@@ -1,45 +1,31 @@
-Message-ID: <3CD7F783.8070704@pacbell.net>
-Date: Tue, 07 May 2002 08:49:23 -0700
-From: Armin <akuster@pacbell.net>
-MIME-Version: 1.0
-To: acurtis@onz.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ibm_ocp_enet.c - PHY implementation requirements?
-References: <NCBBIINEHIPFGJPLBEIFEEJNDGAA.acurtis@onz.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Tue, 7 May 2002 09:16:25 -0700
+From: andrew may <acmay@acmay.homeip.net>
+To: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+Cc: linuxppc-embedded@lists.linuxppc.org, kuster@pacbell.net,
+	acmay@acmay.homeip.ne
+Subject: Re: IBM ocp I2C circular dependency
+Message-ID: <20020507091625.B9190@ecam.san.rr.com>
+References: <3CD7D04C.1E9122A0@etx.ericsson.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3CD7D04C.1E9122A0@etx.ericsson.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Allen Curtis wrote:
-> We have an 405GP design, very similar to the Walnut LSP. One of the major
-> differences is that we have a BroadCom 9-port switch instead of a dedicated
-> PHY for Ethernet. Supporting the switch is much easier than a dedicated PHY
-> because you can always assume:  100Mb, Full-Duplex and you do not have to
-> handle disconnect and mode change interrupts. The problem is that the OCP
-> Ethernet implementation has become much more complex and it is not obvious
-> what must be supported when adding a new interface and what could be a stub.
-> (and its expected result)
->
-> Another issue is that the switch supports both the MII and SPI interfaces.
-> These are mutually exclusive, determined by first access to the device. Our
-> design requires the use of the SPI interface. All currently supported PHY
-> are MII, which is expected. Do you forsee any problems using SPI within
-> ibm_ocp_phy.c?
->
-> TIA
+On Tue, May 07, 2002 at 03:02:04PM +0200, Kenneth Johansson wrote:
+> Also I found a problem with the code when I access a i2c memory from
+> userspace and no chip is present at that address. After that it's not
+> possible to access anything else on the I2C bus. Works OK as long as I use
+> addresses that have a device that answers (I think).
 
-There are a few stubs for the zmii bridge
+There is a suprising lack of copy to/from user functions in the i2c
+code. This may be part of the problem but I think it needs to be fixed
+more in the core code rather than each driver.
 
-The MII functions can most likly be placed into it's own file and you
-might want to think about creating  a spi.c file for its implimentation.
-  This would allow us to have them be complied in depending on what mode
-is configured. The questions is can we come up with a common api to mii
-& spi?
+The driver should not support "Quick" 0 len transfers, I am not sure how
+it handles them now. This may be another problem.
 
-
-
-armin
-
+ps you forgot a "t" in .net.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
