@@ -1,44 +1,41 @@
-Message-ID: <385711B2.4574D1D2@netx4.com>
-Date: Tue, 14 Dec 1999 22:57:38 -0500
+Message-ID: <385714D8.8AD74656@netx4.com>
+Date: Tue, 14 Dec 1999 23:11:04 -0500
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Brian Kuschak <bkuschak@yahoo.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: glibc 1.99-8xx include files?
-References: <19991212014800.9853.qmail@web307.mail.yahoo.com>
+To: bsimon@ctam.com.au
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: linuxppc embedded boot problems.
+References: <3856C0D7.4E1404C9@ctam.com.au> <385703C2.AA4298E7@netx4.com> <38570544.476D42C9@ctam.com.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brian Kuschak wrote:
+Brendan Simon wrote:
+
+> What I don't understand is why it starts to boot (ie. uncompresses into
+> memory) but then nothing happens.
 
 
-> It appears that the glibc header files in the
-> mbxroot.full.tgz filesystem on the ftp site are for
-> glibc version 2.0.
+Could be lots of things.  I hope you can reset your board
+without losing memory.  If so, find the address of 'log_buf'
+in the System.map and dump it out (convert the virtual address
+to physical by masking the upper few bits).  This is the staging
+area for kernel printk messages, and lots of information is
+here before the console is enabled.
 
-I don't think so.....that image was created long before
-the glibc2 version existed.
-
-> ...  I'm using the glibc-1.99 version
-> with the 8xx patches.
-
-This should work.....
+> ....  Are there things that the kernel expects
+> to be setup besides the flash/dram memory ?
 
 
-> My code is including the 2.0 headers, but linking to
-> the 1.99 library.  It's not very happy :-)
+Considering you are doing your own UPM, the Linux kernel will
+find lots of timing errors with it.  It enables the MMU and
+caches very early, so the bus timing will see something new
+for the first time.  I hope you are peforming the proper cache
+initialization sequence and setting all of the necessary
+processor registers in the boot rom.
 
-Are you sure this is happening?  When I boot an 8xx using
-the mbxroot.full file system, I can compile programs on it
-that run just fine.  Maybe I haven't stumbled across the
-features you are trying to use.
-
-I know that cross compiling to use glibc-1.99 on any system
-is very error prone.  I certainly haven't yet mastered it,
-but I am a little slow sometimes.  I still have an old R4 iMac
-for this purpose.
+You can disable the caches in arch/ppc/kernel/head.S.  Try that.
 
 
 	-- Dan
