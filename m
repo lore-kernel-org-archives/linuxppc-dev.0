@@ -1,41 +1,43 @@
-Subject: Re: Kernel Gurus: Module insertion deadlock? [Was: SCSI system
-	freeze w/2.4.18]
+Subject: Re: dmasound audio patch
 From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Albrecht Dre? <albrecht.dress@arcor.de>
-Cc: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20020407143312.GA927@regulus>
-References: <E16tZUq-00007a-00@piglet.grunz.lu>
-	<20020407143312.GA927@regulus>
+To: Bill Fink <billfink@mindspring.com>
+Cc: LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>,
+	YellowDog Linux General <yellowdog-general@lists.terrasoftsolutions.com>
+In-Reply-To: <20020407172358.36f3fd3e.billfink@mindspring.com>
+References: <20020407172358.36f3fd3e.billfink@mindspring.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Date: 08 Apr 2002 00:32:29 +0200
-Message-Id: <1018218750.1868.772.camel@tibook>
+Date: 08 Apr 2002 12:30:37 +0200
+Message-Id: <1018261838.1870.7347.camel@tibook>
 Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 2002-04-07 at 16:33, Albrecht Dre? wrote:
+On Sun, 2002-04-07 at 23:23, Bill Fink wrote:
 >
-> I played a little more with this, and got the following picture:
->
-> * scsi cd support built into the kernel: the access works without a cd in
->    the drive
->
-> * scsi cd support built as module
->    - do a "modprobe sr_mod" (which inserts sr_mod.o and cdrom.o): access
->      works like support built fixed into the kernel;
->    - remove sr_mod (cdrom.o may still be loaded): access leads to the hang as
->      described.
->
-> So I think there is some kind of deadlock between dd and the module
-> insertion (which includes a disk access to read/load the module). As I do
-> not see this on an iMac with a ide cd drive, it might be a problem either in
-> sr_mod or in the scsi stuff. However, the iMac has two separate ide busses
-> for the cd and the disk, so the hang might be "same bus" related.
+> A friend of mine, Rob Scott, worked up a patch to the dmasound driver
+> that fixes some of the PPC endianness issues by doing byte swapping
+> in the driver.  He uses it on a Titanium PowerBook, and I am using it
+> on a dual 500 MHz G4 with good results.  Before the patch, using xmms
+> with the AudioCD Reader plugin, I had to use the esound driver since
+> the OSS driver just gave static.  Now I can use the OSS driver directly,
+> so there's no need to run the esd daemon.
 
-Indeed, I've experienced the same problem on a Cube where both HD and CD-ROM
-are on the first IDE bus. Used to work before around 2.4.10, don't remember
-exactly.
+Must be an old version of xmms? It swaps bytes if necessary since 1.2.5
+or so.
+
+> I know this patch probably isn't politically correct, since as I understand
+> it Linus doesn't believe that things such as byte swapping should be done
+> in the kernel.  But then he lives on a little endian machine and doesn't
+> need to mess with dozens of broken audio applications.
+
+What are those apps? In my experience, most apps where sound doesn't
+work are simply broken and need to be fixed anyhow, no kernel patch can
+help that.
+
+For example, the XMMS cdread plugin needs fixing to convert the data to
+native endianness anyway because otherwise the filtering for the XMMS EQ
+produces noise again.
 
 
 --
