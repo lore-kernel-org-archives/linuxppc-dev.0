@@ -1,43 +1,42 @@
-Date: Tue, 5 Oct 1999 10:54:52 +0200 (MET DST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Charlie McLachlan <cim@uk.research.att.com>
-cc: anthony tong <atong@uiuc.edu>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Do you XF86? Was: ATIRage128 
-In-Reply-To: <Pine.SO4.4.04.9910050925060.25985-100000@marrow>
-Message-ID: <Pine.GSO.4.10.9910051053510.749-100000@dandelion.sonytel.be>
+Date: Tue, 5 Oct 1999 07:36:19 -0400 (EDT)
+From: Elliot Lee <sopwith@redhat.com>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org, Dave Miller <davem@redhat.com>
+Subject: Re: esound for PPC
+In-Reply-To: <19991005105431.012853@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.4.10.9910050733100.1006-100000@lacrosse.corp.redhat.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 5 Oct 1999, Charlie McLachlan wrote:
-> "XFree86 complient, in this context, means that the sources to these
-> servers are already part of the XFree86 development sources and that
-> these servers will be included (with full sources) in one of the next
-> XFree86 releases"
-> ...
-> "Of course, all of them will be integrated into future versions of
-> XFree86"
+On Tue, 5 Oct 1999, Benjamin Herrenschmidt wrote:
 
-> The sources are in the development tree, which you can't get if you aren't
-> a member of XFree86, and they don't like making people members just so
-> they can try out new code.
+> I may be wrong, but to me, this looks like a bug in esound. The driver
+> seems capable of telling the application about it's current format and
+> can be told to change it. If esound does assumptions about the default
+> format instead of querying the driver, then esound is broken. (Also
+> the driver may have been switched to another format by an application
+> before esound takes control anyway. I don't remember which of
+> /dev/audio or /dev/dsp will keep the current setting so this may not
+> be an issue).
 > 
-> So back to the question, Is anyone here a member, and have they tried
-> compiling the SUSE code for PPC? 
+> I agree that the driver lacks a call to query about the native endian,
+> so if you really want to, you can add code to esound to force-switch
+> to big endian on PowerMac, but at least, it should be fixed to not
+> rely on a supposed default setting.
 
-But you can become a member if you intend to work on porting the SUSe code to
-PPC.
+In ftp://people.redhat.com/sopwith/esound-0.2.15.tar.gz (not a final
+release), it explicitly sets big-endian mode on big-endian machines, so
+things should work a bit better. There is also a related bug in the sound
+file playback code fixed, that should help davem's "esdplay plays garbage"
+problems. Please try this out and let me know.
 
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven ----------------- Sony Suprastructure Center Europe (SUPC-E)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint Stevens Woluwestraat 55
-Phone +32-2-7248632 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+-- Elliot					http://developer.gnome.org/
+The first thing a programmer needs to admit is that any program is by far
+more complex than his own mind. Thats why he partitions it into neat
+pieces and avoids complexity.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
