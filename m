@@ -1,36 +1,31 @@
-Message-ID: <3A6CCCBB.270DF241@mvista.com>
-Date: Mon, 22 Jan 2001 19:13:47 -0500
+Message-ID: <3A6CCF31.C44706E2@mvista.com>
+Date: Mon, 22 Jan 2001 19:24:17 -0500
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: paulus@linuxcare.com.au
-CC: Michel Ddnzer <michdaen@iiic.ethz.ch>,
-        Benjamin
-	Herrenschmidt <benh@kernel.crashing.org>,
-        Jeff Hartmann
-	<jhartmann@valinux.com>,
+To: Roman Zippel <zippel@fh-brandenburg.de>
+CC: Jeff Hartmann <jhartmann@valinux.com>, michdaen@iiic.ethz.ch,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
         Gareth Hughes <gareth@valinux.com>, linuxppc-dev@lists.linuxppc.org,
-        dri-devel@lists.sourceforge.net
+        dri-devel@lists.sourceforge.net, Paul Mackerras <paulus@linuxcare.com>
 Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
-References: <3A686DFE.9030308@valinux.com>
-		<19341214104258.22601@mailhost.mipsys.com>
-		<3A68FC06.7BEEA13D@iiic.ethz.ch>
-		<3A691166.DC6DCD81@iiic.ethz.ch> <14956.50865.856754.439761@diego.linuxcare.com.au>
+References: <Pine.GSO.4.10.10101222326300.26751-100000@zeus.fh-brandenburg.de>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+Roman Zippel wrote:
 
-> Which means that *pgd == 0, which is very odd indeed, unless of course
-> you have run off the end of the vmalloc'd area (I assume you haven't).
+> AFAIK such tricks are used for mapping normal (low) memory and ioremapped
+> areas. For normal memory you can use phys_to_virt()/virt_to_phys() and for
+> ioremapped memory, you have to store the physical and virtual address
+> yourself. What am I missing?
 
-Right, I made the same assumption, this was the first time through
-the loop.
-
-> What is the value of the symbol swapper_pg_dir in this kernel?
-
-It looks like swapper_pg_dir because of it's low memory address.
+The PowerPC port, except for a couple of processors (4xx and 8xx again)
+could never use virt_to_phys on any dynamically allocated (vmalloc()'ed)
+space.  All of the drivers/devices that used these macros were using
+ioremapped() or static buffers.  Perhaps the PCI mapping functions are
+implementing some of this, and I need to take a look.
 
 
 	-- Dan
