@@ -1,37 +1,41 @@
-Subject: 405GPr support in linux2.4.18
+Message-ID: <20030218130534.84915.qmail@web20710.mail.yahoo.com>
+Date: Tue, 18 Feb 2003 05:05:34 -0800 (PST)
+From: linuxuser <rlinuxuser@yahoo.com>
+Subject: Booting the kernel
 To: linuxppc-embedded@lists.linuxppc.org
-From: "Laurent Mohin" <laurent.mohin@acterna.com>
-Date: Tue, 18 Feb 2003 11:11:06 +0100
-Message-ID: <OFA7B6F432.6CF96B48-ONC1256CD1.00372BF7@eng.eni.wago.de>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+Hi
 
-I'm designing a board with 405GP processor. I'm now trying to have it
-working with a 405GPr version.
-I've started to configure it working in legacy mode and made the necessary
-changes in PPCBoot.
+I am trying to port linux (ELDK 1.0.1) on custom
+MPC860 target board and new to this work. I am facing
+problems at particular stage.
 
-Once downloaded, my kernel hung in early_init function when it called the
-memset_io to zero the BSS. Using a BDI2000 debugger, I saw that I've
-reached the bad_page_fault function.
+On hyperterminal I could see the message "Now booting
+the kernel..."
 
-The only difference I know between 405GP and 405GPr in legacy mode is data
-cache size. How does the kernel manage it?
+and the target is getting hanged due to panic
+condition.When debugged it is found that console
+driver is not getting initialized. To overcome this in
+init/main.c file , I called the console_init
+subroutine before printk(linux_banner). still the same
+problem persists.. Is this problem is due to MMU
+initialization ??
+On target board we have 2MB Flash memory( addr
+0x2800000-29FFFFF)and 32 MB SD RAM with starting
+address 0x0000000.
 
-I'm currently using kernel 2.4.18 from Montavista.
+I followed the following steps to compile and using
+SDS debugger
+make menuconfig,make dep, make zImage
 
-Any help is welcome,
+If any one have solution kindly reply ..
 
-Laurent
-
-
-Laurent MOHIN
-ACTERNA
+shekar
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
