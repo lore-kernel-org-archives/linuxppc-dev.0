@@ -1,33 +1,33 @@
-Date: Wed, 17 Mar 1999 14:13:24 -0600 (CST)
-From: /* Vinai */ <vroopcha@post.its.mcw.edu>
-To: Tim Carroll <tim@radcom.org>
+Date: Wed, 17 Mar 1999 15:40:20 -0500 (EST)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: Benjamin Herrenschmidt <bh40@calva.net>
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: clock/bogomips in cpuinfo
-In-Reply-To: <Pine.LNX.3.96.990317111511.1153C-100000@radcom.org>
-Message-ID: <Pine.SOL.3.96.990317141011.14032D-100000@post.its.mcw.edu>
+Subject: Re: Apple Open Source: the drivers
+In-Reply-To: <19990317162518.010351@mail.mipsys.com>
+Message-ID: <Pine.LNX.3.96L.990317153729.4041A-100000@unix48.andrew.cmu.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 17 Mar 1999, Tim Carroll wrote:
+On Wed, 17 Mar 1999, Benjamin Herrenschmidt wrote:
+> 
+> Ok, I finally found where the driver are hidden: In the kernel archive,
+> in bsd/dev/ppc. They are mostly objective C drivers. Among other things,
+> there are drivers for the PowerMac ATA with apparently all the timing
+> stuffs, and for the CMD646 controller in the blue G3.
 
-}It works great and on the first try with Paul M's stock 2.2.1 kernel, but
-}a peek at /proc/cpuinfo tells me clock : 195MHZ and bogomips : 403.87. 
+So they're useful? Last night I suddenly got worried because OS X is based on
+Mach... so wouldn't any OS X drivers be more helpful to the MkLinux folks than
+to monolithic Linux?
 
-I get almost the same result with my 604e/233 MHz card in my 7500, i.e.
-the /proc/cpuinfo says 195 MHz, but the BogoMips says 466 (IIRC).  In
-MacOS, the CPU and bus speeds are what they are supposed to be.
+And another question: how is it that OS X, based on Mach, is still comparable
+in speed to other non-microkernel operating systems? It was my (uneducated)
+impression that one of the tradeoffs of a microkernel was a performance
+penalty.
 
-This has not affected anything I am doing, so I did not bother too much
-with it.  But I guess this is not something peculiar to my machine or
-card, as I first thought ...
-
-vinai
-
-
-
+-Hollis
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
