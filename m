@@ -1,55 +1,58 @@
-Message-ID: <67505026E29DD311A9AA00508B7315F350A526@EXCHANGE>
-From: Julia Elbert <jelbert@enerdyne.com>
-To: "'Dan Malek'" <dan@mvista.com>,
-        "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: switching linux kernels
-Date: Tue, 26 Sep 2000 09:59:26 -0700
+Date: Tue, 26 Sep 2000 20:18:35 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: gongzhuo <gongzhuo@163.net>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Does anyone know the memory mapping rules of linuxppc for mvme2600
+ ?
+In-Reply-To: <39C029EB.23243@bjsmtp3.163.net>
+Message-ID: <Pine.HPX.4.10.10009261919440.24555-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Dan,
-We don't need caching, can we turn it off?
-Thanks.
+On Thu, 14 Sep 2000, gongzhuo wrote:
 
-		-----Original Message-----
-		From:	Dan Malek [mailto:dan@mvista.com]
-		Sent:	Tuesday, September 26, 2000 8:55 AM
-		To:	Julia Elbert
-		Cc:	'linuxppc-embedded@lists.linuxppc.org'
-		Subject:	Re: switching linux kernels
+>
+> Hi:
+>   I'm sorry for the copies of my last mail . It seems to be the problem of my ISP.
+>   Does anyone know the memory mapping rules for linuxppc on MVME2600?
+>   If I want to write lkm to add some mappings in the kernel space for my hacking, what functions can I use for memory mapping ?
 
+It depends on whether you use the standard kernel with PreP mappings or my
+kernel which reprograms the PCI bridge Raven to get CHRP like mappings:
+in both mode the first gigabyte is reserved for system RAM but is not
+fully populated (unless you've got 1 Gig of RAM which is not my case).
 
-		Julia Elbert wrote:
+For higher addresses in PreP mode (if I remember well but it may depend
+on the exact version of PPCBUG and OF configured it differently so take
+it with a grain of salt):
+0x40000000-0x7fffffff: not mapped (was mapped to PCI memory space with OF)
+0x80000000-0xbf7fffff: ISA/PCI I/O space, bus addresses 0 to 0x3fffffff
+0xbf800000-0xbfffffff: not mapped, don't ask me why
+0xc0000000-0xfcffffff: ISA/PCI memory space, bus addresses 0 to 0x3cffffff
+0xfd000000-0xfdffffff: ISA memory space (again!, bus addresses 0 to 0xffffff)
+0xfe000000-0xfe7fffff: ISA/PCI I/O space (again!, bus addresses 0 to 0x7fffff)
+0xfe800000-0xfef7ffff: not mapped
+0xfef80000-0xfeffffff: Raven and Falcon registers with holes, see the doc for details
+0xff000000-0xffffffff: two banks of Flash ROM with some holes, top 1MB aliased to bottom
+			of either bank depending on jumpers, see the doc for details
 
-		>                 I am switching to HardHat 2.2.13 from ppc
-2.2.13.
+If you use my kernels, they almost follow the MPC106 in CHRP mode:
+0x40000000-0xfcffffff: PCI memory space, no offset
+0xfd000000-0xfdffffff: ISA memory space, bus addresses 0 to 0xffffff
+0xfe000000-0xfebfffff: PCI/ISA I/O space, bus addresses 0 to 0xbfffff
+0xfec00000-0xffffffff: same as PreP mode...
 
-		> .....whatsoever, just the data is corrupted some how.
+For DMA accesses, the offset is 0x80000000 in PreP mode. It is 0 with my
+kernels, the lowest 16 Mb can also be accssed from bus addresses
+0xfd??????, like the Grackle. This is only a problem if you want to access
+the lowest megabyte of RAM which is not seen from the bus because of VGA
+aliasing issues. But since the kernel code lies there is is hardly ever a
+problem.
 
+	Gabriel.
 
-		Depending upon the flavor of the day ppc 2.2.13, it could be
-a cache
-		configuration difference.  The old 2.2.13 kernels often had
-the data
-		cache in the write-through mode to avoid a variety of bugs
-in both
-		hardware and software.
-
-		The HHLinux 2.2.13 (and all later kernels) run with
-copy-back data
-		cache and subsequent silicon errata fixes, so there may be a
-cache
-		coherency hole in the way your driver manages it's space.
-
-
-			-- Dan
-
-		** Sent via the linuxppc-embedded mail list. See
-http://lists.linuxppc.org/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
