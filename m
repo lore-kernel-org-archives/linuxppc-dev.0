@@ -1,11 +1,11 @@
-Date: Fri, 27 Aug 2004 14:31:34 +0200 (MEST)
+Date: Fri, 27 Aug 2004 15:06:39 +0200 (MEST)
 From: "Patrick Huesmann" <tricknology@gmx.de>
 To: "Mark Chambers" <markc@mail.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-References: <002c01c48c30$f663f000$0301a8c0@chuck2>
+References: <003901c48c34$6e73fe20$0301a8c0@chuck2>
 Subject: Re: Kernel oops when initializing ethernet driver
-Message-ID: <30642.1093609894@www18.gmx.net>
+Message-ID: <3987.1093611999@www44.gmx.net>
 Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
@@ -13,25 +13,33 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 Hi,
 
-> Machine check means you generated an address that the hardware was
-> unable to complete - you wrote (or read) a non-existent address.  It's
-> mapped in the MMU ok but doesn't exist on the board.
+> > Interestingly, the kernel only crashes when accessing that one
+> particular
+> > register (at offset 0x0040). Every other register in that range can be
+> > written to and read from w/o problems.
+>
+> So that sounds like a hardware problem, doesn't it.  This is one of those
+> things where the FPGA has a hard PPC core and a bunch of VHDL
+> peripherals?
 
-Do you mean something like a "bus error"?
+Yes, exactly. The peripherals are connected to the PPC core via the OPB
+(on-chip peripheral bus) and now I must assume that the address decode /
+"chip" select logic within that OPB is buggy or not configured right.
 
-> Memory mapped I/O tends to exist in tight little clusters, and if you get
-> your address off by 1 or something you get a machine check.  So you
-> gotta find exactly what address it's writing to and why it's off -
-> probably
-> .h configuration kind of thing somewhere...
+> The good thing there is that the VHDL isn't much harder
+> to fix than C code.  That would be my wild guess - the VHDL is not
+> decoding the address correctly.
 
-Interestingly, the kernel only crashes when accessing that one particular
-register (at offset 0x0040). Every other register in that range can be
-written to and read from w/o problems.
+I don't even know if we have the VHDL source - the peripherals are
+ready-to-go logic units that are just inserted in the FPGA design.
 
-> Hope that's some kind of help :-)
+> However, also check that you are not accidentally writing past 0x0040.
+> For instance, if 0x0040 is a byte address and you write 16 bits you'll
+> be writing to 0x0040 and 0x0041.
 
-Thanks a lot,
+It is a 32-bit access at 0x0040.
+
+Thanks,
 Patrick
 
 
