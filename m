@@ -1,151 +1,82 @@
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: Jeff Garzik <jgarzik@mandrakesoft.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Patch to fix support for PNIC_II in tulip driver
-Date: Wed, 31 Oct 2001 10:42:00 -0500
-References: <20011028125007.MHAN10438.tomts12-srv.bellnexxia.net@there> <20011031022825.EOTE7882.tomts5-srv.bellnexxia.net@there> <3BDF6249.71796C9C@mandrakesoft.com>
-In-Reply-To: <3BDF6249.71796C9C@mandrakesoft.com>
-Cc: yellowdog-devel@lists.yellowdoglinux.com, suse-ppc@suse.com,
-	becker@scyld.com
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="------------Boundary-00=_0AU2SZM4Z8EP8VA9F3K8"
-Message-Id: <20011031153935.MLSQ7882.tomts5-srv.bellnexxia.net@there>
+Date: Wed, 31 Oct 2001 08:42:33 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: small cleanup
+Message-ID: <20011031084233.A18493@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20011030190809.F16202@cpe-24-221-152-185.az.sprintbbd.net> <Pine.LNX.4.33.0110311113100.31795-100000@serv>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.33.0110311113100.31795-100000@serv>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---------------Boundary-00=_0AU2SZM4Z8EP8VA9F3K8
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+On Wed, Oct 31, 2001 at 11:22:20AM +0100, Roman Zippel wrote:
+> Hi,
+>
+> On Tue, 30 Oct 2001, Tom Rini wrote:
+>
+> > > - pcibios_make_OF_bus_map depends on CONFIG_ALL_PPC
+> >
+> > This should just be a warning, since gcc will optmize it out (it'll
+> > always be false on !CONFIG_ALL_PPC.  It'd almost be preferable to do
+> > something like:
+> > #define pcibios_make_OF_bus_map do { } while(0)
+> >
+> > Someplace...
+>
+> That function is in the same file...
 
-Hi,
+Yes, and compiled only on CONFIG_ALL_PPC.  But the if statement will
+always be false on !CONFIG_ALL_PPC, so while the compiler will warn
+about an implicit declaration, it won't cause a link error.  Eg:
+--- 1.34/arch/ppc/kernel/pci.c  Sat Oct  6 11:16:41 2001
++++ edited/pci.c        Wed Oct 31 08:40:26 2001
+@@ -743,6 +743,9 @@
+                ranges += np;
+        }
+ }
++#else
++/* Kill a warning */
++#define pcibios_make_OF_bus_map do { } while(0)
+ #endif /* CONFIG_ALL_PPC */
 
-Attached is the patch that fixes support for the Lite-On PNIC_II for the
-tulip driver on my machine for kernels 2.4.X.
+ void __init
 
-So if you are using a NIC that includes the Lite-ON PNIC_II (LC82C115)
-please give this a try.  This includes some AsanteFast 10/100 cards that
-run under both Mac OSX and PPC Linux.  Specifically the AsanteFast 10/100
-with Part Number: 61-20590-01 uses this chip and this is the card all
-testing was done for.
+> > > - removed duplicate definition of isa_io_base/isa_mem_base/pci_dram_offset
+> > > (note: these variables are protected with CONFIG_PCI in ppc_ksyms.c, but
+> > > not in the include files, so there are unconditional now)
+> >
+> > This will break 4xx I think...  Can you try doing a
+> > walnut+CONFIG_405_DMA=y compile (in _devel..)
+>
+> I can try it (when I get home).
 
-Special thanks to Jeff Garzik for answering some questions and providing
-the PNIC_II datasheet and the datasheet of the Intel/DEC 21143 which it is
-similar to.  Without those docs, I would have been lost for sure.
+Thanks.
 
-NOTE: This patch is just being submitted with this e-mail and therefore
-has *NOT* yet been accepted by Jeff (the official tulip driver maintainer)
-but it works fine for me and hopefully for others who are having troubles
-with some AsanteFast 10/100 NIC cards.  But there are no guarantees.
+> > > - removed nested __KERNEL__ ifdefs in io.h, one even outside of the
+> > > recursive protection (bad style).
+> >
+> > Correct, but it's usually
+> > #ifdef __KERNEL__
+> > #ifndef __FILE_H__
+> > #define __FILE_H__
+> > ...
+> > #endif
+> > #endif
+> >
+> > Or so.
+>
+> I would do it the other way around. gcc looks for a ifndef/define/endif
+> sequence to decide whether it needs to rescan that file next time, but I'm
+> not sure if gcc finds it in this case.
 
-Feedback welcome.
+By and large we do it the way I said anyhow.  Is this in current gcc or
+when we get the precompiled headers bits?
 
-Hope this helps.
-
-Kevin
-
-- now back to fixing my Adaptec scsi driver
-
-
---------------Boundary-00=_0AU2SZM4Z8EP8VA9F3K8
-Content-Type: application/x-gzip;
-  name="pnic2_fix.patch.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="pnic2_fix.patch.gz"
-
-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
-POii1W79PzDky0kmQQAA
-
---------------Boundary-00=_0AU2SZM4Z8EP8VA9F3K8--
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
