@@ -1,51 +1,39 @@
-Message-ID: <5725AF6EE9FAD51195DC009027E377020B656263@az33exm35.corp.mot.com>
-From: Milliorn Gary-rxcr80 <Gary.Milliorn@motorola.com>
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: gt-64260 Question
-Date: Tue, 25 Nov 2003 13:59:43 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Tue, 25 Nov 2003 16:50:05 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Ashwin Bihari <raz0redge@hotmail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PPCBug, PrPMC800 and bootargs
+Message-ID: <20031125235005.GB2541@stop.crashing.org>
+References: <BAY9-F67lXCCzunMkE4000047a9@hotmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <BAY9-F67lXCCzunMkE4000047a9@hotmail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-owner-linuxppc-embedded@lists.linuxppc.org wrote:
-> Benjamin Davis wrote:
+On Fri, Nov 21, 2003 at 04:31:18PM -0500, Ashwin Bihari wrote:
 >
->> Errata 9 of
->> http://e-www.motorola.com/files/32bit/doc/errata/MPC7455CE.pdf
->> talks about some issues with QACK,
+> Greetings,
 >
-> Okay.
+> I'm trying to get bootargs working with my Kernel such that I can change the
+> root device on the fly from the firmware. I'm using PPC7-Bug and GEVEDIT to
+> set the bootargs up.
 >
->> I further noticed how in arch/ppc/platform/pmac_feature.c, in
->>     probe_uninorth: if (uninorth_rev < 0x11) {
->>         actrl = UN_IN(UNI_N_ARB_CTRL) &
->>         ~UNI_N_ARB_CTRL_QACK_DELAY_MASK; actrl |= ((uninorth_rev <
->>             3) ? UNI_N_ARB_CTRL_QACK_DELAY105 :
->> UNI_N_ARB_CTRL_QACK_DELAY) <<
->> UNI_N_ARB_CTRL_QACK_DELAY_SHIFT;
->>         UN_OUT(UNI_N_ARB_CTRL, actrl);
->>
->> It would appear to me that a QACK delay is being set by communication
->> with the uninorth.  I will say now though this is my first
->> experiance with the kernel. I was kinda thinking they might have
->> gotten around the errata by extending the delay of the QACK.  This
->> QACK is the system saying it is time to get out of nap, and snoop.
+> I can see that bootargs gets set within the firmware, after some digging
+> around in the Linux Kenrel I see that it is never being checked/read. I see
+> there are some patches for VME, any such thing for the PrPMC800??
 >
-> I don't see any reference in the 64260 manual that lets you control
-> this.  Are you sure that you need to nap/snooze?  IOW, are you sure
-> you're not solving a problem you don't have?
+> I'm using 2.4.23-pre8 off the Linuxppc_2.4_devel branch.
 
-The 64260 does not implement the QACK power management protocol; most
-boards just tie it off or connect it only to the COP/JTAG header.
+The changes required for this to work are rather trivial, and you should
+be able to use the code needed for the Motorola LoPEC as a starting
+point of what you need to do (arch/ppc/config.in,
+arch/ppc/kernel/Makefile and arch/ppc/platforms/prpmc800_setup.c I
+imagine).  Patches would be appreciated.
 
-So, you probably needn't worry about it.
-
- --
-Gary Milliorn, Motorola       phone: 512 996.7066
-PowerPC Development Platforms email: mailto:Gary.Milliorn@Motorola.com
-Computing Platform Division
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
