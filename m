@@ -1,37 +1,39 @@
-Message-ID: <3E24A7B5.7000500@redswitch.com>
-Date: Tue, 14 Jan 2003 16:13:41 -0800
-From: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
-MIME-Version: 1.0
-To: support@abatron.ch,
-	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Debugging the kernel with BDI2000
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Wed, 15 Jan 2003 09:25:12 +0530
+From: Chirag Kantharia <kantharia@hathway.com>
+To: "Gallant, John" <jgallant@vanteon.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Assistance with using /dev/fb0 and No X windows
+Message-ID: <20030115092512.A809@toxic>
+Reply-To: Chirag Kantharia <kantharia@hathway.com>
+References: <4926614F7A31D411820F00D0B74FF7E0013D1A21@RDC03>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4926614F7A31D411820F00D0B74FF7E0013D1A21@RDC03>; from jgallant@vanteon.com on Tue, Jan 14, 2003 at 05:17:22PM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I tried to debug the kernel with BDI2000 and gdb and had some problems.
+On Tue, Jan 14, 2003 at 05:17:22PM -0500, Gallant, John wrote:
+| 2) Does anyone know of a driver for the LynxEM chip that is not from the
+| XFree86 code base?
 
-I wanted to set a breakpoint at console_init() and did the following steps.
-(1) BDI>bi 0xc00020f0    # stop at start_here
-(2) BDI>go
-ppcboot was running and loaded the kernel image and stoped at start_here.
-(3) BDI>ci
-(4) ppc_8xx-gdb vmlinux    # start gdb
-(gdb) target remote bdi:2001
-(gdb) b console_init
+There is lynxfb.c in the linuxppc_2_4_devel tree
+(http://www.penguinppc.org/dev/kernel.shtml). You can use that as the
+starting point. It's a WIP.
 
-The above steps were all successful. But when I wanted to step by 'n' or
-continue the execution by 'cont'. I got the following error.
+| I am planning to "strategically advance to the rear" and go back to the
+| PPCBoot code where I was able to get a few bands of color when the LOGO was
+| supposed to be drawn on the screen.  If I can get that to work I am hoping
+| that I can form a better understanding of the LynxEM chip to either create a
+| limited driver or hack up the vga16fb.c file some more before I work on a
+| limited driver.
 
-(gdb) cont
-warning: Cannot insert breakpoint -1:
-Error accessing memory address 0xc0000000: Unknown error 4294967295.
+A working fbset just proves that you are able to talk to the framebuffer
+support in the kernel. It doesn't indicate that your framebuffer is
+actually able to talk to your hardware.
 
-What does this mean? My BDI2000 configuration may not right? CPU is 855.
-
-Thanks.
-- shawn.
+--
+Chirag Kantharia, symonds.net/~chyrag/
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
