@@ -1,449 +1,366 @@
-Date: Wed, 4 Sep 2002 22:02:33 +0200
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: [PATCH] Xilinx virtex 2 pro platform support
-Message-ID: <20020904200233.GL781@mind.be>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="SFyWQ0h3ruR435lw"
-From: p2@mind.be (Peter 'p2' De Schrijver)
+Date: Wed, 4 Sep 2002 16:23:50 -0500 (CDT)
+From: Kumar Gala <kumar.gala@motorola.com>
+To: mporter@mvista.com
+Cc: linuxppc-booke@source.mvista.com,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: [PATCH] CONFIG_BOOKE patch
+Message-ID: <Pine.GSO.4.40.0209041620320.17503-100000@softail.somerset.sps.mot.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---SFyWQ0h3ruR435lw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The following is a bk patch to add in some places that I think we should
+have CONFIG_BOOKE turned on.
 
-Hi,
+- kumar
 
-Attached you will find a patch adding support for the Xilinx virtex 2
-Pro platform, in particular the Xilinx interrupt controller. It was
-tested on a Virtex 2 Pro implementation with 1 CPU core.
+This BitKeeper patch contains the following changesets:
+galak@blarg.somerset.sps.mot.com|ChangeSet|20020904191335|20955
+galak@blarg.somerset.sps.mot.com|ChangeSet|20020904190824|20366
+galak@blarg.somerset.sps.mot.com|ChangeSet|20020904181853|18543
 
-Comments welcome,
+# This is a BitKeeper patch.  What follows are the unified diffs for the
+# set of deltas contained in the patch.  The rest of the patch, the part
+# that BitKeeper cares about, is below these diffs.
+# ID:	cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+# User:	galak
+# Host:	blarg.somerset.sps.mot.com
+# Root:	/local0/bk/linuxppc_2_4_devel
 
-Peter.
---
+#
+#--- 1.71/BitKeeper/etc/logging_ok	Mon Aug 19 21:28:07 2002
+#+++ 1.72/BitKeeper/etc/logging_ok	Wed Sep  4 13:17:41 2002
+#@@ -58,3 +58,4 @@
+# trini@kernel.crashing.org
+# trini@opus.bloom.county
+# trini@stevedallas.bloom.county
+#+galak@blarg.somerset.sps.mot.com
+#
+#--- 1.36/include/asm-ppc/ppc_asm.h	Tue Aug 13 06:52:58 2002
+#+++ 1.37/include/asm-ppc/ppc_asm.h	Wed Sep  4 13:17:34 2002
+#@@ -120,7 +120,7 @@
+#  * On APUS (Amiga PowerPC cpu upgrade board), we don't know the
+#  * physical base address of RAM at compile time.
+#  */
+#-#ifndef CONFIG_440
+#+#ifndef CONFIG_BOOKE
+# #define tophys(rd,rs)				\
+# 0:	addis	rd,rs,-KERNELBASE@h;		\
+# 	.section ".vtop_fixup","aw";		\
+#@@ -134,12 +134,12 @@
+# 	.align  1;				\
+# 	.long   0b;				\
+# 	.previous
+#-#else /* CONFIG_440 */
+#+#else /* CONFIG_BOOKE */
+# #define tophys(rd,rs)				\
+# 	mr	rd,rs
+# #define tovirt(rd,rs)				\
+# 	mr	rd,rs
+#-#endif /* CONFIG_440 */
+#+#endif /* CONFIG_BOOKE */
+# #else  /* CONFIG_PPC_ISERIES */
+#
+# #define tophys(rd,rs)				\
+#
+#--- 1.39/arch/ppc/kernel/traps.c	Sun Sep  1 21:29:58 2002
+#+++ 1.40/arch/ppc/kernel/traps.c	Wed Sep  4 13:17:33 2002
+#@@ -310,7 +310,7 @@
+# {
+# 	int errcode;
+#
+#-#if defined(CONFIG_4xx)
+#+#if defined(CONFIG_4xx) || defined (CONFIG_BOOKE)
+# 	unsigned int esr = mfspr(SPRN_ESR);
+# 	int isbpt = esr & ESR_PTR;
+# 	extern int do_mathemu(struct pt_regs *regs);
+#@@ -322,7 +322,7 @@
+# 		return;
+# #endif /* CONFIG_MATH_EMULATION */
+#
+#-#else /* ! CONFIG_4xx */
+#+#else /* ! CONFIG_4xx && ! CONFIG_BOOKE */
+# 	int isbpt = regs->msr & 0x20000;
+#
+# 	if (regs->msr & 0x100000) {
+#@@ -330,7 +330,7 @@
+# 		_exception(SIGFPE, regs);
+# 		return;
+# 	}
+#-#endif /* ! CONFIG_4xx */
+#+#endif /* ! CONFIG_4xx && ! CONFIG_BOOKE */
+#
+# 	if (isbpt) {
+# 		/* trap exception */
+#@@ -426,7 +426,7 @@
+# }
+# #endif /* CONFIG_8xx */
+#
+#-#if defined(CONFIG_4xx)
+#+#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+#
+# void DebugException(struct pt_regs *regs)
+# {
+#@@ -453,7 +453,7 @@
+# 		_exception(SIGTRAP, regs);
+# 	}
+# }
+#-#endif /* CONFIG_4xx */
+#+#endif /* CONFIG_4xx || CONFIG_BOOKE */
+#
+# #if !defined(CONFIG_TAU_INT)
+# void
+#
+#--- 1.27/arch/ppc/mm/fault.c	Thu Aug 29 01:03:45 2002
+#+++ 1.28/arch/ppc/mm/fault.c	Wed Sep  4 13:17:34 2002
+#@@ -70,7 +70,7 @@
+# 	struct mm_struct *mm = current->mm;
+# 	siginfo_t info;
+# 	int code = SEGV_MAPERR;
+#-#ifdef CONFIG_4xx
+#+#if defined(CONFIG_4xx) || defined (CONFIG_BOOKE)
+# 	int is_write = error_code & ESR_DST;
+# #else
+# 	int is_write = 0;
+#@@ -85,7 +85,7 @@
+# 		error_code &= 0x48200000;
+# 	else
+# 		is_write = error_code & 0x02000000;
+#-#endif /* CONFIG_4xx */
+#+#endif /* CONFIG_4xx || CONFIG_BOOKE */
+#
+# #if defined(CONFIG_XMON) || defined(CONFIG_KGDB)
+# 	if (debugger_fault_handler && regs->trap == 0x300) {
+#@@ -138,8 +138,8 @@
+# 	if (is_write) {
+# 		if (!(vma->vm_flags & VM_WRITE))
+# 			goto bad_area;
+#-#if defined(CONFIG_4xx)
+#-	/* an exec  - 4xx allows for per-page execute permission */
+#+#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+#+	/* an exec  - 4xx/BookE allows for per-page execute permission */
+# 	} else if (regs->trap == 0x400) {
+# 		pte_t *ptep;
+#
+#
+#--- 1.15/include/asm-ppc/mmu.h	Fri Apr  5 12:33:38 2002
+#+++ 1.16/include/asm-ppc/mmu.h	Wed Sep  4 14:13:30 2002
+#@@ -383,5 +383,18 @@
+# #define PPC440_TLB_SW		0x00000002      /* Super write */
+# #define PPC440_TLB_SR		0x00000001      /* Super read */
+#
+#+#define BOOKE_PAGESZ_1K		0
+#+#define BOOKE_PAGESZ_4K		1
+#+#define BOOKE_PAGESZ_16K	2
+#+#define BOOKE_PAGESZ_64K	3
+#+#define BOOKE_PAGESZ_256K	4
+#+#define BOOKE_PAGESZ_1M		5
+#+#define BOOKE_PAGESZ_4M		5
+#+#define BOOKE_PAGESZ_16M	7
+#+#define BOOKE_PAGESZ_64M	8
+#+#define BOOKE_PAGESZ_256M	9
+#+#define BOOKE_PAGESZ_1GB	10
+#+#define BOOKE_PAGESZ_4GB	11
+#+
+# #endif /* _PPC_MMU_H_ */
+# #endif /* __KERNEL__ */
+#
+#--- 1.71/include/asm-ppc/processor.h	Sun Sep  1 21:29:58 2002
+#+++ 1.72/include/asm-ppc/processor.h	Wed Sep  4 13:17:34 2002
+#@@ -825,7 +825,7 @@
+# 	vector128	vscr;		/* AltiVec status */
+# 	unsigned long	vrsave;
+# #endif /* CONFIG_ALTIVEC */
+#-#if defined(CONFIG_4xx)
+#+#if defined(CONFIG_4xx) || defined (CONFIG_BOOKE)
+# 	/* Saved 4xx debug registers */
+# 	unsigned long dbcr0;
+# #endif
+#
 
---SFyWQ0h3ruR435lw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="xilinx-platform.patch"
+# Diff checksum=f91b7d3f
 
-diff -urN -x CVS -x config -x modules -x mtd -x jffs2 -x jffs linuxppc_2_4_clean/arch/ppc/config.in linuxppc_2_4_xseg2.new.clean2/arch/ppc/config.in
---- linuxppc_2_4_clean/arch/ppc/config.in	2002-07-20 12:03:21.000000000 +0200
-+++ linuxppc_2_4_xseg2.new.clean2/arch/ppc/config.in	2002-09-01 17:07:42.000000000 +0200
-@@ -83,6 +83,7 @@
- 	 Redwood-5	CONFIG_REDWOOD_5 	\
- 	 Redwood-6	CONFIG_REDWOOD_6 	\
- 	 Tivo		CONFIG_TIVO 		\
-+	 XSEG2 		CONFIG_XSEG2   		\
- 	 Walnut		CONFIG_WALNUT"	Walnut
 
-    if [ "$CONFIG_EP405" = "y" ]; then
-diff -urN -x CVS -x config -x modules -x mtd -x jffs2 -x jffs linuxppc_2_4_clean/arch/ppc/kernel/Makefile linuxppc_2_4_xseg2.new.clean2/arch/ppc/kernel/Makefile
---- linuxppc_2_4_clean/arch/ppc/kernel/Makefile	2002-07-20 12:04:24.000000000 +0200
-+++ linuxppc_2_4_xseg2.new.clean2/arch/ppc/kernel/Makefile	2002-09-04 20:48:31.000000000 +0200
-@@ -53,9 +53,9 @@
- ifeq ($(CONFIG_4xx),y)
- obj-$(CONFIG_40x)		+= ppc4xx_setup.o ppc4xx_pic.o ocp.o
- ifneq ($(CONFIG_RAINIER),y)
--ifeq ($(CONFIG_SERIAL),y)
--obj-$(CONFIG_40x)		+= ocp_uart.o
--endif
-+#ifeq ($(CONFIG_SERIAL),y)
-+#obj-$(CONFIG_40x)		+= ocp_uart.o
-+#endif
- endif
- obj-$(CONFIG_440)		+= ppc4xx_pic.o ocp.o
- obj-$(CONFIG_PPC_RTC)		+= todc_time.o
-diff -urN -x CVS -x config -x modules -x mtd -x jffs2 -x jffs linuxppc_2_4_clean/arch/ppc/kernel/cputable.c linuxppc_2_4_xseg2.new.clean2/arch/ppc/kernel/cputable.c
---- linuxppc_2_4_clean/arch/ppc/kernel/cputable.c	2002-07-20 12:03:30.000000000 +0200
-+++ linuxppc_2_4_xseg2.new.clean2/arch/ppc/kernel/cputable.c	2002-07-20 19:03:53.000000000 +0200
-@@ -335,6 +335,14 @@
- 	32, 32,
- 	0, /*__setup_cpu_405 */
-     },
-+    {
-+  	/* 405 softcore */
-+	0xffff0000, 0x20010000, "405 Softcore",
-+	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB,
-+	PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+	32, 32,
-+	0, /*__setup_cpu_405 */
-+    },
-     {	/* STB 03xxx */
-     	0xffff0000, 0x40130000, "STB03xxx",
-     	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB,
-diff -urN -x CVS -x config -x modules -x mtd -x jffs2 -x jffs linuxppc_2_4_clean/arch/ppc/kernel/ppc4xx_pic.c linuxppc_2_4_xseg2.new.clean2/arch/ppc/kernel/ppc4xx_pic.c
---- linuxppc_2_4_clean/arch/ppc/kernel/ppc4xx_pic.c	2002-07-20 12:03:53.000000000 +0200
-+++ linuxppc_2_4_xseg2.new.clean2/arch/ppc/kernel/ppc4xx_pic.c	2002-09-01 18:12:56.000000000 +0200
-@@ -140,7 +140,62 @@
- 	mtdcr(DCRN_EXISR, (1 << (31 - bit)));
- }
+# Patch vers:	1.3
+# Patch type:	REGULAR
 
--#else
-+#elif defined(CONFIG_XSEG2)
-+
-+/* Function Prototypes */
-+
-+static void      ppc405_xintc_enable(unsigned int irq);
-+static void      ppc405_xintc_disable(unsigned int irq);
-+static void      ppc405_xintc_disable_and_ack(unsigned int irq);
-+
-+static struct hw_interrupt_type ppc405_xintc = {
-+        "V2PRO 405 XINTC",
-+        NULL,
-+        NULL,
-+        ppc405_xintc_enable,
-+        ppc405_xintc_disable,
-+        ppc405_xintc_disable_and_ack,
-+        0
-+};
-+
-+int ppc405_xintc_get_irq(struct pt_regs *regs) {
-+
-+       int vector;
-+
-+       vector=31 - ((*DCRN_XINTC0_IVR) >> 2);
-+       if(vector==NR_IRQS)
-+		vector=-1;
-+
-+       return vector;
-+
-+}
-+
-+static void  ppc405_xintc_enable(unsigned int irq) {
-+
-+      irq&=0x1f;
-+
-+      *DCRN_XINTC0_SIE=1<<irq;
-+
-+}
-+
-+static void ppc405_xintc_disable(unsigned int irq) {
-+
-+      irq&=0x1f;
-+
-+      *DCRN_XINTC0_CIE=1<<irq;
-+
-+}
-+
-+static void ppc405_xintc_disable_and_ack(unsigned int irq) {
-+
-+      irq&=0x1f;
-+
-+      *DCRN_XINTC0_CIE=1<<irq;
-+      *DCRN_XINTC0_IAR=1<<irq;
-+
-+}
-+
-+#else /* !CONFIG_403  && !CONFIG_XSEG2 */
+== ChangeSet ==
+cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+trini@kernel.crashing.org|ChangeSet|20020903232952|11220
+D 1.1104.1.1 02/09/04 13:18:53-05:00 galak@blarg.somerset.sps.mot.com +5 -0
+B cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+C
+c Modifications to places that are not 4xx specific but also apply to BOOKE processors
+K 18543
+P ChangeSet
+------------------------------------------------
 
- #ifndef UIC1
- #define UIC1 UIC0
-@@ -331,6 +386,7 @@
- }
- #endif
+0a0
+> cort@ftsoj.fsmlabs.com|arch/ppc/kernel/ppc_asm.h|20010106073008|23478|8255526b487a80cc galak@blarg.somerset.sps.mot.com|include/asm-ppc/ppc_asm.h|20020904181734|10747
+> cort@ftsoj.fsmlabs.com|include/asm-ppc/processor.h|20010106072646|29258|bf9de2face866fcb galak@blarg.somerset.sps.mot.com|include/asm-ppc/processor.h|20020904181734|09113
+> cort@ftsoj.fsmlabs.com|arch/ppc/mm/fault.c|20010106073007|25794|57cf8749514acb14 galak@blarg.somerset.sps.mot.com|arch/ppc/mm/fault.c|20020904181734|55022
+> cort@ftsoj.fsmlabs.com|arch/ppc/kernel/traps.c|20010106073007|59482|a197725432ca2496 galak@blarg.somerset.sps.mot.com|arch/ppc/kernel/traps.c|20020904181733|58765
+> cort@ftsoj.fsmlabs.com|BitKeeper/etc/logging_ok|20010106073834|64358|2442203aaaa98f galak@blarg.somerset.sps.mot.com|BitKeeper/etc/logging_ok|20020904181741|06691
 
-+#if !defined(CONFIG_403) && !defined(CONFIG_XSEG2)
- void __init
- ppc4xx_extpic_init(void)
- {
-@@ -396,6 +452,8 @@
- 	}
+trini@kernel.crashing.org|ChangeSet|20020904153231|13043
+D 1.1107 02/09/04 14:08:24-05:00 galak@blarg.somerset.sps.mot.com +0 -0
+B cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+C
+c Merge http://ppc.bkbits.net/linuxppc_2_4_devel
+c into blarg.somerset.sps.mot.com:/local0/bk/linuxppc_2_4_devel
+i galak@blarg.somerset.sps.mot.com|ChangeSet|20020904181853|18543
+K 20366
+M galak@blarg.somerset.sps.mot.com|ChangeSet|20020904181853|18543
+P ChangeSet
+------------------------------------------------
 
- }
-+#endif
-+
- void __init
- ppc4xx_pic_init(void)
- {
-@@ -412,6 +470,15 @@
 
- 	ppc4xx_pic = &ppc403_aic;
- 	ppc_md.get_irq = ppc403_pic_get_irq;
-+
-+#elif defined(CONFIG_XSEG2)
-+
-+    *DCRN_XINTC0_IER=0;
-+    *DCRN_XINTC0_MER=1<<31;
-+
-+    ppc4xx_pic = &ppc405_xintc;
-+    ppc_md.get_irq = ppc405_xintc_get_irq;
-+
- #else
- #if  (NR_UICS > 1)
- 	ppc_cached_irq_mask[0] |= 1 << (31 - UIC0_UIC1NC);	/* enable cascading interrupt */
-diff -urN -x CVS -x config -x modules -x mtd -x jffs2 -x jffs linuxppc_2_4_clean/arch/ppc/kernel/ppc4xx_setup.c linuxppc_2_4_xseg2.new.clean2/arch/ppc/kernel/ppc4xx_setup.c
---- linuxppc_2_4_clean/arch/ppc/kernel/ppc4xx_setup.c	2002-07-20 12:04:09.000000000 +0200
-+++ linuxppc_2_4_xseg2.new.clean2/arch/ppc/kernel/ppc4xx_setup.c	2002-09-04 20:41:23.000000000 +0200
-@@ -104,7 +104,8 @@
- #if defined(CONFIG_FB)
- 	conswitchp = &dummy_con;
- #endif
--#if defined (CONFIG_SERIAL) && !defined (CONFIG_RAINIER)
-+#if defined (CONFIG_SERIAL) && !defined (CONFIG_RAINIER) && \
-+	!defined(CONFIG_XSEG2)
- 	early_uart_init();
- #endif
- 	board_setup_arch();
-@@ -161,8 +162,10 @@
- static void __init
- m4xx_map_io(void)
- {
-+#if !defined(CONFIG_XSEG2)
- 	io_block_mapping(PPC4xx_ONB_IO_VADDR,
- 			 PPC4xx_ONB_IO_PADDR, PPC4xx_ONB_IO_SIZE, _PAGE_IO);
-+#endif
- #ifdef CONFIG_PCI
- 	io_block_mapping(PPC4xx_PCI_IO_VADDR,
- 			 PPC4xx_PCI_IO_PADDR, PPC4xx_PCI_IO_SIZE, _PAGE_IO);
-diff -urN -x CVS -x config -x modules -x mtd -x jffs2 -x jffs linuxppc_2_4_clean/arch/ppc/platforms/Makefile linuxppc_2_4_xseg2.new.clean2/arch/ppc/platforms/Makefile
---- linuxppc_2_4_clean/arch/ppc/platforms/Makefile	2002-07-20 12:03:17.000000000 +0200
-+++ linuxppc_2_4_xseg2.new.clean2/arch/ppc/platforms/Makefile	2002-09-01 17:08:06.000000000 +0200
-@@ -29,6 +29,7 @@
- obj-$(CONFIG_CEDER)		+= ceder.o ibmnp405l.o
- obj-$(CONFIG_CPCI405)		+= cpci405.o ibm405gp.o
- obj-$(CONFIG_EP405)		+= ep405.o ibm405gp.o
-+obj-$(CONFIG_XSEG2)    		+= xseg2.o
- obj-$(CONFIG_REDWOOD_4)		+= redwood.o ibmstb3.o
- obj-$(CONFIG_REDWOOD_5)		+= redwood5.o ibmstb4.o
- obj-$(CONFIG_REDWOOD_6)		+= redwood6.o ibmstbx25.o
-diff -urN -x CVS -x config -x modules -x mtd -x jffs2 -x jffs linuxppc_2_4_clean/arch/ppc/platforms/xseg2.c linuxppc_2_4_xseg2.new.clean2/arch/ppc/platforms/xseg2.c
---- linuxppc_2_4_clean/arch/ppc/platforms/xseg2.c	1970-01-01 01:00:00.000000000 +0100
-+++ linuxppc_2_4_xseg2.new.clean2/arch/ppc/platforms/xseg2.c	2002-09-04 21:12:19.000000000 +0200
-@@ -0,0 +1,111 @@
-+/*
-+ * xseg2.c: Support for the Xilinx V2Pro development board
-+ *
-+ * Copyright 2002 Mind NV
-+ *
-+ * http://www.mind.be/
-+ *
-+ * Author : Peter De Schrijver (p2@mind.be)
-+ *
-+ * This software may be used and distributed according to the terms of
-+ * the GNU General Public License (GPL) version 2, incorporated herein by
-+ * reference. Drivers based on or derived from this code fall under the GPL
-+ * and must retain the authorship, copyright and this license notice. This
-+ * file is not a complete program and may only be used when the entire
-+ * operating system is licensed under the GPL.
-+ *
-+ */
-+
-+#include <linux/config.h>
-+#include <linux/init.h>
-+#include <linux/pci.h>
-+#include <asm/system.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/machdep.h>
-+#include <asm/todc.h>
-+#include <asm/ocp.h>
-+
-+struct ocp_def core_ocp[] = {
-+		{OCP_NULL_TYPE, 0x0, OCP_IRQ_NA, OCP_CPM_NA},
-+
-+};
-+
-+extern int xilinx_kbd_setkeycode(unsigned int scancode, unsigned int keycode);
-+extern int xilinx_kbd_getkeycode(unsigned int scancode);
-+extern int xilinx_kbd_translate(unsigned char scancode, unsigned char *keycode, char raw_mode);
-+extern char xilinx_kbd_unexpected_up(unsigned char keycode);
-+extern void xilinx_kbd_init_hw(void);
-+extern unsigned char xilinx_kbd_sysrq_xlate[128];
-+
-+#undef DEBUG
-+#ifdef DEBUG
-+#define DBG(x...) printk(x)
-+#else
-+#define DBG(x...)
-+#endif
-+
-+void *xseg2_gpio_base;
-+
-+int __init
-+ppc405_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
-+{
-+	static char pci_irq_table[][4] =
-+	/*
-+	 *      PCI IDSEL/INTPIN->INTLINE
-+	 *      A       B       C       D
-+	 */
-+	{
-+                {28, 28, 28, 28},       /* IDSEL 1 - PCI slot 1 */
-+        };
-+	const long min_idsel = 1, max_idsel = 1, irqs_per_slot = 4;
-+	return PCI_IRQ_TABLE_LOOKUP;
-+};
-+
-+
-+void __init
-+board_setup_arch(void)
-+{
-+
-+	io_block_mapping(0xe0000000, 0xa0000000, 0x20000, _PAGE_IO);
-+	io_block_mapping(0xe0020000, 0xd0000000, 0x1000, _PAGE_IO);
-+	io_block_mapping(0xe0030000, 0x60000000, 0x4000, _PAGE_IO);
-+	io_block_mapping(0xe0040000, 0xa9000000, 0x2000, _PAGE_IO);
-+
-+}
-+
-+void __init
-+bios_fixup(struct pci_controller *hose, void *pcil0_base)
-+{
-+
-+}
-+
-+void __init
-+board_io_mapping(void)
-+{
-+	xseg2_gpio_base = ioremap(XSEG2_GPIO_PADDR,
-+				  XSEG2_GPIO_SIZE);
-+}
-+
-+void __init
-+board_setup_irq(void)
-+{
-+}
-+
-+void __init
-+board_init(void)
-+{
-+
-+#ifdef CONFIG_VT
-+    /* these are adjusted in if we have an ADB keyboard */
-+    ppc_md.kbd_setkeycode    = xilinx_kbd_setkeycode;
-+    ppc_md.kbd_getkeycode    = xilinx_kbd_getkeycode;
-+    ppc_md.kbd_translate     = xilinx_kbd_translate;
-+    ppc_md.kbd_unexpected_up = xilinx_kbd_unexpected_up;
-+    ppc_md.kbd_leds          = NULL;
-+    ppc_md.kbd_init_hw       = xilinx_kbd_init_hw;
-+#ifdef CONFIG_MAGIC_SYSRQ
-+    ppc_md.ppc_kbd_sysrq_xlate   = xilinx_kbd_sysrq_xlate;
-+#endif /* CONFIG_MAGIC_SYSRQ */
-+#endif /* CONFIG_VT */
-+
-+}
-diff -urN -x CVS -x config -x modules -x mtd -x jffs2 -x jffs linuxppc_2_4_clean/arch/ppc/platforms/xseg2.h linuxppc_2_4_xseg2.new.clean2/arch/ppc/platforms/xseg2.h
---- linuxppc_2_4_clean/arch/ppc/platforms/xseg2.h	1970-01-01 01:00:00.000000000 +0100
-+++ linuxppc_2_4_xseg2.new.clean2/arch/ppc/platforms/xseg2.h	2002-09-01 17:55:56.000000000 +0200
-@@ -0,0 +1,102 @@
-+/*
-+ * xseg2.h
-+ *
-+ * Copyright 2002 Mind NV
-+ *
-+ * http://www.mind.be/
-+ *
-+ * Author : Peter De Schrijver (p2@mind.be)
-+ *
-+ * This software may be used and distributed according to the terms of
-+ * the GNU General Public License (GPL) version 2, incorporated herein by
-+ * reference. Drivers based on or derived from this code fall under the GPL
-+ * and must retain the authorship, copyright and this license notice. This
-+ * file is not a complete program and may only be used when the entire
-+ * operating system is licensed under the GPL.
-+ *
-+ */
-+
-+
-+#ifdef __KERNEL__
-+#ifndef __XSEG2_H__
-+#define __XSEG2_H__
-+
-+#include <linux/config.h>
-+#include <asm/ppcboot.h>
-+
-+#ifndef __ASSEMBLY__
-+
-+#define bi_tbfreq bi_intfreq
-+
-+extern void *xseg2_gpio_base;
-+
-+#endif
-+
-+#define XSEG2_GPIO_PADDR	((uint)0x90000000)
-+#define XSEG2_GPIO_SIZE	((uint)16)
-+
-+#define PPC4xx_PCI_IO_PADDR	((uint)0xB8000000)
-+#define PPC4xx_PCI_IO_VADDR	PPC4xx_PCI_IO_PADDR
-+#define PPC4xx_PCI_IO_SIZE	((uint)64*1024)
-+#define PPC4xx_PCI_CFG_PADDR	((uint)0xBC020000)
-+#define PPC4xx_PCI_CFG_VADDR	PPC4xx_PCI_CFG_PADDR
-+#define PPC4xx_PCI_CFG_SIZE	((uint)4*1024)
-+
-+/* serial defines */
-+#define BASE_BAUD		3125000
-+
-+#define PPC4xx_MACHINE_NAME "Xilinx Virtex 2 Pro Development board"
-+
-+/* serial port defines */
-+#ifdef CONFIG_SERIAL_MANY_PORTS
-+#define RS_TABLE_SIZE   64
-+#else
-+#define RS_TABLE_SIZE   4
-+#endif
-+
-+#define UART0_INT   31
-+#define UART1_INT   1
-+
-+#define UART0_IO_BASE   (u8 *) 0xE0001003
-+#define UART1_IO_BASE   (u8 *) 0xE0011003
-+
-+#ifdef CONFIG_SERIAL_DETECT_IRQ
-+#define STD_COM_FLAGS   (ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST | ASYNC_AUTO_IRQ)#define STD_COM4_FLAGS  (ASYNC_BOOT_AUTOCONF | ASYNC_AUTO_IRQ)
-+#else
-+#define STD_COM_FLAGS   (ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST)
-+#define STD_COM4_FLAGS  (ASYNC_BOOT_AUTOCONF)
-+#endif
-+
-+#define STD_UART_OP(num)                                        \
-+        { 0, BASE_BAUD, 0, UART##num##_INT, STD_COM_FLAGS,      \
-+                iomem_base: UART##num##_IO_BASE,                \
-+                io_type: SERIAL_IO_MEM, \
-+                iomem_reg_shift: 2,},
-+
-+#if defined(CONFIG_UART0_TTYS0)
-+#define SERIAL_PORT_DFNS        \
-+		STD_UART_OP(0)          \
-+		STD_UART_OP(1)
-+#endif
-+
-+#if defined(CONFIG_UART0_TTYS1) || defined (CONFIG_UART1_DFLT_CONSOLE)
-+#define SERIAL_PORT_DFNS        \
-+		STD_UART_OP(1)          \
-+	    STD_UART_OP(0)
-+#endif
-+
-+/* XINTC defines */
-+
-+#define DCRN_XINTC0_BASE      0xE0020FC0
-+
-+#define DCRN_XINTC0_ISR    ((unsigned int *)(DCRN_XINTC0_BASE + (0x0<<2)))
-+#define DCRN_XINTC0_IPR    ((unsigned int *)(DCRN_XINTC0_BASE + (0x1<<2)))
-+#define DCRN_XINTC0_IER    ((unsigned int *)(DCRN_XINTC0_BASE + (0x2<<2)))
-+#define DCRN_XINTC0_IAR    ((unsigned int *)(DCRN_XINTC0_BASE + (0x3<<2)))
-+#define DCRN_XINTC0_SIE    ((unsigned int *)(DCRN_XINTC0_BASE + (0x4<<2)))
-+#define DCRN_XINTC0_CIE    ((unsigned int *)(DCRN_XINTC0_BASE + (0x5<<2)))
-+#define DCRN_XINTC0_IVR    ((unsigned int *)(DCRN_XINTC0_BASE + (0x6<<2)))
-+#define DCRN_XINTC0_MER    ((unsigned int *)(DCRN_XINTC0_BASE + (0x7<<2)))
-+
-+#endif /* __XSEG2_H__ */
-+#endif /* __KERNEL__ */
-diff -urN -x CVS -x config -x modules -x mtd -x jffs2 -x jffs linuxppc_2_4_clean/include/asm-ppc/ibm4xx.h linuxppc_2_4_xseg2.new.clean2/include/asm-ppc/ibm4xx.h
---- linuxppc_2_4_clean/include/asm-ppc/ibm4xx.h	2002-07-20 12:03:50.000000000 +0200
-+++ linuxppc_2_4_xseg2.new.clean2/include/asm-ppc/ibm4xx.h	2002-09-04 20:55:19.000000000 +0200
-@@ -105,6 +105,10 @@
- #include <platforms/beech.h>
- #endif
+galak@blarg.somerset.sps.mot.com|ChangeSet|20020904190824|20366
+D 1.1108 02/09/04 14:13:35-05:00 galak@blarg.somerset.sps.mot.com +1 -0
+B cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+C
+c Added more generic BOOKE specified page sizes rather then have processor specific page size defines
+K 20955
+P ChangeSet
+------------------------------------------------
 
-+#if defined(CONFIG_XSEG2)
-+#include <platforms/xseg2.h>
-+#endif
-+
- #ifndef PPC4xx_MACHINE_NAME
- #define PPC4xx_MACHINE_NAME	"Unidentified 4xx class"
- #endif
+0a0
+> cort@ftsoj.fsmlabs.com|include/asm-ppc/mmu.h|20010106072646|21322|ea18e1cb3a8b0bc6 galak@blarg.somerset.sps.mot.com|include/asm-ppc/mmu.h|20020904191330|45298
 
---SFyWQ0h3ruR435lw--
+== BitKeeper/etc/logging_ok ==
+cort@ftsoj.fsmlabs.com|BitKeeper/etc/logging_ok|20010106073834|64358|2442203aaaa98f
+paulus@au1.ibm.com|BitKeeper/etc/logging_ok|20020820022807|03522
+D 1.72 02/09/04 13:17:41-05:00 galak@blarg.somerset.sps.mot.com +1 -0
+B cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+C
+c Logging to logging@openlogging.org accepted
+K 6691
+O -rw-rw-r--
+P BitKeeper/etc/logging_ok
+------------------------------------------------
+
+I60 1
+galak@blarg.somerset.sps.mot.com
+
+== include/asm-ppc/ppc_asm.h ==
+cort@ftsoj.fsmlabs.com|arch/ppc/kernel/ppc_asm.h|20010106073008|23478|8255526b487a80cc
+paulus@samba.org|include/asm-ppc/ppc_asm.h|20020813115258|10099
+D 1.37 02/09/04 13:17:34-05:00 galak@blarg.somerset.sps.mot.com +3 -3
+B cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+C
+c For any BOOKE processor phys will map to virt address one-to-one
+K 10747
+O -rw-rw-r--
+P include/asm-ppc/ppc_asm.h
+------------------------------------------------
+
+D123 1
+I123 1
+#ifndef CONFIG_BOOKE
+D137 1
+I137 1
+#else /* CONFIG_BOOKE */
+D142 1
+I142 1
+#endif /* CONFIG_BOOKE */
+
+== arch/ppc/kernel/traps.c ==
+cort@ftsoj.fsmlabs.com|arch/ppc/kernel/traps.c|20010106073007|59482|a197725432ca2496
+paulus@au1.ibm.com|arch/ppc/kernel/traps.c|20020902022958|51282
+D 1.40 02/09/04 13:17:33-05:00 galak@blarg.somerset.sps.mot.com +5 -5
+B cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+C
+c ProgramExceptions and DebugExceptions are handled the same way for 4xx and BOOKE processors
+K 58765
+O -rw-rw-r--
+P arch/ppc/kernel/traps.c
+------------------------------------------------
+
+D313 1
+I313 1
+#if defined(CONFIG_4xx) || defined (CONFIG_BOOKE)
+D325 1
+I325 1
+#else /* ! CONFIG_4xx && ! CONFIG_BOOKE */
+D333 1
+I333 1
+#endif /* ! CONFIG_4xx && ! CONFIG_BOOKE */
+D429 1
+I429 1
+#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+D456 1
+I456 1
+#endif /* CONFIG_4xx || CONFIG_BOOKE */
+
+== arch/ppc/mm/fault.c ==
+cort@ftsoj.fsmlabs.com|arch/ppc/mm/fault.c|20010106073007|25794|57cf8749514acb14
+paulus@au1.ibm.com|arch/ppc/mm/fault.c|20020829060345|48743
+D 1.28 02/09/04 13:17:34-05:00 galak@blarg.somerset.sps.mot.com +4 -4
+B cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+C
+c BOOKE processors handle faults in the same general manor as 4xx
+K 55022
+O -rw-rw-r--
+P arch/ppc/mm/fault.c
+------------------------------------------------
+
+D73 1
+I73 1
+#if defined(CONFIG_4xx) || defined (CONFIG_BOOKE)
+D88 1
+I88 1
+#endif /* CONFIG_4xx || CONFIG_BOOKE */
+D141 2
+I142 2
+#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+	/* an exec  - 4xx/BookE allows for per-page execute permission */
+
+== include/asm-ppc/mmu.h ==
+cort@ftsoj.fsmlabs.com|include/asm-ppc/mmu.h|20010106072646|21322|ea18e1cb3a8b0bc6
+mporter@beef.az.mvista.com|include/asm-ppc/mmu.h|20020405183338|21812
+D 1.16 02/09/04 14:13:30-05:00 galak@blarg.somerset.sps.mot.com +13 -0
+B cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+C
+c Added BOOKE specified page sizes
+K 45298
+O -rw-rw-r--
+P include/asm-ppc/mmu.h
+------------------------------------------------
+
+I385 13
+#define BOOKE_PAGESZ_1K		0
+#define BOOKE_PAGESZ_4K		1
+#define BOOKE_PAGESZ_16K	2
+#define BOOKE_PAGESZ_64K	3
+#define BOOKE_PAGESZ_256K	4
+#define BOOKE_PAGESZ_1M		5
+#define BOOKE_PAGESZ_4M		5
+#define BOOKE_PAGESZ_16M	7
+#define BOOKE_PAGESZ_64M	8
+#define BOOKE_PAGESZ_256M	9
+#define BOOKE_PAGESZ_1GB	10
+#define BOOKE_PAGESZ_4GB	11
+\
+
+== include/asm-ppc/processor.h ==
+cort@ftsoj.fsmlabs.com|include/asm-ppc/processor.h|20010106072646|29258|bf9de2face866fcb
+paulus@au1.ibm.com|include/asm-ppc/processor.h|20020902022958|07068
+D 1.72 02/09/04 13:17:34-05:00 galak@blarg.somerset.sps.mot.com +1 -1
+B cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+C
+c DBCR0 handling for single step is the same for 4xx and BOOKE processors
+K 9113
+O -rw-rw-r--
+P include/asm-ppc/processor.h
+------------------------------------------------
+
+D828 1
+I828 1
+#if defined(CONFIG_4xx) || defined (CONFIG_BOOKE)
+
+# Patch checksum=985280dd
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
