@@ -1,21 +1,17 @@
-Return-Path: <jack_liu@usish.com>
-Received: from ms.usish.com (ms.usish.com [61.152.132.204])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A21402BC0F
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15608.mail.cnb.yahoo.com (web15608.mail.cnb.yahoo.com
+	[202.165.102.62]) by ozlabs.org (Postfix) with SMTP id E72D82BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Sep 2004 13:38:11 +1000 (EST)
-Received: from usish000029-1 (usish000029-1 [192.168.56.62] (may be forged))
-	by ms.usish.com (8.12.8/8.12.8) with ESMTP id i8U3blwk014749
-	for <linuxppc-embedded@ozlabs.org>; Thu, 30 Sep 2004 11:38:03 +0800
-Message-Id: <200409300338.i8U3blwk014749@ms.usish.com>
-From: "Jack Liu" <jack_liu@usish.com>
-To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain;
-      charset="GB2312"
-Date: Thu, 30 Sep 2004 11:37:43 +0800
-Subject: Re:MPC8272 PCI bridge problem?
+	Thu, 30 Sep 2004 21:33:52 +1000 (EST)
+Message-ID: <20040930112710.48490.qmail@web15608.mail.cnb.yahoo.com>
+Date: Thu, 30 Sep 2004 19:27:10 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: Robin Gilks <robin.gilks@tait.co.nz>
+In-Reply-To: <20040930020005.CF5F82BDD3@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Status of uart driver on mpc8xx in 2.6
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,24 +22,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hi,Russell
-=09We have a flash on CS2 rather a BCSR. And BR1 set at F8000000. I=
- am not sure this will be my problem, thanks anyway.
-=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1
-Best regard
-Jack liu=09
----------Original message--------------------
-=09I suspect one of your base registers (BR1) overlaps the memory=
- range that
-the 
-pci bridge is configured for.  It's probably BR1 since I believe=
- that's
-normally 
-0xf4500000 for the BMSR on your board.  You need to change PCI=
- I/O memory
-window 
-to some other range... 
+Thu, 30 Sep 2004 12:07:59 +1200 Robin Gilks wrote:
 
-Regards,
+> I'm sure there is a ppc 'special' tree that has all
+> the necessary fixes 
+> but with this list disappearing for a while I've 
+> rather lost track of 
+> what is where!!
 
-Russell
+Pls bk pull from
+http://ppc.bkbits.net:8080/linuxppc-2.5 and refer to :
+http://ozlabs.org/pipermail/linuxppc-dev/2004-September/000071.html
+
+
+
+=====
+Best regards,
+
+Sam
+
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
