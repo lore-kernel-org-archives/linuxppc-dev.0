@@ -1,33 +1,37 @@
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Message-Id: <199908301627.SAA10148@amber.biophys.uni-duesseldorf.de>
-Subject: Re: mac-2.3.14.diff: adb
-In-Reply-To: <199908301552.RAA23128@lxp03.cern.ch> from Jes Sorensen at "Aug 30, 1999 05:52:45 pm"
-To: Jes.Sorensen@cern.ch (Jes Sorensen)
-Date: Mon, 30 Aug 1999 18:27:43 +0200 (CEST)
-Cc: ddkilzer@computer.org, linux-mac68k@mac.linux-m68k.org,
-        linuxppc-dev@lists.linuxppc.org, paulus@cs.anu.edu.au
+From: supas100@astrophysik.uni-kiel.de (Derek Homeier)
+Message-Id: <199908301652.SAA13704@juliet.astrophysik.uni-kiel.de>
+Subject: Re: Acclerated video driver on Powerbook G3 (lombard)
+To: dnb0@gmx.net
+Date: Mon, 30 Aug 1999 18:52:41 +0200 (MET DST)
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <37C6E999.284BB6B@gmx.net> from "dnb0@gmx.net" at Aug 27, 99 07:40:29 pm
+Reply-to: Derek Homeier <homeier@astrophysik.uni-kiel.de>
+Content-Type: text/plain; charset=iso-8859-1
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Michael> I agree - IIRC Paul created drivers/macintosh as a quick fix to
-> Michael> get the Mac drivers integrated. I've suggested to move things
-> Michael> to other places, but Alan sait this would be 'a 2.3 thing' at
-> Michael> that time. Seems a bit late for that now.
+dnb0@gmx.net wrote:
 > 
-> IMHO there is still time, I doubt Linus would object to patch for this
-> at the moment.
+> the standard kernels fail to accelerate the ATI RAGE LT PRO on the
+> lombard, but 
+> the kernel modified by Paul Mackerras supports it well. you have to use
+> rsync against
+> samba.anu.edu.au/linux-pmac-stable to get it. the command should look like:
 > 
-> Wouldn't it be natural to move the Mac 8530 serial driver to
-> drivers/char and the rest to drivers/adb? or is the via stuff not adb
-> related?
+> # rsync -arvz rsync://samba.anu.edu.au/linux-pmac-stable the-directiory-you-want-it
+> (the r option may be obsolete, but i'm not shure)
+> 
+> you may point it to an existing source-tree, so rsync will only copy the diffs.
+> 
+Thanks, I'm going to try that out when I've set up a source tree, access
+to samba.anu.edu.au is quite slow from up here.
+Do you know if this one also contains the ethernet and/or USB patches?
 
-The general VIA stuff isn't ADB related via-cuda and via-pmu are the low
-level ADB drivers though.
-
-	Michael
+Greetings,
+							Derek
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
