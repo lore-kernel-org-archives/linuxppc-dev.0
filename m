@@ -1,24 +1,28 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Mon, 16 Jun 2003 10:58:23 +1200
-From: Dmytro Bablinyuk <dmytro.bablinyuk@tait.co.nz>
-Subject: linux for PowerPC
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Message-id: <3EECFA0E.7537501A@tait.co.nz>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-ID: <299848370240D611A24400B0D079FBEB91CFE0@smtcn3>
+From: Zhang Qiang MT-CN <Qiang.Zhang@mt.com>
+To: "'linuxppc-embedded'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: ping.c
+Date: Mon, 16 Jun 2003 14:44:37 +0800
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Does anybody could suggest me any free of charge real-time linux distribution or way
-to make it for 859T?
-We have some options for commercial linux suppliers but first we would like to get
-linux running ourself.
-Our requirements are "soft real-time" and it would be good if could use a latest
-kernel.
-The flash we expect to have a 8mb and 16mb of RAM, the eval board is 859T.
+Could someone send me an embedded source file of ping (reduced ping.c)?
 
-Thank you in advance for any suggestions.
+Thanks very much!
 
+				Frank Zhang(уег©)
+				----------------------------------
+				Retail Business
+				Mettler-Toledo (Changzhou) Scale&System Ltd.
+				111 Changxi Road,Changzhou,Jiangsu,P.R.C.
+				PC:213001
+				Email:qiang.zhang@mt.com
+				TEL:0086-519-6642040-3217
+				FAX: 0086-519-6641991
+
+-------------------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
