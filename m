@@ -1,31 +1,43 @@
-To: nitesh_ppc@lycos.com, linuxppc-embedded@lists.linuxppc.org,
-	"Steven Blakeslee" <BlakesleeS@embeddedplanet.com>
-Date: Thu, 30 Jan 2003 15:26:54 -0500
-From: "Nitesh Goyal" <nitesh_ppc@lycos.com>
-Message-ID: <KMFIGHDLLFILEBAA@mailcity.com>
+Date: Thu, 30 Jan 2003 13:37:43 -0700
+From: Matt Porter <porter@cox.net>
+To: brian.auld@adic.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Trying to use ELDK to build Ebony/440GP
+Message-ID: <20030130133743.A25221@home.com>
+References: <995FF289C9D69747A09E42992644595405B23634@penguin.adic.com>
 Mime-Version: 1.0
-Reply-To: nitesh_ppc@lycos.com
-Subject: RE: Howto install bootloader using jtag?
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <995FF289C9D69747A09E42992644595405B23634@penguin.adic.com>; from brian.auld@adic.com on Thu, Jan 30, 2003 at 11:06:12AM -0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->The first thing you do is create an appropriate config file for the debugger
->and board.  If you go to ftp://ftp.denx.de/pub/BDI2000/ you can get Abatron
->BDI config files for the ep405 board.  You run this script then download the
->pcl____.ep file that is on the documentation CD.
-I have downloaded the script(config file) on my host machine (x86). How do I run the script ? If I am right, it has to be run on the board, but the problem is, I can't communicate to the board with serial-port.
+On Thu, Jan 30, 2003 at 11:06:12AM -0800, brian.auld@adic.com wrote:
+> (2) What's the best method to successfully build a kernel for the ebony
+> board using the ELDK tools:
+>      - Port ebony support into e-new?
+>      - Try and work out build issues with 2_4_d configured for 'ebony'.
+>
+> Wanted to solicit some feedback before I go into tangent land.
 
+I can't imagine why any ppc4xx toolchain couldn't build a properly
+configured linuxppc_2_4_devel ebony kernel.  It's working right now
+for my toolchain (mvista)...I haven't used ELDK for a little while now.
 
->You should be able to download and execute it in one
->simple step.
-The problem is I do not know how to download an image from the host to the board because I've overwritten the bootloader.
+I take you have done the following?:
 
-Also, if I'm right, the JTAG has to be connected to the parallel port of host and the bootloader image needs to be downloaded using "some" utility ?
+	make ebony_config
+	make oldconfig
+	make dep zImage
 
-TIA,
--nitesh
+Where you have hacked ARCH and CROSS_COMPILE in the top-level Makefile
+or have a script which passes in the appropriate prefix for your
+toolchain.  i.e. "make ARCH=ppc CROSS_COMPILE=ppc_405- <rule>"
 
+Regards,
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
