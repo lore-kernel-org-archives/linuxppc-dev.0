@@ -1,21 +1,18 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A1B2367A6E
+Return-Path: <takeharu1219@ybb.ne.jp>
+Received: from ybbsmtp06.mail.mci.yahoo.co.jp (ybbsmtp06.mail.mci.yahoo.co.jp
+	[210.80.241.155]) by ozlabs.org (Postfix) with SMTP id B422A67A76
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Feb 2005 06:12:52 +1100 (EST)
-Date: Wed, 23 Feb 2005 11:12:47 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Tom Rini <trini@kernel.crashing.org>
-Message-ID: <20050223191247.GC6670@gate.ebshome.net>
-References: <c3d0340b05022310396240c8ac@mail.gmail.com>
-	<20050223190123.GI345@smtp.west.cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050223190123.GI345@smtp.west.cox.net>
+	Thu, 24 Feb 2005 06:15:55 +1100 (EST)
+Message-ID: <421CD669.1040002@ybb.ne.jp>
+Date: Thu, 24 Feb 2005 04:15:53 +0900
+From: Takeharu KATO <takeharu1219@ybb.ne.jp>
+MIME-Version: 1.0
+To: Takeharu KATO <takeharu1219@ybb.ne.jp>
+References: <421CD2B3.4020805@ybb.ne.jp>
+In-Reply-To: <421CD2B3.4020805@ybb.ne.jp>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] Ebony's UBoot awareness
+Subject: Re: PowerPC4xx Watchdog
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,17 +23,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 23, 2005 at 12:01:23PM -0700, Tom Rini wrote:
-> > +#include "../../../../drivers/net/ibm_emac/ibm_emac_phy.h"
+Hi
+
+Sorry, I sent the mail before checking it by mistake.
+I meant to say as follows:
+I am working on developing WatchDog Driver for PowerPC4xx on Linux-2.6.
+Does anyone have a plan or a patch to make WatchDog Driver on 
+PowerPC4xx(405GP/405GPr/440GP/440GX) for Linux-2.6?
+
+
+Takeharu KATO wrote:
+> Hi
 > 
-> This will not work with O= for example.  The correct method is to modify
-> the Makefile with a CFLAGS_foo.o += -Idrivers/net/ibm_emac
+> I am trying to  WatchDog Driver for PowerPC4xx on Linux-2.6.
+> Does anyone have a plan to WatchDog Driver on this architecture?
+> 
 
-I just tested and it does work even with O= :).
 
-OTOH, I agree this is ugly hack (it was copied from ocotea.c, so blame 
-Matt for it :) and should be fixed correctly by moving those PHY 
-defines to some common include.
-
---
-Eugene
+-- 
+Takeharu KATO
