@@ -1,17 +1,19 @@
-Return-Path: <arrigo@vision.caltech.edu>
-Received: from kla-tencor.com (smtp.kla-tencor.com [192.146.1.134])
-	by ozlabs.org (Postfix) with ESMTP id 5F29D2BF08
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Oct 2004 07:45:23 +1000 (EST)
-Received: from [10.35.5.214] ([10.35.5.214])
-	by kla-tencor.com (8.11.6+Sun/KLAC-1.0i) with ESMTP id i9SLjEj18371
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Oct 2004 14:45:14 -0700 (PDT)
-Message-ID: <41816863.9020000@vision.caltech.edu>
-Date: Thu, 28 Oct 2004 14:45:07 -0700
-From: Arrigo Benedetti <arrigo@vision.caltech.edu>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Disabling interrupts on a SMP system
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 987662BDF2
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Oct 2004 09:44:22 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arrigo Benedetti <arrigo@bologna.vision.caltech.edu>
+In-Reply-To: <41816863.9020000@vision.caltech.edu>
+References: <41816863.9020000@vision.caltech.edu>
+Content-Type: text/plain
+Date: Fri, 29 Oct 2004 09:39:31 +1000
+Message-Id: <1099006771.29690.83.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: Disabling interrupts on a SMP system
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,11 +23,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear all,
+On Thu, 2004-10-28 at 14:45 -0700, Arrigo Benedetti wrote:
+> Dear all,
+> 
+> how can I (temporarily) disable all or some specific interrupts on a 
+> specific CPU in an SMP system
+> from user space code? In my case this is an Apple dual G5 system.
 
-how can I (temporarily) disable all or some specific interrupts on a 
-specific CPU in an SMP system
-from user space code? In my case this is an Apple dual G5 system.
+You can't ... why do you want to do that ?
 
-thanks
--Arrigo
+Ben.
