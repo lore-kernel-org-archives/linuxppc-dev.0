@@ -1,31 +1,36 @@
-Message-ID: <001201c29163$3d2e9cd0$faffa8c0@VISHWANATH>
-From: "Vishwanath" <vishwanath@mistralsoftware.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: I2C Device Register Read problem in 440GP
-Date: Thu, 21 Nov 2002 19:08:13 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Thu, 21 Nov 2002 07:38:23 -0700
+From: Matt Porter <porter@cox.net>
+To: Omanakuttan <omanakuttan@tataelxsi.co.in>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: cannot compile 2.4.19 with kgdb/xmon
+Message-ID: <20021121073823.A8252@home.com>
+References: <3DDC81F0.50200@tataelxsi.co.in>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3DDC81F0.50200@tataelxsi.co.in>; from omanakuttan@tataelxsi.co.in on Thu, Nov 21, 2002 at 12:19:20PM +0530
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+On Thu, Nov 21, 2002 at 12:19:20PM +0530, Omanakuttan wrote:
+> The configuration compiles fine when I exclude kernel hacking options.
+> Once kgdb or xmon options (any of them)  of the kernel hacking options
+> is included, kernel compilation fails with the following
 
-I have written custom driver for accessing a device sitting on the I2C bus
-of IBM 440GP. I am operating in the master mode of I2C controller of 440GP.
-I was able to write a particular value onto the device register. But when I
-try to read the value back, it is returning 0. I have disabled the
-interrupts.
+<snip>
 
-When I was debugging, I found that data was arriving on the I2C bus. But
-before I could read the Master Data Buffer Register of 440 GP, the register
-is getting cleared. Does anyone no why?
+> arch/ppc/kernel/kernel.o(.text+0x8f58): undefined reference to
+> `getDebugChar'
 
-Pls help me. I am stuck.
+Most classic PPC based embedded boards don't have the glue code
+enabled to use kgdb.  I suggest you link in the standard gen550_*.c
+library of polled access functions and enable access by following
+the example in ebony.c.
 
-Thanks and regards,
-vishwa
-
+Regards,
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
