@@ -1,74 +1,82 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Leonardo Pereira Santos <lsantos@pd3.com.br>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: simple PCMCIA questions
-Date: Thu, 28 Nov 2002 16:47:22 -0200
-MIME-Version: 1.0
-Message-Id: <200211281647.24872.lsantos@pd3.com.br>
+Message-Id: <200211290048.SAA31687@lists.linuxppc.org>
+From: "=?GB2312?Q?=D3=DA=E6=BA?=" <yuj@mail.ndsc.com.cn>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: zynx zx212 dual-port ethernet card
+Mime-Version: 1.0
+Content-Type: text/plain
+Date: Fri, 29 Nov 2002 8:52:18 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+The start information is list below:
+//////////////////////////////////
+Copyright Motorola Inc. 1988 - 2001, All Rights Reserved
 
-Hello Everybody!
-	I've got a few pcmcia questions and would apreciate if someone could give me
-some directions. Ok, I have a BK 2.4.20-pre11 kernel compiled with built-in
-PCMCIA support (NO cardbus). If I insert a wifi card in my board's slot and
-use pcmcia-cs' cardctl info, it'll answer me. Next I try to load the card's
-driver, so I insmod then in order (I got the card working in a PLX adapter in
-my PC and it uses theses drivers) : hermes, orinoco and orinoco_cs. Until
-now, so far so good. The first weird thing is that if I do a lsmod, it'll
-answer me this:
+PPC5 Debugger/Diagnostics Release Version 1.3 - 04/27/2001 RM01
+COLD Start
 
-# lsmod
-Module                  Size  Used by
-orinoco_cs              5472   0  (unused)
-orinoco                31648   0  [orinoco_cs]
-hermes                  5840   0  [orinoco_cs orinoco]
+Local Memory Found =20000000 (&536870912)
 
-Ok, who should use the orinoco_cs module?
-In my /etc/modules.conf I have the following line:
+MPU Clock Speed =400Mhz
 
-alias eth1 orinoco_cs
+BUS Clock Speed =100Mhz
 
-So I assumed that if I brought up eth1, everything should work in some degree,
-but when I type ifconfig eth1 up, I just got the message saying
+Reset Vector Location  : ROM Bank B
+Mezzanine Configuration: Single-MPU
+Current 60X-Bus Master : MPU0
+Idle MPU(s)            : NONE
 
-eth1: unknown interface: No such device
+L2Cache:       2048KB, 200Mhz
+Initializing System Memory (DRAM)...
+L2Cache:       2048KB, 200Mhz
+System Memory: 512MB, ECC Enabled (ECC-Memory Detected)
 
-What gives?
-At least shouldn't I be able to bring up a interface?
 
-As a last step, I try to load cardmgr, it then fires up a lot of functions but
-it'll results in a kernel panic:
+SelfTest/Boots about to Begin... Press <BREAK> at anytime to Abort ALL
 
-Kernel panic: request_irq
- <0>Rebooting in 180 seconds..
+NetBoot about to Begin... Press <ESC> to Bypass, <SPC> to Continue
 
-I read in a message from Matthew Locke (
-http://lists.linuxppc.org/linuxppc-embedded/200104/msg00133.html)
+Network Booting from: I82559, Controller 0, Device 0
+Device Name: /pci@fec00000/pci8086,1209@e,0:0,0
+Loading: vmlinuz-motorola-lopec
 
-That 8xx socket driver before CS 3.1.26 wouldn't pass the assined irq number
-to CS. But BK's m8xx_pcmcia.c  has a copyright line from Locke himself from
-2002, and the message's from april, 2001. So, is this still an issue? By the
-message's contents, I figured out that this bug would lead just to a
-non-functioning card, not ot a kerl-panic crash.
-As a last question, why BK's kernel has a very old CS version (3.1.22), when
-the current on is 3.2.3? I mean, the kernel's CS should work, doesn't it?
-Does someone now where can I get a recent kernel with a more recent version
-of CS (assuming that that would fix my problem). Thanks for bearing with me
-so far and any help is kindly apreciated.
+Client IP Address      = 192.168.201.3
+Server IP Address      = 192.168.201.1
+Gateway IP Address     = 0.0.0.0
+Subnet IP Address Mask = 255.255.255.0
+Boot File Name         = vmlinuz-motorola-lopec
+Argument File Name     =
 
-- --
-"All things are ready, if our minds be so"
-The Life Of King Henry V - William Sharespeare
+Network Boot File load in progress... To abort hit <BREAK>
 
-Leonardo Pereira Santos
-Engenheiro de Projetos
-PD3 Tecnologia
-av. Pará 330/202
-(51) 3337 1237
+Bytes Received =&784800, Bytes Loaded =&784800
+Bytes/Second   =&392400, Elapsed Time =2 Second(s)
 
+Residual-Data Located at: $1FED16DC
+loaded at:     00005400 000C65BC
+relocated to:  00800000 008C11BC
+zimage at:     00805A00 008BD53E
+avail ram:     00400000 00800000
+
+Linux/PPC load: ip=on
+Uncompressing Linux...done.
+Now booting the kernel
+
+/////////////////////////////
+Have you solved your problem now?
+
+>Sir, I am having a similar issue with an Intel network board on an MCP750 >board. How far does the kernel get, where does it stop?
+
+
+
+>   I'm porting hardhat linux v2.1 on my motorola lopec mpc7410 board with a zynx zx212 dual-port ethernet card on it.The problem is that the kernel can't start up with the ethernet card on,while without it everything is perfect.Since zx212 is compatible with 21143,I build the kernel with the "tulip" option on.It should be no problem,but it happened.Can anybody tell me the reason?
+> ¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡yuj@mail.ndsc.com.cn
+> ¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡2002-11-14
+>
+>
+
+¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡yuj@mail.ndsc.com.cn
+¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡2002-11-26
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
