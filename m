@@ -1,26 +1,39 @@
-Date: Wed, 28 Nov 2001 02:55:34 -0900
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: TiBook, 1394, iPod working (sort of  ;-)
-Message-ID: <20011128025534.H10071@plato.local.lan>
-References: <20011126231944.E10071@plato.local.lan> <20011127172847.33B512B54A@marcus.pants.nu> <20011127155855.G10071@plato.local.lan> <p05101000b82a6b5266c7@[10.0.0.42]>
-Mime-Version: 1.0
-In-Reply-To: <p05101000b82a6b5266c7@[10.0.0.42]>; from tas@mindspring.com on Wed, Nov 28, 2001 at 02:40:09AM -0800
+Message-ID: <3C0509E7.938BB01D@fh-dortmund.de>
+Date: Wed, 28 Nov 2001 16:59:35 +0100
+From: Ralf Weidemann <weidemann@fh-dortmund.de>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.4.16-ben0: clock broken ?
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Nov 28, 2001 at 02:40:09AM -0800, Timothy A. Seufert wrote:
->
-> Looks like it should even be possible to figure out how Apple did the
-> hard- and soft-link hacks.  Maybe one day Linux will be able to boot
-> directly from HFS+ just as Darwin does.  That would be perverse.  :)
+Hi all,
 
-damn you!  now i have to clean up a big mess of puke...
+I get a clock shift of about a month in the latest 2.4.16-ben0.
+Something broken ?
 
---
-Ethan Benson
-http://www.alaska.net/~erbenson/
+Ralf
+
+
+[ralfw@tibook ralfw]$ uname -a
+Linux tibook.sw2.fb4.fh 2.4.15-ben0 #1 Sun Nov 25 12:12:56 CET 2001 ppc unknown
+[ralfw@tibook ralfw]$ date
+Wed Nov 28 16:34:46 CET 2001
+[ralfw@tibook ralfw]$ hwclock --show
+Wed 28 Nov 2001 04:34:50 PM CET  -0.790044 seconds
+[ralfw@tibook ralfw]$ hwclock -v
+hwclock 2.4c/util-linux-2.11f
+
+
+[ralfw@tibook ralfw]$ uname -a
+Linux tibook.sw2.fb4.fh 2.4.16-ben0 #3 Wed Nov 28 16:20:49 CET 2001 ppc unknown
+[ralfw@tibook ralfw]$ date
+Fri Dec 28 16:39:25 CET 2001
+[ralfw@tibook ralfw]$ hwclock --show
+Fri 28 Dec 2001 04:39:36 PM CET  -0.827878 seconds
+[ralfw@tibook ralfw]$ hwclock -v
+hwclock 2.4c/util-linux-2.11f
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
