@@ -1,22 +1,19 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 1919C67A6C
+Return-Path: <dadair@ariodata.com>
+Received: from orion1.ariodata.com (adsl-64-170-199-186.dsl.snfc21.pacbell.net
+	[64.170.199.186]) by ozlabs.org (Postfix) with ESMTP id 1D27267A8B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Apr 2005 02:26:28 +1000 (EST)
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: Jason McMullan <jason.mcmullan@timesys.com>,
-	Tom Rini <trini@kernel.crashing.org>
-In-Reply-To: <20050318193045.GM8345@smtp.west.cox.net>
-References: <20050316231800.GD8345@smtp.west.cox.net>
-	<d0e9907f9780a7fce59b3f69af6ece99@freescale.com>
-	<1111171391.2987.24.camel@ad.doubleclick.net>
-	<20050318193045.GM8345@smtp.west.cox.net>
-Content-Type: text/plain
-Message-Id: <1112286378.24673.252.camel@rhino.az.mvista.com>
-Mime-Version: 1.0
-Date: 31 Mar 2005 09:26:18 -0700
-Cc: linuxppc-embedded Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: 440EP FPU patch
+	Fri,  1 Apr 2005 02:27:48 +1000 (EST)
+From: "David Adair" <dadair@ariodata.com>
+To: "'Martin Egholm Nielsen'" <martin@egholm-nielsen.dk>,
+	<linuxppc-embedded@ozlabs.org>
+Date: Thu, 31 Mar 2005 08:15:53 -0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+In-reply-to: <424BB36B.1000900@egholm-nielsen.dk>
+Message-ID: <ORION1DXU7J3Ty2cTBM000000a9@orion1.ariodata.com>
+Subject: RE: Overcommit (OOM) problem on embedded device (PPChameleon)
+Reply-To: dadair@ariodata.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,29 +24,85 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-03-18 at 12:30, Tom Rini wrote:
-> On Fri, Mar 18, 2005 at 01:43:11PM -0500, Jason McMullan wrote:
-> > On Fri, 2005-03-18 at 10:06 -0600, Kumar Gala wrote:
-> > > Can you build your patch for the lopec_defconfig and fix the errors 
-> > > associated with enabling altivec.
-> > > 
-> > > Looks like you need to include asm/offset.h & asm/page.h in vector.S, 
-> > > however there is another build error after that.
-> > 
-> > Thanks! That also found a linking bug, fixed in this patch.. Please
-> > double check the call in 'AltiVecUnavalible' in head.S, and the re-load
-> > of 'ctr' at the end of load_up_altivec, as I do not have an AltiVec
-> > machine here.
+
+
+> > Look in mm/mmap.c and search for overcommit_memory, then do same
+> > in the sources for your redhat kernels.
+> I'll look into RH kernel to see if it isn't like you say :-)
 > 
-> No dice:
-> VFS: Mounted root (nfs filesystem) readonly.
-> Freeing unused kernel memory: 100k init 4k prep
-> floating point used in kernel (task=c03816b0, pc=c000d664)
-> Doing some objdump'ing, that's the start of load_up_altivec.
+> > Perhaps there's a patch for it floating around somewhere? ;-)
+> Now, that would be really nice.
+> Though I have no idea of where to look!?
+> 
 
-Hi Jason and Tom,
+Here is what I do.  Patch is against BK linuxppc-2.4 version 1.1285
+(2.4.28-pre3) but might work.
 
-Has there been any more progress on this patch?
+Burns 5% of the RAM but alternatives all seem worse and I never
+have much luck trying to convince my colleagues that
+dynamic allocation has no place in an embedded system.
 
-Thanks,
-Wade Farnsworth
+If you find out why RH works it would be interesting ... perhaps
+there is a better way.
+
+David
+
+
+#
+# mm/mmap.c
+#   Add pessimistic overcommit mode similar to 2.6 mode 2.
+#   This allows malloc aka sbrk() to actually fail before
+#   process is killed.
+#   Overloaded sysctl_overcommit_memory to be both enable
+#   and ratio to avoid making a new sysctl.
+# 
+diff -Nru a/mm/mmap.c b/mm/mmap.c
+--- a/mm/mmap.c	2005-03-30 07:15:13 -08:00
++++ b/mm/mmap.c	2005-03-30 07:15:13 -08:00
+@@ -45,9 +45,13 @@
+ 	__S000, __S001, __S010, __S011, __S100, __S101, __S110, __S111
+ };
+ 
+-int sysctl_overcommit_memory;
++int sysctl_overcommit_memory = 98;
++
+ int max_map_count = DEFAULT_MAX_MAP_COUNT;
+ 
++extern unsigned long totalram_pages;
++extern unsigned long totalhigh_pages;
++
+ /* Check that a process has enough memory to allocate a
+  * new virtual mapping.
+  */
+@@ -66,7 +70,7 @@
+ 	unsigned long free;
+ 	
+         /* Sometimes we want to use more memory than we have. */
+-	if (sysctl_overcommit_memory)
++	if (sysctl_overcommit_memory == 1)
+ 	    return 1;
+ 
+ 	/* The page cache contains buffer pages these days.. */
+@@ -91,7 +95,20 @@
+ 	free += (dentry_stat.nr_unused * sizeof(struct dentry)) >>
+PAGE_SHIFT;
+ 	free += (inodes_stat.nr_unused * sizeof(struct inode)) >>
+PAGE_SHIFT;
+ 
++	/*
++	 * Leave the last 3% for root
++	 */
++	if (current->euid)
++		free -= free / 32;
++
++	/* Strict mode do not allocate last bit of memory */
++	if (sysctl_overcommit_memory) {
++		pages += (totalram_pages - totalhigh_pages)
++			* (100 - sysctl_overcommit_memory) / 100;
++	}
++
+ 	return free > pages;
++
+ }
+ 
+ /* Remove one vm structure from the inode's i_mapping address space. */
