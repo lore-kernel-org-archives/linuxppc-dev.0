@@ -1,50 +1,49 @@
-Date: Sun, 30 Mar 2003 10:28:04 +0200
-From: Boris Bezlaj <boris@gajba.net>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.4.x swim3 performance problem on PM4400 identified
-Message-ID: <20030330082804.GA495@gajba.net>
-References: <16004.27866.270601.561756@gargle.gargle.HOWL> <16005.35950.570218.844672@nanango.paulus.ozlabs.org> <20030329155501.GA587@gajba.net> <16006.19831.210218.170305@nanango.paulus.ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <16006.19831.210218.170305@nanango.paulus.ozlabs.org>
+Message-ID: <63127.213.107.143.228.1049052624.squirrel@www.solinno.co.uk>
+Date: Sun, 30 Mar 2003 20:30:24 +0100 (BST)
+Subject: OpenPIC spurious vector
+From: "Leigh Brown" <leigh@solinno.co.uk>
+To: <linuxppc-dev@lists.linuxppc.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Mar 30, 2003 at 11:50:47AM +1000, Paul Mackerras wrote:
-> Boris Bezlaj writes:
->
-> > | kista:/tmp# dd if=swimmer of=/dev/fd0 bs=512 count=2880
-> > | swim3: timeout reading sector 2647
->
-> Hmmm, wonder why it's reading that sector?
->
-> The timeout probably indicates that the sector header is corrupted or
-> unreadable.  The driver should probably retry after verifying that it
-> is on the right track.
+Hi there,
 
-Well it is the _bad_ floppy case :)
+Early RS/6000 7024-E20 and 7024-E30 models have weird openpics.  One of
+the problems with them is that the spurious vector doesn't seem to work
+properly.  Even though the spurious vector is being set to (127 + 16),
+on these particular machines it always returns 255.
 
-> > | end_request: I/O error, dev 02:00 (floppy), sector 2647   <--bad sector
-> > | dd: writing `/dev/fd0': Input/output error
-> > | 2647+0 records in
-> > | 2646+0 records out
-> > | 1354752 bytes transferred in 134.614549 seconds (10064 bytes/sec)
-> >
-> > after the error at sector 2647, swim3 seems to move the heads to sector 0
-> > and write? another 2647 sectors. Any particular reason for that ?
->
-> I don't think it's the swim3 driver itself that is doing that.  I
-> would start by stracing the dd to see what writes it is doing.  It may
-> be the block I/O layer doing something funny.
+I've thought of a couple of ways of fixing this, but the simplest seems
+to be to change OPENPIC_VEC_SPURIOUS to 239.  Thus, it is always set to
+the value (239 + 16 = 255) that just happens to be the only one available
+on these boxes.
 
-I will give it a shot later in the evening.
+I've applied the patch below on my 140 and it seems to work fine, but I
+don't know if there are any unintended consequences to this change.
 
-Many thanks for your effort 8)
+Can anyone think of any?
 
---
+Thanks in advance,
 
-  Boris
+Leigh.
+
+diff -urNX /home/leigh/.diffex prev/include/asm-ppc/open_pic.h
+linuxppc_2_4_devel-2.4.19-local/include/asm-ppc/open_pic.h
+--- prev/include/asm-ppc/open_pic.h	2003-03-30 17:46:56.000000000 +0100
++++ linuxppc_2_4_devel-2.4.19-local/include/asm-ppc/open_pic.h	2003-03-30
+19:59:39.000000000 +0100
+@@ -26,7 +26,7 @@
+
+ #define OPENPIC_VEC_TIMER	64	/* and up */
+ #define OPENPIC_VEC_IPI		72	/* and up */
+-#define OPENPIC_VEC_SPURIOUS	127
++#define OPENPIC_VEC_SPURIOUS	239
+
+ /*
+  * For the OpenPIC_InitSenses table, we include both the sense
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
