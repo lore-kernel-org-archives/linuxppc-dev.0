@@ -1,14 +1,28 @@
 From: john.khan@liquidation.com
 To: <john.khan@liquidation.com>, <linuxppc-dev@lists.linuxppc.org>
 Subject: RE: Updated PPC Ambassador Tux
-Date: Wed, 20 Feb 2002 10:08:49 -0500
-Message-ID: <NGBBKEOKAMAPDDCNPGFEMEAICBAA.john.khan@liquidation.com>
+Date: Wed, 20 Feb 2002 10:18:48 -0500
+Message-ID: <NGBBKEOKAMAPDDCNPGFEEEAJCBAA.john.khan@liquidation.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <NGBBKEOKAMAPDDCNPGFEGEAICBAA.john.khan@liquidation.com>
+In-Reply-To: <NGBBKEOKAMAPDDCNPGFEMEAICBAA.john.khan@liquidation.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
+
+
+Here is all three together http://gfxgeek.com/ppclogo.html Feel free to use
+them at will but let me know, as I would love to know if either of them is
+used :)
+
+-----Original Message-----
+From: owner-linuxppc-dev@lists.linuxppc.org
+[mailto:owner-linuxppc-dev@lists.linuxppc.org]On Behalf Of
+john.khan@liquidation.com
+Sent: Wednesday, February 20, 2002 10:09 AM
+To: john.khan@liquidation.com; linuxppc-dev@lists.linuxppc.org
+Subject: RE: Updated PPC Ambassador Tux
+
 
 
 Or the no hat version http://gfxgeek.com/linuxppcnohat.gif
