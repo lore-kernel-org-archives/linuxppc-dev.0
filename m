@@ -1,10 +1,10 @@
-In-Reply-To: <19991122144054.C12973@hq.fsmlabs.com>
-Date: Tue, 23 Nov 1999 11:40:01 +0100
+In-Reply-To: <19991122150653.A13066@hq.fsmlabs.com>
+Date: Tue, 23 Nov 1999 11:44:59 +0100
 To: Cort Dougan <cort@fsmlabs.com>, linuxppc-dev@lists.linuxppc.org,
         paulus@linuxcare.com
 From: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: bootloader & head.S weirdness (patch)
-Message-Id: <19991123114001.002761@mailhost.mipsys.com>
+Message-Id: <19991123114459.026069@mailhost.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -13,29 +13,36 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 On Mon, Nov 22, 1999, Cort Dougan <cort@fsmlabs.com> wrote:
 
->I'll check this patch with the latest 2.2 to see how it goes.  Would using
->the bootinfo structure we talked about a few weeks ago help?  I'd like to
->unify things a bit with it but I'm not sure how many problems it would
->solve and how many it could cause.
+>I applied the patch (with some changes necessary to get it into
+>2.2.14pre7).  It breaks pmac netboot during the jump from
+>__secondary_stat() to clear_bats(). 
 
-I'd really like to see this happen. There is really an urgent need to
-cleanup the mess with initrd and the way the command line is passed to
-the kernel too and this would get rid of those.
+You mean netbooting the kernel image directly from OF without going thru
+a bootloader ? Or are you talking about the xcoff piggyback bootstrap ?
 
-There is one idea suggested to me by Gabriel Paubert which would be worth
-considering:
+>There must be some I mappings we need
+>to preserve in order to get to non-pc relative code.  It's worth noting
+>that OF loads us and gives us mappings for 0xc000000 since that's where
+>we're linked at. 
 
-Define some kind of bootx-like bootinfo structure (will all addresses
-relative to the beginning of the structure) and move out of the kernel
-_all_ those head.S hacks AND all the prom_init code (reading the OF tree,
-initing the display, instanciating RTAS, ...).
+I never managed to get OF load the kernel image directly. How did you
+acheive this result (OF setting up such a mapping ?). In this specific
+case, it's always possible to ask OF about our physical address and use
+it for the return address of mmu_off. It should be returned by prom_init
+in r3. This would be cleaner anyway. I'll look into fixing that but I'd
+like to know how you did this netboot stuff so I can reproduce it here.
+(Could you send me your bootptab ?)
 
-All this would be done from a head-appended bootloader which would built
-a device tree when OF is available, and then enter the kernel with a
-unified entry point based on a structure, known mappings.
+>BootX and Quik don't do that so that's probably why they
+>work.  Netboot is really useful so I'd prefer to not break it (definitely
+>not in 2.2).  Any ideas for workarounds?
 
-I don't know if it's worth doing that _now_ (it involves almost breaking
-everything), but I like the idea of cleaning all this up.
+Yes, as I wrote before, OF can tell us the real physical address and we
+can return it from prom_init so that mmu_off does the right thing.
+
+>Chrp and prep netboot works fine.  Boot via quik on chrp works, too.
+
+Great.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
