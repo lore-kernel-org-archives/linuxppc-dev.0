@@ -1,51 +1,20 @@
-From: jkl@miacid.net
-Date: Wed, 2 Jan 2002 16:55:08 -0800 (PST)
+Mime-Version: 1.0
+Message-Id: <p04330106b85a7acfa489@[63.220.231.138]>
+Date: Thu, 3 Jan 2002 16:28:15 -0500
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] C undefined behavior fix 
-In-Reply-To: <25193.1010018130@redhat.com>
-Message-ID: <Pine.BSI.4.10.10201021651180.29444-100000@hevanet.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: do_mounts.c parse error
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I don't have the ANSI standard in front of me, isn't it the case that
-casting a pointer to/from an integer is implementation defined, rather
-than undefined, so people who need to do pointer arithmatic that relies on
-the machine's memory map can do
- (void *)(((int)p) + some_magic_number)
-
-and have some sort of assurance that the compiler won't mess with it?
-
--JKL
+I still get a parse error in 2.5.2-pre5 (bk mirror) in
+init/do_mounts.c, as reported for -pre1. I've tried scoring the code
+for typos but I can't find one. Is this just a dumb typo I'm missing,
+or something more subtle?
 
 
-On Thu, 3 Jan 2002, David Woodhouse wrote:
-
->
-> (cc list trimmed)
->
-> alan@lxorguk.ukuu.org.uk said:
-> >  If you want a strcpy that isnt strcpy then change its name or use a
-> > different language 8)
->
-> The former is not necessarily sufficient in this case. You've still done the
-> broken pointer arithmetic, so even if the function isn't called strcpy() the
-> compiler is _still_ entitled to replace it with a call to memcpy() or even
-> machine_restart() before sleeping with your mother and starting WW III.
->
-> Granted, it probably _won't_ do any of those today, but you should know
-> better than to rely on that.
->
-> What part of 'undefined behaviour' is so difficult for people to understand?
->
-> --
-> dwmw2
->
->
->
->
-
+Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
