@@ -1,34 +1,51 @@
-Message-ID: <3E650AAF.7060804@embeddededge.com>
-Date: Tue, 04 Mar 2003 15:21:03 -0500
-From: Dan Malek <dan@embeddededge.com>
+Reply-To: <joakim.tjernlund@lumentis.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: "Dan Malek" <dan@embeddededge.com>,
+	"Tom Rini" <trini@kernel.crashing.org>
+Cc: "Daniel Jacobowitz" <drow@false.org>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: RE: Improved copy_page() function, about 30% speed up for mpc860!
+Date: Tue, 4 Mar 2003 23:01:59 +0100
+Message-ID: <IGEFJKJNHJDCBKALBJLLEEMPFKAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
-To: Dale Farnsworth <dale@farnsworth.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Patch boot/common/relocate.S to start kernel at 0x000c
-References: <20030304191644.GA4524@rover.farnsworth.org> <3E64FD53.3030107@embeddededge.com> <20030304201302.GA4683@rover.farnsworth.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <3E64DB91.4050508@embeddededge.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dale Farnsworth wrote:
-
-> No, I wasn't sure.  Now after some more looking, I'm sure that
-> it *won't* work for 40x, 44x, and 8xx.
 >
-> I'll find another way.
+>
+> Joakim Tjernlund wrote:
+>
+> > Does this workaround also work for dcbz on kernel addresses?
+>
+> It may, depending upon the silicon revision. :-)
+>
+> IIRC, the real reason for this code is to work around errata in
+> some silicon versions where the DAR isn't loaded  properly.  In
+> addition, this also helps when we use kernel debuggers for setting
+> breakpoints when the text area is write enabled.
 
-Well, one option that may be the easiest is to just change all
-of the linux head.S files to have the three nops again.  When we
-split these file apart a while back, we just removed everything that
-wasn't necessary.  Just put a note in those files why they are
-present.  They don't cost anything since these are exception vector
-locations or temporary storage locations for special purposes.
+I can't find any further info about this bug/workaround. There is nothing in
+linux that indicates that the workaround is dependant on any revision.
+Further, dcbi and dcbz are pretty similar in behavior w.r.t TLB error so
+I suspect that if this works for dcbi it also works for dcbz, only
+on kernel addresses though.
 
-Thanks.
+Maybe user space also can be fixed with instruction decoding
+as Daniel said even if it's ugly. Then you would not have to worry about
+apps/libs using dcbz, at least it would work but perhaps the performance sucks
 
+Tom, can you shed some light on this? The BK log lists you as the one
+who committed this change.
 
-	-- Dan
+> If nothing else, you are learning more than you bargained for. ;-)
+
+Definitly :-)
+
+ Jocke
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
