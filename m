@@ -1,29 +1,43 @@
-Subject: Re: asm inline
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Samuel Rydh <samuel@ibrium.se>
+Date: Fri, 29 Nov 2002 18:49:42 +0100
+From: Samuel Rydh <samuel@ibrium.se>
+To: Gabriel Paubert <paubert@iram.es>
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20021129160826.GA27950@ibrium.se>
-References: <20021129160826.GA27950@ibrium.se>
-Content-Type: text/plain
-Date: 29 Nov 2002 17:30:52 +0100
-Message-Id: <1038587452.4040.22.camel@zion>
+Subject: Re: asm inline
+Message-ID: <20021129174942.GA833@ibrium.se>
+References: <20021129160826.GA27950@ibrium.se> <Pine.LNX.4.33.0211291712010.9530-100000@gra-lx1.iram.es>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.33.0211291712010.9530-100000@gra-lx1.iram.es>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2002-11-29 at 17:08, Samuel Rydh wrote:
+On Fri, Nov 29, 2002 at 05:21:50PM +0100, Gabriel Paubert wrote:
+> On Fri, 29 Nov 2002, Samuel Rydh wrote:
+> How is "addr" declared ? This may be an aliasing problem. Does adding
+> -fno-strict-aliasing to the options help ? Or changing the "=m" to "+m" as
+> an incorrect, but less penalizing than a memory clobber, bandaid. Or
+> declaring addr as pointer to volatile ?
+
+Turning of aliasing did indeed solve the problem. As did changing
+unsigned long to int.
+
+> > Adding "memory" to the clobber list seems to be the only way to make
+> > gcc do the right thing :-(.
 >
-> I just noticed that gcc 3.1 doesn't like the following:
+> A "memory" clobber is such an optimization killer that it is not
+> acceptable in this situation (actually I consider a memory clober hardly
+> ever acceptable).
 
-According to Franz Sirl, gcc 3.2.1 is one of the very first gcc's
-to not need any special patch for known bugs for PPC32 :) I'd
-suggest you try this one.
+Agreed. A "memory" clobber is definitely suboptimal.
 
-I couldn't reproduce that bug with debian sid's gcc 2.95.4, 3.0.4 and
-3.2.1
+> I see that your example involves local variables, does
+> it also happen in the non-automatic case ?
 
-Ben.
+It happens in the non-automatic case too. I'll try the
+latest gcc version later.
+
+/Samuel
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
