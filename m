@@ -1,76 +1,26 @@
-Date: Mon, 27 Aug 2001 00:16:36 -0500
-From: "Joseph P. Garcia" <jpgarcia@execpc.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: pmac_ide_init_hwif_ports duplicate
-Message-Id: <20010827001636.16d6719c.jpgarcia@execpc.com>
+Date: Mon, 27 Aug 2001 09:07:29 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: linuxppc-commit@source.mvista.com,
+	linuxppc-dev@lists.linuxppc.org
+Subject: ppc_htab.c again
+Message-ID: <20010827090729.B6925@cpe-24-221-152-185.az.sprintbbd.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="Multipart_Mon__27_Aug_2001_00:16:36_-0500_10336328"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
-
---Multipart_Mon__27_Aug_2001_00:16:36_-0500_10336328
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-
-pmac_ide_init_hwif_ports exists in two forms in the latest benh kernel.  a generic coding in pmac_setup.c for pci chips (pcmcia iirc), and a coding in ide-pmac.c for pmac specific applications.  On boot, the ide-pmac.c coding is used, but since the pmac_setup.c coding is used in the ppc function structure setup, the pmac_setup.c code is used everywhere else.  One consequence is that mediabays are no longer hot swappable.
-
-I wonder if the pmac_setup.c coding is needed.  If it is, where?  If the only places that need the ide-pmac.c coding are ide-pmac.c and mediabay.c, then the attached patch should be a good fix.  It works by explicitly calling the ide-pmac.c coding, then calling ide_register_hw instead of ide_register.  The more generic pmac_setup.c coding is left as default for any other hot swappable ata subsystem.
-
-Is this code going in the correct direction?  (ide_register is kinda hinted as being legacy)
-
-Thanks.
+Hey all.  I notice paul made ppc_htab.c compile on all arches again.  I'm
+not about to undo this or anything, but I still don't agree with it.  It
+does _not_ do anything when running on !6xx, more more specifically
+!CPU_FTR_L2CR.  We -EFAULT on this case before we do anything.  I _think_
+but I'm not totally sure that the bits which were printed out before, in the
+stock code are bogus.  I also think that if we are going to put in other,
+useful infos on all procs, we should put it in another file (src and /proc).
+Just my 2 cents.
 
 --
-Joseph P. Garcia
-http://www.lycestra.com/
-
---Multipart_Mon__27_Aug_2001_00:16:36_-0500_10336328
-Content-Type: application/octet-stream;
- name="pmac_cdbay.patch"
-Content-Disposition: attachment;
- filename="pmac_cdbay.patch"
-Content-Transfer-Encoding: base64
-
-LS0tIGxpbnV4LTIuNC45LWJlbmgwLWJlbmgyMDAxMDgxOS1KUEcxL2RyaXZlcnMvbWFjaW50b3No
-L21lZGlhYmF5LmMJVHVlIEF1ZyAgNyAwNzo0ODo1MyAyMDAxCisrKyBsaW51eC0yLjQuOS1iZW5o
-MC1iZW5oMjAwMTA4MTktSlBHMy9kcml2ZXJzL21hY2ludG9zaC9tZWRpYWJheS5jCVN1biBBdWcg
-MjYgMDI6MjY6NTEgMjAwMQpAQCAtMTA1LDYgKzEwNSw5IEBACiAgICAoYXNzdW1lcyB0aGUgbWVk
-aWEtYmF5IGNvbnRhaW5zIGFuIGlkZSBkZXZpY2UpICovCiAvLyNkZWZpbmUgTUJfSURFX1JFQURZ
-KGkpCSgoaW5iKG1lZGlhX2JheXNbaV0uY2RfYmFzZSArIDB4NzApICYgMHhjMCkgPT0gMHg0MCkK
-ICNkZWZpbmUgTUJfSURFX1JFQURZKGkpCSgoaW5iKG1lZGlhX2JheXNbaV0uY2RfYmFzZSArIDB4
-NzApICYgMHg4MCkgPT0gMCkKKyNpbmNsdWRlIDxsaW51eC9pZGUuaD4KK3ZvaWQgcG1hY19pZGVf
-aW5pdF9od2lmX3BvcnRzKGh3X3JlZ3NfdCAqaHcsIGlkZV9pb3JlZ190IGRhdGFfcG9ydCwKKwkJ
-CQkJCQkJCQkgaWRlX2lvcmVnX3QgY3RybF9wb3J0LCBpbnQgKmlycSk7CiAjZW5kaWYKIAogLyog
-Tm90ZTogQWxsIGRlbGF5cyBhcmUgbm90IGluIG1pbGxpc2Vjb25kcyBhbmQgY29udmVydGVkIHRv
-IEhaIHJlbGF0aXZlCkBAIC00NzMsOCArNDc2LDExIEBACiAJCQliYXktPnRpbWVyID0gMDsKIAkJ
-CWJheS0+c3RhdGUgPSBtYl91cDsKIAkJCWlmIChiYXktPmNkX2luZGV4IDwgMCkgeworCQkJCWh3
-X3JlZ3NfdCBodzsKIAkJCQlwbXVfc3VzcGVuZCgpOwotCQkJCWJheS0+Y2RfaW5kZXggPSBpZGVf
-cmVnaXN0ZXIoYmF5LT5jZF9iYXNlLCAwLCBiYXktPmNkX2lycSk7CisJCQkJcG1hY19pZGVfaW5p
-dF9od2lmX3BvcnRzKCZodywgKGlkZV9pb3JlZ190KSBiYXktPmNkX2Jhc2UsIDAsIE5VTEwpOwor
-CQkJCWh3LmlycSA9IGJheS0+Y2RfaXJxOworCQkJCWJheS0+Y2RfaW5kZXggPSBpZGVfcmVnaXN0
-ZXJfaHcoJmh3LCBOVUxMKTsKIAkJCQlwbXVfcmVzdW1lKCk7CiAJCQl9CiAJCQlpZiAoYmF5LT5j
-ZF9pbmRleCA9PSAtMSkgewotLS0gbGludXgtMi40LjktYmVuaDAtYmVuaDIwMDEwODE5LUpQRzEv
-YXJjaC9wcGMva2VybmVsL3BtYWNfc2V0dXAuYwlTdW4gQXVnIDE5IDE0OjAxOjMzIDIwMDEKKysr
-IGxpbnV4LTIuNC45LWJlbmgwLWJlbmgyMDAxMDgxOS1KUEczL2FyY2gvcHBjL2tlcm5lbC9wbWFj
-X3NldHVwLmMJU3VuIEF1ZyAyNiAwMjowOTo0MiAyMDAxCkBAIC02MTcsNyArNjE3LDcgQEAKICAq
-IGZvciB0aGUgSURFIGNvbnRyb2xsZXIgaW4gdGhlIG9oYXJlL3BhZGRpbmd0b24vaGVhdGhyb3cv
-a2V5bGFyZ28uCiAgKi8KIHN0YXRpYyB2b2lkIF9fcG1hYwotcG1hY19pZGVfaW5pdF9od2lmX3Bv
-cnRzKGh3X3JlZ3NfdCAqaHcsIGlkZV9pb3JlZ190IGRhdGFfcG9ydCwKK3BtYWNfcGNpX2lkZV9p
-bml0X2h3aWZfcG9ydHMoaHdfcmVnc190ICpodywgaWRlX2lvcmVnX3QgZGF0YV9wb3J0LAogCQlp
-ZGVfaW9yZWdfdCBjdHJsX3BvcnQsIGludCAqaXJxKQogewogCWlkZV9pb3JlZ190IHJlZyA9IGRh
-dGFfcG9ydDsKQEAgLTc5NSw3ICs3OTUsNyBAQAogICAgICAgICBwcGNfaWRlX21kLmlkZV9jaGVj
-a19yZWdpb24JPSBwbWFjX2lkZV9jaGVja19yZWdpb247CiAgICAgICAgIHBwY19pZGVfbWQuaWRl
-X3JlcXVlc3RfcmVnaW9uCT0gcG1hY19pZGVfcmVxdWVzdF9yZWdpb247CiAgICAgICAgIHBwY19p
-ZGVfbWQuaWRlX3JlbGVhc2VfcmVnaW9uCT0gcG1hY19pZGVfcmVsZWFzZV9yZWdpb247Ci0gICAg
-ICAgIHBwY19pZGVfbWQuaWRlX2luaXRfaHdpZgk9IHBtYWNfaWRlX2luaXRfaHdpZl9wb3J0czsK
-KyAgICAgICAgcHBjX2lkZV9tZC5pZGVfaW5pdF9od2lmCT0gcG1hY19wY2lfaWRlX2luaXRfaHdp
-Zl9wb3J0czsKICNlbmRpZiAvKiBDT05GSUdfQkxLX0RFVl9JREUgJiYgQ09ORklHX0JMS19ERVZf
-SURFX1BNQUMgKi8KIAogI2lmZGVmIENPTkZJR19CT09UWF9URVhUCg==
-
---Multipart_Mon__27_Aug_2001_00:16:36_-0500_10336328--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
