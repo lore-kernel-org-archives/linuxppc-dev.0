@@ -1,25 +1,24 @@
-Date: Wed, 12 May 1999 15:40:32 -0400 (EDT)
+Date: Wed, 12 May 1999 15:41:59 -0400 (EDT)
 From: Tom Rini <tmrini@ntplx.net>
-To: Konstantinos Margaritis <kmargar@cc.uoa.gr>
+To: Jason Haas <jhaas@madison-web.com>
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: cvs kernel does not compile
-In-Reply-To: <99051217114000.00658@proton>
-Message-ID: <Pine.LNX.4.05.9905121539420.651-100000@pc.wackyland.com>
+Subject: Re: New PPC/Mac features of 2.2.8?
+In-Reply-To: <37399524.9D22A030@madison-web.com>
+Message-ID: <Pine.LNX.4.05.9905121541250.651-100000@pc.wackyland.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 12 May 1999, Konstantinos Margaritis wrote:
+On Wed, 12 May 1999, Jason Haas wrote:
 
->    The 2.3.0 kernel found on cvs.on.openprojects.net does not compile on
-> my powerpc system (debian glibc 2.1, egcs 1.1.2pre), with the following
-> error: 
+> The cutting-edge linux site says there are "major PPC arch" updates and
+> mac arch updates in 2.2.8.  What are they?  Or, is there somewhere I can
+> look to find out?
 
-Welcome to the dev cycle.  The tree can be broken once again, and only has
-to compile on x86.  I'm sure Cort or someone will see what's going to be
-needed to fix up 2.3.1-pre2 soon enough.
+Just a vger sync.  Common config should now be a lot nicer.  RS/6000 (or
+whatever Cort has now) too.
 
 ---
 Tom Rini (TR1265)
