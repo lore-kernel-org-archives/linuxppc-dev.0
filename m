@@ -1,32 +1,27 @@
-Date: Wed, 7 Apr 2004 09:15:19 +0200
-From: Marc Leeman <marc.leeman@barco.com>
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+Message-ID: <4073B073.40507@com2gether.net>
+Date: Wed, 07 Apr 2004 09:40:35 +0200
+From: sutra <pierre.sutra@com2gether.net>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PCI Memory mapping
-Message-ID: <20040407071519.GE2426@smtp.barco.com>
-Reply-To: Marc Leeman <marc.leeman@barco.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Subject: SPI bus on MPC8xx
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I now realise I sent to the wrong mailing list :-/
-(thread was on linuxppc-dev instead of linuxppc-embedded).
+Hello everybody,
 
-Hi,
+I'm a french student, new to this list and i'm actually developping an
+interface to dialog via the SPI bus of a MPC852T with an HC908GR4. I
+have started my developpement with the driver that Alex Zeffertt made
+and i had a surprise when i saw that Alex use some CPM function
+(m8xx_cpm_dpalloc, m8xx_cpm_hostalloc, ... )  to implement his module
+and that those functions weren't exported in the kernel (/proc/ksyms).
+I'd like to konw if it was a time when those functions were exported
+since Alex used them and the reasons why nowadays this is no more the case.
 
-I know I've been flooding the mailing list with this particular little
-topic and thanks to some valuable comments [1], we were able to
-pinpoint our problem fairly quickly.
+Thanks you
 
-Partly based on a number of related known silicon bugs, I have drafted
-the following description (and work-around) that explains our data
-corruption.
-
-http://scorpius.homelinux.org/~marc/masterwrite/
-
-[1] There is still one comment which is in the queue to be investigated.
-
- marc.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
