@@ -1,39 +1,32 @@
-Date: Sat, 06 Feb 1999 16:21:38 +0100 (MET)
-From: Niels Roest <N.P.Roest@ITS.TUDelft.NL>
-Subject: Re: browser for R5
-In-reply-to: <199902052223.RAA10904@wrath.iatlas.com>
-To: Ira Joseph Woodhead <ira@wrath.iatlas.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Message-id: <Pine.HPP.3.95.990206161654.834A-100000@elektron.et.tudelft.nl>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 6 Feb 1999 16:22:40 +0100 (CET)
+From: Gerd Knorr <kraxel@goldbach.in-berlin.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: matroxfb, anybody? (More details...)
+In-Reply-To: <Pine.LNX.4.02.9901311514590.2341-100000@cassiopeia.home>
+Message-ID: <Pine.LNX.4.04.9902061615290.537-100000@bogomips.masq.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 5 Feb 1999, Ira Joseph Woodhead wrote:
+On Sun, 31 Jan 1999, Geert Uytterhoeven wrote:
 
+> > As far I know, Geert got it to compile on ppc, but it's not working yet.
 > 
+> It crashes with a bus error. That is, the unaccelerated version. I
+> don't have a Matrox, and I had to disable the ATI code because it
+> contains inline ia32 assembler.
 > 
-> Hi folks,
-> 
-> With y'all's help I've installed pre-R5. I cannot begin really
-> stretching its legs yet because I need a decent working web browser,
-> therefore I haven't made the switch. However, I really want to! If
-> anyone knows where to get one (not lynx!) or if anyone knows how to get
-> Netscape 4.x to work on it I will jump in with both feet.
-> 
-> Cheers!
-> ira
-> 
-Hiya, I do not know if you're aware of it,
-but kfm is a pretty ok browser and doesn't have the
-long wait for starting. granted, it doesn't do java or
-javascript (yet), and there's no mail or news client
-(I use tin, but maybe kmail and knews are ok too),
-but I use it with content.
+> I think the bus error is related to trying to map the frame buffer
+> using /dev/mem instead of /dev/fb0.
 
-Niels
+IMHO it is more likely that the Server tries to access some I/O ports
+(probe for ISA-VGA or something like that) without having them mapped.
+At least I ran into this problem while playing with 3.9Nz.
+
+  Gerd
 
 
 
