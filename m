@@ -1,118 +1,65 @@
-Date: Wed, 9 Aug 2000 00:44:34 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: rtc again...
-In-Reply-To: <20000808174157.21374@mailhost.mipsys.com>
-Message-ID: <Pine.HPX.4.10.10008081952360.22126-100000@gra-ux1.iram.es>
+From: "Michael A. Peters" <mpeters@omnilinux.com>
+Reply-To: mpeters@omnilinux.com
+To: edwintam@ieee.org, linuxppc-dev@lists.linuxppc.org
+Subject: php compilation fix
+Date: Tue, 8 Aug 2000 17:29:19 -0700
+Content-Type: text/plain
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <00080818110803.04184@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 8 Aug 2000, Benjamin Herrenschmidt wrote:
+I created a patch that makes the changes suggest to php-4.0.1pl2/main/main.c
 
-> The kernel keeps two things:
->
->  - xtime is the current time and should be UTC.
-                                   ^^^^^^
-				   must
+replace
+args = orig_args;
+by:
+memcpy(args, orig_args, sizeof(orig_args));
 
->  - sys_tz is the current timezone (usually set from userland)
+in lines 370 & 435
 
-Indeed, and it is used mostly (only?) by some filesystems which keep time
-in local time.
+php-4 now builds beautifully on PowerPC, but mod_php-gd does not. Well, it
+builds- but apache won't start with gd.so selected in the php.ini file.
 
-> When the kernel boots, it reads the time from the RTC. On pmac (or any
-> other machine that has a local time), that means that the kernel boots
-> with a wrong notion of time until that gets fixed from userland.
->
-> That's why I added that code that calculates the real UTC from the xpram.
-> It also initialize properly the sys_tz structure, since it's easy,
-> doesn't cost much, and I think it's always better to have a correct value
-> when we can ;) This would also allow some tools and/or installers to
-> "read" the timezone at boot in order to propose a default choice or such
-> things.
->
-> Now there are several problems:
->
->  - The first one, well hidden in kernel/time.c (generic code) is the call
-> to warp_time(). This is an awful hack that seem to be done because PCs
-> apparently also set the RTC to local time.
+Interestingly enough- on Red Hat 6.2 when I build php-4.0.1pl2 without the
+patch, mod_php-gd loads beautifully but with the same patch needed to even
+build php on PPC, mod_php-gd is broken.
 
-This is necessary for people who dual boot some M$ stuff (my PC is UTC and
-it just works fine).
+Something about the fix breaks the compilation of gd.so
+Well, it compiles, it just doesn't load.
+All other modules I currently build load after patch.
 
-> This hack will cause the
-> kernel to "bump" the xtime the first time the syscall settimeofday() is
-> called is it is called with a valid timezone and a NULL timevalue.
+This is how I build gd.so:
 
+# Build PHP modules.
+build_ext() {
+gcc -fPIC -shared $RPM_OPT_FLAGS -DHAVE_CONFIG_H -I.\
+        -I. -I`/usr/sbin/apxs -q INCLUDEDIR` -I./Zend \
+        -I/usr/include/freetype -I/usr/include/$1 \
+        -I./ext/$1 -I./ext/$1/lib$1 -I./main\
+        -I./ext/xml/expat/xmltok -I./ext/xml/expat/xmlparse \
+        -DHAVE_CONFIG_H `grep ^CPPFLAGS Zend/Makefile | cut -f2- -d=` \
+        $4 $2 -o $1.so $3 -lc
 
-> With old broken behaviour, this code has the effect of causing the kernel
-> to "adjust" it's internal time that was wrongly set to local time to be
-> real UTC as soon as it is notified by userland of the real time zone.
-> Obviously, this code breaks us. We should probably change it so that a
-> global variables tells this code we have already inited sys_tz properly
-> and there's no need to warp.
+build_ext gd "ext/gd/gd.c ext/gd/gdttf.c ext/gd/gdcache.c ext/gd/gdt1.c" \
+        "-lpng -lgd -lttf -lt1 -lc" "-DHAVE_GD_PNG  -DHAVE_LIBGD \
+        -DHAVE_LIBJPEG -DHAVE_LIBPNG -DHAVE_GDIMAGECOLORRESOLVE \
+        -DHAVE_LIBT1 -DHAVE_LIBTTF -DHAVE_LIBGD13 -DCOMPILE_DL_GD"
 
-You could also call do_sys_settimeofday with correct tz from pram and a
-null tv to adjust xtime and prevent userland from messing with it again
-(faking the first call used to set timezone). do_sys_settimeofday is a
-public symbol since it's used by sparc and alpha code (at least) for some
-OSF and SunOS emulation.
+Any ideas? I'd like to include mod_php-gd if at all possible...
 
-Pushing this timezone setting policy to architecture dependant code is
-another possibility, but the changes are bigger.
+The src rpm I use can be found at
 
->  - The second one is that ppc_md.get/set_rtc_time are passed (or return)
-> a time value independently of the timezone. That mean that they either do
-> no conversion and so it's the responsibility of the caller to "know" if
-> the RTC is in local time or UTC, or they do the conversion and so return
-> (and get passed) an UTC time. That's what I decided to do, so on
-> PowerMac, they do the adjustement from UTC to localtime and the opposite
-> inside those functions. Paul recently added code to also save the
-> timezone to the xpram. There's a small semantic problem with this code,
-> since it takes the time to set to the RTC as a parameter but uses the
-> global sys_tz. It should either use no parameter (and use only xtime/
-> sys_tz), or be passed both parameters. In this case, we can probably move
-> the init code that reads the initial time zone to the pmac_get_rtc_time() too.
+http://staging.omnilinux.com/~mpeters/php-4.0.1pl2-2.src.rpm
 
-I'm slightly lost :-(. But whether the clock is in UTC or not is a
-parameter (defined in /etc/sysconfig/clock or another system configuration
-file), so I think that translating to/from UTC when setting the clock is a
-purely userland job and set/get_rtc_time should never have to handle this.
+please keep in mind that this spec file is still under major work- although
+(with the exception of mod_php-gd) everyhing that's not commented out currently
+builds spledidly and works on x86 and ppc, and mod_php-gd works on x86 w/o the
+patch.
 
->
->  - There's apparently a problem with the definition of the DST field of
-> sys_tz. The best way to handle this correctly is probably to see how
-> userland tools like hwclock use it. What is responsible for managing DST
-> on linux ? Is there a deamon for that ? A tool called from cron ?
-
-No, AFAICT nothing bothers with it, only the clock program at boot.
-
-First it is 99% a userland problem: just set export TZ=UTC or any path in
-/usr/share/zoneinfo and all dates will appear as if you were in this
-timezone (try date or ls -l).
-
-The translation between UTC and localtime is performed in the C library,
-using the TZ environment variable or /etc/localtime, and it will know when
-to switch between DST and non DST.
-
-The last problem is updating the clock through NTP when the RTC is running
-in local time. Since these are generally small corrections, there are
-solutions (but the comments of the i386 version say that it is buggy :-().
-
-Until now I've found a single place where sys_tz.dsttime is used in the
-kernel: fs/fat/misc.c when converting between Unix and FAT timestamps.
-Interestingly it's used only in one direction, so it definitely looks like
-a bug. Some other filesystems (affs/hfs/ncpfs/ufs) use the timezone
-information but not the dst field, making FAT time handling look even
-buggier.
-
-	Regards,
-	Gabriel.
-
+--
+Michael A. Peters
+http://www.omnilinux.com/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
