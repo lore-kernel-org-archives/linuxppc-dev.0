@@ -1,31 +1,47 @@
-Date: Thu, 27 May 2004 13:55:29 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: rdiz@alumni.deec.uc.pt
+To: David Ho <DavidHo@nanometrics.ca>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Compiling kernel 2.6.7-rc1 for 8xx
-Message-ID: <20040527205529.GL6763@smtp.west.cox.net>
-References: <4786.62.48.238.11.1085678078.squirrel@alumni.deec.uc.pt>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4786.62.48.238.11.1085678078.squirrel@alumni.deec.uc.pt>
+Subject: Re: patch for cpu/mpc8xx/cpu.c:get_tbclk 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 27 May 2004 15:07:34 EDT."
+             <OFFF069FF9.720525F3-ON85256EA1.00688E39-85256EA1.0069104C@nanometrics.ca>
+Date: Thu, 27 May 2004 23:48:56 +0200
+Message-Id: <20040527214901.776EAC109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, May 27, 2004 at 06:14:38PM +0100, rdiz@alumni.deec.uc.pt wrote:
+Dear David,
 
+in message <OFFF069FF9.720525F3-ON85256EA1.00688E39-85256EA1.0069104C@nanometrics.ca> you wrote:
 >
-> I don't know what kind of search I did before, but I found now some recent
-> relevant posts about it. Thanks.
->
-> BTW, do I have to use BitKeeper to download the 2.5 kernel tree?
+> The last if condition is wrong in this function.   The change is made
+> against 0.4.8.  AFAIK, 1.0.2 still has the same problem.
 
-No.  For Linus' tree there are snapshots of the bitkeeper version on
-kernel.org I believe, and for the linuxppc trees there are still rsync
-mirrors on source.mvista.com.
+Let me guess what your are talking about. This is the
+linuxppc-embedded mailing list. Are you talking about Linux?
+
+Or are you completely off topic here?
+
+> And I wonder why it has to reverse engineer the oscclk when I pass the
+> value as a define to come up with the gd->cpu_clk for the MPC866 family...
+> It is a bit useless I think.
+
+Then submit a patch which iomproves the situation.  But  please  send
+this  to  the  proper  mailing  list  (u-boot-users),  and follow the
+instructions in the README (section "Submitting Patches").
+
+Thanks.
+
+Best regards,
+
+Wolfgang Denk
 
 --
-Tom Rini
-http://gate.crashing.org/~trini/
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+No question is too silly to ask. Of course, some  questions  are  too
+silly to to answer...  - L. Wall & R. L. Schwartz, _Programming Perl_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
