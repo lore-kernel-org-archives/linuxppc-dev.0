@@ -1,58 +1,72 @@
-Date: Mon, 31 Jul 2000 12:48:46 +0200
-From: Bernhard Reiter <bernhard@intevation.de>
+Date: Mon, 31 Jul 2000 13:03:53 +0200
+From: Olaf Hering <olh@suse.de>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: HW Problem! Solved: Powerbook hard freeze
-Message-ID: <20000731124846.N13847@cheops.usf.Uni-Osnabrueck.DE>
+Subject: Re: kernel panic in current benh tree (chrp)
+Message-ID: <20000731130353.A9796@suse.de>
+References: <20000729233822.A31230@suse.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="HFD/Dq8JdnjNvyuv"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20000729233822.A31230@suse.de>; from olh@suse.de on Sat, Jul 29, 2000 at 11:38:22PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---HFD/Dq8JdnjNvyuv
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, Jul 29, Olaf Hering wrote:
 
-Some of you might remember my problems with a Lombard Powerbook
-and hard freezes under load.
+> the current benh tree gives me a kernel panic whit a chrp only config.
 
-As many people reported running and stable powerbooks chances were high
-that it was a hardware problem. So I send the laptop in to apple
-support using the Apple Care Protection we bought.. It took a while (6 week=
-s).
-(First: Internal apple support <-> repair communication problems so they
-did not pick it up, secondly they said they had to wait for repair parts
-due to a shortage.)
+> Any ideas what can cause the problem?
+> I will update the diffs of the last benh changes at
+> ftp://ftp.suse.com/pub/suse/ppc/update/BETA/devel/kernel/benh/
 
-Got it back, the letter said: Mainboard exchanged, problems gone.
+The problem seems to be the size of prom.c. I tried all diffs and
+reverse patched the above linux.tar.bz2, the 20th kernel worked then.
 
-And that is how it is: No hard freeze so far, running stable for a
-couple of days now.
-I thought I just let you all know.
-
-At least apple repair contractor ecprc.com got it solved.
-There were no problems or question regarding my use of linux.=20
-(As you might remember the freeze problem mostly showed when running Linux.
-I could not find a way to reliably reproduce it under MacOS.)
-
-So appart from the long time frame this is positive.
-	Bernhard
-
-ps.: To remind you I am not subscribed to the linuxppc-dev list, so
-cc relevant replies to me.
---=20
-Professional Service around Free Software                (intevation.net) =
-=20
-The FreeGIS Project				            (freegis.org)
-Association for a Free Informational Infrastructure            (ffii.org)
-
---HFD/Dq8JdnjNvyuv
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+So, the diff that caused the problem was the following:
 
 
---HFD/Dq8JdnjNvyuv--
+diff -urN source20/linux-pmac-benh/arch/ppc/kernel/prom.c source19/linux-pmac-benh/arch/ppc/kernel/prom.c
+--- source20/linux-pmac-benh/arch/ppc/kernel/prom.c     Mon Jul 31 10:56:18 2000
++++ source19/linux-pmac-benh/arch/ppc/kernel/prom.c     Mon Jul 31 10:48:07 2000
+@@ -1711,9 +1711,17 @@
+        int l;
+
+        for (np = allnodes; np != 0; np = np->allnext) {
+-               char *pname = np->parent ?
+-                       (char *)get_property(np->parent, "name", &l) : 0;
+-               if (pname && strcmp(pname, "mac-io") == 0)
++               int in_macio = 0;
++               struct device_node* parent = np->parent;
++               while(parent) {
++                       char *pname = (char *)get_property(np->parent, "name", &l);
++                       if (pname && strcmp(pname, "mac-io") == 0) {
++                               in_macio = 1;
++                               break;
++                       }
++                       parent = np->parent;
++               }
++               if (in_macio)
+                        continue;
+                reg = (unsigned int *) get_property(np, "reg", &l);
+                if (reg == 0 || l < sizeof(struct reg_property))
+
+
+But, when I insert a printk() before the "for" loop it works again. But
+the size of the vmlinux didn't change.
+
+
+So it seems that the size of prom.c can cause any problems?
+I use quik as boot loader, the zImage from arch/ppc/chrpboot/ didn't
+work as well. The machine is a B50 with 1GB ram.
+
+
+
+Gruss Olaf
+
+--
+ $ man clone
+
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
