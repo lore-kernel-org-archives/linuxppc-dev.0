@@ -1,51 +1,36 @@
-Date: Fri, 12 Feb 1999 09:57:29 +0100 (MET)
-From: Marc Dejardin <Marc.Dejardin@cern.ch>
+Date: Fri, 12 Feb 1999 01:13:04 -0800
+From: Rick Kwan <kenobi@coruscant.lightsaber.com>
+Message-Id: <199902120913.BAA14181@coruscant.lightsaber.com>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Problem with 2.2.1 compilation
-Message-ID: <Pine.A41.3.95a.990212095621.87402B-100000@rsplus13.cern.ch>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: platform specs (was: PReP spec)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+Thanks to Ken Robert's reply to my PReP spec query, I found the
+PowerPC FAQ, dated 27 February 1997 at
+    http://www.mot.com/SPS/PowerPC/library/ppc_faq/ppc_faq.html
+and from there, found my way to
+    ftp://ftp.austin.ibm.com/pub/technology/spec
+In this FTP site, the PReP documents are dated Oct 28, 1994, but
+there is a "chrp" directory there with documents dated Nov 20, 1995
+thru Oct 2, 1996.
 
-For a long time now I encountered regularly kernel panics with recent kernels.
-Every thing was incredibly stable with 2.1.24.
+In my sporadic reading, it does indeed appear that CHRP has
+superceded PReP.  However, the above CHRP specs seem either pretty
+old or pretty stable.  Or am I looking in the wrong place?
 
-To make some tests I am trying to compile the kernel 2.2.1 with -O0 option
-instead of -O2. Then I got the message :
+>From the FAQ, I also made the journey to Yellowknife, at
+    http://www.mot.com/SPS/PowerPC/teksupport/refdesigns/yk.html
+The design manual is dated 98 Feb 20, and clearly states that it
+is a PowerPC/CHRP reference design.
 
-make[1]: Leaving directory `/mnt/extra2/scratch/linux-pmac/arch/ppc/lib'
-ld -T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic arch/ppc/kernel/head.o
-init/main.o init/version.o \
-        --start-group \
-        arch/ppc/kernel/kernel.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o
-kernel/kernel.o mm/mm.o fs/fs.o ipc/ipc.o \
-        fs/filesystems.a \
-        net/network.a \
-        drivers/block/block.a drivers/char/char.a drivers/misc/misc.a
-drivers/net/net.a drivers/scsi/scsi.a drivers/cdrom/cdrom.a
-drivers/sound/sound.a drivers/pci/pci.a drivers/macintosh/macintosh.a
-drivers/video/video.a \
-        /tmp/scratch/linux-pmac/lib/lib.a \
-        --end-group \
-        -o vmlinux
-init/main.o: In function `calibrate_delay':
-init/main.o(.text.init+0x608): undefined reference to `__delay'
-init/main.o(.text.init+0x6e4): undefined reference to `__delay'
-make: *** [vmlinux] Error 1
+A list of current CHRP machines would indeed be interesting,
+if for nothing else, to show the breadth and flexibility of the
+architecture.  (Or lack thereof.)
 
-at the end ... I don't get such a message with -O2 or -O1 option.
-
-Do I make a mistake somewhere ??? is it not possible to remove optimisation in
-kernel building ?
-
-Thanks in advance,
-                                 Marc Dejardin
-
-
+--Rick Kwan, Lightsaber Computing
+  rick.kwan@lightsaber.com
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
