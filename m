@@ -1,50 +1,43 @@
-Message-ID: <3BBC34D9.B60D1BC9@esd-electronics.com>
-Date: Thu, 04 Oct 2001 12:07:21 +0200
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Message-ID: <001b01c14cc3$a926a3a0$b480a984@int.serialsystem.com.sg>
+From: "Nguyen Trung Thanh" <jari.nguyen@serialsystem.com.sg>
+To: "Subodh Nijsure" <SNijsure@SkyStream.com>,
+	"'linuxppc-embedded '" <linuxppc-embedded@lists.linuxppc.org>
+References: <B25E2E5A003CD311B61E00902778AF2A02637AD2@SERVER1>
+Subject: Re: Improving ramdisk uncompression time...
+Date: Thu, 4 Oct 2001 18:59:38 +0800
 MIME-Version: 1.0
-To: Pierre AUBERT <p.aubert@staubli.com>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: simple access to mem mapped peripheral
-References: <B25E2E5A003CD311B61E00902778AF2A02637AB3@SERVER1> <3BBC179A.394FFD71@esd-electronics.com> <3BBC1AAC.AAA004C@staubli.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Pierre,
+Hi,
 
-thanks. mmap is working fine for my problem ! I wonder why lseek'ing and
-reading does not work.
+We can make a specific ramdisk by splitting it into
+64KB parts, and let it there...
+Everytime, we need to read some thing from ramdisk,
+we read from the buffer or decompress a part from
+that ramdisk.
+It'll save you much time while booting and more than 2MB RAM, as well.
 
-Matthias
+Is it cool?
+Jari
 
+----- Original Message -----
+From: "Subodh Nijsure" <SNijsure@SkyStream.com>
+>
+> Hello,
+>
+> My setup has rather large ramdisk 5MB as the ramdisk contains
+> firmware for other boards in the system. In total boot time of
+> about 60 seconds, close to 50% is spent in uncompressing the ramdisk.
+>
+> Has anybody tried building ramdisk with bizp2, what other ideas
+> one might consider to "speed up" the boot time particularly uncompressing
+> the ramdisk...
+>
+> /Subodh Nijsure
 
-Pierre AUBERT wrote:
-
-> I think that you can try the mmap function :
->
->     int mmap_fd;
->
->     /* Open the memory device and mmap the chip registers     */
->     if ((mmap_fd = open("/dev/mem", O_RDWR)) < 0 ) {
->         perror("open(/dev/mem)");
->         exit(1);
->     }
->     ptr = (chip_register *)mmap(NULL, CHIP_MEM_SIZE,
->                           (PROT_READ|PROT_WRITE),
->                           MAP_SHARED, mmap_fd, CHIP_PHYSICAL_ADDRESS);
->     if ( ((int)ptr) < 0 ) {
->         perror("mmap()");
->         close(mmap_fd);
->         exit(1);
->     }
->     else {
->
->         /* Read and write your chip registers ... */
->
->         munmap (ptr, CHIP_MEM_SIZE);
->         close(mmap_fd);
->     }
->
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
