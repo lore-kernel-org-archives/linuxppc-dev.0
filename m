@@ -1,25 +1,39 @@
-Date: Wed, 30 Oct 2002 07:10:57 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: K?ri Dav??sson <kd@medcare.is>
-Cc: "Linux Embedded ppc (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: rsync
-Message-ID: <20021030141057.GM688@opus.bloom.county>
-References: <EADB10BAC266A14A85ECBF8686A73E319380F3@kolkrabbi.flaga.is>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <EADB10BAC266A14A85ECBF8686A73E319380F3@kolkrabbi.flaga.is>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Wed, 30 Oct 2002 17:28:51 +0100
+Mime-Version: 1.0 (Apple Message framework v482)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Subject: initrd problems
+From: Anders Blomdell <anders.blomdell@control.lth.se>
+To: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <ACFC1B4A-EC24-11D6-8213-0003931C2BFA@control.lth.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Oct 30, 2002 at 12:39:35PM -0000, K?ri Dav??sson wrote:
+I have created a compressed ramdisk of the root I'm currently using as NFS
+root for my embedded system. When I try to boot it with the following boot
+arguments:
 
-> Has mvista closed down the rsync access to the kernel source trees?
+   Linux/PPC load: console=ttyS0,9600 root=/dev/ram rw
 
-No.  Why do you ask?
+it fails with:
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+   RAMDISK: Compressed image found at block 0
+   Freeing initrd memory: 361k freed
+   Kernel panic: VFS: Unable to mount root fs on 01:00
+
+Anything very obvious that is wrong?
+
+Regards
+
+Anders Blomdell
+
+------------------------------------------------------------------------------
+  Anders Blomdell
+  Department of Automatic Control        Email: anders.blomdell@control.lth.
+se
+  Lund Institute of Technology           Phone: +46 46 222 4625
+  Box 118, S-221 00 Lund, Sweden         Fax:   +46 46 138118
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
