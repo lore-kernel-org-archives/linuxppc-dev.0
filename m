@@ -1,54 +1,32 @@
-From: hagopiar@vuser.vu.union.edu
-Date: Fri, 11 Dec 1998 19:54:55 -0500 (EST)
-To: Giovanni Liotine <s156658@studenti.ing.unipi.it>
-cc: linuxppc-dev@lists.linuxppc.org, hagopiar@vuser.vu.union.edu,
-        Ralf Weidemann <RalfW@Scalar.de>
-Subject: Re: Compiler porblems
-In-Reply-To: <Pine.BSF.3.96.981209132155.3987A-100000@studenti.ing.unipi.it>
-Message-ID: <Pine.LNX.4.05.9812111954150.12492-100000@sequoia.hagopian.net>
+Date: Fri, 11 Dec 1998 19:13:03 -0800
+From: Sean Harding <sharding@gutenberg.uoregon.edu>
+Reply-To: Sean Harding <sharding@oregon.uoregon.edu>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: New XF68_FBDev
+In-Reply-To: <Pine.LNX.4.03.9812102008300.9078-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <Pine.SGI.4.02.9812111909270.10099-100000@gutenberg.uoregon.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Works fine for me with egcs 1.1.1 and glibc-2.1.104 (linuxppc-pre5 or
-such). That is, after I changed that from "main" to "main ()" :-)
-								-Rob H.
+On Thu, 10 Dec 1998, Geert Uytterhoeven wrote:
 
-On Wed, 9 Dec 1998, Giovanni Liotine wrote:
+>     http://www.cs.kuleuven.ac.be/~geert/bin/XF68_FBDev-accel-ppc-19981210.gz
 
-> Date: Wed, 9 Dec 1998 13:36:33 +0100 (CET)
-> From: Giovanni Liotine <s156658@studenti.ing.unipi.it>
-> To: linuxppc-dev@lists.linuxppc.org
-> Cc: hagopiar@vuser.vu.union.edu, Ralf Weidemann <RalfW@Scalar.de>,
-     linuxppc-dev@lists.linuxppc.org
-> Subject: Compiler porblems
-> 
-> Hi all
-> I've some problem compiling c++ apps under linuxppc with egcs.1.0.2
-> prerelease:
-> during compiling this code 
-> "#include <iostream.h>
->  main
->     {
->     } "
-> 
-> gcc output are a long series of warnings: invalid type 'void *' for
-> default argument to 'ostream *'
-> 
-> When compiling some applications (that compile fine with gcc 2.8.1 under
-> Intel/Linux) like MidsEye gcc results in internal compiler error, e.g:
-> 
-> In method 'void MatrixImage <float>::drawLine(int, int, int, int, float)
-> Internal compiler error.
-> 
-> Is it a compiler bug or what?
-> Any suggestion? Note that this code compile under Intel/Linux box.
-> 
-> Thanks
-> Gianni. 
-> 
+So, does this file work for everyone, or should only those with
+accellerated video be using this?
+
+Thanks.
+
+sean
+
+-- 
+Sean Harding sharding@oregon.uoregon.edu|"art may imitate life
+http://gladstone.uoregon.edu/~sharding/ | but life imitates t.v."
+Consulting: http://www.efn.org/~seanh/  | --ani difranco
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
