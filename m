@@ -1,32 +1,66 @@
-To: "Sangmoon Kim" <dogoil@etinsys.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+Date: Wed, 29 May 2002 15:47:37 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: map iomem in linux_2_4_dev
-References: <022501c20633$cbeb4f10$1a11efcb@industrialDiv.hanasys.co.kr>
-	<20020528062351.A2267@home.com>
-	<002b01c206cd$59f7a760$1a11efcb@industrialDiv.hanasys.co.kr>
-From: Roland Dreier <roland@topspin.com>
-Date: 28 May 2002 22:47:21 -0700
-In-Reply-To: <002b01c206cd$59f7a760$1a11efcb@industrialDiv.hanasys.co.kr>
-Message-ID: <52k7pntsie.fsf@topspin.com>
-MIME-Version: 1.0
+Message-ID: <20020529054737.GE16537@zax>
+References: <022501c20633$cbeb4f10$1a11efcb@industrialDiv.hanasys.co.kr> <20020528062351.A2267@home.com> <002b01c206cd$59f7a760$1a11efcb@industrialDiv.hanasys.co.kr>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <002b01c206cd$59f7a760$1a11efcb@industrialDiv.hanasys.co.kr>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->>>>> "Sangmoon" == Sangmoon Kim <dogoil@etinsys.com> writes:
+On Wed, May 29, 2002 at 01:57:34PM +0900, Sangmoon Kim wrote:
+>
+> Hi,
+> >
+> > You don't need io_block_mapping.  Follow one of the many examples to
+> > use early_serial_init with an ioremap call for your UART.
+> >
+> > The only reason your method works is that the io_block_mapping is
+> > actually using a BAT on our classic PPC platform.  ioremap will
+> > look for an existent BAT mapping and just return the translated
+> > virtual address in this case.  Relying on this is bad practice
+> > since it will not work on other PPC systems.
+> >
+> Right, I exactly wanted to do that.
+> I called io_block_mapping() on initialization code.
+> More precisly on <board name>_map_io(),
+> which is in arch/ppc/platforms/<board_name>_setup().
+> It has nothing to do with competibility.
+> And... Is there any ppc without BAT?
+> I didn't know that.
 
-    Sangmoon> Actually, I'm a hardware guy.  In most cases, mapping
-    Sangmoon> UART is not needed, but on the hardware I designed, it
-    Sangmoon> is needed.  Because its physical addres is 0x78000000.
+Yes there are PPCs without BATs.  e.g. 4xx.
 
-You do not need to remap the UART.  It doesn't matter that 0x78000000
-is its address.  Linux will not get confused between physical address
-of the UART and any virtual address space it may be using.  Just call
-ioremap() and give it the address 0x78000000.  It will give you a
-virtual address you can use to access the UART.
+> > As David correctly pointed out, only use io_block_mapping when
+> > you absolutely must control the placement of the virtual address.
+> Than, if the system initialization code is changed,
+> the driver code should be changed too.
 
-Best,
-Roland
+That's exactly why ioremap() is preferred - then the initialization
+code doesn't need to touch it at all.
+
+> > There are cases when this is necessary since the hardware engineers
+> > always send us garbage to support.  Mapping a UART at init time is
+> > not one of these.
+> >
+> Actually, I'm a hardware guy.
+> In most cases, mapping UART is not needed,
+> but on the hardware I designed, it is needed.
+> Because its physical addres is 0x78000000.
+> Don't blame us too much.
+> It takes much money to change hardware.
+
+Rubbish.  Having a *physical* address of 0x78000000 is no problem at
+all, ioremap() will map that (like any other physical address) into a
+sensible virtual address.
+
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
