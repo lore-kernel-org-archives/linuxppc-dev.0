@@ -1,85 +1,74 @@
-Message-ID: <20045.138.89.83.168.1069820508.squirrel@www.opqua.com>
-In-Reply-To: <F9102D41F595D311ACA7009027DE2C8408EBBA92@c3po.heurikon.com>
-References: <F9102D41F595D311ACA7009027DE2C8408EBBA92@c3po.heurikon.com>
-Date: Tue, 25 Nov 2003 23:21:48 -0500 (EST)
-Subject: RE: routing performance w/embedded linux on ppc?
-From: "linuxppc user" <linuxppc@opqua.com>
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <003f01c3b3de$da6b69d0$c314a8c0@cm>
+From: "Sampath Kumar" <sampath@spartanlabs.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: unable to restore keyboard mode
+Date: Wed, 26 Nov 2003 11:03:41 +0530
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Stephen,
+Hello All,
+I am trying to get the key press & release event from the keyboard. That is
+I need unique value for every key press & release events. For that I changed
+the keyboard driver mode to MEDIUM_RAW, Before I exit from my program, I am
+restoring it back to normal mode. When I came out of the program , my system
+becomes unusable. That is, the keyboard driver is in some different mode,
+thereby making me to do a hard-reset. (Ctl-Alt_Del wont works..some junk
+char will be printed on the screen).I am using Linux 2.4.18. Does anyone
+have idea about what is going wrong in my side. FYI: I am running this
+program from a console.(No Xserver)  Below is the code.
+Is there any other way to restore the system without doing hard-reset when
+this sort of problem comes?
 
-Thanks for the follow-up.  Do you have any numbers for "lesser"
-processors than the 750, e.g. the 8245/8240 or the 405GP?
+If this query is irrelevant to this list, I am sorry for posting it here.
 
-Thanks again and regards.
+With Regards
+sampath
 
+int main()
+{
+ unsigned char ch;
+ int count = 0;
+ int lastmode = 0;
+ int STDIN = 0;
 
+ if (ioctl(STDIN, KDGKBMODE, &lastmode) < 0)
+ {
+      perror(NULL);
+     exit(1);
+ }
+ switch(lastmode)
+ {
+  case K_RAW:
+   printf("raw \n");
+   break;
+  case K_MEDIUMRAW:
+   printf("medium raw \n");
+   break;
+  case K_XLATE:
+   printf("xlate \n");
+   break;
+  case K_UNICODE:
+   printf("unicode \n");
+   break;
+  default:
+   printf("unknown \n");
+   break;
+ }
+ ioctl(STDIN, KDSKBMODE, K_MEDIUMRAW);
 
-> We sustain ~71MB/s routing packets in the following manner.
->
->
-> =====[GbE]=====>[BCM5691]==[GbE]==>[MV64360/PPC750FX] {routing here}
->                                    ||
->                                    || [GbE]
->                 [BCM5691]<==========
->                     ||
->                     || [GbE]
->                     ||
->                      ===========>[MV64360/PPC750FX] {destination}
->
-> If you want to see a P4@2GHz+ brought to it's knees, perform a benchmark
-> such as nbench and throw 80B packets at it at ~100,000 packets/s or so.
->
-> An 800MHz PPC750FX/MV64360 combo barely even showed a performance hit
-> whether the packets were incoming or not.
->
->
-> Stephen B. Johnson
-> Sr. Applications Engineer, Global Accounts
-> Artesyn Communication Products
-> 8310 Excelsior Drive
-> Madison, Wisconsin 53717
->
-> phone  800-356-9602
->
-> NASDAQ:  ATSN
->
->
-> -----Original Message-----
->
-> Folks,
->
-> There seems to be a plethora of data regarding linux IP routing
-> performance (e.g., forwarding rate in packets per sec) on x86
-> platforms.  This is likely because x86 boxen are all that typical
-> university students have in front of them.  :*)
->
-> I'm looking for some papers, pointers, or whatever regarding linux
-> routing performance on midrange embedded ppc hardware, for example
-> the moto8245 and ibm405GP (as used inside the Xilinx Virtex II Pro).
->
-> Basically our application boils down to a 4 port router, and we'd
-> like to get a handle on what kind of aggregate throughput and pps
-> we would be able to handle using these types of ppc processors at
-> ~266/300 MHz.  Yes, the 8260, and 7xx, et al, are faster, but our
-> equipment cost profile is very restrictive.
->
-> example config:
->
->   i82559 | <- PCI -> [mpc8245 @ 300MHz]
->   i82559 |
->   i82559 |
->   i82559 |
->
-> There is other stuff hanging off of PortX and so forth, but that's
-> what the datapath looks like.
->
-> Thanks for any leads/hints/ideas/etc.  I'll summarize back.
+ read (STDIN, &ch, 1);  // PROBLEM COMES FROM THIS READ
+ printf("%d\n", ch);
+
+ ioctl(STDIN, I_FLUSH, FLUSHR);           // EVEN I TRIED TO FLUSH
+ fflush(stdin);                                               // EVEN I
+TRIED TO FLUSH; HOPING THIS WOULD DO SOMETHING
+
+ ioctl(STDIN, KDSKBMODE, lastmode);
+}
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
