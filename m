@@ -1,51 +1,244 @@
-Date: Thu, 28 Sep 2000 13:08:46 +0200 (CEST)
+Date: Thu, 28 Sep 2000 13:18:19 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Takashi Oe <toe@unlserve.unl.edu>
-cc: Benjamin Herrenschmidt <bh40@calva.net>,
-        Jon Erick Ween <jween@som.llu.edu>, linuxppc-dev@lists.linuxppc.org,
-        linux-fbdev@vuser.vu.union.edu
-Subject: Re: Xfree86-4.0.1, Lombard, Mach64 driver, X-server Crash
-In-Reply-To: <Pine.LNX.3.96LJ1.1b7.1000927214454.666I-100000@ofey.earthlink.net>
-Message-ID: <Pine.LNX.4.10.10009281307020.3468-100000@cassiopeia.home>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+cc: R Shapiro <rshapiro@bbn.com>,
+        Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        daenzerm@student.ethz.ch, linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 + ati driver with rage II/rage pro
+In-Reply-To: <Pine.LNX.4.10.10009272022070.27656-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.10.10009281310500.3468-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 27 Sep 2000, Takashi Oe wrote:
-> On Wed, 27 Sep 2000, Benjamin Herrenschmidt wrote:
-> > >Here's a copy of my XF86Config file.
-> > >Two other minor nuisances:
-> > >
-> > >Since using yaboot, my console cursor has disappeared. Is this an OF or a
-> > >yaboot problem? It's very hard to navigate in vi to edit anything (.config
-> > >files for one thing) without a cursor!
-> >
-> > Completely ? Or does it appear with different colors depending on the VC
-> > you are on ? I've seen such bug appear here or there but never took the
-> > time to track it down...
-> >
-> > I suspect an atyfb problem ;)
+On Wed, 27 Sep 2000, Michael Schmitz wrote:
+> So here we have three fb devices in the kernel (you could check with
+> fbset that each is in fact accessible via /dev/fb[0-2]), and XFree unable
+> to cope. You specify the PCI bus ID but not the corresponding framebuffer
+> device node - I heard someone mention this was possible when I was
+> fighting the Lombard crashes, could anyone point out the syntax to use
+> there?
 >
-> I think this is more of a generic fb device layer problem or a combination
-> of driver bug and upper layer bug.  Or I totally don't understand how
-> fbcon works.
->
-> My understanding is this:
-> Video console uses 16 colors, and it only initializes the cmap
-> corresponding to those 16 colors.  The other entries in cmap are up to
-> each individual fb driver or undefined as far as console is concerned.
-> For software cursor, driver specific (struct display_switch *)ops->revc()
-> is used to make the cursor blink.  For the generic fbcon_cfb{16,32}_revc,
-> it xors each pixel with masks 0xffff (depth 16) or 0xffffffff (depth 32).
-> For controlfb which I am very familiar with, the "correct" masks are
-> 0x3def for 555 and 0x0f0f0f0f for 8888.  That is, only 4 LSBs or low 16
-> for each red, green, and blue are xor'ed since cmap entries corresponding
-> to higher bits are undefined as far as fbcon support is concerned.
+> If we can't specify the fb node XFree will have to probe for it (Geert
+> mentioned an easy way to do that: open the device and compare
+> pScrn->memPhysBase or fPtr->fix.smem_start to the PCI base address).
 
-In 2.5.x, we'll have a user-defined xor mask for the cursor as the 17th entry
-in the dispsw_data array.
+Besides, the current fbdev_open_pci() can't cope with multiple cards of the
+same type, and doesn't recognize ATI Mach64.
+
+> BTW Geert: why is fPtr->fboff calculated from fix.smem_len not
+> fix.smem_start while pScrn->fbOffset is calculated from fix.smem_start?
+
+That's indeed incorrect. But it's not the only bug in that part of the code
+:-)
+
+Hmmm... I just noticed I kept that bug in my version...
+
+For reference, these are my (untested) patches...
+Michel, I'll send you a diff relative to my previous version.
+
+diff -urN michel/fbdevhw.c geert-3/fbdevhw.c
+--- michel/fbdevhw.c	Mon Aug 28 16:36:59 2000
++++ geert-3/fbdevhw.c	Thu Sep 28 13:15:54 2000
+@@ -86,8 +86,10 @@
+ 	char*				device;
+ 	int				fd;
+ 	void*				fbmem;
+-	int				fboff;
++	unsigned int			fbmem_len;
++	unsigned int			fboff;
+ 	void*				mmio;
++	unsigned int			mmio_len;
+
+ 	/* current hardware state */
+ 	struct fb_fix_screeninfo	fix;
+@@ -95,6 +97,8 @@
+
+ 	/* saved video mode */
+ 	struct fb_var_screeninfo	saved_var;
++
++	/* FIXME: unused??? [geert] */
+ 	struct fb_cmap			saved_cmap;
+ 	unsigned short			*saved_red;
+ 	unsigned short			*saved_green;
+@@ -194,7 +198,7 @@
+ 		var->sync |= FB_SYNC_VERT_HIGH_ACT;
+ 	if (mode->Flags & V_PCSYNC)
+ 		var->sync |= FB_SYNC_COMP_HIGH_ACT;
+-#if 0
++#if 1 /* Badly needed for PAL/NTSC on Amiga (amifb)!! [geert] */
+ 	if (mode->Flags & V_BCAST)
+ 		var->sync |= FB_SYNC_BROADCAST;
+ #endif
+@@ -222,7 +226,7 @@
+ 	mode->Flags |= var->sync & FB_SYNC_HOR_HIGH_ACT ? V_PHSYNC : V_NHSYNC;
+ 	mode->Flags |= var->sync & FB_SYNC_VERT_HIGH_ACT ? V_PVSYNC : V_NVSYNC;
+ 	mode->Flags |= var->sync & FB_SYNC_COMP_HIGH_ACT ? V_PCSYNC : V_NCSYNC;
+-#if 0
++#if 1 /* Badly needed for PAL/NTSC on Amiga (amifb)!! [geert] */
+ 	if (var->sync & FB_SYNC_BROADCAST)
+ 		mode->Flags |= V_BCAST;
+ #endif
+@@ -247,28 +251,6 @@
+ /* -------------------------------------------------------------------- */
+ /* open correct framebuffer device                                      */
+
+-static struct fb2pci_entry {
+-	CARD32 id;
+-	CARD32 vendor;
+-	CARD32 chip;
+-} fb2pci_map[] = {
+-	{ FB_ACCEL_MATROX_MGA2064W,     PCI_VENDOR_MATROX, PCI_CHIP_MGA2064      },
+-	{ FB_ACCEL_MATROX_MGA1064SG,    PCI_VENDOR_MATROX, PCI_CHIP_MGA1064      },
+-	{ FB_ACCEL_MATROX_MGA2164W,     PCI_VENDOR_MATROX, PCI_CHIP_MGA2164      },
+-	{ FB_ACCEL_MATROX_MGA2164W_AGP, PCI_VENDOR_MATROX, PCI_CHIP_MGA2164_AGP  },
+-	{ FB_ACCEL_MATROX_MGAG100,      PCI_VENDOR_MATROX, PCI_CHIP_MGAG100      },
+-	{ FB_ACCEL_MATROX_MGAG200,      PCI_VENDOR_MATROX, PCI_CHIP_MGAG200      },
+-	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128RE    },
+-	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128RF    },
+-	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128RK    },
+-	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128RL    },
+-	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128PF    },
+-	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128LE    },
+-	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128LF    },
+-	{ FB_ACCEL_3DFX_BANSHEE,        PCI_VENDOR_3DFX,   PCI_CHIP_VOODOO3      },
+-};
+-#define FB2PCICOUNT (sizeof(fb2pci_map)/sizeof(struct fb2pci_entry))
+-
+ /* try to find the framebuffer device for a given PCI device */
+ static int
+ fbdev_open_pci(pciVideoPtr pPci, char **namep)
+@@ -276,8 +258,9 @@
+ 	struct	fb_fix_screeninfo fix;
+ 	char	filename[16];
+ 	int	fd,i,j;
++	memType res_start, res_end;
+
+-	for (i = 0; i < 4; i++) {
++	for (i = 0; i < 8; i++) {
+ 		sprintf(filename,"/dev/fb%d",i);
+ 		if (-1 == (fd = open(filename,O_RDWR,0))) {
+ 			continue;
+@@ -286,15 +269,20 @@
+ 			close(fd);
+ 			continue;
+ 		}
+-		/* FIXME: better ask the fbdev driver for bus/device/func,
+-                          but there is no way to to this yet. */
+-		for (j = 0; j < FB2PCICOUNT; j++) {
+-			if (pPci->vendor   == fb2pci_map[j].vendor &&
+-			    pPci->chipType == fb2pci_map[j].chip   &&
+-			    fix.accel      == fb2pci_map[j].id)
++		for (j = 0; j < 6; j++) {
++			if ((pPci->type[i] & ResPhysMask) != ResMem)
++				continue;
++			res_start = pPci->memBase[j];
++			res_end = res_start+pPci->size[j];
++			if ((0 != fix.smem_len &&
++			     fix.smem_start >= res_start &&
++			     fix.smem_start < res_end) ||
++			    (0 != fix.mmio_len &&
++			     fix.mmio_start >= res_start &&
++			     fix.mmio_start < res_end))
+ 				break;
+ 		}
+-		if (j == FB2PCICOUNT) {
++		if (j == 6) {
+ 			close(fd);
+ 			continue;
+ 		}
+@@ -541,12 +529,19 @@
+
+ 	TRACE_ENTER("MapVidmem");
+ 	if (NULL == fPtr->fbmem) {
+-		fPtr->fboff = fPtr->fix.smem_len & (PAGE_SIZE-1);
+-		fPtr->fbmem = mmap(NULL, fPtr->fix.smem_len, PROT_READ | PROT_WRITE,
++		fPtr->fboff = fPtr->fix.smem_start & ~PAGE_MASK;
++		fPtr->fbmem_len = (fPtr->fboff+fPtr->fix.smem_len+~PAGE_MASK) &
++				  PAGE_MASK;
++		fPtr->fbmem = mmap(NULL, fPtr->fbmem_len, PROT_READ | PROT_WRITE,
+ 				   MAP_SHARED, fPtr->fd, 0);
+ 		if (-1 == (int)fPtr->fbmem) {
+ 			perror("mmap fbmem");
+ 			fPtr->fbmem = NULL;
++		} else {
++		    /* Perhaps we'd better add fboff to fbmem and return 0 in
++		       fbdevHWLinearOffset()? Of course we then need to mask
++		       fPtr->fbmem with PAGE_MASK in fbdevHWUnmapVidmem() as
++		       well. [geert] */
+ 		}
+ 	}
+ 	pScrn->memPhysBase = (unsigned long)fPtr->fix.smem_start & (unsigned long)(PAGE_MASK);
+@@ -570,7 +565,7 @@
+
+ 	TRACE_ENTER("UnmapVidmem");
+ 	if (NULL != fPtr->fbmem) {
+-		if (-1 == munmap(fPtr->fbmem, fPtr->fix.smem_len))
++		if (-1 == munmap(fPtr->fbmem, fPtr->fbmem_len))
+ 			perror("munmap fbmem");
+ 		fPtr->fbmem = NULL;
+ 	}
+@@ -580,6 +575,8 @@
+ void*
+ fbdevHWMapMMIO(ScrnInfoPtr pScrn)
+ {
++	unsigned int mmio_off;
++
+ 	fbdevHWPtr fPtr = FBDEVHWPTR(pScrn);
+
+ 	TRACE_ENTER("MapMMIO");
+@@ -590,12 +587,17 @@
+ 			perror("FBIOPUT_VSCREENINFO");
+ 			return FALSE;
+ 		}
+-		fPtr->mmio = mmap(NULL, fPtr->fix.mmio_len, PROT_READ | PROT_WRITE,
+-				  MAP_SHARED, fPtr->fd, fPtr->fix.smem_len);
++		mmio_off = fPtr->fix.mmio_start & ~PAGE_MASK;
++		fPtr->mmio_len = (mmio_off+fPtr->fix.mmio_len+~PAGE_MASK) &
++				  PAGE_MASK;
++		fPtr->mmio = mmap(NULL, fPtr->mmio_len, PROT_READ | PROT_WRITE,
++				  MAP_SHARED, fPtr->fd, fPtr->fbmem_len);
+ 		if (-1 == (int)fPtr->mmio) {
+ 			perror("mmap mmio");
+ 			fPtr->mmio = NULL;
+-		}
++		} else
++			fPtr->mmio = (void *)((unsigned long)fPtr->mmio+
++							     mmio_off);
+ 	}
+ 	return fPtr->mmio;
+ }
+@@ -607,9 +609,11 @@
+
+ 	TRACE_ENTER("UnmapMMIO");
+ 	if (NULL != fPtr->mmio) {
+-		if (-1 == munmap(fPtr->mmio, fPtr->fix.mmio_len))
++		if (-1 == munmap((void *)((unsigned long)fPtr->mmio & PAGE_MASK),
++				 fPtr->mmio_len))
+ 			perror("munmap mmio");
+ 		fPtr->mmio = NULL;
++		/* FIXME: restore var.accel_flags [geert] */
+ 	}
+ 	return TRUE;
+ }
+@@ -691,9 +695,12 @@
+ 	cmap.transp = NULL;
+ 	for (i = 0; i < numColors; i++) {
+ 		cmap.start = indices[i];
+-		red   = colors[indices[i]].red   << 8;
+-		green = colors[indices[i]].green << 8;
+-		blue  = colors[indices[i]].blue  << 8;
++		red   = (colors[indices[i]].red   << 8) |
++			colors[indices[i]].red;
++		green = (colors[indices[i]].green << 8) |
++			colors[indices[i]].green;
++		blue  = (colors[indices[i]].blue  << 8) |
++			colors[indices[i]].blue;
+ 		if (-1 == ioctl(fPtr->fd,FBIOPUTCMAP,(void*)&cmap))
+ 			perror("ioctl FBIOPUTCMAP");
+ 	}
 
 Gr{oetje,eeting}s,
 
