@@ -1,67 +1,144 @@
-Date: Fri, 25 Jun 1999 10:01:00 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: "Kevin B. Hendricks" <kbhend@business.wm.edu>
-cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-users@lists.linuxppc.org,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Machine Check in Kernel Mode with Paul's 2.2.10 on B+W G3
-In-Reply-To: <v03110700b398a5992950@[209.96.179.153]>
-Message-ID: <Pine.LNX.4.10.9906250959240.11425-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 25 Jun 1999 11:30:53 +0100
+From: Andrew Chadwick <andyc@durge.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Possible ne2k-pci bug on ppc
+Message-ID: <19990625113053.A5487@fof2.durge.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 24 Jun 1999, Kevin B. Hendricks wrote:
-> Well I just received my B+W G3 yesterday and Paul's 2.2.10 kernel
-> annoucement seemed like fate so I tried to boot with it to no avail:
-> 
-> Here are some of the interesting things the error report had to say:
-> 
-> System: Brand new B+W G3 with 12 gig ATI drive and Adatec AIC-7850 scsi
-> host adapter found at PCI 2/0 with a 3 gig scsi Quantum drive with R5/YDL
-> on it (which will boot fine on my PowerTower 180e).
-> 
-> Partion check:
->   sda: sda1 sda2 sda3 sda4 sda5 sda6 sda7 sda8   (sda5 is the root partition)
->   sdb: scsidisk I/O error: dev 08:10 sector 0
->   unable to read partition table  (this is my zip drive without a disk in it)
->   hda: hda timeout waiting for DMA
-> 
-> Machine check in kernel mode
-> Caused by (from msr): regs c01a4c18 Unknown values in msr
-> 
-> Here are some register values:
->    NIP: C00BDE58  LR: C00BDE14  MSR: 00009030  Trap: 0200
-> Task= c01a2f58[0] 'swapper' mm->pgd
-> Last syscall: 112
-> 
-> Backtrace: C00BDE14 COO13C04 C001C850 C0003B68 C001F460 C00069F4 ...
-> 
-> 
-> >From looking at the booting log messages, everything seems fine up to the
-> very end (it finds the scsi drive, finds the partitions, finds the USB hub,
-> USB mouse, etc).  There does not seem to be anything unusual until the DMA
-> timeout message waiting for hda.
-> 
-> Any ideas here?  I used Paul's System.map to try and track down the
-> offending routines but none of the backtrace addresses line up exactly with
-> any of the map entry points (am I missing an offset here?)
+First up, apologies for posting to linuxppc-dev. I'm by no means a kernel
+hacker, but this is developer-level stuff. If any ethernet gurus could
+help me I'd be eternally grateful *g*.
 
-It's normal that the addresses don't line up exactly: the addresses in
-System.map are the labels associated to routines, while chances are high your
-kernel crashes inside a routine. So you have to use the closest address
-that's smaller or equal than the addresses indicated by NIP and the backtrace.
+Does anyone know the status of the ne2k-pci drivers on linux/ppc? I ask
+because my ne2000 card seems to be sending very oddly-shaped etherpackets
+over the network.
 
-Greetings,
+	Thanks in advance,
+	Andrew.
 
-						Geert
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+*The actors:
 
+duodecimo: a Fujitsu 110 Lifebook, Processor: Pentium II @233MHz,
+ethercard is a PCMCIA Xircom CreditCard IIps (known working and
+configured OK via pcmcia-cs). Linux kernel 2.2.7 (unpatched).
+
+piffle: an Apple PowerMac 4400/160, Processor: PowerPC 603e @160MHz,
+ethercard is a cheapo 'software-configurable' 8390-based PCI NE2000 clone
+made by Genius (drivers are right, card config is OK, but it just doesn't
+seem to work). Kernel 2.2.7 (unpatched).
+
+the string: properly teed and terminated 10base2.
+
+
+*Symptoms
+
+piffle does not send any TCP packets that are even recognised by the other
+machine, although they're seen at ethernet level by the ethercard and the
+kernel at the other end. Packets sent by duodecimo are at least seen at
+the TCP level by piffle, but they're all errors.
+
+These ifconfigs are after a few "ping -v"s either way, and are by no
+means synchronized:
+
+
+**duodecimo ifconfig:
+
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:3924  Metric:1
+          RX packets:14447 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:14447 errors:0 dropped:0 overruns:0 carrier:0
+          Collisions:0 
+
+eth0      Link encap:Ethernet  HWaddr 00:80:C7:26:FD:91  
+          inet addr:192.168.101.2  Bcast:192.168.101.255
+Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:343 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          Collisions:0 
+          Interrupt:3 Base address:0x300 
+
+
+**piffle ifconfig:
+
+eth0      Link encap:Ethernet  HWaddr 00:C0:DF:EE:15:4F  
+          inet addr:192.168.101.1  Bcast:192.168.101.255
+Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:395 dropped:0 overruns:0 frame:0
+          TX packets:2979 errors:8 dropped:0 overruns:0 carrier:8
+          collisions:136 txqueuelen:100 
+          Interrupt:25 Base address:0x400 
+                                    ^^^^^
+*** Possible problem #1: this clashes on the PCI bus with the on-board ATI
+*** mach64 graphics chips. But the gfx chips' IO ports are disabled.
+
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:3924  Metric:1
+          RX packets:3019 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:3019 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0 
+
+
+Just to see what was happening and why the lifebook wasn't recognising
+the powerpc's ethernet packets, I did a couple of TCPdumps:
+
+
+**duodecimo tcpdump (piffle pinging duodecimo):
+
+22:15:52.131492 ff:ff:4f:15:ee:df sap 08 > ff:ff:ff:ff:c0:0 ip-sap I
+(s=2,r=3,C) len=46
+			 0008 c000 0100 4f15 eedf 0165 a8c0 0000
+			 0000 a8c0 0000 0265 6d6b 3fe7 ebee ef3e
+			 6ffd a9fe 7fef dfd6 f9be ca71 2ab0
+22:15:53.131437 ff:ff:4f:15:ee:df sap 08 > ff:ff:ff:ff:c0:0 ip-sap I
+(s=2,r=3,C) len=46
+			 0008 c000 0100 4f15 eedf 0165 a8c0 0000
+			 0000 a8c0 0000 0265 6d6b 3fe7 ebee ef3e
+			 6ffd a9fe 7fef dfd6 f9be ca71 2ab0
+22:15:54.131883 ff:ff:4f:15:ee:df sap 08 > ff:ff:ff:ff:c0:0 ip-sap I
+(s=2,r=3,C) len=46    ^^^^^^^^^^^                      ^^^^
+                      ^^^^^^^^^^^                      ^^^^
+*** Almost certainly the real problem: an endianness probblem here?
+*** Besides, that should be "card-addr > ff:ff:ff:ff:ff", no?
+
+			 0008 c000 0100 4f15 eedf 0165 a8c0 0000
+			 0000 a8c0 0000 0265 6d6b 3fe7 ebee ef3e
+			 6ffd a9fe 7fef dfd6 f9be ca71 2ab0
+22:15:55.131364 ff:ff:4f:15:ee:df sap 08 > ff:ff:ff:ff:c0:0 ip-sap I
+(s=2,r=3,C) len=46
+			 0008 c000 0100 4f15 eedf 0165 a8c0 0000
+			 0000 a8c0 0000 0265 6d6b 3fe7 ebee ef3e
+			 6ffd a9fe 7fef dfd6 f9be ca71 2ab0
+
+
+**piffle tcpdump -x (piffle pinging duodecimo):
+
+21:26:39.170000 arp who-has duodecimo tell piffle
+			 0001 0800 0604 0001 00c0 dfee 154f c0a8
+			 6501 0000 0000 0000 c0a8 6502
+21:26:40.170000 arp who-has duodecimo tell piffle
+			 0001 0800 0604 0001 00c0 dfee 154f c0a8
+			 6501 0000 0000 0000 c0a8 6502
+21:26:41.170000 arp who-has duodecimo tell piffle
+			 0001 0800 0604 0001 00c0 dfee 154f c0a8
+			 6501 0000 0000 0000 c0a8 6502
+21:26:42.170000 arp who-has duodecimo tell piffle
+			 0001 0800 0604 0001 00c0 dfee 154f c0a8
+			 6501 0000 0000 0000 c0a8 6502
+
+-- 
+sub p{s/^\s*((\"(\\.|.)*?\")|\w+)//&&return$1;s/^\s*\(//||die$_;my @r;until
+(s/^\s*\)//){push(@r,&p)}\@r}sub r{ref($c=$_[0])?shift(@{$c}).'('.join(',',
+map{r($_)}@{$c}).')':$c}$_= #Andrew Chadwick <http://www.durge.org/~andyc/>
+'(print (join " " (reverse "hacker.\n""Perl""another""Just")))';eval &r(&p)
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
