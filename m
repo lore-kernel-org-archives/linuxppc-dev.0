@@ -1,38 +1,104 @@
-Date: Tue, 9 Oct 2001 10:49:12 +0200 (MEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michel Lanners <mlan@cpu.lu>
-Cc: benh@kernel.crashing.org,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Crash with BenH's 2.4.10/2.4.11-pre on 7600
-In-Reply-To: <200110081944.VAA00811@piglet.grunz.lu>
-Message-ID: <Pine.GSO.4.21.0110091048150.13627-100000@mullein.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 9 Oct 2001 04:46:32 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: Debian PowerPC <debian-powerpc@lists.debian.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: [ANN] yaboot-1.3.4pre1 Please test
+Message-ID: <20011009044631.B30229@plato.local.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 8 Oct 2001, Michel Lanners wrote:
-> The problem is that request_OF_resource (which calls kmalloc() ) is
-> called from probe_sccs, which in turn is called for the serial console,
-> i.e _very_ early in the boot process. At that time, the kmem system is
-> not yet initialized.
+I have uploaded yaboot 1.3.4pre1 for testing.
+http://master.penguinppc.org/projects/yaboot/1.3.4pre/
 
-We had a similar problem on Amiga with the Chip RAM allocator, which uses the
-generic resoruce system now.
+This version fixes many bugs and adds a couple new features, the most
+interesting of which is SGI XFS filesystem support.
 
-Look at amiga_chip_alloc{,_res}() in arch/m68k/amiga/chipram.c for a solution.
+Please test this as much as possible, including all filesystems (ext2,
+reiserfs, xfs, network, etc) there has been changes made to them all.
 
-Gr{oetje,eeting}s,
+Here is the current changelog:
 
-						Geert
+        * yaboot:
+          - Add SGI XFS filesystem support.
+          - Rewrite OpenFirmware device path parsing code.  This fixes
+            many bugs and inconsistencies in yaboot's file loading.
+          - Fix OpenFirmware filesystem support to automatically convert
+            path separator from / to \.  CDROM authors no longer need to use
+            hacks like image=\\install\\powermac\\vmlinux.
+          - Fix kernel loading on some systems.
+          - Allow for getting files from tftp server that does not run a
+            bootpd/dhcpd.
+          - Fix a great deal of incorrect format strings which could cause
+            yaboot crashes.
+          - Fix all filesystems to properly return error conditions, and
+            report those error conditions (instead of just saying `image not
+            found').
+          - Add `help' command to yaboot which prints out basic usage information.
+          - General cruft removal and code cleanup.
+
+        * Makefile cleanup, make filesystems configurable.
+
+When testing its recommended that you have an alternate means of
+booting your system in case something is wrong in this test version,
+to do this do the following:
+
+hmount /dev/<bootstrap_partition>
+hcopy -r /usr/lib/yaboot/yaboot :yaboot.safe
+humount
+
+cd yaboot-1.3.4pre1
+make
+ybin -i second/yaboot  # NOT mkofboot, it will erase the backup yaboot.
+
+Do not run make install since that will overwrite your currently
+installed stable release of yaboot, you need to keep that around in
+case of problems.
+
+This will make the test version boot by default, if it fails you can
+boot the backup version like this:
+
+Boot into OpenFirmware by holding down "command option o f"
+enter the following command:
+boot hd:X,yaboot.safe
+
+Where X is the partition number of your bootstrap partition, to find
+this out enter the following:
+
+printenv boot-device
+
+If you allow ybin to update the nvram this will have the right
+device path (just replace the \\:tbxi with yaboot.safe).
+
+When reporting bugs you must send me the following:
+
+/etc/yaboot.conf
+
+Every error or message yaboot printed verbatim. (write it down, don't
+give me vague paraphrased guesses from memory)
+
+The value of OpenFirmware's boot-device variable, you can get this by running:
+cat /proc/device-tree/options/boot-device
+
+What kind of machine you have:
+cat /proc/device-tree/model
+cat /proc/device-tree/openprom/model
+
+Your partition table:
+mac-fdisk -l /dev/hda (or whatever is appropriate on your system)
+(pdisk -l on some systems)
+
+Do not send me useless reports like: `It doesn't werk'
+
+Test it, try and break it, I want to know about bugs now, not three
+days after I release 1.3.4 final ;-)
+
+Thanks.
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
