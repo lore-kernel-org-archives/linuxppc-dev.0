@@ -1,43 +1,38 @@
-To: deepesh@india.tejasnetworks.com
-Cc: Ethan Benson <erbenson@alaska.net>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Question regarding UBOOT. 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 19 Jul 2003 19:28:08 +0530."
-             <Pine.LNX.4.21.0307191918350.12735-100000@deepesh.india.tejasnetworks.com>
-Date: Sat, 19 Jul 2003 18:29:25 +0200
-Message-Id: <20030719162930.E88E4C6D82@atlas.denx.de>
+Message-ID: <3F19C4B2.4030803@stinkfoot.org>
+Date: Sat, 19 Jul 2003 18:22:42 -0400
+From: Ethan Weinstein <e-d0uble@stinkfoot.org>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: aic7xxx panics (long)
+References: <3EFFD86B.7060007@stinkfoot.org>	 <1056957083.32576.112.camel@gaston>  <3F00E86B.1000309@stinkfoot.org>	 <1057053589.32576.310.camel@gaston>  <3F02537C.1090801@stinkfoot.org>	 <1057148769.32104.422.camel@gaston>  <3F04D1EA.6060906@stinkfoot.org>	 <1057590248.11707.62.camel@gaston>  <3F140C6E.2080609@stinkfoot.org>	 <1058278673.515.2.camel@gaston>  <3F140F1E.1050303@stinkfoot.org> <1058279423.502.7.camel@gaston>
+In-Reply-To: <1058279423.502.7.camel@gaston>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <Pine.LNX.4.21.0307191918350.12735-100000@deepesh.india.tejasnetworks.com> you wrote:
+Benjamin Herrenschmidt wrote:
+>> Would you like to see anything besides `lspci -vvv` for both kernels?
 >
 >
->  I have an EP8260 board. I have the u-boot binary. The board comes with a
-> boot loader(PlanetCore). I want to load u-boot into RAM and then start
-> executing from there. Is this possible? I tried doing this, but the board
-> goes for a reset.
+> Full dmesg output and tarball of /proc/device-tree please
+>
+> Ben.
+>
 
-If the bianry is all you have then the answer is no, it cannot be done.
+Ben-
 
-If you knoiw exactly what you're doing  you  can  modify  the  U-Boot
-source  code  to  behave  like  you  want  - but then you have to ask
-yourself _why_ you would want to do that.
+I was able to get my hands on an IDE drive to boot from.
+The lspci -vvv + dmesg's + /proc/device-tree's fom each kernel,
+(2.4.20-ben10 vs. 2.4.21-ben2) is located here:
 
-My $ 0.02: Install U-Boot. Forget the other bootloader.
+ftp://stinkfoot.org/for.benh_stinkfoot.org.tar.bz2
+
+Again, I appreciate your help.
 
 
-Best regards,
+Ethan
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-If there are self-made purgatories, then we all have to live in them.
-	-- Spock, "This Side of Paradise", stardate 3417.7
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
