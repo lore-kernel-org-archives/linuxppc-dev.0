@@ -1,26 +1,36 @@
-Message-ID: <38A75E46.B89491B8@netx4.com>
-Date: Sun, 13 Feb 2000 20:45:42 -0500
-From: Dan Malek <dan@netx4.com>
+Date: Mon, 14 Feb 2000 12:26:30 -0500 (EST)
+From: Pavel Roskin <pavel_roskin@geocities.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Warning fix
+Message-ID: <Pine.LNX.4.21.0002141221550.19395-100000@sunapee.transcept.com>
 MIME-Version: 1.0
-To: Graham Stoney <greyham@research.canon.com.au>
-CC: Tobias Otto-Adamczak <Tobias.Otto-Adamczak@e-technik.tu-chemnitz.de>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: On-Chip-Debugging for MPC 860 ?
-References: <20000213233353.B879884F0@elph.research.canon.com.au>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Graham Stoney wrote:
+Hello!
 
-> GDB support for PowerPC BDM under Linux isn't yet available.....
+This patch fixes a warning in the kernel (2.2.13)
+Anyway, warnings are not quite useful to anybody except those who wrote
+this code.
 
-The HMI BMDs for 8xx/5xx/4xx series work just fine with GDB on any
-host platform.  There are many others supported as well, just
-take a look at all of the remote-* devices in the GDB sources.
+Pavel Roskin
 
+=== cut here ===
+diff -u -r1.1.1.1 misc.c
+--- arch/ppc/mbxboot/misc.c	2000/01/03 20:10:39	1.1.1.1
++++ arch/ppc/mbxboot/misc.c	2000/02/14 16:53:30
+@@ -261,7 +261,7 @@
+ 	/* Set end of memory available to us.  It is always the highest
+ 	 * memory address provided by the board information.
+ 	 */
+-	end_avail = bp->bi_memsize;
++	end_avail = (char *)bp->bi_memsize;
+ #endif
 
-	-- Dan
+ 	puts("loaded at:     "); puthex(load_addr);
+=== cut here ===
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
