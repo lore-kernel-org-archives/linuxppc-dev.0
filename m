@@ -1,35 +1,38 @@
-Date: 29 Apr 2002 06:59:43 -0000
-Message-ID: <20020429065943.29396.qmail@webmail11.rediffmail.com>
-MIME-Version: 1.0
-From: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
-Reply-To: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
+Date: Mon, 29 Apr 2002 16:10:17 +0200
+From: Marius Groeger <mag@sysgo.de>
+Message-Id: <200204291410.g3TEAHD06070@dagobert.svc.sysgo.de>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: inflate problem
-Content-type: text/plain;
-	format=flowed
+Subject: Re: console on SCC1 on 8260
+In-Reply-To: <3CC7F018.2040604@dgt-lab.com.pl>
+References: <3CC7F018.2040604@dgt-lab.com.pl>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi ,
+In linux.ppc.embedded, you wrote:
+>
+> Huh, I've just discovered that arch/ppc/8260_io/uart.c does not support
+>  console on SCC1!
+> Anyone has such version of this driver?
 
-  I am using 8260 processor,montavitsa sources,
-i am using limon to download kernel on the board,
-when decompressing after certain number of bytes
-its not inflateing properly
+Sure does work for us here. We had to apply the following patch though:
 
-i saw vmlinux when uncompressed is same upto cetain bytes ,
-when jump from head.S to prom_init is not happening
+--- linux-2.4.16.org/arch/ppc/8260_io/uart.c    Fri Dec 21 15:57:14 2001
++++ linux-2.4.16-elinos/arch/ppc/8260_io/uart.c Fri Dec 21 15:57:17 2001
+@@ -162,6 +162,7 @@
+ #else /* SCC_CONSOLE */
+ #define SCC_NUM_BASE   0       /* SCC base tty "number" */
+ #define SCC_IDX_BASE   0       /* table index */
++#define PORT_NUM(P)    (((P) < (SCC_NUM_BASE)) ? (P) : (P)-(SCC_NUM_BASE))
+ static struct serial_state rs_table[] = {
+        /* UART CLK   PORT          IRQ      FLAGS  NUM   */
 
-what i did was i placed directly vmlinux into memory and gave
-control to it  it jumping to prom_init,its not stack problem
-,please give any hint or where i am going wrong
-thanks in advance
+Regards,
+Marius.
 
-_________________________________________________________
-Click below to visit monsterindia.com and review jobs in India or
-Abroad
-http://monsterindia.rediff.com/jobs
-
+--
+Marius Groeger        SYSGO Real-Time Solutions GmbH    www.sysgo.de
+Software Engineering  Embedded and Real-Time Software   www.osek.de
+mgroeger @ sysgo de   Germany                           www.elinos.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
