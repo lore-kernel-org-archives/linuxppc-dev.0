@@ -1,11 +1,8 @@
-Message-ID: <3B55FB76.8080909@hadess.net>
-Date: Wed, 18 Jul 2001 22:11:18 +0100
+Message-ID: <3B55FFA9.2050204@hadess.net>
+Date: Wed, 18 Jul 2001 22:29:13 +0100
 From: Bastien Nocera <hadess@hadess.net>
 MIME-Version: 1.0
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: Iain Sandoe <iain@sandoe.co.uk>,
-	"Joseph P. Garcia" <jpgarcia@execpc.com>, benh@kernel.crashing.org,
-	linuxppc-dev@lists.linuxppc.org
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: 2.4 - buttons, temperature, ictc
 References: <Pine.LNX.4.33.0107182204380.2441-100000@opal.biophys.uni-duesseldorf.de>
 Content-Type: text/plain; charset=us-ascii; format=flowed
@@ -13,75 +10,42 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz wrote:
+Hi,
 
->>>>>Why pmud? For backlight I kind of see how you'd get that notion. But
->>>>>volume?
->>>>>
->>
->>Why would pmud make sense for the backlight ? because changing the
->>backlight settings saves power ? ..Right.
->>
->
->Sort of.
->
->>With Ben's latest changes (the /proc/pmu/* for example), pmud should
->>only be a daemon waiting for events, ie:
->>- sleep event: execute a bunch of shell commands (the pwrctl script
->>should really be split into foo.d directories)
->>
->
->Yep. Plus any other power status change events. /proc/pmu has got nothing
->to do with it, neither has /proc/apm.
->
-I mean that we could strip the code of pmu by half, using /proc/pmu
-instead of poking /dev/pmu directly (which is broken).
-The OS is supposed to give applications an abstraction layer on top of
-the hardware. pmud attacking the hardware directly is broken (and the
-amount of code needed to do this in the kernel is minimum).
+I reckoned that some people would like to see this. I didn't look into
+this much yet, but would like to hear if somebody plans to work on it
+(and if not, I like to take a look at it this week-end).
 
->>- backlight keypress event: change the backlight
->>
->
->Nope. Not power related. Not 'PMU'd.
->
-Let's make "pmud" mean "PowerMac Uber Daemon" then...
+This is an edit I did for myself of a conversation I had on IRC with
+Franz Sirlz... I'm the one asking the stupid questions ;)
+Oh, and you have to use the linux_keycodes, not the adb conversion layer
 
->
->
->>- volume keypress event would be a bad idea to implement inside pmud
->>because that's the kind of thing you want visual feedback for, and there
->>are a lot of different sound implementations that this could be built on
->>top of. (aRts/alsa/oss)
->>
->
->Nope. See above.
->
-Huh, are you agreeing with me there ?
+<hadess> franzo: hmm, any code on using the new input layer, or anything ?
+<franzo> you mean the event devices? just look into the  sample codes in
+the linuxconsole-dev cvs on sourceforge
+        http://linuxconsole.sourceforge.net/
+http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/linuxconsole/ruby/
 
->
->
->>- eject keypress event: eject the damn CD !
->>
->
->Neither. Again, see above. Write a general purpose all powerful event
->daemon for this. Don't bloat pmud because of some unspecific desire for
->feeping creaturitis. This is Linux (Unix), not MockOS.
->
-I don't see the problem there... Bloat of pmud ? hmm, maybe a more
-general-purpose daemon would be interesting, even for x86'ers.
+<hadess> franzo: what is the output of evtest supposed to be when tested
+on a keyboard ?
+<franzo> Event: time 994192244.334929, type 1 (Key), code 28 (Enter),
+value 0
+<franzo>  Event: time 994192246.286645, type 1 (Key), code 57 (Space),
+value 1
 
->
->
->>Better yet for handling the volume would be to get all these keys
->>recognized by the Linux kernel (these keys don't produce any recognized
->>
->
->Nope, not longer an option (kernel bloat, even worse than app bloat).
->
-Hahaha, this was a good one. If the kernel doesn't recognize the key
-(ie. it doesn't generate a keycode), we can't make anything out of it.
-We *have* to have these keys in the usb and adb keycodes translation tables.
+<franzo> hadess, so  no key works with evtest?
+<franzo> hadess, iif the keys don't show up, they are probably missing
+in the  USB  table in the kernel
+<hadess> franzo: the "volume" and eject keys don't show up in any of the
+kbd event devices
+<hadess> franzo: how could i add these keys then ?
+<franzo> hadess, add more known keys to static unsigned char
+hid_keyboard[256] in usb/hid.c, that iis the  USBB-to-linux keycode mapping
+<hadess> franzo: hehe, how do i get the usb keycodes ?
+* hadess annoys franzo
+<franzo> hadess, any kernel messages in /var/log/messages?
+<hadess> franzo: not if i load the evdev
+<hadess> franzo: it showed some unknow keycodes before, yes
 
 Cheers
 
