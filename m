@@ -1,41 +1,35 @@
-From: Darin.Johnson@nokia.com
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <5.1.0.14.2.20030715133146.030d2e60@mail.ebshome.net>
+Date: Tue, 15 Jul 2003 13:39:19 -0700
+To: Darin.Johnson@nokia.com
+From: Eugene Surovegin <ebs@ebshome.net>
 Subject: RE: [RFC] consistent_sync and non L1 cache line aligned buffers
-Date: Tue, 15 Jul 2003 13:18:31 -0700
-Message-ID: <F0B628F30F48064289D8CCC1EE21B7A80C48A5@mvebe001.americas.nokia.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <F0B628F30F48064289D8CCC1EE21B7A80C48A5@mvebe001.americas.n
+ okia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> invalidate_dcache_range works in L1_CACHE_LINE chunks, so if
-> start and/or
-> end of the buffer are not aligned we may corrupt data located
-> in the same
-> cache line (usually stack variable(s) declared before or after buffer
-> declaration).
+At 01:18 PM 7/15/2003, Darin.Johnson@nokia.com wrote:
 
-I had noticed this a long time ago when looking to see how PowerPC
-Linux had solved this problem, but discovered that it just sidestepped
-the problem.
+>I solved the problem (in a non-Linux system) by just flushing the first
+>and last lines in the requested range, and invalidating the rest.  The
+>very slight performance hit is probably less than testing to see if the
+>buffer is unaligned.
 
-I solved the problem (in a non-Linux system) by just flushing the first
-and last lines in the requested range, and invalidating the rest.  The
-very slight performance hit is probably less than testing to see if the
-buffer is unaligned.
+I don't think so.
 
-> To be safe I think it's better to modify consistent_sync to
-> handle such
-> "bad" buffers.
+If you take a look at the assembler output of my patch you'll see that test
+for unaligned just accesses register, when dcbf may require memory access
+which is *significantly* slower.
 
-"Bad" is the wrong word to use, in my opinion.  If the function is
-not called "invalidate_aligned_dcache_range", or is not otherwise
-clearly and unambiguously documented (in an easy to locate place)
-that there are severe restrictions on the input parameters, then
-the function itself is "bad".  The "principle of least astonishment"
-implies that a function should do just what its name implies without
-hidden surprises.
+In majority of cases consistent_sync is called with properly aligned buffer
+and I don't want to penalize this path by *unconditionally* (as you are
+suggesting) flushing start and end of the buffer.
+
+Eugene.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
