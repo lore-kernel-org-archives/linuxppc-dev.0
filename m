@@ -1,17 +1,19 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 9A23067A67
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Mar 2005 01:57:26 +1100 (EST)
+Return-Path: <mikpe@user.it.uu.se>
+Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "aun.it.uu.se",
+	Issuer "Uppsala University CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 119C567A79
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Mar 2005 03:17:23 +1100 (EST)
+From: Mikael Pettersson <mikpe@user.it.uu.se>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Thu, 3 Mar 2005 08:57:23 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8592D7@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Marc Leeman" <marc.leeman@gmail.com>,
-	"Joerg Dorchain" <joerg@dorchain.net>
-Cc: linuxppc-dev@ozlabs.org
-Subject: RE: GCC4 fun.
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16935.14471.919379.826792@alkaid.it.uu.se>
+Date: Thu, 3 Mar 2005 17:17:11 +0100
+To: paulus@samba.org, geert@linux-m68k.org
+Cc: linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH][2.6.11] gcc4 fix for <asm-m68k/setup.h>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,47 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have seen it since 2.6.11-rc2
+gcc4 generates compile errors when it sees declarations
+of arrays of incomplete element types. <asm-m68k/setup.h>
+has one such declaration, which unfortunately breaks ppc32
+since <asm-ppc/setup.h> #includes <asm-m68k/setup.h>.
 
-It is not a fatal error, just more of a warning.
-It complains because schedule() was called while scheduling is disabled
-during initial setup
+The fix in this case is to simply move the array declaration
+to after the corresponding element type declaration.
 
-As far as I have been able to track it down, schedule gets called after
-syscalls, and in this case (and in mine on a 8260)
-It gets called when the proc filesystem is enabled.
+Signed-off-by: Mikael Pettersson <mikpe@csd.uu.se>
 
-These errors surfaced on PPC after Ingo Molnars patches to get rid of
-the BKL (Big Kernel Lock)
-
-> -----Original Message-----
-> From: linuxppc-dev-bounces@ozlabs.org=20
-> [mailto:linuxppc-dev-bounces@ozlabs.org] On Behalf Of Marc Leeman
-> Sent: Thursday, March 03, 2005 07:14
-> To: Joerg Dorchain
-> Cc: linuxppc-dev@ozlabs.org
-> Subject: Re: GCC4 fun.
->=20
-> > scheduling while atomic: swapper/0x00000002/0
-> > Call trace:
-> >  [c0007620] dump_stack+0x18/0x28
-> >  [c01de704] schedule+0x678/0x67c
-> >  [c0004500] syscall_exit_work+0x108/0x10c
-> >  [c02a97b4] proc_root_init+0x168/0x174
-> >  [ff847288] 0xff847288
-> >  [c02945e8] start_kernel+0x144/0x170
-> >  [00003a30] 0x3a30
->=20
-> We have something similar with PPC 8245, I was planning to have a look
-> at it, but didn't get round to it. Since our system is=20
-> crunching numbers
-> since yesterday evening without fault, I guess it's not that=20
-> serious...
->=20
-> --=20
->   greetz, marc
-> Aeryn died so you could live John. She would want you to keep=20
-> fighting.
-> 	D'Argo - Season of Death
-> scorpius 2.6.11 #1 Wed Mar 2 16:38:38 CET 2005 GNU/Linux
->=20
+diff -rupN linux-2.6.11/include/asm-m68k/setup.h linux-2.6.11.gcc4-fixes-v2/include/asm-m68k/setup.h
+--- linux-2.6.11/include/asm-m68k/setup.h	2004-12-25 12:16:22.000000000 +0100
++++ linux-2.6.11.gcc4-fixes-v2/include/asm-m68k/setup.h	2005-03-02 19:36:26.000000000 +0100
+@@ -362,12 +362,13 @@ extern int m68k_is040or060;
+ #ifndef __ASSEMBLY__
+ extern int m68k_num_memory;		/* # of memory blocks found (and used) */
+ extern int m68k_realnum_memory;		/* real # of memory blocks found */
+-extern struct mem_info m68k_memory[NUM_MEMINFO];/* memory description */
+ 
+ struct mem_info {
+ 	unsigned long addr;		/* physical address of memory chunk */
+ 	unsigned long size;		/* length of memory chunk (in bytes) */
+ };
++
++extern struct mem_info m68k_memory[NUM_MEMINFO];/* memory description */
+ #endif
+ 
+ #endif /* __KERNEL__ */
