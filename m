@@ -1,121 +1,57 @@
-From: praveen.nale@wipro.com
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: pci mbx860
-Date: Mon, 1 Dec 2003 13:47:01 +0530
-Message-ID: <19DC990402F5E9438197A8DFAEE8131F72F4D3@blr-ec-msg01.wipro.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: mpc / linux kernel - user space
+From: Jaap-Jan Boor <jjboor@aimsys.nl>
+To: Dan Malek <dan@embeddededge.com>
+Cc: Juergen Oberhofer <e9826367@student.tuwien.ac.at>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <3FC76CEA.9040309@embeddededge.com>
+References: <Pine.GHP.4.58.0311271703390.25225@stud3.tuwien.ac.at>
+	 <7E0B03AE-2100-11D8-BF18-003065E2BB06@aimsys.nl>
+	 <Pine.GHP.4.58.0311271903490.4360@stud3.tuwien.ac.at>
+	 <1070011018.1263.27.camel@linpc003.aimsys.nl>
+	 <3FC76CEA.9040309@embeddededge.com>
+Content-Type: text/plain
+Message-Id: <1070266735.328.5.camel@linpc003.aimsys.nl>
+Mime-Version: 1.0
+Date: Mon, 01 Dec 2003 09:18:55 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-I could get PCI working on MBX860 with few changes to
-qspan_pci.c file (see the patch below) on linux-2.4.21. Do
-note that there are many copies of this file in different
-directories (arch/ppc/kernel, arch/ppc/syslib,
-arch/ppc/boot/simple). The one in boot/simple seems to be the
-older one (qspan_init not required as PPC-BUG bootloader
-initializes QSPAN correctly). I had patched the file in
-ppc/kernel for linux-2.4.2x. Seems it is now moved to
-ppc/syslib in linux-2.5/6 versions.
+On Fri, 2003-11-28 at 16:42, Dan Malek wrote:
+> Jaap-Jan Boor wrote:
+>
+> > If you want to send a signal to user code, you can use kill_proc()
+> > I think.
+>
+> IMHO, trying to use signals to propagate a hardware interrupt to a
+> user application is complicated and has design flaws (what happens
+> if the application "misses" an interrupt or gets blocked for some
+> reason).
 
-Another tip if you are working on MBX860 board. Both of my
-boards had -12V on PC104-Plus bus missing! Do check pin A30 on
-PC104+ for -12V. I had to provide an external -12V supply for
-the PCI cards to make them work!
+Fortunately I never used it (that's the 'I think')
 
-HTH...
+>
+> A couple of other methods that I find simple and use extensively
+> are multi-threading the application and then using a different
+> minor ID device to wait on a read() or ioctl() to simply return.
+> The driver just uses the standard sleep/wakeup mechanisms to
+> synchronize with the application.
+>
+> Another, and I think most useful, method is to implement a select/poll
+> entry point in the driver.  It provides the most flexibility when
+> waiting for various events, plus provides a timeout should something
+> fail to function properly.
 
-Regards,
-Praveen.
+Yes, especially the timeout is nice as 'this should never happen'
+failures never happens except with the customer
 
-------% start of qspan.c patch %-------
---- qspan_pci-orig.c	2003-11-18 17:04:45.000000000 +0530
-+++ qspan_pci.c	2003-11-24 09:21:58.000000000 +0530
-@@ -83,7 +83,7 @@
- 		"	.align 2\n"                   \
- 		"	.long 1b,3b\n"                \
- 		".text"                             \
--		: "=r"(x) : "r"(addr) : " %0")
-+                : "=r"(x) : "r"(addr) : "%0")
+Jaap-Jan
 
- #define QS_CONFIG_ADDR	((volatile uint *)(PCI_CSR_ADDR + 0x500))
- #define QS_CONFIG_DATA	((volatile uint *)(PCI_CSR_ADDR + 0x504))
-@@ -363,17 +363,53 @@
-     return PCIBIOS_DEVICE_NOT_FOUND;
- }
+>
+>
+> 	-- Dan
+>
+>
 
-+#define pcibios_access(host,rw,size,type)                         \
-+int host##_pci_bios_##rw##_config_##size (struct pci_dev *dev,    \
-+		int pos, type value)                                   \
-+{                                                                 \
-+	return host##_pcibios_##rw##_config_##size (dev->bus->number,\
-+			dev->devfn, pos, value);
-\
-+}
-+
-+pcibios_access(qspan, read, byte, u8 *)
-+pcibios_access(qspan, read, word, u16 *)
-+pcibios_access(qspan, read, dword, u32 *)
-+pcibios_access(qspan, write, byte, u8)
-+pcibios_access(qspan, write, word, u16)
-+pcibios_access(qspan, write, dword, u32)
-+
-+#define set_config_access_method(host)   \
-+static struct pci_ops pci_root_ops = {   \
-+	host##_pci_bios_read_config_byte,   \
-+	host##_pci_bios_read_config_word,   \
-+	host##_pci_bios_read_config_dword,  \
-+	host##_pci_bios_write_config_byte,  \
-+	host##_pci_bios_write_config_word,  \
-+	host##_pci_bios_write_config_dword  \
-+}
-+
-+set_config_access_method(qspan);
-+
- void __init
--m8xx_pcibios_fixup(void))
-+m8xx_pcibios_fixup(void)
- {
--   /* Lots to do here, all board and configuration specific. */
- }
-
- void __init
--m8xx_setup_pci_ptrs(void))
-+m8xx_setup_pci_ptrs(void)
- {
--	set_config_access_method(qspan);
-+	struct pci_controller *hose = NULL;
-
--	ppc_md.pcibios_fixup = m8xx_pcibios_fixup;
--}
-+/*        ppc_md.pcibios_fixup = m8xx_pcibios_fixup;*/
-+
-+	hose = pcibios_alloc_controller ();
-+	if (!hose)
-+	{
-+		printk(KERN_ERR "PCI:Unable to allocate hose\n");
-+		return;
-+	}
-+	hose->ops = &pci_root_ops;
-
-+	hose->first_busno = 0;
-+	hose->last_busno = 0xff;
-+}
-
-------% End of qspan.c patch %-------
-
- -----Original Message-----
-
- Subject: pci mbx860
- From: Amit.Lubovsky@infineon.com
- Date: Wed, 5 Nov 2003 09:07:38 +0100
-
- I have to implement pci on MBX860 since the current code is
- broken (I use 2.4.20 kernel from denx), Could anybody point me
- to a sample implementation of pci as a starting and reference
- point ?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
