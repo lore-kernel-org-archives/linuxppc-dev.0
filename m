@@ -1,33 +1,86 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Got Pismo firewire working
-From: Daniel Berlin <dberlin@redhat.com>
-Date: 26 Feb 2001 01:31:31 -0500
-Message-ID: <x7u25igdks.fsf@dynamic-addr-83-177.resnet.rochester.edu>
+Message-ID: <3A9A246D.72D1B5BE@iiic.ethz.ch>
+Date: Mon, 26 Feb 2001 10:39:57 +0100
+From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Timothy A. Seufert" <tas@mindspring.com>
+Cc: Gareth Hughes <gareth@valinux.com>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: r128 DRI driver now fully functional on PPC
+References: <3A76769B.87242FAA@valinux.com>
+	 <v04220800b6bbb8f01525@[10.0.0.42]> <3A963519.C439E7C0@valinux.com> <v04220800b6be6735bfd4@[165.247.215.42]>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I finally got around to making firewire work on the Powerbook
-Pismo.I posted patches to linux1394-devel@lists.sourceforge.net (look
-at the  sourceforge mailing list archives).  SBP-2 (what is used for hard
-drives/cd-rw's/scanners/etc) doesn't quite work yet. It
-detects my 2 firewire hard drives, gets all the info about them right,
-and logs into them successfully (it's an sbp-2 thing, for our purposes
-it means it's talking to them right, and they are talking back right),
-but when it tries to send the scsi commands to read/write, it just times out.
-Probably a small endianess issue somewhere.
+"Timothy A. Seufert" wrote:
+>
+> At 9:02 PM +1100 2/23/01, Gareth Hughes wrote:
+>
+> >Run with LIBGL_DEBUG=1 and see what it says.
+>
+> This revealed what was happening.
+>
+> I set the project root to /usr/Xgart to avoid having to overwrite my
+> existing X11 installation.  libGL was trying to load r128_dri.so, but
+> it was looking under /usr/X11R6/lib/modules/dri, which doesn't even
+> exist.
 
-However, gscanbus and other tools happily show the bus topology
-correctly, read/write blocks/quads from the nodes, etc.
-
-If someone has a digital camera or something that doesn't need SBP-2,
-it'll probably work.
-
-digital video probably will work too.
+Strange, it should look in <ProjectRoot>/lib/modules/dri/ . Seems it didn't
+pick up the right libGL.
 
 
---Dan
+> Since then, I've been trying a number of things, with partial success:
+>
+> 1. Tried to replace /usr/X11R6/lib in /etc/ld.so.conf with
+> /usr/Xgart/lib.  Result: X server won't start because the DRI tree
+> isn't building most of the various X shared libraries like Xmu, ICE,
+> etc.
+>
+> 2. Tried to work around #1 by leaving both /usr/Xgart/lib and
+> /usr/X11R6/lib in ld.so.conf (Xgart first so it gets priority).
+>
+> Result: 3D acceleration works!  However, there are a couple major
+> problems.  First, window titles aren't drawn (the borders are, but
+> the title text is not), and second, upon running a GL program (I've
+> been using gears and gloss from Mesa 3.3), I lose keyboard and mouse
+> input.  Sometimes the mouse cursor is still visible, but clicks do
+> nothing.  Even pressing caps lock doesn't toggle the capslock light.
+> I have to telnet into the machine and kill the GL program to get
+> control back.
+
+What's your hardware? Jack Howarth used to have similar problems with the old
+driver, but AFAIR it was because he tried to build things with the Red Hat
+following the Red Hat procedure.
+
+
+> 3. As an alternate to #2, I went back to just /usr/X11R6/lib in
+> ld.so.conf, and added symlinks under /usr/X11R6/lib to the missing GL
+> and DRI libs in the Xgart tree.  I got the window titles back this
+> way (must be a busted non-3D library somewhere in the DRI tree
+> causing that), but the input device problems persist.
+>
+> 4. Tried to do the right thing by figuring out how to build the
+> missing libraries in the DRI tree.  The source code for all the
+> relevant libs seems to be there, but I can't decipher the X11 build
+> system enough to figure out exactly why they aren't being built.
+>
+> I think it's the "#define BuildServersOnly YES" line in host.def, but
+> commenting it out breaks the build because the DRI tree is not a full
+> XFree86 source tree.
+>
+> I'm guessing that this is really the way to go.  Does anybody know of
+> a way to force building more of the libraries without actually
+> building everything?  Or do I need to download the remaining chunks
+> of the Xfree86 source tree and do a full build of everything?
+
+I wouldn't waste too much time to figure that out (if it works at all) because
+this will eventually be in the standard XFree86. For now, I use a symlink for
+r128_dri.so and set LD_LIBRARY_PATH.
+
+
+--
+Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
+CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
