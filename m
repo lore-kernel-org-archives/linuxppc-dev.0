@@ -1,44 +1,34 @@
-Date: Thu, 8 Mar 2001 16:48:21 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: "Srinivas Rao.M" <msrao@vxl.co.in>
-Cc: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: speed and space Optimization 
-In-Reply-To: <Pine.SCO.3.91.1010308204511.15429B-100000@vayudoot>
-Message-ID: <Pine.HPX.4.10.10103081631390.9166-100000@gra-ux1.iram.es>
+To: "Embedded Linux list" <linuxppc-embedded@lists.linuxppc.org>
+Cc: =?iso-8859-1?q?K=E1ri_Dav=ED=F0sson?= <kd@flaga.is>
+Subject: Re: Going to sleep atomically
+References: <EADB10BAC266A14A85ECBF8686A73E3108AFB6@kolkrabbi.flaga.is>
+From: Roland Dreier <roland@topspincom.com>
+Date: 08 Mar 2001 08:42:26 -0800
+In-Reply-To: =?iso-8859-1?q?K=E1ri_Dav=ED=F0sson's?= message of "Thu, 8 Mar 2001 14:12:43 -0000"
+Message-ID: <52ae6wnrf1.fsf@love-boat.topspincom.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 8 Mar 2001, Srinivas Rao.M wrote:
+    KD> Like in blocking read() and poll() etc?
+    KD> interruptable_sleep_on() or sleep_on()
 
->
-> Ok. thanks for the reply Mr. Gabriel. How can i do the bench marking of
-> these options. Can i get some more information from somewhere on net.
-> -Srini...
+No!!  Do _not_ use sleep_on() in new code.  It isn't atomic (there is
+a race condition where you will miss the wakeup).  In an earlier post
+to this mailing list
+(<http://lists.linuxppc.org/listarcs/linuxppc-embedded/200102/msg00093.html>)
+I gave the following good advice:
 
-Try "info gcc" for the optimization and machine specific options. There
-are also specialized gcc mailing lists, but first read the documentation
-before bothering the people on the lists.
+    You really don't want to use sleep_on() any more (Linus wants to
+    remove it for 2.5).  Take a look at
 
-The best benchmark is *always* the code that you want to run. On my tests
-the difference between size and speed optimizations was always small
-(although above the noise level), and sometimes surprising (-Os was faster
-than -O2 which was faster than -O3 for some routines). The only thing you
-can count on is that -O0 will generate the biggest and slowest code by
-far, -O1 will make it already much smaller and faster, but still
-noticeably slower than any of the higher optimization options.
+    <http://lwn.net/2001/0201/a/sleep-fix.php3>
 
-But every application is different and you might notice a bigger impact
-than me depending on processor and compiler options (I did these tests
-about 18 months ago, compiler has improved since then but of course not as
-much as we would like).
+    for a safer way to sleep, or use the wait_event macro (in
+    linux/sched.h).
 
-Lies, damn lies, statistics, and benchmarks...
-
-	Regards,
-	Gabriel.
-
+Roland
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
