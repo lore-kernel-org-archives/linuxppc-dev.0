@@ -1,26 +1,32 @@
-Subject: BK problems with linuxppc-2.5
-From: Gary Thomas <gary@mlbassoc.com>
+Message-ID: <20030809173952.79342.qmail@web80709.mail.yahoo.com>
+Date: Sat, 9 Aug 2003 10:39:52 -0700 (PDT)
+From: Venkat Raghu <venkatraghu2002@yahoo.com>
+Subject: flat memory in ppc
 To: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <E19lS18-0003Ng-00@source.mvista.com>
-References: <E19lS18-0003Ng-00@source.mvista.com>
-Content-Type: text/plain
-Message-Id: <1060436322.16233.52.camel@hermes>
-Mime-Version: 1.0
-Date: 09 Aug 2003 07:38:43 -0600
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've been unable to access this repository [for days].
+Hi,
 
- [gthomas@hermes tmp]$ bk clone bk://source.mvista.com/linuxppc-2.5 linuxppc-2.5
-  ERROR-Can't get read lock on the repository.
+I am a newbie. Often it is mentioned that ppc
+based systems are "flat memory".
+So Please clarify
+1)what exactly flat memory means?
+2) Please give comparision of x86 and ppc, showing
+the places where they are different.
+3) So is there any difference in drivers that
+work on ppc platforms.
 
-Any ideas/help?
+Any links/pointers will also be helpful.
 
---
-Gary Thomas <gary@mlbassoc.com>
-MLB Associates
+Please mail back to venkatraghu2002@yahoo.com,
+as I did't subscribe.
+
+Regards
+Venkat.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
