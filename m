@@ -1,11 +1,8 @@
-Message-ID: <3431.192.168.1.3.995092083.squirrel@fridge.bcc.co.uk>
-Date: Sat, 14 Jul 2001 07:28:03 +0100 (BST)
-Subject: Re: Booting 43P-140
+Message-ID: <36062.192.168.1.2.995129406.squirrel@fridge.bcc.co.uk>
+Date: Sat, 14 Jul 2001 17:50:06 +0100 (BST)
+Subject: More on booting 43P-140
 From: "Leigh Brown" <leigh@solinno.co.uk>
-To: olh@suse.de
-In-Reply-To: <20010714010238.A4742@suse.de>
-References: <20010714010238.A4742@suse.de>
-Cc: linuxppc-dev@lists.linuxppc.org
+To: linuxppc-dev@lists.linuxppc.org
 Reply-To: leigh@solinno.co.uk
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
@@ -13,16 +10,16 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> On Fri, Jul 13, Leigh Brown wrote:
-> ~snip~
->> I'll have to build my own 2.4.1 kernel and ramdisk to complete the
->> SuSE install, unless anyone has any other ideas?
->
-> compile either the pcnet32 or tulip driver into the kernel.
-I'll try that.
+Hi all,
 
-> what kernel source tree is that 2.4.7pre4?
-A stock Linus one.  It seemed to have most of the stuff I needed in it.
+After an embarrasing hour when I couldn't work out why the root fs disk
+wasn't being recognised for my kernels but was for the one I downloaded,
+I have finally made it into the install program for SuSE 7.1 and Debian
+woody.  However, both have the same problem - they say I don't have any
+disks!  This is weird because in both installers I can bring up a shell
+and manually create and mount an ext2 partition on hdisk1 (/dev/sdb).
+
+Any ideas?
 
 Cheers,
 
