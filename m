@@ -1,38 +1,64 @@
-Message-ID: <373C946C.45802CE6@ibm.net>
-Date: Fri, 14 May 1999 21:23:56 +0000
-From: roboj <roboj@ibm.net>
-MIME-Version: 1.0
+Date: Fri, 14 May 1999 15:40:25 -0600 (CST)
+From: Kamran Karimi <karimi@cs.uregina.ca>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: CDROM Problems with 2.2.9
-References: <199905130459.XAA18408@lists.linuxppc.org>
-Content-Type: text/plain; charset=us-ascii
+Subject: Porting DIPC to PowerPC
+Message-ID: <Pine.SGI.3.91.990514153804.13801C-100000@MERCURY.CS.UREGINA.CA>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-After compiling the recent linux kernel (2.2.9), I've been getting an error
-message which I have included below.  I get it at boot time and it continues
-printing in an infinite loop.  Also, the computer seems to be trying to access
-my cd-rom drive (Toshiba scsi, /dev/scd0 linked to /dev/cdrom). Running power
-computing powerbase.  Anyone ever got a similar error message that can offer
-any suggestions?  Everything works ok in linux vers. 2.2.6-ac3.
+ The following announcement is about DIPC (Distributed IPC) 1.1c. It has 
+already been ported to Linux/i386 and Linux/m68k. Please contact me at 
+karimi@cs.uregina.ca if you want to volunteer for porting it to PowerPC 
+porcessors.
 
 
-SCSI: aborting command due to timeout pid 3, scsi 0, channel 0, id 1
+ This is to announce that version 1.1c of DIPC (Distributed Inter-Process
+Communication) for Linux is available now. It patches 2.2.8/2.3.0 kernels.
 
-mesh_abort (c0374000)
-mesh: state at c0374278, regs at f3010000 dma at f3008000
-ct = 0, seq = c , bs = 6000, fc = 0, exc = 0, err = 0, im = 7, int = 0,
-sp = 2, dma stat = c0, cmdptr = 364010, phase = 0, msgphase = 0, comm_tgt = 1,
-data_ptr = 0, dma_st = 0, dma_ct = 0, n_msgout = 0
+ DIPC can be used to build and program clusters (multi-computers), and provides
+distributed program developers with semaphores, messages and transparent 
+distributed shared memory.
 
-target 1: req = 0374000 goes_out = 0, saved_ptr = 0
+ The file dipc-1.1c.tgz, containing the complete source code and documents, 
+can be obtained by anomymous FTP from wallybox.cei.net, in directory
+/pub/dipc. 
 
-SCSI Host 0 abort (pid3) timed out - resetting
-SCSI bus is being reset for host 0 channel 0
+ Alternatively, it can be downloaded from sunsite.unc.edu, in /incoming/Linux, 
+or in /pub/Linux/system/network/distrib.
 
-mesh reset 2
-mesh: SCSI bus reset detected: waiting for end...done
+DIPC's web pages are at http://wallybox.cei.net/dipc
+
+
+ Here is DIPC's LSM file contents:
+
+Begin3
+Title:		DIPC (Distributed Inter-Process Communication)
+Version:	1.1c
+Entered-date:	14MAY99
+Description:	DIPC enables you to build and program distributed 
+                (multi-computer) systems very easily. It works by 
+                making System V IPC mechanisms (shared memories, 
+                semaphores and messages) network transparent.
+Keywords:	distributed parallel programming multi computer cluster 
+		kernel shared memory message semaphore RPC IPC DSM WAN 
+		network TCP/IP UDP/IP heterogeneous environment
+Author:		kamran@wallybox.cei.net (Kamran Karimi)
+Maintained-by:	kamran@wallybox.cei.net (Kamran Karimi)
+		schmitz@lcbvax.cchem.berkeley.edu (Michael Schmitz)
+Primary-site:	wallybox.cei.net /pub/dipc
+		230kB dipc-1.1c.tgz
+Alternate-site:	sunsite.unc.edu /pub/Linux/system/network/distrib
+		230kB dipc-1.1c.tgz
+Platforms:	Linux/i386, Linux/m68k, TCP/IP, UDP/IP 
+Copying-policy:	Freely distributable and usable, Copyright (C) Kamran Karimi
+End
+
+
+ Regards,
+          Kamran Karimi
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
