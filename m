@@ -1,50 +1,51 @@
-Date: Tue, 6 Nov 2001 02:32:36 -0500 (EST)
-From: <tahoward@ntrnet.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Kernel cannot allocate resource region
-In-Reply-To: <20011104201640.24983@smtp.wanadoo.fr>
-Message-ID: <Pine.LNX.4.33.0111060225210.686-100000@ranger>
+Reply-To: <manu@stapf.org>
+From: "Emmanuel STAPF" <manu@stapf.org>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Strange warning during C compilation
+Date: Tue, 6 Nov 2001 00:55:19 -0800
+Message-ID: <002701c166a0$c33d0080$f5732c0c@venice2>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <000401c15d6d$77730690$f5732c0c@venice2>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I had been using the bk linuxppc_2_4 tree.  I tried the _devel tree, and
-it worked both with and without adb_sync, so all seems well.  Thanks!
+Hi,
 
-Tony
+I'm getting the following warning: warning: pasting "h" and "(" does not
+give a valid preprocessing token
 
-On Sun, 4 Nov 2001, Benjamin Herrenschmidt wrote:
+Here is the piece of code that shows the problem:
 
->
-> >That may be a timing difference hitting in some driver - in the m68k ADB
-> >code, I had been using a local (stack) adb_request struct for some
-> >asyncronous ADB request. Most of the time the async operation would
-> >complete while that variable was still valid (the calling routine hadn't
-> >returned yet). Someetimes it would only complete later ;-(
-> >
-> >The current ADB code should be free from such gross errors, but maybe
-> >something else doesn't cope with async probing of devices? ADB probing
-> >happens asynchronously these days (but then, BenH won't have used
-> >non-static variables for that). And I'd expect the kernel to throw a
-> >panic() for data or illegal instruction errors. Maybe some deadlock - what
-> >other task is active during ADB probe?
->
-> Well, it' s possible that I left or added such bugs ;)
->
-> If you are using my rsync tree (or since recently the bk _devel tree),
-> there's an "adb_sync" option you can add to your kernel command line
-> to force ADB probe to be synchronous.
->
-> Tell me if that helps.
->
-> Ben.
->
->
->
+#define CAT(a,b)a ## b
+#define TEST_MACRO(n,c,a)       (CAT(n,_done) ? CAT(n,_result) :
+CAT(c,a))
+
+extern void* h();
+extern void f(void*);
+extern void* h_result;
+extern char h_done;
+
+void k (void* titi)
+{
+        f((TEST_MACRO(h,h,())));
+}
+
+If you save this code in a test.c file and use `gcc -Wall -c test.c'
+here is what you get:
+
+test.c:11:12: warning: pasting "h" and "(" does not give a valid
+preprocessing token
+
+Any idea what is wrong here? My gcc version is 3.01. It was also
+happening on my gcc version 2.96 with a slightly different error
+message: warning: pasting would not give a valid preprocessing token. I
+tried with an even older version (2.7.2.3) and no warnings.
+
+Regards,
+Manu
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
