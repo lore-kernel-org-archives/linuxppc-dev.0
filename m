@@ -1,14 +1,31 @@
-Date: Tue, 6 Feb 2001 14:22:11 +0100 (MET)
-From: "WN.Jacobs" <WN.Jacobs@net.HCC.nl>
-Reply-To: wn.jacobs@signaal.nl
-To: linuxppc-embedded@lists.linuxppc.org
-cc: wn.jacobs@signaal.nl
-Subject: Ethernet in PPCBOOT on STK860L does not work
-Message-ID: <Pine.GSO.4.21.0102061419290.3125-100000@hatert.nijmegen.inter.nl.net>
+Message-ID: <0D9416AE7F95D411A8710008C7332F3F054738@GUILDFORD4_NT>
+From: Daniel Furse <daniel.furse@iptest.com>
+To: wn.jacobs@signaal.nl, linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Ethernet in PPCBOOT on STK860L does not work
+Date: Tue, 6 Feb 2001 13:52:11 -0000 
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Hi,
+
+We had exactly the same problem with our STK860L.
+
+The solution was to remove the straps from connector X32. After that
+the ethernet worked fine.
+
+Dan
+
+-----Original Message-----
+From: WN.Jacobs [mailto:WN.Jacobs@net.HCC.nl]
+Sent: 06 February 2001 13:22
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: wn.jacobs@signaal.nl
+Subject: Ethernet in PPCBOOT on STK860L does not work
+
 
 
 We bought recently several TQC STK860L starter kits.
@@ -97,6 +114,5 @@ Regards,
 ---
 willy
 mailto:wn.jacobs@signaal.nl
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
