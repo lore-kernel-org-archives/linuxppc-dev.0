@@ -1,85 +1,38 @@
-Message-ID: <00c401c0fe17$1ffc3860$150101c0@teletron.co.kr>
-From: =?ks_c_5601-1987?B?wPy5zrHU?= <apices@intizen.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Linux Booting again - MPC8260
-Date: Tue, 26 Jun 2001 17:08:03 +0900
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <5.0.2.1.0.20010626172652.00a69210@pop.gmx.de>
+Date: Tue, 26 Jun 2001 17:32:38 +0800
+To: linuxppc-embedded@lists.linuxppc.org
+From: Michael Habermann <MHabermann@gmx.de>
+Subject: Segmentation fault while dynamic linking
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi machael,
-Thanks for your help.
+The simple program below produces a segmentation fault when dynamically
+linked. When linked with '--static', it works fine.
 
-I asked about Linux Booting of MPC8260 a few day ago.
-The problem is following code.
+What can be the problem?
 
-start_here:
-        ...
-        bl identify_machine
-        bl MMU_init
-        lis r4,2f@h
-        ori r4,r4,2f@l
-        tophys(r4,r4)
-        li r3,MSR_KERNEL & ~(MSR_IR|MSR_DR)
-        FIX_SRR1(r3,r5)
-        mtspr SRR0,r4
-        mtspr SRR1,r3
-        SYNC
-        RFI              /* halt after the rfi instruction ? */
+The Segmentation Fault occurs at a lot of programs like busyboxes 'ls' and
+unfortnately also at gdbserver.
 
-2:
-   /* Here I add my debuging codes,
-      GPIO - Port A4 output ON.
-      but it outputs nothing. */
-
-        sync
-        tlbia
-        sync
-
-And I received answer.
-
->Check those codes(setbat) in MMU_init() to make sure it is same as your
->custom board:
-
->case _MACH_8260:
->    setbat(...);
->    setbat(...);
->    ioremap_base=...;
->break;
-
-I tried following cases.
-
-    setbat(0, 0xf0000000, 0xf0000000, 0x10000000, IO_PAGE);
-    ioremap_base = 0xf0000000;
-
-    setbat(0, 0xf0000000, 0xf0000000, 0x20000, IO_PAGE);
-    ioremap_base = 0xf0000000;
-
-    setbat(0, 0xf0000000, 0xf0000000, 0x10000000, IO_PAGE);
-    setbat(1, 0xe0000000, 0xe0000000, 0x10000000, IO_PAGE);
-    ioremap_base = 0xe0000000;
-
-    setbat(0, 0xf0000000, 0xf0000000, 0x20000, IO_PAGE);
-    setbat(1, 0xe0000000, 0xe0000000, 0x10000000, IO_PAGE);
-    ioremap_base = 0xe0000000;
+My configuration: Kernel 2.4.4, glibc 2.2.2, bash 2.05, FADS, MPC855T
 
 
-- My Custom Board Info.
-    CPU    : MPC8260 (Rev 01, Mask A.1 1K22A-XC) at 198 MHz
-    DRAM  : 64 MB  (Base Address 0)
-    FLASH : 512 KB (Base Address 0xFFF00000)
-    IMMR   : 0xF0000000
-      - I changed H/W configuration value 0xFF000000 -> 0xF0000000 in ppcboot.
-    No more I/O space for custom board.
+#include <stdio.h>
+#include <time.h>
+int main(int argc, char** argv){
+   time_t tm;
 
-Linux port is frist try to me.
-I have no more solution.
-Please let me know if you have any ideas.
-Thank you.
+   time(&tm);
+   printf("This line is displayed\n");
+   localtime(&tm);  //produces Segmentation fault
+   printf("This one not\n");
 
-min-gyu Jeon.
+   return 0;
+}
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
