@@ -1,41 +1,64 @@
-To: "Flavio Pereira" <fpereira@azisa.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linker problem 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 22 Oct 2002 17:12:39 +0200."
-             <1E354700654661418593A0D6B5A9D410089470@mail.azisa.co.za>
-Date: Tue, 22 Oct 2002 19:41:57 +0200
-Message-Id: <20021022174202.BC10810148@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <002c01c279f8$43c269a0$370da8c0@aman>
+From: "Aman" <aman@mistralsoftware.com>
+To: "Wolfgang Denk" <wd@denx.de>
+Cc: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+References: <20021001184101.EF497FA97@denx.denx.de>
+Subject: Re: Downloading Linux image using Riscwatch
+Date: Tue, 22 Oct 2002 23:54:31 +0530
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Flavio,
+Hi
 
-in message <1E354700654661418593A0D6B5A9D410089470@mail.azisa.co.za> you wrote:
+I have ported rom monitor code[Openbios from IBM] for my custom
+board[PPC440GP Processor]. The custom board doesn't support ethernet. Now I
+want to download a linux image to the RAM of my custom board. What linux
+image I have to build to download to RAM using JTAG of Riscwatch Debugger .
+
+Thanking you in advance
+Regards
+Aman
+
+----- Original Message -----
+From: "Wolfgang Denk" <wd@denx.de>
+To: "Aman" <aman@mistralsoftware.com>
+Cc: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+Sent: Wednesday, October 02, 2002 12:10 AM
+Subject: Re: Downloading Linux image using Riscwatch
+
+
+> In message <001b01c26976$233e0640$370da8c0@aman> you wrote:
+> >
+> >  I am using PPC 440GP processor on custom board. This board doesnt not
+have
+> >  Ethernet support and there is no rom monitor code in the board. Is it
+> >  possible to download the Linux image to the board using JTAG . If so
+what
+> >  type of image should I build.
 >
-> Looks like it was a mistake that some people with term "useless" but hey
-> I'm still learning. I was using LD directly to link and it doesn't
-> automatically include the library files needed for c++. So when I
-> switched to g++ for the linking it solved most of these system errors
-> (__throw etc..). G++ however tries to include a -lstdg++ file which
-> doesn't exist. So I had to use gcc and force link the libstdc++.a
+> You can download the kernel, but it will not run ;-)
+>
+> The Linux kernel relies on a lot of initialization to be done by  the
+> firmware  -  things  like initializing and sizing the memory, passing
+> boot arguments etc.
+>
+> I suggest you start porting PPCBoot.
+>
+> Best regards,
+>
+> Wolfgang Denk
+>
+> --
+> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+> The first 90% of a project takes 90% of the time, the last 10%  takes
+> the other 90% of the time.
+>
 
-You must be doing something wrong here. The g++ as included with  our
-ELDK  does  not reference any "-lstdg++". Can you please show us some
-(simple) exaqmple source and the exact command line you  use,  so  we
-can test if there is really a problem, or just a usage error?
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I can't say I've ever been lost, but I was bewildered once for  three
-days.                                     - Daniel Boone (Attributed)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
