@@ -1,68 +1,52 @@
-Message-ID: <3A0BFE46.A7366165@snmc.com>
-Date: Fri, 10 Nov 2000 07:55:18 -0600
-From: Daris A Nevil <dnevil@snmc.com>
+Message-ID: <00bc01c04b23$92fbfbe0$57c809c0@fel>
+Reply-To: "john zhan" <johnzhan@btamail.net.cn>
+From: "john zhan" <johnzhan@btamail.net.cn>
+To: Íõ³¬·å <chfwang@sina.com.cn>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <3A02ECF3.1E072842@iigi.net> <3A072049.C2096C5C@mvista.com> <001b01c04972$7f2e3d10$57c809c0@nt4srv87>
+Subject: Re: about ACE860 board
+Date: Fri, 10 Nov 2000 22:26:42 +0800
 MIME-Version: 1.0
-To: john zhan <johnzhan@btamail.net.cn>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: GDB for host development platform
-References: <006001bf448c$4aee3aa0$57c809c0@fel>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-John,
+Some older board and its monitor do not support the SIMM which is more than 16MB.
 
-Sounds as though you did not connect to the target correctly.  I have
-written a procedure we use to connect to a PPC target over ethernet.
-You can view this at:
+Refer to ACE860 home,I am not sure its still there : www.ace360.com
+If you are using ICE/BDM,please check the value of br(x) and or(x) ,(x) is which
+CS your SIMM connect to.
 
-	http://qslinux.org/docs/cross/gdb/index.html
+For more information,please go to www.fel.com.cn ,
+Don't fuck me,
+it's none of my business,
+ chinese only,:-)
 
-Hope this helps.
+john zhan.
 
-Regards,
-Daris Nevil
+----- Original Message -----
+From: Íõ³¬·å <chfwang@sina.com.cn>
+To: LinuxPPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Sent: Wednesday, November 08, 2000 6:56 PM
+Subject: about ACE860 board
 
 
-john zhan wrote:
 >
-> I have now successfully build GDB-4.18 for linux/ppc.
-> Both target and host are powerpc-linux.
-> When I was trying to run a executable in my target
-> hardware(8xx) with gdb(target for exec),
->  e.g. hello,
-> GDB said
-> "
-> Starting program: ./hello
-> Don't know how to run.  Try "help target".
-> "
-> Questions:
->     1. what's going on it?
->     2. Does(Did) anyone do the same thing?
->     3.The cross-debugger + target gdb server with a serial connection
->          is the unique choices?
->     4. I wonder which is the best way to debug a linux/ppc application
->         on the embedded platform.
->     5. What do you think a full host development environment
->         (including native comilper,debugger etc) in the embedded
->         system.
+> Hi,
 >
-> thank for any response.
+> Does somebody know the ATLAS ACE860 DARWIN board?
+> It's monitor can auto test the 4M/8M DRAM successfully.
+> But when I insert a 32M DRAM, the monitor only pass 16M, then test failed.
+> I use BDM test it, only can access 16M too.
+> Is this the bug of this board?
 >
-> regards.
-> john zhan.
+> Best regards,
+> Wang Chao Feng
+>
+>
 >
 
---
-Daris A Nevil
-Simple Network Magic Corporation
-401 Kentucky Lane
-McKinney, TX 75069
-214-793-7757
-dnevil@snmc.com
-www.snmc.com
-quickstack.com
-qslinux.org
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
