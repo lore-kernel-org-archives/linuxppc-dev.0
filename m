@@ -1,30 +1,21 @@
-Date: Tue, 21 Sep 1999 10:55:18 -0600 (MDT)
-From: Stephen Edie <sedie@terraplex.com>
+Date: Tue, 21 Sep 1999 12:06:39 -0600 (MDT)
+From: Dan Burcaw <dburcaw@terraplex.com>
 To: Brad Midgley <brad@pht.com>
 cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: how to build rs/6000 kernels
 In-Reply-To: <Pine.LNX.4.10.9909210911420.21470-100000@web1.turbolinux.com>
-Message-ID: <Pine.LNX.4.10.9909211053530.24786-100000@newhope.terraplex.com>
+Message-ID: <Pine.LNX.4.10.9909211206150.26337-100000@newhope.terraplex.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+
 Brad,
 
-You will need to copy the zImage from arch/chrpboot as opposed to
-arch/boot.  Additionally keep in mind that there have been bugs in various
-versions of F50 firmware that prevent large images from netbooting.  (The
-limit tends to be between 1.5 and 2MBs depending on the firmware version)
-
-Stephen
-
-Terra Soft Solutions, Inc.
-   Yellow Dog Linux
-   "The Ultimate Companion for a Dedicated Server"
-   http://www.yellowdoglinux.com/
-
+you want the zImage that's in chrpboot/ not boot/. The one in boot/ is for
+PReP machines.
 
 On Tue, 21 Sep 1999, Brad Midgley wrote:
 
@@ -54,6 +45,13 @@ On Tue, 21 Sep 1999, Brad Midgley wrote:
 > 
 > 
 > 
+
+Dan
+
+Terra Soft Solutions, Inc.
+   Yellow Dog Linux
+   "The Ultimate Companion for a Dedicated Server"
+   http://www.yellowdoglinux.com/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
