@@ -1,44 +1,46 @@
-From: supas100@astrophysik.uni-kiel.de (Derek Homeier)
-Message-Id: <199909171607.SAA07046@juliet.astrophysik.uni-kiel.de>
-Subject: Re: New booter
-To: linuxppc-dev@lists.linuxppc.org
-Date: Fri, 17 Sep 1999 18:07:51 +0200 (MET DST)
-Cc: bh40@calva.net
-In-Reply-To: <199909170500.AAA08016@lists.linuxppc.org> from "Linux PPC Developer Digest" at Sep 17, 99 00:00:48 am
-Reply-to: Derek Homeier <homeier@astrophysik.uni-kiel.de>
-Content-Type: text/plain; charset=iso-8859-1
-MIME-Version: 1.0
+In-Reply-To: <14306.21109.970188.33759@cpu.wpi.edu>
+Date: Fri, 17 Sep 1999 18:10:56 +0200
+To: Josh Huber <huberj@WPI.EDU>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Lombard shuts itself off
+Message-Id: <19990917181056.027066@mailhost.mipsys.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 16 Sep 1999 12:47:15 +0200, Benjamin Herrenschmidt <bh40@calva.net> wrote:
-> 
-> Back to miBoot, I'll try to get it working first (it seems to work but
-> the kernel hangs, I don't know why yet and I won't have time to look into
-> this until this week-end). It doesn't solve all the problems since making
-> bootable CDs (which is my main goal for now) requires a valid driver on
-> the CD (only MacOS Toast can do that to my knowledge) and using this
-> trick to boot from the HD also requires a valid MacOS driver on the disk.
-> 
-> I do have some plans to extend the mecanism further and make a CD driver
-> to avoid relying on Toast and eventually a hard disk driver too (I do
-> have a prototype SCSI driver but this requires licenced patches from
-> Apple to make something really useable).
-> 
-I think the latest mkhybrid <ftp://ftp.ge.ucl.ac.uk/pub/mkhfs/> has provisions 
-for installing a boot driver, but it's highly experimental yet. You'd still
-need the driver itself, also.
+On Fri, Sep 17, 1999, Josh Huber <huberj@WPI.EDU> wrote:
 
-Thanks for your efforts,
-							Derek
+>It's almost as if the battery gets disconnected sometimes:
+>I put the machine to sleep in MacOS, unplug the power strip, put it in
+my case,
+>and walk around with it for a while, open the case up, and...oh look at that
+>the led isn't blinking any more!
+>
+>Then, the same thing started happening with linux...
+>
+>It gets to a point where I can't get the machine to boot again without
+putting
+>the power plug back in.
+>
+>I was suspicious of a faulty battery bay, so I (temporarily) moved the
+battery
+>over to the other bay last night -- we'll see how that works.
+
+I have a similar problem with my wallstreet. It seems to survive quite
+well when travelling with in bag, but when working with it on my knees, A
+brutal move sometimes disconnects the battery. 
+
+There is still a possibility of a problem with PMU communication. This
+beast is quite sensitive to various timing issues, and when something
+goes wrong, it shuts the machine down abruptly.
+
 
 -- 
-Derek Homeier                                           Tel: +49-431-880-4103
-Institut fuer Theoretische Physik und Astrophysik       Fax: +49-431-880-4100
-der Christian-Albrechts-Universitaet                    Feet:        Room 142
-D-24098 Kiel, Germany		      email:  homeier@astrophysik.uni-kiel.de
------------------------------------------------------------------------------
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
