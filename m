@@ -1,34 +1,31 @@
-Message-ID: <20040726025057.68338.qmail@web15204.mail.bjs.yahoo.com>
-Date: Mon, 26 Jul 2004 10:50:57 +0800 (CST)
-From: Song Sam <samlinuxppc@yahoo.com.cn>
+Date: Mon, 26 Jul 2004 00:13:17 -0400 (EDT)
+From: David Woodhouse <dwmw2@infradead.org>
+To: =?gb2312?q?Song=20Sam?= <samlinuxppc@yahoo.com.cn>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: 2.4 versus 2.6 patches
-To: David Woodhouse <dwmw2@infradead.org>,
-	"Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <1090682408.4195.3.camel@localhost.localdomain>
+In-Reply-To: <20040726025057.68338.qmail@web15204.mail.bjs.yahoo.com>
+Message-ID: <Pine.LNX.4.58.0407260009310.4160@localhost.localdomain>
+References: <20040726025057.68338.qmail@web15204.mail.bjs.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Woodhouse <dwmw2@infradead.org> wrote:
+On Mon, 26 Jul 2004, [gb2312] Song Sam wrote:
+> But 2.4 kernel is still a pet for 8xx,at least.I guess
+> many embedded Linux development lean to 2.4 kernel for
+> the moment.For Linux kernel hackers,2.4 kernel was
+> dead but it is alive for most embedded
+> developers.Right? :-)
 
-> On Fri, 2004-07-23 at 10:57 -0400, Robert P. J. Day wrote:
-> > for most of the folks on this list, i suspect they'd be more
-> > interested in patches to a 2.6- style Kconfig file,not a 2.4-style
-> > config.in file, correct?
->
-> Yes. The 2.4 kernel is dead.
+I cannot speak for 'most embedded developers.'; only those with clue.
 
-But 2.4 kernel is still a pet for 8xx,at least.I guess
-many embedded Linux development lean to 2.4 kernel for
-the moment.For Linux kernel hackers,2.4 kernel was
-dead but it is alive for most embedded
-developers.Right? :-)
+I would not consider deploying anything new on 2.4 today; it's just
+not a viable, maintainable platform in my opinion.
 
-Best regards,
-
-Sam
+--
+dwmw2
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
