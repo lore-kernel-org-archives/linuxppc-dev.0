@@ -1,39 +1,40 @@
-Date: Fri, 20 Jul 2001 14:17:51 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Iain Sandoe <iain@sandoe.co.uk>
-Cc: "Joseph P. Garcia" <jpgarcia@execpc.com>,
-	Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: powermac (other ppc?) events
-In-Reply-To: <20010720102336.13001DBA25@atlas.valhalla.net>
-Message-ID: <Pine.LNX.4.10.10107201414210.32605-100000@zirkon.biophys.uni-duesseldorf.de>
+Message-ID: <002a01c11120$1895f130$2502a8c0@cwx053a>
+From: "David Burg" <david.burg@nero.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: R_PPC_REL24 relocation out of range
+Date: Fri, 20 Jul 2001 15:30:09 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > That was my idea in this - have some sound event daemon watch for events
-> > and call the proper ioctl. What was with the sound driver only permitting
-> > a single open() at a time? Would aumix running block the sound
-> > event daemon's ioctl?
->
-> The single open() rule is for /dev/dsp ... it is part of the OSS spec.
+Hello,
 
-OK, I assumed it applied for all interfaces.
+I'm making cross-compilation from x86 to powerpc and I got such nice error
+while executing :
+dlopen: ./libf.so: R_PPC_REL24 relocation at 0x6fdb6458 for symbol
+`L_OFFSET_TABLE_' out of range
 
-> Up until my latest set of patches we were breaking this rule.  As of today
-> those patches are in Ben's tree but not BK (although they are in my ftp
-> space on penguinppc.org as well).
+With dynamic linked libraries. Making a search on the internet, I have seen
+someone got the same trouble :
 
-I recalled you mentioned this lately, so I asked :-)
+http://lists.linuxppc.org/listarcs/linuxppc-dev/200003/msg00025.html
 
-> /dev/mixerXX can be opened multiple times - so this doesn't affect aumix et.
-> al.
+I try this simple program and got the error with the cross-compiler (a
+powerpc-linux-gcc 2.95.2 with matching g++ and ld behind). This web page was
+of previous year, so I bet there exist a fix now but I can't find it.
 
-Fine then. We just need to figure what's the default mixer to use, then.
+I allready use -fpic -fPIC flags to my g++ calls. Note that the bug happen
+when cross-compiling the libraries but not when localy compiling the
+libraries.
 
-	Michael
+
+
+Best regards,
+
+David Burg.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
