@@ -1,9 +1,9 @@
-Message-ID: <39633DE8.EC3A6E1F@embeddededge.com>
-Date: Wed, 05 Jul 2000 09:53:44 -0400
-From: Dan Malek <dan@netx4.com>
+Cc: mark phillips <msss@ne.mediaone.net>
+Message-ID: <3963473C.D493984A@lucent.com>
+Date: Wed, 05 Jul 2000 09:33:32 -0500
+From: Tom Roberts <tjroberts@lucent.com>
 MIME-Version: 1.0
-To: mark phillips <msss@ne.mediaone.net>
-CC: linuxppc-embedded@lists.linuxppc.org
+To: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Problems with HardHat/NFS root filesystems
 References: <39625545.370FE91F@ne.mediaone.net>
 Content-Type: text/plain; charset=us-ascii
@@ -11,49 +11,24 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-mark phillips wrote:
+I, too, had shared-library troubles with this.
 
-> I've been working with HardHat Linux on an Embedded Planet CLLF...
+My solution was to use the Suse PowerPC Beta distribution CDROM I
+got as a door prize. I could not boot from the CDROM (no drive
+on my board), but I did manually build up a disk filesystem by
+starting from their initial root and then installing all of their
+core RPMs on top of it. I ended up with a complete Linux system,
+including gcc, gdb, etc., about 180 MB total. It works great for me.
 
-> I have been able to run the mbxroot.min filesystem (both on NFS and as
-> an initrd).
+	It is a great convenience to have the embedded board hosted
+	on another Linux system which is the NFS fileserver for the
+	board; they of course share all logins.
 
-
-I'm surprised this even works.  Mixing tools and libraries is always
-a challenge and seldom works.  The HHL tools and libraries are built
-as a kit that works together.  The tools generate in-line floating point
-and have startup functions ro glibc2.  The HHL tools, libraries and target
-file system work together, and it is unlikely you will be able to mix
-other pieces with any success.
-
-The 'min' and 'full' file systems are old, glibc-1.99 version software.
-The HHL tools will not build executables to work with this library.
-It was a nicer library to use for embedded systems because it was smaller,
-but it was simply obsolete and we couldn't maintain it.  You can strip
-the libraries in the target file system to make them smaller, however
-I think it removes symbols needed for linking (but programs run OK).
-You can also download the glibc SRPM and remove functions you don't need,
-then rebuild it with the HHL tools.
+This board is a 200 MHz 750 with 64 MBytes SDRAM, so it is just a bit
+bigger than most embedded systems. Now to get the other two CPUs
+running....
 
 
-> In addition, I've noticed that if I run ldconfig on the mbxroot.min
-> filesystem, it no longer boots.  Removing etc/ld.so.cache fixes the
-> problem.
-
-Don't run ldconfig......you don't need to do that, and as you have
-experienced it does the wrong thing.
-
-> ....trace ends with a bunch of queries to
-> /opt/hardhat/devkit/ppc/8xx/target/opt.
-
-You need a symbolic link in the target file system to resolve the
-problem with abosulte path names of libraries in the dynamic loading.
-In the /opt/hardhat/devkit/ppc/8xx/target directory on the server,
-create a symbolic link opt/hardhat/devkit/ppc/8xx/powerpc-linux -> /.
-This way, the target file system "sees" the same directory path that
-was used when you cross compile on the host.
-
-
-	-- Dan
+Tom Roberts	tjroberts@lucent.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
