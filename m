@@ -1,60 +1,43 @@
-Date: Tue, 11 Jul 2000 12:48:02 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Matt Porter <mmporter@home.com>
-cc: Michael Lundkvist <ml@epact.se>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Going from 2.2.12 to 2.2.17pre10
-In-Reply-To: <20000710231251.B23538@cx258813-a.chnd1.az.home.com>
-Message-ID: <Pine.HPX.4.10.10007111242020.9548-100000@gra-ux1.iram.es>
+Date: Tue, 11 Jul 2000 06:52:00 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Gabriel Paubert <paubert@iram.es>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, toa@pop.agri.ch,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.0-test3
+In-Reply-To: <Pine.HPX.4.10.10007110953000.9548-100000@gra-ux1.iram.es>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.1000711064628.14195J-100000@ofey.inetnebr.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 10 Jul 2000, Matt Porter wrote:
+On Tue, 11 Jul 2000, Gabriel Paubert wrote:
 
-> > Ok, my queston was rather: does PPCBUG have support for generic IDE
-> > interfaces or not ?
+> On Mon, 10 Jul 2000, Takashi Oe wrote:
 >
-> Do you mean standard PCI IDE interfaces as in the PCI spec addon?  I'm
-> pretty sure that the init code doesn't put the onboard controllers in
-> native mode so the Ramix controller on the bus will need massaged to
-> get into native mode so it can relocated safely in I/O space.  So,
-> the answer is no.
-
-Thanks, this anwers my question.
-
-> > The other change I would like to see in PPCBUG is that it complies with
-> > the documentatioon that claims that its services will work when the MMU is
-> > enabled. At least on 603e it does not work since it sets the MSR IP bit
-> > and then silently crashes in the TLB handlers. I doubt that this would
-> > work on a 604 or a 750 either (I did not test it), but if you get an ISI
-> > or DSI exception, you are probably screwed too.
+> > 601's BAT doesn't have G bit.  Maybe that's the problem?
 >
-> :)
+> No 601 BATs are completely different, see the source code in the early
+> init. The valid bits in not in the same (BATL or BATU), the size (limited
+> to 8 Mb) and protection encoding are different (only one valid bit, not Vs
+> and Vu, and WIMGxPP are coded as in the PTE). I think the G bit is
+> ignored.
 
-Actually I think that the only way it will work is if everything that
-PPCBUG accesses is mapped with BATs. But I chose not to use BATs for
-simplicity in PrePboot.
+Yes, that's very true ....  Are the following codes incorrect for 601?
 
-> > If people volunteer to write a new MVME bootrom from scratch (or a working
-> > OF), I shall be the first in line to get it and flash it in my boards.
-> > ppc*BUG* deserves its name, at least the second part :-(
->
-> There's a few different bootrom projects in fairly early stages and
-> lots of interest from various embedded Linux parties since many
-> board manufacturers don't have anything more than VxWorks BSPs for
-> their hardware and now want Linux support.  I'm predicting that you'll
-> see some usable GPL bootrom frameworks/code come out of this need in
-> the near future.  I swear I saw a free OF project forming somewhere
-> too.
+[from prepare_disp_BAT() in prom.c]
 
-I would swear it too, but I've lost the pointers.  Actually I thought of
-adding more early init code to prepboot (towards which I'm understandably
-biased) to get something of this kind running, but I don't have the time.
+		/* 601 */
+		addr &= 0xFF800000UL;
+		RELOC(disp_BATU) = addr | (_PAGE_NO_CACHE | PP_RWXX) | 4;
+		RELOC(disp_BATL) = addr | BL_8M | 0x40;
 
-	Regards,
-	Gabriel.
+Previously, it had "_PAGE_GUARDED" for BATU, which I thought was
+incorrect.
+
+
+Takashi Oe
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
