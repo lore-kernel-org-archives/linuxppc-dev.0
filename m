@@ -1,71 +1,78 @@
-Message-ID: <2378.80.7.99.14.1091135695.squirrel@80.7.99.14>
-In-Reply-To: <9ef20ef3040729083748c883c6@mail.gmail.com>
-References: <9ef20ef304071613494a0f0af9@mail.gmail.com>   
-    <20040717014441.GA13447@pegasos> <20040729135130.GE19197@lst.de>   
-    <9ef20ef3040729070439f6d8c1@mail.gmail.com>   
-    <20040729141631.GA20149@lst.de>
-    <2717.217.46.152.97.1091113282.squirrel@217.46.152.97>
-    <9ef20ef3040729083748c883c6@mail.gmail.com>
-Date: Thu, 29 Jul 2004 22:14:55 +0100 (BST)
-Subject: Re: rs/6000 e30 + 240 (doral) support
-From: "Leigh Brown" <leigh@solinno.co.uk>
-To: "Gustavo Barbieri" <barbieri@gmail.com>
-Cc: "Christoph Hellwig" <hch@lst.de>,
-	"Sven Luther" <sven.luther@wanadoo.fr>,
-	debian-kernel@lists.debian.org, linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+Date: Thu, 29 Jul 2004 22:33:19 +0100
+To: paulus@samba.org
+Cc: trini@kernel.crashing.org, linuxppc-dev@lists.linuxppc.org,
+	barbieri@gmail.com
+Subject: [0/9] Support for old IBM PReP boxes
+Message-ID: <20040729213319.GA5857@george.solinno.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: leigh@solinno.co.uk (Leigh Brown)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gustavo Barbieri said:
-> On Thu, 29 Jul 2004 16:01:22 +0100 (BST), Leigh Brown
-> <leigh@solinno.co.uk> wrote:
->> Christoph Hellwig said:
->> >
->> > On Thu, Jul 29, 2004 at 11:04:48AM -0300, Gustavo Barbieri wrote:
->> >> > Most doesn't look too bad to me, but it's a lot of patches.  I
->> vaguely
->> >> > remember they were discussed on linuxppc-dev, so we should check
->> the
->> >> > comments over there.
->> >>
->> >> A lot of patches? Well, there is a lot of "code"... it's not really
->> >> code, but just structure definitions... actually the patche touches
->> >> the real code at few points, one it's just a null pointer checking,
->> >> other are added cases to the switch statement so it can handle those
->> >> boards, so I really can't a problem there.
->> >>
->> >> I already sent an email to linuxppc-dev in the past, but no replies:
->> >>
->> >> http://lists.linuxppc.org/linuxppc-dev/200407/msg00085.html
->> >
->> > Ah sorry, I confused it with Len's big IBM prep patchkit.  Except for
->> a
->> > tiny style issue this patch is fine with me.
->> >
->> > Any upstream comments as I'd hate to carry along a patch like that in
->> > the Debian patchkit while we'd probably want it in Sarge.
->> >
->> > Gustavo, if we apply this patch you'll have to sign up for d-i testing
->> > on prep, though ;-)
->>
->> I have a more comprehensive set of patches that remove the need for
->> ugly hard-coded tables on RS/6000 PReP boxes, that I previously
->> posted to linuxppc-dev.  I'll freshen them up tonight and post them
->> again.  They provide generic support for the E20, E30, 140, 240, F30,
->> and F40 and probably a few other ones that we don't know about, if
->> we're lucky.  The F40 has problems but all the other work fine.
->
-> Hello Leigh,
->
-> Thanks for your original patch!
->
-> This patch you mean is the one in the TODO of those files? Using residual
-> data?
+This set of patches add support for old IBM PReP machines.  They are
+not perfect, but they are known working on the E20, E30, 140, 240
+and F30.  The F40 is not currently working, but it doesn't work at
+all without these patches so I'm not too concerned right now.
 
-Correct.
+As 060-old-openpic.diff has not shown up any problems on any machines
+I think it's worth applying, but if Tom is still unhappy then it can
+be left for now.
+
+Summary:
+
+[1/9] 005-have-residual-data.diff
+
+Introduce have_residual_data() function and change existing code to
+use it.  This is mainly to avoid my additions adding loads of ugly
+#ifdef CONFIG_RESIDUAL_DATA sections.
+
+[2/9] 020-ibm_prep_statusled.diff
+
+This allows use of the IBM status LED if it's found in the residual
+data, plus a couple of other bells and whistles.  It removes the
+140-specific code.
+
+[3/9] 040-residual-pcidev.diff
+
+This adds a function to use the residual data to determine the IRQ
+for a given PCI device, and changes prep_pcibios_fixup() to use it.
+
+[4/9] 045-residual-irqmask.diff
+
+This adds a function to determine the 8259 level/edge mask word.
+With this function we can now (in theory) support any IBM PReP
+machine.  We therefore add a little bit more code to fallback
+to using residual data if we don't recognise the machine.
+
+[5/9] 050-residual-isapic-addr.diff
+
+This adds a function to use the residual data to determine the
+address to pass to i8259_init().
+
+[6/9] 055-host-bridge.diff
+
+This adds support for the "PCIBridgeRS6K" bridge type in residual
+data to prep_find_bridges() - this is for the 7043-240.
+
+[7/9] 060-old-openpic.diff
+
+Some older E20/E30 machines have a very old implementation of the
+OpenPIC which trips up the existing ibm_prep_init() function.  This
+adds support for it.  It also changes the OPENPIC_VEC_SPURIOUS
+constant to work around the buggy OpenPIC in those machines.
+
+[8/9] 080-shorter-planar-id.diff
+
+The planar id is only a byte, so why waste 8 characters displaying
+it?
+
+[9/9] 090-show-level.diff
+
+This makes the /proc/interrupts display the correct edge/level
+indicator for each interrupt.  This is purely cosmetic, but does
+reduce confusion.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
