@@ -1,53 +1,36 @@
-Message-Id: <20001227200444.Postino-005726@smtp01.highway.ne.jp>
-Date: Wed, 27 Dec 2000 20:04:44 +0900
-To: <linuxppc-dev@lists.linuxppc.org>
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: how to use macro in assemble language embedded in C?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Wed, 27 Dec 2000 14:51:25 +0100
+From: christophe barbe <christophe.barbe@inup.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: linux-2.2.18 
+Message-ID: <20001227145125.A11036@pc8.inup.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Hi,
->
-> (NOTE: when reply this mail, please cc: kerler@newmail.net , thanks)
->
-> I change the first line of temp.c:
->     asm("#include <asm\\ptrace.h>\n\t");
-> to
->     asm("#include <asm/ptrace.h>\n\t");
-> ==========temp.c==================
->  asm("#include <asm/ptrace.h>\n\t");
->  void dummy (void)
->  {
->      asm("stwu   %r1, -PT_R16(%r1)");             /* stack */
->  }
+I'm working on a CompactPCI PowerPC card (MCPN750). I've written a little module which uses an IRQ which is simply registred with a request_irq call.
+It works great with a patched kernel 2.2.17.
+I try to upgrade to the last kernel release. Everything seems to be ok except that I never receive IRQ events.
+I've tried to follow the irq path (from head.S, do_IRQ(), ppc_md.do_IRQ(), open_pic_do_IRQ(), ppc_irq_dispatch_handler() to
+irq_desc[irq].action) and in my (limited) understanding it seems good but in fact I never go in the do_IRQ() function. It sounds like my irq is not hard-enabled.
+(I can see it in /proc/interrupts)
 
-The problem is in YOUR syntax.
-Inline asm is C launguage ,so C rabel can not put in string field like "-PT
-_R16".
-The compiler doesn't search the rabel which is put in string field
+I've seem that all the pending patches for ppc have beeb applied in 2.2.18. Is there in this patches something I should know to use my IRQ ?
 
-You can find some examples in asm-ppc.
+Thanks,
+Christophe
 
-cd /usr/include/asm
-grep -n asm * | more
 
-The documentation is gcc source.
-Plaese get some new gcc's source,then open that.
-*importance*
-Read gcc/extend.texi.
+--
 
-There is much help.
-
-More help is there(in gcc source).
-cd gcc
-grep -n asm | more
-
-You will have much help there.
-
-Kaoru
-
+Christophe Barbé
+Software Engineer
+Lineo High Availability Group
+42-46, rue Médéric
+92110 Clichy - France
+phone (33).1.41.40.02.12
+fax (33).1.41.40.02.01
+www.lineo.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
