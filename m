@@ -1,46 +1,49 @@
-Date: Thu, 13 Nov 2003 17:40:29 -0800
-From: Greg KH <greg@kroah.com>
-To: Olaf Hering <olh@suse.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: drivers/usb/serial/whiteheat.c:1209: `CMSPAR' undeclared
-Message-ID: <20031114014029.GU16352@kroah.com>
-References: <20031014165543.GA8051@suse.de> <20031014183142.GC16605@kroah.com> <20031015192249.GB32543@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20031015192249.GB32543@suse.de>
+In-Reply-To: <Pine.GSO.4.21.0311122039580.1561-100000@waterleaf.sonytel.be>
+References: <Pine.GSO.4.21.0311122039580.1561-100000@waterleaf.sonytel.be>
+Mime-Version: 1.0 (Apple Message framework v606)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <55821B76-1669-11D8-A264-000393DBC2E8@motorola.com>
+Cc: Tom Rini <trini@kernel.crashing.org>, Wolfgang Denk <wd@denx.de>,
+	Dale Farnsworth <dale@farnsworth.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+	Gabriel Paubert <paubert@iram.es>
+From: Kumar Gala <kumar.gala@motorola.com>
+Subject: Re: MPC5200 Patches
+Date: Fri, 14 Nov 2003 00:11:06 -0600
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Oct 15, 2003 at 09:22:49PM +0200, Olaf Hering wrote:
->  On Tue, Oct 14, Greg KH wrote:
->
-> > On Tue, Oct 14, 2003 at 06:55:43PM +0200, Olaf Hering wrote:
-> > > Greg,
-> > >
-> > > maybe I asked that once, but:
-> > > is there a fix?
-> > >
-> > >
-> > >   CC [M]  drivers/usb/serial/whiteheat.o
-> > > drivers/usb/serial/whiteheat.c: In function `firm_setup_port':
-> > > drivers/usb/serial/whiteheat.c:1209: `CMSPAR' undeclared (first use in this function)
-> >
-> > That's defined in <asm/termbits.h>
-> >
-> > What platform are you building this on?
->
-> I'm building on ppc32. A grep showed that alpha, ppc, and ppc64 do not
-> have this define. google wasnt very helpful, 'CMSPAR ppc' shows one
-> patch to add it and acm.c which just defines it to 0.
->
-> So the question is, what should be changed?
+What about a single i2c-mpc.c that handles 10x/824x/85xx/5xxx since
+they all seem to support the same programming model from what I can
+tell (5xxx seems not to support broadcast).  This would cover all
+non-CPM instances of I2C on Motorola PPC parts.
 
-Fix up the archs that do not define this?  That would probably be the
-best thing to do.
+- kumar
 
-thanks,
-
-greg k-h
+On Nov 12, 2003, at 1:41 PM, Geert Uytterhoeven wrote:
+>
+> On Wed, 12 Nov 2003, Gabriel Paubert wrote:
+>> On Wed, Nov 12, 2003 at 03:45:14PM +0100, Wolfgang Denk wrote:
+>>> In message <20031112114114.GA8526@iram.es> you wrote:
+>>>>> i2c-algo-m5xxx.c, like the original?
+>>>>
+>>>> Hmmm, dont't repeated x have a tendency to trigger spam filters
+>>>> (especially the dumbest ones)?
+>>>
+>>> Who cares? This is Linux kernel source code.
+>>
+>> I don't remeber the details, but I believe that some people had
+>> problems when posting about the aic7xxx driver some time ago. And
+>> yes, this was on the linux kernel mailing list IIRC.
+>
+> Yep. But IIRC the problem was not posting, but receiving. Apparently
+> some people subscribed to lkml are behind corporate spam filters that
+> remove everything that contains `xxx'. So people started to talk about
+> the aic7<censored> driver to fool the spam filters.
+>
+> BTW, there are similar problems with accessing the Video4Linux
+> website, hosted at bytesex.org.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
