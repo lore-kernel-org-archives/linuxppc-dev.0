@@ -1,38 +1,38 @@
-Message-ID: <38184DC8.6773D84D@schweiz.ch>
-Date: Thu, 28 Oct 1999 15:21:12 +0200
-From: Andreas Tobler <a.tobler@schweiz.ch>
+Message-ID: <381878FB.8916CB9@netx4.com>
+Date: Thu, 28 Oct 1999 12:25:31 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: wung_y@263.net
-CC: linux-ce-devel <linuxce-devel@linuxce.org>,
+To: Andreas Tobler <a.tobler@schweiz.ch>
+CC: wung_y@263.net, linux-ce-devel <linuxce-devel@linuxce.org>,
         linux-ppc <linuxppc-dev@lists.linuxppc.org>,
         linuxppc embedded mail list <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: help, build Cross GCC
-References: <38184905.117429CD@263.net>
+References: <38184905.117429CD@263.net> <38184DC8.6773D84D@schweiz.ch>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Andreas Tobler wrote:
 
 
-Wang Yong wrote:
-> 
-> hi,
->   i want to build a cross GCC to build program for PPC401 in my 586. I
-> have downloaded binutils-2.9.5.0.16 and gcc-2.95.2. when i build gcc,
-> i was told that as: unrecognized option `-ppc'. Do i miss something?
-> would you please show me how to build a cross GCC for PPC step by step?
-> thank you very much.
-Try here:
-http://members.home.com/mmporter/linux/cross/
+> Try here:
+> http://members.home.com/mmporter/linux/cross/
 
-Some infos you'll get on th egcs.cygnus.com site
+I have binaries for RedHat 5.2 Linux/x86 on ppc.kernel.org in
+the embedded directory.  It is a tar file called xppctools or
+something like that.  These load into /opt, so they are easy
+to remove if you want to do something else.  Just put the bin
+directory in your search path.
 
-Andreas
--- 
-| Andreas Tobler				
-| CH-8004 Zuerich 							
-| E-Mail: andreas.tobler@alcatel.ch	| a.tobler@schweiz.ch
------------------------------------------------------------
+I believe this was the last EGCS version before the GCC merge.
+You will need to select your favorite libraries and include
+files, as those are not included.  It will build the kernel
+just fine.
+
+It is something to get you started....
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
