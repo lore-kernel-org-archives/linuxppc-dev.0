@@ -1,47 +1,53 @@
-In-Reply-To: <199909171607.SAA07046@juliet.astrophysik.uni-kiel.de>
-Date: Sat, 18 Sep 1999 14:58:32 +0200
-To: Derek Homeier <homeier@astrophysik.uni-kiel.de>,
-        linuxppc-dev@lists.linuxppc.org, j.pearson@ge.ucl.ac.uk
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: New booter
-Message-Id: <19990918145832.004481@smtp.calvacom.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <37E3935C.720A5F60@wanadoo.fr>
+Date: Sat, 18 Sep 1999 15:27:56 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+CC: Kazumitsu Hanai <hanai@koto.kpu-m.ac.jp>,
+        linuxppc-user <linuxppc-user@lists.linuxppc.org>
+Subject: Re: Ethernet Adapters that actually work!
+References: <v04010502b4091b88b70c@koto.kpu-m.ac.jp>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Sep 17, 1999, Derek Homeier <supas100@astrophysik.uni-kiel.de> wrote:
+Kazumitsu Hanai wrote (not for the first time):
 
->I think the latest mkhybrid <ftp://ftp.ge.ucl.ac.uk/pub/mkhfs/> has
-provisions
->
->for installing a boot driver, but it's highly experimental yet. You'd still
->need the driver itself, also.
+> All ethernet cards, the chipsets of which are DEC 21*4*, will work with tulip
+> driver in LinuxPPC.  *BUT*, be careful, the tulip driver contained in the
+> kernel
+> source, even the latest, is very old, and this driver does not work in
+> LinuxPPC
+> at all.  You must download the latest tulip.c, or at least newer than v0.91
 
-The problem with mkhybrid approach is that it will rip only one driver
-from the CD. A typical bootable CD now contains both a "patch driver", a
-patch partition, and the real driver chained behind those.
+Is there a known reason why the kernel sources contain a stone-age
+version of tulip.c? Is everyone supposed to use de4x5 instead or what?
+(I can confirm that for my Farallon card with its DECchip 21041, both
+de4x5 from the kernel sources and tulip.c:v0.91 from the site given by
+Kazumitsu Hanai are working. The Neanderthal tulip.c from the kernel
+sources doesn't).
 
-I'll look into fixing this once I have finished the hard core booting
-stuff. I beleive I'll end up putting a home-made driver in place of the
-pieces above. This driver will either look for a keystroke or display a
-boot selection dialog and eventually enter the kernel. In the meantime,
-if someone wants to know how this "chained driver" mecanism is done, you
-can mail me privately.
+>From the 2.3.18 kernel in drivers/net/tulip.c:
 
-The only potential problem is that since we lack the Apple patches, the
-SCSI and IDE managers in ROM may not be very reliable to load the kernel
-(especially the MESH driver which is one of the first thing patched).
+  static const char version[] = "tulip.c:v0.89H 5/23/98
+becker@cesdis.gsfc.nasa.gov\n";
 
-Unfortunately, I don't have a CD-RW so I'll have to burn some CDs before
-having a working solution. (I'm considering adding a SCSI CD emulation to
-MOL).
+That's from the era of kernel version 2.1.103!
 
+Even better is the "information" in Documentation/networking/tulip.txt:
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+  This driver is designed to work with PCI Ethernet
+  cards which use the DECchip DC21x4x family. This driver hopefully
+  works with all of 1.2.x and 1.3.x kernels, but I tested only
+  with 1.2.13, 1.3.39, 1.3.49, 1.3.52, 1.3.57 and later.
 
+Well, a little later it is honest enough to suggest
+
+  So, if your card is not a 9332dst, please try the de4x5.c driver
+first.
+
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
