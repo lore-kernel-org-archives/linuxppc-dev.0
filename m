@@ -1,57 +1,122 @@
-Date: Thu, 2 Oct 2003 08:12:01 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Stuart Vivian <stuartvivian@domo.co.uk>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux 2_4_devel kernel hangs after control transferred from u-boot
-Message-ID: <20031002081201.A2929@home.com>
-References: <A4EB77D93A60F347A518AC05291647D9032E5E@domosvr1.domo.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <A4EB77D93A60F347A518AC05291647D9032E5E@domosvr1.domo.local>; from stuartvivian@domo.co.uk on Thu, Oct 02, 2003 at 02:29:18PM +0100
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <2C1BAF8F8E1DD611862B0002A5D4C3FC01BC068F@renexch3.rennes.thmulti.com>
+From: Fillod Stephane <stephane.fillod@thomson.net>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Cross compiling : problem linking
+Date: Thu, 2 Oct 2003 18:34:19 +0200 
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Oct 02, 2003 at 02:29:18PM +0100, Stuart Vivian wrote:
->
-> Hi all,
->
-> I am trying to get a linux kernel to build and run on a Cogent CSB272
-> (IBM PPC 405GP processor) running a U-boot 0.4.0 bootloader. I can tftp
-> a uImage into ram and it passes check, but when I run bootm it
-> uncompresses the kernel and hangs after it starts executing the kernel
-> at address 0x00000000.
->
-> I was given a hardhat vmlinux elf file that I can package to a uImage
-> and run (although it stops at the Calibrating Delay loop... Stage, but
-> that's another issue). I need to be able to recompile a kernel for the
-> board and downloaded linuxppc_2_4_devel from mvista. This compiles fine
-> and produces a new vmlinux. I've started off by using the walnut 405
-> config file to build the kernel, since they're pretty similar.
+Note to the list: sorry for the RFC2822
 
-Hrm, it used to be that everybody said their board was "just like
-a Sandpoint".  I guess walnut is like that in the 4xx world. :)
+> Do you know the replacement for iopl to work on PowerPC?
 
-At any rate, you need to "port" the kernel to your specific board.
-There are many board-specific parameters/devices that have to be
-accounted for.  The first thing that you are running into is that
-a Walnut kernel has code to set clocking to use the external clock,
-in addition it expects to get it's timer frequencies passed into the
-kernel in the board info pointer...are you providing the correct
-info?  See arch/ppc/kernel/ppc4xx_setup.c and
-arch/ppc/platforms/walnut.c...then go from there.
+There's no such crap on PowerPC. No separate IO bus either.
 
-> Any ideas where to start debugging this? I'm relatively new in embedded
-> stuff and linux in general, so it might be something simple, but don't
-> know where to start. Have a BDI2000 but no gdb driver yet, so can't put
-> in breakpoints etc.
 
-For early bringup, it's far easier to just use the telnet interface
-and keep a window or two handy to look at the vmlinux disassembly
-and grep for important symbol addresses like log_buf.  Every developer
-I work with does new board bringup and they never use gdb on top of
-the BDI.
+> Final goal is a kernel module, but now I'm writing a test program in
+> user space (standalone, dynamic compiled).
 
--Matt
+Okay, let's use ESP for once :)
+
+Toni, I don't know what's your "base" address, but it is really odd
+(well, both ways :) on a PowerPC system. You should borrow some help
+from your D-science lab, or have something like a PPC Linux training.
+
+
+Wolfgang, you've got my agreement to put the following in the FAQ
+if it's not already.
+
+
+This code is for accessing hardware registers from *userland*.
+You need CAP_SYS_RAWIO and /dev/mem permissions.
+
+Basically:
+	volatile void *p = ioremap(MY_HARD_REG_ADDR, 4096);
+	...
+	out_8(p, state ^= 0x1);
+
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
+
+#ifdef __PPC__
+extern inline void out_8(volatile unsigned char *addr, int val)
+{
+        __asm__ __volatile__("stb%U0%X0 %1,%0; eieio" : "=m" (*addr) : "r"
+(val));
+}
+#else
+extern inline void out_8(volatile unsigned char *addr, int val)
+{
+        *add = val & 0xff;
+}
+#endif
+
+extern inline volatile void * ioremap(unsigned long physaddr, unsigned size)
+{
+    static int axs_mem_fd = -1;
+    unsigned long page_addr, ofs_addr, reg, pgmask;
+    void* reg_mem = NULL;
+
+    /*
+     * looks like mmap wants aligned addresses?
+     */
+    pgmask = getpagesize()-1;
+    page_addr = physaddr & ~pgmask;
+    ofs_addr  = physaddr & pgmask;
+
+    /*
+     * Don't forget O_SYNC, esp. if address is in RAM region.
+     * Note: if you do know you'll access in Read Only mode,
+     *    pass O_RDONLY to open, and PROT_READ only to mmap
+     */
+    if (axs_mem_fd == -1) {
+        axs_mem_fd = open("/dev/mem", O_RDWR|O_SYNC);
+        if (axs_mem_fd < 0) {
+                perror("AXS: can't open /dev/mem");
+                return NULL;
+        }
+    }
+
+    /* memory map */
+    reg_mem = mmap(
+        (caddr_t)reg_mem,
+        size+ofs_addr,
+        PROT_READ|PROT_WRITE,
+        MAP_SHARED,
+        axs_mem_fd,
+        page_addr
+    );
+    if (reg_mem == MAP_FAILED) {
+        perror("AXS: mmap error");
+        close(axs_mem_fd);
+        return NULL;
+    }
+
+    reg = (unsigned long )reg_mem + ofs_addr;
+    return (volatile void *)reg;
+}
+
+extern inline int iounmap(volatile void *start, size_t length)
+{
+    unsigned long ofs_addr;
+    ofs_addr = (unsigned long)start & (getpagesize()-1);
+
+    /* do some cleanup when you're done with it */
+    return munmap((void*)start-ofs_addr, length+ofs_addr);
+}
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
