@@ -1,32 +1,30 @@
-Date: Thu, 7 Dec 2000 12:11:07 -0600 (CST)
-From: Brian Ford <ford@vss.fsi.com>
+Message-ID: <B25E2E5A003CD311B61E00902778AF2A0148B603@server1.skystream.com>
+From: Subodh Nijsure <SNijsure@SkyStream.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: 2.5 or 2.4 kernel profiling
-In-Reply-To: <Pine.GSO.4.21.0012071148420.515-100000@eos>
-Message-ID: <Pine.GSO.4.21.0012071210280.515-100000@eos>
+Subject: Psos bootrom booting Linux-ppc is that possible, done?
+Date: Thu, 7 Dec 2000 17:25:36 -0800 
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am trying to do some kernel profiling on my EST8260 to determine the
-bottle neck in TCP and UDP thruput, but I can't seem to get any profile
-information.
+Hello,
 
-I have put "profile=2" on the kernel boot line, and readprofile -i
-confirms this, but no function info shows up.  Is this known to be broken,
-or have I just not figured out the magic combination yet?
+I got a MPC860 FADS board for which I just now got a PSOS based
+bootrom.
 
-Thanks.
+Has anybody been successful in booting Linux from a pSOS bootrom?
 
---
-Brian Ford
-Software Engineer
-Vital Visual Simulation Systems
-FlightSafety International
-Phone: 314-551-8460
-Fax:   314-551-8444
+Any pointers will be much appriciated
+[ I have done the usual web searches to see if there is already something
+about
+this on the web..]
+
+Thanks!
+
+/Subodh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
