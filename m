@@ -1,75 +1,104 @@
-MIME-Version: 1.0
-Message-Id: <39275EFF.14793@mta2>
-Date: Sun, 21 May 2000 11:58:55 +0800 (CST)
-From: "zzh" <david-1z@263.net>
-To: Dan Malek <dan@netx4.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re:Re: my port problem
+Date: Sat, 20 May 2000 22:07:01 -0700
+From: Matt Porter <mmporter@home.com>
+To: tjroberts@lucent.com, linuxppc-embedded@lists.linuxppc.org
+Message-Id: <slrn8iernk.lpg.mmporter@liberty.chnd1.az.home.com>
+Subject: Re: QUERY: Embedded PowerPC Linux?
+References: <39243D0C.68406C9D@lucent.com>
+Reply-To: mporter@mvista.com
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->zzh wrote:
+[This message has also been posted.]
+On Thu, 18 May 2000 13:57:16 -0500, Tom Roberts <tjroberts@lucent.com> wrote:
+>	Our LSPS-1 board has 3 PPC604 100MHz CPUs with 16 MBytes of
+>	SDRAM each, an ISA interface to the host, and a SCSA-bus
+>	telephony interface. Our LSPS-2 board has 3 PPC750 200
+>	MHz CPUs with 64 MBytes of SDRAM each, a PCI interface to
+>	the host, and an H.110 telephony interface. These boards have
+>	no conventional computer peripherals, and can only communicate
+>	with the host via memory. We have sample versions of this
+>	latter board with PPC755 CPUs and PPC7400 CPUs, and 128 MBytes
+>	SDRAM per CPU -- these are our real interest for Linux. it
+>	is likely that in the future we will add Ethernet interfaces
+>	to our boards.
 >
->> 0x00200000 0x002e0f77 'vmlinux'
->> 0x002e0f78 0x002e0f94 board information
->> 0x00000000 0x000d0f94 relocated vmlinux and board info
->> 0x00c00000 0x01000000 relocated initrd
->> (0x0000000c)(0x000d0f78, 0x00c00000, 0x00400000, 0x00000000, 0x00000000)
->
->I don't know where these came from.  I guess someone modified misc.c?
->I don't know what they indicate, either.
->
-I choose to not uncompressing kernel.I modified 8xxrom to load vmlinux
-and initrd.
-Memory layout is : 0x0-0xd0f94 vmlinux+bdinfo
-                   0xc00000-0x1000000 initrd
->> Total Memoty = 16MB;unsing 64kb for hash table (at c00d0000).
->> Linux version 2.2.11.......
->> Boot arguments:
->> Calibrating delay loop...14.44 BogoMIPS
->> remove_mem_piece: bad overlap [c8000,f4000) with [c8000, d0000) [e0000, 1000000)
->
-I will check this.maybe this is the reason.
->Don't messages like this get your attention?  Something is wrong with
->the memory map, board information structure, or where you loaded the
->software kernel and ram disk.
->
->>
->> Memory: 15408k available (552k kernel code, 396k data, 28k init) [c0000000,c1000
->> 000]
->> DENTRY hash table entries: 262144 (order: 9, 2097152 bytes)
->> Buffer-cache hash table entries: 32768 (order: 5, 131072 bytes)
->> Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
->> POSIX conformance testing by UNIFIX
->> Linux NET4.0 for Linux 2.2
->> Based upon Sw<6>NET4: Unix domain sockets 1.0 for Linux NET4.0.
->> NET4: Linux TCP/IP 1.0 for NET4.0
->> IP Protocols: ICMP, UDP, TCP
->> TCP: Hash tables configured (ehash 16384 bhash 16384)
->> Starting kswapd v 1.5
->> CPM UART driver version 0.02
->> ttyS00 at 0x0100 is a SCC        //i use scc2 as ttyS0
->
->Really?  So, you modified arch/ppc/mbxboot/m8260_tty.c to use an SCC?
->You have to make lots of changes to use SCC as a console.  I don't have
->any board that uses the SCC for a serial port (easily, without some
->hardware hacking), so I haven't tried this.
+>I downloaded the Yellowdog PPC linux source, and am attempting to
+>configure it to boot on our PowerPC board (single CPU, 48 MB SDRAM).
+>This board has no I/O whatsoever (except an H.110 telephony interface
+>for which I'll have to write a driver). I already have written a driver
+>which communicates via memory buffers to/from the host, and have tested
+>it using stub code based upon our proprietary on-board OS.
 >
 >
-Why? Because motorola ads board has no smc,so i modified 8xxio/uart.c
-.I seems to me that scc can be used as a console and ttyS0 simulataneously.
-I cannot find 8260 stuff in kernel.org when i began this port,
-now i have pre7,should i read it?I know it is done on a EST board.
->> Warning: unable to open an initial console.
->> /*open("/dev/console",...);*/
+>The problem is: this Linux distribution thinks that anything which is
+>not a PPC8xx is a Macintosh of some sort or another. So I have been
+>searching out CONFIG_PMAC (and others) and adding in my own CONFIG_LSPS
+>as appropriate. This means removing large numbers of drivers and
+>initialization files, and is not very pretty. The hard part is those
+>confounded "#ifndef CONFIG_8xx" some of which I need to keep and
+>some of which I must replace....
 >
->Not surprised if this is an SCC.  You have some work to contribute :-).
-Explain to me why.rs_8xx_open not get called although i registered
-it as c 4 64
->
->
->	-- Dan
+>Is there a better distribution to start from than Yellowdog for such
+>bare-bones hardware? So far all of the "embedded PowerPC" links I
+>have found share the assumption that "embedded" means a PPC8xx;
+>my embedded processors are MPC604, MPC750, MPC755, and MPC7400; and
+>they are embedded so deeply that they have no conventional I/O at all.
 
+You are talking about a different distribution to start from but that is
+really just a collection of apps and tools centered around the Linux
+kernel itself.  If I understand correctly, you are concerned about the
+fact that the kernel itself doesn't seem very aware of embedded 6xx/7xx/7xxx
+systems.  Well, that's true.  The assumption is that 6xx/7xx/7xxx are only
+chrp/pmac/prep desktop systems and 8xx/82xx are embedded systems but that
+is changing quickly.
+
+I've worked on several embedded 750 ports recently in which I've implemented
+some preliminary concepts that should make things _much_ easier when porting
+embedded 6xx/7xx systems that don't conform to chrp/pmac/prep specs.
+
+You basically follow MACH_prep and/or MACH_gemini since they are much
+simpler than pmac.  Provide kernel/head.S, mm/init.c, and kernel/setup.c
+changes where necessary for your MACH type.  I generally prefer setting
+up a PReP style memmap unless I'm on a CPCI board and need all that extra
+PCI mem space (to map other boards RAM into).
+
+Board specific support should go into kernel/<board>_setup.c, <board>_pci.c,
+<board>_pic.c, <board>_time.c, <board>_stubs.c.  <board>_stubs.c is where
+I stub out all the chrp/pmac/prep garbage like "prom_init()" to make the
+linker happy and have a reasonablly slim kernel for 29F040 boot flashes.
+..._pic.c and ..._time.c are new since <board>_setup.c is getting to be
+too lengthy for my tastes.  <board>pci.c has something new in that
+I'm adding a (rather simplistic) PCI autoconfig routine to the pci_init()
+call since a firmware/monitor is not always available or desired.
+
+Everything to this point is non-intrusive into the current arch/ppc
+build process which is good.  The only intrusive thing I add is is a
+CONFIG_EMBEDDED which arch/ppc/kernel/Makefile keys off of to not link
+in all the extra chrp/pmac/prep stuff as well as not linking in the
+drivers/macintosh/ library archive.  An embedded port simply sets up
+config.in to define CONFIG_EMBEDDED when their board is selected from
+the machine type selection.
+
+One sore point is that MACH_<board> is defined as a single bit flag so we
+will run out of those with the many MACH types that want to be in the
+kernel in the near future.  That should probably get fixed up to something
+with more longevity.
+
+The other thing that needs to happen is that the directory structure
+will need a reorg to avoid clutter since each port that is merged into
+the kernel will add 2-6 files to arch/ppc/kernel/.  I would really
+like to see a structure more like arch/ppc/kernel/<system1>,<system2>,etc.
+Perhaps the system dependent files belong in arch/ppc/system/<system1>,etc..
+Cort has been receptive to something like this in the past, I just like
+some input before "showing the code". :)
+
+I've Cc'ed linuxppc-embedded to move the discussion there where it
+really belongs.
+
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
