@@ -1,19 +1,19 @@
-Return-Path: <dbruce@ll.mit.edu>
-Received: from ll.mit.edu (LLMAIL.LL.MIT.EDU [129.55.12.40])
-	by ozlabs.org (Postfix) with ESMTP id 33F2567A9C
+Return-Path: <francois.ruvoen@libertysurf.fr>
+Received: from mail.libertysurf.net (webmail-out.tiscali.fr [213.36.80.105])
+	by ozlabs.org (Postfix) with ESMTP id CE18C67A9D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Feb 2005 02:16:04 +1100 (EST)
-Received: (from smtp@localhost) by ll.mit.edu (8.12.10/8.8.8) id j17EkJKf027846
-	for <linuxppc-embedded@ozlabs.org>; Mon, 7 Feb 2005 09:46:19 -0500 (EST)
-Message-ID: <42077F29.3030303@ll.mit.edu>
-Date: Mon, 07 Feb 2005 09:46:01 -0500
-From: David Bruce <dbruce@ll.mit.edu>
+	Tue,  8 Feb 2005 02:25:01 +1100 (EST)
+Received: from tiscali.fr (192.168.10.56) by mail.libertysurf.net (7.1.026)
+	id 41A46CD0002B96E8 for linuxppc-embedded@ozlabs.org;
+	Mon, 7 Feb 2005 16:24:58 +0100
+Date: Mon,  7 Feb 2005 16:24:58 +0100
+Message-Id: <IBJS5M$14DAE0DC6D5C97F571F711EED9A5DF6A@tiscali.fr>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-References: <20050206010004.3890267A7A@ozlabs.org>
-In-Reply-To: <20050206010004.3890267A7A@ozlabs.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: Re: usage of  interruptible_sleep_on( ) function call
+Content-Type: text/plain; charset=iso-8859-1
+From: "=?iso-8859-1?Q?francois.ruvoen@libertysurf.fr?="
+	<francois.ruvoen@libertysurf.fr>
+To: "=?iso-8859-1?Q?linuxppc-embedded?=" <linuxppc-embedded@ozlabs.org>
+Subject: Re: Microwindows on Icecube/CoralP
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,157 +24,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I had the same problem with the i2c-algo-8260.c when loading a module. 
-It's the __pa() translation. Replace _ALL_ __pa with iopa. It worked for 
-me. I discovered it from this link:
-http://ozlabs.org/pipermail/linuxppc-dev/2002-February/013260.html
-
-linuxppc-embedded-request@ozlabs.org wrote:
-> Send Linuxppc-embedded mailing list submissions to
-> 	linuxppc-embedded@ozlabs.org
-> 
-> To subscribe or unsubscribe via the World Wide Web, visit
-> 	https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> or, via email, send a message with subject or body 'help' to
-> 	linuxppc-embedded-request@ozlabs.org
-> 
-> You can reach the person managing the list at
-> 	linuxppc-embedded-owner@ozlabs.org
-> 
-> When replying, please edit your Subject line so it is more specific
-> than "Re: Contents of Linuxppc-embedded digest..."
-> 
-> 
-> Today's Topics:
-> 
->    1. question re usage of  interruptible_sleep_on( ) function call
->       in	cpm_iic_tryaddress( ) function (in i2c-algo-8xx.c)
->       (Povolotsky, Alexander)
-> 
-> 
-> ----------------------------------------------------------------------
-> 
-> Message: 1
-> Date: Sat, 5 Feb 2005 12:30:06 -0500 
-> From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-> Subject: question re usage of  interruptible_sleep_on( ) function call
-> 	in	cpm_iic_tryaddress( ) function (in i2c-algo-8xx.c)
-> To: "'linuxppc-dev@ozlabs.org'" <linuxppc-dev@ozlabs.org>,
-> 	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>,
-> 	"'etux@embeddedtux.org'" <etux@embeddedtux.org>
-> Message-ID:
-> 	<313680C9A886D511A06000204840E1CF0A6475F1@whq-msgusr-02.pit.comms.marconi.com>
-> 	
-> Content-Type: text/plain;	charset="ISO-8859-1"
-> 
-> Hello,
-> 
->> 
->>I have MPC880 microprocessor based board with single 24C02 I2C EEPROM,
->>connected to the I2C bus.
->>
->>Currently booting of the board hangs in the I2C driver after invocation of
->>interruptible_sleep_on( )
-> 
->  function call  in cpm_iic_tryaddress( ) function (in i2c-algo-8xx.c file).
-> 
-> Is it appropriate to use the interruptible_sleep_on( ) function at the
-> kernel booting stage ?
->  (I personally do not think so - since such usage prevents further kernel
-> booting - as observed).
-> What should be done in this code to avoid slleping ?
-> 
-> I presume that the usage of the interruptible_sleep_on( ) function would be
-> appropriate if the 
-> I2C would be configured as a module (after the kernel booting is completed)
-> ?
-> Follow up question:  is it really expected to do I2C initialization ONLY as
-> a module after the kernel booting ?
-> (is it documented anyplace ?) 
-> 
-> 
->>The (end of) log buffer shows following:
->>....
->><6>i2c /dev entries driver.
->><7>device class 'i2c-dev': registering.
->><7>bus i2c:add driver dev_driver.
->><7>i2c-core: driver dev_driver registered
->><6>i2c-rpx: i2c MPC8xx driver.
->><7>DEV: registering device: ID ='i2c-0'.
->><7>CLASS: registering class device: ID= 'i2c-0'.
->><7>i2c_adapter i2c-0:Registered as minor 0.
->><7>CLASS:registering class device: ID = 'i2c-0'
->><7>i2c_adapter i2c-0: registered as adapter #0.
->><4>cpm_iic_init() - iip=fa203c80.
->><4>cpm_iic_init[132] Install ISR for IRQ 16.
->><6>CPM interrupt c0105d90 replacing c01f7a8c.
->><3>request_irq() returned -22  for CPM vector 32.
->><6> i2c-algo-8xx.o: scanning bus m8xx........
->><4>cpm_iic_tryaddress(cpm=c019b9f8,addr=0).
->><4>iip fa203c80, dp_addr 0x800.
->><4>iic_tbase 2048, r_tbase 2048
->><4>about to sleep
->>.ABOVE LINE IS THE LAST ENTRY IN THE LOG BUFFER - THE BOOT HANGS
->>THEREAFTER ... 
->>
-> 
-> Here is the fragment of the cpm_iic_tryaddress( ) function in
-> i2c-algo-8xx.c,
-> where the problem takes place:
-> .... 
-> //      save_flags(flags); cli();
->         i2c->i2c_i2cer = 0xff;
->         i2c->i2c_i2cmr = 0x13;  /* Enable some interupts */
->         i2c->i2c_i2mod = 1;     /* Enable */
->         i2c->i2c_i2com = 0x81;  /* Start master */
-> //      restore_flags(flags);
-> 
->         if (cpm_debug > 1) printk("about to sleep\n");
-> 
->         /* wait for IIC transfer */
-> interruptible_sleep_on(&iic_wait);
-> if (signal_pending(current))
->         return -EIO;
-> 
-> if (cpm_debug > 1) printk("back from sleep\n");
-> 
-> if (tbdf->cbd_sc & BD_SC_NAK) {
->         if (cpm_debug > 1) printk("IIC try; no ack\n");
->         return 0;
-> }
-> 
-> if (tbdf->cbd_sc & BD_SC_READY) {
->         printk("IIC try; complete but tbuf ready\n");
-> }
-> 
-> return 1;
-> 
-> ........
-> 
->>Thanks,
->>Best Regards,
->>Alex 
->>
->>
-> 
-> 
-> 
-> ------------------------------
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> End of Linuxppc-embedded Digest, Vol 6, Issue 12
-> ************************************************
-> 
-> 
-
--- 
-David Bruce
-MIT Lincoln Laboratory
-244 Wood Street
-Lexington, MA 02420
-781.981.3863
-mailto:dbruce@ll.mit.edu
+Thanks. Tweaking a little the source code and I now get the=0D=0Aright co=
+lours. The funny thing is that byte swapping was:=0D=0A0x1234567 =3D> 0x3=
+4126745. I initially thought I could just=0D=0Aswap the two least signifi=
+cant bytes as I am pretty sure I=0D=0Aam using a 16-bit mode (fbset repor=
+ts that anyway). Now I'd=0D=0Alike to see that in 640x480 and not just 10=
+24x768 but that=0D=0Aissue seems tied the frame buffer driver this time.=0D=
+=0A=0D=0A---------- Initial Header -----------=0D=0A=0D=0AFrom      : "Ma=
+rk Chambers" <markc@mail.com>=0D=0ATo          :=0D=0A<francois.ruvoen@li=
+bertysurf.fr>,"linuxppc-embedded"=0D=0A<linuxppc-embedded@ozlabs.org>=0D=0A=
+Cc          : =0D=0ADate      : Mon, 7 Feb 2005 07:59:16 -0500=0D=0ASubje=
+ct : Re: Microwindows on Icecube/CoralP=0D=0A=0D=0A=0D=0A>I have been pla=
+ying with the CoralP, Icecube and Debian.=0D=0A>Works fine, thanks to the=
+ tutorial on the Denx site.=0D=0A>I now would like to see the microwindow=
+s stuff working. I=0D=0A>have been trying the demos from the ELDK but I g=
+et strange=0D=0A>colors, it seems my palette is all wrong. The same happe=
+ns=0D=0A>when I recompile the latest version of microwindows (except=0D=0A=
+>I get yet another palette).=0D=0A>Any pointers?=0D=0A=0D=0AOne unexpecte=
+d thing about the 5200 is that it swaps bytes=0D=0Ato/from the PCI buss. =
+ So if you write a 32 bit pixel, for=0D=0Ainstance 0x12345678, it will be=
+ written to PCI as=0D=0A0x78563412.  Presumably this is based on an assum=
+ption=0D=0Athat PCI targets will be little-endian.  So you might try=0D=0A=
+reversing bytes and see if the palettes make sense.=0D=0A=0D=0AMark Chamb=
+ers=0D=0A=0D=0A=0D=0A=0A************************ ADSL JUSQU'A 16 MEGA + T=
+ELEPHONE GRATUIT ************************=0AL'ultra haut d=E9bit =E0 30EU=
+R/mois seulement ! Et vous t=E9l=E9phonez gratuitement en France vers les=
+ postes fixes, hors num=E9ros sp=E9ciaux.=0APour profiter de cette offre =
+exceptionnelle, cliquez ici : http://register.tiscali.fr/adsl/  (voir con=
+ditions sur le site)=0A=0A
