@@ -1,44 +1,49 @@
-From: Amit Shah <amit.shah@codito.com>
-To: huailin@xtrj.org
+Message-ID: <20040511205120.94854.qmail@web21405.mail.yahoo.com>
+Date: Tue, 11 May 2004 13:51:20 -0700 (PDT)
+From: Huailin Chen <chen_huailin@yahoo.com>
+Reply-To: huailin@xtrj.org
 Subject: Re: IBM 750GX SMP on Marvell Discovery II or III?
-Date: Tue, 11 May 2004 23:01:30 +0530
+To: Amit Shah <amit.shah@codito.com>
 Cc: Dan Malek <dan@embeddededge.com>,
 	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.linuxppc.org
-References: <20040511172318.88343.qmail@web21412.mail.yahoo.com>
-In-Reply-To: <20040511172318.88343.qmail@web21412.mail.yahoo.com>
+In-Reply-To: <200405112301.30665.amit.shah@codito.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200405112301.30665.amit.shah@codito.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+When talking about Multi-Processor arch, we have to
+consider the chipset support, especailly for the bus
+protocol part.
 
-It's pretty strange then that people would come up with boards based on
-dual-processors of the 7xx family (like the IBM Argan board or the Xcalibur
-boards). Any idea how they use it or what are they intended for?
+For the particular PowerPC G3 vs. G4 issue, the thing
+is: If you have a G4 with MPX support, it would be not
+wise if have a chipset with ONLy 60x support. I mean,
+going for SMP is to achieve high performance. However,
+your goal will not be achieved if you don't have a
+good system bus throughput, which usually is the real
+bottleneck for an appliance.
 
-Amit.
+Also, I even don't think GT64260 have the Door Bell
+stuff with which one cpu can send external interrupts
+to another.
 
-On Tuesday 11 May 2004 22:53, Huailin Chen wrote:
-> > My experience has been that MPC750s work in a SMP
-> > environment
-> > on a 60x bus.  Maybe I was just lucky?  The way I
-> > read the manual,
-> > they should work with a proper memory controller.
-> >
-> > Thanks.
+For bus protocol itself, there are some signal/pins
+different in MPX than 60x. Most of them is from data
+streaming and so on, in order to remove dead circles
+and so on.
+
+For more detail, try to some data sheet about your
+chipset.
+
+Huailin,
+
+--- Amit Shah <amit.shah@codito.com> wrote:
 >
-> 750 MEI protocol does NOT support SMP well. Sure, you
-> are right. It works, but not that good.
->
-> Ideally, MESI + MPX Bus is the best one for SMP under
-> PPC arch. That's why need go to G4+ GT 64360.
-
---
-Amit Shah
-Codito Technologies Pvt. Ltd.
+> It's pretty strange then that people would come up with boards based
+> on dual-processors of the 7xx family (like the IBM Argan board or the
+> Xcalibur boards). Any idea how they use it or what are they intended
+> for?
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
