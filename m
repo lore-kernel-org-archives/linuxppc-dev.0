@@ -1,24 +1,47 @@
-Message-ID: <3D0D89E6.6040704@esd-electronics.com>
-Date: Mon, 17 Jun 2002 09:04:06 +0200
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Message-ID: <3D0DA9C2.D78C43E5@imc-berlin.de>
+Date: Mon, 17 Jun 2002 11:20:02 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-To: Dan Brennan <dmb8@optonline.net>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: compact flash and true IDE mode
-References: <3D0A3DA4.586D0956@optonline.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: board specific defines in commproc.h !?!?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Dan,
+Hi there,
 
-take a look into the CPCI405 target support in the recent devel tree.
-We use a mem'mapped CF card as storage device on many of our boards.
+I think we should move the board specific defines such as
 
-The file linux/drivers/ide/cpci405.c should be a good starting point for your work.
+/***  RPXCLASSIC  *****************************************************/
 
-Matthias
+#ifdef CONFIG_RPXCLASSIC
+/* Bits in parallel I/O port registers that have to be set/cleared
+ * to configure the pins for SCC1 use.
+ */
+#define PA_ENET_RXD     ((ushort)0x0001)
+#define PA_ENET_TXD     ((ushort)0x0002)
+#define PA_ENET_TCLK    ((ushort)0x0200)
 
+etc. out of ./include/asm-ppc/commproc.h into the board specific header
+files like ./arch/ppc/platforms/xxx.h
+
+The advantage is, that you don't have to change many files to port linux
+to a new, custom platform. After all #define PA_ENET_RXD
+((ushort)0x0001) is a board specific configuration define.
+
+The same goes for the status_led.h from DENX (which unfortunatly has not
+yet made it into linuxppc_2_4_devel!?!?)
+
+At the same time we should changes this in the PPCBoot source - to make
+porting Linux to a new platform easier.
+
+I am prepared to do this - if you think it's worth it!
+
+So?
+
+Cheers,
+
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
