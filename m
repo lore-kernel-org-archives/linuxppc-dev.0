@@ -6,80 +6,86 @@ Subject: Re: EV-64260-BP & GT64260 bi_recs
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 20 Mar 2002 08:01:19 MST."
-             <20020320150119.GB3762@opus.bloom.county>
-Date: Wed, 20 Mar 2002 16:43:18 +0100
-Message-Id: <20020320154323.55F28109F3@denx.denx.de>
+In-reply-to: Your message of "Wed, 20 Mar 2002 08:55:51 MST."
+             <20020320155551.GD3762@opus.bloom.county>
+Date: Wed, 20 Mar 2002 17:18:35 +0100
+Message-Id: <20020320161840.C5A84109F3@denx.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <20020320150119.GB3762@opus.bloom.county> you wrote:
+In message <20020320155551.GD3762@opus.bloom.county> you wrote:
 >
-> > Has been shot down? When? Where? Why? Am I missing something?
+> Well, I do think the idea of a generic BI_ETH_DEVICE was killed.  Unless
+> you can work out how to deal with the multiple driver issue above.
+
+I'm getting a bit tired about this discussion. We  start  with  siome
+nice  ideas,  then  some open issues pop up, and instead of trying to
+find a solution we drop everything again. I think I rather lean  back
+and  wait for the next round of this discussin in about 2 or 3 months
+from now.
+
+We are just wasting time. it seems.
+
+> Well if this works now, why wouldn't it work later?
+
+It works now because we usually have only a single network interface,
+and there is a single MAC address entry in bd_info. There are  a  few
+systems which have more interfaces (with a strong tendency that their
+number  is  growing) and they use a private (non-standard) version of
+bd_info which is incompatible with anything else. Or  they  use  some
+hard-wired mechanism to compute the additional MAC addresses from the
+first one which is usually not acceptable.
+
+> > I am not aware of something that looks like an acceptable solution to
+> > me.
 >
-> You were CC'ed.   One problem with a generic record is that what happens
-> when you have multiple drivers (8260 + gt-64260, for example).  Also Dan
-> Malek pointed out that most of the information (not all) should be up to
-> the driver (or userland) to handle.
+> So you don't like the patch you made or you don't recall the patch I'm
+> talking about?
 
-We talked about problems, yes. But  that  doesn't  usually  mean  the
-whole idea gets dropped, or does it?
+I'm not really sure which patch you are referring to; I think I  know
+which one you mean, and that one was ugly ;-)
 
-I really like to be able to configure the network interface(s)  of  a
-memory-restricted  embedded  system  using  the IP-autoconfig feature
-just by passing it a "ip=..." command line agument.  This  saves  (1)
-the  memory  for tools like ifconfig etc in the application image and
-(2) the need to  modify  the  application  when  the  network  config
-changes.
+> I don't see how an index helps (enet drivers are in a 'random' order,
+> normally) and some bytes for specific info just means there's some bytes
+> there.  Are you saying the first set of bytes we toss in say this is
+> driver X ?
 
-> > We need to deal with boards with more than  one  ethernet  interface,
-> > which  are already active in the firmware (net-booting from redundand
-> > interfaces, using separate MAC addresses).
+For instance. Hey, but we are talking about a very, very special case
+here - when you have set of non-standard controllers which don't know
+their own addresses _and_ need to get a specific assignment _and_ you
+don't know the initialization sequence _and_ ...
+
+For 98% of all practical purposes it will be sufficient to  pass  the
+list of MAC addresses, and for 1.95% it will be sufficient to combine
+the  MAC  address  with  information about the driver type (GT, 82xx,
+...).
+
+> > So far all 824x systems we (DENX) have seen  looked  like  "standard"
+> > PCI devices, using standard device drivers under Linux.
 >
-> Well, you had a patch awhile ago which allowed for this to be
-> configured, yes?
+> Er, you lost me there.  Either you're saying it's using "standard" chips
+> (tulip, eepro, et al), or (and I don't recall if 824x has it's own
+> special enet like 8260) the enet device shows up normally on the PCI bus
+> and you've got drivers for it..
 
-I am not aware of something that looks like an acceptable solution to
-me.
+They are using hardware that looks like standard chips to the system.
 
-> > We added an index field to BI_ETH_CFG, didn't we?  The  driver  would
-> > then "know" how to map this...
->
-> How would it "know" which ones it can grab?  Ben said the driver should
-> do something like find_bi_rec(BI_XXX_ETH_CFG), which would presumbly
-> return NULL or >= 1 set of bi_recs of BI_XXX_ETH_CFG.  Then you get the
-> 1st and 2nd GT64260 enet devices, and say the 1st and 2nd 8260 enet
-> devices, and whichever drivers registers first gets eth0+eth1 and the
-> other eth2+eth3.
+> But either way it's sounding like it's not a problem now..
 
-...which may be perfectly fine in many situations. If you need a more
-selective assignment, there was the proposal to add some  index  (me)
-or  "some bytes for driver specific info (e.g., on gt64260, is_rmii)"
-(Mark A. Greer) which could be easily used to mark a bi_rec as  [not]
-acceptable by a certain ethernet driver.
+Right.
 
-
-> > We _do_ care, a little for 8xx, very much for 8260, also for 824x and
->
-> We also need to fix the drivers for these at the same time.  Do we
-> actually make use of special 824x enet right now?  I think one of the
-
-So far all 824x systems we (DENX) have seen  looked  like  "standard"
-PCI devices, using standard device drivers under Linux.
-
-> other problems we'll run into is some of the rough edges of 8xx and 8260
-> support...
-
-Right. Some work will be necessary.
+The biggest problem to me is a couple of 8260 systems with  dedicated
+assigment of MAC addresses to several ethernet interfaces.
 
 Wolfgang Denk
 
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-In an infinite universe all things are possible, including the possi-
-bility that the universe does not exist.
-                        - Terry Pratchett, _The Dark Side of the Sun_
+Quote from the Boss after overriding the decision of a task force  he
+created  to  find  a  solution:  "I'm  sorry  if  I ever gave you the
+impression your input would have any effect on my  decision  for  the
+outcome of this project!"
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
