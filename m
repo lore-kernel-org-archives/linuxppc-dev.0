@@ -1,21 +1,37 @@
-Message-Id: <m12mMrg-001SyZC@bucks>
-From: diekema@bucks.si.com (diekema_jon)
-Subject: Need R3 value passed into _start on the SBC8260
-To: linuxppc-embedded@lists.linuxppc.org, dan@netx4.com
-Date: Mon, 1 May 2000 16:32:23 -0400 (EDT)
+Message-ID: <390E078A.14325494@embeddededge.com>
+Date: Mon, 01 May 2000 18:39:06 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
+To: Joshua Horvath <Josh_Horvath-AJH051@email.mot.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Board boots when in BDM, hangs otherwise
+References: <390DDCC0.D293406B@labs.mot.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-	In arch/ppc/mbxboot/head_8260.S, _start assumes that R3 is
-	pointing to the board configuration data.  What does the
-	MontaVista custom ROM on the EST SBC8260 board set R3 to before it
-	jumps to _start?
+Joshua Horvath wrote:
 
-	start_:
-        mr      r11,r3          /* Save pointer to residual/board data */
-        mr      r25,r5          /* Save OFW pointer */
+> ....  If I download this program via the BDM port and run it, everything
+> works fine.
+
+
+Welcome to the wonderful world of BDM.   The bottom line is the BDM
+software is likely initializing something in the processor that you are
+not doing in your code.  This is an all too typical problem I have
+seen in many organizations, and is the reason the first thing I do
+is write processor boot roms and initialization, then throw the BDM
+away before even starting on the kernel.
+
+> .... Now, the weird thing
+> is, if I do an "IN" command (which does some basic initialization and puts the
+> processor in debug mode) and then jump to flash and execute my code, everything
+> works fine.
+
+Yes, indeed, you are missing something in your code.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
