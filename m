@@ -1,30 +1,40 @@
-Date: Thu, 6 Jun 2002 12:30:39 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: roger blofeld <blofeldus@yahoo.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Sungem bug or something else?
-Message-ID: <20020606193039.GD14252@opus.bloom.county>
-References: <20020406102410.14763@smtp.wanadoo.fr> <20020606192510.58822.qmail@web11106.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020606192510.58822.qmail@web11106.mail.yahoo.com>
+Date: Thu, 6 Jun 2002 15:40:32 -0400 (EDT)
+From: Christopher Murtagh <christopher.murtagh@mcgill.ca>
+To: <benh@kernel.crashing.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: SMP/HIGHMEM/7450 status ?
+In-Reply-To: <20020606174530.22442@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.4.33.0206061539340.20902-100000@blues.wcg.mcgill.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jun 06, 2002 at 12:25:10PM -0700, roger blofeld wrote:
+On Thu, 6 Jun 2002 benh@kernel.crashing.org wrote:
+>> herrenschmidt.wcg.mcgill.ca
+>
+>hehe, nice ;) though I wouldn't like having to type that name every
+>day to telnet to the box ;)
 
-> I encounter an oops during boot bringing up a sungem
-> interface. (smp g4 450/gcc 3.1/glibc 2.2.5) If I defer
-> bringing up the network at boot, I can successfully
-> start eth0 (sungem) if I start eth1 (tulip) first, so
-> it may not be the sungem driver itself. This happens
-> on benh 2.4.19-Bpre10, and pre9.
+ Lets just say, I've learned to type your last name really well. :-)
 
-Have you tried gcc-3.0 or gcc-2.95 ?
+Cheers,
+
+Chris
+
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+
+Christopher Murtagh
+Webmaster / Sysadmin
+Web Communications Group
+McGill University
+Montreal, Quebec
+Canada
+
+Tel.: (514) 398-3122
+Fax:  (514) 398-2017
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
