@@ -1,26 +1,62 @@
-Date: Thu, 11 Feb 1999 19:10:08 -0500 (EST)
-From: Tom Rini <tmrini@ntplx.net>
+Date: Thu, 11 Feb 1999 19:48:31 -0500 (EST)
+From: Fred Dushin <fadushin@blackcat.cat.syr.edu>
+Reply-To: fadushin@blackcat.cat.syr.edu
 To: linuxppc-dev@lists.linuxppc.org
-Subject: OF and NetBooting
-Message-ID: <Pine.LNX.4.05.9902111905490.12241-100000@p12-42.hartford.dialin.ntplx.com>
+Subject: Adventures with KDE-1.1
+Message-ID: <Pine.LNX.4.00.9902111928330.4101-100000@blackcat.cat.syr.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
-  After playing around a bit more with my iMac, I was wondering if anyone
-knew just what was going on here..  First, I've gotten the iMac to
-NFS-boot with BootX, and verified that bootp is setup right (ie it sets up
-the network, and I can tftp in the file from OF).  However, when I try and
-load a kernel from OF (either hd:vmlinux or enet:0,vmlinux) I get CLAIM
-failed.  Has anyone gotten past this?  I'm thinking it might be something
-we do really early on, as netbsd does boot (enet:0,netbsd.generic)
 
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+In case anyone is interested...
+
+I downloaded the kde 1.1 tarballs and had a go building.
+But first I updated egcs as much as I could off of linuxppc.org.
+
+BTW, is this the place to look for bleeding edge stuff?  Doesn't
+look like it, by the dates.
+
+[root@blackcat /downloads]# rpm -qa | grep egcs
+egcs-as-gcc-1.1-0a
+egcs-c++-1.1-0a
+egcs-libstdc++-2.8.0-2b
+egcs-1.1-0a
+egcs-libstdc++-devel-2.8.0-2b
+[root@blackcat /downloads]# rpm -qa | grep glibc
+glibc-devel-0.961212-1l
+glibc-info-0.961212-1h
+glibc-static-0.961212-1l
+glibc-0.961212-1l
+
+qt-1.42 built without a hitch.
+
+I started with kde-base, though, and ran into some problems.
+The first problem was due to g++'s including string.h; apparently
+the definition of strnlen involves an implicit cast to void *,
+which ANSI C++ doesn't like (in an optimized version of strnlen).  
+Got around that with a hack (what else?)
+Turned off HAS_ARGZ in config.h.
+
+Further down, I ran into a mess of problems, mostly around header
+files in /opt/egcs/include/g++.  Haven't tracked them down,
+but I figured I'd give the list a holler for suggestions
+about compilers/libs, etc.
+
+I'm on an ancient installation, going back to pre-DR2, I think,
+though I have kept a lot up to date.  2.1.24 on a 7200/75.
+
+Is our compiler out of date?  Or are KDE config scripts mangled?
+Or should I get a new machine...?
+
+Thanks,
+Fred
+
+--
+Fred Dushin                      mailto:fadushin@blackcat.cat.syr.edu
+PGP public key available at      http://blackcat.cat.syr.edu/~fadushin/pgp
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
