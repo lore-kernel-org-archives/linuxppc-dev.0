@@ -1,24 +1,27 @@
-Message-ID: <38777E93.2BE51FEE@charter.net>
-Date: Sat, 08 Jan 2000 12:14:43 -0600
-From: Dan Dickey <ddickey@charter.net>
+From: John Buswell <johnb@one.net>
+To: anthony tong <atong@uiuc.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: iMac DV and aty128fb
+In-Reply-To: <20000108110850.A5252@students.uiuc.edu>
+Message-ID: <Pine.LNX.3.96.1000108181304.23736A-100000@shell>
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
-CC: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: MPC850 Development Board - with SDRAM
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 8 Jan 2000 13:17:41 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-yes - I have an RPX Lite sitting right next to me.
-But, apparently Embedded Planet doesn't have any
-development boards with SDRAM on them.  Does anyone
-out there know of companies that do make them and
-have them available?  Right now, the only company
-I'm aware of that does is http://www.tqc.de.
-Is there any competition for this market?
-	-Dan
+On Sat, 8 Jan 2000, anthony tong wrote:
+
+> What if you don't boot with a vmode argument and use the proper video
+> timings provided by fbset after you boot?
+
+if i don't boot with the vmode option I don't get any display :)
+
+is there any place that documents what parameters I can pass to the kernel
+with video= ? 
+
+ 
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
