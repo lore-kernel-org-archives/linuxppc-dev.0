@@ -1,13 +1,30 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Wed, 9 Jul 2003 15:57:23 -0400
-From: Kent Borg <kentborg@borg.org>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Heretical Question
-Message-ID: <20030709155723.G20807@borg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0927@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Kent Borg'" <kentborg@borg.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Heretical Question
+Date: Wed, 9 Jul 2003 16:09:01 -0400 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+ddd will let you specify a gdb debugger to use. You have to add -g -ggdb to
+the CFLAGS and compile the kernel.  Then give the command
+
+ddd --debugger ppc_8xx-gdb vmlinux
+
+Replace ppc_8xx-gdb with your debugger of choice, gdb is the default if you
+do not specify.
+
+-----Original Message-----
+From: Kent Borg [mailto:kentborg@borg.org]
+Sent: Wednesday, July 09, 2003 3:57 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Heretical Question
+
 
 
 I know it is wrong for me to ask, but is there (possibly already
@@ -26,5 +43,6 @@ Suggestions?
 Thanks,
 
 -kb
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
