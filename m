@@ -1,47 +1,36 @@
-Date: Mon, 21 Aug 2000 12:46:18 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-cc: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org, dmj+@andrew.cmu.edu
+Date: Mon, 21 Aug 2000 13:25:11 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Michel Lanners <mlan@cpu.lu>, dmj+@andrew.cmu.edu,
+        linuxppc-dev@lists.linuxppc.org
 Subject: Re: Control fb problem on 8500
-In-Reply-To: <39A0EF0C.EDC3D3A1@student.ethz.ch>
-Message-ID: <Pine.LNX.4.10.10008211241460.371-100000@cassiopeia.home>
+In-Reply-To: <Pine.LNX.4.10.10008191410200.525-100000@cassiopeia.home>
+Message-ID: <Pine.LNX.4.10.10008211320490.11699-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 21 Aug 2000, Michel [iso-8859-1] Dänzer wrote:
-> That's not even needed, the fbdev driver is just broken. Line 430:
+> > That's what I was thinking about. However, I'm not sure that XFree
+> > supports a display with discontiguous lines in video memory. I think I
+> > read that somewhere in some mailing list or X doc... Can any of the
+> > XFree specialists confirm?
 >
-> 	pScrn->displayWidth = pScrn->virtualX; /* FIXME: might be wrong */
+> I can speak for XFree86 3.x only, not for 4.x.
 >
-> is indeed wrong. virtualX is obvious, but displayWidth should be the memory
-> pitch of a scanline.
->
-> Now you just have to find out where to get the correct value for displayWidth.
+> The only way to work with this is to make xres_virtual = xres+0x20. But then
+> XFree86 will draw into the cursor region, too.
 
-I suppose
+I think it used to work without such a hack - some old m68k Macs had the
+video scan lines start every 1024 bytes but the actual xres was smaller.
+I'll have to look at the macfb code to see what xres_virtual was set to.
+I'm sure the X server didn't draw to the offscreen region as that would
+have caused a bus error (at least the earlier 3.3.x versions didn't.
+Later X versions drawing beyond xres would in fact explain bus errors
+some people saw ...).
 
-    if (fix.line_length)
-	pScrn->displayWidth = fix.line_length*8/var.bits_per_pixel;
-    else
-	pScrn->displayWidth = var.xres_virtual;
-
-should work fine, except on hardware were fix.line_length*8/var.bits_per_pixel
-might not be integer (e.g. if 1280x1024x24 mode requires a line_length of
-4096).
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
