@@ -1,32 +1,57 @@
-Date: Wed, 15 May 2002 14:41:20 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Cameron, Steve" <Steve.Cameron@hp.com>
+Message-ID: <3CE37B49.6000508@elsoft.ch>
+Date: Thu, 16 May 2002 11:26:33 +0200
+From: =?ISO-8859-1?Q?=22David_M=FCller_=28ELSOFT_AG=29=22?= <d.mueller@elsoft.ch>
+MIME-Version: 1.0
+To: Tom Rini <trini@kernel.crashing.org>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: bitkeeper question
-Message-ID: <20020515214120.GB20456@opus.bloom.county>
-References: <45B36A38D959B44CB032DA427A6E10640167CFCE@cceexc18.americas.cpqcorp.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45B36A38D959B44CB032DA427A6E10640167CFCE@cceexc18.americas.cpqcorp.net>
+Subject: Re: [PATCH] Several patches agains linuxppc_devel-2.4.19-pre8
+References: <3CE2481B.5070108@elsoft.ch> <20020515155200.GN721@opus.bloom.county>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, May 15, 2002 at 02:34:54PM -0500, Cameron, Steve wrote:
+Tom Rini schrieb:
+> On Wed, May 15, 2002 at 01:35:55PM +0200, "David M?ller (ELSOFT AG)" wrote:
+>
+>
+>>The attached patch fixes the following issues:
+>
+>
+> Looks good, except:
+> Don't #ifdef externs, if they aren't used it's OK.
+> Since this code only has to work in recent'ish kernels (in reality only
+> 'current' kernels) don't bother with the
+> #ifdef MODULE_LICENSE
+> ...
+> #endif
+>
+> Just use it.
+>
 
-> I'm not sure if this is the right place
-> to ask.  I'm wondering about how (and if) tags
-> are being used for the bk://ppc.bkserver.net/linuxppc_2_4_devel
-> tree.
+I have copied the MODULE_LICENSE stuff from another driver.
+Does anybody knows if this feature is tagged to be a remove candiate in
+future kernels and/or in the modutils?
 
-The only tags on that repository are the kernel.org tags.  IE:
-bk export -rv2.4.18
-Will get you kernel.org as of 2.4.18.   If you do some looking w/ bk
-changes, you can see when that was merged into the repository, and
-export that changeset.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Another question:
+
+I've noticed that (at least) the following files have their executable
+bit set, although they are simple C source files.
+./include/asm-ppc/ppc405_dma.h
+./arch/ppc/kernel/ppc405_dma.c
+./arch/ppc/kernel/ppc405_pci.c
+./arch/ppc/kernel/ppc4xx_setup.c
+./arch/ppc/platforms/walnut.c
+./arch/ppc/platforms/cpc700_pic.c
+
+On the other hand, the PPCBoot kernel packer script in
+./arch/ppc/boot/utils/mkimage.wrapper have the exec bit cleared.
+
+Is it a bit task to fix this?
+
+
+Dave
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
