@@ -1,36 +1,49 @@
-Subject: Re: pmdisk working on ppc (WAS: Help port swsusp to ppc)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 27 Jan 2004 11:47:01 +0100
+From: Pavel Machek <pavel@ucw.cz>
 To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: Pavel Machek <pavel@ucw.cz>, Hugang <hugang@soulinfo.com>,
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Hugang <hugang@soulinfo.com>,
 	Patrick Mochel <mochel@digitalimplant.org>,
 	Nigel Cunningham <ncunningham@users.sourceforge.net>,
 	ncunningham@clear.net.nz,
 	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <Pine.LNX.4.44.0401271130010.23778-100000@opal.biophys.uni-duesseldorf.de>
-References: 
-	 <Pine.LNX.4.44.0401271130010.23778-100000@opal.biophys.uni-duesseldorf.de>
-Content-Type: text/plain
-Message-Id: <1075199877.5659.190.camel@gaston>
+Subject: Re: pmdisk working on ppc (WAS: Help port swsusp to ppc)
+Message-ID: <20040127104701.GB18666@elf.ucw.cz>
+References: <1075154452.6191.91.camel@gaston> <Pine.LNX.4.44.0401271130010.23778-100000@opal.biophys.uni-duesseldorf.de>
 Mime-Version: 1.0
-Date: Tue, 27 Jan 2004 21:37:57 +1100
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.44.0401271130010.23778-100000@opal.biophys.uni-duesseldorf.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I don't mind the wait for memory being freed. Copying more pages with
-> interrupts disabled would mean a higher chance for PMU lockup, won't it?
+Hi!
 
-It's also possible that there is a bug and it just crashes :)
+> > > > Ah, also: The "Freeing memory" phase takes forever. That should
+> > > > really be fixed.
+> > >
+> > > Well, it does the trick for me, but it takes 50% or so of suspend
+> > > time. Some memory managment guru making "freeing memory" faster would
+> > > certainly be welcome.
+> > > 								Pavel
+> > > PS: But I'd like to keep it simple...
+> >
+> > Haven't looked at it yet. Several crash reports so far, mostly
+> > lockups right after printing the number of pages to save. I wonder
+> > if we have something broken in there. It dies for me once too at
+> > this point.
+>
+> The PMU locking up with interrupts disabled, for me (Lombard, 400 MHz).
+> Seems to happen more often on slow machines.
+> Otherwise, it works (saving to the last swap partition if you try to
+> specify which one to use; patch sent to Ben FWIW).
 
-Also, I do suspend devices before the page copy, and I quickly hacked a
-PMU sysdev that should suspend ADB interrupts (at least) so that should
-be fine, except if you have a brightness request in flight maybe ?
+What is "PMU locking"? Is there some part of powermac harware that
+kills machine if you sleep too long with interrupts disabled?
 
-The whole PMU suspend thing must be reworked I suppose. (And the battery
-monitoring thing "paused" as well, we must wait for async PMU requests,
-that is at least battery requests and backlight ones to stop)
-
-Ben.
-
+								Pavel
+--
+When do you have a heart between your knees?
+[Johanka's followup: and *two* hearts?]
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
