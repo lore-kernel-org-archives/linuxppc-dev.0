@@ -1,28 +1,48 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Lars Brinkhoff <lars.spam@nocrew.org>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Success? Both CPUs running (Was: Bogus interrupt -1)
-Date: Sat, 12 May 2001 20:25:35 +0200
-Message-Id: <20010512182535.6170@smtp.wanadoo.fr>
-In-Reply-To: <85y9s2sa6y.fsf_-_@junk.nocrew.org>
-References: <85y9s2sa6y.fsf_-_@junk.nocrew.org>
+Message-ID: <3AFD9868.29C558@folkwang-hochschule.de>
+Date: Sat, 12 May 2001 22:09:12 +0200
+From: =?iso-8859-1?Q?J=F6rn?= Nettingsmeier <nettings@folkwang-hochschule.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: pismo sleep behaviour w/ 2.4.4-benh
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>
->> The symptoms are pretty much (from what he's told me): The system runs for
->> a while, then one of the CPUs goes off into la-la land never to return
->> again. Not very complicated.
->
->It seems to me there was a bug in benh 2.4.4-pre1.  I'm now running bk
->2.4.5-pre1, and I have never seen a CPU hang.
+hello linuxppc-dev people !
 
-Can you tell me how my current 2.4.4 goes ?
+i have been running the mentioned system for about 10 days now,
+using the latest pmud daemon, and it works fine for me, except:
 
-Ben.
+* the box usually falls asleep again after waking up. when woken
+again, it stays up like it should.
+* every 10 or so sleep cycles, the machine locks up. blank screen,
+no standby-led, and i can only power off with ctrl-alt-apple-power.
+sysrq fails, too.
+* the box falls asleep sometimes even when i'm busy typing or moving
+the mouse. this happens at least once every half hour.
 
+some minor glitches that might be unrelated to power management:
+* the first console cannot issue ctrl commands like break or
+suspend, while the others still do. resetting doesn't help.
+* there seems to be a problem under KDE with keyboard/trackpad
+focus: sometimes they are attached to different windows.
+
+i'd like to help tracking this down, but i'm rather new to the ppc
+platform, so please tell me what to do.
+is there a place where i can monitor power management events ? (more
+detailed than in the syslog)
+
+regards,
+
+jörn
+
+
+--
+Jörn Nettingsmeier
+home://Kurfürstenstr.49.45138.Essen.Germany
+phone://+49.201.491621
+http://icem-www.folkwang-hochschule.de/~nettings/
+http://www.linuxdj.com/audio/lad/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
