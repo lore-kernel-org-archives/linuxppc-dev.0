@@ -1,5 +1,5 @@
-Message-ID: <20020911110234.16523.qmail@web12908.mail.yahoo.com>
-Date: Wed, 11 Sep 2002 12:02:34 +0100 (BST)
+Message-ID: <20020911110236.40826.qmail@web12901.mail.yahoo.com>
+Date: Wed, 11 Sep 2002 12:02:36 +0100 (BST)
 From: =?iso-8859-7?q?John=20Nikiforos?= <ppclinuxuser@yahoo.gr>
 Subject: MPC8266/5 and PCI support
 To: linuxppc-embedded@lists.linuxppc.org
