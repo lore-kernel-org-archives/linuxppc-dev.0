@@ -1,28 +1,38 @@
-Date: Sat, 4 Aug 2001 09:07:03 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Samuel Rydh <samuel@entropy.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Versioned module symbols broken for PPC?
-Message-ID: <20010804090703.B32537@opus.bloom.county>
-References: <20010804153849.A2056@ibrium.se>
+Date: Sat, 4 Aug 2001 12:18:40 -0500
+From: Troy Benjegerdes <hozer@drgw.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: bogus SCSI timeouts and ntpd...
+Message-ID: <20010804121840.G17468@altus.drgw.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010804153849.A2056@ibrium.se>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Aug 04, 2001 at 03:38:49PM +0200, Samuel Rydh wrote:
+I have recently started getting what appear to be 'bogus' SCSI timeouts
+after a crash and reboot, when my raid1 is re-syncing. (which amounts to
+copying disk1 of the raid to disk2 of the raid.)
 
-> The support for versioned symbols seems to be broken.
-> After a mrproper recompile, /proc/ksyms contains entries
-> like
+This didn't start happening until I started running ntpd at bootup..
 
-What distro are you running?  They work fine on debian/sid, but YDL2
-shipped w/ a broken modutils (need to yup update).
+I suspect something is broken somewhere such that when ntp adjusts the
+time by a small amount, the SCSI layer (and generic timer code??) gets
+confused and thinks that SCSI command have timed out.
+
+This is with the current linuxppc_2_4_devel, running on a dual processor
+MTX (604ev) with a symbios SCSI chip on-board.
+
+Anyone have any ideas on this, or how to do a testcase to attempt to
+verify it?
+
+So does anyone think this is a generic SCSI problem, or something only
+with PPC, and the use of timebase for the clock?
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
+-----"If this message isn't misspelled, I didn't write it" -- Me -----
+"Why do musicians compose symphonies and poets write poems? They do it
+because life wouldn't have any meaning for them if they didn't. That's
+why I draw cartoons. It's my life." -- Charles Shulz
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
