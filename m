@@ -1,32 +1,52 @@
-Subject: Re: /dev/watchdog for onchip MPC860 watchdog?
-To: tania@centurysys.co.jp (Tania Boak)
-Date: Thu, 13 Jul 2000 17:47:11 +1000 (EST)
-Cc: massin@col.bsf.alcatel.fr, linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <396D6EC3.CAF4201B@centurysys.co.jp> from "Tania Boak" at Jul 13, 2000 04:24:51 PM
+Subject: CLLF860T FEC problem in linux-2.4.0-test4-pre6
+To: linuxppc-embedded@lists.linuxppc.org (LinuxPPC Embedded Mailing List)
+Date: Thu, 13 Jul 2000 18:55:35 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000713074711.9FEC8F@elph.research.canon.com.au>
+Message-Id: <20000713085536.368DE289@elph.research.canon.com.au>
 From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tania Boak writes:
-> But I don't know how to guarantee that the application will be able to
-> service the watchdog in any given interval of time.  How do you
-> distinguish between the case where the system has stopped working and
-> the case where the system is busy but still functioning?
+Hi dudes,
 
-Your system needs to have some periodic task which you can guarantee will
-run sufficiently often during normal operation, and hopefully will clag if
-something catastrophic happens.  If you're doing simple regular data
-aquisition, that's reasonably easy, but if it's a more complex system, there
-may not be such a periodic task.  In this case you can run a real-time thread
-at high priority which sleeps most of the time, just to tickle the watchdog;
-but it still won't guarantee that the lower priority threads are running OK.
-Still, some protection may be better than none, depending on your application.
+I've just had a shot at running the latest 2.2.4-test4-pre6 snapshot on a
+CLLF860T board, and I'm finding that opening the FEC driver fails, because
+the PHY hasn't been recognised.  Firstly though, I had to apply this patch
+to get the FEC initialised:
 
-Regards,
+diff -ur linux-2.4.0-test4-pre6/drivers/net/setup.c linux-2.4.0-test4-pre6.cllf/drivers/net/setup.c
+--- linux-2.4.0-test4-pre6/drivers/net/setup.c	Wed May 24 01:21:51 2000
++++ linux-2.4.0-test4-pre6.cllf/drivers/net/setup.c	Thu Jul 13 18:03:42 2000
+@@ -22,6 +22,7 @@
+ extern int awc4500_365_probe(void);
+ extern int arcnet_init(void);
+ extern int scc_enet_init(void);
++extern int fec_enet_init(void);
+ extern int dlci_setup(void);
+ extern int lapbeth_init(void);
+ extern int sdla_setup(void);
+@@ -74,6 +75,9 @@
+ #endif
+ #if defined(CONFIG_SCC_ENET)
+         {scc_enet_init, 0},
++#endif
++#if defined(CONFIG_FEC_ENET)
++        {fec_enet_init, 0},
+ #endif
+ #if defined(CONFIG_COMX)
+ 	{comx_init, 0},
+
+
+I have CONFIG_FEC_QS6612 enabled in fec.c, but it appears that I'm never
+getting an MII interrupt, because fec_enet_interrupt is never called.
+Hence, neither mii_discover_phy function gets called, and fec_enet_open later
+fails with -ENODEV.
+
+Has anyone got any clues on this before I dive into it tomorrow?
+
+Thanks,
 Graham
 --
 Graham Stoney
