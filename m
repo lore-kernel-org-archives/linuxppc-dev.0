@@ -1,40 +1,48 @@
-Subject: Re: Generic DMA Core
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: John Whitney <johnw@sands-edge.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <034E6544-833B-11D8-9FF0-000A95A07384@sands-edge.com>
-References: <034E6544-833B-11D8-9FF0-000A95A07384@sands-edge.com>
-Content-Type: text/plain
-Message-Id: <1080802903.7999.718.camel@newt>
-Mime-Version: 1.0
-Date: Thu, 01 Apr 2004 08:01:44 +0100
+Date: Thu, 1 Apr 2004 10:35:55 +0200 (MEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: John Whitney <jwhitney-linuxppc@sands-edge.com>
+Cc: Wolfgang Denk <wd@denx.de>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Proposed Kconfig update patch for help text 
+In-Reply-To: <812363C6-8371-11D8-9FF0-000A95A07384@sands-edge.com>
+Message-ID: <Pine.GSO.4.58.0404011035190.12755@waterleaf.sonytel.be>
+References: <20040331230620.ACC3BC10A4@atlas.denx.de>
+ <812363C6-8371-11D8-9FF0-000A95A07384@sands-edge.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2004-03-31 at 18:44, John Whitney wrote:
-> I have written a generic DMA core driver (drivers/dma/) that accepts
-> registrations from low-level DMA hardware drivers (providers).  I've
-> also written a provider driver for the MPC10x dual-channel DMA
-> controller.
-> [...]
-> Is there any interest in this code, and if so, what would be the best
-> way for going about getting it included in the kernel?
+On Wed, 31 Mar 2004, John Whitney wrote:
+> We can put in "8xx", but I didn't think that the listed processors was
+> supposed to be an exhaustive list (just some examples).   Shall we just
+> prune them down to "8xx", "4xx", etc.?
 
-I'd be interested in seeing it. I experimented with something similar
-for Linux 2.4.
+While you're at it, perhaps s/7400/74xx/ for consistency, too?
 
-As for getting into the kernel, the main problem I see is that currently
-nothing else uses it. You may need to do a couple of things: write a
-dummy provider for machines without DMA engines, and use it to
-accelerate an existing process.
+> On Mar 31, 2004, at 6:06 PM, Wolfgang Denk wrote:
+> > In message <B755A2F6-8364-11D8-9FF0-000A95A07384@sands-edge.com> you wrote:
+> >>
+> >> A couple of trivial changes for the processor choice help text to
+> >> make it a bit clearer.
+> > ...
+> >>        types (601, 603, 604, 740, 750, 7400), the Motorola embedded
+> >> -     versions (821, 823, 850, 855, 860, 8260), the IBM embedded
+> >> versions
+> >> +     versions (821, 823, 850, 855, 860, 82xx), the IBM embedded
+> >
+> > How about types like 857, 862, the 866 family, the 885 family, ... ?
 
-The main use of these DMA engines is to transfer data to PCI cards which
-lack built-in DMA. So you probably need to find some examples and modify
-them to use your API.
+Gr{oetje,eeting}s,
 
-- Adrian Cox
-http://www.humboldt.co.uk/
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
