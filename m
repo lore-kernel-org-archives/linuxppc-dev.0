@@ -1,34 +1,31 @@
-Date: Thu, 30 Aug 2001 09:21:50 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: HHL 2.0 Journeyman and SuSE Linux
-Message-ID: <20010830092150.O18618@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20010830175217.H858@zax> <3B8DFF2F.44AFE98F@imc-berlin.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3B8DFF2F.44AFE98F@imc-berlin.de>
+Message-Id: <200108301948.PAA12019@orchid.cspi.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Brian Waite <bwaite@cspi.com>
+Reply-To: bwaite@cspi.com
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 5100 again
+Date: Thu, 30 Aug 2001 15:40:08 -0400
+MIME-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Aug 30, 2001 at 10:54:07AM +0200, Steven Scholz wrote:
+Now that I have a functioning 5100 board with my initrd I am seeing some
+really strange things. When I enable IPMC_PRESENT I start booting but when I
+get to the point of loading my romfs the kernel starts moving extrremely
+slowly. I have not debugged this yet but I just wanted to let others know
+ahead of time. I am using the latest devel_2_4 tree and I am seeing this.
+I'll let you know what I find.
 
-> is it possible to install and use the HHL 2.0 Journeyman Edition on a
-> SuSE Linux 7.x machine?
+Thanks
+Brian
 
-Possibly.  The RedHat rpms should 'just work'.  Or you can download the
-source rpms and compile the host tools for your setup.  The target binaries
-are all the same.
-
-> It looks like Journeyman only (!) suports Red Hat as a development host?
-> Is that right?
-
-Yes.  We also provide the source however.  And everything goes into /opt
-anyways.
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Brian Waite
+
+Looking for a TeraFLOP in a closet
+www.fastcluster.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
