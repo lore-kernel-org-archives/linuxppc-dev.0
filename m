@@ -1,45 +1,34 @@
-Mime-Version: 1.0
-Message-Id: <v04220802b500d91f6693@[10.0.0.42]>
-In-Reply-To: <200003231922.UAA00358@piglet.grunz.lu>
-References: <200003231922.UAA00358@piglet.grunz.lu>
-Date: Fri, 24 Mar 2000 00:49:02 -0800
-To: mlan@cpu.lu, bh40@calva.net
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: LongTrail PCI resource assignment
-Cc: linuxppc-dev@lists.linuxppc.org, geert@linux-m68k.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Date: Fri, 24 Mar 2000 09:55:25 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: cl.en@gmx.net, linuxppc-dev@lists.linuxppc.org
+Subject: Re: different h/w addresses on one eth
+In-Reply-To: <38DA8B2D.ED7A1919@wanadoo.fr>
+Message-ID: <Pine.LNX.4.10.10003240951460.17333-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 8:22 PM +0100 3/23/00, Michel Lanners wrote:
+> > Mar 23 19:57:53 arma kernel: eth0: DC21041 at 0x0400 (PCI bus 0, device 14), h/w address 00:05:02:26:3a:02,
+>
+> > Mar 23 20:03:27 arma kernel: eth0: Digital DC21041 Tulip rev 33 at 0x400, 00:A0:40:64:5C:40, IRQ 28.
+>
+> > got someone of this list a solution for different h/w addresses on one eth card?
+>
+> You may have noticed that you get the second address from the first by
+> bitswapping each byte. One of your drivers is reading backwards.
 
->That's obviously an issue. I think we should decide once and for all
->whether the OF tree is supposed to be up-to-date once the system is
->running. If so, then all fixups (also changing base address) need to be
->re-sync'ed into the OF tree, which is not done now... Or we just leave
->the OF tree alone and work only with the PCI_dev list.
+The first address was from the PCI BIOS - assuming the BIOS knows about
+endianess problems with the card, the driver would be to blame. Does
+anyone know what the correct prefix for this brands of card is?
 
-It's not up to me, because I don't understand the code well enough to
-contribute directly, but I'll offer these points in favor of not
-updating OF:
+Please note that the PCI being correct is only a weak assumption. Apple
+has a history of storing the MAC address backwards in the PROM so you have
+to byteswap - one particular case even required byteswapping nybbles :-)
 
+	Michael
 
-1. Duplication of information across multiple data structures is
-evil.  It should be avoided at all costs.
-
-If there was a really, really good reason to keep OF up to date
-(like, say, if we could break back into the OF console like you can
-on Sparcs), then it would be OK.  Otherwise it is most likely
-unnecessary bloat, and leads to potential confusion (and bugs).  Is
-there any such reason on ppc?
-
-
-2. Most arch types obviously don't have an OF tree at all.
-Presumably they just do everything with the pci_dev list.  Therefore,
-ppc should too -- it's a bad idea to be different in an unnecessary
-way.
-
-   Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
