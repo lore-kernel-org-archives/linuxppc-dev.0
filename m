@@ -1,46 +1,96 @@
-Subject: Re: 405LP RTC reset
+Subject: 405LP compile fix
 From: Hollis Blanchard <hollis@austin.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: embedded list <linuxppc-embedded@lists.linuxppc.org>,
-	Todd Poynor <tpoynor@mvista.com>
-In-Reply-To: <20021218005542.GC3666@zax.zax>
-References: <1040150612.10740.111.camel@granite.austin.ibm.com>
-	<20021218005542.GC3666@zax.zax>
-Date: 18 Dec 2002 09:38:53 -0600
-Message-Id: <1040225939.29647.11.camel@granite.austin.ibm.com>
+To: embedded list <linuxppc-embedded@lists.linuxppc.org>
+Date: 18 Dec 2002 09:49:24 -0600
+Message-Id: <1040226565.29647.15.camel@granite.austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2002-12-17 at 18:55, David Gibson wrote:
->
-> On Tue, Dec 17, 2002 at 12:43:32PM -0600, Hollis Blanchard wrote:
-> > Here's the updated 405LP RTC reset diff (after David's move of the RTC
-> > functions to ibm405lp.c). This patch
-> > a) does a full RTC reset as specified in the docs
-> > b) sets the RTC clock speed in RTC "Register A" DV bits, i.e. it does
-> > not assume the firmware has done this correctly.
->
-> One query though (I didn't think of this earlier) - is it such a great
-> idea to go setting the reference clock frequency?  Unlike most other
-> drivers, we can't just take over the RTC and do what we like with it
-> once the kernel boots, because it has to keep running at the same rate
-> even when the device is rebooting or (mostly) off.
+I'm glad I'm not the only one who sometimes doesn't compile-test his
+patches... ;)
 
-The only issue I can think of here is the firmware setting it
-incorrectly or not at all. In that case, a few seconds will be expanded
-or compressed, but that's better than time running too fast or slow
-forever, right?
+This patch fixes the Beech build, which is calling the now-nonexistant
+function beech_time_init. In actuality beech_calibrate_decr was never called
+anyways... :)
 
-Of course the rate settings must be battery-backed along with the time,
-so you only need to set it once per RTC power loss. That includes
-rebooting time and power off time.
+Please apply to _2_4_devel.
 
 -Hollis
 --
 PowerPC Linux
 IBM Linux Technology Center
+
+
+===== arch/ppc/platforms/beech.c 1.9 vs edited =====
+--- 1.9/arch/ppc/platforms/beech.c	Thu Dec 12 17:06:37 2002
++++ edited/arch/ppc/platforms/beech.c	Tue Dec 17 13:47:47 2002
+@@ -253,64 +253,6 @@
+ 	/* Set RTS/CTS mode for UART 1 */
+
+ 	*beech_fpga_reg_2 |= FPGA_REG_2_DEFAULT_UART1_N;
+-}
+-
+-void __init
+-beech_calibrate_decr(void)
+-{
+-	ulong	freq;
+-	ulong	tbl, tbu;
+-        long	i, loop_count;
+-        u_char	sec;
+-
+-	beech_time_init();
+-
+-	/*
+-	 * Actually this is bad for precision, we should have a loop in
+-	 * which we only read the seconds counter. todc_read_val writes
+-	 * the address bytes on every call and this takes a lot of time.
+-	 * Perhaps an nvram_wait_change method returning a time
+-	 * stamp with a loop count as parameter would be the solution.
+-	 */
+-	/*
+-	 * Need to make sure the tbl doesn't roll over so if tbu increments
+-	 * during this test, we need to do it again.
+-	 */
+-	loop_count = 0;
+-
+-	sec = mfdcr(DCRN_RTC0_SEC) & 0x7f;
+-
+-	do {
+-		tbu = get_tbu();
+-
+-		for (i = 0 ; i < 10000000 ; i++) {/* may take up to 1 second */
+-		   tbl = get_tbl();
+-
+-		   if ((mfdcr(DCRN_RTC0_SEC) & 0x7f) != sec) {
+-		      break;
+-		   }
+-		}
+-
+-		sec = mfdcr(DCRN_RTC0_SEC) & 0x7f;
+-
+-		for (i = 0 ; i < 10000000 ; i++) { /* Should take 1 second */
+-		   freq = get_tbl();
+-
+-		   if ((mfdcr(DCRN_RTC0_SEC) & 0x7f) != sec) {
+-		      break;
+-		   }
+-		}
+-
+-		freq -= tbl;
+-	} while ((get_tbu() != tbu) && (++loop_count < 2));
+-
+-	printk("time_init: decrementer frequency = %lu.%.6lu MHz\n",
+-	       freq/1000000, freq%1000000);
+-
+-	tb_ticks_per_jiffy = freq / HZ;
+-	tb_to_us = mulhwu_scale_factor(freq, 1000000);
+-
+-	return;
+ }
+
+ /*
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
