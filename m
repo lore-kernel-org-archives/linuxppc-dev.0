@@ -1,50 +1,66 @@
-Message-ID: <002501c2f266$3626e5a0$020120b0@jockeXP>
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Dan Malek" <dan@embeddededge.com>
-Cc: "Tom Rini" <trini@kernel.crashing.org>,
-	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>,
-	<strauman@SLAC.Stanford.EDU>
-References: <IGEFJKJNHJDCBKALBJLLEEGBFLAA.joakim.tjernlund@lumentis.se> <20030324201543.GB14264@ip68-0-152-218.tc.ph.cox.net> <003501c2f248$06ddc700$020120b0@jockeXP> <20030324210712.GC14264@ip68-0-152-218.tc.ph.cox.net> <005601c2f24f$f8e23e30$020120b0@jockeXP> <3E7F8DE4.1040901@embeddededge.com>
-Subject: Re: dcbz works on 862 everywhere!
-Date: Tue, 25 Mar 2003 01:33:47 +0100
+Message-ID: <3E7FA758.20808@embeddededge.com>
+Date: Mon, 24 Mar 2003 19:48:24 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	"Linuxppc-Embedded@Lists. Linuxppc.  Org" <linuxppc-embedded@lists.linuxppc.org>,
+	strauman@SLAC.Stanford.EDU
+Subject: Re: dcbz works on 862 everywhere!
+References: <IGEFJKJNHJDCBKALBJLLEEGBFLAA.joakim.tjernlund@lumentis.se> <20030324201543.GB14264@ip68-0-152-218.tc.ph.cox.net> <006601c2f256$e6ff5e80$020120b0@jockeXP> <3E7F9017.2000900@embeddededge.com> <000b01c2f261$292427a0$020120b0@jockeXP>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Joakim Tjernlund wrote:
->
-> >
-> > I think it makes the "copy DAR to MD_EPN" part in the DTLB error handler needless.
-> > Anyway it works with and without that part.
->
-> No, you need to leave that there as well.  Read the comment.....
->
-> If it appears to "work" for you, what happens is you have a DTLB Error
-> immediately following a DTLB miss (the common case lots of the time), so
-> the MD_EPN just happens to contain the proper information.  When you generate
-> the case where a DTLB Error does not match a previous DTLB miss, you will
-> end up tracking down the wrong PTEs.  Even in this case it is likely to
-> appear things work correctly, but they do not.  There is one case with the dcbi
-> where there is no proper operation of the code, so it was necessary to solve
-> the problem another way.
+Joakim Tjernlund wrote:
 
-What case is that(when dcbi does not work)? Give me an example so I can test
-and see what happens, with and without my patch.
 
-> This is exactly why people are telling you to carefully generate test cases
-> the prove an error exists 100% of the time, and that your modifications
-> properly correct the condition 100% of the time.  When you run something
-> like Linux you get pathological cases that do not exercise all conditions
-> with a particular configurations, or you could be generating errors that
-> are not precisely tested as failure conditions.
+> Did you read my mails?
 
-I know all that and thats why post to the list with questions, ideas  and  patches to try out.
-If you had read my mails you would had understood that too.
-Your yelling at me for trying isn't very helpful.
+I did.  From this I gathered that you don't understand why some
+of this code is there in the first place, you removed code that
+would have guaranteed to cause an error if you would have run
+the proper test, and you can't explain why the changes you made
+cause the results you see.  Not something that instills much
+confidence.
 
-    Jocke
+All of these MMU and cache control registers have effects on
+one another.  Writing one register can have the side effect of
+updating another.  The DAR must have valid addresses in order
+to properly rfi, we know some cache operations may not set this
+properly, and we also know that in these cases the MD_EPN is also
+not set properly.  The reason it "works" for you is you found the
+most likely case where you took a DTLB miss, followed by a DTLB Error
+to the same page (or at least to valid pages).  If the miss/error
+sequence was to the same page, it will likely work correctly.  If the
+miss/error sequence is not to the same pages, it could appear
+to "work" but chances are the dcbz was not executed properly and
+you didn't notice the side effects of that.  If you happen to
+find the case where you generate the DTLB miss/error/error with
+intervening TLB exceptions for other pages (like when swapping)
+and the instructions involved are cache instructions (like the
+dcbi in the comment example), you will end up with a big mess.
+It's really hard to generate all of these test cases, and you
+can't always use Linux to do so, but eventually Linux will stumble
+across them.
+
+For a long time, we "solved" these problems on 8xx by not properly
+implementing copy-on-write pages and always marking pages dirty.
+It reduced the likelyhood of the problem, reduced the MMU overhead,
+but cost lots more in memory and processing time during forks.
+This still may not be a bad configuration option for selected
+applications.
+
+Like I said from the beginning, the 100% guaranteed working solution
+is to not use dcbz/dcbt on the 8xx.  Anything else will eventually
+stumble across the error conditions.  If I'm developing a product
+that uses Linux (or any other OS that will dynamically update the MMU
+and take DTLB exceptions) I won't take the risk of failure using
+these instructions.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
