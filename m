@@ -1,56 +1,43 @@
-Date: Thu, 24 Dec 1998 13:01:30 -0600 (CST)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Bryan Christianson <bryanc@ihug.co.nz>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: egcs 1.1.1 and outl
-In-Reply-To: <l03130300b2a6e21c2a5d@[172.16.10.14]>
-Message-ID: <Pine.LNX.4.04.9812241255360.28200-100000@narn.local.drgw.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 26 Dec 1998 14:14:56 +0100
+To: linuxppc-dev@lists.linuxppc.org
+CC: Paul Mackerras <paulus@cs.anu.edu.au>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: PPP & dead serial ports
+Message-Id: <19981226141456.008888@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 24 Dec 1998, Bryan Christianson wrote:
+Hi All !
 
-> 
-> I am running Kernel 2.0.130 compiled with egcs 1.0.2. I upgraded the
-> compiler to egcs 1.1.1 and recompiled the driver I'm working on. The driver
-> crashed the machine on its first call to outl with amessage saying
-> something like 'invalid msr' and then a dump of all the registers.
-> 
-> I've reverted back to egcs 1.0.2 and the driver works fine.
+I don't know exactly how this is expected to work, but I do have a clue
+about the serial port problem people are having (after using PPP, the
+serial port looks dead and doesn't receive any more chars).
 
-what does gcc --version say?
+On my testings, I've seen that when PPP fails, it leaves the serial port
+opened, probably with a bad flow control state, shutdown() never gets
+called (the count is left to 2).
+So on later use of the port, the SCC is not properly re-initialized, and
+any bad state or setting that would have been left by the previous
+connection will still be here.
 
-I'm using egcs-2.91.58, and I'm having problems with booting... I'm still
-trying to figure out what the problem is.
+Another side effect is that the internal modem of the PowerBook will not
+be powered down (at least, in my not-yet-unreleased patches that
+cleans-up things by moving power-up/power-down of the modem to startup
+and shutdown).
 
-> 
-> Is this a known issue - couldn't find anything in the FAQ.
-> 
-> I can reproduce it and get more detail if required. I presume this is a
-> problem with the compiler unless there is something weird with the code for
-> outl in <io.h>
-> 
+I'll try to find out what's going on there, but this may take me very
+much longer than people who know linux better than me, so feel free to
+give me any clue or do your own testings.
 
-Can you get a dump of the registers via a serial console? (or copy them by
-hand) and send it to the list?
 
-> --
-> Bryan Christianson
-> email:		<mailto:bryanc@ihug.co.nz>
-> Home Page:	<http://crash.ihug.co.nz/~bryanc>
-> 
-> 
-> 
-> 
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
