@@ -1,18 +1,23 @@
-Return-Path: <cfriesen@nortel.com>
-Received: from zcars04f.nortelnetworks.com (zcars04f.nortelnetworks.com
-	[47.129.242.57]) by ozlabs.org (Postfix) with ESMTP id E4EFC67A6F
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2005 04:26:12 +1000 (EST)
-Received: from zcard303.ca.nortel.com (zcard303.ca.nortel.com [47.129.242.59])
-	by zcars04f.nortelnetworks.com (Switch-2.2.6/Switch-2.2.0) with
-	ESMTP id j36IQ9j02360
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Apr 2005 14:26:09 -0400 (EDT)
-Message-ID: <425429BF.1050706@nortel.com>
-Date: Wed, 06 Apr 2005 12:26:07 -0600
-From: Chris Friesen <cfriesen@nortel.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: question on inline assembly and long long values
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
+	by ozlabs.org (Postfix) with ESMTP id 0174267A6F
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2005 04:50:51 +1000 (EST)
+Date: Wed, 6 Apr 2005 11:50:49 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Christian <evilninja@gmx.net>
+Message-ID: <20050406185049.GF3396@smtp.west.cox.net>
+References: <20050328232355.GA1982@pegasos>
+	<20050331142813.GH25923@smtp.west.cox.net>
+	<20050331184549.GA28069@pegasos> <4251D5BA.5080905@gmx.net>
+	<20050405053930.GD4604@pegasos>
+	<20050405143802.GS25923@smtp.west.cox.net>
+	<42533FA1.1070001@gmx.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <42533FA1.1070001@gmx.net>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: PREP sym53c8xx sym53c8xx brokeness due to
+	2.6.9-rc1-bk1	introduced residual data patch ...
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,49 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I want to retrieve the msr (which is 64-bits) on a 970 when running in 
-32-bit mode.  I have the following bit of code that seems to work, but 
-when looking at the code it always seems to use a suboptimal register 
-for the low word, and then it ends up having to copy it to the right 
-register to create a long long register pair.
+On Wed, Apr 06, 2005 at 03:47:13AM +0200, Christian wrote:
+> Tom Rini wrote:
+> > Can either of you verify that say 2.6.11.6 w/ "noresidual" on the
+> > command-line works?  Thanks.
+> 
+> i booted vanilla 2.6.11.6 with noresidual (and "nopresidual" too, as Sven
+> sugggested), but the scsi errors did not went away :(
+> 
+> on a side note, and perhaps totally unrelated: i always have
+> PROC_PREPRESIDUAL=y in my .config, but i never had /proc/residual as
+> promised from the help text.
 
-static inline unsigned long long get_msr()
-{
-	union {
-		struct {
-			unsigned long low;
-			unsigned long high;
-		} words;
-		unsigned long long val;
-	} val;
-         asm volatile( \
-                 "mfmsr  %0               \n\t" \
-                 "rldicl %1,%0,32,32       \n\t" \
-                 "rldicl %0,%0,0,32        \n\t" \
-                 : "=r" (val.words.low), "=r" (val.words.high));
-	return val.val;
-}
+Odd.  I thought that only happened if you had no residual data at all
+(which can happen on Powerstacks, esp if netbooting the kernel).  But in
+that case the new code shouldn't be hit at all.  Leigh?
 
-Using this code, the optimised assembly output of
-
-	unsigned long long a = asdf();
-	unsigned long long b = asdf();
-
-is
-
-	mfmsr  5
-	rldicl 0,5,32,32
-	rldicl 5,5,0,32
-	mr 6,0
-	mfmsr  7
-	rldicl 9,7,32,32
-	rldicl 7,7,0,32
-	mr 8,9
-
-I figure it should have been able to use registers 6/8 in the first 
-place, and save the extra moves.
-
-Is there any way to help gcc optimise this?
-
-
-Chris
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
