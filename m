@@ -1,111 +1,44 @@
-To: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Kernel Module; globals badly initialized, help needed.
-References: <6B546A602AD2D211BFF00008C7A428890584401D@hrtades2.atea.be>
-From: Bruno Vetel <bruno.vetel@wanadoo.fr>
-Date: 19 Mar 2002 01:22:44 +0100
-In-Reply-To: <6B546A602AD2D211BFF00008C7A428890584401D@hrtades2.atea.be>
-Message-ID: <84r8mhe78r.fsf@pommard-eth0.art2.com4.ws>
-MIME-Version: 1.0
+Date: Mon, 18 Mar 2002 17:28:20 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: andrew may <acmay@acmay.homeip.net>
+Cc: linuxppc-embedded@lists.linuxppc.org, Armin <akuster@pacbell.net>
+Subject: Re: [PATCH] another for ibm_ocp_enet gzip'd
+Message-ID: <20020319002820.GJ3762@opus.bloom.county>
+References: <20020315114137.A26609@ecam.san.rr.com> <20020315200558.GG691@opus.bloom.county> <20020315142542.A27043@ecam.san.rr.com> <20020315223140.GA1643@opus.bloom.county> <20020318142507.A6687@ecam.san.rr.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020318142507.A6687@ecam.san.rr.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+On Mon, Mar 18, 2002 at 02:25:07PM -0800, andrew may wrote:
+> On Fri, Mar 15, 2002 at 03:31:40PM -0700, Tom Rini wrote:
+> > On Fri, Mar 15, 2002 at 02:25:42PM -0800, andrew may wrote:
+> > > On Fri, Mar 15, 2002 at 01:05:58PM -0700, Tom Rini wrote:
+> > > > On Fri, Mar 15, 2002 at 11:41:37AM -0800, andrew may wrote:
+> > > >
+> > > > > 3. added mal.sh to generate a new ibm_ocp_mal.c
+> > > >
+> > > > This looks very cool.  Can you add in some comments to the shell script,
+> > > > and I didn't see any bashisms in there, can you verify it works with
+> > > > pdksh or one of the other script shells which can be /bin/sh ?
+> > >
+> > > I am not sure how I can check against other shells since I don't
+> > > have them on my machine. Is sh --posix good enough?
+> >
+> > It depends on what 'sh' is.
+>
+> Well I just have bash 2.05a.0(1)-release as a debian package.
 
-We had a problem similar to yours with an HHL 1.0. An update of insmod et rmmod from busybox
-solved our problem
+Can you apt-get pdksh or ksh at your liesure please?
 
-        Bruno
+> Here is a patch for the Config.help and the Makefile
 
-Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be> writes:
-
-> (This messages was already posted on the linuxppc-dev list, put posting it
-> to this list failed...)
->
-> Hi,
->
-> I am having lots of problems with global variables that are badly
-> initialized in a kernel
-> module. I wrote some very simple code showing the problem. The compiler
-> I use is gcc 2.95.3
-> (the one that comes with HHL2.0).
->
-> Is this a compiler problem -do I need to use some special options?- or
-> could it
-> be a problem with insmod, the kernel, ...?
->
-> I had this problem before with DECLARE_WAIT_QUEUE_HEAD where the
-> pointers inside the structure where badly initialized. The only
-> sollution was to reinitialize the fields at runtime. I posted this issue
-> and somebody reported he had seen the same issue.
->
-> Who can help we with this?
->
-> Thanks!
-> Frederic
->
->
-> #include <linux/module.h>
-> #include <linux/kernel.h>
-> #include <linux/init.h>
->
->
-> #if defined(CONFIG_SMP)
-> #define __SMP__
-> #endif
->
-> #if defined(CONFIG_MODVERSIONS)
-> #define MODVERSIONS
-> #include <linux/modversions.h>
-> #endif
->
-> char MyMemSpace[2*0x100];
-> char *MemPointers[2] = {&(MyMemSpace[0]), &(MyMemSpace[0x100])};
->
-> typedef struct
-> {
-> 	char *szName;
-> 	char *szName2;
-> } MyStruct_t;
->
-> MyStruct_t MyStruct[] = {{"A", "A2"}, {"B", "B2"}};
->
-> int init_module(void)
-> {
-> 	printk("TestDriver 3 Loaded\n");
->
-> 	printk("MyMemSpace: 0x%lx 0x%lx \n",  (long)&(MyMemSpace[0]),
-> (long)&(MyMemSpace[0x100]));
-> 	printk("MemPointers: 0x%lx 0x%lx \n", (long)(MemPointers[0]),
-> (long)(MemPointers[1]));
->
-> 	printk("First Char is MyStruct[0].szName %c\n",
-> MyStruct[0].szName[0]);
->
->
-> 	return -1;
-> }
->
-> void cleanup_module(void)
-> {
-> 	return;
-> }
->
->
->
->
-> This is what I get:
->
-> MyMemSpace: 0xc304a1ec 0xc304a2ec
-> MemPointers: 0xc304a1ec 0xc304a3ec
-> First Char is MyStruct[0].szName e
->
->
->
->
+Thanks.
 
 --
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
