@@ -1,24 +1,40 @@
-Message-Id: <9908200311.AA40852@marc.watson.ibm.com>
-To: Bob Doyle <doyle@primenet.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Extended Asm 
-In-Reply-To: Message from Bob Doyle <doyle@primenet.com>
-   of "Fri, 20 Aug 1999 03:01:29 -0000." <37BCC509.6D857E7F@primenet.com>
-Date: Thu, 19 Aug 1999 23:11:25 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Message-Id: <199908201732.TAA09408@mail.shiny.it>
+To: toa@pop.agri.ch
+Subject: Re: MO-Disk on PPC with 53C94 SCSI-chip
+Cc: linuxppc-dev@lists.linuxppc.org, x-linux-kernel@vger.rutgers.edu
+Date: Thu, 19 Aug 1999 22:45:46 CEST
+From: "Giuliano Pochini" <pochini@denise.shiny.it>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	The basic syntax of GCC extended asm statements is identical on
-all platforms.  The details are the syntax of instructions for a
-particular architecture and assembler, and the GCC constraint letter for
-the arguments that get substituted into the assembly language.  The
-constraint letters specific to PowerPC are listed in the GCC manual in the
-Machine Description -- Constraints -- Machine Constraints section under
-IBM RS6000.
 
-David
+>I have a LinuxPPC R5 system running on a PowerMac 7200 with the
+>2.2.12pre8 kernel. 
+[...]
+>I can create a fs on the partiton, I can read/write from/to it. BUT,
+>when I try to change the side of the media I get the same fs tree as 
+on
+>the first side.
+
+Some removable medias don't tell Linux when you change the disk. The 
+easies way to make it work is to try to mount the device before 
+reinserting a new disk (you'll get some orrors of course... ignore 
+them), so Linux notices you changed it.
+
+>So I tried booting without media in to verify if it works on the clean
+>way. This what the dmesg says:
+
+[...]
+
+Strange. I get a "READ CAPACITY failed, blah blah blah", but then all 
+works fine.
+
+[PMac 7300, MO Fujitsu 640MB on ext. SCSI bus]
+
+Bye.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
