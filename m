@@ -1,34 +1,35 @@
-From: "Jerry Quinn" <jquinn@nortelnetworks.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14245.48292.489613.871527@gargle.gargle.HOWL>
-Date: Mon, 2 Aug 1999 11:43:32 -0400 (EDT)
+Message-Id: <3.0.5.32.19990802114406.00817210@mailhost.bulldog.com>
+Date: Mon, 02 Aug 1999 11:44:06 -0400
 To: linuxppc-dev@lists.linuxppc.org
-Subject: PPP burps in 2.2.10
+From: Joe Julicher <joe_julicher@macktrucks.com>
+Subject: Sound
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi.  I'm running a stock kernel.org 2.2.10 kernel on my Powercenter,
-connecting through pppd 2.3.7 (R5 dist).  When I download a large file, I get
-a pile of messages of two kinds:
+I don't know if this has been covered yet but I have some sound questions.
+(pun not intended)
 
-FB. overflow: #### (some number)
+I was playing with X11amp and later XMMS and noticed that there are
+significant freezes in the system while the sound is playing.  For example,
+if you press the button on the tool panel of gnome that retracts the panel,
+it will typically retract, and play the whoosh sound.  But when you try to
+extend the panel, it will freeze for a bit, and then play.  It is only
+while sound is playing.  I don't think it is the X11amp software (or the
+XMMS) because the xload stays low (very low).  I fiddled with the OSS
+buffer sizes in the X11amp preferences but did not see any change.  XMMS
+works better (the displays update in real time) but still has the pauses.
+Other programs that do not depend on sound still seem to work fine and are
+not paused.
 
-and
-
-ppp: error in VJ decompression
-
-Is this a config problem, pppd problem, or kernel bug?  How do I go about
-trying to locate it?  Has it already been found and fixed in the vger version?
+System: Rev 1 G3 292mhz
+	160 Mb RAM
+	14 GB IDE drive
 
 Thanks,
-
--- 
-Jerry Quinn                             Tel: (514) 761-8737
-jquinn@nortelnetworks.com               Fax: (514) 761-8505
-Speech Recognition Research
-
+Joe Julicher
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
