@@ -1,29 +1,43 @@
-Message-ID: <3BE2DAC2.FEB5AAC2@mvista.com>
-Date: Fri, 02 Nov 2001 10:41:22 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <3BE2E1B1.4311A9B4@mvista.com>
+Date: Fri, 02 Nov 2001 10:10:57 -0800
+From: Scott Anderson <scott_anderson@mvista.com>
 MIME-Version: 1.0
-To: Sarnath Kannan <sparc64@rediffmail.com>
-Cc: Dag Nygren <dag@newtech.fi>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: EPIC Vs OpenPIC Vs MontaVista
-References: <20011102152550.14933.qmail@mailweb16.rediffmail.com>
+To: Joshua Horvath <Josh_Horvath-AJH051@email.mot.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Abatron BDI2000
+References: <3BE2C1DB.8B975906@labs.mot.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sarnath, Dag, Andrew,
+Joshua Horvath wrote:
+> From playing around with the Abatron unit, it seems the two biggest advantages
+> are
+>
+> 1) MMU support
+> 2) Can be used with a Linux based development pc
+>
+> Since we haven't had a problem bringing the kernel up on our boards, 1) isn't
+> (currently) a big deal.  What we really need is to be able to debug loadable
+> modules, which from what I've gathered is only possible with kgdb.  Is this
+> assumption correct?
 
-What I think you guys are discovering is an artifact of the inadequate
-interface to openpic_init()--its wider than just a 8259/107 problem.  This has
-been discussed before and some ideas kick around.
+I have used an Abatron to debug loadable modules.  As far as gdb is
+concerned, it only knows that it is talking to something that speaks
+the gdbserver protocol.  Whether that is kgdb or an Abatron makes no
+difference.
 
-Since you guys seem to have the time & motivation, why don't you go back &
-check out the mail archives for that/those discussion(s).  If you like what
-was talked about there, go with it or come up with a better solution and post
-it here for everyone to comment on.  It would be really nice to have a more
-flexible interface to openpic_init(), et. al.
+> We can flash our boards, download code, etc. and as I said, we've got the
+> kernel running successfully.  So other than point 2) above, is there anything
+> else I've missed that would provide a compelling reason to purchase these
+> units?
 
-Mark
+Price?
 
+    Scott Anderson
+    scott_anderson@mvista.com   MontaVista Software Inc.
+    (408)328-9214               1237 East Arques Ave.
+    http://www.mvista.com       Sunnyvale, CA  94085
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
