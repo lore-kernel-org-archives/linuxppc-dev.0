@@ -1,31 +1,43 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Fri, 3 Jan 2003 08:47:41 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Wolfgang Denk <wd@denx.de>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linuxppc_2_4_devel patch: 8xx FEC extensions
-Message-ID: <20030103154741.GE853@opus.bloom.county>
-References: <20030102174010.D97DFC6139@atlas.denx.de> <3E1480E6.4010802@embeddededge.com> <20030102182147.GB853@opus.bloom.county> <3E1484D9.6070402@embeddededge.com>
-Mime-Version: 1.0
+Message-ID: <3E15CD9D.62110C6@midrivers.com>
+Date: Fri, 03 Jan 2003 10:51:25 -0700
+From: Mark Pilon <mpilon@midrivers.com>
+MIME-Version: 1.0
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: DMA and caches -- 'correct handling'?
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3E1484D9.6070402@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Jan 02, 2003 at 01:28:41PM -0500, Dan Malek wrote:
-> Tom Rini wrote:
->
-> >Would the patch, along with a comment about this potentially covering up
-> >HW timing issues (since this seems to have 'fixed' a problem on a
-> >certain HW config) be OK with everyone?
->
-> Go for it.
+this is a ppc405 -based controller question but has bearing on
+the right way to DMA under linux, in general:
 
-Okay, it's all pushed out now.
+I have an application in which I'll be DMAing several megabytes
+from memory into a fifo;  the data are cpu-created so I'd expect
+I'd need to flush the data cache prior to starting the DMA.
+
+is this implicitly done by any of the setup & start-dma calls or
+should I explicitly do this myself.
+
+also, give the sizeof the source buffer and the smallness of the
+405 data cache, I'd expect I should flush the entire cache to
+memory (flush pending writes) rather than for the entire address
+range of the source buffer.
+
+thoughts?
+
+thanks,
+
+Mark
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Mark Pilon
+Minolta-QMS
+
+P.O. Box 37
+325 Dawson County Road 227
+Fallon, MT.  59326-0037
+1-406-486-5539 (primary voice line)
+1-406-853-0433 (cell)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
