@@ -1,25 +1,32 @@
-Date: Thu, 26 Apr 2001 12:56:17 -0400
-From: thewalthamgroup@netscape.net (Mark Phillips)
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Status/availability of gdbserver for linuxppc?
-Mime-Version: 1.0
-Message-ID: <15486A5C.5171CE4D.C7F6CBA8@netscape.net>
-Content-Type: text/plain; charset="us-ascii"
+Message-ID: <3AE859E4.8CF5063A@mvista.com>
+Date: Thu, 26 Apr 2001 13:24:52 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: John Traill <john.traill@motorola.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 8260 SCC as Console
+References: <3AE82655.DADBB0B2@motorola.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, all.
+John Traill wrote:
+>
+> Does anyone have a patch ( Or is working on one ) to use an SCC as a console ?
 
-Last December there was a posting about gdbserver being unable to handle
-interrupts (^C).  Dan Malek replied that fixes for this were available for the 8260, and other platforms would soon follow (I need 860T). (Debugging over SCC ethernet).
+Yes.  The linuxppc_2_5 kernel has all of the right pieces.  I have
+since made some changes that allow this to be selected as a configuration
+option, and the patches are in the pipeline back to the FSM Labs trees.
 
-What is the status of this?  If I read Dan's response correctly, is this a kernel issue (rather than a gdbserver issue?) Also, does anyone have any insight into how to cross-compile gdbserver? The makefiles I have seem to do miserably at this...
+When using the SCC Console, the driver doesn't support SMC serial
+ports due to some configuration conflicts I haven't yet resolved.
+So far, I haven't seen hardware that uses an SCC console and SMC serial
+ports, which places fixing this rather low on my list.
 
-Thanks for any info
-Mark Phillips
+What board are you working on?  I have a Linux port for the ADS8260.....
 
---
-Please reply to markphillips@alum.mit.edu
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
