@@ -1,53 +1,44 @@
-Date: Sat, 15 Jun 2002 16:40:44 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Dan Malek <dan@embeddededge.com>,
-	Eugene Surovegin <ebs@innocent.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] pci_alloc_consistent in an interrupt context
-Message-ID: <20020615064044.GG1124@zax>
-References: <5.1.0.14.2.20020613122317.02e34480@mail.zultys.com> <20020613205824.GX13541@opus.bloom.county> <3D0912F4.4020300@embeddededge.com> <20020613215635.GB13541@opus.bloom.county> <20020614002419.GM4228@zax> <20020614003807.GD13541@opus.bloom.county> <20020614004539.GB26146@zax> <20020614005156.GE13541@opus.bloom.county> <20020614051450.GM26146@zax> <20020614145930.GI13541@opus.bloom.county>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020614145930.GI13541@opus.bloom.county>
+Message-ID: <3D0AE1EE.201@embeddededge.com>
+Date: Sat, 15 Jun 2002 02:42:54 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org,
+	David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: consistent_free()
+References: <20020614042928.GK26146@zax>	<20020614153954.GL13541@opus.bloom.county>	<3D0A1D53.6040205@embeddededge.com> <15626.55930.673731.803194@argo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Jun 14, 2002 at 07:59:30AM -0700, Tom Rini wrote:
-> > > > > My only concern is that are things still consistent on non consistent
-> > > > > procs?
-> > > >
-> > > > Absolutely - no change to the code path at all on non cache coherent
-> > > > processors.
-> > >
-> > > So kmalloc/kfree are equivilent to __get_free_pages/free_pages ?
-> >
-> > Read that again: on *non* cache coherent processors the code path is
-> > the same.  kmalloc() vs. __get_free_pages() is a problem for
-> > processors which *are* cache coherent.
->
-> Yes.  And there's 2 things here which I'm wondering about:
-> (a) Why do we call __get_fre_pages/free_pages now on coherent procs?
-> Can we really just call something else and have it work?
+Paul Mackerras wrote:
 
-Possibly not (though I'm not sure kmalloc() wouldn't work), which is
-why my last patch reverted to using __get_free_pages()/free_pages().
-But the only problem with kmalloc() is the page-alignment requirements
-specified in DMA-mapping.txt, not the actual consistency/coherence.
+> Interesting.  Using __get_free_pages guarantees that the pages are
+> physically contiguous.  Does the new ARM version do something clever
+> to get physically contiguous pages?
 
-> (b) Is it really a good idea to have a function called
-> 'consistent_alloc()' which doesn't actually do that, for the sake of
-> removing 2 ifdefs?
+The  __get_free_pages just does an alloc_pages().  The only difference
+is __get_free_pages returns the page address of the first page.  I
+think there was a previous version that used page structs to return
+unused pages so it was just more convenient to call alloc_pages() directly.
+In fact, I guess this is the current implementation.
 
-As paulus already pointer out, it *does* actually do that.  Normal
-memory is consistent on cache coherent processsors - that's what cache
-coherent means.
+Oh, I see now........they set the Reserved indicator on pages they allocate.
+This is why they can't just vfree() the space anymore.  Pretty sneaky, this
+way an application can also mmap() the space and driver can do DMA from
+user space.  What a f**king hack when you don't have the features you need
+to do it correctly.
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
+ > ....  Or do the callers have to do a
+> scatter/gather type of operation if they are using more than 1 page?
+
+No, you still get consecutive physical pages based on the order parameter.
+
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
