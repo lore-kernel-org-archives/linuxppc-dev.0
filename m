@@ -1,32 +1,30 @@
-Date: Wed, 21 Nov 2001 13:51:17 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Simon Winwood <sjw@cse.unsw.edu.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Walnut boottime issues
-Message-ID: <20011121135117.N3436@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011121104517.A12111@cse.unsw.edu.au> <20011120173502.D821@cpe-24-221-152-185.az.sprintbbd.net> <20011122054437.A26819@cse.unsw.edu.au> <20011121115344.H3436@cpe-24-221-152-185.az.sprintbbd.net> <20011122070413.C26819@cse.unsw.edu.au> <20011121132339.K3436@cpe-24-221-152-185.az.sprintbbd.net> <20011122073805.A26682@cse.unsw.edu.au> <20011121134039.M3436@cpe-24-221-152-185.az.sprintbbd.net> <20011122074525.B26682@cse.unsw.edu.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011122074525.B26682@cse.unsw.edu.au>
+Message-ID: <3BFC1D51.6090808@oerlikon.ca>
+Date: Wed, 21 Nov 2001 16:32:01 -0500
+From: "sruel@oerlikon.ca" <sruel@oerlikon.ca>
+MIME-Version: 1.0
+To: Ken Applebaum <applebaumk@embeddedplanet.com>,
+	linuxppc-embedded@lists.linuxppc.org, Wolfgang Denk <wd@denx.de>
+Subject: Re: eth1 FEC on RPX-CLLF info: Bingo!
+References: <D73A25AA6E54D511AD74009027B1110F04F6C3@ORION>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Nov 22, 2001 at 07:45:25AM +1100, Simon Winwood wrote:
+Bingo!
+FEC is now working!
 
-> 	Well, I can't boot at all with the bootloader stuff removed, but
-> this is a reasonably old bug --- I got it occasionally when I was using
-> the kernel about a month ago.
+Bit 16 & 17 of BCSR2 register needed to be = '1' to activate the MII
+transceiver.
+Thank's Wolfgang and Ken for your info.
+
+Ken Applebaum wrote:
+
+>wolfgang, as usual!, is right on. Sebastien, look at page 15 of the CLLF
+>manual. That should give you the info you need.
 >
-> 	The oops happens as soon as the kernel tries to exec init (in this
-> case its /bin/sash).  It happens every time I try to boot (as opposed to
-> sporadically like before)
+>Ken
+>
 
-Okay.  What userland/toolchain are you using, and did you turn on
-CONFIG_MATH_EMULATION or no?
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
