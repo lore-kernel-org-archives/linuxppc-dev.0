@@ -5,7 +5,7 @@ Cc: linux-ha@muc.de, linuxppc-dev@lists.linuxppc.org,
         linux-kernel@vger.rutgers.edu
 In-Reply-To: <379E2D20.1DE37F8C@phx.mcd.mot.com> from "Johnnie Peters" at Jul 27, 99 03:05:20 pm
 Content-Type: text
-Message-Id: <E11AHdD-00014b-00@the-village.bc.nu>
+Message-Id: <E11AJ7t-0001DH-00@the-village.bc.nu>
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
