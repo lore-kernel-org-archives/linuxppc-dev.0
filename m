@@ -1,61 +1,66 @@
-Message-ID: <392D634E.3328E9C5@embeddededge.com>
-Date: Thu, 25 May 2000 13:30:54 -0400
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: Geir Frode Raanes <geirfrs@invalid.ed.ntnu.no>
-CC: Neil Russell <caret@c-side.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Floating Point problems with Linux on the EST SBC8260
-References: <Pine.BSF.4.21.0005251319150.9249-100000@invalid.ed.ntnu.no>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <4.2.2.20000525110602.00a704c0@mail.kerbango.com>
+Date: Thu, 25 May 2000 11:07:30 -0700
+To: gjohnson@research.canon.com.au (Greg Johnson)
+From: Steve Calfee <calfee@kerbango.com>
+Subject: Re: IDMA: Setting Up Parameter RAM.
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20000525060239.3F99C3C989@elph.research.canon.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Geir Frode Raanes wrote:
+At 04:02 PM 5/25/00 +1000, you wrote:
 
-> You tell me your HW designers can't operate a logic analyzer?
+>Hi all,
+>
+>I am having a little problem with IDMA parameter RAM on the 855T/860.
+>The problem is that when I set up the parameter RAM's DMA Channel
+>Mode Register, and the IDMA BD Base Address pointer, the CPM does not
+>appear to recognise these new values. I am quite confident that I
+>am setting up the ports etc for our board correctly. I shall elaborate.
+>
+>When I power on our board, boot, load our driver for the hardware,
+>setup the IDMA/Parameter RAM/Buffer Descriptors and attempt to start
+>an IDMA transfer,  nothing happens. (reloading driver and retries
+>do not work)
+>
+>When I then hit the reset button (no power cycle) and go through the
+>same ritual, IDMA works fine.
+>
+>The reason being is that values for the IDMA Parameter RAM DMA Channel
+>mode register (DCMR) and IDMA BD Base Address pointer (IBASE) that
+>were written in the first attempt on power-on are preserved in
+>DPRAM over the reboot. Why would these value apparently be written
+>in the first attempt, but appear not to be recognised by the CPM???
+>
+>In addition, if I power on, and use the boot loader to program the
+>IDMA Parameter RAM DCMR and IBASE elements, then boot Linux, load
+>the driver and attempt a DMA operation, It all works fine. The
+>reason I don't want to be content with setting this information up
+>in the boot loader is that we want to be able to eventually allocate
+>and release buffer descriptors.
+>
+>I suspect that I am not setting up something correctly that affects
+>the way that the Communications Processor responds to changes in the
+>Parameter RAM.
+>
+>Can anyoue offer any clues/hints/guesses???
 
-Hardware designers?  This is just software and a few wires :-).
-
-> ...... BTW, when you
-> already have a full FPGA installed then why waste a UPM?
-
-
-You know, I keep hearing this question and continually find boards
-with external hardware and no one using the integrated control logic.
-Everyone is "saving it for something else".  Geeze, these are embedded
-systems that will probably never change.  After I use up all of the
-GP I/O and internal control logic, I will start looking for alternatives.
-The 8260 is even better. Separate DRAM controllers so you don't even
-use up the UPMs for that, more chip selects, more I/O, multiple busses.
-You bought it, may as well use it.
-
-> .... But to keep power
-> drain low I will probabely use the second PCMCIA port for it
-> by means of Xilinx Coolrunner and an AVR for autoconfiguration.
-> Then I could (but will not) expand this into a full ISA bus.
-
-Why bother with the Xilinx?  Just connect the IDE to the PCMCIA.
-I think you could even DMA over the port.
-
-
-> .... How does PPC/Linux handle this addressing
-> problem?
-
-What addressing problem?  The 860 supports 32 bits of address, so
-does Linux.  No problem.  I started to add support for multiple real
-memory spaces (which isn't hard, you just have to detect it), and then
-realized it isn't necessary.  With the 8xx memory controller you can
-make external RAM one linear space, unless you wire it up really stupid.
-
-> One more - if anyone has the specification for Sony Memorystick
-> I would be interested. I am pretty certain that this flashstick
-> has a serial interface on it.
-
-Maybe it is similar to the SanDisk MMC interface?  That is an SPI
-interface, perhaps there is some access standard.
+Check to make sure the addresses you feed the cpm are physical (not memory
+mapped) addresses.
 
 
-	-- Dan
+
+
+Regards, Steve
+
+__________________________________________
+Steve Calfee	--	embedded systems consultant
+calfee@home.com
+cell phone: (510) 468-5837
+Kerbango phone: (408) 517-3355
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
