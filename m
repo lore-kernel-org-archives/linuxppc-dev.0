@@ -1,62 +1,32 @@
-Message-ID: <20010823164256.8751.qmail@kunk.jriver.com>
-Subject: 2.4.9-benh0 problems and kudos
-To: linuxppc-dev@lists.linuxppc.org
-Date: Thu, 23 Aug 2001 11:42:56 -0500 (CDT)
-From: Robert E Brose II <bob@kunk.jriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 23 Aug 2001 09:58:05 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Robert E Brose II <bob@kunk.jriver.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.9-benh0 problems and kudos
+Message-ID: <20010823095805.I14302@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20010823164256.8751.qmail@kunk.jriver.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010823164256.8751.qmail@kunk.jriver.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On the positive side it looks like the 7500 chaos PCI bus fixes
-have been incorporated as well as the planb fixes and the
-controlfb enhancements.
+On Thu, Aug 23, 2001 at 11:42:56AM -0500, Robert E Brose II wrote:
 
-I've run into a couple of small problems however....
+> On the positive side it looks like the 7500 chaos PCI bus fixes
+> have been incorporated as well as the planb fixes and the
+> controlfb enhancements.
 
-planb.c has a problem in 2074.
-pb->lock = 0;
+If you have planb, please fix this and try it out. :)
 
-pb->lock is defined as a semaphore so this gives the following
-compiler error...
+> Next, when pppoe, ax25 or netrom are compiled as modules, trying to
+> insmod them gives the following...
 
-planb.c: In function `init_planb':
-planb.c:2074: incompatible types in assignment
+Don't use insmod.  Use modprobe.
 
-Next, when pppoe, ax25 or netrom are compiled as modules, trying to
-insmod them gives the following...
-
-# /sbin/insmod pppoe
-Using /lib/modules/2.4.9-benh0/kernel/drivers/net/pppoe.o
-/lib/modules/2.4.9-benh0/kernel/drivers/net/pppoe.o: unresolved symbol sk_run_filter
-/lib/modules/2.4.9-benh0/kernel/drivers/net/pppoe.o: unresolved symbol unregister_pppox_proto_Re0ff7a18
-/lib/modules/2.4.9-benh0/kernel/drivers/net/pppoe.o: unresolved symbol pppox_unbind_sock_Rdbcf0794
-/lib/modules/2.4.9-benh0/kernel/drivers/net/pppoe.o: unresolved symbol register_pppox_proto_R7c123193
-
-The problem appears to be sk_run_filter.
-
-Finally, though controlfb works, it doesn't work in X in 24/32 bit mode
-and 1024x768 resolution. It does however work in 800x600 mode at the
-same color depth and my 2.4.5 kernel patched from Michels site does work.
-By not working I mean it goes into X but gives a blank screen.
-
-Here is the dmesg for controlfb...
-
-controlfb: VRAM Total = 4MB (2MB @ bank 1, 2MB @ bank 2)
-controlfb: using video mode 16 and color mode 2.
-Console: switching to colour frame buffer device 128x48
-fb0: control display adapter
-MacOS display is /chaos/control
-
-
-I'm trying to get the latest kernel working so I can do mace testing
-on current code.
-
-Bob
 --
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
