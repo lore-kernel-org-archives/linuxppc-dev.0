@@ -1,49 +1,25 @@
-Date: Mon, 19 Jul 1999 20:18:09 +0200
-From: Lucas Vergnettes <lucas@promac.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: TurboMouse support in standard trees
-Message-ID: <19990719201809.A522@promac.org>
-References: <199907180459.XAA31988@lists.linuxppc.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199907180459.XAA31988@lists.linuxppc.org>; from Linux PPC Developer Digest on sam, jui 17, 1999 at 11:59:21 -0500
+Message-Id: <9907191827.AA39168@marc.watson.ibm.com>
+To: "Ringeman, Tim" <tim_ringeman@gilbarco.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Problem with compiling and linking separately 
+In-Reply-To: Message from "Ringeman, Tim" <tim_ringeman@gilbarco.com>
+   of "Mon, 19 Jul 1999 14:07:34 EDT." <199907191808.OAA14312@hoover.gilbarco.com>
+Date: Mon, 19 Jul 1999 14:27:44 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+	You should be using the compiler, powerpc-linux-gcc, to perform
+the link regardless of whether you are performing the link in a separate
+step.  The link step involves more than just -lc.  You are omitting
+important, additional commands to the linker by trying to invoke the
+linker directly.  Either use GCC for the link or look at the verbose
+output of GCC and learn the additional flags and libraries and object
+files that must be passed to the linker.  For instance, you are omitting
+the crt0 start files.
 
-I went to compile linus' kernel 2.2.10 today. I was using the paul's 2.2.1
-realease before.
-
-It looks like support for the turbomouse has gone :/
-I know that Benjamin made some changes to the driver, but it looks like they
-weren't adequate for the TurboMouse5.
-
-After digging in the kernel messages, I found that the working kernel (2.2.1)
-prints at startup : 
-
-ADB mouse at 3, handler 1 (TurboMouse 5)
-ADB mouse at 15, handler 1
-ADB keyboard at 2, handler set to 3
-
-while the 2.2.10 (not working) prints :
-
-ADB keyboard at 2, handler set to 5
-ADB mouse at 3, handler 1
-ADB mouse at 15, handler set to 4 (TurboMouse 5)
-
-I remember hearing some stuff about this trackball having 2 adb adresses
-(which is shown), and needed to be passed a specific handler.
-
-Unfortunately, I dunno anything about C :/
-
-So Benjamin or other, if you read me, please help, I'm ready to do
-Beta-testing and crashing for having this *finally* working everywhere!
-
-
-Thanks
-Lucas 
+David
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
