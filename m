@@ -1,70 +1,80 @@
-Message-ID: <3BD83D3C.17FB9DD8@mvista.com>
-Date: Thu, 25 Oct 2001 11:26:36 -0500
-From: Mark Hatle <fray@mvista.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3BD83F82.BE5C66A5@disca.upv.es>
+Date: Thu, 25 Oct 2001 18:36:18 +0200
+From: David de =?iso-8859-1?Q?Andr=E9s=20Mart=EDnez?= <ddandres@disca.upv.es>
 MIME-Version: 1.0
-To: "ibm405.linux" <ibm405.linux@laposte.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 405GP Dhrystone Benchmark
-References: <AEEDJHMEPHBIHBAHOOCDIELKCAAA.ogoh@asu.edu> <3BD82D8A.F0DC3B77@mvista.com> <3BD8338B.B93FCF3C@laposte.net>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Root-NFS: Server returned error -13
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"ibm405.linux" wrote:
->
-> Hi,
->
-> Does anyone perform Dhrystone 2.1 benchmark with a 405GP  ?
-> I've tried and i got : 172 Mips  (Walnut board @200Mhz, HHL2.0).
-> I've also tried to run the same benchmark with the same board with the
-> basic_os and the ibm "highcppc" compiler and i found
-> 237 Mips (the 405GP specifications give 282 Mips @200Mhz, they told me that
-> was obtained with a Diab compiler).
-> Is there any reason my result (172 Mips) is so far from ~240 Mips.
-> (i've used  : ppc_405-gcc   -DUNIX -DROPT -O2 -fomit-frame-pointer   dhry21a.c
-> dhry21b.c timers_b.c -o dhry21 )
+Hi all,
 
-(To truely do a valid test you need to compare the compiler output when
-running on the same OS, otherwise the numbers can not be validly
-compared due to OS overhead, i.e. context switching.... but to address
-you compiler question...)
+I'm trying to boot from NFS but I can't access the directory.
+The NFS server is torreta (158.42.50.79)
+The client is stk823L (158.42.50.66)
 
-This is just a guess... but...
+Here is the error message:
+....
+Looking up port of RPC 100003/2 on 158.42.50.79
+Looking up port of RPC 100005/2 on 158.42.50.79
+Root-NFS: Server returned error -13 while mounting
+/tftpboot/158.42.50.66
+VFS: Unable to mount root fs via NFS, trying floppy
+....
 
-GCC is a "generic" compiler.  It is designed to run on as many platforms
-as possible and as such has to make some specific performance sacrifices
-to remain portable.
+The server shows the following /var/log/messages:
+....
+torreta mountd[20966]: NFS mount of /tftpboot/158.42.50.66 attempted
+from 158.42.50.66
+torreta mountd[20966]: NFS client stk823L.disca.upv.es tried to access
+/tftpboot/158.42.50.66
+torreta mountd[20966]: Blocked attempt of 158.42.50.66 to mount
+/tftpboot/158.42.50.66
+....
 
-Whereas IBM has the resources to make a compiler that is ultra fast on a
-PPC system, it probably doesn't work (or at least wouldn't be the same
-code-base) on say an intel system, HPPA, sh, mips, arm, etc systems..
+The /etc/exports looks like:
+....
+/home/ddandres/export 158.42.50.66(rw,no_root_squash)
+....
 
-So you are trading compatability for speeds.  (In most cases
-compatability wins..)  For example think of the TiVo.  The hardware is
-one component of the system, but the software is the true masterpiece.
-If TiVo decides that the PPC isn't the best hardware or they can get
-cheaper parts from another supplier they don't need to completely port
-their code to a new compiler.  (Assuming no assembly) they could take
-their user code and recompile it for another architecture.  They could
-also maintain a code base between processors and update older and newer
-units.  (This is all obviously hypothetical...)
+The /etc/hosts is:
+127.0.0.1	localhost
+158.42.50.79	torreta.disca.upv.es	torreta
+158.42.50.66	stk823l.disca.upv.es	stk823L
 
-The other thing to keep in mind is that some compilers (*note: I have
-never used "diab" before so I am talking generically*) have been known
-to have specific optimizations that boost performance benchmarks but do
-little or not good in the real world.
+The "rpcinfo -p" command sais:
+   program vers proto   port
+    100000    2   tcp    111  portmapper
+    100000    2   udp    111  portmapper
+    100005    1   udp    791  mountd
+    100005    2   udp    791  mountd
+    100005    1   tcp    794  mountd
+    100005    2   tcp    794  mountd
+    100003    2   udp   2049  nfs
+    100003    2   tcp   2049  nfs
+    100021    1   udp   1072  nlockmgr
+    100021    3   udp   1072  nlockmgr
+    100021    1   tcp   1579  nlockmgr
+    100021    3   tcp   1579  nlockmgr
 
-Moral of the story, if you plan on using Linux, plan to use GCC.  If GCC
-isn't fast enough for you, you have two options.
+Can anyone guess which is the problem?
 
-1) Find a commericial compiler that will produce Linux binaries
-2) Help find and improve GCC
-
-(2 is the preferable approach...)
-
---Mark
-(I don't normally add this disclaimer, but these are my opinions and not
-my employer's!)
+--
+----------------------------------------------------------------------
+| David de Andrés Martínez   | Fault Tolerant Systems research Group |
+|                            |                                       |
+| Computer Science Engineer  | Email: ddandres@disca.upv.es          |
+| Doctorate Student          | Phone: +34 96 387.75.74 Ext 75774     |
+|                            | Fax: +34 96 387.75.79                 |
+-------Address--------------------------------------------------------
+|                 DISCA-EUI                                          |
+|                 Universidad Politécnica de Valencia                |
+|                 Campus de Vera #14                                 |
+|                 Valencia E-46021                                   |
+|                 Spain                                              |
+----------------------------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
