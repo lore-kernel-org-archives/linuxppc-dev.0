@@ -1,31 +1,28 @@
-Message-ID: <19991124005625.A7469@lx.c-side.com>
-Date: Wed, 24 Nov 1999 00:56:25 -0800
-From: Neil Russell <caret@c-side.com>
-To: Dan Malek <dmalek@jlc.net>, LiuTao <tliu@ict.ac.cn>
-Cc: linuxppc <linuxppc-dev@lists.linuxppc.org>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: need suggestions
-References: <3839F122.3BF6FEDF@ict.ac.cn> <383A0E2D.CFACF894@jlc.net>
-Mime-Version: 1.0
+Message-ID: <383C1032.9C117E07@denise.shiny.it>
+Date: Wed, 24 Nov 1999 17:20:02 +0100
+From: Giuliano Pochini <pochini@denise.shiny.it>
+MIME-Version: 1.0
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Floppy problems
+References: <199911201327.OAA17266@appel.flower>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <383A0E2D.CFACF894@jlc.net>; from Dan Malek on Mon, Nov 22, 1999 at 10:46:53PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Nov 22, 1999 at 10:46:53PM -0500, Dan Malek wrote:
-> How do you load vxWorks?  I have worked on several vxWorks projects,
 
-If you use vxWorks to load Linux, you would probably still have to pay
-WindRiver a royalty.  Also, that would make the worlds largest bootloader;
-well ok, OF is larger.
+>     I've never gotten my floppy drive to work under Linuxppc, it works fine
+>     under MacOS.  When accessing the floppy, it sounds ok, but the close ()
+>     system call doesn't return.  After this, the fd0 device can't be accessed
+>     again because it's busy.  The process can't be killed.
+> 
+>     [...]
 
-Many years ago, I wrote a boot loader that does (amongst other things)
-BOOTP and TFTP.  I plan to port it to PPC for a project I'm doing soon
-and I will publish it.  It wont be ready for a few months though.
+Same problem here, mainly on write accesses.
 
+Pmac 7300 with all kernels.
 
--- 
-Neil Russell <caret@c-side.com>
+Bye.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
