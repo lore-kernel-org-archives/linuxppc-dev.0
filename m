@@ -1,25 +1,29 @@
-Message-ID: <3A41690B.E5BCB90D@nexus-tech.net>
-Date: Wed, 20 Dec 2000 21:20:59 -0500
-From: Kyle Harris <kharris@nexus-tech.net>
+Message-ID: <3A41E015.4060202@galileo.co.il>
+Date: Thu, 21 Dec 2000 12:48:53 +0200
+From: Rabeeh Khoury <rabeeh@galileo.co.il>
+Reply-To: rabeeh@galileo.co.il
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Software Emulation error
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: heartbeat functions
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-I've encountered the following error several times while running various
-programs. This one comes from a process attempting to call the times()
-function.
+I'm porting Linux to our embedded ppc board.
+Can any one point me to documentation regarding the following function
+and parameters ?
 
-Software Emulation memcp/44 NIP: 18424a0 *NIP: 0x398c8d88 code: ffffffda
-Illegal Instruction
+   ppc_md.heartbeat
+   ppc_md.heartbeat_reset
+   ppc_md.heartbeat_count
 
-Can anyone give me a clue as to why this happens?
+What they are used to ?
 
-Thanks, Kyle.
+Regards,
+Rabeeh
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
