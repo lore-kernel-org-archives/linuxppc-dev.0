@@ -1,21 +1,28 @@
-Message-ID: <01C0D493.EAA27410.svacca@valcom.com>
-From: Steven Vacca <svacca@valcom.com>
-Reply-To: "svacca@valcom.com" <svacca@valcom.com>
-To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Need latest  PLX-PCI-9054 driver for MPC860T
-Date: Fri, 4 May 2001 12:15:30 -0400
+Date: Sat, 5 May 2001 09:44:48 -0700 (PDT)
+From: Paul White <pwhite@networkrobots.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Modules on 2.4.0 PPC Linux
+Message-ID: <Pine.LNX.4.21.0105050940010.13276-100000@stimpy.networkrobots.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have a custom design which has the MPC860T.
-Would anyone know where I could find the latest plx-pci-9054 driver?
+All,
 
-Thanks all,
+I currently have 2.4.0 working on a PPC 7400 embedded board,
+however modules do not seem to be working.  When I attempt
+to load a modules, I receive several unresolved symbols,
+including printk(), schedule(), sk_free(), kmem_cache_alloc(),
+etc..  Since these are all global functions always compiled
+in, they should be found.
 
-ShutEye Thinkin
+Anyone have any ideas?
+
+Thanks....
+
+Paul W.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
