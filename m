@@ -1,73 +1,118 @@
-From: Gabriel Paubert <paubert@iram.es>
-Date: Tue, 26 Aug 2003 22:03:03 +0200
-To: Frank Murphy <murphyf+linux-ppc@f-m.fm>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Linux kernel / USB keyboard scancode problems
-Message-ID: <20030826200303.GA14385@iram.es>
-References: <200308231409.24503.murphyf+linux-ppc@f-m.fm> <20030826093512.GA7637@iram.es> <200308262124.04906.murphyf+linux-ppc@f-m.fm>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200308262124.04906.murphyf+linux-ppc@f-m.fm>
+Date: Wed, 27 Aug 2003 00:10:09 +0200 (MEST)
+From: Martin Schaffner <maschaffner@gmx.ch>
+To: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Subject: getting linux 2.6.0-test4 to compile on an ibook2
+Message-ID: <9970.1061935809@www44.gmx.net>
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Aug 26, 2003 at 09:24:02PM +0200, Frank Murphy wrote:
-> On Tuesday 26 August 2003 11:35, Gabriel Paubert wrote:
-> > On Sat, Aug 23, 2003 at 02:09:24PM +0200, Frank Murphy wrote:
-> > >   To get the menu keysym, I'm supposed to press fn and Enter at the same
-> > > time. But, instead of getting Menu (X keycode 117), I get 99.
-> > > Unfortunately, that's the same keycode as Prior (PageUp), but I think
-> > > that's an X bug. On the console with showkey -k, I get 101. With showkey
-> > > -s, I get 0x5b 0xdb. Unfortunately, I don't know what these values are
-> > > supposed to be for Menu
-> >
-> > Indeed that's an X bug, like the one (fixed now?) with the keypad equal.
->
-> True, the fact that PageUp and Menu make the same keycode in X is an X bug.
-> However, if the kernel sent the normal (i.e. i386) keycode, the X bug
-> wouldn't be exposed.
->
-> > X does its own mapping of raw keycodes to keycodes, and the mapping
-> > is surjective (arghh). The option CustomKeyCodes in X allows you to bypass
-> > this mapping (medium raw modes) but I believe it is deprecated.
+Hello,
 
-On a PC, the Menu key sends e0 5d (and obviously e0 dd for key up). The linux
-keycode is 127 but the X one is 117.
+Today I compiled linux 2.6.0-test4 with almost the same options as the
+currently running 2.4. except for sound support. I had to change 8 lines in the
+code to be able to do so. Below is the patch. One line change concerns ARM
+instead of PowerPC, but the change is because of an architecture-independant API
+change, so I'm including it anyway.
 
 
-> > I believe it was benh in drivers/macintosh/adbhid.c on March 5th. Easy
-> > to find with bk (1.10 revision in the tree on my Pismo which I have not
-> > updated in a long time). Apparently the ADB keycodes have changed
-> > depending on PB revisions.
->
-> Thanks for the pointer! It looks like that's the right place. I've looked at
-> it quickly, and it'll take me a while to figure out what's going on.
+---
+diff -ur linux-2.6.0-test4/drivers/i2c/i2c-keywest.c
+linux-2.6.0-test4-new/drivers/i2c/i2c-keywest.c
+--- linux-2.6.0-test4/drivers/i2c/i2c-keywest.c	2003-08-23
+01:57:49.000000000 +0200
++++ linux-2.6.0-test4-new/drivers/i2c/i2c-keywest.c	2003-08-26
+20:21:48.000000000 +0200
+@@ -510,7 +510,7 @@
+ 		struct keywest_chan* chan = &iface->channels[i];
+ 		u8 addr;
 
-The following might be sufficient (just a wild guess, and it will
-certainly break if you don't use linux keycodes):
+-		sprintf(chan->adapter.dev.name, "%s %d", np->parent->name, i);
++		sprintf(chan->adapter.name, "%s %d", np->parent->name, i);
+ 		chan->iface = iface;
+ 		chan->chan_no = i;
+ 		chan->adapter.id = I2C_ALGO_SMBUS;
+@@ -523,7 +523,7 @@
+ 		rc = i2c_add_adapter(&chan->adapter);
+ 		if (rc) {
+ 			printk("i2c-keywest.c: Adapter %s registration failed\n",
+-				chan->adapter.dev.name);
++				chan->adapter.name);
+ 			i2c_set_adapdata(&chan->adapter, NULL);
+ 		}
+ 		if (probe) {
+diff -ur linux-2.6.0-test4/drivers/ide/arm/icside.c
+linux-2.6.0-test4-new/drivers/ide/arm/icside.c
+--- linux-2.6.0-test4/drivers/ide/arm/icside.c	2003-08-23 01:56:14.000000000
++0200
++++ linux-2.6.0-test4-new/drivers/ide/arm/icside.c	2003-08-26
+20:28:40.000000000 +0200
+@@ -237,7 +237,7 @@
+ 		sg->length = rq->nr_sectors * SECTOR_SIZE;
+ 		nents = 1;
+ 	} else {
+-		nents = blk_rq_map_sg(&drive->queue, rq, sg);
++		nents = blk_rq_map_sg(drive->queue, rq, sg);
 
+ 		if (rq_data_dir(rq) == READ)
+ 			hwif->sg_dma_direction = DMA_FROM_DEVICE;
+diff -ur linux-2.6.0-test4/drivers/ide/ppc/pmac.c
+linux-2.6.0-test4-new/drivers/ide/ppc/pmac.c
+--- linux-2.6.0-test4/drivers/ide/ppc/pmac.c	2003-08-23 01:52:12.000000000
++0200
++++ linux-2.6.0-test4-new/drivers/ide/ppc/pmac.c	2003-08-26
+20:29:38.000000000 +0200
+@@ -942,7 +942,7 @@
+ 	if (hwif->sg_dma_active)
+ 		BUG();
 
-===== adbhid.c 1.12 vs edited =====
---- 1.12/drivers/macintosh/adbhid.c	Sat Jul 12 03:15:34 2003
-+++ edited/adbhid.c	Tue Aug 26 21:55:04 2003
-@@ -70,7 +70,7 @@
- 	 15, 57, 41, 14, 96,  1, 29,125, 42, 58, 56,105,106,108,103,  0,
- 	  0, 83,  0, 55,  0, 78,  0, 69,  0,  0,  0, 98, 96,  0, 74,  0,
- 	  0,117, 82, 79, 80, 81, 75, 76, 77, 71,  0, 72, 73,183,181,124,
--	 63, 64, 65, 61, 66, 67,191, 87,190, 99,  0, 70,  0, 68,101, 88,
-+	 63, 64, 65, 61, 66, 67,191, 87,190, 99,  0, 70,  0, 68,127, 88,
- 	  0,119,110,102,104,111, 62,107, 60,109, 59, 54,100, 97,126,116
- };
+-	nents = blk_rq_map_sg(&drive->queue, rq, sg);
++	nents = blk_rq_map_sg(drive->queue, rq, sg);
 
+ 	if (rq_data_dir(rq) == READ)
+ 		pmif->sg_dma_direction = PCI_DMA_FROMDEVICE;
+@@ -1589,7 +1589,7 @@
+ 		HWGROUP(drive)->busy = 1;
+ 		pmac_ide_dma_check(drive);
+ 		HWGROUP(drive)->busy = 0;
+-		if (!list_empty(&drive->queue.queue_head))
++		if (!list_empty(&drive->queue->queue_head))
+ 			ide_do_request(HWGROUP(drive), 0);
+ 		spin_unlock_irq(&ide_lock);
+ 	}
+@@ -1673,7 +1673,7 @@
+ 	/* We resume processing on the HW group */
+ 	spin_lock_irqsave(&ide_lock, flags);
+ 	HWGROUP(drive)->busy = 0;
+-	if (!list_empty(&drive->queue.queue_head))
++	if (!list_empty(&drive->queue->queue_head))
+ 		ide_do_request(HWGROUP(drive), 0);
+ 	spin_unlock_irqrestore(&ide_lock, flags);
+ }
+diff -ur linux-2.6.0-test4/drivers/net/ne2k-pci.c
+linux-2.6.0-test4-new/drivers/net/ne2k-pci.c
+--- linux-2.6.0-test4/drivers/net/ne2k-pci.c	2003-08-23 01:53:07.000000000
++0200
++++ linux-2.6.0-test4-new/drivers/net/ne2k-pci.c	2003-08-26
+20:40:09.000000000 +0200
+@@ -69,8 +69,6 @@
+ #if defined(__powerpc__)
+ #define inl_le(addr)  le32_to_cpu(inl(addr))
+ #define inw_le(addr)  le16_to_cpu(inw(addr))
+-#define insl insl_ns
+-#define outsl outsl_ns
+ #endif
 
-BTW, I'd also like to keep somewhere the state of the fn key in the
-ADB keyboard driver. I've seen a MacOS utility which allows you to
-use the trackpad as a scroll wheel while the fn button is pressed.
-Thta's what I'd ike to copy.
+ #define PFX DRV_NAME ": "
 
-	Regards,
-	Gabriel
+--
+COMPUTERBILD 15/03: Premium-e-mail-Dienste im Test
+--------------------------------------------------
+1. GMX TopMail - Platz 1 und Testsieger!
+2. GMX ProMail - Platz 2 und Preis-Qualitätssieger!
+3. Arcor - 4. web.de - 5. T-Online - 6. freenet.de - 7. daybyday - 8. e-Post
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
