@@ -1,45 +1,25 @@
-Message-ID: <3B3C38D9.2519DA96@mvista.com>
-Date: Fri, 29 Jun 2001 04:14:17 -0400
+Message-ID: <3B3C3AF3.4DD7DB6F@mvista.com>
+Date: Fri, 29 Jun 2001 04:23:15 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Neil Wilson <NWILSON@Airspan.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Sandpoint 3 + MPC7450 + HHL2
-References: <E69FF45ADA3BD511A25900047623CC4F12AA74@JUPITER>
+To: Kevin Fry <kevin@carts.com>
+Cc: 1337 linuxppc list ???? <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: invalid page faults..
+References: <3B3A5A16.6010005@ccc-dcs.com> <3B3A7958.340746FC@carts.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Neil Wilson wrote:
+Kevin Fry wrote:
 
-> I managed to get the JourneyMan 2 82XX booting up on my Sandpoint3 MPC7450 -
+> What happens is that load_elf_interp() is called and then it calls
+> padzero(elf_bss) and the page faults start occuring.
+> when padzero is called elf_bss is in the 3Exxxxx range. Why would it be so
+> high in memory?
 
-I'm sitting on a bunch of changes for both Sandpoint X3 and 7450.  With
-the new cputable stuff in 2.4_devel, I'll stuff the 7450 changes in
-there.
-
-The X3 changes are a big hack to OpenPIC, because the X3 uses the
-serial interrupt interface of the EPIC.  I'm still working with Motorola
-to understand some discrepancies in the way the board is supposed to
-work,
-and the way it does.  That is, I have some additional hacks that make
-the
-board work, but it isn't right.
-
-I'll work on all of this over the weekend.
-
-> ...after adding a enable for the TimeBase
-
-So, you have an old version of DINK.  Get it updated as you are probably
-missing more than that.
-
-I don't know what Motorola is shipping to their customers.  I have had
-many revisions of hardware and silicon, and just recently have the L2
-cache working.  I never received a board with a working L3 cache.  I
-guess
-there are some magic parts required, and they are ending up in the
-hands of people more important than me :-).
+It's a virtual address.  You are going to see lots of page faults when
+a program starts up.
 
 
 	-- Dan
