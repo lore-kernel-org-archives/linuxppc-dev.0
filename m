@@ -1,22 +1,21 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from www.linux.org.uk (parcelfarce.linux.theplanet.co.uk
-	[195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CCB532BF16
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jan 2005 02:12:03 +1100 (EST)
-Date: Mon, 10 Jan 2005 09:56:07 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: James Nelson <james4765@cwazy.co.uk>
-Message-ID: <20050110115607.GG14098@logos.cnet>
-References: <20050108170406.32690.36989.11853@localhost.localdomain>
-	<20050108170433.32690.82747.72350@localhost.localdomain>
+Return-Path: <sheutlin@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 0CF162BF18
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jan 2005 02:19:01 +1100 (EST)
+From: Sebastian Heutling <sheutlin@gmx.de>
+To: Sven Luther <sven.luther@wanadoo.fr>
+In-Reply-To: <20050110063459.GA22078@pegasos>
+References: <200412261435.13562.marc.dietrich@ap.physik.uni-giessen.de>
+	<200501051733.06350.marvin24@gmx.de> <20050105165551.GA29287@pegasos>
+	<200501052157.25302.marvin24@gmx.de> <41E1BBA2.30008@gmx.de>
+	<20050110063459.GA22078@pegasos>
+Content-Type: text/plain
+Date: Mon, 10 Jan 2005 16:19:03 +0100
+Message-Id: <1105370343.6222.32.camel@weizen.left.earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050108170433.32690.82747.72350@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
-Subject: Re: [RESEND] [PATCH 3/7] ppc: remove cli()/sti() in
-	arch/ppc/8xx_io/fec.c
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [FYI] linux 2.6 still not working with PReP (ppc32)
+Reply-To: sheutlin@gmx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,61 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2005-01-10 at 07:34 +0100, Sven Luther wrote:
 
-Looks OK to me.
+[...]
 
- Dan, Tom, this should be applied to the linuxppc-2.5 IMO.
-
-On Sat, Jan 08, 2005 at 11:04:15AM -0600, James Nelson wrote:
-> Replace save_flags()/resore_flags() with spin_lock_irqsave()/spin_unlock_irqrestore()
-> and document reasons for locking.
+> > I also tried the 2.6.10 and found out that it doesn't work here as well. 
+> > First I get a lot of lost interrupts from the IDE driver and after that 
+> > I also get the SCSI timeouts. It must have something to do with the prep 
+> > changes in 2.6.9. One difference in IRQ setup I noticed is in 
+> > prep_pcibios_fixup(). If I remember correctly before 2.6.9 at least on 
+> > this Utah machine the IRQs are assigned from Motherboard_routes[] 
+> > without doing anything else. Now additionally the IRQ is also written 
+> > into the devices pci config space which might not work on the 
+> > PowerstackII Utah.
+> > It's only a guess and I haven't had the time yet to test it.
 > 
-> Signed-off-by: James Nelson <james4765@gmail.com>
-> 
-> diff -urN --exclude='*~' linux-2.6.10-mm1-original/arch/ppc/8xx_io/fec.c linux-2.6.10-mm1/arch/ppc/8xx_io/fec.c
-> --- linux-2.6.10-mm1-original/arch/ppc/8xx_io/fec.c	2004-12-24 16:35:28.000000000 -0500
-> +++ linux-2.6.10-mm1/arch/ppc/8xx_io/fec.c	2005-01-07 19:58:55.806516338 -0500
-> @@ -389,6 +389,7 @@
->  	flush_dcache_range((unsigned long)skb->data,
->  			   (unsigned long)skb->data + skb->len);
->  
-> +	/* disable interrupts while triggering transmit */
->  	spin_lock_irq(&fep->lock);
->  
->  	/* Send it on its way.  Tell FEC its ready, interrupt when done,
-> @@ -539,6 +540,7 @@
->  	struct	sk_buff	*skb;
->  
->  	fep = dev->priv;
-> +	/* lock while transmitting */
->  	spin_lock(&fep->lock);
->  	bdp = fep->dirty_tx;
->  
-> @@ -799,6 +801,7 @@
->  
->  	if ((mip = mii_head) != NULL) {
->  		ep->fec_mii_data = mip->mii_regval;
-> +
->  	}
->  }
->  
-> @@ -817,8 +820,8 @@
->  
->  	retval = 0;
->  
-> -	save_flags(flags);
-> -	cli();
-> +	/* lock while modifying mii_list */
-> +	spin_lock_irqsave(&fep->lock, flags);
->  
->  	if ((mip = mii_free) != NULL) {
->  		mii_free = mip->mii_next;
-> @@ -836,7 +839,7 @@
->  		retval = 1;
->  	}
->  
-> -	restore_flags(flags);
-> +	spin_unlock_irqrestore(&fep->lock, flags);
->  
->  	return(retval);
->  }
+> Can you try the debian kernels i upload and fill bugreports against them ?
+
+I tried the 2.6.9 kernel. Same problem as in 2.6.10. I hacked a little
+in prep_pci.c/prep_pcibios_fixup() but nothing. Then I replaced
+prep_pci.c and prep_setup.c by using the 2.6.8 ones to be sure that this
+problem isn't coming from elsewhere and guess what: It worked again. So
+something from 2.6.8 to 2.6.9 in those two files must be causing this
+IRQ problem.
+
+
+Sebastian
