@@ -1,42 +1,33 @@
-Message-ID: <38713F39.E72D77FF@ctam.com.au>
-Date: Tue, 04 Jan 2000 11:30:49 +1100
+Message-ID: <38714235.9CB27C5B@ctam.com.au>
+Date: Tue, 04 Jan 2000 11:43:33 +1100
 From: Brendan J Simon <Brendan.Simon@ctam.com.au>
 Reply-To: Brendan.Simon@ctam.com.au
 MIME-Version: 1.0
-CC: Alan Mimms <alanm@unforgettable.com>,
-        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: cross-compiling & debugging embedded-linux apps
-References: <386C3615.E14AE6DD@ctam.com.au>
-	 <19991231.6583200@alanm.penguinpowered.com> <386CD4AD.A0311DD9@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+To: dony <dony.he@huawei.com.cn>
+CC: linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: decompress_kernel() questions......
+References: <387553E8.86C9F334@huawei.com.cn>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jim Lewis wrote:
+dony wrote:
 
-> Alan Mimms wrote:
->
-> > You know about the ldd command?  Do 'ldd bjs1-shared' to see what
-> > libraries you need for your shared executable and make sure they're
-> > there and built with no floating point.  When you compile and link,
+> Now the bootloader can work. But when it enters into
+> decompress_kernel( )£¬It shows a message " bad gzipped data " and
+> exit. I trace the misc.c and find this message is appeared in
+> gunzip(). I think it cannot locate the offset of the zipped kernel
+> image file. Do you have any experience?
+> Thanks.
 
-Yep, but ldd doesn't seem to exist in my cross-tools.  Is it part of gcc,
-binutils or some other package ?
+Yep.  I had the same experience.
+It means that the kernel image isn't loaded into flash or it is loaded
+in the wrong location.
 
+Can you post the output of your terminal output and of "powerpc-linux
+--headers zImage".
 
-> > you're using '-mcpu=860' or '-msoft-float', right?  That also could be
-> > a problem for you.
-
-I'm using -mcpu=860 but I am not specifying -msoft-float.  This shouldn't be a
-problem for a simple program that continuously prints out a string using puts().
-The static version runs so it is some kind of dynamic library loader problem I
-suspect.
-
-I've had some replies from the cross-gcc mailing list with some suggestions.
-I'll post any results worth mentioning.
-
-Thanks,
 Brendan Simon.
 
 
