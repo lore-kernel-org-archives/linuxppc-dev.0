@@ -1,43 +1,29 @@
-Message-ID: <39ADAECB.B1A065A3@rochcivictheatre.org>
-Date: Wed, 30 Aug 2000 20:03:07 -0500
+Message-ID: <39ADB62A.3C5E3BE8@rochcivictheatre.org>
+Date: Wed, 30 Aug 2000 20:34:34 -0500
 From: Tom Gall <gall@rochcivictheatre.org>
 MIME-Version: 1.0
-To: Tom Gall <gall@rochcivictheatre.org>, linuxppc-dev@lists.linuxppc.org
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+CC: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Sourceforge.net
-References: <20000831002959.27641.qmail@ww182.netaddress.usa.net> <39ADAE79.2E03FB5A@rochcivictheatre.org>
-Content-Type: text/plain; charset=us-ascii
+References: <39ADA344.4D6F0916@rochcivictheatre.org> <39ADABDC.15B5AE0@student.ethz.ch>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- jeramy b smith wrote:
- >
- > Tom Gall <gall@rochcivictheatre.org> wrote:
- > >
- > > Hi All,
- > >
- > >  I thought I would just drop a friendly reminder that the PowerPC
-Linux
- > > project on sourceforge.net is alive and active.
- > >
- > >   What is it?
- > >
- > >   It's a place to track bugs, patches, etc etc etc. It's not a
- > > replacement for bitkeeper nor is it a replacement for this list. If
-you
- > > find a new bug or have a new patch it'd be great if you could put
-it in
- > > there.
- > >
- >
- > For those who don't remember, what is the url of the project?
+Michel Dänzer wrote:
 
- Hi Jeramy,
+> BTW have you set things up so that new bugs, patches etc. get automatically
+> announced on this list? That would be pretty handy IMHO, saving people from
+> having to check the site regularly.
 
-  DOH!
+Hi Michel,
 
-   It's http://sourceforge.net/projects/ppclinux/
+  Sounds like either a really good idea or pure evil. I just setup a
+procmail script so in theory when bugs are created or updated they will
+be posted here...  stress in theory.
 
+FLAME ME IF THIS IS PURELY STUPID.
 
 --
 Regards,
