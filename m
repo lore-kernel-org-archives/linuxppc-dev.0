@@ -1,48 +1,44 @@
-Date: Fri, 9 Nov 2001 13:18:43 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: <linuxppc-dev@lists.linuxppc.org>,
-	Daniel Berlin <dan@cgsoftware.com>,
-	Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: "Tony 'Nicoya' Mantler" <nicoya@apia.dhs.org>,
+	Roman Zippel <zippel@linux-m68k.org>
 Subject: Re: Help from Gurus on modes and timing and frame buffers needed!
-In-Reply-To: <20011109014750.QFJJ10804.tomts19-srv.bellnexxia.net@there>
-Message-ID: <Pine.LNX.4.33.0111091307451.1704-100000@serv>
+Date: Fri, 9 Nov 2001 08:23:47 -0500
+References: <v04003a0eb8110c4666ff@[24.70.162.28]>
+In-Reply-To: <v04003a0eb8110c4666ff@[24.70.162.28]>
+Cc: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <20011109132150.FHFJ13234.tomts8-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hi Tony and Roman,
 
-On Thu, 8 Nov 2001, Kevin B. Hendricks wrote:
+Thanks for your help with this!  The drawing and formulas helped me
+understand things.  When I add to that nomenclature the nomenclature used
+by the specific graphic card docs, things can get very confusing.  It
+seems the VCLK and the DOT_CLOCK, and the PIXEL_CLOCK are all related but
+they are ofter scaled differently (off by a factor of 10) and given as
+inverses or one or the other.  Very confusing!
 
-> PIXEL_CLOCK = 10,800
-> H_ACTIVE = 1280
-> H_BLANK = 408
-> V_ACTIVE = 1024
-> V_BLANK = 42
-> H_SYNC_OFF = 128
-> H_SYNC_WIDTH = 112
-> V_SYNC_OFF = 4
-> V_SYNC_WIDTH = 3
-> [..]
-> But how are the  left_margin, right_margin, upper_margin, and lower_margin
-> determined?
+Anyway  One last question:
 
-Let's see if I remember them correctly:
+How are the Sync Flags determined?  I assume they either tell you if the
+sync is an upward pulse or a downward pulse,  or which edge to trigger on
+or something like that.
 
-right/lower = sync_off
-left/upper = blank-sync_off-sync_width
+I see in the EDID block that SYNC_T = 1 but I have no idea how
 
-so that
+                Flags   "-HSync" "-VSync"
 
-left_margin = 168
-right_margin = 128
-upper_margin = 35
-lower_margin = 4
+are determined from that (or anything else).
 
-bye, Roman
+Again any help would be greatly appreciated here.
 
+Thanks,
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
