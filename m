@@ -1,57 +1,35 @@
-From: oliver.amft@ch.abb.com
-To: Mark Hatle <fray@mvista.com>, linuxppc-embedded@lists.linuxppc.org
-Message-ID: <41256927.0038C99E.00@mail1.ch.abb.com>
-Date: Tue, 25 Jul 2000 11:23:14 +0200
-Subject: Re: GLibC cross compile for ppc-linux
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-ID: <67505026E29DD311A9AA00508B7315F33B735B@EXCHANGE>
+From: Mike Flynn <mflynn@enerdyne.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: kmem_grow: Called nonatomically from int - size-32?
+Date: Tue, 25 Jul 2000 12:27:25 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Mark, hi all,
+We have been hacking away on a TI  16C554 quad UART driver based on
+serial.c. The driver supports the TI chip on our motherboard which hosts an
+Embedded Planet CLLF with an MOT 860T processor. We have all four ports
+working with interrupts, but we are seeing this message several times before
+the system hangs: "kmem_grow: Called nonatomically from int - size-32." It
+is issued from linux/mm/slab.c and obviously has something to do with shared
+memory. Does anyone have insight as to what we are (or are not doing) to
+upset slab.c?
 
-sorry for the delay!
-In between i've managed to get arround this: "isomac" checks the header files
-and can't find an #include <{asm,linux}/errno.h> within the errno.h it is
-checking. So, two links to the linux include dir (asm,linux) will help, since
-the configure switch "--with-headers=$linux-dir/include" doesn't work at this
-point.
+Thanks,
 
-Oliver
-
-
-
-
-|---------->
-|          |
-|          |
-|---------->
-  >------------------------------------------------------------------------|
-  |Mark Hatle <fray@mvista.com>                                            |
-  |2000-07-17 19:00                                                        |
-  >------------------------------------------------------------------------|
-
-
-
-I've been cross-compiling glibc-2.1.3 for ppc 7xx and 8xx for a while
-now.  I've yet to see any problems like that.  What if your host OS,
-(i.e. RedHat, debian etc? and it's version.)  And what are you
-targeting?
-
---Mark
-
-oliver.amft@ch.abb.com wrote:
->
-> Hi all,
->
-> i'm trying to build the glibc 2.1.3 on a i686-linux machine for a
-powerpc-linux
-> embedded target. The make command works fine (...no errors) but somehow "make
-> check" stops in the "stdlib tests" part when it is invoking the "isomac"
-command
-> for the first time (after compiling it):
->
+Mike Flynn
+Principal Software Engineer
+Enerdyne Technologies
+8402 Magnolia Ave.
+Suite C
+Santee, CA 92041
+Voice: 619-562-3061
+Fax: 619-562-8802
+MFlynn@Enerdyne.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
