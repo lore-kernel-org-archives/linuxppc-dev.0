@@ -1,47 +1,34 @@
-Date: Wed, 21 Apr 1999 20:58:00 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Simone Piccardi <Simone.Piccardi@fi.infn.it>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Un-Setting VME3PCI Master Master Enable on MVME2431
-In-Reply-To: <371E0313.C0FF665C@fi.infn.it>
-Message-ID: <Pine.HPP.3.96.990421202724.20020d-100000@gra-ux1.iram.es>
+Date: Thu, 22 Apr 1999 00:54:07 -0400 (EDT)
+From: Tom Vier <nester@erols.com>
+Reply-To: Tom Vier <thomassr@erols.com>
+To: "David A. Gatwood" <marsmail@globegate.utm.edu>
+cc: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
+        root <roboj@ibm.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Kernel 2.2.6-ac1 problem
+In-Reply-To: <Pine.LNX.3.96.990420144859.24907A-100000@globegate.utm.edu>
+Message-ID: <Pine.LNX.4.10.9904220050550.19091-100000@localhost.erols.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Tue, 20 Apr 1999, David A. Gatwood wrote:
 
+> The related code I noticed changing was related to quota support.  It
+> doesn't appear to be in the ext2fs code changes, though, because I tried
+> backdating all of those (other than simple formatting and notational
+> changes0 to no avail.  I'm thinking it might be in the general filesystem
+> code.
 
-On Wed, 21 Apr 1999, Simone Piccardi wrote:
+any chance it could be the quota code? i have it enabled, but i don't have
+it setup (no quotas) and i get minor corruption when copying and deleting
+lots of files. does it happen with quotas disabled?
 
-> 
-> Hi,
-> today I got another "little" trouble with our board.
-> We finally get a dataway display that cannot work. After many attempts
-> to use it (it was perfectly working in other crates) we try to go back
-> to the default configuration of the board (I switched to VME3PCI Master
-> Master Enable = N according to what said in the mailing list to boot the
-> kernel) and everything went working.
-> The manual said:
-> N do not enable the VME Bus Interface
-> 
-> So is this only related to the PPCBug (and with a working kernel all
-> will be OK?) Or I have to worry?
-
-Don't worry. The settings of the Raven/Hawk are not ideal for large VME
-systems and it's better to enable the Universe later in the boot process
-or when loading the driver. This bridge is simply a PCI space hog,
-actually if you sum the maximal size of all the programmable images you
-would get something slightly over 32 Gb so it's better to disable it when
-playing with the host bridge (not yet fully done). 
-
-> Probably this is a stupid question, but as I said I'm totally new to
-> VME.
-
-No problem. We all have been newbies at some point. 
-
-	Gabriel
+--
+Tom Vier - 0x82B007A8
+thomass@erols.com
+http://www.erols.com/thomassr/zero/
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
