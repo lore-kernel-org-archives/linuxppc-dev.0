@@ -1,48 +1,104 @@
-Date: Mon, 19 Aug 2002 12:27:01 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Embedded Planet 405Gp booting
-Message-ID: <20020819022701.GD16663@zax>
-References: <200208161023.18576.waite@skycomputers.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="FkmkrVfFsRoUs1wW"
-In-Reply-To: <200208161023.18576.waite@skycomputers.com>
+Message-ID: <001501c24734$5430a1e0$7301a8c0@zhongqx>
+From: "zhongqx" <zhongqx@guoguang.com.cn>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Why my FADS FEC can not work?
+Date: Mon, 19 Aug 2002 11:55:59 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---FkmkrVfFsRoUs1wW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hi,every one,
+       My FADS boards work well without FEC cofigure.But when I make menuconfig ,and select 860T FEC,it has nothing from
+console like the following:
 
-On Fri, Aug 16, 2002 at 10:23:18AM -0400, Brian Waite wrote:
->
-> Hi all,
-> Sorry if this is stupid question, but I am trying to revive and Embedded
-> planet 405 GP board with Linux. Someone else got it booting and has since
-> lost the .config.I am trying to re-create this with little work. I am using
-> PPCBoot 1.1.4 and have been working with the linuxppc_2_4_devel tree (kernel
-> version 2.4.19-rc3. PPCboot is fine, but once it jumps into the kernel I get
-> nothing. Looking at the log_buf in memory it looks like it is taking a kernel
-> stack overflow exception. Am I just doing sometinhg  stupid? It feels like I
-> have a bad option or lack thereof in my .config? I am attaching it just for
-> fun. If anyone has a working .config for this board that would be great.
+=>tftp 400000 linux-2.4.18.ppcboot
+ARP broadcast 1
 
-I use the attached config works for me, but I boot directly using TFTP
-rather than through PPCBoot.
+Retry count exceeded; starting again
+ARP broadcast 1
+TFTP from server 192.168.1.105; our IP address is 192.168.1.99
+Filename 'linux-2.4.18.ppcboot'.
+Load address: 0x400000
+Loading: #################################################################
+         #####################################
+done
+Bytes transferred = 521735 (7f607 hex)
+=>bootm 400000
+## Booting image at 00400000 ...
+   Image Name:   2.4.18
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    521671 Bytes = 509 kB = 0 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.
-http://www.ozlabs.org/people/dgibson
 
---FkmkrVfFsRoUs1wW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="bluefish.config"
+I have already changed the fec.c and define LXT970 not LXT971 for default.why it can not work ? when I do not use 860T FEC item,it woks very well ,like the following:
+=>bootm 400000
+## Booting image at 00400000 ...
+   Image Name:   2.4.18
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    520144 Bytes = 507 kB = 0 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Linux version 2.4.18 (root@localhost.localdomain) (gcc version 2.95.3 20010111 (
+prerelease/franzo/20010111)) #1 Mon Aug 12 09:18:10 CST 2002
+On node 0 totalpages: 2048
+zone(0): 2048 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: ip=192.168.1.99:192.168.1.105::255.255.255.0 root=/dev/nfs
+nfsroot=192.168.1.105:/linuxppc/eldk-bin/ppc_8xx rw
+Decrementer Frequency = 180000000/60
+Calibrating delay loop... 47.71 BogoMIPS
+Memory: 6712k available (940k kernel code, 340k data, 52k init, 0k highmem)
+Dentry-cache hash table entries: 1024 (order: 1, 8192 bytes)
+Inode-cache hash table entries: 512 (order: 0, 4096 bytes)
+Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 2048 (order: 1, 8192 bytes)
+POSIX conformance testing by UNIFIX
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd
+devfs: v1.10 (20020120) Richard Gooch (rgooch@atnf.csiro.au)
+devfs: boot_options: 0x0
+CPM UART driver version 0.03
+ttyS00 at 0x0280 is a SMC
+block: 64 slots per queue, batch=16
+RAMDISK driver initialized: 16 RAM disks of 2048K size 1024 blocksize
+eth0: CPM ENET Version 0.2 on SCC1, 00:d0:93:00:12:34
+loop: loaded (max 8 devices)
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 512 bind 512)
+IP-Config: Complete:
+      device=eth0, addr=192.168.1.99, mask=255.255.255.0, gw=255.255.255.255,
+     host=192.168.1.99, domain=, nis-domain=(none),
+     bootserver=192.168.1.105, rootserver=192.168.1.105, rootpath=
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+Looking up port of RPC 100003/2 on 192.168.1.105
+Looking up port of RPC 100005/1 on 192.168.1.105
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 52k init
 
+192 login: root
+Last login: Wed Dec 31 19:00:34 on ttyS0
+bash-2.04#
+
+
+
+Can anyone give me some help? thank you very much in advanced! my .config like following:
 #
-# Automatically generated make config: don't edit
+# Automatically generated by make menuconfig: don't edit
 #
 # CONFIG_UID16 is not set
 # CONFIG_RWSEM_GENERIC_SPINLOCK is not set
@@ -53,13 +109,12 @@ CONFIG_HAVE_DEC_LOCK=y
 # Code maturity level options
 #
 CONFIG_EXPERIMENTAL=y
-CONFIG_ADVANCED_OPTIONS=y
 
 #
 # Loadable module support
 #
 CONFIG_MODULES=y
-# CONFIG_MODVERSIONS is not set
+CONFIG_MODVERSIONS=y
 CONFIG_KMOD=y
 
 #
@@ -68,57 +123,42 @@ CONFIG_KMOD=y
 CONFIG_PPC=y
 CONFIG_PPC32=y
 # CONFIG_6xx is not set
-CONFIG_40x=y
-# CONFIG_440 is not set
+# CONFIG_4xx is not set
 # CONFIG_POWER3 is not set
-# CONFIG_8xx is not set
-# CONFIG_PPC_ISERIES is not set
-CONFIG_4xx=y
+# CONFIG_POWER4 is not set
+CONFIG_8xx=y
 # CONFIG_PPC_STD_MMU is not set
-# CONFIG_ASH is not set
-# CONFIG_CEDER is not set
-# CONFIG_BEECH is not set
-# CONFIG_CPCI405 is not set
-CONFIG_EP405=y
-# CONFIG_OAK is not set
-# CONFIG_RAINIER is not set
-# CONFIG_REDWOOD_4 is not set
-# CONFIG_REDWOOD_5 is not set
-# CONFIG_REDWOOD_6 is not set
-# CONFIG_SYCAMORE is not set
-# CONFIG_TIVO is not set
-# CONFIG_WALNUT is not set
-# CONFIG_XILINX_ML300 is not set
-CONFIG_EP405PC=y
+CONFIG_SERIAL_CONSOLE=y
+# CONFIG_RPXLITE is not set
+# CONFIG_RPXCLASSIC is not set
+# CONFIG_BSEIP is not set
+CONFIG_FADS=y
+# CONFIG_TQM823L is not set
+# CONFIG_TQM850L is not set
+# CONFIG_TQM855L is not set
+# CONFIG_TQM860L is not set
+# CONFIG_FPS850L is not set
+# CONFIG_TQM860 is not set
+# CONFIG_SPD823TS is not set
+# CONFIG_IVMS8 is not set
+# CONFIG_IVML24 is not set
+# CONFIG_SM850 is not set
+# CONFIG_MBX is not set
+# CONFIG_WINCEPT is not set
 # CONFIG_ALL_PPC is not set
 # CONFIG_SMP is not set
-CONFIG_MATH_EMULATION=y
-CONFIG_405GP=y
-CONFIG_BIOS_FIXUP=y
-CONFIG_EMBEDDEDBOOT=y
-CONFIG_IBM405_ERR77=y
-CONFIG_IBM_OCP=y
-# CONFIG_PM is not set
-CONFIG_UART0_TTYS0=y
-# CONFIG_UART0_TTYS1 is not set
-CONFIG_IBM405_ERR51=y
-CONFIG_NOT_COHERENT_CACHE=y
-# CONFIG_PPC4xx_DMA is not set
-CONFIG_OCP_PROC=y
+# CONFIG_MATH_EMULATION is not set
 
 #
 # General setup
 #
 # CONFIG_HIGHMEM is not set
-# CONFIG_KERNEL_START_BOOL is not set
-# CONFIG_TASK_SIZE_BOOL is not set
-CONFIG_PIN_TLB=y
 # CONFIG_ISA is not set
 # CONFIG_EISA is not set
 # CONFIG_SBUS is not set
 # CONFIG_MCA is not set
-CONFIG_PCI=y
-# CONFIG_PC_KEYBOARD is not set
+# CONFIG_PCI_QSPAN is not set
+# CONFIG_PCI is not set
 CONFIG_NET=y
 CONFIG_SYSCTL=y
 CONFIG_SYSVIPC=y
@@ -127,7 +167,6 @@ CONFIG_KCORE_ELF=y
 CONFIG_BINFMT_ELF=y
 CONFIG_KERNEL_ELF=y
 # CONFIG_BINFMT_MISC is not set
-CONFIG_PCI_NAMES=y
 # CONFIG_HOTPLUG is not set
 # CONFIG_PCMCIA is not set
 
@@ -137,7 +176,7 @@ CONFIG_PCI_NAMES=y
 # CONFIG_PARPORT is not set
 CONFIG_PPC_RTC=y
 CONFIG_CMDLINE_BOOL=y
-CONFIG_CMDLINE="console=ttyS0,9600 ip=dhcp root=/dev/nfs"
+CONFIG_CMDLINE="console=ttyS0,115200"
 
 #
 # Memory Technology Devices (MTD)
@@ -158,15 +197,12 @@ CONFIG_CMDLINE="console=ttyS0,9600 ip=dhcp root=/dev/nfs"
 # CONFIG_PARIDE is not set
 # CONFIG_BLK_CPQ_DA is not set
 # CONFIG_BLK_CPQ_CISS_DA is not set
-# CONFIG_CISS_SCSI_TAPE is not set
 # CONFIG_BLK_DEV_DAC960 is not set
-# CONFIG_BLK_DEV_UMEM is not set
-# CONFIG_BLK_DEV_LOOP is not set
+CONFIG_BLK_DEV_LOOP=y
 # CONFIG_BLK_DEV_NBD is not set
 CONFIG_BLK_DEV_RAM=y
-CONFIG_BLK_DEV_RAM_SIZE=4096
+CONFIG_BLK_DEV_RAM_SIZE=2048
 CONFIG_BLK_DEV_INITRD=y
-# CONFIG_BLK_STATS is not set
 
 #
 # Multi-device support (RAID and LVM)
@@ -184,38 +220,69 @@ CONFIG_BLK_DEV_INITRD=y
 # Networking options
 #
 CONFIG_PACKET=y
-CONFIG_PACKET_MMAP=y
+# CONFIG_PACKET_MMAP is not set
 # CONFIG_NETLINK_DEV is not set
-# CONFIG_NETFILTER is not set
-CONFIG_FILTER=y
+CONFIG_NETFILTER=y
+# CONFIG_NETFILTER_DEBUG is not set
+# CONFIG_FILTER is not set
 CONFIG_UNIX=y
 CONFIG_INET=y
-# CONFIG_IP_MULTICAST is not set
+CONFIG_IP_MULTICAST=y
 # CONFIG_IP_ADVANCED_ROUTER is not set
 CONFIG_IP_PNP=y
-CONFIG_IP_PNP_DHCP=y
+# CONFIG_IP_PNP_DHCP is not set
 CONFIG_IP_PNP_BOOTP=y
-# CONFIG_IP_PNP_RARP is not set
+CONFIG_IP_PNP_RARP=y
 # CONFIG_NET_IPIP is not set
 # CONFIG_NET_IPGRE is not set
+# CONFIG_IP_MROUTE is not set
 # CONFIG_ARPD is not set
 # CONFIG_INET_ECN is not set
-# CONFIG_SYN_COOKIES is not set
+CONFIG_SYN_COOKIES=y
+
+#
+#   IP: Netfilter Configuration
+#
+CONFIG_IP_NF_CONNTRACK=m
+CONFIG_IP_NF_FTP=m
+CONFIG_IP_NF_IRC=m
+# CONFIG_IP_NF_QUEUE is not set
+CONFIG_IP_NF_IPTABLES=m
+CONFIG_IP_NF_MATCH_LIMIT=m
+CONFIG_IP_NF_MATCH_MAC=m
+CONFIG_IP_NF_MATCH_MARK=m
+CONFIG_IP_NF_MATCH_MULTIPORT=m
+CONFIG_IP_NF_MATCH_TOS=m
+# CONFIG_IP_NF_MATCH_AH_ESP is not set
+CONFIG_IP_NF_MATCH_LENGTH=m
+CONFIG_IP_NF_MATCH_TTL=m
+CONFIG_IP_NF_MATCH_TCPMSS=m
+CONFIG_IP_NF_MATCH_STATE=m
+CONFIG_IP_NF_MATCH_UNCLEAN=m
+CONFIG_IP_NF_MATCH_OWNER=m
+CONFIG_IP_NF_FILTER=m
+CONFIG_IP_NF_TARGET_REJECT=m
+CONFIG_IP_NF_TARGET_MIRROR=m
+CONFIG_IP_NF_NAT=m
+CONFIG_IP_NF_NAT_NEEDED=y
+CONFIG_IP_NF_TARGET_MASQUERADE=m
+CONFIG_IP_NF_TARGET_REDIRECT=m
+CONFIG_IP_NF_NAT_SNMP_BASIC=m
+CONFIG_IP_NF_NAT_IRC=m
+CONFIG_IP_NF_NAT_FTP=m
+# CONFIG_IP_NF_MANGLE is not set
+# CONFIG_IP_NF_TARGET_LOG is not set
+# CONFIG_IP_NF_TARGET_ULOG is not set
+CONFIG_IP_NF_TARGET_TCPMSS=m
+CONFIG_IP_NF_COMPAT_IPCHAINS=m
+CONFIG_IP_NF_NAT_NEEDED=y
+# CONFIG_IP_NF_COMPAT_IPFWADM is not set
 # CONFIG_IPV6 is not set
 # CONFIG_KHTTPD is not set
 # CONFIG_ATM is not set
 # CONFIG_VLAN_8021Q is not set
-
-#
-#
-#
 # CONFIG_IPX is not set
 # CONFIG_ATALK is not set
-
-#
-# Appletalk devices
-#
-# CONFIG_DEV_APPLETALK is not set
 # CONFIG_DECNET is not set
 # CONFIG_BRIDGE is not set
 # CONFIG_X25 is not set
@@ -233,11 +300,6 @@ CONFIG_IP_PNP_BOOTP=y
 # CONFIG_NET_SCHED is not set
 
 #
-# Network testing
-#
-# CONFIG_NET_PKTGEN is not set
-
-#
 # ATA/IDE/MFM/RLL support
 #
 # CONFIG_IDE is not set
@@ -248,30 +310,6 @@ CONFIG_IP_PNP_BOOTP=y
 # SCSI support
 #
 # CONFIG_SCSI is not set
-
-#
-# Fusion MPT device support
-#
-# CONFIG_FUSION is not set
-# CONFIG_FUSION_BOOT is not set
-# CONFIG_FUSION_ISENSE is not set
-# CONFIG_FUSION_CTL is not set
-# CONFIG_FUSION_LAN is not set
-
-#
-# IEEE 1394 (FireWire) support (EXPERIMENTAL)
-#
-# CONFIG_IEEE1394 is not set
-
-#
-# I2O device support
-#
-# CONFIG_I2O is not set
-# CONFIG_I2O_PCI is not set
-# CONFIG_I2O_BLOCK is not set
-# CONFIG_I2O_LAN is not set
-# CONFIG_I2O_SCSI is not set
-# CONFIG_I2O_PROC is not set
 
 #
 # Network device support
@@ -296,7 +334,6 @@ CONFIG_NET_ETHERNET=y
 # CONFIG_BMAC is not set
 # CONFIG_GMAC is not set
 # CONFIG_SUNLANCE is not set
-# CONFIG_HAPPYMEAL is not set
 # CONFIG_SUNBMAC is not set
 # CONFIG_SUNQE is not set
 # CONFIG_SUNGEM is not set
@@ -304,7 +341,6 @@ CONFIG_NET_ETHERNET=y
 # CONFIG_LANCE is not set
 # CONFIG_NET_VENDOR_SMC is not set
 # CONFIG_NET_VENDOR_RACAL is not set
-# CONFIG_HP100 is not set
 # CONFIG_NET_ISA is not set
 # CONFIG_NET_PCI is not set
 # CONFIG_NET_POCKET is not set
@@ -314,29 +350,11 @@ CONFIG_NET_ETHERNET=y
 #
 # CONFIG_ACENIC is not set
 # CONFIG_DL2K is not set
-# CONFIG_E1000 is not set
 # CONFIG_MYRI_SBUS is not set
 # CONFIG_NS83820 is not set
 # CONFIG_HAMACHI is not set
 # CONFIG_YELLOWFIN is not set
 # CONFIG_SK98LIN is not set
-# CONFIG_TIGON3 is not set
-
-#
-# Backplane Networking
-#
-# CONFIG_NPNET is not set
-
-#
-# On-chip net devices
-#
-CONFIG_IBM_OCP_ENET=y
-# CONFIG_IBM_OCP_ENET_ERROR_MSG is not set
-CONFIG_IBM_OCP_ENET_RX_BUFF=64
-CONFIG_IBM_OCP_ENET_TX_BUFF=8
-CONFIG_IBM_OCP_ENET_GAP=8
-CONFIG_IBM_OCP_ENET_SKB_RES=0
-CONFIG_OCP_NET=y
 # CONFIG_FDDI is not set
 # CONFIG_HIPPI is not set
 # CONFIG_PLIP is not set
@@ -346,7 +364,15 @@ CONFIG_OCP_NET=y
 #
 # Wireless LAN (non-hamradio)
 #
-# CONFIG_NET_RADIO is not set
+CONFIG_NET_RADIO=y
+# CONFIG_STRIP is not set
+# CONFIG_WAVELAN is not set
+# CONFIG_ARLAN is not set
+# CONFIG_AIRONET4500 is not set
+# CONFIG_AIRONET4500_NONCS is not set
+# CONFIG_AIRONET4500_PROC is not set
+CONFIG_HERMES=m
+# CONFIG_NET_WIRELESS is not set
 
 #
 # Token Ring devices
@@ -388,66 +414,16 @@ CONFIG_OCP_NET=y
 #
 # Frame-buffer support
 #
-CONFIG_FB=y
-CONFIG_DUMMY_CONSOLE=y
-# CONFIG_FB_RIVA is not set
-# CONFIG_FB_CLGEN is not set
-# CONFIG_FB_PM2 is not set
-# CONFIG_FB_PM3 is not set
-# CONFIG_FB_CYBER2000 is not set
-# CONFIG_FB_CT65550 is not set
-# CONFIG_FB_IMSTT is not set
-# CONFIG_FB_S3TRIO is not set
-# CONFIG_FB_VESA is not set
-# CONFIG_FB_VGA16 is not set
-CONFIG_FB_LYNX=y
-# CONFIG_FB_MATROX is not set
-# CONFIG_FB_ATY is not set
-# CONFIG_FB_RADEON is not set
-# CONFIG_FB_ATY128 is not set
-# CONFIG_FB_SIS is not set
-# CONFIG_FB_NEOMAGIC is not set
-# CONFIG_FB_3DFX is not set
-# CONFIG_FB_VOODOO1 is not set
-# CONFIG_FB_TRIDENT is not set
-# CONFIG_FB_VIRTUAL is not set
-CONFIG_FBCON_ADVANCED=y
-# CONFIG_FBCON_MFB is not set
-# CONFIG_FBCON_CFB2 is not set
-# CONFIG_FBCON_CFB4 is not set
-CONFIG_FBCON_CFB8=y
-CONFIG_FBCON_CFB16=y
-CONFIG_FBCON_CFB24=y
-# CONFIG_FBCON_CFB32 is not set
-# CONFIG_FBCON_AFB is not set
-# CONFIG_FBCON_ILBM is not set
-# CONFIG_FBCON_IPLAN2P2 is not set
-# CONFIG_FBCON_IPLAN2P4 is not set
-# CONFIG_FBCON_IPLAN2P8 is not set
-# CONFIG_FBCON_MAC is not set
-# CONFIG_FBCON_VGA_PLANES is not set
-CONFIG_FBCON_VGA=y
-# CONFIG_FBCON_HGA is not set
-# CONFIG_FBCON_FONTWIDTH8_ONLY is not set
-CONFIG_FBCON_FONTS=y
-# CONFIG_FONT_8x8 is not set
-CONFIG_FONT_8x16=y
-CONFIG_FONT_SUN8x16=y
-CONFIG_FONT_SUN12x22=y
-# CONFIG_FONT_6x11 is not set
-# CONFIG_FONT_PEARL_8x8 is not set
-# CONFIG_FONT_ACORN_8x8 is not set
+# CONFIG_FB is not set
 
 #
 # Input core support
 #
-CONFIG_INPUT=y
-CONFIG_INPUT_KEYBDEV=y
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=640
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=480
+# CONFIG_INPUT is not set
+# CONFIG_INPUT_KEYBDEV is not set
+# CONFIG_INPUT_MOUSEDEV is not set
 # CONFIG_INPUT_JOYDEV is not set
-CONFIG_INPUT_EVDEV=y
+# CONFIG_INPUT_EVDEV is not set
 
 #
 # Macintosh device drivers
@@ -456,24 +432,16 @@ CONFIG_INPUT_EVDEV=y
 #
 # Character devices
 #
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
-CONFIG_SERIAL=y
-CONFIG_SERIAL_CONSOLE=y
+# CONFIG_VT is not set
+# CONFIG_SERIAL is not set
 # CONFIG_SERIAL_EXTENDED is not set
 # CONFIG_SERIAL_NONSTANDARD is not set
-CONFIG_UNIX98_PTYS=y
-CONFIG_UNIX98_PTY_COUNT=256
+# CONFIG_UNIX98_PTYS is not set
 
 #
 # I2C support
 #
-CONFIG_I2C=y
-# CONFIG_I2C_ALGOBIT is not set
-# CONFIG_I2C_ALGOPCF is not set
-CONFIG_I2C_IBM_OCP=y
-CONFIG_I2C_CHARDEV=y
-CONFIG_I2C_PROC=y
+# CONFIG_I2C is not set
 
 #
 # Mice
@@ -485,48 +453,18 @@ CONFIG_I2C_PROC=y
 # Joysticks
 #
 # CONFIG_INPUT_GAMEPORT is not set
-# CONFIG_INPUT_NS558 is not set
-# CONFIG_INPUT_LIGHTNING is not set
-# CONFIG_INPUT_PCIGAME is not set
-# CONFIG_INPUT_CS461X is not set
-# CONFIG_INPUT_EMU10K1 is not set
-# CONFIG_INPUT_SERIO is not set
-# CONFIG_INPUT_SERPORT is not set
-
-#
-# Joysticks
-#
-# CONFIG_INPUT_ANALOG is not set
-# CONFIG_INPUT_A3D is not set
-# CONFIG_INPUT_ADI is not set
-# CONFIG_INPUT_COBRA is not set
-# CONFIG_INPUT_GF2K is not set
-# CONFIG_INPUT_GRIP is not set
-# CONFIG_INPUT_INTERACT is not set
-# CONFIG_INPUT_TMDC is not set
-# CONFIG_INPUT_SIDEWINDER is not set
-# CONFIG_INPUT_IFORCE_USB is not set
-# CONFIG_INPUT_IFORCE_232 is not set
-# CONFIG_INPUT_WARRIOR is not set
-# CONFIG_INPUT_MAGELLAN is not set
-# CONFIG_INPUT_SPACEORB is not set
-# CONFIG_INPUT_SPACEBALL is not set
-# CONFIG_INPUT_STINGER is not set
-# CONFIG_INPUT_DB9 is not set
-# CONFIG_INPUT_GAMECON is not set
-# CONFIG_INPUT_TURBOGRAFX is not set
 # CONFIG_QIC02_TAPE is not set
 
 #
 # Watchdog Cards
 #
 # CONFIG_WATCHDOG is not set
+# CONFIG_INTEL_RNG is not set
 # CONFIG_NVRAM is not set
 # CONFIG_RTC is not set
 # CONFIG_DTLK is not set
 # CONFIG_R3964 is not set
 # CONFIG_APPLICOM is not set
-CONFIG_IBM_OCP_GPIO=y
 
 #
 # Ftape, the floppy tape device driver
@@ -553,8 +491,6 @@ CONFIG_IBM_OCP_GPIO=y
 # CONFIG_ADFS_FS_RW is not set
 # CONFIG_AFFS_FS is not set
 # CONFIG_HFS_FS is not set
-# CONFIG_BEFS_FS is not set
-# CONFIG_BEFS_DEBUG is not set
 # CONFIG_BFS_FS is not set
 # CONFIG_EXT3_FS is not set
 # CONFIG_JBD is not set
@@ -567,8 +503,8 @@ CONFIG_IBM_OCP_GPIO=y
 # CONFIG_JFFS_FS is not set
 # CONFIG_JFFS2_FS is not set
 # CONFIG_CRAMFS is not set
-CONFIG_TMPFS=y
-CONFIG_RAMFS=y
+# CONFIG_TMPFS is not set
+# CONFIG_RAMFS is not set
 # CONFIG_ISO9660_FS is not set
 # CONFIG_JOLIET is not set
 # CONFIG_ZISOFS is not set
@@ -579,13 +515,13 @@ CONFIG_RAMFS=y
 # CONFIG_HPFS_FS is not set
 CONFIG_PROC_FS=y
 CONFIG_DEVFS_FS=y
-CONFIG_DEVFS_MOUNT=y
+# CONFIG_DEVFS_MOUNT is not set
 # CONFIG_DEVFS_DEBUG is not set
 # CONFIG_DEVPTS_FS is not set
 # CONFIG_QNX4FS_FS is not set
 # CONFIG_QNX4FS_RW is not set
 # CONFIG_ROMFS_FS is not set
-# CONFIG_EXT2_FS is not set
+CONFIG_EXT2_FS=y
 # CONFIG_SYSV_FS is not set
 # CONFIG_UDF_FS is not set
 # CONFIG_UDF_RW is not set
@@ -598,14 +534,12 @@ CONFIG_DEVFS_MOUNT=y
 # CONFIG_CODA_FS is not set
 # CONFIG_INTERMEZZO_FS is not set
 CONFIG_NFS_FS=y
-CONFIG_NFS_V3=y
+# CONFIG_NFS_V3 is not set
 CONFIG_ROOT_NFS=y
 # CONFIG_NFSD is not set
 # CONFIG_NFSD_V3 is not set
-# CONFIG_NFSD_TCP is not set
 CONFIG_SUNRPC=y
 CONFIG_LOCKD=y
-CONFIG_LOCKD_V4=y
 # CONFIG_SMB_FS is not set
 # CONFIG_NCP_FS is not set
 # CONFIG_NCPFS_PACKET_SIGNING is not set
@@ -617,6 +551,7 @@ CONFIG_LOCKD_V4=y
 # CONFIG_NCPFS_NLS is not set
 # CONFIG_NCPFS_EXTRAS is not set
 # CONFIG_ZISOFS_FS is not set
+# CONFIG_ZLIB_FS_INFLATE is not set
 
 #
 # Partition Types
@@ -624,49 +559,7 @@ CONFIG_LOCKD_V4=y
 # CONFIG_PARTITION_ADVANCED is not set
 CONFIG_MSDOS_PARTITION=y
 # CONFIG_SMB_NLS is not set
-CONFIG_NLS=y
-
-#
-# Native Language Support
-#
-CONFIG_NLS_DEFAULT="iso8859-1"
-# CONFIG_NLS_CODEPAGE_437 is not set
-# CONFIG_NLS_CODEPAGE_737 is not set
-# CONFIG_NLS_CODEPAGE_775 is not set
-# CONFIG_NLS_CODEPAGE_850 is not set
-# CONFIG_NLS_CODEPAGE_852 is not set
-# CONFIG_NLS_CODEPAGE_855 is not set
-# CONFIG_NLS_CODEPAGE_857 is not set
-# CONFIG_NLS_CODEPAGE_860 is not set
-# CONFIG_NLS_CODEPAGE_861 is not set
-# CONFIG_NLS_CODEPAGE_862 is not set
-# CONFIG_NLS_CODEPAGE_863 is not set
-# CONFIG_NLS_CODEPAGE_864 is not set
-# CONFIG_NLS_CODEPAGE_865 is not set
-# CONFIG_NLS_CODEPAGE_866 is not set
-# CONFIG_NLS_CODEPAGE_869 is not set
-# CONFIG_NLS_CODEPAGE_936 is not set
-# CONFIG_NLS_CODEPAGE_950 is not set
-# CONFIG_NLS_CODEPAGE_932 is not set
-# CONFIG_NLS_CODEPAGE_949 is not set
-# CONFIG_NLS_CODEPAGE_874 is not set
-# CONFIG_NLS_ISO8859_8 is not set
-# CONFIG_NLS_CODEPAGE_1250 is not set
-# CONFIG_NLS_CODEPAGE_1251 is not set
-# CONFIG_NLS_ISO8859_1 is not set
-# CONFIG_NLS_ISO8859_2 is not set
-# CONFIG_NLS_ISO8859_3 is not set
-# CONFIG_NLS_ISO8859_4 is not set
-# CONFIG_NLS_ISO8859_5 is not set
-# CONFIG_NLS_ISO8859_6 is not set
-# CONFIG_NLS_ISO8859_7 is not set
-# CONFIG_NLS_ISO8859_9 is not set
-# CONFIG_NLS_ISO8859_13 is not set
-# CONFIG_NLS_ISO8859_14 is not set
-# CONFIG_NLS_ISO8859_15 is not set
-# CONFIG_NLS_KOI8_R is not set
-# CONFIG_NLS_KOI8_U is not set
-# CONFIG_NLS_UTF8 is not set
+# CONFIG_NLS is not set
 
 #
 # Sound
@@ -674,41 +567,30 @@ CONFIG_NLS_DEFAULT="iso8859-1"
 # CONFIG_SOUND is not set
 
 #
-# IBM 4xx options
+# MPC8xx CPM Options
 #
+CONFIG_SCC_ENET=y
+CONFIG_SCC1_ENET=y
+# CONFIG_SCC2_ENET is not set
+# CONFIG_SCC3_ENET is not set
+CONFIG_FEC_ENET=y
+# CONFIG_USE_MDIO is not set
+CONFIG_ENET_BIG_BUFFERS=y
+# CONFIG_SMC2_UART is not set
+CONFIG_USE_SCC_IO=y
+# CONFIG_8xx_COPYBACK is not set
+# CONFIG_8xx_CPU6 is not set
+# CONFIG_UCODE_PATCH is not set
 
 #
 # USB support
 #
-CONFIG_USB=y
-CONFIG_USB_DEBUG=y
-
-#
-# Miscellaneous USB options
-#
-CONFIG_USB_DEVICEFS=y
-# CONFIG_USB_BANDWIDTH is not set
-# CONFIG_USB_LONG_TIMEOUT is not set
-
-#
-# USB Host Controller Drivers
-#
-# CONFIG_USB_EHCI_HCD is not set
+# CONFIG_USB is not set
 # CONFIG_USB_UHCI is not set
 # CONFIG_USB_UHCI_ALT is not set
-CONFIG_USB_OHCI=y
-
-#
-# USB Device Class drivers
-#
+# CONFIG_USB_OHCI is not set
 # CONFIG_USB_AUDIO is not set
-# CONFIG_USB_EMI26 is not set
 # CONFIG_USB_BLUETOOTH is not set
-# CONFIG_USB_MIDI is not set
-
-#
-#   SCSI support is needed for USB Storage
-#
 # CONFIG_USB_STORAGE is not set
 # CONFIG_USB_STORAGE_DEBUG is not set
 # CONFIG_USB_STORAGE_DATAFAB is not set
@@ -720,88 +602,49 @@ CONFIG_USB_OHCI=y
 # CONFIG_USB_STORAGE_JUMPSHOT is not set
 # CONFIG_USB_ACM is not set
 # CONFIG_USB_PRINTER is not set
-
-#
-# USB Human Interface Devices (HID)
-#
-CONFIG_USB_HID=y
-CONFIG_USB_HIDINPUT=y
-CONFIG_USB_HIDDEV=y
-# CONFIG_USB_AIPTEK is not set
-# CONFIG_USB_WACOM is not set
-
-#
-# USB Imaging devices
-#
 # CONFIG_USB_DC2XX is not set
 # CONFIG_USB_MDC800 is not set
 # CONFIG_USB_SCANNER is not set
 # CONFIG_USB_MICROTEK is not set
 # CONFIG_USB_HPUSBSCSI is not set
-
-#
-# USB Multimedia devices
-#
-
-#
-#   Video4Linux support is needed for USB Multimedia device support
-#
-
-#
-# USB Network adaptors
-#
-CONFIG_USB_PEGASUS=y
-# CONFIG_USB_RTL8150 is not set
+# CONFIG_USB_PEGASUS is not set
 # CONFIG_USB_KAWETH is not set
 # CONFIG_USB_CATC is not set
 # CONFIG_USB_CDCETHER is not set
 # CONFIG_USB_USBNET is not set
-
-#
-# USB port drivers
-#
 # CONFIG_USB_USS720 is not set
 
 #
 # USB Serial Converter support
 #
-CONFIG_USB_SERIAL=y
-CONFIG_USB_SERIAL_DEBUG=y
-CONFIG_USB_SERIAL_GENERIC=y
+# CONFIG_USB_SERIAL is not set
+# CONFIG_USB_SERIAL_GENERIC is not set
 # CONFIG_USB_SERIAL_BELKIN is not set
 # CONFIG_USB_SERIAL_WHITEHEAT is not set
 # CONFIG_USB_SERIAL_DIGI_ACCELEPORT is not set
 # CONFIG_USB_SERIAL_EMPEG is not set
 # CONFIG_USB_SERIAL_FTDI_SIO is not set
-CONFIG_USB_SERIAL_VISOR=y
+# CONFIG_USB_SERIAL_VISOR is not set
 # CONFIG_USB_SERIAL_IPAQ is not set
 # CONFIG_USB_SERIAL_IR is not set
 # CONFIG_USB_SERIAL_EDGEPORT is not set
-# CONFIG_USB_SERIAL_EDGEPORT_TI is not set
 # CONFIG_USB_SERIAL_KEYSPAN_PDA is not set
-CONFIG_USB_SERIAL_KEYSPAN=y
-CONFIG_USB_SERIAL_KEYSPAN_USA28=y
-CONFIG_USB_SERIAL_KEYSPAN_USA28X=y
-CONFIG_USB_SERIAL_KEYSPAN_USA28XA=y
-CONFIG_USB_SERIAL_KEYSPAN_USA28XB=y
-CONFIG_USB_SERIAL_KEYSPAN_USA19=y
-CONFIG_USB_SERIAL_KEYSPAN_USA18X=y
-CONFIG_USB_SERIAL_KEYSPAN_USA19W=y
-CONFIG_USB_SERIAL_KEYSPAN_USA49W=y
+# CONFIG_USB_SERIAL_KEYSPAN is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA28 is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA28X is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA28XA is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA28XB is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA19 is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA18X is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA19W is not set
+# CONFIG_USB_SERIAL_KEYSPAN_USA49W is not set
 # CONFIG_USB_SERIAL_MCT_U232 is not set
 # CONFIG_USB_SERIAL_KLSI is not set
 # CONFIG_USB_SERIAL_PL2303 is not set
 # CONFIG_USB_SERIAL_CYBERJACK is not set
 # CONFIG_USB_SERIAL_XIRCOM is not set
 # CONFIG_USB_SERIAL_OMNINET is not set
-
-#
-# USB Miscellaneous drivers
-#
 # CONFIG_USB_RIO500 is not set
-# CONFIG_USB_AUERSWALD is not set
-# CONFIG_USB_TIGL is not set
-# CONFIG_USB_BRLVGER is not set
 
 #
 # Bluetooth support
@@ -809,27 +652,10 @@ CONFIG_USB_SERIAL_KEYSPAN_USA49W=y
 # CONFIG_BLUEZ is not set
 
 #
-# Library routines
-#
-CONFIG_ZLIB_INFLATE=y
-CONFIG_ZLIB_DEFLATE=y
-
-#
 # Kernel hacking
 #
-CONFIG_DEBUG_KERNEL=y
-CONFIG_MAGIC_SYSRQ=y
-# CONFIG_DEBUG_HIGHMEM is not set
-# CONFIG_DEBUG_SLAB is not set
-# CONFIG_DEBUG_IOVIRT is not set
-# CONFIG_DEBUG_SPINLOCK is not set
-# CONFIG_DEBUG_WAITQ is not set
+# CONFIG_MAGIC_SYSRQ is not set
 # CONFIG_KGDB is not set
-CONFIG_XMON=y
-# CONFIG_BDI_SWITCH is not set
-# CONFIG_MORE_COMPILE_OPTIONS is not set
-CONFIG_SERIAL_TEXT_DEBUG=y
-
---FkmkrVfFsRoUs1wW--
+# CONFIG_XMON is not set
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
