@@ -1,23 +1,18 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx016.isp.belgacom.be (outmx016.isp.belgacom.be
-	[195.238.2.115]) by ozlabs.org (Postfix) with ESMTP id 267232BDB5
+Return-Path: <alebas@televes.com>
+Received: from tvesnat.televes.com (unknown [212.163.42.137])
+	by ozlabs.org (Postfix) with ESMTP id 3D8452BEA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 29 Nov 2004 10:21:56 +1100 (EST)
-Received: from outmx016.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx016.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id iASNLhYL013099
-	for <linuxppc-embedded@ozlabs.org>; Mon, 29 Nov 2004 00:21:43 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <41AA5D99.1000103@246tNt.com>
-Date: Mon, 29 Nov 2004 00:22:01 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
+	Mon, 29 Nov 2004 23:40:06 +1100 (EST)
+Message-ID: <1101732712.41ab1b682760f@webmail.televes.com:443>
+Date: Mon, 29 Nov 2004 13:51:52 +0100
+From: alebas@televes.com
+To: linuxppc-embedded@ozlabs.org
+References: <1101236780.41a38a2c7f44f@webmail.televes.com:443>
+	<2515D492-3D8C-11D9-B8D4-003065F9B7DC@embeddededge.com>
+In-Reply-To: <2515D492-3D8C-11D9-B8D4-003065F9B7DC@embeddededge.com>
 MIME-Version: 1.0
-To: roger blofeld <blofeldus@yahoo.com>
-References: <20041127213940.72317.qmail@web53501.mail.yahoo.com>
-In-Reply-To: <20041127213940.72317.qmail@web53501.mail.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200 Cache coherency with BestComm issue
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Kernel 2.6.10-rc1 yet not running on ads8272
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,29 +23,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Roger
+Hi all,
 
-> By experimenting I have found that the BestComm and FEC work without
->the cache flush provided CPU_FTR_MAYBE_CAN_NAP is removed from the
->cputable (nap disables snooping) and that CPU_FTR_NEED_COHERENT is
->added to the cputable (turns on "M" bit in BAT/PTE so that the XLB has
->a chance of seeing a global transaction).
->  
+After commenting out the BCSR lines on m82xx_board_init as Dan
+suggested, some problem still prevents kernel 2.6.10-rc1 from
+running in ads8272 board.
+
+After running MMU_init, next step in head.S is this
+
+/*
+ * Go back to running unmapped so we can load up new values
+ * for SDR1 (hash table pointer) and the segment registers
+ * and change to using our exception vectors.
+ */
+        lis     r4,2f@h
+        ori     r4,r4,2f@l
+        tophys(r4,r4)
+        li      r3,MSR_KERNEL & ~(MSR_IR|MSR_DR)
+        FIX_SRR1(r3,r5)
+        mtspr   SRR0,r4
+        mtspr   SRR1,r3
+        SYNC
+        RFI
+/* Load up the kernel context */
+2:      bl      load_up_mmu
+
+which is not clear for me. Here, the execution flow breaks
+in RFI and never arrives to "bl load_up_mmu". The value of
+SRR0 and SRR1 before RFI is:
+
+8272>rd srr0
+srr0: 0x000035f8  13816
+
+8272>rd srr1
+srr1: 0x00001002  4098
+
+SRR0=0x35f8 is the EA where "bl load_up_mmu" instruction is
+supposed to be.
+
+So now I have no idea about what or why this is not working.
+Any help would be very valuable. My knowledge about this
+stuff is actually very limited.
+
+
+Thanks,
+
+Alex Bastos
+
+
+Dan Malek <dan@embeddededge.com> wrote
+
+> > When this code is executed, the kernel jumps directly to another
+> > address, 0xc000984c,
 >
-Thanks for the info.
-
-The nap thing was indeed obvious ... The proper way to deactivate it 
-would be in lite5200.c
-I added the powersave_nap = 1; as an example on how to allow it to nap. 
-I'll probably
-comment it out by default with a note.
-
-For the CPU_FTR_NEED_COHERENT, are you sure it's required ?
- From my understanding of the G2Core manual, the M bit must be set if 
-you want the G2Core
-to assert the global signal when it access memory. Here, we don't care 
-since only
-the G2Core is snooping on the bus. So that should not be required ...
-
-
-    Sylvain
+> I suspect the MMU isn't yet set up to map the address of the BCSR.
+> Access the address causes a fault, and the "jump" you see is the
+> result of executing a bunch of exception handler instructions that
+> you won't single step due to the exception priorities.
+>
+> 	-- Dan
