@@ -1,97 +1,42 @@
-Message-ID: <3C9B99DC.7C9C769F@aquilagroup.com>
-Date: Fri, 22 Mar 2002 13:53:48 -0700
-From: Jeff Studer <jstuder@aquilagroup.com>
+Message-ID: <009701c1d1f3$b11d7380$0200010a@WT0136>
+From: "Ho-Kuo Chan" <hchan@wavesat.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Serial console not accepting input
+Date: Fri, 22 Mar 2002 17:48:32 -0500
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: eth0 : time out ....error
-References: <001601c1bff5$4c5b0210$17f2fea9@genetelhychon>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Is this with the FEC driver? I have the same problem with the FEC driver in
-kernel version 2.4.2.  I would like to hear any solutions to this problem,
-too.
+Hi,
+    I have managed to get kernel 2-4-19-pre3 booting on my PPC405 GP based
+custom board (which is based on the Walnut). The problem is that the serial
+console does not accept any input. When I say this I mean the typed
+characters are receievd but ignored. I know this because I turned on the
+SERIAL_DEBUG_INTR flag on and the chars are received. I then traced the code
+to find that in receive_chars in drivers/char/serial.c, the chars are only
+accepted if the ignore_status_mask does not have the recieve buffer not
+empty bit set. Well the ignore_status_mask is set in the function
+change_speed if the cflag variable is not equal to CREAD:
 
-ÀüÇý¿µ wrote:
+if ((cflag & CREAD) == 0)
+    info->ignore_status_mask |= UART_LSR_DR;
 
-> Hi!
->
-> I have the problem when I get/recevie data of over 100 kbytes size
-> If I send a small size data , it's trance success
-> but big size data is fail and print following messages
->
-> why not transmit the big size data(over 100kbyte)??
->
-> help me  and thanks for your answers!!
->
-> ===  LOG message  =============
->
-> 1) small size data
->
-> sh-2.03# ftp pc
->
-> Connected to pc.
-> 220 ProFTPD 1.2.1 Server (ProFTPD Default Installation) [tree.com]
-> Name (pc:root): hukim
-> 331 Password required for hukim.
-> Password:
-> 230 User hukim logged in.
-> Remote system type is UNIX.
-> Using binary mode to transfer files.
->
-> ftp> get btd
-> local: btd remote: btd
-> 200 PORT command successful.
-> 150 Opening BINARY mode data connection for btd (27545 bytes).
-> 226 Transfer complete.
-> 27545 bytes received in 0.017 secs (1.6e+03 Kbytes/sec)
->
->  ==========================================================> "success"
->
-> 2) big size data
->
-> ftp> get bt.o
-> local: bt.o remote: bt.o
-> 200 PORT command successful.
-> 150 Opening BINARY mode data connection for bt.o (138660 bytes).
-> NETDEV WATCHDOG: eth0: transmit timed out
-> eth0: transmit timed out.
-> Ring data dump: cur_tx c1f70078, dirty_tx c1f70078 cur_rx: c1f70038
->  tx: 8 buffers
->   c1f70040: 1c00 0042 01f714be
->   c1f70048: 1c14 0042 01f71dbe
->   c1f70050: 1c00 0042 01f71bbe
->   c1f70058: 1c0c 0042 01f716be
->   c1f70060: 1c00 0042 01f71cbe
->   c1f70068: 1c04 0042 01f715be
->   c1f70070: 1c00 0042 01f71ebe
->   c1f70078: 3c24 0042 01f717be
->  rx: 8 buffers
->   c1f70000: 8800 0446 01f6f000
->   c1f70008: 8800 0446 01f6f800
->   c1f70010: 8800 0446 01f6e000
->   c1f70018: 8800 0446 01f6e800
->   c1f70020: 8800 0446 01f6d000
->   c1f70028: 8800 0446 01f6d800
->   c1f70030: 8800 0446 01f6c000
->   c1f70038: a800 0446 01f6c800
-> NETDEV WATCHDOG: eth0: transmit timed out
-> eth0: transmit timed out.
-> Ring data dump: cur_tx c1f70078, dirty_tx c1f70078 cur_rx: c1f70008
->
->  ( ... )
->  ===========================================================> fail
->
+The cflag is equal to the tty's termios.c_cflag which I believe is set to
+the serial console driver's cflag. I checked the sercons.cflag and it is
+originally set to CREAD | HUPCL | CLOCAL in serial_console_setup called when
+the driver is registered in register_console via serial_console_init.
+However, the sercons.cflag is set to 0 in rs_open() in drivers/serial.c
+which is called when tty_open is called. tty_open is called several times
+during the boot process and as such, results in the ignore_status_mask being
+set, causing the console to ignore input chars. So my question in all of
+this is: why is the sercons.cflag set to 0 in rs_open?
 
---
-Jeff Studer
-Software Engineer
-Aquila Technologies Group
+Thanks in advance!!!
 
-jstuder@aquilagroup.com
-office:  505-796-3859
+Ho-Kuo Chan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
