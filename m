@@ -1,34 +1,64 @@
-Date: Wed, 28 Jul 1999 19:47:39 -0500 (CDT)
-From: "ian reinhart geiser (ADMIN)" <geiseri@msoe.edu>
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: I still cannot get L2cr to activate!
-In-Reply-To: <XFMail.990728151208.jeremy@goop.org>
-Message-ID: <Pine.OSF.3.96.990728194414.19087A-100000@torres.msoe.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 28 Jul 1999 22:26:17 -0400
+From: Daniel Jacobowitz <drow@false.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Vger broken w.r.t. gdb
+Message-ID: <19990728222617.A636@them.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-i ran the get G3 settings from the BootX dist.  it said that i was all
-good to go with my l2cr but when i did a:
-[19:51:07}{2}{geiseri@sleepchamber:~ (363.537 Mb)>$ cat /proc/sys/kernel/l2cr 
+After compiling the current vger 2.3.10 (gcc 2.95
+-fno-strict-aliasing), I discovered an odd problem.  Strace works just
+fine, but gdb doesn't.  Simply 'gdb ls', run it, quit.  No processes
+will die but every new process will recieve a SIGTRAP immediately (not
+quite sure if it's before or after the exec() yet).  Ignoring SIGTRAP
+seems to make no difference.  We're reaching the function
+ProgramCheckException in arch/ppc/kernel/traps.c:
 
-i get:
+Jul 28 21:07:32 drow kernel: Program check exception at PC: 3000c1a8, SR: 2d032, vector=700
 
-b9000000:  enabled,no parity,1M,+2 clock,pipelined burst SRAM,ZZ enabled,write-through,1.0ns hold 
+This function includes the code:
 
-as a response...
+        if (regs->msr & 0x100000) {
+                /* IEEE FP exception */
+                _exception(SIGFPE, regs);
+        } else if (regs->msr & 0x20000) {
+                /* trap exception */
+#if defined(CONFIG_XMON) || defined(CONFIG_KGDB)
+                if (debugger_bpt(regs))
+                        return;
+#endif
+printk("Program check exception at PC: %lx, SR: %lx, vector=%lx\n",
+  regs->nip, regs->msr, regs->trap);
+                _exception(SIGTRAP, regs);
+        } else {
+                _exception(SIGILL, regs);
+        }
 
-is this incorrect?
+I don't understand what this is supposed to do.  When are program check
+exceptions generated?  And most of all, what are those MSR bits?  The
+first one is (1 << 20), or bit 11; this is labeled as Reserved in my
+reference.  The second is (1 << 17), or bit 14; this is marked
+Implementation Dependent, and a note adds it is unused on the 601.
 
-also the l2 cache will not show up in my /proc/cpuinfo
+I would guess that the first one is supposed to check bit 20, or
+(1 << 11); that's FE0 and controls recoverable and precise floating
+point interrupts, so that would make more sense.  And my hunch is that
+the second should be checking MSR_SE (1 << 10, bit 21).
 
-any ideas?
+Of course, since this file hasn't changed in an age, that leaves me
+completely baffled as to why this was never a problem before.
 
-	TIA
-	-ian reinhart geiser
 
+Dan
+
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
