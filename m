@@ -1,28 +1,43 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alain RICHARD <alain.richard@equation.fr>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: benh 2.4.4-pre3, Titanium and AirPort
-Date: Wed, 18 Apr 2001 17:15:19 +0200
-Message-Id: <20010418151519.6547@mailhost.mipsys.com>
-In-Reply-To: <a05010406b7033c861041@[192.168.240.10]>
-References: <a05010406b7033c861041@[192.168.240.10]>
+Message-ID: <3ADDB044.46E48FF8@iiic.ethz.ch>
+Date: Wed, 18 Apr 2001 17:18:28 +0200
+From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: Tony Mantler <nicoya@apia.dhs.org>,
+	martin costabel <costabel@wanadoo.fr>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: XF4, SysRq, VT, mouse buttons, Keymaps and all that
+References: <20010418131708.CDFE02EFC5@apollo.valhalla.net>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Iain Sandoe wrote:
+
+> >>Ben just mailed me a much better suggestion:
+> >>
+> >>"Pass the SysRq combination in as a kernel argument".
+> >>
+> >>This would allow those with SysRQ keys (e.g. ISO/ANSI kbds) to use it,
+> >>power books could have something that actually exists etc. etc.
+> > [...]
+> >
+> > Very nice idea.
+> >
+> > ...hopefully defaulted to the standard Alt-f13/printscreen/sysrq-key in
+> > the absense of the kernel commandline.
 >
->01:1a.0 CardBus bridge: Texas Instruments PCI1211
->         Flags: bus master, medium devsel, latency 16, IRQ 58
->         Memory at 80080000 (32-bit, non-prefetchable) [size=4K]
->         Bus: primary=01, secondary=02, subordinate=05, sec-latency=32
->         I/O window 1: 00000000-00000003
->         16-bit legacy interface ports at 1011
+> what about defaulting to <cntl>-<power> if CONFIG_POWERBOOK is set on the
+> kernel build?
+> - the power key is not too far from cntl on newer PowerBook keyboards -
+> anyone know about older ones?
 
-I have the same chip on the Pismo that is recognized by the Yenta driver
+Shouldn't really matter as ctrl is close to the keys used for Sysrq. ;)
 
-Ben.
 
+--
+Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
+CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
