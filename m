@@ -1,47 +1,34 @@
-Date: Mon, 3 Jul 2000 23:44:11 +1000
-From: Chris Leishman <chris_leishman@freeonline.com.au>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [ANN] New kernels, gmac, airport, usb...
-Message-ID: <20000703234411.A7751@freeonline.com.au>
-References: <20000703200255.A7528@freeonline.com.au> <20000703125541.7512@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20000703125541.7512@mailhost.mipsys.com>; from bh40@calva.net on Mon, Jul 03, 2000 at 02:55:41PM +0200
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Chas Williams <chas@cmf.nrl.navy.mil>,
+        Chas Williams
+ <chas@cmf.nrl.navy.mil>,
+        <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [ANN] New kernels, gmac, airport, usb... 
+Date: Tue, 4 Jul 2000 00:17:29 +0200
+Message-Id: <20000703221729.18421@192.168.1.10>
+In-Reply-To: <200007031226.e63CQDw25562@ginger.cmf.nrl.navy.mil>
+References: <200007031226.e63CQDw25562@ginger.cmf.nrl.navy.mil>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jul 03, 2000 at 02:55:41PM +0200, Benjamin Herrenschmidt wrote:
 >
-> >
-> >Bugger.  I was hoping to use my airport - but I don't think I'll be
-> allowed to
-> >turn off security on our corporate wireless net ;)
+>actually, if i understand the problem, the 'standard' driver wants to know
+>the 56-bit key in hex and apple generates this key using the text string
+>you supply (after passing it through using some hashing routine)
 >
-> What I do is to configure the station to accept only the HW MAC address
-> of my card.
+>if you have an airport basestation (with 1.1 s/w or later) you can
+>see the hex string that is being used by choosing 'Network Equivalent
+>Password...' under the 'Base Station' menu in the airport admin utility.
 
-Only problem here is that the traffic is still viewable by anyone, and it
-probably isn't that hard to fake the the HW address...
+I got it to work. There was an endian problem in the driver preventing
+using of the WEP mode. It's fixed in version 0.9.2. I also added a module
+param for the key so you don't need iwconfig to set it
 
->
-> >I wonder if apple would be willing to let this out??  Probably not...
-> >Does MacOS X support WEP yet?  Perhaps I should have a look through there.
->
-> MacOS X does have a driver but it's not open sourced.
->
+see ppclinux.apple.com/~benh for updates
 
-That would be right.  doh :(
-
-
-Chris
-
-
---
-----------------------------------------------------------------------
-            Linux, because I'd like to *get there* today
-----------------------------------------------------------------------
-Reply with subject 'request key' for GPG public key.  KeyID 0xB4E24219
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
