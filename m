@@ -1,43 +1,73 @@
-Date: Fri, 31 May 2002 17:27:56 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: CONFIG_PIN_TLB and telnet problems
-Message-ID: <20020531072756.GG16537@zax>
-References: <20020531071550.GF16537@zax>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020531071550.GF16537@zax>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: cramfs root filesystem corruption
+Date: Fri, 31 May 2002 08:39:32 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E31937F64@kolkrabbi.flaga.is>
+From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
+To: <pruhland@microwavedata.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, May 31, 2002 at 05:15:50PM +1000, David Gibson wrote:
->
-> Ok, I think I've managed to reproduce the telnet problems with
-> CONFIG_PIN_TLB that Tom Rini and others have reported.  I encountered
-> problems telnetting to localhost on a 16MB EP405 (PVR 40110145) and on
-> a 32MB Walnut (PVR 401100C4).  I was unable to reproduce the problem
-> on any of the other 405GP machines I have, each of which as at least
-> 64MB of RAM.
->
-> Interestingly, if I alter the CONFIG_PIN_TLB code so that it only pins
-> one entry (i.e. maps 16MB of RAM instead of 32MB) I can still
-> reproduce the problem on the EP405, but not on the Walnut.  It would
-> seem the problem only bites if the pinned allocation is as large or
-> larger than physical memory.
->
-> It's vaguely understandable that with two pinned entries it would
-> break on the 16MB machine: creating a mapping for more RAM than exists
-> is certainly a bug.  I don't yet know why there is a problem when the
-> mapping is exactly as large as RAM though.
+Let me guess?
 
-Update:  I've now also reproduced the problem on a 64MB EP405PC board,
-by using mem=16M or mem=32M
+Are you updateing the cramfs on a running system, i.e. a system where the cramfs
+is mounted somewhere?
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
+K.D.
+
+> -----Original Message-----
+> From: Paul Ruhland [mailto:pruhland@microwavedata.com]
+> Sent: 30. maí 2002 18:51
+> To: linuxppc-embedded@lists.linuxppc.org
+> Subject: cramfs root filesystem corruption
+>
+>
+>
+> I've found a few posts similar to this from about a year back
+> in the main
+> kernel list but I could never follow the thread to any conclusion.
+>
+> I'm running a cramfs root filesystem on an 850 system,
+> linux-2.4.4 ( from denx
+> ).  Everything has been running fine but the cramfs
+> filesystem has started
+> behaving badly.
+>
+> The cramfs image is in flash, mounted as root via mtd blockdevice.
+>
+> Typically the error occurs during flash reprogramming ( using
+> mtd char device
+> '/dev/mtd0' ) ...during/after flash programming the cramfs
+> filesystem 'loses'
+> information ( files disappear ).  The errors from syslog are
+> 'error during
+> decompression', typically the error numbers ( from
+> 'linux/zlib_fs.h' ) are
+> Z_BUF_ERROR, for the first error,  and Z_DATA_ERROR for the
+> rest.  I've got
+> my BDI breaking at the uncompress error and the source length is huge:
+>
+> (gdb) frame 0
+> #0  cramfs_uncompress_block (dst=0xc078c000, dstlen=4096,
+> src=0xc0145ac0,
+> srclen=4969176) at uncompress.c:49
+>
+> The reprogramming of the flash is successful, all new data
+> has been written to
+> the correct location(s).  The cramfs image ( root filesystem
+> ) in flash is
+> NOT corrupt.  A hard reboot and everything is fine.
+>
+> Has anyone seen such cramfs problem before?  I'm just looking
+> to see if there
+> is any 'known' problems before I get to far into debugging this thing.
+>
+> --
+> Paul Ruhland
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
