@@ -1,28 +1,44 @@
 Mime-Version: 1.0
-Message-Id: <v04220802b69d56ed2a65@[10.0.0.42]>
-In-Reply-To: <Pine.SOL.3.95.1010129121607.21410A-100000@juliet>
-References: <Pine.SOL.3.95.1010129121607.21410A-100000@juliet>
-Date: Tue, 30 Jan 2001 21:53:54 -0800
-To: Derek Homeier <supas100@astrophysik.uni-kiel.de>,
-        linuxppc-dev@lists.linuxppc.org
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: pmud monitoring temperature (Re: powerbook doubles...)
-Cc: Brad Midgley <brad@turbolinux.com>
+Message-Id: <p04330102b69d64c82c08@[24.163.36.97]>
+Date: Wed, 31 Jan 2001 02:04:56 -0500
+To: linuxppc-dev@lists.linuxppc.org
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: continuing XF402 (atimisc) problems
 Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 12:37 PM +0100 1/29/01, Derek Homeier wrote:
+I've been over this on the -user list and the YDL list, and cc-ed Ani
+a few times with it (no response). No one seems to have a clue as to
+the cause of the problem, which is described concisely at:
 
->Actually, IBM and Motorola specs say the G3 has an operating temperature
->of up to 105C!
+<http://lists.linuxppc.org/listarcs/linuxppc-user/200101/msg00672.html>
 
-There are multiple temperature grades.  Desktops usually use parts
-rated for 65 C, maybe 85 if you're lucky.  Apple's early Wall Street
-G3 laptops used 105 C parts (and needed it), later ones with better
-cooling may have 85 C.
+(more detail available if necessary)
 
-   Tim Seufert
+This is on a 6500 (on-board RageII) with a RagePro PCI card. I have
+tried rolling my own XF402 build, with Ani's driver updates, and get
+the exact same XFree log result. I've also tried several of kfukui's
+402 rpms, including use of his "old drivers," again with exactly the
+same result.
+
+I've also done this with an old mix of LinuxPPC 1999 and YDL 1.2.1
+installations, and a clean LinuxPPC Q4 install. I've also tried it
+with kernels 2.2.17, 2.2.18, and 2.4.1. Again all the same result.
+
+I can run with fbdev no problem. I've also had no problem installing
+XF402 on 2 9500-class machines, so I believe my technique is OK. I'm
+pretty darn sure at this point that my Xfree86Config file is correct
+(correct driver, correct Bus ID).
+
+The errors (unresolved symbols) do not seem like a program bug to me,
+more like a linker issue or a library issue? (I'm a bit out of my
+element here)
+
+If anyone can help me... well, you know the part about THANKS.
+
+
+Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
