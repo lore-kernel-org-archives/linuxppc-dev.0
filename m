@@ -1,26 +1,28 @@
-Message-ID: <41EDEC3C1B88D51186EB00A0C9CFADF702FA81@AMWMAIL>
-From: Cindy Peters <cinpet@adaptivemicro.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Upgrading to kernel 2.4.6 with old init program
-Date: Fri, 21 Sep 2001 15:29:29 -0500
+Message-ID: <3BABA566.365ACF68@mvista.com>
+Date: Fri, 21 Sep 2001 16:39:02 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: IDMA on MPC855/860 ?
+References: <3BAB0FFB.4CA071CB@imc-berlin.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am upgrading my Linux kernel from 2.2.13 to 2.4.6 on an MPC823. When the
-kernel startup process gets to running the sbin/init program I am getting a
-usage error for ld.so and then a kernel panic. It looks like it is
-attempting to run ld.so. I am still using an old ramdisk with old versions
-of executables that ran successfully on Linux 2.2.13. Have the file formats
-changed somehow? Do I need to get the source for the executables and rebuild
-them with the latest libraries? If so, where can I get them?
+Steven Scholz wrote:
 
-Thanks,
+> Can anyone point me to some driver code already in the recent linuxppc
+> that are using the MPC's IDMA, please?
 
-Cindy Peters
-Adaptive Micro-Ware, Inc.
+All of the MPC8xx unique drivers use DMA....it's the only way
+to transfer data through the CPM.  Just take one of the drivers,
+like uart.c or enet.c, and remove everything except the buffer
+descriptor management.  Then just add the few lines of code to
+initialize the IDMA channel and you are done.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
