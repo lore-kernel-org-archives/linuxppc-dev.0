@@ -1,31 +1,48 @@
-Date: Tue, 4 Dec 2001 11:15:52 -0700 (MST)
-From: Derrik Pates <dpates@dsdk12.net>
-To: "Kevin B.Hendricks" <kevin.hendricks@sympatico.ca>
+Subject: Re: Max swap size ?
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+To: Christopher Murtagh <christopher.murtagh@mcgill.ca>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Rage128 support for resolutions less than panel resolution?
-In-Reply-To: <20011204175547.WVJL16262.tomts14-srv.bellnexxia.net@there>
-Message-ID: <Pine.LNX.4.40.0112041108131.11201-100000@andromeda.dsdk12.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.LNX.4.33.0112041131460.28164-100000@blues.wcg.mcgill.ca>
+References: <Pine.LNX.4.33.0112041131460.28164-100000@blues.wcg.mcgill.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 04 Dec 2001 19:37:23 +0100
+Message-Id: <1007491043.21631.28.camel@pismo>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 4 Dec 2001, Kevin B.Hendricks wrote:
+On Tue, 2001-12-04 at 17:35, Christopher Murtagh wrote:
+>
+>  Thanks for the replies.
+>
+> On 4 Dec 2001, Michel Dänzer wrote:
+> >That used to be the case before kernel 2.2 IIRC. Nowadays the limit is
+> >in the gigabytes. FWIW I'm using a 400 meg swap partition without
+> >problems.
+>
+>  Ok, well that's good to hear.
+>
+> >Are you sure it only hit swap then? I can't remember ever seeing active
+> >but completely unused swap space, even when RAM usage was low.
+> >
+> >The bottom line is yes, you likely have another problem.
+>
+>  This isn't though.. :-(
+>
+> Mem:  1024100K av,  774636K used,  249464K free,  0K shrd,  179708K  buff
+> Swap:  524280K av,       0K used,  524280K free             490400K  cached
+>
+>  this is what my machine is like at the moment. So, from what you are
+> saying, my problem lies elsewhere (ie. is not swap *size*), but is likely
+> swap related?
 
-> This should work to change your resolution to whatever you want as long as
-> the "scaling register code" patch I saw fly by recently (a couple of weeks
-> ago) actually made it into the aty128fb.c code yet.
+Or maybe it's related to the huge amount of RAM you have, but others
+will know better.
 
-Ah. I looked back through the folder I have for this list - turns out I
-still had the message with the patch tacked on in the box! Yay! I'm
-rebuilding the kernel (2.4.17-pre2-ben0, so no, it's not even in Ben's
-tree yet) as I type, so hopefully this will make 640x480 work acceptably
-on this iBook. It'd be nice for running MoL fullscreen, without having to
-run it in 800x600 all the time...
 
-Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
-dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
-
+--
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
