@@ -1,33 +1,38 @@
-Message-Id: <9908120516.AA43198@marc.watson.ibm.com>
-To: Richard Henderson <rth@cygnus.com>
-Cc: Paul.Mackerras@cs.anu.edu.au, Jes.Sorensen@cern.ch,
-        Geert.Uytterhoeven@cs.kuleuven.ac.be, linuxppc-dev@lists.linuxppc.org,
-        linux-fbdev@vuser.vu.union.edu
-Subject: Re: [linux-fbdev] Re: readl() and friends and eieio on PPC 
-In-Reply-To: Message from Richard Henderson <rth@cygnus.com>
-   of "Wed, 11 Aug 1999 21:40:49 PDT." <19990811214049.A14692@cygnus.com>
-Date: Thu, 12 Aug 1999 01:16:14 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Date: Thu, 12 Aug 1999 15:27:25 +1000
+Message-Id: <199908120527.PAA30218@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: dje@watson.ibm.com
+CC: rth@cygnus.com, Jes.Sorensen@cern.ch, Geert.Uytterhoeven@cs.kuleuven.ac.be,
+        linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu
+In-reply-to: <9908120516.AA43198@marc.watson.ibm.com> (message from David
+	Edelsohn on Thu, 12 Aug 1999 01:16:14 -0400)
+Subject: Re: [linux-fbdev] Re: readl() and friends and eieio on PPC
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <9908120516.AA43198@marc.watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Richard Henderson writes:
+David Edelsohn <dje@watson.ibm.com> wrote:
 
->> My position is that if you can provide the ordering at essentially
->> zero cost, then it is an advantage to have it since more drivers will
->> work that way.
+> 	Is your assumption that you want to provide the infrastructure to
+> write high-performance device drivers or to write device drivers that
+> don't require as much expertise and knowledge to produce correct results?
 
-Richard> But it isn't zero cost.  It's not high cost, but that's not the same thing.
+Interesting question.
 
-	Is your assumption that you want to provide the infrastructure to
-write high-performance device drivers or to write device drivers that
-don't require as much expertise and knowledge to produce correct results?
-There are conflicting goals in this design providing different benefits to
-Linux. 
+I guess I would be trying both to make it easy to write device drivers
+that work, and possible to write very high-performance device drivers.
+Particularly since the vast majority of drivers in Linux have been
+written for the i386 platform, which doesn't do pesky (;-) things like
+reordering reads and writes.
 
-David
+In any case, as far as the question of using readl/writel in
+framebuffer code goes, and whether readl/writel should include the
+eieio, the measurements I did showed zero performance impact of having
+the eieio, in frame-buffer copy code at least.
 
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
