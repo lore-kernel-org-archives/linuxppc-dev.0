@@ -1,35 +1,25 @@
-Message-Id: <200202140825.JAA24865@post.webmailer.de>
-Content-Type: text/plain;
-  charset="iso-8859-15"
-From: Okke Wald <okke.wald@ki.comcity.de>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Linux on IBM Thin Client with ppc 603?
-Date: Thu, 14 Feb 2002 09:31:28 +0100
+From: "Stefan Roese" <stefan.roese@esd-electronics.com>
+To: "David Gibson" <david@gibson.dropbear.id.au>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: ppc4xx_serial.c?
+Date: Thu, 14 Feb 2002 09:46:06 +0100
+Message-ID: <EFEAIMDCOOOHIEPHDNFJAEOCDKAA.stefan.roese@esd-electronics.com>
 MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-reply-to: <20020214053008.GY1133@zax>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-HI all,
+> Is arch/ppc/kernel/ppc4xx_serial.c of any relevance any more?  It
+> doesn't include any code unless CONFIG_DEBUG_BRINGUP is defined, and
+> it doesn't look like it would compile, let alone be called, if it was
+> defined.
 
-I have many IBM Network Station 1000 Thin Clients and I would like to run
-Linux on them. They have a ppc 603eV @ 200MHz, PCI bus, and  common Ethernet
-interface and VGA. They are booting an IBM kernel (ELF format) from a server
-by NFS or TFTP. Because I think booting over network is common for embedded
-boards I am posting here...
+That was also my impression. It seems, that this file could be removed.
 
-I tried to download a SuSE PPC kernel image (just for fun) The boot monitor
-starts downloading the kernel, but it displays a wrong size (much smaller
-than the kernel) and gives an error message before starting the kernel
-(corrupt kernel image or so). Is this common, or should I expect that the
-firmware does a checksum calculation so that using a linux kernel isn't
-possible?
-
-I am completely new in linux ppc computing. I will be pleased if you give me
-some hints on how to start. ;-)
-
-Kind regards,
-Okke
+Stefan.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
