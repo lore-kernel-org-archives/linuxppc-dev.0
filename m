@@ -1,33 +1,34 @@
-Date: Sat, 8 Jan 2000 10:29:00 -0800
-From: "David N. Welton" <davidw@linuxcare.com>
-To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PPC Boards?
-Message-ID: <20000108102900.C18715@linuxcare.com>
-References: <v03130302b49d06179767@[209.123.117.14]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <v03130302b49d06179767@[209.123.117.14]>; from jbredijk@nac.net on Sat, Jan 08, 2000 at 10:23:23AM -0500
+From: John Buswell <johnb@one.net>
+To: anthony tong <atong@uiuc.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: iMac DV and aty128fb
+In-Reply-To: <Pine.LNX.3.96.1000108181304.23736A-100000@shell>
+Message-ID: <Pine.LNX.3.96.1000108191613.23736F-100000@shell>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 8 Jan 2000 14:19:59 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Jan 08, 2000 at 10:23:23AM -0500, James Bredijk wrote:
+On Sat, 8 Jan 2000, John Buswell wrote:
 
->   I'm looking to do some 'mad scientist' type of experimenting with
-> the PPC. I hope to 'play' with both the 'System' & 'Embedded' PPC
-> platforms, but I'm not looking to spend $2600 on the Motorola
-> SandPoint board just so I can fill up my afternoons.
+> is there any place that documents what parameters I can pass to the kernel
+> with video= ? 
 
-It sounds like you really want one of those POP boxes that have yet to
-actually be produced:-(
+The display works fine in regular frame buffer mode (eg.
+video=offb:ofonly). One thing I left out, aside from the video scew, in
+both text and X modes, there is about an inch on the right hand side that
+is black in console or white in X where the display is just not there
+(mouse pointer disappears if you move it into that region), it looks like
+the display is just cut off..
 
-For a bit of info: http://www.popcomputers.com/
+in text mode, the text just disappears :)
 
-Ciao,
--- 
-David N. Welton, Developer, Linuxcare, Inc.
-415.354.4878 x241 tel, 415.701.7457 fax
-davidw@linuxcare.com, http://www.linuxcare.com/
-Linuxcare. At the center of Linux.
+is this something that could be fixed by tweaking fbset options or
+something that needs to be fixed in the ati128fb driver?
+
+thanks
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
