@@ -1,49 +1,41 @@
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <4097DAEA.5@ntlworld.com>
+Date: Tue, 04 May 2004 19:03:22 +0100
+From: Richard Danter <richard.danter@ntlworld.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: memory problems on ppc 8260 based hardware
-Date: Tue, 4 May 2004 11:22:46 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DACD@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <13787783324@hnmcc.com>, <linuxppc-embedded@lists.linuxppc.org>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Simple module, but won't build
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Be aware that there is some timing problems on the SDRAM interface on
-the 826x CPUs
-(Look at motorolas site)
-This sound very much like the problems I had before I fixed the hardware
-on an inhouse board.
+Hi All,
 
+I am trying to build a simple module which will let me write to a bank
+of LED's on my board.
 
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]
-> Sent: Tuesday, May 04, 2004 10:11
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: memory problems on ppc 8260 based hardware
->
->
->
-> I'm running into  memory problems on ppc 8260 based hardware.
-> The kernel is based on linux-2.4.4-2002-10-06.tar.bz2 from
-www.denx.de . (use uboot as bootloader.)
+When I #include <asm/io.h> I get this error:
 
-I use some debug tools and find when paging_init( ) function finished
-(start_kernel --setup_arch--paging_init), some codes were destroyed such
-as sort_exception_table( ) (the next line in setup_arch( ), so the
-kernel hang) , some codes were protected well such as memset( ). (using
-LED in parallel port(adding some codes in kernel), I got the same
-results,the kernel hang after paging_init( ))
+/opt/eldk3.0/ppc_82xx/usr/include/asm/io.h: In function `virt_to_bus':
+/opt/eldk3.0/ppc_82xx/usr/include/asm/io.h:235: `CONFIG_KERNEL_START'
+undeclared (first use in this function)
 
-what's the reason? Any advise will be appreciated.
+the error also occurs in several other functions. I also see errors when
+I #include <asm/uaccess.h> as follows:
 
+/opt/eldk3.0/ppc_82xx/usr/include/asm/uaccess.h: In function `verify_area':
+/opt/eldk3.0/ppc_82xx/usr/include/asm/uaccess.h:37: `CONFIG_TASK_SIZE'
+undeclared (first use in this function)
 
-best regards.
+also in several functions.
 
+I know I have used these with no problems with an older kernel and
+compiler. Is there something I need to add to make these work??
 
-liu
+I am using ELDK 3.0 with the 2.4.24-pre2 kernel on an 8260 target.
 
+Many thanks,
+Rich
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
