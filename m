@@ -1,50 +1,80 @@
-Message-Id: <5.1.0.14.2.20030219011232.00af1bc8@mail.ebshome.net>
-Date: Wed, 19 Feb 2003 01:15:49 -0800
-To: "Laurent Mohin" <laurent.mohin@acterna.com>
-From: Eugene Surovegin <ebs@ebshome.net>
-Subject: Re: 405GPr support in linux2.4.18
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <5.1.0.14.2.20030219004853.00b12e08@mail.ebshome.net>
-References: <OFA7B6F432.6CF96B48-ONC1256CD1.00372BF7@eng.eni.wago.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <3E535227.B4F4FFE4@bmrtech.com>
+Date: Wed, 19 Feb 2003 17:45:11 +0800
+From: Jikun Sun <jack.sun@bmrtech.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: m8xxhci.o USB driver problems on RPXLITE_DW board
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 12:54 AM 2/19/2003, Eugene Surovegin wrote:
+Sir,
 
->At 02:11 AM 2/18/2003, Laurent Mohin wrote:
->>I'm designing a board with 405GP processor. I'm now trying to have it
->>working with a 405GPr version.
->>I've started to configure it working in legacy mode and made the necessary
->>changes in PPCBoot.
->>
->>Once downloaded, my kernel hung in early_init function when it called the
->>memset_io to zero the BSS. Using a BDI2000 debugger, I saw that I've
->>reached the bad_page_fault function.
->>
->>The only difference I know between 405GP and 405GPr in legacy mode is data
->>cache size. How does the kernel manage it?
->
->We successfully run 405GPr based board (in legacy mode) with the _same_
->kernel we used for 405GP.
->We don't use any 405GPr specific features though.
->
->As far as I understand, the only function which depends on the data cache
->size is flush_dcache_all in (arch/ppc/kernel/misc.S).
->But it already handles the worst case which is 440GP (32K), so no change is
->needed for 405GPr.
+We are testing usb driver 'm8xxhci.o' of Monta Vista Linux3.0 on
+RPXLITE_DW board. But it could not work properly.
+The following are configration and log information:
 
-Small correction. We use 2_4_devel tree.
+Board: RPXLITE_DW  LITE23EZ6
+Software: MontaVista Linux 3.0 embedded-planet-rpxlite LSP
 
-I just checked MVL 2.1 and 3.0 sources.
-flush_dcache_all in those trees is an old one, which doesn't support caches
-large than 8K.
+Linux kernel configuration for usb drivers
+# USB support
+CONFIG_USB=y
+# Miscellaneous USB options
+CONFIG_USB_DEVICEFS=y
+CONFIG_USB_BANDWIDTH=y
+# USB Controllers
+CONFIG_USB_MPC8xx=y
 
-You may consider using 2_4_devel for your 405GPr based board.
+Linux kernel bootup information:
+...
+usb.c: registered new driver usbdevfs
+usb.c: registered new driver hub
+m8xxhci: initializing controller
+usb.c: new USB bus registered, assigned bus number 1
+m8xxhci: MPC823e (mask 1)
+hub.c: USB hub found
+hub.c: 1 port detected
+m8xxhci: initializing done
+mice: PS/2 mouse device common for all mice
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 1024 bind 2048)
+Sending BOOTP requests . OK
+IP-Config: Got BOOTP answer from 192.9.200.83, my address is
+192.9.200.145
+IP-Config: Complete:
+      device=eth0, addr=192.9.200.145, mask=255.255.255.0,
+gw=255.255.255.255,
+     host=192.9.200.145, domain=, nis-domain=(none),
+     bootserver=192.9.200.83, rootserver=192.9.200.83,
+rootpath=/opt/hardhat/det
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+Looking up port of RPC 100003/2 on 192.9.200.83
+Looking up port of RPC 100005/1 on 192.9.200.83
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 80k init
+wait_for_qe(qe=c02ca17c) done; urb 00000000, status -110
+wait_for_qe(qe=c02ca17c) done; urb 00000000, status -110
+wait_for_qe(qe=c02ca17c) done; urb 00000000, status -110
+wait_for_qe(qe=c02ca17c) done; urb 00000000, status -110
+wait_for_qe(qe=c02ca17c) done; urb 00000000, status -110
+wait_for_qe(qe=c02ca17c) done; urb 00000000, status -110
+wait_for_qe(qe=c02ca17c) done; urb 00000000, status -110
+wait_for_qe(qe=c02ca17c) done; urb 00000000, status -110
+wait_for_qe(qe=c02ca17c) done; urb 00000000, status -110
+wait_for_qe(qe=c02ca17c) done; urb 00000000, status -110
 
-Eugene
 
+Why wait_for_qe occurs continuesly?
+How could I driver a usbmouse or usb storage on the board?
+Please help me some sources of m8xxhci.o.
+
+
+Jikun Sun
+
+BMR
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
