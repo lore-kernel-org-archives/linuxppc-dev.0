@@ -1,21 +1,26 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3CC0A14A.ACC2296B@carts.com>
-Date: Fri, 19 Apr 2002 15:59:22 -0700
-From: Kevin Fry <kevin@carts.com>
+Message-ID: <8D4C69676E66D511A1CB00508BBBB1921BCF21@ranmx1.ran.harris.com>
+From: "Walser, Martin" <mwalser@harris.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: segmentation fault when using "signal"
+Date: Mon, 22 Apr 2002 01:04:58 -0400
 MIME-Version: 1.0
-To: linuxppc emb3dd3d list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Quick question about L2 + 8260
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Has anyone ever seen a board with an 8260 and an L2 cache enabled that
-was running Linux stablily?
+Hi,
 
-Told you it was a quick question :)
+I've a probelm using the signal function.
+I'm using Kernel 2.4.4 from Denx. When I install a signalhandler for SIGCHLD, I
+get an segmentation fault, when the child process is finished.
 
-Kevin
+I've found out that this happens, when the function installed by signal returns.
 
+Any ideas?
+
+regards
+Martin"
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
