@@ -1,15 +1,18 @@
-Return-Path: <frannk_m1@yahoo.com>
-Received: from web13826.mail.yahoo.com (web13826.mail.yahoo.com
-	[66.163.176.58]) by ozlabs.org (Postfix) with SMTP id 86DD22BC0F
+Return-Path: <steve@icarus.com>
+Received: from icarus.com (icarus.icarus.com [64.105.89.2])
+	by ozlabs.org (Postfix) with ESMTP id 55A3C2BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Oct 2004 03:01:53 +1000 (EST)
-Message-ID: <20040930165511.61100.qmail@web13826.mail.yahoo.com>
-Date: Thu, 30 Sep 2004 09:55:11 -0700 (PDT)
-From: Frank <frannk_m1@yahoo.com>
-To: linuxppc-embedded@ozlabs.org
+	Fri,  1 Oct 2004 04:38:10 +1000 (EST)
+Received: from icarus.com (wing [192.168.1.7]) (authenticated)
+	by icarus.com (8.11.6/8.11.6) with ESMTP id i8UHdhe05413
+	for <linuxppc-embedded@ozlabs.org>; Thu, 30 Sep 2004 10:39:43 -0700
+Message-ID: <415C44DC.8090508@icarus.com>
+Date: Thu, 30 Sep 2004 10:39:40 -0700
+From: Stephen Williams <steve@icarus.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: ISA interrupt  problems
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Embedded Linux, pthreads and scheduling
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,23 +23,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I am having problems getting the ISA interrupts working when I
-cascade the 8259 irq handler to an 8245 external interrupt. I
-have the ethernet and serial interrupts working but when I try
-to setup the ISA interrupts it either doesn't work or it hangs
-when I boot the kernel. Are there any howto's floating around on
-setting up the 8259 interrupts. I see a couple of other
-platforms (i.e., sandpoint) that are using the ISA interrupts
-but it looks likje the have the physical interrupt line
-connected to irq 0. I have mine physically connected to external
-irq 2. Should it be connected to irq 0 instead?
-BTW, I have my Ali1535 superio connected to the external irq 2
-of the mpc8245.
-Any help would be _greatly_ appreciated...
 
+[This is probably not unique to ppc linux, but it is imbedded
+and I am running linux on an embedded pc in this case...]
 
-		
-_______________________________
-Do you Yahoo!?
-Declare Yourself - Register online to vote today!
-http://vote.yahoo.com
+I have a multi-threaded (pthreads) application running on an
+embedded PPC. One of the threads operates a scanner video input,
+and I want to give it (and only it) high priority, so that if
+a device driver wakes it up, it is scheduled as close to "now"
+as possible.
+
+I code the thread in question to capp pthread_setschedparam
+to set its policy to SCHED_FIFO and the priority to some
+number >0. I'm using glibc-ppc_4xx-2.3.1 as packaged in the
+Denx ELDK-3.0. Can I expect this to work? Is any priority >0
+enough to get it priority over other threads, or do I need
+to give it a high (i.e. 99) priority to get past the sliding
+priorities of threads with default scheduling?
+
+For the particular case I'm seeing, it seems to *not* have
+any effect. My interrupt handler is activated (I see on the
+scope) and in the first few cases the response is immediate,
+but sometimes the response is delayed significantly. Where
+I look for the problem may depend on whether the collective
+understanding is that the SCHED_FIFO has the effect I expect.
+
+-- 
+Steve Williams                "The woods are lovely, dark and deep.
+steve at icarus.com           But I have promises to keep,
+http://www.icarus.com         and lines to code before I sleep,
+http://www.picturel.com       And lines to code before I sleep."
