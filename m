@@ -1,26 +1,41 @@
-Date: Mon, 22 Oct 2001 09:33:22 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "David M?ller (ELSOFT AG)" <d.mueller@elsoft.ch>
+Date: Mon, 22 Oct 2001 09:33:38 -0700
+From: Paul Mundt <pmundt@MVista.COM>
+To: Stefan Wanner <stefan.wanner@gmx.ch>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] CS8952 Support for ppc405_phy.c
-Message-ID: <20011022093322.I4933@cpe-24-221-152-185.az.sprintbbd.net>
-References: <3BD42D9E.7040300@elsoft.ch>
+Subject: Re: invert lcd on mpc823l
+Message-ID: <20011022093338.A2836@mvista.com>
+References: <3BD3E484.1030909@gmx.ch>
 Mime-Version: 1.0
+In-Reply-To: <3BD3E484.1030909@gmx.ch>; from stefan.wanner@gmx.ch on Mon, Oct 22, 2001 at 11:19:00AM +0200
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BD42D9E.7040300@elsoft.ch>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Oct 22, 2001 at 04:30:54PM +0200, David M?ller (ELSOFT AG) wrote:
+On Mon, Oct 22, 2001 at 11:19:00AM +0200, Stefan Wanner wrote:
+> i'm using a sharp LQ64D341 tft lcd on a MPC823L board with the
+> kernelsources from denx.de. now when i use /dev/tty0 (the frambuffer
+> character device) the output apears inverse (white background, black
+> text). the tux in the upper left corner has also strange colors (looks
+> also like inverse). how can i fix that?
+>
+Try inverting your colormap. Try something like the following:
 
-> The attached patch adds support for the Cirrus CS8952 (CrystalLAN) PHY
-> to ppc405_phy.c
+--- arch/ppc/8xx_io/lcd823.c.orig       Mon Oct 22 09:30:43 2001
++++ arch/ppc/8xx_io/lcd823.c    Mon Oct 22 09:30:46 2001
+@@ -638,6 +638,7 @@
+     }
 
-Applied, Thanks.
+     lcd823_init_dev();
++    fb_invert_cmaps();
+     lcd823_install_cmap(0, &fb_info);
+
+     if (register_framebuffer(&fb_info) == 0) {
+
+Regards,
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Paul Mundt <pmundt@mvista.com>
+MontaVista Software, Inc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
