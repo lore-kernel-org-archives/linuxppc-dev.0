@@ -1,52 +1,37 @@
-Message-ID: <3D29F668.21DC8B97@esteem.com>
-Date: Mon, 08 Jul 2002 13:30:32 -0700
-From: Conn Clark <clark@esteem.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+From: Arun Dharankar <ADharankar@ATTBI.Com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Serial console ports on systems with no console connected.
+Date: Mon, 8 Jul 2002 21:27:16 -0400
 MIME-Version: 1.0
-To: "Kappl, Hannes" <hkappl@harris.com>,
-	May Ling List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: set a limit for the cache
-References: <8D4C69676E66D511A1CB00508BBBB1922C4173@ranmx1.ran.harris.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200207082127.16518.ADharankar@ATTBI.Com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You can do this by changing values in the /proc file system.
-Refer to the docs in the kernel source.
+Greetings...
 
-"Kappl, Hannes" wrote:
->
->  Hi,
->
->  I am using kernel 2.4.4. I have 32M RAM with a 10M Ramdisk. Now my problem is
-> that
->  the Ramdisk is cached in the RAM(4 - 8M!). Is it possible to set the size of
-> the
->  cache to a limit or to disable the cache complete?
->
->    7:13pm  up 34 min,  0 users,  load average: 0.12, 0.33, 0.30
->  22 processes: 21 sleeping, 1 running, 0 zombie, 0 stopped
->  CPU states:  0.9% user,  4.3% system,  0.0% nice, 94.7% idle
->  Mem:   30612K av,   9216K used,  21396K free,   9904K shrd,      0K buff
->  Swap:      0K av,      0K used,      0K free                  5392K cached
->
->   PID USER     PRI  NI  SIZE  RSS SHARE STAT  LIB %CPU %MEM   TIME COMMAND
->   107 root      14   0   836  836   644 R       0  4.5  2.7   0:00 top
->
->  best regard
->  Hannes
->
+This question is common to both ppcboot and ppc-linux.
+The ppcboot I am using is 1.1.5 and Linux kernel 2.4.18.
 
---
+If there is no console connected to the serial console port,
+is it true that a thread sending output to it hangs? If this is
+ppcboot the bootup process would not proceed? What
+consequences would we see on Linux?
 
-*****************************************************************
-  If you live at home long enough, your parents will move out.
- (Warning they may try to sell their house out from under you.)
-*****************************************************************
+I have a MPC8260ADS based board, and see the above
+behavior under ppcboot. Under Linux using a BDI debugger
+the thread sending output to the console hangs. Perhaps
+under Linux we can set the termio modes to have no
+flow control, but am not sure if this will solve the problem.
 
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
+If this is true, is there a clean/proper way to have a setup
+such that this hang can be avoided?
+
+Best regards,
+-Arun.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
