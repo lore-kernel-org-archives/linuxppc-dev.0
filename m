@@ -1,60 +1,66 @@
-From: Simon Winwood <sjw@cse.unsw.edu.au>
-To: Tom Rini <trini@kernel.crashing.org>
-Date: Thu, 22 Nov 2001 07:04:13 +1100
+Date: Wed, 21 Nov 2001 13:23:39 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Simon Winwood <sjw@cse.unsw.edu.au>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Walnut boottime issues
-Message-ID: <20011122070413.C26819@cse.unsw.edu.au>
-References: <20011121104517.A12111@cse.unsw.edu.au> <20011120173502.D821@cpe-24-221-152-185.az.sprintbbd.net> <20011122054437.A26819@cse.unsw.edu.au> <20011121115344.H3436@cpe-24-221-152-185.az.sprintbbd.net>
+Message-ID: <20011121132339.K3436@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20011121104517.A12111@cse.unsw.edu.au> <20011120173502.D821@cpe-24-221-152-185.az.sprintbbd.net> <20011122054437.A26819@cse.unsw.edu.au> <20011121115344.H3436@cpe-24-221-152-185.az.sprintbbd.net> <20011122070413.C26819@cse.unsw.edu.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011121115344.H3436@cpe-24-221-152-185.az.sprintbbd.net>; from trini@kernel.crashing.org on Wed, Nov 21, 2001 at 11:53:44AM -0700
+In-Reply-To: <20011122070413.C26819@cse.unsw.edu.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Nov 21, 2001 at 11:53:44AM -0700, Tom Rini wrote:
-> On Thu, Nov 22, 2001 at 05:44:37AM +1100, Simon Winwood wrote:
-
-[...]
-
+On Thu, Nov 22, 2001 at 07:04:13AM +1100, Simon Winwood wrote:
+> On Wed, Nov 21, 2001 at 11:53:44AM -0700, Tom Rini wrote:
+> > On Thu, Nov 22, 2001 at 05:44:37AM +1100, Simon Winwood wrote:
+>
+> [...]
+>
+> > >
+> > > 	After some slight hacking --- basically, I added
+> > >
+> > > 	#include <asm/bootmem.h>
+> > >
+> > > and
+> > > 	avail_ram = 0x600000
+> > > 	end_avail = 0x800000
 > >
-> > 	After some slight hacking --- basically, I added
+> > Yeah, I noticed when I tried to compile it.
 > >
-> > 	#include <asm/bootmem.h>
+> > > 	The only problem is that you can only boot with an empty command line,
+> > > otherwise it locks up after 'Now booting the kernel' (as far as I can tell)
 > >
-> > and
-> > 	avail_ram = 0x600000
-> > 	end_avail = 0x800000
+> > Hmm..  How's this go?
+> >
 >
-> Yeah, I noticed when I tried to compile it.
+> 	Nope ... added:
 >
-> > 	The only problem is that you can only boot with an empty command line,
-> > otherwise it locks up after 'Now booting the kernel' (as far as I can tell)
+> 	cp = cmd_line
+> 	timer = 0
+
+D'oh... Thanks.
+
+> 	which was missing (and was causing various problems), however
+> it freezes after 'Uncompressing kernel'.
 >
-> Hmm..  How's this go?
+> loaded at:     00500000 0058A900
+> relocated to:  00400000 0048A900
+> board data at: 00487830 00487870
+> relocated to:  00200100 00200140
+> zimage at:     00406000 0048648A
+> avail ram:     00487000 08000000
 >
+> 	avail ram is less than where the image is relocated to ... found the
+> bug --- you need to use _end rather than __ramdisk_end as there is stuff after
+> the ramdisk.
 
-	Nope ... added:
+Yeah, I thought about that at first, but went with __ramdisk_end for
+some reason.  Thanks alot!
 
-	cp = cmd_line
-	timer = 0
-
-	which was missing (and was causing various problems), however
-it freezes after 'Uncompressing kernel'.
-
-loaded at:     00500000 0058A900
-relocated to:  00400000 0048A900
-board data at: 00487830 00487870
-relocated to:  00200100 00200140
-zimage at:     00406000 0048648A
-avail ram:     00487000 08000000
-
-	avail ram is less than where the image is relocated to ... found the
-bug --- you need to use _end rather than __ramdisk_end as there is stuff after
-the ramdisk.
-
-	So with those changes, it boots OK for me.
-
-	Simon
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
