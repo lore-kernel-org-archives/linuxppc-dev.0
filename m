@@ -1,27 +1,36 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <20020621150853.2021.qmail@web21104.mail.yahoo.com>
-Date: Fri, 21 Jun 2002 08:08:53 -0700 (PDT)
-From: Tim Lai <laitingwai@yahoo.com>
-Subject: Can I run linux without a file system?
+Date: Fri, 21 Jun 2002 10:17:14 -0500
+From: Stephen Cameron <steve.cameron@hp.com>
 To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
+Subject: Anyone used libopt?
+Message-ID: <20020621101714.A1468@zuul.cca.cpqcorp.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am porting linux on a custom board.
-I am using the bootrom to load vmlinux onto
-RAM, and I am in the middle of getting the console/
-serial driver to work.
-All the documents I read have refer the console as
-/dev/ttyS, and state that to communicate to the
-console, I have to set it up with open("/dev/ttyS").
+Has anyone used this libopt tool?
+http://libraryopt.sourceforge.net/
 
-Does that means I have to have some sort of file
-system in linux?
+It is supposed to be able to rebuild libraries
+to contain only the objects that are actually used
+by the programs in your filesystem.
+
+There are some "build" scripts it needs per
+library, and an example for glibc is given:
+http://libraryopt.sourceforge.net/buildlibc
+
+Are there other build scripts for other libraries
+floating around?  The idea of writing my own build
+scripts, considering how much of the example script
+I actually grok, is daunting.
+
+Any pointers to more explanatory material would be
+appreciated.
 
 Thanks.
+
+-- steve
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
