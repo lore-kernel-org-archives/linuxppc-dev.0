@@ -1,28 +1,22 @@
-Date: Sat, 5 Dec 1998 19:07:29 -0500 (EST)
-From: Tom Rini <tmrini@ntplx.net>
-To: linuxppc-dev@lists.linuxppc.org
+From: "Ryan Nielsen" <ran@krazynet.com>
+Message-ID: <19981205164713.A30036@gondolin>
+Date: Sat, 5 Dec 1998 16:47:13 -0800
+To: Tom Rini <tmrini@ntplx.net>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: ksymoops
-In-Reply-To: <Pine.LNX.4.05.9812051203360.1133-100000@p04-08.hartford.dialin.ntplx.com>
-Message-ID: <Pine.LNX.4.05.9812051903300.954-100000@pc.wackyland.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <Pine.LNX.4.05.9812051203360.1133-100000@p04-08.hartford.dialin.ntplx.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.05.9812051203360.1133-100000@p04-08.hartford.dialin.ntplx.com>; from Tom Rini on Sat, Dec 05, 1998 at 12:04:23PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
-
-On Sat, 5 Dec 1998, Tom Rini wrote:
 
 > Hello,
 >   Has anyone played around with getting ksymoops working on PPC yet?
 > Would be a rather useful tool (gonna take a stab at it if not).
 
-nm.  Found ksymmoops 0.6.  On another note, anyone know why the patches in
-it for a more usaeable oops log aren't in vger/samba?
-
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
-
+I assume you mean linux/scripts/ksymoops.cc, a package that does similar
+and works on PPC can be got from ftp://ftp.ocs.com.au/pub/ksymoops.tar.gz
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
