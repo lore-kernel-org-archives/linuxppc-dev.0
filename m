@@ -1,8 +1,10 @@
-From: "Stephan Linke" <Stephan.Linke@epygi.de>
-To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: FW: 860 ATM - channel deactivation
-Date: Mon, 9 Sep 2002 16:39:10 +0200
-Message-ID: <FCEAKDJJAPHPLJFINDAJOELCCIAA.Stephan.Linke@epygi.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <8D7C5F56B409554D9D46AC22195807F3061A2F@exchwenz01.smtp.dmcwave.co.nz>
+From: Rod Boyce <rod_boyce@stratexnet.com>
+To: 
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: MPC860T FEC problem 
+Date: Tue, 10 Sep 2002 02:58:50 +1200
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -10,21 +12,56 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+ -----Original Message-----
+From: 	Wolfgang Denk [mailto:wd@denx.de]
+Sent:	Saturday, September 07, 2002 10:15 AM
+To:	o_y
+Cc:	linuxppc-embedded@lists.linuxppc.org
+Subject:	Re: MPC860T FEC problem
+
+
 Hi,
 
-I had a look at the sources of mpc860sar. In mpc860sar.c there is the
-mpc860sar_undo_activate_channel() function that deactivates a channel (ATM
-VCC) and releases the resources.
-I'm curious about the fact that the deactivation of the channel by calling
-mpc860sar_del_address_mapping() is performed after all the ressources where
-released. Shouldn't it all be done exactly the opposite way arround?
-In case the order is wrong no one will notice it as long as there's no
-traffic arriving while this function is running. And I didn't had any
-trouble so far too. But I'm shure it is wrong.
+in message <MBBBIOFIICDAPDMKHBDEKEDLCAAA.o_yahav@netvision.net.il> you
+wrote:
+>
+> I'm trying to port linux 2.2.14 on MPC860T and busybox as initrd.
 
-Could anyone check this? (I hope I'm in the right mailing list. :))
+2.2.14 is prehistoric stuff. Don't waste your time on  all  the  bugs
+and problems that have been fixed since.
 
-Thanks, Stephan
+We are using this kernel and it is working find for us.
 
+> I have not seen any initializetion of the BCSR4 so i initialize it with
+the
+> value
+> that ppcboot uses , so the ENABLE led is on too.
+
+Ummm... What's BCSR4? If PPCBoot initializes it, why do you  have  to
+initialize it again?
+
+Like Wolfgang said why reinvent the wheel
+
+> The device isn't working even when i use ppcboot (i configured ppcboot to
+> use it).
+
+Sic! So get PPCBoot running first.
+
+> 1. Why there is no initializetion of BCSR4 in the original code?
+> 2. If BCSR4 must be initialized , what is the correct value?
+> 3. Is any one have a code that succeeded getting FEC device to work?
+
+Most of this depends on your hardware.  We are using the FEC with this
+kernel version and it is working fine.  Get the 2.2.14 kernel from
+Wolfgang's FTP site if it is still on there the FEC code and lots of other
+goodies work with this kernel version.
+
+Sometimes you cannot upgrade to a new kernel version this is possibly
+political and not a design decision.  Sometime there is also no reason to
+upgrade to a newer kernel version and have to retest all possible variants
+of device with the new kernel version.
+
+Regards,
+Rod Boyce
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
