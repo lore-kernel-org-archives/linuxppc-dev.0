@@ -1,54 +1,37 @@
-Message-ID: <3FC4C1DD.3020209@imc-berlin.de>
-Date: Wed, 26 Nov 2003 16:08:13 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <3FC4C428.3040707@jonmasters.org>
+Date: Wed, 26 Nov 2003 15:18:00 +0000
+From: Jon Masters <jonathan@jonmasters.org>
 MIME-Version: 1.0
-To: Marius Groeger <mgroeger@sysgo.com>
-Cc: Jaap-Jan Boor <jjboor@aimsys.nl>,
-	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Preemptive Kernel and MPC8xx ???
-References: <3FC0A1D3.70706@imc-berlin.de> <B82FB2A3-1E4E-11D8-A8D4-003065E2BB06@aimsys.nl> <Pine.LNX.4.56.0311241732200.2581@mag.devdep.sysgo.de>
-In-Reply-To: <Pine.LNX.4.56.0311241732200.2581@mag.devdep.sysgo.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Wolfgang Denk <wd@denx.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ppc405 floating point emulation
+References: <20031126144846.791C1C5F5F@atlas.denx.de>
+In-Reply-To: <20031126144846.791C1C5F5F@atlas.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Marius Groeger wrote:
+Wolfgang Denk wrote:
 
-> AFAIK, you can pretty much drop the low-latency patch in favor of
-> using the lock-breaking patch. It is also available from Robert Love
-> at the cited home page.
+> Library support (i. e. using "-msoftfloat") works fine.
 
-Rob Love wrote me:
+Yes good. I had thought it would be fine to use that.
 
- >>Is it correct that your lock-break does basicly the same as Andrew Morton's
- >>low-latency patches? Where is the big difference?
- >
- > Yes, basically the same thing.  Lock-break is a version of low-latency
- > that is "optimized" for use with the preemptive kernel.
- >
- > You might as well just use low-latency, as Andrew is keeping that more
- > up to date.
+> Kernel emulation is available, but makes little sense to use as it is
+> awfully slow.
 
-And that's what I noticed when looking and the download pages...
+The problem I have with this kernel is that floating point emulated
+instructions which perform stores seem to be falling over. There is
+a bug in the fault handling code for stock 2.4.21 that I am using it
+would seem but am looking at whether it is worth fixing it.
 
-That leaves three options:
+By all accounts I might as well just use the floating point emulation in
+libc but am still interested in enlightened feedback.
 
- > 	(a) Use only preempt-kernel
- > 	(b) Use only low-latency
- > 	(c) Use preempt-kernel + low-latency
+Cheers,
 
-Right?
-
---
-Steven Scholz
-
-imc Measurement & Control               imc Meﬂsysteme GmbH
-Voltastr. 5                             Voltastr. 5
-13355 Berlin                            13355 Berlin
-Germany                                 Deutschland
-fon: +49 30 467090-0                    Tel: 030 / 467090-0
-fax: +49 30 4631576                     fax: 030 / 4631576
+Jon.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
