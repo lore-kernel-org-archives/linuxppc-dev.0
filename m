@@ -1,16 +1,17 @@
-Return-Path: <ebs@ebshome.net>
-Date: Fri, 25 Mar 2005 12:37:31 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Tolunay Orkun <listmember@orkun.us>
-Message-ID: <20050325203731.GB14444@gate.ebshome.net>
-References: <712A2DEC228C7448978CBD7A7AD5B090012EE448@fever.wardrobe.irobot.com>
-	<42444D00.80401@orkun.us> <20050325183126.GA2539@gate.ebshome.net>
-	<424469C2.2070906@orkun.us> <42446F00.90000@orkun.us>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <42446F00.90000@orkun.us>
-Cc: linuxppc-embedded@ozlabs.com
-Subject: Re: Question regarding Interrupt "delivery" to user mode process
+Return-Path: <rpjday@mindspring.com>
+Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
+	by ozlabs.org (Postfix) with ESMTP id 04D4B67AA7
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 26 Mar 2005 08:21:00 +1100 (EST)
+Received: from [10.1.1.102] (10.1.2.1) by mailhost.rdmcorp.com (Worldmail
+	1.3.167) for linuxppc-embedded@ozlabs.org; 25 Mar 2005 16:20:57 -0500
+Date: Fri, 25 Mar 2005 16:19:23 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Message-ID: <Pine.LNX.4.61.0503251617100.15647@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: still not clear on which tree to be using these days
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,24 +22,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 25, 2005 at 02:05:20PM -0600, Tolunay Orkun wrote:
-> This would not be a problem for level triggered interrupts if 
-> enable_irq() cleared the pending IRQ bit before re-enabling the 
-> interrupt system if that particular interrupt was level triggered.
-> 
-> If there is a valid request still pending (i.e. external IRQ line is 
-> still asserted at the appropriate level) this would not cause loss of 
-> interrupt but in case there is no requester (i.e. all interrupts are 
-> properly acknowledged), the spurious interrupt due to delayed processing 
-> would be avoided.
 
-Hmm, I think I agree with you. Let me think a little more and I'll 
-probably add this additional ACK to 4xx PIC code.
+  what is the proper tree to be using these days for a 2.6 kernel on
+8xx?  for the longest time, i've used the "bk" checkout from
+bkbits.net, but i see others now working with what looks like the
+latest stock 2.6.x release.
 
-Only thing which bothers me is that such hack will be 4xx specific, as 
-none of PIC handlers I looked at (in arch/ppc) do this. So, I'm not 
-quite sure it worth adding at all. After all, the way you use 
-enable_irq/disable_irq isn't quite standard anyway :).
+  what's the status on patches that were submitted against the bk
+tree? have they been pushed upstream?  etc, etc.
 
---
-Eugene
+rday
