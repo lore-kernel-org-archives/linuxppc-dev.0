@@ -1,48 +1,94 @@
-From: benh@kernel.crashing.org
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: roger blofeld <blofeldus@yahoo.com>,
-	<linuxppc-dev@lists.linuxppc.org>
+Message-ID: <20020606203514.70819.qmail@web11106.mail.yahoo.com>
+Date: Thu, 6 Jun 2002 13:35:14 -0700 (PDT)
+From: roger blofeld <blofeldus@yahoo.com>
 Subject: Re: Sungem bug or something else?
-Date: Thu, 6 Jun 2002 22:25:23 +0200
-Message-Id: <20020606202523.13690@mailhost.mipsys.com>
-In-Reply-To: <D1467143-798D-11D6-8CF5-0003938E434C@ivey.uwo.ca>
-References: <D1467143-798D-11D6-8CF5-0003938E434C@ivey.uwo.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20020606194518.27675@smtp.wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Hi,
+--- Benjamin Herrenschmidt <benh@kernel.crashing.org>
+wrote:
+> >I encounter an oops during boot bringing up a
+> sungem
+> >interface. (smp g4 450/gcc 3.1/glibc 2.2.5) If I
+> defer
+> >bringing up the network at boot, I can successfully
+> >start eth0 (sungem) if I start eth1 (tulip) first,
+> so
+> >it may not be the sungem driver itself. This
+> happens
+> >on benh 2.4.19-Bpre10, and pre9.
 >
->Does sungem use autonegotiate to determine its interface type and speed
->(like some  of the more advanced interface drivers) or does it look at
->the rom or use a table?
+> What kind of error is it ? A Machine Check ?
 >
->If it autonegotiates, does the driver actually wait long enough for the
->autonegotiation to fully complete before returning the first time?
-
-It autonegociates first, then tries fixed speeds, etc..
-
->Under some tulip drivers, I noticed something very similar (but no oops,
->just a inability to use the driver until I rmmod and then insmod it
->once).  I think it happens because the the autonegotiation results where
->handled asynchronously and the main driver routine simply started it and
->returned before the auonegotiation actually completed and the interface
->and speed were properly determined.  The problem was right after
->bringing up the network in the boot sequence things tried to use it (the
->appletalk drivers, etc).  So if I waited to insert the module for the
->driver until after everything else was started (at the end of the
->bootsequence) all was well.
+> Looking at your backtrace, it looks like the driver
+> is
+> trying to access the PHY chip. That can sometimes
+> happen
+> if you have some tool like miitool or ethtool trying
+> to
+> get at the link status while the chip isn't powered
+> up.
 >
->This is all just a wag, but it is something to look at.
+> The problem here is that sungem on Apple HW only
+> powers
+> the chip when the interface is brought up, and
+> powers it
+> down about 10 seconds after bringing the interface
+> down.
+>
+> This improve power management, but kills link
+> monitoring
+> tools.
+>
+> There may be also a bug in the driver causing it to
+> try
+> to access the PHY registers when the chip is in down
+> mode & getting the ethtool ioctl's
+>
+> Ben.
+>
+>
+Ben,
+ I suspect your last thought may be correct. From the
+oops:
+Machine check in kernel mode.
+Oops: machine check, sig: 7
+NIP: C00DE2A8 XER: 20000000 LR: C00E319C SP: DDBB5E10
+REGS: ddbb5d60 TRAP: 0200    Not tainted
+MSR: 00049030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = ddbb4000[753] 'mii-tool' Last syscall: 54
+last math 00000000 last altivec 00000000 CPU: 0
 
-Nah, it's clearly the chip beeing powered down. I know I have a bug
-in the driver that doesn't prevent HW access to the PHY via the
-ethtool ioctl's when the chip is down, and that will cause a Machine
-Check. I just didn't yet take the time to fix it.
+Note mii-tool is running.
 
-Ben.
+The backtrace:
+
+Trace; 02000000 Before first symbol
+Trace; c00e319c <gem_ioctl+158/178>
+Trace; c01785d0 <dev_ifsioc+414/484>
+Trace; c0178850 <dev_ioctl+210/39c>
+Trace; c01b6f08 <inet_ioctl+200/20c>
+Trace; c016de8c <sock_ioctl+40/ac>
+Trace; c005785c <sys_ioctl+13c/338>
+Trace; c000601c <ret_from_syscall_1+0/b4>
+Trace; 7ffff9e0 Before first symbol
+Trace; 100012cc Before first symbol
+Trace; 1000195c Before first symbol
+Trace; 0fed8d94 Before first symbol
+Trace; 00000000 Before first symbol
+
+shows clearly that an ioctl is in progress.
+
+-roger
+
+=====
+no microsoft products were used in the production of this email
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
