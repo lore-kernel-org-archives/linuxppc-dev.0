@@ -1,68 +1,42 @@
-Message-ID: <3AA42F91.D3C9402E@ncal.verio.com>
-Date: Mon, 05 Mar 2001 16:30:09 -0800
-From: Henry Worth <haworth@ncal.verio.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Pismo Aty128fb problem in 2.4.3-pre*?
-References: <3AA41B77.73470672@ncal.verio.com>
-Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0
+Message-Id: <v04220800b6ca30dbefe5@[10.0.0.42]>
+In-Reply-To: <19350128150737.3378@smtp.wanadoo.fr>
+References: <3AA12536.DAF3B1A7@denise.shiny.it>
+ <19350128150737.3378@smtp.wanadoo.fr>
+Date: Mon, 5 Mar 2001 22:18:42 -0800
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Giuliano Pochini <pochini@denise.shiny.it>,
+	<linuxppc-dev@lists.linuxppc.org>
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: Console text selection bug
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've dug through the /var/log/messages, and the system
-did continue booting in the video=aty128fb cases. In all cases
-I'm seeing the following messages:
+At 10:35 PM +0100 3/5/01, Benjamin Herrenschmidt wrote:
+>>When I select text in console it's scrambled. I looked at the
+>>aty128 sources, but I didn't find anything about it. Where is
+>>the code that manages selection/cut/paste ?
+>>
+>>The selected text is scrambled in this way: every char has
+>>the bits 1,2,3 swapped with bits 5,6,7 respectively (bits
+>>numbered left to right). I don't know what can cause this
+>>strange behaviour... I thought the console screen was a
+>>simple array of char/colour pairs.
+>
+>It's an endian bug in fbcon when accessing the text/attribute buffer.
+>
+>I think someone posted a fix for it, You may have more luck asking on
+>the fbdev mailing list to the fbdev maintainers what's up.
+>
+>I think it's related to fbcon_invert_region() not using the access
+>macros and directly tapping the buffer, causing attributes & text
+>to be messed up.
 
-2.4.3-pre[12]
+I saw this problem in 2.4.x until I turned off the config option for
+VGA consoles.  Then it went away.
 
-  kernel: PCI: Enabling device 00:10.0 (0086 -> 0087)
-  kernel: aty128fb: Rage Mobility M3 (AGP) [chip rev 0x0] 8M 128-bit SDR SGRAM (1:1)
-  kernel: Console: switching to colour frame buffer device 80x30
-  kernel: Registered "ati" backlight controller, level: 10/15
-  kernel: fb0: ATY Rage128 frame buffer device on PCI
-  kernel: no framebuffer address found for
-              /pci@f0000000/ATY,RageM3pParent@10/ATY,RageM3pB
-
-
-With video=ofonly
-
-  kernel: Using unsupported 1024x768 ATY,RageM3pA at a4008000, depth=8, pitch=1024
-  kernel: Console: switching to colour frame buffer device 128x48
-  kernel: fb0: Open Firmware frame buffer device
-             on /pci@f0000000/ATY,RageM3pParent@10/ATY,RageM3pA
-  kernel: no framebuffer address found for
-             /pci@f0000000/ATY,RageM3pParent@10/ATY,RageM3pB
-
-
-2.2.19pre13
-
-
-  kernel: aty128fb: Rage Mobility M3 (AGP) [chip rev 0x0] 8M 128-bit SDR SGRAM (1:1)
-  kernel: Console: switching to colour frame buffer device 128x48
-  kernel: Registered "ati" backlight controller, level: 10/15
-  kernel: fb0: ATY Rage128 frame buffer device on /pci@f0000000/ATY,RageM3pParent@10
-
-The earlier PCI probe messages in all 2.4.* cases are:
-
-  kernel: PCI: Probing PCI hardware
-  kernel: Fixup IO res, dev: 0.10, res_start: 400->802400
-  kernel: Can't get bus-range for /pci@f2000000/cardbus@1a
-  kernel: PCI->OF bus map:
-  kernel: 0 -> 0
-  kernel: 1 -> 0
-  kernel: 6 -> 0
-  kernel: PCI:0:10:0: Resource a4000000-a7ffffff (f=1208)
-  kernel: PCI:0:10:0: Resource a0000000-a0003fff (f=200)
-  kernel: PCI:1:17:0: Resource 80000000-8007ffff (f=200)
-  kernel: PCI:1:1a:0: Resource 80080000-80080fff (f=200)
-  kernel: PCI:0:10:0: Resource 00802400-008024ff (f=101)
-  kernel: PCI:1:18:0: Resource 80082000-80082fff (f=200)
-  kernel: PCI:1:19:0: Resource 80081000-80081fff (f=200)
-  kernel: PCI:6:e:0: Resource f5000000-f5000fff (f=200)
-
-
-Is the current fb driver getting confused by the dual
-framebuffers in the OF tree?
+   Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
