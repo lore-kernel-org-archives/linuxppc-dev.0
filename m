@@ -1,71 +1,44 @@
-Message-ID: <00b801c2a2c1$70bc9470$370da8c0@aman>
-From: "Aman" <aman@mistralsoftware.com>
-To: "Matt Porter" <porter@cox.net>
-Cc: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
-References: <000901c2a20b$23472400$370da8c0@aman> <20021212145243.A5263@home.com>
-Subject: Re: NVRAM/RTC
-Date: Fri, 13 Dec 2002 21:35:22 +0530
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3DFA05C3.30703@ccrl.mot.com>
+Date: Fri, 13 Dec 2002 10:07:31 -0600
+From: "Steve Rossi" <Steve.Rossi@motorola.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: 823 Video Controller Driver - where ?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Matt
+I've seen some reference on the list regarding a driver for the 823
+Video Controller -
+i.e.
+http://lists.linuxppc.org/results.html?restrict=linuxppc-embedded&words=vid823
+however I've been unable to locate the source to vid823.c
+apparently this question was asked before:
+http://lists.linuxppc.org/linuxppc-embedded/200201/msg00164.html
+and the answer was that its in the 2_4_devel tree, but I was unable to
+find it in a recent snapshot of the tree (I'm unable to get the tree
+from the bitkeeper repository due to a problem in bitkeeper 3.0 related
+to http proxy with authentication - but thats another story!) so I got
+the snapshot from http://ppckernel.org/tree.php?id=5
+All I could find was the RPX framebuffer driver rpxfb.c for various LCD
+panels using the LCD controller..
+I'm looking for a driver for the video controller to output to an NTSC
+encoder. Am I just missing something?
+Anyone know where I can get vid823.c (or whatever it might be called
+now) and whether its a true framebuffer driver?
 
-This might be a very basic question. By porting what do you mean?. As of now
-I copied the ebony bsp to different location and did changes to boot on the
-custom board. Till now it was booting without any problem. Once I changed
-the EBC configuration to configure some other FPGA ,bcos of which  linux
-booting hangs at " Now Booting the kernel ".
-I commented the ioremap of RTC, and the definitions of
-ppc_md.set_rtc_time = todc_set_rtc_time;
+Regards,
+Steve
 
-ppc_md.get_rtc_time = todc_get_rtc_time;
-
- still the same problem. Should I hv to do something else also.
-
-Thanking you in advance
-regards
-Aman
-
-
------ Original Message -----
-From: "Matt Porter" <porter@cox.net>
-To: "Aman" <aman@mistralsoftware.com>
-Cc: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
-Sent: Friday, December 13, 2002 3:22 AM
-Subject: Re: NVRAM/RTC
-
-
->
-> On Thu, Dec 12, 2002 at 11:50:23PM +0530, Aman wrote:
-> >
-> > Hi All
-> >
-> > I have customized board , which has PPC 440GP as its processor. In this
-> > board there is no NVRAM/RTC as in the 440GP evalkit. In the Rom monitor,
-> > configuration related to it NVRAM/RTC has been removed. Because of this
-> > changes in the rom monitor code, the linux image is hanging after " Now
-> > Booting the Kernel". If  NVRAM/RTC EBC bank1 is enabled in rom monitor,
-the
-> > linux image is executing without any problem. Can anyone say , how to
-> > disable the NVRAM/RTC option in the linux kernel.
->
-> Are you trying to run an ebony image on this board?  Sounds like it,
-> and that would be the wrong thing to do.  Make a new port, and
-> in your <board>.c file, don't ioremap the RTC area (since you don't
-> have one) and delete (or set NULL) all the time/nvram machdeps.
->
-> Regards,
-> --
-> Matt Porter
-> porter@cox.net
-> This is Linux Country. On a quiet night, you can hear Windows reboot.
->
->
->
+--
+-------------------------------------------------------
+Steven K. Rossi                     srossi@labs.mot.com
+Principal Staff Engineer
+Multimedia Communications Research Laboratory
+Motorola Labs
+-------------------------------------------------------
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
