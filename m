@@ -1,29 +1,34 @@
-Message-ID: <406B4BC8.4040501@embeddededge.com>
-Date: Wed, 31 Mar 2004 17:52:56 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Matt Porter <mporter@kernel.crashing.org>
-Cc: John Whitney <johnw@sands-edge.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Proposed changes to io.h
-References: <49B568CB-832A-11D8-9FF0-000A95A07384@sands-edge.com> <20040331164423.GA417@gate.ebshome.net> <20040331100318.B17284@home.com> <9B139B02-834D-11D8-9FF0-000A95A07384@sands-edge.com> <20040331150741.D17284@home.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: John Whitney <jwhitney-linuxppc@sands-edge.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Proposed Kconfig update patch for help text 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 31 Mar 2004 17:42:40 CDT."
+             <B755A2F6-8364-11D8-9FF0-000A95A07384@sands-edge.com>
+Date: Thu, 01 Apr 2004 01:06:15 +0200
+Message-Id: <20040331230620.ACC3BC10A4@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Matt Porter wrote:
+In message <B755A2F6-8364-11D8-9FF0-000A95A07384@sands-edge.com> you wrote:
+>
+> A couple of trivial changes for the processor choice help text to make
+> it a bit clearer.
+...
+>        types (601, 603, 604, 740, 750, 7400), the Motorola embedded
+> -     versions (821, 823, 850, 855, 860, 8260), the IBM embedded
+> versions
+> +     versions (821, 823, 850, 855, 860, 82xx), the IBM embedded
 
+How about types like 857, 862, the 866 family, the 885 family, ... ?
 
-> ..... If e500 wanted a version they
-> can use the SPE option to add some code.
+Wolfgang Denk
 
-This isn't an issue (yet) for e500.  The only 64-bit external bus is
-for the DDR.  The only functions using the quad word are for MTD flash,
-and all flash is on the 32-bit local bus.
-
-
-	-- Dan
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+God may be subtle, but He isn't plain mean.         - Albert Einstein
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
