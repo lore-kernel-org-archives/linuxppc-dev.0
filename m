@@ -1,34 +1,30 @@
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
-Message-Id: <v04204e0eb35f112116ec@[206.163.71.146]>
-In-Reply-To: <373926B4.6BFD7CE7@loomer.com>
-References: <373926B4.6BFD7CE7@loomer.com>
-Date: Wed, 12 May 1999 04:47:18 -0700
-To: linuxppc-dev@lists.linuxppc.org
-From: Joel Klecker <jk@espy.org>
+Date: Wed, 12 May 1999 08:44:31 -0400 (EDT)
+From: Tom Rini <tmrini@ntplx.net>
+To: Hugh Caley <hcaley@loomer.com>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Does Linux PPC support the new 'Lombard/101' Powerbook G3s?
+In-Reply-To: <373926B4.6BFD7CE7@loomer.com>
+Message-ID: <Pine.SUN.4.02.9905120842530.17765-100000@sea.ntplx.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 23:59 -0700 1999-05-11, Hugh Caley wrote:
->Why do you think it would work, Tom?  You can't OF boot the "Wallstreet"
->G3 laptops, can you?
+On Tue, 11 May 1999, Hugh Caley wrote:
 
-<http://developer.apple.com/techpubs/hardware/Developer_Notes/Macintos 
-h_CPUs-G3/PowerBookG3Series_1999/index.html> shows the new powerbooks 
-to be of the new world architecture, thus it has sane OF (though 
-until we have ELF images that the OF likes, no OF booting).
+> Why do you think it would work, Tom?  You can't OF boot the "Wallstreet"
+> G3 laptops, can you?
 
-On a unsupported hardware note: the ethernet controller is a DP83843 
-PHYTER made by National Semiconductor, which will need a driver 
-written for it.
-Docs: <http://www.national.com/pf/DP/DP83843.html>.
+Last I knew, only the New machines (iMac/B&W) coudln't OF boot because of
+the new ELF loader (or something like that).  Other machines might have
+very odd or difficult OFs (1st G3s) but could be OF booted.  Then again, I
+don't have a Wallstreet so I can't be certain.
 
--- 
-Joel Klecker (aka Espy)                    Debian GNU/Linux Developer
-<URL:mailto:jk@espy.org>                 <URL:mailto:espy@debian.org>
-<URL:http://web.espy.org/>               <URL:http://www.debian.org/>
+--
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
