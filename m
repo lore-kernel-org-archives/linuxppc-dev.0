@@ -1,40 +1,34 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3F4F6819.1090002@kegel.com>
-Date: Fri, 29 Aug 2003 07:50:01 -0700
-From: Dan Kegel <dank@kegel.com>
-MIME-Version: 1.0
-To: Brian Padalino <bpadalino@perigee.com>
-Cc: zjzhou@newrocktech.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: how to use busybox to make a ramdisk?
-References: <DGEEIPOFGGPOACEFBGGCEEAECBAA.bpadalino@perigee.com>
-In-Reply-To: <DGEEIPOFGGPOACEFBGGCEEAECBAA.bpadalino@perigee.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Dan Kegel <dank@kegel.com>
+Cc: Brian Padalino <bpadalino@perigee.com>, zjzhou@newrocktech.com,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: how to use busybox to make a ramdisk? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 29 Aug 2003 07:50:01 PDT."
+             <3F4F6819.1090002@kegel.com>
+Date: Fri, 29 Aug 2003 16:52:43 +0200
+Message-Id: <20030829145248.C000EC59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brian Padalino wrote:
-> ... there is also a good tutorial on how to create ramdisk images.
+In message <3F4F6819.1090002@kegel.com> you wrote:
 >
-> http://www.linux.org/docs/ldp/howto/Bootdisk-HOWTO/buildroot.html
->
-> The only thing that I do differently is that I use a loopback device like
-> so:
->   mount -t ext2 filename /mnt/image -o loop
-> This stops mount from complaining to me and I like that.
+> Stock genext2fs doesn't handle ramdisks bigger than 8MB, but
+> there are patches that fix this, and I've been using them happily
+> for about nine months.  (Maybe they're in the mainline now; not sure.)
 
-I highly recommend using genext2fs instead of a loopback mount;
-that way you don't need to be root at all when making the image.
+A patched & extended version  (based  on  Erik  Andersen's  work)  is
+included with the ELDK.
 
-Stock genext2fs doesn't handle ramdisks bigger than 8MB, but
-there are patches that fix this, and I've been using them happily
-for about nine months.  (Maybe they're in the mainline now; not sure.)
-- Dan
+Best regards,
+
+Wolfgang Denk
 
 --
-Dan Kegel
-http://www.kegel.com
-http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+365 Days of drinking Lo-Cal beer.                       = 1 Lite-year
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
