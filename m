@@ -1,33 +1,36 @@
-Date: Fri, 3 Nov 2000 22:53:11 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: cl.en@gmx.net, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Lombard Sleep Crash (Was: 2.2.18pre17 again)
-In-Reply-To: <19340928092653.6730@192.168.1.2>
-Message-ID: <Pine.LNX.4.10.10011032251480.26175-100000@opal.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v04003a00b628feabbda6@[24.70.162.12]>
+In-Reply-To: <p04330100b627ff09296b@[192.168.0.1]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 3 Nov 2000 17:52:22 -0600
+To: Stefan Jeglinski <jeglin@4pi.com>, linuxppc-dev@lists.linuxppc.org
+From: Tony Mantler <nicoya@apia.dhs.org>
+Subject: Re: whacked out 2.2.18pre17?
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Seems I've seen that message before ???
+At 11:53 PM -0600 11/2/2000, Stefan Jeglinski wrote:
+>The second night, it booted, but the no video checkbox was somehow
+>inverted in operation. IOW, with no video turned on (I have a twin
+>turbo card, OFfb is my only choice in running X), I never get the
+>OFfb driver, it always insists on loading the imsttfb driver, so X is
+>impossible.
 
-> >Sep 18 00:35:03 apple kernel: Kernel panic: kernel access of bad area pc
-> >c00cf34c lr c00cfa88 address 24 tsk
-> >+pmud/297
-> >
-> >System.map-2.2.18pre4-ben1:
-> >c00cf218 t idepmac_sleep_device
-> >c00cf334 t idepmac_wake_device
->
-> Please, try to disassemble idepmac_sleep_device with objdump and see
-> where exactly it crashes. Looks like there may be some bad pointer going
-> on there...
+The IMS TT in my 9600/200mp has never given me any troubles at all with
+imsttfb and X. The only quirk is that the dotclock values are off, but read
+and write consistently and reliably.
 
-Rather disassemble idepmac_wake_device (that's where tha PC falls IMHO).
+This is using a Linus-2.2.17 with PCI and IDE patches, and the latest
+debian-unstable packaging of X.
 
-	Michael
+
+Cheers - Tony 'Nicoya' Mantler :)
+
+
+--
+Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
