@@ -1,38 +1,38 @@
-Date: Sun, 8 Oct 2000 01:34:31 +0200
-From: Samuel Rydh <samuel@ibrium.se>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Video driver bug
-Message-ID: <20001008013431.A1138@ibrium.se>
-References: <Pine.LNX.4.10.10010071939260.398-100000@cassiopeia.home> <Pine.LNX.3.96LJ1.1b7.1001007134822.9961B-100000@ofey.earthlink.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.3.96LJ1.1b7.1001007134822.9961B-100000@ofey.earthlink.net>; from toe@unlserve.unl.edu on Sat, Oct 07, 2000 at 01:50:49PM -0500
+Date: Sun, 8 Oct 2000 13:58:01 -0400 (EDT)
+From: Conrad H Ziesler <cziesler@umich.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: ibook ttyS0 (modem), and pppd problem, linux-2.2.17pre20ben2
+Message-ID: <Pine.SOL.4.10.10010080013120.22269-100000@joust.gpcc.itd.umich.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Oct 07, 2000 at 01:50:49PM -0500, Takashi Oe wrote:
->
-> On Sat, 7 Oct 2000, Geert Uytterhoeven wrote:
->
-> > > This problem is observable if one starts MOL from the console. MOL
-> > > changes the video mode on an inactive console in order to extract
-> > > certain video mode parameters (like rowbytes).
->
-> Is there anything wrong with using FB_ACTIVATE_TEST flag for this usage?
-> With the flag, you get a legal var and active fb is untouched.
->
+The first time i run pppd after reboot, everything works great.
 
-Well, using the FB_ACTIVATE_TEST only tells me whether a particular
-mode is acceptable or not. I need the information encoded in the
-fix structure which is only available for the active mode.
+however, if the remote host abruptly hangs up, then all future pppd
+instances yield the following trace in syslog:
 
-/Samuel
+Oct  7 18:35:15 mwatt pppd[7318]: pppd 2.3.11 started by root, uid 0
+Oct  7 18:35:19 mwatt pppd[7318]: Hangup (SIGHUP)
+Oct  7 18:35:19 mwatt pppd[7318]: Connect script failed
 
+that is, pppd aborts without ever running chat.
+nothing i seem to do fixes this except reboot.
 
-----------------------------------------------------------
- E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
-  Phone/fax: (home) +46 8 4418431, (work) +46 8 7908470
-----------------------------------------------------------
+note: if pppd exits cleanly from a session, then the next time it runs has
+no problem, however if the link gets disrupted, then the next (and all
+future) times it fails to work.
+
+i'm guessing there is some state in the serial driver that
+doesn't get cleared in all cases, or some such...
+
+this has been a problem in other previous kernels i have used, however
+specifically, 2.2.17pre20ben2 has this problem.
+
+thanks,
+--conrad
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
