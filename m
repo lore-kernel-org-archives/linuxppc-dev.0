@@ -1,30 +1,65 @@
-Message-ID: <396555DC.E31813E0@erols.com>
-Date: Fri, 07 Jul 2000 00:00:29 -0400
-From: Nelson Abramson <pogtal@erols.com>
-MIME-Version: 1.0
-To: Iain Sandoe <iain@sandoe.co.uk>
-CC: linuxppc-dev@lists.linuxppc.org
+Date: Thu, 6 Jul 2000 21:41:45 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: Matt Brubeck <mbrubeck@hmc.edu>
+Cc: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: Multi-boot advice.
-References: <200007070652.HAA20893@hyperion.valhalla.net>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <20000706214145.R7162@plato.local.lan>
+References: <200007052323.AAA07099@hyperion.valhalla.net> <Pine.GSO.4.21.0007060751390.17224-100000@turing.cs.hmc.edu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="iUdyFHenu1vPh/Ml"
+In-Reply-To: <Pine.GSO.4.21.0007060751390.17224-100000@turing.cs.hmc.edu>; from mbrubeck@hmc.edu on Thu, Jul 06, 2000 at 07:57:13AM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Iain Sandoe wrote:
+--iUdyFHenu1vPh/Ml
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 
-> This is interesting.  I've seen (several times) the comment that the Apple
-> Drive Setup tool doesn't work for Linux.
->
-> However, it certainly did for me (on the Lombard & on a 9600/233)... under
-> what circumstances does it fail?
+On Thu, Jul 06, 2000 at 07:57:13AM -0700, Matt Brubeck wrote:
+>=20
+> On Thu, 6 Jul 2000, Iain Sandoe wrote:
+>=20
+> > I think I read that I must put the Linux boot partition before the
+> > MacOS - X one?
+>=20
+> If you are using yaboot with an OF-bootable partition (e.g. you are using
+> ybin to set up a bootstrap partition), then placing that partition before
+> MacOS will allow you to boot Linux by default without changing any open
+> firmware settings.
 
-Apple Drive Setup from MacOS 9 will cause problems if you are using a certain
-version of BootX.  That problem was fixed by using a newer version of BootX or
-moving to yaboot.
+if you use a multiboot script and you place the Apple_Bootstrap
+partition first you will always get the boot choice without altering
+OF settings.
 
-HTH
---Nelson Abramson
+> Other than that, partition order shouldn't matter.
+>=20
+> Speaking of yaboot, I have a question. Can yaboot boot MacOS, or can I
+> make it exit back to OF without rebooting?
 
+well strictly speaking, no.  yaboot cannot boot anything else, and
+once its loaded OpenFirmware is pretty much destroyed.  you can
+however use a magicboot script to give you the choice to boot linux or
+macos, this scriptloads before yaboot and thus can boot macos. =20
+
+> I'd like to just have my machine always load yaboot, and then use the
+> yaboot prompt to choose my OS. But once I'm in yaboot, Linux seems to be
+> my only option. Is this true? If so, can it be changed?
+
+yes use a magicboot script.  see the ybin docs.
+
+>=20
+>=20
+
+--=20
+Ethan Benson
+http://www.alaska.net/~erbenson/
+
+--iUdyFHenu1vPh/Ml
+Content-Type: application/pgp-signature
+
+
+--iUdyFHenu1vPh/Ml--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
