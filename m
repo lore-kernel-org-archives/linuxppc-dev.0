@@ -1,12 +1,10 @@
-From: jinoung@mail.com
-Message-ID: <009b01bfdf07$e8ad4d60$98e4d5a5@telecom.samsung.co.kr>
-Reply-To: <jinoung@mail.com>
-To: "linux embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: I am looking for 8xxrom with ethernet.
-Date: Mon, 26 Jun 2000 09:46:04 +0900
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+Message-ID: <384039193.961980819731.JavaMail.root@web538-mc.mail.com>
+Date: Sun, 25 Jun 2000 20:53:39 -0400 (EDT)
+From: jinoung kim <jinoung@mail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: I am looking for 8xxrom with ethernet(TFTP).
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
