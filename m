@@ -1,36 +1,45 @@
-Message-Id: <199905050555.WAA23579@soda.CSUA.Berkeley.EDU>
-To: Tom Rini <tmrini@ntplx.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: USB under LinuxPPC 
-In-Reply-To: Your message of "Tue, 04 May 1999 20:05:49 EDT."
-             <Pine.LNX.4.05.9905042004520.667-100000@pc.wackyland.com>
-Date: Tue, 04 May 1999 22:55:45 -0700
-From: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
+In-Reply-To: <Pine.LNX.3.96LJ1.1b7.990430114242.412A-100000@selq119.unl.edu>
+Date: Wed, 5 May 1999 12:55:31 +0200
+To: Takashi Oe <toe@unlinfo.unl.edu>, linuxppc-dev@lists.linuxppc.org,
+        Geert.Uytterhoeven@cs.kuleuven.ac.be
+CC: linuxppc-user@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: XServer for controlfb (fix)
+Message-Id: <19990505125531.028926@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+This patch seems to fix the problem with controlfb and x servers when
+vram is in bank2 only (my 8500 video doesn't work at all, even under
+MacOS, when I put the vram in bank 1):
 
-> Er, SMP uusbd?  uusbd currently doesn't have all the locking requires for
-> SMP to work. Linus' simple USB code might work on SMP, but doens't have an
-> OHCI driver that works yet.
+--- linux.orig/drivers/video/controlfb.c	Mon Feb  8 14:29:33 1999
++++ linux.mol/drivers/video/controlfb.c	Wed May  5 12:45:05 1999
+@@ -720,9 +720,11 @@
+ 	p->total_vram = (bank1 + bank2) * 0x200000;
+ 	/* If we don't have bank 1 installed, we hope we have bank 2 :-) */
+ 	p->control_use_bank2 = !bank1;
+-	if (p->control_use_bank2)
++	if (p->control_use_bank2) {
+ 		p->frame_buffer += 0x600000;
+-
++		p->frame_buffer_phys += 0x600000;
++	}
++	
+ 	init_control(p);
+ }
  
-I tried to make some simple patches to the uusb code to support
-locking using the same locking strategy as the vmscan.c and other
-kernel files, but there were too many things to fix.
 
-Where can I pick up a copy of Linus's USB driver? It does not seem to
-be included with my 2.2.5 kernel sources.
-
-I am about to reveal my limited knowledge of USB, but what is the OHCI
-driver and will I need it to use a USB mouse or keyboard?
-
-Anyway, I wish I had the time to do a complete patch. I really would
-like to get usb running on my 7600. But if it is a tradeoff between
-SMP and USB, I'll pick 800 bogoMIPS over a three button mouse. :-)
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
-----ranga <ranga@soda.berkeley.edu>
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
