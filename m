@@ -1,76 +1,67 @@
-Mime-Version: 1.0
-Message-Id: <p04330100b650e03a5dcb@[192.168.0.1]>
-In-Reply-To: <Pine.GSO.4.10.10012032140410.7958-100000@rose.sonytel.be>
-References: <Pine.GSO.4.10.10012032140410.7958-100000@rose.sonytel.be>
-Date: Mon, 4 Dec 2000 01:09:49 -0500
+Message-ID: <975932158.3a2b8afe69611@rascal.ums.easynet.net>
+Date: Mon, 04 Dec 2000 12:15:58 +0000
 To: linuxppc-dev@lists.linuxppc.org
-From: Stefan Jeglinski <jeglin@4pi.com>
-Subject: arguing IRQ (was Re: dual IRQ 23)
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+From: "Simon Stapleton" <simon@tufty.co.uk>
+Subject: Re: No Backlight Control in 2.2.18pre21
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-[I apologize in advance to Geert, Michel, and Ben if I have
-misrepresented their previous statements below - I'm trying to figure
-this out still]
+> Subject says it: with current linux-pmac-stable kernels, the
+> backlight control via [Fn-]F{1,2} does not work, neither
+> dimming nor turning off the LCD altogether, on a PB Lombard
+> at least.
+> Might have been this way since the CONFIG_PMAC section appeared,
+> in any case, in 2.4.0-test11 there is a CONFIG_PMAC_BACKLIGHT
+> option, and backlight control is working (I've set it to "=y",
+> of course).
 
+Funny you should mention this.  I was about to pen a missive along
+the same lines.  I noticed it this very weekend when getting back
+to hacking together ADB Wacom support (not necessarily coming
+any time soon, BTW)
 
-Geert said:
+The problem appears, to me at least, that if you use the USB
+backport code the powerbook buttons stuff doesn't get included.
+I think somewhere a CONFIG_PMAC_BACKLIGHT is being missed, but
+I may well be wrong.  Changing CONFIG_PMAC_BACKLIGHT to
+CONFIG_PMAC_PBOOK seems to fix the problem (and seems to make
+more sense as we're dealing with powerbook button devices here.
+Or are we?  What about the buttons on the front of some of the
+older pmacs, and on the apple monitors?  I assume these are all
+ADB devices.  I can't test the monitor stuff as my 1710 decided
+it doesn't want to start up recently.  Bah.)
 
->Shared interrupts are allowed by PCI. If it doesn't work, it means one of the
->drivers (or both) can't cope with shared interrupts. The solution is
->to fix the driver(s).
+In a related note, I've been looking at the code that does this.
+I had a patch under 2.2.17 to make the volume and mute buttons work
+on my wallstreet, and was wanting to reinstate it - the original
+patch won't work but the coding seems (relatively) simple.
 
-However, another consensus seems to be available, as per Michel Lanners:
+So - a couple of questions.
 
->01:0c.0 FireWire (IEEE 1394): NEC Corporation: Unknown device 00cd
->(rev 01) (prog-if 10 [OHCI])
->[snip]
->  Interrupt: pin A routed to IRQ 1
->This is most certainly wrong -> ^
->
->01:0d.0 USB Controller: OPTi Inc. 82C861 (rev 10) (prog-if 10 [OHCI])
->[snip]
->  Interrupt: pin A routed to IRQ 23
->                  and this too ->^^
->
->Bot of these devices should get IRQ25. Why? Because on Macs, all four
->IRQ lines of a PCI slot are OR'ed together on the bridge chip.
->Therefore, there is one single fixed IRQ per PCI slot. So, the devices
->behind the PCI-to-PCI bridge in slot 00:0f should all have the same IRQ,
->which should be, following the obvious logic, IRQ 25.
->
->Either a problem with the P2P bridge code in Linux, or with detecting
->the IRQ's out of OF, as Ben suggested.
+1: What is labelled as the 'contrast' button is actually the
+   wallstreet volume control.  Is this the case for other Pbooks?
+   (I can probably get hold of a 3400 to test, but kangas, lombards
+   and the like are all unreachable).  If this _is_ the case, could
+   we rename the constant?
+2: Getting to the sound device.  This is probably a stupid question,
+   but here goes anyway... The sound device is controllable from
+   userland via the /dev/mixer ioctl, as far as I can see.  Can I
+   use this from within the kernel, or is that a big no-no?  I don't
+   like the idea of putting extra helpers in the sound code (or even
+   using existing ones directly), as there's no guarantee that sound
+   support has been built in.  And I _really_ don't like lots more
+   #ifdef's in the code.
 
-It seems to me that both should have the same interrupt, as Michel
-states - after all, they are on the same PCI card; however, the
-larger issue is whether neither should be 23, because 23 is already
-assigned:
+Thoughts, comments, flames?
 
->00:0d.0 SCSI storage controller: Adaptec AIC-7881U
->[snip]
->  Interrupt: pin A routed to IRQ 23
+Simon
 
+--
+Your mouse has moved.  You must reboot Windows NT for these changes to be
+recognised.
 
-Indeed, Ben has said along these lines:
-
->Ok, I found the problem, I think, with the interrupt. I'm still
->investigating, but what it looks like is that the OF tree puts the
->AAPL,interrupt property in the pci-bridge node, not in the sub-nodes.
->So we must make sure the routine that gets interrupts from the tree
->on oldworld iterates to parent devices when it can't find the
->AAPL,interrupt property.
-
-
-Which again indicates that the problem is in the PCI (?) code.
-
-So, is Geert right (PCI ok at least in this aspect, drivers are
-buggy)? Or are Ben/Michel right (drivers OK, PCI/IRQ buggy)?
-
-
-
-Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
