@@ -1,73 +1,45 @@
-Date: Thu, 28 Sep 2000 11:59:26 +0200 (CEST)
+Date: Thu, 28 Sep 2000 12:00:41 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-        Paul Mackerras <paulus@linuxcare.com.au>, Dan Malek <dan@mvista.com>
-Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-In-Reply-To: <19340822040932.8760@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.10.10009281150130.3468-100000@cassiopeia.home>
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, Matt Porter <mmporter@home.com>,
+        Olaf Hering <olh@suse.de>,
+        Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display!
+In-Reply-To: <Pine.LNX.4.21.0009272018090.9846-100000@idd-01.imbc.gr>
+Message-ID: <Pine.LNX.4.10.10009281200120.3468-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 27 Sep 2000, Benjamin Herrenschmidt wrote:
-> >Life would be much simpler if PCI I/O space used a similar opaque IO base
-> >cookie with a corresponding ioportremap(cookie) function (looks a lot like
-> >Dan's tell_me_where() function, which I didn't realize until now :-), before
-> >feeding everything to inb() and friends. On ia32, ioportremap() would
-> evaluate
-> >to the identity.
+On Wed, 27 Sep 2000, Kostas Gewrgiou wrote:
+> On Wed, 27 Sep 2000, Geert Uytterhoeven wrote:
+> > On Tue, 26 Sep 2000, Benjamin Herrenschmidt wrote:
+> > > One thing: I'd be interested in figuring out what happens if you simply
+> > > leave this nasty ATI BAR unassigned (write 0xffffffff and then 0 to it).
+> > > Will the controller fail ?
 > >
-> >No way we can convince The Others to use this approach? It does sound logical
-> >:-)
+> > Well, according to Matt Porter, 0 is a valid address in PCI 2.2. So how do you
+> > disable BARs for PCI 2.2-compliant devices?
+> >
+> > And I'm afraid what XFree86 4.x will do with BARs set to 0. Probably it will
+> > try to relocate them. I guess that's how it crashes on my box with an
+> > unitialized S3...
 >
-> I'm not sure it would help. It would probably allow a kind of "mapping on
-> demand" of the IO region on memory mapped IOs platforms, but unless we
-> add another parameter to ioportremap telling it the pci_dev (or at least
-> the bus number), we can't "guess" on which IO bus the device is and which
-> physical base we must use.
+> Yeap unless i am wrong it will try to relocate them, for prep i fear that
+> without correct BusAddrToHostAddr/HostAddrToBusAddr functions in the xserver
+> this isn't going to work at all :(
+>
+> Don't expect it to initialize the S3 card in any case, the int10 module
+> needs ISA IO/mem accesses and both don't work at the moment for linux/ppc
+> you can imagine what the following code will do to your machine :(
+>
+>  #define V_RAM 0xA0000
+>  INTPriv(pInt)->vRam = xf86MapVidMem(screen,VIDMEM_MMIO,V_RAM,size);
 
-But we can find out the IO bus by looking in which region the physical address
-is located, right? Or do we have the same region on different IO busses?
-That would be really weird! Different IO busses should decode different
-regions.
-
-The ioportremap() function would move all overhead from looking up the IO bus
-and physical base from inb() and friends to ioportremap(). So instead of doing
-
-    u8 inb(unsigned int phys_offset)
-    {
-	if (phys_offset >= region1_start && region1_end)
-	    return in_8(region1_base+phys_offset));
-	else if (phys_offset >= region2_start && region2_end)
-	    return in_8(region2_base+phys_offset));
-	else
-	    ...
-    }
-
-we can do
-
-    unsigned int ioportremap(unsigned int phys_offset, unsigned int size)
-    {
-	if (phys_offset >= region1_start && region1_end)
-	    return region1_base;
-	else if (phys_offset >= region2_start && region2_end)
-	    return region2_base;
-	else
-	    ...
-	/* perhaps do some ioremap() as well, if this wasn't set up at machine
-	   init */
-    }
-
-    static inline u8 inb(unsigned int virtual_offset)
-    {
-	return in_8(virtual_offset);
-    }
-
-where virtual_offset is made from adding the magic cookie returned by
-ioportremap and the offset inside the ioportremap'ed region.
+Yes, you have to know the ISA memory base address, which is machine dependent.
 
 Gr{oetje,eeting}s,
 
