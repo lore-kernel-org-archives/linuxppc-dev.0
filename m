@@ -1,47 +1,70 @@
-Message-ID: <3D3292B8.4020501@cambridgebroadband.com>
-Date: Mon, 15 Jul 2002 10:15:36 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
 MIME-Version: 1.0
-To: rajib majila <rajib.majila@wipro.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problem with PPC 857 MMU
-References: <72D09F11CC09B645ADE2890F6B442FD815E4A5@blr-m3-msg.wipro.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: ioremap on powerpc question
+Date: Mon, 15 Jul 2002 13:58:21 -0500
+Message-ID: <45B36A38D959B44CB032DA427A6E106401281440@cceexc18.americas.cpqcorp.net>
+From: "Cameron, Steve" <Steve.Cameron@hp.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Don't use zImage.initrd  PPCBoot won't understand that format.  Use mkimage to build either:
+Hello,
 
-i) pImage - the stand alone kernel
-ii) pRamdisk - a stand alone ramdisk
-iii) pMulti - combined ramdisk/kernel
+I have a question about ioremap_nocache() on powerpc.
 
-see SELF on ftp.denx.de/pub/LinuxPPC/usr/src/SELF for an example of how to build these
+I want to create a huge RAM buffer for i/o purposes, so I
+boot the kernel with parameter "mem=64M" (actually, my
+system, an IBM ebony 440, has 128M RAM)
+This leave 64M sitting around unused by the linux kernel.
 
-rajib majila wrote:
+Then, I can do
 
-> Hi,
-> We are trying to port mvista linux on Power PC 857T based board. We are loading the zImage.initrd file into 0x120000 address and our bootloader looks for an elf file at that address and then copies the kernel into 0x400000 adrress.
-> After that the boot-loader jumps to that location and the pro-kernel starts uncompressing the kernel into 0x000000. After that it jumps to 0x0. From head_8xx.S, control is transffered to start_kernel by using a rfi instruction. Our kernel crashes at this location. We would like to hear about any such problem faced by any of you and how you solved the problem.
-> We are downloading our boot-loader into the RAM (at 0x100000) using BDM and we run the boot-loader from there as we are
-> Not able to write the on-board flash.
-> All the addresses mentioned above RAM physical address.
-> Thanx a lot in advance for your help.
-> --Rajib
->
->
-> ------------------------------------------------------------------------
->
-> **************************Disclaimer**************************************************
->
->  Information contained in this E-MAIL being proprietary to Wipro Limited is 'privileged'
-> and 'confidential' and intended for use only by the individual or entity to which it is
-> addressed. You are notified that any use, copying or dissemination of the information
-> contained in the E-MAIL in any manner whatsoever is strictly prohibited.
->
-> ****************************************************************************************
->
+	unsigned char *buf;
+	buf = ioremap_nocache(64*1024*1024, 64*1024*1024);
+
+And get back some kind of virtual address, "buf" which I want
+to use for example to recieve data coming in from an IP socket.
+
+Then, since I know the physical address of buf (because I set
+it up myself with ioremap), I want to DMA from buf to a PCI
+device.
+
+I have all this working fine on x86, so far so good.
+
+However, on powerpc, as soon as I try to do, for example:
+
+	*buf = '\0'; // write one char to virt addr returned by ioremap
+
+It blows up with a machine check.
+
+(BTW, buf happens to be == 0xc505c000, so alignment shouldn't be a problem.)
+
+Now, I see threads on LKML via google that say, essentially,
+"you _must_ use readb/writeb, etc to access addresses returned
+by ioremap,"  I had presumed this is because ioremap is used most
+typically to access memory, registers, etc which are actually on
+PCI devices.  In my case, I am simply remapping actual RAM, not
+on the PCI bus at all.  I thought this meant that I can get away
+with accessing those virtual addresses directly.  Am I wrong about
+that?  (well, it seems I am wrong somewhere, but why?)
+
+Using readb/writeb would defeat my purpose.
+My purpose is to avoid an extra copy of the data.  I want to read/write
+the data off an IP socket into/from a buffer which is then directly DMA-able
+to/from a PCI device, and thus avoid having to copy the data into a special
+DMA-able buffer from a more "ordinary" buffer that's used with the socket.
+
+I'm using ioremap because kmalloc can't give me big enough buffers.
+(nothing even close to 64M, and in the end it's likely I would want
+even more than 64M.)
+
+Is what I'm trying to do possible?  Where am I going wrong?
+
+Thanks,
+
+-- steve
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
