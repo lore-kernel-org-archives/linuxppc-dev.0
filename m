@@ -1,50 +1,41 @@
-Message-Id: <200007301643.RAA16451@hyperion.valhalla.net>
-Date: Sun, 30 Jul 2000 17:44:03 +0100
-Subject: Re: Stealth port problems
+Message-Id: <200007301648.RAA16700@hyperion.valhalla.net>
+Date: Sun, 30 Jul 2000 17:48:48 +0100
+Subject: Re: CONFIG_PPC != Mac
 From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Takashi Oe <toe@unlserve.unl.edu>
-CC: linuxppc-dev@lists.linuxppc.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+        "Michel Dnzer" <daenzerm@student.ethz.ch>
+CC: Tony Mantler <nicoya@apia.dhs.org>, Tom Rini <trini@kernel.crashing.org>,
+        Dan Malek <dan@netx4.com>,
+        "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
 Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Content-type: text/plain; charset=""
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  Sun, Jul 30, 2000, Takashi Oe wrote:
-> On Sun, 30 Jul 2000, Iain Sandoe wrote:
+On  Sun, Jul 30, 2000,  Geert Uytterhoeven wrote:
+> On Sun, 30 Jul 2000, Michel [iso-8859-1] Dänzer wrote:
+>> Geert Uytterhoeven wrote:
+>> > The Master PPC Penguin decided to no longer allow to build machine specific
+>> > kernels, but treat PowerMac/PReP/MTX/CHRP as one big machine type
+>> > (`CONFIG_ALL_PPC').
+[snip]
+> Personally I'd more like a configuration where you can select whatever you
+> want of
 >
->> > Ok, this is a news to me.  I'm certain that SCC on oldworld pmacs is
->> > 85C30.  When did the change to 85230 occur?  If I remember correctly,
->> > some DMA setup codes in macserial.c need to know about it if it's dealing
->> > with 85230 rather than 85C30.
->>
->> OK - I don't know for certain - but the code refers to an "ESCC" which is
->> the name of the 85230 - the 8530 should just be called "SCC".
+>   - PowerMac (CONFIG_PMAC)
+>   - PReP (CONFIG_PREP)
+>   - MTX (CONFIG_MTX)
+>   - CHRP (CONFIG_CHRP)
+>   - Gemini (CONFIG_GEMINI)
+>   - EST8260 (CONFIG_EST8260)
+>   - APUS (CONFIG_APUS)
 >
-> It's not 8530.  I got an impression from Zilog's manual that ESCC refers
-> to both 85230 and 85C30 loosely.
+> with of course some extra logic to prevent illegal combinations.
 
-That manual has "Iain's all-time-award-for-the-worst-written-chip-manual"
-:-(
-
->  Actually, on some pages, the term was
-> used to refer to functionalities only available on 85230, and, on other
-> pages, it was used to describe something 8530 doesn't support but both
-> 85C30 and 85230 do.  AMD's usage of the term ESCC is yet slightly
-> different, IIRC.
->
-> Anyway, Apple's documentation uses the term ESCC and 85C30
-> interchangeably, and I think the driver's usage of the term "ESCC" comes
-> from there.
-
-OK.  Well, that makes things worse - rather than better (re. the original
-problem - if DMA is not enabled).  The 8530 had only 4 bytes of RX buffer &
-only 2 Tx (the ESCC doubled these) - can't remember about the 85C30.  Wrote
-drivers for the other two some years ago on a different OS (so memory might
-be a shade foggy).
-
-Of course, Apple has implemented the devices as a cell in an ASIC - so who
-knows?
+This would definitely get my vote too.  There are too many cases where you
+can enable conflicting build options at present - it causes much
+frustration.
 
 Iain.
 
