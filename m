@@ -1,32 +1,18 @@
-Return-Path: <markc@mail.com>
-Received: from relay03.roc.ny.frontiernet.net (relay03.roc.ny.frontiernet.net
-	[66.133.131.36]) by ozlabs.org (Postfix) with ESMTP id 13E4B67A79
+Return-Path: <jpl@xiphos.ca>
+Received: from mail.net (custpop.ca.mci.com [142.77.1.111])
+	by ozlabs.org (Postfix) with ESMTP id 399AE67A9A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Feb 2005 07:26:56 +1100 (EST)
-Received: from filter01.roc.ny.frontiernet.net
-	(filter01.roc.ny.frontiernet.net [66.133.131.176])
-	by relay03.roc.ny.frontiernet.net (Postfix) with ESMTP id B6131191C77
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 Feb 2005 20:26:53 +0000 (UTC)
-Received: from relay03.roc.ny.frontiernet.net ([66.133.131.36])
-	by filter01.roc.ny.frontiernet.net (filter01.roc.ny.frontiernet.net
-	[66.133.131.176]) (amavisd-new, port 10024)
-	with LMTP id 02718-02-49 for <linuxppc-embedded@ozlabs.org>;
-	Mon, 7 Feb 2005 20:26:53 +0000 (UTC)
-Received: from chuck2 (70-97-124-241.br1.rmn.wv.frontiernet.net
-	[70.97.124.241])
-	by relay03.roc.ny.frontiernet.net (Postfix) with ESMTP id 6C40D191B1E
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 Feb 2005 20:26:46 +0000 (UTC)
-Message-ID: <00a001c50d53$e87d4e60$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-Cc: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-References: <20050207195520.D8B4DC108D@atlas.denx.de>
-Date: Mon, 7 Feb 2005 15:30:41 -0500
+	Tue,  8 Feb 2005 07:28:51 +1100 (EST)
+Message-ID: <4207CFBE.2000109@xiphos.ca>
+Date: Mon, 07 Feb 2005 20:29:50 +0000
+From: Joshua Lamorie <jpl@xiphos.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Re: Microwindows on Icecube/CoralP 
+To: Andrei Konovalov <akonovalov@ru.mvista.com>
+References: <4202E286.1010206@xiphos.ca> <42035D27.50901@ru.mvista.com>
+In-Reply-To: <42035D27.50901@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Edge Interrupts (Virtex-II Pro)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,16 +23,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> 
-> This will not work. Microwindows can only  use  a  plain  framebuffer
-> interface,  but  the Coral-P does not allow for such a driver because
-> of the fact that it has a little-endian register interface.  
+Andrei Konovalov wrote:
 
-Or is it because 5200 swaps bytes around on PCI.  It sure looks to me
-like Freescale has made a major screwup in their implementation of
-PCI on the 5200.  I'd love for somebody to prove me wrong about this,
-but I'm afraid I'm right.  I was under the impression that CoralP worked
-nicely on 5200, but now I see that it also requires software tweaks to work
-on 5200.  
+> As this code is not board specific at all,
+> I would move it to arch/ppc/syslib/xilinx_pic.c:ppc4xx_pic_init().
+> Does it sound reasonable (I'll prepare the patch this weekend then)?
 
-Mark Chambers
+This sounds useful, since I am using a custom developed board using the 
+Virtex-II Pro. Unfortunately, the patch wouldn't help me much because I 
+am doing my interrupt setup for most of my custom devices within 
+modules. You see my hardware has a Virtex-II Pro and a Virtex-II with a 
+shared (logically) address space (OPB). I have cascaded interrupt 
+controllers (ask me if anyone wants the code). So it is quite often that 
+I have a changed hardware and therefore require different drivers. 
+Rather than downloading to flash the 700k kernel each time while I am 
+developing, I just download the 6k - 20k modules. Then I store them in 
+onboard NOR flash.
+
+That's a long way of saying YES, isn't it?
+
+Joshua
+
+-- 
+
+Xiphos Technologies
+(514) 848-9640 x227
+(514) 848-9644 fax
+
+www.xiplink.com
+_______________________________________________
+The information transmitted is intended only for the
+person or entity to which it is addressed and may contain
+confidential and/or privileged material.  If you have
+received this in error, please contact the sender and delete
+this communication and any copy immediately. Thank you.
