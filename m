@@ -1,43 +1,30 @@
-Date: Sat, 27 Sep 2003 14:40:22 +0200 (MEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Breaking MESH on non-pmac
-In-Reply-To: <1064664723.631.47.camel@gaston>
-Message-ID: <Pine.GSO.4.21.0309271439300.6768-100000@vervain.sonytel.be>
+Message-ID: <3F78D934.50805@mvista.com>
+Date: Mon, 29 Sep 2003 18:15:32 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: Brian Waite <waite@skycomputers.com>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2nd time Annc: Marvell DB64360 platform support patches available
+References: <200309180953.20633.waite@skycomputers.com> <3F72531C.6060000@mvista.com> <200309250924.06627.waite@skycomputers.com> <3F73300F.2050605@mvista.com>
+In-Reply-To: <3F73300F.2050605@mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 27 Sep 2003, Benjamin Herrenschmidt wrote:
-> There will be some work needed if anybody still owns one of
-> these CHRPs with a MESH SCSI controller.
+Mark A. Greer wrote:
 
-Woops...
+> Depending on how easy it is to merge the 64260 & 64360 drivers, it may
+> be better to just combine them & still use the SDMA method.  But if
+> you do keep separte drivers, it would be better to have a 64360 one
+> that uses PIO directly on the chip's regs.
 
-> Basically, I'm switching the driver to macio-based probing
-> (new driver model).
->
-> For MESH to be probed on those CHRPs, one will have to either
-> hack the driver to add an alternate probe mecanism (ugh !), or
-> better, add hydra to the list of known macio chips and make the
-> macio device stuff work on CHRPs, which shouldn't be too difficult
-> (though it may be weird to have CHRP use pmac_feature.h...)
+BTW, I just 'brute force & ignorance' pushed the gt64260 mpsc into a
+64360 kernel and it basically worked so combining the two is probably
+the way to go.
 
-Time to move one of my SCSI devices from the sym875 to the MESH chain...
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Mark
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
