@@ -1,29 +1,53 @@
-Date: Wed, 8 Nov 2000 20:58:14 +0100 (MET)
-From: Tobias Otto-Adamczak <tobias.otto-adamczak@e-technik.tu-chemnitz.de>
-To: clark@esteem.com
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: More on my SPI driver questions
-In-Reply-To: <5.0.0.25.1.20001108105630.00a4d890@pop.esteem.com>
-Message-ID: <Pine.LNX.4.21.0011082047010.13081-100000@pandora.hrz.tu-chemnitz.de>
+Message-ID: <64AFC0D37B2ED411BAB300508B6D90A019AA54@AVALANCHE>
+From: Dan Winkler <dwinkler@virtual-ink.com>
+To: "'clark@esteem.com'" <clark@esteem.com>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: RE: SPI driver?
+Date: Wed, 8 Nov 2000 16:18:31 -0500 
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I was wondering if anbody has a working SPI driver yet that gets along
-> with SCC2 Ethernet?
+I have a working SPI and I2C driver with and without the microcode patch
+(I'm currently using it in slave mode but it can be easily modified to work
+in master mode).  I'll e-mail  them after I clean them up a bit.
 
-Adding some lines you should be able to use my code.
+-Dan Winkler
 
-> Is there any known side effects IIC/SPI microcode patch?
+-----Original Message-----
+From: clark@esteem.com [mailto:clark@esteem.com]
+Sent: Wednesday, November 08, 2000 1:13 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: SPI driver?
 
-The I2C/SPI host commands (Init Rx/Tx params, close RxBD) are not
-supported when using the patch. Therefore you have to take care of some
-register values yourself. There is a Motorola document that explains more
-details. I can send you this.
 
-Ciao - Tobias
+
+	Hello,
+
+	I was wondering if anbody has a working SPI driver yet. I noticed
+one that
+wasn't working yet was included in HHL 1.2 . Has anyone made any progress
+on it since then? I also noticed it relied on CPM_IIC micro code patch
+,  does it have any known side effects?
+
+Many thanks in advanced
+
+	Conn Clark
+*****************************************************************
+   If you live at home long enough, your parrents will move out.
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
+
+Stock Ticker Symbol				ELST
+
+"clark@esteem.com" Copyright 2000 all rights reserved. May not be sold or
+used for advertisements.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
