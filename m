@@ -1,15 +1,15 @@
 Return-Path: <alebas@televes.com>
 Received: from tvesnat.televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with ESMTP id BCD812BDA0
+	by ozlabs.org (Postfix) with ESMTP id 7369C2BDA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Dec 2004 20:26:16 +1100 (EST)
-Message-ID: <1102585377.41b81e218d6df@webmail.televes.com:443>
-Date: Thu,  9 Dec 2004 10:42:57 +0100
+	Thu,  9 Dec 2004 20:37:23 +1100 (EST)
+Message-ID: <1102586055.41b820c776f7f@webmail.televes.com:443>
+Date: Thu,  9 Dec 2004 10:54:15 +0100
 From: alebas@televes.com
 To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Subject: Kernel 2.6.10 running on mpc8272ads
+Subject: CONFIG_DUMMY_CONSOLE question
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,18 +20,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi to all,
 
-Finally I got my mpc8272ads board running the 2.6.20-rc1 kernel.
-The trick was:
+Hi all,
 
-First, I had to comment out the BCSR modification for second UART
-in m82xx_board_init function (arch/ppc/platforms/pq2ads.c). As
-suggested by Dan Malek, MMU is still off at this point.
+Checking console initialization on mpc8272ads board,
+I have seen that the CONFIG_DUMMY_CONSOLE config
+parameter is allways set in root .config file, regardless
+of its value on my arch/ppc/configs/ads8272_defconfig file.
 
-Second, the uboot bootargs must be modified from those used for
-kernel 2.4. Now, the selected console has to be ttyCPM. This
-was unnecesary in kernel 2.4, as correct console was selected
-by default.
+This parameter drives to the VGA dummy console being
+compiled and included in the vmlinux binary, and started
+as default console for the board (which must be changed
+with console boot arg).
 
-Best regards
+Does anyone knows if this parameter is a must in any kernel
+2.6 configuration? And why? Can it be removed, as my board
+doesn't use VGA at all? How? (I have tried several options)
+
+Thanks,
+
+Alex
