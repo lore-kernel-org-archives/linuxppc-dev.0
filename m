@@ -1,29 +1,25 @@
-Date: Wed, 30 Jun 2004 09:13:18 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Rajarshi Das <rajarshi@in.ibm.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: equivalent of touch_nmi_watchdog
-Message-ID: <20040629231318.GI7523@krispykreme>
-References: <1088509774.22425.54.camel@darya>
+Subject: Re: Pegasos 2 support patch ...
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <20040629204230.GA15900@pegasos>
+References: <20040629165029.GA13468@pegasos>
+	 <20040629204230.GA15900@pegasos>
+Content-Type: text/plain
+Message-Id: <1088564249.1906.14.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1088509774.22425.54.camel@darya>
+Date: Tue, 29 Jun 2004 21:57:29 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+> Another solution would be to test before doing the translate call, maybe
+> this would be more elegant ?
 
-> I am running some code which needs interrupts to be disabled for a
-> reasonable amount of time. A "touch_nmi_watchdog" call is done before
-> this code gets called on i386 platform. How do I do it on ppc64 ? I am
-> using a power 3 machine (type 7044-170) (uniprocessor) and a 2.6.6
-> kernel.
+Yup, if you know it will be broken, don't bother calling it,
+and please, avoid the over-long line :)
 
-Check out arch/ppc64/xmon/xmon.c: disable_surveillance() in a recent 2.6
-kernel. It might be worth moving that function into rtas.c if you want
-to use it as well.
+Ben.
 
-Anton
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
