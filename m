@@ -1,40 +1,37 @@
-Date: Tue, 16 Mar 1999 22:31:15 -0500 (EST)
-From: Arun Rodrigues <arodrig6@darwin.helios.nd.edu>
-Reply-To: Arun Rodrigues <arodrig6@darwin.helios.nd.edu>
-To: Peter Bierman <pmb@apple.com>
-cc: "L. S." <lxcom@operamail.com>, linuxppc-dev@lists.linuxppc.org,
-        linuxppc-user@lists.linuxppc.org
-Subject: Re: Where do we go from here?
-In-Reply-To: <v0313030bb3149b830a1e@[17.202.21.235]>
-Message-ID: <Pine.SGI.4.10.9903162149220.10897@audobon.science.nd.edu>
+Date: Tue, 16 Mar 1999 20:52:44 -0700 (MST)
+From: Jeff Rugen <jrugen@primenet.com>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
+        Linux Framebuffer List <linux-fbdev@vuser.vu.union.edu>
+Subject: Xbh X server/adding acceleration to XF68_FBDev
+Message-ID: <Pine.BSI.3.96.990316204520.10665A-100000@usr01.primenet.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 16 Mar 1999, Peter Bierman wrote:
+Well, I've done some more work on the Xbh X server for 16- and 32-bit
+support.  I've added some acceleration to the 16- and 32-bit modes, so they
+no longer flicker like they did (basically just got the 8-bit stuff
+working with the different modes).  32-bit mode seems to work for me (using
+fvwm2 and a few applications), but 16-bit mode needs some work.  It's
+started though.
 
-> 
-> >With Apple Computers coming into the arena of Linux(PPC) territory, and since
-> >LinuxPPC is playing on Apple's territory, and since Power Macintoshes--unlike
-> >IBM compatibles--are closed systems, what will happen when Apple changes
-> >hardware architectures to a degree that the specifications for Apple hardware
-> >are out of reach for LinuxPPC developers or reverse-enginneered so late that
-> 
-> Why do you think Apple will take steps to intentionally sabotage LinuxPPC
-> work? Wouldn't the opposite seem more likely, given the history of Apple's
-> cooperation with Linux goals through mkLinux, and informal assistance to
-> LinuxPPC?
-> 
+This time I put the source with the executable.  Its all at:
+ftp://linuxppc.cs.nmt.edu/pub/linuxppc/patches/Xbh-16bit-glibc2x
 
-indeed, for all the talk about how apple is closed and against other OSes
-(such as the BeOS complaints) Apple is ultimately a hardware company which
-makes its cash by selling boxes, not software. This move will help - I
-would love linux for the servers and for people who want to play around
-with the system and a MacOS with a UNIX/Mach kernel for the people who
-just want to use end-user apps and not develop. 
+Now, the reason I included the Framebuffer list is I was interested in
+adding acceleration for the clgen framebuffer in the XF68_FBDev server.
+What source should I use as a starting point?  (I have the 3.3.3 server-only
+source right now).  I'll also use that as an excuse to verify that 32-bit
+modes really work with clgenfb.  Thanks.
 
+
+----------------------------------------------------------------------------
+Jeff Rugen                      jrugen@primenet.com
+
+...Had this been an actual emergency, we would have fled in terror, and you 
+would not have been informed.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
