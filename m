@@ -1,23 +1,23 @@
-Return-Path: <msuresh@gamebox.net>
-Received: from smtp-out.hotpop.com (smtp-out.hotpop.com [38.113.3.71])
-	by ozlabs.org (Postfix) with ESMTP id 44ADC2BF0E
+Return-Path: <tnt@246tNt.com>
+Received: from outmx013.isp.belgacom.be (outmx013.isp.belgacom.be
+	[195.238.3.64]) by ozlabs.org (Postfix) with ESMTP id 347D62BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 25 Dec 2004 20:07:02 +1100 (EST)
-Received: from gamebox.net (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 4C32712E4CFF
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 25 Dec 2004 08:38:33 +0000 (UTC)
-Received: from [192.168.0.7] (unknown [61.247.252.55])
-	by smtp-3.hotpop.com (Postfix) with ESMTP id C100F12DCE27
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 25 Dec 2004 08:38:16 +0000 (UTC)
-Message-ID: <41CD26B8.10903@gamebox.net>
-Date: Sat, 25 Dec 2004 14:07:12 +0530
-From: Suresh Chandra Mannava <msuresh@gamebox.net>
+	Sat, 25 Dec 2004 23:34:32 +1100 (EST)
+Received: from outmx013.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx013.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id iBPCYLvE031974
+	for <linuxppc-embedded@ozlabs.org>; Sat, 25 Dec 2004 13:34:21 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <41CD5E60.10404@246tNt.com>
+Date: Sat, 25 Dec 2004 13:34:40 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
+To: ivica@asist-traffic.com
+References: <41C72733.9030300@asist-traffic.com>
+In-Reply-To: <41C72733.9030300@asist-traffic.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: kernel for MPC8260 SBC
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: i2c on mpc5200
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,32 +28,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hi
 
-We developed a SBC based on MPC8260. We are planing to port Linux on it.
-I downloaded mpc8260 cross compiling tools from denx.de.
+> I have a hardware clock (RTC) which is not yet supported in
+> the linux kernel. It is RX-8025 module from EPSON and it is
+> I2C bus-interface based. Before I start writing support for this
+> module I would like to have I2C support working in my kernel.
+> Has anybody succeeded in getting I2C supported for MPC5200
+> based boards with 2.6 kernels? I'm using the one which maintains
+> Sylvain Munaut. If I boot up the kernel with I2C support in it
+> I don't get any initialization messages for I2C, only this one line:
+> ----------------------------------------------------------------------
+> eth0: Phy @ 0x0, type LXT971 (0x001378e2)                           
+> mice: PS/2 mouse device common for all mice
+> i2c /dev entries driver
+> NET: Registered protocol family 2
+> IP: routing cache hash table of 512 buckets, 4Kbytes
+> -----------------------------------------------------------------------
 
-I started cross-compiling linux-2.4.4.
-The problem is
-I am not able to compile kernel. 8260 specific files in arch/ppc are not 
-compiling due to not inclusion of
-"bd_t" structure. I Included the file "asm-ppc/bseip.h".
-Still encountering many errors.
 
-I even tried with linux-2.4.20 and encountered the same problems.
-Is there any patch required for compiling the kernel cleanly.
+Are you sure it doesn't work ?
+On my system there are no I2C init message either, the driver is just 
+not noisy ... (unless you activate all the I2C debug stuff).
 
-or
-I may need to provide board specific information in the form of header 
-files?
+I have the exact same message than you but if I activate the eeprom 
+support then in
+/sys/bus/i2c/devices, the lite5200 eeprom shows up and I can read it ...
 
-Please provide pointer to the sutiable kernel along with patch.
 
-We have configured serial port on SMC. For SMC, CPM is required.
-But there is no option in the kernel to select SMC for serial port.
 
-please educate me on the above issue.
-
-Thanks & Regards,
-
-Suresh Chandra Mannava
+Sylvain
