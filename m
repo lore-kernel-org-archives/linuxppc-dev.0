@@ -1,29 +1,24 @@
-Message-ID: <375CD6AC.D259D76E@uab.ericsson.se>
-Date: Tue, 08 Jun 1999 10:39:08 +0200
-From: Leif Lindholm <Leif.Lindholm@uab.ericsson.se>
+Date: Tue, 8 Jun 1999 07:51:39 -0400 (EDT)
+From: "Jason Y. Sproul" <jsproul@mail.wesleyan.edu>
+Reply-To: jsproul@mail.wesleyan.edu
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Q: control is a C&T 65550?
+Message-ID: <Pine.GSO.4.05.9906080749180.27396-100000@mail.wesleyan.edu>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: udelay not exported to kernel(?) - never mind :)
-References: <375C213C.90DBE256@uab.ericsson.se>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello again
+Is it correct that the /chaos/control chip is essentially a Chips &
+Technologies 65550? If so, does anyone have the variances from the 65550
+datasheet, and if not, what the heck is it? :^)
 
-Hint: don't try to understand the ppc code by looking at how the x86 did
-it :)
-Especially not if you're tired.
+........................................................................
+Jason Y. Sproul                    http://www.con.wesleyan.edu/~jsproul/
+jsproul@wesleyan.edu        jsproul@iced.com        http://www.iced.com/
+     Eagles may soar, but weasels don't get sucked into jet engines.
 
-Got a bit confused by the fact that:
-a) there are different udelay:s for the loader and for the kernel itself
-b) the udelay inside the kernel was an __inline__ and that's why it
-didn't show up in System.map :)
-
-apologetically
-/
-	Leif
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
