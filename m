@@ -1,34 +1,62 @@
-Date: Mon, 1 Mar 1999 21:38:30 -0800
-From: Sean Harding <sharding@gutenberg.uoregon.edu>
-Reply-To: Sean Harding <sharding@oregon.uoregon.edu>
-To: "P. Barrette" <barretp@mcmail.cis.McMaster.CA>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: platinum video card not in kernels >2.1.128?
-In-Reply-To: <Pine.SOL.3.96.990301170514.17781A-100000@mcmail.cis.McMaster.CA>
-Message-ID: <Pine.SGI.4.10.9903012137000.29072-100000@gutenberg.uoregon.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v03130310b2f9566dc824@[38.11.199.159]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 2 Mar 1999 01:03:14 -0600
+To: MkLinux Setup List <mklinux-setup@public.lists.apple.com>,
+        Linux/mac68k List <linux-mac68k@baltimore.wwaves.com>,
+        LinuxPPC Dev List <linuxppc-dev@lists.linuxppc.org>
+From: "David D. Kilzer" <ddkilzer@earthlink.net>
+Subject: ANNC: m68k-linux cross-development RPMS for ppc linux
+Cc: Ryan Rasmussen <ryan.rasmussen@mankato.msus.edu>,
+        Joe Pranevich <jpranevich@lycos.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 1 Mar 1999, P. Barrette wrote:
+I've created RPMS of m68k-linux cross-development tools for ppc linux R4
+systems (MkLinux and LinuxPPC).  You may download them from the following
+FTP site.
 
-> I've been told that the new kernels 2.2.x no longer support the platinum
-> video driver which the 7200 uses;  but I note that there is a platinum
-> option in the config.  Since I have no OF and serial output dumps garbage
+ftp://ftp.mac.linux-m68k.org//pub/MacLinux/cross-compile/ppc/
 
-It works fine for me. The video shoudn't be the problem. The 7200 does
-have OF, you just can't have it output to the screen. If you're getting
-garbage from the serial port, your terminal probably isn't configured
-correctly.
+The RPMs and SRPMs are listed below.
 
-sean
+binutils-m68k-linux-2.9.1.0.4-1a.ppc.rpm   2203K
+egcs-m68k-linux-1.1.1-1a.ppc.rpm           4312K
+glibc-m68k-linux-2.0.4-1a.noarch.rpm       2081K
 
--- 
-Sean Harding sharding@oregon.uoregon.edu|"art may imitate life
-http://gladstone.uoregon.edu/~sharding/ | but life imitates t.v."
-Consulting: http://www.efn.org/~seanh/  | --ani difranco
+binutils-m68k-linux-2.9.1.0.4-1a.src.rpm   5641K
+egcs-m68k-linux-1.1.1-1a.src.rpm          11330K
+glibc-m68k-linux-2.0.4-1a.src.rpm          2934K
+
+They were built to facilitate the Macintosh port of the Linux/m68k project,
+but feel free to use them however you'd like.
+
+NOTES
+-----
+  1. After installing glibc-m68k-linux-2.0.4-1a.noarch.rpm, I had to
+     rename /usr/m68k-linux/lib/libc.so.6 to
+     /usr/m68k-linux/lib/libc.so.6-m68k so that it wouldn't be used when
+     I ran a dynamically linked PPC program.  I'm sure I'm doing
+     something wrong in the RPM spec file, but I'm not sure what.  Any
+     info would be appreciated.
+
+  2. I had to create a patch for the egcs cross compiler to force it to
+     use "m68k-linux-as" instead of "as" when doing compiles, otherwise
+     I wasn't able to use both the native ppc egcs and the m68k-linux
+     egcs at the same time (which is required when making m68k Linux
+     kernels under MkLinux or LinuxPPC.  Comments on this patch would
+     be appreciated.  I think there is a better way to do it.
+
+This info may also be found on the following web page.
+
+ http://www.mac.linux-m68k.org/docs/ppc-cross-dev-tools.html
+
+Dave
+--
+David D. Kilzer
+ddkilzer@earthlink.net
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
