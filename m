@@ -1,44 +1,51 @@
-To: robdlg@att.net
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: popt, ELDK 2.0.2 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 06 Oct 2003 10:51:44 -0000."
-             <200310061051.FAA10075@lists.linuxppc.org>
-Date: Mon, 06 Oct 2003 19:10:46 +0200
-Message-Id: <20031006171051.926E0C59E4@atlas.denx.de>
+Subject: Re: cfi probe for two different flash devices
+From: Gary Thomas <gary@mlbassoc.com>
+To: j.murali@gdatech.co.in
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>,
+	linux-mtd@lists.infradead.org
+In-Reply-To: <200310060645.BAA09508@lists.linuxppc.org>
+References: <200310060645.BAA09508@lists.linuxppc.org>
+Content-Type: text/plain
+Message-Id: <1065460247.1884.188.camel@hermes>
+Mime-Version: 1.0
+Date: 06 Oct 2003 11:10:47 -0600
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200310061051.FAA10075@lists.linuxppc.org> you wrote:
+On Mon, 2003-10-06 at 00:20, J.Murali wrote:
+> hi all,
 >
-> I was experimenting with the popt library in the ELDK 2.0.2, and I received
-> the following errors.  The same compiler invocation is successful when used
-> with gcc under Red Hat Linux 7.3.  The source code follows the error
-> messages.  How do I properly compile and link this file?
+> i am working on a custom board(Redwood6) using IBM ppc 405. I am using
+> the Montavista's kernel 2.4.17. We have one AMD flash of 4 MB and one
+> Intel flash of 16 MB on our board. There are 4 mtd partitions are in AMD
+> and Intel flash is used as storage space of 5 mtd partition.
 >
-> ppc_82xx-gcc -Wall -lpopt -o popt_test main.c
+> AMD partitions
+> -----------------
+> 1. Bootparams
+> 2. Bootldr
+> 3. kernel
+> 4. Filesystem1
+>
+> Intel partition
+> --------------
+> 5. Filesystem2
+>
+> In the CFI probe, the kernel detects only one flash either AMD or INTEL
+> (Which address we specify as window address). What i have to to do for
+> cfi to detect both flash devices.
+>
+> Any suggestions are appreciated
+>
 
-You must specify the linked objects in the correct order. This  means
-(among  other  things)  that  you have to put the libraries AFTER the
-object files that have references to symbols provided by these libs.
-
-Try:
-
-	ppc_82xx-gcc -Wall -o popt_test main.c -lpopt
-
-And RTFM.
-
-Best regards,
-
-Wolfgang Denk
+This question would be best asked of the MTD folks (cc'd), but I think
+you'll need a customized "map" function that recognizes these two FLASH
+device types and creates the appropriate MTD sub-devices appropriately.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Vulcans believe peace should not depend on force.
-	-- Amanda, "Journey to Babel", stardate 3842.3
+Gary Thomas <gary@mlbassoc.com>
+MLB Associates
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
