@@ -1,27 +1,26 @@
-From: Francois.CAU@st.com
-Date: Mon, 8 Nov 1999 10:31:25 +0100
-Message-Id: <H0000a4207a7e76e@MHS>
-Subject: XF86Config for iMac with 16bpp
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain; charset=US-ASCII; name="cc:Mail"
+In-Reply-To: <38221d223825dd81@andira.wanadoo.fr> (added by andira.wanadoo.fr)
+Date: Mon, 8 Nov 1999 15:12:55 +0100
+To: Florent <flobo@iname.com>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Newworld OF boot
+Message-Id: <19991108151255.006142@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-     Hi,
-     I'm using the XF86_FBDev-3.3.5 server provided by Tom Rini, on a iMac 
-     Rev-B. 
-     The 32bpp mode is working well, but I've been unable to make it work 
-     in 16bpp even using XAutoConfig and XConfigurator.
-     Switching to 16bpp alaways produces a "Id 'x' respawning too fast, 
-     disabled for 5 mn..."
-     
-     So, could somebody send me a copy of a working XF86Config file ?
-     (I really need to use the 16bpp mode to debug some video software.) 
-     
-     Thanks,
-     Francois
+On Fri, Nov 5, 1999, Florent <flobo@iname.com> wrote:
+
+>I'm currently working on the second stage loader (version 2.0.0a). When it
+>is launched from OF, it detects the machine as a CHRP and fixes the root
+>partition as the second one (this part of the code seems to be a quick add).
+>
+
+Marius Vollmer recently released "poof", an OF bootloader for NewWorld
+that apparently can read the kernel from ext2. I didn't test it nor I
+remember the URL, but a search on the linuxppc-usr mailing list archive
+should work.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
