@@ -1,18 +1,22 @@
-Date: Mon, 12 Jul 1999 09:02:43 +1000
-Message-Id: <199907112302.JAA20812@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: media bay problems
-Reply-to: Paul.Mackerras@cs.anu.edu.au
+Message-Id: <9907112303.AA25560@marc.watson.ibm.com>
+To: "Charles A. Jolley" <charles.jolley@zeratec.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Netbooting Linux on an iMac 
+In-Reply-To: Message from "Charles A. Jolley" <charles.jolley@zeratec.com>
+   of "Sun, 11 Jul 1999 16:03:54 CDT." <199907112116.QAA23835@www2.tuckeris.com>
+Date: Sun, 11 Jul 1999 19:03:17 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The fix for the media bay problems is to change in_8 to inb in the
-definition of MB_IDE_READY in mediabay.c.  I am away from home at the
-moment, that's why I haven't posted a patch. :-)
+	Please look in the archive of this mailinglist where you will find
+a detailed answer from me about exactly what an OpenFirmware boot image
+must look like to be recognized and loaded.  It basically is a 32-bit
+PowerPC ELF image with a special NOTE section and the loader section in
+the header referencing the NOTE section.
 
-Paul.
+David
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
