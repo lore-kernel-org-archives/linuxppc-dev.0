@@ -1,55 +1,52 @@
-Date: Mon, 19 Jun 2000 07:57:13 +0200
-From: Olaf Hering <olh@suse.de>
-To: khendricks@ivey.uwo.ca
-Cc: linuxppc-dev@lists.linuxppc.org,
-        yellowdog-general@lists.yellowdoglinux.com
+Date: Mon, 19 Jun 2000 01:33:38 -0600 (MDT)
+From: Bryan Stillwell <arcane@verinet.com>
+Reply-To: arcane@verinet.com
+To: yellowdog-general@lists.yellowdoglinux.com
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Need for Cross Platform Updates Distribution
-Message-ID: <20000619075713.A25220@suse.de>
-References: <394D2013.AAD184AB@golden.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <394D2013.AAD184AB@golden.net>
+In-Reply-To: <20000619075713.A25220@suse.de>
+Message-ID: <Pine.LNX.4.10.10006190106010.30352-100000@bamboo.verinet.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Jun 18, hendricks wrote:
+On Mon, 19 Jun 2000, Olaf Hering wrote:
 
+> The idea is good, but it will not work because every distro has its own
+> filesystem structure. As example, we put everything under
+> /opt/{kde,gnome}, the RedHat based distros somewhere under /usr. Another
+> problem is the naming convention of the rpm files. We have a rpms with
+> maximal 8 chars and this will lead to problems when upgrading the stuff.
+> You can not mix that or your rpm database becomes useless.
 
-> My idea is that the iso-image (identical) would be available from all
-> distributions and also sold for some small fee by all distributions.
->
-> I can create all of the JDK binaries, I am building the kde2 beta 2
-> stuff as I write this, I have all the GNOME Helix 1.2 binaries and
-> srpms, Jack has the XFree 4.0 rpms and srpms with the latest G4/Rage 128
-> Pro fixes in place, I have the Xpmac source (and some changes from
-> Ryuichi to integrate), I have access to alot of patches (both from
-> Blackdown and Sun) that fix serious bugs in OpenMotif 2.1, Franz already
-> has posted his latest tool chain, and Paul's 2.2.16 rsync kernel is
-> available right now.  I also have the cvs from last night of Mozilla and
-> will build it this week.
->
-> All of this would be available for some sort of joint effort to quickly
-> get out an updates CD for everyone to use.
->
-> What do people think?  Is this stealing too much thunder from thenext
-> distributions releases?  If not, I say let's do it.
+Why is that?  It pisses me off that rpms for one distro won't work with
+another distro.  It's like the same work is always being done 5 times more
+than necessary.  I've never used suse personally, but I've tried using a
+suse rpm witha redhat installation and it just screwed everything up.
+Same thing happen to me when trying to use a Mandrake rpm...  Why are the
+Linux distro companies fighting over something as simple as packaging
+format?  Also, what's this about suse using /opt for kde and gnome?  Isn't
+/opt in the filesystem standard for commercial software only?
 
-The idea is good, but it will not work because every distro has its own
-filesystem structure. As example, we put everything under
-/opt/{kde,gnome}, the RedHat based distros somewhere under /usr. Another
-problem is the naming convention of the rpm files. We have a rpms with
-maximal 8 chars and this will lead to problems when upgrading the stuff.
-You can not mix that or your rpm database becomes useless.
+Just my good old $.02 worth.  My frustrations with the different distros
+fighting each other has caused me to switch to Debian...  Now if only
+there was a company that would make a Linux distro based off of Debian but
+would maintain package compatibility with the main Debian tree, I would
+probably throw a far bit of money their way.  :)  (Corel Linux just
+doesn't do it for me, and Storm Linux is quite a bit out of date the last
+I checked.)  My feeling is that rpms have split too much down alternate
+paths to try and save them now...  It's nice to know that the Debian folk
+have now ported most of the packages to the ppc platform imo.
 
+I guess my main question for writing this message is will the various
+distros (Yellowdog, linuxppc, suse, etc.) ever get package compatibility
+where I can use a rpm from suse and install it on a yellowdog box?  or
+will Debian be the best choice for me in the near/distant future for any
+platform?
 
+Bryan
 
-Gruss Olaf
-
---
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
