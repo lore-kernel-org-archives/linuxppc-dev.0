@@ -1,308 +1,266 @@
-Message-ID: <D53137D1F3DDD211A3750800060DA313017023B1@viee122a.erd.siemens.at>
-From: Eisenzopf Thomas <thomas.eisenzopf@siemens.at>
-To: "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: crash loadin bash after booting linux on a MPC860ADS
-Date: Tue, 4 Apr 2000 18:07:00 +0200 
+To: Eisenzopf Thomas <thomas.eisenzopf@siemens.at>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: crash loadin bash after booting linux on a MPC860ADS
+References: <D53137D1F3DDD211A3750800060DA313017023B1@viee122a.erd.siemens.at>
+From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+Date: 04 Apr 2000 18:49:42 +0200
+In-Reply-To: Eisenzopf Thomas's message of "Tue, 4 Apr 2000 18:07:00 +0200"
+Message-ID: <kfywvmdvmjd.fsf@kieraypc01.p.y.ki.era.ericsson.se>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Eisenzopf Thomas <thomas.eisenzopf@siemens.at> writes:
 
-thanks again for the suggestions from some members of this mailing list. I
-managed to reconfigure my kernel and now I can boot linux until the NFS root
-filesystem is mounted.
+> Hello,
+>
+> thanks again for the suggestions from some members of this mailing list. I
+> managed to reconfigure my kernel and now I can boot linux until the NFS root
+> filesystem is mounted.
+>
+> But after this the kernel tries to load the shell /bin/sh from NFS, at this
+> point the system crashes. My kernel includes the patches from
+> www.s4l.de/powerpc.html.
+>
+> Please, can anyone help? I took the ramdisk.image.gz filesystem from
+> www.s4l.de/powerpc.html. This should be working for PowerPC(?). On the other
+> hand I tried to get my own filesystem (crosscompile bash, ...), but it
+> didn´t work. Perhaps someone could support me with a tarball of a filesystem
+> working on a MPC860ADS board with NFS root filesystem? How can I make a
+> filesystem on my own (on an Intel PC)?
+>
+>
+> 8xxROM 0.3.0
+>
+> compiletime options:
+> board: ADS DRAM_50MHZ
+> disk: DISK_ROM
+>
+> cpu: XPC860xxZPnnA3 at 48 MHz: 4Kbyte icache 4Kbyte dcache
+>
+> <warning: cpu core has silicon bugs, check the errata>
 
-But after this the kernel tries to load the shell /bin/sh from NFS, at this
-point the system crashes. My kernel includes the patches from
-www.s4l.de/powerpc.html.
+Well, guess you didn't do this...
+Either put your CPU on a hard surface, apply a sledgehammer to it,
+and get a new(er) one. ;)
+Or apply the following diff and see if things get better:
 
-Please, can anyone help? I took the ramdisk.image.gz filesystem from
-www.s4l.de/powerpc.html. This should be working for PowerPC(?). On the other
-hand I tried to get my own filesystem (crosscompile bash, ...), but it
-didn´t work. Perhaps someone could support me with a tarball of a filesystem
-working on a MPC860ADS board with NFS root filesystem? How can I make a
-filesystem on my own (on an Intel PC)?
+diff -u -r1.2 -r1.3
+--- head.S	2000/01/11 18:13:31	1.2
++++ head.S	2000/01/11 18:27:59	1.3
+@@ -883,11 +886,26 @@
+  * only perform the attribute functions.
+  */
+ InstructionTLBMiss:
++#ifndef NO_MPC8xxBUG_CPU6
++	stw	r3, 8(r0)
++	li	r3, M_TW_ADDR
++	stw	r3, 12(r0)
++	lwz	r3, 12(r0)
+ 	mtspr	M_TW, r20	/* Save a couple of working registers */
+ 	mfcr	r20
+ 	stw	r20, 0(r0)
+ 	stw	r21, 4(r0)
+ 	mfspr	r20, SRR0	/* Get effective address of fault */
++	li	r3, MD_EPN_ADDR
++	stw	r3, 12(r0)
++	lwz	r3, 12(r0)
++#else /* NO_MPC8xxBUG_CPU6 */
++	mtspr	M_TW, r20	/* Save a couple of working registers */
++	mfcr	r20
++	stw	r20, 0(r0)
++	stw	r21, 4(r0)
++	mfspr	r20, SRR0	/* Get effective address of fault */
++#endif /* NO_MPC8xxBUG_CPU6 */
+ 	mtspr	MD_EPN, r20	/* Have to use MD_EPN for walk, MI_EPN can't */
+ 	mfspr	r20, M_TWB	/* Get level 1 table entry address */
+ 	lwz	r21, 0(r20)	/* Get the level 1 entry */
+@@ -899,8 +917,19 @@
+ 	 */
+ 	tophys(r21,r21,0)
+ 	ori	r21,r21,1		/* Set valid bit */
++#ifndef NO_MPC8xxBUG_CPU6
++	li	r3, MI_TWC_ADDR
++	stw	r3, 12(r0)
++	lwz	r3, 12(r0)
++	mtspr	MI_TWC, r21	/* Set page attributes */
++	li	r3, MD_TWC_ADDR
++	stw	r3, 12(r0)
++	lwz	r3, 12(r0)
++	mtspr	MD_TWC, r21	/* Load pte table base address */
++#else
+ 	mtspr	MI_TWC, r21	/* Set page attributes */
+ 	mtspr	MD_TWC, r21	/* Load pte table base address */
++#endif /* NO_MPC8xxBUG_CPU6 */
+ 	mfspr	r21, MD_TWC	/* ....and get the pte address */
+ 	lwz	r21, 0(r21)	/* Get the pte */
 
-Any help is appreciated.
+@@ -920,18 +949,29 @@
+ 	 */
+ 	ori	r20, r21, 0x00f0
 
-Best regards,
-Thomas.
++#ifndef NO_MPC8xxBUG_CPU6
++	li	r3, MI_RPN_ADDR
++	stw	r3, 12(r0)
++	lwz	r3, 12(r0)
++#endif
+ 	mtspr	MI_RPN, r20	/* Update TLB entry */
+
+ 	mfspr	r20, M_TW	/* Restore registers */
+ 	lwz	r21, 0(r0)
+ 	mtcr	r21
+ 	lwz	r21, 4(r0)
++#ifndef NO_MPC8xxBUG_CPU6
++	lwz	r3, 8(r0)
++#endif
+ 	rfi
+
+ 2:	mfspr	r20, M_TW	/* Restore registers */
+ 	lwz	r21, 0(r0)
+ 	mtcr	r21
+ 	lwz	r21, 4(r0)
++#ifndef NO_MPC8xxBUG_CPU6
++	lwz	r3, 8(r0)
++#endif
+ 	b	InstructionAccess
+ #endif /* CONFIG_8xx */
+
+@@ -1009,6 +1049,12 @@
+ 	b	00b			/* Try lookup again */
+ #endif /* NO_RELOAD_HTAB */
+ #else /* CONFIG_8xx */
++#ifndef NO_MPC8xxBUG_CPU6
++	stw	r3, 8(r0)
++	li	r3, M_TW_ADDR
++	stw	r3, 12(r0)
++	lwz	r3, 12(r0)
++#endif
+ 	mtspr	M_TW, r20	/* Save a couple of working registers */
+ 	mfcr	r20
+ 	stw	r20, 0(r0)
+@@ -1022,6 +1068,11 @@
+ 	 */
+ 	tophys(r21, r21, 0)
+ 	ori	r21, r21, 1	/* Set valid bit in physical L2 page */
++#ifndef NO_MPC8xxBUG_CPU6
++	li	r3, MD_TWC_ADDR
++	stw	r3, 12(r0)
++	lwz	r3, 12(r0)
++#endif
+ 	mtspr	MD_TWC, r21	/* Load pte table base address */
+ 	mfspr	r21, MD_TWC	/* ....and get the pte address */
+ 	lwz	r21, 0(r21)	/* Get the pte */
+@@ -1042,18 +1093,29 @@
+ 	 */
+ 	ori	r20, r21, 0x00f0
+
++#ifndef NO_MPC8xxBUG_CPU6
++	li	r3, MD_RPN_ADDR
++	stw	r3, 12(r0)
++	lwz	r3, 12(r0)
++#endif
+ 	mtspr	MD_RPN, r20	/* Update TLB entry */
+
+ 	mfspr	r20, M_TW	/* Restore registers */
+ 	lwz	r21, 0(r0)
+ 	mtcr	r21
+ 	lwz	r21, 4(r0)
++#ifndef NO_MPC8xxBUG_CPU6
++	lwz	r3, 8(r0)
++#endif
+ 	rfi
+
+ 2:	mfspr	r20, M_TW	/* Restore registers */
+ 	lwz	r21, 0(r0)
+ 	mtcr	r21
+ 	lwz	r21, 4(r0)
++#ifndef NO_MPC8xxBUG_CPU6
++	lwz	r3, 8(r0)
++#endif
+ 	b	DataAccess
+ #endif /* CONFIG_8xx */
+
+@@ -1086,6 +1148,12 @@
+  */
+ 	. = 0x1400
+ DataTLBError:
++#ifndef NO_MPC8xxBUG_CPU6
++	stw	r3, 8(r0)
++	li	r3, M_TW_ADDR
++	stw	r3, 12(r0)
++	lwz	r3, 12(r0)
++#endif
+ 	mtspr	M_TW, r20	/* Save a couple of working registers */
+ 	mfcr	r20
+ 	stw	r20, 0(r0)
+@@ -1106,6 +1174,11 @@
+ 	 */
+ 	tophys(r21, r21, 0)
+ 	ori	r21, r21, 1		/* Set valid bit in physical L2 page */
++#ifndef NO_MPC8xxBUG_CPU6
++	li	r3, MD_TWC_ADDR
++	stw	r3, 12(r0)
++	lwz	r3, 12(r0)
++#endif
+ 	mtspr	MD_TWC, r21		/* Load pte table base address */
+ 	mfspr	r21, MD_TWC		/* ....and get the pte address */
+ 	lwz	r21, 0(r21)		/* Get the pte */
+@@ -1133,18 +1206,29 @@
+ 	 */
+ 	ori	r20, r21, 0x00f0
+
++#ifndef NO_MPC8xxBUG_CPU6
++	li	r3, MD_RPN_ADDR
++	stw	r3, 12(r0)
++	lwz	r3, 12(r0)
++#endif
+ 	mtspr	MD_RPN, r20	/* Update TLB entry */
+
+ 	mfspr	r20, M_TW	/* Restore registers */
+ 	lwz	r21, 0(r0)
+ 	mtcr	r21
+ 	lwz	r21, 4(r0)
++#ifndef NO_MPC8xxBUG_CPU6
++	lwz	r3, 8(r0)
++#endif
+ 	rfi
+ 2:
+ 	mfspr	r20, M_TW	/* Restore registers */
+ 	lwz	r21, 0(r0)
+ 	mtcr	r21
+ 	lwz	r21, 4(r0)
++#ifndef NO_MPC8xxBUG_CPU6
++	lwz	r3, 8(r0)
++#endif
+ 	b	DataAccess
+ #endif /* CONFIG_8xx */
+
+@@ -2214,7 +2307,19 @@
+         lwz     r9,MM-TSS(r4)           /* Get virtual address of mm */
+         lwz     r9,PGD(r9)              /* get new->mm->pgd */
+         addis   r9,r9,-KERNELBASE@h     /* convert to phys addr */
++#ifndef NO_MPC8xxBUG_CPU6
++	lis	r6, cmd_line@h
++	ori	r6, r6, cmd_line@l
++	li	r7, M_TWB_ADDR
++	stw	r7, 12(r6)
++	lwz	r7, 12(r6)
++	mtspr   M_TWB, r9               /* Update MMU base address */
++	li	r7, M_CASID_ADDR
++	stw	r7, 12(r6)
++	lwz	r7, 12(r6)
++#else
+         mtspr   M_TWB, r9               /* Update MMU base address */
++#endif /* NO_MPC8xxBUG_CPU6 */
+         mtspr   M_CASID, r5             /* Update context */
+         tlbia
+ #endif
 
 
-
-8xxROM 0.3.0
-
-compiletime options:
-board: ADS DRAM_50MHZ
-disk: DISK_ROM
-
-cpu: XPC860xxZPnnA3 at 48 MHz: 4Kbyte icache 4Kbyte dcache
-
-<warning: cpu core has silicon bugs, check the errata>
-
-board: ADS rev B
-flash: 2 Mbytes, delay 90 ns
-dram: EDO, 16 Mbyte, 60 ns, OK
-pcmcia: No card present.
-
-Boot device list:
- rom: rom_disk
-
-Found ext2 filesystem
-
-rom:0:/> bootz
-Size 474838
-4 blocks
-
-entry 0x100000, phoff 0x34, shoff 0x72e6c
-phnum 0x1, shnum 0x9
-p_offset 0x10000, p_vaddr 0x100000, p_paddr 0x100000
-p_filesz 0x530c, p_memsz 0xb1cc
-Loading at 0x10c000
-Size 474838
-464 blocks
-Starting 0x11c000
-loaded at:     0011C000 001271CC
-relocated to:  00100000 0010B1CC
-board data at: 00FF0000 00FF001C
-relocated to:  00200100 0020011C
-zimage at:     00122000 0017EE32
-avail ram:     0017F000 01000000
-
-Linux/PPC load: mem=0x1000000
-Uncompressing Linux...done.
-Now booting the kernel
-Linux version 2.2.13 (eisenzopft@pca355) (gcc version 2.95.2 19991024
-(release))
- #39 Tue Apr 4 17:12:01 Local time zone must be set--see zic manual page
-2000
-Boot arguments: mem=0x1000000
-time_init: decrementer frequency = 180000000/60
-Calibrating delay loop... 47.10 BogoMIPS
-Memory: 15212k available (708k kernel code, 428k data, 36k init)
-[c0000000,c1000
-000]
-DENTRY hash table entries: 262144 (order: 9, 2097152 bytes)
-Buffer-cache hash table entries: 32768 (order: 5, 131072 bytes)
-Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
-POSIX conformance testing by UNIFIX
-Linux NET4.0 for Linux 2.2
-Based upon Swansea University Computer Society NET3.039
-NET4: Unix domain sockets 1.0 for Linux NET4.0.
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP
-TCP: Hash tables configured (ehash 16384 bhash 16384)
-Starting kswapd v 1.5
-Serial driver version 4.27 with no serial options enabled
-ttyS00 at 0x03f8 (irq = 4) is a 16450
-ttyS01 at 0x02f8 (irq = 3) is a 16450
-ttyS02 at 0x03e8 (irq = 4) is a 16450
-CPM UART driver version 0.02
-ttyS00 at 0x0280 is a SMC
-ttyS01 at 0x0100 is a SCC
-ttyS02 at 0x0200 is a SCC
-loop: registered device at major 7
-eth0: CPM ENET Version 0.2, 08:00:3e:26:15:59
-Sending BOOTP and RARP requests.... OK
-IP-Config: Got BOOTP answer from 195.2.106.145, my address is 195.2.106.33
-Looking up port of RPC 100003/2 on 195.2.106.145
-Looking up port of RPC 100005/1 on 195.2.106.145
-VFS: Mounted root (NFS filesystem) readonly.
-Freeing unused kernel memory: 36k init
-page fault in interrupt handler, addr=333c
-NIP: C009402C XER: E000B77F LR: C00941FC REGS: c012d250 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
-last math 00000000
-GPR00: 00000001 C012D300 C012C000 C00C0000 00008000 00000000 C01DEFFC
-7C0803A6
-GPR08: 38210010 00000000 C00D0000 FFFFFCEF 55053059 00000000 018BBC8C
-01800000
-GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012D490 00000000
-C0002544
-GPR24: C0004294 C00D0000 C0132700 C01F32C0 C01EB000 C01EFB40 C01EB144
-00009032
-Scheduling in interrupt
-page fault in interrupt handler, addr=0
-NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012d110 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
-last math 00000000
-GPR00: C000C874 C012D1C0 C012C000 00000018 00000001 00000018 C0135680
-C00DE7A3
-GPR08: 00000018 00000000 FF002830 C012D100 55053039 00000000 018BBC8C
-01800000
-GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012D240 00000000
-C0002544
-GPR24: C0008D84 C00D0000 C012D1F8 C012C000 C00D0000 00000000 00000000
-C012D1C0
-Scheduling in interrupt
-page fault in interrupt handler, addr=0
-NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012cfd0 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
-last math 00000000
-GPR00: C000C874 C012D080 C012C000 00000018 00000001 00000018 C0135680
-C00DE7A3
-GPR08: 00000018 00000000 FF002830 C012CFC0 55053039 00000000 018BBC8C
-01800000
-GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012D100 00000000
-C0002544
-GPR24: C0008D84 C00D0000 C012D0B8 C012C000 C00D0000 00000000 00000000
-C012D080
-Scheduling in interrupt
-page fault in interrupt handler, addr=0
-NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012ce90 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
-last math 00000000
-GPR00: C000C874 C012CF40 C012C000 00000018 00000001 00000018 C0135680
-C00DE7A3
-GPR08: 00000018 00000000 FF002830 C012CE80 55053039 00000000 018BBC8C
-01800000
-GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012CFC0 00000000
-C0002544
-GPR24: C0008D84 C00D0000 C012CF78 C012C000 C00D0000 00000000 00000000
-C012CF40
-Scheduling in interrupt
-page fault in interrupt handler, addr=0
-NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012cd50 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
-last math 00000000
-GPR00: C000C874 C012CE00 C012C000 00000018 00000001 00000018 C0135680
-C00DE7A3
-GPR08: 00000018 00000000 FF002830 C012CD40 55053039 00000000 018BBC8C
-01800000
-GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012CE80 00000000
-C0002544
-GPR24: C0008D84 C00D0000 C012CE38 C012C000 C00D0000 00000000 00000000
-C012CE00
-Scheduling in interrupt
-page fault in interrupt handler, addr=0
-NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012cc10 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
-last math 00000000
-GPR00: C000C874 C012CCC0 C012C000 00000018 00000001 00000018 C0135680
-C00DE7A3
-GPR08: 00000018 00000000 FF002830 C012CC00 55053039 00000000 018BBC8C
-01800000
-GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012CD40 00000000
-C0002544
-GPR24: C0008D84 C00D0000 C012CCF8 C012C000 C00D0000 00000000 00000000
-C012CCC0
-Scheduling in interrupt
-page fault in interrupt handler, addr=0
-NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012cad0 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
-last math 00000000
-GPR00: C000C874 C012CB80 C012C000 00000018 00000001 00000018 C0135680
-C00DE7A3
-GPR08: 00000018 00000000 FF002830 C012CAC0 55053039 00000000 018BBC8C
-01800000
-GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012CC00 00000000
-C0002544
-GPR24: C0008D84 C00D0000 C012CBB8 C012C000 C00D0000 00000000 00000000
-C012CB80
-Scheduling in interrupt
-page fault in interrupt handler, addr=0
-NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012c990 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
-last math 00000000
-GPR00: C000C874 C012CA40 C012C000 00000018 00000001 00000018 C0135680
-C00DE7A3
-GPR08: 00000018 00000000 FF002830 C012C980 55053039 00000000 018BBC8C
-01800000
-GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012CAC0 00000000
-C0002544
-GPR24: C0008D84 C00D0000 C012CA78 C012C000 C00D0000 00000000 00000000
-C012CA40
-Scheduling in interrupt
-page fault in interrupt handler, addr=0
-NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012c850 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
-last math 00000000
-GPR00: C000C874 C012C900 C012C000 00000018 00000001 00000018 C0135680
-C00DE7A3
-GPR08: 00000018 00000000 FF002830 C012C840 55053039 00000000 018BBC8C
-01800000
-GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012C980 00000000
-C0002544
-GPR24: C0008D84 C00D0000 C012C938 C012C000 C00D0000 00000000 00000000
-C012C900
-Scheduling in interrupt
-page fault in interrupt handler, addr=0
-NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012c710 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
-last math 00000000
-GPR00: C000C874 C012C7C0 C012C000 00000018 00000001 00000018 C0135680
-C00DE7A3
-GPR08: 00000018 00000000 FF002830 C012C700 55053039 00000000 018BBC8C
-01800000
-GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012C840 00000000
-C0002544
-GPR24: C0008D84 C00D0000 C012C7F8 C012C000 C00D0000 00000000 00000000
-C012C7C0
-Scheduling in interrupt
-page fault in interrupt handler, addr=0
-NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012c5d0 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
-last math 00000000
-GPR00: C000C874 C012C680 C012C000 00000018 00000001 00000018 C0135680
-C00DE7A3
-GPR08: 00000018 00000000 FF002830 C012C5C0 55053039 00000000 018BBC8C
-01800000
-GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012C700 00000000
-C0002544
-GPR24: C0008D84 C00D0000 C012C6B8 C012C000 C00D0000 00000000 00000000
-C012C680
-Scheduling in interrupt
-page fault in interrupt handler, addr=0
-NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012c490 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c012c000[1] 'sh' mm->pgd 645d2027 Last syscall: 11
-last math 00000000
-GPR00: C000C874 C012C540 C012C000 00000018 00000001 00000018 C0135680
-C00DE7A3
-GPR08: 00000018 00000000 FF002830 C012C480 55053039 00000000 018BBC8C
-01800000
-GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012C5C0 00000000
-C0002544
-GPR24: C0008D84 C00D0000 C012C578 C012C000 C00D0000 00000000 00000000
-C012C540
-Scheduling in interrupt
-Kernel stack overflow in process c012c000, r1=c012c400
-NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012c350 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c012c000[1] 'sh' mm->pgd 00000000 Last syscall: 11
-last math 00000000
-GPR00: C000C874 C012C400 C012C000 00000018 00000001 00000018 C0135680
-C00DE7A3
-GPR08: 00000018 00000000 FF002830 C012C340 55053039 00000000 018BBC8C
-01800000
-GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012C480 00000000
-C0002544
-GPR24: C0008D84 C00D0000 C012C438 C012C000 C00D0000 00000000 00000000
-C012C400
-Call backtrace:
-C000C874 C000C9F4 C0008E28 C0002544 C000C874 C000C9F4 C0008E28
-C0002544 C000C874 C000C9F4 C0008E28 C0002544 C000C874 C000C9F4
-C0008E28 C0002544 C000C874 C000C9F4 C0008E28 C0002544 C000C874
-C000C9F4 C0008E28 C0002544 C000C874 C000C9F4 C0008E28 C0002544
-C000C874 C000C9F4 C0008E28 C0002544 C000C874
-Kernel panic: kernel stack overflow
-In interrupt handler - not syncing
-Rebooting in 180 seconds..
+//Marcus
+--
+Signature under construction, please come back later.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
