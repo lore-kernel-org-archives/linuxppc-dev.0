@@ -1,48 +1,45 @@
-Message-ID: <3BA8E7D1.E986CD4B@acm.org>
-Date: Wed, 19 Sep 2001 11:45:37 -0700
-From: Ira Weiny <iweiny@acm.org>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>, andre@linux-ide.org
-Subject: Re: IDE 1Gig Microdrive (Working!!)
-References: <3BA82D10.5694BC63@acm.org> <20010919133806.12982@smtp.adsl.oleane.com>
+Date: Wed, 19 Sep 2001 16:46:10 -0400
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Accessing PCI IORESOURCE_IO
+Message-ID: <20010919164610.A346@kybl>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+From: Tomas Jura <tjura@binghamton.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
->
->
-> Andre, what do you think would be a good solution ?
->
-> Temporarily masking out the interrupt with disable_irq(), even if it's
-> shared, would be acceptable ? (Provided that it's only masked for a short
-> period of time obviously). Can the problem be worked around by
-> doing the request_irq earlier, and making sure the IDE handler always
-> clear the interrupt condition even when no handler is attached when it's
-> doing the probe ?
+Can anybody explain me how to access PCI card resource
+of type IORESOURCE_IO on PPC ?
 
-Well I am slowly getting my head around the IDE layer so I know what I
-did is a hack.  Moving the request_irq() around seemed like a daunting
-task which I probably could not do without messing something up, sorry.
+My video card can work only with 4MB memory instead 6MB (
+vram:6144 not helps ) and I think that solution is in the
+non memory maped register on ATY chip.
 
-However, my solution relys on the fact that the probe, as far as I could
-tell, does not need the irq, as it polls.  So I just disabled it until
-something happens, timeout or success.  I would think this would solve
-the problem for all drives but I don't have a lot of test cases.  I have
-tried all my CF cards and my Microdrive.  One thing I have not tried is
-to simply disable the irq all the time in the probe to see what happens
-on boot with my normal internal drive.  If this were to work for all
-probes then I could get rid of the flag.
+thanks
+Tomas
 
-However, I do realize the error of my ways.  If there is something else
-on this line which is important...  Anyway, I would think this is
-something others would want to have working.  So if I can help with
-testing or a solution, I would be happy to.
+P.S. I tried following way (which failed):
 
-Thanks,
-Ira Weiny
-iweiny@acm.org
+rp=&pdev->resource[1];
+addr = rp->start;
+if( request_region( addr, 32, "atyfb" ) == 0 ){
+  for( i = 0 ; i < 32; i++)
+    printk( " %X",( unsigned ) inb( addr+i ) );
+  printk( "\n" );
+  release_region( addr, 32 );
+} else
+  printk("cannot request region 0x%lX\n", addr );
+
+Resource 0, Flags 0x200, start 0x81000000, size 0x1000000
+Resource 1, Flags 0x101, start 0xC00, size 0x100
+Resource 2, Flags 0x200, start 0x80800000, size 0x1000
+atyfb: using auxiliary register aperture
+atyfb: 3D RAGE PRO (PQFP, PCI) [0x4750 rev 0x7c] 6M SGRAM,
+14.31818 MHz XTAL, 23
+0 MHz PLL, 100 Mhz MCLK
+BUS_CNTL DAC_CNTL MEM_CNTL EXT_MEM_CNTL CRTC_GEN_CNTL DSP_CONFIG DSP_ON_OFF
+6b2ea040 87010182 08651a79 e0000c01     03000600      001807ee   03c007cf
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
