@@ -1,50 +1,38 @@
-Date: Sat, 29 Dec 2001 11:49:15 -0800
+Date: Sat, 29 Dec 2001 11:56:12 -0800
 From: David Ashley <dash@xdr.com>
-Message-Id: <200112291949.fBTJnFc00222@dave.home>
+Message-Id: <200112291956.fBTJuCD00235@dave.home>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Recommendations for LXT971A PHY MII interrupt connection
+Subject: Re: signals from interrupt
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We had a problem where suddenly the ethernet would stop working, once
-there was a lot of outgoing traffic from the box. It turned out it only
-happened when plugging the ethernet into a full duplex switch instead of
-a half duplex hub. In full duplex there are now two interrupt indicators,
-on TX and RX. In half duplex the interrupt bits are shared. So the driver
-has to know what duplex the PHY is in. How does it find out? The best way
-is to allow the PHY to interrupt the cpu when the status changes.
+>I am running MontaVista hardhat 2.4.2. linux kernel on a MPC8240 cpu with
+>a pci bus,NVRAM device ,64M ram and 32M rom (flash).
+>basically my application is running very well i have created all the threads
+>i needed and all other initialization are almost done.
+>the last problem i have regards interrupts.
+>on my target i have a dual UART 16550 device, one of it's ports used by the
+>kernel (kprintf,etc...) the other port i need to use for my own application.
+>in order to use it i need to receive an interrupt (mean RX interrupt), now
+>since there are no interrupts available out side of the kernel i thought of
+>using signals.
+>what i wanted to do is to get the interrupt with in the kernel and to send a
+>signal to the application, the problem is that every method i tried to
+>implement that did not succeed, can any body help me dealing with this
+>issue.
+>
+>thanks in advance.
+>
+>Ofer Rashuk-Rosenthal.
 
-The 10/100 rate seems irrelevant, the driver appears to get the information
-then do nothing with it. But the duplex really matters.
-
-I had the PHY interrupting on completion of the auto-negotiation. In that
-case you don't get an interrupt if a line is unplugged, just when a line is
-plugged in. The only problem seems to be what register to examine in the
-PHY to find out the line status, there doesn't appear to be a standard.
-
-An alternative is to program the PHY to only negotiate half duplex mode.
-Then nothing really can change that you care about.
-
-I think an important lesson here is do testing under various conditions. It
-turned out in all our testing in the lab we had always plugged the box into
-hubs, which were half duplex. It took some time for us to figure out why
-the box was failing, first we were worried about the cabling, then the
-switch itself, then the hardware on that box possibly being bad. It was only
-after ruling all out that we figure out it was the full/half duplex.
-
-We still haven't tried doing any testing with 10 base T though :^(.
+I would think this whole problem is not in the kernel realm. Your user space
+program should open /dev/ttyS0 or whatever, then just do reads/writes on it.
+You can test if data is available for reading using select(). You can
+fork() off a child process that does nothing but select() in the file
+descriptor for the /dev/ttyS0, and send a signal to the main process to
+notify it of the fact.
 
 -Dave
-
->Being lazy, the preferred (by me) method is not to use a PHY
->interrupt at all :-) You need the PHY interrupt only in cases when
->you need to get informed about link status changes. Few applications
->really need this type of information (although it's "interesting",
->especially during board bring-up).
->
->Hope this helps,
->
->Wolfgang Denk
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
