@@ -1,29 +1,52 @@
-Message-ID: <B25E2E5A003CD311B61E00902778AF2A039C3E40@SERVER1>
-From: Subodh Nijsure <SNijsure@SkyStream.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Sometimes serial port seems stuck.
-Date: Wed, 19 Jun 2002 09:12:34 -0700
+Message-ID: <3D10F388.5@embeddededge.com>
+Date: Wed, 19 Jun 2002 17:11:36 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
+	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: board specific defines in commproc.h !?!?
+References: <3D0DA9C2.D78C43E5@imc-berlin.de> <3D106922.7026437A@imc-berlin.de> <20020619150520.GA12762@opus.bloom.county> <3D10A0AC.409EF92B@imc-berlin.de> <20020619152528.GB12762@opus.bloom.county>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have a custom 8xx board. I am using SMC1 for serial port. SCC1, SCC2 for
-Ethernet.
-Using ppcboot as bootrom & linux 2.4.1
+Tom Rini wrote:
 
-What I have observed is sometimes output on serial port gets stuck, i.e. I
-don't see any output
-unless I hit enter. I have tried executing "reset" UNIX command and it
-doesn't help.
+> On Wed, Jun 19, 2002 at 05:18:04PM +0200, Steven Scholz wrote:
+>
 
-Has anybody seen this before and what might be the cause & remedy for this?
+>>Hmm. Don't know. Maybe. But these are just DEFINES! So what should that
+>>be bad?
+>
+>
+> Oh yeah, right..  Hmm, it probably won't break anything then..
 
-Subodh Nijsure
-Software Manager - Network Media Routers
-SkyStream Networks
+But, that's not the point.
+
+The 2.4 source base is no longer supposed to be a development base.
+The code works fine as it is, moving a bunch of #defines around because
+some people like it that way isn't giving us any feature enhancement and
+opens the door for making mistakes.  I personally like the file the way
+it is because it is the logical collection of all communication processor
+related information regardless of the board.  I'm sorry others don't
+like it that way.
+
+I don't know how many people have lived through previous transitions of
+Linux kernel development to stable trees, but at some point you just have
+to move to the development tree and let the "stable" tree become stable.
+Instead of complaining about the development tree being unstable, you should
+be investing some resources to make it better.  Why are you waiting for
+someone else to do that so you can reap the benefits later?  The only
+thing that should be happening in the 2.4 tree is bug fixing.  The 2.4
+kernel is what it is, like it or not.  If you want something new and different,
+it belongs in the 2.5 tree to show up at some point in the future.
+
+Thanks.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
