@@ -1,67 +1,256 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Gabriel Paubert <paubert@iram.es>, <linuxppc-dev@lists.linuxppc.org>
+Date: Wed, 9 Aug 2000 18:12:48 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: rtc again...
-Date: Thu, 10 Aug 2000 00:48:02 +0200
-Message-Id: <20000809224802.27760@192.168.1.10>
-In-Reply-To: <Pine.HPX.4.10.10008092142330.22126-100000@gra-ux1.iram.es>
-References: <Pine.HPX.4.10.10008092142330.22126-100000@gra-ux1.iram.es>
+In-Reply-To: <20000809170435.11366@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.1000809180837.866H-100000@ofey.earthlink.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->I strongly suspect that we might want a single rtc access function in
->ppc_md and add a first parameter telling what we want it to do, the second
->being a pointer to a tv_sec, and perhaps more parameters.
->
->[.../...]
->
->This last function could also be performed by returning the timebase in
->the READ_TIME function as an extra parameter. The best solution is the one
->which gives the minimal permanent kernel size, __init code size is
->irrelevant.
+On Wed, 9 Aug 2000, Benjamin Herrenschmidt wrote:
 
-Ok.
+> Saving the timezone value to xpram is another issue. It could be done
+> from userland but we currently don't have userland tool that properly
+> access the xpram portion of the nvram. I did plan to add some ioctls to /
+> dev/nvram for it to return the location of the various nvram partitions,
+> looks like it will be time to actually implement them... Also, the
+> userland tool will have to be written...
 
->What use does it have if no daemon will change the timezone anyway ?
+I had a xpram manipulation tool, so I modified it a bit.  Also, I added an
+ioctl to drivers/macintosh/nvram.c.
 
-Well, when travelling with a PowerBook, you tend to regulary change the
-timezone, and you like the kernel to remember what it was ;) Paul added
-the write back of the sys_tz, so I beleive he has some userland tool to
-set it too, Paul ?
-With this current code, any write to our pmac-specific /dev/rtc will
-cause ppc_md.set_rtc_time to update both the RTC and the xpram sys_tz.
+Please have a look at them.  Are these what you had in mind?
 
-So either we make a userland tool for that, or eventually add such a
-feature to pmud along with other PowerBook-specific tasks, accessing /
-dev/nvram directly, or we find a way to make sure updates to sys_tz are
-written back to nvram. I was not specifically thinking about results of a
-DST change. We could eventually add this code along with other nvram
-write code (for flash based nvram) in the restart/shutdown routines if we
-don't want to do it from every ppc_md.set
 
->How does MacOS handle DST changes (on the fly or only at reboot) ?
+Takashi Oe
 
-On the fly.
+Kernel mods:
+--- linux-2.4.0-test4/include/asm-ppc/nvram.h	Tue May  2 15:05:40 2000
++++ linux-nubus/include/asm-ppc/nvram.h	Wed Aug  9 17:44:23 2000
+@@ -38,12 +38,14 @@
+ 	pmac_nvram_NR		/* MacOS Name Registry partition */
+ };
 
->You never (well hardldy ever) pass localtime to userland in Unix and
->that's a big big big plus, each process/user can set TZ as it wishes. IOW
->the value of sys_tz is at best a system wide default but is not imposed to
->anybody. Here at the telescope on all Linux machines, /etc/localtime is
->set as UTC, but then I set TZ=Europe/Madrid in my .profile to avoid too
->much confusion with my PC which has localtime set to Europe/Madrid.  And
->right now I am running a shell with TZ set to Pacific/Tahiti to believe
->that I'm on holiday ;-)
++#ifdef __KERNEL__
+ /* Return partition offset in nvram */
+ extern int	pmac_get_partition(int partition);
 
-Ok, I understand that. That's indeed a nice feature. Changing the
-"global" timezone is specifically useful for portables. You can consider
-it as the machine's physical location instead of a kind of "global" timezone.
+ /* Direct access to XPRAM */
+ extern u8	pmac_xpram_read(int xpaddr);
+ extern void	pmac_xpram_write(int xpaddr, u8 data);
++#endif /* __KERNEL__ */
 
->Done and booted (although I will probably orphan the changeset).
+ /* Some offsets in XPRAM */
+ #define PMAC_XPRAM_MACHINE_LOC	0xe4
+@@ -51,9 +53,12 @@
 
-Heh ;)
+ /* Machine location structure in XPRAM */
+ struct pmac_machine_location {
+-	u32	latitude;	/* 2+30 bit Fractional number */
+-	u32	longitude;	/* 2+30 bit Fractional number */
+-	u32	delta;		/* mix of GMT delta and DLS */
++	unsigned int	latitude;	/* 2+30 bit Fractional number */
++	unsigned int	longitude;	/* 2+30 bit Fractional number */
++	unsigned int	delta;		/* mix of GMT delta and DLS */
+ };
++
++/* /dev/nvram ioctls */
++#define PMAC_NVRAM_GET_OFFSET	_IOWR('p', 0x40, int) /* Get NVRAM partition offset */
 
-Ben.
+ #endif
+--- linux-2.4.0-test4/drivers/macintosh/nvram.c	Tue Jun 20 15:58:42 2000
++++ linux-nubus/drivers/macintosh/nvram.c	Wed Aug  9 16:44:50 2000
+@@ -14,6 +14,7 @@
+ #include <linux/nvram.h>
+ #include <linux/init.h>
+ #include <asm/uaccess.h>
++#include <asm/nvram.h>
+
+ #define NVRAM_SIZE	8192
+
+@@ -70,11 +71,36 @@
+ 	return p - buf;
+ }
+
++static int nvram_ioctl(struct inode *inode, struct file *file,
++	unsigned int cmd, unsigned long arg)
++{
++	switch(cmd) {
++		case PMAC_NVRAM_GET_OFFSET:
++		{
++			int part, offset;
++			if (copy_from_user(&part,(void*)arg,sizeof(part))!=0)
++				return -EFAULT;
++			if (part < pmac_nvram_OF || part > pmac_nvram_NR)
++				return -EINVAL;
++			offset = pmac_get_partition(part);
++			if (copy_to_user((void*)arg,&offset,sizeof(offset))!=0)
++				return -EFAULT;
++			break;
++		}
++
++		default:
++			return -EINVAL;
++	}
++
++	return 0;
++}
++
+ struct file_operations nvram_fops = {
+ 	owner:		THIS_MODULE,
+ 	llseek:		nvram_llseek,
+ 	read:		read_nvram,
+ 	write:		write_nvram,
++	ioctl:		nvram_ioctl,
+ };
+
+ static struct miscdevice nvram_dev = {
+
+
+Userland utilitity: xpram.c
+
+#include <stdio.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <unistd.h>
+
+#include <time.h>
+#include <fcntl.h>
+#include <getopt.h>
+#include <sys/ioctl.h>
+
+#include <asm/nvram.h>
+
+/* Globals */
+int set_timezone = 0;
+
+void
+usage (char *str)
+{
+	fprintf (stderr,
+		"%s offset [val]\n"
+		"%s -t\n"
+		"  t: update XPRAM timezone info\n", str, str);
+	exit(EXIT_FAILURE);
+}
+
+int nvram_fd;
+
+static void
+nvram_init ( int rw_flag )
+{
+	if (rw_flag && getuid () != 0) {
+		fprintf (stderr, "Sorry, must be root to set XPRAM value\n");
+		exit(EXIT_FAILURE);
+	}
+
+	nvram_fd = open ("/dev/nvram", rw_flag? O_RDWR: O_RDONLY);
+	if (nvram_fd < 0) {
+		fprintf (stderr, "unable to open /dev/nvram read/write : %s\n",
+			rw_flag? "read/write": "read only", strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+}
+
+int
+main (int argc, char **argv )
+{
+	int i, arg, rw = 0;
+	unsigned long address;
+	unsigned char val;
+	char *p;
+	extern int optind;
+
+	while ((arg = getopt (argc, argv, "t")) != -1) {
+		switch (arg) {
+	        case 't':
+			set_timezone = 1;
+			break;
+		default:
+			usage (argv[0]);
+		}
+	}
+
+	if (set_timezone) {
+		address = PMAC_XPRAM_MACHINE_LOC;
+		rw = 1;
+	} else {
+		if (!argv[optind])
+			usage(argv[0]);
+
+		address = strtoul(argv[optind], &p, 0);
+		if (p == argv[optind])
+			usage(argv[0]);
+		if (argv[++optind]) {
+			val = (unsigned char)strtoul(argv[optind], &p, 0);
+			if (p == argv[optind])
+				usage(argv[0]);
+			rw = 1;
+		}
+	}
+
+	nvram_init (rw);
+
+	i = pmac_nvram_XPRAM;
+	if (ioctl(nvram_fd, PMAC_NVRAM_GET_OFFSET, &i) < 0) {
+		fprintf(stderr, "ioctl PMAC_NVRAM_GET_OFFSET: %s\n",
+			strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+	address += i;
+
+	if (set_timezone) {
+		unsigned char buf[4];
+		time_t gmt;
+		int utc_offset;
+
+		gmt = time( NULL );
+		(void )localtime( &gmt );
+		utc_offset = -timezone + (daylight? 3600: 0);
+		if (lseek(nvram_fd, address + 8, 0) < 0
+		    || read(nvram_fd, buf, 1) != 1) {
+			fprintf(stderr, "Error reading from /dev/nvram: %s",
+				strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+		buf[0] = (buf[0] & 0x7f) | ((daylight)? 0x80: 0);
+		buf[1] = ((unsigned)(utc_offset) >> 16) & 0xff;
+		buf[2] = ((unsigned)(utc_offset) >> 8) & 0xff;
+		buf[3] = (unsigned)(utc_offset) & 0xff;
+		if (lseek(nvram_fd, address + 8, 0) < 0
+		    || write(nvram_fd, buf, 4) != 4) {
+			fprintf(stderr, "Error writing to /dev/nvram: %s",
+				strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+		exit(EXIT_SUCCESS);
+	}
+
+	if (!rw) {
+		if (lseek(nvram_fd, address, 0) < 0
+		    || read(nvram_fd, &val, 1) != 1) {
+			fprintf(stderr, "Error reading from /dev/nvram: %s",
+				strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+		printf("0x%02X\n", val);
+	} else {
+		if (lseek(nvram_fd, address, 0) < 0
+		    || write(nvram_fd, &val, 1) != 1) {
+			fprintf(stderr, "Error writing to /dev/nvram: %s",
+				strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	exit(EXIT_SUCCESS);
+}
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
