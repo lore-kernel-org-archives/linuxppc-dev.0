@@ -1,89 +1,219 @@
-Message-Id: <200205021127.g42BRYx03373@p2.parker.boston.ma.us>
-To: Brian Kuschak <bkuschak@yahoo.com>
+Message-ID: <20020502115709.13873.qmail@web15005.mail.bjs.yahoo.com>
+Date: Thu, 2 May 2002 19:57:09 +0800 (CST)
+From: =?gb2312?q?Dross=20Zhou?= <zjuzhou@yahoo.com.cn>
+Subject: RE: How to mount romfs in flash as root filesystem?
+To: "K??ri" "Dav??esson" <kd@flaga.is>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: initrd in 2.4.19 
-In-Reply-To: Message from Brian Kuschak <bkuschak@yahoo.com>
-   of "Wed, 01 May 2002 10:08:22 PDT." <20020501170822.7469.qmail@web13005.mail.yahoo.com>
-Date: Thu, 02 May 2002 07:27:34 -0400
-From: Brad Parker <brad@parker.boston.ma.us>
+In-Reply-To: <EADB10BAC266A14A85ECBF8686A73E31937F12@kolkrabbi.flaga.is>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brian Kuschak wrote:
->
->I noticed initrd handling has changed recently in the
->kernel (init/do_mounts.c).  This new code is causing
->me problems.  Has anyone else run into this?
+I have compiled it into kernel,not module,it is romfs.
 
-heh.  I found that every shred of documentation on this was 1/2 right and
-1/2 wrong.
+> What file system do you have on your flash?
+> Is it compiled into the kernel?
+> It does not work to have the fs used on for the root
+> fs compiled as a
+> module.
+>
+> K.D.
+>
+> > -----Original Message-----
+> > From: Dross Zhou [mailto:zjuzhou@yahoo.com.cn]
+> > Sent: 1. ma¨ª 2002 04:35
+> > To: Kári Davíðsson
+> > Subject: RE: How to mount romfs in flash as root
+> filesystem?
+> >
+> >
+> >  --- Kári Davíðsson <kd@flaga.is> µÄÕýÎÄ£º> >
+> > -----Original Message-----
+> > > > From: Gunnar Larisch [mailto:la@softing.com]
+> > > > Sent: 30. apríl 2002 08:41
+> > > > To: Wolfgang Denk
+> > > > Cc: Dross Zhou;
+> > > linuxppc-embedded@lists.linuxppc.org
+> > > > Subject: Re: How to mount romfs in flash as
+> root
+> > > filesystem?
+> > > >
+> > > >
+> > > >
+> > > > On Mon, Apr 29, 2002 at 04:35:24PM +0200,
+> Wolfgang
+> > > Denk wrote:
+> > > > >
+> > > > > In message
+> > > >
+> > >
+> >
+>
+<20020429141408.33240.qmail@web15001.mail.bjs.yahoo.com>
+> > > you wrote:
+> > > > > >
+> > > > > > 	Now my kernel has support ROMFS ,i can
+> mount
+> > > > > > /dev/mtdblock0 /mnt -t romfs and use
+> chroot
+> > > /mnt as
+> > > > > > root filesystem.But i want to mount
+> > > /dev/mtdblock0 as
+> > > > > > root filesystem when system reboot,how
+> to?I
+> > > have try
+> > > > > > many parameters into kernel such as
+> > > "root=/dev/mtdblk0
+> > > > > > romfs ro", but it is no use, it also mount
+> NFS
+> > > > >
+> > > > > Probably because you mistyoed  the  device
+> > > name?  There
+> > > > is  an  'o'
+> > > > > missing, it seems.
+> > > > >
+> > > > > > root,how can i mount /dev/mtdblock0
+> (ROMFS) as
+> > > root
+> > > > > > filesystem?I used linux2.4.4 from denx .
+> > > > >
+> > > > > Just pass "root=/dev/mtdblock0", that's all.
+> > > >
+> > > > This will not work. You must use
+> > > "root=/dev/mtdblock/0" and
+> > >
+> > > wrong! Wolfgang is correct just check how the
+> root
+> > > parameter is parsed
+> > > in
+> > > init/do_mounts.c function name_to_kdev_t().
+> > >
+> > > If you pass root=/dev/mtdblock/0 it will try to
+> > > convert the third "/" to
+> > > a number which it can not and the minor number
+> > > becomes 0 which is
+> > > accedentally correct but is very wrong if you
+> plan
+> > > to mount
+> > > /dev/mtdblock/1
+> > > as you root.
+> > >
+> > > > Linux must be
+> > > > configured with devfs, devfs must be mounted
+> > > before and boot support
+> > >
+> > > It can be either way. You can use devfs in which
+> > > case you must make it
+> > > mountable at boot. You can also get away without
+> > > devfs but then you must
+> > >
+> > > suppply all the necessary device nodes in your
+> > > filesystem.
+> > >
+> > > > from ramdisk must be disabled.
+> > >
+> > > Don't spread wrong information!
+> > >
+> > > Regards,
+> > >
+> > > K.D.
+> > >
+> > > >
+> > > > Gunnar Larisch
+> > > > --
+> > > > Gunnar Larisch
+> > > > Dipl.-Ing.
+> > > > Entwicklung
+> > > > Softing AG - Dep. Industrial Communication
+> > > > Richard-Reitzner-Allee 6
+> > > > 85540 Haar (near Munich)
+> > > > Germany
+> > > > Tel.: ++49 / (0) 89 / 4 56 56 - 183
+> > > > Fax.: ++49 / (0) 89 / 4 56 56 - 399
+> > > >
+> > >
+> >
+> > 	I have try pass root=/dev/mtdblock0 to kernel,
+> > but it always mount NFS as root filesystem.Here is
+> my
+> > output message:
+> >
+> > Video Network Server v1.1
+>
+> >
+> > MPC850,32M RAM,4M FLASH,USB
+>
+> >
+>
+> >
+> >
+>
+> >
+> >
+>
+> >
+> > loaded at:     00200000 0020B1F8
+>
+> >
+> > relocated to:  00180000 0018B1F8
+>
+> >
+> > board data at: 001801B8 001801D4
+>
+> >
+> > relocated to:  00200100 0020011C
+>
+> >
+> > zimage at:     00206000 00286ADE
+>
+> >
+> > avail ram:     00287000 02000000
+>
+> >
+> >
+>
+> >
+> > Linux/PPC load: root=/dev/mtdblock0
+>
+> >
+> > Uncompressing Linux...done.
+>
+> >
+> > Now booting the kernel
+> > Linux version 2.4.4 (root@localhost.localdomain)
+> (gcc
+> > version 2.95.2 19991030 (
+> > On node 0 totalpages: 8192
+>
+> >
+> > zone(0): 8192 pages.
+>
+> >
+> > zone(1): 0 pages.
+>
+> >
+> > zone(2): 0 pages.
+>
+> >
+> > Kernel command line: root=/dev/mtdblock0
+>
+> >
+> > Decrementer Frequency: 3000000
+>
+> >
+> > Calibrating delay loop... 47.61 BogoMIPS
+>
+> >
+> > Memory: 30732k available (988k kernel code, 380k
+> data,
+> > 52k init, 0k highmem)
+> > Dentry-cache hash table entries: 4096 (order: 3,
+> 32768
+> > bytes)
+>
+=== message truncated ===
 
-I came to the conclusion that you can either pivot_root or use /linuxrc
-but not both.
-
-i.e. if you 'turn on' the special /linuxrc running code you can't pivot
-root from it.  it's designed to modload a few modules, enough so the kernel's
-own code can mount a file system.  that's it.  and it better return since
-the kernel is not done initializing.
-
-I want to use pivot_root, so I don't use the special /linuxrc running
-code.  Instead I use "init=/linuxrc" as part of the command line.  If
-you do this your first script should work fine (pivot follwed by
-chroot).  But to be honest, I don't chroot.  I don't think it's
-necessary.
-
-I'd love to hear comments on this.
-
-(actually, looking closer, your 2nd script solves the big problem, which
-it the changing of the real root dev #.   I'll bet it would work if it
-unmounted /dev/hda2 before returning)
-
--brad
-
->
->Using the 'new style' (not terminating linuxrc)
->/linuxrc runs the following sequence:
->  mount -o ro /dev/hda2 /new-root
->  cd /new-root
->  mkdir initrd
->  pivot_root . initrd
->  exec chroot . sbin/init dev/console 2>&1
->But /linuxrc seems to be runnnig as PID 10, and
->sbin/init doesn't start.
->
->Using the 'old style' (linuxrc terminates and kernel
->starts init):
->  mount -o ro /dev/hda2 /new-root
->  cd /new-root
->  mkdir initrd
->  echo 0x0302 > /proc/sys/kernel/real-root-dev
->  exit 0
->The mount fails with EBUSY in mount_block_root()
->because the root device is already mounted:
->
->Attempting to find a root file system on hda2...
-> hda1 hda2
-> hda: hda1 hda2
->XFS mounting filesystem ide0(3,2)
->Starting XFS recovery on filesystem: ide0(3,2) (dev:
->3/2)
->Ending XFS recovery on filesystem: ide0(3,2) (dev:
->3/2)
->VFS: busy inodes on changed media.
->err=-16, p=ext2, name=/dev/root  <--
->VFS: Cannot open root device "" or 03:02
->Please append a correct "root=" boot option
->Kernel panic: VFS: Unable to mount root fs on 03:02
->
->
->For the old style to work, I have to not mount the
->filesystem at all in my /linuxrc. I'm using
->2.4.19-pre7 from bk (1.948)
->
->-Brian
->
->
->
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
