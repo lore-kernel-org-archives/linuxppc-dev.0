@@ -1,26 +1,27 @@
-Message-Id: <m132D91-001SyaC@bucks>
-From: diekema@bucks.si.com (diekema_jon)
-Subject: MontaVista 7xx toolchain can produce code for MPC8260
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Wed, 14 Jun 2000 09:23:47 -0400 (EDT)
-Cc: all@cideas.com
+From: "Navin Boppuri" <nboppuri@myiagent.com>
+To: "Kirk Haderlie" <khaderlie@vividimage.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: FADS 823
+Date: Wed, 14 Jun 2000 14:30:20 +0100
+Message-ID: <NEBBLLEGJMLHPJEFEOKPAEBOCAAA.nboppuri@myiagent.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <319E391E2049D311843500609457383D07FC51@exchange.vividimage.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-	Recently, I have struggling with how to compile/link
-	applications for the MPC8260 with hard floating point.  I am
-	able to statically link applications from an iMac running
-	Yellow Dog Linux Champion Server version 1.2, and have them to
-	run on the EST SBC8260.
+The 8xxrom-0.3.0 source which I downloaded from you site has errors.
+Especially, the fads.h file is corrupt. The structure defined for the board
+info is incorrect. The '#ifndef __ASSEMBLY__' is missing which gives you
+errors in compilation.  I corrected that error but I still am getting a
+bunch of erros.
 
-	The MontaVista (http://www.mvista.com/) 7xx toolchain produces
-	hard floating point, and this code will run on the MPC8260.  The
-	MontaVista 7xx toolchain can be obtained from:
+Does someone have an original source of the 8xxrom-0.3.0 code with support
+for the fads board? Please help. I need this boot code real bad.
 
-	ftp://ftp.mvista.com/pub/CDK/wip/common/RPMS
-	ftp://ftp.mvista.com/pub/CDK/wip/ppc_7xx/RPMS/
+Thank you.
+Navin.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
