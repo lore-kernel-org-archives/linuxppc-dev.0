@@ -1,82 +1,97 @@
-Date: Thu, 10 Aug 2000 11:21:06 -0700 (PDT)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: ian reinhart geiser <geiseri@msoe.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: X4 Rage 128 Driver Error:
-In-Reply-To: <200008101749.e7AHnfM28487@lists.msoe.edu>
-Message-ID: <Pine.LNX.4.10.10008101120460.13424-100000@shell.unixbox.com>
+Message-ID: <3992F340.F9F6314B@motorola.com>
+Date: Thu, 10 Aug 2000 13:24:00 -0500
+From: Jeffrey Hawkins <Jeffrey.F.Hawkins@motorola.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeffrey Hawkins <Jeffrey_Hawkins-CJH016@email.mot.com>
+CC: Franz.Sirl-kernel@lauterbach.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: PPC Versions of Glibc and GCC Status
+References: <3992EAE6.27CF4490@motorola.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Oops, typo.  sorry, resync up and you should be fine.
+Franz,
+
+I noticed after sending you the e-mail, that I addressed
+you as Frank, rather than Franz.  My apologies, I guess
+I have Frank on the brain, since I work closely with a
+Frank...
+
+Jeff
 
 
-ani
-
-
-
-
-On Thu, 10 Aug 2000, ian reinhart geiser wrote:
-
+Jeffrey Hawkins wrote:
 >
-> Greetings,
-> 	I am having problems building rage drivers for X4.0.1 on my
-> 	imac DV.
+> Frank,
 >
-> 	I always seem to get to following error:
-> rm -f r128_driver.o
-> gcc -c -O2 -fsigned-char   -I.
-> -I../../../../../../programs/Xserver/hw/xfree86/common
-> -I../../../../../../programs/Xserver/hw/xfree86/os-support
-> -I../../../../../../programs/Xserver/mfb
-> -I../../../../../../programs/Xserver/mi
-> -I../../../../../../programs/Xserver/hw/xfree86/xaa
-> -I../../../../../../programs/Xserver/hw/xfree86/rac
-> -I../../../../../../programs/Xserver/fb
-> -I../../../../../../programs/Xserver/cfb
-> -I../../../../../../programs/Xserver/hw/xfree86/xaa
-> -I../../../../../../programs/Xserver/hw/xfree86/ramdac
-> -I../../../../../../programs/Xserver/hw/xfree86/vgahw
-> -I../../../../../../programs/Xserver/hw/xfree86/fbdevhw
-> -I../../../../../../programs/Xserver/hw/xfree86/ddc
-> -I../../../../../../programs/Xserver/hw/xfree86/i2c
-> -I../../../../../../programs/Xserver/hw/xfree86/os-support/vbe
-> -I../../../../../../programs/Xserver/hw/xfree86/int10
-> -I../../../../../../programs/Xserver/Xext
-> -I../../../../../../include/fonts -I../../../../../../programs/Xserver/include
-> -I../../../../../../exports/include/X11
-> -I../../../../../../include/extensions
-> -I../../../../../../programs/Xserver/hw/xfree86/xf24_32bpp
-> -I../../../../../.. -I../../../../../../exports/include  -Dlinux -D__powerpc__
-> -D_POSIX_C_SOURCE=199309L -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_BSD_SOURCE
-> -D_SVID_SOURCE  -D_GNU_SOURCE  -DSHAPE -DXINPUT -DXKB -DLBX -DXAPPGROUP
-> -DXCSECURITY -DTOGCUP  -DXF86BIGFONT -DDPMSExtension  -DPIXPRIV -DPANORAMIX
-> -DGCCUSESGAS -DAVOID_GLYPHBLT -DPIXPRIV -DSINGLEDEPTH -DXFreeXDGA
-> -DXvExtension -DXFree86LOADER  -DXFree86Server -DXF86VIDMODE  -DSMART_SCHEDULE
-> -DX_BYTE_ORDER=X_BIG_ENDIAN -DNDEBUG   -DFUNCPROTO=15 -DNARROWPROTO
-> -DIN_MODULE   r128_driver.c
-> r128_driver.c: In function `R128RestoreMode':
-> r128_driver.c:2108: `CONFIG_CNTL' undeclared (first use in this function)
-> r128_driver.c:2108: (Each undeclared identifier is reported only once
-> r128_driver.c:2108: for each function it appears in.)
-> make: *** [r128_driver.o] Error 1
+> I am currently utilizing your current versions of GCC
+> 2.95.3-2c and GLIB2.1.3-15d for my development.  Thanks
+> for all the hard work....
 >
-> I am using the latest rsync from LinuxPPC.org so i figured it would work.
-> Can anyone point me in a better direction?
+> I am experiencing a few issues with LinuxThreads, which upon
+> querying the GNU developers/lists, I have found the issues
+> may have been fixed in the 2.1.9x and 2.2-beta versions.
+> The required fixes are in the LinuxThreads Library, as well
+> as, in other Libraries.
 >
-> Thanks
+> Are you currently integrating/migrating your
+> 2.1.3 versions with 2.1.9x or 2.2.x ?  If you are not
+> planning on doing this, have the changes you have made,
+> or the changes by other LinuxPPC Developers, both to the
+> GCC and GLIBs, been submitted and incorporated in the GNU
+> running changes ?
 >
-> 	-ian reinhart geiser
+> I am just starting the process of going through the Source
+> for 2.1.91 and checking the differences with the 2.1.3-15d.
+> I am querying you on your efforts, and others, so that I don't
+> waste time duplicating what has already been done.  I was
+> hoping to use GLIB 2.1.91 off the shelf, but I know this
+> will probably not be the case.
+>
+> Any feedback, or tips on things to look out for (such as
+> Libraries/Modules you had to make extensive updates to, #ifdefs
+> and #defines that need to be added for PowerPC), would be
+> appreciated.  I will be making the Source Tarballs and RPMs
+> available once I have completed this task.
+>
+> Jeff
 >
 > --
-> This message was sent from the MSOE Web Mail interface at
-> http://mail.msoe.edu/
+> ********************************************************
 >
+> Jeffrey Hawkins
 >
+> Senior Staff Software Engineer
+> Motorola Wireless Data Solutions Engineering
+>
+> Address: DEPT:  DQ525
+>          MS:    IL-02-1055A
+>          1301 East Algonquin Road
+>          Schaumburg, IL 60196
+>
+> Phone:   (847)576-7463
+> FAX:     (847)576-7737
+>
+> ********************************************************
 >
 
+--
+********************************************************
+
+Jeffrey Hawkins
+
+Senior Staff Software Engineer
+Motorola Wireless Data Solutions Engineering
+
+Address: DEPT:  DQ525
+         MS:    IL-02-1055A
+         1301 East Algonquin Road
+         Schaumburg, IL 60196
+
+Phone:   (847)576-7463
+FAX:     (847)576-7737
+
+********************************************************
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
