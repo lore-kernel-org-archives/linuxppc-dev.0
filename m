@@ -1,48 +1,69 @@
-Message-ID: <39453A10.55C5F4D6@embeddededge.com>
-Date: Mon, 12 Jun 2000 15:29:20 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <3945518F.B3185904@noos.fr>
+Date: Mon, 12 Jun 2000 23:09:35 +0200
+From: Guillaume Laurhs <guillaume.laures@noos.fr>
+Reply-To: guillaume.laures@noos.fr
 MIME-Version: 1.0
-To: Cort Dougan <cort@fsmlabs.com>
-CC: rodgersg@us.ibm.com, linuxppc-dev@lists.linuxppc.org, bh40@calva.net,
-        paulus@linuxcare.com, geert@linux-m68k.org, paubert@iram.es,
-        dburcaw@terraplex.com, hollis@linuxppc.com, drdoc@netcene.com,
-        gdt@linuxppc.org, dan_bethe@yahoo.com, khendricks@ivey.uwo.ca,
-        tgall@us.ibm.com, trini@kernel.crashing.org, jcarr@linuxppc.com,
-        jhaas@linuxppc.com, devel@yellowdoglinux.com, tomcook@us.ibm.com
-Subject: Re: PowerPC BOF at Ottawa Linux Symposium July 19
-References: <OF1ED8D32F.3AA2FD26-ON852568F9.0061D9AD@pok.ibm.com> <20000610182014.H31097@medea.fsmlabs.com>
-Content-Type: text/plain; charset=us-ascii
+To: Charles E Leiserson Jr <locutus@MIT.EDU>
+CC: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: SMP
+References: <200006121812.OAA19506@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Cort Dougan wrote:
->
-> I won't be in Ottawa but I have a suggestion for something to talk about
-> there if anyone would be interested in it.  Could you have a brainstorming
-> session about how to re-structure the chip/architecture portions of
-> arch/ppc/?
+Charles E Leiserson Jr a *crit :
 
-I don't know if I will be there, but I would like to make a comment
-on this as well.  The BOF started as a workstation/server discussion,
-and the chip/architecture issues are really the result of the variety
-of embedded PowerPC processors and boards.
+> You can get a working SMP kernel at ftp://borg.mit.edu/pub/linux/linuxppc/kerne
+> ls/multiprocessor/ with all of its support files.  It's a bit old (2.2.12),
+> but it works.
 
-There is PREP/CHRP/PowerMac that you have successfully combined, with
-minor configuration differences among all of them.  Then we have lots
-of different PowerPC cores with highly integrated functional units on
-a variety of different board configurations.  I think we are fortunate
-to be able to provide this wide range of solutions, but it does present
-the source code structure challenge as Cort (and others) have discussed.
+Unfortunately, it doesn't work. BootX 1.2.2 shows up only one penguin, and I get
+the same /proc/cpuinfo.
+I realized that I have this oddity in dmesg :
 
-As a workstation/server BOF, I don't know how much interest exists to
-discuss this.  The easy answer is a set of orthogonal directory trees,
-but I think the highest priority should be on maintaining a set of
-common files.  Having experienced splitting some processor dependent
-files, I would still take the #ifdefs over tracking similar changes
-across multiple files.
+Entering SMP Mode...
+Processor 1 is stuck.
+
+On 2.2.16 it's the same (dmesg from the begining) :
+
+device tree used 31392 bytes
+Total memory = 64MB; using 256kB for hash table (at c0240000)
+Linux version 2.2.16 (root@pm9500) (gcc version 2.95.2 20000313 (Debian
+GNU/Linux)) #2 SMP Mon Jun 12 16:59:05 CEST 2000
+PCI bus 0 controlled by bandit at f2000000
+Cache coherency enabled for bandit/PSX at f2000000
+PCI bus 1 controlled by bandit at f4000000
+Cache coherency enabled for bandit/PSX at f4000000
+System has 32 possible interrupts
+via_calibrate_decr: decrementer_count = 112500 (675003 ticks)
+Console: colour dummy device 80x25
+Calibrating delay loop... 358.81 BogoMIPS
+Memory: 62364k available (1228k kernel code, 1848k data, 96k init) [c0000000,c40
+00000]
+Dentry hash table entries: 8192 (order 4, 64k)
+Buffer cache hash table entries: 65536 (order 6, 256k)
+Page cache hash table entries: 16384 (order 4, 64k)
+POSIX conformance testing by UNIFIX
+Entering SMP Mode...
+Processor 1 is stuck.            <--------------------
+PCI: Probing PCI hardware...
+
+It sounds like the second processor cannot be correctly started...
+
+I tried with an older bootX (1.1.3) it's the same. For now, I can't quik, I think
+Darwin messes up quik (it's installed on a partition before linux).
+
+The cards work well under MacOS, distributed.net client makes a full use of both
+processors (which brings the 9500 a bit higher than a G3@333, but still 3,5 times
+lower than a G4@450..., always accordingto dnet's client)
 
 
-	-- Dan
+Any though about this ? Any way to debug ??
+
+Thanks,
+
+GoM
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
