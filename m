@@ -1,39 +1,41 @@
-Message-ID: <399A3E0F.EA9685E9@wanadoo.fr>
-Date: Wed, 16 Aug 2000 09:09:03 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+Message-ID: <399A4220.23A3B0F5@research.canon.com.au>
+Date: Wed, 16 Aug 2000 17:26:24 +1000
+From: Graham Stoney <greyham@research.canon.com.au>
 MIME-Version: 1.0
-To: toa@pop.agri.ch
-CC: Jack Howarth <howarth@bromo.med.uc.edu>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: bk 2.4-test7 broken
-References: <200008150304.UAA31773@bromo.med.uc.edu> <39992943.C267C4CB@wanadoo.fr> <399989FD.29EFBABA@pop.agri.ch> <3999BA6D.C7C249B0@pop.agri.ch>
+To: dan@netx4.com
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Help with string.S
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Andreas Tobler wrote:
-[]
-> A previous test on linux-pmac-devel(2.4.0-test5) was successful (until
-> to the adaptec...), so I tought the changes got in in bk too. Nop, a
-> reminder on a previous mail from Takashi I checked the time.c in
-> arch/ppc/kernel. The 'mftb' call is still there..... (which the 601
-> doesn't likes/understands)
->
-> So I think a merge between linuxcare-devel and bk isn't done up to now...
+Casting our minds back to July, Dan Malek wrote:
+> OK, I think I am bailing out here.  For some reason, if I remove
+> the 'dcbz' instructions on the MPC8xx processor the world is just
+> a better place.  I don't know why, maybe because of some of the
+> TLB mapping, but I can't find a reason.
 
-Just for the record: I compiled and run OK both
-- linux-pmac-devel as rsynced right now (version 2.4.0-test6)
-- linux-bk-devel as of 3 days ago (version 2.4.0-test5)
+What was the eventual outcome of this?  I've been doing some 2.2.13
+kernel profiling on the 860, and __copy_tofrom_user is coming up as a
+hotspot.
+I tried dropping in the new improved version from
+linux-2.4.0-test7-pre4, and none of the 8xx mods are in there: it'l only
+work for 32 byte cache lines.
 
-For those of you who get up to "freeing kernel memory": Did you see the
-patch on the linux-kernel mailing list for fs/exec.c
-http://boudicca.tux.org/hypermail/linux-kernel/latest/0266.html?
-A similar patch is contained in the latest (test7-pre4) patch from
-Linus.
+I hacked it around and found the same as you: it won't work with the
+dcbz in there, and of course it doesn't run any faster than the old
+version without it.  It's certainly getting more complex in there, and I
+see your point about whether the extra code will actually make it run
+any faster, especially on 8xx CPUs with small I-caches. I'd be keen to
+test whatever you've come up with to see if it's actually better than
+the old 2.2 code on 8xx CPUs.
 
-I am now trying to back out the recent changes to softirq&Cie...
+It sounds like a few people have at least had a shot at adding support
+for other than 32 byte cache lines, but none have propagated into the
+official kernels; how does that happen anyway?
 
---
-Martin
+Thanks,
+Graham
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
