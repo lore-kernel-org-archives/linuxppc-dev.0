@@ -1,34 +1,45 @@
-Date: Sat, 24 Jul 1999 11:14:01 +1000
-Message-Id: <199907240114.LAA01151@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: bh40@calva.net
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <19990723144647.023789@mail.mipsys.com> (message from Benjamin
-	Herrenschmidt on Fri, 23 Jul 1999 14:46:47 +0200)
-Subject: Re: vger 2.2.10 compile failures
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <19990723144647.023789@mail.mipsys.com>
+Date: Fri, 23 Jul 1999 19:48:31 -0600 (CST)
+From: Kamran Karimi <karimi@cs.uregina.ca>
+To: linuxppc-announce@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
+        linuxppc-user@lists.linuxppc.org
+Subject: DIPC for PowerPC
+Message-ID: <Pine.SGI.3.91.990723194451.18857P-100000@MERCURY.CS.UREGINA.CA>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt <bh40@calva.net> wrote:
+Hi,
 
-> I'm getting link errors when compiling today's vger 2.2.10 with xmon
-> support enabled:
-> 
-> arch/ppc/xmon/x.o: In function `backtrace':
-> arch/ppc/xmon/x.o(.text+0x129e): undefined reference to `ret_from_int'
+ I did a blind port of DIPC (http://wallybox.cei.net/dipc) to PowerPC
+processors. Here blind means that due to the lack of equipment, I have not
+done any tests, not even a kernel compile. I would be grateful if
+someone of this list could test the patch, available by anonymous FTP
+from orion.cs.uregina.ca /pub/dipc. More adventurous people can test the
+whole system (available from the same place). The following is the readme
+file accompanying the new patch.
 
-I got tricked by cvs about this, maybe you have too.  I had a stable
-(linux_2_2) cvs tree, and when I did `cvs update -dP', I got an xmon
-directory, but it was the xmon from the head of the tree, i.e. the
-devel branch.  I should have been doing `cvs update -dP -rlinux_2_2',
-of course.  If you do that it should give you the xmon from the stable
-branch (which didn't actually exist until yesterday, but now has the
-xmon.c with the correct contents).
+The file dipc-patch-1.1d.gz was prepared against a 2.2.10 linux
+kernel. It is based on the DIPC 1.1c kernel patch and has the following
+additions:
+ 
+ *) The port to MIPS by Ralf Baechle (not tested in a cluster)
+ *) The port to SPARC (blind, not compiled on target machine)
+ *) The port to PowerPC (blind, not compiled on target machine)
+ *) Some memory management modifications as proposed by David Miller (This
+    might have introduced bugs into DIPC's shared memory subsystem)
 
-Paul.
+ The rest of the package, including the user-space dameon dipcd, some tools
+and example programs, and also the documentation of DIPC, can be found in
+the file dipc-1.1c.tgz.
+
+ Please test the patch, and if possible the whole system in a cluster, and
+report the results to me or to linux-dipc@wallybox.cei.net.
+
+-Kamran Karimi
+
+ 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
