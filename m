@@ -1,43 +1,41 @@
-Message-ID: <3ACBD134.3ECFACAD@netfall.com>
-Date: Wed, 04 Apr 2001 18:58:12 -0700
-From: Andrew Sharp <andy@netfall.com>
+Message-ID: <B171A2EF290DD4118E510010B5029006802220@feriex.feri.de>
+From: "Halfmann, Klaus" <klaus.halfmann@feri.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: RE: Hang Mounting HFS CDROM with 2.4.3 final kernel
+Date: Thu, 5 Apr 2001 07:54:53 +0200 
 MIME-Version: 1.0
-To: debian-powerpc@lists.debian.org
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: External Monitor under Pismo
-References: <20010404172943.E1AD92EFBC@apollo.valhalla.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Iain Sandoe wrote:
+> gwiz% hpmount /dev/cdrom
+> (null): /dev/cdrom: Neither Wrapper nor native HFS+ volume
+> header found (Unknown error 4294967295)
 >
-> > One has to question whether anyone would be interested in adding
-> > this to a frame buffer driver, assuming that it isn't already
-> > there.
+> > Can you create an image from the disk (with dd) and does it show the
+> > same problems ? (Id like to get that image, but I fear it may be to
+> > large for a reasonable download/test. I only have an iBook :/ )
 >
-> because it's useful? ;-)
+> Thanks for the tip.  Mounting the disk image works fine.  For the
+> benefit of others that might encounter this problem and search the
+> archives, the necessary commands are:
+>
+> 	dd if=/dev/cdrom of=cdrom.image
+> 	mount -t hfs cdrom.image /mnt -o loop
+>
+Mmh, so reading via fopen() etc. on /dev/cdrom etc. works different than
+on disk. This looks like a problem with the driver, so it may not be
+the (direct) fault of the hfs kernel driver.
 
-Interesting word.  I wonder what it means.  But all seriousness
-aside, what I meant was that if I was going to do some development
-on this, I would also simultaneously work on getting the aty128
-direct driver to work.  In other words if it's already in the 128
-driver, then I would try to get that working on Pismo, rather than
-try adding CRT support to the fb driver.  I'm trying to make sense,
-really I am.  Someone else mentioned that X4 and X3 vary greatly.  I
-am aware of those differences.
+> > This is using the built-in DVD ROM drive on a dual G4 (but only
+> > running a UP kernel).  I can mount an HFS disk without any problem.
 
-> > I've actually seen an XF86Config for driving the external monitor at
-> > different resolution(s) from the LCD, but I can't find that info at
-> > the moment.  I don't know if it works with the frame buffer
-> > server/driver, but I know that it works with the mach64 server for
-> > 3.3.6.  If I could find it, it would be worth trying....
+Can someone comment on the status in this Driver. Is there something
+new/different there ?
 
-OK, some I'm starting to get the clue that Pismo is the G3 powerbook
-w/ rage128, as opposed to Wallstreet, which is G3 PB w/mach64?  A
-couple more years and I'm sure I'll have it straight.
-
-a
+ 	Klaus Halfmann
+ 	http://www.penguinppc.org/~hasi
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
