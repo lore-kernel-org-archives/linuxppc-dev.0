@@ -1,48 +1,30 @@
-Date: Sat, 5 Aug 2000 22:20:05 -0500 (CDT)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: David Edelsohn <dje@watson.ibm.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: a GCC question 
-In-Reply-To: <200008060231.WAA22602@mal-ach.watson.ibm.com>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.1000805220927.649I-100000@ofey.earthlink.net>
+Message-ID: <398CDA96.C3CBE4C@denise.shiny.it>
+Date: Sat, 05 Aug 2000 23:25:10 -0400
+From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: progress on l2cr
+References: <39861753.8DB68BB6@denise.shiny.it> <20000731184228.18405@192.168.1.10>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 5 Aug 2000, David Edelsohn wrote:
-
-> 	I would guess that for smaller numbers of cases, GCC is deciding
-> that it is more efficient to use a series of "if" statements for a
-> decision tree instead of a switch statement.  You can explicitly code it
-> as such, e.g.,
+> >> >Is there any reason to keep the L2 cache data-only ?
+> >>
+> >> There are some rare cases where it can be useful, yes. Like when flushing
+> >> it, to avoid the flush code to pollute it.
+> >
+> >A few bytes inside a 1MB cache are't a problem IMHO. Anyway I enabled it and
+> >performance compiling programs is 15% lower.
 >
-> if (bi->dispDeviceDepth == 32)
-> ...
-> else if (bi-dispDeviceDepth == 16)
-> ...
-> else if
-> ...
-> else abort();
+> You have no reason to enable "data only" in normal use. It's used during
+> the flush cycle of the cache to avoid polluting it while the flush code
+> runs, but it's set and unset automatically, so you don't need to care.
 
-Ah, that works, though the code doesn't work for some other unknown
-reasons now, probably due to something along the line of things Olaf was
-talking about recently.  Thanks!
+Ok, but /proc/.../l2cr tells it's data-only at boot.
 
-Is there other kind of C constructs besides a switch statement which uses
-.rodata or some such internally that you know of?  If the use of .rodata
-is explicit like for the case of printk("I'm in .rodata."), we can fix the
-reference dynamically pretty easily, but not the internal one like for the
-case of a switch statement.
-
-> (BTW you do not provide a default case for some illegal value in your
-> switch statement.)
-
-The default action is to do nothing, so there is no default case in there.
-
-
-Takashi Oe
-
+Bye.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
