@@ -1,20 +1,19 @@
-Date: Mon, 11 Oct 1999 20:10:49 -0700 (MST)
+Date: Mon, 11 Oct 1999 20:20:26 -0700 (MST)
 From: Tom Rini <trini@kernel.crashing.org>
-To: Ryan Nielsen <ran@krazynet.com>
-cc: Eric Dorland <dorland@lords.com>, Elliot Lee <sopwith@redhat.com>,
-        linuxppc-dev@lists.linuxppc.org
+To: Eric Dorland <dorland@lords.com>
+cc: Elliot Lee <sopwith@redhat.com>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: esound for PPC
-In-Reply-To: <19991011200346.A258@gondolin.asf>
-Message-ID: <Pine.LNX.4.10.9910112010030.15511-100000@opus.bloom.county>
+In-Reply-To: <19991011231039.A526@HSE-MTL-ppp4363.qc.sympatico.ca>
+Message-ID: <Pine.LNX.4.10.9910112018260.15511-100000@opus.bloom.county>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 11 Oct 1999, Ryan Nielsen wrote:
+On Mon, 11 Oct 1999, Eric Dorland wrote:
 
-> Tom Rini wrote:
+> On Mon, Oct 11, 1999 at 01:09:12PM -0700, Tom Rini wrote:
 > > 
 > > On Mon, 11 Oct 1999, Eric Dorland wrote:
 > > 
@@ -27,13 +26,18 @@ On Mon, 11 Oct 1999, Ryan Nielsen wrote:
 > > Elliot has the old set of patches ported up to 0.2.15, and hopefully will
 > > be in 0.2.16 :)
 > 
-> Does this fix the problem Eric wrote about ?
-> Þere is a bug in dmasound.c that causes sound to be played at 22050 Hz
-> instead of (usually) 44100 Hz if a beep (from awacs_mksound) is played.
+> Which old set of patches? I've tried Elliot's 0.2.15 and it doesn't fix 
+> the playing of 16bit sounds. BTW, you need a patch to be able to compile 
+> Elliot's 0.2.15. It seems the configure file assumes that a ppc linux is 
+> MkLinux, and uses its driver instead of OSS. It appears its MkLinux that has 
+> the little-endian sound driver, not linuxppc. Anyway the attached patch 
+> changes removes the MkLinux testing (I don't know how to tell the
+> difference), and just uses OSS.
 
-It only fixed problems that're really esound's fault (ie the static
-stuff).  Whats broken in 0.2.14 is still broken (and dmasound is crap
-anyhow :))
+The patches which exist in a copy of 0.2.14, hence any working esound.
+They did not make it into 0.2.15, but will hopefully be in 0.2.16.  It
+does tell from MkL & Linux/PPC, and it also makes everything work "ok"
+again.
 
 ---
 Tom Rini (TR1265)
