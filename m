@@ -1,30 +1,30 @@
-Message-ID: <20000324002638.12827.qmail@web1001.mail.yahoo.com>
-Date: Thu, 23 Mar 2000 16:26:38 -0800 (PST)
-From: Dan Bethe <dan_bethe@yahoo.com>
-Subject: Re: Synchronous SCSI at 10MB/s on Lombard? (fwd)
+Date: Thu, 23 Mar 2000 17:10:24 -0800
+From: Geoff Keating <geoffk@cygnus.com>
+Message-Id: <200003240110.RAA05871@localhost.cygnus.com>
 To: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+CC: libc-hacker@sourceware.cygnus.com
+Subject: Change to mman.h around 2.3.99-pre3-pre4
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> far on my Lombard. The throughput as reported by hdparm has
-> effectively
-> doubled (from 3.3 to 6.6 MB/s), so does anyone know whether this is
-> safe or there are any dangers implied when setting the transfer rate
-> that
-> high (if it only you could call this high!) on the external bus?
+Does anyone know why the file linux/include/asm-ppc/mman.h changed the
+values of MCL_CURRENT and MCL_FUTURE around kernel version
+2.3.99-pre3-pre4?
 
-	I second the question.  And what does "safe" mean?  Could these
-aggressive settings damage your data, your hardware, or both?  If it's
-just data, then that's okay for me to try.  I'll turn it off when I
-find corrupted data.
-	Thanks!
+This change causes binary incompatibility.
 
-=====
-"Don't expect your own messiah; this neverworld which you desire is
-only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
+They used to be
 
+#define MCL_CURRENT     0x2000          /* lock all currently mapped pages */
+#define MCL_FUTURE      0x4000          /* lock all additions to address space */
+
+but they're now
+
+#define MCL_CURRENT	1		/* lock all current mappings */
+#define MCL_FUTURE	2		/* lock all future mappings */
+
+--
+- Geoffrey Keating <geoffk@cygnus.com>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
