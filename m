@@ -1,41 +1,50 @@
-Date: Sat, 4 Sep 1999 00:13:53 -0700 (MST)
-From: Tom Rini <trini@kernel.crashing.org>
-To: jeramy b smith <ultrapenguin@netscape.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Re: Possible Bug in XFree3.3.5]
-In-Reply-To: <19990904065630.24625.qmail@ww187.netaddress.usa.net>
-Message-ID: <Pine.LNX.4.10.9909040013250.8429-100000@opus.bloom.county>
+Message-ID: <37D209E2.873EDD17@austin.rr.com>
+Date: Sun, 05 Sep 1999 01:12:50 -0500
+From: John Bryan <johnb@austin.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: TCP module for perl
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 4 Sep 1999, jeramy b smith wrote:
+Howdy,
 
-> Tom Rini <trini@kernel.crashing.org> wrote:
-> >Well shoot.  I hadn't made an announcement yet for a reason 
-> >(newer, -1a locally :))
-> 
-> Unfortunately the interim linuxppc.org page had a link to your directory for
-> the 3.3.4 release. Since the interim page is the old page, I went there to see
-> if you had 3.3.5.
+I am looking for a TCP module to use with the Perl
+install that comes with LinuxPPC 1999.
 
-Yeah, oh well.
+At work for Solaris I have it referenced as tcp.pl
 
-> >I wonder if all of this has to do w/ the 15/16 bit fix...  Hmm..---Tom >Rini
-> (TR1265)<br>http://gate.crashing.org/~trini/
-> 
-> The first time I ran the new setup, it gave me a non-reproducible error in the
-> same place that is now in my buffer history. I think it might take a reboot to
-> get the original eror, not sure. There was a method or variable mach64?????blt
-> (not sure) that had an illegal size or number. Vague, yes.
+I am trying to do something like:
 
-But is 16 now working fine??
+-------
+#!/usr/bin/perl
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+use Socket;
 
+require "/usr/local/bin/tcp.pl";  <----don't have
+
+if (open_TCP(F, $ARGV[0], 1411) == undef) {
+    print "Error connecting to server at $ARGV[0]\n";
+    exit(-1);
+}
+
+print F "GET http://some.domain.com HTTP/2.0\n\n";
+-------
+
+When I try without the 'require' it says the open_TCP
+subroutine is undefined, so I don't have the tcp.pl
+apparently.
+
+It is not on my Linux install, at least not under /usr,
+and the FAQ-o-matic didn't turn up anything on it.
+
+I will keep digging around 'the usual places' and see
+what I might turn up, but if anyone knows where I can
+pick this up for LPPC, I'd sure appreciate it.
+
+Thanks,
+JB
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
