@@ -1,37 +1,28 @@
-Date: Thu, 10 Jul 2003 02:49:04 -0500 (CDT)
-Message-Id: <200307100749.h6A7n4Ya072918@sullivan.realtime.net>
+Date: Thu, 10 Jul 2003 02:49:17 -0500 (CDT)
+Message-Id: <200307100749.h6A7nHkv072923@sullivan.realtime.net>
 To: linuxppc-dev@lists.linuxppc.org
 From: Milton Miller <miltonm@bga.com>
-Subject: [PATCH] allow use of biarch binutils to build
+Subject: [PATCH] fix CONFIG_CMDLINE for MULTIPLATFORM
 Cc: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I built a ppc64 / ppc biarch binutils.  The output arch is chosen
-to be powerpc:common64 by default before the diff.  Alan Modra acked
-the choice of powerpc:common.
+The strlcpy conversions moved a set of cmdline up.   But being unconditional
+it breaks the CONFIG_CMDLINE case.  Since the bufer should start out
+zero anyways, delete this line.
 
 
-===== arch/ppc/vmlinux.lds.S 1.22 vs edited =====
---- 1.22/arch/ppc/vmlinux.lds.S	Sat Jun 14 01:41:51 2003
-+++ edited/arch/ppc/vmlinux.lds.S	Wed Jul  9 23:19:53 2003
-@@ -1,6 +1,6 @@
- #include <asm-generic/vmlinux.lds.h>
-
--OUTPUT_ARCH(powerpc)
-+OUTPUT_ARCH(powerpc:common)
- jiffies = jiffies_64 + 4;
- SECTIONS
- {
-===== arch/ppc/boot/ld.script 1.6 vs edited =====
---- 1.6/arch/ppc/boot/ld.script	Thu May 29 06:06:53 2003
-+++ edited/arch/ppc/boot/ld.script	Wed Jul  9 23:17:20 2003
-@@ -1,4 +1,4 @@
--OUTPUT_ARCH(powerpc)
-+OUTPUT_ARCH(powerpc:common)
- SECTIONS
- {
-   /* Read-only sections, merged into text segment: */
+===== arch/ppc/kernel/setup.c 1.40 vs edited =====
+--- 1.40/arch/ppc/kernel/setup.c	Mon Jun 30 12:10:33 2003
++++ edited/arch/ppc/kernel/setup.c	Thu Jul 10 01:17:03 2003
+@@ -405,7 +405,6 @@
+ 	 * are used for initrd_start and initrd_size,
+ 	 * otherwise they contain 0xdeadbeef.
+ 	 */
+-	cmd_line[0] = 0;
+ 	if (r3 >= 0x4000 && r3 < 0x800000 && r4 == 0) {
+ 		strlcpy(cmd_line, (char *)r3 + KERNELBASE,
+ 			sizeof(cmd_line));
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
