@@ -1,18 +1,22 @@
-Return-Path: <markc@mail.com>
-Received: from relay04.roc.ny.frontiernet.net (relay04.roc.ny.frontiernet.net
-	[66.133.131.37]) by ozlabs.org (Postfix) with ESMTP id 3986067A81
+Return-Path: <peter.asemann@web.de>
+Received: from smtp08.web.de (smtp08.web.de [217.72.192.226])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D55A967A9C
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 Feb 2005 23:55:27 +1100 (EST)
-Message-ID: <002b01c50d14$d5f6b770$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: <francois.ruvoen@libertysurf.fr>,
-	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-References: <IBJDLO$2F7CB4091C41824099E5E47AB0570FD3@tiscali.fr>
-Date: Mon, 7 Feb 2005 07:59:16 -0500
+	Tue,  8 Feb 2005 01:53:51 +1100 (EST)
+Received: from [131.188.52.25] (helo=[131.188.52.25])
+	by smtp08.web.de with asmtp (TLSv1:RC4-MD5:128) (WEB.DE 4.103 #192)
+	id 1CyAGn-0003Ti-00
+	for linuxppc-embedded@ozlabs.org; Mon, 07 Feb 2005 15:53:45 +0100
+Message-ID: <420780F6.70209@web.de>
+Date: Mon, 07 Feb 2005 15:53:42 +0100
+From: Peter Asemann <peter.asemann@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Re: Microwindows on Icecube/CoralP
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Sender: peter.asemann@web.de
+Subject: Creating a configuration for my custom MPC875 board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,21 +27,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Some days ago I was told on this mailinglist I needed to create a custom 
+configuration in order to get linux running on my custom hardware.
 
->I have been playing with the CoralP, Icecube and Debian.
->Works fine, thanks to the tutorial on the Denx site.
->I now would like to see the microwindows stuff working. I
->have been trying the demos from the ELDK but I get strange
->colors, it seems my palette is all wrong. The same happens
->when I recompile the latest version of microwindows (except
->I get yet another palette).
->Any pointers?
+So I did as I was told and created an own <name>_defconfig and entries 
+in the menu via editing arch/ppc/config.in and so on.
 
-One unexpected thing about the 5200 is that it swaps bytes
-to/from the PCI buss.  So if you write a 32 bit pixel, for
-instance 0x12345678, it will be written to PCI as
-0x78563412.  Presumably this is based on an assumption
-that PCI targets will be little-endian.  So you might try
-reversing bytes and see if the palettes make sense.
+Well, every board seems to include it's custom header file from 
+platforms/<NAME>.h in the include/asm/mpc8xx.h header file.
+Now I'm curious if I also need to include something?
 
-Mark Chambers
+It seems there usually isn't much stuff in the <name>.h file, only an 
+IMAP_ADDR define and the definition of struct bd_info.
+
+Do I need this stuff - or how do I find out?
+
+Best regards,
+
+Peter Asemann
