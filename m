@@ -1,47 +1,27 @@
-Date: Wed, 13 Jan 1999 13:27:28 -0600 (CST)
-From: "David A. Gatwood" <marsmail@globegate.utm.edu>
-To: a sun <asun@saul9.u.washington.edu>
-cc: linuxppc-dev@lists.linuxppc.org, bh40@calva.net
-Subject: Re: Porting to NuBus PowerMacs
-In-Reply-To: <199901131910.LAA28570@saul9.u.washington.edu>
-Message-ID: <Pine.LNX.3.96.990113132556.9506A-100000@globegate.utm.edu>
+Message-id: <fc.000f7374000bbf09000f7374000bbf09.bbf2e@concordacademy.org>
+Date: Wed, 13 Jan 1999 14:42:32 -0500
+Subject: Re: Pre-R5 installer, some bug fixes
+To: linuxppc-dev@lists.linuxppc.org
+From: Duncan_Mak@concordacademy.org (Duncan Mak)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 12 Jan 1999, a sun wrote:
+> 3.  I couldn't get any of the rpms from biggi--I think the symlinks
+confuse the installer.  I > ended up downloading the rpms to a local
+computer and ftp installing from that computer.   > Without any symlinks
+in the path, the installer found the rpms.
 
-> heh. am i correct in assuming then that just using memory barriers
-> just won't cut it for a certain device that seems to have a bunch of
-> delay()'s sprinkled throughout it? strangely, this same piece of
-> hardware seems to be necessary to get the newer tech g3 extension and
-> the mklinux booter happy... any insights there?
+well, is it possible that someone at linuxppc.org put up ftp.linuxppc.org
+or dev.linuxppc.org with one big directory of RPMS instead of a software
+dir with RPMS in categories? i like the categories at all, but if that is
+what making me not do ftp install, well... i want ftp install.
 
-Actually, on looking at it, there is the use of memory barriers.  The real
-change is in the code for the memory barriers (and possibly in other
-places, too... not certain).  See 
+thanks,
 
-.../osfmk/src/mach_kernel/ppc/proc_reg.h:440
-
-in the MkLinux sources.  :-)
-
-
-Later,
-David
-
-David A. Gatwood                         Visit globegate's internet
-dgatwood@globegate.utm.edu                  talker, Deep Space 36
-http://globegate.utm.edu                telnet globegate.utm.edu:9624
-
------BEGIN GEEK CODE BLOCK-----
-Version 3.1
-GCS/CC/FA/H/L/MC/M/MU/PA/TW d-@ s:>- a-- C++ ++>$ UBLAS*++ ++>$
-P+?>$ L++ +>$ !E--- W++ +>$ N++(++ +)>++ +$ !o? K-? !w--- !O
-M++>$ !V-- PS+>$ !PE- Y+>$ PGP+>$ t++ +>$ 5+>++ ++$ !X- !R tv+>$
-b++>$ !DI !D- G++(++ +)>$ e>++ ++ h--! r--- !y-
-------END GEEK CODE BLOCK------
+duncan.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
