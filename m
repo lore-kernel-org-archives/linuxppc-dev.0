@@ -1,39 +1,42 @@
-To: byf <byfmail@yeah.net>
-Cc: embeded powerpc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: a simple question about ppcboot 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 17 May 2001 09:55:41 +0800."
-             <20010517015601.437D91C9E8999@smtp2.yeah.net>
-Date: Thu, 17 May 2001 08:20:51 +0200
-Message-Id: <20010517062056.BE7B710AA0@denx.denx.de>
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Date: Fri, 22 Jun 2001 14:18:08 +0200 (MEST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	Takashi Oe <toe@unlserve.unl.edu>
+Subject: Re: clock drift on PPC601
+In-Reply-To: <20010621135433.22817@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.4.21.0106221405580.10296-100000@gra-lx1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <20010517015601.437D91C9E8999@smtp2.yeah.net> you wrote:
+On Thu, 21 Jun 2001, Benjamin Herrenschmidt wrote:
+
+> >
+> >OTOH, I have a problem with my MVME2400/2600. Sometimes the calibrated
+> >frequency is wrong by ~400ppm (about 1.5s/hour), most of the time it's
+> >correct however. I can't understand how I get 400 microseconds off out of
+> >a 1 second calibration period with interrupts masked. The value given by
+> >the firmware never varies that much.
+> >
+> >I suspect that reading the CUDA RTC takes time. So using it for
+> >calibration would not be very precise, no ?
 >
-> I have a question about ppcboot,
-> How should I set ethaddr for using tftpboot to load kernel image?
+> That's definitely an issue. We used to have some code based on the
+> VIAs in the mac-io chip. This should be more precise and I beleive
+> the VIA timer frequency is constant on all macs.
 
-You better ask such questions on the PPCBoot mailing list.
+It is still this way on the Macs, although we cold use a longer interval
+to improve precision (it's done once at boot) or take the firmware value.
+On the MVME boards I have however, the precision/stability of the legacy
+ISA timer looks like a joke, and only solution is to use the RTC. I'm
+still trying to figure out if the variations I see are a bug or if the RTC
+has hmm... a flexible definition of the second :-)
 
-Use the "setenv"  command  to  set  environment  variables,  and  the
-"saveenv"  command to save the current settings in persistent storage
-(Flash or EEPROM, depending on your hardware). So you type:
+	Regards,
+	Gabriel.
 
-	=> setenv ethaddr xx:yy:zz:aa:bb:cc
-	=> saveenv
 
-Be careful to chose a VALID (unique, assigned to your board) address!
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-All men should freely use those seven words which have the  power  to
-make any marriage run smoothly: You know dear, you may be right.
-
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
