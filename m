@@ -1,36 +1,34 @@
-Message-ID: <3D31F6B2.3010900@dslextreme.com>
-Date: Sun, 14 Jul 2002 15:09:54 -0700
-From: akuster <akuster@dslextreme.com>
-Reply-To: akuster@dslextreme.com
+Message-ID: <3D3238E0.5090306@embeddededge.com>
+Date: Sun, 14 Jul 2002 22:52:16 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: ppc_devel <linuxppc-dev@lists.linuxppc.org>
-Subject: [RFC/Patch] ppc4xx_pic
+To: akuster@dslextreme.com
+Cc: ppc_devel <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [RFC/Patch] ppc4xx_pic
+References: <3D31F6B2.3010900@dslextreme.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello;
+akuster wrote:
 
-While farting around with some 4xx drivers,  I came accross a few that
-changed the level and polarity of their irq before calling request_irq().
- So I am thinking of adopting how openpic defines and gets irq level and
-polarity information and use it to define  external irqs in the board.c
-files.
+> Basicaly I check to see if a table exists and if so, update the
+> interrupt controller during ppc4xx_pic_init with the proper values.
+> Since the on-chip devices are all ready setup by the bootrom or at
+> least we have been assuming this is the case ,  I am not going to worry
+> about them.
 
-Basicaly I check to see if a table exists and if so, update the
-interrupt controller during ppc4xx_pic_init with the proper values.
- Since the on-chip devices are all ready setup by the bootrom or at
-least we have been assuming this is the case ,  I am not going to worry
-about them.
+My only suggestion is to make the table always exist (removing the
+"if it exists" option), and to represent all interrupts (like openpic
+does).  It may make the rest of the supporting software easier to
+write and will serve as a source of documentation for what the boot rom
+may configure. :-)
 
-Since I plan on updating the ppc4xx_pic , I have also added the ability
-to properly report the level of the interrupt to irq_desc[] so that
-proc/intrrupts will correct.
+Thanks.
 
-what do you think?
 
-armin
+	-- Dan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
