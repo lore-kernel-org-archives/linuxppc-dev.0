@@ -1,52 +1,61 @@
-Date: Mon, 24 Sep 2001 22:10:38 -0400 (EDT)
-From: patrick <tendim@tendim.cjb.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: More problems with Kernel 2.4.10-pre12 and mounting (SOLVED!)
-In-Reply-To: <20010924150437.I14835@plato.local.lan>
-Message-ID: <Pine.LNX.4.21.0109242208050.1127-100000@cr242184-a.etob1.on.wave.home.com>
+Message-ID: <3BB0D8B1.98ED1E7@highway.ne.jp>
+Date: Wed, 26 Sep 2001 04:19:13 +0900
+From: Kaoru Fukui <k_fukui@highway.ne.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: benh@kernel.crashing.org, linuxppc-dev@lists.linuxppc.org
+Subject: Ben's 2.4.10 problems
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 24 Sep 2001, Ethan Benson wrote:
+Hi
 
-> its a debian modified version of pdisk thats more reliable.  get the
-> one from debian woody.
+I had problems in latest Ben's 2.4.10 compiling.
+The problems are in 12c.c,smp.c,chrp_smp.c.
 
-Couldn't find it.
+Kaoru
 
-> > Perhaps it is pdisk that doesn't like the new kernel.
->
-> i don't really see how.. its not doing much more then reading the
-> first 32k of of the disk to parse the partition table.
+------------------------------------------
+diff -urN base/drivers/i2c/i2c-keywest.c fixed/drivers/i2c/i2c-keywest.c
 
-Well, I feel stupid.
+--- base/drivers/i2c/i2c-keywest.c Mon Sep 24 22:24:14 2001
++++ fixed/drivers/i2c/i2c-keywest.c Wed Sep 26 02:00:50 2001
+@@ -42,7 +42,7 @@
+ #include <linux/mm.h>
 
-As Timothy verified, LinuxPPCQ4 pdisk doesn't like 2.4.x kernels, so I
-upgraded to a new pdisk found at YellowdogLinux.com.  That let me see my
-drives at least.
+ #include <asm/prom.h>
+-#include <asm/feature.h>
++#include <asm/pmac_feature.h>
+ #include <linux/nvram.h>
 
-But I still couldn't mount.  I figured if pdisk was broken, mount might
-be, so I upgraded to a newer version of mount from linuxppc.org.
+ /* The Tumbler audio equalizer can be really slow sometimes */
 
-*This* version gave me error messages I could read!  More importantly:
+------------------------------------------------
+diff -urN base/arch/ppc/kernel/chrp_smp.c
+fixed/arch/ppc/kernel/chrp_smp.c
+--- base/arch/ppc/kernel/chrp_smp.c Mon Sep 24 22:24:23 2001
++++ fixed/arch/ppc/kernel/chrp_smp.c Wed Sep 26 02:43:21 2001
+@@ -36,7 +36,7 @@
+ #include <asm/prom.h>
+ #include <asm/smp.h>
+ #include <asm/residual.h>
+-#include <asm/feature.h>
++#include <asm/pmac_feature.h>
+ #include <asm/time.h>
 
-mount: filesystem hfs not supported by kernel
+ #include "open_pic.h"
+diff -urN base/arch/ppc/kernel/smp.c fixed/arch/ppc/kernel/smp.c
+--- base/arch/ppc/kernel/smp.c Mon Sep 24 22:24:23 2001
++++ fixed/arch/ppc/kernel/smp.c Wed Sep 26 02:22:28 2001
+@@ -35,7 +35,7 @@
+ #include <asm/prom.h>
+ #include <asm/smp.h>
+ #include <asm/residual.h>
+-#include <asm/feature.h>
++#include <asm/pmac_feature.h>
+ #include <asm/time.h>
 
-It would seem I turned off the experimental prompts in make menuconfig,
-forgot about Apple HFS File System support, and blindly assumed that Apple
-Partition Map support implied Apple HFS support.
-
-D'oh.
-
-Thanks for everyone's patience!
-
-
---
-patrick m pritchard
-disposable hero.
-
+ #include "open_pic.h"
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
