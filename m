@@ -1,21 +1,18 @@
-Return-Path: <marc.leeman@ieee.org>
-Received: from scorpius.homelinux.org (75-112.a2f.dsl.net4all.net
-	[81.89.112.75]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5DA0267A75
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2005 20:18:16 +1100 (EST)
-Date: Tue, 8 Mar 2005 09:35:15 +0100
-From: Marc Leeman <marc.leeman@gmail.com>
-To: leo <leo_guo@jisung.cn>
-Message-ID: <20050308083515.GA13403@scorpius.homelinux.org>
+Return-Path: <adam@semicircular.net>
+Received: from mail.semicircular.net (214.20.233.220.exetel.com.au
+	[220.233.20.214]) by ozlabs.org (Postfix) with ESMTP id 9814467A6B
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2005 21:57:42 +1100 (EST)
+Received: by mail.semicircular.net (Exim 3.35) id 1D8c9L-00022Y-00
+	for <linuxppc-dev@ozlabs.org>; Tue, 08 Mar 2005 21:41:15 +1100
+Message-ID: <422D8149.5030400@semicircular.net>
+Date: Tue, 08 Mar 2005 21:41:13 +1100
+From: Adam Kent <adam@semicircular.net>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
 References: <20050308030424.DA5D367A79@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="n8g4imXOkfNTN/H1"
 In-Reply-To: <20050308030424.DA5D367A79@ozlabs.org>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Subject: Re: MPC82xx and linux-2.6.
-Reply-To: Marc Leeman <marc.leeman@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,38 +22,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+leo wrote:
+> Anyone who has experience in booting linux-2.6 on Motorola ADS8260 platform?
 
---n8g4imXOkfNTN/H1
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-> Anyone who has experience in booting linux-2.6 on Motorola ADS8260 platfo=
-rm?
-
-MPC8245, don't know if this is close enough.
-
-I had little problems porting a 2.4 to a 2.6 kernel.
-
-
---=20
-  greetz, marc
-Repent? We have less than an arn. I was a Dominar. It'd take me longer
-than that to repent.
-	Rygel - Suns and Lovers
-scorpius 2.6.11 #1 Wed Mar 2 16:38:38 CET 2005 GNU/Linux
-
---n8g4imXOkfNTN/H1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.0 (GNU/Linux)
-
-iD8DBQFCLWPDUQpj09NWLeERAoGWAJ0fz0jnxgVzusZG4bUnBtlOEXH2GACfTFJo
-GqgSQpBOU5UyC4eCnVFbWdg=
-=OO4x
------END PGP SIGNATURE-----
-
---n8g4imXOkfNTN/H1--
+Yes.  It boots and runs fine.  I suggest you have a browse through the 
+linuxppc-embedded archives... 
+http://ozlabs.org/pipermail/linuxppc-embedded/
