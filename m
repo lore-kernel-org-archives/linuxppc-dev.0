@@ -1,38 +1,32 @@
-Date: Sun, 13 Dec 1998 22:41:54 -0700 (MST)
-From: Matt Porter <mmporter@home.com>
-To: Dan Malek <dmalek@jlc.net>
-cc: "Mark S. Mathews" <mark@absoval.com>,
-        LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Cross compiling kernels.
-In-Reply-To: <3670AF4C.23FF463D@jlc.net>
-Message-ID: <Pine.LNX.3.96.981213215448.31533C-100000@liberty.chnd1.az.home.com>
+Message-ID: <3674B40A.8B152375@jlc.net>
+Date: Mon, 14 Dec 1998 01:45:30 -0500
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gabriel Paubert <paubert@iram.es>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PReP RTC vs Decrementer accuracy...
+References: <Pine.HPP.3.96.981213172728.17076D-100000@gra-ux1.iram.es>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 11 Dec 1998, Dan Malek wrote:
+Gabriel Paubert wrote:
 
-> Mark S. Mathews wrote:
-> 
-> > I'm currently trying to build a cross compiler (hosted on x86) for
-> > building PPC kernels.....
-> 
-> Has anyone been successful doing this?  I get personal
-> e-mail almost weekly from people either using gcc 2.x.x.x,
-> which we all know is incorrect, or having problems building
-> a cross egcs.  I use only egcs tools natively on LinuxPPC
-> machines, so I have no suggestions other than that.
+> Yes, the problem is the good old 601. The TB uses different register
+> numbers (it's called the RTC, split into RTCU and RTCL like TBU and TBL).
 
-Don't use gcc!  See my web page at
-http://members.home.net/mmporter/cross.html for instructions on building
-cross development tools and the latest version to use.
+I'll take a look at this.  I don't think it is a problem.  I only use the
+lower part to count 10 millisecond timer interrupts, and as long
+as I know where it wraps around, it should be fine.  As long as
+there are timebase compare registers that interrupt when a match
+occurs on either upper or lower, we are all set.  Different register
+numbers are OK because all get/set operations are implementation
+defined functions.
 
---
-Matt Porter
-mmporter@home.com
-Unix is a Linux-like operating system.
+
+    -- Dan
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
