@@ -1,40 +1,36 @@
-Message-ID: <607C84FE9FF8D211B6790090274D57F82FDCA6@Austin>
-From: Ian Dale <idale@Crossroads.com>
-To: "'Sergio Brandano'" <sb@dcs.qmw.ac.uk>, linuxppc-user@lists.linuxppc.org,
-        linuxppc-dev@lists.linuxppc.org
-Subject: RE: Package Management
-Date: Wed, 11 Aug 1999 11:02:54 -0500
+Message-ID: <61891BA043DED21180920090273F173829B113@argentina.telogy.com>
+From: Naushit Sakarvadia <nsakarvadia@telogy.com>
+To: "'LinuxPPC Developpers'" <linuxppc-dev@lists.linuxppc.org>
+Subject: Assembly 
+Date: Wed, 11 Aug 1999 14:51:28 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I use GNORPM. But (as it's currently configured) it doesn't work for me
-unless I'm root.
+Hello,
 
------Original Message-----
-From: Sergio Brandano [mailto:sb@dcs.qmw.ac.uk]
-Sent: Wednesday, August 11, 1999 10:40 AM
-To: linuxppc-user@lists.linuxppc.org; linuxppc-dev@lists.linuxppc.org
-Cc: sb@dcs.qmw.ac.uk
-Subject: Package Management
+I am trying to learn assembly language of Powerpc.
 
+Anybody can suggest good point to start?
 
+I tried to read User Manual of MPC860 and InstrucionManual but
+it doesnt talk about architecture of PPC,meas how many register it has...
+how many flags..etc...
 
-Hi all,
+I need something like programmer's guide ,which is not I couldnt find on
+Motarola website.
 
-I wonder, is there an utility that allows to install/update/remove
-packages? The update/remove part is of paramount importance.
+Can somebody experienced point me out where to start?
 
-Also, hearing from the happy users of Debian (i386), apparently 
-they can save on a single floppy all the data that are strictly
-needed in order to install a Debian system from scratch (what
-packages and, for each package, the chosen version). This is 
-a terrific feature that allows sysadms to mirror their finely
-tuned system across multiple machines, with ftp installation.
-Do we have something similar?
+Thanks in advance.
 
- Cheers,
- Sergio
+Bye
+
+Regards
+Naushit
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
