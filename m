@@ -1,66 +1,44 @@
-Message-ID: <3A1AD5AD.F07B6804@sympatico.ca>
-Date: Tue, 21 Nov 2000 15:06:05 -0500
-From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-Reply-To: khendricks@ivey.uwo.ca
+Message-Id: <200011212143.WAA00749@piglet.grunz.lu>
+Date: Tue, 21 Nov 2000 22:43:53 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: controlfb problem (on XFree86-4.0.1 off the penguinppc.org deve
+  lopment tree)
+To: jens_tingleff@yahoo.com
+cc: linuxppc-dev@lists.linuxppc.org, ajoshi@unixbox.com
+In-Reply-To: <20001121113537.25972.qmail@web1611.mail.yahoo.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Linker Experts Desperately Needed!
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On  21 Nov, this message from Jens Tingleff echoed through cyberspace:
+>> That problem I fixed for me with a patch you can find here:
+>>
+>> http://www.cpu.lu/~mlan/linux/dev/xf4.html
+>>
+>
+> Actually, I did roll this patch into my modifications. Could it be that
+> the development tree on penguinppc.org doesn't have these patches at
+> the moment?
 
-I am trying to help the port of openoffice to ppc linux.  The build continues
-for a long time then fails after testing a recently built shared library:
+That could be; I never got any positive feedback of any patch that fixes
+this problem getting close enough to official XFree to be swallowed ;-)
 
-Checking DLL ../unxlngppc.pro/lib/libsba609lp.so ...: ERROR:
-/usr/local/jdk/openoffice-609/solver/609/unxlngppc.pro/lib/libsvl609lp.so:
-R_PPC_REL24 relocation out of range
+The patch I'm using isn't clean enough for that... and it might even not
+work for all resolutions/depths; never tried...
 
+Cheers
 
-The "Checking DLL" is actually a small c program which tries to dlopen the
-library using RTLD_NOW.  The dlopen fails and the call to dlerror creates the
-R_PPC_REL24 error message.
+Michel
 
-I manually checked the link paths, the LD_LIBRARY_PATH, etc and all are well.
-No other library has failed in this way.  The code is all c++ code.  All of the
-object files linked into this library were build with g++ -fPIC.
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-In an attempt to figure out what the problem symbol is, I tried modifying the
-checkdll file to dlopen the library using RTLD_LAZY so that none of the function
-relocations would happen and then I would use dlsym to look up each and every
-unresolved symbol until I found the culprit.  Unfortunately dlopen with
-RTLD_LAZY failed to open the library with the exact same error message, which
-means that a non-function related symbol was the culprit.
-
-I then used the LD_DEBUG=bindings trick when running my check program to get a
-complete list of the bindings as they are made.  And I used readelf to dump a
-list of all symbols of "OBJECT" type that were "UND" in the library to compare
-against the bindings.
-
-I then checked each and every symbol reported by readelf as being OBJECT and UND
-against the log file showing the bindings.  This shortened my list to 144
-possible culprits with no bindings made before the error terminated the binding
-process, but each and ever one of those could be properly found in the libraries
-linked into this one.
-
-I am now stumped.
-
-How do I find what is causing the R_PPC_REL24 error that prevents dlopen with
-RTLD_LAZY from working?
-
-If it matters I am using the following tools:
-
-gcc-2.95.3-2f,
-binutils 2.10.0.33
-glibc-2.1.3-5a
-
-Any help or ideas of how to attack this problem would be greatly appreciated.
-
-Thanks,
-
-Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
