@@ -1,52 +1,56 @@
-Subject: Re: UART driver problem
-To: pavel_roskin@geocities.com (Pavel Roskin)
-Date: Wed, 5 Apr 2000 15:34:43 +1000 (EST)
-Cc: erammsu@kieraypc01.p.y.ki.era.ericsson.se (Marcus Sundberg),
+To: Wolfgang Denk <wd@denx.de>
+Cc: Stephane Laroche <stephane.laroche@sympatico.ca>,
         linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.21.0002150923400.11610-100000@sunapee.transcept.com> from "Pavel Roskin" at Feb 15, 2000 09:41:33 AM
+Subject: Re: Basic questions about PPC embedded developement under Linux
+References: <200004041653.SAA08051@denx.local.net>
+From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+Date: 05 Apr 2000 11:02:12 +0200
+In-Reply-To: Wolfgang Denk's message of "Tue, 04 Apr 2000 18:53:23 +0200"
+Message-ID: <kfyn1n8vs2z.fsf@kieraypc01.p.y.ki.era.ericsson.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000405053443.B19F2505F0@brixi.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi guys,
+Wolfgang Denk <wd@denx.de> writes:
 
-Pavel Roskin writes:
-> drivers/char/serial.c is not broken!
+> In message <38EA0716.47AA17BA@sympatico.ca> you wrote:
+> >
+> > What do you gain by "understanding" the linux image?
+>
+> On the MPC8xx a Linux kernel image is usually an ELF binary file with
+> several sections, for instance like that:
+>
+> Sections:
+> Idx Name          Size      VMA       LMA       File off  Algn
+>   0 .text         00004854  00180000  00180000  00010000  2**2
+>                   CONTENTS, ALLOC, LOAD, READONLY, CODE
+>   1 .rodata       000007bc  00184860  00184860  00014860  2**4
+>                   CONTENTS, ALLOC, LOAD, READONLY, DATA
+>   2 .data         0000031c  00186000  00186000  00016000  2**2
+>                   CONTENTS, ALLOC, LOAD, DATA
+>   3 .data.init    00000000  00187000  00187000  00017000  2**0
+>                   CONTENTS
+>   4 .bss          000031f8  00187000  00187000  00017000  2**2
+>                   ALLOC
+>   5 image         0007135d  00000000  00000000  00017000  2**0
+>                   CONTENTS, READONLY
+>   6 initrd        0008a502  00000000  00000000  0008835d  2**0
+>                   CONTENTS, READONLY
+>
+> Most BDM debuggers I know will load only those sections  into  memory
+> (RAM or FLASH) that have the LOAD flag set (which is perfectly OK for
+> normal  binaries).  So  they will load only the text, rodata and data
+> sections which just contain the boot loader code - they will not load
+> the kernel image, nor the initial ramdisk image.
 
-[ explaination of why the code looks correct deleted ]
+Hmm, sounds like a bug in the zImage linking.
+To me it would seem apropriate to have the ALLOC, LOAD and DATA flags
+set for data.init, image and initrd sections.
 
-Sorry to dredge up the past here, but I'm still confused about one thing:
-why does write(2) to a tty return successfully when passed an invalid address?
-
-Here's an example:
-
-    #include <unistd.h>
-
-    int main()
-    {
-	printf("bad write returned %d\n", write(1, 0, 1));
-	perror("write");
-	return 0;
-    }
-
-When run on Linux/PPC or Linux/i386, you get:
-    bad write returned 1
-    write: Success
-
-I would have expected the SunOS result of:
-    bad write returned -1
-    write: Bad address
-
-There was a discussion about this on the linux-kernel mailing list, under
-the subject "bug in write(2) system call", but I can't see where to fix it.
-
-Any clues?
-
-Thanks,
-Graham
+//Marcus
+--
+Signature under construction, please come back later.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
