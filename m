@@ -1,15 +1,15 @@
 Return-Path: <greg.weeks@timesys.com>
 Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id B1EEB67A6B
+	by ozlabs.org (Postfix) with ESMTP id AE1A767A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 03:42:51 +1100 (EST)
-Message-ID: <42386209.2070407@timesys.com>
-Date: Wed, 16 Mar 2005 11:42:49 -0500
+	Thu, 17 Mar 2005 03:44:37 +1100 (EST)
+Message-ID: <42386274.2020504@timesys.com>
+Date: Wed, 16 Mar 2005 11:44:36 -0500
 From: Greg Weeks <greg.weeks@timesys.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Content-Type: multipart/mixed; boundary="------------080203040009020207060406"
-Subject: [patch] fix gianfar unitilized spinlock.
+Content-Type: multipart/mixed; boundary="------------070305080305030605010102"
+Subject: [patch] fix unitilized spinlock in cpm driver when used as console
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,33 +21,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------080203040009020207060406
+--------------070305080305030605010102
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
-Fix unitilized spinlock in the gianfar tsec etherenet driver.
+Fix unitilized spinlock in the cpm scc driver when used as console.
 
 Signed-off-by: Greg Weeks <greg.weeks@timesys.com>
 
 
---------------080203040009020207060406
+
+--------------070305080305030605010102
 Content-Type: text/x-patch;
- name="gianfar.spinlock.patch"
+ name="cpm.console.spinlock.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="gianfar.spinlock.patch"
+ filename="cpm.console.spinlock.patch"
 
---- all/drivers/net/gianfar.c-orig
-+++ all/drivers/net/gianfar.c
+--- all/drivers/serial/cpm_uart/cpm_uart_core.c-orig
++++ all/drivers/serial/cpm_uart/cpm_uart_core.c
 
-@@ -384,6 +384,8 @@
- 	mii_info->mdio_read = &read_phy_reg;
- 	mii_info->mdio_write = &write_phy_reg;
+@@ -1038,6 +1038,7 @@
  
-+        spin_lock_init(&mii_info->mdio_lock);
-+
- 	priv->mii_info = mii_info;
- 
- 	/* Reset the management interface */
+ 	port =
+ 	    (struct uart_port *)&cpm_uart_ports[cpm_uart_port_map[co->index]];
++	spin_lock_init(&(port->lock));
+ 	pinfo = (struct uart_cpm_port *)port;
+ 	
+ 	pinfo->flags |= FLAG_CONSOLE;
 
---------------080203040009020207060406--
+--------------070305080305030605010102--
