@@ -1,41 +1,37 @@
-Date: Fri, 3 May 2002 09:59:37 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Curtis, Allen" <Allen.Curtis@Thales-IFS.com>
-Cc: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>,
-	"'acurtis@onz.com'" <acurtis@onz.com>
-Subject: Re: linuxppc_2_4_devel - Walnut compile
-Message-ID: <20020503165937.GE894@opus.bloom.county>
-References: <FA06AA2C99BCD511951200005A994410438645@irvexch1.sextantifs.com>
-Mime-Version: 1.0
+From: Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <FA06AA2C99BCD511951200005A994410438645@irvexch1.sextantifs.com>
+Message-ID: <15571.5505.916224.351719@argo.ozlabs.ibm.com>
+Date: Sat, 4 May 2002 08:56:01 +1000 (EST)
+To: Joern Nettingsmeier <nettings@folkwang-hochschule.de>
+Cc: =?iso-8859-1?Q?K=E1ri=20Dav=ED=F0sson?= <kd@flaga.is>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Powerbook
+In-Reply-To: <3CD29410.2DB93FF5@folkwang-hochschule.de>
+References: <EADB10BAC266A14A85ECBF8686A73E31937F1C@kolkrabbi.flaga.is>
+	<3CD29410.2DB93FF5@folkwang-hochschule.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, May 03, 2002 at 09:39:36AM -0700, Curtis, Allen wrote:
+Joern Nettingsmeier writes:
 
-> > > 2. linker error - early_serial* symbols undefined
-> > >    modified drivers/char/Makefile - to include serial.c
-> >
-> > Turn on CONFIG_SERIAL.  No one has tested any of the 4xx configs w/o
-> > CONFIG_SERIAL, so it's not supprising it didn't work.  I've
-> > pushed a few
-> > small things which might help however.
->
-> I got this to build doing the following. In the process of testing it now.
->
-> 1. Changed Standard/Generic Serial Port to [Y] from [M]
-> 	This enabled the console on serial port option
->
-> Notes:
-> a) Makefile modifications were unnecessary in drivers/char.
-> b) I guess that SICC is not appropriate.....
+> <asbestos mode="full body protection">
+> if you're in for quick compilation, get an intel machine.
+> </asbestos>
 
-Right.  SICC is an STB03xxx-specific thing.
+No, if you're in for quick compilation, compile a kernel for i386
+rather than a kernel for ppc, for some reason gcc is quicker at
+producing x86 output than ppc output, i.e. the x86 compilation
+involves less computation.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+About 18 months ago I did a comparison of a (then) recent dual G4
+powermac with a (then) recent dual pentium II system.  I timed all
+four combinations of ppc or x86 machine and ppc or x86 output.  The
+ppc machine was consistently faster than the x86 machine for the same
+computation, although the ppc machine producing ppc output was slower
+than the x86 machine producing x86 output.
+
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
