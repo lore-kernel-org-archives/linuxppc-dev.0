@@ -1,17 +1,15 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15602.mail.cnb.yahoo.com (web15602.mail.cnb.yahoo.com
-	[202.165.102.56]) by ozlabs.org (Postfix) with SMTP id 9EC342BDEB
+Return-Path: <adam.kent@geckoaudio.com>
+Received: from mail.opentransfer.com (mail2.opentransfer.com [69.49.238.3])
+	by ozlabs.org (Postfix) with SMTP id 27FBA2BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Nov 2004 17:45:12 +1100 (EST)
-Message-ID: <20041130064436.45153.qmail@web15602.mail.cnb.yahoo.com>
-Date: Tue, 30 Nov 2004 14:44:36 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: Frank <frannk_m1@yahoo.com>
-In-Reply-To: <20041129175045.9279.qmail@web13807.mail.yahoo.com>
+	Tue, 30 Nov 2004 18:42:39 +1100 (EST)
+Message-ID: <41AC2253.20403@geckoaudio.com>
+Date: Tue, 30 Nov 2004 18:33:39 +1100
+From: Adam Kent <adam.kent@geckoaudio.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: fbmem.c compile problem
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: MPC8272ADS - devices on PCI bus 'freezing' board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,64 +20,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Frank <frannk_m1@yahoo.com> wrote£∫
+Hi all,
 
-> # 
-> # Console drivers
-> #
-> CONFIG_VGA_CONSOLE=y
-> #
-> # Frame-buffer support
-> #
-> CONFIG_FB=y
-> CONFIG_DUMMY_CONSOLE=y
-> # CONFIG_FB_VOYAGER is not set
-> # CONFIG_FB_MB86290 is not set
-> # CONFIG_FB_RIVA is not set
-> # CONFIG_FB_CLGEN is not set
-> # CONFIG_FB_PM2 is not set
-> # CONFIG_FB_PM3 is not set
-> # CONFIG_FB_CYBER2000 is not set
-> # CONFIG_FB_CT65550 is not set
-> # CONFIG_FB_IMSTT is not set
-> # CONFIG_FB_S3TRIO is not set
-> CONFIG_FB_VESA=y
-> # CONFIG_FB_VGA16 is not set
-> # CONFIG_FB_LYNX is not set
-> # CONFIG_FB_SM712 is not set
-> # CONFIG_FB_MATROX is not set
-> # CONFIG_FB_ATY is not set
-> CONFIG_FB_RADEON=y
-> # CONFIG_FB_ATY128 is not set
+I am working on a project involving an MPC8272ADS development board 
+with a MPC8247 processor, and am experiencing some issues with the PCI 
+bus.
 
-It seems that you haven't enabled enough configuration
-about framebuffer support. Following is the my extra
-LCD kernel configuration on 2.4.18. Just a reference.
+The problem is basically that generating traffic flow over an Ethernet 
+card connected via the PCI bus on the board results in a board 
+'freeze'.  Specifically, flooding another host on the network with 
+ICMP ping packets will reproduce the problem.  This happens after a 
+variable amount of time, anywhere from around 5 seconds to a few 
+minutes of network activity.  It will crash even faster if the other 
+host also pings the development board at the same time.  The freeze 
+results in the board becoming totally unresponsive to any connections 
+over the standard board Ethernet ports or further communication over 
+the default serial console.  The board's "run" LED (LD18) also becomes 
+permanently lit, indicating an infinite loop of some kind.
 
-#
-# Frame-buffer support
-#
-CONFIG_FBCON_ADVANCED=y
-CONFIG_FBCON_CFB8=y
-CONFIG_FBCON_FONTS=y
-CONFIG_FONT_8x8=y
-CONFIG_FONT_8x16=y
-#
-# Character devices
-#
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
+Details of setup:
+- Using the monolithic Linux kernel image (2.4.26) provided by 
+Arabella, a company that provides a free board support package for 
+this board, and the standard Arabella-provided board file system 
+mounted over NFS.
+- A stock-standard PCI Ethernet card based on the RTL8139 chip set.
+- Standard Linux kernel driver for the PCI Ethernet card (8139too) 
+built using the Linux source tree provided by Arabella, and inserted 
+as a module into the running kernel.
+- A simple local network setup between another host running Linux, via 
+a crossover CAT5 cable.
 
-=====
-Best regards,
+Has anyone experienced similar problems with the PCI bus on the 
+MPC8272ADS?  More broadly, what kernel sources are people using on 
+this board to use PCI-based devices?
 
-Sam
+We are also trying to get the latest linuxppc-2.4.28 kernel 
+(downloaded yesterday from ppc.bkbits.net) running, but it seems that 
+PCI support is not actually included in the standard kernel code for 
+this board; it seems that the PCI support code is something that 
+Arabella has specifically added to their kernel tree.
 
-_________________________________________________________
-Do You Yahoo!?
-150ÕÚ«˙MP3∑ËøÒÀ—£¨¥¯ƒ˙¥≥»Î“Ù¿÷µÓÃ√
-http://music.yisou.com/
-√¿≈Æ√˜–«”¶”–æ°”–£¨À—±È√¿Õº°¢—ﬁÕº∫Õø·Õº
-http://image.yisou.com
-1GæÕ «1000’◊£¨—≈ª¢µÁ” ◊‘÷˙¿©»›£°
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+Thanks in advance for any help anyone can offer,
+
+Adam Kent
+Gecko Audio
