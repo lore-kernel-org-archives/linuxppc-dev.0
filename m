@@ -1,107 +1,47 @@
-Message-ID: <3DEF754B.8010505@bluewin.ch>
-Date: Thu, 05 Dec 2002 16:48:27 +0100
-From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
-MIME-Version: 1.0
-To: Abraham vd Merwe <abraham@2d3d.co.za>
-Cc: Linux on PowerPC Developers Mail List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: questions about porting an 8240 arch to linux
-References: <20021205161437.A16705@crystal.2d3d.co.za>
+Date: Thu, 5 Dec 2002 10:35:09 -0800
+From: Chris Zimman <chris@cryptoapps.com>
+To: Chris Zimman <chris@cryptoapps.com>,
+	Linux on PowerPC Developers Mail List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: looking for documentation on porting Linux to PowerPC platforms
+Message-ID: <20021205183509.GA10250@mail.cryptoapps.com>
+Reply-To: Chris Zimman <chris@cryptoapps.com>
+References: <20021204103839.A28568@crystal.2d3d.co.za> <20021204192129.GA8996@mail.cryptoapps.com> <20021205104856.A3899@crystal.2d3d.co.za>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20021205104856.A3899@crystal.2d3d.co.za>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+On Thu, Dec 05, 2002 at 10:48:56AM +0200, Abraham vd Merwe wrote:
+> I've got a VxWorks boot loader on the thing, so I'm not worrying about a
+> boot loader right now. I just need to know what I need to setup before
+> branching to the processor. Looking at the source for the 8xx processors, it
+> seems I need:
 
-I recommend to use the linuxppc_devel_2_4 tree for your embedded board
-(have a look to http://penguinppc.org/dev/kernel.shtml for further
-information). The configuration and implementation for the Sandpoint
-board is a good starting point as it's based on a 8240 as well. Another
-good example might be the implementation for the zx4500.
+I've never looked at the VxWorks boot loader, so I'm not sure how it
+does things.
 
-Hope it helps,
-
-Wolfgang.
-
-
-On 12/05/2002 03:14 PM Abraham vd Merwe wrote:
-> Hi!
->
-> !!! Here's what I have:
->
-> * Board based on Motorola MPC8240 processor (based on 603e core)
-> * 32M sdram
-> * 250mhz processor
-> * board is based on PowerPC microprocessor command hardware reference
-> platform (CHRP).
->
-> !!! Here's what I figured out/did so far. Please correct me if I did
-> something wrong.
->
-> 1. used 2.4.18 w/ 2.4.18-ppc patch applied (got it from ftp.kernel.org)
-> 2. added my arch to arch/ppc/config.in
-> 3. added a embed_config() section to arch/ppc/boot/simple/embed_config.c for
-> my arch with the following hardcoded parameters:
->
 > ------------< snip <------< snip <------< snip <------------
->     bd->bi_intfreq = 250 * 1000000;
->     bd->bi_busfreq = 33 * 1000000;
->     bd->bi_memsize = 32 * 1024 * 1024;
->     bd->bi_baudrate = 9600;
+> r3: ptr to board info data
+> r4: initrd_start or if no initrd then 0
+> r5: initrd_end - unused if r4 is 0
+> r6: start of command line string
+> r7: end of command line string
 > ------------< snip <------< snip <------< snip <------------
 >
-> i have no idea what bus bi_busfreq refers to so I assumed PCI running at
-> 33mhz. what is this bus frequency?
->
-> 4. add an include for my arch header in include/asm-ppc/mpc8xx.h
-> 5. defined the following bd_t structure in my arch header:
->
-> ------------< snip <------< snip <------< snip <------------
-> typedef struct {
->     unsigned int bi_intfreq;        /* cpu frequency (hz) */
->     unsigned int bi_busfreq;        /* bus frequency (hz) */
->     unsigned int bi_memsize;        /* size of memory (bytes) */
->     unsigned int bi_baudrate;
-> } bd_t;
-> ------------< snip <------< snip <------< snip <------------
->
-> 6. defined IMAP_ADDR, IMAP_SIZE, NR_8259_INTS in my arch header
->
-> !!! things I still need to figure out or don't have a clue about:
->
-> 1. what is IMAP_ADDR, IMAP_SIZE. I searched for IMMR in the MPC8240
-> reference manual and couldn't find anything - I have no idea what IMAP_ADDR
-> should be and I assumed IMAP_SIZE should be 64k like the other platforms.
->
-> 2. what uart should I use? the user manual claims the board has a 8250
-> compatible uart, but if I compile in the standard linux 16550 uart support,
-> it exports the same symbols as those in arch/ppc/boot/simple/m8xx_tty.c
-> which is compiled when I select M8XX support. I disabled the 16550 support
-> for now and defined NR_8259_INTS to 16 (what should this be?) for now just
-> to get it to compile.
->
-> 3. do I need to setup any registers before branching to the kernel?
->
-> --
->
-> Regards
->  Abraham
->
-> It's no use crying over spilt milk -- it only makes it salty for the cat.
->
-> __________________________________________________________
->  Abraham vd Merwe - 2d3D, Inc.
->
->  Device Driver Development, Outsourcing, Embedded Systems
->
->   Cell: +27 82 565 4451         Snailmail:
->    Tel: +27 21 761 7549            Block C, Aintree Park
->    Fax: +27 21 761 7648            Doncaster Road
->  Email: abraham@2d3d.co.za         Kenilworth, 7700
->   Http: http://www.2d3d.com        South Africa
->
->
->
+> Is that all? Also, what is the "board info data" ?
 
+bd_t contains parameters for the kernel (eg. start of memory, size,
+start of flash, etc.).
+
+> I downloaded ppc-patch-2.4.18.bz2 from
+> ftp://ftp.kernel.org/pub/linux/kernel/ports/ppc - is that sufficient or is
+> there better support in the BK repository?
+
+You'd probably be best getting the code from the BK repository.  Again,
+what you most likely want is 2.4.x + platforms.
+
+--Chris
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
