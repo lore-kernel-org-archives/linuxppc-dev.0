@@ -1,47 +1,58 @@
-Date: Tue, 24 Aug 1999 08:29:01 -0500 (CDT)
-From: Dave Weis <djweis@plconline.com>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: Tony Mantler <eek@escape.ca>, linuxppc-dev@lists.linuxppc.org
+Date: Tue, 24 Aug 1999 10:38:51 -0700 (PDT)
+From: "David A. Gatwood" <dgatwood@mvista.com>
+To: Tony Mantler <eek@escape.ca>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Performa 5200
-In-Reply-To: <19990824110602.000653@mail.mipsys.com>
-Message-ID: <Pine.LNX.4.10.9908240826490.24794-100000@catbert.desm.plconline.com>
+In-Reply-To: <v04003a04b3e7e12ecd82@[216.81.20.86]>
+Message-ID: <Pine.LNX.3.96.990824102919.26367A-100000@mvista.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Tue, 24 Aug 1999, Tony Mantler wrote:
 
-> >I'm not particularily fluent in PPC ASM, so head.S makes fairly opaque
-> >reading for me. I'm wondering if someone might have some pointers to where
-> >this would likely be dying, so I have good a place to start?
+> I recently obtained for myself up a Performa 5200, and I've been playing
+> with trying to hack linux into shape on it. (I'm usually a Mac68k guy)
 > 
-> is this a NuBus class machine or a PCI based one ? If it's a NuBus one,
-> then you are out of luck, or if you have time to spend, you can begin
-> porting linux/ppc to those beasts. (Basically, RAM is not contiguous and
-> you cannot rely in the kernel beeing loaded at physical 0, since the
-> frame buffer may be hard coded at physical 1Mb). Look at the various
-> parameters BootX pass for a NuBus machine (using the latest 2.1.12 kernel
-> from vger or Paul's rsync, you should have the latest bootx.h).
+> I compiled a kernel from a stock 2.2.10 tree that I have laying around
+> (from ftp.kernel.org, most every config option turned off, booting with
+> BootX) and, after sprinkling around a bit of debug code, found that it
+> makes it past the prom.c code where it draws the "Welcome to linux
+> [blahblah] booting...", but doesn't make it to start_kernel after that.
+> 
+> I'm not particularily fluent in PPC ASM, so head.S makes fairly opaque
+> reading for me. I'm wondering if someone might have some pointers to where
+> this would likely be dying, so I have good a place to start?
 
-Depending on how in to the 68k boxes you are, the impression I got is that
-the memory structure is very similar to the 68ks of the same shape/era. I
-tried it on my wife's 6114CD and it hung with just the desktop background
-visible. Mix and match some of the mac68k code and you should be done in
-no time :-) haha
+If I were you, I'd look at MkLinux, _not_ LinuxPPC.  I got about 2/3rds of
+the 52/53/62/6300 support already in there.  The interrupt handling code
+is written and should be close to correct, along with hard-coded addresses
+for serial hardware, video, IDE, SCSI... it's basically 90% finished.
+It's the 10% that I can't do anymore, since I no longer have access to the
+machines in question.
 
-If you need any other machines to test a kernel on, let me know.
+Some models of machines in that family get a long way into the boot
+process, some freeze at the MkLinux Booter's splash screen, and I haven't
+have time to try to figure out the difference.  Could be anything from RAM
+size to whether it has a 603 vs. 603e.  I'm leaning towards the latter. 
+That's probably what's wrong in LinuxPPC's head.S, too, since I don't
+think either one has ever supported a machine w/ an original 603.  Grab
+yourself a couple of microprocessor reference guides.  :-)
 
-dave
+LinuxPPC's interrupt handling code is not well suited to the design of the
+interrupt hardware in the NuBus 5x00 machines, since A. it has no master
+interrupt flag register or interrupt control register, and B. it has other
+interrupt hardware scattered in weird places throughout the hardware.
+It woudl be a _very_ massive hack to get it working under LinuxPPC,
+especially since even 6/7/8100 support isn't there (which is a necessary
+foundation for some of the MkLinux 5x00 changes).  It's also a heck of a
+lot easier to start with something that almost works than to start with
+somnething that's not remotely close.  ;-)
 
--- 
-David Weis                | 10520 New York Ave, Des Moines, IA 50322
-djweis@plconline.com      | Voice 515-278-0133 Ext 231
 
-When they took the Fourth Amendment, I was quiet because I didn't deal drugs.
-When they took the Sixth Amendment, I was quiet because I was innocent.
-When they took the Second Amendment, I was quiet because I didn't own a gun.
-Now they've taken the First Amendment and I can't say anything.
+David
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
