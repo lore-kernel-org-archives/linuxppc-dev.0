@@ -1,64 +1,42 @@
-Date: Mon, 3 Jun 2002 07:35:16 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: S3 trio config
-Message-ID: <20020603143516.GE8193@opus.bloom.county>
-References: <15608.22619.81123.994767@argo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15608.22619.81123.994767@argo.ozlabs.ibm.com>
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Debugging Network Performance
+Date: Mon, 3 Jun 2002 20:27:33 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFMEBCDIAA.acurtis@onz.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Jun 01, 2002 at 03:15:07PM +1000, Paul Mackerras wrote:
+I was wondering if anyone could provide some pointers on monitoring and
+debugging network communications. The performance of Ethernet communications
+seems to vary with kernel revisions. I would like to analyze this problem
+but I need a little guidance on the issue.
 
-> We have this difference between drivers/video/Config in linuxppc_2_4
-> compared to the official tree:
->
-> diff -urN linux-2.4.19-pre9/drivers/video/Config.in linuxppc_2_4/drivers/video/Config.in
-> --- linux-2.4.19-pre9/drivers/video/Config.in	Tue May 28 22:39:29 2002
-> +++ linuxppc_2_4/drivers/video/Config.in	Sat Jun  1 14:40:58 2002
-> @@ -73,7 +73,7 @@
->        dep_bool '  Apple "valkyrie" display support' CONFIG_FB_VALKYRIE $CONFIG_ALL_PPC
->        bool '  Chips 65550 display support' CONFIG_FB_CT65550
->        bool '  IMS Twin Turbo display support' CONFIG_FB_IMSTT
-> -      bool '  S3 Trio display support' CONFIG_FB_S3TRIO
-> +      dep_bool '  S3 Trio display support' CONFIG_FB_S3TRIO $CONFIG_ALL_PPC
->        tristate '  VGA 16-color graphics console' CONFIG_FB_VGA16
->     fi
->     if [ "$CONFIG_PARISC" = "y" ]; then
->
-> Does anyone know why we have this?  Is the S3 Trio display really only
-> used on PReP or CHRP machines, not on any PCs?
+TIA!
 
-IIRC, when I did this the S3Triofb code was full of OF'isms, so it's
-really only useful on some CHRP machines.  And just checking, it's still
-got:
-int __init s3triofb_init(void)
-{
-        struct device_node *dp;
+=========== Previous 8260 Ethernet email ==================
 
-        dp = find_devices("S3Trio");
-        if (dp != 0)
-            s3triofb_of_init(dp);
-        return 0;
-}
+2. Some relative performance measurements (HHL 2.4.2 vs. 2.4.19pre9)
+			10T Hub	|	100BT switch
+		 -------------------------------------|
+	2.4.2	 |	410KBps	|	750KBps	  |
+		 -------------------------------------|
+	2.4.19 |	440KBps	|	190KBps	  |
+		 --------------------------------------
 
-So it certainly won't link on !CONFIG_ALL_PPC.
+	RedHat 2.4.18-3 (x86)	3900KBps
 
-But more importantly, that needs to be cleaned up a bit to be more like:
-if [ "$CONFIG_PPC32" = "y" ]; then
-   if [ "$CONFIG_ALL_PPC" = "y" ]; then
-      ... apple drivers ...
-      ... S3Trio ...
-   fi
-   ... other drivers ...
-fi
+3. TOP shows as much as 48% system utilization during a single FTP transfer.
+With the fix mentioned in #1, there are 0 errors reported by ifconfig.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+I may be missing something but I believe that these numbers are going the
+wrong way. There is still the question of performance decrease when using a
+100BT switch. Signal intregety can not be the only suspect considering the
+performance did increase using an older version of the kernel. (although
+nothing like the Workstation performance)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
