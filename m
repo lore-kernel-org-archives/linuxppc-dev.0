@@ -1,33 +1,29 @@
-Date: Tue, 16 Apr 2002 22:35:09 -0700 (PDT)
+Date: Tue, 16 Apr 2002 22:44:49 -0700 (PDT)
 From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: Olaf Hering <olh@suse.de>
-Cc: Stefan Jeglinski <jeglin@4pi.com>,
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Cc: Stefan Berndtsson <stefan@nocrew.org>,
 	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ATI 7000 and dual-monitor X? (was Re: 9600 maturity?)
-In-Reply-To: <20020416100152.A4692@suse.de>
-Message-ID: <Pine.BSF.4.44.0204162227560.49666-100000@shell.unixbox.com>
+Subject: Re: R128 Scaling.
+In-Reply-To: <1018964431.1590.2722.camel@tibook>
+Message-ID: <Pine.BSF.4.44.0204162241110.49666-100000@shell.unixbox.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 16 Apr 2002, Olaf Hering wrote:
+On 16 Apr 2002, Michel [ISO-8859-1] Dänzer wrote:
 
-> It is a VE, but I have one report where it fails on a 9600, after
-> loading vgahw.a or something like that. Maybe it must go into another
-> slot or the guy has to boot without video=ofonly.
-> More details later..
+> Is that with a driver with optimized ImageWrite acceleration? I don't
+> think any stock XFree86 driver is really optimized there yet, I'm
+> working on radeon now and the results should be easily applicable to
+> r128.
 
 
-This is most likely the perennial multiple PCI bus ISA IO problem in
-userland that plagues many Macs.  I won't go into the discussion again of
-why this is a problem, as this has been discussed here many times (see old
-posts about this problem on G4's), but a quick solution may be to put the
-card in the 1st slot, or whichever slot corresponds to the io_base
-syscall.  I have never used a 9600 so ask around which slot this is.
-
-Also, have you tried radeonfb?
+There are several that do ImageWrie acceleration.  The radeon driver already
+does indirect ImageWrite acceleration (its the same as CPUToScreen color
+expansion).  There are others which do it in the direct method, the savage
+driver is an example.
 
 
 ani
