@@ -1,31 +1,29 @@
-Message-ID: <39235DE0.585F036A@embeddededge.com>
-Date: Wed, 17 May 2000 23:05:04 -0400
+Message-ID: <39236178.53CD635@embeddededge.com>
+Date: Wed, 17 May 2000 23:20:24 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Pavel Roskin <pavel_roskin@geocities.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Another useful piece of code lost
-References: <Pine.LNX.4.21.0005171815010.32437-100000@sunapee.transcept.com>
+To: Richard Hendricks <richard.hendricks@motorola.com>
+CC: "Dan A. Dickey" <ddickey@charter.net>,
+        Nicolas-Peter Pohland <pohland@snom.de>,
+        "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: How to get rom code to go on FADS?
+References: <391B220F.9838E70F@charter.net> <391C3273.4BBF0884@motorola.com> <391C3945.9E0A439F@charter.net> <391C5416.15ADA181@motorola.com> <391D5E99.D14A02F2@charter.net> <39201DD2.2135361E@motorola.com> <39202D2C.385DD3B@charter.net> <3920AA9F.2DCA0B2E@charter.net> <3920ED16.A2D26629@snom.de> <3921B844.572E3C63@charter.net> <3922046E.D77E156@charter.net> <3922EE48.1E41DA1B@motorola.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pavel Roskin wrote:
+Richard Hendricks wrote:
 
-> Strictly speaking, this is wrong because this code assumes that all PPC
-> machines, even PowerMac's use PCMCIA.
+> Interesting.  So clearing the SYPCR early in the ROM code is what
+> was preventing you from getting the code to run stand-alone?
 
-Of course it's wrong.  That was done specifically for your custom
-embedded hardware.  There wasn't any mechanism in that code base to
-ack the ATA interrupt if it didn't come from known IDE hatdware.
-
-> The MontaVista kernels don't include anything like that. This is one of
-> the reasons why they don't support ATA Flash on RPX/Lite.
-
-That work was done for you under contract on the RPX-Lite.  If you wish
-to give this away, go ahead.  My intention is to use newer IDE abstractions
-or Magnus' real PCMCIA instead of this unique solution for you.
+Oh, yes.  Clearing SYPCR is a very bad thing.  You end up with counter
+values set to zero and immediately time out.  It seems a little strange,
+as you have also cleared the enable flags.  I am sure someone at SPS
+could explain the transistors flipping inside the part to make this
+happen.
 
 
 	-- Dan
