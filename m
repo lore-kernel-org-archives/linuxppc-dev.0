@@ -1,53 +1,60 @@
-Date: Sun, 23 Sep 2001 13:54:41 -0700
-From: Tom Rini <trini@kernel.crashing.org>
+Message-ID: <3BAEB0CA.5DF89FB0@mvista.com>
+Date: Mon, 24 Sep 2001 00:04:26 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
 To: Wolfgang Denk <wd@denx.de>
-Cc: Dan Malek <dan@mvista.com>,
+Cc: Josh Huber <huber@alum.wpi.edu>,
+	Tom Rini <trini@kernel.crashing.org>,
+	Stefan Roese <stefan.roese@esd-electronics.com>,
 	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
 	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
 Subject: Re: CPCI-405 port (PPC405GP)
-Message-ID: <20010923135441.C1878@cpe-24-221-152-185.az.sprintbbd.net>
-References: <3BAA0C91.42E0910D@mvista.com> <20010923180123.979C61009E@denx.denx.de>
-Mime-Version: 1.0
+References: <20010923180012.755801009E@denx.denx.de>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010923180123.979C61009E@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sun, Sep 23, 2001 at 08:01:18PM +0200, Wolfgang Denk wrote:
-> In message <3BAA0C91.42E0910D@mvista.com> you wrote:
->
-> > the purposes of the bootloader is to isolate these changes into the
-> > bootloader.
->
-> As long as you don't create incompatible  _interfaces_  there  is  no
-> problem.
+Wolfgang Denk wrote:
 
-Well, 2.5/2.6 _will_ be incompatible with 2.4.  But it should also be
-possible for bootloaders to work for both.
+> Where can I get more information what it will look like in  2.5?
 
-> > The bootloader is a critical part to initializing the environment for
-> > the kernel.  With all of the MMU futzing around we do trying to get
-> > Linux running, Ben and I have discussed yet another better bootloader
-> > method to move some of this around between the bootloader and the
-> > kernel start up.  There are also initrd and command line things done
-> > by the bootloader (among other board specific initialization).  It's
-> > more than whether or not we all use bi_recs.
->
-> Please keep in mind that PPCBoot exists, and is used on MANY  boards.
-> Even  when you don't use it yourself, I ask you not to break compati-
-> bility without GOOD reason. Also, I'd appreciate a little  discussion
-> with  the PPCBoot folks before such changes happen. You know where to
-> find us.
+>From my understanding it will be similar to the current implementation,
+but will pass pointers/info in registers rather than stuffing it
+into a "well known" memory location.
 
-Well, this was on linuxppc-dev at least once.  Possibly twice.  And at
-least once more before we actually do this.  2.5 will be incompatible
-since everyone whose spoken before has agreeded that the current methods
-aren't 100%.  If you wanna make a case for moving everyone to the way
-PPCBoot talks to the kernel, please do.
+There should be some discussion in the archives.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+> Keep in mind that PPCBoot is in use for 50+ boards from  many  diffe-
+> rent hardware manufacturers. And the number is growing every week.
+
+That's why we keep suggesting a piggyback loader is always used rather
+than trying to boot vmlinux (or compressed version of it) directly.
+We currently support lots of boards that don't use PPCboot, the
+kernel interface has changed a couple of times (most recently the
+clock speed stuff), and it didn't affect any of the boot roms.
+
+You could just leave the PPCboot interface as it is, write a supporting
+function for it in the current embed_config.c file, and just use the
+same code we use on all of the other embedded boards.
+
+> Or is there even a discussion of this stuff where one  can  at  least
+> inject  ideas  or point out thinks that might cause problems - BEFORE
+> everything is cast in stone?
+
+The discussion has pretty much died away.  We just have to find time
+to implement it.  The intention is to provide a single standard interface
+to the kernel, that is flexible and extensible.  The bi_recs are basically
+a tag and information, you can ignore anything you don't understand in the
+list and provide defaults for things you don't see in the record list.
+Many of the piggyback loaders already support the first version of this,
+the "well known" memory location made it a challenge for the 8xx boards,
+so I was slow doing anything about it until Ben suggested the change to
+use the registers to pass the record start/end information.  This will
+break the existing kernel calling interface, so everyone has to change to
+use the same thing.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
