@@ -1,43 +1,39 @@
-Date: Wed, 27 Oct 1999 13:31:48 -0500 (CDT)
-From: Kumar Gala <kumar@chaos.ph.utexas.edu>
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: ptrace
-Message-ID: <Pine.LNX.4.10.9910271325190.17521-100000@chaos.ph.utexas.edu>
+Message-ID: <381745F8.B3C225@jlc.net>
+Date: Wed, 27 Oct 1999 14:35:36 -0400
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: hollis@andrew.cmu.edu
+CC: Neil Russell <caret@c-side.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: RevD iMac USB errors (was Problems compiling ppc kernels)
+References: <19991027030045.28758.qmail@kunk.jriver.com> <381674D5.15A925B5@andrew.cmu.edu> <19991026225703.G11654@lx.c-side.com> <3816973A.375F987D@andrew.cmu.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Does anyone know why ptrace will only read and write a word at a time.  I
-know libc limits this but is there any reason.
-
-The reason I ask is it seems from looking at other Unix implementations of
-ptrace that for operations like reading all the registers on a machine,
-or reading writing FP (and now AltiVec registers) that this is a big
-waste.
-
-ie. if I want to dump all the registers for the a process (GPRs, FPs, VRs)
-It is going to take 224 system calls with the current implementation.
-
-32 (for GPRs) + 64 (for FPs) + 128 (for VRs)
-
-plus additional calls for any status registers (PC, CRn, FPSCR, VSCR,
-etc.)
-
-rather being able to make a single call to ptrace to dump all the
-registers, 3 calls - one for GPRs, one for FPs, one for VRs would be much
-more efficient.  
-
-I think it is something that should be fixed, and most likely we could
-maintain the 'IMHO broken' way that things are currently done, and still
-have the nicer features I am taking about.
-
-- kumar
+hollis@andrew.cmu.edu wrote:
 
 
+> Those kernels should definately boot... are you downloading them from
+> the Mac OS side? Linux apparently has some issues copying to HFS that
+> can render kernels unbootable (this is from personal experience).
+> 
+> If those still don't work, try the kernel at
+> ftp://ftp.linuxppc.org/kernels/BlueG3/v2.2.6/vmlinux-2.2.6-rev1.gz
 
-ignorance is bliss.
+Thanks for all of the information, but I still haven't found anything
+that will boot on my iMac.  I am trying to catch the messages as they
+scroll by :-).  The first one that seems suspicious is something
+about "hub 0 timeout" trying to attach or initialize.  After that I
+get continuous "USB-HUBM Cannot attach to port 0 of hub....." and
+"USBD: Transaction....endpoint 0, timed out".
 
+Hacking code now.......I have the 2.2.5 kernel patched up to 2.2.6
+with the other keyboard and usb patches as described on johnb's
+imaclinux.net pages, as my starting point.  Should I be using something
+else?
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
