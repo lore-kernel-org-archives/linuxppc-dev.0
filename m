@@ -1,49 +1,39 @@
-Message-ID: <38794B87.BDFD48E8@netx4.com>
-Date: Sun, 09 Jan 2000 22:01:27 -0500
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: Dan Dickey <ddickey@charter.net>
-CC: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>,
-        Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: MPC850 Development Board - with SDRAM
-References: <38777E93.2BE51FEE@charter.net> <38791AAD.F3EBA3A2@netx4.com> <38794090.8D116362@charter.net>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200001100522.XAA07318@congo.borg.umn.edu>
+Subject: Re: My cookbook approach to building a cross compiler for the powerpc on an intel x86 Linux box
+Date: Sun, 9 Jan 2000 21:23:08 -0800
+From: Grant Erickson <grant@borg.umn.edu>
+To: "Dan Dickey" <ddickey@charter.net>
+cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>,
+        "Linux PPC Dev" <linuxppc-dev@lists.linuxppc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Dickey wrote:
+Also, consider the documentation at:
 
-> .....  I'm not sure that any "smaller"
-> companies actually make powerpc development systems - instead,
-> I can only find them at Motorola and IBM, and ???.
+     http://www.lcse.umn.edu/~grant/Linux/cross.html
 
-There are some, but their goal is usually to sell expensive PC-based
-development tools.  They are also subject to the silicon "droppings"
-(from all parts suppliers) since the volume is small.
+Regards,
 
+Grant Erickson
 
-> I haven't responded back to Robert yet; but I'm intrigued by the
-> last line - is there a system in the works that has SDRAM on it?
-> (And no EDO).  Time will tell.
-
-Of course there are such systems in the works.  Like he said,
-their expansion boards have it as an option, and if you consider
-what they do and future processors available......
-
-
-> And yes - I'm aware that Embedded Planet isn't in the
-> development system market - but you do have to admit, their
-> boards also fulfill that requirement pretty well.  :)
+On 1/9/2000 6:23 PM, Dan Dickey wrote:
+>Ok; I originally wrote this in HTML - but the list doesn't accept
+>attachments.  So, here is how it looks as text; sorry for the
+>poor formatting.  Consider it a work in progress.  :)
+>	-Dan
+>
+>Other documents referenced:
+>
+>   * http://members.home.com/mmporter/linux/cross/  (less useful)
+>   * http://www.objsw.com/CrossGCC/  (more useful)
 
 
-Yes, they do.  It is more fun to work with companies that integrate
-these boards and see your efforts (and software) be deployed in
-just a few months.  Developing boot roms and debugging hardware
-is fun once or twice, but developing cool applications quickly
-is fun forever.
+ Grant Erickson                       University of Minnesota Alumni
+  o mail:grant@borg.umn.edu                               1996 BSEE
+  o http://www.tc.umn.edu/~erick205                       1998 MSEE
 
-
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
