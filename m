@@ -1,50 +1,39 @@
-From: Gabriel Paubert <paubert@iram.es>
-Date: Thu, 15 May 2003 12:45:42 +0200
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Richard Zidlicky <rz@linux-m68k.org>, Wolfgang Denk <wd@denx.de>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: set_rtc_time() cleanup / normalization
-Message-ID: <20030515104542.GA19980@iram.es>
-References: <20030514230638.GB1687@linux-m68k.org> <Pine.GSO.4.21.0305151031410.13683-100000@vervain.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.GSO.4.21.0305151031410.13683-100000@vervain.sonytel.be>
+Content-Type: text/plain;
+  charset="us-ascii"
+From: Trevor Woerner <ppc339@vtnet.ca>
+Reply-To: ppc339@vtnet.ca
+To: linuxppc-dev@lists.linuxppc.org
+Subject: address translation
+Date: Thu, 15 May 2003 07:29:36 -0400
+MIME-Version: 1.0
+Message-Id: <200305150729.36436.ppc339@vtnet.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, May 15, 2003 at 10:32:12AM +0200, Geert Uytterhoeven wrote:
-> On Thu, 15 May 2003, Richard Zidlicky wrote:
-> > On Wed, May 14, 2003 at 05:42:24PM +0200, Gabriel Paubert wrote:
-> > > On Tue, May 13, 2003 at 02:03:51PM +0200, Richard Zidlicky wrote:
-> >
-> > > > - RTC should be accessed by proper rtc device driver only
-> > >
-> > > This model is already broken by the fact that you read the time
-> > > early in boot to get reasonable initial values. So I don't buy
-> > > at all this argument.
-> >
-> > reading it early during boot is a bit different, no worry about
-> > interrupts, long delays etc. Also this could be actually done
-> > by accessing /dev/rtc.
->
-> Actually this breaks on machines where the RTC is on i2c, since i2c wasn't
-> initialized yet.
+I want to setup a mapping so that when anything tries to read/write the
+16 bytes at 0x1f0 - 0x1ff the actual physical memory that gets accessed
+is 0xf7000000 - 0xf700000f.
 
-Well, that's tough, it should at least be read before the first
-userspace program is sorted. Could it be read and passed from a
-bootloader with a botinfo record (repeatedly read the clock until
-you cross a second boundary and get the timebase at this point).
+I can't figure out what I need to call to get this done.
 
-Something like BI_CLOCK
-struct bi_clock {
-	unsigned long timebase;
-	unsigned long tv_sec;
-}
+ioremap() is the exact opposite of what I want.
 
+remap_page_range() comes very close but aligns everything to the page
+boundary. In other words, after I do the mapping with either 0x1f0 or
+0x0 as the virtual address, accessing 0x1f0 gives me 0xf70001f0 instead
+of 0xf7000000. I don't want *page* translation, I need
+*address-for-address* translation (if such a thing is possible). I
+tried setting the physical address to 0xf7000000 - 0x1f0 but that
+didn't work (I didn't think it would :-)
 
-Reading the clock is easy under OF, don't know about others.
+I think resetting _IO_BASE is just another page translation trick.
 
-	Gabriel
+I also tried using io_block_mapping(), which I use in my platform io
+setup routine, but the MMU crashed with one of those '###A' reports.
+
+any suggestions, please?
+
+        Trevor
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
