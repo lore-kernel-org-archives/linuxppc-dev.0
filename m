@@ -1,50 +1,36 @@
-Date: Fri, 9 Nov 2001 11:44:03 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 405 -- a little console help, part 2
-Message-ID: <20011109114403.J27549@zax>
-References: <3BEA8A5D.50A75CE7@midrivers.com> <3BEAA8D3.51ADDCC8@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BEAA8D3.51ADDCC8@mvista.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Ricardo Scop <scop@digitel.com.br>
+To: Dan Malek <dan@embeddededge.com>
+Subject: Re: Linuxppc and MPC8255 routing performance
+Date: Fri, 9 Nov 2001 12:55:29 +0300
+Cc: linuxppc-embedded@lists.linuxppc.org, mercio@digitel.com.br,
+	lehder@digitel.com.br
+References: <9729.011107@vanet.com.br> <01110818021400.00999@scop.digitel.com.br> <3BEAFCEB.3090604@embeddededge.com>
+In-Reply-To: <3BEAFCEB.3090604@embeddededge.com>
+MIME-Version: 1.0
+Message-Id: <01110912552900.03277@scop.digitel.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Nov 08, 2001 at 09:46:27AM -0600, Mark Hatle wrote:
+On Friday 09 November 2001 00:45, Dan Malek wrote:
+> > Even without secondary (L2) cache?
 >
-> Mark Pilon wrote:
-> >
-> > I've got a little more info -- /bin/sash doesn't produce any
-> > output and just sits there, echoing charachters typed.  I'll try poking
-> > around w/ gdb/abatron but am not sure how to find the exec'd shell.
-> >
-> > if I spawn ash w/ init=/bin/ash:
-> > ...
+> Yes.  Depending upon the application, using the "backside" memory
+> for exclusive CPM use could be helpful.
 >
-> That is very odd, I don't know why ash would work and sash does not.
-> Very strange indeed.
 
-Ah, I think I know why this might be - are you using the 2_4_devel
-tree?
+By "backside" memory you mean ... the internal data cache, perhaps?
 
-All static executables segfaulted before reaching main until very
-recently: the 4xx's MMU makes it possible to actually enforce the
-execute permission bit on pages.  Since most processors don't allow
-this, however, there are heaps of bugs in userland (binutils etc.)
-where pages aren't marked executable that need to be.  In this case
-there was instruction just before the got that wasn't marked
-executable.
+And, how can this be done?
 
-For now, at least, I've disabled enforcement of the page execute
-permissions, because there's just too much stuff that breaks with it
-on.
+[sorry for the silly questions, but I'm new to both Linux and MPC8255 memory
+stuff :-( ; any pointer to documentation will be very welcome, too]
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
+Thanks again...
 
+~ Ricardo
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
