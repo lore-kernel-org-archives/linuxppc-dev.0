@@ -1,17 +1,17 @@
-Return-Path: <ALEBAS@televes.com>
-Received: from televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with SMTP id 6CDFC2BDB5
+Return-Path: <stefan.nickl@kontron.com>
+Received: from kom-mail1.kontron-modular.com (unknown [62.159.155.196])
+	by ozlabs.org (Postfix) with ESMTP id 695E22BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Nov 2004 19:33:38 +1100 (EST)
-Message-ID: <51DB8827D393D411BB69003048003F46FDCF65@tvesntr.televes.com>
-From: Bastos Fernandez Alexandre <ALEBAS@televes.com>
-To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Date: Thu, 18 Nov 2004 09:32:10 +0100
-MIME-Version: 1.0
+	Thu, 18 Nov 2004 21:14:00 +1100 (EST)
+From: Stefan Nickl <Stefan.Nickl@kontron.com>
+To: linuxppc-embedded@ozlabs.org
+In-Reply-To: <1098984003.11434.12.camel@lucy.pep-kaufbeuren.de>
+References: <1098984003.11434.12.camel@lucy.pep-kaufbeuren.de>
 Content-Type: text/plain
-Cc: "'Gerald.VanBaren@smiths-aerospace.com'"
-	<Gerald.VanBaren@smiths-aerospace.com>
-Subject: RE: Linuxppc-embedded Digest, Vol 3, Issue 25
+Date: Thu, 18 Nov 2004 11:13:48 +0100
+Message-Id: <1100772828.22636.15.camel@lucy.pep-kaufbeuren.de>
+Mime-Version: 1.0
+Subject: Re: All-ones problem with FCC1 on MPC8541
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,37 +22,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Gerald,
+On Thu, 2004-10-28 at 19:20 +0200, Stefan Nickl wrote:
+> The packet sizes I receive look reasonable, but the buffers are
+> filled only with 0xff. The same goes for sending, the contents
+> of the buffers are OK (dhcp discover...), but when capturing
+> the output on the other side with ethereal, the packet is again
+> all 0xff.
 
-The MPC8272ADS board has also a 32 bits wide flash.
-But in the doc, the BPS field appears in the first byte of the HRCW, bits
-4-5,
-which is 11 in "0x0E". So I should be using 32 bit wide access, not 16 bit
-wide.
-I am booting from flash, at least it should. Both jumper JP9 and SW2 are
-selected following doc indications. In fact, those 16 bits I get, are from
-flash's
-contents. The jumper I was asking for would be another bad documented one.
+To whom it may concern: We finally solved it!
 
-I think you are right and my flash width is misconfigured. But it's the
-reason
-I cannot figure out. That is why I was asking for phantom jumpers.
+>From what I can tell, it's a bug in both linuxppc-2.4 AND the manual.
 
-Alex
+It's all about the values of RIPTR and TIPTR in the FCC parameter RAM,
+to work on the MPC8541/MPC8555 they must not assume the values that the
+current public kernel sets them to, and what is suggested by the manual.
 
-> -----Original Message-----
-> 
-> It looks like you have your HRCW/flash/BR0 (any or all of the
-> preceeding) memory width misconfigured.  That is why you are seeing
-> 0000xyxy -- you should see xyxyxyxy (four repeated bytes).  The PQ2FADS
-> flash is 32 bits wide, is the MPC8272ADS?  Your second HRCW byte "74" is
-> selecting 8 bits port size (BPS field) -- it looks like you are
-> configured for booting from EEPROM (8 bits wide), not flash.  I suspect
-> it should be "B4" which is what I'm using on the PQ2FADS.
-> 
-> The PQ2FADS can select either flash (8MByte, 32 bits wide) or EEPROM
-> (32K, 8 bits wide).  Obviously, you want to select flash, not EEPROM.
-> U-boot is not going to fit in EEPROM (per its design :-).  Is that the
-> "other jumper" you refer to?
-> 
-> gvb
+First the manual bug: "For best performance, it should be located in the
+following address ranges: 0x3000-0x4000 or 0xB000-0xC000."
+
+However, the "Internal Dual-Port Data RAM Memory Map" shows both of
+these ranges as "Reserved" in the MPC8555 manual (different from the
+MPC8560 manual). This is also not mentioned in the latest errata.
+
+
+Next the linux bug: This is from cpm.h in the public kernel:
+
+#ifdef CONFIG_8272
+#define CPM_DATAONLY_SIZE       ((uint)(8 * 1024) - CPM_DATAONLY_BASE)
+#define CPM_FCC_SPECIAL_BASE    ((uint)0x00009000)
+#else
+#define CPM_DATAONLY_SIZE       ((uint)(16 * 1024) - CPM_DATAONLY_BASE)
+#define CPM_FCC_SPECIAL_BASE    ((uint)0x0000b000)
+#endif
+
+and this is from cpm.h in the metrowerks 8555 kernel:
+
+#if (defined(CONFIG_8272) || defined(CONFIG_8555))
+#define CPM_DATAONLY_SIZE       ((uint)(8 * 1024) - CPM_DATAONLY_BASE)
+#define CPM_FCC_SPECIAL_BASE    ((uint)0x00009000)
+#else
+#define CPM_DATAONLY_SIZE       ((uint)(16 * 1024) - CPM_DATAONLY_BASE)
+#define CPM_FCC_SPECIAL_BASE    ((uint)0x0000b000)
+#endif
+
+Note that little difference? :)
+
+When the internal buffers are placed in the non-reserved region,
+it just works.
+
+Greetings,
+
+-- 
+Stefan Nickl
+Kontron Modular Computers
