@@ -1,78 +1,50 @@
-Date: Thu, 20 Nov 2003 23:11:57 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Brian Kuschak <bkuschak@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 440gx ethernet lockup
-Message-ID: <20031121071157.GA7078@gate.ebshome.net>
-References: <20031121023649.GA5602@gate.ebshome.net> <20031121063247.59445.qmail@web40905.mail.yahoo.com>
+Subject: Re: EP405 GPIO signal problem
+From: Toni Van Remortel <t.vanremortel@ha.be>
+Reply-To: t.vanremortel@ha.be
+To: Eugene Surovegin <ebs@ebshome.net>
+Cc: Embedded PPC <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <20031120181921.GA3365@gate.ebshome.net>
+References: <1069336934.1290.6.camel@toni>
+	 <20031120181921.GA3365@gate.ebshome.net>
+Content-Type: text/plain
+Message-Id: <1069402906.4172.6.camel@toni>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20031121063247.59445.qmail@web40905.mail.yahoo.com>
+Date: Fri, 21 Nov 2003 09:21:46 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Nov 20, 2003 at 10:32:47PM -0800, Brian Kuschak wrote:
+Op do 20-11-2003, om 19:19 schreef Eugene Surovegin:
+> On Thu, Nov 20, 2003 at 03:02:15PM +0100, Toni Van Remortel wrote:
+> > I have an RTAI powered kernel module which outputs 32 bits data via the
+> > EP405 GPIO ports from the IBM 405GP CPU. These outputs are multiplexed
+> > with other signals.
+> > Problem: when I output the 32 bits as one like this:
+> > writel( buffer, (u32)gpio_base_addr+GPIO0_OR );
+> > (where buffer is of u32 type)
 >
-> >
-> > What kernel version? What board? Eval or your custom
-> > one?
-> > If the custom one, did you try your test on eval?
-> >
->
-> It's based on 2.4.19 linuxppc_2_4 plus IBM's
-> 440gx_nova_fp patch.
+> One thing which looks strange to me. Are you sure you can use 32 GPIO
+> pins?
 
-I got impression that IBM patch wasn't of a good quality (the one
-against mvl 2.4.17).
-linuxppc-2.4 tree has some changes for EMAC4, not sure they
-were in IBM's patch.
+Ain't possible, I know.
 
-> Custom hardware.  During
-> previous testing on eval board there was a loss of
-> connectivity, which in hindsight could have been this
-> problem.  I'm working on reproducing it on the eval
-> board.
->
-> > How long does it usually take to get into lock up
-> > state?
-> >
-> > I've just ran your "find" cmd for 10 minutes on our
-> > 440GX board
-> > without any problems.
-> >
->
-> With aforementioned command, <5000 to 300,000 packets,
-> if MSWM bit is disabled or enabled, respectively.
-> Only happens if nfs is mounted tcp, udp mode doesn't
-> seem to trigger it, or at least not as quickly.
+> This is impossible because 405GP has only 23, and I doubt you can use
+> even this number, because some of the pins are shared with IRQ and
+> PerCSx lines.
 
-Hmm, I was testing NFS over UDP for 40 min. Not sure I can easily test
-NFS over TCP. What about netperf?
+You can set all 23 GPIO's as output. I actually only use 17 of them (2 x
+8bit position and 1 on/off).
+Now I've taken a deeper look at the problem, it might be caused by the
+EP405 itself. My DAC settles at 70ns.
+I still have to check if the signals are outputted all at the same time.
+Should go and fetch a logic analyzer somewhere ;)
 
-> > What clock mode are you using (533/152, 500/166 or
-> > smth else)?
-> > Do you have L2C enabled? If yes, please check
-> > L2C0_SR for parity
-> > errors (we have some problems with several our 440GX
-> > boards).
-> >
->
-> 666/166.
+--
+                           Toni Van Remortel
+              Wetenschappelijk Medewerker - D-science lab
+  Real time Linux for embedded systems: http://linemb.d-sciencelab.com
+              Tel: +32 3 205 61 72 - Fax: +32 3 205 61 95
+                      E-mail: t.vanremortel@ha.be
 
-You may want to try lower speeds. May help to isolate problem :)
-
-> CONFIG_440GX_L2_INSTRUCTION=y
-> CONFIG_440GXL2_CACHE=y
->
-> I'll check on the parity errors, although I'm not sure
-> how that could lockup the EMAC.
-
-Well, you can get corrupted code with impredictable results. We are
-still investigating these L2C parity errors. I saw several times
-something similar to your situation when EMAC was stuck on faulty
-board, although I didn't look at it hard.
-
-Eugene.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
