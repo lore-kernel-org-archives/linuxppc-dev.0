@@ -1,33 +1,38 @@
-From: jimix@pobox.com (Jimi X)
+Message-ID: <39EB8A67.E2F9C023@mvista.com>
+Date: Mon, 16 Oct 2000 16:08:23 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+Reply-To: mgreer@mvista.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14827.34607.795659.155820@kitch0.watson.ibm.com>
-Date: Mon, 16 Oct 2000 18:54:39 -0400 (EDT)
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Boot Rom Version and os-chooser
-Reply-To: jimix@watson.ibm.com
+Subject: If not CONFIG_ALL_PPC, you're broken
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I updated with Apples PowerBook Firmware Update 2.7 on my pismo as
-apple suggested to fix some firewire kinks I had.
+I've haven't been paying attention to this but it seems as though any
+platform that doesn't fit in CONFIG_ALL_PPC doesn't build anymore.
 
-Apple System Profiler says:
-  ROM revision:			$t7D.45F6
-  Boot ROM verion:		$0003.27f2
-  Mac OS ROM file version:	3.8
+I've intentionally stayed back from the bleeding edge so I don't run
+into these types of problems.  However, now I'm ready to bring some
+things up to the latest version and release to the world.  Problem is,
+some of the stuff I depend on is  broken and has been for some time as I
+understand it.
 
+I guess I was hoping that enough people were tracking the latest changes
+that things wouldn't stay broken for too long.  Yes, I know, I am lazy
+and should contribute more.  Anyway, I think we all need to pay closer
+attention to the changes that are being put in, including me.
 
-Now my os-chooser forth script does not work.
-I tried adding the obvious "PowerBook3,2" to the <COMPATIBLE>
+What's the best way to get the other platforms working again?
 
-Should I have tried upping the major number?
+Mark
 
--Jimi X
-
-BTW: I can boot linux fine (no surprise), I just have to go into OF to
-     boot OS9 (pain pain pain).
+--
+Mark A. Greer (mgreer@mvista.com; 480-517-0287)
+MontaVista Software, Inc.
+2141 E. Broadway Road, Suite 108
+Tempe, AZ  85282
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
