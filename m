@@ -1,28 +1,20 @@
-Date: Mon, 29 Jul 2002 07:44:08 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Serial core problems on embedded PPC
-Message-ID: <20020729144408.GA11206@opus.bloom.county>
-References: <20020729040824.GA2351@zax> <20020729100009.A23843@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020729100009.A23843@flint.arm.linux.org.uk>
+Message-ID: <3D45875A.20608@redswitch.com>
+Date: Mon, 29 Jul 2002 11:20:10 -0700
+From: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: support for IBM 440GP
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Jul 29, 2002 at 10:00:10AM +0100, Russell King wrote:
+When will the IBM newly released 440GP be supported in the kernel? I
+heard the MontaVista guys did a lot of effort to support it.
 
-> Unless ppc and others are willing to put up with major breakage when I
-> change asm/serial.h, I don't see this getting cleaned up.  Comments on
-> this area welcome.
+Thanks,
 
-Well, what changes do you have in mind?
+Shawn.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
