@@ -1,82 +1,99 @@
-Message-Id: <200012131526.eBDFQaT21707@denx.local.net>
-To: rabeeh@galileo.co.il
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: problems with powerpc-linux-gcc 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 13 Dec 2000 16:23:55 +0200."
-             <3A37867B.2070606@galileo.co.il>
-Date: Wed, 13 Dec 2000 16:26:36 +0100
+Message-ID: <009201c06519$e83418d0$1e894b82@pc30>
+From: "Nils Hagge" <Nils.Hagge@stud.uni-hannover.de>
+To: "Jari Nguyen Trung Thanh" <jari.nguyen@serialsystem.com.sg>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <006c01c0650f$73b65d60$1e894b82@pc30> <976717249.3a3785c2030de@mail.serialsystem.com.sg>
+Subject: Re: Kernel panic: No init found.
+Date: Wed, 13 Dec 2000 16:32:30 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3A37867B.2070606@galileo.co.il> you wrote:
->
-> I'm having trouble with compiling some code that I will use for our
-> embedded system when booting the system.
+Hi Jari,
 
-This is an old story: buggy code does not work.  I  always  have  the
-same problem ;-)
+thank for your fast answer. I examined the problem I little bit further,
+maybe you find something, that can help me further with this new
+piece of information.
+> you should see if you have the link sbin -> bin in the target dir or not..
+bash-2.03# dir -l
+total 100
+drwxr-xr-x   2 root     root         8192 Dec  5 02:55 bin
+drwxr-xr-x   2 root     root         4096 Dec  5 03:14 boot
+drwxr-xr-x   2 root     root         4096 Dec  5 02:54 dev
+drwxr-xr-x   6 root     root         4096 Dec 13 07:14 etc
+drwxr-xr-x   3 root     root         4096 Dec  5 02:54 home
+drwxr-xr-x   3 root     root         4096 Dec  5 02:54 include
+-rwxrwxrwx   1 root     root        30344 Dec  8 06:39 init
+drwxr-xr-x   4 root     root         4096 Dec  5 02:55 lib
+drwxr-xr-x   6 root     root         4096 Dec  5 02:55 man
+drwxr-xr-x   2 root     root         4096 Aug  9 21:17 mnt
+drwxr-xr-x   3 root     root         4096 Dec  5 02:54 opt
+drwxr-xr-x   2 root     root         4096 Aug  9 21:17 proc
+lrwxrwxrwx   1 root     root            3 Dec  5 02:54 sbin -> bin
+drwxr-xr-x   4 root     root         4096 Dec  5 02:55 share
+drwxr-xr-x   2 root     root         4096 Aug  9 21:17 tmp
+drwxr-xr-x   5 root     root         4096 Dec  5 02:54 usr
+drwxr-xr-x   8 root     root         4096 Dec  5 02:55 var
+drwxr-xr-x  10 root     root         4096 Dec  5 02:55 web
+Sure. This link exists. But even if it didnt, it should work nevertheless,
+if you take a look at the source file....
 
-> The function that I'm having trouble with is the printf function. I used
+> the best thing I can show that you should look to the file: /init/main.c
+> in your kernel source
+....that I nearly know by heart
 
-To  be  more  specific:  you  have  problems  with   _your_   (buggy)
-_implementation_  of  the said function. It works fine for many, many
-people.
+ if (open("/dev/console", O_RDWR, 0) < 0)
+  printk("Warning: unable to open an initial console.\n");
 
-> In the powerpc environemnt (using GNU powerpc-linux-gcc cross compiler),
-> the compiler puts the arguments in registers instead of the stack ; due
+ (void) dup(0);
+ (void) dup(0);
 
-Right. Which is a Good Thing (TM) to do.
+ /*
+  * We try each of these until one succeeds.
+  *
+  * The Bourne shell can be used instead of init if we are
+  * trying to recover a really broken machine.
+  */
 
-> static char *do_printf(char *buf, const char *fmt, const int *dp)
-> {
-> ...
-> }
->
->
-> void printf(const char *fmt, ...)
-
-Please note that a conforming implementation of printf() returns "int".
-
-> {
->    char buf[256],*p;
->    p = buf;
->    do_printf(buf, fmt, ((const int *)&fmt)+1);
->    while (*p) putchar(*p++);
-> }
-
-This code is WRONG!
-
-You MUST do something like that:
-
-#include <stdarg.h>
-...
-... do_printf(..., const char *fmt, va_list args)
-
-int printf(const char *fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	... do_printf(..., fmt, args);
-	va_end(args);
-
-	return (number_of_printed_chars);
+ if (execute_command)
+  printk("Suchen nach %s ", execute_command),
+execve(execute_command,argv_init,envp_init),
+                printk("%d\n", errno);
+ printk("Suchen nach /sbin/init "),
+execve("/sbin/init",argv_init,envp_init),         <---here /sbin/init is
+tried to be loaded
+        printk("%d\n", (errno));
+ printk("Suchen nach /etc/init "), execve("/etc/init",argv_init,envp_init),
+<----- /etc/init
+ printk("%d\n", (errno));
+ printk("Suchen nach /bin/init "), execve("/bin/init",argv_init,envp_init),
+<----- /bin/init
+ printk("%d\n", (errno));
+ printk("Suchen nach /bin/sh "), execve("/bin/sh",argv_init,envp_init),
+<----- /bin/sh
+ printk("%d\n", (errno));
+ panic("No init found.  Try passing init= option to kernel.");
 }
 
+I added the "printk" statements in order to see the error codes.
+And the output is the following:
+[....]
+VFS: Mounted root (NFS filesystem).
+Freeing unused kernel memory: 36k init
+Suchen nach /bin/init 2
+Suchen nach /sbin/init 2
+Suchen nach /etc/init 2
+Suchen nach /bin/init 2
+Suchen nach /bin/sh 2
+[...]
+Thus the error is always no. 2, which is according to
+"include/asm-ppc/errno.h" equal to
+"No such file or directory".
+And this is definitely not true. The files do all exist and are readable and
+executable for all (u-g-o).
 
-... and RTFM: man stdarg(3)
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"You ain't experienced..." "Well, nor are you." "That's true. But the
-point is ... the point is ... the point is we've been not experienced
-for a lot longer than you. We've got  a  lot  of  experience  of  not
-having any experience."           - Terry Pratchett, _Witches Abroad_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
