@@ -1,62 +1,42 @@
-Date: Sun, 28 Apr 2002 17:25:30 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Problem in pmac PCI fixup
-To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <20020429004945.83544.qmail@web14804.mail.yahoo.com>
+Date: Sun, 28 Apr 2002 17:49:45 -0700 (PDT)
+From: Aurel Wisse <aurel_wisse@yahoo.com>
+Subject: Sungem with iMac Rev-B
+To: linuxppc-dev@lists.linuxppc.org,
+	yddev <yellowdog-devel@lists.terrasoftsolutions.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
-Message-Id: <E171qYc-0000AJ-00@piglet.grunz.lu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Crossposted yellowdog-devel/linuxppc-devel, sorry but
+this is last ditch...
 
-I'm about to finish a bit of work on planb, the 7x00/8x00 video input
-driver.
+I have read several comments about the sungem driver
+being preferred to the bmac(+) driver.
 
-It's now in rather good shape (acording to my very low standards ;-);
-among other things, it doesn't need to do any PCI fixups by hand
-anymore.
+Going through the sourcecode of the sungem, I am not
+sure however that it will work with older hardware
+like the iMac Rev-B's Uni-North and the LXT970.
 
-Almost, I should add, because there's a problem left with the IRQ. In
-fact, the PCI code does not fill pdev->irq for many pmac devices, since
-OF doesn't set PCI_INTERRUPT_LINE. Therefore, we have fixup code in
-pmac_pci.c; however, that code checks PCI_INTERRUPT_PIN on the device.
+I am trying to modify the bmac to force the PHY to
+abandon autonegotiation and to use 10Mb/s and half
+duplex. "Reverse engineering" the bmac code leads
+nowhere. The bmac_init_phy doesn't give a lot of info,
+except a couple of undocumented constants written via
+bmac_mif_write, and the mif_write writes to the MIFCSR
+register which is undocumented in the bmac.h file.
 
-Now, the problem is that planb doesn't have a PCI_INTERRUPT_PIN setting,
-therefore fixup doesn't get applied. And hardcoding the IRQ in the planb
-driver code doesn't seem right....
+This is terribly frustrating as Apple is obviously
+able to do it with their Duplex tool hack. Hence, it
+*can* be done. Why can't they just send us their
+sourcecode for the Duplex tool? Does anybody have a
+direct line to Apple?
 
-Since the PCI fixup code is about fixing broken things anyway, I'd
-propose we remove the check for PCI_INTERRUPT_PIN and solely rely on OF
-properties to see whether there's an interrupt present at all. Patch
-would be this here (hand-pasted):
+Aurel
 
---- linux-2.4.19-pre6-lvm-gentoo/arch/ppc/kernel/pmac_pci.c     Sun Apr 28 09:14:09 2002
-+++ linux-2.4.16-planb/arch/ppc/kernel/pmac_pci.c       Sun Apr 28 17:18:39 2002
-@@ -493,8 +503,6 @@
-                unsigned char pin;
-                struct device_node* node;
-
--               if (pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &pin) || !pin)
--                       continue; /* No interrupt generated -> no fixup */
-                node = pci_device_to_OF_node(dev);
-                if (!node) {
-                        printk("No OF node for device %x:%x\n", dev->bus->number, dev->devfn >> 3);
-
-Anybody have any problem with that approach?
-
-Thanks, and cheers
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+Yahoo! Health - your guide to health and wellness
+http://health.yahoo.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
