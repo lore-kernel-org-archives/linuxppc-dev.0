@@ -1,65 +1,55 @@
-Message-ID: <619D608DD3F0D311882C009027732E1A83626B@ntserver.act.domain>
-From: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
-To: "PPC-Linux list (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Problem on ADS board
-Date: Thu, 11 Oct 2001 13:45:34 +1000
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Wed, 10 Oct 2001 21:14:53 -0700 (PDT)
+From: James F Dougherty <jfd@krakatoa.gigabitnetworks.com>
+Message-Id: <200110110414.f9B4Er5b005756@krakatoa.gigabitnetworks.com>
+To: linuxppc-embedded@lists.linuxppc.org, Siva.Prasad@smartm.com
+Subject: Re: Intel TL82543GC gigabit Ethernet driver...
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, all
+Siva,
 
-I am running Linux 2.4.6 on Motorola 8260ADS board.
+I have to put on my Broadcom marketing hat right now.
 
-I can start kernel (I use ppcboot) and get it booting and run simple
-applications.  If I try to run a complex application, board crashes without
-any warning and it also writes to the FLASH memory, corrupting it and
-setting lock bits on one of the 4 chips on Flash SIMM.
+Why don't you just use the Broadcom BCM5701? It has an integrated
+10/100/1000 copper PHY, supports hardware TCP/IP/UDP and ethernet
+checksumming, Dual programmable (RX/TX) 133Mhz MIPS R2K cores,
+and is very cheap. Also, they have drivers and source code for
+VxWorks, BSD, Windows 98/NT/2K, Solaris, Netware, and oh,
+did I mention Linux, yes, fully supported with 570x doing HW
+checksum of IP/UDP/TCP and ethernet!
 
-Flash is not mapped into Linux memory space at all as far as I can see, so I
-do not quite understand how it can write there. Also to write to the flash,
-it has to execute a sequence of specific commands and there is no code to do
-so. At least I did not put in any and I could not see any.
+Call me if you need me to put you in touch with the right people.
+Also, if you decide to use this part, I will help you with any
+network problems you have;I should know, I work on them =8^)
 
-Some additional information that may be useful:
-I downloaded a program called memtester. This program tries to allocate as
-much memory as it can, then mlock it and run some tests on it. Allocation
-succeds, but somewhere in the locking part, system crashes. This program
-executes in the user space, so it should not crash the kernel, but it does.
-Also, I tried to see with BDI2000 what is going on. Results I am getting are
-somewhat strange:
-Most of the times, when board crashes, BDI2000 prompt says "Target reset
-detected" and it tries to re-initialize the board.
-In some cases, BDI2000 was saying that board is still running. Halting it
-reveals that it tries to execute something out of addresses in the beginnig
-of SDRAM (SDRAM starts at 0x0000_0000). Address translation is turned on, so
-I would really expect to see addresses offset of 0xC000_0000, because Linux
-was executing on board. If I let board run (with BDI2000 "go" command) and
-then halt it again, I may see that it halted in the kernel (addresses are
-offset). Starting and stopping the program in this manner shows me that
-current execution address jumps between offsetted and non-offsetetd
-addresses.
+BTW, I am using Broadcom BCM5701 on my HHL 2.0 LinuxPPC system
+right now.
 
-I would appreciate any ideas on the subject.
+Hope this helps.
+					-James
 
-BTW, same version of kernel is running on 750 CPU runnign same memtester and
-there are no problems at all.
+James F. Dougherty
+Senior Staff Engineer
+jfd@broadcom.com
+408-501-8273
 
-Thank you,
-
-/************************/
-Rudolf Ladyzhenskii
-Senior DSP Engineer
-Advanced Communication Technologies
-ph.  +61 3 8080 8215
-fax. +61 3 9672 8800
-Level 9, 190 Queen Street,
-Melbourne, 3000
-Australia
-/***********************/
-
+>
+> Hi,
+>
+> Can some one point me to the place, where I can find the latest driver for
+> Intel TL82543GC Gigabit Ethernet. I want to use that on PPC 750/7400 custom
+> board.
+>
+> I got a CD in which it has PRO 1000 driver, but it was built for 2.2.14.
+> Probably, there might have been few bug fixes after that.
+>
+> Thanks in advance.
+>
+> -- Siva
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
