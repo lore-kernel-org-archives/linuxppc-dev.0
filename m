@@ -1,38 +1,48 @@
-Date: Tue, 13 Mar 2001 00:50:20 -0700
-From: Cort Dougan <cort@fsmlabs.com>
-To: David Schleef <ds@schleef.org>
-Cc: Stefano Coluccini <s.coluccini@caen.it>,
-	Oliver Brown <obrown@adventnetworks.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 2.5 Kernel Tree
-Message-ID: <20010313005020.I10175@ftsoj.fsmlabs.com>
-References: <CD5CA14300A9D54A8D13D58CD3C87B42294BDF@advcorp-exc01.advent.com> <NDBBIFIMCKPOADMAJOKMIEPNCPAA.s.coluccini@caen.it> <20010312192909.B8328@stm.lbl.gov>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010312192909.B8328@stm.lbl.gov>; from ds@schleef.org on Mon, Mar 12, 2001 at 07:29:09PM -0800
+To: Arturo Nunez <artnpp@cs.ucf.edu>
+Cc: linuxppc-embedded@lists.linuxppc.org (ppc)
+Subject: Re: Error Compiling Embedded 860 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 12 Mar 2001 20:06:40 EST."
+             <200103130106.UAA18070@iris.cs.ucf.edu>
+Date: Tue, 13 Mar 2001 09:09:48 +0100
+Message-Id: <20010313080953.4CFAD281DB@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We don't generate patches/snapshots from the 2.5 tree.
+In message <200103130106.UAA18070@iris.cs.ucf.edu> you wrote:
+>
+> 	But when I try to compile the Kernel for a
+> 	- 8xx Processor Type ( I have a 860)
+> 	Doesnt compile ..
+> 	The error I may see is:
+> 	-realpath(../8xx_io) failed, No such file or directory
+> 	Ok Seems to be that doesnt fin the File... But I already have..
+> 	Any Idea about the Problem ??
 
-} On Mon, Mar 12, 2001 at 05:54:20PM +0100, Stefano Coluccini wrote:
-} >
-} > >
-} > > What is the host address (and port?) for the 2.5 LinuxPPC tree?
-} > >
-} >
-} > bk clone bk://bitkeeper.fsmlabs.com:5005 linux_2_5
-} >
-} > Stefano.
-}
-} And nightly (weekly, *ly) patches/images?
-}
-}
-}
-}
-} dave...
-}
-}
+You can fix that easily:
+
+--- linux-2.4.3-pre3-2001-03-11/arch/ppc/Makefile.ORIG	Sun Mar 11 21:10:01 2001
++++ linux-2.4.3-pre3-2001-03-11/arch/ppc/Makefile	Mon Mar 12 14:30:25 2001
+@@ -31,7 +31,7 @@
+ endif
+
+ ifdef CONFIG_8xx
+-CFLAGS := $(CFLAGS) -mcpu=860 -I../8xx_io
++CFLAGS := $(CFLAGS) -mcpu=860 -I$(TOPDIR)/arch/ppc/8xx_io
+ endif
+
+ ifdef CONFIG_PPC64BRIDGE
+
+Hope this helps,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Calm down, it's *__only* ones and zeroes.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
