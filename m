@@ -1,37 +1,33 @@
-From: linas@austin.ibm.com
-Date: Fri, 9 Jan 2004 12:32:32 -0600
-To: Bill Noffsinger <bnoffsi@acis.ufl.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Linux on IBM 9076 nodes
-Message-ID: <20040109123231.A52402@forte.austin.ibm.com>
-References: <00c801c3d6d6$a9f818a0$7138e30a@ibm18437>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <00c801c3d6d6$a9f818a0$7138e30a@ibm18437>; from bnoffsi@acis.ufl.edu on Fri, Jan 09, 2004 at 12:33:15PM -0500
+In-Reply-To: <1071962774.8935.23.camel@gaston>
+References: <20031220175850.416fb0ec.colin@colino.net> <1071962774.8935.23.camel@gaston>
+Mime-Version: 1.0 (Apple Message framework v609)
+Message-Id: <D65308DD-42F3-11D8-8972-000A95A4DC02@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	Colin Leroy <colin@colino.net>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] tas3004_tables.c off-by-one
+Date: Fri, 9 Jan 2004 23:33:24 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jan 09, 2004 at 12:33:15PM -0500, Bill Noffsinger wrote:
+>> I found out this was due to too short (by one item) arrays in
+>> tas3004_tables.c. This patch fixes it. I just copied over the last
+>> entry
+>> of each array.
 >
-> Our lab has recently acquired a 48-node IBM SP configuration based on
-> 4-way "Winterhawk-II" Power3-2 wide nodes with 8 GB memory. I see on the
-> Linuxppc site (boxes) that Linux is known to work on 9076-SP nodes
-> (ours). How difficult is the port?
+> Interesting, my understanding is that those values were taken
+> from Darwin ;) I'll look at this too along with your fan stuff
+> and merge, thanks.
 
-Port what?
+It could be these tables are taken from Darwin, but there is no need
+for that; the chip manual contains those tables, too (but for a bigger
+range of values).
 
-I've recompiled & run both 2.4-marcelo, 2.4-redhat, 2.4-suse (which
-are all very different) and 2.6-torvalds kernels on a 2-way power3 box
-and 'it just works'.  I can't imagine why it wouldn't 'just work' on
-an SP.
 
-I'm guessing that the hard part for you will be to get the interconnect
-between the machines running.  I assume this will need some funny
-device driver for whatever the interconnect technology is (which you
-didn't mention).
-
---linas
+Segher
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
