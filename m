@@ -1,65 +1,84 @@
-From: Brad Boyer <flar@pants.nu>
-Message-Id: <200002282147.QAA05378@marcus.pants.nu>
-Subject: Re: HFS+ feature request
-To: bdowning@wolfram.com (Brian Downing)
-Date: Mon, 28 Feb 2000 13:47:46 -0800 (PST)
-Cc: tas@mindspring.com (Timothy A. Seufert),
-        geert@linux-m68k.org (Geert Uytterhoeven),
-        linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <200002251949.NAA09042@wolfram.com> from "Brian Downing" at Feb 25, 2000 01:49:44 PM
+Message-ID: <38BAF676.7EFDA62D@fliegl.de>
+Date: Mon, 28 Feb 2000 23:28:06 +0100
+From: Deti Fliegl <deti@fliegl.de>
 MIME-Version: 1.0
+To: Gabriel Paubert <paubert@iram.es>
+CC: Detlef Fliegl <fliegl@in.tum.de>, Jack Howarth <howarth@bromo.med.uc.edu>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Stability of 2.3.47 (G4)
+References: <Pine.HPX.4.10.10002281941520.21544-100000@gra-ux1.iram.es>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Brian Downing wrote:
-> The filesystem isn't case-sensitive.  This doesn't bug me _that_ much, I
-> suppose, but some system calls feel a little broken:
+Gabriel Paubert wrote:
 >
-> % touch README
-> % touch test
-> % mv test readme
-> mv: rename test to readme: file exists
-> % mv test README
-> % ls
-> README
+> On Mon, 28 Feb 2000, Detlef Fliegl wrote:
 >
-> The mv error is from the rename(2) system call returning -1.  Fine,
-> except that in the documentation it states that if the "to" argument
-> exists, it is removed first.  In a case-insensitive filesystem, I expect
-> "README" to be replaced with "readme".
-
-The official format of HFS+ does specify that the strings are compared
-in a case insensitive way.  In fact, it goes further and specifies a
-bunch of details about actual Unicode sequences and I really don't want
-to break all of that.
-
-> Symlinks show up as a file in MacOS.  I was hoping they would be able
-> to do them as aliases, but I suppose they can't.
+> > Yes I know - it seems to be a memory consistency problem. Roman
+> > Weissgaerber (the author of the OHCI driver) is already informed and he
+> > has access to our G4 for further testing.
 >
-> Aliases show up a zero-length files in Unix, because all of the alias'
-> stuff is in the resource fork, which I haven't been able to find a way
-> to get at with Unix calls.
+> I have some doubts about memory consistency with smart PCI bridges if you
+> don't set the global bit in the PTE. What happens if you use the SMP
+> definition of _PAGE_BASE in asm/pgtable.h ? Write gathering in the CPU may
+> simply bypass all coherency mechanisms by allocating a cache line which is
+> being written to without signalling it on the bus, I don't see anything in
+> the PCI specifications preventing a bridge from actually prefetching
+> memory contents and caching them.
 >
-> Hard links (this is scary) make _all_ linked files show up as aliases
-> to diskname:FileNodeDataXXXXX in the MacOS, where XXXXX is a number
-> (inode number, or the HFS+ equivalent?).  The aliases are unresolvable,
-> and the FileNodeData file does not exist.
+> #define _PAGE_BASE      _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_COHERENT
+>
+> I also have a strange problems on my 750 based MVME2400, the system boots
+> perfectly from power off, but a reboot leads to strange problems with
+> messages like (2.3.45):
+>
+> *ap++ == 0x55
+> Report this to bash-maintainers@prep.ai.mit.edu
+>
+> Setting clock  (utc): Sun Feb 27 16:25:52 /etc/localtime 2000
+> /etc/rc.d/rc.sysin
+> it: line 2:    68 Segmentation fault      initlog -n $0 -s "$1" -e 1
+>
+> Last login: Sun Feb 27 17:24:33 on ttyS0
+> [: too many arguments
+>
+> In other cases I had illegal instructions or ld.so bug messages, ld.so
+> would enter an apparently infinite loop when trying to load the init code
+> (system hang just after Freeing unused memory which I traced with a few
+> printk; it depends on your definition of infinity but not a single page
+> fault in one night and still responsive to interrupts). But this only
+> happens at the second (and following) reboots after power up.
+>
+> It works perfectly on a 603e, and 2.2.12 also works on both
+> kinds of machines without problems. I added a zeroing of all free memory
+> in the bootloader and the problems have disappeared, this is the only clue
+> I have right now, has anybody had a similar experience ?
+>
+> I suspected L2 cache coherency lost during early boot but this looks weird
+> since uncompressing the kernel should completely thrash the 1Mb
+> L2 cache (compressed + uncompressed kernel > 2Mb).
+>
+>         Gabriel.
+I can reproduce the same behavior: After the second reboot the system
+becomes instable and often the init process cannot be started. If I
+start MacOS in between the next Linux reboot is successful. Maybe there
+is something not initialized fully.
+If there is a corelation with the OHCI-USB controller problems is not
+easy to see. My next try is plugging a PCI Analyzer into the machine to
+see whats happening on the bus when the USB error occures.
+On my Athlon Board (with AMD OHCI onboard controller) similar problems
+with the OHCI driver occur. Often the registers cannot be read properly
+and other weird things happen (including crashes). Roman Weissgaerber,
+the author of the OHCI driver is currently busy but he promised helping
+us in the next two weeks.
 
-If you can give me an image of an HFS+ filesystem with some of this UNIX style
-stuff, I can enable that stuff in the linux driver as well.  The official
-spec doesn't say much about the permissions, ownership, devices, etc.  It
-just says that they will be supported, and reserves a block for UNIX style
-info like device numbers and uid/gid.  I figured I'd ignore that stuff until
-I could get more info about the way OSX would handle it.
 
-Just in case anyone is wondering, I have some preliminary code that a few
-other people are helping me with, but I'm swamped at work and haven't had
-much time.  Volunteers are much appreciated.
-
-	Brad Boyer
-	flar@pants.nu
-
+Deti
+--
+Deti Fliegl
+Phone: +49 179 2198419 Fax: +49 89 74141105
+e-mailto:deti@fliegl.de http://www.fliegl.de
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
