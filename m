@@ -1,66 +1,65 @@
-Message-ID: <40239C69.5040803@siemens.com>
-Date: Fri, 06 Feb 2004 14:53:45 +0100
-From: Steffen Rumler <Steffen.Rumler@siemens.com>
+Message-ID: <20040206145813.25115.qmail@web20418.mail.yahoo.com>
+Date: Fri, 6 Feb 2004 06:58:13 -0800 (PST)
+From: hp <aput99@yahoo.com>
+Subject: bash-gdbserver exit problem on PPC4xx board ( the Walnut)
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: BUG in mtd/chips/cfi_cmdset_0002.c for 64bit width flashes (linuxppc_2_4_devel)
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-We have found the following bug in mtd/chips/cfi_cmdset_0002.c
-for 64bit bus width.
+I encountered a weird problem while using gdbserver-5.3-3 in bash-2.05b on a
+PPC4xx board (the Walnut).  I telnet into the board which gives me a bash
+shell.  However when I kick of a remote debugging session with gdbserver and
+when that session ends, bash terminates the telnet session too.
 
-The routine do_write_oneword() uses the DQ6 algorithm in order
-to detect the end of programming phase (see bitkeeper: linuxppc_2_4_devel)
+Here is a senario:
 
+HOST (running RedHat 9.0)
 
-oldstatus = cfi_read(map, adr);
-status = cfi_read(map, adr);
+$gdb
+(gdb)target remote 192.168.1.5:2345
+(gdb) c
+Continuing.
 
-while( (status & dq6) != (oldstatus & dq6) &&
-         (status & dq5) != dq5 &&
-         !time_after(jiffies, timeo) ) {
+Program exited normally.
+(gdb)
 
-     if (need_resched()) {
-         cfi_spin_unlock(chip->mutex);
-         yield();
-         cfi_spin_lock(chip->mutex);
-     } else
-         udelay(1);
+========================================
+========================================
 
-     oldstatus = cfi_read( map, adr );
-     status = cfi_read( map, adr );
-}
+WALNUT:  ( <---- telnet in)
 
-There are two contiguous calls of cfi_read() to check for the DQ6 toggling.
+bash-2.05b$  /bin/gdbserver 192.168.1.1:2345 /bin/mount
+Process /bin/mount created; pid = 42
+Remote debugging from host 192.168.1.1
+/dev/root on / type unknown (rw,errors-remount,-re)
 
-But for 64bit one cfi_read() results in two flash accesses, one for
-the upper 32bit and the other for lower 32bit. In this way the DQ6 bits toggle
-for the two accesses related to one cfi_read(). The first access will be
-compared with the third and the second with the fourth.
-The end detection is broken, the body of the while loop will never be executed.
+Child exited with retcode = 0
 
-I suggest to switch to the alternative DQ7 algorithm.
+Child exited with status 1
+GDBserver exiting
+bash-2.05b$ logout
+Connection closed by foreign host.
 
+[back to where I telnet'ed in from]$
 
-Steffen
+The weird thing is that if I do the debugging on the console using minicom
+directly from the Walnut, bash-2.05b does NOT display this behavior.  Only
+when I telnet in, then bash kills the telnet session when the remote debug
+session ends.
+I wonder if anyone knows what is going on here?  Or any pointers as to how to
+debug and solve this problem.  That is to stop bash from terminating the
+telnet session when the debug session ends.
 
---
+I'm using strace but it's confusing to trace (telnet->bash->gdbserver) :(
 
+Thanks in advance for any input.
+Andrew
 
---------------------------------------------------------------
-
-Steffen Rumler
-Siemens AG
-Hofmannstr. 51                 Email: Steffen.Rumler@siemens.com
-D-81359 Munich                 Phone: +49 89 722-44061
-Germany                        Fax  : +49 89 722-36703
-
---------------------------------------------------------------
-
+ps.  Sorry if this is a re-post.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
