@@ -1,46 +1,48 @@
-Subject: Re: Wake-on-LAN on PowerBook G4
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg Allen <gallen@arlut.utexas.edu>
+To: Jan Damborsky <jan.damborsky@devcom.cz>
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <p05200f0bba801e39a47c@[10.8.16.89]>
-References: <p05200f0bba801e39a47c@[10.8.16.89]>
-Content-Type: text/plain
-Message-Id: <1046116715.608.0.camel@zion.wanadoo.fr>
-Mime-Version: 1.0
-Date: 24 Feb 2003 20:58:36 +0100
+Subject: Re: X windows for Linux PPC embedded 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 24 Feb 2003 18:12:42 +0100."
+             <3E5A528A.4020805@devcom.cz>
+Date: Mon, 24 Feb 2003 22:48:08 +0100
+Message-Id: <20030224214813.6D2FAC6E0C@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2003-02-24 at 20:45, Greg Allen wrote:
-> I have a PowerBook G4, 1GHz. Wake-on-LAN works fine under MacOS X,
-> but seems to be ignored on Linux.
+In message <3E5A528A.4020805@devcom.cz> you wrote:
 >
-> My guess is that this belongs in
->     drivers/macintosh/via-pmu.c, at about line 2070:
->
->    /* Tell PMU what events will wake us up */
-> ....
->    pmu_request(&req, NULL, 4, PMU_POWER_EVENTS, PMU_PWR_SET_WAKEUP_EVENTS,
->      0, PMU_PWR_WAKEUP_KEY |
->      (option_lid_wakeup ? PMU_PWR_WAKEUP_LID_OPEN : 0));
->
-> Several other options for wakeup are listed in include/linux/pmu.h,
-> but Wake-on-LAN is not one of them.
->
-> I'd like to make this work and am willing to try, but need more info.
-> Questions:
->
-> Is this the right place, and there's just a PMU_PWR_WAKEUP_LAN bit missing?
-> Does anyone know what that bit is? Perhaps Apple doesn't tell us.
-> Is there a MacOSX program that dumps this PMU register, so I can
-> twiddle the setting and see if a PMU bit changes?
+> I would like to ask, if there is some project
+> for porting X windows system to Embedded
+> PPC Linux. I use board with MPC823E with
+> VGA TFT display+touch screen, 32MB RWM,
+> 4MB FLASH, Ethernet, serial RS232,....
+> I would like to use it as remote graphic terminal
+> communicating via Ethernet by means of X protocol.
+> Does somebody know how to make it work ?
 
-I don't know if it's related to that PMU command or not. There is definitely
-some code to add to sungem driver's PHY management (compare it to what
-AppleGMACEthernet does).
+There is nothing much to "port". Just use a system with  as  much  as
+possible RAM, and a local harddisk, so you can enable swap space, and
+run the standard "make" procedure on the target (native!).
 
-Ben.
+I once looked into this trying to find out if you could prepare X11R6
+for cross compilation, but found it too difficult  /  not  worth  the
+effort.  I  ran  a  build  on  a  MPC860P  with 64 MB RAM and a 20 GB
+harddisk attached to the PCMCIA slot. It took  _ages_  (>  48  hours,
+IIRC)  but  except  for  some  minor issues the build went through. I
+think this was in the  age  of  HHL  1.2  JE,  so  any  decent  build
+environment should work fine, too.
 
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Hacking's just another word for nothing left to kludge.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
