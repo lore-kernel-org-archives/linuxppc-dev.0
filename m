@@ -1,38 +1,30 @@
-Date: Thu, 21 Dec 2000 17:30:30 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Need testers with MESH SCSI
-In-Reply-To: <19341115030509.14383@192.168.1.10>
-Message-ID: <Pine.LNX.4.05.10012211729150.623-100000@callisto.of.borg>
+Message-ID: <3A424E21.4B5741F@mvista.com>
+Date: Thu, 21 Dec 2000 13:38:25 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Initialization code
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 21 Dec 2000, Benjamin Herrenschmidt wrote:
-> I need some feedback about the following change to the MESH driver. Does
-> it fix previously non-working configurations ? Does it break currently
-> working configurations ?
+Happy Holidays..........
 
-Doesn't make a difference for me. This is on a CHRP LongTrail with Apple Hydra
-Mac I/O and one disk on the MESH chain:
+I feel the need to severely hack up the mm/init.c and probably some
+of kernel/setup.c because I am going to make this IBM4xx code work
+and fit into the kernel.  It is my holiday vacation project, and
+any suggestions are welcome.  I am going to rely upon many of the
+updates that Tom Rini has recently sent around as patches, and do
+this only in the linuxppc_2_5 BK tree.
 
-    Host: scsi1 Channel: 00 Id: 05 Lun: 00
-      Vendor: QUANTUM  Model: FIREBALL_TM3200S Rev: 300X
-      Type:   Direct-Access                    ANSI SCSI revision: 02
+Thanks.
 
-Gr{oetje,eeting}s,
 
-						Geert
+	-- Dan
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+	I like MMUs because I don't have a real life.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
