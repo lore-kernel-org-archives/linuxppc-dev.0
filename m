@@ -1,38 +1,40 @@
-Message-Id: <199904221923.OAA26620@lists.linuxppc.org>
-Date: Thu, 22 Apr 1999 15:23:02 -0400
-From: "Williams, Murray Todd" <murray_williams@merck.com>
-Subject: Wacom Intuos Graphics Tablet and the USB iMac
-To: "'linuxppc-user@lists.linuxppc.org'" <linuxppc-user@lists.linuxppc.org>,
-        "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-MIME-version: 1.0
-Content-type: text/plain
+From: Konstantinos Margaritis <kmargar@cc.uoa.gr>
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Subject: powerpc system open for development?
+Date: Fri, 23 Apr 1999 02:05:05 +0300
+Content-Type: text/plain
+MIME-Version: 1.0
+Message-Id: <99042302094300.00619@proton>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've noticed that there is a pretty functinal driver for XFree86 (Xinput)
-for the Wacom Intuos graphics tablet, which is basically a generic serial
-device.  ( http://www.levien.com/free/linux_intuos.html ) and I also see
-that Wacom describes how to get the serial-port (PC) Intuos to work on an
-iMac (USB) via a simple USB-to-serial converter.  (
-http://www.wacom.com/productsupport/usb.html )
+-----BEGIN PGP SIGNED MESSAGE-----
 
-So here's the question: I know that right now we only have USB mice and
-keyboards working on the iMac.  Does anyone know how easy or hard it would
-be to get a standard serial device on the USB interface to map to a port
-(e.g. /dev/ttyS1 or something) so that I could try to compile the Xinput
-driver on an iMac?
+   Hi,
+   Is there a powerpc open system open for development? Free unix accounts of course
+are required, plus many development tools. The problem is I am on a dialup system, 
+so some authors that I am helping in porting some programs -e.g. freeamp- cannot do
+real debugging, as they cannot login and do real development. As it is debugging is
+restricted to me-send-bug-report/he-sends-possible-fix/me-sends-another-bug-report/
+he-sends-another-possible-fix, etc... you get the idea.
+   I think that something like this is necessary on an organized basis if porting
+is to go any faster.
 
-On the surface, this sounds like a simple thing, but I know absolutely
-nothing about Mac serial devices (/dev/ttySx) or the USB standards.
+- --
+Konstantinos Margaritis
+kmargar@cc.uoa.gr, markos@debian.org
 
-Any thoughts?
+-----BEGIN PGP SIGNATURE-----
+Version: 2.6.3ia
+Charset: noconv
 
-Murray Todd Williams
-murray_williams@merck.com
-
-P.S. If you're reading this on the linuxppc-dev list, e-mail a response to
-me directly.  I haven't put myself on that mailing list (yet).
+iQCVAwUBNx+sO/alfJok8qABAQFzfwP+MzOY5gcydcwbTyJhXmX0aAP9HkFd5y0K
+C6H7P586VChxjybRR65Ff5J8FTrjEgXjFjLzedAKqNT8L5GDd8g5bBTPe0XB4aig
+YcEu1i+8M57fm2Tr/uE82DIWAZCLQkNipRv7C81krZHDfb7wv6ZLUWEgC+IJQso9
+BiZcnrAUG3s=
+=Grx8
+-----END PGP SIGNATURE-----
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
