@@ -1,38 +1,43 @@
-From: Paul Mackerras <paulus@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15389.3566.531070.447917@argo.ozlabs.ibm.com>
-Date: Mon, 17 Dec 2001 08:11:10 +1100 (EST)
-To: Andrew Cagney <ac131313@cygnus.com>
-Cc: Kumar Gala <kumar.gala@motorola.com>,
-	linuxppc-dev@lists.linuxppc.org, Daniel Jacobowitz <drow@mvista.com>,
-	Kevin Buettner <kevinb@redhat.com>, gdb@sources.redhat.com,
-	ezannoni@cygnus.com, fsirl@kernel.crashing.org
-Subject: Re: AltiVec register ptrace support
-In-Reply-To: <3C1AB0A5.7040102@cygnus.com>
-References: <Pine.GSO.4.40.0112141249070.21737-100000@softail.somerset.sps.mot.com>
-	<3C1AB0A5.7040102@cygnus.com>
-Reply-To: paulus@samba.org
+Message-Id: <v04003a0db842c0b7e250@[24.70.162.28]>
+In-Reply-To: <p04330105b8428baee0fe@[24.163.44.170]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sun, 16 Dec 2001 15:24:55 -0600
+To: Stefan Jeglinski <jeglin@4pi.com>,
+	linuxppc-dev@lists.linuxppc.org
+From: "Tony 'Nicoya' Mantler" <nicoya@apia.dhs.org>
+Subject: Re: ethtool failure with tulip 21143
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Andrew Cagney writes:
+At 11:53 AM -0600 12/16/01, Stefan Jeglinski wrote:
+>I have a PowerPC 6500 with a Farallon 10/100 PCI card connected to a
+>Netgear 10/100 switch. I have never gotten this card to work right in
+>this box. If the number of packets is small, the connection seems to
+>work, but any increase in the number of packets (my theory) causes
+>the interface/NIC to choke up. I'm using 2.4.14 (bk).
+[...]
 
-> The Linux/PPC kernel supports PEEK/POKE for fetching registers.  The
-> proposed Kernel interface _consistently_ extends that interface using
-> the exact same mechanims to obtain the altivec regiters.  All the
-> required changes for this have been posted and have been demonstrated to
-> work.
->
-> Separate to that, it has been _proposed_ that the PPC ptrace() interface
-> be changed so that get/set reg for all register classes be added
-> (incomplete patch posted).  Isn't this separate to the problem at hand?
+I had the same problem with the Farallon 10/100 card in my 9600. It seemed
+that either the driver or the chip weren't talking FDX properly - the card
+worked flawlessly at 100/HDX.
 
-If we are going to add a get/set reg interface for the altivec vector
-registers, I would rather not extend the peek/poke interface to do
-that as well.
+I never figured out how to twiddle the duplex setting in the driver itself,
+I usually ended up unplugging and replugging the ethernet cable a few times
+until I confused the nway into thinking half-duplex is a good idea.
 
-Paul.
+This was using the 'tulip' driver, iirc. I never had much luck with the
+de4x5 driver. I haven't booted linux on my 9600 in a while, though, so
+things might have improved since then.
+
+
+Cheers - Tony 'Nicoya' Mantler :)
+
+
+--
+Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
