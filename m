@@ -1,57 +1,31 @@
-Subject: Re: libXrender bug crashes OpenOffice
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-To: "Jason E. Stewart" <jason@openinformatics.com>
-Cc: linuxppc <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <87g06zkc8y.fsf@openinformatics.com>
-References: <87u1vfkfgt.fsf_-_@openinformatics.com>
-	<1006902937.5468.25.camel@pismo>  <87g06zkc8y.fsf@openinformatics.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 28 Nov 2001 01:27:39 +0100
-Message-Id: <1006907259.5347.29.camel@pismo>
+Date: Tue, 27 Nov 2001 15:58:55 -0900
+From: Ethan Benson <erbenson@alaska.net>
+To: linuxppc <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: TiBook, 1394, iPod working (sort of  ;-)
+Message-ID: <20011127155855.G10071@plato.local.lan>
+References: <20011126231944.E10071@plato.local.lan> <20011127172847.33B512B54A@marcus.pants.nu>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20011127172847.33B512B54A@marcus.pants.nu>; from flar@pants.nu on Tue, Nov 27, 2001 at 09:28:47AM -0800
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2001-11-28 at 00:47, Jason E. Stewart wrote:
+On Tue, Nov 27, 2001 at 09:28:47AM -0800, Brad Boyer wrote:
 >
-> "Michel Dänzer" <michdaen@iiic.ethz.ch> writes:
->
-> > On Tue, 2001-11-27 at 23:37, Jason E. Stewart wrote:
-> >
-> > > While running Kevin Hendrix's build of OpenOffice I kept getting
-> > > Abort's for no reason. We've finally limited down to the Xrender
-> > > lib. When it's not on my system, OpenOffice runs fine, with it I get
-> > > crashes.
+> Well, according to Apple's documentation, the only version of HFS+
+> is version 4, so I have no idea what's up with that...
 
-BTW how can I reproduce those crashes? No 'success' so far.
+well it also doesn't document things like the permission bits, it just
+says they are unused and reserved, obviously this is not the case
+given OSX, apple just has not updated this document.
 
-
-> > > Kevin found a bug in the library and fixed it and OpenOffice runs fine
-> > > on his system with libXrender installed. I downloaded the latest xlibs
-> > > source from sid and checked, but his patch hasn't yet been
-> > > included.
-> > >
-> > > Will it be included soon?
-> >
-> > Err... and what does that have to do with Linux/PPC development? ;)
->
-> Perhaps I was mistaken, but I thought that the bug only existed on
-> PPC. Is this too X-specific and should be posted elsewhere?
-
-At least I didn't see anything PPC specific in the fix you posted.
-
-In particular though, you should submit this in a bug against the Debian
-xlibs package for it to be included there.
-
-AFAIK the fix has already been applied to the XFree86 CVS trunk, so it
-will be in the 4.2.0 release. Don't know about the 4.1 branch.
-
-
-PS: No, you can't build only libXrender.
+that means theres a bit of reverse engineering involved as well since
+apple is using a newwer version of HFS+ which is not entirely
+documented.
 
 --
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
