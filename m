@@ -1,48 +1,35 @@
-Message-ID: <2F67A63DFFB1D31185D90090278CBB2D02578BC9@apmail6.chn.agilent.com>
-From: "ZHANG,HAI-TAO (A-China,ex1)" <hai-tao_zhang@agilent.com>
-To: zjuzhou@163.net
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Who can tell me the detail of boot?
-Date: Fri, 20 Apr 2001 18:54:08 +0900
+Message-ID: <3AE00D10.DB8A1202@inn.ericsson.se>
+Date: Fri, 20 Apr 2001 12:18:56 +0200
+From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: byf <byfmail@yeah.net>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Can I use RiscWatch to load ppcboot?
+References: <20010419015349.90F841CA867CB@smtp.yeah.net>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+byf wrote:
 
-You may find some usefule information on CHRP documentation and some
-application notes from Motorola. And there are lots of documents introducing
-Linux boot process. The vmlinuz file, you can check the linux Makefile for
-very detailed information.
+> Hello,
+>
+> I am working for walnut 405GP, it has a ROM Monitor and RiscWatch.
+> now I want to use PPCBoot to overwrite ROM Monitor,
+> Can I use RiscWatch to load PPCBoot to flash or to ram and run it?
+>
 
-I do not think that you will get all you want if you ask so general and big
-questions.
+yes. I use the onboard SRAM walnut has a switch that exchange the flash and
+sram address. So once you load it you can actually reset the machine and it
+will boot just like you had programmed a real flash just don't tun the power
+off :)
 
-Haitao
+--
+Kenneth Johansson
+Ericsson Business Innovation AB   Tel: +46 8 404 71 83
+Viderögatan 3                     Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@inn.ericsson.se
 
-> -----Original Message-----
-> From: zjuzhou@163.net [mailto:zjuzhou@163.net]
-> Sent: Friday, April 20, 2001 9:25 AM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: Who can tell me the detail of boot?
->
->
->
-> hello all,
->
-> 	I can't understand the detail of boot,(my target borad
-> is customed).
-> From supply power,CPU reset then run instructs from
-> flash,load vmlinuz image
-> file to ram,vmlinuz image then do what? And what is the
-> combination of of
-> vmlinuz image file?
-> 	thanks.
->
->
->
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
