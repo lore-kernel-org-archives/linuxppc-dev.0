@@ -1,41 +1,39 @@
-Message-ID: <41EDEC3C1B88D51186EB00A0C9CFADF702FAE0@AMWMAIL>
-From: Cindy Peters <cinpet@adaptivemicro.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: TX errors on eth0
-Date: Thu, 1 Nov 2001 11:02:09 -0500 
+Message-ID: <3BE17B78.79443EB1@cambridgebroadband.com>
+Date: Thu, 01 Nov 2001 16:42:32 +0000
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: John Francis <johnfrancsis@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Is there no vmalloc() for PPC kernel?
+References: <20011025093708.81325.qmail@web20107.mail.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am using Linux kernel 2.4.6 on a custom MPC823 board. I don't seem to be
-having any problem with Ethernet functionality. I am running DHCP, httpd,
-telnet, and Samba successfully. If I run ifconfig the number of TX packets
-is 0 and there is a large number of TX errors. I am assuming that it is a
-problem with the way the transmit statistics is getting updated. Has anyone
-else seen this problem?
-Does anyone know how to fix it?
+I've written a resident driver which calls vmalloc.
 
-Following is the output of ifconfig:
+If you're writing a module which calls vmalloc you'll need to make sure EXPORT_SYMBOL(vmalloc)
+appears in
 
-[root@acornbd1 /root]# ifconfig
-lo        Link encap:Local Loopback
-          inet addr:127.0.0.1  Bcast:127.255.255.255  Mask:255.0.0.0
-          UP LOOPBACK RUNNING  MTU:16436  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0 coll:0
+linux/arch/$(ARCH)/kernel/$(ARCH)_ksyms.c:
 
-eth0      Link encap:Ethernet  HWaddr AA:55:00:06:14:45
-          inet addr:142.42.6.44  Bcast:142.42.255.255  Mask:255.255.255.0
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:11169 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:4444 dropped:66 overruns:0 carrier:0 coll:0
-          Base address:0x3d00
+... otherwise insmod will fail.
 
-Thanks,
-Cindy Peters
-Adaptive Micro-Ware, Inc.
+Alex
+
+John Francis wrote:
+>
+> I need to allocate more than page worth of memory in
+> kernel. Some documentation that I looked at indicated
+> I should be using vmalloc() , so I tried using it for
+> PPC kernel and it couldn't find this symbol. Looked
+> through the code ( 2.4.4 ) and I didn't see it.
+>
+> What is the best way to allocate "fairly" large memory
+> pool for use within the kernel by the driver?
+>
+> John
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
