@@ -1,25 +1,21 @@
-Subject: Re: Any docments analyzing linuxppc kernel and it's policy?
-To: gongzhuo@163.net (Gong Zhuo)
-Date: Thu, 14 Sep 2000 11:22:04 +1100 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org (Linux PPC Mailing List)
-In-Reply-To: <012101c01d7e$097f5b00$4607a8c0@LocalHost> from "Gong Zhuo" at Sep 13, 2000 08:27:50 PM
+Subject: Re: I want to find flash device driver...
+To: zzu@cesys.ajou.ac.kr (Min-kyu, Joo)
+Date: Thu, 14 Sep 2000 11:29:31 +1100 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <000e01c01db8$b5289ea0$481877d3@ajou.ac.kr> from "Min-kyu, Joo" at Sep 14, 2000 04:27:34 AM
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000914002204.35D14F0@elph.research.canon.com.au>
+Message-Id: <20000914002931.CFB85B6@elph.research.canon.com.au>
 From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Gong Zhuo writes:
->   Is there any document analyzing the linuxppc kernel and how does the
-> kernel arrange all the logical space ?
+Min-kyu, Joo writes:
+> Does anyone know where can I get flash device driver for linux?
 
-Check out Dan's answer from last time this FAQ was asked, at:
-    http://lists.linuxppc.org/listarcs/linuxppc-embedded/200005/msg00157.html
-
-You can find this link in the "Memory Map" section of the HOWTO at:
-http://members.nbci.com/_XMCM/greyhams/linux/PowerPC-Embedded-HOWTO-8.html#ss8.2
+Try the HOWTO section under "Device Drivers: Flash Memory" at:
+http://members.nbci.com/_XMCM/greyhams/linux/PowerPC-Embedded-HOWTO-10.html#ss10.2
 
 Regards,
 Graham
