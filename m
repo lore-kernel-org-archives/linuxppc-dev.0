@@ -1,78 +1,56 @@
+Date: Wed, 20 Mar 2002 01:03:02 +0100 (CET)
+From: Gabriel Paubert <paubert@iram.es>
 To: Tom Rini <trini@kernel.crashing.org>
 Cc: "Mark A. Greer" <mgreer@mvista.com>,
-	linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: EV-64260-BP & GT64260 bi_recs 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 19 Mar 2002 16:16:28 MST."
-             <20020319231628.GQ3762@opus.bloom.county>
-Date: Wed, 20 Mar 2002 00:46:57 +0100
-Message-Id: <20020319234702.CA8AA109F3@denx.denx.de>
+	<linux-galileo@source.mvista.com>, <wd@denx.de>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: EV-64260-BP & GT64260 bi_recs
+In-Reply-To: <20020319224420.GO3762@opus.bloom.county>
+Message-ID: <Pine.LNX.4.33.0203200100150.15761-100000@gra-lx1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <20020319231628.GQ3762@opus.bloom.county> you wrote:
+On Tue, 19 Mar 2002, Tom Rini wrote:
+
 >
-> I sort-of remember this too.  For 2.4 I'm not sure if it's better to
-> have a massive ammount of compile time options or not.  Either way we'd
-
-What sort of compile time options? I don't want to have MAC addresses
-built into the kernel images!
-
-> need to change the driver to handle multiple enets, yes?
-
-Only some, like the 8xx. Other  configurations  run  just  fine  with
-several ethernet interfaces.
-
-> > BTW: the structure should probably be extended by one entry  for  the
-> > interface (eth0, eth1, etc...).
+> On Tue, Mar 19, 2002 at 02:56:14PM -0500, Mark A. Greer wrote:
 >
-> Forcing ethX is a bad idea I think, but we do need a way of saying all
-> of this applies to *this* enet device.
-
-Right, probably an index is all we need.
-
-> Yes, but we're speaking in terms of GT-64260, which has ns1655x and it's
-> own, but I'm not as clear about having 'em both on.  But, does 8xx not
-> allow for reading of what things are currently set at now or must it be
-> specified?
-
-But isn't this the whole idea behind the new  interface  -  to  allow
-certain  things to be done just ONCE, in ONE place, and not again and
-again and again in several instances of  the  same  code,  with  good
-chances that at least one instance is buggy?
-
-Of course I can retrieve this information in some CPU and  eventually
-board  dependend  way  somehow - but why should I bother to implement
-this code when the information is already available?
-
-With the same argiment we could drop the MEMSIZE record - the  kernel
-can  detect the memory size as well. Not that I think that would be a
-good idea...
-
-And BTW: I'm not talking about 8xx systems only.
-
-> > You are wrong. We'll switch faster than you seem to think.
+> > I like what Michael has done but want to add more and change the
+> > BI_GT64260_ETH_CFG to a more generic BI_ETH_CFG.
 >
-> I know you'll switch when it's all set and working.
+> I don't know about this.  Why?  From what I can tell, this is something
+> that will be useful for 8xx/8260, but would require changing the driver
+> to know about this, and it's currently over bd_t, and I'd rather leave
+> it for now.
+>
+> > New (and [pretty much] generic):
+> > --------------------------------
+> >   BI_MEMSTART -- mem start
+>
+> GT-64260 doesn't use this, does it?  We'll need this for Nubus and other
+> discontig memory situations, but not right now (except for APUS).
+>
+> >   BI_INTFREQ -- internal CPU frequency??
+> >   BI_BUSFREQ -- CPU bus freqency?
+> >   BI_ETH_CFG -> struct with following:
+> >    -- mac addr
+> >    -- hdx/fdx; 10/100/1000/...; OR autonegotiate
+> >    -- phy addr
+> >    -- some bytes for driver specific info (e.g., on gt64260, is_rmii)
+>
+> Looks fine, see above of course...
 
-Then, or before :-)
+Don't forget timebase/decrementer frequency, it is not always easy to
+measure and very important for timekeeping.
 
-> There's a time and place for everything, and it's called the development
-> line.  Big rewrites/changes are supposed to be done there and maybe
-> backported.
+Still fighting lack of reproducible timebase frequency measurements at
+boot on some boards. Not very actively since I've got more urgent
+problems and NTP ends up hiding most of it.
 
-Ummm... someone called 2.5 "fs-eating-non-compiling-crap,  so  ignore
-that for a few months". Guess who?
+	Gabriel.
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"I say we take off; nuke the site from orbit. It's the only way to be
-sure."                                  - Corporal Hicks, in "Aliens"
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
