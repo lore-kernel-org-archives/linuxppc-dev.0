@@ -1,28 +1,21 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PPCBOOT in customised MPC860T board
-To: "RamanaYV" <venkataramana_y@mic.co.in>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <OF6966D76E.A0BB8139-ON65256E40.001AB153@lntinfotech.com>
-From: "Thamarai Selvan" <Thamarai.Selvan@lntinfotech.com>
-Date: Fri, 20 Feb 2004 10:23:47 +0530
+Message-ID: <2D9AB865A49FD511914700105A0EF679016C48E2@morse.smart.lfk.eads.net>
+From: "Hager, Johannes, HRD/AB" <johannes.hager@lfk.eads.net>
+To: "PPC Linux Mailing List (E-Mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: How To port Interrupt Driver
+Date: Fri, 20 Feb 2004 07:37:54 +0100
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ramana,
+Hello All,
+I am porting Linux to a custom board with a MPC604.
+On this board we have a self made interrupt controller.
+Can anybody tell me, which kernel modules I have to
+change for getting our interrupt controller work?
 
-check out the following link
-http://www.uclinux.org/~bkuhn/Platforms/Coldfire/tarifa/20020526/README
-if ur still interested with ppcboot this will give u a good idea ;-)-
-
- With Regards,
- Thamarai Selvan.G
- (:  91-22-27612571, 27621100 X 4115
-________________________________________________________
-
- "Rivers of dream, never ends on destiny sea"                      - Thams
-
+Best regards
+Johannes Hager
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
