@@ -1,30 +1,35 @@
-Message-ID: <3CA87831.974F719D@mvista.com>
-Date: Mon, 01 Apr 2002 10:09:37 -0500
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Michael Sokolov <msokolov@ivan.Harhan.ORG>,
-	linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
+Date: Mon, 1 Apr 2002 08:20:36 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
+Cc: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
 Subject: Re: [Linux-galileo] ev64260 bi_rec patch
-References: <0203292359.AA12953@ivan.Harhan.ORG> <3CA4E98B.F7A7ECE0@mvista.com> <20020401152507.GB6360@opus.bloom.county>
+Message-ID: <20020401152036.GA6360@opus.bloom.county>
+References: <3CA4EDA9.5C885292@mvista.com> <0203300045.AA13159@ivan.Harhan.ORG>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0203300045.AA13159@ivan.Harhan.ORG>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+On Fri, Mar 29, 2002 at 04:45:43PM -0800, Michael Sokolov wrote:
+>
+> Mark A. Greer <mgreer@mvista.com> wrote:
+>
+> > Okay, the bi_recs need to be copied.  Something for you to do over the weekend ;)
+>
+> I don't know how to do that in a way acceptable to you. I only know how to do
+> things my way, which I've done in my patch which you've pocket-vetoed.
+>
 
-> OK.  The problem is that the original PPC location of the bi_recs was
+IIRC, your original patch did the parsing in parse_bootinfo() or so in
+arch/ppc/kernel/setup.c which means each new driver bi_rec needs to
+modify arch/ppc/kernel/setup.c, which isn't nice.  What we need is
+something like how we save Motorola residual data or bd_info stuffs
+(memcpy in platform_init).
 
-Acutally, my problem was that I misread his respone.  I thought he was trying to
-say the find_bootinfo was in the bootloader or something like that.
-
-> So the always-correct call for platform_init() is:
-> parse_bootinfo((struct bi_record *) (r3 + KERNELBASE));
-
-Is there a reason we shouldn't just fix find_bootinfo then?
-
-Mark
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
