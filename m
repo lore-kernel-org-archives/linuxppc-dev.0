@@ -1,28 +1,26 @@
-Subject: Re: Linux in Flash on MPC5200 (icecube)
-From: Gerrit Van de Velde <gvd@denayer.wenk.be>
+Message-ID: <40337E7F.5090509@euronet.nl>
+Date: Wed, 18 Feb 2004 16:02:23 +0100
+From: Jos Beck II <jos_beck@euronet.nl>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <1077114566.4804.12.camel@nios>
-References: <1077114566.4804.12.camel@nios>
-Content-Type: text/plain
-Message-Id: <1077114854.4804.17.camel@nios>
-Mime-Version: 1.0
-Date: 18 Feb 2004 15:34:14 +0100
+Subject: Choise of MPC8250 development board
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 2004-02-18 at 15:29, Gerrit Van de Velde wrote:
-> Hello,
->
-> Currently I have a jffs2 image (4.4Mb) with the root filesystem (busybox
-> + tinylogin) in the FLASH (/dev/mtd1 - /dev/mtdblock1) and I'm able to
-> mount it and boot from it.
+Hi,
 
-sorry, I have a jffs image, not jffs2
+We have to make a decision on what kind of development board to use for
+a new MPC8250AVR project.
+The Motorola PQ2FADS-VR looks usefull but we don't want to work with
+Codewarrior and therefore the supplied JTAG tool is also useless (as we
+were told)
+What we need is a relatively simple board with one or more fast ethernet
+ports to the FCCs and one or two sync. serial ports to the SCCs.
+Any advice?
 
-Kind regards,
-
-Gerrit Van de Velde
+Jos
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
