@@ -1,60 +1,60 @@
-Message-ID: <3CFEE9A3.5060300@embeddededge.com>
-Date: Thu, 06 Jun 2002 00:48:35 -0400
-From: Dan Malek <dan@embeddededge.com>
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "Ppc Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: 8260 Network Performance update
+Date: Wed, 5 Jun 2002 21:55:51 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFCEDMDIAA.acurtis@onz.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: First cut at large page support on 40x
-References: <20020531042153.GD16537@zax>	<3CFC0D3F.9030901@embeddededge.com>	<20020604035947.GH2762@zax>	<3CFCFC20.80101@embeddededge.com> <15614.37065.549142.218906@argo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+1. Unidirectional TCP/IP traffic (ftp):   get 180MBfile /dev/null
+(Thanks Jean-Denis)
 
-> Dan, you continue to surprise me.
+			10T Hub	|	100BT switch
+		 -------------------------------------|
+	2.4.2  |	839KBps	|	6526KBps	  |
+		 --------------------------------------
+	2.4.19 |	838KBps	|	9412KBps	  |
+		 --------------------------------------
 
-Eh?
+These numbers look good!
 
-> .....  You complain about a kB or two for
-> a device tree
+2. Here is a description of the original test and some new test results.
 
-When did I ever complain about a device tree?  I think it's the right
-idea, I just didn't like the way we were getting there on systems
-that don't have OF.
+		-------------	FTP Put	-------------
+		|		|---------------->|		|
+		|   Host	|	NFS save	| 8260 PPC	|
+		|		|<----------------|		|
+		-------------			-------------
 
-> .... but happily throw away anything from 16kB to 128kB or
-> more just to simplify iopa, which should not be needed anyway.
+Given that the unidirectional transfers look good I assume that the problem
+is either resource related (running out of Ethernet buffers) or scheduling
+related. The following tests use the 2.4.19pre9 kernel but vary the number
+of RX/TX buffers. (symmetric allocation)
 
-What isn't needed?  The page tables or the iopa()?  I'm tired of having
-different methods to look up VM information just because the memory
-was allocated in a different way.  With iopa() (which seems fine for
-other architectures to use) I don't care how the memory was allocated,
-I just feed it a virtual address and get the answer.  What's wrong with
-that (other than it's not a hack :-)?  The page tables have always
-been there, and it's not a big deal.  Why haven't we done the same
-hack for processors with BATs?  They don't need the page tables either.
-
-I also stated the importance of the page tables is to allow background
-hardware debuggers to look up translations so they can work with Linux.
-Kind of a nice thing to have once in a while.
-
-I find a simple solution for an enhancement and you don't like it because
-it isn't a big hacked up mess (or maybe because I had an original thought).
-If I would have made the same hacked up mess you have done it wouldn't have
-been checked in.....not long ago all of the embedded stuff was viewed as a
-problem child, and today it's OK to hack up generic code with an #ifdef
-for a specific IBM embedded processor????  Does that surprise you? :-)
-
-I haven't changed my point of view on any of the embedded Linux because
-that is pretty much all I have ever done.  It's the rest of you that can't
-determine on which side of the fence you want to play.  Stop picking on me
-or I'll take all of my toys to a different playground :-).
+			10T Hub	|	100BT switch
+		 -------------------------------------|
+	16 RTB |	440KBps	|	190KBps	  |
+		 --------------------------------------
+	32 RTB |	450KBps	|	230KBps	  |
+		 --------------------------------------
+	64 RTB |	450KBps	|	240KBps	  |
+		 --------------------------------------
 
 
-	-- Dan
+The above data shows that this is not a raw communication speed issue but
+rather a scheduling or resource issue where either FTP or NFS is getting
+starved. My guess is that FTP is taking all the receive buffers leaving
+nothing for NFS to work with when storing the file.
+
+Does this help to identify the problem and a possible solution? Additional
+tests recommendations?
+
+TIA!
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
