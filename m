@@ -1,39 +1,35 @@
-Date: Fri, 7 Sep 2001 12:31:40 +0200
-From: Marius Groeger <mag@sysgo.de>
-Message-Id: <200109071031.f87AVeW09279@dagobert.svc.sysgo.de>
+Date: Fri, 7 Sep 2001 04:18:28 -0700 (PDT)
+From: James F Dougherty <jfd@GigabitNetworks.COM>
+Message-Id: <200109071118.EAA14228@krakatoa.gigabitnetworks.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: pthread support in ppc405 gdb
-In-Reply-To: <3B96BA46.6040604@ixiacom.com>
-References: <3B96BA46.6040604@ixiacom.com>
-Reply-To: mag@sysgo.de
+Subject: swapspace in HHL 2.0
+Cc: jfd@krakatoa.gigabitnetworks.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In linux.ppc.embedded, Bryan Rittmeyer wrote:
+Hi,
 
-> We have a mission-critical need for a ppc405 source level debugger
-> (gdb) which can handle complex, threaded C++ applications. However,
-> the HHL 2.0 release notes say the following:
->
-> * gdb 5.0
->    gdb 5.0 included with HHL 2.0 does not support
->    debugging multi-threaded (pthread) applications.
+I used initdconfig to enable mountall.sh and have an /etc/fstab like
+so:
 
-The current gdb snapshots have fairly decent support for pthreads. I'd be
-careful though with "complex, threaded C++ applications". That has always
-beed a problem with gdb (at least on other platforms where threads were
-supported). This is - at least partially - due to the inherent, er,
-weirdness of C++.
+# /etc/fstab: static file system information.
+#
+# <file system> <mount point>   <type>  <options>               <dump>  <pass>
+/dev/root       /               auto    defaults,errors=remount-ro      0 0
+/proc           /proc           proc    defaults                        0 0
+/dev/hda1       /               auto    rw                              0 1
+/dev/hda2       swap            swap    defaults                        0 2
 
-Elinos does support pthread debugging btw.
+When the system boots, it says that it is enabling the swapspace, however
+if you cat /proc/meminfo, it shows that it is really not enabled.
+Now, if you do a "swapon -a" instead of "swapon -a 2" (like in the mountall.sh)
+then swap comes on.
 
-Regards
-Marius.
+What am I doing wrong?
 
-----------------------------------------------------------------------
-Marius Groeger        SYSGO Real-Time Solutions GmbH    www.sysgo.de
-Software Engineering  Embedded and Real-Time Software   www.osek.de
-mgroeger @ sysgo de   Germany                           www.elinos.com
+MTIA				-James
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
