@@ -1,48 +1,45 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <012801c388c5$f4378540$2803050a@JackyLam>
-From: "Jacky Lam" <jackylam@astri.org>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Queston about Walnut
-Date: Thu, 2 Oct 2003 17:17:00 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="big5"
+To: "Jacky Lam" <jackylam@astri.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Queston about Walnut 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 02 Oct 2003 17:17:00 +0800."
+             <012801c388c5$f4378540$2803050a@JackyLam>
+Date: Thu, 02 Oct 2003 12:13:10 +0200
+Message-Id: <20031002101315.499C3C59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear all,
+In message <012801c388c5$f4378540$2803050a@JackyLam> you wrote:
+>
+>     I get a IBM 405 GP evaluation board recently. After I compile the
+> toolchain and kernel 2.4.22 using the crosstools. I try to boot the kernel
+> on the board by u-boot. I follow the instruction of uboot to create a uImage
+> as follows:
 
-    I get a IBM 405 GP evaluation board recently. After I compile the
-toolchain and kernel 2.4.22 using the crosstools. I try to boot the kernel
-on the board by u-boot. I follow the instruction of uboot to create a uImage
-as follows:
+Who gave you such (obviously wrong) instructions?
 
-    powerpc-405-linux-gnu-objcopy -O binary -R .note -R .comment -S vmlinux
-linux.bin
-    gzip -9  linux.bin
-    ./mkimage -A ppc -O linux -T kernel -C gzip -a 0x00400000 -e
-0x00400000 -n "test" -d linux.bin.gz uImage
+>     ## Booting image at 00400000 ...
+>    Image Name:   test
+>    Created:      2003-10-02   8:51:50 UTC
+>    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+>    Data Size:    612743 Bytes = 598.4 kB
+>    Load Address: 00400000
+>    Entry Point:  00400000
 
-    and load the image by tftpboot. But after I type bootm, only the
-following is displayed and the whole system hangs:
+For PowerPC systems, both  Load  Address  and  Entry  Point  must  be
+specified as 0.
 
-    ## Booting image at 00400000 ...
-   Image Name:   test
-   Created:      2003-10-02   8:51:50 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    612743 Bytes = 598.4 kB
-   Load Address: 00400000
-   Entry Point:  00400000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-   <Hangs afterwards...>
+Best regards,
 
-    I haven't modified any source yet. I don't know even it is needed.
-    Could anyone kindly tell me what's wrong about my steps? Thanks so much.
+Wolfgang Denk
 
-Regards,
-Jacky
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+It may be that your whole purpose in life is simply  to  serve  as  a
+warning to others.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
