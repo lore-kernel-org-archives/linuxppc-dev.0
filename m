@@ -1,32 +1,35 @@
-Date: Mon, 25 Sep 2000 12:52:07 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: rshapiro@bbn.com, Michel Dänzer <daenzerm@student.ethz.ch>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display!
-In-Reply-To: <39CEF3FC.A6DB84C6@wanadoo.fr>
-Message-ID: <Pine.LNX.4.21.0009251234360.2176-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14799.11024.140217.896029@esb.bbn.com>
+Date: Mon, 25 Sep 2000 06:38:08 -0400
+From: R Shapiro <rshapiro@bbn.com>
+To: Martin Costabel <costabel@wanadoo.fr>
+Cc: Michel Ddnzer <daenzerm@student.ethz.ch>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 fbdev screenblanking
+In-Reply-To: <39CEF3FC.A6DB84C6@wanadoo.fr>
+References: <Pine.LNX.4.10.10009231028030.26749-100000@apollo.kulian.net>
+	<14798.23332.833379.615321@esb.bbn.com>
+	<39CE8B90.1B318DD2@student.ethz.ch>
+	<14798.43366.937709.900651@esb.bbn.com>
+	<39CEF3FC.A6DB84C6@wanadoo.fr>
+Reply-To: rshapiro@bbn.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 25 Sep 2000, Martin Costabel wrote:
+Martin Costabel writes:
+ > I had this at the beginning after switching to Franz' RPMs, but it went
+ > away soon, I don't remember why, maybe with Franz' 0.36a instead of
+ > 0.30c.
 
->
-> The most annoying bug for me is that sometimes keys repeat (almost)
-> indefinitely. Most frequently mouse clicks on scroll arrows that scroll
-> all the way to the end of the file, but I had it also with the delete
-> (backwards) key that instead of only 2 characters erased 90% of the
-> whole text. This bug is random, but its probability is variable:
-> sometimes it happens practically always and sometimes almost never.
+I was seeing it in 0.36, and it's still there with the complete rsync
+and rebuild I did on Saturday.  It may be an intermittent problem but
+I don't think it's been fixed yet.
 
- I noticed the same thing also only in kernels with the input layer though,
-i haven't heard of any similar problems in the x86 side and since the code
-in x is the same i suspect that the problem is in the kernel side.
 
-  Kostas
+
+--
+rshapiro@bbn.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
