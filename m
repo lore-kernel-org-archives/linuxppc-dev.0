@@ -1,50 +1,45 @@
-Message-Id: <200104162121.XAA01103@piglet.grunz.lu>
-Date: Mon, 16 Apr 2001 23:21:50 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: TiBook trackpad in benh's kernel?
-To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <3ADB6887.F67E9DDE@iiic.ethz.ch>
+Date: Mon, 16 Apr 2001 23:47:51 +0200
+From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: XF4 (mach64) help please
+References: <20010416151514.E88D02F0B6@apollo.valhalla.net>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Iain Sandoe wrote:
 
-Anyone else seen this? I can't get the trackpad on my TiBook working
-with benh's latest tres (rsync'ed a few days ago).
+> 1/  Key-mappings are screwed (big time) with any combination of "Option
+> XkbModel" I've tried - this is very unfortunate because I can't do SysRq or
+> VT switches - too much time spent watching fsck...
 
-I tried adding a few printk's, but there seem to never be any data
-coming from the trackpad. ALso, the 'trackpad' tool claims there is no
-trackpad.
+You could try Option "XkbDisable" until you know how to configure XKB (I still
+use it ;).
 
-Ideas? I do think it is detected on bootup:
 
-adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
-ADB keyboard at 2, handler 1
-Detected ADB keyboard, type ISO, swapping keys.
-event1: Event device for input1
-keybdev.c: Adding keyboard: input1
-input1: ADB HID on ID 2:2.c4
-event2: Event device for input2
-input2: ADB HID on ID 7:7.1f
-ADB mouse at 3, handler set to 4 (trackpad)
-event3: Event device for input3
-mouse1: PS/2 mouse device for input3
-input3: ADB HID on ID 3:3.01
-adb: finished probe task...
+> 2/  The Mach64 driver is not loading.
+>
+> 3/  The fbdev driver loads & runs but usually crashes on X restart (which
+> occurs on log-out) - leaving me with a locked machine and another fsck...
 
-Thanks
+I beg your pardon? :) I'd be interested to see a log of that, preferrably with
+debugging output enabled, but this smells like a framebuffer device bug.
 
-Michel
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+> fbdevHWInit failed
+> crapping out here
 
+Do you use atyfb in console? The ati driver only works with that with option
+"UseFBDev". No idea what it will do without that option, you'd have to find
+out.
+
+
+--
+Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
+CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
