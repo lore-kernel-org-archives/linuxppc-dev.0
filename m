@@ -1,81 +1,103 @@
-Message-ID: <B0CD235912AED411B69800D0B7C9F60F1DF878@mail>
-From: "Francis Yu <francisy@luxn.com>" <francisy@luxn.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Kernel not returning from M8xx_cpm_reset
-Date: Wed, 20 Nov 2002 18:03:00 -0800
+From: Paul Ruhland <pruhland@rochester.rr.com>
+To: Tord Andersson <tordson@algonet.se>
+Subject: Re: Cross compiling pppd 2.4.1 with ELDK 2.0
+Date: Wed, 20 Nov 2002 21:13:34 -0500
+References: <004b01c290df$3b4e7720$0280a8c0@emil>
+In-Reply-To: <004b01c290df$3b4e7720$0280a8c0@emil>
+Cc: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+  charset="iso-8859-1"
+Message-Id: <200211202113.34578.pruhland@rochester.rr.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
-I have ported the ppcboot 1.2.0 over to my hardware. I went into some
-problem when I wanted to run the TQM_860L linux (version 2.4.4). The kernel
-would not print anything after it was launched by the ppcboot. When I
-stopped it, it shows that it is engaged in some kind of timer loop. When I
-traced the function calls, I found that it never returns from the function
-<va_to_pte>, and I have no idea how does it end up in the timer loop from
-<va_to_pte>.
-The followings are what I have found thus far. Could anybody please shed
-some light into this. Thanks.
-Francis Yu
+Your output tells me the include paths in your eldk may be broken ( or
+something went wrong during eldk install ).
+
+If eldk path is '/opt/eldk', what do you have for the following:
+
+  /opt/eldk/ppc_8xx/usr/include/linux
+  /opt/eldk/ppc_8xx/usr/include/asm
+
+They should be links like so:
+
+  /opt/eldk/ppc_8xx/usr/include/linux --> ../src/linux/include/linux/
+  /opt/eldk/ppc_8xx/usr/include/asm --> ../src/linux/include/asm/
+
+Do the directories the links point to exist?
+
+---
+
+Optionally, and I've seen some say this shouldn't be done, I point those two
+links to my target's kernel include paths.
+
+  /opt/eldk/ppc_8xx/usr/include/linux -->
+/home/me/project/src/linux/include/linux/
+  /opt/eldk/ppc_8xx/usr/include/asm -->
+/home/me/project/src/linux/include/asm/
+
+I've never had a problem with this and its done like that on my host system as
+well ( '/usr/include/linux' --> '/usr/src/linux/include/linux', etc ).
 
 
-=> bootm 400000
-## Booting image at 00400000 ...
-   Image Name:   Linux-2.4.4
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    605331 Bytes = 591.1 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Current stack ends at 0x00F9BC18 => set upper limit to 0x00800000
-## cmdline at 0x007FFF00 ... 0x007FFF00
-bd address  = 0x00F9BFC4
-memstart    = 0x00000000
-memsize     = 0x01000000
-flashstart  = 0xFFE00000
-flashsize   = 0x00200000
-flashoffset = 0x00000000
-sramstart   = 0x00000000
-sramsize    = 0x00000000
-immr_base   = 0xFA000000
-bootflags   = 0x00000001
-intfreq     =     50 MHz
-busfreq     =     50 MHz
-ethaddr     = 00:10:EC:00:1D:0B
-IP addr     = 192.168.1.65
-baudrate    =   9600 bps
-No initrd
-## Transferring control to Linux (at address 00000000) ...
+--
+Paul Ruhland
 
-Nothing else was shown from this point on. I went in there to trace the
-Kernel and found the followings:
 
-Kernel started executing at 0x00000000, it went through some setups and then
-jumped to the following sequences:
-<start_kernel> ;
-<setup_arch>;
-<m8xx_setup_arch>;
-<m8xx_cpm_reset>;
-<va_to_pte>, passing 0x1b7000 as parameter;
-Inside <va_to_pte>
-
- $0000AB24 mr.      R3,R3			(R3=0x1b7000)
- $0000AB28 blt      0xab34
- $0000AB2C lwz      R9,0x2c(R2)		(R2=0x156020, R9=0)
- $0000AB30 b        0xab3c
- $0000AB34 lis      R9,0x15
- $0000AB38 addi     R9,R9,0x5f9c
- $0000AB3C lwz      R11,0xc(R9)		(R11=0x7cdc3378 ???)
- $0000AB40 rlwinm   R3,R3,0x0,0x0,0x13	(R3=0x1b7000)
- $0000AB44 rlwinm   R9,R3,0xc,0x14,0x1d	(R9=0)
- $0000AB48 add      R0,R11,R9			(R0=0x7cdc3378)
- $0000AB4C cmpwi    R0,0x0......		(Starting accessing
-non-existing memory here!!!)
+On Wednesday 20 November 2002 04:53 pm, Tord Andersson wrote:
+> Hi,
+>
+> I am currently trying to crosscompile pppd with the ELDK 2.0 toolchain.
+> To build in a native Intel RedHat 7.2 environment was no problem.
+> However, when trying to crosscompile it seems that there are more things
+> than CC and the PATH to be altered. By changing the include file search
+> path, I was able to build chat, but pppd seems to be a little harder. Is
+> there anyone out there that might have some clues?
+>
+> Kind regards,
+>
+> Tord
+>
+> Some results:
+> [root@ronja ppp-2.4.1]# printenv | grep PATH
+> PATH=/opt/eldk/usr/bin:/opt/eldk/bin:/usr/local/bin:/bin:/usr/bin:/usr/X11R
+>6/bin
+>
+> :/home/root/bin
+>
+> [root@ronja ppp-2.4.1]# export CC=ppc_8xx-gcc
+> [root@ronja ppp-2.4.1]# make
+> cd chat; make  all
+> make[1]: Entering directory `/home/tord/proj/StarSafe/pppd/ppp-2.4.1/chat'
+> ppc_8xx-gcc -c -O2 -g -pipe -DTERMIOS                    -DSIGTYPE=void
+>          -UNO_SLEEP                      -DFNDELAY=O_NDELAY              -o
+> chat .o chat.c
+> In file included from /opt/eldk/usr/../ppc_8xx/usr/include/signal.h:307,
+>                  from chat.c:97:
+> /opt/eldk/usr/../ppc_8xx/usr/include/bits/sigcontext.h:28:
+> asm/sigcontext.h: No such file or directory
+> In file included from /opt/eldk/usr/../ppc_8xx/usr/include/errno.h:36,
+>                  from chat.c:98:
+> /opt/eldk/usr/../ppc_8xx/usr/include/bits/errno.h:25: linux/errno.h: No
+> such fil e or directory
+> In file included from chat.c:97:
+> /opt/eldk/usr/../ppc_8xx/usr/include/signal.h:310: warning: `struct
+> sigcontext' declared inside parameter list
+> /opt/eldk/usr/../ppc_8xx/usr/include/signal.h:310: warning: its scope is
+> only th is definition or declaration, which is probably not what you want.
+> chat.c: In function `write_char':
+> chat.c:1257: `EINTR' undeclared (first use in this function)
+> chat.c:1257: (Each undeclared identifier is reported only once
+> chat.c:1257: for each function it appears in.)
+> chat.c:1257: `EWOULDBLOCK' undeclared (first use in this function)
+> make[1]: *** [chat.o] Error 1
+> make[1]: Leaving directory `/home/tord/proj/star/pppd/ppp-2.4.1/chat'
+> make: *** [all] Error 2
+> [root@ronja ppp-2.4.1]#
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
