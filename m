@@ -1,59 +1,51 @@
-Date: Fri, 24 Mar 2000 09:26:42 +0200 (EET)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Ani Joshi <ajoshi@shell.unixbox.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Rage128 Xfree 4.0 speedup/fix patch...
-In-Reply-To: <Pine.LNX.4.10.10003231730190.10447-200000@shell.unixbox.com>
-Message-ID: <Pine.LNX.4.21.0003240812520.15226-100000@idd-01.imbc.gr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200003240804.IAA15674@hyperion.valhalla.net>
+Date: Fri, 24 Mar 2000 08:04:34 +0000
+Subject: Re: State of sound support in 2.3.x
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: jingai@floatingpenguins.com
+CC: "PPC-DEV" <linuxppc-dev@lists.linuxppc.org>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 23 Mar 2000, Ani Joshi wrote:
+>> >I have the 2.3.52 kernel from Paul's tree, with PowerMac DMA
+>> > sound support compiled in.  I guess my question is:  what is the
+>> current
+>> > state of sound support in Paul's 2.3.52 kernel?
+>>
+>> My primary distribution source is also LimuxPPC.
+>>
+>> Geert Uytterhoeven posted a patch to split the DMA sound support between
+>> Pmac, Atari etc. a while ago (look for dmasound split).
+>
+> Okay, I applied the patch (and the patch to the patch) that I found in the
+> list archives.  It built fine, but upon reboot, sound doesn't work at all
+> (no beep even).  I tried building both Sound Support and PowerMac AWACS
+> support as modules, and it produced one module called soundcore.c.  I
+> rebooted with this kernel and insmod'ed it, and it still doesn't work,
+> although /dev/dsp and /dev/mixer existed this time.  Any clues?  I've got a
+> UMAX S900, which, IIRC is a 9500 clone.
 
-> The rage128 xfree 4.0 driver uses improper load/store instructions,
-> and I believe I have fixed it and also fixed the slowdown of the driver
-> compared to x86 r128.
->
+Yes (I think) - I should have posted a patch for this.
 
- Seems fine, but note that the macros in the r128 driver
-are going away, they were only there because the default
-MMIO_xxx macros that we had on ppc didn't do any byteswapping.
- Me and Michel Danzer are working on it and in fact the macros
-that we are using now are more or less the same with what you posted.
+in drivers/char/mem.c there are two areas in which calls (and its
+declaration) to init_dmasound() are conditional on CONFIG_DMASOUND - but
+CONFIG_DMASOUND has been removed.
 
+You need to change those lines to something like...
 
-> Could any others with rage128 and xfree4.0 test teh patch?  please do some
-> x11perf test *before* and after and email them to me, thanks.
->
->
-> here are the 2 tests which jack howarth has done:
->
-> before:		Dot		4910000.0/sec
-> 		100x100rect	29000.0/sec
->
-> after:		Dot		9130000.0/sec
-> 		100x100rect	57300.0/sec
->
->
->
-> it seems with my patch, rage128 on a g4/450 is faster then my Xpert 128
-> on celeron450...
->
+#if defined(CONFIG_DMASOUND_AWACS) || defined(CONFIG_DMASOUND_ATARI....
 
-  Yes with xfree86 4.0 we should be getting similar speeds with the x86
-side there are still some cases in cfb (and in some other places) that
-are slower in big endian but since cfb is going away in favor of fb thats
-not a big deal.
+or whatever (the various CONFIG_DMASOUND_XXXXX are visible in the Makefiles)
 
->
-> please test as I don't have a rage128 on my ppc...
->
-> ani
->
+Sorry about this - I was very new to the list and carried out some of the
+discussion without doing cc's ;-)
 
-  Kostas
+I think that is it - basically you have everything complied in - but it
+isn't being called at init time.
+
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
