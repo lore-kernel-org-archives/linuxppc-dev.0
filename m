@@ -1,31 +1,33 @@
-Message-ID: <39662FCC.49A3E523@erols.com>
-Date: Fri, 07 Jul 2000 15:30:20 -0400
-From: Nelson Abramson <pogtal@erols.com>
+Message-ID: <002e01bfe854$c4019c40$1a6a1504@strayer.edu>
+From: "Robert Thompson" <rothomp3@vt.edu>
+To: <linuxppc-dev@lists.linuxppc.org>
+Cc: <bh40@calva.net>
+Subject: 2.2.17pre9-ben1 and airport
+Date: Fri, 7 Jul 2000 16:48:53 -0400
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: yellowdog-devel@lists.yellowdoglinux.com, linuxppc-dev@lists.linuxppc.org,
-        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Subject: Re: RFC: Changing default partition type for linux/ppc
-References: <Pine.LNX.4.10.10007071754400.28685-100000@opal.biophys.uni-duesseldorf.de> <20000707221950.20980@192.168.1.10>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+Hi, I have an iBook SE with an airport card, so naturally I was quite
+excited at the prospect of being able to use 32bit color (finally!) under
+Linux, and the AirPort card as well. So, I downloaded the source from
+ppclinux.apple.com/~benh, and built a new kernel. First of all, the mach64
+stuff seems to work fine with Xpmac, but the XF68_FBDev that's installed on
+my Yellow Dog 1.2 machine just puts a weird line on the screen. Oh well, no
+biggie, since Xpmac is working. I haven't tried XF4 yet, either. Now, on to
+the problems...
+1.) The trackpad won't work at all anymore, but external USB mice work fine.
+I did make the prerequisite changes in /dev.
+2.) When I try to insmod airport.o network_name=home it claims that printk
+and isa_io_base are unresolved symbols.
 
-> >
-> >Benh: are you maintaining the official version of pdisk now?
->
-> No, I'm not. I don't know if someone actually maintains it
+Any ideas?
 
-I believe one of the original (the original?) creator(s) of pdisk is now
-part of the Linux/PPC community.  IIRC, he was working on upgrading pdisk
-and fixing the problems that were highlighted previously in the list
-archives.  I haven't heard anything recently, so I have no idea what the
-status is.
-
---Nelson Abramson
+Thanks,
+Robbie Thompson
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
