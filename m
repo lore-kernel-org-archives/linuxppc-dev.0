@@ -1,81 +1,65 @@
-Date: Wed, 8 Mar 2000 12:47:16 -0600
-From: Grant Erickson <grant@borg.umn.edu>
-To: Michel Lanners <mlan@cpu.lu>
-cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-        Matt Porter <mmporter@home.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Grabbing an Interrupt for a Brain-dead PCI Device
-In-Reply-To: <200003072200.XAA00434@piglet.grunz.lu>
-Message-ID: <Pine.SGI.4.21.0003081136360.51665-100000@brule.borg.umn.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <v04011708b4ec4b0ae554@[129.116.196.236]>
+Date: Wed, 8 Mar 2000 12:59:29 -0600
+To: linuxppc-dev@lists.linuxppc.org
+From: Greg Allen <gallen@arlut.utexas.edu>
+Subject: AltiVec on Linux
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Thanks for all the assistance on this issue thus far. This has been an
-interesting trial under the guise of "life is just unnecessarily hard when
-hardware designers fail to do things the right way."
+So I've been playing with Motorola's new "AltiVec" compiler, and here are
+some observataions I thought I might share:
 
-My system:
-	Power Macintosh G3 300
+It's not a "Linux" compiler -- it's strictly a cross-compiler. It creates
+the toolset "powerpc-eabisim-*". The binaries that it generates do not run
+on Linux.
 
-So, after playing with a few other PCI cards, I find:
+The included gdb has a simulator that can run these binaries.
 
-                 ---------------------------------------------------------
-     Board Slot  |      0      |      1      |      2      |      3      |
-                 ---------------------------------------------------------
-Pin  Product     |  IRQ   Dev  |  IRQ   Dev  |  IRQ   Dev  |  IRQ    Dev |
-                 ---------------------------------------------------------
- A   AMD Lance   |   25    15  |   24    14  |   23    13  |   --     -- |
- A   ATI Rage*   |   --    --  |   --    --  |   --    --  |   22     18 |
- A   Prisa NetFX |   25    15  |   24    14  |   23    13  |   --     -- |
- A** My Device   |   --    15  |   --    14  |   --    13  |   --     -- |
-                 ---------------------------------------------------------
+It is possible to generate a library with powerpc-eabisim-gcc (lib*.a) and
+then link to it with native gcc and get an executable. However, libc
+function calls are problematic -- Linux is glibc based and
+powerpc-eabisim-gcc is newlib based. e.g. "printf" called from the
+powerpc-eabisim-gcc causes link errors with native gcc.
 
-  * The ATI Rage is soldered onto the motherboard.
- ** My brain-dead PCI device uses INTA# but doesn't advertise it via the
-    PCI_INTERRUPT_PIN register.
+Motorola chose to "extend the C language" for the AltiVec API. They added a
+new modifier "vector":
 
-So after experimenting with this for a while, I think* that I can assign
-the interrupt based on the PCI device the card is assigned.
+    vector float a, b, c;
+    c = vec_add(a,b);
 
-Also, regarding memory address space resources, is there a routine I can
-call that says "Assign this card some resource space because it hasn't
-been assigned one yet"?
+To make powerpc-eabisim-gcc recognize "vector", you compile with "-fvec".
 
-Thanks again,
+Unfortunately, powerpc-eabisim-g++ doesn't recognize "vector" at all.
+That's right, boys and girls, NO C++ SUPPORT WITH ALTIVEC!
 
-Grant
+So we have to patch g++ the same way gcc was patched -- to extend the C++
+language for AltiVec.
 
+When I saw that Motorola was "changing C" for AltiVec, I thought it was a
+mistake. Now I'm certain.
 
-On Tue, 7 Mar 2000, Michel Lanners wrote:
-> On   7 Mar, this message from Grant Erickson echoed through cyberspace:
-> > The device has an interrupt at INTA#. Unfortunately, the device being dumb
-> > as it is, doesn't utilize the interrupt pin register to advertise that it
-> > does in fact have an interrupt there. So, I assume that once again, the
-> > PROM doesn't give it one.
->
-> Of course not... how should it know? But....
->
-> > Is there a way, in Linux, for me to programmatically and manually assign
-> > an interrupt to this device as might have been done in the PROM? I'm
-> > guessing I have to twiddle some registers in the North Bridge, correct?
->
-> As far as I know, yes, it depends on the host bridge. However, I don't
-> think there's any bridge configuration involved here, as the interrupt
-> pin routing would rather be done in hardware.
->
-> If this is in a PowerMac (at least those previous to UMA), then there
-> is a fixed IRQ per physical slot. All 4 PCI interrupt lines are OR'ed
-> together per slot.
->
-> However, there are other IRQ routing schemes as well... the above being
-> the easiest one, because the IRQ value can be hardcoded based on the
-> slot, which you can determine by software.
->
-> Plus, there are ways to determine an unknown IRQ by letting the device
-> generate an interrupt, and seing what IRQ it comes in on. You might
-> find more info in 'Linux Device Drivers' by Alessandro Rubini.
+What's wrong with:
+    typedef float[4] vector_float;
+    vector_float a, b, c;
+    c = vec_add(a,b);
 
+That works fine with VIS and MMX (in integer modes).
+
+</rant>
+
+In any case, the AltiVec package gives a few hints on what needs to be done
+to make a LinuxPPC native compiler. We're not there yet.
+
+I guess I'll be looking into that, too...
+
+-Greg
+----------------------------------------------------------------------
+| Gregory E. Allen, MSEE Research Engineer <gallen@arlut.utexas.edu> |
+|    Advanced Technology Laboratory, Sonar Development Division      |
+|  Applied Research Laboratories: The University of Texas at Austin  |
+----------------------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
