@@ -1,44 +1,51 @@
-Date: Sun, 9 Feb 2003 11:44:14 +0100
-From: Harald Welte <laforge@gnumonks.org>
-To: Manuj Dhingra <manuj_dhingra@ae.gatech.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: VGA out/External Monitor on ibook 2
-Message-ID: <20030209104414.GW13269@naboo.fugue.com>
-References: <20030120155921.GA22300@haar.ae.gatech.edu>
+Date: Sun, 9 Feb 2003 21:30:31 +0000
+From: Magnus Damm <damm@opensource.se>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: pmac: input layer as module and usb keyboard
+Message-Id: <20030209213031.2b67933e.damm@opensource.se>
 Mime-Version: 1.0
-In-Reply-To: <20030120155921.GA22300@haar.ae.gatech.edu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed;
+ boundary="Multipart_Sun__9_Feb_2003_21:30:31_+0000_101fc900"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jan 20, 2003 at 10:59:21AM -0500, Manuj Dhingra wrote:
->
-> 	I know this has been asked before, but I did not come across any
-> solutions, so let me appologise if I missed them.
->
-> I have a: ibook 2 (white ibook from summer of 2001) 500MHz. It has a ATI
-> Rage 128 graphics card which my OF calls ATY,RageM3p29s. The aty128fb
-> module is used for video framebuffer, and I can't seem to get VGA mirror
-> to work.
+This is a multi-part message in MIME format.
 
-I have exactly the same model.
+--Multipart_Sun__9_Feb_2003_21:30:31_+0000_101fc900
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-> case 2: Monitor not connected at boot up
-> The external monitor is "wavy". I turn the LCD off (m3mirror from benh)
-> and play around with timings, resolutions etc. The "waviness" gets more or
-> less but I could not find setting to make it stable. BTW, it is true for
-> both a CRT and flat-panel. Internal-LCD is fine (at 1024x768).
+Hi all,
 
-Yes, I can confirm this behaviour.  It's really annoying because I
-cannot use my iBook2 for any of my presentations at conferences... and
-I'm really too lazy to carry a second old x86 notebook with me.
+This patch makes it possible to use a usb keyboard with a kernel that has the
+input layer compiled as a module.
 
-> Has this been solved? If not, how can I help?
+Please apply.
 
-I'm not aware of any solution :(
+thanks /
 
---
-- Harald Welte / laforge@gnumonks.org               http://www.gnumonks.org/
+magnus
+
+
+
+--Multipart_Sun__9_Feb_2003_21:30:31_+0000_101fc900
+Content-Type: application/octet-stream;
+ name="linux-2.4.20-pmac_input_module.patch"
+Content-Disposition: attachment;
+ filename="linux-2.4.20-pmac_input_module.patch"
+Content-Transfer-Encoding: base64
+
+LS0tIGxpbnV4LTIuNC4yMC9hcmNoL3BwYy9wbGF0Zm9ybXMvcG1hY19zZXR1cC5jCTIwMDItMTEt
+MjggMjM6NTM6MTEuMDAwMDAwMDAwICswMDAwCisrKyBsaW51eC0yLjQuMjAtcG1hY19pbnB1dF9t
+b2R1bGUvYXJjaC9wcGMvcGxhdGZvcm1zL3BtYWNfc2V0dXAuYwkyMDAzLTAyLTA5IDE0OjQ4OjU1
+LjAwMDAwMDAwMCArMDAwMApAQCAtODUxLDcgKzg1MSw3IEBACiBzZWxlY3RfYWRiX2tleWJvYXJk
+KHZvaWQpCiB7CiAjaWZkZWYgQ09ORklHX1ZUCi0jaWZkZWYgQ09ORklHX0lOUFVUCisjaWYgZGVm
+aW5lZChDT05GSUdfSU5QVVQpIHx8IGRlZmluZWQoQ09ORklHX0lOUFVUX01PRFVMRSkKIAlwcGNf
+bWQua2JkX2luaXRfaHcgICAgICAgPSBtYWNfaGlkX2luaXRfaHc7CiAJcHBjX21kLmtiZF90cmFu
+c2xhdGUgICAgID0gbWFjX2hpZF9rYmRfdHJhbnNsYXRlOwogCXBwY19tZC5rYmRfdW5leHBlY3Rl
+ZF91cCA9IG1hY19oaWRfa2JkX3VuZXhwZWN0ZWRfdXA7Cg==
+
+--Multipart_Sun__9_Feb_2003_21:30:31_+0000_101fc900--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
