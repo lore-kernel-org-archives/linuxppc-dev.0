@@ -1,45 +1,35 @@
-Message-ID: <39099239.307199E6@student.ethz.ch>
-Date: Fri, 28 Apr 2000 15:29:29 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+Date: Fri, 28 Apr 2000 10:03:31 -0500 (CDT)
+From: Ramprasad Rao <ramp@oddjob.uchicago.edu>
+To: Ramprasad Rao <ramp@oddjob.uchicago.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: usb devices ..
+Message-ID: <Pine.GSU.4.05.10004280951040.27217-100000@oddjob.uchicago.edu>
 MIME-Version: 1.0
-To: root <whschult@uncc.edu>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Latest XFree86 v4.0 crashing (possible culprit sawmill)
-References: <200004270502.AAA08920@lists.linuxppc.org>
-	 <39090775.BFEECFA1@uncc.edu> <39092CEA.1321BC79@student.ethz.ch> <3909892A.41387BC1@uncc.edu>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-root wrote:
+Hi -
 
-> I'm roughly familiar with gdb, but not enough to really know what I
-> should be doing to help.  Where should I expect to find the core file,
+I've been trying to get USB devices to work under linuxppc and have not
+had any success. I know that the mouse and keyboards work and so does
+the printer (at least the epson 740). What about other devices? I'm
+interested in getting a functional USB  storage at least. Has anyone
+had any luck? I have looked at the <linux-usb> mailing list and website
+and I find evidence of working zip drives etc. but most (or all) seem
+to be linux-x86.
 
-The server doesn't normally dump core. I suggest you build a server with
-'#define DoLoadableServer NO' uncommented in either
-xc/config/cf/{xf86site,host}.def and run the server from gdb.
+Question: Does the latest devel kernel at linuxcare have all the usb
+patches? All my efforts have been with building a kernel from the rsynced
+sources from Paul's site.
 
-Beware that you'll most probably have to do that from a remote machine as you
-won't have access to gdb's console otherwise.
+I have also tried applying the usb-backport to the latest stable sources from
+linuxcare. These patches never apply cleanly and don't compile also.
 
+Any suggestions (or ideas).
 
-> and what information do you need?
-
-Where it crashes :)
-
-Hint: Rebuild the file(s) it shows with makeg to see the actual code in gdb.
-
-
-> Which log file do you need?
-
-/var/log/XFree86.0.log
-
-But sadly it's only rarely helpful in such cases.
-
-
-Michel
+Thanks - Ramprasad
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
