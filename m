@@ -1,59 +1,33 @@
-Message-Id: <5.1.0.14.0.20011030095652.02d84ec0@pop.gmx.de>
-Date: Tue, 30 Oct 2001 10:00:44 +0800
-To: Jean-Denis Boyer <jdboyer@mediatrix.com>
-From: Michael Habermann <MHabermann@gmx.de>
-Subject: RE: Reducing glibc with mklibs.sh
+Date: Mon, 29 Oct 2001 19:08:41 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Mark Pilon <mpilon@midrivers.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <F1BED55F35F4D3118C0F00E0295CFF4D414C7E@mail.mediatrix.com>
+Subject: Re: trying to build latest devel <cramfs>
+Message-ID: <20011029190841.G9925@cpe-24-221-152-185.az.sprintbbd.net>
+References: <3BDDA382.1172104F@midrivers.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3BDDA382.1172104F@midrivers.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 05:36 PM 10/29/2001 -0500, Jean-Denis Boyer wrote:
->In your script:
-> > cp *.map ../lib/
->might be bad, because the makefile of glibc produces libm.map,
->while mklibs.sh looks for libm_pic.map (the name differs).
+On Mon, Oct 29, 2001 at 11:44:18AM -0700, Mark Pilon wrote:
 
-Sorry for having posted this buggy script. Here's the correct one:
----
-CC=powerpc-linux-gcc \
-AR=powerpc-linux-ar \
-RANLIB=powerpc-linux-ranlib \
-CFLAGS="-Os -DNDEBUG" \
-./configure \
---enable-kernel=2.4.4 \
---disable-profile \
---host=powerpc-linux \
---enable-add-ons=linuxthreads \
---with-headers=/usr/local/powerpc-linux/include \
---prefix=
+> trying to build for walnut, w/ cramfs enabled under
+> filesystems, compressed rom-based filesystem
+>
+> I get:
+> uncompress.c:21: linux/zlib_fs.h: No such file or directory
+>
+> any idea where this went or if there's a Plan for future
+> support of this ?
 
-make
-make install_root=/usr/local/powerpc-linux install
+Quite possibly because the inflate stuff under cramfs just got moved.
+Post this on linux-kernel or try 2.4.14-pre4 (soon to be pre5).
 
-#Prepare the lib directory for reducing the standard library size with
-#mklibs.shcp
-#copy pic files to ../lib/
-cp `find -name "*_pic.a"` ../lib/
-
-#rename *.map file to ../lib/*_pic.map
-for i  in *.map; do
-     cp $i ../lib/${i%%.map}_pic.map
-done
-
-#libc requires special handling
-mkdir ../lib/libc_pic
-cp elf/interp.os ../lib/libc_pic/interp.o
-cp elf/soinit.os ../lib/libc_pic/soinit.o
-cp elf/sofini.os ../lib/libc_pic/sofini.o
-
-#libm doesn't work
-rm -f ../lib/libc.map
-rm -f ../lib/libc_pic.a
----
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
