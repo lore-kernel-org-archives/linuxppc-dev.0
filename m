@@ -1,28 +1,39 @@
-Date: Wed, 6 Oct 1999 16:47:22 -0700 (MST)
-From: Tom Rini <trini@kernel.crashing.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: ADB probing
-Message-ID: <Pine.LNX.4.10.9910061626290.10804-100000@opus.bloom.county>
+Message-ID: <37FC31B5.A450DFFF@loomer.com>
+Date: Wed, 06 Oct 1999 22:38:00 -0700
+From: Hugh Caley <hcaley@loomer.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: hollis@andrew.cmu.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Lombard patches - which tree?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello all.
+Hi, Hollis.  Paul's rsync stable source does not require any other patches to
+support ethernet or USB on a Lombard (at least it works with my Lombard's
+ethernet and a Logitech Wingman USB mouse).
 
-I've run into a wierd problem with ADB stuff, and I wonder if anyone has
-an idea on how to work/fix this.  What I'm trying to do right now is fix
-up kudzu so it can probe for things on the ADB bus.  Right now it does
-what all the other old config tools did, and pokes at /dev/adbmouse.  The
-problem is right now this works if there's any adb device present (one of
-the machines I checked only has an adb kbd, tho adbmouse suport is
-compiled in).  Also, is there any way to see if the machine has an adb
-keyboard installed?  Thanks..
+You could make your own, or the version I use is up on my web site:
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+http://www.loomer.com/linuxppc
+
+Hugh
+
+> Date: Wed, 06 Oct 1999 14:15:26 -0400
+> From: "Hollis"
+> Subject: Lombard patches - which tree?
+>
+> I'm looking to compile a Lombard kernel which has patches for both ethernet
+> and USB (it does need a USB patch, right?). Have the patches made their way
+> into Paul's rsync, or anywhere for that matter?
+>
+> - -Hollis
+>
+--
+Hugh Caley, Unix Administrator
+Babcock & Brown, San Francisco
+510-524-1672
+hughc@babcockbrown.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
