@@ -1,33 +1,50 @@
-From: jtm@smoothsmoothie.com
-Date: Wed, 6 Feb 2002 11:48:38 -0600
-To: murali nagarajan <muralin@gdatech.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problems running PING, Telnet
-Message-ID: <20020206174838.GA8587@shamus.smoothsmoothie.com>
-References: <020c01c1ae90$d47efbe0$0900a8c0@Domain.invalid>
-Mime-Version: 1.0
+Message-ID: <20020207155723.63550.qmail@web20102.mail.yahoo.com>
+Date: Thu, 7 Feb 2002 07:57:23 -0800 (PST)
+From: Bruce <brc1995@yahoo.com>
+Subject: Re: Problems running PING, Telnet 
+To: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <020c01c1ae90$d47efbe0$0900a8c0@Domain.invalid>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Feb 05, 2002 at 02:02:32PM -0800, murali nagarajan wrote:
->                                    ----------
-> - PING command does not work
->   The erro message I get is   "ping: unknown protocol icmp"
+Hi Murali,
 
-Do you have the libnss_* stuff in /lib? I think not having it is
-the source of your problem.
+We had similar problems when we moved from an NFS
+mounted file system to a RAM Disk.
 
-> - Telnet program does not work which tells me that the service is unknown.
->    The error message I get is "telnet: tcp/telnet: unknown service"
+>> - PING command does not work
+>>               The erro message I get is "ping:
+unknown protocol icmp"
 
-This might be related to the above, but I'm not sure.
+>>                - Telnet program does not work which
+tells me that the service is unknown.
+>>               The error message I get is "telnet:
+tcp/telnet: unknown service"
 
---
-Jay Monkman	    The truth knocks on the door and you say "Go away, I'm
-monkman@jump.net    looking for the truth," and so it goes away. Puzzling.
-		     - from _Zen_and_the_Art_of_Motorcycle_Maintenance_
+
+You didn't mention whether telnet and ping were
+working on the nfs mounted filesystem and
+then stopped working when you migrated to
+the RAM Disk.
+
+If that is the case, we found the strace tool to
+be indispensible. Bring the strace tool over to
+your target and execute
+
+strace ping
+
+System calls will be displayed on your terminal. The
+program will show if there are failures as it
+is trying to open shared libraries or other
+configuration files. It is not perfect, but it can
+really help to narrow down where the problem
+may reside.
+
+Bruce
+
+Send FREE Valentine eCards with Yahoo! Greetings!
+http://greetings.yahoo.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
