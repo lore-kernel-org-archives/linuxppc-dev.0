@@ -1,57 +1,55 @@
-Message-ID: <3DA1A08B.3C71949D@selta.it>
-Date: Mon, 07 Oct 2002 13:56:11 -0100
-From: stefania magistrali <s.magistrali@selta.it>
-MIME-Version: 1.0
-To: rekha gvv <rekhagvvc@yahoo.co.in>
+To: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: boot linux on fads mpc860
-References: <20021007112640.38961.qmail@web8005.mail.in.yahoo.com>
-Content-Type: text/plain; charset=iso-8859-2
+Subject: Re: ELDK iso image 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 07 Oct 2002 09:37:30 CDT."
+             <0B0A39652BB0D411BCCF00508B9512EC08AEB42C@tx14exm05.ftw.mot.com>
+Date: Mon, 07 Oct 2002 17:01:12 +0200
+Message-Id: <20021007150117.BD61AFA9C@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You have to download the FADS image. You have to create an image like this:
-mkimage -n 'Linux FADS image' -A ppc -O linux -T kernel -C gzip -a 00000000 -e
-00000000  -d $(PATH_TO_VMLINUX)/vmlinux.gz fads-image
-where mkimage is created as a tool in ppcboot
-Then you can use tftpboot to download it (es. tftpboot 100000 fads-image)
-Bye!
-Stefania
+Dear Bo,
 
-rekha gvv wrote:
+in message <0B0A39652BB0D411BCCF00508B9512EC08AEB42C@tx14exm05.ftw.mot.com> you wrote:
+>
+> Would you please provide the ELDK iso image (instead of directory tree)
+> on your web address: www.denx.de or ftp.leo.org ?
 
-> Hello,
-> I am new to this mailing list.
-> I am trying to boot linux from Fads MPC860 powerpc
-> board I have compiled the linux kernelversion
-> linux-2.4.4-2002-03-21 .Also i have put the PPcboot
-> 1.1.6 into the board.now i dont know how to download
-> this linux kernel into this board.Should i do any
-> sttings with ppcboot .please do let me know
-> i am using the tftpboot command but then
-> wheni tell go 100000 it tells
->
-> ## starting application at 0x00100000
->
-> thenit hangs ..
-> i have tried to download the vmlinux file also
-> converted that to binary format and also tried but it
-> gives the same problem
-> one more thing is when i used the BOOTM command
-> it used to give
->
-> ##Booting application at 0x00100000
-> Bad magic number
->
-> I dont understand what to do.so kindly please help
-> Regards
-> Rekha
-> rekhagvvc@yahoo.co.in
->
-> Faith Hill - Exclusive Performances, Videos & More
-> http://faith.yahoo.com
->
+No, I won't ;-)
 
+> Basically there are a lot of problems for me (perhaps others) to burn the
+> image on linux box.
+
+Well, you always have the option to buy the CDROM if you don't manage
+to burn one yourself.
+
+
+The main reason not to provide an ISO image whas that we expected our
+first release of the ELDK to require lots of updates. Actually,  this
+was not really necessary.
+
+
+But it makes little sense to put ISO images out anyway:
+
+We will have a new version of the ELDK (based on YD-2.3)  out  before
+the  end  of  the  month.  Even then, we will not provide ISO images.
+Instead, we intend to use Debian's "jigdo"  mechanism  to  allow  for
+easy creatsion of ISO images on the user side and easy updates on the
+developer's side.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Man is the best computer we can put aboard a spacecraft ...  and  the
+only one that can be mass produced with unskilled labor.
+                                                  - Wernher von Braun
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
