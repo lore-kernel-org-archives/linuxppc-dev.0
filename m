@@ -1,19 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mailout10.sul.t-online.com (mailout10.sul.t-online.com
-	[194.25.134.21]) by ozlabs.org (Postfix) with ESMTP id 9D66C67A46
+Return-Path: <Murray.Jensen@csiro.au>
+Received: from act-ironport-ext-out2.csiro.au (act-ironport-ext-out2.csiro.au
+	[150.229.7.38]) by ozlabs.org (Postfix) with ESMTP id 688C167A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 21:39:19 +1100 (EST)
+	Thu, 17 Mar 2005 21:46:04 +1100 (EST)
+Message-Id: <6.2.0.14.0.20050318082431.01cd8238@localhost>
+Date: Fri, 18 Mar 2005 08:36:27 +1100
 To: "Jean Nicollerat MD" <jean.nicollerat@microdev.ch>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 17 Mar 2005 10:27:07 +0100."
+From: Murray Jensen <Murray.Jensen@csiro.au>
+In-Reply-To: <HMECJAKDCPLOGPDHNAHEAEKHCAAA.jean.nicollerat@microdev.ch>
+References: <20050317083415.4BCD5C1510@atlas.denx.de>
 	<HMECJAKDCPLOGPDHNAHEAEKHCAAA.jean.nicollerat@microdev.ch>
-Date: Thu, 17 Mar 2005 11:39:02 +0100
-Sender: wd@denx.de
-Message-Id: <20050317103907.185B1C1510@atlas.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Cc: Linuxppc-Embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: RTC with TQM823L 
+Subject: RE: RTC with TQM823L 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,40 +24,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <HMECJAKDCPLOGPDHNAHEAEKHCAAA.jean.nicollerat@microdev.ch> you wrote:
->
-> I'm used to program on processor without OS. I want try linux to use linux
+At 08:27 PM 17/03/2005, Jean Nicollerat MD wrote:
+>I have to read message that comme on the CAN bus every 2ms. Then I have to
+>show values on the LCD and transfers some message on the RS232.
 
-That was what I expected from your posting.
+Sounds like a simple device driver would handle this.
 
-> I have to read message that comme on the CAN bus every 2ms. Then I have to
-> show values on the LCD and transfers some message on the RS232.
+>I need a timer to the check the reception of the messages.
 
-Ok.
+Could this be done by setting a timeout which you keep rescheduling?
 
-> I need a timer to the check the reception of the messages.
+Note that the standard clock tick on linux has 10ms resolution - i.e. 100Hz.
+You might want to increase this to 1000Hz (i.e. 1ms resolution). I have read
+of people doing this in this list.
 
-No. This is fundamentally wrong. You do NOT need a timer to check  if
-a device driver has data available.
+>I seem it is difficult with linux.
 
-This is exactly what I meant when sayin you will have to get used  to
-working  in  a Unix environment., Under Unix, you will not use a time
-triggered control loops which polls all your drivers,  but  you  will
-use select() or poll() to wait for events from your drivers. It's the
-incoming data which triggers your control loop, not a timer.
+No, its not difficult at all - its very easy. There is a learning curve 
+though, just
+like anything. Cheers!
+                                                                 Murray...
+--
+Murray Jensen, CSIRO Manufacturing & Infra. Tech.      Phone: +61 3 9662 7763
+Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
+Internet: Murray.Jensen@csiro.au
 
-> I seem it is difficult with linux. I will try with the RTAI.
+To the extent permitted by law, CSIRO does not represent, warrant and/or
+guarantee that the integrity of this communication has been maintained or
+that the communication is free of errors, virus, interception or interference.
 
-DO NOT DO IT. This will only make things worse. You are on the  wrong
-track.  Don't  try to stick with a software design which does not fit
-any more. Change your  design  to  take  advantage  of  the  services
-provided by a Unix operating system.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Never call a man a fool.  Borrow from him.
+The information contained in this e-mail may be confidential or privileged.
+Any unauthorised use or disclosure is prohibited. If you have received this
+e-mail in error, please delete it immediately and notify Murray Jensen on
++61 3 9662 7763. Thank you.
