@@ -1,37 +1,33 @@
-Date: Sun, 27 Aug 2000 18:28:29 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
-        paulus@linuxcare.com.au
-Subject: Re: Patches for 2.4.0-test7
-In-Reply-To: <39A8379C.E4EBB33A@wanadoo.fr>
-Message-ID: <Pine.LNX.4.10.10008271823320.3745-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <39A96FFA.EF350293@embeddededge.com>
+Date: Sun, 27 Aug 2000 15:46:02 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Roman Zippel <zippel@fh-brandenburg.de>
+CC: Ronald Wahl <rwa@peppercon.de>, Benjamin Herrenschmidt <bh40@calva.net>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: allocating uncachable memory
+References: <Pine.GSO.4.10.10008261825550.25785-100000@zeus.fh-brandenburg.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > AFAIK, CONFIG_ADBMOUSE cannot be selected without CONFIG_ADB_KEYBOARD in
-> > the current bk tree. I'm also doing additional config fixes, so that ADB-
-> > less pmacs can remove all the ADB stuffs and keep the PMU for example.
-> > CONFIG_ADB_KEYBOARD is not displayed when CONFIG_INPUT_ADBHID is, etc...
->
-> Someone recently wrote that one could have both /dev/adbmouse and
-> /dev/input/mice working at the same time, so I tried this, too. And I
-> *could* select CONFIG_ADBMOUSE without CONFIG_ADB_KEYBOARD, only it
-> didn't compile due to undefined variables. My patch fixes these, but
-> indeed it is probably better to change the config.in files to forbid
-> this choice.
+Roman Zippel wrote:
 
-That would have been me - I still claim that keeping adbmouse working for
-backwards compatibility would be a good thing, but my word doesn't carry
-much weight.
+> IMO the only portable solution would be a memremap (similiar to ioremap).
 
-The adbmouse driver only relies on the keyboard driver for mouse button
-emulation. At least in 2.2.17, it won't interfere with the new input code,
-I haven't tried 2.4.0 yet.
+Coming up with a function name and actually implementing it are two
+very different things......ioremap() should do the right thing.
+There are also many other issues associated with the macros
+bus_to_virt() and virt_to_bus() that are challenging.
 
-	Michael
+> Sure?
+
+Yes I am sure.  Bursting data over the bus is hell of a lot faster,
+especially in this case where the PCI bridge can combine these into
+a PCI burst transfer as well.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
