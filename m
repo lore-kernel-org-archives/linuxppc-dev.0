@@ -1,48 +1,29 @@
-Date: Tue, 11 May 2004 15:25:49 +0200
-From: Olaf Hering <olh@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Cc: akpm@osdl.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] export clear_pages on ppc32
-Message-ID: <20040511132549.GB4920@suse.de>
-References: <20040510153624.GA9214@suse.de> <16544.1344.359606.598912@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <16544.1344.359606.598912@cargo.ozlabs.ibm.com>
+Message-ID: <0F48024310E5D6118D200002B3A440DB08B079E4@zil01exm08.mcil.comm.mot.com>
+From: Meriin Michael-BMM063 <BMM063@motorola.com>
+To: "Linuxppc-Dev (E-mail)" <linuxppc-dev@lists.linuxppc.org>
+Subject: Using SMC patch on MPC852T
+Date: Tue, 11 May 2004 16:27:50 +0300
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="windows-1255"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- On Tue, May 11, Paul Mackerras wrote:
+Hi All,
 
->
-> Olaf Hering writes:
->
-> > ext3 as module is not possible in 2.6.6, clear_pages, called from
-> > clear_page, is not exported.
->
-> clear_page is an inline function now, we should remove its export.
-
-Good point:
+I am trying to apply a SMC patch (exit0.1 MPC8XX SMC(UART) and I2C/SPI MICROCODE PACKAGE).
+MPC852T does not have SCC1&2, but SMC1 is overlapped with SCC3.
+In our implementation we need both portsSMC1 (console) and SCC3 (Ethernet).
+The first thing I tried was to eliminate places in enet.c code which are using SMC1 area, but SCC3 was not transmitting.
+Now I've applied patch as it described in the manual (using micropatch.c). After enabling Tx and Rx in SMC1, it starts transmitting by it self.
+Any ideas?
+Does somebody use SCC3 & SMC1 together without patch?
 
 
-diff -p -purN linux-2.6.6/arch/ppc/kernel/ppc_ksyms.c linux-2.6.6.ppc32/arch/ppc/kernel/ppc_ksyms.c
---- linux-2.6.6/arch/ppc/kernel/ppc_ksyms.c     2004-05-10 04:33:19.000000000 +0200
-+++ linux-2.6.6.ppc32/arch/ppc/kernel/ppc_ksyms.c       2004-05-11 15:24:57.000000000 +0200
-@@ -72,7 +72,7 @@ int abs(int);
 
- extern unsigned long mm_ptov (unsigned long paddr);
+Best Regards,
+     Michael Meriin
 
--EXPORT_SYMBOL(clear_page);
-+EXPORT_SYMBOL(clear_pages);
- EXPORT_SYMBOL(clear_user_page);
- EXPORT_SYMBOL(do_signal);
- EXPORT_SYMBOL(do_syscall_trace);
-
-
---
-USB is for mice, FireWire is for men!
-
-sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
