@@ -1,43 +1,34 @@
-Message-ID: <3990AF84.9E5FBD5A@denise.shiny.it>
-Date: Tue, 08 Aug 2000 21:10:28 -0400
-From: Giuliano Pochini <pochini@denise.shiny.it>
-MIME-Version: 1.0
+Date: Tue, 8 Aug 2000 18:48:21 -0700
+From: Daniel Jacobowitz <drow@false.org>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: How to get up-to-speed on the 3D / DRI in Rage 128
-References: <39902BE4.44DE97C1@ivey.uwo.ca> <39902E69.67F50604@relog.ch>
+Subject: Re: php compilation fix
+Message-ID: <20000808184821.A20816@drow.them.org>
+References: <00080818110803.04184@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <00080818110803.04184@localhost.localdomain>; from mpeters@omnilinux.com on Tue, Aug 08, 2000 at 05:29:19PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > I have the xf 401 src tar archives and I can get a hold of ani's cvs of the
-> > xfree86 tree.
+On Tue, Aug 08, 2000 at 05:29:19PM -0700, Michael A. Peters wrote:
 >
-> I haven't used Ani's patches, and I seem to be the only one running DRI
-> successfully so far. Maybe better try without them first.
+> I created a patch that makes the changes suggest to php-4.0.1pl2/main/main.c
 >
-> > What other patches/fixes do I need to get going?
-> >
-> > - aty128fb.c patches for panning?
->
-> Not needed, you can use the full screen.
->
-> > - DRI patches?
->
-> Yep. What I'm running is the DRI CVS trunk (which is basically X 4.0.1 and
-> some DRI changes) and a patch that I've posted to dri-devel. If you can't get
-> it from there, I can send it to you privately or put it up for HTTP download.
->
-> (Jack Howarth should have it as well)
->
-> > - etc
->
-> That's all I can think of ATM.
+> replace
+> args = orig_args;
+> by:
+> memcpy(args, orig_args, sizeof(orig_args));
 
-Please let me understand... I d/l the latest X + DRI patches and I compile
-them. If all goes right I get a working X, but how can I use the 3D
-acceleration ?  Do I need a patched version of Mesa too, or what ?
+I suspect you're looking for va_copy().
 
-Bye.
+
+Dan
+
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
