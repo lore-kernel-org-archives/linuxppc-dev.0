@@ -1,107 +1,52 @@
-Message-ID: <387D7686.7EDD5241@switchboard.ericsson.se>
-Date: Thu, 13 Jan 2000 07:53:58 +0100
-From: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
+Message-ID: <387D8686.EF88134E@dalim.de>
+Date: Thu, 13 Jan 2000 09:02:14 +0100
+From: Stephane GEORGES <sg@dalim.de>
 MIME-Version: 1.0
-To: Grant Erickson <grant@lcse.umn.edu>
-CC: linuxppc-embedded@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Help Sought: 8390-Ethernet Troubles on PowerPC 4xx Port
-References: <Pine.SGI.4.10.10001121900080.250408-100000@brule.borg.umn.edu>
+To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+CC: iweiny@pacbell.net, linuxdev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: User level Macros for Endianess
+References: <E869F6EDBD5F4E50C1256864006C9E10.006C9E4AC1256864@kehl.dalim.de>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-If I understand the error messages right is your board waiting to 
-send forever. 
+I use my own executable compiled by GNU before compiling anything else:
 
-I think I've seen that before...
+bigendian.c
+-----------
 
-I don't know how the board is organized, but my experience with
-ethernet for 8xx is that it's really important to initialize the PHY
-correctly.
+int main()
+{
+  unsigned short val = 0x0011;
+  unsigned char* str = (unsigned char*)&val;
+  if ( str[0] == 0x00 )
+    return 1;
+  else
+    return 0;
+}
 
-The PHY on my F(ADS) boards needs to be enabled in a special board
-specific register. Then should the PHY be configured with 3 pins,
-half/full duplex, collision test and loopback.
+in my GNUmakefile
+-----------------
 
-I don't know who takes care of PHY setup in you case.
-The PHY setup is board specific in our 8xx case anyhow.
+- one rule to compile bigendian.c if exe not compiled
+- one rule testing the return value of exe and setting
 
-Good luck /
+    MEMORY_IS_LITTLE_ENDIAN or MEMORY_IS_BIG_ENDIAN
 
-magnus
+That way I do not need to look for the right MACRO on the right SYSTEM.
 
-Grant Erickson wrote:
-> 
-> The latest road bump I've encountered on the path to a Linux port for the
-> PowerPC 403GCX running on IBM's "Oak" evaluation board is getting the
-> National Semiconductor DP83902AV chip to behave.
-> 
-> The chip on the board works with both the IBM PROM and with TiVo's
-> 2.1.24-based kernel, so I know that the hardware is OK.
-> 
-> Thinking that maybe I had a problem with the Linux 2.3.3x sources, I
-> overlaid the port onto 2.2.14 and get the same problem. So, it's
-> definitely something in the 4xx-code or something in my 'oaknet.c' driver.
-> 
-> My driver is pretty much a verbatim copy of all the other 8390-based
-> drivers. TiVo's 2.1.24 driver doesn't seem much different either.
-> 
-> I DO know for a fact that I can probe and see the device and I know for a
-> fact that the driver is getting and handling interrupts.
-> 
-> Anyone out there with any experience with 8390-based controllers or
-> drivers have any insight on where I might start looking to tackle the
-> below problem?
-> 
-> The "oaknet.c" code is in the latest 2.3.39 sources; otherwise, I can send
-> the similar code for 2.2.14 if it'd help. Both rely on the stock 8390.o
-> module.
-> 
-> I get the following sorts of errors on both 2.2.14 and 2.3.3x:
-> 
-> Linux version 2.2.14 (grant@brule) (gcc version 2.95.2 19991024 (release)) #97 Wed Jan 12 16:52:16 CST 2000
-> Calibrating delay loop... 9.73 BogoMIPS
-> Memory: 7124k available (660k kernel code, 372k data, 36k init) [c0000000,c0800000]
-> Dentry hash table entries: 1024 (order 1, 8k)
-> Buffer cache hash table entries: 8192 (order 3, 32k)
-> Page cache hash table entries: 2048 (order 1, 8k)
-> POSIX conformance testing by UNIFIX
-> Linux NET4.0 for Linux 2.2
-> Based upon Swansea University Computer Society NET3.039
-> NET4: Unix domain sockets 1.0 for Linux NET4.0.
-> NET4: Linux TCP/IP 1.0 for NET4.0
-> IP Protocols: ICMP, UDP, TCP, IGMP
-> TCP: Hash tables configured (ehash 8192 bhash 8192)
-> Starting kswapd v 1.5
-> Shoulda called rs_init...
-> RAM disk driver initialized:  16 RAM disks of 4096K size
-> loop: registered device at major 7
-> eth0: National DP83902AV at 08:00:5a:c8:02:b4, found at 0xf4000000, using IRQ 27.
-> Looking up port of RPC 100003/2 on 192.168.68.90
-> eth0: timeout waiting for Tx RDC, stat = 0x0
->         start address 0x2000, current address 0x2018, count 42
-> Resetting eth0...
-> eth0: timeout waiting for Tx RDC, stat = 0x3
->         start address 0x2600, current address 0x2612, count 42
-> Resetting eth0...
-> eth0: timeout waiting for Tx RDC, stat = 0x3
->         start address 0x2000, current address 0x2014, count 42
-> Resetting eth0...
-> neighbour table overflow
-> eth0: timeout waiting for Tx RDC, stat = 0x3
->         start address 0x2600, current address 0x2613, count 42
-> Resetting eth0...
-> eth0: timeout waiting for Tx RDC, stat = 0x3
->         start address 0x2000, current address 0x2012, count 42
-> Resetting eth0...
-> eth0: timeout waiting for Tx RDC, stat = 0x3
->         start address 0x2600, current address 0x2613, count 42
-> Resetting eth0...
-> neighbour table overflow
-> 
-> Stymied,
-> 
-> Grant Erickson
+I compile my code on IRIX (SGI), Solaris (SUN), intel Linux and LinuxPPC.
+
+--
+
+/====================================================================/|
+| Stephane GEORGES                     |                             ||
+| DALiM SOFTWARE GmbH      R&D         |    Tel: +49 7851 9196 40    ||
+| Strassburger Str.6                   |    Fax: +49 7851 7357 6     ||
+| D-77696                              |                             ||
+| Kehl-Sundheim (Germany)              |    E-mail: sg@dalim.de      ||
+|____________________________________________________________________|/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
