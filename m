@@ -1,59 +1,50 @@
-Message-Id: <v04003a17b876b6e2a882@[24.70.162.28]>
-In-Reply-To: <E16TySf-000098-00@piglet.grunz.lu>
-References: <Pine.LNX.4.43.0201241431430.29327-100000@andromeda.dsdk12.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 25 Jan 2002 01:26:08 -0600
-To: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
-From: "Tony 'Nicoya' Mantler" <nicoya@apia.dhs.org>
-Subject: Re: Radeon DRI support patch
+Date: Fri, 25 Jan 2002 10:22:08 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: hollis@austin.ibm.com,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+	sdi@remote.org
+Subject: Re: RFC: vesafb
+In-Reply-To: <20020124180313.GB1839@cpe-24-221-152-185.az.sprintbbd.net>
+Message-ID: <Pine.GSO.4.21.0201251020020.15996-100000@vervain.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 10:59 PM -0600 1/24/02, Michel Lanners wrote:
-[...]
->By chance, this would not be something comparable to what has been
->discovered for the athlon processor under linux recently? Namely cache
->coherency problems between processor and AGP.
+On Thu, 24 Jan 2002, Tom Rini wrote:
+> On Wed, Jan 23, 2002 at 01:20:10PM -0600, hollis@austin.ibm.com wrote:
+> > The attached patch allows vesafb to work on PPC. vesafb does surprisingly
+> > little with the BIOS (which I thought was the whole point of VESA). With some
+> > ifdef's I'm able to use it as sort of a VGA offb -- the firmware initializes
+> > the card, and the driver just uses it and never mucks with it.
 >
->>From what I understood (which may be wrong ;-) AGP gart is non-coherent
->(by design?) . So, if the processor has a _cacheable_ mapping for the
->same memory as the AGP card also has, there can be coherency problems if
->the (valid) data in the processor's cache is modified by the AGP card
->before the processor writes the cache line back to memory.
->
->It was also mentioned that the erronous behaviour was related to
->speculative writes, which are also use on the PPC processors.
->
->Just a shot in the dark...
+> This looks good to me.  My only comment is you should probably use
+> CONFIG_MTRR around the mtrr bits instead of __i386__ (which is what
 
-It's not the speculative write that kills the athlon, it's the fact that
-the incomplete speculative write dirties the otherwise clean cache line,
-which then gets written back unmodified somewhere down the road.
+Indeed.
 
-Caching non-coherent segments should be safe-ish so long as you:
+> other drivers do).  Geert, since you're still overall fb maintainer
 
-1: Write a full cache line, and always a full cache line.
-2: Always flush sequentially after writing.
-3: Always invalidate sequentially before reading.
+What's in a name...
 
-The athlon's speculative writes would violate rules #1 and #2. If the PPC
-dirties the cache line on it's incomplete speculative writes, then it also
-violates the same rules. (Does it? Anyone?)
+> (yes?) would you be willing to sign off on these changes to be sent to
+> Marcelo for 2.4.19-pre1?
 
-Of course, if the code itself violates these rules, then all hell breaks
-loose. :)
+Just send them to Marcelo, CC me, and say it's OK for me to include them.
+Or better, ask Gerd Knorr to send them in (please CC me)?
 
-Indeed the simple solution is to turn off caching on AGP-mapped pages.
+Gr{oetje,eeting}s,
 
-
-Cheers - Tony 'Nicoya' Mantler :)
-
+						Geert
 
 --
-Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
-Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
