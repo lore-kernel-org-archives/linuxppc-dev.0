@@ -1,38 +1,56 @@
-Date: Thu, 09 Mar 2000 16:47:17 +0000
-From: David Riley <happyoscar42@usa.net>
-Subject: kernel.org kernels and unreliability
-To: linuxppc-dev@lists.linuxppc.org
-Reply-to: happyoscar42@usa.net
-Message-id: <38C7D58F.C8970B7E@usa.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+Date: Thu, 9 Mar 2000 18:46:43 +0100 (MET)
+From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.2.15pre11 on PB Lombard
+In-Reply-To: <20000308105356.021134@mailhost.mipsys.com>
+Message-ID: <Pine.SOL.3.95.1000309182200.26688A-100000@juliet>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Has anyone else noticed unreliable memory problems using kernel.org's
-2.3.x kernels?  Especially while compiling, random things start
-happening (more specifically, I get random page faults, signal 11
-terminations of cc1 and bits of code are randomly dropped which reappear
-when I restart compiling), but I have also noticed that any large files
-that I download over ftp (and probably other protocols) have pieces
-dropped from them.  At first I blamed this on the ethernet card on the
-other end (I have an FTP server running on a K6-2 linux box that says
-"eth0: tx interrupt but no status"), but MacOS downloads perfectly from
-it, and it has no problem receiving.  I would use paul's kernel source,
-but my PPP connenction runs behind a firewall which blocks out almost
-every port (which includes Quake*, rsync, and sometimes even http when
-the operators screw up) and I woun't get my DSL line until June. ;-(  I
-know I could use the tarballs of Paul's kernel source, but it's easy to
-download a small patch every update than a 10-12 MB tarball over a PPP link.
+On Wed, 8 Mar 2000, Benjamin Herrenschmidt wrote:
 
-If it makes a difference, I'm running on a 7300 (604e, hammerhead memory
-controller) and this has been happening since kernel 2.3.42 (when I
-upgraded from vger-2.3.18) and includes kernel 2.3.50 which hardly works
-on i386 (it breaks , among other things, xfs, so I can't run X) as well.
+> On Tue, Mar 7, 2000, Derek Homeier <supas100@astrophysik.uni-kiel.de> wrote:
+>
+> >... some 2^4 adresses or so follow, which I could write down if anyone
+> >will find them useful. I can't get anything beyond that, because xmon
+> >prints everything else black on black!
+> >
+> >This happens both with CONFIG_MAC_FLOPPY set or unset (the above is without
+> >floppy driver)
+>
+> Check that you didn't include inadvertently the legacy PC floppy driver
+>
+Oh right, CONFIG_BLK_DEV_FD dunnit! I wonder how I came to include it, since
+I usually start with pmac_defconfig and from that only remove stuff I don't
+need, except for few things like the USB drivers. It boots, however, and
+I even got the SUN12x22 font to work now, thank you!
+What's still causing problems is the DMA code, however. There's still the
 
---
-"Your mouse has been moved.  Windows 95 must be restarted for change to
-take effect."
+: hda: Enabling MultiWord DMA 2
+: hdc: packet command error: status=0x51 { DriveReady SeekComplete Error }
+: hdc: packet command error: error=0x54
+: ATAPI device hdc:
+:   Error: Illegal request -- (Sense key=0x05)
+:   Invalid field in command packet -- (asc=0x24, ascq=0x00)
+:   The failed "Start Stop Unit" packet command was:
+:   "1b 00 00 00 03 00 00 00 00 00 00 00 "
+: cdrom: open failed.
+
+error on startup. I can't see if this is directly causing any problems, but
+the performance for hdc is frequently down to 0.8 MB/s. Apparently ejecting
+and reloading the disk is sufficient to bring it back to 1.6 MB/s, but after
+returning from sleep it's down again (this is the 24X CD-ROM on a 333 MHz
+PB 101, FYI). Well, at least I found an easy workaround now...
+
+I also noticed that power consumption during sleep had dramatically increased
+with the previous 2.2.15pre kernels; I'm currently checking out if that problem
+persists.
+
+Thanks again,
+							Derek
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
