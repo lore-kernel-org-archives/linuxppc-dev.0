@@ -1,26 +1,28 @@
-Date: Sat, 15 Apr 2000 15:28:44 +0200 (CEST)
+Date: Sat, 15 Apr 2000 16:37:30 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Josh Huber <huberj@wpi.edu>
-cc: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Preserving memory...
-In-Reply-To: <20000411151958.H771@mclinux.com>
-Message-ID: <Pine.LNX.4.10.10004151528070.359-100000@cassiopeia.home>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Remaining Pismo issues
+In-Reply-To: <20000410003254.010360@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.4.10.10004151636100.359-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 11 Apr 2000, Josh Huber wrote:
-> First, is there a way to tell powerpc hardware (Macs in particular -- for
-> now) to preserve memory across a system restart?  It looks like it does this
-> by default, partially.
->
-> Secondly, if I can get the first part to work reliably, does anyone know
-> what regions of memory should be avoided, i.e. are thrashed by OF etc?
+On Mon, 10 Apr 2000, Benjamin Herrenschmidt wrote:
+> Linux has some power management features (like DOZE'ing the CPU in the
+> idle thread) but some more general work on power management is needed to
+> really improve things. The sound chip could be shut down optionally when
+> the driver is not opened (well, eventually disabling the console beep),
+> the hard disk could be completely powered off instead of just spun down,
+> and the overall CPU activity could be monitored by a deamon and the CPU
+> speed adjusted dynamically.
 
-At least on the LongTrail, all memory is cleared by OF (at least it looks like
-that).
+According to my sister (who has a Wallstreet which is currently under repair
+because of a broken LCD :-(, the battery lasts longer under Linux than under
+MacOS.
 
 Gr{oetje,eeting}s,
 
