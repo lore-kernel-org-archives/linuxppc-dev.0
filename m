@@ -1,195 +1,41 @@
-Message-Id: <m12sxXK-001SyZC@bucks>
-From: diekema@bucks.si.com (diekema_jon)
-Subject: EST SBC8260 Linux memory mapping rules
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Fri, 19 May 2000 20:54:38 -0400 (EDT)
+Message-ID: <3925EBA0.ABFE1267@embeddededge.com>
+Date: Fri, 19 May 2000 21:34:24 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
+To: diekema_jon <diekema@bucks.si.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: EST SBC8260 Linux memory mapping rules
+References: <m12sxXK-001SyZC@bucks>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have attempted to capture the Linux memory mapping rules, and how
-they apply to the EST SBC8260 board.  I would appreciate any
-comments on how this can be improved.
+diekema_jon wrote:
 
-After the comments have been rolled in, I would like to publish this
-as Documentation/powerpc/SBC8260_memory_mapping.txt in the Linux
-kernel source tree.
+>         - The compressed Linux kernel (zImage) contains a bootstrap loader
+>           that is position independent; you can load it into any RAM,
+>           ROM or FLASH memory address >= 0x00200000 (above 2 MB).
+>
+>           Note: If zImage is loaded at its link address of 0x00400000 (4 MB),
+>                 then zImage will skip the step of moving itself to
+>                 its link address.
 
-
-	* EST SBC8260 Linux memory mapping rules
-
-	Initial conditions:
-	-------------------
-
-	Tasks that need to be perform by the boot ROM before control is
-	transferred to zImage (compressed Linux kernel):
-
-	- Define the IMMR to 0xf0000000
-
-	- Initialize the memory controller so that RAM is available at
-	  physical address 0x00000000.  On the SBC8260 is this 16M (64M)
-	  SDRAM.
-
-	- Build the board information structure (see
-	  include/asm-ppc/est8260.h for its definition)
-
-	- The compressed Linux kernel (zImage) contains a bootstrap loader
-	  that is position independent; you can load it into any RAM,
-	  ROM or FLASH memory address >= 0x00200000 (above 2 MB).
-
-	  Note: If zImage is loaded at its link address of 0x00400000 (4 MB),
-	        then zImage will skip the step of moving itself to
-		its link address.
-
-	- Load R3 with the address of the board information structure
-
-	- Transfer control to zImage
-
-	- The Linux console port is SMC1, and the baud rate is controlled
-	  from the bi_baudrate field of the board information structure.
-	  On thing to keep in mind when picking the baud rate, is that
-	  there is no flow control on the SMC ports.  I would stick
-	  with something safe and standard like 19200.
-
-	  On the EST SBC8260, the SMC1 port is on the COM1 connector of
-	  the board.
+The zImage should be loaded above the link address by at least the
+amount of memory required by the uncompress/setup functions.  If you
+load it below the address, it could potentially relocate itself on
+top of the kernel or ram disk image.  For example, the uncompress/setup
+functions are linked to run at 0x00400000, based upon the current size
+of the functions, you need to load above 0x00407000.  I would pick
+0x00480000 or higher, just to not worry about it.
 
 
-	EST SBC8260 defaults:
-	---------------------
+>           and I/O devices above phsical address 0x80000000.  The lowest
 
-	0x00000000-0x00FFFFFF   16M (64M) SDRAM
-	0xFE000000-0xFFFFFFFF    4M flash (SIMM)
-	0xFC000000-0xFCFFFFFF    2M flash (8 bits wide, soldered to the board)
-	0x22000000-0x2200FFFF    8K EEPROM
-	0x04000000-0x04FFFFFF    4M local bus SDRAM (soldered to the board)
-	0x21000000-0x21000000   Flash present detect (from the flash SIMM)
-	0x21000001-0x21000001   Switches (read) and LEDs (write)
+You could fix this typo....it should be 'physical'.
 
 
-	Notes:
-	------
 
-	- The chip selects can map 32K blocks and up (powers of 2)
-
-	- The SDRAM machine can handled up to 128Mbytes per chip select
-
-	- Linux uses the 60x bus memory (the SDRAM DIMM) for the
-	  communications buffers.
-
-	- BATs can map 128K-256Mbytes each.  There are four data BATs and
-	  four instruction BATs.  Generally the data and instruction BATs
-	  are mapped the same.
-
-	- The IMMR must be set above the kernel virtual memory addresses,
-	  which start at 0xC0000000.  Otherwise, the kernel may crash as
-	  soon as you start any threads or processes due to VM collisions
-	  in the kernel or user process space.
-
-
-	  Details from Dan Malek <dan_malek@mvista.com> on 10/29/1999:
-
-	  The user application virtual space consumes the first 2 Gbytes
-	  (0x00000000 to 0x7FFFFFFF).  The kernel virtual text starts at
-	  0xC0000000, with data following.  There is a "protection hole"
-	  between the end of kernel data and the start of the kernel
-	  dynamically allocated space, but this space is still within
-	  0xCxxxxxxx.
-
-	  Obviously the kernel can't map any physical addresses 1:1 in
-	  these ranges.
-
-
-	  Details from Dan Malek <dan_malek@mvista.com> on 5/19/2000:
-
-	  During the early kernel initialization, the kernel virtual
-	  memory allocator is not operational.  Prior to this KVM
-	  initialization, we choose to map virtual to physical addresses
-	  1:1.  That is, the kernel virtual address exactly matches the
-	  physical address on the bus.  These mappings are typically done
-	  in arch/ppc/kernel/head.S, or arch/ppc/mm/init.c.  Only
-	  absolutely necessary mappings should be done at this time, for
-	  example board control registers or a serial uart.  Normal device
-	  driver initialization should map resources later when necessary.
-
-	  Although platform dependent, and certainly the case for embedded
-	  8xx, traditionally memory is mapped at physical address zero,
-	  and I/O devices above phsical address 0x80000000.  The lowest
-	  and highest (above 0xf0000000) I/O addresses are traditionally
-	  used for devices or registers we need to map during kernel
-	  initialization and prior to KVM operation.  For this reason,
-	  and since it followed prior PowerPC platform examples, I chose
-	  to map the embedded 8xx kernel to the 0xc0000000 virtual address.
-	  This way, we can enable the MMU to map the kernel for proper
-	  operation, and still map a few windows before the KVM is operational.
-
-	  On some systems, you could possibly run the kernel at the
-	  0x80000000 or any other virtual address.  It just depends upon
-	  mapping that must be done prior to KVM operational.  You can never
-	  map devices or kernel spaces that overlap with the user virtual
-	  space.  This is why default IMMR mapping used by most BDM tools
-	  won't work.  They put the IMMR at something like 0x10000000 or
-	  0x02000000 for example.  You simply can't map these addresses early
-	  in the kernel, and continue proper system operation.
-
-	  The embedded 8xx/82xx kernel is mature enough that all you should
-	  need to do is map the IMMR someplace at or above 0xf0000000 and it
-	  should boot far enough to get serial console messages and KGDB
-	  connected on any platform.  There are lots of other subtle memory
-	  management design features that you simply don't need to worry
-	  about.  If you are changing functions related to MMU initialization,
-	  you are likely breaking things that are known to work and are
-	  heading down a path of disaster and frustration.  Your changes
-	  should be to make the flexibility of the processor fit Linux,
-	  not force arbitrary and non-workable memory mappings into Linux.
-
-	- You don't want to change KERNELLOAD or KERNELBASE, otherwise the
-	  virtual memory and MMU code will get confused.
-
-	  arch/ppc/Makefile:KERNELLOAD = 0xc0000000
-
-	  include/asm-ppc/page.h:#define PAGE_OFFSET    0xc0000000
-	  include/asm-ppc/page.h:#define KERNELBASE     PAGE_OFFSET
-
-	- RAM is at physical address 0x00000000, and gets mapped to
-	  virtual address 0xC0000000 for the kernel.
-
-
-	Physical addresses used by the Linux kernel:
-	--------------------------------------------
-
-	0x00000000-0x3FFFFFFF   1GB reserved for RAM
-	0xF0000000-0xF001FFFF   128K IMMR  64K used for dual port memory,
-                                 64K for 8260 registers
-
-
-        Logical addresses used by the Linux kernel:
-	-------------------------------------------
-
-	0xF0000000-0xFFFFFFFF   256M BAT0 (IMMR: dual port RAM, registers)
-	0xE0000000-0xEFFFFFFF   256M BAT1 (I/O space for custom boards)
-	0xC0000000-0xCFFFFFFF   256M BAT2 (RAM)
-	0xD0000000-0xDFFFFFFF   256M BAT3 (if RAM > 256MByte)
-
-
-	EST SBC8260 Linux mapping:
-	--------------------------
-
-	DBAT0, IBAT0, cache inhibited:
-
-                                Chip
-        Memory                  Sel Use
-        ---------------------   --- ---------------------------------
-        0xF0000000-0xF001FFFF   n/a IMMR: dual port RAM, registers
-
-        DBAT1, IBAT1, cache inhibited:
-
-
-------------------\\----------------------\\----------------------------
-Jon Diekema        |                       | Smiths Industries
-(616) 241-8310     |                       | 3290 Patterson Avenue, SE
-diekema_jon@si.com \\                      \\  Grand Rapids, MI 49512-1991
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
