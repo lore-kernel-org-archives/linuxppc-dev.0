@@ -1,50 +1,49 @@
-From: "Stefan Balcerczak" <Stefan.Balcerczak@marconi.com>
+Message-ID: <3AE58FCB.8D4198C3@matrox.com>
+Date: Tue, 24 Apr 2001 10:38:05 -0400
+From: Alexandre Nikolaev <anikolae@matrox.com>
+Reply-To: Alexandre.Nikolaev@matrox.com
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Cc: "Shoudong Xu" <Shoudong.Xu@cern.ch>,
-	"Zydla Tsui" <zydla@hotmail.com>
-Message-ID: <80256A38.003BE360.00@marconicomms.com>
-Date: Tue, 24 Apr 2001 12:57:12 +0200
-Subject: Antwort: Re: unable to mount root fs on 01:00
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Subject: Re: ppc little-endian port
+References: <3AE47B3C.8DF8F330@matrox.com> <3AE5595C.74644FE5@raleigh.ibm.com>
+Content-Type: text/plain; charset=koi8-r
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+Sorry, we were not clear enough...
 
-I have to say sorry for the question about ip-config - it was my fault. There
-was an error in the data I passed to the kernel.
+Why we did it:
+            We have our own image processing PCI board. Hardware guys
+decided that since PCI is little endian, it would be better from "their
+hardware point of view" to run ppc in little-endian as well. We can do
+nothing about that and just have to run ppc in little endian.
+Maybe someone else will be on the same boat :)
 
-The problem with mount /dev/ram as root is still unsolved and I have no idea
-what to do about it ...
+What else we did:
+            We compiled the whole Busy Box using glibc with some
+modifications of glibc (endian related + strange bug). Also, we compiled
+the ash of standard source (taken from Montavista) using Dietlibc with
+no modifications. Then we compiled and run an application under ash
+shell (yieldt benchmark from Montavista) and saw good results: typically
+7 ms and 11 ms thread context switch time regardless of number of
+threads and thread size, for revisions 2.09 and 2.06 respectfully.
 
-I tried a newer Kernel (2.4.4) but have problems with compiling:
+Which processors did we test:
+            We ran only 7400, revision 2.06 and 2.09.
 
-===========================================================================================
-arch/ppc/kernel/kernel.o: In function `lookup_partitions':
-arch/ppc/kernel/kernel.o(.text+0x7852): undefined reference to `pmac_newworld'
-arch/ppc/kernel/kernel.o(.text+0x7856): undefined reference to `pmac_newworld'
-arch/ppc/kernel/kernel.o: In function `pmac_nvram_init':
-arch/ppc/kernel/kernel.o(.text.init+0x554): undefined reference to
-`find_devices'
-arch/ppc/kernel/kernel.o(.text.init+0x554): relocation truncated to fit:
-R_PPC_REL24 find_devices
-arch/ppc/kernel/kernel.o(.text.init+0x588): undefined reference to
-`device_is_compatible'
-arch/ppc/kernel/kernel.o(.text.init+0x588): relocation truncated to fit:
-R_PPC_REL24 device_is_compatible
-arch/ppc/kernel/kernel.o(.text.init+0x6b6): undefined reference to `sys_ctrler'
-arch/ppc/kernel/kernel.o(.text.init+0x6ba): undefined reference to `sys_ctrler'
-make: *** [vmlinux] Error 1
-===========================================================================================
+Alexandre
 
-So I play around with the "working" kernel 2.2.14 and try to get kernel 2.4.4
-configured right - If anybody has a hint for me
-I would be glad to hear about.
 
-Regards,
-Stefan
+
+*****************************************
+| Alexandre Nikolaev
+| Software Designer
+| Matrox Electronic Systems Ltd
+| Imaging Department
+| Tel. (514) 8226000 ext. 2323
+| E-mail: Alexandre_Nikolaev@matrox.com
+*****************************************:)
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
