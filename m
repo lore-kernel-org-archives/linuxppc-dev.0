@@ -1,66 +1,71 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Leonardo Pereira Santos <lsantos@pd3.com.br>
-To: Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Card Services in a FADS850SAR board
-Date: Tue, 12 Nov 2002 19:26:07 -0200
+Message-ID: <001601c28a92$e4a0d8c0$0200a8c0@telia.com>
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: "Tom Rini" <trini@kernel.crashing.org>
+Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>,
+	<alan@lxorguk.ukuu.org.uk>
+References: <20021112162504.GI658@opus.bloom.county> <IGEFJKJNHJDCBKALBJLLAEPBFHAA.joakim.tjernlund@lumentis.se> <20021112184025.GA9033@opus.bloom.county>
+Subject: Re: ppc_8xx-gcc 2.95.3 Monta Vista does not do ANY loop unrolling
+Date: Tue, 12 Nov 2002 22:30:12 +0100
 MIME-Version: 1.0
-Message-Id: <200211121926.09433.lsantos@pd3.com.br>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+> On Tue, Nov 12, 2002 at 05:46:49PM +0100, Joakim Tjernlund wrote:
+>
+> > > > Now to the trick question(s):
+> > > > Where might it be suitable to add -funroll-loops or, better yet, can it be done
+> > > > with a pragma or attribute attached to the function in question? It's pretty
+> > > > hard to unroll inline functions otherwise (and only the inline function).
+> > >
+> > > Well, to lib/Makefile:
+> > > ifeq ($(CONFIG_PPC32),y)
+> > > CFLAGS_crc32.o += -funroll-loops
+> > > endif
+> > >
+> > > Should work.  And it's not unheard of.
+> >
+> > Yes, that much I already figured, but are there OTHER places in
+> > the kernel that also might benefit from unrolling. I don't know the
+> > kernel as well as you do and was hoping for a lead or two.
+>
+> Not really.  Unfortunatly what might be better is to figure out how it
+> works on i386, and then figure out how to duplicate that logic on PPC,
+> maybe making it another flag and then turned on for different sizes
+> based on -mtune.
 
-	I know, I know, the FADS board is a piece of c**p but it is the only card I
-will have for some time now I i stuck with it :( . Ok, I trying to make the
-boad's PCMCIA connector work. I'm using a recent kernel (2.4.20-pre11) in a
-MPC850 processor, and the PCMCIA card is a WiFi card.
-	First I compiled the kernel with built-in PCMCIA support and modules for the
-card's drivers. The first strange thing is that the PCMCIA interrupt
-generates a sig 11 error (kernel accessed bad area). But if I boot
-(initialize Card Services) with the board already connected, the 8xx module
-works fine. So I load up the three driver modules I need (hermes, orinoco,
-orinoco_cs), but when I do a lsmod, the orinoco_cs is listed as unused.
-Shouldn't the cs driver be used by Card Services? In Paul J. Lucas' page
-about a PCMCIA in a PowerBook there is a fine "dummies guide" to make it
-work. I followed it but CS' cardmanager doesn't load up the drivers, although
-it identifies my card. In Paul's page, he says CS versions prior to 3.1.27
-don't work out-of-the-box with a powerpc, and the kernel's version is 3.1.22.
-	So I went to CS' HP, downloaded and complied  it to my kernel. After starting
-CS with a insmod, when I tried to load the socked driver to the 8xx powerpc
-(m8xx_pcmcia) , it generates a sig 11 error in the middle of its
-initialization. As a desperate measure, I trying to integrate CS' new code
-(3.2.3) in the kernel, but that gives me a very strange compilation error in
-re resource management code.
-	After all this, my questions are:
-	Should I tell my boss to give me a new board RIGHT NOW?
-	If there is hope of making it work on my card, why the orinoco_cs module is
-unused?
-	I got the powerpc kernel in bitkeeper, there is another kernel with a more
-recent version of CS?
-	Am I making something really stupid compiling CS? I justo follow its
-Configure script.
-	Now the question that I fear: There is need of a ISA bus? If yes, where do I
-configure it, as there isn't any option in the general setup menu in the
-kernel config.
-	I'm configuring my kernel to support:
-	- hot plugable devies,
-	- CardBus,
-	- 8xx support
-	The rest is the module support to my WiFi card.
-	Sorry for the long mail. I'd be very grateful if anyoune could give me any
-information. Thanks a lot!
+well, according to Mark Hatle it's only gcc 3.3-pre that does this kind of unrolling
+automatically so that will take a very long time before it's figured out and usable.
 
-- --
-"All things are ready, if our minds be so"
-The Life Of King Henry V - William Sharespeare
+So maybe it's worth the effort  to figure out a few hot spots and apply -funroll-loops there.
 
-Leonardo Pereira Santos
-Engenheiro de Projetos
-PD3 Tecnologia
-av. Pará 330/202
-(51) 3337 1237
+-mtune is new to me, need to look that one up.
 
+>
+> > > >  Any progress on the i2c-algo-8xx.c and/or 8xx_io/enet.c patches I sent earlier?
+> > >
+> > > As I said privatly, Dan Malek is handling the enet patch, and I'm
+> > > looking for time to do the i2c one.  Right now I'm working on making the
+> > > kernel easier to tweak (in some ways) for 2.5.
+> >
+> > I know Dan is handling the enet stuff, but since you both work
+> > for MV(don't you?) I figured you might know, being an insider and all :-)
+>
+> I don't follow you.  Dan doesn't work for MVista now.
+
+Sorry, I didn't know that.
+
+>
+> > Maybe your tweak stuff could make use of forced unrolling?
+>
+> Eventually, it could be used for turning it on or off for the whole
+> kernel, or for a specific area even, once I get Makefile tweaks working.
+> First I'm trying to get dependancies right.
+
+makes sense.
+
+    Jocke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
