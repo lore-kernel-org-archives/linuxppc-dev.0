@@ -1,38 +1,46 @@
-Message-ID: <39085EE9.6052CE60@embeddededge.com>
-Date: Thu, 27 Apr 2000 11:38:17 -0400
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: Ruedi.Hofer@ascom.ch
-CC: linuxppc-embedded@lists.linuxppc.org, kernel@linux01.hasler.ascom.ch
-Subject: Re: MPC860T
-References: <0FTO0083YCJPTE@pmdf-it.hasler.ascom.ch>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <4.2.0.58.20000427124716.00c06bc0@praesum.com>
+Date: Thu, 27 Apr 2000 12:52:13 -0700
+To: linuxppc-embedded@lists.linuxppc.org
+From: Kent Dahlgren <kent@praesum.com>
+Subject: Re: Video Card with PowerPC initialization Code
+In-Reply-To: <Pine.BSF.4.10.10004260843060.60450-100000@invalid.ed.ntnu.
+ no>
+References: <3905A4C9.7C58472E@raleigh.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ruedi.Hofer@ascom.ch wrote:
+At 08:53 AM 4/26/00 +0200, you wrote:
 
-> After some success with the native 860, I moved now to the 860T
-> on the FADS evaluation board.
+>On Tue, 25 Apr 2000, Ralph Blach wrote:
+>
+> > Does anybody know of Video card which has a ROM that has PowerPC
+> > initializaiton in it?  If so, what is it?
+>
+>They don't.
+>
+>PowerPC desktop systems usually comes with Open Firmware
+>(aka. OpenBoot on SPARC) wich requires expansion ROMs to
+>be in CPU neutral Forth code, compiled runtime.
+>Hence, VGA BIOS does not apply.
 
-You poor soul.....
+Well there are PCI video cards for the Mac that have Open Firmware
+on them. One of those may do it for you. This of course assumes that
+you have Open Firmware support on your system. The downside to
+Open Firmware is of course that it's big, expensive, and there are no
+open source implementations available AFAIK.
+
+Kent
 
 
-> 2. I'm not able to compile the kernel with only FEC enabled.
->  (commproc.h reports: #error, undefined config!)
+_______________________________________________________________
 
-That's interesting.  What kernel are you using?
-
-> 3. Is it possible to use SCC1 enet and FEC simultaneously.
-
-Of course.  I use it as a firewall/gateway/router.....
-
-> Can someone provide patches or howto's?
-
-Get the 2.2.13 kernel from MontaVista's ftp site.
-
-
-	-- Dan
+Praesum Communications                  Phone: (510) 337-0495
+Suite 1                                 Fax:   (510) 337-0418
+1134E Ballena Blvd                      email: kent@praesum.com
+Alameda, Ca. 94501                      web:   www.praesum.com
+_______________________________________________________________
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
