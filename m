@@ -1,58 +1,48 @@
-Message-ID: <387D7DD5.DA4B1A68@cns.canon.co.jp>
-Date: Thu, 13 Jan 2000 16:25:09 +0900
-From: Ouchi Masatomo <oouchi@cns.canon.co.jp>
-Reply-To: oouchi@cns.canon.co.jp
+Message-ID: <387E02BC.DCCA86B0@apus.co.at>
+Date: Thu, 13 Jan 2000 17:52:12 +0100
+From: "Reni Pachernegg" <rene.pachernegg@apus.co.at>
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-CC: oouchi@cns.canon.co.jp
-Subject: Re: LinuxPPC Embedded: root nfs boot problems.
-References: <382BC9B2.FDF9AD50@ctam.com.au> <382BE502.4CFC93BD@enib.fr> <382F4582.4F6882F2@ctam.com.au>
-Content-Type: text/plain; charset=iso-2022-jp
+To: Graham Stoney <greyham@research.canon.com.au>
+CC: kd@flaga.is, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Building Glibc
+References: <20000112225539.62B021B152@elph.research.canon.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Please help me.
+Hello,
+Troubles dont stop.
+Started to build a new version of the GCC for Cross-Compiling for
+PowerPc on i686. 
+I found an installation-guide for gcc cross-compiler at
+www.objsw.com/CrossGCC/FAQ-4.htm and followed the steps in 4.1.
+(automate build script (4.5)didnt work). Using:
+binutils 2.9.5.0.22
+gcc 2.95.2
+newlib-1.8.2
+Installing the binutils was successfull.
+Building gcc stopped with:
+as: unknown option -ppc
+Used script: 
+target=powerpc-eabi
+prefix=/bar
+i=$prefix/bin
+../gcc-2.8.1/configure --target=$target --prefix=$prefix -v /
+--with-newlib --enable-languages=c --with-gnu-ld --with-gnu-as
+make all install/
+        AS_FOR_TARGET=$i/${target}-as \ 
+        LD_FOR_TARGET=$i/${target}-ld \ 
+        AR_FOR_TARGET=$i/${target}-ar \ 
+        RANLIB_FOR_TARGET=$i/${target}-ranlib
+The Assembler used, is the one installed by binutils for powerpc.
+I didnt found any hint of any option -ppc in any file (greped it) in any
+of the 3 tools. But there is the as option -mppc. Maybe this is the
+option that is intended to be used.
+Any propositions?
+Regards 
+	Rene
 
-[used source]
-  mpc8xx-2.2.13
-  I am trying to boot by NFS.
-
-[NFS Server]
-  Linux  2.2.5-15 for i686 by Redhat ver 6.0
-  IP=192.168.0.254
-  defines client's name, MAC, IP, ... in /etc/bootbtab
-
-[status]
-  I met following console messages,
-
-*************************************************
-  ...
-  eth0: CPM ENET Version 0.2, 00:00:85:30:30:31
-  Sending BOOTP and RARP requests.... OK
-  IP-Config: Got BOOTP answer from 192.168.0.254,
-       my address is 192.168.0.100
-  Looking up port of RPC 100003/2 on 192.168.0.254
-  Looking up port of RPC 100005/1 on 192.168.0.254
-  VFS: Mounted root (NFS filesystem) readonly.
-  Freeing unused kernel memory: 40k init
-  nfs: server 192.168.0.254 not responding, still trying
-  nfs: server 192.168.0.254 OK
-  nfs: server 192.168.0.254 not responding, still trying
-  nfs: task 20 can't get a request slot
-  nfs: server 192.168.0.254 OK
-  neighbour table overflow
-  ...
-*************************************************
-
-[NFS servers's /var/log/messages says]
-  bootpd[880]: version 2.4.3
-  mountd[520]: authenticated mount request from mpc860ads:800
-
-
-<<Question>>
- What is wrong with my setting?
---
- oouchi@cns.canon.co.jp
+Does somebody know what to do??
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
