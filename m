@@ -1,39 +1,37 @@
-Message-ID: <019001bffc2b$9300a6f0$bf0102c8@sc.mcel.mot.com>
-From: "Rolf Liu" <rolfl@sc23.sc.mcel.mot.com>
-To: "Rolf Liu" <rolfl@sc.mcel.mot.com>, <linuxppc-dev@lists.linuxppc.org>
-References: <015401bffbae$1aa27940$bf0102c8@sc.mcel.mot.com>
-Subject: Re: question of 'SIZEOF_HEADERS' !!!!!!!!!!!!!!!
-Date: Wed, 2 Aug 2000 10:44:26 +0800
+Message-ID: <39879B21.A1D66679@amulet.co.jp>
+Date: Wed, 02 Aug 2000 12:53:05 +0900
+From: Hollis Blanchard <hollis@amulet.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Thomas Graichen <graichen@innominate.de>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: USB keyboard problems - cdcd
+References: <news2mail-8m5oaq$6tj$3@mate.bln.innominate.de>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Is this 'SIZEOF_HEADERS' just the size of the ELF header , which is 304 byte
-long ?
+Thomas Graichen wrote:
+>
+> i have a little keyboard problem on my blueberry imac with the
+> standard usb keyboard: whenever i type something very quickly
+> followed by space the typed in will be repeated before the
+> space (best example: i want to type "cd " and get "cdcd ")
+> - this gets a bit annoying - does anybody have the same
+> problem (or even a fix for it) ? - is it more a soft-
+> wareproblem (i hope :-) or maybe a hardwareproblem ?
+> (i had it on all kernels from 2.2.x to 2.4.0-testx)
 
+This is well-known (at least for people with USB keyboards). Interestingly,
+it *only* seems to happen with the old Apple USB mini keyboard (the fullsize
+is too new; haven't heard anything about it).
 
+The problem only seems to happen when some (not all) groups of three keys
+are hit too quickly. It could be because this keyboard physically allows you
+to press more keys simultaneously, or it could be driver-related (or both).
 
->
-> Hi, all
-> I am linking the linux ppc kernel .
-> I found a symblo named 'SIZEOF_HEADERS' in the link script file
-> 'vmlinux.lds'.
-> I wonder where the symbol come from.
-> I have searched throuth the source tree, but I can't find the definition
-of
-> it.
-> Who can tell me some info about it ? at least the value of it ?
-> thanks a lot .
->
-> BRs
-> Rolf Liu
->
->
->
->
+The only solution for now seems to be type "cd " one key a time.
 
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
