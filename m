@@ -1,33 +1,55 @@
-Subject: Re: Question about PPC __put_user_asm/__get_user_asm
-To: drow@false.org (Daniel Jacobowitz)
-Date: Wed, 5 Apr 2000 10:33:16 +1000 (EST)
-Cc: greyham@research.canon.com.au (Graham Stoney),
-        linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20000404102915.A29825@drow.res.cmu.edu> from "Daniel Jacobowitz" at Apr 04, 2000 10:29:15 AM
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000405003318.76C5B3C994@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+Date: Tue, 04 Apr 2000 18:30:43 -0700
+From: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
+Subject: Re: Install on a Pismo (going bad)
+In-reply-to: <20000404231952.A2266@suse.de>
+To: linuxppc-dev@lists.linuxppc.org
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-id: <p04310101b51047876a0b@[134.114.15.89]>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii; format=flowed
+References: <200004042110.OAA25686@shell1.ncal.verio.com>
+ <20000404231952.A2266@suse.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Dan,
+At 11:19 PM +0200 4/4/00, Olaf Hering wrote:
+>On Tue, Apr 04, Henry A. Worth wrote:
+>
+>>
+>>  > From: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
+>>
+>>  > I've come to the decision that the hard drive is fried :(.  I've
+>>  > tried formatting the drive with Drive Setup and it returns
+>>  > Initialization Failed every time.  I'm glad I bought the 3 year
+>>  > warranty now.
+>>
+>>  I suspect Drive Setup has problems with the Pismo and/or OS/9,
+>>  had same problem if I selected the option to zero the partitions.
+>>  Try without that option.
+>
+>I had that problem a long time ago with my 7200/90 and MkLinux or so,
+>can't remember exactly.
+>Drive Setup is buggy, it should be OpenSource ;)
+>
+>
+>Gruss Olaf
 
-Daniel Jacobowitz writes:
-> I can't tell you what those particular elements do, but I can tell you
-> that -ffunction-sections will most likely NOT produce a bootable
-> kernel.  It makes assumptions about the types of sections present - see
-> for instance the __initfunc() macro and its custom section.
+Well, after a night of fighting with it, I was ready to give up.  For
+some reason, when I got up this morning it felt like cooperating with
+me.  I managed to get the drive formatted correctly, and I'm gonna
+work on installing Linux on it tonight.  Thanks for all the help.
 
-Thanks for the tip, but I think I've already solved this by renaming the
-sections used in include/asm/init.h from ".text.init" to ".text_init" to avoid
-the namespace clash which would happen if compiling a function named "init()".
-I've also made the corresponding change in arch/ppc/vmlinux.lds, and added
-*(.text.*) and (*.data.*) to the .text and .data output sections respectively.
-That oughta do it, unless I've missed something...
+Tim
 
-Thanks,
-Graham
+
+--
+
+-------
+Tim Wojtulewicz           Tim.Wojtulewicz@nau.edu
+(520)523-2543             http://dana.ucc.nau.edu/~tjw4
+
+In the Windows world, you are one click away from
+harming yourself -- Elias Levy, Bugtraq
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
