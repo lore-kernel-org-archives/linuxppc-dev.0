@@ -1,43 +1,63 @@
-Message-ID: <3AC3F85F.88D020BE@rochcivictheatre.org>
-Date: Thu, 29 Mar 2001 21:07:11 -0600
-From: Tom Gall <gall@rochcivictheatre.org>
+From: "David S. Miller" <davem@redhat.com>
 MIME-Version: 1.0
-To: Tony Mantler <nicoya@apia.dhs.org>
-Cc: Kaoru Fukui <k_fukui@highway.ne.jp>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Success kernel-243pre8-SMP(patch)(Re: spin_lock problem inrecent   
- kernel
-References: <20010329021803.Postino-029218@smtp01.highway.ne.jp>	
-	 <3AC2352D.384B57CA@rochcivictheatre.org>	
-	 <20010329222953.Postino-006016@smtp01.highway.ne.jp>	
-	 <3AC33CA7.E5DF4C03@vnet.ibm.com>
-	 <20010330062000.Postino-000633@smtp01.highway.ne.jp> <v04003a21b6e9a03a5dae@[24.70.162.12]>
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <15044.444.777880.743127@pizda.ninka.net>
+Date: Thu, 29 Mar 2001 19:47:08 -0800 (PST)
+To: Daniel Berlin <dan@www.cgsoftware.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: ieee1394 fixed soon...
+In-Reply-To: <Pine.LNX.4.10.10103290950010.11075-100000@www.cgsoftware.com>
+References: <15042.57778.640138.923390@pizda.ninka.net>
+	<Pine.LNX.4.10.10103290950010.11075-100000@www.cgsoftware.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tony Mantler wrote:
+Daniel Berlin writes:
+ > As sopon as the the ieee1394 maintainer gets on the ball, i'll submit
+ > them again.
 
-> That's #if*n*def, not #ifdef. :)
->
-> And speaking of #ifndef, why are these spinlocks here in the first place
-> and/or why do they now need to be removed? Just suddenly removing locks
-> because of a new deadlock condition gets my spidey senses tingling.
+If they continue to be unresponsive, I can ask Linus what we
+as maintainers should do.
 
-It all stinks to high heaven, that's for sure. Removing the
-page_table_lock from being locked in ioremap, saves us from stopping
-cold during the first ioremap (at least on Power3). And as far as the
-second, I'm in complete agreement...  warning warning danger will
-robinson!
+ > > 	p->value &= cpu_to_le32(0xfffffff0);
+ > >
+ > > works _PERFECTLY_ fine.
 
---
-Regards,
+ > Not for me
 
-Tom
+This is mathmatically impossible.  :-)  Something else has to account
+for it.
 
---------------------------------------------------------------
-Linux Guy             "My heart is human, my blood is boiling,
-gall@rochcivictheatre.org    my brain IBM" -- Mr Roboto, Styxx
+Maybe, you were hitting a compiler bug or similar, but you were not
+hitting a problem because the logic is wrong.
+
+ > I'm pretty sure, however, that I did that change
+ > individually, and it made a difference.
+
+Please verify this now, and check for miscompilation if you still
+see the problem.
+
+ > > I know what needs to be swapped thats why I did the patches I did :-)
+ >
+ > It's trickier than you may think, because motherboard implementations of
+ > firewire aren't required to honor the byte swapping setting, making it
+ > pretty useless.
+
+I've read this paragraph of the OHCI specification.  Find me a
+motherboard controller found on a big-endian system which does
+not implement this bit, then I will begin to be concerned.
+
+ > sure, as soon as they start actually maintaining ieee1394.
+
+Why don't we contact them and give them a week, explaining that if
+they don't wish to be active in ieee1394 driver maintainence then you
+and I are willing to help more actively co-maintain the ieee1394 layer
+together. :-)
+
+Later,
+David S. Miller
+davem@redhat.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
