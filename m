@@ -1,42 +1,32 @@
-Message-ID: <3B8C7D0E.D88A0689@mvista.com>
-Date: Wed, 29 Aug 2001 01:26:38 -0400
-From: Dan Malek <dan@mvista.com>
+Date: Wed, 29 Aug 2001 02:02:41 -0400 (EDT)
+From: Bill Fink <billfink@capu.net>
+To: paulus@samba.org
+Cc: linuxppc-dev@lists.linuxppc.org, billfink@capu.net
+Subject: Re: Call for help: altivec-enabled vlc
+Message-ID: <Pine.LNX.4.21.0108290153420.26316-100000@gwiz.nasa.atd.net>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-commit@source.mvista.com,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Remove some stuff from arch/ppc/boot/Makefile... (2_4_devel)
-References: <20010828184504.E15262@cpe-24-221-152-185.az.sprintbbd.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+> I use this in mpeg2dec (actually a hacked version that I use to play
+> videos off my tivo) and Anton Blanchard hacked this into xine. I also
+> have altivec-enabled motion compensation routines for libmpeg2.
 >
-> Okay.  Since I've already posted a patch vs 2_4_devel to kill the 'mbx' dir,
+> Hope this is useful...
 
-I just pushed an update that pulls "treeboot" into the 'mbx' directory.
-I had a conflict with your latest update, I had to manually resolve it
-so I hope I chose the right '<<<<<<' code :-).
+Most definitely useful!
 
-Anyway, you can take that directory and merge it.  I'll look at the
-results when I get back from racing on Monday.
+Could you also post your altivec-enabled MC routines?  And if you
+could provide Anton Blanchard's xine patches or a pointer to them,
+that would be doubly great.  I don't believe these have been posted
+to any of the xine e-mail lists, so I'm not sure where else to look
+for them.
 
-I created a 'mktree' program along the lines of mkprep, mkchrp, etc.
-We can get rid of that 1000 lines of Perl or whatever that crap was
-that I couldn't understand.  The 'mktree' program only works properly
-on big endian hosts (but who would use anything else? :-).  I looked
-at some of the 'cross' modifications done by Porter to the other
-programs,
-and I guess I'll get around to that when I return.
+						-Thanks
 
-We should also be able to include the Spruce build in this as well,
-since it is a treeboot image.
+						-Bill
 
-Thanks.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
