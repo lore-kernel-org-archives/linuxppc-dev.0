@@ -1,229 +1,179 @@
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-To: Brendan J Simon <Brendan.Simon@ctam.com.au>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Linux ABI documents and powerpc supplements.
-Date: Wed, 5 Jan 2000 01:23:26 +0100
-Content-Type: text/plain
-References: <38727B8B.2FBD0B8@ctam.com.au>
-In-Reply-To: <38727B8B.2FBD0B8@ctam.com.au>
+Message-ID: <3872D1EA.DF497905@ctam.com.au>
+Date: Wed, 05 Jan 2000 16:08:59 +1100
+From: Brendan J Simon <Brendan.Simon@ctam.com.au>
+Reply-To: Brendan.Simon@ctam.com.au
 MIME-Version: 1.0
-Message-Id: <00010501374800.22517@enzo.bigblue.local>
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Linux ABI documents and powerpc supplements.
+References: <38727B8B.2FBD0B8@ctam.com.au> <00010501374800.22517@enzo.bigblue.local>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Franz Sirl wrote:
 
-0x10000000 + SIZEOF_HEADERS is the current recommended base address for
-Linux/PPC. It was changed sometime ago from 0x1800000 to better support running
-the binaries on AIX. On Linux we use /lib/ld.so.1, Linux overrules the SYSV ABI
-here. The size of the libraries if you are talking about the standard Linux/PPC
-ones is due to a bug in 'strip' which tends to corrupt the libraries.
+> 0x10000000 + SIZEOF_HEADERS is the current recommended base address for
+> Linux/PPC. It was changed sometime ago from 0x1800000 to better support running
+> the binaries on AIX. On Linux we use /lib/ld.so.1, Linux overrules the SYSV ABI
+> here. The size of the libraries if you are talking about the standard Linux/PPC
+> ones is due to a bug in 'strip' which tends to corrupt the libraries.
+>
+> The most current documentation I know of is in
+> <ftp://sourceware.cygnus.com/pub/binutils/ppc-docs/>
 
-The most current documentation I know of is in
-<ftp://sourceware.cygnus.com/pub/binutils/ppc-docs/>
+Thanks.  I just downloaded the "System V Application Binary Interface PowerPC Processor
+Supplement".  It is dated September 1995 and is authored by Steve Zucker (SunSoft) and Kari Karhi
+(IBM).  Chapter 3 (page 3-24) says that "a program base of 0x02000000 (32 MB) is recommended for
+reasons given in chapter 5".  I take it that the Linux/PPC supplement would state that a base of
+0x10000000+SIZEOF_HEADERS is recommneded.  Is there such a beast as a Linux/PPC supplement ?
 
-Franz.
+I am having problems getting simple shared executalbes to work on my embedded powerpc system
+(MPC860).  I am using an egcs-1.1.2 cross compiler and have cross-compiled linux-2.2.5 kernel,
+glibc-2.1 and some simple test applications.  I have an app that outputs a string every second
+using puts().  If I compile with "powerpc-linux-gcc -m860 -static" it works, but if I compile
+with "powerpc-linux-gcc -m860 -shared" it doesn't work.  I am mount root via nfs and the nfs
+daemon is in debug mode.  I can see the libraries being accessed and read but the app just
+segfaults.  Here is the "powerpc-linux-objdump -p" of the test apps and the libraries.  Do they
+look OK ?
+Would the segfault occur when loading the shared libraries into memory or when trying to execute
+code from memory ?
+Do I need -fPIC or does -shared impy this ?
+
+Thanks,
+Brendan Simon.
 
 
-Am Wed, 05 Jan 2000 schrieb Brendan J Simon:
->To linuxppc developers,
->
->Kai Ruottu (who contributes a hell of a lot on the crossgcc mailing list and who
->cross-compiles for many targets including i586-cygwin, i586-mingw, powerpc-linux,
->powerpc-eabi, sparc-linux, arm-linux, etc) had some questions about Linux ABIs and powerpc
->supplements.  I have forwarded the entire email.  Hopefully someone can point him to any
->relevant docs and/or answer his questions.  Most of his questions are towards the end of this
->email.
->
->Thanks,
->Brendan Simon.
->
->
->
->Kai Ruottu wrote:
->
->> Brendan J Simon wrote:
->> >
->> > Kai Ruottu wrote:
->> >
->> > > 1. Using 'strings' to see the 'hard-wired' name of the dynamic linker in
->> > >    the executable:
->> > >
->> > >         E:\usr\local\samples>strings tst_ppc-linux.x | more
->> > >         /lib/ld.so.1    <------- !!!
->> > >         __gmon_start__
->> > >         libc.so.6
->> >
->> > The output of "powerpc-linux-strings bjs1-shared" looks OK to me.
->> > $ powerpc-linux-strings bjs1-shared
->> > _DYNAMIC
->> > _GLOBAL_OFFSET_TABLE_
->> > __gmon_start__
->>
->>  When your output from 'strings' didn't show the 'ld.so.1' (didn't it really?)
->> I tried removing the '--dynamic-linker xxxxx' from my specs, and got then :
->>
->>         E:\usr\local\samples>strings tst_ppc-linux.x | more
->>         /usr/lib/ld.so.1    <------- !!!!
->>         __gmon_start__
->>         libc.so.6
->>
->>  This could be the right place for 'ld.so.1' in a Linux/PPC-system and my
->> powerpc-linux executables have been this far just insane... (I should never guess
->> these things or trust my memory...)
->>
->> > I'm not sure how to interpret the output of "powerpc-linux-objdump -p bjs1-shared".
->> > The output  is :
->> > $ powerpc-linux-objdump -p bjs1-shared
->> > <snip>
->> > Dynamic Section:
->> >   NEEDED      libc.so.6
->> >   INIT        0x610   <----- !!!!
->> >   FINI        0x634   <----- !!!!
->> >   HASH        0x94
->> >   STRTAB      0x310
->> >   SYMTAB      0x150
->> >   PLTGOT      0x40748
->> >   JMPREL      0x48c
->> >   RELA        0x420
->> >   VERNEED     0x400
->> >   VERSYM      0x3c8
->>
->>  The addresses look to be too small, those from my 'ppc-linux-gnu' are all over
->> '0x10000000' :
->>
->>         Dynamic Section:
->>           NEEDED      libc.so.6
->>           NEEDED      ld.so.1
->>           INIT        0x100011f0
->>           FINI        0x10001214
->>           HASH        0x10000150
->>           STRTAB      0x1000027c
->>           SYMTAB      0x1000019c
->>           PLTGOT      0x10011990
->>           JMPREL      0x10000368
->>           RELA        0x10000368
->>           VERNEED     0x10000348
->>           VERSYM      0x1000032a
->>
->> which is the result of the default linker script (elf32ppclinux.x) :
->>
->>         SECTIONS
->>         {
->>           /* Read-only sections, merged into text segment: */
->>           . = 0x10000000 + SIZEOF_HEADERS;
->>           .interp   : { *(.interp) }
->>           .hash           : { *(.hash)          }
->>
->>  What should the base address be for a Linux/PPC executable?
->>
->> > I don't see anything strange here.   I did the same for libc.so.6
->> > $ powerpc-linux-objdump -p lib/libc.so.6
->> > <snip>
->> > Version definitions:
->> > 1 0x01 0x0865f4e6 libc.so.6
->> > 2 0x00 0x0d696910 GLIBC_2.0
->> > 3 0x00 0x0d696911 GLIBC_2.1
->> >         GLIBC_2.0
->> >
->> > Version References:
->> >   required from ld.so.1:
->> >     0x0d696911 0x00 05 GLIBC_2.1
->> >     0x0d696910 0x00 04 GLIBC_2.0
->> >
->> > And again for ld.so.1
->> > $ powerpc-linux-objdump -p lib/ld.so.1
->> > <snip>
->> > Version definitions:
->> > 1 0x01 0x0275a261 ld.so.1
->> > 2 0x00 0x0d696910 GLIBC_2.0
->> > 3 0x00 0x0d696911 GLIBC_2.1
->> >         GLIBC_2.0
->> >
->> > I don't see anything glaringly wrong but I don't exactly know what I would be looking
->> > for.  Can you see any problems ?
->>
->>  Do you have just the same 'libc.so.6', 'ld.so.1' etc. in the cross-tools and in the
->> run-time environment?  Your executable seems to be linked using some glibc-2.1.x libs,
->> but do you have the same libs in the run-time target board?  Or just some smaller and
->> older ones ? (Recently someone somewhere wondered why the glibc-2.1.x libs are so big
->> when the older 2.0.6 ones were much smaller...).
->>
->>  Better to use the older ones at least when linking...
->>
->>  The generic rule is that one cannot run executables which were linked against newer
->> shared libs, using older shared libs at run-time.  No forwards-compatibility expected.
->> But all executables linked against older libs should run with newer shared libs. This
->> kind of backwards-compatability is always expected... At least between two releases.
->>
->> > >  Perhaps the new 'readelf' utility in binutils can be used for sanity checks
->> > > of the same kind...
->> > Never heard of it.  Is it part of binutils-2.9.1 or newer cvs and snapshots ?
->>
->>  It is included with the new snapshots (perhaps almost a year now) :
->>
->> E:\usr\local\ppc-linux-gnu\bin>readelf --version
->> GNU readelf 991116
->> Copyright 1997, 1998, 1999 Free Software Foundation, Inc.
->> This program is free software; you may redistribute it under the terms of
->> the GNU General Public License.  This program has absolutely no warranty.
->>
->>  And the 'elf32ppclinux' support appeared to them some time ago :
->>
->> E:\usr\local\ppc-linux-gnu\bin>ld -V
->> GNU ld version 2.9.5 (with BFD 991116)
->>   Supported emulations:
->>    elf32ppclinux
->>    elf32ppc
->>
->>  The difference between 'elf32ppc' and 'elf32ppclinux' was discussed some time ago,
->> but the only difference seems to be the base address, here is a clip from the default
->> linker script for elf32ppc :
->>
->>         SECTIONS
->>         {
->>           /* Read-only sections, merged into text segment: */
->>           . = 0x01800000 + SIZEOF_HEADERS;
->>           .interp   : { *(.interp) }
->>           .hash           : { *(.hash)          }
->>
->>  If the default linker script for 'elf32ppclinux' says in the same lines :
->>
->>         SECTIONS
->>         {
->>           /* Read-only sections, merged into text segment: */
->>           . = 0x10000000 + SIZEOF_HEADERS;
->>           .interp   : { *(.interp) }
->>           .hash           : { *(.hash)          }
->>
->>  So I'll repeat my question: "What should the base address to be for a Linux/PPC
->> executable?"
->>
->>  Or doesn't it really matter if there is a '. = 0', '. = 0x01800000' or a '. = 0x10000000'
->> in the line after the comment?
->>
->>  For all ELF/x86-systems the base address seems to be the same, but for MIPS, SPARC
->> etc. it seems to vary between different ELF-systems... The SVR4/PowerPC ABI Supplement
->> talks about '0x02000000' as the base address and the '/usr/lib/ld.so.1' is also the
->> 'program interpreter' or the 'dynamic linker' there...
->>
->>   BTW, is there something equivalent for Linux/PPC as there is for the never-seen
->> SVR4/PPC, the "System V Application Binary Interface, PowerPC Processor Supplement",
->> by Steve Zucker and Kari Karhi?  Sometimes it sounds very funny when there seems to
->> be no free docs for the "Free Linux" (only those "For Dummies" things), but quite a
->> lot for the commercial SVR4 (e.g. via 'www.sco.com/developer/devspecs').
->>
->>  A document with the name "Linux Application Binary Interface,  PowerPC Processor
->> Supplement" seems to be still missing... For Linux/ARM, Linux/Alpha, Linux/MIPS,
->> Linux/M68K too... Isn't there any yet for Linux/x86? (Who said that MS tries to hide
->> the Windows ABI...). Some day all the money went to RedHat & Co. should be converted
->> into some docs... Meanwhile the SVR4-ABI docs, the ARM-ELF-ABI, DWARF etc. docs seem
->> to be the only for Linux. And the GNU sources of course, but who really likes to read
->> everything from the sources...
->>
->>  Ok, if there were some nice PDF etc. docs for Linux/* ABIs, there could be much less
->> misunderstandings and much less trouble to find these 'base' things... But surely more
->> answers with the advice about 'RTFM'....
->
+bjs1-static:     file format elf32-powerpc
+
+Program Header:
+    LOAD off    0x00000000 vaddr 0x01800000 paddr 0x01800000 align 2**16
+         filesz 0x00038910 memsz 0x00038910 flags r-x
+    LOAD off    0x00038910 vaddr 0x01878910 paddr 0x01878910 align 2**16
+         filesz 0x000015ac memsz 0x00002034 flags rw-
+    NOTE off    0x000000a0 vaddr 0x018000a0 paddr 0x018000a0 align 2**4
+         filesz 0x00000020 memsz 0x00000020 flags r--
+
+
+bjs1-shared:     file format elf32-powerpc
+
+Program Header:
+    LOAD off    0x00000000 vaddr 0x00000000 paddr 0x00000000 align 2**16
+         filesz 0x0000066c memsz 0x0000066c flags r-x
+    LOAD off    0x00000670 vaddr 0x00040670 paddr 0x00040670 align 2**16
+         filesz 0x000000d8 memsz 0x0000015c flags rwx
+ DYNAMIC off    0x00000678 vaddr 0x00040678 paddr 0x00040678 align 2**2
+         filesz 0x000000a0 memsz 0x000000a0 flags rw-
+
+Dynamic Section:
+  NEEDED      libc.so.6
+  INIT        0x610
+  FINI        0x634
+  HASH        0x94
+  STRTAB      0x310
+  SYMTAB      0x150
+  STRSZ       0xad
+  SYMENT      0x10
+  PLTGOT      0x40748
+  PLTRELSZ    0x3c
+  PLTREL      0x7
+  JMPREL      0x48c
+  RELA        0x420
+  RELASZ      0xa8
+  RELAENT     0xc
+  TEXTREL     0x0
+  VERNEED     0x400
+  VERNEEDNUM  0x1
+  VERSYM      0x3c8
+
+Version References:
+  required from libc.so.6:
+    0x0d696910 0x00 02 GLIBC_2.0
+
+
+lib/libc.so.6:     file format elf32-powerpc
+
+Program Header:
+    PHDR off    0x00000034 vaddr 0x00000034 paddr 0x00000034 align 2**2
+         filesz 0x000000c0 memsz 0x000000c0 flags r-x
+  INTERP off    0x000e8760 vaddr 0x00128760 paddr 0x00128760 align 2**2
+         filesz 0x00000010 memsz 0x00000010 flags rw-
+    LOAD off    0x00000000 vaddr 0x00000000 paddr 0x00000000 align 2**16
+         filesz 0x000d9f1c memsz 0x000d9f1c flags r-x
+    LOAD off    0x000d9f20 vaddr 0x00119f20 paddr 0x00119f20 align 2**16
+         filesz 0x00012fa0 memsz 0x00016a48 flags rwx
+ DYNAMIC off    0x000e8a30 vaddr 0x00128a30 paddr 0x00128a30 align 2**2
+         filesz 0x000000b0 memsz 0x000000b0 flags rw-
+
+Dynamic Section:
+  NEEDED      ld.so.1
+  SONAME      libc.so.6
+  INIT        0x21738
+  FINI        0xd9eb0
+  HASH        0xf4
+  STRTAB      0x9728
+  SYMTAB      0x2be8
+  STRSZ       0x79ba
+  SYMENT      0x10
+  PLTGOT      0x12cec0
+  PLTRELSZ    0x14d0
+  PLTREL      0x7
+  JMPREL      0x1ff50
+  RELA        0x11eec
+  RELASZ      0xf714
+  RELAENT     0xc
+  VERDEF      0x11e60
+  VERDEFNUM   0x3
+  VERNEED     0x11ebc
+  VERNEEDNUM  0x1
+  VERSYM      0x110f6
+
+Version definitions:
+1 0x01 0x0865f4e6 libc.so.6
+2 0x00 0x0d696910 GLIBC_2.0
+3 0x00 0x0d696911 GLIBC_2.1
+    GLIBC_2.0
+
+Version References:
+  required from ld.so.1:
+    0x0d696911 0x00 05 GLIBC_2.1
+    0x0d696910 0x00 04 GLIBC_2.0
+
+
+lib/ld.so.1:     file format elf32-powerpc
+
+Program Header:
+    LOAD off    0x00000000 vaddr 0x00000000 paddr 0x00000000 align 2**16
+         filesz 0x00013fb8 memsz 0x00013fb8 flags r-x
+    LOAD off    0x00013fc0 vaddr 0x00053fc0 paddr 0x00053fc0 align 2**16
+         filesz 0x00002bc8 memsz 0x000032c0 flags rwx
+ DYNAMIC off    0x00016378 vaddr 0x00056378 paddr 0x00056378 align 2**2
+         filesz 0x00000088 memsz 0x00000088 flags rw-
+
+Dynamic Section:
+  SONAME      ld.so.1
+  HASH        0x94
+  STRTAB      0xf28
+  SYMTAB      0x528
+  STRSZ       0xcc4
+  SYMENT      0x10
+  PLTGOT      0x56c2c
+  PLTRELSZ    0x330
+  PLTREL      0x7
+  JMPREL      0x3170
+  RELA        0x1d9c
+  RELASZ      0x1704
+  RELAENT     0xc
+  VERDEF      0x1d40
+  VERDEFNUM   0x3
+  VERSYM      0x1c00
+
+Version definitions:
+1 0x01 0x0275a261 ld.so.1
+2 0x00 0x0d696910 GLIBC_2.0
+3 0x00 0x0d696911 GLIBC_2.1
+    GLIBC_2.0
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
