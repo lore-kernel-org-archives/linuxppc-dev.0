@@ -1,35 +1,39 @@
-From: rodgersg@us.ibm.com
-Subject: PowerPC Linux BOF and Conference Call Friday July 21
-To: linuxppc-dev@lists.linuxppc.org, yellowdog-devel@lists.yellowdoglinux.com
-Cc: rodgersg@us.ibm.com, ajh@achilles.net
-Date: Tue, 18 Jul 2000 10:32:36 -0400
-Message-ID: <OFE31DFA08.8F24374D-ON85256920.004CD3D3@pok.ibm.com>
+Date: Tue, 18 Jul 2000 20:20:46 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: strace doesn't work on 2.4.0-testX
+In-Reply-To: <39744BAA.6E5984DA@wanadoo.fr>
+Message-ID: <Pine.LNX.4.10.10007182019150.488-100000@cassiopeia.home>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-To:  arch/ppc developers
+On Tue, 18 Jul 2000, Martin Costabel wrote:
+> The problem is that strace stopped working somewhere between
+> 2.4.0-test1-ac18 and -ac21 (I have both kernels and verified just
+> moments ago). It still doesn't work with 2.4.0-test5-pre2. Is this a
+> known problem or am I doing something wrong? I haven't seen anything on
+> the linux-kernel list (in the l-k archives, the last message with a
+> similar subject is from 1996), so it could be a ppc-related problem.
 
-I will be running the PowerPC Linux Birds Of a Feather meeting at the Linux
-Symposium in Ottawa on Friday July 21 from 4:30-6:00PM (East Coast USA).
-The meeting will be immediately after Paul Mackerras talk on ppp and Andrew
-Tridgell's talk on rsync.    If you are going to the symposium, please look
-for details there.   If you would like to join via teleconference and do
-not already have the teleconference numbers, please send me your name and
-your topic of interest and I will send you the passcode.    Please do not
-forward or post the passcode or the teleconference will get jammed.
-Also, do not request the passcode if you are going to be in Ottawa;  we
-don't want you joining from another pub :-)
+IIRC this is a known problem, caused by some changes in the ptrace() syscall.
 
-For more information on the symposium please visit.
+But IIRC, I did see an announce that someone did fix it on PPC. Or was that on
+MIPS?
 
-http://www.linuxsymposium.org/2000
+Gr{oetje,eeting}s,
 
-Thank you.
+						Geert
 
-Greg Rodgers (rodgersg@us.ibm.com)
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
