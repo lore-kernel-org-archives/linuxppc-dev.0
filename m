@@ -1,35 +1,47 @@
-Date: Mon, 20 Sep 1999 09:26:38 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: miBoot 1.0d3
-In-Reply-To: <19990919014557.023075@smtp.calvacom.fr>
-Message-ID: <Pine.LNX.4.10.9909200924100.2752-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <199909200748.AAA10294@soda.CSUA.Berkeley.EDU>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Profiling Code
+Date: Mon, 20 Sep 1999 00:48:48 -0700
+From: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 19 Sep 1999, Benjamin Herrenschmidt wrote:
-> Another issue is that I have currently no way to exit from miBoot. If I
-> fail to boot Linux, I exit to the caller, the disk is ejected, but the
-> machine doesn't try another disk to boot from. It may ne possible, it may
-> not, I'll have to disassemble more of MacOS ROM in order to figure this
-> out. I'd like to have a choice to boot MacOS, especially when miBoot is
-> on a hard disk partition.  (I can still change the PRAM value and reboot).
 
-That would indeed be nice. FYI, Amiga-Lilo can boot AmigaOS, since we
-disasembled the ca. 20 bytes of code in the boot block.
+Hi,
 
-Greetings,
+I have been trying to profile a small C program under LinuxPPC, but I
+can't gprof to run. (I couldn't find prof on my box).
 
-			Geert (who actually doesn't care about  MacOS at all)
+Bascially my make rule for profiling executes the following code:
 
---
-Geert Uytterhoeven ----------------- Sony Suprastructure Center Europe (SUPC-E)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint Stevens Woluwestraat 55
-Phone +32-2-7248608 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+$ gcc -pg -Wall -pedantic -o prog prog.c
+
+This compiles just fine. When I execute the program it creates the
+gmon.out file correctly. If I run gprof against this gmon.out file, I
+get a seg fault:
+
+$ gprof prog gmon.out
+Segmentation fault
+
+ldd on gprof looks okay:
+
+$ ldd /usr/bin/gprof 
+        libbfd-990418.so => /usr/lib/libbfd-990418.so (0x01753000)
+        libc.so.6 => /lib/libc.so.6 (0x01611000)
+        /lib/ld.so.1 => /lib/ld.so.1 (0x30000000)
+
+I am able to build with profiling on my Solaris box and Linux x86 just
+fine (for the exact same program), so I think that I'm not doing
+something correctly on PPC.
+
+If anyone has been able profile thier code under LinuxPPC, I would
+appreciate some pointers.
+
+Thanks,
+
+
+----ranga <ranga@soda.berkeley.edu>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
