@@ -1,16 +1,28 @@
-Return-Path: <tglx@linutronix.de>
-Received: from debian.tglx.de (unknown [213.239.205.147])
-	by ozlabs.org (Postfix) with ESMTP id 708B567A81
+Return-Path: <niklaus.giger@member.fsf.org>
+Received: from smtp.hispeed.ch (mxout.hispeed.ch [62.2.95.247])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id ED2FD67A7F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 27 Feb 2005 11:32:59 +1100 (EST)
-Message-ID: <20050227005956.1.patchmail@tglx>
-Mime-Version: 1.0
-Content-Type: text/plain
-To: trini@kernel.crashing.org
-Date: Sun, 27 Feb 2005 00:56:16 +0100 (CET)
-From: tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: [PATCH 1/10] PPC: C99 initializers for hw_interrupt_type structures
+	Mon, 28 Feb 2005 02:10:41 +1100 (EST)
+Received: from ng (80-218-254-31.dclient.hispeed.ch [80.218.254.31])
+	(authenticated bits=0)
+	by smtp.hispeed.ch (8.12.6/8.12.6/tornado-1.0) with ESMTP id
+	j1RFAZ99026876
+	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>; Sun, 27 Feb 2005 16:10:36 +0100
+From: Niklaus Giger <niklaus.giger@member.fsf.org>
+To: linuxppc-embedded@ozlabs.org
+Date: Sun, 27 Feb 2005 16:10:30 +0100
+References: <200502262328.24165.niklaus.giger@member.fsf.org>
+In-Reply-To: <200502262328.24165.niklaus.giger@member.fsf.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200502271610.30615.niklaus.giger@member.fsf.org>
+Subject: Re: Problems porting to a custom PPC405GPr board using a vanilla
+	2.6.10 kernel
+Reply-To: niklaus.giger@member.fsf.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,197 +33,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Convert the initializers of hw_interrupt_type structures to C99 initializers.
+Am Samstag, 26. Februar 2005 23.28 schrieb Niklaus Giger:
+> Hi
+>
+> I would like to port Linux to a custom PPC405GPr board. Its hardware runs
+> vxWorks fine for more than a year.
+>
+I made some more progress. After adding 3 lines for MMU support with the BDI
+I can debug the startup up to kernel_start using BDI.=20
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Afterwards my console changes the baudrate for still unknown reasons.
 
----
- platforms/adir_pic.c |   12 ++++--------
- syslib/cpc700_pic.c  |   12 ++++--------
- syslib/cpm2_pic.c    |   13 +++++--------
- syslib/i8259.c       |   13 +++++--------
- syslib/mpc52xx_pic.c |   13 +++++--------
- syslib/open_pic2.c   |   12 +++++-------
- syslib/ppc403_pic.c  |   11 ++++-------
- syslib/xilinx_pic.c  |   13 +++++--------
- 8 files changed, 37 insertions(+), 62 deletions(-)
----
-diff -urN 2.6.11-rc5.orig/arch/ppc/platforms/adir_pic.c 2.6.11-rc5/arch/ppc/platforms/adir_pic.c
---- 2.6.11-rc5.orig/arch/ppc/platforms/adir_pic.c	2004-12-24 22:33:52.000000000 +0100
-+++ 2.6.11-rc5/arch/ppc/platforms/adir_pic.c	2005-02-26 20:54:19.000000000 +0100
-@@ -73,14 +73,10 @@
- }
- 
- static struct hw_interrupt_type adir_onboard_pic = {
--	" ADIR PIC ",
--	NULL,
--	NULL,
--	adir_onboard_pic_enable,		/* unmask */
--	adir_onboard_pic_disable,		/* mask */
--	adir_onboard_pic_disable,		/* mask and ack */
--	NULL,
--	NULL
-+	.typename = " ADIR PIC ",
-+	.enable = adir_onboard_pic_enable,	/* unmask */
-+	.disable = adir_onboard_pic_disable,	/* mask */
-+	.ack = adir_onboard_pic_disable,	/* mask and ack */
- };
- 
- static struct irqaction noop_action = {
-diff -urN 2.6.11-rc5.orig/arch/ppc/syslib/cpc700_pic.c 2.6.11-rc5/arch/ppc/syslib/cpc700_pic.c
---- 2.6.11-rc5.orig/arch/ppc/syslib/cpc700_pic.c	2004-12-24 22:34:26.000000000 +0100
-+++ 2.6.11-rc5/arch/ppc/syslib/cpc700_pic.c	2005-02-26 20:54:19.000000000 +0100
-@@ -90,14 +90,10 @@
- }
- 
- static struct hw_interrupt_type cpc700_pic = {
--	"CPC700 PIC",
--	NULL,
--	NULL,
--	cpc700_unmask_irq,
--	cpc700_mask_irq,
--	cpc700_mask_and_ack_irq,
--	NULL,
--	NULL
-+	.typename = "CPC700 PIC",
-+	.enable = cpc700_unmask_irq,
-+	.disable = cpc700_mask_irq,
-+	.ack = cpc700_mask_and_ack_irq,
- };
- 
- __init static void
-diff -urN 2.6.11-rc5.orig/arch/ppc/syslib/cpm2_pic.c 2.6.11-rc5/arch/ppc/syslib/cpm2_pic.c
---- 2.6.11-rc5.orig/arch/ppc/syslib/cpm2_pic.c	2004-12-24 22:34:57.000000000 +0100
-+++ 2.6.11-rc5/arch/ppc/syslib/cpm2_pic.c	2005-02-26 20:54:19.000000000 +0100
-@@ -102,14 +102,11 @@
- }
- 
- struct hw_interrupt_type cpm2_pic = {
--	" CPM2 SIU  ",
--	NULL,
--	NULL,
--	cpm2_unmask_irq,
--	cpm2_mask_irq,
--	cpm2_mask_and_ack,
--	cpm2_end_irq,
--	0
-+	.typename = " CPM2 SIU  ",
-+	.enable = cpm2_unmask_irq,
-+	.disable = cpm2_mask_irq,
-+	.ack = cpm2_mask_and_ack,
-+	.end = cpm2_end_irq,
- };
- 
- 
-diff -urN 2.6.11-rc5.orig/arch/ppc/syslib/i8259.c 2.6.11-rc5/arch/ppc/syslib/i8259.c
---- 2.6.11-rc5.orig/arch/ppc/syslib/i8259.c	2005-02-26 20:38:12.000000000 +0100
-+++ 2.6.11-rc5/arch/ppc/syslib/i8259.c	2005-02-26 20:54:19.000000000 +0100
-@@ -129,14 +129,11 @@
- }
- 
- struct hw_interrupt_type i8259_pic = {
--	" i8259    ",
--	NULL,
--	NULL,
--	i8259_unmask_irq,
--	i8259_mask_irq,
--	i8259_mask_and_ack_irq,
--	i8259_end_irq,
--	NULL
-+	.typename = " i8259    ",
-+	.enable = i8259_unmask_irq,
-+	.disable = i8259_mask_irq,
-+	.ack = i8259_mask_and_ack_irq,
-+	.end = i8259_end_irq,
- };
- 
- static struct resource pic1_iores = {
-diff -urN 2.6.11-rc5.orig/arch/ppc/syslib/mpc52xx_pic.c 2.6.11-rc5/arch/ppc/syslib/mpc52xx_pic.c
---- 2.6.11-rc5.orig/arch/ppc/syslib/mpc52xx_pic.c	2004-12-24 22:35:59.000000000 +0100
-+++ 2.6.11-rc5/arch/ppc/syslib/mpc52xx_pic.c	2005-02-26 20:54:19.000000000 +0100
-@@ -166,14 +166,11 @@
- }
- 
- static struct hw_interrupt_type mpc52xx_ic = {
--	"MPC52xx",
--	NULL,				/* startup(irq) */
--	NULL,				/* shutdown(irq) */
--	mpc52xx_ic_enable,		/* enable(irq) */
--	mpc52xx_ic_disable,		/* disable(irq) */
--	mpc52xx_ic_disable_and_ack,	/* disable_and_ack(irq) */
--	mpc52xx_ic_end,			/* end(irq) */
--	0				/* set_affinity(irq, cpumask) SMP. */
-+	.typename = "MPC52xx",
-+	.enable = mpc52xx_ic_enable,		/* enable(irq) */
-+	.disable = mpc52xx_ic_disable,		/* disable(irq) */
-+	.ack = mpc52xx_ic_disable_and_ack,	/* disable_and_ack(irq) */
-+	.end = mpc52xx_ic_end,			/* end(irq) */
- };
- 
- void __init
-diff -urN 2.6.11-rc5.orig/arch/ppc/syslib/open_pic2.c 2.6.11-rc5/arch/ppc/syslib/open_pic2.c
---- 2.6.11-rc5.orig/arch/ppc/syslib/open_pic2.c	2005-01-24 12:25:36.000000000 +0100
-+++ 2.6.11-rc5/arch/ppc/syslib/open_pic2.c	2005-02-26 20:54:19.000000000 +0100
-@@ -83,13 +83,11 @@
- static void openpic2_ack_irq(unsigned int irq_nr);
- 
- struct hw_interrupt_type open_pic2 = {
--	" OpenPIC2 ",
--	NULL,
--	NULL,
--	openpic2_enable_irq,
--	openpic2_disable_irq,
--	openpic2_ack_irq,
--	openpic2_end_irq,
-+	.typename = " OpenPIC2 ",
-+	.enable = openpic2_enable_irq,
-+	.disable = openpic2_disable_irq,
-+	.ack = openpic2_ack_irq,
-+	.end = openpic2_end_irq,
- };
- 
- /*
-diff -urN 2.6.11-rc5.orig/arch/ppc/syslib/ppc403_pic.c 2.6.11-rc5/arch/ppc/syslib/ppc403_pic.c
---- 2.6.11-rc5.orig/arch/ppc/syslib/ppc403_pic.c	2005-01-24 12:25:36.000000000 +0100
-+++ 2.6.11-rc5/arch/ppc/syslib/ppc403_pic.c	2005-02-26 20:54:19.000000000 +0100
-@@ -34,13 +34,10 @@
- static void ppc403_aic_disable_and_ack(unsigned int irq);
- 
- static struct hw_interrupt_type ppc403_aic = {
--	"403GC AIC",
--	NULL,
--	NULL,
--	ppc403_aic_enable,
--	ppc403_aic_disable,
--	ppc403_aic_disable_and_ack,
--	0
-+	.typename = "403GC AIC",
-+	.enable = ppc403_aic_enable,
-+	.disable = ppc403_aic_disable,
-+	.ack = ppc403_aic_disable_and_ack,
- };
- 
- int
-diff -urN 2.6.11-rc5.orig/arch/ppc/syslib/xilinx_pic.c 2.6.11-rc5/arch/ppc/syslib/xilinx_pic.c
---- 2.6.11-rc5.orig/arch/ppc/syslib/xilinx_pic.c	2005-01-24 12:25:36.000000000 +0100
-+++ 2.6.11-rc5/arch/ppc/syslib/xilinx_pic.c	2005-02-26 20:54:19.000000000 +0100
-@@ -79,14 +79,11 @@
- }
- 
- static struct hw_interrupt_type xilinx_intc = {
--	"Xilinx Interrupt Controller",
--	NULL,
--	NULL,
--	xilinx_intc_enable,
--	xilinx_intc_disable,
--	xilinx_intc_disable_and_ack,
--	xilinx_intc_end,
--	0
-+	.typename = "Xilinx Interrupt Controller",
-+	.enable = xilinx_intc_enable,
-+	.disable = xilinx_intc_disable,
-+	.ack = xilinx_intc_disable_and_ack,
-+	.end = xilinx_intc_end,
- };
- 
- int
+Analysing the __log_buf I get the following output
+(gdb) x/s &__log_buf
+0xc01accfc <ratelimit_lock.9>:   "<4>Linux version 2.6.10=20
+(niklaus@ng.ngiger.dyndns.org) (gcc-Version 3.3.5 (Debian 1:3.3.5-8)) #15 S=
+un=20
+=46eb 27 14:44:27 CET 2005\n<7>On node 0 totalpages: 8240\n<7>  DMA zone: 8=
+240=20
+pages, LIFO batch:2\n<7>"...
+(gdb) x
+0xc01acdc4 <ratelimit_lock.9+200>:       "  Normal zone: 0 pages, LIFO=20
+batch:1\n<7>  HighMem zone: 0 pages, LIFO batch:1\n<4>Built 1=20
+zonelists\n<4>Kernel command line: ip=3D172.25.1.6\n<4>PID hash table entri=
+es:=20
+256 (order:8, 4096 bytes)\n"
+(gdb) x
+0xc01ace84 <ratelimit_lock.9+392>:       ""
+
+>My board has no RTC. Is this a problem?=20
+>
+>Should I start with another kernel? Can anybody point me to a known good=20
+>kernel version for a specific PPC405 board?
+
+Any hint would be greatly appreciated.
+
+Best regards
+
+=2D-=20
+Niklaus Giger
+Wieshoschet 6
+CH-8753 Mollis
+Tel. ++41 55 612 20 54 (privat)
+Tel. ++41 55 618 64 68 (Gesch=E4ft)
