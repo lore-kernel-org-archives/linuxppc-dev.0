@@ -1,69 +1,41 @@
-Date: Tue, 8 Jun 1999 21:08:04 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ioremap() on ISA memory space
-In-Reply-To: <Pine.LNX.4.10.9906082022070.25878-100000@mercator.cs.kuleuven.ac.be>
-Message-ID: <Pine.HPP.3.96.990608205122.27048K-100000@gra-ux1.iram.es>
+Date: Tue, 8 Jun 1999 12:31:24 -0700 (MST)
+From: Matt Porter <mporter@phx.mcd.mot.com>
+To: paubert@iram.es
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PReP boot options was Re: How to boot VME from HD?
+In-Reply-To: <Pine.LNX.3.96.990608123717.26558A-100000@liberty.chnd1.az.home.com>
+Message-ID: <Pine.LNX.3.96.990608122023.28505F-100000@fwrsl-11.phx.mcd.mot.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 8 Jun 1999, Geert Uytterhoeven wrote:
+> check twice before typing the return key since the wrong digit in the of0
+> parameter may make one of your partitions unusable (to solve this we would
+> need a MILO like loader, but I had no time to work on this, although
+> prepboot might be a good starting point).
 
-> 
-> 
-> I found one reason why current kernels don't work on my LongTrail: my NVRAM is
-> in ISA memory space. When the kernel tries to ioremap() it in
-> pmac_nvram_init(), I get
-> 
->     __ioremap(): phys addr e0000 is RAM lr c000e43c
-> 
-> and ioremap() returns NULL, causing all later accesses to NVRAM (e.g. in atyfb)
-> to fail due to NULL pointer dereferences.
-> 
-> Do all CHRP boxes have NVRAM in ISA memory space? The comment (by Corey) near
-> the call to pmac_nvram_init() in chrp_init2() already wonders whether
-> pmac_nvram_init() should be called or not.
+This is something I've been looking at off and on.  I think the best route
+is to take quik and combine it with features from the integrated
+bootloader and your preploader.  The current situation makes it tough to
+offer a PReP distribution that smoothly installs since one needs to
+rebuild the bootloader and link with the kernel just to change the default
+root device and kernel parameters. :-/
 
-I don't know, but according to M.Mares (the PCI guy), all addresses passed
-to ioremap should be processor physical addresses. So you should modify
-the call to ioremap to add the physical offset at which the ISA memory
-space (address 0-16 Mb) appears on the PCI bus. 
+> I have also considered the
+> possibility of booting from ROM (flash the kernel into the 4 or 8Mb of
+> PROM present on these boards), but not implemented it.
 
-The hacks done on the i386 port are not valid since on a standard PC
-addresses from 640kB to 1Mb-64kB are directly forwarded to PCI/ISA.
-On a PC, the addresses on both sides of the host bridge are always the
-same. It is simply not possible to stick to this rule when you want to
-have all physical memory contiguous and starting at address 0.
+I have working code for this that requires an updated PPCBUG revision.
+A PPCBUG release with support for RBing PReP images should be available
+"RSN", but it's hard to say since the firmware group is rather loaded
+these days.
 
-The 8088 is still going to bite us for some time with these ambiguous
-addresses and DMA problems :-(.  
+--
+Matt Porter				Motorola Computer Group
+mporter@mcg.mot.com			Real Time Software Support
 
-> Besides, I'd say one must call ioremap() to access ISA memory space anyway, so
-> it sounds like a bug in the memory management subsystem to me.
-
-Indeed (note that Linus indicated that ioremap for ISA memory space would 
-be compulsory in 2.3 even on i386), but this is not necessarily a mm bug
-IMHO. It would be better to define a macro that conditionally adds a
-platform dependant offset for addresses < 16 Mb (I've heard that
-ISA_MEM_BASE has been killed, and I disagree just because of this kind
-of things).
-
-I would rather use ioremap(dev->base_address[n],...) for standard PCI
-devices and ioremap(ISA_PHYSICAL_ADDRESS(xxx),...) for devices which might
-be on ISA with: 
-
-#define ISA_PHYSICAL_ADDRESS(x) \ 
-(((x)<0x1000000) ? ((x)+ISA_PHYSICAL_BASE) : (x))
-
-where ISA_PHYSICAL_BASE is a boot time constant (0xfd000000 on MPC106,
-don't know on others). 
-
-	Greetings,
-	Gabriel.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
