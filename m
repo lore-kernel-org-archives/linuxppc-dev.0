@@ -1,48 +1,36 @@
-Message-ID: <3BEC1A7C.DA3119C4@midrivers.com>
-Date: Fri, 09 Nov 2001 11:03:40 -0700
-From: Mark Pilon <mpilon@midrivers.com>
+Message-Id: <5.1.0.14.2.20011109125808.0300b040@falcon.si.com>
+Date: Fri, 09 Nov 2001 13:08:14 -0500
+To: linuxppc-embedded@lists.linuxppc.org
+From: Jerry Van Baren <vanbaren_gerald@si.com>
+Subject: Re: Linuxppc and MPC8255 routing performance
+In-Reply-To: <3BEC0578.9020704@embeddededge.com>
+References: <9729.011107@vanet.com.br>
+ <01110818021400.00999@scop.digitel.com.br>
+ <3BEAFCEB.3090604@embeddededge.com>
+ <01110912552900.03277@scop.digitel.com.br>
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 405 -- a little console help, resolution
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The problem w/ sash "not responding" (it was SEGVing) was
-due to the kernel checking for execute permission on the page of
-sash it was to execute.
+At 11:34 AM 11/9/01 -0500, Dan Malek wrote:
 
-Thanks to David Gibson for his help.
+>Ricardo Scop wrote:
+>
+>
+>>By "backside" memory you mean ... the internal data cache, perhaps?
+>
+>No, bad use of words on my part.  The 8260 has a local bus that can only
+>be accessed from the CPU core and CPM (it's not on the 60x bus).  Maybe
+>the 8255 doesn't have this feature, I don't remember.
+>
+>
+>         -- Dan
 
-the patch, (found fixed in the _devel tree I just pulled)
-in arch/ppc/mm/fault.c:
+The 8255 uses the 8260 "local bus" connections for the PCI bus.
 
-#if 0
-		/* It would be nice to actually enforce the VM execute
-		   permission on CPUs which can do so, but far too
-		   much stuff in userspace doesn't get the permissions
-		   right, so we let any page be executed for now. */
-		if (! (vma->vm_flags & VM_EXEC))
-			goto bad_area;
-#endif
+gvb
 
-the #if 0 was added to the code fragment.
-
-ALSO, is everyone who sends something to this list getting
-an email bounce for hideo noda,mutoh @mutoh.co.jp ?? every post
-to this list gives me this bounce.
-
-perhaps some hack to the list server, or, the reply-to of the
-list emails I'm responding to?
-
-
-Mark Pilon
-
-Minolta-QMS
-P.O. Box 37
-Fallon, MT.  59326-0037
-
-1-406-853-0433
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
