@@ -1,42 +1,39 @@
-Message-ID: <396D5403.23A8B739@amulet.co.jp>
-Date: Thu, 13 Jul 2000 14:30:43 +0900
-From: Hollis Blanchard <hollis@amulet.co.jp>
+From: "Chris Backas" <cbackas@rcn.com>
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Date: Thu, 13 Jul 2000 01:32:24 -0400 (EDT)
+Reply-To: "Chris Backas" <cbackas@bigfoot.com>
 MIME-Version: 1.0
-To: Robert Thompson <rothomp3@vt.edu>
-CC: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-        linuxppc-dev@lists.linuxppc.org,
-        Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: trackpad
-References: <003b01bfeaa6$744c6e60$1a6a1504@strayer.edu><4.3.2.7.2.20000711172513.03963320@mail.munich.netsurf.de><00e801bfeb51$d19bf300$1a6a1504@strayer.edu> <00071122541602.00729@enzo.bigblue.local> <008301bfec55$bc40c580$1a6a1504@strayer.edu>
-Content-Type: text/plain; charset=iso-2022-jp
+Content-Type: text/plain; charset="us-ascii"
+Subject: iBook woes
+Message-Id: <E13CcDf-0003p2-00@smtp01.mrf.mail.rcn.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Robert Thompson wrote:
->
-> > All looks fine..., no idea what's going wrong for you. A new binary kernel
-> > will be on Ben's page in a hour or so, please try that one.
->
-> OK, I've tried it. No function from the trackpad still. I downloaded the
-> sources and recompiled. Still no trackpad. I turned off "Enable new input
-> layer" and make dep'd make clean make vmlinux etc and *still* no trackpad!
-> I'm on the Yellow Dog list, and people are starting to report similar
-> problems with 2000 "Pismo" PowerBooks and these kernels...
+Hello all,
 
-I have a Pismo here. It has a trackpad. The trackpad works, both in gpm
-and in XF4, with the new input layer stuff. Both programs are set to use
-protocol "IMPS/2". Both programs use /dev/mouse, which is a symlink to
-/dev/input/mice, which is a device with major 13 minor 63.
+I'm having sound & video trouble with my iBook.. before I start, here's the machine's info:
 
-Your problem after disabling the new input layer is most likely because
-/dev/mouse is still a symlink to the new input layer device; you can't
-have it both ways.
+Original iBook, 160MB RAM, modified with a 12GB HD, and it has an AirPort card.  I have a working tri-boot setup with MacOS 9.0.4, Mac OS X DP4, and Yellow Dog Linux
+Champion Server 1.2.  I'm using yaBoot to boot the machine (BootX causes it to lockup instantly, and often it simply turns off when I try to use BootX) and as on now, Kernel
+is 2.2.17pre10-ben1
 
-If the precompiled kernel doesn't work that suggests there's something
-wrong in your configuration, like your /dev setup or the protocol that X
-and gpm are expecting or the device X and gpm are reading from.
+First, the video trouble.  Using the version of XFree that came with YellowDog, X runs in 800x600x8, which is very ugly.  After about 15-30minutes of using X, the screen
+would polarize and the computer would lock up hard (dead to pings etc).  So, I decided to upgrade to XFree 4, because that was listed as a solution for iMac trouble on
+Yellow Dog's page.  I installed XFree 4, and although the lockups are now gone, I have a new (odd) problem.  The left 1/4inch of the image is displayed on the right
+1/4inch of the screen =)  (Slightly raised up too)  There's no overlap, the entire screen is shifted to the left like this, and I'm still not able to get anything better than 8bit color.
+In XFree's messages, I can see a message indicating that it thinks the video card has 468K of RAM.
 
--Hollis
+Am I missing something obvious?  Do I need a specific video= line in my yaboot.conf file?
+
+
+Ok, now for the sound.  Simply put, I've never heard a peep out of this thing under Linux.  Is the dmasound module the correct one for the iBook?  I have 'alias sound
+dmasound' on /etc/conf.modules, and 'lsmod' lists dmasound as loaded (but unused). When I start X, I can see complaints from esd that /dev/dsp does not exist (it does)
+But perhaps it's not setup properly?
+
+There's a few other minor troubles (mainly with making MacOS not unbless my yaboot partition...) but these two ar e the big ones =)  Any help is appreciated.
+
+Chris Backas
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
