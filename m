@@ -1,53 +1,46 @@
-Message-Id: <200011100030.eAA0URH11424@denx.local.net>
-To: Kyle Harris <kharris@nexus-tech.net>
-cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: multiple kernel images on TQM823 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 09 Nov 2000 18:53:47 EST."
-             <3A0B390B.94A8BB06@nexus-tech.net>
-Date: Fri, 10 Nov 2000 01:30:27 +0100
+Date: Fri, 10 Nov 2000 10:00:14 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: fraher <fraher@pweh.com>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MVME2604 Problems with MMU
+In-Reply-To: <3a0b0db70.46b4@clbdev2.eh.pweh.com>
+Message-ID: <Pine.HPX.4.10.10011100955260.19910-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Kyle,
+On Thu, 9 Nov 2000, fraher wrote:
 
-in message <3A0B390B.94A8BB06@nexus-tech.net> you wrote:
 >
-> I have a STK823 kit that I have just started playing with. I've rebuilt
-> the kernel and also have some canned images that came with the CDK. I'm
+>    I've got a 2.2.12 kernel with Gabriel's patches (NFS mounted root),
+> and it works beautifully on a MVME2603 board (many thanks, Gabriel).
+> However, when I swap out the MVME2603 with a MVME2604, and cause some
+> SCSI disk activity, the system crashes with
+>
+>         end_scsi_request: buffer-list destroyed
+>         page fault in interrupt handler, addr=8000000
+>         NIP: 08000000 XER: 20000000 LR: C00C67BC REGS: c00ffc48 TRAP: 0400
+>         MSR: 40001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+>         TASK = c00fdfe8[0] 'swapper' mm->pgd c00fc000 Last syscall: 112
+>                 ...
+>         kernel panic: kernel access of bad area pc 8000000 lr c00c67bc address 8000000 tsk swapper/0
+>
+> The 'page fault' makes me wonder if the 604's TLB miss response differs
+> sufficiently to cause the kernel panic.
+> Has anyone else seen problems running on 2.2.12 with an MVME2604?
+> Are there other patches needed to compensate for the MMU differences
+> with the 604e?
 
-The images on the CD-ROM are for the older TQmon firmware. They  will
-not work with PPCBoot.
+I don't have any MVME2604, but I have several MVME2400 with uptimes in
+the months range. MVME2400 don't have SCSI, but a 750 has processor with
+an MMU very similar to the 604e. Could it be a subtle SCSI/timing problem ?
 
-For PPCboot you have to  recompile  the  kernel  and  create  PPCBoot
-images  using  the mkimage tool. For detailed instructions please see
-the README in the PPCBoot directory.
+OTOH, I have reports of working 2604, but I don't remember if it's with
+root on NFS or using SCSI.
 
-> using ppcboot for the MPC823. The present kernel lives at 0x40020000
-> (and boots fine). Can I load another kernel somewhere else in flash and
+	Gabriel.
 
-Yes, sure you can. The pre-installed kernel is just about 320  KB  if
-it's  a 2.2.x version, or about 420 kB if it's a 2.4.x. It's probably
-a good idea to play for safety first, so I think 40100000 is  a  good
-address for the next kernel image.
-
-> boot from it? I've tried loading images at 0x40200000, but I get a "Bad
-> Magic Number" error when booting.
-
-That means that it's not a PPCBoot image.
-
-Please contact me directly if you need pre-build PPCboot images.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Every program has at least one bug and can be shortened by  at  least
-one  instruction  --  from  which,  by induction, one can deduce that
-every program can be reduced to one instruction which doesn't work.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
