@@ -1,80 +1,78 @@
-Message-ID: <19990921193653.14861.rocketmail@web125.yahoomail.com>
-Date: Tue, 21 Sep 1999 12:36:53 -0700 (PDT)
-From: David Hay <hay_dave@yahoo.com>
-Reply-To: hay@colorado.edu
-Subject: Re: USB driver not detecting mouse? (lots of detail)
-To: Ira K Weiny <iweiny@falcon.csc.calpoly.edu>
-Cc: linuxdev <linuxppc-dev@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <199909212103.VAA03918@go.hannover.sgh-net.de>
+Subject: Stupid question of the day: Ethernet IP aliases on startup
+Date: Tue, 21 Sep 1999 23:04:13 +0200
+From: John L Grantham <jgrantha@hannover.sgh-net.de>
+To: <linuxppc-dev@lists.linuxppc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I got the 2.3 USB code from cvs.on.openprojects.net.  I had to update it a
-bit to include the 2.2 spinlock.h since it seems to have moved in the 2.3
-kernel.  If I think of it, I'll try to make some patches once I get home...
+Hi all,
 
-Where are these patches you speak of?  From reading the docs in the USB
-driver, these patches have made it into the USB tree...or are there non-USB
-patches that need to be applied?
+My stupid question of the day, on a similar vein to some other questions 
+recently: I'm trying to set up my Linux box (PowerMac G3 MT/266, LinuxPPC 
+1999 crossed with YDL 1.1) to start up Ethernet IP aliases each time the 
+computer boots. First attempt was using netcfg, which set up the aliases 
+okay, and in each case the files for eth0:0 through eth0:7 in 
+/etc/sysconfig/ says ONBOOT=YES, but the aliases don't start on boot. So 
+I wrote a shell script to do so, and the script works if I call it 
+(though it complains that the files already exist, but it does start the 
+ports); the script I wrote is in /etc/sysconfig/network-scripts/, with a 
+symbolic link pointing to it from /etc/rc.d/init.d/. But no dice--on 
+startup, nothing doing, and I have to call the script myself.
 
-David
+What I'm looking to do is bind a specific IP address to an Ethernet 
+alias. Then, each IP gets a domain name in my isolated LAN, and also each 
+IP is used for a virtual server for HTTP. So long as I run the script, 
+everything works. The script looks like this:
 
---- Ira K Weiny <iweiny@falcon.csc.calpoly.edu> wrote:
-> I get similar results with the 2.2 kernel.  Have you tried Paul's patches
-> for
-> the USB code?  Or I should ask where you got the 2.3 USB code.  I could not
-> get
-> the 2.3 code to compile with the 2.2 kernel.  But I have the cvs 2.3 which
-> I
-> know is like bleeding edge and I am sure the directions on the USB-HowTo
-> don't
-> take that into account.  I get tons of include file missing and symbols
-> errors...
-> 
-> So I though I would compile it against the 2.3 kernel and see if I can run
-> that.  Of course now I have to get the 2.3 kernel to actually run!!!
-> 
-> Anyway Paul has patches to the 2.3 USB which take into acount endianes
-> issues
-> which LinuxPPC needs.
-> 
-> I can look up the web page if you want for the patches.  Alternativly the
-> 2.3
-> cvs source has the endianess issues in the code and no need to patch, which
-> I
-> for one can never get to work.  ;-(
-> 
-> Good luck.  If I get anything working I will let you know.
-> Ira Weiny
-> 
-> > 
-> > I have a Kensington USB Mouse-In-A-Box Scroll mouse which works fine
-> under
-> > MacOS, so I know there's nothing wrong with the mouse or the Entegra
-> 4-Port
-> > USB card it's connected to.  I have a Power Tower Pro 225 (if that makes
-> a
-> > difference)
-> 
-> ...
-> 
-> > 
-> > Sep 20 18:20:57 dhay kernel:       bEndpointAddress    =   81 (in) 
-> > Sep 20 18:20:57 dhay kernel:       bmAttributes        =   03 (Interrupt)
-> 
-> > Sep 20 18:20:57 dhay kernel:       wMaxPacketSize      = 0001 
-> > Sep 20 18:20:57 dhay kernel:       bInterval           =   ff 
-> > Sep 20 18:20:57 dhay kernel: ohci-control thread sleeping
-> > 
-> 
+#!/bin/sh
+# John's attempt at a script to start up Ethernet IP aliases
+# /etc/sysconfig/network-scripts/ipaliases
 
-===
-------------------------------------------------------------
- David Hay                                     \|/ ____ \|/
- hay@colorado.edu                              ~@-/ oO \-@~
- http://home.earthlink.net/~dhay/              /_( \__/ )_\
- ~ Live well ~ Laugh often ~ Love much ~          \__U_/
+# First set up IPs
+/sbin/ifconfig lo 127.0.0.1
+/sbin/ifconfig eth0 up
+/sbin/ifconfig eth0 192.168.1.1
+/sbin/ifconfig eth0:0 192.168.1.10
+/sbin/ifconfig eth0:1 192.168.1.11
+/sbin/ifconfig eth0:2 192.168.1.12
+/sbin/ifconfig eth0:3 192.168.1.13
+/sbin/ifconfig eth0:4 192.168.1.14
+/sbin/ifconfig eth0:5 192.168.1.15
+/sbin/ifconfig eth0:6 192.168.1.16
+/sbin/ifconfig eth0:7 192.168.1.17
+
+# Now set up routing and loopback
+/sbin/route add -net 127.0.0.0 
+/sbin/route add -net 192.168.1.0 dev eth0
+/sbin/route add -host 192.168.1.1 dev eth0
+/sbin/route add -host 192.168.1.10 dev eth0:0
+/sbin/route add -host 192.168.1.11 dev eth0:1
+/sbin/route add -host 192.168.1.12 dev eth0:2
+/sbin/route add -host 192.168.1.13 dev eth0:3
+/sbin/route add -host 192.168.1.14 dev eth0:4
+/sbin/route add -host 192.168.1.15 dev eth0:5
+/sbin/route add -host 192.168.1.16 dev eth0:6
+/sbin/route add -host 192.168.1.17 dev eth0:7
+/sbin/route add default gw 192.168.1.200
+
+# End script
+
+Any ideas, O great sirs and madams?
+
+cya
+
+John
+
+---
+
+John Grantham | Freelance Graphic and Web Designer
+              | Dipl.-Designer (FH)
+              | Homepage: http://surf.to/multimedia
+              | MacLinux: http://www.maclinux.de/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
