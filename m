@@ -1,43 +1,58 @@
-Date: Tue, 26 Jun 2001 16:25:03 +0200
-From: Michael Peeters <michael@vub.ac.be>
-To: linuxppc-dev@lists.linuxppc.org, scmeyers@telocity.com
-Subject: Re: Problems with 2.4.5
-Message-ID: <20010626162503.F1859@wheeler.vub.ac.be>
-Reply-To: Michael.Peeters@ieee.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 26 Jun 2001 14:13:00 -0400 (EDT)
+Message-Id: <200106261813.f5QID0l244185@saturn.cs.uml.edu>
+From: "Albert D. Cahalan" <acahalan@cs.uml.edu>
+To: lm@bitmover.com
+Cc: linuxppc-commit@ppcbk.mvista.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: ppc @ ppc.bitkeeper.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Scott,
-I'm having exactly the smae problem.
-Apparently __change_bit and some other nonatomic bit operation are not
-defined in asm-ppc/bitops.h. I made a patch. I'll mail at your own peril:
-this is my first attempt at muddling in kernel stuff (but it is mostly
-cut_and_paste, so I think ... it should work - it does for me anyway).
+> We're working getting BK/web up and we are also making changes so that you'll
+> be able to do this:
+>
+>         bk clone http://ppc.bitkeeper.com/linuxppc_2_4
+>
+> which will work through firewalls.
 
-It compiles, but I haven't had the chance to reboot the machine yet
-(it is at a remote location).
+*sigh*
 
-I you want, I'll keep you posted
+Encouraging people to violate security?
 
-Yours,
-Michael Peeters
+I guess everybody does it. Let's just get rid of all other ports.
+Then we can all have stateful app-level firewalls to stop this
+sort of hack. Admins can get regular updates, just like with their
+anti-virus and Internet filter software. :-/
 
-P.S. Could it be I have a book you wrote ? Or is this a question you
-are getting sick and tired of getting ?
+> While the machine we have has a gig of ram and a fast cpu, and a 1.5Mbit
+> net connection, we're really prefer that you cloned once and pulled many
+> times rather than recloning all the time.  Pulling uses tiny amounts of
+> bandwidth, we can barely detect it, but cloning burns about 35MBytes of
+> bandwidth.  It's worth getting a copy of BK even if you don't use BK
+> because it can transfer the data faster than ftp/rsync/whatever because
+> it already knows what has been changed.  A trivial mirroring command:
+>
+>         # one time only
+>         bk clone bk://ppc.bitkeeper.com:5000 linuxppc_2_4
+>
+>         # Nightly
+>         cd linuxppc_2_4
+>         bk pull
+>         rm -rf ../linuxppc_2_4.export
+>         bk export . ../linuxppc_2_4.export
 
---
-----------------------------------------------------
-Michael Peeters (MultiPlex) michael.peeters@ieee.org
-  Need Privacy? http://www.keyserver.net/
-Tel: 02/629.36.57                Fax: 02/629.34.50
-====================================================
-Vrije Universiteit Brussel
-Faculty of Applied Sciences
-Department of Applied Physics and Photonics
-VUB-TW-TONA, Pleinlaan 2, B-1050 Brussels, Belgium
-----------------------------------------------------
+bzip2 -dc patches-are-better.bz2 | patch -p1 -E -s
+
+I know it doesn't push BitKeeper, but patches are certainly fine for
+bandwidth problems. That is, if you leave off the header crud that
+BitKeeper likes to create. I think you'd save bandwidth actually.
+
+I'm not even sure if I'm allowed to use BitKeeper. I'm doing some
+work with the Linux kernel, but I can't make it public yet and
+getting the paid license would be quite a pain. (while the actual
+dollar amount isn't likely an issue, getting a purchase order
+and MIS approval would be an awkward procedure -- around here
+ClearCase rules)
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
