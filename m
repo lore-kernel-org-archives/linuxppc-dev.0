@@ -1,46 +1,36 @@
-From: nsheeley@austin.rr.com
-Date: Wed, 24 Feb 1999 16:34:23 -0600 (CST)
-Reply-To: nsheeley@austin.rr.com
-Subject: semaphore-helper.h
-To: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 24 Feb 1999 21:20:43 -0500 (EST)
+From: Tom Vier <nester@erols.com>
+Reply-To: Tom Vier <thomassr@erols.com>
+To: Gary Thomas <gdt@linuxppc.org>
+cc: linuxppc-dev@lists.linuxppc.org,
+        mklinux-development-system@public.lists.apple.com
+Subject: Re: egcs-1.1.1-1c bug (was Re: major ksyms problem)
+In-Reply-To: <XFMail.990224095316.gdt@linuxppc.org>
+Message-ID: <Pine.LNX.4.05.9902241650240.454-100000@localhost.erols.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
-Message-ID: <013092421221829FE5@mail5.austin.rr.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Wed, 24 Feb 1999, Gary Thomas wrote:
 
-I just checked out the current CVS from 
+> Sadly he can't use that modutils package as it's only for 2.1.xx and 2.2.xx
+> kernels.
+> 
+> Tom,  Can you try the 2.2.xx kernels and see if they work for you?
+> This would 
+> be a much better way to spend your time rather than looking after a quite old
+> kernel.
 
-:pserver:cvs@cvs.samba.org:/cvsroot
+actually modutils 2.1.121 works, except of course for kerneld. 8)
+unfortunately, linuxppc won't (yet) run on my 7100/80 and mk doesn't
+(yet) run 2.2.x
 
-All seems well until I try to do a make:
-
-make[2]: Entering directory `/local/src/CVS_kernel/linux/kernel'
-gcc -D__KERNEL__ -I/local/src/CVS_kernel/linux/include -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -D__powerpc__ -fsigned-char -msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple -mstring   -fno-omit-frame-pointer -c -o sched.o sched.c
-sched.c:39: asm/semaphore-helper.h: No such file or directory
-
-Hmm.. only three arch's asm-includes have semaphore-helper.h
-(i386, sparc, sparc64), but its not ifdef'ed in any way in
-sched.c
-
-So my question are:
-		
-	a.  Should I expect to be able to CVS checkout and
-	    make a working kernel?  I am wondering about the stability 
-	    of the tree -- what's my percent chance that I won't have
-	    to debug anything? 
-
-	b.  If yes to a., does anyone have a patch for the above problem.
-
-Thanks.
-
-Nate
-
-
-
-
+--
+Tom Vier - 0x82B007A8
+thomass@erols.com        | goto the Zero Page at:
+Tortured Souls Software  | http://www.erols.com/thomassr/zero/
 
 
 
