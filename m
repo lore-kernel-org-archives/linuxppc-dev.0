@@ -1,21 +1,22 @@
-Date: Fri, 5 Apr 2002 14:37:58 -0700
-From: Matt Porter <mporter@mvista.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+From: Dustin Byford <dustin@firein.net>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: 440
-Message-ID: <20020405143758.A15625@home.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: CVS version on a Sandpoint 8240
+Date: Sat, 6 Apr 2002 04:16:32 -0700
+MIME-Version: 1.0
+Message-Id: <200204060416.32920.dustin@firein.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Since a lot of people are looking for it, I thought I'd drop a note
-to mention that I just pushed the initial 440 support into _devel.
+Has anyone successfully run the current CVS version of ppcboot on a sandpoint
+with an 8240.  I'm going to stard porting to my board and it is similar to
+the sandpoint design.  I would like to take advantage of the reorganization
+to use a tulip card to tftpboot.
 
-Regards,
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Thanks
+			--Dustin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
