@@ -1,25 +1,21 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <40FE9076.2080505@innopsys.fr>
-Date: Wed, 21 Jul 2004 15:49:10 +0000
-From: Pestka Christophe <c-pestka@innopsys.fr>
-Reply-To: c-pestka@innopsys.fr
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Bestcomm on mpc5200
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: 440GX: mapping PCI address
+Date: Thu, 22 Jul 2004 04:58:03 -0500
+Message-ID: <45ABD2373C33C4459D42B40EC4F346F2024CA06C@FTWMLVEM03.e2k.ad.ge.com>
+From: "Barbier, Renaud (GE Infrastructure)" <Renaud.Barbier@ge.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+As you know the PCI address(and other embedded device) are seen through a 36-bit address space.
 
-    I ' ve seen there is a Bestcomm API on the ELDK from Denx for the
-mpc5200, but I don' t know how can I use it on a linux system.
-    Is someone has ever used it, or an example to give me?
+How do you map this address from user space?
 
-Best regards,
+I have seen a message from 2002 saying it is not supported. Anything new since then?
 
-Pes.
-
+thanks.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
