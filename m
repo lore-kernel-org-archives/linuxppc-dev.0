@@ -1,19 +1,22 @@
-Return-Path: <glikely@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.193])
-	by ozlabs.org (Postfix) with ESMTP id 0BA1367A6C
+Return-Path: <ejohnson@acdstar.com>
+Received: from mail.acdstar.com (mail.acdstar.com [209.98.244.9])
+	by ozlabs.org (Postfix) with ESMTP id AD3A267A72
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Feb 2005 10:48:22 +1100 (EST)
-Received: by wproxy.gmail.com with SMTP id 57so784894wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Feb 2005 15:48:20 -0800 (PST)
-Message-ID: <528646bc05021515486bd9f926@mail.gmail.com>
-Date: Tue, 15 Feb 2005 16:48:19 -0700
-From: Grant Likely <glikely@gmail.com>
-To: Sylvain Munaut <tnt@246tnt.com>, linuxppc-embedded@ozlabs.org
+	Wed, 16 Feb 2005 10:53:40 +1100 (EST)
+Received: from zaphod.acdstar.com (zaphod.int.acdstar.com [192.168.2.100])
+	by mail.acdstar.com (8.13.0/8.13.0) with ESMTP id j1FNuupr003815
+	for <linuxppc-embedded@ozlabs.org>; Tue, 15 Feb 2005 17:56:56 -0600
+Message-Id: <6.2.1.2.1.20050215174631.02dfbf28@mail.int.acdstar.com>
+Date: Tue, 15 Feb 2005 17:55:21 -0600
+To: linuxppc-embedded@ozlabs.org
+From: "Eric N. Johnson (ACD)" <ejohnson@acdstar.com>
+In-Reply-To: <712A2DEC228C7448978CBD7A7AD5B090592CE2@fever.wardrobe.irob
+	ot.com>
+References: <712A2DEC228C7448978CBD7A7AD5B090592CE2@fever.wardrobe.irobot.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Subject: Lite5200 full duplex support
-Reply-To: Grant Likely <glikely@gmail.com>
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: Re: How to set a custom baud rate using 2.6 linux distro on
+ MPC5200 based board?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,20 +27,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm using Sylvain's http://bkbits.246tnt.com:14690/linux-2.5-mpc52xx
-bk tree on a lite5200 evb.  I noticed that the FEC driver is hard
-coded to only support half duplex 10/100 auto-negotiation.  Is that
-intentional?  Are there any known problems with running full duplex?
 
-I modified the code to allow full duplex and I haven't observed any
-problems yet.  (w/ nfsroot and compiling apps on the target natively)
+>I'm trying to set a custom baud rate (500KBaud, in case anyone cares) on 
+>one of the PSCs on a MPC5200 board.
+[snip]
+>   serial_info.flags = ASYNC_SPD_CUST | ASYNC_LOW_LATENCY;
+>    serial_info.custom_divisor = 48;  // clock on FTDI chip / 48 == 500KB
+>
+>    if ( ioctl(tty_fd, TIOCSSERIAL, &serial_info ) < 0) {
+>      perror("config_serial_port: ioctl TIOCSSERIAL");
+>      return(-1);
+>    }
+>
+>This compiled fine under the ppc cross-dev tools we have but it fails with 
+>an "invalid argument" error when run on the ppc board.
 
-Cheers,
-g.
+It looks like this code was written for an FTDI serial port.  The FTDI is a 
+USB to Serial converter that handles baud rate generation very differently 
+from a standard UART.
 
-BTW, here's what I changed:
-drivers/net/fec_mpc52xx/fec_phy.c line 294 (phy_info_lxt971)
-from:
-        { mk_mii_write(MII_REG_ANAR, 0x0A1), NULL }, /* 10/100, HD */
-to:
-        { mk_mii_write(MII_REG_ANAR, 0x1E1), NULL }, /* 10/100, HD */
+Eric
