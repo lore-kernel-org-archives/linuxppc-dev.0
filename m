@@ -1,50 +1,47 @@
-Message-Id: <200010061357.PAA05385@denx.local.net>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Segmentation fault 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 06 Oct 2000 17:39:31 +0900."
-             <00100618093700.11698@localhost.localdomain>
-Date: Fri, 06 Oct 2000 15:57:36 +0200
+From: "\"Jeffrey D. Kowing\" <Jeff Kowing" <jeffrey.d.kowing@jsc.nasa.gov>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14813.60363.648514.72914@igor.jsc.nasa.gov>
+Date: Fri, 6 Oct 2000 10:12:11 -0500 (CDT)
+To: Zhaobin Zhu <zzhu@emc.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Linux boot failed on Sandpoint under baudrate 38400
+In-Reply-To: <39DCEA5A.2E9DDE3C@emc.com>
+References: <39DCEA5A.2E9DDE3C@emc.com>
+Reply-To: jeffrey.d.kowing@jsc.nasa.gov
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello H.S. Kim,
+You can use a kernel option to override what I believe is the default
+of 9600 when the kernel opens the serial port for use as the console.
+I have "console=ttyS0,38400" in my #define CMDLINE in
+arch/ppc/boot/misc.c.
 
-first of all: please fix your mail setup!!!
-
-> From: "H.S. Kim" <root@localhost.localdomain>
-
-"root@localhost.localdomain" is NOT a valid email address!
-
-In message <00100618093700.11698@localhost.localdomain> H.S. Kim wrote:
->
-> I compiled the binutil, gcc,  kernel and glibc without errors.
-> binutil-2.20.0.26
-> gcc-2.95.2
-> mpc8xx-2.2.13
-> glibc-2.1.3
-...
-> *** Result ***
-> p = strrchr(filename,'/')  -> segmentation fault
-
-Building a cross-development environment for the MPC8xx is a
-non-trivial task. There is some description in the Embedded PPC
-HOWTO, and there are ready to use build scripts and/or images, for
-instance from our web page
-(http://www.denx.de/solutions-en.html#CDK), from MontaVista, RedHat,
-and others.
-
-Most probably you have made a mistake when building GCC and/or glibc.
-
-Wolfgang Denk
+Zhaobin Zhu writes:
+ >
+ > Hi,
+ >
+ > Anybody tried booting Hardhat linux on Sandpoint/603e/755/7400
+ > under Baudrate 38400 ?
+ >
+ > On my sp7400, the boot is ok under 9600, but gives garbled message
+ > after "Now booting the kernel" under 38400.
+ >
+ > I change baudrate in arch/ppc/boot/ns16550.c
+ >
+ > Does the kernel change the baudrate in other place ?
+ >
+ > Thanks,
+ >
+ > --
+ >  Zhaobin Zhu
+ >  zzhu@emc.com
+ >
+ >
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A bore is someone who persists in holding his own views after we have
-enlightened him with ours.
+Jeff Kowing
+jeffrey.d.kowing1@jsc.nasa.gov
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
