@@ -1,44 +1,60 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: 3 Jun 2003 09:47:44 -0000
+Message-ID: <20030603094744.2309.qmail@webmail6.rediffmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: System crash in kernel_thread
-Date: Tue, 3 Jun 2003 10:36:22 +0200
-Message-ID: <742AC4678EF8464697DDDFE3B40F6ECD07E2CD@srv-mailrnd.azisa.co.za>
-From: "Flavio Pereira" <Flavio.Pereira@za.flextronics.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+From: "ramanathan G A" <ramanathan_ga@rediffmail.com>
+Reply-To: "ramanathan G A" <ramanathan_ga@rediffmail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: compiling newlib for powerpc-linux
+Content-type: text/plain;
+	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Guys
+Hi All,
+I am trying to setup an cross development environment for
+powerpc-linux on i686-linux.
+Built binutils 2.13.90.0.4 and GCC (cross) 3.2 and was then trying
+to configure and compile newlib 1.11.0
+(anything wrong with using newlib here?. Mine is an embedded
+powerpc -MPC8260- target system)
 
-I'm trying to port Linux to a proprietary board. I got u-boot working
-good, and now that I start the kernel I find that the system _halts_
-when it tries to run init using the kernel_thread routine in
-init/main.c/rest_init(). Can someone suggest why this could be
-happening?
+Here is the screen shot.
+-----------------screen shot----
+[root@linuxswan newlib-powerpc]# ../newlib-1.11.0/configure
+--with-newlib --target=powerpc-linux
+Configuring for a i686-pc-linux-gnu host.
+*** This configuration is not supported in the following
+subdirectories:
+      target-newlib target-libgloss
+     (Any other directories should still work fine.)
+Created "Makefile" in /root/anandapa/newlib-powerpc using
+"mt-frag"
+./config.status is unchanged
+[root@linuxswan newlib-powerpc]#
+--------
+I think the configuration step is incomplete here in setting up an
+cross dev. environment to build applications for powerpc.
+(library is not getting compiled and installed with this config. I
+guess. Why is it not taking directries recursively?)
 
-This is my output:
+I even, went on doing a  'make all install' and tried compiling a
+sample application.
 
-Linux version 2.4.20 (fpereira@rigel) (gcc version 2.95.4 20010319
-(prerelease/f
-ranzo/20011204)) #17 Tue Jun 3 11:02:30 SAST 2003
-On node 0 totalpages: 8192
-zone(0): 8192 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line:
-Decrementer Frequency = 187500000/60
-Warning: real time clock seems stuck!
-Calibrating delay loop... 49.76 BogoMIPS
-Memory: 30892k available (1048k kernel code, 380k data, 52k init, 0k
-highmem)
-Dentry cache hash table entries: 4096 (order: 3, 32768 bytes)
-Inode cache hash table entries: 2048 (order: 2, 16384 bytes)
-Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
-Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
-Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
-POSIX conformance testing by UNIFIX
+---------------------screen shot---
+[root@linuxswan wd]# powerpc-linux-gcc -I /usr/include test.c
+/usr/local/lib/gcc-lib/powerpc-linux/3.2/../../../../powerpc-linux/bin/ld:
+cannot open crt1.o: No such file or directory
+collect2: ld returned 1 exit status
+-----------
+
+Could some one correct me with the proper configuration steps
+required?
+
+Thanks.
+
+Rgds,
+Ramanathan G A
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
