@@ -1,21 +1,30 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Leonardo Pereira Santos <lsantos@pd3.com.br>
-To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-Subject: Re: Can software discover MPC8xx variant?
-Date: Wed, 29 Jan 2003 15:15:28 -0200
-References: <D73A25AA6E54D511AD74009027B1110F3C05EC@ORION>
-In-Reply-To: <D73A25AA6E54D511AD74009027B1110F3C05EC@ORION>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C05ED@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Leonardo Pereira Santos'" <lsantos@pd3.com.br>
 Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Can software discover MPC8xx variant?
+Date: Wed, 29 Jan 2003 12:31:37 -0500
 MIME-Version: 1.0
-Message-Id: <200301291515.28980.lsantos@pd3.com.br>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+I'm guessing you've never worked with a contract manufacturer.  :) jk
+
+-----Original Message-----
+From: Leonardo Pereira Santos [mailto:lsantos@pd3.com.br]
+Sent: Wednesday, January 29, 2003 12:15 PM
+To: Steven Blakeslee
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Can software discover MPC8xx variant?
+
+
 
 Ok, but in this case the hardware itself wouldn't know waht revision or
-whatever it is. And they already have to change the processor, so you have to
+whatever it is. And they already have to change the processor, so you have
+to
 change the hardware anyway, mount or not a few resistors shouldn't be hard.
 
 On Wednesday 29 January 2003 15:02, you wrote:
@@ -45,12 +54,14 @@ On Wednesday 29 January 2003 15:02, you wrote:
 > On Wednesday 29 January 2003 12:13, Marius Groeger wrote:
 > > On Wed, 29 Jan 2003, Alex Zeffertt wrote:
 > > > Can anybody tell me if there is a way to identify which processor from
-> > > the MPC8xx family software is running on.  I hoped I could use the IMMR
+> > > the MPC8xx family software is running on.  I hoped I could use the
+IMMR
 > > > special purpose register.  However, this only tells you the silicon
 > > > revision, which can have the same value even if the processors are
 > > > different!
 > > >
-> > > Does the processor type (e.g. 862, 857T, 857DSL) reside anywhere in the
+> > > Does the processor type (e.g. 862, 857T, 857DSL) reside anywhere in
+the
 > > > processor?
 > >
 > > U-Boot/PPCboots cpu/mpc8xx/cpu.c contains a lot of generic type
@@ -60,7 +71,8 @@ On Wednesday 29 January 2003 15:02, you wrote:
 > > Regards,
 > > Marius
 >
-> ---------------------------------------------------------------------------
+>
+---------------------------------------------------------------------------
 >
 > >-- Marius Groeger           SYSGO Real-Time Solutions AG
 > > mgroeger@sysgo.de Software Engineering     Embedded and Real-Time
@@ -90,6 +102,5 @@ av. Pará 330/202
 
 Today Fortune tells us:
 Is knowledge knowable?  If not, how do we know that?
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
