@@ -1,16 +1,12 @@
-Return-Path: <cfriesen@nortel.com>
-Received: from zcars04f.nortelnetworks.com (zcars04f.nortelnetworks.com
-	[47.129.242.57]) by ozlabs.org (Postfix) with ESMTP id 23EFC67A33
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2005 03:20:29 +1000 (EST)
-Message-ID: <42541A55.1030606@nortel.com>
-Date: Wed, 06 Apr 2005 11:20:21 -0600
-From: Chris Friesen <cfriesen@nortel.com>
-MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <1112770418.9567.137.camel@gaston>
-	<c689550a30a3129f8576f78eaa6f7af4@freescale.com>
-In-Reply-To: <c689550a30a3129f8576f78eaa6f7af4@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-Path: <kumar.gala@freescale.com>
+In-Reply-To: <42541A55.1030606@nortel.com>
+References: <42541A55.1030606@nortel.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <5b292a628bb78373928a0e1626086707@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 6 Apr 2005 12:58:53 -0500
+To: "Chris Friesen" <cfriesen@nortel.com>
 Cc: linux-ppc-embedded list <linuxppc-embedded@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>
@@ -24,19 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+On Apr 6, 2005, at 12:20 PM, Chris Friesen wrote:
 
-> static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned 
-> long addr,
->                                        pte_t *ptep)
-> {
->         pte_t tmp = *ptep;
->         pte_update(ptep, ~_PAGE_HASHPTE, 0);
->         return tmp;
-> }
+> Kumar Gala wrote:
+>
+> > static inline pte_t ptep_get_and_clear(struct mm_struct *mm, =
+unsigned
+>  > long addr,
+>  >=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 pte_t *ptep)
+>  > {
+>  >=A0=A0=A0=A0=A0=A0=A0=A0 pte_t tmp =3D *ptep;
+>  >=A0=A0=A0=A0=A0=A0=A0=A0 pte_update(ptep, ~_PAGE_HASHPTE, 0);
+>  >=A0=A0=A0=A0=A0=A0=A0=A0 return tmp;
+>  > }
+>
+> Doesn't work.=A0 The update and storing of the old value must be =
+atomic.
+> The value of the pte can change between storing the tmp value and
+> calling pte_update().
 
-Doesn't work.  The update and storing of the old value must be atomic. 
-The value of the pte can change between storing the tmp value and 
-calling pte_update().
+Thanks, realized this after a bit more thought, and some discussion on=20=
 
-Chris
+lkml :)
+
+Guess, I need to write a 64-bit pte version of pte_update, foo!
+
+- kumar
