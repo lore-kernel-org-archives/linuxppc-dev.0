@@ -1,35 +1,88 @@
-Mime-Version: 1.0
-Message-Id: <v04220801b4e6adfba6f6@[10.0.0.42]>
-In-Reply-To: <200003041016.LAA00502@piglet.grunz.lu>
-References: <200003041016.LAA00502@piglet.grunz.lu>
-Date: Sat, 4 Mar 2000 04:15:51 -0800
-To: mlan@cpu.lu
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: PCI I/O address problems on B&W G3
+From: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: Paul Mackerras <paulus@linuxcare.com>
+Subject: Patch to fix imps2 emulation for usb mice in stable 2.2.X series
+Date: Sat, 4 Mar 2000 09:09:54 -0500
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD"
 Cc: linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+MIME-Version: 1.0
+Message-Id: <00030409183800.00482@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 11:16 AM +0100 3/4/00, Michel Lanners wrote:
 
->>  So it would seem to me that we need some kind of a scheme for
->>  allocating I/O port base addresses if OF didn't do it.  I'm vaguely
->>  familiar with the concepts behind PCI address space allocation,
->>  having looked at it from the hardware design POV a while back, but
->>  I'm not familiar enough with the kernel code yet to tackle this
->>  problem (or to even be sure that I'm on the right track here).
->
->That should be handled by the new, 2.3 PCI code with dynamic resurce
->allocation. I've just discovered that part, however, and am not at all
->familiar with it. I'm RTFS'ing...
+--Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD
+Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 
-Another piece of code to look at might be the Alpha arch PCI code in
-2.2.  From what I can tell it is doing complete configuration of PCI
-by itself (apparently the firmware on Alpha boards doesn't do any PCI
-config).
+Hi Paul,
 
-   Tim Seufert
+According to the XFree 4.0 developers bit 3 in the first character from all
+imps/2 mice must be set.  This was not the case in early 2.3.X kernels but this
+bug was found and fixed in later 2.3.XX kernels.
+
+The Xfree 4.0 Xserver uses this fact to determine if characters read from a
+imps/2 mouse are out-of-sync or not.
+
+Because our 2.2.X kernel usb mouse.c code never properly sets this bit in the
+first character, the XFree 4.0 Xservers are throwing out the first character
+read from the mouse umaking for mouse mayhem.
+
+Will you please install this patch into the 2.2.X stable kernel series?  It
+will make our imps2 usb mouse properly follow the conventions for imps2 mice
+and make it more like what the 2.3.XX kernels are doing right now
+
+I have tried this patch with the latest XFree 3.9.18 Xserver, and with Xpmac
+(rev 9) and an older Mac-On-Linux and it does not cause any problems.
+
+Thanks.
+
+Kevin
+
+
+--- drivers/usb/mouse.c.prev	Fri Mar  3 17:18:37 2000
++++ drivers/usb/mouse.c	Fri Mar  3 17:19:56 2000
+@@ -183,6 +183,7 @@
+ 		switch (state) {
+ 		case 0: { /* buttons and sign */
+ 			int buttons = mouse->buttons;
++                        buttons = buttons | 0x08; // set bit 3 to fit imps/2
+ 			mouse->buttons = 0;
+ 			if (mouse->dx < 0)
+ 				buttons |= 0x10;
+
+
+p.s. In case the e-mail mangles this, I have attached the patch as a file also.
+
+Thanks,
+
+Kevin
+
+
+--
+Kevin B. Hendricks
+Associate Professor of Operations and Information Technology
+Richard Ivey School of Business, University of Western Ontario
+London, Ontario  N6A-3K7  CANADA
+khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+
+
+--Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD
+Content-Type: text/x-c++;
+  name="usb_imps2.patch"
+Content-Disposition: attachment; filename="usb_imps2.patch"
+Content-Transfer-Encoding: base64
+
+LS0tIGRyaXZlcnMvdXNiL21vdXNlLmMucHJldglGcmkgTWFyICAzIDE3OjE4OjM3IDIwMDAKKysr
+IGRyaXZlcnMvdXNiL21vdXNlLmMJRnJpIE1hciAgMyAxNzoxOTo1NiAyMDAwCkBAIC0xODMsNiAr
+MTgzLDcgQEAKIAkJc3dpdGNoIChzdGF0ZSkgewogCQljYXNlIDA6IHsgLyogYnV0dG9ucyBhbmQg
+c2lnbiAqLwogCQkJaW50IGJ1dHRvbnMgPSBtb3VzZS0+YnV0dG9uczsKKyAgICAgICAgICAgICAg
+ICAgICAgICAgIGJ1dHRvbnMgPSBidXR0b25zIHwgMHgwODsgLy8gc2V0IGJpdCAzIHRvIGZpdCBp
+bXBzLzIKIAkJCW1vdXNlLT5idXR0b25zID0gMDsKIAkJCWlmIChtb3VzZS0+ZHggPCAwKQogCQkJ
+CWJ1dHRvbnMgfD0gMHgxMDsK
+
+--Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
