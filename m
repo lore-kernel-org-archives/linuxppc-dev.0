@@ -1,60 +1,47 @@
-Message-Id: <20001224225303.Postino-014755@smtp01.highway.ne.jp>
-Date: Sun, 24 Dec 2000 22:53:03 +0900
-To: Alexandre Oliva <aoliva@redhat.com>
-CC: <gcc@gcc.gnu.org>, <linuxppc-dev@lists.linuxppc.org>
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: kerne-2.4.0-test13pre3 with gcc-2.97
-In-Reply-To: <or66kazecj.fsf@guarana.lsd.ic.unicamp.br>
-References: <20001223145258.Postino-022361@smtp01.highway.ne.jp> Kaoru Fukui's
- message of "Sat, 23 Dec 2000 14:52:58 +0900"
- <or66kazecj.fsf@guarana.lsd.ic.unicamp.br>
+Message-ID: <3A461339.27E208ED@ife.ee.ethz.ch>
+Date: Sun, 24 Dec 2000 16:16:09 +0100
+From: Thomas Sailer <sailer@ife.ee.ethz.ch>
+Reply-To: sailer@ife.ee.ethz.ch
 MIME-Version: 1.0
+To: Kaoru Fukui <k_fukui@highway.ne.jp>
+CC: linuxppc-dev@lists.linuxppc.org, gcc@gcc.gnu.org
+Subject: Re: kerne-2.4.0-test13pre3 with gcc-2.97
+References: <20001223145258.Postino-022361@smtp01.highway.ne.jp>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-From: Alexandre Oliva <aoliva@redhat.com>
-To: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: kerne-2.4.0-test13pre3 with gcc-2.97
-Date: 24 Dec 2000 01:29:32 -0200
-Cc: <linuxppc-dev@lists.linuxppc.org>, <gcc@gcc.gnu.org>
+Kaoru Fukui wrote:
 
+> The gcc-2.97 makes singleCPU work kernel  well,
+> But the smp kernel didn't work.
+
+> diff -urN base/linux/drivers/usb/audio.c fixed/linux/drivers/usb/audio.c
+> --- base/linux/drivers/usb/audio.c      Fri Dec 22 13:47:44 2000
+> +++ fixed/linux/drivers/usb/audio.c     Sat Dec 23 12:18:21 2000
+> @@ -788,7 +788,7 @@
+>  {
+>         union {
+>                 __s16 s[64];
+> -               unsigned char b[0];
+> +               unsigned char *b;
+>         } tmp;
+>         unsigned int scnt, maxs, ufmtsh, dfmtsh;
 >
-> On Dec 23, 2000, Kaoru Fukui <k_fukui@highway.ne.jp> wrote:
+> @@ -1139,7 +1139,7 @@
+>  {
+>         union {
+>                 __s16 s[64];
+> -               unsigned char b[0];
+> +               unsigned char *b;
+>         } tmp;
+>         unsigned int scnt, maxs, ufmtsh, dfmtsh;
 >
-> > -		unsigned char b[0];
-> > +		unsigned char *b;
->
-> This change (and apparently all other changes you've made) are
-> definitely wrong.  Zero-sized arrays as the last element of a
-> structure used to be an extension in GCC 2.95.2, that has been adopted
-> by C99 with a slightly different syntax, that GCC CVS supports: just
-> remove the `0' from between the braces.
->
-> With your change, you're changing what is supposed to be a structure
-> whose last element is a flexible array with a structure that ends with
-> a pointer to such an array, which means the array should be allocated
-> separately, and any access to it must de-reference an additional
-> pointer.  You'd have to adjust all uses of such a pointer to make this
-> change.  Could this be the reason why your modified kernel doesn't
-> work?
 
-Thanks Alex your explain.
+This patch is completely bogus. I do not believe you tested these
+code paths, it just cannot work that way.
 
-I tried this
-
- -		unsigned char b[0];
- +		unsigned char b[];
-
-It gave me Inetrnal  error: Segmentaion fault .
-
-I had success compileing for the kernel with my patch.
-
-I don't understand how do I do untill.
-
-Thanks
-Kaoru
-
+Tom
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
