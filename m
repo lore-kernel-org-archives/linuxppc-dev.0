@@ -1,43 +1,29 @@
-Message-ID: <877aabc40408240724500bb006@mail.gmail.com>
-Date: Tue, 24 Aug 2004 19:54:18 +0530
-From: Amit Shah <shahamit@gmail.com>
-Reply-To: Amit Shah <shahamit@gmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RFI doesn't branch off?
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Tue, 24 Aug 2004 11:44:16 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: value of XIP?  and whether it works with 2.6 kernel?
+Message-ID: <Pine.LNX.4.60.0408241141110.6489@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+   working with a recent post to the MTD mailing list, and reading the
+wiki part on XIP over at www.denx.de, i'm curious about who's using
+XIP with the 2.6 kernel, specifically with the 8xx boards.
 
-I have a strange issue with a custom board running a 750GX on a
-Marvell 64360 bridge. I transferred control to the uImage via u-boot
-(which I had to modify for my board-specific UART and SDRAM inits,
-also disabling PCI).
+   as i read it from david w's post on the MTD list, XIP has limited
+value since flash is noticeably more expensive than RAM anyway.
 
-Using the UART that's initialized by u-boot, I put some putchar()s in
-head.S to figure out where the kernel was freezing. It seems 'rfi' in
-mmu_off doesn't jump off to '__after_mmu_off' as expected. I also put
-some pattern into SDRAM before an after mmu_off. I just see the
-pattern (via a PCI interface) put before mmu_off.
+   so, thoughts?  who's actually using this?  and it's not clear from
+the DENX page that there's a patch for the 2.6 kernel -- that page
+refers specifically to 2.4.
 
-The contents of SRR0 correctly point to __after_mmu_off just before
-the 'rfi'. However, the 'rfi' documentation says the value of SRR0 is
-concatenated with '0x0b00'. I don't think this should be done.
-Anyways, since this code is supposed to work, I'm not sure why it
-isn't working.
+   anyway, i'm just curious, wondering whether it would be worth giving
+it a try, just for the entertainment value.
 
-Can any u-boot initializations be causing this? I guess not, I've not
-touched any CPU-specific settings in u-boot.
-
-Can anyone give me some pointers?
-
-Thanks,
-Amit.
---
-Amit Shah
-http://amitshah.nav.to/
+rday
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
