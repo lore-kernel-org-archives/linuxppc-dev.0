@@ -1,22 +1,18 @@
-Return-Path: <daveg@sonartech.com.au>
-Received: from sonartech.com.au (newgate.sonartech.com.au [203.28.130.2])
-	by ozlabs.org (Postfix) with ESMTP id 021152BDA6
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2004 06:13:41 +1000 (EST)
-Message-ID: <41532EAD.2060103@sonartech.com.au>
-Date: Fri, 24 Sep 2004 06:14:37 +1000
-From: David Gardiner <daveg@sonartech.com.au>
-MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-References: <414916BD.9080607@sonartech.com.au>
-	<20040915223624.A25752@home.com>
-	<414946A0.1020306@sonartech.com.au>
-	<20040920173241.GL27914@smtp.west.cox.net>
-	<20040920122312.A8344@home.com> <414F5FED.6070107@sonartech.com.au>
-	<20040922163309.GL16619@smtp.west.cox.net>
-In-Reply-To: <20040922163309.GL16619@smtp.west.cox.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: Linux-2.6.9-rc2 kernel build for mvme5100
+Return-Path: <afleming@freescale.com>
+Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
+	by ozlabs.org (Postfix) with ESMTP id 421AD2BDA6
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2004 06:13:57 +1000 (EST)
+In-Reply-To: <35fb2e590409230738605c57b2@mail.gmail.com>
+References: <1095945594.7501.46.camel@nighteyes.localdomain>
+	<35fb2e590409230738605c57b2@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <12D6C166-0D9D-11D9-911D-000393C30512@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Date: Thu, 23 Sep 2004 15:13:46 -0500
+To: jonathan@jonmasters.org
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: Old mailing list archives
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,12 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Mine goes back to early March 2003.  I am, likewise, willing to tar it 
+up, if we can find somewhere to put it.
 
->I'll try and pick out the important changes and push them up.  Thanks.
->  
+On Sep 23, 2004, at 09:38, Jon Masters wrote:
+
+> On Thu, 23 Sep 2004 09:19:54 -0400, Jeff Angielski 
+> <jeff@theptrgroup.com> wrote:
 >
-I think I'd rather fold the mvme5100 into pplus as later emails 
-discussed which would make the patch useless so please hold off.
-
-Ta,
-dg
+>> Is the archive of the old mailing still available somewhere?
+>
+> My pre-ozlabs archive goes back to the end of 20031113 however others
+> will have much better logs of old messages - I can tarball mine if you
+> find that useful.
+>
+> Jon.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
