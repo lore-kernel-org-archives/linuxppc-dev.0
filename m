@@ -1,15 +1,17 @@
-Return-Path: <robin@india.tejasnetworks.com>
-Received: from pop-mail.india.tejasnetworks.com (india.tejasnetworks.com
-	[164.164.94.83]) by ozlabs.org (Postfix) with SMTP id A465D2BF07
+Return-Path: <jonb@marel.is>
+Received: from marel.marel.is (GW-NAT01-ISLNET.marel.is [213.213.131.1])
+	by ozlabs.org (Postfix) with ESMTP id BB3982BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Jan 2005 21:04:07 +1100 (EST)
-Message-ID: <4229EDFB.2040402@india.tejasnetworks.com>
-From: Robin <robin@india.tejasnetworks.com>
+	Thu,  6 Jan 2005 22:37:55 +1100 (EST)
+In-Reply-To: <20050105175646.GC14485@gate.ebshome.net>
+To: Eugene Surovegin <ebs@ebshome.net>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org,
-	Linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: TZ variable setting for denx 2.4.20
+Message-ID: <OF4A31BCB9.4155B59E-ON00256F81.003A1A73-00256F81.003FE2D0@marel.is>
+From: "=?iso-8859-1?Q?J=F3n_Benediktsson?=" <jonb@marel.is>
+Date: Thu, 6 Jan 2005 11:37:36 +0000
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC5200 - problem with CF card
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,38 +21,42 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
-Date: Thu, 06 Jan 2005 10:04:09 -0000
 
-Hi all,
-I am trying to find a way of setting TZ environment variable with DST
-support for southern hemisphere countries. Its giving a strange problem.
-In southern hemisphere countries, DST starts around Oct and ends around
-March. The DST time seems to be applicable from Oct until Dec31,19:00hrs.
-Then it reverts back to standard time.
+Eugene Surovegin <ebs@ebshome.net> wrote on 05.01.2005 17:56:46:
 
-For northern hemisphere countries, its working perfectly.(Here DST starts
-around March and ends around Oct. There is no year crossing DST period.)
+> On Wed, Jan 05, 2005 at 02:49:42PM +0000, J?n Benediktsson wrote:
+> > > I am working with a custom MPC5200 board which uses the built-in=20
+> > > ATA/IDE controller for a compact flash card.=20
+> > > The Linux kernel is Denx linux=5F2=5F4=5Fdevel.=20
+>=20
+> [snip]
+>=20
+> > > mpc5xxx=5Fide: Setting up IDE interface ide0...=20
+> > > Probing IDE interface ide0...=20
+> > > hda: SanDisk SDCFBI-1024, ATA DISK drive=20
+> > > hdb: probing with STATUS(0x00) instead of ALTSTATUS(0x7f)=20
+> > > ide0: unexpected interrupt, status=3D0x00, count=3D1=20
+>=20
+> I had similar problem with some CF cards (while other like in your=20
+> case worked fine).
+>=20
+> Try disabling probing of the slave ide0 interface (hdb). I'm not=20
+> familiar with MPC5xxx, but most likely you can modify mpc5xxx=5Fide or=20
+> whatever code sets up access to your CF card.
+>=20
+> Find where an instance of ide=5Fhwif=5Ft is initialized for ide0 and add =
 
-I am sending the system timezone at various times..
+> something like:
+>=20
+>    /* Don't probe second drive */
+>         hwif->drives[1].noprobe =3D 1;
+>=20
 
-bash> export TZ="xxx5:30yyy4:30,M10.1.1,M2.1.1"
-bash> date 10010159
-Mon Oct  1 01:59:00 xxx 2001
-bash> date
-Mon Oct  1 01:59:47 xxx 2001
-bash> date
-Mon Oct  1 03:00:10 yyy 2001
-bash> date 12311900
-Mon Dec 31 19:00:00 yyy 2001
-bash> date 12311959
-Mon Dec 31 18:59:00 xxx 2001 <----------- problem. It should have
-reverted to xxx only in feb.
+Thank you.  It was indeed the probing for the second drive that was=20
+causing the problem.
+Adding hdb=3Dnoprobe to the kernel command line (bootargs) fixes the proble=
+m=20
+without kernel modifications.
 
-Please give me some idea for setting time zone for southern hemisphere
-countries.
-
-I am using 2.4.20 linux kernel from denx.I am running date command from
-busybox version 0.6 which in is using strftime. The processor is ppc860T.
-
-Regards,
-Robin Mathew
+Thanks again,
+Jon
