@@ -1,40 +1,54 @@
-Message-Id: <sbd7c48d.025@tms-pty.com>
-Date: Thu, 25 Oct 2001 07:51:30 +1100
-From: "Jeremy Rosen" <Rosen.Jeremy@tms-pty.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MPC8xx IDE
+Date: Wed, 24 Oct 2001 15:12:55 -0700
+From: Dan Cox <danc@mvista.com>
+To: Iain Young <iain@g7iii.junglelink.co.uk>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Motorola LOPEC 1U Board
+Message-ID: <20011024151255.A11765@merlin.hawlab.org>
+Reply-To: danc@mvista.com
+References: <20011024200210.A774@g7iii.junglelink.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20011024200210.A774@g7iii.junglelink.co.uk>; from iain@g7iii.junglelink.co.uk on Wed, Oct 24, 2001 at 12:02:10 -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yes, I am also trying to have pcmcia to work on my FADS board...
-it is already configured in the denx kernel for the following boards
-ivms8,lwmon.spd8xx,tqm8xx
+On 2001.10.24 12:02 Iain Young wrote:
+>
+> Hi,
+>
+> I'm considering running Linux 2.4.x on the Motorola LOPEC 1U Board.
+> Does anyone have any experience with this board ? Any hints or
+> tips ? Or gotchas for that matter ?
+>
+>
+> All the Best
+>
+> Iain
+>
+> PS: If anyone knows of someone selling these boards in the UK, I'd
+> be really gratefull - I can find a few Motorola resellers, but
+> none seem to offer the LOPEC board.
+>
+>
+>
 
-to have it, it seems (havn't investigated deeply yet ) that their are
-just a couple of #define to add...
-most of them are common to all board, but one of them is giving me
-serious problems : IDE0_INTERRUPT
-I tried to find out in my boards documentation what interrupt was to be
-assigned to pcmcia, but I didn't find...
-did I miss something ???
+Iain
 
->>> Laurent Pinchart <laurent.pinchart@capflow.com> 10/24/01 10:47PM
->>>
+Yep.  A LoPEC port is in the 2.4 devel tree.
 
-Hi
+No real gotchas.  Although it's an ATX board, definitely use a 1U case, since
+the PCI slot doesn't line up to the slots on regular PC cases (unless you
+hacksaw
+the back off).
 
-While trying to find an easy way to add non-volatile storage on a
-custion MPC860 board, I noticed that there was some support for IDE on
-the PCMCIA interface in the Linux kernel.
+It's a pretty neat board, actually.  With a supported framebuffer, you could
+probably
+even use it for a desktop box (USB, IDE/SCSI).
 
-Does anyone know where I can find more information about that ? There
-seems to be a board (IVMS8) with such an IDE interface, but I haven't
-been able to find anything about it on the web.
-
-Laurent Pinchart
+--
+Dan Cox
+MontaVista Software
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
