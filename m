@@ -1,82 +1,51 @@
-Subject: Caching in the MPC107, linux 2.6
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: linuxppc-embedded@lists.linuxppc.org
-Content-Type: text/plain
-Message-Id: <1079088369.691.43.camel@newt>
-Mime-Version: 1.0
-Date: Fri, 12 Mar 2004 10:46:09 +0000
+Message-ID: <4051A816.5040000@jonmasters.org>
+Date: Fri, 12 Mar 2004 12:07:50 +0000
+From: Jon Masters <jonathan@jonmasters.org>
+MIME-Version: 1.0
+To: Fillod Stephane <stephane.fillod@thomson.net>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: uncached user space mapping with mmap() ???
+References: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6CFCF@renexch3.rennes.thmulti.com>
+In-Reply-To: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6CFCF@renexch3.rennes.thmulti.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I discovered this problem back in 2002:
 
-http://lists.linuxppc.org/results.html?words=caching+mpc107&method=and&sort=score&restrict=linuxppc-embedded
+Fillod Stephane wrote:
 
-The 2.6 kernel requires a fix to use a MPC745x along with a MPC107
-bridge. My proposed patch is below - any comments?
+<snip jcm being anal>
 
-Without this fix or something like it my boards cannot use pcnet32
-ethernet.
+| Indeed! I should have written:
+| "The bigger the mmap, the better, and the "lesser"  vma entries
+| there will be."
 
-- Adrian Cox
-http://www.humboldt.co.uk/
+Yes indeed. I shall try not to be such an anal pedant in future.
 
-diff -Nru a/arch/ppc/Kconfig b/arch/ppc/Kconfig
---- a/arch/ppc/Kconfig	Fri Mar 12 10:43:37 2004
-+++ b/arch/ppc/Kconfig	Fri Mar 12 10:43:37 2004
-@@ -631,6 +631,11 @@
- 	bool "Enable MPC10x store gathering"
- 	depends on FORCE || SANDPOINT
+<snip>
 
-+config CACHING_HOSTBRIDGE
-+        bool
-+        depends on FORCE || SANDPOINT
-+	default y
-+
- config CPC710_DATA_GATHERING
- 	bool "Enable CPC710 data gathering"
- 	depends on K2
-diff -Nru a/arch/ppc/mm/hashtable.S b/arch/ppc/mm/hashtable.S
---- a/arch/ppc/mm/hashtable.S	Fri Mar 12 10:43:37 2004
-+++ b/arch/ppc/mm/hashtable.S	Fri Mar 12 10:43:37 2004
-@@ -348,6 +348,13 @@
- 	andc	r8,r5,r8		/* PP = user? (rw&dirty? 2: 3): 0 */
- #ifdef CONFIG_SMP
- 	ori	r8,r8,_PAGE_COHERENT	/* set M (coherence required) */
-+#elif defined(CONFIG_CACHING_HOSTBRIDGE)
-+        /* The MPC107 PCI bridge contains a cache, which must remain
-+           coherent with the CPU cache. This is only necessary for the
-+           MPC745x family, as they support the shared state. */
-+BEGIN_FTR_SECTION
-+	ori	r8,r8,_PAGE_COHERENT
-+END_FTR_SECTION_IFSET(CPU_FTR_SPEC7450)
- #endif
+|>Are you somehow assuming you can have variable page sizes or will
+|>necessarily be using BATs to map in large regions? If this is the case
+|>then do bear in mind the fixed 4K page size on most platforms and the
+|>fact that many architectures like 4xx do not have any BATs anyway.
 
- 	/* Construct the high word of the PPC-style PTE (r5) */
-diff -Nru a/arch/ppc/mm/ppc_mmu.c b/arch/ppc/mm/ppc_mmu.c
---- a/arch/ppc/mm/ppc_mmu.c	Fri Mar 12 10:43:37 2004
-+++ b/arch/ppc/mm/ppc_mmu.c	Fri Mar 12 10:43:37 2004
-@@ -32,6 +32,7 @@
- #include <asm/prom.h>
- #include <asm/mmu.h>
- #include <asm/machdep.h>
-+#include <asm/cputable.h>
+| You're right. To have less entries in the page table, we would need
+| variable page sizes, since 4xx does not have BAT. Hence my remark
+| in form of question about ability of hugetlb. The answer must
+| be in the archive.
 
- #include "mmu_decl.h"
- #include "mem_pieces.h"
-@@ -140,7 +141,12 @@
- #ifdef CONFIG_SMP
- 	if ((flags & _PAGE_NO_CACHE) == 0)
- 		flags |= _PAGE_COHERENT;
-+#elif defined(CONFIG_CACHING_HOSTBRIDGE)
-+	if ((flags & _PAGE_NO_CACHE) == 0 &&
-+            (cur_cpu_spec[0]->cpu_features & CPU_FTR_SPEC7450))
-+		flags |= _PAGE_COHERENT;
- #endif
-+
- 	bl = (size >> 17) - 1;
- 	if (PVR_VER(mfspr(PVR)) != 1) {
- 		/* 603, 604, etc. */
+I would love to look at the hugetlb stuff but have not got around to it.
+FWIW I looked at your Wiki example of uncached access the other day and
+will probably send an update for a generic peekpoke utility unless
+someone tells me there already is one generally available.
+
+| Thanks for the correction  :-)
+
+Coffee does this kind of thing so I apologise if I ever seem snappy.
+Robert Love must hate me by now with the list of stuff for his book!
+
+Jon.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
