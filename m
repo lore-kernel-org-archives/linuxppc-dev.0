@@ -1,40 +1,79 @@
-From: bob@kunk.jriver.com
-Message-ID: <20000915021909.31906.qmail@kunk.jriver.com>
-Subject: Re: New topic (PowerPC Linux PCI HELL)
+Date: Thu, 14 Sep 2000 21:28:46 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Date: Thu, 14 Sep 2000 21:19:09 -0500 (CDT)
+Subject: ld bug?
+In-Reply-To: <Pine.LNX.4.10.10009132130250.452-100000@cassiopeia.home>
+Message-ID: <Pine.A41.3.96LJ1.1b7.1000914205905.93706A-100000@unlserve.unl.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Vojtech Pavlik <vojtech@suse.cz> wrote:
+Hi,
 
-> The same happens for OHCI on new Macs. The correct function to use is:
+Well, I've just had a kernel hang at "Freeing unused kernel memory:..."
+with linux-2.4.0-test8 + numerous patches, and I've traced the hang to
+what apears (to me) to be a ld bug.
 
-> pci_enable_device(dev);
+The kernel hangs at the call to spin_unlock_irq() in schedule() of
+kernel/sched.c.  For me (UP kernel), spin_unlock_irq() is defined to be
 
-> This function will enable the i/o, mem and irqs, and assign them if they
-> were not assigned for some reason, too.
+struct int_control_struct
+{
+	void (*int_cli)(void);
+	void (*int_sti)(void);
+	void (*int_restore_flags)(unsigned long);
+	void (*int_save_flags)(unsigned long *);
+	void (*int_set_lost)(unsigned long);
+};
+extern struct int_control_struct int_control;
 
-> And you should use it on any PCI device you want to use before using
-> it, on all architectures. Also check its return value.
+extern void __no_use_sti(void);
 
-> --
-> Vojtech Pavlik
-> SuSE Labs
+#define __sti()			int_control.int_sti()
+#define local_irq_enable()	__sti()
+#define spin_unlock(lock)	do { } while (0)
+#define spin_unlock_irq(lock)	\
+	do { spin_unlock(lock);  local_irq_enable();       } while (0)
 
-This comment is from my experience with the Rocketport driver port to PPC.
 
-pci_enable_device() is a do nothing call in 2.2.x kernels. It is defined
-and supposedly working in 2.3.x/2.4.x kernels. On my 7200, hacks to
-enabled verious PCI devices are required with 2.2.x kernels.
+>From objdump output of kernel/sched.o:
 
-Bob
---
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+     458:       3d 20 00 00     lis     r9,0
+                        45a: R_PPC_ADDR16_HA    int_control+0x4
+     45c:       80 09 00 04     lwz     r0,4(r9)
+                        45e: R_PPC_ADDR16_LO    int_control+0x4
+     460:       7c 08 03 a6     mtlr    r0
+     464:       4e 80 00 21     blrl
+
+So, if I'm reading this correctly, the compiler is generating correct
+assembly.  Now, objdump output of vmlinux (kernel) for the same segment
+says:
+
+c02164c4:       3d 20 c0 3a     lis     r9,-16326
+c02164c8:       80 09 c3 e4     lwz     r0,-15388(r9)
+c02164cc:       7c 08 03 a6     mtlr    r0
+c02164d0:       4e 80 00 21     blrl
+
+However, from "nm vmlinux | grep int_control", "int_control" is at
+
+c039c3e0 D int_control
+
+as opposed to c03ac3e0 used in vmlinux.  So, it appears that ld or
+something is acting up.  I've tried various version of binutils from
+2.9.1.0.990418 to 2.10.0.18, but all have produced the same output.
+Except for 2.9.1.0.990414, all 2.10.x versions that I tried are from
+ftp://devel.linuxppc.org/users/fsirl/R5/RPMS/.
+
+gcc is 2.95.3-2c (also from fsirl directory).
+
+If I change some totally (and seemingly) unrelated files a bit, vmlinux
+produced may be correct.  I tried to look at if any section's size
+matters, but I don't see any pattern unfortunately.
+
+
+Takashi Oe
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
