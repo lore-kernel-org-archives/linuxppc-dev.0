@@ -1,44 +1,35 @@
-Date: Fri, 26 Jan 2001 10:18:21 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: New Apple PCI IDs
-In-Reply-To: <Pine.LNX.4.05.10101260953120.497-100000@callisto.of.borg>
-Message-ID: <Pine.LNX.4.05.10101261017500.497-100000@callisto.of.borg>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Daniel Eisenbud <eisenbud@cs.swarthmore.edu>,
+        <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Fwd: mesh SCSI bus locks hard on 7500 when burning a CD-R in
+ dao mode
+Date: Fri, 26 Jan 2001 12:07:24 +0100
+Message-Id: <19341221043908.3227@mailhost.mipsys.com>
+In-Reply-To: <20010125165015.B15827@allspice.cs.swarthmore.edu>
+References: <20010125165015.B15827@allspice.cs.swarthmore.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 26 Jan 2001, Geert Uytterhoeven wrote:
-> >From looking at people's lspci output and at include/linux/pci_ids.h, I created
-> this list:
->
->     106b  0018  UniNorth FireWire
->     106b  0019  KeyLargo USB
->     106b  001e  UniNorth PCI
->     106b  001f  UniNorth PCI
->     106b  0020  UniNorth AGP
->     106b  0021  UniNorth GMAC
->     106b  0022  Mac I/O???
->
-> Are these correct?
-> Is there a difference between the two PCI busses (33/66 MHz? 32/64 bit?)
-> Where's the Mac I/O? In UniNorth or in KeyLargo?
+>I have a Powermac 7500 (with a G3 accelerator.)  I have replaced the
+>internal CD-ROM with a Yamaha CD-RW drive.  This sits on the mesh SCSI
+>bus.  I have the mesh driver configured to run at 5 megabytes/second
+>(since I get massive SCSI problems all over the place if I set it to
+>10.)  Under a variety of kernels, from 2.2.15 or so to 2.4.0 from Paul
+>Mackeras's tree, my SCSI setup is generally stable and I can burn CD-R
+>disks just fine in track-at-once mode.  However, if I try to burn a disk
+>in disk-at-once mode, either with cdrdao or cdrecord, the SCSI bus
+>appears to silently lock up hard, bringing down my whole machine.
+>Nothing is logged at all, as far as I can tell.  Has anyone had this
+>problem before?  Does anyone know of a solution?  If not, how would I go
+>about debugging this further?
 
-Some more kernel source reading convinced me that Mac I/O is indeed in
-KeyLargo.
+Do you see any kind of kernel error messages on the console before it
+locks up ?
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
