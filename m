@@ -1,40 +1,39 @@
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: memory problems on ppc 8260 based hardware
-Date: Tue, 4 May 2004 13:56:11 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DACE@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "liuming" <13787783324@hnmcc.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+	charset="iso-8859-1"
+Subject: RE: VirtexIIPro, caches
+Date: Tue, 4 May 2004 11:59:00 -0700
+Message-ID: <C7FFFEA58B43D311920D0004ACE5333F132B01B8@amer25.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "emanuel stiebler" <emu@ecubics.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-See
-http://e-www.motorola.com/files/32bit/doc/white_paper/MPC826XSDRAMWP.pdf
+Hi Emanuel,
 
-Basically the clocks going to the SDRAM has to be leading the clock
-going to the 8260 by about 1 ns.
+Without the MMU on, please check the ICCI and DCCI registers.
+These give 128 MB resolution.
 
-This will only show up when doing burst accesses (like linux does all
-the time) and no while doing standard memory tests.
+With the MMU on, caching is on a per-page basis; check the
+TLB_W and TLB_I flags of each TLB entry.
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]
+Sent: Tuesday, May 04, 2004 8:41 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: VirtexIIPro, caches
 
 
-> -----Original Message-----
-> From: liuming [mailto:13787783324@hnmcc.com]
-> Sent: Tuesday, May 04, 2004 13:38
-> To: Rune Torgersen
-> Subject: Re: memory problems on ppc 8260 based hardware
->
->
-> Hi,
->       Mr Torgersen, thanks a lot .
->       I have read the Errata of 8260.  SDRAM is 32bit    (60x
-> bus), is it the reason?  could you say something about you
-> fixed the hardware on an inhouse board?
->
-> Best regards!
->  liu
+
+Hi all,
+is there an easy way to check if the caches are all enabled ?
+I have some performance problems and I'm trying to figure out
+where it is coming from ...
+
+cheers & thanks
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
