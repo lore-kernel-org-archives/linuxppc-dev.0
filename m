@@ -1,41 +1,49 @@
-Date: Thu, 08 Jun 2000 18:55:27 -0400
-From: sat <satadru@umich.edu>
+Mime-Version: 1.0
+Message-Id: <v04220800b565e4500d98@[192.168.0.1]>
+In-Reply-To: <v04220811b565bafd4b4b@[206.6.156.5]>
+References: <v04220811b565bafd4b4b@[206.6.156.5]>
+Date: Thu, 8 Jun 2000 20:05:04 -0400
 To: linuxppc-dev@lists.linuxppc.org
-Subject: GeeK: more proof... 
-Message-ID: <2712820046.960490527@[192.168.0.69]>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: Re: compiling new imsttfb?
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Can I apply the standard patch from 2.2.15 to 2.2.16 in Paul's CVS kernel?
+I was browsing comp.os.linux.powerpc and saw mention of a new
+imsttfb.c that I nabbed off <http://fortyoz.org/~ror/linux/>.
 
----------- Forwarded Message ----------
-Date: Thursday, June 08, 2000 1:23 AM -0400
-From: Dug Song <dugsong@monkey.org>
-To: backrow@citi.umich.edu
-Subject: GeeK: more proof...
+For grins I thought I'd try compiling this new imsttfb.c (dated
+22-May) in with the 2.2.15 linux-pmac-stable (rsynced about 2 weeks
+ago).
 
-this is amazingly bad.
+But, the new imsttfb.c is substantially different than the one
+included with the rsynced version. In particular, the entire
+imsttfb_of_init function is excised, and this causes the compile to
+fail:
 
-http://sendmail.net/?feed=000607linuxbug
+offb.o(.text.init+0x47c): undefined reference to `imsttfb_of_init'
+offb.o(.text.init+0x47c): relocation truncated to fit: R_PPC_REL24
+imsttfb_of_init
+make: *** [vmlinux] Error 1
 
-    A serious bug has been discovered in the Linux kernel that can be used
-    by local users to gain root access. The problem, a vulnerability in
-    the Linux kernel capability model, exists in kernel versions up to and
-    including version 2.2.15. According to Alan Cox, a key member of the
-    Linux developer community, "It will affect programs that drop setuid
-    state and rely on losing saved setuid, even those that check that the
-    setuid call succeeded."
+Is there any easy way to modify this properly? My intuition is
+telling me that this new imsttfb is so different it won't compile
+under any circumstances with the linux source I have, regardless of
+my question above. Is there a better version I can try?
 
--d.
+I have a Linux box with a Twin Turbo card in it, and despite being
+pretty good IMHO with trying out different kernel video arguments, I
+see exactly the same effects described on this list when acceleration
+is attempted: in X, any window is drawn correctly initially, but
+dragging it anywhere automatically defracts the entire screen into
+split horizontal lines.
 
----
-http://www.monkey.org/~dugsong/
+So I'm looking at this imsttfb issue on the side. Any suggestions?
 
 
+Stefan Jeglinski
 
----------- End Forwarded Message ----------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
