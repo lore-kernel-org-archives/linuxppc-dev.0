@@ -1,44 +1,59 @@
-Message-ID: <3D4AA993.6050903@dslextreme.com>
-Date: Fri, 02 Aug 2002 08:47:31 -0700
-From: akuster <akuster@dslextreme.com>
-Reply-To: akuster@dslextreme.com
+Message-ID: <20020802170326.52862.qmail@web20702.mail.yahoo.com>
+Date: Fri, 2 Aug 2002 10:03:26 -0700 (PDT)
+From: bhupinder sahran <bhup_sah@yahoo.com>
+Subject: Re: cannot execute zimage
+To: vandana mehtani <vandana_mehtani123@rediffmail.com>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20020802055646.8330.qmail@webmail17.rediffmail.com>
 MIME-Version: 1.0
-To: vnair@hss.hns.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: INFO on IBM Spruce board
-References: <65256C09.002390C5.00@sandesh.hss.hns.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-vnair@hss.hns.com wrote:
-> hello list,
->
-> Can anyone show me the pointers for getting started with porting linux on IBM
-> SPRUCE board. Also from where can i get necessary h/w manuals for the board. I
-> have checked up IBM site for this, but lots of links seems to be missing now.
->
-> some characteristics of the board are
-> 1. 750 based ppc
-> 2. CPC700 system controller
-> 3. 128 MB RAM
->
-> Necessary resources for setting up the development environment like Vision Probe
-> are available.
->
-> Which kernel version shall i start with and some documents for porting
-> guidelines will be helpful. I tried downloading kernel using bitkeeper, but
-> somehow bitkeeper is not working from behind the firewall.
->
-> Thanks
-> - Vikram
+Hi
+It's very tough to find out from the information u
+have provided.
+After downloading the kernel.
+First u have to set ur cross compiler path in Makfile.
+Thne u have to give make xconfig to configure the
+kernel.
+Then configure the kernel acc. to ur requirement.
+Then give make clean, make dep ,make zImage...
+U may have some luck.
+
+Thanx
+Bhupi
 
 
-There is support for the IBM Spruce in linuxppc_2_4_devel.  IBM has the
-only links I know of for Docs.
 
-armin
+
+--- vandana  mehtani
+<vandana_mehtani123@rediffmail.com> wrote:
+>
+> hi all,
+> i ahve downoaded the ppc kernel source version 2.4.2
+> from
+> ppckernel.org..
+> when i do a make bzimage...
+> there goes this problem.
+> cannot execute shell scripts..
+> it doesnot recognize any tokens of the shell
+> scripts..
+> where cld the possible problems lie.
+> i am using a cross compiler gcc for powerpc and want
+> to port it
+> onto the FADS board.
+> thanks all
+> regards
+> vandana
+> Give your Company an email address like
+> ravi @ ravi-exports.com.  Sign up for Rediffmail Pro
+> today!
+> Know more. http://www.rediffmailpro.com/signup/
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
