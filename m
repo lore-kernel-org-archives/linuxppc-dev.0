@@ -1,51 +1,29 @@
-Date: Wed, 26 Nov 2003 10:52:18 -0800 (PST)
-From: Nathan Field <ndf@ghs.com>
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Cross Compiler running under Win32
-In-Reply-To: <3FC4B0EC.3090107@imc-berlin.de>
-Message-ID: <Pine.LNX.4.44.0311261019570.17218-100000@zcar.ghs.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Date: Wed, 26 Nov 2003 20:18:58 +0100
+From: Peter Vandenabeele <peter.vandenabeele@mind.be>
+To: linuxppc user <linuxppc@opqua.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: routing performance w/embedded linux on ppc?
+Message-ID: <20031126201858.A7373@mind.be>
+Reply-To: Peter Vandenabeele <peter.vandenabeele@mind.be>
+References: <16694.138.89.83.168.1069733893.squirrel@www.opqua.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <16694.138.89.83.168.1069733893.squirrel@www.opqua.com>; from linuxppc@opqua.com on Mon, Nov 24, 2003 at 11:18:13PM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Green Hills Software has its own compiler which we can host from Windows,
-Linux, Solaris and HPUX. At the moment we still make use of the GNU linker
-though, so to use our stuff you still need binutils working on your host.
-Apparently the compiler group is considering supporting Linux targets with
-our linker, I have no idea what the status of that is though.
+On Mon, Nov 24, 2003 at 11:18:13PM -0500, linuxppc user wrote:
+> I'm looking for some papers, pointers, or whatever regarding linux
+> routing performance on midrange embedded ppc hardware, for example
+> the moto8245 and ibm405GP (as used inside the Xilinx Virtex II Pro).
 
-Any particular reason why you don't want to use Cygwin?
+The core in the Virtex-II Pro is not a full 405GP but only a
+PowerPC 405 core with MMU and caches in hard-core. When using soft-core
+(IP) Ethernet implementations connected to the OPB bus (the slower
+bus, compared to the PLB bus), the OPB bus bandwidth may be the
+limiting factor.
 
-	nathan
-
-PS. I don't know if this list allows plugging non-GNU software, if it
-doesn't please ignore this bit. Our compiler produces significantly
-smaller and faster code that pretty much anyone else. An internal test
-showed code size differences when compiling the Linux kernel at 20+%
-smaller than GNU gcc 3.x and well over 30% against 2.95. We didn't do much
-benchmarking, but the speed difference was apparently big enough that it
-was visable during kernel boot. I believe the kernel cross compile was
-entirely with our tools.
-
-On Wed, 26 Nov 2003, Steven Scholz wrote:
->
-> does someone know of a cross compiler (producing code for let's say
-> MPC8xx) that is running natively under win32 (Windows2000/XP) without
-> stuff like CYGWIN?
->
-> I'am just wondering. Apparently MVISTA released their new "DevRocket"
-> which is supposed to run under WindowsXP. So I assume they have cross
-> compilers for "30 processors from 8 architectures" running under
-> Windows...
-
---
-Nathan Field (ndf@ghs.com)			            In my pocket.
-
-But the trouble with analogies is that analogies are like goldfish:
-sometimes they have nothing to do with the topic at hand.
-        -- Crispin (from a posting to the Bugtraq mailing list)
+Peter
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
