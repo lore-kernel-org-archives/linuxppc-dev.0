@@ -1,40 +1,42 @@
-Message-Id: <3C56D4D3.CC3E7D03@motorola.com>
-Date: Tue, 29 Jan 2002 10:58:59 -0600
-From: Josh Horvath <Josh_Horvath-AJH051@email.mot.com>
+Message-ID: <3C56E5D4.7085BB1C@mvista.com>
+Date: Tue, 29 Jan 2002 10:11:32 -0800
+From: Armin Kuster <akuster@mvista.com>
 MIME-Version: 1.0
-To: David Ashley <dash@xdr.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: BUG: udp socket, getsockopt + setsockopt
-References: <200201291649.g0TGn2x09346@xdr.com>
+To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: I2C support for 405GP
+References: <3C566357.7060307@esd-electronics.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is just a guess, but is SO_RCVLOWAT getting set somewhere?  The receive
-call will block until it gets the number of bytes set with this option.  I
-think it defaults to 1, so it should normally return when any data is
-available on the socket.  But if it has been bumped up to a big number, it
-might account for the behavior you're seeing.
+Matthias Fuchs wrote:
+>
+> Hello,
+>
+> is anybody working on the I2C driver for the IBM 405GP ?
+> The driver was in the 2.4.2 Kernel from Montavista, but it dissapeared
+> from the devel tree a long time ago. I tried to take that old sources
+> and merged the i2c stuff into a more recent 2.4 devel kernel. It did not work.
+>
+> This leads to some questions:
+>
+> 1) Is anybody currently workig on this issue ?
+> 2) Does anybody have a local working i2c driver for the 405 ?
+> 3) Is there a special reason why the i2c support dissapeared ?
+>
+> I read sometime ago on the i2c project site, that they care about the 405
+> i2c driver. Is this true ?
+>
+> Matthias
 
--Josh
+Yes I do.
+1 & 2) yes
+3) The I2c drivers are warehoused by the i2c folks.  If you need it ou
+can check it out from there.  I am working on coverting the driver to
+the ocp format.
 
-David Ashley wrote:
->
-> I've found a very strange bug in linux ppc 2.4.17, I think. I'm pulling
-> udp packets off the LAN and reading them in a user space program. They come
-> in sets of about 60k bytes all together, then pause for a while. I only can
-> read the first 48k successfully, then they get lost.
->
-> If I have a setsockopt call on the socket, setting SO_RCVBUF to 65535,
-> then I don't lose any data. But if I do a getsockopt beforehand on
-> SO_RCVBUF, it reports 65535. Without the setsockopt I get the packet loss,
-> with it I don't lose any. It is strange because the value doesn't appear
-> to be changing.
->
-> What can be causing this mysterious behaviour?
->
-> -Dave
->
+-- armin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
