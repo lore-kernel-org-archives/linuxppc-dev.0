@@ -1,72 +1,151 @@
-Message-ID: <8D7C5F56B409554D9D46AC22195807F3061C26@exchwenz01.dmcwave.co.nz>
-From: Rod Boyce <rod_boyce@stratexnet.com>
-To: "'Klaus Heydeck'" <Heydeck@kieback-peter.de>,
-	"<" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Antw: Re: Lauterbach ICD In-Circuit Debugger
-Date: Thu, 23 Jan 2003 08:08:29 +1300
+Message-ID: <20030122195006.67877.qmail@web41207.mail.yahoo.com>
+Date: Wed, 22 Jan 2003 11:50:06 -0800 (PST)
+From: Prakash kanthi <pkanthi@yahoo.com>
+Subject: Re: Linux Kernel hangs after execve('/bin/sh')
+To: dnevil@snmc.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <42353.12.148.147.242.1043248979.squirrel@nevil.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have no experience with the Lauterbach debugger although when we were
-looking to buy I obtained a quote for one.  While my quote is a few years
-old the BDI2000 was 1/3 the price.  If you are looking to purchase a new
-debugger then there is not contest.  The BDI works on Linux or Windows and
-I'm yet to discover anything it can't do.
-Even if you were going to buy a second debugger I would recommend the
-BDI2000
+Hurray .......
 
-Regards,
-Rod Boyce.
+Daris, you suggestion seem to work. I Compiled my
+hello.c with -Bstatic (size was almost 1MB), added it
+to ramdisk and it works. So now the problem is
+narrowed down to, being not able to work with the
+shared libraries.
 
- -----Original Message-----
-From: 	Klaus Heydeck [mailto:Heydeck@kieback-peter.de]
-Sent:	Thursday, 23 January 2003 5:48 a.m.
-To:	<
-Subject:	Antw: Re: Lauterbach ICD In-Circuit Debugger
+One point is that, i DID NOT get any errors (atleast
+on the screen) while execve was loading shared
+libraries in the process of executing /bin/sh. But for
+sure, my problem is related to it.
+
+I really appreciate any suggestions related to this
+issue.
+
+Thanks,
+Prakash
 
 
->>
->> A lot of people suggest to use the Abatron BDI2000 as debug system. I
-used
->> the Lauterbach TRACE32-ICD system with ARM processors without MMU (no
->> Linux) and it works extremely well.
->> The manufacturer claims it fully supports both the MMU and the Linux
-kernel
->> (see here for more details
->> http://www.lauterbach.com/cgi-bin/docloc.pl?file=rtoslinux.pdf). Can
->> anybody who used it confirm this point?
+--- Daris A Nevil <dnevil@snmc.com> wrote:
 >
->I can. You can debug the kernel and e.g. interrupts using virtual
->addresses very well, you just have to specify the mapping
->(e.g. for ppc map phys 0x00000000 to 0xc0000000)
+> Prakash,
 >
->I've not looked in detail yet to debug user processes.
+> Try compiling your hello.c program with the -Bstatic
+> flag.  That will
+> eliminate the need to load libraries, and should
+> show if there are other
+> problems.  If that works OK then we can focus on why
+> your library loading
+> is failing.
 >
-We are using the TRACE32-ICD (MPC8xx) with U-Boot and Kernel 2.4.4.
-Kernel debugging works without any problems. User space debugging is also
-fine - but only if you don't have to debug shared libraries :-(
-I think the T32 is a very good choice for kernel debugging, especially if
-you
-have experience with the GUI and don t need the documentation or online help
-;-)
-If the problems with the shared libs are solved you have _one_ debugger for
-kernel and applications.
-
-Best regards,
-Klaus Heydeck
-
---
-Klaus Heydeck
-Kieback & Peter GmbH & Co KG
-Abt. Softwareentwicklung
-Tempelhofer Weg 50
-12347 Berlin / Germany
-Tel. +49 30 60095 522
-Fax. +49 30 60095 540
+> Regards,
+> Daris Nevil
+>
+>
+> Prakash kanthi said:
+> >
+> > Hi FOlks,
+> >
+> > I finally reached the last step (hopefully) of
+> linux
+> > kernel booting process. Kernel gets stuck after
+> doing
+> > a 'execve("/bin/sh")'. I tried using different
+> > ramdisks, still no difference.
+> >
+> > I added few printk's in the source, following the
+> > function call path from 'execve' call. Following
+> is
+> > the output. You can see that, execve goes through
+> > without any file permission problems and
+> subsequently
+> > it tries to open /lib/ld.so.1 flawlessly. After
+> that i
+> > see nothing on the terminal.
+> >
+> > ---------
+> > init:Trying to bring /bin/sh up.
+> > do_execve:enter for /bin/sh
+> > open_exec:enter for /bin/sh.
+> > open_exec:Permission error=0.
+> > dentry_open:enter.
+> > dentry_open: after file->f_op->open. 0
+> > open_exec:enter for /lib/ld.so.1.
+> > open_exec:Permission error=0.
+> > dentry_open:enter.
+> > dentry_open: after file->f_op->open. 0
+> > do_execve: after search_binary_handler. retval=0
+> > -----------
+> >
+> >
+> > I wrote a small standalone program hello.c to
+> test, if
+> > i can dynamically load it from init() instead of
+> > loading /bin/sh. I compiled the program added it
+> to my
+> > ramdisk and called from init(). Following is the
+> > output. You can see that, it did all of it that it
+> did
+> > for /bin/sh and also tried to open
+> /etc/ld.so.preload
+> > and /etc/ld.so.cache and failed. But again towards
+> the
+> > end, it tries to open /lib/libc.so.6 and succeds
+> but
+> > still no output is displayed that hello.c is
+> trying to
+> > print.
+> >
+> > ---------
+> > init:Trying to bring /bin/hello up.
+> > do_execve:enter for /bin/hello
+> > open_exec:enter for /bin/hello.
+> > open_exec:Permission error=0.
+> > dentry_open:enter.
+> > dentry_open: after file->f_op->open. 0
+> > open_exec:enter for /lib/ld.so.1.
+> > open_exec:Permission error=0.
+> > dentry_open:enter.
+> > dentry_open: after file->f_op->open. 0
+> > do_execve: after search_binary_handler. retval=0
+> > sys_open:enter for /etc/ld.so.preload.
+> > sys_open:unused_fd=3.
+> > filp_open:enter for /etc/ld.so.preload.
+> > filp_open:open_namei error -2.
+> > sys_open:enter for /etc/ld.so.cache.
+> > sys_open:unused_fd=3.
+> > filp_open:enter for /etc/ld.so.cache.
+> > filp_open:open_namei error -2.
+> > sys_open:enter for /lib/libc.so.6.
+> > sys_open:unused_fd=3.
+> > filp_open:enter for /lib/libc.so.6.
+> > filp_open:open_namei error 0.
+> > dentry_open:enter.
+> > dentry_open: after file->f_op->open. 0
+> > -----------
+> >
+> > Can someone please throw some light on this?
+> >
+> > Thanks,
+> > Prakash
+> >
+> >
+>
+>
+> Daris A Nevil
+> Simple Network Magic Corporation
+> 401 Kentucky
+> McKinney, Texas 75069
+> http://www.snmc.com
+> 972-562-3751
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
