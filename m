@@ -1,30 +1,44 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <linuxppc-dev@lists.linuxppc.org>,
-	Debian PowerPC <debian-powerpc@lists.debian.org>
-Cc: <dan@debian.org>
-Subject: [ANN] yaboot maintainer change
-Date: Thu, 20 Sep 2001 17:09:39 +0200
-Message-Id: <20010920150939.32251@smtp.adsl.oleane.com>
+Message-Id: <20010921001918.Postino-011488@smtp01.highway.ne.jp>
+Date: Fri, 21 Sep 2001 00:19:18 +0900
+To: Stefan Jeglinski <jeglin@4pi.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+From: Kaoru Fukui <k_fukui@highway.ne.jp>
+Subject: Re: 2.4.10-pre12 sysrq.c compile error
+In-Reply-To: <p04330104b7cfaa0a7830@[63.220.231.138]>
+References: <200109200500.AAA17467@lists.linuxppc.org>
+ <20010920.201024.730567552.t-matsuu@protein.osaka-u.ac.jp>
+ <20010920201330.Postino-024975@smtp01.highway.ne.jp>
+ <p04330104b7cfaa0a7830@[63.220.231.138]>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all !
+From: Stefan Jeglinski <jeglin@4pi.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.10-pre12 sysrq.c compile error
+Date: Thu, 20 Sep 2001 10:52:13 -0400
 
-The maintenance of yaboot releases & packaging will now be handled by
-Ethan Benson. He should shortly release 1.3 (which is the same as 1.2.5
-code wise for those who caught it), the version bump is here to avoid
-confusion with versions I released.
+>
+> >  > `wakeup_bdflush' was defines in two defrent files.
+> >>
+> >  > linuxppc_2_4_devel/drivers/char/sysrq.c (line: 35)
+> >>  extern void wakeup_bdflush(int);
+> >>
+> >>  linuxppc_2_4_devel/include/linux/fs.h (line: 1347)
+> >>  extern void wakeup_bdflush(void);
+> >>
+> >
+> >if it's same extern , it's no problem.
+> >Different paramenter is no good.
+>
+> Right. I should have supplied more info about what I have tried.
 
-The archives of older versions on my page will remain, users should
-however now get their versions from Ethan, I'll let him explain that all.
+Look at fs/buffer.c line2748 where the real function is in.
+so That is void wakeup_bdflush(void)
 
-I still maintain the actual code for yaboot and the yaboot source rsync
-repository, so you can still feed me with bug reports ;)
+Kaoru
 
-Regards,
-Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
