@@ -1,26 +1,32 @@
-Date: Wed, 5 Jun 2002 12:22:18 +0100 (BST)
-From: Leigh Brown <leigh@solinno.co.uk>
-To: trini@kernel.crashing.org
-Cc: geert@linux-m68k.org, <paulus@samba.org>, <p2@mind.be>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: S3 trio config
-Message-ID: <Pine.LNX.4.44.0206051219160.11815-100000@micro.solinno.co.uk>
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "Bill Fink" <billfink@mindspring.com>,
+	"LinuxPPC Developers" <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: Debugging Network Performance
+Date: Wed, 5 Jun 2002 06:16:18 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFMECIDIAA.acurtis@onz.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <20020605011832.63bf4ff5.billfink@mindspring.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This little patch allows it to compile (non-module) for me:
+>     "It would be interesting to see where the cpu is being used. Could you
+>     boot with profile=2 and use readprofile to find the worst cpu hogs
+>     during a run?"
 
---- linuxppc_2_4_devel/drivers/video/S3triofb.c	Wed Jun  5 06:01:45 2002
-+++ linuxppc_2_4_devel-240/drivers/video/S3triofb.c	Wed Jun  5 10:00:01 2002
-@@ -851,4 +851,4 @@
- module_init(s3triofb_init);
- MODULE_LICENSE("GPL");
- #endif
--module_exit(s3trio_exit);
-+module_exit(s3triofb_exit);
+Where can I find documentation on the profile=## option? Are there also
+tools that will help to interpret the logs?
+
+> The problem with the poor SUNGEM performance turned out to be lots of
+> extraneous unnecessary interrupts, so you might want to check out the
+> eth0 interrupts in /proc/interrupts, comparing the two cases.
+
+I will check the interrupts. There are several errata regarding the FCC
+interface. I know that the code considered these cases but I need to make
+sure that it did not get removed mistakenly.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
