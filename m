@@ -1,42 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.29.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de.ibm.com", Issuer "Equifax" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 2D16E67A70
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Feb 2005 00:00:00 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate3.de.ibm.com (8.12.10/8.12.10) with ESMTP id j1ICxtn1023462
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Feb 2005 12:59:55 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
-	j1ICxtDS155562
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Feb 2005 13:59:55 +0100
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11/8.12.11) with ESMTP id
-	j1ICxtT1028663
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Feb 2005 13:59:55 +0100
-In-Reply-To: <20050218122009.GK5801@schottelius.org>
+Return-Path: <nico-linux-ppc@schottelius.org>
+Received: from scice.schottelius.org (ns.schottelius.org [213.146.113.242])
+	by ozlabs.org (Postfix) with SMTP id 6ABC167A8E
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Feb 2005 01:56:47 +1100 (EST)
+Date: Fri, 18 Feb 2005 15:57:52 +0100
+From: Nico Schottelius <nico-linux-ppc@schottelius.org>
+To: Joerg Dorchain <joerg@dorchain.net>
+Message-ID: <20050218145752.GA11139@schottelius.org>
 References: <20050118094216.GB25470@Redstar.dorchain.net>
 	<20050126113554.GD19633@schottelius.org>
 	<20050127163606.GN14866@Redstar.dorchain.net>
-	<20050118094216.GB25470@Redstar.dorchain.net>
-	<20050126113554.GD19633@schottelius.org>
-	<1106746946.6250.56.camel@gaston>
-	<20050208075421.GB21154@schottelius.org>
-	<8f293b6dbedd2ae1a825608a48a0604b@kernel.crashing.org>
-	<20050218111304.GH5801@schottelius.org>
-	<f585c9c6e4bdfbba6dcaafc96b7c0607@kernel.crashing.org>
-	<20050218122009.GK5801@schottelius.org>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Message-Id: <629f63c4608b762de8bf6f962b6180ef@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Fri, 18 Feb 2005 14:00:32 +0100
-To: Nico Schottelius <nico-linux-ppc@schottelius.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="7AUc2qLy4jB3hD7Z"
+In-Reply-To: <20050127163606.GN14866@Redstar.dorchain.net>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] Heartbeat LED for iBook
+Subject: ibook-led (finished) (was: [PATCH] Heartbeat LED for iBook)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -46,12 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Well, it's the last part of RTFM, so I was asking
-> for the "fine manual", the documentation to ADB/PMU. So I can
-> lookup the commands I need for setting the led on/off.
 
-There is no manual.  You can look at some Darwin source code,
-I guess, or there is some code in Linux to do this as well, IIRC.
+--7AUc2qLy4jB3hD7Z
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hello everybody!
+
+Thank you everybody for the help.
+
+I found the correct bytes in the beginning of this thread and wrote
+ibook-led (should work with powerbooks, too).
+
+The program works as following:
+
+ei nico # ./ibook-led =20
+ibook-led <0,1,2> <delay>
+   0: switch led off
+   1: switch led on
+   2: switch led on for <delay> useconds
 
 
-Segher
+The source code can be found on http://linux.schottelius.org/hacks/.
+
+Sincerly,
+
+Nico
+
+--7AUc2qLy4jB3hD7Z
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
+
+iQIVAwUBQhYCbrOTBMvCUbrlAQI/xw//XDlIwNY9MG16HpnmrrPMEnYoD2Oh7vlB
+F9IxzaCKrwCiA/660K4k/5Ov/q6+Cwhqy+DYYVynf+SxxkXntD197w95S6HTd8GO
+SKSDJOyfUBv97fuEGYFt2vKZdXaArA/vD1F5I4hAv9a7dhZbXozPAjiUxMakA+o2
+JVGBBS1NJi5O3d2MI/Zdozdsh9knK87aseHxL28WG79vEyLZXjVEN9PzENNnGJtL
+KiUGivZLOHbIQ+S1gh3FiyaTws81JVDynucQiEPhGWfW+eTGEd/yc6rNfAAaAZmk
++ykQG1X+8eQOdgOOfmUQDhwWXvupZ5vVh3KpNLaZkkBKgnktzMES1c4ZscHzUdnQ
+PL3RhMUxDkrLsmYXqimST+SCOc1vPWl/16R+W7ayO6fC4bJCu5ITmqO+eTUvI3Jh
+I40XaCINpbQ4wUZaXQkltiw55tckI6xelYWIF/NiZvv85m/FFgU0biM7i1KAlpbI
+IXC14gHp4zDQhI0nTNUOR+AGQpejjC3ksObgdY2e6jZbbnYU24dBOFVHqmQcrhYE
+RNc2s6YdA6KsEMy7uWD9V2aDNTcPsXSlm64zKYHTGrSHHK40VH3kDoi7Z5t0wcsl
+2CR0OwZu27yQg/VQeOgIUv7jBXrF2HxJIBMvkbd9DaorxAaqEzGeKbIZohYcqlnM
+YZbPd2syVYI=
+=qpvB
+-----END PGP SIGNATURE-----
+
+--7AUc2qLy4jB3hD7Z--
