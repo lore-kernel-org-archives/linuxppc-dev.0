@@ -1,18 +1,19 @@
-Date: Mon, 17 Nov 2003 21:38:32 -0500
 Subject: Re: cache coherence problem
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v552)
-Cc: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
 To: Juergen Kienhoefer <juergen@kienhoefer.com>
-From: "Michael R. Zucca" <mrz5149@acm.org>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
 In-Reply-To: <3FB972E8.5090701@kienhoefer.com>
-Message-Id: <4CE8E7E9-1970-11D8-ADD5-003065D401D8@acm.org>
+References: <3FB972E8.5090701@kienhoefer.com>
+Content-Type: text/plain
+Message-Id: <1069122238.7168.63.camel@gaston>
+Mime-Version: 1.0
+Date: Tue, 18 Nov 2003 14:02:28 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Monday, November 17, 2003, at 08:16  PM, Juergen Kienhoefer wrote:
-
+On Tue, 2003-11-18 at 12:16, Juergen Kienhoefer wrote:
 > Guys,
 > Look at the folloging test program. It mmaps memory, puts some
 > instructions in it and executes it.
@@ -21,21 +22,17 @@ On Monday, November 17, 2003, at 08:16  PM, Juergen Kienhoefer wrote:
 > Should the kernel clean the instruction cache for these addresses
 > in mmap system call?
 > Thanks for any thoughts!
+> Juergen
 
-I don't think this is the kernel's responsibility. I think this is just
-life with PPCs. If you dump random instructions into random memory, you
-have to make sure everything is flushed and the icache is invalidated
-before executing the code. You have to do the same thing when you do
-self-modifying code.
+It's your duty to ensure cache coherency. Actually, the kernel
+will eventually clean the icache for newly mapped in blank pages,
+but it will certainly not enforce flush of your writes to memory.
 
-Why would you want to do this, anyway?
+You need to first flush the data cache to memory using dcbf or
+dcbst, then sync for this to complete, then invalidate the
+instruction cache, sync and isync.
 
---
-----------------------------------------------
-  Michael Zucca - mrz5149@acm.org
-----------------------------------------------
-  "I'm too old to use Emacs." -- Rod MacDonald
-----------------------------------------------
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
