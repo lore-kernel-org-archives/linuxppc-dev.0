@@ -1,47 +1,47 @@
-Date: Fri, 24 Nov 2000 15:23:56 +0100 (MET)
+Date: Fri, 24 Nov 2000 15:29:07 +0100 (MET)
 From: Gabriel Paubert <paubert@iram.es>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-cc: Avery Pennarun <apenwarr@worldvisions.ca>,
-        Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-        daenzerm@student.ethz.ch, Hadess <hadess@writeme.com>,
-        debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        Avery Pennarun <apenwarr@worldvisions.ca>,
+        linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
 Subject: Re: apmd and other archs
-In-Reply-To: <Pine.LNX.4.10.10011231923001.18630-100000@opal.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.HPX.4.10.10011241514240.14737-100000@gra-ux1.iram.es>
+In-Reply-To: <19341019071225.5885@192.168.1.2>
+Message-ID: <Pine.HPX.4.10.10011241524030.14737-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 23 Nov 2000, Michael Schmitz wrote:
+On Fri, 24 Nov 2000, Benjamin Herrenschmidt wrote:
 
-> The init scripts of all distributions but SuSE handle this just fine
-> (mount -n). At least SuSE seems to mount the root fs rw from the start,
-> which causes all sorts of pain if you want to boot into a RedHat system
-> using the SuSE rescue disk. No idea how SuSE copes with readonly root fs.
+> We can "fix" that by either having the PMU driver on core99 continuously
+> send those infos via /dev/pmu without explicit request. It may also be
+> interesting to replace this by a kernel thread. That would allow more
+> flexibility in communicating with userland (things like signaling
+> processes that asked for it to be notified of a sleep request, etc...).
 
-Yes, but read my previous posts. I consider the -n and -f mount options to
-be a kludge. There is a chicken and egg problem and the workaround is a
-kludge. The list of mounted file systems should be maintained by the
-kernel IMHO, since the kernel has to know them in any case.
+Could the recently added keventd thread be used for this? I don't like the
+idea of adding kernel threads just for one thing. One kernel thread for
+all relatively slow operations which may need a process context is
+reasonable however.
 
-Mouting root read/write too early is even worse. That's no problem
-since Suse waits for root fs to be checked before remounting rw. But Suse
-has otehr problems when you want to maximize sharing on diskless systems
-(init scripts in /sbin for one).
-
-> > non-clean shutdown which you would have to erase before the first mount is
-> > done (adding another funky option to mount). Unless you make some kind of
-> > ramdisk compulsory, which might not be bad idea after all with current
-> > memory sizes.
+> One other issue we have with sleep is that we need to prevent the kernel
+> to do a bunch of thigns while going to sleep. scheduling from within the
+> sleep ioctl is dangerous, but will happen occasionally, especially when
+> sleeping & waking up the IDE layer.
 >
-> Yeah, like Linux will never run on my old 4 MB Mac anyway.
+> I beleive it should be possible to hack the scheduler so that only our
+> sleep thread gets scheduled at all (disabling scheduling on the main CPU
+> and freezing other CPUs in sleep loops) during the sleep & wakeup process.
+>
+> Any better ideas ?
 
-BTW: what is the minimum RAM to run Liunx/PPC these days ? My smallest
-(quasi embedded) machines have 16Mb and I hope to keep these running for
-at least 5 to 7 more years.
+No, I thought the deep sleep modes were only for laptops which are not SMP
+unless I missed some recent Apple announcement ;-). Do SMP G4 truly
+require complex power management ?
 
+BTW: I dislike any idea of playing with the scheduler.
 
 	Gabriel.
 
