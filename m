@@ -1,37 +1,43 @@
-Date: Thu, 30 Oct 2003 10:29:33 +1300
-From: Robin Gilks <robin.gilks@tait.co.nz>
-Subject: 866 derived RTC handling
-To: linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
-Message-id: <3FA0313D.2070203@tait.co.nz>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; format=flowed
+From: "Christos Pasalidis" <cpas@intracom.gr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: IBM Redwood-5 and ATA-6 HD - DMA
+Date: Thu, 30 Oct 2003 13:14:30 +0200
+Message-ID: <NFBBKGCEICKODMJLGDABOENDCEAA.cpas@intracom.gr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="windows-1253"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greetings
+Hi
 
-Has anyone tackled the lack of a Real Time Clock block in the mpc866
-(and its derivatives)? As far as I can see, the changing of platform_init()
-         ppc_md.set_rtc_time             = m8xx_set_rtc_time;
-         ppc_md.get_rtc_time             = m8xx_get_rtc_time;
-to
-         ppc_md.set_rtc_time             = NULL;
-         ppc_md.get_rtc_time             = NULL;
-based on the CPU will do the trick - but the question is, what is the
-best way to identify the subclass of 866 within the 8xx family of CPUs.
+I have a Redwood-5 evaluation board from IBM. I have tried to use several
+ATA-6 HDs (Hitachi IC25N020ATMR04 and HTS548020M9AT00, Western Digital
+WD800JB) in (any) DMA mode and none of them works. They only work in PIO
+mode.
 
-The IMMR mask version of 0x08000003 seems one way, is this consistant
-does anyone know? I'd like to avoid the introduction of (yet another)
-config item so a probe would be best IMHO.
+I dont have such problem with the ATA-5 and ATA-4 HDs I tried.
 
+Does any one have similar experience ? Does anyone have used succesfully
+ATA-6 HD in any non-PIO mode on the Redwood-5 ?
 
---
-Robin Gilks
-Senior Design Engineer          Phone: (+64)(3) 357 1569
-Tait Electronics                Fax  :  (+64)(3) 359 4632
-PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
-New Zealand
+Thanks in advance,
+Christos
 
+-----------------------------------------------
+ Christos Pasalidis, MSc
+ Software Engineer
+
+ INTRACOM S.A.
+ Hellenic Telecommunications & Electronics Industry
+ New Technologies Dept.
+ Embedded Systems Group
+ P.O. Box 68, 19.5 km Markopoulo Ave.
+ 190 02 Peania, Athens, GREECE
+ Tel.: (+30 1) 667 4711, 667 9000
+ Fax.:(+30 1) 667 7101
+ email: cpas_AT_intracom_DOT_gr
+ URL: www.intracom.gr
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
