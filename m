@@ -1,43 +1,69 @@
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16207.61398.896235.148724@nanango.paulus.ozlabs.org>
-Date: Sat, 30 Aug 2003 10:29:10 +1000 (EST)
-From: Paul Mackerras <paulus@samba.org>
-To: Corey Minyard <minyard@acm.org>
+Date: Sat, 30 Aug 2003 15:20:18 +0000
+From: Gabriel Paubert <paubert@iram.es>
+To: Frank Murphy <murphyf+linux-ppc@f-m.fm>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Change to allow signal handlers to set SE and BE bits.
-In-Reply-To: <3F4FB0F3.9090906@acm.org>
-References: <3F4FB0F3.9090906@acm.org>
+Subject: Re: Linux kernel / USB keyboard scancode problems
+Message-ID: <20030830152017.A26312@mrt-lx1.iram.es>
+References: <200308231409.24503.murphyf+linux-ppc@f-m.fm> <200308270948.04190.murphyf+linux-ppc@f-m.fm> <20030827182950.GA12646@iram.es> <200308291728.01954.murphyf+linux-ppc@f-m.fm>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200308291728.01954.murphyf+linux-ppc@f-m.fm>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Corey Minyard writes:
+On Fri, Aug 29, 2003 at 05:28:01PM +0200, Frank Murphy wrote:
+>
+> On Wednesday 27 August 2003 8:29, Gabriel Paubert wrote:
+> > Well, except for Scroll Lock, it's a mess. It depends on the other which
+> > are down at the time the key is pressed.
+>
+> Thanks for these. Because they're such a mess, perhaps the codes for F13, F14,
+> and F15 should be used instead. Now just to find out what they are, and if
+> all Apple keyboards have these keys as F13, 14, & 15.
 
-> I have a debugger that runs in an application that requires access to
-> the SE and BE bits.  The following patch adds that capability to
-> 2.4.21-ben1.  I have tested this, and gdb still seems to correctly step
-> out of signal handlers, and it seems to work for 4xx.  Does this look ok?
+>From include/linux/input.h (latest Linus'bk repository, lines 195-200):
 
-Can you explain a bit more about why the process needs to be able to
-single-step itself rather than having another process single-step it
-using ptrace?
+#define KEY_F13                 85
+#define KEY_102ND               86
+#define KEY_F11                 87
+#define KEY_F12                 88
+#define KEY_F14                 89
+#define KEY_F15                 90
 
-It looks like you're using the old trick of sending yourself a signal
-and then modifying the register values stored on the stack.  That
-seems like a bit of a kludge to me.  If there is some reason why you
-would always naturally be in a signal handler anyway at the point
-where you want to single-step, then maybe it is less of a kludge.
-Does your in-process debugger run entirely inside signal handlers?
-(And if it does, how do you cope with the fact that there are lots of
-C library functions you can't use inside signal handlers, including
-printf?)
+which are mapped to 85/115/119 for emulated raw scancodes
+in drivers/char/keyboard.c, or rather 0x55/0x73/0x77 since
+scancodes ar normally typed in hex.
 
-Also... would this have any impact on how you expect setcontext() to
-behave?  Passing the 3rd argument of a "real-time" signal handler to
-setcontext is supposed to have the same effect as returning from the
-handler.
+Of course the problem is that X wants these in 118/119/120.  I've just
+checked out the X CVS tree and my head hurts. I believe that the relevant
+code is in:  programs/Xserver/hw/xfree86/common/xf86Events.c.
 
-Paul.
+But it's so hard to follow :-(
+
+Anyway, if I follow the X code correctly (a big if), 0x55 and 0x77
+won't be remapped, but 0x73 will be, to 0xCB. After that we add 8
+to compute the X keycode which become: 93, 211, and 127.
+
+With some luck, there may be a solution since none of these key
+codes are used under X, neither on the Mac nor on the PC.
+
+>
+> > > > The following might be sufficient (just a wild guess, and it will
+> > > > certainly break if you don't use linux keycodes):
+> > >
+> > > Thanks for your guessed fix. I'll have to look at what you've done, but,
+> > > wow, it's pretty cryptic.
+> >
+> > Well, it is really simple. Replace 101 by 127 in the ADB to Linux keycode
+> > mappings. In this way the translation back to "raw" keycodes (only cooked
+> > twice!) gives 349, which is 256 + 93 (0xe0 0x5d).
+>
+> Well, I guess the trick is to know which one to change. :)
+
+Did you actually try the patch. If yes, on which kernel?
+
+	Regards,
+	Gabriel
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
