@@ -1,50 +1,63 @@
-Message-ID: <004801c2a1f5$9ee25e10$1764a8c0@leonardo>
-From: "Leonardo Pereira Santos" <lsantos@pd3.com.br>
-To: "Donald MacArthur" <dmacarth@ufl.edu>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <NDBBIHDFKLJKGJJGMFJOKEJACGAA.dmacarth@ufl.edu>
-Subject: Re: MPC850 Pinout Description?
-Date: Thu, 12 Dec 2002 13:46:17 -0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: Move 405LP RTC support from beech.c into ibm405lp.c
+From: Hollis Blanchard <hollis@austin.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: embedded list <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <20021212035459.GF4631@zax.zax>
+References: <20021212035459.GF4631@zax.zax>
+Date: 12 Dec 2002 10:17:44 -0600
+Message-Id: <1039709875.3537.20.camel@granite.austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Well, I think the best document is the MPC850 manual, which is available as
-a PDF file at Motorola's web site. Chapter 12 (External Signals) has
-everything you need. Try this page
+On Wed, 2002-12-11 at 21:54, David Gibson wrote:
+>
+> The RTC support (written by Todd Poynor) for the Beech is actually in
+> the 405LP chip itself, not just on the Beech board.
+<snip>
 
-http://e-www.motorola.com/webapp/sps/library/documentationlist.jsp?rootNodeI
-d=01&nodeId=018rH3bTdG8657&Device=MPC850&DocTypeKey=A0&Results=25
+As a separate patch (either before or after your move), I'd like to see
+the following patch committed. The current "reset" code doesn't follow
+the sequence described in the manual, and doesn't really reset the chip.
+Until I added this code, the RTC usually would simply not advance. I've
+tested this thoroughly on Beech (405LP 1.1).
 
------ Original Message -----
-From: "Donald MacArthur" <dmacarth@ufl.edu>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Thursday, December 12, 2002 11:57 AM
-Subject: MPC850 Pinout Description?
+Also, the comment makes me curious - why rely on the BIOS to set the
+right input frequency? It's just one more line of code here (and a
+#define or two for the various boards).
+
+===== beech.c 1.8 vs edited =====
+--- 1.8/arch/ppc/platforms/beech.c      Mon Nov 11 11:57:56 2002
++++ edited/beech.c      Thu Dec 12 10:05:01 2002
+@@ -280,10 +280,15 @@
+
+                /* Reset the core and ensure it's enabled.  We assume
+                   only that the BIOS has set the correct frequency. */
+-
+-               mtdcr(DCRN_RTC0_WRAP, 0);
++
++               mtdcr(DCRN_RTC0_WRAP, 0);               /* toggle NRST & NMR */
+                mtdcr(DCRN_RTC0_WRAP, 3);
+-               mtdcr(DCRN_RTC0_CR1, mfdcr(DCRN_RTC0_CR1) & 0x7f);
++               mtdcr(DCRN_RTC0_CR0, 0x60);             /* No divider chain, No
+square wave */
++               mtdcr(DCRN_RTC0_CR1, 0x80);             /* Disable update cycles
+/interrupts*/
++               mtdcr(DCRN_RTC0_WRAP, 0);               /* toggle NRST & NMR */
++               mtdcr(DCRN_RTC0_WRAP, 3);
++               mtdcr(DCRN_RTC0_CR1, mfdcr(DCRN_RTC0_CR1) & 0x7f); /* allow upda
+tes */
++
+                not_initialized = 0;
+        }
 
 
->
-> Does anyone know of a concise document which describes the pinouts and
-> functions of the MPC850?
->
-> Thank You
-> Donald MacArthur
-> dmacarth@ufl.edu
->
-> Graduate Fellow
-> Center for Intelligent Machines and Robotics
-> Mechanical Engineering
-> MEB300
-> University of Florida
-> Gainesville, Fla
-> 32611
->
->
->
->
 
+-Hollis
+--
+PowerPC Linux
+IBM Linux Technology Center
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
