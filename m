@@ -1,48 +1,36 @@
-Date: Mon, 16 Dec 2002 12:43:36 +1100
+Date: Mon, 16 Dec 2002 12:58:53 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Cort Dougan <cort@fsmlabs.com>,
-	Tom Rini <trini@kernel.crashing.org>,
+To: Todd Poynor <tpoynor@mvista.com>,
 	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Support for Arctic platform (405LP based)
-Message-ID: <20021216014336.GF4981@zax.zax>
-References: <20021213043628.GI21319@zax.zax> <20021212215126.V23952@duath.fsmlabs.com> <20021213151808.GI19456@opus.bloom.county> <20021215121526.M30941@duath.fsmlabs.com> <15869.5023.549830.146265@argo.ozlabs.ibm.com>
+Message-ID: <20021216015853.GG4981@zax.zax>
+References: <20021213043628.GI21319@zax.zax> <3DFA3420.10105@mvista.com> <20021215073549.GB16755@zax.zax>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15869.5023.549830.146265@argo.ozlabs.ibm.com>
+In-Reply-To: <20021215073549.GB16755@zax.zax>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Dec 16, 2002 at 10:43:27AM +1100, Paul Mackerras wrote:
+On Sun, Dec 15, 2002 at 06:35:49PM +1100, David Gibson wrote:
+> > CONFIG_IBM_OPENBIOS is taken out of the CONFIG_SYCAMORE section of
+> > arch/ppc/config.in?
 >
-> Cort Dougan writes:
+> Err... I have no idea what you're asking.  How did SYCAMORE get into
+> this?
 >
-> > How about killing the _2_4_devel tree?  When I created it I want it to be a
-> > playground for stabilizing then moving things over to 2_4 failry quickly.
-> > It seems to have become the defacto "want board X, you better use
-> > _2_4_devel" tree.
+> > Duplication of the CONFIG_BEECH case in
+> > arch/ppc/boot/simple/embed_config.c: might be trying to enable the SSX
+> > bootloader for Beech, but since CONFIG_IBM_OPENBIOS is on for Beech it
+> > seems we'd have dup definitions?  Would more SSX code would be necessary
+> > anyhow?
 >
-> Now that Marcelo is using BK, what I would really like to do is to
-> kill both the linuxppc_2_4 and linuxppc_2_4_devel trees and move to a
-> tree that is a child of Marcelo's linux-2.4 tree.
->
-> > When I went looking for a working 4xx tree recently I had to write a script
-> > that would go through the last year of changesets in _2_4 and _2_4_devel
-> > and try to build them then stick the result into a file.  That ran for 7
-> > days on a 2.0Ghz Dual x86.  Then, that only gave me a list of building
-> > trees.  Knowing that there's only 1 tree would be much easier!
->
-> 4xx in particular is a problem because I'm not convinced about the
-> approach that has been taken for some of the 4xx infrastructure.  The
-> ocp stuff seems a lot more complicated than it needs to be, for
-> instance.  There is no particular reason that I can see why the 8xx
-> stuff in 2_4_devel shouldn't go to Marcelo for 2.4.21.
+> Again, I'm afraid I'm having trouble parsing that paragraph - what do
+> you want to know?
 
-Well, it sounds as if linuxppc_2_4_devel is the place to commit the
-Arctic2 code.  Killing that tree off, by whatever means, sounds like a
-very good idea, but not actually something that committing my code
-elsewhere would help to accomplish.
+Gah, ok, now I see what you're talking about:  the diffs to the
+SYCMORE config and the extra beech code in my patch.  Yes, as you
+probably suspected they were just mistakes - now corrected.
 
 --
 David Gibson			| For every complex problem there is a
