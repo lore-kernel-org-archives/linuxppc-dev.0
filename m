@@ -1,35 +1,58 @@
-Message-ID: <391154B5.1CCDFEF0@agelectronics.co.uk>
-Date: Thu, 04 May 2000 11:45:09 +0100
-From: Adrian Cox <apc@agelectronics.co.uk>
+Message-ID: <39116DF7.4CD7FFBD@mondonet.net>
+Date: Thu, 04 May 2000 14:32:55 +0200
+From: Mario Scarpa <m.scarpa@mondonet.net>
 MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-CC: Gong Zhuo_sina <gong_zhuo@sina.com.cn>,
-        linuxppc dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Any compact pci driver for MCP750?
-References: <Pine.HPX.4.10.10005041203430.234-100000@gra-ux1.iram.es>
+To: Gabriel Ricard <g_ricard@yahoo.com>
+CC: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Lombard hard freeze (still there)
+References: <20000503175115.20311.qmail@web1704.mail.yahoo.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert wrote:
-> For the MCP750, you should have no problems. But to access MCPN750, the
-> code is not written and even the infrastructure is not (yet) there. some
-> more work to support non transparent PCI<->PCI bridges is necessary.
+Gabriel Ricard wrote:
+>
+> My symptoms
+> include a wandering mouse pointer: i.e. when I am
+> typing rapidly, X will occasionally think I've clicked
+> the mouse button and the focus goes to where the
+> pointer was located.
 
-On x86 architecture, Ziatech have CompactNet, which uses the 21554
-non-transparent bridge. This should be portable to PowerPC, though some
-work may be required:
-http://www.compactnet.com/
+Same for me. And it is really annoying to write the
+emails two or three times ;-)
+My mouse is a brand x 5$ usb mouse with three buttons...
 
-I've done some similar work on a PowerPC, but on PCI cards and using a
-very different core logic design which avoided the need for a
-non-transparent bridge:
-http://www.agelectronics.co.uk/tpe3.html
-The kernel for this board passes ethernet frames over the PCI backplane
-between boards. The novelty over traditional shared memory networking is
-the use of I2O units.
+> I also have strange problems with
+> my lombard locking up when I leave it in the screen
+> saver overnight or turn the brightness all the way
+> down.
 
-- Adrian Cox, AG Electronics
+Yes, I used to have this too but I solved it using 2.2.15pre20
+X 3.3.6 and booting without specifying "no video options"
+in BootX. As for the video opts I am using let me know if
+you need them and will mail to you.
+Same for the .config.
+
+> I haven't had any problems related to massive
+> network activity.
+
+Bah, this seems to be my own problem...
+
+> As for the USB->serial adapter, I have one from
+> Keyspan which several people are working on developing
+> drivers for. Search the list archives for more detail
+> on that.
+
+Many thanks I will do it.
+
+Bye,
+
+--
+Mario Scarpa
+
+Mondonet NOC
+Phone: +39 06 52.47.37.02
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
