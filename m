@@ -1,31 +1,37 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Wed, 23 Apr 2003 19:44:14 -0400
-Message-Id: <200304232344.h3NNiE021408@hyper.wm.sps.mot.com>
-From: Peter Barada <pbarada@mail.wm.sps.mot.com>
-To: heintz@mail.utexas.edu
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-reply-to: <3EA70BDE.9080609@mail.utexas.edu> (message from Chris
-	Heintzelman on Wed, 23 Apr 2003 16:55:42 -0500)
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Wed, 23 Apr 2003 19:08:46 -0700
+To: Chris Heintzelman <heintz@mail.utexas.edu>,
+	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: booting MGT5100?
+Message-ID: <20030424020846.GA1283@rover.farnsworth.org>
 References: <3EA70BDE.9080609@mail.utexas.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3EA70BDE.9080609@mail.utexas.edu>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->I noticed that a few months ago someone mentioned booting Linux on one
->of these boards (MGT5100).  There didn't seem to be much discussion
->though; I have one of these boards and would also like to boot linux on
->it, I'm wondering if anyone can point me to a good starting point on
->this?  Any help is appreciated.  I've got a toolchain and kernel built
->but am having no luck with it.
+On Wed, Apr 23, 2003 at 09:55:42PM +0000, Chris Heintzelman wrote:
+>
+> I noticed that a few months ago someone mentioned booting Linux on one
+> of these boards (MGT5100).  There didn't seem to be much discussion
+> though; I have one of these boards and would also like to boot linux on
+> it, I'm wondering if anyone can point me to a good starting point on
+> this?  Any help is appreciated.  I've got a toolchain and kernel built
+> but am having no luck with it.
+>
+> Thanks,
+> Chris H.
 
-Yes, we've booted linux on a 'IceCube' board that has a MGT5100 on
-it...  Haven't done uch past getting the console driver working. What
-board do you have?
+I've been working with Kent Borg to bring up linux on the mgt5100.
+As Peter said, they're running it on an icecube, while I have a glacier
+system.  The serial driver seems reasonably solid.  I've been working
+on an ethernet driver and started testing it today.  It has sent and
+received a few packets but lots of cleanup remains.  I plan to put up a
+bk repository on source.mvista.com in a couple of weeks.  I could send
+you a tarball if you'd rather not wait.
 
---
-Peter Barada                                   Peter.Barada@motorola.com
-Wizard                                         781-852-2768 (direct)
-WaveMark Solutions(wholly owned by Motorola)   781-270-0193 (fax)
+-Dale Farnsworth
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
