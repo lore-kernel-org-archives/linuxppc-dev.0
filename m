@@ -1,27 +1,35 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Content-Type: text/plain; charset="iso-8859-1"
-From: Gerard Flynn <flynn@lure.u-psud.fr>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: TQM8xx modules
-Date: Tue, 11 Dec 2001 16:56:23 +0100
+Message-ID: <3C162FE2.2D26113E@mvista.com>
+Date: Tue, 11 Dec 2001 10:10:10 -0600
+From: Mark Hatle <fray@mvista.com>
 MIME-Version: 1.0
-Message-ID: <E16DpGa-0004k0-00@tamesis.lure.u-psud.fr>
+To: srinivas pulipati <srinivasp@multitech.co.in>
+Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: how to cross complile helloworld.c
+References: <3C15FD95.5F348883@multitech.co.in>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-  Is anyone using the linux-ppc kernel tree for TQM minimodules ?
+srinivas pulipati wrote:
+>
+> hi,
+>
+> i have compiled glibc for powerpc-linux.
+> when i try to compile a sample file helloworld.c
+> it is saying undefined  reference to printf.
+> looks like it is not taking proper library.
+>
+> can anyone help me?
+>
+> thanks
+> srinivas
+>
 
-  I tried to compile the development branch for the TQM855L but the zImage
-build fails because no embed_config function is defined for this
-configuration.
+After compiling glibc, did you rebuild you compiler set?  Without doing
+a recompile gcc is still going to use newlib and will have no knowledge
+of the installed glibc.
 
-  If anyone has a pointer to the simplest way to get a kernel running on this
-type of module I'd greatly appreciate it.  (I know Denx has a patch for these
-modules for a 2.2 kernel but the kernel against which it was made appears no
-longer to be available.)
-
-  Thanks,
-  Gerard Flynn
+--Mark
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
