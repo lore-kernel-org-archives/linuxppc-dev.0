@@ -1,17 +1,19 @@
-Return-Path: <galak@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 6805067A2F
+Return-Path: <shawnxjin@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.206])
+	by ozlabs.org (Postfix) with ESMTP id A47CF67A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 12 Feb 2005 08:52:33 +1100 (EST)
-Date: Fri, 11 Feb 2005 15:52:15 -0600 (CST)
-From: Kumar Gala <galak@freescale.com>
-To: akpm@osdl.org
-Message-ID: <Pine.LNX.4.61.0502111546100.29653@blarg.somerset.sps.mot.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org,
-	linuxppc-embedded@ozlabs.org
-Subject: [PATCH] ppc32: Fix PCI2 support on MPC8555/41 CDS systems
+	Sat, 12 Feb 2005 13:24:36 +1100 (EST)
+Received: by rproxy.gmail.com with SMTP id 40so354645rnz
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 11 Feb 2005 18:24:34 -0800 (PST)
+Message-ID: <c3d0340b05021118241ab5eec8@mail.gmail.com>
+Date: Fri, 11 Feb 2005 18:24:33 -0800
+From: Shawn Jin <shawnxjin@gmail.com>
+To: ppcembed <linuxppc-embedded@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Subject: EMAC doesn't get ethernet mac address on Ebony?
+Reply-To: Shawn Jin <shawnxjin@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,64 +24,98 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Andrew,
+Hi,
 
-The following patch fixes an issue related to the second PCI host 
-controller working on MPC8555/41 systems.  If possible we should get this 
-in before 2.6.11.
+I'm trying to load a kernel image for Ebony built with the default
+configuration ebony_defconfig from 2.6.10. The image is in u-boot
+format. The root filesystem is set to a remote NFS root.
 
-Keep track of the last PCI bus number on PCI1 so that the PCI2 host
-controller can properly exclude itself at the right time, exclusion should
-occur after initial setup so that the early pci config cycles in setting 
-PCI2 actually get to the controller.
+Strangely I found the ethernet driver cannot detect the mac address.
+The address is supposed to be transferred from bd_info struct, isn't
+it?
 
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+Also I noticed that the kernel command line shown is not what I
+defined on u-boot's bootargs. Are there some changes that I'm not
+aware of on kernel handling command line?
 
---- 
-diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
---- a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c	2005-02-10 18:33:44 -06:00
-+++ b/arch/ppc/platforms/85xx/mpc85xx_cds_common.c	2005-02-10 18:33:44 -06:00
-@@ -281,16 +281,17 @@
- #define ARCADIA_HOST_BRIDGE_IDSEL     17
- #define ARCADIA_2ND_BRIDGE_IDSEL     3
- 
-+extern int mpc85xx_pci1_last_busno;
-+
- int
- mpc85xx_exclude_device(u_char bus, u_char devfn)
- {
- 	if (bus == 0 && PCI_SLOT(devfn) == 0)
- 		return PCIBIOS_DEVICE_NOT_FOUND;
- #ifdef CONFIG_85xx_PCI2
--	/* With the current code we know PCI2 will be bus 2, however this may
--	 * not be guarnteed */
--	if (bus == 2 && PCI_SLOT(devfn) == 0)
--		return PCIBIOS_DEVICE_NOT_FOUND;
-+	if (mpc85xx_pci1_last_busno) 
-+		if (bus == (mpc85xx_pci1_last_busno + 1) && PCI_SLOT(devfn) == 0)
-+			return PCIBIOS_DEVICE_NOT_FOUND;
- #endif
- 	/* We explicitly do not go past the Tundra 320 Bridge */
- 	if (bus == 1)
-diff -Nru a/arch/ppc/syslib/ppc85xx_setup.c b/arch/ppc/syslib/ppc85xx_setup.c
---- a/arch/ppc/syslib/ppc85xx_setup.c	2005-02-10 18:33:44 -06:00
-+++ b/arch/ppc/syslib/ppc85xx_setup.c	2005-02-10 18:33:44 -06:00
-@@ -243,6 +243,8 @@
- }
- #endif /* CONFIG_85xx_PCI2 */
- 
-+int mpc85xx_pci1_last_busno = 0;
-+
- void __init
- mpc85xx_setup_hose(void)
- {
-@@ -341,6 +343,9 @@
- 			IORESOURCE_IO, "PCI2 host bridge");
- 
- 	hose_b->last_busno = pciauto_bus_scan(hose_b, hose_b->first_busno);
-+
-+	/* let board code know what the last bus number was on PCI1 */
-+	mpc85xx_pci1_last_busno = hose_a->last_busno;
- #endif
- 	return;
- }
+Below is the kernel dumped message.
+
+=> bootm 200000
+## Booting image at 00200000 ...
+   Image Name:   Linux-2.6.10
+   Created:      2005-02-11  23:20:23 UTC
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    857587 Bytes = 837.5 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Current stack ends at 0x07FAA580 => set upper limit to 0x00800000
+## cmdline at 0x007FFC00 ... 0x007FFC51
+bd address  = 0x07FAAF90
+memstart    = 0x00000000
+memsize     = 0x08000000
+flashstart  = 0xFF800000
+flashsize   = 0x00480000
+flashoffset = 0x00000000
+sramstart   = 0x00000000
+sramsize    = 0x00000000
+bootflags   = 0x00000000
+intfreq     =    400 MHz
+busfreq     = 133.333 MHz
+ethaddr     = 00:04:AC:E3:1B:BB     
+
+/*** <---- the ethernet address here ***/
+
+IP addr     = 130.27.85.245
+baudrate    =   9600 bps
+No initrd
+## Transferring control to Linux (at address 00000000) ...
+Linux version 2.6.10  (gcc version 3.3.3 (DENX ELDK 3.1 3.3.3-8)) #1 Fr
+i Feb 11 15:18:50 PST 2005
+IBM Ebony port (MontaVista Software, Inc. (source@mvista.com))
+Built 1 zonelists
+Kernel command line: ip=on   
+
+/*** it's different from what I set in uboot's bootargs. ***/
+
+PID hash table entries: 1024 (order: 10, 16384 bytes)
+Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
+Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
+Memory: 127872k available (1324k kernel code, 452k data, 100k init, 0k highmem)
+Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+NET: Registered protocol family 16
+PCI: Probing PCI hardware
+Serial: 8250/16550 driver $Revision: 1.90 $ 6 ports, IRQ sharing enabled
+ttyS0 at MMIO 0x0 (irq = 0) is a 16550A
+ttyS1 at MMIO 0x0 (irq = 1) is a 16550A
+io scheduler noop registered
+io scheduler anticipatory registered
+io scheduler deadline registered
+io scheduler cfq registered
+mal0: Initialized, 4 tx channels, 2 rx channels
+emac: IBM EMAC Ethernet driver, version 2.0
+Maintained by Benjamin Herrenschmidt <benh@kernel.crashing.org>
+zmii0: input 0 in SMII mode
+eth0: IBM emac, MAC ff:ff:ff:ff:ff:ff              
+
+/*** <---- no mac is fetched???? ***/
+
+eth0: Found Generic MII PHY (0x08)
+zmii0: input 1 in RMII mode
+eth1: IBM emac, MAC ff:ff:ff:ff:ff:ff
+eth1: Found Generic MII PHY (0x09)
+mice: PS/2 mouse device common for all mice
+NET: Registered protocol family 2
+IP: routing cache hash table of 1024 buckets, 8Kbytes
+TCP: Hash tables configured (established 8192 bind 16384)
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+eth0: Link is Up
+eth0: Speed: 100, Full duplex.
+Sending BOOTP requests ..   
+
+/*** <---- so never get networking up. ***/
+
+Thanks,
+-Shawn.
