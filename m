@@ -1,46 +1,57 @@
-Message-ID: <3DFA1005.4020107@bluewin.ch>
-Date: Fri, 13 Dec 2002 17:51:17 +0100
-From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
-MIME-Version: 1.0
-To: Steve Rossi <Steve.Rossi@motorola.com>
-Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 823 Video Controller Driver - where ?
-References: <3DFA05C3.30703@ccrl.mot.com>
+Date: Fri, 13 Dec 2002 10:35:40 -0700
+From: Matt Porter <porter@cox.net>
+To: Aman <aman@mistralsoftware.com>
+Cc: Matt Porter <porter@cox.net>,
+	linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: NVRAM/RTC
+Message-ID: <20021213103540.A8090@home.com>
+References: <000901c2a20b$23472400$370da8c0@aman> <20021212145243.A5263@home.com> <00b801c2a2c1$70bc9470$370da8c0@aman>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <00b801c2a2c1$70bc9470$370da8c0@aman>; from aman@mistralsoftware.com on Fri, Dec 13, 2002 at 09:35:22PM +0530
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 12/13/2002 05:07 PM Steve Rossi wrote:
-> I've seen some reference on the list regarding a driver for the 823
-> Video Controller -
-> i.e.
-> http://lists.linuxppc.org/results.html?restrict=linuxppc-embedded&words=vid823
-> however I've been unable to locate the source to vid823.c
-> apparently this question was asked before:
-> http://lists.linuxppc.org/linuxppc-embedded/200201/msg00164.html
-> and the answer was that its in the 2_4_devel tree, but I was unable to
-> find it in a recent snapshot of the tree (I'm unable to get the tree
-> from the bitkeeper repository due to a problem in bitkeeper 3.0 related
-> to http proxy with authentication - but thats another story!) so I got
-> the snapshot from http://ppckernel.org/tree.php?id=5
-> All I could find was the RPX framebuffer driver rpxfb.c for various LCD
-> panels using the LCD controller..
-> I'm looking for a driver for the video controller to output to an NTSC
-> encoder. Am I just missing something?
-> Anyone know where I can get vid823.c (or whatever it might be called
-> now) and whether its a true framebuffer driver?
+On Fri, Dec 13, 2002 at 09:35:22PM +0530, Aman wrote:
+> This might be a very basic question. By porting what do you mean?. As of now
 
-Recently we have ported a video driver to the MPC823 using the video
-encoder AD7176. The problem is, that the pixels data in the framebuffer
-must have the YUV or Y-Cb-Y-Cr-Format which is rarely used, at least I
-have not found any support in Linux or Microwindows. You can find the
-port on our linux-2.4 CVS tree (see http://www.denx.de/re/linux.html).
-Check for "arch/ppc_8xx/video823.c" and "drivers/video/fbcon-yuv.c".
+By "porting", I mean adding a set of code that reflect the unique
+characteristics of your custom board.
 
-Hope it helps,
+> I copied the ebony bsp to different location and did changes to boot on the
+> custom board. Till now it was booting without any problem. Once I changed
+> the EBC configuration to configure some other FPGA ,bcos of which  linux
+> booting hangs at " Now Booting the kernel ".
 
-Wolfgang.
+Hrm, without knowing your custom board I can't really comment on
+the potential source of something that is specific to your board.
 
+You can try enabling early boot text messages.  Hopefully it still
+works on 440, I heard a rumor that it might be broken which would
+require some changes to head_440.S.  An easier path is, of course,
+using a hardware debugger (BDI) to point you to where you are
+dying...I usually just dump logbuf before the console is inited
+so I can read the buffered oops message.
+
+> I commented the ioremap of RTC, and the definitions of
+> ppc_md.set_rtc_time = todc_set_rtc_time;
+>
+> ppc_md.get_rtc_time = todc_get_rtc_time;
+>
+>  still the same problem. Should I hv to do something else also.
+
+You need to get rid of time_init, set_rtc_time, get_rtc_time,
+nvram_read_val, nvram_write_val too.
+
+You *will* get an oops from a machine check if you even have
+todc_time_init enabled...it will be attempting to read from
+some bogus location.
+
+Regards,
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
