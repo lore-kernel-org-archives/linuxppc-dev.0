@@ -1,21 +1,28 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B431867A2F
+Return-Path: <ALEBAS@televes.com>
+Received: from mailext.televes.com (unknown [212.163.42.136])
+	by ozlabs.org (Postfix) with ESMTP id 6267567A2F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Mar 2005 15:14:17 +1000 (EST)
-Date: Mon, 28 Mar 2005 21:14:14 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Tom Rini <trini@kernel.crashing.org>,
-	Matt Porter <mporter@kernel.crashing.org>, linuxppc-embedded@ozlabs.org
-Message-ID: <20050329051413.GA19132@gate.ebshome.net>
-References: <20050321152728.GS8345@smtp.west.cox.net>
-	<20050321174049.GA11734@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050321174049.GA11734@gate.ebshome.net>
-Subject: Re: [PATCH] ppc44x: Remove PVR_440G* and change usages
+	Tue, 29 Mar 2005 16:51:29 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by mailext.televes.com (Postfix) with ESMTP id 079ED2B7544
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 29 Mar 2005 08:56:42 +0200 (CEST)
+Received: from mailext.televes.com ([127.0.0.1])
+	by localhost (mailext [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+	id 18487-06 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 29 Mar 2005 08:56:41 +0200 (CEST)
+Received: from televes.com (unknown [212.163.42.137])
+	by mailext.televes.com (Postfix) with SMTP id BB4402B7542
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 29 Mar 2005 08:56:41 +0200 (CEST)
+Message-ID: <51DB8827D393D411BB69003048003F4601B1C1CE@tvesntr>
+From: Bastos Fernandez Alexandre <ALEBAS@televes.com>
+To: "'Walter L. Wimer III'" <walt.wimer@timesys.com>
+Date: Tue, 29 Mar 2005 08:29:50 +0200
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: Problem running Linux 2.6.11 on MPC8272ADS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,46 +33,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 21, 2005 at 09:40:49AM -0800, Eugene Surovegin wrote:
+Hi, 
 
-[snip]
+>From "linux/arch/ppc/platforms/pq2ads.h"
+#define BCSR_ADDR ((uint) 0xf4500000)
+>From "u-boot/include/configs/MPC8260ADS.h"
+#define CFG_BCSR 0xF4500000
+So ...
+Which version of u-boot and/or linux tree are you using?
+With linuxppc-2.5 and u-boot 1.2 everything works fine for me.
+Maybe Mike's problem is other. Maybe not. :-)
 
-> > -	u32 pvr = mfspr(PVR);
-> > -	if (pvr == PVR_440GX_RA || pvr == PVR_440GX_RB ||
-> > -	    (pvr == PVR_440GX_RC && p->cpu > 667000000))
-> > +	if (strcmp(cur_cpu_spec[0]->cpu_name, "440GX Rev. A") == 0 ||
-> > +			strcmp(cur_cpu_spec[0]->cpu_name, "440GX Rev. B") == 0
-> > +			|| (strcmp(cur_cpu_spec[0]->cpu_name, "440GX Rev. C")
-> > +				== 0 && p->cpu > 667000000))
+Best regards,
+Alex
+
+> -----Original Message-----
+> From:	Walter L. Wimer III [SMTP:walt.wimer@timesys.com]
+> Sent:	Monday, March 28, 2005 6:07 PM
+> To:	Mike Rapoport
+> Cc:	linuxppc-embedded@ozlabs.org
+> Subject:	Re: Problem running Linux 2.6.11 on MPC8272ADS
 > 
 > 
-> While I applaud Tom's quest to eliminate _useless_ PVR defines I think 
-> this change looks strange.
+> Hi Mike,
 > 
-> It substitutes simple and clear (for those who are reading this code) 
-> check to something more involved without good reason, IMHO.
+> I had the same "hang" experience.  The file arch/ppc/platforms/pq2ads.c
+> contains the following function:
 > 
-> Also, it adds additional "point of failure" making this code more 
-> fragile. We never used those CPU ID strings anywhere in the kernel 
-> code before, people are used to the fact that they don't matter much 
-> (maybe only for user-mode) and it's possible that during some future 
-> "cleanup" code will break. One could say that we aren't allowed to 
-> change such strings because something in user-mode could break, and 
-> while I agree with that, I don't think it's good argument to _add_ 
-> additional point where code could break.
-
-While talking with galak today on IRC, he mentioned one of the reason, 
-why we may want to use string comparison instead of PVR.
-
-For some chips, e.g. for 8272 family, there is NO way (even if we use 
-IMMR[16-31] and REV_NUM in addition to PVR) to detect correctly CPU 
-(which I think is pretty lame, but I digress :). For such cases, board 
-port can "fixup" CPU name, if this information can be implied by the 
-board type/revision/etc.
-
-So, I think having a way to specify/name/detect CPU which is more 
-general and even can solve some real problems, is beneficial. 
-Therefore, I don't object anymore to such changes :).
-
---
-Eugene
+>   void __init
+>   m82xx_board_setup(void)
+>   {
+>   	/* Enable the 2nd UART port */
+>   	*(volatile uint *)(BCSR_ADDR + 4) &= ~BCSR1_RS232_EN2;
+>   }
+> 
+> 
+> I had to ifdef-out the assignment statement above.  It appears that the
+> definition for BCSR_ADDR in the kernel code differs from what U-Boot is
+> using, and that area of memory isn't properly mapped into the kernel
+> address space this early in the boot sequence.  As a result, I was
+> getting an Oops() before the console was even enabled (I could see the
+> Oops message by examining the kernel's printk log buffer using a
+> BDI-2000 hardware debugger).
+> 
+> 
+> 
+> Good luck,
+> 
+> Walt Wimer
+> TimeSys Corporation
+> 
+> 
+> 
+> 
+> On Sun, 2005-03-27 at 11:31 +0200, Mike Rapoport wrote:
+> > Hi,
+> > I'm trying to bring up the Linux 2.6.11 on MPC8272ADS and it seem to 
+> > hang up at the very beginning.
+> > I use ads8272_defconfig and then enable console on SCC:
+> > 
+> > CONFIG_SERIAL_CPM=y
+> > CONFIG_SERIAL_CPM_CONSOLE=y
+> > CONFIG_SERIAL_CPM_SCC1=y
+> > 
+> > 
+> > when I boot the kernel from the u-boot the system hangs up right after 
+> > the kernel decompression.
+> > 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
