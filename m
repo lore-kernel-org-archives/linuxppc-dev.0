@@ -1,31 +1,43 @@
-Message-ID: <392317F8.F32062C6@embeddededge.com>
-Date: Wed, 17 May 2000 18:06:48 -0400
-From: Dan Malek <dan@netx4.com>
+Date: Wed, 17 May 2000 18:38:01 -0400 (EDT)
+From: Pavel Roskin <pavel_roskin@geocities.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Another useful piece of code lost
+Message-ID: <Pine.LNX.4.21.0005171815010.32437-100000@sunapee.transcept.com>
 MIME-Version: 1.0
-To: Steve Rossi <srossi@ccrl.mot.com>
-CC: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: more on e2fsck
-References: <3922CB9E.873738B6@ccrl.mot.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steve Rossi wrote:
+Hello!
 
-> when I run mke2fs /dev/sda2 it creates a file system just fine.
+The kernel that Dan Malek wrote for us in Transcept, Inc. had the
+following lines in include/asm-ppc/ide.h :
 
-Oh, I'll just make a wild guess here.....SCSI disks on 8xx.....:-).
-How many pieces of untested hardware (and software) are in this path?
+/*
+ * The following are not needed for the non-m68k ports
+ */
+#if 0
+#define ide_ack_intr(base, irq)         (1)
+#else
+static __inline__ void ide_ack_intr(unsigned int base, unsigned int irq)
+{
+        ((immap_t *)IMAP_ADDR)->im_pcmcia.pcmc_pscr = ~0;
+}
+#endif
 
-Have you written a simple program to make sure you can read/write
-sectors on the disk without errors?  I, like the others, have e2fsck
-working on PCMCIA "disk" devices.  The sources compile just fine.  I
-suppose someone could compile and test something for you to verify it
-works.  I don't have anything handy at the moment, but I will add it
-to my list.
+Strictly speaking, this is wrong because this code assumes that all PPC
+machines, even PowerMac's use PCMCIA.
 
+But from the practical point of view, this code makes it possible to
+support ATA Flash at least on RPX/Lite, so the comment is wrong - there
+are non-m68k ports depending on non-trivial ide_ack_intr().
 
-	-- Dan
+The MontaVista kernels don't include anything like that. This is one of
+the reasons why they don't support ATA Flash on RPX/Lite.
+
+Regards,
+Pavel Roskin
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
