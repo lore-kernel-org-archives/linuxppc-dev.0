@@ -1,26 +1,29 @@
-Date: Fri, 8 Oct 1999 16:02:15 -0700 (PDT)
+Date: Fri, 8 Oct 1999 16:07:41 -0700 (PDT)
 From: Brad Midgley <brad@turbolinux.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: OF syntax for quik on RS/6000
-Message-ID: <Pine.LNX.4.10.9910081556350.30742-100000@web1.turbolinux.com>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+cc: "David A. Gatwood" <dgatwood@mvista.com>, bh40@calva.net,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: ADB probing
+In-Reply-To: <199910080944.LAA03438@simul.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.10.9910081604290.30742-100000@web1.turbolinux.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
 
-Could someone help me with some forth syntax?
+> I really don't like polling, but there probably isn't anything else to
+> 
+> The only other thing I can imagine is to keep the default IDs unoccupied,
+> and watch for packets from these IDs. 
 
-Quik on CHRP assumes it will find a devalias "disk" which refers to the
-boot disk. However, recent IBM firmware revs appear to disregard setting
-that alias, so they can't be booted from hard drive (eg the f50 I'm
-working with). I'd like to be able to direct people to enable some nvramrc
-code so "disk" is set to be the same as the first entry from boot-device.
-(We could try to get fancy later).
+I like this approach because it effectively disables the hard reset that a
+keyboard on the default id can perform and would be able to move keyboards
+off the default as soon as it noticed them.
 
-How would I express that in OF/forth?
+How does all this discussion fit in with the work being done on the input
+system which will allow multiple independent keyboards, etc.?
 
 Brad
 brad@pht.com | http://www.pht.com/~brad/
