@@ -1,53 +1,32 @@
-Message-Id: <199909160742.JAA00362@piglet.cpu.lu>
-Date: Thu, 16 Sep 1999 09:42:09 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: New booter (about quik)
-To: bierman@apple.com
-cc: erbenson@alaska.net, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <v0313030ab405d00a6b8a@[17.202.21.235]>
+Message-ID: <37E0A14A.E4217C4@madflower.com>
+Date: Thu, 16 Sep 1999 03:50:40 -0400
+From: Sean <picasso@madflower.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+To: Tom Rini <trini@kernel.crashing.org>
+CC: Ethan Benson <erbenson@alaska.net>,
+        "David A. Gatwood" <dgatwood@mvista.com>,
+        Kevyn Shortell <kevyn@apple.com>,
+        Benjamin Herrenschmidt <bh40@calva.net>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: New booter-New world
+References: <Pine.LNX.4.10.9909151555260.31363-100000@opus.bloom.county>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  15 Sep, this message from Peter Bierman echoed through cyberspace:
->>the bootblock method works on most OF machines since there are plenty
->>of people using quik to do it, its the newworld machines that are
->>either different or broken, however they have a flashable ROM so
->>apple can fix this oversight.
-> 
-> I haven't used quik, but I'm guessing it patches OF so that OF can read a
-> booter somewhere? This would be similar to System Disk for OldWorld
-> machines, which patches OF, and then points it at a loader partition which
-> contains an expanded XCOFF binary (the same binary as the booter, just in a
-> format that OldWorld OF can load and execute.)
 
-No, quik is a two-part boot process. quik installs a first-stage boot
-loader in the boot block of a disk partition. I admit I am not sure if
-this partition needs to be a HFS partition, or if it can be an ext2
-partition... (Paul?)
+Since the New World machines have a flashable ROM, why doesn't Apple
+just write a new flash ROM for MacOS X by writing a flash with
+bootloader on it that stores its information in the MBR or PRAM
+(multiple PRAM settings) or somewhere so they don't have to use the
+secret partition trick to get MacOS X to boot correctly. In the process,
+they might as well add an allowance so you can boot Linux or another
+alternative OS in the extra slots (multiple kernels, etc). And the
+ability to pick which OS you prefer to boot.
 
-The first-stage then loads the second-stage based on its physical block
-assignment on disk, not based on any filesystem code. It's only the
-second-stage that includes filesystem code, and which loads the kernel
-from the root ext2 partition.
-
-Apart from the HFS partition that might be needed for the bootblock
-installation (i.e. it can be a partition as small as your tools allow
-you to create it), I think this is a clean boot method... the
-second-stage can include any filesystem code you want, and you can
-update that part independantly of all the others.
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+I think this would help bolster Apple's reputation and would extend
+their hardare sales into markets they rarely get buyers. (linux people
+tired of fighting with LILO *lol*)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
