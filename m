@@ -1,31 +1,47 @@
-Message-ID: <383993F5.BCE4A507@pplmail.com>
-Date: Mon, 22 Nov 1999 14:05:25 -0500
-From: Francois Guimond <fguimond@pplmail.com>
+Message-ID: <38399F76.919D1FB4@netx4.com>
+Date: Mon, 22 Nov 1999 14:54:30 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Linux ppc newbie boot sequense
+To: sorin@nitechinc.com
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: IDE on MBX board
+References: <99111909331400.01435@splash.nitechinc.com> <38397383.8F8677A1@jlc.net> <99112211371500.00831@splash.nitechinc.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Excuse me for de obivious question, but I am a newbie...
+Sorin Balea wrote:
 
-I am trying to install a linux kernel on MPC8240 cpu in a limited flash
-space.
-(Motorola sandpoint evaluation platform 512kb flash 32MB ram and dink32
-software)
+> So from what i understand, the IDE on MBX board is done by the W83C553F
+> chip which i suppose it's not present on other boards, am i right?
 
-I have got a PPC zImage compiled.
 
-My question is what do I put at First Instruction?
-Do I need Lilo?
-Where is the first instruction of the kernel in a zImage?
+Well, that part just appears as a standard PC-style IDE controller,
+and the standard Linux port will support that.  It's everything
+between the 8xx and that part, the QSpan PCI Bridge, the 8259
+interrupt controller, and the integrated features inside the 8xx
+that are the challenge.  If you look at the MBX as "just" a i486
+PC board, and ignore all of the internal 8xx features, these things
+work just fine.  The trouble is, on one hand you want to leverage
+all of the internal 8xx features, and on the other you want this
+external.....well....crap.  The 8xx MBX just doesn't represent
+the kind of board people use for building products (those I have
+helped develop).  The added cost of the PCI and PC-style I/O
+aren't necessary for embedded designs suitable for the 8xx.
+This is further complicated by Linux assuming an exclusive
+PC-style environment (8259 interrupt controller, PCI, ISA, 165xx
+serial, PCI Ethernet, etc.), and currently prevents some internal
+8xx devices to co-exist with external PC stuff.
 
-I want only serial console first.
+> If nobody minds, i'd like to give it a shot at making it work,
 
-Because there is no CPM  in it, I wanted to postpone the networking
-features.
-It means no root over nfs...
+Just pick a "stock" 2.2.x and it is likely to work.  Just choose
+the proper configuration options.  Just don't configure everything,
+or you get a big mess.
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
