@@ -1,31 +1,32 @@
-Message-ID: <3BD0E1BD.7927133@mvista.com>
-Date: Fri, 19 Oct 2001 22:30:21 -0400
+Message-ID: <3BD0EE54.80DC772A@mvista.com>
+Date: Fri, 19 Oct 2001 23:24:04 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Neil Wilson <NWILSON@Airspan.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Sandpoint X3 + network
-References: <E69FF45ADA3BD511A25900047623CC4F12AB2E@jupiter>
+To: Mark Pilon <mpilon@midrivers.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: debugging ppc4xx VM w/ abatron
+References: <3BD05C20.20E3396B@midrivers.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Neil Wilson wrote:
+Mark Pilon wrote:
 
-> Whilst I am trying to look at this problem I was wondering if anyone else
-> has seen similar or even better knows why & has a cure.
+> I'm trying to debug mvista's 2.4.2 kernel w/ the bdi2000 (v.1.05) and
+> am having trouble once the mmu is turned on
 
-I have seen the problem for all too long and don't yet have a cure.
-When speaking to folks at Motorola, it appears they are having more
-success than I when the Sandpoint X3 is configured for legacy X2 mode.
-If you can determine how to do that successfully (I found it easier to
-use the default X3 mode than figure out the switches :-), build a kernel
-for the X2 and see how it works.
+We have unfortunately really screwed up the Abatron folks lately by
+moving around bits in the Linux PTEs.  I've tried to coordinate this
+the best I can, to ensure we understand what kernel version matches
+the BDI2000 firmware version.  Unfortunately, I'm not the only one
+making changes, so sometimes I miss things.  I apologize and continue
+to work with Abatron to sort this out.  It's the fault of us that are
+making kernel modifications....
 
-Due to the pipeline differences in the 7450, I suspect there are some
-sync's or eieio's missing, but I haven't had the time to finish all
-of the 7450 work.
+Oh sorry, the short answer is you need to patiently ask Abatron to
+get the version of firmware that matches the kernel you are debugging.
+By the way, this is only a 4xx problem.
 
 Thanks.
 
