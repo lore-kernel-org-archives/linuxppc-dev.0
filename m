@@ -1,40 +1,43 @@
-Date: Thu, 6 Jun 2002 15:40:32 -0400 (EDT)
-From: Christopher Murtagh <christopher.murtagh@mcgill.ca>
-To: <benh@kernel.crashing.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: SMP/HIGHMEM/7450 status ?
-In-Reply-To: <20020606174530.22442@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.33.0206061539340.20902-100000@blues.wcg.mcgill.ca>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: roger blofeld <blofeldus@yahoo.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Sungem bug or something else?
+Date: Thu, 6 Jun 2002 21:45:18 +0200
+Message-Id: <20020606194518.27675@smtp.wanadoo.fr>
+In-Reply-To: <20020606192510.58822.qmail@web11106.mail.yahoo.com>
+References: <20020606192510.58822.qmail@web11106.mail.yahoo.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 6 Jun 2002 benh@kernel.crashing.org wrote:
->> herrenschmidt.wcg.mcgill.ca
->
->hehe, nice ;) though I wouldn't like having to type that name every
->day to telnet to the box ;)
+>I encounter an oops during boot bringing up a sungem
+>interface. (smp g4 450/gcc 3.1/glibc 2.2.5) If I defer
+>bringing up the network at boot, I can successfully
+>start eth0 (sungem) if I start eth1 (tulip) first, so
+>it may not be the sungem driver itself. This happens
+>on benh 2.4.19-Bpre10, and pre9.
 
- Lets just say, I've learned to type your last name really well. :-)
+What kind of error is it ? A Machine Check ?
 
-Cheers,
+Looking at your backtrace, it looks like the driver is
+trying to access the PHY chip. That can sometimes happen
+if you have some tool like miitool or ethtool trying to
+get at the link status while the chip isn't powered up.
 
-Chris
+The problem here is that sungem on Apple HW only powers
+the chip when the interface is brought up, and powers it
+down about 10 seconds after bringing the interface down.
 
+This improve power management, but kills link monitoring
+tools.
 
---
+There may be also a bug in the driver causing it to try
+to access the PHY registers when the chip is in down
+mode & getting the ethtool ioctl's
 
-Christopher Murtagh
-Webmaster / Sysadmin
-Web Communications Group
-McGill University
-Montreal, Quebec
-Canada
-
-Tel.: (514) 398-3122
-Fax:  (514) 398-2017
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
