@@ -1,44 +1,40 @@
-Date: Fri, 22 Jan 1999 01:51:59 -0600 (CST)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Vinai <vroopcha@post.its.mcw.edu>
-cc: linuxppc-user@lists.linuxppc.org, linux-pmac@samba.anu.edu.au,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: MP machine with VME bridge ??
-In-Reply-To: <Pine.SOL.3.96.990121203832.18026A-100000@post.its.mcw.edu>
-Message-ID: <Pine.LNX.4.04.9901220150530.12144-100000@narn.local.drgw.net>
+Message-ID: <XFMail.990122075441.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.LNX.3.96.990121190157.466A-100000@persephone.cs.nmt.edu>
+Date: Fri, 22 Jan 1999 07:54:41 -0000 (GMT)
+From: Gary Thomas <gdt@linuxppc.org>
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
+Cc: Dan Malek <dmalek@jlc.net>, linuxppc-dev@lists.linuxppc.org,
+        linux-kernel@vger.rutgers.edu,
+        Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
+        Johnnie Peters <jpeters@phx.mcd.mot.com>,
+        Michael Meissner <meissner@cygnus.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 21 Jan 1999, Vinai wrote:
 
+On 22-Jan-99 Cort Dougan wrote:
 > 
-> Hi All,
+> The changes are not minor.  I'm going to hold off for a while.
 > 
-> I am trying to collect some information here.  We currently have a high-
-> speed data acquisition system (16-bit, 2E6 samples per sec) running on a
-> Power Challange (multiple CPU Sili-graph machine with a VME bus). We are
-> trying to create a duplicate system, but would very much like to avoid
-> paying what we did for the Sili-graph.
+
+What about the fixes for the PS/2 mouse?  These are not large, but
+significant for systems that need to intialize the mouse from scratch.
+
+> arch/ppc/boot needs to be redone anyway so until that happens (which
+> should happen soon) I think it best to wait.  
 > 
-> Are there any multiple-CPU VME motorola based machines out there that'll
-> run LinuxPPC?  Our only other alternative is linux running on a multiple
-> -CPU intel machine.  But as yet we have not been able to find a PCI card
-> that has the A/D performance we currently have with our present VME set-
-> up.
-
-Motorola makes dual CPU (604e/300) VME boards.
-
-(Which should soon support SMP... See my next message to linuxppc-dev)
-
---------------------------------------------------------------------------
-| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
-
+> My current thinking is that there will be a arch/ppc/prepboot for prep and
+> a arch/ppc/8xxboot for the 8xx processor systems (mbx, rpx lite and so
+> on).  prepboot will likely be based on Gabriels prepboot code.  Those are
+> just my rough ideas right now so they're subject to change.  Anyone have
+> suggestions or opinions about that?
+> 
+> }I suspose it is too late to get this in the real 2.2.0 release?
+> 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
