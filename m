@@ -1,43 +1,231 @@
-Message-ID: <20040531015917.47683.qmail@web15207.mail.bjs.yahoo.com>
-Date: Mon, 31 May 2004 09:59:17 +0800 (CST)
-From: Song Sam <samlinuxppc@yahoo.com.cn>
-Subject: Re: 8xx-2.6 | Prolog
-To: Pantelis Antoniou <panto@intracom.gr>,
-	Dan Malek <dan@embeddededge.com>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Kumar Gala <kumar.gala@motorola.com>,
+Subject: Re: [PATCH] fix TLB handling for 8xx on linuxppc-2.5
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Pantelis Antoniou <panto@intracom.gr>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Tom Rini <trini@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>,
 	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <40B6DEC8.2070605@intracom.gr>
-MIME-Version: 1.0
+In-Reply-To: <40BB42EF.10805@intracom.gr>
+References: <40BB42EF.10805@intracom.gr>
 Content-Type: text/plain
+Message-Id: <1086040829.1930.66.camel@gaston>
+Mime-Version: 1.0
+Date: Tue, 01 Jun 2004 08:00:30 +1000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pantelis Antoniou <panto@intracom.gr> wrote:
-
-> > Dan Malek wrote:
-
-> > The interrupt stuff in patch 1 was wrong when it was done in 2.4 and
-> > I'm disappointed to see it again in 2.6. Unfortunately, I don't have
-> > time to fix it now, but it will get done properly when I implement
-> > the similar thing for the 8560.
+On Tue, 2004-06-01 at 00:36, Pantelis Antoniou wrote:
+> Hi
 >
-> Well, I had to do something. request_8xxirq & friends are unusable.
+> The following patch fixes the problems of 8xx with the latest
+> linuxppc-2.5 tree.
+>
+> With it user space progresses properly.
+> Lots of gray areas remain and MM handling for 8xx is
+> mighty inefficient IMO.
+>
+> Dan could you please take a look?
 
-I tested External Interrupt of 823e with
-request_8xxirq on IRQ1-IRQ7 in 2.4.18(MVL3.0-rpxlite
-BSP) last night.It did work.But I failed many times to
-make PCMCIA IP_B7 interrupt work,which should be
-treated as External Interrupt--registered fine but
-without any response to IP_B7 change.
+Ok, looks a bit weird on the edges.
 
-I wonder whether "interrupt stuff" as you metioned had
+>
+> Pantelis
+>
+>
+> ______________________________________________________________________
+> diff -Nur --exclude=RCS --exclude=CVS --exclude=SCCS --exclude=BitKeeper --exclude=ChangeSet linuxppc_2.5/arch/ppc/kernel/head_8xx.S linuxppc_2.5-intracom/arch/ppc/kernel/head_8xx.S
+> --- linuxppc_2.5/arch/ppc/kernel/head_8xx.S	Mon May 31 10:52:29 2004
+> +++ linuxppc_2.5-intracom/arch/ppc/kernel/head_8xx.S	Mon May 31 17:24:05 2004
+> @@ -157,6 +157,24 @@
+>  	SAVE_2GPRS(7, r11)
+>
+>  /*
+> +if ((val & (_PAGE_HWWRITE | _PAGE_RW | _PAGE_DIRTY)) == (_PAGE_RW | _PAGE_DIRTY))
+> +	val |= _PAGE_HWWRITE;
+> +else if ((val & (_PAGE_HWWRITE | _PAGE_RW | _PAGE_DIRTY)) == _PAGE_HWWRITE)
+> +	val &= ~_PAGE_HWWRITE;
+> +*/
 
-any relation with my case.
+I don't like the above. Things should be dealt with differently.
 
-Sorry for disturbing you all! :-)
+The TLB handler itself should only care about _setting_ _PAGE_HWWRITE I
+think when it's missing (oh, and dirty of course). The clearing should
+be done on a per-PTE basis in ptep_get_and_clear_*, ptep_clear_*, etc...
+along with the necessary TLB invalidate (hrm... can we invalidate
+selectively instead of the whole thing ?)
 
-Sam
+The tlbia in update_mmu_cache() doesn't look good. More like a
+workaround for breakage in the implementation.
+
+Paul, any comment ?
+
+Ben.
+
+> +#define LAZY_DTLB_FIX			\
+> +	rlwinm  r12,r10,0,23,25;	\
+> +	cmpwi   r12,0xc0;		\
+> +	bne+    0f;			\
+> +	ori     r10,r10,0x100;		\
+> +	b	1f;			\
+> + 0:	cmpwi   r12,0x100;		\
+> +	bne+    1f;			\
+> +	rlwinm  r10,r10,0,24,22;	\
+> + 1:
+> +
+> +/*
+>   * Note: code which follows this uses cr0.eq (set if from kernel),
+>   * r11, r12 (SRR0), and r9 (SRR1).
+>   *
+> @@ -348,7 +366,6 @@
+>  	mtspr	MD_TWC, r11	/* Load pte table base address */
+>  	mfspr	r11, MD_TWC	/* ....and get the pte address */
+>  	lwz	r10, 0(r11)	/* Get the pte */
+> -
+>  	ori	r10, r10, _PAGE_ACCESSED
+>  	stw	r10, 0(r11)
+>
+> @@ -398,6 +415,7 @@
+>  	mfcr	r10
+>  	stw	r10, 0(r0)
+>  	stw	r11, 4(r0)
+> +	stw	r12, 16(r0)
+>  	mfspr	r10, M_TWB	/* Get level 1 table entry address */
+>
+>  	/* If we are faulting a kernel address, we have to use the
+> @@ -440,6 +458,7 @@
+>  	mtspr	MD_TWC, r11
+>
+>  	mfspr	r11, MD_TWC	/* get the pte address again */
+> +	LAZY_DTLB_FIX
+>  	ori	r10, r10, _PAGE_ACCESSED
+>  	stw	r10, 0(r11)
+>
+> @@ -463,6 +482,7 @@
+>  	lwz	r11, 0(r0)
+>  	mtcr	r11
+>  	lwz	r11, 4(r0)
+> +	lwz	r12, 16(r0)
+>  #ifdef CONFIG_8xx_CPU6
+>  	lwz	r3, 8(r0)
+>  #endif
+> @@ -472,6 +492,7 @@
+>  	lwz	r11, 0(r0)
+>  	mtcr	r11
+>  	lwz	r11, 4(r0)
+> +	lwz	r12, 16(r0)
+>  #ifdef CONFIG_8xx_CPU6
+>  	lwz	r3, 8(r0)
+>  #endif
+> @@ -505,6 +526,7 @@
+>  	mfcr	r10
+>  	stw	r10, 0(r0)
+>  	stw	r11, 4(r0)
+> +	stw	r12, 16(r0)
+>
+>  	/* First, make sure this was a store operation.
+>  	*/
+> @@ -574,6 +596,7 @@
+>  	*/
+>  	ori	r10, r10, _PAGE_DIRTY|_PAGE_ACCESSED|_PAGE_HWWRITE
+>  	mfspr	r11, MD_TWC		/* Get pte address again */
+> +	LAZY_DTLB_FIX
+>  	stw	r10, 0(r11)		/* and update pte in table */
+>
+>  	/* The Linux PTE won't go exactly into the MMU TLB.
+> @@ -596,6 +619,7 @@
+>  	lwz	r11, 0(r0)
+>  	mtcr	r11
+>  	lwz	r11, 4(r0)
+> +	lwz	r12, 16(r0)
+>  #ifdef CONFIG_8xx_CPU6
+>  	lwz	r3, 8(r0)
+>  #endif
+> @@ -605,6 +629,7 @@
+>  	lwz	r11, 0(r0)
+>  	mtcr	r11
+>  	lwz	r11, 4(r0)
+> +	lwz	r12, 16(r0)
+>  #ifdef CONFIG_8xx_CPU6
+>  	lwz	r3, 8(r0)
+>  #endif
+> diff -Nur --exclude=RCS --exclude=CVS --exclude=SCCS --exclude=BitKeeper --exclude=ChangeSet linuxppc_2.5/arch/ppc/kernel/misc.S linuxppc_2.5-intracom/arch/ppc/kernel/misc.S
+> --- linuxppc_2.5/arch/ppc/kernel/misc.S	Mon May 31 10:52:30 2004
+> +++ linuxppc_2.5-intracom/arch/ppc/kernel/misc.S	Mon May 31 17:24:05 2004
+> @@ -565,10 +565,12 @@
+>   * flush_icache_range(unsigned long start, unsigned long stop)
+>   */
+>  _GLOBAL(flush_icache_range)
+> +#if !defined(CONFIG_8xx)
+>  	mfspr	r5,PVR
+>  	rlwinm	r5,r5,16,16,31
+>  	cmpi	0,r5,1
+>  	beqlr				/* for 601, do nothing */
+> +#endif
+>  	li	r5,L1_CACHE_LINE_SIZE-1
+>  	andc	r3,r3,r5
+>  	subf	r4,r3,r4
+> @@ -683,10 +685,12 @@
+>   *	void __flush_dcache_icache(void *page)
+>   */
+>  _GLOBAL(__flush_dcache_icache)
+> +#if !defined(CONFIG_8xx)
+>  	mfspr	r5,PVR
+>  	rlwinm	r5,r5,16,16,31
+>  	cmpi	0,r5,1
+>  	beqlr					/* for 601, do nothing */
+> +#endif
+>  	rlwinm	r3,r3,0,0,19			/* Get page base address */
+>  	li	r4,4096/L1_CACHE_LINE_SIZE	/* Number of lines in a page */
+>  	mtctr	r4
+> @@ -712,10 +716,12 @@
+>   *	void __flush_dcache_icache_phys(unsigned long physaddr)
+>   */
+>  _GLOBAL(__flush_dcache_icache_phys)
+> +#if !defined(CONFIG_8xx)
+>  	mfspr	r5,PVR
+>  	rlwinm	r5,r5,16,16,31
+>  	cmpi	0,r5,1
+>  	beqlr					/* for 601, do nothing */
+> +#endif
+>  	mfmsr	r10
+>  	rlwinm	r0,r10,0,28,26			/* clear DR */
+>  	mtmsr	r0
+> diff -Nur --exclude=RCS --exclude=CVS --exclude=SCCS --exclude=BitKeeper --exclude=ChangeSet linuxppc_2.5/arch/ppc/mm/init.c linuxppc_2.5-intracom/arch/ppc/mm/init.c
+> --- linuxppc_2.5/arch/ppc/mm/init.c	Mon May 31 10:52:30 2004
+> +++ linuxppc_2.5-intracom/arch/ppc/mm/init.c	Mon May 31 17:24:05 2004
+> @@ -605,7 +605,6 @@
+>  	kunmap(page);
+>  }
+>
+> -#ifndef update_mmu_cache
+>  /*
+>   * This is called at the end of handling a user page fault, when the
+>   * fault has been handled by updating a PTE in the linux page tables.
+> @@ -641,6 +640,7 @@
+>  		if (!pmd_none(*pmd))
+>  			add_hash_page(mm->context, address, pmd_val(*pmd));
+>  	}
+> +#else
+> +	__tlbia();
+>  #endif
+>  }
+> -#endif
+> diff -Nur --exclude=RCS --exclude=CVS --exclude=SCCS --exclude=BitKeeper --exclude=ChangeSet linuxppc_2.5/include/asm-ppc/tlbflush.h linuxppc_2.5-intracom/include/asm-ppc/tlbflush.h
+> --- linuxppc_2.5/include/asm-ppc/tlbflush.h	Mon May 31 10:53:26 2004
+> +++ linuxppc_2.5-intracom/include/asm-ppc/tlbflush.h	Mon May 31 17:24:16 2004
+> @@ -50,7 +50,8 @@
+>  static inline void flush_tlb_kernel_range(unsigned long start,
+>  				unsigned long end)
+>  	{ __tlbia(); }
+> -#define update_mmu_cache(vma, addr, pte)	do { } while(0)
+> +/* #define update_mmu_cache(vma, addr, pte)	do { } while(0) */
+> +extern void update_mmu_cache(struct vm_area_struct *, unsigned long, pte_t);
+>
+>  #else	/* 6xx, 7xx, 7xxx cpus */
+>  struct mm_struct;
+--
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
