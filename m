@@ -1,50 +1,36 @@
-Message-ID: <371B000F.A5C5CA84@siemens.at>
-Date: Mon, 19 Apr 1999 12:06:07 +0200
-From: Helmut Buchsbaum <helmut.buchsbaum@siemens.at>
-MIME-Version: 1.0
-To: Magnus Damm <eramdam@kieray1.p.y.ki.era.ericsson.se>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC on FADS
-References: <199904151452.QAA26871@kieraycl01.kieraydom>
-Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-Id: <v04204e01b340b5cd8dfc@[206.163.71.146]>
+In-Reply-To: <371A80F0.B04E9947@dgs.monash.edu.au>
+References: <371A80F0.B04E9947@dgs.monash.edu.au>
+Date: Mon, 19 Apr 1999 03:32:48 -0700
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+From: Joel Klecker <jk@espy.org>
+Subject: Re: LinuxPPC: couldn't donwload glibc sources.
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello Magnus!
+At 01:03 +0000 1999-04-19, Brendan Simon wrote:
+>I tried downloading the glibc sources as described on the cross-compiler
+>page (http://members.home.com/mmporter/cross.html#LibC).
+>
+>Are following sites still valid ?
+>
+>ftp://alpha.gnu.org/gnu/glibc-2.0.106.tar.gz
+>ftp://alpha.gnu.org/gnu/glibc-crypt-2.0.96.tar.gz
+>ftp://alpha.gnu.org/gnu/glibc-linuxthreads-2.0.106.tar.gz
 
-Magnus Damm wrote:
-> 
-> That has been one of my problems since october... =)
-> 
-> Now is linux running with root on ATA-Flash!
+alpha.gnu.org is down, in any event those are old sources.
 
-This what I'd like to do, too! But what about the 823-PCMCIA controller
-support?
-What's your configuration?
-I once spent some hours to adapt Dan's FADSROM for the 860 to my 823,
-but unfortunately I didn't succeed due to problems talking to the PCMCIA
-hardware!
-
-> 
-> Question:
-> 
-> Where can I find information about linux memory management?
-> 
-
-Try http://humbolt.geo.uu.nl/Linux-MM/ for a start!
-
-
+Try:
+<ftp://sourceware.cygnus.com/pub/glibc/glibc-2.1.tar.gz>
+<ftp://sourceware.cygnus.com/pub/glibc/glibc-linuxthreads-2.1.tar.gz>
+<ftp://ftp.funet.fi/pub/gnu/funet/glibc-crypt-2.1.tar.gz>
 -- 
-*********************************************************
-* Helmut Buchsbaum               * Siemens AG Austria   *
-* Tel:   ++43-1-1707-36686       * EZE PN 5             *
-* Fax:   ++43-1-1707-55169       * Erdberger Laende 26  *
-*                                * A-1030 Vienna/Europe *
-*********************************************************
-* mailto:Helmut.Buchsbaum@siemens.at                    *
-*        buc@eze22.siemens.co.at                        *
-*********************************************************
+Joel Klecker (aka Espy)                    Debian GNU/Linux Developer
+<URL:mailto:jk@espy.org>                 <URL:mailto:espy@debian.org>
+<URL:http://web.espy.org/>               <URL:http://www.debian.org/>
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
