@@ -1,54 +1,54 @@
-Message-ID: <3C0AA2AF.97E7FCB4@wanadoo.fr>
-Date: Sun, 02 Dec 2001 22:11:09 +0100
-From: Martin Costabel <costabel@wanadoo.fr>
+Message-ID: <3C0AADA8.8050304@waitaki.otago.ac.nz>
+Date: Mon, 03 Dec 2001 11:39:36 +1300
+From: Bryce McKinlay <bryce@waitaki.otago.ac.nz>
 MIME-Version: 1.0
-To: paulus@samba.org
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
-Subject: Re: [PATCH] Minor changes to control/imstt/platinum/valkyrie/atyfb
-References: <20011127143058.R13091@cpe-24-221-152-185.az.sprintbbd.net>
-		<3C08CFF0.18A1FBC7@wanadoo.fr> <15369.65261.546405.15780@argo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	Jeff Koftinoff <jeffk@jdkoftinoff.com>, havardk@xmms.org
+Subject: Re: Byte order in sound drivers
+References: <3C099A81.6040506@waitaki.otago.ac.nz> <20011202095651.24942@smtp.wanadoo.fr>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+Benjamin Herrenschmidt wrote:
+
+>>The most recent release of XMMS (0.9.5) works correctly for me for both
+>>MP3 and WAV files, but not CD audio for which the input plugin returns
+>>sound in the native endian-ness.
+>>
 >
-> Martin Costabel writes:
+>So far, I had MP3s working but not WAV nor cdread (blank noise in both
+>cases). I didn't yet try 0.9.5 though.
 >
-> > For the valkyriefb driver on my Pmac 6400, I can confirm from a first
-> > short test that it still works. This is with your patch applied to
-> > today's 2.4.17-pre1-ben0 kernel.
+
+I should mention I was using the "xmms-cdread" plugin from
+ftp://mud.stack.nl/pub/OuterSpace/willem, along with the ide-scsi
+driver, to get cd audio going. The built in XMMS "cdaudio" plugin didn't
+work for my Ti 500.
+
+>>It depends on the HW you have. Most recent machines don't do HW
+>>byteswap, and so accept only big-endian samples. The way this is
+>>implemented in our driver currently is a bit weird though, the
+>>setformat ioctl won't fail when trying to set an LE format, but
+>>it will set the equivalent BE format. So the application is
+>>expected to read back the format to figure out what had to be
+>>done.
 >
-> Do you still have macos on the 6400?  If so can you confirm whether,
+>
+>Well, the current dmasound behaviour is definitely broken. I'm
+>changing it now so that when asked for an _LE format on a chip
+>that do only _BE will return -EINVAL.
+>
 
-Yes, I still have MacOS 8.6. No 9.x, though.
+Interesting, thanks for looking at that. I wonder if the USB audio
+driver has the same problem, since I get exactly the same behaviour with
+my sound sticks.
 
-> if you set the screen resolution and colour depth in macos, that the
-> value you have set in macos is the default that linux will use?
+regards
 
-I did some tests with the 2 useful modes of the 6400: 1024x768x8bit at
-72Hz (vmode 15, cmode 8) and 800x600x16bit at 60Hz (vmode 10, cmode 16).
+Bryce.
 
-The results, with or without Tom's patch, were the same as they always
-were:
-The vmode of MacOS is used by the Linux console; the cmode 16 is not
-recognized, so instead of vmode 10 16 one always gets vmode 10 8 as
-default. The log says
-
-kernel: Monitor sense value = 0x62b, <6>using video mode 10 and color
-mode 0
-
-I think I never saw this differently. For 16bit color, I always had to
-either put video=valkyriefb:vmode:10,cmode:16 into the kernel args or
-say vmode 10 16 at the console (and then startx -- -depth 15 to get the
-right colors in X; -depth 16 gives weird colors).
-
-P.S. Rebooting into MacOS (first time for almost a year) seems to have
-cured the crashes I had yesterday, too. Weird.
-
---
-Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
