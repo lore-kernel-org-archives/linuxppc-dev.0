@@ -1,42 +1,36 @@
-Message-Id: <376BA9B3.6773@gold.tc.umn.edu>
-Date: Sat, 19 Jun 1999 08:31:15 -0600
-From: Akiko Tanaka <tanak002@gold.tc.umn.edu>
-Reply-To: Akiko Tanaka <tanak002@gold.tc.umn.edu>
-MIME-Version: 1.0
+Date: Sat, 19 Jun 1999 12:42:34 -0400 (EDT)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: a question
-Content-Type: text/plain; charset=us-ascii
+cc: Sean Harding <sharding@gutenberg.uoregon.edu>,
+        Geert.Uytterhoeven@cs.kuleuven.ac.be
+Subject: platinumfb problem (cont. from long ago)
+Message-ID: <Pine.LNX.3.96L.990619121249.2028A-100000@unix47.andrew.cmu.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've been tryint to install Linux (downloaded from 
-mklinux.apple.com/pub site) on my Mac (power Mac 5400), but it seems 
-like I don't know the basics that the READ ME's and your FAQ's don't 
-explain, and am having trouble for hours.  The problem I have is the 
-"bootstrap cannot find configuration file" message that I get, which 
-seems to be a common problem.  But, I think my problem is that I Don't 
-know how to do "4) Place the "mach_servers" folder at the top level 
-(ie. not on the desktop)
-   of a suitable volume on your Mac."  Am I supposed to put 
-"mach_server" folder inside the patrition for MacHFS when I look at 
-through the pdisk?  How do you do that?  I just don't know how to put 
-things above the desktop level.
+Update on slightly broken platinumfb:
+(see http://lists.linuxppc.org/listarcs/linuxppc-dev/199903/msg00120.html for
+the end of the old thread)
 
-Also, if I manage to put it where it's supposed to go and edit the 
-line in lilo.conf, am I supposed to just put rootdev=/dev/hda (or 
-ata0.0) or whatever, or supposed to write 
-/dev/boot_device/mach_servers/bootstrap.conf, which comes up in the 
-error message when I try to boot it?  Also, it seems that I have to 
-specify a patition when I do this.  How do I do that?  If the 
-patrition # in pdisk is 5, do I put rootdev=/dev/hda/5 or hda5? or 
-what?  If it's ata0.0, does it become ata0.5 or ata0.0/5 or some other 
-kind of way?
+The kernel installed with R5 still has the screwy palette. Kernel.org's 2.2.9
+does too, as well as 2.2.7-vger (found in the /kernels directory on
+linuxppc.org). The kernel used *during* the R5 installer had no
+palette problems because it used offb (that had me confused for a minute).
 
-Please Help!!
+Since the problem occurs in console as well as X (I'm going to assume the
+LinuxPPC gdm backgroud is *not* brilliant magenta), Sean's patch seems pretty
+necessary. The XF86 that comes with R5 has the same problem that Xpmac in R4
+did, so I think the patch won't break anything XF86-specific, which Sean was
+worried about.
 
-Akiko Tanaka
-tanak002@gold.tc.umn.edu
+Btw, if you're going to include something like xeyes in an installer, why not
+make it xpat2 or a Tetris clone or something?
+
+-Hollis
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
