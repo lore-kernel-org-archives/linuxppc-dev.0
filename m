@@ -1,54 +1,67 @@
-Message-ID: <38318048.B414DC12@schweiz.ch>
-Date: Tue, 16 Nov 1999 17:03:20 +0100
-From: Andreas Tobler <a.tobler@schweiz.ch>
-Reply-To: toa@pop.agri.ch
+Date: Tue, 16 Nov 1999 17:15:53 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Geoff Hutchison <ghutchis@wso.williams.edu>
+cc: Martin Costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Building Question
+In-Reply-To: <v04220800b4572678a8f9@[129.105.9.226]>
+Message-ID: <Pine.HPX.4.10.9911161657160.5120-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: Ani Joshi <ajoshi@shell.unixbox.com>
-CC: Dev-Linux <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Kernel debugging??
-References: <Pine.LNX.4.10.9911160749360.21354-100000@shell.unixbox.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Ani,
 
-Ani Joshi wrote:
+
+On Tue, 16 Nov 1999, Geoff Hutchison wrote:
+
 > 
-> andreas,
->         since you're on a powermac and using BootX, you can use
-> prom_print() to print debuging info before start_kernel, there after you
+> At 11:23 AM +0100 11/16/99, Martin Costabel wrote:
+> >Fix the "undefined reference" error.
+> >You mean "undefined reference" isn't an error on x86?
+> 
+> That's my point--people compiling the *same* code don't get that error.
+> 
+> At 9:27 AM +0100 11/16/99, Wolfgang Denk wrote:
+> >I'm not really sure, but can you please check how  big  your  code  /
+> >data  segments  are? The PPC addressing model is limited in range for
+> >relative addressing - "REL24" indicates that you are overrunning  the
+> >relacatable range using 24 bit offsets...
+> 
+> I was afraid of that. Thanks. I'll see if I can tweak the linking 
+> order and see if that helps a bit. I'll also try gcc -Os and see if 
+> that helps.
 
-This what I'm doing now.
-But I feel a bit lost when it goes into asm.
+Note that actually the so called 24 bit is a signed 26 bit value branch
+relative offset. This means that you try to jump more than +/-32 Mb away
+from the code which is quite strange, unless you are generating megatons
+of template based code... (You truly need several millions line of code
+or your code is spread across a lot of sections which happen
+not to be located together). Check also the linker script if there is
+one just in case...
 
-> can just use printk().  instead of putting a million prints all over the
-> place, you should look at the patches between 2.3.25-2.3.28 and see what
-> was changed in ppc/kernel or ppc/mm ,
+You might also want to use the longcall attribute (I never tested it),
+from info gcc: 
 
-This I also did, on the mm side do I have to include both mm and
-arch/ppc/mm?
-Here many changes happened.
+`longcall'
+     On the RS/6000 and PowerPC, the `longcall' attribute causes the
+     compiler to always call the function via a pointer, so that
+     functions which reside further than 64 megabytes (67,108,864
+     bytes) from the current location can be called.
 
-> i've booted 2.3.25 on my 7200 
-And I could boot a stock 2.3.26 with changes in asm-ppc/fcntl.h
-(O_LARGEFILE ....)
+for portability I would it use it in the following way: 
+#ifdef __powerpc__
+#define __faraway __attribute__((__longcall__))
+#else
+#define __faraway
+#endif
+and then declare the offending functions __faraway...
 
->but i have had no time lately to try 2.3.28, perhaps
-> later today i will work on it.
+Note: It might also be used for the linux kernel in modules, declaring a
+function longcall would avoid the jump through linker generated (actually
+module loader generated) code if I understand correctly what it does.
 
-On my side it's mostly a question of learning, a fixed problem is nice,
-a self found and fixed problem is even nicer :-)
+	Gabriel.
 
-Thanks for your hints
-
-Andreas
-
--- 
-| Andreas Tobler				
-| CH-8004 Zuerich 							
-| E-Mail: andreas.tobler@alcatel.ch	| a.tobler@schweiz.ch
------------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
