@@ -1,56 +1,81 @@
-Message-Id: <200001281022.LAA30623@denx.local.net>
-To: "Linux PPC Embedded" <linuxppc-embedded@lists.linuxppc.org>,
-        "Linux PPC Dev" <linuxppc-dev@lists.linuxppc.org>,
-        greyham@research.canon.com.au (Graham Stoney)
-Subject: Re: [ANNOUNCE] MPC8xx example device drivers
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 14 Jan 2000 00:34:01 +0100."
-Date: Fri, 28 Jan 2000 11:22:06 +0100
+Date: Fri, 28 Jan 2000 11:35:58 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Christophe Lizzi <lizzi@csti.fr>
+cc: linuxppc-dev@lists.linuxppc.org, plaurent@csti.fr
+Subject: Re: PREP memory layout and PCI transactions
+In-Reply-To: <200001280947.KAA09960@devl58>
+Message-ID: <Pine.HPX.4.10.10001281125040.22483-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-While trying to help some  customers  getting  started  with  writing
-device  drivers for MPC8xx systems we developed some example drivers.
-The drivers are quite simple and more for educational than  practical
-purposes:
-
-trv:	["TRiVial" driver] This driver demonstrates the use of the
-        basic kernel functions and system calls for a memory "buffer"
-        device. It is generic and runs on PPC and x86 as well.
-
-tid:	["Trivial Interrupt Driver"] The purpose of this driver is to
-        demonstrate real hardware accesses, CPM interrupt processing,
-        and passing of module parameters. It  uses  one  of  the  CPM
-        timers to create interrupts.
-
-tqm_led: ["TQM8xx LED" driver] This driver  is  specific  to  the  TQ
-        Components  STK8xx  starter  kit:  it  provides a very simple
-        example how to control external devices (here the LEDs on the
-        starter kit board) using the CPM parallel ports.
-
-The sources for these drivers can be found on:
-
-	ftp://ftp.denx.de/pub/LinuxPPC/usr/src/drivers.tar.gz
 
 
-I'm especially grateful to Jean-Jacques Germond, Frédéric Soulier and
-Christian Batt for allowing to make their work Open Source.
+On Fri, 28 Jan 2000, Christophe Lizzi wrote:
+
+> Hi,
+>
+> I'm currently porting a third-party RAID driver from ix86 to LinuxPPC.
+> The target is an MTX board with 32 Mbytes of RAM, running a 2.2.10 kernel.
+>
+> The driver requests the device to fill some memory locations in kernel
+> space via DMA. This works just fine when such memory locations come
+> from pages allocated by get_free_page() or kmalloc().
+>
+> However, this fails when these locations come from the *static* data
+> of the module, or from pages allocated by vmalloc().
+
+This is normal, all physical memory is mapped starting from 0xc0000000
+in the kernel virtual address space. [I think that copying blindly the
+x86 setup is a mistake but it's not the time to discuss this ;-)]
+
+But module code and data are allocated with vmalloc, and te fixed offset
+between physical and kernel virtual addresses no more hold (obviously).
+So you can only do DMA to memory acquired by kmalloc (and incidentally to
+local buffers on the stack but don't forget that the size is very limited
+so I recommend against unless you have a very strong argument in favor).
+
+It is possible the the raw io patches which are in recent kernels allow
+for DMA to vmalloced memory but I did not study them and I'm not sure.
 
 
-ALL type of feedback is welcome,  especially  all  contributions  for
-improvement.
+> Specifically, the pages returned by get_free_page() or kmalloc() are located
+> around kernel virtual addresses C1xxxxxx (bus addresses 81xxxxxx), while the
+> static data in question and the pages returned by vmalloc() are located
+> behind virtual addresses C4xxxxxx (bus addresses 84xxxxxx).
 
+Bus address 84xxxxxx will not point to your physical memory and you'll end
+up with some weird error on the PCI bus.
 
-Wolfgang
+> The PCI analyser sees on the PCI bus a memory write transaction initiated
+> by the device to such an 84xxxxxx address in memory. We can observe that this
+> transaction is never completed because the DEVSEL signal on the bus is not
+> asserted during the correct 5 clock time interval. The transaction is then
+> terminated as with a master-abort termination, meaning that this address
+> is not known by the memory controler as an address that can be accessed
+> from the PCI bus.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-No, I'm not going to explain it. If you  can't  figure  it  out,  you
-didn't want to know anyway... :-)
-                   - Larry Wall in <1991Aug7.180856.2854@netlabs.com>
+Normal....
+
+> Is this a feature, a known restriction, or a bug? Maybe a register
+
+It is a very well known and documented restriction, which is a problem if
+your device can't do scatter gather since the size of buffers you can
+allocate with kmalloc is limited.
+
+> describing the accessible address range from the bus is not correctly
+> initialised into the Falcon chip?
+
+No, oh and by the way if you want to use the Falcon/Raven/Hawk in CHRP
+mode, grab my patches at:
+
+ftp://vlab1.iram.es/linux-2.[23]
+
+they work on my MVME26xx and 24xx, but the MTX is quite similar AFAICT.
+
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
