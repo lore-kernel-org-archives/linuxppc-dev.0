@@ -1,61 +1,49 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
+Message-ID: <39EBDC43.3F7E57B8@mvista.com>
+Date: Tue, 17 Oct 2000 00:57:39 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
+To: mgreer@mvista.com
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: If not CONFIG_ALL_PPC, you're broken
+References: <39EB8A67.E2F9C023@mvista.com>
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14827.56089.260884.298273@argo.linuxcare.com.au>
-Date: Tue, 17 Oct 2000 15:52:41 +1100 (EST)
-To: Tilmann Bitterberg <tibit-ibm@bitterberg.de>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: HIGHMEM now working
-In-Reply-To: <Pine.LNX.4.21.0010161220230.1783-200000@karl.rchland.ibm.com>
-References: <Pine.LNX.4.21.0010161220230.1783-200000@karl.rchland.ibm.com>
-Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tilmann Bitterberg writes:
+"Mark A. Greer" wrote:
+>
+> I've haven't been paying attention to this but it seems as though any
+> platform that doesn't fit in CONFIG_ALL_PPC doesn't build anymore.
 
-> I saw that you recently did some fixes for HIGHMEM on CHRP, but
-> they did not work. Actually, I can't get the kernel to boot on a
+We don't even need CONFIG_ALL_PPC anymore.  We can just rename
+arch/ppc to arch/powermac_workstation, as that is all that works
+right now.  It sucks to have to build a 2 Mbyte kernel with USB,
+keyboard, mouse, and tons of other stuff just to get a kernel that
+will link when all you want is a serial and Ethernet port......and
+then hack init functions that you didn't want anyway so they don't
+try to touch hardware you don't have.
 
-Where did you get the version you tried?  I recently got a kernel
-going with highmem on a 44p/170 but I haven't pushed all the changes
-into bk.  I had to make several changes to the python code as well as
-arch/ppc/mm/init.c and my changes are somewhat different to what is
-being done in the linuxppc_2_5 tree.  My changes are available in the
-rsync tree at ppc.samba.org::linux-pmac-devel but that is
-unfortunately almost unusable because of bandwidth restrictions on
-that machine.  I am trying to get a ppc.linuxcare.com machine set up
-in California but that is proving to be a slow process.
+> ........  Yes, I know, I am lazy
+> and should contribute more.  Anyway, I think we all need to pay closer
+> attention to the changes that are being put in, including me.
 
-> Why not just lower PKMAP_BASE to 0xf6000000, will this break
-> someone?
+Well, putting in the time is only part of it.  I am trying to support
+about a dozen different PowerPC boards, none of which look like a
+PowerMac.  By the time I test a kernel across all of these platforms
+and check in a few changes I am completely out of date and have to
+start over.
 
-Everyone, potentially. :-)  You're lucky it worked.
+> What's the best way to get the other platforms working again?
 
-The way the code is at the moment, we divide up the space between the
-end of RAM and the end of the address space (0xffffffff) like this:
+Fortunately, it looks like some people (Matt, Troy, others) have pushed
+a few PReP and CHRP updates, and Paul has a CHRP workstation for testing.
+Maybe when the PMac stuff slows down, we can catch up.  Unfortunately,
+we still have to build huge kernels with lots of stuff we don't need,
+and I don't know how to fix that (well, I do but I don't think it
+is likely to happen :-).
 
-    end of RAM ... end of RAM + VMALLOC_OFFSET:	    not used
-    end of RAM + VMALLOC_OFFSET ... ioremap_bot:    vmalloc & ioremap
-    ioremap_bot ... ioremap_base:		    early ioremaps
-    ioremap_base ... 0xffffffff:		    ioremap virt = phys
 
-In other words all of the address space from end of RAM +
-VMALLOC_OFFSET is potentially used by ioremap (which is a bit greedy
-of it really).  I personally think that the code in ioremap which
-assigns virt = phys for phys >= ioremap_base should go away.  For now
-I have added an extra check in the highmem case so that it only uses
-virt = phys for ioremap_base <= phys <= PKMAP_BASE.  This shows up one
-or two missing ioremaps in the chrp code which I have fixed in my
-version.
-
-Paul.
-
---
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
