@@ -1,52 +1,53 @@
-Message-ID: <39C8C35A.17D027C0@sxb.bsf.alcatel.fr>
-Date: Wed, 20 Sep 2000 16:02:02 +0200
-From: Christian Batt <Christian.Batt@sxb.bsf.alcatel.fr>
+Message-ID: <39C8C584.D845678A@siemens.at>
+Date: Wed, 20 Sep 2000 16:11:16 +0200
+From: Rainer Kloud <rainer.kloud@siemens.at>
 MIME-Version: 1.0
-To: Tobias Otto-Adamczak <Tobias.Otto-Adamczak@e-technik.tu-chemnitz.de>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC8xx DPRAM : m8xx_cpm_hostalloc
-References: <Pine.LNX.4.21.0009201535490.2375-100000@odoaker.hrz.tu-chemnitz.de>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 8260 FCC Ethernet driver, cpm_8260.h
+References: <39C1DE70.F1D90668@siemens.at> <39C24395.756E3252@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > > You can place your buffers outside the DPRAM (you can use
-> > > m8xx_cpm_hostalloc for that).
-> >
-> > OK.
+Dear Dan,
+
+> Rainer Kloud wrote:
 >
-> Does this solve your problem ? What are you working on, e.g. which
-> controller/protocol ? What is your HW (CPU, board) ?
-
-I am working on a utopia (ATM) module. The board is a TQM8xxL
-shipped with a 860SAR, Rev C1.
-The buffers are stored in the host main memory, whereas the Buffer
-Descriptors and some other ATM tables are stored in DPRAM.
-That's why I need more DPRAM space ...
-
-> > No, I don't use any microcode patch.
+> > So my question is: Does anyone have a Ethernet Driver
+> > for the FCC?
 >
-> On my MBX board the EPPC-Bug monitor loads a patch at boot time. I ignored
-> that for a long time; I thought I was done with disabling the microcode
-> option in the kernel config. But I had to explicitly disable the microcode
-> relocation to get my SPI working.
+> Ummmm.....arch/ppc/8260_io/fcc_enet.c should do the trick......
 >
-> Surely it would work also with microcode enabled but then I would have to
-> take care of all these relocation things.
+> I am constantly making updates to the sources for 8260, and recently
+> updated the driver (there is another major update coming).  You should
+> probably get used to using the BitKeeper tree from FSM Labs...
+>         www.fsmlabs.com/linuxppcbk/html
 
-The monitor I use to run the kernel, is the one shipped with the TQboard.
-Just after a hard reset, I have dumped the state of the register after
-monitor setup : SCCR = 0  ->  ERAM =0 : So, microcode program execution is
-disabled.
+Thank you for your tip, the source file wasn't included in my
+old distribution.
 
-I will get a deeper look inside all that stuff ...
+But one further question:
+After compelation of your driver I was able to send some
+data (bootp request), but I couldn't receive any. Further
+I got no transmit interrupt. So I took a look to the FCC
+mask register and I saw that the FCCM (and of course FCCE)
+register is a 32 bit register where only the higher word is
+used. But when useing the event constants (f.e. FCC_ENET_TXB)
+from cpm_8260.h only the bits in the lower word are set.
+So setting the desired events in the FCC mask register has
+no effect!
+After that I have changed the constants to manipulate the
+high word and everything seems to work correct (I got my
+transmit and receive interrupts).
+I have seen, that the FCCM/FCCE are different from other
+channels, f.e the SCC. There the mask register is only
+defined as 16 bit register.
 
-Thanks for your help Tobias,
+What do you think about this?
 
-Best Regards
-
-Christian
+Bye,
+Rainer
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
