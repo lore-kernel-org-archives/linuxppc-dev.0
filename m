@@ -1,55 +1,53 @@
-From: flar@allandria.com
-Message-Id: <200008311748.KAA13993@marcus.allandria.com>
-Subject: Re: Btree directories (Re: Status of HFS+ support)
-To: viro@math.psu.edu (Alexander Viro)
-Date: Thu, 31 Aug 2000 10:48:21 -0700 (PDT)
-Cc: dgatwood@deepspace.mklinux.org (David A. Gatwood), ak@suse.de (Andi Kleen),
-        lord@sgi.com (Steve Lord), matthew@wil.cx (Matthew Wilcox),
-        khalfmann@libra.de (Halfmann Klaus), roman@augan.com (Roman Zippel),
-        linuxppc-dev@lists.linuxppc.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <Pine.GSO.4.10.10008310557340.628-100000@weyl.math.psu.edu> from "Alexander Viro" at Aug 31, 2000 06:33:26 AM
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: <tom_gall@vnet.ibm.com>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: PowerBook 2000 + Mouse + 2.4.0-test7
+Date: Thu, 31 Aug 2000 19:57:48 +0200
+Message-Id: <20000831175748.648@mailhost.mipsys.com>
+In-Reply-To: <39AE8E35.53F2865@vnet.ibm.com>
+References: <39AE8E35.53F2865@vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Alexander Viro wrote:
-> Shrinking/growing the same directory is not going to happen while you
-> are in ->readdir(). You have ->i_zombie on it, so...
+>
+>Hi All,
+>
+> quick question, with a 2.4.0-test7 that was fresh as of last Friday.
 
-That's a bit of a help. The 2.2 docs rarely mentioned what was locked
-when, and finding all the various locks in the code wasn't easy.
+I don't know for Linus test-7, but I can speak for the current state of
+bk 2.4-test8
+>
+> On my PowerBook 2000, the kernel machine checks when it init's the
+>serial ports
 
-> 	Urgh. Could you show me your code? I think that a variation of the
-> scheme used for fatfs may work here. Basically, you can keep hash of
+You probably have the "legacy" (dumb) serial ports compiled in. The
+Macintosh serial ports are a separate option. The ISA bus doesn't exist,
+an nobody answer to legacy IO addresses on a mac, thus causing the
+machine check.
 
-You can find some of my code at http://devel.linuxppc.org/pub/users/flar/
-which is in the form of patches to a slightly old 2.2 kernel. However,
-since the patches hardly touch any existing files, it will likely apply
-cleanly to any 2.2 kernel. I have some minor changes that aren't there
-yet, but nothing that changes the basic outline or actually makes it
-work properly. I didn't look much at fatfs because I didn't think it
-would be relevant, but I'll take a look now that I have some idea what
-I should look for there. My code is based on a mix of code stolen from
-ext2 and hfs and a few ideas I thought of on my own.
+>and once I redid my config file to remove that support, kernel boots but X no
+>longer recognizes the trackpad. (Yet on a 2.2.x series with the ibook
+>kernels it
+>does)  Is this a known problem?
 
-> directory entries and do (find; unhash; copy; rehash) whenever you move
-> one. inodes would keep references to such entries, ditto for readdir
-> having a "cursor" entry. Rebalancing would go under rw-semaphore (writer)
-> and all tree lookups/scans under the same semaphore (reader). That way you
-> can get rid of the tree search in ->write_inode(), BTW.
+Get the bk tree. In the "Macintosh Drivers" option, you can either enable
+the ADB HID that comes with the input devices, or the old mac_keyb.c
+driver. If you are using the mac_keyb.c driver, then you can also select
+the old adbmouse.c driver in "Char devices/Mice). This should allow your
+current 2.2.x setup to work.
 
-I'm currently ignoring locking almost entirely, because my support is
-read only, but I did have a few ideas on where I would need locking.
-Hopefully my code isn't completely wrong, but I'd be happy to accept
-any advice on where I really do need to worry about locking. I still
-haven't read the latest documentation that I've been told got put
-into 2.4 but I also haven't started porting my code to 2.4 for lack
-of time.
+If you want to switch to the new input layer, then enable the ABD HID.
+You'll have to create the appropriate /dev entries for, at least, /dev/
+input/mice, and change /dev/usbmouse and /dev/mouse to point to it. You
+can safely remove /dev/adbmouse. Note that the old adbmouse driver was
+BusMouse protocol while the new input layer provides you with PS/2 datas,
+like USB mice.
 
-	Brad Boyer
-	flar@pants.nu
+Ben (who is happily running 2.4 on the Pismo powerbook (2000)).
+
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
