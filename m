@@ -1,10 +1,10 @@
-Message-ID: <005101be74f0$8e1582a0$499672cf@sunshinecomputing.com>
+Message-ID: <006701be74f2$a3bf8d60$499672cf@sunshinecomputing.com>
 From: "Brian Macy" <bmacy@sunshinecomputing.com>
-To: "linuxppc-user list" <linuxppc-user@lists.linuxppc.org>,
-        <linuxppc-dev@lists.linuxppc.org>
-References: <199903211538.CAA21155@pandora.chariot.net.au>
-Subject: How stable is stock R4??
-Date: Mon, 22 Mar 1999 21:46:53 -0800
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+References: <19990321023338.A2592@persephone.ppc.kernel.org>
+Subject: Kernel panic on 2.2.3-ac4 PPC...
+Date: Mon, 22 Mar 1999 22:01:46 -0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -12,11 +12,17 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm just curious as I'm getting some really odd behavior... basically I
-start getting seg faults and illegal instructions all over. Sometimes the
-system locks up solid and sometimes processes just die. It appears to occur
-if I try to launch a bunch of applications.... especially in X, though I'm
-not certain it is limited to X and I know processes outside of X will fail.
+Let's see if I can manage to give anything of any use :)
+I have a UMAC c500 PPC 603e 240MHz
+
+When I boot the 2.2.3-ac4 kernel I get the following message (I had to write
+it down so it isn't the whole message... let me know if there are portions
+that are more helpful).
+
+Machine check in kernel mode.
+Caused by (from msr): regs c055ddc0 Machine check signal - probably due to
+mm fault with mmu off
+TASK = c055c000[1] 'swapper' mm->pgd c00dc000 Last syscall:120
 
 Brian Macy
 
