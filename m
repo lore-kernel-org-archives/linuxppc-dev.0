@@ -1,92 +1,166 @@
-Message-ID: <3FD98F4E.9080602@bluewin.ch>
-Date: Fri, 12 Dec 2003 10:50:06 +0100
-From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
+From: "Stefan Roese" <stefan.roese@esd-electronics.com>
+To: "'DaveyWu'" <daveywu@transengines.com>,
+	"'Linuxppc-Embedded'" <linuxppc-embedded@lists.linuxppc.org>,
+	<benh@kernel.crashing.org>, <akuster@mvista.com>
+Subject: RE: PPC4xx enet driver problem (version 2.0)
+Date: Fri, 12 Dec 2003 11:56:09 +0100
+Message-ID: <004601c3c09e$8cfea410$0212000a@PCSTEFAN>
 MIME-Version: 1.0
-To: Matt Porter <mporter@kernel.crashing.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 405 TLB miss reduction
-References: <3FBD5348000912F8@mssbzhh-int.msg.bluewin.ch> <20031210090327.A18009@home.com> <3FD83398.3020000@bluewin.ch> <20031211104505.C26110@home.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="US-ASCII"
+In-Reply-To: <01b001c3c059$35107840$5100a8c0@davey033ce6193>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 12/11/2003 06:45 PM Matt Porter wrote:
-> On Thu, Dec 11, 2003 at 10:06:32AM +0100, Wolfgang Grandegger wrote:
->>
->> On 12/10/2003 05:03 PM Matt Porter wrote:
->> > David Gibson and Paul M. implemented large TLB kernel lowmem
->> > support in 2.5/2.6 for 405.  It allows for large TLB entries
->> > to be loaded on kernel lowmem TLB misses.  This is better than
->> > the CONFIG_PIN_TLB since it works for all of your kernel lowmem
->> > system memory rather than the fixed amount of memory that
->> > CONFIG_PIN_TLB covers.
->>
->> Ah, I will have a look to 2.5/2.6. Is there a backport for 2.4?
->
-> No.
->
->> > I've been thinking about enabling a variant of Andi Kleen's patch
->> > to allow modules to be loaded into kernel lowmem space instead of
->> > vmalloc space (to avoid the performance penalty of modular drivers).
->> > This takes advantage of the large kernel lowmem 405 support above
->> > and on 440 all kernel lowmem is in a pinned tlb for architectural
->> > reasons.
->>
->> Is this patch available somewhere? It would be interesting to measure
->> the improvement for our application.
->
-> Google is your friend.
-> http://seclists.org/lists/linux-kernel/2002/Oct/6522.html
-> IIRC, there's a later version with some minor differences.
->
->> > I've also been thinking about dynamically using large TLB/PTE mappings
->> > for ioremap on 405/440.
->>
->> OK, I expect not so much benefit from this measure but it depends on the
->> application, of course.
->
-> Yes, I've seen a lot of apps with huge shared memory areas across PCI
-> that can benefit from this...they used BATs on classic PPCs.
->
->> > In 2.6, there is hugetlb userspace infrastructure that could be enabled
->> > for the large page sizes on 4xx.
->>
->> But this sounds more promising. Same questing as above. Is there a
->> backport for 2.4?
->
-> No.
->
->> > Allowing a compile time choice of default page size would also be useful.
->>
->> Increasing the page size from 4 to 8 kB should, in theory, halve the
->> page misses (if no large TLB pages are used). Unfortunately, increasing
->> the page size seem not straight forward as it's statically used in
->> various places and maybe the GLIBC needs to be rebuild as well.
->
-> Possibly, as Dan mentions, there are other arches already doing this
-> type of thing.  I know ia64 does and sounds like MIPS is another.
->
->> > Basically, all of these cases can provide a performance advantage
->> > depending on your embedded application...it all depends on what your
->> > application is doing.
->>
->> Of course, and tweaking the kernel for a dedicated application might not
->> been worth the effort. Anyhow, I have now a better idea what else can be
->> done.
->
-> When I used to do apps work we were very performance sensitive (depends
-> on you project, of course) and we were very willing to make kernel
-> tweaks (proprietary RTOS) to me our requirements.  It all depends on
-> your requirements, constraints, budget, etc. :)
+Davey!
 
-Well, time and money is usually a scarce resource :-(. Anyhow, this
-thread showed me that it might be worth tweaking the kernel and that
-there are already various implementations which could be followed after
-a more detailed analysis of the TLB misses. Thank you and Dan very much
-for the valuable input.
+No, we didn't solve this problem so far. Eugene did some tests on an
+ppc440 board and had no problems with the multiple enet devices. So it
+seems to be 405ep related! I still have to send some debug output to
+Eugene (hopefully today)!
 
-Wolfgang.
+By the way: Did you notice that your MAC-address of the 2nd ethernet
+channel (eth1) is 00:00:00:00:00:00? This is wrong and probably a
+problem in passing MAC-addresses from your bootloader to linux. What
+bootloader are you using? U-Boot/OpenBios?
+
+Best regards,
+Stefan.
+
+> -----Original Message-----
+> From: DaveyWu [mailto:daveywu@transengines.com]
+> Sent: Friday, December 12, 2003 3:40 AM
+> To: Stefan Roese; Linuxppc-Embedded;
+> benh@kernel.crashing.org; akuster@mvista.com
+> Subject: Re: PPC4xx enet driver problem (version 2.0)
+>
+>
+> Hi Stefan,
+>     I have suffered the same problem when I am trying swtich
+> to 2.4.22 from 2.4.18 on IBM405ep board. Following is the
+> output on my board:
+>
+> # ifconfig eth0 down
+> # ifconfig eth1 down
+> # ifconfig eth0 192.168.1.1
+> eth0: adjust to link, speed: 100, duplex: 1, opened: 1
+> eth0: Speed: 100, Full duplex.
+> # ping 192.168.1.123
+> PING 192.168.1.123 (192.168.1.123): 56 data bytes
+> 64 bytes from 192.168.1.123: icmp_seq=0 ttl=128 time=5.2 ms
+> 64 bytes from 192.168.1.123: icmp_seq=1 ttl=128 time=2.8 ms
+> 64 bytes from 192.168.1.123: icmp_seq=2 ttl=128 time=2.7 ms
+> 64 bytes from 192.168.1.123: icmp_seq=3 ttl=128 time=2.6 ms
+> 64 bytes from 192.168.1.123: icmp_seq=4 ttl=128 time=2.7 ms
+> 64 bytes from 192.168.1.123: icmp_seq=5 ttl=128 time=2.7 ms
+>
+> --- 192.168.1.123 ping statistics ---
+> 6 packets transmitted, 6 packets received, 0% packet loss
+> round-trip min/avg/max = 2.6/3.1/5.2 ms # ifconfig eth1 192.168.2.1
+> eth1: adjust to link, speed: 100, duplex: 1, opened: 1
+> eth1: Speed: 100, Full duplex.
+> SIOCSIFFLAGS: Device or resource busy
+> # ifconfig
+> eth0      Link encap:Ethernet  HWaddr 00:04:AC:E3:15:5E
+>           inet addr:192.168.1.1  Bcast:192.168.1.255
+> Mask:255.255.255.0
+>           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+>           RX packets:104 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:7 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 txqueuelen:100
+>           RX bytes:10027 (9.7 kiB)  TX bytes:630 (630.0 iB)
+>           Interrupt:15
+>
+> lo        Link encap:Local Loopback
+>           inet addr:127.0.0.1  Mask:255.0.0.0
+>           UP LOOPBACK RUNNING  MTU:16436  Metric:1
+>           RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 txqueuelen:0
+>           RX bytes:0 (0.0 iB)  TX bytes:0 (0.0 iB)
+>
+> # ping 192.168.1.123
+> PING 192.168.1.123 (192.168.1.123): 56 data bytes
+>
+> --- 192.168.1.123 ping statistics ---
+> 25 packets transmitted, 0 packets received, 100% packet loss
+> # ifconfig -a
+> eth0      Link encap:Ethernet  HWaddr 00:04:AC:E3:15:5E
+>           inet addr:192.168.1.1  Bcast:192.168.1.255
+> Mask:255.255.255.0
+>           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+>           RX packets:104 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:15 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 txqueuelen:100
+>           RX bytes:10027 (9.7 kiB)  TX bytes:966 (966.0 iB)
+>           Interrupt:15
+>
+> eth1      Link encap:Ethernet  HWaddr 00:00:00:00:00:00
+>           inet addr:192.168.2.1  Bcast:192.168.2.255
+> Mask:255.255.255.0
+>           BROADCAST MULTICAST  MTU:1500  Metric:1
+>           RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 txqueuelen:100
+>           RX bytes:0 (0.0 iB)  TX bytes:0 (0.0 iB)
+>           Interrupt:17
+>
+> lo        Link encap:Local Loopback
+>           inet addr:127.0.0.1  Mask:255.0.0.0
+>           UP LOOPBACK RUNNING  MTU:16436  Metric:1
+>           RX packets:25 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:25 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 txqueuelen:0
+>           RX bytes:2800 (2.7 kiB)  TX bytes:2800 (2.7 kiB)
+>
+> #
+> Have you already solved the problem?
+>
+> ----- Original Message -----
+> From: "Stefan Roese" <stefan.roese@esd-electronics.com>
+> To: "Linuxppc-Embedded"
+> <linuxppc-embedded@lists.linuxppc.org>;
+> <benh@kernel.crashing.org>; <akuster@mvista.com>
+> Sent: Wednesday, December 03, 2003 7:29 PM
+> Subject: PPC4xx enet driver problem (version 2.0)
+>
+>
+> >
+> > Hello!
+> >
+> > We are trying to switch to the 2.4.23 linuxppc_2_4_devel
+> kernel (from
+> > 2.4.21) and experience a problem with the "new" ethernet driver for
+> > the ibm ppc4xx (version 2.0 from Benjamin Herrenschmidt). On our
+> > boards with only one active enet interface we have no problems. But
+> > our PPC405EP boards with 2 active enet devices, the traffic stops
+> > completely upon initializing the 2nd devices (emac_reset_configure).
+> >
+> > Has anybody experienced similar problems? Has anybody seen
+> this driver
+> > working properly with more than one ppc4xx enet devices (especially
+> > ppc405ep)?
+> >
+> > With the previous driver (from linuxppc_2_4_devel 2.4.21
+> maintained by
+> > mvista) we had no problems with 2 enet interfaces on the
+> ppc405ep so
+> > far!
+> >
+> > By the way: What is the future of the ppc4xx enet driver. I
+> found that
+> > the 2.5 kernel  has a newer mvista driver included
+> (modifications for
+> > 440gx, etc.). Is the driver from 2.4.23 a dead end?
+> >
+> > Thanks and best regards,
+> > Stefan.
+> >
+> >
+> >
+> >
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
