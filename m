@@ -1,37 +1,42 @@
-Date: Tue, 21 Mar 2000 00:23:48 -0800 (PST)
-From: Matt Brubeck <mbrubeck@hmc.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: aty128fb patch on iMac DV
-Message-ID: <Pine.GSO.4.21.0003202326590.17973-100000@turing.cs.hmc.edu>
+Date: Tue, 21 Mar 2000 09:57:32 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Matt Brubeck <mbrubeck@hmc.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: aty128fb patch on iMac DV
+In-Reply-To: <Pine.GSO.4.21.0003202326590.17973-100000@turing.cs.hmc.edu>
+Message-ID: <Pine.LNX.4.05.10003210956450.29327-100000@callisto.of.borg>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm running linux-pmac-stable on my iMac 350. The aty128 framebuffer on
-this machine has had similar problems to the new G4s, though it doesn't
-have a Rage Pro card. Specifically, video appears in several frames and at
-odd colors for any color depth above 8-bit. In 8-bit mode video appears
-fine except that the entire screen is shifted down exactly one pixel,
-about halfway across the screen.
+On Tue, 21 Mar 2000, Matt Brubeck wrote:
+> I applied Kevin Hendricks' latest rage128.patch, and aty128fb now works
+> perfectly in 8-bit color. It still fails as before in 15/16, 24, and
+> 32-bit modes. I get the following message when I do "fbset -depth 16":
+>
+> fbcon_setup: No support for fontwidth 8
+> fbcon_setup: type 0 (aux 0, depth 16) not supported
 
-The offb driver works fine on this machine, but will not switch to any
-color depth other than 8.
+You have to enable
 
-I applied Kevin Hendricks' latest rage128.patch, and aty128fb now works
-perfectly in 8-bit color. It still fails as before in 15/16, 24, and
-32-bit modes. I get the following message when I do "fbset -depth 16":
+    CONFIG_FBCON_CFB16=y
+    CONFIG_FBCON_CFB24=y
+    CONFIG_FBCON_CFB32=y
 
-fbcon_setup: No support for fontwidth 8
-fbcon_setup: type 0 (aux 0, depth 16) not supported
+for 16/24/32 bpp text console support.
 
-So the patch was an improvement, but there are still problems. I don't
-know anything about video drivers, but am willing to help test out any
-changes, or muck around with the driver myself if someone will give me a
-few pointers or a place to start.
+Gr{oetje,eeting}s,
 
-Matt Brubeck
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
