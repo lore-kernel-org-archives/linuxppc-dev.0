@@ -1,19 +1,17 @@
-Return-Path: <cfriesen@nortel.com>
-Received: from zcars04e.nortelnetworks.com (zcars04e.nortelnetworks.com
-	[47.129.242.56]) by ozlabs.org (Postfix) with ESMTP id 08CAD67AC5
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2005 07:37:43 +1000 (EST)
-Message-ID: <4254569D.2050300@nortel.com>
-Date: Wed, 06 Apr 2005 15:37:33 -0600
-From: Chris Friesen <cfriesen@nortel.com>
-MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-References: <425429BF.1050706@nortel.com>
-	<2b5cd7aefbd800842537d00be729d169@freescale.com>
-	<42544010.4020105@nortel.com> <20050406211843.GA2737@iram.es>
-In-Reply-To: <20050406211843.GA2737@iram.es>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: question on inline assembly and long long values
+Return-Path: <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <c689550a30a3129f8576f78eaa6f7af4@freescale.com>
+References: <1112770418.9567.137.camel@gaston>
+	<c689550a30a3129f8576f78eaa6f7af4@freescale.com>
+Content-Type: text/plain
+Date: Thu, 07 Apr 2005 08:22:42 +1000
+Message-Id: <1112826162.9568.175.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	linux-ppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: pte_update and 64-bit PTEs on PPC32?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +21,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Gabriel Paubert wrote:
-> On Wed, Apr 06, 2005 at 02:01:20PM -0600, Chris Friesen wrote:
+On Wed, 2005-04-06 at 11:44 -0500, Kumar Gala wrote:
 
->>static inline unsigned long long getmsr()
->>{
->>	unsigned long long val;
->>        asm volatile( \
->>                "mfmsr  %L0               \n\t" \
->>                "rldicl %0,%L0,32,32       \n\t" \
->>                "rldicl %L0,%L0,0,32        \n\t" \
->>                : "=r" (val));
->>	return val;
->>}
+> Ben, I agree with you about having the flags in a single word so we can 
+> lock them properly.  In the short term it appears that the issue I'm 
+> running into is explicit with ptep_get_and_clear():
+> 
+> static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned 
+> long addr,
+>                                         pte_t *ptep)
+> {
+>          return __pte(pte_update(ptep, ~_PAGE_HASHPTE, 0));
+> }
+> 
+> It appears that we should be returning the pte that was passed in, 
+> before its modified?  (seems a little silly to me, why bother, the 
+> caller could do this -- i've posted to lkml on the issue?).
 
-> If you are running in 32 bit mode, you don't need
-> to clear the upper half of %L0.
+No, we should return the "old" PTE.
 
-Thanks for the tip.  That cuts out another instruction.
+>   Anyways, 
+> since pte_update only returns the lower 32-bits the wrong thing 
+> happens.  The following seems to be a better implementation of 
+> ptep_get_and_clear() for ppc32 which resolves my issue:
+> 
+> static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned 
+> long addr,
+>                                         pte_t *ptep)
+> {
+>          pte_t tmp = *ptep;
+>          pte_update(ptep, ~_PAGE_HASHPTE, 0);
+>          return tmp;
+> }
 
-Chris
+Hrm... I would still do it differently. I would read the "rpn only" part
+non atomically and load/clear the other half atomically. Withotu that,
+you may miss a bit set between the load and the update (for example,
+_PAGE_HASHPTE may have been put in in between).
+
+> If we are ok with this I'll send a patch upstream for it.  I'd like to 
+> still discuss how to make this all proper long term.  Currently, 
+> ptep_get_and_clear was the only user of pte_update that used the return 
+> value for anything but flags.  One change would be for it to return 
+> just the flags portion of the pte it was given.  Another would be for 
+> us to implement a proper 64-bit pte version of pte_update.
+> 
+> - kumar
+> 
+-- 
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
