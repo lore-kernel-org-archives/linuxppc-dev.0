@@ -1,36 +1,35 @@
-From: Paul Mackerras <paulus@samba.org>
+Message-ID: <38851.193.133.92.239.994925353.squirrel@lbbrown.homeip.net>
+Date: Thu, 12 Jul 2001 09:09:13 +0100 (BST)
+Subject: Booting 43P-140
+From: "Leigh Brown" <leigh@solinno.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Reply-To: leigh@solinno.co.uk
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15181.18002.484704.634903@cargo.ozlabs.ibm.com>
-Date: Thu, 12 Jul 2001 16:40:18 +1000 (EST)
-To: ashish anand <ashisha@india.infogain.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PCI BAR initialisation..?
-In-Reply-To: <3B4C0567.9BC25E5B@india.infogain.com>
-References: <3B4C0567.9BC25E5B@india.infogain.com>
-Reply-To: paulus@samba.org
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-ashish anand writes:
+Hi all,
 
-> But by any chance if somebody has come across a random feature of pci BAR.
-> that is if you write the required pci addresses in BAR after writing 0xffffffff and
-> reading it back , and to confirm if the actual value has reached the BAR , we read it again
-> but then it returns funny values.
->
-> more surprisingly if i move the code in some other function then everything behaves correctly.
-> I am more then sure that nothing relevant is happening betwen two places.
+I forward ported Todd Inglett's 43P-140 patches to 2.4.7pre4 and tried to
+boot - no joy.  I then found a 43P-140 image on SuSE's web site and tried
+that - no joy.  Here are the steps I took:
 
-Hmmm, that sounds like maybe the config space reads and writes are
-getting reordered, which would be a Bad Thing.
+1. I dd'd the image onto a floppy (get some result with both images)
+2. I set the bootlist in AIX to floppy followed by hdisk0.
+3. I set up the machine to boot from tty0 (using my trusty Psion 5).
+4. I boot the machine, it displays the "Loading Software" screen on
+   the terminal and reads about the right amount of data from the floppy.
+5. I get no messages, just a newline emitted at the end - the LED gets
+   stuck on F05 (I think, I didn't write it down).
 
-What sort of PCI host bridge does your system have?
+Pointers to what to do next would be gratefully received - I am very keen
+on getting Linux going on this box (I couldn't afford a bigger one :-) and
+will be able to help with testing kernels and so on once its up and running.
 
-If you place an mb() call after each pci config read or write, does
-that fix the problem?
+Cheers,
 
-Paul.
+Leigh.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
