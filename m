@@ -1,11 +1,11 @@
-Date: Wed, 7 Jan 2004 08:43:12 +0100
+Date: Wed, 7 Jan 2004 08:47:40 +0100
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Sven Luther <sven.luther@wanadoo.fr>,
 	Tom Rini <trini@kernel.crashing.org>, Lee Braiden <jel@ntlworld.com>,
 	debian-powerpc@lists.debian.org,
 	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Would setting the CONFIG_RTC option break the powerpc kernel on your machine ?
-Message-ID: <20040107074312.GA22544@iliana>
+Message-ID: <20040107074740.GB22544@iliana>
 References: <20031217165608.GA11653@iliana> <20031217170620.GS11761@stop.crashing.org> <20031219114050.GA5650@iliana> <20031219162800.GE29266@stop.crashing.org> <20031222134504.GA5964@iliana> <20031222161042.GB10841@stop.crashing.org> <20031222162601.GA9021@iliana> <20031222163315.GC10841@stop.crashing.org> <20040107065458.GA20228@iliana> <1073460144.784.79.camel@gaston>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
@@ -28,10 +28,7 @@ On Wed, Jan 07, 2004 at 06:22:25PM +1100, Benjamin Herrenschmidt wrote:
 > > drivers/char/rtc.c code ?
 >
 > will the kernel let you build both drivers in ?
-
-Yes, sure. But naturally they die horribly on pmac hardware, or so i am
-told.
-
+>
 > then you can do, in 2.4, something ugly like that:
 >
 > #ifdef CONFIG_ALL_PPC
@@ -39,7 +36,11 @@ told.
 > 	return -ENODEV;
 > #endif
 
-Ok, cool, will try that out.
+Mmm, two questions :
+
+ 1) could a #ifdef __powerpc__ not be enough ?
+
+ 2) The other failures in rtc_init return -EIO, not -ENODEV.
 
 Friendly,
 
