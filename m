@@ -1,35 +1,29 @@
-From: ghannon@cspi.com
-To: tvdbroek@tsc.leica.nl
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <85256E85.005DF90C.00@pine.cspi.com>
-Date: Thu, 29 Apr 2004 13:15:21 -0400
-Subject: Re: ttyS1 on an MVME5100
+Subject: mvme5100 setup
+From: Dietrich Pescoller <dpescoller@microgate.it>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain
+Message-Id: <1083261150.1242.455.camel@diti.bzmicrogate>
 Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Date: Thu, 29 Apr 2004 19:52:31 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> does somebody ever uses the second serial channel on a Motorola MVME5100?
+Could somebody please send me the .config of a running 2.4.x kernel wich
+runs on a mvme5100 motorola board.
+I didn't managed yet and i find it very diffucult to get documentation
+for startup (building and booting)
+Could someone help me or give me some advices
 
-Do you mean the second channel on-board, or one of the serial ports that
-are available using the IPMC-761?
-I set console=ttyS1, and the result was similar to what you saw, the
-board locked up.  I don't recall if I let it reboot (ie was it a panic or
-a lock-up.)
-I also tried just echoing some text to ttyS1 and it locked up as well.
-
-> I'm using Linux version 2.4.7-timesys-3.1.246 from Timesys. Since this is
-a
-> free download there is no support from them.
-
-I also tried using the ports available on the IPMC and got no where.
-They don't seem to be recognized, unless I left out some kernel option.
-I'm using the 2.4.23 kernel from the linuxppc_2_4_devel tree.
-
-Please let me know if you find a solution to this.
-
-G. Hannon
+Thank you very much
+Dietrich Pescoller
+--
+Dietrich Pescoller
+Microgate s.r.l
+Via Stradivari, 4
+I-39100 BOLZANO-BOZEN (ITALY)
+Tel. 0471-501532
+Fax 0471-501524
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
