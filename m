@@ -1,33 +1,30 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Dan Malek <dan@embeddededge.com>,
-	Paul Mackerras <paulus@samba.org>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: More details on the telnet with CONFIG_PIN_TLB problems
-Date: Thu, 6 Jun 2002 00:15:42 +0200
-Message-Id: <20020605221542.31000@smtp.wanadoo.fr>
-In-Reply-To: <20020606014206.GQ2630@zax>
-References: <20020606014206.GQ2630@zax>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15614.37065.549142.218906@argo.ozlabs.ibm.com>
+Date: Thu, 6 Jun 2002 08:29:29 +1000 (EST)
+To: Dan Malek <dan@embeddededge.com>
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: First cut at large page support on 40x
+In-Reply-To: <3CFCFC20.80101@embeddededge.com>
+References: <20020531042153.GD16537@zax>
+	<3CFC0D3F.9030901@embeddededge.com>
+	<20020604035947.GH2762@zax>
+	<3CFCFC20.80101@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->flush_instruction_cache() is already an iccci on 4xx (iccci flushes
->the entire ICU).  flush_dcache_icache() should be fixed though.  We
->could either replace the entire icache flushing loop with a single
->iccci, or we could replace each icbi with two icbis, on the address
->and the address XORed with 0x00001000 (which is the only possible
->alias with 4kb pages).
+Dan Malek writes:
 
-Provided that address ^ 0x1000 is mapped or we do that with
-translation off (but then we must get to the physical address
-of the first page).
+> If you would allow these to stay, you wouldn't have to change any other
+> mapping functions, like iopa().  It's only a couple of pages.......
 
-Looks simpler to do an iccci.
+Dan, you continue to surprise me.  You complain about a kB or two for
+a device tree but happily throw away anything from 16kB to 128kB or
+more just to simplify iopa, which should not be needed anyway.
 
-Ben.
-
+Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
