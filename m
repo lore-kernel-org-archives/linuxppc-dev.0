@@ -1,45 +1,32 @@
-Date: Fri, 8 Feb 2002 10:35:57 -0800
-From: andrew may <acmay@acmay.homeip.net>
-To: Stefan Roese <stefan.roese@esd-electronics.com>
-Cc: linuxppc-embedded@lists.linuxppc.org, Armin <akuster@pacbell.net>
-Subject: Re: PPC405gp enet Soft Reset
-Message-ID: <20020208103557.A27732@ecam.san.rr.com>
-References: <20020207191741.A26185@ecam.san.rr.com> <EFEAIMDCOOOHIEPHDNFJOEJBDKAA.stefan.roese@esd-electronics.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <EFEAIMDCOOOHIEPHDNFJOEJBDKAA.stefan.roese@esd-electronics.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Linux boot issues
+Date: Fri, 8 Feb 2002 13:17:17 -0600
+Message-ID: <D3A72C5007329A4F991C0DD87202259F096A5D@sekhmet.ad.newisys.com>
+From: "Navin Boppuri" <navin.boppuri@newisys.com>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Feb 08, 2002 at 11:03:59AM +0100, Stefan Roese wrote:
-> Andrew
->
-> > I seem to be having a problem with the soft reset of EMAC
-> > mode register when I have no ethernet connection to by phy.
->
-> We have the same problem (CPCI-405 with Intel LXT971 PHY).
+Hello again,
 
-It is good to see that the problem is known.
+I have PPCBOOT 1.1.2 running on my hardware with an MPC855T processor running at 64MHZ (both core and bus). I have SDRAM interfaced on this hardware and I think the burst accesses are working fine since PPCBOOT is executing well with burst accesses turned on. I have a 2.4.2 Linux kernel programmed in flash and I am trying to boot this kernel on the hardware.
 
-> > After this code in init_ppc405_enet(void) the SRST bit does
-> > not clear until after I stick in a cable.
->
-> See Chapter 19.7.1 in PPC405GP User Manual (EMAC0_MR0):
+I have a BDI hooked up to this hardware.
 
-The prelim hard copies I have been looking at failed to mention
-the clocks need to be active, but I did check the pdf and it is
-in there, so I guees I will try to look more at the soft copy these
-days.
+The problem is when I start booting the kernel, PPCBOOT calculates the checksum and says it is OK. It then uncompresses the kernel and even that is successful. The processor then goes into the debug state and halts at instruction 0xc000fa0c with a Software Emulation exception. When I do a disassemble of the Linux kernel, I see that this instruction is the start of the "printk" routine. No matter how many times I do this, I break at exactly the same instruction.
 
-> It seems that we can't reset and setup the EMAC correctly without cable
-> connected (no cable == no PHY clock!). So what do we do when this occurs?
-> Disable the driver?
+I tried defining CONFIG_CLOCKS_IN_MHZ but that did not change anything. I also tried running the processor at 64Mhz/32Mhz (core/memory bus) and 32Mhz/32Mhz but it did not make a difference.
 
-Your joking right? To do that is less than a 10 line hack, that I had to do
-to stop the driver from doing a panic or crashing, but I would not feel
-good about sending that as a patch. The driver needs to be able to handle
-this, but it will take some rework and it would be nice to know if there
-is really a reason to do the SoftReset before probing the phy.
+I was hoping that the kernel would come up atleast with burst accesses turned off, but I see the same exact behaviour even then.
+
+I am not sure what to look for now.
+
+Thank you for all the help and putting up with my weird queries.
+
+Navin Boppuri.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
