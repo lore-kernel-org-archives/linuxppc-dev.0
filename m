@@ -1,40 +1,36 @@
-Message-ID: <40963D85.6090805@gcctech.com>
-Date: Mon, 03 May 2004 08:39:33 -0400
-From: "Christopher R. Johnson" <cjohnson@gcctech.com>
-Reply-To: cjohnson@gcctech.com
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: netatalk with appletalk on ppc
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-ID: <E380A44D523BD5118EAE0002A52CE5C40B9A089B@zcard0k8.ca.nortel.com>
+From: "Andrew Williams" <awilliam@nortelnetworks.com>
+To: Jaap-Jan Boor <jjboor@aimsys.nl>
+Cc: "linuxppc-embedded@lists.linuxppc" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Spurious Interrupts.. 2.4.22 82xx platforms
+Date: Mon, 3 May 2004 09:59:25 -0400 
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ok, perhaps this should be posted elsewhere, but I figure someone here
-might have tried this:
+I can't believe I missed this thread.
 
-I'm using netatalk - trying to get the atalkd component up.  I've done
-this in the past with older kernels, but this time I'm on 2.4.23rc1.
- I'm using the on-chip ethernet support on the 405, and its working
-great with IP based stuff.  I've tried two different versions of
-netatalk with identical results.
+That's what I get for mis-typing "spurious" in the search engine
+(only 1 'r' in spurious folks).
 
-When atalkd starts up it does aarp probing to see if it can come up with
-an Appletalk network address.  The probe is sent out on the wire, but
-something wierd happens.  the aarp_rcv code gets invoked right away, and
-when I look at the packet its examing, its the exact packet that was
-just sent out.  This code sees this as an aarp probe being done by some
-other network entity (why?  the mac address is mine) and fails the
-probe.  The aarp code then moves on to another address to try, and the
-whole thing happens again, forever.  Its definitely going to eth0, and
-as I mentioned I see the aarp probe go out on the wire.  Running similar
-code on my intel desktop works fine, the probes happen 10 times, .1
-seconds apart, no one answers, and the code adopts that Appletalk
-address (the expected behavior).  I'm trying to wind my way through the
-net_tx_action and net_rx_action code to see why this is happening, but
-its slow going.
+I'll pursue this trail and add the sync's.
 
-Suggestions?
-
+> -----Original Message-----
+> From: Jaap-Jan Boor [mailto:jjboor@aimsys.nl]
+> Sent: May 3, 2004 2:57 AM
+> To: Williams, Andrew [CAR:9D40:EXCH]
+> Cc: linuxppc-embedded@lists.linuxppc
+> Subject: Re: Spurious Interrupts.. 2.4.22 82xx platforms
+>
+>
+> Andrew,
+>
+> Are you aware of this?
+> http://lists.linuxppc.org/linuxppc-embedded/200211/msg00139.html
+>
+> I'm not sure of this is your problem though
+>
+> Jaap-Jan
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
