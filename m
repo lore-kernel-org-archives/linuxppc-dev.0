@@ -1,46 +1,80 @@
 From: Paul Mackerras <paulus@linuxcare.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14793.16409.167430.562490@argo.linuxcare.com.au>
-Date: Thu, 21 Sep 2000 09:54:17 +1100 (EST)
-To: Roman Zippel <zippel@fh-brandenburg.de>
+Message-ID: <14793.17269.279179.950369@argo.linuxcare.com.au>
+Date: Thu, 21 Sep 2000 10:08:37 +1100 (EST)
+To: Matt Porter <mporter@mvista.com>
 Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-In-Reply-To: <Pine.GSO.4.10.10009201023340.21745-100000@zeus.fh-brandenburg.de>
-References: <14791.61311.118516.747495@argo.linuxcare.com.au>
-	<Pine.GSO.4.10.10009201023340.21745-100000@zeus.fh-brandenburg.de>
+In-Reply-To: <20000919231220.A10511@cx258813-a.chnd1.az.home.com>
+References: <Pine.LNX.4.10.10009172058340.715-100000@cassiopeia.home>
+	<14790.58502.25252.825448@argo.linuxcare.com.au>
+	<20000919150621.A9826@cx258813-a.chnd1.az.home.com>
+	<14791.61311.118516.747495@argo.linuxcare.com.au>
+	<20000919231220.A10511@cx258813-a.chnd1.az.home.com>
 Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Roman Zippel writes:
+Matt Porter writes:
 
-> > example, inb(0x3f8) won't access the first serial port (this is on
-> > machines such as prep and some chrp which have a lot of PC-style
-> > devices).
->
-> You know that the serial driver supports pci cards? So it's somehow a bad
-> example and even for broken drivers it shouldn't be that much of a problem
-> to add:
+> Ick...agree here.  Of course, the serial driver could be changed to
+> do other than inb/outb's for other archs and be passed the memory
+> mapped address of the ports.
 
-You know that prep and chrp machines usually have a super-I/O chip
-that has serial ports at I/O 0x3f8 and 0x2f8?  How does support for
-pci cards in the serial driver help you there?
+And the parallel port driver, and the floppy driver, and the
+keyboard/mouse drivers, and the ...
 
-> #if __broken__
-> #define xxx_inb(base, port) inb(port)
-> #else
-> #define xxx_inb(base, port) readb(base + port)
-> #endif
+> This looks to be a good solution if we can't resolve to make the kernel
+> less legacy-oriented.  I changed the default K2 board memory map to
 
-I can just see Ted T'so adding that extra cruft to the serial driver,
-and then Linus accepting the patch.  Not.
+If we only supported powermacs, and not preps or chrps, then we
+probably could make the kernel less "legacy-oriented". :-) :-)
 
-> All the 8390 based drivers do something like this. (Although currently
-> they abuse inb/outb for that.)
+> do a similar thing by orienting the 2nd host bridge right after the
+> 1st in the physical map.  The virt->phys mapping was then 1:1 and things
+> work as you describe above.  Obviously, this approach won't work when
+> you have separate bridge ASICs since you can't get the memory map
+> granularity that I had in the dual host bridge package.
 
-Inb/outb are the *correct* things to use for accessing PCI I/O space.
+So we set up the virtual -> physical mapping to suit ourselves.  Not a
+problem.
+
+> Well, on drivers like the de4x5 you switch to use the mem bar instead
+> of the I/O bar and then it's generic.  There are lots of drivers that
+> given the choice, chose to use I/O calls.  These can easily be fixed.
+
+But what is wrong with using registers in I/O space and accessing them
+with in*/out*?  I don't understand the aversion some people have shown
+to using in*/out*.  They are the accessor functions for PCI I/O space,
+that's all.  Whatever happens, we need accessor functions for PCI I/O
+space.  We can call them something different or make them more
+complicated but that would just create extra work for ourselves and
+make it harder to port drivers between architectures.
+
+> PCI I/O is memory mapped on everything but x86.  In most cases PCI
+
+So???  What we have is a level of abstraction that hides (from driver
+authors) exactly how PCI memory and I/O space are accessed.  We have
+readb/writeb etc. for PCI memory space and inb/outb etc. for PCI I/O
+space.  The fact that on PPC both are mapped into the processor's
+address space and accessed using loads and stores is something that
+drivers should not care in the slightest about.  And in fact these
+spaces are not accessed this way on some other non-intel platforms;
+e.g. sparc64 uses special ldasi/stasi instructions.
+
+> devices provide bars that map the same set of registers into both
+> I/O space and mem space.  That leaves only the true legacy devices
+> which have no memory bars to be concerned with.  It's a smaller
+> set of drivers that need different low level access methods than
+> you're making it out to be.
+
+The fact remains that a lot of drivers will continue to use inb/outb
+etc., since they are developed primarily on the intel platform.  It
+makes sense for us to have an inb/outb that works similarly to intel,
+so that we can use as many drivers as possible with as little pain as
+possible.
 
 Paul.
 
