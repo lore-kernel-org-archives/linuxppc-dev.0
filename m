@@ -1,74 +1,48 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Wed, 19 Feb 2003 14:29:55 -0800
-Subject: Re: PowerMac vs. Intel for PowerPC Development Host
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v551)
-Cc: linuxppc-embedded@lists.linuxppc.org
-To: brian.auld@adic.com
-From: bob piatek <bobtek@fishcamp.com>
-In-Reply-To: <995FF289C9D69747A09E42992644595405B23678@penguin.adic.com>
-Message-Id: <AB83137E-4459-11D7-868F-000393D6CBAE@fishcamp.com>
+To: bob piatek <bobtek@fishcamp.com>
+Cc: brian.auld@adic.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PowerMac vs. Intel for PowerPC Development Host 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 19 Feb 2003 14:29:55 PST."
+             <AB83137E-4459-11D7-868F-000393D6CBAE@fishcamp.com>
+Date: Wed, 19 Feb 2003 23:44:43 +0100
+Message-Id: <20030219224449.065F7C6E0D@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've been using a Mac running the Yellow Dog Linux distribution and
-have not had any problems.
-
-The plusses are you don't have to worry about cross-compiling or
-setting up GDB in a cross platform environment.  It is just a couple
-more things you don't have to worry about.
-
-As a bonus, many of your host's command line tools can be NFS mounted
-on your embedded system and run directly without having to have special
-versions for your target.
-
-So... no negatives but a few plusses.
-
-
-Bob
-
-fishcamp engineering
-105 W. Clark Ave.
-Orcutt, CA  93455
-
-http://www.fishcamp.com
-TEL: 805-937-6365
-FAX: 805-937-6252
-
-
-
-On Wednesday, February 19, 2003, at 01:52 PM, brian.auld@adic.com wrote:
-
+In message <AB83137E-4459-11D7-868F-000393D6CBAE@fishcamp.com> you wrote:
 >
-> A while back I wrote an email to this list regarding development kit
-> suggestions. Based mainly on feedback from this email, I am currently
-> moving
-> in the Intel/ELDK direction.
->
-> Out of all the feedback I received, only one person suggested
-> developing on
-> a PowerMac based Linux box, thus eliminating the need for
-> cross-compiling. I
-> have become more interested in this option as some people in our
-> company
-> have noted that cross-compiling embedded linux presented problems on
-> past
-> projects when it came to building certain 3rd party applications.
->
-> In the Intel vs. Mac debate for a linux development host for embedded
-> ppc
-> development, if money was not an issue, would I get more PowerMac
-> recommendations??
->
-> Thanks,
->
-> -- Brian
->
->
->
->
->
+> I've been using a Mac running the Yellow Dog Linux distribution and
+> have not had any problems.
 
+This depends on your target processor.
+
+> The plusses are you don't have to worry about cross-compiling or
+> setting up GDB in a cross platform environment.  It is just a couple
+> more things you don't have to worry about.
+
+This depends on your target processor.
+
+> As a bonus, many of your host's command line tools can be NFS mounted
+> on your embedded system and run directly without having to have special
+> versions for your target.
+
+This depends on your target processor.
+
+For example, with MPC8xx or IBM 4xx systems which don't  have  a  FPU
+and  small  cache  line  sizes  you  may want special versions of the
+libraries, and a  special  configuration  of  GCC  that  automgically
+enables "-msoft-float" etc.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+See us @ Embedded World, Nuremberg, Feb 18-20, Hall 12.0 Booth 12-442
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
