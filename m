@@ -1,41 +1,47 @@
-Message-ID: <389D018F.A081DBFF@unlserve.unl.edu>
-Date: Sat, 05 Feb 2000 22:50:29 -0600
+Message-ID: <389D57C8.F4204CF@unlserve.unl.edu>
+Date: Sun, 06 Feb 2000 02:15:54 -0600
 From: Takashi Oe <toe@unlserve.unl.edu>
 MIME-Version: 1.0
-To: BenH <bh40@calva.net>
+To: Brad Midgley <brad@turbolinux.com>
 CC: linuxppc-dev@lists.linuxppc.org
 Subject: Re: [patch] little-endian dmasound silently fails
-References: <20000205142613.026592@192.168.1.10>
+References: <Pine.LNX.4.20.0002060210380.16199-100000@mail.turbolinux.com>
 Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-BenH wrote:
+Hi,
+
+Brad Midgley wrote:
 >
-> Actually, I had some reports about this problem too and I'm wondering if
-> all revisions of AWACS actually support byte swapping. (I think I
-> remember seeing a comment on this list telling explicitely that some
-> revisions didn't support it).
+> > don't think this is dmasound's fault.  Luckily for us, many "broken"
+> > OSS-compatible apps tend to work just fine if we simply modify them to
+> > ask for AFMT_S16_NE not *_LE, though performance critical apps should
+> > be fixed with more effort.
+>
+> is the app broken because it tries to use _LE formats?
 
-AWACS on Nubus PowerMac doesn't support byte swapping.  I know for sure
-rev. 2 and 3 (beige G3) do support it.  In any case, many apps are
-simply broken.
+No, no, no.  There is no problem in trying to use _LE or whatever
+formats.  The problem is that many apps *don't* pass the data in
+little-endian format when, in fact, they ask the driver to be ready for
+little-endian data.  Please have a closer look at any app that you think
+should work but fail.  I bet they are genuinely broken (i.e. passing
+data in wrong byte order).  Note that, whenever apps use short or long
+or int, they must be aware of byte order.
 
-By the way, I was looking through Darwin code the other day, and I
-noticed their pmu code have the following for pmu command:
+> i agree it's not optimal and reflects laziness on the developer's part to
+> try to make everything work as if it's little-endian, but that the api
+> allows it, right?
 
-        kPMUsoundSet            = 0x90,  // sound power control
-        kPMUSetDFAC             = 0x91,  // set DFAC register (DBLite)
-        kPMUsoundRead           = 0x98,  // read sound power state
-        kPMUReadDFAC            = 0x99,  // read DFAC register (DBLite)
+Some sound formats are little endian, and others are big endian.  If the
+app can pass the multi-byte data to the driver without byte-swapping in
+software, it should, but, of course, it can do in any way.
 
-Do you have any idea if they are used with G3 PowerBooks under Mac OS?
-There was a report long time that an user would lose ability to play
-audio CD from media bay drive after sleep, and he needed to boot Mac OS
-completely before coming back to Linux to get the lost audio CD
-capability back, though beep and other sound functions weren't affected
-at all.
+By the way, dmasound should probably optimize for stereo not mono, and
+it should not support _U8/16 variants, perhaps, since AWACS doesn't
+support them in hardware.  The format conversion is done in software
+(kernel space).
 
 
 Takashi Oe
