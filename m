@@ -1,94 +1,47 @@
-From: Joe Green <jgreen@mvista.com>
-To: Frank Rowand <frank_rowand@mvista.com>,
-        Subodh Nijsure <SNijsure@SkyStream.com>
-Subject: Re: ppc_8xx-ldd
-Date: Fri, 2 Feb 2001 11:18:52 -0800
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-=_XrJmOWFrxsjyBldbEFSArCBynEcd"
-Cc: "'jeffrey.d.kowing1@jsc.nasa.gov'" <jeffrey.d.kowing1@jsc.nasa.gov>,
-        linuxppc-embedded@lists.linuxppc.org
-References: <B25E2E5A003CD311B61E00902778AF2A0148B6C5@SERVER1> <3A7AFD6B.67378DDD@mvista.com> <01020211101301.24872@minotaur.mvista.com>
-In-Reply-To: <01020211101301.24872@minotaur.mvista.com>
+Message-ID: <3A7B0CFB.6BAB81F3@matrox.com>
+Date: Fri, 02 Feb 2001 14:39:39 -0500
+From: Sébastien Côté <scote1@matrox.com>
 MIME-Version: 1.0
-Message-Id: <01020211203602.24872@minotaur.mvista.com>
+To: Jim Potter <jrp@wvi.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: mm in user space
+References: <3A79EBF9.6534E50D@wvi.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---Boundary-=_XrJmOWFrxsjyBldbEFSArCBynEcd
-Content-Type: text/plain
-Content-Transfer-Encoding: 8bit
+Jim Potter wrote:
+>
+> > I got exactly the same problem, did you manage to fix it?
+> Yes, I did (blushing).
+> While doing the early boot-tasks I had installed a custom DSI trap
+> handler, to alert me to all the stupid mistakes that sometimes get made
+> when bringing up Linux on a new hardware platform.  When I got to the
+> "user space" task of create_elf_tables(), it's *supposed* to take the
+> regular DSI trap to fixup the TLB, pagetables, etc...
+>
+> After restoring the default DSI trap handler in head.S, it worked fine.
+>
+> What kind of problem are you having with your system?
 
-On Fri, 02 Feb 2001, Joe Green wrote:
-> For execution on a development host, I've attached a simple shell script
-> that does something like ldd.  (ldd actually loads the program, which
-> won't work for cross-developed programs.)  It must be run from the same
-> directory as the target architecture objcopy and objdump, and must have
-> the same prefix (e.g., ppc_8xx-ldd, ppc_8xx-objcopy, ppc_8xx-objdump).
+I lose the system in create_elf_tables, when NEW_AUX_ENT is first called
+but I don't really know what happens then because the debugger screws
+up.
 
-Of course, it would be better if it correctly removed the tmp file, as
-the attached version does.  :-/
+Today, I noticed that the values of PAGE_OFFSET (from which KERNELBASE
+is set) and KERNELLOAD had been changed to 0x0 on the system..  This
+seemed very bad to me so I set them back to 0xc0000000 but then the
+debugger doesn't want to load the kernel image in memory (it tries to
+load it at 0xc0000000 which isn't possible).. Then I just changed
+KERNELLOAD back to 0x0 and kept KERNELBASE to 0xc0000000.
 
---
-Joe Green <jgreen@mvista.com>
-MontaVista Software, Inc.
+Now the system locks up at the very beginning (prom_init) but since
+KERNELLOAD and KERNELBASE are different, I wasn't hoping for much (not
+really beacuse they differ, but because the linker used 0x0).
 
---Boundary-=_XrJmOWFrxsjyBldbEFSArCBynEcd
-Content-Type: application/x-shellscript;
-  name="ppc_8xx-ldd"
-Content-Disposition: attachment; filename="ppc_8xx-ldd"
-Content-Transfer-Encoding: base64
+Do you think it would be possible to get everything to work with
+KERNELBASE and KERNELLOAD = 0x0 ?
 
-IyEvYmluL3NoCgojCiMgIEZJTEU6ICBsZGQtc2NyaXB0CiMKIyAgREVTQ1JJUFRJT046CiMgICAg
-U2hlbGwgc2NyaXB0IHRoYXQgc2ltdWxhdGVzIGxkZCB1c2luZyBvYmpjb3B5IGFuZCBvYmpkdW1w
-LgojICAgIFdvcmtzIGZvciBjcm9zcy1kZXZlbG9wZWQgcHJvZ3JhbXMgb24gaG9zdCBzeXN0ZW0u
-CiMKIyAgQVVUSE9SOiAgTW9udGFWaXN0YSBTb2Z0d2FyZSwgSW5jLiA8c291cmNlQG12aXN0YS5j
-b20+CiMKIyAgQ29weXJpZ2h0IDIwMDEgTW9udGFWaXN0YSBTb2Z0d2FyZSBJbmMuCiMKIyAgVGhp
-cyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7IHlvdSBjYW4gcmVkaXN0cmlidXRlICBpdCBhbmQv
-b3IgbW9kaWZ5IGl0CiMgIHVuZGVyICB0aGUgdGVybXMgb2YgIHRoZSBHTlUgR2VuZXJhbCAgUHVi
-bGljIExpY2Vuc2UgYXMgcHVibGlzaGVkIGJ5IHRoZQojICBGcmVlIFNvZnR3YXJlIEZvdW5kYXRp
-b247ICBlaXRoZXIgdmVyc2lvbiAyIG9mIHRoZSAgTGljZW5zZSwgb3IgKGF0IHlvdXIKIyAgb3B0
-aW9uKSBhbnkgbGF0ZXIgdmVyc2lvbi4KIwojICBUSElTICBTT0ZUV0FSRSAgSVMgUFJPVklERUQg
-ICBgYEFTICBJUycnIEFORCAgIEFOWSAgRVhQUkVTUyBPUiBJTVBMSUVECiMgIFdBUlJBTlRJRVMs
-ICAgSU5DTFVESU5HLCBCVVQgTk9UICBMSU1JVEVEICBUTywgVEhFIElNUExJRUQgV0FSUkFOVElF
-UyBPRgojICBNRVJDSEFOVEFCSUxJVFkgQU5EIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQVVJQ
-T1NFIEFSRSBESVNDTEFJTUVELiAgSU4KIyAgTk8gIEVWRU5UICBTSEFMTCAgIFRIRSBBVVRIT1Ig
-IEJFICAgIExJQUJMRSBGT1IgQU5ZICAgRElSRUNULCBJTkRJUkVDVCwKIyAgSU5DSURFTlRBTCwg
-U1BFQ0lBTCwgRVhFTVBMQVJZLCBPUiBDT05TRVFVRU5USUFMIERBTUFHRVMgKElOQ0xVRElORywg
-QlVUCiMgIE5PVCBMSU1JVEVEICAgVE8sIFBST0NVUkVNRU5UIE9GICBTVUJTVElUVVRFIEdPT0RT
-ICBPUiBTRVJWSUNFUzsgTE9TUyBPRgojICBVU0UsIERBVEEsICBPUiBQUk9GSVRTOyBPUiAgQlVT
-SU5FU1MgSU5URVJSVVBUSU9OKSBIT1dFVkVSIENBVVNFRCBBTkQgT04KIyAgQU5ZIFRIRU9SWSBP
-RiBMSUFCSUxJVFksIFdIRVRIRVIgSU4gIENPTlRSQUNULCBTVFJJQ1QgTElBQklMSVRZLCBPUiBU
-T1JUCiMgIChJTkNMVURJTkcgTkVHTElHRU5DRSBPUiBPVEhFUldJU0UpIEFSSVNJTkcgSU4gQU5Z
-IFdBWSBPVVQgT0YgVEhFIFVTRSBPRgojICBUSElTIFNPRlRXQVJFLCBFVkVOIElGIEFEVklTRUQg
-T0YgVEhFIFBPU1NJQklMSVRZIE9GIFNVQ0ggREFNQUdFLgojCiMgIFlvdSBzaG91bGQgaGF2ZSBy
-ZWNlaXZlZCBhIGNvcHkgb2YgdGhlICBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBhbG9uZwoj
-ICB3aXRoIHRoaXMgcHJvZ3JhbTsgaWYgbm90LCB3cml0ZSAgdG8gdGhlIEZyZWUgU29mdHdhcmUg
-Rm91bmRhdGlvbiwgSW5jLiwKIyAgNjc1IE1hc3MgQXZlLCBDYW1icmlkZ2UsIE1BIDAyMTM5LCBV
-U0EuCiMKCiMgR2V0IHRoZSBjb21tYW5kIHByZWZpeCB0byB1c2UgdG8gZmluZCBvdGhlciBhcmNo
-aXRlY3R1cmUtZGVwZW5kZW50IHRvb2xzLgojIFRoaXMgcmVxdWlyZXMgdGhpcyBzY3JpcHQgYmUg
-bmFtZWQgIjxzb21ldGhpbmc+bGRkIiwgYW5kIHVzYWdlIGJlbG93CiMgcmVxdWlyZXMgdGhhdCBv
-Ympjb3B5IGFuZCBvYmpkdW1wIGZvciB0aGlzIGFyY2hpdGVjdHVyZSBiZSBpbnN0YWxsZWQKIyB3
-aXRoIHRoZSBzYW1lIHBhdGggYW5kIHByZWZpeCBhcyBsZGQuCnByZWZpeD0kezAlbGRkfQoKIyBE
-aXJlY3RvcnkgZm9yIHRlbXBvcmFyeSBmaWxlCnRtcGRpcj0ke1RNUERJUjotL3RtcH0KCmZvciBm
-aWxlIGluICRAIDsgZG8KICAgICMgSWYgbXVsdGlwbGUgZmlsZXMgb24gY29tbWFuZCBsaW5lLCBw
-cmludCBlYWNoIGZpbGUgbmFtZS4KICAgICMgRm9yIGEgc2luZ2xlIGZpbGUsIGp1c3QgcHJpbnQg
-dGhlIGxpYnJhcnkgbGlzdC4KICAgIGlmIFsgJCMgLWd0IDEgXSA7IHRoZW4KCWVjaG8gIiR7Zmls
-ZX06IgogICAgZmkKCiAgICAjIEdldCBsaW5rZWQgc2hhcmVkIGxpYnJhcmllcyBmcm9tIHRoZSBE
-VF9ORUVERUQgZW50cmllcy4KICAgIGxpYnJhcmllcz0kKCR7cHJlZml4fW9iamR1bXAgLXAgJGZp
-bGUgfAoJCWdyZXAgTkVFREVEIHwKCQlzZWQgLWUgJ3MvLipORUVERUQgXCguKlwpJC9cMS8nKQoK
-ICAgICMgR2V0IHRoZSBwcm9ncmFtIGludGVycHJldGVyIGZyb20gdGhlIFBUX0lOVEVSUCBzZWN0
-aW9uLgogICAgIyBIYXZlIHRvIHVzZSBhIHRtcCBmaWxlIGJlY2F1c2Ugb2JqY29weSB3b24ndCBv
-dXRwdXQgdG8gc3Rkb3V0LgogICAgaWYgJHtwcmVmaXh9b2JqY29weSAtaiAuaW50ZXJwIC1PIGJp
-bmFyeSAkZmlsZSAkdG1wZGlyLyQkLmludGVycDsgdGhlbgoJaW50ZXJwPSQodHIgLWQgLWMgIls6
-Z3JhcGg6XSIgPCAkdG1wZGlyLyQkLmludGVycCkKCXJtIC1mICR0bXBkaXIvJCQuaW50ZXJwCgls
-aWJyYXJpZXM9IiRsaWJyYXJpZXMgJGludGVycCIKICAgIGZpCgogICAgIyBQcmludCBsaWJyYXJ5
-IGxpc3QgaW4gc2ltdWxhdGVkIGxkZCBvdXRwdXQgZm9ybS4KICAgICMgTm90IGxvb2tpbmcgYXQg
-dGFyZ2V0IGxpYnJhcmllcywgc28gbm8gZnVsbCBwYXRocyBvbiB0aGUgcmlnaHQgc2lkZS4KICAg
-ICMgQ2FuJ3QgZ2VuZXJhdGUgbG9hZCBhZGRyZXNzZXMgd2l0aCBhbnkgY2VydGFpbnR5LCBzbyBq
-dXN0IHVzZSAweDAuCiAgICBmb3IgbGlicmFyeSBpbiAkbGlicmFyaWVzOyBkbwoJZWNobyAiCSRs
-aWJyYXJ5ID0+ICRsaWJyYXJ5ICgweDApIgogICAgZG9uZQpkb25lCg==
-
---Boundary-=_XrJmOWFrxsjyBldbEFSArCBynEcd--
+Sébastien Côté
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
