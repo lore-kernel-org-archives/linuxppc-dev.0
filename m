@@ -1,25 +1,103 @@
-Message-ID: <40B4880B.1000801@intracom.gr>
-Date: Wed, 26 May 2004 15:05:31 +0300
+Message-ID: <40B4880E.9030809@intracom.gr>
+Date: Wed, 26 May 2004 15:05:34 +0300
 From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
 To: Tom Rini <trini@kernel.crashing.org>,
 	Dan Malek <dan@embeddededge.com>,
 	Kumar Gala <kumar.gala@motorola.com>,
 	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: 8xx-2.6 | Prolog
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: [PATCH #1/9]  8xx-2.6 | commproc
+Content-Type: multipart/mixed;
+ boundary="------------060606060705010404040708"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+This is a multi-part message in MIME format.
+--------------060606060705010404040708
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+
 Hi
 
-The patches that follow are against the linuxppc-2.5 tree and
-are tested to work on my NETTA board.
+The following patch updates the commproc in order for 2.6 to work
+for 8xx.
 
-Awaiting comments.
+Regards
 
 Pantelis
 
+
+--------------060606060705010404040708
+Content-Type: application/x-bzip2;
+ name="01_8xx_commproc.patch.bz2"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="01_8xx_commproc.patch.bz2"
+
+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
+qKBaqf8XckU4UJA5AD59
+--------------060606060705010404040708
+Content-Type: text/plain;
+ name="01_8xx_commproc.diffstat"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="01_8xx_commproc.diffstat"
+
+ arch/ppc/8xx_io/commproc.c |  181 +++++++++++++++++++++++++++++++++++----------
+ 1 files changed, 144 insertions(+), 37 deletions(-)
+
+--------------060606060705010404040708--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
