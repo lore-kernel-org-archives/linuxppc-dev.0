@@ -1,18 +1,18 @@
-Return-Path: <flylist@linuxkernel.net>
-Received: from sarang.flyduck.com (c-24-6-74-43.client.comcast.net
-	[24.6.74.43]) by ozlabs.org (Postfix) with ESMTP id 6D3F82BF0E
+Return-Path: <kumar.gala@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 806BC2BF27
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Jan 2005 11:52:03 +1100 (EST)
-Message-Id: <200501130009.j0D09vra020125@sarang.flyduck.com>
-From: "Ho Lee" <flylist@linuxkernel.net>
-To: "'linuxppc'" <linuxppc-embedded@ozlabs.org>
-Date: Wed, 12 Jan 2005 16:14:49 -0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <F9865C8B04ED3A4D8D793FCE19368854F2FBDF@EXCHANGE01.corp.skystream.com>
-Cc: 'Steffen Rumler' <Steffen.Rumler@siemens.com>
-Subject: RE: Kernel boot hangs by parallel flood pings
+	Thu, 13 Jan 2005 15:20:06 +1100 (EST)
+In-Reply-To: <41E5B318.3060304@mvista.com>
+References: <41E5B318.3060304@mvista.com>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <579DFDF6-651A-11D9-92A0-000393DBC2E8@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 12 Jan 2005 22:19:39 -0600
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: linuxppc-embedded@ozlabs.org, Kumar Gala <galak@somerset.sps.mot.com>
+Subject: Re: RFC: [PATCH] platform device driver model support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,53 +23,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+> My $0.02.
+>
+> I didn't go thru in complete detail but I like the idea.=A0 I have a
+> couple minor comments, though.
+>
+> 1) Can we pick something other than 'soc' since the Marvell bridges
+>  really aren't SOCs?=A0 I don't really know what is better but just to
+> throw something out, how about haing them all look like ppc_pd_xxx()?
 
-I met the same problem in CPM driver, and there could be many 
-solutions. I think the right place to fix is the fec driver. 
-The fec driver registers interrupt handler during the 
-initialization not when the device is opened, so it may
-receive packets even the device is not up and running (also 
-before the network subsystem is initialized) My fix was to 
-ignore the received packets if the driver is not opened. 
+What about ppc_plat_xxx() or ppc_sys_xxx() [for system]?  'sys' maybe=20
+more consistent with our naming conventions in that arch/ppc/platforms=20=
 
---- linux-2.4.26.orig/arch/ppc/8xx_io/fec.c
-+++ linux-2.4.26/arch/ppc/8xx_io/fec.c 
-@@ -587,6 +587,9 @@
-                goto rx_processing_done;
-        }
- 
-+       if (!netif_running(dev))
-+           goto rx_processing_done;
-+
-        /* Process the incoming frame.
-         */
-        fep->stats.rx_packets++;
+is more board focused, and arch/ppc/syslib is bridge and non-core chip=20=
 
+functionality.
 
-Regards,
-Ho
+> 2) In 8540_ads.c you're digging out platform_device entries and
+> modifying them in your mpc8540ads_setup_arch() routine.=A0 I think the
+> platform_device "way" of doing that would be to make your mods via the
+> platform_notify() hook (eventually called by device_add() which was
+> ultimately called from platform_add_devices()).
 
------Original Message-----
-From: linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Rune Torgersen
-Sent: Wednesday, January 12, 2005 7:32 AM
-To: Steffen Rumler; linuxppc
-Subject: RE: Kernel boot hangs by parallel flood pings
+This is problematic for some things like the updating of the IOMEM=20
+resources since that needs to occur before platform_device_register is=20=
 
---- Kernel.old/net/ipv4/ip_output.c     Thu Jun  5 09:00:39 2003
-+++ Kernel/net/ipv4/ip_output.c Thu Jun  5 09:00:28 2003
-@@ -1087,11 +1087,11 @@
+called.  However, the updates in mpc8540_ads.c could possibly handled=20
+by platform_notify(), will look into that.
 
- void __init ip_init(void)
- {
--       dev_add_pack(&ip_packet_type);
--
-        ip_rt_init();
-        inet_initpeers();
-
-+       dev_add_pack(&ip_packet_type);
-+
- #ifdef CONFIG_IP_MULTICAST
-        proc_net_create("igmp", 0, ip_mc_procinfo);
- #endif
->>
+- kumar=
