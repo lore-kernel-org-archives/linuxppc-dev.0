@@ -1,43 +1,72 @@
-Message-ID: <40C4DBA3.1090202@nortelnetworks.com>
-Date: Mon, 07 Jun 2004 17:18:27 -0400
-From: Chris Friesen <cfriesen@nortelnetworks.com>
+Date: Mon, 7 Jun 2004 20:04:44 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: newest "bk pull" of 8xx tree still builds a kernel that hangs
+In-Reply-To: <20040607200811.GD12823@smtp.west.cox.net>
+Message-ID: <Pine.LNX.4.58.0406071950460.3449@localhost.localdomain>
+References: <Pine.LNX.4.58.0406071152260.14264@localhost.localdomain>
+ <20040607200811.GD12823@smtp.west.cox.net>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: problems with 2.6.5 and MCPL765
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We've been using 2.4.22 with Motorola MCPN765 cards, and are looking at moving
-to 2.6.5.  We took a userspace image that worked on 2.4, stuck it into
-arch/ppc/boot/images and did a "make zImage.initrd" at the top level of the
-2.6.5 kernel tree with the processor set to 74xx and the platform set to
-MCPN765.  Is that the right way to do it? (I realize that userspace might have
-issues, but for a first crack at it, should that at least start to run?)
+On Mon, 7 Jun 2004, Tom Rini wrote:
 
-We then tried to boot and immediately took the following exception:
+>
+> On Mon, Jun 07, 2004 at 11:55:33AM -0400, Robert P. J. Day wrote:
+>
+> >
+> >   having just got back from vacation, i may have missed some of the latest
+> > developments.  i just did a "bk pull" from the linuxppc-2.5 tree, rebuilt
+> > the kernel for my 8xx board and, just like before i left, the kernel hung
+> > almost immediately upon booting:
+> >
+> > Linux/PPC load: console=ttyS0,9600 rw root=/dev/ram0 init=/sbin/minit
+> > Uncompressing Linux...done.
+> > Now booting the kernel
+> > (hang)
+> >
+> > should i be expecting this?  once upon a time, of course, i got all the
+> > way to user space before the hang.  have there been some recent patches to
+> > cause this latest behaviour?  i haven't messed with the config file in
+> > quite some time.  should i?
+>
+> What probably happened is that you don't have a UART driver selected.
+> I've had my best luck with CONFIG_SERIAL_CPM, so you might want to try
+> that.
 
-Exception: Alignment
-SRR0 =00499234 SRR1 =00002040 Vector-Offset =00600
-DSISR=00002467 DAR  =FFFF92F3
-IP     =00499234 MSR    =00002040 CR     =20000044 FPSCR  =00000000
-R0     =0080013C R1     =0158A0D0 R2     =0000000F R3     =00500000
-R4     =00000000 R5     =00000000 R6     =00000000 R7     =00000000
-R8     =0048D7B8 R9     =00000000 R10    =00001014 R11    =00000008
-R12    =00000001 R13    =000000FF R14    =00000000 R15    =00000000
-R16    =00000000 R17    =00000000 R18    =00000000 R19    =00000000
-R20    =00000000 R21    =00000000 R22    =00000000 R23    =00000000
-R24    =00000000 R25    =00000000 R26    =00000000 R27    =00000000
-R28    =00000000 R29    =00000000 R30    =00000000 R31    =00500000
-SPR0   =EFFEA298 SPR1   =00000000 SPR8   =00000028 SPR9   =00000000
-00499234 C86792F3  LFD         FR3,$FFFF92F3(R7) ($FFFF92F3)
-PPC6-Bug>Console = [1F: VT- "SLAVE"]
+i selected that, but still no luck -- kernel still hangs almost
+immediately -- but there may be other issues here.
 
-Any ideas where to look?
+i'm working with a custom board that, despite the initial contents of the
+file arch/ppc/8xx_io/uart.c, supports both ethernet on SCC3 and console on
+SMC1.  for our 2.4 kernel, i have the MPC8xx options (among others):
 
-Thanks,
+  [*] SMC1/SCC3/I2C/SPI Microcode Patch
+  [*] CPM SCC Ethernet
+  (SCC3) SCC used for Etherhet
+  [*] Use SMC1 for UART
 
-Chris
+so you can definitely see that we've been hacking the kernel source for
+our 2.4 build on this board.  i was *hoping* to get a minimal 2.6 config
+to boot just to prove that it could be done, before starting to make any
+necessary mods from there.  now i'm wondering if that's even possible.
+
+since i'd rather not start mucking with the source code just yet (it being
+in a state of flux), i think what i want to try is to get an absolutely
+minimal config to see if it boots.  so, one would think, i could turn off
+stuff like JFFS2 support, tmpfs, even networking, just to see if i can get
+any further.
+
+if anyone wants to suggest the bare minimum config that should build a
+bootable kernel, i'd be interested.  but i'm starting to get this
+unpleasant sensation that i really might need to hack uart.c as we did
+with the 2.4 kernel just for our board.
+
+rday
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
