@@ -1,46 +1,45 @@
-From: Paul Mackerras <paulus@samba.org>
-MIME-Version: 1.0
+Date: Tue, 10 Sep 2002 21:07:40 -0700
+From: curt brune <curt@acm.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: booting on embedded planet RPX_LITE-DW (823e)
+Message-ID: <20020911040740.GA19578@lenin.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <15742.33086.511345.798962@argo.ozlabs.ibm.com>
-Date: Wed, 11 Sep 2002 09:33:18 +1000 (EST)
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Caching in the MPC107
-In-Reply-To: <1031581408.30396.81.camel@newt>
-References: <1031581408.30396.81.camel@newt>
+In-Reply-To: <20020910065712.2B2EBFA8B@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Adrian Cox writes:
+Success!!  It boots!
 
-> I've just been debugging an interesting problem with a new board that
-> uses a MPC107 bridge with a 7445 processor. The symptoms were that the
-> ethernet device never saw updated transmit descriptors unless another
-> bus master was active in the system.
+Thanks to all the people who pointed this out:
+
+> > Does anyone know a reason for the 0x10000 offset?  Can you point
+    me to
 >
-> The underlying problem is that linuxppc_2_4_devel only sets the
-> _PAGE_COHERENT flag on memory when CONFIG_SMP is enabled. This doesn't
-> allow for the fact that the MPC107 contains caches. The cache causing
-> the problem was the PCI-to-Local-Memory-Read-Buffer (PCMRB), which can
-> store two 32-byte cache lines.
+> It seems you are loading a file in ELF format. 0x10000  is  64  kB
+    -
+> this  size  of  the ELF file header. In the Pre-PPCBoot times when we
+> still used this  bootstrap  loader  method  for  booting  we  alsways
+> stipped  this  header  - this saves 64 kB (more than 10% of the  image
+> size!) in flash:
+>
+>       dd if=zImage of=zImage.raw bs=64k skip=1
+>
 
-Interesting.  You are of course quite correct in saying that if there
-are other things in the system (besides the CPU) that can access and
-cache memory, then we need to set the M (== _PAGE_COHERENT) bit in the
-PTEs for at least any memory that is going to be accessed by those
-other agents.
+Regarding my hanging problem -- this was board specific.  My board has
+a watchdog timer, which was enabled.  After disabling this via the
+"SYPCR" config parameter it just worked.  Great.  Good feeling.
 
-> My current thinking is to produce a patch which introduces a new option:
-> CONFIG_CACHING_HOSTBRIDGE which boards combining the MPC107 and the
-> MPC7450 can set. This will probably be needed for Motorola's Valis or
-> Gyrus PMCs.
+It even netboots.  Great.
 
-Hmmm, it would be better to have the code just do the right thing on
-each platform.  We could for instance have platform_init set a flag to
-say "we have a caching hostbridge" and have mapin_ram and
-bat_mapin_ram set the M bit if that flag is set.
+For what it's worth I'm running kernel 2.4.18 patched with
+ppc-patch-2.4.18.gz from kernel.org .  For the toolchain I'm using the
+ELDK.  No other patches.
 
-Paul.
+Now the real big fun begins.
+
+Cheers,
+Curt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
