@@ -1,35 +1,39 @@
-Message-Id: <9910291811.AA21080@marc.watson.ibm.com>
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Lou Langholtz <ldl@chpc.utah.edu>, linuxppc-dev@lists.linuxppc.org,
-        gdt@linuxppc.org, cort@cs.nmt.edu
-Subject: Re: linux-2.2.13pre15 stability w/ head.S patch 
-In-Reply-To: Message from Gabriel Paubert <paubert@iram.es>
-   of "Fri, 29 Oct 1999 12:34:30 +0200." <Pine.HPX.4.10.9910291132120.18743-100000@gra-ux1.iram.es>
-Date: Fri, 29 Oct 1999 14:11:16 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Message-ID: <3819E3D7.B9D7E4F3@chpc.utah.edu>
+Date: Fri, 29 Oct 1999 12:13:43 -0600
+From: Lou Langholtz <ldl@chpc.utah.edu>
+MIME-Version: 1.0
+To: Cort Dougan <cort@ppc.kernel.org>
+Cc: linuxppc-dev@lists.linuxppc.org, gdt@linuxppc.org
+Subject: Re: linux-2.2.13pre15 stability w/ head.S patch
+References: <3818908A.8A6539B6@chpc.utah.edu> <19991028212456.B13879@chimaera.ppc.kernel.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Gabriel Paubert writes:
+Cort Dougan wrote:
 
-Gabriel> OTOH when address translation is turned on (or when the its state is
-Gabriel> unknown) I would have put an isync _before_ the first mtdbatu to make
-Gabriel> sure that it does not interfere with previous instructions (this is
-Gabriel> required from the manuals AFAICT).
+> The Linus tree is in sync with by the 2.2 and 2.3 right now.  Have you
+> tried 2.3.24 and/or 2.3.13?
 
-	You are correct, I mistyped the example.  The isync's should go
-before the entire block of DBAT updates and after.  The PowerPC
-Microprocessor Programming Environments book synchronization requirements
-state that a "context-synchronizing instruction" is REQUIRED PRIOR and
-REQUIRED AFTER a mtspr (DBAT) instruction.  Context Synchronizing
-Instructions are "sc", "rfi", "rfid", and "isync".  Disabling the valid
-bits by zeroing the upper BAT register before modifying the lower BAT
-register is necessary.
+That's great news. My bandwidth is so limited that checking this fact is
+impracticle. So this helps a lot to know. I haven't tried 2.3.24 or 2.3.13 or
+2.2.13 out yet either. Seems like 2.2.14's due out soon and I figured I'd just
+wait.
 
-	If address translation is off, the context sychronization is
-unnecessary. 
+> The changes here should only affect the boot since that's the only place
+> they do anything.  Are you sure this change improved stability and now the
+> recent changes to PPP from Paul? . . .
 
-David
+It was more speculation in part based on diff'ing different releases to see how
+much PPC specific changes had occured. I've also seen reference by others on
+the linuxppc-dev list that seemed to point to this code improving things
+stability wise. Maybe I just misunderstood or something. I'm kind of too
+crunched for time right now to dig this out --- sorry about that. I'll try
+being more thourough later on when I get more time or maybe the problem will
+have just been totally fixed.
+
+Whatever the case, thanks for considering it.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
