@@ -1,45 +1,59 @@
-Message-ID: <396A4D77.F79AEADE@pop.agri.ch>
-Date: Tue, 11 Jul 2000 00:26:07 +0200
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+Message-ID: <396A5162.411F49EF@embeddededge.com>
+Date: Mon, 10 Jul 2000 18:42:42 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Takashi Oe <toe@unlserve.unl.edu>
-CC: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.4.0-test3
-References: <Pine.LNX.3.96LJ1.1b7.1000710164335.14195C-100000@ofey.inetnebr.com>
+To: daniel.marmier@lightning.ch
+CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Help with string.S
+References: <3967B1E3.80CAC746@embeddededge.com> <396969E1.A7256E4A@lightning.ch>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Takashi Oe wrote:
->
-> On Mon, 10 Jul 2000, Benjamin Herrenschmidt wrote:
->
-> > >
-> > >It doesn't compile per se, in pmac_backlight.c asm/pmu.h & asm/adb.h
-> > >should be linux/pmu.h & linux/adb.h. This isn't a tragedy.
-> >
-> > That's strange, it did compile for me without I push. Looks like bk
-> > didn't push the latest version, or something got screwed up... I'll check
-> > that tonight.
->
-> Why is pmac_backlight.c compiled in for CONFIG_ALL_PPC?  Isn't it
-> PowerBook only thing?
+Daniel Marmier wrote:
 
-I have both a PB and an old 'pm7200' and I build against both.
+> IIRC, I have sent you a patch that did the right thing for 16-byte
+> cache lines at time of 2.3.99-pre5.
 
-> > >How can I help?
-> >
-> > Well, you can check disabling that (and the call that sets up this BAT in
-> > head.S) but don't forget, if you do that, to also declare
-> > bootx_text_mapped to 0 before leaving prom.c
->
-> 601's BAT doesn't have G bit.  Maybe that's the problem?
+Now I remember :-).  I see too much code from too many places every
+day!
 
-Don't know, but here on the quick it wasn't the solving hint. Tomorrow..?
+> ...... Of course, if there are caches with 64 or
+> 128 byte lines, some more work needs to be done.
 
-Regards,
-Andreas
+Lots more :-).
+
+> What gives me trouble is the fact that dcbz instruction in function
+> arch/ppc/lib/string.S:__copy_tofrom_user does not seem to work for me.
+
+These are becoming a pain in the ass instructions.  Has anyone ever
+done some performance analysis to see what we really gain here in
+real life?  Sure, locally and logically you can make an intuitive
+argument, but we are sure fetching lots of instructions just to get
+this aligned, and further to actually move the data.
+
+These instructions certainly don't work on uncached memory space,
+causing the alignment exception and probably horrible performance without
+people knowing.  These instructions used to cause the exception on
+the early MPC8xx processors when copyback cache wasn't enabled.  Today,
+the newer silicon doesn't fault at all regardless of cache mode.  I
+guess I need to determine what is really happening.  Nothing would
+be fine, but it appears _something_ (usually incorrect) happens.
+
+> But the function works fine if I remove that instruction.
+
+I'm still a C code fan:
+	for(i=0; i<count; i++)
+		*d++ = *s++;
+
+...and let the compiler guys make it go fast :-).
+
+You know, we could make this even faster by using the Altivec and the
+new cache streaming modes on the 7400 processors :-).  I've tested this
+in applications.  It really works.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
