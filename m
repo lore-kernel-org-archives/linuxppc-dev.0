@@ -1,36 +1,37 @@
-From: tom_gall@vnet.ibm.com
-Message-ID: <39478BE8.3B6E6157@vnet.ibm.com>
-Date: Wed, 14 Jun 2000 13:43:04 +0000
-Reply-To: tom_gall@vnet.ibm.com
+Date: Wed, 14 Jun 2000 21:07:30 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: recent bk tree broken on LongTrail
+Message-ID: <Pine.LNX.4.05.10006142104040.581-100000@callisto.of.borg>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.4.0-test1 linux/sched.h
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Anyone notice that on
+The current bk tree (june 15) no longer works on my CHRP LongTrail. The version
+from june 5 works fine.
 
-2.4.0-test1-ac18 that sched.h was changed to remove
+If I try to boot the new kernel image, OF reboots the box in the `correct mode'
+(sic) for the kernel image, after which real-mode? becomes true. Needless to
+say, it still doesn't work after that and goes until
+`returning from prom_init', which is not good.
 
-#define PF_PTRACED 0x00000010
-#define PF_TRACESYS 0x00000020
+I manually have to restore real-mode? to false before I can boot my old kernels
+again. I suspect the new chrpboot code for the POWER3/4 boxes is the culprit.
 
-I need both of these systems to get a successful zImage built for my Power3 box.
-Anyone know why there were removed, do we really really need this or should
-dependancies on these symbols go?
+Let's investigate this (after I finished the dishes, of course :-)
 
-Regards,
+Gr{oetje,eeting}s,
 
-Tom
+						Geert
 
 --
-Tom Gall - PowerPC Linux Team    "Where's the ka-boom? There was
-Linux Technology Center           supposed to be an earth
-(w) tom_gall@vnet.ibm.com         shattering ka-boom!"
-(w) 507-253-4558                 -- Marvin Martian
-(h) tgall@uswest.net
-http://oss.software.ibm.com/developerworks/opensource/linux
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
