@@ -1,36 +1,34 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3C695395.7DEC4A71@opensource.se>
-Date: Tue, 12 Feb 2002 18:40:37 +0100
-From: Magnus Damm <damm@opensource.se>
-MIME-Version: 1.0
-To: "David Marqvar (DAM)" <DAM@tt.dk>
-Cc: "Embedded Linux PPC List (E-mail)" <linuxppc-embedded@lists.linuxppc.org>,
+To: Magnus Damm <damm@opensource.se>
+Cc: "David Marqvar (DAM)" <DAM@tt.dk>,
+	linuxppc-embedded@lists.linuxppc.org,
 	"Laurits Lassen Petersen (LLP)" <LLP@tt.dk>
-Subject: Re: Kernel 2.4.4
-References: <E8F83D6D2A6AD3118E0300902786A20502371417@NTEX>
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: Kernel 2.4.4 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 12 Feb 2002 18:40:37 +0100."
+             <3C695395.7DEC4A71@opensource.se>
+Date: Tue, 12 Feb 2002 19:21:28 +0100
+Message-Id: <20020212182133.53CF3109D7@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> My next step is to find a simple bootloader..
+In message <3C695395.7DEC4A71@opensource.se> you wrote:
+>
+> And, you may want to boot PPCBoot from Miniboot.
+> This will make it possible to update PPCBoot
+> without any BDM.
 
-Try Miniboot!
-It is almost as simple as a bootloader can be.
+Ummm... as soon as you have PPCBoot running on a system you  can  use
+this  to  install  any  new  version of PPCBoot, too. No need for BDM
+then, either.
 
-http://opensource.se/projects/
+Wolfgang Denk
 
-Miniboot now supports 4 different boards,
-all with mpc8xx processors.
-
-A new version will be released soon...
-
-And, you may want to boot PPCBoot from Miniboot.
-This will make it possible to update PPCBoot
-without any BDM.
-
-Cheers /
-
-Magnus
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+See us @ Embedded Systems Nuremberg, Feb 19-21, Hall 12 K01 (with TQ)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
