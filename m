@@ -1,35 +1,83 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Stefan Jeglinski <jeglin@4pi.com>, <linuxppc-dev@lists.linuxppc.org>
+Message-Id: <v04003a00b629d6998c64@[24.70.162.12]>
+In-Reply-To: <20001104073540.A23753@xim.dyndns.org>
+References: <v04003a01b629191ff4ae@[24.70.162.12]>; from
+ nicoya@apia.dhs.org on Fri, Nov 03, 2000 at 08:01:55PM -0600
+ <v04003a00b628feabbda6@[24.70.162.12]>
+ <v04003a00b628feabbda6@[24.70.162.12]>
+ <p04330100b629125ff911@[192.168.0.1]>
+ <v04003a01b629191ff4ae@[24.70.162.12]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 4 Nov 2000 09:32:23 -0600
+To: spiette@generation.net, linuxppc-dev@lists.linuxppc.org
+From: Tony Mantler <nicoya@apia.dhs.org>
 Subject: Re: whacked out 2.2.18pre17?
-Date: Sat, 4 Nov 2000 13:47:40 +0100
-Message-Id: <19340929061924.29978@192.168.1.10>
-In-Reply-To: <p04330100b629527c3036@[192.168.0.1]>
-References: <p04330100b629527c3036@[192.168.0.1]>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->The two things that are constant on my hardware (PowerTowerPro +
->PowerLogix G3, 6 PCI cards, most of which are not seen anyway,
->2940UW):
->
->1. Full boot is impossible, always with one of the following circumstances:
->	a) freeze at "booting..."
->	b) can't find MAC address for MACE device -> kernel panic
->	c) "machine check in kernel mode" -> "unknown values in srr1" ->
->		kernel panic
+At 6:35 AM -0600 11/4/2000, Simon Piette wrote:
+[...]
+>Could you elaborate on that? I have an IMSTT 128 (2Mb VRAM) and I'm
+>unable to accelerated video on a plain pmac kernel. I am currently stuck
+>at kernel 2.2.12 because this is the only kernel that will accept a
+>patch from Ryen Nielsen (http://krazynet.com/~ran/linux/imsttfb.c).
+>The last pmac I tried is 2.2.16
 
-That's weird. The symptoms you describe are typicall of a kernel beeing
-damaged by bus-mastering devices (your 6 PCI cards frighten me ...).
+I'm not sure how much I can elaborate on it, since I've never actually
+managed to get it to not work.
 
-But in this case, 2.2.17 should have the same problems.
 
-No explanation come to my mind. Did you try removing some PCI cards to
-see if one could be the cause of the problem ? I don't see any of the
-2.2.18 change that could explain your problem.
+[...]
+>$ cat /proc/cmdline
+>root=/dev/sdb6 video=imsttfb:vmode:17,cmode:16 idebus=66 hda=noautotune
 
-Ben.
+merida:~# cat /proc/cmdline
+root=/dev/hde1 adb_buttons=113,107
+
+
+>$ lspci -vv
+>[snip]
+>00:0e.0 Display controller: Integrated Micro Solutions Inc. IMS9129 (rev 01)
+>        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+>ParErr- Stepping- SERR- FastB2B-
+>        Status: Cap- 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
+><TAbort- <MAbort- >SERR- <PERR-
+>        Latency: 8 min, 8 max, 32 set
+>        Interrupt: pin A routed to IRQ 24
+>        Region 0: Memory at 82000000
+>        (32-bit, prefetchable)
+
+merida:~# lspci -vv
+[...]
+01:0f.0 Display controller: Integrated Micro Solutions Inc. IMS9129 [Twin
+turbo 128] (rev 01)
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+	Status: Cat- 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+	Latency: 32 (2000ns min, 2000ns max)
+	Interrupt: pin A routed to IRQ 29
+	Region 0: Memory at 92000000 (32-bit, prefetchable)
+	Expansion ROM at 90000000 [disabled]
+[...]
+
+looking through /var/log/kern.log, we have...
+[...]
+MacOS display is /bandit/IMS,tt128mbA
+Console: switching to colour frame buffer device 160x64
+fb0: IMS TT (IBM) frame buffer; 4MB vram; chip version 2
+[...]
+
+And that's about it. I'm booting with BootX, by the way.
+
+
+Cheers - Tony 'Nicoya' Mantler :)
+
+
+--
+Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
