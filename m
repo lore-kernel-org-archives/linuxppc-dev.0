@@ -1,19 +1,22 @@
-Return-Path: <wd@denx.de>
-Received: from mailout02.sul.t-online.com (mailout02.sul.t-online.com
-	[194.25.134.17]) by ozlabs.org (Postfix) with ESMTP id 99A662BDEB
+Return-Path: <Agostino.Sette@siemens.com>
+Received: from david.siemens.it (david.siemens.it [192.109.0.136])
+	by ozlabs.org (Postfix) with ESMTP id 6B8722BF09
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 Nov 2004 03:23:37 +1100 (EST)
-To: "=?iso-8859-1?Q?J=F3n_Benediktsson?=" <jonb@marel.is>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 04 Nov 2004 12:32:40 GMT."
-	<OF368071C2.FBC6B7BC-ON00256F42.003F3DF3-00256F42.0044E8BB@marel.is>
-Date: Thu, 04 Nov 2004 17:22:57 +0100
-Sender: wd@denx.de
-Message-Id: <20041104162302.2B49DC1430@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Handling power failure - MPC5200 
+	Fri,  5 Nov 2004 03:32:14 +1100 (EST)
+Received: from milano-b-qfe1.netz.sbs.de (milano-b.netz.sbs.de [192.109.0.135])
+	by david.siemens.it (8.11.7/8.11.7) with SMTP id iA4GGQd00398
+	for <linuxppc-embedded@ozlabs.org>; Thu, 4 Nov 2004 17:16:26 +0100 (MET)
+Received: from milvb22a.siemens.it (milvb22a.siemens.it [141.29.217.131])
+	by mail.siemens.it (8.11.7/8.11.7) with ESMTP id iA4GFBK24261
+	for <linuxppc-embedded@ozlabs.org>; Thu, 4 Nov 2004 17:15:11 +0100 (MET)
+Message-ID: <69DF49BE936F4441980EC1D59F0ADC2F94592E@aqlby02a.siemens.it>
+From: Sette Agostino <Agostino.Sette@siemens.com>
+To: linuxppc-embedded@ozlabs.org
+Date: Thu, 4 Nov 2004 17:17:58 +0100 
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C4C289.D95C9D10"
+Subject: My email
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,43 +27,176 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <OF368071C2.FBC6B7BC-ON00256F42.003F3DF3-00256F42.0044E8BB@marel.is> you wrote:
-> 
-> Capacitors on the supply provide me with some milliseconds to repond to 
-> power failure, which I would
-> like to use to do as much cleanup as possible before power is totally 
-> gone.  In particular, I am concerned
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-How many is "some"? If it's not >100 or so it is probably  not  worht
-the effort...
+------_=_NextPart_001_01C4C289.D95C9D10
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> with trying to prevent damage to filesystems.  The board has Compact Flash
-> and onboard flash which
-> are used as filesystems.  The board will be used as an industrial 
-> controller.
-> 
-> Can anyone point me to examples of how this can be handled ?
+Agostino.Sette@siemens.com
 
-Use the standard methods: use the CF card read-only  (many  CF  cards
-can  be  damaged  [beyond  repair]  when  you power off while a write
-operation is in progress). Use a filesystem  on  the  ob-board  flash
-which knows how to handle a loss of power (i. e., use JFFS2).
+=20
 
-> Can anyone share experience of a similar setup, which filesystems to 
-> select etc ?
+------------------------------------------------------------------------=
+----
+---------------------
+SIEMENS CNX
+Agostino Sette     DI SW 3
+Phone: +39 0862 335 557    FAX: +39 0862 335 623
+Address: Localit=E0 Boschetto S.S.17  67100 L'Aquila - Italy
+E-Mail:  <mailto:Agostino.Sette@siemens.com> Agostino.Sette@siemens.com
+"L'esperienza =E8 il nome che diamo ai nostri errori"
+"Experience is simply the name we give our mistakes"
+"Erfahrung ist der Name, den man seinen Fehlern gibt." Oscar Wilde
+------------------------------------------------------------------------=
+----
+---------------------
+=20
 
-We usually use ext2 read-only on the CF, JFFS2 for the writable parts
-on the on-board flash, cramfs for all  parts  that  need  not  to  be
-written  on  a  regular  base (most of your root filesystem including
-application  code,  libraries  etc.),  and  a  FiST   based   overlay
-filesystem in case of software patches need to be added.
+=20
 
-Best regards,
 
-Wolfgang Denk
+------_=_NextPart_001_01C4C289.D95C9D10
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
--- 
-See us @ Embedded/Electronica Munich, Nov 09 - 12, Hall A.6 Booth 513
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-You don't have to stay up nights to succeed; you have to  stay  awake
-days.
+<html>
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+
+
+<meta name=3DGenerator content=3D"Microsoft Word 10 (filtered)">
+
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+address
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+span.EmailStyle17
+	{font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:612.0pt 792.0pt;
+	margin:72.0pt 89.85pt 72.0pt 89.85pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Agostino.Sette@siemens.com</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;</span></font></p>
+
+<address><b><i><font size=3D3 color=3Dteal face=3D"Times New =
+Roman"><span lang=3DIT
+style=3D'font-size:12.0pt;color:teal;font-weight:bold'>-----------------=
+------------------------------------------------------------------------=
+--------</span></font></i></b></address>
+
+<address><b><i><font size=3D3 color=3Dteal face=3D"Times New =
+Roman"><span lang=3DIT
+style=3D'font-size:12.0pt;color:teal;font-weight:bold;font-style:normal'=
+>SIEMENS</span></font></i></b><font
+color=3Dteal><span lang=3DIT style=3D'color:teal;font-style:normal'> =
+<strong><b><font
+face=3D"Times New =
+Roman">CNX</font></b></strong></span></font></address>
+
+<address><strong><b><i><font size=3D3 color=3Dnavy face=3D"Times New =
+Roman"><span
+lang=3DIT =
+style=3D'font-size:12.0pt;color:navy;font-style:normal'>Agostino =
+Sette</span></font></i></b></strong><font
+color=3Dnavy><span lang=3DIT =
+style=3D'color:navy;font-style:normal'>&nbsp;&nbsp;&nbsp;&nbsp;
+DI SW 3</span></font></address>
+
+<address><i><font size=3D3 color=3Dnavy face=3D"Times New Roman"><span =
+lang=3DIT
+style=3D'font-size:12.0pt;color:navy;font-style:normal'>Phone: +39 =
+0862&nbsp;335
+557&nbsp;&nbsp;&nbsp; FAX: +39&nbsp;0862 335 =
+623</span></font></i></address>
+
+<address><i><font size=3D3 color=3Dnavy face=3D"Times New Roman"><span =
+lang=3DIT
+style=3D'font-size:12.0pt;color:navy;font-style:normal'>Address: =
+Localit=E0
+Boschetto S.S.17&nbsp; 67100&nbsp;L'Aquila - =
+Italy</span></font></i></address>
+
+<address><i><font size=3D3 color=3Dnavy face=3D"Times New Roman"><span =
+lang=3DIT
+style=3D'font-size:12.0pt;color:navy;font-style:normal'>E-Mail: =
+</span></font></i><font
+color=3Dnavy><span style=3D'color:navy;font-style:normal'><a
+href=3D"mailto:Agostino.Sette@siemens.com"><span =
+lang=3DIT>Agostino.Sette@siemens.com</span></a></span></font></address>
+
+<address><i><font size=3D3 color=3Dnavy face=3D"Times New Roman"><span =
+lang=3DIT
+style=3D'font-size:12.0pt;color:navy;font-style:normal'>&quot;L'esperien=
+za =E8 il
+nome che diamo ai nostri errori&quot;</span></font></i></address>
+
+<address><i><font size=3D3 color=3Dnavy face=3D"Times New Roman"><span
+style=3D'font-size:12.0pt;color:navy;font-style:normal'>&quot;Experience=
+ is
+simply the name we give our mistakes&quot;</span></font></i></address>
+
+<address><i><font size=3D3 color=3Dnavy face=3D"Times New Roman"><span
+style=3D'font-size:12.0pt;color:navy;font-style:normal'>&quot;Erfahrung =
+ist der
+Name, den man seinen Fehlern gibt.&quot; Oscar =
+Wilde</span></font></i></address>
+
+<address><b><i><font size=3D3 color=3Dteal face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:teal;font-weight:bold'>-----------------=
+------------------------------------------------------------------------=
+--------</span></font></i></b></address>
+
+<address><i><font size=3D3 color=3Dnavy face=3D"Times New Roman"><span
+style=3D'font-size:12.0pt;color:navy'>&nbsp;</span></font></i></address>=
+
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>&nbsp;</span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C4C289.D95C9D10--
