@@ -1,27 +1,31 @@
-Message-ID: <38926E6B.706491A1@netx4.com>
-Date: Fri, 28 Jan 2000 23:36:59 -0500
+Message-ID: <3893CE3D.99AACAB6@netx4.com>
+Date: Sun, 30 Jan 2000 00:38:05 -0500
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: raphael.bossek@solutions4linux.de
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Cachable / Non-cachable memory
-References: <E12E7dQ-0004I1-00@mx00.kundenserver.de>
+To: Shuangjun Zhu <r44089@email.sps.mot.com>
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Help about MPC823 Video and Cache
+References: <002201bf6861$20f24d10$69f001dc@sjzhu.sps.mot.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-raphael.bossek@solutions4linux.de wrote:
+Shuangjun Zhu wrote:
 
+> After the system boot up, the text on the TV flicker fiercely out,
+> if I disable the I-Cache throught the EST visionProbe tool,
 
-> how does Linux specify memory regions as cachable and non-
-> cachable?
+Determine your silicon revision and look on the Motorola web
+site for errata and application notes.  Early versions of the
+823 didn't work so well, especially at high resolution and
+refresh rates.  Later versions of the 823 added somewhat
+undocumented SIU configurations to improve the arbitration of
+the U-bus and access to the frame buffer by the video controller.
 
-
-Any memory mapping request outside of the range of real
-memory is mapped uncached/guarded.  Look at drivers/char/mem.c
-
-Driver requests to ioremap() are mapped uncached/guarded.
+If all seems well on the silicon front, make sure your video
+configuration is proper.  Excessively high (and unnecessary)
+refresh rates cause problems.
 
 
 	-- Dan
