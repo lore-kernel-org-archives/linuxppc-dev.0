@@ -1,38 +1,45 @@
-Message-ID: <3A3E417E.A5B259C2@kis.uni-freiburg.de>
-Date: Mon, 18 Dec 2000 17:55:30 +0100
-From: Thomas Berkefeld <berke@kis.uni-freiburg.de>
-Reply-To: berke@kis.uni-freiburg.de
-MIME-Version: 1.0
+Date: Mon, 18 Dec 2000 08:06:04 -0900
+From: Ethan Benson <erbenson@alaska.net>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: PCI-to-parallel port problem
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Subject: Re: BootX (the MacOS X kind)
+Message-ID: <20001218080604.A8526@plato.local.lan>
+References: <19341110161621.11025@192.168.1.10> <Pine.LNX.4.10.10012181028400.4672-100000@opal.biophys.uni-duesseldorf.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
+In-Reply-To: <Pine.LNX.4.10.10012181028400.4672-100000@opal.biophys.uni-duesseldorf.de>; from schmitz@opal.biophys.uni-duesseldorf.de on Mon, Dec 18, 2000 at 10:30:40AM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+--fdj2RfSjLxBAspz7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I have FASTPCI 4008 PCI parallel port card from Dolphin Peripherals. To
-use the card,
-the manual tells to modprobe parport_pc.o with io-address and irq.
-Unfortunatley
-parport_pc.c cannot be compiled with
-kernel 2.4.0-test11 on my G4 Mac  (a header is missing).
-Furthermore /proc/pci says the interrupt number is 53 which seems a bit
-high.
-This is what /proc/pci says about the card:
-Bus  2, device   3, function  0:
-    Parallel controller: PCI device 1409:7268 (Timedia Technology Co
-Ltd) (rev 1).
-      IRQ 53.
-      I/O at 0x1010 [0x1017].
-      I/O at 0x1000 [0x1007].
+On Mon, Dec 18, 2000 at 10:30:40AM +0100, Michael Schmitz wrote:
+>=20
+> > >You should've trademarked the BootX name :-) This'll result in some
+> > >confusion ...
+> >
+> > Yeah, I know. I suggested them to change the name long before they
+> > released it, but they apparently didn't care.
+>=20
+> Now who's surprised?
+>=20
+> What's the license on their version of BootX? Maybe we can hijack it :-)
 
-Any hints?
+we can't, its apsl like everything else.
 
-Thanks
+--=20
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
-Thomas
+--fdj2RfSjLxBAspz7
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
+
+--fdj2RfSjLxBAspz7--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
