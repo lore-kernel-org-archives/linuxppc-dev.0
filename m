@@ -1,32 +1,47 @@
-Date: Sat, 17 Jan 2004 10:41:48 +0100
-From: Colin Leroy <colin@colino.net>
-To: valvoline@vrlteam.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] therm_* drivers need i2c-keywest
-Message-Id: <20040117104148.6af58e88.colin@colino.net>
-In-Reply-To: <20040116164430.GV2658@adapter.n0skillz.org>
-References: <20040116122756.034fc736.colin@colino.net>
-	<20040116164430.GV2658@adapter.n0skillz.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sat, 17 Jan 2004 19:21:20 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Gabriel Paubert <paubert@iram.es>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>,
+	linas@austin.ibm.com, valvoline <valvoline@vrlteam.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Broadcom BCM94306
+In-Reply-To: <20040116195406.GA25566@iram.es>
+Message-ID: <Pine.GSO.4.58.0401171920040.1950@waterleaf.sonytel.be>
+References: <20040114161107.GM2658@adapter.n0skillz.org>
+ <20040114181350.B40506@forte.austin.ibm.com> <70D6BF86-473D-11D8-A8C3-000A95A4DC02@kernel.crashing.org>
+ <20040115115023.GA12001@iram.es> <C404D01A-475A-11D8-A8C3-000A95A4DC02@kernel.crashing.org>
+ <20040116195406.GA25566@iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 16 Jan 2004 at 17h01, valvoline wrote:
-
-Hi,
-
-> what's about /dev/ entries ?, i still see nothing into it...the only infos
-> that i can fetch are into /var/log/syslog.
+On Fri, 16 Jan 2004, Gabriel Paubert wrote:
+> On Thu, Jan 15, 2004 at 02:00:16PM +0100, Segher Boessenkool wrote:
+> > >P.S.: there is nothing wrong with calling little-endian wrong or
+> > >perverted or fucked-up ;-)
+> >
+> > I don't know if I trust you here -- you wrote "bug endian" just a few
+> > lines up ;-)
 >
-> If i don't make a mismatch, there should be some /dev entries that the
-> module should create, usefull to set/fetch important informations about
-> fans/cpu.
+> Damned laptop keyboards! U and I keys are just too close from each
+> other;-) Apart from this, if you look up some archives, you'll certainly
+> find that I think, live and breathe big-endianly ;-) (bit 0 is the most
+> significant bit, period)
 
-They're in /sys - that's the new 2.6 location for such things.
-Look in /sys/devices/temperatures/
+Although I prefer big endian myself, I don't like counting bits in the `wrong'
+direction ;-) Hence bit 0 is always the least significant bit.
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-Colin
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
