@@ -1,52 +1,47 @@
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Dan Malek <dan@embeddededge.com>,
+To: Dan Malek <dan@embeddededge.com>
+Cc: Tom Rini <trini@kernel.crashing.org>,
 	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: [PATCH and RFC] Remove request_8xxirq 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 20 Jun 2002 14:45:51 PDT."
-             <20020620214551.GI16052@opus.bloom.county>
-Date: Thu, 20 Jun 2002 23:58:39 +0200
-Message-Id: <20020620215844.E66F61030A@denx.denx.de>
+In-reply-to: Your message of "Thu, 20 Jun 2002 17:49:40 EDT."
+             <3D124DF4.6060505@embeddededge.com>
+Date: Fri, 21 Jun 2002 00:02:05 +0200
+Message-Id: <20020620220210.C233C1030A@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20020620214551.GI16052@opus.bloom.county> you wrote:
+In message <3D124DF4.6060505@embeddededge.com> Dan Malek wrote:
 >
 > > Isn't this more or less  the  same  idea  as  presented  by  Wolfgang
 > > Grandegger more than half a year ago? See
 >
-> Pretty similar, yeap.
->
-> > By then there was a common agreement that it was a bad idea from  the
-> > beginning (although we need and use it for RTAI anyway).
->
-> Well, Dan Malek didn't like it (and he doesn't like it again either).
-> When you did this for RTAI, I assume (since I didn't look at the patch)
+> Yes, it's very similar.  I thought this was just your stuff
+> coming from someone else :-)
 
-Grrrgh.. Why do we send a patch, when you don't even look at it?
+This is how I see it: we submit a patch, Tom Rini does not even  look
+at  it,  it  gets rejected, and half a year later it pops up and "the
+bulk of this work was done by" somebody else.
 
-> that in the end it was so RTAI wouldn't have to special-case 8xx things
-> in the common code (ie request_irq() or cpm_install_handler()) ?
+> it ever since :-)  All we get is one hack on top of another without the
+> right solution (kinda like the PCI I/O accesses and mapping).
 
-No. It's needed because otherwise you cannot register  a  RT  handler
-for CPM interrupts.
+:-(
 
 > > It's amusing to see how ideas get recycled again and again.
 >
-> heh.
+> Yeah, but the implementation is always slightly different :-)
 
-Well, actually my amusement is limited. This whole business how  some
-patches  make  it  or  don't  make  it into some kernel tree is higly
-frustrating.
+Well, there is something needed to make "the bulk of this work".
 
 Wolfgang Denk
 
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Two wrongs don't make a right, but three rights make a left.
+Technology is dominated by those who manage what they do  not  under-
+stand.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
