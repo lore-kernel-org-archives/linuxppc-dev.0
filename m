@@ -1,35 +1,41 @@
-From: Joe Green <jgreen@mvista.com>
-To: Dan Malek <dan@embeddededge.com>,
-        greyham@research.canon.com.au (Graham Stoney)
-Subject: Re: Doc/Serial problems in HHL 1.2?
-Date: Fri, 18 Aug 2000 08:02:54 -0700
-Content-Type: text/plain
-Cc: linuxppc-embedded@lists.linuxppc.org
-References: <399B9874.99CF5C1C@mtjones.com> <00081708394601.01481@minotaur.mvista.com> <399CC44F.C8CE6E2A@embeddededge.com>
-In-Reply-To: <399CC44F.C8CE6E2A@embeddededge.com>
+Message-ID: <399D6E54.B211AB8E@mvista.com>
+Date: Fri, 18 Aug 2000 10:11:48 -0700
+From: Matthew Locke <mlocke@mvista.com>
 MIME-Version: 1.0
-Message-Id: <00081808044900.02969@minotaur.mvista.com>
+To: Paolo Scaffardi <arsenio@tin.it>
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Porting X to PowerPC platform
+References: <002501c008fc$d8938060$020a0a0a@PaoloScaffardi>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joe Green writes:
-> I don't think we have an 860CLLF LSP, ...
+Paolo Scaffardi wrote:
+>
+> I am writing a framebuffer device for my MPC823FADS platform, and i need to
+> port a simple X-server based on the framebuffer to my PowerPC.
 
-On Thu, 17 Aug 2000, Graham Stoney wrote:
-> Umm, I think you do in 1.2:
->     hhl-ppc_8xx-cllf-lsp-2.2.14-1.2.2-3.noarch.rpm
->     hhl-ppc_8xx-cllf-lsp-binaries-2.2.14-1.2.2-3.noarch.rpm
+nothing in X is ever simple :-)
 
-On Thu, 17 Aug 2000, Dan Malek wrote:
-> Yes, there is a LSP for the 860 CLLF.  It is called:
-> 	hhl-ppc_8xx-cllf-lsp-2.2.14-1.2.2-3.noarch.rpm
+>
+> I looked at the XFree86 sources but it's not clear hot to compile them for
+> PowerPC targets!
 
-You're both right, of course.  I just did a quick search for 860, which
-missed it.  Sorry for the misinformation.
+I guess size is not important for you.  We (Montavista) are supporting
+Microwindows, which is a small footprint open-source windowing system
+for embedded systems (I must have said this a thousand times at
+LinuxWorld).  you can find a srpm and a rpm for 8xx on our ftp site
+ftp://ftp.mvista.com.  It is very light weight, but has several widgets
+(listbox, buttons, etc).
 
---
-Joe Green <jgreen@mvista.com>
-MontaVista Software, Inc.
+> Are you already done this?
+> How can i proceed?
+>
+> I'm in a hurry... please help me soon!
+>
+yeah, if you are in a hurry, I suggest trying microwindows. It has both
+a Win323 API and a "X like" API into its graphics engine.  If you are
+familiar with either one, you can have a simple app running in no time.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
