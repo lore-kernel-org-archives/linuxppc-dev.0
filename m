@@ -1,53 +1,58 @@
-Message-Id: <199912081427.IAA30654@lists.linuxppc.org>
-Date: Wed, 8 Dec 1999 09:24:50 -0500 (EST)
-From: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Reply-To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Subject: Need developer to help move JDK ppc port forward
-To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <384E7C14.ECF75B72@pacbell.net>
+Date: Wed, 08 Dec 1999 07:41:08 -0800
+From: David Brownell <david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+To: "Gregory P. Smith" <greg@electricrain.com>
+Cc: iweiny@pacbell.net, linuxdev <linuxppc-dev@lists.linuxppc.org>,
+        usb <linux-usb@suse.com>
+Subject: Re: [linux-usb] OHCI fix for Belkin BusPort card on PowerMac
+References: <199912062223.OAA05538@batcave2.localdomain> <19991206152414.B8929@yyz.electricrain.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+"Gregory P. Smith" wrote:
+> 
+> On Mon, Dec 06, 1999 at 02:23:12PM -0800, iweiny@pacbell.net wrote:
+> >
+> > I am running:
+> > PowerMac 8500 (604 processor)
+> > USB BusPort from Belkin (Model: F5U005-MAC) PCI USB card
+> > 2.2.12 kernel (self compiled)
+> > 2.3.29 USB stack from Paul Mackerras's rsync tree
+> > opendis-0.0.3-pre4 from http://digitalux.netpedia.net
 
-Due to recent events, I will no longer be producing JDK's for PowerPC. 
+(and a DC-265 camera)
 
-If you or your firm needs a Java Developmnet Kit for PowerPC and if you have 
-some time, please consider helping out the Blackdown porting team move forward 
-and keep supporting other non-86 platforms.
+> ...
+> > However, when requesting more data then the camera had to give the returned
+> > status was "9" and not "0".  The OHCI driver interpreted this as an error and
+> > subsequently the user level program would think no data had been returned.
+> ...
+> 
+> Data underrun means the controller received less data that it asked
+> for in a transfer.  This is not really an error in many situations;
+> try modifying the dc2xx driver to accept it.
 
-If at all interested, please contact 
-
-Scott Hutinger at : srh@www.mprojects.wiu.edu
-
-I will be removing the current JDK for Linux PPC site soon (everything has been 
-copied to www.linuxppc.org/java/) so nothing will be lost.
-
-I would also be happy to bring anyone who wants, up to speed on the build 
-process, etc to help make sure PPC keeps its Java capability going for use with 
-Mozilla and other projects.
-
-If anyone knows if IBM has or is considering an Open Source Java platform, I 
-would be happy to help contribute to porting it to LinuxPPC.  Please let me 
-know.  Unfortunately, kaffe has previously refused my help since I have seen the 
-Sun source code.
-
-Also, if anyone needs a 40 something year old former PDP-8 and PDP-11 programmer 
-with time on his hands to help out a *true* Open Source project, let me know... 
-
-Thanks,
-
-Kevin
+I'd not be sure it should be OK in this situation, though.  Or that
+the "opendis-0.0.3-pre4" release is really free of dependencies on
+serial I/O models, where such cases are the norm.  (By the way, the
+page above lists 0.0.2 -- dated August, with no USB support -- as the
+most current version!)
 
 
---
-Kevin B. Hendricks
-Associate Professor of Operations and Information Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA   
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+> It's not your card, its all controllers and a general "all slightly
+> different" state of the HCDs at the moment.  We're working on fixing
+> this with a move to a new cleaner device <-> usb stack/hcd interface.
 
+That'll be very good to have.
+
+
+As a quick sanity check, though, is USB working nicely on that
+PowerMac for anyone else?  I've not heard many success reports,
+pro or con, on Mac USB support.
+
+- Dave
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
