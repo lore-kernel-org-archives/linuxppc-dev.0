@@ -1,50 +1,52 @@
-Message-Id: <5.1.0.14.2.20030514093849.029e6f98@mail.ebshome.net>
-Date: Wed, 14 May 2003 09:41:40 -0700
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Eugene Surovegin <ebs@ebshome.net>
-Subject: Re: set_rtc_time() cleanup / normalization
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <1052901153.664.15.camel@gaston>
-References: <5.1.0.14.2.20030513161846.03805338@mail.ebshome.net>
- <20030512211733.B489EC6092@atlas.denx.de>
- <20030512211733.B489EC6092@atlas.denx.de>
- <5.1.0.14.2.20030513161846.03805338@mail.ebshome.net>
+Date: Wed, 14 May 2003 23:42:14 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [PATCH] educate users about x86 specific kludges instead of hiding thier ignorance
+Message-ID: <20030515074214.GA787@plato.local.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: multipart/mixed; boundary="kORqDWCi7qDJ0mEj"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 01:32 AM 5/14/2003, Benjamin Herrenschmidt wrote:
+--kORqDWCi7qDJ0mEj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> >
-> > 2) set_rtc_time() implementation for concrete RTC device *maybe* slow or
-> > just cannot
-> >     be called from the interrupt context.
-> >     Why just don't fix actual RTC code in each case ?
-> >     It may be useful to provide some *generic* facility for such cases.
->
->It may just not be fixable cleanly. If you RTC is on a bus which requires
->some semaphoring for access (i2c does on pmac, though so far, the RTC isn't
->on i2c on these, I admit), or which is just so slow that you really do NOT
->want to block the machine in an interrupt that long ?
 
-Well, fix was already suggested. Just use some kernel thread to actually
-update RTC.
+Hi,
 
->Actually, the later is the most nasty. Also, since set_rtc_time() is used for
->both interrupt call and non-interrupt call, it cannot make assumptions about
->beeing able to schedule or not, thus causing the same latency problem when
->called via /dev/rtc, possibly a good DOS attack tool, but more simply, it
->just suck that way...
+the phony bzImage target in the ppc Makefiles is not helping anything,
+rather it just changes the confusion from `why doesn't make bzImage
+work?' to `where is my bzImage?'
 
-Well, maybe we need to functions, one that can be called from interrupt
-context,
-the other - usual one. Or we can test in_interrupt() in set_rtc_time and
-act accordingly (although solution with two functions seems more clean).
+lets not hide users ignorance lets teach them instead.  the attached
+patch replaces the phony bzImage target with a error explaining that
+bzImage is x86 only and to use zImage instead.
 
-Eugene.
+please apply.
 
+--
+Ethan Benson
+http://www.alaska.net/~erbenson/
+
+--kORqDWCi7qDJ0mEj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="Makefile.diff"
+
+--- linux/arch/ppc/Makefile.orig	Wed May 14 23:33:00 2003
++++ linux/arch/ppc/Makefile	Wed May 14 23:35:24 2003
+@@ -98,7 +98,8 @@
+ BOOT_TARGETS = zImage zImage.initrd znetboot znetboot.initrd
+
+ # All the instructions talk about "make bzImage".
+-bzImage: zImage
++bzImage:
++	$(error bzImage is an x86 specific hack to work around broken design.  Try make zImage)
+
+ $(BOOT_TARGETS): $(CHECKS) vmlinux
+ 	@$(MAKEBOOT) $@
+
+--kORqDWCi7qDJ0mEj--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
