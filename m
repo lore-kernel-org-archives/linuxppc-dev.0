@@ -1,46 +1,32 @@
-Message-ID: <37D044CE.B31A1907@broadlink.com>
-Date: Fri, 03 Sep 1999 14:59:42 -0700
-From: Scott Wood <scott@broadlink.com>
-MIME-Version: 1.0
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: DEC Tulip not working in B&W G3
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <19990904001345.11766.qmail@www0m.netaddress.usa.net>
+Date: 3 Sep 99 19:13:45 CDT
+From: jeramy b smith <ultrapenguin@netscape.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Possible Bug in XFree3.3.5
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have a NetGear FA-310TX (DEC 21141) NIC in my new B&W G3 running kernel
-2.2.6.
-The kernel detects the card and gives me an eth1 interface, but I can't 
-pass any traffic into or out of the interface, and I get some strange
-kernel
-messages:
+I downloaded the 3.3.5 rpms from Tom's directory and installed them. I have a
+2meg ati rage IIc. Before upgrading the rpm, I was using vmode 18 and cmode 16
+and the same for my X resolution (1152x864@16bpp). However, trying to startx
+with this configuration would crash.
 
-eth0: BMAC+ at 00:50:e4:20:d7:43
-  The PCI BIOS has not enabled this device!  Updating PCI command
-0000->0005.
-tulip.c:v0.89H 5/23/98 becker@cesdis.gsfc.nasa.gov
-eth1: Digital DS21140 Tulip at 0x1080, 40 00 35 05 fc db, IRQ 23.
-eth1:  MII transceiver found at MDIO address 0, config 1000 status 7809.
-eth1:  Advertising 01e1 on PHY 0, previously advertising 01e1.
+Changing the depth in to 8bpp in XF86config solved this. I tried setting the
+the resolution to 800x600 and bumping the colors up to 16bpp. XFB initializes
+the accel code, reports the font and pixmap caches are disabled. Then I get
+the BBdebug message that it is setting up gnome support. I catch the signal
+11. blackbox then tells me:
 
->---snip---<
+X Error of failed request:   16 Badlength (poly request too large or internal
+Xlib length error
+Major/minor opcode of failed request: 72 / 0
+Resource id in failed request: 0x8000014
 
-phy registers:
- 0800 7809 7810 0001 01e1 40a1 0003 0000
- 0000 0000 0000 0000 0000 0000 0000 0000
- 0000 0002 0000 1000 0048 0010 0000 0002
- 0001 0000 0000 0000 0000 0000 0000 0000
+I tried Xconfigurator to rule out window manager/extraneous errors and
+Xconfigurator would promptly quit when it would try to test these modes.
 
-I'm not certain exactly what causes this message to be printed, though. 
-Has
-anyone else got the Tulip NICs to work in a B&W G3??
-
--- 
-+---------------------+----------------------+
-|     Scott Wood      |   Systems  Engineer  |
-|=====================+======================|
-|           BroadLink Communications         |
-+--------------------------------------------+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
