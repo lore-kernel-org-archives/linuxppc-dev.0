@@ -1,36 +1,41 @@
-Date: Tue, 5 Jan 1999 09:45:30 +1100
-Message-Id: <199901042245.JAA00826@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: brad@pht.com
-CC: linuxppc-dev@lists.linuxppc.org, p1rabbit@halcyon.com
-In-reply-to: <Pine.LNX.3.95.990104100936.8496A-100000@pacific.pht.com>
-	(message from Brad Midgley on Mon, 4 Jan 1999 10:18:56 -0700 (MST))
-Subject: Re: 2.2.0pre2 SCSI problems, more (fwd)
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.LNX.3.95.990104100936.8496A-100000@pacific.pht.com>
+Date: Mon, 4 Jan 1999 18:48:40 -0700 (MST)
+From: Cort Dougan <cort@persephone.cs.nmt.edu>
+To: Dan Malek <dmalek@jlc.net>
+cc: Paul Mackerras <paulus@cs.anu.edu.au>,
+        Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
+        bh40@calva.net, tmrini@ntplx.net, linuxppc-dev@lists.linuxppc.org
+Subject: Re: irq cleanup
+In-Reply-To: <36901B63.5F905878@jlc.net>
+Message-ID: <Pine.LNX.3.96.990104184703.27992A-100000@persephone.cs.nmt.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> that's the SAME drive that aborts for me in 2.2.0p4. mine is also
-> connected to mesh. my 2.1.30 identifies it as: 
-> 
-> Vendor: QUANTUM   Model: FIREBALL1280S     Rev: 630G
-> 
-> i don't see it blacklisted. something just makes it want to abort now. the
-> scary thing about this is this drive ships STANDARD in 1gig 7500's. that's
-> a lot of computers that suddenly can't run linux. 
+Right, the winbond has a couple 8259's emulated on it.  They're routed to
+irq 3 on the 8xx.  
 
-I have a 7600 but it no longer has this disk in it (it's in another
-machine).  Could somebody with a 7600 and this disk and the kernel
-sources do the following: change drivers/scsi/mesh.c to #define
-MESH_DBG and to initialize mesh_debug_targets to 1, and send me the
-resulting debug log?
+}I am a little confused by this.  I am travelling and don't have
+}my books handy. and I remember the MBX uses the 8259
+}interrupt controller to manage all PCI/ISA device interrupts.
+}What I don't remember are the actual connections.  I believe
+}the PCI interrupts are routed to the 8259, which is then
+}routed to one of the 8xx external interrupts.
 
-I may be able to take my fireball1280S out of the machine it's in if
-we can't resolve the problem soon.
+I think some devices can be routed through the qspan as well.  The docs I
+have are not clear.
 
-Paul.
+}The QSPAN interrupts are for things like PCI parity
+
+Right, that's the plan.
+
+}To support PCI or ISA devices that interrupt on the MBX
+}you would need to modify irq.c to support a multilevel interrupt
+}scheme.  The 8259 would interrupt on one of the 8xx interrupt
+}controller levels, then you would have to process all 8259
+}interrupts.
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
