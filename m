@@ -1,34 +1,44 @@
-Message-ID: <3FBA2959.80609@g-house.de>
-Date: Tue, 18 Nov 2003 15:14:49 +0100
-From: Christian Kujau <evil@g-house.de>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ppc32 lockups with 2.6
-References: <3FA5698A.9000905@g-house.de> <3FAABE62.4090804@g-house.de> <20031110125044.A22030@forte.austin.ibm.com> <3FB01392.60500@g-house.de> <20031110175740.A32176@forte.austin.ibm.com> <3FB02C85.6090400@g-house.de> <20031111153658.GH8584@ip68-0-152-218.tc.ph.cox.net> <3FB2D757.1010304@g-house.de> <20031113174745.GA11560@ip68-0-152-218.tc.ph.cox.net> <3FB41A14.3040108@g-house.de> <3FBA11AC.8090408@g-house.de>
-In-Reply-To: <3FBA11AC.8090408@g-house.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: benh@kernel.crashing.org
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Dale Farnsworth <dale@farnsworth.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: MPC5200 Patches 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 18 Nov 2003 11:44:34 +1100."
+             <1069116274.7174.54.camel@gaston>
+Date: Tue, 18 Nov 2003 15:45:59 +0100
+Message-Id: <20031118144604.65781C5F5F@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Christian Kujau wrote:
-> i will go on with 2.6.0-tes5 now....
+Dear Ben,
 
-no strange error messages anymore with -test5, but still no routing.
-i someone wants to have a look:
+in message <1069116274.7174.54.camel@gaston> you wrote:
+>
+> On Tue, 2003-11-18 at 11:43, Benjamin Herrenschmidt wrote:
+> > I only ever got DMA reads to work, DMA writes never kicked the
+> > BestComm task..
+>
+> Argh... I hate that evolution bug that when you remove the
+> signature,  it deletes 2 random lines of text...
+>
+> So I was asking if you had the IDE DMA working correctly since
+> I see that you have my code in there.
 
-http://nerdbynature.de/bits/
+This is still your unmodified code. We're working  with  Motorola  on
+this  issue,  but  it  was assigned lower priority because of other,
+more pressing issues.
 
-(i've re-orderd the links, sorry. the "my PReP machine (ppc32) doesn't
-like the new kernel" are the right ones.)
+Best regards,
 
-Thanks,
-Christian.
+Wolfgang Denk
 
 --
-BOFH excuse #179:
-
-multicasts on broken packets
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Swap read error.  You lose your mind.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
