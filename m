@@ -1,27 +1,41 @@
-To: Grant Erickson <erick205@umn.edu>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Solutions for Fast Software Upgrade in Linux/PPC
-References: <Pine.SOL.4.20.0109251001370.4999-100000@garnet.tc.umn.edu>
-From: Josh Huber <huber@alum.wpi.edu>
-Date: Wed, 26 Sep 2001 11:52:03 -0400
-In-Reply-To: <Pine.SOL.4.20.0109251001370.4999-100000@garnet.tc.umn.edu>
- (Grant Erickson's message of "Tue, 25 Sep 2001 10:38:15 -0500 (CDT)")
-Message-ID: <87ite6dk64.fsf@mclinux.com>
+Message-ID: <3BB201A4.40987FC@disca.upv.es>
+Date: Wed, 26 Sep 2001 18:26:12 +0200
+From: David de =?iso-8859-1?Q?Andr=E9s=20Mart=EDnez?= <ddandres@disca.upv.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: CAN Linux driver for TQM823L
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Grant Erickson <erick205@umn.edu> writes:
+Hello,
 
-[snip]
+We are working with a STK823L module (board with a TQM823L with 2 CAN
+Controllers [i282527]) and I wonder if anyone knows about a CAN Linux
+for PowerPC (LinuxPPC) driver for this module.
 
-oh, and I forgot to mention one thing about bootimg.  Unfortunately it
-only supports x86, but the pieces you'd need to rewrite are small.
+I have taken a look at the drivers from:
+Linux CAN-bus Driver Project (http://home.wanadoo.nl/arnaud/)
+CanFestival (http://www.esstin.uhp-nancy.fr/~tissered/CanFestival/)
+LinuxLab (ftp://ftp.llp.fu-berlin.de/LINUX-LAB/)
+but I haven't been lucky.
 
-ttyl,
+Any help would be great.
+
 --
-Josh Huber
+----------------------------------------------------------------------
+| David de Andrés Martínez   | Fault Tolerant Systems research Group |
+|                            |                                       |
+| Computer Science Engineer  | Email: ddandres@disca.upv.es          |
+| Doctorate Student          | Phone: +34 96 387.75.74 Ext 75774     |
+|                            | Fax: +34 96 387.75.79                 |
+-------Address--------------------------------------------------------
+|                 DISCA-EUI                                          |
+|                 Universidad Politécnica de Valencia                |
+|                 Campus de Vera #14                                 |
+|                 Valencia E-46021                                   |
+|                 Spain                                              |
+----------------------------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
