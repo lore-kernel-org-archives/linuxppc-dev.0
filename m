@@ -1,42 +1,29 @@
-Message-ID: <41058D7A.4080802@g-house.de>
-Date: Tue, 27 Jul 2004 01:02:18 +0200
-From: Christian Kujau <evil@g-house.de>
-MIME-Version: 1.0
-To: Giuliano Pochini <pochini@shiny.it>
-Cc: LinuxPPC-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Can't compile 2.6.7 with gcc 3.4.1
-References: <20040726223832.3edafe0a.pochini@shiny.it>
-In-Reply-To: <20040726223832.3edafe0a.pochini@shiny.it>
+Date: Tue, 27 Jul 2004 08:33:53 +0930
+From: Alan Modra <amodra@bigpond.net.au>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Hollis Blanchard <hollisb@us.ibm.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>, Olaf Hering <olh@suse.de>,
+	Stef Simoens <stefaan.simoens@coditel.net>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+	Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] fix missing option in binutils version check
+Message-ID: <20040726230353.GX7099@bubble.modra.org>
+References: <20040615161258.GA14528@smtp.west.cox.net> <20040615172511.GA21667@suse.de> <20040615174648.GC14528@smtp.west.cox.net> <20040703222918.GA10425@suse.de> <40E75DC7.7070601@coditel.net> <20040704024149.GB2146@smtp.west.cox.net> <Pine.GSO.4.58.0407041028480.21842@waterleaf.sonytel.be> <E2EB9906-CDD7-11D8-92C8-000A95A0560C@us.ibm.com> <20040725060754.GE7099@bubble.modra.org> <20040726193652.GE28588@smtp.west.cox.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040726193652.GE28588@smtp.west.cox.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Mon, Jul 26, 2004 at 12:36:52PM -0700, Tom Rini wrote:
+[about ppc .machine]
+> But working in what versions of binutils ?
 
-Giuliano Pochini wrote:
-> Is this a known problem ?  I can't compile the kernel 2.6.7 with gcc
-3.4.1:
->
->   CC      arch/ppc/kernel/traps.o
-> arch/ppc/kernel/traps.c: In function `AltivecUnavailException':
-> arch/ppc/kernel/traps.c:650: warning: unsigned int format, long
-unsigned int arg (arg 3)
-> arch/ppc/kernel/traps.c: In function `AltivecAssistException':
-> arch/ppc/kernel/traps.c:665: warning: implicit declaration of function
-`emulate_altivec'
->   CC      arch/ppc/kernel/irq.o
->   CC      arch/ppc/kernel/idle.o
->   CC      arch/ppc/kernel/time.o
-> {standard input}: Assembler messages:
-- --------------------^^^^^^^^^
+HJ's 2.14.90.0.8 and later, FSF 2.15 release.
 
-the Assembler spits out the errors here, and /usr/bin/as is usually
-coming with "binutils". which version do you have?
-
-Christian.
-- --
-BOFH excuse #72:
-
-Satan did it
+--
+Alan Modra
+IBM OzLabs - Linux Technology Centre
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
