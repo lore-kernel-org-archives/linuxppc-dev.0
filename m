@@ -1,25 +1,17 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CA9F667A6B
+Return-Path: <vijay_padiyar@hotmail.com>
+Received: from hotmail.com (bay1-dav3.bay1.hotmail.com [65.54.244.107])
+	by ozlabs.org (Postfix) with ESMTP id 6288D67A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Feb 2005 14:42:48 +1100 (EST)
-In-Reply-To: <20050210170658.GA20153@logos.cnet>
-References: <EA78B62757AF1E4799828249310AC4CA071D281F@stca206a.bus.sc.rolm.com>
-	<28F2CE72-0BF0-11D9-97DC-003065F9B7DC@embeddededge.com>
-	<20050210150437.GA19134@logos.cnet>
-	<c5f8c158f9254cbb0a8e085cf0fda8de@embeddededge.com>
-	<20050210170658.GA20153@logos.cnet>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0982a06b7c889ef71cf1a2a50dfd0fbe@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Thu, 10 Feb 2005 22:42:22 -0500
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Cc: "Smith, Craig" <craig.d.smith@siemens.com>,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Linux 2.6.x on 8xx status
+	Fri, 11 Feb 2005 15:38:03 +1100 (EST)
+Message-ID: <BAY1-DAV32181D4E594557F8931608B770@phx.gbl>
+From: "Vijay Padiyar" <vijay_padiyar@hotmail.com>
+To: "Embedded TUX" <etux@embeddedtux.org>,
+	"LinuxPPC Support" <linuxppc-embedded@ozlabs.org>
+Date: Fri, 11 Feb 2005 10:07:53 +0530
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: problem with accessing memory mapped area
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,28 +22,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi there
 
-On Feb 10, 2005, at 12:06 PM, Marcelo Tosatti wrote:
+I'm running a Linux 2.6.10 kernel with BusyBox 1.0 on an MPC8260 platform.
+My board's memory map is as follows:
 
-> How do you do track down the current TLB state? With a BDI?
+SDRAM: 0x00000000 - 0x07FFFFFF (128 MB)
+FLASH: 0xFE000000 - 0xFFFFFFFF (32 MB)
 
-Yes.  The BDI2000 is invaluable for this kind of debugging.
+In addition, in the address range 0x30000000-0x300000FF, I have a CPLD
+mapped.
 
-> Shouldnt it be loading the TLB entry which "seem to be OK" accordingly 
-> to your
-> analysis ??
+Now, I wish to access the registers of this CPLD. For this, I create a
+module and insert it into the kernel. Now, in my 'init_module' function, I
+map the address range 0x30000000-0x300000FF to cpld_mem:
 
-Yes.
+unsigned char *cpld_mem;
 
-> BTW, we are seeing very bad slowdown on v2.4 compared to v2.6 on m8xx.
+int init_module(void)
+{
+    ...
+    ...
+    cpld_mem =  (unsigned char *) ioremap (0x30000000, 0x100);
+}
 
-What are you using for performance measurements?  Standard
-benchmarks I could run, too?
+Let's say my file operation functions are device_open, device_release,
+device_read, device_write and device_ioctl.
 
-> Its likely to be cache related - I'm preparing a detailed email about 
-> it.
+Now, I wish to write to the address 0x30000014. In device_write, I do the
+following:
 
-OK.  Thanks.
+ssize_t device_write(...)
+{
+    ...
+    printk(KERN_DEBUG "Writing to CPLD");
+    outb(0x00, cpldMem + 0x14);
+}
 
+But when I execute this program on the target, it crashes after displaying
+"Writing to CPLD". Sometimes it says 'Bus error' and some other times I get
+a 'Kernel panic' message and the system reboots.
 
-	-- Dan
+Where could I be going wrong? I tried with 'writeb()' as well. It gave the
+same results. :-( Am I making some obvious silly mistakes?
+
+Regards
+
+Vijay Padiyar
+
+http://www.vijaypadiyar.eu.tf
