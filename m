@@ -1,172 +1,69 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3E9FE4DC.8040704@tataelxsi.co.in>
-Date: Fri, 18 Apr 2003 17:13:24 +0530
-From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
-MIME-Version: 1.0
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: debugging using bdi2000, unable to proceed.
-References: <20030417134544.300A5C58B9@atlas.denx.de>
-Content-Type: multipart/mixed;
- boundary="------------030804050501090001080807"
+To: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: debugging using bdi2000, unable to proceed. 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 18 Apr 2003 17:13:24 +0530."
+             <3E9FE4DC.8040704@tataelxsi.co.in>
+Date: Fri, 18 Apr 2003 16:51:17 +0200
+Message-Id: <20030418145122.6C0B6C58B9@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------030804050501090001080807
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Dear Om,
 
-Wolfgang Denk wrote:
->>we are using http://www.ultsol.com/PDFS/Tool%20Talk%2002-001a.pdf as a
->>refernce to get bdi 2000 setup running.
->>Connections are made as per the document.
->>bdisetup is run from the host. Using the configuration file.
->>We used format IMAGE and file zImage and the image file  loaded to
->>0x400000 using bdi2000.
+in message <3E9FE4DC.8040704@tataelxsi.co.in> you wrote:
 >
->
-> Don't do this. Build a PPCBoot image as usual using the mkimage tool,
-> and use PPCboot to download and start the kernel. Use the BDI2000 for
-> debugging only.
-Hi,
-We tried loading a ppcboot image of linux kernel and ramdisk referring
-the document and
-http://lists.linuxppc.org/linuxppc-embedded/200108/msg00188.html.
-What we did is,
-power up both bdi2k and target.
-We got ppcboot prompt on the serial console.
-Setup the bdi2000 using serial connection from the host (using bdisetup
-executable) telnet to bdi2000. bdi2000 picks up the configuration file
-and configures target and itself. in host, ppc_82xx-gdb <path to
-vmlinux> put breakpoint at start_kernel
+> > Don't do this. Build a PPCBoot image as usual using the mkimage tool,
+> > and use PPCboot to download and start the kernel. Use the BDI2000 for
+> > debugging only.
+> Hi,
+> We tried loading a ppcboot image of linux kernel and ramdisk referring
+> the document and
+> http://lists.linuxppc.org/linuxppc-embedded/200108/msg00188.html.
+> What we did is,
+> power up both bdi2k and target.
+> We got ppcboot prompt on the serial console.
+> Setup the bdi2000 using serial connection from the host (using bdisetup
+> executable) telnet to bdi2000. bdi2000 picks up the configuration file
+> and configures target and itself. in host, ppc_82xx-gdb <path to
+> vmlinux> put breakpoint at start_kernel
 
-Now ideally we should be able to give bootm <image loc> <ramdisk loc>
-from ppcboot. but bdi2k holds the target in debug mode. In this state we
-are unable to enter any command into ppcboot prompt.
-Same behaviour is shown in our custom board also.
+This sequence is wrong.  _First_  configure  and  boot  the  BDI2000.
+Connect  to  the  BDI2000 over telnet. Type "reset" and "go" to start
+PPCBoot.
 
-we use the vads8260.cfg file provided by bdi2000.
-I think there is some configuration that we need to change in the bdi
-supplied file like bdimode and breakmode. Is it so? I cannot think of
-any other reason.
+Use PPCBoot to load the kernel etc.
 
-Thanks,
-Om.
+_Then_ "halt" with the BDI2000, set any  breakpoints  you  need,  and
+continue  execution  ("go").  The use "bootm" in PPCBoot to start the
+kernel.
 
---------------030804050501090001080807
-Content-Type: application/x-unknown-content-type-CodeWarrior_cfg;
- name="VADS8260.CFG"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="VADS8260.CFG"
+> Now ideally we should be able to give bootm <image loc> <ramdisk loc>
+> from ppcboot. but bdi2k holds the target in debug mode. In this state we
+> are unable to enter any command into ppcboot prompt.
 
-OyBiZGlHREIgY29uZmlndXJhdGlvbiBmaWxlIGZvciBNUEM4MjYwLUFEUyBib2FyZA0KOyAt
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KOw0KW0lO
-SVRdDQo7IGluaXQgY29yZSByZWdpc3Rlcg0KV1JFRyAgICBNU1IgICAgICAgICAgICAgMHgw
-MDAwMDAwMCAgICAgIDtjbGVhciBNU1INCldNMzIJMHgwRjAxMDFBOAkweDA0NzAwMDAwCTtJ
-TU1SIDogaW50ZXJuYWwgc3BhY2UgQCAweDA0NzAwMDAwDQpXTTMyCTB4MDQ3MTAwMDQJMHhG
-RkZGRkZDMwk7U1lQQ1I6IGRpc2FibGUgd2F0Y2hkb2cNCldNMzIJMHgwNDcxMEM4MAkweDAw
-MDAwMDAxCTtTQ0NSIDogbm9ybWFsIG9wZXJhdGlvbg0KDQo7IGluaXQgbWVtb3J5IGNvbnRy
-b2xsZXINCldNMzIJMHgwNDcxMDEwNAkweEZGODAwODM2CTtPUjA6IEZsYXNoIDhNQiwgQ1Mg
-ZWFybHkgbmVnYXRlLCA2IHcucy4sIFRpbWluZyByZWxheA0KV00zMgkweDA0NzEwMTAwCTB4
-RkY4MDE4MDEJO0JSMDogRmxhc2ggQDB4RkY4MDAwMDAsIDMyYml0LCBubyBwYXJpdHkNCldN
-MzIJMHgwNDcxMDEwQwkweEZGRkY4MDEwCTtPUjE6IEJDU1IgMzJLQiwgYWxsIHR5cGVzIGFj
-Y2Vzc2UsIDEgdy5zLg0KV00zMgkweDA0NzEwMTA4CTB4MDQ1MDE4MDEJO0JSMTogQkNTUiBA
-MHgwNDUwMDAwMCwgMzJiaXQsIG5vIHBhcml0eQ0KV00zMgkweDA0NTAwMDA0CTB4M0QwMDAw
-MDAJO0JDU1IxOiBlbmFibGUgUlMyMzItMQ0KDQo7IGluaXQgU0RSQU0gSW5pdCAoUFBDIGJ1
-cykNCldNMTYJMHgwNDcxMDE4NAkweDE5MDAJICAgICAgICA7TVBUUFI6IERpdmlkZSBCdXMg
-Y2xvY2sgYnkgMjYNCldNOAkweDA0NzEwMTlDCTB4MjEJICAgICAgICA7UFNSVCA6IERpdmlk
-ZSBNUFRQUiBvdXRwdXQgYnkgMzQNCjtXTTgJMHgwNDcxMDE5QwkweDE0CSAgICAgICAgO1BT
-UlQgOiBEaXZpZGUgTVBUUFIgb3V0cHV0IGJ5IDIxDQpXTTMyCTB4MDQ3MTAxMTQJMHhGRjAw
-MEM4MAk7T1IyICA6IDE2TUIsIDIgYmFua3MsIHJvdyBzdGFydCBhdCBBOSwgMTEgcm93cw0K
-V00zMgkweDA0NzEwMTEwCTB4MDAwMDAwNDEJO0JSMiAgOiBTRFJBTSBAMHgwMDAwMDAwMCwg
-NjRiaXQsIG5vIHBhcml0eQ0KV00zMgkweDA0NzEwMTkwCTB4Mjk2RUI0NTIJO1BTRE1SOiBQ
-cmVjaGFyZ2UgYWxsIGJhbmtzDQpXTTgJMHgwMDAwMDAwMAkweEZGCSAgICAgICAgO0FjY2Vz
-cyBTRFJBTQ0KV00zMgkweDA0NzEwMTkwCTB4MDk2RUI0NTIJO1BTRE1SOiBDQlIgUmVmcmVz
-aA0KV004CTB4MDAwMDAwMDAJMHhGRgkgICAgICAgIDtBY2Nlc3MgU0RSQU0NCldNOAkweDAw
-MDAwMDAwCTB4RkYJICAgICAgICA7QWNjZXNzIFNEUkFNDQpXTTgJMHgwMDAwMDAwMAkweEZG
-CSAgICAgICAgO0FjY2VzcyBTRFJBTQ0KV004CTB4MDAwMDAwMDAJMHhGRgkgICAgICAgIDtB
-Y2Nlc3MgU0RSQU0NCldNOAkweDAwMDAwMDAwCTB4RkYJICAgICAgICA7QWNjZXNzIFNEUkFN
-DQpXTTgJMHgwMDAwMDAwMAkweEZGCSAgICAgICAgO0FjY2VzcyBTRFJBTQ0KV004CTB4MDAw
-MDAwMDAJMHhGRgkgICAgICAgIDtBY2Nlc3MgU0RSQU0NCldNOAkweDAwMDAwMDAwCTB4RkYJ
-ICAgICAgICA7QWNjZXNzIFNEUkFNDQpXTTMyCTB4MDQ3MTAxOTAJMHgxOTZFQjQ1Mgk7UFNE
-TVI6IE1vZGUgU2V0DQpXTTgJMHgwMDAwMDAwMAkweEZGCSAgICAgICAgO0FjY2VzcyBTRFJB
-TQ0KV00zMgkweDA0NzEwMTkwCTB4NDE2RUI0NTIJO1BTRE1SOiBlbmFibGUgcmVmcmVzaCwg
-bm9ybWFsIG9wZXJhdGlvbg0KDQoNCltUQVJHRVRdDQpDUFVUWVBFICAgICA4MjYwICAgICAg
-ICA7dGhlIENQVSB0eXBlICg2MDNFViw3NTAsODI0MCw4MjYwKQ0KSlRBR0NMT0NLICAgMCAg
-ICAgICAgICAgO3VzZSAxNiBNSHogSlRBRyBjbG9jaw0KQk9PVEFERFIgICAgMHhmZmYwMDEw
-MCAgO2Jvb3QgYWRkcmVzcyB1c2VkIGZvciBzdGFydC11cCBicmVhaw0KV09SS1NQQUNFICAg
-MHgwMDAwMDAwMAk7d29ya3NwYWNlIGluIHRhcmdldCBSQU0gZm9yIGZhc3QgZG93bmxvYWQN
-CkJESU1PREUgICAgIEFHRU5UICAgICAJO3RoZSBCREkgd29ya2luZyBtb2RlIChMT0FET05M
-WSB8IEFHRU5UIHwgR0FURVdBWSkNCkJSRUFLTU9ERSAgIFNPRlQgICAgICAJO1NPRlQgb3Ig
-SEFSRCwgSEFSRCB1c2VzIFBQQyBoYXJkd2FyZSBicmVha3BvaW50cw0KO1NURVBNT0RFICAg
-IEhXQlAgICAgICAgIDtUUkFDRSBvciBIV0JQLCBIV1BCIHVzZXMgYSBoYXJkd2FyZSBicmVh
-a3BvaW50DQpWRUNUT1IgICAgICBDQVRDSCAgICAgICA7Y2F0Y2ggdW5oYW5kbGVkIGV4Y2Vw
-dGlvbnMNCkRDQUNIRSAgICAgIE5PRkxVU0gJO2RhdGEgY2FjaGUgZmx1c2hpbmcgKEZMVVNI
-IHwgTk9GTFVTSCkNCjtNTVUgICAgICAgICBYTEFUICAgICAgICA7dHJhbnNsYXRlIGVmZmVj
-dGl2ZSB0byBwaHlzaWNhbCBhZGRyZXNzDQpQT1dFUlVQICAgICA1MDAwICAgICAgICA7c3Rh
-cnQgZGVsYXkgYWZ0ZXIgcG93ZXItdXAgZGV0ZWN0ZWQgaW4gbXMNCjtSRUdMSVNUICAgICBT
-UFIgICAgICAgICA7c2VsZWN0IHJlZ2lzdGVyIHRvIHRyYW5zZmVyIHRvIEdEQg0KO1JFR0xJ
-U1QgICAgIEFMTCAgICAgICAgIDtzZWxlY3QgcmVnaXN0ZXIgdG8gdHJhbnNmZXIgdG8gR0RC
-DQo7VklPICAgICAgICAgNyA5NjAwICAgICAgIDtUQ1AgcG9ydCBmb3IgdmlydHVhbCBJTywg
-QkNTUjE6IGVuYWJsZSBSUzIzMi0xICEhIQ0KO1NJTyAgICAgICAgIDcgOTYwMCAgICAgICA7
-VENQIHBvcnQgZm9yIHNlcmlhbCBJTywgY2hlY2sgQkNTUjE6IGVuYWJsZSBSUzIzMi0xICEh
-IQ0KDQpbSE9TVF0NCklQICAgICAgICAgIDEwLjEuNDAuMTcNCkZJTEUgICAgICAgIFM6XFBS
-SlxhcmNoXHBwY1xtYnhib290XHp2bWxpbnV4DQo7RklMRSAgICAgICAgRTpcY3lnbnVzXHJv
-b3RcdXNyXGRlbW9cbXBjODI2MFxmaWJvLmV4ZQ0KRk9STUFUICAgICAgSU1BR0UNCkxPQUQg
-ICAgICAgIE1BTlVBTCAgICAgIDtsb2FkIGNvZGUgTUFOVUFMIG9yIEFVVE8gYWZ0ZXIgcmVz
-ZXQNCkRFQlVHUE9SVCAgIDIwMDENClBST01QVCAgICAgIE1QQzgyNjA+CTtuZXcgcHJvbXB0
-IGZvciBUZWxuZXQNCkRVTVAgICAgICAgIEU6XHRlbXBcZHVtcC5iaW4NCjtEVU1QICAgICAg
-ICBkdW1wLmJpbiAgICAgICAgICAgIDtMaW51eDogZHVtcC5iaW4gbXVzdCBhbHJlYWR5IGV4
-aXN0IGFuZCBwdWJsaWMgd3JpdGFibGUNCg0KW0ZMQVNIXQ0KQ0hJUFRZUEUgICAgSTI4Qlg4
-ICAgICAgO0ZsYXNoIHR5cGUgKEFNMjlGIHwgQU0yOUJYOCB8IEFNMjlCWDE2IHwgSTI4Qlg4
-IHwgSTI4QlgxNikNCjtDSElQVFlQRSAgICBBTTI5Qlg4DQpDSElQU0laRSAgICAweDIwMDAw
-MCAgICA7VGhlIHNpemUgb2Ygb25lIGZsYXNoIGNoaXAgaW4gYnl0ZXMgKGUuZy4gQU0yOUYw
-MTAgPSAweDIwMDAwKQ0KQlVTV0lEVEggICAgMzIgICAgICAgICAgO1RoZSB3aWR0aCBvZiB0
-aGUgZmxhc2ggbWVtb3J5IGJ1cyBpbiBiaXRzICg4IHwgMTYgfCAzMiB8IDY0KQ0KO1dPUktT
-UEFDRSAgIDB4MDQ3MDAwMDAgIDt3b3Jrc3BhY2UgaW4gZHVhbCBwb3J0IFJBTQ0KV09SS1NQ
-QUNFICAgMHgwMDAwMDAwMCAgO3dvcmtzcGFjZSBpbiBTRFJBTQ0KO0ZJTEUgICAgICAgIEU6
-XHRvcm5hZG9cdGFyZ2V0XGNvbmZpZ1xhZHM4MjYwXHRlc3QuaGV4ICA7VGhlIGZpbGUgdG8g
-cHJvZ3JhbQ0KO0ZPUk1BVCAgICAgIFNSRUMgMHgwMTAwMDAwMA0KO0ZJTEUgICAgICAgIEU6
-XGN5Z251c1xyb290XHVzclxkZW1vXG1wYzgyNjBcaW5pdDgyNjAuUzMNCkZJTEUgICAgICAg
-IEU6XGN5Z251c1xyb290XHVzclxkZW1vXG1wYzgyNjBcYWRzODI2MC5zc3MNCjsNCkVSQVNF
-ICAgICAgIDB4RkY4MDAwMDAgIDtlcmFzZSBzZWN0b3IgIDAgb2YgZmxhc2ggU0lNTSAoTEgy
-OEYwMTZTQ1QpDQpFUkFTRSAgICAgICAweEZGODQwMDAwICA7ZXJhc2Ugc2VjdG9yICAxIG9m
-IGZsYXNoIFNJTU0NCkVSQVNFICAgICAgIDB4RkY4ODAwMDAgIDtlcmFzZSBzZWN0b3IgIDIg
-b2YgZmxhc2ggU0lNTQ0KRVJBU0UgICAgICAgMHhGRjhDMDAwMCAgO2VyYXNlIHNlY3RvciAg
-MyBvZiBmbGFzaCBTSU1NDQpFUkFTRSAgICAgICAweEZGOTAwMDAwICA7ZXJhc2Ugc2VjdG9y
-ICA0IG9mIGZsYXNoIFNJTU0NCkVSQVNFICAgICAgIDB4RkY5NDAwMDAgIDtlcmFzZSBzZWN0
-b3IgIDUgb2YgZmxhc2ggU0lNTQ0KRVJBU0UgICAgICAgMHhGRjk4MDAwMCAgO2VyYXNlIHNl
-Y3RvciAgNiBvZiBmbGFzaCBTSU1NDQpFUkFTRSAgICAgICAweEZGOUMwMDAwICA7ZXJhc2Ug
-c2VjdG9yICA3IG9mIGZsYXNoIFNJTU0NCkVSQVNFICAgICAgIDB4RkZBMDAwMDAgIDtlcmFz
-ZSBzZWN0b3IgIDggb2YgZmxhc2ggU0lNTQ0KRVJBU0UgICAgICAgMHhGRkE0MDAwMCAgO2Vy
-YXNlIHNlY3RvciAgOSBvZiBmbGFzaCBTSU1NDQpFUkFTRSAgICAgICAweEZGQTgwMDAwICA7
-ZXJhc2Ugc2VjdG9yIDEwIG9mIGZsYXNoIFNJTU0NCkVSQVNFICAgICAgIDB4RkZBQzAwMDAg
-IDtlcmFzZSBzZWN0b3IgMTEgb2YgZmxhc2ggU0lNTQ0KRVJBU0UgICAgICAgMHhGRkIwMDAw
-MCAgO2VyYXNlIHNlY3RvciAxMiBvZiBmbGFzaCBTSU1NDQpFUkFTRSAgICAgICAweEZGQjQw
-MDAwICA7ZXJhc2Ugc2VjdG9yIDEzIG9mIGZsYXNoIFNJTU0NCkVSQVNFICAgICAgIDB4RkZC
-ODAwMDAgIDtlcmFzZSBzZWN0b3IgMTQgb2YgZmxhc2ggU0lNTQ0KRVJBU0UgICAgICAgMHhG
-RkJDMDAwMCAgO2VyYXNlIHNlY3RvciAxNSBvZiBmbGFzaCBTSU1NDQpFUkFTRSAgICAgICAw
-eEZGQzAwMDAwICA7ZXJhc2Ugc2VjdG9yIDE2IG9mIGZsYXNoIFNJTU0NCkVSQVNFICAgICAg
-IDB4RkZDNDAwMDAgIDtlcmFzZSBzZWN0b3IgMTcgb2YgZmxhc2ggU0lNTQ0KRVJBU0UgICAg
-ICAgMHhGRkM4MDAwMCAgO2VyYXNlIHNlY3RvciAxOCBvZiBmbGFzaCBTSU1NDQpFUkFTRSAg
-ICAgICAweEZGQ0MwMDAwICA7ZXJhc2Ugc2VjdG9yIDE5IG9mIGZsYXNoIFNJTU0NCkVSQVNF
-ICAgICAgIDB4RkZEMDAwMDAgIDtlcmFzZSBzZWN0b3IgMjAgb2YgZmxhc2ggU0lNTQ0KRVJB
-U0UgICAgICAgMHhGRkQ0MDAwMCAgO2VyYXNlIHNlY3RvciAyMSBvZiBmbGFzaCBTSU1NDQpF
-UkFTRSAgICAgICAweEZGRDgwMDAwICA7ZXJhc2Ugc2VjdG9yIDIyIG9mIGZsYXNoIFNJTU0N
-CkVSQVNFICAgICAgIDB4RkZEQzAwMDAgIDtlcmFzZSBzZWN0b3IgMjMgb2YgZmxhc2ggU0lN
-TQ0KRVJBU0UgICAgICAgMHhGRkUwMDAwMCAgO2VyYXNlIHNlY3RvciAyNCBvZiBmbGFzaCBT
-SU1NDQpFUkFTRSAgICAgICAweEZGRTQwMDAwICA7ZXJhc2Ugc2VjdG9yIDI1IG9mIGZsYXNo
-IFNJTU0NCkVSQVNFICAgICAgIDB4RkZFODAwMDAgIDtlcmFzZSBzZWN0b3IgMjYgb2YgZmxh
-c2ggU0lNTQ0KRVJBU0UgICAgICAgMHhGRkVDMDAwMCAgO2VyYXNlIHNlY3RvciAyNyBvZiBm
-bGFzaCBTSU1NDQpFUkFTRSAgICAgICAweEZGRjAwMDAwICA7ZXJhc2Ugc2VjdG9yIDI4IG9m
-IGZsYXNoIFNJTU0NCkVSQVNFICAgICAgIDB4RkZGNDAwMDAgIDtlcmFzZSBzZWN0b3IgMjkg
-b2YgZmxhc2ggU0lNTQ0KRVJBU0UgICAgICAgMHhGRkY4MDAwMCAgO2VyYXNlIHNlY3RvciAz
-MCBvZiBmbGFzaCBTSU1NDQpFUkFTRSAgICAgICAweEZGRkMwMDAwICA7ZXJhc2Ugc2VjdG9y
-IDMxIG9mIGZsYXNoIFNJTU0NCg0KW1JFR1NdDQpETU0xICAgICAgICAweDA0NzAwMDAwDQpG
-SUxFICAgICAgICBjOlxiZGkyMDAwXHJlZzgyNjAuZGVmDQoNCg==
---------------030804050501090001080807--
+This is because the init sequence of  the  BDI2000  will  reset  your
+board.  Didn't  you  see  this  from  the  output? The BDI2000 prints
+readable messages - read and try to understand them.
 
+> I think there is some configuration that we need to change in the bdi
+> supplied file like bdimode and breakmode. Is it so? I cannot think of
+> any other reason.
+
+The reason is pilot error.
+
+
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+All I ask is a chance to prove that money can't make me happy.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
