@@ -1,39 +1,49 @@
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Low memory problems in 8xx Linux
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 31 Jan 2000 16:02:01 +0100
-Message-ID: <kfy3drel1xy.fsf@kieraypc07.p.y.ki.era.ericsson.se>
+Date: Mon, 31 Jan 2000 16:23:17 -0500 (EST)
+From: "Kevin M. Myer" <kevin_myer@elanco.k12.pa.us>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: devel kernels 2.3.41
+In-Reply-To: <389537D2.D4642F0A@wanadoo.fr>
+Message-ID: <Pine.LNX.4.20.0001311609090.2282-100000@marble.elanco.k12.pa.us>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Mon, 31 Jan 2000, Martin Costabel wrote:
 
-is anybody else experiencing severe problems when free memory gets low
-in Linux? And I'm not talking about _out of memory_, just simply low
-on RAM...
+>
+> The 2.3.41 final kernel is broken on most non-intel architectures (dma
+> code changed completely). I would think (and hope) the PPC kernel
+> developers are too busy fixing this right now to answer your question.
 
-Even with 96 MB swap on ATA flash, and 26MB of memory in the cache
-(ie not really in use), as soon as free pages hit the minimum limit
-the system will lock solid. This happens before any swap is starting
-to get used, and afterwards the system wont even answer to ping.
+I poked around a bit and found I could at least get around the compile
+problem at the beginning with the following simple patch:
 
-At some occasions all processes (including init) will simply crash
-with an illegal instruction or segfault, and the kernel seems to
-live on.
+--- linux/include/asm-ppc/types.h.old   Mon Jan 31 16:07:01 2000
++++ linux/include/asm-ppc/types.h       Mon Jan 31 16:03:28 2000
+@@ -41,6 +41,10 @@
 
-This happens with kernels 2.2.5, 2.2.10, 2.2.12, 2.2.13, 2.2.14 and
-2.2.15pre5 + Rik's boobytrap2 patch, on MBX, ADS, FADS, RPX Lite and
-custom boards. (2.2.12 and earlier based on Dan Malek's 2.2.5, 2.2.13
-and later based on his 2.2.13).
+ #define BITS_PER_LONG 32
 
-So, has anyone else experienced problems like this?
++/* Dma addresses are 32-bits wide for now.  */
++
++typedef u32 dma_addr_t;
++
+ #endif /* __KERNEL__ */
 
-//Marcus
---
-Signature under construction, please come back later.
+ #endif
+
+In init/main.c, it included linux/pci.h, in which the struct pci_dev has a
+new member "dma_mask".  This is of type dma_addr_t, which is defined for
+i386 and sparc64 but no other architectures that I can tell.
+
+That at least got me around the initial compile problem.  I'm working on
+an Apple Network Server with a somewhat less than vanilla 2.3.41 so I'm
+not sure if it compiles and boots fully (seeing as I've goofed up some
+code for the secondary PCI bus on the ANS and it won't compile fully).
+
+Kevin
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
