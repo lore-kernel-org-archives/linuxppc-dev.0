@@ -1,41 +1,57 @@
-Date: Wed, 12 Apr 2000 11:55:34 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-To: Joseph Garcia <jpgarcia@execpc.com>
-cc: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 12 Apr 2000 22:06:32 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>,
+        linuxppc-dev@lists.linuxppc.org
 Subject: Re: Problems with Ethernet on PowerBook Wallstreet G3
-In-Reply-To: <38F4BBFA.B3CE8273@execpc.com>
-Message-ID: <Pine.LNX.3.96.1000412115310.25261G-100000@deepspace.mklinux.org>
+In-Reply-To: <20000412202547.009139@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.4.10.10004122158001.4942-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 12 Apr 2000, Joseph Garcia wrote:
+On Wed, 12 Apr 2000, Benjamin Herrenschmidt wrote:
 
-> Initially, I was thinking that this is a bug brought on by the BMAC+, a
+> Browsing the Darwin bmac driver source, I found some interesting comments:
+>
+>       /*
+>        * On the transmit side, we use the chipset interrupt. Using the
+> 	   * transmit DMA interrupt (or having multiple transmit DMA entries)
+> 	   * would allows us to send the next frame to the chipset prior the
+> 	   * transmit fifo going empty.
+>        * However, this aggrevates a BMac chipset bug where the next frame
+> going
+> 	   * out gets corrupted (first two bytes lost) if the chipset had to retry
+> 	   * the previous frame.
+>        */
 
-Nope.  The original bmac had this bug, too, as did this driver before bmac
-was supported.  (Or at least the MkLinux version of this driver, which you
-can compare line-for-line for grins.)
+Extremely ugly. Does this mean corruption even happens when using the
+device interrupt? Anyway, we seem to be using the txdma interrupt so this
+bug is what bites us probably.
 
+> 		/*
+> 		 * The BMac Ethernet controller appends two bytes to each receive
+> 		 * buffer containing the buffer
+> 		 * size and receive frame status.
+> 		 * We locate these bytes by using the DMA residual counts.
+> 		 */
 
-> change.  so its not that.  Anything else that could be causing it?  I
-> don't remember this problem with earlier 2.2 kernels.  Anyone confirm
-> this?  2.1.x maybe?
+Need to allocate large enough receive buffers here :-) That's already
+taken care of:
+	/* initialize list of sk_buffs for receiving and set up recv dma
+*/
+	if (!bp->rx_allocated) {
+	        for (i = 0; i < N_RX_RING; i++) {
+	                bp->rx_bufs[i] = dev_alloc_skb(RX_BUFLEN+2);
+                        if (bp->rx_bufs[i] == NULL) return 0;
+	                skb_reserve(bp->rx_bufs[i], 2);
+	        }
+	        bp->rx_allocated = 1;
+	}
 
-Unless there was a previous bmac driver that used different code, it is
-unlikely that this ever worked right.  Especially, given that even Apple's
-Darwin code says it's a hardware bug.  Two words: sun ethernet....  ;-)
-
-
-David
-
----------------------------------------------------------------------
-A logician trying to explain logic to a programmer is like a cat
-trying to explain to a fish what it's like to be wet.
-
-	-- unknown, possibly Franklin Veaux
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
