@@ -1,52 +1,42 @@
-Message-Id: <200010170601.IAA06906@piglet.grunz.lu>
-Date: Tue, 17 Oct 2000 08:01:30 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: linux-pmac-stable SMP issues
-To: nicoya@apia.dhs.org
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <v04003a01b6115952b7fe@[24.70.162.14]>
+Date: Tue, 17 Oct 2000 10:05:39 +0200 (CEST)
+From: Xavier Grave <grave@ipno.in2p3.fr>
+To: Matt Porter <mporter@mvista.com>
+cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4 kernel doesn't allocate resource for my PCI Board
+In-Reply-To: <20001016095706.B4206@beef.az.mvista.com>
+Message-ID: <Pine.LNX.4.21.0010171002520.1915-100000@ipnpcu5>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  16 Oct, this message from Tony Mantler echoed through cyberspace:
-> The second thing I noticed is that "Processor 1 is stuck.". I seem to
-> recall this issue has been brought up once or twice before, but a look
-> through the mailing list archives didn't reveal any clues.
+Hi,
+
+On Mon, 16 Oct 2000, Matt Porter wrote:
+> According to this dump, you are not running the latest linuxppc_2_5.
+> The latest linuxppc_2_5 tree does not relocate memory BARs, only I/O
+> BARs.  Not to mention the PReP relocation code doesn't properly update
+> the memory resource limits.
 >
-> I vaguely recall the issue might be related to the booter used, I'm using
-> BootX 1.2.2 (from MacOS 9.0.4). Is there a different booter I should be
-> using to acheive full SMP functionality - hopefully one that allows easy
-> dual-booting?
+> To get linuxppc_2_5:
+>
+> 	bk clone bk://bitkeeper.fsmlabs.com:5005 linuxppc_2_5
 
-It might not work as you want for dual booting, but you might want to
-try OF booting with quik. It's rather manual, but it may bring up your
-second processor...
+In fact I've done :
+	bk clone bk://bitkeeper.fsmlabs.com:5000 linuxppc_2_5
+                                              /|\
 
-> Other than that, things work rather well, though 5 MB/s powermac scsi is
-> anything but spectacular (10MB/s made lots of stuff segfault) - leaves the
-> system feeling a tad sluggish compared to, say, my SGI Indigo2, but I
-> suppose that's not really a fair comparison to begin with. :)
+> If you really think you have the right tree, then email me privately
+> your prep_pci.c and I'll let you know.
 
-PowerMac SCSI has always been on the slow side.... Nevertheless, I have
-no problem running my MESH SCSI (7600) at 10MB/s. Strange... Maybe
-that's why the default speed is 5 MB/s. Although, since the external
-(53Cxx) also runs at 5 MB/s, and the internal SCSI is meant to be
-faster, I'd say MacOS runs it at 10MB/s also?
+I'm downloading the right tree, I'll test it and let you know if
+everything is right.
 
-Cheers
+xavier
 
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+33 (0) 1 69 15 79 59
+De chacun selon ses forces, a chacun selon ses besoins
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
