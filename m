@@ -1,51 +1,58 @@
-Message-Id: <200010121430.JAA21005@lists.linuxppc.org>
-From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
-Reply-To: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-Cc: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>, Josh Huber
-	 <huber@mclx.com>,
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>,
         Linux/PowerPC Devel List
-	 <linuxppc-dev@lists.linuxppc.org>
-Date: Thu, 12 Oct 2000 10:30:17 -0400
-Content-Type: text/plain;
-	charset=us-ascii
+ <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: dual head r128
-Mime-Version: 1.0 (Apple Message framework v337)
+Date: Thu, 12 Oct 2000 17:13:52 +0200
+Message-Id: <19340906084536.29942@192.168.1.2>
+In-Reply-To: <Pine.LNX.4.21.0010121542340.18328-100000@idd-01.imbc.gr>
+References: <Pine.LNX.4.21.0010121542340.18328-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Kostas,
+>
+>Since the card is a x86 one int10 is needed to initialize it, don't expect
+>the int10 code to work under linux/ppc though, it needs ISA IO and memory
+>access which don't work.
+>I have code to fix PIO for machines with only one iobase, but it
+>doesn't work with Uni-N machines (i have no idea how to handle code like
+>inb(0x3C3) in this machines and until someone figures out how to handle it
+>don't expect int10 to work....)
 
-> If the main clock rate is different, as long as
-> > you can find out what it is, reading and calculating the  timings from
-> > those register settings really should work generically, shouldn't it?
+I'm updating the PCI code in linuxppc_2_5 tree (which is more or less
+meant to be merged in _2_3 soon). I'm adding a couple of cases to the
+sys_pciconfig_iobase syscall to return the ISA mem and IO bases (if they
+exist).
 
-> The reference frequency isn't the same in all cards, your patch assumes that
->   /* Assume REF clock is 2950 (in units of 10khz) */
->   /* and that all pllclk must be between 125 Mhz and 250Mhz */
+On the kernel side, one of the PCI IO busses will be mapped to ISA. What
+I'll do is basically to change the kernel inb/outb functions to do
+something like
 
-Yes, that is what I was referring to above.  That info is generally available in the card docs.  Ben has a whole set of ref clock rates for all the ati cards shipped under mac or clones.  I also have that info and could easily look up the card id to set it for macs in general.
+if (addr < 64k)
+  do_io(isa_io_base + addr)
+else
+  do_io(addr)
 
->   /* These probably aren't going to work for
->      the card you are using.  Specifically,
->      reference freq can be 29.50MHz,
->      28.63MHz, or 14.32MHz.  YMMV. */
+This way, PCI IOs will be able to use real physical addresses that will
+have been put by the fixup code in the IO resources, while legacy IOs
+will tap the IO bus that we have decided is the "legacy" bus.
 
-You can actually use info on the pllclk constraints to rule out the 14.32Mhz cases from the other two cases and then you are left with only 2 to try.
+It's a bit ugly, but AFAIK, we don't have any arch where IOs are memory
+mapped below 64K physical. I would have prefered Paul's mecanism for
+appending the IO spaces, but...
 
-A lookup table would certainly do the trick if the user did not want to simply  use trial and error.  Anything would be better than the complete hard coded values set in the XF 4.0 source.
+Unfortunately, there's no simple way to allow two busses to have the
+legacy IOs. That means on UniN machines that they'll be available either
+on the AGP bus, or the external PCI bus, but not both.
+What you might do is to consider the ISA io base to be the IO base of the
+bus that holds the card for which you are trying to run the BIOS. (By
+using the syscall to retreive this IO base for the VGA card) instead of
+asking the kernel for the "legacy" IO base.
 
-Perhaps a better idea is allow the REF clock rate to be passed as a parameter in the XF86Config file (much like the video memory parameter and bus ids passed now) for people to have control over if need be.   This value would then only be used if the bios test failed and then in place of the hardcoded values so that my pll register probing routine would be actually work.  A desperate user could then try each of the 3 values until he/she saw something they liked on the screen.
+Ben.
 
-> Most of the ppc r128 cards have a reference frequency of 29.50MHz so the
-> code works but i heard that some of the new ones have different reference
-> freq.
-
-Yes, there is one new card (of the r128 variety) on Ben's list that does not use the 2950 ref clock value.
-
-Since he has a bios on a ppc card it would be interesting to see the results of some "bios present?" tests to help determine if a bios is really there or not.  The current test sometimes passes on macs without a bios (possibly OF rom?) and garbage values are returned.
-
-Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
