@@ -1,45 +1,78 @@
-Message-Id: <sd08c3de.074@mail.frequentis.com>
-Date: Thu, 13 Jun 2002 16:09:34 +0200
-From: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
-To: <grave@ipno.in2p3.fr>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: debian installation on an embedded system
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <3D08AA25.9AF41113@icn.siemens.de>
+Date: Thu, 13 Jun 2002 16:20:21 +0200
+From: Steffen Rumler <Steffen.Rumler@icn.siemens.de>
+MIME-Version: 1.0
+To: Neil Horman <nhorman@lvl7.com>
+Cc: linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Accessing the user stack inside system call service routine
+References: <3D084D1F.95AFFCBB@icn.siemens.de> <3D087D95.5070206@lvl7.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi!
-
-Well this seems to be OK. But I think it doesn't start the scripts stored in /etc/rc2.d. It printed Entering Init level 2 (or similar...)  and then the login apears.
-
-Gerhard
-
->>> Xavier Grave <grave@ipno.in2p3.fr> 06/13/02 02:50pm >>>
-
-Le jeu, 13 jun 2002 08:18:11, Gerhard TAEUBL a écrit :
+>         Since the process virtual address which are used on the user space stack are not
+> directly available from the context of the kernel, you will need to do some
+> virtual address translation to access teh stack frames you are interested in.  I
+> would suggest that you look at the source code for the copy_to_user and
+> copy_from_user functions to see how they access a process address space from
+> kernel space.  That will probably start you in the right direction.
+> hope that helps!
+> Neil :)
 >
-> Hi!
->
-> I try to do this like Kenneth described it (see
-> http://lists.linuxppc.org/linuxppc-embedded/200103/msg00106.html).
-> I used an own design with an mpc860Tand the console on SCC2.
->
-> It works fine till the login. If I enter root the login apears again, and
-> so on, no request for password. The system is stored on an IMac, so I use
-> the password file from the mac (debian 2.2).
->
-> Any ideas?
-Hi,
 
-Did you check the file /etc/securetty ?
-Perhaps this is a security problem..
+Thank you for the answer.
 
-O+ xavier
+I have not accessed the user  space directly.
+Instead I have just used copy_from_user():
+
+
+int
+sys_sigsuspend(old_sigset_t mask, int p2, int p3, int p4, int p6, int
+p7,
+	       struct pt_regs *regs)
+{
+  ...
+  while (1) {
+
+    current->state = TASK_INTERRUPTIBLE;
+
+    current->in_suspend = 1;     /* XXX my stuff for debugging */
+    current->user_regs  = regs;
+    if(copy_from_user(current->user_stack_xxx, regs->gpr[1], 128)){
+
+      printk("\n------------- copy_from_user failed: %d\n", ret);
+    }
+
+    schedule();
+
+    current->in_suspend = 0;    /* XXX my stuff for debugging */
+    current->user_regs  = NULL;
+    ...
+}
+
+The copy_from_user() works fine. The printk() message does not
+appear.
+
+Later, when I inspect 'current->user_stack_xxx' (temporary
+added to struct_task) for all processes with 'current->in_suspend'
+set, all seems to be zero. I do this check within a kernel
+module, I can load when the threads are hanging.
+
+Steffen
+
 --
-33 (0) 1 69 15 79 59
-De chacun selon ses forces, a chacun selon ses besoins
 
+
+--------------------------------------------------------------
+
+Steffen Rumler
+ICN ON PNE SB 4
+Siemens AG
+Hofmannstr. 51                 Email: Steffen.Rumler@icn.siemens.de
+D-81359 Munich                 Phone: +49 89 722-44061
+Germany                        Fax  : +49 89 722-36703
+
+--------------------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
