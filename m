@@ -1,55 +1,44 @@
-In-Reply-To: <36A733F6.79E148C7@univ-rennes1.fr>
-Date: Fri, 22 Jan 1999 11:44:35 +0100
-To: costabel@wanadoo.fr, linuxppc-dev@lists.linuxppc.org,
-        cort@persephone.cs.nmt.edu
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: pre8(vger) kills button 3 on 1-button mouse
-Message-Id: <19990122114435.018460@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <XFMail.990122110718.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+In-Reply-To: <Pine.LNX.3.96.990122011837.2237A-100000@persephone.cs.nmt.edu>
+Date: Fri, 22 Jan 1999 11:07:18 -0000 (GMT)
+From: Gary Thomas <gdt@linuxppc.org>
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
+Cc: Michael Meissner <meissner@cygnus.com>
+Cc: Michael Meissner <meissner@cygnus.com>,
+        Johnnie Peters <jpeters@phx.mcd.mot.com>,
+        Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
+        linuxppc-dev@lists.linuxppc.org, Dan Malek <dmalek@jlc.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ok, I found the reason why the keyboard is no longer sending different
-keycodes for left and right option key. In my patches, I was setting the
-keyboard to the highest possible handler ID for a normal keyboard (that
-is 3 or 5 instead of 1) but this is wrong: at handler 5, the Apple
-Extended Keyboard will not send different codes.
 
-The kernel fix is in mac_keyb.c, line 647, replace:
+On 22-Jan-99 Cort Dougan wrote:
+> You're right.
+> 
+> }What about the fixes for the PS/2 mouse?  These are not large, but
+> }significant for systems that need to intialize the mouse from scratch.
+> 
+> I'll take another look at the patch.
 
-	/* Enable full feature set of the keyboard
-	   ->get it to send separate codes for left and right shift,
-	   control, option keys */
-	for(i = 0;i < keyboard_ids.nids; i++) {
-	    if (adb_try_handler_change(keyboard_ids.id[i], 5))
-	    	printk("ADB keyboard at %d, handler set to 5\n", keyboard_ids.id[i]);
-	    else if (adb_try_handler_change(keyboard_ids.id[i], 3))
-	    	printk("ADB keyboard at %d, handler set to 3\n", keyboard_ids.id[i]);
-	    else
-	    	printk("ADB keyboard at %d, handler 1\n", keyboard_ids.id[i]);
-	}
+Thanks.  The important files [for this one] are:
+  drivers/char/pc_keyb.[ch]
+  drivers/char/Config.in
 
-by
-
-	/* Enable full feature set of the keyboard
-	   ->get it to send separate codes for left and right shift,
-	   control, option keys */
-	for(i = 0;i < keyboard_ids.nids; i++) {
-    if (adb_try_handler_change(keyboard_ids.id[i], 3))
-	    	printk("ADB keyboard at %d, handler set to 3\n", keyboard_ids.id[i]);
-	    else
-	    	printk("ADB keyboard at %d, handler 1\n", keyboard_ids.id[i]);
-	}
+Also the changes I made to the PPC configure files are useful and can be
+separated from the boot changes.
 
 
-In the meantime, you can get back the previous behaviour from userland with:
-
-mousemode 2 3
-
-Sorry for the inconvenient !
-
+------------------------------------------------------------------------
+Gary Thomas                              |
+email: gdt@linuxppc.org                  | "Fine wine is a necessity of
+   ... opinions expressed here are mine  |        life for me"
+       and no one else would claim them! |
+                                         |      Thomas Jefferson
+------------------------------------------------------------------------
 
 
 
