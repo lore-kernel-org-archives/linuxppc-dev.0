@@ -1,229 +1,308 @@
-To: Ruedi Hofer <ruedi.hofer@ascom.ch>
-Cc: linuxppc-embedded@lists.linuxppc.org, kernel@linux01.hasler.ascom.ch
-Subject: Re: PCMCIA support for 860
-References: <38E9D766.28A0BD27@ascom.ch>
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 04 Apr 2000 15:23:56 +0200
-In-Reply-To: Ruedi Hofer's message of "Tue, 04 Apr 2000 13:52:06 +0200"
-Message-ID: <kfyd7o6vw2b.fsf@kieraypc01.p.y.ki.era.ericsson.se>
+Message-ID: <D53137D1F3DDD211A3750800060DA313017023B1@viee122a.erd.siemens.at>
+From: Eisenzopf Thomas <thomas.eisenzopf@siemens.at>
+To: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: crash loadin bash after booting linux on a MPC860ADS
+Date: Tue, 4 Apr 2000 18:07:00 +0200 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ruedi Hofer <ruedi.hofer@ascom.ch> writes:
+Hello,
 
-> Hi
->
-> Well, I found out that I have to add in kernel/ksyms.c the line
-> EXPORT_SYMBOL(request_irq);
->
-> Now I'm able to load the different kernel modules, but
->
-> sh-2.03#
-> sh-2.03# insmod pcmcia_core
-> Linux PCMCIA Card Services 3.1.10
->   kernel build: 2.2.13 #85 Tue Apr 4 10:26:49 CEST 2000
->   options:  none
-> sh-2.03# insmod m8xx_pcmcia
-> m8xx_pcmcia: Version 0.03, 14-Feb-2000, Magnus Damm
-> m8xx_pcmcia: ADS using SLOT_A with IRQ 13.
-> sh-2.03# insmod ds
-> sh-2.03# insmod ide_cs
-> /lib/modules/2.2.13/pcmcia/ide_cs.o: unresolved symbol ide_unregister
-> /lib/modules/2.2.13/pcmcia/ide_cs.o: unresolved symbol ide_register
-> sh-2.03#
->
-> ... I can't add the module ide_cs. For that reason, do I have to
-> enable 'Enhanced IDE support' in the kernel options??
+thanks again for the suggestions from some members of this mailing list. I
+managed to reconfigure my kernel and now I can boot linux until the NFS root
+filesystem is mounted.
 
-Yes, if you want to use ATA flash disks you must do that. Also note
-that I haven't got the IDE code to run as modules, so you'll have to
-compile it into the kernel.
+But after this the kernel tries to load the shell /bin/sh from NFS, at this
+point the system crashes. My kernel includes the patches from
+www.s4l.de/powerpc.html.
 
-> If I do so, I get the following compile errors:
->
-> m8xx_setup.c: In function `m8xx_init_IRQ':
-> m8xx_setup.c:286: warning: implicit declaration of function `cpm_interrupt_init'
-> m8xx_setup.c: In function `m8xx_ide_init_hwif_ports':
-> m8xx_setup.c:390: warning: unused variable `port'
-> m8xx_setup.c: In function `m8xx_init':
-> m8xx_setup.c:522: structure has no member named `ide_request_irq'
-> make[1]: *** [m8xx_setup.o] Error 1
-> make[1]: Leaving directory
-> `/usr/src/linux-mpc8xx-2.2.13-damm-bossek-fpu-pcmcia/arch/ppc/kernel'
-> make: *** [_dir_arch/ppc/kernel] Error 2
+Please, can anyone help? I took the ramdisk.image.gz filesystem from
+www.s4l.de/powerpc.html. This should be working for PowerPC(?). On the other
+hand I tried to get my own filesystem (crosscompile bash, ...), but it
+didn´t work. Perhaps someone could support me with a tarball of a filesystem
+working on a MPC860ADS board with NFS root filesystem? How can I make a
+filesystem on my own (on an Intel PC)?
 
-The IDE support in Dan's 2.2.13 isn't uptodate.
+Any help is appreciated.
 
-This first diff puts it in sync with the rest of the kernel:
+Best regards,
+Thomas.
 
-diff -u -r1.1 -r1.2
---- Config.in	2000/01/11 18:13:30	1.1
-+++ Config.in	2000/01/11 18:21:02	1.2
-@@ -21,4 +21,8 @@
 
- bool 'RPX-Lite 823(e) LCD Frame Buffer' CONFIG_RPXLCD
 
-+if [ "$CONFIG_BLK_DEV_IDE" = "y" ]; then
-+ bool 'Configure IDE driver for ATA on PCMCIA' CONFIG_IDE_ATA_FLASH
-+fi
-+
- endmenu
-diff -u -u -r1.1 -r1.2
---- m8xx_setup.c	2000/01/11 18:13:31	1.1
-+++ m8xx_setup.c	2000/01/11 18:28:29	1.2
-@@ -160,7 +160,7 @@
- 	fp = (binfo->bi_intfreq * 1000000) / 16;
- 	freq = fp*60;	/* try to make freq/1e6 an integer */
-         divisor = 60;
--        printk("time_init: decrementer frequency = %d/%d\n", freq, divisor);
-+        printk("Decrementer frequency: %d/%d\n", freq, divisor);
-         decrementer_count = freq / HZ / divisor;
-         count_period_num = divisor;
-         count_period_den = freq / 1000000;
-@@ -300,17 +300,13 @@
+8xxROM 0.3.0
 
- #if defined(CONFIG_BLK_DEV_IDE) || defined(CONFIG_BLK_DEV_IDE_MODULE)
+compiletime options:
+board: ADS DRAM_50MHZ
+disk: DISK_ROM
 
--/* Define this to make a PCMCIA ATA Flash card work.
--*/
--#define ATA_FLASH 1
--
- /*
-  * IDE stuff.
-  */
- void
- m8xx_ide_insw(ide_ioreg_t port, void *buf, int ns)
- {
--#ifdef ATA_FLASH
-+#ifdef CONFIG_IDE_ATA_FLASH
- 	ide_insw(port, buf, ns);
- #else
- 	ide_insw(port+_IO_BASE, buf, ns);
-@@ -320,7 +316,7 @@
- void
- m8xx_ide_outsw(ide_ioreg_t port, void *buf, int ns)
- {
--#ifdef ATA_FLASH
-+#ifdef CONFIG_IDE_ATA_FLASH
- 	ide_outsw(port, buf, ns);
- #else
- 	ide_outsw(port+_IO_BASE, buf, ns);
-@@ -330,7 +326,7 @@
- int
- m8xx_ide_default_irq(ide_ioreg_t base)
- {
--#ifdef ATA_FLASH
-+#ifdef CONFIG_IDE_ATA_FLASH
- 	return PCMCIA_INTERRUPT;
- #else
-         return 14;
-@@ -362,20 +358,6 @@
- {
- }
+cpu: XPC860xxZPnnA3 at 48 MHz: 4Kbyte icache 4Kbyte dcache
 
--int
--m8xx_ide_request_irq(unsigned int irq,
--		       void (*handler)(int, void *, struct pt_regs *),
--		       unsigned long flags,
--		       const char *device,
--		       void *dev_id)
--{
--#ifdef ATA_FLASH
--	return request_8xxirq(irq, handler, flags, device, dev_id);
--#else
--	return request_irq(irq, handler, flags, device, dev_id);
--#endif
--}
--
- void
- m8xx_ide_fix_driveid(struct hd_driveid *id)
- {
-@@ -389,11 +371,11 @@
- {
- 	ide_ioreg_t port = base;
- 	int i;
--#ifdef ATA_FLASH
-+#ifdef CONFIG_IDE_ATA_FLASH
- 	volatile pcmconf8xx_t	*pcmp;
- #endif
+<warning: cpu core has silicon bugs, check the errata>
 
--#ifdef ATA_FLASH
-+#ifdef CONFIG_IDE_ATA_FLASH
- 	*p = 0;
- 	*irq = 0;
+board: ADS rev B
+flash: 2 Mbytes, delay 90 ns
+dram: EDO, 16 Mbyte, 60 ns, OK
+pcmcia: No card present.
 
-@@ -406,6 +388,14 @@
+Boot device list:
+ rom: rom_disk
 
- 	base = (unsigned long) ioremap(PCMCIA_MEM_ADDR, 0x200);
+Found ext2 filesystem
 
-+#if defined(CONFIG_ADS) || defined(CONFIG_FADS)
-+	pcmp->pcmc_pbr0 = PCMCIA_MEM_ADDR;
-+	pcmp->pcmc_por0 = 0xc00ff051;  // 16bit access - read CIS
-+	pcmp->pcmc_pgcra = 0;
-+	pcmp->pcmc_pgcrb = 0;
-+	pcmp->pcmc_por0 = 0xc00ff041;  // mem-mapped
-+#endif
-+
- 	/* For the M-Systems ATA card, the first 8 registers map 1:1.
- 	 * The following register, control/Altstatus, is located at 0x0e.
- 	 * Following that, the irq offset, is not used, so we place it in
-@@ -519,7 +509,6 @@
-         ppc_ide_md.release_region = m8xx_ide_release_region;
-         ppc_ide_md.fix_driveid = m8xx_ide_fix_driveid;
-         ppc_ide_md.ide_init_hwif = m8xx_ide_init_hwif_ports;
--        ppc_ide_md.ide_request_irq = m8xx_ide_request_irq;
+rom:0:/> bootz
+Size 474838
+4 blocks
 
-         ppc_ide_md.io_base = _IO_BASE;
- #endif
+entry 0x100000, phoff 0x34, shoff 0x72e6c
+phnum 0x1, shnum 0x9
+p_offset 0x10000, p_vaddr 0x100000, p_paddr 0x100000
+p_filesz 0x530c, p_memsz 0xb1cc
+Loading at 0x10c000
+Size 474838
+464 blocks
+Starting 0x11c000
+loaded at:     0011C000 001271CC
+relocated to:  00100000 0010B1CC
+board data at: 00FF0000 00FF001C
+relocated to:  00200100 0020011C
+zimage at:     00122000 0017EE32
+avail ram:     0017F000 01000000
 
-Note that you must say _no_ to 'Configure IDE driver for ATA on PCMCIA'
-to use the pcmcia-cs package.
-
-This second diff is required to use ATA flash disks, but may break
-support for normal IDE controllers on some other bus:
-
-diff -u -b -u -r1.7 -r1.9
---- m8xx_setup.c	2000/03/17 16:17:44	1.7
-+++ m8xx_setup.c	2000/03/29 19:14:17	1.9
-@@ -379,7 +379,7 @@
- /* We can use an external IDE controller or wire the IDE interface to
-  * the internal PCMCIA controller.
-  */
--void __init m8xx_ide_init_hwif_ports(ide_ioreg_t *p, ide_ioreg_t base, int *irq)
-+void m8xx_ide_init_hwif_ports(ide_ioreg_t *p, ide_ioreg_t base, int *irq)
- {
- 	ide_ioreg_t port = base;
- 	int i;
-@@ -434,10 +434,23 @@
-
- 	/* Just a regular IDE drive on some I/O port.
- 	*/
-+#if 1
-+	if (base < MAX_HWIFS) {
-+		/* Don't try to probe for IDE controllers. */
-+		*p = 0;
-+		*irq = 0;
-+		return;
-+	}
-+#endif
- 	i = 8;
- 	while (i--)
- 		*p++ = port++;
-+#if 1
-+	*p++ = base + 0x0e;
-+	*p++ = base + 0x0a;
-+#else
- 	*p++ = base + 0x206;
-+#endif
- 	if (irq != NULL)
- 		*irq = 0;
- #endif
-
-//Marcus
---
-Signature under construction, please come back later.
+Linux/PPC load: mem=0x1000000
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.2.13 (eisenzopft@pca355) (gcc version 2.95.2 19991024
+(release))
+ #39 Tue Apr 4 17:12:01 Local time zone must be set--see zic manual page
+2000
+Boot arguments: mem=0x1000000
+time_init: decrementer frequency = 180000000/60
+Calibrating delay loop... 47.10 BogoMIPS
+Memory: 15212k available (708k kernel code, 428k data, 36k init)
+[c0000000,c1000
+000]
+DENTRY hash table entries: 262144 (order: 9, 2097152 bytes)
+Buffer-cache hash table entries: 32768 (order: 5, 131072 bytes)
+Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
+POSIX conformance testing by UNIFIX
+Linux NET4.0 for Linux 2.2
+Based upon Swansea University Computer Society NET3.039
+NET4: Unix domain sockets 1.0 for Linux NET4.0.
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP
+TCP: Hash tables configured (ehash 16384 bhash 16384)
+Starting kswapd v 1.5
+Serial driver version 4.27 with no serial options enabled
+ttyS00 at 0x03f8 (irq = 4) is a 16450
+ttyS01 at 0x02f8 (irq = 3) is a 16450
+ttyS02 at 0x03e8 (irq = 4) is a 16450
+CPM UART driver version 0.02
+ttyS00 at 0x0280 is a SMC
+ttyS01 at 0x0100 is a SCC
+ttyS02 at 0x0200 is a SCC
+loop: registered device at major 7
+eth0: CPM ENET Version 0.2, 08:00:3e:26:15:59
+Sending BOOTP and RARP requests.... OK
+IP-Config: Got BOOTP answer from 195.2.106.145, my address is 195.2.106.33
+Looking up port of RPC 100003/2 on 195.2.106.145
+Looking up port of RPC 100005/1 on 195.2.106.145
+VFS: Mounted root (NFS filesystem) readonly.
+Freeing unused kernel memory: 36k init
+page fault in interrupt handler, addr=333c
+NIP: C009402C XER: E000B77F LR: C00941FC REGS: c012d250 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
+last math 00000000
+GPR00: 00000001 C012D300 C012C000 C00C0000 00008000 00000000 C01DEFFC
+7C0803A6
+GPR08: 38210010 00000000 C00D0000 FFFFFCEF 55053059 00000000 018BBC8C
+01800000
+GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012D490 00000000
+C0002544
+GPR24: C0004294 C00D0000 C0132700 C01F32C0 C01EB000 C01EFB40 C01EB144
+00009032
+Scheduling in interrupt
+page fault in interrupt handler, addr=0
+NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012d110 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
+last math 00000000
+GPR00: C000C874 C012D1C0 C012C000 00000018 00000001 00000018 C0135680
+C00DE7A3
+GPR08: 00000018 00000000 FF002830 C012D100 55053039 00000000 018BBC8C
+01800000
+GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012D240 00000000
+C0002544
+GPR24: C0008D84 C00D0000 C012D1F8 C012C000 C00D0000 00000000 00000000
+C012D1C0
+Scheduling in interrupt
+page fault in interrupt handler, addr=0
+NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012cfd0 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
+last math 00000000
+GPR00: C000C874 C012D080 C012C000 00000018 00000001 00000018 C0135680
+C00DE7A3
+GPR08: 00000018 00000000 FF002830 C012CFC0 55053039 00000000 018BBC8C
+01800000
+GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012D100 00000000
+C0002544
+GPR24: C0008D84 C00D0000 C012D0B8 C012C000 C00D0000 00000000 00000000
+C012D080
+Scheduling in interrupt
+page fault in interrupt handler, addr=0
+NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012ce90 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
+last math 00000000
+GPR00: C000C874 C012CF40 C012C000 00000018 00000001 00000018 C0135680
+C00DE7A3
+GPR08: 00000018 00000000 FF002830 C012CE80 55053039 00000000 018BBC8C
+01800000
+GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012CFC0 00000000
+C0002544
+GPR24: C0008D84 C00D0000 C012CF78 C012C000 C00D0000 00000000 00000000
+C012CF40
+Scheduling in interrupt
+page fault in interrupt handler, addr=0
+NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012cd50 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
+last math 00000000
+GPR00: C000C874 C012CE00 C012C000 00000018 00000001 00000018 C0135680
+C00DE7A3
+GPR08: 00000018 00000000 FF002830 C012CD40 55053039 00000000 018BBC8C
+01800000
+GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012CE80 00000000
+C0002544
+GPR24: C0008D84 C00D0000 C012CE38 C012C000 C00D0000 00000000 00000000
+C012CE00
+Scheduling in interrupt
+page fault in interrupt handler, addr=0
+NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012cc10 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
+last math 00000000
+GPR00: C000C874 C012CCC0 C012C000 00000018 00000001 00000018 C0135680
+C00DE7A3
+GPR08: 00000018 00000000 FF002830 C012CC00 55053039 00000000 018BBC8C
+01800000
+GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012CD40 00000000
+C0002544
+GPR24: C0008D84 C00D0000 C012CCF8 C012C000 C00D0000 00000000 00000000
+C012CCC0
+Scheduling in interrupt
+page fault in interrupt handler, addr=0
+NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012cad0 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
+last math 00000000
+GPR00: C000C874 C012CB80 C012C000 00000018 00000001 00000018 C0135680
+C00DE7A3
+GPR08: 00000018 00000000 FF002830 C012CAC0 55053039 00000000 018BBC8C
+01800000
+GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012CC00 00000000
+C0002544
+GPR24: C0008D84 C00D0000 C012CBB8 C012C000 C00D0000 00000000 00000000
+C012CB80
+Scheduling in interrupt
+page fault in interrupt handler, addr=0
+NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012c990 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
+last math 00000000
+GPR00: C000C874 C012CA40 C012C000 00000018 00000001 00000018 C0135680
+C00DE7A3
+GPR08: 00000018 00000000 FF002830 C012C980 55053039 00000000 018BBC8C
+01800000
+GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012CAC0 00000000
+C0002544
+GPR24: C0008D84 C00D0000 C012CA78 C012C000 C00D0000 00000000 00000000
+C012CA40
+Scheduling in interrupt
+page fault in interrupt handler, addr=0
+NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012c850 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
+last math 00000000
+GPR00: C000C874 C012C900 C012C000 00000018 00000001 00000018 C0135680
+C00DE7A3
+GPR08: 00000018 00000000 FF002830 C012C840 55053039 00000000 018BBC8C
+01800000
+GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012C980 00000000
+C0002544
+GPR24: C0008D84 C00D0000 C012C938 C012C000 C00D0000 00000000 00000000
+C012C900
+Scheduling in interrupt
+page fault in interrupt handler, addr=0
+NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012c710 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
+last math 00000000
+GPR00: C000C874 C012C7C0 C012C000 00000018 00000001 00000018 C0135680
+C00DE7A3
+GPR08: 00000018 00000000 FF002830 C012C700 55053039 00000000 018BBC8C
+01800000
+GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012C840 00000000
+C0002544
+GPR24: C0008D84 C00D0000 C012C7F8 C012C000 C00D0000 00000000 00000000
+C012C7C0
+Scheduling in interrupt
+page fault in interrupt handler, addr=0
+NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012c5d0 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c012c000[1] 'sh' mm->pgd c01e3000 Last syscall: 11
+last math 00000000
+GPR00: C000C874 C012C680 C012C000 00000018 00000001 00000018 C0135680
+C00DE7A3
+GPR08: 00000018 00000000 FF002830 C012C5C0 55053039 00000000 018BBC8C
+01800000
+GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012C700 00000000
+C0002544
+GPR24: C0008D84 C00D0000 C012C6B8 C012C000 C00D0000 00000000 00000000
+C012C680
+Scheduling in interrupt
+page fault in interrupt handler, addr=0
+NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012c490 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c012c000[1] 'sh' mm->pgd 645d2027 Last syscall: 11
+last math 00000000
+GPR00: C000C874 C012C540 C012C000 00000018 00000001 00000018 C0135680
+C00DE7A3
+GPR08: 00000018 00000000 FF002830 C012C480 55053039 00000000 018BBC8C
+01800000
+GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012C5C0 00000000
+C0002544
+GPR24: C0008D84 C00D0000 C012C578 C012C000 C00D0000 00000000 00000000
+C012C540
+Scheduling in interrupt
+Kernel stack overflow in process c012c000, r1=c012c400
+NIP: C000C874 XER: C000B77F LR: C000C874 REGS: c012c350 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c012c000[1] 'sh' mm->pgd 00000000 Last syscall: 11
+last math 00000000
+GPR00: C000C874 C012C400 C012C000 00000018 00000001 00000018 C0135680
+C00DE7A3
+GPR08: 00000018 00000000 FF002830 C012C340 55053039 00000000 018BBC8C
+01800000
+GPR16: 018BBC8C C0100AA4 C0100AA0 00000000 00001032 0012C480 00000000
+C0002544
+GPR24: C0008D84 C00D0000 C012C438 C012C000 C00D0000 00000000 00000000
+C012C400
+Call backtrace:
+C000C874 C000C9F4 C0008E28 C0002544 C000C874 C000C9F4 C0008E28
+C0002544 C000C874 C000C9F4 C0008E28 C0002544 C000C874 C000C9F4
+C0008E28 C0002544 C000C874 C000C9F4 C0008E28 C0002544 C000C874
+C000C9F4 C0008E28 C0002544 C000C874 C000C9F4 C0008E28 C0002544
+C000C874 C000C9F4 C0008E28 C0002544 C000C874
+Kernel panic: kernel stack overflow
+In interrupt handler - not syncing
+Rebooting in 180 seconds..
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
