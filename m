@@ -1,48 +1,47 @@
-Message-Id: <4.3.2.20010309072224.00c05100@falcon.si.com>
-Date: Fri, 09 Mar 2001 07:23:26 -0500
+From: David Hopcroft <dhopcroft@aminocom.com>
 To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: How to get COFF-format code
-In-Reply-To: <3AA8A8EE.1C1A8149@fiberlogic.com>
+Subject: Problem implementing pcmcia_cs on ppc 823 hardware
+Date: Fri, 9 Mar 2001 17:11:37 +0000
+Content-Type: text/plain
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-Id: <01030917160500.00652@dhopcroft>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hey, look at that.  Tornado-2 (gcc-based) cross compiler supports a
-flavor of coff:
+Hi,
 
-C:\tmp>objdumpppc -i
-BFD header file version cygnus-2.6
-elf32-powerpc
-  (header big endian, data big endian)
-   powerpc:common
-aixcoff-rs6000
-  (header big endian, data big endian)
-   powerpc:common
-   rs6000:6000
+I wonder if any one can shed some light on a problem I am having? I am trying
+to implement PCMCIA services on a custom PPC based board.
 
-gvb
+I am using;
+	Processor - PPC 823 @ 64MHz
+	Kernel - 2.2.14
+	Card Services - 3.1.10
+	PCMCIA card - Xircom CreditCard Ethernet (CE3B-100BTX)
 
+I "insmod" the required modules (pcmcia_core, m8xx_pcmcia, ds and xirc2ps_cs)
+and run cardmgr.
 
-At 05:57 PM 3/9/01 +0800, Lin, Nan-Hung wrote:
+The problem arises when I insert a pcmcia card, into it's slot. At which
+point I get a "Kernel panic: machine check".  This seems to be around the area,
+in the code, where the card services are starting to read it's CIS/attribute
+area.
 
->Hello,
->
->I use linux-2.4.0-test13-pre2 and
->       Processor Type as 8xx
->       Machine Type as   TQM855L
->
->The "make" only generates ELF-format code.
->How to generate COFF-format code ?
->
->Thanks for help.
->
->
->------------------------------------------
->Carl Lin               carl@fiberlogic.com
->
+I have iormap'd _IO_BASE to 0x80000000 in init.c
+
+My BMT is enabled but set to 255(Max value).
+
+The bus frequency of the board is 32Mhz I have tried setting this in the code
+to values of 32 & 32000000 with the same results. looking at file m8xx_pcmcia.c
+it should be set to the latter.
+
+Can any one suggest any thing obvious I have missed, or misunderstood?
+
+I can post a debug log if required, but it's quite long.
+
+---
+David Hopcroft
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
