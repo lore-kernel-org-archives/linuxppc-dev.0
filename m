@@ -1,46 +1,58 @@
-From: Steffen Haeuser <SteffenH@hyperion-software.de>
-Reply-To: SteffenH@hyperion-software.de
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-CC: Iain Sandoe <iain@sandoe.co.uk>, takashi oe <toe@unlserve.unl.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Date: Mon, 31 Jul 2000 11:21:59 +0100
-Message-ID: <yam8247.2950.146578880@mail.lf-online.de>
-In-Reply-To: <398540D2.78A1388E@relog.ch>
-Subject: Re: LinuxPPC X Server
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Date: Mon, 31 Jul 2000 12:48:46 +0200
+From: Bernhard Reiter <bernhard@intevation.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: HW Problem! Solved: Powerbook hard freeze
+Message-ID: <20000731124846.N13847@cheops.usf.Uni-Osnabrueck.DE>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="HFD/Dq8JdnjNvyuv"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Am 31-Jul-00 schrieb Michel Dänzer:
+--HFD/Dq8JdnjNvyuv
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->Steffen Haeuser wrote:
+Some of you might remember my problems with a Lombard Powerbook
+and hard freezes under load.
 
-Hi!
+As many people reported running and stable powerbooks chances were high
+that it was a hardware problem. So I send the laptop in to apple
+support using the Apple Care Protection we bought.. It took a while (6 week=
+s).
+(First: Internal apple support <-> repair communication problems so they
+did not pick it up, secondly they said they had to wait for repair parts
+due to a shortage.)
 
->> That is really good news :) If anyone had the chance to try it out, please
->> tell so...
+Got it back, the letter said: Mainboard exchanged, problems gone.
 
->Hold on, I will :)
+And that is how it is: No hard freeze so far, running stable for a
+couple of days now.
+I thought I just let you all know.
 
-Great :)
+At least apple repair contractor ecprc.com got it solved.
+There were no problems or question regarding my use of linux.=20
+(As you might remember the freeze problem mostly showed when running Linux.
+I could not find a way to reliably reproduce it under MacOS.)
 
->> if this works, we might even take some of you guys into the Sin Beta Tester
->> programs, if I remember right, we still need a handful of testers (but I
->> have to check with the guy doing the Betatester issues in our company...).
+So appart from the long time frame this is positive.
+	Bernhard
 
->I for one wouldn't say no...
+ps.: To remind you I am not subscribed to the linuxppc-dev list, so
+cc relevant replies to me.
+--=20
+Professional Service around Free Software                (intevation.net) =
+=20
+The FreeGIS Project				            (freegis.org)
+Association for a Free Informational Infrastructure            (ffii.org)
 
-Hehehe, who would...
+--HFD/Dq8JdnjNvyuv
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
->AFAIK the specs for Rage128 aren't publicly available, but there's working
->code in DRI - I'm convinced it will be far more easier to get it working than
->write something new from scratch.
 
-Okay, that's a point...
-
-Steffen
-
+--HFD/Dq8JdnjNvyuv--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
