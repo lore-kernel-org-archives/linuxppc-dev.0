@@ -1,84 +1,53 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
+Date: Mon, 16 Oct 2000 17:22:58 -0700 (PDT)
+From: James Simmons <jsimmons@suse.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Takashi Oe <toe@unlserve.unl.edu>, Benjamin Herrenschmidt <bh40@calva.net>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>,
+        Samuel Rydh <samuel@ibrium.se>
+Subject: Re: [linux-fbdev] Re: Video driver bug
+In-Reply-To: <Pine.LNX.4.10.10010141839280.570-100000@cassiopeia.home>
+Message-ID: <Pine.LNX.4.21.0010161712090.6261-100000@euclid.oak.suse.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14827.39263.212734.807452@argo.linuxcare.com.au>
-Date: Tue, 17 Oct 2000 11:12:15 +1100 (EST)
-To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: dual head r128
-In-Reply-To: <Pine.HPX.4.10.10010121719150.16113-100000@gra-ux1.iram.es>
-References: <19340906084536.29942@192.168.1.2>
-	<Pine.HPX.4.10.10010121719150.16113-100000@gra-ux1.iram.es>
-Reply-To: paulus@linuxcare.com.au
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert writes:
-
-> On Thu, 12 Oct 2000, Benjamin Herrenschmidt wrote:
->
-> > On the kernel side, one of the PCI IO busses will be mapped to ISA. What
-> > I'll do is basically to change the kernel inb/outb functions to do
-> > something like
+> > > Well, my understanding is that MOL needs to be able to "probe" for all
+> > > supported mode. Doing so on a visible console would definitely be hell.
+> > > It does that in order to setup the MacOS-side driver mode list.
 > >
-> > if (addr < 64k)
-> >   do_io(isa_io_base + addr)
-> > else
-> >   do_io(addr)
+> > According to Samuel's last post, MOL needs both var and fix for probing.
+> > If there is something like:
+> >
+> > struct fb_probe_info {
+> > 	struct fb_var_screeninfo var;
+> > 	struct fb_fix_screeninfo fix;
+> > };
 >
-> No please, is there anybody bloat-conscious on this damned list ? Burying
-> more and more code inside each {in,out}[bwl] is not the solution.
-
-I agree that doing that in inb/outb is a bad idea.
-
-> Just define a macro ISA_PORT or something like this and update the kernel
-> to replace all the in/out to fixed ports to do in/out(ISA_PORT(n)). If you
-
-You mean everywhere in all the generic code?  I confidently predict
-that that wouldn't be accepted into the official kernel sources (and
-nor should it be accepted).
-
-> Advantages:
-> - no iobase added in the PCI case: add iobase to all the
-> pci_resource_start and the driver code shrinks. Have you ever counted
-> the lwz instructions to access iobase, I have seen sequences where it
-> represented 1/4 to 1/3 of the instructions!
-
-I think iobase should be a constant, and we should set up our virt ->
-phys mapping to do anything fancy that we might need.
-
-> PCI I/O resources will have to be kernel virtual, physical is impossible
-> with PreP if we want to lift the 2Gbuser space restriction (PreP I/O is
-> from 2 to 3 Gb physical and the first thing to do is to reallocate devices
-> which use it since most firmware use it too liberally, like one device
-> every ... 256Mb). There are other and better ways to increase user
-> available virtual space, however. And anyway I don't want any stinking add
-> in each in/out macro.
-
-Adding a constant is fine, that's just one instruction.  I think you
-need to stop and look at the relative speeds of an I/O access
-(hundreds of nanoseconds, if not microseconds) with the speed of a few
-instructions or even a cacheable load.  In any case, I/O accesses are
-actually very infrequent (if you don't believe me, measure it), unless
-you're doing PIO to a high-bandwidth device, in which case it should
-be using DMA.
-
-> > Unfortunately, there's no simple way to allow two busses to have the
-> > legacy IOs. That means on UniN machines that they'll be available either
-> > on the AGP bus, or the external PCI bus, but not both.
+> Why does it need fix? Relying on data from fix for a mode that is not yet
+> really set is not wise: there's no guarantee that fix will be the same when the
+> mode is really set later.
 >
-> Indeed, this is too awkward (is tere no way to redirect only the VGA
-> part of the legacy I/O space ? That's what the PCI-PCI bridges do, but
-> I've not yet used a single machine with AGP so I'm ignorant).
+> Example: dual-head cards, where the resolution on one head is changed so the
+> card's memory management is changed.
 
-Could someone fill me in on why we need legacy I/O to the AGP bus?
+Yes this is really bad. The way most drivers are written is that testing
+var does not change fix. If you grab fix after testing the video mode it
+will be for the current set resolution. Not the one you are testing
+for. For most drivers you need to physically set the mode to change
+fix. Sometimes the information in fix can only be obtained from the
+hardware and this requires a video mode change.
+   I do agree their are problems with fix and var being grabbed by
+seperate ioctl calls. This can cause really problems (think fork). But
+the solution is much more complex than just combining both fix and var
+into one ioctl. Consider the situation with several apps having /dev/fbX
+open and one app changes the video mode. Since changing the video mode
+will change var and fix not only for the app that changed the video mode
+but also for the other apps depending on the values it obtains for var and
+fix. Now they will have the wrong values. Their are other issues as well.
+As you can see it is more complex than what you think.
 
-Paul.
-
---
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
