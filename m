@@ -1,25 +1,20 @@
-Return-Path: <tim.bird@am.sony.com>
-Received: from mail1.fw-sj.sony.com (mail1.fw-sj.sony.com [160.33.82.68])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 701362BF07
+Return-Path: <baakre@mac.com>
+Received: from mxsf06.cluster1.charter.net (mxsf06.cluster1.charter.net
+	[209.225.28.206]) by ozlabs.org (Postfix) with ESMTP id 8253D2BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Jan 2005 10:11:06 +1100 (EST)
-Received: from mail3.sjc.in.sel.sony.com (mail3.sjc.in.sel.sony.com
-	[43.134.1.211])
-	by mail1.fw-sj.sony.com (8.12.11/8.12.11) with ESMTP id j04LQsuX029449
-	for <linuxppc-embedded@ozlabs.org>; Tue, 4 Jan 2005 21:26:54 GMT
-Received: from [43.134.85.135] ([43.134.85.135])
-	by mail3.sjc.in.sel.sony.com (8.12.11/8.12.11) with ESMTP id
-	j04LQsEU012221
-	for <linuxppc-embedded@ozlabs.org>; Tue, 4 Jan 2005 21:26:54 GMT
-Message-ID: <41DB0A1E.5070506@am.sony.com>
-Date: Tue, 04 Jan 2005 13:26:54 -0800
-From: Tim Bird <tim.bird@am.sony.com>
-MIME-Version: 1.0
+	Wed,  5 Jan 2005 14:08:19 +1100 (EST)
+Received: from mxip16.cluster1.charter.net (mxip16a.cluster1.charter.net
+	[209.225.28.146])
+	by mxsf06.cluster1.charter.net (8.12.11/8.12.11) with ESMTP id
+	j051tWuM029771
+	for <linuxppc-embedded@ozlabs.org>; Tue, 4 Jan 2005 20:55:32 -0500
+Mime-Version: 1.0 (Apple Message framework v619)
+Message-Id: <DFD6FD98-5EBC-11D9-889D-0030657E48E8@mac.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=us-ascii
-Subject: realtime preemption patch on PPC
+From: Blair Aakre <baakre@mac.com>
+Date: Tue, 4 Jan 2005 19:55:28 -0600
+Subject: 440GP (Ebony) Eval Board documentation needed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,24 +25,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello all,
+Help! I have a 440GP eval board without any kind of documentation. Does 
+anyone out there have some basic, getting-started information for this 
+board? A hardware reference manual would be ideal, as this thing has 
+lots of jumpers, debug connectors, etc.
 
-I sent the message below to LKML, but someone suggested to send it
-to this list as well.
+Can anyone help me out?
 
-I'm planning on doing some work with Ingo's realtime preemption patch
- on a PowerPC platform.  I did some preliminary investigation of the
- patch before Christmas, and am ready to do some serious work in the
- next few weeks.
-
-Has anyone else worked on this patch on PPC?  Is anyone else interested
- in working with me on it?
-
-Thanks,
- -- Tim
-
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Electronics
-=============================
+-Blair
