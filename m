@@ -1,37 +1,36 @@
-Date: Thu, 12 Aug 1999 15:00:46 +1000
-Message-Id: <199908120500.PAA30022@tango.anu.edu.au>
+Date: Thu, 12 Aug 1999 15:03:33 +1000
+Message-Id: <199908120503.PAA30042@tango.anu.edu.au>
 From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: rth@cygnus.com
-CC: Jes.Sorensen@cern.ch, Geert.Uytterhoeven@cs.kuleuven.ac.be,
-        linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu
-In-reply-to: <19990811214049.A14692@cygnus.com> (message from Richard
-	Henderson on Wed, 11 Aug 1999 21:40:49 -0700)
-Subject: Re: [linux-fbdev] Re: readl() and friends and eieio on PPC
+To: iweiny@kdat.csc.calpoly.edu
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <199908120447.VAA18371@kdat.csc.calpoly.edu>
+	(iweiny@kdat.csc.calpoly.edu)
+Subject: Re: newbee q's? and 2.2 kernels
 Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.LNX.4.10.9908091008460.25523-100000@mercator.cs.kuleuven.ac.be> <199908100100.LAA28784@tango.anu.edu.au> <d34si8xfwi.fsf@lxp03.cern.ch> <199908110023.KAA23996@tango.anu.edu.au> <d34si6kcge.fsf@lxp03.cern.ch> <19990811003805.A11890@cygnus.com> <199908120017.KAA25043@tango.anu.edu.au> <19990811214049.A14692@cygnus.com>
+References: <199908120447.VAA18371@kdat.csc.calpoly.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Richard Henderson <rth@cygnus.com> wrote:
+Ira K. Weiny <iweiny@kdat.csc.calpoly.edu> wrote:
 
-> But it isn't zero cost.  It's not high cost, but that's not the same
-> thing.
+> I have been trying to install pauls 2.2.10.  I would eventually like to
+> compile my own kernel and modules.  Specifically I am going to try and
+> fix the pppd from crashing...  Of course if I can...  ;-)
 
-Show us the numbers?
+What's the problem with pppd?  It works fine for me, but maybe that's
+just because I'm the ppp maintainer :-).
 
-I'm starting to sound like Larry McVoy, I know. :-)
+> What does the System.map and module-info files do in the /boot
 
-The measurements I did showed no measurable difference in performance
-for copying stuff around a framebuffer on PPC (Richard, I guess you
-may not have seen that post).  As far as PPC is concerned, I am
-unwilling to break drivers for the sake of an infinitesimal
-performance gain.  I don't believe the frame-buffer guys will actually
-see any measurable improvement in performance from taking out the
-eieio from readl/writel on PPC.
+ps uses /boot/System.map, and complains if it is for a different
+version from the currently running kernel.
 
-Of course, it may be different on alpha, and I would be very
-interested to know how big the effect is there.
+> directory?  And where can I get some information on kernels and modules?  As
+> with most computer stuff the books I have found are outdated for the 2.2
+> kernel.
+
+Have a look in the Documentation directory in the kernel sources.
 
 Paul.
 
