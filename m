@@ -1,49 +1,43 @@
-Mime-Version: 1.0
-Message-Id: <v04220805b45a473d1794@[129.105.9.179]>
-In-Reply-To: <Pine.HPX.4.10.9911161657160.5120-100000@gra-ux1.iram.es>
-References: <Pine.HPX.4.10.9911161657160.5120-100000@gra-ux1.iram.es>
-Date: Thu, 18 Nov 1999 18:20:41 -0600
-To: Gabriel Paubert <paubert@iram.es>
-From: Geoff Hutchison <ghutchis@wso.williams.edu>
-Subject: Re: Building Question
-Cc: Martin Costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-ID: <38349F1A.8AECF96F@wanadoo.fr>
+Date: Fri, 19 Nov 1999 01:51:38 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: phandel@cise.ufl.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Extreme swapping / new location of Paul's kernels [was Re: Kernel
+ debugging??]
+References: <19991118110411.015070@mailhost.mipsys.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 5:15 PM +0100 11/16/99, Gabriel Paubert wrote:
->Note that actually the so called 24 bit is a signed 26 bit value branch
->relative offset. This means that you try to jump more than +/-32 Mb away
->from the code which is quite strange, unless you are generating megatons
->of template based code... (You truly need several millions line of code
->or your code is spread across a lot of sections which happen
->not to be located together). Check also the linker script if there is
->one just in case...
+Benjamin Herrenschmidt wrote:
+> 
+> On Wed, Nov 17, 1999,  <phandel@cise.ufl.edu> wrote:
+> 
+> >I've noticed the same extreme swapping in 2.3.26, using SCSI disks
+> >(PowerCenter Pro 210) and BootX.  Returning to my previous kernel, there
+> >was no swapping. This was using BootX 1.2b1.
+> 
+> And I have absolutely no idea about what in BootX can cause this. Could
+> you check if the amount of available RAM seen by the kenrel is correct ?
 
-After several days of investigation, I'm guessing it may be the "lot 
-of sections which happen not to be located together." The linker 
-script is the latest GNU libtool.
+Comparing boot messages from booting with "good" and "bad" versions of
+BootX, I saw that the amount of RAM is OK in both cases, but then I
+found one quite incredible thing, and this is essentially the only
+difference in the boot messages. Booting with BootX version <= 1.1.3 and
+any kernel, I get as usual
 
-The code itself:
-a) doesn't use templates
-b) isn't "megatons" since individual C++ files weigh in at a few K.
+   kernel: Calibrating delay loop... 133.12 BogoMIPS 
 
-Granted, I'm using bison and flex to generate some C++ code, but 
-these are still fairly small in the scheme of things. On an 
-individual basis, the object files are at most 50-100K.
+Booting with BootX-1.2b2, I get with the same kernels
 
-So that would lead me to believe that the problem comes when linking 
-a few several MB shared or static libraries together. Does this sound 
-reasonable? Would these normally be in different sections as far as 
-the linker is concerned? (I'm not an expert on object file formats.)
+   kernel: Calibrating delay loop... 11.39 BogoMIPS
 
->You might also want to use the longcall attribute (I never tested it),
->from info gcc:
+This is repeatable, but for me quite incomprehensible.
 
-I'd obviously prefer to stay away from this if possible.
-
--Geoff
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
