@@ -1,29 +1,30 @@
-Message-ID: <3F3C0EB4.9010101@mvista.com>
-Date: Thu, 14 Aug 2003 15:35:32 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <3F3C46A2.8010804@mvista.com>
+Date: Thu, 14 Aug 2003 21:34:10 -0500
+From: Mark Hatle <fray@mvista.com>
 MIME-Version: 1.0
-To: anu k <anuk_mv@rediffmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problem with EEPro100 and Sandpoint board
-References: <20030814190819.31581.qmail@webmail35.rediffmail.com>
-In-Reply-To: <20030814190819.31581.qmail@webmail35.rediffmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: C Doyle <cdoyle35@hotmail.com>
+Cc: u-boot-users@lists.sourceforge.net,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Hardhat Linux over-riding u-boot IRQ/ PCI configuration mappings
+References: <Law10-F1109kcqdWUz400050dd4@hotmail.com>
+In-Reply-To: <Law10-F1109kcqdWUz400050dd4@hotmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-anu k wrote:
-
->The BooTP server seems to be responding to the requests, but the packets are getting lost at the client end. Not quite sure if its a driver problem or has something to do with the new Sandpoint board revision.
->Regds,
->Anuk
+C Doyle wrote:
 >
->
-What kind of board and what's the serial number on it if its an X3(B)?
-I just became aware that ones >6000 have had their switch settings
-changed when they come from the factory.
+> Linux version 2.4.20-pre7 (root@MPC8266) (gcc version 2.95.3 20010315
+> (release/MontaVista)) #6 Thu Aug 14 14:26:03 BST 2003
 
-Mark
+I don't know the answer to your question, but I want to correct the
+subject.  This kernel is not a MontaVista Linux kernel (or previously
+called Hard Hat Linux.)  You may be using the Hard Hat Linux as
+userspace, but the problems you are seeing are related to the kernel you
+have choosen.
+
+--Mark
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
