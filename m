@@ -1,37 +1,44 @@
-Message-ID: <F14441D40E5AD3118886005004607AD10BDE13@MAIL1>
-From: "Halfmann, Klaus" <khalfmann@libra.de>
-To: linuxppc-dev@lists.linuxppc.org, linux-fsdevel@vger.kernel.org
-Subject: Releasing Version 1.0.2 of hfsplusutils
-Date: Wed, 25 Oct 2000 17:32:40 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Wed, 25 Oct 2000 11:56:43 -0400
+From: Josh Huber <huber@mclx.com>
+To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: powerbook pcmcia troubles
+Message-ID: <20001025115643.D14268@missioncriticallinux.com>
+References: <20001025112219.C14268@missioncriticallinux.com> <39F6FCBD.F364A535@mpifr-bonn.mpg.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-md5;
+	protocol="application/pgp-signature"; boundary="GyRA7555PLgSTuth"
+In-Reply-To: <39F6FCBD.F364A535@mpifr-bonn.mpg.de>; from ad@mpifr-bonn.mpg.de on Wed, Oct 25, 2000 at 05:31:09PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-on 	ftp://penguinppc.org/users/hasi/hfsplusutils-1.0.2-3.ppc.rpm
+--GyRA7555PLgSTuth
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-resp.	ftp://penguinppc.org/users/hasi/hfsplusutils-1.0.2-3.src.rpm
+On Wed, Oct 25, 2000 at 05:31:09PM +0200, Albrecht Dre? wrote:
+> Did you read/follow the instructions on this page:
+>=20
+> http://www.mpifr-bonn.mpg.de/div/iri/Archiv/LinuxPPC/PCMCIA.html
 
-You can download rpms of version 1.0.2 of my hfsplusutils.
+No, I didn't -- wasn't even aware of this page.
 
-The new version was neccessary because on large volumes
-(> 2Gb) I must use lseek64.
+Thanks, I'm building the kernel now, and I assume this will fix the
+problem (I was booting with yaboot).
 
-Changes:
-	Correctly checks for the existance
-	of the backup volume record.
+Thanks,
 
-	has a btree node cache (does not speed up very much)
-	has a blockiterator for files that speeds up hpcopy
-		(especially with fragmented files)
+--=20
+Josh
+| huber@mclx.com |
+1024D/6B21489A 61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
 
-	hpfsck is in the src-rpm but not int the binaries,
-	as of now it does not check much.
+--GyRA7555PLgSTuth
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-	General code cleanup in preparing for write access.
 
-Helpers welcome
+--GyRA7555PLgSTuth--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
