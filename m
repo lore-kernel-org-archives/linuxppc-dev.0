@@ -1,43 +1,84 @@
-Date: Tue, 7 Mar 2000 14:01:13 -0500
-From: Daniel Jacobowitz <drow@false.org>
-To: Michel Lanners <mlan@cpu.lu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: controlfb in Paul's 2.3.48
-Message-ID: <20000307140113.A13319@drow.res.cmu.edu>
-References: <200003071840.TAA03827@piglet.grunz.lu>
-Mime-Version: 1.0
+Message-ID: <38C5643C.D9C2A4BD@amberdata.demon.co.uk>
+Date: Tue, 07 Mar 2000 20:19:08 +0000
+From: David Monro <davidm@amberdata.demon.co.uk>
+MIME-Version: 1.0
+To: Gabriel Paubert <paubert@iram.es>
+CC: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: IBM 850 - Open Firmware or not? and more on the ide byteswapgame...
+References: <Pine.HPX.4.10.10003071102520.22162-100000@gra-ux1.iram.es>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200003071840.TAA03827@piglet.grunz.lu>; from mlan@cpu.lu on Tue, Mar 07, 2000 at 07:40:58PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Mar 07, 2000 at 07:40:58PM +0100, Michel Lanners wrote:
-> Hi list,
+Gabriel Paubert wrote:
 >
-> I'm struggling with kernel 2.3 to get all my special stuff working
-> again...
+> On Mon, 6 Mar 2000, David Monro wrote:
 >
-> Anyway, while experimenting, I noticed that the 2.3.48 controlfb
-> doesn't recognize my 4 MB VRAM anymore. Here's the message:
+> >
+> > Did the IBM 850 implement Open Firmware as described in the PReP spec?
+> > I'm guessing not, which is a pity. Can anybody enlighten me for certain?
+> >
+> > btw I've figured out why the 850 needs byteswapping of the IDE hard
+> > drives to work properly - I just realized that NT/ppc ran little endian,
+> > and the firmware understands little-endian FDISK style partition tables.
+> > Since we understand them too, but we are running big-endian, we end up
+> > in a mess. Why are we running big-endian btw?
 >
->  controlfb: Memory bank 1 present, bank 2 absent, total VRAM 2MB
+> Hmm, I'm starting to wonder, are you sure that the system is completely
+> reset to big endian mode ?  If the ARC firmware is designed to run NT, it
+> might set all the bits to little endian mode (that's not only the
+> processor but also the bridge and maybe more bits here and there).
 >
-> Sure enough, both banks are present and do work in 2.2.13 (my current
-> kernel).
 
-Ark!  I could swear this was all taken care of.
+Oh, I think it is properly set up etc; I just finally had a realization
+that since NT was running little-endian, it didn't have the overhead of
+swapping the disk in order to run the same way round as the partition
+table indicated it was running.
 
-Could you please send me (privately) a diff -u of the 2.2.13 and 2.3.48
-controlfb?  I can't think offhand of any reasons for changes unless
-someone has been mucking with the fbdev API when I wasn't looking.
+> Or is it that we should make the firmware believe that Linux/PPC is little
+> endian and then switch to big endian the whole system ourselves. My
+> interpretation is that the firmware might attempt to run both big and
+> little endian OS but that the disk access and especially partition table
+> interpretation routines only work correctly when the processor is in
+> little endian mode. IOW the firmware is hopelessly buggy.
 
-Dan
+It isn't really that bad - basically they picked one format for the
+parition table (which happened to be the NT one). Other OSs can do what
+they like as long as the firmware sees a valid little-endian FDISK
+partition table with a PReP boot partition in it (and then the OS has to
+make sure it doesn't stomp on the boot partition). This afternoon I had
+a look at an AIX disk and discovered it was partitioned with a 3M PReP
+partition starting 2M from the front of the disk and nothing else. So
+I'd imagine that AIX probably stores something in the first 2M, and then
+uses everything execpt the first 5M of the disk under its own scheme.
 
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
+> BTW: big endian is the right way for PPC, you don't want to run a PPC
+> in niadne-elttil mode under any circumstance.
+
+Unless you are Micro$oft :-) For that matter, Workplace OS (ie OS/2 for
+ppc) ran little-endian. I would guess in both cases the compaines
+decided that the endian cleanup of the source wasn't worth the hassle.
+Actually, why does it matter which way up you run the CPU?
+
+According to the PREP spec Solaris/PPC was also little-endian!
+Presumably they decided PReP machines looked more like PCs than sparcs.
+In which case the only OS that the PReP spec mentions which runs
+big-endian is AIX. (What was Taligent - something from Apple maybe? The
+name in mentioned in the spec, but all the slots in the tables under
+that heading are blank, and so is the appendix for it :-))
+
+[..]
+> At a time due to these problems, I had code in the kernel which could grok
+> a partition table in any endianness but the rest of the disk was in normal
+> order (even the extended partition tables).
+
+Have you still got this code anywhere? This is exactly what we need; to
+grok the primary partition table little-endian but everything else
+native. Then we just need to write an fdisk to work with it :-)
+
+Cheers,
+
+	David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
