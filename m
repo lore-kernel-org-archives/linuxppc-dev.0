@@ -1,47 +1,61 @@
-Message-ID: <392CA1D7.17D475CD@embeddededge.com>
-Date: Wed, 24 May 2000 23:45:27 -0400
-From: Dan Malek <dan@netx4.com>
+Subject: IDMA: Setting Up Parameter RAM.
+To: linuxppc-embedded@lists.linuxppc.org ( Linux PPC Mailing List)
+Date: Thu, 25 May 2000 16:02:39 +1000 (EST)
 MIME-Version: 1.0
-To: Neil Russell <caret@c-side.com>
-CC: Dan Malek <dan@netx4.com>, diekema_jon <diekema@bucks.si.com>,
-        all@cideas.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Floating Point problems with Linux on the EST SBC8260
-References: <20000524134257.A9100@lx.c-side.com> <m12uikI-001SyaC@bucks> <20000524150506.D9100@lx.c-side.com> <392C5713.1C921311@embeddededge.com> <20000524160640.E9100@lx.c-side.com> <392C8042.EB65AAF6@embeddededge.com> <20000524201743.A8680@lx.c-side.com>
 Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000525060239.3F99C3C989@elph.research.canon.com.au>
+From: gjohnson@research.canon.com.au (Greg Johnson)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Neil Russell wrote:
+Hi all,
 
-> We have an FPGA that implements part of the ISA spec, enough to do
-> programmed I/O to an IDE device.  The FPGA has its own chip select and uses
-> the UPM for timing.
+I am having a little problem with IDMA parameter RAM on the 855T/860.
+The problem is that when I set up the parameter RAM's DMA Channel
+Mode Register, and the IDMA BD Base Address pointer, the CPM does not
+appear to recognise these new values. I am quite confident that I
+am setting up the ports etc for our board correctly. I shall elaborate.
 
+When I power on our board, boot, load our driver for the hardware,
+setup the IDMA/Parameter RAM/Buffer Descriptors and attempt to start
+an IDMA transfer,  nothing happens. (reloading driver and retries
+do not work)
 
-Interesting....I have used an FPGA or the UPM to provide the ISA
-bus timing, but not both at the same time.  I have UPM programming
-for the 8xx that creates ISA bus timing, so I guess I could try that
-on the 8260 as well.....I think it needs an external signal inversion,
-but that is all.
+When I then hit the reset button (no power cycle) and go through the
+same ritual, IDMA works fine.
 
-> .........  When it works,
-> it will be slow, but we probably don't care - we are not building a
-> file server.
+The reason being is that values for the IDMA Parameter RAM DMA Channel
+mode register (DCMR) and IDMA BD Base Address pointer (IBASE) that
+were written in the first attempt on power-on are preserved in
+DPRAM over the reboot. Why would these value apparently be written
+in the first attempt, but appear not to be recognised by the CPM???
 
-Hmmmm....I'll bet it can be made to work with compact flash as well....
+In addition, if I power on, and use the boot loader to program the
+IDMA Parameter RAM DCMR and IBASE elements, then boot Linux, load
+the driver and attempt a DMA operation, It all works fine. The
+reason I don't want to be content with setting this information up
+in the boot loader is that we want to be able to eventually allocate
+and release buffer descriptors.
 
-> ....  It will probably still be slow, but he CPU will no longer be
-> held up.
+I suspect that I am not setting up something correctly that affects
+the way that the Communications Processor responds to changes in the
+Parameter RAM.
 
-Depending upon the data flow, they may still share a common internal
-bus....Plus you tie up the CPM.
+Can anyoue offer any clues/hints/guesses???
 
-> Got any better ideas?  (no PCI, no expensive chips...).
+Thanks in advance.
 
-I just gave it away, and I have another project on the pile :-).
+Greg.
 
-
-	-- Dan
+--
++------------------------------------------------------+
+| Do you want to know more? www.geocities.com/worfsom/ |
+|              ..ooOO Greg Johnson OOoo..              |
+| HW/SW Engineer        gjohnson@research.canon.com.au |
+| Canon Information Systems Research Australia (CISRA) |
+| 1 Thomas Holt Dr., North Ryde, NSW, 2113,  Australia |
+|      "I FLEXed my BISON and it went YACC!" - me.     |
++------------------------------------------------------+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
