@@ -1,29 +1,51 @@
-Message-Id: <200009211902.VAA03147@piglet.grunz.lu>
-Date: Thu, 21 Sep 2000 21:02:16 +0200 (CEST)
+Message-Id: <200009211941.VAA05085@piglet.grunz.lu>
+Date: Thu, 21 Sep 2000 21:40:58 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
 Subject: Re: CPU Temperature Patch
-To: djosg@mgu.bath.ac.uk
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <10009201242.AA11420@mgu.bath.ac.uk> or <11420.10009201242@mgu.bath.ac.uk>
+To: trini@kernel.crashing.org
+cc: ad@mpifr-bonn.mpg.de, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20000920110436.C15401@opus.bloom.county>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi there,
+Hi all,
 
-On  20 Sep, this message from D.J. Osguthorpe echoed through cyberspace:
-> Note that the intrinsic resolution of the temperature seems to be 4 degrees
-> - the values printed are at the mid-point between two 4 degree multiples.
+On  20 Sep, this message from Tom Rini echoed through cyberspace:
+>
+> On Wed, Sep 20, 2000 at 05:03:42PM +0200, Albrecht Dreß wrote:
+>>
+>> "D.J. Osguthorpe" wrote:
+>> > Here are two patches that appear to fix the cpu_temp function in setup.c.
+>> > They have been applied to a number of Ben Herrenschmidt kernels on a 500 MHz
+>> > Pismo powerbook and print reasonable values when you cat /proc/cpuinfo.
+>>
+>> The patch seems to work on my Lombard/333, too... Really great!
+>>
+>> > +       /* this set for 500 MHz Pismo - how do we get access to clock?? */
+>>
+>> There is, in the same file, around line 319 code to read the clock speed from
+>> the device tree. However, is it really necessary to include the clock speed at
+>> this point? What is the drawback if we just assume 500 MHz (or even the max
+>> value) for every G3 based machine?
+>
+> Why assume when we can do it properly?  Besides, a friend of mine oc'ed his
+> B&W to 550, so it's possible to have >500Mhz :)
 
-Yes, that is so by design: 5 bit A/D for a range of 0 - 128 degrees.
-Found that in some paper on the Thermal Assist Unit (ref. 2 in the
-appnote).
+To do it properly on all machines requires a processor frequency
+calculating routine, that doesn't depend on OF. Note that on all
+upgraded machines that did not initially have a G3, OF's value is wrong
+(too low, actually)!
 
-By the way, the uncalibrated sensor has an accuracy of +- 12 degrees.
+On the other hand, Motorola's doc states that setting too large a value
+doesn't hurt, so I guess we can safely hardcode something like 600 MHz.
 
+At the only expense of busy-waiting a bit too long on slower machines...
+but how often do you look at /proc/cpuinfo? Besides, you could always do
+the aproximation using the interrupt ;-)
 
 Michel
 
