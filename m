@@ -1,31 +1,61 @@
-Subject: RE: Poor 8260 FCC Ethernet performance
-From: Gary Thomas <gary@mlbassoc.com>
-To: Rune Torgersen <runet@innovsys.com>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B06DAF8@ismail.innsys.innovsys.com>
-References: 
-	 <DCEAAC0833DD314AB0B58112AD99B93B06DAF8@ismail.innsys.innovsys.com>
-Content-Type: text/plain
-Message-Id: <1086820067.3643.1766.camel@hermes>
-Mime-Version: 1.0
-Date: Wed, 09 Jun 2004 16:27:48 -0600
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Poor 8260 FCC Ethernet performance 
+Date: Wed, 9 Jun 2004 17:33:39 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DAF9@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Rune Torgersen" <runet@innovsys.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 2004-06-09 at 16:19, Rune Torgersen wrote:
-> Does the FCC performance issue have something to do with the fact that
-> the current FCC drivers in linux puts the buffer descriptors in main
-> memory and not in dual port?
+BTW, found the problem with that piece of code about 2 seconds after
+sending it....
+The fcc_rbase &tbase parameters are not given the physical address, but
+the virtual one...
 
-I hope not since the latest word from Motorola is that they need to be
-in main memory - at least on the latest processors, the CPM DPRAM can't
-handle cache bursts (or so I've been told - I have a least one customer
-that has experienced this)
+Change
+ 	ep->fen_genfcc.fcc_rbase = (uint)&immap->im_dprambase[i];
+To
+	ep->fen_genfcc.fcc_rbase = __pa((uint)&immap->im_dprambase[i]);
 
---
-Gary Thomas <gary@mlbassoc.com>
-MLB Associates
+And
+	ep->fen_genfcc.fcc_tbase = (uint)&immap->im_dprambase[i];
+To
+	ep->fen_genfcc.fcc_tbase = __pa((uint)&immap->im_dprambase[i]);
 
+
+And everything works great...
+Probably even increased performance a bit...
+
+Proper patch:
+--- ../fcc_enet.c       2004-06-09 22:33:14.000000000 -0500
++++ arch/ppc/8260_io/fcc_enet.c 2004-06-09 22:26:47.000000000 -0500
+@@ -1564,17 +1564,17 @@ init_fcc_param(fcc_info_t *fip, struct n
+         * These are relative offsets in the DP ram address space.
+         * Initialize base addresses for the buffer descriptors.
+         */
+-#if 0
++#if 1
+        /* I really want to do this, but for some reason it doesn't
+         * work with the data cache enabled, so I allocate from the
+         * main memory instead.
+         */
+        i = m8260_cpm_dpalloc(sizeof(cbd_t) * RX_RING_SIZE, 8);
+-       ep->fen_genfcc.fcc_rbase = (uint)&immap->im_dprambase[i];
++       ep->fen_genfcc.fcc_rbase = __pa((uint)&immap->im_dprambase[i]);
+        cep->rx_bd_base = (cbd_t *)&immap->im_dprambase[i];
+
+        i = m8260_cpm_dpalloc(sizeof(cbd_t) * TX_RING_SIZE, 8);
+-       ep->fen_genfcc.fcc_tbase = (uint)&immap->im_dprambase[i];
++       ep->fen_genfcc.fcc_tbase = __pa((uint)&immap->im_dprambase[i]);
+        cep->tx_bd_base = (cbd_t *)&immap->im_dprambase[i];
+ #else
+        cep->rx_bd_base = (cbd_t *)m8260_cpm_hostalloc(sizeof(cbd_t) *
+RX_RING_SIZE, 8);
+
+---
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
