@@ -1,45 +1,82 @@
-Message-ID: <001301c2c26b$2a06e7a0$020120b0@jockeXP>
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Dan Malek" <dan@embeddededge.com>
-Cc: "Shen Rong" <rshen@udtech.com.cn>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <IGEFJKJNHJDCBKALBJLLGEIOFJAA.joakim.tjernlund@lumentis.se> <3E2F1920.9070702@embeddededge.com>
-Subject: Re: wrong definition in cpm_8260.h?
-Date: Thu, 23 Jan 2003 00:08:23 +0100
+Message-ID: <003201c2c275$45a441b0$5e207aa1@fish>
+From: "Jason Park" <jason@amadeus.kist.re.kr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Problem with BDI2000 flash programming
+Date: Thu, 23 Jan 2003 09:20:12 +0900
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="Windows-1252"
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-From: "Dan Malek" <dan@embeddededge.com>
-> Joakim Tjernlund wrote:
->
-> > Yes, the CPM will set these flags, but will it also clear them if the
-> > buffer is not first/last in a frame? I think not.
->
-> It doesn't matter.  The flags are always going to be set.  Why bother
-> clearing them when you always set them?
->
-> > I know that the driver is designed to always set them so in practise it
-> > won't be problem. However this could change some day.
->
-> Well, when it changes we can change the code to set/clear the flags
-> according to the buffer management algorithm.
->
->
-> > yes I know, but I still think those flags should be included in the RX_STATS macro.
->
-> Why?  Like I said in the previous message, they aren't part of any network
-> status.  They are buffer control flags and need to properly indicate how the
-> buffers are managed, not cleared as part of network status.
+hi, im new to this email list.. but i am having some problems with my board
+and don't know where to turn.
 
-Suppose there is a bug in the driver(or someone introduces a bug or flaky HW) that will
-generate a buffer that is not the first(or last) in this frame every now and then.
-Since previously received frames did not clear these bits when they were done with
-the RX BD, these bits will still be set and the driver won't detect the "bad" frames.
+target board: ep8260
+host distribution: redhat 8.0 (with powerpc cross compilers)
+debugger: BDI2000
 
-         Jocke
+problem: trying to burn a PPCBOOT image into the flash memory at location
+0xFF10 0000
+
+setting up the initial bdi configurations.. i get the following output:
+
+[root@FISH gdbcop21]# ./bdisetup -v -s
+BDI Type : BDI2000 Rev.C (SN: 94406634)
+Loader   : V1.05
+Firmware : V1.14 bdiGDB for PPC6xx/PPC7xx
+Logic    : V1.02 PPC6xx/PPC7xx
+MAC      : 00-40-49-fa-40-66
+IP Addr  : 161.122.32.98
+Subnet   : 255.255.255.0
+Gateway  : 161.122.32.1
+Host IP  : 161.122.32.94
+Config   : ep8260.cfg.init
+
+everything looks normal to me... i have the ep8260.cfg.init file in the
+/tftpboot directory.  so at this point i will connect to the board with
+telnet.
+
+# telnet 161.122.32.98
+Trying 161.122.32.98...
+Connected to 161.122.32.98.
+Escape character is '^]'.
+BDI Debugger for Embedded PowerPC
+=================================
+
+PHYS  <address>              converts an effective to a physical address
+****
+****
+other stuff here..
+****
+****
+QUIT                         terminate the Telnet session
+
+bdi2000>
+
+since there is not error outputting that it cannot find the original
+configuration file ep8260.cfg.init, i conclude that tftp worked properly.
+i can read the flash memory, including the existing bootloader i got from
+embedded planet. (planetcore at location 0xFFF0 000)
+Now i place ppcboot.bin into the /tftpboot directory, and after checking
+whats in memory location 0xFF10 0000 (there is nothing there), i proceed
+to try and write into the flash:
+
+bdi2000>prog 0xFF100000 ppcboot.bin bin
+Programming ppcboot.bin , please wait ....
+# Cannot open program file on host
+bdi2000>
+
+this is what i can't figure out.  i think that it must be a problem
+with the hosts tftp configuration, but i did check the tftp server several
+times, even connected it to other computers and swapping files.  could there
+be a setting i missed in the BDI2000?
+
+
+also.. i was wondering if there was more detailed documentation on using
+the BDI2000 besides the manual that came with the prooduct and WD's PPCBoot
+and Linux Guide.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
