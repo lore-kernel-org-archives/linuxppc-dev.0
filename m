@@ -1,34 +1,23 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Trouble compiling kernel for G5.
-From: Stefan Berndtsson <stefan@nocrew.org>
-Date: Fri, 09 Jan 2004 18:24:14 +0100
-Message-ID: <874qv5c9xd.fsf@hades.nocrew.org>
+From: "Bill Noffsinger" <bnoffsi@acis.ufl.edu>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Linux on IBM 9076 nodes
+Date: Fri, 9 Jan 2004 12:33:15 -0500
+Message-ID: <00c801c3d6d6$a9f818a0$7138e30a@ibm18437>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-When trying to compile the latest rsynced kernel (checked today, 2004-01-09)
-from source.mvista.com::linuxppc-2.5-benh (2.6.1-rc1-ben1) for my G5, I
-run into the following message with SATA:
+Our lab has recently acquired a 48-node IBM SP configuration based on
+4-way "Winterhawk-II" Power3-2 wide nodes with 8 GB memory. I see on the
+Linuxppc site (boxes) that Linux is known to work on 9076-SP nodes
+(ours). How difficult is the port? IBM does not support Linux on the
+9076 but does on the newer Power4 pSeries units.
 
-  CC      drivers/scsi/sata_svw.o
-drivers/scsi/sata_svw.c:236: error: request for member `bios_param' in something not a structure or union
-drivers/scsi/sata_svw.c:236: error: initializer element is not constant
-drivers/scsi/sata_svw.c:236: error: (near initialization for `k2_sata_sht.proc_info')
-drivers/scsi/sata_svw.c: In function `k2_sata_init_one':
-drivers/scsi/sata_svw.c:369: warning: label `err_out_unmap' defined but not used
-make[2]: *** [drivers/scsi/sata_svw.o] Error 1
-make[1]: *** [drivers/scsi] Error 2
-make: *** [drivers] Error 2
+Bill Noffsinger
+bnoffsi@ufl.edu
 
-My .config can be found at http://stefan.nocrew.org/config-g5.txt
-
-GCC version is 3.3.3, currently running kernel 2.6.0-test10.
-
-Anything else needed from me?
-
-/Stefan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
