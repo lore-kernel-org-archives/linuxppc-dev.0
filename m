@@ -1,43 +1,48 @@
-Message-ID: <37E2C3EE.A935D240@netx4.com>
-Date: Fri, 17 Sep 1999 18:42:54 -0400
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Cleanup thought.
-References: <199909172225.AAA28226@denx.local.net>
-Content-Type: text/plain; charset=us-ascii
+Date: Sun, 19 Sep 1999 16:37:11 -0400 (EDT)
+From: Claude Robitaille <crobitaille@videotron.ca>
+Subject: Compiling 2.3.18
+To: linuxppc-embedded@lists.linuxppc.org
+Message-id: <Pine.LNX.4.10.9909191611110.1836-100000@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+Hi,
+
+I have no success at compiling (actually just doing make dep) the
+2.3.18 kernel source I downloaded from linuxppc.cs.nmt.edu (I think
+it is from Dave's source tree). I am getting the following error:
+
+make -C sound fastdep
+make[4]: Entering directory `/usr/src/linux-2.3.18.embedded/drivers/sound'
+.depend.69: *** unterminated call to function `wildcard': missing `)'.
+Stop.
+make[4]: Leaving directory `/usr/src/linux-2.3.18.embedded/drviers/sound'
+make[3]: *** [_sfdep_sound] Error 2
+
+etc.
 
 
-> Sorry. Re-reading what I posted this sounds a lot more negative
+There is no function `wildcard' in any files, except for Makefile.
 
-That startup code is intended to work for every 8xx processor.
-All you need to do is set up the memory controller and get these
-bits into memory (if the controller isn't set up, you can't get
-them there anyway).
+I tried with different .config files, including the default file created
+by make xconfig.
 
-Then decide how you want to build the board information structure,
-which can be hard coded if you wish.  It's all downhill from there.
+I downloaded 2.3.18 from edge.kernelnotes.org and I am able to compile
+(after fixing one of the Config.in file).
 
+Could it be a problem with Dave's tar (as for fadsrom.tar)?
 
-> 
-> Oops! I must have missed this (I  even  can't  find  it  here  in  my
-> archives). Can you please re-post a pointer? TIA!
+I am targetting a board with an MPC8xx, does the source from the
+embedded tree at linuxppc.cs.nmt.edu better than the one from
+cutting edge (if I can compile it !!), i.e. it there required
+stuff that only appears in the embedded source tree?
 
-ftp://ftp.ppc.kernel.org/pub/linuxppc/embedded/fadsrom.tgz
+Thanks
 
+Claude
 
-> Maybe I/we can do a bit more than just talking?
-
-I have your SMC console stuff underway, what else do you want
-to add?  Write it, test it, send it.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
