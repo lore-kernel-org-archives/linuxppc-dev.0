@@ -1,41 +1,31 @@
-Message-Id: <200110122149.XAA03908@piglet.grunz.lu>
-Date: Fri, 12 Oct 2001 23:49:14 +0200 (CEST)
+Message-Id: <200110122153.XAA03912@piglet.grunz.lu>
+Date: Fri, 12 Oct 2001 23:53:01 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: kernel linking segfaults??
-To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: boot methods
+To: paulus@samba.org
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <15302.40082.869098.88039@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+On  12 Oct, this message from Paul Mackerras echoed through cyberspace:
+>
+> I would like to make a complete list of the methods people use to boot
+> the PPC/Linux kernel on different platforms.  As a start, here is what
+> I can think of off the top of my head:
+>
+> Powermac:
+> 	vmlinux loaded with BootX
+> 	vmlinux loaded with quik
+> 	vmlinux loaded with yaboot
+> 	vmlinux.coff loaded via OF netboot
+> 	vmlinux.elf-pmac loaded via OF (disk or net boot)
 
-Now that Ben fixed the serial console problem, I've tried again to
-compile recent 2.4 kernels (2.4.12-benh0 that is) on my venerable 7600.
-
-However, compilation fails on the final link stage:
-
-ld -T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic arch/ppc/kernel/head.o init/main.o init/version.o \
-        --start-group \
-        arch/ppc/kernel/kernel.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o kernel/kernel.o mm/mm.o fs/fs.o ipc/ipc.o arch/ppc/xmon/x.o \
-         drivers/char/char.o drivers/block/block.o drivers/misc/misc.o drivers/net/net.o drivers/media/media.o drivers/char/drm/drm.o drivers/ide/idedriver.o drivers/scsi/scsidrv.o drivers/cdrom/driver.o drivers/sound/sounddrivers.o drivers/pci/driver.o drivers/pcmcia/pcmcia.o drivers/net/pcmcia/pcmcia_net.o drivers/net/wireless/wireless_net.o drivers/macintosh/macintosh.o drivers/video/video.o drivers/usb/usbdrv.o drivers/input/inputdrv.o drivers/i2c/i2c.o \
-        net/network.o \
-        /usr/src/2.4/linux-2.4.benh/lib/lib.a \
-        --end-group \
-        -o vmlinux
-make: *** [vmlinux] Segmentation fault
-make: *** Deleting file `vmlinux'
-
-Since the 7600 has some weirdo old LinuxPPC install with a rather old
-toolchain, I thought I'd try on the TiBook (Debian testing), but same
-result (both with the 7600's kernel config and the Book's).
-
-Anybody got any clue here?
-
-
-Thanks, and cheers
+Hmm, vmlinux.coff floppy-booted on OldWorlds?
 
 Michel
 
