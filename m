@@ -1,38 +1,27 @@
-Date: Sat, 07 Apr 2001 12:56:51 +0100
-Subject: Re: DMASOUND->rev6  (2.4.3)(attn: Xine, MOL, PowerComputing,
-	 ibook, Tumbler)
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: phandel@cise.ufl.edu
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Sat, 07 Apr 2001 12:42:19 -0700
+Subject: Coding device driver for a minor device.
+From: Karsten Jeppesen <karsten@jeppesens.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <B6F4BBA9.5D29%karsten@jeppesens.com>
 Mime-version: 1.0
 Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010407115656.B5F2EDBA70@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-]
->>  - fix bug where TX stops when dbdma status comes up "DEAD"
->>    so far only reported on PowerComputing clones ... but.
->>    (PowerComputing clones - NOT TESTED - please let me know what happens).
->
-> Nope, I can still kill sound by merely moving the mouse.
+I have done modules.
 
-This is beginning to  worry me - I can't see what it has to do with the
-disk-sound interaction we were originally talking about.
+Now the problem is that I have 2 pushbuttons that I would like to read.
+Looking in the device list I see dev 10, which has a lot of - let us call it
+miscellaneous - content. This one seems to fit here. Maybe as a minor 185 or
+186.
+But how do I locate the device driver for device major 10?
 
-(did I ever get your dev-tree? - I can't find a mail with it...).
+I am certain there is a simple way - somebody knows it?
 
-when you move the mouse:
 
-via-cuda (?)
-...
-move cursor in display driver (*PCI* , I guess?).
+Sinserely,
+Karsten Jeppesen
 
-does the problem occur if you press & hold a key?
-(i.e. is it the adb end or the display driver end?)
-
-what display device?
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
