@@ -1,59 +1,95 @@
-Message-ID: <3E0BA5BB.7B959E63@koffie.nl>
-Date: Fri, 27 Dec 2002 01:58:36 +0100
-From: Segher Boessenkool <segher@koffie.nl>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
 MIME-Version: 1.0
-To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Cc: "'Paul Mackerras'" <paulus@samba.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: SV: New invalidate/clean/flush_dcache functions
-References: <000001c2aa85$ff48d250$83b9143e@hempc>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <3E0BB407.000043.10611@bj244.163.com>
+Date: Fri, 27 Dec 2002 09:59:35 +0800 (CST)
+From: "yydsr" <yydsr@163.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: =?gb2312?B?QWJvdXQgSUJNICBXYWxudXQ0MDVHUCAgUHJvYmxlbS4=?=
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joakim Tjernlund wrote:
+Hi,
+    hello!
+    I'm trying to get a walnut board booted. I'm using linuxppc_2_4_devel pulled from denx yesterday. I'm getting the "Real time clock seems stuck" message then nothing, no messages after that. I found a brief thread about this.
 
-> Only the invalidate function is missing the sync instruction.
-> It's not needed. Invalidating the cache does not touch the memory
-> so there is no need to sync the memory. I have been running my system
+http://lists.linuxppc.org/linuxppc-embedded/200106/msg00113.html
 
-sync is not a "sync the memory" instruction, whatever that should mean.
->From chapter 8 of the 32-bit PEM:
+Have the changes suggested been put in the devel tree? If so, can someone offer some advice on how to proceed?
 
-	The sync instruction provides an ordering function for the effects of
-	all instructions executed by a given processor. Executing a sync
-	instruction ensures that all instructions preceding the sync instruction
-	appear to have completed before the sync instruction completes, and that
-	no subsequent instructions are initiated by the processor until after the
-	sync instruction completes. When the sync instruction completes, all
-	external accesses caused by instructions preceding the sync instruction
-	will have been performed with respect to all other mechanisms that access
-	memory.
+Here's some console output.
 
-dcbi can cause external accesses (it invalidates cache on _all_ cpu's in a
-system, not just the local cpu).
+PPCBoot 2.0.0
+CPU: IBM PowerPC 405GP Rev. D at 200 MHz (PLB=100, OPB=50, EBC=50 MHz)
+PCI sync clock at 33 MHz, internal PCI arbiter enabled
+16 kB I-Cache 8 kB D-Cache
+Board: ### No HW ID - assuming WALNUT405
+I2C: ready
+DRAM: 32 MB
+FLASH: 512 kB
+In: serial
+Out: serial
+Err: serial
+KGDB: kgdb ready
+ready
+BEDBUG:ready
 
-> without it for a long time and I asked my HW contact at Motorola about
-> it and he agreed. Others has used the dcbi without a sync without
-> problems.
->
-> Can you give me a pointer to where the spec claims that a sync is
-> needed after a dcbi?
+=> tftpboot 400000 p1
+ENET Speed is 100 Mbps - FULL duplex connection
+ARP broadcast 1
+TFTP from server 192.168.1.11; our IP address is 192.168.1.111
+Filename 'p1'.
+Load address: 0x400000
+Loading: #################################################################
+############################################
+done
+Bytes transferred = 557872 (88330 hex)
+=> imi 400000
 
-It doesn't.  Whether the sync is needed or not depends on your usage of the
-dcbi, i.e. 1) is it necessary that the cache line gets invalidated on all
-other cpu's, too?  and 2) do you already have another sync instruction on this
-cpu, some time after the dcbi, but before the point where you have the requirement
-of invalidation?
+## Checking Image at 00400000 ...
+Image Name: Linux-2.4.20-pre11
+Created: 2002-10-31 12:17:56 UTC
+Image Type: PowerPC Linux Kernel Image (gzip compressed)
+Data Size: 557808 Bytes = 544.7 kB
+Load Address: 00000000
+Entry Point: 00000000
+Verifying Checksum ... OK
+=> bootm 400000
+## Booting image at 00400000 ...
+Image Name: Linux-2.4.20-pre11
+Created: 2002-10-31 12:17:56 UTC
+Image Type: PowerPC Linux Kernel Image (gzip compressed)
+Data Size: 557808 Bytes = 544.7 kB
+Load Address: 00000000
+Entry Point: 00000000
+Verifying Checksum ... OK
+Uncompressing Kernel Image ... OK
+Linux version 2.4.20-pre11 (root@tbdev1) (gcc version 2.95.4 20010319 (prerelease/franzo/20011204)) #12 Thu Oct 31 05:13:53 MST 2002
+IBM Walnut port (C) 2000-2002 MontaVista Software, Inc. (source@mvista.com)
+On node 0 totalpages: 1295
+zone(0): 1295 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: console=ttyS0,9600 root=/dev/ram
+Warning: real time clock seems stuck!
 
-It might very well be true that a sync here isn't necessary, and sync's can be very
-costly (on smp systems), but better be safe than sorry.
 
 
-Cheers,
+then nothing after that.
 
-Segher
+Any ideas? I've searched the archives for walnut boot problems. It seems like most people just get it running and that's that.
+
+
+
+thank you.
+
+
+yydsr@163.com
+
+=============================================================
+元旦、情人节不再做孤独人!你还不快来约会？	http://dating.163.com/
+网易俱乐部为你建造一个超级的私人社区！		http://our.163.com
+新年有礼！ VIP邮箱也可以免费用！		http://vip.163.com/payment/MobilePayment.shtml
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
