@@ -1,40 +1,53 @@
-Message-ID: <390DFCD4.1BC8BF8E@embeddededge.com>
-Date: Mon, 01 May 2000 17:53:24 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <390E55F1.CD5D0605@mac.com>
+Date: Tue, 02 May 2000 00:13:37 -0400
+From: Andrew Thompson <lordpixel@mac.com>
 MIME-Version: 1.0
-To: Neil Russell <caret@c-side.com>
-CC: Arto Vuori <avuori@ssh.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: 8260 io and caches
-References: <390DB320.DC787D62@ssh.com> <20000501101916.E6832@lx.c-side.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 5 button mouse and XFree86 vers 4
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Neil Russell wrote:
->
-> >From what I can see, the uart driver in the current linux source is written
-> for the 860, with no mods for the 8260.
+Posted something similar to this on the users list a few days ago and no
+one seemed to know, so I'm hoping someone here does...
 
-Oh, there are some mods, but I did start with the 8xx code :-).
+Well last night I took the plunge and switched to XFree86 vers 4, using the
+rpms from here:
+http://entropy.crashing.org/~howarth/
 
-> ....  The 8260 has some different bits
-> in the RFCR/TFCR parameter RAM fields.  There is a GBL bit (bit 2) that
-> enables cache snooping.
+What I'm trying to do now is get all 5 buttons working on my Kensington
+Mouseworks USB mouse.
 
-Oooops.  Sorry about that.  I was playing with caches (and not) and
-I guess I didn't get everything checked in properly.  Make sure you
-also make the same cache changes to the SCC Ethernet.
+I tried adding this lines to my XF86Config
+        Option      "Buttons" "5"
 
-Don't consider this software ready to run.  I have more to check
-in and I am still making lots of changes.
+But no dice. Has anytone had any luck with > 3 buttons so far?
 
-> .....  Of course, you probably want to add a SMC_GBL
-> #define to do this properly.
+A little further info:
 
-It was supposed to be there...........
+xmodmap -pp reports 5 buttons are defined, but if I redefine the mapping I
+just lose buttons and buttons 2 and 4 don't seen to be generating any
+events in X.
 
+If I use "xev" and click in the window, nothing is reported for buttons 2
+and 4. Button 1 is reported as 1, button 3 as 2 and button 5 as 3.
 
-	-- Dan
+So I did some reading in the XFree86 docs and discovered that the PS/2
+protocol only supports 3 buttons. PS/2 mice with > 3 buttons need some
+vendor specific initialisation. The protocol for the old Kensington
+Thinking mouse PS/2 version doesn't work with this new Kensignton
+Mouseworks (I tried it).
+
+This would imply that what I want to do is use the mouse as a generic HID 5
+button USB mouse. But when I try to use the usb (or USB) protocol with the
+above RPM of XFree86 vers 4 it complains that usb is an unkown protocol!
+
+Can someone enlighten me as to the story with USB mice on linux ppc? Are we
+somehow shimying them so they appear as PS/2 or ADB?
+Why isn't USB support on in the above RPMs? If I get the source RPM and
+build it myself can I turn in on maybe?
+
+AndyT
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
