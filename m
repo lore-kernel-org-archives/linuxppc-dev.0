@@ -1,25 +1,27 @@
-Message-Id: <m12ukeM-001SyaC@bucks>
+Message-Id: <m12ukmg-001SyaC@bucks>
 From: diekema@bucks.si.com (diekema_jon)
 Subject: Re: Floating Point problems with Linux on the EST SBC8260
-To: caret@c-side.com (Neil Russell)
-Date: Wed, 24 May 2000 19:33:18 -0400 (EDT)
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20000524150506.D9100@lx.c-side.com> from "Neil Russell" at May 24, 2000 03:05:06 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Wed, 24 May 2000 19:41:54 -0400 (EDT)
+Cc: all@cideas.com
+In-Reply-To: <392C4A4B.2839C790@embeddededge.com> from "Dan Malek" at May 24, 2000 05:31:55 PM
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-From: Neil Russell <caret@c-side.com>
+>From Dan Malek:
 
-> My development environment is a G3 blue and white MAC, running Linux 1999 Q3.
-> I compile the kernel native on that machine.  All applications that I
-> use are directly from that CD.  I make a RAM disk image that I download
-> to the board.  This RAM disk has very little in it.
+> Further, you would have discovered the 1.1 CDK is for an 8xx and the
+> libraries are compiled for soft (in-line) floating point.  You are
+> mixing floating point instructions with library and compiler support
+> that assumes otherwise.
 
-What files are contained in the RAM disk image, and how big is it?  Do
-you statically link your application to avoid packaging the libraries?
+My application was statically linked against the Denx CDK that was
+compiled for hard float.  The static application already has all the
+libraries routines that it needs, hence it won't pull in the Hard Hat
+Linux 1.1 libraries (soft float) from the root filesystem.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
