@@ -1,40 +1,48 @@
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] enhanced i2c driver for MPC8xx/MPC8260 CPM ... 
-In-reply-to: Your message of "Fri, 31 May 2002 07:47:25 -0700"
-             <20020531144725.GG32412@opus.bloom.county>
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "Conn Clark" <clark@esteem.com>
+Cc: "May Ling List" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Poor 8260 FCC Ethernet performance
+Date: Fri, 31 May 2002 20:09:49 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFMEPEDHAA.acurtis@onz.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 01 Jun 2002 12:28:34 +1000
-Message-ID: <1109.1022898514@msa.cmst.csiro.au>
-From: Murray Jensen <Murray.Jensen@csiro.au>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <3CF79C16.4B547602@esteem.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 31 May 2002 07:47:25 -0700, Tom Rini <trini@kernel.crashing.org> writes:
->> I think the file that includes <linux/i2c-algo-cpm.h> is expected to include
->> commproc.h, or cpm_8260.h, as required. What is the policy on these things?
->> Should every include file include all headers it needs? Anyone?
+> Could it be an analog problem? Have you looked at the signals
+> comming in on
+> a scope?
 >
->IMHO, a header file should only include other things which the header
->itself needs.  eg if you do 'u8 foo;' in foo.h, add #include <asm/types.h>
 
-OK, but should it include *all* headers it needs? If so, then the existing
-<linux/i2c-algo-8xx.h> should include both <asm/8xx_immap.h> and
-<asm/commproc.h> since it uses the types "i2c8xx_t" and "cpm8xx_t".
+Looking at the signal with a scope is probably a good idea. Here is an
+update from today's fun.
 
->Anything the C file needs itself, it should include, and for the sake of
->being explicit (and it's good for multi-arch drivers) if the C code does
->'u8 bar;' it should do #include <asm/types.h> too.
+1. These is an error in the fcc_enet.c file which causes NO and CRC errors
+when running in full-duplex mode. fcc_restart() should be updated to include
+FCC_PSMR_LPB when configuring full-duplex mode. (cleared when not)
 
-Agreed.
+2. Some relative performance measurements (HHL 2.4.2 vs. 2.4.19pre9)
+			10T Hub	|	100BT switch
+		 -------------------------------------|
+	2.4.2	 |	410KBps	|	750KBps	  |
+		 -------------------------------------|
+	2.4.19 |	440KBps	|	190KBps	  |
+		 --------------------------------------
 
->> Should we take this discussion off the list now? Cheers!
->
->Nah..
+	RedHat 2.4.18-3 (x86)	3900KBps
 
-I was referring to the discussion about the combined 8xx/8260 i2c driver
-I posted. I agree - the above should stay on the list. Cheers!
-								Murray...
+3. TOP shows as much as 48% system utilization during a single FTP transfer.
+With the fix mentioned in #1, there are 0 errors reported by ifconfig.
+
+I may be missing something but I believe that these numbers are going the
+wrong way. There is still the question of performance decrease when using a
+100BT switch. Signal intregety can not be the only suspect considering the
+performance did increase using an older version of the kernel. (although
+nothing like the Workstation performance)
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
