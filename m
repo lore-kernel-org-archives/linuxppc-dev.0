@@ -1,19 +1,23 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
-	by ozlabs.org (Postfix) with ESMTP id ADEFB2BD6A
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2004 00:46:23 +1000 (EST)
-Date: Fri, 17 Sep 2004 07:46:14 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Hollis Blanchard <hollis@penguinppc.org>
-Message-ID: <20040917144614.GF23760@smtp.west.cox.net>
-References: <20040916182531.GA20649@george.solinno.co.uk>
-	<EF4D4AFC-0815-11D9-81F8-000A95A0560C@penguinppc.org>
+Return-Path: <kevin@retriever.dyndns.org>
+Received: from mallard.mail.pas.earthlink.net (mallard.mail.pas.earthlink.net
+	[207.217.120.48]) by ozlabs.org (Postfix) with ESMTP id 7D9032BD7B
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2004 05:53:31 +1000 (EST)
+Received: from ar39.lsanca2-4.16.240.34.lsanca2.elnk.dsl.genuity.net
+	([4.16.240.34] helo=retriever.dyndns.org)
+	by mallard.mail.pas.earthlink.net with esmtp (Exim 3.33 #1)
+	id 1C8OnQ-0005N8-00
+	for linuxppc-dev@ozlabs.org; Fri, 17 Sep 2004 12:53:28 -0700
+Received: from kevin by retriever.dyndns.org with local (Exim 3.36 #1 (Debian))
+	id 1C8OnM-0006Bv-00
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Sep 2004 12:53:24 -0700
+Date: Fri, 17 Sep 2004 12:53:24 -0700
+From: Kevin Bailey <ppc@retriever.dyndns.org>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <20040917195324.GC27768@retriever.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <EF4D4AFC-0815-11D9-81F8-000A95A0560C@penguinppc.org>
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PReP][PATCH] Fix ISA PIC interrupt acknowledge address
-	detection
+Sender: Kevin Bailey <kevin@retriever.dyndns.org>
+Subject: 8245 ?
 List-Id: "Linux on PowerPC \(Including Embedded\) Developers Mail List"
 	<linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,23 +28,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 16, 2004 at 02:23:48PM -0500, Hollis Blanchard wrote:
+I've cvs'd the linuxppc_2_4_devel tree. What would be the best
+CPU/platform combination for an 8245 based board using the
+internal DUART ? I've tried a few combinations and am getting
+link errors, and just wanted to know which one to make the
+effort on.
 
-> On Sep 16, 2004, at 1:25 PM, Leigh Brown wrote:
-> 
-> >The ISA PIC address for acknowledging interrupts is actually defined
-> >in residual data as a 32-bit system address, rather than a 32-bit
-> >memory address.  This is rather embarrasing, as I don't think this
-> >function has done the right thing, ever.
-> >
-> >Tested and working fine on my Carolina and 140.
-> 
-> And this is important, as 2.6.9-rcX suffer from the dreaded Carolina 
-> "lost interrupt" problems. Could we try to get this patch into 2.6.9 
-> final?
-
-I'll try and get this in quickly.
-
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Thanks,
+krb
