@@ -1,44 +1,32 @@
-From: Alan Mimms <alanm@unforgettable.com>
-Date: Fri, 31 Dec 1999 00:59:28 GMT
-Message-ID: <19991231.592800@alanm.penguinpowered.com>
-Subject: Re: Embedded planet 860T CLLF HELP!
-To: David Clear <davidc@uswest.net>
-CC: Dan Malek <dan@netx4.com>, linuxppc-embedded@lists.linuxppc.org,
-        dclear@uswest.net
-In-Reply-To: <386BF96A.52C62EA1@uswest.net>
-References: <19991230.21564500@alanm.penguinpowered.com> <386BDEF1.8421A130@netx4.com> <386BF7B4.7DF02BEE@uswest.net> <386BF96A.52C62EA1@uswest.net>
+Message-ID: <386C150F.22B1A3D0@huawei.com.cn>
+Date: Fri, 31 Dec 1999 10:29:35 +0800
+From: dony <dony.he@huawei.com.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Raphael Bossek <raphael.bossek@solutions4linux.de>,
+        Brendan Simon <bsimon@ctam.com.au>, Dan Malek <dan@netx4.com>,
+        linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
+Subject: Please help me...
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-YEYEYEYEHAHAHAHAHA!  I got to the bash prompt with Dan's new source 
-tree.  Possibly a driver bug in the source tree I had downloaded from 
-the linuxppc.org embedded PPC FTP area?  Now to work....  Thanks very 
-much Dan.
+Hi,
+      Now I am trying to embed linux onto our MPC860-based board. I have
+some questions which may be solved by you embed-linux gurus....
+     What I want to do  is the following:
+    1     Initialize the MPC860 CPU , memory, serial port, enet port .
+    2    Download  the linux powerpc kernel (which I have cross-compiled
+on my X86 box)
+           from the TFTP server to RAM on board.
+    3    run the kernel.
+Now the 1 and 2 step work well, but when I download the kernel to RAM on
+board, It just cannot run.Do you know why? How can I programme to make
+it run? Since the kernel is a compressed image (zvmlinux), need I make
+some codes to decompress it and then run it? if so, how to do it?
+ Thank you very much :-))
+ Merry christmas & happy year.
 
-a
-
->>>>>>>>>>>>>>>>>> Original Message <<<<<<<<<<<<<<<<<<
-
-On 12/30/99, 4:31:38 PM, David Clear <davidc@uswest.net> wrote regarding 
-Re: Embedded planet 860T CLLF HELP!:
-
-
-> David Clear wrote:
-
-> > I ran 'make config' to set up the RPX CLLF.  The kernel built fine, 
-but
-> > then I found I had to edit the Makefile to make it build coffboot and
-> > then mbxboot.  That gave me a zImage file that I could convert into
-> > zi.cllf.
-
-> In retrospect, I think "make zImage" would have helped me out too...
-
-> sigh...
-
-> David.
-
+dony
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
