@@ -1,79 +1,42 @@
-Message-ID: <20021017135003.23135.qmail@web13115.mail.yahoo.com>
-Date: Thu, 17 Oct 2002 14:50:03 +0100 (BST)
-From: =?iso-8859-7?q?John=20Nikiforos?= <ppclinuxuser@yahoo.gr>
-Subject: RE: Problem with MPC8260 buffer descriptor
-To: Dominique Letty <dletty@interfaceconcept.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 860 rtc problem
+From: Hollis Blanchard <hollis@austin.ibm.com>
+To: leeyang <leeyang@ycig.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <000e01c275da$33148ba0$3501a8c0@none>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-7
+In-Reply-To: <000901c27583$b24224c0$fc00a8c0@ycigrnd.ycig.com>
+References: <000901c27583$b24224c0$fc00a8c0@ycigrnd.ycig.com>
+Date: 17 Oct 2002 09:24:11 -0500
+Message-Id: <1034864663.8254.19.camel@granite.austin.ibm.com>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- I don't remember if it is called ECE or ESE.
-I think it is on the HID0. But I am not sure.
-I currently don't have the manual handy.
+On Wed, 2002-10-16 at 21:19, leeyang wrote:
+>
+> With 'date -s' command it returned time had been changed.
+> However after a reset,the time go back to 1970's again :-(
+>
+> I try with 'hwclock' and it says below:
+>
+> bash-2.04# hwclock --debug
+> hwclock 2.4c/util-linux-2.11f
+> Using /dev/rtc interface to clock.
+> Last drift adjustment done at 0 seconds after 1969
+> Last calibration done at 0 seconds after 1969
+> Hardware clock is on unknown time
+> Assuming hardware clock is kept in local time.
+> Waiting for clock tick...
+> /dev/rtc does not have interrupt functions. Waiting in loop for time from
+> /dev/rtc to change
+> ...got clock tick
+> Time read from Hardware Clock: 1970/01/09 21:28:28
+> Hw clock time : 1970/01/09 21:28:28 = 786508 seconds since 1969
+> Fri Jan  9 21:28:28 1970  -0.188839 seconds
 
-                       John
+`hwclock` with no arguments seems to be the same as `hwclock --show`. I
+would recommend `hwclock -w`.
 
- --- Dominique Letty <dletty@interfaceconcept.com>
-έγραψε: >
-> I don't find any information about this ECE bit in
-> MPC8260UM and 603eUM.
-> Where can I enable it?
->
-> Thinks for your help.
->
-> Dominique
-> -----Message d'origine-----
-> De : John Nikiforos [mailto:ppclinuxuser@yahoo.gr]
-> Envoye : jeudi 17 octobre 2002 09:57
-> A : acurtis@onz.com; Dominique Letty;
-> linuxppc-embedded@lists.linuxppc.org
-> Objet : RE: Problem with MPC8260 buffer descriptor
->
->
->  Is the ECE bit enabled?
-> (Cache coherency for the 8260, so that the
-> CPM wont get any stalled data)
->
->                     John
->
->  --- Allen Curtis <acurtis@onz.com> έγραψε: >
-> > > Now I try to port this driver under Linux 2.4.17
-> > Kernel for a MPC8260. I
-> > > have allocated
-> > > Buffer Descriptors in DPRAM and Data Buffers in
-> > SDRAM. When I try
-> > > to send a
-> > > buffer, I fill
-> > > a data buffer and the first BD registers, I
-> think,
-> > with the
-> > > correct values.
-> > > It doesn't work
-> > > anytimes. When the buffer is transmited, the
-> > sending data are correct. The
-> > > problem seems to
-> > > come from the CPM which can't access to the BD
-> > modifications in the DPRAM.
-> > >
-> > > Does anyone have already meet these problems?
-> >
-> > Would it be a problem to post your:
-> >
-> > 1. GSMRH & GSRM_L initialization
-> > 2. SCC Parameter RAM configuration
-> > 3. Location of your BDs in DPRAM
-> >
-> > THX
-> >
-> >
-> >
->
->
->
-
+-Hollis
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
