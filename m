@@ -1,31 +1,36 @@
-From: "dong in kang" <dkang@east.isi.edu>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Kernel configuration option for debugging the kernel (using bdi 2000)
-Date: Wed, 4 Jun 2003 15:32:58 -0400
-Message-ID: <001f01c32ad0$1ae03010$45a97241@Minjoo>
+Message-ID: <3EDEA1A3.6080805@bmrtech.com>
+Date: Thu, 05 Jun 2003 09:49:23 +0800
+From: =?GB2312?B?varT8bn6?= <jiang.y.g@bmrtech.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <AB5AF73EAF23304EA1B932174137CED702FB8F@m5tmail.m5t.com>
+To: linuxppc-embedded@lists.linuxppc.org, dan@mvista.com
+Subject: MPC860 and Compact Flash Card in True Ide Mode
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Hello,
+hello ,
 
- I started using bdi2000 with gdb.
-I run gdb on Pentium PC.
-The target is Sandpoint X3 with Altimus MPC755 processor board.
-I found some flags in "kernel hacking" menu.
-Which should I turn on?
-   Magic SysRq key, Include kgdb kernel debugger, Include xmon kernel
-debugger, Include BDI-2000 user context switcher, ...
+Dan wrote in returning SangTae Ha "MPC850 and ATA/IDE"
+>There are at least three easy and inexpensive ways people add ATA/IDE
+>to the 8xx processors for embedded systems:
 
- I switched from Codewarrior to GDB recently.
-I'm not good at remote debugging with GDB.
-I'll appreciate your help.
+>Connect to PCMCIA interface
+>Use a simple CPLD between the processor bus and disk
+>Program one of the UPMs to generate timing and then
+>externally buffer the signals
 
- Dong-In
+I use the third way (UPMB) to add ATA/IDE (SanDisk 16M) to Mpc860T for
+my embedded system and OS is MVL PE3.0 in my board.
+According to MPC860UM, Program the UPMs in the following steps:
+1. Write patterns into the RAM array.
+2. Program MPTPR
+3. Program the machine mode register (MAMR and MBMR).
+4. Set up BRx and ORx.
 
+But I have a difficulty to write patterns into the RAM array because I
+know little UPM timing. Who can give me a RAM table and MPTPR, MBMR example?
+
+Thanks in advance!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
