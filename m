@@ -1,40 +1,36 @@
-Subject: Re: Problem of concurrency in arch/ppc/8260_io/uart.c
-From: Gary Thomas <gary@mlbassoc.com>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Kumar Gala <kumar.gala@motorola.com>,
-	Dan Malek <dan@embeddededge.com>,
-	Joakim Tjernlund <joakim.tjernlund@lumentis.se>,
-	Jean-Denis Boyer <jdboyer@m5t.com>,
-	Steffen Rumler <Steffen.Rumler@siemens.com>,
-	linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20031001143243.GE12343@ip68-0-152-218.tc.ph.cox.net>
-References: <3F79A106.8010608@embeddededge.com>
-	 <3F417AA6-F41B-11D7-B134-000393DBC2E8@motorola.com>
-	 <20031001143243.GE12343@ip68-0-152-218.tc.ph.cox.net>
-Content-Type: text/plain
-Message-Id: <1065019736.9737.526.camel@hermes>
-Mime-Version: 1.0
-Date: 01 Oct 2003 08:48:56 -0600
+Message-ID: <3F7AF44D.4040101@embeddededge.com>
+Date: Wed, 01 Oct 2003 11:35:41 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MPC823 and LCD?
+References: <D73A25AA6E54D511AD74009027B1110F3C0A59@ORION> <3F796663.5050809@imc-berlin.de> <3F79A750.8090707@embeddededge.com> <3F7A7C9F.4050001@imc-berlin.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 2003-10-01 at 08:32, Tom Rini wrote:
-> On Wed, Oct 01, 2003 at 09:26:29AM -0500, Kumar Gala wrote:
->
-> > Did I miss something or did is someone moving this patch from 8xx to
-> > 8260?  It looks like Tom's commit of Joakim's work was for 8xx.
->
-> No one has moved this to 8260 as no one with access to hw (not me,
-> easily) has time to do it.  If you can, I'll apply it.
->
+Steven Scholz wrote:
 
-I'll be glad to test this as well (sadly I don't have time today to
-help with moving the patch).  I have access to both 8xx and 82xx boards.
+> Ok. So we could move the code into a drivers/video/lcd823.c (or
+> mpc823fb.c), put your Copyrigth back in and make it available to all
+> MPC823 boards.
 
---
-Gary Thomas <gary@mlbassoc.com>
-MLB Associates
+How different are these drivers?  You mentioned Wolfgang's version
+is "more generic"?  I know lots of people have touched this driver
+since the beginning of time, and I think Scott Anderson actually
+made it look pretty :-)  I think if the driver remains LCD only,
+we need to keep that as part of the name (like lcd823fb.c).  If someone
+merges the LCD and YUV video into one driver, then call it something
+like mpc823fb.c....I don't care so much about the copyright update
+as the loss of the history of people that have worked on it.
+
+
+Thanks.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
