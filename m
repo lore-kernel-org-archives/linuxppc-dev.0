@@ -1,49 +1,44 @@
-Date: Sun, 17 Jan 1999 15:29:14 -0500
-From: Daniel Jacobowitz <drow@false.org>
-To: Paul.Mackerras@cs.anu.edu.au
-Cc: brad@pht.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: scsi hangs [drow@cs.cmu.edu: Re: CD-writers] (fwd)
-Message-ID: <19990117152914.A12471@drow.res.cmu.edu>
-References: <Pine.LNX.3.95.990103224624.29306A-100000@pacific.pht.com> <199901041138.WAA00533@tango.anu.edu.au>
+In-Reply-To: <Pine.PMDF.3.96.990117163455.538996255B-100000@uni.edu>
+Date: Mon, 18 Jan 1999 00:33:22 +0100
+To: puetzk6715@uni.edu
+CC: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: wrong termbits.h vs. tty_io.c
+Message-Id: <19990118003322.010688@smtp.calvacom.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199901041138.WAA00533@tango.anu.edu.au>; from Paul Mackerras on Mon, Jan 04, 1999 at 10:38:45PM +1100
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jan 04, 1999 at 10:38:45PM +1100, Paul Mackerras wrote:
-> Brad Midgley <brad@pht.com> wrote:
-> 
-> > i have tried out the current vger kernel and i'd characterize it as "five
-> > times" as stable. meaning i can copy 125 megabytes from a jaz on the
-> > external bus to a drive on the internal bus before it crashes--with
-> > 2.1.130 i could only copy about 25 megabytes before it crashed. the error
-> > when it crashes is always:
-> 
-> Actually, I'm not sure that the vger version had the locking exactly
-> right before.  The version in vger is now the same as the version
-> currently in the official tree, and I am moderately confident it's OK.
-> If you can reproduce it with that version, I really will have to dig
-> deeper.
-> 
-> We will never get the sd.c patch into the official version because it
-> breaks SMP machines.  I know because that's what happened on my SMP
-> powermac. :-)
+On Sun, Jan 17, 1999,  <puetzk6715@uni.edu> wrote:
 
 
-I don't have the exact messages, but attempting to use an external CDR
-(boot drive on MESH, burner on 53c94) locks up with a bunch of illegal
-sense requests.  Then it tries to reset the external bus, times out,
-claims to try harder, and more or less locks up.
+>Then let's fix it quick (prior to R5-CD freeze).
 
-Dan
+I've just posted the patch to termios (hand-made, so it may not apply "as
+is"). I hope someone will check it in asap.
 
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|     CMU, CS class of 2002      |
-|   Debian GNU/Linux Developer    __   Part-Time Systems Programmer  |
-|         dan@debian.org         |  |        drow@cs.cmu.edu         |
-\--------------------------------/  \--------------------------------/
+I've just merged all my patches with Cort's ftp vger image. I've
+separated my in-progress DMA code from simple bug fixes, and I hope I'll
+be able to submit those before final merge (I lack time, I have a lot of
+work and I'll soon be away for one or two weeks). I finally have the
+serial driver back to what looks like full functionality on my PowerBook,
+I hope I didn't break anything on other machines. There were a couple of
+timeouts issues, some bugs with my internal modem FCR bits on PowerBook
+G3s, and maybe a couple of other things I fixed by moving code around and
+cleaning things up. I've finally made my first successfull PPP connection
+with the PB internal modem and it worked great with the serial driver at
+115k (looked faster than MacOS PPP). The port should no longer hang when
+closed as it used to due to an infinite (almost) timeout in schedule.
+
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
