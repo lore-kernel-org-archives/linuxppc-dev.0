@@ -1,31 +1,41 @@
-Date: Wed, 23 Jun 2004 08:20:28 -0500
-From: David Wolfe <david.wolfe@freescale.com>
-To: I?igo Lopez Barranco <ilopez@albatros-sl.es>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Lite5200 USB with Vbus=1.7V
-Message-ID: <20040623132028.GA1311@orthanc.sps.mot.com>
-References: <42A622EB18325843894BB8E1040E3DF502275A@sinaexchf> <42A622EB18325843894BB8E1040E3DF5022759@sinaexchf>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <42A622EB18325843894BB8E1040E3DF502275A@sinaexchf> <42A622EB18325843894BB8E1040E3DF5022759@sinaexchf>
+From: "T Michael Turney" <tmike@recipes4linux.com>
+To: "Jack Liu" <Jack_liu@usish.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: linux shell
+Date: Wed, 23 Jun 2004 09:02:24 -0700
+Message-ID: <GEEKLLHMFHLAJOBEEELHOEBMCKAA.tmike@recipes4linux.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-reply-to: <200406230935.i5N9Z5V9030272@ms.usish.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-[ I?igo Lopez Barranco writes: ]
-> The only strange thing is that in Motorola's schematics says that
-> pins 3 and 5 of the Micrel 2025 are Not Connected and 4 is GND, and
-> Micrel's 2025 datasheet says that 3 is GND and 4 and 5 NC. Then, in
-> the Lite5200 GND pin 3 is connected to GND through an 1k resistor,
-> instead of directly as I suppose they pretended in the schematic, and
+. file
+is a built-in shell command.  It executes the commands
+in file in the current shell, no sub-shell is spawned.
+Since no sub-shell is spawned, variable settings stay in effect.
+file is found along $PATH and does not have to be executable.
+Cheers,
+T.mike
 
-That is correct and an error in our Lite5200 layout. Thanks for the
-feedback. We are replacing R164 with a 0 Ohm resistor. Our Total5200
-platform does not share this problem.
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Jack Liu
+Sent: Wednesday, June 23, 2004 2:35 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: linux shell
 
---
-David Wolfe
-Digital Audio, Radio & Telematics
-Freescale Semiconductor
+
+
+hi,all
+
+ I am wondering about the usage of ". ifcfg-eth0" since ifcfg-eth0 is
+not an execuatable. Can anyone tell me?
+
+Best regards
+Jack Liu
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
