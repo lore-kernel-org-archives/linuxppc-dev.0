@@ -1,34 +1,46 @@
-Message-ID: <6F9E5BBF912DD6119E7900B0D0FC51FC0415FF@DC-MAIL>
-From: "Hinkle, Mark" <MHinkle@dc.fti-net.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Sandpoint eval kit
-Date: Tue, 26 Mar 2002 10:02:01 -1200
-MIME-Version: 1.0
-Content-Type: text/plain
+Message-Id: <200203270931.RAA09753@isdn.iscas.ac.cn>
+Date: Wed, 27 Mar 2002 17:37:24 +0800
+From: weiwu <weiwu@isdn.iscas.ac.cn>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: UPM works for 16MB PC SDRAM but fails for 32MB memory
+Mime-Version: 1.0
+Content-Type: text/plain;
+      charset="GB2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm considering purchasing a Sandpoint X3 evaluation system for an embedded
-project I'm working on.  The specific package I'm looking at is the
-PPCEVALSP3745 [1].  What success/problems have people had with this board?
+I have bootrom code (ppcboot) for which I have UPM values with which I
+can access the 16MB PC SDRAM okay but for 32MB memory
+my bootrom fails to execute out of RAM.
 
-It's going to need a few megs of ROM but the specs I've seen don't mention
-any kind of ROM.  I figure I can get away with using a hard drive connected
-to it because speed at this point is not _that_ much of an issue.
+software: Now I have modifyed the AMA and MAMR registers,but it still not work!
 
-Are there any issues with executing an application that is being stored on
-the drive rather than in ROM?  How about then accessing other information
-that is stored on the drive?
+Hardware:
+My board uses HY57V281620A SDRAM and it's configuration is 4 Banks x 2M x 16bits, 12 rows and 9 column.
 
-[1] -
-http://e-www.motorola.com/webapp/sps/site/prod_summary.jsp?code=PPCEVALSP374
-5&nodeId=01M964472741978#
+MPC SDRAM
+=========
+A29 A0
+A28 A1
+A27 A2
+A26 A3
+A25 A4
+A24 A5
+A23 A6
+A22 A7
+A21 A8
+A20 A9
+GPL_A0 A10
+A18 A11
 
-Mark Hinkle
-Software Engineer, Frontier Technologies
-mhinkle@fti-net.com
-(703) 671-0508 x31
+A7 BA0
+A8 BA1
+OE_GPL_A1 RAS
+GPL_A2 CAS
+GPL_A3 WE
 
+What do I have to do get 32MB memory going?
+Thanks!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
