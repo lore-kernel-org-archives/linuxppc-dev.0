@@ -1,124 +1,62 @@
-Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC0601F@SNCMAIL>
-From: James Don <JDon@spacebridge.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: SELF: compile of util-linux
-Date: Fri, 10 Jan 2003 08:22:27 -0500
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3E1EE23F.5BC310F3@imc-berlin.de>
+Date: Fri, 10 Jan 2003 16:09:51 +0100
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Definitions for c_cflag etc. in termbits.h???
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-PLEASE IGNORE THIS ENTIRE POST ...
+Hi there,
 
-I figured out what I needed to know ... man patch ;-)
+I am playing around with UARTs and got completly confused when looking at
+./include/asm-ppc/termbits.h:
 
------Original Message-----
-From: James Don
-Sent: Thursday, January 09, 2003 8:44 PM
-To: James Don; 'linuxppc-embedded@lists.linuxppc.org'
-Subject: RE: SELF: compile of util-linux
+E.g. the DEFINEs of c_iflags appear to me as decimal values!?
 
-linuxppc-embedded@lists.linuxppc.org
+/* c_iflag bits */
+#define IGNBRK  0000001
+#define BRKINT  0000002
+#define IGNPAR  0000004
+#define PARMRK  0000010
+#define INPCK   0000020
+#define ISTRIP  0000040
+#define INLCR   0000100
+#define IGNCR   0000200
+#define ICRNL   0000400
+#define IXON    0001000
+#define IXOFF   0002000
+#define IXANY   0004000
+#define IUCLC   0010000
+#define IMAXBEL 0020000
 
-Scratch question 2 ...
-I thin the answer is that "patch" basically buts in the files necessary to
-build a cross compiled version of "util-linux" .... after I patch I think
-this will mean that the SED command will find some matches ...
+So how could code like
 
-I didn't need the "patch part" to build busy box (0.60.5) when I tried ...
-so I thought I could skip it ...
+./arch/ppc/8xx_io/uart.c:       if (I_BRKINT(info->tty) || I_PARMRK(info->tty))
+or
+./arch/ppc/8xx_io/uart.c:#define RELEVANT_IFLAG(iflag) (iflag &
+(IGNBRK|BRKINT|IGNPAR|PARMRK|INPCK))
 
-I think anyways,
-Jim
+possibly work?
 
------Original Message-----
-From: James Don
-Sent: Thursday, January 09, 2003 8:36 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: SELF: compile of util-linux
+Shouldn't that be hex values as in ./include/asm-sparc64/termbits.h:
 
-Hi,
+/* c_iflag bits */
+#define IGNBRK  0x00000001
+#define BRKINT  0x00000002
+#define IGNPAR  0x00000004
+#define PARMRK  0x00000008
+#define INPCK   0x00000010
+#define ISTRIP  0x00000020
+#define INLCR   0x00000040
+#define IGNCR   0x00000080
+etc. ???
 
-I am just browsing through the SELF code ... and trying for kicks to make
-"my own version" as an exercise to learn more about packages required for a
-running embedded Linux system ...
+Thanks,
 
-So far I have ...
-
-1.) Built uclibc
-2.) Built busybox with uclibc gcc wrappers
-3.) Built insmod with uclibc gcc wrappers
-
-I am reading the compile of util-linux (see below item 1) ... I am
-relatively new to linux so I have some questions (most of which are probably
-stupid seeing as just started looking at this)...
-
-1.) The "patch" part of the compile ... is it to add kernel support for what
-I am compiling? If I managed to get a pre-built image to run on an unpatched
-kernel what am I missing?
-
-2.) When you run the "sed -e 's/XXX-powerpc-linux-/$(CROSS_PREFIX)/" I
-assume this should go into the make sysyem and put the cross compiler in the
-build ? ... sorry never used "sed" just skimmed the man page
-
-3.) For kicks I have taken the tar ball I downloaded of util-linux (version
-2.11y) and tried to compile it with the uclibc gcc wrappers (see item 2
-below) ... now this does when I get to the "make part" ... it seems to die
-because "configure" was not called ... but its not called from SELF's make
-file either ??? If I call make from the util-linux directory it calls
-configure ... but then uses my local 'cc' ...
-
-Any tips would be great ;-) In the mean time I will keep digging and
-hopefully see what's wrong with my script ;-)
-
-Best regards,
-Jim
-
-
-
-item 1
-============
-$(LOGIN)/login-utils/login: $(LOGIN)/.patch
-	$(MAKE) -C $(LOGIN)/lib
-	$(MAKE) -C $(LOGIN)/login-utils login
-
-$(LOGIN)/.patch: $(CONFIGURATION) \
-		$(TARBALLS)/util-linux-$(LOGIN_VERSION).tar.gz \
-		$(PATCHES)/util-linux-$(LOGIN_VERSION)-cross.$(P_SUFF) \
-
-$(PATCHES)/util-linux-$(LOGIN_VERSION)-nosetproctitle.$(P_SUFF) \
-		$(CONFIG)/config.mk
-	rm -fr $(LOGIN)
-	cd $(BUILD) && \
-	gzip -cd $(TARBALLS)/util-linux-$(LOGIN_VERSION).tar.gz | tar xf -
-	cd $(LOGIN) && \
-	sed -e 's/XXX-powerpc-linux-/$(CROSS_PREFIX)/' \
-
-$(PATCHES)/util-linux-$(LOGIN_VERSION)-cross.$(P_SUFF) | \
-		patch -p1 -b -z.cross && \
-	patch -p1 -b -z.no_sp
-<$(PATCHES)/util-linux-$(LOGIN_VERSION)-nosetproctitle.$(P_SUFF) && \
-	touch .patch
-
-item 2
-==============
-#!/usr/bin/bash
-
-LOGIN_UTIL_VERSION=2.11y
-LOGIN_BUILD_DIR=$HOME/ppcLoginUtil/
-
-CROSS=powerper-uclibc-
-
-echo LOGIN_BUILD_DIR=$LOGIN_BUILD_DIR
-
-rm -fr $LOGIN_BUILD_DIR/util-linux-$LOGIN_UTIL_VERSION
-tar xvfz $LOGIN_BUILD_DIR/util-linux-$LOGIN_UTIL_VERSION.tar.gz
-cd $LOGIN_BUILD_DIR/util-linux-$LOGIN_UTIL_VERSION
-
-sed -e 's/XXX-powerpc-linux-/$CROSS/' *
-
-make -C $LOGIN_BUILD_DIR/util-linux-$LOGIN_UTIL_VERSION/lib
-make -C $LOGIN_BUILD_DIR/util-linux-$LOGIN_UTIL_VERSION/login-utils login
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
