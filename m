@@ -1,30 +1,44 @@
-From: desrice@comcast.net
-To: mporter@kernel.crashing.org, linuxppc-embedded@lists.linuxppc.org
-Subject: Ethernet Driver
-Date: Mon, 17 May 2004 17:40:51 +0000
-Message-Id: <051720041740.24419.40A8F923000C6ADF00005F6322007511500A0C079D9C0A0B@comcast.net>
+Message-ID: <40A8FED6.9000809@ru.mvista.com>
+Date: Mon, 17 May 2004 22:05:10 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: Gennadiy Kurtsman <gkurtsman@ru.mvista.com>
+Subject: [PATCH]  for linuxppc-2.4 tree: 10/100 Ethernet driver for Xilinx
+ ML300
+References: <4034C37D.20909@ru.mvista.com> <405B2C46.90108@ru.mvista.com>
+In-Reply-To: <405B2C46.90108@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-HI Guys
+Hi,
 
-I'm wonder if anyone has seen this problem and can maybe help. I'm
-working with the IBM 405H ( on our custom board ) processor and Monta
-Vista Linux Kernel of linux-2.4.17_mvl21. I have updated the Ethernet
-driver to support two Ethernet Interfaces, which use EMAC 0 and EMAC 2
-(This is where our two Phys are physically connected to.). The problem
-I'm seeing is that on interface 2 ( EMAC 2 ) when a line rate of 3% ,
-with 64 byte packet size , is exceeded, MAL0 RX descriptor errors are
-continuously generated. This failure has two types of symptoms when the
-traffic to the port is removed :
+Here is the 10/100Mb ethernet driver update for Xilinx EMAC.
 
-1. The MAL0 descriptor errors cease soon after the traffic is removed,
-and the system recovers
-2. The MAL0 descriptor errors never cease and the system is continuously
-handling the error.
+New functionality added:
+1) SG DMA transfer support;
+2) putting more than one packet per interrupt into FIFO (FIFO mode);
+3) interrupt coalesce parameters setting using ioctl commands (SGDMA mode);
+4) ethtool utility support;
+5) bottom half interrupts service.
 
-Thanks in Advance
-Des
+Fixed:
+1) memory deallocation in cleanup function;
+2) setting Tx timeout in FIFO mode.
+
+The patch affects Xilinx ML300 board only.
+
+The patch itself can be found here:
+http://source.mvista.com/~ank/xilinx_xenet_update.040517.diff
+
+The patch is against the kernel version 2.4.26.
+
+The patch author is Gennadiy Kurtsman.
+
+Best regards,
+Andrei Konovalov
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
