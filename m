@@ -1,31 +1,38 @@
-Message-ID: <407E7267.305@imc-berlin.de>
-Date: Thu, 15 Apr 2004 13:30:47 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
-To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: problem with queue_task() and mark_bh()...
-References: <407BF458.5080408@imc-berlin.de> <407E42F9.1060201@imc-berlin.de>
-In-Reply-To: <407E42F9.1060201@imc-berlin.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: MPC85xx support
+From: Jon Loeliger <jdl@motorola.com>
+To: Gerrit Van de Velde <gvd@denayer.wenk.be>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <407E5F36.80003@denayer.wenk.be>
+References: <407E5F36.80003@denayer.wenk.be>
+Content-Type: text/plain
+Date: 15 Apr 2004 08:35:33 -0500
+Message-Id: <1082036134.20892.8.camel@baz.sps.mot.com>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+On Thu, 2004-04-15 at 05:08, Gerrit Van de Velde wrote:
+>
+> Hi,
+>
+> I was wondering how well the mpc85xx of motorola (PowerPC e500 core) is
+> currently supported in the linux/u-boot combination.
+> Can anyone give some pointers about this matter ?
+>
+> Kind regards,
+> Gerrit Van de Velde
 
->>     queue_task( &( lp->task ), &tq_immediate );
->>     mark_bh( IMMEDIATE_BH );
+Hi Gerrit,
 
-I've put some printks in my kernel.
+I am planning to release an updated version of the mpc85xx support
+for U-Boot in just a few days.  It will be updated to Rev 1.1 and
+has major improvements to the TSEC driver.  An updated Linux release
+is close as well, but I'll let my partner in crime speak there. :-)
 
-Now I can see that the task is successfully queued, that mark_bh() is called
-and the tasklet_hi_schedule() calls __tasklet_hi_schedule().
+Are there specific features you are concerned about?
 
-But the function immediate_bh() in kernel/timer.c (which should then call
-run_task_queue(&tq_immediate)) is never called.
+jdl
 
-Any ideas?
-
-Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
