@@ -1,31 +1,23 @@
-From: "Stephan Linke" <Stephan.Linke@epygi.de>
-To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: [PATCH and RFC] Remove request_8xxirq
-Date: Sun, 23 Jun 2002 18:54:43 +0200
-Message-ID: <FCEAKDJJAPHPLJFINDAJCEOKCFAA.Stephan.Linke@epygi.de>
+Message-ID: <20020624015205.47078.qmail@web11206.mail.yahoo.com>
+Date: Sun, 23 Jun 2002 18:52:05 -0700 (PDT)
+From: Sergiy Kovtun <skovtun@yahoo.com>
+Subject: PPCboot+MPC7410+Sandpoint
+To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20020531182540.GY32412@opus.bloom.county>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <15635.16331.965632.877856@argo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hello all,
 
-why not simply placing a new request_cascaded_irq() with an additional
-controller/device identifier beside request_irq().
+Has anybody successfully built ppcboot for
+Altimus(MPC7410) on Sandpoint X3B board ?
 
-If you map the functionality to the original functions the rest of the code
-could stay unchanged.
-You can even map the old function calls using macros.
-(If you like to you can use device 0 for a virtual mapping too. But I
-wouldn't. :)
+Thanks,
 
-request_irq() could be left unchanged and new patches could use a single
-registration function. So everyone should stay happy.
-
-Stephan
+Sergiy,
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
