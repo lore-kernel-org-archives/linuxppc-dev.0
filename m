@@ -1,27 +1,39 @@
-In-Reply-To: <20040609131408.33319.qmail@web15205.mail.bjs.yahoo.com>
-Subject: Re: How to set current time to 8xx RTC through Linux application?
-To: Song Sam <samlinuxppc@yahoo.com.cn>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <OFAAD6E391.94B93EC5-ON85256EAE.005413DF-85256EAE.00543302@nanometrics.ca>
-From: David Ho <DavidHo@nanometrics.ca>
-Date: Wed, 9 Jun 2004 11:19:40 -0400
+Message-ID: <4418.62.48.238.11.1086803257.squirrel@alumni.deec.uc.pt>
+Date: Wed, 9 Jun 2004 18:47:37 +0100 (WEST)
+Subject: U-Boot and kernel 2.6
+From: "Ricardo DIz" <rdiz@alumni.deec.uc.pt>
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain;charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-If you are using ELDK-3.0 and it's development root filesystem, hwclock
-does the trick.
+Hi,
 
-David
+I'm trying to boot a custom 860T board using the latest kernel from
+linuxppc-2.5. The board is currently using a variation of an old version
+of U-Boot (0.2.0) along with a hacked 2.4.20 linux kernel version.
 
->
-> I added 8xx RTC driver both on U-Boot and Linux
-> kernel.And I could set current time right under
-> U-Boot.But I have no idea on making it through Linux
-> application?I could read it with following code but
-> how to set it?
+My first aim is to boot a simple kernel and make it get to a shell. For
+that I compiled the kernel, but did not compiled u-boot with a recent
+version.
 
+When booting, the kernel got uncompressed, but then it resets! I presume
+the watchdog (which is enabled), is resetting the processor, so I guess
+booting just stalls. Was there any changes in the way parameters were
+received by the kernel since 2.4.20?
+
+Oh, I forgot to mention the compiler. I'm still using a gcc 2.95
+cross-compiler, altough I tried using a gcc 3.2 cross-compiler for the
+8260 once, but got the same result.
+
+I followed a recent thread very similar to this, but that turned out to be
+just a matter of UART configuration, and I don't thinks this is the case.
+
+Any thoughts?
+
+Thanks in advance,
+Ricardo Diz
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
