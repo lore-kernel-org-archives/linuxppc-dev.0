@@ -1,102 +1,62 @@
-Message-ID: <37A5EFAF.D41304DD@msoe.edu>
-Date: Mon, 02 Aug 1999 14:21:19 -0500
-From: ian geiser <geiseri@msoe.edu>
+From: "Jerry Quinn" <jquinn@nortelnetworks.com>
 MIME-Version: 1.0
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
-        LinuxPPC List <linuxppc-user@lists.linuxppc.org>
-Subject: Sony says this cannot happen!
-Content-Type: multipart/mixed;
- boundary="------------4AB92228D4C2EA08DBFBC0E6"
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14245.63618.624651.638604@gargle.gargle.HOWL>
+Date: Mon, 2 Aug 1999 15:58:58 -0400 (EDT)
+To: Simon Piette <spiette@generation.net>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Help with cd writing scsi error?
+In-Reply-To: <37A5EAD7.E4B3CCE@generation.net>
+References: <14245.48740.399981.423193@gargle.gargle.HOWL> <37A5EAD7.E4B3CCE@generation.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------4AB92228D4C2EA08DBFBC0E6
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+>> "Simon" == Simon Piette <spiette@generation.net> writes:
 
-I purchased a new Sony CD-ROM last week and i have since then run
-into the most peculiar problem i have ever seen in my life.
+ Simon> Jerry Quinn wrote:
+ >> Hi all.  I'm trying to burn an audio CD on a stock kernel.org 2.2.10
+ >> kernel on a Powercenter (R5 dist).  The generic SCSI driver is built as a
+ >> module.  I'm using cdrecord-1.8a24, the latest I could find (1.8a21 gives
+ >> the same error).  I'm setting shmmax to 16M.  My burner is a Panasonic
+ >> CW-7502 with rev 4.17 firmware.
+ >> 
+ >> Basic info gathering from the drive seems to work fine.  I can extract
+ >> digital audio as well.  I pulled one track off a disc to use as a writing
+ >> test.  To do the test I try the following with a CDR blank in the drive:
+ >> 
+ >> cdrecord dev=3,0 -dummy -audio track.wav
+ >> 
+ >> I get the following error -
+ >> 
+ >> cdrecord Input/output error.  read track info: scsi sendcmd: retryable
+ >> error CDB: 52 01 00 00 00 FF 00 00 1C 00 status: 0x2 (CHECK CONDITION)
+ >> Sense Bytes: 70 00 05 00 00 00 0A 00 00 00 00 64 00 00 00 Sense Key: 0x5
+ >> Illegal Request, Segment 0 Sense Code: 0x64 Qual 0x00 (illegal mode for
+ >> this track) Fru 0x0 Sense flags: Blk 0 (not valid) cmd finished after
+ >> 0.003s timeout 240s
+ >> 
+ >> cdrecord says it is using generic SCSI-3/mmc cdr driver (mmc_cdr) and
+ >> driver flags are SWABAUDIO.
+ >> 
+ >> Any ideas?
 
-I was ripping a CD, it was scratched and i have used cdparanoia to
-"salvage" CD's like this in the past.  while the CD was being ripped
-it got to a point  in the CD where it just could not get by.  the CD
-sample
-just repeats over and over again no matter what CD player you are on.
+ Simon> Could you try :
 
-well i gave up on this track and went to another one.  but no matter
-what
-track i was on it would only sample the same 2 seconds of audio from the
+ Simon> $ cdrecord dev=3,0,0 fs=3800k -dummy -audio track.wav
 
-first track.  so i switched CDs... the same 2 seconds of audio OVER AND
-OVER!
+I'll give this a try next (except for dev - see below).  Should the smaller
+buffer be required even when shmmax is 16 meg?
 
-so i rebooted (warm boot) still the SAME 2 seconds of audio...
+ Simon> Arguments for dev: bus, id, lun
 
-so i powered off and waited a few minutes.... then i rebooted and
-everything
-was fine.
+ Simon> Have you 3 scsi buses and your cd-burner is at id 0 on your last
+ Simon> detected bus?
 
-i called sony and they said there was no way the CD-ROM could store
-audio
-on board the CD player like that and that i would be better off
-purchasing a new
-CD because CD-ROMs are not mad to rip cds....
+dev=3,0 has default bus 0, no?  Other cdrecord operations are happy with
+this and seem to talk to the drive reasonably.
 
-i am wondering if anyone else has run into this and IF  it is a problem
-with my
-machine.
-
- thanks in advance
-
-    -ian reinhart geiser
-
---
-.-----------------------------------------------------------.
-|[]                   NeXT Generation                    [X]|
-|--------------------------,--------------------------------.
-|  PC Network Specialist,  | Office:    CCSD Data Center    |
-|  Macintosh Specialist @  | Phone:     414.277.4528        |
-|  Milwaukee School of     |                                |
-|        Engineering       |--------------------------------|
-|                          |                                |
-|   ian reinhart geiser    | phone:   414.220.9683          |
-|   Apt #510A              | email:   geiseri@msoe.edu      |
-|   1029 N Jackson St      | web:     www.msoe.edu/~geiseri |
-|   Milwaukee, WI 53202    |  NeXT/Be/Cyberdog Mail okay!   |
-|                          |   MIME or BinHex prefered      |
-|--------------------------'--------------------------------|
-'-----------------------------------------------------------'
-
-
-
---------------4AB92228D4C2EA08DBFBC0E6
-Content-Type: text/x-vcard; charset=us-ascii;
- name="geiseri.vcf"
-Content-Description: Card for ian geiser
-Content-Disposition: attachment;
- filename="geiseri.vcf"
-Content-Transfer-Encoding: 7bit
-
-begin:vcard 
-n:geiser;ian
-tel;pager:414-402-8302
-tel;cell:414-688-0535
-tel;home:414-220-9683
-tel;work:414-277-7143
-x-mozilla-html:TRUE
-url:http://www.msoe.edu/~geiseri
-org:Geek Central
-version:2.1
-email;internet:geiseri@msoe.edu
-title:Geek
-adr;quoted-printable:;;Apt 5=0D=0A828 N Milwaukee St;Milwaukee;Wisconsin;53202;USA
-x-mozilla-cpt:;0
-fn:ian reinhart geiser
-end:vcard
-
---------------4AB92228D4C2EA08DBFBC0E6--
+Jerry
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
