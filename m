@@ -1,19 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id D028A2BF16
+Return-Path: <paguilar@junkerhq.net>
+Received: from webmail.abac.com (webmail.abac.com [216.55.191.200])
+	by ozlabs.org (Postfix) with ESMTP id 800AD2BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Jan 2005 02:53:05 +1100 (EST)
-In-Reply-To: <7f834d4e050109212155be7b19@mail.gmail.com>
-References: <7f834d4e050109212155be7b19@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=ISO-2022-JP; format=flowed
-Message-Id: <AD51476A-631F-11D9-807E-000393DBC2E8@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 10 Jan 2005 09:52:48 -0600
-To: Aubrey Lee <aubrey1127@gmail.com>,
-	"<tglx@linutronix.de> <tglx@linutronix.de>" <tglx@linutronix.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Build cross tools for PowerQUICCIII
+	Tue, 11 Jan 2005 04:18:05 +1100 (EST)
+Received: from webmail.junkerhq.net (localhost [127.0.0.1])
+	by webmail.abac.com (8.12.11/8.12.8) with ESMTP id j0AH4LRU092460
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 10 Jan 2005 09:04:21 -0800 (PST)
+	(envelope-from paguilar@junkerhq.net)
+Message-ID: <61163.81.72.55.167.1105376661.squirrel@81.72.55.167>
+Date: Mon, 10 Jan 2005 18:04:21 +0100 (CET)
+From: "Pedro Aguilar" <paguilar@junkerhq.net>
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/mixed;boundary="----=_20050110180421_54297"
+Subject: 8xx_imap patch for the mpc8xx ATM driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,57 +25,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I've attached some patches Freescale has developed and sent Dan K. to 
-include into crosstool.  Feel free to use these until Dan K. 
-incorporates them into crosstool:
+------=_20050110180421_54297
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 
-http://gate.crashing.org/~galak/crosstool-0.28-rc37-e500.patch.bz2
-http://gate.crashing.org/~galak/crosstool-0.28-extra-patches.patch.bz2
+Hi,
 
-Two patches are needed for crosstool-0.28-rc37, and are attached:
+I have a mpc8xx based board that must provide ATM functionality using the
+utopia interface. I used the mpc86x ESAR Linux ATM driver, but since the
+driver was develop and has been tested only with kernels 2.4.4 and 2.4.17,
+I had to modify my kernel (2.4.25 from DENX) in order to make it work.
 
-1/ e500 toolchain patch.
+It is a very simple change in the include/asm-ppc/8xx_imap.h file .
+All the 2.4.x kernels that I've seen need this change.
+It seems that the Fast Ethernet Controller needs this change too.
 
-This patch contains the following:
+Here's the patch (and in the attchmnt too).
+It can be applied from the kernel's top dir.
 
-   - spe patches for glibc-2.3.2 and glibc-2.3.2,
-     - gcc-3.4.3-e500-glibc-2.3.3-spe.dat
-     - powerpc-e500.dat
-     - powerpc-e500.config (e500 kernel config for 2.6.9)
-     - demo-e500.sh
+--- include/asm-ppc/8xx_immap.h 2004-06-25 21:14:33.000000000 +0200
++++ include/asm-ppc/8xx_immap.h 2005-01-10 18:27:57.264606288 +0100
+@@ -272,7 +272,8 @@
+        ushort  iop_pdpar;
+        char    res3[2];
+        ushort  iop_pddat;
+-       char    res4[8];
++        uint    utmode;
++        char    res4[4];
+ } iop8xx_t;
 
-demo-e500.sh will build an e500 toolchain comprising gcc-3.4.3
-glibc-2.3.3, and binutils-2.15
-
-2/ getandpatch EXTRA_PATCHES patch.
-
-This is a patch for getandpatch to permit additional patches (in
-addition to the standard crosstool patches) that are needed to be
-applied for a toolchain build.  To do this the environment variable
-EXTRA_PATCHES is set to the name of the patches needed.  For example
-when building the e500 toolchain EXTRA_PATCHES needs to be set to "spe"
-to apply the spe patches to glibc.  The glibc spe patches are located
-in: crosstool-0.28-rc37/patches/glibc-2.3.2-spe
-  The advantage that this gives is that all the standard crosstool 
-patches
-for glibc-2.3.2 can remain in their original directory, and the spe
-patches are applied in addition to the normal glibc patches.
-
-- kumar
+ /* Communication Processor Module Timers
 
 
-On Jan 9, 2005, at 11:21 PM, Aubrey Lee wrote:
+Thanks.
 
->      Hi, I want to build cross tools for PowerQUICCIII（mpc8540, e500 
-> core）,
->      Had anyone built cross tools successfully by cross-tools-0.28?
->       What type of target should I set? Could you tell me the versions
->  you have used?
->       Thank you!
->      Best regards
->
->     Aubrey
->  _______________________________________________
-> Linuxppc-embedded mailing list
->  Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Pedro
+------=_20050110180421_54297
+Content-Type: application/octet-stream; name="patch_8xx_imap_100105"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="patch_8xx_imap_100105"
+
+LS0tIGluY2x1ZGUvYXNtLXBwYy84eHhfaW1tYXAuaAkyMDA0LTA2LTI1IDIxOjE0OjMzLjAwMDAw
+MDAwMCArMDIwMAorKysgaW5jbHVkZS9hc20tcHBjLzh4eF9pbW1hcC5oCTIwMDUtMDEtMTAgMTg6
+Mjc6NTcuMjY0NjA2Mjg4ICswMTAwCkBAIC0yNzIsNyArMjcyLDggQEAKIAl1c2hvcnQJaW9wX3Bk
+cGFyOwogCWNoYXIJcmVzM1syXTsKIAl1c2hvcnQJaW9wX3BkZGF0OwotCWNoYXIJcmVzNFs4XTsK
+KyAgICAgICAgdWludCAgICB1dG1vZGU7CisgICAgICAgIGNoYXIgICAgcmVzNFs0XTsKIH0gaW9w
+OHh4X3Q7CiAKIC8qIENvbW11bmljYXRpb24gUHJvY2Vzc29yIE1vZHVsZSBUaW1lcnMK
+------=_20050110180421_54297--
