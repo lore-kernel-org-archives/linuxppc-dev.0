@@ -1,28 +1,24 @@
-Message-ID: <20000915024609.15159.qmail@web1003.mail.yahoo.com>
-Date: Thu, 14 Sep 2000 19:46:09 -0700 (PDT)
-From: Dan Bethe <dan_bethe@yahoo.com>
-Subject: Re: Programming USB ports
-To: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200009150254.DAA20954@hyperion.valhalla.net>
+Date: Fri, 15 Sep 2000 03:55:06 +0100
+Subject: Re: ld bug?
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Takashi Oe <toe@unlserve.unl.edu>, linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---- Michael Norton <mnorton@cisco.com> wrote:
+> c039c3e0 D int_control
 >
-> hi,
->
-> Where can I find some good documentation on programming the USB ports
-> under LinuxPPC?
-> Do tools exist for programming the USB using JAVA?
+> as opposed to c03ac3e0 used in vmlinux.  So, it appears that ld or
 
-	You can try http://linux-usb.org, there might be relevant HOWTOs on
-http://linuxdoc.org, and you might try searching something like Google.com.
+This looks about the same as the difference reported by ksymoops (when it
+refuses to work - reporting a mismatch between System.map and /proc/ksyms).
 
-=====
-"Don't expect your own messiah; this neverworld which you desire is
-only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
+but I was seeing that on 2.2.17 (however, using the toolchain upgrades
+recommended for 2.4.0).
 
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
