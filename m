@@ -1,42 +1,74 @@
-Date: Mon, 24 Sep 2001 17:39:59 -0400 (EDT)
-From: patrick <tendim@vex.net>
-To: Ethan Benson <erbenson@alaska.net>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: More problems with Kernel 2.4.10-pre12 and mounting
-In-Reply-To: <20010923221839.G14835@plato.local.lan>
-Message-ID: <Pine.NEB.4.33.0109241732420.19824-100000@vex.net>
+Message-Id: <200109242209.RAA30858@lists.linuxppc.org>
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+To: paulus@samba.org
+Subject: Re: [PATCH] gcc3 compatibility and debugger support
+Date: Tue, 25 Sep 2001 00:09:55 +0200
+Cc: linuxppc-commit@source.mvista.com,
+	linuxppc-dev@lists.linuxppc.org
+References: <200109061932.OAA12306@lists.linuxppc.org> <15278.40161.431833.765393@cargo.ozlabs.ibm.com>
+In-Reply-To: <15278.40161.431833.765393@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Multipart/Mixed;
+  boundary="------------Boundary-00=_JKT6FSL3BFOAQCHQJQC9"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 23 Sep 2001, Ethan Benson wrote:
+--------------Boundary-00=_JKT6FSL3BFOAQCHQJQC9
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 
-> well sounds to me like your scsi driver is hosed then.
+On Monday 24 September 2001 04:39, Paul Mackerras wrote:
+> Franz Sirl writes:
+> >  	current_set[smp_processor_id()] = new;
+> > +#else
+> > +	current_set[0] = new;
+> >  #endif /* CONFIG_SMP */
+>
+> Yuck.  Just put the #endif before the line that sets current_set[].
+> smp_processor_id() is 0 on UP.
 
-Well if the SCSI driver is hosed, then shouldn't I *not* be able to do
-anything else then?  My setup is as follows:
+OK, here is the updated patch.
 
-SCSI0 - Adaptec 2940 UW Card   /dev/sda
-SCSI1 - Mesh Internal SCSI     /dev/sdb
+Franz.
 
-And all of the drivers have been compiled into the kernel (no modules).
 
-> well if badblocks has no problem reading the entire device why should
-> anything else.  this clearly has nothing to do with partition table
-> support.
+--------------Boundary-00=_JKT6FSL3BFOAQCHQJQC9
+Content-Type: text/plain;
+  charset="iso-8859-1";
+  name="bk-misc1a.diff"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment; filename="bk-misc1a.diff"
 
-Then that leaves it to the program I'm using to read the partition map.
-I've seen you reference "mac-fdisk".  Is this the same as pdisk?  Or
-is an entirely different beast?
+===== arch/ppc/kernel/process.c 1.29 vs edited =====
+--- 1.29/arch/ppc/kernel/process.c	Tue Sep 18 03:19:06 2001
++++ edited/arch/ppc/kernel/process.c	Mon Sep 24 19:59:28 2001
+@@ -226,8 +226,10 @@
+ 	if ((prev->thread.regs && (prev->thread.regs->msr & MSR_VEC)))
+ 		giveup_altivec(prev);
+ #endif /* CONFIG_ALTIVEC */
+-	current_set[smp_processor_id()] = new;
+ #endif /* CONFIG_SMP */
++
++	current_set[smp_processor_id()] = new;
++
+ 	/* Avoid the trap.  On smp this this never happens since
+ 	 * we don't set last_task_used_altivec -- Cort
+ 	 */
+===== include/asm-ppc/prom.h 1.20 vs edited =====
+--- 1.20/include/asm-ppc/prom.h	Wed Aug 29 00:49:25 2001
++++ edited/include/asm-ppc/prom.h	Thu Sep  6 21:13:57 2001
+@@ -106,7 +106,7 @@
 
-Perhaps it is pdisk that doesn't like the new kernel.
+ #define PTRRELOC(x)	((typeof(x))((unsigned long)(x) + offset))
+ #define PTRUNRELOC(x)	((typeof(x))((unsigned long)(x) - offset))
+-#define RELOC(x)	(*PTRRELOC(&(x)))
++#define RELOC(x)	(*({ typeof(x) * __ptr  = PTRRELOC(&(x)); __asm__ ("" : "=r" (__ptr) : "0" (__ptr)); __ptr;}))
 
-patrick@tendim.cjb.net
-http://www.tendim.cjb.net/
-Like anime?   Got hotline?
-hotline://twoaday.cjb.net/
+ #endif /* _PPC_PROM_H */
+ #endif /* __KERNEL__ */
 
+--------------Boundary-00=_JKT6FSL3BFOAQCHQJQC9--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
