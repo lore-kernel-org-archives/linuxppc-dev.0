@@ -1,21 +1,40 @@
-Message-Id: <200101310013.f0V0DdS14226@denx.local.net>
-To: Brian Kuschak <brian.kuschak@skystream.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Abatron BDI2000 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 30 Jan 2001 14:42:00 PST."
-             <B25E2E5A003CD311B61E00902778AF2A0204433C@SERVER1>
-Date: Wed, 31 Jan 2001 01:13:39 +0100
+Message-ID: <B25E2E5A003CD311B61E00902778AF2A02044341@SERVER1>
+From: Brian Kuschak <brian.kuschak@skystream.com>
+To: "'Wolfgang Denk'" <wd@denx.de>,
+        Brian Kuschak
+	 <brian.kuschak@skystream.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Abatron BDI2000 
+Date: Tue, 30 Jan 2001 16:37:58 -0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+I reflashed my BDI2000 (loader=1.03, firmware=1.01, logic=1.01).
+Unfortunately I get the same results.  I will contact Abatron.  Perhaps
+there is a bug in this version of the command parser.
+
+Thanks,
+Brian
+
+
+-----Original Message-----
+From: Wolfgang Denk [mailto:wd@denx.de]
+Sent: Tuesday, January 30, 2001 4:14 PM
+To: Brian Kuschak
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Abatron BDI2000
+
+
 In message <B25E2E5A003CD311B61E00902778AF2A0204433C@SERVER1> you wrote:
 >
-> Is anyone out there using the Abatron BDI2000 to set hardware breakpoints on
-> data access (on 405GP)? I'm probably just doing something dumb, but I don't
+> Is anyone out there using the Abatron BDI2000 to set hardware breakpoints
+on
+> data access (on 405GP)? I'm probably just doing something dumb, but I
+don't
 > see it. Any ideas?
 
 Not on 405, but on 8xx / 82xx instead.
