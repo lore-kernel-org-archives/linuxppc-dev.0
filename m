@@ -1,31 +1,26 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-	<linuxppc-dev@lists.linuxppc.org>
+Date: Tue, 17 Jul 2001 11:32:17 +0100
 Subject: Re: 2.4 - buttons, temperature, ictc
-Date: Tue, 17 Jul 2001 12:19:01 +0200
-Message-Id: <20010717101901.21603@smtp.adsl.oleane.com>
-In-Reply-To: <5.1.0.14.2.20010717110248.03890268@mail.netsurf.de>
-References: <5.1.0.14.2.20010717110248.03890268@mail.netsurf.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: "Joseph P. Garcia" <jpgarcia@execpc.com>,
+	linuxppc-dev@lists.linuxppc.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010717103403.EB5C92EFB9@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->I object to putting anything you marked with CONFIG_PMAC_VOLUME into the
->kernel, it's worse enough we have CONFIG_PMAC_BACKLIGHT in there. I'll
->merge your "input_report_key" into my 2.5 adbhid.c source though, thx.
->
->With 2.5 even CONFIG_PMAC_BACKLIGHT in adbhid.c will go away and you _have_
->to use the event devices then, so you better start using them _now_. Taking
->kernel bloating shortcuts is not the way to go IMHO.
+not sure how the volume controller can work in the general case.
 
-Right, all this belongs to userland. I might include part of this
-patch in 2.4 so we have the feature working now, but for 2.5, I'd
-rather use the event devices for both backlight and volume, and
-have pmud handle them.
+I think this needs to be a user-space action (somehow) through the standard
+OSS calls - because there are now quite a few PMac sound implementations
+(although not all working fully yet)...
 
-Ben.
+doing it this way is going to horribly link the adb and dmasound drivers
+together...
 
+ciao,
+Iain
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
