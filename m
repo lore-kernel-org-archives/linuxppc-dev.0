@@ -1,30 +1,29 @@
-Message-ID: <7283DE19D141D111AD0E00A0C95B195502581D6B@mail2.aiinet.com>
-From: "Gessner, Matt" <mattg@aiinet.com>
-To: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: 8260, FCC and local bus?
-Date: Tue, 27 Jun 2000 13:03:34 -0400
+Message-ID: <3958E040.15B86909@netx4.com>
+Date: Tue, 27 Jun 2000 13:11:28 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Mark S. Mathews" <mark@absoval.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PLPRCR & Checkstop reset
+References: <Pine.LNX.3.96.1000625172850.17884A-100000@tristar.cc.absoval.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Mark S. Mathews wrote:
 
-I'm having trouble getting this combination to work.
-Has anyone had success?
-I tried to follow the basic outline of the scc enet driver,
-but of course there are some significant differences.
+> We're using the mvista 2.2.13-3 kernel sources and I'd like to add a
+> software reboot capability.
 
-I think I'm tripping on VA <-> PA stuff, but I'm not sure,
-as the machine just dies.
+Here is the first installment.  It will allow commands that use
+the reboot system call (like 'reboot') to properly jump into the
+system reset vector.  If you want to write some custom programs
+to execute code somewhere else, you can call reboot with a
+starting address parameter.  I use this to use Linux to load a
+new Linux kernel.
 
-I'm using the EST SBC 8260.
 
-TIA,
-
-Matt
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
