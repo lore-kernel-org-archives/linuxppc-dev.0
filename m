@@ -1,42 +1,63 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>,
-	"Tom Rini" <trini@kernel.crashing.org>
-Subject: Performance bug in 8xx_io/enet.c?
-Date: Tue, 6 Apr 2004 12:15:37 +0200
-Message-ID: <IGEFJKJNHJDCBKALBJLLAEILIKAA.joakim.tjernlund@lumentis.se>
+Date: Tue, 06 Apr 2004 12:52:20 -0400
+From: Jeff Tucker <jeff@jltnet.com>
+To: u-boot-users@lists.sourceforge.net,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [U-Boot-Users] Need help booting linux on IBM 405EP eval board
+Message-ID: <67947102.1081255940@[192.168.0.230]>
+In-Reply-To: <20040405222200.F0C05C109A@atlas.denx.de>
+References: <20040405222200.F0C05C109A@atlas.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am seeing a severe performance drop in 8xx_io/enet.c in some cases I can't explain. The cause of
-the performance drop is the 1.12.1.8 ChangeSet to enet.c. Changeset comments
- "Original comments:
-  Fixed potential race condition in transmit routine.
-  Eliminated erroneous "BSY can't happen" error message.
+--On Tuesday, April 06, 2004 12:21 AM +0200 Wolfgang Denk <wd@denx.de>
+wrote:
 
-  I believe this race condition is actualized under
-  heavy load."
+> In message <13615528.1081174833@[192.168.0.230]> you wrote:
+>>
+>> In fact, there are messages there which probably point to the root
+>> cause.  I've got a lot of messages like this, I'll just type in the
+>> first couple:
+>>
+>> ack overflow in process c0162030, r1=c0162450
+>> <2>Kernel stack overlow in process c0162030, r1=c01622b0
+>> <4>Data machine check in kernel mode
+>> and lots more stuff like that but I presume the first messages are
+>> earliest  and are the root cause.
+>
+> Actually these are not the first messages; the  ring  buffer  wrapped
+> around. Try resetting the board faster, and/or increasing the log_buf
+> size in your kernel configuration.
+>
 
-The testcase is simple:
-NFS mount root fs on target.
-Do a "time cp big_file new_bigfile" to warm up.
-start a "ping -f <target IP> on the NFS server.
-Do a few more "time cp big_file new_bigfile"
+Thanks. I did increase the ring buffer and, in fact, modified the kernel so
+it would simply lock up when the ring buffer filled up so I could make sure
+to see the first messages. Strangely, the messages in the buffer are
+incomplete and there are gaps in between them. This makes me think that the
+SDRAM isn't working right.
 
-The last step takes about 10-20 seconds(big_file is 8356 KB) before the
-above change. After the change it takes
-about 1 minute.
+To test that, I've tried the simple memory test which works in U-Boot. I've
+also loaded the kernel image two different places in SDRAM and used the
+memory compare to see if they're the same. Both of these work. The IBM
+bootloader's memory test, which is a little more exhaustive, also works so
+I don't think the hardware itself is bad.
 
-Can anyone confirm this behavior?
+In doing more debugging, I discovered the early boot serial messages I
+could enable. The kernel is running until the first call to pte_alloc, then
+it dies. This is deep within the virtual memory manager and is voodoo I
+don't understand. Since the kernel works with the other bootloader, though,
+I think that the code is probably fine. This, too, would make me think that
+U-Boot isn't setting up the SDRAM correctly. I'm going to compare its setup
+to what the IBM bootloader does.
 
- Jocke
+Thanks
+Jeff
 
-http://ppc.bitkeeper.com:8080/linuxppc_2_4_devel/diffs/arch/ppc/8xx_io/enet.c@1.12.1.8?nav=index.html|src/.|src/arch|src/arch/ppc|sr
-c/arch/ppc/8xx_io|hist/arch/ppc/8xx_io/enet.c
 
+--
+Jeff Tucker
+jeff@jltnet.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
