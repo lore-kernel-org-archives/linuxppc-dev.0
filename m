@@ -1,11 +1,11 @@
-Message-ID: <39A2F6C7.F2743BF7@student.ethz.ch>
-Date: Tue, 22 Aug 2000 23:55:19 +0200
+Message-ID: <39A30138.36D33D93@student.ethz.ch>
+Date: Wed, 23 Aug 2000 00:39:52 +0200
 From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
 To: mlan@cpu.lu
 CC: geert@linux-m68k.org, linuxppc-dev@lists.linuxppc.org, dmj+@andrew.cmu.edu
 Subject: Re: Control fb problem on 8500
-References: <200008222115.XAA00745@piglet.grunz.lu>
+References: <200008222110.XAA00741@piglet.grunz.lu>
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
@@ -13,23 +13,23 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 Michel Lanners wrote:
 
-> supposing someone actually finds out how control's hardware cursor works,
-> and supposing someone would actually take the time to implement this,
-> wouldn't we need to provide a XFree driver as well? I guess plain fbdevhw
-> doesn't support hw cursor...
+> > I don't think having to use ShadowFB with the fbdev driver is too bad
+> > because it should generally enhance performance :)
+>
+> I guess control is the exception. I found out it isn't worth the memory
+> impact. I once ran a complete x11perf run comparing with and without
+> shadowfb, and with shadowfb was overall slower. Some operations were
+> faster, though, but not in general.
 
-Don't think that there are fbdev ioctls to control it either.
+Oh no. This is very bad.
 
 
-> In that event, would it be possible to address the above-mentioned flaw
-> in XFree in that particular driver, or is the problem more geneic (i.e.
-> littered throughout the source tree)?
+> I suppose this is because main memory isn't faster on my box than access
+> to the VRAM. Both are accessed via a 50 MHz bus, and are of the same
+> basic type (plain old DRAM, that is).
 
-No, the driver can handle it very easily by setting pScrn->displayWidth to the
-correct value.
-
-The problem with the fbdev driver is that it should know that value before it
-possibly can (before the mode is initialized).
+Indeed, this breaks the basic assumption behind ShadowFB, that main RAM is
+very fast compared to video RAM. The situation is similar for Amigas :-/
 
 
 Michel
