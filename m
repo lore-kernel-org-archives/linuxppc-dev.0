@@ -1,15 +1,18 @@
 Return-Path: <annamaya@yahoo.com>
-Received: from web53805.mail.yahoo.com (web53805.mail.yahoo.com
-	[206.190.36.200]) by ozlabs.org (Postfix) with SMTP id B1FB867A78
+Received: from web53806.mail.yahoo.com (web53806.mail.yahoo.com
+	[206.190.36.201]) by ozlabs.org (Postfix) with SMTP id 705C567A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jan 2005 09:08:24 +1100 (EST)
-Message-ID: <20050119220819.24822.qmail@web53805.mail.yahoo.com>
-Date: Wed, 19 Jan 2005 14:08:18 -0800 (PST)
+	Thu, 20 Jan 2005 09:11:25 +1100 (EST)
+Message-ID: <20050119221123.49764.qmail@web53806.mail.yahoo.com>
+Date: Wed, 19 Jan 2005 14:11:23 -0800 (PST)
 From: annamaya <annamaya@yahoo.com>
-To: linuxppc-embedded@ozlabs.org
+To: Robin <robin@india.tejasnetworks.com>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <4229EDFB.2040402@india.tejasnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Subject: Input to the timerclk on the MPC8280
+Subject: Re: TZ variable setting for denx 2.4.20
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,31 +23,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I've asked this question on this forum before but it
-did not get answered. I tried asking the same question
-in the U-Boot forum with no results. So, I am going to
-try this again.
+I am not sure what hapenned to the SPI driver that was
+out there for the 8xx that I wrote a long time ago. I
+know that it was working fine then. I do have a
+version now that works great. I'll try and make it
+available somewhere real soon. But this one's only for
+the 2.4 kernel and not the 2.6 kernel.
 
-According to section 4.1.2 on Page 4-4 in the MPC8280
-User's Manual, one should be able to use a combination
-of  external clocks on Port C pins 25, 26, 27 and 29,
-the CPM cloak and BRG1 to generate a 32KHz or a 4MHz
-clock. I am unable to find  any code in u-boot or any
-other place that initializes any of these pins to be
-external clocks. And as for BRG1, I believe it is
-being used for the SMC clock.
+--- Robin <robin@india.tejasnetworks.com> wrote:
 
-I am unable to understand how this is done. Can we
-have a timerclk input WITHOUT an external clock
-signal? Can I just use the CPM clock to generate this?
-How is this being done in U-Boot now?
+> Hi all,
+> I am trying to find a way of setting TZ environment
+> variable with DST
+> support for southern hemisphere countries. Its
+> giving a strange problem.
+> In southern hemisphere countries, DST starts around
+> Oct and ends around
+> March. The DST time seems to be applicable from Oct
+> until Dec31,19:00hrs.
+> Then it reverts back to standard time.
+> 
+> For northern hemisphere countries, its working
+> perfectly.(Here DST starts
+> around March and ends around Oct. There is no year
+> crossing DST period.)
+> 
+> I am sending the system timezone at various times..
+> 
+> bash> export TZ="xxx5:30yyy4:30,M10.1.1,M2.1.1"
+> bash> date 10010159
+> Mon Oct  1 01:59:00 xxx 2001
+> bash> date
+> Mon Oct  1 01:59:47 xxx 2001
+> bash> date
+> Mon Oct  1 03:00:10 yyy 2001
+> bash> date 12311900
+> Mon Dec 31 19:00:00 yyy 2001
+> bash> date 12311959
+> Mon Dec 31 18:59:00 xxx 2001 <----------- problem.
+> It should have
+> reverted to xxx only in feb.
+> 
+> Please give me some idea for setting time zone for
+> southern hemisphere
+> countries.
+> 
+> I am using 2.4.20 linux kernel from denx.I am
+> running date command from
+> busybox version 0.6 which in is using strftime. The
+> processor is ppc860T.
+> 
+> Regards,
+> Robin Mathew
+> 
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+>
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
 
-Thanks much for your help. I really need an answer to
-this. 
 
 
 		
 __________________________________ 
 Do you Yahoo!? 
-Yahoo! Mail - now with 250MB free storage. Learn more.
-http://info.mail.yahoo.com/mail_250
+Take Yahoo! Mail with you! Get it on your mobile phone. 
+http://mobile.yahoo.com/maildemo 
