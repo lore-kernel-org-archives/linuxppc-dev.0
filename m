@@ -1,37 +1,59 @@
-Date: Tue, 11 Dec 2001 11:34:30 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Andrew Dixon <andrew.dixon@seranoa.com>
-Cc: ppclist <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: r3 and bd_t
-Message-ID: <20011211183430.GQ22045@cpe-24-221-152-185.az.sprintbbd.net>
-References: <3C164F4B.E9A4FCA2@seranoa.com>
-Mime-Version: 1.0
+Message-ID: <3C17548A.5AEEDC5B@multitech.co.in>
+Date: Wed, 12 Dec 2001 18:28:50 +0530
+From: srinivas pulipati <srinivasp@multitech.co.in>
+MIME-Version: 1.0
+To: Mark Hatle <fray@mvista.com>
+Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: how to cross complile helloworld.c
+References: <3C15FD95.5F348883@multitech.co.in> <3C162FE2.2D26113E@mvista.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3C164F4B.E9A4FCA2@seranoa.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Dec 11, 2001 at 01:24:11PM -0500, Andrew Dixon wrote:
->
-> Hi All -
->
-> I'm trying to boot linux on an sbc8260 using PPCBoot.  (Linux 2.4.16 and
-> PPCBoot 1.1.2)  PPCBoot passes a data structure (bd_t) with a lot of
-> board information in it.  The way that this is supposed to work (I
-> think, please correct me if I'm wrong) is that PPCBoot leaves the
-> address of the data structure in r3 and one of the first things that
-> linux should do is to copy or obtain this information somehow.  So, my
-> question is this: does anyone know where this happens in the code?  I've
-> been looking in arch/ppc/kernel/setup.c and this looks like where it
-> should happen but I don't see it.
+hi mark,
 
-arch/ppc/kernel/head_8xx.S saves this and passes it onto early_init()
-iirc, which will pass it along to platform_init(), which copies it for
-safe keeping.
+yes i built the gcc after compling glibc only.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+just now i figured out the problem.
+
+after compiling glibc..
+
+i edited the file <path where you put glibc/lib/libc.so  and  changed
+
+GROUP ( /lib/libc.so.6 /lib/libc_nonshared.a )
+to:
+GROUP ( <path where you put glibc>/lib/libc.so.6 <path where you put
+glibc>/lib/libc_nonshared.a )
+
+now powepc-linux-gcc is able to compile hello.c file without any error.
+
+thanks
+srinivas
+
+Mark Hatle wrote:
+
+> srinivas pulipati wrote:
+> >
+> > hi,
+> >
+> > i have compiled glibc for powerpc-linux.
+> > when i try to compile a sample file helloworld.c
+> > it is saying undefined  reference to printf.
+> > looks like it is not taking proper library.
+> >
+> > can anyone help me?
+> >
+> > thanks
+> > srinivas
+> >
+>
+> After compiling glibc, did you rebuild you compiler set?  Without doing
+> a recompile gcc is still going to use newlib and will have no knowledge
+> of the installed glibc.
+>
+> --Mark
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
