@@ -1,38 +1,46 @@
-Date: Wed, 15 Mar 2000 18:25:55 -0800 (PST)
-From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-To: "Peter M. Jansson" <petej@clickvision.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: SIGALRM can't be delivered after longjmp from handler?
-In-Reply-To: <Pine.LNX.4.10.10003152106550.9912-100000@penguin.office.clickvision.com>
-Message-ID: <Pine.LNX.3.96.1000315182151.32684H-100000@deepspace.mklinux.org>
+From: Michael Thompson <mickey@berkeley.innomedia.com>
+Message-Id: <200003160716.XAA19499@berkeley.innomedia.com>
+Subject: G3/IDE/BootX/2.3.49 woes
+To: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 15 Mar 2000 23:16:39 -0800 (PST)
+Cc: mickey@berkeley.innomedia.com (Michael Thompson)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 15 Mar 2000, Peter M. Jansson wrote:
-
-> Did that; no effect.
-
-Well, it did for me, but I had to change the location of the signal()
-line.  The installation of the signal handler has to occur before the
-sigsetjmp or else the longjmp() restores an empty set of handlers.
 
 
-1.  Move the if (signal(...)) line to right after the printf("Cycle...")
-line
+I've got a B/W G3. I am able to boot 2.2.15 using bootX 1.2b3
+without any problems.
 
-2.  Change setjmp(jmp_buf) to sigsetjmp(jmp_buf,1)
+However, with 2.3.49, the IDE controller doesn't seem to
+be generating interrupts.
 
-3.  Change longjmp to siglongjmp
+The controller (CMD646) is recognized, the drives are
+identified.
 
-4.  add a signal(...) line to the beginning of the signal handler
+I can see that irq 26 has been assigned to the device, and
+this irq is enabled.
 
-The program then works as it did on *BSD.
+The controller's MRDMODE register (0x71) is initialized to
+0x00, so it should be generating interrupts.
+
+However, no interrupts are received from the device.
+
+Could this be an interrupt routing issue?
 
 
-David
 
+
+Can someone let me know how I can boot linux on a G3
+using OpenFirmware instead of bootX? Maybe I will
+have better luck with OFW.o
+
+Thanks very much!
+
+-Michael Thompson
+mickey@berkeley.innomedia.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
