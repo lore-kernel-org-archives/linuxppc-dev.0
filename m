@@ -1,21 +1,35 @@
-Message-Id: <200004261658.MAA22540@mal-ach.watson.ibm.com>
-To: Elizabeth Clarke <eclarke@aminocom.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: glibc-2.1.2 cross-compile problem 
-In-Reply-To: Message from Elizabeth Clarke <eclarke@aminocom.com>
-   of "Wed, 26 Apr 2000 14:37:25 -0000." <3906FF25.4E9E6AEA@aminocom.com>
-Date: Wed, 26 Apr 2000 12:58:39 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Message-ID: <39072136.6A4B340A@relog.ch>
+Date: Wed, 26 Apr 2000 19:02:46 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
+MIME-Version: 1.0
+To: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
+CC: gewrgiou@imbc.gr, linuxppc-dev@lists.linuxppc.org
+Subject: Re: XFree 4.0 dual monitor on AGP G4
+References: <Pine.LNX.4.21.0004261635150.27506-100000@idd-01.imbc.gr> <20000427015351E.roikawa@rr.iij4u.or.jp>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	The cross-tools want to have the target system header files
-available in a directory called "sys-include" underneath the target
-triplet in the installation directory.  The target triplet directory wants
-to look like /usr on the real system and the gcc-fixed header files will
-go into the regular "include" directory.
+Ryuichi Oikawa wrote:
 
-David
+> BTW, why do people like fbdev very much?
+
+- one can use the generic fbdev driver if the dedicated driver doesn't work
+- if the dedicated driver supports fbdev, access to the hardware is
+  coordinated between all virtual terminals
+- ...
+
+
+> It's easier to port XFree86 built-in drivers as Kostas mentioned before, and > has advantages that developers can port/update the server independent on the
+> kernel, add support the latest hardware without waiting for the kernel
+> driver, etc.
+
+Use of the fbdev support is optional.
+
+
+Michel
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
