@@ -1,16 +1,17 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
-	by ozlabs.org (Postfix) with ESMTP id 7287667A6B
+Return-Path: <lpetras@netspace.net.au>
+Received: from mail.netspace.net.au (cumulus.netspace.net.au [203.10.110.72])
+	by ozlabs.org (Postfix) with ESMTP id 623E267A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Feb 2005 16:34:36 +1100 (EST)
-Date: Tue, 8 Feb 2005 22:34:33 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: jgarzik@pobox.com
-Message-ID: <20050208223433.A12821@cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: netdev@oss.sgi.com, linuxppc-embedded@ozlabs.org
-Subject: [PATCH] emac: fix jumbo frame support
+	Wed,  9 Feb 2005 16:36:56 +1100 (EST)
+From: "Linas Petras" <lpetras@netspace.net.au>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Wed, 9 Feb 2005 16:36:53 +1100
+Message-ID: <000001c50e69$5df30610$6401a8c0@supernova>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Cc: 'Sylvain Munaut' <tnt@246tNt.com>
+Subject: Re: Problems with Serial Port on IceCube 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,41 +22,93 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Fixes a bug in RX buffer allocation so that jumbo size skbs are
-allocated when the MTU size is changed. Also removes the deprecated
-restore_flags() call.  Please apply.
+I have tried using another serial cable (as suggested by Wolfgang) but =
+it
+made no difference, but I did not expect it to as I get all the messages
+from the bootroms OK.
 
-Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
+I have have confirmed that I have (as suggested by Sylvian) set
+CONFIG_CMDLINE=3D "console=3DttyS0" and have also tried =
+"console=3DttyS0, 115200"
+(as my serial port is set to 115200 on the icecube board) without any
+messages after arch:exit.=20
 
-===== drivers/net/ibm_emac/ibm_emac_core.c 1.7 vs edited =====
---- 1.7/drivers/net/ibm_emac/ibm_emac_core.c	2004-12-07 10:06:23 -07:00
-+++ edited/drivers/net/ibm_emac/ibm_emac_core.c	2005-02-08 22:25:39 -07:00
-@@ -912,7 +912,6 @@
- 		PKT_DEBUG(("emac_start_xmit() stopping queue\n"));
- 		netif_stop_queue(dev);
- 		spin_unlock_irqrestore(&fep->lock, flags);
--		restore_flags(flags);
- 		return -EBUSY;
- 	}
- 
-@@ -1281,7 +1280,7 @@
- 	/* Format the receive descriptor ring. */
- 	ep->rx_slot = 0;
- 	/* Default is MTU=1500 + Ethernet overhead */
--	ep->rx_buffer_size = ENET_DEF_BUF_SIZE;
-+	ep->rx_buffer_size = dev->mtu + ENET_HEADER_SIZE + ENET_FCS_SIZE;
- 	emac_rx_fill(dev, 0);
- 	if (ep->rx_slot != 0) {
- 		printk(KERN_ERR
-===== drivers/net/ibm_emac/ibm_emac_core.h 1.2 vs edited =====
---- 1.2/drivers/net/ibm_emac/ibm_emac_core.h	2004-08-05 07:26:55 -07:00
-+++ edited/drivers/net/ibm_emac/ibm_emac_core.h	2005-02-08 22:24:52 -07:00
-@@ -77,8 +77,6 @@
- 
- #define ENET_HEADER_SIZE	14
- #define ENET_FCS_SIZE		4
--#define ENET_DEF_MTU_SIZE	1500
--#define ENET_DEF_BUF_SIZE	(ENET_DEF_MTU_SIZE + ENET_HEADER_SIZE + ENET_FCS_SIZE)
- #define EMAC_MIN_FRAME		64
- #define EMAC_MAX_FRAME		9018
- #define EMAC_MIN_MTU		(EMAC_MIN_FRAME - ENET_HEADER_SIZE - ENET_FCS_SIZE)
+Below is what I see when I try and boot Sylvians 2-6-10-rc2 kernel.
+
+=3D> tftp 200000
+Using FEC ETHERNET device
+TFTP from server 192.168.1.101; our IP address is 192.168.1.201
+Filename 'uImage'.
+Load address: 0x200000
+Loading: =
+#################################################################
+ #################################################################
+ #################################################################
+ #############################################################
+done
+Bytes transferred =3D 1305842 (13ecf2 hex)
+=3D> bootm 200000
+## Booting image at 00200000 ...
+   Image Name:   Linux-2.6.10-rc2
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    1305778 Bytes =3D  1.2 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+id mach(): done
+MMU:enter
+MMU:hw init
+MMU:mapin
+MMU:setio
+MMU:exit
+setup_arch: enter
+setup_arch: bootmem
+ocp: exit
+arch: exit
+            =20
+At this point all output to the serial port stops but the board boots =
+and I
+can telnet to the IP address. It's not that important in the greater =
+scheme
+of things, just very annoying :-(
+
+Below is a "printenv" from the icecube-uboot.
+
+baudrate=3D115200
+ethact=3DFEC ETHERNET
+preboot=3Decho;echo AutoStarting. Press any key to abort ...;echo
+ethaddr=3D00:04:9F:00:12:60
+bootdelay=3D5
+hostname=3Dicecube
+flashboot=3Droot=3D/dev/mtdblock2 rw
+rootfs=3Droot=3D/dev/nfs rw =
+nfsroot=3D192.168.1.101:/work/ELDK-3.1/ppc_6xx
+bootfile=3DuImage
+nfsroot=3Droot=3D/dev/nfs rw =
+nfsroot=3D192.168.1.101:/work/ELDK-3.1/ppc_6xx
+ip=3Dip=3D192.168.1.201:192.168.1.101:192.168.1.101:255.255.255.0:icecube=
+::off
+bootargs=3Droot=3D/dev/nfs rw =
+nfsroot=3D192.168.1.101:/work/ELDK-3.1/ppc_6xx
+ip=3D192.16
+8.1.201:192.168.1.101:192.168.1.101:255.255.255.0:icecube::off
+filesize=3Db7d6e
+fileaddr=3D100000
+netmask=3D255.255.255.0
+ipaddr=3D192.168.1.201
+serverip=3D192.168.1.101
+bootcmd=3Dbootm ff100000
+stdin=3Dserial
+stdout=3Dserial
+stderr=3Dserial
+
+
+Any ideas????
+
+
+Linas Petras
+------------
+I know not with which weapons World War III will be faught, but World =
+War IV
+will be faught with sticks and stones. - Albert Einstein.
