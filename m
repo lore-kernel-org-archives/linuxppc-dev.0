@@ -1,30 +1,38 @@
-Date: Wed, 27 Sep 2000 20:17:02 +0200 (CEST)
+Date: Wed, 27 Sep 2000 20:21:32 +0200 (CEST)
 From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Olaf Hering <olh@suse.de>
-cc: Jon Erick Ween <jween@som.llu.edu>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Xfree86-4.0.1, Lombard, Mach64 driver, X-server Crash
-In-Reply-To: <20000927194234.A2778@suse.de>
-Message-ID: <Pine.LNX.4.10.10009272015410.27656-100000@opal.biophys.uni-duesseldorf.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        R Shapiro <rshapiro@bbn.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display!
+In-Reply-To: <Pine.LNX.4.10.10009271317210.383-100000@cassiopeia.home>
+Message-ID: <Pine.LNX.4.10.10009272017090.27656-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > OK, I've switched from BootX to Yboot using a stable 2.2.17 kernel and the
-> > most recent XF86-4.0.1 and ati driver sources I can find. I seem to get
-> > different PCI assignments to the ATI chip on boot-up (looking at dmesg
-> > compared with using BootX) but the X-server still doesn't detect the chip
-> > with "startx" or "XFree86" and exits with a "device not found" and "no
-> > screens" error. Any further suggestions?
+> > I've posted such a patch to debian-powerpc when one user there had this
+> > problem. That was before I learned booting with yaboot avoids the problem.
+> > If the resource conflict also happens on oldworld machines, I'd still
+> > prefer some suggestions to foolproof the patch (as in: how can I figure
+> > out if a region has been allocated by another card? What bits from the
+> > config registers should I look at?).
 >
-> There is a Modes line in the screen section, use a generic mode.
-> Don't specify a Modes section.
+> You should walk all PCI devices and construct your own resource tree from
+> pci_dev->base_address[i]. After that you know the conflicts and unassigned
+> addresses and can look for free space. Unfortunately this is probably nearly
+> as much work as backporting the 2.4.x PCI resource code (which is tested,
+> unlike new code you would invent).
 
-It's probably just some error in the device section (the server doesn't
-complain about 'no valid modes found' but 'no device found'.
+Yep, I'm aware of that. I'm way too lazy to backport the PCI resource code
+and the problem seemed solved by using yaboot for me. I didn't
+fully realize the Wallstreet doesn't have this option.
 
-Need to see your XF86Config's device section.
+Instead of walking the whole device tree, I hope to get away with just
+picking a free area (assuming pci_dev->base_address[i] == 0 means free)
+instead. But I won't get to it before the weekend. If BenH implements a
+cleaner way, the better.
 
 	Michael
 
