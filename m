@@ -1,50 +1,47 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Mon, 14 Jul 2003 07:31:10 -0700
+Date: Mon, 14 Jul 2003 07:52:01 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-Cc: Pantelis Antoniou <panto@intracom.gr>,
+To: Dean Matsen <deanm@earthlink.net>
+Cc: Paul Mackerras <paulus@samba.org>,
 	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Ethernet PHY chip discovery not working on 855T with 971/972 chips
-Message-ID: <20030714143110.GA1211@ip68-0-152-218.tc.ph.cox.net>
-References: <3F124BF5.6070803@intracom.gr> <20030714075810.D95FAC6D82@atlas.denx.de>
+Message-ID: <20030714145200.GC1211@ip68-0-152-218.tc.ph.cox.net>
+References: <3F0C8112.5060001@earthlink.net> <20030709212145.49E24C6D82@atlas.denx.de> <20030711151834.GU17433@ip68-0-152-218.tc.ph.cox.net> <3F0F468F.1050909@earthlink.net> <16143.24034.31805.589402@cargo.ozlabs.ibm.com> <3F1079FA.3050901@earthlink.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030714075810.D95FAC6D82@atlas.denx.de>
+In-Reply-To: <3F1079FA.3050901@earthlink.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Jul 14, 2003 at 09:58:05AM +0200, Wolfgang Denk wrote:
+On Sat, Jul 12, 2003 at 02:13:30PM -0700, Dean Matsen wrote:
 
-> Dear Pantelis,
+> Paul Mackerras wrote:
 >
-> in message <3F124BF5.6070803@intracom.gr> you wrote:
+> >Dean Matsen writes:
 > >
-> > >>IIRC the last time we such discussions simply nothing  happened:  see
-> > >>for example to code for dp_alloc / dp_free that was submitted several
-> > >>times.
-> > >
-> > >google knows nothing of this, can you give a pointer into the thread
-> > >please?  Thanks.
-> > >
-> > >
-> > I was the one that sent the patches (search for dpalloc).
+> >
+> >
+> >>Somewhere in this discussion thread I saw that the 2.4 kernel is closed
+> >>for
+> >>patches (I just joined this list, so I didn't know that).
+> >>
+> >>
+> >
+> >Well, that's not strictly true, we will continue to fix things that
+> >are broken, but I would prefer than any new development (e.g. support
+> >for new boards or devices) happened in 2.5.  It's a bit disappointing
+> >that 8xx still doesn't compile in 2.5.  I don't have any 8xx hardware
+> >to test on so I have been relying on others to update it.
+> >
+> >
+> Ok, in that case I do have ONE thing that I know should be fixed, but
+> I haven't seen any response on it, so I am wondering if anyone noticed
+> it at all. See
 >
-> I was referring to a much older implementation  of  this  feature.  I
-> sent it to Tom nearly two years ago:
->
-> 	Subject: Re: Modifications to linuxppc_2_4_devel
-> 	From: Wolfgang Denk <wd@denx.de>
-> 	Date: Wed, 29 Aug 2001 23:57:30 +0200
-> 	To: Tom Rini <trini@kernel.crashing.org>
->
-> The patch in question was named "PATCH-006-dpfree+uart".
+> http://lists.linuxppc.org/linuxppc-dev/200307/msg00085.html
 
-I really wish I had looked into making mutt keep a copy of sent mail a
-lot sooner.  I don't suppose you have a copy of my reply to that as
-well?  I suspect it was either "Can you break the uart stuff out from
-the dpfree stuff" and you didn't, or "This is large and intrusive and
-I'd feel better if I could make Dan Malek look at it".
+This has been fixed in the 2_4_devel tree now.  This is not an issue in
+2.5 / 2.6.
 
 --
 Tom Rini
