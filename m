@@ -1,28 +1,31 @@
-Message-ID: <39D7F8FB.9C508CF1@charter.net>
-Date: Sun, 01 Oct 2000 21:54:51 -0500
-From: "Dan A. Dickey" <ddickey@charter.net>
+Message-ID: <39D816D8.35ED965E@mvista.com>
+Date: Mon, 02 Oct 2000 01:02:16 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org"
+To: "Dan A. Dickey" <ddickey@charter.net>
+CC: "linuxppc-embedded@lists.linuxppc.org"
  <linuxppc-embedded@lists.linuxppc.org>
-Subject: ethernet on fads850sar board?
+Subject: Re: ethernet on fads850sar board?
+References: <39D7F8FB.9C508CF1@charter.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-this is a shot in the dark - but does anyone have
-ethernet working on the fads850sar board, or any fads board?
-Could I please see the code...  I'm working with the ppcboot
-project, but can't seem to get this going on my fads board,
-and don't really understand why.  The hub I'm connecting to
-shows activity when I send a packet, but ethereal on my
-also connected to the hub linux machine doesn't show anything
-coming in.  After sending the packet, the status of the TxBD
-is pretty much what I'd expect - 0x6c00.
-Any ideas?
-(And why do the baud rate generators that feed the ethernet
- clocks need to run at 2Mhz?)
-	-Dan
+"Dan A. Dickey" wrote:
+
+> Any ideas?
+
+Make sure the GP I/O pins are configured properly to be SCC2 Ethernet
+control/status lines.  Make sure the BCSR bits enable and properly
+configure the PHY (half/full duplex, loopback, etc.).
+
+> (And why do the baud rate generators that feed the ethernet
+>  clocks need to run at 2Mhz?)
+
+Ummm, no.....The PHY provides the clocks, they are inputs to port.
+I don't know why an external clock would be set to that value.
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
