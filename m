@@ -1,46 +1,57 @@
-Date: Tue, 6 Apr 2004 23:18:48 +0100
-From: Martin Habets <errandir_news@mph.eclipse.co.uk>
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.6.5/iBook G3: Oops on resume from sleep
-Message-ID: <20040406221848.GA1641@palantir8>
-References: <20040405215318.GA2822@mortadelo.pirispons.net> <20040405231321.GA1293@palantir8> <20040406073741.GA4008@fpirisp.portsdebalears.com> <20040406120158.GA7444@palantir8> <20040406124325.GA17046@fpirisp.portsdebalears.com>
+Subject: Re: PREEMPT problems
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Colin LEROY <colin@colino.net>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <1081212676.1426.166.camel@gaston>
+References: <1b6001c417f6$229c2a70$3cc8a8c0@epro.dom>
+	 <1080867387.1203.19.camel@gaston>
+	 <1080921611.11826.13.camel@thor.asgaard.local>
+	 <1080924194.11826.27.camel@thor.asgaard.local>
+	 <1080961566.1425.84.camel@gaston>
+	 <1080997005.4208.24.camel@thor.asgaard.local>
+	 <1081212676.1426.166.camel@gaston>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <1081294118.2722.43.camel@thor.asgaard.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040406124325.GA17046@fpirisp.portsdebalears.com>
+Date: Wed, 07 Apr 2004 01:28:39 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Well, I'm out of clues then. Must be something else affecting
-this. I'm still on 2.6.3-benh and by the looks of it I'll stay on
-that for a while and get some other work done.
-
-Probably not relevant, but does the input source in alsa mixer work
-okay for you?
-
-Martin
-
-On Tue, Apr 06, 2004 at 02:43:25PM +0200, Kiko Piris wrote:
->
-> On 06/04/2004 at 13:01, Martin Habets wrote:
->
-> > Well, the code is so new that the bug fixes have not made it into the
-> > kernel yet. But they are in the alsa cvs node.
-> > What I did is pick up revision 1.29 (the latest) from
-> > http://cvs.sourceforge.net/viewcvs.py/alsa/alsa-kernel/ppc/tumbler.c
+On Tue, 2004-04-06 at 02:51, Benjamin Herrenschmidt wrote:
+> > Sure enough, -rc2-ben0 is now behaving just as badly as -rc3-ben0.
+> > Probably just fluctuation.
 > >
-> > Make a backup of your existing tumbler.c file, just in case... Put the
-> > new one in an recompile.
+> > > I also added a WARN_ON(), do you see it triggered in dmesg ?
 >
-> Revision 1.29 of that file, AFAICS is the latest one.
->
-> This is exactly the same file that comes with 2.6.5.
->
-> If I understood you correctly...
->
-> Thanks for replying, btw :-)
->
-> --
-> Kiko
+> Still can't reproduce any problem here. You are using xfs right ?
+
+Yes. Colin, what about you?
+
+> Maybe it's a filesystem issue... or some driver (USB device ?)
+
+The only USB device I'm using regularly is a mouse.
+
+> that you are using that is allergic to preempt ?
+
+I don't think I'm using anything exotic... do you think ALSA could cause
+such problems? The filesystem seems more likely to me, but what do I
+know.
+
+
+> It would be useful if you could spot one of those stuck processes
+> and get a backtrace from it. For that, use P<pid> in xmon to get the
+> ksp then b<ksp value> to get a backtrace.
+
+I'm back to a non-preempt kernel for the time being, but I'll try to do
+that if I ever feel adventurous again, and provided I find out how to
+get into xmon.
+
+
+--
+Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
+Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
