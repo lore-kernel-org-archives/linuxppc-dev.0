@@ -1,48 +1,30 @@
-Message-Id: <v03110702b53c10dcc4d9@[208.177.152.17]>
-In-Reply-To: <200005060514.AAA05188@lists.linuxppc.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 8 May 2000 00:03:57 -0700
-To: linuxppc-dev@lists.linuxppc.org
-From: james  woodyatt <jhw@wetware.com>
-Subject: Re: Help with cross-endian bitfields?
+Date: Mon, 8 May 2000 11:35:55 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Kevin Hendricks <khendricks@ivey.uwo.ca>
+cc: ian reinhart geiser <geiseri@msoe.edu>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Problems Compileing PVM
+In-Reply-To: <00050714365900.05361@localhost.localdomain>
+Message-ID: <Pine.LNX.4.10.10005080915420.8539-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Daniel Jacobowitz <drow@false.org> wrote:
->On Fri, May 05, 2000 at 03:27:21PM -0400, jlquinn@us.ibm.com wrote:
->>
-[...]
->> Can someone tell me what's going on here?  Am I going to have to have
->> ifdef's on these structs, or resort to mask macros, or is there a
->> reasonable solution here.
+> On Sun, 07 May 2000, Michael Schmitz wrote:
+> > > __va_arg_type_violation
 >
->As Dan Malek said, there is no defined ordering.  The compiler is free
->to do whatever it wishes.  You can't assume that.  (I think.)
-[...]
+> Franz once explained this error to me.  It seems according to the ANSI C
+> standard va_arg can only be done with primary (promoted) types like integer,
+> double, etc.  For any other type, a cast must be done to create proper ansi c.
 
-It's absolutely true.
+That's what I meant by 'sloppy programming'. Your instructions cover
+everything but one tiny detail: it is common practice to pass the 'args'
+va_list argument to other functions further down. In some cases I've seen,
+a pointer to the va_list argument is passed (which breaks on PPC). What's
+the proper coding style here?
 
-Not only is there no defined ordering, the ANSI standard says that it
-doesn't even need to use bitfield operations in the machine code.  It's
-allowed to pad arbitrarily between the bitfields.  It's allowed to
-completely ignore the bitfield widths and treat the members like integers.
-It's even allowed to order the very bits themselves in weird ways, if it
-thinks the processor will like it better that way.
-
-Bitfields are just not even remotely portable.
-
-C structures should not be used to represent portable serializations of
-external data.  Period.  Yes, they're convenient-- but your compiler and my
-compiler don't have to agree on practically anything about them.
-
-
---
-j h woodyatt <jhw@wetware.com>
-http://www.wetware.com/jhw
-"Yeah, Mercury's going into retrograde, but
-at least we're not the Kennedys."  --sean poreda
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
