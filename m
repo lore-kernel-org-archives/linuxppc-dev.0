@@ -1,13 +1,26 @@
-Subject: Question about linker -Ttext option
+Subject: [Fwd: Question about linker -Ttext option]
 From: Bob Beck <beck@assurtech.com>
 To: linuxppc-embedded@lists.linuxppc.org
 Content-Type: text/plain
-Message-Id: <1078791026.4208.9.camel@budweiser>
+Message-Id: <1078791191.4208.11.camel@budweiser>
 Mime-Version: 1.0
-Date: 09 Mar 2004 14:10:26 +1400
+Date: 09 Mar 2004 14:13:12 +1400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
+
+FYI - I'm using version 2.4.18 of the linux
+kernel with the ppc patches.
+
+Bob
+
+
+-----Forwarded Message-----
+
+From: Bob Beck <beck@assurtech.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Question about linker -Ttext option
+Date: 09 Mar 2004 14:10:26 +1400
 
 In the arch/ppc/boot directory, one of the linker
 options is "-Ttext 0x00800000".
