@@ -1,35 +1,44 @@
-Date: Fri, 8 Dec 2000 12:24:44 -0600 (CST)
+Date: Fri, 8 Dec 2000 12:47:22 -0600 (CST)
 From: Brian Ford <ford@vss.fsi.com>
-To: diekema_jon <diekema@bucks.si.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 2.5 or 2.4 kernel profiling
-In-Reply-To: <m144RWF-001SzYC@bucks>
-Message-ID: <Pine.GSO.4.21.0012081220100.24199-100000@eos>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 66 Mhz bus clock for EST8260?
+Message-ID: <Pine.GSO.4.21.0012081225350.24199-100000@eos>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 8 Dec 2000, diekema_jon wrote:
+Is there any magic in getting the EST8260 board to work with a 66 Mhz bus
+clock?  I haven't had good luck with a Linux or vxWorks image.
 
-> > I am trying to do some kernel profiling on my EST8260 to determine the
-> > bottle neck in TCP and UDP thruput, but I can't seem to get any profile
-> > information.
->
-I figured it out.  It was a "corrupt" System.map file.  My Solaris cross
-environment does not have all the extensions that Linux's Makefiles
-expect.  grep was the culpret this time.
+My board has a 200/166/66 rev A.1 chip.
 
-I am just a rebel that wants to create the cross environment myself
-instead of using Monta Vista's.  Every so often I find another problem.
+I boot using a vxWorks bootrom.  I have made a few corrections to the
+bootrom so the decrementer frequency is set correctly from the user
+dip switches in addition to setting the core, cpm, and bus speeds.
 
-> What version of Linux are you using?  I have tried the LTT, Linux
-> Trace Toolbox under 2.4.0-test11.  LTT tracks a large number of
-> events, so it may give you a better handle as to what is happening
-> when.
->
-Thanks.  I have it, but I haven't figured it all out yet.
+The scenerio is as follows:
+
+1.) Burn configuration word to change MODCK_H from 0x0001 to 0x0101
+2.) Swap oscillators 33.0 -> 66.0 Mhz
+3.) Set MODCK[1-3] switches to 0x111 (200/133/66)
+4.) Mirror 3.) on user switches for vxWorks bootrom to read
+5.) Hack head_8260.S to put immr in place for Linux
+6.) Set linux board info in embed_config.c to 200/133/66/66
+(core,cpm,bus,brg) making sure there is real space allocated for it
+instead or whatever was in r3 when vxWorks booted us.
+6.) Reboot.
+
+vxWorks bootrom runs fine and downloads Linux or vxWorks.
+
+Linux pannics just before giving me a shell prompt somewhere in tty init.
+
+vxWorks appears to come up fine, but the muxDevBind fails for the Fast
+Ethernet and thus no network communications.  Even though the bootrom
+just downloaded us successfully over the same interface.
+
+Has anyone had any luck with the 66 Mhz bus clock?
 
 --
 Brian Ford
