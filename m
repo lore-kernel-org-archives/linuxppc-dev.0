@@ -1,47 +1,42 @@
-Message-ID: <92E171C34A30D51193CA000103CE74F002C40E86@CAREX>
-From: Tom Guilliams <tguilliams@sbs.com>
-To: "'Abraham van der Merwe'" <abz@frogfoot.net>,
-	"'Linux PowerPC Embedded Systems'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: where to find cross dev debian packages?
-Date: Fri, 24 Jan 2003 09:22:05 -0800
-MIME-Version: 1.0
-Content-Type: text/plain
+Subject: Re: Need IDE for embedded Linux project
+From: Kenneth Johansson <ken@kieraypc01.tn.sw.ericsson.se>
+To: brian.auld@adic.com
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <995FF289C9D69747A09E42992644595405B23618@penguin.adic.com>
+References: <995FF289C9D69747A09E42992644595405B23618@penguin.adic.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 24 Jan 2003 18:39:29 +0100
+Message-Id: <1043429969.4533.65.camel@spawn>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-http://www.emdebian.org/crossdev.html
+On Tue, 2003-01-21 at 21:10, brian.auld@adic.com wrote:
 
------Original Message-----
-From: Abraham van der Merwe [mailto:abz@frogfoot.net]
-Sent: Wednesday, January 15, 2003 9:46 AM
-To: Linux PowerPC Embedded Systems
-Subject: where to find cross dev debian packages?
+> Option 4: Linux development server <--> PC-X server software
+>           (hummingbird) on windows development hosts.
 
+This is the one you want. But the windows machines would not be the
+developent host but the x server. Since all the programs and files would
+be on the one linux box that would be the development host.
 
+You can test a setup like this with
+http://www.cygwin.com/ + http://www.cygwin.com/xfree/ without spending
+any money on software.
 
-Hi!
+If you want to spend money I have previously used
+http://www.ncd.com/products/software/pcxware/ and at least version 4
+works quite good.
 
-I'm desperately looking for cross compile debian packages for developing
-PowerPC apps on Linux/x86. They used to be at www.emdebian.org, but I can
-only find the C/C++ compilers and headers there. Anybody know where I can
-find the libc6-dev-powerpc, etc. packages?
+Also you want to configure this with XDM (XDMCP) this way it looks just
+like everyone had their own linux computer.
 
 --
-
-Regards
- Abraham
-
-"Thirty days hath Septober,
-April, June, and no wonder.
-all the rest have peanut butter
-except my father who wears red suspenders."
-
-___________________________________________________
- Abraham vd Merwe [ZR1BBQ] - Frogfoot Networks
- P.O. Box 3472, Matieland, Stellenbosch, 7602
- Cell: +27 82 565 4451 Http: http://www.frogfoot.net/
- Email: abz@frogfoot.net
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 404 71 83
+Tellusborgsvägen  94              Fax: +46 8 404 72 72
+126 25 Stockholm                  ken@switchboard.ericsson.se
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
