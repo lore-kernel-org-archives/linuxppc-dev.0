@@ -1,41 +1,29 @@
-Date: Wed, 14 Jan 2004 15:38:40 -0700
-From: Tom Rini <trini@kernel.crashing.org>
+From: linas@austin.ibm.com
+Date: Wed, 14 Jan 2004 18:13:50 -0600
 To: valvoline <valvoline@vrlteam.org>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: temp.c and cputable.c issues
-Message-ID: <20040114223840.GD983@stop.crashing.org>
-References: <20040114193910.GN2658@adapter.n0skillz.org> <20040114221018.GB983@stop.crashing.org> <20040114201153.GO2658@adapter.n0skillz.org>
+Subject: Re: Broadcom BCM94306
+Message-ID: <20040114181350.B40506@forte.austin.ibm.com>
+References: <20040114161107.GM2658@adapter.n0skillz.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040114201153.GO2658@adapter.n0skillz.org>
+In-Reply-To: <20040114161107.GM2658@adapter.n0skillz.org>; from valvoline@vrlteam.org on Wed, Jan 14, 2004 at 05:11:07PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jan 14, 2004 at 09:11:53PM +0100, valvoline wrote:
-> On Wed, Jan 14, 2004 at 03:10:18PM -0700, Tom Rini wrote:
->
-> > There are errata documents from Motorola that tell you not to use the
-> > TAU on any 745x CPU.  The omission of this flag is intentional.
->
-> what's about this documents ?, if TAU is disabled what's the right way
-> to fetch thermal infos for 745x based CPUs ?, any workaround or suggested
-> url to start from ?
+On Wed, Jan 14, 2004 at 05:11:07PM +0100, valvoline wrote:
+> of drivers are required? i think that simple win32-drivers cannot work
+> properly in a different architecture with different *endian.
 
-There are no workarounds or planned fixes for this errata (it varries
-slightly in number from 7450/1 to 7455 to 7457 documents I think).  All
-errata can be gotten from Motorolas website.
-7450:
-http://e-www.motorola.com/webapp/sps/site/prod_summary.jsp?code=MPC7450_ARCHIVED
-7451:
-http://e-www.motorola.com/webapp/sps/site/prod_summary.jsp?code=MPC7451
-7455:
-http://e-www.motorola.com/webapp/sps/site/prod_summary.jsp?code=MPC7455
-7457:
-http://e-www.motorola.com/webapp/sps/site/prod_summary.jsp?code=MPC7457
+totally irrelevent and off-topic, but ... the ppc can (or used
+to be able to) switch endianess dynamically.  To be more correct,
+it can run some user-space code that was little endian, by having
+the kernel set the appropriate bit in the MSR before it ran the
+app.  I have no idea is the linux kernel saves/restores this bit(s),
+or if this is still supported on the newest processors.
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+--linas
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
