@@ -1,34 +1,71 @@
-Date: Tue, 23 Jan 2001 12:32:48 +0100 (MET)
-From: Roman Zippel <zippel@fh-brandenburg.de>
-To: frowand@mvista.com
-cc: Dan Malek <dan@mvista.com>, Jeff Hartmann <jhartmann@valinux.com>,
-        michdaen@iiic.ethz.ch,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Gareth Hughes <gareth@valinux.com>, linuxppc-dev@lists.linuxppc.org,
-        dri-devel@lists.sourceforge.net, Paul Mackerras <paulus@linuxcare.com>
-Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
-In-Reply-To: <3A6CD180.EDFEA254@mvista.com>
-Message-ID: <Pine.GSO.4.10.10101231226390.21679-100000@zeus.fh-brandenburg.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 23 Jan 2001 14:03:48 +0100
+From: Olaf Hering <olh@suse.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: mprotect broken on ppc
+Message-ID: <20010123140348.A1745@suse.de>
+References: <20010120221908.A20689@suse.de> <20010120222630.B20689@suse.de> <20010121183031.A25128@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010121183031.A25128@suse.de>; from olh@suse.de on Sun, Jan 21, 2001 at 06:30:31PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Sun, Jan 21, Olaf Hering wrote:
 
-On Mon, 22 Jan 2001, Frank Rowand wrote:
+>
+> On Sat, Jan 20, Olaf Hering wrote:
+>
+> >
+> > On Sat, Jan 20, Olaf Hering wrote:
+> >
+> > >
+> > > Hi,
+> > >
+> > > there seems to be a bug in mprotect which was introduced in
+> > > test9->test10.
+> > >
+> > > The result is an invalid pointer from the getpwuid(3) function, this
+> > > function is used in rpm to check owner and group permissions.
+> >
+> > forgot some facts:
+> >
+> > the build host runs always a glibc2.13 system with 2.2 headers. The
+> > build chroot runs a glibc2.2 system with 2.4.0ac2 headers.
+> > And it fails when a kernel 2.4.0-test10 or later is running, every other
+> > kernel works fine.
+>
+> I put some debug in mm/mprotect.c:
+> ...
+> asmlinkage long sys_mprotect(unsigned long start, size_t len, unsigned
+> long prot)
+> {
+>         unsigned long nstart, end, tmp;
+>         struct vm_area_struct * vma, * next;
+>         int error = -EINVAL;
+>
+>         if (start & ~PAGE_MASK) {
+>                 printk("sys_mprotect start \n");
+>                 return -EINVAL;
+>         }
+> ...
+>
+> it fails here.
+> Jan 21 18:28:06 mandarine kernel: sys_mprotect start
 
-> Currently, my biggest user of this method is pci_alloc_consistent().  This use is
-> because the 405 is not IO cache coherent.  In this case, the "physical" address
-> is really a bus address, which pci_alloc_consistent calls "dma_handle".
-> DMA-mapping.txt says drivers should not use bus_to_virt(), which is a close
-> relative of phys_to_virt().
+sys_mprotect start= 6ffdffb0,PAGE_MASK= fffff000
 
-That's true, if you look into include/asm-sparc64/io.h, you see that
-bus_to_virt()/virt_to_bus() are not defined anymore.
 
-bye, Roman
+It was solved with this patch:
+http://penguinppc.org/~olaf/broken_build/elf.diff
 
+
+Gruss Olaf
+
+--
+ $ man clone
+
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
