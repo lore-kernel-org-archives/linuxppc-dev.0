@@ -1,21 +1,34 @@
-Date: Wed, 7 Nov 01 15:04:15 PST
-From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0111072304.AA06632@ivan.Harhan.ORG>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: RFC: i8259.c cleanup
-Cc: Sven.Dickert@planb.de, davidm@amberdata.demon.co.uk,
-	hollis@austin.ibm.com, paubert@iram.es
+Message-ID: <3BE9D0C9.5E4A3F8@mvista.com>
+Date: Wed, 07 Nov 2001 17:24:41 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: Val Henson <val@nmt.edu>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: The Plan
+References: <15337.7275.266062.777161@cargo.ozlabs.ibm.com> <Pine.GSO.4.21.0111071246050.11631-100000@mullein.sonytel.be> <20011107134125.O22194@boardwalk>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hollis@austin.ibm.com wrote:
+Val Henson wrote:
 
-> I'm looking at the "Poll Command" section of
-> the 8259 docs, and i8259.c seems completely legit...
+> I agree with Geert.  I don't think that dividing the clutter into two
+> directories instead of one really improves matters.  Each directory is
+> still monstrously huge and the division is non-obvious.
+> arch/ppc/masochist would be easier to understand. :)
 
-Exactly.
+Yeah but if you do it the other way, you end up with a directory with a
+clutter of subdirs--exchanged one clutter for another.
 
-MS
+> What is the problem we're trying to solve here?
+
+Hmmm, clutter I suppose but to be honest I don't have a problem with the way
+it is now...
+
+Mark
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
