@@ -1,37 +1,69 @@
-Date: Wed, 28 Apr 1999 08:27:10 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
+Date: Wed, 28 Apr 1999 08:47:29 -0400
+From: "Paul J. Schinder" <schinder@pobox.com>
 To: Satadru Pramanik <satadru@umich.edu>
-cc: linuxppc-dev@lists.linuxppc.org
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Rel 5 ssh?
-In-Reply-To: <Pine.LNX.4.10.9904280104180.19702-100000@beer.pub.umich.edu>
-Message-ID: <Pine.SUN.4.02.9904280825510.16076-100000@sea.ntplx.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <19990428084728.A6499@pobox.com>
+References: <Pine.LNX.4.10.9904280104180.19702-100000@beer.pub.umich.edu> <19990428080649.A5927@pobox.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <19990428080649.A5927@pobox.com>; from Paul J. Schinder on Wed, Apr 28, 1999 at 08:07:00AM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 28 Apr 1999, Satadru Pramanik wrote:
+On Wed, Apr 28, 1999 at 08:07:00AM -0400, Paul J. Schinder wrote:
+} On Wed, Apr 28, 1999 at 01:05:57AM -0400, Satadru Pramanik wrote:
+} } 
+} } I've tried to rebuild the ssh-1.2.6 src.rpm under glibc2.1, and I get
+} } these errors:
+} } gcc -pipe -c -I.  -I./gmp-2.0.2-ssh-2 -DHAVE_CONFIG_H
+} } -DHOST_KEY_FILE=\"/etc/ssh/ssh_host_key\"
+} } -DHOST_CONFIG_FILE=\"/etc/ssh/ssh_config\"
+} } -DSERVER_CONFIG_FILE=\"/etc/ssh/sshd_config\"
+} } -DSSH_PROGRAM=\"/usr/bin/ssh1\" -DETCDIR=\"/etc/ssh\"
+} } -DPIDDIR=\"/var/run\" -DSSH_BINDIR=\"/usr/bin\"
+} } -DTIS_MAP_FILE=\"/etc/ssh/sshd_tis.map\" -O2 -fsigned-char
+} } -I/usr/X11R6/include login.c
+} } login.c: In function `record_login':
+} } login.c:437: structure has no member named `ut_syslen'
+} } login.c:441: structure has no member named `e_termination'
+} } login.c:442: structure has no member named `e_exit'
+} } login.c:454: `WTMPX_FILE' undeclared (first use in this function)
+} } login.c:454: (Each undeclared identifier is reported only once
+} } login.c:454: for each function it appears in.)
+} } make: *** [login.o] Error 1
+} } Bad exit status from /var/tmp/rpm-tmp.85594 (%build)
+} 
+} There's a patched RPM for 1.2.26 at Yellow Dog
+} <ftp://ftp.yellowdoglinux.com/>.  I don't remember the exact location;
+} you'll have to hunt around.  It works.
 
-> login.c: In function `record_login':
-> login.c:437: structure has no member named `ut_syslen'
-> login.c:441: structure has no member named `e_termination'
-> login.c:442: structure has no member named `e_exit'
-> login.c:454: `WTMPX_FILE' undeclared (first use in this function)
-> login.c:454: (Each undeclared identifier is reported only once
-> login.c:454: for each function it appears in.)
-> 
-> Any thoughts?  Does anybody know how to fix this?  The sshd from this
-> install can't allocate ptys either.
+Whoops.  Having had a few minutes to track this down, my memory was
+playing tricks.  It's not a patched rpm, it's an rpm of patches, with
+a script to apply them to 1.2.26.  In
+/pub/yellowdog/updates/champion-1.0/RPMS/install-ssh-0.6-1.noarch.rpm
 
-Delete the ut_syslen line.  e_term/e_exit->__e, WTMPX_FILE->_PATH_WTMP (i
-think..).  As for the pty probllem, make sure you have a current dev rpm
-and have Unix98 pty suport compiled in.
 
---
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+} 
+} } 
+} } 
+} } Any thoughts?  Does anybody know how to fix this?  The sshd from this
+} } install can't allocate ptys either.
+} } 
+} } --=
+} } satadru pramanik `satadru@umich.edu' www.umich.edu/~satadru
+} } Online Editor, The Michigan Daily
+} } Yugoslavia declares 'peace' in Kosovo; NATO Airstrikes
+} } continue
+} } -CNN Interactive, 04/08/99
+} } =--
+} } 
+} } 
 
+-- 
+Paul Schinder
+schinder@pobox.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
