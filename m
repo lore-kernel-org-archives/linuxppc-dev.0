@@ -1,25 +1,26 @@
-Date: Wed, 19 May 1999 18:12:06 -0400 (EDT)
+Date: Wed, 19 May 1999 18:19:21 -0400 (EDT)
 From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: "J. Lewellen" <jasson@u.washington.edu>
-cc: Andreas Bogk <andreas@andreas.org>,
-        Alvin Brattli <Alvin.Brattli@phys.uit.no>,
-        linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: Re: Patch: PB G3 Tapping?
-In-Reply-To: <Pine.A41.4.10.9905191320300.74104-100000@dante15.u.washington.edu>
-Message-ID: <Pine.LNX.3.96L.990519180234.4847B-100000@unix47.andrew.cmu.edu>
+To: Tom Rini <tmrini@ntplx.net>
+cc: Andreas Bogk <andreas@andreas.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.3.3 compile error on ppc
+In-Reply-To: <Pine.LNX.4.05.9905191522510.8961-100000@pc.wackyland.com>
+Message-ID: <Pine.LNX.3.96L.990519181350.4847C-100000@unix47.andrew.cmu.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 19 May 1999, J. Lewellen wrote:
-> 
-> Can someone point me to a kernel patch to turn tapping off on my G3
-> laptop?
+On Wed, 19 May 1999, Tom Rini wrote:
+>
+> The official kernel releases are only ever checked on x86.  So sometimes
+> they'll be broken (not usually on a stable tree).
 
-There's a commandline utility. Check BenH's homepage or search the list
-archives.
+I'm beginning to think we need a status page like at
+http://cvs-mirror.mozilla.org/webtools/tinderbox/showbuilds.cgi?tree=SeaMonkey&hours=12
+
+You know, where you see the Intel person check something in and then all the
+other platform builds start going red?
 
 -Hollis
 
