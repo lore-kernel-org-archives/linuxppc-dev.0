@@ -1,25 +1,27 @@
-Date: Fri, 27 Aug 2004 11:31:06 +0200 (CEST)
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: "Oliver Fuchs" <olivers.lists@gmx.net>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: ushort fcc_fcce
-Message-ID: <Pine.LNX.4.44.0408271130100.16734-100000@linpc003.aimsys.nl>
+Date: Fri, 27 Aug 2004 12:05:44 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: Does ext2 based on MTD acceptable for Embedded Development? 
+Message-ID: <412F2398.313.E2BE91@localhost>
+In-reply-to: <20040827074002.58692C109F@atlas.denx.de>
+References: Your message of "Fri, 27 Aug 2004 09:08:23 +0200." <412EFA07.27872.405FEB@localhost> 
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi,
+From:           	Wolfgang Denk <wd@denx.de>
 
-Why is
-include/asm-ppc/immap_8260.h:   ushort  fcc_fcce;
+> > I would not use ext2 on MTD.
+>
+> We do, and it works perfect. You just want to make sure to  mount  it
+> read-only.
+Is there an advantage to use ext2 instead of cramfs for read only fs?
 
-and not uint fcc_fcce, as e.g. the fcc event register
-in hdlc mode uses 32 bits.
-
-thanks,
-
-Jaap-Jan
+Regards,
+Oliver
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
