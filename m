@@ -1,31 +1,26 @@
 From: "Stefano Coluccini" <s.coluccini@caen.it>
-To: "Tom Rini" <trini@kernel.crashing.org>
-Cc: "Bj?rn Wingman" <bjowi@ida.liu.se>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: mcpn765
-Date: Fri, 16 Mar 2001 09:21:29 +0100
-Message-ID: <NDBBIFIMCKPOADMAJOKMIECDDAAA.s.coluccini@caen.it>
+To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Sym53c875 problem with last 2_5 updates
+Date: Fri, 16 Mar 2001 09:38:47 +0100
+Message-ID: <NDBBIFIMCKPOADMAJOKMIECEDAAA.s.coluccini@caen.it>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <20010315111921.A872@opus.bloom.county>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > Check the make file arch/ppc/boot/pp3/Makefile, in the rule for making
-> > zImage.initrd there is a typo: you must add the -pbp option to
-> the mkprep
-> > invocation.
->
-> This _should_ be fixed in current 2_5.
->
+Hi all,
+  few days ago (I don't remember the exact date) I have resynced my local
+repository of 2_5 and today I have recompiled a kernel. While before the
+updates my sym53c875 based board had always worked fine, now the driver
+unsuccesfully try to download script on the chip continually. I have seen
+that the sym53c8xx.c file is changed, in fact I have correct the problem
+replacing the new file with the old.
+I have not found any mention of sym53c8xx.c change in the changesets at
+http://www.bitmover.com:8888//home/ppc/linuxppc_2_5 so I have thinked it can
+be an erroneous update ... it is possible ?
 
-You are right, it is fixed with last updates, but I had the same symptom
-described by Bjorn when the -pbp were missing. Perhaps Bjorn doesn't have
-downloaded the last updates ?
-
-Bye.
 Stefano.
 
 
