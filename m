@@ -1,34 +1,29 @@
-Message-Id: <200001201851.NAA26974@mal-ach.watson.ibm.com>
-To: Benjamin Herrenschmidt <bh40@calva.net>,
-        Kevin Hendricks <khendricks@ivey.uwo.ca>
-Cc: Moritz Thomas <motho@gmx.net>, linuxppc-dev@lists.linuxppc.org,
-        linuxppc-user@lists.linuxppc.org
+Message-Id: <4.2.2.20000120195050.00c796f0@mail.munich.netsurf.de>
+Date: Thu, 20 Jan 2000 19:52:22 +0100
+To: David Edelsohn <dje@watson.ibm.com>
+From: Franz Sirl <Franz.Sirl@munich.netsurf.de>
 Subject: Re: Fwd: Re: still no accelerated X ($#!$*)
-In-Reply-To: Message from Benjamin Herrenschmidt <bh40@calva.net>
-   of "Thu, 20 Jan 2000 19:45:07 +0100." <20000120194507.014220@mailhost.mipsys.com>
-Date: Thu, 20 Jan 2000 13:51:39 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Cc: khendricks@ivey.uwo.ca, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <200001201826.NAA25092@mal-ach.watson.ibm.com>
+References: <Message from Kevin Hendricks <khendricks@ivey.uwo.ca>
+ <00012013133502.00819@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Hum... I still have to check what gcc/ppc specific constraints are. But
-> in this specific case, it's the index who should not be assigned to r0.
-> Both base and regdata can be r0. So either I'm mising something, or the
-> "b" constraint is actually wrong semanticall, or we need yet-another
-> constraint for the index.
+At 19:26 20.01.00 , David Edelsohn wrote:
 
-	Sorry, you are right.  I am multitasking on too many things.  The
-way that you have written the inlined assembly, regindex should be the one
-with the "b" constraint.
+>         The "b" constraint should be associated with "base_addr", not with
+>"regindex":
+>
+>         asm("stwbrx %0,%1,%2": : "r"(regdata), "r"(regindex),
+> "b"(base_addr));
 
-	Also, Geert's comment was correct that there is no difference in
-the example function simply because of luck.
+Uhm, David, that's wrong. "b" has to be assigned to %1!
 
-Sorry, David
-===============================================================================
-David Edelsohn                                      T.J. Watson Research Center
-dje@watson.ibm.com                                  P.O. Box 218
-+1 914 945 4364 (TL 862)                            Yorktown Heights, NY 10598
+Franz.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
