@@ -1,28 +1,30 @@
-Subject: Re: fan control: therm_pm72 on _new_ powermacs 64 ?
+Subject: Re: [PATCH] ugly hack to make therm_pm72 work on XServe G5
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: boris <boris@macbeth.rhoen.de>
+To: Harald Welte <laforge@gnumonks.org>
 Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040805123304.GA18674@macbeth.rhoen.de>
-References: <20040805123304.GA18674@macbeth.rhoen.de>
+In-Reply-To: <20040806080406.GB11638@sunbeam2>
+References: <20040805114348.GD7112@sunbeam2>
+	 <20040806080406.GB11638@sunbeam2>
 Content-Type: text/plain
-Message-Id: <1091779721.9271.218.camel@gaston>
+Message-Id: <1091779753.9271.220.camel@gaston>
 Mime-Version: 1.0
-Date: Fri, 06 Aug 2004 18:08:41 +1000
+Date: Fri, 06 Aug 2004 18:09:14 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 2004-08-05 at 22:33, boris wrote:
-> Hello ...
+On Fri, 2004-08-06 at 18:04, Harald Welte wrote:
+> I actually forgot that small userspace program ;)
 >
->  Is someone working on linux support for the new fan control unit built in
->  recent pmac64 ? Or has further details ?
+> It is a total ripoff of the kernel driver and was implemented because
+> it's easier to play with i2c from userspace during development.
 >
->  [FATAL: Error inserting therm_pm72
->  (/lib/modules/2.6.8-rc2-bk10/kernel/drivers/macintosh/therm_pm72.ko):
->  No such device]
+> benh:  Any reason why you implemented your own byte+word read/write
+> routines?  Apparently the i2c_smbus routines work quite fine, even from
+> userspace...
 
-You mean the latest G5s ? not yet, as soon as I get the hardware hopefully
+I don't remember the exact reason, I had some issues, either with the
+sensors or the FCU, or maybe it was for mimmicing OF code...
 
 Ben.
 
