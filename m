@@ -1,31 +1,35 @@
-In-Reply-To: <20040426190138.4392EC109F@atlas.denx.de>
-Subject: Re: libjpeg
-To: Wolfgang Denk <wd@denx.de>
+Date: Mon, 26 Apr 2004 14:22:20 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Andrew Williams <awilliam@nortelnetworks.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF2F145C49.BE0B4823-ON85256E82.007533AB-85256E82.00754FEC@nanometrics.ca>
-From: David Ho <DavidHo@nanometrics.ca>
-Date: Mon, 26 Apr 2004 17:21:21 -0400
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Subject: Re: FW: Code Clean-Up
+Message-ID: <20040426212220.GH19246@smtp.west.cox.net>
+References: <E380A44D523BD5118EAE0002A52CE5C40B87C888@zcard0k8.ca.nortel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E380A44D523BD5118EAE0002A52CE5C40B87C888@zcard0k8.ca.nortel.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > Is there an idiot's guide to run the configure script to generate a
+On Mon, Apr 26, 2004 at 02:50:24PM -0400, Andrew Williams wrote:
+
+> What's the current view/policy on code cleanup?
+> Eg. immap_8260.h vs 8xx_immap.h
 >
-> "configure --help" may help ;-)
+>   Furthermore each unit that accesses the immap, has to conditionaly select
+> the target platform header file.
 >
-> > makefile that uses a cross-compiler instead of the native gcc.  I like
-to
-> > build it from my ix86 box.  I'm getting a headache from googling...
+> I'm proposing a single immap.h file, that conditionaly selects either
+> immap_8260.h, or 8xx_immap.h (possibly renamed to immap_8xx.h).
 >
+>   Do people want to see this type of restructure/patch?
 
-This seems to do the trick.
+Do you have code which works on both 82xx (or looking at 'newer' code in
+2.4, soon to be in 2.6, 'cpm2' which is 82xx/85xx) and 8xx ?
 
-CC=ppc-linux-gcc ./configure --disable-shared ppc-linux
---prefix=/home/davidho/usr/local
-
-David
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
