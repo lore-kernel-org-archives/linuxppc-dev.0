@@ -1,28 +1,25 @@
-Message-Id: <9901252333.AA28914@marc.watson.ibm.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-Cc: "Kevin B. Hendricks" <kbhend@dogwood.tyler.wm.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Help from Kernel Gurus needed!!! 
-In-Reply-To: Message from Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-   of "Mon, 25 Jan 1999 22:27:43 +0100." <Pine.LNX.4.03.9901252224310.29711-100000@mercator.cs.kuleuven.ac.be>
-Date: Mon, 25 Jan 1999 18:33:03 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Date: Mon, 25 Jan 1999 19:09:11 -0700 (MST)
+From: Cort Dougan <cort@persephone.cs.nmt.edu>
+To: Paul.Mackerras@cs.anu.edu.au
+cc: hozer@drgw.net, linuxppc-dev@lists.linuxppc.org
+Subject: Re: kswapd and SMP still broke on 2.2.0-pre9
+In-Reply-To: <199901232325.KAA18504@tango.anu.edu.au>
+Message-ID: <Pine.LNX.3.96.990125190836.12469A-100000@persephone.cs.nmt.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Geert Uytterhoeven writes:
+I get failures.  I get a hang right after MMU_init() with a MP kernel even
+on a UP machine.  Same crash I was getting on chrp and smp some time ago.
 
-Geert> Hehe, the clue is that IBM/Motorola didn't implement instructions that perform
-Geert> operations that can be done in a different manner, too.
+}Both 2.2.0-pre9 and vger work fine on my 2-processor powermac.  I do
+}have some local changes in my tree to do with some extra memory
+}barriers etc., but I haven't changed kswapd.  You could try rsyncing
+}my current tree from samba.anu.edu.au::linux-pmac-devel to see my
+}changes.
 
-Geert> `mr' is just an alias for add with zero.
-
-	The point is that the extended mnemonic document the intent and
-purpose of the operation.  This is for documentation, not correctness or
-efficiency. 
-
-David
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
