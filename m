@@ -1,28 +1,21 @@
-Message-ID: <36DC07D6.CF8163BA@cecom.com>
-Date: Tue, 02 Mar 1999 10:46:32 -0500
-From: "Rodney J. Woodruff" <rwoodruf@cecom.com>
-MIME-Version: 1.0
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: I found out a new bit of info
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 2 Mar 1999 10:53:59 -0500
+From: mayan <mayan@watson.ibm.com>
+Message-Id: <9903021553.AA29088@mayan.watson.ibm.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Turning off paging to disk?
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello Again,
 
-I found the type of scsi card that was installed in my brand spanking new G3/333
-(new is the mysterious word).
+How does one turn off paging to disk? 
 
-The apple system profiler lists the SCSI card as a:
+I am booting with root=/dev/ram, with no disk, and I was
+wondering how to disable swapping (or at least fool Linux
+into swapping from memory to memory :)
 
-Card name:  "Apple53C875Card"
-Card Model:  "NCR,875"
-Card Revision:  4
-			120
-Card Vendor ID: 1000
-
--- Rodney
+Thanks!
+Mayan
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
