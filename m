@@ -1,40 +1,47 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "'Anton Blanchard'" <anton@samba.org>,
-	"'Peter Bergner'" <bergner@vnet.ibm.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: TASK_UNMAPPED_BASE
-Date: Fri, 6 Feb 2004 11:53:32 +0100
-Message-ID: <000901c3ec9f$76acd7e0$0a01a8c0@LUMENTIS02>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-reply-to: <20040205170657.GA19011@krispykreme>
+In-Reply-To: <1076044476.885.9.camel@gaston>
+References: <401FE138.8080807@lycos.nl> <1075847083.17327.31.camel@gaston> <40221664.70208@lycos.nl> <1076044476.885.9.camel@gaston>
+Mime-Version: 1.0 (Apple Message framework v612)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <A3B443AA-58B8-11D8-884B-000A95A0560C@us.ibm.com>
+Cc: Mikolaj Krzewicki <mkrzewicki@lycos.nl>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+From: Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: benh performance problem
+Date: Fri, 6 Feb 2004 09:25:05 -0600
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > The problem with a TASK_UNMAPPED_BASE that was "too low"
-> > was referring to the bug where we always loaded ld.so at
-> > TASK_UNMAPPED_BASE even though that adress was in the middle of the
-> > bss. Now that has been fixed, "too low" isn't a concern anymore.
-> >
-> > However, I'm not sure moving the TASK_UNMAPPED_BASE below the text
-> > section will work. It's used for more than just loading shared libs.
-> > Anonymous mmap areas and the heap are all located relative to it.
+On Feb 5, 2004, at 11:14 PM, Benjamin Herrenschmidt wrote:
 >
-> That reminded me of a patch wli did to rearrange how things are
-> allocated. I wonder if doing something radical like this will work on
-> ppc32.
-[SNIP patch]
+> On Thu, 2004-02-05 at 21:09, Mikolaj Krzewicki wrote:
+>>
+>> 2.6.1-benh1, HZ=1000: timing=36.5s
+>> 2.6.1-benh1, HZ=100 : timing=32s
+> The fact that pbbuttons makes a difference makes me think the
+> interrupt handling is taking way too much time on your setup,
+> and pbbuttons is loading the machine with PMU interrupts...
 
-Hi Anton
+pbbuttons is loading the machine? What about all those extra
+decrementer ticks? I assume benchmarks showed no performance
+degradation on some class of ppc32; what was the slowest system tested?
+For that matter, couldn't this hurt 4xx, 8xx(x), as well?
 
-I tried your patch on my 2.4 kernel.
-uClibc boots fine with the libs loaded towards lower addresses.
+Perhaps HZ should be user-configurable? Although that doesn't help
+distributions who'd like one kernel to work everywhere... How does
+Linux handle increased HZ on old i386 anyways?
 
-glibc won't boot, hangs direcly after mount.
+> Not sure if I can fix any of this at this point without doing a
+> major rewrite of the exception handling code, I suspect those
+> CPUs don't like running in real mode and our exception handling
+> happens mostly in that mode in ppc32...
 
- Jocke
+I didn't realize CPUs go slower in real mode..?
+
+--
+Hollis Blanchard
+IBM Linux Technology Center
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
