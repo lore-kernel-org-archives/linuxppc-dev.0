@@ -1,25 +1,25 @@
-Date: Thu, 25 Oct 2001 10:11:47 -0600 (MDT)
-From: Derrik Pates <dpates@dsdk12.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Does RivaFB (in current BenH) work on PPC?
-In-Reply-To: <20011025075549.22936@smtp.wanadoo.fr>
-Message-ID: <Pine.LNX.4.33.0110251010370.2435-100000@andromeda.dsdk12.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200110251627.MAA26720@makai.watson.ibm.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: "KOBAYASHI R. Taizo" <tkoba@ike-dyn.ritsumei.ac.jp>,
+	jeglin@4pi.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.13-pre5 crash when mounting proc 
+In-Reply-To: Message from Tom Rini <trini@kernel.crashing.org>
+   of "Thu, 25 Oct 2001 08:30:32 PDT." <20011025083032.A29107@cpe-24-221-152-185.az.sprintbbd.net>
+Date: Thu, 25 Oct 2001 12:27:36 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 25 Oct 2001, Benjamin Herrenschmidt wrote:
+>>>>> Tom Rini writes:
 
-> It will once I have merged Ani Joshi changes.
+Tom> Um.  Is that _all_ that changed?  That really shouldn't have any effect
+Tom> at all...  What compiler/binutils combo is this?
 
-Any idea when that'll be? :) And will the OFFB driver work (at least for
-text-console purposes) and not interfere with the XFree 'nv' driver?
+	It looks like the incorrect version has a continuation character
+to a blank line instead of a continuation returning to .text section.
+That definitely could cause problems.
 
-Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
-dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
-
+David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
