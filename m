@@ -1,33 +1,38 @@
-Date: Thu, 16 Dec 1999 15:08:09 -0600 (EST)
-From: Jason Haas <jhaas@www.linuxppc.org>
-To: Jonathan Brauer <brauer@texmemsys.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 64 bit powerpcs
-In-Reply-To: <199912162103.PAA27402@sun92.texmemsys.com>
-Message-ID: <Pine.LNX.4.04.9912161506590.3730-100000@www.linuxppc.org>
+Message-ID: <38597379.21E4FB7E@ctam.com.au>
+Date: Fri, 17 Dec 1999 10:19:22 +1100
+From: Brendan Simon <bsimon@ctam.com.au>
+Reply-To: bsimon@ctam.com.au
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: linuxppc-embedded: nfsroot is WORKING !!!
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 16 Dec 1999, Jonathan Brauer wrote:
 
-> 
-> I was looking to see if anyone had any experiance getting and or using 64 bit 
-> PPC chips in embedded systems.  TIA.
+I finally got nfsroot to work.  I changed
+    #define NFS_DEF_FILE_IO_BUFFER_SIZE 4096
+to
+    #define NFS_DEF_FILE_IO_BUFFER_SIZE 1024
+in include/linux/nfs_fs.h.
 
-AFAIK, Cort Dougan was/is going to start working on porting Linux to that
-chipset, but I have no further information.
 
-Linux not running on them would definately be an obstacle to using them.
+All programs will now run from an nfs server.  Yippee :)
 
-Cheers,
+Now, is it just an incompatiblility with old nfs servers on 2.0.x
+kernels ?
+I would assume that it SHOULD be backward compatible.
 
-Jason Haas,  jhaas@linuxppc.com
-LinuxPPC Inc,  http://www.linuxppc.com
+I guess I should upgrade my Intel boxes to a distribution that uses
+2.2.x kernels (though that should not be necessary) and change the
+default buffer size back to 4096.
 
-"A polar bear is a rectangular bear after a coordinate transform."
+Has anyone else seen a similar problem connecting to nfs servers running
+on older kernels ?
+
+Thanks for everyones help,
+Brendan Simon.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
