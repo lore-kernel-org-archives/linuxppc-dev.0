@@ -1,49 +1,41 @@
-Message-ID: <3EDBE422.EFCD17E5@opersys.com>
-Date: Mon, 02 Jun 2003 19:56:18 -0400
-From: Karim Yaghmour <karim@opersys.com>
-Reply-To: karim@opersys.com
+Message-ID: <20030603000005.28931.qmail@web21003.mail.yahoo.com>
+Date: Mon, 2 Jun 2003 17:00:05 -0700 (PDT)
+From: kas turi <inox_kas@yahoo.com>
+Subject: dlopen causes the program to crash
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: brian.auld@adic.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Bare bones filesytem using Karim's book
-References: <995FF289C9D69747A09E4299264459540C109861@penguin.adic.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Brian,
+Hi
+   I am running timesys linux 2.4.7-timesys-3.1.180 on
+my 8260 board.  I have written a small program that
+invokes dlopen and tries to access the shared library.
+The program is linked with libdl-2.1.3.so.
+The program is shown below:
 
-Apart from what Wolfgang has already said, I would add the following
-gotchas:
-- Make sure the library you are linking your init to, whichever one it
-may be, is actually functional. I have seen some glibc versions
-compile fine and fail to work on the target. See the 4th paragraph
-on p. 112 for an example. Suggestion: try a different C library
-version.
-- Your libs may not be properly located. Suggestions: try linking
-your init statically.
-- Try putting something else as init. Use the init= kernel boot param
-to pass some custom statically linked program that does something
-obvious (while(1) printf(...); for example) and check if that works.
+#include <dlfcn.h>
+#include <stdio.h>
 
-brian.auld@adic.com wrote:
-> Any quick thoughts on why this might be happening? To provide a comparison benchmark as I worked through this, I copied the (i) dev files, (ii) inittab and (iii) rc.sysinit from chapter 6 of the book (my "from scratch filesytem") to the ELDK stripped down target filesystem and this setup still boots.
+main()
+{
+        void *handle;
 
-Right, this sounds like a library thing. Though I may be wrong.
+        printf ("Before dlopen\n");
+        handle = dlopen ("/lib/libpthread.so.0",
+RTLD_NOW);
+        printf ("dlopen done\n");
 
-> Most of the above were left in as I felt they needed to be there or they were "required" sysVinit or initscripts, which I didn't want to remove...
+        dlclose(handle);
+}
 
-Better watch out for having both sysVinit and BusyBox-init as Wolfgang
-already pointed out.
+When I run on the target I get "Illegal instruction"
+at dlopen even though libpthread.so.0 is present in
+/lib directory.
 
-HTH,
+Any idea why the dlopen causes the program to crash?
 
-Karim
-
---
-Author, Speaker, Developer, Consultant
-Pushing Embedded and Real-Time Linux Systems Beyond the Limits
-http://www.opersys.com || karim@opersys.com || 514-812-4145
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
