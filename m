@@ -1,15 +1,26 @@
+Message-Id: <200303200308.VAA21457@lists.linuxppc.org>
+From: "jwalden@digitalatlantic.com" <jwalden@digitalatlantic.com>
+To: <gary.thomas@mind.be>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Date: Thu, 20 Mar 2003 03:05:06 -0000
 Subject: RE: CONFIG_SERIAL_TEXT_DEBUG causes exception
-From: "Gary D. Thomas" <gary.thomas@mind.be>
-To: Jerry Walden <jwalden@digitalatlantic.com>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <MMEKKOMGOBGEIENHLGDLIECACHAA.jwalden@digitalatlantic.com>
-References: <MMEKKOMGOBGEIENHLGDLIECACHAA.jwalden@digitalatlantic.com>
-Content-Type: text/plain
-Date: 19 Mar 2003 14:18:44 -0700
-Message-Id: <1048108724.7459.6087.camel@hermes.chez-thomas.org>
-Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Thanks for the info -
+
+It doesn't look to me like the 4xx has a BAT -
+what would I use instead?
+
+Jerry Walden
+
+-----Original Message-----
+From: Gary D. Thomas [mailto:gary.thomas@mind.be]
+Sent: Wednesday, March 19, 2003 4:19 PM
+To: Jerry Walden
+Cc: linuxppc embedded
+Subject: RE: CONFIG_SERIAL_TEXT_DEBUG causes exception
 
 
 On Wed, 2003-03-19 at 14:04, Jerry Walden wrote:
@@ -97,13 +108,12 @@ can arrange for it.
 >
 >
 --
-.--------------------------------------------------------.
+--------------------------------------------------------.
 |       Mind: Embedded Linux and eCos Development        |
 |--------------------------------------------------------|
 | Gary Thomas              email:  gary.thomas@mind.be   |
 | Mind ( http://mind.be )  tel:    +1 (970) 229-1963     |
 | gpg: http://www.chez-thomas.org/gary/gpg_key.asc       |
 '--------------------------------------------------------'
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
