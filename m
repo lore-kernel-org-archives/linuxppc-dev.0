@@ -1,32 +1,44 @@
-From: phandel@cise.ufl.edu
-Date: Mon, 4 Oct 1999 21:54:18 -0400 (EDT)
-To: Ani Joshi <ajoshi@shell.unixbox.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Voodoo3 support
-In-Reply-To: <Pine.LNX.4.10.9910040752150.32347-100000@shell.unixbox.com>
-Message-ID: <Pine.LNX.4.10.9910042150590.971-100000@dialup-l111.cise.ufl.edu>
+From: hollis@andrew.cmu.edu
+Message-ID: <37F97754.37CA0ACC@andrew.cmu.edu>
+Date: Mon, 04 Oct 1999 23:58:12 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Mike Clubine <clubine@outeractive.com>
+CC: linuxppc-user@lists.linuxppc.org,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: No Valid Monitor Settings for a PowerPC 8500/180
+References: <37F9705D.FFA98080@outeractive.com>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 4 Oct 1999, Ani Joshi wrote:
+Mike Clubine wrote:
+> 
+> I am currently trying to install the latest version of linuxppc-1999 on
+> my PowerPC 8500/180.  It has 1 Meg of video ram and it is not
+> accelerated.  (Basically it's the stock onboard video.)  The install
+> goes fine until the point in time that I am asked to configure my
+> monitor setup.  This is where things get interesting.  I cannot find
+> even one valid setting.
 
-> anyhow, i was gonna start the actual driver
+[snip trying a few monitors]
 
-Thank you very much for your work on this!  Seems like a few other people
-have also gotten one of these nice cards.
+> Has anyone else run into this problem?  I can choose something generic
+> and then skip out on on the x-test when installing, but then as soon as
+> I boot up I get tons of error messages having to do with gpm being
+> mysteriously murdered, even if I take it out of the appropriate rc.d
+> directories.
 
+Boot into runlevel 1 and try running Xautoconfig. (There's a page about
+this at linuxppc.com/updates.) That should automatically generate a
+working XF86Config file.
 
-Thanks,
-Pete
+Does anyone (developers?) know why Xconfigurator chokes so horribly on
+so many machines? Is it something different about Linux/PPC or a bug or
+what? This "no valid monitor" thing is pretty common. Another one (what
+I get) is a segfault immediately after detecting videocontroller  and
+VRAM. Why doesn't it work?
 
--- 
-Peter F. Handel          "[The anti-Christ] also forced everyone, small and
-phandel@cise.ufl.edu      great ... to receive a mark [smart card?] on his
-www.cise.ufl.edu/~phandel right hand or on his forehead, so that no one could
-FAX: (561) 619-8051       buy or sell unless he had the mark"-Revelation13:16
-
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
