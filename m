@@ -1,45 +1,37 @@
-Message-Id: <200109211858.OAA22552@makai.watson.ibm.com>
-To: Ralph Blach <rcblach@raleigh.ibm.com>
-Cc: Dan Malek <dan@mvista.com>, linuxppc-dev@lists.linuxppc.org,
-	Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
-	Mark Salisbury <mbs@mc.com>,
-	"Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: ppc LE questions (seeking help hand info pointers) 
-In-Reply-To: Message from Ralph Blach <rcblach@raleigh.ibm.com>
-   of "Fri, 21 Sep 2001 13:01:49 EDT." <3BAB727D.C85E5CB@raleigh.ibm.com>
-Date: Fri, 21 Sep 2001 14:58:23 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+From: Peter Bergner <bergner@brule.borg.umn.edu>
+Date: Fri, 21 Sep 2001 14:40:50 -0500
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: hollis@austin.ibm.com,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org,
+	Debian PowerPC <debian-powerpc@lists.debian.org>, dan@debian.org
+Subject: Re: yaboot & zImage's
+Message-ID: <20010921144050.A223060@brule.borg.umn.edu>
+References: <20010920150939.32251@smtp.adsl.oleane.com> <20010920152246.B14835@plato.local.lan> <20010921114951.A211936@brule.borg.umn.edu> <20010921112047.B23691@cpe-24-221-152-185.az.sprintbbd.net> <20010921132904.C17347@austin.ibm.com> <20010921113329.C23691@cpe-24-221-152-185.az.sprintbbd.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010921113329.C23691@cpe-24-221-152-185.az.sprintbbd.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Ralph Blach writes:
+Sorry, I should have been a little more explicit.  Yes, I meant to
+say zImage (including zImage.initrd, duh).  No, yaboot does not
+do compression.
 
-Ralph> Although my knowledge of powerpc is
-Ralph> far from complete, I can tell everybody that from my experience that the
-Ralph> Book E architecture is superior.
+The only reason we couldn't boot zImages before, was that yaboot
+_always_ loaded the image from the FS into memory at KERNELADDR.
+This is what vmlinux wants/expects.  OTOH, zImage (or any other
+program) expects to be loaded into memory where it was linked at.
+The code now detects if we're loading a vmlinux or not.  If it's a
+vmlinux, then yaboot loads the image at KERNELADDR, otherwise it
+loads it at the p_vaddr value for each ELF segment.
 
-Ralph> I believe that Book E processor which have been announced by both
-Ralph> Motorola and IBM will be VERY successful.
+To detect if we're loading a vmlinux, we look at the e_entry value and
+if it is equal to 0xC0000000 for ELF32 or 0xC000000000000000 for ELF64,
+then we _assume_ it's a vmlinux.
 
-	Let me clarify a point in my previous reply: the PowerPC Book E
-changes to the PowerPC Book I UISA affect 64-bit PowerPC only.  The 32-bit
-subset of PowerPC Book E is compatible with the rest of the PowerPC
-architecture family.  IBM's PowerPC 440GP implements the 32-bit PowerPC
-Book E architecture.
 
-	As I said in my original message, the supervisor and non-UISA
-changes are very useful and have a lot of support from the embedded
-PowerPC developer community.  The IBM PowerPC 440GP and other 32-bit
-PowerPC Book E chips implement the areas of agreement and compatibility
-which create broad support for the PPC 440GP chip and the PowerPC
-architecture.  I am happy when the various chip implementations in the
-PowerPC architecture family complement and reinforce each other.
-
-David
-
-	P.S. The above comments are my own opinion and are not intended to
-imply that they represent any company or organization.
-
+Peter
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
