@@ -1,39 +1,37 @@
-Date: Thu, 16 Mar 2000 23:34:35 +0100
-From: Olaf Hering <olh@suse.de>
-To: Chris Backas <cbackas@bigfoot.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Linnux on iBooks
-Message-ID: <20000316233435.A27256@suse.de>
-Reply-To: linuxppc-dev@lists.linuxppc.org
-References: <E12VfO2-0002sK-00@smtp01.mrf.mail.rcn.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E12VfO2-0002sK-00@smtp01.mrf.mail.rcn.net>
+Message-Id: <200003170652.BAA02096@shell.faradic.net>
+Date: Thu, 16 Mar 2000 20:52:10 EST
+From: jingai <jingai@floatingpenguins.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: USB keyboard lights & kernel 2.3.52 (paul's)
+Reply-To: jingai@floatingpenguins.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Mar 16, Chris Backas wrote:
 
-> I have an original iBook (not the new ones) and I would like to run Linux on it
-> if possible.  I've read that Linux can now be booted on the iBook, but 'booting'
-> and 'usable' are two *very* different things in  my book.  I've heard that
-> Ethernet and the Modem aren't usable etc.. My question is, just how usable is
-> LinuxPPC on an iBook?  What still doesn't work?  Thanks for any info.
+I finally was able to get Paul's tree to run on my box tonight (2.3.52), and
+all seems great, except for two things:
 
-The iBook works fine, the sound is currently not supported and you can't
-(?) switch the resolution, use the offb driver.
-Ethernet and modem works very well.
-This thing is unusable with only 32MB, at least with X.
-You can use BootX to use more than 8 bit color depth.
+1) My USB keyboard's lights have gone wacko.  In 2.3.39 and below, they
+didn't light up at all (num lock, scroll lock, caps lock), but in 2.3.52,
+when caps lock is toggled, the num lock light lights up instead, and I have
+yet to figure out what toggles the other two :)  not a major problem, just
+an oddity.
 
+2) The other problem is that netfilter 0.1.18 no longer builds -- I'm
+guessing this is due to a change in the kernel headers and we'll probably
+see a new netfilter release soon, but I figured I'd mention it anyway.
 
-Gruss Olaf
+Last question:  since my work schedule has been so hectic, I haven't been
+actually following the threads on XFree86 4.0, so I'm just curious... does
+it currently build on PPC boxes?  And does it support accelerated video
+with the ATI RagePro, or do is this a good reason for me to go out and
+actually buy a Rage128 :)
 
---
- $ man 1 current_release
+Thanks in advance,
+Jonathan
 
-BUGS
-       Users never read manuals...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
