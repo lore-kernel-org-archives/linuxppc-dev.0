@@ -1,52 +1,46 @@
+Date: Tue, 19 Sep 2000 19:39:30 +0300
+From: Alex Shnitman <alexsh@hectic.net>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: kgdb/Sandpoint -- patch & help needed 
-In-Reply-To: Message from Alex Shnitman <alexsh@hectic.net>
-   of "Mon, 18 Sep 2000 17:16:27 +0300." <20000918171627.B4328@hectic.net>
+Subject: Re: kgdb/Sandpoint -- patch & help needed
+Message-ID: <20000919193930.C1406@hectic.net>
+References: <alexsh@hectic.net> <7803.969334757@msa.cmst.csiro.au>
 Mime-Version: 1.0
-Content-Type: text/plain
-Date: Tue, 19 Sep 2000 14:39:17 +1100
-Message-ID: <7803.969334757@msa.cmst.csiro.au>
-From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7803.969334757@msa.cmst.csiro.au>; from Murray.Jensen@cmst.csiro.au on Tue, Sep 19, 2000 at 02:39:17PM +1100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 18 Sep 2000 17:16:27 +0300, Alex Shnitman <alexsh@hectic.net> writes:
->... However, with this patch the kernel
->hangs right after saying "Now booting the kernel". I don't even see
->how these changes could affect the boot process so early.
+Hi, Murray!
 
-Aha! I was caught by this. When you enable CONFIG_KGDB, a breakpoint is
-executed in setup_arch() which is just about the first thing the kernel
-does.
+On Tue, Sep 19, 2000 at 02:39:17PM +1100, you wrote the following:
 
-The sequence is (very!) roughly (and for the 8xx embedded platform):
+> >... However, with this patch the kernel
+> >hangs right after saying "Now booting the kernel". I don't even see
+> >how these changes could affect the boot process so early.
+>
+> Aha! I was caught by this. When you enable CONFIG_KGDB, a breakpoint is
+> executed in setup_arch() which is just about the first thing the kernel
+> does.
 
-_start()
-	identify_machine()
-	MMU_init()
-	start_kernel()
-		lock_kernel()
-		setup_arch()
-			set_debug_traps()	| ifdef CONFIG_KGDB
-			breakpoint()		|
-			...
-		parse_options()
-		trap_init()
-		init_IRQ()
-		...
+Right, but before calling setup_arch, it prints the linux kernel
+banner! Here's the code:
 
-Solution? Simply start gdb on your host machine and do the following:
+        printk(linux_banner);
+	setup_arch(&command_line, &memory_start, &memory_end);
 
-	set remotebaud BBBBBB	(if required)
+And I don't see the banner. Did you see it when you encountered this?
 
-	target remote /dev/...	(serial port on host connected to
-				 target kgdb serial port)
-	continue
 
-and your kernel will fire up again (I kicked myself when I realised what
-was going on). Cheers!
-								Murray...
+--
+Alex Shnitman                            | http://www.debian.org
+alexsh@hectic.net, alexsh@linux.org.il   +-----------------------
+http://alexsh.hectic.net    UIN 188956    PGP key on web page
+       E1 F2 7B 6C A0 31 80 28  63 B8 02 BA 65 C7 8B BA
 
+NTL have a new network routing protocol as invented for amusing
+small children. Its called 'now you see it now you dont' with much
+of the US vanishing at cardiff for 10 seconds every minute or so.
+	-- Alan Cox on a diary update
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
