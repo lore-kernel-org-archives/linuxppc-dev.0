@@ -1,18 +1,21 @@
-Return-Path: <mikpe@user.it.uu.se>
-Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "aun.it.uu.se",
-	Issuer "Uppsala University CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0DF7667A7A
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Mar 2005 23:26:26 +1100 (EST)
-Date: Fri, 25 Mar 2005 13:25:59 +0100 (MET)
-Message-Id: <200503251225.j2PCPxPo010837@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@csd.uu.se>
-To: adaplas@pol.net, benh@kernel.crashing.org
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org
-Subject: Mach64 framebuffer console distorted on PMac G3 with recent 2.6
-	kernels
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4A14467AAF
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Mar 2005 09:27:15 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jesse Barnes <jbarnes@engr.sgi.com>
+In-Reply-To: <200503240854.45741.jbarnes@engr.sgi.com>
+References: <1111645464.5569.15.camel@gaston>
+	<200503240854.45741.jbarnes@engr.sgi.com>
+Content-Type: text/plain
+Date: Sat, 26 Mar 2005 09:23:40 +1100
+Message-Id: <1111789420.5570.67.camel@gaston>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ppc32/64: Map prefetchable PCI without guarded bit
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,86 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2005-03-24 at 08:54 -0800, Jesse Barnes wrote:
+> On Wednesday, March 23, 2005 10:24 pm, Benjamin Herrenschmidt wrote:
+> > While experimenting with framebuffer access performances, we noticed a
+> > very significant improvement in write access to it when not setting
+> > the "guarded" bit on the MMU mappings. This bit basically says that
+> > reads and writes won't have side effects (it allows speculation). It
+> > appears that it also disables write combining.
+> 
+> Doesn't pgprot_writecombine imply non-guarded, so can't you use it instead?  
+> Either way, you'll probably want to fix fbmem.c as well and turn off 
+> _PAGE_GUARDED?
 
-My Beige PowerMac G3 has a Mach64 GT chip. The display is an old 15" PC monitor.
-In recent 2.6 kernels, the framebuffer console suffers from distortions,
-where pixels in several columns around 50% and 75% into the lines (all lines)
-flicker on/off all the time.
+I'm not sure we implement pgprot_writecombine. But anyway, that wouldn't
+help as X uses /dev/mem which doesn't use that, and sysfs new mmap
+interface doesn't have anything for setting writecombine.
 
-All kernels up to and including 2.6.10-rc1-bk3 were Ok and did not have
-this problem, but 2.6.10-rc1-bk8 and newer all do.
-(The intermediate 2.6.10-rc1-bk[4-7] ones don't compile on my pmac.)
+The interface I propose could be made generic, that is the whole point.
+It's basically a mean for the arch to say "heh, somebody wants to map
+this bit of physical address space, what pgprot should I use" :) The
+decision of wether to do uncacheable or writecombine, all the
+page_in_ram() trickery in /dev/mem or fbmem can be moved to arch
+specific routines and cleanup the generic stuff.
 
-There were major updates to the Mach64 driver between 2.6.10-rc1-bk3 and -bk8,
-so I can only conclude that the new driver misprograms the chip somehow.
+> Maybe it's time for a more generic call to support this stuff, both for 
+> in-kernel mappings and ones that we export to userspace.
 
-Below is a dmesg diff between bk3 (working) and bk8 (distortions).
-I'm willing to run test/debug patches if you need more information.
+Yah, in-kernel mappings aren't covered yet, as my interface supposes a
+"struct file" but then, I don't use the struct file argument in my ppc
+implementation (I exposed it for the sake of archs that may want it). We
+could just define that in-kernel mappings can call this with NULL for
+struct file.
 
-BTW, who is the maintainer for Mach64? I couldn't find anything specific
-in MAINTAINERS.
-
-/Mikael
-
---- dmesg-2.6.10-rc1-bk3	2005-03-25 12:36:26.000000000 +0100
-+++ dmesg-2.6.10-rc1-bk8	2005-03-25 12:36:27.000000000 +0100
-@@ -31,13 +31,54 @@
- Registering pmac pic with sysfs...
- SCSI subsystem initialized
- usbcore: registered new driver hub
--atyfb: 3D RAGE (GT) [0x4754 rev 0x9a] 2M SGRAM, 14.31818 MHz XTAL, 200 MHz PLL, 67 Mhz MCLK
--BUS_CNTL DAC_CNTL MEM_CNTL EXT_MEM_CNTL CRTC_GEN_CNTL DSP_CONFIG DSP_ON_OFF
--7b23a040 86010182 004215b3 25010001     03000200      004808e2   009c0666
--PLL ad d5 21 44 e8 03 82 d1 8e 9e 98 14 a6 1b 00 00
-+PCI: Enabling device 0000:00:12.0 (0086 -> 0087)
-+atyfb: using auxiliary register aperture
-+atyfb: 3D RAGE (Mach64 GT) [0x4754 rev 0x02]
-+atyfb: 2M SGRAM (1:1), 14.31818 MHz XTAL, 200 MHz PLL, 67 Mhz MCLK, 67 MHz XCLK
- atyfb: monitor sense=73f, mode 6
-+atyfb: setting up CRTC
-+atyfb: set primary CRT to 640x480 PP composite N
-+atyfb: CRTC_H_TOTAL_DISP: 4f006b
-+atyfb: CRTC_H_SYNC_STRT_WID: 80059
-+atyfb: CRTC_V_TOTAL_DISP: 1df020c
-+atyfb: CRTC_V_SYNC_STRT_WID: 301e2
-+atyfb: CRTC_OFF_PITCH: 14000000
-+atyfb: CRTC_VLINE_CRNT_VLINE: 0
-+atyfb: CRTC_GEN_CNTL: b000200
-+atyfb: atyfb_set_par
-+atyfb:  Set Visible Mode to 640x480-8
-+atyfb:  Virtual resolution 640x3251, pixclock_in_ps 33523 (calculated 33523)
-+atyfb:  Dot clock:           29 MHz
-+atyfb:  Horizontal sync:     34 kHz
-+atyfb:  Vertical refresh:    64 Hz
-+atyfb:  x  style: 29.27833 640 720 784 864   480 483 486 525
-+atyfb:  fb style: 33523  80 640 80 64 39 480 3 3
-+debug atyfb: Mach64 non-shadow register values:
-+debug atyfb: 0x2000:  004F006B 00080059 01DF020C 000301E2
-+debug atyfb: 0x2010:  00C40000 14000000 00000002 0B000200
-+debug atyfb: 0x2020:  004805FA 00B4043B 00000000 92100000
-+debug atyfb: 0x2030:  00000000 00000031 00000000 00000000
-+debug atyfb: 0x2040:  00000000 00000000 00000000 00000000
-+debug atyfb: 0x2050:  00000000 00000000 00000000 00000000
-+debug atyfb: 0x2060:  FFFFFF00 00000001 00000008 07FF07FF
-+debug atyfb: 0x2070:  00000000 00000000 00003720 00000040
-+debug atyfb: 0x2080:  00000000 00000000 00000000 00000000
-+debug atyfb: 0x2090:  00A63003 00000000 00000000 00000000
-+debug atyfb: 0x20A0:  7B23A050 00000000 00000000 25010001
-+debug atyfb: 0x20B0:  004215B3 00010000 00010000 00000000
-+debug atyfb: 0x20C0:  00FF0001 86010182 00000000 00000000
-+debug atyfb: 0x20D0:  00000180 00000000 00000000 00002082
-+debug atyfb: 0x20E0:  9A004754 0000001D 00000000 00000000
-+debug atyfb: 0x20F0:  00000000 0000000B 800004F8 00000000
-+
-+debug atyfb: Mach64 PLL register values:
-+debug atyfb: 0x00:  ADD52414 A80382D1 8E829601 A61B0000
-+debug atyfb: 0x10:  ADD52414 A80382D1 8E829601 A61B0000
-+debug atyfb: 0x20:  ADD52414 A80382D1 8E829601 A61B0000
-+debug atyfb: 0x30:  ADD52414 A80382D1 8E829601 A61B0000
-+
- Console: switching to colour frame buffer device 80x30
--fb0: ATY Mach64 frame buffer device on PCI
-+atyfb: fb0: ATY Mach64 frame buffer device on PCI
- Generic RTC Driver v1.07
- Macintosh non-volatile memory driver v1.1
- io scheduler noop registered
+Ben.
