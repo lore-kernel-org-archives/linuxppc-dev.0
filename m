@@ -1,28 +1,34 @@
-Message-ID: <CA78D1B723D8D411AF0300508BDCF74F011454AF@NTCORREO>
-From: GOTZON ASTONDOA <gastondoa@fagorautomation.es>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Changing the timeslice
-Date: Thu, 6 Feb 2003 16:07:10 +0100 
+Message-ID: <0A0CCED2EF0FD41196950060089FDFED1A5E92@nt0.omnibyte.com>
+From: Don Easton <dhe@omnibyte.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Serial console driver question
+Date: Thu, 6 Feb 2003 11:11:16 -0600 
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all:
-	Linux has a 10 ms timeslice by default. But we need to have 2 or 3
-ms timeslice.
+Hi,
 
-	I read that the only thing i need to do is change the HZ value
-defined in asm-ppc/param.h (default is 100) and probe in to find the correct
-value. Is it true? Is any formula to do it? Is there any problem (except the
-schaduling overhead)?
-	I read somewhere that i also need to change properly
-PROC_CHANGE_PENALTY in asm-ppc/smp.h. But others dont talk about it. If i
-need to change it, what is "properly"?
+I'm new to the list as of yesterday, and new to Linux as of a
+couple of weeks ago. I've tried researching this on the net
+but haven't come up with anything, so I'm asking for help here.
 
+I'm trying to port Linux to a custom VME board we make, this
+board doesn't have any video or keyboard hardware, so I need to
+use the onboard serial port as a terminal console. It looks
+to me like everybody uses a 16550 UART compatible device for
+serial ports, but we happen to have a Zilog z85230 part on our board.
+So my question becomes; what's the best/easiest way to get Linux
+to talk to this part and use it as the consol? Being new to all this,
+I'm not sure if I should try to patch the kernel, or write a driver
+for this part, or something else... Any advice would be appreciated.
 
-	Can somebody give me some light?
-	Thanks to everibody for your help.
+TIA,
+
+Don Easton
+Omnibyte Corp.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
