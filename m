@@ -1,75 +1,46 @@
-Message-ID: <3BEFFBCF.7010600@embeddededge.com>
-Date: Mon, 12 Nov 2001 11:41:51 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-Id: <5.1.0.14.2.20011112114211.00bd4350@falcon.si.com>
+Date: Mon, 12 Nov 2001 11:49:37 -0500
+To: linuxppc-embedded@lists.linuxppc.org
+From: Jerry Van Baren <vanbaren_gerald@si.com>
+Subject: Re: Flash programing
+In-Reply-To: <5BFFEE450E4C9264CB2CB0E906D67860@j_padron.joseane.zzn.com>
 MIME-Version: 1.0
-To: Sarnath Kannan <sparc64@rediffmail.com>
-Cc: ashish anand <ashisha@india.infogain.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: "OpenPIC versus EPIC" in MPC8240 !
-References: <20011112084114.25202.qmail@mailFA3.rediffmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset="iso-8859-1"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sarnath Kannan wrote:
+At 10:09 AM 11/12/01 +0100, Juan Padron wrote:
 
-> Hi Ashish,
->   what I felt was, populating reserved areas
-> is a bug.
+>Hi:
+>
+>  I´m new in this list.
+>  I have a beginner question.
+>  We have Metrowerks CodeWarrior (for Windows). It has a little
+> application and we use it to program the flash (via the Wigglers BDM):
+> write and erase.
+>But now, we are starting with embedded linux and we want to know how we
+>can program the flash fron Linux using the BDM.
 
-It's only a bug if we don't know we are doing this and
-it is causing problems.  We know we can do what we
-are doing without trouble.  I'm not trying to
-justify this hack or claim it is the proper solution.
-It just happens to work, allows us to take advantage of
-existing software functions, and someday it may be changed.
+Wolfgang covered most aspects of this.  If, however, your question is how
+to use the Wiggler BDM from a linux workstation instead of a WinXX
+workstation, the answer is that it isn't readily possible.  There are no
+linux Wiggler drivers.
 
-When someone like you shows up and your only concern or
-contribution is to fix this function, then do it.  I don't
-want to hear why you think someone else did it wrong or what
-someone else should do to make it better.  Just fix the damn
-thing!  When someone like me is trying to do hundreds of things
-to get a board port done, using any existing code is exactly
-what I'm going to do.  For EPIC I could take advantage of a
-bunch of existing code instead of discussing why it should
-change, or rewriting and testing on a whole bunch of other platforms
-that doesn't help me make progress.  If you have the time to
-rewirte and test it on _everything_ affected, go right ahead.
+Note that this isn't just an issue of how to wiggle the wiggler pins.  You
+also have to know how to address the internals of the PPC CPU, which is a
+Motorola trade secret.  You have to sign agreements with them before they
+will tell you how to use the JTAG port to access the internal registers.
 
+>   Could you help me?
 
-> I has said that this could be a __possible__
-> cause for getting bogus interrupts. I would
-> say there is 80% possibility.
+Sorry, probably not :-/
 
-You are just digging a deeper hole.  Bugs are either 100% there
-or not there at all.  There isn't an 80% possibility of a bug.......
-The _conditions_ under which a bug can appear are variable,
-but a bug is a bug.
+>   Thank you for your help.
+>
+>Obtenga su E-mail GRATUITO en http://joseane.zzn.com
 
->  Moreover if u can read the EPIC manual,
-> u can notice that IVPR and SVPR both start
-> at  offset 0x50200. ( So the IVPR space is
-> not a continous 24 entries. It is actually
-> overalapped and discontinous )
-
-If you actually _understood_ what you read, you would notice
-this register space has different functions depending upon
-the configuration of the EPIC and the design of the hardware
-surrounding it.  You will also notice that because of the way
-we initialize and utilize the openpic and interrupt management
-functions that we properly configure the interrupt source registers
-for the board design.
-
->   I have no idea of hurting people. But if a bug
-> is pointed out, there is no harm in accepting it.
-
-More importanly, you should do something constructive and fix it.
-
-Thanks.
-
-
-	-- Dan
+gvb
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
