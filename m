@@ -1,69 +1,40 @@
-Date: Mon, 7 Dec 1998 10:57:38 GMT
-From: costabel@lie.univ-rennes1.fr (Martin Costabel)
-Message-Id: <199812071057.KAA07174@lie.univ-rennes1.fr.maths>
-To: tmrini@ntplx.net
-Subject: Re: pre-R5&miscs
+Message-ID: <19981207120536.A4658@maxime.u-strasbg.fr>
+Date: Mon, 7 Dec 1998 12:05:36 +0100
+From: Sven LUTHER <luther@maxime.u-strasbg.fr>
+To: VALETTE Eric <valette@crf.canon.fr>, luther@dpt-info.u-strasbg.fr
 Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: New XF68_FBDev
+Reply-To: luther@dpt-info.u-strasbg.fr
+References: <Pine.LNX.4.03.9812041442140.26444-100000@mercator.cs.kuleuven.ac.be> <19981204145330.I463@maxime.u-strasbg.fr> <m0zmwAV-0000WWC@tri-yann.crf.canon.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <m0zmwAV-0000WWC@tri-yann.crf.canon.fr>; from VALETTE Eric on Mon, Dec 07, 1998 at 09:37:23AM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini <tmrini@ntplx.net> wrote on Sun, 6 Dec 1998:
+On Mon, Dec 07, 1998 at 09:37:23AM +0100, VALETTE Eric wrote:
+> >>>>> "Sven" == Sven LUTHER <luther@maxime.u-strasbg.fr> writes:
+> 
+> Sven> it is ok with you if i do some debian packages of your servers ? Or do you
+> Sven> prefer to do that yourself ?
+> 
+> I would love to install debian packages (provided they are for 2.1) instead of
+> RH4. Do you have any ftp address where I can download stuffs...
 
-> On Sun, 6 Dec 1998, Martin Costabel wrote:
+you can get all of debian/ppc from :
+ftp.debian.org/debian/dists/sid/main/binary-powerpc
 
->> If I use XPmac, then it works in principle, but the colors are all
->> messed up, most of the time nothing is readable. I say 'most of the
->> time', because the weird colors are not always the same, they depend on
->> the number of the console from which X is started. Also, if you touch
->> the title bar of a window, the X server dies. This has been mentioned
->> here, and it seems that someone already has a fix.
->
-> I believe this is similar to the problem of using Xpmac compat mode
-> normally, isn't it?
+except the X stuff (there was some problem, the ppc maintainer is waiting for
+		X3.3.3, who is still not debianized ... but it should come soon).
 
-If by 'normally', you mean linuxppc R4, then no, this is not similar. For me,
-Xpmac on R4 works perfectly (I helped writing the valkyriefb driver, after all,
-to make sure that this is so). On pre-R5 *with the same kernel* and the same
-boot procedure, the colors are crazy. 
-And they depend not only on the number of the console from which X
-is started, but also on the time of the day or whatever. Almost every time I
-startx, I get different colors. The windows that should be black on pale yellow
-in my config, for example, are sometimes yellow on green, sometimes dark blue onvery dark blue, sometimes green on black and so on. You get the picture.
+the X stuff can be downloaded from :
 
-I tried to run the Xpmac from R4, fixed by fix961212, but it dies saying it 
-cannot define the default font path and doesn't find the font 'fixed'. But
-this is exactly the same font path that Xpmac from pre-R5 finds without
-problems. Weird. 
+http://master.debian.org/~dan
 
->> If I use XF68_FBDev, then the colors are OK, but the keyboard and the
->> mouse do not work correctly: The option (alt) keys do not work, and
->> there is no simulation for mouse buttons 2 and 3.
->> This is a problem that has been mentioned to the author (Geert U.)
->> already some time ago, but since he doesn't have ADB devices any more,
->> it is not clear whether this will be fixed soon.
->>
->> So for people with standard Apple keyboards and mice, there remains a
->> serious problem.
->
-> Hmm.  Haven't used the XF68_FBDev's that i've built for a while, but they
-> did work fine here.  Right now I'm using Geert's server from 10something
-> run throught fix961212.  Make sure you have Xkb stuff turned off in the
-> XF86Config file.
- 
-The 2 servers from Geert's that I tried didn't want to run on pre-R5. I don't 
-quite know why, because they dump 2 pages of messages on the screen, only the
-second of which is visible. This is a help file. I guess the real errors are
-mentioned on the first, invisible, page. Not very helpful.
+Friendly,
 
-This problem with the non-functioning option keys seems to be the same in
-R4 and pre-R5. And I am pretty sure that the problem is relatively recent.
-I think it was not there at a time when kernel versions were around 
-2.1.115-121 or so. I don't know how to test this.
-
---
-Martin
-
+Sven LUTHER
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
