@@ -1,50 +1,53 @@
-Date: Thu, 4 Dec 2003 01:15:36 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Wojciech Kromer <krom@dgt-lab.com.pl>
-Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: memory problem with fec on 8250
-Message-ID: <20031204091536.GA1050@gate.ebshome.net>
-References: <3FCD956B.8030604@gazeta.pl> <3FCEF441.2030808@dgt-lab.com.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3FCEF441.2030808@dgt-lab.com.pl>
+Message-ID: <3FCEFB59.80300@intracom.gr>
+Date: Thu, 04 Dec 2003 11:16:09 +0200
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: the door is closing for 2.4
+References: <16334.33020.624995.521330@cargo.ozlabs.ibm.com>
+In-Reply-To: <16334.33020.624995.521330@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Dec 04, 2003 at 09:45:53AM +0100, Wojciech Kromer wrote:
-> >i have some problems with using fec device on my custom 8250 board
-> >while sending a lot of data (at least 300MB) through this device causes
-> >lack of memory
-> >sending same amount of data through loopback works fine
-> >
-> >i'm using 2.4.19 kernel
-> >any idea?
->
-> cached memory keeps growing slowly, and free is going down same way,
-> after putting ~300MB ftp data (from 8250 board to another host), VM
-> starts killing some applications
->
-> same situation is with latest linuxppc_2_4_devel kernel from denx.de,
-> but there is additional information from kernel
->
-> <5>__alloc_pages: 0-order allocation failed (gfp=0x1d2/0)
-> <5>__alloc_pages: 0-order allocation failed (gfp=0x1d2/0)
-> <5>__alloc_pages: 0-order allocation failed (gfp=0x1d2/0)
-> <5>__alloc_pages: 0-order allocation failed (gfp=0x1d2/0)
-> <5>__alloc_pages: 0-order allocation failed (gfp=0x1d2/0)
-> <4>VM: killing process sshd
->
-> what's wrong ???
+Paul Mackerras wrote:
 
-It means that this box is really out of memory.
+>Guys,
+>
+>Marcelo has announced that as of 2.4.25, the official 2.4 tree is
+>going into maintenance-only mode.  There is still a lot of stuff in
+>the linuxppc-2.4 and linuxppc_2_4_devel trees which hasn't gone into
+>the official 2.4 tree.  Most of that is board ports for various
+>embedded boards, and for many of those boards, it's not clear whether
+>anyone cares whether they are supported by the official 2.4 or not.
+>
+>So if you have a board that you want to see supported by the official
+>2.4 tree, and it isn't already, let me know.  I will need someone to
+>commit to maintaining the port on an ongoing basis before I send it to
+>Marcelo, though.
+>
+>We also need people to start moving their embedded board ports to
+>2.6, along with all the related device drivers, etc.  We are already
+>past the point where new development should all be done in 2.5/2.6.
+>
+>Paul.
+>
+Hi Paul
 
-Could you provide output from utility called 'free' and from file
-/proc/slabinfo at two points of time: 1) when you just booted your
-boax and 2) just before it starts failing.
+I have various boards based on 8xx that I want to get them in  but I can't
+because they depend on some patches that I was told should wait for 2.6.
 
-Thanks,
+However I don't think that 2.6 works for 8xx at all.
 
-Eugene.
+What is the status of 2.6 for 8xx?
+
+Does someone intent to do it, or should I try to give it a shot?
+
+Regards
+
+Pantelis
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
