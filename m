@@ -1,41 +1,126 @@
-Message-ID: <3DAC8A12.8090600@vss.fsi.com>
-Date: Tue, 15 Oct 2002 16:35:14 -0500
-From: Jim Mesenbrink <mesenb@vss.fsi.com>
+Message-ID: <3DACBC0F.DDB832E0@esteem.com>
+Date: Tue, 15 Oct 2002 18:08:31 -0700
+From: Conn Clark <clark@esteem.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: booting Linux on est8260 using FCC2
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Patrick Mahoney <pmahoney@8d.com>
+Cc: May Ling List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: mpc8xx - power save modes - PIT
+References: <20021010183502.GA843@segfault.usine.8d.com> <3DA5F5EC.2844DE06@esteem.com> <20021015225625.GA8153@segfault.usine.8d.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have an EST SBC8260 board that I am trying to boot Linux using the
-FCC2 interface.  I am using ppcboot 1.2.0 and Linux 2.4.20-pre10.  I get
-as far in the boot process as:
+Patrick Mahoney wrote:
+>
+> Hello Conn,
+>
+> Progress has been made... I can succesfully raise the clock rate
+> divider up to a factor of 8 before the kernel starts. This makes the
+> current consumption drop from 0.41A to 0.32A...
 
-    IP-Config: Complete:
-          device=eth0, addr=10.0.0.8, mask=255.255.255.0, gw=10.0.0.1,
-         host=est8260, domain=, nis-domain=(none),
-         bootserver=10.0.0.62, rootserver=10.0.0.62, rootpath=
-    NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-    Looking up port of RPC 100003/2 on 10.0.0.62
+Where are you doing this?
+Is the divide by 8 in the SCCR[DFNH] or SCCR[DFNL]?
+If you are going to have a SCCR[DFNL] divider that drops your clock
+speed below 24MHz you need to set the SCCR[CRQEN] bit to keep ethernet
+working. (assuming your DFNH keeps it above 24MHz)
 
-After which the board goes silent.  I've placed a sniffer on the same
-net to verify that the board stops talking.  If I use the slower SCC
-ethernet interface everything works fine.  I have tried setting the port
-to half duplex on my switch without any luck.  I looked at the clock
-settings etc. in fcc_enet.c after reading a reply posted by Allen Curtis
-in regards to this exact situation, "Booting Linux Kernel on a EST8260",
-posted by another user.  I quickly realized I wasn't sure what I should
-exactly be looking for.  This issue also appears in the posting
-"root=/dev/nfs on sbc8260".  Any ideas would be greatly appreciated.
+>
+> Also, the timer thing, that was a rookie mistake... The timer variable
+> was declared on init_module stack, which disappeared before the timer
+> interrupt. (Thanks to Hollis for that one).
+>
+> One more thing. I thought I had SCCR[PRQEN] set, but I did not. Thats
+> why your idle.c hack caused a hang before the shell came up. I now
+> set SCCR[PRQEN] from the planetcore bootloader and can reach the
+> shell.
+>
+> phew!
+>
+> All right... Now I know 'idled' gets called... The thing is... Power
+> consumption stays the same! :(
+
+Power consumption will stay the same as long as you aren't taxing the
+CPU with some task. When you have task running that that needs scheduling
+it prevents the idle loop from running the power saving code. When the
+CPU is kept busy chewing on this task power consumption should rise back
+to about what it was before.
+
+>  The only modification i brought is
+> going into doze high instead of doze low... Going to doze low changes
+> the clock rate and hangs my kernel...
 
 
+Could you check and see what you have the SCCR[CRQEN] set to?
+I belive if your SCCR[DFNL] is set to a divide ratio that is to high
+it could keep the CPM from functioning correctly if the SCCR[CRQEN]
+bit is not set. If this bit is set your processor should pop back
+into normal high mode for any CPM activity.
+
+I recommend that you set the SCCR[DFNH] to divide by 1 (000 binary)
+and SCCR[DFNL] to divide by 8 (010 binary) since your board seems to
+function that slowly. Also make sure that the SCCR[CRQEN] bit is set.
+
+IF this works we might beable to try a higher division factor in your
+SCCR[DFNL] to save more power.
+
+> Here is my comment-stripped
+> loop:
+>
+>                 while(!current->need_resched) {
+>                         _nmask_and_or_msr( ( MSR_POW | MSR_EE ), 0);
+>                         ((immap_t *)IMAP_ADDR)->im_clkrstk.cark_plprcrk = KAPWR_KEY;
+>                         reg = ((immap_t *)IMAP_ADDR)->im_clkrst.car_plprcr;
+>                         ((immap_t *)IMAP_ADDR)->im_clkrst.car_plprcr = reg ;
+>                         reg &= 0xFFFFF8FF;
+>                         ((immap_t *)IMAP_ADDR)->im_clkrstk.cark_plprcrk = KAPWR_KEY;
+>                         reg |= 0x00000100;
+>                         ((immap_t *)IMAP_ADDR)->im_clkrst.car_plprcr = reg;
+>                         _nmask_and_or_msr(0, MSR_POW | MSR_EE);
+>                 }
+>                 schedule();
+>                 check_pgt_cache();
+>
+> Waddaya think?
+> Thanks for you help,
+>
+> Pat Mahoney
+>
+> On Thu, Oct 10, 2002 at 02:49:32PM -0700, Conn Clark wrote:
+> > Patrick Mahoney wrote:
+> > >
+> > > Hello pple,
+
+<snip>
+
+> > }
+> > #endif
+
+	Your idle loop should work fine. I still don't see why Doze Low mode
+hangs your kernel. If you have the SCCR[CRQEN] bit set the only time the CPU
+should be in Doze Low mode is when its in the idle loop and no CPM activity
+is present. If there is CPM activity it should transparently pop into Doze
+High mode then back after the CPM activity has finished. Any interupt should
+snap it out of either Doze mode and into Normal High mode until the idle loop
+power saving code gets executed again. If the SCCR[CRQEN] bit is set then
+Doze High and Doze Low modes in the idle loop should be indistingushable from
+one another.
+
+There has to be something fishy about a setting for this not to work.
+
+Please keep me advised.
+
+	Conn
 --
-Jim Mesenbrink					 FlightSafety International
-mesenb@vss.fsi.com				 Visual Simulation Systems
-Phone: 314-551-8422				 5695 Campus Parkway
-FAX:   314-551-8444				 St. Louis, MO 63042-2338
+
+*****************************************************************
+  If you live at home long enough, your parents will move out.
+ (Warning they may try to sell their house out from under you.)
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
