@@ -1,61 +1,39 @@
-Date: Wed, 20 Nov 2002 10:32:08 -0500
-From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Suspicious sequence of code in ibm_ocp_enet.c
-Message-ID: <20021120153208.GU27929@zax.zax>
-References: <5.1.0.14.2.20021119234016.021989c8@pop.prodigy.net>
-Mime-Version: 1.0
+To: Ricardo Scop <scop@digitel.com.br>
+Cc: Owen Green <owenjinggreen@yahoo.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Fast HDLC driver
+References: <20021119161020.83422.qmail@web20104.mail.yahoo.com>
+	<52ptt1bitv.fsf@topspin.com> <200211201439.45731.scop@digitel.com.br>
+From: Roland Dreier <roland@topspin.com>
+Date: 20 Nov 2002 09:41:59 -0800
+In-Reply-To: <200211201439.45731.scop@digitel.com.br>
+Message-ID: <52r8dg9lzs.fsf@topspin.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5.1.0.14.2.20021119234016.021989c8@pop.prodigy.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Nov 19, 2002 at 11:50:43PM -0800, Eugene Surovegin wrote:
->
-> Hi!
->
-> I found a strange sequence of code in ppc405_enet_open (devel_2_4 &
-> devel_2_5).
->
-> init_rings is called _AFTER_ enabling MAL tx and rx channels:
->
-> static int
-> ppc405_enet_open(struct net_device *dev)
-> {
->
->        ... some code skipped ...
->
->         /* enable all MAL transmit and receive channels */
->         enable_mal_chan(fep);
->
->         /* set transmit and receive enable */
->         out_be32(&emacp->em0mr0, EMAC_M0_TXE | EMAC_M0_RXE);
->
->         init_rings(dev);
->
->        netif_start_queue(dev);
->         printk(KERN_NOTICE "%s: IBM EMAC: open completed\n\n", dev->name);
->
->         return 0;
-> }
->
-> I suspect that this can cause some trouble during opening the device if a
-> packet arrives just after enabling rx channel but before init_rings is
-> executed. Frankly, I'm pretty sure that this causes infrequent crashes on
-> our custom 405GP board.
->
-> I'd move call to init_rings(dev) just before enable_mal_chan(fep);
->
-> Any ideas, suggestions ?
+>>>>> "Ricardo" == Ricardo Scop <scop@digitel.com.br> writes:
 
-It certainly looks dodgy.  Try changing it and see what happens.  Then
-send a patch :-)
+    Roland> I don't have a specific answer about HDLC, but I think
+    Roland> calling netif_rx() from interrupt context is correct.
+    Roland> netif_rx() doesn't do anything except queue the packet for
+    Roland> processing and then mark the network softirq.  In fact if
+    Roland> you want to call netif_rx() from non-interrupt context
+    Roland> then you have to use the netif_rx_ni() function to make
+    Roland> sure the softirq runs soon enough.
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.
-http://www.ozlabs.org/people/dgibson
+    Ricardo> Hmm, is this true? QSLinux driver calls netif_rx() from
+    Ricardo> thew interrupts bottom half; it it ok?
+
+This should probably be OK.  First, a bottom half is still interrupt
+context.  Second, if I recall correctly, Linux 2.2 does not even
+define netif_rx_ni().  If the driver works well there's no reason to
+change it.
+
+Best,
+  Roland
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
