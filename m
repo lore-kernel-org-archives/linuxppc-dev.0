@@ -1,92 +1,33 @@
-Date: Thu, 2 Nov 2000 16:07:28 +0100
-From: Claus <cl.en@gmx.net>
-To: Albrecht Dreﬂ <ad@mpifr-bonn.mpg.de>
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <3A01882C.9C16CC60@mpifr-bonn.mpg.de>
+Date: Thu, 02 Nov 2000 16:28:44 +0100
+From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
+MIME-Version: 1.0
+To: cl.en@gmx.net
+CC: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Lombard Sleep Crash (Was: 2.2.18pre17 again)
-Message-ID: <20001102160728.B371@olis.north.de>
-Reply-To: cl.en@gmx.net
-References: <14839.53124.753011.489351@argo.linuxcare.com.au> <39F96E14.C06AB6FB@mpifr-bonn.mpg.de> <20001027163923.A13804@suse.de> <3A015F72.2576BB01@mpifr-bonn.mpg.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-md5;
-	protocol="application/pgp-signature"; boundary="3MwIy2ne0vdjdPXF"
-In-Reply-To: <3A015F72.2576BB01@mpifr-bonn.mpg.de>; from ad@mpifr-bonn.mpg.de on Thu, Nov 02, 2000 at 13:34:58 +0100
+References: <14839.53124.753011.489351@argo.linuxcare.com.au> <39F96E14.C06AB6FB@mpifr-bonn.mpg.de> <20001027163923.A13804@suse.de> <3A015F72.2576BB01@mpifr-bonn.mpg.de> <20001102160728.B371@olis.north.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---3MwIy2ne0vdjdPXF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Claus wrote:
+> if you panic'ed with the CD module inserted, would you try to snooze without it?
 
+Got it. Without the cd drive module inserted, it does not panic. Apparently, it
+is enough that there is a CD drive at all, because there was no CD inserted or
+mounted. IMHO, this is a serious kernel bug. Anyone out there to fix this?
 
- >:=20
- >: I attach the kernel .config and the relevant part from /var/log/message=
-s, and as
- >: always, any help is _really_ welcome!
-=20
-if you panic'ed with the CD module inserted, would you try to snooze withou=
-t it?
+BTW, in an other approach, I rsync'ed Paul's linux-pmac-stable, but with this
+one the pmud does not start at all as it can not open /dev/adb...
 
-or try this one:
+> or try this one:
+[c code snipped]
 
-/* wakebay.c - wakes a powerbook mediabay so the system doesnt crash on acc=
-essing
- * a disk mounted before sleeping.  great for CD drives.
- *
- * Joseph Palani Garcia <jpgarcia@execpc.com>
- *
- * fairly simple.  IOCTL the mediabay to tell it the media changed.  (it on=
-ly forgot
- * it in sleep.  we remind it.)
- *
- * 3 cases:
- *   nothing in drive      : does nothing, exits normally
- *   in drive, not mounted : acts, no effect (?)
- *   in drive, is mounted  : drive regains status, door locked, etc.
- *
- * this is useful for PMUD.  add it to the wakeup script to prevent crashes.
- *
- */
-#include <stdio.h>
-#include <fcntl.h>
-#include <linux/cdrom.h>
+Again, I _really_ think this should go into the kernel...
 
-int
-main(int argc, char **argv)
-{
-  int fd, arg=3D0;
+Thanks a lot, Albrecht.
 
-  if(argc<2){
-    fprintf(stderr,"Usage:\n\t%s <device>\n",argv[0]);
-    return 1;
-  }
-
-  fd =3D open(argv[1], O_RDONLY);
-
-  if (fd < 0) {
-    fprintf(stderr,"%s cannot be opened.  exiting.\n",argv[1]);
-    return 0;
-  }
-
-  if (ioctl(fd, CDROM_MEDIA_CHANGED, &arg) < 0)
-    perror("CDROM_MEDIA_CHANGED ioctl");
-
-  close(fd);
-  return 0;
-}
-
-
-
-Regards
-
-		Claus
-
---3MwIy2ne0vdjdPXF
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
-
---3MwIy2ne0vdjdPXF--
+--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
