@@ -1,36 +1,30 @@
-In-Reply-To: <1089979617.1055.19.camel@bng-d000218>
-References: <s0f7edc2.025@EMAIL> <1089977681.27006.90.camel@kubu.opensource.se> <1089979617.1055.19.camel@bng-d000218>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <891CFADE-D72C-11D8-B668-003065F9B7DC@embeddededge.com>
-Cc: Magnus Damm <damm@opensource.se>,
-	linuxppc-embedded@lists.linuxppc.org,
-	Rupesh S <rupeshs@myw.ltindia.com>
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <005d01c46b3e$12adf030$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: "Dan Malek" <dan@embeddededge.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <s0f7edc2.025@EMAIL> <1089977681.27006.90.camel@kubu.opensource.se> <1089979617.1055.19.camel@bng-d000218> <891CFADE-D72C-11D8-B668-003065F9B7DC@embeddededge.com>
 Subject: Re: Why not kmalloc() ??
-Date: Fri, 16 Jul 2004 09:32:08 -0400
-To: sanjeev ramachandran <sanjeev.ramachandran@fci.com>
+Date: Fri, 16 Jul 2004 10:06:12 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Jul 16, 2004, at 8:06 AM, sanjeev ramachandran wrote:
+> Use hostalloc
+> only for those functions necesary (small serial fifos and such).
+>
+> Use dma_alloc_consistent() for large memory buffers that you need
+> to attach to BDs, for example Ethernet buffers.  There is very little
+> memory available from either dpalloc or hostalloc, and they must
+> be used only when necessary.
+>
 
-> Bingo , But there is another function called dpalloc which does the
-> same
-> job of allocating from the dual port ram.
+Is there any reason to use m8xx_cpm_hostalloc() over dma_alloc_consistent()
+for a loadable driver (that is, one loaded after VM initialized)?
 
-It is the only function that allocates from dpram.  hostalloc does not.
-Use the dpram only for those functions as necessary.  Use hostalloc
-only for those functions necesary (small serial fifos and such).
-
-Use dma_alloc_consistent() for large memory buffers that you need
-to attach to BDs, for example Ethernet buffers.  There is very little
-memory available from either dpalloc or hostalloc, and they must
-be used only when necessary.
-
-
-	-- Dan
+Mark Chambers
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
