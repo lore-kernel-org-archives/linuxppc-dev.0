@@ -1,36 +1,30 @@
-Date: Mon, 20 Mar 2000 20:53:46 +0100
+Date: Mon, 20 Mar 2000 20:54:53 +0100
 From: Florian Lohoff <flo@rfc822.org>
-To: David Edelsohn <dje@watson.ibm.com>
-Cc: Gabriel Paubert <paubert@iram.es>, linuxppc-dev@lists.linuxppc.org
+To: Gabriel Paubert <paubert@iram.es>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: PPC/MCA RS/6000 port ?
-Message-ID: <20000320205346.F1363@paradigm.rfc822.org>
-References: <paubert@iram.es> <200003200257.VAA26624@mal-ach.watson.ibm.com>
+Message-ID: <20000320205453.G1363@paradigm.rfc822.org>
+References: <20000319213603.A1365@paradigm.rfc822.org> <Pine.HPX.4.10.10003200116330.28648-100000@gra-ux1.iram.es>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200003200257.VAA26624@mal-ach.watson.ibm.com>; from David Edelsohn on Sun, Mar 19, 2000 at 09:57:45PM -0500
+In-Reply-To: <Pine.HPX.4.10.10003200116330.28648-100000@gra-ux1.iram.es>; from Gabriel Paubert on Mon, Mar 20, 2000 at 01:20:32AM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Mar 19, 2000 at 09:57:45PM -0500, David Edelsohn wrote:
+On Mon, Mar 20, 2000 at 01:20:32AM +0100, Gabriel Paubert wrote:
 
-> 	I do not have any hardware specs for these machines offhand, but
-> the interrupt controller may very well be PC-like cascaded 8259s.
+> > Model (C20/C10) - PPC 601 or 604 depending on the
+> > CPU Module and ~4-5 MCA Slots
+>
+> This is a recurring question on this list which comes up every few months.
+> I don't think anybody is working on a port due to the lack of HW
+> documentation and the probably odd implementation (there must be reason
+> for the so called direct store segments supported by the MMU of early PPC
+> processors).
 
-> 	The PPC601 was a POWER architecture chip with additional user-mode
-> PowerPC instructions.  It was based on the existing RSC (RIOS Single Chip)
-> processor that IBM already was using and allowed the first PowerPC chip
-> implementation to be developed and deployed very rapidly.  The supervisor
-> state of the chip was all POWER architecture, not PowerPC Books II and
-> III.  The direct store segments were a way to access special devices on
-> the I/O bus.
-
-What does this mean in concern to the existing PPC port ? As i understand
-the linuxppc port does already run on 601 - So the CPU is already
-supported - Leaves us with bootstrap/bootprom and special architecture
-(interrupts, scsi controller, serial ports etc)
-
-Right ?
+But as i understood - The 601 is supported - If it isnt there are
+still machines left - The Model C10/C20 with a 604 CPU Module.
 
 Flo
 --
