@@ -1,50 +1,103 @@
-Date: Wed, 23 Oct 2002 16:49:07 +0200 (CEST)
-From: Gabriel Paubert <paubert@iram.es>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: Compile fixes for linuxppc-2.5
-Message-ID: <Pine.LNX.4.32.0210231642560.19486-100000@gra-vd1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 23 Oct 2002 17:24:16 -0500 (CDT)
+Message-Id: <200210232224.g9NMO5n04849@postal.somerset.sps.mot.com>
+From: Ed Swarthout <Ed.Swarthout@Motorola.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: syscall register clobber list
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Hi all,
+asm-ppc/unistd.h is sloppy with the register clobber list for some of
+the _syscallX macros.  gcc with this fix:
 
-I just tried my first bleeding edge compile from the linuxppc-2.5
-bk repository. It did not compile without the appened patch. The
-first part looks obviously correct since it was the only usage
-of lcd_on which was not hidden by a CONFIG_PMAC_PBOOK. I'm less
-sure about the second part, it may be due to the fact that I have
-I have an unconventional configuration (no modules), but nevertheless.
+   http://gcc.gnu.org/ml/gcc/2002-09/msg00741.html
 
-	Gabriel.
+will issue a bunch of error messages like this:
 
-===== drivers/video/aty128fb.c 1.16 vs edited =====
---- 1.16/drivers/video/aty128fb.c	Mon Aug 19 14:45:44 2002
-+++ edited/drivers/video/aty128fb.c	Wed Oct 23 14:54:39 2002
-@@ -2099,8 +2099,10 @@
- 	struct aty128fb_par *par = data;
- 	unsigned int reg = aty_ld_le32(LVDS_GEN_CNTL);
+  include/asm/unistd.h:439: error:
+  asm-specifier for variable `__sc_4' conflicts with asm clobber list
 
-+#ifdef CONFIG_PMAC_PBOOK
- 	if (!par->lcd_on)
- 		on = 0;
-+#endif
- 	reg |= LVDS_BL_MOD_EN | LVDS_BLON;
- 	if (on && level > BACKLIGHT_OFF) {
- 		reg |= LVDS_DIGION;
-===== include/sound/initval.h 1.2 vs edited =====
---- 1.2/include/sound/initval.h	Tue Jun 11 18:30:46 2002
-+++ edited/include/sound/initval.h	Wed Oct 23 16:30:48 2002
-@@ -145,6 +145,7 @@
- #if defined(SNDRV_GET_ID) && !defined(MODULE)
- #include <linux/ctype.h>
- #include <linux/init.h>
-+#include <linux/slab.h>
- static int __init get_id(char **str, char **dst)
- {
- 	char *s, *d;
+Here's a patch:
+
+Index: unistd.h
+===================================================================
+RCS file: /cvsroot/linuxppc/linuxppc_2_4_devel/include/asm-ppc/unistd.h,v
+retrieving revision 1.1.1.2
+diff -u -r1.1.1.2 unistd.h
+--- unistd.h	2002/09/14 05:22:43	1.1.1.2
++++ unistd.h	2002/10/23 21:56:45
+@@ -249,8 +249,16 @@
+ 	return (__sc_err & 0x10000000 ? errno = __sc_ret, __sc_ret = -1 : 0), \
+ 	       (type) __sc_ret
+
+-#define __syscall_clobbers \
++#define __syscall_clobbers_4_12 \
+ 	"r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12"
++#define __syscall_clobbers_5_12 \
++	"r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12"
++#define __syscall_clobbers_6_12 \
++	"r6", "r7", "r8", "r9", "r10", "r11", "r12"
++#define __syscall_clobbers_7_12 \
++	"r7", "r8", "r9", "r10", "r11", "r12"
++#define __syscall_clobbers_8_12 \
++	"r8", "r9", "r10", "r11", "r12"
+
+ #define _syscall0(type,name)						\
+ type name(void)								\
+@@ -266,7 +274,7 @@
+ 			 "mfcr %1      "				\
+ 			: "=&r" (__sc_3), "=&r" (__sc_0)		\
+ 			: "0"   (__sc_3), "1"   (__sc_0)		\
+-			: __syscall_clobbers);				\
++			: __syscall_clobbers_4_12);		       	\
+ 		__sc_ret = __sc_3;					\
+ 		__sc_err = __sc_0;					\
+ 	}								\
+@@ -288,7 +296,7 @@
+ 			 "mfcr %1      "				\
+ 			: "=&r" (__sc_3), "=&r" (__sc_0)		\
+ 			: "0"   (__sc_3), "1"   (__sc_0)		\
+-			: __syscall_clobbers);				\
++			: __syscall_clobbers_4_12);			\
+ 		__sc_ret = __sc_3;					\
+ 		__sc_err = __sc_0;					\
+ 	}								\
+@@ -313,7 +321,7 @@
+ 			: "=&r" (__sc_3), "=&r" (__sc_0)		\
+ 			: "0"   (__sc_3), "1"   (__sc_0),		\
+ 			  "r"   (__sc_4)				\
+-			: __syscall_clobbers);				\
++			: __syscall_clobbers_5_12);			\
+ 		__sc_ret = __sc_3;					\
+ 		__sc_err = __sc_0;					\
+ 	}								\
+@@ -341,7 +349,7 @@
+ 			: "0"   (__sc_3), "1"   (__sc_0),		\
+ 			  "r"   (__sc_4),				\
+ 			  "r"   (__sc_5)				\
+-			: __syscall_clobbers);				\
++			: __syscall_clobbers_6_12);			\
+ 		__sc_ret = __sc_3;					\
+ 		__sc_err = __sc_0;					\
+ 	}								\
+@@ -372,7 +380,7 @@
+ 			  "r"   (__sc_4),				\
+ 			  "r"   (__sc_5),				\
+ 			  "r"   (__sc_6)				\
+-			: __syscall_clobbers);				\
++			: __syscall_clobbers_7_12);			\
+ 		__sc_ret = __sc_3;					\
+ 		__sc_err = __sc_0;					\
+ 	}								\
+@@ -406,7 +414,7 @@
+ 			  "r"   (__sc_5),				\
+ 			  "r"   (__sc_6),				\
+ 			  "r"   (__sc_7)				\
+-			: __syscall_clobbers);				\
++			: __syscall_clobbers_8_12);			\
+ 		__sc_ret = __sc_3;					\
+ 		__sc_err = __sc_0;					\
+ 	}								\
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
