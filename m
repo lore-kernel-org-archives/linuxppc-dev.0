@@ -1,41 +1,46 @@
-From: Josh Huber <huberj@WPI.EDU>
+Message-ID: <37E50C29.CA2CE536@execpc.com>
+Date: Sun, 19 Sep 1999 11:15:37 -0500
+From: Joseph Garcia <jpgarcia@execpc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14308.62378.599609.90190@cpu.wpi.edu>
-Date: Sun, 19 Sep 1999 10:31:06 -0400 (EDT)
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Lombard shuts itself off
-In-Reply-To: <19990917181056.027066@mailhost.mipsys.com>
-References: <14306.21109.970188.33759@cpu.wpi.edu>
-	<19990917181056.027066@mailhost.mipsys.com>
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: patches: MacOS-like Wallstreet sound in/out controls
+References: <19990919105401.015601@smtp.calvacom.fr>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt writes:
+Benjamin Herrenschmidt wrote:
+> A better solution would  be to make the appropriate infos available to
+> userland (eventually via a private ioctl of the sound driver). Then, we
+> could have an optional damon handling all this automatically that can be
+> unplugged for people who like controlling everything manually. If no-one
+> have time to write this, then you may include the patches anyway but
+> wrapped in a compile option. (I'd like the volume button patch anyway).
 > 
-> I have a similar problem with my wallstreet. It seems to survive quite
-> well when travelling with in bag, but when working with it on my knees, A
-> brutal move sometimes disconnects the battery. 
-> 
-> There is still a possibility of a problem with PMU communication. This
-> beast is quite sensitive to various timing issues, and when something
-> goes wrong, it shuts the machine down abruptly.
-Well, it happaned again, but this time is was sleeping last night on my desk with the power cord attached!
+> On a similar way, I'm wondering what is the best way for the eth driver
+> to tell userland about it's link status. I'd like to add to Paul's pmud a
+> way to have scripts run when the link goes down and up. (basically, this
+> would ifdown eth0 completely to remove it from the router, change my
+> default route to the one I need for PPP, etc...)
 
-I woke up this morning, and the sleep led was flashing, but when I pressed a key, it didn't wake up, the led went off, and nothing happaned.
+since we aren't psychics, the daemon should have a configuration and script
+place in /etc (/etc/pmu?).  the config would allow the user to control some
+standard responses on how it acts internally. (like volume control, switching,
+etc)  then the option to do additional things in scripts.  Given the potential
+flexibility people may want, does this mean C is too static, and thus perl or
+another more script-friendly language should be used?
 
-My question is this:
-Ben, is it possible that there could be a problem with the wakup code that caused this problem, or do you think that i should call and complain to apple?
+If all goes well, we may eventually have a "apmd" for ppc.  any reason we
+shouldn't try to use apmd as a framework?  have a so-called "apmd-compatibility"
+mode where we can use the standard PC apmd as our frontend?  or does it not have
+features like eth detect, so its not worth the bother?  (never had a pc laptop)
 
-My battery was in the right compartment, and it wasn't moving around at all, but then again it was also still hooked up to wall power...
+a few ideas from a peanut.
 
-The suspicious thing is that the led was still flashing, but usually when I have this problem (with I'm carrying it around w/o power) the led stops blinking..although it has happened like this before.
-
-Never while it was hooked up to AC power though.
-
-A similar thing happens in MacOS, which is why I'm inclined to call apple on this one...
-
-Josh
+-- 
+Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
+CS Undergraduate                      Student Employee - Systems Programmer
+University of Wisconsin - Madison                            UW Lidar Group
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
