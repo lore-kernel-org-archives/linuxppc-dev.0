@@ -1,10 +1,10 @@
-Date: Tue, 16 Feb 1999 12:44:17 +0100 (MET)
+Date: Tue, 16 Feb 1999 14:18:04 +0100 (MET)
 From: Gabriel Paubert <paubert@iram.es>
-To: David Edelsohn <dje@watson.ibm.com>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: bootstrap stuffs 
-In-Reply-To: <9902151757.AA75924@marc.watson.ibm.com>
-Message-ID: <Pine.HPP.3.96.990216123042.1977B-100000@gra-ux1.iram.es>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: bootstrap stuffs
+In-Reply-To: <19990216134514.022163@mail.mipsys.com>
+Message-ID: <Pine.HPP.3.96.990216141435.1977G-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -13,38 +13,30 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-On Mon, 15 Feb 1999, David Edelsohn wrote:
+On Tue, 16 Feb 1999, Benjamin Herrenschmidt wrote:
 
-> 	As Gabriel correctly explained, a "sync" instruction may be
-> necessary before interrupts are enabled if some off-chip operation, like
-> modifying an interrupt controller on the bus, was performed.  That is
-> because of the bus operations which need to complete before interrupts can
-> be enabled, not because of the enabling itself.
+> On Tue, Feb 16, 1999, Gabriel Paubert <paubert@iram.es> wrote:
+> 
+> >However, I have question about sync: how do the bridges handle a sync
+> >bus operation after a posted write ? If they don't flush the write
+> >queues, it means that the only solution for the 8259 is to read again the
+> >interrupt mask after having written it when masking an interrupt. 
+> 
+> I beleive the sync is _not_ forwarded to the bridge, at least not on the
+> MPC106. I fixed the "bogus interrupts" problem on pmac by adding, after
+> the sync, a loop that reads the mask until it's actually the value that
+> we wrote. I beleive a single read is enough to flush the bridges, but I
+> am a little bit paranoid as far as Apple's interrupt controller is
+> concerned so I added the loop.
 
-Actually I have come to the conclusion that the best way to handle this is
-to add a sync instruction in the mask/disable interrupt routines (the ones
-that access the interrupt controllers), so that all following __cli/__sti
-only need to access the MSR (for enable/unmask you don't care to
-synchronize of course).
-
-For a driver I'm writing, I've suppressed all references to
-read/write[bwl] when accessing MMIO space because they include an eieio. 
-I'm explicitly adding iobarrier() instead.
-
-I would also like to see versions of in/out which do not have an implied
-eieio so that you can control when/if you want to synchronize(sync), force
-ordering and or prevent gathering (eieio), or don't care (nothing).
-
-However, I have question about sync: how do the bridges handle a sync
-bus operation after a posted write ? If they don't flush the write
-queues, it means that the only solution for the 8259 is to read again the
-interrupt mask after having written it when masking an interrupt. 
+Please forgive the noise. I just checked that the 603 and 750 do not
+perform any bus operation when excuting sync or eieio. So the only
+solution when disabling an interrupt is to read again the same register in
+the controller (which is guaranteed to be ordered). OTOH 604 perform bus
+operations on eieio and sync, but it still has potential problems with
+posted writes IMHO. 
 
 	Gabriel.
-
-P.S: actually I might try a lot of these modifications once my driver
-works and I have put my VME boards in operation at the telescope. But for
-now I have no time.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
