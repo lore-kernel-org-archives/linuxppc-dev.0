@@ -1,81 +1,34 @@
-Message-ID: <3952206E.E2CBD46C@snmc.com>
-Date: Thu, 22 Jun 2000 09:19:26 -0500
-From: Daris Nevil <dnevil@snmc.com>
+Message-ID: <39522AB6.230ED909@embeddededge.com>
+Date: Thu, 22 Jun 2000 11:03:18 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Lucinda Schafer <lucsch@adaptivemicro.com>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MMU problems?
-References: <A109131318C4D1119AC20060088DECE330F4B1@amwmail.adaptivemicro.com>
-Content-Type: text/plain; charset=iso-8859-1
+To: diekema_jon <diekema@bucks.si.com>
+CC: linuxppc-embedded@lists.linuxppc.org, dan_malek@mvista.com, all@cideas.com
+Subject: Re: Missing cpm_install_handler/cpm_free_handler on the MPC8260 port
+References: <m1357B4-001SyaC@bucks>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Lucinda,
+diekema_jon wrote:
 
-I am having good success with the MPC850.  Our board is able to
-run without MMU problems, and shutting down is not a problem.
-We are using a kernel leveraged from 2.2.5, so it is a bit older,
-and I think some of the MMU code has changed since them.
+>         It appears that the interrupt controller on the MPC8260 is a bit
+>         different from the MPC8xx.
 
-Daris Nevil
-SiSIC Inc/SNMC
-www.snmc.com
 
-Lucinda Schafer wrote:
+That is why these functions are not needed on the 8260.  On the 8xx,
+the CPM is a second level interrupt controller from the PowerPC core.
+That is, the CPM was one interrupt vector from the SIU core, and the
+CPM further multiplexed all interrupts from its devices.
 
-> I agree. I believe we ARE dealing with a kernel bug, and it is particular to
-> the MPC823.
->
-> Let's hear some success stories--embedded units in production, running in
-> the field for days, shutting down power and rebooting with no kernel panics.
-> That may help convince me we are dealing with a hardware issue.
->
-> Lucinda Schafer
-> Staff Software Engineer
-> Adaptive Micro-Ware, Inc.
->
-> -----Original Message-----
-> From: Patrick Lerda [mailto:Lerda@microprocess.com]
-> Sent: Thursday, June 22, 2000 2:01 AM
-> To: 'Dan Malek'; Nguyen Xuan Hoang
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: RE: MMU problems?
->
-> Have you tried to do complex operation on a 8xx board like compiling the
-> kernel. This operation
-> works well on a PPC740 board, but on a 8xx after a long time the kernel goes
-> in an unstable
-> state. Theses bugs are related to the 8xx MMU code.
->
-> Patrick LERDA
->
-> > -----Message d'origine-----
-> > De:   Dan Malek [SMTP:dan@netx4.com]
-> > Date: jeudi 22 juin 2000 05:56
-> > À:    Nguyen Xuan Hoang
-> > Cc:   linuxppc-embedded@lists.linuxppc.org
-> > Objet:        Re: MMU problems?
-> >
-> >
-> > Nguyen Xuan Hoang wrote:
-> >
-> > > I have seen a lot of discussions about MMU on MPC823,
-> >
-> >
-> > There are no MMU or cache related problems on any of the MPC8xx
-> > processors and stable versions of Linux.  These are just people
-> > discussing the challenges of building custom boards and making
-> > source code changes.
-> >
-> > There are dozens of people shipping products with Linux running on
-> > these processors.  You seldom hear from people that are happy and
-> > successful.
-> >
-> >
-> >       -- Dan
-> >
->
+On the 8260, all CPM devices are unique interrupts from the SIU core,
+so they use the "standard" internal interrupt controller functions.  I
+don't know what a "CPM interrupt" function would do on the 8260, other
+than be a single line of code that calls the SIU interrupt function
+with exactly the same parameters.
 
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
