@@ -1,15 +1,26 @@
-Message-Id: <5.2.1.1.2.20030724130854.01be5458@mail.lauterbach.com>
-Date: Thu, 24 Jul 2003 13:11:26 +0200
-To: Diaconescu Bogdan-BDIACON1 <bogdan.diaconescu@motorola.com>
-From: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>
-Subject: Re: Gcc longcall option
+Message-ID: <DD38D67B9196D31189EC00508B62563701CA64B5@zro01exm01.corp.mot.com>
+From: Diaconescu Bogdan-BDIACON1 <bogdan.diaconescu@motorola.com>
+To: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <DD38D67B9196D31189EC00508B62563701C4921F@zro01exm01.corp.m
- ot.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: RE: Gcc longcall option
+Date: Fri, 25 Jul 2003 19:14:48 +0300
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
+
+
+Thanks,
+I'll try gcc-3.3 version whith the pragm you said.
+
+Bogdan
+
+-----Original Message-----
+From: Franz Sirl [mailto:Franz.Sirl-ppc@lauterbach.com]
+Sent: Thursday, July 24, 2003 2:11 PM
+To: Diaconescu Bogdan-BDIACON1
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Gcc longcall option
 
 
 At 17:34 22.07.2003, Diaconescu Bogdan-BDIACON1 wrote:
@@ -35,6 +46,5 @@ where you put this pragma, you can default your project/module/file to
 longcalls.
 
 Franz.
-
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
