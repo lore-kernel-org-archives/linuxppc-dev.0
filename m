@@ -1,40 +1,24 @@
-Date: Fri, 7 Apr 2000 11:20:52 -0400 (EDT)
-From: Pavel Roskin <pavel_roskin@geocities.com>
-To: "Wohlgemuth, Jason" <jason_wohlgemuth@gilbarco.com>
-cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Software Emulation Exception...
-In-Reply-To: <200004071354.JAA03494@hoover.gilbarco.com>
-Message-ID: <Pine.LNX.4.21.0004071011570.19406-100000@sunapee.transcept.com>
+Message-ID: <38EDFD1E.B5306B9@embeddededge.com>
+Date: Fri, 07 Apr 2000 11:22:06 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Graham Stoney <greyham@research.canon.com.au>
+CC: LinuxPPC Embedded Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: A couple of minor sys/types.h changes
+References: <20000407031003.A76213C9A8@elph.research.canon.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello, Jason!
+Graham Stoney wrote:
 
-> I was hoping you all would pass some knowledge on to me.  Occasionally our
-> application dies and our board goes into a loop of printing
->
-> "Software Emulation %s/%d NIP: %lx *NIP: 0x%x code: %x"
+> We've recently stumbled on a couple of sys/types.h....
 
-This happened to me when I tried to read more than 8 megabytes of data
-from ATA Flash inthe same time by using e.g.
+Yep.  Fixed in the 2.3.xx stuff.  If you are actually using these
+files, there are probably more things that need updating.
 
-dd if=/dev/hda of=/dev/null count=17000
 
-The problem has gone after upgrading to the Montavista kernel (from their
-CDK 1.0)
-
-However, I have no idea what caused the problem and whether it has been
-fixed.
-
-By the way, I found a newer kernel (March, 23) in
-ftp://ftp.mvista.com/pub/CDK/updates/1.0/ppc_8xx/SRPMS/
-
-I haven't tested it yet.
-
-Pavel Roskin
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
