@@ -1,39 +1,36 @@
-Subject: Re: [PATCH] cpufreq support for 7447A on 2004 iBooks
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: John Steele Scott <toojays@toojays.net>
-Cc: Sebastian Henschel <linux@kodeaffe.de>,
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] [Patch] for UHCI driver (from kernel 2.6.6).
+Date: Sat, 19 Jun 2004 08:53:26 +0200
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Sven Luther <sven.luther@wanadoo.fr>,
+	Alan Cox <alan@www.pagan.org.uk>, Nicolas DET <nd@bplan-gmbh.de>,
 	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <200406191250.18936.toojays@toojays.net>
-References: <200406051846.50718.toojays@toojays.net>
-	 <20040618120250.GA8657@fuchi> <1087572619.8207.275.camel@gaston>
-	 <200406191250.18936.toojays@toojays.net>
-Content-Type: text/plain
-Message-Id: <1087619961.9046.301.camel@gaston>
-Mime-Version: 1.0
-Date: Fri, 18 Jun 2004 23:39:22 -0500
+References: <Pine.LNX.4.44L0.0406181737520.1334-100000@ida.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0406181737520.1334-100000@ida.rowland.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Message-Id: <200406190853.32745.oliver@neukum.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2004-06-18 at 22:19, John Steele Scott wrote:
->
-> On Sat, 19 Jun 2004 01:00 am, Benjamin Herrenschmidt wrote:
-> > Can you produce a combined patch ?
->
-> Ben,
->
-> I've added the check for the 12" and 17" PBs to my patch, the latest version
-> is at http://www/~toojays/misc/7447a_cpufreq_20040619.patch. I haven't heard
-> from anybody using the 17" PB, but got the ID from
-> http://www.theapplemuseum.com/index.php?id=tam&page=products&subpage=newworld
->
-> Do you want the additions to pmac_mb_defs to go in the same patch? In my mind
-> the two issues are independent.
 
-Hi ! Thanks. Yes, the mb defs can go into the same patch, I'll just
-label it "improve support for newer powerbooks" ;)
+Am Freitag, 18. Juni 2004 23:41 schrieb Alan Stern:
+> > barriers. Actually, it's worse, you need a full mb() to order them,
+> > which is why lately, we made ppc64 writeX() do full sync's ... that sucks
+> > but it's near to impossible to get an abstract IO API that would cover
+> > our needs here and still make other archs happy it seems...
+>
+> I recently changed a few mb() calls to wmb(), because they only protected
+> data the CPU was writing to be read by the device.  Do you think changing
+> all the wmb()'s back to mb()'s would make a difference?
 
-Ben.
+Are these issues documented somewhere?
 
+	Regards
+		Oliver
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
