@@ -1,64 +1,47 @@
-From: bob@kunk.jriver.com
-Message-ID: <19991027030703.28859.qmail@kunk.jriver.com>
-Subject: (fwd) Re: Problems compiling ppc kernels. (fwd)
-To: linuxppc-dev@lists.linuxppc.org
-Date: Tue, 26 Oct 1999 22:07:03 -0500 (CDT)
+From: hollis@andrew.cmu.edu
+Message-ID: <381674D5.15A925B5@andrew.cmu.edu>
+Date: Tue, 26 Oct 1999 23:43:17 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: bob@kunk.jriver.com
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: RevD iMac USB errors (was Problems compiling ppc kernels)
+References: <19991027030045.28758.qmail@kunk.jriver.com>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gerd Knorr Wrote:
-
-In lists.linuxppc.dev, you wrote:
+bob@kunk.jriver.com wrote:
 > 
-> I have been having some real weird problems with compiling 
-> kernels for my iMAC.  I have tried kernel versions 2.2.12, 2.3.23, 2.3.21
-> And have goten pretty much the same results.
+> Neil Russel Wrote:
+> 
+> On Tue, Oct 26, 1999 at 01:47:28PM -0400, Mike Panetta wrote:
+> > I have been having some real weird problems with compiling
+> > kernels for my iMAC. ....
+> 
+> I had basically the same problems compiling a kernel for iMac, and
+> fixed them by turning off config for the offending items.  I did not
+> get any of those kernels to boot on the iMac.  I ended up using 2.2.6
+> (the one shipped on the LinuxPPC CD).  The 226 kernel works, except for
+> the keyboard/mouse ("version 1.16 USB, only understand 1.0 problem").
+> I ended up hacking a small change into the ethernet code to snarf
+> specially formatted UDP packets and shove them into the console queue.
+> This works fine, but is rather ugly.
 
-I got 2.3.23 sorta working on my iMac (rev B).  "grep ^C .config" is attached
-at the end of this mail.  There are alot of gliches:
+I have no idea what you're saying... you hacked your iMac to make it
+think custom-made packets coming at it are from the keyboard?
 
-  * needs some careful tuning of the config options to get a kernel which
-    compiles and links without errors.
-  * hfs does'nt compile.
-  * other filesystems don't work as modules.
-  * usb keyboard needs a (trivial) patch, see below.
-  * usb keyboard works only if ADB_KEYBOARD is compiled in too.
-  * I have a few keys which don't work at all because they are
-    not mapped by usb_kbd_map (that's why the debug printk in the
-    patch).
-  * I could'nt make the usb mouse work.  usb mouse driver is listed
-    in /proc/bus/usb/drivers, the (logitech) mouse is listed in
-    /proc/bus/usb/devices, but /proc/misc has no entry for usb mouse.
-    gpm does'nt work too.
-  * The kernel does'nt survive a "make clean && make vmlinux".
-    Starts swapping, gets slower and slower over time.
+> Does anyone else have any insight into this?  Can anyone point me to
+> a kernel binary that works on the iMac?  How about the config file for
+> the said kernel?
+> 
+> I have a rev.D iMac, purchased about a month ago (just before the new
+> iMac came out).
 
-vger is still at 2.3.18.  usb keyboard does'nt work at all for me.
+The kernels on rshaw's pages (http://www.linuxppc.org/blueg3) should
+work fine. The trick is just to comment out the USB version-checking
+code. I think he has the patch there as well.
 
-My default kernel is still 2.2.6 with the old uubsd stack patched in.
-
-  Gerd
-
--- end of forwarded message --
-
-Reiterating the quote..
-
-  * The kernel doesn't survive a "make clean && make vmlinux".
-    Starts swapping, gets slower and slower over time.
-
-I have EXACTLY the same problem in the intel version so this is not
-PPC specific...
-
-The 2.2.13 Kernel I'm running seems stable. For best USB keyboard 
-performance I run 2.2.6 though....
-
-Bob
--- 
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
