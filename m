@@ -1,52 +1,31 @@
-Date: Mon, 1 Feb 1999 19:32:43 -0100
+Date: Mon, 1 Feb 1999 19:38:20 -0100
 From: Owen Waller <O.Waller@ee.qub.ac.uk>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-Cc: "Petr Vandrovec Ing. VTEI" <VANDROVE@vc.cvut.cz>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: matroxfb, anybody? (More details...)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.2.1 & serial ports
 In-Reply-To: <Pine.LNX.4.03.9902011814220.17350-100000@mercator.cs.kuleuven.ac.be>
-Message-Id: <Pine.SGI.4.02A.9902011930570.11398-100000@myst.ee.qub.ac.uk>
+Message-Id: <Pine.SGI.4.02A.9902011932560.11398-100000@myst.ee.qub.ac.uk>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 1 Feb 1999, Geert Uytterhoeven wrote:
+Folks,
 
-> On Mon, 1 Feb 1999, Petr Vandrovec Ing. VTEI wrote:
-> > On  1 Feb 99 at 15:30, Owen Waller wrote:
-> > > o.k. well the x86 board definelty doesn't... So we now have a more general
-> > > problem:
-> > > If I have two idential video boards in my Mac one "mac" specific which
-> > > shows up in the OF tree, and one that is x86 sourced and doesn't show up
-> > > under OF how can we initialise both boards correctly.
-> > If you have at least one matrox in your OF tree, driver will initialize
-> > all matroxes from offb. If you have no matrox in OF tree, driver will
-> > initialize them from matrox_init.
-> > > im my case matroxfb will become my primary head, but I'd still like access
-> > > to the internal (control) video in case soemthing in a new kernel dies
-> > > before matroxfb is initialised.
-> > Without offb you can set order by
-> > video=control: video=matrox:
-> > to get control first (or vice versa to get matrox first). With offb I do not
-> > know.
-> > So, attached patch adds back that matrox_init is called unless you
-> > specify `video=matrox:off' on command line. In this case, matrox can
-> > be still initialized through offb. If you specify `video=matrox:disabled',
-> > driver will be unavailable for offb too.
-> Which does not help if you have 2 Matrox boards, due to the single static
-> `initialized' variable.
+I've compiled a stock v2.2.1 kernel _without_ UNIX98 support so I don't
+have a /proc/tty filesystem but I can't seem to access the serial ports
+since the upgrade. In particular ppp won't dial out - it pickes up and
+senses the carrier but thats it. It's almost as if the modem doesn't have
+a dial tone (although it certainly does). Also minicom takes an age to
+initialise and then pretty much refuses to talk to the modem.
 
-True. In this case is it worth applying your patch Petr?
+But if I drop back to my last good kernel (v2.1.127) things work
+perfectly.
 
-> > Also, driver still does not use device_node passed to driver by offb
-> > because of no-one told me what I can expect in that variable... Driver
-> You can find the PCI base addresses in there (look at atyfb_of_init() for an
-> example).
+I know you need glib v2+ to be able to use the UNIX98 support but as I'm
+on a stock R4 system I explicity turned this off in the kernel config.
 
-if you know the base address in PCI could this be used to move the card
-into OF?
+Has anybody got ppp to work with a v2.2 kernel?
 
 -------------------------------------------------------------------------
 Owen Waller                     |   "...sometimes I think I'm a little
