@@ -1,28 +1,26 @@
-Message-ID: <3CBD2584.B1504DA5@multitech.co.in>
-Date: Wed, 17 Apr 2002 13:04:28 +0530
-From: srinivas pulipati <srinivasp@multitech.co.in>
+Message-ID: <20020417082603.47938.qmail@web15004.mail.bjs.yahoo.com>
+Date: Wed, 17 Apr 2002 16:26:03 +0800 (CST)
+From: =?gb2312?q?Dross=20Zhou?= <zjuzhou@yahoo.com.cn>
+Subject: Does someone use usb storage driver in mpc850?
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: rtlinux interrupt response
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi all,
+Hello all:
+	Does someone use usb storage driver(IDE->USE
+bridge).Our project needs a usb storage such as IDE
+harddisk via usb bridge.Our borad is based in
+MPC850DEZT and run linuxppc2.4.4(823/850HCI usb
+controler driver).Where can get more information about
+usb on ppc?
+thanks.
 
-i have downloaded denx rtlinux and ported it to my custom board for
-study purpose.
-my board is based on MPC860. rtlinux is working fine.
+--ZhouChang
 
-i tried to measure the interrupt response time.
-i am getting best case is 30microseconds and worst case is
-150microsenconds.
-couldn't understand why this much difference.
-can anybody explain? or is there any thing wrong in my port?
-
-thanks
-srinivas
-
+30 张免费世界杯球票 7 天送完！有种你就快来抢！
+http://cn.promo.yahoo.com/49/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
