@@ -1,36 +1,27 @@
-Message-ID: <00a601c470cd$94f5cd80$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "Pantelis Antoniou" <panto@intracom.gr>,
-	"Robert P. J. Day" <rpjday@mindspring.com>
-Cc: "Embedded Linux PPC list" <linuxppc-embedded@lists.linuxppc.org>
-References: <20040723133703.1A753C109F@atlas.denx.de> <Pine.LNX.4.60.0407230947570.5108@localhost.localdomain> <410123EE.4000602@intracom.gr>
-Subject: Re: random ramblings on 8xx patches (long and tedious :-)
-Date: Fri, 23 Jul 2004 11:56:07 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+In-Reply-To: <20040723083856.A25212@home.com>
+References: <1090590567.3939.20.camel@localhost.localdomain> <20040723140231.GA21814@smtp.west.cox.net> <6658EF7A-DCB6-11D8-BC2F-003065F9B7DC@embeddededge.com> <20040723083856.A25212@home.com>
+Mime-Version: 1.0 (Apple Message framework v618)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <255849E8-DCC5-11D8-BE0B-003065F9B7DC@embeddededge.com>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Tom Rini <trini@kernel.crashing.org>,
+	Andreas Oberritter <obi@saftware.de>
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: [PATCH] export m8xx_cpm_hostalloc
+Date: Fri, 23 Jul 2004 12:27:10 -0400
+To: Matt Porter <mporter@kernel.crashing.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> The family should be sufficient (say 8xx).
->
-> Then everything should be automatically set up at run-time, based
-> on probing code which should detect the rest.
->
-> That's what OCP should do ideally when it is ready.
->
-> In this day and age wasting 50k to kill every-single last
-> ugly define in drivers or the setup code is worth it; again IMHO.
->
+On Jul 23, 2004, at 11:38 AM, Matt Porter wrote:
 
-This sounds like a good idea, especially since the setup code can probably
-be thrown away after startup.  However, does this fully solve the problem?
-For instance if the user is deciding whether to include a UART or USB driver
-for SCC3 doesn't he needs to know at that time whether it's on chip or not?
-Perhaps udev handles this situation?
+> That doesn't exist in 2.6. Use dma_alloc_coherent().
 
-Mark Chambers
+Right....that one, too. :-)
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
