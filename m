@@ -1,30 +1,34 @@
-Message-ID: <002801c2e1ee$cb9634c0$7300a8c0@avantwave.com>
-From: "Ivan Cheng" <ivancheng@avantwave.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: mpc8241/8245 floating point unit
-Date: Tue, 4 Mar 2003 09:38:44 +0800
-MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="utf-8"
+  charset="utf-8"
+From: Rakesh Jagota <j.rakesh@gdatech.co.in>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: USER Application on IBM 405 based processor using vulcan chip
+Date: Tue, 4 Mar 2003 11:40:24 +0530
+References: <002801c2e1ee$cb9634c0$7300a8c0@avantwave.com>
+In-Reply-To: <002801c2e1ee$cb9634c0$7300a8c0@avantwave.com>
+MIME-Version: 1.0
+Message-ID: <djbhycas60uzv16.040320031131@gda-server>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi all,
+I am working for Settop Box project with IBM405 processor in linux. I am
+developing an user application to inetract the user with settop box. I am
+using i2c interface for this. I am not able to understand the following
+things:
+1. Whether we should decode the Transport straem directly or we should store
+it first and after that go for decoding and play.
 
-    We are evaluating the mpc8241/8245 on the floating point unit.  For they
-are based on the 603e core, there is a hardware floating point support.  And
-we are going to cross-compile the kernel and apps in intel platform.  I am
-very interested to know
+2. How we should store the channel information and How to tune the channel.
 
-- whether the FPU is supported in the linux distribution in both user/kernel
-mode.
-- If so, how should I compile for the applicaiton/driver with gcc?
-- , and in which version of gcc does it support?
+3. How to load the DES register.
 
-Thanks very much for any comments.
+Can anyone help me out to sort out these issue.
 
-Ivan Cheng
+Thanks in advance,
+
+Rakesh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
