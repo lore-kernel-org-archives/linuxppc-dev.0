@@ -1,109 +1,47 @@
-Message-ID: <39B9194C.D917F3BC@student.ethz.ch>
-Date: Fri, 08 Sep 2000 18:52:28 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+From: Paul Mackerras <paulus@linuxcare.com.au>
 MIME-Version: 1.0
-To: debian-powerpc@lists.debian.org
-CC: linuxppc-dev@lists.linuxppc.org,
-        Steffen Haeuser <SteffenH@hyperion-software.de>
-Subject: [ANN] Updated Rage128 (Pro) DRI test binaries
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14777.65296.649836.830091@argo.linuxcare.com.au>
+Date: Sat, 9 Sep 2000 20:12:48 +1100 (EST)
+To: Tilmann Bitterberg <tibit-ibm@bitterberg.de>
+Cc: Linuxppc Development Mailing List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: CONFIG_HIGHMEM problems
+In-Reply-To: <Pine.LNX.4.21.0009081006530.1436-200000@ford>
+References: <Pine.LNX.4.21.0009081006530.1436-200000@ford>
+Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Grab them at http://n.ethz.ch/student/daenzerm/download/DRI/ .
+Tilmann Bitterberg writes:
 
+> After looking at arch/ppc/mm/init.c:pmac_find_end_of_memory, I
+> realized that there is no chance to return a total of more than
+> ram_limit (which is in 512MB in my case).
 
-Here's the updated DRI.readme you find there:
+Hmmm, you're right, the ram_limit limit shouldn't be applied if
+CONFIG_HIGHMEM is defined.  Your patch looks a bit wrong though, we
+need phys_mem.regions[0].size to reflect the total amount of ram we
+are going to be using (including high memory).  I haven't had a chance
+to test the highmem stuff on a machine that has a lot of memory myself
+yet.
 
+> Problem: After freeing all init stuff I get a
+> Machine check in kernel mode
+> Caused by (from: SRR1=81032) Machine check.
+> TRAP 0200
+> TASK = co1a5ff0[0] 'swapper'
+> Last syscall: 120
 
-Direct Rendering Infrastructure for Rage128 (Pro) on PowerPC
-------------------------------------------------------------
+Well, we would need to know where the machine check happened,
+preferably with a stack trace.
 
-
-These are test binaries. If you have installed XFree86 4.0.2 or later,
-chances are it already supports DRI. Please check before trying these
-tarballs.
-
-You can find general information about the DRI at http://dri.sourceforge.net .
-
-
-For flexibility, I have split things up in three tarballs:
-
-- dri-main
-
-  This contains the X server binary, the common modules, the libraries and
-  an example XF86Config (etc/X11/XF86Config.dri). Just untar into / and
-  start the server like this:
-
-    /usr/XF86-DRI/bin/X :1 -xf86config /etc/X11/XF86Config.dri
-
-  The :1 is only needed if you already have an X server running on display
-  :0 .
-
-  You may have to set the environment variable LD_LIBRARY_PATH to
-  /usr/XF86-DRI/lib for GL apps to use the correct libraries.
-
-
-- dri-r128
-
-  This contains the Rage128 (Pro) specific modules for the X server and
-  libGL. You have to untar this into / as well for things to work.
-
-  I have split these from the main tarball to allow for frequent updates
-  without having to download too much.
-
-
-- drm-source
-
-  This contains the source for the Direct Rendering Manager kernel module.
-
-  The following assumes you are running kernel version <ver>:
-
-  Untar anywhere, cd drm-source, make, cp r128.o /lib/modules/<ver>/misc/ ,
-  as of Linux 2.4.0-test7 to /lib/modules/<ver>/kernel/drivers/char/drm/ .
-  If your kernel source isn't in /usr/src/linux{,-<ver>}, you have to set
-  TREE to where the kernel headers are, e.g.
-  make TREE=/usr/src/linux-pmac-benh/include .
-
-
-
-History
--------
-
-
-- 20000908 (XFree86 4.0.1b):
-
-The lighting problems (moebius showed them badly e.g.) are fixed, thanks to
-the upgrade to Mesa 3.4 .
-
-A few other things have improved, but there are still wrong colors sometimes.
-
-
-- 20000814 (XFree86 4.0.1):
-
-It Works(TM) :)
-
-There are color problems here and there, I'm working on that.
-
-Performance isn't too exciting without AGP GART, however before you give up
-frustrated, try something which uses (preferrably lots of) textures. :)
-
-The kernel modules sometimes can't be loaded successfully upon the first
-server start. Just exit and restart. Or load it manually before starting the
-server to be on the safe side.
-
-
-
-Please report any bugs but also success to me!
-
-Have fun and be happy,
-
-Michel Dänzer <daenzerm@student.ethz.ch>
-
+Paul.
 
 --
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
