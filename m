@@ -1,57 +1,61 @@
-Message-Id: <5.1.0.14.2.20030514094842.029fc6c0@mail.ebshome.net>
-Date: Wed, 14 May 2003 09:57:51 -0700
-To: Xupei Liang <tliang@yahoo.com>
-From: Eugene Surovegin <ebs@ebshome.net>
-Subject: Re: IDE driver support in PPC440
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20030514152011.2631.qmail@web11004.mail.yahoo.com>
-References: <5.1.0.14.2.20030513234918.035106b8@mail.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <3EC28019.8030402@mvista.com>
+Date: Wed, 14 May 2003 10:42:49 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: dong in kang <dkang@east.isi.edu>
+Cc: "'Linux PPC Embedded mailing list'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: boot PPClinux on Sandpoint with Atlimus board
+References: <000401c31a20$3ddee7c0$45a97241@Minjoo>
+In-Reply-To: <000401c31a20$3ddee7c0$45a97241@Minjoo>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 08:20 AM 5/14/2003, Xupei Liang wrote:
->Hi, Eugene,
+dong in kang wrote:
+
+> Hello,
 >
->The IRQ7 is setup as level trigger and active low.
+> I'm trying to boot PPClinux on Sandpoint with Altimux board (using MPC755
+>and MPC107 bridge chip).
+>I don't use DINK32. I use Codewarrior v.6.0 with BDI 2000.
+>I'm trying to load the zImage.initrd on the SDRAM and directly run the
+>kernel without using bootloader.
+>I use MontaVista's hardhat linux. I configured the linux to work for
+>Sandpoint.
+>I use BDI2000 to initialize the bridge chip, which are less than 10
+>instructions long.
+>After initialization, I can read/write sdram.
+>And then I upload zImage.initrd at 0x800000.
+>It successfully decompresses the kernel and jump to 0x00000000.
+>>From there it works fine until it enables MMU and jump to 0xC0000000.
+>When it jumps to 0xC0000000, it only finds garbage there. All FFs at
+>0xC0000000.
+>
+Well, you're glossing over a lot of steps any of which could be causing
+you problems.  However, to address why you don't see anything at 0xc0000000:
 
-<snip>
+You're looking there with your BDI, right?  If so, that's because
+0xc0000000 is a virtual address and the 'md' telnet cmd needs a physical
+address.  Try 'md 0'.  If things look okay.  Go into your System.map
+file, find 'log_buf' and dump the data at the associated address
+(converting the 0xCyyyyyyy to 0x0yyyyyyy).  You should see the printk
+output that has accumulated (but not been dumped b/c you haven't reached
+console_init() yet).  If you're lucky, you'll see the panic msg/reg dump
+that will give you a clue as to what went wrong.
 
->This time, ppc405_pic_get_irq() returns irq 64 because
->the routine knows that all interrupts have been
->disabled (I have looked at UIC_ER0 and UIC_ER1
->and verified that is the case).
-
-No, this is not correct, it should return -1.
-Otherwise do_IRQ will spin forever (see arch/ppc/kernel/irq.c)
-
-Here is the code in question:
-
-int
-ppc405_pic_get_irq(struct pt_regs *regs)
-{
-
-        ........
-
-         if (irq == (NR_UIC_IRQS * NR_UICS))
-                 irq = -1;
-
-#ifdef UIC_DEBUG
-         printk("ppc405_pic_get_irq - irq %d bit 0x%x\n", irq, bits);
-#endif
-
-         return (irq);
-}
-
-
-Check, that NR_UIC_IRQS == 32 (defined in include/arch-ppc/irq.h)
-and NR_UICS == 2 (defined in /include/arch-ppc/ibm440.h) in your tree.
-
-They weren't set correctly in some early versions of 440GP code.
-
-Eugene
+>I checked the register MSR and BATs. They look OK. But address translation
+>doesn't seem to occur.
+>I think I need to do more initialization before I upload zImage.initrd and
+>run it.
+>Could anybody tell me what should i do?
+>
+> Thanks,
+>
+> Dong-In Kang
+>
+>
+Mark
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
