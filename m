@@ -1,91 +1,48 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3DE33302.4070907@tataelxsi.co.in>
-Date: Tue, 26 Nov 2002 14:08:26 +0530
-From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppcboot, linux , hang at the last step
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ppcboot, linux , hang at the last step 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 26 Nov 2002 14:08:26 +0530."
+             <3DE33302.4070907@tataelxsi.co.in>
+Date: Tue, 26 Nov 2002 11:00:49 +0100
+Message-Id: <20021126100054.4530FC614B@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-caixupeng wrote:
- > but, can you tell me the detail?
- >
- > Does it mean  the kernel has build in ramdisk ?
-No. The kernel does not have a built in ramdisk. but it uses the ramdisk
-image passed for modules and the like. correct me if I am wrong.
- > or you have to give a ramdisk separately to the kernel boot args?
-initrd='ramdisk image' is the option I gave.
-I am not very much conversant with linux booting procedure, but I
-believe that the initrd image takes all the dependent modules and link
-them properly when the kernel is booting up. So even if you choose fs
-support in modular format, it will be loaded by the initrd image.
+In message <3DE33302.4070907@tataelxsi.co.in> you wrote:
+>
+> No. The kernel does not have a built in ramdisk. but it uses the ramdisk
+> image passed for modules and the like. correct me if I am wrong.
 
- >>when I passed the initrd option into the kernel.
- >
- > the option is " root=/dev/ram ",  right?
-Frankly, I am not sure. someone else might be able to help you.
+Please do not confuse the usage of  a  ramdisk  image  with  standard
+distributions  like RedHat etc. With Embedded Systems a ramdisk image
+usually severs a bit a different purpose.
 
-Thanks and regards,
-Om.
+>  > or you have to give a ramdisk separately to the kernel boot args?
+> initrd='ramdisk image' is the option I gave.
 
-caixupeng wrote:
- > very very thanks.
- >
- > but, can you tell me the detail?
- >
- > I didn't choose advanced partion features.
- >
- > and I chose ext2 fs support, and initrd support too.
- >
- > there is a size of ramdisk set in linux config,
- >
- > Does it mean  the kernel has build in ramdisk ?
- > or you have to give a ramdisk separately to the kernel boot args?
- >
- >
- >>when I passed the initrd option into the kernel.
- >
- > the option is " root=/dev/ram ",  right?
- >
- > thank you very much!
- >
- >             edmoon
- >
- > ----- Original Message -----
- > From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
- > To: "caixupeng" <edmoon@huawei.com>
- > Sent: Tuesday, November 26, 2002 1:03 PM
- > Subject: Re: ppcboot, linux , hang at the last step
- >
- >
- >
- >>caixupeng wrote:
- >>
- >>>When I boot a linux image use "bootm ffa00000 ffb00000"
- >>>
- >>>VFS: Cannot open root device "" or 16:01
- >>>Please append a correct "root=" boot option
- >>>Kernel panic: VFS: Unable to mount root fs on 16:01
- >>>
- >>>I have set the "bootargs=root=/dev/ram"
- >>
- >>I faced the same problem, not on ebony.
- >>My configuration was wrong.
- >>1. i did not compile in the advanced partition features and consequently
- >>kernel could not recognize my hda.
- >>2. The problem still persisted. I found out the file system support was
- >>absent. I compiled ext2 fs support into the kernel and tried.
- >>3. I had to create an initrd image using mkinitrd, and all worked fine
- >>when I passed the initrd option into the kernel.
- >>
- >>HTH.
- >>Om.
- >>
- >
- >
+This may be correct with some boot loader like LILO, bot it i s not a
+valid kernel boot argument.
 
+>  > the option is " root=/dev/ram ",  right?
+> Frankly, I am not sure. someone else might be able to help you.
+
+Yes, "root=/dev/ram" (or usually "root=/dev/ram rw") is  the  correct
+kernel boot argument for booting with an initial ramdisk image.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"The computer programmer is a creator of universes for which he alone
+is responsible. Universes of virtually unlimited  complexity  can  be
+created  in  the  form  of  computer  programs." - Joseph Weizenbaum,
+_Computer Power and Human Reason_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
