@@ -1,55 +1,35 @@
-Message-ID: <38E3BB77.890DB46D@email.sps.mot.com>
-Date: Thu, 30 Mar 2000 14:39:19 -0600
-From: "Richard Hendricks" <ra6353@email.sps.mot.com>
+Message-ID: <38E3CE55.977E302@cray.com>
+Date: Thu, 30 Mar 2000 15:59:49 -0600
+From: Mike Wolf <mwolf@sgi.com>
 MIME-Version: 1.0
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Another try at the run-from-Flash issue for MPC8xx/MBX/custom
-References: <38E27471.83CCAC10@innocon.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 4xx tlb questions
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Doug,
-  Do you have the I-Cache enabled when decompressing?  What about
-disabling serialization? (Set ICTRL to 0x7)
+Hi,
+  I'm new to kernel development and have a question
+on the 4xx.  Part of the tlb address is 8 bits from the
+PID register.  I cannot find the code that sets the PID
+register for user code.  I find code that sets the PID reg
+to 0, and I find code that saves the current value of PID reg
+and then setting it to 0 to do some work and then sets
+it back.  I was expecting to see something in sched.c that
+set the PID to some value from the task_struct on a context
+switch.
 
-Doug Rogers wrote:
->
-> I, too, would like to run from Flash. The question for me isn't speed,
-> isn't cost, nor EMI effects. It is simply a matter of size. We have a
-> very small area in which to squeeze the parts, and the best we could do
-> is 32M RAM and 16M ROM. Our application code is in the 10M range (text
-> only, even after chopping over half of it out!), but it is expected to
-> grow. So for us it's not really a matter of cost or (running) speed,
-> since the Flash runs fast enough for our purposes.
->
-> As another constraint, our card needs to be able to run very soon after
-> power-up. I've hacked the LynxOS startup monitor to detect either gzip'd
-> or bzip2'd KDI's. I've timed the decompression of our smaller test image
-> and it takes over 40 seconds on a 40MHz MBX860 board. That's too slow.
-> We could live with 20, perhaps, but not much more than that. For now I
-> boot my images over the network since our MBX board has only 4M Flash.
-> It's faster than decompressing!
->
-> With LynxOS, we're able to keep in Flash both the text sections of the
-> kernel AND of all binaries on the filesystem. Wow! That allows us to put
-> only the RAM disk and vector/data/bss sections into RAM. Shweet!
->
-> I was hoping that Linux was to that point, but apparently not. Just
-> having the kernel run from ROM would be helpful for now, so if anyone
-> out there has done so, I'd be very appreciative of any feedback.
->
-> Thanks!
->
-> Doug
->
-> --
-> --_._-__-____------_--_-_-_-___-___-____-_--_-___--____-___--_-__--___-_
-> Doug Rogers, ICI   | The strongest reason for the people to retain the
-> V:703.893.2007x220 | right to keep and bear arms is, as a last resort,
-> www.innocon.com    | to protect themselves against tyranny in
-> ___________________| Government. [Thomas Jefferson]
->
+Its not at all obvious to me how the PID is getting set.  The
+only other option I'm aware of is to invalidate the TLB on
+a context change, but I didnt see that either and the tlb
+handlers imply something else because they save the current
+value of the PID register.  If it was always 0 it wouldnt
+need that
+--
+Mike Wolf
+Cray Research
+655-F Lone Oak Drive, Eagan, MN 55121
+mwolf@cray.com          (651)683-5313
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
