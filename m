@@ -1,52 +1,66 @@
-Date: Wed, 28 Apr 1999 13:51:18 -0400 (EDT)
-From: Satadru Pramanik <satadru@umich.edu>
-To: Tom Rini <tmrini@ntplx.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Rel 5 ssh?
-In-Reply-To: <Pine.SUN.4.02.9904280825510.16076-100000@sea.ntplx.net>
-Message-ID: <Pine.LNX.4.10.9904281350090.24995-100000@beer.pub.umich.edu>
+Message-ID: <3727628A.80F872F4@fi.infn.it>
+Date: Wed, 28 Apr 1999 21:33:30 +0200
+From: Simone Piccardi <Simone.Piccardi@fi.infn.it>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Extremely near to a working syste
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Thanks a lot everybody.  ssh compiles cleanly now, and that hint on the
-unix98 pty config was the key to getting sshd working right.  
+Hi,
 
+Thanks to the many helps that I get, I'm now extremely near to a working
+system on a MVME2301 board.
 
-On Wed, 28 Apr 1999, Tom Rini wrote:
+I successfully cross-compiled a PPC kernel using a RedHat 5.2 on a PC,
+and I could boot from this, I also setup the bootp and nfs server on my
+machine having the kernel finding the root directory on my PC. 
 
-On Wed, 28 Apr 1999, Satadru Pramanik wrote:
+The only thing I'm lacking is a ppc root tree. I tried to use a debian
+tree that I take from here: 
+ftp://ftp.debian/org/pub/debian/dists/potato/main/disks-powerpc/2.1.8-1999-02-24/base2_2.tgz
+but what I had (after booting) is:
 
-> login.c: In function `record_login':
-> login.c:437: structure has no member named `ut_syslen'
-> login.c:441: structure has no member named `e_termination'
-> login.c:442: structure has no member named `e_exit'
-> login.c:454: `WTMPX_FILE' undeclared (first use in this function)
-> login.c:454: (Each undeclared identifier is reported only once
-> login.c:454: for each function it appears in.)
-> 
-> Any thoughts?  Does anybody know how to fix this?  The sshd from this
-> install can't allocate ptys either.
+[snip]
+Sending BOOTP requests....eth0: media is TP.
+. OK
+IP-Config: Got BOOTP answer from 192.84.146.24, my address is
+192.84.146.131
+IP-Config: Gateway not on directly connected network.
+Looking up port of RPC 100003/2 on 192.84.146.24
+Looking up port of RPC 100005/1 on 192.84.146.24
+VFS: Mounted root (NFS filesystem) readonly.
+Freeing unused kernel memory: 60k init 4k pmac 8k open firmware
+INIT: version 2.76 booting
+INIT: No inittab file found
 
-Delete the ut_syslen line.  e_term/e_exit->__e, WTMPX_FILE->_PATH_WTMP (i
-think..).  As for the pty probllem, make sure you have a current dev rpm
-and have Unix98 pty suport compiled in.
+Enter runlevel: 1
+INIT: Entering runlevel: 1
+INIT: no more processes left in this runlevel
 
---
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+and here it hangs. I never used debian, but effectively there is no
+/etc/inittab in the tree, I have to get one of there something missing?
+(or it seems to me that the mount was fine, but I'm wrong ?
 
+I also try to make a RedHat tree, but the problem is that also by giving
+the --root=/... option (and the --ingnorearch also) I cannot execute the
+postinstallation scripts: while I was installing libraries this was not
+a problem, because they simply call ldconfig and I skipped they with
+--noscripts, but when I try to install other packages (like bash for
+example) they execute  more complex scripts, that I have to do by hand,
+and before to do this for all the packages, I would like to know if
+there a cleaner (and faster) way to do this work.
 
---=
-satadru pramanik `satadru@umich.edu' www.umich.edu/~satadru
-Online Editor, The Michigan Daily
-Yugoslavia declares 'peace' in Kosovo; NATO Airstrikes
-continue
--CNN Interactive, 04/08/99
-=--
+Thanks you againg for all the help, I could'nt even believe to be
+capable to get a so near working system in so few time!
 
+Bye
+-- 
+Simone Piccardi
+Microsoft is NOT the answer. Microsoft is the Question.
+The answer is: "NO!"
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
