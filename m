@@ -1,18 +1,14 @@
-Return-Path: <takeharu1219@ybb.ne.jp>
-Received: from ybbsmtp10.mail.mci.yahoo.co.jp (ybbsmtp10.mail.mci.yahoo.co.jp
-	[210.80.241.184]) by ozlabs.org (Postfix) with SMTP id 8B4C467A6E
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Mar 2005 03:27:17 +1100 (EST)
-Message-ID: <423073A9.70404@ybb.ne.jp>
-Date: Fri, 11 Mar 2005 01:19:53 +0900
-From: Takeharu KATO <takeharu1219@ybb.ne.jp>
-MIME-Version: 1.0
-To: Joerg Dorchain <joerg@dorchain.net>
-References: <20050303124435.GA24233@Redstar.dorchain.net>	<4227153C.3030201@gmx.net>	<20050303141832.GU25080@Redstar.dorchain.net>	<20050304075703.GA15637@Redstar.dorchain.net>	<422FD24F.4070108@jp.fujitsu.com>
-	<20050310072803.GR4017@Redstar.dorchain.net>
-In-Reply-To: <20050310072803.GR4017@Redstar.dorchain.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: boot time scheduling hile atomic
+Return-Path: <nbarendt@vxitech.com>
+Received: from vxitech.com (mail.atiba.com [216.153.79.104])
+	by ozlabs.org (Postfix) with ESMTP id 7502467A6B
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Mar 2005 11:50:37 +1100 (EST)
+Message-Id: <5.2.1.1.0.20050310185814.02b26630@mail.atiba.com>
+Date: Thu, 10 Mar 2005 19:27:25 -0500
+To: linuxppc-dev@ozlabs.org
+From: Nick Barendt <nbarendt@vxitech.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: MPC5200 PCI TX/RX FIFO
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,47 +18,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Joerg:
 
-> I came to the same idea. This explains as well why the i386 party does
-> not notice the effect, as their first interrupt happen later (different
-> HZ value)
-> 
-As far as I know, current HZ value for PPC is 1000
-as same as i386 family.
 
-Please see following:
-
--- include/asm-i386/param.h
-   1 #ifndef _ASMi386_PARAM_H
-   2 #define _ASMi386_PARAM_H
-   3
-   4 #ifdef __KERNEL__
-   5 # define HZ             1000            /* Internal kernel timer 
-frequency */
--- include/asm-i386/param.h
-
--- include/asm-ppc/param.h
-
-   1 #ifndef _ASM_PPC_PARAM_H
-   2 #define _ASM_PPC_PARAM_H
-   3
-   4 #ifdef __KERNEL__
-   5 #define HZ              1000            /* internal timer frequency */
-   6 #define USER_HZ         100             /* for user interfaces in 
-"ticks" */
--- include/asm-ppc/param.h
-
-FYI, Kernel preemption ought not to be taken place at this point,
-because preemption count is a positive number.
-
-According to my observation, the problem occur on second call of
-proc_root_init.But I could not who call it.
-IIRC,the value of LR(link register) pointed at the start of BSS.
-
-Regards,
+         Has anyone had luck getting the MPC5200 PCI RX or TX FIFOs 
+working, either directly or with Bestcomm DMA support?  I've been trying to 
+do so for a few weeks, on and off, with little luck.  I'm probably missing 
+something obvious.
+         I'm using Wolfgang's kernel tree, on a board similar to the IceCube.
+         I'd like to use the PCI RX FIFO to speed up moving data from a PCI 
+device - it looks like the RX FIFO is the most straight-forward mechanism 
+for bursting.  I've had some luck getting the RX FIFO to pull data back 
+from a PCI device, and can get a peripheral interrupt from the RX FIFO, but 
+no matter what I do (read data from FIFO to DDR, clear status bits, etc.), 
+I can't seem to acknowledge the interrupt at the peripheral end, so it 
+continues to fire.  I can't find anything in the MPC5200 user manual about 
+acknowledging the interrupt in the PCI controller, unlike the FEC, say, 
+which has documentation on how to ack FEC interrupts.
+         I then went the Bestcomm route, using the Bestcomm API, but I'm 
+clearly missing something there, because the DMA engine indicates a TEA 
+after a very long timeout.  That problem might be related to my PCI RX FIFO 
+interrupt problem, or might be completely different.  Might it be that the 
+Alarm signal to the DMA engine is the same as the interrupt signal to the core?
+         In the end, I'd like to go the DMA route.  It is likely that using 
+the RX FIFO would be a significant improvement over what I have right now, 
+though, and it is (hopefully) easier to get up and running.
+         Does anyone have any wisdom (or, better yet, sample code :-) they 
+can share on this?
 
 
 
--- 
-Takeharu KATO
+Nick Barendt
+VXI Technology, Inc.
+Cleveland Instruments Division
+5425 Warner Road, Suite 13
+Valley View, OH 44125
+PH:  216-447-4059
+FAX: 216-447-8951
+nbarendt@vxitech.com
