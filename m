@@ -1,69 +1,113 @@
-Date: Mon, 14 Oct 2002 11:20:47 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Andrew May <acmay@acmay.homeip.net>
-Cc: Matt Porter <porter@cox.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: very minor 405GP and 405GPr PCI difference
-Message-ID: <20021014012047.GD2040@zax>
-References: <3D995EC0.2000500@elsoft.ch> <20021002014219.GF1848@zax> <3D9AA452.5070004@elsoft.ch> <20021003011233.GC1102@zax> <20021006052314.GG27824@acmay.homeip.net> <20021006183120.A17129@home.com> <20021008041419.GF32555@zax> <20021008052136.GA26470@acmay.homeip.net> <20021009015828.GO32555@zax> <20021011193720.GA9039@acmay.homeip.net>
-Mime-Version: 1.0
+Message-ID: <3DAA73C1.31FC2758@imc-berlin.de>
+Date: Mon, 14 Oct 2002 09:35:29 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
+MIME-Version: 1.0
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>,
+	dhinds <dhinds@sonic.net>
+Subject: [Pcmcia-cs-devel]request/release region in ide-cs.c ???
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20021011193720.GA9039@acmay.homeip.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Oct 11, 2002 at 12:37:20PM -0700, Andrew May wrote:
+Hi there,
+
+I have a problem regarding PCMCIA CS and ide-cs.c.
+Please stay calm while I explain why I send this question to this list:
+
+My CS with IDE seems to work fine. But I stumbled over the
+request/release_region in
+ide-cs.c:
+Apparently release_region is called in ide_config() and request_region is called
+in ide_release()!?!? Shouldn't it be the other way round?
+
+After the first "insert"
+
+root@dab4k_64937:~# cardctl insert
+ide0 at 0x100-0x107,0x10e on irq 9
+root@dab4k_64937:~# cat /proc/ioports
+
+there's no (!) requested ioport. But after the first "eject":
+
+root@dab4k_64937:~# cardctl eject
+root@dab4k_64937:~# cat /proc/ioports
+00000100-0000010f : ide-cs
+
+Repeating insert/eject adds a requested region every time!!!
+
+root@dab4k_64937:~# cardctl insert
+ide0 at 0x110-0x117,0x11e on irq 9
+root@dab4k_64937:~# cat /proc/ioports
+00000100-0000010f : ide-cs
+root@dab4k_64937:~# cardctl eject
+root@dab4k_64937:~# cat /proc/ioports
+00000100-0000010f : ide-cs
+00000110-0000011f : ide-cs
+root@dab4k_64937:~# cardctl insert
+ide0 at 0x120-0x127,0x12e on irq 9
+root@dab4k_64937:~# cat /proc/ioports
+00000100-0000010f : ide-cs
+00000110-0000011f : ide-cs
+root@dab4k_64937:~# cardctl eject
+root@dab4k_64937:~# cat /proc/ioports
+00000100-0000010f : ide-cs
+00000110-0000011f : ide-cs
+00000120-0000012f : ide-cs
+
+So for me this is a problem!!! The beast is eating up ioport resources!
+Now I said I noticed that release_region is called in ide_config() and
+request_region is called in ide_release(). When I swap this (as one might
+expect) everything works fine!
+
+root@dab4k_64937:~# cat /proc/ioports
+root@dab4k_64937:~# cardctl insert
+ide0 at 0x100-0x107,0x10e on irq 9
+root@dab4k_64937:~# cat /proc/ioports
+00000100-0000010f : ide-cs
+root@dab4k_64937:~# cardctl eject
+root@dab4k_64937:~# cat /proc/ioports
+root@dab4k_64937:~# cardctl insert
+ide0 at 0x100-0x107,0x10e on irq 9
+root@dab4k_64937:~# cat /proc/ioports
+00000100-0000010f : ide-cs
+root@dab4k_64937:~# cardctl eject
+root@dab4k_64937:~# cat /proc/ioports
+root@dab4k_64937:~#
+
+So I asked on Pcmcia-cs-devel mailing list and the Godfather himself answered:
+
+dhinds wrote:
 >
-> Sorry about the late reply but I wanted to check the 2.5 tree and I haven't
-> been looking at it before.
->
-> On Wed, Oct 09, 2002 at 11:58:28AM +1000, David Gibson wrote:
+> On Thu, Oct 10, 2002 at 03:43:50PM +0200, Steven Scholz wrote:
 > >
-> > On Mon, Oct 07, 2002 at 10:21:36PM -0700, Andrew May wrote:
-> > >
-> > > A full featured bootloader like PPCboot will need to setup the PCI bus
-> > > to work with PCI devices, so it is not like it is always an extra burden
-> > > on the bootloader or useless work.
-> >
-> > That's all very well if you've got PPCboot, but lots of boards have
-> > firmware which is, lets face it, shite.  The kernel has to be able to
-> > deal with this case.  And since it has to deal with it for the case of
-> > crappy firmware, is there any point turning it off for the case of
-> > decent firmware?
+> > Could someone please explain to me why release_region is called in
+> > ide_config() and request_region is called in ide_release()???
+> > Shouldn't it be the other way round?
 >
-> Yes there is a point. I am working on a new custum PCI device and the
-> hardware guy gives me silly requests to try differnt PCI bus settings.
-> And I would much rather make the changes in my small quick PPCBoot build
-> rather than a full kernel build.
-
-Well, for a fair few of the settings - the mapping addresses at least,
-the kernel has to know what the settings are to workk, even if PPCBoot
-has already set things up.
-
-Incidentally the Makefiles in 2.5 are greatly improved, so kernel
-builds with small changes are often a lot less painful than they used
-to be.
-
-> > > So I just want you to keep in mind the PCI bus fixup can be a config
-> > > option that can be built out if desired. It really shouldn't be tied
-> > > to the board itself, since it is also common to load in PPCboot into
-> > > Walnut boards.
-> >
-> > That's easy - in fact the patch I posted before allows this (it won't
-> > do anything if CONFIG_BIOS_FIXUP is not defined).
+> The region is allocated for the socket in the PCMCIA core.  The ide-cs
+> driver releases the region because the kernel IDE driver refuses to
+> talk to the device if the IO region is already allocated.  After the
+> IDE driver shuts down, we re-reserve the region so that the PCMCIA
+> core can free it when it shuts down the socket.
 >
-> Well you patch is only part of the issue, it is the rest of
-> arch/ppc/kernel/4xx/ppc405_pci.c that gets pulled in every build with PCI,
-> that remapps everything in _find_bridges.
+> As for why this misbehaves on PPC, I'm not sure.  It would seem that
+> the core code is not reserving (and freeing) the region as expected.
+>
+> -- Dave
 
-True, but it's an even smaller subset of platforms that could do
-without that code.
+???
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.
-http://www.ozlabs.org/people/dgibson
+So is PPC misbehaving? In which way? Why?
+
+Is it a problem of PCMCIA CS (on PPC) or is it a general problem of
+request/release_region on PPC?
+
+BTW: I am using the kernel version of PCMCIA CS compiled into the kernel not as
+modules...
+(Kernel 2.4.19-rc3, pcmcia-cs-3.2.1)
+
+Thanks a million!
+
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
