@@ -1,46 +1,50 @@
-Date: Tue, 22 Dec 1998 14:49:26 -0700 (MST)
+Date: Tue, 22 Dec 1998 14:59:42 -0700 (MST)
 From: john s jacobs anderson <jacobs@azstarnet.com>
-To: Mark Abene <phiber@radicalmedia.com>
+To: Tom Harrington <tph@rmi.net>
 cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
 Subject: Re: TurboMouse fix
-In-Reply-To: <19981222132904.J16123@radicalmedia.com>
-Message-ID: <Pine.LNX.3.96.981222144709.10207A-100000@lazarus>
+In-Reply-To: <m0zsV1o-001C7HC@shell.rmi.net>
+Message-ID: <Pine.LNX.3.96.981222145001.10207B-100000@lazarus>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Bad morning, Mark? 
+> Hmm, maybe something in your header files?  ADB_WRITEREG is defined (on
+> my system) in /usr/include/asm/adb_mouse.h.  Look for this file and see 
+> what's there.
 
-> 1) mousehack is **ONLY** for TurboMouse 5.0 trackballs!  Not two button 4.0's.
-> I had written a hack last year for my 4.0, but abandoned it when I got a 5.0.
-> The 4.0 would actually require kernel mods to the ADB code since the two buttons
-> send left and right arrow-key keycodes, and the kernel would have to recognize
-> that they were coming from a different ADB address in order to properly treat
-> them as mouse-button events.  Otherwise, the kernel just thinks you have two
-> keyboards.  At least in kernel 2.1.24, the adb code treats anything with 
-> dev-handler 2 as a keyboard, which in this case is faulty logic.
+OMM, the /usr/include/asm dir is a symlink to asm-ppc in the kernel
+source, which is 2.1.131. That file contains a struct def for
+mouse_status, and that's all. The ADB_WRITEREG, etc. #defines are in
+adb.h.
 
-ok. 
+> I'm surprised it complains about "ADB-WRITEREG" when the code uses
+> "ADB_WRITEREG".  You didn't happen to "fix" this while trimming the
+> file in pico, did you?
 
-> 2) You should NEVER edit source code with pico, since it breaks wrapped lines
-> which turns source code into useless mulch.
+No, I screwed up while re-typing the error messages into my email.
+Nothing in between the --cut here-- and --cut here-- (or whatever you
+had delimiting the code) was changed. 
 
-did you look at the source? none of the lines were that long; I didn't
-have emacs open, and vi(m) still gives me headaches. But thanks for the
-heads up.
+(Is it just me, or is everybody assuming I'm way more stupid than is
+necessary? I followed instructions, and when that didn't work, I provided
+the requested feedback, and so far I've got two condescending emails to
+show for it.) 
 
-> 3) Did you type in your error messages by hand?  The macro used in my program
-> is ADB_WRITEREG, with an underscore, not a hyphen.  It's no shock that the
-> hyphenated version is undefined, as it don't exist.
+> I really don't know if mousehack is useful (or even necessary) with a v4.0
+> TurboMouse.  I assume you've tried the "mousemode" command?
 
-yes, I did, and yes, my finger apparently slipped off the shift key for
-the duration of the - keystroke. Mea maxima culpa, eh?
+Well, Mark Abene(sp?) has said in this thread that mousehack doesn't work
+with the 4.0 balls. I've tried mousemode; the mouse just switches back.
+
+Maybe it's time to start shopping for one of the 5.0 turbo mice -- too
+bad, the design and construction seems a lot more solid on the 4.0 models.
 
 john.
-
-
+jacobs@treefort.org
+www.treefort.org/~jacobs
 
 
 
