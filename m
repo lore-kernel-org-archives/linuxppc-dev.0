@@ -1,48 +1,28 @@
-To: "Thamarai Selvan" <Thamarai.Selvan@lntinfotech.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Porting emlinux on customized MPC860 board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 13 Jan 2004 15:02:19 +0530."
-             <OFC1528F5C.1343245D-ON65256E1A.0034551B@lntinfotech.com>
-Date: Tue, 13 Jan 2004 18:53:18 +0100
-Message-Id: <20040113175323.32FCBC10AF@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <0B0A39652BB0D411BCCF00508B9512EC0E596248@tx14exm05.ftw.mot.com>
+From: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: u-boot 1.0.0 support for 7410+107 ?
+Date: Tue, 13 Jan 2004 14:55:44 -0600
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <OFC1528F5C.1343245D-ON65256E1A.0034551B@lntinfotech.com> you wrote:
->
-> I would like u all to help me out with porting issue currently iam having.
-> The customised MPC860 board [target], we have  doesnt have any bootloader
-> or code in its ROM
-> If i need to port emlinux from my host what related steps i should take
-> from the view of target.
+Hi,
 
-Step 1: get access to a BDI2000
-Step 2: port / adapt U-Boot to your board
-Step 3: port / adapt Linux to your board (large parts just copy & paste
-        from the U-Boot drivers).
+I downloaded the u-boot 1.0.0 and tried to make it work on my 7410+107
+custom board.
 
-> if anyone could direct me on to the documents available on emlinux and
+My questions is which board type under ../board match ppc7410+mpc107 best ?
+I could
+not find something like sandpoint X3 that contains ppc7410 and mpc107.
 
-http://www.denx.de/twiki/bin/view/PPCEmbedded/Introduction ?
-http://www.denx.de/twiki/bin/view/DULG/Manual ?
+Thanks.
 
-> This is my first venture towards Linux/emlinux.
+Bo
 
-Hope this helps.
-
-Best regards,
-
-Wolfgang Denk
-
---
-See us @ Embedded World, Nuremberg, Feb 17 - 19,  Hall 12.0 Booth 440
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"There are three principal ways to lose money: wine, women, and engi-
-neers. While the first two are more pleasant, the third is by far the
-more certain."                           - Baron Rothschild, ca. 1800
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
