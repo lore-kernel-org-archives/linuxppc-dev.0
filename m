@@ -1,32 +1,38 @@
-Date: Wed, 14 Jan 2004 15:10:18 -0700
+Date: Wed, 14 Jan 2004 15:38:40 -0700
 From: Tom Rini <trini@kernel.crashing.org>
 To: valvoline <valvoline@vrlteam.org>
 Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: temp.c and cputable.c issues
-Message-ID: <20040114221018.GB983@stop.crashing.org>
-References: <20040114193910.GN2658@adapter.n0skillz.org>
+Message-ID: <20040114223840.GD983@stop.crashing.org>
+References: <20040114193910.GN2658@adapter.n0skillz.org> <20040114221018.GB983@stop.crashing.org> <20040114201153.GO2658@adapter.n0skillz.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040114193910.GN2658@adapter.n0skillz.org>
+In-Reply-To: <20040114201153.GO2658@adapter.n0skillz.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jan 14, 2004 at 08:39:10PM +0100, valvoline wrote:
-
-> i've enabled TAU and CPUFREQ, and compiled everything...all seems to go well,
-> but looking into a dmesg from kernel i'm receiving this message:
+On Wed, Jan 14, 2004 at 09:11:53PM +0100, valvoline wrote:
+> On Wed, Jan 14, 2004 at 03:10:18PM -0700, Tom Rini wrote:
 >
-> ...
-> Thermal assist unit not available
-> ...
+> > There are errata documents from Motorola that tell you not to use the
+> > TAU on any 745x CPU.  The omission of this flag is intentional.
 >
-> looking into /usr/src/linux/arch/ppc/kernel/cputable.c i've noticed that all
-> 7455 based machine, have the CPU_FTR_TAU feature disabled, so i've patched the
-> file as in the included patch...now all seems to works fine!.
+> what's about this documents ?, if TAU is disabled what's the right way
+> to fetch thermal infos for 745x based CPUs ?, any workaround or suggested
+> url to start from ?
 
-There are errata documents from Motorola that tell you not to use the
-TAU on any 745x CPU.  The omission of this flag is intentional.
+There are no workarounds or planned fixes for this errata (it varries
+slightly in number from 7450/1 to 7455 to 7457 documents I think).  All
+errata can be gotten from Motorolas website.
+7450:
+http://e-www.motorola.com/webapp/sps/site/prod_summary.jsp?code=MPC7450_ARCHIVED
+7451:
+http://e-www.motorola.com/webapp/sps/site/prod_summary.jsp?code=MPC7451
+7455:
+http://e-www.motorola.com/webapp/sps/site/prod_summary.jsp?code=MPC7455
+7457:
+http://e-www.motorola.com/webapp/sps/site/prod_summary.jsp?code=MPC7457
 
 --
 Tom Rini
