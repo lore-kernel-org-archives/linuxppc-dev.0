@@ -1,43 +1,30 @@
-Date: Mon, 3 Jan 2000 13:40:00 +0200 (EET)
-From: Mika Kuoppala <mak@icon.fi>
-To: Raphael Bossek <raphael.bossek@solutions4linux.de>
-cc: Ruedi Hofer <ruedi.hofer@ascom.ch>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Loading the Kernel on a FADS
-In-Reply-To: <19991224001218.A6891@raphael.bossek.home>
-Message-ID: <Pine.LNX.4.10.10001031335050.3502-100000@atom.icon.fi>
+Message-ID: <38708C86.2CD58E66@huawei.com.cn>
+Date: Mon, 03 Jan 2000 19:48:22 +0800
+From: dony <dony.he@huawei.com.cn>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Brendan.Simon@ctam.com.au,
+        linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
+Subject: Cannot booting the kernel...
+References: <386C150F.22B1A3D0@huawei.com.cn> <386ABF52.922267E9@ctam.com.au> <38701F3A.FAD6263E@huawei.com.cn> <386ADE53.D3411F6A@ctam.com.au> <38704D0B.94438516@huawei.com.cn> <386AFFC5.E0134DB8@ctam.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Hello,
 
+      With your help, Now I can starting my kernel.  I search linux-ppc lists and find
+that I have similar problems as you. Here is the messages:
 
-On Fri, 24 Dec 1999, Raphael Bossek wrote:
+        Linux/PPC load:
+        Uncompressing Linux...done.
+        Now booting the kernel
 
-> 
-> i hope i can find some time make pictures after my vacation of the running
-> system in the meantime i fight with cross-compiler creation and so on...
-> 
-> WHY DOES REISERFS NOT WORK WITH POWERPC !
-> 
-Short and stupid answer would be: because it is not ported yet.
-Hans Reiser states that it is not yet supporting anything but i386
-architecture. But i remember he mentioning that if some company 
-wants it bad, with some financial support he can port it.
-
-When someone needs it urgently enough he/she will port it,
-or give Hans Reiser a motivation donation so that he would do it :)
-
- --
-> Raphael Bossek <raphael.bossek@solutions4linux.de> [ICQ #40047651]
-> PGP fingerprint: DF 6F 2C 76 46 1E B4 1C  5B A5 2E 1B FC E0 D3 F6
-> PGP public key: http://www.solutions4linux.de/private/pgpkey.asc
-> 
-
-Yep. Debian rocks.
-
--- Mika
+Then nothing happens. I also follow some suggestions which Dan advise you and modify
+arch/ppc/kernel/head.S to disable and unlock and invalidate the cache, but it seems to
+make no difference. Can you give me some advice ?
+Thank you :-))
+dony
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
