@@ -1,41 +1,47 @@
-Subject: RE: New 745x errata
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: Giuliano Pochini <pochini@shiny.it>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <XFMail.20031114114053.pochini@shiny.it>
-References: <XFMail.20031114114053.pochini@shiny.it>
-Content-Type: text/plain
-Date: 14 Nov 2003 11:00:41 +0000
-Message-Id: <1068807642.23764.108.camel@newt>
+Date: Fri, 14 Nov 2003 12:17:35 +0100
+From: Wilmer van der Gaast <lintux@lintux.cx>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Oops in current linux-2.5-benh
+Message-ID: <20031114111735.GA13590@gaast.net>
+References: <20031114011048.GG24030@gaast.net> <1068793571.9828.40.camel@gaston>
 Mime-Version: 1.0
+In-Reply-To: <1068793571.9828.40.camel@gaston>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2003-11-14 at 10:40, Giuliano Pochini wrote:
+Benjamin Herrenschmidt (benh@kernel.crashing.org) wrote:
+> Does it happen if you built i2c in the kernel instead of as a module ?
 
-> > 1) The BTIC doesn't work reliably: it can cause execution of corrupted
-> > instructions. (This is listed in the errata for the 7450 and 7457, but
-> > not for the 7455. I'll only believe that the 7455 escaped this bug if I
-> > hear confirmation out of Motorola.)
->
-> Did you try to ask them about it ?
+It already was in the kernel (except for keywest), but somehow it
+managed to load the i2c-core module anyway.
 
-Yes, but an answer to this sort of question will normally take a few
-days.  I thought it was worth raising the issue on the mailing list now.
+This was possible because linux-2.6.0-test9 (also on my machine) had its
+modules in /lib/modules/2.6.0-test9 as well. I added -benh to the
+EXTRAVERSION in linuxppc and recompiled/-installed the whole
+kernel+modules. Isn't it better to keep that in EXTRAVERSION on the
+bk/rsync source as well?
 
-> > 2) dcbt to protected addresses can cause spurious bus cycles. This could
-> > potentially be exploited from userspace to lock up hardware.
->
-> Hm, a 1-cycle window this is very small.  Anyway, if dc* instructions are
-> used inside the kernel, we could keep them disabled in userspace only.
+Anyway, it certainly looks a lot better now!!! aumix works (didn't work
+in -test9), and even sleeping works! (I'd never seen that working in
+Linux before)
 
-The kernel uses the dc* instructions in copy_page, and in prefetches
-everywhere. These uses should all be safe, unless any driver prefetches
-an unchecked userspace pointer. The only problem is that we don't
-currently switch the value of HID0 when entering and leaving userspace.
+This is fantastic. Okay, thanks. Keep up the good work, 2.6-benh works
+better for me than 2.4-benh already.
 
-- Adrian
+By the way, not really on-topic, but I'm probably not the first to see
+this problem: The UTF8 stuff in 2.6 breaks linedrawing chars and makes
+almost every curses application ugly and unusable. What to do about
+that?
 
+Wilmer van der Gaast.
+
+--
++-------- .''`.     - -- ---+  +        - -- --- ---- ----- ------+
+| lintux : :'  :  lintux.cx |  | OSS Programmer   www.bitlbee.org |
+|   at   `. `~'  debian.org |  | www.algoritme.nl   www.lintux.cx |
++--- -- -  ` ---------------+  +------ ----- ---- --- -- -        +
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
