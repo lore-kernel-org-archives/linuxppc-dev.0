@@ -1,43 +1,35 @@
-Date: Sat, 15 Sep 2001 22:17:13 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
+Date: Sun, 16 Sep 2001 07:59:22 -0400
 Subject: Re: ben's latest?
-Message-ID: <20010915221713.B26618@plato.local.lan>
-References: <B7C9A5CA.DEC6%jspectre@lords.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="AdjLlRqdF7kYRNze"
-In-Reply-To: <B7C9A5CA.DEC6%jspectre@lords.com>; from jspectre@lords.com on Sun, Sep 16, 2001 at 12:41:48AM -0400
+From: johnathan spectre <jspectre@lords.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <B7CA0C5A.DEDD%jspectre@lords.com>
+In-Reply-To: <20010916010806.A23547@mediaone.net>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---AdjLlRqdF7kYRNze
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+on 9/16/01 1:08 AM, Craig Rodrigues at rodrigc@mediaone.net wrote:
 
-On Sun, Sep 16, 2001 at 12:41:48AM -0400, johnathan spectre wrote:
->=20
-> Hello all,
->=20
-> Can someone (Ben?) please tell me where I can obtain Ben's latest kernels?
-> The last rsync instructions I have don't work any more and his web page
-> <http://penguinppc.org/~benh/> seems to be missing from the site (I get a
-> 404 with a woman).
+> On Sun, Sep 16, 2001 at 12:41:48AM -0400, johnathan spectre wrote:
+>>
+>> Hello all,
+>>
+>> Can someone (Ben?) please tell me where I can obtain Ben's latest kernels?
+>
+> How about:
+>
+> http://www.ppckernel.org
 
-all ~/ user pages must be referenced from master.penguinppc.org not
-just penguinppc.org. =20
+well I was looking for somewhere to rsync to, not download a huge tarball.
+bug I guess that will have to do (unless I'm losing my mind I can't find any
+docs on where to rsync to any more, I used to use penguinppc.org but it
+refuses connection now).
 
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
+thanks though
 
---AdjLlRqdF7kYRNze
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+-js
 
-
---AdjLlRqdF7kYRNze--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
