@@ -1,33 +1,63 @@
-Date: Fri, 12 Dec 2003 16:05:34 +0100
-From: Olaf Hering <olh@suse.de>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] boot/ld.script dependency missing
-Message-ID: <20031212150534.GA23649@suse.de>
-References: <20031201212931.GA10959@suse.de> <20031203160958.GF912@stop.crashing.org>
+Date: Sat, 13 Dec 2003 10:03:32 +0100
+From: Harald Welte <laforge@gnumonks.org>
+To: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: insmod ipv6 freezes current linuxppc-2.5 and 2.5-benh
+Message-ID: <20031213090332.GH8950@obroa-skai.de.gnumonks.org>
+References: <20031120201249.GB29432@sunbeam.de.gnumonks.org> <1069386878.876.49.camel@gaston> <20031121153314.GC23224@sunbeam.de.gnumonks.org> <20031130155530.GK26749@obroa-skai.de.gnumonks.org> <1070380779.5675.16.camel@thor.asgaard.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20031203160958.GF912@stop.crashing.org>
+In-Reply-To: <1070380779.5675.16.camel@thor.asgaard.local>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- On Wed, Dec 03, Tom Rini wrote:
-
-> On Mon, Dec 01, 2003 at 10:29:31PM +0100, Olaf Hering wrote:
+On Tue, Dec 02, 2003 at 04:59:39PM +0100, Michel D‰nzer wrote:
 >
-> > fiddling with ld.script doesnt trigger a rebuild of the boot files.
+> On Sun, 2003-11-30 at 16:55, Harald Welte wrote:
+> > On Fri, Nov 21, 2003 at 04:32:52PM +0100, Harald Welte wrote:
+> > >
+> > > On Fri, Nov 21, 2003 at 02:54:38PM +1100, Benjamin Herrenschmidt wrote:
+> > >
+> > > > Interesting. Same machine here and I use 2.6 everyday :)
+> > >
+> > > The problem seems to be gcc-related. Debian testing seems to have
+> > > installed gcc-3.3.2 (yes, maybe not the best compiler for a kernel
+> > > anyway) per default.
+> > >
+> > > compiling the same kernel with gcc-2.95 results in a working ipv6
+> > > module.
+> >
+> > I did some more testing:
+> >
+> > Compiles with gcc-3.3.2 and gcc-3.2.3 result in a broken kernel,
+> > gcc-3.0.4 and gcc-2.95.4 work fine.
 >
-> This looks to be an incomplete patch.  Please fix the rest of
-> arch/ppc/boot/ and verify that arch/ppc64/boot/ doesn't have the issue
-> as well.  Thanks.
+> I've been running Ben's tree built with gcc-3.3 for a while (since
+> test7-ish) without problems:
+>
+> What version of binutils do you have? Current from testing here.
 
-The patch for 2.6 is complete, others either do not need the ld.script,
-or they already have the dependency.
+the same here.  I can now even confirm the same problem on a different
+machine, a dual G4 450, running debian testing.
 
+The actual problem seems not to be an infinite loop, but rather a very
+long loop.   IF you wait long enough, it will eventually work.  A
+significant delay (i.e. assumed long loop) is also observed while
+loading any module.  Something like 10 - 15 seconds for every module
+that I'm loading during startup (ipv6, tulip, dmasound_pmac, ...)
+
+The machine is completely frozen during that loop, not even the cursor
+is blinking anymore.
+
+compiling the kernel with gcc 2.95 or 3.0 removes those symptoms.
+
+> --
+> Earthling Michel D‰nzer      |     Debian (powerpc), X and DRI developer
 --
-USB is for mice, FireWire is for men!
-
-sUse lINUX ag, n√úRNBERG
+- Harald Welte <laforge@gnumonks.org>               http://www.gnumonks.org/
+============================================================================
+Programming is like sex: One mistake and you have to support it your lifetime
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
