@@ -1,41 +1,25 @@
-Message-Id: <199901142059.MAA03291@fhloston>
-To: Tom Rini <tmrini@ntplx.net>
-cc: satadru pramanik <satadru@umich.edu>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Accelerated XF68 on PowerMac 7300? 
-In-reply-to: Your message of "Thu, 14 Jan 1999 15:46:51 EST."
-             <Pine.LNX.4.05.9901141546030.15415-100000@pc.wackyland.com>
-Date: Thu, 14 Jan 1999 12:59:44 -0800
-From: Renaud Dreyer <rdreyer@math.berkeley.edu>
+Date: Thu, 14 Jan 1999 14:53:11 -0700 (MST)
+From: Cort Dougan <cort@persephone.cs.nmt.edu>
+To: Alan Cox <alan@cymru.net>
+cc: Jesper Skov <jskov@cygnus.co.uk>, linuxppc-dev@lists.linuxppc.org,
+        Jes.Sorensen@cern.ch, linux-apus@sunsite.auc.dk
+Subject: Re: Synchronization [was Re: The Magic Show: kernel_map() disappearing]
+In-Reply-To: <199901142052.UAA24588@snowcrash.cymru.net>
+Message-ID: <Pine.LNX.3.96.990114145156.7359A-100000@persephone.cs.nmt.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> On Thu, 14 Jan 1999, Renaud Dreyer wrote:
-> 
-> > > On Thu, 14 Jan 1999, satadru pramanik wrote:
-> > > 
-> > > > Ditto for a 7600/132!
-> > > 
-> > > The main problem with accel'ed X for any of the internal videos is docs on
-> > > howto accel it... :)
-> > 
-> > So then can I assume that the acceleration will not work on my 7300, no matter
-> > what?
-> 
-> The internal video won't be.
+That's my rationale for doing the sync and eieio in the mb().  That way,
+we're guaranteed no races no matter what assumptions someone makes about
+the x86 when adding barriers to their driver code.  Is that unreasonable?
+
+}x86 and most other processors dont have the notion of a store barrier and
+}an i/o barrier beign different
 
 
-OK, so I know indeed not to waste any more time on this, for now.
-
-> > I was thinking of eventually a graphic card for my 7300, with some kind
-> > of 3D support. Which one would support acceleration? Thanks,
-> 
-> Right now there's an accel'ed X for ati cards and IMS cards.  Drop one of
-> those in, run X on that and it'll be acclerated.
-
-All and any card? Isn't the 7300 internal video ati based, though? Thanks,
-
-          Renaud
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
