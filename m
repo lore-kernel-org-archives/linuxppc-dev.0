@@ -1,52 +1,50 @@
-Date: Tue, 24 Apr 2001 12:11:35 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Dan Malek <dan@mvista.com>
-Cc: Cort Dougan <cort@fsmlabs.com>, Alexandre.Nikolaev@matrox.com,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppc little-endian port
-In-Reply-To: <3AE4E93E.AC7C788C@mvista.com>
-Message-ID: <Pine.HPX.4.10.10104241134560.2724-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: "Stefan Balcerczak" <Stefan.Balcerczak@marconi.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: "Shoudong Xu" <Shoudong.Xu@cern.ch>,
+	"Zydla Tsui" <zydla@hotmail.com>
+Message-ID: <80256A38.003BE360.00@marconicomms.com>
+Date: Tue, 24 Apr 2001 12:57:12 +0200
+Subject: Antwort: Re: unable to mount root fs on 01:00
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 23 Apr 2001, Dan Malek wrote:
+Hello!
 
->
-> Cort Dougan wrote:
-> >
-> > Why?
->
-> Yeah, we really don't care about little-endian.  Like I always
-> say, getting a kernel built and booted is the easy part.  The
-> entire world runs big endian tools, libraries and applications.
-> Making all of that work is a task no one is going to tackle.
+I have to say sorry for the question about ip-config - it was my fault. There
+was an error in the data I passed to the kernel.
 
-Indeed...
+The problem with mount /dev/ram as root is still unsolved and I have no idea
+what to do about it ...
 
-> While refreshing my PowerPC history the other day, I found a UISA
-> book from 1991.....The Little-Endian Byte Ordering chapter introduction
-> has this to say:
+I tried a newer Kernel (2.4.4) but have problems with compiling:
 
-1991 ? I though PPC came in 1993. First Power systems were announced and
-delivered in 1990 AFAIR.
+===========================================================================================
+arch/ppc/kernel/kernel.o: In function `lookup_partitions':
+arch/ppc/kernel/kernel.o(.text+0x7852): undefined reference to `pmac_newworld'
+arch/ppc/kernel/kernel.o(.text+0x7856): undefined reference to `pmac_newworld'
+arch/ppc/kernel/kernel.o: In function `pmac_nvram_init':
+arch/ppc/kernel/kernel.o(.text.init+0x554): undefined reference to
+`find_devices'
+arch/ppc/kernel/kernel.o(.text.init+0x554): relocation truncated to fit:
+R_PPC_REL24 find_devices
+arch/ppc/kernel/kernel.o(.text.init+0x588): undefined reference to
+`device_is_compatible'
+arch/ppc/kernel/kernel.o(.text.init+0x588): relocation truncated to fit:
+R_PPC_REL24 device_is_compatible
+arch/ppc/kernel/kernel.o(.text.init+0x6b6): undefined reference to `sys_ctrler'
+arch/ppc/kernel/kernel.o(.text.init+0x6ba): undefined reference to `sys_ctrler'
+make: *** [vmlinux] Error 1
+===========================================================================================
 
-> Later in the text it states "There are 24 ways to specify the
-> ordering of four bytes withing a word, but only two of these
-> orderings are sensible."
+So I play around with the "working" kernel 2.2.14 and try to get kernel 2.4.4
+configured right - If anybody has a hint for me
+I would be glad to hear about.
 
-Indeed the PDP was a nightmare, like VAX floating-point formats BTW...
-
-> I contend there is only one sensible ordering, and we are already
-> using it.........
-
-Right, unfortunately so many people have been brainwashed by the
-niadne-elttil side and are unable to think on their own.
-
-	Regards,
-	Gabriel.
+Regards,
+Stefan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
