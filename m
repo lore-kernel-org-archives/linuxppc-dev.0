@@ -1,58 +1,44 @@
-Message-ID: <3BF54157.6070605@humboldt.co.uk>
-Date: Fri, 16 Nov 2001 16:39:51 +0000
-From: Adrian Cox <adrian@humboldt.co.uk>
+Message-ID: <3BF54569.3060000@embeddededge.com>
+Date: Fri, 16 Nov 2001 11:57:13 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
+To: Adrian Cox <adrian@humboldt.co.uk>
 Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: [PATCH] Allow small areas in io_block_mapping
-References: <3BF52F0C.7020608@humboldt.co.uk> <3BF53B55.90900@embeddededge.com>
+References: <3BF52F0C.7020608@humboldt.co.uk> <3BF53B55.90900@embeddededge.com> <3BF54157.6070605@humboldt.co.uk>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+Adrian Cox wrote:
 
 
-> Hmmmm....Is io_block_mapping() supposed to be a replacement for ioremap()?
-> If so, it doesn't do anything I want.  What you are asking for is already
-> done by ioremap.  If someone has already wired BATs, you get them, and
-> if not then single PTEs will be allocated.  In this case, just don't
-> allocate
-> BATs for I/O in the space you want individual pages when you do the board
-> initialization, and call ioremap().
+> I hadn't realised that ioremap could be used before vmalloc was working,
+> but on examining the code, it looks like it can. So I may just change my
+> code to use ioremap.
+
+Yeah, but just remember it does 1:1 virt->phys mapping.  I have a couple
+of 4xx processors with hard-wired low physical addresses, and I have to
+force them to map to a "friendly" virtual address :-).  That's the
+only reason I like io_block_mapping(), but I don't have BATs to deal with.
+
+> In defense of the patch....
+
+You are correct.  The comments in the code are kind of funny.....ensure
+you call it with the right parameters, but then it checks some anyway.
 
 
-I hadn't realised that ioremap could be used before vmalloc was working,
-but on examining the code, it looks like it can. So I may just change my
-code to use ioremap.
+> That's pretty well what I need here.
 
-In defense of the patch I would like to say that the extra test is in
-the spirit of the existing tests within io_block_mapping(), and if this
-doesn't go in then a comment describing the intention and limits of the
-interface would be a useful addition to <include/asm-ppc/io.h>.
+Let's do it.  I think io_block_mapping() was conceptually copied from
+other architectures for consistency, but I don't think it's doing the
+right thing for us in all cases.
 
-
-> I think we still need to define a better set of functions here.  I want to:
->
->     1.) Control the virt->phys mapping when necessary by forcing both
->         virtual and physical addresses (kind like io_block_mapping now)
->
->     2.) Cover a very large space with a single BAT or large page entry
->
->     3.) Have an ioremap()-like function that will use the physical address
->         to either match in 1 or 2 above, or allocate single PTEs if
->         no match.
->
-> The functions used to set up 1 and 2 above are performed very early during
-> memory management initialization and are not subject to change once we
-> start using these mapped spaces.
+Thanks.
 
 
-That's pretty well what I need here.
-
---
-Adrian Cox   http://www.humboldt.co.uk/
+	-- Dan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
