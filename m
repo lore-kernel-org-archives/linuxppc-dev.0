@@ -1,24 +1,39 @@
-Message-ID: <6DF87017DA95D611AC6000606730DE9B0EC160@BLREXSR>
-From: Nageswari S <nageswari@sanyo.co.in>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: DMA Help
-Date: Wed, 11 Dec 2002 11:23:49 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Pagnotta, Chris" <chris.pagnotta@viasat.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Hanging Init 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 10 Dec 2002 18:04:31 PST."
+             <0509218DDAD7D6118055006008F6D5F6A1E3A6@postal.viasat.com>
+Date: Wed, 11 Dec 2002 09:49:32 +0100
+Message-Id: <20021211084937.C79DCC613A@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+In message <0509218DDAD7D6118055006008F6D5F6A1E3A6@postal.viasat.com> you wrote:
+> Thanks for the input. I finally got the board up. It was due
+> to the my compilation of busybox with the -nostdlib option and
+> explicitly linking the necessary libs (warning of not finding _start). I
+> also noticed the
+> floating point emulation was off in the kernel.
 
-I am porting USB OHCI driver to a custom PowerPC 405 based platform with no
-PCI Bus. I have taken SA1111 as a reference. USB uses DMA for its memory
-transfers. How can I check proper functioning of DMA. Any help/suggestion
-will be highly appreciated.
+...which is OK. You should not enable it.
 
-Thankyou,
-regards,
-Nageswari
+> Does anyone have a good explanation of the _start as the entry
+> symbol for an application? This seemed to be my problem when I originally
+
+This must be the rsult from your build process. I don't see this  wih
+busybox.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Overdrawn?  But I still have checks left!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
