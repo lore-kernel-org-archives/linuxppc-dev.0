@@ -1,32 +1,21 @@
-Date: Wed, 26 Jun 2002 15:51:42 +0200 (CEST)
-From: Marius Groeger <mag@sysgo.de>
+Message-ID: <37D0F88E70D96C428C19EEB865701A38F1690B@buda902a.siemens.hu>
+From: =?ISO-8859-1?Q?M=E9sz=E1ros_Lajos?= <ludwigm@siemens.hu>
 To: linuxppc-embedded@lists.linuxppc.org
-Cc: Steven Scholz <steven.scholz@imc-berlin.de>
 Subject: Re: SELF and JFFS2????
-Message-ID: <Pine.LNX.4.40.0206261547340.1779-100000@mag.devdep.sysgo.de>
+Date: Wed, 26 Jun 2002 16:04:26 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steven,
+Marius Groeger wrote:
 
-> has anyone successfully used DENX SELF to create an root fs _and_ put it
-> then on a JFFS2 partion?
+>> FWIW, the Elinos DevKit contains an example project ...
 
-FWIW, the Elinos DevKit contains an example project to do just that. It
-allows to format the MTD device, and download and install another project
-onto it.
+Is the Elinos DevKit as free as Linux kernel (or for example ELDK) ?
 
-Regards,
-Marius
-
------------------------------------------------------------------------------
-Marius Groeger           SYSGO Real-Time Solutions GmbH     mgroeger@sysgo.de
-Software Engineering     Embedded and Real-Time Software    www.sysgo.de
-Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
-FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
-
+	Ludwig
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
