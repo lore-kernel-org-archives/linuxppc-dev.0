@@ -1,42 +1,84 @@
-Message-Id: <m13UT30-001SweC@bucks>
-From: diekema@bucks.si.com (diekema_jon)
-Subject: Re: MPC8260 boards with Linux support ?
-To: brendan.simon@ctam.com.au
-Date: Thu, 31 Aug 2000 08:02:22 -0400 (EDT)
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <39ADDF77.8080608@ctam.com.au> from "Brendan Simon" at Aug 31, 2000 03:30:47 PM
+Message-ID: <001801c0135c$53caea20$0400a8c0@PeterTympanick>
+From: "Peter Tympanick" <ptymps@ultsol.com>
+To: "Matt Porter" <mporter@mvista.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <Pine.HPX.4.10.10008311300320.15978-100000@gra-ux1.iram.es>
+Subject: Re: Linux on Motorola Sandpoint/PPMC7400
+Date: Thu, 31 Aug 2000 08:01:20 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Can anyone suggest an 8260 development board that is supported by the
-> Linux/PPC kernels.
+Using the Abatron BDI2000 and bdiGDB, have you figured out a way to
+implement loadable device drivers for hardware using a PowerPC device?
 
-EST SBC8260
+Thanks for your help in advance.
 
-http://www.estc.com/products/boards/SBC8260-8240_ds.html
+Peter Tympanick
+Sales Engineer
+Ultimate Solutions, Inc.
+===============================
+Development Tools for Embedded Systems
+Ph: 978-455-3383
+Fx: 978-926-3091
+Email: ptymps@ultsol.com
+WWW: http://www.ultsol.com
 
-> Does the 2.2.X series support 8260 or would I have to go to the
-2.3.X or > 2.4 series ?
 
-You need to run the 2.4.x kernel to get the latest support.  I have
-2.4.0-test7 runing on the SBC8260, but 2.4.0-test8-pre1 panics during
-startup.  I have been getting my kernels from the Linux/PPC BitKeeper
-Repository at FSMLabs (http://www.fsmlabs.com/linuxppcbk.html).
+----- Original Message -----
+From: Gabriel Paubert <paubert@iram.es>
+To: Dan Malek <dan@netx4.com>
+Cc: Matt Porter <mporter@mvista.com>; <linuxppc-embedded@lists.linuxppc.org>
+Sent: Thursday, August 31, 2000 4:13 AM
+Subject: Re: Linux on Motorola Sandpoint/PPMC7400
 
-For a nice packaged solution, I would go to MontaVista
-(http://www.mvista.com/) and get the Linux Support Package from the
-CDK version 1.2 (http://www.mvista.com/cdk1.2/) for the SBC8260.
 
-ftp://ftp.mvista.com/pub/CDK/1.2/latest/PowerPC/ppc_82xx/RPMS
 
-Look for *sbc8260*
+On Wed, 30 Aug 2000, Dan Malek wrote:
 
-------------------\\----------------------\\----------------------------
-Jon Diekema        |                       | Smiths Industries
-(616) 241-8310     |                       | 3290 Patterson Avenue, SE
-diekema_jon@si.com \\                      \\  Grand Rapids, MI 49512-1991
+> Well, not exactly :-).  The code is actually written with some
+> assumptions because I couldn't make it do _everything_.  The download
+> should be located above the address where it is linked to execute.
+> For example, I download to 0x900000, the code relocates to 0x800000,
+> then uncompresses the kernel into the base of memory.
+>
+> This follows the MPC8xx boot model with a larger memory window.
+> The MPC8xx had more constraints (smaller main memory 8 Mbyte start
+> up translation), so the load/execution addresses were lower in
+> memory.  Since the kernel is constantly growing and the 82xx had
+> a 16 MByte window, I just decided to move everything further up
+> in the address space.
+>
+> Anything below the linked execution address (0x800000 in this case)
+> is considered fair game for allocation by the code, so it could
+> write over itself or other necessary information (like zImage or the
+> ramdisk).
+
+Well, if you have a look at PrePboot, it solves all these kind of
+problems. On my MVME2600:
+
+- when booting from network, the zImage is loaded very low in memory,
+- when booting from disk, it finds itself at top of memory (~15Mb),
+
+what the code does is first to relocate itself where it is originally
+loaded (compiled with -mrelocatable) so that it can perform a basic
+analyzis of the current memory layout.
+
+Then it moves itself up or down to the top of memory (yes it can have to
+move itself down to the top, as contradictory as it seems, it actually
+happens quite often), sometimes with partial overlaps, clears its bss,
+relocates itself once again (until this point your have to be very careful
+with what the code does), and setup a basic memory management system
+taking into account firmware needs to avoid stepping on firmware's toes.
+
+At this point, reading OF device tree, decompressing the kernel,
+emulating VGA ROM bioses, etc... becomes almost trivial.
+
+Regards,
+Gabriel.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
