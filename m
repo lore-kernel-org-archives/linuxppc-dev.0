@@ -1,22 +1,21 @@
-Return-Path: <joerg@dorchain.net>
-Received: from Redstar.dorchain.net (153-133-088-212.ip-addr.teresto.net
-	[212.88.133.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <evilninja@gmx.net>
+Received: from mail.g-house.de (ns1.g-housing.de [62.75.136.201])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4F99567A6C
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Mar 2005 18:57:29 +1100 (EST)
-Date: Fri, 4 Mar 2005 08:57:03 +0100
-From: Joerg Dorchain <joerg@dorchain.net>
-To: evilninja <evilninja@gmx.net>, linuxppc-dev@ozlabs.org
-Message-ID: <20050304075703.GA15637@Redstar.dorchain.net>
+	by ozlabs.org (Postfix) with ESMTP id F343E67A6C
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Mar 2005 02:45:33 +1100 (EST)
+Message-ID: <42287959.8050708@gmx.net>
+Date: Fri, 04 Mar 2005 16:06:01 +0100
+From: _evil <evilninja@gmx.net>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
 References: <20050303124435.GA24233@Redstar.dorchain.net>
 	<4227153C.3030201@gmx.net>
 	<20050303141832.GU25080@Redstar.dorchain.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="VS++wcV0S1rZb1Fb"
-In-Reply-To: <20050303141832.GU25080@Redstar.dorchain.net>
-Subject: Re: boot time scheduling hile atomic (was: GCC4 fun.)
+	<20050304075703.GA15637@Redstar.dorchain.net>
+In-Reply-To: <20050304075703.GA15637@Redstar.dorchain.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Subject: Re: boot time scheduling hile atomic
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,50 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Joerg Dorchain wrote:
+>>>
+>>>i don't know why you're getting this error, but seeing "swapper" to be
+>>>involved here: can you compile with CONFIG_SWAP=n and boot this one?
+>>
+>>I'll do tonight.
+> 
+> Did so, no effect on this. IMHO "swapper" is a somewhat misguiding name
+> for the idle task with pid 0.
 
---VS++wcV0S1rZb1Fb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+yes, i just guessed. sadly, it did not help :-\
+and i can't decode the backtrace either.
 
-On Thu, Mar 03, 2005 at 03:18:32PM +0100, Joerg Dorchain wrote:
-> >=20
-> > > scheduling while atomic: swapper/0x00000002/0
-> > > Call trace:
-> > >  [c0007620] dump_stack+0x18/0x28
-> > >  [c01de704] schedule+0x678/0x67c
-> > >  [c0004500] syscall_exit_work+0x108/0x10c
-> > >  [c02a97b4] proc_root_init+0x168/0x174
-> > >  [ff847288] 0xff847288
-> > >  [c02945e8] start_kernel+0x144/0x170
-> > >  [00003a30] 0x3a30
-> >=20
-> > i don't know why you're getting this error, but seeing "swapper" to be
-> > involved here: can you compile with CONFIG_SWAP=3Dn and boot this one?
->=20
-> I'll do tonight.
+does the system halt after the message? if not, we a re not in a hurry 
+and if you have time you could possbily track it down a bit to 1) the 
+kernelversion when it happened first and/or 2) find the .config option, 
+that causes this error.
 
-Did so, no effect on this. IMHO "swapper" is a somewhat misguiding name
-for the idle task with pid 0.
+if the box halts after this, and no guru from linuxppc-dev is available, 
+maybe you should try and post on linux-kernel too.
 
-I am more wondering what in proc_root_init or immediately after it
-causes a call to the exit_work syscall.
-
-Bye,
-
-Joerg
-
---VS++wcV0S1rZb1Fb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
-
-iD8DBQFCKBTPjY4+4PdzvOARArZaAJ4y/SEQNh9hfhzbt9cdj+5wB2mjpwCfZz5h
-qZa4BJ65qgeCsKxwMUYruTI=
-=Z/oM
------END PGP SIGNATURE-----
-
---VS++wcV0S1rZb1Fb--
+just my 2c,
+Christian.
