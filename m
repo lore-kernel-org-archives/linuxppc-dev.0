@@ -1,47 +1,82 @@
-Date: Fri, 2 Apr 1999 13:22:26 +0200 (MET DST)
-From: David De Ridder <s970707@uia.ua.ac.be>
-Reply-To: David De Ridder <david.de.ridder@bitsmart.com>
-To: Michael Lundkvist <ml@epact.se>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: MVME2306 problems dragging on
-In-Reply-To: <qp1zigcz4c.fsf@erbium.epact.se>
-Message-ID: <Pine.SO4.4.05.9904021252040.23869-100000@hsins.uia.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Apple Job Posting and Good News for LinuxPPC developers
+References: <Pine.HPP.3.96.990326121245.1078X-100000@gra-ux1.iram.es>
+From: Holger Bettag <hobold@informatik.uni-bremen.de>
+Date: 02 Apr 1999 14:11:16 +0200
+In-Reply-To: Gabriel Paubert's message of Fri, 26 Mar 1999 12:31:59 +0100 (MET)
+Message-ID: <8x677fp6hn.fsf@s52.informatik.uni-bremen.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello everyone,
+Gabriel Paubert <paubert@iram.es> writes:
 
-I'm still trying to get our board to run LinuxPPC. So far, I've come to
-booting the Linux kernel. This kernel can also mount its NFS fs.
+[beefier PowerPCs]
+> Not many people have seen a 620 AFAICT :-( and the G4 I've seen announced
+> by Motorola is not what I expected: it's a super 750 with Altivec + 604
+> FPU (single cycle double precision multiplier) + SMP capabilities. 
+> 
+> But at least I expected:
+> 
+> - a 64 bit version (means >32 address pins, perhaps ~40 or so, 64 is
+>   obviously overkill right now and I don't ask for it)
+> 
+I have heard rumours that the "Max" core has provisions to physically address
+more than 4GB of memory (via the MMU's segment registers). Processes would
+still be limited to a 4GB logical address space, though.
 
-There seems to be a problem with the serial line settings. After the
-kernel says : ``Freeing unused memory : [...] open firmware'', the
-serial console gets flooded with two kinds of similar messages :
+> - more superscalar (not 2+branch, but at least 4 way)
+> 
+The 604e is four-way superscalar, but it has slightly lower integer performance
+per clock cycle than the 750. Apparently you can't extract significantly more
+parallelism than 2 instructions per clock from real-world code, so the 604e's
+abilities are wasted, while the 750's exceptionally elegant branch handling
+leads to measurable benefits over the 604e's more traditional (though very
+sophisticated) branch prediction.
 
-``request_irq(): irq 4 handler c008dae8 name serial dev_id 0000`` and
-``request_irq(): irq 4 handler c0000000 name <NULL> dev_id 0000``.
+> - longer in flight instruction queue
+> 
+Compared to the 750, "Max" has additional reservation stations and a longer
+completion queue. Motorola's first estimates were 10% more integer performance
+per clock cycle than the 750, but this probably includes the effect of
+the larger L2.
 
-BTW, I'm using a /dev/console with major 5 minor 1. Inbetween those
-messages, I see some errors that seem to come from init. I have no update
-daemon, and bash cannot be loaded because it cannot find its libtermcap.
-When I manually make a link to libtermcap, there are no more errors,
-but also no more screen output at all.
-  
-Does anyone know how to get it correctly running ?
+BTW, a larger number of unresolved "in flight" instructions would jeopardize
+the processors unique (among superscalar CPUs) ability to directly execute
+branches without predicting them, because the outcome of branch conditions
+would more often be still "in flight", too.
 
-+-----------------------------------------------------------------+
-|   David 'Septimus' De Ridder   | "Never underestimate the       |  
-|                                |  power of the soul unleashed." |
-| <david.de.ridder@bitsmart.com> |   - 'Essence Flare', M:TG      |
-+-----------------------------------------------------------------+
+> - 2 FPU: not sure, but divides seem to kill current PPC, one
+>   unit which can do all instructions(including sqrt) + one mult/add only
+>   would be great. OTOH, on FFT benchmarks which interest me also (not a
+>   single div), PPC are excellent. 
+> 
+AFAIK, the divide algorithm used in PowerPC FPUs was selected specifically
+to re-use as much of the multiplier as possible; i.e. saving transistors
+was the foremost goal.
 
---
-"I want you to find happiness."
- - Marilyn Monroe in 'Gentlemen prefer Blondes'
+With nowadays silicon structure sizes, it would probably be a very good idea
+to have a separate divider. Possibly even one that uses a faster algorithm
+(like estimation plus refinement as is done explicitly in AltiVec).
 
+> - 2 LSU to feed all these units: hey Pentium and PPro can do 2 memory
+>   accesses por clock since they came out. They need it because they
+>   require many load/store to compensate for the small number of registers 
+>   but I'd expect it to be beneficial even on PPC with large and fast 
+>   backside L2 caches. Power2 has had 2 LSU since the beginning AFAICT.   
+>
+AFAIK, Pentium and PPro/PII/PIII do not have the equivalent of two full-blown
+LSUs. In best case, they can do either two loads or one load plus one store,
+but not two store operations. Furthermore, their L1 cache is not really
+dual-ported, only dual-banked, so that two accesses can only be carried out
+in parallel if they hit different banks.
+
+And finally, if you ever have an algorithm where loads or stores are the
+bottleneck, the performance will be limited by main memory bandwidth anyway,
+regardless of L1 bandwidth (unless you are register-starved, of course, but
+that will almost never happen with 32 GPRs + 32 FPRs (+ 32VRs)).
+
+  Holger
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
