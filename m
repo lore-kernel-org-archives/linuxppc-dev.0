@@ -1,46 +1,39 @@
-Date: Fri, 14 Dec 2001 13:02:37 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Gabriel Paubert <paubert@iram.es>,
-	linuxppc-dev@lists.linuxppc.org, Dan Malek <dan@embeddededge.com>,
-	paulus@samba.org
-Subject: Re: 7450 bugs & fixes
-Message-ID: <20011214200237.GL16904@cpe-24-221-152-185.az.sprintbbd.net>
-References: <Pine.LNX.4.21.0112030102320.582-100000@ltgp.iram.es> <20011214191920.4144@smtp.adsl.oleane.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <p05101001b84012ac3a2e@[10.0.0.42]>
 In-Reply-To: <20011214191920.4144@smtp.adsl.oleane.com>
+References: <Pine.LNX.4.21.0112030102320.582-100000@ltgp.iram.es>
+ <20011214191920.4144@smtp.adsl.oleane.com>
+Date: Fri, 14 Dec 2001 12:41:52 -0800
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Gabriel Paubert <paubert@iram.es>
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: 7450 bugs & fixes
+Cc: <linuxppc-dev@lists.linuxppc.org>,
+	Dan Malek <dan@embeddededge.com>, <paulus@samba.org>
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Dec 14, 2001 at 08:19:20PM +0100, Benjamin Herrenschmidt wrote:
+At 8:19 PM +0100 12/14/01, Benjamin Herrenschmidt wrote:
 
-> >>  - errata 29: do we ever switch MSR:IR off via an mtmsr ? If yes, we
-> >>    need to add a sync, but I don't think we do.
-> >
-> >No, because kernel is not mapped 1:1 to physical memory, doing this would
-> >cause an implicit jump, which is prohibited by the architecture. Note that
-> >it also solves erratum 37 (different symptom and bug, same cure).
->
-> Yup. I just wanted to ask anyway ;) Maybe some early bootloaders do that.
+>I don't neither, they didn't give me any detail. Could they catch
+>icache misses on the bus and delay incoming tlbie (freezing the emitter)
+>when that happen ? I don't know the bus protocol ...
 
-Actually, I _think_ there's a possibility.  In
-arch/ppc/boot/common/util.S we do:
-        .globl  disable_6xx_mmu
-disable_6xx_mmu:
-        /* Establish default MSR value, exception prefix 0xFFF.
-         * If necessary, this function must fix up the LR if we
-         * return to a different address space once the MMU is
-         * disabled.
-         */
-        li      r8,MSR_IP|MSR_FP
-        mtmsr   r8
+Take this with a grain of salt (*), but I don't recall anything in
+the bus protocol which could be used to identify whether a particular
+busrt is filling an icache or a dcache miss, much less whether it's
+an icache miss which happened during a tablewalk.  It all looks the
+same to the outside world.
 
-So we should probably throw a 'sync' at the end of that, yes?
-
+(*) I've designed hardware, but it was a 750cx and 8260 system and
+therefore plain old 60x bus, not MAXbus like the systems in question.
+Also, I wasn't the one who had to get deep into the the 60x bus
+protocol.  That said, I don't remember anything in 60x which could
+identify *why* a transfer was happening, and whenever I've skimmed
+over MAXbus docs it looks a lot like a better version of 60x.
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
