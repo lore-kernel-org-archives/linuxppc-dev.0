@@ -1,38 +1,41 @@
-Mime-Version: 1.0
-Message-Id: <v04220801b652547c23e8@[10.0.0.42]>
-In-Reply-To: <p04330100b650e03a5dcb@[192.168.0.1]>
-References: <Pine.GSO.4.10.10012032140410.7958-100000@rose.sonytel.be>
- <p04330100b650e03a5dcb@[192.168.0.1]>
-Date: Tue, 5 Dec 2000 00:39:22 -0800
-To: Stefan Jeglinski <jeglin@4pi.com>, linuxppc-dev@lists.linuxppc.org
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: arguing IRQ (was Re: dual IRQ 23)
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Date: Tue, 5 Dec 2000 11:13:41 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: alex@cosmo.allay.net
+cc: linuxppc-dev@lists.linuxppc.org, max@trega.com
+Subject: Re: lots of questions (va_list, embedded perl, cvsd, introduction
+ - sort of)
+In-Reply-To: <Pine.LNX.4.10.10012050215570.22364-100000@macachu.ex-pressnet.com>
+Message-ID: <Pine.LNX.4.10.10012051046530.9367-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 1:09 AM -0500 12/4/00, Stefan Jeglinski wrote:
+> okay, so to the real meat of this post. ive been having some problems with
+> the opennap server. i find that the va_list functions (primarily v*printf)
+> are giving me segfaults and data corruption. this, however, is *not*
 
->So, is Geert right (PCI ok at least in this aspect, drivers are
->buggy)? Or are Ben/Michel right (drivers OK, PCI/IRQ buggy)?
+Make sure you are using __va_copy to copy va_list arguments. Plus do
+not expect a va_list argument to remain unchanged in the calling routine
+even though you pass the va_list argument by value.
 
-PCI is in fact designed to share interrupts gracefully, as Geert
-said.  However, sharing doesn't look like the problem here: what
-Michel and Ben are talking about is that the kernel fails to
-correctly identify your card's true IRQ number.  On these Macs there
-is a fixed mapping between PCI slots and interrupt numbers,
-determined by hardware.  If software gets this mapping wrong, drivers
-will hook into the wrong IRQ numbers and fail to work correctly.
+> happening on an x86 bsd machine. i have limited machines to test this on,
 
-According to Ben, this appears to be a problem in the kernel code
-which discovers information about PCI devices (including interrupt
-mappings) from an Open Firmware data structure, the OF device tree.
-Apparently the interrupt assignment information in the device tree is
-structured somewhat differently in Old World Macs such as yours when
-devices are behind a PCI to PCI bridge.  (Your combo card consists of
-such a bridge plus two PCI devices.)
+x86 uses a different mechanism for va_lists, which is more tolerant :-(
 
-   Tim Seufert
+>     va_start (ap, fmt); vsnprintf ( buf, 1022, fmt, ap ); va_end (ap);
+
+The va_end does nothing here...
+
+#define va_end(AP)	((void)0)
+
+>     va_start (ap, fmt); vprintf ( fmt, ap ); va_end (ap);
+
+and the second va_start should just restore the initial state of ap from
+the stack. Looks like it should work...
+
+	Michael
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
