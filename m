@@ -1,30 +1,40 @@
-Message-Id: <v04003a01b3219f570c82@[192.168.1.4]>
-In-Reply-To: <Pine.LNX.3.95.990326170718.11329A-100000@drongo.anu.edu.au>
-References: <36FA6863.50817162@business.wm.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 26 Mar 1999 21:33:00 +0100
-To: linuxppc-dev@lists.linuxppc.org
-From: "N.G. Temme" <niek@database.rino.nl>
-Subject: Re: Apple Job Posting and Good News for LinuxPPC developers
+Date: Fri, 26 Mar 1999 22:27:59 -0800
+Message-Id: <199903270627.WAA18114@aragorn.shiresoft.com>
+From: Guy Sotomayor <ggs@shiresoft.com>
+To: dje@watson.ibm.com
+Cc: paubert@iram.es, linuxppc-dev@lists.linuxppc.org
+Reply-To: ggs@shiresoft.com
+Subject: Re: Apple Job Posting and Good News for LinuxPPC developers 
+In-Reply-To: <9903261613.AA48254@marc.watson.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->On Thu, 25 Mar 1999, Kevin B. Hendricks wrote:
->
->> We should get one of our own into this role and get a leg up on helping
->>apple
->> open up its hardware specs for Linux PPC
->>
->> What do you think?
->
->I'm voting for Paul Mackerras to get the job.. :-)
->(I'm sure he _love_ to spend his time working solely on linuxpmac.. :-)
->
+> 
+> Gabriel> Do 64 bit PPC processors that can be bought as chips (not in a system)
+> 
+> Gabriel> exist (i.e., can you buy a Power3 in a BGA package and the chipset
+> that
+> Gabriel> goes with) ? 
+> 
+>      I doubt it.  The Power3 comes from the server organization and is
+> intended for their use.  IBM, however, does understand customer demand:
+> if there was "enough" market interest, I am sure that it would find a way
+> to sell it.  The Power3 processor price is nowhere near a PPC750 or G4 and
+> does not include AltiVec.
+> 
+Actually I think the 64bit PPCs are called PowerPC II.  They're reasonably
+nice chips last time I looked.  They are expensive to put together in a
+system (ie 8MB L2, 128bit data bus, etc).  Also the 6xx bus is a split
+transaction bus, so the bus controllers are a bit more complex too.  I
+also think that all the data paths are ECC'd with parity on addresses. 
+For a good example on what type of systems are built using these things,
+look at the S70 Advanced server.
 
 
-me too
+TTFN - Guy
 
 
 
