@@ -1,27 +1,43 @@
-Message-ID: <3F0BA671.1050900@embeddededge.com>
-Date: Wed, 09 Jul 2003 01:21:53 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Eugene Surovegin <ebs@ebshome.net>
-Cc: Dean Matsen <deanmatsen@earthlink.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Ethernet PHY chip discovery not working on 855T with  971/972
- chips
-References: <3F0B7B28.7040902@earthlink.net> <5.1.0.14.2.20030708195315.038110e8@mail.ebshome.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Wed, 09 Jul 2003 17:44:56 +1200
+From: Dmytro Bablinyuk <dmytro.bablinyuk@tait.co.nz>
+Subject: Re: Problem with starting up 2.4.21 kernel
+In-reply-to: <20030709050619.19722.qmail@web9705.mail.yahoo.com>
+To: linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
+Message-id: <3F0BABD8.5010703@tait.co.nz>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii; format=flowed
+References: <20030709050619.19722.qmail@web9705.mail.yahoo.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Eugene Surovegin wrote:
+>  1. Have you configured correctly the timers?
 
-> It usually means that your hw lacks pull-up on MII MDIO line.
+I tried to pass in Hz and in MHz by playing with clocks_in_mhz
+environment variable
 
-Yep, and even when PHYs indicate they have internal pull-ups, either
-they don't or they aren't sufficient.
+> 2. Have you correctly configured the serial interface
+> (where you have your console)? SCC,SMC..etc.
 
+I could not find in my .config where I can define a SMC1 to use for UART
+but I have:
+#
+# MPC8xx CPM Options
+#
+# CONFIG_SCC_ENET is not set
+CONFIG_FEC_ENET=y
+# CONFIG_USE_MDIO is not set
+CONFIG_ENET_BIG_BUFFERS=y
+# CONFIG_SMC2_UART is not set
+# CONFIG_USE_SCC_IO is not set
+CONFIG_8xx_COPYBACK=y
+CONFIG_8xx_CPU6=y
+CONFIG_UCODE_PATCH=y
 
-	-- Dan
+> And, could you see inside the System.map in what
+> function does your kernel locks?
+
+It's a m8xx_cpm_reset function.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
