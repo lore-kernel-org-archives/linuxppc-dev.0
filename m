@@ -1,100 +1,91 @@
-Date: Thu, 6 Jul 2000 13:14:09 -0400
-From: Josh Huber <huber@mclinux.com>
-To: "Peter R. Wood" <pwood@gordon.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: GAIM compile error
-Message-ID: <20000706131409.C820@mclx.com>
-References: <Pine.LNX.4.21.0007061254230.8579-100000@dyn-133-196.gordon.edu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-md5;
-	protocol="application/pgp-signature"; boundary="d01dLTUuW90fS44H"
-In-Reply-To: <Pine.LNX.4.21.0007061254230.8579-100000@dyn-133-196.gordon.edu>; from pwood@gordon.edu on Thu, Jul 06, 2000 at 01:01:20PM -0400
+Date: Thu, 6 Jul 2000 19:17:46 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Michael Lundkvist <ml@epact.se>
+cc: linuxppc-dev@lists.linuxppc.org, aeb@veritas.com
+Subject: Re: Going from 2.2.12 to 2.2.17pre10
+In-Reply-To: <qphfa3ie20.fsf@erbium.epact.se>
+Message-ID: <Pine.HPX.4.10.10007061912350.21326-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---d01dLTUuW90fS44H
-Content-Type: multipart/mixed; boundary="eRtJSFbw+EEWtPj3"
-Content-Disposition: inline
+On 6 Jul 2000, Michael Lundkvist wrote:
 
+>
+> Hi!
+>
+> I'm trying to go from 2.2.12 to 2.2.17pre10 on an MVME 2400.
+>
+> A few problems:
+>
+> The Motorola SROM bug-patch lacks one row in de4x5.c:
+>
+> --- de4x5.c~    Thu Jul  6 16:01:32 2000
+> +++ de4x5.c     Thu Jul  6 16:14:18 2000
+> @@ -4829,6 +4829,7 @@
+>      } else if ((lp->media == INIT) && (lp->timeout < 0)) {
+>          lp->ibn = 3;
+>         lp->active = *p;
+> +       if (MOTO_SROM_BUG) lp->active = 0;
+>         lp->infoblock_csr6 = OMR_MII_100;
+>         lp->useMII = TRUE;
+>         lp->infoblock_media = ANS;
+>
+> This one was easy. Now for the hard one. :)
+>
+> I'm using a PMC-harddisk based on the CMD-646 chipset (Ramix 233).
+>
+> I installed my system under 2.2.12 with Debian.
+>
+> When I come to the partition check in 2.2.17pre10 it fails with
+> "hda: unknown partition table"
+>
+> I added a printout in drivers/block/genhd.c in msdos_partition()
+>
+> --- genhd.c~    Thu Jul  6 16:01:31 2000
+> +++ genhd.c     Thu Jul  6 16:48:02 2000
+> @@ -522,7 +522,8 @@
+>  #endif
+>         if (*(unsigned short *)  (0x1fe + data) != cpu_to_le16(MSDOS_LABEL_MAGIC)) {
+>                 brelse(bh);
+> -               return 0;
+> +               printk("Data: %x LABEL:%x\n",(*(unsigned short *)  (0x1fe + data)), cpu_to_le16(MSDOS_LABEL_MAGIC) );
+> +               return 0;
+>         }
+>         p = (struct partition *) (0x1be + data);
+>
+>
+> With this I get the following printout:
+> hda:Data: aa55 LABEL:55aa
+>
+> So it seems like the byte order is wrong. Does anyone know why this
+> happens?
+>
+> Please don't tell me my 2.2.12 partitioned disk is wrong. :)
 
---eRtJSFbw+EEWtPj3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+What's your version of fdisk ?
 
-On Thu, Jul 06, 2000 at 01:01:20PM -0400, Peter R. Wood wrote:
->=20
-> Hello,
->=20
-> I've contacted the authors of GAIM regarding this problem, but they don't
-> seem to have a clue about it so I thought I'd submit it here. I'm trying
-> to compile GAIM, the AOL instant messenger clone, from its CVS source.  I
-> get this error during the compile:
-[snip]
+Under 2.2.12 dd if=/dev/hda of=xxx bs=512 count=1 and see what comes out.
+Can PPCBUG actually boot from these disks ?
 
-grr, more va_arg errors :)
+>
+> Where do I go for the best LinuxPPC 2.4 kernel for MVME-boards? Is it
+> fsmlabs Bitkeeper repository?
 
-Attached is a patch that I'll forward onto the maintainer.
+I have 2.4.0-test2 running on an MVME2600, look at:
 
---=20
-Josh
-6B21489A | GnuPG ID/Fingerprint | huber@mclx.com |
-61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
+	ftp://vlab1.iram.es/pub/linux-2.4
 
---eRtJSFbw+EEWtPj3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="gaim.diff"
-Content-Transfer-Encoding: quoted-printable
+did not try the MVME2400 yet (they are all in use for real tasks, I'm
+waiting for more and have to develop on the 16Mb MVME2600 :-(). But I
+only have SCSI disks or NFSRoot.
 
---- oscar.c	Thu Jul  6 13:12:42 2000
-+++ oscar.c.orig	Thu Jul  6 13:11:09 2000
-@@ -534,8 +534,8 @@
- 		userinfo  =3D va_arg(ap, struct aim_userinfo_s *);
- 		msg       =3D va_arg(ap, char *);
- 		icbmflags =3D va_arg(ap, u_int);
--		flag1     =3D (u_short)va_arg(ap, u_int);
--		flag2     =3D (u_short)va_arg(ap, u_int);
-+		flag1     =3D va_arg(ap, u_short);
-+		flag2     =3D va_arg(ap, u_short);
- 		va_end(ap);
-=20
- 		serv_got_im(userinfo->sn, msg, icbmflags & AIM_IMFLAGS_AWAY);
-@@ -624,7 +624,7 @@
- 	info =3D va_arg(ap, struct aim_userinfo_s *);
- 	prof_enc =3D va_arg(ap, char *);
- 	prof =3D va_arg(ap, char *);
--	infotype =3D (u_short)va_arg(ap, u_int);
-+	infotype =3D va_arg(ap, u_short);
- 	va_end(ap);
-=20
- 	if (prof =3D=3D NULL || !strlen(prof)) {
-@@ -655,7 +655,7 @@
- 	va_list ap;
-=20
- 	va_start(ap, command);
--	id  =3D (u_short)va_arg(ap, u_int);
-+	id  =3D va_arg(ap, u_short);
- 	msg =3D va_arg(ap, char *);
- 	va_end(ap);
-=20
-@@ -674,7 +674,7 @@
- 	u_short type;
-=20
- 	va_start(ap, command);
--	type =3D (u_short)va_arg(ap, u_int);
-+	type =3D va_arg(ap, u_short);
-=20
- 	switch(type) {
- 		case 0x0002: {
+I have a 2.2.16 kernel compiled but never booted, I could give you R/O
+access to my BK trees if you want (but the machine on which they are is
+not up 100% of the time).
 
---eRtJSFbw+EEWtPj3--
-
---d01dLTUuW90fS44H
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
-
---d01dLTUuW90fS44H--
+	Gabriel.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
