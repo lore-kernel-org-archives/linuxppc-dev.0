@@ -1,46 +1,24 @@
-From: Steffen Haeuser <SteffenH@hyperion-software.de>
-Reply-To: SteffenH@hyperion-software.de
-To: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org
-CC: Benjamin Herrenschmidt <bh40@calva.net>,
-        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Date: Tue, 25 Jul 2000 20:59:15 -0500
-Message-ID: <yam8241.767.146963968@mail.lf-online.de>
-In-Reply-To: <200007251835.TAA17687@hyperion.valhalla.net>
-Subject: Re: sound again [was: Re: xf4 bug report]
+Message-ID: <397E49E9.482279C7@uncc.edu>
+Date: Tue, 25 Jul 2000 22:16:09 -0400
+From: "William H. Schultz" <whschult@uncc.edu>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Current status on Voodoo3 support?
+References: <200007250500.AAA30416@lists.linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Am 25-Jul-00 schrieb Iain Sandoe:
+Hello all.
 
->Hi Steffen,
+I was just wondering where I can find information on the status of
+Voodoo3 support.  I noticed with my latest rsync of the 2.4.x kernel
+that DRI support finally compiles--but the voodoo3 module still doesn't
+compile.  Having no experience at all in coding drivers, is there
+anything I can do to help out?
 
-Hi!
 
->OK I've done a build - hope it's got enough in it to boot your machine :-)
->it's linked to the page given above along with the modules & system map.
-
-Thanks, I am downloading it right now :)
-
->=====
-
->To find the sound chip info (on my machine) under linux:
-
->cat /proc/device-tree/pci/mac-io/davbus/sound/compatible
-
-The filename is
-
-/proc/device-tree/pci/pci-bridge/mac-io/davbus/sound/compatible
-
-and the file contains
-
-burgundyawacs
-
-if this says anything to you :)
-
-Steffen
-
+Hank
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
