@@ -1,91 +1,92 @@
-Message-Id: <5.1.0.14.2.20030113102943.02685c88@falcon.si.com>
-Date: Mon, 13 Jan 2003 10:40:06 -0500
+Message-ID: <4926614F7A31D411820F00D0B74FF7E0013D1A1D@RDC03>
+From: "Gallant, John" <jgallant@vanteon.com>
 To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-Subject: Re: 8xx SCC and SMC uart latency
-In-Reply-To: <00666C8E.C21188@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: Assistance with using /dev/fb0 and No X windows
+Date: Mon, 13 Jan 2003 11:23:04 -0500
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Your last line on the i386 makes me think you are polling the UART and
-immediately sending back the response.  This is a totally different model
-than what you are running under linux.
+Hello,
 
-You can approach that model under linux only by writing a custom device
-driver that understand your communications protocol and, in the Rx handler,
-processes the received packet, generates data, and queues it to be
-sent.  Of course, this is going to take some effort and has a pretty good
-sized learning curve to climb.  There are some device driver toolkits that
-can help here.
+    I have managed to get the "default" VGA/FB support to access my graphics
+device on the onboard PCI bus.  We a SMI LynxEM chip on the board.  I have
+the vga init() code properly accessing the device and the on chip frame
+buffer.  I have used fbset to determine if /dev/fb0 can be accessed, and the
+driver is called.  I also tried "ls -l > /dev/fb0" this also gets into the
+vga16fb_get_fix() code.
 
-Your 10mSec timeout and 5-8mSec latency numbers sound suspiciously like
-task switch (clock tick) times of 100Hz.  You need to tell us more about
-how your code is structured and what happens along the path from when the
-first byte comes in to when the first byte goes out, including all the
-separate tasks that get involved and how they communicate with each
-other.  As a quick test, increase your kernel clock rate to 1000Hz and see
-if it improves your timings by about 10x.
+    What I need to do, and here is my lack of understanding, is to have some
+program access the /dev/fb0 device and display on the CRT.  I do not have
+any X support, only whatever came with the MVL distribution.  I am wondering
+what is necessary to use mingetty, or some other display method.
 
-gvb
+    Added wrinkles:  No keyboard yet, but I do have the console=ttyS0
+working.
 
+    So any advice on what I could use or what I may have missed in my
+Xconfig settings?
 
-At 04:14 PM 1/13/2003 -0500, wd@denx.de wrote:
+The following is what I have for the CONFIG_FB settings:
+#
+# Frame-buffer support
+#
+CONFIG_FB=y
+CONFIG_DUMMY_CONSOLE=y
+# CONFIG_FB_RIVA is not set
+# CONFIG_FB_CLGEN is not set
+# CONFIG_FB_PM2 is not set
+# CONFIG_FB_PM3 is not set
+# CONFIG_FB_CYBER2000 is not set
+# CONFIG_FB_CT65550 is not set
+# CONFIG_FB_IMSTT is not set
+CONFIG_FB_VGA16=y
+# CONFIG_FB_MQ200 is not set
+# CONFIG_FB_MATROX is not set
+# CONFIG_FB_ATY is not set
+# CONFIG_FB_RADEON is not set
+# CONFIG_FB_ATY128 is not set
+# CONFIG_FB_SIS is not set
+# CONFIG_FB_3DFX is not set
+# CONFIG_FB_VOODOO1 is not set
+# CONFIG_FB_IT8181 is not set
+CONFIG_FB_VIRTUAL=y
+CONFIG_FBCON_ADVANCED=y
+# CONFIG_FBCON_MFB is not set
+# CONFIG_FBCON_CFB2 is not set
+# CONFIG_FBCON_CFB4 is not set
+# CONFIG_FBCON_CFB8 is not set
+# CONFIG_FBCON_CFB16 is not set
+# CONFIG_FBCON_CFB24 is not set
+# CONFIG_FBCON_CFB32 is not set
+# CONFIG_FBCON_AFB is not set
+# CONFIG_FBCON_ILBM is not set
+# CONFIG_FBCON_IPLAN2P2 is not set
+# CONFIG_FBCON_IPLAN2P4 is not set
+# CONFIG_FBCON_IPLAN2P8 is not set
+# CONFIG_FBCON_MAC is not set
+CONFIG_FBCON_VGA_PLANES=y
+CONFIG_FBCON_VGA=y
+# CONFIG_FBCON_HGA is not set
+# CONFIG_FBCON_FONTWIDTH8_ONLY is not set
+# CONFIG_FBCON_FONTS is not set
+CONFIG_FONT_8x8=y
+CONFIG_FONT_8x16=y
 
->Dear Eli,
->
->in message <75DF04AC5ED4D511A9810090273CB4163A66F0@ROKONET-E> you wrote:
-> >
-> > We have a device that communicates over RS232 at 9600 bps.  This device has
-> > a 4 mSec timeout, i.e we have to reply in less then 4mSec.
->
->Which parts of your software are included in this timeout?
->
->Do you mean something like that:
->
->* driver receives data
->* application reads data from driver
->* application generates response
->* application writes response to driver
->* driver sends data
->
->?
->
-> > The packets are usually small (4-6 Bytes).  We communicate successfully
-> with
-> > the device, but only if we change the timeout to above 10mSec.
-> > It seems that it takes 5-8 mSec for us to reply.  This is the same if
-> we use
->
->You might try to run your code with LTT instrumentation so  that  you
->can  see  where  it  takes  the  time.  I  guess  it's just that your
->application takes that long before it gets scheduled.
->
-> > SMC or SCC.  We tried to play with the MAX_IDL and the Tx/Rx buffer sized,
-> > but with no success.
-> >
-> > Has anyone an idea on how to minimize the uart latency?
->
->I don't think that this has anything to do with the UART driver.
->
-> > If we use the same code on a PC (i386) we reply in 300 microSec.
->
->If you have to guarantee a response time, you will have  to  consider
->using a real-time extension like RTAI. The standard Linux kernel does
->not guarantee any latencies.
->
->Best regards,
->
->Wolfgang Denk
->
->--
->Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
->Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
->You can love it, change it, or leave it.    There is NO other option.
->But do not complain - it is your own choice...                  -- wd
->
+Thank you
+
+--------------------------------------------
+John A. Gallant
+Sr. Embedded Software Engineer
+Vanteon Inc.
+2851 Clover Street
+Pittsford, NY 14534
+Phone: 585.248.0510 x279
+Fax  : 585.248.0537
+email: jgallant@vanteon.com
+web: www.vanteon.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
