@@ -1,32 +1,44 @@
-Message-ID: <3C41F3C2.E35D4E2C@attbi.com>
-Date: Sun, 13 Jan 2002 12:53:24 -0800
-From: C S Rosenmund <gnuman@attbi.com>
-MIME-Version: 1.0
+From: k_fukui@highway.ne.jp
+Message-Id: <200201132108.GAA26379@mail.highway.ne.jp>
+Date: Mon, 14 Jan 2002 06:05:15 +0900 (JST)
+Subject: problem prom.c
 To: linuxppc-dev@lists.linuxppc.org
-Subject: A few questions on older Macintosh Powerbooks
-Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Would someone tell me what the latest monolithic kernel and patch
-available for a NuBus PPC would be and where they can be found? I'm
-working with the 2.4.5 sources (and the patch-2.4.5-Nubus patch), and it
-works *almost*. . .
+Hi! Ben.
 
-If that is the latest, is there an expansion bay patch available, and if
-so, where?
-same question concerning the PCMCIA services. . .
+I got a compilation problem from your rsync tree(2.4.18.pre3).
 
-Hardware in question is a PowerBook 1400c
+Here is the error message.
+I have questioon which is the patch correct?
 
-OS I'm using is Debian-PPC 2.2
+Kaoru
 
-any reference material you could send me would be greatly appreciated.
-Thanks in advance.
+gcc -D__KERNEL__ -I/usr/src/redhat/BUILD/linux/include -Wall -Wstrict-prototypes -Wno-trigra -fomit-frame-pointer -fno-strict-aliasing -fno-common -D__powerpc__ -fsigned-char -msoft-flpe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring   -DKBUILD_BASENAME=prom  -c -o prom.o
+prom.c: In function `prom_hold_cpus':
+prom.c:300: `offset' undeclared (first use in this function)
+prom.c:300: (Each undeclared identifier is reported only once
+prom.c:300: for each function it appears in.)
+make[1]: *** [prom.o] Error 1
+make[1]: Leaving directory `/usr/src/redhat/BUILD/linux/arch/ppc/kernel'
+make: *** [_dir_arch/ppc/kernel] Error 2
+error: Bad exit status from /var/tmp/rpm-tmp.55016 (%build)
 
-Sanjay
-gnuman@attbi.com
-gnuman0@pacbell.net
+diff -urN base/arch/ppc/kernel/prom.c fixed/arch/ppc/kernel/prom.c
+--- base/arch/ppc/kernel/prom.c	Fri Jan 11 22:40:35 2002
++++ fixed/arch/ppc/kernel/prom.c	Mon Jan 14 05:50:14 2002
+@@ -280,6 +280,7 @@
+ {
+ 	extern void __secondary_hold(void);
+ 	unsigned long i;
++	unsigned long offset = reloc_offset();
+ 	int cpu;
+ 	phandle node;
+ 	char type[16], *path;
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
