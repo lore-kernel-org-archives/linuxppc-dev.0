@@ -1,19 +1,23 @@
-Return-Path: <Alexander.Povolotsky@marconi.com>
-Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
-	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id 691E72BF0E
+Return-Path: <msuresh@gamebox.net>
+Received: from smtp-out.hotpop.com (smtp-out.hotpop.com [38.113.3.71])
+	by ozlabs.org (Postfix) with ESMTP id 44ADC2BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 25 Dec 2004 04:05:54 +1100 (EST)
-Message-ID: <313680C9A886D511A06000204840E1CF0A647403@whq-msgusr-02.pit.comms.marconi.com>
-From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-To: "'Tom Rini'" <trini@kernel.crashing.org>,
-	"'dan@embeddededge.com'" <dan@embeddededge.com>
-Date: Fri, 24 Dec 2004 12:05:36 -0500
+	Sat, 25 Dec 2004 20:07:02 +1100 (EST)
+Received: from gamebox.net (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 4C32712E4CFF
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 25 Dec 2004 08:38:33 +0000 (UTC)
+Received: from [192.168.0.7] (unknown [61.247.252.55])
+	by smtp-3.hotpop.com (Postfix) with ESMTP id C100F12DCE27
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 25 Dec 2004 08:38:16 +0000 (UTC)
+Message-ID: <41CD26B8.10903@gamebox.net>
+Date: Sat, 25 Dec 2004 14:07:12 +0530
+From: Suresh Chandra Mannava <msuresh@gamebox.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Subject: seeking advise on porting custom PPC  platform (in my case it is
-	variant of 8xx ) from Linux 2.4.(.26) to Linux 2.6(.10-rc3)
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: kernel for MPC8260 SBC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,20 +30,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi,
 
-In Linux 2.6 I see the new directory arch/ppc/syslib, which does not exist
-in Linux 2.4(.26).
-I would GREATLY APPRECIATE if Tom or Dan (or someone else) could explain
-what are the reasons for creating this new directory and describe on what
-basis existing
-Linux 2.4 files went there and why  ... 
-and if there any new files (vs Linux 2.4) were created in that new directory
-?  
+We developed a SBC based on MPC8260. We are planing to port Linux on it.
+I downloaded mpc8260 cross compiling tools from denx.de.
 
-In general, I am seeking advise on porting PPC platform
-(in my case it isvariant of 8xx ) from Linux 2.4.(.26) to Linux
-2.6(.10-rc3).
- Did anyone created howto document on this subject ?
+I started cross-compiling linux-2.4.4.
+The problem is
+I am not able to compile kernel. 8260 specific files in arch/ppc are not 
+compiling due to not inclusion of
+"bd_t" structure. I Included the file "asm-ppc/bseip.h".
+Still encountering many errors.
 
-Thanks,
+I even tried with linux-2.4.20 and encountered the same problems.
+Is there any patch required for compiling the kernel cleanly.
 
-Alex
+or
+I may need to provide board specific information in the form of header 
+files?
+
+Please provide pointer to the sutiable kernel along with patch.
+
+We have configured serial port on SMC. For SMC, CPM is required.
+But there is no option in the kernel to select SMC for serial port.
+
+please educate me on the above issue.
+
+Thanks & Regards,
+
+Suresh Chandra Mannava
