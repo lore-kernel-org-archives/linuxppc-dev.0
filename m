@@ -1,33 +1,37 @@
-Content-Type: text/plain
-MIME-Version: 1.0
-Message-ID: <7T989269826170.02006@webmail4.inner-21cn.com>
-Date: Mon, 30 Jul 2001 17:38:29 +0800 (CST)
-From: "yah" <hay8888@21cn.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: 
-Subject: rebuild kernel
+Date: Tue, 31 Jul 2001 00:21:16 -0700 (PDT)
+From: James F Dougherty <jfd@GigabitNetworks.COM>
+Message-Id: <200107310721.AAA02898@krakatoa.gigabitnetworks.com>
+To: mgreer@mvista.com, trini@kernel.crashing.org,
+	jfd@GigabitNetworks.COM
+Subject: HHL 2.0 login problem
+Cc: jfd@GigabitNetworks.COM, linuxppc-embedded@lists.linuxppc.org,
+	ppcboot-users@lists.sourceforge.net
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-I use powerpc-linux-gcc to rebuild my kernel--linux-2.4.6.tar.gz. When I 'make
-zImage', it has following error:
+Anyone know what is wrong here? Perhaps my dev tree is not
+configured correctly, or there is some missing file?
 
-pmac_pci.c:In function 'init_bandit':
-pmac_pci.c:252: 'PCI_VENDOR_ID_APPLE_BANDIT' undeclared (firest use in this function)
-pmac_pci.c:252:(Each undeclared identifier is reported only once
-pmac_pci.c:252:for each function it appears in.)
-make[1]:***[pmac_pci.o] Error1
-make[1]:Leaving directory '/usr/local/linux/arch/ppc/kernel'
-make: ***[_dir_arch/ppc/kernel] Error 2
 
-I use CDK1.2 made in mvista,and rebuild kernel for MCP750 board. Please give me some advices.Thanks.
--------------------------------
-抢注商务邮，手机到我手
-http://enterprise.21cn.com/game/
-华中科技大学项目管理研究生课程班（广州）招生，29日截止！
-http://learning.21cn.com:8080/peixun/detail_course.php?id=5502
 
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 84k init 4k openfirmware
+modrs_close: bad serial port count; tty->count is 1, state->count is 2
+probe: modprobe: Can't open dependencies file
+/lib/modules/2.4.2_hhl20/modules.dep (No such file or directory)
+INIT: version 2.78 booting
+eth0: Setting full-duplex based on MII#0 link partner capability of 45e1.
+INIT: Entering runlevel: 2
+
+mousse login: root
+
+PAM_unix[14]: (login) session opened for user root by (uid=0)
+login[14]: unable to change tty `/dev/console' for user `root'
+Unable to change tty /dev/console: Illegal seek
+
+mousse login:
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
