@@ -1,30 +1,29 @@
-Date: Thu, 13 Jun 2002 08:43:55 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Stefan Roese <stefan.roese@esd-electronics.com>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PPC405GPr support patch (and a small CPCI405 update)
-Message-ID: <20020613154355.GR13541@opus.bloom.county>
-References: <EFEAIMDCOOOHIEPHDNFJCEAKEBAA.stefan.roese@esd-electronics.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <EFEAIMDCOOOHIEPHDNFJCEAKEBAA.stefan.roese@esd-electronics.com>
+Message-ID: <3D08E0CD.4040806@pacbell.net>
+Date: Thu, 13 Jun 2002 11:13:33 -0700
+From: Armin <akuster@pacbell.net>
+MIME-Version: 1.0
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Paul Mackerras <paulus@samba.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: First cut at large page support on 40x
+References: <20020531042153.GD16537@zax> <3CFC0D3F.9030901@embeddededge.com> <20020604035947.GH2762@zax> <3CFCFC20.80101@embeddededge.com> <15614.37065.549142.218906@argo.ozlabs.ibm.com> <3CFEE9A3.5060300@embeddededge.com> <15614.63160.272890.683586@argo.ozlabs.ibm.com> <3CFF1624.2070808@embeddededge.com> <20020612035203.GQ25800@zax> <3D06E702.4000709@embeddededge.com> <20020612064344.GT25800@zax>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Jun 13, 2002 at 05:00:50PM +0200, Stefan Roese wrote:
+David Gibson
+>
+> Heh, so instead we got a half-assed re-implementation (with a whole
+> bunch of extraneous pointless crap) in the form of the OCP layer.
+>
 
-> By the way:
-> Upon looking into cputable.c I noticed that all NP4xx ppc's have the wrong
-> cache line size configured (total cache size in kB instead of cache line
-> size). May this cause some problems?
+Crap...this pointless crap has made it easier to add driver support to
+new IBM 4xx processors. And the Idea goes beyond PPC :)  Cosmetic
+changes don't help make things not half-assed and mature.  Flushing the
+idea, API's and usage does.
 
-Well, if glibc ever makes use of those entries (see
-http://bugs.debian.org/100657) it might.  But for now, iirc it's
-probably harmless.  Patches accepted of course.
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+  armin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
