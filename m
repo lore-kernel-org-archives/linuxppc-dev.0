@@ -1,41 +1,50 @@
 Mime-Version: 1.0
-Message-Id: <v0420553fb3abf4c843cd@[206.163.71.146]>
-In-Reply-To: 
- <Pine.LNX.3.96.990709020727.21556D-200000@newhope.terraplex.com>
-References: 
- <Pine.LNX.3.96.990709020727.21556D-200000@newhope.terraplex.com>
-Date: Fri, 9 Jul 1999 11:58:42 -0700
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <v04020a02b3ac45cbc4ab@[192.168.0.2]>
+In-Reply-To: <8xyagpbzxm.fsf@s53.informatik.uni-bremen.de>
+References: Mike DeSimone's message of Fri, 9 Jul 1999 08:04:03 -0500
+ Sacha Varma's message of Fri, 09 Jul 1999 12:29:35 +0100
+ <3785DD1F.B853E731@ssl.co.uk> <v04020a00b3aba2034899@[192.168.0.2]>
+Date: Fri, 9 Jul 1999 19:41:36 -0500
 To: linuxppc-dev@lists.linuxppc.org
-From: Joel Klecker <jk@espy.org>
-Subject: Re: QuickTime Streaming Server for Linux.. on x86
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+From: Mike DeSimone <Hot-Wire@mail.utexas.edu>
+Subject: Re: altivec
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 02:34 -0600 1999-07-09, Dan Burcaw wrote:
->--- StreamingServer-2/RhapServer/UDPSocket.cpp.o	Fri Jul  9 
->02:05:48 1999
->+++ StreamingServer-2/RhapServer/UDPSocket.cpp	Fri Jul  9 02:07:41 1999
->@@ -40,7 +40,11 @@
-> #endif
->
-> #if __linux__
->+#if __GLIBC__ >= 2
->+#include <bits/socket.h>
->+#else
-> #include <socketbits.h>
->+#endif
+>Well, if you do instruction-by-instruction emulation, the iteration count is
+>at most 16 (16 bytes in a vector). Furthermore, the overhead of a context
+>switch into privileged mode and back again is not negligible (at the very
+>least a pipeline flush and some saving/restoring of registers). Finally,
+>keeping the emulated vector registers somewhere in memory means that you will
+>quite often be limited by the availability of 'only' one load/store unit.
 
-Ugh, that is so wrong it's not even funny, both of those are internal 
-headers to glibc, and should not be included directly. The portable 
-way is <sys/socket.h> (which in the glibc implementation includes the 
-appropriate internal header). Whoever's responsible for the linux 
-patches ought to be shot.
--- 
-Joel Klecker (aka Espy)                    Debian GNU/Linux Developer
-<URL:mailto:jk@espy.org>                 <URL:mailto:espy@debian.org>
-<URL:http://web.espy.org/>               <URL:http://www.debian.org/>
+That's true, I forgot about the 16 byte limit.  That will really make the
+overhead significant.  Kind of annoying to me (my typical vector length is
+over 900).  Maybe having two libraries is the way to go, then...
+
+>> I'm also wondering what has been done on this issue on the Intel side of
+>> the fence, since KNI and 3Dnow! are similar to Altivec in concept and, at
+>> least for 3Dnow!, implementation.
+>>
+>Similar? Please forgive my ranting, but AltiVec is feature-complete,
+>orthogonal, and implemented without compromises. MMX, 3DNow!, and ISSE have
+>none of the above three qualities. They were available sooner, but that's
+>about it.
+
+That's why I said "similar in concept" ... not execution.  And I said KNI
+(the PIII new instructions), not MMX, which is integers only.  (Also why I
+didn't mention Sun's VIS).
+_________________________________________________________________________
+                                __________
+##   ##   ###   #####   #####   \********/   #####    ###    ##### ######
+### ###  ## ##  ##  ## ##        \*/\/\*/    ##  ##  ## ##  ##     ##
+#######  ## ##  #####   ####       /\/\      #####   ## ##   ####  ####
+## # ## ####### ##  ##     ##      \**/      ##  ## #######     ## ##
+##   ## ##   ## ##  ## #####        \/       #####  ##   ## #####  ######
+_________________________________________________________________________
+### Mike DeSimone ### Hot-Wire@mail.utexas.edu ### ares.marsbase.mars ###
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
