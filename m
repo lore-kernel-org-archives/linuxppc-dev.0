@@ -1,39 +1,33 @@
-Subject: Re: boot methods
+Subject: Re: VGA out on ibook2
 From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-To: paulus@samba.org
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <15302.40082.869098.88039@cargo.ozlabs.ibm.com>
-References: <15302.40082.869098.88039@cargo.ozlabs.ibm.com>
+To: Paulo Abreu <paulotex@yahoo.com>
+Cc: linuxppc-dev@lists.linuxppc.org, guile@mac.com
+In-Reply-To: <20011012083602.385%96000@smtp.netc.pt>
+References: <200110120459.XAA10187@lists.linuxppc.org>
+	<20011012083602.385%96000@smtp.netc.pt>
 Content-Type: text/plain; charset=ISO-8859-1
-Date: 13 Oct 2001 13:01:59 +0200
-Message-Id: <1002970919.7091.1849.camel@pismo>
+Date: 13 Oct 2001 13:05:24 +0200
+Message-Id: <1002971124.7091.1880.camel@pismo>
 Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2001-10-12 at 09:32, Paul Mackerras wrote:
+On Fri, 2001-10-12 at 09:36, Paulo Abreu wrote:
 >
-> I would like to make a complete list of the methods people use to boot
-> the PPC/Linux kernel on different platforms.  As a start, here is what
-> I can think of off the top of my head:
+> Linux PPC Developer Digest wrote:
+> >Hi
+> >	I'm trying to use the external VGA connector on an ibook2 (the white
+> >one) with the benh utility m3mirror and, after turning crt on, the
+> >screen on the monitor looks "wavy" and unusable.
+> >	Anybody could guide me to solve this problem?
 >
-> Powermac:
-> 	vmlinux loaded with BootX
-> 	vmlinux loaded with quik
-> 	vmlinux loaded with yaboot
-> 	vmlinux.coff loaded via OF netboot
-> 	vmlinux.elf-pmac loaded via OF (disk or net boot)
->
-> RS/6000 CHRP:
-> 	vmlinux loaded with yaboot
-> 	zImage.chrp-rs6k loaded via OF netboot
->
-> RS/6000 43p-140:
-> 	zImage.prep loaded via OF (floppy or hard disk)
+> Same problem here. If I include the crt:1 option in the kernel booting
+> options, the waves dissapear and the console looks good, but the X
+> colors are all wrong. Looks like the crt is in 8bpp while X and the lcd
+> are in 16bpp. Tried this with 2.4.10-ben0.
 
-APUS:
-	vmlinux loaded with boothack (from AmigaOS)
+Do you use Option "UseFBDev" in X?
 
 
 --
