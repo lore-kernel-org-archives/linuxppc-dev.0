@@ -1,42 +1,30 @@
-Date: Thu, 1 Jul 2004 08:24:49 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: "Mark A. Greer" <mgreer@mvista.com>,
-	linux-emb <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: mv6360 support in mv64x60.c (was Re: GT64260_eth (Ethernet) Driver)
-Message-ID: <20040701082449.A9754@home.com>
-References: <40E1E94B.9060204@mvista.com> <1088691201.14216.2977.camel@hades.cambridge.redhat.com>
+Subject: Re: getting support for command-line flash partitioning
+From: David Woodhouse <dwmw2@infradead.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <Pine.LNX.4.60.0407011037010.15415@localhost.localdomain>
+References: <Pine.LNX.4.60.0407011037010.15415@localhost.localdomain>
+Content-Type: text/plain
+Message-Id: <1088695697.14216.3060.camel@hades.cambridge.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1088691201.14216.2977.camel@hades.cambridge.redhat.com>; from dwmw2@infradead.org on Thu, Jul 01, 2004 at 03:13:21PM +0100
+Date: Thu, 01 Jul 2004 16:28:18 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Jul 01, 2004 at 03:13:21PM +0100, David Woodhouse wrote:
-> ∃ an Ethernet driver for the MV64340 (the MIPS version of the chip). It
-> doesn't use OCP though -- there's no OCP on MIPS. Can someone explain
-> why OCP is used instead of the generic platform_device functionality
-> provided by the kernel? Should we convert MIPS to OCP?
+On Thu, 2004-07-01 at 10:45 -0400, Robert P. J. Day wrote:
+>    so how is this being added to the files?  as in, who will add this
+> feature to the individual files, and get it pushed upstream, if that's
+> what's going to happen?  just curious as to how this feature will
+> eventually end up in the mainstream.
 
-OCP is used because it is simply wrapping a standard API around a
-standard LDM "bus".  platform devices try to make non-hardware-scan
-capable devices a special case.  OCP provides a standard way to get
-at all platform specific information that a driver needs rather
-than just a few things like platform devices currently do
-(io, mem, irq resources).
+The owner of each board support ('map') file is expected to make sure
+that it's kept up to date in my CVS tree. Periodically I push updates to
+Linus, although individuals are welcome to send their own changes to
+Linus as soon as they're committed to CVS too.
 
-One of the goals is to extend to allow hierarchical PM and hotplug
-in OCP, its a standard bus now, but it's a flat list of devices
-on the "bus".  In reality, SoCs that have internal PM/hotplug
-capabilities have a hierarchical set of buses that should be
-represented to properly manage this. Eventually, the idea is
-to have OCP instantiate a tree of these dumb devices.
+--
+dwmw2
 
-"We" should probably convert MIPS, ARM, SH, etc. to OCP, but
-it only recently got rewritten (it's been around for ages in
-PPC) in 2.4 and ported to 2.6.
-
--Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
