@@ -1,34 +1,33 @@
-Date: Wed, 28 Jan 2004 00:36:22 +0100
-From: Giuliano Pochini <pochini@shiny.it>
-To: LinuxPPC-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: [PATCH] simple fix
-Message-Id: <20040128003622.4c0a7917.pochini@shiny.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <4016F99E.6080104@g-house.de>
+Date: Wed, 28 Jan 2004 00:51:58 +0100
+From: Christian Kujau <evil@g-house.de>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: linux-2.4-benh compiling error
+References: <4016760E.50009@g-house.de> <20040127194022.GA646@kimdon.org>
+In-Reply-To: <20040127194022.GA646@kimdon.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Small patch against linuxppc-2.5-benh rsync tree pulled half hour ago (GMT+1).
 
+David Kimdon wrote:
+| I don't know what your build system is, but I had the same error on
+| Debian unstable, the bug (and a patch) is here:
+|
+| http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=228852
 
---- fs/hfs/extent.c_old Wed Jan 28 00:31:30 2004
-+++ fs/hfs/extent.c     Wed Jan 28 00:31:56 2004
-@@ -470,8 +470,8 @@
-        if (inode->i_size > HFS_I(inode)->phys_size) {
-                struct address_space *mapping = inode->i_mapping;
-                struct page *page;
--               size = inode->i_size - 1;
-                int res;
-+               size = inode->i_size - 1;
+yes, Debian/unstable here, and it really seems to be that very bug you
+pointed out. it´s even said to be fixed in the latest version of
+console-tools, so i´ll have to wait until it hits my mirror of choice.
 
-                page = grab_cache_page(mapping, size >> PAGE_CACHE_SHIFT);
-                if (!page)
+Thanks!
+Christian.
 
+- --
+BOFH excuse #69:
 
-
---
-Giuliano.
-
+knot in cables caused data stream to become twisted and kinked
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
