@@ -1,42 +1,36 @@
-Date: Fri, 25 Jun 1999 10:57:34 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@mvista.com>
-To: "Kevin B. Hendricks" <kbhend@business.wm.edu>
-cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org,
-        "Conrad M. Hirano" <placebo2@pobox.com>
-Subject: Re: Machine Check in Kernel Mode with Paul's 2.2.10 on B+W G3
-In-Reply-To: <v03110702b399351bdfdd@[209.183.128.103]>
-Message-ID: <Pine.LNX.3.96.990625105241.20726O-100000@mvista.com>
+Date: Fri, 25 Jun 1999 14:33:23 -0400 (EDT)
+From: Colin Fredericks <fredec@rpi.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: iMac sound problems
+Message-ID: <Pine.A41.3.96.990625141549.25298A-100000@cortez.sss.rpi.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 25 Jun 1999, Kevin B. Hendricks wrote:
+Hi everyone.  I currently have LinuxPPC R5 installed on my rev. A iMac
+(233 Mhz processor, 6 megs of VRAM (upgraded from 2), 96 megs of ram). 
+I've had a few problems (to be expected), but only one that I felt I
+should bring to the developer list: 
 
-> I know what DMA mode is and how it works, but I don't know what PIO mode
+Sound in the basic setup is bletcherous.
 
-Polled (Programmed) I/O.  It means no DMA and no interrupts.  Just raw
-hardware access, complete with the need for predictable timing and
-interrupts turned off, generally.  It's really not suitable for anything
-beyond testing to see if the drive supports DMA and for early bootstrap
-before interupts are turned on.  I would expect a massive performance hit. 
-There's a happy medium in there somewhere, though.  It should be possible
-to do interrupt driven IDE w/o DMA.  It probably would require a driver
-hack, though.
+Something (whether it be in KDE or Enlightenment or something more basic) 
+is trying to write sound directly to my speakers. It ignores any line-out
+or headphones plugged in.  System and error sounds create the same kind of
+beautiful sound you get when trying to shift into reverse from 3nd gear
+because you overshot 4th gear. This happens about 80% of the time, with
+the system sounds continuing to play even after the "enable sound in
+Enlightenment" and "KDE sounds" are turned off.
 
-> is?  What impact on MacOS performance will moving the cable have?  Isn't
-> DMA mode the fastest way to transfer blocks of data to and from memory?
-> Will PIO mode have much of a performance penalty (I have to use this
-> machine under MacOS as much or more than I do under LinuxPPC).
+Such applications as x11amp do read MP3's correctly, and play correctly.
+However, they also write directly to the speakers. :(
 
-I would imagine that the performance impact would be dramatic.  I could be
-wrong, though.  The G3 and its busses might be fast enough to not be
-horrible at PIO.  No way to know w/o trying it, I suppose.
+I'm not on the list, so anyone with suggestions should e-mail me at
+fredec@rpi.edu. Thanks for everyone's work with LinuxPPC - great product.
 
-
-Later,
-David
+		-Colin Fredericks
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
