@@ -1,27 +1,19 @@
-Date: Fri, 3 Aug 2001 10:02:51 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Hollis Blanchard <hollis@austin.ibm.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] IBM PReP power down
-Message-ID: <20010803100251.A20944@opus.bloom.county>
-References: <20010803114608.A9987@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010803114608.A9987@austin.ibm.com>
+MIME-Version: 1.0
+Subject: I2O driver for PPC platform
+Content-Type: text/plain;
+	charset="gb2312"
+Date: Fri, 3 Aug 2001 19:04:26 +0100
+Message-ID: <EB0AF92C5F6B6B45A3EC7A2608347EC0082115@CORK-DC1.raidtec.ie>
+From: "Charles Feng" <Charles.Feng@raidtec.ie>
+To: <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Aug 03, 2001 at 11:46:08AM -0500, Hollis Blanchard wrote:
+Hi guys,
+	Does anybody know if Linux I2O driver works on PPC platform? Has
+anybody worked on this? Thanks!
 
-> The patch is against _2_4, but applies with slight offsets to _2_4_devel as
-> well. Please commit to both?
-
-It currently fails on 2_4, and it's the big hunk too.  Also, can't
-utah_sig87c750_setbit be 'static'?  Aside from that it looks good..
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Charles
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
