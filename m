@@ -1,64 +1,80 @@
-Date: Mon, 27 Mar 2000 12:38:57 +0200 (MET DST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-cc: Michel Dänzer <michdaen@iiic.ethz.ch>, Gabriel Paubert <paubert@iram.es>,
-        Benjamin Herrenschmidt <bh40@calva.net>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: LongTrail PCI resource assignment
-In-Reply-To: <Pine.LNX.4.10.10003271147390.31775-100000@opal.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.GSO.4.10.10003271235360.11532-100000@dandelion.sonytel.be>
+Date: Mon, 27 Mar 2000 14:09:03 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Kevin Hendricks <khendricks@ivey.uwo.ca>
+cc: Ani Joshi <ajoshi@shell.unixbox.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Some issues to resolve with XFree 4.0 yet
+In-Reply-To: <00032519041300.00635@localhost.localdomain>
+Message-ID: <Pine.LNX.4.21.0003260204250.15969-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 27 Mar 2000, Michael Schmitz wrote:
-> > > Applying Geerts patch (minus the PCIBIOS_MIN_MEM patch) plus the following
-> > > one solves my PCI address conflict for the Mach64 by reallocating the MMIO
-> > > aperture, and allows XFree86 4.0 to run on my Lombard.
-> >
-> > Great news! So how does it compare to 3.3.x for you?
+On Sat, 25 Mar 2000, Kevin Hendricks wrote:
+
+> Hi Kostas,
 >
-> It feels a lot slower (15/16 bpp as fast as 32 before), 16 bpp have messed
-> up color (green too bright, maybe 565 is wrong after all), 32 bpp fails to
-> start (no screen found, weight 000 inconsistent with depth 32).
+> Okay, with the patch I posted last night for setting crtc.pitch in aty128fb.c,
+> mode switching now works fine but the "panning" ioctl is on the "todo" list yet.
+> Thanks to Geert for pointing out you can't change virtual resolutions on the
+> fly with XFree (I was about to try! ;-)
+>
 
-16 bpp (depth 15) is 555 on the Mach64. Feel free to add support for 565 (depth
-16).
+  The aty128fb in the linus 2.3.x tree has panning working so you can try
+that and see if its working ok.
 
-> I need to figure out what the pixel format for 16 and 32 bpp really is.
-> Currently the X server refuses to start up if the RGB weights don't add up
-> to the screen depth, and depth 32 isn't supported at all. 24 bpp works but
-> it's really slower than 32 bpp before. Plus the X server refuses to
-> cooperate with xscreensaver and consistently kicks me out after 10
-> minutes.
+> You then asked me to look at getting it to work without using the FBDev.  Given
+> my earlier patch which calculates XCLK using OF supplied values in the pll
+> registers, all you need to do to use it without FBDev is to simply comment out
+> the calls to vgaHWSave and vgaHWRestore in r128_driver.c.
+>
 
-32 bpp (depth 24) is 888.
+  You will also need to add code to switch the framebuffer in the right
+endian for the depth and probably disable the int10 module.
 
-> Even with not loading the more arcane extensions the X server weighs in at
-> 21 MB (I recall 17 or so before), that might explain the slowdown a bit.
+> >From that point on, everything works like a charm.
+>
+> My question is as follows, under ppc should we ever be doing anything with
+> vgaHWSave and vgaHWRestore.  Can I simply ifdef them out for all __powerpc__
+> machines?
+>
 
-Does it use shadowfb? And extra copy of the screen image would explain some of
-the memory requirements.
+  vgahw will not work under powerpc right now (iobase and vga memory aren't
+handled right), once its working it will probably be usefull for prep/chrp
+but for now you have to disable it.
 
-BTW, you don't want to know about the resource consumption of Xsun on the
-Ultra-10 at work.
+> If not, is there any way to determine under which powerpc machines that an r128
+> card actually can use vgaHWSave and vgaHWRestore.
+>
 
-> Need to work on the accelerated Mach64 driver perhaps.
+  Thats a good question, right now they don't work at all under ppc for
+drivers that don't switch vgahw to MMIO.
 
-YES! ;-)
+> I think the only outstanding issue on r128 is the damn flashing white square
+> when cursor images are changed.  I have looked and looked at this but I can't
+> figure out why this is happening unless a big white square is someone's
+> idea of a transparent cursor! ;-)
+>
+  This is strange, from what i see in the driver it hides the cursor before
+loading the image so i can't imagine why you get the artifacts
 
-Gr{oetje,eeting}s,
+> I have to start spending time on some other projects for awhile (i.e. real
+> life research project that needs to get underway) so I wanted to wrap things up
+> with the r128 driver for awhile.
+>
+> If and when I get some time, I would be happy to take a shot at taking the r128
+> source and making it a mach64 source just in case you think that would be of
+> use (i.e. someone else hasn't done that yet and the old ati driver has not been
+> converted to work yet).
+>
 
-						Geert
+  There is an ati driver in 4.0 (not accelerated much though) it just needs
+fbdev support and prabably some endian changes before its usable under ppc,
+it shouln't be much harder than what you did to add fbdev support in r128
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+   Kostas
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
