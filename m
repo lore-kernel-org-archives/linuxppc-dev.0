@@ -1,41 +1,60 @@
-Message-ID: <003101bff189$9ac1f800$084da8c0@uranus>
-From: "Heiko Jakob" <buffalo@the7lg.de>
-To: "Neil Russell" <caret@c-side.com>, "David Riley" <oscar@the-rileys.net>,
-        <linuxppc-dev@lists.linuxppc.org>,
-        "Timothy A. Seufert" <tas@mindspring.com>
-References: <39FB3C16.3359BC41@the-rileys.net><20001028172451.A10220@lx.c-side.com> <v04220803b622eb4a1108@[10.0.0.42]>
-Subject: Re: PPC byte ordering
-Date: Wed, 19 Jul 2000 15:59:43 +0200
+Date: Fri, 29 Sep 2000 23:18:28 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Petr Vandrovec <VANDROVE@vc.cvut.cz>
+cc: Benjamin Herrenschmidt <bh40@calva.net>,
+        Jon Erick Ween <jween@som.llu.edu>, linuxppc-dev@lists.linuxppc.org,
+        linux-fbdev@vuser.vu.union.edu, toe@unlserve.unl.edu
+Subject: Re: [linux-fbdev] Re: Xfree86-4.0.1, Lombard, Mach64 driver
+In-Reply-To: <8876DA34084@vcnet.vc.cvut.cz>
+Message-ID: <Pine.LNX.4.10.10009292312220.383-100000@cassiopeia.home>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> At 5:24 PM -0700 10/28/00, Neil Russell wrote:
+On Fri, 29 Sep 2000, Petr Vandrovec wrote:
+> On 29 Sep 00 at 13:05, Geert Uytterhoeven wrote:
+> > The main thing we need to be careful about is that the xor mask is different
+> > for truecolor and directcolor visuals: truecolor needs an `all ones' mask,
+> > while directcolor needs `15' for each color component (drivers that incorrectly
+> > report a directcolor instead of truecolor visual will easily be identified).
 >
-> >It would in theory be possible to have the kernel run big-endian as it is
-> >and have certain user programs run little endian by setting the LE bit in
-> >the MSR register for the process in question.  The real problem here is
-> >that you have to add a *lot* of code to system calls to make this work.
-> >There are a few system calls that this would be real difficult, such
-> >as ioctl().  I once looked into doing this for the MIPS with SVR4 UNIX.
->
-> The other real problem is that Linus Torvalds has already said that
-> he will never ever in a million years accept a patch which attempts
-> to do such a thing, so you'd have to fork the kernel to do it.
-> According to Linus, architectures are either big or little-endian,
-> not both.  A sane position considering the syscall ugliness you
-> mention
+> What about killing directcolor completely, and using directcolor capable
+> hardware as truecolor one with per-fb global gamma correction table?
+> (as windows do...)
 
-How do the linux-mips people handle with big- and  little-endian code ?
-Maybe they know a good solution, which allows both big- and little-endian
-code to execute.
-The PPC is big-endian by nature, and what for we do need little-endian code
-to be executed on a PPC ?
+That's another possibility...
 
-MfG
+The advantage of using the directcolor features by storing the console palette
+in the color LUT, is that the console behaves more like the original VGA text
+console: if you change one console palette entry, all characters drawn in that
+color will change as well.
+
+Besides, if you have e.g. 32 bpp hardware that uses XRGB 8888, with X
+specifying some special features, you don't want to xor with 0xffffffff
+neither, but with a fbdev specific value. Another reason for using the 17th
+entry as the xor mask.
+
+> List of modified files is shorter then ;-)
+
+Yes, but the changes to the drivers that we do have to update (the ones
+supporting directcolor) are more complex:
+
+  - When in truecolor mode, the gamma correction table must be loaded
+  - Setcolreg() should update dispsw_data[i] when in truecolor mode, instead
+    of changing the color LUT
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
