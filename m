@@ -1,31 +1,21 @@
-Date: Tue, 19 Jan 1999 22:53:25 -0500 (EST)
-From: Brent H Mundy <bmundy@indiana.edu>
+Date: Wed, 20 Jan 1999 12:09:34 +0100
+From: massin@col.bsf.alcatel.fr (Raphael Massin)
+Message-Id: <199901201109.MAA09311@c5s144.clb>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: 3-button mouse
-In-Reply-To: <36A520DE.DCC9F600@phx.mcd.mot.com>
-Message-ID: <Pine.HPP.3.96.990119224947.19824A-100000@falstaff.ucs.indiana.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: slight error in linux 2.2.0-pre8
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hello all,
 
-I have looked on the F-o-M for a supplier of 3-button mice.  All I could
-find were entries for installing/trouble shooting.  Can anyone suggest a
-3-button mouse (ADB).  I am looking to spend ~$30.  All I can find is
-either 2-button mice, expensive 3-button mice, or 3-button USB mice.
-Suggestions?  
+I downloaded yesterday the linux-2.2.0-pre8.tar.gz file and am adapting it
+to my MPC860 based board.
 
-Thanks in advance,
-Brent
+In arch/ppc/boot/head.S, there is an error at line 157. It should be
+'sub r7,r9,r8' and not 'sub r7,r8,r9'
 
-___________________________________________________
-
-ZenCrafters:  Total Enlightenment, in about an hour
-___________________________________________________
-
-
+	Raphael
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
