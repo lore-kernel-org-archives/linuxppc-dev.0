@@ -1,10 +1,10 @@
-Date: Wed, 10 Jan 2001 20:05:16 +0100 (MET)
+Date: Wed, 10 Jan 2001 20:16:14 +0100 (MET)
 From: Gabriel Paubert <paubert@iram.es>
 To: Jerry Van Baren <vanbaren_gerald@si.com>
 cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Using realtime clock? 
-In-Reply-To: <4.3.2.20010110104647.00baee80@falcon.si.com>
-Message-ID: <Pine.HPX.4.10.10101101955310.1811-100000@gra-ux1.iram.es>
+In-Reply-To: <4.3.2.20010110114302.00ba2830@falcon.si.com>
+Message-ID: <Pine.HPX.4.10.10101102007140.1811-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
@@ -13,43 +13,25 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 On Wed, 10 Jan 2001, Jerry Van Baren wrote:
 
->
-> Wolfgang:
->
-> A good place to start is the clock mini HOWTO:
->    http://www.linuxdoc.org/HOWTO/mini/Clock.html
->
-> The astronomy people, among others, are really fanatical about accurate
-> time and have some very elaborate programs to synchronize clocks to the
-> nanosecond (microsecond?) level.  These involve NTP daemons.  Note that
-> the NTP daemons can synchronize to a radio clock that provides a
-> 1/second tick: your simplest solution would probably be to set up your
-> accurate RTC to do a 1/second interrupt and then tie it into a NTP
-> daemon to keep your kernel clock accurate.
+> Yup.  However, adjtimex() is a function call that tweaks the clock
+> parameters in the kernel.  If you understood those parameters (I
+> don't), you could keep your clock very accurate.
 
-As an astronomer, I'm not that fanatical about clock accuracy, let us say
-a couple of milliseconds is sufficient. OTOH VLBI and pulsar astronomers
-are absolutely obsessed by clock precision. But yes, ntp is the protocol
-to use to synchronize machines on a LAN: one machine has a radio clock
-or whatever and all the other lock on it through ntp.
+Indeed, but the hard part is to compute the parameters for adjtimex (BTW
+never set the state bit to locked otherwise the kernel will rewrite the
+RTC from the system clock, creating an interesting loop).
 
->
-> Note that utilities like adjtimex (covered in the HOWTO) adjust time
-> slowly so that it is monotonically increasing (i.e. they speed up or
-> slow down the tick announcement rather than jamming a new value in the
-> linux clock).  This is a VERY GOOD feature: otherwise you the risk of
-> having Really Bad things happen like your cron job running twice if the
-> clock jam happens to run at just the wrong moment (quite likely,
-> actually, since you probably update the clock as a cron job).
+> If you tracked down some references (NTP source code, NTP RFCs, "David
+> L. Mills' clock adjustment algorithm"), I suspect you would be able to
+> figure out how to properly use adjtimex().  Further, I suspect
+> adjtimex() a pretty lightweight routine since it merely adjusts the
+> parameters that presumably already exist in your kernel.
 
-ntp does it too, actually they both ajust the duration of the jiffy though
-the adjtimex syscall. Funny things may still happen around leap seconds
-however (one second is repeated).
 
-Why would you update the clock as a cron job ?
-
-ntpd does it (actually the kernel does it on a regular basis when adjtimex
-tells it that the pll with the time server is closed).
+It is.  ntp also is lightweight: about 5 minutes for the main server I
+have here after >6 months of operation on a 200MHz 603e, serving about 10
+machines at higher than average rate (to improve precision) and
+broadcasting for less critical machines.
 
 	Gabriel.
 
