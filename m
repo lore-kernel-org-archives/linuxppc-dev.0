@@ -1,38 +1,50 @@
-Message-Id: <200007191513.RAA01451@denx.local.net>
-To: Steve Rossi <srossi@ccrl.mot.com>
-cc: clark@esteem.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Do I shoot myself in the foot first or HEAD.S? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 19 Jul 2000 09:09:27 CDT."
-             <3975B697.63313411@ccrl.mot.com>
-Date: Wed, 19 Jul 2000 17:13:09 +0200
+Message-ID: <3975C701.FB6B19D9@lucent.com>
+Date: Wed, 19 Jul 2000 10:19:29 -0500
+From: Tom Roberts <tjroberts@lucent.com>
+MIME-Version: 1.0
+To: clark@esteem.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Do I shoot myself in the foot first or HEAD.S?
+References: <1.5.4.32.20000719011945.006845c0@pop.esteem.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3975B697.63313411@ccrl.mot.com> Steve Rossi wrote:
->
-> I wrote a little app that slaps an EST .bin file header on a linux image
-> (zvmlinux or zvmlinux.inird). I can send that to you if you want it. Then I use
-> Download to Target from VisionClick and that sticks the whole image in RAM. You
-> do need to disable VisionICE's interception of software breakpoint emulation
-> interrupts - do 'cf sbe special'. That should be it.
+clark@esteem.com wrote:
+> 3. What do I need to do in the ROM before jumping to HEAD.S other than
+> programming the ram timmings in the UPM( I assume HEAD.S is where everything
+> starts )?
 
-BTW - included with the upcoming first public version of PPCBOOT is a
-small tool (img2srec) which creates a srecord  file  from  zImage  or
-zImage.initrd  files,  omitting unneeded stuff which is included when
-just stripping the ELF header and then converting to S-records.  This
-saves just another few bytes on the target :-)
+My startup code at 0xFFF00100 simply loads values into r3-r7 and then
+jumps to physical address 0 (where vmlinux was loaded). But our hardware
+is initialized from the host, not the on-board CPUs.
 
-Thanks to Ruedi Dummermuth of Abatron who provided this tool.
 
-Wolfgang Denk
+> 4. Has any one managed to get an EST VisionICE in circuit emulator to work
+> with linuxPPc? If so How? Would I be better off using the GNU Debuger?
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-There's no future in time travel.
+I never figured out how to use any of that stuff. I debugged head.S
+by using r11 and r12 (otherwise unused) to poke cookies into low
+memory, and traced through head.S until it took off (:-)). But my
+architecture may be different from yours -- I have a PPC board which
+plugs into a host which can read/write the on-board RAM via the PCI
+bus. So I could always dump memory on the board.
+
+I had to develop custom console and network drivers using that PCI
+memory-to-memory interface. I debugged them using our proprietary OS,
+so once I threaded through head.S it was a short trip to a bash console
+prompt. Once you get to start_kernel() I doubt any debugger will be of
+much use (gdb perhaps, because it understands memory mapping, but the
+ICE won't).
+
+
+Several people have said "don't change head.S". I found I had to,
+because my board is not anything like any of the CONFIG choices.
+I did, at least, move it into my private directory and symlink it
+back where it belongs; ditto for the half-dozen other files I had
+to change.
+
+
+Tom Roberts	tjroberts@lucent.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
