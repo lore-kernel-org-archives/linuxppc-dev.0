@@ -1,20 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
-	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id E85B567A65
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B5AD167A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 13 Feb 2005 09:15:44 +1100 (EST)
-To: Grant Likely <glikely@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 12 Feb 2005 11:57:06 MST."
-	<528646bc05021210572aaeaa3f@mail.gmail.com>
-Date: Sat, 12 Feb 2005 23:15:21 +0100
-Sender: wd@denx.de
-Message-Id: <20050212221526.2B75FC1430@atlas.denx.de>
+	Sun, 13 Feb 2005 10:11:13 +1100 (EST)
+Date: Sat, 12 Feb 2005 15:11:09 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: emre kara <emrekara2002@yahoo.co.uk>
+Message-ID: <20050212231109.GA609@gate.ebshome.net>
+References: <20050211135501.19902.qmail@web25710.mail.ukl.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050211135501.19902.qmail@web25710.mail.ukl.yahoo.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Fwd: Memory Size Requirement to Run Linux on Embedded
-	Environment
+Subject: Re: 1000MB (GMII) ports on IBM 440GX (ocotea)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,26 +25,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <528646bc05021210572aaeaa3f@mail.gmail.com> you wrote:
-> 
-> > This is not correct. U-Boot is located where your memory map dictates
-> > it, this can be the begining or the end or right  in  the  middle  of
-> > your flash - depending on your hardware design.
-> I suggested the beginning of flash under the assumption that u-boot
-> would be the first code to execute.  Albert, if it is not then you
-> will need to have some other code at the boot location.
+On Fri, Feb 11, 2005 at 01:55:01PM +0000, emre kara wrote:
+> I have problems on ppc440gx ( IBM 440gx evaluatation
+> board)  gigabit ethernet ports.
+> I have configurated and compiled linux kernel version
+> 2.4.29 (latest) for ocotea board and it worked fine
+> with two MII /Fast Ethernet ports,but i can't find any
+> way to configure GMII (gigabit) ethernet driver for
+> other on chip two gigabit ports, in the platform
+> specific file (arch/ppc/platforms/ocotea.c) the source
+> configures only two fast ethernet ports.
+> I have also loaded Montavista's preview kernel on my
+> board and in this kernel,  four ethernet ports worked
+> fine, but there are huge differences between two
+> kernels so I can't find a way to overcome this
+> problem.
+> Is anyone have an idea for the solution?
 
-That's what I intended topoint out: this is hardware dependent;  some
-processiors  support  low-boot  (0x100)  and  high-boot (0xFFF00100),
-others  have  a  fixed  reset  vector  (0xFFFFFFFC),  and  yet  other
-architectures behave differently (like ARM startin at 0x0000).
+There is an experimental PPC4xx NAPI EMAC driver, which has 440GX 
+support (GigE, TAH, scatter-gather, jumbo) for 2.4.30-pre1 (2.6 
+version will follow shortly).
 
-Best regards,
+Patch can be found at http://kernel.ebshome.net/.
 
-Wolfgang Denk
+Please, note, full 440GX support is newly added feature and therefore 
+don't consider it stable yet. I'm in process of testing it. So, use 
+it at your own risk.
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"There are things that are so serious that you can  only  joke  about
-them"                                                    - Heisenberg
+--
+Eugene
