@@ -1,22 +1,51 @@
-Message-ID: <005d01c254fc$220722e0$5fa1ba40@optiplex>
-From: "Fanny Wakizaka" <fanny.wakizaka@cyclades.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: PCMCIA cards for MPC8xx?
-Date: Thu, 5 Sep 2002 09:48:59 -0700
+Message-ID: <3D77BAF7.CBFFB809@xilinx.com>
+Date: Thu, 05 Sep 2002 13:13:43 -0700
+From: "Peter Ryser" <Peter.Ryser@xilinx.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Peter 'p2' De Schrijver" <p2@mind.be>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] Xilinx TFT interface driver
+References: <20020904195856.GJ781@mind.be>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-We are developing a custom hw based on the MPC855 with support to PCMCIA. We
-are using MontaVista linux kernel 2.4.17.
-Could you give me some suggestions of PC Cards that worked with MPC8xx? I'm
-looking for ethernet cards, modem cards and wireless cards.
-Thanks in advance,
-Fanny
+Peter,
+
+all the devices for which you posted patches are supported in the
+linuxppc_2_4_devel tree for more than a month. The tree contains device
+drivers/support for the following Xilinx devices
+
+- Interrupt Controller
+- 10/100 Mbit Ethernet
+- PS2 port (mouse/keyboard)
+- Uart (actually, the standare Linux Uart driver)
+- TFT
+- GPIO
+- IIC
+
+More drivers will be added soon.
+
+- Peter
+
+
+Peter 'p2' De Schrijver wrote:
+
+> Hi,
+>
+> Attached you will find a patch implementing a Linux framebuffer driver
+> for the Xilinx TFT interface. It was tested on a Xilinx Virtex2Pro
+> implementation.
+>
+> Comments welcome,
+>
+> Peter.
+>
+>   ------------------------------------------------------------------------
+>
+>    xtft-patchName: xtft-patch
+>              Type: Plain Text (text/plain)
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
