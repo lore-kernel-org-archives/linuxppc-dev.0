@@ -1,76 +1,103 @@
-Date: Mon, 6 Mar 2000 12:04:13 +0100 (MET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Grant Erickson <grant@borg.umn.edu>
-cc: Ani Joshi <ajoshi@shell.unixbox.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: HELP: Power Mac G3 PCI Strangeness in 2.2 and 2.3
-In-Reply-To: <200003052129.PAA46273@congo.borg.umn.edu>
-Message-ID: <Pine.GSO.4.10.10003061202100.23760-100000@dandelion.sonytel.be>
+Date: Mon, 6 Mar 2000 13:28:59 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: David Monro <davidm@amberdata.demon.co.uk>
+cc: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: bootloader ideas
+In-Reply-To: <38C355B5.951735EB@amberdata.demon.co.uk>
+Message-ID: <Pine.HPX.4.10.10003060942140.2213-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 5 Mar 2000, Grant Erickson wrote:
-> After modifying the Linux kernel to accept PCI devices with the invalid
-> vendor/device ID combination of 0xffff/0x0000, I noticed something odd
-> about the way the system PROM (and to a lesser extent Linux) configured
-> the chip's base addresses. Looking at a number of other devices in the
-> system:
+
+
+On Mon, 6 Mar 2000, David Monro wrote:
+
+> I've been thinking about bootloaders. Particularly with respect to PReP
+> machines.
+
+Me too...
+
 >
->         grant@marathon% cat /proc/iomem
->         81800000-8180001f : PCI device 1022:2000 AMD Lance Ethernet
->         81900000-819fffff : PCI device 1022:2000 AMD Lance Ethernet
->         82000000-82ffffff : PCI device 1002:4754 ATI Mach 128
->         f3000000-f307ffff : PCI device 106b:0010 Apple Heathrow I/O
->         fffc0000-ffffffff : PCI device ffff:0000 ???
+> The current method of making the kernel a binary loaded by the firmware
+> is a bit of a kluge. It means we have to jump through hoops to change
+> kernel parameters etc. It seems to me there are two or three obvious
+> approaches, but first I need some information.
 >
-> Clue 1: The address range programmed for the chip looks suspiciously like
-> the state it might be left in after determining how much address space it
-> needs.
+> 1) What if any services does the PReP firmware provide once it loads an
+> image? I'm guessing that it isn't a lot, just the residual data to tell
+> us what hardware we have. I could be wrong here though - can anybody
+> tell me where to find softcopy PReP documentation?
 
-Yes.
+It's somewhere on IBM sites if it's still there...
 
-> Before Linux does this address space sizing, it saves the base address.
-> In the case of my chip, it would have read "0x0" since nothing was
-> programmed there previously. If Linux does find 0x0, it just leaves the
-> result of the address sizing there and moves on.
 >
-> So, that led me to wonder where the addresses in the other devices were
-> coming from...
+> 2) What does the ARC bootloader goop for NT provide in the way of
+> services? I'm guessing rather more. In particular I suspect we have a
+> way or reading files, by name, from a FAT16-formatted partition, and
+> possibly passing them arguments, maybe stored in nvram. This is the way
+> some Alpha systems do it; you set up an ARC boot entry to run a little
+> executable (ldmilo.exe) which loads a file called 'milo' from the same
+> directory and executes it. Milo then takes over and loads the kernel.
 >
-> I found that even before Linux executes a single line of code, all the
-> other devices above have valid addresses programmed into their base
-> address registers. Who's doing this?
->
-> I believe that the Open Firmware PROM in the PowerPC system probes all
-> PCI devices in the system at power up. It then assigns valid base
-> addresses to those devices with VALID vendor and device IDs.
+> Do all the PReP machines have ARC available for them? I would guess most
+> do, but I could be wrong.
 
-OF (should) assign addresses. On my box (CHRP), it does so for _recognized_
-devices only.
+No, I've never seen a single machine with ARC myself...
 
-> Because my chip uses an invalid vendor ID of 0xFFFF, Open Firmware must
-> just ignore it and never programs in a valid base address! Therefore,
-> when we go and try to access the chip at 0xFFFC0000 (which is outside the
-> valid PCI address space on PReP/CHRP/PowerMac systems?) we're off probing
-> never-never land. The PCI controller never assumes the transaction!
+> IMHO milo itself is overkill; it actually contains an awful lot of the
+> kernel code (basically the SCSI drivers etc) so that once loaded it can
+> load the kernel from any device that linux knows about, even if the
+> machine firmware and ARC don't know about it. The current PReP boot code
+> covers that eventuality even if it is a bit of a kluge - as long as the
+> kernel can be loaded by the firmware (even from floppy) it will work.
+> Assuming that more PReP machines have ARC images available, I'd be
+> interested in creating a bootloader which, once loaded from ARC, would
+> be able to load a kernel image from a device ARC could read, using ARC
+> services. Anybody got any documentation?
 
-How difficult is it to make the PCI chip use a valid vendor/device ID? I don't
-think you can assume any boot ROM will try to assign a region to it. There's no
-way to distinguish a device with an invalid vendor/device ID from a device
-that's not even present.
+The problem is that ARC has some services, PPCBUG used on Motorola boards
+has very likely different ones...
 
-Go read the PCI spec and use valid IDs.
+> Oh, we could also have the bootloader do a lot of fixing up of things
+> like the PCI spaces and interrupts - I note that NT and Linux on the
+> IBM 850 have different ideas of where things are and what interrupts
+> they use. Seems to work though.
 
-Gr{oetje,eeting}s,
+For starting point see my prepboot bootloader which you can find at
+ftp://vlab1.iram.es/linux-2.[23]
 
-						Geert
+it is included in the mvme patches.
 
---
-Geert Uytterhoeven ------------- Sony Software Development Center Europe (SDCE)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
-Voice +32-2-7248638 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+Basically:
+- for now it adds a new directory (for now), arch/ppc/preepboot and a
+CONFIG option to enable it.
+
+- it reorganizes PCI I/O and memory space, actually for my machines based
+on Raven/Falcon or Hawk Motorola chipsets, it remaps them completely
+to something closer to CHRP
+
+- it initializes video boards with an x86 ROM BIOS emulator if neceessary
+
+- it still needs some work to handle the NVRAM, I want too to get rid of
+most kludges in the early part of the kernel
+
+- I have code which correctly gets the interrupt routing from residual
+data
+
+- it includes its own virtual memory management system, simple, primitive
+and not resistant at all to fragmentation, but anyway it's thrown away
+almost immediately,
+
+- it is completely relocatable so that it can run whatever the memory
+map of the system is ((except for interrupt vectors which are fixed by
+HW). Actually it moves itself high so that it can decompress the kernel
+in low memory.
+
+
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
