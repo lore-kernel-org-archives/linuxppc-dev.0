@@ -1,20 +1,26 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
-	by ozlabs.org (Postfix) with ESMTP id 8976B2BDB3
+Return-Path: <mgreer@mvista.com>
+Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id B10D22BDB3
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  9 Oct 2004 04:02:11 +1000 (EST)
-Date: Fri, 8 Oct 2004 11:02:09 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20041008180209.GD14773@smtp.west.cox.net>
-References: <Pine.LNX.4.60.0410080704170.6219@dell.enoriver.com>
-	<20041008164047.GC14773@smtp.west.cox.net>
-	<944792EE-194E-11D9-9299-003065F9B7DC@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <944792EE-194E-11D9-9299-003065F9B7DC@embeddededge.com>
-Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: cleaning up the Kconfig menu structure -- the bigger picture
+	Sat,  9 Oct 2004 04:21:50 +1000 (EST)
+Message-ID: <4166D5E7.8080209@mvista.com>
+Date: Fri, 08 Oct 2004 11:01:11 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: Russell King <rmk@arm.linux.org.uk>
+References: <E1CFESm-0002PH-00@real.realitydiluted.com>
+	<4165E52E.60908@waitefamily.us>
+	<20041008111345.GA23212@linux-mips.org>
+	<1097234203.318.89.camel@hades.cambridge.redhat.com>
+	<20041008122633.C17999@flint.arm.linux.org.uk>
+In-Reply-To: <20041008122633.C17999@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Brian Waite <brian@waitefamily.us>, lachwani@pmc-sierra.com,
+	Ralf Baechle <ralf@linux-mips.org>, mdharm@momenco.com,
+	linuxppc-embedded@ozlabs.org, sjhill@realitydiluted.com,
+	David Woodhouse <dwmw2@infradead.org>, rabeeh@galileo.co.il
+Subject: OCP vs. platform_device (was Marvell 64360/64340 GigE driver for
+ MIPS and PPC....)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,95 +31,92 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 08, 2004 at 01:22:06PM -0400, Dan Malek wrote:
+Moving to a wider PPC audience...
 
+Mark
+--
+
+Russell King wrote:
+
+>On Fri, Oct 08, 2004 at 12:16:43PM +0100, David Woodhouse wrote:
+>  
+>
+>>On Fri, 2004-10-08 at 13:13 +0200, Ralf Baechle wrote:
+>>    
+>>
+>>>I was already considering to implement something like OCP for MIPS also.
+>>>Since it already exists on PPC I instead would suggest to move
+>>>arch/ppc/syslib/ocp.c into generic code, something like drivers/ocp/
+>>>maybe?
+>>>      
+>>>
+>>Fine... but if you're doing that instead of extending platform_device to
+>>meet your needs, make sure you remove platform_device while you're at it
+>>and convert its users to OCP.
+>>    
+>>
+>
+>There are a lot of users of platform devices, and this now includes
+>virtually everything in the input layer.  This would be a very large
+>amount of work to rip out platform devices.
+>
+>Let's look at this:
+>
+>struct ocp_def {
+>        unsigned int    vendor;
+>        unsigned int    function;
+>
+>These are meaningless for the vast majority of platform devices.
+>
+>        int             index;
+>        phys_addr_t     paddr;
+>
+>Some platform devices have multiple addresses.  phys_addr_t isn't
+>sensible anyway - it really really really wants to be a struct
+>resource so that you're integrated into the kernels resource
+>management system.
+>
+>        int             irq;
+>
+>And have multiple IRQs, and may very well have multiple DMA channel
+>numbers.
+>
+>        unsigned long   pm;
+>        void            *additions;
+>        void            (*show)(struct device *);
+>};
 > 
-> On Oct 8, 2004, at 12:40 PM, Tom Rini wrote:
 > 
-> >Which is where every other serial driver is (that's been updated to use
-> >the new serial core and make life easier).
-> 
-> How does this make life easier?
-
-I wasn't clear.  drivers/serial/ makes the life of serial driver writers
-easier as all of the stuff people kept c&p'ing from
-drivers/char/serial.c is common, and so on.
-
-Having the serial choice in drivers/serial/Kconfig is easier on folks
-migrating from other platforms since it's where they would expect it
-(since that's where all of the other serial drivers are).  It's
-hopefully nothing for people who've done 8xx on 2.4 compared to all of
-the other stuff changed in 2.6, but it isn't making life easier for
-them.
-
-> >That's kinda the opposite direction of where I want things to move.
-> 
-> That doesn't make sense to those of us with experience using all
-> of the 8xx/82xx/85xx variants, other processors that may use the
-> same peripherals (like ColdFire), or with knowledge of yet to be
-> announce parts.
-
-I'll agree it's a change, but this is how everyone else works.  For
-example, it might make sense to rename platforms/85xx to platforms/cpm2,
-and that's where (making up examples) cpm2 microcode updates, errata
-config options, enable foolevel/type cache options could go, while
-drivers live under drivers/.
-
-IMHO, the biggest reason someone outside the ppc32 community hasn't
-yelled about arch/ppc/{8xx,82xx}_io/ is that it wasn't called
-arch/ppc/drivers/{8xx,82xx} :)
-
-> >What, IMHO, should happen is that once the real drivers side of 8xx_io
-> >are moved out into drivers/ we'll really be left with commproc and
-> >microcode, both of which can live in arch/ppc/syslib/ as cpm1_common.c
-> 
-> That's irrelevant to keeping the menu options in a central place.
-> Maybe it's because I'm old, but keeping the CPM configuration options
-> in one place on the screen seems to make it easier to think and choose
-> the proper options.  Remember, there is lots more to the CPM than just
-> serial ports or Ethernet drivers.  There are drivers floating around 
-> that
-> for some mysterious reason never seem to make it into the Linus tree
-> or out of development trees into other "official" place.
-
-But they too should live with with their drivers/ (or net/)
-counter-parts, even if they aren't in Linus' tree.
-
-> >....... and we can deal with microcode
-> >questions in arch/ppc/Kconfig where we now source the 8xx_io/Kconfig
-> >file ....
-> 
-> There is never any harm in separating logical functions into separate
-> files.  Using this argument I guess you would like the whole kernel
-> to just be one big Linux.c file? :-)
-
-Fine, arch/ppc/Kconfig.cpm1 if we don't have platforms/8xx/ :)
-
-> > (or, if it really does end up making sense to, and I'm not yet
-> >convinced of this, make platforms/8xx, we can put the question in
-> >platforms/8xx/Kconfig).
-> 
-> I don't know why we don't have the platforms/8xx directory.  We already
-> have 4xx and 85xx, there are certainly more 8xx boards and 
-> configurations
-> than anything else (if all of the 2.4 stuff was actually moved 
-> forward).
-
-Yes.  But 8xx isn't board.[ch] and mpc<cpu_variant>.[ch], it's
-m8xx_setup.c + board.h.  If we can work it out into being more like
-85xx and 4xx, that would convince me :)
-
-> Both
-> of the 4xx and 85xx have special IO configuration options even though
-> they have drivers in the standard places.  Your desire of "where you 
-> want
-> 8xx to move" is against what has been established for other processors,
-> and of course doesn't make sense to me.
-
-But that's what I just described.  Letting the special config options
-(I don't know if I'd call 85xx_PCI2 "I/O", but it is special) live in
-platforms/8xx/Kconfig (or ppc/Kconfig.cpm1, or whatever).
-
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+>/* Struct for a given device instance */
+>struct ocp_device {
+>        struct list_head        link;
+>
+>Unnecessary - the device model provides this for us already.
+>
+>        char                    name[80];       /* device name */
+>
+>Already part of platform_device.
+>
+>        struct ocp_def          *def;           /* device definition */
+>        void                    *drvdata;       /* driver data for this device */
+>
+>This is a duplication of the driver data in struct device.
+>
+>        struct ocp_driver       *driver;
+>
+>Another duplication.
+>
+>        u32                     current_state;  /* Current operating state. In ACPI-speak,
+>                                                   this is D0-D3, D0 being fully functional,
+>                                                   and D3 being off. */
+>
+>and yet again another duplication.
+>
+>        struct                  device dev;
+>};
+>
+>So I think ripping out platform devices and throwing in something
+>which is very different is a backwards step.
+>
+>  
+>
