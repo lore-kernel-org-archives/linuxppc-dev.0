@@ -1,51 +1,42 @@
-Date: Thu, 23 Nov 2000 15:12:58 +0100 (MET)
+Date: Thu, 23 Nov 2000 15:18:53 +0100 (MET)
 From: Gabriel Paubert <paubert@iram.es>
-To: Tony Mantler <nicoya@apia.dhs.org>
-cc: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-        Avery Pennarun <apenwarr@worldvisions.ca>, daenzerm@student.ethz.ch,
-        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Hadess <hadess@writeme.com>, debian-powerpc@lists.debian.org,
-        linuxppc-dev@lists.linuxppc.org
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+cc: Avery Pennarun <apenwarr@worldvisions.ca>,
+        Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        daenzerm@student.ethz.ch, Hadess <hadess@writeme.com>,
+        debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
 Subject: Re: apmd and other archs
-In-Reply-To: <v04003a20b642c8d1ea1a@[24.70.162.12]>
-Message-ID: <Pine.HPX.4.10.10011231508240.21126-100000@gra-ux1.iram.es>
+In-Reply-To: <Pine.LNX.4.10.10011231431070.3480-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.HPX.4.10.10011231514150.21126-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 23 Nov 2000, Tony Mantler wrote:
+On Thu, 23 Nov 2000, Michael Schmitz wrote:
 
-> >Now /etc/mtab is also somewhat redundant with /proc/mounts. Actually you
-> >should be able to link /etc/mtab to /proc/mounts but it raises a lot of
-> >problems and does not work satifactorily in my experience.
-> [...]
 >
-> I think technically the /proc filesystem is optional. Requiring /proc for
-> mount to function gives you another fun chicken + egg of how the heck do
-> you then mount /proc on startup? ;)
-
-Because mount stats /etc/mtab and does not touch it if it finds that it is
-a symlink. But this has still problem, I just can't remember which ones. I
-know that I thought it would be great and had to go back to the standard
-/etc/mtab.
-
-Indeed proc is optional, but in practice it has become a necessary evil.
-Most systems won't boot without it, hey most init scripts now have a look
-at /proc/cmdline and whatnots. Ugly as hell...
-
-> At the risk of drifting way off topic, it might be worth looking at
-> rewriting mount and fellow /etc/mtab users to just never need to use a file
-> like /etc/mtab. I can particularily recall a few times where a stale,
-> unwritable /etc/mtab made some system reconfiguration and/or system
-> recovery about 5 times more annoying than it needed to be.
+> > On Thu, Nov 23, 2000 at 12:15:32PM +0100, Michael Schmitz wrote:
+> >
+> > > Re: mounting /etc readonly: how do you handle /etc/mtab in that case? :-)
+> >
+> > Symlink it to /proc/mounts, of course. :)
 >
-> 30 years of unix tradition be damned, /etc/mtab sucks.
+> Good answer. I'd have used a symlink to some writeable directory on the
+> root fs, mainly because using /proc all over the place tends to confuse
+> Unix admins with no Linux experience. Let's not fall into the Solaris trap
+> (you are in a maze of twisty little config files, all different from the
+> rest of Unix').
 
-Indeed.
+At boot, before the first mount command executes, there may be _no_
+writable directory and there may be none for a while, and you have the
+problem of having an existing non-empty /etc/mtab (or equivalent) from a
+non-clean shutdown which you would have to erase before the first mount is
+done (adding another funky option to mount). Unless you make some kind of
+ramdisk compulsory, which might not be bad idea after all with current
+memory sizes.
 
-	Cheers,
 	Gabriel.
 
 
