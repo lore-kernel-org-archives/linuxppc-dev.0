@@ -1,41 +1,61 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Mark Chambers <markc@mail.com>
-Reply-To: markc@mail.com
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Control-C in bash ???
-Date: Tue, 14 Jan 2003 08:44:09 -0500
-References: <20030113193102.E7B7CC608E@atlas.denx.de>
-In-Reply-To: <20030113193102.E7B7CC608E@atlas.denx.de>
-MIME-Version: 1.0
-Message-Id: <200301140844.09234.markc@mail.com>
+To: Alex Zeffertt <ajz@cambridgebroadband.com>
+Cc: markc@mail.com,
+	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Control-C in bash ??? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "14 Jan 2003 13:31:45 GMT."
+             <1042551106.8605.109.camel@zambia>
+Date: Tue, 14 Jan 2003 15:50:41 +0100
+Message-Id: <20030114145047.03432C608E@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks for your help on this one.  I changed the last line of etc/inittab to
+In message <1042551106.8605.109.camel@zambia> you wrote:
+>
+> I had exactly the same problem with ash (busybox version), but I found
+> it went away when I replaced
+>
+> ttyS0::respawn:-/bin/sh
+>
+> in /etc/inittab with
+>
+> ttyS0::respawn:/sbin/login
+>
+> I have no idea why....
 
-        3:2345:respawn:/sbin/mingetty --noclear tts/0
+I explained this a couple of times before on the list:
 
-and added "tts/0" to etc/securetty and now I get a console with job control.
-I don't know how long it would have taken me to discover "job control" or "controlling tty"!!
-(I'm learning linux from the ground up)
+Signal handling depends on a controlling tty. If you  start  a  shell
+directly, you don't get one, so ^C will not work.
 
-Thanks again,
-Mark Chambers
+We modified the login in our ELDK a bit to assign a controlling  tty,
+so any shell started from login will behave as expected.
+
+This is all the magic that it takes:
+
+-> cat /opt/eldk/build/target_rpms/util-linux/SOURCES/login-eldk.patch
+--- util-linux-2.11f/login-utils/login.c.orig   Fri Jun 21 14:17:36 2002
++++ util-linux-2.11f/login-utils/login.c        Fri Jun 21 14:18:34 2002
+@@ -259,6 +259,7 @@
+
+     flags &= ~O_NONBLOCK;
+     fcntl(fd, F_SETFL, flags);
++    ioctl(fd, TIOCSCTTY);
+
+     for (i = 0 ; i < fd ; i++)
+       close(i);
 
 
-Original message:
-> On a PC, I can, for instance, enter "ping 192.168.1.4", then hit Control-C and
-> stop the ping.  For the life of me, I can't figure out how to do the same on
-> my MPC860 system!!!
+Best regards,
 
-> I have an MPC860 running 2.4.19, with a mostly unmodified eldk distribution
-> from Wolfgang Denx.  I did modify the init script to use /dev/console instead
-> of /ttyx (standard driver using SMC1).  I'd not only like a solution, I want
-> to undertand how this works - I've poked around and I can't figure out what's
-> supposed to happen - Is the shell that generates a SIGINT, or the uart
-> driver, or what?  Any enlightenment will be greatly appreciated...
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Free markets select for winning solutions."        - Eric S. Raymond
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
