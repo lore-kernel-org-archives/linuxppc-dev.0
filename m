@@ -1,33 +1,30 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: Ani Joshi <ajoshi@shell.unixbox.com>,
-	Derrik Pates <dpates@dsdk12.net>
+Date: Sun, 28 Oct 2001 07:03:46 -0700 (MST)
+From: Derrik Pates <dpates@dsdk12.net>
+To: "Kevin B.Hendricks" <khendricks@ivey.uwo.ca>
+Cc: Ani Joshi <ajoshi@shell.unixbox.com>,
+	<linuxppc-dev@lists.linuxppc.org>
 Subject: Re: GeForce on PPC == _no work_
-Date: Sun, 28 Oct 2001 07:52:39 -0500
-Cc: <linuxppc-dev@lists.linuxppc.org>
-References: <Pine.BSF.4.32.0110271946440.10582-100000@shell.unixbox.com>
-In-Reply-To: <Pine.BSF.4.32.0110271946440.10582-100000@shell.unixbox.com>
+In-Reply-To: <20011028125007.MHAN10438.tomts12-srv.bellnexxia.net@there>
+Message-ID: <Pine.LNX.4.33.0110280701460.22729-100000@andromeda.dsdk12.net>
 MIME-Version: 1.0
-Message-Id: <20011028125007.MHAN10438.tomts12-srv.bellnexxia.net@there>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Ani,
+On Sun, 28 Oct 2001, Kevin B.Hendricks wrote:
 
-On October 27, 2001 10:48, Ani Joshi wrote:
-> Well, the problem is you are using a fp with the ADC port.  This isn't
-> supported as there is no documentation on how I am supposed to powerup
-> and run the DVI port.  On ppc, rivafb only supports the VGA port right
-> now unless some secret docs are leaked out of nvidia, same goes with X.
+> Has anyone looked in the latest Darwin release?  Is there code there that
+> supports flat panels on both Radeon and Nvidia?  If so, where would one
+> look for it?
 
-Has anyone looked in the latest Darwin release?  Is there code there that
-supports flat panels on both Radeon and Nvidia?  If so, where would one
-look for it?
+I've tried browsing the CVS tree via WebCVS, and found one reference, with
+an empty directory. It may just use OF framebuffer support on Apple
+systems, which would not entirely surprise me. (And of course, the onboard
+OF ROM on those boards knows how to deal with ADC/DVI flat panels.)
 
-Thanks,
+Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
+dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
 
-Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
