@@ -1,27 +1,32 @@
-Message-ID: <20000216155509.19793.qmail@web217.mail.yahoo.com>
-Date: Wed, 16 Feb 2000 07:55:09 -0800 (PST)
-From: Sebastien Articlaux <sebastien_articlaux@yahoo.com>
-Subject: nm command
-To: embedded linuxppc <linuxppc-embedded@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Sebastien Articlaux <sebastien_articlaux@yahoo.com>
+Cc: embedded linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: nm command
+References: <20000216155509.19793.qmail@web217.mail.yahoo.com>
+From: Jesper Skov <jskov@redhat.com>
+Date: 16 Feb 2000 17:55:19 +0100
+In-Reply-To: Sebastien Articlaux's message of "Wed, 16 Feb 2000 07:55:09 -0800 (PST)"
+Message-ID: <otg0utnl3c.fsf@thinktwice.zoftcorp.dk>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+>>>>> "Sebastien" == Sebastien Articlaux <sebastien_articlaux@yahoo.com> writes:
 
-I've tried this command (and a lot of others like
-this...) to get
-symbol table but without success...
+Sebastien> Hello,
 
-   nm vmlinux | sort | less
+Sebastien> I've tried this command (and a lot of others like this...)
+Sebastien> to get symbol table but without success...
 
-->>file format not recognize
+It's automatically generated. See System.map
 
-what is the format of vmlinux?
-Thanks.
+Sebastien>    nm vmlinux | sort | less
 
-Sebastien ARTICLAUX...not a lucky boy!
+-> file format not recognize
+
+Sebastien> what is the format of vmlinux?  Thanks.
+
+Try powerpc-unknown-linux-gnu-nm.
+
+Jesper
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
