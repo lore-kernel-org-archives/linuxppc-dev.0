@@ -1,25 +1,25 @@
-From: Gerd Knorr <kraxel@goldbach.in-berlin.de>
-Date: Thu, 4 Mar 1999 20:51:55 +0100
-Message-Id: <199903041951.UAA00814@macintoy.masq.in-berlin.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: MVME 2306 almost up and running
-In-Reply-To: <Pine.SO4.4.05.9903041715480.4479-100000@hsins.uia.ac.be>
+Date: Thu, 4 Mar 1999 15:26:30 -0500 (EST)
+From: Tom Rini <tmrini@ntplx.net>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: More problem in pre-R5
+In-Reply-To: <36DE4D9D.4699A6F6@wanadoo.fr>
+Message-ID: <Pine.LNX.4.05.9903041525170.16485-100000@pc.wackyland.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Hi,
-> 
-> My final question : our board now finally boots, it can mount an
-> NFS partition as root fs, but does anybody know where on the Internet
-> I can find a file system tree with the binaries for LinuxPPC ? I mean,
-> like Slackware, but for LinuxPPC. (We have no other [spare] PPC based
-> machines, so I need a full binary file tree to set up on the NFS fs).
+On Thu, 4 Mar 1999, Martin Costabel wrote:
 
-Just download the basic rpm's and install them on the NFS Server
-with "rpm --root=/export/nfsroot4ppc -i *.rpm".
+> Does anyone else see this?
 
-  Gerd
+used to. Upgrade ncurses as well.
+
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
