@@ -1,21 +1,18 @@
 Return-Path: <jonmasters@gmail.com>
-Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.194])
-	by ozlabs.org (Postfix) with ESMTP id 9BFF72BDB3
+Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.199])
+	by ozlabs.org (Postfix) with ESMTP id BB08C2BDB4
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Oct 2004 08:12:46 +1000 (EST)
-Received: by mproxy.gmail.com with SMTP id 76so4829881rnk
+	Tue,  5 Oct 2004 08:28:28 +1000 (EST)
+Received: by mproxy.gmail.com with SMTP id 76so4830858rnk
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 04 Oct 2004 15:12:37 -0700 (PDT)
-Message-ID: <35fb2e590410041512498c67db@mail.gmail.com>
-Date: Mon, 4 Oct 2004 23:12:37 +0100
+	Mon, 04 Oct 2004 15:28:26 -0700 (PDT)
+Message-ID: <35fb2e5904100415285979b343@mail.gmail.com>
+Date: Mon, 4 Oct 2004 23:28:26 +0100
 From: Jon Masters <jonmasters@gmail.com>
-To: Frank <frannk_m1@yahoo.com>
-In-Reply-To: <20041004173930.53349.qmail@web13823.mail.yahoo.com>
+To: linuxppc-embedded@ozlabs.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-References: <20041004173930.53349.qmail@web13823.mail.yahoo.com>
-Cc: geert@linux-m68k.org, linuxppc-embedded@ozlabs.org
-Subject: Re: openpic
+Subject: smc91111
 Reply-To: jonathan@jonmasters.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,21 +24,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 4 Oct 2004 10:39:30 -0700 (PDT), Frank <frannk_m1@yahoo.com> wrote:
-> I can't seem to find a site to download the OpenPic
-> specification. Anyone have a pointer or know where I can go to
-> get it.
-> Thanks in advance...
+Hi all,
 
-This one has come up yet again. Geert and I have asked AMD to fix this
-oversight in their website redesign some time back but it's not yet
-happened.
+I've got a hacked version of the smc91111 driver from an old arm tree
+that I'm happily using on my board at work - I'll post patches for it
+in due course as we use a custom 16bit bus that physically looks and
+acts like ISA (but really is cunningly slightly different in timing
+and spec as it's a soft core implemented bridge bodged together to
+work on a dev board. mmmmmm.).
 
-I've sent a copy of the PDF to you by private mail and have heard that
-it's ok for us to do this in the interim if necessary. But please,
-don't all come emailing me at once.
+Today I had to add some ethtool support to the driver to support using
+howl (anybody else use that to do Zero Conf?) and was debating fixing
+up http://criticalmass.sourceforge.net/kernel/smc91x/ to work with odd
+bus types like ours (it's a lot of work and testing compared with a
+quick hack to get this done on time so this question is more
+hyperthetical when I'm done with the immediate problem).
 
-Geert - do you think there'd be a problem if I stuck this up on
-printk.net|jonmasters.org?
+Who is using the SMC91111 family of MACs and if so which driver do you use?
 
 Jon.
