@@ -1,55 +1,28 @@
-Message-ID: <4148FEAAD879D311AC5700A0C969E8905DE80C@orsmsx35.jf.intel.com>
-From: "Grover, Andrew" <andrew.grover@intel.com>
-To: "'Matthew Locke'" <mlocke@mvista.com>,
-	"Grover, Andrew" <andrew.grover@intel.com>
-Cc: "'Santiago Garcia Mantinan'" <manty@udc.es>,
-	acpi@phobos.fachschaften.tu-muenchen.de,
-	linuxppc-dev@lists.linuxppc.org
-Subject: RE: [Acpi] acpi=no-idle should be automatic
-Date: Thu, 5 Apr 2001 10:05:50 -0700 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
+Date: Thu, 05 Apr 2001 19:10:31 +0100
+Subject: HTML device-trees posted
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="utf-8"
+Message-Id: <20010405181155.95D9FDB9C8@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Actually, I almost did this very thing a few months ago, but at the time
-there didn't seem to be much interest in PM so I didn't think it worth the
-hassle, especially since phobos already existed for ACPI, and they've been
-very responsive to requests.
+Hi List,
 
-Whatever you want to add is fine by me - my only concern is that someone's
-gotta maintain it, and unless someone else volunteers, I'd think that would
-be you, Matthew. ;-)
+I've posted the html versions of the device trees I've collected to date at:
 
-Regards -- Andy
+http://penguinppc.org/files/users/iain/dev-trees-html/trees-index.html
 
-> From: Matthew Locke [mailto:mlocke@mvista.com]
-> "Grover, Andrew" wrote:
-> > Device power management specifically does not require ACPI.
-> That's why I
-> > requested that a second listserv (linux-power) be set up
-> for non-ACPI PM
-> > discussions. I'm hoping that PM development will be
-> accelerating, and will
-> > use that list, just to keep the distinction clear.
->
-> What about creating a project on sourceforge.net for power management?
-> It might help to have a site dedicated to power management in
-> general.
-> That way we have a central resource for all info, code, etc across
-> architectures.  I know the ppc guys have done a lot of work
-> already with
-> power management.
->
-> We could call it
-> linux-pm, it helps you get your zzzzZZZZZs:)
->
->
-> Matthew Locke
-> Montavista Software, Inc
-> http://www.mvista.com
->
+It's not great rocket-science - but could be quite useful...
+
+thanks to all those who sent trees - and more are still welcome (if yours is
+not there - consider sending it ;-)
+
+only takes ten minutes to do..
+
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
