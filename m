@@ -1,39 +1,33 @@
-Message-ID: <3858128D.B2A8D870@netx4.com>
-Date: Wed, 15 Dec 1999 17:13:33 -0500
-From: Dan Malek <dan@netx4.com>
+Message-ID: <38581658.A9BAE144@ctam.com.au>
+Date: Thu, 16 Dec 1999 09:29:44 +1100
+From: Brendan Simon <bsimon@ctam.com.au>
+Reply-To: bsimon@ctam.com.au
 MIME-Version: 1.0
-To: Alan Mimms <alan@packetengines.com>
-CC: Richard Hendricks <ra6353@email.sps.mot.com>,
-        Jim Chapman <jim.chapman@iname.com>, bsimon@ctam.com.au,
-        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+To: Jesper Skov <jskov@cygnus.co.uk>
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: linuxppc-embedded: /bin/sh wont run from nfsroot.
-References: <19991215055541.23843.qmail@web301.mail.yahoo.com> <3857F56C.65411CA4@netx4.com> <385807D7.8262398C@email.sps.mot.com> <99121513483409.00750@alan.corp.packetengines.com>
+References: <19991215055541.23843.qmail@web301.mail.yahoo.com> <385725A3.A1C110DF@ctam.com.au> <ot66y035bv.fsf@thinktwice.zoftcorp.dk>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Alan Mimms wrote:
+Jesper Skov wrote:
 
+> >>>>> "Brendan" == Brendan Simon <bsimon@ctam.com.au> writes:
+> Brendan> After undefining it, the kernel got further.  It gets to the
+> Brendan> point where it tries to run /bin/sh and then just sits there.
+> Brendan> Here is the last part of the console ouput.  Any ideas where
+> Brendan> to go from here.
+>
+> Which version of GCC do you use for compiling the kernel? Did you by
+> any chance upgrade GCC recently?
 
-> Actually and arguably, "good system design" says precisely the opposite.  If
-> you're building up, say, network protocol packets to be DMAed out through a FEC
-> you want to be able to touch the area of the packet buffer repeatedly without
-> having to do a memory cycle for each "touch".  Cacheable packet buffers are the
-> only way to get this performance enhancing behavior.
+I'm still using egcs-1.1.2 but I don't really see that as being the
+problem.  I do want to upgrade to gcc-2.95.2 at some stage but not until
+I've got a minimal linux system running that I can ping from the outside
+world.  Telnet would be good too.  Once I'm there then I will upgrade my
+tools.
 
-
-
-This is exactly what the Linux kernel does.  It just didn't
-seem to be the place to describe what is cached and flushed,
-write through, or non-cached.  Take a look at the existing
-CPM drivers and see what they do.
-
-A "good system design" is whatever is appropriate for the
-application.  Be happy you are using a processor that provides
-these flexible options.  Many don't.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
