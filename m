@@ -1,61 +1,27 @@
-From: Miles Lane <miles.lane@comcast.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: linuxppc-2.5 (mvista rsync) -- drivers/ide/ppc/pmac.c:1843: error: request for member `queue_head' in something not a structure or union
-Date: Sun, 10 Aug 2003 08:57:53 -0700
-References: <200308100851.04174.miles.lane@comcast.net>
-In-Reply-To: <200308100851.04174.miles.lane@comcast.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200308100857.53299.miles.lane@comcast.net>
+Date: Sun, 10 Aug 2003 12:22:29 -0400
+Subject: Re: [PATCH] 2.6 timebase synchronization
+From: Mark Guertin <mguertin@macdiscussion.com>
+To: Untitled <linuxppc-dev@lists.linuxppc.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <BB5BE984.12A6%mguertin@macdiscussion.com>
+In-Reply-To: <1060508348.13388.20.camel@gaston>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sorry, I should have included this in the original message.
+On 8/10/03 5:39 AM, "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+wrote:
 
-Gnu C                  3.3.1
-Gnu make               3.80
-util-linux             2.11z
-mount                  2.11x
-e2fsprogs              1.32
-pcmcia-cs              3.2.3
-PPP                    2.4.1
-nfs-utils              1.0.5
-Linux C Library        2.3.1
-Dynamic linker (ldd)   2.3.1
-Procps                 3.1.6
-Net-tools              1.60
-Console-tools          0.2.3
-Sh-utils               5.0
-GNU ld version 2.14 20030612
+> Remaining are some older core99 machines, the 4-way DayStar oldworld
+> machines, and afaik, that's all...
 
-#
-# ATA/ATAPI/MFM/RLL support
-#
-CONFIG_IDE=y
-CONFIG_BLK_DEV_IDE=y
+As always, my Daystar quad is around, and if you want/need testing on it
+just let me know.  I also have a couple of Powersurge 2-way as well.
 
-CONFIG_BLK_DEV_IDEDISK=y
-CONFIG_IDEDISK_MULTI_MODE=y
-CONFIG_IDEDISK_STROKE=y
-CONFIG_BLK_DEV_IDECD=y
-CONFIG_BLK_DEV_IDEFLOPPY=y
-CONFIG_BLK_DEV_IDESCSI=y
-CONFIG_IDE_TASK_IOCTL=y
+Mark (Gerk)
 
-CONFIG_BLK_DEV_IDEPCI=y
-CONFIG_IDEPCI_SHARE_IRQ=y
-CONFIG_BLK_DEV_GENERIC=y
-CONFIG_BLK_DEV_SL82C105=y
-CONFIG_BLK_DEV_IDEDMA_PCI=y
-CONFIG_IDEDMA_PCI_AUTO=y
-CONFIG_BLK_DEV_ADMA=y
-CONFIG_BLK_DEV_IDE_PMAC=y
-CONFIG_BLK_DEV_IDEDMA_PMAC=y
-CONFIG_BLK_DEV_IDEDMA_PMAC_AUTO=y
-CONFIG_BLK_DEV_IDEDMA=y
-CONFIG_IDEDMA_IVB=y
-CONFIG_IDEDMA_AUTO=y
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
