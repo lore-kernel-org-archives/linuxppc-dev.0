@@ -1,36 +1,33 @@
-Date: Wed, 18 Apr 2001 18:36:05 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Benjamin Herrenschmidt <benjamin.herrenschmidt@wanadoo.fr>
-Cc: Cort Dougan <cort@fsmlabs.com>, linuxppc-commit@fsmlabs.com,
+Date: Wed, 18 Apr 2001 09:39:41 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Benjamin Herrenschmidt <benjamin.herrenschmidt@wanadoo.fr>,
+	Cort Dougan <cort@fsmlabs.com>, linuxppc-commit@fsmlabs.com,
 	linuxppc-dev@lists.linuxppc.org
 Subject: Re: CPU features again
-In-Reply-To: <20010418160328.15973@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.05.10104181835150.5185-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <20010418093941.C13403@opus.bloom.county>
+References: <20010418160328.15973@mailhost.mipsys.com> <Pine.LNX.4.05.10104181835150.5185-100000@callisto.of.borg>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.05.10104181835150.5185-100000@callisto.of.borg>; from geert@linux-m68k.org on Wed, Apr 18, 2001 at 06:36:05PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 18 Apr 2001, Benjamin Herrenschmidt wrote:
-> Those feature bits have to be common accross the entire PPC range (and
-> possibly common with ppc64 too since ppc64 is supposed to run ppc32
-> binaries, except that ppc64 has 32 more bits to stuff it's own features
-> for 64 bits binaries).
+On Wed, Apr 18, 2001 at 06:36:05PM +0200, Geert Uytterhoeven wrote:
+> On Wed, 18 Apr 2001, Benjamin Herrenschmidt wrote:
+> > Those feature bits have to be common accross the entire PPC range (and
+> > possibly common with ppc64 too since ppc64 is supposed to run ppc32
+> > binaries, except that ppc64 has 32 more bits to stuff it's own features
+> > for 64 bits binaries).
+>
+> BTW, we don't take the sparc64/mips64 approach and create arch/ppc64/?
+> Sparc64/mips64 run 32-bit binaries as well.
 
-BTW, we don't take the sparc64/mips64 approach and create arch/ppc64/?
-Sparc64/mips64 run 32-bit binaries as well.
-
-Gr{oetje,eeting}s,
-
-						Geert
+That's a 2.5 planned thing, I believe.
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
