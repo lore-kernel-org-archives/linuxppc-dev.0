@@ -1,109 +1,46 @@
-Message-ID: <021901c1d615$62ffe7c0$0202a8c0@ebrady.net>
-From: "Ed Brady" <mailinglist@ebrady.net>
-To: "Wolfgang Denk" <wd@denx.de>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <20020327210215.3A202109F4@denx.denx.de>
-Subject: Re: Compiling 2.4.18 for Motorola MBX board 
-Date: Wed, 27 Mar 2002 23:59:48 -0500
-MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+  charset="us-ascii"
+From: Dustin Byford <dustin@firein.net>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 8240, ocd wiggler, gdb, and pre boot init
+Date: Thu, 28 Mar 2002 03:37:16 -0700
+MIME-Version: 1.0
+Message-Id: <200203280337.16187.dustin@firein.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang,
+Hello, I have a question about building a custom 8240 board that I'm
+attempting to load a linux ppc kernel on and do some IP routing.
 
-Thank you for the reply....
+Currently I have wired the cpu and sdram to the point that I need to
+initialize the sdram controller and attempt to load a small test program to
+perform some memory testing.  I'm having trouble with gdb for cygwin, for the
+wiggler at www.ocdemon.net.  I feel fairly confident that I am able to read
+and write all of the registers (gpr, msr, etc...) but I'm not sure exactly
+what's going on with writing to the CONFIG_ADDR and CONFIG_DATA ports to
+start initializing the SDRAM interface.  Currently, when I do a
 
-I was able to perform the following functions
+set *0xfec00000 = 0x8000000a8
+print *0xfec00000
 
-make mbx_config
-make oldconfig
-make dep
-make zImage
+I get a 0x0, in fact every memory location I attempt to print is without
+variance 0x0.  One time I was able to write to 0xfec00000 and the value did
+successfully print, but I continually re-issued the print and after about 10
+seconds the value returned to 0x0.  Writing to registers is rock solid every
+time, even when bypassing the register cache, using rproxy, and using the
+ocdcommander software on the macraigor site.  A logic analyzer is showing the
+bits flowing in and out of the cpu, and the 'ocd log' in gdb shows no errors.
+LED displays are showing me the value on PMAA and MAA and it appears that the
+CPU is in fact attempting to fetch an instruction from rom after a reset
+(which is not wired in right now).
 
-Using make zImage, the kernel itself would build, but I got the following
-errors when attempting to link the original boot code.
+Perhaps someone who has tried this before might have some pointers.  Has
+anyone written a gdb script to initialize the sdram interface on an 8240 that
+they'd be willing to share?
 
--------
-powerpc-eabi-objcopy -O elf32-powerpc \
-        --add-section=.image=../images/vmlinux.gz \
-        --set-section-flags=.image=contents,alloc,load,readonly,data \
-        ../common/dummy.o image.o
-powerpc-eabi-ld -T ../ld.script -Ttext 0x00180000 -Bstatic -o zvmlinux
-head.o ../common/relocate.o  misc-embedded.o ../common/misc-common.o
-../common/string.o ../common/util.o embed_config.o iic.o m8xx_tty.o image.o
-../lib/zlib.a
-image.o: In function `main':
-image.o(.text+0xc): undefined reference to `__eabi'
-make[2]: *** [zvmlinux] Error 1
-make[2]: Leaving directory `/usr/src/ppc/linux/arch/ppc/boot/simple'
-make[1]: *** [zImage] Error 2
-make[1]: Leaving directory `/usr/src/ppc/linux/arch/ppc/boot'
-make: *** [zImage] Error 2
------
+Thanks for any help!
 
-Could this error be related to an incorrectly built cross-compiler?   Using
-some information that I found on the web, I build the ppc cross compiler, as
-ppc-unknown-eabi,  which I interpret to mean ppc eabi on unknown O.S.
-Should I have built the cross-compiler as ppc-linux-eabi?
-
-I have not yet tried the 'make pImage' build yet, however I have noticed
-that 'make pImage' command can not be performed at the Top Level directory
-with the standard makefile.  In order to run it I have to export TOPDIR to
-be the linux ppc source directory, and then CD to the arch/ppc/boot
-directory first.  I will give more details on this once I have given it a
-try.
-
-Ed Brady
-
-
-
------ Original Message -----
-From: "Wolfgang Denk" <wd@denx.de>
-To: "Ed Brady" <mailinglist@ebrady.net>
-Sent: Wednesday, March 27, 2002 4:02 PM
-Subject: Re: Compiling 2.4.18 for Motorola MBX board
-
-
-> Ed,
->
-> in message <015601c1d5d0$b0278b60$64d4047e@research.liebert.com> you
-wrote:
-> >
-> > I am trying to cross compile the latest 2.4.18 kernel to run on an MBX
-board
-> > (MPC 860).  However, I consistently run into problems whenever the final
-> > link is performed.    See error text below....
->
-> It seems your kernel configuration is broken. You better restart with
-> the default configuration fro the  MBX  board;  check  that  this  is
-> compiling fine, and then start modifying according to your needs:
->
-> $ make mbx_config
-> $ make oldconfig
-> $ make dep
-> $ make pImage # with PPCBoot firmware
-> $ make zImage # with old bootstrap loader code
->
-> If this works, you can start modifying the configuration
-> using
->
-> $ make menuconfig
->
-> etc.
->
-> Hope this helps,
->
-> Wolfgang Denk
->
-> --
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-> The trouble with our times is that the future is not what it used  to
-> be.                                                     - Paul Valery
->
-
+			--Dustin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
