@@ -1,41 +1,31 @@
-Message-ID: <B25E2E5A003CD311B61E00902778AF2A039C353D@SERVER1>
-From: Subodh Nijsure <SNijsure@SkyStream.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Generating core files when user apps crash
-Date: Wed, 12 Dec 2001 09:01:19 -0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Wed, 12 Dec 2001 10:14:50 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Andrew Dixon <andrew.dixon@seranoa.com>,
+	ppclist <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: r3 and bd_t
+Message-ID: <20011212171450.GB27587@cpe-24-221-152-185.az.sprintbbd.net>
+References: <3C164F4B.E9A4FCA2@seranoa.com> <20011211183430.GQ22045@cpe-24-221-152-185.az.sprintbbd.net> <20011212171457.GA20492@shamus.smoothsmoothie.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20011212171457.GA20492@shamus.smoothsmoothie.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+On Wed, Dec 12, 2001 at 11:14:57AM -0600, jtm@smoothsmoothie.com wrote:
+> On Tue, Dec 11, 2001 at 11:34:30AM -0700, Tom Rini wrote:
+> >
+>
+> > arch/ppc/kernel/head_8xx.S saves this and passes it onto early_init()
+> > iirc, which will pass it along to platform_init(), which copies it for
+> > safe keeping.
+>
+> I think the 8260 uses arch/ppc/kernel/head.S instead of head_8xx.S.
 
-I am using linux 2.4.4 on my board, what I have seen is when user
-applications crash
-they are not generating core files. I have made sure that ulimit for the
-core file is set to
-unlimited, using ulimit -c unlimited
+Er, yes.  Sorry, i thought the question was about 8xx not 8260.
 
-Is there something else I need to do to generate core files when programs
-crash?
-
-sh-2.04# ulimit -a
-core file size (blocks)     unlimited
-data seg size (kbytes)      unlimited
-file size (blocks)          unlimited
-max locked memory (kbytes)  unlimited
-max memory size (kbytes)    unlimited
-open files                  1024
-pipe size (512 bytes)       8
-stack size (kbytes)         8192
-cpu time (seconds)          unlimited
-max user processes          8192
-virtual memory (kbytes)     unlimited
-
-
-/Subodh Nijsure
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
