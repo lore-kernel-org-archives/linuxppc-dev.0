@@ -1,66 +1,56 @@
-Message-Id: <00Jul6.121427adt.7305@dragon.appliedmicro.ns.ca>
-From: Frank Smith <smith@amirix.com>
-MIME-Version: 1.0
-To: Pete Buechler <peterb@suse.com>
-CC: Ruedi.Hofer@ascom.ch, linuxppc-embedded@lists.linuxppc.org,
-        distribution@linux01.hasler.ascom.ch
-Subject: Re: newlib, uclib
-References: <0FXA0055X023NC@pmdf-it.hasler.ascom.ch> <00070608033801.21103@CX579290-B>
-Content-Type: text/plain; charset=us-ascii
-Date: Thu, 6 Jul 2000 12:14:19 -0300
+From: Ruedi.Hofer@ascom.ch
+Date: Thu, 06 Jul 2000 16:46:59 +0100 (CED)
+Subject: Re: Mvista Kernel on FADS 860
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: kernel@linux01.hasler.ascom.ch
+Message-id: <0FXA0064T6EGQK@pmdf-it.hasler.ascom.ch>
+MIME-version: 1.0
+Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_kUadz9gaYBRPBSj/F1KL6w)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pete Buechler wrote:
+--Boundary_(ID_kUadz9gaYBRPBSj/F1KL6w)
+Content-type: TEXT/PLAIN
+Content-Transfer-Encoding: 7BIT
 
->
-> Another option is to identify the C library functions that you are actually
-> using and remove the others from the archive. That would be rather tough by
-> hand. Lineo has a closed source tool called "Lipo" which will do that for you -
-> there may be a free replacement in the works somewhere.
+Although I know that FADS is a bad choice, some more info concerning this problem:
+(I have no solution yet)
 
-The Debian boot-floppies package has a script that does this sort of
-thing,
-I believe. Don't know how well it performs as compared to lipo-suction.
+I'm referring to hardhat 1.1, kernel source 2.2.13.7.
 
-Excerpt from 'boot-floppies/scripts/rootdisk/mklibs.sh':
+In several files (eg include/asm-ppc/mpc8xx.h) I found lines containing
+#ifdef CONFIG_FADS
+...
+#endif
+Therefore I think I should be able to configure FADS somewhere in the kernel config menu.
+Unfortunately, I am not!
 
-# Introduction:
-# When creating boot floppies, there is never enough room on the disks.
-# So it is important not to waste bytes on unnecessary code.
-# Shared Libraries contain many functions that are probably not used in
-the
-# binaries included in the boot disks, and copying the whole library is
-a
-# waste of space.
-# This utilitiy helps to reduce the necessary libraries to only include
-the
-# symbols needed to run a given set of executables.
-#
-# Features:
-# * Automatic detection of all necessary libraries, even for
-inter-library
-#   dependencies, for a given set of executables.
-# * Automatic installation of all needed libraries and soname links.
-# * Automatic reduction of all libraries to minimal size for which PIC
-#   libraries are provided.
-#
-# Requirements:
-# * Beside the shared libraries, you need libfoo_pic.a files for all
-#   libraries you want to reduce.
-# * You need binutils (notably objdump and objcopy) installed.
+All my trials failed of adding the #define to the file arch/ppc/config.in. Example:
+  choice 'Machine Type' \
+        "PowerMac       CONFIG_PMAC \
+         PReP/MTX       CONFIG_PREP \
+         CHRP           CONFIG_CHRP \
+         PowerMac/PReP/CHRP     CONFIG_ALL_PPC \
+         APUS           CONFIG_APUS \
+         MBX            CONFIG_MBX \
+         RPXL           CONFIG_RPXLITE \
+         RPXC           CONFIG_RPXCLASSIC \
+         EST8xx         CONFIG_EST8xx \
+***         FADS           CONFIG_FADS \
+         BSE-IP         CONFIG_BSEIP" PowerMac
 
 
-Frank.
+Any ideas?
+
+/Ruedi
 
 
---
-Frank Smith, MCompSci
-Principal Software Designer      frank.smith@amirix.com
-AMIRIX Systems Inc.              http://www.amirix.com/
-Embedded Debian Project          http://www.emdebian.org/
-77 Chain Lake Drive              902-450-1700 x289 (Phone)
-Halifax, N.S. B3S 1E1            902-450-1704 (FAX)
+
+PS: I even have a problem compiling the newly installed hardhat kernel 2.2.13.7. (Without
+changing anything, just typing make dep && make zImage!)
+I get 'FEC_INTERRUPT'  undeclared in fec.c!
+
+--Boundary_(ID_kUadz9gaYBRPBSj/F1KL6w)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
