@@ -1,31 +1,36 @@
-To: Alireza Sadri <arsadri@yahoo.ca>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: RS232 Baud Rate 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 30 Jun 2004 03:54:12 PDT."
-             <20040630105412.41291.qmail@web12824.mail.yahoo.com>
-Date: Wed, 30 Jun 2004 13:55:45 +0200
-Message-Id: <20040630115550.92E82C109F@atlas.denx.de>
+Message-ID: <40E2ADCA.4030006@fh-landshut.de>
+Date: Wed, 30 Jun 2004 14:10:50 +0200
+From: Oliver Korpilla <okorpil@fh-landshut.de>
+MIME-Version: 1.0
+To: Marco Schramel <Schramel.Linux@go.bartec.de>
+Cc: PPC_LINUX <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: pci on ppc
+References: <200406301233.24676.Schramel.Linux@go.bartec.de>
+In-Reply-To: <200406301233.24676.Schramel.Linux@go.bartec.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20040630105412.41291.qmail@web12824.mail.yahoo.com> you wrote:
+Marco Schramel wrote:
+> Where the function "m8260_setup_arch()" (m8260_setup.c) is called ?? With the pci option the kernel does not call this function.
 >
-> I am going to use ViosinProbeII with VisionCLICK , and
-> i need to set the COM port baud rate , can anyone tell
-> me what is MPC8260 RS232 baud rate?
 
-It is whatever you program into it.
+I don't know If I understand you right or this is helpful to you, but these
+functions are never called directly, but instead in platform_init() function
+pointers are stored in the ppc_md struct variable, and this holds true for
+m8260_setup_arch() as well (in arch/ppc/kernel/m8260_setup.c):
+
+ppc_md.setup_arch = m8260_setup_arch;
 
 
-Wolfgang Denk
+There's always only one platform_init() due to the linking process, so there's
+no name clash.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-panic: kernel trap (ignored)
+Could you elaborate a bit on your PCI problem anyway? Is your board standard or
+custom?
+
+With kind regards,
+Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
