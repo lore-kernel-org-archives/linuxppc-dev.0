@@ -1,29 +1,37 @@
-Date: Wed, 23 Jan 2002 16:20:50 -0800 (PST)
-From: Mark Jaffe <wizards@wizdev.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Troubling system freezups...
-Message-ID: <Pine.LNX.3.96.1020123161956.7638C-100000@wizdev.net>
+Date: Thu, 24 Jan 2002 05:42:46 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: RFC: vesafb
+To: hollis@austin.ibm.com
+Cc: linuxppc-dev@lists.linuxppc.org, sdi@remote.org
+In-Reply-To: <20020123192010.GP510@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
+Message-Id: <E16Tbiw-00008o-00@piglet.grunz.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I am still experiencing system hangs. Kernel is 2.4.18-pre0-benh on
-8500/dual-604. I had just rsync'ed the kernel source this afternoon and
-launched a build script. Monitored output of the build halted partway
-through, indicating frozen state. Unfortunately, I returned it to the
-co-lo so this necessitates a visit to reboot and probably baby-sit a
-manual fsck of the volume.
+On  23 Jan, this message from hollis@austin.ibm.com echoed through cyberspace:
+> The attached patch allows vesafb to work on PPC. vesafb does surprisingly
+> little with the BIOS (which I thought was the whole point of VESA). With some
+> ifdef's I'm able to use it as sort of a VGA offb -- the firmware initializes
+> the card, and the driver just uses it and never mucks with it.
 
-Is there some way to see what happened?
+Wouldn't this be a good start to use generic PC-type grafic cards on PPC
+machines in general? Or do you lack initialization if nobody (neither
+firmware nor OS) can talk to the card 'natively'?
 
-Mark
-============================================================
-Mark Jaffe          | (408) 972-9638 (home)
-Chief Wizard        | (408) 807-1530 (cell/page/voicemail)
-Computer Wizards    | (425) 795-6421 (FAX)
-wizards@wizdev.net  | http://www.wizdev.net/
+Cheers
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
