@@ -1,28 +1,24 @@
-Message-ID: <3B67ED13.E1C05C61@irisa.fr>
-Date: Wed, 01 Aug 2001 13:50:43 +0200
-From: Romain Dolbeau <dolbeau@irisa.fr>
+Message-ID: <3B688167.9010906@hadess.net>
+Date: Wed, 01 Aug 2001 23:23:35 +0100
+From: Bastien Nocera <hadess@hadess.net>
 MIME-Version: 1.0
-To: Olaf Hering <olh@suse.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: `planb' doesn't compile on recent BenH kernel.
-References: <3B67E741.50A66F26@irisa.fr> <20010801134541.B2050@suse.de>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-dev@lists.linuxppc.org,
+	"Joseph P. Garcia" <jpgarcia@execpc.com>
+Subject: special adb buttons don't survive sleep
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Olaf Hering wrote:
+Hi,
 
-> The attached patch allows the compile. Do you have hardware to test? I
-> have a 7500 but no video hardware around.
+Joseph's code for the special adb buttons doesn't survive sleep, the
+event device just isn't present anymore when coming back from sleep. All
+the other event devices are present (/dev/input/eventX).
 
-I was already recompiling without line 2074, but unfortunately
-I don't have video hardware either. I just _hate_ to have hardware
-without a proper driver :-)
+Franz, any tips ?
 
---
-DOLBEAU Romain               | l'histoire est entierement vraie, puisque
-ENS Cachan / Ker Lann        |     je l'ai imaginee d'un bout a l'autre
-dolbeau@irisa.fr             |           -- Boris Vian
+Cheers
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
