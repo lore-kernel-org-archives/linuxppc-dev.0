@@ -1,25 +1,58 @@
-Date: Fri, 10 Sep 1999 10:29:34 +1000
-Message-Id: <199909100029.KAA04114@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: ddkilzer@computer.org
-CC: costabel@wanadoo.fr, sterwill@io.nu, hcaley@loomer.com,
-        linuxppc-dev@lists.linuxppc.org
-In-reply-to: <v03130303b3fdfbeb11d0@[192.168.1.1]> (ddkilzer@computer.org)
-Subject: Re: Paul's devel branch on Lombard?
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <37D74322.B787B9FE@loomer.com> <19990909092545.C4200@io.nu>
- <37D7C974.77E93281@loomer.com> <37D820B5.F84B223D@wanadoo.fr>
- <19990909163058.A22217@io.nu> <v03130303b3fdfbeb11d0@[192.168.1.1]>
+Date: Thu, 9 Sep 1999 22:07:53 -0500 (CDT)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ioremap (still?) broken
+In-Reply-To: <199909090629.IAA00320@piglet.cpu.lu>
+Message-ID: <Pine.LNX.4.04.9909092206020.5581-100000@narn.drgw.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> It probably changed to CONFIG_ADB_MOUSE.  This may be a side-effect of the
-> ADB merger between Linux/m68k and LinuxPPC.
 
-Yes it did, and yes it is.  I have the merged ADB stuff in my
-linux-pmac-devel tree now.
+A couple of people mentioned I should check that PCI memory accesses are
+enabled in the PCI command register. I fixed this, and about an hour later
+I was transmitting at around 300 Mbit/second ;)
 
-Paul.
+Thanks to all who replied.
+
+
+
+On Thu, 9 Sep 1999, Michel Lanners wrote:
+
+> On   7 Sep, this message from Troy Benjegerdes echoed through cyberspace:
+> [about an Alteon PCI Gigabit card]
+> > The first thing the driver does is check the card version by reading a
+> > particular register. By using appropriate printf's, I have found that the
+> > value returned is '0xffffffff'. (defininitely NOT the register it's
+> > looking for)
+> 
+> First, I'd try to get the card identification right. What kind of
+> register are you trying to read? Is that a PCI config register, or
+> already a memory- or IO-register on the card?
+> 
+> What about lspci? Does it report your board? Does it identify it
+> correctly? In what machine are you trying this?
+> 
+> Get back with this, and we'll see for the next step ;-)
+> 
+> Michel
+> 
+> -------------------------------------------------------------------------
+> Michel Lanners                 |  " Read Philosophy.  Study Art.
+> 23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+> L-1710 Luxembourg              |
+> email   mlan@cpu.lu            |
+> http://www.cpu.lu/~mlan        |                     Learn Always. "
+> 
+> 
+
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |  troy@blacklablinux.com    |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
