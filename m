@@ -1,23 +1,22 @@
-Message-ID: <38960D72.D0FB6642@dnrc.bell-labs.com>
-Date: Mon, 31 Jan 2000 22:32:18 +0000
-From: Pravin Pathak <pkpathak@dnrc.bell-labs.com>
+Message-ID: <38960E11.6F73E8C1@transport.com>
+Date: Mon, 31 Jan 2000 14:34:58 -0800
+From: Lachlan Audas <laudas@transport.com>
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: i82557 driver for PPC
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Looking for cllf-2.2.13.tgz
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-I need to port i82557 driver for ppc. This probably need
-some changes to the driver available on the net like big-endian
-to small-endian conversions. Can any one
-guide me on this.
+Hi every one,
 
-Regards
-Pravin
+I was looking the for the linux kernal cllf-2.2.13.tgz on mail.netx4.com
+(in /pub)  but no where to be found !   Has it been erased ? or lost ?
+or is there a newer version around some where.
 
+Thanks.
+
+Lachlan Audas
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
