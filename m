@@ -1,39 +1,30 @@
-Message-ID: <3BE17B78.79443EB1@cambridgebroadband.com>
-Date: Thu, 01 Nov 2001 16:42:32 +0000
+Message-ID: <3BE17D1F.649716F9@cambridgebroadband.com>
+Date: Thu, 01 Nov 2001 16:49:35 +0000
 From: Alex Zeffertt <ajz@cambridgebroadband.com>
 MIME-Version: 1.0
-To: John Francis <johnfrancsis@yahoo.com>
+To: Liu HongXun-a16975 <a16975@motorola.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Is there no vmalloc() for PPC kernel?
-References: <20011025093708.81325.qmail@web20107.mail.yahoo.com>
+Subject: Re: Is there ATM driver for MPC860 available?
+References: <01139FC052A0D411900B00508B9535FC03B1689E@ZCH07EXM04.corp.mot.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've written a resident driver which calls vmalloc.
+Yes, I'm doing it.
 
-If you're writing a module which calls vmalloc you'll need to make sure EXPORT_SYMBOL(vmalloc)
-appears in
-
-linux/arch/$(ARCH)/kernel/$(ARCH)_ksyms.c:
-
-... otherwise insmod will fail.
+Liu, I'll send this to you directly rather than to the whole list as it's quite big.  If anyone else
+wants a copy they can write to me.
 
 Alex
 
-John Francis wrote:
+Liu HongXun-a16975 wrote:
 >
-> I need to allocate more than page worth of memory in
-> kernel. Some documentation that I looked at indicated
-> I should be using vmalloc() , so I tried using it for
-> PPC kernel and it couldn't find this symbol. Looked
-> through the code ( 2.4.4 ) and I didn't see it.
+> Hi, all,
+> Is there ATM driver for MPC860?
+> Thanks
 >
-> What is the best way to allocate "fairly" large memory
-> pool for use within the kernel by the driver?
->
-> John
+> Rolf Liu
 >
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
