@@ -1,95 +1,35 @@
-From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
-Reply-To: Thomas Graichen <graichen@innominate.de>
-Subject: shifts on 64bit ints
-Date: 3 Aug 2000 22:38:06 GMT
-Message-ID: <news2mail-8mcs8e$kdj$2@mate.bln.innominate.de>
-Reply-To: thomas.graichen@innominate.de
-To: linuxppc-dev@lists.linuxppc.org
+Date: Thu, 3 Aug 2000 15:59:11 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Ronald Wahl <rwa@peppercon.de>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: iounmap
+Message-ID: <20000803155911.A6226@cx258813-a.chnd1.az.home.com>
+References: <Pine.LNX.4.21.0008030950020.1647-100000@goliath.issistance.de> <Pine.LNX.4.10.10008031443520.425-100000@cassiopeia.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.10.10008031443520.425-100000@cassiopeia.home>; from geert@linux-m68k.org on Thu, Aug 03, 2000 at 02:44:12PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-while trying to debug the sgi xfs code on the ppc i ran across the
-following thing which looks a bit like a bug to me - maybe some-
-one here can confirm - even better describe or solve this (this
-for now the reason - don't know if the last or not - why the sgi
-xfs code does not run on the ppc so far)
+On Thu, Aug 03, 2000 at 02:44:12PM +0200, Geert Uytterhoeven wrote:
+>
+> On Thu, 3 Aug 2000, Ronald Wahl wrote:
+> > I'm currently writing a device driver for an pci controller and have to
+> > map very large amounts of pci memory and i/o ranges via ioremap. The
+> > problem is that there is no iounmap and ioremap returns NULL after some
+> > insmod/rmmod cycles. When gets this implemented?
+>
+> When someone steals some spare time and writes the code.
 
-ok - now the story - let's have a look at the following code:
+Done.  The hot swap PCI kernel patches from MCG have iounmap implemented.
+Very useful when ripping a PCI peripheral out of its slot. :)
 
-unsigned int myint;
-
-for (myint = 0; myint < 64; myint++) {
-  printf("Mask %d is ",myint);
-  printf("0x%8x", (int)((1LL << myint) >> 32));
-  printf("%8x - ", (int)(1LL << myint));
-  printf("0x%8x", (int)(~(1LL << myint) >> 32));
-  printf("%8x\n", (int)(~(1LL << myint)));
-}
-
-which should do about the same as shifting a bit through a 64bit
-(long long - LL) int and print the result for each step and the
-inverse of it - it is a bit more complicated (the 32 shifts) be-
-cause there seems to be no %llx support for printk so i had to
-work around it this way - i hope it is right that way - so
-basically it is the function of
-
-for (myint = 0; myint < 64; myint++) {
-  printf("Mask %d is ",myint);
-  printf("0x%llx - ", (1LL << myint));
-  printf("%llx\n", ~(1LL << myint));
-}
-
-ok - if you compile it on i386 and on ppc in userland and in the
-kernel you get the following results:
-
-...
-Mask 29 is 0x       020000000 - 0xffffffffdfffffff
-Mask 30 is 0x       040000000 - 0xffffffffbfffffff
-Mask 31 is 0x       080000000 - 0xffffffff7fffffff
-Mask 32 is 0x       1       0 - 0xfffffffeffffffff
-Mask 33 is 0x       2       0 - 0xfffffffdffffffff
-Mask 34 is 0x       4       0 - 0xfffffffbffffffff
-...
-
-on i386 and ppc userland and i386 in the kernel - and this is
-i think what one would expect to get as the result - but in the
-kernel on ppc you get:
-
-...
-Mask 29 is 0x       020000000 - 0xffffffffdfffffff
-Mask 30 is 0x       040000000 - 0xffffffffbfffffff
-Mask 31 is 0x       080000000 - 0xffffffff7fffffff
-Mask 32 is 0x       1       0 - 0xfffffffeffffffff
-Mask 33 is 0x       0       0 - 0xffffffffffffffff
-Mask 34 is 0x       0       0 - 0xffffffffffffffff
-...
-
-which is a bit confusing to me and i think it is a bug some-
-where - any shift greater than 32 gives trash ... can anyone
-confirm this or have an idea or solution to this ?
-
-btw. if you shift 33 times by one instead of 33 at once it
-works fine ...
-
-btw. this is on the sgi xfs tree from oss.sgi.com with some
-patches to get it working on ppc from
-
-  http://innominate.org/~graichen/projects/xfs-ppc/
-
-so basically 2.4.0-test5 ...
-
-a lot of thanks in advance
-
-t
-
-p.s.: am i right that there is no simple way to print 64bit with
-      printk (no %xll etc.) - or do i just not know the trick ?
+See them at http://www.mcg.mot.com/linux under HA Linux/Downloads.
 
 --
-thomas.graichen@innominate.de
-Technical Director                                       innominate AG
-Clustering & Security                                networking people
-tel: +49.30.308806-13 fax: -77               web: http://innominate.de
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
