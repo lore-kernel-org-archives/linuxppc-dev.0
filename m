@@ -1,70 +1,46 @@
-Message-ID: <38794090.8D116362@charter.net>
-Date: Sun, 09 Jan 2000 20:14:40 -0600
-From: Dan Dickey <ddickey@charter.net>
+Date: Sun, 9 Jan 2000 18:22:56 -0800 (PST)
+From: Mark Vojkovich <mvojkovich@varesearch.com>
+To: Shuangjun Zhu <r44089@email.sps.mot.com>
+cc: XFree86 Devel <devel@XFree86.Org>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Question about the video device driver
+In-Reply-To: <009201bf5b0b$01e4c140$73f102de@sjzhu>
+Message-ID: <Pine.LNX.4.04.10001091810530.25394-100000@silicon.su.valinux.com>
 MIME-Version: 1.0
-To: Dan Malek <dan@netx4.com>
-CC: "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>,
-        Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: MPC850 Development Board - with SDRAM
-References: <38777E93.2BE51FEE@charter.net> <38791AAD.F3EBA3A2@netx4.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek wrote:
-> 
-> Dan Dickey wrote:
-> 
-> > yes - I have an RPX Lite sitting right next to me.
-> > But, apparently Embedded Planet doesn't have any
-> > development boards with SDRAM on them.
-> 
-> Embedded Planet does not build development boards, they
-> build production boards for OEMs to integrate into products
-> to reduce development cost and risk.
 
-Sorry - didn't mean to imply that.  I'm aware of what they
-advertise on their web page (http://www.embeddedplanet.com/)
-and how some of it is used.  I'm not sure that any "smaller"
-companies actually make powerpc development systems - instead,
-I can only find them at Motorola and IBM, and ???.
 
->   There is always
-> a debate about EDO versus SDRAM.  Their design started wtih
-> EDO, and since it continues to be available with both
-> competitive cost and performance there isn't a reason to
-> change the design.
+On Mon, 10 Jan 2000, Shuangjun Zhu wrote:
+
+> >   What format is the hardware buffer in?  What macroblock
+> >size?
+> > 
 > 
-> Products that wish to use SDRAM do so by placing it on their
-> boards that connect to the Embedded Planet board.  This allows
-> the flexibility to add the necessary amount of memory for
-> the product requirements.  You can use the UPMB signals from
-> the RPX-Lite processor bus connector in your design if you
-> require SDRAM.
 > 
->         -- Dan
-
-Yes, I've become a little more aware of this situation since
-claiming the above.  Here's a message I received from
-Robert Applebaum (who works for Embedded Planet I believe).
-He gave permission to repost this to the list.
-
-Robert Applebaum wrote:
+> For the MPC823 FADS board, video controller is in the CPM, part of 
+> the CPU, and video encoder is ADV7176, video memory is map to 
+> the system memory.  It can support NTSC/PAL display.
 > 
-> Dan, we use EDO on CPU boards, but have PC100 SDRAM on new IO cards such as
-> the VEXC which use the UPM B (the EDO on UPM A are used as a single Heap)
+> MPC823 can support RGB and YCr Cb, but for Analog Devices ADV7176
+> video encoder,  it can only support 4:2:2 YCr Cb(CCIR 601) format.
 > 
-> all our new products have SDRAM
+> I do not know what the macroblock's meaning is.
+> 
 
-I haven't responded back to Robert yet; but I'm intrigued by the
-last line - is there a system in the works that has SDRAM on it?
-(And no EDO).  Time will tell.
+  I meant the Cr and Cb sampling intervals.  It's 4:2:2 so it's
+2x1 pixel blocks.  That means you have to do some sort of
+shadowfb method since X requires that you can read back
+the data without loss.  If there were Cb and Cr samples for each
+luma, then you could have used a StaticColor visual and rendered
+directly into the framebuffer.  StaticColor is like pseudocolor
+but with a fixed lookup table.
 
-And yes - I'm aware that Embedded Planet isn't in the
-development system market - but you do have to admit, their
-boards also fulfill that requirement pretty well.  :)
-	-Dan
+
+			Mark.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
