@@ -1,50 +1,58 @@
-Message-ID: <3BCC3EEE.35029A2F@midrivers.com>
-Date: Tue, 16 Oct 2001 08:06:38 -0600
-From: Mark Pilon <mpilon@midrivers.com>
-MIME-Version: 1.0
+From: ckrobins@rockwellcollins.com
+Subject: Trying to add SCSI hard disk as additional filesystem to Motorola MVME-3604
+ that boots from ramdisk
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: libc not finding atexit() w/ -lm
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 16 Oct 2001 10:35:41 -0500
+Message-ID: <OF46710E85.C37E1C35-ON86256AE7.00496232@collins.rockwell.com>
+MIME-Version: 1.0
+Content-type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-all,
+I am having difficulty with interfacing an 8-bit SCSI hard disk to an
+embedded system that boots from a ramdisk.
 
-I'm attempting to link a .o containing the whetstone benchmark
-to a package of stand-alone (runs pre-linux) diags and, depending
-where in LD's args I stick -lm:
+The embedded system is VME-based and has a Motorola MVME-3604 SBC which
+boots from a ramdisk.    The OS
+is Yellow Dog Linux (version 2.2.12) with Gabriel Paubert's patches applied
+for use with the MVME-2604.    My
+predecessor did the job of getting this initial system up and running.
+I have a fair amount of experience with Unix,
+mostly Solaris boxes, and some experience with running Linux, but this is
+the first I've had to do with patching and
+building kernels.
 
-whetstone.o: In function `whetstone_main':
-whetstone.o(.text+0x414): undefined reference to `sin'
-whetstone.o(.text+0x420): undefined reference to `cos'
-whetstone.o(.text+0x434): undefined reference to `cos'
-.
-.
-.
+So far, I have changed the configuration file ('make menuconfig') to add
+SCSI support, AIC-7XXX, and ncr53c8xx &
+sym53c8xx.    I modified the ramdisk's /etc/fstab file to add the line
+'/dev/sda /mnt ext2 noauto 0 0'
 
-OR,
+The specific errors are:
 
-/home/mpilon/ppc_tools/ppc_home/powerpc-linux/lib/libc.so.6: undefined
-reference to `atexit'
-make[1]: *** [mercury] Error 1
-make[1]: Leaving directory `/home/mpilon/mercury/diagboot'
+1. modprobe: modprobe: Can't locate module block-major-8
+2. /dev/sda isn't present in the table when I do a 'mount'
 
--- I suspect I'd get the latter error if I fixed the first.
+I also get a similar error from modprobe about   Can't locate module
+char-major-4.
 
-I built my own tools so I suspect a path problem or lack of a patch;
-I searched the linuxppc-embedded list but found nothing for 'atexit'
+It appears to me that it's probably having trouble finding any modules at
+all.
+My predecessor's notes say (I think) that the module code is built into the
+kernel we use, rather than loaded as
+a module at runtime, so I guess that shouldn't be a surprise.    But what
+should have been built into the kernel that
+I missed?
 
-all help appreciated,
+I have a log file of the system as it boots, with all of the details.
+It's about 10Kb large and it doesn't seem
+appropriate to post, but I'll mail it to anyone whose interested.   Please
+contact me at:  ckrobins@rockwellcollins.com
 
-Mark
---
-Mark Pilon
+Thanks for your help and consideration
 
-Minolta-QMS
-P.O. Box 37
-Fallon, MT.  59326-0037
+Regards,
+Craig Robinson
 
-1-406-853-0433
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
