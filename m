@@ -1,68 +1,50 @@
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Olaf Hering <olh@suse.de>,
+        Michael Schmitz
+ <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display!
+Date: Tue, 26 Sep 2000 23:02:53 +0200
+Message-Id: <19340821143437.3943@mailhost.mipsys.com>
+In-Reply-To: <20000926204606.B467@suse.de>
+References: <20000926204606.B467@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14801.3419.973780.175624@esb.bbn.com>
-Date: Tue, 26 Sep 2000 16:55:55 -0400
-From: R Shapiro <rshapiro@bbn.com>
-To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-Cc: daenzerm@student.ethz.ch,
-        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.1 + ati driver with rage II/rage pro
-In-Reply-To: <Pine.LNX.4.10.10009262127370.21452-100000@zirkon.biophys.uni-duesseldorf.de>
-References: <39D0F7EB.C0415571@relog.ch>
-	<Pine.LNX.4.10.10009262127370.21452-100000@zirkon.biophys.uni-duesseldorf.de>
-Reply-To: rshapiro@bbn.com
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz writes:
- > > > (--) ATI(0): VideoRam: 1 kByte (EDO)
- > >
- > > That's quite little VRAM :)
- >
- > Yep, that can't really be the 2048 bug anymore.
+>> I've posted such a patch to debian-powerpc when one user there had this
+>> problem. That was before I learned booting with yaboot avoids the problem.
+>> If the resource conflict also happens on oldworld machines, I'd still
+>> prefer some suggestions to foolproof the patch (as in: how can I figure
+>> out if a region has been allocated by another card? What bits from the
+>> config registers should I look at?).
+>
+>I have a precompiled benh Kernel at penguinppc.org/~olaf with Benhs current
+>kerneltree, your patch is still needed - otherwise *kaboom*
 
+Allocating a region is nasty. You must find a free physical region (2.2.x
+has no support for that) and you must find one that is decoded by the
+north bridge (we currently have no code for either reading or writing the
+address space decode enable bits of Bandit and UniNorth).
 
-Fwiw the probed VideoRam on my rev. b beige G3 is also some
-ridiculously small number (though not as small as this) yet it runs
-the ati driver without any problems.  That one has a single monitor
-and Rage Pro video.
+That's step 2 of my PCI patches. I will a set of regions per hose (pci
+controller, Apple ones can decode several non-contiguous regions).
 
+With this done, we will be able to really allocate PCI space from the
+kernel. I still have to check if the common PCI code provides enough
+hooks so I can even add new decoded regions to Bandit/Uninorth, but
+that's not terribly important.
 
- > But that's also quite a lot of mach64 cards. Are there really two GI's in
- > the machine?
+One thing: I'd be interested in figuring out what happens if you simply
+leave this nasty ATI BAR unassigned (write 0xffffffff and then 0 to it).
+Will the controller fail ?
 
-It's a three-headed machine: two Rage Pro cards plus the onboard Rage
-II.  If I set all three Devices to use fbdev, X happily drives all
-three displays (in xinerama, even).  It's only the ati driver that
-causes the trouble.
+What I can do in the meantime is test that we are running _exactly_ on
+this machine model, and them remap to a region we know is safe (that's
+more or less what you patch do).
 
-
-
- > You will have to pass multipe atyfb= kernel parameters to make the kernel
- > initialize one framebuffer device for each.
-
-Right now my kernel args are
-
- video=atyfb:vmode:20,cmode:8
-
-I don't know the syntax for specifying multiple atyfb's.
-
-I'm using BootX to boot.  I tried miBoot but I couldn't get X 4.0.1 to
-run at all that way, even with the fbdev driver.  I don't think quik
-booting works on this machine, so BootX seems to be the only option.
-
-
-
- > Also helpful: a dump of the OF device tree.
-
-Remind me how to get that and I'll try to generate one.
-
-
-
---
-rshapiro@bbn.com
-
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
