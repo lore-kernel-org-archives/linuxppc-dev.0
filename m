@@ -1,70 +1,104 @@
-Message-ID: <3F261115.7090107@intracom.gr>
-Date: Tue, 29 Jul 2003 09:15:49 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
-MIME-Version: 1.0
-To: Adam Kaczynski <kaczor@dgt-lab.com.pl>
-Cc: Alex Zeffertt <ajz@cambridgebroadband.com>,
-	Sanjay Kumar <skumar@giga-stream.de>,
+Message-ID: <20030729062348.20980.qmail@web14601.mail.yahoo.com>
+Date: Mon, 28 Jul 2003 23:23:48 -0700 (PDT)
+From: Kalpesh Jasapara <kjasapara@yahoo.com>
+Subject: Re: "alloc_area_pte: page already exists" 
+To: tliang@yahoo.com
+Cc: Matt Porter <mporter@kernel.crashing.org>,
 	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: m8260_cpm_dpfree( )
-References: <FKEJLMJFECLAHOKCGJFPKEFGCBAA.skumar@giga-stream.de> <1059403782.2835.193.camel@zambia.cambridgebroadband.com> <3F2583F8.9060300@dgt-lab.com.pl>
-In-Reply-To: <3F2583F8.9060300@dgt-lab.com.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Adam Kaczynski wrote:
+Hello,
+
+>From the code it appears that iounmap() or vfree() of
+any virtual address that maps physical address beyond
+the 32 bit address space, especially in case of PPC
+440 (where pte_t is defined as unsigned long long ),
+free_area_pte() will return without completely
+clearing out the pte.
+
+If the pte has not completely been cleaned up (all 64
+bits) during the iounmap(or vfree) is it possible that
+pte_none() would complain and you see the messages ?
+
+Matt, do you think it is a bug ?
+the FIXME suggests that this needs to be cleaned up.
+
+File: pgtable.h
+<..snip..>
+#else /* CONFIG_440 */
+/* FIXME: Clean this up */
+static inline unsigned long pte_update(pte_t *p,
+unsigned long clr,
+                                       unsigned long
+set)
+{
+        unsigned long old, tmp, offset;
+
+        __asm__ __volatile__("\
+1:      li      %0,4\n\
+        lwarx   %2,%0,%4\n\
+        andc    %1,%2,%5\n\
+        or      %1,%1,%6\n"
+"       stwcx.  %1,%0,%4\n\
+        bne-    1b"
+        : "=&r" (offset), "=&r" (tmp), "=&r" (old),
+"=m" (*p)
+        : "r" (p), "r" (clr), "r" (set), "m" (*p)
+        : "cc" );
+        return old;
+}
+#endif /* CONFIG_440 */
+<...snip...>
+
+Regards,
+-Kalpesh
 
 >
-> Alex Zeffertt wrote:
+> Matt,
 >
->> Sanjay,
->>
->>> 1. where can I get m8260_cpm_dpfree() function implementation ?
->>
->> You could try porting the dpfree function in
->> arch/ppc/8xx_io/commproc.c.  However, this function should only really
->> be necessary if you wish to rmmod the driver.
->>
->
-> I had the same problem last year when I was working with the simple ATM
-> driver
-> (http://www.dgt-lab.com.pl/Serwis/ATMdrv8260.tar.gz )
-> and I decided to make a kind of not very nice looking work-around -
-> simply to grab and later free the block of memory I needed from the top.
->
-> This feature was important for us to debug the driver since I was able
-> to load, test and later rmmod the driver. However this work-around would
-> work only if the driver is loaded as the last one (from the drivers
-> using dp_mem).
->
-> I think that there is no reason to implement any more robust allocator
-> for dp memory since it is used only for very special purposes, allocated
->  only during drivers initialization and because this resource is so
-> limited that any normal allocation mechanism (with a pool of memory
-> blocks) would be inefficient.
->
-> Regards,
-> Adam
->
->
->
->
->
-Hi
+> It is a custom board with 256MB of memory.
 
-I just want to point out that I have posted a solution to that problem
-some time
-ago for the 8xx.
+Ahh, ok. So, what you've done is misconfigured a
+mapping in
+your custom board port. It's reporting that you
+already have
+a pte allocated in the vmalloc area which must be
+untouched
+so the VM can allocate memory at runtime.
 
-Try searching the list for the patches, they implement a proper
-dpalloc/dpfree
-with storage management.
+Usually, this is the result of an errant io_block_map
+entry
+which overlaps the vmalloc area. Examine the
+VMALLOC_START
+macro to see how the start of vmalloc space is
+calculated.
+In your case, (256MB of RAM) the start of vmalloc
+space will
+be at 0xd1000000 assuming a standard PAGE_OFFSET of
+0xc0000000.
+If you've mapped something near that virtual address
+or somewhere
+close above that address then you need to move it. How
+much
+vmalloc space you need to reserve depends solely on
+your specific
+application.
 
-Regards
+In most cases, it's smarter to never use io_block_map
+and to
+let ioremap() create mappings dynamically so this sort
+of thing
+doesn't happen. Most modern in-kernel ports try to not
+use
+io_block_map if at all possible.
 
-Pantelis
+Regards,
+--
+Matt Porter
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
