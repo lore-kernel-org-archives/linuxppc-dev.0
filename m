@@ -1,63 +1,40 @@
-Message-ID: <22F662CDC53ED411B65700805F31DE1C1359D5@exccop-01.dmo.cpqcorp.net>
-From: "Mathiasen, Torben" <Torben.Mathiasen@compaq.com>
-To: "'Ron Bianco'" <ronb@junction.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: eepro100 on IBM Walnut board,
-Date: Fri, 6 Apr 2001 11:16:04 +0100 
+From: "Jeffrey D. Kowing" <jeffrey.d.kowing1@jsc.nasa.gov>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15053.55321.570589.702338@igor.jsc.nasa.gov>
+Date: Fri, 6 Apr 2001 09:52:09 -0500
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: DiskOnChip Millennium flash chip on PPC
+Reply-To: jeffrey.d.kowing1@jsc.nasa.gov
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks a lot. I'll take a look at some of the older versions.
+Recently, the hardware guys in my group are considering the DiskOnChip
+Millennium MD2810.
 
-Regards,
-Torben
+http://www.m-sys.com/content/products/product.asp?PID=1&FILE=docmillennium&FAM=doc
 
------Original Message-----
-From: Ron Bianco [mailto:ronb@junction.net]
-Sent: 6. april 2001 00:48
-To: Torben Mathiasen
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: eepro100 on IBM Walnut board,
+Some time ago there were some discussions about the DiskOnChip from
+M-Systems on Linux/PPC targets.
 
+http://lists.linuxppc.org/listarcs/linuxppc-embedded/200005/msg00069.html
+http://lists.linuxppc.org/listarcs/linuxppc-embedded/199912/msg00097.html
 
+>From the MTD for Linux website, http://www.linux-mtd.infradead.org/, I
+gather that there is now a GPL'd driver available (not from M-Systems,
+but from David Woodhouse of the MTD project) and that it is in the
+Linux 2.4 kernel.  There are also references to its use in the GNU
+Grub and LinuxBios projects.
 
-Didn't have endian problems in the version we're using on our PPC 8240
-board.
-The version string says:  eepro100.c:v1.09j 7/27/99 Donald Becker.......etc.
-I had problems with newer versions, I think endian issues were one of the
-them.
+I was wondering since the time of the previous discussions on this
+list if anyone has had any further experience or advice about the
+DiskOnChip on PPC targets that they would care to share?
 
-Ron
+Many thanks.
 
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Cort
-> Dougan
-> Sent: Thursday, April 05, 2001 1:33 PM
-> To: Torben Mathiasen
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: eepro100 on IBM Walnut board,
->
->
->
-> The latest eepro has serious endian-ness problems.  PPC and MIPS suffer
-> this problem.
->
-> } Has anyone tried using an Intel i82559 NIC as a second adapter with an
-IBM Walnut board? I'm using the
-> eepro100 driver
-> } with the montavista distribution (tried 2.4.0-test2 and 2.4.2) and the
-driver just keeps printing:
-> wait_for_cmd_timeout.
-> } The NIC won't send any frames, and no interrupts are generated.
-> }
-> } The docs claim that the eepro100 driver should work.
->
->
-
+--
+Jeff Kowing
+jeffrey.d.kowing1@jsc.nasa.gov
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
