@@ -1,35 +1,40 @@
-Message-ID: <3BD718AF.75934CD8@mvista.com>
-Date: Wed, 24 Oct 2001 15:38:23 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: =?iso-8859-1?Q?K=E1ri=20Dav=ED=F0sson?= <kd@flaga.is>
-Cc: "Linux Embedded ppc (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: microcodepatch
-References: <EADB10BAC266A14A85ECBF8686A73E3145934F@kolkrabbi.flaga.is>
-Content-Type: text/plain; charset=iso-8859-1
+Message-Id: <sbd7c48d.025@tms-pty.com>
+Date: Thu, 25 Oct 2001 07:51:30 +1100
+From: "Jeremy Rosen" <Rosen.Jeremy@tms-pty.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MPC8xx IDE
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kári Davíðsson wrote:
+Yes, I am also trying to have pcmcia to work on my FADS board...
+it is already configured in the denx kernel for the following boards
+ivms8,lwmon.spd8xx,tqm8xx
 
-> Are there any known issues regarding the I2C patch and the ethernet
-> driver?
+to have it, it seems (havn't investigated deeply yet ) that their are
+just a couple of #define to add...
+most of them are common to all board, but one of them is giving me
+serious problems : IDE0_INTERRUPT
+I tried to find out in my boards documentation what interrupt was to be
+assigned to pcmcia, but I didn't find...
+did I miss something ???
 
-You need to ensure the patch is suitable for the CPM on the processor
-you have.  I know the USB SOF patch works on the 823/850 Rev. B processors,
-but I don't remember where the others came from.  You should probably
-visit Motorola's web site and get the patch specific to your processor
-and update the microcode patch file.
+>>> Laurent Pinchart <laurent.pinchart@capflow.com> 10/24/01 10:47PM
+>>>
 
-> If I disable the microcode patch everything works fine, except the I2C
-> stuff.
+Hi
 
-Depending upon the application, sometimes it is easier and faster to
-simply use the software toggle agorithm on the pins rather than the
-CPM controller.
+While trying to find an easy way to add non-volatile storage on a
+custion MPC860 board, I noticed that there was some support for IDE on
+the PCMCIA interface in the Linux kernel.
 
+Does anyone know where I can find more information about that ? There
+seems to be a board (IVMS8) with such an IDE interface, but I haven't
+been able to find anything about it on the web.
 
-	-- Dan
+Laurent Pinchart
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
