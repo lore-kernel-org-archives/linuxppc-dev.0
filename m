@@ -1,14 +1,16 @@
-Return-Path: <evilninja@gmx.net>
-Received: from mail.gmx.net (imap.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 241FD2BDB5
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Jan 2005 13:13:04 +1100 (EST)
-Message-ID: <41D9FB86.1060407@gmx.net>
-Date: Tue, 04 Jan 2005 03:12:22 +0100
-From: Christian <evilninja@gmx.net>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-15
-Subject: Re: [FYI] linux 2.6 still not working with PReP (ppc32)
+Return-Path: <anton@ozlabs.org>
+Date: Tue, 4 Jan 2005 14:16:25 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Chris Friesen <cfriesen@nortelnetworks.com>
+Message-ID: <20050104031625.GD7335@krispykreme.ozlabs.ibm.com>
+References: <41D9CD19.50207@nortelnetworks.com>
+	<20050103225822.GC7335@krispykreme.ozlabs.ibm.com>
+	<41D9D6A2.2010705@nortelnetworks.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <41D9D6A2.2010705@nortelnetworks.com>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: dcbz not used on ppc64?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,39 +20,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+ 
+> Hmm.  As of 2.6.9 at least, clear_page() is only ever called by 
+> clear_user_page(), which in turn is only ever called by 
+> drivers/media/video/video-buf.c.  I'm not using that driver, which 
+> explains why the instruction didn't show up when I disassembled the kernel.
 
-> anymore. but i'm building PReP kernel everyday, results and a config-file
-> is here:
->
-> http://www.nerdbynature.de/bits/sheep/latest-kernel/
+Dont forget mm/memory.c:clear_user_highpage -> clear_user_page. 
 
-sorry, it should read:
-
-http://www.nerdbynature.de/bits/hal/daily/
-
-> yes, i'll upload working zImage.prep + .config here:
->
-> http://www.nerdbynature.de/bits/sheep/prep/
-
-and: http://www.nerdbynature.de/bits/hal/daily/results/
-
->>>How does your boot.log looks like?
-
-will show up in http://www.nerdbynature.de/bits/hal/daily/boot/
-
-sorry for the confusion,
-Christian.
-- --
-BOFH excuse #57:
-
-Groundskeepers stole the root password
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
-
-iD8DBQFB2fuGC/PVm5+NVoYRAiCxAKC8B1L+FVw/5CoG3y7IpFVxpqzrgACfVSK7
-gXQcGiHCfHg3vEabXHtaZaU=
-=2cwH
------END PGP SIGNATURE-----
+Anton
