@@ -1,67 +1,65 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Mon, 10 Apr 2000 14:59:08 +0100 (CED)
-Subject: Bootloader 8xxrom on ADS860, gcc 2.95
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: systemboot@linux01.hasler.ascom.ch
-Message-id: <0FSS009D0XGBQZ@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_+Mb/Gb7eSdblNZY0hBzvLg)"
+From: Joe Green <jgreen@mvista.com>
+To: greyham@research.canon.com.au (Graham Stoney),
+        pavel_roskin@geocities.com (Pavel Roskin)
+Subject: Re: Unpacking the mvista kernel RPMs
+Date: Mon, 10 Apr 2000 09:18:30 -0700
+Content-Type: text/plain
+Cc: jason_wohlgemuth@gilbarco.com (Wohlgemuth Jason),
+        linuxppc-embedded@lists.linuxppc.org ('linuxppc-embedded@lists.linuxppc.org')
+References: <20000410031456.0B51D3C960@elph.research.canon.com.au>
+In-Reply-To: <20000410031456.0B51D3C960@elph.research.canon.com.au>
+MIME-Version: 1.0
+Message-Id: <00041010295400.03098@minotaur.mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---Boundary_(ID_+Mb/Gb7eSdblNZY0hBzvLg)
-Content-type: TEXT/PLAIN
-Content-Transfer-Encoding: 7BIT
+On Sun, 09 Apr 2000, Graham Stoney wrote:
+> Pavel Roskin writes:
+> > By the way, I found a newer kernel (March, 23) in
+> > ftp://ftp.mvista.com/pub/CDK/updates/1.0/ppc_8xx/SRPMS/
+>
+> How does one go about unpacking one of these RPMs?
+>
+> I tried ftp'ing the rpm and going:
+> % rpm -i hhl-kernel-2.2.13-7.src.rpm
+> % rpm -bp /usr/src/redhat/SPECS/hhl-kernel-2.2.13.spec
+> ...
+> ccp: configs/%{_hhl_kernel_configs}: No such file or directory
+> Bad exit status from /var/tmp/rpm-tmp.689 (%prep)
 
-Hi
+First of all, if you just want to build a kernel, you can use the
+kernel-source RPM rather than the SRPM.  This installs a kernel source
+tree that is preconfigured to use the cross-development tools.  You
+only need to use the SRPM if you want to rebuild the RPMs.
 
-I'm using almost the standard 8xxrom bootloader on my ADS860 board.
+For rebuilding the RPMs, you need to use the "rpmconfig" support.  I've
+been meaning to write a README me about this.  We're defining our RPM
+spec files in terms of macros that can be changed for different hosts
+and targets, so that we can have a common source base for all.  You'll
+have to bear with us a while if you want to work with this architecture
+right now, because it's still developing.
 
-When I cross compile it on my I386 Linux host using the egcs-2.91, it works ok.
+To build the 2.2.13-7 kernel RPM, you need to install the
+hhl-rpmconfig-0.0.2-1 RPM.  Then you need to configure RPM to include
+the correct macro files.  When building on a Hard Hat Linux or Red Hat
+Linux system, I do this by creating a .rpmrc file in my home directory
+that contains the following:
 
-When I cross compile it on my I386 Linux host using the gcc 2.95.2, it doesn't work.
-That means, it always crashes like:
+macrofiles:  /usr/lib/rpm/macros:/opt/hardhat/config/rpm/hosts/i686-pc-linux-gnu:/opt/hardhat/config/rpm/targets/%{_target}:~/.rpmmacros
 
------
-8xxROM 0.3.0
+That should all be one line; not sure how it will come out in email.
 
-compiletime options:
-board: ADS DRAM_25MHZ
-disk: DISK_ATA PCMCIABUG
+The /opt/hardhat/config/rpm/hosts/i686-pc-linux-gnu macro file will
+provide host-specific macros.  The
+/opt/hardhat/config/rpm/targets/%{_target} specification will select a
+target macro file based on the target specified when invoking rpm.  For
+the 8xx target, we use the rpm option "--target ppc_8xx-hardhat-linux".
 
-cpu: XPC860xxZPnnA3 at 25 MHz: 4Kbyte icache 4Kbyte dcache
+I hope this helps.
 
-<warning: cpu core has silicon bugs, check the errata>
-
-board: ADS rev A - warning, read errata
-flash: 2 Mbytes, delay 90 ns
-dram: 32 Mbyte, 70 ns, OK
-pcmcia: 5V and 3V
-pcsr = 0x0070fe70
-
-ATA disk: 'SunDisk SDP'.
-
-Boot device list:ata.c : Card Not Ready 0x0
-
-disk: No disk found.
-NIP: 00000000 XER: E0004A7F LR: FE004604 REGS: 01fefb80 TRAP: 1000
-MSR: 00001002 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
-
-GPR00: 00000000 01FEFC70 FE004310 00000000 00000001 01FEFC88 FFFFFFFB 01FEFE10
-GPR08: 00000000 FE00B264 00000000 00012600 01FEFD48 1011AFB0 000125C0 00000000
-GPR16: 00000000 00000000 00000002 FE010000 00009032 000125B8 00010000 C0002544
-GPR24: 00000002 00000001 00000001 01FF0000 01FEFEE8 FF002FDC 01FEFF08 01FEFEA8
-Call backtrace:
-Software Emulation Exception
------
-
-Did someone encounter the same problem??
-
-Maybe the gcc 2.95 does some better optimisations!
-
-Cheers, Ruedi
-
---Boundary_(ID_+Mb/Gb7eSdblNZY0hBzvLg)--
+--
+Joe Green <jgreen@mvista.com>
+MontaVista Software, Inc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
