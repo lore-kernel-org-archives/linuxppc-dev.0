@@ -1,76 +1,75 @@
-Message-Id: <4.3.2.7.2.20000901081743.00b28970@bucks.si.com>
-Date: Fri, 01 Sep 2000 08:33:15 -0400
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jon Diekema <diekema_jon@esseye.si.com>
-Subject: Linux kernel modules and the GPL
+Message-ID: <39AFAD3C.C849E398@snmc.com>
+Date: Fri, 01 Sep 2000 08:21:00 -0500
+From: Daris A Nevil <dnevil@snmc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: cpm_enet_down and MAC address change.
+References: <081f01c013db$364aa100$1952df8d@SOYANG>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I thought that loadable Linux modules avoided the GPL requirements, but
-perhaps it doesn't?
-I guess you need to go back the GPL license, and understand what a derived
-work means.
+Hyun-Joon,
 
- From COPYING in the Linux Kernel source:
+I have been promising myself that I would re-work the ethernet driver
+for use in QSLinux (qslinux.org), but have never gotten around to it.
+The driver performs initialization in the init() function, rather than
+the first call to open().  Another problem with the driver is that it
+will only work with a single enet port.  I wanted to modify it so that
+it would work with multiple ports.  A good example of how this can be
+found is the HDLC driver (hdlcppp.c) from the QSLinux source.  This is
+the source I will use (eventually) to rewrite the enet driver, as it
+already has all of the buffer descriptor handling, and the open and
+close handling setup correctly.  That driver allows you to open one or
+more HDLC channels, and also allows you to close arbitrary channels.
 
-                    GNU GENERAL PUBLIC LICENSE
-                        Version 2, June 1991
+Regards,
+Daris
 
-0. This License applies to any program or other work which contains
-a notice placed by the copyright holder saying it may be distributed
-under the terms of this General Public License.  The "Program", below,
-refers to any such program or work, and a "work based on the Program"
-means either the Program or any derivative work under copyright law:
-that is to say, a work containing the Program or a portion of it,
-either verbatim or with modifications and/or translated into another
-language.  (Hereinafter, translation is included without limitation in
-the term "modification".)  Each licensee is addressed as "you".
+Hyun-Joon Cha wrote:
+>
+> Hello.
+>
+> In shell, I can't do down ethernet interface.
+> ======================================
+> # ifconfig eth0 down
+> dev_close: bug eth0 still running
+>
+> I checked ethernet driver and found that there are empty code for it.
+>
+> At cpm_enet_close of arch/ppc/8xx_io/enet.c
+> ===========================================
+> static int
+> cpm_enet_close(struct device *dev)
+> {
+>         /* Don't know what to do yet.
+>         */
+>
+>         return 0;
+> }
+>
+> So, I can't down ethernet interface on Linux for MPC850 and can't change MAC addr at runtime also.
+>
+> Then how can I make it possible? or do someone make module for ethernet and serial driver for MPC?
+>
+> Maybe it's a good idea to modularize it and make a configuration header file for parallel IO pins to SCCs and SMCs to port Linux easy.
+>
+> If anybody know it or have a idea please answer.
+>
+> Thanks in advance.
+> Have a nice day.
+>
 
- From COPYING in the Linux Kernel source:
-
-dell 108} head COPYING
-
-    NOTE! This copyright does *not* cover user programs that use kernel
-  services by normal system calls - this is merely considered normal use
-  of the kernel, and does *not* fall under the heading of "derived work".
-  Also note that the GPL below is copyrighted by the Free Software
-  Foundation, but the instance of code that it refers to (the Linux
-  kernel) is copyrighted by me and others who actually wrote it.
-
-                         Linus Torvalds
-
-
- From http://www.linuxhq.com/lg/issue32/rubini.html
-
-Alessandro: What is your position about the availability of Linux modules
-in binary-only form?
-
-Linus: I kind of accept them, but I never support them and I don't like them.
-
-The reason I accept binary-only modules at all is that in many cases you
-have for example a device driver that is not written for Linux at all, but
-for example works on SCO Unix or other operating systems, and the
-manufacturer suddenly wakes up and notices that Linux has a larger audience
-than the other groups. And as a result he wants to port that driver to Linux.
-But because that driver was obviously not _derived_ from Linux (it had a
-life of its own regardless of any Linux development), I didn't feel that I
-had the moral right to require that it be put under the GPL, so the
-binary-only module interface allows those kinds of modules to exist and
-work with Linux.
-
-That doesn't mean that I would accept just any kind of binary-only module:
-there are cases where something would be so obviously Linux-specific that
-it simply wouldn't make sense without the Linux kernel. In those cases it
-would also obviously be a derived work, and as such the above excuses don't
-really apply any more and it falls under the GPL license.
-
-------------------\\----------------------\\----------------------------
-Jon Diekema        |                       | Smiths Industries
-(616) 241-8310     |                       | 3290 Patterson Avenue, SE
-diekema_jon@si.com \\                      \\  Grand Rapids, MI 49512-1991
-
+--
+Daris A Nevil
+Simple Network Magic Corporation
+401 Kentucky Lane
+McKinney, TX 75069
+214-793-7757
+dnevil@snmc.com
+www.snmc.com
+quickstack.com
+qslinux.org
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
