@@ -1,36 +1,46 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Date: Thu, 3 Jun 2004 09:06:35 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: David Wolfe <david.wolfe@freescale.com>
-Cc: I?igo Lopez Barranco <ilopez@albatros-sl.es>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: DMA support for MPC5xxx?
-Message-ID: <20040603090635.B7347@home.com>
-References: <42A622EB18325843894BB8E1040E3DF5022734@sinaexchf> <20040603145434.GA23282@orthanc.sps.mot.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040603145434.GA23282@orthanc.sps.mot.com>; from david.wolfe@freescale.com on Thu, Jun 03, 2004 at 09:54:34AM -0500
+To: Matt Porter <mporter@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: DMA support for MPC5xxx? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 03 Jun 2004 09:06:35 PDT."
+             <20040603090635.B7347@home.com>
+Date: Thu, 03 Jun 2004 18:42:40 +0200
+Message-Id: <20040603164245.B24A9C109F@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jun 03, 2004 at 09:54:34AM -0500, David Wolfe wrote:
->
-> [ I?igo Lopez Barranco writes: ]
-> > Thanks for your answer. Is there any place to follow the evolution
-> > of this problem, kind of bestcomm project web page or mail list, or
-> > is this list where motorola people uses to announce new bestcomm
-> > releases?
->
-> This is the list. As Wolfgang mentioned, we are seeing conflicts between
-> multiple drivers using Bestcomm tasks. Our results will be placed in the
-> linuxppc_2_4_devel CVS repository. I can't quote you a schedule, but I
-> can say my entire group will be off-site all of next week.
+Matt,
 
-It would be nice if you could work support for your silicon into
-the de facto standard Linux/PPC community trees like the MPC85xx
-folks are doing.
+in message <20040603090635.B7347@home.com> you wrote:
+>
+> It would be nice if you could work support for your silicon into
+> the de facto standard Linux/PPC community trees like the MPC85xx
+> folks are doing.
 
--Matt
+We tried. We really tried.
+
+See the thread starting at
+http://lists.linuxppc.org/linuxppc-dev/200311/msg00000.html
+
+David even posted on this list to get feedback  from  the  community.
+But I haven't seen a single reply on the mailing lists.
+
+
+Please don't blame _us_ that the 5xxx code was not accepted  for  the
+public trees.
+
+This is really not fair!!!
+
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"There was no difference between  the  behavior  of  a  god  and  the
+operations of pure chance..."   - Thomas Pynchon, _Gravity's Rainbow_
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
