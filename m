@@ -1,18 +1,20 @@
-Return-Path: <colin@colino.net>
-Received: from paperstreet.colino.net (colino.net [213.41.131.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B191367A7E
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Jan 2005 06:20:54 +1100 (EST)
-Date: Thu, 27 Jan 2005 19:52:05 +0100
-From: Colin Leroy <colin@colino.net>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <20050127195205.192c8c28@jack.colino.net>
-In-Reply-To: <1106012932.4533.46.camel@gaston>
-References: <1106012932.4533.46.camel@gaston>
+Return-Path: <shawnxjin@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.193])
+	by ozlabs.org (Postfix) with ESMTP id 5582A67A7F
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Jan 2005 07:18:46 +1100 (EST)
+Received: by rproxy.gmail.com with SMTP id 1so292940rny
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jan 2005 12:18:45 -0800 (PST)
+Message-ID: <c3d0340b050127121826b92395@mail.gmail.com>
+Date: Thu, 27 Jan 2005 12:18:45 -0800
+From: Shawn Jin <shawnxjin@gmail.com>
+To: linuxppc <linuxppc-dev@ozlabs.org>
+In-Reply-To: <20050127111615.A4266@cox.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Subject: Re: [PATCH] radeonfb: massive update of PM code
+References: <c3d0340b0501271005409166e6@mail.gmail.com>
+	<20050127111615.A4266@cox.net>
+Subject: Re: Relocating interrupt vectors in ppc440?
+Reply-To: Shawn Jin <shawnxjin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,27 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 18 Jan 2005 at 12h01, Benjamin Herrenschmidt wrote:
+First thank you for your valuable response.
 
-Hi Ben, 
+> > Assumed that the interrupt vectors locate at the low address space
+> > physically and given that there is 2GB SDRAM shared by two ppc440
+> > cores, can one of linux kernels run at the top of 1GB space? This
+> > means the interrupt vectors for this copy need to move to upper 1GB.
+> > Each core runs a copy of linux kernel independently.
+> 
+> Yes, you'd have to do something like the APUS code does by settings
+> PPC_MEMSTART appropriately for the second processor. Also, of course
 
-> This patch is a quite massive update to radeonfb. It adds the ability
-> to reboot from scratch the various chip models used on the recent
-> powermac laptops, adds a bunch of new chips (including R420 support,
-> untested), plus various fixes here or there including LCD & flat panel
-> blanking, abuse of stack usage in radeonfb_set_par(), and finally,
-> adapts the PM code to the recent powermac changes.
+I guess the value set to PPC_MEMSTART should be the offset to the
+physical starting address of 2GB SDRAM not the absolute physical
+address, right?
 
-I just upgraded to 2.6.10, applied the 6 other patches you sent and this
-one. This one makes some heavy video corruption on my iBook G4
-(PowerBook6,3). The patch applies with a 27 lines offset at most hunks,
-but does no rejects. 
+> limiting the memory on the first processor to 1GB. There's probably
 
-I'm using xorg 6.7.0, and your test sleep patch #7 on 2.6.9 worked fine.
+Limiting the memory on the first processor to 1GB can be done by
+setting the mem size to 1GB in boot arguments (mem=1024MB)?
 
-Tell me if I can be of any help...
+> One idea is that if you really don't have to do it, then don't. :)
 
-Thanks!
--- 
-Colin
-  "Dinner not ready: (A)bort (R)etry (P)izza"
+The SoC is designed in this way that two cores share the DDR but it's
+not SMP. Two kernels have to run independently. Relocating interrupt
+vectors to upper 1GB memory means that another copy of kernel can run
+at upper memory, right. So I'm afraid I have to do that. :(
+
+Thanks,
+-Shawn.
