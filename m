@@ -1,38 +1,45 @@
-To: "Rupesh S" <rupeshs@myw.ltindia.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MC850 peripheral support in linux 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 25 Mar 2004 18:21:06 +0530."
-             <s0632321.003@EMAIL>
-Date: Thu, 25 Mar 2004 20:36:55 +0100
-Message-Id: <20040325193700.42BCAC118A@atlas.denx.de>
+Date: Thu, 25 Mar 2004 12:40:08 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Jaap-Jan Boor <jjboor@aimsys.nl>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Dan Malek <dan@embeddededge.com>,
+	Tolunay Orkun <listmember@orkun.us>, Wolfgang Denk <wd@denx.de>
+Subject: Re: IBM 440GX, Ocotea...
+Message-ID: <20040325194008.GM13366@smtp.west.cox.net>
+References: <20040323164441.06AA0C1157@atlas.denx.de> <1080061066.8019.70.camel@linpc003.aimsys.nl> <406080CB.5040403@embeddededge.com> <4B2752C7-7D6A-11D8-BC79-000A95B15278@aimsys.nl> <20040324222512.GM7126@smtp.west.cox.net> <1B149F27-7E32-11D8-BB55-000A95B15278@aimsys.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1B149F27-7E32-11D8-BB55-000A95B15278@aimsys.nl>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <s0632321.003@EMAIL> you wrote:
+On Thu, Mar 25, 2004 at 08:57:47AM +0100, Jaap-Jan Boor wrote:
+
+> On Mar 24, 2004, at 23:25, Tom Rini wrote:
 >
-> 1) Does the I2C bus support in the kernel works for the internal I2C controller of MC850
-> 2) Does the RTC support in the kernel (char driver) works for the internal RTC of MC850
-> 3) Does the PCMCIA support in the kernel (IDE drivers)  works for the internal PCMCIA Socket controller of MC850
+> >>>It seems to be a circuitous route that I don't even understand
+> >>>anymore.  Sometime stuff I check in gets there, sometimes not. :-)
+> >>
+> >>and you have never found out the conditions when something
+> >>get's in (only when submitted at friday the 13th or something?)
+> >
+> >Um, yeah.  I'm hoping 2.6 will be different from 2.4 in that regard. :)
+>
+> ok!
+>
+> >linuxppc-2.[45] are children of the linux-2.[45] trees, and contain
+> >stuff that's not quite ready to go out, _but_will_be_soon_ or has been
+> >put in a tree for Linus/Marcelo, but they haven't pulled yet.
+>
+> ok thanks (and linuxppc-2.5 should be used to get something into 2.6?)
 
-3 x yes. But I can only speak of the DENX kernel trees.
-
-> This is to help me finalizing Linux for one of my Embedded Projects that will be built on MC850.
-
-Don't expect too much of performance out of a 850;  the  tiny  caches
-are a major pain.
-
-Best regards,
-
-Wolfgang Denk
+If it's something which isn't quite ready yet, it should go into
+linuxppc-2.5.  Otherwise, it should go to linux-2.5, either via Andrew
+Morton, or Paul or Ben sending it to Linus.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-There are three things I always forget. Names, faces -  the  third  I
-can't remember.                                         - Italo Svevo
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
