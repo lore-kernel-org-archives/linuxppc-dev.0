@@ -1,28 +1,20 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx015.isp.belgacom.be (outmx015.isp.belgacom.be
-	[195.238.2.87]) by ozlabs.org (Postfix) with ESMTP id A04022BE83
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Dec 2004 01:26:44 +1100 (EST)
-Received: from outmx015.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx015.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id iBGEQb8t030724
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Dec 2004 15:26:37 +0100
-	(envelope-from <tnt@246tNt.com>)
-Received: from ayanami.246tNt.com (238.232-200-80.adsl.skynet.be
-	[80.200.232.238])
-	by outmx015.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id iBGEQZMt030697
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Dec 2004 15:26:35 +0100
-	(envelope-from <tnt@246tNt.com>)
-Received: from [10.0.0.245] (246tNt-laptop.lan.ayanami.246tNt.com [10.0.0.245])
-	by ayanami.246tNt.com (Postfix) with ESMTP id E2F9A1649A4
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Dec 2004 15:25:32 +0100 (CET)
-Message-ID: <41C19B1B.1050202@246tNt.com>
-Date: Thu, 16 Dec 2004 15:26:35 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Linux PPC Dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: [RFC][PATCH] Adds support for PF_FREEZE on ppc
+Return-Path: <windenntw@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.201])
+	by ozlabs.org (Postfix) with ESMTP id 4D4682BEA0
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Dec 2004 08:23:00 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id 67so183080wri
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Dec 2004 13:22:59 -0800 (PST)
+Message-ID: <69304d11041217131620036e56@mail.gmail.com>
+Date: Fri, 17 Dec 2004 22:16:19 +0100
+From: Antonio Vargas <windenntw@gmail.com>
+To: Kendall Bennett <KendallB@scitechsoft.com>
+In-Reply-To: <41B9A33A.26557.5DDD7EC8@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+References: <41B9A33A.26557.5DDD7EC8@localhost>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: Write Combining for PowerPC?
+Reply-To: Antonio Vargas <windenntw@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,41 +24,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On Fri, 10 Dec 2004 13:23:06 -0800, Kendall Bennett
+<KendallB@scitechsoft.com> wrote:
+> Hi Guys,
+> 
+> We are working on some PowerPC machines and noticed that the boxes don't
+> appear to support the equivalent of Write Combining that we get on x86
+> boxes. Copies to Video Memory on our Motorola Sandpoint box run about
+> 10Mb/s, which is terribly, terribly slow!
+> 
+> Does anyone know if it is possible to do something similar to Write
+> Combining for the PowerPC architecture, to speed up CPU access to the
+> linear framebuffer? Part of the problem is that for video overlay support
 
-While trying to use the /sys/power interface on a ppc target,
-I noticed that the processes didn't freeze. Apparently, since
-that interface was never used on ppc beforce, signal.c didn't handle the
-signal.
+hmmm... G4 processors will do write-combining when you write two
+cachelines just one after the other... there is a write-queue on the
+cpu and when there is 1 write on the queue and you add another one for
+the next cacheline, it will automatically merge the write. Also, if
+you manage to complete a sector, then he knows you don't need to
+read-then-write the memory and just issues a "kill-this-cacheline" on
+the bus instead of "please-i-need-exclusive-access-for-this-cacheline"
 
-The patch below fixes that for me.
+> (not motion compensation) you have to dump the entire YUV frame into
+> video memory for the hardware overlay, and even on a 1GHz PPC box playing
+> an MPEG2 stream is not possible as X takes up over 80% of the CPU just to
+> copy the YUV data to video memory!
+> 
+> Obviously bus mastering will help solve this problem, but it would be
+> better if there was a way to enabling faster CPU access to the
+> framebuffer as well.
+
+bus mastering is DMA-ing from system memory to gfxcard memory?
+ 
+> Regards,
+> 
+> ---
+> Kendall Bennett
+> Chief Executive Officer
+> SciTech Software, Inc.
+> Phone: (530) 894 8400
+> http://www.scitechsoft.com
+> 
+> ~ SciTech SNAP - The future of device driver technology! ~
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
 
 
-Sylvain
+-- 
+Greetz, Antonio Vargas aka winden of network
 
+http://wind.codepixel.com/
 
-Signed-Off-By: Sylvain Munaut <tnt@246tNt.com>
-
-
-===== arch/ppc/kernel/signal.c 1.40 vs edited =====
---- 1.40/arch/ppc/kernel/signal.c       2004-10-28 09:39:49 +02:00
-+++ edited/arch/ppc/kernel/signal.c     2004-12-01 09:25:55 +01:00
-@@ -24,6 +24,7 @@
- #include <linux/wait.h>
- #include <linux/ptrace.h>
- #include <linux/unistd.h>
-+#include <linux/suspend.h>
- #include <linux/stddef.h>
- #include <linux/elf.h>
- #include <linux/tty.h>
-@@ -616,6 +617,11 @@
-
-        if (!oldset)
-                oldset = &current->blocked;
-+
-+       if (current->flags & PF_FREEZE) {
-+               refrigerator(0);
-+               return 0;
-+       }
-
-        newsp = frame = 0;
+Las cosas no son lo que parecen, excepto cuando parecen lo que si son.
