@@ -1,126 +1,158 @@
-From: gopi@india.tejasnetworks.com
-Date: Thu, 21 Feb 2002 17:34:49 +0000 (GMT)
-To: Ricardo Scop <scop@digitel.com.br>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Unable to write to SIMASK
-In-Reply-To: <02022018275201.01017@scop.digitel.com.br>
-Message-ID: <Pine.LNX.4.21.0202210948300.26384-200000@tn100build.india.tejasnetworks.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463809023-319490387-1014312889=:26531"
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: monochromatic lcd on mpc823
+Date: Thu, 21 Feb 2002 17:04:30 -0300
+Message-ID: <7B3538F053C06142BF0AA9DF2D764AC6064305@MAILSRV1.aquarius.cpqd.com.br>
+From: "Sergio Massami Sakai" <Sakai@cpqd.com.br>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+Hi there,
 
----1463809023-319490387-1014312889=:26531
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Have someone tried to set the lcd controller driver for MPC823 to use a monochromatic lcd?
+I´m trying to do that, initially with 1bit/pixel mode, but I had some problems.
 
-hi..
+I´ve created a configuration for my LCD and changed the SCCR to set the clock. The sync signals are OK for this display now.
+The problem is: I tried to set some pixels in the framebuffer but I´ve got no response in the LCD interface data pins.
 
-I tried the simple code attatched with this mail:
+Looking at the color map default configurations I think that there isn´t specific configurations for monochrome operation modes.
+I tried to change my color map according to the MPC823 reference manual but nothing hapenned.
 
-complied using:
-ppc_8xx-gcc -c -D__KERNEL__ -DMODULE -O2 -Wall myMpc.c
+Does anyone have some idea about what could be the problem?
 
-Then, on the target board:
+I´m using denx kernel 2.4.4-2001-05-12 and a FADS board.
+I´m a newbie at Linux framebuffer programming (and at Linux kernel programming...) so it´s possible that I´m doing something wrong in my test.
+I´m using an extremely simple program to test the LCD controller output (just fill all fb bits with 0 or 1) as follows.
+The data pins are always low, except FD0 that is always high (device open/close, fb filled with 0/1)
 
->  insmod myMpc.o ; rmmod myMpc
-read0 = 3eed0000, read1 = 1eed0000, read2 = 1eed0000
-(above was the output of printk from the driver)
+PS: I had some doubts about the MPC823 LCD controller manual. I´m not sure if each bit (or 2-4.. bit group), representing a pixel, is in a separated word or not (ex. for 8 pixels in 2 bits/pixel mode are represented in the framebuffer: 1111111111111111 or 0000000000000011, 0000000000000011,....). I´m working with the "not separated words" hypothesis.
 
-> insmod myMpc.o ; rmmod myMpc
-read0 = 3eed0000, read1 = 1eed0000, read2 = 1eed0000
-(read0 is again 3eed0000 implying the original value is restored)
+************************************************************
 
-> insmod myMpc.o ; rmmod myMpc
-read0 = 3eed0000, read1 = 1eed0000, read2 = 1eed0000
+#include <unistd.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <linux/fb.h>
+#include <sys/mman.h>
 
-So, it looks like when we go out of the driver(exit from system call),
-the value of simask is being restored by some code in the kernel.
-
-I understand that this is not a good way of enabling/disabling
-irqs(better use request_8xxirq etc..), but I thought this should work.
-
-gopi
-
-
-On Wed, 20 Feb 2002, Ricardo Scop wrote:
-
-> On Wednesday 20 February 2002 21:53, gopi@india.tejasnetworks.com wrote:
-> > hi..
-> >
-> >   We have an MPC860T based custom board.
-> >
-> >   We wanted to control interrupt on one of the irqs by writing to SIMASK
-> > register using a small driver with two ioctls which will will do
-> > the following:
-> >
-> >   // WRITE_MASK_IOCTL
-> >   simask_write_ioctl(mask) {
-> >     cli();
-> better use save_flags(flags); cli();
->
-> >     (volatile unsigned int *)(IMMR + simask_offset) = mask;
-> You're missing a * operator here (don't know about your actual source code,
-> though...)
-  That was a typing error, it was ok in code.
-
->
-> >     written_value = *(volatile unsigned int *)(IMMR + simask_offset);
-> >     sti();
-> better use restore_flags(flags)... and flags must be defined as an unsigned
-> long.
->
-> >     printk (written_value);
-> >   }
-> >
-> >   // READ_MASK_IOCTL
-> >   simask_read_ioctl() {
-> >     cli(); // Not really needed..
-> >     read_value = *(volatile unsigned int *)(IMMR + simask_offset);
-> >     sti();
-> >     printk (read_value);
-> >   }
-> >
-> >
-> <snip>
->
->
-> HTH,
->
-> R. Scop
->
+#ifndef bool
+#define bool unsigned char
+#endif
+#ifndef FALSE
+#define FALSE 0
+#endif
+#ifndef TRUE
+#define TRUE 1
+#endif
 
 
----1463809023-319490387-1014312889=:26531
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name="myMpc.c"
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.21.0202211734490.26531@tn100build.india.tejasnetworks.com>
-Content-Description: 
-Content-Disposition: attachment; filename="myMpc.c"
+int fbfd = 0;
+struct fb_var_screeninfo vinfo;
+struct fb_fix_screeninfo finfo;
+long int screensize = 0;
+char *fbp = 0;
+long int location = 0;
 
-I2luY2x1ZGUgPGxpbnV4L2NvbmZpZy5oPg0KI2luY2x1ZGUgPGxpbnV4L21v
-ZHVsZS5oPg0KI2luY2x1ZGUgPGxpbnV4L3ZlcnNpb24uaD4NCiNpbmNsdWRl
-IDxsaW51eC90eXBlcy5oPg0KI2luY2x1ZGUgPGxpbnV4L3NjaGVkLmg+DQoj
-aW5jbHVkZSA8bGludXgva2VybmVsLmg+DQojaW5jbHVkZSA8bGludXgvaW50
-ZXJydXB0Lmg+DQojaW5jbHVkZSA8YXNtLzh4eF9pbW1hcC5oPg0KDQojZGVm
-aW5lIElNQVBfQUREUiAgKCh1aW50KTB4ZmYwMDAwMDApDQoNCmludCBpbml0
-X21vZHVsZSh2b2lkKSB7DQoNCiAgICB2b2xhdGlsZSBpbW1hcF90ICppbXAg
-PSAoaW1tYXBfdCAqKUlNQVBfQUREUjsNCiAgICB2b2xhdGlsZSBzeXNjb25m
-OHh4X3QgKnN5c3AgPSAoc3lzY29uZjh4eF90ICopICYoaW1wLT5pbV9zaXVf
-Y29uZik7DQogICAgdW5zaWduZWQgaW50IHJlYWQwLCByZWFkMSwgcmVhZDI7
-DQogICAgdW5zaWduZWQgbG9uZyBmbGFnczsNCg0KICAgIHNhdmVfZmxhZ3Mo
-ZmxhZ3MpOyBjbGkoKTsNCiAgICAgICAgcmVhZDAgPSBzeXNwLT5zY19zaW1h
-c2s7DQogICAgICAgIHN5c3AtPnNjX3NpbWFzayA9IDB4MWVlZDAwMDA7DQog
-ICAgICAgIHJlYWQxID0gc3lzcC0+c2Nfc2ltYXNrOw0KICAgIHJlc3RvcmVf
-ZmxhZ3MoZmxhZ3MpOw0KICAgIHJlYWQyID0gc3lzcC0+c2Nfc2ltYXNrOw0K
-ICAgIHByaW50aygicmVhZDAgPSAleCwgcmVhZDEgPSAleCwgcmVhZDIgPSAl
-eFxuIixyZWFkMCwgcmVhZDEsIHJlYWQyKTsNCg0KICAgIHJldHVybiAwOw0K
-DQp9DQoNCmludCBjbGVhbnVwX21vZHVsZSh2b2lkKSB7DQogICAgcmV0dXJu
-IDA7DQp9DQo=
----1463809023-319490387-1014312889=:26531--
+bool open_dev() {
+	/* Open the file for reading and writing */
+	fbfd = open("/dev/fb0", O_RDWR);
+	if (!fbfd) {
+		printf("Error: cannot open framebuffer device.\n");
+		return FALSE;
+	}
+	printf("The framebuffer device was opened successfully.\n");
+	return TRUE;
+} /* open_dev */
+
+void close_dev() {
+	munmap(fbp, screensize);
+	close(fbfd);
+} /* close_dev */
+
+bool get_info() {
+	/* Get fixed screen information */
+	if (ioctl(fbfd, FBIOGET_FSCREENINFO, &finfo)) {
+		printf("Error reading fixed information.\n");
+		return FALSE;
+	}
+	/* Get variable screen information */
+	if (ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo)) {
+		printf("Error reading variable information.\n");
+		return FALSE;
+	}
+	/* Figure out the size of the screen in bytes */
+	screensize = (vinfo.xres * vinfo.yres * vinfo.bits_per_pixel) / 8;
+	return TRUE;
+} /* get_info */
+
+bool get_map() {
+	/* Map the device to memory */
+	fbp = (char *)mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED,
+		fbfd, 0);
+	if ((int)fbp == -1) {
+		printf("Error: failed to map framebuffer device to memory.\n");
+		return FALSE;
+	}
+	printf("The framebuffer device was mapped to memory successfully.\n");
+	printf("fbp: %d\n",(int)fbp);
+	return TRUE;
+} /* get_map */
+
+
+void fill_map_char(unsigned int size,char value) {
+	int i;
+	for (i=0;i<size;i++)
+		fbp[i] = value;
+} /* fill_map_char */
+
+void print_menu() {
+	printf("MENU:\n");
+	printf("1-Init\n");
+	printf("2-Fill 0\n");
+	printf("3-Fill 1\n");
+	printf("4-Exit\n");
+} /* print_menu */
+
+bool choice_menu() {
+	char opt;
+	bool open = FALSE;
+	scanf("%c",&opt);
+	switch(opt){
+		case '1':	//init
+			open_dev();
+			get_info();
+			get_map();
+			break;
+		case '2':	//0
+			if (open)
+				fill_map_char(screensize,(char)0x00);
+			break;
+		case '3':	//1
+			if (open) {
+				fill_map_char(screensize,(char)0xFF);
+			}
+			break;
+		case '4':	//exit
+			if (open)
+				close_dev();
+			return FALSE;
+		case '\n' :
+		default :
+			break;
+	}
+	return TRUE;
+} /* choice_menu */
+
+int main()
+{
+	print_menu();
+	while (choice_menu()) {}
+
+	return 0;
+}
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
