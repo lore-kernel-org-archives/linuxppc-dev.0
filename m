@@ -1,24 +1,41 @@
-Message-ID: <3A679D41.55BED8DC@xilinx.com>
-Date: Thu, 18 Jan 2001 17:49:54 -0800
-From: "Peter Ryser" <Peter.Ryser@xilinx.com>
+Message-ID: <20010119032114.15637.qmail@web11805.mail.yahoo.com>
+Date: Thu, 18 Jan 2001 19:21:14 -0800 (PST)
+From: xuelong wang <wang_xuelong@yahoo.com>
+Subject: embedded questions
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: Hua Ji <hji@netscreen.com>
-CC: "'crossgcc@sources.redhat.com'" <crossgcc@sources.redhat.com>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Hello World and 405GP with my gcc cross compiling.
-References: <A33AEFDC2EC0D411851900D0B73EBEF7063E55@NAPA>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Try the following:
+Dear Sir or Madam,
 
-${prefix}/bin/${target}-gcc -g -c hello.c
-${prefix}/bin/${target}-ld -o hello ${prefix}/${target}/lib/crt0.o hello.o -lc
--lg
+I have 2 questions to ask you.
 
-- Peter
+1. Do you have any experiences in compiling ppcboot
+packages(i.e. ppcboot-0.4.4-pre1 or ppcboot-0.6.2)? If
+you have, please tell me what compiling environment
+(such as CDK and cygwin) you used to do the right
+thing. Of course, other corresponding advice is
+welcome too. If you don¡¯t, please tell me your
+opinion of compiling ppcboot packages.
+
+2. Now my board have already had a ppcboot.srec on its
+flash, and I can download a kernel with Srec format
+into my board. In a word, everything is OK, since
+mounting NFS is no problem, debugging simple
+applications on the board is also no problem. But, I
+think, when we make this board become a product, we
+should not let the board work through mounting a NFS
+located in a Host machine. Because the board should
+run independent of a Host machine. So my question is
+how to make a file system on my board? I appreciate
+a-sentence-advice and detailed descriptions about this
+question.
+
+    Thanks in advance!
+                                Xuelong Wang
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
