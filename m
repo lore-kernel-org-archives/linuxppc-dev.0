@@ -1,33 +1,49 @@
-Message-ID: <002901c17653$3489e520$cc00a8c0@ycigrnd.ycig.com>
-From: "leeyang" <leeyang@ycig.com>
-To: "Montgomery, Tim" <timm@artesyncp.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <F9102D41F595D311ACA7009027DE2C84033FFE27@c3po.heurikon.com>
-Subject: Re: PPC RTC on I2C
-Date: Mon, 26 Nov 2002 08:23:53 -0000
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: caixupeng <edmoon@huawei.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ppcboot, ebony , change baudrate function has bug. 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 26 Nov 2002 09:44:19 +0800."
+             <001d01c294ed$569cecc0$92690b0a@DBKQW41X>
+Date: Tue, 26 Nov 2002 09:31:59 +0100
+Message-Id: <20021126083204.5EFE8C6134@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Why not use RTC in the PPC core?
-
------ Original Message -----
-From: "Montgomery, Tim" <timm@artesyncp.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Tuesday, November 26, 2002 6:13 AM
-Subject: PPC RTC on I2C
-
-> I'm working on getting i2c support working on a module that has its
->RTC on i2c.
+In message <001d01c294ed$569cecc0$92690b0a@DBKQW41X> you wrote:
 >
-> I've got my i2c client written, but i2c-core and friends don't load
->until very late in the game; setting ppc_md.get/set (at least in
->platform_init) is not very useful.
+> when you set a new baudrate,
 >
-> Any thoughts on a graceful way to implement kernel RTC support using
->an i2c-based RTC (w/o bypassing the kernel's i2c layer)?
+> => setenv  baudrate 38400
+> ## Switch baudrate to 38400 bps and press ENTER ...
+>
+>
+> it will hang .
+
+It does not hang. It waits for you to switch the baudrate  and  press
+ENTER.
+
+> I find a way  to avoid it.
+> first, clear the baudrate with "setenv baudrate=xxxx"----it's wrong ,
+
+This is an ugly hack,and strongly discouraged.
+
+The way the baudrate change is implemented in PPCBoot is  intentional
+-  it prevents you to enter a baudrate which you cannot use with your
+terminal. If you cannot type the  enter  and  the  "saveenv"  command
+necessary to store the new baudrate permanently, you can always reset
+the board ans it will come up with the old, working baudrate.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+For every problem there is one solution which is  simple,  neat,  and
+wrong.                                                - H. L. Mencken
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
