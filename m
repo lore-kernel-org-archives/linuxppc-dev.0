@@ -1,96 +1,30 @@
-Message-ID: <20021220170607.22771.qmail@web41207.mail.yahoo.com>
-Date: Fri, 20 Dec 2002 09:06:07 -0800 (PST)
-From: Prakash kanthi <pkanthi@yahoo.com>
-Subject: Re: After Uncompresseing Linux..., what's next
-To: Gary Thomas <gary@chez-thomas.org>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <1040403153.32282.6220.camel@hermes.chez-thomas.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+Cc: ?? <yuj@mail.ndsc.com.cn>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: use bdi on board with ppcbug 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 20 Dec 2002 10:20:48 EST."
+             <D73A25AA6E54D511AD74009027B1110F3C050D@ORION>
+Date: Fri, 20 Dec 2002 18:10:44 +0100
+Message-Id: <20021220171049.128AAC6139@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Gary,
+In message <D73A25AA6E54D511AD74009027B1110F3C050D@ORION> you wrote:
+> Also, wouldn't the INIT section of the config script have to be empty?
 
-I really appreciate your help. Here is what i am
-doing. Sorry it is little long. But was necessasry.
+This depends on the hardware. On many boards a minimal initialization
+MUST be performed (like switching off the watchdog timer :-)
 
-1. I have a boot loader(xrom.elf) of size around 400KB
-which basically have menu driven tests along with an
-option to jump to linux kernel(zImage.initrd.elf).
+Best regards,
 
-2. xrom.elf is compiled to start at 0xfffffffc and
-jump to 0x00000000 to have rest of functionality.
-zImage.initrd.elf is compiled to start at 0x00400000.
+Wolfgang Denk
 
-3. I load zImage.initrd.elf first and then xrom.elf
-(xilinx tool makes sure that they are loaded to
-corresponding locations based on ELF header).
-
-4. After loading both, i start running xrom.elf and it
-shows up a menu in my UART terminal. I jump to linux
-(0x00400000).
-
-5. I see that linux is basically reading the board
-info, setting UART, prints some boot messages onto it
-and then performs uncompression (gunzip function takes
-the rest of linux image and puts the uncompressed code
-starting from 0x0).
-
-6. Up untill, everything is ok. After this, control
-jumps to 0x0 and starts executing.
-
-My problems are,
-
-a. Once the uncompression process is done, i am not
-sure if the image is copied to 0x0 (i do see value
-changes in memory starting from 0x0).
-b. As uncompression process is embedded into
-zImage.initrd.elf, i do not objdump does not tell me
-which function it is going to execute after
-uncompression.
-
-Please suggest.
-
-Thanks,
-Prakash
-
-
-
-
-
---- Gary Thomas <gary@chez-thomas.org> wrote:
-> On Fri, 2002-12-20 at 09:48, Prakash kanthi wrote:
-> > I do have xilinx tools and i am working with their
-> V2P
-> > product. I completely understands what you are
-> said.
-> > But the problem is, right after the uncompression
-> and
-> > cpy to 0x00000000, i loose total control because i
-> > don't have any clue what is getting executed.
-> >
->
-> What sort of things can you do with the Xilinx
-> tools?  Is
-> there any way to set [hardware] breakpoints or
-> single step?
->
-> > And also, i have my boot monitor code at
-> 0x00000000,
-> > before uncompress process overwrites it. I see
-> that
-> > some of that code is getting executed after jump
-> to
-> > 0x0. I reason i am overwriting 0x0 is because, i
-> only
-> > have 8MB RAM.
-> >
->
-> 8M should be plenty of RAM.
->
->
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Wish not to seem, but to be, the best."                  - Aeschylus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
