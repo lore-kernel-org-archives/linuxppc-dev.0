@@ -1,105 +1,53 @@
-Message-Id: <v04003a00b2c3f68d12ab@[205.161.35.44]>
-In-Reply-To: <13981.45420.95483.559227@lassi.cygnus.co.uk>
-References: 
- <Pine.LNX.3.96.990113130000.3632F-100000@persephone.cs.nmt.edu>
- <13980.23937.676502.388522@lassi.cygnus.co.uk>
- <Pine.LNX.3.96.990113130000.3632F-100000@persephone.cs.nmt.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 14 Jan 1999 14:46:20 -0500
-To: Jesper Skov <jskov@cygnus.co.uk>
-From: Douglas Godfrey <dvdoug@tiac.net>
-Subject: Re: Synchronization [was Re: The Magic Show: kernel_map()
- disappearing]
-Cc: linuxppc-dev@lists.linuxppc.org, Jes Sorensen <Jes.Sorensen@cern.ch>,
-        alan@cymru.net, Linux/APUS mailing list <linux-apus@sunsite.auc.dk>
+Date: Thu, 14 Jan 1999 14:18:13 -0600 (CST)
+From: "David A. Gatwood" <marsmail@globegate.utm.edu>
+To: Michael Schmitz <schmitzm@uclink4.berkeley.edu>
+cc: Hubert Figuiere <Hubert.Figuiere@solsoft.fr>,
+        Benjamin Herrenschmidt <bh40@calva.net>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Porting to NuBus PowerMacs
+In-Reply-To: <v03020900b2c32a566a02@[128.32.144.85]>
+Message-ID: <Pine.LNX.3.96.990114141525.17757A-100000@globegate.utm.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-If you define a structure with an independant spinlock for each driver
-and change the iobarrier() macro to iobarrier(lock) and iobarrier(unlock)
-you can get correct MP behavior without slowing down UP systems. The MP
-version of iobarrier() would do a eieio instruction and then acquire/release
-the spinlock and while the UP version would just do a eieio. MP systems will
-incurr the overhead of locating and locking/unlocking the spinlock. UP
-systems will have no overhead beond the eieio. The lock/unlock parameter
-would be ignored for UP systems and required for MP systems.
+On Thu, 14 Jan 1999, Michael Schmitz wrote:
 
-For both Nubus and PCI PPC systems the requirement is just that only 1
-driver at a time and access a device and that load/stores be done in
-strict program order.
+> The CUDA hangs off VIA1 in the m68k machines. If this machine is just a
+> 040 Mac with a PPC glued on top, the m68k code should do.
 
-For Example:
-While the SCSI driver is setting up a read I/O, it is perfectly OK for a
-serial driver to be writing to a serial port on another CPU. The PCI accesses
-for the 2 drivers can be interleaved in any order as long as each driver's
-accesses are in proper sequence.
+Basically, yeah.
 
 
-At 3:57 AM -0500 1/14/99, Jesper Skov wrote: [Synchronization [was Re: The
-Magic Show: kernel_map()]
->>>>>> "Cort" == Cort Dougan <cort@persephone.cs.nmt.edu> writes:
->
->Cort> You're right, that was an oversight on my part.  I'll fix the
->Cort> mistake.  I'll commit that to vger now.  I'm going to leave the
->Cort> sync in there as well, to make sure that things stall until the
->Cort> writes are done.
->
->Cort> }The reordering thing can also be achieved with 'sync', but it
->Cort> stalls }the CPU until all IO has completed. 'eieio' is the
->Cort> correct solution }(IMHO.. And Motos NSHO btw)
->
->
->OK, core of the problem is that I don't know what mb() is supposed to
->do. Here's what we have on the PPC:
->
-> sync : stall CPU until all IO has completed.
-> eieio: prevent CPU from reordering/collapsing reads/writes to memory.
->        (but otherwise run at full steam!)
->
->We would want to use eieio for drivers and such accessing their
->controller in a strict serialized manner. We would want to use sync
->for SMP related stuff since it ensures, well, synchronization between
->multiple CPUs wrt memory access.
->
->Using sync for drivers is a bad idea; it's overkill, stalling the
->CPU for no good reason.
->
->That's why I added the iobarrier() macros (adding _w/_r/_rw on Alan's
->request) that are only related to IO synchronization within the same
->CPU. Essentially it's just renaming the eieio() macro already used in
->many PPC drivers because it's a bad name; Linux/APUS will be sharing
->drivers with Linux/m68k where eieio isn't such a helpful name.
->
->Given that mb() was defined as sync, I assumed mb() to be the common
->Linux name for a thingie used for SMP synchronization.
->
->I may have been wrong. iobarrier() may not be such a good name after
->all, but I think it's important for the names to reflect the semantics
->of the function. And there are two separate synchronization semantics
->required (at least on the PPC) - I don't want to merge them just
->because there's already a common Linux function that's named mb()
->(memory barrier, presumably).
->
->Don't know what the functions/macros should be named, but it would be
->nice if:
->
-> a) the names reflected semantics: CPU internal IO synchronization vs
->    inter-CPU synchronization.
->
-> b) the names were common on all Linux
->    archs, defined as do {} while(0) when not applicable.
->
->
->For bigger brains to discuss further. I rest my case :)
->
->Jesper
+> VIA1 and VIA2 are at fairly constant base addresses throughout the
+> m68k series. But Apple might have played some tricks on us again :-(
+
+'course I don't even know the base address for the IO space, but I'm
+gathering it's the same as the PDMs, and I vaguely remember reading that
+somewhere.  Right now, the question basically boils down to the display
+going off (or black or something) when interrupts are enabled.  If we can
+get past that, it should be mostly smooth sailing.  We'll have to have
+base addresses for the IDE hardware, but I'd expect it to share that with
+the NuBus PowerBooks....  Apple's addresses seem to be very similar
+between the PDMs, the PERFORMA class, and the POWERBOOK class (NuBus).
 
 
-Thanx...
-  Doug
+David
 
+David A. Gatwood                         Visit globegate's internet
+dgatwood@globegate.utm.edu                  talker, Deep Space 36
+http://globegate.utm.edu                telnet globegate.utm.edu:9624
+
+-----BEGIN GEEK CODE BLOCK-----
+Version 3.1
+GCS/CC/FA/H/L/MC/M/MU/PA/TW d-@ s:>- a-- C++ ++>$ UBLAS*++ ++>$
+P+?>$ L++ +>$ !E--- W++ +>$ N++(++ +)>++ +$ !o? K-? !w--- !O
+M++>$ !V-- PS+>$ !PE- Y+>$ PGP+>$ t++ +>$ 5+>++ ++$ !X- !R tv+>$
+b++>$ !DI !D- G++(++ +)>$ e>++ ++ h--! r--- !y-
+
+------END GEEK CODE BLOCK------
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
