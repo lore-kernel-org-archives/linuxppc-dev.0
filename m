@@ -1,38 +1,39 @@
-Message-ID: <67505026E29DD311A9AA00508B7315F350A606@EXCHANGE>
-From: Julia Elbert <jelbert@enerdyne.com>
-To: "'Phillip Soltan'" <psoltan@pacificsw.com>,
-        "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: scc2 using brg4 in uart.c
-Date: Wed, 13 Dec 2000 10:59:22 -0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Wed, 13 Dec 2000 12:12:31 -0800
+From: Hao Li <hli@wag.caltech.edu>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: vxhack and mvista kernel
+Message-ID: <20001213121231.A26159@onetta.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Phillip,
-Thank you for responding. One of these days I will hopefully need less help.
+Hi. I am trying to use VxWorks boot rom to boot MontaVista's 2.4.0-test2
+kernel on a EST SBC8260 board. I already have MontaVista's CDK 1.2
+installed on a Linux x86 host running Red Hat 6.2. From a previous post
+I find that I'll need to hack the kernel zImage with Dan Malek's
+vxhack.c program. So below is what I did:
 
-Did you enable the transceiver hardware through the appropriate BSCR
-register?
-yep, we are o.k. here
- Did you configure the SCC2 priority in the CICR register?
-yes, CICR_SCB_SCC2 is enabled in commproc.c
+% uname -mrs
+Linux 2.4.0-test11 i686
+% cc --version
+2.95.2
+% ncftpget ftp://ftp.mvista.com/pub/Area51/ppc-8xx/vxhack.c
+vxhack.c:                                                3.49 kB   29.64 kB/s
+% cc -o vxhack vxhack.c
+% cp /opt/hardhat/devkit/ppc/82xx/target/boot/vmlinuz-sbc8260-2.4.0-test2-1.2.2-3 .
+% ./vxhack vmlinuz-sbc8260-2.4.0-test2-1.2.2-3
+Segmentation fault
 
-I am using the 860T
-Originally, we wrote a hdlc synchronous driver on SCC2 using BRG4 that was
-loaded and worked with this port, if that helps.
 
-Hmm. darn I just found that my sicr is wrong, it should be. Dan had it right
-and I killed it with a 26. uuuggh, I should know better.
- cp ->cp_sicr |= 0x0000 1b 00;
+Could someone explain to me what the problem is? Is it because I do it
+on a non-ppc host or I should not have used MontaVista's
+vmlinuz-sbc8260-2.4.0-test2-1.2.2-3 kernel?
 
-scc2 has interrupts! Amazing, how that works. Now, maybe I can find my data
-somewhere....
-Thank you.
- --Julia
+Thanks a lot!
+
+- Hao
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
