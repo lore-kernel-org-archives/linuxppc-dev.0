@@ -1,43 +1,42 @@
-Date: Sat, 31 Mar 2001 15:30:31 +0200
-From: Samuel Rydh <samuel@ibrium.se>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: I-cache flushing on the 7400
-Message-ID: <20010331153031.A10946@ibrium.se>
-Mime-Version: 1.0
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <15045.61890.58237.453470@ipa.ne.mediaone.net>
+Date: Sat, 31 Mar 2001 10:03:30 -0500
+From: R Shapiro <reshapiro@mediaone.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: new aic7xxx driver DOES NOT WORK with cdrecord
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I recently discovered that the following sequence
+A little while ago I reported a puzzling change to scsi behavior in
+the 2.4.3 kernels.  I didn't get any explanation of what was going on,
+but after burning half a dozen coasters on a scsi CD-R, testing
+various kernel configs, I think I finally understand what's happening.
+A completely new driver for aic7xxx was introduced in 2.4.3, or
+thereabouts, and it just doesn't work for CD-Rs.  For now it's still
+possible to load the old driver (CONFIG_SCSI_AIC7XXX_OLD), which I
+only just discovered, and this driver works fine.  But according to
+the documentation, support for this will supposedly be removed soon.
 
-	LI_PHYS( r2,split_store_patch )
-	stw     r4,0(r2)			// store instruction
-	dcbst   0,r2				// Flush cache
-	sync
-	icbi    0,r2
-	isync
+Who should I report this problem to? Does Adaptec write these linux
+drivers or is it done by a volunteer working on his/her own?  Ideally
+I'd like to use the newer driver, if it can be made to work properly.
+At the very least I'd like to ensure that the old driver isn't removed
+before the new one works.
 
-	.... some instructions and then a rfi to split_store_patch ....
-	rfi
+Or is it possible this is a cdrecord issue, and not a driver problem
+after all?  That doesn't make sense to me, but I want to consider all
+options.
 
-split_store_patch:
-	nop
-
-did not work properly on a G4s (but it did work flawlessly on my G3).
-To make the i-cache flush effective, I had to insert an extra
-'sync' before the last isync. Consulting my Motorola manuals,
-the recommended sequence for the 7400 (but not for the 750) did have
-that extra sync. Looking at the 2.4.3-pre8 BK source, I discovered
-the 'sync' was sometimes missing (in flush_icache_range and in a
-few places in head.S). Shouldn't the sync really be added?
-
-/Samuel
+Is anyone using the new aic7xxx driver successfully with cdrecord?
 
 
-----------------------------------------------------------
- E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
-  Phone/fax: (home) +46 8 4418431, (work) +46 8 7908470
-----------------------------------------------------------
+Thanks for any assistance -
+
+
+
+--
+reshapiro@mediaone.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
