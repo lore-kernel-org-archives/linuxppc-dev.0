@@ -1,39 +1,30 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <20030506081707.57165.qmail@web41813.mail.yahoo.com>
-Date: Tue, 6 May 2003 01:17:07 -0700 (PDT)
-From: Cedric Aubert <cedric_aubert@yahoo.fr>
-Reply-To: cedric_aubert@yahoo.fr
-Subject: MPCBDM
-To: LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <159C486347C8D3119B1D005004A4694001FDE5FA@OLIVE>
+From: Steven Rothweiler <Stevenr@raritan.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux Kernel generic question (procedure queue)
+Date: Tue, 6 May 2003 08:40:45 -0400 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+>
+> But my main advice will be to get yourself a copy of
+> "Linux Device Drivers" by Rubini and Corbet first.
+>
 
-What are the limitations of the MPCBDM ?
+After purchasing the book on Vladmir's great advice, I realized
+that I could download the PDF version of the entire book at
+http://www.xml.com/ldd/chapter/book/bookindexpdf.html .
 
-Is it possible to debug generic C/C++ code without
-linux ?
+Is there any reason the PDF version of this book is (seemingly)
+free?  I don't feel bad about downloading it, since I've already
+purchased the book, but I think it's not fair to the authors.
 
-Whatr is the difference with BDI ?
-
-Thanks a lot
-
----
-AUBERT Cedric
-SDEL Controle Commande
-Service R&D
-rue Nungesser & Coli
-44860 St Aignan de Grand Lieu
-
-Tel : +33 (0)2 40 84 50 00
-Poste : 5109
-Fax : +33 (0)2 40 84 51 10
-
-E-mail : cedric_aubert@yahoo.fr
-Web : http://www.controle-commande.sdel.fr
+Unless, of course, they *want* to give it away...
+--
+STeve
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
