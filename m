@@ -1,66 +1,63 @@
-Message-ID: <00b701c38988$02a19f90$2803050a@JackyLam>
-From: "Jacky Lam" <jackylam@astri.org>
-To: <linuxppc-embedded@lists.linuxppc.org>
-References: <F886A68DA978614991E47D82EA26B542131C76@csy-exchange1.giat.intra>
-Subject: Re: Queston about Walnut
-Date: Fri, 3 Oct 2003 16:26:06 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
+Subject: RE: Cross compiling : problem linking
+From: Toni Van Remortel <t.vanremortel@ha.be>
+Reply-To: linuxppc-embedded@lists.linuxppc.org
+To: Fillod Stephane <stephane.fillod@thomson.net>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <2C1BAF8F8E1DD611862B0002A5D4C3FC01BC068F@renexch3.rennes.thmulti.com>
+References: 
+	 <2C1BAF8F8E1DD611862B0002A5D4C3FC01BC068F@renexch3.rennes.thmulti.com>
+Content-Type: text/plain
+Message-Id: <1065169617.14913.7.camel@toni>
+Mime-Version: 1.0
+Date: Fri, 03 Oct 2003 10:26:57 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
------ Original Message -----
-From: "ARIBAUD Albert" <a.aribaud@giat-industries.fr>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Friday, October 03, 2003 3:57 PM
-Subject: RE: Queston about Walnut
-
-
+Op do 02-10-2003, om 18:34 schreef Fillod Stephane:
+> Note to the list: sorry for the RFC2822
 >
-> (disclaimer : I work on 8xx, not 4xx)
+> > Do you know the replacement for iopl to work on PowerPC?
 >
-> I would suggest inspecting the timings for memory access.
-> If this is SDRAM, you must have had to program the UPM for
-> it, I suppose. Might be that VxWorks has it right, and you
-> have set it up differently.
->
-> Also, writing to address 0 might be a Bad Ideam (tm), if you
-> have set this area to hold interrupt vectors.
->
-> Did you try single write (say, "mw 100000 0") ?
+> There's no such crap on PowerPC. No separate IO bus either.
 
-    Thanks for you suggestion. Not only single write, I can now write to
-anywhere except the first 1MB of SDRAM. I think it is occupied by u-boot?
-So, I think memory is ok now.
+Darn. I've once seen an example somewhere on the net on controlling an
+output pin on the EP405 (from kernel space), but I can't remember where
+:(
 
-    Do you have any idea it hangs at __sti()?
+> > Final goal is a kernel module, but now I'm writing a test program in
+> > user space (standalone, dynamic compiled).
 
-        mfmsr   r3              /* Get current state */
-        ori     r3,r3,MSR_EE    /* Turn on 'EE' bit */
-        SYNC                   /* Some chip revs have problems here... */
-        mtmsr   r3        <------Hangs after executing it      /* Update
-machine state */
-        blr
+Now I know that the difference between user and kernel space is so
+different, I'll only try to go for the final result: a kernel module.
 
-    Is there any relationship with the previous instruction "SYNC"? What
-revision will have problem there?
+> Okay, let's use ESP for once :)
 
-    Thanks.
+What is ESP?
 
+> Toni, I don't know what's your "base" address, but it is really odd
+> (well, both ways :) on a PowerPC system. You should borrow some help
+> from your D-science lab, or have something like a PPC Linux training.
 
->
-> Albert.
->
-> P.S. I think that if you write directly to linuxppc-embedded,
-> Wolfgang will cease receiving you mails twice (which he probably
-> does now since you e-mail him *and* CC: to the list).
+I'm afraid I should go for the last one. The D-science lab is actually
+specialized in usability and product design testing. There is only one
+technological project running, namely mine, which is about embedded
+Linux. I started working on this project when I was just about half a
+year graduated as industrial engineer. So my Linux knowledge was limited
+to desktop use and installation.
+You'll probably think I'm asking things that every embedded Linux
+developer knows, but I'm not one, I'm just trying to understand
+everything. Aside that, my platform knowledge is zero. That's why I come
+up with code for x86 to run on PPC ;)
 
-    Thanks for remind me. I will be careful next time.
-
-Best regards,
-Jacky
+PS: that "base" address was fetched from ibm405gp.h (the ECB base
+address).
+--
+                           Toni Van Remortel
+              Wetenschappelijk Medewerker - D-science lab
+  Real time Linux for embedded systems: http://linemb.d-sciencelab.com
+              Tel: +32 3 205 61 72 - Fax: +32 3 205 61 95
+                      E-mail: t.vanremortel@ha.be
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
