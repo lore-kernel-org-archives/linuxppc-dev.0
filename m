@@ -1,22 +1,23 @@
 From: raphael.bossek@solutions4linux.de
 To: linuxppc-embedded@lists.linuxppc.org
-Date: Fri, 28 Jan 2000 10:28:06 +0100
+Date: Fri, 28 Jan 2000 10:31:23 +0100
 MIME-Version: 1.0
 Content-type: text/plain; charset=US-ASCII
-Subject: PCMCIA IDE as default interface needed
-Message-Id: <E12E7aL-0003Bw-00@mx00.kundenserver.de>
+Subject: Cachable / Non-cachable memory
+Message-Id: <E12E7dQ-0004I1-00@mx00.kundenserver.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-i now get Linux boot throught the 8xxROM code and a PCMCIA IDE
-HD and boot via NFS but now i whould continue use the IDE drive
-insated of NFS.
+how does Linux specify memory regions as cachable and non-
+cachable? It is sometimes required to mark mapped memory
+regions from devices as non-cachable by the MMU so the PowerPC
+does not tune the write/read accesses.
 
-I heard that some people done such a hack for the mpc8xx-linux
-2.2.13 code... Can i get this patch !
+Is there any function or sample driver code in the mpc8xx-linux
+2.2.13 code ?
 
 cu Raphael Bossek - http://www.solutions4linux.de/powerpc.html
 
