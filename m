@@ -1,50 +1,102 @@
-Message-ID: <36901B63.5F905878@jlc.net>
-Date: Sun, 03 Jan 1999 20:37:39 -0500
-From: Dan Malek <dmalek@jlc.net>
+Date: Sun, 3 Jan 1999 20:42:07 -0700 (MST)
+From: Brad Midgley <brad@pht.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.2.0p4 ignores one of my drives
+Message-ID: <Pine.LNX.3.96LJ1.1b7.990103204043.696A-100000@cricket>
 MIME-Version: 1.0
-To: Cort Dougan <cort@persephone.cs.nmt.edu>
-CC: Paul Mackerras <paulus@cs.anu.edu.au>,
-        Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
-        bh40@calva.net, tmrini@ntplx.net, linuxppc-dev@lists.linuxppc.org
-Subject: Re: irq cleanup
-References: <Pine.LNX.3.96.981231143743.14310A-100000@persephone.cs.nmt.edu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Cort Dougan wrote:
+hi...
 
-> I was adding code for the QSPAN interrupts on the mbx.....
+after making the 2.1.130 (2 jan vger) -> 2.2.0pre4 (3 jan vger)
+upgrade, linux can't see one of my hard drives any more.
 
-I am a little confused by this.  I am travelling and don't have
-my books handy. and I remember the MBX uses the 8259
-interrupt controller to manage all PCI/ISA device interrupts.
-What I don't remember are the actual connections.  I believe
-the PCI interrupts are routed to the 8259, which is then
-routed to one of the 8xx external interrupts.
+this is a drive that mklinux has never been able to see so i always
+thought of linuxppc as being very robust in finding it and being able
+to access it. the drive contains my macos startup volume and macos
+never has trouble with it.
 
-The QSPAN interrupts are for things like PCI parity
-errors and the IDMA.  However, the IDMA won't operate
-because of a silicon bug that will not allow the QSPAN to
-be a master on the 8xx bus.
+i use a 7500 with a 604 upgrade, two internal hard drives, a slew of
+devices on the external bus.
 
-To support PCI or ISA devices that interrupt on the MBX
-you would need to modify irq.c to support a multilevel interrupt
-scheme.  The 8259 would interrupt on one of the 8xx interrupt
-controller levels, then you would have to process all 8259
-interrupts.
+before:
 
-> The idea is to have a master controller, and each slave is dealt with as a
-> handler so we don't have such an ifdef soup.
+Jan  3 19:39:22 cricket kernel: mesh: target 1 synchronous at 5.0 MB/s
+Jan  3 19:39:22 cricket kernel:   Vendor: QUANTUM   Model: FIREBALL1280S     Rev: 630G
+Jan  3 19:39:22 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
+Jan  3 19:39:22 cricket kernel: Detected scsi disk sdb at scsi0, channel 0, id 1, lun 0
 
-That's the right idea.   The master in this case would
-be the 8xx interrupt controller, and the slave would be the 8259.
-The QSpan isn't part of the picture.
+after:
 
+Jan  3 20:14:44 cricket kernel: mesh: target 1 aborted
 
-    -- Dan
+brad
 
+fwiw, here are the full logs:
+
+Jan  3 19:39:22 cricket kernel: scsi0 : MESH
+Jan  3 19:39:22 cricket kernel: scsi1 : 53C94
+Jan  3 19:39:22 cricket kernel: scsi : 2 hosts.
+Jan  3 19:39:22 cricket kernel: mesh: target 0 synchronous at 5.0 MB/s
+Jan  3 19:39:22 cricket kernel:   Vendor: QUANTUM   Model: PD1225S           Rev: 3110
+Jan  3 19:39:22 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
+Jan  3 19:39:22 cricket kernel: Detected scsi disk sda at scsi0, channel 0, id 0, lun 0
+Jan  3 19:39:22 cricket kernel: mesh: target 1 synchronous at 5.0 MB/s
+Jan  3 19:39:22 cricket kernel:   Vendor: QUANTUM   Model: FIREBALL1280S     Rev: 630G
+Jan  3 19:39:22 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
+Jan  3 19:39:22 cricket kernel: Detected scsi disk sdb at scsi0, channel 0, id 1, lun 0
+Jan  3 19:39:22 cricket kernel: mesh: target 3 synchronous at 4.2 MB/s
+Jan  3 19:39:22 cricket kernel:   Vendor: SONY      Model: CD-ROM CDU-8005   Rev: 1.0j
+Jan  3 19:39:22 cricket kernel:   Type:   CD-ROM                             ANSI SCSI revision: 02
+Jan  3 19:39:22 cricket kernel: Detected scsi CD-ROM sr0 at scsi0, channel 0, id 3, lun 0
+Jan  3 19:39:22 cricket kernel:   Vendor: SEAGATE   Model: ST32550N          Rev: 0022
+Jan  3 19:39:22 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
+Jan  3 19:39:22 cricket kernel: Detected scsi disk sdc at scsi1, channel 0, id 1, lun 0
+Jan  3 19:39:22 cricket kernel:   Vendor: iomega    Model: jaz 1GB           Rev: H.62
+Jan  3 19:39:22 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
+Jan  3 19:39:22 cricket kernel: Detected scsi removable disk sdd at scsi1, channel 0, id 2, lun 0
+Jan  3 19:39:22 cricket kernel:   Vendor: NEC       Model: CD-ROM DRIVE:464  Rev: 1.04
+Jan  3 19:39:22 cricket kernel:   Type:   CD-ROM                             ANSI SCSI revision: 02
+Jan  3 19:39:22 cricket kernel: Detected scsi CD-ROM sr1 at scsi1, channel 0, id 3, lun 0
+Jan  3 19:39:22 cricket kernel:   Vendor: RICOH     Model: MP6201S           Rev: 2.20
+Jan  3 19:39:22 cricket kernel:   Type:   CD-ROM                             ANSI SCSI revision: 02
+Jan  3 19:39:22 cricket kernel: Detected scsi CD-ROM sr2 at scsi1, channel 0, id 4, lun 0
+Jan  3 19:39:22 cricket kernel:   Vendor: UMAX      Model: Astra 1200S       Rev: V1.3
+Jan  3 19:39:22 cricket kernel:   Type:   Scanner                            ANSI SCSI revision: 02
+Jan  3 19:39:22 cricket kernel: Detected scsi generic sgh at scsi1, channel 0, id 5, lun 0
+Jan  3 19:39:22 cricket kernel: scsi : detected 3 SCSI cdroms 4 SCSI disks total.
+
+Jan  3 20:14:44 cricket kernel: scsi0 : MESH
+Jan  3 20:14:44 cricket kernel: scsi1 : 53C94
+Jan  3 20:14:44 cricket kernel: scsi : 2 hosts.
+Jan  3 20:14:44 cricket kernel: mesh: target 0 synchronous at 5.0 MB/s
+Jan  3 20:14:44 cricket kernel:   Vendor: QUANTUM   Model: PD1225S           Rev: 3110
+Jan  3 20:14:44 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
+Jan  3 20:14:44 cricket kernel: Detected scsi disk sda at scsi0, channel 0, id 0, lun 0
+Jan  3 20:14:44 cricket kernel: mesh: target 1 aborted
+Jan  3 20:14:44 cricket kernel: mesh: target 3 synchronous at 4.2 MB/s
+Jan  3 20:14:44 cricket kernel:   Vendor: SONY      Model: CD-ROM CDU-8005   Rev: 1.0j
+Jan  3 20:14:44 cricket kernel:   Type:   CD-ROM                             ANSI SCSI revision: 02
+Jan  3 20:14:44 cricket kernel: Detected scsi CD-ROM sr0 at scsi0, channel 0, id 3, lun 0
+Jan  3 20:14:44 cricket kernel:   Vendor: SEAGATE   Model: ST32550N          Rev: 0022
+Jan  3 20:14:44 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
+Jan  3 20:14:44 cricket kernel: Detected scsi disk sdb at scsi1, channel 0, id 1, lun 0
+Jan  3 20:14:44 cricket kernel:   Vendor: iomega    Model: jaz 1GB           Rev: H.62
+Jan  3 20:14:44 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
+Jan  3 20:14:44 cricket kernel: Detected scsi removable disk sdc at scsi1, channel 0, id 2, lun 0
+Jan  3 20:14:44 cricket kernel:   Vendor: NEC       Model: CD-ROM DRIVE:464  Rev: 1.04
+Jan  3 20:14:44 cricket kernel:   Type:   CD-ROM                             ANSI SCSI revision: 02
+Jan  3 20:14:44 cricket kernel: Detected scsi CD-ROM sr1 at scsi1, channel 0, id 3, lun 0
+Jan  3 20:14:44 cricket kernel:   Vendor: RICOH     Model: MP6201S           Rev: 2.20
+Jan  3 20:14:44 cricket kernel:   Type:   CD-ROM                             ANSI SCSI revision: 02
+Jan  3 20:14:44 cricket kernel: Detected scsi CD-ROM sr2 at scsi1, channel 0, id 4, lun 0
+Jan  3 20:14:44 cricket kernel:   Vendor: UMAX      Model: Astra 1200S       Rev: V1.3
+Jan  3 20:14:44 cricket kernel:   Type:   Scanner                            ANSI SCSI revision: 02
+Jan  3 20:14:44 cricket kernel: Detected scsi generic sgg at scsi1, channel 0, id 5, lun 0
+Jan  3 20:14:44 cricket kernel: scsi : detected 3 SCSI cdroms 3 SCSI disks total.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
