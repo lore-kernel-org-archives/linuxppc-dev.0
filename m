@@ -1,35 +1,38 @@
-Date: Wed, 30 Jan 2002 17:39:28 -0700 (MST)
-From: daRonin <daronin@digimerc.com>
-To: Derrik Pates <dpates@dsdk12.net>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: RE:  Radeon DRI support patch
-In-Reply-To: <Pine.LNX.4.43.0201241431430.29327-100000@andromeda.dsdk12.net>
-Message-ID: <Pine.LNX.4.33.0201301736300.1321-100000@daronin.digimerc.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 31 Jan 2002 12:09:22 -0500
+From: Daniel Jacobowitz <dmj+@andrew.cmu.edu>
+To: gopi@india.tejasnetworks.com
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: why is tty->pgrp set to -1 for console?
+Message-ID: <20020131120922.A6447@nevyn.them.org>
+References: <Pine.LNX.4.21.0201301141250.25516-100000@tn100build.india.tejasnetworks.com> <Pine.LNX.4.21.0201312050570.1490-100000@tn100build.india.tejasnetworks.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.21.0201312050570.1490-100000@tn100build.india.tejasnetworks.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 24 Jan 2002, Derrik Pates wrote:
-
-> On Thu, 24 Jan 2002, daRonin wrote:
+On Thu, Jan 31, 2002 at 08:58:58PM +0000, gopi@india.tejasnetworks.com wrote:
 >
-> > I install benh kernel and applied your patches on my new Powerbook Titanium.
-> >
-> > Seems to be working, it's nice to get more than 400FPS. Unfortunately it still seems to be a bit flaky.
-> >
-> > It does freeze the machine randomly when running GLX apps.
+> hi..
 >
-> That's the ever-lovely UniNorth AGP adding joy to your day. Ben's still
-> working on getting the kinks out of supporting it - it's weird.
+>   We had a problem that ctrl-c was not working on the console.  I
+> figured out that, ctrl-c was getting recognized as the 'intr' signal,
+> but the function isig (in drivers/char/n_tty.c) sends a signal only if
+> the tty->pgrp > 0.
+>
+>   I have put a print stmt in this function and checked that the value
+>   is 'tty->pgrp = ffffffff' (which is -1).
+>
+>   What is the correct procedure to follow to get around this problem
+> and get ctrl-c working on console?
 
-  Yes, weird would describe it. After running it for a while, even without
-it crashing the system, after a while the GLX libs just seem to disappear
-from /usr/X11/lib/modules/extensions. No log or console messages, nothing.
-Very weird...
+You need to run a getty on the console in order for SIGINT to get sent
+properly.  That should be all it takes.  If the pgrp hasn't been set
+yet, the kernel doesn't know where to send them.
 
-daRonin
-
+--
+Daniel Jacobowitz                           Carnegie Mellon University
+MontaVista Software                         Debian GNU/Linux Developer
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
