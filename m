@@ -1,32 +1,38 @@
-Message-ID: <61891BA043DED21180920090273F173829B0C6@argentina.telogy.com>
-From: Naushit Sakarvadia <nsakarvadia@telogy.com>
-To: "'LinuxPPC Developpers'" <linuxppc-dev@lists.linuxppc.org>
-Subject: Newbee
-Date: Thu, 22 Jul 1999 09:08:21 -0400
+Date: Thu, 22 Jul 1999 15:11:07 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Naushit Sakarvadia <nsakarvadia@telogy.com>
+cc: "'LinuxPPC Developpers'" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Newbee
+In-Reply-To: <61891BA043DED21180920090273F173829B0C6@argentina.telogy.com>
+Message-ID: <Pine.LNX.4.10.9907221510430.18791-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Thu, 22 Jul 1999, Naushit Sakarvadia wrote:
+> Although I am experienced in x68 Linux but I am very new to PPC stuff.
+> First of all I want to cross compile a Kernel for PPC based embedded
+> platform.
+> 
+> For that I downloaded a emmedded kernel port by "Dan Malek" from FTP site.
+> 
+> When I configure thru "make configure" it doesnt give me processore option
+> for PPC...
+> 
+> How do u inform your build a PPC target?
 
-Although I am experienced in x68 Linux but I am very new to PPC stuff.
-First of all I want to cross compile a Kernel for PPC based embedded
-platform.
+When crosscompiling, use `make ARCH=ppc other_make_options'
 
-For that I downloaded a emmedded kernel port by "Dan Malek" from FTP site.
+Greetings,
 
-When I configure thru "make configure" it doesnt give me processore option
-for PPC...
+						Geert
 
-How do u inform your build a PPC target?
-
-Thanks
-
-Regards,
-Naushit.
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
