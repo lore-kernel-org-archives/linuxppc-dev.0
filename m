@@ -1,64 +1,67 @@
-Message-ID: <B895EFF5AF34724880036BDB5B5B8148135687@amer22.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'Brian S. Park'" <brian@corelis.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: getting Linux working on IBM Walnut demo board
-Date: Wed, 28 May 2003 13:59:31 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Brian S. Park" <brian@corelis.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: getting Linux working on IBM Walnut demo board 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 28 May 2003 13:53:08 PDT."
+             <5.1.1.6.2.20030528132553.0128a2f0@corelis.com>
+Date: Wed, 28 May 2003 23:34:58 +0200
+Message-Id: <20030528213503.9676EC6162@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brian:
+Dear Brian,
 
-Re flash capacity, there was a thread on this some months ago.
-There are those who pride themselves on having the most compact
-system possible, and who will tell you 2MB is "bloated".  There
-are those who prefer to use a standard C library, and who think
-5 MB is OK.  So it depends on how much you want to crunch things
-down ...
+in message <5.1.1.6.2.20030528132553.0128a2f0@corelis.com> you wrote:
+>
+> It turned out that ELDK default setup does not have any dev files. How do I
+> create all the dev files I need?
 
-However, I will say that an 8MB flash device should be plenty
-for compressed kernel, compressed RAM disk which contains a nice
-set of libraries + applications, firmware, etc.  And you might
-be able to get by with 4MB.
+Well, I recommend you start reading the documentation now.
 
-We use a pair of StrataFlash parts on most all of our boards
--- these are 8MB, 16 bits wide; we usually use a pair of them
-(for a 32-bit bus) which gives us 16MB of flash.  And that is
-more than plenty.  All my firmware (several different tools)
-fit comfortably in the last 1 MB.  I generally put some extras
-in my RAM disk, e.g. some largish PDF files (product briefs)
-so that a board can run a web server, dishing up some marketing
-literature, etc, and I am not one of the people who wants the
-tiniest C library, so I am one of the more profligate users.
-And my zvmlinux.initrd is generally in the 3-5MB range.  That
-leaves space in our 16MB flash for 2-3 of those zvmlinux.initrd's.
+There is a section "7. Mounting  Target  Components  via  NFS"  which
+explains  that  you  have  to  run the ELDK_MAKEDEV and ELDK_FIXOWNER
+scripts.
 
------Original Message-----
-From: Brian S. Park [mailto:brian@corelis.com]
-Sent: Wednesday, May 28, 2003 1:53 PM
-Subject: Re: getting Linux working on IBM Walnut demo board
+I bet a case of beer that you didn't do that yet.
 
-Thank you all for good suggestions.
+> What is the reasonable amount of flash to have for a minimally configured
+> Embedded Linux system?
 
-It turned out that ELDK default setup does not have any dev files. How do I
-create all the dev files I need?
+Depends on what you want to squeeze in. I have seen systems with just
+128 kB. Obviously this is just enough for the bootloader to boot  the
+kernel  over network. There are products on the market like Bluetooth
+LAN Access Points or ISDN routers which have just 2 MB flash. With  4
+MB  flash  you  can  set  up  a powerful system including things like
+network access, web server, and Microwindows  or  Qt  embedded  based
+GUIs.
 
- >[root@karla2 dev]# ls
- >initctl  log  null
+I have not seen a system with less than 4 MB flash lately.
 
-Also, I have a general question about Embedded Linux. What is the
-reasonable amount of flash to have for a minimally configured Embedded
-Linux system?
+> My target will be running small (<<1MB) program which will take commands
+> over TCP/IP network.
+> So, I want to know how much flash memory we should put on our custom target.
 
-My target will be running small (<<1MB) program which will take
-commands over TCP/IP network. So, I want to know how much flash
-memory we should put on our custom target. We do not need support for
-PCI/Video/Sound/HD/SCSI/Parallel port/... All we need from the OS is
-network support. Probably using Linux is an overkill but since it's
-free. :)
+If thisi s all you need (just one binary) you can plan for some 600kB
+for the compressed kernel image plus some 800kB for  the  application
+image.  2  MB  flash  will do for such a setup - but please note that
+software tendsa to fill available space, and  I  bet  you  will  have
+ideas for things to add once the box is running.
+
+> All we need from the OS is network support. Probably using Linux is an
+> overkill but since it's free. :)
+
+Happy hacking.
+
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+It all seemed, he thought, to be rather a lot of  trouble  to  go  to
+just sharpen a razor blade.  - Terry Pratchett, _The Light Fantastic_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
