@@ -1,40 +1,54 @@
-To: linuxppc-embedded@lists.linuxppc.org
-From: Martin Egholm Nielsen <martin@egholm-nielsen.dk>
-Subject: Re: Interrupt handling triggered by GPIO-input on 405EP?
-Date: Tue, 18 May 2004 17:01:22 +0200
-Message-ID: <40AA2542.5060306@egholm-nielsen.dk>
-References: <c8cvjr$m40$1@sea.gmane.org> <008a01c43ce1$9a65fda0$0301a8c0@chuck2>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <008a01c43ce1$9a65fda0$0301a8c0@chuck2>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [Fwd: Memory layout question]
+Date: Tue, 18 May 2004 10:25:05 -0500
+Message-ID: <DB1DE297F535B340AEAE1E51B221C3D0016B3DCB@FTWMLVEM02.e2k.ad.ge.com>
+From: "Heater, Daniel (GE Infrastructure)" <Daniel.Heater@gefanuc.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Cc: <okorpil@fh-landshut.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Mark,
+> I'm currently trying out the VMIC Tundra Universe II driver, a
+> PCI-VME bus bridge quite common in embedded devices (from VMIC and
+> Motorola). VMIC manufactures mostly x86 boards, but I try to use
+> the driver on a MVME5500 with 7455 Motorola PPC.
+> There seems to be a memory problem involved, as follows:
 
->>However, the way the application is at the moment I need to poll the
->>input-ports every so often in order to detect a pushbutton-activation.
->>Hence, I would like to register an interrupt-handler (of some sort) that
->>informs me when these events occur. Is that somehow possible?
-> I don't know this hardware so I don't know if you can bring the GPIO into an
-> actual IRQ line.
-Well, according to the manual GPIO0_17-23 (IRQ 0-6) is connected to
-interrupt 25-31, but I have no clue how to utilise that...
+-- snip --
 
-> But if you can't, a pretty efficient way to poll the GPIO is to hook into
-> the heartbeat timer (100Hz, 10ms).
-=== SNIP ===
-> I've only done this from within a device driver, btw - the app opens
-> /dev/mydevice and gets a character whenever the gpio (in my case a keypad)
-> changes.
-So you've created your own device-driver on top of the gpio-dev.-driver?
-  And what kind of device is this? Does the driver buffer keypad inputs
-even if the device is not open?
-Can you please post a source example describing this in further details?
+> Actually the addresses returned by allocate_resource seem to come from
+> system memory, because ioremap_nocache logs a debug statement
+> that is only triggered if the remapping is below the high_memory
+bound.
+> (And there already seems to be a virtual address associated with it -
+> physical 0x40000000 is RAM 0xc<whatever> - kernel space, I guess)
+>
+> But the address returned is 0x40000000 !! Isn't that the 2nd
+> GB of address space? My board only has 512 MB of storage, and is only
+> upgradable to 1GB, so shouldn't an address starting at 0x40000000
+> physically never be a memory address and never be below the
+> high_memory bound?
 
-Regards,
-  Martin
+Can you post a copy of /proc/iomem, and /proc/vme/master, and any
+relevant portions of the output from dmesg if available?
+
+> Can I even dereference an I/O memory pointer on the PowerPC?
+> (It can be done on x86) I know, I know, I _should_ use readb and
+> friends, but can it be done? Or _must_ I strictly use the macros
+> because it won't work the other way round?
+
+That's the way I do it on x86. I haven't tried PPC.
+
+BTW, please copy me directly on replies to this thread. I am not
+subscribed to this list.
+
+Daniel L. Heater
+Software Development, Embedded Systems
+GE Fanuc Automation Americas, Inc.
+VMIC, Inc.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
