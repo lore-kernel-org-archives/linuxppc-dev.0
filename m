@@ -1,17 +1,20 @@
-Return-Path: <vijay_padiyar@hotmail.com>
-Received: from hotmail.com (bay1-dav18.bay1.hotmail.com [65.54.244.122])
-	by ozlabs.org (Postfix) with ESMTP id 2C65567A30
+Return-Path: <bora.sahin@ttnet.net.tr>
+Received: from fep03.ttnet.net.tr (fep03fe.ttnet.net.tr [212.156.4.134])
+	by ozlabs.org (Postfix) with ESMTP id 1849567A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Feb 2005 00:47:02 +1100 (EST)
-Message-ID: <BAY1-DAV187A9A9A5B15B2CB86F14D8B7D0@phx.gbl>
-From: "Vijay Padiyar" <vijay_padiyar@hotmail.com>
-To: "Embedded TUX" <etux@embeddedtux.org>,
-	"LinuxPPC Support" <linuxppc-embedded@ozlabs.org>
-Date: Tue, 1 Feb 2005 19:17:02 +0530
+	Wed,  2 Feb 2005 01:17:23 +1100 (EST)
+Date: Tue, 1 Feb 2005 16:05:22 +0200
+From: =?ISO-8859-15?B?Qm9yYSDeYWhpbg==?= <bora.sahin@ttnet.net.tr>
+Message-ID: <15316324132.20050201160522@ttnet.net.tr>
+To: Clemens Koller <clemens.koller@anagramm.de>
+In-Reply-To: <41FF5346.1020208@anagramm.de>
+References: <20050131221106.21519.qmail@web51003.mail.yahoo.com>
+	<41FF5346.1020208@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: problem with getty and telnetd
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re[2]: Pointers to Linux portability docs
+Reply-To: =?ISO-8859-15?B?Qm9yYSDeYWhpbg==?= <bora.sahin@ttnet.net.tr>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,69 +25,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
+Hi,
 
-I am running a Linux 2.6.10 kernel on an MPC8260 target. I have Busybox 1.0
-installed on top of the Linux kernel.
+Clemens> Additionally, if it comes to some more add-ons (i.e.
+Clemens> Graphics and IDE on PCI you might re-use some of my
+Clemens> ideas.
 
-Problem 1: getty ------------------------------------------
+What is these ideas? Can you explain it more clearly?
 
-I wish to put in place a login system on my system console (ttyCPM). For
-this, I add the following line to /etc/inittab:
 
-::respawn:/sbin/getty -L 57600 ttyCPM
-
-On the subsequent login, I find that the system goes totally haywire! It
-keeps displaying the login prompt again and again, and doesn't accept the
-user ID and password I give, saying:
-
-# /:
-(none) login: root
-/bin/sh: root: No such file.
-
-I am unable to do anything after this, as the login prompt keeps popping up
-everytime I enter a command. After a while the console gets stuck.
-
-However, if I remove the above line from /etc/inittab and execute the getty
-process directly from the command prompt, everything works just fine!
-
-# /: getty -L 57600 ttyCPM
-(none) login: root
-password:
-
-BusyBox 1.00 xxxxxxxxxxx (BusyBox string)
-
-~ /: pwd
-/root
-
-Also, if I add a line to /etc/inittab as follows:
-
-s1:2345:/sbin/getty -L 57600 ttyCPM
-
-then upon the subsequent boot, I can see the getty process in the list of
-running processes (by giving the ps command). However, I don't get any login
-prompt.
-
-Please explain what the problem could be. I don't have any other relevant
-files in /etc. Do I need to add any other files (other than the getty entry
-in inittab) for getty to work ok?
-
-Problem 2: telnetd ------------------------------------------
-
-To implement a telnet host on my target, I run the telnetd process from the
-target. All is fine at first sight - I can connect from a remote host, the
-login prompt is displayed fine (and WORKS here!) and it SEEMS as if I can
-use the system normally.
-
-HOWEVER, the problem comes when I try a ls command or try to view a file
-with vi. If I do a ls on a directory with several files, the telnet terminal
-on the remote host gets stuck after displaying a few entries. There's only
-two ways to recover: close the terminal window on the host or kill the 'ash'
-shell process on the target with 'kill -HUP process_id'.
-
-Why could this be happening? Is there some buffer setting that I need to
-address? Or something else that I'm missing? Please help!!!
-
-Regards
-
-Vijay Padiyar
+-- 
+Bora SAHIN
