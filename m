@@ -1,50 +1,44 @@
-From: Paul Mackerras <paulus@samba.org>
+Message-ID: <3C21A301.2080204@elsoft.ch>
+Date: Thu, 20 Dec 2001 09:36:17 +0100
+From: "David =?ISO-8859-1?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15393.32955.759625.567860@argo.ozlabs.ibm.com>
-Date: Thu, 20 Dec 2001 17:10:03 +1100 (EST)
-To: BURJAN Gabor <burjang@elte.hu>
+To: Adrian Cox <adrian@humboldt.co.uk>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: kernel panic at boot [3c59x]
-In-Reply-To: <20011219202337.GA30003@csoma.elte.hu>
-References: <20011219202337.GA30003@csoma.elte.hu>
-Reply-To: paulus@samba.org
+Subject: Re: ISA DMA
+References: <3C206A41.1080501@humboldt.co.uk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-BURJAN Gabor writes:
+Hi
 
-> Perhaps you've read this on linux-kernel list too.  I have a problem
-> with booting 2.4.17-rc1 on a RS/6000 (43P-140), when Vortex support is
-> compiled into the kernel.  Andrew Morton helped me in debugging the
-> problem.
-[snip]
-> The first printk showed the right ioaddress which belonged to the device
-> (shown by `lspci -v').  The second printk was not executed because the
-> kernel paniced before it.  He wrote it's definitely a platform issue.
-> Any suggestions are welcome.
+Seems like you are facing the same problem as i do. But IIRC i think you
+have to adjust the code in include/asm/dma.h (and possibly other places)
+as well (at least in 2.4.14, not sure about the later kernels).
 
-This is ultimately a known problem which I haven't got around to
-fixing yet.  The 140 has a PCI-PCI bridge and the firmware configures
-it to pass through a range of I/O and memory addresses.  The problem
-is that the firmware assumes a 1GB I/O space (yes, it thinks you might
-need a *billion* I/O port addresses!) and configures the bridge up in
-the high end of that range.  Linux uses a much smaller range of I/O
-addresses (0 to 16M-1, from memory) and reconfigures devices to have
-I/O addresses in that range.  Unfortunately the code to reconfigure
-bridges isn't there yet.  The I/O address that you mentioned,
-0x3f7ffc00, is up near the end of the 1GB I/O region and shows that
-the card hasn't been reconfigured.
+BTW:
 
-You would have the vortex card in slot 4 or 5, which are the slots
-behind the PCI-PCI bridge.  Moving the card to one of the other slots
-would help, but if you have nothing behind the bridge you will strike
-another known problem, which is that the firmware will then configure
-the bridge with all its windows closed, which confuses the code that
-reads the bridge configuration.  You can get around that problem for
-now by removing the riser card that provides slots 4 and 5.
+What south bridge do you use? Some of the newer ones offer 32bit
+addressing capability for DMA.
 
-Paul.
+Adrian Cox wrote:
+
+> The current 2.4-devel tree never assigns any memory to the ISA DMA zone,
+> irrespective of the setting of ISA_DMA_THRESHOLD. As I'm currently
+> trying to get a floppy working on a platform with 24-bit ISA DMA in its
+> Southbridge, this looks like a problem.
+>
+> How do people feel about the attached patch? This should only change
+> behavior for platforms which set ISA_DMA_THRESHOLD to a value other than
+> 0 or (-1)L.
+>
+
+
+[stuff deleted]
+
+
+Dave
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
