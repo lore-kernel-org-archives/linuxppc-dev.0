@@ -1,78 +1,69 @@
-Message-Id: <200001161843.TAA15591@appel.flower>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Cutting edge moved or shifting to .deb? 
-In-reply-to: Your message of "Sun, 16 Jan 2000 19:15:15 +0100."
-             <38820AB3.72DDCF9F@wanadoo.fr>
-Date: Sun, 16 Jan 2000 19:43:30 +0100
-From: Jan Nieuwenhuizen <janneke@gnu.org>
+Date: Sun, 16 Jan 2000 11:03:20 -0800
+From: "David N. Welton" <davidw@linuxcare.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Cutting edge moved or shifting to .deb?
+Message-ID: <20000116110320.A27127@linuxcare.com>
+References: <200001161644.RAA14656@appel.flower>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200001161644.RAA14656@appel.flower>; from janneke@gnu.org on Sun, Jan 16, 2000 at 05:44:08PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sunday, 16 January 2000, Martin Costabel writes:
+<debian developer hat>
 
-> There is some pretty interesting recent stuff in contrib, but have you
-> ever thought about contributing yourself? The current versions of gcc
+On Sun, Jan 16, 2000 at 05:44:08PM +0100, Jan Nieuwenhuizen wrote:
 
-Uhm, that's partly why I'm asking.  I'm contributing LilyPond (see sig),
-eg, which I'd like to give the best part of my time.  Also, I don't have
-the resourses (disk space) to contribute X11 or Mozilla.  I can't
-imagine that I'm the only one (or first one for that matter), wanting a
-more stable version of Emacs, for example?
+> On the other hand, ftp.<cc>.debian.org has stuff such as XFree
+> 3.3.6, emacs-20.5 (which is good, I was having a lot of trouble with
+> my 20.3 emacs), a recent mozilla-M12, that can be alienised, but the
+> glibc seems to be 'stuck' at libc6_2.1.2-5.deb.
 
-Yesterday, I found that vanilla Emacs-20.5a doesn't easily compile for
-ppc (using modified 20.3 patches).  Now, before my (LilyPond) development
-efforts grinds to a halt, in favour of maintaining important parts of
-my own distribution, I'd just like to know if I'm missing some important
-ftp site: will anybody use my emacs-20.5 if I manage to put up an rpm on
-contrib, or has everyone already got it from somewhere else?
+Yes, and being an open organization, anyone can participate,
+contribute bug fixes, and discuss the state of things on the mailing
+lists.  What's more, you get the same environment across all
+architectures, which currently include ARM, Alpha, m68k, i386, the
+early stages of a mips port, ppc, and sparc.  Most of the non i386
+architectures are supported by autobuilder systems which let them keep
+up with i386, where most of the development occurs.  And there are a
+*lot* of .deb's available.
 
-> and glibc 
-> are so stable that you can basically take the latest *.src.rpms or even 
-> tgzs from anywhere and compile them with only minor tweaking.
+> On a related, totally off-topic note: I can't seem to find how to
+> verify package integrity with dpkg, eg, the equivalent for rpm
+> --verify.
 
-Yes, that's really grand.  So much better than, say, a year ago.
+Dpkg doesn't work that way, although the capability might be added in
+the future.  Ask on the debian lists for details.
 
-> > On the other hand, ftp.<cc>.debian.org has stuff such as XFree 3.3.6,
-> > emacs-20.5 (which is good, I was having a lot of trouble with my 20.3
-> 
-> ftp.mklinux.org has new RPMS, for example emacs-20.5 RPMS. The latest
+> I've setup a partition this summer with a minimal debian
+> installation, just to test it out.  But at that time, I had only
+> low-bandwidth and deer internet access.  The debian distribution was
+> having quite some problems then, and updating by burning a cdrom a
+> week didn't really work for me.  Now I'm using that partition to run
+> compiles on: I removed all docs and other stuff, so that a lot of
+> packages should be reinstalled.  However, `chroot /mnt/debian/root
+> dpkg --audit', and `dpkg --status <some-doc-truncated-package>' say
+> all is ok?  How to fix and upgrade this?
 
-Ok, thanks.  Should have posted my questions yesterday :-)
+Well, if your packages are out of date, you can just grab all the
+latest ones, which should reinstall all the necessary files that have
+been wiped.  That's a good place to start, at least.
 
-> xemacs versions (both stable and devel) also exist as RPMS or are easily
-> compilable.
-> 
-> And then it looks like a major new release from linuxppc.com is
-> imminent...
+You really want to get 'apt' up and running - it's fantastic!  It
+allows you to run commands like "apt-get install emacs20" and it will
+go fetch emacs off the net for you and install it.  If you currently
+have apt on there, you can run "apt-get update", and "apt-get
+dist-upgrade", and that should get you the latest versions of
+everything.
 
-I've been expecting this for some time, but how can one tell?
+</debian developer hat>
 
-> > emacs), a recent mozilla-M12, that can be alienised, but the glibc seems
-> > to be 'stuck' at libc6_2.1.2-5.deb.
-> > 
-> > Kernel development seems to have moved from vger to openprojects to
-> > Paul's at linuxcare: rsync -auvz linuxcare.com.au::linux-pmac-devel.
-> 
-> Vger is quite alive in recent days. I have their kernel versions
-> 2.2.15-pre2
-> and 2.3.40 (pre something), both running OK for me.
-
-Ah.  I tried some days ago, and it had the same problems with pmac_nvram.c
-(missing .h include) as Linus' tree.  I'll have another look.
-
-> turbolinux, debian, SuSE (far too much for my taste), I think the amount
-> of development coming out of it is rather awesome. 
-
-It is.  But it helps if you know where to look.
-
-Thanks for some pointers,
-
-Jan.
-
+Good luck,
 -- 
-Jan Nieuwenhuizen <janneke@gnu.org> | GNU LilyPond - The music typesetter
-http://www.xs4all.nl/~jantien       | http://www.lilypond.org
+David N. Welton, Developer, Linuxcare, Inc.
+415.354.4878 x241 tel, 415.701.7457 fax
+davidw@linuxcare.com, http://www.linuxcare.com/
+Linuxcare. At the center of Linux.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
