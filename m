@@ -1,30 +1,62 @@
-Date: Fri, 4 May 2001 15:34:59 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: jason@openinformatics.com, linuxppc-dev@lists.linuxppc.org,
-	debian-powerpc@lists.debian.org
-Subject: Re: Success! (was Re: External Monitor under Pismo)
-Message-ID: <20010504153459.A14533@lambda.u-strasbg.fr>
-References: <87hez1pjm1.fsf@amadeus.openinformatics.com> <20010504122935.19790@mailhost.mipsys.com>
+Date: Fri, 4 May 2001 15:39:17 +0200
+From: Uwe Steinmann <steinm@majestix.fernuni-hagen.de>
+To: =?iso-8859-1?Q?Michel_D=E4nzer?= <michdaen@iiic.ethz.ch>
+Cc: Daniel Berlin <dan@cgsoftware.com>,
+	Uwe Steinmann <Uwe.Steinmann@FernUni-Hagen.de>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: IRDA support
+Message-ID: <20010504153917.A3673@gehtnix.fernuni-hagen.de>
+References: <20010503102914.A4411@gehtnix.fernuni-hagen.de> <8766fianez.fsf@dynamic-addr-83-177.resnet.rochester.edu> <3AF29648.575843F4@iiic.ethz.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010504122935.19790@mailhost.mipsys.com>; from benh@kernel.crashing.org on Fri, May 04, 2001 at 02:29:35PM +0200
-From: Sven LUTHER <luther@dpt-info.u-strasbg.fr>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <3AF29648.575843F4@iiic.ethz.ch>; from michdaen@iiic.ethz.ch on Fri, May 04, 2001 at 01:45:12PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, May 04, 2001 at 02:29:35PM +0200, Benjamin Herrenschmidt wrote:
-> Note that if you don't want to mess with XFree, I recently added the
-> ability to control the CRT & LCD outputs of the Rage M3 to aty128fb in my
-> rsync tree. The tool to control it is on www.penguinppc.org/~benh
+On Fri, May 04, 2001 at 01:45:12PM +0200, Michel Dänzer wrote:
+> Daniel Berlin wrote:
+> >
+> > Uwe Steinmann <steinm@majestix.fernuni-hagen.de> writes:
+> >
+> > > short question. Do any of the recent kernels support IRDA on a
+> > > Pismo?
+> > Nope.
+> >
+> > > If no, what needs to be done to make it work?
+> >
+> > Get it to actually turn it on properly, i would imagine.
+> > it times out trying to send the setup bytes, or something like this.
+>
+> Yep, here's what I get running irattach when I replace the 'goto out' by break
+> in irda_setup():
+>
+> PowerMac Z8530 serial driver version 2.0
+> tty00 at 0xc9a1c020 (irq = 22) is a Z8530 ESCC (cobalt modem)
+> tty01 at 0xc9a23000 (irq = 23) is a Z8530 ESCC (IrDA)
+> irda_setup timed out on 1st byte
+> irda_setup 1st byte = ff
+> irda_setup timed out on 2nd byte
+> irda_setup 2nd byte = ff (4f)
+> irda_setup timed out on 1st byte
+> irda_setup 1st byte = ff
+> irda_setup timed out on 2nd byte
+> irda_setup 2nd byte = ff (51)
+>
+>
+> Hope this is meaningful to the people familiar with that code...
+>
+> I saw comments in macserial.c that it should work on older G3 PowerBooks, can
+> anyone confirm that? What about iMacs?
+>
+>
+> I'd really love to get this working for HotSync...
+I'm glad not to be the only one who would like to see IRDA working.
+Unfortunately, I'm not a kernel guru.
 
-BTW, the recently released ibook is said to only have the capacity to mirror,
-not act as an independent display ? can that be or is it something limited in
-the mac drivers ? It has a 8MB embedded rage mobility 128, same as the
-titanium i think.
-
-Friendly,
-
-Sven Luther
+  Uwe
+--
+  Uwe.Steinmann@fernuni-hagen.de
+  Tel: +2331 987 4528    Fax: +2331 987 375
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
