@@ -1,60 +1,36 @@
-Message-ID: <398741C3.4845BA95@student.ethz.ch>
-Date: Tue, 01 Aug 2000 23:31:47 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+From: Steffen Haeuser <SteffenH@hyperion-software.de>
+Reply-To: SteffenH@hyperion-software.de
+To: Pierre Phaneuf <pp@ludusdesign.com>
+CC: linuxppc-dev@lists.linuxppc.org, howarth@nitro.med.uc.edu,
+        xpert@XFree86.Org, daenzerm@student.ethz.ch
+Date: Wed, 02 Aug 2000 00:07:18 +0100
+Message-ID: <yam8249.919.146769688@mail.lf-online.de>
+In-Reply-To: <39873902.D091D4D8@ludusdesign.com>
+Subject: Re: [Xpert] LinuxPPC X Server
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: LinuxPPC X Server
-References: <398726FD.C1A79E2B@student.ethz.ch> <20000801204113.29901@mailhost.mipsys.com>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+Am 01-Aug-00 schrieb Pierre Phaneuf:
 
-> >> >Great, I'd happily beta-test and/or help, will that be in your
-> >> >rsync-tree or in 2.4?
-> >>
-> >> It's far from finished yet. It will be in 2.4 bk tree once done
-> >
-> >Cool, so it will be in our APUS 2.4 tree :)
->
-> Well, I don't see what good Uni-North AGP bridge support can be to APUS
-> machines, but if you think it's cool ...
+>Steffen Haeuser wrote:
 
-I don't have a bitkeeper tree, but the APUS tree is based on it, so I can
-build the agpgart stuff from there.
+Hi!
 
+>Why do you wait for those bugfix? These are in the server, so if your
+>code is correct, you could just put it up and make it available, so that
+>when the X server is fixed, Sin will just work.
 
-> >> Also, I need to figure out why XF4 (Franz 4.0.1 RPMs) die with 2.4 on
-> >> both my Pismo and my G4.
-> >
-> >Strange, it works fine here running 2.4.0-test4 from linux-pmac-devel...
->
-> I'll compare with this kernel. Also, which version of glibc do you have ?
+For myselves this would be okay, but it is possible that other people involved
+would not agree. Still, the 640x480 bug is now fixed, as I was informed, so
+at least this is no problem anymore. And hopefully DRI Drivers will come not
+to
+far in the future. After this recent developement I think it is quite likely
+that we will put a PPC Binary on the CDs of the game(s).
 
-book(~): dpkg -l|grep libc6
-ii  libc6          2.1.3-10       GNU C Library: Shared libraries and Timezone
-ii  libc6-dev      2.1.3-10       GNU C Library: Development Libraries and Hea
+Steffen
 
-> Did you compile XF4 yourself ? If yes, which gcc did you use ? (just in
-> case...)
-
-book(~): gcc -v
-Reading specs from /usr/lib/gcc-lib/powerpc-linux/2.95.2/specs
-gcc version 2.95.2 20000220 (Debian GNU/Linux)
-
-Compiled both X 4.0.1 (more or less stock AFAIR) and the kernel with that.
-
-
-Michel
-
-
---
-                               Reboot America.
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
