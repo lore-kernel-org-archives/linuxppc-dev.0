@@ -1,35 +1,60 @@
-Message-ID: <397E0874.564A99B6@mvista.com>
-Date: Tue, 25 Jul 2000 21:36:52 +0000
-From: Scott Anderson <sanders@mvista.com>
+Message-ID: <397F0006.24762F7@mvista.com>
+Date: Wed, 26 Jul 2000 08:13:10 -0700
+From: Cal Erickson <cal_erickson@mvista.com>
+Reply-To: cal_erickson@mvista.com
 MIME-Version: 1.0
+To: Mike Flynn <mflynn@enerdyne.com>
 CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: flash filesystem
-References: <4.3.2.7.0.20000824132843.00b1f9a0@10.0.0.2>
+Subject: Re: kmem_grow: Called nonatomically from int - size-32?
+References: <67505026E29DD311A9AA00508B7315F33B735B@EXCHANGE>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mike Coy wrote:
-> The best that I can come up with is that the flash is probably mapped into
-> memory somewhere, and maybe I could fool the ramdisk code into reading a
-> pre-existant ramdisk at a given address.  This didn't appear to be too
-> trivial at my first browse through the code, though.
-> What is the right way to get at data in flash?
+Mike,
+You are trying to get a new piece of cache. The message occurs when
+there is not one available. After the message appears the system goes
+into a spinlock and tries again. This continues until the request is satisfied.
 
-I used the MTD code to accomplish the same thing.  I have a compressed
-ext2 filesystem image sitting in FLASH and pass the MTD slram driver
-the beginning and ending address and it exposes the FLASH as /dev/mtd0.
-To make sure we're on the same page, I'm talking about a read-only
-filesystem.
+This could be an indication that you have a memory leak somewhere and
+are not returning memory.
+Cal
 
-Check out http://www.linux-mtd.infradead.org/ to get started with the
-MTD layer.  I'm under the impression that MTD has gone into the 2.4
-kernel so it should become "the" way of doing this.
+Mike Flynn wrote:
 
-    Scott Anderson
-    scott_anderson@mvista.com   MontaVista Software Inc.
-    (408)328-9214               490 Potrero Ave.
-    http://www.mvista.com       Sunnyvale, CA  94086
+> We have been hacking away on a TI  16C554 quad UART driver based on
+> serial.c. The driver supports the TI chip on our motherboard which hosts an
+> Embedded Planet CLLF with an MOT 860T processor. We have all four ports
+> working with interrupts, but we are seeing this message several times before
+> the system hangs: "kmem_grow: Called nonatomically from int - size-32." It
+> is issued from linux/mm/slab.c and obviously has something to do with shared
+> memory. Does anyone have insight as to what we are (or are not doing) to
+> upset slab.c?
+>
+> Thanks,
+>
+> Mike Flynn
+> Principal Software Engineer
+> Enerdyne Technologies
+> 8402 Magnolia Ave.
+> Suite C
+> Santee, CA 92041
+> Voice: 619-562-3061
+> Fax: 619-562-8802
+> MFlynn@Enerdyne.com
+>
+
+--
+===========================================================================
+Cal Erickson                 MontaVista Software Inc.
+Customer Support Engineer    490 Potrero Avenue
+Phone (408) 328-0304         Sunnyvale CA 94085
+Fax   (408) 328-9204         e-mail cal_erickson@mvista.com
+Pager 877-566-2012           support 1-800-759-8888 pin 202-7489
+web http://www.mvista.com    support e-mail: support@mvista.com
+eCode: http://cal@work.com.ecode.com
+===========================================================================
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
