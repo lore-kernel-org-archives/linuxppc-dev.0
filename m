@@ -1,20 +1,24 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
-	by ozlabs.org (Postfix) with ESMTP id 4408A2BF11
+Return-Path: <Renaud.Barbier@ge.com>
+Received: from ext-nj2gw-1.online-age.net (ext-nj2gw-1.online-age.net
+	[216.35.73.163]) by ozlabs.org (Postfix) with ESMTP id 66B472BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 18 Dec 2004 03:38:44 +1100 (EST)
-Date: Fri, 17 Dec 2004 09:38:37 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-Message-ID: <20041217163837.GE31110@smtp.west.cox.net>
-References: <313680C9A886D511A06000204840E1CF0A6473AF@whq-msgusr-02.pit.comms.marconi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <313680C9A886D511A06000204840E1CF0A6473AF@whq-msgusr-02.pit.comms.marconi.com>
-Cc: "'Demke, Torsten'" <Torsten.Demke@fci.com>,
-	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>,
-	'Steven Blakeslee' <BlakesleeS@embeddedplanet.com>
-Subject: Re: 2.6.10-rc3 for 8xx with I2C config enabled  still fails ...
+	Tue, 21 Dec 2004 02:24:53 +1100 (EST)
+Received: from int-nj2gw-2.online-age.net (int-nj2gw-2 [3.159.236.66])
+	by ext-nj2gw-1.online-age.net (8.12.9/8.12.9/990426-RLH) with ESMTP id
+	iBKFG6BF015196 for <linuxppc-embedded@ozlabs.org>;
+	Mon, 20 Dec 2004 10:16:07 -0500 (EST)
+Received: from cinmlef07.e2k.ad.ge.com (localhost [127.0.0.1])
+	by int-nj2gw-2.online-age.net (8.12.9/8.12.8/990426-RLH) with ESMTP id
+	iBKFG1Ql008186 for <linuxppc-embedded@ozlabs.org>;
+	Mon, 20 Dec 2004 10:16:06 -0500 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Mon, 20 Dec 2004 09:17:02 -0600
+Message-ID: <45ABD2373C33C4459D42B40EC4F346F204D1E5F9@FTWMLVEM03.e2k.ad.ge.com>
+From: "Barbier, Renaud (GE Infrastructure)" <Renaud.Barbier@ge.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: IDE
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,30 +29,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 17, 2004 at 11:30:53AM -0500, Povolotsky, Alexander wrote:
+I have a custom 440GX board with a Promise 20269.
+even though, I used the options ide3=3Dnoprobe or hdg=3Dnoprobe and =
+hdh=3Dnoprobe
+Linux hangs on probing the second interface.=20
+Am using the kernel options the correct way?
 
-> Hi,
-> 
-> Even so much "touted" ;-) 2.6.10-rc3 FAILS for 8xx with I2C config enabled 
-> ... and our custom MPC885 based board is using a single 24C02 type I2C
-> EEPROM, connected to the I2C bus ...
-> 
-> Does anyone of you has any input/experience about 2.6.10-rc3 functionality
-> (this all relates to our card) of:
-> SPI, HDLC, Entropia, Legerity, watchdog, NAND flash support,
-> MTD with JFFS2 filesystem support and flash compatibility ??? (Any info will
-> be much appreciated !)
-
-So, your best bet to get 8xx I2C working is to grab the 'latest' from a
-2.4 tree that has it working, and move it up.  In doing so, you may want
-to kill 'i2c-rpx' and merge it all into the i2c-algo-8xx file.
-
-[snip]
-> CONFIG_8xx=y
-CONFIG_BROKEN=y
-as well.  Not that it's directly relevant (the 8xx breakage is in
-something else), but..
-
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Uniform Multi-Platform E-IDE driver Revision: 7.00beta4-2.4
+ide: Assuming 33MHz system bus speed for PIO modes; override with =
+idebus=3Dxx
+PDC20269: IDE controller at PCI slot 00:03.0
+PDC20269: chipset revision 2
+PDC20269: not 100% native mode: will probe irqs later
+PDC20269: ROM enabled at 0x000dc000
+    ide2: BM-DMA at 0xefd0-0xefd7, BIOS settings: hde:pio, hdf:pio
+    ide3: BM-DMA at 0xefd8-0xefdf, BIOS settings: hdg:pio, hdh:pio
+Probing IDE interface ide2...
+hde: STI Flash 6.2.0, CFA DISK drive
+blk: queue c01dbea0, I/O limit 4095Mb (mask 0xffffffff)
+Probing IDE interface ide3...
