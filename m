@@ -1,22 +1,24 @@
-Message-Id: <9907112303.AA25560@marc.watson.ibm.com>
-To: "Charles A. Jolley" <charles.jolley@zeratec.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Netbooting Linux on an iMac 
-In-Reply-To: Message from "Charles A. Jolley" <charles.jolley@zeratec.com>
-   of "Sun, 11 Jul 1999 16:03:54 CDT." <199907112116.QAA23835@www2.tuckeris.com>
-Date: Sun, 11 Jul 1999 19:03:17 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Message-Id: <l03130300b3af56970161@[132.227.88.15]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Mon, 12 Jul 1999 10:32:25 +0200
+To: linuxppc-dev@lists.linuxppc.org
+From: André Desnoyers <Andre.Desnoyers@ufr-info-p6.jussieu.fr>
+Subject: Xserver on iMac and R5
+Cc: cad@ufr-info-p6.jussieu.fr
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Please look in the archive of this mailinglist where you will find
-a detailed answer from me about exactly what an OpenFirmware boot image
-must look like to be recognized and loaded.  It basically is a 32-bit
-PowerPC ELF image with a special NOTE section and the loader section in
-the header referencing the NOTE section.
+1)i can not lauch Xserver on iMac,
+  neither with the standard system
+         (ftp.cdrom.com://pub/linux/linuxppc/linuxppc-R5-final/RedHat
+  nor john's patch of XF86Config
+2)are there a french keymap
+3)how simulate the 2nd et 3rd mouse's button
+							Thanks
 
-David
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
