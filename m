@@ -1,40 +1,40 @@
-Date: Tue, 30 Mar 1999 10:13:29 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Dave Weis <djweis@plconline.com>
-cc: David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: modifying boot loader 
-In-Reply-To: <Pine.LNX.3.95.990329222203.1767A-100000@catbert.desm.plconline.com>
-Message-ID: <Pine.HPP.3.96.990330100809.1043E-100000@gra-ux1.iram.es>
+Message-ID: <XFMail.990330103822.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <9903300405.AA56644@marc.watson.ibm.com>
+Date: Tue, 30 Mar 1999 10:38:22 +0100 (BST)
+From: Gary Thomas <gdt@linuxppc.org>
+To: David Edelsohn <dje@watson.ibm.com>
+Subject: Re: modifying boot loader
+Cc: linuxppc-dev@lists.linuxppc.org, Dave Weis <djweis@plconline.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-
-On Mon, 29 Mar 1999, Dave Weis wrote:
-
+On 30-Mar-99 David Edelsohn wrote:
 > 
+>>>>>> Dave Weis writes:
 > 
-> On Mon, 29 Mar 1999, David Edelsohn wrote:
-> >       I doubt LinuxPPC will work on a 601-based machine.  The PPC601 was a
-> > POWER architecture chip with PowerPC user instructions added. 
+> Dave> It's a 7011-250, the first 601 machine. Actually I found a copy of AIXpert
+> Dave> online that had the announcement for the machine. 
+> 
+>       I doubt LinuxPPC will work on a 601-based machine.  The PPC601 was a
+> POWER architecture chip with PowerPC user instructions added. 
+> 
 
-But with a PowerPC MMU, which is the important point.
+It absolutely does work on 601 based machines!  At least this one (that I know of):
+  IBM - Nobis (Sandalfoot)
 
-> Based on what I read in the source, they are supported. I guess I'll find
-> out in a bit.
 
-Watch out for instructions that try to access HID0, like flushing the
-caches, which is very different on 601. I remember seeing various places
-(and suggesting some fixes) where accesses to HID0 were not protected with
-a check of the processor type. But it was several months ago and I don't
-know if all such problems have been fixed now. 
+------------------------------------------------------------------------
+Gary Thomas                              |
+email: gdt@linuxppc.org                  | "Fine wine is a necessity of
+   ... opinions expressed here are mine  |        life for me"
+       and no one else would claim them! |
+                                         |      Thomas Jefferson
+------------------------------------------------------------------------
 
-This was my $0.02 tip of the day.
-
-	Gabriel.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
