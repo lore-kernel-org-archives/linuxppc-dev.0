@@ -1,58 +1,48 @@
-Message-Id: <v04003a00b5614aa89cff@[24.66.67.194]>
-In-Reply-To: <200006050548.HAA00780@piglet.grunz.lu>
-References: <20000604104844.A13914@quaketop.them.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 5 Jun 2000 07:40:22 -0500
-To: mlan@cpu.lu, drow@false.org
-From: Tony Mantler <nicoya@apia.dhs.org>
+Message-ID: <393BA424.2E608C4@relog.ch>
+Date: Mon, 05 Jun 2000 14:59:16 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
+MIME-Version: 1.0
+To: mlan@cpu.lu
+CC: ajoshi@shell.unixbox.com, linuxppc-dev@lists.linuxppc.org
 Subject: Re: [patch] VRAM detection in controlfb
-Cc: linuxppc-dev@lists.linuxppc.org
+References: <200006041356.PAA00976@piglet.grunz.lu>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 12:48 AM -0500 6/5/2000, Michel Lanners wrote:
->On   4 Jun, this message from Daniel Jacobowitz echoed through cyberspace:
->>
->> On Sun, Jun 04, 2000 at 10:08:39AM -0500, Tony Mantler wrote:
-[...]
->>> If you have a block that's both dirty and incoherent... well, don't do
->>>that. :)
->>
->> Ew.  I wonder if that's our problem...
->
->Would make sense, and I thought so too.... dcbi is wrong in any case for
->us, since we did modify that block. However, I wonder whether caching is
->on at all for the framebuffer adresses? (And if so, is that a good idea?
->Do we want to trash the cache with a xsetroot?)
+Michel Lanners wrote:
 
-I'm not sure of the design specifics of the Control video, but most of the
-Apple video designs I've seen put the high-bandwidth low-latency video ram
-right on the main bus, so it's already half way to being a cache in and of
-itself (I seem to recall apple's sound manager using vram for buffer
-space), and would benefit very little from the CPU cache, except perhaps in
-a multi-cpu machine to keep bus chatter down to a minimum, but the exact
-tradeoffs of that would take a bit of consideration to quantify.
+> 1. What do the vc: and map: options do?
 
-Besides that, unlike main ram, what has and hasn't been written back to the
-framebuffer makes a big difference in what you see on screen. Caching would
-probably make for some mighty weird flicker, jumpy or inconsistent video
-playback, and all sorts of evil visual gremlins. You could always cache the
-framebuffer as write-through, but then any value you might have got from
-the caching goes right out the window, as framebuffer writes should
-outnumber framebuffer reads by an order of magnitude.
+map: maps framebuffer devices to VCs. E.g. I use
 
-Anyways, that's the long answer. The short answer is: no, you probably
-don't want to cache the framebuffer.
+	video=pm2fb:... video=amifb:... video=map:000011
+
+So pm2fb is fb0 and amifb fb1, and VCs 1-4 are handled by pm2fb while 5 and
+six are handled by amifb. Hope you get the idea.
 
 
-Cheers - Tony :)
+> 2. Why can you specify more options after 'scrollback:', separated with
+>    a ',', but not after the 'map:' option (no other options possible),
+
+I guess it doesn't make sense to mix map: with device specific options because
+it affects all devices.
+
+>    whereas you can have more options following 'vc:', but without a
+>    separator?
+
+If only I knew what vc: is for :)
+
+
+Michel
 
 
 --
-Tony Mantler       Renaissance Nerd Extraordinaire     nicoya@apia.dhs.org
-Winnipeg, Manitoba, Canada                     http://nicoya.feline.pp.se/
-
+...and that is how we know the Earth to be banana-shaped.
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
