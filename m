@@ -1,49 +1,28 @@
-Date: Thu, 31 Aug 2000 18:09:19 +0200 (CET)
-From: Marc Dietrich <Marc.Dietrich@hrz.uni-giessen.de>
-To: daenzerm@student.ethz.ch
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: asm statement in include/asm not ansi conform
-In-Reply-To: <39AD4E8F.76FB97E0@relog.ch>
-Message-Id: <Pine.A41.4.21.0008311751210.17008-100000@c2.hrz.uni-giessen.de>
+Date: Thu, 31 Aug 2000 18:10:55 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Dan Malek <dan@netx4.com>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Michel Dänzer <daenzerm@student.ethz.ch>,
+        Tony Mantler <nicoya@apia.dhs.org>,
+        Tom Rini <trini@kernel.crashing.org>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Platform configuration (was: Re: CONFIG_PPC != Mac)
+In-Reply-To: <39AE80BD.D86B34DA@embeddededge.com>
+Message-ID: <Pine.HPX.4.10.10008311808260.15978-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello Michel,
+On Thu, 31 Aug 2000, Dan Malek wrote:
 
-after some testing dri works now. On startup X says "dri enabled" and
-glinfo shows many supported GL functions. But at least when running
-"gears" for example, I get no accelaration at all. Still 60 frames per
-second - same as with software rendering. I also have a P-III/500 box with
-Rage128 (AGP) witch produces 400 frames! Glxinfo says something like "RGB
-error" and breaks.
+> I would also like to see us spend a little more time trying to
+> stabilize 2.4 instead of trying to solve elaborate configuration and
+> boot schemes.  That is what 2.5 is for.
 
-Maybe it's better at your site?
-
-Marc
-
-On Wed, 30 Aug 2000, Michel Dänzer wrote:
-
-> Marc Dietrich wrote:
->
-> > I just compiled XFree from dri.sourceforge.net, which uses the "-ansi"
-> > option for compiling.
->
-> Is that defined in xc/config/cf/host.def? It's always a good idea to tweak
-> that file before an X build.
->
->
-> > Problem is, that this fails on some "asm" instructions in e.g.
-> > include/asm-ppc/processor.h. I'm not very firm with C but is it posible to
-> > replace this with __asm__ ? I compiled X without -ansi and it seems to work.
->
-> So the DRI is working for you? Cool, we are two now then ;)
->
->
-
-Marc Dietrich                marc.dietrich@physik.uni-giessen.de
+What are your problems with 2.4 ? I'm at 2.4.0-test7 and I've not had any
+problem so far, although I still need to upgrade my modutils.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
