@@ -1,33 +1,40 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Takashi Oe <toe@unlserve.unl.edu>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: rtc again...
-Date: Sat, 5 Aug 2000 13:25:31 +0200
-Message-Id: <20000805112531.1840@192.168.1.10>
-In-Reply-To: 
- <Pine.LNX.3.96LJ1.1b7.1000804195419.649B-100000@ofey.earthlink.net>
-References: 
- <Pine.LNX.3.96LJ1.1b7.1000804195419.649B-100000@ofey.earthlink.net>
+Date: Sat, 5 Aug 2000 13:51:23 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Tom Gall <gall@rochcivictheatre.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Getting things in...  Was: Re: shifts on 64bit ints
+In-Reply-To: <20000804174953.16973@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.4.10.10008051350130.433-100000@cassiopeia.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Fri, 4 Aug 2000, Benjamin Herrenschmidt wrote:
+> I'm an horribly bad web designer, but one cool thing to do if someone is
+> good at it, would be a web-pased patch repository. You send patches with
+> a web form (eventually an upload mecanism) along with your  email, a
+> comment, etc..., they get assigned a patch number automatically, anybody
+> can consult the database, and people with write access to BK can mark
+> them (accepted, refused, postponed, ... along with a comment) once they
+> have been handled.
 >
->As Geert has pointed out, hwclock can give UTC or local time to /dev/rtc,
->why don't we just let userland deal with this local time issue.  What I
->mean is for pmac_set_rtc_time(), let's change:
+> Any volunteer to design such a site ?
 
-That would give us back what we had at the beginning. This way, userland
-is solely responsible for this setup, which means it will be wrong on 50%
-of user machines (but that's user fault isn't it ?) and which means the
-kernel will boot with a wrong time, at least until the userland init
-script takes over.
+It already exists for Samba, and once it was in a testing period for the
+Linux kernel (as maintained by Linus): Jitterbug.
 
-I don't see why it's such a mess to simply read the default values from
-xpram so we are consistent with MacOS. But everything in Linux is a mess
-anyway...
+Gr{oetje,eeting}s,
 
-Ben.
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
