@@ -1,45 +1,34 @@
-Subject: Re: linuxppc-2.5 from mvista.com -- drivers/char/agp/agp.h:31:
-	asm/agp.h: No such file or directory
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: miles.lane@attbi.com
+Date: Mon, 24 Mar 2003 13:11:34 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Leigh Brown <leigh@solinno.co.uk>
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <1048528618.5401.36.camel@thor>
-References: <200303241737.LAA16808@lists.linuxppc.org>
-	 <1048528618.5401.36.camel@thor>
-Content-Type: text/plain; charset=ISO-8859-1
-Message-Id: <1048532438.5409.46.camel@thor>
+Subject: Re: [RFC][PATCH] Put PReP boot arguments in a fixed location in the boot image
+Message-ID: <20030324201134.GA14264@ip68-0-152-218.tc.ph.cox.net>
+References: <61347.213.107.143.228.1048365078.squirrel@www.solinno.co.uk>
 Mime-Version: 1.0
-Date: 24 Mar 2003 20:00:39 +0100
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <61347.213.107.143.228.1048365078.squirrel@www.solinno.co.uk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2003-03-24 at 18:56, Michel Dänzer wrote:
-> On Mon, 2003-03-24 at 18:37, miles.lane@attbi.com wrote:
-> >   gcc -Wp,-MD,drivers/char/agp/.backend.o.d -D__KERNEL__ -Iinclude -Wall
-> > -Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common
-> > -Iarch/ppc -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple
-> > -mstring -fomit-frame-pointer -nostdinc -iwithprefix include
-> > -DKBUILD_BASENAME=backend -DKBUILD_MODNAME=agpgart -c -o
-> > drivers/char/agp/backend.o drivers/char/agp/backend.c
-> > In file included from drivers/char/agp/backend.c:39:
-> > drivers/char/agp/agp.h:31: asm/agp.h: No such file or directory
-> > In file included from drivers/char/agp/backend.c:39:
-> > drivers/char/agp/agp.h: In function `global_cache_flush':
-> > drivers/char/agp/agp.h:51: warning: implicit declaration of function
-> > `flush_agp_cache'
-> > make[3]: *** [drivers/char/agp/backend.o] Error 1
->
-> I did
->
-> cp include/asm-{alpha,ppc}/asm.h
-                             ^^^^^
-D'oh, make that agp.h .
+On Sat, Mar 22, 2003 at 08:31:18PM -0000, Leigh Brown wrote:
 
+> I have been using this patch very successfully for ages.  Having the
+> boot arguments in a fixed location in the boot image makes it trivial
+> to write a program to set the arguments.
+>
+> Please take a look at the patch and let me know what you think.  If
+> there are no negative comments I shall post it again for inclusion.
+> The patch should apply against linuxppc_2_4 and linuxppc_2_4-devel.
+
+The changes to 'mkprep' I _think_ would break non-'PReP' systems using
+that.  Please modify simple/head.S (and related) in a similar fashion,
+and present this is a patch against 'linux-2.4' (GNU or BK patch is
+fine with me).  Thanks.
 
 --
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
-
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
