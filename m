@@ -1,35 +1,59 @@
-Date: Wed, 6 Jan 1999 09:41:57 +1100
-Message-Id: <199901052241.JAA04815@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: brad@pht.com
-CC: linuxppc-dev@lists.linuxppc.org, p1rabbit@halcyon.com
-In-reply-to: <Pine.LNX.3.96LJ1.1b7.990104192040.452A-100000@cricket> (message
-	from Brad Midgley on Mon, 4 Jan 1999 19:41:15 -0700 (MST))
-Subject: Re: 2.2.0pre2 SCSI problems, more (fwd)
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.LNX.3.96LJ1.1b7.990104192040.452A-100000@cricket>
+In-Reply-To: <v04011700b2b80bfaa277@[209.86.156.99]>
+Date: Tue, 5 Jan 1999 23:48:15 +0100
+To: linuxppc-dev@lists.linuxppc.org, "Timothy A. Seufert" <tas@mindspring.com>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Strange PMAC IDE performance problem
+Message-Id: <19990105234815.008275@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Brad Midgley <brad@pht.com> wrote:
+On Tue, Jan 5, 1999, Timothy A. Seufert <tas@mindspring.com> wrote:
 
-> i removed all devices from the second bus except for an 80M quantum drive
-> that i used to boot from.  (everyone should be warned that you should boot
-> from a non-mesh device when mesh debugging is on! :) 
-> 
-> a strange thing, and maybe bad news for debugging: the drive is discovered
-> properly by the debugging kernel. maybe it's a timing issue. i hope the
-> logs can tell you something. 
+>Interesting -- I don't get any bogus interrupts on either of my machines.
+>I also don't experience such harsh penalties to system responsiveness if
+>there's a lot of I/O going on -- I often use grep with find supplying the
+>filenames to recursively search the kernel source tree, which cranks the
+>disk quite a bit, and have no problems using other programs while it's
+>churning away.
+>
+>I would guess that you have the same performance problem along with some
+>serious bug that for some reason is only showing up on your machine (as I
+>believe there are many other people using PowerBook G3 Series machines
+>without such problems).
 
-A timing issue sounds likely, as nothing much has changed in the mesh
-driver (or the rest of the SCSI code AFAIK) lately.  If you set
-mesh_debug_targets back to 0 but still have MESH_DBG defined, it won't
-print all that debugging info but it will still record all the log
-information (which is a relatively lightweight thing to do), and if
-you get the target aborting, it will print the log.
+I remember Cort having tons of them initially with his PowerBook and they
+disappeared, I don't know if it was after a kernel change however.
 
-Paul.
+On my PowerBook G3 Series (250MHz first gen.), I have occasionally a
+couple of bogus interrupts during boot and ADB probing (seems to be
+related to high PMU acitivity but I have not really tracked them) and
+some date reading problems (the problem appeared twice in several month,
+usually persistent accross reboots, and after 1 or 2 days, it disappears
+again). Those are the only apparently random problems I'm having. Also,
+the IDE is not very fast (looks slower than MacOS) but this may be due to
+Linux not using full features of the controller in G3 Series (according
+to a very vague statement of Apple, it should be improved but nothing
+precise enough however).
+
+I never experienced the slowdown+crash on heavy i/os, even when copying
+full kernel trees locally, over NFS and both at the same time.
+
+Is there some common denominator with all those problems ? For example, I
+never connect anything to my PowerBook's MESH. Did the people with the
+problem have something connected to it ? never ? always ? both ? Maybe we
+could collect the disk models to see if the seem to be related. Also, are
+the problem similar when booting with OF and BootX or are there any
+differences ?
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
