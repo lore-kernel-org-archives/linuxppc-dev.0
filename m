@@ -1,51 +1,45 @@
-Message-Id: <200003240804.IAA15674@hyperion.valhalla.net>
-Date: Fri, 24 Mar 2000 08:04:34 +0000
-Subject: Re: State of sound support in 2.3.x
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: jingai@floatingpenguins.com
-CC: "PPC-DEV" <linuxppc-dev@lists.linuxppc.org>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Mime-Version: 1.0
+Message-Id: <v04220802b500d91f6693@[10.0.0.42]>
+In-Reply-To: <200003231922.UAA00358@piglet.grunz.lu>
+References: <200003231922.UAA00358@piglet.grunz.lu>
+Date: Fri, 24 Mar 2000 00:49:02 -0800
+To: mlan@cpu.lu, bh40@calva.net
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: LongTrail PCI resource assignment
+Cc: linuxppc-dev@lists.linuxppc.org, geert@linux-m68k.org
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> >I have the 2.3.52 kernel from Paul's tree, with PowerMac DMA
->> > sound support compiled in.  I guess my question is:  what is the
->> current
->> > state of sound support in Paul's 2.3.52 kernel?
->>
->> My primary distribution source is also LimuxPPC.
->>
->> Geert Uytterhoeven posted a patch to split the DMA sound support between
->> Pmac, Atari etc. a while ago (look for dmasound split).
->
-> Okay, I applied the patch (and the patch to the patch) that I found in the
-> list archives.  It built fine, but upon reboot, sound doesn't work at all
-> (no beep even).  I tried building both Sound Support and PowerMac AWACS
-> support as modules, and it produced one module called soundcore.c.  I
-> rebooted with this kernel and insmod'ed it, and it still doesn't work,
-> although /dev/dsp and /dev/mixer existed this time.  Any clues?  I've got a
-> UMAX S900, which, IIRC is a 9500 clone.
+At 8:22 PM +0100 3/23/00, Michel Lanners wrote:
 
-Yes (I think) - I should have posted a patch for this.
+>That's obviously an issue. I think we should decide once and for all
+>whether the OF tree is supposed to be up-to-date once the system is
+>running. If so, then all fixups (also changing base address) need to be
+>re-sync'ed into the OF tree, which is not done now... Or we just leave
+>the OF tree alone and work only with the PCI_dev list.
 
-in drivers/char/mem.c there are two areas in which calls (and its
-declaration) to init_dmasound() are conditional on CONFIG_DMASOUND - but
-CONFIG_DMASOUND has been removed.
+It's not up to me, because I don't understand the code well enough to
+contribute directly, but I'll offer these points in favor of not
+updating OF:
 
-You need to change those lines to something like...
 
-#if defined(CONFIG_DMASOUND_AWACS) || defined(CONFIG_DMASOUND_ATARI....
+1. Duplication of information across multiple data structures is
+evil.  It should be avoided at all costs.
 
-or whatever (the various CONFIG_DMASOUND_XXXXX are visible in the Makefiles)
+If there was a really, really good reason to keep OF up to date
+(like, say, if we could break back into the OF console like you can
+on Sparcs), then it would be OK.  Otherwise it is most likely
+unnecessary bloat, and leads to potential confusion (and bugs).  Is
+there any such reason on ppc?
 
-Sorry about this - I was very new to the list and carried out some of the
-discussion without doing cc's ;-)
 
-I think that is it - basically you have everything complied in - but it
-isn't being called at init time.
+2. Most arch types obviously don't have an OF tree at all.
+Presumably they just do everything with the pci_dev list.  Therefore,
+ppc should too -- it's a bad idea to be different in an unnecessary
+way.
 
-Iain.
+   Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
