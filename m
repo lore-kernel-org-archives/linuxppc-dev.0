@@ -1,12 +1,26 @@
-Date: Tue, 27 Apr 2004 18:57:02 -0400
-From: Charles Frey <charlesf@wciatl.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: ppc405ep GPIO register mmap'ing invalid argument
-Message-ID: <10074256.1083092222@[192.168.0.66]>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: ppc405ep GPIO register mmap'ing invalid argument
+Date: Tue, 27 Apr 2004 16:19:50 -0700
+Message-ID: <C7FFFEA58B43D311920D0004ACE5333F132B016D@amer25.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "Charles Frey" <charlesf@wciatl.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Check the manpage:  length must be a multiple of getpagesize().
+Which your 4 evidently is not.
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]
+Sent: Tuesday, April 27, 2004 3:57 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ppc405ep GPIO register mmap'ing invalid argument
+
 
 
 Hey,
