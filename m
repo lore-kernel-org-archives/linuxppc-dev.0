@@ -1,40 +1,38 @@
-In-Reply-To: <1083275387.29594.146.camel@gaston>
-References: <408FEBB6.105@nortelnetworks.com> <1083191370.21436.81.camel@gaston> <409108FE.70500@nortelnetworks.com> <B77CD81E-99EE-11D8-B5B8-000393A47A5C@lanl.gov> <1083275387.29594.146.camel@gaston>
-Mime-Version: 1.0 (Apple Message framework v613)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <42A58B44-9A33-11D8-B5B8-000393A47A5C@lanl.gov>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	Chris Friesen <cfriesen@nortelnetworks.com>
-From: Greg Watson <gwatson@lanl.gov>
-Subject: Re: confused about HID1 bits and G5
-Date: Thu, 29 Apr 2004 17:16:35 -0600
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20040430040048.85521.qmail@web40411.mail.yahoo.com>
+Date: Thu, 29 Apr 2004 21:00:48 -0700 (PDT)
+From: Raghu <raghu_dk@yahoo.com>
+Subject: Using 2GB RAM kernel ppc-2.4.20
+To: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 29/04/2004, at 3:49 PM, Benjamin Herrenschmidt wrote:
+Hello All,
 
-> On Fri, 2004-04-30 at 01:05, Greg Watson wrote:
->> As a firmware designed (LinuxBIOS), I would support this. Obviously
->> there are some things that the firmware has to do, like enable memory,
->> but the less reliance the o/s has on magic behavior the better. It
->> makes firmware design simpler and more reliable.
->
-> There is nothing like "magic behaviour" here. There is a set of
-> features that should normally be enabled on the CPU, this set is
-> clearly defined in the spec, the firmware should enabled them.
->
-> As I wrote, I prefer not touching most of this from the kernel since
-> some specific CPU rev. errata may involve disabling some of those,
-> and that is typically done by the firmware, at least on pmacs. Now,
-> it's possible that I decide to force more of these bits myself based
-> on experience with broken firmwares, but so far, this has not been
-> necessary :)
+My board is - PowerPC 750FX, System Controller- Marvel
+64360, Internal reg Map at- 0xFE000000,SDRAM 2GB.
 
-Well the good thing about LinuxBIOS is you can fix the firmware. :-)
+Refering mail:
+"http://lists.linuxppc.org/linuxppc-embedded/200307/msg00018.html"
 
-Greg
+CONFIG settings I have are:
+CONFIG_HIGHMEM=y
+CONFIG_HIGHMEM_START_BOOL=y
+CONFIG_HIGHMEM_START=fc000000
+CONFIG_KERNEL_START_BOOL=y
+CONFIG_KERNEL_START=90000000
+
+And io_block_mapping is
+io_block_mapping( 0xFE000000, 0xFE000000, 0x10000000,
+_PAGE_IO );
+
+I changed the PKMAP_BASE to 0xFC000000, but still see
+the "init" not working on doing a NFS rootfs mount.
+
+Regards,
+Raghu.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
