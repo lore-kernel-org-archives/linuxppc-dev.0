@@ -1,34 +1,20 @@
-Subject: Re: [PATCH] MPC85XX TSEC driver: fix for mdio speed
-From: Jon Loeliger <jdl@freescale.com>
-To: Stefan Nickl <Stefan.Nickl@kontron.com>
-Cc: Andy Fleming <afleming@motorola.com>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <1089788421.5959.15.camel@lucy.pep-kaufbeuren.de>
-References: <22C48749-C9D2-11D8-B201-000393DBC2E8@freescale.com>
-	 <6429F663-D53A-11D8-8835-000393C30512@freescale.com>
-	 <1089788421.5959.15.camel@lucy.pep-kaufbeuren.de>
-Content-Type: text/plain
-Message-Id: <1089817209.17810.87.camel@blarg.somerset.sps.mot.com>
-Mime-Version: 1.0
-Date: 14 Jul 2004 10:00:09 -0500
+Subject: Little survey: SCM systems?
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Wed, 14 Jul 2004 17:39:32 +0200
+Message-ID: <42A622EB18325843894BB8E1040E3DF5022792@sinaexchf>
+From: =?iso-8859-1?Q?I=F1igo_Lopez_Barranco?= <ilopez@albatros-sl.es>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 2004-07-14 at 02:00, Stefan Nickl wrote:
+Hi.
+I would like to know which software configuration system (SCM) have you people tried. I found a nice comparison between different systems in http://better-scm.berlios.de/comparison/ and Vesta seems really interesting. Anyone has tried it?
+We're using CVS right now, but it has some limitations wich can become quite bothering. Also, we have to compile for several different platforms, using different toolchains, etc. Any SCM that you would recommend for this kind of development.
+Thanks in advance.
 
-> Btw: Can support for the 8541 be expected anytime soon?
->      I added some #defines to my platform code, but I didn't look
->      closely into it's incarnation of the CPM yet.
->
-> --
-> Stefan Nickl
-> Kontron Modular Computers
-
-Just yesterday, I was given The Nod to release the 8555/8541
-sources for U-Boot.  Linux likely follows shortly.
-
-jdl
-
+Iñigo
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
