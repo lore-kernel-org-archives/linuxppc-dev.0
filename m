@@ -1,40 +1,33 @@
-To: caixupeng <edmoon@huawei.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppcboot, linux , hang at the last step 
+To: "Li Xiangrong" <lixiangrong@china.com>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: problem about mac address 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 25 Nov 2002 18:59:56 +0800."
-             <000d01c29471$ca5b94d0$92690b0a@DBKQW41X>
-Date: Mon, 25 Nov 2002 17:10:53 +0100
-Message-Id: <20021125161058.C3A11C58BF@atlas.denx.de>
+In-reply-to: Your message of "Mon, 25 Nov 2002 20:25:32 +0800."
+             <200211251219.GAA14313@lists.linuxppc.org>
+Date: Mon, 25 Nov 2002 17:14:57 +0100
+Message-Id: <20021125161502.A9429C58BF@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <000d01c29471$ca5b94d0$92690b0a@DBKQW41X> you wrote:
+In message <200211251219.GAA14313@lists.linuxppc.org> you wrote:
 >
-> When I boot a linux image use "bootm ffa00000 ffb00000"
-> the linux hang at the last step:
->
-> VFS: Cannot open root device "" or 16:01
-> Please append a correct "root=" boot option
-> Kernel panic: VFS: Unable to mount root fs on 16:01
->
-> I have set the "bootargs=root=/dev/ram"
+> i configured.I searched the kernel and have not find the place to set that addr. The kernel gets the mac addr. from and only from the SDRAM(enet.c):
 
-Is this your input, or the putput of the printenv command in PPCBoot?
-Remember that you must not use a '=' with setenv!
+I don't know where you're looking, but I have a line
 
-> Is my linux kernel's erro or ppcboot's problem?
+	iap = bd->bi_enetaddr;
 
-Which arguments are really passed to Linux?  The  kernel  prints  the
-boor arguments it receives on the console.
+in our FEC code, which reads the MAC address as passed  by  the  boot
+loader in the bd_info struncture.
 
-> Does ppcboot send the bootargs to linux kernel correctly?
+> this happen and may u give me an advice to solve it?
 
-It does. Probably you did not specifyu correct boot arguments.
-
+You provide too little information to allow a really helpful  answer.
+Which  CPU?  Which board? Which kernel version? Where did you get the
+source from? Who ported the source to your board?
 
 Best regards,
 
@@ -43,7 +36,7 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-You've no idea of what a poor opinion  I  have  of  myself,  and  how
-little I deserve it.                                  - W. S. Gilbert
+"The one charm of marriage is that it makes a  life  of  deception  a
+neccessity."                                            - Oscar Wilde
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
