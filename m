@@ -1,48 +1,87 @@
 From: "Jon Erick Ween" <jween@som.llu.edu>
-To: Benjamin Herrenschmidt <bh40@calva.net>,
-        Jon Erick Ween <jween@som.llu.edu>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Xfree86-4.0.1, Lombard, Mach64 driver, X-server Crash
-Date: Wed, 27 Sep 2000 21:41:07 -0700
-Message-ID: <7736FE84100B.AAAFC5@som.llu.edu>
+To: jeramy b smith <ultrapenguin@netscape.net>,
+        "Jon Erick Ween" <jween@som.llu.edu>,
+        <linuxppc-dev@lists.linuxppc.org>
+Cc: <schmitz@opal.biophys.uni-duesseldorf.de>
+Subject: Re: Xfree86-4.0.1, Lombard, Been There - Done That
+Date: Wed, 27 Sep 2000 21:51:47 -0700
+Message-ID: <7736FE84141B.AAA10E3@som.llu.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt <bh40@calva.net> wrote:
->>Here's a copy of my XF86Config file.
+jeramy b smith <ultrapenguin@netscape.net> wrote:
+>For the 80th and last time. Get the XF86Config.pismo from howarths
+directory.
+
+Well, that's where I started. But, this being the 80th time around, I'll go
+back and try again. Funny how small things can send you off track
+sometimes.
+
+>Switch the references from rage128 to ati. Copy this file to
+>/etc/X11/XF86Config . The timings will work. I am not using the latest
+version
+>of the ati driver (X) but mine works. When booting a recent kernel with
+>yaboot, you should not have to specify video= on a lombard. It will by
+default
+>use 1024x768 60hz and atyfb. If you are not getting a cursor, I would bet
+You
+>either gummed something up in your .config or you are specifying
+uneccessary
+>video options.
+
+Actually, I just discovered the cursor is black. Moving the mouse cursor
+(gdm) over it brings it out. Must be a color setting that's off.
+
+>Also make sure you aren't telling yaboot to use "novideo".
+
+I really didn't specify anything manually, just installed the generic
+yaboot with mkofboot first and then ybin as I referenced new kernel images.
+I'll go back an look at the .config file and see.
+
+>If
+>you are not getting a cursor after verifying that, use one of Ben's
+>precompiled kernels. I am using one of his older precompiled kernels (with
+
+>direct boot ati accel fixed), the ati driver from a month ago, xf401 from
+>franz's rpms, and a slightly edited XF86Config file that used the pismo
+file
+>as a template.  The only bug I have is that i get a few blue garbage
+pixels
+>when areas with blue in them redraw.
+>
+>-Jeramy
+
+
+Thanks Jon
+
+>> OK, I've switched from BootX to Yboot using a stable 2.2.17 kernel and
+the
+>> most recent XF86-4.0.1 and ati driver sources I can find. I seem to get
+>> different PCI assignments to the ATI chip on boot-up (looking at dmesg
+>> compared with using BootX) but the X-server still doesn't detect the
+chip
+>> with "startx" or "XFree86" and exits with a "device not found" and "no
+>> screens" error. Any further suggestions?
 >>
->>Two other minor nuisances:
+>> Thanks
 >>
->>Since using yaboot, my console cursor has disappeared. Is this an OF or a
-
->>yaboot problem? It's very hard to navigate in vi to edit anything
-(.config
->>files for one thing) without a cursor!
+>> Jon
+>>
+>> --
+>> Jon Erik Ween, MD
+>>
+>> Cognitive and Cerebrovascular Neurology
+>>
+>> Assistant Professor
+>> Loma Linda University School of Medicine
+>>
+>> Director, Stroke Program
+>> Loma Linda University Medical Center
+>>
+>>
 >
->Completely ? Or does it appear with different colors depending on the VC
->you are on ? I've seen such bug appear here or there but never took the
->time to track it down...
-
-No colors, no blinking no nothing, just blackness,- apart from the text
-that prints out nicely. So, as long as you don't have to go back and insert
-(in an editor, eg) things work OK. But, to edit a Config file to get it
-back, I don't know exactly what to do. All this is in an attempt to get
-XF86-4 to work, so I don't have a GUI "fall-back" ;->
-
-
->I suspect an atyfb problem ;)
-
-I had no problem with my 2.2.17 kernel build booting from BootX. atyfb is
-generic, right?
-
 >
->>Also, I can't figure out how to uninstall BootX. Throwing it away under
->>MacOS doesn't seem to help.
->
->Remove the bootx extension that is in your MacOS Extensions folder. it
->should appear near the top of the list when vieweing them by name.
->
->Ben.
 >
 
 
