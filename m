@@ -1,38 +1,31 @@
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Message-Id: <199909221109.NAA30216@amber.biophys.uni-duesseldorf.de>
-Subject: Re: ssh2 and multiheaded X
-In-Reply-To: <Pine.HPX.4.10.9909220935310.7776-100000@gra-ux1.iram.es> from Gabriel Paubert at "Sep 22, 1999 09:39:45 am"
-To: paubert@iram.es (Gabriel Paubert)
-Date: Wed, 22 Sep 1999 13:09:12 +0200 (CEST)
-Cc: mlan@cpu.lu, pogtal@erols.com, linuxppc-user@lists.linuxppc.org,
-        linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: Brad Boyer <flar@marcus.pants.nu>
+Message-Id: <199909221228.FAA02902@marcus.pants.nu>
+Subject: Re: 2.3.whatever and hfs
+To: costabel@wanadoo.fr (Martin Costabel)
+Date: Wed, 22 Sep 1999 05:28:50 -0700 (PDT)
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <37E72316.B63EBD9E@wanadoo.fr> from "Martin Costabel" at Sep 21, 99 08:17:58 am
+Content-Type: text
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > I tried compiling ssh2, but it aborts with errors on va_arg. Something
-> > with assigment of incompatible types...
-> 
-> There have been many problems with va_args on PPC due to the fact that the
-> designers of the SYSV varargs interface had to stand out :-( 
-> 
->  Basically you have to use the provided standard macros and _never_ try to
-> outsmart them because `everybody knows that actually you can simply walk
-> an array' is utterly wrong on PPC. 
-> 
-> And I don't enter the alignment issues which have changed between
-> versions...
-> 
-> Disclaimer: I've not seen the code, but there have been several varargs
-> related problems and this was always the answer AFAIR. 
+Martin Costabel wrote:
+> So in the next stable kernel version, we will not have HFS support and,
+> of course, even less HFS+ support! Is there really nobody in the
+> linuxppc developers community who can do this? The current maintainer
+> has been inactive since 7 months (see the archives from February), so he
+> could not really object if someone else took over.
 
-I still get segfaults due to varargs even though I use the standard macros. 
-That's with gcc 2.95.1 and it seems to involve pointers to user defined
-structs solely. Haven't had time to debug this lately but I can try to write
-some sample code to demonstrate it. 
+Well, I started looking at this, but I have so little free time that I may
+not have anything sooner than anyone else anyway.  I think this is the
+problem everyone is having, which isn't really a surprise.  If I do manage
+to find some free time, I'll work on this, but I don't want to guarantee
+anything.  If someone else starts work on this, I'll be happy to help.  If
+noone else gets going on this, it may be a while.
 
-	Michael
+	Brad Boyer
+	flar@pants.nu
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
