@@ -1,52 +1,52 @@
-Message-ID: <3B799791.2CEAFCC0@mvista.com>
-Date: Tue, 14 Aug 2001 17:26:41 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3B799A0A.497DFF56@mvista.com>
+Date: Tue, 14 Aug 2001 14:37:14 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-To: Peter Desnoyers <pdesnoyers@chinook.com>
-Cc: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>,
-	Daris A Nevil <dnevil@snmc.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Non-cacheable memory
-References: <Pine.LNX.4.33.0108091838380.11077-100000@localhost.localdomain> <3B72E40D.3080600@chinook.com> <3B74AADC.C2CE7B89@mvista.com> <3B77F684.415638E8@chinook.com>
+To: James F Dougherty <jfd@GigabitNetworks.COM>, anj@aps.anl.gov,
+	mporter@mvista.com, dan@mvista.com,
+	linuxppc-embedded@lists.linuxppc.org, cort@cs.nmt.edu,
+	jfd@cs.stanford.edu
+Subject: Re: MPC8240 EPIC Driver (Attached)
+References: <200108140743.AAA05509@krakatoa.gigabitnetworks.com> <3B7963C3.36191B14@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Peter Desnoyers wrote:
+James,
 
-> This seems like another case of either too little abstraction, or too
-> much.  An embedded PPC system with PCI basically has two buses, with
-> different DMA addressing, and there's no way to tell consistent_alloc(),
-> etc. about that.
+I took a look around and I think I deleted what I had.  It really wasn't that much
+code anyway.  The important things are to get the functionality and not cause
+wholesale changes to the existing code.
 
-Well, if you are using PCI devices, you should be calling the pci_*
-versions of these functions.  Those include a pci_dev structure, so
-you can get the information you need to do this correctly, and seems
-like the solution (more discussion later in the message).
+Please let me know if you're going to work on it and I'll wait to see what you come up
+with.  Otherwise, now that there seems to be interest, I'll start working on it when
+I'm done with my current project (in a few weeks).
 
-> If you wouldn't mind, could you give me a pointer to the discussion of
-> this phase-out?
+Mark
+--
 
-I hear it from other folks on ppc-dev or something.  There are too many
-lists for me to read and find this information first hand :-).
+"Mark A. Greer" wrote:
 
+> James F Dougherty wrote:
+>
+> > Mark,
+> >
+> > Send me your changes and I'll
+> > gladly test them...
+>
+> I never finished them.  I had some changes in an old 2.4.0-testxxx kernel but never
+> finished what I started.
+> This was several months ago so I kinda forget but I was going to make the
+> initsenses table look something like what gets passed to openpic_initirq plus a
+> field to specify the offset in from OpenPIC_addr/OpenPIC.  I also added a couple
+> routines to set the epic in serial or direct mode and I think that was about it.
+>
+> I may have some of this laying around.  I'll take a look this afternoon & if its
+> worth sending, I'll send it to you.
+>
+> Mark
+>
 
-> I wonder if the proper thing to do is to enhance consistent_alloc to
-> take an argument indicating the bus type?
-
-Yep.  Like I said above, you should be using the pci_* versions of
-these functions.  We can extract information from the pci_dev and pass
-it along to consistent_alloc.  The local, internal peripherals can just
-pass a NULL or zero or something, whatever this parameter is supposed to
-mean.  Or, perhaps the pci_* functions fix up the information returned
-from consistent_alloc.
-
-> ....  There are more elegant ways
-> of doing things, but this wouldn't involve changes to a lot of code.
-
-This seems elegant enough to me :-).
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
