@@ -1,39 +1,55 @@
-Reply-To: <fred@sc23.sc.mcel.mot.com>
-From: "fred" <fred@sc23.sc.mcel.mot.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: bitkeeper
-Date: Tue, 15 Oct 2002 09:45:15 +0100
-Message-ID: <003901c27427$2f861c60$940879c8@sc.mcel.mot.com>
+Subject: Re: How to change endian attribute for a memory region
+To: "Michael Meriin" <Michael@KSWaves.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+From: "Laurent Mohin" <laurent.mohin@acterna.com>
+Date: Tue, 15 Oct 2002 11:08:22 +0200
+Message-ID: <OF5FAD415F.66B42502-ONC1256C53.003189A8@eni.wago.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <Pine.LNX.4.44.0210141023500.28198-100000@sandstone.austin.ibm.com>
+Content-type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am behind firewall. I can use neither rsync nor bk. I miss tar.bz2 packet.
+Michaêl,
 
------Original Message-----
-From: Hollis Blanchard [mailto:hollis@austin.ibm.com]
-Sent: Monday, October 14, 2002 4:26 PM
-To: Cameron, Steve
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: bitkeeper
+I can't connect the chip as a byte wide device due to performance
+degradation.
+Due to other constraints, I can't invert MSB and LSB. In fact, due to color
+mapping, if I work in 8 bit per pixel, I must address my framebuffer in big
+endian mode. In 16 bit per pixel, I need to use little endian mode.
+So I really need to change the endian attribute.
+
+Thanks for your answer
+
+Laurent
 
 
-On Mon, 14 Oct 2002, Cameron, Steve wrote:
+
+
+"Michael Meriin" <Michael@KSWaves.com> on 14/10/2002 10:57:00
+
+To:    linuxppc-embedded@lists.linuxppc.org, Laurent
+       Mohin/SE/Wavetek@Global
+cc:
+Subject:    Re: How to change endian attribute for a memory region
+
+
+
+> I'm trying to interface a 405GP chip with an EPSON S1D13506 graphic
+> controller. Because the EPSON chip is a little endian, I need to have my
+> framebuffer memory acceded in little endian mode.
+> What is the best way to change endian attribute for a specific memory
+> region (ioremap little endian)?
 >
-> So, I was wondering if there are any plans to say, mirror
-> the development linux powerpc bitkeeper tree as a tar.bz2
-> on a more regular basis, like the regular linux kernel
-> development team does?  Or perhaps someone is already
-> doing that, and I just don't know about it?
+> Laurent
 
-MontaVista already provides rsync access to the PPC bk trees. See
-http://penguinppc.org/dev/kernel.shtml for more details.
-
--Hollis
+I suggest you to connect it to the uP as a byte wide device, this will
+immediately solve your problem.
+The second way you can do it for 16 bit bus to connect MSB and LSB wise a
+wiser.
+>
+Best Regards,
+                     Michael Meriin
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
