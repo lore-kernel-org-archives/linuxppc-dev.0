@@ -1,62 +1,28 @@
-Date: Wed, 28 Nov 2001 17:04:59 -0600
-From: Troy Benjegerdes <hozer@drgw.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: arch/ppc/boot broken include in currenty 2_4_devel
-Message-ID: <20011128170459.N23942@altus.drgw.net>
-References: <20011128162242.M23942@altus.drgw.net>
+Subject: Re: CONFIG_ALL_PPC
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+To: paulus@samba.org
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <15365.24592.409195.392505@gargle.gargle.HOWL>
+References: <15365.24592.409195.392505@gargle.gargle.HOWL>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 29 Nov 2001 00:30:22 +0100
+Message-Id: <1006990222.1621.13.camel@pismo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011128162242.M23942@altus.drgw.net>; from hozer@drgw.net on Wed, Nov 28, 2001 at 04:22:43PM -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Okay, the problem is I was running with 'make -e' and somehow that
-screwed everything up. Oh well.
+On Wed, 2001-11-28 at 23:07, Paul Mackerras wrote:
+>
+> I want to rename CONFIG_ALL_PPC to CONFIG_PREP_PMAC_CHRP in the
+> linuxppc_2_4_devel tree (or if anyone can suggest a better name I'll
+> use that).
 
+CONFIG_ALL_PPC_MINUS_APUS? ;)
 
-On Wed, Nov 28, 2001 at 04:22:43PM -0600, Troy Benjegerdes wrote:
->
-> Somehow, the
->
-> CFLAGS	+= -fno-builtin -D__BOOTER__ -I$(TOPDIR)/arch/$(ARCH)/boot/include
->
-> line in arch/ppc/boot/Makefile is not getting picked up, causeing me
-> problems like:
->
-> make[3]: Entering directory
-> `/scratch/mvp/linuxppc_2_4_galileo/arch/ppc/boot/lib'
-> ppc_8xx-gcc -D__KERNEL__ -I/scratch/mvp/linuxppc_2_4_galileo/include -Wall
-> -Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer
-> -fno-strict-aliasing -fno-common -D__powerpc__ -fsigned-char -msoft-float
-> -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring -O2 -ggdb   -c -o
-> zlib.o zlib.c
-> zlib.c: In function `inflateEnd':
-> zlib.c:330: too many arguments to function
-> zlib.c: At top level:
-> zlib.c:337: parse error before `('
->
->
-> because it's picking up the wrong zlib.h.
->
-> I've been messing around with the makefile, but I can't get it to do
-> anything that seems sensible.
->
-> --
-> Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
-> -----"If this message isn't misspelled, I didn't write it" -- Me -----
-> "Why do musicians compose symphonies and poets write poems? They do it
-> because life wouldn't have any meaning for them if they didn't. That's
-> why I draw cartoons. It's my life." -- Charles Shulz
->
->
->
 
 --
-Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
------"If this message isn't misspelled, I didn't write it" -- Me -----
-"Why do musicians compose symphonies and poets write poems? They do it
-because life wouldn't have any meaning for them if they didn't. That's
-why I draw cartoons. It's my life." -- Charles Shulz
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
