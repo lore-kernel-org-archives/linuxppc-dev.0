@@ -1,44 +1,46 @@
-Date: Thu, 10 Jun 1999 16:57:32 -0400
-From: Daniel Jacobowitz <drow@false.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Q: control is a C&T 65550?
-Message-ID: <19990610165732.A3984@drow.res.cmu.edu>
-References: <19990608095844.A5496@drow.res.cmu.edu> <199906102051.WAA00299@piglet.cpu.lu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199906102051.WAA00299@piglet.cpu.lu>; from Michel Lanners on Thu, Jun 10, 1999 at 10:51:08PM +0200
+From: Brad Boyer <flar@cegt201.bradley.edu>
+Message-Id: <199906102103.QAA15072@cegt201.bradley.edu>
+Subject: Re: EM86 port for LinuxPPC?
+To: jpgarcia@execpc.com (Joseph Palani Garcia)
+Date: Thu, 10 Jun 1999 16:03:00 -0500 (CDT)
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.GSO.3.95.990610130308.9290A-100000@earth> from "Joseph Palani Garcia" at Jun 10, 99 01:13:51 pm
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jun 10, 1999 at 10:51:08PM +0200, Michel Lanners wrote:
-> - The RAMDAC is an Apple ASIC as well, named RaDaCal, integrating the
-> RAMDAC, CLUT and a hardware cursor device. Use and programming of the
-> hardware cursor are yet undocumented. The known details are that the
-> cursor needs to be drawn by the OS as some kind of sprite, in an
-> offscreen VRAM portion reserved at the end of each scanline. The
-> vertical position needs to be drawn at the right offset, whereas the
-> horizontal position of the cursor is taken care of by RaDaCal, probably
-> by setting the horizontal position info in a register. Vertical
-> movements therefore need a redraw by the OS.
+> Some may have noticed the EM86 x86 "emulator" for alpha/linux to run
+> x86/linux binaries.  I recently added the define to my kernel compile and
+> it compiled the binary support (the em86 program gets help from the
+> kernel, so theres a kernel define in the alpha kernel config).  Anyway,
+> I downloaded all the source from digital's site, and tried compiling it.
+> It all compiled fine except for one thing, the thing i am doubious about.
+> a source file that is only about 25 lines of assembly.  What i think it
+> does is reroute the syscalls to the friend in the kernel.  It seems to me
+> that because of this, it may be bound to the alpha architecure.  Is there
+> a way to port this to ppc?  or is there just too many dissimilarities
+> between alpha and ppc archs?  ( i haven't tried doing it yet because i
+> don't know if its worth the time in learning alpha and ppc assm/arch just
+> to get x86/linux bins to run... or im just lazy)
 
-I intend to see what I can do about documenting the hardware cursor. 
-With all the excellent advice I've gotten, I expect it won't be too
-difficult.
+I looked into this earlier, and even started to work on it, but I went
+on to something else before I got finished.  The major problems as I
+saw them were that all the code for EM86 assumes a 64 bit
+little-endian architecture, and it would be annoying to track down all
+those assumptions and correct them.  That is doable, but time
+consuming.  The other major headache is that the actual CPU emulation
+used is the proprietary FX32 library from DEC.  We would have to write
+our own x86 emulation library to replace it.  This isn't so much of a
+problem, because there is already a basic x86 emulator in one of the
+bootloaders, to be able to run BIOS code from PCI cards with x86 BIOS
+chips on them.  I started looking at it, but then I went on to
+something that was more interesting, and I felt was more useful.  I'd
+be glad to share more detailed thoughts on this if anyone wants.
 
-> Obviously, all of the above information can be totally wrong ;-). If
-> there is any Apple engineer in the audience who knows better, please do
-> speak up!
-
-Unfortunately, the Apple engineers in the audience aren't allowed to :(
-
-Dan
-
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
+	Brad Boyer
+	flar@cegt201.bradley.edu
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
