@@ -1,20 +1,16 @@
-Return-Path: <wd@denx.de>
-Received: from mailout02.sul.t-online.com (mailout02.sul.t-online.com
-	[194.25.134.17]) by ozlabs.org (Postfix) with ESMTP id D3D972BDEB
+Return-Path: <kmilligan@austin.polycom.com>
+Received: from ausexch00.austin.polycom.com (unknown [216.54.148.81])
+	by ozlabs.org (Postfix) with ESMTP id A39E82BEA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Nov 2004 07:37:54 +1100 (EST)
-To: Kumar Gala <kumar.gala@freescale.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 17 Nov 2004 13:56:28 CST."
-	<C509F54D-38D2-11D9-9D5A-000393DBC2E8@freescale.com>
-Date: Wed, 17 Nov 2004 21:37:27 +0100
-Sender: wd@denx.de
-Message-Id: <20041117203732.29E57C1430@atlas.denx.de>
-Cc: "Gala Kumar K.-galak" <kumar.gala@motorola.com>,
-	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: ELDK 3.1? 
+	Thu, 18 Nov 2004 08:29:11 +1100 (EST)
+Message-ID: <F3CF3D25A7F8F44BB59BC7A2CA83E30B0232224F@ausexch00.austin.polycom.com>
+From: "Milligan, Keath" <kmilligan@austin.polycom.com>
+To: linuxppc-embedded@ozlabs.org
+Date: Wed, 17 Nov 2004 15:13:27 -0600
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C4CCEA.47D9DBD0"
+Subject: MPC8272ADS PCI device mapping
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,66 +21,233 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <C509F54D-38D2-11D9-9D5A-000393DBC2E8@freescale.com> you wrote:
->
-> I thought from some posts on the u-boot lists that 3.1 was going to 
-> have a 85xx build as well?
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-Argh, you're persevering... ok, here we go.
+------_=_NextPart_001_01C4CCEA.47D9DBD0
+Content-Type: text/plain
 
-Yes, ELDK 3.1 uses GCC-3.3.3 and binutils 2.14 to support 85xx etc.
+Hello,
 
-There is a lot of new packets:
+ 
 
-	appWeb 		1.2.2-1_5
-	bzip2 		1.0.2-5_1
-	bzip2-devel 	1.0.2-5_1
-	bzip2-libs 	1.0.2-5_1
-	dhclient 	3.0.1rc13-2
-	dhcp 		3.0.1rc13-2
-	dosfstools 	2.8-3
-	dropbear 	0.43-1_2
-	file 		3.39-9_2
-	lrzsz 		0.12.20-14_1
-	net-snmp 	5.0.6-17_2
-	net-snmp-devel 	5.0.6-17_2
-	net-snmp-utils 	5.0.6-17_2
+I am having trouble getting PCI devices mapped correctly under Linux 2.4.22
+running on an MPC8272ADS evaluation board.
 
-As you can see, the focus is on network enabled devices: the powerful
-"appWeb" web server, the "dropbear" SSH server, SNMP support, etc.
+ 
 
-But there is also another group of new target packets:
+I have multiple PCI-attached devices with a total of 512MB of prefetchable
+memory and about 200MB of non-prefetchable memory address spaces in various
+block sizes. All of the devices are behind a PCI-to-PCI bridge that is
+plugged into the ADS.
 
-	autoconf 	2.57-3_1
-	byacc 		1.9-22_1
-	flex 		2.5.4a-26_1
-	libtool 	1.4.3-5_1
-	libtool-libs 	1.4.3-5_1
-	m4 		1.4.1-11_1
-	patch 		2.5.4-14_1
-	rpm 		4.1.1-1.8xa_7
-	rpm-build 	4.1.1-1.8xa_7
-	rpm-devel 	4.1.1-1.8xa_7
+ 
 
-This is all that was missing for a more or less complete native build
-environment; with the current ELDK you can  easily  build  all  those
-software  packets that are difficult to handle in a cross envrionment
-(like Perl, to name just  one).  If  you  have  the  resources  (RAM,
-external  storage)  on  your target you can even bootstrap a complete
-Linux distribution on a target system.
+At this stage in my project, these devices are initializing themselves to
+base addresses that need to be moved when Linux boots on the 8272. The
+problem I am having is that Linux is trying to remap everything, but is
+unable to allocate regions for everything, so I end up with most of the
+devices mapped to the same (invalid) address.
 
-ELDK 3.1 comes with support for PowerPC, ARM (new: XScale explicitely
-supported), and MIPS (new: little-endian systems supported).
+ 
 
-And there is some bug fixes and other minor extensions.
+I've tried hacking the kernel PCI initialization to manually set all the
+base addresses, but it seems to be ignoring that for the most part.
+
+ 
+
+Could someone point me in the right direction to getting everything
+initialized and mapped correctly?
+
+ 
+
+Thanks
+
+ 
 
 
-Best regards,
+------_=_NextPart_001_01C4CCEA.47D9DBD0
+Content-Type: text/html
 
-Wolfgang Denk
+<html>
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Everything should be made as simple as possible, but not simpler."
-                                                    - Albert Einstein
+<head>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=US-ASCII">
+
+
+<meta name=Generator content="Microsoft Word 10 (filtered)">
+
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Batang;
+	panose-1:2 3 6 0 0 1 1 1 1 1;}
+@font-face
+	{font-family:"\@Batang";
+	panose-1:2 3 6 0 0 1 1 1 1 1;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+h1
+	{margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	page-break-after:avoid;
+	font-size:16.0pt;
+	font-family:Arial;}
+h2
+	{margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	page-break-after:avoid;
+	font-size:14.0pt;
+	font-family:Arial;
+	font-style:italic;}
+h3
+	{margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	page-break-after:avoid;
+	font-size:13.0pt;
+	font-family:Arial;}
+h4
+	{margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	page-break-after:avoid;
+	font-size:13.0pt;
+	font-family:Arial;
+	font-style:italic;}
+h5
+	{margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	page-break-after:avoid;
+	font-size:12.0pt;
+	font-family:Arial;}
+h6
+	{margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	page-break-after:avoid;
+	font-size:12.0pt;
+	font-family:Arial;
+	font-style:italic;}
+p.MsoHeading7, li.MsoHeading7, div.MsoHeading7
+	{margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	page-break-after:avoid;
+	font-size:12.0pt;
+	font-family:Arial;}
+p.MsoHeading8, li.MsoHeading8, div.MsoHeading8
+	{margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	page-break-after:avoid;
+	font-size:12.0pt;
+	font-family:Arial;
+	font-style:italic;}
+p.MsoHeading9, li.MsoHeading9, div.MsoHeading9
+	{margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	page-break-after:avoid;
+	font-size:11.0pt;
+	font-family:Arial;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=EN-US link=blue vlink=purple>
+
+<div class=Section1>
+
+<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
+font-family:Arial'>Hello,</span></font></p>
+
+<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
+font-family:Arial'>&nbsp;</span></font></p>
+
+<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
+font-family:Arial'>I am having trouble getting PCI devices mapped correctly
+under Linux 2.4.22 running on an MPC8272ADS evaluation board.</span></font></p>
+
+<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
+font-family:Arial'>&nbsp;</span></font></p>
+
+<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
+font-family:Arial'>I have multiple PCI-attached devices with a total of 512MB
+of prefetchable memory and about 200MB of non-prefetchable memory address
+spaces in various block sizes. All of the devices are behind a PCI-to-PCI
+bridge that is plugged into the ADS.</span></font></p>
+
+<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
+font-family:Arial'>&nbsp;</span></font></p>
+
+<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
+font-family:Arial'>At this stage in my project, these devices are initializing
+themselves to base addresses that need to be moved when Linux boots on the 8272.
+The problem I am having is that Linux is trying to remap everything, but is
+unable to allocate regions for everything, so I end up with most of the devices
+mapped to the same (invalid) address.</span></font></p>
+
+<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
+font-family:Arial'>&nbsp;</span></font></p>
+
+<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
+font-family:Arial'>I've tried hacking the kernel PCI initialization to
+manually set all the base addresses, but it seems to be ignoring that for the
+most part.</span></font></p>
+
+<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
+font-family:Arial'>&nbsp;</span></font></p>
+
+<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
+font-family:Arial'>Could someone point me in the right direction to getting
+everything initialized and mapped correctly?</span></font></p>
+
+<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
+font-family:Arial'>&nbsp;</span></font></p>
+
+<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
+font-family:Arial'>Thanks</span></font></p>
+
+<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
+font-family:Arial'>&nbsp;</span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C4CCEA.47D9DBD0--
