@@ -1,81 +1,75 @@
-Message-ID: <37850CB5.53C7193D@broadlink.com>
-Date: Thu, 08 Jul 1999 13:40:21 -0700
-From: Scott Wood <scott@broadlink.com>
+Date: Thu, 8 Jul 1999 14:58:13 -0600 (MDT)
+From: Dan Burcaw <dburcaw@terraplex.com>
+To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+cc: "Charles A. Jolley" <charles.jolley@zeratec.com>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: QuickTime Streaming Server for Linux.. on x86
+In-Reply-To: <Pine.LNX.3.96L.990708160307.5641B-100000@unix47.andrew.cmu.edu>
+Message-ID: <Pine.LNX.3.96.990708145504.17464B-100000@newhope.terraplex.com>
 MIME-Version: 1.0
-To: Dan Malek <dmalek@jlc.net>
-CC: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: RPX Lite kernel
-References: <378248CD.E3174193@broadlink.com> <3784C7D7.2EC6C451@jlc.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek wrote:
-> 
-> Hi Scott.
-> 
-> What type of board and processor do you have?  What is the version
-> of the RPX utility program?
-
-The CPU model is MPC850SRZT50.  Version: RPX-Lite BW 850SR 50Mhz/8Mhz Ic ~Dc RPXU v1.39
-
-I finally got the cross-compiler stuff setup (x86->ppc), but in the final linking stage of compiling the kernel, I get a whole
-bunch of 'undefined reference to...' errors (whether or not I have 'Set version information on all symbols for modules' defined). 
-I found that commenting out the offending symbol EXPORT lines in arch/ppc/kernel/ppc_ksyms.c got rid of most of the errors (mostly
-isa/pci stuff and a few other things that it seems the RPX board doesn't support, and I also tweaked a Makefile to exclude ADB
-support).  The only error left is:
-
-arch/ppc/kernel/kernel.o(__ksymtab+0x0): undefined reference to `request_irq'
-
-I also get:
-
-uart.c: In function `serial_console_setup':
-uart.c:2705: warning: zero-length format string
-
-which doesn't seem critical, but makes me wonder whether console on serial port will work correctly.
-
-I am using the embedded-2.2.5 sources I got from the linuxppc.org ftp site.  I guess they're not completely setup to compile
-cleanly for the RPX-Lite (on my x86 RH5.2 system anyway).  I'll try booting your kernel, but in the end I've got to be able to
-compile my own.  If all else fails, if I gave you my .config could you build a kernel for me?  
+On Thu, 8 Jul 1999, Hollis R Blanchard wrote:
 
 > 
-> Scott Wood wrote:
+> On Thu, 8 Jul 1999, Charles A. Jolley wrote:
+> > > 
+> > > Also, lots and lots of "warning: multi-character character constant" coming
+> > > from lines like
+> > >
+> > > static const FourCharCode kFractionLostPacketsSig = 'frac';
+> > >
+> > > Should those single ticks be quotes?
+> > >
+> > > -Hollis
+> > 
+> > The MacOS makes extensive use of 4-character constants (32-bit values) to
+> > identify file and creator types, and also the types of resources in the
+> > resource fork of a file.  The single quote method is a standard way of
+> > indicating these constants and all MacOS compilers will take it without
+> > complaint.  I encountered this same problem when porting some Mac stuff to
+> > Linux some time ago.  I seem to recall that the compiler complained but
+> > produced the right results anyway.  My Linux systems are down right now so I
+> > can't check to make sure and I've since updated all my old code to work
+> > around it.
 > 
-> > I'm trying to load the zImage.rpcg.srec-2.1.127 kernel...
+> I remember that much from the very little Mac OS programming I've done... but
+> I was just wondering how the compiler was handling it. I mean, if I were a
+> compiler and I was just translating chars in 's to ascii values, I'd probably
+> get confused. If it's no problem, then why is it a warning?
 > 
-> That's a pretty old kernel too.  Download the 2.2.5 sources and
-> build a newer one.
+> > Changing the single ticks to quotes will most definitely introduce errors,
+> > though, because that will cause the compiler to produce a 32-bit pointer to
+> > a NULL terminated string "frac", rather than a 32-bit value equal to the
+> > four characters 'frac'.  This can be particularly deadly in code where types
+> > are explicitly cast because it is still a 32-bit value either way.
 > 
-> > Is it possible for you to post a v2.2 kernel in SREC format,
+> Just hoping for a quick fix... =)
 > 
-> I have a 2.2.5 kernel for the RPX-Lite 823 board that I will
-> upload to the linuxppc.cs.nmt.edu server.  If that matches your
-> board, give it a try.  I am just on a slow telephone line right now,
-> so it may be a while before it is up there :-).
+> Also, was the two-line patch mentioned before for LinuxPPC? Whose is it and
+> where is it? The darwin-streaming Apple mailing list is exceptionally dead,
+> and I haven't seen any mention of LinuxPPC anything on there.
+
+Yes it was. Was just worked on yesterday.. 
+
+
 > 
-> > ... and/or the program you used to convert the binary kernel to SREC
-> > format so I can compile a custom kernel?
+> -Hollis
 > 
-> I attached the program "zsrec.c", which is a simple S-record
-> generator I use for the kernel.  To run it is pretty simple,
-> "zsrec zImage > /tftpboot/zi.rpx".  It creates the S-records
-> to load at 0x200000, which works nicely on the RPX.  You can
-> also get objcopy to do the same thing, but it took less time for
-> me to write this program than to figure out what command line
-> parameters I needed :-).
+
 > 
-> Good Luck.  Have fun.
-> 
->         -- Dan
-> 
->  
--- 
-+---------------------+----------------------+
-|     Scott Wood      |   Systems  Engineer  |
-|=====================+======================|
-|           BroadLink Communications         |
-+--------------------------------------------+
+
+
+Dan
+
+Terra Soft Solutions, Inc.
+ email: dburcaw@yellowdoglinux.com
+ website: http://www.yellowdoglinux.com/
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
