@@ -1,52 +1,47 @@
-Message-ID: <C08678384BE7D311B4D70004ACA3710511194633@amer22.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'Der Herr Hofrat'" <der.herr@mail.hofr.at>, markc@mail.com
+To: markc@mail.com
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Control-C in bash ???
-Date: Mon, 13 Jan 2003 12:25:06 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: Control-C in bash ??? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 13 Jan 2003 14:09:00 EST."
+             <200301131409.00113.markc@mail.com>
+Date: Mon, 13 Jan 2003 20:30:57 +0100
+Message-Id: <20030113193102.E7B7CC608E@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This must be a minicom setting (although I can't find it) --
-control-C works fine for me in minicom.
-
------Original Message-----
-From: Der Herr Hofrat [mailto:der.herr@mail.hofr.at]
-Sent: Monday, January 13, 2003 12:20 PM
-To: markc@mail.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Control-C in bash ???
-
-
-
+In message <200301131409.00113.markc@mail.com> you wrote:
 >
-> On a PC, I can, for instance, enter "ping 192.168.1.4", then hit Control-C
-> and stop the ping.  For the life of me, I can't figure out how to do the
-> same on my MPC860 system!!!
->
-> I have an MPC860 running 2.4.19, with a mostly unmodified eldk
-distribution
-> from Wolfgang Denx.  I did modify the init script to use /dev/console
-instead
-> of /ttyx (standard driver using SMC1).  I'd not only like a solution, I
-want
-> to undertand how cancelling a shell command is supposed to work  - I've
-poked
+> I have an MPC860 running 2.4.19, with a mostly unmodified eldk distribution
+> from Wolfgang Denx.  I did modify the init script to use /dev/console instead
+> of /ttyx (standard driver using SMC1).  I'd not only like a solution, I want
+
+This is the old ELDK, then? The current version includes
+
+	3:2345:respawn:/sbin/mingetty --noclear console
+
+and a fix for the ^C problem....
+
+> to undertand how cancelling a shell command is supposed to work  - I've poked
 > around and I can't figure out what's supposed to happen - Does the shell
 > generate a SIGINT, or the uart driver, or what?  Any enlightenment will be
 > greatly appreciated...
 
-I belive that the problem is that the control-C never arives on
-the console as the serial-comunication package you are using does
-not deliver it (atleast minicom does not) - You can use ping -c 1
-(not sure if your ping also takes -c # for the count) to ensure that
-it will terminate after one ping package. That was my workaround...
+You need a controlling terminal. We modified  login:  to  set  it  as
+needed.  See  the previous thread ("RAMDISK IMAGES(2): ash has no job
+control").
 
-hofrat
+Best regards,
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"There are three principal ways to lose money: wine, women,  and  en-
+gineers.  While  the first two are more pleasant, the third is by far
+the more certain."                      -- Baron Rothschild, ca. 1800
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
