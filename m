@@ -1,31 +1,37 @@
-Message-ID: <3815B661.F4D901DE@jlc.net>
-Date: Tue, 26 Oct 1999 10:10:42 -0400
-From: Dan Malek <dmalek@jlc.net>
+Date: Tue, 26 Oct 1999 10:12:29 -0700 (MST)
+From: Tom Rini <trini@kernel.crashing.org>
+To: luther@dpt-info.u-strasbg.fr
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
+        jmb@montana.edu
+Subject: Re: iBook/UMA pre3
+In-Reply-To: <19991026095628.A18917@maxime.u-strasbg.fr>
+Message-ID: <Pine.LNX.4.10.9910261012010.1206-100000@opus.bloom.county>
 MIME-Version: 1.0
-To: Ryan Nielsen <ran@krazynet.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: esound for PPC
-References: <19991011154325.A14359@HSE-MTL-ppp4363.qc.sympatico.ca> <Pine.LNX.4.10.9910111308380.802-100000@opus.bloom.county> <19991011200346.A258@gondolin.asf> <19991014193940.A1143@HSE-MTL-ppp4505.qc.sympatico.ca> <19991017190502.A13068@gondolin.asf> <19991023152110.A525@HSE-MTL-ppp4445.qc.sympatico.ca> <19991023203334.A26715@gondolin.asf> <19991024223141.A758@HSE-MTL-ppp4328.qc.sympatico.ca> <19991025222905.A32256@gondolin.asf>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ryan Nielsen wrote:
+On Tue, 26 Oct 1999, Sven LUTHER wrote:
 
+> 
+> On Mon, Oct 25, 1999 at 10:36:13PM +0200, Benjamin Herrenschmidt wrote:
+> > 
+> > I updated the patches and kernel to a new version. PCI config is fully
+> > working now, USB works too. I'n now running MacOS under mac-on-linux (the
+> > new version that doesn't require you to patch the kernel) on linux on the
+> > iBook ;)
+> 
+> Is any iof the scsi on USB controllers supported by linux ? 
+> 
+> Is some one working on this, is it difficult to do ?
 
-> can someone fix that hissing problem ......
+They supposedly work, tho I'm not sure if anyone has tried it w/ an OHCI
+controller.
 
-I did that in the 2.3.xx kernel while adding the recording stuff.  At
-the time the 2.2.x was "frozen" to updates so I didn't perform the same
-updates in the 2.2.x tree.  I guess I can go back and do that, although
-there has been lots of activity around this driver lately, including
-threats of re-writes.
+---
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
-I have some updates as well, so how about everyone working on something
-in this driver speak up and we coordinate this......
-
-
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
