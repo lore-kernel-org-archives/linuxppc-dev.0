@@ -1,26 +1,41 @@
-Mime-Version: 1.0 (Apple Message framework v609)
-Message-Id: <0C9650E4-464C-11D8-BD5A-000393DBC2E8@motorola.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-To: linuxppc-embedded@lists.linuxppc.org
-From: Kumar Gala <kumar.gala@motorola.com>
-Subject: Job at Motorola SPS
-Date: Tue, 13 Jan 2004 22:42:25 -0600
+To: v.sudeep@exgate.tek.com
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Thamarai.Selvan@lntinfotech.com
+Subject: Re: Porting emlinux on customized MPC860 board 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 14 Jan 2004 00:57:45 PST."
+             <301A812E6528D511A8F70008C71E57860290FEE7@ap-bang-m02.india.tek.com>
+Date: Wed, 14 Jan 2004 10:56:46 +0100
+Message-Id: <20040114095651.64601C10AF@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I hate posting to the list with a job listing, but I figured it better
-to try an employ an open source hacker than not.
+In message <301A812E6528D511A8F70008C71E57860290FEE7@ap-bang-m02.india.tek.com> you wrote:
+>
+> The following site
+> http://www.denx.de/twiki/bin/view/PPCEmbedded/HostDevelopmentPlatform in
+> Section 4.2 refers to a document written by Wolfgang Denk for
+> cross-development of tools to compile code for (embedded PowerPC systems
+> using Linux on an Intel PC(http://www.denx.de/cdk-en.html). But the
 
-Anyways, we are looking for an engineer to work on u-boot and linux
-kernel support for current and future PowerPC products.  The individual
-would have to be willing to relocate to Austin.
+This was ancient stuff.
 
-If your interested please send a resume to kumar.gala@motorola.com
+> associated link was not active and so the document was not found. Can you
+> please redirect me to the correct location. Or if anybody has still got the
+> document could someone please share it with me.
 
-Thanks
+Please see http://www.denx.de/twiki/bin/view/DULG/Manual instead.
 
-- Kumar
+Best regards,
 
+Wolfgang Denk
+
+--
+See us @ Embedded World, Nuremberg, Feb 17 - 19,  Hall 12.0 Booth 440
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Lead me not into temptation... I can find it myself.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
