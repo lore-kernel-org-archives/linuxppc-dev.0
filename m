@@ -1,28 +1,54 @@
-Date: Tue, 16 May 2000 12:51:08 -0700
-From: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
-Subject: Re: Pismo status
-In-reply-to: <20000516161545.A10347@lambda.u-strasbg.fr>
-To: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
-Message-id: <p04301801b54757188869@[209.147.134.138]>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; format=flowed
-References: <20000516172313.A3581@freeonline.com.au>
- <39210AF3.4964C38A@relog.ch> <20000516161545.A10347@lambda.u-strasbg.fr>
+Message-Id: <200005162039.WAA00813@piglet.grunz.lu>
+Date: Tue, 16 May 2000 22:39:32 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Promise Ultra/66
+To: spiette@generation.net
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20000516133216.A760@xim.bellglobal.com>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Isn't it supposed to have no fan ?
->
->
+Hi there,
 
-No it's definitely supposed to have a fan.  It comes on in MacOS.
-The problem is that the PMU is not fully supported yet, so it doesn't
-understand that the processor is too hot.  I'm trying to find
-information about it, but I'm not having much luck.  If anything, try
-running Paul's pmud (you can get it from rpmfind.net).  It helps a
-little.
+On  16 May, this message from Simon Piette echoed through cyberspace:
+>
+> Hi,
+>
+> I'm currently trying to get working a Promise Ultra/66 (BIOS v 1.14) on
+> a 2.2.12 kernel and/or a 2.2.15 kernel both from kernel.org, as Michael
+                                                                  ^^^^^^^
+Make that Michel, but never mind ;-)
 
-Tim
+> Lanners used those. I would like to have it to work on a Umax J700/180
+> (the actual machine) and a StarMax 3200/240
+>
+> For the former (2.2.12 kernel), I got the ide-2.2.12 patch form Andre
+> Hedrick (http://www.kernel.org/pub/linux/kernel/people/hedrick)
+> and applied the patch from Michael Lanners
+> (http://lists.linuxppc.org/listarcs/linuxppc-dev/199909/msg00146.html)
+
+Forget about these old patches. Go to my PCI page:
+
+http://www.cpu.lu/~mlan/linux/dev/pci.html
+
+and get yourself my latest patches for either 2.2.15 (kernel.org) or
+2.3.99-pre7 (linuxcare.au) kernels. For 2.2.15, you need Andre's patches
+in addition to mine. Apply his IDE patches first.
+
+Have fun!
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
