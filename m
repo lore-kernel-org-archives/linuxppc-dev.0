@@ -1,102 +1,33 @@
-In-Reply-To: <EE7CAF713952AC4A970DD7CD8B4C12A042DCAC@emss09m06.us.lmco.com>
-References: <EE7CAF713952AC4A970DD7CD8B4C12A042DCAC@emss09m06.us.lmco.com>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <9D37F37A-ECAC-11D8-916A-000393DBC2E8@freescale.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-From: Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: Linux 2.4.27-pre6-bk hangs on MPC8540 board
-Date: Thu, 12 Aug 2004 17:11:52 -0500
-To: "Cordes, Aaron M" <aaron.m.cordes@lmco.com>
+Message-ID: <757A9CB222EBD5118D2300D0B7828DE10CAEF8C0@az33exm32.corp.mot.com>
+From: Swarthout Edward L-SWARTHOU <SWARTHOU@freescale.com>
+To: "'Cordes, Aaron M'" <aaron.m.cordes@lmco.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Linux 2.4.27-pre6-bk hangs on MPC8540 board
+Date: Thu, 12 Aug 2004 15:14:47 -0700
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-See you are still having issues.  A few questions:
-1. What version of the silicon do you have?
-2. What board is this on (customer, ADS, etc.)?
-3. What firmware/bootloader (and if u-boot, what version)
+> We are bringing up an 8540-based board, and are getting hangs at
+> random spots when booting Linux.  Sometimes the hangs occur while the
 
-thanks
+Indeed, classic memory corruption symptoms.
 
-- kumar
+> Is there a way in Linux or the 8540 to prevent burst accesses,
+> in order to test whether they are the problem?
 
-On Aug 12, 2004, at 2:38 PM, Cordes, Aaron M wrote:
+Instead of trying to mask the problem by using crawl modes, I would suggest
+proving that it is a DDR interface problem by enabling ECC (of course you
+need to be able to plug in an ECC memory).  Most interface corruptions will
+be detected by the ECC logic.
 
->
-> I should mention that our SDRAM is connected to the 8540's DDR
-> controller, not LocalBus.
->
-> Aaron
->
-> -----Original Message-----
-> From: Cordes, Aaron M
-> Sent: Thursday, August 12, 2004 2:34 PM
-> To: 'wd@denx.de'
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: RE: Linux 2.4.27-pre6-bk hangs on MPC8540 board
->
->
-> Is there a way in Linux or the 8540 to prevent burst accesses, in order
-> to test whether they are the problem?  I scanned the processor's
-> reference manual, but I didn't see anything that would let me do this.
->
-> Thanks
-> Aaron
->
-> Aaron Cordes
->
-> -----Original Message-----
-> From: wd@denx.de [mailto:wd@denx.de]
-> Sent: Thursday, August 12, 2004 9:08 AM
-> To: Cordes, Aaron M
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: Linux 2.4.27-pre6-bk hangs on MPC8540 board
->
->
-> In message
-> <EE7CAF713952AC4A970DD7CD8B4C12A042DCA7@emss09m06.us.lmco.com> you
-> wrote:
->>
->> We are bringing up an 8540-based board, and are getting hangs at
->> random spots when booting Linux.  Sometimes the hangs occur while the
->> kernel is initializing, sometimes the boot gets far enough where I can
->
->> log in and run a couple of programs.  Eventually the board locks up
->> with no oopses or panics.  If I connect to the board with a debugger,
->> the processor is usually stopped in the Data miss exception handler,
->> and there is usually memory corruption in the kernel code.
->
-> That's it: memory problems.
->
->> I ran memory tests using both Edink and U-boot and they all passed, so
->> I'm reluctant to blame hardware for the memory corruption.  Has anyone
->
->> seen similar behavior, or have any suggestions of things I might try?
->
-> All those memory tests only can test simple read and write  accesses;
-> they  all  fail to access burst mode accesses, which will happen when
-> Linux starts runing, and which are failing.
->
-> Your SDRAM initialization is bad, and  the  system  crashes  when  it
-> tries to fetch instructions from RAM. Note that simple read and write
-> accesses may still work, it's the burst mode that is failing.
->
-> It is NOT sufficient to program the memory controller  of  your  CPU;
-> each  SDRAM  chip  also  requires  a specific initialization sequence
-> which you must adhere  to  to  the  letter  -  check  with  the  chip
-> manufacturer's manual.
->
-> Best regards,
->
-> Wolfgang Denk
->
-> --
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-> If
-> this is a service economy, why is the service so bad?
->
+It is much easier to resolve board or DDR configuration issues when hardware clearly reports an ECC error instead of causing code to go wild.
+
+u-boot supports enabling ECC, but it does not report its occurrence.
+
+Ed dot Swarthout at Freescale dot com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
