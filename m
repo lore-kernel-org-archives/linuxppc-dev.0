@@ -1,47 +1,48 @@
-To: Prakash kanthi <pkanthi@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Flash File System 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 25 Mar 2003 23:01:31 PST."
-             <20030326070131.88176.qmail@web41202.mail.yahoo.com>
-Date: Wed, 26 Mar 2003 08:34:07 +0100
-Message-Id: <20030326073412.21FAFC58BA@atlas.denx.de>
+Date: Wed, 26 Mar 2003 08:57:52 +0100
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: RE: dcbz works on 862 everywhere!
+In-reply-to: <3E810DA7.1060605@slac.stanford.edu>
+To: Till Straumann <strauman@SLAC.Stanford.EDU>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Tom Rini <trini@kernel.crashing.org>,
+	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLCEHGFLAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20030326070131.88176.qmail@web41202.mail.yahoo.com> you wrote:
+> Hi guys.
+
+Thanks Till, you are the first one who actually tested
+my fix.
+
+> I revitalized my old test environment on a
+> mpc860t (XPC860TZP50B5 / 3J21M to be precise).
+
+hmm, B5 rev is pretty buggy. Good that it works on
+this silicon as well.
+
 >
-> I have a 32MB Intel Strata flash on my PPC405 based
-> custom board. I need to create access routines/APIs to
-> access the flash. I was thinking of creating a Flash
-> File System and mount it as a device in Linux
-> environment.
+> I found that 'dcbz' (while failing to set DAR)
+> indeed sets MD_EPN correctly. Hence, Jocke's fix
+> (copy EPN[0:19]->DAR) would handle that.
+
+Did you try any of the other dcxx instructions as well?
+
+> My older idea (fixing up MD_EPN and DAR based
+> on the faulting instruction opcode and the involved
+> GPR contents) should work even if we have neither
+> a valid MD_EPN nor DAR.
+
+Yes, I tried to do that. I never got past how to convert the
+virtual address in SRR0 to physical so I could read the instruction
+and decode it.
+
 >
-> Are there any off the shelf FFS packages available?
-> Generally, how the flash is used?
+> -- Till.
 
-Use the MTD layer.
-
-> I am working with micro-monitor to use its Tiny File
-> System on flash support and eventually mount into
-> linux. Did anyone use this combination before?
-
-I think you cannot do this. AFAIK the TFS code is not available under
-a GPL compatible license which prevents it from being linked with the
-Linux kernel code.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-There is is no reason for any individual to have a computer in  their
-home.      -- Ken Olsen (President of Digital Equipment Corporation),
-              Convention of the World Future Society, in Boston, 1977
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
