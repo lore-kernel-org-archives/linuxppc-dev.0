@@ -1,22 +1,26 @@
-Date: Fri, 26 Feb 1999 11:54:42 -0700 (MST)
-From: Cort Dougan <cort@persephone.cs.nmt.edu>
-To: VALETTE Eric <valette@crf.canon.fr>
-cc: jpeters@phx.mcd.mot.com, paubert@iram.es, jeremy@goop.org,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Interrupt routing in prep_pci.c
-In-Reply-To: <m10GJ1b-0000WXC@tri-yann.crf.canon.fr>
-Message-ID: <Pine.LNX.3.96.990226115411.18533A-100000@persephone.cs.nmt.edu>
+Message-ID: <36D6F473.EF95A3F7@madison-web.com>
+Date: Fri, 26 Feb 1999 14:22:27 -0500
+From: Jason Haas <jhaas@madison-web.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: userlist <linuxppc-dev@lists.linuxppc.org>
+Subject: New R5 beta due w/in 5 days.
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Can you send me the latest diffs needed for your board?  Mostly pci
-interrupt routing, right?  That can go in right away.
+Hi folks,
 
-}Note that, we may also need to fix the early kernel setup...
+Jeff's putting together a new beta that he expects to have out before
+LinuxWorld.  He's in the process of putting it together right now.  No,
+I don't know what's going to be in it. :)
 
+Please give it some time to propgate across the mirror servers before
+you grab it.  We're starting a round of server upgrades, but the FTP
+server won't be upgraded for a while yet.  
+
+Thanks,
+Jason, jhaas@linuxppc.org
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
