@@ -1,6 +1,6 @@
-Message-ID: <3A871C0D.7DB5B8FA@mvista.com>
-Date: Sun, 11 Feb 2001 18:11:09 -0500
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3A87A26C.F5985A7C@mpifr-bonn.mpg.de>
+Date: Mon, 12 Feb 2001 09:44:28 +0100
+From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
 MIME-Version: 1.0
 To: "Joseph P. Garcia" <jpgarcia@execpc.com>
 CC: linuxppc-dev@lists.linuxppc.org
@@ -12,21 +12,17 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 "Joseph P. Garcia" wrote:
+[snip]
+> It seems rather erratic on which systems are afflicted.  My brother's lombard
+> is not affected, nor a wallstreet confirmed built after mine, which is.
 
-> If it is true that the iMac has the same Tx problem,
+Just for your information: I acutally *have* this problem quite frequently with
+my Lombard/333 when it is connected to a 100MBit switch. It seems to work when
+conntected to 1 10MBit hub, though.
 
-Yes, they do.  That is why we started working on it.  I just
-tracked down some of the info from Darwin, and had someone else
-work on it for a while.
-
-> ... Anyone know dbdma well enough to approach a fix? :)
-
-Yeah, but I don't have the time right now.  It's on the list of
-things to do, but it doesn't bother me enough to stop other things
-and fix it.  Since you asked, I thought I would at least give you
-what I had so you wouldn't have to start from zero :-).
+Yours, Albrecht.
 
 
-	-- Dan
+--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
