@@ -1,52 +1,64 @@
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16554.45801.852216.765803@cargo.ozlabs.ibm.com>
-Date: Wed, 19 May 2004 11:05:45 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Oliver Korpilla <okorpil@fh-landshut.de>
+From: "Prabhakar Kalasani" <kalasani@sena.com>
+To: "Song Sam" <samlinuxppc@yahoo.com.cn>
 Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Memory layout question
-In-Reply-To: <Pine.LNX.4.33.0405161456020.1169-100000@lux32.if.fh-landshut.de>
-References: <Pine.LNX.4.33.0405161456020.1169-100000@lux32.if.fh-landshut.de>
+Subject: RE: RPX-CLLF porting
+Date: Wed, 19 May 2004 10:34:23 +0900
+Message-ID: <ACEDKFIMODAHBNCONGOHGEPPCDAA.kalasani@sena.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <20040514150316.61675.qmail@web15207.mail.bjs.yahoo.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Oliver Korpilla writes:
+Thank you  sam
+I made Binary Image and I could boot my target.
 
-> This seems to work fine and dandy on the x86, and there seems to be
-> something wrong on the PowerPC.
+Rgards,
+KP
 
-Well, first, what source tree are you using?  What kernel version?
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Song Sam
+Sent: Saturday, May 15, 2004 12:03 AM
+To: Prabhakar Kalasani; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: RPX-CLLF porting
 
-> Actually the addresses returned by allocate_resource seem to come from
-> system memory, because ioremap_nocache logs a debug statement that is only
-> triggered if the remapping is below the high_memory bound. (And there
-> already seems to be a virtual address associated with it - physical
-> 0x40000000 is RAM 0xc<whatever> - kernel space, I guess)
 
-That sounds truly weird.  What is the whole message that gets printed?
-I suggest you add a printk to __ioremap to print the values of
-high_memory and virt_to_phys(high_memory).
 
-> But the address returned is 0x40000000 !! Isn't that the 2nd GB of address
-> space? My board only has 512 MB of storage, and is only upgradable to 1GB,
-> so shouldn't an address starting at 0x40000000 physically never be a
-> memory address and never be below the high_memory bound?
+Prabhakar Kalasani <kalasani@sena.com> wrote:
+> I have got RPX-CLLF target , I'm trying to port PPC Linux , I made
+> tftp,nfs and DHCP setup and I could able to load the kernel using tftp
+> , the problem is I couldn't able to run the kernel .
 
-You would think so.
+> File                                           =
+> vmlinux
+> ENET                                           =
+> 0010EC002D1E
+> DefaultENET                                    =
+> ENET
+> TftpRAM                                        =
+> High
+> Start                                          =
+> 400000
+> Format                                         =
+> NetBin
 
-> Can I even dereference an I/O memory pointer on the PowerPC? (It can be
-> done on x86) I know, I know, I _should_ use readb and friends, but can it
-> be done? Or _must_ I strictly use the macros because it won't work the
-> other way round?
+> Enter server filename   <vmlinux> :
+> Enter (B)inary or (S)record input mode <B> :
+> Enter address offset  : <00400000 hex> :
+> .512.1024..2048...
+> Total bytes = 1839078 in 9948811 uSecs
 
-You can in fact dereference the return value from __ioremap, but it is
-generally not a good idea unless you know that what you are accessing
-is well-behaved memory.  PowerPC processors can reorder loads and
-stores unless you put barriers in to prevent that, and read/write[bwl]
-include barriers for that reason.
+Pls check your LINUX kernel format.As you set in the
+configuation,image format is NetBin.But it seemed that
+you downloaded ELF kernel.Pls try zImage.embedded
+rather than vmlinux.
 
-Paul.
+Best regards,
+
+Sam
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
