@@ -1,52 +1,41 @@
-Date: Thu, 17 Oct 2002 16:52:48 +0200
-Mime-Version: 1.0 (Apple Message framework v482)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Subject: Problems with 2_4_devel & MVME2600 serial interrupts
-From: Anders Blomdell <anders.blomdell@control.lth.se>
-To: linuxppc-embedded@lists.linuxppc.org
-Message-Id: <1A322033-E1E0-11D6-8132-0003931C2BFA@control.lth.se>
+To: Hollis Blanchard <hollis@austin.ibm.com>
+Cc: leeyang <leeyang@ycig.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 860 rtc problem 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "17 Oct 2002 09:24:11 CDT."
+             <1034864663.8254.19.camel@granite.austin.ibm.com>
+Date: Thu, 17 Oct 2002 17:42:31 +0200
+Message-Id: <20021017154236.9C142FAA7@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-When trying 2_4_devel on a MVME2600 box, the system hangs on the first
-access to stdout (printk works OK).
+In message <1034864663.8254.19.camel@granite.austin.ibm.com> you wrote:
+>
+> > With 'date -s' command it returned time had been changed.
+> > However after a reset,the time go back to 1970's again :-(
+...
+> `hwclock` with no arguments seems to be the same as `hwclock --show`. I
+> would recommend `hwclock -w`.
 
-The problem occurs when my /bin/sh gets invoked as the init task, so all
-kernel initialization seems to work OK (lots of reasonable output at least)
-. What seems to happen is:
+hwclock expects a standard /dev/rtc interface, which is not available
+for the MPC8xx in some versions of the Linux kernel.
 
-1. A write to stdout eventually reach rs_write (drivers/char/serial/serial.
-c),
-    where the following gets executed:
+If you're  looking  for  an  implementation,  check  out  our  kernel
+sources. It includes a MPC8xx RTC driver.
 
-		info->IER |= UART_IER_THRI;
-		serial_out(info, UART_IER, info->IER);
+Best regards,
 
-2. When the interrupts gets enabled, the system gets an interrupt and
-eventually
-    calls i8259_irq, which reads 0xff from pci_intack, which it will
-continue to
-    do	forever in this loop (do_IRQ, arch/kernel/irq.c):
+Wolfgang Denk
 
-      while ((irq = ppc_md.get_irq(regs)) >= 0) {
-		ppc_irq_dispatch_handler(regs, irq);
-		first = 0;
-      }
-
-Does anybody has a clue what might be wrong (linuxppc_2_4 works OK, but not
-the linuxppc_2_4_devel)?
-
-Regards
-
-Anders Blomdell
-
-------------------------------------------------------------------------------
-  Anders Blomdell
-  Department of Automatic Control        Email: anders.blomdell@control.lth.
-se
-  Lund Institute of Technology           Phone: +46 46 222 4625
-  Box 118, S-221 00 Lund, Sweden         Fax:   +46 46 138118
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+How many seconds are there in a year? If I tell you there are 3.155 x
+10^7, you won't even try to remember it. On the other hand, who could
+forget that, to within half a percent, pi seconds is  a  nanocentury.
+                                               -- Tom Duff, Bell Labs
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
