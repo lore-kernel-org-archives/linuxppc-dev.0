@@ -1,108 +1,48 @@
-Date: Thu, 11 Oct 2001 09:39:45 -0600 (MDT)
-From: Derrik Pates <dpates@dsdk12.net>
-To: Olaf Hering <olh@suse.de>
-Cc: Stefan Wanner <stefan.wanner@ymail.ch>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: vfat on bigendian
-In-Reply-To: <20011011164253.A27332@suse.de>
-Message-ID: <Pine.LNX.4.33.0110110936370.7496-200000@andromeda.dsdk12.net>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="1842346852-303532877-1002814785=:7496"
+Subject: Re: bug in XFree86 4.1.0 with Rage 128 driver?
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+To: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Cc: Olaf Hering <olh@suse.de>, linuxppc-dev@lists.linuxppc.org,
+	Herbert Duerr <duerr@sun.com>
+In-Reply-To: <1002814351.12609.408.camel@pismo>
+In-Reply-To: <200110111541.f9BFfFf02772@ashley.ivey.uwo.ca>
+References: <200110111541.f9BFfFf02772@ashley.ivey.uwo.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 11 Oct 2001 18:33:26 +0200
+Message-Id: <1002818006.12609.941.camel@pismo>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+On Thu, 2001-10-11 at 17:37, Kevin Hendricks wrote:
 
---1842346852-303532877-1002814785=:7496
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+> > So what's in CVS only works for fbdev, Kevin's patch is needed for
+> > r128?
+>
+> I went and used cvsweb on Xfree86.org to see what keithp actually
+> committed.
+>
+> The bug I found was actually *already* fixed by XF4 guys  soon after
+> XF410 was released (they simply removed the || !xFormat in the "if")
+> (given the dates on the Xrender.c changes).
+>
+> So all keithp had to add was the code to check to make sure xData
+> malloced okay (i.e put back in || !xData in the "if").
+>
+> So what is in cvs head right now for this code snippet turns out to be
+> exactly what my  patch will do for XF 4.1.0.
+>
+> I assume the r128 versus framebuffer issue was only due to random memory
+> being tested so the results were/are random.
+>
+> The patch is needed for all 4.1.0 respins since the bug only exists in
+> 4.1.0 but anything based on cvs recently should be okay as is.
 
-On Thu, 11 Oct 2001, Olaf Hering wrote:
+The fix is only in the trunk, not the 4.1 branch?
 
-> Alan has the patch.
-> /mirror/SuSE/ftp.suse.com/pub/suse/ppc/kernel/BETA/patches/70__2.4.5-pre1_vfat_direntry_endianfix.diff.gz
 
-Yeah, except it looks like that patch will generate trashed short names. I
-did fix my patch (I had to add stuff in fs/vfat/namei.c to translate the
-long name in Unicode for into little-endian, and to allow "proper"
-comparisons and conversions of its wide-char form so that the short name
-will be generated correctly. The corrected patch is attached.
-
-/me procceds to put a paper bag over his head and sit in the corner. :)
-
-Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
-dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
-
---1842346852-303532877-1002814785=:7496
-Content-Type: TEXT/plain; name="vfat-lfn-fix-rev3.diff"
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.33.0110110939450.7496@andromeda.dsdk12.net>
-Content-Description: 
-Content-Disposition: attachment; filename="vfat-lfn-fix-rev3.diff"
-
-LS0tIG9yaWdzL2xpbnV4LTIuNC1iZW5oLmRpc3QvZnMvZmF0L2Rpci5jCVdl
-ZCBPY3QgMTAgMDc6MTE6MzIgMjAwMQ0KKysrIGxpbnV4L2ZzL2ZhdC9kaXIu
-YwlXZWQgT2N0IDEwIDIxOjA3OjA0IDIwMDENCkBAIC0yMzIsNiArMjMyLDEw
-IEBADQogCQkJCW1lbWNweSgmdW5pY29kZVtvZmZzZXRdLCBkcy0+bmFtZTBf
-NCwgMTApOw0KIAkJCQltZW1jcHkoJnVuaWNvZGVbb2Zmc2V0KzEwXSwgZHMt
-Pm5hbWU1XzEwLCAxMik7DQogCQkJCW1lbWNweSgmdW5pY29kZVtvZmZzZXQr
-MjJdLCBkcy0+bmFtZTExXzEyLCA0KTsNCisNCisJCQkJZm9yKGkgPSBvZmZz
-ZXQ7IGkgPCBvZmZzZXQgKyAyNjsgaSArPSAyKQ0KKwkJCQkJX19sZTE2X3Rv
-X2NwdXMoKHdjaGFyX3QgKikmdW5pY29kZVtpXSk7DQorDQogCQkJCW9mZnNl
-dCArPSAyNjsNCiANCiAJCQkJaWYgKGRzLT5pZCAmIDB4NDApIHsNCkBAIC00
-MzAsNiArNDM1LDEwIEBADQogCQkJbWVtY3B5KCZ1bmljb2RlW29mZnNldF0s
-IGRzLT5uYW1lMF80LCAxMCk7DQogCQkJbWVtY3B5KCZ1bmljb2RlW29mZnNl
-dCsxMF0sIGRzLT5uYW1lNV8xMCwgMTIpOw0KIAkJCW1lbWNweSgmdW5pY29k
-ZVtvZmZzZXQrMjJdLCBkcy0+bmFtZTExXzEyLCA0KTsNCisNCisJCQlmb3Io
-aSA9IG9mZnNldDsgaSA8IG9mZnNldCArIDI2OyBpICs9IDIpDQorCQkJCV9f
-bGUxNl90b19jcHVzKCh3Y2hhcl90ICopJnVuaWNvZGVbaV0pOw0KKw0KIAkJ
-CW9mZnNldCArPSAyNjsNCiANCiAJCQlpZiAoZHMtPmlkICYgMHg0MCkgew0K
-LS0tIG9yaWdzL2xpbnV4LTIuNC1iZW5oLmRpc3QvZnMvdmZhdC9uYW1laS5j
-CVdlZCBPY3QgMTAgMDc6MTE6MzIgMjAwMQ0KKysrIGxpbnV4L2ZzL3ZmYXQv
-bmFtZWkuYwlUaHUgT2N0IDExIDA5OjI5OjI5IDIwMDENCkBAIC01MTksNyAr
-NTE5LDggQEANCiAJLyogIGBbJyAgICAgYF0nICAgIGA7JyAgICAgYCwnICAg
-ICBgKycgICAgICBgPScgKi8NCiAJMHgwMDVCLCAweDAwNUQsIDB4MDAzQiwg
-MHgwMDJDLCAweDAwMkIsIDB4MDAzRCwgMCwNCiB9Ow0KLSNkZWZpbmUgSVNf
-UkVQTEFDRUNIQVIodW5pKQkodmZhdF91bmlzdHJjaHIocmVwbGFjZV9jaGFy
-cywgKHVuaSkpICE9IE5VTEwpDQorI2RlZmluZSBJU19SRVBMQUNFQ0hBUih1
-bmkpCSh2ZmF0X3VuaXN0cmNocihyZXBsYWNlX2NoYXJzLCBcDQorCQkJCQlf
-X2NwdV90b19sZTE2KHVuaSkpICE9IE5VTEwpDQogDQogc3RhdGljIGlubGlu
-ZSB3Y2hhcl90ICp2ZmF0X3VuaXN0cmNocihjb25zdCB3Y2hhcl90ICpzLCBj
-b25zdCB3Y2hhcl90IGMpDQogew0KQEAgLTU4Nyw3ICs1ODgsOCBAQA0KIAkw
-eDAwMkUsIDB4MDAyMCwgMCwNCiB9Ow0KICNkZWZpbmUgSVNfU0tJUENIQVIo
-dW5pKSBcDQotCSgod2NoYXJfdCkodW5pKSA9PSBza2lwX2NoYXJzWzBdIHx8
-ICh3Y2hhcl90KSh1bmkpID09IHNraXBfY2hhcnNbMV0pDQorCShfX2NwdV90
-b19sZTE2KCh3Y2hhcl90KSh1bmkpKSA9PSBza2lwX2NoYXJzWzBdIHx8IFwN
-CisJIF9fY3B1X3RvX2xlMTYoKHdjaGFyX3QpKHVuaSkpID09IHNraXBfY2hh
-cnNbMV0pDQogDQogLyogR2l2ZW4gYSB2YWxpZCBsb25nbmFtZSwgY3JlYXRl
-IGEgdW5pcXVlIHNob3J0bmFtZS4gIE1ha2Ugc3VyZSB0aGUNCiAgKiBzaG9y
-dG5hbWUgZG9lcyBub3QgZXhpc3QNCkBAIC02MjcsNyArNjI5LDcgQEANCiAJ
-LyogTm93LCB3ZSBuZWVkIHRvIGNyZWF0ZSBhIHNob3J0bmFtZSBmcm9tIHRo
-ZSBsb25nIG5hbWUgKi8NCiAJZXh0X3N0YXJ0ID0gZW5kID0gJnVuYW1lW3Vs
-ZW5dOw0KIAl3aGlsZSAoLS1leHRfc3RhcnQgPj0gdW5hbWUpIHsNCi0JCWlm
-ICgqZXh0X3N0YXJ0ID09IDB4MDAyRSkgeyAvKiBpcyBgLicgKi8NCisJCWlm
-ICgqZXh0X3N0YXJ0ID09IF9fY3B1X3RvX2xlMTYoMHgwMDJFKSkgeyAvKiBp
-cyBgLicgKi8NCiAJCQlpZiAoZXh0X3N0YXJ0ID09IGVuZCAtIDEpIHsNCiAJ
-CQkJc3ogPSB1bGVuOw0KIAkJCQlleHRfc3RhcnQgPSBOVUxMOw0KQEAgLTY3
-Myw3ICs2NzUsOCBAQA0KIAkJCWNoYXJidWZbMF0gPSAnXyc7DQogCQkJY2hs
-ID0gMTsNCiAJCX0gZWxzZSB7DQotCQkJY2hsID0gbmxzLT51bmkyY2hhcigq
-aXAsIGNoYXJidWYsIHNpemVvZihjaGFyYnVmKSk7DQorCQkJY2hsID0gbmxz
-LT51bmkyY2hhcihfX2NwdV90b19sZTE2KCppcCksIGNoYXJidWYsDQorCQkJ
-CQlzaXplb2YoY2hhcmJ1ZikpOw0KIAkJCWlmIChjaGwgPD0gMCkgew0KIAkJ
-CQlpc19zaG9ydG5hbWUgPSAwOw0KIAkJCQljaGFyYnVmWzBdICA9ICdfJzsN
-CkBAIC03MjAsNyArNzIzLDggQEANCiAJCQkJY2hhcmJ1ZlswXSA9ICdfJzsN
-CiAJCQkJY2hsID0gMTsNCiAJCQl9IGVsc2Ugew0KLQkJCQljaGwgPSBubHMt
-PnVuaTJjaGFyKCppcCwgY2hhcmJ1Ziwgc2l6ZW9mKGNoYXJidWYpKTsNCisJ
-CQkJY2hsID0gbmxzLT51bmkyY2hhcihfX2NwdV90b19sZTE2KCppcCksIGNo
-YXJidWYsDQorCQkJCQkJc2l6ZW9mKGNoYXJidWYpKTsNCiAJCQkJaWYgKGNo
-bCA8PSAwKSB7DQogCQkJCQlpc19zaG9ydG5hbWUgPSAwOw0KIAkJCQkJY2hh
-cmJ1ZlswXSA9ICdfJzsNCkBAIC04ODMsNiArODg3LDkgQEANCiAJfQ0KIAlp
-ZiAoKm91dGxlbiA+IDI2MCkNCiAJCXJldHVybiAtRU5BTUVUT09MT05HOw0K
-Kw0KKwlmb3IoaSA9IDA7IGkgPCAqb3V0bGVuOyBpKyspDQorCQlfX2NwdV90
-b19sZTE2cygmKCh3Y2hhcl90ICopb3V0bmFtZSlbaV0pOw0KIA0KIAkqbG9u
-Z2xlbiA9ICpvdXRsZW47DQogCWlmICgqb3V0bGVuICUgMTMpIHsNCg==
---1842346852-303532877-1002814785=:7496--
+--
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
