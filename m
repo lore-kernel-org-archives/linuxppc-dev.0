@@ -1,40 +1,39 @@
-Date: Sat, 1 Dec 2001 02:38:48 -0800
-Subject: Re: Byte order in sound drivers
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v475)
-From: Jeff Koftinoff <jeffk@jdkoftinoff.com>
-To: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <3C08ADE6.8030004@waitaki.otago.ac.nz>
-Message-Id: <9A5DA94E-E647-11D5-8040-003065709198@jdkoftinoff.com>
+Message-ID: <3C08CFF0.18A1FBC7@wanadoo.fr>
+Date: Sat, 01 Dec 2001 13:41:20 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
+Subject: Re: [PATCH] Minor changes to control/imstt/platinum/valkyrie/atyfb
+References: <20011127143058.R13091@cpe-24-221-152-185.az.sprintbbd.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Saturday, December 1, 2001, at 02:16 AM, Bryce McKinlay wrote:
+Tom Rini wrote:
+>
+> Hello all.  The following patches make slight changes to the vmode/cmode
+> logic on a few fb drivers.  Now everone consistantly only tries to get
+> these modes from nvram if CONFIG_NVRAM is defined (otherwise a
+> compile-time error on everyone but atyfb).  On imsttfb I made the logic
+> only executed on CONFIG_ALL_PPC, and removed USE_NV_MODES (which
+> shouldn't be needed now).  However, I have none of this hardware, and I
+> remember some of these drivers being very touchy.  So could people with
+> this hardware apply the patch and let me know if it works still?
 
->
-> It seems that some of the newwer media player applications (including
-> mplayer and the latest xmms from CVS) swap the byte order of sound
-> samples before playing them on PPC, and this results in nothing but
-> static from both the dmasound and usb audio drivers.
->
-> Is this because the sound driver perhaps already doing endian-swapping,
-> and can I disable it? Are these applications correct to want to convert
-> samples into the native endian-ness?
->
-> I'm using a 2.4.14 benh kernel.
->
-> cheers
->
-> Bryce.
->
->
+For the valkyriefb driver on my Pmac 6400, I can confirm from a first
+short test that it still works. This is with your patch applied to
+today's 2.4.17-pre1-ben0 kernel.
 
-XMMS has endian problems with wav files, but not mp3 files - It is
-listed as a bug as well for sparc.  The problem solely lies with
-applications that are written incorrectly.
+I am not testing it very extensively, because this kernel crashes on me
+as soon as pppd is started. Yesterday's 2.4.16-ben0 crashed when running
+ping. Even on my iBook, the 2.4.16 gave me an "illegal lseek" when
+trying to run ping (the 2.4.17-pre1 seems to work OK on the iBook).
+Since the 6400 is serving as an adsl router, I prefer to go back to the
+stable 2.4.0-pmac kernel from last January.
 
-jeff
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
