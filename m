@@ -1,26 +1,24 @@
-Date: Thu, 28 Aug 2003 07:08:16 -0400
-Message-Id: <200308280708.AA2900820296@intrex.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: "Ralph Blach" <rblach@intrex.net>
-Reply-To: <rblach@intrex.net>
-To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
-	<t.vanremortel@ha.be>
-Subject: Re: K-computing RTAI benchmark cross-compile
+Date: Thu, 28 Aug 2003 13:25:27 +0200
+Message-ID: <3F39F7430002E6F2@mssbzhh-int.msg.bluewin.ch>
+In-Reply-To: <1062060226.25974.5.camel@toni>
+From: "Wolfgang Grandegger" <wolfgang.grandegger@bluewin.ch>
+Subject: RE: K-computing RTAI benchmark cross-compile
+To: t.vanremortel@ha.be,
+	"Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-These are X86 assembler instructions.  You will have to port
-them.  Send me the file and I will see what I can do.
-
-Chip
-
----------- Original Message ----------------------------------
-From: Toni Van Remortel <t.vanremortel@ha.be>
-Reply-To: t.vanremortel@ha.be
-Date:  Thu, 28 Aug 2003 10:43:47 +0200
-
+>-- Original Message --
+>Subject: K-computing RTAI benchmark cross-compile
+>From: Toni Van Remortel <t.vanremortel@ha.be>
+>Reply-To: t.vanremortel@ha.be
+>To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+>Date: Thu, 28 Aug 2003 10:43:47 +0200
+>
+>
 >
 >Hi all,
 >
@@ -56,16 +54,15 @@ Date:  Thu, 28 Aug 2003 10:43:47 +0200
 >
 >Anybody a clue how to solve this? Or are there other PPC RTAI benchmarks
 >available?
->
->Regards,
->--
->                           Toni Van Remortel
->              Wetenschappelijk Medewerker - D-science lab
->              Tel: +32 3 205 61 72 - Fax: +32 3 205 61 95
->                      E-mail: t.vanremortel@ha.be
->
->
->
->
+
+The program seems to use x86 asm instructions somehow. Is timer_test.c
+a user space program or a kernel module? Where can I download it from?
+
+Hope it helps.
+
+Wolfgang.
+
+Wolfgang
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
