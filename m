@@ -1,74 +1,55 @@
-Date: Thu, 24 Jun 1999 22:03:07 -0400
-From: Daniel Jacobowitz <drow@false.org>
-To: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>, ad@MPIfR-Bonn.MPG.de
+Date: Fri, 25 Jun 1999 12:11:11 +1000
+Message-Id: <199906250211.MAA04916@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: ad@MPIfR-Bonn.MPG.de
+CC: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+In-reply-to: <3771D987.C59A9374@mpifr-bonn.mpg.de> (message from Albrecht
+	=?iso-8859-1?Q?Dre=DF?= on Thu, 24 Jun 1999 09:08:55 +0200)
 Subject: Re: Help: Porting PCI driver from Linux/Intel -> PPC
-Message-ID: <19990624220307.A9159@drow.res.cmu.edu>
+Reply-to: Paul.Mackerras@cs.anu.edu.au
 References: <3771D987.C59A9374@mpifr-bonn.mpg.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: =?iso-8859-1?Q?=3C3771D987=2EC59A9374=40mpifr-bonn=2Empg=2Ede=3E=3B_from?=
- =?iso-8859-1?Q?_Albrecht_Dre=DF_on_Thu=2C_Jun_24=2C_1999_at_09:08:55AM_+?=
- =?iso-8859-1?Q?0200?=
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jun 24, 1999 at 09:08:55AM +0200, Albrecht Dreß wrote:
-> 
-> [sorry, this is a rather long post]
-> Hi all,
-> 
+Albrecht =?iso-8859-1?Q?Dre=DF?= <ad@MPIfR-Bonn.MPG.de> wrote:
+
 > 	I wrote a driver for a pci dsp card, which works fine on several Intel/
 > Linux boxes both with 2.0.x and 2.2.x.  This encouraged to make a test with my
 > PMac 7300/166, running R5 with the stock 2.2.6 kernel.  I compiled and inserted
 > the driver --- and got a kernel panic :-(
-> 
+
+A machine check?  That will happen if you try to access an I/O port
+which doesn't respond.
+
 > Maybe I missed some setup which is needed with LinuxPPC but not with Intel?  Or
-> does this card simply not work on my Mac?  I hope some PCI/kernel gurus could 
-> help me or point me to a "PCI-for-LinuxPPC-beginners-page".
+
+PCI cards don't automatically their memory and I/O accesses enabled on
+powermacs.  Arguably the generic PCI stuff in the kernel should turn
+on memory and I/O accesses, and it should probably also check that the
+addresses assigned by Open Firmware are sane.
 
 > Now I try to insmod my driver, which reads the configuration space (using calls
 > to pci_read_config_dword) and dumps it, reads irq and board revision, reads the
 > base adresses of the five io regions, and reads one io address via inl().  The
-> last operation leads to a panic:
 
+Ideally you should use pci_find_device and then use the base_address
+and irq fields from the pci_dev structure it returns.  And for
+powermacs, you will need to set the bit in the config-space control
+register to enable I/O accesses.
 
-> Machine check in kernel mode. 
-> Caused by (from msr): regs c24d7ca0 Unknown values in msr 
-> NIP: C483CFA0 XER: 00000000 LR: C483CF54 REGS: c24d7ca0 TRAP: 0200 
+> * lspci reports irq #25, but the value in the config space is 1
 
-                                                                ^^^^
+Use pci_dev->irq instead, it should be correct.
 
-> MSR: 00009030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11 
-> TASK = c24d6000[578] 'insmod' mm->pgd c269b000 Last syscall: 128  
-> last math c24d6000 
-> GPR00: 000008C0 C24D7D90 C24D6000 C483E180 C024C920 000008DC 000008F8 000008FC  
-> GPR08: 00000000 F20008DC F20008FC F20008F8 84222424 0184F370 00000000 00000000  
-> GPR16: 018F8790 00000000 FFFFFFFF 00000000 00009032 024D7E80 00000000 00000001  
-> GPR24: C483C048 C483E51C C483D4C4 C4840000 C24D7D9C C02D04A0 C024C920 00000040  
-> Call backtrace:  
-> C483CF54 C483C0A8 C0016968 C000388C 018056D4 01803428 01803AD4  
-> 016DF7D4 00000000  
-> Instruction DUMP: 3863e180  7fc4f378  4cc63182 <480015c1> 38600000  80010034 
-> 7c0803a6  8361001c  83810020  
-> Kernel panic: machine check 
+> * the regions 0 to 3 are 256 bytes each, so they would overlap if the values
+>   reported would be correct.
 
+Possibly OF's fault.  I assume that if you write 0xffffffff into those
+base address registers, you get back 0xffffff01, indicating 256 bytes
+of I/O space?
 
-What I highlighted above is your clue.  I don't remember off the top of
-my head which 0200 is, but I'm willing to bet it's Open Firmware's data
-access exception - attempting to access physical memory unmapped by the
-MMU.  Along with the other suggestion for enabling memory, be very sure
-about endianness issues - that's the major porting pitfall.  Where are
-you inl()'ing from?
-
-
-Dan
-
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
