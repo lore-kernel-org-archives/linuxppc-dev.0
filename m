@@ -1,23 +1,34 @@
-Message-ID: <3CB6EACC.AE7BD215@lvl7.com>
-Date: Fri, 12 Apr 2002 10:10:20 -0400
-From: Neil Horman <nhorman@lvl7.com>
+Message-ID: <3CB6EDB3.5050804@embeddededge.com>
+Date: Fri, 12 Apr 2002 10:22:43 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: problem with __init and __initdata modifiers in 2.4.19pre6
-Content-Type: text/plain; charset=us-ascii
+To: Geir Frode Raanes <geirfrs@invalid.ed.ntnu.no>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC5xx now with MMU
+References: <20020412095643.U79588-100000@invalid.ed.ntnu.no>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hey all!
-	I just downloaded the 2.4.19pre6 kernel from bitkeeper and I'm having some
-build issues.  My compilation fails on line 35 of do_mounts.c.  I've done some
-tinkering and I can only seem to resolve the problem if I remove the __initdata
-attribute from the mount_initrd variable.  If I do this I clear up that error,
-but I bomb out again on the next symbol to be flagged as either __init or
-__initdata.  Has anyone had a simmilar experience with this kernel, and If so,
-what did you do to fix it, as I'm kinda stumped here.  If it matters I'm using
-gcc 2.95.3.  Thanks a bunch!
-Neil :)
+Geir Frode Raanes wrote:
+
+> ...... The User Manual claims 603
+> conformity and lists Linux among its operation systems support -
+
+More of Motorola's automotive processors are now claiming "603 core"
+processor.  It appears as this block in diagrams without any further
+details.  I have a number of outstanding questions to the group
+trying to get details on this block.  Things like MMU and FPU are
+in the questions, and there are other details about processor
+registers that I have asked as well.
+
+I have received some requests for Linux on these new processors,
+but so far no one has provided a board for me to use for development.
+
+Thanks.
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
