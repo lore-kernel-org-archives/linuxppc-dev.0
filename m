@@ -1,43 +1,37 @@
-To: joakim.tjernlund@lumentis.se
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PWM on the MPC850 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 11 Dec 2002 14:55:42 +0100."
-             <IGEFJKJNHJDCBKALBJLLAELKFIAA.joakim.tjernlund@lumentis.se>
-Date: Wed, 11 Dec 2002 15:54:24 +0100
-Message-Id: <20021211145429.18D5BC613A@atlas.denx.de>
+Date: Wed, 11 Dec 2002 07:56:58 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Pantelis Antoniou <panto@intracom.gr>
+Cc: joakim.tjernlund@lumentis.se, acurtis@directvinternet.com,
+	Dan Malek <dan@embeddededge.com>,
+	Paul Mackerras <paulus@au1.ibm.com>, Matt Porter <porter@cox.net>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Regarding consistent_alloc
+Message-ID: <20021211145658.GA19456@opus.bloom.county>
+References: <IGEFJKJNHJDCBKALBJLLAELIFIAA.joakim.tjernlund@lumentis.se> <3DF70C55.3010709@intracom.gr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3DF70C55.3010709@intracom.gr>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <IGEFJKJNHJDCBKALBJLLAELKFIAA.joakim.tjernlund@lumentis.se> you wrote:
->
-> > But be warned: do NOT use any of the port B pins for I/O  in  such  a
-> > setup. There is a race condition within all MPC8xx CPUs.
->
-> hmm, we access a few port B I/O pins from user space. What/where is the
-> race in kernel?
+On Wed, Dec 11, 2002 at 11:58:45AM +0200, Pantelis Antoniou wrote:
 
-I should add that it is non-trivial to work around this issue. We had
-a case where even the short spikes on the output caused by this  race
-condition  were not acceptable. The only way to make this work was to
-disable the PWM timers (and wait for them to shut  down  -  which  is
-another  issue)  before moifying the port B data, and then start them
-up again. Of course this is unacceptable when you need high precision
-PWM signals (but the you would not use a MPC8xx RISC timer anyway).
+[snip]
+> I think it's safe to assume that there is large amount of confussion at
+> this subject.
 
-My recommendation is: never, ever use the RISC timers if you need  to
-know hwat's going on on port B.
+Definatly.
 
-Best regards,
+> FWIW I dislike the use of iopa(), and I would be forced to duplicate the
+> code of
+> consistent_alloc() class of functions in my tree.
 
-Wolfgang Denk
+Why would you have to duplicate the consistent_alloc code?  It is not
+tied to PCI, really.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Free markets select for winning solutions."        - Eric S. Raymond
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
