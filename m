@@ -1,52 +1,55 @@
-Date: Wed, 12 May 1999 22:32:55 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: Derek Moeller <moeller@networksplus.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: linuxppc tree with uusbd
-In-Reply-To: <Pine.LNX.3.96.990512192847.11500A-100000@ns1.networksplus.net>
-Message-ID: <Pine.LNX.4.05.9905122231420.651-100000@pc.wackyland.com>
+Message-ID: <XFMail.990513053536.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.BSI.3.96.990512182248.24792A-100000@usr08.primenet.com>
+Date: Thu, 13 May 1999 05:35:36 +0100 (BST)
+From: Gary Thomas <gdt@linuxppc.org>
+To: Jeff Rugen <jrugen@primenet.com>
+Subject: RE: Motorola Powerstack Parallel Port
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 12 May 1999, Derek Moeller wrote:
 
-> On Wed, 12 May 1999, Tom Rini wrote:
+On 13-May-99 Jeff Rugen wrote:
 > 
-> > On Wed, 12 May 1999, Derek Moeller wrote:
-> > 
-> > > On Wed, 12 May 1999, Ben Martz wrote:
-> > > 
-> > > > 
-> > > > Does anyone maintain a linuxppc tree that includes the uusbd package? I
-> > > > would like to get 2.2.7+ up and running on my iMac but obviously the old
-> > > > 2.2.0 uusbd patches can't be applied to the vger tree anymore (as an
-> > > > exercise in futility I tried!). CVS or ftp would be just fine.
-> > > 
-> > > I can get you as close as 2.2.6, I couldn't patch it beyond that (patches
-> > > started failing). That's what I'm running right now. I'd like to see if
-> > > you can patch it further. I don't have it up yet, but I'll put it up maybe
-> > > today/tomorrow at my site (it'll be under /moeller/linux when it does get
-> > > up there).
-> > 
-> > To get to 2.2.7/8 just back out changes from 2.2.7 for Linus' USB stack.
-> > All in all, getting the new stack working is much more important then
-> > putting the old one in. (in the long run anyhow.)
+> Ok, according to the book that came with my Motorola PowerStack, I have a
+> parallel port that is compatible with IEEE standard 1284, including the
+> Extended Capability Port (ECP) and Enhanced Parallel Port (EPP).  However,
+> the driver (parport_pc) doesn't recognize it as ECP and EPP, and says its
+> only SPP.  I haven't played around the parallel port much, so I figured I'd
+> ask first, to see if anyone else had looked into this before.  Does the
+> kernel need to do some sort of initialization before the parallel port is
+> recognized as such?   (I do have a B&W quickcam plugged into the port now,
+> but I don't think that should affect the detection).
 > 
-> Isn't OHCI support really shaky for the new stack though? I know they've
-> got UHCI support down pretty well, but I don't know how the iMac would
-> fare with the current new stack drivers.
 
-Shaky to not working.  Hence we need to get it working. (Nothing too great
-has changed in 2.2.7/2.2.8 (if you've been using 2.2.6-vger).  And you can
-unpatch parts of 2.2.7 to remove usb support and put back in uusbd support
-if you really need it.
+It might - those devices do funky things to the port even though they are
+supposed to be invisible unless being accessed.
 
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+> I have one of the old 100MHz 604 machines.  I'm trying to get the quickcam
+> drivers working with the 2.2.x/2.3.x kernel (I had one of the drivers
+> working with the 2.0.x kernel, but I don't know if it was in EPP or SPP
+> mode).
+> 
+> Any help, pointers, or advice on this topic would be much appreciated.
+> If you know what specific chip is used to implement the parallel
+> port, I can look around for a data book on it as well.  Thanks for any help.
+>
+
+The parallel port, along with most of the other devices in the system, are
+implemented in the PCI-bridge chip (82473 IIRC).
+ 
+
+------------------------------------------------------------------------
+Gary Thomas                              |
+email: gdt@linuxppc.org                  | "Fine wine is a necessity of
+   ... opinions expressed here are mine  |        life for me"
+       and no one else would claim them! |
+                                         |      Thomas Jefferson
+------------------------------------------------------------------------
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
