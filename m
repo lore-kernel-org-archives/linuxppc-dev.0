@@ -1,36 +1,22 @@
-Message-ID: <369E92BE.9F02827B@television.telia.se>
-Date: Fri, 15 Jan 1999 02:59:03 +0200
-From: Robert =?iso-8859-1?Q?Valsj=F6?= <robert.valsjo@television.telia.se>
-Reply-To: robert.valsjo@television.telia.se
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: [Q] How to install gnome on pre-R5
-Content-Type: text/plain; charset=us-ascii
+From: Alan Cox <alan@cymru.net>
+Message-Id: <199901150138.BAA30172@snowcrash.cymru.net>
+Subject: Re: Synchronization [was Re: The Magic Show: kernel_map() disappearing]
+To: cort@persephone.cs.nmt.edu (Cort Dougan)
+Date: Fri, 15 Jan 1999 01:38:48 +0000 (GMT)
+Cc: alan@cymru.net, jskov@cygnus.co.uk, linuxppc-dev@lists.linuxppc.org,
+        Jes.Sorensen@cern.ch, linux-apus@sunsite.auc.dk
+In-Reply-To: <Pine.LNX.3.96.990114145156.7359A-100000@persephone.cs.nmt.edu> from "Cort Dougan" at Jan 14, 99 02:53:11 pm
+Content-Type: text
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-[Q] How to install gnome on pre-R5
+> That's my rationale for doing the sync and eieio in the mb().  That way,
+> we're guaranteed no races no matter what assumptions someone makes about
+> the x86 when adding barriers to their driver code.  Is that unreasonable?
 
-Hi!
-
-I have downloaded all the files at 
-
-ftp://linuxppc.cs.nmt.edu/pub/linuxppc/gnome/ppc/
-
-Then I follow the user-guide (html based) for gnome installation, but
-I can't figure out how to install all those packages. 
-
-The user-guide is for i386 (not all files are there in the ppc
-directory above), so I wonder if I should do it in another way?
-
-Thanx! :-)
-
-/rob
-
-
-"Ofcourse there are intelligent beings in the Universe, 
-otherwise they would have come here a long time ago"  ;-)
+It would be good to get the right stuff done in the drivers not take a
+wired in performance hit we cant get back out of
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
