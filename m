@@ -1,24 +1,31 @@
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <v04020a00b2e6f5596238@[136.152.65.18]>
-Date: Wed, 10 Feb 1999 00:44:20 -0800
-To: linuxppc-dev@lists.linuxppc.org
-From: Brian C Burke <bcburke@socrates.berkeley.edu>
-Subject: v2.2.1 and serial fixes
+Message-ID: <36C14B5E.38CF@post.uni-bielefeld.de>
+Date: Wed, 10 Feb 1999 10:03:28 +0100
+From: "Jens Ch. Restemeier" <jenschrr@post.uni-bielefeld.de>
+Reply-To: jenschrr@post.uni-bielefeld.de
+MIME-Version: 1.0
+To: Amos <quoll@nutopia.org>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: libglib? where is it?
+References: <199902100324.VAA14271@lists.linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I posted this over the weekend but got no response so I'll try again.
+Amos wrote:
+> 
+> I'm trying to install the gnome rpms I found @
+> <ftp://linuxppc.cs.nmt.edu/pub/linuxppc/gnome/ppc/> Every many of the
+> packages say they require a libglib package, but I can't find it anywhere!?
+> I'm running R5 RawHide 1.something (I'm in MacOS right now...). Did I miss a
+> package when I installed R5 originally (I'm sure I did, but what one?)
 
-Over the last few weeks I seen reference to BenH fixing some serial driver
-bugs that may be involved in ppp hangs. I grapped the 2.2.1 kernel in hopes
-that these fixes were incorporated. Unfortunatelly I'm still finding ppp
-connections often hang and the only fix is to reboot. If I boot into
-mklinux ppp is stone reliable, so the problem is in linuxppc  Were the
-serial fixes incorporated in 2.2 or do I need to get the latest sources?
+"glib" is related to gtk+. If gtk+ programs (like GIMP-1.1) work, you'll
+propably already have glib, and you just need to override the
+dependancies (--nodeps).
 
-Brian
+Jens
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
