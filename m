@@ -1,51 +1,46 @@
-Date: Thu, 29 Mar 2001 09:52:32 +0100
-Subject: Re: Sound skips
+Date: Thu, 29 Mar 2001 11:05:13 +0100
+Subject: Re: Sound stoppage
 From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Giuliano Pochini <pochini@denise.shiny.it>
-Cc: linuxppc-dev@lists.linuxppc.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>,
+	Kostas Gewrgiou <gewrgiou@imbc.gr>, Takashi Oe <toe@unlserve.unl.edu>
 Mime-version: 1.0
 Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010329085335.527C32EFCE@apollo.valhalla.net>
+Message-Id: <20010329100514.4D0F82EFCB@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> >>  You might want to try Andrew Morton's Low-Latency patch (URL:
->> >>  http://www.uow.edu.au/~andrewm/linux/schedlat.html#downloads)
->
-> Done. It doen't make a lot difference, but I can compile stuff without
-> sound interruptions most of the time
+some more bandit-using machines:
 
-OK.  So nothing much has changed since I last tried it - note that those
-patches take scheduling latency below 1ms on x86.
+7500/100: (from suse database)
 
-maybe we do have some IRQ blocking as well (I haven't had time to benchmark
-that at 2.4.x - it's on the TODO list).
+compatible: AAPL,7500 MacRISC
+bandit: AAPL,343S1126
 
->(if it doesn't involve libtool).
+9500/132: (from suse database)
 
-hmmm.  Have you got any idea what libtool does that is different?
-(does strace work at the moment?)
+compatible: AAPL,9500 MacRISC
+bandit: AAPL,343S1126
 
-mmap-ing files is "bad news" even with the LL patches (IIRC).
+9600/233: (mine ;-)
 
-> I tried to lower the fragment size to 9 (512B==0.012s) and it skips
-> even when the system is completely idle.
+compatible: AAPL,9500 MacRISC
+bandit: AAPL,343S1126
 
-I don't know what UI you are using but...
+so far, it seems only two Apple bandit models: 343S1183 & 343S1126
 
-does this occur each second (i.e. related to, for example, updating a clock
-on screen) ... or
+was there any machine after 9600 that used bandit?
 
-every 20/30 seconds or so - perhaps related to sync() ?
+(I don't seem to remember one - my next machine was G3/beige).
 
----
+any news on PowerXXXX machines OF info?
 
-ah well, we'll solve it eventually [otherwise PPC is dead for sound - which
-would be a Great Shame (tm).]
+my 9600 definitely has Gestalt as part of the Apple OF (viewed in display
+name registry under 9.0.4 - and has the machine ID as part of that - can't
+be sure about other early models).
 
 ciao,
 Iain.
-
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
