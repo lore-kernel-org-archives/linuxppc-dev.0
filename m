@@ -1,51 +1,37 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <DEA23DB61B62D4118B5900508B323B84012CC7D5@OPENMAIL>
-From: Jeremy Bowen <Jeremy.Bowen@opennw.com>
-To: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Problems with MMU: address translation for 0xXXXXXXXX failed 
-Date: Thu, 15 May 2003 09:15:19 +1200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Jeremy Bowen <Jeremy.Bowen@opennw.com>
+Cc: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Problems with MMU: address translation for 0xXXXXXXXX failed 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 15 May 2003 09:15:19 +1200."
+             <DEA23DB61B62D4118B5900508B323B84012CC7D5@OPENMAIL>
+Date: Wed, 14 May 2003 23:46:25 +0200
+Message-Id: <20030514214630.605BDC6092@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Success!! Thanks for the replies. Here's a brief summary of what was
-necessary to get things working.
-
-> > I'm trying to get a BDI2000 (firmware v1.09) working in
-> > order to debug a kernel module.
-> > I'm using an Embedded Planet RPXlite MPC850 board running
-> > kernel v2.4.20
-> ...
-> > Am I missing something obvious ? Is this the right way to
-> > go about debugging
-> > a loadable module ? Any help would be gratefully appreciated.
+In message <DEA23DB61B62D4118B5900508B323B84012CC7D5@OPENMAIL> you wrote:
 >
-> There were a couple of changes  /  extensions  to  the  MMU  support.
-> Firmware version 1.09 is pretty old (Aug 2001). You might want to try
-> a  more  recent one.
+> OK. I couldn't find any firmware on the Abatron web-site but fortunately
+> I've been sent v1.12 from a friend. This seems to make all the difference.
 
-OK. I couldn't find any firmware on the Abatron web-site but fortunately
-I've been sent v1.12 from a friend. This seems to make all the difference.
+Tell your friend that he did something illegal, and be aware that you
+are now using pirated software.
 
-I was able to make some minor progress with the addition of "PTBASE 0xF0" to
-my config file (as suggested by Dan) however the key seems to have been the
-upgraded firmware in the BDI2000.
+The Abatron firmware is available only if you pay  for  the  license,
+then  you  will get one your of updates. After that, you can purchase
+an extension for the next year for 15% or the original price for  the
+license.
 
-I'm not entirely sure the soft breakpoints are working correctly yet (I
-suspect they probably are) but anyway I can make sufficient progress using
-hard breakpoints for now.
 
-Thanks for the assistance.
-
+Wolfgang Denk
 
 --
-Jeremy Bowen
-Senior Software Engineer
-OPEN Networks Ltd
-Wellington
-New Zealand
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Everything should be made as simple as possible, but not simpler."
+                                                    - Albert Einstein
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
