@@ -1,37 +1,29 @@
-To: laurent.pinchart@capflow.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: SCC or SMC for console ? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 15 Feb 2002 15:24:38 +0100."
-             <3C6D1A26.1040209@capflow.com>
-Date: Fri, 15 Feb 2002 15:35:37 +0100
-Message-Id: <20020215143542.4B06510E4C@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <01C1B608.E92871A0.svacca@valcom.com>
+From: Steven Vacca <svacca@valcom.com>
+Reply-To: "svacca@valcom.com" <svacca@valcom.com>
+To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Unbuffered char reads from App from stdin (keyboard)
+Date: Fri, 15 Feb 2002 10:09:52 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3C6D1A26.1040209@capflow.com> you wrote:
->
-> >Should be no problem. The kernel on our FTP server was tested with  6
-> >serial  ports  on  a  MPC860, with HW flow controll on all SCC's.
-> >
-> Reading arch/ppc/8xx_io/uart.c, I found out that all the flow control
-> related code was surrounded by false #if #endif. It seems that there is
+App and Linux kernel 2.2.13 running on mpc860T.
 
-You're reading the wrong code, it seems.
+I would like to know the best way, from inside my GNU C App,
+to sense if there's a keyboard key pressed.  Something
+similar to kbhit() in Microsoft C.  I would like to have a particular
+thread execute a loop continuously and only when a key
+is present, do a getc() or getchar(), or gets(), and the like.
 
-Get the sources from ftp://ftp.denx.de/pub/LinuxPPC/usr/src/
-You will find a lot of CONFIG_UART_CTS_CONTROL_SCCx,
-CONFIG_UART_RTS_CONTROL_SCCx, CONFIG_UART_CD_CONTROL_SCCx, and
-CONFIG_UART_DTR_CONTROL_SCCx stuff there.
+What is the best way to accomplish this?
+Is there a way to make stdin unbuffered?
 
-Wolfgang Denk
+Thanks,
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-See us @ Embedded Systems Nuremberg, Feb 19-21, Hall 12 K01 (with TQ)
+ShutEyeThinkin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
