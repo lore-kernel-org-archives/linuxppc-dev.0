@@ -1,66 +1,40 @@
-Message-Id: <4.3.2.20010108112126.00b95f00@falcon.si.com>
-Date: Mon, 08 Jan 2001 11:25:27 -0500
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: MV kernel on 405GP
-In-Reply-To: <3A59E708.5E9375CD@GreenCurrent.com>
+Message-ID: <3A59EA33.B7C7187F@snmc.com>
+Date: Mon, 08 Jan 2001 10:26:28 -0600
+From: Daris Nevil <dnevil@snmc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+To: "Bernal, Fernando J" <fernando.bernal@eds.com>
+CC: "'linuxppc-embedded@lists.linuxppc.org'"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: SCC and SMC Implementation
+References: <7A62AD36B644D411B0E500508BDF0CECF1245C@usahm016.exmi01.exch.eds.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sounds like you have one or more pending interrupts that you are not
-handling properly.  As soon as you enable external interrupts, you take
-the vector, but don't clear the pending interrupt(s).  Since you don't
-clear the interrupt, as soon as you leave the ISR, you get hit by
-another interrupt.  Viola, instant loop.
+F.J.,
 
-Suggestions:
-1) Check what interrupts are enabled and verify that they are handled
-properly.
-2) Mask any external interrupt you don't need right now.
-3) If that doesn't work, mask all external interrupts and see if you
-get further.
-4) Re-enable the interrupts one at a time until you die again.
-5) Repeat step #1 with the last interrupt you enabled :-).
+SNMC has implement both SMC and SCC serial drivers for the MPC850.  The drivers
 
-gvb
+seem to work for the MPC823 as well, although we have not done extensive
+testing
+for the 823.
+
+You can download the sources from ftp.qslinux.org (documentation on
+www.qslinux.org).
+
+The drivers can be found in the directory snmc/qslinux/drivers/char.
+
+Regards,
+Daris Nevil
 
 
-At 06:12 PM 1/8/01 +0200, Juha Okkonen wrote:
+"Bernal, Fernando J" wrote:
 
->         I have a custom board that uses IBM 405GP -prosessor. I have
-> already
->         modified ppcboot-0.5.3 for booting. And am trying to get
-> Monta Vista's
->         linux-2.4.0-test2 kernel to run on it also. But there is some
-> problem
->         with exceptions. When start_kernel(void)-function calls sti()
-> to enable
->         external interrupts, the prosessor hangs totally. I don't get any
->register
->         dumps or anything else either. I have been able to verify
-> with kgdb
->that
->         everything works until update of MSR-register.
+> I would like to know if someone has implemented the two SMC and the two SCC
+> serial ports on an embedded 823 PowerPC.
 >
->         If somebody has a version of the kernel modified for 405GP
-> and ppcboot
->         both working, I would like to have the sources or at least
-> ideas about
->         my problemn.
->
->                                                         'Okko
->
->
->--
->Juha
->Okkonen/CTO                                 Juha.Okkonen@GreenCurrent.com
->Green Current Oy                                Phone +358  9 2517 5525
->Tekniikantie 21 E 226                                         +358
->41  517 6542
->02150 Espoo
+> F.J. Bernal
 >
 
 
