@@ -1,51 +1,34 @@
-Date: Thu, 31 Dec 1998 14:52:44 -0500 (EST)
-From: Tom Rini <tmrini@ntplx.net>
-To: linux-pmac@samba.anu.edu.au, linuxppc-dev@lists.linuxppc.org,
-        linuxppc-user@lists.linuxppc.org
-Subject: 2.2.0-pre2
-Message-ID: <Pine.LNX.4.05.9812311424090.974-100000@pc.wackyland.com>
+Date: Thu, 31 Dec 1998 14:59:23 -0600 (CST)
+From: Tom Rini <trini@globe.linuxppc.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: temporary freeze with Debian init
+In-Reply-To: <Pine.LNX.4.03.9812311928100.21390-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <Pine.LNX.3.96.981231145628.528A-100000@globe>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello all,
-  Linux 2.2.0-pre2 is out, and compiles outta the box.  There is of course
-a diff against that of things in vger/should be in vger :) at:
+On Thu, 31 Dec 1998, Geert Uytterhoeven wrote:
 
-http://dobbstown.yeti.edu/vger-linus7.diff
+> On Thu, 31 Dec 1998, Tom Rini wrote:
+> > On Thu, 31 Dec 1998, Geert Uytterhoeven wrote:
+> > 
+> > >     NET3: Unix domain sockets 0.16 for Linux NET3.038.
+> > 
+> > Unix domain sockets as a module perhaps?
+> 
+> Yes. But it's module on my m68k box too, and there I don't see the problem.
 
-This has (for Corts benefit if he feels like sending more to linus :)):
-
-arch/ppc/defconfig,pmac_config  - tulip and dex4x5 as modules,
-CONFIG_SERIAL off (pmac doesn't need it and it oopes, and pmac makes up a
-very large majority (at least keep the 1st part tho, that is of use to
-all)
-
-CONFIG_ADBMOUSE now lets you boot with adb_buttons=2,XX,XX and do right
-option/control+click for buttons two+three (as button emu used to be, from
-Franz Sirl)
-
-include/asm-ppc/dma.h - #define dma_isa_is_buggy or whatever, from Geert
-
-drivers/net/Makefile,Config.in - Allow bmac/mace modules
-
-drivers/net/mace.c - spinlocks, stability fixes
-
-drivers/scsi/sd.c - stability fixes for mac53c94 (at least, from Paul a
-while ago)
-
-chrp/prep/mbx_defconfig, say N to all sorts of new options (mbx was done
-right now, d'oh!)
-
-video updates are for normal users of course..
+Might be worth seeing if kmod is doing something odd for us.  It's not a
+debian problem I can say that much.  I think I've seen kmod's thread get
+stuck in a loop trying to find a moduleat boot sometimes to.
 
 ---
 Tom Rini (TR1265)
 http://dobbstown.yeti.edu/
-
-
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
