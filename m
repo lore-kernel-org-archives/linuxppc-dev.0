@@ -1,47 +1,41 @@
-Date: Wed, 29 Nov 2000 19:50:14 +0200 (EET)
-From: Topi Kanerva <tkanerva@ees2.oulu.fi>
-To: Rainer Kloud <rainer.kloud@siemens.at>
-cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: loading a elf binary
-In-Reply-To: <3A1BECC8.DB736163@siemens.at>
-Message-ID: <Pine.GSO.4.30.0011291946240.29386-100000@stekt6>
+Date: Wed, 29 Nov 2000 12:18:44 -0600 (CST)
+From: Brian Ford <ford@vss.fsi.com>
+To: Dan Malek <dan@mvista.com>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: EST SBC8260 and Canary CTX-1170
+In-Reply-To: <3A242BE5.C34D48FC@mvista.com>
+Message-ID: <Pine.GSO.4.21.0011291213330.493-100000@eos>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 22 Nov 2000, Rainer Kloud wrote:
+On Tue, 28 Nov 2000, Dan Malek wrote:
 
->(mapped) correctly into the RAM. But in the further process of loading
->the
->binary (search_binary_handler and load_elf_binary) I can't find the
->place
->where the rest of the binary is loaded?!
->(the correct loaded part of the executable resides from 0xc0252000 to
->0xc0252fff in the kernel and from 0x10000000 to 0x10000fff in user
->space)
+> I just checked in the newer driver that will properly do this on
+> the EST board with the National PHY in the CTX-1170 gizmo.  If for
+> some reason this doesn't work, just modify mii_discover_phy_poll() to
+> set 'phy_duplex' to '1'.
 >
->When then the kernel executes the binary, everything works correct
->until the first executed instruction is outside of the first page (4k)
->of the executable.
->Then the processor will load a wrong instruction which results at the
->end in a page fault.
 
-Rainer,
-I think the thing here you described, could be the ultimate symptom for us
-Sandpoint owners. The problem was and is, more or less, that when the
-kernel tries to run /sbin/init at the startup time, it always results in a
-kernel oops with illegal instructions. Then, if it is so, why the heck
-doesn't the CPU execute the right instructions when running out from the 4K
-boundary??? There's something in the sandpoints that sucks big time.
+I cracked open my CTX-1170 gizmo and it has a Lucent LU3X51FT-JE80 PHY in
+it.  I manually set the phy_duplex to 1 and the phy_speed to 100, still
+no dice.
 
-OK, so I don't have a JTAG debugger, so I can't tell you exact details, but
-I'll try to do some hacking with a KGDB in the meantime...
+Do you know what parts I need to modify in order to get the Lucent PHY
+working too?  I am just looking for a few hints on what needs to be
+done.  I'll be glad to try and do the "dirty" coding work.
 
-BTW, I have a PPC7400 (it's a sandpoint with the Altimus board)
+Thanks.
 
- -topi
+--
+Brian Ford
+Software Engineer
+Vital Visual Simulation Systems
+FlightSafety International
+Phone: 314-551-8460
+Fax:   314-551-8444
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
