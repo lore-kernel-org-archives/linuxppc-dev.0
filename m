@@ -1,30 +1,29 @@
-Date: Mon, 29 May 2000 23:55:58 -0700
-From: Daniel Jacobowitz <drow@false.org>
-To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-Cc: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Daniel Jacobowitz <drow@false.org>, <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Debian pmud package available
-Message-ID: <20000529235558.A25312@quaketop.them.org>
-References: <B555F58A.7D5%rothomp3@vt.edu> <Pine.LNX.4.10.10005281352260.21987-100000@zirkon.biophys.uni-duesseldorf.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.10.10005281352260.21987-100000@zirkon.biophys.uni-duesseldorf.de>; from schmitz@zirkon.biophys.uni-duesseldorf.de on Sun, May 28, 2000 at 02:03:09PM +0200
+Date: Tue, 30 May 2000 10:57:49 +0200
+Message-Id: <20000530085749.19793@mailhost.mipsys.com>
+In-Reply-To: <20000529235558.A25312@quaketop.them.org>
+References: <20000529235558.A25312@quaketop.them.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, May 28, 2000 at 02:03:09PM +0200, Michael Schmitz wrote:
-> If the Debian powerpc release kernel is 2.2.15 I'll take care of that in
-> the Debian package. What you got was Stephan's LinuxPPC package, I can't
-> update that one, obviously.
+On Mon, May 29, 2000, Daniel Jacobowitz <drow@false.org> wrote:
 
-It is.  Probably Cort's 2.2.16pre4, in fact - building it now.
+>> If the Debian powerpc release kernel is 2.2.15 I'll take care of that in
+>> the Debian package. What you got was Stephan's LinuxPPC package, I can't
+>> update that one, obviously.
+>
+>It is.  Probably Cort's 2.2.16pre4, in fact - building it now.
 
-Dan
+I tried this kernel yesterday and it doesn't boot the Pismo. I'll try to
+fix that before the end of the week. (I'm taking a few days off so I'll
+have some time for linux hacking ;)
 
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
