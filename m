@@ -1,54 +1,30 @@
-Message-ID: <406CB2AC.3020001@246tNt.com>
-Date: Fri, 02 Apr 2004 02:24:12 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: mpc5xxx support (Was: Re: Proposed Kconfig update patch for help
- text)
-References: <20040401170515.E5C8EC10A4@atlas.denx.de>
-In-Reply-To: <20040401170515.E5C8EC10A4@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: PREEMPT problems
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Colin LEROY <colin@colino.net>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <1b6001c417f6$229c2a70$3cc8a8c0@epro.dom>
+References: <1b6001c417f6$229c2a70$3cc8a8c0@epro.dom>
+Content-Type: text/plain
+Message-Id: <1080865776.1286.8.camel@gaston>
+Mime-Version: 1.0
+Date: Fri, 02 Apr 2004 10:29:37 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
-
->>- Ignore the Motorola code, or since it's GPL (must be to be in the
->>  kernel, so I'm just making the assumption here...) use it as a guide
->>  for how things work to implement a clean Linux implementation of
->>  the code. I know there's someone working on this (who pops up on
->>  #mklinux on freenode from time to time) but I don't know how far
->>  they've gotten.
+On Fri, 2004-04-02 at 00:32, Colin LEROY wrote:
+> Hi,
 >
->Ummm... Why is there no discussion about this on any mailing list? And
->don't you think that that at least Motorola should be included in any
->such attempts? [AFAICT they are not, at least not until today.] Also,
->isn't this kind of wasted effort as the target is still moving?
+> This won't be really helpful, as I have no time to investigate, but I seem
+> to have problems with preempt (and latest main-tree BK). After a few hours
+> of uptime, I get hanging processes (sed, cvs (can't be network related as
+> the CVSROOT is local)) and gcc segfaults while compiling kernel.
+>
+> Maybe it's not completely fixed yet...
 
-Well, huh, I talked about it on the embedded ml :
+Ah. Well, no problem here nor for other testers so far, weird...
 
-http://lists.linuxppc.org/linuxppc-embedded/200403/msg00082.html
+Ben.
 
-along with some 'strange stuff' in the 2.4 port memory map
-
-http://lists.linuxppc.org/linuxppc-embedded/200403/msg00095.html
-
-Yeah sure, having Motorola involved would certainly help, but I don't
-have any official contact with them and my Motorola semiconductor
-distributor and I are not in best terms recently so I just hoped that
-some one concerned at motorola would be reading the list ...
-
-About the bestcomm code more precisly :
-A lot of people told me that the code had some issues. So for the 2.6 I
-just though that I would rewrite a code that would only fits the linux
-needs. Of course I won't just ignore the motorola code, for me rewriting
-is looking at the current implementation is just a way to a better
-understanding on how it works. If at the end, the motorola code is
-cleaner/more generic and works better, then just use it, but as I
-understand it it's not the case right now. If I'm not right, then,
-please correct me.
-
-Sylvain Munaut
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
