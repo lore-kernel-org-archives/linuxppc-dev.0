@@ -1,32 +1,42 @@
-Date: Thu, 27 Jul 2000 10:59:29 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Joseph Garcia <jpgarcia@execpc.com>
-cc: Stephan Leemburg <pmud-bugs@jvc.nl>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Joseph Garcia <jpgarcia@execpc.com>, <linuxppc-dev@lists.linuxppc.org>,
+        <sleemburg@jvc.nl>
 Subject: Re: powerbook hang from post-sleep cdrom access - fix
-In-Reply-To: <397FE132.1690D2DD@execpc.com>
-Message-ID: <Pine.LNX.4.10.10007271058170.18614-100000@opal.biophys.uni-duesseldorf.de>
+Date: Thu, 27 Jul 2000 12:32:26 +0200
+Message-Id: <20000727103226.13755@mailhost.mipsys.com>
+In-Reply-To: <397FEEE5.265963BF@execpc.com>
+References: <397FEEE5.265963BF@execpc.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I think I have a fix to prevent a system hang when trying to access a cdrom
-> after sleeping.  I have a small util "wakebay" that simply does a
-> CDROM_MEDIA_CHANGED ioctl on a specified device.  I added a the line "wakebay
-> /dev/hdc" to PMUD's wakeup script on my PDQ.  This seems to get the desired
-> response from the drive, in that it locks the door and spins the disk when it
-> should, and if its not there, mounted, or otherwise, does nothing.
 >
-> my code can be grabbed from http://www.execpc.com/~jpgarcia
+>So would this always be done on wake to hdc and hde?  I read Pismos, and
+maybe
+>iBooks, have their drives at hde.  I'm not sure if they are afflicted by this
+>problem.
+
+That's why this should be done from the kernel, I beleive. There, you can
+know if the controller is hosting a hard disk, a cdrom or an ATAPI floppy.
+
+>might also need to consider ide-floppy drives, like ls-120 and zip.  I don't
+>have one myself, so I don't know if these need it either.  They dont
+have much
+>for ioctls, just eject.  If they have this problem, an ioctl to
+>idefloppy_media_change may be needed.
+
+Yep, probably, I'm not sure about those since I don't have one to test
+with. I'm also considering adding code for force a disk access (spin up)
+before trying to do the set features on wakeup.
+
+>I'm not concerned about it, but might genuine floppies have the hang problem
+>too?
 >
-> Can this be done automatically at the kernel level?
-
-Should be called from the IDE notify chain perhaps. See the last function
-in ide-pmac().
-
-	Michael
+>I assume a bay hard drive would error/exit without a problem because they
+>can't
+>change.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
