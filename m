@@ -1,30 +1,42 @@
-Date: Wed, 31 Mar 2004 08:44:23 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: John Whitney <johnw@sands-edge.com>
+Subject: Re: cross-compiling problems (linux to ppc)
+From: Hollis Blanchard <hollisb@us.ibm.com>
+To: sting sting <zstingx@hotmail.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Proposed changes to io.h
-Message-ID: <20040331164423.GA417@gate.ebshome.net>
-References: <49B568CB-832A-11D8-9FF0-000A95A07384@sands-edge.com>
+In-Reply-To: <Sea2-F28k1Ixzl4anSs00047d9a@hotmail.com>
+References: <Sea2-F28k1Ixzl4anSs00047d9a@hotmail.com>
+Content-Type: text/plain
+Message-Id: <1080752139.26315.5.camel@basalt.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <49B568CB-832A-11D8-9FF0-000A95A07384@sands-edge.com>
+Date: Wed, 31 Mar 2004 10:55:39 -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Mar 31, 2004 at 10:44:25AM -0500, John Whitney wrote:
-> 2. I'd like to add 64-bit __raw_readll and __raw_writell routines to
-> io.h, done using floating-point registers.  Currently, modules such as
-> MTD (when writing to 64-bit buses) perform two 32-bit, non-atomic
-> writes, which can cause problems.  Using a floating-point register to
-> guarantee a 64-bit write is ugly, but it works.  Code for these inlined
-> routines is as follows:
+On Wed, 2004-03-31 at 05:17, sting sting wrote:
 
-[snip]
+> Now , I had followed the instructions on :
+> http://penguinppc.org/embedded/cross-compiling/
 
-I wonder will it work on 4xx CPUs which don't have floating point unit?
+> ../../gcc-3.3.2/gcc/config/rs6000/linux.h:89:20: signal.h: No such file or d
+> tory
+> In file included from tconfig.h:22,
+>                  from ../../gcc-3.3.2/gcc/libgcc2.c:36:
+> ../../gcc-3.3.2/gcc/config/rs6000/linux.h:98: error: parse error before "sta
+> "
+> ../../gcc-3.3.2/gcc/config/rs6000/linux.h:98: warning: no semicolon at end o
+> ruct or union
 
-Eugene.
+There's a patch you can apply listed on the page (read carefully). It
+will only work if you only want to build kernels (i.e. no glibc, no
+userspace).
+
+The other alternative is to install *target* kernel headers (not
+/usr/include) and build against those. This is just silly if you don't
+want glibc, but the toolchain people are apparently too busy to care.
+
+--
+Hollis Blanchard
+IBM Linux Technology Center
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
