@@ -1,58 +1,37 @@
-Date: Wed, 10 Feb 1999 21:33:54 -0600 (CST)
-From: Ken Roberts <ken@worldnet.att.net>
-Reply-To: Ken Roberts <ken.r@worldnet.att.net>
-To: martine@rzuni1.fh-bingen.de
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: anonftp...???
-In-Reply-To: <Pine.LNX.3.96.990210142642.1001A-100000@rzuni1.fh-bingen.de>
-Message-ID: <Pine.LNX.3.96.990210211811.447A-100000@dancer.at.home>
+Date: Wed, 10 Feb 1999 21:55:18 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Rick Kwan <kenobi@coruscant.lightsaber.com>
+cc: linuxppc-dev@lists.linuxppc.org, rick.kwan@lightsaber.com
+Subject: Re: PReP spec
+In-Reply-To: <199902101953.LAA01696@coruscant.lightsaber.com>
+Message-ID: <Pine.LNX.4.04.9902102154390.28166-100000@narn.local.drgw.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Wed, 10 Feb 1999, Rick Kwan wrote:
 
-do you mean without rebooting your machine?
+> 
+> Hello, list... I have never posted here before.  These are sorta
+> more hardware questions, but I'm not sure where else to ask.
+> My motivation is that I inherited a PReP box a year ago, and
+> intermittently play with it (e.g., Valentine's Day release); I'm
+> trying to migrate into serious play.
+> 
+> How does one get a copy of the PReP specification?
+> 
+> Is PReP still considered a viable commercial architecture or is it
+> reaching end-of-life?
 
-if i understand you correctly, you have not changed any configuration files, but
-instead have killed the anonymous ftp server.
+Look on Motorola's MCG website.. (www.mcg.mot.com, I think)
 
-i think, if inetd is running your anonymous ftp, then you should be able to do
-this:
-
-kill -HUP `cat /var/run/inetd.pid`
-
-BEFORE YOU DO THIS:
-when you send a HUP (hangup) to a unix daemon, it re-reads the configuration
-file.  this is the least-destructive way to do this, it should cause all your
-servers to re-read their configs without breaking critical connections to users.
-
-also, the quotes in the line above are backticks, which is under the ~ key.  if
-you can't get that to work, then you can break the command into two parts:
-
-cat /var/run/inetd.pid
-
-<number is printed>
-
-kill -HUP <number>
-
-
->hello...
->
->what is to do, if i ftpshut the anonymous ftp-server and want to restart
->it?
->
->mart
-
-
--------------------------------------------------------------------------------
-    Ken Roberts                                      ken.r@worldnet.att.net
-                 Oft-times thou feelest like unto a nut,
-                     And yet, M'lord, anon, feel'st thou not so.
-                 Yon Almond Joy these selfsame nuts doth have,
-                     Whereas contrary Mounds doth have them not.
-                                 -- William Shakespeare, kind of
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
