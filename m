@@ -1,26 +1,28 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Hollis <hollis-lists@austin.rr.com>
-To: "Timothy A. Seufert" <tas@mindspring.com>,
-	linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hollis <hollis-lists@austin.rr.com>,
+	<linuxppc-dev@lists.linuxppc.org>
 Subject: Re: another endianness issue...
-Date: Sat, 23 Jun 2001 13:33:27 -0500
-Cc: Guillaume =?iso-8859-1?q?Laur=E8s?= <guillaume.laures@noos.fr>,
-	"Leonard N. Zubkoff" <lnz@dandelion.com>
-References: <3B2E747A.6090607@noos.fr> <3B34616F.2090403@noos.fr> <v04220800b75a8da0ed9d@[10.0.0.42]>
-In-Reply-To: <v04220800b75a8da0ed9d@[10.0.0.42]>
+Date: Sun, 24 Jun 2001 01:22:50 +0200
+Message-Id: <20010623232250.4313@smtp.wanadoo.fr>
+In-Reply-To: <01062313332701.00569@silence.internal>
+References: <01062313332701.00569@silence.internal>
 MIME-Version: 1.0
-Message-Id: <01062313332701.00569@silence.internal>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Saturday 23 June 2001 01:19, Timothy A. Seufert wrote:
+>>
+>> Bitfields are not a good way to describe hardware registers.
 >
-> Bitfields are not a good way to describe hardware registers.
+>Why is that? Are there generally bitfield problems other than this one?
 
-Why is that? Are there generally bitfield problems other than this one?
+Neither structures nor bitfields are good for describing HW registers
+because they are always implementation dependant, the actual layout
+in memory of a structure of a bitfield depends completely on the
+compiler, it's setting, the platform, whatever....
 
--Hollis
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
