@@ -1,39 +1,31 @@
-Date: Fri, 23 Jul 2004 10:36:28 -0500
-From: David Wolfe <david.wolfe@freescale.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC5200, Hang in send() to a socket
-Message-ID: <20040723153628.GA32654@orthanc.sps.mot.com>
-References: <42A622EB18325843894BB8E1040E3DF50227A4@sinaexchf>
+Date: Fri, 23 Jul 2004 08:38:56 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Andreas Oberritter <obi@saftware.de>
+Subject: Re: [PATCH] export m8xx_cpm_hostalloc
+Message-ID: <20040723083856.A25212@home.com>
+References: <1090590567.3939.20.camel@localhost.localdomain> <20040723140231.GA21814@smtp.west.cox.net> <6658EF7A-DCB6-11D8-BC2F-003065F9B7DC@embeddededge.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <42A622EB18325843894BB8E1040E3DF50227A4@sinaexchf>
+In-Reply-To: <6658EF7A-DCB6-11D8-BC2F-003065F9B7DC@embeddededge.com>; from dan@embeddededge.com on Fri, Jul 23, 2004 at 10:41:36AM -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-[ I?igo Lopez Barranco writes: ]
-> Hi. I'm testing a program to send files thru a TCP socket on an MPC5200.
+On Fri, Jul 23, 2004 at 10:41:36AM -0400, Dan Malek wrote:
+>
+> On Jul 23, 2004, at 10:02 AM, Tom Rini wrote:
+>
+> > Must the driver use hostalloc?  I didn't think that i2c was called so
+> > early that kmalloc/bootmem_alloc() (or so) couldn't be used.
+>
+>
+> Should use ...consistent_alloc()
 
-> programs stops forever in one of the writings to the socket after
-> having sent a random number of packets. Strace says that it stops on a
-> send(), and netstat shows that the connection is stablished, and stays
-> this way:
+That doesn't exist in 2.6. Use dma_alloc_coherent().
 
-I see this problem too during a FTP put operation. The network remains up
-as a concurrently executing ping has no problem and I can restart the FTP
-transfer which will happily transfer an random number of packets before
-halting again. I also noticed a nasty memory leak associated with this
--- if I rerun the FTP transfer enough times the system will run out of
-memory. It may be related to lost RX packets. The RX error count seen
-from "ifconfig" adds up very quickly on a put. FTP get doesn't provoke
-this bug nearly as much.
-
-I'm looking into the driver, though I am quite unfamiliar with Linux
-networking kernel code.
-
---
-David Wolfe
-Digital Audio, Radio & Telematics
-Freescale Semiconductor
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
