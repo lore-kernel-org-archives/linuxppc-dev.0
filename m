@@ -1,47 +1,29 @@
-To: joakim.tjernlund@lumentis.se
-Cc: "Michael Meriin" <Michael@KSWaves.com>,
-	"linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: SPI Driver for 8xx 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 11 Sep 2002 12:26:20 +0200."
-             <IGEFJKJNHJDCBKALBJLLAEFNFGAA.joakim.tjernlund@lumentis.se>
-Date: Wed, 11 Sep 2002 12:50:33 +0200
-Message-Id: <20020911105038.2375DFA8B@denx.denx.de>
+Message-ID: <20020911110234.16523.qmail@web12908.mail.yahoo.com>
+Date: Wed, 11 Sep 2002 12:02:34 +0100 (BST)
+From: =?iso-8859-7?q?John=20Nikiforos?= <ppclinuxuser@yahoo.gr>
+Subject: MPC8266/5 and PCI support
+To: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-7
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Jocke,
+ Has anybody worked with the PCI
+support for the MPC8265/66 processors? Is there
+a driver available? If not,is there a driver I can
+user to import it to the MPC8265/66 ?
 
-in message <IGEFJKJNHJDCBKALBJLLAEFNFGAA.joakim.tjernlund@lumentis.se> you wrote:
-> Great, I too need a SPI driver for mpc8xx.
+                  Thanks in advance!
 
-:-)
 
-> I took a quick look at the cpm_spi.* driver and looks fine to me, but I have a question:
-> The driver turns off interrupts during transmission. The comment in the file
-> says: ... we may need to call it from interrupt handlers.
->
-> I can not see any call from a interrupt handler in this code. Where is the call(s) from/to
-> interrupt handlers? Or is this just a future extension?
 
-We use the SPI communication inside another device  driver  (for  CAN
-bus).  It is this other driver that will call the SPI I/O function in
-it's interrupt handler.
 
-> I would like to keep the interrupts on, if possible.
+=====
+--/ /  (_)__  __ ____  __  / _ \  / _ \  / ___/
+ / /__/ / _ \/ // /\ \/ / / /_ / / /_ / / /__
+/____/_/_//_/\_,_/ /_/\_\/_/    /_/    /____/--
 
-Feel free to modify the driver according to your needs. It should not
-be a problem except for special cases like ours.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"If the code and  the  comments  disagree,  then  both  are  probably
-wrong."                                                - Norm Schryer
+Αποκτήστε τη δωρεάν @yahoo.gr διεύθυνση σας στο http://www.otenet.gr
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
