@@ -1,30 +1,44 @@
-From: ajay.kunnath@exgate.tek.com
-Message-ID: <21F9768AF088D211BF1C0008C71E5786013C9E07@ap-bang-m02.india.tek.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: IIC write
-Date: Wed, 4 Oct 2000 11:25:20 -0700 
+Date: Wed, 4 Oct 2000 13:55:34 -0500 (CDT)
+From: Jamie Guinan <guinan@bluebutton.com>
+To: Dan Malek <dan@mvista.com>
+cc: "Linux Embedded List (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MBX860 Linux
+In-Reply-To: <39DB6EF6.732F7348@mvista.com>
+Message-ID: <Pine.LNX.4.10.10010041344160.17066-100000@www.llamacom.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+On Wed, 4 Oct 2000, Dan Malek wrote:
 
-I need to write some data into an EEPROM using the iic bus. From the MPC860
-user manual I was not able to figure out the method to send the trasmit
-buffer.
+>
+> Jamie Guinan wrote:
+>
+> > The only problem I had with the MBX was the lack of schematics (maybe
+> > someone at Motorola actually has them, but I was not able to locate
+> > that person).  If you're considering buying new boards, you might look
+> > at the Embedded Planet boards.
+>
+> Keep in mind that both of these boards, the MBX and Embedded Planet,
+> are production-ready boards, not evaluation cards.  Production ready
+> boards are always highest quality, have boot roms and easy to use tools,
+> and seldom have engineering information available. Most companies will
+> work with you to meet your own production costs when the volumes are
+> high, including providing the engineering information to build your
+> own.  They are not interested in selling one for you to copy :-).
 
-As per the manual, I need to mention the device address as the first byte to
-be transmitted i.e. first byte in tbdf->cbd_bufadr . If so, where do I
-mention
-the actual buffer which contains the data that needs to be written to the
-EEPROM ?
+True, I guess I'm spoiled working around all this open source stuff.  :)
 
-I would greatly appreciate any help.
+Hey, sorry if its o.t. for the list, but I noticed Dan's doing a
+conference session at the Embedded Linux Conference in Framingham
+MA on the 27th.  Just thought I'd mention it here if anyone on the
+list was thinking about attending.
 
-Thanks,
-Ajay
+  http://www.rtcgroup.com/elinuxexpo/index2.html
+
+-Jamie
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
