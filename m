@@ -1,35 +1,68 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <75DF04AC5ED4D511A9810090273CB4163A66F0@ROKONET-E>
-From: Eli Brin <elib@rokonet.co.il>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: 8xx SCC and SMC uart latency
-Date: Mon, 13 Jan 2003 11:37:28 +0200
+Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC0603E@SNCMAIL>
+From: James Don <JDon@spacebridge.com>
+To: "'Wolfgang Denk'" <wd@denx.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: RAMDISK IMAGES(2): ash has no job control ??? ... can't acces
+	 s tt y; job control turned off
+Date: Mon, 13 Jan 2003 09:57:12 -0500
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Cool I will look into that tonight...
 
-We are using the FADS board and MPC860T CPU, with ELDK 2.0.2 (kernel
-06-10-2002).
+As always thank you!!!
+Jim
 
-We have a device that communicates over RS232 at 9600 bps.  This device has
-a 4 mSec timeout, i.e we have to reply in less then 4mSec.
+Ps I have SELF and ELDK downloaded ... but never installed ELDK ... should
+the patch be in SELF (it seems not to be)?
 
-The packets are usually small (4-6 Bytes).  We communicate successfully with
-the device, but only if we change the timeout to above 10mSec.
+-----Original Message-----
+From: Wolfgang Denk [mailto:wd@denx.de]
+Sent: Sunday, January 12, 2003 5:40 PM
+To: James Don
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: RAMDISK IMAGES(2): ash has no job control ??? ... can't acces s
+tt y; job control turned off
 
-It seems that it takes 5-8 mSec for us to reply.  This is the same if we use
-SMC or SCC.  We tried to play with the MAX_IDL and the Tx/Rx buffer sized,
-but with no success.
+In message <DB0585C9F6F9D411BE8F00D0B7896A4CC0603B@SNCMAIL> you wrote:
+>
+> 2.) I added line "ttyS1::askfirst:-/bin/sh" to inittab ... and I get
+> "Bummer, can't open /dev/ttyS1" ... which was funny enough to make me blow
+> coffee out my nose ... whats this tty normally used for?
 
-Has anyone an idea on how to minimize the uart latency?
+It is you who defines the use of the serial ports on your board -  we
+cannot answer this question.
 
-If we use the same code on a PC (i386) we reply in 300 microSec.
+> 3.) I added line "ttyS0::askfirst:-/bin/sh" to inittab ... and that seems
+to
+> work ...
+>
+> Three leads to a question ... here it is ...
+>
+> Should I change 'libbb.h' to open /dev/ttyS0 instead of ttyS ... see line
 
-Thank you, and a happy New Year
-Eli Brin
+You probably don't want to make your ramdisk  image  dependend  on  a
+specific  board / tty use.
+
+If you look closer at our ELDK you will find that it contains a small
+modification to  "login"  (calling  of  TIOCSCTTY  ioctl)  which  was
+necessary  to  allow  for  using  /dev/console  as the default serial
+console device specified in inittab. See the
+build/target_rpms/util-linux/SOURCES/login-eldk.patch
+file in the ELDK build environment.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Nothing in progression can rest on its original plan. We may as  well
+think  of  rocking  a grown man in the cradle of an infant.
+- Edmund Burke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
