@@ -1,45 +1,57 @@
-Message-Id: <199911261206.NAA23788@denx.local.net>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-cc: linuxppc-dev@lists.linuxppc.org, linuxppc-embedded@lists.linuxppc.org
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: bootloader & head.S weirdness & restructuring 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 26 Nov 1999 10:42:03 +0100."
-             <Pine.LNX.4.10.9911261032590.22448-100000@opal.biophys.uni-duesseldorf.de>
-Date: Fri, 26 Nov 1999 13:06:21 +0100
+Message-Id: <199911261615.KAA09452@lists.linuxppc.org>
+Date: Fri, 26 Nov 1999 11:12:42 -0500 (EST)
+From: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
+Reply-To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
+Subject: JDK 122 BUGFIX: just released
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org,
+        yellowdog-general@lists.yellowdoglinux.com
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <Pine.LNX.4.10.9911261032590.22448-100000@opal.biophys.uni-duesseldorf.de>
-Michael Schmitz wrote:
+Hi,
 
-> > > >     #if defined(CONFIG_x) || defined(CONFIG_y) || defined(CONFIG_z)
-> > > >     ...
-> > > >     #endif
-...
-> Plus it has the added benefit that you can still build kernels that
-> support a range of hardware (by making has_feature_a not const 0 or 1 but
-> something like feature_present(a) :-) If you don't need this, both are
-> equivalent though. 
+Overnight I received a few bug reports about problems with the just announceed 
+jdk122_pre-v1 running under 32bpp/24planes with Swing/JFC.  This bug has just 
+been fixed.
 
-This depends if the compiler has a chance to  decide  which  code  is
-needed and which not. Otherwise it cannot optimize away dead code.
+So if you use 32bpp and or JDK 1.2.2, please grab today's bugfix release for the 
+following files:
 
-> Worried about wasting a few cycles on the branch? I've never noticed a
+- README.linuxppc
+- jdk122_pre-v2.tar.bz2 
+or
+- jre122_pre-v2.tar.bz2
 
-No, it's the code size that matters on  many  embedded  systems.  The
-target  is  a minimal kernel code size. And improved performance is a
-most welcome add-on.
+Notice the v2 as opposed to yesterday's v1.  Some of the mirrors are still being 
+updated so look closely before downloading again.
 
-Wolfgang Denk
+Note: JDK 1.1.8 does not exhibit this bug, and the latest release (announced 
+yesterday is fine).
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"...one of the main causes of the fall of the Roman Empire was  that,
-lacking  zero,  they had no way to indicate successful termination of
-their C programs."                                     - Robert Firth
+If you just downloaded 21 meg for no good reason, I sincerely apologize.
+
+Kevin
+
+
+
+The following sites are *known* to have the bugfixed version, other mirrors will 
+catch up soon.
+
+http://khendricks.ivey.uwo.ca/linuxppc/jdk/
+ftp://khendricks.ivey.uwo.ca/pub/
+http://www.linuxppc.org/java/
+
+
+
+--
+Kevin B. Hendricks
+Associate Professor of Operations and Information Technology
+Richard Ivey School of Business, University of Western Ontario
+London, Ontario  N6A-3K7  CANADA   
+khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
