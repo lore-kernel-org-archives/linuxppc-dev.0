@@ -1,34 +1,34 @@
-Date: Sun, 16 May 1999 13:12:08 -0400 (EDT)
-From: Anirudh Joshi <ajoshi@Glue.umd.edu>
-To: Kevin Hendrickson <hndrcksn@net178019.hcv.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Frame buffer weirdness?
-In-Reply-To: <Pine.LNX.3.96.990515174202.20309D-100000@net178019.hcv.com>
-Message-ID: <Pine.GSO.3.95q.990516131034.19095C-100000@y.glue.umd.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 16 May 1999 13:39:23 -0500
+From: strimmer <strimmer@cs.oberlin.edu>
+Subject: About Darwin Install, and Sound in linuxppc
+To: linuxppc-dev@lists.linuxppc.org
+Message-id: <0FBU00IR56DKQ7@oberlin.edu>
+MIME-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+I know it is off topic for the list, but the darwin list is not helping 
+at all.  I finially have an almost working pre-R5.  Yeah!!  My problem 
+though is the Darwin install says it needs a 1GB drive, but it will not 
+install on my 1.2GB drive.  I have about 1.4 GB free in a partition on 
+another drive, but the Darwin installer states it must delete all the 
+data on the drive.  Can anyone help me out?  Possibly package the 
+installer smaller, or post some image files I can setup using my linuxppc 
+install.  Thanks a lot.
+     -Scott
+=;)
+P.S. I'm new to kernel compiling, and I can't get an 2.2.6-15apmac kernel 
+to compile that gives me sound.  I type make pmac_config  make menuconfig 
+ (All the Mac dma sound options are on), make dep, make image, make 
+modules, make modules_install.  Copy the vmlinux file generated into my 
+system folder and restart.  
 
-	if you want a quick fix, run Xpmac (its accelerated), iirc xpmc in
-xfree 3.3.3.1 has oikawa's patches.
-
-
-ani
-
-
-
-> 
-> This is more frustrating since it can make X unuseable. I'm currently
-> running XFree86-3.3.3.1-49a and Gnome 1.01 (not sure - different parts
-> have different versions). In 16 and 32 bit modes, text in menus, buttons
-> and xterms seem to be black on black. Totally unreadable. In 8 bit mode,
-> it is sometimes unreadable with black text on a striped background (green
-> and black or red and black vertical bands.)
-> 
-
+Could someone either send me instructions on where I went wrong, or 
+possibly a working kernel conf file?  I have a beige G3 MT/266.  I'm 
+running off of my external SCSI drive.  17" Apple 720 Monitor.  64 MB 
+RAM.  Thanks again for all of your help.  
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
