@@ -1,30 +1,39 @@
-Message-ID: <3CF7F086.CA7EACD7@mvista.com>
-Date: Fri, 31 May 2002 17:52:06 -0400
-From: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <3CC6E3D0.60D906ED@esteem.com>
+Date: Wed, 24 Apr 2002 09:56:48 -0700
+From: Conn Clark <clark@esteem.com>
 MIME-Version: 1.0
-To: willy@synergymicro.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: GT64260 ethernet driver - long term stability?
-References: <200205100459.XAA27925@lists.linuxppc.org> <3CF6C96E.BD1DAA3A@synergymicro.com>
+To: May Ling List <linuxppc-embedded@lists.linuxppc.org>
+Subject: What problems are there with floating point emulation in the kernel?
 Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Bill Fincke wrote:
+Hello everyone,
 
-> Has anyone exercised the gt64260_eth.c driver (from the MontaVista
-> BK tree) for any length of time?  I ported it and have been using
-> it successfully for several weeks, but find that it can't sustain
-> continuous file transfers for more than a few hours.
+	I've been told on this list that there are problems fpu emulation
+in the kernel. I was curoius as to what the errors are and the aftermath
+(pun intended) that occurs when they are encountered. ( Like are the
+values off a little bit or a lot, does it cause a kerel panic, does it
+block interupts, does it unleash a terible monster that will destroy the
+universe, etc... .)
 
-I'm not all that surprised that you've run into something.  Both the
-ethernet and mpsc (uart) drivers for the controllers on that bridge are
-pretty much hacks.  They need to be rewritten at some point.  To be
-honest, after looking at them, I'm surprised they work as well as they
-do.  Its a project just waiting for a volunteer just like you!!   ;)
+	I'm also very supprised that Motorola and IBM haven't dedicated
+some resources to address these problems since their fpu-less chips are
+often used in linux designs.
 
-Mark
+thanks in advance,
+
+	Conn
+--
+
+*****************************************************************
+  If you live at home long enough, your parents will move out.
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
 
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
