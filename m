@@ -1,19 +1,22 @@
-Return-Path: <wd@denx.de>
-Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
-	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id 76A242BDA1
+Return-Path: <jcm@jonmasters.org>
+Received: from smtp.mailbox.co.uk (smtp.mailbox.net.uk [195.82.125.32])
+	by ozlabs.org (Postfix) with ESMTP id 4060A2BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Oct 2004 06:55:01 +1000 (EST)
-To: annamaya <annamaya@yahoo.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 14 Oct 2004 11:10:59 PDT."
-	<20041014181059.21986.qmail@web53803.mail.yahoo.com>
-Date: Thu, 14 Oct 2004 22:54:37 +0200
-Sender: wd@denx.de
-Message-Id: <20041014205442.10A7AC1430@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Booting Linux using a PlanetCore BootLoader 
+	Fri, 15 Oct 2004 07:24:11 +1000 (EST)
+Date: Thu, 14 Oct 2004 22:23:44 +0100
+From: Jon Masters <jonathan@jonmasters.org>
+To: Rupesh S <rupesh.sugathan@gmail.com>
+Message-ID: <20041014212344.GA789@apogee.jonmasters.org>
+References: <1e44ebcf04101214247d3072b6@mail.gmail.com>
+	<20041012213634.GA4936@gate.ebshome.net>
+	<35fb2e590410121603624c27a2@mail.gmail.com>
+	<1e44ebcf0410140944620f1dab@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1e44ebcf0410140944620f1dab@mail.gmail.com>
+Sender: Jon Masters <jcm@jonmasters.org>
+Cc: jonathan@jonmasters.org, linuxppc-embedded@ozlabs.org
+Subject: Re: PPC kernel hangs
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,24 +27,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20041014181059.21986.qmail@web53803.mail.yahoo.com> you wrote:
-> Thanks again. I am glad to be back on the mailing
-> lists. And yes, forgot to say hi to Wolfgang Denk,
-> another one of my mentors. Hey Denk.
+On Thu, Oct 14, 2004 at 09:44:30AM -0700, Rupesh S wrote:
 
-Hello!
+> ################################################################
+> volatile __u32* __fpga;
+> 
+> __fpga = (__u32*) ioremap_nocache(0x60000000, (4*1024));
+> 
+> /* writel(data, ((__u32)__fpga + 0x0C)); */ /* This does not work */
+> 
+> *(volatile __u32*)((__u32)__fpga + 0x0C) = data; /* This works */
+> #############################################################
 
-> And what's the story on lists.linuxppc.org. Will they
-> ever retrieve the archives?
+Hi Rupesh,
 
-I sent all my archives (back to 5  Dec  1998)  to  the  current  list
-maintainer to set up a new archive. Nothing happened since.
+Notice that you're casting as a pointer in one case, and in the other you're not.
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Every little picofarad has a nanohenry all its own.      - Don Vonada
+Jon.
