@@ -1,24 +1,47 @@
-Message-Id: <200004270247.WAA13561@hoover.gilbarco.com>
-From: "Banks, Kelly" <kelly_banks@gilbarco.com>
+From: Ruedi.Hofer@ascom.ch
+Date: Thu, 27 Apr 2000 14:11:43 +0100 (CED)
+Subject: MPC860T
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: multithreaded remote gdb on ppc linux
-Date: Wed, 26 Apr 2000 22:47:25 -0400
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Cc: kernel@linux01.hasler.ascom.ch
+Message-id: <0FTO0083YCJPTE@pmdf-it.hasler.ascom.ch>
+MIME-version: 1.0
+Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_OazTPKJuACiGMnblXA8B/g)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Are there any implementations of multithreaded gdb under remote linux?
+--Boundary_(ID_OazTPKJuACiGMnblXA8B/g)
+Content-type: TEXT/PLAIN
+Content-Transfer-Encoding: 7BIT
 
-Digging through the source I have managed to find, I'm beginning to think
-that the answer is no.
+Hi
 
-I do, however, see some work done under lynx-low (gdbserver)...  Is that a
-good starting place for implementing one if there is none thus far?
+After some success with the native 860, I moved now to the 860T
+on the FADS evaluation board.
 
-Thanx,
-Kelly
+With this test setup, I'd like to do some internetworking tests.
+(like routing ...)
+
+For that reason I need the FEC working as well as the SCC1 enet.
+
+Facts:
+
+1. The SCC1 enet compiles and runs ok on its own.
+
+2. I'm not able to compile the kernel with only FEC enabled.
+ (commproc.h reports: #error, undefined config!)
+
+3. Is it possible to use SCC1 enet and FEC simultaneously.
+ (fec.c has a comment like:
+ If using multiple enets on 8xx, this needs some work!)
+
+Has someone already done this work??
+
+Can someone provide patches or howto's?
+
+Thanx, Ruedi
+
+
+--Boundary_(ID_OazTPKJuACiGMnblXA8B/g)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
