@@ -1,41 +1,33 @@
-Date: Thu, 14 Nov 2002 10:35:07 -0700
+Date: Thu, 14 Nov 2002 10:48:07 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Tom Armistead <Tom_Armistead@phx.mcd.mot.com>
-Cc: ???? <yuj@mail.ndsc.com.cn>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: motorola lopec mpc7410
-Message-ID: <20021114173507.GB605@opus.bloom.county>
-References: <200211140848.CAA19190@lists.linuxppc.org> <20021114151038.GA14431@opus.bloom.county> <3DD3D715.8BA00B56@phx.mcd.mot.com>
+To: Magnus Damm <damm@opensource.se>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: bi_record and initrd
+Message-ID: <20021114174807.GC605@opus.bloom.county>
+References: <3DD3C747.8B7EE5CD@opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3DD3D715.8BA00B56@phx.mcd.mot.com>
+In-Reply-To: <3DD3C747.8B7EE5CD@opensource.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Nov 14, 2002 at 10:02:13AM -0700, Tom Armistead wrote:
-> > On Thu, Nov 14, 2002 at 04:50:34PM +0800, ???? wrote:
-> >
-> > >  I'm porting mvista linux 2.1 for the motorola lopec mpc7410 board.And I noticed that there are some differences between the board version described by mvista and motorola.Also,the version of PPCBug is different.I'm wondering why?
-> >
-> > For support for an MontaVista product, please contact your mvista sales
-> > rep (or perhaps your manager knows) to find out how to contact support.
-> >
-> > Having said that, I _believe_ the LoPEC I have running right now has
-> > PPC6Bug, so perhaps you should contact Motorola to find out how to
-> > upgrade the firmware.
+On Thu, Nov 14, 2002 at 04:54:47PM +0100, Magnus Damm wrote:
+
+> The bi_record setup code in linux/arch/ppc/boot/simple/misc-embedded.c
+> doesn't care about the initrd size. So, if you are using a initrd that
+> crosses a megabyte-boundary you will have your initrd overwritten with
+> the bi_record. This results in crc error when unpacking the initrd.
 >
-> PPC5Bug is the firmware for Lopec.  The last released version for Lopec is PPC5Bug 1.4 RM02 but it is unlikely that upgrading the firmware (from 1.3) would have any effect on the described problem.   I don't know much about Linux but my
-> guess is that something is misconfigured in your kernel (console IO would be the first thing I'd check...).
+> The quick fix is to add a offset to the boot-code and to
+> arch/ppc/kernel/setup.c.
+>
+> So, what's the long term solution?
+> Passing a pointer to the kernel?
 
-Well, if he is using the MVista supplied LSP, the config should be
-correct, as it was tested on a similar machine at mvista.  What changed
-from PPC5Bug 1.3 to 1.4?  There is a general reliance on the lopec for
-the firmware to have set things up correctly, so if there was some
-critical fix in 1.4, that might explain it.
-
-> The PPC6Bug series was for the Hawk based products (MCPN765, MVME5100, PPMC750, etc..).  I don't think any version of PPC6Bug will work at all on Lopec.
-
-My memory has been, and will continue to be wrong on occasions.  Thanks.
+Can you give more information about where everything is loaded up at?  I
+thought this was a non-issue, but it's been a while since I tested
+initrds.
 
 --
 Tom Rini (TR1265)
