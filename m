@@ -1,21 +1,19 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B836E67A83
+Return-Path: <vijesh.vh@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.202])
+	by ozlabs.org (Postfix) with ESMTP id EBC1867A83
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Mar 2005 18:48:49 +1100 (EST)
-Date: Mon, 21 Mar 2005 23:48:46 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: "Lawrence E. Bakst" <ml@iridescent.org>
-Message-ID: <20050322074846.GA8379@gate.ebshome.net>
-References: <0.20050322_000905.tnt@patchsend.246tNt.com>
-	<p0621020ebe656d463a67@mail.iridescent.org>
+	Tue, 22 Mar 2005 19:21:04 +1100 (EST)
+Received: by rproxy.gmail.com with SMTP id j1so1103761rnf
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 22 Mar 2005 00:21:02 -0800 (PST)
+Message-ID: <8e78982e0503220021a849bf2@mail.gmail.com>
+Date: Tue, 22 Mar 2005 13:51:02 +0530
+From: Vijesh VH <vijesh.vh@gmail.com>
+To: linuxppc-embedded@ozlabs.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <p0621020ebe656d463a67@mail.iridescent.org>
-Cc: ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Future of OCP
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Help Regarding DEVFS
+Reply-To: Vijesh VH <vijesh.vh@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,42 +24,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 21, 2005 at 11:04:44PM -0800, Lawrence E. Bakst wrote:
-> Q1: OK, so I gather the OCP system which until recently used to be 
-> in a separate OCP tree and was recently integrated into 2.6 is going 
-> away?
+Hi,
+ I faced a problem when i was doing Netboot on linux 2.4.29 on IBM
+PowerPC 4xx Processor. I am using filesystem develped for 2.4.18. Can
+anyone help me to sort out the problem.
+*************************************************************************************
+IP-Config: Got BOOTP answer from 192.168.48.143, my address is 192.168.48.3
+eth0:smc_set_multicast_list
+LAN91C111:smc_setmulticast
+IP-Config: Complete:
+      device=eth0, addr=192.168.48.3, mask=255.255.255.0, gw=255.255.255.255,
+     host=192.168.48.3, domain=mylinux.org, nis-domain=macindia.org,
+     bootserver=192.168.48.143, rootserver=192.168.48.143, rootpath=/stb
+arp_tables: (C) 2002 David S. Miller
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+Looking up port of RPC 100003/2 on 192.168.48.143
+Looking up port of RPC 100005/1 on 192.168.48.143
+nfs: server 192.168.48.143 not responding, still trying
+nfs: server 192.168.48.143 OK
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 80k init
+Warning: unable to open an initial console.
+Kernel panic: No init found.  Try passing init= option to kernel.
+ <0>Rebooting in 180 seconds..
+***********************************************************************************
 
-There is a trend use platform device instead of OCP. There are no 
-conceptual differences though, just a more convenient way from cross 
-platform POV - OCP is PPC specific, platform device - generic 
-solution. 
-
-IMHO there is little gain from converting 4xx from OCP platform device 
-(except being just like other PPC subarchs :). That's the main reason 
-it hasn't been done yet. Matt seems to be busy these days, I don't see 
-a point, frankly, so we just waiting for a patch :).
-
-> I had just started to do a 405 EP port of 2.6.11-rc4  based off of 
-> the bubinga config.
-> 
-> Q2: Assuming yes, to Q1, any advice on how I should proceed, 
-> continue on with an OCP port or wait for this new stuff?
-
-Well, I wouldn't worry much. These changes will affect mostly device 
-drivers and some platform stuff. Board code (which I assume you are 
-working on) won't be changed significantly if any. As I said, platform 
-device stuff is conceptually similar to OCP, so changes will be mostly 
-cosmetic.
-
-> Q3: How does one stay in the loop on this stuff? With only about 3 
-> messages posted in this group and none in linuxppc-dev I am clearly 
-> in the wrong place. I feel like I missed the conversation. Where was 
-> it?
-
-Most discussions happen on IRC (for more info see 
-http://www.penguinppc.org). Some people think it's a kind of "elitist 
-circle" which requires some special invitation :), which is not true, 
-obviously.
-
---
-Eugene
+-- 
+Thanks and Regards,
+Vijesh V H
