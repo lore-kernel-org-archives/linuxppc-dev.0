@@ -1,85 +1,173 @@
-Subject: Re: 405LP - Beech with SSX firmware
-From: Hollis Blanchard <hollis@austin.ibm.com>
-To: embedded list <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <1040427361.1096.27.camel@granite.austin.ibm.com>
-References: <1040427361.1096.27.camel@granite.austin.ibm.com>
-Content-Type: multipart/mixed; boundary="=-i4fALXwkPMEULhSErx2c"
-Date: 08 Jan 2003 13:23:56 -0600
-Message-Id: <1042053852.1207.176.camel@granite.austin.ibm.com>
-Mime-Version: 1.0
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <885489B3B89FB6449F93E525DF78777F064533@srvnt506.ALLOPTIC.COM>
+From: "Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: BDI-2000
+Date: Wed, 8 Jan 2003 12:12:12 -0800 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---=-i4fALXwkPMEULhSErx2c
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Hello,
 
-On Fri, 2002-12-20 at 17:36, Hollis Blanchard wrote:
-> Hi, this patch (copied from Arctic) allows Beech to boot with SSX
-> firmware. If there's a way to detect OpenBIOS vs PIBS (I've asked for
-> confirmation) then I think the Beech and Arctic ifdefs could be combined
-> in the file. There may not be though, and in the meantime this works.
+Looks like I made a typo and changed my kernel virtual address
+in the makefile to 0x0c000000 instead of the default at 0xc0000000
 
-There is currently no way to detect PIBS, though I think I talked the
-developer into including "PIBS" string in the future.
+So, after changed the kernel address to 0xc0000000 the kernel did
+bootup with the following dump:
+        Module Name: ../images/zImage.srec
+        Entry Location: 0x400000
+Starting at 0x400000...
 
--Hollis
---
-PowerPC Linux
-IBM Linux Technology Center
+loaded at:     00400000 0040C30C
+board data at: 004001C0 004001E4
+relocated to:  0040C0E8 0040C10C
+zimage at:     0040C30C 004BC471
+avail ram:     004BD000 00800000
 
---=-i4fALXwkPMEULhSErx2c
-Content-Disposition: attachment; filename=405LP-beech-ssx.diff
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; name=405LP-beech-ssx.diff; charset=ISO-8859-1
+Linux/PPC load: console=ttyS0,9600 nfsroot=192.168.0.59:/exports/onu860
+ip=192.1
+68.0.238::255.255.255.0
+Uncompressing Linux... done.
+Now booting the kernel
+Linux version 2.4.7-timesys-3.1.254 (cmuaddi@localhost.localdomain) (gcc
+version
+ 2.95.2 19991024 (release)) #42 Wed Jan 8 10:51:27 PST 2003
+On node 0 totalpages: 2048
+zone(0): 2048 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: console=ttyS0,9600 nfsroot=192.168.0.59:/exports/onu860
+ip=
+192.168.0.238::255.255.255.0
+Decrementer Frequency = 187500000/60
+Memory: 5380k available (1624k kernel code, 676k data, 56k init, 0k highmem)
+Calibrating delay loop... 49.76 BogoMIPS
+Dentry-cache hash table entries: 1024 (order: 1, 8192 bytes)
+Inode-cache hash table entries: 512 (order: 0, 4096 bytes)
+Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 2048 (order: 1, 8192 bytes)
+POSIX conformance testing by UNIFIX
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd v1.8
+devfs: v0.107 (20010709) Richard Gooch (rgooch@atnf.csiro.au)
+devfs: boot_options: 0x2
+CPM UART driver version 0.03
+ttyS00 at 0x0280 is a SMC
+pty: 256 Unix98 ptys configured
+block: queued sectors max/low 3373kB/1124kB, 64 slots per queue
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+eth0: CPM ENET Version 0.2 on SCC1, 00:00:00:00:00:00
+eth1: FEC ENET Version 0.2, FEC irq 3, addr 00:00:00:80:00:00
+loop: loaded (max 8 devices)
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 16 buckets, 2Kbytes
+TCP: Hash tables configured (established 16 bind 26)
+IP-Config: Incomplete network configuration information.
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+Looking up port of RPC 100003/2 on 192.168.0.59
+RPC: sendmsg returned error 101
+portmap: RPC call returned error 101
+Root-NFS: Unable to get nfsd port number from server, using default
+Looking up port of RPC 100005/1 on 192.168.0.59
+RPC: sendmsg returned error 101
+portmap: RPC call returned error 101
+Root-NFS: Unable to get mountd port number from server, using default
+RPC: sendmsg returned error 101
+mount: RPC call returned error 101
+Root-NFS: Server returned error -101 while mounting /exports/onu860
+VFS: Unable to mount root fs via NFS, trying floppy.
+request_module[block-major-2]: Root fs not mounted
+VFS: Cannot open root device "" or 02:00
+Please append a correct "root=" boot option
+Kernel panic: VFS: Unable to mount root fs on 02:00
+Rebooting in 180 seconds..
 
-=3D=3D=3D=3D=3D arch/ppc/boot/simple/embed_config.c 1.20 vs edited =3D=3D=
-=3D=3D=3D
---- 1.20/arch/ppc/boot/simple/embed_config.c	Sun Dec 15 20:02:08 2002
-+++ edited/arch/ppc/boot/simple/embed_config.c	Wed Dec 18 15:53:18 2002
-@@ -868,12 +868,33 @@
- #endif
-=20
- #ifdef CONFIG_BEECH
--static void
--get_board_info(bd_t **bdp)
-+/* Several bootloaders have been used on Beech. We assume either
-+ * SSX or OpenBIOS */
-+
-+#define SSX_BIOS_ADDR 		0xFFFF0000
-+#define SSX_BIOS_GET_BOARD_INFO 0
-+
-+struct ssx_bios_id {
-+	unsigned int boot_branch;	/* Branch to bootcode */
-+	char ssx_bios[8];		/* "SSX BIOS" (no \0) */
-+	void (*bios_entry_point)(unsigned int, bd_t *); /* Call bios_entry_point(=
-cmd, &data) */
-+};
-+
-+extern int memcmp(const void *s1, const void *s2, size_t n);
-+
-+static void get_board_info(bd_t **bdp)
- {
--	typedef void (*PFV)(bd_t *bd);
--	((PFV)(*(unsigned long *)BOARD_INFO_VECTOR))(*bdp);
--	return;
-+	struct ssx_bios_id *ssx =3D (struct ssx_bios_id *)SSX_BIOS_ADDR;
-+
-+	/* Check for SSX signature */
-+
-+	if (memcmp(&ssx->ssx_bios, "SSX BIOS", 8) =3D=3D 0) {
-+		ssx->bios_entry_point(SSX_BIOS_GET_BOARD_INFO, *bdp);
-+	} else {
-+		/* It's not SSX, so assume OpenBIOS */
-+		typedef void (*PFV)(bd_t *bd);
-+		((PFV)(*(unsigned long *)BOARD_INFO_VECTOR))(*bdp);
-+	}
- }
-=20
- void
 
---=-i4fALXwkPMEULhSErx2c--
+Looks like my IP has some problem.  I will like to use the BDI with the ddd
+for debugging
+on my linux server.  When i start the ddd with the following command as
+suggested
+by the appnote
 
+ddd -debugger gdb -gdb vmlinux
+
+(gdb)target remote bdi:2001
+Remote packet too long:
+c00021a00040b..............
+
+It seems there is a problem between the BDI and the DDD on my linux PC.  I
+am running
+redHat 8.0, GNU DDD 3.3.1 (i686-pc-linux-gnu)
+
+Any help will be greatly appreciated.
+
+Thanks
+
+Cecilia
+
+-----Original Message-----
+From: Kerl, John [mailto:John.Kerl@Avnet.com]
+Sent: Wednesday, January 08, 2003 9:44 AM
+To: 'Marius Groeger'; 'cecilia.muaddi@alloptic.com'
+Cc: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Re: BDI-2000
+
+I think Marius' problem and mine were generalizations
+of the same issue -- there can't be *any* mappings in
+the kernel with virtual address below 0xc0000000.
+(This includes regions mapped 1-1 as a special case.)
+I couldn't put the IMMR at 0x38000000; I moved it to
+0xf0000000.  Marius found that on-chip RAM was mapped
+at 0x70000000; that was bad too.  Also the CPLD on
+my board which does LED control is mapped in at
+0xf8000000 -- also above the 0xc0000000.  So I am
+skeptical when Cecilia says she has "some other IO
+mapped to miscellaneous addresses".  What are those
+miscellaneous virtual addresses?
+
+The difference, though, is that Marius & I both had
+problems entering user mode.  Cecilia's is just a few
+lines from the top of head_8xx.S, without yet having
+made any subroutine calls to anything more complicated.
+There's not much room for anything to have gone wrong
+yet, in the Linux kernel code.  So I agree that getting
+the vxWorks boot ROM out of the picture (e.g. using
+PPCBoot instead) would be an interesting test.
+
+-----Original Message-----
+From: Marius Groeger [mailto:mag@sysgo.de]
+Sent: Wednesday, January 08, 2003 10:21 AM
+To: Wells, Charles
+Cc: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Re: BDI-2000
+
+On Wed, 8 Jan 2003, Wells, Charles wrote:
+
+> When I read Cecilia's post, I assumed what the statement "proven hardware
+> platform" meant was that the vxworks O/S and user tasks exercised all the
+> peripheral hardware; i.e., the SDRAM works, the ROM works, the FLASH works,
+> the console works, etc.  So, that statement made sense to me.  While Linux
+
+vxWorks doesn't use the MMU as much as Linux does. On Linux, the kernel and
+all processes run in their own address space. The memory accesses involved
+for cache or tlb refills are quite different to what's happening in a
+vxWorks setup. Again, I'm probably overly pessimistic here, but we _have_
+seen HW problems that just didn't show up when running vxWorks (AFAIR it was
+a burst access on some early G4 based system.)
+
+On a related matter, the following might also be interesting, especially
+regarding the question of what firmware to use. The vxWorks boot-loader
+tends to initialise _a lot_ of things you don't necessarily need. For
+instance, on IBM405 based systems it sets up the on-chip RAM at address
+0x70000000. Not a good idea when switching to user-mode the first time. Took
+me quite some time to find this one... ;-)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
