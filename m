@@ -1,35 +1,58 @@
-Message-Id: <199907311753.TAA16961@denx.muc.de>
-To: Hartmut.Koptein@t-online.de (Hartmut Koptein)
-Cc: linuxppc-dev@lists.linuxppc.org
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: embedded PowerPC porting coordination [was Re: Motorola Web Site] 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 31 Jul 1999 12:48:57 +0200."
-             <19990731124856.F18628@isis.isis.de>
-Date: Sat, 31 Jul 1999 19:53:12 +0200
+Date: Sat, 31 Jul 1999 15:12:24 -0500 (CDT)
+From: Vinai <vroopcha@post.its.mcw.edu>
+Reply-To: Vinai <vroopcha@post.its.mcw.edu>
+To: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
+cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: C&T acceleration support, needs testers.
+In-Reply-To: <19990801005311S.roikawa@rr.iij4u.or.jp>
+Message-ID: <Pine.SOL.3.96.990731150035.5467A-100000@post.its.mcw.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <19990731124856.F18628@isis.isis.de> you write:
-> 
-[Adrian Cox:]
-> > Another thing to consider - linuxppc-dev is already a mix of PPC kernel
-> > development, and linuxppc distribution userspace issues. I've ported
-> > 2.2.10 to my embedded board, but I'm using a Debian userspace.
-> 
-> Please forward me your patches. 
+On Sun, 1 Aug 1999, Ryuichi Oikawa wrote:
 
-Me too :-)
+}I'm trying to implement C&T 6555x HW acceleration to the X servers.
+}I put a Xpmac binary:
+} ftp://ppc.linux.or.jp/pub/users/oikawa/Xserver/hw/powermac/Xpmac-
+}19990731-glibc2.1.gz
+}XF68_FBDev version hasn't been compiled, yet.
+}
+}Because I don't have any C&T 6555x hardware, I need testers for
+}debugging.  Thank you for your help.
 
-Wolfgang Denk
+Hi,
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I have a theory that it's impossible to prove anything, but  I  can't
-prove it.
+I grabbed your Xpmac binary this morning and tried it out on a 3400/240
+running R5.  It seemed to work well for the most part.  Very noticeable
+acceleration, especailly over the XF86 server I was currently using.  I
+did run into a couple problems though.
+
+- If windows are moved around too quickly, vertical bands appear.  If I
+  explicitly request that part of the screen to be redrawn (e.g. by my
+  closing the xterm and reopening it), the lines disappear.
+
+- When I passed it the wrong option (I used "startx --depth 16" instead
+  of the correct "startx -- -depth 16", it off course ignored the wrong
+  swtich and started up in 8-bit colour).  But on exiting X, it locked
+  up the machine completely.  I couldn't even switch to another virtual
+  console to kill the process or reboot the machine, so I ended up with
+  a hard reboot).  For a window managers - I am using an old version of
+  AfterStep that I recompiled from the src.rpm for R5.  It is version
+  1.0.7a (Yes - I know it's old, but it is small, I know how to set it
+  up, and does all I need ;-)
+
+Otherwise, I have not found any other problems, and the person that uses
+this machine is actually pretty happy right now, as am I ;-)  Thanks for
+the great work !!
+
+cheers
+vinai
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
