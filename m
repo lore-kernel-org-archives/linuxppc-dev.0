@@ -1,40 +1,52 @@
-From: zjuzhou@163.net
+Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4D414C24@mail.mediatrix.com>
+From: Jean-Denis Boyer <jdboyer@mediatrix.com>
+To: "'RSR - Piero Dominioni'" <pdominioni@rsr.it>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: NFS mount for TQM823L
+Date: Tue, 2 Oct 2001 10:32:11 -0400 
 MIME-Version: 1.0
-Message-Id: <3BB9BC07.14257@bjapp3>
-Date: Tue, 2 Oct 2001 21:07:19 +0800 (CST)
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: =?gb2312?B?SG93IHRvIHVzZSBzb2Z0IHJlYWwtdGltZQ==?=
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
-     In our project,we must write  driver for a device which generates interrupts about 2000 times per second,the service application must
-send about 300kB/s data(from device) into network(using UDP).We want to use soft real time in the interrupts in order to response device quickly, how to do?
-     In addition ,how to use high priority in our service application ?
-     We use a custom 860 borad and hhl2.0.
+> I can see that portmap is suspended:
+Do you mean that it is sleeping instead of suspended?
+In the STAT column of ps, a 'S' means 'sleeping'.
+Look at the 'ps' man pages.
 
-Chang Zhou
+> I guess it is correctly waiting for
+> RPC calls and for other daemons (such as mountd and nfsd) to register.
+I think you are right.
 
+> But if I try to run mountd or nfsd (# ./mountd,  for example)
+> I get the same
+> errors as portmap wouldn't be running at all.
+Be sure that the file '/etc/services' in the target includes the following
+entries:
+  sunrpc   111/tcp   portmapper   # RPC 4.0 portmapper TCP
+  sunrpc   111/udp   portmapper   # RPC 4.0 portmapper UDP
 
+Also, be sure you have the file '/etc/rpc' present in the target.
 
+> Can you explain me how?
+> Should I cross-compile it for my PowerPC platform, load it on
+> the target and then run it?
+This is a script, so it does not need to be compiled.
+The only thing you need is the interpreter (first line in the script).
+That script invokes the Bourne Shell (usually accomplished by bash).
+The script should be invoked at the command line, giving it a parameters.
+Valid parameters are: start, stop, restart, reload and status.
 
-
-
-
-===============================================
-
-手机号码是电邮，从此交费不用愁，一号在手“随身邮”
-
-—— 163“随身邮”手机邮箱 ——
-◎ 手机号码就是电子邮箱地址，方便记忆
-◎ 不用上网，透过手机短信，随时掌握邮件的接收情况
-◎ 决不错过任何商业良机
-◎ 方便的按月收费方式，最低每月只需5元
-
-详情请浏览
-http://vip.163.net/mobile/mobile.htm
-
-===============================================
+Regards,
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., Technical Leader
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Qu閎ec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
