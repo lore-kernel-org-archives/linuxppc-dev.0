@@ -1,46 +1,55 @@
-Date: Tue, 26 Jun 2001 06:22:29 -0400 (EDT)
-From: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: (allocating non-cachable memory) (or More on the i82596)
-Message-ID: <Pine.LNX.3.95.1010626060441.32475C-100000@november.bhjjh.erols.com>
+Message-ID: <3B386E15.455B2C74@dgt-lab.com.pl>
+Date: Tue, 26 Jun 2001 13:12:21 +0200
+From: Wojciech Kromer <krom@dgt-lab.com.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: What's wrong with my kernel debugging?
+Content-Type: text/plain; charset=iso-8859-2
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've been looking at the code for the i82596 ethernet controller a bit
-more and think that (thank god) it provides a better base for my board's
-driver than I initially though.
+I'm trying to debug kernel module on remote PPC machine.
+Say me if I'm doing something wrong.
 
-But...
+I had fonud 0xc303b04c address using loadmodule.sh script
 
-Our board is 603e based, with non functional hardware snooping. This is
-not too much a problem for this chip- it supports writing to a block of
-shared memory marked as non-cachable in lieu of using snooping. In fact,
-our vxworks port for the board uses a whopping half meg memory region for
-this purpose (seems a bit large to me, but I wasn't involved with that
-port). What's more, the driver in the kernel seems to work using a shared
-memory region as well. This is architecturally good. Unfortunately, I am
-unable to figure out how to mark an area of memory as non-cachable.
 
-The existing driver was written for 68k hardware, and therefore uses calls
-that are non-existant in the ppc port:
+==========================================================================
 
-#ifdef __mc68000__
-        cache_push(virt_to_phys((void *)(dev->mem_start)), 4096);
-        cache_clear(virt_to_phys((void *)(dev->mem_start)), 4096);
-        kernel_set_cachemode((void *)(dev->mem_start), 4096,  IOMAP_NOCACHE_SER);
-#endif
+Copyright 2000 Free Software Foundation, Inc.
+GDB is free software, covered by the GNU General Public License, and you
 
-Therefore, my concise question is most likely: what are the equivalent
-functions for a 603e based board? (I assume that the two cache_ functions
-are comprable to flush_instruction_cache, but am probably wrong about
-that, so I blatantly make the error hear so that someone will correct my
-ignorance :)
+are
+welcome to change it and/or distribute copies of it under certain
+conditions.
+Type "show copying" to see the conditions.
+There is absolutely no warranty for GDB.  Type "show warranty" for
+details.
+This GDB was configured as "ppc-redhat-linux".
+(gdb) target remote /dev/ttyS0
+Remote debugging using /dev/ttyS0
+0xc000aff8 in ?? ()
+(gdb) add-symbol-file /lib/modules/vtxcsmod 0xc303b04c
+add symbol table from file "/lib/modules/vtxcsmod" at
+        .text_addr = 0xc303b04c
+(y or n) y
+Reading symbols from /lib/modules/vtxcsmod...done.
+(gdb) b init_module
+Breakpoint 1 at 0xc30aba20: file vtxcs_mod.c, line 93.
+(gdb) continue
+Continuing.
+warning: Cannot insert breakpoint 1:
+Cannot access memory at address 0xc30aba20
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ why ???
 
-Thanks,
---Gus
+
+
+
+--
+* * * * * * * * * * * *
+* per pedes ad astra! *
+* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
