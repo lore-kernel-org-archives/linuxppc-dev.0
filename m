@@ -1,66 +1,39 @@
-Date: Thu, 9 Aug 2001 18:49:02 -0400 (EDT)
-From: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
-To: Daris A Nevil <dnevil@snmc.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Non-cacheable memory
-In-Reply-To: <3B7034A0.C55D871F@snmc.com>
-Message-ID: <Pine.LNX.4.33.0108091838380.11077-100000@localhost.localdomain>
+From: "Elan Feingold" <elan@nxnetworks.com>
+To: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: VisionXD crashes
+Date: Thu, 9 Aug 2001 18:34:35 -0500
+Message-ID: <NDBBLJKOJGKDOFBHNPGEGEGNCEAA.elan@nxnetworks.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 7 Aug 2001, Daris A Nevil wrote:
+Hi,
 
-> Gus, Tom,
->
-> Here is the procedure I used to allocate pages and mark them as non-cached in
-> the 2.2.5 kernel (SNMC's QSLinux):
->
->     mem_addr = __get_free_page(GFP_KERNEL);
->     pte = va_to_pe(&init_task, mem_addr);
->     pte_val(*pte) |= _PAGE_NO_CACHE;
->     flush_tlb_page(current->mm_mmap, mem_addr);
->
-> I used these pages for SCC buffer descriptors, so they were never returned to
-> the system. I'm not sure if this is the preferred way, but it certainly works.
-> I have not tried this in the 2.4 kernel yet.  The functions __get_free_page()
-> and flush_tlb_page() do exist in 2.4.4, but I could not locate va_to_pe()  (I
-> think that was a macro in 2.2.5).
->
-> You may also want to look at the file linux/asm/pgalloc.h, esp. the functions
-> get_pgd_slow() and get_pgd_fast().
+This may be a very stupid question, but I'm a newbie.  We have Linux 2.4.4
+booting, thanks to the VisionXD app and a BDM pod, using Limon as a
+bootloader.  We have telnetted in and played around a bit.
 
-Indeed, that does look quite like what I would expect to do. But, trust my
-luck, it didn't work. I'm on a 2.4 kernel (a few weeks old from the devel
-tree (2.4.7-pre6?). Here's how my code looks:
+The problem is that when we run strace on the inetd process and telnet in,
+for example (or run 'crashme' for just a second), the kernel hangs solidly
+(in the case of strace, it locks up right after printing out 'fork(...)').
+If we leave VisionXD up, it pops up a 'critical error' dialog; if we don't
+the kernel just hangs.  We think it might have something to do with the
+interaction between the BDM pod and the processor, but we really have no
+clue.
 
-        dev->mem_start = (int)__get_free_pages(GFP_KERNEL, 0);
-#ifndef CONFIG_NO_DCACHE
-        {
-        /* This is where code goes to set the above allocated memory as
-        *  non-cacheable. These lines DO NOT WORK right now. */
+We are using the EST 8260 eval board, which Limon supports, so I assume all
+our memory settings are correct.  The fact that we can telnet in and run
+various programs (including our TCP/IP intensive application for quite a few
+hours) leads me to believe that it's *almost* working correctly...
 
-        pte_t *pte = va_to_pte(dev->mem_start);
-        pte_val(*pte) |= _PAGE_NO_CACHE;
-        flush_tlb_page(init_mm.mmap, dev->mem_start);
-        }
-#endif
+Any ideas?  Help!!!
 
+Many thanks,
 
-Notes: CONFIG_NO_DCACHE is an option I added which disables the L1 cache
-(no cache means no need for uncached memory :) Also, va_to_pte is in
-arch/ppc/mm/fault.c, and is ifdef'd with a CONFIG_8xx. I altered that
-ifdef to also include the function for my board.
-
-I might also need to set the addresses 0x10710000 and 0x10718000 to be
-non-cacheable (for MMIO with the chip). Would those addresses be in the
-page table? And if not, thoughts on how to un-cache those areas (which are
-each only a few bytes)?
-
-Thanks,
---Gus
+-elan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
