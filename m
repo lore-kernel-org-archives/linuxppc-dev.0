@@ -1,39 +1,46 @@
+Message-ID: <3FB02C85.6090400@g-house.de>
+Date: Tue, 11 Nov 2003 01:25:41 +0100
+From: Christian <evil@g-house.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16304.10740.446366.410358@cargo.ozlabs.ibm.com>
-Date: Tue, 11 Nov 2003 11:14:44 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: John Whitney <john.whitney@timesys.com>
-Cc: "Mailing List: linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Bad code path in DoSyscall
-In-Reply-To: <BBD51F48.2329%john.whitney@timesys.com>
-References: <BBD51F48.2329%john.whitney@timesys.com>
+To: linas@austin.ibm.com
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ppc32 lockups with 2.6
+References: <3FA5698A.9000905@g-house.de> <3FAABE62.4090804@g-house.de> <20031110125044.A22030@forte.austin.ibm.com> <3FB01392.60500@g-house.de> <20031110175740.A32176@forte.austin.ibm.com>
+In-Reply-To: <20031110175740.A32176@forte.austin.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-John Whitney writes:
+linas@austin.ibm.com wrote:
+>
+> kdb is a built-in kernel debugger. gdb is useless for this case,
+> although kgdb could be another alternative.
 
-> There seems to be a bad code path in the assembly routine DoSyscall()
-> (arch/ppc/kernel/entry.S).
+yes, i thought so. i'm still a bit confused if "kdb" and "kgdb".
 
-You're right, good catch.  The patch below should fix it.
+as http://kgdb.sourceforge.net/whichdebugger.html points out, kdb would
+be the better choice here, but i don't see any "kdb" within the kernel
+config nor does it seem to be a user space-tool. anyway, i have
 
-Paul.
+CONFIG_DEBUG_KERNEL=y
+CONFIG_DEBUG_SLAB=y
+CONFIG_MAGIC_SYSRQ=y
+CONFIG_KGDB=y
+CONFIG_KGDB_TTYS1=y
+CONFIG_XMON=y
+CONFIG_DEBUG_INFO=y
+CONFIG_BOOTX_TEXT=y
 
-diff -urN linux-2.5/arch/ppc/kernel/entry.S pmac-2.5/arch/ppc/kernel/entry.S
---- linux-2.5/arch/ppc/kernel/entry.S	2003-09-27 19:46:43.000000000 +1000
-+++ pmac-2.5/arch/ppc/kernel/entry.S	2003-11-11 09:29:34.000000000 +1100
-@@ -233,8 +233,8 @@
- 	SYNC
- 	RFI
+in my kernel now (still compiling), and will try to setup kgdb tomorrow
+(read: today :-))
 
--66:	li	r3,ENOSYS
--	b	22b
-+66:	li	r3,-ENOSYS
-+	b	ret_from_syscall
+Thank you for your time,
+Christian.
+--
+BOFH excuse #410:
 
- 	.globl	ret_from_fork
- ret_from_fork:
+Electrical conduits in machine room are melting.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
