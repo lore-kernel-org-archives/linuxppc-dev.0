@@ -1,14 +1,31 @@
-Date: Wed, 25 Sep 2002 14:49:26 -0400
-From: Patrick Mahoney <pmahoney@8d.com>
-To: ppcboot-users@lists.sourceforge.net,
+Message-ID: <D73A25AA6E54D511AD74009027B1110F2C8634@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Patrick Mahoney'" <pmahoney@8d.com>,
+	ppcboot-users@lists.sourceforge.net,
 	linuxppc-embedded@lists.linuxppc.org
 Cc: yooth@ipone.co.kr
-Subject: ppcboot on rpxlite_dw mpc850
-Message-ID: <20020925184926.GA4089@segfault.usine.8d.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: RE: ppcboot on rpxlite_dw mpc850
+Date: Wed, 25 Sep 2002 14:59:22 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+The RPXlite_config in ppcboot is for the Embedded Planet LITE CW not the DW.
+The CW is high boot and has DRAM, the DW is low boot and has SDRAM.
+
+
+
+-----Original Message-----
+From: Patrick Mahoney [mailto:pmahoney@8d.com]
+Sent: Wednesday, September 25, 2002 2:49 PM
+To: ppcboot-users@lists.sourceforge.net;
+linuxppc-embedded@lists.linuxppc.org
+Cc: yooth@ipone.co.kr
+Subject: ppcboot on rpxlite_dw mpc850
+
 
 
 Hello lists,
@@ -94,21 +111,25 @@ Patrick Mahoney
 _start:
         lis     r3, CFG_IMMR@h          /* position IMMR */
         mtspr   638, r3
-        li      r21, BOOTFLAG_COLD      /* Normal Power-On: Boot from FLASH   */
+        li      r21, BOOTFLAG_COLD      /* Normal Power-On: Boot from FLASH
+*/
         b       boot_cold
 
         . = EXC_OFF_SYS_RESET + 0x10
 
         .globl  _start_warm
 _start_warm:
-        li      r21, BOOTFLAG_WARM      /* Software reboot                      */
+        li      r21, BOOTFLAG_WARM      /* Software reboot
+*/
         b       boot_warm
 
 boot_cold:
 boot_warm:
 
-        /* Initialize machine status; enable machine check interrupt            */
-        /*----------------------------------------------------------------------*/
+        /* Initialize machine status; enable machine check interrupt
+*/
+
+/*----------------------------------------------------------------------*/
         li      r3, MSR_KERNEL          /* Set ME, RI flags */
         mtmsr   r3
 
