@@ -1,48 +1,71 @@
-In-Reply-To: <199911172134.WAA00322@piglet.grunz.lu>
-Date: Fri, 19 Nov 1999 11:30:16 +0100
-To: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: OF boot and kernel devices
-Message-Id: <19991119113016.007097@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Date: Fri, 19 Nov 1999 11:46:01 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Geoff Hutchison <ghutchis@wso.williams.edu>
+cc: Martin Costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Building Question
+In-Reply-To: <v04220805b45a473d1794@[129.105.9.179]>
+Message-ID: <Pine.HPX.4.10.9911190941180.5120-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Nov 17, 1999, Michel Lanners <mlan@cpu.lu> wrote:
 
->Is this really needed in the kernel? How about running the bootloader
->_installer_ in order to configure OF? Once you get to the bootloader
->itself from OF, and if you include filesystem code in it, there's no
->need to configure anything else than a simple loader config file (à la
->quik).
 
-I would prefer avoiding filesystem writes from the bootloader. I'm not
-100% sure they work fine in OF (I learned not to rely on OF
-functionalities that Apple doesn't use) and, in some cases, the
-bootloader will have only readonly fs support (iso, maybe others). 
+On Thu, 18 Nov 1999, Geoff Hutchison wrote:
 
->Yeah, that would make the HFS booter partition acceptable. I guess it
->will always be a major pain to get to an HFS partition from Linux, so
->make whatever needs to be there as static as possible (no kernels, no
->config files).
+> After several days of investigation, I'm guessing it may be the "lot 
+> of sections which happen not to be located together." The linker 
+> script is the latest GNU libtool.
+> 
+> The code itself:
+> a) doesn't use templates
+> b) isn't "megatons" since individual C++ files weigh in at a few K.
+> 
+> Granted, I'm using bison and flex to generate some C++ code, but 
+> these are still fairly small in the scheme of things. On an 
+> individual basis, the object files are at most 50-100K.
+> 
+> So that would lead me to believe that the problem comes when linking 
+> a few several MB shared or static libraries together. Does this sound 
+> reasonable? Would these normally be in different sections as far as 
+> the linker is concerned? (I'm not an expert on object file formats.)
 
-As Ethan suggested, we can have to booter config file in /boot, and have
-a simple script based on the hfsutils that will copy this to the
-bootstrap partition. Not very much different from re-launching quik or
-lilo when you change your config anyway.
+Have a look with objdump --head to all the files you are trying to link
+and try to sum the .text and .data sizes. I've just discovered that the
+.plt and .got sections get linked _after_ all the data sections and I
+wonder why it is so. The linker replaces calls to shared library with
+calls to the .plt section where it puts glue code to call the actual
+function. You might need a different linker script in which you put the
+plt before the data, for example by taking the default script
+(/usr/lib/ldscripts/elf32ppclinux.x) and moving the 
 
->If I remeber correctly, OF 1.05 in the first PC Macs is unable to load
->from a specific partition, but rather loads from the first bootable
->partition on the specified disk. Therefore, I think that partition
->browsing is a must for the bootloader, or you're limited to as much
->boot partitions as you have disks.... Which doesn't make booting
->various installs easier (think R4/R5, LinuxPPC/YellowDog, maybe
->MkLinux...)
+  .plt   : { *(.plt) }
 
-At first, I'm limiting myself to OF 3.x (newworld machines). Then, I'll
-look into back-porting to previous OF versions.
+line just after the start of the data section (between the ALIGN statement
+and the start of the .data group). I've checked that it did not break a
+small program: it simply makes the executable slightly bigger (200 bytes
+in my case) because the PLT is now in the middle of the file rather than
+being truncated.
+
+Anyway, this probably means that the application has a lot initialized
+data (a few big arrays with some elements statically initialized could
+cause it but it's a wild guess). The resulting executable will be huge in
+any case (objdump --head will tell you how much you would have saved by
+looking at the size of the plt). 
+
+
+> 
+> >You might also want to use the longcall attribute (I never tested it),
+> >from info gcc:
+> 
+> I'd obviously prefer to stay away from this if possible.
+> 
+
+I understand.
+
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
