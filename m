@@ -1,24 +1,32 @@
-Message-Id: <200007112219.PAA29279@soda.csua.Berkeley.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: PMAC SMP on 2.4.0-test1
-Date: Tue, 11 Jul 2000 15:19:00 -0700
-From: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
+Message-Id: <200007120131.CAA24936@hyperion.valhalla.net>
+Date: Wed, 12 Jul 2000 02:31:59 +0100
+Subject: Re: 2.4.0-test3 tree
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: toa@pop.agri.ch
+CC: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Tue, Jul 11, 2000 Andreas Tobler wrote:
+> Iain Sandoe wrote:
+>>
+>> The bk rsync 2.4.0-test3 tree is not compiling (timer.c)
+>> rsynced 16:00 BST [15:00 UTC/GMT]
+>
+> kernel/timer.c line 580: if (p->nice > DEF_NICE) (ok)
+> arch/ppc/kernel/idle.c line 51: current->nice = 0; (not sure)
+>
+> Runs here on a wallstreet.
 
-I was able to build a PPC (PMAC) SMP kernel using the 2.4.0-test1
-sources with the PMAC/PPC patches, but I can't seem to get the kernel
-to boot. My machine is a 7600 with a 2 x 200 604e card.
+Thnx.
+and now on a G3/Beige :-))
 
-I see the initial boot text from Boot-X, but it never gets to the
-point where it displays the two penguins. Since there is no oops, I'm
-not sure where to start debugging.
+[doesn't solve the problem I have - no sound - but at least I can now try
+and fix that :-) ]
 
-Any ideas?
-
-----ranga <ranga@soda.berkeley.edu>
+Iain
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
