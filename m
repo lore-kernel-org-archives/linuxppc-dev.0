@@ -1,21 +1,13 @@
-Return-Path: <det.nicolas@free.fr>
-Received: from smtp2.wanadoo.fr (smtp2.wanadoo.fr [193.252.22.29])
-	by ozlabs.org (Postfix) with ESMTP id B8B8567A6C
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Mar 2005 06:48:39 +1100 (EST)
-Received: from me-wanadoo.net (localhost [127.0.0.1])
-	by mwinf0203.wanadoo.fr (SMTP Server) with ESMTP id 0E3211C001EB
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Mar 2005 20:48:35 +0100 (CET)
-Received: from free.fr (ALyon-151-1-9-130.w83-113.abo.wanadoo.fr
-	[83.113.151.130])
-	by mwinf0203.wanadoo.fr (SMTP Server) with ESMTP id B4DB01C001DE
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Mar 2005 20:48:34 +0100 (CET)
-From: Nicolas DET <det.nicolas@free.fr>
-To: linuxppc-dev@ozlabs.org
-Cc: 
-Date: 06 Mar 2005 20:48:01 +0100
-In-Reply-To: <20050306191034.GA10975@pegasos>
-Message-Id: <20050306194834.B4DB01C001DE@mwinf0203.wanadoo.fr>
-Subject: Re: mv64x60 updates
+Return-Path: <domen@coderock.org>
+Received: from trashy.coderock.org (coderock.org [193.77.147.115])
+	by ozlabs.org (Postfix) with ESMTP id 775C867A46
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Mar 2005 09:23:09 +1100 (EST)
+To: paulus@samba.org
+From: domen@coderock.org
+Date: Sun, 06 Mar 2005 23:22:56 +0100
+Message-Id: <20050306222256.A3F911F1FF@trashy.coderock.org>
+Cc: linuxppc-dev@ozlabs.org, domen@coderock.org
+Subject: [patch 1/4] delete unused file arch_ppc_kernel_find_name.c
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,54 +17,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Sven,
 
-On 06/03/2005, you wrote:
+Remove nowhere referenced file. (egrep "filename\." didn't find anything)
 
-> Ah, i guess that was the missing bit. Basically i need to set MV64360 for
-> my board, but since it is a generic PPC_CHRP, how is that supposed to
-> work ?  
-> Could you send me maybe a list of files which need merging yet, compared
-> to 2.6.11 ? I guess it just doesn't work because i am missing pieces.
+Signed-off-by: Domen Puncer <domen@coderock.org>
+---
 
-I fixed that here.
-TheKconfig issue is really minor compared to the rest :-)
 
->> > Anyway, how do you probe for the chip ? On the pegasos we used to map
->> > on the marvell pci id :
->> > 
->> >   0000:00:00.0 Host bridge: Marvell Technology Group Ltd.
->> > MV64360/64361/64362   System Controller (rev 03)
->> > 
->> > too bad Marvell didn't do the logical thing and made the ethernet port
->> > appear as separated devices on a third internal pci bus.
->> 
->> The mv643xx_eth probe is dependent on having the appropriate
->> platform device entry.  See eth0_device and mv64x60_add_pds() in
->> arch/ppc/syslib/mv643x60.c .
+ kj/arch/ppc/kernel/find_name.c |   48 -----------------------------------------
+ 1 files changed, 48 deletions(-)
 
-> The pegasos has the mv64360 registers mapped at 0xf1000000, and the ports
-> (only port1 is wired though) mapped at interrupt 9, shared with other
-> devices. I guess that would be the only real difference with the other
-> currently supported hardware, right ? 
-
-Yeah, and also, Pegasos II kernel shouldn't call all the chipset init call
-which has been added.
-Pegasos II chipset init is done by the OFW. OSs kernel shouldn't have to
-touch it much.
-
-> Will look at the above mentioned files and function and try to enable it.
-
-I already patch a bit the kernel. However, enabling new Marvell code means
-not booting anymore ATM.
-I'm trying to find a way to patch the current source, without breaking
-Katana & friends support.
-
-The smartest could be to move all unneeded/board specific code somewhere
-else (chipset init...) and to keep ony the minimal (only
-platform_get_resource() realted stuff), in arch/ppc/syslib/mv64x60*
-
-Regards
--- 
-Nicolas DET
-MorphOS & Linux developer
+diff -L arch/ppc/kernel/find_name.c -puN arch/ppc/kernel/find_name.c~remove_file-arch_ppc_kernel_find_name.c /dev/null
+--- kj/arch/ppc/kernel/find_name.c
++++ /dev/null	2005-03-02 11:34:59.000000000 +0100
+@@ -1,48 +0,0 @@
+-#include <stdio.h>
+-#include <asm/page.h>
+-#include <sys/mman.h>
+-#include <strings.h>
+-/*
+- * Finds a given address in the System.map and prints it out
+- * with its neighbors.  -- Cort
+- */
+-
+-int main(int argc, char **argv)
+-{
+-	unsigned long addr, cmp, i;
+-	FILE *f;
+-	char s[256], last[256];
+-	
+-	if ( argc < 2 )
+-	{
+-		fprintf(stderr, "Usage: %s <address>\n", argv[0]);
+-		return -1;
+-	}
+-
+-	for ( i = 1 ; argv[i] ; i++ )
+-	{
+-		sscanf( argv[i], "%0lx", &addr );
+-		/* adjust if addr is relative to kernelbase */
+-		if ( addr < PAGE_OFFSET )
+-			addr += PAGE_OFFSET;
+-		
+-		if ( (f = fopen( "System.map", "r" )) == NULL )
+-		{
+-			perror("fopen()\n");
+-			exit(-1);
+-		}
+-		
+-		while ( !feof(f) )
+-		{
+-			fgets(s, 255 , f);
+-			sscanf( s, "%0lx", &cmp );
+-			if ( addr < cmp )
+-				break;
+-			strcpy( last, s);
+-		}
+-		
+-		printf( "%s%s", last, s );
+-	}		
+-	fclose(f);
+-	return 0;
+-}
+_
