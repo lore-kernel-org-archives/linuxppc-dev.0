@@ -1,18 +1,19 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
-	by ozlabs.org (Postfix) with SMTP id AFA0C67A7A
+Return-Path: <avolkov@varma-el.com>
+Received: from amanaus.varma-el.com (unknown [195.144.244.147])
+	by ozlabs.org (Postfix) with ESMTP id 36ADC67A73
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Mar 2005 23:00:38 +1100 (EST)
-Message-ID: <4243FFF4.3050400@ru.mvista.com>
-Date: Fri, 25 Mar 2005 15:11:32 +0300
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
+	Fri, 25 Mar 2005 23:32:40 +1100 (EST)
+Message-ID: <424404E2.2030602@varma-el.com>
+Date: Fri, 25 Mar 2005 15:32:34 +0300
+From: Andrey Volkov <avolkov@varma-el.com>
 MIME-Version: 1.0
-To: "Wimer, Walt" <walt.wimer@timesys.com>
-References: <1111705036.15834.29.camel@excalibur.timesys.com>
-In-Reply-To: <1111705036.15834.29.camel@excalibur.timesys.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: PCI support under 2.6.11.4 on MPC8272ADS ???
+To: Sylvain Munaut <tnt@246tNt.com>, Wolfgang Denk <wd@denx.de>
+References: <0.20050322_000905.tnt@patchsend.246tNt.com>	<556f5ce38ca914dce63ca24277af4b3e@freescale.com>	<423FC578.8040202@246tNt.com>	<42427C2F.2070104@varma-el.com>
+	<4242CFF8.7090908@246tNt.com> <42430DF0.2050304@varma-el.com>
+In-Reply-To: <42430DF0.2050304@varma-el.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [RFC] MPC5200 Kernel/UBoot PCI problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,81 +24,58 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Walt,
+Hi Sylvain, Wolfgang,
 
-It may have nothing to do with your case,
-
-but once I've seen incorrect data from lspci
-when PCI clock was 66MHz and the card was 3COM 3C905
-which is not 66MHz-capable.
-And for MPC8272ADS boards we have the HRCW (read from CPLD)
-defaults to 66MHz PCI clock.
-
-
-Best regards,
-Andrei
-
-Wimer, Walt wrote:
-> Using Vitaly's 2.4-based patch below as a starting point, I've been
-> adding PCI support to 2.6.11.4 for the MPC8272ADS board.
 > 
-> The good news is that I think I have PCI interrupts pretty well sorted
-> out, and I see *something* half-way reasonable from "lspci".
-> 
-> The bad news is that neither of the ethernet cards that I'm trying will
-> actually work, and I see some very weird behavior with PCI configuration
-> space:
-> 
->   Card 1:  Some Realtek RTL8139D-based card
->   Card 2:  NETGEAR FA311 (National Semi DP83815 chip)
-> 
-> With either card installed alone, both U-Boot and my kernel identify the
-> cards correctly in PCI configuration space.
-> 
-> With *both* cards installed, both U-Boot and my kernel see the Realtek-
-> based card correctly, but the NETGEAR card has a corrupted Vendor ID
-> (e.g. 0x1000 or 0x1003 instead of the correct 0x100b).  This happens
-> regardless of which PCI slots I use for the cards (I've tried virtually
-> every combination).  This smells of a power problem or something to me.
-> 
-> And again, even with either card alone, the drivers have serious
-> problems talking to the cards.  I get various error messages from
-> the drivers and I see badly mangled packets on the wire.  It's also
-> not uncommon for the whole system to freeze...
-> 
-> Has anyone else seen similar behavior?
-> 
-> Has anyone had success with PCI on this board (under any kernel
-> version)?
-> 
-> 
-> Any ideas / data points are appreciated.
-> 
-> 
-> Thanks!!!
-> 
-> Walt Wimer
-> 
-> 
-> 
-> 
->>This patch adds PCI bridge support for MPC8272 and PQ2FADS to the
->>current linuxppc-2.4 tree. Actually it has been tested with 8272, but
->>PQ2 _should_ also work, though it will complain that host bridge ID is
->>unrecognized.
 >>
->>Signed-off-by: Vitaly Bordug <vbordug at ru.mvista.com>
->>
->>--
->>Sincerely, Vitaly
->>
->>-------------- next part --------------
->>A non-text attachment was scrubbed...
->>Name: pq2-pci.patch
->>Type: text/x-patch
->>Size: 20111 bytes
->>Desc: not available
->>Url : http://ozlabs.org/pipermail/linuxppc-embedded/attachments/20050218/12060ce8/pq2-pci.bin
+>> Try adding some delays in the pci configuration zone access routines 
+>> in mpc52xx_pci.c  I remember someone needed those but still don't know 
+>> why, the manual don't say anything about that.
 > 
-> 
-> 
+> Board started, after I add udelay(7) in read/write config. Really strange.
+
+Sylvain, answer was in PCI2.2 specification, not in manual.
+
+Wolfgang, as I see, you use same trick in u-boot, as Sylvain suggested 
+to me. IMHO this trick is wrong. Below I explain why.
+
+When I insert udelay(1000) after deassertion of RST# (write 0 to PR of 
+PCIGSCR), AND remove ALL delays from read/write config, board started 
+too ;). Hence problem not in the MPC, but in slow board(s) (re)start
+(I was lucky with my board, because udelay must be 1000000).
+
+Here some quotations from "PCI Local Bus Specification rev. 2.2":
+
+ From table 4-6 Timing parameters:
+					       |  Min	|Max| Unit
+Trhfa| RST# High to First configuration access | 2**25	|   | clocks
+Trhff| RST# High to First FRAME# assertion     |   5	|   | clocks
+
+2**25 clocks = 1.016 sec for 33MHz and 0.508 sec for 66MHz PCI.
+
+ From Chapter "4.3.2 Reset":
+
+....
+Some PCI devices must be prepared to respond as a target Trhff time 
+after RST# deasserts. For example, devices in the path between the CPU 
+and the boot ROM (not expansion ROM) must be prepared to respond as a 
+target Trhff time after RST# deasserts.
+
+All other devices must be prepared to respond as a target not more than 
+Trhfa after the deassertion of RST#. It is recommended that the system 
+wait at least Trhfa following the deassertion of RST# to a device before 
+the first access to that device, unless the device is in the path 
+between the CPU and the boot ROM or the system knows that the device is
+ready sooner.
+
+Software that accesses devices prior to the expiration of Trhfa must be 
+prepared for the devices either not to respond at all (resulting in 
+Master-Abort) or for the devices to respond with Retry until the 
+expiration of Trhfa. At no time can a device return invalid data. 
+Devices are exempt from the Maximum Retry Time specification and the 
+target initial latency requirement until the expiration of Trhfa.
+....
+
+-- 
+Regards
+Andrey Volkov
