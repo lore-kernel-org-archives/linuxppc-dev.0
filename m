@@ -1,48 +1,37 @@
-From: "G. Guével" <gguevel@interfaceconcept.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: MMU problems on MPC860P
-Date: Fri, 15 Sep 2000 18:40:09 +0200
-Message-ID: <000101c01f33$a5f58ca0$2901a8c0@none>
+Message-ID: <39C25A1D.58CA03F3@mvista.com>
+Date: Fri, 15 Sep 2000 13:19:25 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "G. Guével" <gguevel@interfaceconcept.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MMU problems on MPC860P
+References: <000101c01f33$a5f58ca0$2901a8c0@none>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+G. Guével wrote:
 
-I have a MBX MPC860 board and a montavista linux kernel 2.2.13 which works
-very well.
+> I want to port this kernel on a MPC860P proprietary board called pLines.
 
-I want to port this kernel on a MPC860P proprietary board called pLines.
-I can execute my kernel init until the last execve command which launches
-the sh command.
-I can get my ip address from a bootp server and mount a network file system.
+There aren't any software changes to required to support the 860P.  I
+have a couple for testing that I use regularly.
 
-When the execve is run the following functions are called :
-do_load_elf_binary - flush_old_exec - exec_mmap - new_page_tables -
-SET_PAGE_DIR
-This last function calls an asm instruction, ie "mtspr M_TWB 1DF00".
-On the MBX board it is "mtspr M_TWB 1DE00".
+What is the silicon revision of the part?  I think they are all fairly
+new, but this sounds like a CPU6 errata, which I didn't think affected
+the 860P.
 
-This instruction sets the tablewalk level one base value.
+For all 860 processors that use FEC (855/860 T and P), make sure you
+have the FEC driver that looks at the IMMR for the silicon revision and
+sets the Port D bits correctly.  These changed at some point (I don't
+remember exactly, either B to C or C to D).  This doesn't cause the
+problem you see here, but it will keep the FEC from working properly.
 
-If I comment this instruction, I can have the ash application which crashes
-when calling other applications.
-If I uncomment this instruction I have nothing.
+You may just want to hop over to the MontaVista web site and use the
+2.2.14 kernel from CDK 1.2.
 
-If I add an infinitely printk loop after the mtspr, printk works during 2 to
-3 s then cpu crashes.
-But printk seems not to be sure while page manipulation.
 
-Any help on this subject will be welcome.
-
-Thanks to all
-Sorry for my poor english language, je suis français.
-
-Bye
-Gerard Guevel
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
