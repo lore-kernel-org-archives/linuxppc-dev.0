@@ -1,35 +1,59 @@
-Message-ID: <3CD23B61.869488A2@ardistech.com>
-Date: Fri, 03 May 2002 09:25:21 +0200
-From: "bart@ardistech.com" <bart@ardistech.com>
-Reply-To: bart@ardistech.com
+Message-ID: <E1836A7F3557D311A14000805F9F36FC01733756@usdfo011.usac.danfoss.net>
+From: Christensen Henrik USAC <HenrikChristensen@Danfoss.com>
+To: "'Ricardo Scop '" <scop@digitel.com.br>,
+	Hihn Jason <JasonHihn@Danfoss.com>,
+	"''linuxppc-embedded@lists.linuxppc.org' '" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Position available for 8xx series programmer
+Date: Fri, 3 May 2002 12:53:48 +0200 
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>,
-	dmalek@jlc.net
-Subject: Re: MP8xx: not initialized CPM RAM crash
-References: <20020503064038.64A6111952@denx.denx.de>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
->
-> In message <3CD2255B.330FA4E4@ardistech.com> you wrote:
-> >
-> > I found in ./drivers/i2c/i2c-rpx.c in rpx_iic_init the structure member
-> > ii->iic_rpbase != 0. Very likely because ppcboot uses this area as initial
-> > stack. This causes the kernel to get a machine check during i2c init. Should
-> > the CPM RAM not be zero'd somewhere during kernel boot?
->
-> Which kernel version are you talking about?
->
-2.4.2 MontaVista HH linux
+Yes, but they must be Green Card holders or other proof of being approved to
+work legally in the US.
 
-> I think we fixed this in our version of the 8xx I2C driver long ago.
->
-Thanks, I'll check out a newer kernel.
+Regards,
 
-	Bart
+Henrik Christensen
+
+-----Original Message-----
+From: Ricardo Scop
+To: Hihn Jason; 'linuxppc-embedded@lists.linuxppc.org'
+Cc: Christensen Henrik USAC
+Sent: 5/3/02 1:03 AM
+Subject: Re: Position available for 8xx series programmer
+
+Hi,
+
+Do you accept foreigners too ;-) ???
+
+-Scop.
+Brazil
+
+On Thursday 02 May 2002 11:56, Hihn Jason wrote:
+> Hello all,
+>
+> Danfoss Inc (www.danfoss.com) a world leader in industrial automation,
+has
+> a position available for an Embedded PPC software engineer in
+Baltimore,
+> MD. This position requires low-level experience with the 8xx series
+> processors. Embedded Linux in particular, but any Linux experience is
+> desired, but not required.
+>
+> Anyone interested is encouraged to contact my boss, Henrik Christensen
+at:
+> HenrikChristensen@Danfoss.com or (410)931-6778 x4254
+>
+> I look forward to working with you in the future.
+>
+> Sincerely,
+> Jason Hihn
+> Danfoss R&D
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
