@@ -1,68 +1,71 @@
-To: zjzhou@newrocktech.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: reboot by software 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 16 Dec 2003 17:38:46 +0800."
-             <000101c3c3b8$68333110$b702a8c0@newrock2>
-Date: Tue, 16 Dec 2003 11:24:51 +0100
-Message-Id: <20031216102456.E79DEC5F5F@atlas.denx.de>
+From: v.sudeep@exgate.tek.com
+Message-ID: <301A812E6528D511A8F70008C71E57860290F93F@ap-bang-m02.india.tek.com>
+To: jbeisert@eurodsn.de, linuxppc-embedded@lists.linuxppc.org
+Subject: RE: dummy_con
+Date: Tue, 16 Dec 2003 04:45:36 -0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear John,
+Hi !!!
 
-in message <000101c3c3b8$68333110$b702a8c0@newrock2> you wrote:
->
-> I have a linux running on my mpc8260 board( power on reset at
-> 0xfff00100, I use 32 bit flash, and directly maping 0xF0000000 ~
-> 0xFFFFFFF in kernel).
->
-> Now, I want to reboot system by software. But, when I jump to
-> 0xfff00100 in kernel mode, it's going dead. Can anybody help me?
+First and foremost.... THANKS a MILLION for your response.
 
-Jumping to some address does not cause a reboot of the system.  After
-a   reset,  the  CPU  state  (especially  the  state  of  the  memory
-controller) is somewhat special. The safest  way  to  cause  a  clean
-reboot of the whole system is to actually go through a reset.
+I did what you suggested and got an error while building.(error message
+attached below) I am not sure how I should be proceeding.
 
-Try something like this:
+Like I said before I have a S3 ViRGE/GX card. Since I did not find ViRGE/GX
+in the menuconfig, I enabled S3 Trio. Do you think there is any chance of
+this working ?
 
-void
-m8260_restart(char *cmd)
-{
-	__volatile__	unsigned char	dummy;
-	__volatile__	unsigned int	msr;
-	uint		bad_addr;
+I searched up the net for similar error conditions...
+http://lists.terrasoftsolutions.com/yellowdog-general/July01/0930.html
+For them the simple solution was to unselect S3 Trio in menuconfig. It cant
+apply in my case right. Now what do I do ???
 
-	/* Get base address mapped by BR0/OR0 */
-	bad_addr = ((immap_t *)IMAP_ADDR)->im_memctl.memc_br0 & 0xFFFF8000;
-	cli();
+Any leads on how to proceed are deeply appreciated.
 
-	/* Enable CheckStop Reset */
-	((immap_t *)IMAP_ADDR)->im_clkrst.car_rmr |= 0x00000001;
+Thanks in advance.
 
-	/* Invalidate BR0 mapping */
-	((immap_t *)IMAP_ADDR)->im_memctl.memc_br0 = 0;
+- S u d e e p    V
+If at first you dont succeed, skydiving is not for you.
 
-	/* Set MSR and cause reset */
-	__asm__("mfmsr %0" : "=r" (msr) );
-	msr &= ~0x1000;
-	__asm__("mtmsr %0" : "=r" (msr) );
-	dummy = * (unsigned char *) bad_addr;
-	printk("Restart failed\n");
-	while(1);
-}
 
-Best regards,
 
-Wolfgang Denk
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Bankers do it with interest (penalty for early withdrawal).
+
+-----Original Message-----
+From: Juergen Beisert [mailto:jbeisert@eurodsn.de]
+Sent: Monday, December 15, 2003 9:03 PM
+To: Sudeep, V
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: dummy_con
+
+
+Hi!
+
+> THE PROBLEM:  While compiling the kernel I get the following error.
+> arch/ppc/kernel/kernel.o: In function `ppc4xx_setup_arch':
+> arch/ppc/kernel/kernel.o(.text.init+0xbee): undefined reference to
+> `dummy_con'
+> arch/ppc/kernel/kernel.o(.text.init+0xbf2): undefined reference to
+> `dummy_con'
+> arch/ppc/kernel/kernel.o(.text.init+0xbf6): undefined reference to
+> `conswitchp'
+> arch/ppc/kernel/kernel.o(.text.init+0xbfa): undefined reference to
+> `conswitchp'
+> drivers/char/char.o: In function `chr_dev_init':
+> drivers/char/char.o(.text.init+0x248): undefined reference to `fbmem_init'
+> drivers/char/char.o(.text.init+0x248): relocation truncated to fit:
+> R_PPC_REL24 fbmem_init
+> make: *** [vmlinux] Error 1
+
+Try activate the "Virtual terminal" and "Support for console on virtual
+terminal".
+
+JB
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
