@@ -1,45 +1,38 @@
-To: "Ian Guffick" <zenadsl2546@zen.co.uk>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MCF5200 Dev Environment 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 24 Nov 2003 09:28:01 GMT."
-             <001501c3b26d$459555e0$0d01a8c0@IAN>
-Date: Mon, 24 Nov 2003 11:24:28 +0100
-Message-Id: <20031124102433.C4387C5F5F@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <005601c3b275$39446fd0$0700a8c0@pc005>
+Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Ramdisk trivial question
+Date: Mon, 24 Nov 2003 11:25:02 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <001501c3b26d$459555e0$0d01a8c0@IAN> you wrote:
->
-> What GNU tools are available for the Motorola MCF5200 PowerPC processor.
+Dear friends,
 
-We use the ppc_82xx packages of our ELDK which is available for free download.
+in our project we have always used the NFS to run linux over an 8260 custom
+board. Now since the activity is almost stable we have tried to build the
+root filesystem on ramdisk. Obviously we have followed all the main rules
+which are contained into several good books, but an important choice is
+always left to the user: " what are the components of filesystem?". The
+answer to this of course depend on several factors which are not the scope
+of this e-mail.
 
-> I presume somewhere there will be GCC, GDB, and all the other useful stuff ?
+The question is: The ELDK 2.01 package (which is currently being used in our
+system) is too large to be fitted into a ramdisk, while the minimum
+filesystem does not allow to be used in our midrange application. Does
+anybody have or can indicate where can we find an almost complete filesystem
+scheme (for instance based on the ELDK packages)?
 
-Sure. See http://www.denx.de/twiki/bin/view/DULG/ELDK for details.
+Any help would be apreciated
 
-> What tools exist for programming/debugging a board without dBug preloaded into flash ?
+Many thanks
 
-BDI2000.
+Gianfranco
 
-> P.S. I want to avoid paying £5000 for a dev kit with Code Warrior or Green Hills or similar.
-> Thanks for any pointers in the right direction  ;-)
-
-If you are going to do any serious work (kernel / driver development)
-you will want a BDI2000 rather sooner than later anyway ;-)
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Until you walk a mile in another man's moccasins, you  can't  imagine
-the smell.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
