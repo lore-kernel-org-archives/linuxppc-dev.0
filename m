@@ -1,43 +1,83 @@
-Date: Fri, 28 Mar 2003 12:06:42 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: John F Davis <johndavi@us.ibm.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: pcmcia microdrive support on 2.4.21-rev5 for arctic2
-Message-ID: <20030328010642.GA18350@zax>
-References: <OF5A440509.F12D8E5A-ON87256CF6.0080427D-85256CF6.00811364@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OF5A440509.F12D8E5A-ON87256CF6.0080427D-85256CF6.00811364@us.ibm.com>
+Subject: Linux Kernel Porting  in PPC405GPr
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OFF7149A9F.93AD1B92-ON65256CF7.0028C780@lntinfotech.com>
+From: "Alexander J" <Alexander.J@lntinfotech.com>
+Date: Fri, 28 Mar 2003 13:11:49 +0530
+MIME-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Mar 27, 2003 at 06:29:33PM -0500, John F Davis wrote:
->
-> Hello
->
-> I am trying to get my microdrive working with 2.4.21.rev5.  I have the
-> following config options set:
-> CONFIG_PCMCIA=m
-> CONFIG_PCMCIA_PCCF_4xx=m
-> CONFIG_IDE=y
-> CONFIG_BLK_DEV_IDE=y
-> CONFIG_BLK_DEV_IDECS=m
->
-> I can insmod pcmcia_core, pccf_4xx, and ds.
->
-> I built the latest pcmcia package from sourceforge in order to get cardmgr.
->
-> When I insert my microdrive, it says "insmod ide_cs.o" no module by that
-> name found.
-> I indeed do not have this module in my tree.  What's the deal?
+Hi all,
 
-In recent kernels the name of the module has changed to ide-cs.o
+I have a PPC 405GPr target board loaded with the customized PPCboot 1.1.5.
+Now i am trying
+to load the linux kernel into the target but unsuccessful. Could anyone pl
+help?
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.
-http://www.ozlabs.org/people/dgibson
+The following is the procedure which i have followed.
+
+.(a)  Downloaded the Linux-2.4.18 from the net (No support for the built-in
+network card)
+(b)
+(c)   The following changes are done in the main make file existing in the
+linux folder
+      a.    Changed the architecture as ARCH :- ppc
+      b.    Changed the cross compiler as CROSS COMPILE = powerpc-linux-
+(d)   make menuconfig
+(e)   make dep
+(f)   make clean
+(g)   make zImage. It created the image as zImage
+(h)   Added the header to image using mkimage (mkimage -n xx -O linux - A
+ppc -a 0000 -e 0000 -d xx ) as described  in the BSP.
+(i)   Downloaded the image using the PPC monitor program tftpboot to the
+default location 0x1000000
+          => tftp 1000000 vmlinux
+          miiphy_read: addr[0x0] reg[0x1]
+          read err 3
+          a2: read: EMAC_STACR=0xffffc001, i=2
+          miiphy_read: addr[0x0] reg[0x5]
+          read err 3
+          a2: read: EMAC_STACR=0xffffc005, i=2
+          PHY speed1 read failed, assuming 10bT
+          miiphy_read: addr[0x0] reg[0x5]
+          read err 3
+          a2: read: EMAC_STACR=0xffffc005, i=2
+          PHY duplex read failed, assuming half duplex
+          ENET Speed is 10 Mbps - HALF duplex connection
+          ARP broadcast 1
+          TFTP from server 107.108.204.207; our IP address is
+          107.108.204.104
+          Filename 'vmlinux'.
+          Load address: 0x1000000
+          Loading:
+          #################################################################
+
+          #################################################################
+              ###########################
+          done
+          Bytes transferred = 802132 (c3d54 hex)
+
+(j)   run the command bootm 1000000, It printed the following
+          => bootm 1000000
+           ## Booting image at 01000000 ...
+          Image Name:   kernel_image
+          Created:      2003-03-03  13:39:09 UTC
+          Image Type:   PowerPC Linux Kernel Image (uncompressed)
+          Data Size:    802068 Bytes = 783 kB = 0 MB
+          Load Address: 00000000
+          Entry Point:  00000000
+          Verifying Checksum ... OK
+          Loading Kernel Image ... OK
+
+(k)   After this, the PPC target system hangs forever.
+
+
+Any ideas or suggestions?
+
+Thanks in advance.
+Alex j
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
