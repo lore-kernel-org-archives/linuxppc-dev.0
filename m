@@ -1,49 +1,34 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Message-ID: <3C69A0EC.2090400@embeddededge.com>
-Date: Tue, 12 Feb 2002 18:10:36 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Eric.Oosterhof@radisys.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: I2C module problem on 8260
-References: <OFC97C91CA.1E7BB35E-ON88256B5E.007CD94A@radisys.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Dan Malek <dan@embeddededge.com>
+Cc: Eric.Oosterhof@radisys.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: I2C module problem on 8260 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 12 Feb 2002 18:10:36 EST."
+             <3C69A0EC.2090400@embeddededge.com>
+Date: Wed, 13 Feb 2002 00:18:08 +0100
+Message-Id: <20020212231813.2D906109D7@denx.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Eric.Oosterhof@radisys.com wrote:
+In message <3C69A0EC.2090400@embeddededge.com> you wrote:
+>
+> Finally, there isn't any deallocation function for CPM memory space.  I thought
+> someone else was going to contribute this, and I apologize if I misplaced a patch,
 
-> .....  I discovered in so doing that the virtual address
-> space that the module is placed in does not allow the use of __pa to get a
-> virtual address.
+I've sent such patches to Tom Rini many months ago (starting  29  Aug
+2001),  and  in some iterations again and again. It's for 8xx only so
+far, but adaption for 82xx is just a small exercise.
 
-Welcome to the wonderful world of Linux VM and the need for different
-implementations depending upon how you use the driver.  The 8xx and 4xx
-processors use the 'iopa()' function within the usual macros to do this.
-Outside of those processors, you can call it directly.  Change the __pa()
-to iopa() and you should be fine.
+Unfortunately, this patch was always ignored (as some  others,  too),
+so I finally gave up.
 
-There are other things you must consider.  Loadable modules dynamically
-allocate pages of memory, so they are likely not to be physically contiguous.
-One of the programming techniques for modules is you must explicitly allocate
-all objects subject to DMA such that they are known to be physically contiguous
-if necessary.  The static buffers you allocate in a built-in driver won't work
-for DMA in a module.
+Wolfgang Denk
 
-Finally, there isn't any deallocation function for CPM memory space.  I thought
-someone else was going to contribute this, and I apologize if I misplaced a patch,
-but this needs to be done or else your module loading/unloading will exhaust
-the CPM dual port memory space.  I guess I can quickly do one that used the old
-unix style map allocator, but I never got around to do it.  Due to the interactions
-of the devices on the CPM for resource allocation and the configuration
-interdependencies, I always found it easier to just build a static driver and
-reboot the kernel.
-
-Have fun!
-
-
-	-- Dan
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+See us @ Embedded Systems Nuremberg, Feb 19-21, Hall 12 K01 (with TQ)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
