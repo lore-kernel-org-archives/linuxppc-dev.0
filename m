@@ -1,46 +1,55 @@
-Date: Wed, 8 Dec 1999 13:46:36 -0600
-From: Grant Erickson <grant@lcse.umn.edu>
+Date: Wed, 8 Dec 1999 23:17:57 +0200 (EET)
+From: Mika Kuoppala <mak@icon.fi>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: PowerPC 4xx Port Progress
-Message-ID: <Pine.SGI.4.10.9912081326290.56447-100000@brule.borg.umn.edu>
+Subject: Good embedded board to start with
+Message-ID: <Pine.LNX.4.10.9912082231580.21860-100000@atom.icon.fi>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've made some small bit of progress on getting the 2.3.30 kernel to boot
-on IBM's 403GCX "Oak" evaluation board:
 
-  Linux version 2.3.30 (grant@brule) (gcc version 2.95.2 19991024 (release)) #33 Wed Dec 8 11:05:44 PST 1999.
-  On node 0 totalpages: 00000400.
-  zone(0): 1024 pages.
-  zone(1): 0 pages.
-  zone(2): 0 pages.
-  Calibrating delay loop... 12.95 BogoMIPS.
-  Memory: 2648k available (752k kernel code, 656k data, 40k init) [c0000000, c0400000].
-  Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes).
-  POSIX conformance testing by UNIFIX
+Hello folks!
 
-Then it runs off into nowhere land which isn't too surprising considering
-that there are a lot of holes yet.
+What would be a good board to purchase just to 
+get newbie's feet wet in this embedded ppc world ?
 
-Major issues to resolve/finish:
+It should be 8xx or 82xx based board and some
+of these requirements filled:
 
-  o Figure out why the stack on exception entry never looks the same as on
-    exception exit (a cache issue no doubt).
-  o Figure out why paging_init still causes things to die (I've worked
-    around it in the interim).
-  o 403GCX Async Interrupt Controller (AIC) (arch/ppc/kernel/ppc4xx_pic.c)
-  o Ethernet: National Semiconductor DP83902AV (drivers/net/oaknet.c)
-  o Serial: /dev/ttyS0 (On-chip 403GCX SCC), /dev/ttyS1 (NS 16550DV)
-  o MMU: finish up page table code and D/ITLB miss exception handlers.
-  o Timer code is probably wrong, BogoMIPS seems low.
+	- runs ppc linux kernel without modifying source
+	  (patches are ok), from 2.2.x or from 2.3.x tree
 
-I'll try to get the latest code to Cort for inclusion in the next kernel.
-In the interim, I'll be posting patches, etc. to:
+	- some rather non-complex way of booting the device
+	
+	- possibly serial port to easen up boot debugging
+  
+	- ethernet and driver for it
 
-	http://www.lcse.umn.edu/~grant/Linux/index.html
+	- if there is such thing as 'mainstream', the 
+	  more close to it this board would be, the better.
+
+If things get much easier by buying some ppc based development
+machine to compile things for the board (some mac or imac or other ppc
+workstation), it is an option too.
+
+This is just an evaluation project and we are going
+to buy one board only at start. Main purpose is just to
+get into embedded-ppc world and get it up and running, and
+doing so gain self-confidence that ppc might be an alternative
+to x86 in embedded things.
+
+If i get it up and running, i would like to put web server
+running on it, perhaps with final evaluation report on it. To
+make a good demo ofcourse :) I know linux rather well on x86 
+side but in ppc world only thing i have currently is motivation.
+
+Am i totally in too deep waters with this ?
+
+Thankyou in advance !
+
+-- Mika <miku@iki.fi>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
