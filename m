@@ -1,50 +1,46 @@
-Message-Id: <199908092015.WAA00324@piglet.cpu.lu>
-Date: Mon, 9 Aug 1999 22:15:19 +0200 (CEST)
+Message-Id: <199908092023.WAA00328@piglet.cpu.lu>
+Date: Mon, 9 Aug 1999 22:23:25 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
 Subject: Re: Trying a Promise Ultra/66 on powerpc
-To: bh40@calva.net
-cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <19990809085029.001336@smtp.calvacom.fr>
+To: Paul.Mackerras@cs.anu.edu.au
+cc: paulus@cs.anu.edu.au, drow@false.org, mj@ucw.cz,
+        linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <199908090513.PAA09905@tango.anu.edu.au>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi gentlemen (any ladies around?),
-
-On   9 Aug, this message from Benjamin Herrenschmidt echoed through cyberspace:
-> On Mon, Aug 9, 1999, Paul Mackerras <paulus@cs.anu.edu.au> wrote:
->>Basically the problem is that the IDE driver assumes that you access
->>all IDE controllers via I/O ports.  When you have a controller that
->>has memory-mapped registers, there is a problem.  When you have a
->>system where one IDE controller has I/O ports and another has memory-
->>mapped registers, you have a bigger problem.  The current approach to
->>solving this problem is to map the addresses of the memory-mapped
->>registers into pseudo I/O port numbers (by subtracting _IO_BASE).  If
->>there is a better way, somebody let me know. :-)
+On   9 Aug, this message from Paul Mackerras echoed through cyberspace:
+>> This fact was already catered for with the definition of outb/inb and
+>> friends, which get an offset added to the port. Unfortunately, the
+>> PowerMac IDE code undoes this and replaces it with a different
+>> mechanism, which in essence removes the offset. Grrr..
 > 
-> Looks like the best way would be to store the port base or pointers to
-> the in/out functions in the HWIF structure.
+> Not any more.  I took that stuff out a few weeks ago so that the
+> CMD646 on the blue&white G3s could work.
 
-How about fixing this in the kernel's PCI bus structures, by adding any
-required offsets in the pci_fixup() routines? This would make for clean
-inb()/outb() definitions (no offset), and also accomodates multiple I/O
-spaces behind more than one bridge. For instance, on the 7x00, both
-bandit and chaos have I/O space; the one for the PCI cards, the other
-for control (yes, control has an I/O port range! Not sure it serves,
-though...).
+Is that change in vger only? Submitted for 2.2.11?
 
-Any fixed-offset approach would break with multiple I/O ranges.... Not
-to mention the 9x00 machines (two separate host bridges, each three
-slots), where you can't work around the problem by using hardcoded
-addresses for the known motherboard chips.
+> Basically the problem is that the IDE driver assumes that you access
+> all IDE controllers via I/O ports.
 
-I guess this approach could be made to work across the PPC
-architecture, not only on the PMac, as the PPC in general lacks anything
-special about I/O space... after all, those are just small memory
-spaces ;-)
+Not a problem in itself, I guess: it's just that on the PPC, I/O ports
+are not necessarily below 64k in processor-view..
+
+> When you have a controller that
+> has memory-mapped registers, there is a problem.  When you have a
+> system where one IDE controller has I/O ports and another has memory-
+> mapped registers, you have a bigger problem.  The current approach to
+> solving this problem is to map the addresses of the memory-mapped
+> registers into pseudo I/O port numbers (by subtracting _IO_BASE).  If
+> there is a better way, somebody let me know. :-)
+
+I'd vote for making I/O ports a memory addresss like any other, and
+making sure drivers get this address right. See my other post for
+details..
 
 Michel
 
