@@ -1,40 +1,41 @@
-To: Liu Fred-a18596 <fred.liu@motorola.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: unable to input in u-boot at Lite5200 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 11 Mar 2004 20:38:57 +0800."
-             <89DEFCC5DB33D411A27F00508BCF8A821489FCB7@ZCH07EXM05.corp.mot.com>
-Date: Thu, 11 Mar 2004 16:59:42 +0100
-Message-Id: <20040311155947.6E05AC0655@atlas.denx.de>
+Message-ID: <405090F3.1000900@embeddededge.com>
+Date: Thu, 11 Mar 2004 11:16:51 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>
+Cc: Jason McMullan <jason.mcmullan@timesys.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC8560ADS issues
+References: <1078945499.3748.4.camel@veena.timesys> <1079019785.29565.36.camel@chuck.arlut.utexas.edu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <89DEFCC5DB33D411A27F00508BCF8A821489FCB7@ZCH07EXM05.corp.mot.com> you wrote:
->
-> I have burned u-boot.1.0.0 into Lite5200 board (icecube, 16M Flash, 64M SDRAM).
-> u-boot printed fllowing information when I pushed the reset button.
-...
-> All information seems good, but I can't input key to stop autoboot.
-> It seems  that it dont't accept any input from console.
-> I don't know why this happened.
-> Can anyone explain it?
+Matthew S. McClintock wrote:
 
-Disable hardware flow control in your terminal emulation.
+> What version of u-boot are you using? There was a patch around Feb. 24th
+> that fixed some things in the ethernet driver for u-boot. Although since
+> you seem to have the TSEC ports working it seems you have the latest
+> version.
 
-Please read the manual. See
-http://www.denx.de/twiki/bin/view/DULG/SystemSetup#Section_4.3.
+The TSECs work, but the FCCs don't.  I spend time here and there debugging
+when I have a chance.
 
-Best regards,
 
-Wolfgang Denk
+> I have not attempted to use the FCC in u-boot but I have it working in
+> Linux, well sort of anyways... it is going extremely slow and I am still
+> investigating that.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-It is not best to swap horses while crossing the river.
-- Abraham Lincoln
+Do you keep up to date with the linuxppc trees?  Some of us have been
+pushing lots of CPM updates lately.  We recently updated all of the
+common code for 82xx and 85xx.  If this doesn't work there must be
+some I/O or board configuration that is amiss.
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
