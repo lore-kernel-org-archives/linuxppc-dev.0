@@ -1,83 +1,41 @@
-Message-Id: <5.1.0.14.2.20030225185928.00ac3198@mail.zultys.com>
-Date: Tue, 25 Feb 2003 20:08:14 -0800
-To: linuxppc-embedded@lists.linuxppc.org
-From: Eugene Surovegin <ebs@ebshome.net>
-Subject: Possible bug in flush_dcache_all on 440GP
+Date: Tue, 25 Feb 2003 21:14:52 -0700
+From: Matt Porter <porter@cox.net>
+To: brian.auld@adic.com
+Cc: porter@cox.net, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Kernel Preemption patch
+Message-ID: <20030225211452.A11988@home.com>
+References: <995FF289C9D69747A09E42992644595405B2368A@penguin.adic.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <995FF289C9D69747A09E42992644595405B2368A@penguin.adic.com>; from brian.auld@adic.com on Tue, Feb 25, 2003 at 06:32:29AM -0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all!
+On Tue, Feb 25, 2003 at 06:32:29AM -0800, brian.auld@adic.com wrote:
+> I would presume others interested in the information you posted below would
+> have the same questions:
+>
+> (1) penguinppc.org patch page??
+>     - I don't remember, and couldn't find when double-checking, a link
+>       for patches at this url.
 
-I believe there is a bug in flush_dcache_all implementation for not cache
-coherent processors.
+http://penguinppc.org/dev/
 
-This function uses simple algorithm to force dcache flush by reading
-"enough" data to completely reload the cache:
+> (2) source.mvista.com (440GP mmap patch)
+>     - I ncftp'ed to this location, and did not find any patches that
+>       were for the 440, including the mmap patch you mentioned. Is
+>       there a README somewhere that talks about this?
 
-/*
-  * 40x cores have 8K or 16K dcache and 32 byte line size.
-  * 440 has a 32K dcache and 32 byte line size.
-  * 8xx has 1, 2, 4, 8K variants.
-  * For now, cover the worst case of the 440.
-  * When we get a cputable cache size entry we can do the right thing.
-  */
+It's mentioned in the changeset comments in the trees.
 
-#define CACHE_NWAYS	64
-#define CACHE_NLINES	16
+>       Or, is this the pub/linuxppc/bigphys_remap... patch?
 
-_GLOBAL(flush_dcache_all)
-	li	r4, (CACHE_NWAYS * CACHE_NLINES)
-	mtctr	r4
-	lis     r5, KERNELBASE@h
-1:	lwz	r3, 0(r5)		/* Load one word from every line */
-	addi	r5, r5, L1_CACHE_LINE_SIZE
-	bdnz    1b
-	blr
+Yes...that's the "mmap" patch.
 
-This function uses the assumption that __every__ load operation will
-cause cache miss therefore it executes CACHE_NWAYS * CACHE_NLINES
-loads to force all cache reload. It uses memory from the beginning
-of the kernel for this purpose.
-
-Problem may arise if some of the addresses from this range (starting
-at KERNELBASE) are already in the dcache (for example from the _previous_
-call to flush_dcache_all).
-
-Here is more technical details:
-
-Cache on 440GP is 64-was associative. There is a register for each cache set
-(called data cache victim index register) which holds "way" number for
-next cache-miss-triggered load operation. It's incremented in round-robin
-manner after each cache load.
-
-flush_dcache_all _may_ cause up to 64 loads for each cache set, and all
-ways will be reloaded. But, if there is less than 64 loads (because some loads
-are not misses) not all ways will be reloaded, causing possible dirty data
-not reaching phys memory.
-
-It's interesting that current flush_dcache_all implementation seems to be
-OK for
-all CPU with _smaller_ than 32K dcache size. This is due to the fact that
-using
-_twice_ as much memory than the cache size will _always_ completely reload
-the cache.
-
-I think of two possible way to fix this function:
-
-1) Use twice as much memory than the cache size. This solution is not very
-efficient,
-    but it doesn't add _any_ special requirements to the memory we use to
-reload the
-    cache with.
-
-2) Add "dccci 0, 0" just before "blr". This still assumes that we use
-memory which
-    normally is _not_ loaded into dcache (e.g. code at KERNELBASE).
-
-Eugene.
-
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
