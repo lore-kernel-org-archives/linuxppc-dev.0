@@ -1,31 +1,57 @@
-Date: Tue, 8 Jun 1999 21:19:58 -0400
-From: Daniel Jacobowitz <drow@false.org>
-To: Paul.Mackerras@cs.anu.edu.au
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Q: control is a C&T 65550?
-Message-ID: <19990608211958.A16107@drow.res.cmu.edu>
-References: <19990608095844.A5496@drow.res.cmu.edu> <Pine.LNX.4.10.9906081600260.20992-100000@mercator.cs.kuleuven.ac.be> <19990608101236.A5738@drow.res.cmu.edu> <199906082354.JAA05316@tango.anu.edu.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199906082354.JAA05316@tango.anu.edu.au>; from Paul Mackerras on Wed, Jun 09, 1999 at 09:54:18AM +1000
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <v04020a00b383890d4806@[136.152.65.18]>
+Date: Tue, 8 Jun 1999 20:28:34 -0700
+To: linuxppc-dev@lists.linuxppc.org
+From: Brian C Burke <bcburke@socrates.berkeley.edu>
+Subject: TurboMax driver bug
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jun 09, 1999 at 09:54:18AM +1000, Paul Mackerras wrote:
-> The other thing to do is to browse through the darwin sources from
-> apple and see if they have a control driver somewhere.
+I downloaded the vmlinux-blueg3v2 kernel from linuxppc.org and it supports
+the turbomax card and attached maxtor drives on my beige G3 rev1. However
+the cdrom drive at hdc shows up as a twin of the motherboard quantum drive
+at hda and is not accessible. The can be seen in the startup printout that
+follows.
 
-Licence issues aside, they don't have video drivers there, as far as I
-can see.  Lots of other little goodies, but no video drivers.
 
-Dan
+AEC6210: IDE controller on PCI bus 00 dev 70
+AEC6210: not 100% native mode: will probe irqs later
+AEC6210: ROM enabled at 0x81800001
+    ide2: BM-DMA at 0xfe000400-0xfe000407, BIOS settings: hde:DMA, hdf:pio
+    ide3: BM-DMA at 0xfe000408-0xfe00040f, BIOS settings: hdg:DMA, hdh:pio
+hda: QUANTUM FIREBALL ST4300A, ATA DISK drive
+hdc: QUANTUM FIREBALL ST4300A, ATA DISK drive
+hde: Maxtor 91728D8, ATA DISK drive
+hdg: Maxtor 91728D8, ATA DISK drive
+ide0 at 0xd4831000-0xd4831007,0xd4831160 on irq 13
+ide1 at 0xd4835000-0xd4835007,0xd4835160 on irq 13 (shared with ide0)
+ide2 at 0xfe000440-0xfe000447,0xfe000432 on irq 24
+ide3 at 0xfe000420-0xfe000427,0xfe000412 on irq 24 (shared with ide2)
+hda: QUANTUM FIREBALL ST4300A, 4110MB w/81kB Cache, CHS=14848/9/63, (U)DMA
+hdc: QUANTUM FIREBALL ST4300A, 4110MB w/81kB Cache, CHS=14848/9/63, (U)DMA
+hde: Maxtor 91728D8, 16479MB w/512kB Cache, CHS=33483/16/63, UDMA
+hdg: Maxtor 91728D8, 16479MB w/512kB Cache, CHS=33483/16/63, UDMA
 
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
+
+The 2.2.1 kernel which does not detect the TuboMax card detects the cdrom
+at hdc correctly.
+
+hda: QUANTUM FIREBALL ST4300A, ATA DISK drive
+hdc: MATSHITA CR-585, ATAPI CDROM drive
+ide0 at 0xd4831000-0xd4831007,0xd4831160 on irq 13
+ide1 at 0xd4835000-0xd4835007,0xd4835160 on irq 14
+hda: QUANTUM FIREBALL ST4300A, 4110MB w/81kB Cache, CHS=14848/9/63, (U)DMA
+hdc: ATAPI 1X CD-ROM drive, 4224kB Cache
+Uniform CDROM driver Revision: 2.54
+
+
+If this list is not he correct place to report this bug please tell me where.
+
+Thanks,
+Brian
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
