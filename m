@@ -1,36 +1,35 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <885489B3B89FB6449F93E525DF78777F06453B@srvnt506.ALLOPTIC.COM>
-From: "Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: access memory mapped registers
-Date: Thu, 9 Jan 2003 14:00:13 -0800 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: access memory mapped registers 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 09 Jan 2003 14:00:13 PST."
+             <885489B3B89FB6449F93E525DF78777F06453B@srvnt506.ALLOPTIC.COM>
+Date: Fri, 10 Jan 2003 00:14:06 +0100
+Message-Id: <20030109231411.AE68EC608E@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+In message <885489B3B89FB6449F93E525DF78777F06453B@srvnt506.ALLOPTIC.COM> you wrote:
+>
+> I will like to access some memory mapped registers through user space
+> applications.
+> Do i just use the "mmap" function calls to map the physical memory to my
+> user space?
 
-This is probably one of those silly questions again, and I seem to be having
-a lot of them lately.
+You don't. Design a proper device driver interface instead.
 
-I will like to access some memory mapped registers through user space
-applications.
-Do i just use the "mmap" function calls to map the physical memory to my
-user space?
-My BR/OR registers are set up properly to handle the addresses, but do i
-need to configure
-the kernel for those memory regions?
 
-The address I am looking at is at physical location 0x60000000 and
-0x40000000.  My RAM space is mapped to
-virtual address starting at 0xc0000000 (where the RAM's physical address is
-from 0x0 - 0x00ffffff)
+Best regards,
 
-THank you very much for your help
+Wolfgang Denk
 
-Cecilia
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+By the way, ALL software projects are done by iterative  prototyping.
+Some companies call their prototypes "releases", that's all.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
