@@ -1,37 +1,49 @@
-Message-ID: <40C020DC.9050607@iti.fi>
-Date: Fri, 04 Jun 2004 10:12:28 +0300
+Message-ID: <40C02B94.8020709@iti.fi>
+Date: Fri, 04 Jun 2004 10:58:12 +0300
 From: Kate Alhola <kate@iti.fi>
 MIME-Version: 1.0
-To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: fbdev_drv/xfree86 getting rid of /dev/tty0 console
+To: Wolfgang Denk <wd@denx.de>
+Cc: iida <iida@ztec.com.br>,
+	linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: driver SPI for MPC5200
+References: <20040601173804.04313C109F@atlas.denx.de>
+In-Reply-To: <20040601173804.04313C109F@atlas.denx.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I try to use Xfree86 with fbdev_drv in embedded system and i got stuck
-to "xf86OpenConsole: Cannot open /dev/tty0" or
-"xf86OpenConsole: Cannot find a free VT" etc.
+Wolfgang Denk wrote:
 
-The problem is that the device is embedded ppc without any console at
-all and least there won't never be
-one in /dev/tty0 that is normally linked to serial port.
+>>Or what i have to modify to use in mpc5200
+>>
+>>
+>
+>You need to write a new driver.
+>
+>
 
-The problem is that /dev/tty0 looks a like to be hardcoded to
-"xf86OpenConsole(void)" in xfree86 lnx_init.c and
-it is called unconditionally from xf86Init.c . I have not found any
-switch to switch console off from xfree86
-config files. Also linkig /dev/tty to /dev/null or /dev/vcs0 etc does
-not help, it just replaces
-"can not open" error with "Cannot find a free VT".
+I have been doin such thing a while. The base idea is to hae similar
+subsystem tha i2c has.
+Least in my application i like to controll multiple diferent devices via
+spi  and i like
+that the spi connected targets look a like "normal" devides to linux
+programs.
+At the moment i am working spi core and drivers for tsc2301 ( system
+management
+chip / adc/audio ), MMC ( multimedi card ) and frame buffer device for
+small 128x64
+graphical LCD ( UC1606 Chip )
 
-I know that i  can hack xfree86 source and remove this dependency by
-hand but it looks a like
-not to be right or most elegant solution because i can't believe that i
-am first one that tries to use
-fbdev in embedded hw without any console.
+The thing that i am waiting is to get something clear to this DMA
+problem that
+has been discussed here lately.
 
-The the linux distribution and filesystem is stantard eldk 3.0 ppc_82xx .
+The MPC5200 SPI device does not support Bestcomm DMA at all but PSC can
+be used
+in SPI mode with DMA. With DMA i can update display or read MMC block
+with just one interupt without polling etc needed with normal SPI.
+
 
 Kate
 
