@@ -1,42 +1,58 @@
-Date: Tue, 29 Jun 2004 05:53:22 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 2.5 bk tree on 8xx board ... so close
-In-Reply-To: <20040628233119.GE28128@smtp.west.cox.net>
-Message-ID: <Pine.LNX.4.60.0406290546500.3272@localhost.localdomain>
-References: <Pine.LNX.4.60.0406281743170.4213@localhost.localdomain>
- <20040628233119.GE28128@smtp.west.cox.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Subject: [PATCH] MPC85XX TSEC driver: fix for mdio speed
+From: Stefan Nickl <Stefan.Nickl@kontron.com>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Cc: Kumar Gala <kumar.gala@freescale.com>
+Content-Type: multipart/mixed; boundary="=-a3aU3+FYXTF5XUJej2aW"
+Message-Id: <1088504263.4834.14.camel@lucy.pep-kaufbeuren.de>
+Mime-Version: 1.0
+Date: Tue, 29 Jun 2004 12:17:44 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 28 Jun 2004, Tom Rini wrote:
+--=-a3aU3+FYXTF5XUJej2aW
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-> Which serial driver did you use?  For me 8xx_UART does not work, but
-> CPM_UART will (it's still not quite correct, I have to config in both
-> SMC1 and SCC1 to get SMC1 to work, but I'm burried under a bunch of
-> other stuff right now).
+In gianfar_phy.c, the divisor for the MDIO interface to the PHYs
+is set to a safe value as part of running a phy_cmd.
+However, there is one MDIO transaction that happens before any command
+is sent: reading the PHYs manufactuere identifier in get_phy_info.
 
-i was, in fact, using 8xx_UART under the "MPC8xx CPM options" menu,
-but (pardon my confusion) i'm not aware of this CPM_UART option of
-which you speak (unless you're just paraphrasing).
+This patch adds a "dummy command" to use the side effect of
+phy_run_commands.
 
-if i deselect 8xx_UART, i'm assuming you're talking about going then
-to the menu selections:
+Background is that the initial revision of our hardware only works
+reliably with the slowest divisor as long as the FEC PHY is the only
+(MDIO) bus load. We kept reading slightly distorted ID from the FEC's
+PHY when the 2 Marvells were not yet up.
 
-   Device Drivers
-     Character devices
-       Serial drivers
+--
+Stefan Nickl
+Kontron Modular Computers
 
-and selecting the appropriate CONFIG_SERIAL_CPM* settings (_SCC1 and
-_SMC1)?  is that what you're referring to above?
 
-   i may have to wait for one of the board experts to get in later to
-make sure i have the right settings here.  thanks so far.
+--=-a3aU3+FYXTF5XUJej2aW
+Content-Disposition: attachment; filename=gfar_mdiospeed.patch
+Content-Type: text/x-patch; name=gfar_mdiospeed.patch; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
-rday
+diff -Nru a/drivers/net/gianfar_phy.c b/drivers/net/gianfar_phy.c
+--- a/drivers/net/gianfar_phy.c	2004-06-29 12:07:12 +02:00
++++ b/drivers/net/gianfar_phy.c	2004-06-29 12:07:12 +02:00
+@@ -496,6 +496,8 @@
+ 	int i;
+ 	struct phy_info *theInfo = NULL;
+
++	/* make sure the interface speed is safe from the first access */
++	phy_run_commands(dev, (const struct phy_cmd[]){{miim_end}});
+
+ 	/* Grab the bits from PHYIR1, and put them in the upper half */
+ 	phy_reg = read_phy_reg(dev, MIIM_PHYIR1);
+
+
+
+--=-a3aU3+FYXTF5XUJej2aW--
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
