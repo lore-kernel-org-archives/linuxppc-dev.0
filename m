@@ -1,105 +1,81 @@
-Message-ID: <20000217105324.29583.qmail@web210.mail.yahoo.com>
-Date: Thu, 17 Feb 2000 02:53:23 -0800 (PST)
-From: "D.J. Barrow" <barrow_dj@yahoo.com>
-Subject: Re: hfs+
-To: Brad Boyer <flar@pants.nu>, Dan Bethe <dan_bethe@yahoo.com>
-Cc: marv <omarvo@hotmail.com>, linuxppc-dev@lists.linuxppc.org
+Date: Thu, 17 Feb 2000 12:18:13 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Patrick Lerda <Lerda@microprocess.com>
+cc: linuxppc-dev@lists.linuxppc.org,
+        "'debian-powerpc@lists.debian.org'" <debian-powerpc@lists.debian.org>
+Subject: Re: PowerPC in little endian mode
+In-Reply-To: <B0CAE42C9EE0D311AAAD00500422FC6302CD71@iis000.microdata.fr>
+Message-ID: <Pine.HPX.4.10.10002171151480.2120-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-This guy might be able to help,
-he is a linux fan & an old friend & knows the mac as
-well as anyone, he is responsible for the apple's
-internal download/installation software &
-always has to get his hands dirty with mac filesystem
-internals.
 
-He is currently porting his partition libraries
-to MacOS X.
 
-Ken Fitzgerald Smith metro@tinet.ie
+On Thu, 17 Feb 2000, Patrick Lerda wrote:
 
-He usually is a bit difficult at first
-but is a real pussycat once you get to know him.
+>
+> 	Most of the trouble I have on my PowerPC platform came from the fact
+> that
+> 	Linux work in big-endian mode, this break some drivers like last USB
+> developement,
 
-If he isn't able to help directly hopefully
-he should be able to get you more docs or
-point you in the right direction if you run
-into problems.
+The the drivre is badly written, that's all. Since all the infrastructure
+is here to write endian independant drivers.
 
---- Brad Boyer <flar@pants.nu> wrote:
+> 	and other PCI boards that work fine on i386 linux. Designing a
+> driver working on
+> 	different little-endian processors is quite easy the only
+> differences between these
+> 	systems is the PCI bus mapping that is different, but upgrading a
+> driver is quite easy.
 >
-> Dan Bethe wrote:
-> > 	Bless you.  Lots of people would be grateful.
-> This would be
-> > tremendously useful, especially if it could be the
-> main crossplatform,
-> > mature, multiuser, unix-like filesystem to share
-> data between Linux and
-> > MacOS 8/9/10 on the same machine.
-> > 	Beware of duplicate work.  There are the
-> hfsutils, which are user
-> > space utilities.  And there is something that's
-> either a library or a
-> > kernel module, that someone's working on, which is
-> nonfunctional at
-> > this time.
-> > 	Do searches on lists.linuxppc.org to find who's
-> doing what.  We've
-> > recently discussed this within the last 2 months.
-> > 	pajama1@mindspring.com and
-> tdilling@oncodev.isc-net.upenn.edu are in
-> > my linuxppc notes as being interested in hfs+
-> development.
-> > 	Also see this:
-> >
-> >
-> http://developer.apple.com/technotes/tn/tn1150.html
-> >
-> > --- marv <omarvo@hotmail.com> wrote:
-> > > Who's working HFS+ and can i help? I know some
-> seem and i've been
-> > > reading the kernel vfs docs and the hfs+ docs
-> from apple.
-> > > Reply directly because i was too lazy to join
-> the mailing list
-> > > although
-> > > i did browse through the archives :P
+> 	Some applications are broken too, and from a user space point of
+> view, the only difference
+> 	between i386 and PowerPC linux is endianess.
+
+Then the applications are badly written, but this is not the only
+difference, see below. People are also using Linux on Sparc and 68k which
+are big endian only. Besides older PPCs do not work well in little endian
+mode (lots of alignment traps), and several instructions
+(lmw/stmw/lswi/stswi/lswx/stswx) do not work at all, although this is not
+a very serious limitation.
+
 >
-> I am the one with the mostly non functional code for
-> a kernel filesystem
-> module for hfsplus.  The current code is available
-> in my directory on
-> devel.linuxppc.org as a patch against a 2.2.14
-> kernel tree. However, the
-> big problem now is that the filesystem structure
-> doesn't seem to match
-> what I got out of the Apple technote, which may be
-> due to an error
-> on my part or a lack of info from Apple. I haven't
-> had the time to look
-> into it carefully yet, but if you want to look, I'll
-> do what I can to
-> help. The URL is
-> http://dev.linuxppc.org/pub/users/flar/ which has
-> links to individual patches I have posted. The most
-> recent patch as of
-> this moment can mount a filesystem and has code to
-> read directories and
-> data forks of files, but sometimes misreads the
-> catalog and loses track
-> of files at odd times. It isn't likely to damage
-> disks, but it does
-> crash occasionally and cause strange errors.
->
-> 	Brad Boyer
-> 	flar@pants.nu
->
->
->
+> 	PowerPC 603, 740, 750 don't have a true little endian support, but
+> some bridge like MPC106
+> 	seems to be able to translate munged data to true little-endian mode
+> between CPU and PCI bridge, this
+> 	is enough to have a working  full little-endian system.
+
+Indeed, but setting the bridges up is a mess (and very dependant on each
+bridge). I'm not even sure than all PMac bridges can be used in little
+endian mode. I suspect little endian support in PPC is a vestige of trying
+to get Microsoft porting NT to windows since they did not want to make the
+effort to make it endian-independant. Another great Microsoft achievement
+since now NT is architecture independant provided the architecture is x86
+but don't get me started on that.
+
+> 	And so be able to get all the software from linux i386 working world
+> without headache.
+
+No, there will still be problems, did you hear about iopl(), ioperm(),
+sys_ldt(), embedded x86 assembly in X servers performing in and out
+instructions or even disabling hardware interrupts with no checks in the
+source code of the architecture it is being compiled for ?
+
+Actually, these are probably more severe than endianness issues.
+
+Besides that I'll stop using Linux/PPC the day it runs in little endian
+mode. Big endian is the only right way. Actually God meant bit 0 to be the
+most significant bit, not the other way around which leads to systematic
+inconsistencies.
+
+".naidne-elttil dnats t'nac I"
+
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
