@@ -1,73 +1,67 @@
-Message-ID: <3CEAAEFF.3D274083@kegel.com>
-Date: Tue, 21 May 2002 13:33:03 -0700
-From: Dan Kegel <dank@kegel.com>
-Reply-To: dank@kegel.com
-MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: khttpd crash verified with vanilla linuxppc_2_4_devel
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <5.1.0.14.0.20020521144711.0312fc28@sgss.com>
+Date: Tue, 21 May 2002 16:58:40 -0400
+To: linuxppc-embedded@lists.linuxppc.org
+From: Dean McBride <dmcbride@sgss.com>
+Subject: Un-killable process???
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I can crash khttpd at will on a totally vanilla
-linuxppc_2_4_devel kernel as of changeset 1.749
-using an open source load generator, with or without
-the patch that fixes a khttpd crash on x86
-( http://www.kegel.com/linux/khttpd/khttpd-unbork.patch ).
+Hello,
 
-This crash is not present on the imac with current kernels, nor
-in Hard Hat 2.0 on this same board, nor on the PC with current kernels.
-I believe it's a bug in the linuxppc_2_4_devel trunk.
+I have a process I can't kill (kill -9) without rebooting the system.  I've
+attempted
+attaching strace, gdb, etc. to the process, but each of those task just
+hang.  I
+can however kill those task (strace, gdb).  I've looked through the /proc/<pid>
+area, but don't really know what I'm looking for or at!  The task seems to be
+somehow stuck on some resource, but I don't know which one or how to find
+out.  I'm running with Linux 2.4.10-pre10 on a 4 processor Power PC with
+512Mbytes of memory.  The process is reading data from a PMC card.
 
-Now that I've got it happening with 1.749, I'll try earlier versions
-in hopes I find an older version that doesn't oops, and narrow
-down the cause.
+Any ideas or suggestions?  I've include some more information below!
 
-Kernel: circa 2.4.17-pre6 fetched with
-bk clone -r1.749 bk://ppc.bkserver.net/linuxppc_2_4_devel
+Thanks
+Dean
 
-Sample oops #1:
->>???; c0044358 <sys_select+3fc/48c>   <=====
-Trace; c00442a4 <sys_select+348/48c>
-Trace; c00081fc <ppc_select+a0/b0>
-Trace; c00028dc <ret_from_syscall_1+0/b4>
+Here's the output from the ps command:
+    74 root     root     R /opt/ds/src/lm1/bin/lm1_read -s 4 -m 255 -f 4000
+-a -r -u 2 -g 1
 
-Sample oops #2:
->>???; c003eaa4 <link_path_walk+7e4/990>   <=====
-Trace; c003e958 <link_path_walk+698/990>
-Trace; c003ec68 <path_walk+18/28>
-Trace; c003f3f8 <open_namei+a8/660>
-Trace; c0031f2c <filp_open+58/84>
-Trace; c0032394 <sys_open+4c/fc>
-Trace; c00028dc <ret_from_syscall_1+0/b4>
 
-The oops tracebacks are not terribly helpful.
+Heres the /proc/74/status file
 
-Script to reproduce:
-#!/bin/sh
-set -x
-insmod khttpd
-echo 1 > /proc/sys/net/khttpd/stop
-sleep 2
-echo 16 > /proc/sys/net/khttpd/threads
-echo `pwd` > /proc/sys/net/khttpd/documentroot
-echo 80 > /proc/sys/net/khttpd/clientport
-echo 8080 > /proc/sys/net/khttpd/serverport
-echo http://127.0.0.1:8080/128k.html > urls
-# place a 128KB-ish file here, e.g.
-# cp http_load 128k.html
-# chmod 644 128k.html
-while /bin/true; do
-    echo 1 > /proc/sys/net/khttpd/start
-    ./http_load -checksum -parallel 10 -seconds 6 urls
-    echo 1 > /proc/sys/net/khttpd/stop
-    sleep 1
-done
+sh-2.03# more /proc/74/status
+Name:   lm1_read
+State:  R (running)
+Pid:    74
+PPid:   62
+TracerPid:      0
+Uid:    0       0       0       0
+Gid:    0       0       0       0
+FDSize: 256
+Groups: 0
+VmSize:     2580 kB
+VmLck:      2580 kB
+VmRSS:      2580 kB
+VmData:     1128 kB
+VmStk:        16 kB
+VmExe:        20 kB
+VmLib:      1188 kB
+SigPnd: 0000000000044102
+SigBlk: 0000000000000000
+SigIgn: 8000000000000000
+SigCgt: 0000000000004002
+CapInh: 0000000000000000
+CapPrm: 00000000fffffeff
+CapEff: 00000000fffffeff
 
-Let that run for a few iterations, then stop it,
-and run http_load a few times by hand.
+/proc/74/statm file
 
-http_load is from http://www.acme.com/software/http_load/http_load-04jan2002.tar.gz
+sh-2.03# more /proc/74/statm
+645 645 317 17 0 628 328
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
