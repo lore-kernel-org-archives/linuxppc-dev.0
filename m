@@ -1,56 +1,50 @@
-Date: Wed, 29 May 2002 13:48:22 -0500
-From: Stephen Cameron <steve.cameron@hp.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Unrecognized opcode: `mtdcr'
-Message-ID: <20020529134822.A4429@zuul.cca.cpqcorp.net>
-Reply-To: steve.cameron@hp.com
+Date: Wed, 29 May 2002 12:05:44 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Stephen Cameron <steve.cameron@hp.com>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Matt Porter <mporter@mvista.com>
+Subject: Re: Unrecognized opcode: `mtdcr'
+Message-ID: <20020529190544.GO5997@opus.bloom.county>
+References: <20020529134822.A4429@zuul.cca.cpqcorp.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020529134822.A4429@zuul.cca.cpqcorp.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+On Wed, May 29, 2002 at 01:48:22PM -0500, Stephen Cameron wrote:
+>
+> Hi,
+>
+> I just started trying to play with my new Ebony board...
+>
+> I noticed now 'as' complains: Unrecognized opcode: `mtdcr'
+> when I do this:
+> 	make ebony_config
+[snip]
+> But, if I do this:
+> 	make walnut_config
+[snip]
+> Any ideas?
 
-I just started trying to play with my new Ebony board...
+I think we need to change arch/ppc/Makefile from:
+ifdef CONFIG_40x
+CFLAGS := $(CFLAGS) -Wa,-m405
+endif
 
-I noticed now 'as' complains: Unrecognized opcode: `mtdcr'
-when I do this:
-	make ebony_config
-	make mrproper
-	make menuconfig
-	make dep
-	make zImage
+To:
+ifdef CONFIG_4xx
+CFLAGS := $(CFLAGS) -Wa,-m405
+endif
 
-But, if I do this:
-	make walnut_config
-	make mrproper
-	make menuconfig
-	make dpe
-	make zImage
+For the moment.  Until there's some 440-specific opcodes we use (are
+there any?) which means we'll need to do -Wa,-m440.
 
-I can make a zImage just fine.
+Matt, do you want to do this or shall I?
 
-Of course I can manually add '-Wa,-m405' into my CFLAGS in
-the Makefile, and it will build ok, but I'm thinking that's
-not what I want to do.
-
-My 'as' says:
-
-[scameron@zuul sslinux]$ /usr/local/powerpc-linux/bin/as --version
-GNU assembler 2.12
-Copyright 2002 Free Software Foundation, Inc.
-This program is free software; you may redistribute it under the terms of
-the GNU General Public License.  This program has absolutely no warranty.
-This assembler was configured for a target of `powerpc-linux'.
-
-I also tried binutils 2.12.1, with the same results.
-
-Any ideas?
-
-Thanks,
-
--- steve
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
