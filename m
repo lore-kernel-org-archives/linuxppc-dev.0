@@ -1,46 +1,63 @@
-To: Matt Porter <mporter@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: DMA support for MPC5xxx? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 03 Jun 2004 09:06:35 PDT."
-             <20040603090635.B7347@home.com>
-Date: Thu, 03 Jun 2004 18:42:40 +0200
-Message-Id: <20040603164245.B24A9C109F@atlas.denx.de>
+Date: Thu, 3 Jun 2004 11:33:02 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+Cc: Matt Porter <mporter@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: DMA support for MPC5xxx?
+Message-ID: <20040603113302.A24468@home.com>
+References: <20040603090635.B7347@home.com> <20040603164245.B24A9C109F@atlas.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040603164245.B24A9C109F@atlas.denx.de>; from wd@denx.de on Thu, Jun 03, 2004 at 06:42:40PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Matt,
-
-in message <20040603090635.B7347@home.com> you wrote:
+On Thu, Jun 03, 2004 at 06:42:40PM +0200, Wolfgang Denk wrote:
 >
-> It would be nice if you could work support for your silicon into
-> the de facto standard Linux/PPC community trees like the MPC85xx
-> folks are doing.
+> Matt,
+>
+> in message <20040603090635.B7347@home.com> you wrote:
+> >
+> > It would be nice if you could work support for your silicon into
+> > the de facto standard Linux/PPC community trees like the MPC85xx
+> > folks are doing.
+>
+> We tried. We really tried.
+>
+> See the thread starting at
+> http://lists.linuxppc.org/linuxppc-dev/200311/msg00000.html
+>
+> David even posted on this list to get feedback  from  the  community.
+> But I haven't seen a single reply on the mailing lists.
 
-We tried. We really tried.
+So? Repost. I miss stuff the first time around a lot of times
+myself [this is not to indicate that I would necessarily comment
+on 5200 stuff, just an example].
 
-See the thread starting at
-http://lists.linuxppc.org/linuxppc-dev/200311/msg00000.html
+> Please don't blame _us_ that the 5xxx code was not accepted  for  the
+> public trees.
+>
+> This is really not fair!!!
 
-David even posted on this list to get feedback  from  the  community.
-But I haven't seen a single reply on the mailing lists.
+Fair? Of course the community isn't fair. It's fickle and often
+concerned only with its own current projects. Persistence really
+helps when one wants something to be in the trees. Frankly, I'm
+surprised that this isn't a top priority for Freescale. Maintaining
+code in the kernel.org trees is far more efficient than when it
+bit rots in some other tree. It also makes the support for Freescale's
+silicon available to a wider audience.  I think that has got to be
+high on their list.
 
+Just to add fuel to the fire, I'll note that others are able to
+appear on #mklinux and work out the issues in real-time with the
+folks there. is often more desirable and productive. It's also often
+the only way to get Paul's attention. Oh, and FWIW, the folks working
+hard on 8xx and 85xx acceptance do manage to do this.
 
-Please don't blame _us_ that the 5xxx code was not accepted  for  the
-public trees.
+I'm glad I don't give up as easy. It took me a while to get core OCP/4xx
+in linux-2.5. :)
 
-This is really not fair!!!
-
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"There was no difference between  the  behavior  of  a  god  and  the
-operations of pure chance..."   - Thomas Pynchon, _Gravity's Rainbow_
+-Matt
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
