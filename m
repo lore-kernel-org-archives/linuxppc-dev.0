@@ -1,55 +1,94 @@
-From: clark@esteem.com
-Message-Id: <1.5.4.32.20001017220107.006c1694@pop.esteem.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 17 Oct 2000 15:01:07 -0700
-To: "Chris Pearson" <chris@newmonics.com>
-Subject: Re: Host development environment?
-Cc: linuxppc-embedded@lists.linuxppc.org
+Date: Tue, 17 Oct 2000 19:46:31 -0400 (EDT)
+From: Jamie Guinan <guinan@bluebutton.com>
+Reply-To: guinan@bluebutton.com
+To: Yiran Duan <yiranduan@yahoo.com>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MBX kernel compile error
+In-Reply-To: <20001017210229.5208.qmail@web5201.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.21.0010171929100.19158-100000@gemini.home.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 11:04 AM 10/17/00 -0700, you wrote:
->
->Hi all,
->
->I have been lurking here for a while, and now I have a quick question...
->
->What do most of you use for a host environment.  I get the feeling that most
->people are cross compiling on a Linux-x86 box...  Does anyone use Linux-PPC
->on say a Macintosh, or RS6k?  What about OS X (beta)?
->
->Thanks,
->
->-Chris
->
->----------------------------------------------------------------------------
->------------
->Chris Pearson
->Computer Engineer                    chris@newmonics.com
->NewMonics, Inc.                      http://www.newmonics.com
->
->
->
+On Tue, 17 Oct 2000, Yiran Duan wrote:
 
+> Hi,
+>
+> I tried to compile linux kernel for MBX board on
+> i686-pc-linux. The package I used to built my
+> cross-compiler is:
+>
+>     binutils-2.10
+>     glibc-2.1.3
+>     gcc-2.95
 
-         Although I use a PC to develope on, HardHat supports Yellow Dog
-linux which works on a mac (depending on the model) and I think it may
-support rs6K.
+I've built for MBX with almost the same, only binutils 2.9.5 instead
+of 2.10.
 
-Good Luck,
+> The kernel package I used is
+>
+>     linux-2.2.17
+>
+> I passed make xconfig, make dep, make clean, but got
+> the following error at make zImage:
+>
+> powerpc-linux-gcc -D__KERNEL__
+> -I/home/compiler/sources/linux/include -Wall
+> -Wstrict-prototypes -O2 -fomit-frame-pointer
+> -fno-strict-aliasing -D__powerpc__ -fsigned-char
+> -msoft-float -pipe -fno-builtin -ffixed-r2
+> -Wno-uninitialized -mmultiple -mstring -mcpu=860
+> -D__ASSEMBLY__ -c head.S -o head.o
+> head.S: Assembler messages:
+> head.S:1829: Error: unsupported relocation type
+> make[1]: *** [head.o] Error 1
+> make[1]: Leaving directory
+> `/home/compiler/sources/linux/arch/ppc/kernel'
+> make: *** [_dir_arch/ppc/kernel] Error 2
+>
+> Could anyone give me any idea about where I was wrong?
 
-        Conn Clark
-*****************************************************************
-  If you live at home long enough, your parrents will move out.
-*****************************************************************
+Looking at
+  http://lxr.linux.no/source/arch/ppc/kernel/head.S
+the problem is apparent:
 
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
+  255 #ifndef CONFIG_8xx
+  256         bl      prom_init
+  257         .globl  __secondary_start
+  258 __secondary_start:
+  ...
 
-Stock Ticker Symbol				ELST
+  1293 #ifndef CONFIG_8xx
+  ..
+  1822 #else  /* CONFIG_8xx */
+  1823         .globl  giveup_fpu
+  1824 giveup_fpu:
+  1825         blr
+  1826 #endif /* CONFIG_8xx */
+  1827
+  1828 mmu_off:
+  1829         addi    r4, r3, __secondary_start - _start
+  1830         mfmsr   r3
+
+__secondary_start is not defined for CONFIG_8xx.  It looks like
+head.S changed a bit since 2.2.14, and I wouldn't know which way to go
+about fixing it, but I might suggest either backing down to 2.2.14 or
+jumping to 2.4.0-test2.
+
+The latest Monta Vista CDK (1.2) appears to include both, and last I
+tried their stuff worked quite well with little headaches - I'd recommend
+giving it a try,
+
+  http://www.mvista.com/
+  ftp://ftp.mvista.com/pub/CDK/
+
+-Jamie
+
+>
+> Thank you.
+> Yiran.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
