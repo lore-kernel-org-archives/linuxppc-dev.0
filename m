@@ -1,36 +1,42 @@
-Message-ID: <61891BA043DED21180920090273F173829B113@argentina.telogy.com>
-From: Naushit Sakarvadia <nsakarvadia@telogy.com>
-To: "'LinuxPPC Developpers'" <linuxppc-dev@lists.linuxppc.org>
-Subject: Assembly 
-Date: Wed, 11 Aug 1999 14:51:28 -0400
+Date: Wed, 11 Aug 1999 14:03:23 -0500 (CDT)
+From: Vinai <vroopcha@post.its.mcw.edu>
+To: Naushit Sakarvadia <nsakarvadia@telogy.com>
+cc: "'LinuxPPC Developpers'" <linuxppc-dev@lists.linuxppc.org>
+Subject: PowerPC info URL's (was Re: Assembly)
+In-Reply-To: <61891BA043DED21180920090273F173829B113@argentina.telogy.com>
+Message-ID: <Pine.SOL.3.96.990811135814.14503A-100000@post.its.mcw.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+Hi,
 
-I am trying to learn assembly language of Powerpc.
+Take a look at the following pages.  I keep meaning to actually go into
+some of this stuff, but there's "the pathway to hell" etc, etc ;-) Hope
+they have what you are looking for:
 
-Anybody can suggest good point to start?
+	http://www.mot.com/SPS/PowerPC/
+	http://www.mot.com/SPS/PowerPC/teksupport/
+	http://www.mot.com/SPS/PowerPC/teksupport/teklibrary/
 
-I tried to read User Manual of MPC860 and InstrucionManual but
-it doesnt talk about architecture of PPC,meas how many register it has...
-how many flags..etc...
+Some of the stuff on the last page may be what you need ??
 
-I need something like programmer's guide ,which is not I couldnt find on
-Motarola website.
+cheers
+vinai
 
-Can somebody experienced point me out where to start?
+}I am trying to learn assembly language of Powerpc.
+}
+}Anybody can suggest good point to start?
+}
+}I tried to read User Manual of MPC860 and InstrucionManual but it
+}doesnt talk about architecture of PPC,meas how many register it has...
+}how many flags..etc...
+}
+}I need something like programmer's guide ,which is not I couldnt find on
+}Motarola website.
 
-Thanks in advance.
-
-Bye
-
-Regards
-Naushit
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
