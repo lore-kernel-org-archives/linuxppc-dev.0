@@ -1,35 +1,28 @@
-Message-ID: <399082CA.1DA9D0D1@embeddededge.com>
-Date: Tue, 08 Aug 2000 17:59:38 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <3990B113.6063CFD2@m2tech.co.nz>
+Date: Wed, 09 Aug 2000 13:17:07 +1200
+From: ben bodley <benb@m2tech.co.nz>
 MIME-Version: 1.0
-To: "Brown, David (dbrown03)" <DBrown03@harris.com>
-CC: "'Dan Malek'" <dan@netx4.com>,
-        "'linuxppc-embedded@lists.linuxppc.org'"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Serial Port Baud Rate
-References: <BE1C564723B3D21191FD0000F840E39801D815F8@rfcmx2.rfc.comm.harris.com>
+To: mailing list <linuxppc-embedded@lists.linuxppc.org>
+Subject: linux not at physical address zero
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Brown, David (dbrown03)" wrote:
->
-> Baud rates 300, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200 worked
-> for me, with simple tests.
+hi all,
 
-Thanks (I was mostly giving you a hard time, but I do appreciate the
-testing :-).
+i have just got linux running out of physical address 0xa0000000
+(instead of 0x00000000), for our custom board... the solution is not
+very neat and i was wondering if someone had actually added support for
+this to the kernel, maybe in an older version...
 
-> The lower Baud rates lose characters when the device is closed before it has
-> been emptied, but that's a known condition which is usually not a problem
-> for embedded work.
+cheers,
 
-Yeah.  Unfortunately, there isn't any way to know when the last bit of
-the UART has left the CPM shifter.  The only method is to delay based upon
-the FIFO depth and bit rate.  That obviously isn't implemented very well.
+ben
 
+--
+/\\------------------------------------------------------------------
+:::::::::::..ben.b..m2technologyltd.nz..64.9.4448307.130..:::::::::::
 
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
