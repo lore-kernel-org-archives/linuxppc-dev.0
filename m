@@ -1,16 +1,33 @@
+From: "T Michael Turney" <tmike@recipes4linux.com>
+To: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: MPC8260 ethernet transmit problem
+Date: Tue, 15 Jun 2004 08:39:54 -0700
+Message-ID: <GEEKLLHMFHLAJOBEEELHCEPHCJAA.tmike@recipes4linux.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Subject: RE: MPC8260 ethernet transmit problem
-Date: Tue, 15 Jun 2004 09:05:38 -0600
-Message-ID: <065ACD8E84315E4394C835E398C8D5EB089DD8@cossmgmbx02.email.corp.tld>
-From: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <065ACD8E84315E4394C835E398C8D5EB089DD8@cossmgmbx02.email.corp.tld>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Check your port initialization: do you have the Tx (and Rx) clock configured properly?  Do you have the Tx data and control lines configured properly?
+Also check the PHY initialization function.
+Cheers,
+T.mike
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of
+VanBaren, Gerald (AGRE)
+Sent: Tuesday, June 15, 2004 8:06 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: MPC8260 ethernet transmit problem
+
+
+
+Check your port initialization: do you have the Tx (and Rx) clock configured
+properly?  Do you have the Tx data and control lines configured properly?
 
 gvb
 
