@@ -1,35 +1,55 @@
-Message-Id: <9909281839.AA40920@marc.watson.ibm.com>
+Date: Tue, 28 Sep 1999 13:34:18 -0700 (PDT)
+From: Deirdre Saoirse <deirdre@linuxcare.com>
 To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Cc: hollis+@andrew.cmu.edu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2.13 build OOB?; need for some standardization here? 
-In-Reply-To: Message from Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-   of "Tue, 28 Sep 1999 14:08:13 EDT." <199909281810.NAA06999@lists.linuxppc.org>
-Date: Tue, 28 Sep 1999 14:39:11 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.2.13 build OOB?; need for some standardization here?
+In-Reply-To: <199909281522.KAA04793@lists.linuxppc.org>
+Message-ID: <Pine.LNX.4.10.9909281327440.2351-100000@gentoo.linuxcare.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Kevin Hendricks writes:
+On Tue, 28 Sep 1999, Kevin_Hendricks wrote:
 
-Kevin> I think we should either fix the way Linus and company decides when to release a 
-Kevin> stable version, or get our own "Alan Cox" to act as shepard over our own stable 
-Kevin> "ppc" kernel tree and make that person "official".
+> Isn't there any way to do more standardization among the different powerpc linux 
+> distributions (I know you want to differentiate your product to compete but..)
+> 
+> Right now, we have Debian ppc, Linux PPC, YellowDog Linux, TurboLinux,
+> MkLinux DR1, etc all vying for the same user base.
 
-	I tend to agree with Kevin here.  The Linux core kernel developers
-need to improve their release engineering process.  I realize that
-Linux/PPC was on the fringe for a long time, and both Paul and Cort have
-done a lot of excellent work these past few months adding functionality
-and improving the overall design.  This rapid development makes it hard
-for Linus and company to keep up.  However, x86 development should not
-break PowerPC and other ports as much as I have seen.
+MkLinux and LinuxPPC are effectively identical except for kernel. The
+file hierarchy is the same (Red Hat based).
 
-	PowerPC and other architectures are becoming more important and
-demonstrating the diversity of Linux.  The breakage and instability does
-not cast a good light on bazaar-style development model and Linux when we
-are trying to broaden the Linux market.
+Furthermore, SuSE has announced that it too will be interested in a
+PowerPC port. There's a LOT of interest in PowerPC these days.
 
-David
+> This is literally a nightmare for tracking down bug reports of keycode problems 
+> in the jdk, video driver problems, etc.
+
+It is said that on the x86 kernel,  almost 50% of reported kernel bugs are
+people running vmware.
+
+> To more unify this, should we have our own clone of Alan Cox to make 
+> "semi-official" updates to the "official" stable tree to make things more 
+> official for ppc.  
+> 
+> Is this a role for Paul?  (it is the role that Paul has filled for a very long 
+> time now, maybe it should be "official").  If so, then publize that being the 
+> one "true" source for "official" ppc kernel trees.
+
+I thought this already WAS Paul Mackerras.
+
+> Am I simply worrying too much?
+
+Yes. :)
+
+-- 
+Deirdre Saoirse, Systems Analyst, Linuxcare, Inc.
+415.354.4878 x252 tel, 415.701.7457 fax
+dsaoirse@linuxcare.com, http://www.linuxcare.com/
+Linuxcare. At the center of Linux.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
