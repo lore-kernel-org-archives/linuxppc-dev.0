@@ -1,57 +1,42 @@
-Subject: Re: Serial Console on XServe and yaboot???
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bill Fink <billfink@mindspring.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20030312081931.2cafbb86.billfink@mindspring.com>
-References: <20030311223353.00f9a059.billfink@mindspring.com>
-	 <1047455184.18956.27.camel@zion.wanadoo.fr>
-	 <20030312081931.2cafbb86.billfink@mindspring.com>
-Content-Type: text/plain
-Message-Id: <1047476566.18957.61.camel@zion.wanadoo.fr>
-Mime-Version: 1.0
-Date: 12 Mar 2003 14:42:47 +0100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15983.28808.122462.515758@gargle.gargle.HOWL>
+Date: Wed, 12 Mar 2003 18:38:16 +0100
+From: mikpe@csd.uu.se
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.2.24 boot hang fix for old-world PowerMac 4400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2003-03-12 at 14:19, Bill Fink wrote:
-> Hi Ben,
->
-> On 12 Mar 2003, Benjamin Herrenschmidt wrote:
->
-> > On Wed, 2003-03-12 at 04:33, Bill Fink wrote:
-> > > I'd like to use the serial port on the XServe as a serial console.
-> > > I enabled CONFIG_SERIAL_CONSOLE in a 2.4.20-0.7b (YDL 2.3) kernel,
-> > > set the OF input-device and output-device parameters to ttya, and
-> > > booted with the kernel argument "console=ttyS0,38400".
-> > >
-> > > This actually works once the system starts booting.  My problem
-> > > is that I never get a chance to interact with yaboot and thus for
-> > > example can't select a different Linux kernel to boot.  Is there
-> > > any way to accomplish this, for example by some suitable modification
-> > > to the ofboot.b file in the boot partition?  Or is this just not
-> > > supported by the hardware?
-> > >
-> > > Thanks in advance for any help or pointers, or even for informing
-> > > me that this is a hopeless quest.
-> >
-> > iirc, there is something weird with the OF params for the console
-> > on the xserve. Try changing these:
-> >
-> > intput-device    "scca"
-> > output-device    "scca"
-> > input-device-1   "scca"
-> > output-device-1  "scca"
->
-> Thanks for the idea, but unfortunately it had no effect, as I saw
-> no yaboot screens show up when I did a reboot.  Is it possible that
-> the initial OF uses a different baud rate than 38400 (although I
-> didn't even see any garbage show up)?
+Kernel 2.2.24 hangs immediately on boot on my PowerMac 4400.
+The patch below fixes this problem. I checked the linuxppc_2_2 tree
+today and it does not have this fix. Please consider applying it.
 
-Hrm... I did manage to get it last time I played with an xserve. I
-don't remember the baudrate though (maybe 57600...)
+I extracted the patch from YDL's 2.2.19-1r kernel, since that
+was the only fully functional kernel I could find.
+All 2.4 ppc kernels I've tested have problems on this machine
+(swim3 floppy driver needs 10 minutes to write a 1.44MB floppy,
+and vmlinux.coff aborts with a CLAIM error at boot) which is
+why I'm currently using the 2.2.24 kernel.
 
-Ben.
+Please cc: me on replies; I subscribed to linuxppc-dev today but
+haven't gotten any confirmation or linuxppc-dev mail yet.
 
+/Mikael
+
+--- linux-2.2.24/arch/ppc/kernel/prom.c.~1~	Mon Mar 26 22:41:59 2001
++++ linux-2.2.24/arch/ppc/kernel/prom.c	Wed Mar 12 15:57:35 2003
+@@ -668,8 +668,8 @@
+ 	}
+
+ #endif
+-	/* If PowerMac, then use quiesce call */
+-	if (!chrp) {
++	/* If OpenFirmware version >= 3, then use quiesce call */
++	if (RELOC(prom_version) >= 3) {
+ 	    prom_print(RELOC("Calling quiesce ...\n"));
+ 	    call_prom(RELOC("quiesce"), 0, 0);
+ 	    offset = reloc_offset();
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
