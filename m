@@ -1,18 +1,15 @@
-Return-Path: <jchapman@katalix.com>
-Received: from ptb-relay02.plus.net (ptb-relay02.plus.net [212.159.14.213])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1B14867A6D
+Return-Path: <greg.weeks@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id 6611A67A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Mar 2005 06:52:56 +1100 (EST)
-Message-ID: <42373D11.5020808@katalix.com>
-Date: Tue, 15 Mar 2005 19:52:49 +0000
-From: James Chapman <jchapman@katalix.com>
+	Wed, 16 Mar 2005 07:19:19 +1100 (EST)
+Message-ID: <42374345.6080704@timesys.com>
+Date: Tue, 15 Mar 2005 15:19:17 -0500
+From: Greg Weeks <greg.weeks@timesys.com>
 MIME-Version: 1.0
-To: "Mark A. Greer" <mgreer@mvista.com>
-Content-Type: multipart/mixed; boundary="------------040803020108050609060607"
-Cc: Linuxppc-Embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH 2.6.11] ppc32: update Radstone ppc7d platform for enet/i2c
+To: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/mixed; boundary="------------080208060005040201060508"
+Subject: [patch] mpc8560ads mtd platform
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,231 +21,211 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------040803020108050609060607
-Content-Type: text/plain; charset=us-ascii; format=flowed
+--------------080208060005040201060508
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
+Add an MTD partitions in the platform code for the mpc8560ads board.
+
+Signed-off-by: Greg Weeks <greg.weeks@timesys.com>
 
 
---------------040803020108050609060607
-Content-Type: text/plain;
- name="ppc7d-platdata.patch"
+
+--------------080208060005040201060508
+Content-Type: text/x-patch;
+ name="mpc8560ads.mtd.paltform.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="ppc7d-platdata.patch"
+ filename="mpc8560ads.mtd.paltform.patch"
 
-ppc32: add ethernet and I2C support to Radstone PPC7D platform
+--- ppc-mpc8560ads/arch/ppc/configs/mpc8560_ads_defconfig-orig
++++ ppc-mpc8560ads/arch/ppc/configs/mpc8560_ads_defconfig
 
-Signed-off-by: James Chapman <jchapman@katalix.com>
-
-Change default platform config to add mv643xx_eth and mv64xxx-i2c
-config options. Add i2c platform data and update to cope with the
-recent platform device name change.
-
-Index: linux-2.6/arch/ppc/platforms/radstone_ppc7d.c
-===================================================================
---- linux-2.6.orig/arch/ppc/platforms/radstone_ppc7d.c	2005-03-15 19:29:22.000000000 +0000
-+++ linux-2.6/arch/ppc/platforms/radstone_ppc7d.c	2005-03-15 19:35:02.000000000 +0000
-@@ -669,6 +669,42 @@
- }
- #endif
- 
-+#if defined(CONFIG_I2C_MV64XXX)
-+static void __init
-+ppc7d_fixup_i2c_pdata(struct platform_device *pdev)
-+{
-+	struct mv64xxx_i2c_pdata *pdata;
-+	int i;
-+
-+	pdata = pdev->dev.platform_data;
-+	if (pdata == NULL) {
-+		pdata = kmalloc(GFP_KERNEL, sizeof(*pdata));
-+		if (pdata == NULL)
-+			return;
-+
-+		memset(pdata, 0, sizeof(*pdata));
-+		pdev->dev.platform_data = pdata;
-+	}
-+
-+	/* divisors M=8, N=3 for 100kHz I2C from 133MHz system clock */
-+	pdata->freq_m = 8;
-+	pdata->freq_n = 3;
-+	pdata->timeout = 500;
-+	pdata->retries = 3;
-+
-+	/* Adjust IRQ by mv64360_irq_base */
-+	for (i = 0; i < pdev->num_resources; i++) {
-+		struct resource *r = &pdev->resource[i];
-+
-+		if (r->flags & IORESOURCE_IRQ) {
-+			r->start += mv64360_irq_base;
-+			r->end += mv64360_irq_base;
-+			pr_debug("%s, uses IRQ %d\n", pdev->name, (int) r->start);
-+		}
-+	}
-+}
-+#endif
-+
- static int __init ppc7d_platform_notify(struct device *dev)
- {
- 	static struct {
-@@ -676,13 +712,16 @@
- 		void ((*rtn) (struct platform_device * pdev));
- 	} dev_map[] = {
- #if defined(CONFIG_SERIAL_MPSC)
--		{ MPSC_CTLR_NAME "0", ppc7d_fixup_mpsc_pdata },
--		{ MPSC_CTLR_NAME "1", ppc7d_fixup_mpsc_pdata },
-+		{ MPSC_CTLR_NAME ".0", ppc7d_fixup_mpsc_pdata },
-+		{ MPSC_CTLR_NAME ".1", ppc7d_fixup_mpsc_pdata },
- #endif
- #if defined(CONFIG_MV643XX_ETH)
--		{ MV643XX_ETH_NAME "0", ppc7d_fixup_eth_pdata },
--		{ MV643XX_ETH_NAME "1", ppc7d_fixup_eth_pdata },
--		{ MV643XX_ETH_NAME "2", ppc7d_fixup_eth_pdata },
-+		{ MV643XX_ETH_NAME ".0", ppc7d_fixup_eth_pdata },
-+		{ MV643XX_ETH_NAME ".1", ppc7d_fixup_eth_pdata },
-+		{ MV643XX_ETH_NAME ".2", ppc7d_fixup_eth_pdata },
-+#endif
-+#if defined(CONFIG_I2C_MV64XXX)
-+		{ MV64XXX_I2C_CTLR_NAME ".0", ppc7d_fixup_i2c_pdata },
- #endif
- 	};
- 	struct platform_device *pdev;
-@@ -1363,7 +1402,8 @@
- 
- 	ppc_md.pcibios_fixup_bus = ppc7d_pci_fixup_bus;
- 
--#if defined(CONFIG_SERIAL_MPSC) || defined(CONFIG_MV643XX_ETH)
-+#if defined(CONFIG_SERIAL_MPSC) || defined(CONFIG_MV643XX_ETH) || \
-+    defined(CONFIG_I2C_MV64XXX)
- 	platform_notify = ppc7d_platform_notify;
- #endif
- 
-@@ -1405,4 +1445,8 @@
- 	rev_num = (val8 & PPC7D_CPLD_BOARD_REVISION_NUMBER_MASK) >> 5;
- 	if (rev_num <= 1)
- 		ppc7d_has_alma = 1;
-+
-+#ifdef DEBUG
-+	console_printk[0] = 8;
-+#endif
- }
-Index: linux-2.6/arch/ppc/configs/radstone_ppc7d_defconfig
-===================================================================
---- linux-2.6.orig/arch/ppc/configs/radstone_ppc7d_defconfig	2005-03-15 19:29:22.000000000 +0000
-+++ linux-2.6/arch/ppc/configs/radstone_ppc7d_defconfig	2005-03-15 19:30:50.000000000 +0000
 @@ -1,7 +1,7 @@
  #
  # Automatically generated make config: don't edit
- # Linux kernel version: 2.6.11
--# Tue Mar 15 11:11:47 2005
-+# Tue Mar 15 14:31:19 2005
+-# Linux kernel version: 2.6.11-rc1
+-# Thu Jan 20 01:24:56 2005
++# Linux kernel version: 2.6.11.3
++# Tue Mar 15 15:06:17 2005
  #
  CONFIG_MMU=y
  CONFIG_GENERIC_HARDIRQS=y
-@@ -514,7 +514,10 @@
- CONFIG_SK98LIN=y
- # CONFIG_VIA_VELOCITY is not set
- CONFIG_TIGON3=y
--# CONFIG_MV643XX_ETH is not set
-+CONFIG_MV643XX_ETH=y
-+CONFIG_MV643XX_ETH_0=y
-+CONFIG_MV643XX_ETH_1=y
-+# CONFIG_MV643XX_ETH_2 is not set
+@@ -75,6 +75,7 @@
+ # CONFIG_MPC8555_CDS is not set
+ CONFIG_MPC8560_ADS=y
+ # CONFIG_SBC8560 is not set
++# CONFIG_STX_GP3 is not set
+ CONFIG_MPC8560=y
  
  #
- # Ethernet (10000 Mbit)
-@@ -667,7 +670,90 @@
+@@ -134,7 +135,78 @@
  #
- # I2C support
+ # Memory Technology Devices (MTD)
  #
--# CONFIG_I2C is not set
-+CONFIG_I2C=y
-+CONFIG_I2C_CHARDEV=y
+-# CONFIG_MTD is not set
++CONFIG_MTD=y
++# CONFIG_MTD_DEBUG is not set
++CONFIG_MTD_PARTITIONS=y
++# CONFIG_MTD_CONCAT is not set
++# CONFIG_MTD_REDBOOT_PARTS is not set
++# CONFIG_MTD_CMDLINE_PARTS is not set
 +
 +#
-+# I2C Algorithms
++# User Modules And Translation Layers
 +#
-+# CONFIG_I2C_ALGOBIT is not set
-+# CONFIG_I2C_ALGOPCF is not set
-+# CONFIG_I2C_ALGOPCA is not set
++CONFIG_MTD_CHAR=y
++CONFIG_MTD_BLOCK=y
++# CONFIG_FTL is not set
++# CONFIG_NFTL is not set
++# CONFIG_INFTL is not set
 +
 +#
-+# I2C Hardware Bus support
++# RAM/ROM/Flash chip drivers
 +#
-+# CONFIG_I2C_ALI1535 is not set
-+# CONFIG_I2C_ALI1563 is not set
-+# CONFIG_I2C_ALI15X3 is not set
-+# CONFIG_I2C_AMD756 is not set
-+# CONFIG_I2C_AMD8111 is not set
-+# CONFIG_I2C_I801 is not set
-+# CONFIG_I2C_I810 is not set
-+# CONFIG_I2C_ISA is not set
-+# CONFIG_I2C_MPC is not set
-+# CONFIG_I2C_NFORCE2 is not set
-+# CONFIG_I2C_PARPORT_LIGHT is not set
-+# CONFIG_I2C_PIIX4 is not set
-+# CONFIG_I2C_PROSAVAGE is not set
-+# CONFIG_I2C_SAVAGE4 is not set
-+# CONFIG_SCx200_ACB is not set
-+# CONFIG_I2C_SIS5595 is not set
-+# CONFIG_I2C_SIS630 is not set
-+# CONFIG_I2C_SIS96X is not set
-+# CONFIG_I2C_STUB is not set
-+# CONFIG_I2C_VIA is not set
-+# CONFIG_I2C_VIAPRO is not set
-+# CONFIG_I2C_VOODOO3 is not set
-+# CONFIG_I2C_PCA_ISA is not set
-+CONFIG_I2C_MV64XXX=y
++CONFIG_MTD_CFI=y
++# CONFIG_MTD_JEDECPROBE is not set
++CONFIG_MTD_GEN_PROBE=y
++# CONFIG_MTD_CFI_ADV_OPTIONS is not set
++CONFIG_MTD_MAP_BANK_WIDTH_1=y
++CONFIG_MTD_MAP_BANK_WIDTH_2=y
++CONFIG_MTD_MAP_BANK_WIDTH_4=y
++# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
++# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
++# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
++CONFIG_MTD_CFI_I1=y
++CONFIG_MTD_CFI_I2=y
++# CONFIG_MTD_CFI_I4 is not set
++# CONFIG_MTD_CFI_I8 is not set
++CONFIG_MTD_CFI_INTELEXT=y
++# CONFIG_MTD_CFI_AMDSTD is not set
++# CONFIG_MTD_CFI_STAA is not set
++CONFIG_MTD_CFI_UTIL=y
++# CONFIG_MTD_RAM is not set
++# CONFIG_MTD_ROM is not set
++# CONFIG_MTD_ABSENT is not set
++# CONFIG_MTD_XIP is not set
 +
 +#
-+# Hardware Sensors Chip support
++# Mapping drivers for chip access
 +#
-+CONFIG_I2C_SENSOR=y
-+# CONFIG_SENSORS_ADM1021 is not set
-+# CONFIG_SENSORS_ADM1025 is not set
-+# CONFIG_SENSORS_ADM1026 is not set
-+# CONFIG_SENSORS_ADM1031 is not set
-+# CONFIG_SENSORS_ASB100 is not set
-+# CONFIG_SENSORS_DS1621 is not set
-+# CONFIG_SENSORS_FSCHER is not set
-+# CONFIG_SENSORS_FSCPOS is not set
-+# CONFIG_SENSORS_GL518SM is not set
-+# CONFIG_SENSORS_GL520SM is not set
-+# CONFIG_SENSORS_IT87 is not set
-+# CONFIG_SENSORS_LM63 is not set
-+# CONFIG_SENSORS_LM75 is not set
-+# CONFIG_SENSORS_LM77 is not set
-+# CONFIG_SENSORS_LM78 is not set
-+# CONFIG_SENSORS_LM80 is not set
-+# CONFIG_SENSORS_LM83 is not set
-+# CONFIG_SENSORS_LM85 is not set
-+# CONFIG_SENSORS_LM87 is not set
-+CONFIG_SENSORS_LM90=y
-+# CONFIG_SENSORS_MAX1619 is not set
-+# CONFIG_SENSORS_PC87360 is not set
-+# CONFIG_SENSORS_SMSC47B397 is not set
-+# CONFIG_SENSORS_SIS5595 is not set
-+# CONFIG_SENSORS_SMSC47M1 is not set
-+# CONFIG_SENSORS_VIA686A is not set
-+# CONFIG_SENSORS_W83781D is not set
-+# CONFIG_SENSORS_W83L785TS is not set
-+# CONFIG_SENSORS_W83627HF is not set
++# CONFIG_MTD_COMPLEX_MAPPINGS is not set
++CONFIG_MTD_PHYSMAP=y
++CONFIG_MTD_PHYSMAP_START=0xff000000
++CONFIG_MTD_PHYSMAP_LEN=0x01000000
++CONFIG_MTD_PHYSMAP_BANKWIDTH=4
 +
 +#
-+# Other I2C Chip support
++# Self-contained MTD device drivers
 +#
-+# CONFIG_SENSORS_EEPROM is not set
-+# CONFIG_SENSORS_PCF8574 is not set
-+# CONFIG_SENSORS_PCF8591 is not set
-+# CONFIG_SENSORS_RTC8564 is not set
-+# CONFIG_SENSORS_M41T00 is not set
-+# CONFIG_I2C_DEBUG_CORE is not set
-+# CONFIG_I2C_DEBUG_ALGO is not set
-+# CONFIG_I2C_DEBUG_BUS is not set
-+# CONFIG_I2C_DEBUG_CHIP is not set
++# CONFIG_MTD_PMC551 is not set
++# CONFIG_MTD_SLRAM is not set
++# CONFIG_MTD_PHRAM is not set
++# CONFIG_MTD_MTDRAM is not set
++# CONFIG_MTD_BLKMTD is not set
++# CONFIG_MTD_BLOCK2MTD is not set
++
++#
++# Disk-On-Chip Device Drivers
++#
++# CONFIG_MTD_DOC2000 is not set
++# CONFIG_MTD_DOC2001 is not set
++# CONFIG_MTD_DOC2001PLUS is not set
++
++#
++# NAND Flash Device Drivers
++#
++# CONFIG_MTD_NAND is not set
  
  #
- # Dallas's 1-wire bus
+ # Parallel port support
+@@ -540,7 +612,6 @@
+ # Graphics support
+ #
+ # CONFIG_FB is not set
+-# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+ 
+ #
+ # Sound
+@@ -587,6 +658,10 @@
+ CONFIG_FS_MBCACHE=y
+ # CONFIG_REISERFS_FS is not set
+ # CONFIG_JFS_FS is not set
++
++#
++# XFS support
++#
+ # CONFIG_XFS_FS is not set
+ # CONFIG_MINIX_FS is not set
+ # CONFIG_ROMFS_FS is not set
+@@ -631,6 +706,8 @@
+ # CONFIG_BEFS_FS is not set
+ # CONFIG_BFS_FS is not set
+ # CONFIG_EFS_FS is not set
++# CONFIG_JFFS_FS is not set
++# CONFIG_JFFS2_FS is not set
+ # CONFIG_CRAMFS is not set
+ # CONFIG_VXFS_FS is not set
+ # CONFIG_HPFS_FS is not set
+@@ -648,7 +725,6 @@
+ # CONFIG_NFSD is not set
+ CONFIG_ROOT_NFS=y
+ CONFIG_LOCKD=y
+-# CONFIG_EXPORTFS is not set
+ CONFIG_SUNRPC=y
+ # CONFIG_RPCSEC_GSS_KRB5 is not set
+ # CONFIG_RPCSEC_GSS_SPKM3 is not set
 
---------------040803020108050609060607--
+--- ppc-mpc8560ads/arch/ppc/platforms/85xx/mpc8560_ads.c-orig
++++ ppc-mpc8560ads/arch/ppc/platforms/85xx/mpc8560_ads.c
+
+@@ -30,6 +30,7 @@
+ #include <linux/serial.h>
+ #include <linux/tty.h>	/* for linux/serial_core.h */
+ #include <linux/serial_core.h>
++#include <linux/mtd/physmap.h>
+ #include <linux/initrd.h>
+ #include <linux/module.h>
+ #include <linux/fsl_devices.h>
+@@ -220,3 +221,39 @@
+ 
+ 	return;
+ }
++
++#ifdef CONFIG_MTD_PHYSMAP
++static struct mtd_partition mpc85xxads_partitions[] = {
++	{
++		.name =   "Linux JFFS2 Filesystem",
++		.offset = 0x0,
++		.size =   0x00800000,
++	},
++	{
++		.name =   "Linux Kernel",
++		.offset = 0x00800000,
++		.size =   0x00200000,
++	},
++	{
++		.name =   "Linux INITRD",
++		.offset = 0x00a00000,
++		.size =   0x00580000,
++	},
++	{
++		.name	= "Bootloader",
++		.offset	= 0x00f80000,
++		.size	= 0x00080000,
++	}
++};
++
++static int __init
++mpc8560ads_setup_mtd(void)
++{
++
++	physmap_set_partitions(&mpc85xxads_partitions[0], 4);
++	return 0;
++}
++
++arch_initcall(mpc8560ads_setup_mtd);
++
++#endif
+
+--------------080208060005040201060508--
