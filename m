@@ -1,43 +1,40 @@
-Date: Tue, 30 Oct 2001 12:12:21 -0600
-From: Troy Benjegerdes <hozer@drgw.net>
+Message-ID: <3BDEEEE9.3080300@hadess.net>
+Date: Tue, 30 Oct 2001 18:18:17 +0000
+From: Bastien Nocera <hadess@hadess.net>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: current linuxppc_2_4_devel SMP strangeness.. (processes dieing)
-Message-ID: <20011030121221.E13806@altus.drgw.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: recording audio?
+References: <200110300216.VAA01211@missioncriticallinux.com>	<1004447087.20679.2102.camel@pismo> <200110301414.JAA09542@missioncriticallinux.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Okay, I pulled 2_4_devel this morning and built and SMP kernel my MTX.. it
-booted up, but some weird things started happening..
+Josh Huber wrote:
 
-First, exportfs died on bootup..
-
-Starting internet superserver: inetd.
-Exporting directories for NFS kernel
-daemon.../etc/rc2.d/S20nfs-kernel-server: line 80:   214 Illegal
-instruction     $PREFIX/sbin/exportfs -r
-done.
-Starting NFS kernel daemon: nfsd mountd.
+>
+> Michel Dänzer <michdaen@iiic.ethz.ch> writes:
+>
+>
+>>dmasound doesn't support recording AFAIK, but ALSA might.
 
 
-Then, when I tried to log in over serial console, the login process
-appeared to die after I entered 'root'.  If I kept trying, I would
-occasional actually get a password prompt.
+It does. See Iain's page.
 
 
-I think there's something going wrong either in the cache flush avoidance
-stuff, or in the generic smp VM.
+> hmm, I wasn't even aware that there was an ALSA driver for powermac
+> sound hardware.  I'll have to check that out...
 
-(I'm going to finally update linuxppc_2_4 for MTX SMP later today, so I'll
-can hopefully find out if it's a generic VM problem or not)
+
+It even supports iBooks IIRC.
+
+
+Cheers
+
 
 --
-Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
------"If this message isn't misspelled, I didn't write it" -- Me -----
-"Why do musicians compose symphonies and poets write poems? They do it
-because life wouldn't have any meaning for them if they didn't. That's
-why I draw cartoons. It's my life." -- Charles Shulz
+/Bastien Nocera
+http://hadess.net
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
