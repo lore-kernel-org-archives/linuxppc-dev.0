@@ -1,52 +1,28 @@
-From: Konstantinos Margaritis <kmargar@cc.uoa.gr>
-To: linuxppc-dev@lists.linuxppc.org
+Date: Tue, 4 May 1999 22:46:45 +1000 (EST)
+From: Nathan Hurst <njh@drongo.anu.edu.au>
+To: Konstantinos Margaritis <kmargar@cc.uoa.gr>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Mozilla for PPC
-Date: Tue, 4 May 1999 12:21:17 +0300
-Content-Type: text/plain
-References: <199905040459.XAA23649@lists.linuxppc.org>
+In-Reply-To: <99050412251300.10725@proton>
+Message-ID: <Pine.LNX.3.95.990504224139.8992A-100000@drongo.anu.edu.au>
 MIME-Version: 1.0
-Message-Id: <99050412251300.10725@proton>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
------BEGIN PGP SIGNED MESSAGE-----
+On Tue, 4 May 1999, Konstantinos Margaritis wrote:
 
->On Mon, 3 May 1999, Jason Y. Sproul wrote:
->
->> On Mon, 3 May 1999, Tom Rini wrote:
->> 
->> > R5 RSN. <g>
->> 
->> Are we talking O(weeks) or O(days) here? I'm trying to budget my time
->> effectively, and it would help to have this info.
->
->O(days) == O(7*weeks) == 7 * O(weeks) == O(weeks).  Yes!  O(t).
+> >O(days) == O(7*weeks) == 7 * O(weeks) == O(weeks).  Yes!  O(t).
+> 
+> Assuming that the O(t) function is linear. But it seldom is, it is much
+> more likely polynomial or even exponential so in the end
 
-Assuming that the O(t) function is linear. But it seldom is, it is much
-more likely polynomial or even exponential so in the end
+Actually, time usually depends on whether you're having fun, O(time) = 
+k/O(fun); and as it is no fun not having mozilla, O(time) -> \infty.
 
-O(days) != O(weeks).
+njh
 
-unless you take the limit so that 
-
-lim O(days) = lim O(weeks)
-
-Sorry, couldn't resist :-)
-
-- --
-Konstantinos Margaritis
-
------BEGIN PGP SIGNATURE-----
-Version: 2.6.3ia
-Charset: noconv
-
-iQCVAwUBNy68//alfJok8qABAQFhowP8CuTM3a1g4aDfvabrWTKY4ErN+c1WgqXx
-FaqVF9gjcBel7vJHJHCUTuFnw+5omyK35pwwOGaHURCYKCq+Bfm2/NGrWKYb+U8r
-BDxKuCDqKyHuG5eiJso2Fac+oCTfEGrBvxzIvlm5SaZcC1nRR9KlzeLQa5D2LeBD
-J5XcGAm2UZc=
-=RARS
------END PGP SIGNATURE-----
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
