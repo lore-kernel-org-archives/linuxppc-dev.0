@@ -1,50 +1,44 @@
-Message-ID: <39CFB72A.8974F2DB@student.ethz.ch>
-Date: Mon, 25 Sep 2000 22:35:54 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
-MIME-Version: 1.0
-To: Martin Costabel <costabel@wanadoo.fr>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Linux keycodes and left cursor on Pismo
-References: <Pine.SOL.4.10.10009221556010.17778-100000@ncal.verio.com>
-	 <39CE9B1F.84530732@student.ethz.ch> <39CEF070.1A60BE5B@wanadoo.fr>
-Content-Type: text/plain; charset=iso-8859-1
+Date: Mon, 25 Sep 2000 14:24:09 -0700
+From: Geoff Keating <geoffk@cygnus.com>
+Message-Id: <200009252124.OAA25434@geoffk.org>
+To: Franz.Sirl-kernel@lauterbach.com
+CC: drepper@cygnus.com, libc-alpha@sources.redhat.com,
+        linuxppc-dev@lists.linuxppc.org
+In-reply-to: <5.0.0.19.2.20000925110119.01fe1df0@mail.lauterbach.com> (message
+	from Franz Sirl on Mon, 25 Sep 2000 11:10:45 +0200)
+Subject: Re: [RFC] IPC64 with glibc-2.2 and linux-2.4
+References: <Franz Sirl's message of "Sun, 24 Sep 2000 21:50:44 +0200">
+ <00092421504403.01070@enzo.bigblue.local> <5.0.0.19.2.20000925110119.01fe1df0@mail.lauterbach.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Martin Costabel wrote:
+> Date: Mon, 25 Sep 2000 11:10:45 +0200
+> From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+> Cc: libc-alpha@sources.redhat.com, linuxppc-dev@lists.linuxppc.org
 
-> > > >After switching to Linux keycodes (and Debian's i386 us keymap), the
-> > > >left cursor key doesn't generate a keycode anymore. Interestingly, it
-> > > >works in X with Xkb, but not without.
-> > > >
-> > > >Anyone else sees this?
-> > >
-> > > Check the dev and user archives, I think this has been discussed a
-> > > few times since the new input layer backport went in.
-> >
-> > I've searched the archives now with no luck.
->
-> I haven't seen this discussed, but I'll try a wild guess: What's
-> suspicious is that the linux keycode for KEY_LEFT is 105=0x69, the same
-> as the old mac keycode for SYSRQ_KEY. You could easily verify this by
-> pressing LEFT plus s or t or something and see whether it does some
-> emergency sync or whatever. Just a guess.
+> Yeah, I know. But it's no problem for me to push this change into the
+> kernel after some people (including you :-)) have agreed to the principle
+> of the patch.
 
-But a good one! That's exactly the issue. I wonder how it has worked with Xkb
-in X though...
+I too agree with the principle of the patch.  There's no reason to
+limit this quantity to 16 bits.
 
-As Magic Sysrq seems to always use ADB keycodes anyway, I'll not use it for
-now.
+> What about 'seq'? Can I safely bump it to 32bit for userspace in the final
+> patch? I see no need for the kernel and userspace being different here, but
+> all other archs are limiting it to 16bit, so there may be a reason...
 
+I can't see any particular reason.
 
-Thanks,
+Did you test it?  There are four combinations to check:
 
-Michel
-
+new application/new kernel
+old application/new kernel  (to test symbol versioning)
+new application/old kernel  (test translation of old structure to new)
+old application/old kernel  (this should Just Work if the above cases work)
+			    (but of course you should still check it :-) )
 
 --
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
+- Geoffrey Keating <geoffk@cygnus.com>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
