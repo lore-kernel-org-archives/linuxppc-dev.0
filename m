@@ -1,13 +1,20 @@
-Return-Path: <runet@innovsys.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Date: Thu, 21 Oct 2004 16:57:56 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DB90@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <Linuxppc-embedded@ozlabs.org>
-Cc: 
-Subject: CPM2 uart early console
+Return-Path: <wd@denx.de>
+Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
+	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id 064F62BC0F
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 22 Oct 2004 08:34:32 +1000 (EST)
+To: Zajac Adam-AAZ004 <Adam.Zajac@motorola.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 21 Oct 2004 16:55:13 CDT."
+	<EFB813091B18D511BD3600508B644F820A618202@tx14exm06.ftw.mot.com>
+Date: Fri, 22 Oct 2004 00:34:04 +0200
+Sender: wd@denx.de
+Message-Id: <20041021223409.7BD1EC146A@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Help on tuning the Linux kernel for soft real-time requiremen
+	ts
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,20 +25,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Is there any way of getting an early console output on a kernel on an
-8260? (running u-boot as bootloader)
-Right now, I don't get any console output until after the full driver is
-loaded, and that is way too late, since the kernel is hanging on the PCI
-init right now, and the kernel log buffer doesn't have the backtrace of
-the Oops.
+In message <EFB813091B18D511BD3600508B644F820A618202@tx14exm06.ftw.mot.com> you wrote:
+> 
+> Gerald, you may be right about this. Although I still don't know which of
+> the threads in our system cause the serial resource contention, I
 
-BTW..
-What are the device node numbers for ttyCPM[0..5] ?
+Check the console driver first.
 
-Rune Torgersen
-System Developer
-Innovative Systems LLC
-1000 Innovative Drive
-Mitchell, SD 57301
-Ph: 605-995-6120
-www.innovsys.com
+> BTW, are you guys aware of any tool that could help me debug the threads
+> that would concurrently try to access shared resources?
+> Do you think LTT would be helpful for this particular problem (serial driver
+
+LTT is certaily useful; but be aware that it may generate a  of  data
+in  short  time,  which then needs a lot of work to really understand
+what's going on ;-)
+
+> contention that leads to missing soft real-time deadlines)?
+
+I'm not exaclty sure I really understand what  you  are  asking  for.
+Isn't  sometimes  missing  the  deadlines what the "soft" is standing
+for? ;-)
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+There's another way to survive.  Mutual trust -- and help.
+	-- Kirk, "Day of the Dove", stardate unknown
