@@ -1,58 +1,43 @@
-From: "Ashwin Bihari" <raz0redge@hotmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux boot args with PReP image
-Date: Fri, 31 Oct 2003 16:38:47 -0500
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
-Message-ID: <BAY9-F21vzUElLqdoZd0008849e@hotmail.com>
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: MPC5200 Patches 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 31 Oct 2003 22:34:22 +0100."
+Date: Sat, 01 Nov 2003 10:36:28 +0100
+Message-Id: <20031101093633.E4EF3C59E4@atlas.denx.de>
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-It turns out that the command line to change the boot args is indeed already
-working, I just didn't think I could change it when it showed up on the
-screen. I was shown my mistake, so this is taken care of. Thanks for the
-prompt replies.
+[Repost - the original message did not make it to the  mailing  lists
+because of the size of the attachment.]
 
-Regards
+Dear Tom,
 
-~Ashwin
+in message <20031031155445.GA25446@ip68-0-152-218.tc.ph.cox.net> you wrote:
+>
+> > Will you accept these patches, and put the stuff  into  the  official
+> > trees?
+>
+> What would be best is a patch against 2.4.23-pre9 (or semi-recent bk
+> snapshot) posted to linuxppc-dev and/or linuxppc-embedded.
 
->From: "Ashwin Bihari" <raz0redge@hotmail.com>
->To: linuxppc-embedded@lists.linuxppc.org
->Subject: Linux boot args with PReP image
->Date: Fri, 31 Oct 2003 13:28:49 -0500
->
->
->Greetings,
->
->I'm using a PrPMC800 with Motorola's PPC7-BUG> to boot Linux. I've got a
->working kernel and everything works fine. I've used the default boot args
->of: console=ttys0,9600 console=tty0 root=/dev/hde2 noinitrd.
->
->This, of course, means that if we decide to change the location of root, or
->more appropriately decide to have two separate roots between which we would
->have switch back and forth, I'll have to recompile the kernel with the new
->string and then put that onto the PReP partition.
->
->What I would ideally like to do is have a Linux: prompt appear after I boot
->into the PReP partition to allow me to have a default string and then
->change
->it if I decided to chagne root on the fly..
->
->Has anyone done anything similar or have any tips for me?
->
->Regards,
->
->~Ashwin Bihari
->
->
->
->
+Please find attached below a  patch  against  2.4.23-pre9  (ChangeSet
+1.1397, BK Key paulus@samba.org|ChangeSet|20031030220219|08345).
 
-_________________________________________________________________
-Cheer a special someone with a fun Halloween eCard from American Greetings!
-Go to  http://www.msn.americangreetings.com/index_msn.pd?source=msne134
+I've also uploaded the patch to
+ftp://ftp.denx.de/pub/ppc/linux/bk_2_4_devel-1.1397-MPC5200.patch.gz
 
+Best regards,
 
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+By the way, ALL software projects are done by iterative  prototyping.
+Some companies call their prototypes "releases", that's all.
+
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
