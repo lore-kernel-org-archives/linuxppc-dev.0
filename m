@@ -1,32 +1,51 @@
-Message-Id: <5.1.1.6.0.20021223143800.00acb5a0@dns.struinfo.it>
-Date: Mon, 23 Dec 2002 14:49:14 +0100
-To: linuxppc-embedded@lists.linuxppc.org
-From: llandre <r&d@wawnet.biz>
-Subject: Re: Walnut configuration (old problem)
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <3E071A3F.7050309@intracom.gr>
+Date: Mon, 23 Dec 2002 16:14:23 +0200
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: [PATCH]: Trivial MTD map Config.in fix
+Content-Type: multipart/mixed;
+ boundary="------------080902050500030907020502"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sorry for my silly question.
-I didn't realize that even in the Linux PPC master Makefile it is necessary
-to setup the ARCH variable.
-Anyway here are the operations I performed in order to build the kernel for
-this board (I think this can help other newbies like me):
+This is a multi-part message in MIME format.
+--------------080902050500030907020502
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-1) download linuxppc_2_4_devel tree: rsync -avz --delete
-source/mvista.com::linuxppc_2_4_devel <destination_directory>
-2) make mrproper
-3) make walnut_config
-4) make oldconfig
-5) make dep
-6) make pImage
+Hi
 
+There is an unbalanced fi in the drivers/mtd/maps/Config.in
+which causes an abort when you select it.
 
-Thanks for the help,
+Please apply as it is obvious.
 
-llandre
+Pantelis
+
+--------------080902050500030907020502
+Content-Type: text/plain;
+ name="trivial-mtd-map.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="trivial-mtd-map.patch"
+
+--- ../linuxppc_2_4_devel/drivers/mtd/maps/Config.in	Fri Dec 20 11:35:57 2002
++++ drivers/mtd/maps/Config.in	Mon Dec 23 16:06:05 2002
+@@ -63,8 +66,7 @@
+     if [ "$CONFIG_440" = "y" ]; then
+       dep_tristate '  Flash devices mapped on IBM Ebony' CONFIG_MTD_EBONY $CONFIG_MTD_CFI $CONFIG_EBONY
+     fi
+-   fi
+- fi
++  fi
+ fi
+
+ if [ "$CONFIG_MIPS" = "y" ]; then
+
+--------------080902050500030907020502--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
