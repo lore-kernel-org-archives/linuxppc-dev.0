@@ -1,55 +1,79 @@
-Subject: Re: ibook2 first rev modem
-From: Bastien Nocera <hadess@hadess.net>
-To: =?ISO-8859-1?Q?F=E9lix?= Ortega <guile@mac.com>
-Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <1011233996.23635.42.camel@milleniumfalcon>
-References: <1011200645.6549.23.camel@dozo>
-	<1011233996.23635.42.camel@milleniumfalcon>
-Date: 17 Jan 2002 03:30:35 +0000
-Message-Id: <1011238236.6980.32.camel@dozo>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: linuxppc-dev@lists.linuxppc.org
+Subject: orinoco_cs on linuxppc_2_4/linux-2.4-benh
+From: Josh Huber <huber@alum.wpi.edu>
+Date: Thu, 17 Jan 2002 21:38:10 -0500
+Message-ID: <87ofjs8ju5.fsf@paradoxical.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 2002-01-17 at 02:25, Félix Ortega wrote:
-> On Wed, 2002-01-16 at 18:04, Bastien Nocera wrote:
-> >
-> > I've finally been able to get the iBook dual-USB's i2c modem to work and
-> > dialup to my ISP.
-> What was the problem? I'm using my ibook's modem since september without
-> any issue....
+I've decided to update the kernel on my laptop (Lombard 400),
+currently it's running 2.4.11-pre4-ben0, which seems to work fine,
+except I can't get usbmidi working with it.
 
-Couldn't connect
+usbmidi works (afaict) with the current 2.4.18-pre4(-ben0)? trees from
+either linuxppc_2_4 or Ben's tree.  However, both of them seem to
+break my wireless card.  The link to the base (an airport) appears to
+be good, however no packets are transmitted/received over the link:
 
-> > The problem lies in the modem's firmware. If you haven't updated the
-> > modem firmware, the modem won't be able to connect at v.90 for some
-> > ISPs. (I verified by dialling up from MacOS X, it didn't work for v90,
-> > but did for v34).
-> >
-> I have not updated my ibook's modem firmware and connect almost always
-> at v90 with three distinct ISP's.
+with the newer kernels:
 
-You're lucky.
+iwconfig:
+eth1      IEEE 802.11-DS  ESSID:"huber_net"  Nickname:"mystic"
+          Mode:Managed  Frequency:2.412GHz  Access Point: 00:60:1D:1D:3E:0E
+          Bit Rate:1Mb/s   Tx-Power=15 dBm   Sensitivity:1/3
+          Retry limit:4   RTS thr:off   Fragment thr:off
+          Power Management:off
+          Link Quality:15/92  Signal level:-74 dBm  Noise level:-89 dBm
+          Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
+          Tx excessive retries:0  Invalid misc:0   Missed beacon:0
 
-> > PS: Here is the modem init line I use:
-> > \d\d\d\d\d\d\dAT&FE0W1Q0V1X4&C1&K3S95=1&D3S7=75S0=0+MS=11,1,300,33600
-> > I tried adding an M0 somewhere, but couldn't get the modem to shut up.
-> > Any ideas ?
-> Why you use such a string? I'm using ATM0 and everything works...
+dmesg:
+hermes.c: 3 Oct 2001 David Gibson <hermes@gibson.dropbear.id.au>
+orinoco.c 0.09a (David Gibson <hermes@gibson.dropbear.id.au> and others)
+orinoco_cs.c 0.09 (David Gibson <hermes@gibson.dropbear.id.au> and others)
+eth1: Station identity 001f:0001:0004:0034
+eth1: Looks like a Lucent/Agere firmware version 4.52
+eth1: Ad-hoc demo mode supported
+eth1: WEP supported, 104-bit key
+eth1: MAC address 00:60:1D:F1:04:67
+eth1: Station name "HERMES I"
+eth1: ready
+eth1: index 0x01: Vcc 5.0, irq 22, io 0x0100-0x013f
 
-It's the init string MacOS X uses
 
-> What was wrong whith your modem?
+Anyone else have this working with current kernels?
 
-Couldn't connect to the isp, "HANGUP" just after link ttyS0 and ppp0
-together.
+with the older kernel:
 
-Cheers
+iwconfig:
+eth1      IEEE 802.11-DS  ESSID:"huber_net"  Nickname:"mystic"
+          Mode:Managed  Frequency:2.412GHz  Access Point: 00:60:1D:1D:3E:0E
+          Bit Rate:11Mb/s   Tx-Power=15 dBm   Sensitivity:1/3
+          Retry limit:4   RTS thr:off   Fragment thr:off
+          Encryption key:off
+          Power Management:off
+
+dmesg:
+hermes.c: 3 Oct 2001 David Gibson <hermes@gibson.dropbear.id.au>
+orinoco.c 0.08 (David Gibson <hermes@gibson.dropbear.id.au> and others)
+orinoco_cs.c 0.08 (David Gibson <hermes@gibson.dropbear.id.au> and others)
+eth1: Station identity 001f:0001:0004:0034
+eth1: Looks like a Lucent/Agere firmware version 4.52
+eth1: Ad-hoc demo mode supported.
+eth1: WEP supported, "128"-bit key.
+eth1: MAC address 00:60:1D:F1:04:67
+eth1: Station name "HERMES I"
+eth1: Allowed channels mask: 0x000007ff
+eth1: ready
+eth1: index 0x01: Vcc 5.0, irq 22, io 0x0100-0x013f
+
+
+If you need any more info, just ask,
 
 --
-/Bastien Nocera
-http://hadess.net
+Josh Huber
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
