@@ -1,30 +1,37 @@
-Message-ID: <005d01c46b3e$12adf030$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "Dan Malek" <dan@embeddededge.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <s0f7edc2.025@EMAIL> <1089977681.27006.90.camel@kubu.opensource.se> <1089979617.1055.19.camel@bng-d000218> <891CFADE-D72C-11D8-B668-003065F9B7DC@embeddededge.com>
-Subject: Re: Why not kmalloc() ??
-Date: Fri, 16 Jul 2004 10:06:12 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+From: "Steve Boorman" <steveb@baydel.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Fri, 16 Jul 2004 15:49:50 +0100
+Subject: Re: PPC440 Kernel Stack overflow
+Reply-To: Steve Boorman <steveb@baydel.com>
+Message-ID: <40F7F91E.18124.2F5883@localhost>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Use hostalloc
-> only for those functions necesary (small serial fifos and such).
->
-> Use dma_alloc_consistent() for large memory buffers that you need
-> to attach to BDs, for example Ethernet buffers.  There is very little
-> memory available from either dpalloc or hostalloc, and they must
-> be used only when necessary.
->
+Mark,
 
-Is there any reason to use m8xx_cpm_hostalloc() over dma_alloc_consistent()
-for a loadable driver (that is, one loaded after VM initialized)?
+Thanks for your comments, you are basically confirming what I
+suspected, that accessing regions of memory outside the allocated
+stack area are not trapped. It looks like the Kernel stack pointer is
+just compared when context switches occur, and only then reported if
+out of range.
 
-Mark Chambers
+> I'm curious about your watchdog - a true watchdog should hard reset
+> your board if not serviced.  So you've really got a high priority
+> interrupt I guess, which is probably not much use, (as you're
+> finding out).  If it were an NMI you could at least write some code
+> that would jump to the reset vector or something like that.
+
+The watch-dog we use is built into the PPC440GP. The first time it
+expires it generates a critical interrupt, the second time, if still
+enabled, will cause a hardware reset if that function is enabled.
+Whilst tracking down our original bug we didn't want the hardware
+reset to occur as it would definitely loose any debug information
+that may still be left in memory, hence we run it with reset
+disabled.
+
+Regards,
+Steve Boorman
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
