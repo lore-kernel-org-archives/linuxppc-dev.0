@@ -1,33 +1,20 @@
-Message-ID: <36CCCA4D.674C653F@ewing.org>
-Date: Thu, 18 Feb 1999 20:19:57 -0600
-From: "Rick Ewing" <rick@ewing.org>
-MIME-Version: 1.0
-To: someguy <someguy@rakis.net>, linuxppc-dev@lists.linuxppc.org
+Date: Thu, 18 Feb 1999 20:25:10 -0700 (MST)
+From: Cort Dougan <cort@persephone.cs.nmt.edu>
+To: Greg Stovall <gstovall@nortelnetworks.com>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: IBM providing Linux for RS6000
-References: <199902182152.QAA20060@ns2.gis.net>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <A969F78C865BD1119B230000F8B8459603166F9D@zrchb181.us.nortel.com>
+Message-ID: <Pine.LNX.3.96.990218202455.8577C-100000@persephone.cs.nmt.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Published reports already say that IBM has been talking to the LinuxPPC guys
-for a little while and will likely use their product for a demo an upcoming
-trade show.  For IBM, if these guys are producing a good port, why reinvent
-the wheel on an OS with little revenue potential? (In IBM's terms of dollars)
+They're not providing their own version.
 
-Rick Ewing
-
-
-someguy wrote:
-
-> >Will the fact that IBM is going to be providing it's own version going to
-> >have any effects on the linuxppc development efforts?
-> >
-> >If so, will it be positive or negative?
->
-> I thought IBM talked to J. Haas about getting LinuxPPC on the IBMs?
->
-> justin
+}Will the fact that IBM is going to be providing it's own version going to
+}have any effects on the linuxppc development efforts?  
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
