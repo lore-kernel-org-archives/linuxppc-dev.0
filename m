@@ -1,19 +1,21 @@
-Return-Path: <lists@petig-baender.de>
-Received: from e.frontend.um.mediaways.net (e.frontend.um.mediaways.net
-	[62.53.231.247]) by ozlabs.org (Postfix) with SMTP id 10D802BF0B
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Nov 2004 18:31:53 +1100 (EST)
-Message-ID: <41AA7128.2020907@petig-baender.de>
-Date: Mon, 29 Nov 2004 01:45:28 +0100
-From: Christof Petig <lists@petig-baender.de>
+Return-Path: <murphyf+xfree86@f-m.fm>
+Received: from out2.smtp.messagingengine.com (out2.smtp.messagingengine.com
+	[66.111.4.26]) by ozlabs.org (Postfix) with ESMTP id 80FC72BDF2
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Nov 2004 20:42:50 +1100 (EST)
+Content-Type: text/plain; charset="ISO-8859-1"
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <200411232008.16854.murphyf+xfree86@f-m.fm>	
-	<41A70567.8050000@petig-baender.de>
-	<1101517373.4668.2.camel@gaston>
-In-Reply-To: <1101517373.4668.2.camel@gaston>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Frank Murphy <murphyf+xfree86@f-m.fm>, debian-x@lists.debian.org
+References: <200411232008.16854.murphyf+xfree86@f-m.fm>   
+	<200411270948.08054.murphyf+xfree86@f-m.fm>   
+	<1101607094.5176.0.camel@gaston>   
+	<200411282114.48141.murphyf+xfree86@f-m.fm>   
+	<1101674379.4653.9.camel@gaston>
+In-Reply-To: <1101674379.4653.9.camel@gaston>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+	"Frank Murphy" <murphyf+xfree86@f-m.fm>
+Date: Mon, 29 Nov 2004 10:42:35 +0100
+From: "Frank Murphy" <murphyf+xfree86@f-m.fm>
+Message-Id: <1101721355.31317.209633721@webmail.messagingengine.com>
+Cc: debian-x@lists.debian.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Subject: Re: G3 iBook LCD brightness in X under kernel 2.4.25 and 2.6.8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,69 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt schrieb:
-> What machine model precisely ? If it's an iBook, only the very first one
-> had a mach64 based chip and indeed used atyfb-based brightness control,
-> that might have been broken...
 
-My machine is an orange iBook (300MHz), lspci:
-0000:00:0b.0 Host bridge: Apple Computer Inc. UniNorth AGP
-0000:00:10.0 VGA compatible controller: ATI Technologies Inc Rage 
-Mobility L AGP 2x (rev 64)
-0000:10:0b.0 Host bridge: Apple Computer Inc. UniNorth PCI
-0000:10:17.0 ff00: Apple Computer Inc. KeyLargo Mac I/O (rev 02)
-0000:10:18.0 USB Controller: Apple Computer Inc. KeyLargo USB
-0000:10:19.0 USB Controller: Apple Computer Inc. KeyLargo USB
-0000:20:0b.0 Host bridge: Apple Computer Inc. UniNorth Internal PCI
-0000:20:0f.0 ffff: Apple Computer Inc. UniNorth GMAC (Sun GEM) (rev ff)
-
-> Some earlier models have PMU-controlled brightness, independently on the
-> video card...
-
-I don't think this is the case for us.
-
->>Your mouse pointer might get some noisy spots on brightness change, ever 
->>noticed? I would blame the kernel first (since 2.4 works well).
+On Mon, 29 Nov 2004 07:39:39 +1100, "Benjamin Herrenschmidt" said:
+> On Sun, 2004-11-28 at 21:14 +0100, Frank Murphy wrote:
+> > On Sunday 28 November 2004 2:58, Benjamin Herrenschmidt wrote:
+> > > >
+> > > > So I've tried this using the stock Debian 2.6.8 and 2.6.9 PPC kernels
+> > > > with the same results.
+> > > >
+> > > > $ grep ATY /boot/config-2.6.9-powerpc
+> > > > CONFIG_FB_ATY128=y
+> > > > CONFIG_FB_ATY=y
+> > > > CONFIG_FB_ATY_CT=y
+> > > > CONFIG_FB_ATY_GX=y
+> > > > # CONFIG_FB_ATY_XL_INIT is not set
+> > > >
+> > > > It seems that the atyfb module is compiled in. Is there another way to
+> > > > check?
+> > >
+> > > Check the bits in CONFIG_PMAC_BACKLIGHT in atyfb (like, add some
+> > > printk's to see if they are reached etc..)
+> > 
+> > So I added a couple of printk()s like you asked. I added one to 
+> > aty128fb_blank() in aty128fb.c:2037 and two to aty_init() in 
+> > atyfb_base.c:1793 and 1802 (inside the 'if (M64_HAS(MOBIL_BUS))'). The one I 
+> > added to aty128fb didn't print (as expected), but both of them from 
+> > atyfb_base.c printed. So it seems that CONFIG_PMAC_BACKLIGHT is properly 
+> > defined. Anything you'd specifically like me to try?
 > 
+> Well, the backlight control is done by writing to one of the LCD
+> register, you can try to track down the values in there and eventually
+> compare with 2.4
+
+I'll try to look at this, but I don't know very much about it.
+
+> > I find it interesting that in the console the dimming works. I thought that on 
+> > PPC the console used the framebuffer. Another notable thing is that while in 
+> > X, the dimming doesn't work, but when I switch to one of the VTs, the screen 
+> > brightness is adjusted to what it should have been in X.
 > 
-> Ah ? Haven't noticed that ? what machine ? 
+> Ah ? What do you mean by "dimming" ? blanking ? or backlight control ?
 
-I would blame X to leaving the mach64 in a 'strange' state which makes 
-the kernel unable to set the brightness the way it uses to do. Since 2.4 
-was able to do it, it must be possible (might be less efficient).
+OK, the F1 and F2 keys on my keyboard have little "brighter"/"dimmer"
+icons on them. When I press them when running X on 2.4.25, the screen
+brightness changes. So for me, that's "dimming." I believe that it's the
+"backlight control" that does this. When I press the "dimmer" button
+enough (8 times, I think), then the backlight turns totally off, and I
+can't see anything on the screen. For me that's "blanking" in this
+context. It's true that something else (X, I think) will kind of blank
+the screen, but the backlight stays lit. I noticed this when I closed
+the lid to make the iBook sleep, but the backlight stayed on, warming
+the keyboard. I then noticed the same problem with the dimmer keys.
 
->>>The reason this is important for me is that the LCD is not dimmed when I close 
->>>the lid for sleep, which kind of ruins the point of sleep.
->>>
->>>Does anyone have an idea of what else I need to do to get screen dimming to 
->>>work under X with Linux 2.6?
-> 
-> 
-> You may be missing the atyfb kernel driver.
+> Could be some crap done by the X driver ... It's notoriously allergic to
+> fbdev's ... I'll have to double check.
 
-CONFIG_ADB=y
-# CONFIG_ADB_CUDA is not set
-CONFIG_ADB_PMU=y
-CONFIG_PMAC_PBOOK=y
-CONFIG_PMAC_APM_EMU=y
-CONFIG_PMAC_BACKLIGHT=y
-# CONFIG_ADB_MACIO is not set
+It probably is. But it's strange because I use all the same software
+except the kernel to get this behavior. So there's something with the
+kernel / X interface that has changed, either for 2.6 or the way Debian
+builds 2.6. I have a hard time with this because there are so many
+interactions:  is it the PMU? The APM emulation? X driver? Kernel
+driver? I don't have a good idea about how these things interact.
 
-# CONFIG_FB_ATY128 is not set
-CONFIG_FB_ATY=y
-CONFIG_FB_ATY_CT=y
-# CONFIG_FB_ATY_GX is not set
-# CONFIG_FB_ATY_XL_INIT is not set
+Let me know what you find out.
 
->>Try to ask on the ppc-kernel list (CCed). I suspect that nobody has 
->>reimplemented power management for mach64 in 2.6. The fact that lid 
->>closing does not put the display to sleep keeps me locked in 2.4, too 
->>(though I experienced that 2.6 is way faster).
-> 
-> 
-> It is, provided you have the right driver.
-
-I really would like to work this out.
-
-Yours
-    Christof
+Frank
