@@ -1,118 +1,33 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <404F26A5.7070807@catapult.com>
-Date: Wed, 10 Mar 2004 09:31:01 -0500
-From: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org,
-	Kevin Sapp <Kevin.Sapp@catapult.com>
-Subject: RAM Disk problems
-References: <20040309151442.1E311C0655@atlas.denx.de>
-In-Reply-To: <20040309151442.1E311C0655@atlas.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: RAM Disk problems 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 10 Mar 2004 09:31:01 EST."
+             <404F26A5.7070807@catapult.com>
+Date: Wed, 10 Mar 2004 16:00:27 +0100
+Message-Id: <20040310150032.D3CBEC0655@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+In message <404F26A5.7070807@catapult.com> you wrote:
+>
+> I am trying to bring up a RAM disk as the root file system.
+> Most everything is working until it come's time to mount it.
 
-I am trying to bring up a RAM disk as the root file system.
-Most everything is working until it come's time to mount it.
-The logs are below.
+This is an ext2 based ramdisk? Do you have ext2  support  enabled  in
+your kernel? If yes, try disabling devfs.
 
-I noticed in mount_block_root the get_fs_names appears
-to returning a zero length string.
+Best regards,
 
-I have tried root=/dev/ram
-root=/dev/ram0
-root=/dev/rd/0
-and combinatins with noinitrd.
+Wolfgang Denk
 
-FYI. The RAM disk will be loaded by a bus master and will have
-to be persistant.
-
-Any suggestions?
-Thanks
-Kevin
-
-
-=> bootm 100000 200000
-## Booting image at 00100000 ...
-   Image Name:   Linux-2.4.20
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    485362 Bytes = 473.10 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Loading RAMDisk Image at 00200000 ...
-   Image Name:   Kevin Simple RAMDisk
-   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-   Data Size:    1405884 Bytes =  1.3 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-## initrd at 0x00200040 ... 0x003573FB (len=1405884=0x1573BC)
-   Loading Ramdisk to 01c27000, end 01d7e3bc ... OK
-kernel addr:00000000
-machine_init<6>Memory BAT mapping: BAT2=16Mb, BAT3=8Mb, residual: 7Mb
-Linux version 2.4.20 (kevin@linux4) (gcc version 3.2.1) #258 Wed Mar 10
-07:55:32
- EST 2004
-setup arch<4>ADS setup arch
-On node 0 totalpages: 7936
-zone(0): 7936 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line: root=/dev/ram rw console=ttyS0,9600 nobats
-ip=192.168.82.5
-         console passed ttyS0:0
-            Checking for registered console ttyS
-         Prefered console -1
-ADS init IRQ. NR_IRQS=256
-ADS time init
-ADS calibrate decrementer. FREQ=66666666, tb_ticks_per_jiffy=166666
-           stdio console init
-serial_console_setup
-cons:c00ebc48 str:9600 cons->index:0 Calibrating delay loop... 132.71
-BogoMIPS
-Memory: 28828k available (828k kernel code, 288k data, 48k init, 0k highmem)
-Dentry cache hash table entries: 4096 (order: 3, 32768 bytes)
-Inode cache hash table entries: 2048 (order: 2, 16384 bytes)
-Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
-Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
-Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
-POSIX conformance testing by UNIFIX
-ADS init
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society NET3.039
-Initializing RT netlink socket
-Starting kswapd
-devfs: v1.12c (20020818) Richard Gooch (rgooch@atnf.csiro.au)
-devfs: devfs_debug: 0x0
-devfs: boot_options: 0x1
-pty: 256 Unix98 ptys configured
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-loop: loaded (max 8 devices)
-*********************SERIAL INIT*************
-MPC8260 FCC Ethernet driver
-BD rings initialised, RBASE=1B8160, TBASE=1B8360
-Created eth0
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP, IGMP
-IP: routing cache hash table of 512 buckets, 4Kbytes
-TCP: Hash tables configured (established 2048 bind 4096)
-eth0: OPEN
-IP-Config: Guessing netmask 255.255.255.0
-IP-Config: Complete:
-      device=eth0, addr=192.168.82.5, mask=255.255.255.0,
-gw=255.255.255.255,
-     host=192.168.82.5, domain=, nis-domain=(none),
-     bootserver=255.255.255.255, rootserver=255.255.255.255, rootpath=
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-RAMDISK: Compressed image found at block 0
-Freeing initrd memory: 1372k freed
-Kernel panic: VFS: Unable to mount root fs on 01:00
- <0>Rebooting in 180 seconds..
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I mean, I . . . think to understand you, I just don't know  what  you
+are saying ...                        - Terry Pratchett, _Soul Music_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
