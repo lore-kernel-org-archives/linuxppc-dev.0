@@ -1,54 +1,56 @@
-To: James Don <JDon@spacebridge.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: ifconfig: SCC1 enet0 not showing up 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 18 Dec 2002 09:56:52 EST."
-             <DB0585C9F6F9D411BE8F00D0B7896A4CC05F4E@SNCMAIL>
-Date: Wed, 18 Dec 2002 17:43:12 +0100
-Message-Id: <20021218164317.D3F5BC6289@atlas.denx.de>
+Date: Thu, 19 Dec 2002 08:15:56 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Hollis Blanchard <hollis@austin.ibm.com>
+Cc: embedded list <linuxppc-embedded@lists.linuxppc.org>,
+	Todd Poynor <tpoynor@mvista.com>
+Subject: Re: 405LP RTC reset
+Message-ID: <20021218211556.GA8947@zax.zax>
+References: <1040150612.10740.111.camel@granite.austin.ibm.com> <20021218005542.GC3666@zax.zax> <1040225939.29647.11.camel@granite.austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1040225939.29647.11.camel@granite.austin.ibm.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <DB0585C9F6F9D411BE8F00D0B7896A4CC05F4E@SNCMAIL> you wrote:
+On Wed, Dec 18, 2002 at 09:38:53AM -0600, Hollis Blanchard wrote:
 >
-> My Ethernet is not showing up ... I have compiled in enet support ... fixed
-> my port pins ... but when I do ifconfig I see only:
+> On Tue, 2002-12-17 at 18:55, David Gibson wrote:
+> >
+> > On Tue, Dec 17, 2002 at 12:43:32PM -0600, Hollis Blanchard wrote:
+> > > Here's the updated 405LP RTC reset diff (after David's move of the RTC
+> > > functions to ibm405lp.c). This patch
+> > > a) does a full RTC reset as specified in the docs
+> > > b) sets the RTC clock speed in RTC "Register A" DV bits, i.e. it does
+> > > not assume the firmware has done this correctly.
+> >
+> > One query though (I didn't think of this earlier) - is it such a great
+> > idea to go setting the reference clock frequency?  Unlike most other
+> > drivers, we can't just take over the RTC and do what we like with it
+> > once the kernel boots, because it has to keep running at the same rate
+> > even when the device is rebooting or (mostly) off.
+>
+> The only issue I can think of here is the firmware setting it
+> incorrectly or not at all. In that case, a few seconds will be expanded
+> or compressed, but that's better than time running too fast or slow
+> forever, right?
 
-Probably you did not configure the network interface at all?
+That's true.  Still, I think it might be worth testing what the rate
+is set to when we come in, and printing a warning if it's not what we
+expect before we adjust it.  If it just silently corrects it I could
+imagine it being pretty nasty to track down why the device is
+losing/gaining time each boot.
 
-> At start my enet scc is configured properly ... I am pretty sure because I
-> see:
-> ## Transferring control to Linux (at address 00000000) ...
-> Linux version 2.4.20-pre8 ...
-> Kernel command line: root=/dev/ram rw
-> ip=192.168.104.101:192.168.103.151:192.168.104.1:255.255.255.0:BigMoney::off
-
->From  this  command  line  I  suspect  that  you  intend  to  use  IP
-autoconfiguration, but then...
-
-...
-> CONFIG_INET=y
-> CONFIG_IP_MULTICAST=y
-> # CONFIG_IP_ADVANCED_ROUTER is not set
-> # CONFIG_IP_PNP is not set
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-...then you don't enable IP autoconfiguration in the kernel,  so  you
-will have to manually configure the interface.
-
-
-I guess you want to define CONFIG_IP_PNP ...
-
-Best regards,
-
-Wolfgang Denk
+> Of course the rate settings must be battery-backed along with the time,
+> so you only need to set it once per RTC power loss. That includes
+> rebooting time and power off time.
+>
+> -Hollis
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Why is an average signature file longer than an average Perl script??
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
