@@ -1,102 +1,75 @@
-Message-Id: <v03130302b3f1013159dd@[192.168.1.1]>
-In-Reply-To: <199908310243.MAA17110@tango.anu.edu.au>
-References: <199908301552.RAA23128@lxp03.cern.ch> (message from Jes
- Sorensen	on Mon, 30 Aug 1999 17:52:45 +0200)
- <v03130327b3ebecbebbd3@[192.168.1.1]>
- <199908270917.LAA04250@lxp03.cern.ch>
- <v03130308b3ec440550d3@[192.168.1.1]>
- <199908271414.QAA24261@lxp03.cern.ch>
- <37CAA6F5.D93A168B@biophys.uni-duesseldorf.de>
- <199908301552.RAA23128@lxp03.cern.ch>
+Message-Id: <v03130301b3f116a864e2@[192.168.1.1]>
+In-Reply-To: <v0313030fb3efcb9a9d0f@[192.168.1.1]>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 30 Aug 1999 23:25:35 -0500
-To: Paul.Mackerras@cs.anu.edu.au, Jes.Sorensen@cern.ch
+Date: Tue, 31 Aug 1999 00:26:35 -0500
+To: linuxppc-dev@lists.linuxppc.org
 From: "David D. Kilzer" <ddkilzer@computer.org>
-Subject: Re: mac-2.3.14.diff: adb
-Cc: schmitz@opal.biophys.uni-duesseldorf.de, linux-mac68k@mac.linux-m68k.org,
-        linuxppc-dev@lists.linuxppc.org
+Subject: Re: SMP support for Daystar 604e 200MHz dual-processor card
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras <Paul.Mackerras@cs.anu.edu.au> wrote:
+David D. Kilzer wrote:
 
->The stuff in drivers/macintosh is basically stuff that I thought would
->only be useful on macs (powermacs initially but also potentially 68k
->macs).
+>Is anyone running LinuxPPC with a Daystart 604e 200MHz dual-processor 
+>card?
 
-If anyone continues the NeXT port of Linux (LiNeXT), these systems also use
-ADB for mouse and keyboard.  It seems to be kind of dead right now, though.
+Hmmm...must have been half-asleep when typing that.  Yes, it's a 
+Daystar nPower processor card with dual 200 MHz 604e PowerPC CPUs.
 
-  http://www.black.linux-m68k.org/
+Here's what's left of the boot messages on the screen in 2.2.12 from 
+CVS that I compiled on Aug 29, 1999:
 
->What's in there breaks down into:
->
->ADB drivers: adb.c, macio-adb.c, via-cuda.c, via-pmu.c, mac_keyb.c
 
-Add to that 68k-only stuff:  adb-iop.c, via-macii.c [and adb-iisi.c which
-doesn't exist at the moment].
+POSIX conformance testing by UNIFIX
+Entering SMP Mode...
+Processor 1 is stuck.
+PCI: Probing PCI hardware
+Linux NET4.0 for Linux 2.2
+Based upon Swansea University Computer Society NET3.039
+NET4: Unix domain sockets 1.0 for Linux NET4.0.
+NET4: Linux TCP/IP 1.0 for NET4.0.
+IP Protocols: ICMP, UDP, TCP, IGMP
+NET4: AppleTalk 0.18 for Linux NET4.0
+Starting kswapd v1.5
+MacOS display is /chaos/control
+Monitor sense value = 0x603, using video mode 13 and color mode 1.
+Console: switching to colour frame buffer device 104x39
+fb0: control display adapter
+ADB keyboard at 2, handler set to 3
+ADB mouse at 3, handler set to 2
+Serial driver version 4.27 with no serial options enabled
+Machine check in kernel mode.
+Caused by (from msr): regs c01fbcf0 Machine check signal - probably due to mm fault
+with mmu off
+NIP: C00E8818 XER: 00000000 LR: C00E87C0 REGS: c01fbcf0 TRAP: 0200
+MSR: 00001030 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c01fa000[1] 'swapper' mm->pgd c015b000 Last syscall: 120
+last math 00000000 CPU: 0 last CPU: 255
+GPR00: 000000FF C01FBDA0 C01FA000 000000FF C01A1068 C01A1068 00000020 C1080000
+GPR08: FFFFFFFF 000003F9 F2000000 F2000000 C0180000 001EB0A4 C00E822C C00E79F4
+GPR16: C00E704C C00E7B14 C00E496C C00E48FC C00E7660 C00E65AC C00E6680 C00E65E4
+GPR24: C01BE77C 00000000 C0171EAC 00000000 00000000 00000001 C0171EAC C01FBDA8
+Call backtrace:
+C00E87C0 C018C9E8 C018BAF0 C018BB64 C018A028 C017C97C C00043C0
+C000A274
+Kernel panic: machine check
+Rebooting in 180 seconds..
 
->zilog serial driver: macserial.[ch]
 
-In drivers/char there exists mac_SCC.[ch] for m68k Macs, though it needs to
-exist on its own outside of m68kserial.c (which is going away soon :^).
+The part about "Processor 1 is stuck." doesn't look good, then we get 
+the big OOPS.
 
->powerbook media bay driver: mediabay.c
->
->/dev/nvram driver: nvram.c
+Any more suggestions?  I've tried booting without extensions, and with
+virtual memory turned off.  I have not tried the BootX startup extension
+yet, though, only the application.
 
-Nothing equivalent (yet) on the m68k side, though we may soon have a PCMCIA
-driver if Joshua Thompson gets it working on his PB 190cs.
+One thing I'm not sure I have set up correctly is swap for LinuxPPC.  I'm
+sure it's setup fine for MkLinux, but I may be missing something in this 
+case.
 
->The CUDA and PMU drivers both have several functions, of which talking
->to the ADB bus is only one.  The CUDA and PMU are both responsible for
->talking to the real-time clock and NVRAM, and for reset and soft-power
->control.  The PMU also has the functions of controlling and reporting
->on the battery status and for putting the system to sleep.  The PMU
->driver exports a /dev/pmu device.
-
-The adb-iop.c is an ADB driver for IOP-based Macs (IIfx, Quadra 900 and
-950), the via-macii.c is a via driver for Mac II-based ADB systems (II,
-SE/30), and adb-iisi.c will be a driver for the IIsi-style ADB.
-
->If there was a compelling reason for getting rid of drivers/macintosh,
->sure we could find other homes for the files in it.  I haven't seen
->any compelling reason yet though.  If the 68k-mac folks feel that they
->can't use drivers/macintosh, that is unfortunate and certainly not
->what I intended.
-
-Actually, the m68k-mac folks don't care whether it goes in
-drivers/macintosh or drivers/adb.  The m68k port maintainer, Jes Soresen,
-won't accept any patches that put or modify files in drivers/macintosh.
-
-To clear up any confusion, please note that Joshua Thompson submitted a
-PPC-relevant patch to Paul Mackerras while I (David Kilzer) submitted an
-m68k-relevant patch to Jes Sorensen.  Both were patches to files in
-drivers/macintosh, and in some cases moved the files there from other
-places.
-
-The issue at hand is that Jes believes drivers/macintosh should not exist
-while drivers/adb (for low-level adb stuff) and drivers/char/adb (for adb
-devices) should exist instead.  Paul, it seems to me, would be happy either
-way.
-
->I think the idea of having a drivers/adb directory is reasonable, and
->adb.c, mac_keyb.c and maybe adbmouse.c can go in there.  I don't see
->that via-cuda.c and via-pmu.c really fit well in there though.  Maybe
->the thing to do is to split the adb-related functions out of those
->files and put them in cuda-adb.c and pmu-adb.c in drivers/adb.
->
->I don't really mind whether macserial.[ch] stay in drivers/macintosh
->or go to drivers/char.  drivers/sbus/char/sunserial.[ch] is a
->precedent for keeping it in drivers/char.  nvram.c could go into
->drivers/char, I guess, but would have to have a name change.  I don't
->see that these things have to go in drivers/char just because they
->implement a character device.
-
-I would appreciate it if Jes and Paul would come to an agreement on where
-the code belongs so we can get on with the ADB merger.  :^)
+Thanks!
 
 Dave
 
