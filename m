@@ -1,38 +1,25 @@
-Message-ID: <392B854B.F9AC566E@execpc.com>
-Date: Wed, 24 May 2000 02:31:23 -0500
-From: Joseph Garcia <jpgarcia@execpc.com>
+Message-ID: <01e901bfc556$3042b280$bf0102c8@dell191.sc.mcel.mot.com>
+From: "Rolf Liu" <rolfl@sc23.sc.mcel.mot.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: RPX Lite 
+Date: Wed, 24 May 2000 16:00:55 +0800
 MIME-Version: 1.0
-To: Stephan Leemburg <stephan@jvc.nl>
-CC: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-        Sergio Brandano <sb@dcs.qmw.ac.uk>, linuxppc-dev@lists.linuxppc.org,
-        debian-powerpc@lists.debian.org
-Subject: Re: PMUD vs APM
-References: <B5514D3F.E6B3%stephan@jvc.nl>
-Content-Type: text/plain; charset=iso-2022-jp
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Stephan Leemburg wrote:
-> Yes, it's activated with the -a flag (see pmud --help for details). I need
-> to modify the manuals and /etc/power/apm. You must have a modified apm
-> program to use it however, as the 'standard' apm programs all read from
-> /proc/apm and this path is usually compile time determined...
-
-I also found this kind of annoying.  And as far as I can tell, APM doesn't show
-everything.  This is why I wrote a plugin for GKrellM that, using PMUD, displays
-battery status in a window.  Its almost as good as Batmon, but smaller.  I know
-this works on Wallstreet, PDQ, and Lombard, and have untested code for other
-systems.  If you already used GKrellM, this is something to try.  And I still
-need testers for systems I don't have access to.
-
-Are there any other PMU-savvy monitors out there?
-
-Thanks.
-
---
-Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
-CS Undergraduate                      Student Employee - Systems Programmer
-University of Wisconsin - Madison                            UW Lidar Group
+Hi, all,
+I am having some work on RPX Lite( a box based on Powerpc 823).
+You know, the RPX Lite can run the Linuxppc,which can be attained.
+My work is to develop some applications which will run under the
+Linuxppc on RPX Lite.
+Cause the purpose is to let the application run on RPX Lite, I need
+know how to let the Linuxppc start the application on the RPX Lite
+Box. I am a new one to such  problem. I don't know how to do it .
+How to combine the application into the linuxppc , and get a package?
+Anyone knows the mechanism of runing application on such box ?
+thanks a lot .
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
