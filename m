@@ -1,41 +1,63 @@
-Message-Id: <200007301648.RAA16700@hyperion.valhalla.net>
-Date: Sun, 30 Jul 2000 17:48:48 +0100
-Subject: Re: CONFIG_PPC != Mac
+Message-Id: <200007301655.RAA17061@hyperion.valhalla.net>
+Date: Sun, 30 Jul 2000 17:56:09 +0100
+Subject: Re: LinuxPPC X Server
 From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-        "Michel Dnzer" <daenzerm@student.ethz.ch>
-CC: Tony Mantler <nicoya@apia.dhs.org>, Tom Rini <trini@kernel.crashing.org>,
-        Dan Malek <dan@netx4.com>,
-        "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+To: SteffenH@hyperion-software.de, Takashi Oe <toe@unlserve.unl.edu>
+CC: linuxppc-dev@lists.linuxppc.org
 Mime-version: 1.0
-Content-type: text/plain; charset=""
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  Sun, Jul 30, 2000,  Geert Uytterhoeven wrote:
-> On Sun, 30 Jul 2000, Michel [iso-8859-1] Dänzer wrote:
->> Geert Uytterhoeven wrote:
->> > The Master PPC Penguin decided to no longer allow to build machine specific
->> > kernels, but treat PowerMac/PReP/MTX/CHRP as one big machine type
->> > (`CONFIG_ALL_PPC').
-[snip]
-> Personally I'd more like a configuration where you can select whatever you
-> want of
+On  Sun, Jul 30, 2000, Steffen Haeuser wrote:
+> Am 30-Jul-00 schrieb Takashi Oe:
 >
->   - PowerMac (CONFIG_PMAC)
->   - PReP (CONFIG_PREP)
->   - MTX (CONFIG_MTX)
->   - CHRP (CONFIG_CHRP)
->   - Gemini (CONFIG_GEMINI)
->   - EST8260 (CONFIG_EST8260)
->   - APUS (CONFIG_APUS)
+> Hi!
 >
-> with of course some extra logic to prevent illegal combinations.
+>>> Well, if it is not fixed it most likely WILL hold up...
+>
+>>What's wrong with XF68_FBDev?
+>
+> Hmmm... I was told to use the ATI thing... did not think this was only a thing
+> related to the ATI Driver... but maybe I should try this.
+>
+>>> Hmmm... I was told that no DRI Drivers would exist even for r128 ... can
+> you
+>>> point me to a place where I can get this ? And if they exist in Source
+> form,
+>>> someone has them already in Binary form maybe ?
+>
+>>www.xfree86.org
+>>4.0.1 has them.
+>
+> Hmmm... I looked on the site, but could only see versions for x86 and Alpha
+> there,
+> not for PPC... has anybody TRIED this stuff (source) on PPC yet ?
+>
+> I really do not have the time to try around with untried stuff...
+>
+> *Has* anybody tried compiling this 4.0.1 version on PPC? Does it work ? Are
+> there
+> any problems ? Is a Binary Version available anywhere ?
 
-This would definitely get my vote too.  There are too many cases where you
-can enable conflicting build options at present - it causes much
-frustration.
+Look back through archive from this list for a post from Ani Joshi - it was
+an [ANN].
+
+I saw, also that there are some binaries (don't remember who, sorry) but
+these do not include the newest drivers.
+
+On the up side I built it yesterday (with Ani's rsync stuff in place of the
+xfree86 directory).  It build without problem - now all I need is time to
+test ;-)
+
+At present I'm not able to host the binaries (and not enough experienced
+with X to be sure of building the right collection :-)
+
+On the down side it took **all** day to build on my 300M G3.
+
+And yes, there have been reports of people trying it (one yesterday - said
+it was quicker in some places & slower in others...)
 
 Iain.
 
