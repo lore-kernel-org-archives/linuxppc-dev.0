@@ -1,39 +1,44 @@
-Subject: Re: [PATCH/RFC] add proc_dir_entry fields to device_node
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nathan Lynch <nathanl@austin.ibm.com>
+Date: Sat, 4 Oct 2003 14:48:57 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <3F7DA229.7090409@austin.ibm.com>
-References: <3F7DA229.7090409@austin.ibm.com>
-Content-Type: text/plain
-Message-Id: <1065254150.645.16.camel@gaston>
-Mime-Version: 1.0
-Date: Sat, 04 Oct 2003 09:55:50 +0200
+Subject: Re: Typo fix in 2.6.0-test5
+In-Reply-To: <1065192807.23151.19.camel@gaston>
+Message-ID: <Pine.LNX.4.44.0310041440130.15962-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2003-10-03 at 18:22, Nathan Lynch wrote:
-> Hi-
+> > > > Also, include/video/macmodes.h is missing (used by matroxfb).
+> > >
+> > > Is it in the bk tree as of then (can be checked via web pages)?
+> >
+> > Nope. Missing in the 2.5 devel bk tree as well. It might be by design, and
+> > matroxfb is really what's broken, though.
 >
-> I am doing some ppc64 work to enable dynamic addition and removal of
-> nodes in /proc/device-tree.  It seems that recording a node's directory
-> and symlinks (if any) in the device_node is the easiest way to assure
-> that a node is cleaned up properly after deletion.
->
-> I need to add a few lines to fs/proc/proc_devtree.c::add_node() to
-> record the proc entries for each node as it is processed.  These will
-> refer to fields that do not yet exist in ppc's device_node.  I propose
-> adding these fields to ppc's device_node (patch attached).  If that
-> comment in prom.h about breaking BootX is still valid, there are
-> alternatives, but they would likely involve ifdefs and macros.
+> No, it's not missing afaik, it's just not where matroxfb is looking for
 
-The comment is valid. You cannot change the format of struct
-device_node on ppc32 without breaking BootX booting :(
+My fault - I thought I'd looked for it there, but missed it. Trivial patch
+attached.
 
-The solution to this is to finally break it by having a conversion
-step between the BootX-passed device-tree and the in-kernel one
+Other than that, no compile problems. Boots on my Lombard, will give it a
+test on our iMac next.
 
-Ben
+--- drivers/video/matrox/matroxfb_base.h.org	2003-10-04 14:43:06.000000000 +0200
++++ drivers/video/matrox/matroxfb_base.h	2003-10-04 14:44:46.000000000 +0200
+@@ -55,7 +55,7 @@
+ #if defined(CONFIG_PPC_PMAC)
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+-#include <video/macmodes.h>
++#include "../macmodes.h"
+ #endif
+
+ /* always compile support for 32MB... It cost almost nothing */
+
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
