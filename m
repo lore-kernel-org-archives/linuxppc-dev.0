@@ -1,20 +1,30 @@
-From: "DONG-IN KANG" <dkang@east.isi.edu>
-To: "'Joao Vicente'" <joao.vicente@spectel.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
 Subject: RE: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom MPC8260 board 
-Date: Thu, 9 Oct 2003 15:02:51 -0400
-Message-ID: <001f01c38e97$f02a5d60$45a97241@Yongkoo>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <DEF39A0710293E489D45B10E06645CBD0243B1E7@dub-msx1.spectelcorp.com>
+	charset="iso-8859-1"
+Date: Fri, 10 Oct 2003 11:23:48 +0100
+Message-ID: <DEF39A0710293E489D45B10E06645CBD0243B22E@dub-msx1.spectelcorp.com>
+From: "Joao Vicente" <joao.vicente@spectel.com>
+To: "DONG-IN KANG" <dkang@east.isi.edu>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Did you set the compiler flag "-g -gdb" when you configure the kernel?
+Hi Dong-In
 
- Dong-In
+I do have -g compiler flag, but my gcc does not recognize -gdb.
+
+Thanks
+
+Joao
+
+-----Original Message-----
+From: DONG-IN KANG [mailto:dkang@east.isi.edu]
+Sent: Thursday, October 09, 2003 8:03 PM
+Subject: RE: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom MPC8260 board
+
+ Did you set the compiler flag "-g -gdb" when you configure the kernel?
 
 -----Original Message-----
 From: Joao Vicente
@@ -64,15 +74,15 @@ Do you reckon is there anything else I could try to fix this problem.
 -----Original Message-----
 From: Wolfgang Denk [mailto:wd@denx.de]
 Sent: Thursday, October 09, 2003 1:38 PM
-Subject: Re: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom
-MPC8260 board
+Subject: Re: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom MPC8260 board
 
 in message <DEF39A0710293E489D45B10E06645CBD0243B1A7@dub-msx1.spectelcorp.com> you wrote:
 >
 > I am trying to boot the ppc kernel on a MPC8260 based custom board.
 ...
 > One of the doubts that I have is that when I look into the system.map
-> file, it shows that the start address is at 0xc0000000 (as shown below)
+> file, it shows that the start address is at 0xc0000000 (as shown
+> below)
 >
 > c0000000 T _start
 
