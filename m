@@ -1,53 +1,53 @@
-Message-ID: <3A708795.9D627FE9@mvista.com>
-Date: Thu, 25 Jan 2001 15:07:49 -0500
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-CC: Roman Zippel <zippel@fh-brandenburg.de>, mgreer@mvista.com,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: CONFIG_HIGHMEM on PPC
-References: <Pine.HPX.4.10.10101251838570.22074-100000@gra-ux1.iram.es>
-Content-Type: text/plain; charset=us-ascii
+From: iweiny@pacbell.net
+Date: Thu, 25 Jan 2001 12:24:52 -0800 (PST)
+Subject: Re: [Fwd: sigcontext on Linux-ppc in user space]
+In-reply-to: <200101251810.f0PIAeH04079@ashley.ivey.uwo.ca>
+To: linuxppc-dev@lists.linuxppc.org
+Message-id: <200101252024.MAA01557@batcave2.batcave>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert wrote:
+I don't know if this helps or not but,
+I get similar results from my 2 machines.
 
-> ..... Has anybody
-> any docs on how the MMU has been modified to handle the extra bits on the
-> 7450.
+Machine 1 (2.2.18 glibc 2.1.3-4e)
 
-Yes, I have one and I am working on it.  Although I have been spending
-time at the lower end of the processor scale, my changes are directly
-applicable to the 7450 enhancements as well.  Of course, we then
-have the "common kernel" problem :-).  If I build something to
-take advantage of the 7450 enhancements, it may not boot on other
-systems.
+12:17pm >./a.out
+SIGUSR1 = 10
+scp = 7ffff694
+scp->signal = 0
 
-> The only port which is simple is the 68k
+Machine 2 (2.4.1 glibc 2.1.3-4e)  <= very recent BK kernel
 
-Lots of people complain about it, but I'll agree the 68k MMU
-design and supporting instructions is still the best.
+11:21am >./a.out
+SIGUSR1 = 10
+scp = 7ffff634
+scp->signal = 0
 
-> ...... Using such a simple trick for processors which do not allow
-> to (easily or not) access alternate address spaces is not an option.
+Ira
 
-You can easily make the PowerPC have this same alternate address
-design.  Either people forget or have never known the value of these
-large virtual alternate address space designs, and simply jump to
-the common space design we have in Linux.
-
-> ............ Now, assuming that you
-> can store one bit in one atom of hydrogen, the weight of 2^128 bytes of
-> memory would be in the range of a few 10^9 tons, hardly practical for
-> mobile systems ;-)
-
-Of course, you know that 1 bits weight more than 0 bits, right?  I
-proved it once.  I wrote a streamer tape with all 0s, weighed it,
-then wrote it with all 1s.  It weighed slightly more with all 1s :-).
-
-
-	-- Dan
+--- To quote Kevin B. Hendricks: ---
+>
+>
+> Hi,
+>
+> Here is what I get from running it on my system (ppc linux with 2.2.15 kernel with some mods and glibc-2.1.3).
+>
+> But no segfault.
+>
+> Kevin
+>
+>
+> [kbhend@localhost ~]$ gcc -O2 -ojunk junk.c
+> [kbhend@localhost ~]$ ./junk
+> SIGUSR1 = 10
+> scp = 7fffe9a4
+> scp->signal = 0
+> [kbhend@localhost ~]$
+>
+>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
