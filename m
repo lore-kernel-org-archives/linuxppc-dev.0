@@ -1,30 +1,66 @@
-Date: Fri, 18 Jul 2003 13:02:58 -0400
-From: Ryan Boder <icanoop@bitwiser.org>
-To: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Date: Sat, 19 Jul 2003 11:37:22 +0000
+From: Giuliano Pochini <pochini@shiny.it>
+To: Ethan Benson <erbenson@alaska.net>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Trouble with 2.6.0-test1 on ibook2
-Message-ID: <20030718170258.GE6596@bitwiser.org>
-References: <20030718014622.GA5430@bitwiser.org> <1058517715.23548.71.camel@thor.holligenstrasse29.lan>
+Subject: Re: G4 mdd help request [solved]
+Message-Id: <20030719113722.1dab30c0.pochini@shiny.it>
+In-Reply-To: <XFMail.20030717124840.pochini@shiny.it>
+References: <20030717073956.GH7926@plato.local.lan>
+	<XFMail.20030717124840.pochini@shiny.it>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1058517715.23548.71.camel@thor.holligenstrasse29.lan>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jul 18, 2003 at 10:41:55AM +0200, Michel Dänzer wrote:
-> What graphics chip does the machine have, and have you built OFfb into
-> the kernel?
+It wasn't my fault. There is a bad interaction between the G4-MDD and the
+Adaptec [23]9160 family. I quote here the relevant part from ask.adaptec.com
+because it may be useful to someone else:
 
-Rage Mobility M3 AGP 2x (rev 02).
 
-Yes, I did. I'll try again without that as soon as my iso finished
-downloading. I figure I might as well move to YDL 3.0 while I'm
-reinstalling.
+----
+System will not boot to a drive attached to an Adaptec SCSI card on
+QuickSilver G4s.
 
-Thanks for the advice,
+This information applies to the following product(s):
+
+PowerDomain 29160, 29160N, 39160 PCI SCSI Card
+
+
+To work around this issue print out the instructions that are below and
+follow them exactly:
+
+1) Reboot, holding down command-option-O-F all at the same time at startup.
+This will bring up a white screen starting with "Open Firmware" and ending
+with a "0 >" prompt.
+
+2 When the Open Firmware prompt appears, type the following: (Note that the
+spaces between quotes are important and the instructions are case sensitive)
+
+setenv fcode-debug? true
+
+3) At the "0 >" prompt type the following and then press the return key
+
+printenv
+
+4) Verify the following line exists in the output, generally 4 to 6 lines down
+
+fcode-debug? true false
+
+5) At the "0 >" prompt type the following and then press the return key
+
+mac-boot
+
+6) Once the system is up, select appropriate drive (using Startup Disk in
+the Control Panels folder under Mac OS 9 or in Startup Disk in System
+Preferences under Mac OS X) and reboot.
+----
+
+
+
 --
-Ryan Boder
-http://www.bitwiser.org/icanoop
+Bye.
+   Giuliano.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
