@@ -1,50 +1,31 @@
-Message-ID: <T59373b00ffac1785c31d3@pcow058m.blueyonder.co.uk>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Alban Fellows <Alban.Fellows@blueyonder.co.uk>
+Date: Thu, 21 Feb 02 15:35:45 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0202212335.AA07438@ivan.Harhan.ORG>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: USB audio
-Date: Thu, 21 Feb 2002 22:32:01 +0000
-References: <85ofii3lk9.fsf@junk.nocrew.org>
-In-Reply-To: <85ofii3lk9.fsf@junk.nocrew.org>
-MIME-Version: 1.0
+Subject: SBS Adirondack, K2, and Palomar IV StarMON
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thursday 21 February 2002 3:24 pm, Lars Brinkhoff wrote:
-> I got an iSub today.  It's recognized as an USB audio device when it's
-> connected, and it basically works, but there are two problems:
->
-> * Whenever I kill a process (with ^C, to be precise) writing audio
->   data to the iSub, that process hangs.  From then on, all processes
->   opening the dsp or mixer devices also hang.  If I don't kill the
->   process, suspending and resuming works fine.
->
-> * The "aumix" program (version 2.7) doesn't seem to think there is a
->   volume control.
->
-> I'm running Linux 2.4.18-rc1-benh (from ppckernel.org).
+Hi again,
 
-For the group's information I have had similar hanging problems with my
-Roland UA-30 USB Audio Interface. The most major issue has been the fact that
-because the process cannot be killed, the filesystem is in use and cannot be
-unmounted, which results in a forced fsck after reboot.
-This has become less of a problem since I switched to ext3 filesystems, as
-they don't need fsck.
+Reassured that SBS has gotten rid of StarMON together with me and basically
+thrown it in the trash, I've decided to treat it as completely abandoned by
+them and put the remnants of it that I have on my FTP site in hope that someone
+else finds them useful. The treasure lies in:
 
-I am running 2.4.18-rc1 from the bitkeeper ppc tree.
+ivan.Harhan.ORG:/pub/PPCStar/SBS
 
-As a side issue to this I have noticed that the console beep does not work on
-the USB audio, but does on the dmasound for the builtin audio. I now have
-both installed and get console beeps from the Mac and most of my other sound
-from the USB.
+There you'll find almost-release-quality ROMs for Adirondack, K2, Palomar IV,
+and Palomar IV+, as well as the source (in CVS files) for this plus the
+GT-64260 stuff SBS got me started on but never let me finish.
 
-BTW. Is there any reason why the dsp devices appear to be single open. (ie
-once one program has the sound another program can hang waiting for it)
-
-thanks
-
-Alban.
+--
+Michael Sokolov					786 E MISSION AVE APT F
+Programletarian Freedom Fighter			ESCONDIDO CA 92025-2154 USA
+International Free Computing Task Force		Phone: +1-760-480-4575
+						msokolov@ivan.Harhan.ORG (ARPA)
+Let the Source be with you
+Programletarians of the world, unite!
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
