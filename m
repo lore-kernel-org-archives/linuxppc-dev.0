@@ -1,43 +1,33 @@
-Date: Mon, 10 Mar 2003 21:11:51 -0700
-From: Matt Porter <porter@cox.net>
-To: Jeff Boyd <jeff.boyd@att.net>
-Cc: Matt Porter <porter@cox.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 36 bit DMA address on IBM 440 PPC
-Message-ID: <20030310211151.A23781@home.com>
-References: <200303101316.HAA25661@lists.linuxppc.org> <20030310071217.A22215@home.com> <3E6D34CB.62007516@att.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3E6D34CB.62007516@att.net>; from jeff.boyd@att.net on Mon, Mar 10, 2003 at 07:58:51PM -0500
+From: "daiyi" <daiyicrat@hotmail.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: gdb help!
+Date: Tue, 11 Mar 2003 12:39:08 +0800
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-ID: <DAV682fqZ8HIzoitPPP0002bdb2@hotmail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Mar 10, 2003 at 07:58:51PM -0500, Jeff Boyd wrote:
-> Is it to be 64 bit, or will the ref be more abstract and come from an
-> /asm/ architecture specific include? It seems to me that in general it
-> would be better to make things that hold or return or take a physical
-> address reference it as such (e.g. phys_addr_t) rather than declare it
-> to be some data size (e.g. unsigned long [long]), since data bus and
-> address bus sizes are not necessarily in sync for size. Thus my vote for
-> a separate architecture specific data type for physical address.
+I downloaded gdb-5.3.tar.gz. But when I tried to make gdbserver
+in the diectory /gdb-5.3/gdb/gdbserver,it didn't work. Of course
+I tried to make this command before "make" that is "./configure
+--target=powerpc",also I found noway. when I want to use gdbserver in
+the HHL2.0 ,I found ,though I can debug the programme, on the screen
+there constantly prints words in the following:
 
-The discussion on lkml suggested that Linus wants resources on all
-platforms to be 64 bits, period.  Of course, the driving factor is
-to handle some ia32 PAE management in a better manner.  One thing
-to keep in mind is that resources are not necessarily a CPU physical
-address (although most platforms define them as such), they are defined
-as an 'ioremapable token'.  In the same manner, ioremap produces a
-token which can be passed to read*/write*, in most implementations
-that token is a virtual address which dereference directly (though
-that is cheating the API).  One thing that makes a u64 resource
-convenient is that there is no abstraction necessary to printk
-info/warnings involving resource values.
+Remote side has terminated connection. GDBserver will reopen the connection.
+Remote debugging using /dev/ttyS0
+readchar: Got EOF
+Remote side has terminated connection. GDBserver will reopen the connection.
+Remote debugging using /dev/ttyS0
+readchar: Got EOF
+Remote side has terminated connection. GDBserver will reopen the connection.
+Remote debugging using /dev/ttyS0
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+I don't know why.
+in the gdb I have set "remotebaud"
+Can someone help ms?
+Thanks alot1
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
