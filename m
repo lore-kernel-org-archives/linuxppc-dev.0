@@ -1,36 +1,33 @@
-Message-ID: <3984265B.631EB6C4@student.ethz.ch>
-Date: Sun, 30 Jul 2000 14:58:03 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+Message-ID: <398426BC.67FCDC6E@denise.shiny.it>
+Date: Sun, 30 Jul 2000 08:59:40 -0400
+From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
-To: Giuliano Pochini <pochini@denise.shiny.it>
+To: Benjamin Herrenschmidt <bh40@calva.net>
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF4, speed and keyboard problems
-References: <39835F2B.36C12CC9@denise.shiny.it>
-Content-Type: text/plain; charset=iso-8859-1
+Subject: Re: Stealth port problems
+References: <39811B2C.4D34DDD@denise.shiny.it> <20000728083426.19235@mailhost.mipsys.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Giuliano Pochini wrote:
+> >Hi!  I have troubles with my stealth port on a G3-blue. When it runs at
+> 115200
+> >ifconfig
+> >shows a lot of overruns. At 57600 it works fine, but it's slow :-((
+> >
+> >Does any of you own that serial port ?  Suggestions ??
 >
-> Hi! I finally installed XF4. It seems faster for most of operations (windows
-> movement is smothes, xscreensever runs fater, etc), but all visualization
-> plugins for Alsaplayer and xmms are 30% slower according to CPU usage
-> (print_a_bitmap_on_the_screen() is slower ??).
-
-CPU usage of the plugins or the server? You have to sum up both to get the
-actual CPU usage with both versions of X.
-
-Can you please provide numbers?
+> Which kernel ? With the DMA serial driver, it should work better than
+> that... The Stealth hardware is probaly not responsible, it's just a line
+> driver plugged instead of the modem, the actual zilog SCC is part of
+> Apple's ASIC.
 
 
-Michel
+I've just tried the old non-dma code. Same problem :-(((
+All works fine with Mac OS.
 
 
---
-Elevator out of order. Try the ones across the street.
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
+Bye.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
