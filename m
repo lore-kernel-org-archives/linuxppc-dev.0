@@ -1,50 +1,29 @@
-Message-ID: <3A894F05.AAFB7427@raleigh.ibm.com>
-Date: Tue, 13 Feb 2001 10:13:09 -0500
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+To: Ralph Blach <rcblach@raleigh.ibm.com>
+Cc: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: WaitQueues.
+References: <3A894F05.AAFB7427@raleigh.ibm.com>
+From: Roland Dreier <roland@topspincom.com>
+Date: 13 Feb 2001 08:22:11 -0800
+In-Reply-To: Ralph Blach's message of "Tue, 13 Feb 2001 10:13:09 -0500"
+Message-ID: <521yt25z9o.fsf@love-boat.topspincom.com>
 MIME-Version: 1.0
-To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: WaitQueues.
-Content-Type: multipart/mixed;
- boundary="------------1891E666C195432E7BDC8DD2"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------1891E666C195432E7BDC8DD2
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+    Ralph> Is there anyway to contionally initialize a wait queue. I
+    Ralph> want to test a wait queue to see if has been initialized
+    Ralph> not initialize it.  If not, how do I serialize an access to
+    Ralph> a set location so that I can atomically test and increment
+    Ralph> that location?
 
-Is there anyway to contionally initialize a wait queue. I want to test a
-wait queue to see if has been initialized not initialize it.  If not,
-how do I serialize an access to a set location so that I can atomically
-test and increment that location?
+I'm not sure about doing init_waitqueue_head() conditionally, but as
+for atomic test and increment, you could use atomic_t (look at
+asm/atomic.h).  That gives you atomic_inc_and_test_greater_zero()
+among other things.  If you just want to set a flag,
+test_and_set_bit() may be simpler.
 
-Thanks
-
-Chip
---------------1891E666C195432E7BDC8DD2
-Content-Type: text/x-vcard; charset=us-ascii;
- name="rcblach.vcf"
-Content-Description: Card for Ralph Blach
-Content-Disposition: attachment;
- filename="rcblach.vcf"
-Content-Transfer-Encoding: 7bit
-
-begin:vcard
-n:Blach;Ralph
-tel;work:919-543-1207
-x-mozilla-html:TRUE
-url:www.ibm.com
-org:IBM MicroElectronics
-adr:;;3039 Cornwallis		;RTP;NC;27709;USA
-version:2.1
-email;internet:rcblach@raleigh.ibm.com
-x-mozilla-cpt:;15936
-fn:Ralph Blach
-end:vcard
-
---------------1891E666C195432E7BDC8DD2--
-
+Roland
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
