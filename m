@@ -1,17 +1,20 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao09.cox.net (fed1rmmtao09.cox.net [68.230.241.30])
-	by ozlabs.org (Postfix) with ESMTP id 9F40567AC7
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Feb 2005 04:34:52 +1100 (EST)
-Date: Wed, 9 Feb 2005 10:34:50 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Mikael Pettersson <mikpe@user.it.uu.se>
-Message-ID: <20050209173450.GA3226@smtp.west.cox.net>
-References: <16906.12395.517982.168072@alkaid.it.uu.se>
+Return-Path: <pevnev@juno.com>
+Received: from outbound-mail.lax.untd.com (outbound-mail.lax.untd.com
+	[64.136.28.164]) by ozlabs.org (Postfix) with SMTP id E296467A91
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Feb 2005 05:23:33 +1100 (EST)
+Received: from outbound29-sr.lax.untd.com (webmail01.lax.untd.com
+	[10.131.27.141])
+	by smtpout04.lax.untd.com with SMTP id AABBAWXJ5AZ9EEBJ
+	for <linuxppc-dev@ozlabs.org> (sender <pevnev@juno.com>);
+	Wed,  9 Feb 2005 10:23:23 -0800 (PST)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <16906.12395.517982.168072@alkaid.it.uu.se>
-Cc: paulus@samba.org, linux-kerne@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH][2.6.11-rc3] gcc-4.0 fixes for ppc32
+From: "Alexander Povolotsky" <pevnev@juno.com>
+Date: Wed, 9 Feb 2005 18:22:10 GMT
+To: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Message-Id: <20050209.102300.2012.117453@webmail01.lax.untd.com>
+Subject: question on CONFIG_I2C_SPI_UCODE_PATCH and
+	CONFIG_I2C_SPI_SMC1_UCODE_P ATCH
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,28 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 09, 2005 at 04:46:51PM +0100, Mikael Pettersson wrote:
-> These patches are needed to allow me to build a working
-> 2.6.11-rc3 kernel for ppc32 with gcc-4.0 (20050130 snapshot):
-> 
-> - The static time_offset in arch/ppc/kernel/time.c triggers a
->   declaration conflict with the non-static one in include/linux/timex.h.
->   Solution: s/time_offset/ppc_time_offset/g in ppc's time.c.
-> - OpenPIC is declared extern in open_pic_defs.h but static in
->   open_pic.c. Solution: remove the extern decl.
-> - prom_display_paths[] and prom_num_displays are declared extern in
->   include/asm-ppc/prom.h but static in arch/ppc/syslib/prom_init.c.
->   Solution: remove the extern decls.
-> - The 'const' on __USE_RTC() in include/asm-ppc/time.h triggers
->   compiler warnings. Change it to use compiler.h's __attribute_const__.
->   (This mirrors changes that have already been made in e.g. byteorder.h.)
-> 
-> Tested on an eMac. No breakage observed.
-> 
-> Signed-off-by: Mikael Pettersson <mikpe@csd.uu.se>
 
-This all looks fine to me, will send once 2.6.12-rc1 opens.
+Hi,
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+I have a question on use of CONFIG_I2C_SPI_UCODE_PATCH and CONFIG_I2C_SPI_SMC1_UCODE_PATCH in Linux 2.6.
+
+Could someone from this list explain for me what problems each of those two patches are addressing ?
+I have MPC 880 based board with single 24C02 I2C EEPROM,
+connected to the I2C bus and currently (without those two patches configured in .config) I have problem of communicating 
+over I2C bus with that device - scanning for any address (in the range between 0 and 128) on the I2C bus does not get any response (interrupt)
+so code remains in the sleep (on interrupt) mode.
+
+Would applying (any or both) above patches resolve my problem as described ?
+
+Thanks,
+Best Regards,
+Alex
+
+___________________________________________________________________
+Speed up your surfing with Juno SpeedBand.
+Now includes pop-up blocker!
+Only $14.95/month -visit http://www.juno.com/surf to sign up today!
