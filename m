@@ -1,35 +1,44 @@
-Date: Tue, 18 May 1999 15:25:58 -0500 (CDT)
-From: Derek Moeller <moeller@networksplus.net>
-To: luis@inficad.com
-cc: Michael_Cardenas@deneba.com, linuxppc-dev@lists.linuxppc.org
-Subject: RE: USB 1.1 spec
-In-Reply-To: <813A3F0E2D02D211884900A0C966731E7A7FBB@exchsrvr.inficad.com>
-Message-ID: <Pine.LNX.3.96.990518152428.837A-100000@ns1.networksplus.net>
+Message-ID: <3742B7FE.9F30D222@americasm01.nt.com>
+Date: Wed, 19 May 1999 09:09:18 -0400
+From: "Jerry Quinn" <jquinn@nortelnetworks.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tom Rini <tmrini@ntplx.net>
+CC: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: OF booting news
+References: <Pine.SUN.4.02.9905180911500.14119-100000@sea.ntplx.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 17 May 1999 luis@inficad.com wrote:
-
+Tom Rini wrote:
 > 
-> Has anyone here installed LinuxPPC on a iMac rev b?  If so how does it
-> work?  I am thinking about installing it on my imac.
+> On Sat, 15 May 1999, Benjamin Herrenschmidt wrote:
+> 
+> > For those who haven't seen it yet, with Darwin 0.2, Apple release new
+> > pieces of source code, including the secondary loader, with sources, a
+> > working of control video driver, and more... That's interesting because
+> > we should now be able to make a great secondary booter with OS choosing
+> > capabilities. I don't have time to look into this now, but this could be
+> > a good replacement for BootX in the future.
+> 
+> It looks like most part of the MkL booter were canablized in this as well.
+> So it should be possible to do the following, with a little work:
+> On old (not New World) ROMs, choose between: MacOS, LinuxPPC, MkL (little
+> bit of work on their end?), possibly BeOS, *BSD, and and OSX.  On New
+> World, most of that is possible (some problem OF booting LPPC right now,
+> and No MacOS (w/o lots of work).)  All that's really missing from it right
+> now is some graphical part I think.  There's a routine to draw the OSX
+> logo tho. :)
 
-	I have it installed on both a R/A and R/B. It works fine on both
-(provided you follow the special installations instructions,
-www.linuxppc.org/iMac).
+Umm, any news about Platinum drivers?  Otherwise, a revised loader still
+wouldn't be very useful on 7200 class machines.
 
---
 
-+--------------------------------------+
- Derek Moeller moeller@networksplus.net 
-     Linux for PowerPC User, Student    
-   http://www.networksplus.net/moeller	 
-    "aut inveniam viam aut faciam"	 
-+--------------------------------------+
-
+-- 
+Jerry Quinn                             Tel: (514) 761-8737
+jquinn@nortelnetworks.com               Fax: (514) 761-8505
+Speech Recognition Research
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
