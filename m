@@ -1,48 +1,60 @@
-Date: Mon, 7 Aug 2000 14:33:00 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: rtc again... 
-In-Reply-To: <20000804155023.5420@mailhost.mipsys.com>
-Message-ID: <Pine.HPX.4.10.10008071358050.9070-100000@gra-ux1.iram.es>
+Message-ID: <398EAE77.EEB275AC@student.ethz.ch>
+Date: Mon, 07 Aug 2000 14:41:27 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Multi-head on Pismo
+References: <854304.3174574500@[209.147.134.131]>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 4 Aug 2000, Benjamin Herrenschmidt wrote:
+Tim Wojtulewicz wrote:
+>
+> I've been playing around recently trying to get multi-head support on my
+> Pismo laptop to work.  This is using the built-in VGA port along with the
+> LCD.  I have a few questions/comments.  Currently, I'm using XF86 4.0.1
+> with the r128 driver and kernel 2.2.17pre10-ben2.
+>
+> I have tried simply modifying the ServerLayout in the XF86Config file, but
+> this will not work (I don't think) since both the VGA port and the LCD are
+> run off the same Rage128 chip.  All examples I have seen of using Xinerama
+> to do this have used 2 sepearte cards.  I'm using the command 'startx --
+> +xinerama' to start X.
+>
+> When the machine boots, a message pops up on the external message as
+> follows:
+>
+> ...ok
+> Copying OF device tree...done
+> Initing fake screen
+> Calling quiesce
+>
+> then the screen goes black and remains that way for the session.  What does
+> this mean?
+>
+> (Possible OT) Another thing I noticed while poking around in the device
+> tree is that there are two ATY,RageM3p entries under
+> /proc/device-tree/pci/ATY,RageM3pParent.  They are pA and pB.  What do
+> these two have to do with each other?
+>
+> Has anyone else out there worked on this, and (hopefully) gotten it to work
+> right?  Thanks for any help you can give.
 
-> On recent Core99 machines, Apple has a HW timer in the KeyLargo ASIC that
-> can be used to sync timebases. (It looks like a 64 bits bus-cycle timer,
-> but I'm not completely sure yet). There's also, I beleive, the OpenPIC timer.
+AFAIK dualhead isn't properly supported by either XFree86 nor aty128fb yet.
+The only possibility might be to set things up in MacOS, then boot using BootX
+'without video driver' and then use offb.
 
-OpenPIC timers are not that easy to use since they are not guaranteed to
-ultimately run off the same oscillator as the processor time base, so you
-can't guarantee a stable mathematical relationship between the timebase
-and an OpenPIC timer count register.
 
-Of course it will work in many machines (you would have to sacrifice one
-of the 4 timers to do this but that's not a big deal). You would also have
-to keep the most significant timebase bits and some other data in some
-other places (the OpenPIC timer has only 31 bits and runs at 1/8 the bus
-clock on integrated Motorola OpenPICs but 1/8 the PCI clock if you have an
-IBM MPIC2 chip). I'm looking for a solution for SMP which does not depend
-on the exact underlying hardware (it may require IPI but these are quite
-well encapsulated), like a few interlocked memory accesses to transmit the
-timebase and check that they are close enough.
+Michel
 
-Oh, BTW, in the OpenPIC timer specification the following is so laughable:
 
-- integral number of clock ticks per second
-
-Knowing that this number is required to be >= 4 million and the stability
-of typical computer oscillators, I can guarantee that the fractional part
-can be used as a fairly good random number generator (provided you don't
-measure it too often).
-
-	Regards,
-	Gabriel.
-
+--
+People who are wrong the most are wrong the loudest.
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
