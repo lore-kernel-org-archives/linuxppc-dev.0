@@ -1,9 +1,9 @@
-Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4D414C24@mail.mediatrix.com>
-From: Jean-Denis Boyer <jdboyer@mediatrix.com>
-To: "'RSR - Piero Dominioni'" <pdominioni@rsr.it>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: NFS mount for TQM823L
-Date: Tue, 2 Oct 2001 10:32:11 -0400 
+Message-ID: <B25E2E5A003CD311B61E00902778AF2A02637AB3@SERVER1>
+From: Subodh Nijsure <SNijsure@SkyStream.com>
+To: "'Matthias Fuchs'" <matthias.fuchs@esd-electronics.com>,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: simple access to mem mapped peripheral
+Date: Tue, 2 Oct 2001 07:53:52 -0700 
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,42 +11,40 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I can see that portmap is suspended:
-Do you mean that it is sleeping instead of suspended?
-In the STAT column of ps, a 'S' means 'sleeping'.
-Look at the 'ps' man pages.
+Hello,
 
-> I guess it is correctly waiting for
-> RPC calls and for other daemons (such as mountd and nfsd) to register.
-I think you are right.
+May be try this?
 
-> But if I try to run mountd or nfsd (# ./mountd,  for example)
-> I get the same
-> errors as portmap wouldn't be running at all.
-Be sure that the file '/etc/services' in the target includes the following
-entries:
-  sunrpc   111/tcp   portmapper   # RPC 4.0 portmapper TCP
-  sunrpc   111/udp   portmapper   # RPC 4.0 portmapper UDP
+	chip_registerbase = (unsigned
+long)ioremap_nocache(CHIP_PHYSICAL_ADDRESS,
+    			CHIP_MEM_SIZE);
+	printk("Linux kernel Memory mapped base register %lX \n",
+chip_registerbase);
 
-Also, be sure you have the file '/etc/rpc' present in the target.
+Then you can read and write to your chip via *chip_registerbase
 
-> Can you explain me how?
-> Should I cross-compile it for my PowerPC platform, load it on
-> the target and then run it?
-This is a script, so it does not need to be compiled.
-The only thing you need is the interpreter (first line in the script).
-That script invokes the Bourne Shell (usually accomplished by bash).
-The script should be invoked at the command line, giving it a parameters.
-Valid parameters are: start, stop, restart, reload and status.
+/Subodh
 
-Regards,
---------------------------------------------
- Jean-Denis Boyer, B.Eng., Technical Leader
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
+-----Original Message-----
+From: Matthias Fuchs [mailto:matthias.fuchs@esd-electronics.com]
+Sent: Tuesday, October 02, 2001 10:02 AM
+To: linuxppc-embedded
+Subject: simple access to mem mapped peripheral
+
+
+
+Hi,
+
+I need a "very simple" way to access a mem mapped peripheral. The device
+is mem mapped at 0xf0200000.
+I was trying /dev/mem but this dev only accesses my physical memory
+chips.
+
+My target is a ppc405gp running recent kernel 2.4.10.
+
+Any idea ?
+
+Matthias
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
