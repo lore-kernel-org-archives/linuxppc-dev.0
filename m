@@ -1,128 +1,94 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-Id: <3.0.3.32.20020621143133.006d37a8@hollabaugh.com>
-Date: Fri, 21 Jun 2002 14:31:33 -0600
-To: Jerry Van Baren <vanbaren_gerald@si.com>,
+Message-ID: <C08678384BE7D311B4D70004ACA371050B76351D@amer22.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "'Jerry Van Baren'" <vanbaren_gerald@si.com>,
 	linuxppc-embedded@lists.linuxppc.org
-From: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>
-Subject: Re: Can I run linux without a file system?
-In-Reply-To: <5.1.0.14.2.20020621155315.05f3e830@falcon.si.com>
-References: <20020621194234.37274.qmail@web21103.mail.yahoo.com>
- <200206211835.g5LIZDL01282@hofr.at>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Subject: RE: Can I run linux without a file system?
+Date: Fri, 21 Jun 2002 13:41:49 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 04:12 PM 6/21/2002 -0400, Jerry Van Baren wrote:
+It's not *that* bad, is it? ;)
+
+I have to admit I stumbled around for a while before
+I got it right, but I do have a shell script for making
+a RAM disk image, and I use it all the time.  Is anyone
+interested in a copy?
+
+-----Original Message-----
+From: Jerry Van Baren [mailto:vanbaren_gerald@si.com]
+Sent: Friday, June 21, 2002 1:12 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Can I run linux without a file system?
+
+
+
+You need at least a RAM file system for "/" and a bunch of subdirectories
+such as /dev, /lib, etc.  The common way to do this on a minimalistic
+system is to create a file system image in ROM (often compressed) and copy
+it to RAM on start up.  Given the questions you are asking, I am very
+confident creating a minimal RAM disk image will challenge you sufficiently
+:-).  I'm not being snide, lots of people with lots of linux knowledge have
+tried and failed.  Most people use someone else's pre-configured minimal
+file systems and add/subtract (mostly add :-) programs to it.  This is
+because it is very, very hard to create a minimal file system (that works,
+that is).
+
+Pointers to development systems with example RAM disk images:
+   http://www.denx.de/solutions-en.html
+     ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/
+   http://www.mvista.com/
+   (there are others, I'm just too lazy to do the google search for you)
+
+Trying to run linux without a file system of any sort would require you to
+rewrite of pretty much everything and the three or four things you didn't
+rewrite, you would have to rebuild (static link, no shared
+libraries).  There are a lot of software engineers and hackers that would
+turn down the opportunity to do this at any price.  On the other hand, a
+lot of naivety and a even more coffee sometimes generates remarkable
+results :-).
+
+You really want to look at eCOS or one of the other light weight tasking
+OSs.
+   http://www.redhat.com/embedded/technologies/ecos/
+
+gvb
+
+
+At 12:42 PM 6/21/2002 -0700, Tim Lai wrote:
+
+>I am interested in both input/output operation
+>on the console. If I just set CONFIG_SERIAL_CONSOLE,
+>will I be able read input from the console?
+>The main application will be started from init(),
+>and the application will need to read and write
+>to the console. Are there are method to communicate
+>to the serial port other than open("/dev/ttyS0")?
 >
->You need at least a RAM file system for "/" and a bunch of subdirectories
->such as /dev, /lib, etc.  The common way to do this on a minimalistic
->system is to create a file system image in ROM (often compressed) and copy
->it to RAM on start up.  Given the questions you are asking, I am very
->confident creating a minimal RAM disk image will challenge you sufficiently
->:-).  I'm not being snide, lots of people with lots of linux knowledge have
->tried and failed.  Most people use someone else's pre-configured minimal
->file systems and add/subtract (mostly add :-) programs to it.  This is
->because it is very, very hard to create a minimal file system (that works,
->that is).
-
-I disagree. Creating a minimal root filesystem is easy once you understand what
-happens when init executes. (Shameless plug here) In my Embedded Linux book, I show
-you exactly the files needed to get bash running with a network connection. You use ldd to find out lib dependencies. Then copy binaries you want with their libs and some config files and your done. Here's my script to build such a root filesystem (http://www.embeddedlinuxinterfacing.com/chapters/04/buildrootfilesystem/buildrootfilesystem). Look it over, it probably won't make much sense without reading chapter 4.
-
-I can say that a minimum RedHat install uses 29,296 files – 382.020MB, debian 10,734 files - 67.428MB, my minimal root filesystem 82 files and 4.8MB.
-
-
-Here's a listing of tftproot directory
-
-root@tbdev1[513]: cd /tftpboot/powerpc-rootfs/
-root@tbdev1[514]: du -s
-4824    .
-root@tbdev1[515]: find .
-.
-./dev
-./dev/tty
-./dev/tty0
-./dev/ttyS0
-./dev/console
-./dev/null
-./dev/ram
-./dev/initctl
-./dev/mem
-./dev/pts
-./dev/ptyp0
-./dev/ttyp0
-./etc
-./etc/init.d
-./etc/init.d/rcS
-./etc/init.d/umountfs
-./etc/protocols
-./etc/services
-./etc/fstab
-./etc/inittab
-./etc/resolv.conf
-./etc/mtab
-./bin
-./bin/bash
-./bin/cat
-./bin/ls
-./bin/mount
-./bin/umount
-./bin/ps
-./bin/df
-./bin/kill
-./bin/ping
-./bin/chmod
-./bin/touch
-./bin/rm
-./bin/echo
-./bin/sh
-./sbin
-./sbin/init
-./sbin/ifconfig
-./sbin/route
-./sbin/depmod
-./sbin/insmod
-./sbin/lsmod
-./sbin/rmmod
-./lib
-./lib/ld-2.2.3.so
-./lib/ld.so.1
-./lib/libc-2.2.3.so
-./lib/libc.so.6
-./lib/libutil-2.2.3.so
-./lib/libutil.so.1
-./lib/libncurses.so.5
-./lib/libncurses.so.5.2
-./lib/libdl-2.2.3.so
-./lib/libdl.so.2
-./lib/libnss_dns-2.2.3.so
-./lib/libnss_dns.so.2
-./lib/libnss_files-2.2.3.so
-./lib/libnss_files.so.2
-./lib/libresolv-2.2.3.so
-./lib/libresolv.so.2
-./lib/libproc.so.2.0.7
-./lib/librt-2.2.3.so
-./lib/librt.so.1
-./lib/libpthread-0.9.so
-./lib/libpthread.so.0
-./lib/libm-2.2.3.so
-./lib/libm.so.6
-./lib/libstdc++-3-libc6.1-2-2.10.0.so
-./lib/libstdc++-libc6.1-2.so.3
-./usr
-./usr/bin
-./usr/bin/telnet
-./usr/bin/gdbserver
-./usr/lib
-./proc
-./tmp
-
-
-root@tbdev1[516]: find . | wc
-     82      82    1212
+>
+> >
+> > You don't need a filesystem to get output on the
+> > serial console
+> > you just need to enable the console with
+> > CONFIG_SERIAL_CONSOLE=y
+> > in your kernel configuration (atleast for mpc860
+> > that all)
+> > but you will have a hard time producing much more
+> > than a blinking
+> > cursor if you boot a Linux kernel and have no
+> > application that
+> > it then can run on the root-filesystem - what would
+> > be the point
+> > of such a setup - 1MB kernel code for a blinking
+> > cursor on a
+> > serial port seems expensive.
+> >
+> > hofrat
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
