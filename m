@@ -1,46 +1,47 @@
-Message-ID: <39E4EE41.9E708472@student.ethz.ch>
-Date: Thu, 12 Oct 2000 00:48:33 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+Date: Thu, 12 Oct 2000 11:14:54 +0200 (CEST)
+From: Xavier Grave <grave@ipno.in2p3.fr>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: 2.4 kernel doesn't allocate resource for my PCI Board 
+Message-ID: <Pine.LNX.4.21.0010121107090.10161-100000@ipnpcu5>
 MIME-Version: 1.0
-To: Josh Huber <huber@mclx.com>
-CC: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: dual head r128
-References: <20001011141722.A1437@missioncriticallinux.com>
-	 <39E4B4D0.FA62D929@student.ethz.ch>
-	 <20001011145249.B1437@missioncriticallinux.com>
-	 <39E4BAD4.E78B4E3B@student.ethz.ch> <20001011152633.A1614@missioncriticallinux.com>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Josh Huber wrote:
+Hi all,
 
-> > I guess it's because Branden doesn't build the powerpc debs himself or
-> > Ani's patches didn't apply cleanly anymore.
->
-> Yeah, like Tom said, I think it's because the patches broke x86
-> systems.  What I think I'm going to do is get the source package for
-> xfree 4, rsync ani's stuff and rebuild a package.
+I'm new to this list. I'm working on a VME Board from motorolla
+(MVME2303) and I have a 2.2.17 kernel running without problem.
 
-The latest powerpc debs do contain patches from Ani though, don't know what he
-changed in his tree since then if anything.
+The board have a Pci Mezzanine Card with a NCR 53c895 chip for my SCSI
+disk. When I try to boot the latest kernel (I'm trying from 2.4.0-test6 up
+to 2.4.0-test10) I have the following error message during boot :
 
+PCI: Cannot allocate resource region 1 of device 00:11.0
+PCI: Cannot allocate resource region 2 of device 00:11.0
+PCI: Failed to allocate resource 2 for Symbios Logic Inc. (formerly
+NCR) 53c895
 
-> I'll also upgrade to 2.4 to see if that makes a difference.
->
-> btw, dmesg shows that the fbcon system only detected one card -- the
-> AGP one.
+which leads to the following :
+sym53c895-0: Downloading SCSI SCRIPTS.
+scsi0 : sym53c8xx - version 1.6b
+scsi : aborting command due to timeout : pid 0, scsi0, channel 0, id 0,
+lun 0 Inquiry 00 00 00 ff 00
+sym53c8xx_abort: pid=0 serial_number=1 serial_number_at_timeout=1
+SCSI host 0 abort (pid 0) timed out - resetting
+SCSI bus is being reset for host 0 channel 0.
+sym53c8xx_reset: pid=0 reset_flags=2 serial_number=1
+serial_number_at_timeout=1
+sym53c895-0: unable to abort current chip operation.
+SCSI host 0 abort (pid 0) timed out - resetting
 
-That should work better with a 2.4 kernel. Anyway, have you used two
-video=aty128fb: ?
+Anyone have an idea how to solve this ?
 
+Thanks in advance, xavier
 
-Michel
+33 (0) 1 69 15 79 59
+De chacun selon ses forces, a chacun selon ses besoins
 
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
