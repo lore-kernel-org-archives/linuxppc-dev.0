@@ -1,31 +1,22 @@
-To: "Rune Torgersen" <runet@innovsys.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Insmod trouble 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 01 Apr 2004 18:17:46 MDT."
-             <DCEAAC0833DD314AB0B58112AD99B93B06DAAE@ismail.innsys.innovsys.com>
-Date: Fri, 02 Apr 2004 18:54:51 +0200
-Message-Id: <20040402165457.0957DC10B8@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: vze8n24y@verizon.net
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: C++ on PowerQUICC 1
+Date: Fri, 2 Apr 2004 17:12:38 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Message-Id: <20040402171238.NAJJ5247.out014.verizon.net@outgoing.verizon.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <DCEAAC0833DD314AB0B58112AD99B93B06DAAE@ismail.innsys.innovsys.com> you wrote:
->
-> I get the following unresolved functions when trying to insmod a module
-> with some floating point math in it:
+Hi:
 
-You cannot use floating point in kernel mode.
+I would like to run a C++ program on a PowerQUICC I with 8MB of Ram. I have been told that this may not be possible to do. Does anyone have experience with the memory requirements for C++ with a PQ1?
 
-Best regards,
+Thank you,
 
-Wolfgang Denk
+Bob Davis
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-God made machine language; all the rest is the work of man.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
