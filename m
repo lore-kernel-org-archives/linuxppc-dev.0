@@ -1,48 +1,36 @@
-Message-ID: <39AF028E.1C024B66@wanadoo.fr>
-Date: Fri, 01 Sep 2000 03:12:46 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.4 problems
-References: <39AEC1C7.E0894CFB@wanadoo.fr> <20000831214724.8428@192.168.1.10>
+Date: Thu, 31 Aug 2000 18:44:47 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Platform configuration (was: Re: CONFIG_PPC != Mac)
+Message-ID: <20000831184447.D3823@opus.bloom.county>
+References: <39AE80BD.D86B34DA@embeddededge.com> <Pine.HPX.4.10.10008311808260.15978-100000@gra-ux1.iram.es>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.HPX.4.10.10008311808260.15978-100000@gra-ux1.iram.es>; from paubert@iram.es on Thu, Aug 31, 2000 at 06:10:55PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+On Thu, Aug 31, 2000 at 06:10:55PM +0200, Gabriel Paubert wrote:
 >
-> >On my 6400, both bk-test8 and pmac-devel-test7 are running nicely. The
-> >one major problem is random sudden freezes that can happen after some
-> >minutes or after 3 days and which have been reported a couple of times
-> >by others, too. It is like the ADB interrupt dies. There are no
-> >messages, the computer is still alive, it goes on compiling or
-> >downloading, and today I even could ssh in over the net, but locally,
-> >keyboard and mouse are dead, even MagicSysRq, the only working key combo
-> >is ctrl-cmd-power :-(
-> >
-> >I never saw this with 2.2.X kernels (not recently, in any case).
 >
-> Interesting. Do you have the new input layer enabled or are you still
-> running the old keyboard and mouse drivers ?
+> On Thu, 31 Aug 2000, Dan Malek wrote:
+>
+> > I would also like to see us spend a little more time trying to
+> > stabilize 2.4 instead of trying to solve elaborate configuration and
+> > boot schemes.  That is what 2.5 is for.
+>
+> What are your problems with 2.4 ? I'm at 2.4.0-test7 and I've not had any
+> problem so far, although I still need to upgrade my modutils.
 
-I am now running the new input layer (with old keycodes). But I saw
-(rather, suffered from) these freezes already before the arrival of the
-new input layer. For a while I blamed it on Xpmac, where I seem to
-remember having had these even with 2.2.x kernels, but I am using now
-XFree-4.0.1-fbdev.
-
->                                              If you telnet to the box, do
-> you still see ADB interrupts increasing when typing keys or not ?
-
-You mean when I type on the local "dead" keyboard? I couldn't test this
-yet, because the machine from which I sshed in was 15 km away at work.
-And after a while I had the bad idea to type "hwclock -r", upon which
-the 6400 was really dead, so I could not test it any further. While I
-observed it, the ADB interrupt did not increase.
+Here's a few: The PCI resource allocation/conflict stuff has "issues" with
+some Pmacs (7600, Yikes! G4, I don't know about others).  And my powerstack
+series e doesn't get beyond loading linux right now (I haven't played too much
+tho.)  But regardless, this is a 2.5 issues.  I'd be very supprised if this
+gets into 2.4.0 or even an early 2.4.x.
 
 --
-Martin
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
