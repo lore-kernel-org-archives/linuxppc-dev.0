@@ -1,26 +1,38 @@
-Date: Tue, 15 Dec 1998 22:35:48 -0600 (CST)
+Date: Tue, 15 Dec 1998 22:42:40 -0600 (CST)
 From: Troy Benjegerdes <hozer@drgw.net>
-To: VALETTE Eric <valette@crf.canon.fr>
-cc: cort@persephone.cs.nmt.edu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: changes to the kernel
-In-Reply-To: <m0zo3lc-0000WVC@tri-yann.crf.canon.fr>
-Message-ID: <Pine.LNX.4.04.9812152229540.30336-100000@narn.local.drgw.net>
+To: Michel Lanners <mlan@cpu.lu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: matroxfb, anybody?
+In-Reply-To: <199812131040.LAA03780@piglet.cpu.lu>
+Message-ID: <Pine.LNX.4.04.9812152239541.30336-100000@narn.local.drgw.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 10 Dec 1998, VALETTE Eric wrote:
+On Sun, 13 Dec 1998, Michel Lanners wrote:
 
-> Inflates returns %d... I will send a patch enabling to print decimal
-> as well... NB : this bug has been reported by alois on the mailling list
-> with a fix and I have reposted the fix.
 > 
+> Hi there,
+> 
+> Anybody successfull in running matroxfb with recent vger kernels?
+> 
+> I've tried using it alongside controlfb as a second framebuffer, but it
+> doesn't initialize. Compiled-in, it only goes through the very first
+> debugging message, and then nothing more;  while as a module insmod
+> aborts (slightly older matroxfb.c (1.6c)) or hangs the system (most
+> recent matroxfb.c (1.8)).
+> 
+> I've also tried to compile-in matroxfb without controlfb, but that
+> failed because offb.c wasn't in (undefined ref to console_getmode et
+> al.). I'm right now trying a recompile with OF support compiled in, but
+> no framebuffer driver. Let's see....
 
-FYI, I've had this problem on a 604e/133 blackhawk board. I worked around
-it by setting the optimization level for arch/ppc/boot to -O instead of
--O2 in the makefile.
+I'm running matroxfb on a motorola MTX board (PReP machine) which does not
+have open firmware. As a module, it crashes in ioremap (don't know why).
+the framebuffer X server works. However VGA text mode doesn't work too
+well.
 
 --------------------------------------------------------------------------
 | Troy Benjegerdes    |    troybenj@iastate.edu    |    hozer@drgw.net   |
