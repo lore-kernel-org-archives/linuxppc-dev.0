@@ -1,17 +1,17 @@
-Message-ID: <37DDAACA.FFBFF68D@execpc.com>
-Date: Mon, 13 Sep 1999 20:54:18 -0500
-From: Joseph Garcia <jpgarcia@execpc.com>
-MIME-Version: 1.0
+Date: Mon, 13 Sep 1999 22:38:04 -0400 (EDT)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
 To: Timothy Wall <twall@tiac.net>
-CC: linuxppc-dev@lists.linuxppc.org
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: missing space on ext2fs scsi drive
-References: <37DDA89E.8B35952D@tiac.net>
-Content-Type: text/plain; charset=iso-2022-jp
+In-Reply-To: <37DDA89E.8B35952D@tiac.net>
+Message-ID: <Pine.LNX.3.96L.990913223653.9981F-100000@unix47.andrew.cmu.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Timothy Wall wrote:
+On Mon, 13 Sep 1999, Timothy Wall wrote:
 > 
 > I've run into an odd problem that I'm not quite sure how to diagnose.
 > 
@@ -23,21 +23,10 @@ Timothy Wall wrote:
 > Is my ext2fs accounting screwed?  Why does the FS think there is no
 > space when writing, but show space with "df" ?
 
-I had this problem when i installed 1999 with it reformatting my drives.  The
-problem is it didn't recognize the partition geom right.  My problem was i had a
-2 gig partition, it was formatted as if it were 1 gig, and its max files were
-only 65k of them.  So when i tried to have more then 65000+ files on this drive,
-it still had space, but no blank table entries for the new files.  whoops.
+Run 'df -i'. This shows you your inode usage. Full, isn't it? Time to backup,
+reformat (with mke2fs), and reinstall.
 
-Im not sure what caused it, but what i did was put the files on another
-drive(s), reformat the drive (which did it right (?)), and move them back.  I'd
-like to think there is a better solution.  Ideas?
+-Hollis
 
-Hope this helps.  Good luck.
-
--- 
-Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
-CS Undergraduate                      Student Employee - Systems Programmer
-University of Wisconsin - Madison                            UW Lidar Group
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
