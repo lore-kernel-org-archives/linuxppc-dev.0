@@ -1,41 +1,43 @@
-Date: Thu, 29 Nov 01 14:15:10 PST
-From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0111292215.AA01078@ivan.Harhan.ORG>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ide_init_hwif_ports
+From: Keith Owens <kaos@ocs.com.au>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: include/asm-ppc/platforms/ 
+In-reply-to: Your message of "Thu, 29 Nov 2001 08:26:25 PDT."
+             <20011129082625.R29541@cpe-24-221-152-185.az.sprintbbd.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Fri, 30 Nov 2001 09:19:20 +1100
+Message-ID: <30560.1007072360@ocs3.intra.ocs.com.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-mod+linuxppc-dev@MissionCriticalLinux.com wrote:
+On Thu, 29 Nov 2001 08:26:25 -0700,
+Tom Rini <trini@kernel.crashing.org> wrote:
+>On Thu, Nov 29, 2001 at 10:48:46PM +1100, Paul Mackerras wrote:
+>> The only reason for having include/asm-ppc/platforms under
+>> include/asm-ppc is so that serial.h can include the right
+>> blah_serial.h file.  We can get around that by using
+>> early_serial_setup except that that doesn't work if the serial driver
+>> is built as a module.  The boot stuff also needs to get at the first
+>> serial port but we can manage that by requiring the platform.h file to
+>> define e.g. BOOT_SERIAL_ADDRESS, BOOT_SERIAL_REG_SHIFT, etc., if it
+>> wants to use a serial port in the boot wrapper.  The boot wrapper code
+>> then just does #include <platform.h>.
+>
+>What would <asm/serial.h> contain here?  Keep in mind that some ports
+>'just work' with the default <asm/serial.h>.
 
-> Not to quibble with your painfully accurate
-> description of the VT82C686B, but might it be
-> possible (using the IDE Interrupt Routing register
-> at offset 0x4a in function 1) to arrange for both
-> channels to use the same interrupt routing?
-> Like force both to IRQ14?  Just a thought...
+The make rules I sent to Paul automatically generate platform.h and
+platform_serial.h by copying the platform specific files to arch/ppc
+under standard names.  If the platform has no *_serial.h file then
+platform_serial.h is a zero length file.  So ppc code can always
 
->From what I could tell the IDE interrupt routing is fixed by the board
-circuitry *outside* the chip and cannot be changed by any register diddling. As
-I said, I don't think the VT82C686B even knows when an IDE interrupt has
-occurred. The interrupt lines from the IDE connectors are tied directly to the
-IRQ14 and IRQ15 pins, the same ones that go to the ISA slot connectors. If one
-of these pins goes high, the VT82C686B has no way of knowing that it's IDE or
-something else on ISA using this IRQ is signaling an interrupt.
+#include <platform.h>
+#include <platform_serial.h>
 
-Then what does the supposed IDE Interrupt Routing register (at offset 0x4A in
-function 0, I assume that's what you really meant) do? I have no idea. I
-suspect that Via *tried* to make it standards-compliant and support both AT-
-compatible and pure PCI IDE interrupt routing, but never fully got it. Consider
-function 1's Interrupt Pin register (offset 0x3D). The Via manual says:
+without #ifdef in the main code.
 
-00h Legacy mode interrupt routing
-01h Native mode interrupt routing
-
-Yet it always reads as 00 and I couldn't get it to read as 01 or as anything
-else.
-
-MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
