@@ -1,24 +1,18 @@
 From: Paul Mackerras <paulus@linuxcare.com>
-To: linuxppc-dev@lists.linuxppc.org, Martin Costabel <costabel@wanadoo.fr>
-Subject: Re: 2.3.43 failed
-Date: Tue, 15 Feb 2000 10:20:21 +1100
+To: linuxppc-dev@lists.linuxppc.org
+Subject: my web page
+Date: Tue, 15 Feb 2000 17:12:17 +1100
 Content-Type: text/plain
-References: <38A7C1DF.99A5346@wanadoo.fr>
 MIME-Version: 1.0
-Message-Id: <00021510205202.09337@argo.linuxcare.com.au>
+Message-Id: <0002151714050B.09337@argo.linuxcare.com.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 14 Feb 2000, Martin Costabel wrote:
-
-> Thanks. Your new version in 2.3.45pre works correctly (shows me once
-> more why I'm not a kernel developer: I replaced all 3 occurrences of
-> dev_kfree_skb by if (in_irq()) ... else ..., which worked, too; you
-> replaced just one of them by dev_kfree_skb_irq; I had tried this before,
-> but always got the wrong one :-( ).
-
-Actually, I can't take the credit, the fix was in the official 2.3.45-pre2.
+I have done a little web page describing the current state of kernel
+development for the powermac and how to get my rsync trees.  It's at
+http://linuxcare.com.au/paulus/kernels.html.  Let me know if there is
+anything I should explain better (or more).  :-)
 
 --
 Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
