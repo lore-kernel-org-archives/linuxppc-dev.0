@@ -1,13 +1,49 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Thu, 30 Jan 2003 09:07:46 +0200
-From: Thomas Andrews <tandrews@mindspring.co.za>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Development hardware
-Message-ID: <20030130090746.A5731@mindspring.co.za>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <21A8AE56EBB6D411A4520060973D360101A9F791@PEPINTERCOM>
+From: Claus Gindhart <Claus.Gindhart@kontron.com>
+To: "'Thomas Andrews'" <tandrews@mindspring.co.za>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Development hardware
+Date: Thu, 30 Jan 2003 08:32:33 +0100
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Hi,
+we have quit a bunch of boards with the 860T processor available.
+If interested, please check into
+http://www.pep.com/e2brain
+or
+http://www.pep.de/products/productdetails.php?productid=139
+or
+http://www.pep.de/products/productdetails.php?productid=133
+
+We supply a Linux-BSP including a 2.4.18 Kernel for all our PowerPC
+boards.
+One drawback i should mention: We have BSP's available for our 8245
+and 750CX platforms already; the 860T BSP's are under development
+in the moment.
+
+--
+Mit freundlichen Gru?en / Best regards
+
+Claus Gindhart
+Software Design Engineer
+
+PEP Modular Computers GmbH     phone:    +49-8341-803-374
+R&D Software                   fax:      +49-8341-803-40-374
+Sudetenstrasse 7               email:    claus.gindhart@kontron.com
+D-87600 Kaufbeuren             web page: http://www.pep.de
+                                         http://www.kontron.com
+
+
+-----Original Message-----
+From: Thomas Andrews [mailto:tandrews@mindspring.co.za]
+Sent: Donnerstag, 30. Januar 2003 08:08
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Development hardware
+
 
 
 Hi Folks
@@ -26,5 +62,6 @@ table-walk ?
 
 Many thanks,
 Thomas
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
