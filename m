@@ -1,61 +1,26 @@
-Message-ID: <36C362C9.6D64E0A6@babcockbrown.com>
-Date: Thu, 11 Feb 1999 15:07:54 -0800
-From: root <hughc@babcockbrown.com>
+Date: Thu, 11 Feb 1999 19:10:08 -0500 (EST)
+From: Tom Rini <tmrini@ntplx.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: OF and NetBooting
+Message-ID: <Pine.LNX.4.05.9902111905490.12241-100000@p12-42.hartford.dialin.ntplx.com>
 MIME-Version: 1.0
-To: Jeff Rugen <jrugen@primenet.com>
-CC: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: R5 Install (Mostly) Successful on PBG3
-References: <Pine.BSI.3.96.990211154529.28495A-100000@usr09.primenet.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This was a new install, no R4 stuff involved.
+Hello,
+  After playing around a bit more with my iMac, I was wondering if anyone
+knew just what was going on here..  First, I've gotten the iMac to
+NFS-boot with BootX, and verified that bootp is setup right (ie it sets up
+the network, and I can tftp in the file from OF).  However, when I try and
+load a kernel from OF (either hd:vmlinux or enet:0,vmlinux) I get CLAIM
+failed.  Has anyone gotten past this?  I'm thinking it might be something
+we do really early on, as netbsd does boot (enet:0,netbsd.generic)
 
-It turns out that running rpm --rebuilddb fixed it.  I haven't had any problems
-installing the stuff I missed after that.
-
-Do the LinuxPPC guys want to hear about problems with the install and
-operation?
-
-Hugh
-
-Jeff Rugen wrote:
-
-> On Thu, 11 Feb 1999, root wrote:
->
-> > There were a few failures during intstall.  The main problem I have is
-> > that RPM doesn't work; any attempt to use it returns an error
-> > "//var/lib/rpm/nameindex.rpm: Invalid argument"
->
-> The problem seems to be the R4 RPM database and the pre-R5 RPM database are
-> incompatible with each other.  I manually removed all the /var/lib/rmp/*
-> files (well, i copied them off) and reinstalled -- it created a new RPM
-> database that works.  However, I was left with a ton of files from R4 rpms,
-> that were no longer needed and I had to remove manually.
->
-> I did write a script that would return 0 if the file passed in as a name was
-> listed in the RPM database, and -1 otherwise, then used the script in a find
-> command to list all the non-RPM files.  I ran it overnight -- ended up with
-> thousands of files, and manually deleted large chunks of them.
->
-> Be _very_ careful doing this.  Sometimes you'll get RPMs that don't indicate
-> that a directory is part of the distribution, so you'll see directory names
-> you think you can delete.  You don't want to do that. :-)
->
-> ----------------------------------------------------------------------------
-> Jeff Rugen                      jrugen@primenet.com
->
-> ...Had this been an actual emergency, we would have fled in terror, and you
-> would not have been informed.
-
---
-Hugh Caley, System Administrator
-Babcock & Brown, Inc., San Francisco
-1+512+1515x694 | hughc@babcockbrown.com
-
-
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
