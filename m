@@ -1,38 +1,35 @@
-From: ghannon@cspi.com
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <85256BD6.00607ADF.00@pine.cspi.com>
-Date: Wed, 12 Jun 2002 14:03:48 -0400
-Subject: GT-64260B and SMP
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-ID: <3D0791FA.16013059@mvista.com>
+Date: Wed, 12 Jun 2002 14:24:58 -0400
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: ghannon@cspi.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: GT-64260B and SMP
+References: <85256BD6.00607ADF.00@pine.cspi.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+ghannon@cspi.com wrote:
 
-We are going to be working on an SMP system using this chip in the
-near future  and I am just checking the current status of support
-in the Linux kernel.
+> Is anyone currently, or in the near future, going to be working on
+> modifications for SMP using the rev B Gallileo Discovery system
+> controller from Marvell?
 
-Is anyone currently, or in the near future, going to be working on
-modifications for SMP using the rev B Gallileo Discovery system
-controller from Marvell?
+There are several ports to SMP boards happening here with the Rev A part.  I
+have still to see a board with the Rev B chip.
 
-Is this already done in one of the kernel trees?
+> Is this already done in one of the kernel trees?
 
-Was SMP support already attempted/successful using rev A parts?
+Not exactly.  The closest thing will be the work that Troy B. did in the
+linux-galileo tree for the Motorola MVP evaluation platform.
 
- I do have ppcboot 1.0.5 and linux 2.4.10-pre9 from
-Mission Critical Linux for the eval board (rev A and not SMP)
-but I haven't yet attempted to get it running.
+> Was SMP support already attempted/successful using rev A parts?
 
-Thanks,
-Gary Hannon
+See above.
 
-CSPI
-(978) 663-7598  x1509
-ghannon@cspi.com
+Mark
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
