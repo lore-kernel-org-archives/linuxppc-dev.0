@@ -1,101 +1,150 @@
-From: "Joe Hamman" <joe.hamman@embeddedspecialties.com>
-To: "Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: MMU on the power pc 860 
-Date: Sun, 22 Dec 2002 22:01:27 -0600
-Message-ID: <IBEKKAEMFNGMMNNIBFEMCECECCAA.joe.hamman@embeddedspecialties.com>
+Message-Id: <200212230835.JAA13251@hzsms01.nl.lucent.com>
+Date: Mon, 23 Dec 2002 09:35:55 +0100 (MET)
+From: Jaap-Jan Boor <jjboor@lucent.com>
+Reply-To: Jaap-Jan Boor <jjboor@lucent.com>
+Subject: Re: Serious Problem: After Uncompresseing Linux..., what's next
+To: pkanthi@yahoo.com
+Cc: linuxppc-embedded@lists.linuxppc.org, gary@chez-thomas.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20021221205905.1518EC6139@atlas.denx.de>
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Cecilia,
-
-The comment on the Vision* tools' MMU support is incorrect.  The visionICE II and visionPROBE II support up to four regions of
-translation.  You need to enter the details manually:
-
-BKM>CF MMU LINUX
-BKM>CF MMUA C0000000 0 FF000000
-
-Use the CF MMUL to list the translation table entries currently defined in the tool.  You can get the details from WRS.  This will
-allow you to use visionCLICK (or SingleStep w/vision) to debug anything statically linked into the kernel, from address 0 through
-init.
-
-Unless you have specific reasons not to switch, I recommend using the U-Boot bootloader.
-
-Regards,
-Joe
-
-
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Wolfgang
-Denk
-Sent: Saturday, December 21, 2002 2:59 PM
-To: Muaddi, Cecilia
-Cc: 'linuxppc-embedded@lists.linuxppc.org'
-Subject: Re: MMU on the power pc 860
-
-
-
-Dear Cecilia,
-
-in message <885489B3B89FB6449F93E525DF78777F06451E@srvnt506.ALLOPTIC.COM> you wrote:
 >
-> I am porting the timeSys Linux to a custom Power PC 860 board.  Our board
-> currently runs
-> windRiver VxWorks.  I have modified the VxWorks bootrom to allow me to
-> download a motorola
-> hex record, and I have modified the timeSys bootcode
-> arch/ppc/boot/mbx/misc.c:decompress_kernel
+> Hi Folks,
+>
+> I think finally i have idea as to why boot process was
+> failing. After uncompressing linux image, the code
+> execution was aborting with an ESR value of
+> 0x08000000, which stands for "ILLEGAL INSTRUCTION".
+> When i checked the instruction causing this, i figured
+> that, 'tlbia' (0x00002384) is the culprit. tlbia is a
+> valid instruction in PPC405 instruction set.
+>
+> I still don;t understand, how come it is getting
+> rejected. Am i missing anything? Can anyone please
+> throw some light on this?
 
-This is the generic Linux bootstrap loader, it has nothing to do with
-TimeSys.
+I don't know anything about your cpu (405) but make
+sure you understand any prerequisites for the tlbia
+instruction or what it's function is (may be your
+instruction cache is totally invalid after this
+instruction or your immu settings are not correct)
 
-> loaded at:     00400000 0040C30C
-> board data at: 004001C0 004001E4
-> relocated to:  0040C0E8 0040C10C
-> zimage at:     0040C30C 004BC440
-> avail ram:     004BD000 00800000
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Jaap-Jan
 
-This loos strange to me. Didn't you map RAM to 0x0000?
+>
+> thanks,
+> Prakash
+>
+>
+>
+>
+> --- Prakash kanthi <pkanthi@yahoo.com> wrote:
+> >
+> > Gary,
+> >
+> > I really appreciate your help. Here is what i am
+> > doing. Sorry it is little long. But was necessasry.
+> >
+> > 1. I have a boot loader(xrom.elf) of size around
+> > 400KB
+> > which basically have menu driven tests along with an
+> > option to jump to linux kernel(zImage.initrd.elf).
+> >
+> > 2. xrom.elf is compiled to start at 0xfffffffc and
+> > jump to 0x00000000 to have rest of functionality.
+> > zImage.initrd.elf is compiled to start at
+> > 0x00400000.
+> >
+> > 3. I load zImage.initrd.elf first and then xrom.elf
+> > (xilinx tool makes sure that they are loaded to
+> > corresponding locations based on ELF header).
+> >
+> > 4. After loading both, i start running xrom.elf and
+> > it
+> > shows up a menu in my UART terminal. I jump to linux
+> > (0x00400000).
+> >
+> > 5. I see that linux is basically reading the board
+> > info, setting UART, prints some boot messages onto
+> > it
+> > and then performs uncompression (gunzip function
+> > takes
+> > the rest of linux image and puts the uncompressed
+> > code
+> > starting from 0x0).
+> >
+> > 6. Up untill, everything is ok. After this, control
+> > jumps to 0x0 and starts executing.
+> >
+> > My problems are,
+> >
+> > a. Once the uncompression process is done, i am not
+> > sure if the image is copied to 0x0 (i do see value
+> > changes in memory starting from 0x0).
+> > b. As uncompression process is embedded into
+> > zImage.initrd.elf, i do not objdump does not tell me
+> > which function it is going to execute after
+> > uncompression.
+> >
+> > Please suggest.
+> >
+> > Thanks,
+> > Prakash
+> >
+> >
+> >
+> >
+> >
+> > --- Gary Thomas <gary@chez-thomas.org> wrote:
+> > > On Fri, 2002-12-20 at 09:48, Prakash kanthi wrote:
+> > > > I do have xilinx tools and i am working with
+> > their
+> > > V2P
+> > > > product. I completely understands what you are
+> > > said.
+> > > > But the problem is, right after the
+> > uncompression
+> > > and
+> > > > cpy to 0x00000000, i loose total control because
+> > i
+> > > > don't have any clue what is getting executed.
+> > > >
+> > >
+> > > What sort of things can you do with the Xilinx
+> > > tools?  Is
+> > > there any way to set [hardware] breakpoints or
+> > > single step?
+> > >
+> > > > And also, i have my boot monitor code at
+> > > 0x00000000,
+> > > > before uncompress process overwrites it. I see
+> > > that
+> > > > some of that code is getting executed after jump
+> > > to
+> > > > 0x0. I reason i am overwriting 0x0 is because, i
+> > > only
+> > > > have 8MB RAM.
+> > > >
+> > >
+> > > 8M should be plenty of RAM.
+> > >
+> > >
+> >
+> >
+> >
+>
+>
+>
 
-> I was able to use the VisionICE BDM to single step, and see it does jump to
-> the address 0, and
-> begin execute the instruction in kernel/arch/ppc/kernel/head_8xx.S:_start
+---
+J.G.J. Boor
+Lucent Technologies Nederland b.v.	Room:  BE-525
+Optical Networking Group TMS Data 	Phone: +31 (0)35 687 4721
+Larenseweg 50, P.O. Box 1168, 		Fax:   +31 (0)35 687 5976
+1200 BD, Hilversum, The Netherlands	mailto:jjboor@lucent.com
 
-You will not get far  with  the  Vision*;  better  use  a  tool  that
-understands the MMU, like the Abatron BDI2000.
-
-> I think the MMU TLB setup I have is not exactly correct, since the vxWorks
-> BOOTROM does not
-> initialize any MMU registers.  Can someone tell me if I need to initialize
-> the M_TWB register for the
-
-MMU should be switched off when starting Linux.
-
-> to be the value for this register?  My physical memory map consists of RAM
-> at location 0 to 0x1ffffff
-
-This is not what I see above.
-
-> and my IMMR is set to 0x2b00 0000
-
-And this is plain wrong. The IMMR _must_ be mapped above 0xF0000000.
-
-
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Use C++ to confuse your enemies; use C to produce stable code.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
