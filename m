@@ -1,21 +1,25 @@
-Return-Path: <martin@egholm-nielsen.dk>
-Received: from softscan.infopaq.dk (softscan.infopaq.dk [213.150.59.22])
-	by ozlabs.org (Postfix) with SMTP id ABDDC67A88
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
+	by ozlabs.org (Postfix) with ESMTP id 75AB467A94
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Apr 2005 06:13:25 +1000 (EST)
-Received: from unknown (HELO [192.168.0.5]) ([212.242.189.63])
-	(envelope-sender <martin@egholm-nielsen.dk>)
-	by mail.freepaq.dk (qmail-ldap-1.03) with SMTP
-	for <linuxppc-embedded@ozlabs.org>; 31 Mar 2005 20:13:27 -0000
-Message-ID: <424C59E1.7010605@egholm-nielsen.dk>
-Date: Thu, 31 Mar 2005 22:13:21 +0200
-From: Martin Egholm Nielsen <martin@egholm-nielsen.dk>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-References: <ORION1DXU7J3Ty2cTBM000000a9@orion1.ariodata.com>
-In-Reply-To: <ORION1DXU7J3Ty2cTBM000000a9@orion1.ariodata.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: Re: Overcommit (OOM) problem on embedded device (PPChameleon)
+	Fri,  1 Apr 2005 06:15:51 +1000 (EST)
+Date: Thu, 31 Mar 2005 13:15:48 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Matt <mporter@kernel.crashing.org>,
+	Jason McMullan <jason.mcmullan@timesys.com>
+Message-ID: <20050331201548.GK25923@smtp.west.cox.net>
+References: <20050316231800.GD8345@smtp.west.cox.net>
+	<d0e9907f9780a7fce59b3f69af6ece99@freescale.com>
+	<1111171391.2987.24.camel@ad.doubleclick.net>
+	<20050318193045.GM8345@smtp.west.cox.net>
+	<1112286378.24673.252.camel@rhino.az.mvista.com>
+	<20050331163420.GI25923@smtp.west.cox.net>
+	<20050331131044.A29501@cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050331131044.A29501@cox.net>
+Cc: linuxppc-embedded Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: 440EP FPU patch
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,93 +30,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi David,
-
->>>Look in mm/mmap.c and search for overcommit_memory, then do same
->>>in the sources for your redhat kernels.
->>I'll look into RH kernel to see if it isn't like you say :-)
->>>Perhaps there's a patch for it floating around somewhere? ;-)
->>Now, that would be really nice.
->>Though I have no idea of where to look!?
-> Here is what I do.  Patch is against BK linuxppc-2.4 version 1.1285
-> (2.4.28-pre3) but might work.
-Well, the patch goes straight into my 2.4.20 ppc-kernel - but we have to 
-wait until tomorrow to see if it does the magic.
-
-> Burns 5% of the RAM but alternatives all seem worse and I never
-I can live with that (3%)...
-
-> If you find out why RH works it would be interesting ... perhaps
-> there is a better way.
-I downloaded the 2.4.20-10 kernel SRPM from RH8 - it contains all the 
-patches they apply to the serene 2.4.20 kernel.
-There is some stuff regarding introducing the 
-"overcommit_memory_accounting" variable from the 2.5 kernel, but I 
-haven't looked into it in depth.
-
-I'll try with your patch first :-)
-
-BR,
-  Martin Egholm
-
-> #
-> # mm/mmap.c
-> #   Add pessimistic overcommit mode similar to 2.6 mode 2.
-> #   This allows malloc aka sbrk() to actually fail before
-> #   process is killed.
-> #   Overloaded sysctl_overcommit_memory to be both enable
-> #   and ratio to avoid making a new sysctl.
-> # 
-> diff -Nru a/mm/mmap.c b/mm/mmap.c
-> --- a/mm/mmap.c	2005-03-30 07:15:13 -08:00
-> +++ b/mm/mmap.c	2005-03-30 07:15:13 -08:00
-> @@ -45,9 +45,13 @@
->  	__S000, __S001, __S010, __S011, __S100, __S101, __S110, __S111
->  };
->  
-> -int sysctl_overcommit_memory;
-> +int sysctl_overcommit_memory = 98;
-> +
->  int max_map_count = DEFAULT_MAX_MAP_COUNT;
->  
-> +extern unsigned long totalram_pages;
-> +extern unsigned long totalhigh_pages;
-> +
->  /* Check that a process has enough memory to allocate a
->   * new virtual mapping.
->   */
-> @@ -66,7 +70,7 @@
->  	unsigned long free;
->  	
->          /* Sometimes we want to use more memory than we have. */
-> -	if (sysctl_overcommit_memory)
-> +	if (sysctl_overcommit_memory == 1)
->  	    return 1;
->  
->  	/* The page cache contains buffer pages these days.. */
-> @@ -91,7 +95,20 @@
->  	free += (dentry_stat.nr_unused * sizeof(struct dentry)) >>
-> PAGE_SHIFT;
->  	free += (inodes_stat.nr_unused * sizeof(struct inode)) >>
-> PAGE_SHIFT;
->  
-> +	/*
-> +	 * Leave the last 3% for root
-> +	 */
-> +	if (current->euid)
-> +		free -= free / 32;
-> +
-> +	/* Strict mode do not allocate last bit of memory */
-> +	if (sysctl_overcommit_memory) {
-> +		pages += (totalram_pages - totalhigh_pages)
-> +			* (100 - sysctl_overcommit_memory) / 100;
-> +	}
-> +
->  	return free > pages;
-> +
->  }
->  
->  /* Remove one vm structure from the inode's i_mapping address space. */
+On Thu, Mar 31, 2005 at 01:10:44PM -0700, Matt wrote:
+> On Thu, Mar 31, 2005 at 09:34:21AM -0700, Tom Rini wrote:
+> > On Thu, Mar 31, 2005 at 09:26:18AM -0700, Wade Farnsworth wrote:
+> > > On Fri, 2005-03-18 at 12:30, Tom Rini wrote:
+> > > > On Fri, Mar 18, 2005 at 01:43:11PM -0500, Jason McMullan wrote:
+> > > > > On Fri, 2005-03-18 at 10:06 -0600, Kumar Gala wrote:
+> > > > > > Can you build your patch for the lopec_defconfig and fix the errors 
+> > > > > > associated with enabling altivec.
+> > > > > > 
+> > > > > > Looks like you need to include asm/offset.h & asm/page.h in vector.S, 
+> > > > > > however there is another build error after that.
+> > > > > 
+> > > > > Thanks! That also found a linking bug, fixed in this patch.. Please
+> > > > > double check the call in 'AltiVecUnavalible' in head.S, and the re-load
+> > > > > of 'ctr' at the end of load_up_altivec, as I do not have an AltiVec
+> > > > > machine here.
+> > > > 
+> > > > No dice:
+> > > > VFS: Mounted root (nfs filesystem) readonly.
+> > > > Freeing unused kernel memory: 100k init 4k prep
+> > > > floating point used in kernel (task=c03816b0, pc=c000d664)
+> > > > Doing some objdump'ing, that's the start of load_up_altivec.
+> > > 
+> > > Hi Jason and Tom,
+> > > 
+> > > Has there been any more progress on this patch?
+> > 
+> > Sadly no.  We got to the point where it was reliably crashing on my
+> > LoPEC (7400), but no time to try and fix it.  The problem should show up
+> > on any classic PPC box..
 > 
-> 
-> 
+> If nobody has time to work on this, then I intend  to put Wade's 440EP
+> support in as is (actually, he's planning on resubmitting with some
+> additional changes).  When somebody has time, they can redo the patch
+> against that.
+
+That's a good point to bring up.  Jason, do you want to post your
+current version to the list and we can try and see if we can get it
+workign right?
+
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
