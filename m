@@ -1,62 +1,45 @@
-Date: Mon, 7 Oct 2002 22:21:36 -0700
-From: Andrew May <acmay@acmay.homeip.net>
-To: Matt Porter <porter@cox.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: very minor 405GP and 405GPr PCI difference
-Message-ID: <20021008052136.GA26470@acmay.homeip.net>
-References: <OF8DC4E66D.5C36B7D3-ON87256C41.00434ACB@boulder.ibm.com> <20020930040143.GF10265@zax> <20021001052121.GV10265@zax> <3D995EC0.2000500@elsoft.ch> <20021002014219.GF1848@zax> <3D9AA452.5070004@elsoft.ch> <20021003011233.GC1102@zax> <20021006052314.GG27824@acmay.homeip.net> <20021006183120.A17129@home.com> <20021008041419.GF32555@zax>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20021008041419.GF32555@zax>
+To: Jin Cheng <jcheng@redswitch.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: can not open crt1.o using ELDK 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 07 Oct 2002 21:19:49 PDT."
+             <3DA25CE5.EA79616B@redswitch.com>
+Date: Tue, 08 Oct 2002 07:34:26 +0200
+Message-Id: <20021008053431.2C56DFA9C@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Oct 08, 2002 at 02:14:19PM +1000, David Gibson wrote:
+In message <3DA25CE5.EA79616B@redswitch.com> you wrote:
 >
-> On Sun, Oct 06, 2002 at 06:31:20PM -0700, Matt Porter wrote:
-> >
-> > On Sat, Oct 05, 2002 at 10:23:14PM -0700, Andrew May wrote:
-> > >
-> > > It would be nice to have the option to let the boot loader set the
-> > > mapping. I have been happy with getting things done in PPCBoot and
-> > > ripping out the PCI scanning in the kernel.
-> >
-> > Yes, that's the ideal situation and going to what David and I would
-> > like to see makes that yet another simple fallout feature.
-> >
-> > Your custom port using a good implementation of PPCBoot simply
-> > would not call the pci macro init library nor would it use pci_auto.
->
-> As Matt says, this would fall out naturally from a better control
-> structure.  Howeever, I tend to think that leaving things like this to
-> the bootloader/firmware is a bad idea:
+> When I use the ELDK to compile one file, I got the following message saying can
+> not
+> find crt1.o. Can someone help me on that? I don't have problem compiling one
+> other file.
+...
+> hyperion: 224 % make
+> ppc-linux-gcc -D__KERNEL__ -DMODULE -I/u/jcheng/ppclinux/include -Wall
+> -Wstrict-prototypes -Wno-trigraphs -O -g -DDEBUG -fno-strict-aliasing
+> -fno-common -fomit-frame-pointer -I/u/jcheng/ppclinux/arch/ppc -fsigned-char
+> -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring -Wa,-m405
+> -nostdinc -I/opt/eldk/usr/lib/gcc-lib/ppc-linux/2.95.3/include vayu_main.c
+> dbgprint.h:35: warning: `debug' defined but not used
+> /opt/eldk/usr/ppc-linux/bin/ld: cannot open crt1.o: No such file or directory
+> collect2: ld returned 1 exit status
 
-A full featured bootloader like PPCboot will need to setup the PCI bus
-to work with PCI devices, so it is not like it is always an extra burden
-on the bootloader or useless work.
+Please check your compiler options.  If  you're  compiling  a  kernel
+module, you should not try linking it as normal binary.
 
-> The kernel has to know how PCI addresses are mapped anyway, so this
-> becomes yet another point at which the kernel and firmware are bound
-> together.  Why should the kernel have code to deal with umpteen
-> different cases of how PCI might have been set up, or not set up by
-> the firmware/bootloader, when it can just take control of the host
-> bridge and reprogram it how it wants?  Once the debugging cruft comes
-> out, it should only be a couple of hundred bytes of code.
+Best regards,
 
-I wouldn't want to see the kernel deal with all the possible mapping
-configurations. Right now with everything getting remapped a couple
-of times it makes it hard to follow what the final mapping will be.
-Then we also have the core Linux PCI code that will try to fixup things
-again, if it thinks it is needed. PPCBoot knows how the kernel wants
-things setup so there should be no need to fix it up.
+Wolfgang Denk
 
-So I just want you to keep in mind the PCI bus fixup can be a config
-option that can be built out if desired. It really shouldn't be tied
-to the board itself, since it is also common to load in PPCboot into
-Walnut boards.
-
-Then there is always the case of hot-plugs, and the kernel will always
-have to do that mapping there.
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Wisdom is one of the few things that looks bigger the further away it
+is.                               - Terry Pratchett, _Witches Abroad_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
