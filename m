@@ -1,24 +1,28 @@
-Message-ID: <368698BA.3C54@post.uni-bielefeld.de>
-Date: Sun, 27 Dec 1998 21:29:46 +0100
+Message-ID: <3686B22B.69BA@post.uni-bielefeld.de>
+Date: Sun, 27 Dec 1998 23:18:22 +0100
 From: "Jens Ch. Restemeier" <jenschrr@post.uni-bielefeld.de>
 Reply-To: jenschrr@post.uni-bielefeld.de
 MIME-Version: 1.0
-To: David Edelsohn <dje@watson.ibm.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: egcs bug - who can I send it to ?
-References: <9812271913.AA36702@marc.watson.ibm.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: via-cuda crashing ?
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-David Edelsohn wrote:
-> 
->         Which release of EGCS are you running?  You do not provide any
-> information about the compiler, but I suspect that this is fixed in
-> egcs-1.1.1.
+Hi !
 
-Whoops, it's egcs-2.91.57. Does this help ?
+Nobody had any documentation on via-cuda, so I started some experiments
+by myself. After a lot of reboots I found that after sending an
+incomplete I2C request
+- via cuda polling doesn't return
+- if I use a timeout and send the next command anyway I get a
+kernel-panic.
+
+Is there any way to tell cuda: "Whatever you do, stop it and return to
+normal operation" ?
+
+I need this to implement I2C bus scanning.
 
 Jens
 
