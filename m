@@ -1,39 +1,39 @@
-Message-ID: <3DD992E1.6040000@iram.es>
-Date: Tue, 19 Nov 2002 02:24:49 +0100
-From: Gabriel Paubert <paubert@iram.es>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-To: joakim.tjernlund@lumentis.se
-Cc: Tim Seufert <tas@mindspring.com>,
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15833.45182.639413.720952@argo.ozlabs.ibm.com>
+Date: Tue, 19 Nov 2002 14:31:10 +1100
+To: Gabriel Paubert <paubert@iram.es>
+Cc: joakim.tjernlund@lumentis.se, Tim Seufert <tas@mindspring.com>,
 	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: csum_partial() and csum_partial_copy_generic() in badly optimized?
-References: <IGEFJKJNHJDCBKALBJLLMEBJFIAA.joakim.tjernlund@lumentis.se>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <3DD92C01.7080906@iram.es>
+References: <IGEFJKJNHJDCBKALBJLLEEBFFIAA.joakim.tjernlund@lumentis.se>
+	<3DD92C01.7080906@iram.es>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Joakim Tjernlund wrote:
+Gabriel Paubert writes:
 
-> hmm, I think you are right. The practice seems to be invalidate_dcache_range(start, start+len).
-> But then the interface should be invalidate_dcache_range(start, len) instead, IMHO.
-> I guess it's too late to change it now.
+> I don't know this code, whether it is correct or not depends on what you
+> pass in r4. If it is invalidate_dcache_range(start, start+len), the code
+> is correct since start+len is one byte beyond the buffer. If it is
+> invalidate_dcache_range(first, last), then it is buggy. The former
+> definition of parameters is more frequent in practice.
 
-Probably. I don't know why it is this way since it would in most cases be
-better to do the start+len in the subroutine, saving almost always one
-instruction in the caller.
+That is correct, the `stop' parameter is the address of the first byte
+after the end of the range that you want invalidated.
 
->
->
->>This said, the first instruction can be removed:
->>_GLOBAL(invalidate_dcache_range)
->>  	rlwinm	r3,r3,0,~(L1_CACHE_LINE_SIZE-1)
->>  	subf	r4,r3,r4
->>  	add	r4,r4,L1_CACHE_LINE_SIZE-1
+> This said, the first instruction can be removed:
+> _GLOBAL(invalidate_dcache_range)
+>   	rlwinm	r3,r3,0,~(L1_CACHE_LINE_SIZE-1)
 
-of course this instruction should be an immediate form: addi and not add!
+Huh?  I'm guessing you really mean to say:
 
-	Regards,
-	Gabriel.
+	rlwinm	r3,r3,0,0,31-LG_L1_CACHE_LINE_SIZE
 
+Regards,
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
