@@ -2,26 +2,26 @@ Subject: Re: equivalent of touch_nmi_watchdog
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Rajarshi Das <rajarshi@in.ibm.com>
 Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <1088509774.22425.54.camel@darya>
+In-Reply-To: <1088517617.18965.65.camel@darya>
 References: <1088509774.22425.54.camel@darya>
+	 <1088514406.13868.48.camel@gaston>  <1088517617.18965.65.camel@darya>
 Content-Type: text/plain
-Message-Id: <1088514406.13868.48.camel@gaston>
+Message-Id: <1088516776.15069.50.camel@gaston>
 Mime-Version: 1.0
-Date: Tue, 29 Jun 2004 08:06:46 -0500
+Date: Tue, 29 Jun 2004 08:46:16 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2004-06-29 at 06:49, Rajarshi Das wrote:
-> Hi,
-> I am running some code which needs interrupts to be disabled for a
-> reasonable amount of time. A "touch_nmi_watchdog" call is done before
-> this code gets called on i386 platform. How do I do it on ppc64 ? I am
-> using a power 3 machine (type 7044-170) (uniprocessor) and a 2.6.6
-> kernel.
+On Tue, 2004-06-29 at 09:00, Rajarshi Das wrote:
+> Its basically dumping code. After a panic has happened, interrupts are
+> inhibited, all CPUS (except the host cpu) are frozen, and for each page
+> of data, the dump module writes the dump to disk by calling the host
+> adapter's interrupt handler till I/O completes.
 
-Can you tell us more about your code ? It's never a good idea to disable
-interrupts for more than a few microseconds ...
+Hrm... a bit scary but might actually work. I don't think we have
+a clean interface for whatever watchdog service HV may provide
+though, but I'll let others comment on that.
 
 Ben.
 
