@@ -1,17 +1,34 @@
-Reply-To: <govindan@tejasnetworks.com>
-From: "Govindan" <govindan@tejasnetworks.com>
-To: <linuxppc-dev@lists.linuxppc.org>,
-        <damm@kierayapc01.p.y.ki.era.ericsson.se>,
-        <dhinds@pcmcia.sourceforge.org>
-Cc: <gopi@tejasnetworks.com>
-Subject: Problem with PCMCIA and RPXCLASSIC
-Date: Tue, 19 Dec 2000 18:52:04 +0530
-Message-ID: <011d01c069be$ae578d50$1b01a8c0@india.tejasnetworks.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-ID: <382386870.977252793244.JavaMail.root@web624-wrb.mail.com>
+Date: Tue, 19 Dec 2000 14:06:33 -0500 (EST)
+From: Matthew Locke <mlocke@onemain.com>
+To: <govindan@tejasnetworks.com>, linuxppc-dev@lists.linuxppc.org,
+        damm@kierayapc01.p.y.ki.era.ericsson.se, dhinds@pcmcia.sourceforge.org
+Subject: RE: Problem with PCMCIA and RPXCLASSIC
+CC: gopi@tejasnetworks.com
+Mime-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
+
+
+two patches need to be applied to the kernel to get PCMCIA ide cards to
+work.  Did you apply both patches?  they are on
+ftp://ftp.mvista.com/pub/area51/ppc_8xx
+
+That should be the only issue.  I have not tested the IBM microdrive
+specifically, but other IDE flash cards work fine.
+
+since the RPX-lite and cllf do not have PCI, 0x80000000 will work.
+
+
+
+------Original Message------
+From: "Govindan" <govindan@tejasnetworks.com>
+To: linuxppc-dev@lists.linuxppc.org,
+damm@kierayapc01.p.y.ki.era.ericsson.se, dhinds@pcmcia.sourceforge.org
+Sent: December 19, 2000 1:22:04 PM GMT
+Subject: Problem with PCMCIA and RPXCLASSIC
+
 
 
 Hi,
@@ -80,6 +97,12 @@ Tejas Networks India Pvt. Ltd.     Fax: +91-80-226 7494
 Bangalore 560 001
 -------------------------------------------------------------------
 "I care for future, because I spend rest of my life there"
+
+
+
+
+_____________________________________
+OneMain.com, Your Hometown Internet.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
