@@ -1,42 +1,34 @@
-To: Matt Porter <porter@cox.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Ebony crash fix & 440GP cleanup step one
-References: <20020524134731.A21503@home.com> <523cwcudy1.fsf_-_@topspin.com>
-	<20020529154551.C3960@home.com>
-From: Roland Dreier <roland@topspin.com>
-Date: 30 May 2002 16:00:47 -0700
-In-Reply-To: <20020529154551.C3960@home.com>
-Message-ID: <52d6vdnsv4.fsf@topspin.com>
+Message-ID: <3CF6AF4C.1070302@mvista.com>
+Date: Thu, 30 May 2002 16:01:32 -0700
+From: Matthew Locke <mlocke@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Paul Mackerras <paulus@samba.org>
+Cc: Dan Malek <dan@embeddededge.com>,
+	David Gibson <david@gibson.dropbear.id.au>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: LMBench and CONFIG_PIN_TLB
+References: <20020529030838.GZ16537@zax>	<3CF4E842.3070207@embeddededge.com>	<15605.24191.948013.249297@argo.ozlabs.ibm.com>	<3CF581BE.8020207@embeddededge.com>	<3CF64E9C.60303@mvista.com> <15606.47823.449239.651529@argo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->>>>> "Matt" == Matt Porter <porter@cox.net> writes:
+Paul Mackerras wrote:
 
-    Matt> Looks great, pushed.  There's still more work to do in the
-    Matt> includes but it's a good start.  I'm moving the PCIX
-    Matt> initialization to a common library, so don't overlap there
-    Matt> if you wander out of moving headers around.
+>>btw, there are bugs with it.  Starting several processes with init or
+>>even telnetd will expose the bug.
+>>
+>
+>David and I haven't been able to reproduce this on the Walnut or the
+>EP405.  What sort of machine are you using, what processor, how much
+>RAM, and what distro are you using?
+>
+>Paul.
+>
 
-Cool.  I'm starting to think about the best way to organize the code
-in ebony.c.  It seems like maybe ebony.c should become ppc440_setup.c
-with the Ebony-specific stuff inside #ifdef CONFIG_EBONY (and if we do
-that, maybe ppc4xx_setup.c should be split into ppc40x_setup.c and
-really generic stuff in ppc4xx_setup.c).  Another option would be to
-keep ebony.c but move most of the code into library functions in a new
-ppc440_setup.c file.
+I run MVL (of course) on a walnut with 32MB of RAM.  What is your
+environment?  btw, MVL uses soft-float in glibc not floating point
+emulation in the kernel.
 
-My motivation is that I'm going to have a few 440GP-based boards to
-deal with soon, and I'd like to minimize the amount of code that has
-to be copied or duplicated to support a new board.  I'd like to do
-this in a way that fits in well with the kernel so it's easy for me to
-keep our kernel tree in sync with the main tree.
-
-What are your thoughts?
-
-Thanks,
-Roland
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
