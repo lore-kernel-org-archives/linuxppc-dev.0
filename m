@@ -1,58 +1,72 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3C99BBA3.8090703@thales-bm.com>
-Date: Thu, 21 Mar 2002 11:53:23 +0100
-From: Julien Eyries <julien.eyries@thales-bm.com>
+Message-ID: <3C99BD40.1090107@pacbell.net>
+Date: Thu, 21 Mar 2002 11:00:16 +0000
+From: Armin <akuster@pacbell.net>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: MBX boot loader on a MPC8260 custom board 
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Kim young-kyun <elecguy@netian.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [Q] kernel-compile error for walnut with 2.4.18 ?
+References: <3C9968B3.8090307@netian.com>
+Content-Type: text/plain; charset=EUC-KR
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi all ,
+Kim young-kyun wrote:
+> Hi, all.
+>
+> I try to comile kernel 2.4.18 for walnut(IBM PowerPC 405GP) board on
+> Red-Hat 7.1.
+> I met below error message and I cannot solve this problem.
+>
+> powerpc-linux-gcc -D__KERNEL__
+> -I/home/elecguy/work/ppclinux/linux-2.4.18/include -Wall
+> -Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer
+> -fno-strict-aliasing -fno-common -D__powerpc__ -fsigned-char
+> -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring
+> -Wa,-m403 -mcpu=403 -DKBUILD_BASENAME=ppc4xx_pic -c -o ppc4xx_pic.o
+> ppc4xx_pic.c
+> {standard input}: Assembler messages:
+> {standard input}:83: Error: unsupported relocation against DCRN_EXISR
+> {standard input}:84: Error: unsupported relocation against DCRN_EXIER
+> {standard input}:111: Error: unsupported relocation against DCRN_EXIER
+> {standard input}:128: Error: unsupported relocation against DCRN_EXIER
+> {standard input}:145: Error: unsupported relocation against DCRN_EXIER
+> {standard input}:149: Error: unsupported relocation against DCRN_EXISR
+> {standard input}:64: Error: unsupported relocation against DCRN_EXIER
+>
+> Cross-compiler is builded by following order.
+>
+> 1) binutils-2.12.90.0.1
+> ./configure --target=powerpc-linux --with-cpu=403
+> make; make install
+>
+> 2) gcc-core-2.95.3
+> ./configure --target=powerpc-linux --enable-shared --enable-languages=c
+> --with-newlib --with-cpu=403
+> make; make install
+>
+> linux-2.4.18 with ppc-patch-2.4.18
+> *in Makefile
+> ARCH := ppc
+> CROSS_COMPILE=powerppc-linux-
+> AFLAGS := -D__ASSEMBLY__ $(CPPFLAGS) -Wa,-m403
+> *in arch/ppc/Makefile
+> CFLAGS := (Original flags)... -Wa,-m403
+> *in make menuconfig
+> Processor Type -> 4xx
+> Machine Type -> Walnut
+>
+> What's wrong?
+>
+>
+>
+>
+>
 
-we have here a custom MPC8260 board (4 Mo flash, 32 Mo SDRAM,200 Mhz
-MPC8260) and we want to use the HardHat linux from Montavista.
-we are also using BDI-2000 probe (from ABATRON) .
+Try a newer kernel.  DCRN_EXIER is an older implimentaion and is only
+used on any 403 cpus. Your -m403 looks fishy, we are usin -m405 & -mcpu=405
 
-the kernel we have build is based on the ADS8260 board which is quite
-similar to our board.
-
-the boot-loader we use is the "mbx" boot loader which come with the
-Linux kernel tree.
-
-the problem i have is :
-- we load the file "zvmlinux.mbx" using the BDI2000 probe
-- we take control over the MPC8260 with "ppc_82xx-gdb zvmlinux.mbx" and
-"target remote xx.xx.xx.xx:2001"
-- we do some "stepi" and the code runs, entering function
-"decompress_kernel", then "serial_init" .
-- at some point in this function "serial_init" , the PC (program
-counter) begins to count downwards !!! for exemple ( 0x400000 ...
-0x3ffffc ... 0x3fff8 ...  )
-
-another point is: when debugging C source code (in emacs + gdb),
-we can see that the programms jumps from one point to another (some
-times backward) , not following the logical flow of the C source code
-.Is that normal ????
-
-what could be the reason of such behaviour ???
-does someone here have an idea for our problem ?????
-
-
-any help is welcome,
-greetings,
-
-
-
---
-Julien Eyries
-R&D engineer
-Thales Broadcast & Multimedia (ex-thomcast)
-email: julien.eyries@thales-bm.com
-fax: 33(0) 1 34 90 31 10
-tel: 33(0) 1 34 90 31 01
+armin
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
