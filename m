@@ -1,51 +1,26 @@
-Message-Id: <v03010d00b3629a8caf7e@[209.96.179.218]>
-In-Reply-To: <99051420024100.00761@ns1102.munich.netsurf.de>
-References: <v03010d01b361fdd7ad04@[209.96.179.238]>
+Date: Sat, 15 May 1999 10:09:09 +0200
+To: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: OF booting news
+Message-Id: <19990515100909.001740@mail.mipsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 14 May 1999 23:36:11 -0400
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-        linuxppc-dev@lists.linuxppc.org, Tom Rini <tmrini@ntplx.net>,
-        yellowdog-general@lists.yellowdoglinux.com
-From: "Kevin B. Hendricks" <kbhend@business.wm.edu>
-Subject: Re: Getting JDK 1.2 to work under glibc 2.1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Tom and Franz,
+For those who haven't seen it yet, with Darwin 0.2, Apple release new
+pieces of source code, including the secondary loader, with sources, a
+working of control video driver, and more... That's interesting because
+we should now be able to make a great secondary booter with OS choosing
+capabilities. I don't have time to look into this now, but this could be
+a good replacement for BootX in the future.
 
->get the just released stuff from DRR1, the usual packages, they will install
->nicely on YDL:
->binutils*
->egcs*
->libstdc++*
->cpp*
->glibc*
->nscd*
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-Thanks!  I upgraded the tool chain to DRR1 and that did the trick.  So I
-now have JDK 1.2 up and running under glibc 2.1.  I still have alot of
-testing to do of both Motif 2.1 and the JDK but I think I am pretty much
-there.
-
-Hi Everyone,
-
-What I need now is a volunteer using glibc 2.1 to put the JDK 1.2 through
-its paces and test it as completely as they can.  My home machine is
-isolated and I have run the usual few tests I have access to, but I would
-really like someone to put it through the ringer under glibc 2.1 and let me
-know how it holds up.
-
-If anyone is truly interested and has the time over the next week or so to
-pound on it, I would be happy to privately post a beta version for them to
-test (please only if interested and serious about testing).  Once it has
-been tested, I will make a formal release (hopefully by the end of next
-week).
-
-Thanks,
-
-Kevin
 
 
 
