@@ -1,29 +1,21 @@
 Return-Path: <jonmasters@gmail.com>
-Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.203])
-	by ozlabs.org (Postfix) with ESMTP id C17782BDB3
+Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.194])
+	by ozlabs.org (Postfix) with ESMTP id 467F22BDB3
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 10 Oct 2004 05:27:47 +1000 (EST)
-Received: by mproxy.gmail.com with SMTP id 76so134255rnk
+	Sun, 10 Oct 2004 05:40:32 +1000 (EST)
+Received: by mproxy.gmail.com with SMTP id 76so134724rnk
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 09 Oct 2004 12:27:15 -0700 (PDT)
-Message-ID: <35fb2e59041009122710ab6d53@mail.gmail.com>
-Date: Sat, 9 Oct 2004 20:27:15 +0100
+	Sat, 09 Oct 2004 12:40:31 -0700 (PDT)
+Message-ID: <35fb2e5904100912409628a94@mail.gmail.com>
+Date: Sat, 9 Oct 2004 20:40:31 +0100
 From: Jon Masters <jonmasters@gmail.com>
-To: Tony Lee <tony.p.lee@gmail.com>
-In-Reply-To: <470b6397041007195371655afb@mail.gmail.com>
+To: Andrei Konovalov <akonovalov@ru.mvista.com>
+In-Reply-To: <4166CCF5.7040705@ru.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-References: <000001c4aace$245a5060$6500a8c0@PortatileLG>
-	<35fb2e5904100508157a393ee2@mail.gmail.com>
-	<4162C649.6060900@ru.mvista.com>
-	<35fb2e590410051507367017a@mail.gmail.com>
-	<41641222.6080405@ru.mvista.com>
-	<470b63970410071534422f6617@mail.gmail.com>
-	<4165DB83.8080001@jonmasters.org>
-	<470b6397041007195371655afb@mail.gmail.com>
-Cc: Andrei Konovalov <akonovalov@ru.mvista.com>,
-	Luca Giuliani <l.giuliani@tiscali.it>, linuxppc-embedded@ozlabs.org
-Subject: Re: Linux on Memec Virtex II Pro V4P7 Rev. 3
+References: <4166CCF5.7040705@ru.mvista.com>
+Cc: akpm@osdl.org, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH][PPC32] Xilinx ML300 board support (very basic)
 Reply-To: jonathan@jonmasters.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -35,53 +27,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 7 Oct 2004 19:53:52 -0700, Tony Lee <tony.p.lee@gmail.com> wrote:
+On Fri, 08 Oct 2004 21:23:01 +0400, Andrei Konovalov
+<akonovalov@ru.mvista.com> wrote:
 
-> The problem I saw was that I can't turn off the interrupt at all.
+> Adds minimal Xilinx ML300 board support (enough to boot with ramdisk).
+> The only peripheral devices supported are 16x50 compatible UARTs.
+> 
+> Signed-off-by: Andrei Konovalov <akonovalov@ru.mvista.com>
 
-On the Memec board? really?
+I'll test this if I get chance soon.
 
-> Once I start one write command, the ISR keep coming in.
+>         /*
+> -        * At one point, we were getting machine checks.  Linux was not
+> -        * invalidating the data cache before it was enabled.  The
+> -        * following code was added to do that.  Soon after we had done
+> -        * that, we found the real reasons for the machine checks.  I've
+> -        * run the kernel a few times with the following code
+> -        * temporarily removed without any apparent problems.  However,
+> -        * I objdump'ed the kernel and boot code and found out that
+> -        * there were no other dccci's anywhere, so I put the code back
+> -        * in and have been reluctant to remove it.  It seems safer to
+> -        * just leave it here.
+> +        * Invalidate the data cache if the data cache is turned off.
+> +        * - The 405 core does not invalidate the data cache on power-up
+> +        *   or reset but does turn off the data cache. We cannot assume
+> +        *   that the cache contents are valid.
+> +        * - If the data cache is turned on this must have been done by
+> +        *   a bootloader and we assume that the cache contents are
+> +        *   valid.
+>          */
 
-Ouch.
+Er...the caveat about the MSR is still worth noting - I had this
+problem and for a while couldn't figure out why the fsck the board
+wouldn't come up with cacheing enabled (I've written patches for
+debugging that turn off various cacheing by modifying the pte macros,
+etc.) and *still* believe we're not clean from unwanted machine checks
+here. Just FYI.
 
-> I review the verilog code and schematic multiple times with the
-> HW group but can't figure out what went wrong.
+> +/* We don't need anything mapped.  Size of zero will accomplish that. */
+> +#define PPC4xx_ONB_IO_PADDR    0u
+> +#define PPC4xx_ONB_IO_VADDR    0u
+> +#define PPC4xx_ONB_IO_SIZE     0u
 
-We had to move one of the sysace lines to a different bank on the v2p
-but that was because we were cunningly running out of particular IO
-lines (the v2p does different signalling and voltages on different
-banks - I didn't make the modification as I don't work on the hardware
-directly, just mess with Xilinx hardware stuff in my spare time and
-software for them when at work :-) ).
+:-)
 
-> My best guess was the BUFRDY line is mix up with the ISR line
+> +*     This program is free software; you can redistribute it and/or modify it
+> +*     under the terms of the GNU General Public License as published by the
+> +*     Free Software Foundation; either version 2 of the License, or (at your
+> +*     option) any later version.
 
-Perhaps. But that's down to your hardware guys to check the error
-output from your synthesis tool to see if this weirdly has happened.
-Our board doesn't have lines hard tied together, if that was the
-notion you were offering.
+...and then:
 
-> I try turn off the ISR on write with SYSACE register and
-> the ppc interrupt control register.  None of them worked.
+> +*     Xilinx hardware products are not intended for use in life support
+> +*     appliances, devices, or systems. Use in such applications is
+> +*     expressly prohibited.
 
-Did you do it as per my patch, or what?
+I've always loved it how Xilinx GPL disclaimers cunningly aren't. They
+might want to wake up and smell the coffee at some point.
 
-> Do you think if we add a small DMA engine would help
-> the performance or the performance problem is caused
-> by the sysace firmware + the CF disk?
+Andrei, you'll want to modify the ML300 xparameters stuff to allow
+it's location to be specified by a parameter. People who want to use
+(ewww, spit) autogenerated Xilinx xparameters.h from their EDK will
+probably also want to choose where it lives.
 
-Perhaps. I'll have a think about that - I'm certainly not going to get
-paid to do that, and until I can buy a v2p board for home or have some
-spare time in the office, it'll have to wait for an implementation.
-Kind of like porting to 2.6 and a whole bunch of other non-comercially
-useful things I want to do with this thing :-).
+> + * arch/ppc/syslib/xilinx_pic.c
+> + *
+> + * Interrupt controller driver for Xilinx Virtex-II Pro.
 
-> The sysace controller IS VERY fast on loading the bitstream
-> and linux boot image.
-
-Yes. We come up in 8 seconds to my firmware, and total boot time is
-around 20 seconds, without any effort to make it less. That includes
-cunning DHCP+ZeroConf scripts I wrote.
+Nice. Better than the original and now handles different types of interrupts.
 
 Jon.
