@@ -1,84 +1,31 @@
-Message-ID: <3AC08CA8.D15B04AF@raleigh.ibm.com>
-Date: Tue, 27 Mar 2001 07:50:48 -0500
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+Message-ID: <01C0B6AE.0AC9DCA0@milkweed.cspi.com>
+From: Brian Waite <bwaite@cspi.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: initrd on PPC
+Date: Tue, 27 Mar 2001 11:06:57 -0500
 MIME-Version: 1.0
-To: Zehetbauer Thomas <TZ@link.topcall.co.at>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: booting HardHat on IBM 405GP
-References: <41EA756DBC9FD0118CFC0020AFDB5C5A188D91@tcint1ntsrv>
-Content-Type: multipart/mixed;
- boundary="------------F17B431FC3CD5DB9ED3C91B7"
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------F17B431FC3CD5DB9ED3C91B7
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Has anyone been successful in bringing up a zImage.initrd under 2.4 PPC. I am using a Motoroloa 2400 with a zImage.initrd and it looks like there is no way this can be working. initrd_start and initrd_size are not set correctly when I get into arch/ppc/kernel/setup.c. We have been working great under 2.2 but I am tring to bring it up under 2.4.3pre3 and hitting a roadblock. Has the entire logic changed from 2.2 -> 2.4 here or is it just really broken? We are hoping to get it working today but we are putting 2.2 code back into the 2.4 tree to make this happen I am a little afraid this is the bass-ackwards way to do this. Has anyone just gotten this to work out of the box?
 
-Zehetbauer,
+I have checked all the configs I can think of
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_SIZE=4096   <-- We are below this
+CONFIG_BLK_DEV_INITRD=y
+# CONFIG_CRAMFS is not set
+# CONFIG_RAMFS is not set
+# CONFIG_DEVFS_FS is not set
+CONFIG_DEVPTS_FS=y
+CONFIG_ROMFS_FS=y
 
-Hi,  This is a function call to sa, and if you look at the address of sa
-(the starting address) I'll bet it absoulte 0.  So, what happens is you
-get a jump to zero.
 
-Heres the boot process.
-1)move the ramdisk to upper memory.
-2)uncompress the kernel image starting a real 0.
-3)Jump to 0.
+Brian Waite
 
-Chip Blach
-
-Zehetbauer Thomas wrote:
->
-> Hi!
->
-> My company is going to develop an embedded solution based on a IBM 406GP
-> processor.
-> We are in early development right now and I am trying to boot linux on a
-> > IBM 25 EB 405 P4 WIN WAL 00
-> evaluation kit (this is the information on the bill of delivery).
->
-> Attempting to debug I've found linux/arch/ppc/boot/tree/main.c:start to
-> be the first function executed.
-> At the very last step this function calls
-> >    (*(void (*)())sa)(&board_info,
-> >                      initrd_start,
-> >                      initrd_start + initrd_size,
-> >                      cmdline,
-> >                      cmdline + strlen(cmdline));
-> and I can't find where execution goes on.
->
-> Any help is greatly appreciated.
->
-> TIA
-> Tom
->
-> PS: Does someone know how to determine the board's revision number?
->
---------------F17B431FC3CD5DB9ED3C91B7
-Content-Type: text/x-vcard; charset=us-ascii;
- name="rcblach.vcf"
-Content-Description: Card for Ralph Blach
-Content-Disposition: attachment;
- filename="rcblach.vcf"
-Content-Transfer-Encoding: 7bit
-
-begin:vcard
-n:Blach;Ralph
-tel;work:919-543-1207
-x-mozilla-html:TRUE
-url:www.ibm.com
-org:IBM MicroElectronics
-adr:;;3039 Cornwallis		;RTP;NC;27709;USA
-version:2.1
-email;internet:rcblach@raleigh.ibm.com
-x-mozilla-cpt:;15936
-fn:Ralph Blach
-end:vcard
-
---------------F17B431FC3CD5DB9ED3C91B7--
+Looking for a TeraFLOP in a closet?
+www.fastcluster.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
