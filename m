@@ -1,81 +1,349 @@
-Message-Id: <200012280405.WAA05948@lists.linuxppc.org>
-Date: Wed, 27 Dec 2000 23:05:03 -0500
-From: jingai <jingai@floatingpenguins.com>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: debian-powerpc@lists.debian.org
-Subject: Re: Re: Status of PCI-PCI bridge on UMAX S900
-Reply-To: jingai@floatingpenguins.com
-In-Reply-To: <19341121033813.21271@192.168.1.2>
-References: <j-jvNB.A.O4F.4jrR6@murphy> <19341121033813.21271@192.168.1.2>
+Message-ID: <20001228061558.39005.qmail@web11107.mail.yahoo.com>
+Date: Wed, 27 Dec 2000 22:15:58 -0800 (PST)
+From: gopi krishna <mgopik@yahoo.com>
+Subject: Re: Problem with PCMCIA and RPXCLASSIC 
+To: linuxppc-dev@lists.linuxppc.org
+Cc: govindan@tejasnetworks.com, dhanush@tejasnetworks.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: multipart/mixed; boundary="0-1129517751-977984158=:38104"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >Hello, I am just curious if anyone is working on getting the PCI-PCI
-> >bridge code working for the UMAX S900...
+--0-1129517751-977984158=:38104
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hi..
+
+  We got the IBM microdrive on pcmcia up on RPXclassic
+with the changes(given in patch file as attatchment).
+
+Kernel: 2.2.14
+pcmcia-cs:3.1.22
+
+This, unlike dan's implementation, uses the card
+services also.  There are mainly 3 changes:
+1. _IO_BASE
+2. Hooking the IRQLVL of PCMCIA PGCR to 9(9 is used by
+ide.. else we get a lost interrupt error).
+3. ide_ack_intr to clear PCSR.
+
+M. Gopi Krishna
+Tejas Networks India Ltd
+www.tejasnetworks.com
+Email:gopi@tejasnetworks.com
+-----------------------------------
+
+Matthew Locke wrote:
+
+> >Then we gave _IO_BASE = 0x80000000
+> >This still did not work and the kernel panics.  We
+had to >comment out
+> >a line in ll_rw_blk.c( where and outb_p is
+called)..
+> >After this the kernel comes up.
 >
-> If you want to give it a look by yourself, the code that gets the
-> interrupt numbers is in arch/ppc/prom.c. Look at the bits that use the
-> "AAPL,interrupt" property and modify it slightly so that when it can't
-> find it, it looks for the parent.
+> So, IO_BASE = 0x80000000 does work, ll_rw_blk.c is
+an unrelated bug.
 
-Ok, I've given it a more thorough looksee, and here is what I have done:
+What are you guys using for a kernel?  This outb_p
+"bug" was fixed
+in ancient times (or you didn't properly configure the
+kernel).
 
---- prom.c  Wed Dec 27 22:54:42 2000
-+++ prom.c.old  Wed Dec 27 22:04:15 2000
-@@ -1566,10 +1566,6 @@
-    ip = (int *) get_property(np, "AAPL,interrupts", &l);
-    if (ip == 0)
-        ip = (int *) get_property(np, "interrupts", &l);
--   /* JSL: HACK FOR UMAX S900 PCI-PCI BRIDGE (DECchip 21052)
--    */
--   if (ip == 0 && np->parent != NULL)
--           ip = (int *) get_property(np->parent, "AAPL,interrupts", &l);
-    if (ip != 0) {
-        np->intrs = (struct interrupt_info *) mem_start;
-        np->n_intrs = l / sizeof(int);
 
-I have verified that the code I added is in fact called when it probes the
-two
-cards in slots 3 and 4; however, *ip == 1 for both cards.  It seems as
-though
-the IRQ info cannot be retrieved from AAPL,interrupts, or it is just
-incorrect.
+> It may be a little confusing, but since it works for
+me I doubt there is a
+> goof up. The confusing part is that there is code in
+there to bypass card
+> services for ATA cards.
 
-I did try *manually* setting the IRQs for these cards to 25 and 26, which
-as I expected, did not work... (it appears to have the same effect as
-when they are set to 1, considering that is also incorrect).
+Yes, this works.  It sounds like you are mixing the
+internal ATA hack
+with card services.  You can't use both........
 
-If it might help, the card in slot 4 is my second ethernet card (used for
-my LAN -- internal is used for DSL), and it *does* work a little --
-here is output from ping:
+> >I HAVE READ IN THE MAILING LIST from Dan dated TUE
+02, may 2000
+> >that he has successfully used IBM Micro drive with
+MPC860 PCMCIA.
+> >has anybody got the detail information ?
+>
+> I don't think Dan uses card services.  He has code
+in the kernel that
+> connects the ide driver directly to the 8xx pcmcia
+controller.
 
-PING 192.168.1.2 (192.168.1.2): 56 data bytes
-64 bytes from 192.168.1.2: icmp_seq=0 ttl=255 time=7648.2 ms
-64 bytes from 192.168.1.2: icmp_seq=1 ttl=255 time=6656.9 ms
-64 bytes from 192.168.1.2: icmp_seq=2 ttl=255 time=5657.2 ms
-64 bytes from 192.168.1.2: icmp_seq=3 ttl=255 time=4654.8 ms
-64 bytes from 192.168.1.2: icmp_seq=4 ttl=255 time=3657.5 ms
-64 bytes from 192.168.1.2: icmp_seq=5 ttl=255 time=2656.7 ms
-64 bytes from 192.168.1.2: icmp_seq=6 ttl=255 time=1657.8 ms
-64 bytes from 192.168.1.2: icmp_seq=7 ttl=255 time=657.9 ms
+That's right, no card services when I wrote that
+message.  I just
+used the PCMCIA interface as a dedicated ATA
+interface.  The purpose
+was simply to verify the hardware would work
+correctly, and to provide
+a method for embedded systems to use this interface
+directly without
+card services.
 
---- 192.168.1.2 ping statistics ---
-11 packets transmitted, 8 packets received, 27% packet loss
-round-trip min/avg/max = 657.9/4155.8/7648.2 ms
 
-As you might notice, 7648.2ms is pretty bad for a machine in the
-next room :)  Not to mention the 27% packet loss..
+        -- Dan
 
-Anyway, I think I am stepping out of my bounds here now... hopefully
-this is enough information for someone to give me some more pointers
-on where I should look..
 
-/me really wishes he were a kernel guru right now :)
 
-TIA,
-Jonathan
+Yahoo! Photos - Share your holiday photos online!
+http://photos.yahoo.com/
+--0-1129517751-977984158=:38104
+Content-Type: application/x-unknown; name="kernel-disc.patch"
+Content-Description: kernel-disc.patch
+Content-Disposition: attachment; filename="kernel-disc.patch"
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtYXVyIGxpbnV4Lm9sZC9hcmNoL3BwYy9rZXJuZWwvaXJxLmMgbGlu
+dXgubmV3L2FyY2gvcHBjL2tlcm5lbC9pcnEuYwotLS0gbGludXgub2xkL2Fy
+Y2gvcHBjL2tlcm5lbC9pcnEuYwlUdWUgQXVnICA4IDEyOjM2OjE3IDIwMDAK
+KysrIGxpbnV4Lm5ldy9hcmNoL3BwYy9rZXJuZWwvaXJxLmMJU3VuIERlYyAy
+NCAxMjo1NjozNSAyMDAwCkBAIC0xNzksNiArMTc5LDcgQEAKIAlwID0gJmly
+cV9kZXNjW2lycV0uYWN0aW9uOwogCQogCWlmICgob2xkID0gKnApICE9IE5V
+TEwpIHsKKwkJCXJldHVybiAtRUJVU1k7CiAJCS8qIENhbid0IHNoYXJlIGlu
+dGVycnVwdHMgdW5sZXNzIGJvdGggYWdyZWUgdG8gKi8KIAkJaWYgKCEob2xk
+LT5mbGFncyAmIGFjdGlvbi0+ZmxhZ3MgJiBTQV9TSElSUSkpCiAJCQlyZXR1
+cm4gLUVCVVNZOwpkaWZmIC1hdXIgbGludXgub2xkL2FyY2gvcHBjL2tlcm5l
+bC9tOHh4X3NldHVwLmMgbGludXgubmV3L2FyY2gvcHBjL2tlcm5lbC9tOHh4
+X3NldHVwLmMKLS0tIGxpbnV4Lm9sZC9hcmNoL3BwYy9rZXJuZWwvbTh4eF9z
+ZXR1cC5jCVR1ZSBBdWcgIDggMTI6MzY6MTcgMjAwMAorKysgbGludXgubmV3
+L2FyY2gvcHBjL2tlcm5lbC9tOHh4X3NldHVwLmMJU3VuIERlYyAyNCAxMjo1
+NjozNSAyMDAwCkBAIC0zMDYsNyArMzA2LDcgQEAKIHZvaWQKIG04eHhfaWRl
+X2luc3coaWRlX2lvcmVnX3QgcG9ydCwgdm9pZCAqYnVmLCBpbnQgbnMpCiB7
+Ci0jaWZkZWYgQVRBX0ZMQVNICisjaWZkZWYgQVRBX0ZMQVNIMQogCWlkZV9p
+bnN3KHBvcnQsIGJ1ZiwgbnMpOwogI2Vsc2UKIAlpZGVfaW5zdyhwb3J0K19J
+T19CQVNFLCBidWYsIG5zKTsKQEAgLTMxNiw3ICszMTYsNyBAQAogdm9pZAog
+bTh4eF9pZGVfb3V0c3coaWRlX2lvcmVnX3QgcG9ydCwgdm9pZCAqYnVmLCBp
+bnQgbnMpCiB7Ci0jaWZkZWYgQVRBX0ZMQVNICisjaWZkZWYgQVRBX0ZMQVNI
+MQogCWlkZV9vdXRzdyhwb3J0LCBidWYsIG5zKTsKICNlbHNlCiAJaWRlX291
+dHN3KHBvcnQrX0lPX0JBU0UsIGJ1ZiwgbnMpOwpAQCAtMzI3LDcgKzMyNyw3
+IEBACiBtOHh4X2lkZV9kZWZhdWx0X2lycShpZGVfaW9yZWdfdCBiYXNlKQog
+ewogI2lmZGVmIEFUQV9GTEFTSAotCXJldHVybiBQQ01DSUFfSU5URVJSVVBU
+OworCXJldHVybiA5OyAvLyBQQ01DSUFfSU5URVJSVVBUOwogI2Vsc2UKICAg
+ICAgICAgcmV0dXJuIDE0OwogI2VuZGlmCkBAIC0zODEsNyArMzgxLDcgQEAK
+IC8qIFdlIGNhbiB1c2UgYW4gZXh0ZXJuYWwgSURFIGNvbnRyb2xsZXIgb3Ig
+d2lyZSB0aGUgSURFIGludGVyZmFjZSB0bwogICogdGhlIGludGVybmFsIFBD
+TUNJQSBjb250cm9sbGVyLgogICovCi12b2lkIF9faW5pdCBtOHh4X2lkZV9p
+bml0X2h3aWZfcG9ydHMoaWRlX2lvcmVnX3QgKnAsIGlkZV9pb3JlZ190IGJh
+c2UsIGludCAqaXJxKQordm9pZCBtOHh4X2lkZV9pbml0X2h3aWZfcG9ydHMo
+aWRlX2lvcmVnX3QgKnAsIGlkZV9pb3JlZ190IGJhc2UsIGludCAqaXJxKQog
+ewogCWlkZV9pb3JlZ190IHBvcnQgPSBiYXNlOwogCWludCBpOwpAQCAtMzg5
+LDEzICszODksNiBAQAogCXZvbGF0aWxlIHBjbWNvbmY4eHhfdAkqcGNtcDsK
+ICNlbmRpZgogCi0jaWZkZWYgQVRBX0ZMQVNICi0JKnAgPSAwOwotCSppcnEg
+PSAwOwotCi0JaWYgKGJhc2UgIT0gMCkJCS8qIE9ubHkgbWFwIHRoZSBmaXJz
+dCBBVEEgZmxhc2ggZHJpdmUgKi8KLQkJcmV0dXJuOwotCiAjaWYgZGVmaW5l
+ZChDT05GSUdfUlBYTElURSkgfHwgZGVmaW5lZChDT05GSUdfUlBYQ0xBU1NJ
+QykKIAlpZiAocnB4X3BjbWNpYV9jb25maWcoKSkKIAkJcmV0dXJuOwpAQCAt
+NDA1LDYgKzM5OCwxNCBAQAogCQlyZXR1cm47CQkvKiBObyBjYXJkIGluIHNs
+b3QgKi8KICNlbmRpZgogCisKKyNpZmRlZiBBVEFfRkxBU0gxCisJKnAgPSAw
+OworCSppcnEgPSAwOworCisJaWYgKGJhc2UgIT0gMCkJCS8qIE9ubHkgbWFw
+IHRoZSBmaXJzdCBBVEEgZmxhc2ggZHJpdmUgKi8KKwkJcmV0dXJuOworCiAJ
+YmFzZSA9ICh1bnNpZ25lZCBsb25nKSBpb3JlbWFwKFBDTUNJQV9NRU1fQURE
+UiwgMHgyMDApOwogCiAJLyogRm9yIHRoZSBNLVN5c3RlbXMgQVRBIGNhcmQs
+IHRoZSBmaXJzdCA4IHJlZ2lzdGVycyBtYXAgMToxLgpAQCAtNDM5LDggKzQ0
+MCw4IEBACiAJd2hpbGUgKGktLSkKIAkJKnArKyA9IHBvcnQrKzsKIAkqcCsr
+ID0gYmFzZSArIDB4MjA2OwotCWlmIChpcnEgIT0gTlVMTCkKLQkJKmlycSA9
+IDA7CisJLy9pZiAoaXJxICE9IE5VTEwpCisJCS8vKmlycSA9IDA7CiAjZW5k
+aWYKIH0KICNlbmRpZgpAQCAtNjMzLDcgKzYzNCw4IEBACiAJKi8KICNpZiAx
+CiAjaWYgMQotCXBjbXAtPnBjbWNfcG9yMCA9IDB4YzAwZmYwNDU7CisJLyog
+VEVKOiBwY21wLT5wY21jX3BvcjAgPSAweGMwMGZmMDQ1OyAqLworCXBjbXAt
+PnBjbWNfcG9yMCA9IDB4YzAwMkZGNDU7CiAjZWxzZQogCXBjbXAtPnBjbWNf
+cG9yMCA9IDB4YzAwZmYwMDU7CiAjZW5kaWYKQEAgLTY1MiwxMiArNjU0LDEy
+IEBACiAKIAkvKiBTZXQgaW50ZXJ1cHQgbnVtYmVyIGluIFNJVS4KIAkqLwot
+CXBjbXAtPnBjbWNfcGdjcmIgPSAobWtfaW50X2ludF9tYXNrKFBDTUNJQV9J
+TlRFUlJVUFQpIDw8IDI0KSB8CisJcGNtcC0+cGNtY19wZ2NyYiA9IChta19p
+bnRfaW50X21hc2soOSkgPDwgMjQpIHwKIAkJKG1rX2ludF9pbnRfbWFzayhQ
+Q01DSUFfSU5URVJSVVBUKSA8PCAxNik7CiAKIAkvKiBFbmFibGUgc3RhdHVz
+IGNoYW5nZSBpbnRlcnJ1cHQgZnJvbSBzbG90IEIuCiAJKi8KLQlwY21wLT5w
+Y21jX3BlciA9IDB4MDAwMGZmMTA7CisJcGNtcC0+cGNtY19wZXIgPSAweDAw
+MDBmZjIwOwogCiAJLyogQ2xlYXIgYWxsIGludGVycnVwdCBzdGF0dXMuCiAJ
+Ki8KZGlmZiAtYXVyIGxpbnV4Lm9sZC9hcmNoL3BwYy9tbS9pbml0LmMgbGlu
+dXgubmV3L2FyY2gvcHBjL21tL2luaXQuYwotLS0gbGludXgub2xkL2FyY2gv
+cHBjL21tL2luaXQuYwlUdWUgQXVnICA4IDEyOjM2OjE3IDIwMDAKKysrIGxp
+bnV4Lm5ldy9hcmNoL3BwYy9tbS9pbml0LmMJU3VuIERlYyAyNCAxMjo1Njoz
+NSAyMDAwCkBAIC0xMTY0LDcgKzExNjQsMTEgQEAKIAlpb3JlbWFwKEhJT1hf
+Q1NSX0FERFIsIEhJT1hfQ1NSX1NJWkUpOwogI2VuZGlmCiAjaWZkZWYgQ09O
+RklHX1JQWENMQVNTSUMKLSAgICAgICAgaW9yZW1hcChQQ0lfQ1NSX0FERFIs
+IFBDSV9DU1JfU0laRSk7CisgICAgICAvL2lvcmVtYXAoUENJX0NTUl9BRERS
+LCBQQ0lfQ1NSX1NJWkUpOyBURUo6IENvbW1lbnRlZCBhcyBnaXZpbmcgcHJv
+YmxlbXMuCisgICAgICBpb3JlbWFwKF9JT19CQVNFLCBfSU9fQkFTRV9TSVpF
+KTsKKyNlbmRpZgorI2lmZGVmIENPTkZJR19SUFhMSVRFCisgICAgICAgIGlv
+cmVtYXAoX0lPX0JBU0UsIF9JT19CQVNFX1NJWkUpOwogI2VuZGlmCiAjZW5k
+aWYgLyogQ09ORklHXzh4eCAqLwogfQpkaWZmIC1hdXIgbGludXgub2xkL2Ry
+aXZlcnMvYmxvY2svaWRlLWRpc2suYyBsaW51eC5uZXcvZHJpdmVycy9ibG9j
+ay9pZGUtZGlzay5jCi0tLSBsaW51eC5vbGQvZHJpdmVycy9ibG9jay9pZGUt
+ZGlzay5jCVR1ZSBKYW4gIDQgMjM6NDI6MTQgMjAwMAorKysgbGludXgubmV3
+L2RyaXZlcnMvYmxvY2svaWRlLWRpc2suYwlTdW4gRGVjIDI0IDEyOjU2OjM2
+IDIwMDAKQEAgLTg3Miw3ICs4NzIsNyBAQAogewogCWlkZV9kcml2ZV90ICpk
+cml2ZTsKIAlpbnQgZmFpbGVkID0gMDsKLQkKKwogCU1PRF9JTkNfVVNFX0NP
+VU5UOwogCXdoaWxlICgoZHJpdmUgPSBpZGVfc2Nhbl9kZXZpY2VzIChpZGVf
+ZGlzaywgaWRlZGlza19kcml2ZXIubmFtZSwgTlVMTCwgZmFpbGVkKyspKSAh
+PSBOVUxMKSB7CiAJCWlmIChpZGVfcmVnaXN0ZXJfc3ViZHJpdmVyIChkcml2
+ZSwgJmlkZWRpc2tfZHJpdmVyLCBJREVfU1VCRFJJVkVSX1ZFUlNJT04pKSB7
+CmRpZmYgLWF1ciBsaW51eC5vbGQvZHJpdmVycy9ibG9jay9pZGUtcHJvYmUu
+YyBsaW51eC5uZXcvZHJpdmVycy9ibG9jay9pZGUtcHJvYmUuYwotLS0gbGlu
+dXgub2xkL2RyaXZlcnMvYmxvY2svaWRlLXByb2JlLmMJVHVlIEphbiAgNCAy
+Mzo0MjoxNCAyMDAwCisrKyBsaW51eC5uZXcvZHJpdmVycy9ibG9jay9pZGUt
+cHJvYmUuYwlTdW4gRGVjIDI0IDEyOjU2OjM2IDIwMDAKQEAgLTMxNyw2ICsz
+MTcsNyBAQAogCQlkZWxheV81MG1zKCk7CiAJCSh2b2lkKSBHRVRfU1RBVCgp
+OwkJLyogZW5zdXJlIGRyaXZlIGlycSBpcyBjbGVhciAqLwogCX0KKwogCXJl
+dHVybiByYzsKIH0KIApkaWZmIC1hdXIgbGludXgub2xkL2RyaXZlcnMvYmxv
+Y2svaWRlLmMgbGludXgubmV3L2RyaXZlcnMvYmxvY2svaWRlLmMKLS0tIGxp
+bnV4Lm9sZC9kcml2ZXJzL2Jsb2NrL2lkZS5jCVR1ZSBKYW4gIDQgMjM6NDI6
+MTQgMjAwMAorKysgbGludXgubmV3L2RyaXZlcnMvYmxvY2svaWRlLmMJU3Vu
+IERlYyAyNCAxMjo1NjozNiAyMDAwCkBAIC0xNjgzLDggKzE2ODMsOSBAQAog
+CX0KIAlyZXZhbGlkYXRlX2RyaXZlcygpOwogI2lmZGVmIENPTkZJR19LTU9E
+Ci0JaWYgKCFmb3VuZCAmJiB0eXBlID09IElERV9QUk9CRV9NT0RVTEUpCisJ
+aWYgKCFmb3VuZCAmJiB0eXBlID09IElERV9QUk9CRV9NT0RVTEUpIHsKIAkJ
+KHZvaWQpIHJlcXVlc3RfbW9kdWxlKCJpZGUtcHJvYmUiKTsKKwl9CiAjZW5k
+aWYgLyogQ09ORklHX0tNT0QgKi8KIH0KIApAQCAtMTg5NCwxMiArMTg5NSwx
+NCBAQAogCWludCBpbmRleCwgcmV0cnkgPSAxOwogCWlkZV9od2lmX3QgKmh3
+aWY7CiAJaWRlX2lvcmVnX3QgZGF0YV9wb3J0ID0gKGlkZV9pb3JlZ190KSBh
+cmcxLCBjdGxfcG9ydCA9IChpZGVfaW9yZWdfdCkgYXJnMjsKKwkKIAogCWRv
+IHsKIAkJZm9yIChpbmRleCA9IDA7IGluZGV4IDwgTUFYX0hXSUZTOyArK2lu
+ZGV4KSB7CiAJCQlod2lmID0gJmlkZV9od2lmc1tpbmRleF07Ci0JCQlpZiAo
+aHdpZi0+aW9fcG9ydHNbSURFX0RBVEFfT0ZGU0VUXSA9PSBkYXRhX3BvcnQp
+CisJCQlpZiAoaHdpZi0+aW9fcG9ydHNbSURFX0RBVEFfT0ZGU0VUXSA9PSBk
+YXRhX3BvcnQpIHsKIAkJCQlnb3RvIGZvdW5kOworCQkJfQogCQl9CiAJCWZv
+ciAoaW5kZXggPSAwOyBpbmRleCA8IE1BWF9IV0lGUzsgKytpbmRleCkgewog
+CQkJaHdpZiA9ICZpZGVfaHdpZnNbaW5kZXhdOwpAQCAtMjgxOSw3ICsyODIy
+LDYgQEAKIAkJZGlzYWJsZV9pcnEoaWRlX2h3aWZzWzBdLmlycSk7CiAJfQog
+I2VuZGlmIC8qIF9fbWM2ODAwMF9fIHx8IENPTkZJR19BUFVTICovCi0KIAko
+dm9pZCkgaWRlcHJvYmVfaW5pdCgpOwogCiAjaWYgZGVmaW5lZChfX21jNjgw
+MDBfXykgfHwgZGVmaW5lZChDT05GSUdfQVBVUykKZGlmZiAtYXVyIGxpbnV4
+Lm9sZC9kcml2ZXJzL2Jsb2NrL2xsX3J3X2Jsay5jIGxpbnV4Lm5ldy9kcml2
+ZXJzL2Jsb2NrL2xsX3J3X2Jsay5jCi0tLSBsaW51eC5vbGQvZHJpdmVycy9i
+bG9jay9sbF9yd19ibGsuYwlUdWUgSmFuICA0IDIzOjQyOjE0IDIwMDAKKysr
+IGxpbnV4Lm5ldy9kcml2ZXJzL2Jsb2NrL2xsX3J3X2Jsay5jCVN1biBEZWMg
+MjQgMTI6NTY6MzYgMjAwMApAQCAtODQ4LDcgKzg0OCw3IEBACiAJZmxvcHB5
+X2luaXQoKTsKICNlbHNlCiAjaWYgIWRlZmluZWQgKF9fbWM2ODAwMF9fKSAm
+JiAhZGVmaW5lZChDT05GSUdfUE1BQykgJiYgIWRlZmluZWQoX19zcGFyY19f
+KVwKLSAgICAmJiAhZGVmaW5lZChDT05GSUdfQVBVUykKKyAgICAmJiAhZGVm
+aW5lZChDT05GSUdfQVBVUykgJiYgIWRlZmluZWQoQ09ORklHXzh4eCkKIAlv
+dXRiX3AoMHhjLCAweDNmMik7CiAjZW5kaWYKICNlbmRpZgpkaWZmIC1hdXIg
+bGludXgub2xkL2luY2x1ZGUvYXNtLXBwYy9pZGUuaCBsaW51eC5uZXcvaW5j
+bHVkZS9hc20tcHBjL2lkZS5oCi0tLSBsaW51eC5vbGQvaW5jbHVkZS9hc20t
+cHBjL2lkZS5oCVR1ZSBBdWcgIDggMTI6MzY6MTcgMjAwMAorKysgbGludXgu
+bmV3L2luY2x1ZGUvYXNtLXBwYy9pZGUuaAlTdW4gRGVjIDI0IDEyOjU2OjU4
+IDIwMDAKQEAgLTE1MSw3ICsxNTEsMTcgQEAKIC8qCiAgKiBUaGUgZm9sbG93
+aW5nIGFyZSBub3QgbmVlZGVkIGZvciB0aGUgbm9uLW02OGsgcG9ydHMKICAq
+LworIyBpZiAxIC8qIFRFSiAqLworIyBpbmNsdWRlIDxhc20vOHh4X2ltbWFw
+Lmg+CitzdGF0aWMgX19pbmxpbmVfXyB2b2lkIGlkZV9hY2tfaW50cihiYXNl
+LCBpcnEpCit7CisJdm9sYXRpbGUgcGNtY29uZjh4eF90CSpwY21wOworCXBj
+bXAgPSAocGNtY29uZjh4eF90ICopKCYoKChpbW1hcF90ICopSU1BUF9BRERS
+KS0+aW1fcGNtY2lhKSk7CisJcGNtcC0+cGNtY19wc2NyID0gfjA7Cit9Cisj
+IGVsc2UKICNkZWZpbmUgaWRlX2Fja19pbnRyKGJhc2UsIGlycSkJCSgxKQor
+IyBlbmRpZgogI2RlZmluZSBpZGVfcmVsZWFzZV9sb2NrKGxvY2spCQlkbyB7
+fSB3aGlsZSAoMCkKICNkZWZpbmUgaWRlX2dldF9sb2NrKGxvY2ssIGhkbHIs
+IGRhdGEpCWRvIHt9IHdoaWxlICgwKQogCmRpZmYgLWF1ciBsaW51eC5vbGQv
+aW5jbHVkZS9hc20tcHBjL21wYzh4eC5oIGxpbnV4Lm5ldy9pbmNsdWRlL2Fz
+bS1wcGMvbXBjOHh4LmgKLS0tIGxpbnV4Lm9sZC9pbmNsdWRlL2FzbS1wcGMv
+bXBjOHh4LmgJVHVlIEF1ZyAgOCAxMjozNjoxNyAyMDAwCisrKyBsaW51eC5u
+ZXcvaW5jbHVkZS9hc20tcHBjL21wYzh4eC5oCVN1biBEZWMgMjQgMTI6NTY6
+NTggMjAwMApAQCAtNDQsNyArNDQsOSBAQAogI2RlZmluZQlfSVNBX01FTV9C
+QVNFIFBDSV9JU0FfTUVNX0FERFIKICNkZWZpbmUgUENJX0RSQU1fT0ZGU0VU
+IDB4ODAwMDAwMDAKICNlbHNlCi0jZGVmaW5lIF9JT19CQVNFICAgICAgICAw
+CisvLyNkZWZpbmUgX0lPX0JBU0UgICAgICAgIDAKKyNkZWZpbmUgX0lPX0JB
+U0UgICAgICAgICgweEUwMDAwMDAwKQorI2RlZmluZSBfSU9fQkFTRV9TSVpF
+ICAgKDB4MTAwMCkKICNkZWZpbmUgX0lTQV9NRU1fQkFTRSAgIDAKICNkZWZp
+bmUgUENJX0RSQU1fT0ZGU0VUIDAKICNlbmRpZgpkaWZmIC1hdXIgbGludXgu
+b2xkL2luY2x1ZGUvYXNtLXBwYy9ycHhjbGFzc2ljLmggbGludXgubmV3L2lu
+Y2x1ZGUvYXNtLXBwYy9ycHhjbGFzc2ljLmgKLS0tIGxpbnV4Lm9sZC9pbmNs
+dWRlL2FzbS1wcGMvcnB4Y2xhc3NpYy5oCVR1ZSBBdWcgIDggMTI6MzY6MTcg
+MjAwMAorKysgbGludXgubmV3L2luY2x1ZGUvYXNtLXBwYy9ycHhjbGFzc2lj
+LmgJU3VuIERlYyAyNCAxMjo1Njo1OCAyMDAwCkBAIC02MSw2ICs2MSwxMiBA
+QAogI2RlZmluZSBCQ1NSMF9QQ01DSUEzVk9MVAkoKHVpbnQpMHgwMDBhMDAw
+MCkJLyogQ0xMRiAqLwogI2RlZmluZSBCQ1NSMF9QQ01DSUE1Vk9MVAkoKHVp
+bnQpMHgwMDA2MDAwMCkJLyogQ0xMRiAqLwogCisjZGVmaW5lIEJDU1IxX0lQ
+QjVTRUwgICAgICAgICAgICgodWludCkweDAwMTAwMDAwKQorI2RlZmluZSBC
+Q1NSMV9QQ1ZDVEw0ICAgICAgICAgICAoKHVpbnQpMHgwMDA4MDAwMCkKKyNk
+ZWZpbmUgQkNTUjFfUENWQ1RMNSAgICAgICAgICAgKCh1aW50KTB4MDAwNDAw
+MDApCisjZGVmaW5lIEJDU1IxX1BDVkNUTDYgICAgICAgICAgICgodWludCkw
+eDAwMDIwMDAwKQorI2RlZmluZSBCQ1NSMV9QQ1ZDVEw3ICAgICAgICAgICAo
+KHVpbnQpMHgwMDAxMDAwMCkKKwogI2RlZmluZSBCQ1NSMl9FTjIzMlhDVlIJ
+CSgodWludCkweDAwMDA4MDAwKQogI2RlZmluZSBCQ1NSMl9RU1BBQ0VTRUwJ
+CSgodWludCkweDAwMDA0MDAwKQogI2RlZmluZSBCQ1NSMl9GRVRITEVETU9E
+RQkoKHVpbnQpMHgwMDAwMDgwMCkJLyogQ0xMRiAqLwpkaWZmIC1hdXIgbGlu
+dXgub2xkL2luY2x1ZGUvYXNtLXBwYy9ycHhsaXRlLmggbGludXgubmV3L2lu
+Y2x1ZGUvYXNtLXBwYy9ycHhsaXRlLmgKLS0tIGxpbnV4Lm9sZC9pbmNsdWRl
+L2FzbS1wcGMvcnB4bGl0ZS5oCVR1ZSBBdWcgIDggMTI6MzY6MTcgMjAwMAor
+KysgbGludXgubmV3L2luY2x1ZGUvYXNtLXBwYy9ycHhsaXRlLmgJU3VuIERl
+YyAyNCAxMjo1Njo1OCAyMDAwCkBAIC01NSw2ICs1NSwxMiBAQAogI2RlZmlu
+ZSBCQ1NSMF9QQ01DSUEzVk9MVAkoKHVpbnQpMHgwMDBhMDAwMCkKICNkZWZp
+bmUgQkNTUjBfUENNQ0lBNVZPTFQJKCh1aW50KTB4MDAwNjAwMDApCiAKKyNk
+ZWZpbmUgQkNTUjFfSVBCNVNFTAkJKCh1aW50KTB4MDAxMDAwMDApCisjZGVm
+aW5lIEJDU1IxX1BDVkNUTDQJCSgodWludCkweDAwMDgwMDAwKQorI2RlZmlu
+ZSBCQ1NSMV9QQ1ZDVEw1CQkoKHVpbnQpMHgwMDA0MDAwMCkKKyNkZWZpbmUg
+QkNTUjFfUENWQ1RMNgkJKCh1aW50KTB4MDAwMjAwMDApCisjZGVmaW5lIEJD
+U1IxX1BDVkNUTDcJCSgodWludCkweDAwMDEwMDAwKQorCiAvKiBISU9YIEV4
+cGFuc2lvbiBjYXJkLgogKi8KICNkZWZpbmUgSElPWF9DU1IwX0RFRkFVTFQJ
+KCh1aW50KTB4MzgwZjNjMDApCg==
+
+--0-1129517751-977984158=:38104
+Content-Type: application/x-unknown; name="pcmcia-disc.patch"
+Content-Description: pcmcia-disc.patch
+Content-Disposition: attachment; filename="pcmcia-disc.patch"
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtYXVyIHBjbWNpYS1jcy0zLjEuMjIub2xkL01ha2VmaWxlIHBjbWNp
+YS1jcy0zLjEuMjIubmV3L01ha2VmaWxlCi0tLSBwY21jaWEtY3MtMy4xLjIy
+Lm9sZC9NYWtlZmlsZQlTYXQgRmViIDI2IDA3OjMxOjUwIDIwMDAKKysrIHBj
+bWNpYS1jcy0zLjEuMjIubmV3L01ha2VmaWxlCVN1biBEZWMgMjQgMTI6NTc6
+MTIgMjAwMApAQCAtNiwxMCArNiwxMCBAQAogaW5jbHVkZSBjb25maWcubWsK
+IGVuZGlmCiAKLUFMTCAgPSBtb2R1bGVzIGNsaWVudHMgd2lyZWxlc3MgY2Fy
+ZG1nciBmbGFzaCBkZWJ1Zy10b29scyBtYW4gZXRjCitBTEwgID0gbW9kdWxl
+cyBjbGllbnRzIGNhcmRtZ3IgZmxhc2ggZGVidWctdG9vbHMgbWFuIGV0Ywog
+RElSUyA9IGNhcmRtZ3IgZmxhc2ggZGVidWctdG9vbHMgbWFuIGV0YwogaWZu
+ZGVmIENPTkZJR19QQ01DSUEKLURJUlMgOj0gbW9kdWxlcyBjbGllbnRzIHdp
+cmVsZXNzICQoRElSUykKK0RJUlMgOj0gbW9kdWxlcyBjbGllbnRzICQoRElS
+UykKIGVuZGlmCiAKIGhlbHA6CmRpZmYgLWF1ciBwY21jaWEtY3MtMy4xLjIy
+Lm9sZC9tb2R1bGVzL2NzLmMgcGNtY2lhLWNzLTMuMS4yMi5uZXcvbW9kdWxl
+cy9jcy5jCi0tLSBwY21jaWEtY3MtMy4xLjIyLm9sZC9tb2R1bGVzL2NzLmMJ
+V2VkIE5vdiAgOCAwMDozOTowMSAyMDAwCisrKyBwY21jaWEtY3MtMy4xLjIy
+Lm5ldy9tb2R1bGVzL2NzLmMJU3VuIERlYyAyNCAxMjo1NzoxMiAyMDAwCkBA
+IC0xNzkzLDcgKzE3OTMsNiBAQAogICAgIHNvY2tldF9pbmZvX3QgKnM7CiAg
+ICAgY29uZmlnX3QgKmM7CiAgICAgaW50IHJldCA9IDAsIGlycSA9IDA7Ci0g
+ICAgCiAgICAgaWYgKENIRUNLX0hBTkRMRShoYW5kbGUpKQogCXJldHVybiBD
+U19CQURfSEFORExFOwogICAgIHMgPSBTT0NLRVQoaGFuZGxlKTsKZGlmZiAt
+YXVyIHBjbWNpYS1jcy0zLjEuMjIub2xkL21vZHVsZXMvbTh4eF9wY21jaWEu
+YyBwY21jaWEtY3MtMy4xLjIyLm5ldy9tb2R1bGVzL204eHhfcGNtY2lhLmMK
+LS0tIHBjbWNpYS1jcy0zLjEuMjIub2xkL21vZHVsZXMvbTh4eF9wY21jaWEu
+YwlXZWQgT2N0IDI1IDA1OjQ1OjUxIDIwMDAKKysrIHBjbWNpYS1jcy0zLjEu
+MjIubmV3L21vZHVsZXMvbTh4eF9wY21jaWEuYwlTdW4gRGVjIDI0IDEyOjU3
+OjEyIDIwMDAKQEAgLTEzOCw3ICsxMzgsOCBAQAogI2VuZGlmCiAKICNpZmRl
+ZiBDT05GSUdfQkRfSVNfTUhaCi0jZGVmaW5lIE04WFhfQlVTRlJFUSAoKG1w
+Yzh4eF9iZGluZm8tPmJpX2J1c2ZyZXEpICogMTAwMDAwMCkKKy8vI2RlZmlu
+ZSBNOFhYX0JVU0ZSRVEgKChtcGM4eHhfYmRpbmZvLT5iaV9idXNmcmVxKSAq
+IDEwMDAwMDApCisjZGVmaW5lIE04WFhfQlVTRlJFUSAoKDQwKSAqIDEwMDAw
+MDApCiAjZWxzZQogI2RlZmluZSBNOFhYX0JVU0ZSRVEgKG1wYzh4eF9iZGlu
+Zm8tPmJpX2J1c2ZyZXEpCiAjZW5kaWYKQEAgLTMwMyw4ICszMDQsMTQgQEAK
+IAlkZWZhdWx0OiByZXR1cm4gMTsKIAl9CiAKLQlpZighKCh2Y2MgPT0gNTAp
+IHx8ICh2Y2MgPT0gMCkpKQorCWlmKCEoKHZjYyA9PSA1MCkgfHwgKHZjYyA9
+PSAwKSkpIHsKKyNpZiAxCisJICAgcHJpbnRrKEtFUk5fREVCVUcsICJ2b2x0
+YWdlX3NldDogdmNjID0gJWQgdnBwPSVkXG4iLHZjYyx2cHApOworCSAgIHBy
+aW50ayhLRVJOX0RFQlVHLCAiUmV0dXJuaW5nIDAgc3RpbGwuLi5cbiIpOwor
+I2Vsc2UKIAkgICByZXR1cm4gMTsKKyNlbmRpZgorCX0KIAogCS8qIGZpcnN0
+LCB0dXJuIG9mZiBhbGwgcG93ZXIgKi8KIApkaWZmIC1hdXIgcGNtY2lhLWNz
+LTMuMS4yMi5vbGQvcnVsZXMubWsgcGNtY2lhLWNzLTMuMS4yMi5uZXcvcnVs
+ZXMubWsKLS0tIHBjbWNpYS1jcy0zLjEuMjIub2xkL3J1bGVzLm1rCVRodSBK
+YW4gMTMgMDY6MTA6NTQgMjAwMAorKysgcGNtY2lhLWNzLTMuMS4yMi5uZXcv
+cnVsZXMubWsJU3VuIERlYyAyNCAxMjo1NzoxMiAyMDAwCkBAIC0xOCwzICsx
+OCwxOSBAQAogCUBta2RpciAtcCAuZGVwZmlsZXMgOyBtdiAkKi5kIC5kZXBm
+aWxlcwogCiAtaW5jbHVkZSAkKFNSQ1M6JS5jPS5kZXBmaWxlcy8lLmQpCisK
+KyMtLS0tLS0tLS1Hb3BpOiBNeSBtb2RpZmljYXRpb25zIHN0YXJ0IGhlcmUK
+K0NST1NTX0NPTVBJTEUgCTo9IC9vcHQvaGFyZGhhdC9kZXZraXQvcHBjLzh4
+eC9iaW4vcHBjXzh4eC0KKworQVMJPSQoQ1JPU1NfQ09NUElMRSlhcworTEQJ
+PSQoQ1JPU1NfQ09NUElMRSlsZAorQ0MJPSQoQ1JPU1NfQ09NUElMRSlnY2MK
+K0NQUAk9JChDQykgLUUKK0FSCT0kKENST1NTX0NPTVBJTEUpYXIKK05NCT0k
+KENST1NTX0NPTVBJTEUpbm0KK1NUUklQCT0kKENST1NTX0NPTVBJTEUpc3Ry
+aXAKK09CSkNPUFkJPSQoQ1JPU1NfQ09NUElMRSlvYmpjb3B5CitPQkpEVU1Q
+CT0kKENST1NTX0NPTVBJTEUpb2JqZHVtcAorTUFLRQk9bWFrZQorR0VOS1NZ
+TVM9L3NiaW4vZ2Vua3N5bXMKK1BSRUZJWD0vb3B0L2hhcmRoYXQvZGV2a2l0
+L3BwYy84eHgvdGFyZ2V0Cg==
+
+--0-1129517751-977984158=:38104--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
