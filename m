@@ -1,40 +1,48 @@
-Date: Thu, 17 Dec 1998 10:21:03 +1100 (EST)
-From: Nathan Hurst <njh@cs.monash.edu.au>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org, paulus@cs.anu.edu.au
-Subject: Re: BootX, ramdisk and root device
-In-Reply-To: <19981215143756.003692@mail.mipsys.com>
-Message-ID: <Pine.LNX.3.96.981217095027.10484A-100000@central>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v04003a00b29e0319bdf3@[205.161.35.44]>
+In-Reply-To: 
+ <Pine.LNX.4.03.9812141143100.17418-100000@mercator.cs.kuleuven.ac.be>
+References: <19981214105418.022383@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Wed, 16 Dec 1998 19:49:27 -0500
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
+        linuxppc-dev@lists.linuxppc.org
+From: Douglas Godfrey <dvdoug@tiac.net>
+Subject: Re: Restructure of arch/ppc/kernel and include/asm-ppc
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 15 Dec 1998, Benjamin Herrenschmidt wrote:
+Power MachTen implements a Unix Filesystem on top of the Mac HFS filesystem.
+There are restrictions on path length, file/filder names and non alphanumeric
+characters allowed in Unix files to allow mapping unix files to Mac OS files.
+The main restrictions are 32byte name length limit and the mapping of the
+":" <--> "/" and problems with files that start with "." (Norton Utilities
+will remove the "." thereby breaking the Unix file system).
 
-> I was wondering: Is there any case where a user may want to have both
-> "Use RamDisk" and a specified root device ? 
-I don't think so.
+Linux could then co-exist with the Mac OS with the Linux Scheduler and Memory
+Management system taking over forom the Mac OS (each Mac OS task becomes a
+Linux task with protected memmory). This is how MachTen for the 68k worked.
 
-> Should I ignore the content of the root device field when ram disk is
-> used ? 
+At 5:43 AM -0500 12/14/98, Geert Uytterhoeven wrote: [Re: Restructure of
+arch/ppc/kernel and include/asm-ppc]
+>On Mon, 14 Dec 1998, Benjamin Herrenschmidt wrote:
+>> Another thing that Paul and I are trying to define and implement: A way
+>> to completely boot from a disk image on the HFS volume (and eventually
+>> use this image as the read/write root volume). This would allow
+>> installations of Linux on top of macos without reformatting &
+>> repartitioning the hard disk.
+>
+>Thus a generalization of umsdosfs, the UNIX-like fs on top os msdosfs? I think
+>something like that already exists, read about it on linux-kernel some time
+>ago.
+>
+>Greetings,
+>
+>						Geert
 
-This would make sense.
-
-> (It still possible to
-> force it by typing the parameter manually in the kernel args anyway).
-
-Hence, if people know what they're doing, they can add it, but the rest of
-us who just forgot to clear the field wont have problem.
-
-> Similar issue: should I lookup and remove any "video=xxxx" option from
-> the kenrnel args prior to booting the kernel when "no video driver" is
-> checked or is this harmless ?
-
-I think that anyone who puts this in will know what they're doing.
-
-njh
+Thanx...
+  Doug
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
