@@ -1,66 +1,77 @@
-Message-Id: <199909151707.MAA16408@lists.linuxppc.org>
-Date: Wed, 15 Sep 1999 13:05:10 -0400 (EDT)
-From: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Reply-To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Subject: Re: controlfb.c bug in VRAM bank2 check if bank1
-To: mlan@cpu.lu, ldl@chpc.utah.edu
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 15 Sep 1999 10:22:22 -0700 (PDT)
+From: "David A. Gatwood" <dgatwood@mvista.com>
+To: Ethan Benson <erbenson@alaska.net>
+cc: "Timothy A. Seufert" <tas@mindspring.com>,
+        Benjamin Herrenschmidt <bh40@calva.net>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: New booter
+In-Reply-To: <v04210105b404ed46f043@[192.168.0.1]>
+Message-ID: <Pine.LNX.3.96.990915100107.32318D-100000@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Tue, 14 Sep 1999, Ethan Benson wrote:
 
-Just to add fuel to the fire (although I am not sure if this is related or not)
+> On 14/9/99 Timothy A. Seufert wrote:
+> 
+> >In fact, I think that's just what OS X does on New World machines.  I
+> >recall that it creates a small partition named "Rhapsody Booter" or some
+> >such thing.
+> 
+> yes it does this on all machines, and frankly I think its a 
+> disgusting kludge, that would be OK as a absolute LAST RESORT *after* 
+> all attempts to get a proper booter working have failed.
 
-My B+W G3 rev2 with 16MB of vram has never ever detected the correct amount.  In 
-fact, if I run Xconfigurator, it tells me I have less then 1MB of vram and 
-therefore won't let me use any of the higher resolutions that should work.
-
-The interesting thing is that if I change my bpp via the MacOS, Xconfigurator 
-reports completely different amounts of vram available and not in any logical 
-way that I can see.
-
-Any fixes along these lines would be greatly appreciated (this is with Paul's 
-2.2.10 stable kernel available from his website).
-
-Just thought someone in the know should be told :-)
-
-Kevin
+That _is_ a proper booter.  I assume you mean that having a booter should
+be a last resort after you can't get direct OF loading to work....
 
 
+> linux in my view is about doing things better, and doing them *right* 
+> Linus himself is fairly picky about doing things right instead of 
+> doing a kludge that `works'
+> 
+> Apple's attitude seems to be `why do it right when a kludge will do?' 
+> I do not want to see linux choose the same philosophy.
 
->> Hmm... official 2.2.12 does detect my 4 MB... and this is a 7600, so the same
->> motherboard as the 7500...
->>
->> Michel . . .
->
->Odd. I thought I tried stock 2.2.12 and it didn't detect the 4MB VRAM in my
->PowerMac 7500. Now I'm not so sure. A quick diff of the kernel controlfb.c 
-sources
->between 2.2.6 and 2.2.12 reveal no difference though in the VRAM bank check 
-code
->though so it also seems to me that if people had this problem in 2.2.6 then 
-2.2.12
->should also be unable to detect the full 4MB VRAM. If you're saying that the
->hardware should be identical then could some other software be responsible such 
-as
->the OF software be perhaps different and causing this different behavior? I'd
->really like some confirmation now that others with 7500 don't get all
->4MB VRAM detected even using stock 2.2.12. I've read postings from others that
->they didn't get 4MB VRAM detected but I don't think that was with 2.2.12 at 
-that
->time.
->
+I am, frankly, offended by that statement.  You're talking about what you
+see now and using the words "MacOS X".  What you see now doesn't even
+remotely resemble MacOS X code-wise.  It's MacOS X Server, not MacOS X. 
+Different kernel, totally different source base, probably a different boot
+mechanism.
 
---
-Kevin B. Hendricks
-Associate Professor of Operations and Information Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA   
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+The fact that the current "temporary" code uses what you describe as a
+kludge does _not_ in any way mean that Apple's attitude is to use a kludge
+instead of doing things right.  MacOS X Server was never intended to be
+anything more than a series of hacks to get people by until the real code
+comes out.  Period.
+
+
+> sorry to be blunt but just because apple has chosen to kludge their 
+> bootloader does NOT mean that is what we should do.
+
+Doing it "right" means ripping Apple's BrokenFirmware (tm) off the boards
+and rewriting it so that everything works.  Short of that, all boot
+methods are kludges.  The choice here is whether you want to have to boot
+half-way into MacOS (BootX) or have a way that doesn't require any
+licensing to distribute in a bootable form (this new thing).
+
+Also, to say that Linux does things "right" is ridiculous.  Linux x86 has
+loadlin, which loads from DOS (kinda like BootX app), and syslinux, which
+seems similar to what this new booter is doing.  Booting by OF is kind of
+like booting with x86's lilo, which isn't always possible on all drives
+in all configurations.  That's why they have other things like syslinux
+and loadlin.  That's why LinuxPPC has BootX and now... well, whatever this
+thing is called... BootY?
+
+In conclusion, Linux has, and always will have kludges as alternative boot
+mechanisms for machines that can't boot in the traditional way.  There's
+simply no way around it if you want to support a wide range of machines.
+
+
+David
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
