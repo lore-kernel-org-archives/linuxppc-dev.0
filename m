@@ -1,48 +1,35 @@
-Message-Id: <200209051304.IAA10208@lists.linuxppc.org>
-From: "" <slowforce@zju.edu.cn>
+Date: 5 Sep 2002 13:48:53 -0000
+Message-ID: <20020905134853.32298.qmail@webmail9.rediffmail.com>
+MIME-Version: 1.0
+From: "Narendra  " <narengh@rediffmail.com>
+Reply-To: "Narendra  " <narengh@rediffmail.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Date: Thu, 05 Sep 2002 21:00:55 +0800
-Reply-To: "" <slowforce@zju.edu.cn>
-Subject: ATM issue: one Host Four Nodes
-Content-Type: text/plain
+Subject: Unable to do I/O operations with WLAN card. 
+Content-type: text/plain;
+	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-We just have such a system to build.
-                                ________
-                                |      |
-                            RX  | ATM  |_TX____________________________
-  |---------------------------->| HOST |                              |
-  |                             |      |                              |
-  |                             |______|                              |
-  |                                                                   |
-  |      ________       ________        ________       ________       |
-  |      |      |       |      |        |      |       |      |       |
-  |   TX | ATM  | RX  TX| ATM  | RX   TX| ATM  | RX  TX| ATM  |  RX   |
-  |------| NODE |<------| NODE |<-------| NODE |<------| NODE |<------|
-         |      |       |      |        |      |       |      |
-         |______|       |______|        |______|       |______|
-             A              B               C              D
-It's used to perform high speed data acqusition.
-ATM HOST -- a pc with an ATM card
-ATM NODE -- MPC860 with linux-2.4.4
+Hi All,
 
-The ATM HOST is responisble for sending controlling information to ATM NODEs
-and receiving data from each NODEs.
-The ATM NODE is responsible for performing data acqusition.
+I have Two EP RPX-LITE board.
 
-As the diagram show,ATM NODEs are connected one after another.
-we use one VPI/VCI to identify one ATM NODE, so if the ATM HOST send the
-control message to ATM NODE D, the message will touch  ATM NODE A、B、C first,
-then ATM NODE D. In order to improve the system capacity and efficiency,
-the ATM NODE A、B、C should ignore this message(not parse it) and send it
-to the next node, in another words, this message should be bypassed in low
-level(e.g. PHY level) by ATM NODE A、B、C. How can i get this point?
-Any advice will be greatly appreciated!
-Best Regards!
-Li
+I have my WLAN driver working fine on one EP board.
+
+But I have problems with the other board. INITIALIZE command to
+D-Link card is successful but after that issueing ACCESS command
+is failing if i try to write any record, with Status Register
+having value 0x7b21 and RESP0 having the value 4.
+
+Any Idea What could be the problem??
+Is there any problem with the Target Board?..because same card,
+same driver is working fine with other EP board.
+
+I am using HARD HAT Linux 2.0.
+
+Thanks in advance,
+Naren
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
