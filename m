@@ -1,50 +1,58 @@
-To: Anil Giri <anil@india.tejasnetworks.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux-2.4.18 on MPC860T -Linux kernel boot problem 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 12 May 2003 18:37:57 +0500."
-             <1052744877.3ebf9cad5d4d8@pop-mail.india.tejasnetworks.com>
-Date: Mon, 12 May 2003 15:27:53 +0200
-Message-Id: <20030512132758.B86AFC6092@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Linux-2.4.18 on MPC860T -Linux kernel boot problem
+Message-ID: <1052744877.3ebf9cad5d4d8@pop-mail.india.tejasnetworks.com>
+Date: Mon, 12 May 2003 18:37:57 +0500 (IST)
+From: Anil Giri <anil@india.tejasnetworks.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Anil,
+Hi everybody,
 
-in message <1052744877.3ebf9cad5d4d8@pop-mail.india.tejasnetworks.com> you wrote:
->
-> I'm trying to run a Linux kernel (2.4.18) on a Motorola MPC860T
-> processor.But my kernel boot hangs in my_console_write function in uart.c
-> I can't see any message on the console after "Now booting the kernel".
+I'm trying to run a Linux kernel (2.4.18) on a Motorola MPC860T
+processor.But my kernel boot hangs in my_console_write function in uart.c
+I can't see any message on the console after "Now booting the kernel".
 
-Can you see  any  output  in  the  log_buf  area  if  you  perform  a
-post-mortem dump (using PPCBoot's "md" command) ?
+My question is, has anyone been able to boot a 2.4.18 kernel on an
+MPC860T, using PPCBoot as the boot loader ? If so, have you encountered such a
+problem ? Is there any issue with clock freq. in Hz instead of Mhz.?
+Is there any patch available for ppc?
 
-> My question is, has anyone been able to boot a 2.4.18 kernel on an
-> MPC860T, using PPCBoot as the boot loader ? If so, have you encountered such a
-> problem ? Is there any issue with clock freq. in Hz instead of Mhz.?
-> Is there any patch available for ppc?
+Following is the output on console...
+=========================================
 
-2.4.18 usually runs perfectly fine on 8xx, assuming that you made  no
-errors when porting the Linux kernel to your board.
+Initializing...
+  CPU:   XPC860xxZPnnD4 at 66 MHz: 4 kB I-Cache 4 kB D-Cache FEC present
+  Board:  103-PCALTC101-E  AF-4402-20-0041
+  Ethernet Address : 00:04:95:05:00:0e
+   1/ 2/ 0  3: 7:25
+  DRAM:  (128 MB SDRAM) 128 MB
+  FLASH: 16 MB
+*** Warning - bad CRC, using default environment
 
-Yes, there is an issue with clock frequencies in Hz versus MHz, which
-has been documented in several places. See for example  the  "README"
-and  "CHANGELOG"  files that come with the PPCBoot source (search for
-"CONFIG_CLOCKS_IN_MHZ"), or see section "10. Questions  and  Answers"
-of our documentation at http://www.denx.de/re/DPLG.html
+  Input:  serial
+  Output: serial
 
+Hit any key to stop autoboot:  0
+## Starting application at 0x40080000 ...
+loaded at:     40080000 40089368
+relocated to:  00180000 00189368
+board data at: 07F3FE48 07F40000
+relocated to:  00200100 002002B8
+zimage at:     40086000 4010A956
+initrd at:     4010A956 40360A1A
+relocated to:  07DA9000 07FFF0C4
+avail ram:     00201000 07DA9000
 
-Best regards,
+Linux/PPC load: root=/dev/ram
+Uncompressing Linux...done.
+Now booting the kernel
+=========================================
 
-Wolfgang Denk
+-Anil
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Bus error -- please leave by the rear door.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
