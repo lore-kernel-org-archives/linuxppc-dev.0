@@ -1,48 +1,428 @@
-Date: Wed, 17 Sep 2003 17:22:32 +0200
+Date: Wed, 17 Sep 2003 18:33:06 +0200
 From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
 Subject: RE: Problem of concurrency in arch/ppc/8260_io/uart.c
-In-reply-to: <3F68769C.1010000@embeddededge.com>
+In-reply-to: <IGEFJKJNHJDCBKALBJLLEEGCFPAA.joakim.tjernlund@lumentis.se>
 To: Dan Malek <dan@embeddededge.com>
 Cc: Jean-Denis Boyer <jdboyer@m5t.com>,
 	Steffen Rumler <Steffen.Rumler@siemens.com>,
 	linuxppc <linuxppc-embedded@lists.linuxppc.org>
 Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLEEGCFPAA.joakim.tjernlund@lumentis.se>
+Message-id: <IGEFJKJNHJDCBKALBJLLGEGDFPAA.joakim.tjernlund@lumentis.se>
 MIME-version: 1.0
 Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Joakim Tjernlund wrote:
+> > Whatever the boot rom initializes.
 >
-> > I am taking a stab at my_console_write() as well. I have something that works well
-> > for me, but i am unsure if I have broken KGDB/XMON support.
+> OK, then I will assume TX buffer length of 1, until serial_console_setup has run and
+> initialize it to 4.
 >
-> You better check it.  The reason for all of the complexity in there is to
-> support that.  Lots of time was spent making kgdb/xmon work correctly, and
-> to break it or toss it away would kinda piss me off.
+>  Jocke
 
-Yes, so much I already figured :). I am trying to get it right. Care to test KGDB/XMON
-when i am done?
->
-> > ....In my new my_console_write()
-> > I must know the length of the TX buffer in the TXBD.
->
-> Why?
+Here we go again. This patch adds the above. I am unable to break it, please try to :)
+Index: arch/ppc/8xx_io/uart.c
+===================================================================
+RCS file: /home/cvsadmin/cvsroot/kernel/linuxppc/arch/ppc/8xx_io/uart.c,v
+retrieving revision 1.7
+diff -u -r1.7 uart.c
+--- arch/ppc/8xx_io/uart.c	13 Jun 2003 09:04:43 -0000	1.7
++++ arch/ppc/8xx_io/uart.c	17 Sep 2003 16:18:46 -0000
+@@ -81,7 +81,11 @@
+ #define TX_WAKEUP	ASYNC_SHARE_IRQ
 
-I don't want to disable interrupts for every char transmitted. I therefore fill
-the TX BD as much as possible and that is why I need to know the length of the TX buffer.
+ static char *serial_name = "CPM UART driver";
+-static char *serial_version = "0.03";
++static char *serial_version = "0.04";
++
++/* TX buffer length used by my_console_write.
++   Assume minumun length until it gets set by this driver */
++static int console_tx_buf_len = 1;
 
->
-> > ...But what is the TX buffer length before serial_console_setup has run(that's
-> > when KGB/XMON is active)?
->
-> Whatever the boot rom initializes.
+ static DECLARE_TASK_QUEUE(tq_serial);
 
-OK, then I will assume TX buffer length of 1, until serial_console_setup has run and
-initialize it to 4.
+@@ -196,6 +200,7 @@
 
- Jocke
+ /* The number of buffer descriptors and their sizes.
+ */
++#define EARLY_BUF_SIZE	4
+ #define RX_NUM_FIFO	4
+ #define RX_BUF_SIZE	32
+ #define TX_NUM_FIFO	4
+@@ -1068,6 +1073,7 @@
+ 	ser_info_t *info = (ser_info_t *)tty->driver_data;
+ 	volatile cbd_t	*bdp;
+ 	unsigned char *cp;
++	unsigned long flags;
+
+ 	if (serial_paranoia_check(info, tty->device, "rs_put_char"))
+ 		return;
+@@ -1075,7 +1081,16 @@
+ 	if (!tty)
+ 		return;
+
++	local_irq_save(flags);
+ 	bdp = info->tx_cur;
++	/* Get next BD.
++	*/
++	if (bdp->cbd_sc & BD_SC_WRAP)
++		info->tx_cur = info->tx_bd_base;
++	else
++		info->tx_cur = (cbd_t *)bdp + 1;
++	local_irq_restore(flags);
++
+ 	while (bdp->cbd_sc & BD_SC_READY);
+
+ 	cp = info->tx_va_base + ((bdp - info->tx_bd_base) * TX_BUF_SIZE);
+@@ -1083,14 +1098,6 @@
+ 	bdp->cbd_datlen = 1;
+ 	bdp->cbd_sc |= BD_SC_READY;
+
+-	/* Get next BD.
+-	*/
+-	if (bdp->cbd_sc & BD_SC_WRAP)
+-		bdp = info->tx_bd_base;
+-	else
+-		bdp++;
+-
+-	info->tx_cur = (cbd_t *)bdp;
+ }
+
+ static int rs_8xx_write(struct tty_struct * tty, int from_user,
+@@ -1100,6 +1107,7 @@
+ 	ser_info_t *info = (ser_info_t *)tty->driver_data;
+ 	volatile cbd_t *bdp;
+ 	unsigned char	*cp;
++	unsigned long flags;
+
+ #ifdef CONFIG_KGDB_CONSOLE
+         /* Try to let stub handle output. Returns true if it did. */
+@@ -1113,44 +1121,46 @@
+ 	if (!tty)
+ 		return 0;
+
+-	bdp = info->tx_cur;
+-
+ 	while (1) {
+ 		c = MIN(count, TX_BUF_SIZE);
+
+ 		if (c <= 0)
+ 			break;
+
++		local_irq_save(flags);
++		bdp = info->tx_cur;
+ 		if (bdp->cbd_sc & BD_SC_READY) {
+ 			info->flags |= TX_WAKEUP;
++			local_irq_restore(flags);
+ 			break;
+ 		}
+
+ 		cp = info->tx_va_base + ((bdp - info->tx_bd_base) * TX_BUF_SIZE);
+ 		if (from_user) {
+-			if (copy_from_user((void *)cp, buf, c)) {
++			c -= copy_from_user((void *)cp, buf, c);
++			if (!c) {
+ 				if (!ret)
+ 					ret = -EFAULT;
++				local_irq_restore(flags);
+ 				break;
+ 			}
+ 		} else {
+ 			memcpy((void *)cp, buf, c);
+ 		}
+-
++		/* Get next BD.
++		 */
++		if (bdp->cbd_sc & BD_SC_WRAP)
++			info->tx_cur = info->tx_bd_base;
++		else
++			info->tx_cur = (cbd_t *)bdp + 1;
++		local_irq_restore(flags);
++
+ 		bdp->cbd_datlen = c;
+ 		bdp->cbd_sc |= BD_SC_READY;
+
+ 		buf += c;
+ 		count -= c;
+ 		ret += c;
+-
+-		/* Get next BD.
+-		*/
+-		if (bdp->cbd_sc & BD_SC_WRAP)
+-			bdp = info->tx_bd_base;
+-		else
+-			bdp++;
+-		info->tx_cur = (cbd_t *)bdp;
+ 	}
+ 	return ret;
+ }
+@@ -1210,28 +1220,28 @@
+ {
+ 	volatile cbd_t	*bdp;
+ 	unsigned char	*cp;
++	unsigned long flags;
+
+ 	ser_info_t *info = (ser_info_t *)tty->driver_data;
+
+ 	if (serial_paranoia_check(info, tty->device, "rs_send_char"))
+ 		return;
+
++	local_irq_save(flags);
+ 	bdp = info->tx_cur;
++	/* Get next BD.
++	*/
++	if (bdp->cbd_sc & BD_SC_WRAP)
++		info->tx_cur = info->tx_bd_base;
++	else
++		info->tx_cur = (cbd_t *)bdp + 1;
++	local_irq_restore(flags);
+ 	while (bdp->cbd_sc & BD_SC_READY);
+
+ 	cp = info->tx_va_base + ((bdp - info->tx_bd_base) * TX_BUF_SIZE);
+ 	*cp = ch;
+ 	bdp->cbd_datlen = 1;
+ 	bdp->cbd_sc |= BD_SC_READY;
+-
+-	/* Get next BD.
+-	*/
+-	if (bdp->cbd_sc & BD_SC_WRAP)
+-		bdp = info->tx_bd_base;
+-	else
+-		bdp++;
+-
+-	info->tx_cur = (cbd_t *)bdp;
+ }
+
+ /*
+@@ -1802,7 +1812,7 @@
+ static void rs_8xx_wait_until_sent(struct tty_struct *tty, int timeout)
+ {
+ 	ser_info_t *info = (ser_info_t *)tty->driver_data;
+-	unsigned long orig_jiffies, char_time;
++	unsigned long orig_jiffies, char_time, tst_res;
+ 	/*int lsr;*/
+ 	volatile cbd_t *bdp;
+
+@@ -1837,6 +1847,7 @@
+ 	 * are empty.
+ 	 */
+ 	do {
++		unsigned long flags;
+ #ifdef SERIAL_DEBUG_RS_WAIT_UNTIL_SENT
+ 		printk("lsr = %d (jiff=%lu)...", lsr, jiffies);
+ #endif
+@@ -1854,12 +1865,15 @@
+ 		 * is the buffer is available.  There are still characters
+ 		 * in the CPM FIFO.
+ 		 */
++		local_irq_save(flags);
+ 		bdp = info->tx_cur;
+ 		if (bdp == info->tx_bd_base)
+ 			bdp += (TX_NUM_FIFO-1);
+ 		else
+ 			bdp--;
+-	} while (bdp->cbd_sc & BD_SC_READY);
++		tst_res = !!(bdp->cbd_sc & BD_SC_READY);
++		local_irq_restore(flags);
++	} while (tst_res);
+ 	current->state = TASK_RUNNING;
+ #ifdef SERIAL_DEBUG_RS_WAIT_UNTIL_SENT
+ 	printk("lsr = %d (jiff=%lu)...done\n", lsr, jiffies);
+@@ -2261,10 +2275,11 @@
+ {
+ 	struct		serial_state	*ser;
+ 	ser_info_t			*info;
+-	unsigned			i;
++	unsigned			i, c, cr_missing, max_tx_size;
+ 	volatile	cbd_t		*bdp, *bdbase;
+ 	volatile	smc_uart_t	*up;
+ 	volatile	u_char		*cp;
++	unsigned long                   flags;
+
+ 	ser = rs_table + idx;
+
+@@ -2273,40 +2288,39 @@
+ 	 * we simply use the single buffer allocated.
+ 	 */
+ 	if ((info = (ser_info_t *)ser->info) != NULL) {
+-		bdp = info->tx_cur;
+ 		bdbase = info->tx_bd_base;
+-	}
+-	else {
+-		/* Pointer to UART in parameter ram.
+-		*/
++	} else {
++		/* Pointer to UART in parameter ram. */
+ 		up = (smc_uart_t *)&cpmp->cp_dparam[ser->port];
+-
+-		/* Get the address of the host memory buffer.
+-		 */
+-		bdp = bdbase = (cbd_t *)&cpmp->cp_dpmem[up->smc_tbase];
+
++		/* Get the address of the host memory buffer.*/
+ 		info = &consinfo;
++		info->tx_bd_base = (cbd_t *)bdbase = (cbd_t *)&cpmp->cp_dpmem[up->smc_tbase];
++		info->tx_cur = (cbd_t *)bdbase;
+ 	}
++	max_tx_size = console_tx_buf_len;
++	cr_missing = 0;
++	while (1){
++		c = MIN(max_tx_size, count);
++		if (c <= 0)
++			break;
+
+-	/*
+-	 * We need to gracefully shut down the transmitter, disable
+-	 * interrupts, then send our bytes out.
+-	 */
+-
+-	/*
+-	 * Now, do each character.  This is not as bad as it looks
+-	 * since this is a holding FIFO and not a transmitting FIFO.
+-	 * We could add the complexity of filling the entire transmit
+-	 * buffer, but we would just wait longer between accesses......
+-	 */
+-	for (i = 0; i < count; i++, s++) {
++		local_irq_save(flags);
++		bdp = info->tx_cur;
++		bdbase = info->tx_bd_base;
++		if (bdp->cbd_sc & BD_SC_WRAP)
++			info->tx_cur = (cbd_t *)bdbase;
++		else
++			info->tx_cur = (cbd_t *)(bdp+1);
++		local_irq_restore(flags);
++
+ 		/* Wait for transmitter fifo to empty.
+ 		 * Ready indicates output is ready, and xmt is doing
+ 		 * that, not that it is ready for us to send.
+ 		 */
+ 		while (bdp->cbd_sc & BD_SC_READY);
+
+-		/* Send the character out.
++		/* Send the characters out.
+ 		 * If the buffer address is in the CPM DPRAM, don't
+ 		 * convert it.
+ 		 */
+@@ -2314,55 +2328,32 @@
+ 			cp = (u_char *)(bdp->cbd_bufaddr);
+ 		else
+ 			cp = info->tx_va_base + ((bdp - info->tx_bd_base) * TX_BUF_SIZE);
+-		*cp = *s;
+-
+-		bdp->cbd_datlen = 1;
+-		bdp->cbd_sc |= BD_SC_READY;
+-
+-		if (bdp->cbd_sc & BD_SC_WRAP)
+-			bdp = bdbase;
+-		else
+-			bdp++;
+-
+-		/* if a LF, also do CR... */
+-		if (*s == 10) {
+-			while (bdp->cbd_sc & BD_SC_READY);
+-
+-			/* This 'if' below will never be true, but a few
+-			 * people argued with me that it was a "bug by
+-			 * inspection" that is was easier to add the code
+-			 * than continue the discussion.  The only time
+-			 * the buffer address is in DPRAM is during early
+-			 * use by kgdb/xmon, which format their own packets
+-			 * and we never get here. -- Dan
+-			 */
+-			if ((uint)(bdp->cbd_bufaddr) > (uint)IMAP_ADDR)
+-				cp = (u_char *)(bdp->cbd_bufaddr);
+-			else
+-				cp = info->tx_va_base + ((bdp - info->tx_bd_base) * TX_BUF_SIZE);
+-			*cp = 13;
+-			bdp->cbd_datlen = 1;
+-			bdp->cbd_sc |= BD_SC_READY;
+
+-			if (bdp->cbd_sc & BD_SC_WRAP) {
+-				bdp = bdbase;
+-			}
+-			else {
+-				bdp++;
+-			}
++		i=1; /* Keeps track of consumed TX buffer space */
++		if (cr_missing) {
++			/* Previus loop didn't have room for the CR, insert it first in this */
++			*cp++ = '\r';
++			i++;
++		}
++		cr_missing = 0;
++		for (; i <= c; i++) {
++			if ((*cp++ = *s++) != '\n')
++				continue; /* Copy bytes until a NewLine is found */
++			/* NewLine found, see if there is space in the TX buffer to add a CR */
++			if (i < max_tx_size) {
++				*cp++ = '\r'; /* yes, there is space to add a CR */
++				i++;
++			} else
++				cr_missing = 1; /* No space in the TX buffer,
++						   rember it so it can be inserted in the next loop */
+ 		}
+-	}
+-
+-	/*
+-	 * Finally, Wait for transmitter & holding register to empty
+-	 *  and restore the IER
+-	 */
+-	while (bdp->cbd_sc & BD_SC_READY);
++		count -= (c-cr_missing);
++		bdp->cbd_datlen = i-1;
++		bdp->cbd_sc |= BD_SC_READY;
+
+-	if (info)
+-		info->tx_cur = (cbd_t *)bdp;
++	}
++	/* while (bdp->cbd_sc & BD_SC_READY); is this really needed? */
+ }
+-
+ static void serial_console_write(struct console *c, const char *s,
+ 				unsigned count)
+ {
+@@ -3003,7 +2994,7 @@
+
+ 		}
+ 	}
+-
++	console_tx_buf_len = TX_BUF_SIZE;
+ 	return 0;
+ }
+
+@@ -3059,7 +3050,7 @@
+ 	 * memory yet because vm allocator isn't initialized
+ 	 * during this early console init.
+ 	 */
+-	dp_addr = m8xx_cpm_dpalloc(8);
++	dp_addr = m8xx_cpm_dpalloc(2*EARLY_BUF_SIZE);
+ 	mem_addr = (uint)(&cpmp->cp_dpmem[dp_addr]);
+
+ 	/* Allocate space for two buffer descriptors in the DP ram.
+@@ -3073,10 +3064,10 @@
+ 	bdp->cbd_bufaddr = iopa(mem_addr);
+ 	(bdp+1)->cbd_bufaddr = iopa(mem_addr+4);
+
+-	consinfo.rx_va_base = mem_addr;
+-	consinfo.rx_bd_base = bdp;
+-	consinfo.tx_va_base = mem_addr + 4;
+-	consinfo.tx_bd_base = bdp+1;
++	consinfo.rx_va_base = (unsigned char *) mem_addr;
++	consinfo.rx_bd_base = (cbd_t *) bdp;
++	consinfo.tx_va_base = (unsigned char *) (mem_addr + EARLY_BUF_SIZE);
++	consinfo.tx_bd_base = (cbd_t *) (bdp+1);
+
+ 	/* For the receive, set empty and wrap.
+ 	 * For transmit, set wrap.
+@@ -3177,7 +3168,7 @@
+ 	/* Set up the baud rate generator.
+ 	*/
+ 	m8xx_cpm_setbrg((ser - rs_table), bd->bi_baudrate);
+-
++	console_tx_buf_len = EARLY_BUF_SIZE;
+ 	return 0;
+ }
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
