@@ -1,32 +1,48 @@
-To: "Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: where to get ppc_8xx-gdb 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 22 Jan 2003 12:08:39 PST."
-             <885489B3B89FB6449F93E525DF78777F064563@srvnt506.ALLOPTIC.COM>
-Date: Wed, 22 Jan 2003 22:15:10 +0100
-Message-Id: <20030122211515.4BA8FC608E@atlas.denx.de>
+Date: Wed, 22 Jan 2003 22:33:25 +0100
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: RE: wrong definition in cpm_8260.h?
+In-reply-to: <3E2EDD3E.1000502@embeddededge.com>
+To: Dan Malek <dan@embeddededge.com>
+Cc: Shen Rong <rshen@udtech.com.cn>,
+	linuxppc-embedded@lists.linuxppc.org
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLGEIOFJAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=Windows-1252
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <885489B3B89FB6449F93E525DF78777F064563@srvnt506.ALLOPTIC.COM> you wrote:
+> Joakim Tjernlund wrote:
 >
-> My embeded distribution for PPC 860 did not come with the cross-compiled
-> gdb.
+> > The same error is in commproc.h for 8xx as well.
+>
+> It's not an error in either driver since first/last will always be
+> set in every buffer.  There isn't any reason for the driver to test
+> or take any action based upon these indicators.
 
-See http://www.denx.de/re/ELDK.html
+Yes, the CPM will set these flags, but will it also clear them if the
+buffer is not first/last in a frame? I think not.
 
-Best regards,
+I know that the driver is designed to always set them so in practise it
+won't be problem. However this could change some day.
 
-Wolfgang Denk
+Also, is it not time to remove the code contained in #ifndef final_version macros?
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"If you want to eat hippopatomus, you've got to pay the  freight."  -
-attributed to an IBM guy, about why IBM software uses so much memory
+>
+> These are not data transfer error or status indicators in the sense
+> they indicate some condition on the network itself.  These are buffer
+> management indicators that should be managed as such if they are used.
+
+yes I know, but I still think those flags should be included in the RX_STATS macro.
+
+
+    Jocke
+>
+> Thanks.
+>
+>
+> 	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
