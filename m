@@ -1,44 +1,61 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Wed,  9 Jun 2004 09:56:29 -0300
-Message-Id: <HZ1LA5$9EA97153A3F2D2EC1AD72AC1798B6528@bol.com.br>
-Subject: Re: ioctl(TIOCMGET) on Lite5200
+Message-ID: <40C7099D.10206@fh-landshut.de>
+Date: Wed, 09 Jun 2004 14:59:09 +0200
+From: Oliver Korpilla <okorpil@fh-landshut.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-From: "saurosalomoni" <saurosalomoni@bol.com.br>
-To: "wd" <wd@denx.de>
-Cc: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+To: "Heater, Daniel (GE Infrastructure)" <Daniel.Heater@gefanuc.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: VME driver patch for PowerPC
+References: <DB1DE297F535B340AEAE1E51B221C3D0016B3DCB@FTWMLVEM02.e2k.ad.ge.com> <40C48A1C.30602@fh-landshut.de>
+In-Reply-To: <40C48A1C.30602@fh-landshut.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> In message
-<HZ0056$6237825DE310949AB818EA81D16B09F0@bol.com.br> you
-wrote:
-> >
-> > I'm having a problem with a specific argument of the
-> > ioctl function, which is ioctl(TIOCMGET).
-> > I wrote a simple routine which just reads or writes the
-> > RTS pin.
-> > It worked OK on my Red Hat 9, under x86, but when I try
-> > to run it on a Lite5200 using denx kernel 2.4-25, it
-> > keeps saying "TIOCMGET failed: Invalid argument" and
->
-> Well, that says it all: the TIOCMGET ioctl() is not
-available for the
-> 5200's PSC uart driver.
->
-> Best regards,
->
-> Wolfgang Denk
+Hello!
 
-So, if the 5200 series don't support TIOCMGET and
-TIOCMSET ioctl() (nor TIOCMBIS and TIOCMBIC, I've just
-tried them), what could I possibly use to get/set the
-control pin RTS in my Lite5200?...
-Is there any other system call or function that
-accomplishes that?
+Adding the patch below activated correct behaviour for vme_peek/poke, with
+correct data width (tested VME_D8, VME_D16 and VME_D32), and without cache bursts.
 
-Thank you very much.
+It simply sets the cache-inhibited and guarded bits before remapping the pages
+(these flags are PowerPC-specific, and the pci_mmap_page_range() function is
+sadly no exported kernel symbol).
 
+Would you again be so kind to run some "still works"-test on an Intel board?
+
+Looks like a hack, but I guess it simply gets the job done... No need for a
+larger rewrite here.
+
+May take some time till I can again lay hands on a MVME5500 (PPC 7455 - 1Ghz) to
+verify on another PPC board, though.
+
+With kind regards,
+Oliver Korpilla
+
+Index: module/vme_main.c
+===================================================================
+--- module/vme_main.c   (revision 5)
++++ module/vme_main.c   (revision 6)
+@@ -191,14 +191,18 @@
+   */
+  int vme_mmap(struct file *file_ptr, struct vm_area_struct *vma)
+  {
+-
+         DPRINTF("Attempting to map %#lx bytes of memory at "
+                 "physical address %#lx\n", vma->vm_end - vma->vm_start,
+                 vma->vm_pgoff << PAGE_SHIFT);
+
++#ifdef CONFIG_PPC32
++       vma->vm_page_prot.pgprot |= _PAGE_NO_CACHE | _PAGE_GUARDED;
++       DPRINTF("PowerPC protection flags set.\n");
++#endif
++
+         /* Don't swap these pages out
+          */
+-       vma->vm_flags |= VM_RESERVED;
++       vma->vm_flags |= VM_LOCKED | VM_IO | VM_SHM;
+
+  #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,3) || defined RH9BRAINDAMAGE
+         return remap_page_range(vma, vma->vm_start, vma->vm_pgoff << PAGE_SHIFT,
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
