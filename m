@@ -1,37 +1,23 @@
 From: Benjamin Herrenschmidt <bh40@calva.net>
-To: <cl.en@gmx.net>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Lombard Sleep Crash (Was: 2.2.18pre17 again)
-Date: Fri, 3 Nov 2000 16:55:09 +0100
-Message-Id: <19340928092653.6730@192.168.1.2>
-In-Reply-To: <20001103162250.A367@olis.north.de>
-References: <20001103162250.A367@olis.north.de>
+To: Stefan Jeglinski <jeglin@4pi.com>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: whacked out 2.2.18pre17?
+Date: Fri, 3 Nov 2000 16:56:44 +0100
+Message-Id: <19340928092828.1670@192.168.1.2>
+In-Reply-To: <p04330100b627ff09296b@[192.168.0.1]>
+References: <p04330100b627ff09296b@[192.168.0.1]>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->just for the record:
->
->I've got the same crash as Albrecht in Sept. with 2.2.18pre4-ben1
->and linuxppc2k on my PB3400 without the wakebay app.
->
->Sep 18 00:35:03 apple kernel: Kernel panic: kernel access of bad area pc
->c00cf34c lr c00cfa88 address 24 tsk
->+pmud/297
->
->System.map-2.2.18pre4-ben1:
->c00cf218 t idepmac_sleep_device
->c00cf334 t idepmac_wake_device
->c00cf400 t idepmac_sleep_interface
->c00cf4e4 t idepmac_wake_interface
->c00cf728 t idepmac_notify_sleep
->c00cfab0 T ide_dma_intr
->c00cfb8c T ide_build_dmatable
+>I am aware that this kernel is being worked on daily (that's why I
+>try to rebuild it each night), but I'm a little surprised that I am
+>having so much trouble with a pre17 kernel. Anybody know what's up?
+>Is this thing going through such big changes that I should let it go
+>for a while instead of trying each night?
 
-Please, try to disassemble idepmac_sleep_device with objdump and see
-where exactly it crashes. Looks like there may be some bad pointer going
-on there...
+Well, first try with a more recent bootx.. that may help.
 
 Ben.
 
