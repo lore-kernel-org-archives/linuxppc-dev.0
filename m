@@ -1,46 +1,36 @@
-Date: Tue, 12 Feb 02 22:59:30 PST
-From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0202130659.AA16839@ivan.Harhan.ORG>
-To: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: I'm no longer at SBS + my GT-64260 stuff
+Date: Wed, 13 Feb 2002 09:00:02 +0100
+From: Olaf Hering <olh@suse.de>
+To: yellowdog-devel@lists.yellowdoglinux.com
+Cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: new G4 dual 1 gig is here - how to install?
+Message-ID: <20020213090002.B4386@suse.de>
+References: <416D9C76-201E-11D6-BE69-0003938E434C@ivey.uwo.ca> <D232876A-2024-11D6-A30D-0003938E434C@ivey.uwo.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <D232876A-2024-11D6-A30D-0003938E434C@ivey.uwo.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Linux/PPC developers,
+On Tue, Feb 12, Kevin B. Hendricks wrote:
 
-In the past I had supported Linux on certain PPC boards made by SBS, and I had
-also talked on this mailing list to some extent about StarMON, an IMHO
-wonderful ROM monitor of my invention, both for SBS and for the world. Well,
-there have been some changes, specifically I no longer work for SBS effective
-today (involuntarily so, job leads welcome :), and therefore I can no longer
-speak for SBS. I do not personally own any of their hardware, so unfortunately
-further contributions from me to code for their boards are very unlikely.
+> BTW: Are there any nice utilities to let me snoop through the OF device
+> tree under Mac OSX.  I know I can get DisplayName Registry to work under
+> MacOS 9.2 but would rather do my machine snooping under OSX if possible.
 
-As for StarMON, I thought I would make it see the light of day by making a
-version of it for a non-SBS board in the public domain. (As I understand it SBS
-has got rid of StarMON together with me.) That non-SBS board is Marvell/
-Galileo's reference board for the GT-64260A system controller, the EV-64260A.
-Only 750 family CPUs are supported, not 74xx. The code can be obtained from the
-IFCTF CVS with:
+Copy the boot file in the root of a hfs partition, select that one as
+boot volume. Boot to OF prompt, type "printenv boot-device", that will
+give you a clue about that path name. Then change the ,\\:tbxi part to
+,filename.
 
-cvs -d :pserver:anoncvs@ivan.Harhan.ORG:/fs3/IFCTF-cvs co ppcstar-ref-impl \
-	starboot starboot-drivers starmon-tools ppc-linux-boot
 
-It's not release quality, but I thought I would release what I have as right
-now I'm not likely to improve it because again I didn't personally own the
-hardware and no longer have it.
+Gruss Olaf
 
-You can also get all my public domain Linux/PPC work that never made it into
-the public tree with:
+--
+ $ man clone
 
-cvs -d :pserver:anoncvs@ivan.Harhan.ORG:/fs3/IFCTF-cvs co linuxppc-mikes-diff
-
-It's a diff against linuxppc_2_4_devel. Apart from the stuff I've posted here
-before that wasn't incorporated into the public tree, the new stuff you haven't
-seen before is my GT-64260 work. I've made some pretty good improvements IMHO
-to that code, so check it out.
-
-MS
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
