@@ -1,34 +1,44 @@
-Date: Sun, 17 Oct 1999 12:45:17 -0500 (CDT)
-From: ian reinhart geiser <geiseri@msoe.edu>
-To: David Edelsohn <dje@watson.ibm.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: OLD gcc source needed... 
-In-Reply-To: <9910171727.AA10306@marc.watson.ibm.com>
-Message-ID: <Pine.LNX.4.10.9910171242150.1006-100000@sleepchamber.apt5.msoe.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <v04205500b42fd739efae@[192.168.1.40]>
+Date: Sun, 17 Oct 1999 22:09:16 +0200
+To: linuxppc-dev@lists.linuxppc.org
+From: "N.G. Temme" <niek@database.rino.nl>
+Subject: presentation on linux
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 17 Oct 1999, David Edelsohn wrote:
+I am going to give a presentation about linux. I would like to give 
+this presentation on a  powerbook running linux.
 
-> 	gcc-2.6.3 did not support Linux/PPC.  It may not have supported
-> SVR4/ELF PowerPC ABI used by Linux/PPC at all.
-> 
-> David
-> 
+I would look a little strange to give a presentation about a 
+operating system that you are not using you're self. This 
+presentation is not only about linux as server OS but it also 
+discusses linux as desktop OS.
 
-	nuts....
 
-	i have gotten the source for 2.8.1 to "sorta" work
-	with a new patch of the 68HC11 compiler.  but under
-	2.9.5 i get some new errors.
 
-	has any one ever gotten the 68HC11 compiler to work
-	with 2.8.1 or will i be out on my own for this one.
+I need to no if linux is up to this task.
 
-	-ian reinhart geiser
+Can you connect a projector to a powerbook G3 running linuxppc?
 
+And is there any presentation software for linux?
+
+I am not looking for powerpoint for linux. A sort of flash or 
+quicktime would be great. I would like to give the presentation in a 
+web browser because it would be cool to say 'I am not only giving a 
+presentation on this computer it is also its own webserver'.
+
+If you  know a solution for linux on intel I am also very interested. 
+Linuxpcc  would better though.
+
+
+I hope to hear form you.
+
+
+
+Niek Temme
+niek@nepheware.rino.nl
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
