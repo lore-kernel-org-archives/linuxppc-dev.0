@@ -1,55 +1,45 @@
-Date: Tue, 04 Apr 2000 18:30:43 -0700
-From: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
-Subject: Re: Install on a Pismo (going bad)
-In-reply-to: <20000404231952.A2266@suse.de>
+Date: Tue, 4 Apr 2000 17:46:24 -0800
+From: Ethan Benson <erbenson@alaska.net>
 To: linuxppc-dev@lists.linuxppc.org
-Cc: linuxppc-dev@lists.linuxppc.org
-Message-id: <p04310101b51047876a0b@[134.114.15.89]>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; format=flowed
-References: <200004042110.OAA25686@shell1.ncal.verio.com>
- <20000404231952.A2266@suse.de>
+Cc: "Henry A. Worth" <haworth@ncal.verio.com>
+Subject: Re: Install on a Pismo (going bad)
+Message-ID: <20000404174624.C7595@plato.localdomain.local>
+References: <200004042110.OAA25686@ <200004042110.OAA25686@ shell1.ncal.verio.com> <20000404231952.A2266@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20000404231952.A2266@suse.de>; from olh@suse.de on Tue, Apr 04, 2000 at 11:19:52PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 11:19 PM +0200 4/4/00, Olaf Hering wrote:
->On Tue, Apr 04, Henry A. Worth wrote:
->
->>
->>  > From: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
->>
->>  > I've come to the decision that the hard drive is fried :(.  I've
->>  > tried formatting the drive with Drive Setup and it returns
->>  > Initialization Failed every time.  I'm glad I bought the 3 year
->>  > warranty now.
->>
->>  I suspect Drive Setup has problems with the Pismo and/or OS/9,
->>  had same problem if I selected the option to zero the partitions.
->>  Try without that option.
->
->I had that problem a long time ago with my 7200/90 and MkLinux or so,
->can't remember exactly.
->Drive Setup is buggy, it should be OpenSource ;)
->
->
->Gruss Olaf
+On Tue, Apr 04, 2000 at 11:19:52PM +0200, Olaf Hering wrote:
 
-Well, after a night of fighting with it, I was ready to give up.  For
-some reason, when I got up this morning it felt like cooperating with
-me.  I managed to get the drive formatted correctly, and I'm gonna
-work on installing Linux on it tonight.  Thanks for all the help.
+> Drive Setup is buggy, it should be OpenSource ;)
 
-Tim
 
+very, and i have found that its bugginess surfaces much more when you
+try and create non-macos partitions with it, my attempts to do so
+resulted in crashes, corrupted partitions tables and other such
+nastiness. (and `initialization failed' errors on what i know to be
+good disks) so i have simply adopted the standard practice of using
+each OS's native fdisk to create its partitions, ie use drive setup to
+create macos partitions and mac-fdisk to create linux partitions.
+
+what i tell people to do if they need to share a disk wtih macos is
+first use drive setup to create 2 HFS partitions. the first being the
+total size of all the linux partitions the user wants to create.  (say
+they want 64MB / 1GB /usr 1GB /var 2GB /home, they would make the
+first HFS partitions 5060MB)  then delete that partition with
+mac-fdisk (aka pdisk under linux) and create the linux partitions
+inside the newwly created `hole'
+
+this seems reasonable to me, every single other OS/arch i have used
+says to do this: BSD says use linux's `braindamaged' fdisk for its
+partitions and BSD's fdisk for BSD partitions, linux says use DOS
+fdisk for DOS partitions and its fdisk for linux partitions etc.
 
 --
-
--------
-Tim Wojtulewicz           Tim.Wojtulewicz@nau.edu
-(520)523-2543             http://dana.ucc.nau.edu/~tjw4
-
-In the Windows world, you are one click away from
-harming yourself -- Elias Levy, Bugtraq
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
