@@ -1,69 +1,91 @@
-Message-ID: <20020310173636.42443.qmail@web11102.mail.yahoo.com>
-Date: Sun, 10 Mar 2002 09:36:36 -0800 (PST)
-From: roger blofeld <blofeldus@yahoo.com>
-Subject: Re: 2.4.18-ben0 on G4 SMP: do_IRQ waiting for irq lock
-To: laforge@gnumonks.org
+Date: Wed, 13 Mar 2002 18:59:19 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Nasty ATI/tulip interaction
+To: dgatwood@gatwood.net
 Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.3.96.1020226185429.7844B-100000@gatwood.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/plain; charset=us-ascii
+Message-Id: <E16lD25-00006q-00@piglet.grunz.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Harald,
-I've seen the same problem with cups on my G4 dual
-450.
+Hi David,
 
-In addition, my machine hangs whenever the macserial
-driver is closed (e.g., open /dev/ttyS0 with minicom,
-the exit).
+Sorry for replying late; was on holiday...
 
-Does your machine do this as well?
+On  27 Feb, this message from David A. Gatwood echoed through cyberspace:
+>
+> On Tue, 26 Feb 2002, David A. Gatwood wrote:
+>
+>> Weird issue.  I finally got the PowerBase 180, and I've attempted to move
+>> my Linux system from the G4 over to it.  I'm running a heavily patched
+>> 2.2.21-pre2 kernel.  It includes the PCI fixup patches, Promise Ultra
+>> ATA/66 patches, and a few (possibly ppc-specific) bug fixes
+> [ in IDE ].
 
--roger
+Any specific reason to stay with a 2.2 kernel? I can run 2.4.18 mainline
+straight-Linus (sorry, straight-Marcello) on my 7600, with a Promise as
+well.
 
-On Sat, 9 Mar 2002 10:43:28 +0100,
-laforge@gnumonks.org wrote:
->On Fri, Mar 08, 2002 at 07:34:09PM +0100,
-benh@kernel.crashing.org wrote:
->> Could be a driver bug showing up, difficult to say.
-The problem definitely
->> doesn't happen here (dual G4 450Mhz, 2x7400 CPU
-with highmem). The fact that
->> the IRQ lock can be held by the other CPU is normal
-though, both CPUs don't
->> take external IRQs but decrementer ones for example
-happen on both.
->>
->> That said, I don't know what is causing your
-problem.
+2.4 kenels are a lot faster on PPC as well...
+
+> Thanks to Ben Herrenschmidt, I've gotten it back to the point where I have
+> a console, but enabling the ethernet card still hoses the ATI output.
 >
->I've now managed to get the kernel running - so far
-without any crashes for
->one day.
->
->The problem seemed connected with the cups daemon. If
-I don't start (or use)
->any part of the cups (common unix printing system),
-it runs fine.
->
->I don't know what cups is trying to do, since there
-are no local printers
->configured. Everything it is supposed to do is to
-submit remote printjobs
->to my printer server.
->
->As of drivers, the only hardware driver (apart from
-standard pmu, aty128fb,
->sungem) I'm using is tulip for a 21x4x network board.
->
->But the problems are not related with this network
-interface, since I'm
->heavily using it for NFS, etc. I've also tried to
-pingflood the machine
->on both network interfaces - no problem.
->
->> Ben.
+> On a hunch, I downloaded, compiled, and installed pciutils, and I found
+> the problem....  The tulip card and the motherboard VGA got assigned the
+> same I/O ports address (0xf2000400).  No idea how that happened, but it's
+> quite consistent.
+
+Definitely a reason to move to 2.4 with the dynamic resource allocation.
+That one will catch conflicts (modulo bugs like a chip not decoding as
+precise as it says...).
+
+> Looks like something broken.  I'd try without Michel Lanners' PCI fixup
+> patches, but I can't boot without them.
+
+Use 2.4 ;-) Should boot, and you can get rid of my patches :-))
+
+> I'm trying to track down what's
+> breaking, but it isn't obvious.  I've tried to duplicate the code that
+> remaps planb to remap the ethernet device, but I'm getting nowhere fast.
+> It's attempting to do the remap, and it is successfully changing the
+> kernel's notion of the device address, but it looks like for some reason,
+> the change isn't happening in the controller itself, since I'm getting a
+> machine check when I actually try to access the device now.  I'm probably
+> doing something wrong.
+
+You sure you did everything required? You need to write the new address
+back into the device's control registers, and you need to enable IO/Mem
+space response before the device would repond. A non-responding device
+can give you a machine check.
+
+> I'm giving up for the night, but when I get back to this tomorrow night,
+> does anyone have any suggestions on how to change the PCI addy of the
+> ethernet card?
+
+I'm repeting myself, but try 2.4 ?
+
+> BTW, this doesn't work:
+[snip]
+
+Hmmm.. should have worked, though. Didn't see any obvious errors. Try a
+2.4 kernel (did I say that before?), if that fails also, I'd say you
+have a hardware bug somewhere that needs to be worked around....
+
+Cheers
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
