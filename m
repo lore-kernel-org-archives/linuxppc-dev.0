@@ -1,89 +1,55 @@
-Date: Wed, 9 Jun 2004 14:12:30 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: "Kernel panic: No init found", 8xx board with linuxppc-2.5
-Message-ID: <Pine.LNX.4.58.0406091404520.13339@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: VME driver patch for PowerPC
+Date: Wed, 9 Jun 2004 15:01:12 -0500
+Message-ID: <DB1DE297F535B340AEAE1E51B221C3D007E84017@FTWMLVEM02.e2k.ad.ge.com>
+From: "Heater, Daniel (GE Infrastructure)" <Daniel.Heater@gefanuc.com>
+To: <okorpil@fh-landshut.de>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-  in my ongoing quest to see how far i get in booting on my 8xx board with
-the latest 2.5 tree, i was having trouble getting past the line:
+> >>Could you check, whether the patch to your driver (version
+> >>7433-3.2 of your
+> >>Linux support) still compiles on an Intel platform, and works
+> >>as intended?
+> >>
+> >Yep. I only did a quick test, but it appears to work fine on x86.
+> >I've merged your patch up with the code base for the next release.
+> >
+> Great!
+>
+> I don't know about x86 bus organization, but maybe it limits
+> the address
+> range for available addresses too strongly (on a single bus,
+> where the
+> Universe is on). Comparing how much window space you can map with the
+> old version and the new one on x86 could prove useful.
 
-  Serial: CPM driver $Revision: 0.01 $.
+Your dead on right. I cannot allocate as much space. In fact,
+on a VMIVME-7750 I'm only able to allocate 768KB now vs. the
+~2MB I could access before.
 
-since all i really needed was my serial port as a console, i configured
-the kernel, and deselected all of:
+> Adding the patch below activated correct behaviour for vme_peek/poke,
+> with correct data width (tested VME_D8, VME_D16 and VME_D32), and
+> without cache bursts.
+>
+> It simply sets the cache-inhibited and guarded bits before
+> remapping the pages (these flags are PowerPC-specific, and the
+> pci_mmap_page_range() function is sadly no exported kernel symbol).
+>
+> Would you again be so kind to run some "still works"-test on an
+> Intel board?
 
-  Device drivers ->
-    Character drivers ->
-      Serial drivers ->
-	NO 8250 stuff
-	NO CPM2 stuff
+That part still works.
 
-and all i selected under "MPC8xx CPM options" was
-
-  [*] Use UART
-
-(not being a real hardware whiz, i may have selected a totally meaningless
-set of options.  i'm quite willing to be chastised for being clueless
-here.)
-
-  after i built my new kernel and incorporated my long-time root
-filesystem, i got:
-
-Linux/PPC load: console=ttyS0,9600 rw root=/dev/ram0 init=/sbin/minit
-Uncompressing Linux...done.
-Now booting the kernel
-Linux version 2.6.7-rc3 (rpjday@localhost.localdomain) (gcc version 3.2.2
-200304
-On node 0 totalpages: 8192
-  DMA zone: 8192 pages, LIFO batch:2
-  Normal zone: 0 pages, LIFO batch:1
-  HighMem zone: 0 pages, LIFO batch:1
-Built 1 zonelists
-Kernel command line: console=ttyS0,9600 rw root=/dev/ram0 init=/sbin/minit
-PID hash table entries: 256 (order 8: 2048 bytes)
-Decrementer Frequency = 187500000/60
-Memory: 29840k available (744k kernel code, 204k data, 52k init, 0k
-highmem)
-Calibrating delay loop... 46.97 BogoMIPS
-Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)
-Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)
-Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
-checking if image is initramfs...it isn't (no cpio magic); looks like an
-initrd
-Freeing initrd memory: 1563k freed
-Linux NoNET1.0 for Linux 2.6
-devfs: 2004-01-31 Richard Gooch (rgooch@atnf.csiro.au)
-devfs: boot_options: 0x1
-Generic RTC Driver v1.07
-RAMDISK driver initialized: 16 RAM disks of 6144K size 1024 blocksize
-CPM UART driver version 0.03
-ttyS00 at 0x0280 is a SMC
-RAMDISK: Compressed image found at block 0
-VFS: Mounted root (ext2 filesystem).
-Mounted devfs on /dev
-Freeing unused kernel memory: 52k init
-Kernel panic: No init found.  Try passing init= option to kernel.
- <0>Rebooting in 180 seconds..
-
-
-  now this is puzzling since, once upon a time, i *did* get either init or
-minit to at least start, but as we know, as soon as i hit user space,
-things hung.
-
-  so it's curious that the kernel can't even find minit (or init, or
-/bin/sh, i tried all three).  i've checked the root filesystem that's
-bundled with the ramdisk, and it seems fine.
-
-  did my particular selection of kernel config options make a mess of
-things?  as i said, once before, the kernel never had a problem finding
-the init program.
-
-rday
+Thanks,
+Daniel L. Heater
+Software Development, Embedded Systems
+GE Fanuc Automation Americas, Inc.
+VMIC, Inc.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
