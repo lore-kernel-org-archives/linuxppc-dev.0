@@ -1,75 +1,40 @@
-Date: Mon, 17 Apr 2000 14:48:54 -0700 (PDT)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: /proc/ppc_htab and 2.3 oddities
-In-Reply-To: <Pine.LNX.4.10.10004172130210.455-100000@cassiopeia.home>
-Message-ID: <Pine.LNX.4.10.10004171430530.25863-100000@shell.unixbox.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200004172244.XAA17952@hyperion.valhalla.net>
+Date: Mon, 17 Apr 2000 23:51:25 +0100
+Subject: Re: /proc/ppc_htab 
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Ani Joshi <ajoshi@shell.unixbox.com>
+CC: "PPC-DEV" <linuxppc-dev@lists.linuxppc.org>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 17 Apr 2000, Geert Uytterhoeven wrote:
-
+>> A few days ago I saw `mmu_context_overflow' in my kernel messages.
+>> The machine locked up on `cat /proc/ppc_htab'. Fortunately it autorebooted
+>> after 180 seconds and came back to life again.
 >
-> A few days ago I saw `mmu_context_overflow' in my kernel messages.
-> The machine locked up on `cat /proc/ppc_htab'. Fortunately it autorebooted
-> after 180 seconds and came back to life again.
+> I also saw this a few weeks ago, and was meaning to fix it but I was
+> unable to reproduce it.
 
-I also saw this a few weeks ago, and was meaning to fix it but I was
-unable to reproduce it.
+I have not seen the mmu_context_overflow - but the /proc/ppc_htab has been
+causing a lock-up since at least 2.3.51 (sorry it slipped my mind).
 
->
-> Since I don't have direct access to my PPC box now (I'm recovering from knee
-> surgery) and rely on it for receiving email, I'm not very eager to do some
-> more experiments with /proc/ppc_htab.
+I'm using Paul's rsync (latest I've tried is 2.3.99-pre3).
 
-Ouch, hope you feel better soon.
+> I'm sure you don't feel like crashing a remote box again, but if you or
+> anyone else could cat /proc/ppc_htab and tell if panics and perhaps post
+> the OOPS.
 
->
-> Note that I have no idea what mmu_context_overflow means nor what ppc_htab
-> really does. Are these two related?
+Unfortunately there was no panic, OOPS or anything - and - unlike Geert's my
+system never came back - just locked up completely - requiring a three
+finger salute to get anywhere.  G3/minitower (beige).
 
-/proc/ppc_htab is the proc entry for the hash table.  it shows some
-current stats on the hash table and allows some manipulation.
+Not as much help as I would like - apart from the fact that it was
+completely repeatable - I'm out of circulation for 5 weeks now - paid work
+;-) but if there's anything I can supply by tomorrow night that will throw
+more light on it - let me know.
 
-an mmu_context_overflow occurs when the counter, well...  overflows.
-
-I'm sure you don't feel like crashing a remote box again, but if you or
-anyone else could cat /proc/ppc_htab and tell if panics and perhaps post
-the OOPS.
-
->
-> For what it's worth, I'm running the bk tree at the 2.3.99-pre3 level.
->
-
-Speaking of 2.3.99, i think the shared mem or something is terrible
-broken.  I am currently in the process of writing an XFree86 driver for
-Savage chipset cards, (for those unfamiliar with xfree 4.0, you just
-build the driver as a module, ie just an object and place it in a set path
-for the server to load), and each time I would build a new driver to test
-and copy/replace over the old one and then run the server, it would not
-replace the old driver correctly.
-
-Just to prove i wasn't going insane, I used an old build, found out it
-worked.  Then made a new build with a ton of ErrorF's (xfree printf's) all
-over the place, and replaced the driver.  To my amazement, it was still
-using the old build, even though the new one was sitting right over the
-old one.  This was all with 2.3.99pre3 with all the /var/shm done.  When I
-switched back to 2.2.4 kernel, it worked fine as normal (copy'ing over DID
-work as expected).
-
-Has anyone else seen this?
-
->
-> Gr{oetje,eeting}s,
->
-> 						Geert
-
-
-Ani
-
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
