@@ -1,44 +1,38 @@
-Subject: Re: Question about PPC __put_user_asm/__get_user_asm
-To: paubert@iram.es (Gabriel Paubert)
-Date: Wed, 5 Apr 2000 10:21:56 +1000 (EST)
-Cc: greyham@research.canon.com.au (Graham Stoney),
-        linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.HPX.4.10.10004041321080.21080-100000@gra-ux1.iram.es> from "Gabriel Paubert" at Apr 04, 2000 01:35:34 PM
-MIME-Version: 1.0
+Date: Wed, 5 Apr 2000 02:27:40 +0200
+From: Olaf Hering <olh@suse.de>
+To: "William H. Schultz" <whschult@uncc.edu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: kernel args with miboot
+Message-ID: <20000405022740.B20631@suse.de>
+Reply-To: linuxppc-dev@lists.linuxppc.org
+References: <200004040459.XAA03713@lists.linuxppc.org> <38EA7D15.C453ED94@uncc.edu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000405002157.104963C978@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+In-Reply-To: <38EA7D15.C453ED94@uncc.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert writes:
-> At least i386 does the same trick as Documentation/exception.txt explains.
-> But using .text explicitly is bad style in any case, you might want to
-> replace it by .previous like in this hand-built unified diff for the
-> __put_user_asm case:
+On Tue, Apr 04, William H. Schultz wrote:
 
-Thanks Gabriel; I must have been going blind yesterday when I looked at the
-i386 uaccess.h file to not notice this!
+> Maybe I'm just not as quick as everyone else, but how do you
+> pass kernel arguments when using miboot?  I found some stuff
+> when I looked at the "Sytem" file with ResEdit, but it
+> didn't look like that's where I was supposed to put the
+> stuff.  I also haven't found any documentation on the
+> bootloader.
 
-> Caution: I don't claim it will solve all your problems: actually it will
-> still leave some remnants in the __ex_table and .fixup sectioons which
-> will be cause linker errors. But at least the code of the functions will
-> stay in the appropriate section. I've no idea on how to generate per
-> function __ex_table and fixup sections (actually I think it's the wrong
-> approach for 6xx/7xx/7xxx PPC for other reasons).
+There is a resource CMDL, you can have two configurations. Just enter
+your stuff carefully.
+Documentation is available in .c fomat ;)
 
-I don't believe we want per-function __ex_table and .fixup sections, so I
-think using .previous in the __get_user_asm & __put_user_asm solves my problem.
-I get no link errors from the resulting kernel, but the output is way too
-small, and `nm' doesn't even recognise it -- so I'll have to solve this next.
 
-Thanks,
-Graham
+Gruss Olaf
+
 --
-Graham Stoney
-Principal Hardware/Software Engineer
-Canon Information Systems Research Australia
-Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
+ $ man 1 current_release
+
+BUGS
+       Users never read manuals...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
