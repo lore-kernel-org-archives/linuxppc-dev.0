@@ -1,32 +1,22 @@
-Date: Tue, 7 Sep 1999 08:55:06 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Troy Benjegerdes <hozer@drgw.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ioremap (still?) broken
-In-Reply-To: <Pine.LNX.4.04.9909070126490.14821-100000@narn.drgw.net>
-Message-ID: <Pine.LNX.4.10.9909070854420.10344-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <37D4C5D6.8806560F@pop.agri.ch>
+Date: Tue, 07 Sep 1999 09:59:18 +0200
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: 53c94 Specs ?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 7 Sep 1999, Troy Benjegerdes wrote:
-> I am attempting to make an Alteon based Gigabit Ethernet card work in a
-> Yosemite G3, and it appears that either ioremap is not mapping memory
-> correctly, or the implementation of 'readl,writel' on PPC is not
-> consistent with the implementation on all other architectures.
+Hi,
 
-Paul just checked in an ioremap() fix at the linux_2_2 branch of vger.
+does anyone know where to get the specs for the SCSI Chip 53C94? On the
+NCR site I had not much luck. 
+Thanks for any hint,
 
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven ----------------- SONY Suprastructure Center Europe (SUPC-E)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
-Phone +32-2-7248608 Fax +32-2-7242686 ---------------- B-1130 Brussels, Belgium
+Andreas
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
