@@ -1,44 +1,92 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <20040514155816.1679.qmail@web15206.mail.bjs.yahoo.com>
-Date: Fri, 14 May 2004 23:58:16 +0800 (CST)
-From: Song Sam <samlinuxppc@yahoo.com.cn>
-Subject: Re: mpc8xx linux maintenance
-To: David Ho <DavidHo@nanometrics.ca>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <OFB9E33748.A397083B-ON85256E94.004FB37A-85256E94.004FF18D@nanometrics.ca>
-MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <40A515E2.30401@pp.iij4u.or.jp>
+References: <1084462045.4683.68.camel@lucy.pep-kaufbeuren.de> <40A515E2.30401@pp.iij4u.or.jp>
+Mime-Version: 1.0 (Apple Message framework v613)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <D0320B10-A5D7-11D8-AB97-000393DBC2E8@freescale.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
+	Stefan Nickl <Stefan.Nickl@kontron.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Subject: Re: Stability of network/io on MPC8540ADS?
+Date: Fri, 14 May 2004 13:52:13 -0500
+To: Yuji Nishimura <yujin@pp.iij4u.or.jp>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Ho <DavidHo@nanometrics.ca> wrote:
-> Please don't mind correcting me on what I said here. I would love
-> to hear some feedback from the community, and possibly the folks at
-> Motorola, Timesys, Montavista.
+Y.Nishimura ,
 
-I am not from above famous vendors.Just know their
-names and their products.But still want to add sth
-here on you topic.
+It looks like the patch was not included in your email.  I would
+appreciate seeing it and evaluating if it is something we should
+include in the stock kernel.
 
-> > Just wondering, do we have a person from Motorola or well known
-> > embedded linux company that actively ensures the operation of the
-> > Linux kernel on mpc8xx, 2.6 in particular?
+- kumar
 
-So 2.6 porting on mpc8xx isn't a cinch at all.There
-were some discussions on the thread but still no
-result.If I remember right,it's Dan Malek stopped the
-discussion and let others waitting for his porting
-work.I also want to know the improvement.
+On May 14, 2004, at 1:54 PM, Yuji Nishimura wrote:
 
-> > Wolfgeng mentioned in his interview with Linux > Device (
-> http://linuxdevices.com/articles/AT2240586951.html) that 2.6 may be
-> slow,
+>
+> Helo Stefan,
+>
+> I evaluated MPC8540ADS and found out similar problem few weeks ago. I
+> made tiny patch and it works well.
+> I also evaluated with NEC ehci pci device. The result was fine.
+> I wrote 1GB data to external usb-2.0 HDD via USB-2.0(ehci), that works
+> well.
+> I also try to use ftp(MPC8540=server) and transfer (R/W) 2047MB data
+> via
+> TSEC(gianfar) and it also works well.
+> If you try to use this patch, please let me know. I think patch
+> requires
+> more evaluation...
+>
+> Best Regards,
+> Y.Nishimura - Tokyo, Japan.
+>
+>
+>
+> Stefan Nickl wrote:
+>
+>> Hello,
+>>
+>> since the linuxppc-2.4 port to our custom 8540 board
+>> has made some progress now, I went back to the ADS
+>> board for some cross-checking.
+>>
+>> I've experienced several reproducible lockups that
+>> are triggered by heavy IO and/or networking.
+>>
+>> Kernel is vanilla linuxppc-2.4.27-pre2, gcc 3.2.3,
+>> root=/dev/nfs (Gentoo -Os -mcpu=603e)
+>>
+>> 1) Using netcat to write data over tcp:
+>>   cat /dev/zero | nc lucy 3000
+>>
+>>   "lucy" is running "nc -l -p 3000 |pipeworks > /dev/null"
+>>   This freezes the ADS after a few seconds.
+>>
+>> 2) Writing to the nfsroot server:
+>>   cat /dev/urandom > /test
+>>
+>>   The same. Reading seems ok.
+>>
+>> 3) Writing to a USB2.0 HDD connected via PCI
+>>   interface board (OHCI compatible).
+>>
+>>   Lockup after ~70MB of writing
+>>
+>> I haven't tested explicitly, but the kernel that
+>> was shipped with the board (some 2.4.20?) didn't
+>> seem to have such problems.
+>>
+>> Any ideas?
+>>
+>> --
+>> Stefan Nickl
+>> Kontron Modular Computers
+>>
+>>
+>>
+>
+>
 
-Thanks for giving this nice interview.
-
-Best regards,
-
-Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
