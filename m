@@ -1,19 +1,20 @@
-Return-Path: <j.glisse@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.200])
-	by ozlabs.org (Postfix) with ESMTP id 83FEE2BF0E
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jan 2005 02:40:58 +1100 (EST)
-Received: by wproxy.gmail.com with SMTP id 36so178007wra
-	for <linuxppc-dev@ozlabs.org>; Sun, 09 Jan 2005 07:40:56 -0800 (PST)
-Message-ID: <4240b916050109074053e328b1@mail.gmail.com>
-Date: Sun, 9 Jan 2005 16:40:56 +0100
-From: Jerome Glisse <j.glisse@gmail.com>
-To: trini@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-	linuxppc64-dev@ozlabs.org
+Return-Path: <olh@suse.de>
+Received: from Cantor.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "mail.suse.de",
+	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 1B6942BF16
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jan 2005 02:45:38 +1100 (EST)
+Date: Sun, 9 Jan 2005 16:13:53 +0100
+From: Olaf Hering <olh@suse.de>
+To: linux-kernel@vger.kernel.org
+Message-ID: <20050109151353.GA9508@suse.de>
+References: <200501082324.j08NOIva030415@hera.kernel.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_Part_1544_31757278.1105285256542"
-Subject: Classic PPC specific ASM (CONFIG_6XX)
-Reply-To: Jerome Glisse <j.glisse@gmail.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <200501082324.j08NOIva030415@hera.kernel.org>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] raid6: altivec support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,51 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_1544_31757278.1105285256542
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+ On Sat, Jan 08, Linux Kernel Mailing List wrote:
 
-Hi,
+> ChangeSet 1.2347, 2005/01/08 14:02:27-08:00, hpa@zytor.com
+> 
+> 	[PATCH] raid6: altivec support
+> 	
+> 	This patch adds Altivec support for RAID-6, if appropriately configured on
+> 	the ppc or ppc64 architectures.  Note that it changes the compile flags for
+> 	ppc64 in order to handle -maltivec correctly; this change was vetted on the
+> 	ppc64 mailing list and OK'd by paulus.
 
-With 2.6.10 i get a compilation error with disable_6xx_mmu
-i guess this is linked with the patch you supplied in december
-in arch/ppc/boot/common/util.S
+This fails to compile on ppc, enable_kernel_altivec() is an exported but
+undeclared function. cpu_features is also missing.
 
-Patch which comment disable_6xx_mmu if flags CONFIG_6XX
-not defined. The problem arise in arch/ppc/boot/simple/misc-prep.c
-where there is no conditional compilation for this function.
+drivers/md/raid6altivec1.c: In function `raid6_altivec1_gen_syndrome':
+drivers/md/raid6altivec1.c:99: warning: implicit declaration of function `enable_kernel_altivec'
+drivers/md/raid6altivec1.c: In function `raid6_have_altivec':
+drivers/md/raid6altivec1.c:111: error: request for member `cpu_features' in something not a structure or union
+drivers/md/raid6altivec2.c: In function `raid6_altivec2_gen_syndrome':
+drivers/md/raid6altivec2.c:110: warning: implicit declaration of function `enable_kernel_altivec'
 
-Attached is a patch that use the flags CONFIG_6XX to comment
-out call to this function if flags not set.
+There are a few more exported symbols without declaration:
+__ashldi3
+__ashrdi3
+__lshrdi3
+enable_kernel_spe
+fec_register_ph
+fec_unregister_ph
+idma_pci9_read
+idma_pci9_read_le
+local_irq_disable_end
+local_irq_enable_end
+local_irq_restore_end
+local_save_flags_ptr_end
+ocp_bus_type
+ppc4xx_set_dma_addr
 
-By the way there is many compilation warning related to PPC with 2.6.10
-anyone looking to correct them ?
 
-Signed-off-by: Jerome Glisse <j.glisse@gmail.com>
+I'm not sure if the EXPORT_SYMBOL should be dropped for them, they have
+no users in the current kernel.
 
-best,
-Jerome Glisse
-
-------=_Part_1544_31757278.1105285256542
-Content-Type: application/octet-stream; name="disable_6xx-patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="disable_6xx-patch"
-
-ZGlmZiAtTnJ1IGxpbnV4L2FyY2gvcHBjL2Jvb3Qvc2ltcGxlL21pc2MtcHJlcC5jIGxpbnV4LTIu
-Ni4xMC9hcmNoL3BwYy9ib290L3NpbXBsZS9taXNjLXByZXAuYwotLS0gbGludXgvYXJjaC9wcGMv
-Ym9vdC9zaW1wbGUvbWlzYy1wcmVwLmMJMjAwNC0xMi0yNCAyMjozMzo1MS4wMDAwMDAwMDAgKzAx
-MDAKKysrIGxpbnV4LTIuNi4xMC9hcmNoL3BwYy9ib290L3NpbXBsZS9taXNjLXByZXAuYwkyMDA1
-LTAxLTA5IDE2OjMwOjU5LjkzODc2NjQ0OCArMDEwMApAQCAtMzQsNyArMzQsOSBAQAogZXh0ZXJu
-IHZvaWQgc2VyaWFsX2ZpeHVwcyh2b2lkKTsKIGV4dGVybiBzdHJ1Y3QgYmlfcmVjb3JkICpkZWNv
-bXByZXNzX2tlcm5lbCh1bnNpZ25lZCBsb25nIGxvYWRfYWRkciwKIAkJaW50IG51bV93b3Jkcywg
-dW5zaWduZWQgbG9uZyBja3N1bSk7CisjaWZkZWYgQ09ORklHXzZYWAogZXh0ZXJuIHZvaWQgZGlz
-YWJsZV82eHhfbW11KHZvaWQpOworI2VuZGlmCiBleHRlcm4gdW5zaWduZWQgbG9uZyBtcGMxMHhf
-Z2V0X21lbV9zaXplKHZvaWQpOwogCiBzdGF0aWMgdm9pZApAQCAtMTUyLDkgKzE1NCwxMSBAQAog
-CQlob2xkX3Jlc2lkdWFsLT5WaXRhbFByb2R1Y3REYXRhLlJlc2VydmVkNSA9IDB4ZGVhZGJlZWY7
-CiAJfQogCisJI2lmZGVmIENPTkZJR182WFgKIAkvKiBOb3cgZ28gYW5kIGNsZWFyIG91dCB0aGUg
-QkFUcyBhbmQgZW5zdXJlIHRoYXQgb3VyIE1TUiBpcwogCSAqIGNvcnJlY3QgLiovCiAJZGlzYWJs
-ZV82eHhfbW11KCk7CisJI2VuZGlmCiAKIAkvKiBNYWtlIHIzIGJlIGEgcG9pbnRlciB0byB0aGUg
-cmVzaWR1YWwgZGF0YS4gKi8KIAlyZXR1cm4gKHVuc2lnbmVkIGxvbmcpaG9sZF9yZXNpZHVhbDsK
-
-------=_Part_1544_31757278.1105285256542--
+--- ../linux-2.6.10-bk12/include/asm-ppc/system.h	2004-12-24 22:34:32.000000000 +0100
++++ ./include/asm-ppc/system.h	2005-01-09 15:53:32.338569809 +0100
+@@ -76,6 +76,7 @@ extern void giveup_fpu(struct task_struc
+ extern void enable_kernel_fp(void);
+ extern void giveup_altivec(struct task_struct *);
+ extern void load_up_altivec(struct task_struct *);
++extern void enable_kernel_altivec(void);
+ extern void giveup_spe(struct task_struct *);
+ extern void load_up_spe(struct task_struct *);
+ extern int fix_alignment(struct pt_regs *);
