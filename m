@@ -1,65 +1,50 @@
-Date: Wed, 31 Oct 2001 15:53:35 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: small cleanup
-Message-ID: <20011031155335.A20613@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011031084233.A18493@cpe-24-221-152-185.az.sprintbbd.net> <Pine.LNX.4.33.0110312042050.1723-100000@serv>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.33.0110312042050.1723-100000@serv>
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+To: Liu HongXun-a16975 <a16975@motorola.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: how to disable the swap on embedded system? 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 26 Sep 2001 15:48:12 +0800."
+             <01139FC052A0D411900B00508B9535FC0334D03D@ZCH07EXM04.corp.mot.com>
+Date: Mon, 01 Oct 2001 09:00:30 +0200
+Message-Id: <20011001070036.09A0A100A2@denx.denx.de>
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Oct 31, 2001 at 08:49:27PM +0100, Roman Zippel wrote:
-> Hi,
+Hi Rolf,
+
+in message <01139FC052A0D411900B00508B9535FC0334D03D@ZCH07EXM04.corp.mot.com> you wrote:
 >
-> On Wed, 31 Oct 2001, Tom Rini wrote:
->
-> > Yes, and compiled only on CONFIG_ALL_PPC.  But the if statement will
-> > always be false on !CONFIG_ALL_PPC, so while the compiler will warn
-> > about an implicit declaration, it won't cause a link error.  Eg:
-> > --- 1.34/arch/ppc/kernel/pci.c  Sat Oct  6 11:16:41 2001
-> > +++ edited/pci.c        Wed Oct 31 08:40:26 2001
-> > @@ -743,6 +743,9 @@
-> >                 ranges += np;
-> >         }
-> >  }
-> > +#else
-> > +/* Kill a warning */
-> > +#define pcibios_make_OF_bus_map do { } while(0)
-> >  #endif /* CONFIG_ALL_PPC */
-> >
-> >  void __init
->
-> Hmm, I don't see how that is any better, but it's ok for me.
+> Because there is no disk support, I wonder if there is also the need
+> to use the swap function which load needed page from disk to memory?
+> If that swap function is not needed, how I can disable such function for
+> linuxppc?
 
-I'd still rather just ignore the warning. :)
+Just do not enable it. As long as you don't announce a swap device to
+the kernel (using the "swapon" command) the kernel will  not  attempt
+to do any swapping.
 
-> > > > This will break 4xx I think...  Can you try doing a
-> > > > walnut+CONFIG_405_DMA=y compile (in _devel..)
-> > >
-> > > I can try it (when I get home).
-> >
-> > Thanks.
->
-> Works fine, below is the relevant part of the patch for 2_4_devel.
+> The current version linuxppc on my FADS823 always gives some problems.
+> When there is a page fault, the system will halt and oops
 
-Okay, thanks.  Remove my objection to that part then..
+This has nothing to do with swapping.
 
-> > By and large we do it the way I said anyhow.  Is this in current gcc or
-> > when we get the precompiled headers bits?
->
-> That has nothing to do with precompiled headers, check the cpp info file
-> ("Header Files" -> "Once-Only") for more info.
+I see two likely causes for this problem:
 
-I will when I get a moment.. :)  But #ifndef __FOO__ #define __FOO__
-#ifdef __BAR__ ... #endif /* __BAR__ */ #endif /* __FOO__ */ works
-better than checking for __BAR__ first?
+(1) You are running  with  a  BDM  debugger  attached,  and  did  not
+    configure  the  DER register correctly, so that you trap into BDM
+    mode  on  each  page  fault.  Make  sure  to  initialize  DER  as
+    0x2002000F or similar (i. e. don't trap on page faults).
+
+(2) You have real problems, most probably with your hardware. I  have
+    seen a couple of FADS boards that were just broken.
+
+Wolfgang Denk
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I haven't lost my mind -- it's backed up on tape somewhere.
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
