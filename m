@@ -1,65 +1,41 @@
-Message-ID: <39626E45.E0496869@gnu.org>
-Date: Wed, 05 Jul 2000 09:07:49 +1000
-From: Andrew Clausen <clausen@gnu.org>
+Date: Tue, 4 Jul 2000 16:42:13 -0700 (PDT)
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+To: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org,
+        yellowdog-general@lists.yellowdoglinux.com
+Subject: [ANN] New XFree86-pmac rsync tree
+Message-ID: <Pine.LNX.4.10.10007041630040.102-100000@shell.unixbox.com>
 MIME-Version: 1.0
-To: Hollis Blanchard <hollis@amulet.co.jp>
-CC: linuxppc-dev@lists.linuxppc.org, GNU Parted list <parted@gnu.org>
-Subject: Re: GNU Parted, linuxppc support coming :-)
-References: <39625AB3.6A5447CE@gnu.org> <39632512.1953DBAA@amulet.co.jp>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hollis Blanchard wrote:
->
-> Andrew Clausen wrote:
-> >
-> > I'm trying to support the Mac partition map, but I'll need some help,
-> > since I don't have a PowerPC :-(
->
-> Just about everything you need is at
-> http://developer.apple.com/techpubs/mac/Devices/Devices-121.html#HEADING121-50
+With XFree86 4.x development speeding up, I have placed an rsync tree of
+my xfree86/ tree.  This rsync tree can be grabbed with:
 
-Yeah, I've read it... :-)
+rsync -arvz penguinppc.org::xfree86-pmac .
 
-> At least, I know that myself and a few other people have been able to
-> code based off of that.
 
-Yep.
+This tree contains the 'bleeding edge' development server and drivers for
+XFree86 4.x.  Included are my development Mach64, IMS TwinTurbo 128/3D,
+and Chips&Tech 6555x drivers.  The tree also contains the latest Rage128
+driver.
 
-> > Could someone send me their partition map?  You can get this with:
-> >
-> >         # dd if=/dev/hda bs=512 count=MAP-SIZE | gzip | map.gz
-> >
-> > If you don't know how big your partition map (+1 for driver block) is,
-> > then 64 should do (?).  (What's a reasonable size for a partition
-> > map?)
->
-> I forget, but I don't think *anyone* has more than 20 (on most Macs, the
-> first 7 contain drivers etc), so 20 x sizeof(partition) (see above URL).
+This is NOT a full xfree86, simply the xfree86 SERVER tree.  Using this
+tree is very simple, all you have to do is grab the X401src-1.tgz tarball
+from ftp.xfree86.org, and replace the xc/programs/Xserver/hw/xfree86
+directory with the rsync'ed one.
 
-Each partition gets one block (yes?).  So thats 20 * 512?
-(From comments in various programs, most disks have 512 byte blocks...)
+For detailed instructions and information, see:
 
-> > Note: I'm not adding HFS support at this stage - it's a LOT of work.
-> > So you'll be able to resize ext2 partitions in the near future, but
-> > not HFS partitions :-/  Unless there are some volunteers...
->
-> There seems to be a shortage of HFS folks these days. :) But ext2
-> resizing sounds very cool.
+http://penguinppc.org/usr/xf4
 
-Excuse my ignorance... what FS's do people usually use with MacOS?
-HFS/HFS+?
 
-(Is the point "no-one uses MacOS", or "no-one's hacking on HFS
-in Linux"?)
+The existence of this tree should facilitate development of these drivers
+and keep me from having to constantly update binary drivers :)
 
-> P.S. Can't get you a real map right now, but email me later if you want
-> it.
+Feel free to send me bug reports and/or patches against the tree.
 
-That would be useful, thanks :-)
-
-Andrew Clausen
+ani
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
