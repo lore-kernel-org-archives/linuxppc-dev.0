@@ -1,36 +1,44 @@
-Subject: Re: libXrender bug crashes OpenOffice
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-To: "Jason E. Stewart" <jason@openinformatics.com>
-Cc: linuxppc <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <87u1vfkfgt.fsf_-_@openinformatics.com>
-References: <87u1vfkfgt.fsf_-_@openinformatics.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 28 Nov 2001 00:15:37 +0100
-Message-Id: <1006902937.5468.25.camel@pismo>
+Date: Tue, 27 Nov 2001 15:20:51 -0800
+From: Ira Weiny <iweiny@acm.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: TiBook, 1394, iPod working (sort of  ;-)
+Message-Id: <20011127152051.65abd20b.iweiny@acm.org>
+In-Reply-To: <20011127221834.23360@smtp.wanadoo.fr>
+References: <B499780B-E362-11D5-9B27-003065B90BBC@apple.com>
+	<20011127221834.23360@smtp.wanadoo.fr>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2001-11-27 at 23:37, Jason E. Stewart wrote:
+On Tue, 27 Nov 2001 23:18:34 +0100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> While running Kevin Hendrix's build of OpenOffice I kept getting
-> Abort's for no reason. We've finally limited down to the Xrender
-> lib. When it's not on my system, OpenOffice runs fine, with it I get
-> crashes.
 >
-> Kevin found a bug in the library and fixed it and OpenOffice runs fine
-> on his system with libXrender installed. I downloaded the latest xlibs
-> source from sid and checked, but his patch hasn't yet been
-> included.
+> No, you didn't ;) In fact, I even think recent MacOS (or is it MacOS X ?)
+> may create pure HFS+ volumes without the wrapper.
 >
-> Will it be included soon?
+> The main reason for the wrapper was for machines running non-HFS+ capable
+> filesystem to display something (where are all my files gone ?) instead
+> of proposing you to format the disk, and for the system to be able to
+> boot from HFS+ since OldWorld ROMs didn't understand it. Basically, the
+> wrapper contains a slim-fast MacOS System file which contains the necessary
+> HFS+ support to mount the real volume and continue booting from that.
+>
 
-Err... and what does that have to do with Linux/PPC development? ;)
+I think this makes sence because with Linux the HFS+ partition on my HD shows
+up with the "where are all my files gone?" thing.  (Which BTW dropped me into
+xmon when I vim'ed it...)  But the iPod did not show up with anything
+intelligable.
 
+Must be that the iPod is "pure" HFS+ when the other is a wrapper.
 
---
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+To quote a pointy eared character "Fascinating."
+
+Thanks for the info,
+Ira Weiny
+iweiny@acm.org
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
