@@ -1,49 +1,37 @@
-Date: Fri, 11 Oct 2002 12:08:05 -0400
-From: Patrick Mahoney <pmahoney@8d.com>
-To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: mpc8xx - power save modes - PIT
-Message-ID: <20021011160805.GA14567@segfault.usine.8d.com>
-References: <D73A25AA6E54D511AD74009027B1110F3C035A@ORION>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <D73A25AA6E54D511AD74009027B1110F3C035A@ORION>
+Date: Fri, 11 Oct 2002 18:30:08 +0200
+Mime-Version: 1.0 (Apple Message framework v482)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Subject: Fwd: Problems with linuxppc_2_4_devel and linuxppc_2_4
+From: Anders Blomdell <anders.blomdell@control.lth.se>
+To: linuxppc-embedded@lists.linuxppc.org
+Message-Id: <B4D84098-DD36-11D6-99DE-0003931C2BFA@control.lth.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Steven,
+I'm still having problems boooting both linuxppc_2_4 and linuxppc_2_4_devel
+on my MVME2600-1. With linuxppx_2_4 I get garbled data from 'Now booting th
+kernel'
+until init starts to run, linuxppc_2_4_devel failss to boot, but that is
+probably due to some NFS problem (hard to say with the current sad state of
+console output, though).
 
-On Fri, Oct 11, 2002 at 09:15:21AM -0400, Steven Blakeslee wrote:
->
-> In the 850 user manual I found the following to describe the SCCR[DNFH].
-> "Division factor high frequency. Sets the VCOOUT frequency division factor
-> for general system
-> clocks to be used in normal mode. In normal mode, the MPC850 automatically
-> switches to the
-> DFNH frequency. To select the DFNH frequency, load this ?eld with the divide
-> value and clear
-> CSRC. A loss-of-lock condition does not occur when this ?eld is changed.
-> This ?eld is cleared by a power-on or hard reset."
->
-> You have the following code.
-> imp->im_clkrst.car_plprcr |= 1<<21;		// plprcr[csrc]=1
+  Linux/PPC load: console=ttyS0,9600 root=/dev/nfs ip=on
+  Uncompressing Linux...done.
+  Now booting the kernel
+   ...Lots of garbled data deleted...
+   init-2.03#
+   init-2.03#
 
-In fact, that was erronoeus because of the bit ordering stuff
-mentioned in a previous mail within this thread. I meant to write:
+My question's now are:
 
-imp->im_clkrst.car_plprcr |= 0x00000400         // plprcr[csrc]=1
+   1. Which driver is expected to take care of the console messages on a
+      MVME2600-1 (and hence probably responsible for the garbled data)?
+   2. Have I forgotten some important switch on the boot line?
 
-Anyway, i was trying to move to 'normal low mode', which is supposed
-to be 100% functionnal, only at a slower pace.
+Regards
 
-If i either change the dfnh clock divider (ex: sccr[dfnh]=110b) or
-move to the normal low mode (plprcr[csrc]=1), i lose my console. :(
+Anders Blomdell
 
-Thanks for your support.
-Best regards,
-
-
-Pat Mahoney
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
