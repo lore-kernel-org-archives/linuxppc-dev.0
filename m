@@ -1,18 +1,18 @@
 Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao09.cox.net (fed1rmmtao09.cox.net [68.230.241.30])
-	by ozlabs.org (Postfix) with ESMTP id 5B7802BDA1
+Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
+	by ozlabs.org (Postfix) with ESMTP id 62BB52BDD7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Oct 2004 01:38:31 +1000 (EST)
-Date: Thu, 7 Oct 2004 08:38:29 -0700
+	Fri,  8 Oct 2004 01:40:32 +1000 (EST)
+Date: Thu, 7 Oct 2004 08:40:29 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Message-ID: <20041007153829.GD14773@smtp.west.cox.net>
-References: <Pine.LNX.4.60.0410051330310.5314@dell.enoriver.com>
+To: Andreas Oberritter <obi@saftware.de>
+Message-ID: <20041007154029.GE14773@smtp.west.cox.net>
+References: <1096517265.27208.18.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.60.0410051330310.5314@dell.enoriver.com>
-Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] first in a series to enhance microcode patches
+In-Reply-To: <1096517265.27208.18.camel@localhost.localdomain>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] remove obsolete arch/ppc/8xx_io/uart.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,21 +23,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 05, 2004 at 01:32:11PM -0400, Robert P. J. Day wrote:
+On Thu, Sep 30, 2004 at 06:07:45AM +0200, Andreas Oberritter wrote:
 
->   resend of previous patch -- sorry, forgot the developer's cert of 
-> origin.  please be patient, i'm slowly getting the hang of this.
+> Hi Dan,
 > 
->   purpose of patch:
-> 
->   1) adds a relocation pointer to smc_uart_t
->   2) redeclares reserved chunks in structures to be in terms of a
->      standard char array, rather than the hideous combination of uint,
->      ushort, and so on.
-> 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> this patch for linuxppc-2.5 removes the old uart driver which doesn't
+> work since a long time and has already been replaced by
+> drivers/serial/cpm_uart/*.
 
-Applied.
+Can you please re-do this patch vs a linux-2.6 tree?  Thanks.
 
 -- 
 Tom Rini
