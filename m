@@ -1,64 +1,67 @@
-From: "Prabhakar Kalasani" <kalasani@sena.com>
-To: "Song Sam" <samlinuxppc@yahoo.com.cn>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: RPX-CLLF porting
-Date: Wed, 19 May 2004 10:34:23 +0900
-Message-ID: <ACEDKFIMODAHBNCONGOHGEPPCDAA.kalasani@sena.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20040514150316.61675.qmail@web15207.mail.bjs.yahoo.com>
+Message-Id: <200405190239.i4J2dHRV010022@ms.usish.com>
+From: "Jack Liu" <Jack_liu@usish.com>
+To: Wolfgang Denk <wd@denx.de>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Re: ELDK help
+Mime-Version: 1.0
+Content-Type: text/plain
+Date: Wed, 19 May 2004 10:39:17 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thank you  sam
-I made Binary Image and I could boot my target.
+Wolfgang,
 
-Rgards,
-KP
+     Thanks. That was the problem. I am using ELDK on x86 platform and
+2.4.21 for powerpc kernel.
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Song Sam
-Sent: Saturday, May 15, 2004 12:03 AM
-To: Prabhakar Kalasani; linuxppc-embedded@lists.linuxppc.org
-Subject: Re: RPX-CLLF porting
+======= 2004-05-18 09:31:00 Origianl message=======
 
+>In message <200405180149.i4I1niRV001354@ms.usish.com> you wrote:
+>>
+>>      ELDK worked for me greatly before. Just a few days ago,I found
+>> that when I not use make clean, things work ok. However when I make
+>> clean and make uImage, the following error message appears:
+>
+>What host system are you running? Are you sure your native compiler is
+>working?
+>
+>Which kernel tree is this? How did you configure the kernel? What is
+>the _exact_ sequence of commands you are using?
+>
+>> make[3]: Entering directory `/root/new/4.1/drivers/char'
+>> gcc -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -I/root/new/4.1/arch/ppc -o conmakehash conmakehash.c
+>> /tmp/cck3aG7b.s: Assembler messages:
+>> /tmp/cck3aG7b.s:2: Warning: Unrecognized .section attribute: want a,m,s,w,x
+>> /tmp/cck3aG7b.s:2: Warning: Unrecognized .section attribute: want a,m,s,w,x
+>> /tmp/cck3aG7b.s:155: Warning: Unrecognized .section attribute: want a,m,s,w,x
+>> /tmp/cck3aG7b.s:155: Warning: Unrecognized .section attribute: want a,m,s,w,x
+>> /usr/local/bin/ld: unrecognized option '--eh-frame-hdr'
+>> /usr/local/bin/ld: use the --help option for usage information
+>....
+>
+>>   It seems that the toolchain is broken since it used gcc instead of
+>> ppc_82xx-gcc which caused error happen. I reinstalled the ELDK and
+>
+>You are wrong. This is one of the source files which gets compiled
+>using the host's native compiler; the Makefile has this rule for it:
+>
+>	conmakehash: conmakehash.c
+>		$(HOSTCC) $(HOSTCFLAGS) -o conmakehash conmakehash.c
+>
+>> help. So what could be the problem? Some configuration changes?
+>
+>Obviously your hostcompiler (gcc) and/or you host's binutils have some
+>problems. This is not a problem with the ELDK.
 
+= = = = = = = = = = = = = = = = = = = =
 
-Prabhakar Kalasani <kalasani@sena.com> wrote:
-> I have got RPX-CLLF target , I'm trying to port PPC Linux , I made
-> tftp,nfs and DHCP setup and I could able to load the kernel using tftp
-> , the problem is I couldn't able to run the kernel .
-
-> File                                           =
-> vmlinux
-> ENET                                           =
-> 0010EC002D1E
-> DefaultENET                                    =
-> ENET
-> TftpRAM                                        =
-> High
-> Start                                          =
-> 400000
-> Format                                         =
-> NetBin
-
-> Enter server filename   <vmlinux> :
-> Enter (B)inary or (S)record input mode <B> :
-> Enter address offset  : <00400000 hex> :
-> .512.1024..2048...
-> Total bytes = 1839078 in 9948811 uSecs
-
-Pls check your LINUX kernel format.As you set in the
-configuation,image format is NetBin.But it seemed that
-you downloaded ELF kernel.Pls try zImage.embedded
-rather than vmlinux.
-
-Best regards,
-
-Sam
-
+Best regards
+Jack Liu
+R&D Dept. USI(Shanghai) Inc.
+Tel: +86-21-58966996x1155
+Fax: +86-21-58967931
+Email: Jack_liu@usish.com
+http://www.usi.com.tw
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
