@@ -1,31 +1,32 @@
-In-Reply-To: <Pine.A41.4.05.9908271508310.19776-100000@c2.hrz.uni-giessen.de>
-Date: Fri, 27 Aug 1999 22:28:24 +0200
-To: Marc Dietrich <Marc.Dietrich@hrz.uni-giessen.de>,
-        linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: bug in l2cr status display?
-Message-Id: <19990827222824.024086@smtp.calvacom.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <37C70BD2.4F0D3298@create.ucsb.edu>
+Date: Fri, 27 Aug 1999 15:06:12 -0700
+From: Stephen Travis Pope <stp@create.ucsb.edu>
+Reply-To: stp@create.ucsb.edu
+MIME-Version: 1.0
+To: Philip Marden <phil@allmalt.cs.uwm.edu>,
+        Paul Mackerras <paulus@cs.anu.edu.au>, Katia Frank <kfrank@umich.edu>,
+        schmitzm@uclink4.berkeley.edu
+CC: stp@create.ucsb.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Answer: Using USB on 1999/Bronze/Lombard Powerbooks
+References: <199908271609.LAA02751@allmalt.cs.uwm.edu>
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Aug 27, 1999, Marc Dietrich <Marc.Dietrich@hrz.uni-giessen.de> wrote:
 
->It seems to me, that the L2CR programming is implemented but disabled in
->current kernel version. The L2CR=xxxxxxx doesn't work for me.
+Hello all,
 
-We didn't add the call to setup_l2cr when merging 2.2 with Linus to avoid
-changing non-arch stuffs late during the merge, things were already
-complicated enough. In the meantime, I used a different solution via a
-property stuck by BootX in the device tree, but this is really broken in
-several ways, and we should put back the l2cr=xxxx option once for all now.
+I pasted together a number of comments from others and made a how-to
+page for settng up the USB on a Lombard PowerBook. Your comments are
+invited. The URL is
+http://www.dartmouth.edu/~jonh/lppc-serve/cache/733.html
 
+--
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+stp
+  Stephen Travis Pope -- http://www.create.ucsb.edu/~stp
+  stp@create.ucsb.edu -- stp9@cornell.edu
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
