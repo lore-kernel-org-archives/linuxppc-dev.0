@@ -1,48 +1,47 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ralf Weidemann <linuxppc@gatekeeper.informatik.fh-dortmund.de>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.4.17-pre8-ben0: kernel oops using pcmcia services
-Date: Fri, 14 Dec 2001 17:39:39 +0100
-Message-Id: <20011214163939.1291@smtp.adsl.oleane.com>
-In-Reply-To: <3C1A299D.8090402@gatekeeper.informatik.fh-dortmund.de>
-References: <3C1A299D.8090402@gatekeeper.informatik.fh-dortmund.de>
+Date: Fri, 14 Dec 2001 11:50:41 -0500 (EST)
+From: Christopher Murtagh <christopher.murtagh@mcgill.ca>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 7450 bugs & fixes
+In-Reply-To: <20011214091736.18195@smtp.wanadoo.fr>
+Message-ID: <Pine.LNX.4.33.0112141144170.25147-100000@blues.wcg.mcgill.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-First make sure the memory resources you use are available
-in /proc/iomem
-
->include port 0x100-0x4ff, port 0x800-0x8ff, port 0xc00-0xcff
-
-Those should be ok
-
->include memory 0xc0000-0xfffff
-
-This one is wrong (this is in the middle of RAM !)
-
->include memory 0xa0000000-0xa0ffffff, memory 0x60000000-0x60ffffff
-
-Hrm...  the second one is wrong at least.
-
-try
-
-include memory 0xa1000000-0xa1ffffff, I think this one is available
-on your machine.
-
+On Fri, 14 Dec 2001, Benjamin Herrenschmidt wrote:
+>Get a more recent kernel. I've worked around a couple of these errata in
+>both my rsync tree and the bitkeeper ppc kernels.
 >
-># First built-in serial port
->exclude irq 4
-># Second built-in serial port
->#exclude irq 3
-># First built-in parallel port
->exclude irq 7
+>And please, don't forget to tell me if it works better ;)
 
-Remove the above exclude, they don't make sense on pmacs
+ :-)
 
-Ben.
+ Thanks Ben. I grabbed 2.4.17-pre8-ben0 and it is now running. I'll let
+you know how it goes.
+
+ Just to confirm, if I want to use more than 768 MB of RAM, I need to
+compile with High Memory right?
+
+ Thanks again.
+
+Cheers,
+
+Chris
+
+
+--
+
+Christopher Murtagh
+Webmaster / Sysadmin
+Web Communications Group
+McGill University
+Montreal, Quebec
+Canada
+
+Tel.: (514) 398-3122
+Fax:  (514) 398-2017
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
