@@ -1,50 +1,36 @@
-Message-ID: <000601c33173$8610e4c0$11a2a2c8@scomguo>
-From: "yong_guo" <yong_guo@scomcenter.com>
-To: "Callebaut Benoit" <callebaut@mailandnews.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <3EEDFF92@mailandnews.com>
-Subject: Re: RE :how to do:root filesystem on flash?
-Date: Fri, 13 Jun 2003 14:17:42 +0800
+From: "Sanjay Kumar" <skumar@giga-stream.de>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Registering ATM devices.
+Date: Fri, 13 Jun 2003 08:39:23 +0200
+MIME-Version: 1.0
+Message-ID: <FKEJLMJFECLAHOKCGJFPMEOACAAA.skumar@giga-stream.de>
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
------ Original Message -----
-From: "Callebaut Benoit" <callebaut@mailandnews.com>
-To: "linuxppc-embedded mailing list" <linuxppc-embedded@lists.linuxppc.org>
-Sent: Thursday, June 12, 2003 5:33 PM
-Subject: RE :how to do:root filesystem on flash?
+Dear all,
 
+I have MPC8266 having connected two UTOPIA II interface on FCC1 and FCC2.
+UTOPIA II interface connected to FCC1 has 16 PHY devices connected to it
+and UTOPIA II interface connected to FCC2 has 2 PHY devices connected to
+it.
+                    while registering the atm devices via
+atm_device_register() function should I register two atm devices, one for
+each UTOPIA II interface conncetd to FCC1 and FCC2 or 18 atm devices for
+each PHY devices connected on both UTOPIA II interface.Total number of PHY
+devices on both UTOPIA II interface is 18.
 
->
-> I,
-> 1 : Create a cramfs filesystem with the right endianess from your nfs
-> filesystem using mkcramfs.
-> Burn it into the flash( at the start of the flash).
-Is it must be burned from the start of the flash?  My u-boot bin code is
-burned at the start of the flash.
+Any suggestion will be helpfull to me.
 
->
-> 2 : In your kernel config set the "root=" option to : "/dev/mtdblock0"
-In my system, the flash is registered as /dev/flasha, should i pass the
-parameter "root=/dev/flasha" to kernel?
+with regards,
+sanjay
 
-> Enable Flash MTDBlock support and the right options like CFI,...
-> Set up the start of the flash and its length
-> Enable Cramfs in filesystem
-> Disable NFS as root filesystem.
->
-> Rebuild your kernel and flash it.
-> Reboot the board en enjoy.
->
-> PS : This question was already a 100 times answered. Search in the mailing
-> list before asking such a question.
-> Or maybe a better idea : One may build a FAQ or a list of Howtos on such
-> common questions.
->
-> Benoit Callebaut
->
->
-
+ ==============================================================
+ Sanjay Kumar                        skumar@giga-stream.de
+ GIGA-STREAM UMTS Technologies GmbH  Tel: +49 (07243) 94976-119
+ Im Ermlisgrund 8                    Fax: +49 (07243) 94976-100
+ 76337 Waldbronn
+ ==============================================================
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
