@@ -1,47 +1,69 @@
-Date: Mon, 21 Jul 2003 20:10:37 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Xupei Liang <tliang@yahoo.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>,
-	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: "alloc_area_pte: page already exists"
-Message-ID: <20030721201037.A16523@home.com>
-References: <20030721182803.A16248@home.com> <20030722020149.35332.qmail@web11005.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030722020149.35332.qmail@web11005.mail.yahoo.com>; from tliang@yahoo.com on Mon, Jul 21, 2003 at 07:01:49PM -0700
+Message-ID: <3F1D5B74.8040604@mvista.com>
+Date: Tue, 22 Jul 2003 10:42:44 -0500
+From: Mark Hatle <fray@mvista.com>
+MIME-Version: 1.0
+To: C Doyle <cdoyle35@hotmail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Boa Cross Compile for MPC8266ADS?
+References: <Law10-F14oFLaqSOc7w000291b9@hotmail.com>
+In-Reply-To: <Law10-F14oFLaqSOc7w000291b9@hotmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Jul 21, 2003 at 07:01:49PM -0700, Xupei Liang wrote:
+Slightly off subject, but any reason you are working on Boa.  (I have
+not used it myself.)  But I know thttpd is small and is capable of
+running CGI applications.  (It also cross compiles properly.)  :)
+
+Back to your original question...
+
+Assuming the application build infrastructure isn't on crack
+(unfortunatly a lot of apps are...) you will need to set:
+
+CC=cross compiler
+AS=cross assembler
+LD=cross linker
+AR=cross ar (optional)
+RANLIB=cross ranlib (optional)
+CPP=cross cpp (optional)
+CXX=cross C++ (g++) compiler
+NM=cross nm (optional)
+STRIP=cross strip
+
+Then make sure that when you run configure you have --host= set to
+"powerpc-linux".  You may also want to set --build= to whatever your
+host architecture is.  ("gcc -dumpmachine" is an easy way to get the
+fill canonical name.)
+
+Now ASSUMING the application's configure script is correct the system
+should be now setup to build.  Just type make and your should get a
+working application.  (Of course it's rarely this simple.. For instance
+you may have to manually pass configure values into the configure step
+to work around things it can't automatically determine for cross
+compilation.)
+
+--Mark
+
+C Doyle wrote:
 >
-> Matt,
+> Hello all,
+> I'm a student working with Motorola for a dissertation project. I'm
+> using the MPC8266ADS-PCI development board to write a device driver for
+> a usb peripheral. What I'm intending to do is use the Boa Webserver to
+> throw up a webpage and run cgi-scripts to configure the device driver
+> from a remote host and also give some Tx/Rx/Error reporting. I'm quite
+> new to the embedded world and I can't seem to get Boa to cross compile
+> for the board. I'm using the hardahat devkit cross compiler but when I
+> point the Make file to the compiler its not happy. Is there anyone who
+> has already compiled this for the MPC8266 and can I use the ./configure
+> shell script with flags to tell it I want to cross compile? Any help
+> would be greatly appreciated as the homepage only describes the setup
+> with the default ./configure script. Thanx
 >
-> It is a custom board with 256MB of memory.
+>
+>
+>
 
-Ahh, ok.  So, what you've done is misconfigured a mapping in
-your custom board port.  It's reporting that you already have
-a pte allocated in the vmalloc area which must be untouched
-so the VM can allocate memory at runtime.
-
-Usually, this is the result of an errant io_block_map entry
-which overlaps the vmalloc area.  Examine the VMALLOC_START
-macro to see how the start of vmalloc space is calculated.
-In your case, (256MB of RAM) the start of vmalloc space will
-be at 0xd1000000 assuming a standard PAGE_OFFSET of 0xc0000000.
-If you've mapped something near that virtual address or somewhere
-close above that address then you need to move it.  How much
-vmalloc space you need to reserve depends solely on your specific
-application.
-
-In most cases, it's smarter to never use io_block_map and to
-let ioremap() create mappings dynamically so this sort of thing
-doesn't happen. Most modern in-kernel ports try to not use
-io_block_map if at all possible.
-
-Regards,
---
-Matt Porter
-mporter@kernel.crashing.org
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
