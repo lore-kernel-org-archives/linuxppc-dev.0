@@ -1,32 +1,43 @@
-Mime-Version: 1.0 (Apple Message framework v613)
-Message-Id: <034E6544-833B-11D8-9FF0-000A95A07384@sands-edge.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
 To: linuxppc-dev@lists.linuxppc.org
-From: John Whitney <johnw@sands-edge.com>
-Subject: Generic DMA Core
-Date: Wed, 31 Mar 2004 12:44:08 -0500
+Subject: [ANN] Graphics Drivers for Fujitsu Coral-P available
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+Date: Wed, 31 Mar 2004 19:52:56 +0200
+Message-Id: <20040331175301.EF2A3C109A@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have written a generic DMA core driver (drivers/dma/) that accepts
-registrations from low-level DMA hardware drivers (providers).  I've
-also written a provider driver for the MPC10x dual-channel DMA
-controller.
+DENX has released source code and patches for a preliminary version
+of graphics drivers for the Fujitsu "Coral-P" graphics card for
+big-endian Linux systems (like PowerPC). The code is available as
+Free Software under GPL at ftp://ftp.denx.de/pub/fujitsu/Coral-P/
 
-Effectively, the DMA core accepts requests to transfer data from one
-address to another, with the ability to request things like
-source-address-holding, destination-address-holding, etc.  It then
-matches a request to a provider that can support it, and queues the
-request to the provider.  After completion, the DMA core calls a
-provided callback for the client.  The core also handles
-cache-coherency with explicit flushes and invalidates, not making
-assumptions that the addresses are in cache-coherent regions.
+The code was especially developed for and tested on a Motorola
+LITE5200 board featuring the MPC5200 processor, running a standard
+Debian installation including KDE etc.
 
-Is there any interest in this code, and if so, what would be the best
-way for going about getting it included in the kernel?
+Please see the included README for instructions. A tutorial how to
+install Debian on a MPC5200 system is available in the DULG:
+http://www.denx.de/twiki/bin/view/DULG/DebianOnPowerpcInstallationHowto
 
-John
+More efficient drivers which will actually utilize the advanced
+graphics features of the Coral-P chip are under development. DENX
+will make this much more powerful accelerated X11 driver available
+soon. Of course it will be Free Software under GPL, too.
 
+[Please drop me a note if you are interested in a ATA  harddisk  with
+Debian & the graphics drivers pre-installed.]
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Security is mostly a superstition. It does not  exist  in  nature...
+Life is either a daring adventure or nothing."         - Helen Keller
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
