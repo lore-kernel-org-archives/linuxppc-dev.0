@@ -1,38 +1,50 @@
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <39ABC306.BDA989EA@lucent.com>
-Date: Tue, 29 Aug 2000 09:04:54 -0500
-From: Tom Roberts <tjroberts@lucent.com>
-MIME-Version: 1.0
-To: Alex Shnitman <alexsh@hectic.net>
+Date: Tue, 29 Aug 2000 19:43:58 +0300
+From: Alex Shnitman <alexsh@hectic.net>
+To: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Linux on Motorola Sandpoint/PPMC7400
-References: <20000828225504.B23679@hectic.net>
+Message-ID: <20000829194358.C29944@hectic.net>
+References: <20000828233543.A23949@hectic.net> <Pine.HPX.4.10.10008282257080.6537-100000@gra-ux1.iram.es>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.HPX.4.10.10008282257080.6537-100000@gra-ux1.iram.es>; from paubert@iram.es on Mon, Aug 28, 2000 at 11:01:07PM +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Alex Shnitman wrote:
-> I've seen that Hard Hat Linux supports the Sandpoint board with
-> MPC8240 and MPC755. We have a 7400 processor there though. Does anyone
-> have any experience with this configuration? Can Linux run on it?
+Hi, Gabriel!
 
-While I have no experience with this board, I have run Linux on our
-own boards, with MPC750, MPC755, and MPC7400. Note these three can
-all be obtained in APPROXIMATELY pin-compatible packages, and their
-architecthres are compatible (the 7400 adds AltiVec; I'm ignoring
-differences in clock speed, cache size, etc). The MPC8240 is I believe
-a completely different beast (I've never used one).
+On Mon, Aug 28, 2000 at 11:01:07PM +0200, you wrote the following:
 
-I used Linux Kernel 2.2.15 from YellowDog, heavily customized to run
-on our boards. I made no MPC7400-specific changes, however. Note I
-made no effort at all to optimize it for the 7400 (other than adding
-the proper l2cr parameter -- yes, your software has to be aware of
-the hardware platform's details (:-().
+> > > You can't start an ELF image from jumping at it sload address. But I know
+> > > only PPCBUG and OF, not your firmware.
+> >
+> > But zsrec (the thing that creates the srecords from the binary file)
+> > strips the 64k ELF header of the kernel image, so it should be fine?
+> > Or shouldn't it? Or did I misunderstand you?
+>
+> Maybe. Ok, then what type of PCI bridge do you have ?
 
-	I have only 1 board with 7400s, and we are modifying it to
-	try and evaluate SMP architecture....
+It uses a Winbond chip for PCI/ISA bridge. (I can find the exact model
+if it'd help.)
+
+> Do you know the memory and I/O map as seen from the processor ?
+
+Yes, it's in the brochure.. If I send it to you would it help?
+
+> Is it truly ooking like standard PreP ?
+
+How would I know? Frankly, I'm a newbie in this business...
 
 
-Tom Roberts	tjroberts@lucent.com
+--
+Alex Shnitman                            | http://www.debian.org
+alexsh@hectic.net, alexsh@linux.org.il   +-----------------------
+http://alexsh.hectic.net    UIN 188956    PGP key on web page
+       E1 F2 7B 6C A0 31 80 28  63 B8 02 BA 65 C7 8B BA
+
+/real/ kernel hackers
+    dd if=/dev/urandom of=/vmlinuz
+and influence the Universal Randomosity Field.
+	-- Gaal Yahas
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
