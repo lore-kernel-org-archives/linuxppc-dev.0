@@ -1,37 +1,50 @@
-Message-ID: <393BB0F5.415E62C8@aminocom.com>
-Date: Mon, 05 Jun 2000 13:53:57 +0000
-From: Elizabeth Clarke <eclarke@aminocom.com>
+Message-ID: <393BBE5D.49B17E9C@embeddededge.com>
+Date: Mon, 05 Jun 2000 10:51:09 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Java
-References: <200006021710.NAA19138@hoover.gilbarco.com>
+To: Daniel Wu <Daniel.Wu@alcatel.com.au>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: kernel crashes at InstructionTLBMiss
+References: <00Jun4.144038est.115228@border.alcanet.com.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Banks, Kelly" wrote:
-> I was hitting the exact same error & wound up tracking it into the
-> libtermcap.2.0.8 that I was using...  Mine went away when I used the termcap
-> available from Mvista.
+Daniel Wu wrote:
 
-Hmmm, didn't make any difference. But then I dont understand what
-difference it could make. AIUI anything compiled with egcs ie the JDK
-binaries are incompatible with anything compiled with gcc  - my
-libraries, because egcs
-referenced the symbol register_frame_info. I tried making a library with
-just that symbol and pre-loading it, but still got the error:
+> boot the target, I get the following output and nothing more.
+>
+> loaded at:     00800000 0080B1D8
+> relocated to:  00B00000 00B0B1D8
+> board data at: 00B00190 00B001B8
+> relocated to:  007F0100 007F0128
+> zimage at:     00806000 0087C6C1
+> initrd at:     0087C6C1 00A53511
+> avail ram:     00A54000 02000000
 
-/usr/jre118-v2/bin/ppc/green_threads/jre: error in loading shared
-libraries: /usr/jre118-v2/lib/ppc/green_threads/libjava.so: symbol
-__register_frame_info, version GLIBC_2.0 not defined in file libc.so.6
-with link time reference
+There are several things to watch for.  First, I am surprised you see
+this much output.  You have obviously changed link addresses in the
+Makefile, which you shouldn't do.  Because of the early kernel
+mapping, everything should reside in the lower 8Mbytes of memory.  The
+zImage support loader (arch/ppc/mbxboot/...stuff...) should link to
+low memory, 0x00100000.  You should load the image either just above
+that, at 0x00200000 or in very high ROM addresses ( > 16 Mbyte).
 
-I think I'm going to have to investigate the JDK-1.2.2 and glibc-2.1.3
-from
-Franz Sirl's site, unless I'm missing something completely?...
-(probably!)
+You are also running an 860T at 50 MHz, so you are likely to discover
+the "CPU6" silicon errata.  You need all of the patches for this.
 
-Beth
+Go to the MontaVista ftp site (ftp.mvista.com), /pub/CDK/wip/ppc_8xx/RPMS.
+Get the kernel sources/headers from there (along with any other tools
+you may want or need).  This is a 2.2.13 kernel with all patches and
+the option to include the "CPU6" patch.  Don't apply any other patches
+from anywhere.  Just use it and make the minimal changes for your
+board.
+
+Using a BDM is more likely to cause trouble than help.  This kernel
+has XMON and KGDB options.  Use them instead of BDM.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
