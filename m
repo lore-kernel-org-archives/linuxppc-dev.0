@@ -1,41 +1,43 @@
-Date: Mon, 17 Sep 2001 09:38:42 +0200
+Date: Mon, 17 Sep 2001 13:40:14 +0200
 From: Xavier Grave <grave@ipno.in2p3.fr>
 To: Matt Porter <mporter@mvista.com>
 Cc: Xavier Grave <grave@ipno.in2p3.fr>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: mvme5100 memory model ?
-Message-ID: <20010917093842.C10416@ipnpcu5.in2p3.fr>
-References: <20010913162250.C5558@ipnpcu5.in2p3.fr> <20010913051235.A7990@cx258813-a.chnd1.az.home.com> <20010913175703.C6152@ipnpcu5.in2p3.fr> <20010914102219.B3783@beef.az.mvista.com>
+	embarque ppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: driver for the mvme5100
+Message-ID: <20010917134014.A10747@ipnpcu5.in2p3.fr>
+References: <20010914100154.A7161@ipnpcu5.in2p3.fr> <20010914055405.A12955@cx258813-a.chnd1.az.home.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-In-Reply-To: <20010914102219.B3783@beef.az.mvista.com>; from mporter@mvista.com on ven, sep 14, 2001 at 19:22:19 +0200
+In-Reply-To: <20010914055405.A12955@cx258813-a.chnd1.az.home.com>; from mporter@mvista.com on ven, sep 14, 2001 at 14:54:05 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Le ven, 14 sep 2001 19:22:19, Matt Porter a écrit :
->
-> [Move to linuxppc-embedded]
->
-> On Thu, Sep 13, 2001 at 05:57:03PM +0200, Xavier Grave wrote:
-> >
-> > > > "chrp-like".  CFGA and CFGD are not at chrp compliant locations
-> > > due to limitations of the hawk smc.  As far as PCI I/O and Mem
-> > > space, it is the same.
-> >
-> > One more question so : why the Hawk chip doesn't appear in the
-> /proc/iomem
->
-> /proc/iomem displays a a list of iomem_resource resources.  I'm think
-> that although it is being used, the MPIC mem base address is never
-> claimed so it doesn't show up.  Feel free to fix it.
+> That's what you should expect to see.  In Linux a PCI mem resource
+> is defined as an ioremapable token.  It may or may not be a PCI or
+> processor bus address.  In the case of a PReP memory map, PCI bus
+> addresses are translated in a non-1:1 fashion.  So an offset of
+> 0xc0000000 is correct for the difference between the actual BAR
+> value and the corresponding Linux resource value.  In the case
+> of a CHRP memory map, PCI bus addresses are 1:1 with processor
+> bus addresses (like most developers like to assume..x86).  In
+> this case the mem resource start will be the same as the actual
+> memory BAR value.
 
-Thanks for your answers,
+Hi,
 
-I'll try to fix it, I'll try a look in the prep_* files to get some
-inspiration.
+With your informations I have found the problem and also a solution.
 
-O+ xavier
+I had programmed the tundra chip SLSI image to map at 0x0 in pci address.
+In the prep model, there isn't any problem with the dram memory. In the
+CHRP
+there is a ressource allocation conflict with the dram memory. Since my
+mvme5100 board
+have 64MB of memory I have changed the SLSI offset to 128MB and there is no
+more conflict.
+
+Thanks one more time, xavier
+
 --
 33 (0) 1 69 15 79 59
 De chacun selon ses forces, a chacun selon ses besoins
