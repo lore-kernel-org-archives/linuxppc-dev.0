@@ -1,45 +1,51 @@
-Content-Type: text/plain;
-  charset="iso-8859-15"
-From: Rakesh Jagota <j.rakesh@gdatech.co.in>
-To: "Q-ha Park" <qhpark@jchyun.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Tuner
-Date: Wed, 19 Mar 2003 11:00:05 +0530
-References: <aoupdd247x3zp3l.190320030853@gda-server> <001201c2edcb$f7822240$af85efcb@qhavm>
-In-Reply-To: <001201c2edcb$f7822240$af85efcb@qhavm>
+Reply-To: <kamarajp@future.futsoft.com>
+From: "Kamaraj P" <kamarajp@future.futsoft.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Kenal Panic
+Date: Wed, 19 Mar 2003 11:56:25 +0530
+Message-Id: <000801c2ede0$78f56300$3c06140a@future.futsoft.com>
 MIME-Version: 1.0
-Message-ID: <mv1lfaynz2zisom.190320031708@gda-server>
+In-Reply-To: <20030312130214.A7123@reric.net>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi All,
 
-Thankx for info. I have seen some of the tuner driver in
-../linux/drivers/media/video folder. But i didnt find any driver for sharp
-tuner there. One more confusion is there, How can we select the tuner card in
-the config file for particular card, and is there anything else we have to
-write for tuner card to get it work. I have seen i2c driver is also there.
-Can you tell me exactly how we have to configure it.
+I am getting this Kernel Panic message when I invoke ping flood from MPC8xx
+.
+How can I troubleshoot this message.
 
-Thanks in advance,
+Oops: Kernel Mode Software FPU Emulation, sig: 8
+NIP: C00292BC XER: C0001D7F LR: C00292BC SP: C3A07BC0 REGS: c3a07b10 TRAP:
+1000
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c3a06000[114] 'ping' Last syscall: 102
+last math 00000000 last altivec 00000000
+GPR00: C00292BC C3A07BC0 C3A06000 0000001B 00001032 00000001 00000001
+00000000
+GPR08: 00000000 C0130000 0000001F C3A07B00 55F33F93 1001B8DC 00000000
+100AE410
+GPR16: 10010000 10010000 10010000 10010000 00001032 03A07D00 00000000
+C012A1A0
+GPR24: 00000120 C3A07D10 C012A1A0 00000007 00000007 C3A07C08 C012A1A0
+C01790C0
+Call backtrace:
+C00292BC C00297A0 C5645BDC C564555C C5643524 C563E21C C0003904
+C0003A30 C0002810 C00151D0 C0018B48 C0015028 C0014ED4 C0014C54
+C000285C 10010000 7FFFFCE8 10001664 0FED9DBC 00000000
+Kernel panic: Aiee, killing interrupt handler
 
-Rakesh
+In interrupt handler - not syncing
+Rebooting in 180 seconds..
 
-On Wednesday 19 March 2003 09:29 am, Q-ha Park wrote:
-> > i am working on custom design settop Box project in linux based on
-> > valcun chip(stbx25xx) ibm ppc405 . I am using montavista linux
-> > previewkit. I want to include the tuner driver for sharp tuner. I didnt
-> > see any driver for sharp tuner. Is it available and how to select this
-> > driver in our kernel.
->
->
-> ouch. if you're looking for the driver in the kernel tree, there's no much
-> luck. you probably want to contact your tuner company for the driver, and
-> you'll have to port it to linux if there's no linux version available. you
-> may not even have to write a linux driver unless you want to, since many
-> tuners are controlled with I2C, and the I2C driver is provided in the
-> kernel.
+
+Can any one knows ??
+
+Thanks in advance
+Kamaraj.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
