@@ -1,58 +1,81 @@
-Message-ID: <000f01c47172$591008d0$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "Kevin P. Dankwardt" <k@kcomputing.com>,
-	"Embedded Linux PPC list" <linuxppc-embedded@lists.linuxppc.org>
-References: <KCEOLLHGFJIAFNAMGACHMEMODPAA.k@kcomputing.com>
-Subject: Re: Linux is not reliable enough?
-Date: Sat, 24 Jul 2004 07:35:36 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: [PATCH] export m8xx_cpm_hostalloc
+From: Andreas Oberritter <obi@saftware.de>
+To: Matt Porter <mporter@kernel.crashing.org>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20040723083856.A25212@home.com>
+References: <1090590567.3939.20.camel@localhost.localdomain>
+	 <20040723140231.GA21814@smtp.west.cox.net>
+	 <6658EF7A-DCB6-11D8-BC2F-003065F9B7DC@embeddededge.com>
+	 <20040723083856.A25212@home.com>
+Content-Type: multipart/mixed; boundary="=-aC1Gd3i2/98zGh5DD4uO"
+Message-Id: <1090674246.3023.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: Sat, 24 Jul 2004 15:04:06 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kevin,
+--=-aC1Gd3i2/98zGh5DD4uO
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-I suspect you have a political problem here.  Mr. Chief Software Architect
-(which is a title for someone who doesn't actually *do* anything) is not
-going to lose his job for choosing QNX.  My suggestion is this:  Point out
-that the only way to prove reliability is with testing.  Linux is open
-source, it won't cost anything to put it on a side by side test, and let
-Linux speak for itself.
-
-- Linux is open source, any potential bugs are theoretically fixable.  What
-do you do if QNX develops a problem?
-- You can hunt around for some of Linus's comments about microkernal
-architecture.  He thinks they're stupid, only he's says it more poetically.
-- Don't fall into this trap of software mysticism, that one operating system
-is somehow intrinsically more reliable than another.  There's good and bad
-software, to be sure, but even Windows can be reliable in certain carefully
-constrained environments.  It's only ones and zeros.
-
-My $.02
-
-Mark Chambers
-
------ Original Message -----
-From: "Kevin P. Dankwardt" <k@kcomputing.com>
-To: "Embedded Linux PPC list" <linuxppc-embedded@lists.linuxppc.org>
-Sent: Friday, July 23, 2004 5:06 PM
-Subject: Linux is not reliable enough?
-
-
+Am Fr, den 23.07.2004 schrieb Matt Porter um 17:38:
+> On Fri, Jul 23, 2004 at 10:41:36AM -0400, Dan Malek wrote:
+> >
+> > On Jul 23, 2004, at 10:02 AM, Tom Rini wrote:
+> >
+> > > Must the driver use hostalloc?  I didn't think that i2c was called so
+> > > early that kmalloc/bootmem_alloc() (or so) couldn't be used.
+> >
+> >
+> > Should use ...consistent_alloc()
 >
-> I am working with a team on a project where their customer is concerned
-> about the reliability of Linux. The customer wants to go with QNX because
-of
-> the belief that QNX Neutrino is inherently more reliable. This belief
-> revolves around the differences in design where drivers in QNX do not
-reside
-> in the same address space as the (micro-)kernel.
->
-> What the team was hoping to use is a MPC5200 based system and the ELDK.
->
-<snip>
+> That doesn't exist in 2.6. Use dma_alloc_coherent().
+
+Thanks, that works, but requires the attached patch. Please apply.
+
+Regards,
+Andreas
+
+--=-aC1Gd3i2/98zGh5DD4uO
+Content-Disposition: attachment; filename=dma.diff
+Content-Type: text/x-patch; name=dma.diff; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+# This is a BitKeeper generated diff -Nru style patch.
+#
+# ChangeSet
+#   2004/07/24 14:59:23+02:00 obi@pegasos.saftware.de
+#   export __dma_alloc_coherent and __dma_free_coherent (required for CONFIG_NOT_COHERENT_CACHE)
+#
+# arch/ppc/kernel/dma-mapping.c
+#   2004/07/24 14:59:03+02:00 obi@pegasos.saftware.de +2 -1
+#   export __dma_alloc_coherent and __dma_free_coherent (required for CONFIG_NOT_COHERENT_CACHE)
+#
+diff -Nru a/arch/ppc/kernel/dma-mapping.c b/arch/ppc/kernel/dma-mapping.c
+--- a/arch/ppc/kernel/dma-mapping.c	2004-07-24 15:00:12 +02:00
++++ b/arch/ppc/kernel/dma-mapping.c	2004-07-24 15:00:12 +02:00
+@@ -254,6 +254,7 @@
+  no_page:
+ 	return NULL;
+ }
++EXPORT_SYMBOL(__dma_alloc_coherent);
+
+ /*
+  * free a page as defined by the above mapping.
+@@ -317,7 +318,7 @@
+ 	       __func__, vaddr);
+ 	dump_stack();
+ }
+-EXPORT_SYMBOL(dma_free_coherent);
++EXPORT_SYMBOL(__dma_free_coherent);
+
+ /*
+  * Initialise the consistent memory allocation.
+
+--=-aC1Gd3i2/98zGh5DD4uO--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
