@@ -1,9 +1,8 @@
-Message-Id: <200110042105.QAA14178@lists.linuxppc.org>
-From: "Boerner, Brian" <bmb@pirus.com>
-To: "'Peter Desnoyers'" <pdesnoyers@chinook.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: GDB + VisionICE?
-Date: Thu, 4 Oct 2001 17:09:46 -0400 
+Message-ID: <35C119252057D511BB9F0003476BF8A208E5E2@freexc01.smartm.com>
+From: "Prasad, Siva" <Siva.Prasad@smartm.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Root login...
+Date: Thu, 4 Oct 2001 15:43:02 -0700 
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,44 +10,43 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I would contact your wrs fae. I've heard through the grapevine that some
-beta firmware exists (it may be released firmware now) that supports the
-MMU. I couldn't find it in my mail but it was something like:
-MMU=LINUX
+Hi,
 
-It might be worth exploring. I've also had good luck with the AMC PowerTAP
-product as well. But that's neither here nor there.
+I used HHL Journeyman 2.0 PPC 7xx to build ramdisk for our custom PPC 750
+board. When I try to execute, it gives the login prompt. But when I type
+'root' and hit enter, it gives me back login prompt again. Basically it is
+not logging in.
 
--bmb
+What might be the problem that is causing this?. I tried with just "/bin/sh"
+and it directly gives me the shell prompt as expected... when I put
+"/sbin/init", it gives this login problem.
 
+Any help would be great.
 
->-----Original Message-----
->From: Peter Desnoyers [mailto:pdesnoyers@chinook.com]
->Sent: Wednesday, October 03, 2001 12:21 PM
->To: linuxppc-embedded@lists.linuxppc.org
->Subject: GDB + VisionICE?
->
->
->
->[this is a resend - I sent it with an incorrect from: address, and it
->didn't make it to the list]
->
->Has anyone configured GDB to work with a VisionICE II for a powerpc
->target?It looks like the remote-est target is close, but only works
->for m68k targets.  It might not be much work to adapt it for powerpc,
->which leads to the second question:
->
->Is this a pointless exercise due to the lack of VisionICE support for
->the
->MMU, or would it be worthwhile?
->
->Thanks,
->--
->.....................................................................
-> Peter Desnoyers            (781) 457-1165   pdesnoyers@chinook.com
-> Chinook Communications     (617) 661-1979   pjd@fred.cambridge.ma.us
-> 100 Hayden Ave, Lexington MA 02421
->
->
+Am I missing any files???.
+I put the following files in ramdisk...
+
+/bin
+bash cat cp date echo ls mount ping ps sh stty umount
+
+/dev
+console ram0 tty ttyS0
+
+/sbin
+fsck getty halt ifconfig init insmod lsmod modprobe reboot shutdown sulogin
+
+/etc
+fstab (with /dev/root, /dev/ram0 and /proc)
+passwd
+group
+inittad (as is from HHL Journeyman)
+rc.d (as is from HHL Journeyman)
+init.d (as is from HHL Journeyman)
+default (as is from HHL Journeyman)
+
+and create few other directories...
+/root /proc /mnt /usr /tmp /var
+
+-- Siva
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
