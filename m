@@ -1,46 +1,39 @@
-In-Reply-To: <411369F9.5060506@rossvideo.com>
-References: <20040806081151.B77FCC109F@atlas.denx.de> <411369F9.5060506@rossvideo.com>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <884A8F94-E7A5-11D8-9B14-003065F9B7DC@embeddededge.com>
-Cc: PPC_LINUX <linuxppc-embedded@lists.linuxppc.org>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: Init hangs
-Date: Fri, 6 Aug 2004 08:38:34 -0400
 To: Ralph Siemsen <rsiemsen@rossvideo.com>
+Cc: PPC_LINUX <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Init hangs 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 06 Aug 2004 07:22:33 EDT."
+             <411369F9.5060506@rossvideo.com>
+Date: Fri, 06 Aug 2004 14:46:34 +0200
+Message-Id: <20040806124639.3E765C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Aug 6, 2004, at 7:22 AM, Ralph Siemsen wrote:
-
-> This could also be a floating point issue.
-
-I doubt it.  The processor in question is an 8270, which
-has an FPU.
-
->   Most code compiled against
+In message <411369F9.5060506@rossvideo.com> you wrote:
+>
+> This could also be a floating point issue.  Most code compiled against
 > libc will try to "reset" the floating point state upon startup.  This
 > will cause a fault if you do not have a kernel floating point emulator
-> of some sort loaded to handle it.
 
-On the MPC8xx, which does not have a floating point unit,
-there is still sufficient support in the kernel to trap and emulate
-FPU reset and context save/restore for this purpose.  You only
-need the CONFIG_MATH_EMULATION is you intend to
-really do floating point arithmetic.
+No, this has nothing to do with it.
 
->  (Even though init doesn't use any
-> floating point itself).  So as a quick test try building your kernel
-> with CONFIG_MATH_EMULATION=y
+First, Marco wrote that he is working on a 8270 processor which has a
+FPU, so FP issues should not play a role here.
 
-This should not be used with any processor that has hardware
-floating point.  In the rare cases where you may actually be
-utilizing IEEE trap conditions, these functions could get in the
-way and produce erroneous results.
+Second, he mentioned that he was using the ELDK which takes  care  of
+using soft-float on processors without a MMU.
 
 
-	-- Dan
+Thanks.
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The following statement is not true.  The previous statement is true.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
