@@ -1,34 +1,61 @@
-Date: Wed, 13 Feb 2002 19:53:07 -0800 (PST)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	<yellowdog-devel@lists.yellowdoglinux.com>
+Date: Thu, 14 Feb 2002 08:53:13 -0500
 Subject: Re: new G4 dual 1 gig is here - how to install?
-In-Reply-To: <B58DFA00-20F2-11D6-B4A8-0003938E434C@ivey.uwo.ca>
-Message-ID: <Pine.BSF.4.44.0202131947110.42574-100000@shell.unixbox.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v480)
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: linuxppc-dev@lists.linuxppc.org,
+	yellowdog-devel@lists.yellowdoglinux.com
+In-Reply-To: <D232876A-2024-11D6-A30D-0003938E434C@ivey.uwo.ca>
+Message-Id: <3085F5FE-2152-11D6-9FA4-0003938E434C@ivey.uwo.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 13 Feb 2002, Kevin B. Hendricks wrote:
+Hi,
 
-> 2.  The bad news is that my ATI 7500 with my flat panel display simply
-> goes black so I can't tell exactly what is detected or not.
+I hooked up an 17inch CRT and the DFP flat panel to the ATI 7500.
 
+Then I tried booting linux, here are some excerpts from the dmesg log
+(hand typed)
 
-You will need to check if the OpenFirmware pll probing code I use in
-radeonfb works on 7500.  Look in the device-tree node and see what the
-reference clock is.  If you look in radeon_get_pllinfo() you can see the
-OF probe code there.  IIRC on x86 7500 boards, the xclk is ~ 22000, the
-ref div is 12 and reference clock is 2700 i belive.  The 7500 is supported
-on x86 btw.
+radeonfb: ref_clk = 2700, ref_div = 12, xclk = 20025 from OF
 
-If you can log in and get a bootlog that would be helpful.
+ATI Radeon 7500 QW DDR SGRAM 32MB
 
+radeonfb:  DVI port no monitor connected
+                    CRT port no monitor connected
 
-ani
+So it looks like it can't detect which port to use and defaults to CRT?
+
+I will just hack the driver to force use of DVI and try to work around
+this issue so that I don't need 2 monitors connected.
+
+But Here is the interesting line that I can't figure out
+
+no framebuffer address found for
+/pci@f0000000/ATY,BlueStoneParent@10,ATY,BlueStone_B
+
+So it looks like there is some other ATI device in the system that I
+don't understand where or what it is.  I see both entries for this
+BlueStone thing and entries for the Radeon 7500 in the device tree.
+
+Also, interestingly enough, SOUND is out of control on this new
+machine.  A beep comes out at ear-shattering levels no matter what I
+do.  I do believe something has changed when it comes ot sound in these
+new systems.
+
+I will try to dump the OF device tree and get the dmesg log posted so
+that anyone interested can take a look at things to look for interesting
+items.
+
+So I am progressing ....
+
+Anything anyone wants me to dump, just let me know and I will try to
+provide the info they need.
+
+Thanks,
+
+Kevin
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
