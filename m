@@ -1,26 +1,29 @@
-Message-Id: <200109271310.JAA20256@missioncriticallinux.com>
-From: mod+linuxppc-embedded@MissionCriticalLinux.com
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Adding 'bus_offset' to pci_controller 
-In-Reply-To: Your message of "Wed, 26 Sep 2001 16:29:00 PDT."
-             <3BB264BC.8E7291FE@mvista.com>
-Date: Thu, 27 Sep 2001 09:10:08 -0400
+Message-ID: <3BB3315C.A66FC4FF@chinook.com>
+Date: Thu, 27 Sep 2001 10:02:04 -0400
+From: Peter Desnoyers <pdesnoyers@chinook.com>
+MIME-Version: 1.0
+Cc: ibm405gp <ibm405.linux@laposte.net>,
+	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: debugging modules
+References: <B7D8251A.270D%scott_anderson@mvista.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm just catching up with this thread and I'm
-not sure which problem it is that we're trying
-to solve here.  Isn't it true that the various
-pci_ops routines are passed a pci_dev from which
-they can extract pci_dev->pci_bus->number and
-decide which bus is meant from that?  Or does
-that constitute a namespace (or number-space)
-collision?  Aha - yes it might - each "node" in
-a PCI bus "tree" has its own bus number, right?
-So pci_dev->pci_bus->number is only intended to
-be meaningful within a given tree and each tree
-is (should be) its own domain...
+Take a look in Documentation/i386/kgdb.  (a couple of the build options
+may be different for PPC, but the gdb instructions are the same)
 
+> on 9/27/01 12:05 AM, ibm405gp at ibm405.linux@laposte.net wrote:
+> > I saw in a previous message that I would be able to debug modules
+> > instead of generating the kernel each time.
+> > Can somebody give me the procedure to follow?
+>
+
+--
+.....................................................................
+ Peter Desnoyers            (781) 457-1165   pdesnoyers@chinook.com
+ Chinook Communications     (617) 661-1979   pjd@fred.cambridge.ma.us
+ 100 Hayden Ave, Lexington MA 02421
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
