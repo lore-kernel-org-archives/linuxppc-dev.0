@@ -1,51 +1,45 @@
-Date: Mon, 2 Dec 2002 15:29:37 +0100 (CET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Samuel Rydh <samuel@ibrium.se>, <linuxppc-dev@lists.linuxppc.org>
+To: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: asm inline
-In-Reply-To: <1038587452.4040.22.camel@zion>
-Message-ID: <Pine.LNX.4.33.0212021518030.13937-100000@gra-lx1.iram.es>
+References: <Pine.LNX.4.33.0211291712010.9530-100000@gra-lx1.iram.es>
+	<20021202131158.GA2427@ibrium.se> <jevg2cee7e.fsf@sykes.suse.de>
+	<200212020914.21465.kevin.hendricks@sympatico.ca>
+From: Andreas Schwab <schwab@suse.de>
+Date: Mon, 02 Dec 2002 15:29:47 +0100
+In-Reply-To: <200212020914.21465.kevin.hendricks@sympatico.ca> ("Kevin B.
+ Hendricks"'s message of "Mon, 2 Dec 2002 09:14:21 -0500")
+Message-ID: <jeisycebok.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Hi Ben,
+"Kevin B. Hendricks" <kevin.hendricks@sympatico.ca> writes:
 
-On 29 Nov 2002, Benjamin Herrenschmidt wrote:
+|> Hi,
+|>
+|> I thought strict-aliasing was only turned on at -O3?
+|> It was that way in the past.  Did this change for gcc-3.2.X?
 
->
-> On Fri, 2002-11-29 at 17:08, Samuel Rydh wrote:
-> >
-> > I just noticed that gcc 3.1 doesn't like the following:
->
-> According to Franz Sirl, gcc 3.2.1 is one of the very first gcc's
-> to not need any special patch for known bugs for PPC32 :) I'd
-> suggest you try this one.
->
-> I couldn't reproduce that bug with debian sid's gcc 2.95.4, 3.0.4 and
-> 3.2.1
+Yes, strict aliasing is now the default.
 
-Sorry, I replied far too fast to Samuel just before leaving on Friday,
-simply throwing in al the ideas that came through my head. My first guess
-turned out not to be so bad since this was indeed an aliasing problem.
+|> There seems to be an enormous amount of code that is not strict-aliasing
+|> safe (in the JDK, in OpenOffice.org, etc).
 
-In any case Samuel's code is not even 64 bit clean, the parameters for
-st_le32 should never be long (64 bit on PPC64 and other 64 bit archs) in
-the first place, but IMO something like int, or even u32 or s32 to stress
-that you are accessing a 32 bit quantity.
+Well, they have always walked on thin ice...
 
-I'm not a language lawyer by any stretch of the imagination but I believe
-that the compiler has the right to reorder the accesses in the
--fstrict-aliasing case.
+|> Is there any warning flag that can be enabled to help find these cases (the
+|> OOo source base is simply huge)?
 
-This said different distributions may ship different default options for
-the compiler, either by tweaking the source code or the default spec file
-IIRC, so checking some Debian's versions without specifying which
-compiler flags were in effect does not mean much.
+gcc 3.3 implements such a warning, but it may give many false positives.
 
-	Gabriel.
+Andreas.
 
+--
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux AG, Deutschherrnstr. 15-19, D-90429 Nürnberg
+Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
