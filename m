@@ -1,29 +1,24 @@
-Message-Id: <199912290101.UAA23618@mal-ach.watson.ibm.com>
-To: Geoff Keating <geoffk@cygnus.com>
-cc: eek@escape.ca, drow@false.org, linuxppc-dev@lists.linuxppc.org,
-        libc-alpha@sourceware.cygnus.com
-Subject: Re: DB_THREAD support in Berkeley DB/glibc 
-In-Reply-To: Message from Geoff Keating <geoffk@cygnus.com>
-   of "Tue, 28 Dec 1999 16:54:38 PST." <199912290054.QAA13250@localhost.cygnus.com>
-Date: Tue, 28 Dec 1999 20:01:40 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Message-ID: <3869B37A.FAFE13AE@earthlink.net>
+Date: Tue, 28 Dec 1999 23:08:42 -0800
+From: Mike Pecen <mpecen@earthlink.net>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Samba
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Geoff Keating writes:
+Does anybody know where to look or what to edit when you get this error
+message
+on a windows box when attempting to access a linux client under samba?
 
->> If you only are using the TSL_UNSET in the context that one
->> already has the lock, then the lwarx/stwcx are unnecessary.  What you have
->> written, however, is not a general atomic clear macro.
+\\client is not accessable
+The specified computer did not recieve your request. Try again later
 
-Geoff> How is it not atomic?
+I have already ping(ed) the network and data packets are being switched,
+but this
+message tells me that windows cannot find my linux box.  Any ideas??
 
-	If this thread is the only one that can clear the cell, I think
-that it is okay.  The store to acquire the lock also is atomic, but one
-cannot simply store the value.  If the programming model allows contention
-when clearing the word, one needs to use the lwarx/stwcx instructions.
-
-David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
