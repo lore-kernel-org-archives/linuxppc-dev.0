@@ -1,26 +1,42 @@
-Subject: Re: Desesperatly looking for a intConnect() equivalent routine...
-From: David Woodhouse <dwmw2@infradead.org>
-To: Garcia =?ISO-8859-1?Q?J=E9r=E9mie?= <GARCIAJ@3il.fr>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <85E6ED5B5EC32F439702305CC417E12D9E2A85@email.3il.fr>
-References: <85E6ED5B5EC32F439702305CC417E12D9E2A85@email.3il.fr>
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <1088502104.4636.181.camel@imladris.demon.co.uk>
-Mime-Version: 1.0
-Date: Tue, 29 Jun 2004 10:41:44 +0100
+Date: Tue, 29 Jun 2004 05:53:22 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 2.5 bk tree on 8xx board ... so close
+In-Reply-To: <20040628233119.GE28128@smtp.west.cox.net>
+Message-ID: <Pine.LNX.4.60.0406290546500.3272@localhost.localdomain>
+References: <Pine.LNX.4.60.0406281743170.4213@localhost.localdomain>
+ <20040628233119.GE28128@smtp.west.cox.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 2004-06-28 at 17:51 +0100, Garcia Jérémie wrote:
-> Does anyone would have a clue for a newbie in Linux ppc dev please??
+On Mon, 28 Jun 2004, Tom Rini wrote:
 
-You don't explain what you're trying to use it for. But you should
-almost certainly be writing a kernel driver, in which case the answer is
-request_irq().
+> Which serial driver did you use?  For me 8xx_UART does not work, but
+> CPM_UART will (it's still not quite correct, I have to config in both
+> SMC1 and SCC1 to get SMC1 to work, but I'm burried under a bunch of
+> other stuff right now).
 
---
-dwmw2
+i was, in fact, using 8xx_UART under the "MPC8xx CPM options" menu,
+but (pardon my confusion) i'm not aware of this CPM_UART option of
+which you speak (unless you're just paraphrasing).
 
+if i deselect 8xx_UART, i'm assuming you're talking about going then
+to the menu selections:
+
+   Device Drivers
+     Character devices
+       Serial drivers
+
+and selecting the appropriate CONFIG_SERIAL_CPM* settings (_SCC1 and
+_SMC1)?  is that what you're referring to above?
+
+   i may have to wait for one of the board experts to get in later to
+make sure i have the right settings here.  thanks so far.
+
+rday
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
