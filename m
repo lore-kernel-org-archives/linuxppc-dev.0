@@ -1,36 +1,35 @@
-Message-ID: <393D7854.8CF53542@erols.com>
-Date: Tue, 06 Jun 2000 18:16:52 -0400
-From: Nelson Abramson <pogtal@erols.com>
-MIME-Version: 1.0
-To: rboder@grn.georet.net
-CC: linuxppc-dev@lists.linuxppc.org
+Date: Tue, 6 Jun 2000 16:20:29 -0700 (PDT)
+From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+To: Ryan Boder <rboder@grn.georet.net>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: G4 configuration
-References: <393D6256.89D44EA6@grn.georet.net>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <393D6256.89D44EA6@grn.georet.net>
+Message-ID: <Pine.LNX.3.96.1000606161902.1622C-100000@deepspace.mklinux.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ryan Boder wrote:
+On Tue, 6 Jun 2000, Ryan Boder wrote:
 
 > Does anyone have a .config to configure a kernel that is stable on the
 > G4 sawtooth? I have the current stable source but every kernel I compile
 > freezes and corrupts my root file system. If anyone has one will you
 > please mail it to me?
 
-The .config that comes with Paul's tree (via rsync) should compile and run
-your sawtooth just fine.  It worked for me...
+2.3 or 2.2?  The 2.2.15pre3 that Ben H. built (any recent iBook kernel) is
+rock solid. I have no advice on 2.3....
 
-If you are using that one and still having problems, you may want to do
-some more investigation.
 
-HTH
---Nelson Abramson
+David
 
---
-"Apparently if you play the Windows NT CD backwards you hear satanic messages"
-"You think that's bad, if you play it forwards it installs Windows NT!"
---orlando
+---------------------------------------------------------------------
+A brief Haiku:
+
+Microsoft is bad.
+It seems secure at first glance.
+Then you read your mail.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
