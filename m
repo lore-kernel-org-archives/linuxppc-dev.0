@@ -1,37 +1,50 @@
-Date: Sat, 3 Nov 2001 11:59:20 +0100 (CET)
-From: Jonas Smedegaard <dr@jones.dk>
-Reply-To: Jonas Smedegaard <js@debian.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Open Firmware debugging through Ethernet
-In-Reply-To: <20011031160313.7048@smtp.adsl.oleane.com>
-Message-ID: <Pine.LNX.4.33.0111031156300.792-100000@auryn.jones.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 3 Nov 2001 08:15:53 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: boot methods
+Message-ID: <20011103081553.C29932@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20011102185547.B29932@cpe-24-221-152-185.az.sprintbbd.net> <20011103094543.10BDA10CDB@denx.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20011103094543.10BDA10CDB@denx.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Sat, Nov 03, 2001 at 10:45:37AM +0100, Wolfgang Denk wrote:
+> In message <20011102185547.B29932@cpe-24-221-152-185.az.sprintbbd.net> you wrote:
+> >
+> > Vendor                Extension               How
+> > IBM Spruce            .spruce                 ???
+> > Force PowerCore       .pcore                  PowerBoot (Force firmware)
+> > Force PowerPMC 250    .pcore                  PowerBoot
+> > M.E.N. F1             .menf1                  ??? (Probably custom fw).
+> > Motorola LoPEC        .pplus/.bugboot[1]      PPCBUG
+> > Motorola MCPN765      same                    same
+> > Motorola MVME5100     same                    same
+> > Motorola PrPMC750     same                    same
+> > Motorola PrPMC750     same                    same
+> > Motorola Sandpoint    .sandpoint              DINK32
+[snip]
 
-I stumbled across this today, that might be useful to kernel hackers:
+[1]: .bugboot is for images in flash.
 
-Open Firmware debugging through Ethernet fram another machine.
+> > Why is the how important?  With the exception of firmware-deficiencies,
+> > the current wrapper doesn't really care what it came from.  And they
+>
+> ...or there is no wrapper at all.
 
-http://developer.apple.com/technotes/tn/tn2023.html
-
-Kind regards,
-
- - Jonas
-
-P.S.
-
-Please Cc me, as I am not subscribed to the list
+But that's going to be much of an option.  I think we want to enforce
+some wrapper, so that things like PPCBoot aren't effected by internal
+changes.  And I don't think the PPCBoot wrapper needs to be all that big
+either.  I do need to sit down and verify this, but a PPCBoot wrapper
+could be as minimal as taking a current bd_t structure and converting it
+to bi_recs.  No duplicated serial, et al.
 
 --
-Jonas Smedegaard (+45 40843136)          http://dr.jones.dk/~jonas/
-Spiff ApS (= IT-guide dr. Jones ApS)     http://dr.jones.dk/
-Debian GNU/Linux developer               http://people.debian.org/~js/
-
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
