@@ -1,20 +1,16 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D3E152BF40
+Return-Path: <NWilson@Airspan.com>
+Received: from mail.airspan.com (mail.airspan.com [62.189.116.4])
+	by ozlabs.org (Postfix) with ESMTP id 096AB2BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Nov 2004 20:18:31 +1100 (EST)
-Date: Wed, 10 Nov 2004 01:18:27 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: "Mukund JB." <mukundjb@esntechnologies.co.in>
-Message-ID: <20041110091827.GA15672@gate.ebshome.net>
-References: <4EE0CBA31942E547B99B3D4BFAB348111ECD4C@mail.esn.co.in>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB348111ECD4C@mail.esn.co.in>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux port for the 440EP processor
+	Thu, 11 Nov 2004 00:59:42 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Wed, 10 Nov 2004 13:58:29 -0000
+Message-ID: <3506EDCDEC47904CBE6FD2E1DEEA8984020CFB71@fs5.airspan.com>
+From: "Neil Wilson" <NWilson@Airspan.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: mmap64/open64/pread etc on 440GX
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,28 +21,77 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 10, 2004 at 11:36:44AM +0530, Mukund JB. wrote:
-> Does 440EP processor come under 4xx type?
+Hi,
 
-Yes. But AFAIK 440EP port isn't available publicly, yet.
+I am trying to write a command line utility for our dev board
+(440GX,2.6.9 kernel) in order to provide support for our hardware
+engineers.  As a test I am trying to dump the first few bytes of the
+U-boot header.
 
-> Is there a central repository for Linux distributions for 440 series?
+I though that this would work but using /dev/mem gives me a bad address
+error on the pread64, using /dev/kmem only reads back 0 bytes.  Is there
+something blindingly obvious that I am missing for using 36bit addresses
+? I believe the address is correct as I can see the boot code from
+within the kernel. Thanks.
 
-440 isn't something special, currently all 2.6 work is done in 
-kernel.org tree. For more info, see http://penguinppc.org/kernel/
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
 
-> Are there any tools, help Documents that can help build Linux
-> distribution for the 440EP Processor?
-> In "Linux for PowerPC Embedded Systems HOWTO" Document, the Target
-> Hardware's 4xx series points to some site addr & I didn't find any 440
-> processor support there? 
-> 
-> Do I have access to the working 440GP & 440GX in both 2.4 & 2.6
-> developed by u? where can I find them?
+unsigned char buf[10240];
 
-You can consider MontaVista Linux (www.mvista.com). Currently they 
-support 440GP & 440GX. You can also take a look at www.denx.de, 
-although I have no idea how good is 44x support they provide.
+int main(int argc,char **argv)
+{
+	unsigned long long memAddr=3D0x00000001fff80000ULL;
+	int x;
+	int fd;
+	int readSize;
+	int pageSize;
+=09
+	pageSize=3Dsysconf(_SC_PAGESIZE);
+=09
+	fd=3Dopen64("/dev/mem", O_RDWR);
+	if(fd=3D=3D-1)
+	{
+		perror("open64");
+		return 0;
+	}
+=09
+	readSize=3Dpread64(fd,(void*)buf,pageSize,memAddr);
+=09
+	if(readSize !=3D pageSize)
+	{
+		perror("pread64 ");
+		printf("only read %d of %d requested bytes\n", readSize,
+pageSize);
+	}
+=09
+	close(fd);
+=09
+	// show some of it
+	if(readSize>0)
+	{
+		for(x=3D0;x<25;x++)
+		{
+			printf("%02x(%c)
+",buf[x],isprint(buf[x])?buf[x]:'.');
+		}
+		printf("\n");
+	}
+}
+
+Neil
 
 --
-Eugene
+Neil Wilson
+Airspan Communications Ltd.
+Cambridge House, Oxford Road,
+Uxbridge, Middx, UB8 1UN, UK.
+Tel: +44(0)1895-467265
+
+neilwilson@airspan.com
+www.airspan.com
