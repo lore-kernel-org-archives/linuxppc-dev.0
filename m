@@ -1,36 +1,33 @@
-Message-ID: <001901c46817$6a561760$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "m madhuker" <mythri_madhuker@yahoo.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <20040712064401.25378.qmail@web13604.mail.yahoo.com>
-Subject: Re:  Your valuable Suggestions / Advise for Beginners in Device Driver Development under Embedded Linux P
-Date: Mon, 12 Jul 2004 09:51:59 -0400
+From: "Kevin P. Dankwardt" <k@kcomputing.com>
+To: "m madhuker" <mythri_madhuker@yahoo.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Your valuable Suggestions / Advise for Beginners in DeviceDriver Development under Embedded Linux P
+Date: Mon, 12 Jul 2004 09:35:50 -0500
+Message-ID: <KCEOLLHGFJIAFNAMGACHOEOBDOAA.k@kcomputing.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
+In-Reply-To: <1089639405.6032.25.camel@veena.timesys>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Madhuker,
+The books and references that others have listed are certainly helpful. In
+fact no matter what route a developer takes, getting training, figuring it
+all out for one's self, or working with a vendor - the books and Web are
+essential.
 
-> I have been assigned some project based in Device
-> Driver Development for USB, Printers, IDE, Ethernet
-> under Embedded Linux.  Since I am a beginner in this
-> area, I would like to know some details based on the
-> following clarifications.
->
-> etc. etc.
+The fastest route for a developer to get up to speed is to take one or more
+training courses.
 
-I would recommend two good books, both available from Amazon.com:
-"Understanding the Linux Kernel" and "Linux Device Drivers".  You are also
-going to need google.com and do a lot of on-line research!  If you are new
-to linux completely, I would recommend playing with programming on a Linux
-PC first, and only going to an embedded environment when you are comfortable
-with the PC.
+The cheapest way is to get the books and use the Web.
 
-Good luck,
-Mark Chambers
+The most expensive way is to hire an embedded Linux vendor.
+
+Of course, they all have other tradeoffs as well.
+
+Kevin Dankwardt
+K Computing
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
