@@ -1,34 +1,38 @@
-Date: Tue, 14 Sep 1999 16:58:03 +1000
-Message-Id: <199909140658.QAA08107@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: ranga@CSUA.Berkeley.EDU
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <199909100518.WAA05129@soda.CSUA.Berkeley.EDU> (message from
-	Sriranga Veeraraghavan on Thu, 09 Sep 1999 22:18:09 -0700)
-Subject: Re: note about compiling SMP kernels
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <199909100518.WAA05129@soda.CSUA.Berkeley.EDU>
+Message-ID: <37DDF78B.C4BA5256@jlc.net>
+Date: Tue, 14 Sep 1999 03:21:47 -0400
+From: Dan Malek <dmalek@jlc.net>
+MIME-Version: 1.0
+To: Hugh Caley <hcaley@loomer.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: PCMCIA on Powerbook G3 Series
+References: <37DDF029.25A4839F@loomer.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU> wrote:
+Hugh Caley wrote:
 
-> Is the correct procedure still:
-> 
-> cd /usr/src/linux
-> make mrproper
-> make pmac_config
-> make menuconfig (or whatever you please)
-> make dep
-> make clean
-> gmake -j 3 vmlinux 
 
-That would be fine (but isn't your make == gmake anyway?).  I don't do
-the make mrproper myself very often since that deletes your .config, I
-tend to do make oldconfig; make clean; make dep; make vmlinux modules
-(with a -j if you like).
+> Is it possible yet to use PCMCIA on a PB G3 Series laptop?
 
-Paul.
+Yep.  Do it on my Wallstreet every day.  I run an old kernel that
+I patch here and there, and the pcmcia-3.0.7 that I ported a long
+time ago.  It looks like Paul and others have kept it up to date.
+
+
+> ... simply inserting my little Viking smart card adaptor causes a
+> kernel panic every time, and having it in at boot does the same thing.
+
+
+Ooooo.  I found that as well with my ATA flash cards and compact
+adaptors.  I work on it from time to time, but haven't found the
+problem yet.  I know that something doesn't match correctly between
+the pcmcia-cs and the IDE driver.
+
+At least other people now know....anyone have any ideas?  I have
+not worked on it for a while, maybe I'll take a stab at it again.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
