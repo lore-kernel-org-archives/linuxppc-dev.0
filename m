@@ -1,45 +1,29 @@
-Date: Tue, 4 Apr 2000 17:46:24 -0800
-From: Ethan Benson <erbenson@alaska.net>
+Date: Tue, 04 Apr 2000 22:22:32 -0700
+From: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
+Subject: Setting up yaboot
 To: linuxppc-dev@lists.linuxppc.org
-Cc: "Henry A. Worth" <haworth@ncal.verio.com>
-Subject: Re: Install on a Pismo (going bad)
-Message-ID: <20000404174624.C7595@plato.localdomain.local>
-References: <200004042110.OAA25686@ <200004042110.OAA25686@ shell1.ncal.verio.com> <20000404231952.A2266@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20000404231952.A2266@suse.de>; from olh@suse.de on Tue, Apr 04, 2000 at 11:19:52PM +0200
+Message-id: <38EACD97.113001FE@dana.ucc.nau.edu>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+References: <200004040459.XAA03713@lists.linuxppc.org>
+ <38EA7D15.C453ED94@uncc.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Apr 04, 2000 at 11:19:52PM +0200, Olaf Hering wrote:
+Is there some sort of instructions to setting up yaboot?  I managed to
+get LinuxPPC 2000 installed on my Pismo, and I'd like to actually be able
+to use it now.  Here's how I have the partitions set up.
 
-> Drive Setup is buggy, it should be OpenSource ;)
+hda9 -> 2gb MacOS partition (HFS+)
+hda10 -> 32mb HFS partition
+hda11 -> 128mb swap
+hda12 -> Rest of drive is linux "/"
 
+Don't ask me why the partition numbers are so high, cuz I don't know.
+Any help offered would be appreciated.
 
-very, and i have found that its bugginess surfaces much more when you
-try and create non-macos partitions with it, my attempts to do so
-resulted in crashes, corrupted partitions tables and other such
-nastiness. (and `initialization failed' errors on what i know to be
-good disks) so i have simply adopted the standard practice of using
-each OS's native fdisk to create its partitions, ie use drive setup to
-create macos partitions and mac-fdisk to create linux partitions.
+Tim
 
-what i tell people to do if they need to share a disk wtih macos is
-first use drive setup to create 2 HFS partitions. the first being the
-total size of all the linux partitions the user wants to create.  (say
-they want 64MB / 1GB /usr 1GB /var 2GB /home, they would make the
-first HFS partitions 5060MB)  then delete that partition with
-mac-fdisk (aka pdisk under linux) and create the linux partitions
-inside the newwly created `hole'
-
-this seems reasonable to me, every single other OS/arch i have used
-says to do this: BSD says use linux's `braindamaged' fdisk for its
-partitions and BSD's fdisk for BSD partitions, linux says use DOS
-fdisk for DOS partitions and its fdisk for linux partitions etc.
-
---
-Ethan Benson
-http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
