@@ -1,36 +1,32 @@
-From: Paul Mackerras <paulus@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15530.40918.517084.226235@argo.ozlabs.ibm.com>
-Date: Wed, 3 Apr 2002 16:23:18 +1000 (EST)
-To: Troy Benjegerdes <hozer@drgw.net>
-Cc: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Troy Benjegerdes <hozer@drgw.net>,
+	Paul Mackerras <paulus@samba.org>
+Cc: <linux-galileo@source.mvista.com>,
+	<linuxppc-dev@lists.linuxppc.org>
 Subject: Re: GT64260 merge warning
-In-Reply-To: <20020402230411.G6003@altus.drgw.net>
-References: <20020402230411.G6003@altus.drgw.net>
-Reply-To: paulus@samba.org
+Date: Wed, 3 Apr 2002 07:47:07 +0100
+Message-Id: <20020403064708.3178@smtp.wanadoo.fr>
+In-Reply-To: <20020403132444.T6003@altus.drgw.net>
+References: <20020403132444.T6003@altus.drgw.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Troy Benjegerdes writes:
+>Yeah, the config option needs to die. I'm waiting for
+>
+>a) benh to get his new bi_rec implementation done,
+>
+>b) get this damn driver working on SMP
+>
+>Also, I'd need to have two BI_MAC_ADDRESS records, since I need to be able
+>to pass the mac addresses of both ethernets from the firmware for the
+>board I have.
 
-> I'm getting close to a point where I want to start merging appropriate
-> things from the linuxppc_2_4_galileo tree on source.mvista.com into
-> 2_4_devel.
+You'll have 2 BI_DEVICE records each containing a MAC address ;)
 
-I'll be interested to see it - I'm in code review mode at the moment. :)
+Ben.
 
-> The first thing I'm going to do is a moderately large cleanup to
-> drivers/net/gt64260_eth.c.
-
-Good.  Can you get rid of the config option for the MAC address?
-Please? :)  I suggest that we define a BI_MAC_ADDRESS bi_rec type
-which is used to pass in a default MAC address for the system, and we
-use that (single) MAC address for all the ethernet interfaces on the
-system which don't have any way to find out a MAC address for that
-specific interface.
-
-Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
