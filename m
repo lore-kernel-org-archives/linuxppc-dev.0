@@ -1,10 +1,8 @@
-Date: Fri, 22 Oct 1999 10:21:40 -0700 (PDT)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: phandel@cise.ufl.edu
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Questions about rsync "linux-devel" -
-In-Reply-To: <Pine.LNX.4.10.9910221220520.18946-100000@PetesBox.localdomain>
-Message-ID: <Pine.LNX.4.10.9910221017160.20412-100000@shell.unixbox.com>
+Date: Fri, 22 Oct 1999 14:48:41 -0400 (EDT)
+From: "Walker M. White - Math Grad" <wmwhite@math.cornell.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Changing the driver for Kensington T-Mouse
+Message-ID: <Pine.LNX.3.96.991022144644.13374D-100000@main.math.cornell.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -12,27 +10,33 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
+  I am not a driver hacker (All my programming experience is application
+level), so I am not sure how to do this.  Hopefully someone here does, and
+it willing to help me.
 
-	If you want a recent 2.3 kernel, try a 2.3.22 linus kernel (from
-ftp.us.kernel.org), i patched it up and it should build fone on ppc with
-my patch located at 
+  The current driver for the Kensington Turbo Mouse annoys me to no end.
+This is because of how it maps the buttons :
+   lower left  - 1/left
+   lower right - 2/middle
+   upper left  - 3/right
+upper right does not seem to be supported, but I have never been able to
+figure out whether that is a problem with X or the driver.
 
-	ftp://devel.linuxppc.org/users/ajoshi/2.3.22-ppc.patch
+  Programs in X designed with ergonomics in mind (as few as they are) use
+the middle button sparingly for less routine actions;  that is because it
+is more difficult to press.  Using that logic, the "middle button" for the
+Turbo mouse should clearly be upper left.
 
-be sure to config for Pmac *only*, not for pmac/chrp/prep cause i recall
-some prep issues still which i haven't bothered to include in the patch.
-but if you setup for pmac, you should be fine.
+  I used to be able to ignore this fact with xmodmap (Though I still did
+not have a fourth mouse button).  However, Gnome overrides xmodmap and
+only allows left/right-handed configuration (You can launch xmodmap AFTER 
+Gnome starts, but that is also annoying). I want to stick with Gnome
+because it is in sync with the Linux boxes at school.  Hence my solution:
+change the kernel driver.
 
+  So, does anyone have a clue how to do this?
 
-ani
-
-
-On Fri, 22 Oct 1999 phandel@cise.ufl.edu wrote:
-
-> 
-> I'm interested in spending some time with the linux kernel, and I've got
-> some questions about samba.anu.edu.au::linux-pmac-devel - 
-> 
+-Walker
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
