@@ -1,60 +1,52 @@
-From: "Chris Hallinan" <clh@net1plus.com>
-To: "Coenraad Jacobsz" <cjj@research.canon.com.au>,
-        <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: DHCP client
-Date: Mon, 21 Aug 2000 10:07:28 -0400
-Message-ID: <NEBBKJPFOLJNBMFNKBIIAEKKCCAA.clh@net1plus.com>
+Date: Mon, 21 Aug 2000 17:06:41 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: diekema_jon <diekema@bucks.si.com>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: decrementer_count, count_period_num, and count_period_den has
+In-Reply-To: <m13Qrpt-001SzbC@bucks>
+Message-ID: <Pine.HPX.4.10.10008211653500.15550-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <39A0ED3D.BDCDEA7F@research.canon.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We tried the ISC implementation (version 2.0) of the client.
-It compiled and executed successfully on our '850 board (BSE
-IP) with very little effort. We are using the Monta Vista
-CDK 1.0 development environment.
+On Mon, 21 Aug 2000, diekema_jon wrote:
 
-The bulk of the effort was involved with providing
-persistent storage of the lease data required by DHCP in our
-flash.
+> Does this patch make sense?
 
-The client seems to work well...I also use it on my laptop,
-and I've used it at several customer sites to configure my
-laptop for their network without any problems.
+Yes, with the few remarks below...
 
--Chris Hallinan
-DS4.COM, Inc.
+>
+>
+> dell 200} bk diffs -r1.7 -u arch/ppc/kernel/m8260_setup.c
+> ===== arch/ppc/kernel/m8260_setup.c 1.7 vs 1.10 =====
+> --- 1.7/arch/ppc/kernel/m8260_setup.c   Wed Aug  2 12:53:58 2000
+> +++ 1.10/arch/ppc/kernel/m8260_setup.c  Mon Aug 21 09:34:30 2000
+> @@ -113,9 +113,8 @@
+>
+>         freq = (binfo->bi_busfreq * 1000000);
+>          divisor = 4;
+> -        decrementer_count = freq / HZ / divisor;
+> -        count_period_num = divisor;
+> -        count_period_den = freq / 1000000;
+> +       tb_ticks_per_jiffy = freq / divisor / HZ;
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf
-Of Coenraad Jacobsz
-Sent: Monday, August 21, 2000 4:50 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: DHCP client
+I'd rather write it freq/(divisor*HZ), but it should not change anything.
 
+> +       tb_to_us = mulhwu_scale_factor(freq / divisor, 1000000);
 
-Hi everyone
+I had the impression that the tb/decrementer frequency was not guaranteed
+(from the comments) to be > 1MHz, while it's always the case for 6xx
+processors. If it's in the right frequency range (1MHz to something like
+4 billion*HZ or ~400GHz ;-)), then this code should work just fine.
 
-Is there anyone who has implemented a DHCP client for 8xx
-successfully?
-If so, could you point us in the right direction please.
+The final test is obviously that it works... Check that gettimeofday does
+not always return an exact multiple of 1/HZ. (or that 2 succesive calls to
+gettimeofday do not return exactly the same value from user mode so that
+there is enough delay)
 
-A search for DHCP on the MontaVista site came up with "No
-documents
-match...", but there are other sources e.g. the www.isc.org
-site, or
-maybe Red Hat's 'pump'  However, that may require
-substantial
-modification...
-
-Any help appreciated
-
-Thanks,
-Coenraad
+	Gabriel.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
