@@ -1,96 +1,60 @@
-Message-ID: <3ACAE9C5.6077A4E2@opensource.se>
-Date: Wed, 04 Apr 2001 11:30:45 +0200
-From: Magnus Damm <damm@opensource.se>
-MIME-Version: 1.0
+Date: Wed, 4 Apr 2001 15:01:32 +0200 (CEST)
+From: Geir Frode Raanes <geirfrs@invalid.ed.ntnu.no>
 To: linuxppc-embedded@lists.linuxppc.org
-Cc: mlocke@mvista.com
-Subject: runtime check of cacheline size.
-Content-Type: text/plain; charset=us-ascii
+Subject: PCMCIA-ATA DMA and Minix/FATxx
+Message-ID: <Pine.BSF.4.21.0104041359250.64110-100000@invalid.ed.ntnu.no>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+[System description]
+We have designed a MPC855T system hooked up to an Altera '400 EPLD.
+The FPGA perform the realtime JPEG compression of the image data
+stream, piping it directly to ATA disk by means of DMA.
 
-Wouldn't it be nice with a glibc that works for all of us?
+The Altera EPLD is interfaced to the PowerPC through the PCMCIA
+port A, and is designed to present itself as a multifunctional
+PCMCIA device of which the first is the ATA disk (controller)
+connected to another port of the EPLD.
 
-Idea:
-
-Let's run-time check the cacheline-size of our cpu!
-
-How?
-
-First we need to make sure that the maximum cacheline size of
-any PowerPC cpu is 128 bytes. (CACHELINE_MAX)
-If it's anything else then it's easy to add that to the code.
-
-Then if we should use the dcbz instruction we need at least
-CACHELINE_MAX bytes aligned to a CACHELINE_MAX address. (buf)
-Then we write:
-
-address: data (32bit)
-
-buf+16   16
-buf+32   32
-buf+64   64
-
-Then we use the "dcbz" instruction on buf.
-
-then we add together all data we've written above (sum):
-
-32 bit data on address:
-
-buf+64
-buf+32
-buf+16
-
-then: cachelinesize = 128-sum
-
-Easy, right?
+The ATA disk is in other words connected to a switched bus (MUX)
+internal to the EPLD and at one time either connected to the PCMCIA
+(PowerPC) interface or to the JPEG compression block but never both.
 
 
-I tried to implement it using assembler:
 
----- cut here ----
+[Actual question]
+It would be beneficial to have a filesystem that allows for linear
+write of large files (~20-50GB) and a partitioning scheme that allows
+the ATA disk to be removed and later plugged into an IBM PC.
 
-cachelinesize_detect:
+The partitioning and formatting must be possible to perform over the
+MPC855T PCMCIA interface by PowerPC/Linux. The free space must be
+absolutely free (no interspaced file system nodes) since the EPLD
+will perform raw write form start LBA outwards. Upon completion the
+data will be backannotated into the file system by means of patching
+file tables with start LBA and end LBA. No CRC/ECC.
 
-#define CACHELINE_MAX 128
+FAT16 is well documented and would have been a perfect solution.
+But 2GB partition size is unfortunately unacceptable. FAT32 seems
+more obscure and is not so well documented. Any good references?
+Minix is told to be simple but where is it documented?
+Any other filesystems w/docs? (MAC/SUN/ISO filesystems&partitioning?)
 
-        /* use dcbz to figure out the size of a cacheline
-         * on our system...
-         * needs a CACHELINE_MAX bytes buffer in r3.
-         * r3 should be aligned to CACHELINE_MAX too.
-         */
 
-        li      r4, 0x10        /* 16 bytes: mpc8xx, ibm4xx */
-        stwx    r4, r4, r3
-        li      r4, 0x20        /* 32 bytes */
-        stwx    r4, r4, r3
-        li      r4, 0x40        /* 64 bytes */
-        stwx    r4, r4, r3
-        dcbz    0, r3
-        add     r5, r4, r4      /* 128 bytes */
-        lwzx    r4, r4, r3
-        sub     r5, r5, r4
-        lwz     r4, 0x20(r3)
-        sub     r5, r5, r4
-        lwz     r4, 0x10(r3)
-        sub     r5, r5, r4
 
-/* now: r5 contains cacheline size */
+Also, does PPC/Linux now detect PCMCIA ATA drives out of the box
+without any resort to interrupt rerouting and the like? (The system
+will - when the HW will arrive in three weeks time - boot from Flash
+with initrd, not from the PCMCIA ATA disk.)
 
----- cut here ----
+--
 
-The code is untested and I've probably use the "sub"
-instruction the wrong way. You get the idea anyhow.
+Geir Frode Raanes
+Norsk Elektro Optikk A/S
+[www.neo.no]
 
-Who wants to adopt the idea for memset.S?
-
-I don't really have time, sorry...
-
-Cheers /
-
-Magnus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
