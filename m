@@ -1,32 +1,27 @@
+Message-ID: <20040807141411.74995.qmail@web15604.mail.cnb.yahoo.com>
+Date: Sat, 7 Aug 2004 22:14:11 +0800 (CST)
+From: Song Sam <samlinuxppc@yahoo.com.cn>
 Subject: Re: How to remove JFFS2 'Making dirty' display on RPXlite DW?
-From: David Woodhouse <dwmw2@infradead.org>
-To: Song Sam <samlinuxppc@yahoo.com.cn>
-Cc: Mark Chambers <markc@mail.com>,
-	David Ho <DavidHo@nanometrics.ca>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20040807073904.67622.qmail@web15606.mail.cnb.yahoo.com>
-References: <20040807073904.67622.qmail@web15606.mail.cnb.yahoo.com>
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <1091872202.1438.26.camel@imladris.demon.co.uk>
-Mime-Version: 1.0
-Date: Sat, 07 Aug 2004 10:50:03 +0100
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <1091872202.1438.26.camel@imladris.demon.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sat, 2004-08-07 at 15:39 +0800, Song Sam wrote:
-> Next,I will take Wolfgang's advice on decreasing boot
-> time to create an ext2+mini_fo filesystem based on MTD
->  to get a faster boot process.By now the boot time of
-> my target is 18-20
-> seconds(48MHZ[CORE]+24MHZ[BUS]+uncompressed
-> kernel+JFFS2).
+David Woodhouse <dwmw2@infradead.org> wrote£∫
+>
+> The JFFS2 code in the 2.6 kernel can give about an order of magnitude
+> improvement in mount time. It's a lot less na√Øve than the 2.4 code.
 
-The JFFS2 code in the 2.6 kernel can give about an order of magnitude
-improvement in mount time. It's a lot less na√Øve than the 2.4 code.
+Good hints.But 2.6 cannot boot on 8xx via NFS by
+now.How can I make a JFFS2?Beats me.Anyway,I will try
+it to see how far I would go ...
 
---
-dwmw2
+Thanks
 
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
