@@ -1,25 +1,38 @@
-Message-ID: <36E93596.A055D7BB@mitre.org>
-Date: Fri, 12 Mar 1999 10:41:10 -0500
-From: Charles Lepple <clepple@mitre.org>
-MIME-Version: 1.0
+Date: Fri, 12 Mar 1999 16:53:14 -0500 (EST)
+From: Tom Rini <tmrini@ntplx.net>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: sync problem in arch/ppc/kernel/misc.S?
-Content-Type: text/plain; charset=us-ascii
+cc: linuxppc-user@lists.linuxppc.org
+Subject: Re: ok, vger anoncvs is back, README (fwd)
+In-Reply-To: <Pine.LNX.3.96.990311181502.7624A-100000@persephone.cs.nmt.edu>
+Message-ID: <Pine.LNX.4.05.9903121644510.2229-100000@pc.wackyland.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Does anyone have any recollection of writing the comment "some chip revs
-have problems here..." in arch/ppc/kernel/misc.S? It's in the
-enable_interrupts subroutine, and on a DY4 603e board, I do seem to have
-problems :-) It doesn't seem to be getting past this sync instruction,
-and I'm a little confused as to why not. Anyone with insights into this?
-(FWIW, the PVR is 0x60400, implying that it's not the 2.5V core chip...)
+On Thu, 11 Mar 1999, Cort Dougan wrote:
 
-Thanks,
+> An anoncvs mirror of the vger repositories is available now from
+> there.  Sorry for taking so long.  The modules available which people
+> should be interested in are 'linux' and 'modutils'.
 
-Charles Lepple
-clepple@mitre.org
+And for those of you that kept an old vger repository around and don't
+mind some ugly for lines:
+
+for i in `find . -name Root`;do echo 
+:pserver:anonymous@cvs.on.openprojects.net:/cvs/linux' > $i;done
+
+for i in `find . -name Repository`;do mv $i $i.orig;done
+for i in `find . -name Repository.orig`;do echo /cvs/linux/`echo $i | sed
+-e 's/\.\///g' -e 's/\/CVS\/Repository.orig//g'` > $i;done
+
+Still have to fix the CVS/Repository at the base of your tree.
+
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
