@@ -1,38 +1,31 @@
-Subject: Re: Making only part of memory DMA-able [CONFIG_DISCONTIGMEM?]
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: Anders Blomdell <anders.blomdell@control.lth.se>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <5E0FB922-2FB1-11D7-9939-0003931C2BFA@control.lth.se>
-References: <5E0FB922-2FB1-11D7-9939-0003931C2BFA@control.lth.se>
-Content-Type: text/plain
-Date: 24 Jan 2003 16:14:43 +0000
-Message-Id: <1043424894.782.17.camel@newt>
-Mime-Version: 1.0
+From: erik.teose@exgate.tek.com
+Message-ID: <BA0E4392AD99D040885C414D992C24BE0165DBE5@us-bv-m11>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: How do you change the program counter (PC)
+Date: Fri, 24 Jan 2003 08:58:20 -0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 2003-01-24 at 15:34, Anders Blomdell wrote:
+> > SREC: (I am not much sure) It seems an old format used
+> mostly by motorola.
+> > It's like BIN format, but has other information used for
+> downloading. It seems
+> > some bootloaders need SREC format for downloading.
+> >
+>
+> SREC is more or less the same as a BIN file but it has an address and
+> checksum so it would be much smaller if you want to put a
+> byte at 0 and
+> one at 100000 and you can be sure that is is correctly transfered.
 
-> Is there anybody working on DISCONTIGOUS memory allocation for PowerPC's,
-> that could shed some light on what should be done? A lot of memory
-> management seems to be specialized for CONFIG_440, which further clutters
-> my vision...
+A big difference is that SREC is full ascii, which means lots of
+bytes of overhead, which means longer transfer times if you're loading
+via rs232.
 
-I've dealt with a very similar system architecture^(1). The main lesson
-I learned from this was to always use a non-transparent PCI-PCI bridge.
-
-In your case, I presume that this is a fixed system design, and you
-don't have to make every device driver in the Linux kernel work. You
-might consider writing a special purpose allocator and modifying the
-individual drivers you require to use it.
-
-
-(1: http://www.varisys.co.uk/tpe3.html )
-
---
-Adrian Cox
-http://www.humboldt.co.uk/
-
+Erik
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
