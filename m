@@ -1,19 +1,24 @@
-Return-Path: <wd@denx.de>
-Received: from mailout11.sul.t-online.com (mailout11.sul.t-online.com
-	[194.25.134.85]) by ozlabs.org (Postfix) with ESMTP id 3BE4367A77
+Return-Path: <Renaud.Barbier@ge.com>
+Received: from ext-ch1gw-8.online-age.net (ext-ch1gw-8.online-age.net
+	[64.37.194.16]) by ozlabs.org (Postfix) with ESMTP id 8A69267A2F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Feb 2005 04:48:56 +1100 (EST)
-To: David Jander <david.jander@protonic.nl>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 17 Feb 2005 16:50:53 +0100."
-	<200502171650.53799.david.jander@protonic.nl>
-Date: Thu, 17 Feb 2005 18:48:34 +0100
-Sender: wd@denx.de
-Message-Id: <20050217174839.48A3DC1430@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Which kernel tree for future 8xx development? 
+	Fri, 18 Feb 2005 09:02:08 +1100 (EST)
+Received: from int-ch1gw-2.online-age.net (int-ch1gw-2 [3.159.232.66])
+	by ext-ch1gw-8.online-age.net (8.12.11/8.12.11/20050527-JWF) with ESMTP
+	id j1HLmtBT006235
+	for <linuxppc-embedded@ozlabs.org>; Thu, 17 Feb 2005 16:48:55 -0500
+Received: from cinmlef08.e2k.ad.ge.com (localhost [127.0.0.1])
+	by int-ch1gw-2.online-age.net (8.12.9/8.12.3/990426-RLH) with ESMTP id
+	j1HLmstW018878 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 17 Feb 2005 16:48:55 -0500 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Thu, 17 Feb 2005 15:50:27 -0600
+Message-ID: <45ABD2373C33C4459D42B40EC4F346F205E1A4F0@FTWMLVEM03.e2k.ad.ge.com>
+From: "Barbier, Renaud (GE Infrastructure)" <Renaud.Barbier@ge.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: 440GX interrupt
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,32 +29,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <200502171650.53799.david.jander@protonic.nl> you wrote:
-> 
-> 
-> Now I am observing myself doing apparently absurd things as for example taking 
-> arch/ppc/8260_io/cpm_spi.c from DENX and putting it into arch/ppc/8xx_io/ 
-> from bitkeeper and hacking until it works (again). It still doesn't. Where on 
-> earth is the original driver (which was for MPC860, not MPC8260)!??
+I have a question regarding interrupt and irq locking.
+I derived  (or copied from somehwere)a library (linux 2.4.26) for the =
+440GX from ppc4xx_pic.c to take care of the last interrupt register =
+(UIC2).
+This a newbie question regarding get_irq/spin_lock
+here is get_irq:
+...
+     bits =3D mfdcr(DCRN_UIC_MSR(UICBASE));
+     if ((bits & 0x40000000) =3D=3D 0x40000000)
+     {
+        bits =3D mfdcr(DCRN_UIC_MSR(UIC0));
+        irq =3D ( ffs(bits));
+        irq =3D 32-irq;
+	}
+	...
 
-That's probably arch/ppc/8xx_io/cpm_spi.c from our old linux-2.4
-kernelk tree.
+my question is what guarantee that the code is executed atomically?
 
-> Before we port all of our stuff once again from one tree to another, can 
-> someone please give me a good advice on which way to go now and in forseeable 
-> future? 
+The reason I asked is that we have a driver that did the following in =
+the ioctl call:
 
-I cannot answer this question - maybe once there  is  a  clear  split
-between  stable  and  development  kernel  trees again. At the moment
-there is only chaos.
+	disable_irq(26);
+	/* do something */
+	enable_irq(26);
 
-Best regards,
+as you noticed there is not any spin_lock.
+Sometimes, this leads  get_irq to see UICBASE indicating an irq in UIC0 =
+and
+UIC0_MSR to return 0. hence you get irq 32 (MAL_SERR) and an infinite =
+loop.
 
-Wolfgang Denk
+My current fix is to use irqsave/irqrestore in the driver which I think =
+is the correct way to do (but I may be wrong please help).
 
--- 
-See us @ Embedded World, Nuremberg, Feb 22 - 24,  Hall 10.0 Booth 310
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Mr. Cole's Axiom:
-        The sum of the intelligence on the planet is a constant;
-        the population is growing.
+
+However, I have a colleague (here is the human problem of my questions: =
+him or me is the problem) that insists that I should do something in =
+get_irq to have atomic execution.
+
+can you share your view about get_irq and spin_lock?
+
+If it is not the correct place to ask this question, let me know where =
+to send it.
