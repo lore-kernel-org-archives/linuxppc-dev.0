@@ -1,26 +1,41 @@
-Message-Id: <199910200447.VAA21997@finagle>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: video driver for PowerBook 3500
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Tue, 19 Oct 1999 21:47:45 -0700
-From: Jeff Woolsey <woolsey@jlw.com>
+Message-Id: <m11dr0J-0000WVC@tri-yann.crf.canon.fr>
+Date: Wed, 20 Oct 1999 10:21:51 +0200 (CEST)
+From: "VALETTE Eric" <valette@crf.canon.fr>
+To: alois_fertl@TalkNet.de
+CC: cort@persephone.cs.nmt.edu, linuxppc-dev@lists.linuxppc.org
+In-reply-to: <37B5E009.FBA8C036@talknet.de> (message from Alois Fertl on Sat,
+	14 Aug 1999 23:30:50 +0200)
+Subject: Re: IDE on Motorola Hardware
+References: <37B5E009.FBA8C036@talknet.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Where does one find the video driver for this system?  With No
-Video Driver unchecked, anything I put after video= (be it chipsfb
-or guacamole) results in a solid purple screen right after displaying
-Tux and a couple bits of hardware info.  I'm running a 2.2.12 kernel
-from Benjamin Herrenschmidt with an interrupt-driven Ethernet (finally!),
-but I've always seen the problem, from 2.2.1 onwards, at least.
+>>>>> "Alois" == Alois Fertl <alois_fertl@TalkNet.de> writes:
+
+Alois> Cort, Eric
+
+Hi,
+
+Alois> Some time ago I issued a patch to fix IDE related problems on Motorola
+Alois> hardware. This patch was not specific enough and broke the IDE support
+Alois> on IBM. Here is a revised version which hopefully will not break other
+Alois> systems.
+
+I have my own non generic patch for the MCP750 using the VIA specific driver.
+It enables me to put the VIA PCI/ISA bridge at optimal performance...
+
+Thanks for your mail anyway. If you want the patch again, mail me...
+
 
 -- 
-Jeff Woolsey +1 408 487 7177 {woolsey,jlw}@{jlw,mri{,.mentor{,g}},microtec}.com
-"Tried working once.  Didn't work out.  Too much like work."  -Steed
-Why do wrong numbers leave messages in languages that I don't understand
-and are not present in my greeting???
-
+   __                 
+  /  `                   	Eric Valette
+ /--   __  o _.          	Canon CRF - Communication Dept
+(___, / (_(_(__         	Rue de la touche lambert
+				35517 Cesson-Sevigne  Cedex
+				FRANCE
+Tel: +33 (0)2 99 87 68 91	Fax: +33 (0)2 99 84 11 30
+E-mail: valette@crf.canon.fr	http://www.crf.canon.fr
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
