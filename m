@@ -1,39 +1,31 @@
-Date: Fri, 12 Nov 1999 07:46:16 -0800 (PST)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <Pine.LNX.4.10.9911120738300.4566-100000@shell.unixbox.com>
+Date: Fri, 12 Nov 1999 17:20:03 +0100
+To: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: 2.3.27 on CHRP Longtrail
-In-Reply-To: <Pine.LNX.4.05.9911121430470.444-100000@callisto.of.borg>
-Message-ID: <Pine.LNX.4.10.9911120738300.4566-100000@shell.unixbox.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <19991112172003.001697@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Not directly related, but...
 
+While working on OF booting with the iBook (I really want to get rid of
+BootX with those new machines, on of the reason beeing a nightmare
+compatibiliy problem with the new iMac DV and Swathoo G4s), I quickly
+hacked my early boot text mode to work with the OF display.
 
-On Fri, 12 Nov 1999, Geert Uytterhoeven wrote:
+Basically, that means that it's possible to display debugging text from
+almost every point of the kernel initialisation (using mostly
+xmon_printf) before the fb is up and running, even while OF output can no
+more be used (after MMU init).
 
-> The problem is in free_all_bootmem(): we have MAX_DMA_ADDRESS == 0xffffffff
-> and virt_to_phys() subtracts KERNELBASE from it. I don't understand (yet)
-> what's all that bootmem stuff doing...
-
-	this is interesting because I recently had a problem sorta like
-this on pmacs with some recent 2.3's.  in do_init_bootmem() a call to
-remove_mem_piece() uses boot_mapsize as the "size", this locks up on old
-non-b&w/imac/g4 powermacs, but I changed the size to boot_mapsize+start
-and it fixed it.  I didn't bother debugging remove_mem_piece() since i got
-it working, perhaps i'll switch it back adn see where it dies.
-	also on a side note, boot_mapsize is initialized through an
-init_bootmem() call wich uses __pa(), i recently saw a post from linus
-saying that __pa/__va should not ever be used in "real" code as they are
-only used in the headers for internal stuff, and he's considering removing
-them.  think this is a problem?
-
-
-
-ani
+It's too hackish for now, and I have no time to post a patch before later
+today or this week end, I'll try to clean this a little bit and separate
+it from the main bunch of iBook patches since i could be useful for
+others too.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
