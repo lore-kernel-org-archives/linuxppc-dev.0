@@ -1,18 +1,23 @@
 Return-Path: <jdl@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 8362467A7B
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 5A99D67A82
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Apr 2005 01:36:06 +1000 (EST)
+	Fri,  1 Apr 2005 01:56:10 +1000 (EST)
 From: Jon Loeliger <jdl@freescale.com>
-To: Li Yang-r58472 <LeoLi@freescale.com>
-In-Reply-To: <9FCDBA58F226D911B202000BDBAD46730117355F@zch01exm40.ap.freescale.net>
-References: <9FCDBA58F226D911B202000BDBAD46730117355F@zch01exm40.ap.freescale.net>
+To: Jon Masters <jonathan@jonmasters.org>
+In-Reply-To: <424BEDFC.8080300@jonmasters.org>
+References: <424ACFF1.5000403@bitsim.se>
+	<111d2ae873d1bfee413409dfc4f2f064@freescale.com>
+	<424BEDFC.8080300@jonmasters.org>
 Content-Type: text/plain
-Message-Id: <1112283360.23088.57.camel@cashmere.sps.mot.com>
+Message-Id: <1112284541.23088.77.camel@cashmere.sps.mot.com>
 Mime-Version: 1.0
-Date: Thu, 31 Mar 2005 09:36:00 -0600
-Cc: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
-Subject: RE: Problem running Linux 2.6.11 on MPC8272ADS
+Date: Thu, 31 Mar 2005 09:55:42 -0600
+Cc: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>,
+	Sylvain Munaut <tnt@246tNt.com>,
+	Andrei Konovalov <akonovalov@ru.mvista.com>,
+	Jakob Viketoft <jakob.viketoft@bitsim.se>
+Subject: Flat OF Device Tree for ppc32 [was: Platform bus/ppc sys model...]
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,24 +28,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2005-03-31 at 02:22, Li Yang-r58472 wrote:
-> Good point.
-> There is also IMMR need to be passed from bootloader to kernel.  We
-> can make more use of the u-boot bd_info mechanism.  But it binds ppc
-> linux to u-boot boot loader.  I don't know if we should make it a
-> porting convention.
+On Thu, 2005-03-31 at 06:33, Jon Masters wrote:
+> Kumar Gala wrote:
+> 
+> |> My intention was to give a device tree structure to the kernel at boot
+> |> time via a (pseudo?) pointer in bd_info or similar. 
 
-Hi guys,
+> This got resurrected recently. 
 
-So, just for the record here, Kumar and I are moving the ppc32
-line away from bd_t towards an OpenFirmware flattened device tree.
-That data will still have a place for the IMMR to be passed.
+Hi!
 
-Under another Subject:, I'll describe a brief outline of
-The Plan So Far so people can take shots at it. :-)
+> | I think this is reasonable.  The best device tree would be a flattened
+> | OF tree since we are trying to move the world in that direction.  Jon
+> | Masters around?
+> 
+> Yes, but I've been tied up with worky and magazine stuff again. If
+> someone wants to work with me then this might actually happen.
 
-> Best Regards,
-> Leo
+Hi Jon,
 
+I'm here and actively(!) working on it now.   Here is the very
+rough plan as Kumar and I have discussed it.  Please feel free
+to comment on it or offer suggestions.  Ben has suggested that
+I start with the "second step" below.  I'd like to do a round
+of cleanup first.
+
+So far, I have taken the first step of isolating the references
+to the global __res[] variable into one file and replacing all
+references to the data in the bd_t structure with a thin, shim
+layer of function calls that are nominally into an OF-like
+interface.  I have done this for all the 85xx and 83xx boards
+in my development tree, and am working on the others now.
+This step effectively isolates the __res[] references to one
+file where a well defined interface can be created to pose as
+an OF Device Tree layer (briefly).
+
+As a follow-up second step, I plan on introducing essentially
+the same code currently in ppc64 to handle the flat device tree
+and provide an interface to that data in exactly the same manner
+as the ppc64 currently has.  I understand the desire to have the
+flat-tree handling be "outside the kernel".
+
+As a third step, the shim layer will be rewritten/augmented to
+use the actual OF device tree data where it currently fronts
+for the bd_t data.
+
+Finally, as time permits and maintainers allow (read: prod),
+the other (not 85xx, not 83xx) boards can have their setup code
+converted to use the "real" OF device tree function calls.
+
+When all of that is done, the shim layer can be removed, as needed.
+
+
+Oh, yeah.  Um, also on my plate will be to construct the
+original flat-tree blob in U-Boot to be handed to the kernel.
+(I'll start with 85xx and 83xx, naturlich.)
+
+We have not yet decided on the layout of that tree to determine
+where all the attributes and devices really belong.  I will
+also discuss with Wolfgang and crew how to generate that tree
+over in U-Boot land.
+
+Right?
+ 
 Thanks,
 jdl
