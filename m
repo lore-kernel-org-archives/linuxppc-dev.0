@@ -1,112 +1,59 @@
-Date: Thu, 6 Sep 2001 07:03:58 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Brian Waite <bwaite@cspi.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MVME5100 and bugboot fails
-Message-ID: <20010906070358.A9316@cx258813-a.chnd1.az.home.com>
-References: <85256ABF.00549667.00@pine.cspi.com> <200109061544.LAA11977@orchid.cspi.com> <20010906085639.F21172@cpe-24-221-152-185.az.sprintbbd.net>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="GvXjxJ+pjyke8COw"
-In-Reply-To: <20010906085639.F21172@cpe-24-221-152-185.az.sprintbbd.net>; from trini@kernel.crashing.org on Thu, Sep 06, 2001 at 08:56:39AM -0700
+Message-ID: <3B978E09.3A25E2CD@aps.anl.gov>
+Date: Thu, 06 Sep 2001 09:54:01 -0500
+From: Andrew Johnson <anj@aps.anl.gov>
+MIME-Version: 1.0
+To: =?iso-8859-1?Q?=C0=B1=B5=BF=BC=AE?= <manulsan@daintelecom.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Can't run init... MPC8240
+References: <004601c13710$d26abee0$2000a8c0@private>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---GvXjxJ+pjyke8COw
-Content-Type: text/plain; charset=us-ascii
-
-On Thu, Sep 06, 2001 at 08:56:39AM -0700, Tom Rini wrote:
+À±µ¿¼® wrote:
 >
-> On Thu, Sep 06, 2001 at 11:36:39AM -0400, Brian Waite wrote:
->
-> > I tried that and I was unable to relocate just the initrd. Right now, I just
-> > tested to see:
-> > if  ((zImage_start >= 0xf0000000) || (zImage_start <= 0x00800000))
-> >
-> > That seems to work for now, but I'll take a peek at the gemeni and see how
-> > they do it.
->
-> Er, after re-reading, it's wrong too.  I'll send you a patch
-> privately, if you can test it.
+> I am working MPC8240 custom board with Sandpoint8240 BSP
+> from MVista CDK 2.0 .   I think that I made something wrong.
 
-This location checking logic is all a hack...I've already stared at this
-a while to make it work for someone.  I recommend we _always_ relocate
-both zImage and initrd (if present).
+Check that your installation of the Sandpoint LSP actually completed
+without any errors - I found that the HHL-2.0 release had some problems
+and many of the target binaries were not installed properly (the first
+time through the install process it hung up, and although it appeared to
+work the second time it didn't install all the packages that it should).
+You can check this by doing an ls as follows, which from a (fully
+installed) development host should look like this:
 
-See the attached patch to misc-simple.c (this is versus 2.4.2ish, but
-should apply cleanly) which gets the initrd relocated properly...it's
-tested with bugboot.
+host$ ls /opt/hardhat/devkit/ppc/82xx/target/sbin
+MAKEDEV*    ifdown*                 lsmod@       rmmod@
+badblocks*  ifup*                   lspci*       route*
+depmod*     init*                   mii-tool*    runlevel*
+devfsd*     insmod*                 mke2fs*      setpci*
+dumpe2fs*   insmod.static*          mkfs*        shutdown*
+e2fsck*     insmod_ksymoops_clean*  mkfs.ext2*   slattach*
+fdisk*      install-info*           mkswap*      sln*
+fsck*       ipmaddr*                modinfo*     start-stop-daemon*
+fsck.ext2*  iptunnel*               modprobe@    sulogin*
+fsck.ext3*  kallsyms@               plipconfig*  swapoff@
+fsck.nfs*   kbdrate*                pmap_dump*   swapon*
+genksyms*   kernelversion*          pmap_set*    sysctl*
+getty*      killall5*               portmap*     syslogd*
+halt*       klogd*                  poweroff@    telinit@
+hdparm*     ksyms@                  rarp*        tune2fs*
+hwclock*    ldconfig*               reboot@      unix_chkpwd*
+ifconfig*   losetup*                resize2fs*
 
+If many of those files are missing from your installation then you have
+the same problem, which explains why your target can't find /sbin/init.  I
+modified the HardHat installation script and did some parts of the
+installation manually, but I don't have my modified version any more.  I
+don't know if MontaVista have developed a fix for this yet, but I did tell
+them about it several months ago.
+
+- Andrew
 --
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
-
---GvXjxJ+pjyke8COw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="bugboot_initrd.patch"
-
---- linux-2.4.2_hhl20/arch/ppc/boot/common/misc-simple.c.orig	Wed Sep  5 14:31:27 2001
-+++ linux-2.4.2_hhl20/arch/ppc/boot/common/misc-simple.c	Wed Sep  5 14:51:49 2001
-@@ -97,39 +97,27 @@
- 		initrd_start = 0;
- 	initrd_end = INITRD_SIZE + initrd_start;
-
--	/*
--	 * Find a place to stick the zimage and initrd and
--	 * relocate them if we have to. -- Cort
--	 */
-+	/* relocate zimage */
- 	avail_ram = (char *)PAGE_ALIGN((unsigned long)_end);
- 	puts("zimage at:     "); puthex((unsigned long)zimage_start);
- 	puts(" "); puthex((unsigned long)(zimage_size+zimage_start)); puts("\n");
--	if ( (unsigned long)zimage_start <= 0x00800000 )
--	{
--		memcpy( (void *)avail_ram, (void *)zimage_start, zimage_size );
--		zimage_start = (char *)avail_ram;
--		puts("relocated to:  "); puthex((unsigned long)zimage_start);
--		puts(" ");
--		puthex((unsigned long)zimage_size+(unsigned long)zimage_start);
--		puts("\n");
-+	memcpy( (void *)avail_ram, (void *)zimage_start, zimage_size );
-+	zimage_start = (char *)avail_ram;
-+	puts("relocated to:  "); puthex((unsigned long)zimage_start);
-+	puts(" ");
-+	puthex((unsigned long)zimage_size+(unsigned long)zimage_start);
-+	puts("\n");
-
--		/* relocate initrd */
--		if ( initrd_start )
--		{
--			puts("initrd at:     "); puthex(initrd_start);
--			puts(" "); puthex(initrd_end); puts("\n");
--			avail_ram = (char *)PAGE_ALIGN(
--				(unsigned long)zimage_size+(unsigned long)zimage_start);
--			memcpy ((void *)avail_ram, (void *)initrd_start, INITRD_SIZE );
--			initrd_start = (unsigned long)avail_ram;
--			initrd_end = initrd_start + INITRD_SIZE;
--			puts("relocated to:  "); puthex(initrd_start);
--			puts(" "); puthex(initrd_end); puts("\n");
--		}
--	} else if ( initrd_start ) {
--		puts("initrd at:     "); puthex(initrd_start);
--		puts(" "); puthex(initrd_end); puts("\n");
--	}
-+	/* relocate initrd */
-+	puts("initrd at:     "); puthex(initrd_start);
-+	puts(" "); puthex(initrd_end); puts("\n");
-+	avail_ram = (char *)PAGE_ALIGN(
-+			(unsigned long)zimage_size+(unsigned long)zimage_start);
-+	memcpy ((void *)avail_ram, (void *)initrd_start, INITRD_SIZE );
-+	initrd_start = (unsigned long)avail_ram;
-+	initrd_end = initrd_start + INITRD_SIZE;
-+	puts("relocated to:  "); puthex(initrd_start);
-+	puts(" "); puthex(initrd_end); puts("\n");
-
- 	avail_ram = (char *)0x00400000;
- 	end_avail = (char *)0x00800000;
-
---GvXjxJ+pjyke8COw--
+Perfection is reached, not when there is no longer anything to add,
+but when there is no longer anything to take away.
+- Antoine de Saint-Exupery
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
