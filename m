@@ -1,29 +1,49 @@
-From: "Todd_Tomaino"@vnci.net
+Message-ID: <3AAB06CC.F5E5A5BA@routefree.com>
+Date: Sat, 10 Mar 2001 21:02:04 -0800
+From: David Blythe <blythe@routefree.com>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <85256A0A.0072CACC.00@ushq1.vnci.net>
-Date: Fri, 9 Mar 2001 16:00:51 -0500
-Subject: i2c w/ 2.2.14 on the RPXLite
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Subject: MMU_init buglet in 2.4.0-mvista_010216
+Content-Type: multipart/mixed;
+ boundary="------------DA6C3874358A62DB95C1FEEA"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+This is a multi-part message in MIME format.
+--------------DA6C3874358A62DB95C1FEEA
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-I have recently converted from Montavista HHL 1.0 to 1.2.  When using the
-new version I am having difficulties getting the i2c driver to load.  I
-have selected it during "make config" and seen it link and compile during
-"make dep" and "make zImage", but when I boot the RPXLite there is no sign
-of the driver.  I have added printk messages to to iic.c to make the
-loading more obvious, but it's not there.  Other drivers that appeared to
-load before (spi for example) are also not present.   My problems are
-compounded by the fact that I am a newbie.  If anyone has any information
-it would be greatly appreciated.
+memory sizes > 16M but not a multiple of 16M not quite right.  for the
+24M config i was playing with it manifests itself as a tlb miss/kernel
+stack overflow.
 
-best regards,
+patch attached.
+	david
+--------------DA6C3874358A62DB95C1FEEA
+Content-Type: text/plain; charset=us-ascii;
+ name="d7"
+Content-Disposition: inline;
+ filename="d7"
+Content-Transfer-Encoding: 7bit
 
-Todd
+Index: arch/ppc/mm/init.c
+===================================================================
+diff -u -r1.1.1.4 init.c
+--- arch/ppc/mm/init.c	2001/02/21 00:52:57	1.1.1.4
++++ arch/ppc/mm/init.c	2001/03/11 04:52:27
+@@ -1015,7 +1015,7 @@
+ 	/* -----  pin 4MB chunks of memory  ----- */
+
+ 	if (size_pinned < size_DRAM) {
+-		pinned_tlbs = ((size_DRAM - size_pinned) / SIZE_4MB);
++		pinned_tlbs += ((size_DRAM - size_pinned) / SIZE_4MB);
+
+ 		if (pinned_tlbs > PPC4xx_MAX_PINNED_TLB) {
+ 			printk(KERN_ERR "MMU_init(): memory configuration requires %d tlb entries.\n",
+
+--------------DA6C3874358A62DB95C1FEEA--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
