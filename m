@@ -1,42 +1,36 @@
-Date: Thu, 4 Jan 2001 18:36:44 -0800
-From: David Schleef <ds@schleef.org>
-To: Dan Malek <dan@mvista.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3A5536EB.4B266E68@mvista.com>
+Date: Thu, 04 Jan 2001 21:52:27 -0500
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: David Schleef <ds@schleef.org>
+CC: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Linux boot fails after MMU (MPC8260)
-Message-ID: <20010104183644.A20037@stm.lbl.gov>
-Reply-To: David Schleef <ds@schleef.org>
-References: <0G6N00K6Y4ZYFB@pmdf-it.hasler.ascom.ch> <3A54BFCF.8EC56F45@mvista.com>
-Mime-Version: 1.0
+References: <0G6N00K6Y4ZYFB@pmdf-it.hasler.ascom.ch> <3A54BFCF.8EC56F45@mvista.com> <20010104183644.A20037@stm.lbl.gov>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3A54BFCF.8EC56F45@mvista.com>; from dan@mvista.com on Thu, Jan 04, 2001 at 01:24:15PM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Jan 04, 2001 at 01:24:15PM -0500, Dan Malek wrote:
->
-> For now, the only working version of Linux on the 8260 is from
-> the MontaVista web site.  It is a -test2 version.
+David Schleef wrote:
 
-Don't be so pessimistic... =)  I've been running the bitkeeper
-kernel on an 8260 for several months now, synchronizing every
-few weeks.  Works fine, except for the occasional bug hunt.
+> Don't be so pessimistic... =)  I've been running the bitkeeper
+> kernel on an 8260 for several months now, synchronizing every
+> few weeks.  Works fine, except for the occasional bug hunt.
 
+I'm still breaking it on a regular basis, so I don't want to
+imply it will always work :-).  I try not to check it in that
+way, but sometimes I do just so I don't lose anything or get
+too far behind.  I'm glad it is working for you.
 
-> If you have
-> access to the FSM Labs BitKeeper sources, I will be updating these
-> for the 8260 before the end of the week.
+> I have an ever-increasing patch that I should probably clean
+> up and send to you, but I keep putting it off.
 
-I have an ever-increasing patch that I should probably clean
-up and send to you, but I keep putting it off.  Even in its
-current hackish form, it should be useful for bug hunting.
-Let me know.
+Well, it is much nicer to receive small patches that are easy
+to incorporate and test.  Please don't wait too long.
 
-
+Thanks.
 
 
-
-dave...
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
