@@ -1,33 +1,37 @@
-Message-Id: <199907200927.SAA04143@mail.cc.tohoku.ac.jp>
+Date: Tue, 20 Jul 1999 10:13:16 -0400 (EDT)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: Yann Bizeul <yann@tynsoe.com>
+cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Subject: Re: X : caught signal 11 ?
+In-Reply-To: <199907200828.DAA31764@lists.linuxppc.org>
+Message-ID: <Pine.LNX.3.96L.990720100907.1737B-100000@unix47.andrew.cmu.edu>
 MIME-Version: 1.0
-Date: Tue, 20 Jul 1999 18:27:37 +0900
-From: Kazunori Aoshima <aoshimak@mail.cc.tohoku.ac.jp>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: [Q] Any changes of PS/2 mouse on 2.2 kernel ?
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi.
+On Tue, 20 Jul 1999, Yann Bizeul wrote:
+> 
+> I've a little bit more informations.
+> 1) X caught signal 11 and quits each time I go back to a console.
+> 2) X quits each time XScreensaver is launching
+> 
+> Iuse the XFree server provided by Release 5
 
-I set X on PowerStack, but PS/2 mouse hungs all systems.
-After moves (about 100 dots) pointer, all of the system is halted,
-not reboot.
-Kernel 2.1.125 works PS/2 better than 2.2.x.
+I also have problem 1), though I guess I've managed to disable xscreensaver so
+X does its built-in blanking thing (with no power saving =( ).
 
-When changes PS/2 code on kernels?
-Or, this trouble is based on some libraly change?
+To crash X:
+startx
+ctrl-cmd-F1
 
-P.S. I heard that serial mouse will do when use X on R5.
+Poof. All gone. If you have xdm set up, xdm reloads (and takes you to vc 7
+from wherever you wanted to go in the first place). I'm using platinumfb. Is
+anyone else out there able to use virtual consoles without X crashing?
 
-Best regards.
-----------------------
-Kaz Aoshima = PReP station
-Material deveropment, Faculty of engineering, 
-Tohoku University, Japan
-E-mail:aoshimak@mail.cc.tohoku.ac.jp
-#I am appreciate if you could tell me suggestions
- for my bad English expressions.
+-Hollis
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
