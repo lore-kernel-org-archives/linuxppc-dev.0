@@ -1,48 +1,62 @@
-Date: Tue, 11 Jun 2002 19:51:30 -0700
-From: Matt Porter <porter@cox.net>
-To: Khai Trinh <kqtrinh@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Ebony bootloader
-Message-ID: <20020611195130.C28767@home.com>
-References: <20020611234337.46834.qmail@web11503.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020611234337.46834.qmail@web11503.mail.yahoo.com>; from kqtrinh@yahoo.com on Tue, Jun 11, 2002 at 04:43:37PM -0700
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Arun Dharankar <ADharankar@ATTBI.Com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problem: SDRAM configuration and refresh
+Date: Tue, 11 Jun 2002 23:03:04 -0400
+References: <20020611192251.WCYS2751.rwcrmhc52.attbi.com@rwcrwbc57>
+In-Reply-To: <20020611192251.WCYS2751.rwcrmhc52.attbi.com@rwcrwbc57>
+MIME-Version: 1.0
+Message-Id: <200206112303.04576.ADharankar@ATTBI.Com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Jun 11, 2002 at 04:43:37PM -0700, Khai Trinh wrote:
+Greetings!
+
+Thanks to anyone who might have attempted to
+help out! The problem turned out to by too low
+SDRAM refresh interval.
+
+Best regards,
+-Arun.
+
+
+On Tuesday 11 June 2002 03:22 pm, adharankar@attbi.com wrote:
+> Greetings,
 >
-> Does the Ebony board port implement a bootloader? What
+> I am trying to getup a Scout based board with
+> 64MB SDRAM, and could use any recommendations
+> to fix this problem:
+>
+> If I set the refresh-enable bit in the PSDMR,
+> the chipselect for flash and other devices
+> vanishes: consequently, this startup code
+> ends up executing junk. At this point if I try
+> to look at the flash from the BDI2000, the
+> flash cannot be seen.
+>
+>
+>
+> On the other hand, if I initialize the SDRAM
+> without setting this refresh-enable bit, ppcboot
+> (the code using it) comes up and am able to run
+> commands etc. However, the problem now is that
+> without the SDRAM refresh we run into memory
+> corruption problem (mtest will fail) and a system
+> hang.
+>
+> Its interesting to note that as long as memory
+> is accessed frequently (say via mtest), the
+> corruption is not see at that address. Also, an
+> idle system almost hangs in a very short time,
+> whereas an active one with mtest will continue on.
+>
+>
+>
+> Best regards,
+> -Arun.
+>
 
-It uses the "simple" bootloader.
-
-> does the head_440.S file do in a nutshell?
-
-init MMU and jump to start_kernel.
-
-> If our custom board has peripheral devices hanging off
-> the EBC0, how should I initilize them and where in the
-> ebony port code? I browsed the source a little bit and
-> see the ebony.c source. I believe this is where you
-> add peripheral devices to the kernel. Am I right?
-
-You can add then wherever you want, but ideally you would
-create a <custom_board>.c with board specific I/O code.
-
-> What is that ioremap64() anyway? Is this a kernel call
-> or a called supported by the firmware?
-
-Read Understanding Linux, Linux Device Drivers, and the
-documentation in Documentation/ directory.  ioremap64()
-is a version of ioremap() for >32-bit physical address
-systems (440, 745x).
-
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
