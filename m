@@ -1,20 +1,14 @@
-Return-Path: <olh@suse.de>
-Received: from Cantor.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "mail.suse.de",
-	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1B6942BF16
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jan 2005 02:45:38 +1100 (EST)
-Date: Sun, 9 Jan 2005 16:13:53 +0100
-From: Olaf Hering <olh@suse.de>
-To: linux-kernel@vger.kernel.org
-Message-ID: <20050109151353.GA9508@suse.de>
-References: <200501082324.j08NOIva030415@hera.kernel.org>
+Return-Path: <hch@lst.de>
+Date: Sun, 9 Jan 2005 17:06:14 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Jerome Glisse <j.glisse@gmail.com>
+Message-ID: <20050109160614.GA22839@lst.de>
+References: <4240b916050109072621440269@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <200501082324.j08NOIva030415@hera.kernel.org>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] raid6: altivec support
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4240b916050109072621440269@mail.gmail.com>
+Cc: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+Subject: Re: U3 G5 AGP support patch (v4)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,54 +18,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Sat, Jan 08, Linux Kernel Mailing List wrote:
++static struct device_node* uninorth_node __pmacdata;
++static u32 __iomem * uninorth_base __pmacdata;
 
-> ChangeSet 1.2347, 2005/01/08 14:02:27-08:00, hpa@zytor.com
-> 
-> 	[PATCH] raid6: altivec support
-> 	
-> 	This patch adds Altivec support for RAID-6, if appropriately configured on
-> 	the ppc or ppc64 architectures.  Note that it changes the compile flags for
-> 	ppc64 in order to handle -maltivec correctly; this change was vetted on the
-> 	ppc64 mailing list and OK'd by paulus.
+static struct device_node *uninorth_node __pmacdata;
+static u32 __iomem *uninorth_base __pmacdata;
 
-This fails to compile on ppc, enable_kernel_altivec() is an exported but
-undeclared function. cpu_features is also missing.
++	if(uninorth_rev == 0x21) {
 
-drivers/md/raid6altivec1.c: In function `raid6_altivec1_gen_syndrome':
-drivers/md/raid6altivec1.c:99: warning: implicit declaration of function `enable_kernel_altivec'
-drivers/md/raid6altivec1.c: In function `raid6_have_altivec':
-drivers/md/raid6altivec1.c:111: error: request for member `cpu_features' in something not a structure or union
-drivers/md/raid6altivec2.c: In function `raid6_altivec2_gen_syndrome':
-drivers/md/raid6altivec2.c:110: warning: implicit declaration of function `enable_kernel_altivec'
+	if (uninorth_rev == 0x21) {
 
-There are a few more exported symbols without declaration:
-__ashldi3
-__ashrdi3
-__lshrdi3
-enable_kernel_spe
-fec_register_ph
-fec_unregister_ph
-idma_pci9_read
-idma_pci9_read_le
-local_irq_disable_end
-local_irq_enable_end
-local_irq_restore_end
-local_save_flags_ptr_end
-ocp_bus_type
-ppc4xx_set_dma_addr
++	if((uninorth_rev >= 0x30) && (uninorth_rev <= 0x33)) {
+
+	if ((uninorth_rev >= 0x30) && (uninorth_rev <= 0x33)) {
+
++	if (agp_bridge->dev->device == PCI_DEVICE_ID_APPLE_U3_AGP) {
++			/* This is an AGP V3 */
++			agp_device_command(command, TRUE);
++	} else {
++			/* AGP V2 */
++			agp_device_command(command, FALSE);
++	}
+
+double-indentation, also please use 1/0 instead of TRUE/FALSE.
+
++static struct aper_size_info_32 u3_sizes[8] =
++{
++/*
++ * Not sure that uninorth3 supports that high aperture sizes but it
++ * would strange if it did not :)
++ */
+
+comment before the struct declearation, please, aka
+
+/*
+ * Not sure that uninorth3 supports that high aperture sizes but it
+ * would strange if it did not :)
+ */
+static struct aper_size_info_32 u3_sizes[8] = {
+
++	uninorth_node = of_find_node_by_name(NULL, "uni-n");
++	/* Locate G5 u3 */
++	if (uninorth_node == NULL) {
++		uninorth_node = of_find_node_by_name(NULL, "u3");
++	}
+
+	/* Locate G5 u3 */
+	uninorth_node = of_find_node_by_name(NULL, "uni-n");
+	if (!uninorth_node)
+		uninorth_node = of_find_node_by_name(NULL, "u3");
+
++	/*
++	 * Set specific functions & values for agp3 controller.
++	 */
++	if (pdev->device == PCI_DEVICE_ID_APPLE_U3_AGP) {
++		uninorth_agp_driver.insert_memory  = uninorth3_insert_memory;
++		uninorth_agp_driver.aperture_sizes = (void *)u3_sizes;
++		uninorth_agp_driver.num_aperture_sizes = 8;
+
+Please delcare separate driver instance instead of overriding.
 
 
-I'm not sure if the EXPORT_SYMBOL should be dropped for them, they have
-no users in the current kernel.
-
---- ../linux-2.6.10-bk12/include/asm-ppc/system.h	2004-12-24 22:34:32.000000000 +0100
-+++ ./include/asm-ppc/system.h	2005-01-09 15:53:32.338569809 +0100
-@@ -76,6 +76,7 @@ extern void giveup_fpu(struct task_struc
- extern void enable_kernel_fp(void);
- extern void giveup_altivec(struct task_struct *);
- extern void load_up_altivec(struct task_struct *);
-+extern void enable_kernel_altivec(void);
- extern void giveup_spe(struct task_struct *);
- extern void load_up_spe(struct task_struct *);
- extern int fix_alignment(struct pt_regs *);
+And asm-ppc64 is still missing an agp.h, no?
