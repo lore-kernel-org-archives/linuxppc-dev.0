@@ -1,18 +1,22 @@
-Return-Path: <krypton@ulrich-teichert.org>
-Received: from arbas.nms.ulrich-teichert.org (i3ED64C85.versanet.de
-	[62.214.76.133]) by ozlabs.org (Postfix) with ESMTP id BBFCA2BDB5
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Jan 2005 02:27:06 +1100 (EST)
-Message-Id: <200501041523.j04FNoO0009594@arbas.nms.ulrich-teichert.org>
-To: mikemartin@linux.ca
-Date: Tue, 4 Jan 2005 16:23:50 +0100 (MET)
-In-Reply-To: <855e88d005010405417d49dcfb@mail.gmail.com> from "Mike Martin" at
-	Jan 04, 2005 08:41:56 AM
-From: Ulrich Teichert <krypton@ulrich-teichert.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Ulrich Teichert <krypton@ulrich-teichert.org>, linuxppc-dev@ozlabs.org,
-	debian-powerpc@lists.debian.org, Philippe Guyot <pguyot@cvf.fr>
+Return-Path: <sydneymartin@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.205])
+	by ozlabs.org (Postfix) with ESMTP id 9E2542BDB5
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Jan 2005 02:39:43 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id 69so189236wra
+	for <linuxppc-dev@ozlabs.org>; Tue, 04 Jan 2005 07:39:42 -0800 (PST)
+Message-ID: <855e88d005010407396309a9f9@mail.gmail.com>
+Date: Tue, 4 Jan 2005 10:39:41 -0500
+From: Mike Martin <sydneymartin@gmail.com>
+To: Ulrich Teichert <krypton@ulrich-teichert.org>
+In-Reply-To: <200501041523.j04FNoO0009594@arbas.nms.ulrich-teichert.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+References: <855e88d005010405417d49dcfb@mail.gmail.com>
+	<200501041523.j04FNoO0009594@arbas.nms.ulrich-teichert.org>
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
+	Philippe Guyot <pguyot@cvf.fr>
 Subject: Re: 43p-140 install issues
+Reply-To: mikemartin@linux.ca
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,38 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, 4 Jan 2005 16:23:50 +0100 (MET), Ulrich Teichert 
+> Could you try to format them before dd'ing on them, like fdformat /dev/fd0h1440?
+> I am not sure if that will change anything, though.
 
->I gave Leigh's 2.4.22 a try. It gave me the same result with the
->debian root disk:
->
->VFS: Insert root floppy and press ENTER
->
->FAT: bogus logical sector size 1981
->FAT: bogus logical sector size 1981
->read_super_block: can't find a reiserfs filesystem on (dev 02:00,
->block 64, size 1024)
->read_super_block: can't find a reiserfs filesystem on (dev 02:00,
->block 8, size 1024)
->Kernel panic: VFS: Unable to mount root fs on 02:00
+Will do.
 
-Could you try to format them before dd'ing on them, like fdformat /dev/fd0h1440?
-I am not sure if that will change anything, though.
+> 
+> I am begining to believe that there is some sort of hardware problem with your
+> box or it is an upgraded version which was a -140 in it's previous life, but my
+> -140 is rock solid with Leigh's 2.4.19 kernel - once it's up, that is.
+> I will leave it running tonight to see what happens,
+> 
+> HTH,
+> Uli
 
->Tonight I'll grab a different root floppy and see what happens.
->
->Leigh's 2.4.22 will also boot the system installed on /dev/sdb1,
->however it also stopped responding after awhile. I think it lasted
->longer than with 2.4.19.
+I am starting to believe this as well. I'm going to see if I can get
+some history on the machine from before it was shelved. As well, I
+know there is a second machine, I'm going to see if I can swap this
+one for that one and see if the same issues exist.
 
-I am begining to believe that there is some sort of hardware problem with your
-box or it is an upgraded version which was a -140 in it's previous life, but my
--140 is rock solid with Leigh's 2.4.19 kernel - once it's up, that is.
-I will leave it running tonight to see what happens,
-
-HTH,
-Uli
--- 
-Dipl. Inf. Ulrich Teichert|e-mail: Ulrich.Teichert@gmx.de
-Stormweg 24               |listening to: Suicide Drive (The Deep Eynde)
-24539 Neumuenster, Germany|Public Pervert (Interpol) Clé De Contact (Metal Urbain)
+MikeMartin
