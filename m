@@ -1,42 +1,34 @@
-Message-ID: <3981BB7A.23043170@lightning.ch>
-Date: Fri, 28 Jul 2000 18:57:30 +0200
-From: Daniel Marmier <daniel.marmier@lightning.ch>
-Reply-To: daniel.marmier@lightning.ch
+Message-ID: <3981D46D.1CBEFF74@embeddededge.com>
+Date: Fri, 28 Jul 2000 14:43:57 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Dan Malek <dan@netx4.com>
-CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Altivec on 2.4.xx?
-References: <3980DEAF.ACFB0C43@embeddededge.com> <39813520.673CF3E0@lightning.ch> <39819D52.DAC049B4@embeddededge.com>
+To: Paolo Scaffardi <arsenio@tin.it>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: MPC8xx-2.2.13 kernel and Framebuffer support: cannot compile!
+References: <001b01bff7e1$ab6b4720$640a0a0a@server>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek wrote:
-> This is a PowerPC architecture definition. It isn't unique to the MPC8xx,
-> as I am obviously using a 7400 with Altivec here.
+Paolo Scaffardi wrote:
+>
+> I trying to develop a simple framebuffer driver for my MPC823FADS Video
+> analog output, but when i modify the kernel to include the any frame buffer
+> device driver, the compilers reports me:
 
-The exception I was talking about is _implementation specific_, which makes
-it MPC8xx unique. I do not use Altivec, but I am afraid there could be
-problems even without it. I could not find out whether the Data TLB Miss
-exception sets the DSISR, but DataStoreTLBMiss can branch to DataAccess,
-wich passes the DSISR to do_page_fault. Phew, hope I was clearer :-)
-Anyway, I will look at this exception with care before telling more.
+Go visit www.mvista.com.  We already have 823 frame buffers for
+some products in the Linux kernels.  It would at least be a starting
+point for your customization.
 
-> Having the common page fault handler is a good thing, we just have
-> to make sure we extract the information properly from the appropriate
-> register.
+> I cannot use other kernels because of my FADS board (not supported by
+> HardHat and similars).
 
-Of course it is a good thing. I was just suggesting a way of retrieving
-this information properly from do_page_fault.
-
-> I thought there was more (than none :-) development happening with
-> Altivec on PowerPC Linux.  Maybe tiny test applications will work,
-> but my MPEG-2 decoder won't.
-
-Sorry, only 8xx here :-(
+It may be easier to add FADS support to a kernel that already supports
+the frame buffer.  Unfortunately, I am adding FADS support (again) to
+the Linux kernel, and I guess I will make it stick this time.......
 
 
-				Daniel Marmier
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
