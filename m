@@ -1,36 +1,33 @@
-Message-ID: <39A7D7BD.D6C2AC2A@wanadoo.fr>
-Date: Sat, 26 Aug 2000 16:44:13 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+Date: Sat, 26 Aug 2000 18:34:41 +0200 (MET DST)
+From: Roman Zippel <zippel@fh-brandenburg.de>
+To: Dan Malek <dan@embeddededge.com>
+cc: Ronald Wahl <rwa@peppercon.de>, Benjamin Herrenschmidt <bh40@calva.net>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: allocating uncachable memory
+In-Reply-To: <39A6AF42.323B88C@embeddededge.com>
+Message-ID: <Pine.GSO.4.10.10008261825550.25785-100000@zeus.fh-brandenburg.de>
 MIME-Version: 1.0
-To: Ethan Benson <erbenson@alaska.net>
-CC: Linux/PPC-devel <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: updated nvsetenv for newworld?
-References: <20000826054151.Y2146@plato.local.lan>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ethan Benson wrote:
->
-> I vaguely recall seeing a note to this list sometime this month
-> about nvsetenv being fixed to work correctly on newworld powermacs?
->
-> is this true and if so where can the updated code be found?
+Hi,
 
-There used to be "nvtool" which came with "poof" (predecessor of yaboot)
-by Marius Vollmer, but this seems to have vanished. Neither the URL
-given on the page http://www.ping.de/sites/zagadka/poof/ nor Marius'
-email addresses on his two homepages seem to work any more.
+> There isn't anything generic right now.  A few of us are working on
+> a solution, as there are other processors affected (IBM 4xx) as well.
 
-> sorry for bringing this up again, i was apparently stoned or something
-> and didn't keep the original messages on the topic.  (and the search
-> engine on linuxppc.org doesn't seem to be finding recent messages)
+IMO the only portable solution would be a memremap (similiar to ioremap).
 
-Vladimir Simonov started the recent enquiry about this, but the result
-was as I said above.
+> Don't forget that managing the caches in software (via flushes and
+> invalidates) could actually provide better performance for data
+> transfers due to the cache bursting available when caches are enabled.
 
---
-Martin
+Sure? Often you don't want io data in the cache at all. io is mostly slow
+and you have to wait anyway. On the other hand such stuff is also a horror
+to debug.
+
+bye, Roman.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
