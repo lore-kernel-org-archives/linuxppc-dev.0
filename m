@@ -1,39 +1,42 @@
-Message-ID: <3BFC70DF.4040905@embeddededge.com>
-Date: Wed, 21 Nov 2001 22:28:31 -0500
+Message-ID: <3BFC7352.6020204@embeddededge.com>
+Date: Wed, 21 Nov 2001 22:38:58 -0500
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linuxppc_2_4_devel vs MontaVista STB3xxxx kernel
-References: <Pine.LNX.4.21.0111220032220.1377-100000@lougher.demon.co.uk>
+To: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
+Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: request_irq () kills kernel
+References: <B164B53F5BD6D511888D009027732E1A024972@ntserver.act.domain>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Phillip Lougher wrote:
+Rudolf Ladyzhenskii wrote:
 
 
-> I am now left wondering whether it may be better to move over to
-> the 2_4_devel kernel for the STB3xxxx and for further kernel
-> work I need to do for different 4xx chips.
+> I was looking through the kernel code and I discovered that other drivers
+> use request_8xxirq() instead of request_irq().
 
-It depends upon what kind of support you want.  If you want to do
-everything yourself and hope some of your questions are answered here,
-then the _devel kernel is probably OK.  If you want real Linux
-technicians dedicated to answer your questions and provide help when
-you ask then the MontaVista subscription is for you.  Also, IBM
-provides drivers only to STB customers for all of their specialty
-peripherals in the chips.  These drivers and other software are only
-available with the MontaVista distribution, we don't have access to
-this or ability to maintain them in the public sources.
+Hmmm.....I didn't think request_irq() should exist.  The reason for the
+name change is to ensure people writing the drivers know a different
+integrated interrupt controller is in use and to catch any legacy drivers
+that would call request_irq() and mess up the interrupt controller.
+We are discussing other options, but I'm holding out for a more generic
+solution to all of the interrupt controller variants.
 
-The boards containing STB processors aren't generally available. All of
-the software in the public _devel tree is courtesy of MontaVista
-employees as their time permits.  You may have to contribute and test
-changes to keep the public tree up to date.
+> ..... Now, those things have been
+> defined to be same in /arch/ppc/kernel/irq.c, but both appear in System.map.
+> Which one should I use?
 
-Thanks.
+You should only be using request_8xxirq() for all integrated peripherals.
+
+> Also, anyone have any ideas why kernel would die?
+> I am trying to hook to interrupt 0x0c (Timer0) and I checked SIMR_L register
+> to make sure Timer interrupts are masked.
+
+Installing an interrupt handler will automatically unmask that interrupt.
+If the hardware isn't properly initialized, like the timer is constantly
+generating interrupts, you will get stuck in an infinite interrupt loop.
 
 
 	-- Dan
