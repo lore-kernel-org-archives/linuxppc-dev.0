@@ -1,42 +1,42 @@
-Message-ID: <37C64B33.27CD4058@agelectronics.co.uk>
-Date: Fri, 27 Aug 1999 09:24:19 +0100
-From: Adrian Cox <apc@agelectronics.co.uk>
+Message-ID: <37C64B37.49029CC6@wanadoo.fr>
+Date: Fri, 27 Aug 1999 10:24:23 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-To: mlan@cpu.lu
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: bug in l2cr status display?
-References: <199908262105.XAA03192@piglet.cpu.lu>
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+CC: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
+Subject: Re: vger-2.3.15 on pmac
+References: <4.2.0.58.19990826171730.00981650@mail.lauterbach.com> <37C57094.D6415E54@wanadoo.fr> <99082700153800.01224@ns1102.munich.netsurf.de> <99082703052100.00447@ns1102.munich.netsurf.de>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Lanners wrote:
-> It seems that the effect of the L2CR[DO] bit isn't clear. In the 750
-> user manual, in the table describing l2cr, it says '... setting  this
-> bit enables the caching of instructions'. This doesn't corrsspond to
-> the name of the register, nor to what I see with my G3 upgrade card: in
-> normal operation, L2CR[DO] isn't set, but it makes no sense to disable
-> instruction caching excpet for test purposes.
+Franz Sirl wrote:
 > 
-> So, what's happening? Is the user manual wrong? In that case, we should
-> correct arch/ppc/kernel/ppc_htab.c accordingly.
+> Am Fre, 27 Aug 1999 schrieb Franz Sirl:
+> >- convert adb_mouse_setup to new style (compiles, but not tested yet)
+> 
+> AAARGH! Everything has changed with the setup code. Use the following diff
+> for the adb_mouse_setup routine:
 
-I think I posted a patch for this a while ago, but I've sort of lost
-track. Basically, somebody in Motorola's documentation department
-couldn't tell one from zero. In normal use the bit should be clear.
-Hopefully somebody with write access will get the correct form into CVS.
+Thanks, Franz!
 
-They also got the Branch Target Instruction Cache the wrong way round. I
-just hope that all firmware developers for G3 machines noticed these
-mistakes.
+Everything is working. I am writing this now from 2.3.15 on my Performa
+6400.
 
-> Any Motorola engineer around? Others with better docs? FWIW, I checked
-> the 750 errata already... nothing.
+For drivers/macintosh/mac_keyb.c, I applied also BenH's patches that are
+in the 2.2 branch on vger, but not yet in the main branch. For me, this
+has the effect that the keyboard gets put on handler 3 instead of 5, so
+that in raw mode it produces different keycodes for the right modifier
+keys, and I can therefore use adb_buttons=2,58,124 to get
+button2=Opt_L+click, button3=Opt_R+click, like in Xpmac.
 
-It's in the errata to the manual, not the errata to the chip.
+What is still not working are the LEDs and the ScrollLock and NumLock
+keys. But this is a different story that started way back before 2.3.x
+and is not very important.
 
-- Adrian Cox, AG Electronics
+--
+Martin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
