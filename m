@@ -1,50 +1,71 @@
-To: Michael Habermann <MHabermann@gmx.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MMU and BDI2000 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 14 Sep 2001 17:58:29 +0800."
-             <5.1.0.14.0.20010914174808.026db880@pop.gmx.de>
-Date: Fri, 14 Sep 2001 13:29:48 +0200
-Message-Id: <20010914112953.26B7C10099@denx.denx.de>
+Message-ID: <6B546A602AD2D211BFF00008C7A42889041D6BE4@hrtades2.atea.be>
+From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
+To: "'ashish anand'" <ashisha@india.infogain.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: "Kernel logical address"  vs "Physical"
+Date: Fri, 14 Sep 2001 13:47:32 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <5.1.0.14.0.20010914174808.026db880@pop.gmx.de> you wrote:
+So the key is that by address is above ioremap_base. That I initially got
+away with not using ioremap is a coincidence? Right?
+
+Where could I find a complete discussion of how all this is organized? The
+documents I find are or very vague, or explain a small issue and suppose you
+have already solid knowledge about it.
+
+Thanks,
+Frederic
+
+-----Original Message-----
+From: ashish anand [mailto:ashisha@india.infogain.com]
+Sent: vrijdag 14 september 2001 8:07
+To: Goddeeris Frederic; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: "Kernel logical address" vs "Physical"
+Importance: High
+
+
+
+> Thank you for your reply! I am afraid that I am still confused...
 >
-> I've not found a BDI newsgroup or FAQ so I'm sorry
+> You say "actually when you refer to address mentioned 0xFA400000 in driver
+> this address is already virtual address". The address 0xFA40000 is an
+> address that I found in the documentation of the hardware vendor (Embedded
+> Planet, the board is an CLLF_BW32), where there is no reference to any OS.
+> The table containing the chip select mappings mentions that the "Control
+and
+> Status register" is mapped at FA40. So I assume that 0xfA400000 is a pure
+> physical address. Or is this a false assumption?
+>
+> When I write "char *p=0xFA40000;" it works.
+> When I write "char *p=0xFA40000; p = ioremap(p,1);" I get another pointer
+> and it works as well... I suppose this could not work when 0xFA40000 was
+not
+> a physical address. When I use p=__va(p); or p=pa(p); it crashes
 
-Maybe we should start a mailing list.
 
-> But I get problems debugging variables. The BDI often prints:
-> '*** MMU: address translation for 0xC100B288 failed',
-...
-> [TARGET]
-> CPUTYPE	    MPC800
-> CPUCLOCK    25000000    ;the CPU clock rate after processing the init list
-> BDIMODE     AGENT       ;the BDI working mode (LOADONLY | AGENT)
-> BREAKMODE   HARD        ;SOFT or HARD, HARD uses PPC hardware breakpoints
-> MMU XLAT
+documentation is alright.
+your documentation says that address 0xF4A00000 is a PHYSICAL address mapped
+for
+ LED.but you will not be able to use this adress from processor without
+ioremapping.
+in mmu of processor thee should be entry for virtual ----> physical
+addreses.
 
-Are you using latest BDI2000 firmware?
+initially this is not , after using ioremap it is created there.
 
-I'm missing a PTBASE definition in this section  -  without  it  only
-default  translation  is  enabled.  See  the  BDI2000  user's manual,
-Section "3.2.2 Part [TARGET]" (Entries "MMU XLAT  [kb]"  and  "PTBASE
-addr") and Section "3.3.4 Embedded Linux MMU Support".
+in your case you are getting virtual address = physical addres , probably
+because of
+ioremap_base in the implementation of ioremap.
+your physical address is above ioremap_base.
+hence physical = virtual.
 
-Please note that the 2.4.4 kernel on our  FTP  server  does  not  yet
-include  the  automatic  update  of  the  BDI  page table information
-structure mentioned in the BDI2000 manual. We will have this  in  the
-next version (as soon as it's running stable).
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Is a computer language with goto's totally Wirth-less?
+now path of your transaction from processor -> host bridge -> LED is clear.
+this is all about your confusion.
+I don't have any idea about your specific board.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
