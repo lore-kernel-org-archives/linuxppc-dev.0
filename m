@@ -1,62 +1,42 @@
-To: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: bdi200 or powertap.. help me to decide. 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 09 Jan 2003 10:06:45 +0530."
-             <3E1CFC5D.5030608@tataelxsi.co.in>
-Date: Thu, 09 Jan 2003 09:30:32 +0100
-Message-Id: <20030109083037.88D89C608E@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Thu, 9 Jan 2003 10:05:50 +0100
+Mime-Version: 1.0 (Apple Message framework v482)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Subject: Booting Linux from an already running linux
+From: Anders Blomdell <anders.blomdell@control.lth.se>
+To: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <8CD0F4AF-23B1-11D7-98E2-0003931C2BFA@control.lth.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3E1CFC5D.5030608@tataelxsi.co.in> you wrote:
->
-> I have been following the recent ( and ongoing ) discussions on bdi2000.
-> I have recommended the company to buy bdi2000. The company is
-> considering bdi2000 and powertap. ( AMC Applied Microsystems
-> Corporation's PowerTAP™).
-> I am going through the data sheet of powertap and doing a comparitative
-> study of both products to find out which one is better suited for linux
-> kernel debugging. Frankly we don't need any of the jazz that powertap +
-> MWX-ICE™ debugger offers .We will be happy to use GNU tools. One good
-> feature I see in powertap is to examine the contents of the registers.
-> but I am a little pessimistic about the linux kernel debug support on
-> powertap.
+Now that I have a Linux running with networking on a PrPMC800 running as
+NON-MONARCH, I wonder if anybody knows about a program that can start a
+fresh linux kernel from the filesystem. The reason I need this, is that the
+PrPMC800 PPC-Bug does not support network booting for NON-MONARCH operation
+(neither have I found any alternative that does), and downloading megabytes
+over the serial line is not very tempting.
 
-Ask yourself (and your AMC /  Metrowerks  sales  guy)  the  following
-questions:
+In theory it should be simple (given that we have enough RAM):
 
-* Does the PowerTAP documentation / sales guys claim to support Linux
-  as target OS? Especially is the MMU support good enough to debug
-  for example dynamically loaded kernel modules?
+   1. Load the new image into RAM (userspace)
+   2. Disable interrupts
+   3. Copy image from userspace RAM to contiguous (physical) memory
+   4. Jump to code in the contiguos (physical) memory
 
-* How many people on this mailing list actually reported that they
-  have successfully used a PowerTAP to debug the Linux kernel
-  including dynamically loaded device drivers?
+Does anybody know of such a program?
 
-* Is there support for Linux as host OS?
+Regards
 
-* Does the Linux kernel provide special hooks for the PowerTAP
-  (equivalent to the CONFIG_BDI_SWITCH configuration option)?
-
-* Which CPUs are supported by the PowerTAP? The BDI2000 supports
-  CPU32/32+, ColdFire, PowerPC, ARM, MIPS32, XScale and M-CORE ...
+Anders Blomdell
 
 
-Guess what we're using...
+------------------------------------------------------------------------------
+  Anders Blomdell
+  Department of Automatic Control        Email: anders.blomdell@control.lth.
+se
+  Lund Institute of Technology           Phone: +46 46 222 4625
+  Box 118, S-221 00 Lund, Sweden         Fax:   +46 46 138118
 
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I wish I had a bronze torc for every user who didn't read the manual.
-                             - Terry Pratchett, _The Light Fantastic_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
