@@ -1,47 +1,29 @@
-Message-ID: <001001c2926f$c29d2960$370da8c0@aman>
-From: "Aman" <aman@mistralsoftware.com>
-To: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Debuging Problem in PPC440GP
-Date: Sat, 23 Nov 2002 03:10:22 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Sat, 23 Nov 2002 12:42:11 +0800
+From: caixupeng <edmoon@huawei.com>
+Subject: why so slowly when use serial to download S-record file?
+To: linuxppc-embedded@lists.linuxppc.org
+Message-id: <001701c292aa$b061a4c0$33690b0a@DBKQW41X>
+MIME-version: 1.0
+Content-type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All
+Dear all,
 
-I wanted to debug the application in ppc440gp. To debug I am using gdbserver
-and ddd. The application which I have written is hello world program. In the
-target the command is
+my ppcboot is 1.2.1
+and I set baud rate to 38400, but it need almost 4 hours to download a 2 Mega bytes file.
+what's wrong ?
 
-root@192.168.13.246:~# gdbserver 192.168.13.242:4000 hello
-Process hello created; pid = 107
+my board is ebony.
 
-In the host the command is
-ddd --debugger ppc_405-gdb --gdb hello and then in the GUI the following
-command is given
+Who know the reason?
 
-target remote 192.168.13.246:4000 which in turn creates the following line
-in the target
-Remote debugging using 192.168.13.242:4000
+please tell me.
 
-In the above situation , if I say "cont" , the program executes normally.
-However if I say "run" , it gives the following error
+thanks!
 
-(gdb) run
-Don't know how to run.  Try "help target".
-
-and in the target it says
-
-"Killing inferior".
-
-Can anybody help me in solving this issue.
-
-Thanking you in advance
-Regards
-Aman
-
+edmoon
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
