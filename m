@@ -1,18 +1,18 @@
-Return-Path: <markc@mail.com>
-Received: from relay03.roc.ny.frontiernet.net (relay03.roc.ny.frontiernet.net
-	[66.133.131.36]) by ozlabs.org (Postfix) with ESMTP id F3C8F2BD46
+Return-Path: <cml3227@eircom.net>
+Received: from stanley (unknown [193.120.93.48])
+	by ozlabs.org (Postfix) with ESMTP id 1B9782BD46
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Oct 2004 22:18:52 +1000 (EST)
-Message-ID: <004301c4bc1f$69fccdc0$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "soar.wu" <soar.wu@utstar.com>
-References: <PCEFKKAFFIJFPILJEMCHAEAPCGAA.soar.wu@utstar.com>
-Date: Wed, 27 Oct 2004 08:20:26 -0400
+	Wed, 27 Oct 2004 22:23:46 +1000 (EST)
+Message-ID: <417F934C.9000903@eircom.net>
+Date: Wed, 27 Oct 2004 13:23:40 +0100
+From: Conor McLoughlin <cml3227@eircom.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+To: Neil Wilson <NWilson@Airspan.com>
+References: <3506EDCDEC47904CBE6FD2E1DEEA8984020CFB63@fs5.airspan.com>
+In-Reply-To: <3506EDCDEC47904CBE6FD2E1DEEA8984020CFB63@fs5.airspan.com>
+Content-Type: multipart/mixed; boundary="------------000006050100020801050500"
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Help!
+Subject: Re: 440GX + peek/poke utility
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,85 +23,139 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Yes, the 'HPI' - are connected to a T.I. DSP, 6416 type.
->
-> About the HPI problem progress.
-> now we have the following resolve method:
->
-> 1, If we use a temp variable to store the read out data, then store the
-data to SDRAM, it is OK, there is no hop.
->      tmpReadRst = READ_UL_HPI_REG(UL_HPIDA_ADDR);
->     *p_cur = tmpReadRst;
->      p_cur++;
->
-> 2, If we donot modify the source codes, but we use the optimization O3 to
-compile the source codes, it is OK.
-> *p_cur = READ_UL_HPI_REG(UL_HPIDA_ADDR);
-> p_cur++;
->
-> 3, If we add a sync instruction to the source  codes, it is OK.
-> *p_cur = READ_UL_HPI_REG(UL_HPIDA_ADDR);
->             __asm__("  eieio; sync");
-> p_cur++;
->
-> 4, If we modify the BSP, update the memory operation option,
-> from :
-> PHYS_MEM_DESC sysPhysMemDesc [] =
-> {
-> ...
->     /*all the other small chip*/
->     {
->     (void *) 0x50000000,
->     (void *) 0x50000000,
->     0x08000000,
->     VM_STATE_MASK_VALID | VM_STATE_MASK_WRITABLE |
-VM_STATE_MASK_CACHEABLE,
->     VM_STATE_VALID      | VM_STATE_WRITABLE      | VM_STATE_CACHEABLE_NOT
->     },
-> ...
-> to:
-> PHYS_MEM_DESC sysPhysMemDesc [] =
-> {
-> ...
->     /*all the other small chip*/
->     {
->     (void *) 0x50000000,
->     (void *) 0x50000000,
->     0x08000000,
->     VM_STATE_MASK_VALID | VM_STATE_MASK_WRITABLE | VM_STATE_MASK_CACHEABLE
-| VM_STATE_MASK_GUARDED,
->     VM_STATE_VALID      | VM_STATE_WRITABLE      | VM_STATE_CACHEABLE_NOT
-| VM_STATE_GUARDED
->     },
-> ...
->
-> We added the option VM_STATE_VM_MASK_GUARDED and VM_STATE_GUARDED,
-> still use the old source codes:
-> *p_cur = READ_UL_HPI_REG(UL_HPIDA_ADDR);
-> p_cur++;
->
-> Now We find there is no hop. It is OK
->
->
-> 5, If we use the memory which is allocated by function cacheDmaMalloc(),
-> the hop still exist, but the number of  hop is little than when we use
-malloc().
->
-> Do you tell me the reason??
->
+This is a multi-part message in MIME format.
+--------------000006050100020801050500
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-sysPhysMemDesc? This is VxWorks, not linux, right?  Well, the same general
-points can be made, but this list is not the right one for VxWorks issues.
+Attached is the simple "mempoke" utility I wrote. It can be used on any
+linux platform.
 
-1) Even though the 8260 is cache-coherent you should make sure the MMU is
-set up so the HPI space is non-cached.
-2) In C code make sure the HPI space is declared as 'volatile' so the
-compiler doesn't optimize out references to the address.
-3) Remember that the HPI interface on the DSP is DMA driven and goes through
-a FIFO, so that writes to DSP memory have a delay before they actually
-appear in DSP memory.  And don't forget to look at cache issues on the DSP
-side.  Your problem may actually be on the DSP side and your various fixes
-are just introducing enough delay for things to complete on the DSP side.
+-Conor
 
-Good luck,
-Mark Chambers
+Neil Wilson wrote:
+> Hi,
+> 
+> I probably just wasn't looking hard enough but would anyone know if a
+> peek/poke type command line utility would exist for accessing physical
+> addresses under Linux on a 440GX board ?  Thanks.
+> 
+> Neil
+> 
+> --
+> Neil Wilson
+> Airspan Communications Ltd.
+> Cambridge House, Oxford Road,
+> Uxbridge, Middx, UB8 1UN, UK.
+> Tel: +44(0)1895-467265
+> 
+> neilwilson@airspan.com
+> www.airspan.com
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
+
+
+--------------000006050100020801050500
+Content-Type: application/x-compressed-tar;
+ name="mempoke.tgz"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="mempoke.tgz"
+
+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
+--------------000006050100020801050500--
