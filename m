@@ -1,50 +1,44 @@
-Date: Thu, 20 Nov 2003 09:42:42 -0500
-Subject: Re: MTD and Intel rev J Strata Flash
-From: John Whitney <john.whitney@timesys.com>
-To: <ghannon@cspi.com>,
-	"Mailing List: linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <BBE23D12.2753%john.whitney@timesys.com>
-In-Reply-To: <85256DE4.004F812B.00@pine.cspi.com>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-ID: <20031120145529.50850.qmail@web41415.mail.yahoo.com>
+Date: Thu, 20 Nov 2003 06:55:29 -0800 (PST)
+From: Jeff Stevens <jsteve17@yahoo.com>
+Subject: Kernel 2.4.23 Problems
+To: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Linux-MTD is alive and well at linux-mtd.infradead.org.  Access to the
-mailing list can be found there as well.
+I recently tried upgrading to the 2_4_devel kernel
+from the DENX CVS repository (2.4.23 kernel).
+However, when I try to run the new kernel, I don't see
+anything after it uncompresses the kernel.  I can boot
+the 2.4.4 kernel without any problems, and have
+basically all of the same kernel configuration in
+2.4.23 as in 2.4.4.  I have tried both with and
+without the clocks_in_mhz environment variable set,
+and I have updated the rpxclassic.h file (in
+arch/ppc/platforms) to include asm/ppcboot.h as I had
+to do in 2.4.4 (although rpxclassic.h is under
+include/asm-ppc in 2.4.4). There is one option (which
+I think is the culprit) that I don't have in the
+2.4.23 kernel that is in the 2.4.4.  That is the "Use
+SCM1 for UART" option under the "MPC8xx Options"
+portion of the kernel configuration.  The base option
+exists ("Use SMC1 for UART"), but there is no other
+options when I select that, as there are for the "Use
+SMC2 for UART" option and as it does have in 2.4.4
+(such as "Use SMC2 for Console" etc.).  Is there a
+patch that will give me these options?  Could someone
+please help!  I have tried all of the UART options
+(SMC1, SMC2, and all of the SCCx UARTs) with no luck.
+I'm at a loss now, and don't know what else to try.
 
-John Whitney
+Thanks in advance,
+   Jeff
 
-On 11/20/03 9:36 AM, "ghannon@cspi.com" <ghannon@cspi.com> wrote:
 
->
-> Hi,
->
-> I'm assuming the linux-mtd list has long since vanished.
->
-> I'm working with a rev J strata flash part.
->
-> It has the "feature" that it's lock-bits can be set individually,
-> but are cleared colllectively.    I have made a 3 partition system
-> where I mainly want two partitions locked except when I am updating
-> them, and the third one unlocked always.
->
-> Has any effort  been put into the MTD layer to take into account that
-> an unlock clears all the bits and some should be put back on.
-> I didn't see anything like that in the code.
->
-> I will put the functionality into my tools if it is not in a lower layer
-> already.
->
-> Thanks,
->
-> Gary Hannon
-> CSPI
->
->
->
->
-
+Free Pop-Up Blocker - Get it now
+http://companion.yahoo.com/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
