@@ -1,45 +1,32 @@
-Message-ID: <3E8B0058.4030503@mvista.com>
-Date: Wed, 02 Apr 2003 09:23:04 -0600
-From: Mark Hatle <fray@mvista.com>
-MIME-Version: 1.0
-To: Toni Van Remortel <t.vanremortel@ha.be>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: EP405 Kernel Panic
-References: <20030402140215.47965273.t.vanremortel@ha.be>
-In-Reply-To: <20030402140215.47965273.t.vanremortel@ha.be>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Wed, 2 Apr 2003 09:40:37 -0700
+From: Matt Porter <porter@cox.net>
+To: Jean-Denis Boyer <jdboyer@mediatrix.com>
+Cc: Matt Porter <porter@cox.net>, kas turi <inox_kas@yahoo.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Disabling data cache
+Message-ID: <20030402094037.A31751@home.com>
+References: <2702075D4DE2B043BF5EB82E9CFAD45B763543@mail1.mediatrix.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <2702075D4DE2B043BF5EB82E9CFAD45B763543@mail1.mediatrix.com>; from jdboyer@mediatrix.com on Wed, Apr 02, 2003 at 09:28:21AM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This comes up weekly on the mailing list, if you search the archives you'll find
-the canned response:
-
-Make sure you have all of the libraries required by your shell.  If there are
-missing libraries it will return back no init found.
-
-Use objdump or ldd to get a list of the required libraries.  (At the minimum you
-will need /lib/ld.so and /lib/libc.so.)  Alternative is to statically link your
-shell.
-
---Mark
-
-> RAMDISK: Compressed image found at block 0
-> Freeing initrd memory: 1771k freed
-> VFS: Mounted root (ext2 filesystem) readonly.
-> Freeing unused kernel memory: 76k init
-> Kernel panic: No init found.  Try passing init= option to kernel.
+On Wed, Apr 02, 2003 at 09:28:21AM -0500, Jean-Denis Boyer wrote:
 >
->
-> So as you can see, the kernel parameters are root=/dev/ram
-> init=/bin/bash, but why does the kernel panic on No init!?
-> /bin/bash does exist in the initrd.
->
-> Anybody an idea where to look?
->
-> # file bin/bash
-> bin/bash: ELF 32-bit MSB executable, PowerPC or cisco 4500, version 1 (SYSV), for GNU/Linux 2.2.5, dynamically linked (uses shared libs), stripped
-> Needed libs are in /lib.
+> There is a kernel configuration option for that: CONFIG_DCACHE_DISABLE.
+> In the kernel configuration UI, look into the section 'MPC8260 CPM Options'.
 
+There is no code backing that option in linuxppc_2_4_devel, it is useless.
+Certainly one could take what one person did (in the old post I referenced)
+and put it under a config option for debug purposes.  Yet another nice
+project for somebody. :)
+
+Regards,
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
