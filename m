@@ -1,34 +1,47 @@
-Date: Wed, 19 May 2004 14:19:29 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Brian Hawley <bhawley@luminex.com>
-Cc: Wolfgang Denk <wd@denx.de>, linuxppc-embedded@lists.linuxppc.org
+Message-Id: <4.2.2.20040519142646.04c22c40@bhawley.mailhost.luminex.com>
+Date: Wed, 19 May 2004 14:27:49 -0700
+To: Eugene Surovegin <ebs@ebshome.net>
+From: Brian Hawley <bhawley@luminex.com>
 Subject: Re: Ebony Board, PPC440GP and NFS panics
-Message-ID: <20040519211929.GB13351@gate.ebshome.net>
-References: <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com> <4.2.2.20040519101456.0509d340@bhawley.mailhost.luminex.com> <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com> <4.2.2.20040519132218.050b0df0@bhawley.mailhost.luminex.com>
+Cc: Wolfgang Denk <wd@denx.de>, linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20040519221108.GD13351@gate.ebshome.net>
+References: <4.2.2.20040519134735.04c20180@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519132218.050b0df0@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519101456.0509d340@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519132218.050b0df0@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519134735.04c20180@bhawley.mailhost.luminex.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4.2.2.20040519132218.050b0df0@bhawley.mailhost.luminex.com>
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, May 19, 2004 at 01:24:21PM -0700, Brian Hawley wrote:
-> Actually, I had no intention of trying to port ebony to u-boot.  I just
-> wanted
-> to get something to work.
+At 03:11 PM 5/19/04 -0700, Eugene Surovegin wrote:
+
+>inird option has nothing to do with MAC address. MAC address is read by
+>ebony.c directly from OpenBIOS VPD area (see ebony.c::ebony_setup_arch())
+>regardless whether initrd is enabled or not.
+
+I understand that.  The point I was trying to make is that with the MAC
+address invalid,
+we can not use the ebony_defconfig, because it wants to boot and use an NFS
+root.
+
+>Probably, you have erased this area on your box.
 >
-> Unfortunately, we've had no luck getting it to boot with the default ibm
-> bootloader either.
+>You can hard code MAC address into ebony.c to see whether this helps you
+>do go
+>further in boot process.
 
->From your previous e-mails I got an impression that booting with OpenBIOS was
-OK.
+I'll check ebony.c...the other place I noticed I could do that was in the
+ethernet driver itself...
 
-Actually, a lot of people succefully boot Ebony using stock IBM boot loader (me
-included)
+Thanks for the tip.
 
-Please, post boot log for the _default_ Ebony configuration (using IBM bootlader
-_not_ u-boot and build with ebony_defconfig), maybe we can help you.
+>Eugene.
+>
 
-Eugene.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
