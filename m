@@ -1,35 +1,98 @@
-From: Larry McVoy <lm@bitmover.com>
-Date: Fri, 7 Jan 2000 12:42:29 -0800
-Message-Id: <200001072042.MAA24660@work.bitmover.com>
+Date: Fri, 7 Jan 2000 14:51:19 -0800 (PST)
+Message-Id: <200001072251.OAA13463@sade.ddi.com>
+From: Jim Terman <terman@ddi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 To: linuxppc-dev@lists.linuxppc.org
-Subject: BK reader/writer locking
+Subject: problem with short in va_arg list with 2.95.1 gcc
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-mea culpa.  I had writer locks at the repository level working but not
-reader locks.  So you could get inconsistent data if you did a pull or
-a resync while someone else was pushing.  
+I am having a problem with code that looks for type short in a va_arg list
+when optimization is turned on.  There is no problem with no optimization.
+It compiles fine but produces an undefined reference to `__va_arg_type_violation'
+which I assume is delibrate to flag an error.  Is there a workaround besides
+turning off optimizations?
 
-A pass at fixing this is in hq.fsmlabs.com:/home/lm/bk so please pull that
-to your local machine and "cd src; make production".  This has already been
-done on hq so you should be back in business on the shared repository.
+If I compile the following file:
+test.c
+------
+#include <stdarg.h>
+#include <stdio.h>
 
-By the way, I dunno if you know it, but you guys rate pretty much 24x7 
-support.  Here's how to get it:
+void printout(short d, ...)
+{
+  va_list arglist;
 
-a) ALWAYS send help requests to dev@bitmover.com - contrary to public
-   opinion, BK is not just me.  Andrew, Rick, Kim, and Aaron also
-   work here and are good and helping and fixing bugs.
+  printf("%d ", d);
+  d = va_arg (arglist, short);
+  while (d)
+    {
+      printf("%s ", d);
+      d = va_arg (arglist, short);
+    }
+}
 
-b) If you don't get an ACK pretty quickly, and you are being held up,
-   you can call my business line which is in the US at 415-401-8808.
-   If you are stalled and you are sure it is a BK problem, for the time
-   being you can call 24 hours/day, I'll get up.  I know some of you are
-   in Europe so I pretty much have to deal with the timezone difference.
+int main()
+{
+  printout(1, 2, 0);
+  printout(2, 3,  4, 0);
+  return 0;
+}
 
-Cheers,
+with the command line:
 
---lm
+> gcc -v -O test.c
+Reading specs from /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/specs
+gcc version 2.95.1 19990809 (prerelease)
+ /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/cpp -lang-c -v -D__GNUC__=2 -D__GNUC_MINOR__=95 -DPPC -D__ELF__ -Dpowerpc -D__PPC__ -D__ELF__ -D__powerpc__ -D__PPC -D__powerpc -Acpu(powerpc) -Amachine(powerpc) -D__CHAR_UNSIGNED__ -D__OPTIMIZE__ -D_CALL_SYSV -D_BIG_ENDIAN -D__BIG_ENDIAN__ -Amachine(bigendian) -D_ARCH_PPC -D__unix__ -D__linux__ -Dunix -Dlinux -Asystem(unix) -Asystem(posix) test.c /tmp/ccnguSmk.i
+GNU CPP version 2.95.1 19990809 (prerelease) (PowerPC GNU/Linux)
+#include "..." search starts here:
+#include <...> search starts here:
+ /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/../../../../ppc-redhat-linux/include
+ /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/include
+ /usr/include
+End of search list.
+The following default directories have been omitted from the search path:
+ /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/../../../../include/g++-3
+ /usr/local/include
+End of omitted list.
+ /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/cc1 /tmp/ccnguSmk.i -quiet -dumpbase test.c -O -version -o /tmp/ccwsSAdv.s
+GNU C version 2.95.1 19990809 (prerelease) (ppc-redhat-linux) compiled by GNU C version 2.95.1 19990809 (prerelease).
+ as -mppc -V -Qy -o /tmp/ccF8j30K.o /tmp/ccwsSAdv.s
+GNU assembler version 2.9.5 (ppc-redhat-linux) using BFD version 2.9.5.0.14
+ /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/collect2 -m elf32ppclinux -dynamic-linker /lib/ld.so.1 /usr/lib/crt1.o /usr/lib/crti.o /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/crtbegin.o -L/usr/lib/gcc-lib/ppc-redhat-linux/2.95.1 /tmp/ccF8j30K.o /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/libgcc.a -lc /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/libgcc.a /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/crtend.o /usr/lib/crtn.o
+/tmp/ccF8j30K.o: In function `printout':
+/tmp/ccF8j30K.o(.text+0x60): undefined reference to `__va_arg_type_violation'
+/tmp/ccF8j30K.o(.text+0x60): relocation truncated to fit: R_PPC_REL24 __va_arg_type_violation
+collect2: ld returned 1 exit status
+
+> gcc -v test.c
+Reading specs from /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/specs
+gcc version 2.95.1 19990809 (prerelease)
+ /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/cpp -lang-c -v -D__GNUC__=2 -D__GNUC_MINOR__=95 -DPPC -D__ELF__ -Dpowerpc -D__PPC__ -D__ELF__ -D__powerpc__ -D__PPC -D__powerpc -Acpu(powerpc) -Amachine(powerpc) -D__CHAR_UNSIGNED__ -D_CALL_SYSV -D_BIG_ENDIAN -D__BIG_ENDIAN__ -Amachine(bigendian) -D_ARCH_PPC -D__unix__ -D__linux__ -Dunix -Dlinux -Asystem(unix) -Asystem(posix) test.c /tmp/ccTOmkZu.i
+GNU CPP version 2.95.1 19990809 (prerelease) (PowerPC GNU/Linux)
+#include "..." search starts here:
+#include <...> search starts here:
+ /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/../../../../ppc-redhat-linux/include
+ /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/include
+ /usr/include
+End of search list.
+The following default directories have been omitted from the search path:
+ /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/../../../../include/g++-3
+ /usr/local/include
+End of omitted list.
+ /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/cc1 /tmp/ccTOmkZu.i -quiet -dumpbase test.c -version -o /tmp/ccUI6hGQ.s
+GNU C version 2.95.1 19990809 (prerelease) (ppc-redhat-linux) compiled by GNU C version 2.95.1 19990809 (prerelease).
+ as -mppc -V -Qy -o /tmp/ccBIgJ3g.o /tmp/ccUI6hGQ.s
+GNU assembler version 2.9.5 (ppc-redhat-linux) using BFD version 2.9.5.0.14
+ /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/collect2 -m elf32ppclinux -dynamic-linker /lib/ld.so.1 /usr/lib/crt1.o /usr/lib/crti.o /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/crtbegin.o -L/usr/lib/gcc-lib/ppc-redhat-linux/2.95.1 /tmp/ccBIgJ3g.o /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/libgcc.a -lc /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/libgcc.a /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/crtend.o /usr/lib/crtn.o
+> 
+-- 
+______________________________________________________________________________
+Jim Terman       |   323 Vintage Park Dr.   |   Voice: (650) 356-5446
+terman@ddi.com   |   Foster City, CA        |   Fax:   (650) 356-5490
+Diab-SDS, Inc.   |   94404                  |   web site - http://www.ddi.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
