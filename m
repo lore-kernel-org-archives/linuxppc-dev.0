@@ -1,49 +1,50 @@
-Message-ID: <390F0D6C.1631011D@embeddededge.com>
-Date: Tue, 02 May 2000 13:16:28 -0400
-From: Dan Malek <dan@netx4.com>
+Message-Id: <m12mgPF-001SyZC@bucks>
+From: diekema@bucks.si.com (diekema_jon)
+Subject: Getting the image section of the ELF file to load w/ VxWorks boot ROM
+To: linuxppc-embedded@lists.linuxppc.org, bkuschak@yaoo.com,
+        jim.chapman@iname.com, frank@mitre.org
+Date: Tue, 2 May 2000 13:24:21 -0400 (EDT)
 MIME-Version: 1.0
-To: Christian Batt <Christian.Batt@sxb.bsf.alcatel.fr>
-CC: wd@denx.de, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Hard Disk Drive on PCMCIA port
-References: <390EEFCC.9A66D452@sxb.bsf.alcatel.fr>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Christian Batt wrote:
+	I am having trouble loading the image section of the elf file
+	(contains the gzip compressed Linux kernel) with the VxWorks boot
+	ROM or the EST VisionICE on the EST SBC8260 board.  Both of these
+	options appear to ignore this section.
 
-> We would like to know how it would be feasible to use a
-> Hard Disk Drive on such 8xx boards, by using a PCMCIA port.
+	This problem was discussed on the linuxppc-embedded mailing list
+	on 11/2[2-3]/99.  A few approaches were put forth, but not all the
+	details were included.  Does someone have a recipe on how to solve
+	this problem?
 
-Yes....I have used the IBM Micro Drive in a PCMCIA adapter.  Given
-my limited hardware knowledge, I believe there are enough signals
-on the PCMCIA that you could also use an IDE connector to a notebook
-or regular IDE/ATA disk drive.  I don't know of anyone that has done
-this, as all of the designs I have seen have an external interface
-for such devices.
+	CPU: EST Corp. est8260 -- MPC8260 PowerQUICC II SBC
+	Version: 5.4
+        BSP version: 1.2/3
 
-> What are the other possibilities (PCI bridge ...) ?
+	I have managed to use ".gzimage" instead of "image" as the
+	section name and have changed the section flags, but I don't
+	think this is enough.
 
-I can put you in contact with some talented hardware engineers that
-have connected damn near everything to a 8xx without using a PCI
-bridge.  They use just a little bit of logic in some type of
-programmable logic device and out the other side is a bus of choice.
-A recent project included a notebook ATA disk drive with DMA....
+bucks 2166} powerpc-linux-objdump -h zImage
 
-> Is there allready some support in the current kernels (i.e 2.2.13
-> or 2.3.99) for such HDD ?
+zImage:     file format elf32-powerpc
 
-It's there.  One of my higher priority (out of a zillion) projects
-is to get the 8xx PCMCIA integrated into the 2.2.14 and 2.3.99 kernels.
-I lost my IBM Micro Drive (had to send it back to the customer), but
-I can test with other devices I have.
-
-Right now, you can simply modify the code in m8xx_setup.c to properly
-map the PCMCIA and device registers, then add the absolute minimal set
-of configuration for IDE/ATA hard disk to the kernel.
-
-
-	-- Dan
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00004494  00400000  00400000  00010000  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .rodata       00000470  004044a0  004044a0  000144a0  2**4
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  2 .data         0000030c  00405000  00405000  00015000  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  3 .data.init    00000000  00406000  00406000  00016000  2**0
+                  CONTENTS
+  4 .bss          0000526c  00406000  00406000  00016000  2**2
+                  ALLOC
+  5 .gzimage      0006fd80  00000000  00000000  00020000  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
