@@ -1,55 +1,43 @@
-Message-Id: <200007252153.WAA27683@hyperion.valhalla.net>
-Date: Tue, 25 Jul 2000 22:53:52 +0100
-Subject: Re: [ANN] IRQ Latency tool 0.1.3 release.
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Benjamin Herrenschmidt <bh40@calva.net>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-Id: <200007252156.XAA00879@piglet.grunz.lu>
+Date: Tue, 25 Jul 2000 23:56:38 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: MacSerial and Serial driver cohabitation
+To: schmitz@opal.biophys.uni-duesseldorf.de
+cc: geert@linux-m68k.org, alain.richard@equation.fr, bh40@calva.net,
+        paulus@linuxcare.com, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <3973274F.F305D3FD@biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>> I still haven't found the "hard-block" that is effecting the overall audio
->>> latency performance... ah well, back to the drawing board...
->>
->>Do you have IDE? The IDE driver turned out to be the major interrupt messing
->>problem on m68k, since it can disable interrupts for quite a while.
->
-> We have some great IRQ blockers in Linux currently. IDE is one,
-> especially in PIO mode where it disables IRQs by default during
+Hi all,
 
-[...]
+On  17 Jul, this message from Michael Schmitz echoed through cyberspace:
+> I'd say agree on a fixed order of probing, allocate minors in that order
+> (with the possible exception of allowing a driver to allocate specific
+> minors out of order if someone wants to make sure their driver always
+> gets the same minors).
 
-Does this mean that there are already other tools to measure the IRQ
-blocking?
+Whoever fixes this problem should be decorated, and a statue put up in
+his memory. ;-)
 
-To go back to the original problem:
+But if anyone is brave enough to attempt it, don't forget that there are
+_two_ places where serial ports are probed for: serial console init very
+early in the booting, and driver init much later in the boot process.
+Those two should be guaranteed to be in sync re minor assignment/device
+naming. Right now, that's not the case.
 
-running a sched_fifo based audio latency test (Benno Senoner's x86 version
-with PPC patches) I was seeing 8-10ms 'inexplicable' scheduling spikes.
+Michel
 
-Someone postulated that this could be caused by IRQ blocking.
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-Hence the tool.  However, on my set-up, using the same latency test the
-spikes show - but there are no IRQ blocks of that length showing in the
-measurement.
-
-I therefore have to conclude that:
-
-(a) The tool is missing something - please peruse and suggest if you have
-time... I think that most stuff is covered (and I did cover the DataAccess &
-InstructionAccess exceptions - although that is currently not enabled in the
-patch I've posted).
-
-(b) The effect is caused by some other phenomenon (which is my current
-guess).
-
-So, I'm going to have another look at the latency test to see what I can do
-to narrow down the source of the problem (including checking what the test
-does :-)
-
-Iain,
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
