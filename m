@@ -1,41 +1,31 @@
-In-Reply-To: <001a01c48abe$0fccb5f0$0301a8c0@chuck2>
-References: <Pine.LNX.4.60.0408241141110.6489@localhost.localdomain> <000f01c48a95$e18e5c20$0301a8c0@chuck2> <FE902A72-F6AB-11D8-918A-003065F9B7DC@embeddededge.com> <001a01c48abe$0fccb5f0$0301a8c0@chuck2>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <60394D06-F6B8-11D8-918A-003065F9B7DC@embeddededge.com>
-Cc: "Embedded Linux PPC list" <linuxppc-embedded@lists.linuxppc.org>,
-	"Robert P. J. Day" <rpjday@mindspring.com>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: value of XIP?  and whether it works with 2.6 kernel?
-Date: Wed, 25 Aug 2004 13:01:15 -0400
-To: "Mark Chambers" <markc@mail.com>
+Date: Wed, 25 Aug 2004 10:40:59 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Oliver King-Smith <oliver.king-smith@nuvation.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Problem trying to address custom hardware
+Message-ID: <20040825104059.B9986@home.com>
+References: <FC3C0DD86B79DF4FA423AF0379A547610155436D@mailguy2.nuvation.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <FC3C0DD86B79DF4FA423AF0379A547610155436D@mailguy2.nuvation.com>; from oliver.king-smith@nuvation.com on Tue, Aug 24, 2004 at 04:10:15PM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Aug 25, 2004, at 12:10 PM, Mark Chambers wrote:
+[your mailer is really bad and should be fixed, this required heavy editing]
 
-> http://www.finux.org/Reprints/Reprint-Bird-OLS2004.pdf
+On Tue, Aug 24, 2004 at 04:10:15PM -0700, Oliver King-Smith wrote:
+> memfd = open("/dev/mem", O_RDWR);
+> if (memfd){
+>  pCPLD = (CPLD_REGISTERS *) mmap(0,
+>  CPLD_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE,
+>  memfd, CPLD_OFFSET);
 
-That's a very misleading paper, and if you read it carefully
-actually supports what I said.
+Others addressed your core problem, but you should know that this
+mmap request won't produce the desired result. You need MAP_SHARED
+since MAP_PRIVATE will result in a COW when you attempt to modify
+your register.
 
-In total, XIP saved them about 80 mS, which is the time it
-takes to copy a kernel to RAM.  Nothing else in the
-paper is related to XIP.  You don't have to use a compressed
-kernel in any environment, and most of the paper talked
-about reducing other boot up delays.  the XIP is an
-insignificant player in boot up time, it does have other
-value as Wolfgang pointed out.
-
-The kernel XIP from Flash isn't very hard to implement,
-it is just very board configuration dependent.  All you
-need is a proper linker command file for your board
-and a couple of start up MMU hacks......for PowerPC.
-
-Thanks.
-
-	-- Dan
-
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
