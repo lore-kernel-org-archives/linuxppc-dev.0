@@ -1,88 +1,50 @@
-Date: Sun, 5 Mar 2000 23:04:07 +0200 (EET)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-cc: Michel Dänzer <michdaen@iiic.ethz.ch>, linuxppc-dev@lists.linuxppc.org
+Date: Sun, 5 Mar 2000 22:20:55 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        Michel Dänzer <michdaen@iiic.ethz.ch>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on pp
  cwith  r128
-In-Reply-To: <v03110701b4e8411b4220@[209.183.132.206]>
-Message-ID: <Pine.LNX.4.21.0003052134430.12030-100000@idd-01.imbc.gr>
+In-Reply-To: <Pine.LNX.4.21.0003052134430.12030-100000@idd-01.imbc.gr>
+Message-ID: <Pine.LNX.4.05.10003052220090.11732-100000@callisto.of.borg>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 5 Mar 2000, Kevin B. Hendricks wrote:
-
-> Hi Kostas,
->
-> > The hwcursor in aty128 lives in the framebuffer so since writes in the
-> >framebuffer get byteswapped differently depending on the depth we need to
-> >write the cursor with differnt byteswapping depending on the depth.
-> >The other solution is to disable the be mode in the framebuffer before
-> >writing the cursor and then reenable it.
+On Sun, 5 Mar 2000, Kostas Gewrgiou wrote:
+> On Sun, 5 Mar 2000, Kevin B. Hendricks wrote:
+> > >> > By the way, true 16 bit depth (565) does not work on my machine. The
+> > >>screen
+> > >> > comes up but everything is very very green!
+> > >> >
+> > >> > Reverting to 16bpp and 15 depth (555) works fine.
 > >
-> >It might be also possible to let the hwcursor layer know about this and do
-> >the right thing (that will be the best way to handle it).
+> > >  The problem here is that aty128fb doesn't support 16 bit depth,
+> > >asking for 16 bit will give you 15 bit but fbdevhw fails to detect
+> > >this.
+> >
+> > Is this true even under x86?  What about in the very latest aty128fb from
+> > the latest 2.3.XX kernel?
 >
-> Given that changes in cursor images are in no way performance sensitive, I
-> think the current patch is just fine, don't you especially if we want
-> something in before xf 4.0 final.
->
+>   Yeap its the same in the x86 side as well, atyfb doesn't support 565
+> either i imagine you remember the jdk problems that we had in xf68_fbdev
+> because of this.
 
- The patch will do for now, after 4.0 is out i'll look for a more general
-solution since other drivers will need the same patch and obviously the
-generic cursor layer is the place to handle this.
+But since Mach64 CT/VT/GT do support RGB 565, adding support for it isn't that
+difficult. Patches?
 
-> >> > By the way, true 16 bit depth (565) does not work on my machine. The
-> >>screen
-> >> > comes up but everything is very very green!
-> >> >
-> >> > Reverting to 16bpp and 15 depth (555) works fine.
->
-> >  The problem here is that aty128fb doesn't support 16 bit depth,
-> >asking for 16 bit will give you 15 bit but fbdevhw fails to detect
-> >this.
->
-> Is this true even under x86?  What about in the very latest aty128fb from
-> the latest 2.3.XX kernel?
->
+Gr{oetje,eeting}s,
 
-  Yeap its the same in the x86 side as well, atyfb doesn't support 565
-either i imagine you remember the jdk problems that we had in xf68_fbdev
-because of this.
+						Geert
 
-> I would think true 16 bit (565) would be desirable given it seems to be the
-> default in the x86 world.
->
-> I will look at the aty128fb.c code to see if there is anything easily found.
->
-> By the way,  I can not get the Xserver to work if I specifify more than 1
-> mode in the XF86Config file.  In fact whatever mode I put there is actually
-> ignored and the mode used by the frame buffer is inherited instead.
->
-> So to change resolutions, I have to use fbset (with /etc/fb.modes filled in
-> properly) and then start of the XFree86 Xserver.
->
-> Is this the resolution switching problem you mentioned to me previously?
->
-> Should we be using fbset to change resolutions of should the mode line in
-> /etc/X11/XF86Config actually be used?
->
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
 
-I can have more than one modeline under x86 (i don't have an aty128 in my
-mac) (there is a problem while switching with ctrl-alt-+/- once the xserver
-is up though, it seems that the stride isn't updated correctly but i didn't
-had the time to look at this yet)
-
-Can you build the fbdevhw module with debug messages enabled and check if
-you can see why its failing with the extra modelines under ppc ?
-
-> Thanks,
->
-> Kevin
-
-  Kostas
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
