@@ -1,51 +1,35 @@
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-To: Martin Costabel <costabel@wanadoo.fr>, Paul.Mackerras@cs.anu.edu.au
-Subject: Re: vger-2.3.15 on pmac
-Date: Fri, 27 Aug 1999 03:01:53 +0200
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.linuxppc.org
-References: <4.2.0.58.19990826171730.00981650@mail.lauterbach.com> <37C57094.D6415E54@wanadoo.fr> <99082700153800.01224@ns1102.munich.netsurf.de>
-In-Reply-To: <99082700153800.01224@ns1102.munich.netsurf.de>
+Message-ID: <19990827024033.12194.rocketmail@web1005.mail.yahoo.com>
+Date: Thu, 26 Aug 1999 19:40:33 -0700 (PDT)
+From: Dan Bethe <dan_bethe@yahoo.com>
+Subject: three ADB mouse buttons on Powerbook G3 Series
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Message-Id: <99082703052100.00447@ns1102.munich.netsurf.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Am Fre, 27 Aug 1999 schrieb Franz Sirl:
->- convert adb_mouse_setup to new style (compiles, but not tested yet)
 
-AAARGH! Everything has changed with the setup code. Use the following diff
-for the adb_mouse_setup routine:
+	Greetings to all, and welcome to my first linuxppc-dev post.  This is
+the only list I'm on regarding LinuxPPC, although I'm a heavy fulltime
+user of it, off-and-on since R4 and pre-R5.  I have some information
+and encouragements I've been collecting to share with you all but now
+I'm desperate for a touch of help!
+	If you please, just reply to me individually via email; I'll let you
+all know when I got the answer and I'll post the answer to the
+FAQ-o-Matic.
+	I have a Wallstreet Powerbook G3 Series, and I use the ADB built-in
+trackpad mouse.  I found out from the FAQ-o-Matic how to enable three
+buttons with the "adb_buttons=xx,yy" kernel parameter.  But they seem
+to be specific for different keyboards, so how do I do it on mine?
+	Or, do we have support for the ALPS Glidepoint external three-button
+ADB trackpad mouse?
+	Thanks!!
+===
+"We can learn from the past, but those days are gone.
+We can hope for the future, but there may not be one."
+-- http://www.dreamtheater.net/songb5.htm#VI1
 
-@@ -174,16 +193,22 @@ __initfunc(int adb_mouse_init(void))
-  * option, which is about using ADB keyboard buttons to emulate
-  * mouse buttons. -- paulus
-  */
--__initfunc(void adb_mouse_setup(char *str, int *ints))
-+static int __init adb_mouse_setup(char *str)
- {
-+       int ints[4];
-+
-+       str = get_options(str,ARRAY_SIZE(ints),ints);
-        if (ints[0] >= 1) {
--               adb_emulate_buttons = ints[1] > 0;
--               if (ints[1] > 1)
--                       adb_button2_keycode = ints[1];
-+               adb_emulate_buttons = ints[1];
-                if (ints[0] >= 2)
--                       adb_button3_keycode = ints[2];
-+                       adb_button2_keycode = ints[2];
-+               if (ints[0] >= 3)
-+                       adb_button3_keycode = ints[3];
-        }
-+       return 1;
- }
-+
-+__setup("adb_buttons=", adb_mouse_setup);
-
- #ifdef MODULE
- int init_module(void)
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
