@@ -1,30 +1,23 @@
-Message-ID: <3F78D934.50805@mvista.com>
-Date: Mon, 29 Sep 2003 18:15:32 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: linuxppc-2.5
+From: Stefan Berndtsson <stefan@nocrew.org>
+Date: Tue, 30 Sep 2003 23:15:47 +0200
+Message-ID: <873ceeuge4.fsf@hades.nocrew.org>
 MIME-Version: 1.0
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: Brian Waite <waite@skycomputers.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2nd time Annc: Marvell DB64360 platform support patches available
-References: <200309180953.20633.waite@skycomputers.com> <3F72531C.6060000@mvista.com> <200309250924.06627.waite@skycomputers.com> <3F73300F.2050605@mvista.com>
-In-Reply-To: <3F73300F.2050605@mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Mark A. Greer wrote:
+linux-2.6.0-test5, rsynced from source.mvista.com::linuxppc-2.5 (is there
+a more recently updated source than that?) doesn't seem to have a working
+sleep-mode in an ibook2 (late 2001, 600MHz, M3/R128).
 
-> Depending on how easy it is to merge the 64260 & 64360 drivers, it may
-> be better to just combine them & still use the SDMA method.  But if
-> you do keep separte drivers, it would be better to have a 64360 one
-> that uses PIO directly on the chip's regs.
+linux-2.6.0-test3 from the same source at an earlier time had a very
+functional sleep.
 
-BTW, I just 'brute force & ignorance' pushed the gt64260 mpsc into a
-64360 kernel and it basically worked so combining the two is probably
-the way to go.
+Is this known? Did I just miss it on the list? Is there a fix? :)
 
-Mark
-
+/Stefan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
