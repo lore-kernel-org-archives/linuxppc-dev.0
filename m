@@ -1,17 +1,21 @@
-To: "Sanjeev R" <sanjeevr@myw.ltindia.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC880 and ELDK 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 23 Apr 2004 09:52:59 +0530."
-             <s088e797.066@EMAIL>
-Date: Fri, 23 Apr 2004 09:11:22 +0200
-Message-Id: <20040423071128.1B2EFC133F@atlas.denx.de>
+Message-Id: <s0891844.083@EMAIL>
+Date: Fri, 23 Apr 2004 13:20:34 +0530
+From: "Sanjeev R" <sanjeevr@myw.ltindia.com>
+To: <wd@denx.de>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MPC880 and ELDK
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Thanks for the information. Actually wanted to validate my assumptions and to make it doubly sure that i can look  for support from the list.
+
+Thanks
+Sanjeev
+
+>>> Wolfgang Denk <wd@denx.de> 04/23/04 12:11AM >>>
 In message <s088e797.066@EMAIL> you wrote:
 >
 >  Does  ELDK support  MPC880 arch? (linux distro in it)
@@ -44,5 +48,6 @@ Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
 "Unibus timeout fatal trap program lost sorry"  -  An  error  message
 printed by DEC's RSTS operating system for the PDP-11
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
