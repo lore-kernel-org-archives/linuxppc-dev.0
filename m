@@ -1,67 +1,52 @@
-Message-ID: <3896CEA3.EBA97957@ctam.com.au>
-Date: Tue, 01 Feb 2000 23:16:35 +1100
+Message-ID: <3896D868.BE2A5C@ctam.com.au>
+Date: Tue, 01 Feb 2000 23:58:16 +1100
 From: Brendan John Simon <Brendan.Simon@ctam.com.au>
 Reply-To: Brendan.Simon@ctam.com.au
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>,
-        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+To: Alan Mimms <alan@packetengines.com>
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: mpc8xx-2.2.13 kernel hangs during boot.
-References: <200002010035.BAA26304@denx.local.net>
+References: <200002010035.BAA26304@denx.local.net> <3896CEA3.EBA97957@ctam.com.au> <0001311713560A.00776@alan.corp.packetengines.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+Alan Mimms wrote:
 
-> In message <3896BF04.55AD7C4F@ctam.com.au> you write:
-> >
-> > I based my port on the BSEIP board as it is the simplest.
-> > The IMMR is at 0xff000000 and all peripherals are mapped above 0x80000000
-> > except for DRAM which is mapped at 0x00000000.
+> Brendan,
 >
-> Do youmean you have  any  peripherals  mapped  at  addresses  in  the
-> 0x80000000 ... 0xC0000000 range? I don't think this will work...
+> We use a serial connection to debug our applications with GDB all the time
+> using stubs that are part of our "OS".  It certainly is possible.  We put the
+> devices on the end of a 24 port Livingston Portmaster terminal server and then
+> setup the ports as raw data ports to which we connect with GDB running on our
+> main build/debug box.  That way the user can debug something in another room or
+> across the planet very easily through the network.
 
-Sorry about my ignornace but why can't I use the address range
-0x80000000-0xBFFFFFFF for my peripherals ?
-Is 0xC0000000-0xFFFFFFFF ok ?  What address range would be recommended ?
-
-
-> > I didn't think so.  The embedded-2.2.5 kernel works fine with the same
-> > bootloader.  I forgot to mention the the embedded-2.2.5 kernel is compiled
->
-> What does "works fine" mean? Can you  run  any  serious  applications
-> which *use* (nearly) all your available memory?
-
-No I haven't tried any serious applications.  I just got a simple test app
-working with dynamic linking using the embedded-2.2.5 kernel compiled with
-binutils-2.9.5.0.24/gcc-2.95.2.  I would prefer to use mpc8xx-2.2.13.
-I now have to put some serious applications together such as telnetd, snmpd,
-etc.
+Cool.  A little overkill never hurt anybody :)
+I'll assume one build/debug box connected directly to the target via a serial cable
+or ethernet for now.
 
 
-> > How can I look at this memory area ?  With a BDM debugger ?  I thought BDM
-> > can't be used.
->
-> Of course this will work with a BDM debugger. Why should it fail???
+> I debugged my initial port of the linux kernel to our platform using just this
+> kind of interface.  You have to commandeer the serial hardware away from the
+> driver - I simply didn't tell the kernel there was a device there and
+> configured it "manually" from the GDB nub initialization function which I
+> called early in main.c.  This works fine for KERNEL debugging.
 
-There have been many postings to this list stating that BDM will not work after
-the kernel is running.  I think it has something to do with the MMU.  The
-debugger does not know how to translate VMA to PMA.  Do you believe this
-statement is correct ?  Can you confirm that the kernel can be debugged using a
-BDM ?
+When you say configured manually what exactly do you mean.
+Is this in the kernel itself ?
+When you say main.c do you mean init/main.c in the linux kernel source tree ?
+Has this got anything to do with the kgdb option in the "make config" process ?
+Can ethernet be used to debug the kernel or is a serial port the only or best way to
+go ?
 
 
-> > Can a serial debugger be used ?
->
-> What is a serial debugger? Do you have any type of boot monitor  with
-> debugging features, or what?
+> For application debugging, you probably want to live in user space.  You COULD
+> use gdbserver, I think, although I have no experience or knowledge of this.
 
-I was thinking of gdb with a serial connection.  I do not have a boot monitor
-with debugging features but I can write some gdb stubs if it is possible.  I
-was basically asking whether it is possible or not to debug the kernel and/or
-apps via a serial connection.
+I'm pretty sure gdbserver is the way to go for debugging applications.  A TCP
+connection is a nice way to debug this.
 
 Thanks,
 Brendan Simon.
