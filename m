@@ -1,53 +1,33 @@
-Message-ID: <3A1B12E9.46C3B9@mvista.com>
-Date: Tue, 21 Nov 2000 16:27:21 -0800
-From: Matthew Locke <mlocke@mvista.com>
+Message-ID: <3A1B1644.C08461FD@blastoff.com>
+Date: Tue, 21 Nov 2000 16:41:41 -0800
+From: "Tod E. Kurt" <tod@blastoff.com>
 MIME-Version: 1.0
-To: "Ruhland, Paul" <pruhland@microwavedata.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [linuxppc-embedded] PCMCIA on MBX860
-References: <DF2142DFD5ECD311BA1900104B943A979322A2@roche-exg1.rochester.adaptivebroadband.com>
+To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: USB Host mode on RPX Lite DW?
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-you need to change a config file.
+Hi!
 
-in /etc/sysconfig/pcmcia
+Has anyone tried to make their RPX Lite DW work as a USB Host?
 
-change the i82365 to m8xx_pcmica
+There exists a tarball of diffs to accomplish this at
+'http://embeddedplanet.com/FN/Final/products/linux_planet1.htm'.
+Embedded Planet says they don't intend to develop these any further).  I
+can only get two of the three diffs to apply.  The last one
+('usb-2.diffs') fails entirely.
 
-"Ruhland, Paul" wrote:
->
-> Matthew,
->
-> I used 'pcmcia-cs-3.1.19.tar.gz', 'hhl-8xx_pcmcia-3.1.19.patch', and
-> 'hhl-8xx-kernel_pcmcia.patch' from the mvista site.
->
-> After adding MBX board specific code to 'modules/m8xx_pcmcia.c' the package
-> succesfully compiles.  However, I now get the following errors when I try to
-> load the module(s):
->
-> ----------------------------------------
-> sh-2.03# /etc/init.d/pcmcia start
-> Starting PCMCIA services: modulesLinux PCMCIA Card Services 3.1.19
->   kernel build: 2.2.14 #10 Tue Nov 21 11:37:36 GMT-5 2000
->   options:  none
-> /lib/modules/2.2.14/pcmcia/i82365.o: /lib/modules/2.2.14/pcmcia/i82365.o: No
-> suyds: no socket drivers loaded!
-> /lib/modules/2.2.14/pcmcia/ds.o: init_module: Device or resource busy
->  cardmgr.
-> cardmgr[74]: starting, version is 3.1.19
-> sh-2.03# cardmgr[74]: no pcmcia driver in /proc/devices
-> cardmgr[74]: exiting
->
-> sh-2.03# lsmod
-> Module                  Size  Used by
-> pcmcia_core            38032   0
-> sh-2.03#
-> -----------------------------------------
-> I was under the impression from your previous post that the socket driver
-> was part of the patch...am I mistaken?  If it is...I assume I must load it
-> first...what is it called?
+Has Monta Vista or anyone else managed to get this to work?
+
+Thanks,
+-=tod
+
+
+--
+Tod E. Kurt
+tod@blastoff.com
+tod@todbot.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
