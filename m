@@ -1,82 +1,35 @@
-Message-ID: <20020226131114.89636.qmail@web9704.mail.yahoo.com>
-Date: Tue, 26 Feb 2002 05:11:14 -0800 (PST)
-From: None Atall <linux_meis@yahoo.com>
-Subject: Re: execve system call question
-To: Sangmoon Kim <dogoil@etinsys.com>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <008901c1beb1$409cc7f0$1a11efcb@industrialDiv.hanasys.co.kr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Tzahi Oved <tzahio@voltaire.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: ppcboot 1.1.4 & MPSC 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 26 Feb 2002 10:25:46 +0200."
+             <20083A3BAEF9D211BDB600805F8B14F3010A15AB@NTSERVER>
+Date: Tue, 26 Feb 2002 14:18:19 +0100
+Message-Id: <20020226131824.EE0B6109E3@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Well, after that command, the filesystem takes
-place. You can't put anything in the kernel. The
-procedure for calling and executing init works fine.
-Is the root filesystem correct? Have you tried to
-upload a ramdisk image in ram? If you are sure that
-all these are correct, then do you have a JTAG
-Debugger? (OCD Commander ...)
+In message <20083A3BAEF9D211BDB600805F8B14F3010A15AB@NTSERVER> you wrote:
+>
+> I'm trying to work with the internal uart (MPSC) on the Galileo EVB64260
+> board. When I set the definition CONFIG_MPSC in the EVB64260 config file
+> (which supposed to set the terminal to work on the MPSC) I'm not getting any
+> response on my console, do I need to configure anything else ?? any
 
-                     D. Meidanis
+This can be anything, like just bad baudrate settings. You need to be
+more specific about your setup.
 
---- Sangmoon Kim <dogoil@etinsys.com> wrote:
->
-> Hi!
-> I'm debugging a custom MPC755 board
-> with linuxppc_devel from montavista rsync,
-> and /opt/hardhat/devkit/ppc/7xx/target for NFS root.
-> It booted and stoped after the message.
->
->
---------------------------------------------------------
-> NET4: Linux TCP/IP 1.0 for NET4.0
-> IP Protocols: ICMP, UDP, TCP
-> IP: routing cache hash table of 1024 buckets,
-> 8Kbytes
-> TCP: Hash tables configured (established 8192 bind
-> 8192)
-> IP-Config: Complete:
->       device=eth0, addr=203.239.17.200,
-> mask=255.255.255.0, gw=203.239.17.57,
->      host=dogoil, domain=, nis-domain=(none),
->      bootserver=203.239.17.57,
-> rootserver=203.239.17.57, rootpath=
-> NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-> Looking up port of RPC 100003/2 on 203.239.17.57
-> Looking up port of RPC 100005/1 on 203.239.17.57
-> VFS: Mounted root (nfs filesystem).
-> Freeing unused kernel memory: 76k init
->
---------------------------------------------------------
->
-> I traced the code and the point of stopping is after
-> calling
-> execve("/sbin/init", argv_init, envp_init)
-> in init/main.c
->
-> I was trying to trace more, but it was impossible
-> because of the complexity of the code.
->
-> Is there any method to debug this?
-> I'm debugging it for a month.
->
-> Please help me.
->
-> - Sangmoon Kim -
->
->
+And you have better chances for a useful reply on  the  ppcboot-users
+mailing list.
 
+Wolfgang Denk
 
-=====
--------------------------------------------------
-  Dhmhtrios Meidanis
--Degree in Mathematics, University of the Aegean.
--Master in Computer Architecture and Digital
- Systems, University of Crete.
-  Greece.
--------------------------------------------------
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Cole's Law: Thinly sliced cabbage.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
