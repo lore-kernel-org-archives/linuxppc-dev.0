@@ -1,35 +1,60 @@
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: Michel Dänzer <daenzerm@student.ethz.ch>,
-        Stephan Leemburg <stephan@jvc.nl>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Debian pmud package available
-References: <Pine.LNX.4.10.10005261124590.25198-100000@opal.biophys.uni-duesseldorf.de>
-From: Francois Felix Ingrand <felix@ingrand.net>
-Date: 31 May 2000 15:20:09 +0200
-In-Reply-To: Michael Schmitz's message of "Fri, 26 May 2000 11:25:34 +0200 (CEST)"
-Message-ID: <x8qog5mhn5i.fsf@alf.laas.fr>
+Message-ID: <3935145C.DE1F478D@mandrakesoft.com>
+Date: Wed, 31 May 2000 09:32:12 -0400
+From: Jeff Garzik <jgarzik@mandrakesoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+To: Josh Huber <huberj@wpi.edu>
+CC: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Lite-On ethernet controller
+References: <20000531090215.A652@mclinux.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de> writes:
-
-> > Sorry to step in this thread, but I am interested in having those
-> > power management capabilities on my Pismo too. I use LinuxPPC 2000
-> > (2.2.15pre19)
-> >
-> > Where can I get the RPMS or tar files.
+Josh Huber wrote:
 >
-> http://www3.jvc.nl/linuxppc/
+> I have what appears to be a Lite-On ethernet controller, which is supported
+> by the tulip driver. What it really is, is a Asante FriendlyNET card. I had
+> heard that the card works in 2.2.14+, but I'm having trouble getting it to
+> work in later kernels (devel).
+>
+> Because of the network driver interface change, I can't try out the newest
+> tulip driver in 2.4pre.
 
-I already installed this version on my pismo. As far as I can tell, it only
-supports battery charge level on this powerbook model. Am I right?
+I don't understand what you mean here.
+
+
+> Does anyone know of forward-ported tulip drivers?
+
+A tulip driver exists in the 2.4pre kernel.  Are you having problems
+with that driver?
+
+
+> The particular error I'm seeing only happens with moderate load -- pings and
+> other light traffic work 100%.
+>
+> Error information:
+> NETDEV WATCHDOG: eth1: transmit timed out
+> Transmit timed out, status e4660000, CSR12 000050ca, resetting...
+>
+> Device information:
+> tulip driver output:
+> eth1: Lite-On PNIC-II rev 37 at 0x1c00, 00:00:94:C5:EF:FF, IRQ 30.
+
+IRQ 30?  Is that ok for PPC?
+
+
+> lspci -vv output attached because it's too wide.
+
+No attachment...
+
+	Jeff
+
+
 
 --
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- "Renault, 97: le chômage pour Vilvorde, 98: 5 milliards, 99: 9 milliards pour
-  les actionnaires, dont 60% pour les fonds de pension américains."
-http://www.ingrand.net/felix                   http://www.laas.fr/~felix
+Jeff Garzik              | Liberty is always dangerous, but
+Building 1024            | it is the safest thing we have.
+MandrakeSoft, Inc.       |      -- Harry Emerson Fosdick
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
