@@ -1,29 +1,27 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Lars Brinkhoff <lars.spam@nocrew.org>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Sound on G4 tower, success
-Date: Fri, 26 Oct 2001 14:08:47 +0200
-Message-Id: <20011026120847.6797@smtp.adsl.oleane.com>
-In-Reply-To: <85r8rtcnzj.fsf@junk.nocrew.org>
-References: <85r8rtcnzj.fsf@junk.nocrew.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <p04330101b7ff0afb0d5b@[24.163.33.28]>
+In-Reply-To: <p05100301b7fea82467e1@[207.172.166.94]>
+References: <p04330100b7f7f805ef9a@[24.163.33.28]>
+ <20011025.233136.74750056.tkoba@ike-dyn.ritsumei.ac.jp>
+ <20011025083032.A29107@cpe-24-221-152-185.az.sprintbbd.net>
+ <200110251653.f9PGrRd19727@pacific.somerset.sps.mot.com>
+ <20011025100904.D29107@cpe-24-221-152-185.az.sprintbbd.net>
+ <p05100301b7fea82467e1@[207.172.166.94]>
+Date: Fri, 26 Oct 2001 08:44:19 -0400
+To: linuxppc-dev@lists.linuxppc.org
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: Re: 2.4.13-pre5 crash when mounting proc
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->> Well, I think I know how to control it. It's just that I don't have
->> the HW to test on ;)
->
->I'd be happy to test new sound hacks on a 2001 G4 Tower.
+>  I updated my copy of the bk:linuxppc_2_4 tree to
+>2.4.14-pre1 and it boots properly again on my G4.
 
-Can you tell me if the version of dmasound in my current rsync
-helps getting sound our of speaker ? It should mute the speaker
-when the jack is plugged and unmute it when unplugged. Can you
-verify this behaviour ?
+ditto on my 9500/G3.
 
-Ben
 
+Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
