@@ -1,36 +1,32 @@
-Date: Mon, 25 Mar 2002 15:05:40 -0700
+Date: Mon, 25 Mar 2002 19:16:16 -0700
 From: Val Henson <val@nmt.edu>
-To: Murray Jensen <Murray.Jensen@cmst.csiro.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: EV-64260-BP & GT64260 bi_recs
-Message-ID: <20020325150540.B23479@boardwalk>
-References: <val@nmt.edu> <16802.1017017050@msa.cmst.csiro.au>
+Message-ID: <20020325191616.J24258@boardwalk>
+References: <20020324120930.A14640@boardwalk> <20020324164649.32343@smtp.wanadoo.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <16802.1017017050@msa.cmst.csiro.au>; from Murray.Jensen@cmst.csiro.au on Mon, Mar 25, 2002 at 11:44:10AM +1100
+In-Reply-To: <20020324164649.32343@smtp.wanadoo.fr>; from benh@kernel.crashing.org on Sun, Mar 24, 2002 at 05:46:49PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Mar 25, 2002 at 11:44:10AM +1100, Murray Jensen wrote:
+On Sun, Mar 24, 2002 at 05:46:49PM +0100, Benjamin Herrenschmidt wrote:
 >
-> On Sun, 24 Mar 2002 12:09:30 -0700, Val Henson <val@nmt.edu> writes:
-> >How about one BI_IGNORE type, and driver writers and firmware authors
-> >can put whatever they feel like inside that bi_rec?
->
-> The kernel should simply ignore any bi_rec it doesn't know about. You don't
-> need a special record tag for this. Any bi_recs within bi_recs are all ignored
-> in one fell swoop, since the outer record tag is unknown.
+> Of course you want to add whatever additional bi_recs, and among the things
+> I propose is the definition that the kernel will only use all-lowercase
+> bi_rec types for it's own use leaving any other combo for other uses.
 
-I know most of you understand this, but I just wanted to make it
-clear:
+Did you mean, the kernel will use all-uppercase bi_rec types?  That's
+what it's currently using.  If you meant to say that the kernel will
+use all-lowercase bi_rec types, I'm interested in knowing why it's
+worth breaking backwards compatibility.
 
-The kernel should simply ignore any bi_rec it doesn't know about - and
-does.  The question is, how can we guarantee that the kernel doesn't
-know about that bi_rec?  The answer is that we need to reserve at
-least one (or several, under Ben's plan) bi_rec types that are
-guaranteed not to be used by the kernel.  That's all I was trying to
-say.
+> No. A BI_IGNORE makes no sense. A whole class of bi_rec types guaranteed
+> not to be used by the kernel makes sense.
+
+Sure, that makes sense.  Like the vendor specific major/minor numbers.
 
 -VAL
 
