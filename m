@@ -1,23 +1,23 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <20083A3BAEF9D211BDB600805F8B14F3010A15AB@NTSERVER>
-From: Tzahi Oved <tzahio@voltaire.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: ppcboot 1.1.4 & MPSC
-Date: Tue, 26 Feb 2002 10:25:46 +0200
+Message-ID: <003101c1bea6$52edcf90$6801a8c0@gaoxg>
+From: "gao xiaoguo" <gaoxg@guoguang.com.cn>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: monitor in mpc860fads
+Date: Tue, 26 Feb 2002 17:16:48 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="windows-1255"
+	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-I'm trying to work with the internal uart (MPSC) on the Galileo EVB64260
-board. When I set the definition CONFIG_MPSC in the EVB64260 config file
-(which supposed to set the terminal to work on the MPSC) I'm not getting any
-response on my console, do I need to configure anything else ?? any
-suggestions ?
+hi,
 
-Thanks
+now i have a mpc860fads board, maybe there is a debug monitor inside it.
+but i dont know how to check it. i also dont know what i need on host end to communicate with the monitor. some guide book is appreciated.
+
+I am newbie in this area, hope some expertise point out a way for me.
+
+thanks
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
