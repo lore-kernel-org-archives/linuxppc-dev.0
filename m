@@ -1,35 +1,21 @@
-Message-Id: <5.1.0.14.2.20030603172714.0385f290@mail.ebshome.net>
-Date: Tue, 03 Jun 2003 17:31:27 -0700
-To: Robin Gilks <robin.gilks@tait.co.nz>
-From: Eugene Surovegin <ebs@ebshome.net>
-Subject: Re: CRAMFS or SQUASHFS
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <3EDD296F.FA278C9C@tait.co.nz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+From: Darin.Johnson@nokia.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Failsafe bootloader
+Date: Tue, 3 Jun 2003 23:47:22 -0700
+Message-ID: <F0B628F30F48064289D8CCC1EE21B7A8012E39C8@mvebe001.americas.nokia.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 04:04 PM 6/3/2003, Robin Gilks wrote:
->I've been trying to determine the best Flash based *_read-only_* compressed
->filesystem for an embedded system.
->
->I can find nothing about CRAMFS - not even what it stands for - is it CRAM
->as in
->squeeze it all in or Compressed RAM meaning it uses loads of RAM to expand
->into.
->Just a hint in the right direction here would help!!
+We had a similar scheme for upgrades.  There was an "approved" image, and a "current" image.  If the current image wasn't working it would revert to the approved image automatically.  If the running image appeared to be ok, the operator could then mark it as the "approved" version.  In addition, there was a "factory installed" image that could be used if the operator messed the system up badly.
 
-Did you read Documentation/filesystems/cramfs ??????
+The drawback is that this takes more Flash space, which can be important when the goals turn from "make a product that works" into "save an extra $5 on the board cost".  Thus, for a later product we got rid of the factory image.
 
-We use cramfs in one of our embedded products along with read-only MTD
-block device.
-No problems so far :)
+It also could be very nice if you could upgrade the lowest level of software, the boot loader or system initializer (ppcboot, etc).  We had found a bug in our loader at one point, and because many registers are "write once" it was difficult to fix these settings from the application software.  But finding a foolproof and reliable way to upgrade the boot loader software is difficult, especially if you are relying on customers and operators to do the upgrading.
 
-BTW, patch exists that solves endianess problems in mkcramfs.
-
-Eugene.
-
+Darin Johnson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
