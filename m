@@ -1,41 +1,45 @@
-Message-ID: <3FC1D594.9060105@imc-berlin.de>
-Date: Mon, 24 Nov 2003 10:55:32 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
-To: Jaap-Jan Boor <jjboor@aimsys.nl>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Preemptive Kernel and MPC8xx ???
-References: <3FC0A1D3.70706@imc-berlin.de>	 <B82FB2A3-1E4E-11D8-A8D4-003065E2BB06@aimsys.nl>	 <3FC1BAC8.6030305@imc-berlin.de> <1069667203.31339.146.camel@linpc003.aimsys.nl>
-In-Reply-To: <1069667203.31339.146.camel@linpc003.aimsys.nl>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: "Ian Guffick" <zenadsl2546@zen.co.uk>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MCF5200 Dev Environment 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 24 Nov 2003 09:28:01 GMT."
+             <001501c3b26d$459555e0$0d01a8c0@IAN>
+Date: Mon, 24 Nov 2003 11:24:28 +0100
+Message-Id: <20031124102433.C4387C5F5F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,m
-
->>>>is somebody actually using the preemptive kernel patches ...
->>>
->>>Yes I do on 2.4.20 and 2.4.22 from kernel.org. So far all seems
->>>to work but didn't do any measurements on it.
->>
->>So you're using vanilla 2.4.22 on your MPC8xx board!?
+In message <001501c3b26d$459555e0$0d01a8c0@IAN> you wrote:
 >
-> yes, am I stupid?
+> What GNU tools are available for the Motorola MCF5200 PowerPC processor.
 
-NO! I nerver said that!
-I just didn't know that vanilla 2.4.22 from kernel.org is now stable enough
-w.r.t. MPC8xx.
+We use the ppc_82xx packages of our ELDK which is available for free download.
 
->>Could you please give me a link to find the mentioned "low-latency patches".
->
-> it comes from Andrew Morton's page
-> http://www.zip.com.au/~akpm/linux/schedlat.html
-Thanks a million.
+> I presume somewhere there will be GCC, GDB, and all the other useful stuff ?
 
-Good luck,
+Sure. See http://www.denx.de/twiki/bin/view/DULG/ELDK for details.
 
-Steven
+> What tools exist for programming/debugging a board without dBug preloaded into flash ?
 
+BDI2000.
+
+> P.S. I want to avoid paying £5000 for a dev kit with Code Warrior or Green Hills or similar.
+> Thanks for any pointers in the right direction  ;-)
+
+If you are going to do any serious work (kernel / driver development)
+you will want a BDI2000 rather sooner than later anyway ;-)
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Until you walk a mile in another man's moccasins, you  can't  imagine
+the smell.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
