@@ -1,75 +1,48 @@
-Message-ID: <36A7BC64.EE5457BA@phx.mcd.mot.com>
-Date: Thu, 21 Jan 1999 16:46:44 -0700
-From: Johnnie Peters <jpeters@phx.mcd.mot.com>
+Message-ID: <36A7CD79.D769782E@jlc.net>
+Date: Thu, 21 Jan 1999 19:59:38 -0500
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-To: Gary Thomas <gdt@linuxppc.org>
-CC: Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
-        linux-kernel@vger.rutgers.edu, linuxppc-dev@lists.linuxppc.org,
-        Dan Malek <dmalek@jlc.net>, Cort Dougan <cort@persephone.cs.nmt.edu>,
-        Michael Meissner <meissner@cygnus.com>
-Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
-References: <XFMail.990120152136.gdt@linuxppc.org>
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Kernel 2.2p7 for embedded
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Everybody
-
-I downloaded this stuff, merged it in and tried it.  Everything worked
-fine except the serial console connections are not showing the
-bootloader information that was introduced with Cort's serial
-console changes.  I don't yet know why as I am suddenly swamped
-with work but I will track it down in the next few days if nobody else
-does.  Othwise this looks really great.
-
-I really like the configuration changes Gary mode for the command
-line stuff and being able to configure the mouse to force initialization.
-
-Johnnie
 
 
-Gary Thomas wrote:
+I just finished the merge of the 8xx embedded processor changes
+to the 2.2-pre7 kernel.  They can be found on linuxppc.cs.nmt.edu
+in the embedded directory.
 
-> On 20-Jan-99 Johnnie Peters wrote:
-> >
-> > I will volunteer to try the patches on:
-> >
-> > Blackhawk
-> > Comet
-> > Utah
-> > Mequite
-> > MTX
-> > VME2600/2700/3600
-> >
-> > just as soon as they are available.
-> >
->
-> I have put up all my patches against 2.2.0p7 at:
->   ftp://ftp.linuxppc.org/gary/diffs-2.2.0p7-Jan20
-> These are diffs against the virgin 2.2.0-pre7.
->
-> This includes the changes to fix boot problems on my Utah box,
-> as well as the changes to get the PS/2 mouse working again.
->
-> I also did some restructuring of the PPC main configuration menu
-> so that Pmac questions are ignored if you aren't configuring for
-> a PowerMac.  I also added a configuration option to set the default
-> kernel boot line, passed to the bootstrap code.
->
-> Note: I have had persistent problems with the cache test in the
-> NCR driver.  It seems to work fine if I just ignore it, so I also
-> left it that way.  I also had to "tone down" the driver a lot,
-> the default of WIDE+20Mhz just doesn't cut it on my drives :-)
->
-> ------------------------------------------------------------------------
-> Gary Thomas                              |
-> email: gdt@linuxppc.org                  | "Fine wine is a necessity of
->    ... opinions expressed here are mine  |        life for me"
->        and no one else would claim them! |
->                                          |      Thomas Jefferson
-> ------------------------------------------------------------------------
+I created a patch file as well against the kernel.org original.  This
+is not completely useful by itself since there are several new files
+not represented in the patch.  This is mainly for porting references.
 
+In addition to the merge, it also includes Cort's new interrupt handler
+functions.  Cort, take a look at this because there were some minor
+changes I had to make :-).
+
+The CPM Ethernet driver (all but 860T) includes modfications sent
+to me by Pierre Vandwalle.  This is better but there is still some bug
+there that is getting my attention.
+
+I have run this kernel on my MBX, RPX-Lite and BSE ip-Engine boards.
+The only requirement is at least 6 MBytes of DRAM.  I have not yet
+tested initrd.
+
+Upcoming events.   The kernel still enables write-through cache.  I will
+upload the new ld.so that is required for copy-back cache (it assumes a
+cache line size that is not correct on the 8xx).  I will also upload all of
+libraries that are built from the glibc RPM.  These have software floating
+point and enable many more programs to work correctly.  I also have some
+programs built for the software floating point world that I will upload as well.
+
+I also see that I am _still_ behind the latest kernel :-).
+
+
+    -- Dan
 
 
 
