@@ -1,25 +1,36 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Daniel Berlin <dan@cgsoftware.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>,
-	"Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Subject: Re: DFP support for kernel radeonfb.c added
-Date: Wed, 14 Nov 2001 22:24:15 +0100
-Message-Id: <20011114212415.18586@smtp.wanadoo.fr>
-In-Reply-To: <Pine.LNX.4.33.0111141518370.25545-100000@www.cgsoftware.com>
-References: <Pine.LNX.4.33.0111141518370.25545-100000@www.cgsoftware.com>
+To: Vincent Katz <vincent.katz@laposte.net>
+Cc: <jhartmann@precisioninsight.com>, <paulus@samba.org>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: AGP : ATI128,powerpc
+Date: Wed, 14 Nov 2001 22:26:29 +0100
+Message-Id: <20011114212629.29843@smtp.wanadoo.fr>
+In-Reply-To: <1005771164.6732.19.camel@avalon>
+References: <1005771164.6732.19.camel@avalon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->No, I mean using i2c to grab it.
+>Linux version : 2.4.14
+>File with a supposed probleme : linux/drivers/char/agp/agpgart_be.c
+>
+>I have a powerpc with an ati128 AGP.
+>
+>When i compile the kernel i have this error : error "Please define
+>flush_cache."
+>
+>this error come from the function flush_cache in agpgart_be.c where
+>definition for powerpc are not setting . Why ?
 
-I think OF uses the Radeon "GPIO" registers to probe the panel type based
-on a wired panel ID and a table of EDIDs in the driver. At least, it did
-it that way on mach64. I dumped a disassembly of the Rage M3 (r128 base)
-MacOS 9 driver of my Pismo and started tracing it, it seem to play with
-GPIOs as well. I didn't yet figure out the exact algorithm though.
+What PPC machine is this ? I added support for Apple's UniNorth
+chipset in my kernel (patch submited to dri-devel a few days ago)
+along with the necessary r128 DRM changes to work around HW bugs.
+
+(My rsync tree is at rsync.penguinppc.org::linux-2.4-benh).
+
+If you are using a different chipset, then my code may not help
 
 Ben.
 
