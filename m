@@ -1,58 +1,39 @@
-Message-Id: <5.1.0.14.2.20011107081736.00bb5550@falcon.si.com>
-Date: Wed, 07 Nov 2001 08:56:12 -0500
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: Compiling kernel with -g option.
-In-Reply-To: <200111070012.QAA23022@shell9.ba.best.com>
+Date: 7 Nov 2001 14:11:24 -0000
+Message-ID: <20011107141124.12482.qmail@mailweb22.rediffmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+From: "Sarnath  Kannan" <sparc64@rediffmail.com>
+Reply-To: "Sarnath  Kannan" <sparc64@rediffmail.com>
+To: "Dan Malek" <dan@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Re: "OpenPIC versus EPIC" in MPC8240 !
+Content-type: text/plain;
+	charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Relocation truncated to fit errors are typically caused by your executable
-exceeding 16Mbytes (24 bits) in size (assuming it isn't caused by missing
-modules and thus unresolved references).  It looks to me like more
-aggressive optimizing (O2) is sufficient to get you below the 16Mbyte
-mark.  Can you leave some things (less necessary or already debugged
-things) out of your kernel or modularize them so that they don't have to be
-linked in?
+> It's not magic, just a bad software hack.  We tell the
+> openpic that it has interrupts from 16 to 32, not from
+> zero.  OpenPIC interrupt 16 matches EPIC interrupt zero.
+   16-32 ? NumSources of OpenPIC = 24. It should be
+either (0-23) or (16-40). 16-32 is noWhere.
 
-You might try making the code not relocatable to avoid the 24 bit address
-limitation on position independent code, but I don't have any experience
-with that option and it may cause all sorts of things to break.
+> The interrupts zero to 15 are given to the 8259.
+> The problem with this method is we can't get to some
+> of the other EPIC features, but we are discussing
+> alternatives.
+>
+  Its not a "HACK" dan. Its a bug. Just verify
+the register layout of OpenPIC and EPIC. You
+will find that "openpic_init" is populating
+reserved memory areas of EPIC. No wonder, we get
+bogus interrupts. You can verify this in the code.
+  Moreover Had the code really wanted seperation
+of vector spaces of OpenPIC and EPIC, it should have
+called "openpic_init" with
+"offset value = "NUM_8259_INTERRUPTS"
 
- From the gcc manual, "IBM RS/6000 and PowerPC Options"
--mno-relocatable
-
-On embedded PowerPC systems generate code that allows (does not allow) the
-program to be relocated to a different address at runtime. If you use
-`-mrelocatable' on any module, all objects linked together must be compiled
-with `-mrelocatable' or `-mrelocatable-lib'.
-
-gvb
-
-
-At 04:12 PM 11/6/01 -0800, Subodh Nijsure wrote:
-
->Sorry if this is "basic" question but I looked through mailing and couldn't
->find a solution.
->
->When I compile kernel and some of my own modules together I get tons
->of error like --
->
->relocation truncated to fit: R_PPC_REL24 copy_to_user
->..
->..
->
->However if I compile everything with -O2 options everything works fine,
->any way I can fix this so I can debug things....
->
->Thanks.
->
->/Subodh
->
->
+sarnath
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
