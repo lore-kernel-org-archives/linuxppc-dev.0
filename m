@@ -1,59 +1,35 @@
-Message-ID: <3BD5B7D8.C060B6AF@mvista.com>
-Date: Tue, 23 Oct 2001 14:32:56 -0400
-From: Dan Malek <dan@mvista.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3BD5C0B1.2060601@oerlikon.ca>
+Date: Tue, 23 Oct 2001 15:10:41 -0400
+From: Sebastien Ruel <sruel@oerlikon.ca>
+Reply-To: sruel@oerlikon.ca
 MIME-Version: 1.0
-To: David =?iso-8859-1?Q?M=FCller?= (ELSOFT AG) <d.mueller@elsoft.ch>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Additional IRQ handlers in ppc4xx_init_IRQ()
-References: <3BD517E5.5090204@elsoft.ch>
-Content-Type: text/plain; charset=iso-8859-1
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RPX-CLLF & Flash root filesystem
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"David Müller (ELSOFT AG)" wrote:
+Hi there,
 
-> I have a question regarding the registration of additional IRQ handlers
-> for a PPC405GP based board.
+I have an Embedded-Planet RPX-CLLF 860P board, and i'm trying to put a
+root filesystem on the flash so I will no longer depend on nfs.
 
-Where are Matt's changes for the Tivo?  It would address this and give
-us another example of how this should be structured.
+Up to date, i've been able to put the Linux image inside the Flash
+memory, but I'm still using BOOTP and NFS for the root filesystem.
 
+I'm using Hardhat Linux 2.2.14, with the standard PlanetCore Bootloader
+v1.03.
 
-> extended ppc4xx_init_IRQ as follows:
+Is there a procedure out there that could help me do this?
 
-This is not an appealing solution.  We should change ppc4xx_pic_init()
-to initialize the internal interrupt controller irq descriptor, and then
-create a standard board initialization call for board specific changes.
+Thank's
 
+Sebastien Ruel
+system engineer
+Oerlikon Contraves
+Montreal, Canada.
 
-> static void __init
-> ppc4xx_init_IRQ(void)
-> {
->         int i;
->
->         ppc4xx_pic_init();
->
-+	  ppc4xx_pic_board_init();
->         return;
-> }
->
-
-The '...board_init()' function can be empty for those boards that don't
-require any additional controller initialization.
-
-
->         for (i = 0; i < NR_IRQS; i++)
->                 irq_desc[i].handler = ppc4xx_pic;
-
-The NR_IRQS should represent the total number of interrupts across all
-controllers.  The pic_init() should change this loop to initialize either
-NR_AIC or NR_UIC depending upon a 403 or 405 interrupt controller.  No
-#ifdefs necessary.
-
-Thanks.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
