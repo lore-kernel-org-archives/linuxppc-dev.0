@@ -1,31 +1,31 @@
-Content-Type: text/plain;
-  charset="us-ascii"
-From: Srini Amble <samble@xopnetworks.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: thttpd and CGI on MPC 850
-Date: Wed, 2 Apr 2003 14:23:33 -0600
+Message-ID: <3E8B5D37.4090706@embeddededge.com>
+Date: Wed, 02 Apr 2003 16:59:19 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Message-Id: <200304021423.33094.samble@xopnetworks.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Matt Porter <porter@cox.net>,
+	Jean-Denis Boyer <jdboyer@mediatrix.com>,
+	kas turi <inox_kas@yahoo.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Disabling data cache
+References: <2702075D4DE2B043BF5EB82E9CFAD45B763543@mail1.mediatrix.com> <20030402094037.A31751@home.com> <3E8B3895.5050908@embeddededge.com> <20030402194622.GA30107@ip68-0-152-218.tc.ph.cox.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pardon me for posting this message to this mailing list ( it does not quite
-belong here)
+Tom Rini wrote:
 
-I have "thttpd" (version 2.23beta1) running on my MPC850 board. When I submit
-a "FORM" which in turn invokes a CGI program (written in C) the console
-output freezes and I get the error "An error occurred while loading
-http://192.168.0.128/cgi-bin/example.cgi" on the browser window. The board is
-alive because I can ping the board. I can execute the CGI program on the
-shell without any problem. I would appreciate any wisdom from the community
-at large which will help me in debugging this problem.
+> My guess and recollection is that the 8260 version of this was to
+> disable the DCACHE in a certain manner, because of buggy silicon on a
+> specific board.  Someone unmerged this bit of code later I think.
 
-BTW, Identical set of "thttpd", CGI program, and HTML pages works fine on an
-x86 RH 7.3 host.
+Hmm....OK.  FYI, on any processor core except 8xx you can't disable
+the data cache and expect to make any progress without also removing
+the cache management instructions.  That would be a pretty ugly patch
+and also require unique libraries for the applications. :-)
 
-Thanks in advance
---
-Srini Amble
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
