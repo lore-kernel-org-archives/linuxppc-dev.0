@@ -1,41 +1,30 @@
-Message-ID: <3AC8C866.AE9CDA83@mvista.com>
-Date: Mon, 02 Apr 2001 14:43:50 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3AC8ED90.54885AAF@corelatus.com>
+Date: Mon, 02 Apr 2001 23:22:24 +0200
+From: Thomas Lange <thomas@corelatus.com>
 MIME-Version: 1.0
-To: machael <dony.he@huawei.com.cn>
-Cc: Wolfgang Denk <wd@denx.de>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Does linux-2.4.0-test1 support 8260?
-References: <000b01c0a2e5$c499d400$8021690a@huawei.com>
+To: Dan Malek <dan@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MII PHY support?
+References: <3AC76542.A4D27697@bigwig.net> <3AC8BA81.3BC77AC4@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-machael wrote:
+Dan Malek wrote:
 
->       Does linux-2.4.0-test1 support 8260?
+> Maybe we should just move this into a separate source file instead of
+> making a big configuration mess of the FCC Ethernet driver.  I'm about
+> to do that for some 8xx FEC functions as well.
 
-I haven't tried it recently, but it used to work.  I just used
-the linuxppc_2_5 baseline to port a couple of new 8260s I received.
-It worked fine.  I don't recall anything (except probably the I2C
-stuff) that is in this baseline and not in 2.4.  You may want to
-get a newer kernel, like 2.4.2, and from someplace like FSM Labs.
-There are some uart driver hacks for SCC console that don't seem
-to be working, but I can't think of anything else.
+We have a custom board (GTH) with an 860 using the SCC and the FEC for
+ethernet, so we have two transceivers on board.
+To support auto neg. and full duplex on the SCC, we need to be able to
+communicate with both transceivers. Since this communication is done
+on the same MDIO pins, it would be nice to move the code out of the
+fec driver and make it possible to use for scc ethernet too.
 
-> Note that there is an error  when showing "Freeing initrd memory: 4194300k
-> freed" .
+/Thomas Lange/
 
-That's just a stupid 'printk' problem printing a bogus variable (that
-I think several people, including me, have checked in a fix).
-There isn't any bug associated with that.
-
-I know it's very hard, but have you verified your memory timing
-parameters with some simple test programs?  Once Linux starts
-running with MMU and caches enabled, it pushes the limits of the
-hardware and nasty things like this start to appear.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
