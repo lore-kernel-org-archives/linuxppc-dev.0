@@ -1,28 +1,42 @@
-From: Steffen Haeuser <SteffenH@hyperion-software.de>
-Reply-To: SteffenH@hyperion-software.de
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>, daenzerm@student.ethz.ch
-CC: Iain Sandoe <iain@sandoe.co.uk>, takashi oe <toe@unlserve.unl.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Date: Tue, 01 Aug 2000 17:25:09 +0100
-Message-ID: <yam8248.468.146674120@mail.lf-online.de>
-In-Reply-To: <Pine.LNX.4.21.0008011508360.4803-100000@idd-01.imbc.gr>
-Subject: Re: LinuxPPC X Server
+Message-ID: <39871F8A.C2B1D262@student.ethz.ch>
+Date: Tue, 01 Aug 2000 21:05:46 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: Takashi Oe <toe@unlserve.unl.edu>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: LinuxPPC X Server
+References: <20000731140748.1481@mailhost.mipsys.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Am 01-Aug-00 schrieb Kostas Gewrgiou:
+Benjamin Herrenschmidt wrote:
 
-Hi!
+> I'm working on a /dev/agpgart implementation for new machines.
 
-> If i remember corectly 4.0.1 doesn't need agpgart but i fear that 3d
->performance is far worst without it.
+Great, I'd happily beta-test and/or help, will that be in your rsync-tree or
+in 2.4?
 
-Surely faster than *no* 3D Acceleration :)
+> But DRI should be already port-able using the PCI GART provided by most ATI
+> chipsets.
 
-Steffen
+The latest r128 DRI driver should work without AGP GART, but AFAIK PCI GART
+support is only planned yet - I assume and hope it should work anyway?
 
+> Any volunteer ?
+
+I'll have a try. (checking out the DRI CVS tree now :)
+
+
+Michel
+
+
+--
+Man invented language to satisfy his deep need to complain.
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
