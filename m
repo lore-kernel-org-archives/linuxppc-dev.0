@@ -1,28 +1,34 @@
-Message-ID: <3977006E.1A7E8151@biophys.uni-duesseldorf.de>
-Date: Thu, 20 Jul 2000 15:36:46 +0200
+Message-ID: <3977018F.35968D3A@biophys.uni-duesseldorf.de>
+Date: Thu, 20 Jul 2000 15:41:35 +0200
 From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: Iain Sandoe <iain@sandoe.co.uk>
-CC: Rolf Liu <rolfl@sc23.sc.mcel.mot.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: problems about __cli()
-References: <200007200919.KAA12257@hyperion.valhalla.net>
+To: Kohkichi Hosoda <khosoda@venus.dti.ne.jp>
+CC: schmitz@opal.biophys.uni-duesseldorf.de, ajoshi@shell.unixbox.com,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: [ANN] New XFree86-pmac rsync tree
+References: <20000715113541Y.kohkichi@venus.dti.ne.jp>
+		<Pine.LNX.4.10.10007171100220.22569-100000@opal.biophys.uni-duesseldorf.de> <20000720221208U.kohkichi@venus.dti.ne.jp>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Iain Sandoe wrote:
-> the function is implemented in:
+Kohkichi Hosoda wrote:
+> Section "Screen"
+>         Identifier "Screen0"
+> #       Device     "r128"
+> #       Monitor    "Monitor0"
+>     Device     "ATY,RagePro_C"
+>     Monitor    "iMac Monitor"
+>         DefaultDepth      15
 >
-> /usr/src/your-kernel-foo-bar/arch/ppc/kernel/misc.S
->
-> It is *vital* to make sure that there is a symlink named 'linux' in /usr/src
-> that points to your /usr/src/your-kernel-foo-bar/ because there are symlinks
-> in /usr/include that expect to use this to find the build-specific headers.
+> I also tried DefaultDepth 8, and both settings also gave me
+> a lot of spectrum and strange color on X.
 
-Wasn't that the same guy that tried to build Linux kernels on a Windoze
-system? The whole /usr/src and symlink stuff might be a bit tough to
-pull off on such a box.
+And what exactly does the 15 and 8 bit subsections look like?
+
+You will need fbbpp = 16 for 15 bit. And Ani's latest (yesterday's)
+source has no color or accel problems whatsoever for me.
 
 	Michael
 
