@@ -1,45 +1,38 @@
-Message-Id: <5.0.2.1.2.20010302124631.01aabdf0@mail.munich.netsurf.de>
-Date: Fri, 02 Mar 2001 13:07:10 +0100
-To: Stephen Turner <sret1@cam.ac.uk>
-From: Franz Sirl <Franz.Sirl@munich.netsurf.de>
-Subject: Re: Bug#86356: analog: analog segfaults
-Cc: 86356@bugs.debian.org,
-	"Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-	Andrew Sharp <andy@netfall.com>, "Marco d'Itri" <md@Linux.IT>,
-	Michel Lanners <mlan@cpu.lu>, debian-powerpc@lists.debian.org,
-	linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.3.96.1010302101639.19312B-100000@gamma.statslab.c
- am.ac.uk>
-References: <01022318305301.06077@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Date: Fri, 2 Mar 2001 19:51:21 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: sym53c875 in 2.4.2
+Message-ID: <Pine.LNX.4.05.10103021932200.480-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 11:29 02.03.2001, Stephen Turner wrote:
+	Hi,
 
->This turns out to be a bug in gcc, not analog. On ppc, gcc 2.95.2 seems to
->have alignment problems when a function is passed certain long lists of
->arguments including doubles. But apparently the bug is fixed in the (not yet
->released) 2.95.3 version of gcc.
+I just tried the current bk linuxppc_2_4 on my CHRP LongTrail with Sym53c875
+card. The Sym53c8xx driver fails downloading the SCSI scripts, and keeps trying
+ad infinitum.
 
-No, it won't be fixed in the official gcc-2.95.3, cause the release manager
-Bernd Schmidt rejected my patch because of the possible implications for
-other platforms. It is fixed in my Linux/PPC RPM's since about a year, and
-accordingly in the update RPM's for LinuxPPC and YDL. Suse is fixed too, I
-think since around mid-last-year. Somehow Debian slipped through, but I
-have been in contact with Daniel Jacobowitz, and I think he will upgrade
-the Debian package soon (or he already has?).
-My current diff against the GCC CVS gcc-2_95-branch (which will become the
-official 2.95.3) can be found at
-<ftp://devel.linuxppc.org:21/users/fsirl/cvs-2_95-branch-ppc.diff>, I just
-updated it with a fix for the loop bug uncovered by some MPEG player.
+At first sight, the kernel seems to work when I disable the Sym53c8xx driver
+with `sym53c8xx=excl:0x1400'. It boots to a shell from the MESH.
 
-gcc-3.0pre (PPC RPM's soon to come) already has all the fixes, so with 3.0
-we all will be in sync again.
+PCI seems to be OK. Only changes are that the sl82c105 IDE got assigned some
+I/O ports now.
 
-Franz.
+Everything worked fine in the 2.4.1 from a month ago.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
