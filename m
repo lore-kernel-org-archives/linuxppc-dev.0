@@ -1,36 +1,27 @@
-From: bkuschak@yahoo.com
-Date: Tue, 6 Feb 2001 10:33:37 -0800 (PST)
-Message-Id: <200102061833.f16IXbT21311@lara.pathlink.com>
-Subject: 60 second CPU load spike
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3A804C24.4BA29BB1@mvista.com>
+Date: Tue, 06 Feb 2001 14:10:28 -0500
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: "Bruno R. Barreyra" <bruno.r.barreyra@intel.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux on a 823FADS
+References: <3A7F4C08.21F4AC7E@intel.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+"Bruno R. Barreyra" wrote:
 
-I was hoping someone might be able to provide a few hints or insights regarding
-a problem I am trying to track down.  I've noticed that something in our system
-is spiking the CPU load exactly every 60 seconds.  When the system is heavily
-loaded by packet processing, this spike causes the CPU to go to about 100% (from
-80%) for approximately 2-3 seconds.  This causes packet drops at either the
-hardware or the netif_rx() backlog queue.  Here is some more information:
+> How am I supposed to build the kernel? It seems the FADS port has long
+> been abandoned. I'm trying to revive it,
 
-- no other processes running except init, getty, sh, kswapd, kupdate, kflushd,
-wdt (watchdog)
-- kernel instrumentation shows one 60-second timer (wdt), but it is not
-coincident with the spike
-- happens with ethernet IP-forwarding
-- profiling data inconclusive
-- using MontaVista's 2.4 kernel on PowerPC405
+You can find the FADS LSP on the MontaVista server in /pub/Area51.
+It is based on a 2.4.0-test2 kernel and works fine on the 860.  All
+you need to do is update the SCC Ethernet configuration and you should
+be all set.
 
-I noticed 60 second periodic tasks such as route-related garbage collection,
-etc, and changed these periods in /proc, without any effect.  I would like to
-find out what is causing these spikes and eliminate the problem.  Any comments
-would be appreciated.
 
-Thanks,
-Brian
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
