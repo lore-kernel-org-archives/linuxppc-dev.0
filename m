@@ -1,103 +1,80 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Linuxppc-Dev@Lists. Linuxppc. Org" <linuxppc-dev@lists.linuxppc.org>
-Subject: FW: Improved copy_page() function, about 30% speed up for mpc860!
-Date: Fri, 28 Feb 2003 11:41:52 +0100
-Message-ID: <IGEFJKJNHJDCBKALBJLLIEKNFKAA.joakim.tjernlund@lumentis.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: porting oprofile to ppc
+From: Albert Cahalan <albert@users.sourceforge.net>
+To: oprofile-list@lists.sourceforge.net
+Cc: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain
+Date: 28 Feb 2003 18:27:15 -0500
+Message-Id: <1046474835.1090.303.camel@cube>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi
+I'm considering a port to the MPC7400 ("G4") PowerPC.
+This is out of desperation, since there isn't anything
+beyond gprof available for Linux/ppc users.
 
-hmm, no reply on this on the embedded list. Maybe this list is a better place.
+I could use some advice. Where do I even start?
+Anybody else doing this or interested in helping?
 
- Jocke
+I run both 2.4.xx and 2.5.xx kernels, compiled from
+source. Neither one has any performance monitoring
+hooks ready to use. I could add them. What is needed?
 
------Original Message-----
-From: Joakim Tjernlund [mailto:joakim.tjernlund@lumentis.se]
-Sent: Thursday, February 27, 2003 14:09
-To: Linuxppc-Embedded@Lists. Linuxppc. Org
-Subject: Improved copy_page() function, about 30% speed up for mpc860!
+I notice that RTC support conflicts with the /dev/rtc
+driver. Couldn't it use the driver? Sometimes the RTC
+is available via memory-mapped IO, and sometimes the
+RTC is emulated by the /dev/rtc driver. Even on x86 you
+need the /dev/rtc driver to safely set the clock with SMP.
 
+I'm not a Qt fan. Can I avoid it? All my stuff is GNOME,
+plain X11, or non-GUI. Somehow libqt.so.2.3.1 did get
+installed though.
 
-Hi all
+On the 7xx and 74xx chips, I get a user-readable 64-bit
+counter that ticks at 1/16 of the memory bus clock. So on
+my 450 MHz Mac with a 100 MHz bus, it ticks at 6.25 MHz.
+There's also a privileged 32-bit count-down register that
+gives an interrupt. There isn't a CPU core cycle counter,
+unless you have a 7400 (or above?) and are willing to
+devote a performance counter to that purpose.
 
-I have been playing with the copy_page() function in arch/ppc/kernel/misc.S
-and gained about 30% speed up for my mpc860, rev D4 MHz.
+The 7400 chip additionally gives me a set of performance
+monitoring registers, with read-only access from user code.
+There are four counters, PMC1 to PMC4, and control registers.
+I can freeze the counters in kernel mode, in user mode,
+and according to a flag that may be used to mark a process.
 
-This is what i did:
-- Use dcbz on 8xx but clear ahead one cache line(performance is really crappy
-  if I don't clear ahead). This is the biggest improvement.
-- Use prefetch for 8xx as well.
+There's a threshold value for some of the performance
+counters, taking on values from 0..63 times 2 or 32.
+(0,2,4,...,124,126,128,160,192,...,1952,1984,2016)
+So for example, I could count loads that stall for more
+than 1952 ticks.
 
-I know that dcbz is buggy for some 8xx CPUs but I don't know which ones.
-For me works just fine, except in copy_tofrom_user(don't know why).
+I can enable counters PMC2..PMC4 when PMC1 goes negative.
+I can freeze all the counters (or cause an interrupt)
+when one of PMC2...PMC4 goes negative.
 
-I would like to get some feedback & test results both for 8xx and non 8xx.
-Please include exact CPU and revision.
+There are ways for external hardware to mask counting or
+interrupt generation. I'm not about to solder a button
+onto my CPU for this, but I guess it should be supported.
 
- Thanks
-         Jocke
+All four counters can count:
 
-_GLOBAL(copy_page)
-	addi	r3,r3,-4
-	addi	r4,r4,-4
-	li	r5,4
-#if MAX_COPY_PREFETCH > 1
-	/* This will prefetch past end of page, does not seem to be a problem? */
-	li	r0,MAX_COPY_PREFETCH
-	li	r11,4
-	mtctr	r0
-11:	dcbt	r11,r4
-	addi	r11,r11,L1_CACHE_LINE_SIZE
-	bdnz	11b
-#else /* MAX_L1_COPY_PREFETCH == 1 */
-	dcbt	r5,r4
-	li	r11,L1_CACHE_LINE_SIZE+4
-#endif /* MAX_L1_COPY_PREFETCH */
-	dcbz	r5,r3 /* older 8xx CPUs may have buggy dcbz instructions, if so try "dcbt r5,r3" instead */
-	addi	r5,r5,L1_CACHE_LINE_SIZE
-	li	r0,4096/L1_CACHE_LINE_SIZE-1 /* All, but the last cache line of data due dcbz below */
-	mtctr	r0
-1:
-	dcbt	r11,r4
-	dcbz	r5,r3 /* zero the cache line after the one that is beeing copied
-		       * older 8xx CPUs may have buggy dcbz instructions, if so try "dcbt r5,r3" instead */
-	COPY_16_BYTES
-#if L1_CACHE_LINE_SIZE >= 32
-	COPY_16_BYTES
-#if L1_CACHE_LINE_SIZE >= 64
-	COPY_16_BYTES
-	COPY_16_BYTES
-#if L1_CACHE_LINE_SIZE >= 128
-	COPY_16_BYTES
-	COPY_16_BYTES
-	COPY_16_BYTES
-	COPY_16_BYTES
-#endif
-#endif
-#endif
-	bdnz	1b
-/* Copy the last cache line of data */
-	COPY_16_BYTES
-#if L1_CACHE_LINE_SIZE >= 32
-	COPY_16_BYTES
-#if L1_CACHE_LINE_SIZE >= 64
-	COPY_16_BYTES
-	COPY_16_BYTES
-#if L1_CACHE_LINE_SIZE >= 128
-	COPY_16_BYTES
-	COPY_16_BYTES
-	COPY_16_BYTES
-	COPY_16_BYTES
-#endif
-#endif
-#endif
-	blr
+core cycles
+completed instructions, excluding folded branches
+memory cycles divided by 32, 8k, 128k, or 2M
+instructions dispatched (0, 1, or 2 per core cycle)
+
+Then of course each register has a selection of other
+choices. Of interest:
+
+instruction breakpoint matches, with a bit mask
+(could be abused to count system calls or interrupts)
+various cache things, loads, stores, etc.
+
+There must be 60 to 240 choices, depending on how one
+counts duplicates.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
