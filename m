@@ -1,17 +1,16 @@
-Return-Path: <jonmasters@gmail.com>
-Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.198])
-	by ozlabs.org (Postfix) with ESMTP id 910772BC0F
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Sep 2004 10:24:30 +1000 (EST)
-Received: by mproxy.gmail.com with SMTP id 76so4182708rnk
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Sep 2004 17:24:26 -0700 (PDT)
-Message-ID: <35fb2e5904092617246482c908@mail.gmail.com>
-Date: Mon, 27 Sep 2004 01:24:26 +0100
-From: Jon Masters <jonmasters@gmail.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <dennis@pcde.inka.de>
+Received: from mail.inka.de (quechua.inka.de [193.197.184.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1E3F62BC0F
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Sep 2004 19:23:10 +1000 (EST)
+Date: Mon, 27 Sep 2004 10:57:11 +0200
+From: Dennis Grevenstein <dennis@pcde.inka.de>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <20040927085711.GA12651@aton.pcde.inka.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Subject: Cisco Aironet, PowerBook PCMCIA
-Reply-To: jonathan@jonmasters.org
+Content-Type: text/plain; charset=us-ascii
+Subject: RS/6000 40p status
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,20 +20,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Hi,
 
-Couldn't find my regular prism2 card so I tried a Cisco Aironet 340 I
-recall using once previously. Seems to be some hard lock issues on my
-powerbook going on here.
+What's the current status of the RS/6000 40p aka 7020
+aka 6015? There are PReP machines mentioned to work,
+but I'm not sure about the 40p. I got Linux installed
+on mine using a custom 2.4.18 kernel from 
+http://www.remote.org/sven/ppc.html
+Are these patches in the PPC devel kernel?
 
-I'll take a look at why this happens, just passing on that fact in
-case anyone else has one of these and wants to help out. I've no
-useful logs from the box in question yet.
+If you reply, please add a CC: to me.
+I'm not on the list.
 
-Cheers,
+mfg
+Dennis
 
-Jon.
-
-P.S. Incidentally I've found PCMCIA is more flaky on the Powerbook
-with a 2.6 kernel than with a 2.4 - removing any device without first
-ejecting it will result in a hard lockup. Will investigate.
+-- 
+There is certainly no purpose in remaining in the dark
+except long enough to clear from the mind
+the illusion of ever having been in the light.
+                                        T.S. Eliot
