@@ -1,31 +1,59 @@
-Date: Sun, 25 Mar 2001 22:22:04 -0500 (EST)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: "Michael R. Zucca" <mrz5149@acm.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Date: Mon, 26 Mar 2001 05:26:05 +0100
 Subject: Re: Sound stoppage
-In-Reply-To: <l03130302b6e460bd2e0b@[24.218.240.205]>
-Message-ID: <Pine.LNX.4.21L.0103252219310.2204-100000@unix47.andrew.cmu.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Hollis R Blanchard <hollis+@andrew.cmu.edu>,
+	"Michael R. Zucca" <mrz5149@acm.org>
+Cc: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010326043026.49B822F06E@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 25 Mar 2001, Michael R. Zucca wrote:
+Mon, Mar 26, 2001,  Hollis R Blanchard wrote:
+> On Sun, 25 Mar 2001, Michael R. Zucca wrote:
+>>
+>> I'm having a problem with sound stopping when I'm trying to use it at the
+>> same time as X.
+>>
+>> Machine lowdown:
+>> PowerCenter 132 with a Sonnet 750 upgrade.
 >
-> I'm having a problem with sound stopping when I'm trying to use it at the
-> same time as X.
+> I used to have this problem, also on a PowerCenter 132.
 >
-> Machine lowdown:
-> PowerCenter 132 with a Sonnet 750 upgrade.
+> I haven't used that machine in a while, but I believe such problems were
+> fixed with Iain Sandoe's dmasound patches & backport. I don't remember the
+> link offhand; check http://penguinppc.org/dev/pmac.
 
-I used to have this problem, also on a PowerCenter 132.
+the last 2.2.x stuff is linked from: (and also via penguinppc.org).
 
-I haven't used that machine in a while, but I believe such problems were
-fixed with Iain Sandoe's dmasound patches & backport. I don't remember the
-link offhand; check http://penguinppc.org/dev/pmac.
+http://www.drfruitcake.com/linux/linuxppc.html
 
--Hollis
+*note* there is a dbdma problem that is *not* fixed with the ed21 patch to
+2.2.18. (one day I'll apply the 2.4.x stuff back to the 2.2.18) - or if
+someone else is interested in trying a merge - I can point them in the right
+direction.
 
+===== as of now...
+
+You'd be better off with 2.4.x: (patches + a kernel binary/mods at)
+
+ftp://ftp.penguinppc.org/users/iain/kernel/2_4_x/
+
+==== Gotchas that remain:
+
+1/ the 2.4.x patches will not build-in (stupid mistake on my part - I
+renamed a CONFIG_XXX - but not everywhere - oops).
+
+2/ Some PowerCenter machines have a dbdma problem (hardware-related) in
+addition to those fixed in the 2.4.x patches.  There is a fix for this "in
+the works" - sorry it's a bit slow coming (there's a few waiting) but I'm a
+bit bogged down in rent-paying work ATM :-(.
+
+I'll post as soon as the PowerCenter fix is avail.
+
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
