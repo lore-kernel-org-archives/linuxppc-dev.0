@@ -1,32 +1,28 @@
-Message-ID: <20030809173952.79342.qmail@web80709.mail.yahoo.com>
-Date: Sat, 9 Aug 2003 10:39:52 -0700 (PDT)
-From: Venkat Raghu <venkatraghu2002@yahoo.com>
-Subject: flat memory in ppc
-To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <16181.43369.219750.258015@cargo.ozlabs.ibm.com>
+Date: Sun, 10 Aug 2003 12:09:45 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Samuel Rydh <samuel@ibrium.se>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] 2.6 timebase synchronization
+In-Reply-To: <20030809011305.GA12030@ibrium.se>
+References: <20030808001523.GA9274@ibrium.se>
+	<20030809011305.GA12030@ibrium.se>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Samuel Rydh writes:
 
-I am a newbie. Often it is mentioned that ppc
-based systems are "flat memory".
-So Please clarify
-1)what exactly flat memory means?
-2) Please give comparision of x86 and ppc, showing
-the places where they are different.
-3) So is there any difference in drivers that
-work on ppc platforms.
+> Attached is an improved version of the patch.
 
-Any links/pointers will also be helpful.
+How many SMP machines are there where we don't know how to freeze/thaw
+the timebase?  We know how to do that on the old powersurge powermacs,
+on CHRP systems and on at least some of the recent core99 powermacs
+(those that have a timebase-enable property on the cpu device nodes).
+What machines are left?
 
-Please mail back to venkatraghu2002@yahoo.com,
-as I did't subscribe.
-
-Regards
-Venkat.
-
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
