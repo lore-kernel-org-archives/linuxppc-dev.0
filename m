@@ -1,48 +1,46 @@
-Date: Mon, 4 Oct 1999 08:27:13 +0200 (MET DST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Elliot Lee <sopwith@redhat.com>
-cc: Tom Rini <trini@kernel.crashing.org>, Eric Dorland <dorland@lords.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: esound for PPC
-In-Reply-To: <Pine.LNX.4.10.9910031740170.29018-100000@lacrosse.corp.redhat.com>
-Message-ID: <Pine.GSO.4.10.9910040826360.15704-100000@dandelion.sonytel.be>
+From: hollis@andrew.cmu.edu
+Message-ID: <37F84F94.3A4FE3D0@andrew.cmu.edu>
+Date: Mon, 04 Oct 1999 02:56:20 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [Fwd: Voodoo3 support]
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 3 Oct 1999, Elliot Lee wrote:
-> On Sun, 3 Oct 1999, Tom Rini wrote:
-> > > It appears you're right. All the sounds that have trouble playing are 16bit
-> > > 44kHz wavs. The weird thing is that if I start esd and use esdplay, all the
-> > > sounds play properly. However the 16bit sounds don't appear to be going
-> > > through esd because I don't get my prompt back until the sound is done
-> > > playing, while the 8bit sounds are played asynchronously.
-> 
-> This may just be because the 16bit sound files are bigger...
-> 
-> > What happens is either audiofile or esound is doing byte swapping it
-> > doesn't need to.
-> 
-> I think I heard somewhere that the PPC /dev/dsp uses little endian format,
-> while Sparc uses its native (big) endianness.
-> 
-> If someone could give me a table of what endianness the sound devices on
-> various platforms expect, I could make an esound-0.2.15 that fixes it
-> (after having you all test it :).
+(Posted to wrong list.)
+Anyone have a Voodoo 3?
 
-There are different sound format codes for little and big endian 16 bit sound.
-Look at the sound headers.
+-Hollis
 
-Greetings,
+-------- Original Message --------
+Subject: Voodoo3 support
+Date: Sun, 3 Oct 1999 23:31:32 -0700
+From: Michael Greer <mgreer@skinnydesign.com>
+To: linuxppc-user@lists.linuxppc.org
 
-						Geert
 
---
-Geert Uytterhoeven ----------------- Sony Suprastructure Center Europe (SUPC-E)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint Stevens Woluwestraat 55
-Phone +32-2-7248632 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+After exchanging a few messages with Daryll Strauss (the 3DFX Linux 
+wizard), I now know that no Linux support for Voodoo3 exists for the 
+PPC platform. There are drivers for V3 in the 3.3.5 and 3.9.19 
+versions of XFree86, and they will compile, but evidently some 
+byte-swapping has to be done to get the V3 and PPC to talk properly. 
+He says that someone is working on it for 3.9.16 and it might be out 
+in the next beta, but that he has been in contact with a few PPC 
+developers and none have followed up on his suggestions for kernel 
+support. He claims it would be rather easy to implement.
+	I am not a programmer, so I can't do this, but is anyone out 
+there working on V3 support for the PPC? The MacTell cards should be 
+out soon, so I imagine we will be swarmed with V3 PPC users. I just 
+bought a PC PCI card and use the 3DFX Mac drivers, and I love it, but 
+I would love for my Linux to run just as fast.
 
+	thanks, Mike
+_____________
+  S K I N N Y         Michael Greer             
+http://www.skinnydesign.com
+  D E S I G N         mgreer@skinnydesign.com
+_____________
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
