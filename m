@@ -1,22 +1,41 @@
-Message-ID: <EFB813091B18D511BD3600508B644F820A61802E@tx14exm06.ftw.mot.com>
-From: Zajac Adam-AAZ004 <Adam.Zajac@motorola.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Question on DMA support for MPC85xx
-Date: Fri, 9 Jul 2004 16:27:33 -0500 
+Message-ID: <40EF2824.7030109@g-house.de>
+Date: Sat, 10 Jul 2004 01:20:04 +0200
+From: Christian Kujau <evil@g-house.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: linuxppc-dev@lists.linuxppc.org
+Subject: still binutils problems: Error: Unrecognized opcode: `dssall'
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello everyone,
 
-Does anybody know if a 2.4.20 kernel supports mpc85xx DMA engine?
-I need to use PQIII DMA and would like to know if I could use such functions
-as set_dma_mode(), set_dma_addr() and set_dma_count().
+hi,
 
-Regards,
-Adam Zajac
+$subject was discussed quite often here, but i am not sure, if a
+solution was found. may i ask if the error is a toolchain (gcc/binutils)
+error, or is the kernel to be fixed?
 
+thanks,
+Christian.
+
+  CC      arch/ppc/kernel/ppc_htab.o
+  AS      arch/ppc/kernel/l2cr.o
+arch/ppc/kernel/l2cr.S: Assembler messages:
+arch/ppc/kernel/l2cr.S:110: Error: Unrecognized opcode: `dssall'
+arch/ppc/kernel/l2cr.S:278: Error: Unrecognized opcode: `dssall'
+arch/ppc/kernel/l2cr.S:387: Error: Unrecognized opcode: `dssall'
+make[1]: *** [arch/ppc/kernel/l2cr.o] Error 1
+
+GNU ld version 2.15
+  Supported emulations:
+   elf32ppclinux
+   elf32ppc
+   elf32ppcsim
+
+- --
+BOFH excuse #416:
+
+We're out of slots on the server
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
