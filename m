@@ -1,32 +1,36 @@
-Message-ID: <3E81C5AA.80206@embeddededge.com>
-Date: Wed, 26 Mar 2003 10:22:18 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: joakim.tjernlund@lumentis.se
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	"Linuxppc-Embedded@Lists. Linuxppc.  Org" <linuxppc-embedded@lists.linuxppc.org>,
-	strauman@SLAC.Stanford.EDU
-Subject: Re: dcbz works on 862 everywhere!
-References: <IGEFJKJNHJDCBKALBJLLAEHCFLAA.joakim.tjernlund@lumentis.se>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: greggiraud@netcourrier.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC8266ADS 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 26 Mar 2003 08:42:26 +0700."
+             <mnet1.1048664546.22205.greggiraud@netcourrier.com>
+Date: Wed, 26 Mar 2003 16:40:47 +0100
+Message-Id: <20030326154052.4D658C58BA@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joakim Tjernlund wrote:
+In message <mnet1.1048664546.22205.greggiraud@netcourrier.com> you wrote:
+>
+> I am using a MPC8266ADS card, and I want to put a PPCBOOT1.2.1 into it.
 
-> I am still intrested in trying copy-on-write but I can't figure out
-> how. Is it a big job? Any pointers?
+You should use U-Boot instead of PPCBoot for new projects.
 
-The 8xx properly implements copy-on-write now.  I don't remember when
-I updated this, maybe somewhere in the mid 2.3.xxx timeframe.  All of
-the processor specific MM functions have to be changed, it isn't
-something that is likely going to be a configuration option. due to
-all of the common #define, macros, and page table functions.  It
-does remove three instructions and a branch from the TLBmiss handler :-)
+> => The file board/mpc8260ads/mpc8260ads.c contain a function named
+> intdram. In that file, we init a local sdram and the sdram on the 60x
+> bus. We mustn't intilializase the local sdram.
+
+Well, so comment out this part of the code.
 
 
-	-- Dan
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Fascinating, a totally parochial attitude.
+	-- Spock, "Metamorphosis", stardate 3219.8
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
