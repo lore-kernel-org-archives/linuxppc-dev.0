@@ -1,63 +1,42 @@
-Message-ID: <38CCE7A2.6027@cygnus.com>
-Date: Mon, 13 Mar 2000 05:05:38 -0800
-From: Michael Snyder <msnyder@cygnus.com>
-Reply-To: msnyder@cygnus.com
+Message-ID: <38CCF340.363C70A7@iiic.ethz.ch>
+Date: Mon, 13 Mar 2000 14:55:12 +0100
+From: Michel Dänzer <michdaen@iiic.ethz.ch>
 MIME-Version: 1.0
-To: Kevin Buettner <kev@primenet.com>
-CC: jjs <Jerry.Sexton@insignia.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: gdb and multi-threaded applications.
-References: <017c01bf8a91$0e74f460$571170c1@honda.isltd.insignia.com> <1000310213225.ZM27738@saguaro.lan>
-Content-Type: text/plain; charset=us-ascii
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+CC: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        Kostas Gewrgiou <gewrgiou@imbc.gr>, linuxppc-dev@lists.linuxppc.org,
+        Kevin Puetz <puetzk@iastate.edu>
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to workonppcwithr128
+References: <Pine.LNX.4.10.10003131356430.32105-100000@opal.biophys.uni-duesseldorf.de>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kevin Buettner wrote:
+Michael Schmitz wrote:
 >
-> On Mar 10,  1:03pm, jjs wrote:
->
-> > Sorry I have not been back to you sooner, I have been distracted by other
-> > things. I tried getting a test application to exhibit the same behaviour
-> > with no luck. However, I did notice that before the call to pthread_create
-> > to start up the new thread we have the line:
+> > > A clean patch against XFree 4.0 would help to decide if I just missed some
+> > > more cache flush magic or if it's a real atydb bug.
 > >
-> >     pthread_sigmask(SIG_BLOCK, &fullSigMask, &sigMask);
-> >
-> > All the bits in fullSigMask are set, so this call blocks all signals to the
-> > calling thread. Commenting this line out makes everything work under gdb,
-> > the new thread gets created and doing 'info threads' after this gives me a
-> > list of all the threads running in the process. This implies that gdb
-> > requires a signal to be unblocked at the point the thread is created.
-
-Your analysis is correct.  The linuxthreads library uses certain
-signals to communicate and synchronize between threads.  GDB
-listens in on these signals.  Most commonly they are SIGUSR32,
-SIGUSR33 and SIGUSR34, but this is not always the case.  I would
-think that blocking these signals might affect more than just
-GDB debugging (ie. it might affect the program's behavior directly).
-
-> > If
-> > this is fact the case, which signal must we not block in order for correct
-> > operation under gdb?
+> > I suspect it is the latter as Kevin Puetz has reported a similar problem with
+> > Mach64 on the debian-powerpc list. The server locked the machine in
+> > fbdevHWModeInit(). If you could rebuild libfbdevhw.a with DEBUG defined (in
+> > fbdevhw.c), we might get more valuable information from the log.
 >
-> SIGCHLD.
+> Sounds like the very bug I'm chasing. It chokes on the FBIOPUT_VSCREENINFO
+> ioctl. The mode in question is reported as:
 >
-> (I think.)
+> xfree init mode:        64902   1024 1064 1200 1344   768 771 777 806
+> fbdev init mode:        15407   1024 40 136 144   768 3 6 29   16 0:0:0
+>
+> with the only thing that seems fishy the 0:0:0 as the res:blue:green
+> length values.
 
-SIGCHLD does come into play as well, although I have never
-fully understood its role.  Try unblocking SIGCHLD, but also
-be prepared to try unblocking the ones I mentioned above.
+If it's for 16 bpp, this might be the problem.
 
-> Background for Michael: Jerry reported a problem in which gdb (on
-> linux/ppc) hangs on a pthread_create().   Jerry has verified that
-> the thread tests in the test suite work properly on his platform,
-> so we know that gdb does work (some of the time) when creating
-> new threads.  Jerry's application is proprietary and I've asked him
-> to try to distill the problem into a small example that we can test.
->
-> Note to Jerry: I'd still like a small example, preferably one that
-> we could eventually put into the testsuite.
->
-> Kevin
+Have you tried with several depths? (15, 8, 24, 32, ???)
+
+
+Michel
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
