@@ -1,45 +1,49 @@
-Message-ID: <3E1EF9B4.3030201@elsoft.ch>
-Date: Fri, 10 Jan 2003 17:49:56 +0100
-From: =?ISO-8859-1?Q?=22David_M=FCller_=28ELSOFT_AG=29=22?= <d.mueller@elsoft.ch>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: [PATCH]  ppc_ksyms.c (linuxppc-2.5)
-Content-Type: multipart/mixed;
- boundary="------------080701080707020902050603"
+Date: Fri, 10 Jan 2003 18:05:08 +0100
+Mime-Version: 1.0 (Apple Message framework v482)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Subject: PrPMC800 - Restarting PPC7-Bug without a reset
+From: Anders Blomdell <anders.blomdell@control.lth.se>
+To: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <AC2DA90D-24BD-11D7-98E2-0003931C2BFA@control.lth.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------080701080707020902050603
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi,
 
-Hello
+We have a number of PrPMC800 systems that are to be run in NON-MONARCH mode.
+  Unfortunately they hang indefinitely if I tries to do a [card] reset (full
+system reset works). This means that it is impossible to use the Harrier
+chip to get the board to do a proper reset.
 
-The attached patch fixes two little problems in ppc_ksyms.c.
+Therefore I need some way to restart PPC7-Bug without doing a hardware
+reset (in the belief that PPC7-Bug will setup the card in a useful state).
+The naive attempt to do a "g fff00100" [jumping to the reset exception
+handler in flash] from the PPC7-Bug prompt, of course failed miserably, and
+so did my attempts to simulate a system reset by the following code:
 
-	- mark "flush_dcache_range" as EXPORT_SYMBOLS
-	- "__res" is not only used on 8xx, but also on 4xx
+	lis r0,0xfff0        ; Flash reset vector lives at 0xfff00100
+     ori r0,r0,0x0100
+     li  r9,0x40          ; Use exception prefix = 0xfffn_nnnn
+     mtmsr r9             ; Make msr contain exception prefix bit
+     mtsrr0 r0            ; Make rfi return to 0xfff00100
+     mtsrr1 r9            ; Make msr after rfi contain exception prefix bit
+     sync
+     rfi                  ; Simulate a reset
 
-Dave
+Anybody that has some good idea of what could be done?
 
---------------080701080707020902050603
-Content-Type: application/octet-stream;
- name="ppc_ksyms.c.patch.bz2"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="ppc_ksyms.c.patch.bz2"
+Regards
 
-QlpoOTFBWSZTWQ3jXkQAAHTfgGAQSH//2lu33GCvb/9kMAF0sDDRCjT0mRoyHqMQDQABoaMQ
-BqNJtFPTSAA9QAGgAAAAJIiU8mRo1MagAA00GammmJo9I0VXG0QggmKUATin01Kd8auJyNnR
-ZOCGQqyAyOo04Qj3QxJZZIkLlf/B4UxN3gsJMGYdA1ghBdKailkyHQm3G47ADNAMPSFCEqBy
-BsmKafcLyVoqwjhFwLKQwdh5oKEtDAGhjFyi8QSfV74yKIkvBUQb0oDZEnbCBjCI62IHHLBG
-UgMYcMEMx7iawWcTmgRsEeziziLBaRGwRERWI1CNIjWI1C3fQjEZoZG/IeT5VdJHd22kpmK/
-NW2bhZ9CtqRUK9roC4iIw15r8AaJcJ0RVFqOBSYTcnP20KGBgv3zGtjjy0ouqoJNsqkK1FU0
-JomJPNUb1ErlgyIGAKVInipvTAqpxSwKRXJlOrpNSZJFe3uc6x8ag0i4lNjimiMqIMDAUolM
-qoHsVB/F3JFOFCQDeNeRAA==
---------------080701080707020902050603--
+Anders Blomdell
+
+
+------------------------------------------------------------------------------
+  Anders Blomdell
+  Department of Automatic Control        Email: anders.blomdell@control.lth.
+se
+  Lund Institute of Technology           Phone: +46 46 222 4625
+  Box 118, S-221 00 Lund, Sweden         Fax:   +46 46 138118
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
