@@ -1,38 +1,32 @@
-Date: Tue, 18 May 1999 09:17:32 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: OF booting news
-In-Reply-To: <19990515100909.001740@mail.mipsys.com>
-Message-ID: <Pine.SUN.4.02.9905180911500.14119-100000@sea.ntplx.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: vince@nos40zr.shell.com (Vince D. Duperron)
+Message-Id: <199905181530.KAA08132@nos40ap.shell.com>
+Subject: gcc newbie
+To: linuxppc-dev@lists.linuxppc.org
+Date: Tue, 18 May 1999 10:30:50 -0500 (CDT)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 15 May 1999, Benjamin Herrenschmidt wrote:
+hello;
 
-> For those who haven't seen it yet, with Darwin 0.2, Apple release new
-> pieces of source code, including the secondary loader, with sources, a
-> working of control video driver, and more... That's interesting because
-> we should now be able to make a great secondary booter with OS choosing
-> capabilities. I don't have time to look into this now, but this could be
-> a good replacement for BootX in the future.
+One of my goals for linuxppc is learning C and C++.  I have started 
+the process by writing some elementary programs to get failure with 
+the syntax and have had success compiling them on my Sun using Sun's
+cc compiler.  I haven't been able to achieve the same results using 
+gcc under linuxppc or SunOS.  I suspect I am doing something
+gcc doesn't like or understand.  
 
-It looks like most part of the MkL booter were canablized in this as well.
-So it should be possible to do the following, with a little work:
-On old (not New World) ROMs, choose between: MacOS, LinuxPPC, MkL (little
-bit of work on their end?), possibly BeOS, *BSD, and and OSX.  On New
-World, most of that is possible (some problem OF booting LPPC right now,
-and No MacOS (w/o lots of work).)  All that's really missing from it right
-now is some graphical part I think.  There's a routine to draw the OSX
-logo tho. :)
+The programs are short but I hesitate to just post the code.  Being new to 
+C and C++ all I have to go by for syntax is what is in my text book.  It 
+would be nice if somebody has a moment to look at the code and let me know 
+what I may be doing wrong.  Also if you have a good book to recommend that
+focuses on gcc and is written for a beginner I'd probably buy it.  
 
---
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+thank you
 
+Vince Duperron
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
