@@ -1,46 +1,43 @@
-Date: Thu, 2 Mar 2000 15:41:20 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org, "Timothy A. Seufert" <tas@mindspring.com>,
-        dledford@redhat.com
-Subject: Re: Need reports about PCI I/O conflicts
-In-Reply-To: <20000302152244.014464@mailhost.mipsys.com>
-Message-ID: <Pine.HPX.4.10.10003021537520.2213-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: bh40@calva.net
+Cc: ad@mpifr-bonn.mpg.de, roikawa@rr.iij4u.or.jp,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: FireWire + Apple PB G3: some success
+In-Reply-To: Your message of "Tue, 29 Feb 2000 17:45:47 +0100"
+	<20000229174547.008164@mailhost.mipsys.com>
+References: <20000229174547.008164@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20000303022240B.roikawa@rr.iij4u.or.jp>
+Date: Fri, 03 Mar 2000 02:22:40 +0900
+From: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: FireWire + Apple PB G3: some success
+> BTW. I didn't find register infos in the datasheet for the TI-1131. Do
+> you have those ? I'd be interested. I found only the pinout and
+No, I didn't find any register information except application report
+on interrupts(I'll send it to you if necessary, which is just a 115K PDF)
+probably because it is obsolete. But you can find it in the pcmcia-cs
+package, whose auther may have a document(though I'm not quite sure).
 
+BBTW, I'm new in the MOL source and I need some information/explanation.
+Today I tried to add RageLTPro OF properties to MOL oftree.nw,
+insert it into the pci device tree and mmu map full 16MB aperture
+in thw video driver(on PB G3). I could run the drawing engine within
+MacOS manually, but ATI's extension didn't seem to recognize the chip
+at all. I even tried to load & insert into the driver properties field
+the driver extracted from ATI Driver update file, but no success.
+I don't understand MOL interface mechanism yet(and unfortunately
+my macos complier, symantec c++ doesn't work on recent system).
 
-	Hi,
+What is the correct way to accelerate MOL video?
 
-> Note about the Adaptec problem reported earlier, this is apparently not
-> an OF bug, but a combination of an OF "feature" along with a bug in
-> Michel patches.
->
-> What I think happens is that the firmware (and I suspect this is done by
-> the Adaptec OF code on the card, not by OF itself) will "disable" the IO
-> accesses and decides that the card should use only memory-mapped
-> registers on PPC. It does this by writing 0 in the io space register, but
-> doesn't disable IO accesses to the card in the PCI config header (or
-> maybe they get re-enabled by the kernel fixup code). Also, I still have
-> to check if the bit 0 is actually 0 or 1.
->
-> However, Michel code doesn't see this and do it's fixup, causing a
-> remapping of the io space to fe000000 instead of leaving 0, which may let
-> some driver think the address was actually assigned. This is a problem
-> since in theory, io 0 is perfectly valid, isn't it ? In this case, it
-> should be considered wrong.
+Thanks,
 
-No, 0 is special: if you set all programmable bits to zero (an I/O space
-BAR will always have the LSB set), the corresponding decoder is disabled
-per the PCI specification. I know devices that do not respect this point
-however, and it is a mess for I/O space on machines which have ISA since
-it interfers with some ISA standard, well-known, devices.
-
-	Gabriel.
-
+Ryuichi Oikawa
+roikawa@rr.iij4u.or.jp
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
