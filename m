@@ -1,41 +1,28 @@
-Message-Id: <200008030742.IAA26688@hyperion.valhalla.net>
-Date: Thu, 03 Aug 2000 08:42:25 +0100
-Subject: Re: Updated DMASOUND patches
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: "Michel Dänzer" <daenzerm@student.ethz.ch>
-CC: linuxppc-dev@lists.linuxppc.org, Benjamin Herrenschmidt <bh40@calva.net>
-Mime-version: 1.0
-Content-type: text/plain; charset="ISO-8859-1"
+Date: Thu, 3 Aug 2000 10:00:15 +0200 (CEST)
+From: Ronald Wahl <rwa@peppercon.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: iounmap
+Message-ID: <Pine.LNX.4.21.0008030950020.1647-100000@goliath.issistance.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- Thu, Aug 3, 2000,  Michel Dänzer wrote:
-> Iain Sandoe wrote:
->
->> 2.4.0-test5
->>
->> This is much more flaky **with identical code**  there is no crashing (yet)
->> - but a strong tendency for almost any activity to cut off the sound.
->> opening the mixer control is a really good way of doing it.  Once the panel
->> is open you can restart the sound and all is hunky-dory... but...
->
-> I've noticed that 2.4.0-test4 is much more sluggish than any 2.2 kernel I've
-> used. Turning on DMA for the HD (yep, didn't do it automatically) helps a bit,
-> but not totally.
+Hi,
 
-According to DMESG DMA *is* on for both SCSI & IDE (IDE doesn't enter into
-this really for me - all my disks are SCSI).  How could I tell if dmesg were
-telling fibs?
+I'm currently writing a device driver for an pci controller and have to
+map very large amounts of pci memory and i/o ranges via ioremap. The
+problem is that there is no iounmap and ioremap returns NULL after some
+insmod/rmmod cycles. When gets this implemented?
 
->> I guess I'm a little suspicious of the new wait-queue stuff (that's really
->> the only major change to the sound side).
->
-> There's a whole new kernel around the sound driver ;)
+ron
 
-Fair point... I guess we do interact with the fs stuff, and IRQs and...
-and... :-)
+--
+\\                 Ronald Wahl   |   Peppercon AG                 //
+ \\\          rwa@peppercon.de  |||  http://www.peppercon.de/   ///
+  \OO  -----------------------  OOO  ------------------------  OO/
+   OO  GnuPG/PGP key available  OOO  ||||||||||||||||||||||||  OO
 
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
