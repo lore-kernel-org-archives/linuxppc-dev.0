@@ -1,60 +1,43 @@
-From: stevenj@gil-galad.mit.edu
-Date: Wed, 22 Mar 2000 14:30:40 -0500 (EST)
-Reply-To: stevenj@alum.mit.edu
+Date: Thu, 23 Mar 2000 11:14:37 +1100
+From: Chris Leishman <masklin@debian.org>
 To: linuxppc-dev@lists.linuxppc.org
-cc: roikawa@rr.iij4u.or.jp
-Subject: Small patch for Xpmac mouse button keys
-Message-ID: <Pine.LNX.4.10.10003221412090.847-100000@gil-galad.mit.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: PB2000 (pismo) install feedback
+Message-ID: <20000323111437.A10858@freeonline.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dear Linux/PPC developers,
+Hi all,
 
-I thought I'd pass along a trivial patch for Xpmac (from the
-XFree86-3.3.6-8a package in LinuxPPC 2000) that corrects a problem that
-was bugging me on my Lombard laptop.
+(I finally got yaboot configured (using a 100M bootstrap partition, hd:9), on
+my pismo so I could test the pismo kernel.)
 
-I like to set X so that the option and command keys to the left of the
-space bar are mapped to emulate buttons 2 and 3 (this is much more
-convenient to me than option-1 and option-2).  This worked fine in
-LinuxPPC 1999 under XF68_FBDev, but when I installed LinuxPPC 2000
-yesterday and switched to (the default) Xpmac, I discovered that I could
-no longer do this.
+I compiled the kernel on a Lombard I have here, then moved the kernel
+(vmlinux) onto my pismo bootstrap partition.  Initially yaboot.conf contained:
 
-The basic problem is that Xpmac gets confused if you want the option key
-to be one of the mouse buttons but still want to set -nooptionmouse (so
-that the unmodified command-key is button 3, in my case).  If you set
--nooptionmouse and click the option key for button 2, it doesn't recognize
-it because it wants the option key to be up when the mouse keys are
-pressed.
+image=hd:9,vmlinux
+	label=install
+	initrd=hd:9,ramdisk.image.gz
+	initrd-size=8192
+	novideo
 
-The fix is simple: if the mouse button key is the option key, ignore the
-setting for -nooptionmouse.  The patch, for
-XFree86-3.3.6/xc/programs/Xserver/hw/powermac/pmacIo.c, is equally
-trivial:
+However, on booting the kernel, I had some very pretty errors with the video
+(very, very surreal - looked like a CRT next to a big magnet).  However, when
+I removed "novideo" flag it booted straight up!
 
-280a281,283
-> 		int optionOK = (optionDown != noOptionMouse ||
-> 				IS_OPTION_KEY(*me) ||
-> 				IS_RIGHT_OPTION_KEY(*me));
-284c287
-< 		    if (optionDown != noOptionMouse || keyUp && rightDown) {
----
-> 		    if (optionOK || keyUp && rightDown) {
-289c292
-< 		    if (optionDown != noOptionMouse || keyUp && middleDown) {
----
-> 		    if (optionOK || keyUp && middleDown) {
+Any ideas Ben & co?  Is this a known issue?
 
-I hope this is useful, although perhaps future Linux/PPC releases will
-standardize on XFree-4.0 so this won't be an issue any more (assuming that
-the same mistake isn't made)...
+Regards,
 
-Cordially,
-Steven G. Johnson
+Chris
 
+
+--
+----------------------------------------------------------------------
+            Linux, because I'd like to *get there* today
+----------------------------------------------------------------------
+Reply with subject 'request key' for GPG public key.  KeyID 0xB4E24219
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
