@@ -1,38 +1,63 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Chris Leishman <masklin@debian.org>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [ANN] New kernels, gmac, airport, usb...
-Date: Mon, 3 Jul 2000 11:22:38 +0200
-Message-Id: <20000703092238.25732@mailhost.mipsys.com>
-In-Reply-To: <20000703190820.A7196@freeonline.com.au>
-References: <20000703190820.A7196@freeonline.com.au>
+Date: Mon, 3 Jul 2000 11:45:02 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Wolfgang Denk <wd@denx.de>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: (Manually) relocate PPC code?
+In-Reply-To: <200007011839.UAA29375@denx.local.net>
+Message-ID: <Pine.HPX.4.10.10007031122370.5670-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> It is based on it, but AFAIK, WEB doesn't work with the Apple base
->> station. It should be possible to use WEB between two airports on linux,
->> but I didn't try. What I meant on the page was a quick explanation on how
->> to get it working with an Apple Airport base station.
->>
->> If its actually supported, then I'll be glad to fix the page ;)
->>
->> Ben.
+On Sat, 1 Jul 2000, Wolfgang Denk wrote:
+
 >
+> Hi,
 >
->Well, I've been playing with it - and I can't seem to get it running...
->so I guess it isn't yet :(
+> I need to write some C code on PPC which must stay relocatable, resp.
+> I must relocate it myself (all of code and data etc.). I'm using GNU
+> tools.
 
-I'm still not completely awake, of course, you will have replaced all
-occurences of WEB in my mail by WEP ;)
+Do you know about the -mrelocatable gcc and gas option ? Granted that it
+generates slightly larger code, but it helps a lot to solve this kind of
+problems.
 
-The card works fine between two macs and a mac & an airport base station
-with WEP disabled. According to someone on the mailing list, using the
-base station WEP requires knowledge about the Apple key distribution
-mecanism, and we don't have this knowledge.
+> This is for a standalone application, _NOT_ running under Linux.
 
-Ben.
+Fine.
+
+> Where can I find documentation about things like the format of the
+> GOT etc., or ideally existing _simple_ (read: small) example code?
+
+Well, prepboot does this (with many more things): download a pristine
+2.2.12 and apply the mvme2600 patches that you'll find at
+ftp://vlab1.iram.es/pub/linux-2.2/. You'll then find a medium size example
+in arch/ppc/prepboot. Actually it could be used to load a standalone
+program or be integrated with it (except that you'll have to modify the
+Makefile and the linker script which imports a couple of kernel symbols).
+
+Actually prepboot may even be more complex than what you need since it
+first relocates itself whereever it happens to be loaded by firmware and
+then analyzes the memory map and setup of the machine before moving itself
+and relocating again. The part between both relocations is easy to break
+(there are many things you can't do like accessing the bss since it may
+extend past the end of memory or whatever, and you can't easily use
+pointers since they would not be relocated properly in the second pass),
+but once the final relocation is done, the environment is reasonably
+friendly (don't expect a full libc either but console I/O and a simple
+memory management layer are available).
+
+No interrupts however, this is left as an exercise for the reader. The MMU
+exception handlers can be used as a starting point (especially the only
+part which must be written in assembler for entry and exit).
+
+> All hints, pointers, ideas appreciated - TIA!
+
+Hope this helps....
+
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
