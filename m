@@ -1,31 +1,53 @@
-Message-ID: <3DDC7AFC.6A8B4A0C@koffie.nl>
-Date: Thu, 21 Nov 2002 07:19:40 +0100
-From: Segher Boessenkool <segher@koffie.nl>
+Reply-To: <joakim.tjernlund@lumentis.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: "Tom Rini" <trini@kernel.crashing.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: linuxppc_2_4_devel, rc1 and rc2 problem.
+Date: Thu, 21 Nov 2002 14:30:17 +0100
+Message-ID: <IGEFJKJNHJDCBKALBJLLGEDDFIAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
-To: Ethan Blanton <eblanton@cs.ohiou.edu>
-Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-	"Halfmann, Klaus" <Klaus.Halfmann@bauer-partner.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Unexpected sleep on old iBook
-References: <2C5637A6A7CE844EA3C0A94565479F5275A2E2@dest-as20-002.int.bauer-partner.com> <Pine.LNX.4.33.0211191743560.11419-100000@opal.biophys.uni-duesseldorf.de> <20021119203347.GK8575@paco.resnet.purdue.edu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20021120191423.GA13132@opus.bloom.county>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ethan Blanton wrote:
-> (Does it irritate anyone else that there seems to be no *good* way to
->  differentiate iBook versions?  I'm sure there's some motherboard
->  resource version that's unambiguous, but come on...)
+> On Wed, Nov 20, 2002 at 07:55:35PM +0100, Joakim Tjernlund wrote:
+> >
+> > > >
+> > > > hmm, my i2c stuff got into rc2 (and uart too?). I see this on rc2 AND rc1, but NOT in pre8.
+> > > > No, I have not tried to port it to vanilla 2.4.x. It requires some work to do that.
+> > >
+> > > They both made it in post rc1 I think, yes.  Try going back carefully
+> > > via bk changes and bk export -tr1.xxxxx (find when
+> > > /home/.../linuxppc_2_4 was merged into /home/.../linuxppc_2_4_devel).
+> >
+> > The error ocurres between changeset 1.1130 - 1.1137.
+> > I forgot to mention that the error only happens on a 862,100Mhz, 16KB icache, 8KB dcache.
+> > My 860,80Mz does not show the problem.
+> >
+> > Idea's ?
+>
+> Can you narrow down the ChangeSet it occured at a bit?
 
-Just read the device tree:
+Aaargh, now I am getting it in pre8 as well. However I have made
+some progress:
 
-/proc/device-tree/model  gives you the model name.
-/proc/device-tree/scb#  gives you the revision number.
+I have 2 custom boards one mpc862(100Mhz, 16KB icache, 8KB dcache) and a
+mpc860(80Mz,4KB icache, 4KB dcache). If I overclock the mpc860 to 100MHz I get
+the same problem. If I set the clock on both boards to 95MHz all is well. If I overclock
+the mpc862 to 105 MHz it works fine.
 
+It turns out that syslog is actually running after the error. If I stop syslog and
+start it again it works fine. If adjust my script so klogd is started before
+syslogd all is well to.
 
-Segher
+This looks like a race somewhere to me, but i have no clue as to where.
+
+Anyone?
+
+    Jocke
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
