@@ -1,42 +1,34 @@
+Date: Wed, 19 May 2004 14:19:29 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
 To: Brian Hawley <bhawley@luminex.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: /dev/ram in ramdisk_image.gz 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 19 May 2004 13:09:46 PDT."
-             <4.2.2.20040519130806.050a0340@bhawley.mailhost.luminex.com>
-Date: Wed, 19 May 2004 23:11:15 +0200
-Message-Id: <20040519211120.B4177C109F@atlas.denx.de>
+Cc: Wolfgang Denk <wd@denx.de>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Ebony Board, PPC440GP and NFS panics
+Message-ID: <20040519211929.GB13351@gate.ebshome.net>
+References: <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com> <4.2.2.20040519101456.0509d340@bhawley.mailhost.luminex.com> <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com> <4.2.2.20040519132218.050b0df0@bhawley.mailhost.luminex.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4.2.2.20040519132218.050b0df0@bhawley.mailhost.luminex.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <4.2.2.20040519130806.050a0340@bhawley.mailhost.luminex.com> you wrote:
+On Wed, May 19, 2004 at 01:24:21PM -0700, Brian Hawley wrote:
+> Actually, I had no intention of trying to port ebony to u-boot.  I just
+> wanted
+> to get something to work.
 >
-> Does anyone know if the ramdisk_image.gz on the DENX site for the ppc has
-> the /dev/ram device
-> already created?
+> Unfortunately, we've had no luck getting it to boot with the default ibm
+> bootloader either.
 
-Yes, it has. But it doesn't need to. The kernel cannot look into /dev
-before mounting the root filesystem anyway.
+>From your previous e-mails I got an impression that booting with OpenBIOS was
+OK.
 
-> When we boot an initrd [ created using mkimage from uboot on the
-> ramdisk_image.gz ], we get
->
-> Kernel panic: VFS: Unable to mount root fs on ram0
-> <0>Rebooting in 180 seconds..<6>eth0: Link is Up
+Actually, a lot of people succefully boot Ebony using stock IBM boot loader (me
+included)
 
-Must be a problem with your kernel and/or your  kernel  configuration
-(for example: do you have ext2 support enabled?).
+Please, post boot log for the _default_ Ebony configuration (using IBM bootlader
+_not_ u-boot and build with ebony_defconfig), maybe we can help you.
 
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Things are not as simple as they seem at first.        - Edward Thorp
+Eugene.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
