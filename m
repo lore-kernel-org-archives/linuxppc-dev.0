@@ -1,27 +1,17 @@
-Date: Sun, 21 May 2000 16:28:45 -0500 (CDT)
-From: ian reinhart geiser <geiseri@msoe.edu>
+Date: Sun, 21 May 2000 18:21:41 -0400
+From: Alain Birtz <abz@videotron.ca>
+Subject: How to force X to redraw just after drawing procedure like XFillRectangle ?
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Rawhide SRPMS
-In-Reply-To: <v04220802b54dfb36e27a@[10.0.0.42]>
-Message-ID: <Pine.LNX.4.10.10005211627270.811-100000@sleepchamber.apt5.msoe.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Reply-to: abz@videotron.ca
+Message-id: <39286174.1B3176B6@videotron.ca>
+MIME-version: 1.0
+Content-type: text/plain; x-mac-creator=4D4F5353; x-mac-type=54455854; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I heard that KRASH was available as SRPM as a part
-of the rawhide package.  Can anyone point me to
-a good URL to find these SRPMS.
-
-Thanks.
-	-ian reinhart geiser
-
--------------------------------------------------
-Ian Reinhart Geiser <geiseri@msoe.edu>
-DEC Unix Systems Adimistrator and
-	Computer Engineering Student
-http://www.msoe.edu/~geiseri/finger.phtml
+How to force the X tserver to redraw just after XFillRectangle or other
+Xlib drawing procedure ?
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
