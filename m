@@ -2,10 +2,10 @@ From: "aa aaa" <linux_powerpc@hotmail.com>
 To: wd@denx.de
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: also the problem of creating jffs2
-Date: Fri, 14 May 2004 10:12:00 +0800
+Date: Fri, 14 May 2004 10:19:39 +0800
 Mime-Version: 1.0
 Content-Type: text/plain; format=flowed
-Message-ID: <BAY13-F27OgmJKtBmmg00011537@hotmail.com>
+Message-ID: <BAY13-F40ODt9Cz93Mg00011534@hotmail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
@@ -111,5 +111,24 @@ Starting system log daemon: syslogd klogd.
 Starting internet superserver: inetd.
 
 MontaVista Linux 3.0, Professional Edition
+
+I just modify the /drive/mtd/maps/rpxlite.c ,this is the place i modify
+/*#define WINDOW_ADDR 0xfe000000
+#define WINDOW_SIZE 0x800000
+-----------*/
+
+#define WINDOW_ADDR 0xff000000
+#define WINDOW_SIZE 0x1000000
+/* Flash / Partition sizing */
+/*#define MAX_SIZE_KiB              8192
+#define BOOT_PARTITION_SIZE_KiB    512
+#define KERNEL_PARTITION_SIZE_KiB 1536
+#define APP_PARTITION_SIZE_KiB    6144
+*/
+
+#define MAX_SIZE_KiB              16384
+#define BOOT_PARTITION_SIZE_KiB    512
+#define KERNEL_PARTITION_SIZE_KiB 1536
+#define APP_PARTITION_SIZE_KiB    14236
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
