@@ -1,41 +1,36 @@
-Message-ID: <391289B2.4060C2DF@mpifr-bonn.mpg.de>
-Date: Fri, 05 May 2000 10:43:30 +0200
-From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
+Message-ID: <39128A45.6C1BA8F1@wanadoo.fr>
+Date: Fri, 05 May 2000 10:45:57 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-To: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
-Subject: Q: IO window remapping
+To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+CC: Ani Joshi <ajoshi@shell.unixbox.com>
+Subject: Re: 2.3.99-pre6 sound hfs
+References: <Pine.LNX.4.10.10005042042280.19981-100000@shell.unixbox.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all!
+Ani Joshi wrote:
+>
+> As some of you have said before, the HFS issue in 2.3 is due to all the
+> VFS changes, page cache stuff being a big one.  anyhow, i poked around a
+> bit last nite and have stabalized it a bit more (though not perfect yet),
+> mounting and reads work fine, writes work sometimes and not, very strange.
+>
+> below is a patch which makes hfs use generic file read/writes, obviously
+> more needs to be done then this, hopefully i'll post some more patches
+> soon...
 
-I am currently trying to get the PCMCIA package working on a PISMO Powerbook.
-The problem it that the Cardbus bridge (a TI 1211) has a odd IO window
-definition (from lspci -vv):
+With this patch, I still cannot mount hfs CDs (the LinuxPPC 2000 CD),
+and after a while of copying and gcc'ing on a hfs ZIP, it still freezes
+the system. It seems, however, to survive somewhat longer than before,
+and it freezes more gracefully, i.e. it puts me in a state (like vi
+insert mode without Esc key) where I can type, even change consoles, but
+it doesn't react. MagicSysRQ is still working, which wasn't the case
+before.
 
-00:1a.0 CardBus bridge: Texas Instruments: Unknown device ac1e
-	Subsystem: Unknown device 104c:ac1e
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping-
-SERR- FastB2B-
-	Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort-
-<MAbort- >SERR- <PERR-
-	Latency: 16 set, cache line size 08
-	Interrupt: pin A routed to IRQ 58
-	Region 0: Memory at 80080000 (32-bit, non-prefetchable)
-	Bus: primary=00, secondary=01, subordinate=01, sec-latency=32
-I/O window 0: 00001000-00000fff
-	BridgeCtl: Parity- SERR- ISA- VGA- MAbort- >Reset+ 16bInt+ PostWrite+
-	16-bit legacy interface ports at 0007
-
-As a result, any pcmcia package operation (like card insertion) fails as no io
-ports can be assigned.
-
-I hope this question is not too dumb: What is the correct range for this IO
-window?  Where should I fix it (probabely in arch/ppc/kernel/pmac_pci.c)?
-
-Thanks in advance, Albrecht
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
