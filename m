@@ -1,38 +1,58 @@
-Date: Fri, 12 Sep 2003 09:17:18 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Curtis, Allen" <Allen.Curtis@Thales-IFS.com>
-Cc: Dan Malek <dan@embeddededge.com>,
-	"Curtis, Allen (by way of Allen Curtis <acurtis@onz.com>)" <acurtis@onz.com>,
-	PPC Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MPC8266ADS patch
-Message-ID: <20030912161718.GH13672@ip68-0-152-218.tc.ph.cox.net>
-References: <FA06AA2C99BCD511951200005A99441003BE170D@IRVEXCH1>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <FA06AA2C99BCD511951200005A99441003BE170D@IRVEXCH1>
+Message-ID: <3F656CFC.1050706@imc-berlin.de>
+Date: Mon, 15 Sep 2003 09:40:44 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
+MIME-Version: 1.0
+To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Problems w/  CONFIG_BLK_DEV_MPC8xx_IDE
+Content-Type: multipart/mixed;
+ boundary="------------040607080006040705040000"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Sep 12, 2003 at 08:59:51AM -0700, Curtis, Allen wrote:
-> > > Here is a patch to make MPC8266ADS its own platform. Instead of creating
-> a
-> > > new platforms/ads8266.h header, ....
-> >
-> > Will the "other issues to be addressed" cause the need for more
-> definitions
-> > or further #ifdefs in the existing file?  If so, let's just go ahead and
-> > create the new file now and just add to it later.
->
-> And, better yet, why not just pull all of the ADS8266 bits in _devel now
-> out to 2.4 proper?  (And, pretty please, for 2.6 as well? :))
->
-> I'll do that if someone will review and commit the changes.
+This is a multi-part message in MIME format.
+--------------040607080006040705040000
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-It's a deal.
+Hi there,
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+I just noticed that the vanilla 2.4.22 does not compile with
+CONFIG_BLK_DEV_MPC8xx_IDE:
+
+drivers/ide/idedriver.o: In function `ide_timer_expiry':
+drivers/ide/idedriver.o(.text+0xaa30): undefined reference to `ide_ack_intr'
+drivers/ide/idedriver.o(.text+0xaa30): relocation truncated to fit: R_PPC_REL24
+
+It's the same for the BK trees.
+
+The attached patch fixes that.
+
+Please apply and forward it.
+
+Thanks a million,
+
+Steven
+
+--------------040607080006040705040000
+Content-Type: text/plain;
+ name="MPC8xx_IDE.fix"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="MPC8xx_IDE.fix"
+
+--- include/asm-ppc/ide.h.FIX	Mon Sep 15 09:35:25 2003
++++ include/asm-ppc/ide.h	Mon Sep 15 09:36:17 2003
+@@ -110,6 +110,7 @@
+  */
+ #if (defined CONFIG_APUS || defined CONFIG_BLK_DEV_MPC8xx_IDE)
+ #define IDE_ARCH_ACK_INTR 1
++#define ide_ack_intr(hwif)	((hwif)->hw.ack_intr ? (hwif)->hw.ack_intr(hwif) : 1)
+ #endif
+
+ #endif /* __KERNEL__ */
+
+--------------040607080006040705040000--
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
