@@ -1,21 +1,19 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from www.linux.org.uk (parcelfarce.linux.theplanet.co.uk
-	[195.92.249.252])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DC4B72BF18
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Jan 2005 08:53:06 +1100 (EST)
-Date: Wed, 12 Jan 2005 16:27:58 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-Message-ID: <20050112182758.GA1185@logos.cnet>
-References: <313680C9A886D511A06000204840E1CF0A6474B2@whq-msgusr-02.pit.comms.marconi.com>
+	by ozlabs.org (Postfix) with ESMTP id 4E2D02BF0E
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Jan 2005 11:33:25 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sven Luther <sven.luther@wanadoo.fr>
+In-Reply-To: <20050109123515.GC17561@pegasos>
+References: <20050109115720.GA19213@lst.de> <20050109123515.GC17561@pegasos>
+Content-Type: text/plain
+Date: Thu, 13 Jan 2005 01:33:05 +0100
+Message-Id: <1105576385.6021.2.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <313680C9A886D511A06000204840E1CF0A6474B2@whq-msgusr-02.pit.comms.marconi.com>
-Cc: "'linuxppc-dev@ozlabs.org'" <linuxppc-dev@ozlabs.org>,
-	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Subject: Re: Linux 2.6 8xx kernel booting vs watchdog
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: status of the G4 l2 cache flush and MSR errate patch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 12, 2005 at 02:41:18PM -0500, Povolotsky, Alexander wrote:
-> Hi,
+
+> Mmm, well, i am not really the author of this one. Jacob Pan from freescale is
+> the author, so we should change this, will do. So this should show :
 > 
-> I wonder if someone could help me with answering couple of my questions:
+> ## DP: Patch author: Pan Jacob-r7aahq <Jacob.Pan@freescale.com>
+> > ## DP: Upstream status: under review by benh.
 > 
-> How watchdog resetting is handled for PPC 
-> in Linux 2.6 on the kernel level ?
-> Does one need to add code for it or is it supported "off the shelf" ?
+> The patch does two things. Use hardware assist for cache flush, which seems to
+> be ok on 744x processors, but broken on earlier G4s and G3s. And add a printk
+> in case of some exception, so the user knows about it instead of it being
+> silently discarded. 
 
-It is not supported off the shelf. 
+The HW assist isn't completely ok neither... it should be enough for
+enabling the cache at boot though. I've been banging my head lately
+trying to get a properly working & reliable cache flush mecanism for use
+on the Mac laptops since we need that for cpufreq and sleep on various
+models, but what I have right now is just a "works most of the time"
+kind of implementation.
 
-We (Cyclades) have a timer to periodically touch the watchdog on boot, and afterwards
-a watchdog driver which gets periodically written by a userspace daemon. 
+> I was under the impression that benh said that the patch was ok, but not
+> really relevant, since it applies to code travel cases which either are not
+> really used in the common case, or result in a dying of the kernel anyway.
+> Don't remember all the details though. They do respond to some G4 processor
+> errata's though.
 
-I can send a patch if you wish.
+I'll have a look again. Just back from vacation, leave me a coupe of
+days to catch up with everything and I'll take care of those.
 
-> Is "early printk" supported for PPC on 2.6 ?
-> If yes - how and where it could be enabled?
-
-Not sure.
+Ben.
