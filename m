@@ -1,14 +1,28 @@
-Date: 14 May 2003 14:36:24 -0000
-Message-ID: <20030514143624.358.qmail@webmail31.rediffmail.com>
+Message-ID: <21A8AE56EBB6D411A4520060973D360101A9FA4E@PEPINTERCOM>
+From: Claus Gindhart <Claus.Gindhart@kontron.com>
+To: "'ramanathan G A'" <ramanathan_ga@rediffmail.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: linux ppc boot parameters R3, R5
+Date: Wed, 14 May 2003 16:48:45 +0200
 MIME-Version: 1.0
-From: "ramanathan G A" <ramanathan_ga@rediffmail.com>
-Reply-To: "ramanathan G A" <ramanathan_ga@rediffmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: linux ppc boot parameters R3, R5
-Content-type: text/plain;
-	format=flowed
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Hi Ramanathan,
+The Open Firmware Data is provided, if You use the Open Firmware Bootloader.
+For every proprietary BootLoader, you can proceed without this.
+Please pay some attention for the have_of flag, which is used in some places
+of the ppc tree of the kernel. You have to ensure, that have_of is always
+set to FALSE for your board.
+
+-----Original Message-----
+From: ramanathan G A [mailto:ramanathan_ga@rediffmail.com]
+Sent: Mittwoch, 14. Mai 2003 16:36
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: linux ppc boot parameters R3, R5
+
 
 
 Hi All,
