@@ -1,34 +1,60 @@
-Date: Fri, 8 Dec 2000 13:45:45 +0100 (MET)
-Message-Id: <200012081245.NAA11500@na13.mathematik.uni-tuebingen.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Ethernet problems on Lombard with kernel 2.2.18pre24
-Cc: oliver@e-math.ams.org, jcarr@mail.linuxppc.org
-From: Marcel Oliver <oliver@uni-tuebingen.de>
+Message-ID: <3A30F1D2.16C3EA2A@wtal.de>
+Date: Fri, 08 Dec 2000 15:36:02 +0100
+From: Christof Petig <christof.petig@wtal.de>
+MIME-Version: 1.0
+To: "Halfmann, Klaus" <khalfmann@libra.de>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: AW: Sound on an iBook?
+References: <F14441D40E5AD3118886005004607AD10BDE8C@MAIL1>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Since I installed the LinuxPPC beta release on my Lombard Powerbook,
-I experience severe problems with the ethernet port:
+"Halfmann, Klaus" wrote:
 
-- Cannot get transmission rates past about 50-100 k/sec
+> Christof Petig <mailto:christof.petig@wtal.de> wrote:
+> >
+> > Hello,
+> >
+> > I got no answer on the debian-ppc list, so I'll try here.
+> >
+> > does anybody know a way to get the sound hardware on my iBook working?
+> > Everything else is working fine.
+> >
+>
+> The iBook has a different Hardware than all other Macs found so far.
 
-- Tramsmitions of large files (several MB and up) on the LAN are
-  likely to have some corruption
+Yes, this validates my suspicions.
 
-- Things get better when transmitting at (slower) internet speeds
+> There is an (unsupported, ugly ...) version of dmasound that
+> sometimes works on iBooks, but it provides no control of the
+> output,
 
-The kernel version is 2.2.18pre24 as included with the beta, and the
-problems are with the prebuild kernel as well as with a more
-minimalistic self-compiled kernel.
+read: no volume control, no frequency change? That is not nice but
+acceptable.
 
-I should add that the ethernet on Lombard was always somewhat flaky,
-but things have gotten much much worse with the upgrade.
+> it just takes what OF or MacOS left behind. So using
+> such a Kernel/Module is a kind of russian roulette because it
+> will block forever when intializing fails.
 
-There are some older and somewhat inconclusive posts on this list
-about ethernet problems on Lombard. Is there any new understandingn of
-the problem, or can I help to provide more debug information?
+I would love/dare to try it.
 
---Marcel
+> This issue needs a good assembler-/Forth- Programmer that must
+> use MacsBug in MacOS or dissassemble the OF to find out whats
+> going on there.
+
+Oh no, that sounds really bad. No specs available, no darwin driver?
+
+> I'd really like to do that but that is nothing
+> I can do when going to work by train ....
+
+Hmm. It reads like a joke. But I love to work on my computer in a train.
+
+I would offer some time but I don't know any PPC assembly. C and
+Linux-kernel are no strangers to me.
+
+Christof
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
