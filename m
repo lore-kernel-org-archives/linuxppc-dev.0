@@ -1,47 +1,65 @@
-Date: Sat, 23 Sep 2000 16:08:41 +0200
-From: Samuel Rydh <samuel@ibrium.se>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: MOL on 2.4/603
-Message-ID: <20000923160841.A814@ibrium.se>
-References: <20000922164705.32547@mail.mipsys.com> <39CBAA3C.2CC16A34@wanadoo.fr> <39CC3D55.74CD42A2@wanadoo.fr> <20000922223145.B9334@opus.bloom.county> <39CC4642.4291D6A1@wanadoo.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <39CC4642.4291D6A1@wanadoo.fr>; from costabel@wanadoo.fr on Sat, Sep 23, 2000 at 07:57:22AM +0200
+Message-ID: <39CCBADE.2A59D37A@student.ethz.ch>
+Date: Sat, 23 Sep 2000 16:14:54 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
+MIME-Version: 1.0
+To: Henry Worth <haworth@ncal.verio.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Linux keycodes and left cursor on Pismo
+References: <Pine.SOL.4.10.10009221556010.17778-100000@ncal.verio.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Sep 23, 2000 at 07:57:22AM +0200, Martin Costabel wrote:
+Henry Worth schrieb:
 >
-> Tom Rini wrote:
+> Michel Ddnzer <daenzerm@student.ethz.ch> wrote:
 >
-> BTW, now that even the MOL patches have sneaked into Linus' tree, has
-> anyone got MOL to work on a 603 with the 2.4.0 kernel? Or what is
-> missing?
+> >After switching to Linux keycodes (and Debian's i386 us keymap), the left
+> >cursor key doesn't generate a keycode anymore. Interestingly, it works in
+> >X with Xkb, but not without.
+> >
+> >Anyone else sees this?
 >
+> Check the dev and user archives, I think this has been discussed a
+> few times since the new input layer backport went in.
 
-Well, the MOL code in 2.4 has support for 603. However, the MOL
-binary does not yet support the 603. (In 2.4, the PTE hash
-is gone so MOL must now support the 603 MMU explicitly).
-
-Fixing this is certainly on my todo-list (but so is a lot of other
-things - if someone with MMU knowledge and a 603 wants to fix it,
-I can give some assistance).
-
-Btw, the lastest released mol version is *not* compatible with
-the 2.4 kernel. To run MOL on the 2.4 kernel, pull the latest
-version of MOL from the bitkeeper server:
-
-	bk://waltari.theophys.kth.se:5000
-
-Cheers,
-
-/Samuel
+I'll do that. I checked Franz's pages on the input layer on PPC and didn't
+find anything there.
 
 
-----------------------------------------------------------
- E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
-  Phone/fax: (home) +46 8 4418431, (work) +46 8 7908470
-----------------------------------------------------------
+> However, invoking xmon once X (at least Xpmac 10) is running
+> will result in a microscopic xmon text session replicated 4 times
+> across the screen (even if you switch back to a text VT first).
+
+This also happens with XFree86, it's because xmon assumes an 8 bit display - I
+guess you are running X in 32 bpp? :)
+
+
+> Martin Costabel wrote:
+> >
+> > F13 (keycode 0x69) works for me as MagicSysRq (ADB keyboard, kernels
+> > 2.2.x or 2.4.0-x).
+>
+> Ah, well no F13 or equiv. combo on a Pismo. Grepping through
+> the sources it doesn't appear there is any bootparm or /proc
+> entry to change it...
+
+Would be handy though.
+
+> So changing it to 0x6f in /arc/ppc/kernel/pmac_setup.c and rebuilding it
+> should give you F12 instead.
+
+I use that for the right mouse button emu, will it work nonetheless?
+
+Thanks for the tip!
+
+
+Michel
+
+
+--
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
