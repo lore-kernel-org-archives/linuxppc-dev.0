@@ -1,32 +1,47 @@
-Date: Tue, 9 Mar 1999 16:31:31 -0500 (EST)
-From: Tom Rini <tmrini@ntplx.net>
-To: "Charles E. Leiserson, Jr." <locutus@MIT.EDU>
-cc: Hollis R Blanchard <hollis+@andrew.cmu.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: No-IDE kernel compile link errors 
-In-Reply-To: <199903091638.LAA14811@all-night-tool.mit.edu>
-Message-ID: <Pine.LNX.4.05.9903091629070.2274-100000@pc.wackyland.com>
+Message-Id: <199903100706.IAA00340@piglet.cpu.lu>
+Date: Wed, 10 Mar 1999 08:06:16 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Promise Ultra33 in PowerMac?
+To: linuxppc-dev@lists.linuxppc.org, hedrick@astro.dyer.vanderbilt.edu
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 9 Mar 1999, Charles E. Leiserson, Jr. wrote:
+Hi all,
 
-> I seem to recall having read something about the 2.2 kernels not compiling if 
-> IDE isn't set.  I had the same problem, so I just compiled in IDE support, 
-> even though I have no IDE devices or bus.
-> 
-> Feel free to correct me if I'm wrong.
+I'm thinking about adding a Promise Ultra33 UDMA IDE controller to my
+PowerMac. Those things, and especially the IDE disks, are so damned
+cheap...
 
-Please try
-ftp://linuxppc.cs.nmt.edu/pub/linuxppc/patches/non-pmac-ide/ide.diff
-Then rm your .config and try again.  If this works I'll bug Cort <g>
+Anyway, does anybody have any idea whether such a beast would work with
+the current ide driver stuff? I guess that PCI-wise, there should be no
+problem. It's more a question of who initialises te board, as that may
+be done by BIOS on-controller in an i386 machine, and has to be done by
+the driver on a PowerPC box.
 
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+Using i386 boards in a PowerPC box under Linux can be done, as
+demonstrated by my Compaq-OEM Matrox Millenium which works happily
+(excpet a few quirks not related to its i386-ness).
+
+Any thoughts (apart from 'drop that idea, buy SCSI' ;-) ?
+
+Thanks
+
+Michel
+
+PS Andre, you got this mail because you're listed as maintainer of the
+IDE stuff. If you know any other more apropriate oracle to answer this,
+please forward...
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
