@@ -1,19 +1,18 @@
-Return-Path: <jakob.viketoft@bitsim.se>
-Received: from amsfep20-int.chello.nl (amsfep20-int.chello.nl [213.46.243.18])
-	by ozlabs.org (Postfix) with ESMTP id 9B90567A2F
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 7EAA467A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Mar 2005 02:12:34 +1000 (EST)
-Message-ID: <424ACFF1.5000403@bitsim.se>
-Date: Wed, 30 Mar 2005 18:12:33 +0200
-From: Jakob Viketoft <jakob.viketoft@bitsim.se>
-MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <424AAF09.9050706@ru.mvista.com>
-	<5a325f210dccfd254541824008e8c5a1@freescale.com>
-In-Reply-To: <5a325f210dccfd254541824008e8c5a1@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Andrei Konovalov <akonovalov@ru.mvista.com>,
-	Sylvain Munaut <tnt@246tNt.com>,
+	Thu, 31 Mar 2005 03:27:06 +1000 (EST)
+In-Reply-To: <424ACFF1.5000403@bitsim.se>
+References: <424ACFF1.5000403@bitsim.se>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <111d2ae873d1bfee413409dfc4f2f064@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 30 Mar 2005 11:26:55 -0600
+To: "Jakob Viketoft" <jakob.viketoft@bitsim.se>
+Cc: Jon Masters <jonathan@jonmasters.org>, Sylvain Munaut <tnt@246tNt.com>,
+	Andrei Konovalov <akonovalov@ru.mvista.com>,
 	Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
 Subject: Re: Platform bus/ppc sys model...
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -26,43 +25,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> On Mar 30, 2005, at 7:52 AM, Andrei Konovalov wrote:
->> Do I understand correct that the ppc_sys model used by 85xx, 83xx, and 
->> 52xx
->>  SOCs is not so well suited for Virtex-II Pro (which Jakob and me bear 
->> in mind)?
->>  In case of Xilinx ???_devices.c could be the list of all the IPs 
->> supported in linux.
->>  But ???_sys.c has little sense as for any given combination of the 
->> particular
->>  Virtex-II Pro chip and the particular board the set of IPs (as well 
->> as the memory
->> map, interrupt numbers, some hardware options (if ethernet has SGDMA 
->> or not))
->>  is not fixed. I.e. ideally we would need some kind of run time system 
->> configuration
->>  instead of compiled time system configuration implemented by ???_sys.c.
-> 
-> 
-> This is correct.  There is nothing that precludes us from building up a 
-> way to dynamically create the information.  Is there some way to query 
-> the hardware itself, or is the information implied something else?
-> 
-> - kumar
+> My intention was to give a device tree structure to the kernel at boot
+> time via a (pseudo?) pointer in bd_info or similar. Then you would only
+>  need to recompile a little bootloader (which is needed for setting up
+> the FPGA anyway) with this structure for every specific card. You could
+> even be shrewd enough to have a single kernel image but several
+> structures to launch several processors on the same chip. Does it sound
+> like a sane solution?
 
-My intention was to give a device tree structure to the kernel at boot 
-time via a (pseudo?) pointer in bd_info or similar. Then you would only 
-need to recompile a little bootloader (which is needed for setting up 
-the FPGA anyway) with this structure for every specific card. You could 
-even be shrewd enough to have a single kernel image but several 
-structures to launch several processors on the same chip. Does it sound 
-like a sane solution?
+I think this is reasonable.  The best device tree would be a flattened 
+OF tree since we are trying to move the world in that direction.  Jon 
+Masters around?
 
-Otherwise, I'm a bit unsure as to whether a system with a gigantic list 
-of devices in ???_devices.c is the right way to go. In the Xilinx case, 
-not only is a list of possible IP:s needed, but also the usual standard 
-circuits which can be connected from outside to the chip. Wouldn't it be 
-more realistic to have knowledge of the compiled in drivers somehow?
+> Otherwise, I'm a bit unsure as to whether a system with a gigantic list
+> of devices in ???_devices.c is the right way to go. In the Xilinx case,
+> not only is a list of possible IP:s needed, but also the usual standard
+>  circuits which can be connected from outside to the chip. Wouldn't it 
+> be
+> more realistic to have knowledge of the compiled in drivers somehow?
 
-	/Jakob
+Your needs are a bit different than the initial purpose of ppc_sys.  
+The reason the device list works well for us today is that it replaced 
+duplication between every variant of 85xx.
+
+I'm not that familiar with exactly what information you would need to 
+have access to in the Xilinx case.  I would think if you information 
+compiled into drivers some of this might all be moot.  Part of the 
+whole device model is to have drivers that are agnostic of the system 
+they are in.
+
+- kumar
