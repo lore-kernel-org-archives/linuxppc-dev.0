@@ -1,31 +1,42 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: phillip@lougher.demon.co.uk
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: [FYI] Squashfs released (compressed fs for embedded systems)
-Date: Wed, 30 Oct 2002 16:48:42 +0000
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <E186w1K-0002n1-0U@anchor-post-39.mail.demon.net>
+Subject: source-level debugging w/ RISCWatch
+From: Hollis Blanchard <hollis@austin.ibm.com>
+To: embedded list <linuxppc-embedded@lists.linuxppc.org>
+Date: 30 Oct 2002 13:06:47 -0600
+Message-Id: <1036004807.11072.1289.camel@granite.austin.ibm.com>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-First release of squashfs.
+--=-RaclAh4Sk1CquNeZPjnZ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Squashfs is a highly compressed read-only filesystem for Linux (kernel 2.4.x). It uses zlib compression to compress both files, inodes and directories.  Inodes in the system are very small and all blocks are packed to minimise data overhead. Block sizes greater than 4K are supported up to a maximum of 32K.
+Someone just asked me about this and I realized other people might find
+it useful.
 
-Squashfs is intended for embedded systems, and for archival and general read-only filesystem use.
+In your Makefile, CFLAGS_KERNEL   = -g -gdwarf
+rw> load image zImage.treeboot <--- loads zImage onto target
+rw> load host vmlinux <--- loads debugging info into RISCWatch
 
-The filesystem was originally developed for an embedded PowerPC board (IBM Redwood variant), and so unusually for a Linux filesystem supports big-endian byte order (unlike Cramfs).  It however also supports other architectures, and has been tested on PowerPC, i586 and Sparc.
+That's almost all it takes. Unfortunately RISCWatch will try to open
+unqualified filenames, e.g. "rd.c". So you have to add to your srchpath
+all the directories you're interested in:
+rw> srchpath add /home/hollis/src/linux/arch/ppc/platforms
+rw> srchpath add /home/hollis/src/linux/arch/ppc/kernel
+rw> srchpath add /home/hollis/src/linux/kernel
+......
 
-Squashfs is available from http://squashfs.sourceforge.net.
+I did this in my startup.cmd file by starting with a `find -type d` and
+trimming from there.
 
-The patch file is currently against 2.4.19.  There is further info on the
-filesystem design etc. in the README.
+Current (5.0) versions of RISCWatch claim to support dwarf2 which is now
+the default debug format in gcc 3.x, but gcc 3.x added some extentions
+that RW doesn't understand, so the load fails. I tried dwarf1 with gcc
+3.x, but that fails to compile due to gcc bugs. The recommendation was
+made to use gcc 2.95 with dwarf2, but that just caused RW to segfault.
+I'm using dwarf1 with gcc 2.95 and that's working.
 
-I'l be interested in getting any feedback...
-
-Phillip Lougher
-
+-Hollis
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
