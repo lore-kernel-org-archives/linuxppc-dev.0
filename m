@@ -1,20 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 98BD567A70
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 13:05:05 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mikael Pettersson <mikpe@user.it.uu.se>
-In-Reply-To: <16924.59237.581247.498382@alkaid.it.uu.se>
-References: <16924.59237.581247.498382@alkaid.it.uu.se>
-Content-Type: text/plain
-Date: Thu, 24 Feb 2005 13:04:48 +1100
-Message-Id: <1109210688.15027.2.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: ppc32 weirdness with gcc-4.0 in 2.6.11-rc4
+Return-Path: <kumar.gala@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 6FA5767A75
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 16:16:38 +1100 (EST)
+In-Reply-To: <3609259af610006a1a0b7b016f727500@freescale.com>
+References: <3609259af610006a1a0b7b016f727500@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <61dc898b0ce55c51093c2b1c44d65434@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 23 Feb 2005 23:16:31 -0600
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: PATCH: add ppc PVR register values for 7447A and 7457 CPUs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +21,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -Memory: 255872k available (1788k kernel code, 976k data, 144k init, 0k highmem)
-> +Memory: 255872k available (1776k kernel code, 0k data, 144k init, 0k highmem)
+Tom,
 
-That is weird... (0k data)
+Here are the only usages of PVR_<CPU> that are in arch/ppc:
 
-> AGP special page: 0xcffff000
->  Calibrating delay loop... 830.66 BogoMIPS (lpj=4153344)
->  Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
-> @@ -132,13 +132,7 @@
->  VFS: Mounted root (ext3 filesystem) readonly.
->  Freeing unused kernel memory: 144k init 4k chrp 8k prep
->  usb 3-2: new full speed USB device using ohci_hcd and address 2
-> -hub 3-2:1.0: USB hub found
-> -hub 3-2:1.0: 3 ports detected
-> -usb 3-2.1: new low speed USB device using ohci_hcd and address 3
-> -input: USB HID v1.10 Mouse [Logitech Apple Optical USB Mouse] on usb-0001:10:1b.0-2.1
-> -usb 3-2.3: new full speed USB device using ohci_hcd and address 4
-> -input: USB HID v1.10 Keyboard [Mitsumi Electric Apple Extended USB Keyboard] on usb-0001:10:1b.0-2.3
-> -input: USB HID v1.10 Device [Mitsumi Electric Apple Extended USB Keyboard] on usb-0001:10:1b.0-2.3
-> +usb 3-2: can't connect bus-powered hub to this port
->  EXT3 FS on hda5, internal journal
->  Adding 1048568k swap on /dev/hda3.  Priority:-1 extents:1
->  SCSI subsystem initialized
-> 
-> Note: "Memory: ... 0k data ..." !? Surely that can't be correct.
+boot/simple/misc-ev64260.S:     cmplwi  r25,(PVR_7450 >> 16)
+platforms/ev64260.c:    if (pvr !=3D PVR_VER(PVR_7450)) {
+platforms/4xx/ebony.c:          case PVR_REV(PVR_440GP_RB):
+platforms/4xx/ebony.c:          case PVR_REV(PVR_440GP_RC1):
+syslib/ibm440gx_common.c:       if (pvr =3D=3D PVR_440GX_RA || pvr =3D=3D=20=
 
-Not sure what's up, but it's probably something beeing miscompiled. Can
-you check if the udelay/medlay loops are correct ?
+PVR_440GX_RB ||
+syslib/ibm440gx_common.c:           (pvr =3D=3D PVR_440GX_RC && p->cpu >=20=
 
-Ben.
+667000000))
+
+What do you think should we just get ride of all the other cases that=20
+are not actually used and leave these in asm/regs.h or should we move=20
+them as follows:
+
+PVR_7450 -> into platforms/ev64260.h
+PVR_440GP* -> into platforms/4xx/ebony.c (or include/asm/ibm4xx.h)
+PVR_440GX* -> into syslib/ibm440gx_common.h
+
+- kumar
+
+On Feb 23, 2005, at 4:52 PM, Kumar Gala wrote:
+
+>
+>
+> On Feb 23, 2005, at 4:25 PM, Tom Rini wrote:
+>
+> > On Wed, Feb 23, 2005 at 08:48:25PM +0000, James Chapman wrote:
+>  >=A0 > Signed-off-by: James Chapman <jchapman@katalix.com>
+> > >
+>  > > Trivial patch to add 7447A and 7457 CPU defs.
+>  >
+>  > Why?=A0 Most of the PVR definitions here can be removed (*muttering=20=
+
+> about
+>  >=A0 85xx ones being added).
+>
+> Yeah, yeah, will work on removing them.
+>
+> - kumar
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+>  Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
