@@ -1,38 +1,42 @@
-Message-ID: <3EFAF094.8030705@dgt-lab.com.pl>
-Date: Thu, 26 Jun 2003 15:09:40 +0200
-From: Wojciech Kromer <krom@dgt-lab.com.pl>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: pcf8563 and i2c kernel abstarct
-References: <3EFAE8F1.4010406@dgt-lab.com.pl>
-In-Reply-To: <3EFAE8F1.4010406@dgt-lab.com.pl>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Subject: EP405 network interface
+From: Toni Van Remortel <t.vanremortel@ha.be>
+Reply-To: t.vanremortel@ha.be
+To: PPC Mailinglist <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain
+Message-Id: <1056636064.26546.6.camel@toni>
+Mime-Version: 1.0
+Date: 26 Jun 2003 16:01:05 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-.... i've forgot to call si2c_init before, now there is another starnge
-thig, here is my backtrace
+Hi all,
 
-#0  add_wait_queue_exclusive (q=0xc01ba738, wait=0xc03f7f28)
-    at linux/include/linux/list.h:44
-#1  0xc00095bc in __down (sem=0xc01ba730) at semaphore.c:79
-#2  0xc00e83a0 in i2c_add_driver (driver=0xc017d3fc)
-    at linux/include/asm/semaphore.h:94
-#3  0xc018deb0 in pcf8563_rtc_init () at pcf8563.c:265
-#4  0xc018d92c in misc_init () at misc.c:270
-#5  0xc018d1b0 in chr_dev_init () at mem.c:677
-#6  0xc01866dc in do_initcalls () at init/main.c:474
-#7  0xc0186724 in do_basic_setup () at init/main.c:558
-#8  0xc0002294 in init (unused=0x1) at init/main.c:574
-#9  0xc0006d24 in kernel_thread () at time.c:447
+I cannot get the NIC working on my EP405. I used the ep405_config from
+the linuxppc_2_4_devel tree.
 
+This is a part of the output:
 
+...
+loop: loaded (max 8 devices)
+eth0: No PHY device found.
+removing net dev
+...
 
+So it seems that the kernel doesn't find the NIC (but it is there, and
+working, ep-bootloader can use it to download the image).
+
+Anybody an idea?
+
+I already checked the NIC support, and the onboard-IBM NIC support is
+enabled.
+
+Regards,
 --
-* * * * * * * * * * * *
-* per pedes ad astra! *
-* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
+                           Toni Van Remortel
+              Wetenschappelijk Medewerker - D-science lab
+                 Tel: 03 205 61 72 - Fax: 03 205 61 95
+                      E-mail: t.vanremortel@ha.be
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
