@@ -1,21 +1,16 @@
-Return-Path: <Martin.Krause@tqs.de>
-Received: from mail.tqs.de (mail.tqs.de [213.68.230.225])
-	by ozlabs.org (Postfix) with ESMTP id 474652BE83
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao09.cox.net (fed1rmmtao09.cox.net [68.230.241.30])
+	by ozlabs.org (Postfix) with ESMTP id 3D8AC2BE83
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Dec 2004 02:45:20 +1100 (EST)
-Received: from tq-mailsrv-1.tq-net.de (tq-mailsrv-1 [172.20.1.1])
-	by mail.tqs.de (Postfix) with ESMTP id 106883C7B
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Dec 2004 16:45:19 +0100 (CET)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Fri, 10 Dec 2004 16:45:18 +0100
-Message-ID: <DE2CC66C40EAB74EA6D66AC71BF98E1E03055AE7@TQ-MAILSRV-1>
-From: "Martin Krause" <Martin.Krause@tqs.de>
-To: "Clemens Koller" <clemens.koller@anagramm.de>
+	Sat, 11 Dec 2004 03:51:54 +1100 (EST)
+Date: Fri, 10 Dec 2004 09:51:52 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: jgarzik@pobox.com, akpm@osdl.org
+Message-ID: <20041210095152.A31319@home.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-embedded@ozlabs.org
-Subject: AW: video card for Lite5200
+Subject: [PATCH][EMAC] fix ibm_emac autonegotiation result parsing
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,33 +21,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Clemens,
+Fix aneg result parsing in ibm_emac driver.
 
-Clemens Koller wrotes on Freitag, 10. Dezember 2004 16:11:
-> > From the silicon motion homepage you could get a framebuffer driver
-> > for the SM501 PCI card. This should work without great
-> > modifications for PPC systems.
->=20
-> Thank you, I know that thing. I started with that driver, but I did
-> quite a lot of code cleanup (I guess there are lots of leftovers from
-> the SM7xx parts). I am about to put this into a loadable
-> kernel module fbdev driver.
-> Later on, we might need some power management, use it on
-> different resolutions and use the other on-chip peripherals...
+Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
+Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
 
-Oh, sounds interesting. We took the driver from SMI and hacked it
-to run on our board. Three different resolutions are possible:
-640x480, 800x600 and 1024x768. We use "fbset" to change it.
-But with the higher two resolutions, the picture is very noise.=20
-I think this is because of two high SM501 internal memory clocks.
-Unforunately the datasheet of the grafic controler is very spare -
-not to say poor. So I yet couldn't figure out, at wich speed the
-memory clock is running actually and how to change it.
-
-> Do you use any of the other peripherals of the SM501, too? (USB,
-> Audio, 8051)=20
-
-No, actually not.
-
-Regards,
-Martin
+===== drivers/net/ibm_emac/ibm_emac_phy.c 1.1 vs edited =====
+--- 1.1/drivers/net/ibm_emac/ibm_emac_phy.c	2004-05-22 10:13:08 -07:00
++++ edited/drivers/net/ibm_emac/ibm_emac_phy.c	2004-11-24 15:23:54 -08:00
+@@ -191,17 +191,18 @@
+ 	u16 lpa;
+ 
+ 	if (phy->autoneg) {
+-		lpa = phy_read(phy, MII_LPA);
++		lpa = phy_read(phy, MII_LPA) & phy_read(phy, MII_ADVERTISE);
+ 
+-		if (lpa & (LPA_10FULL | LPA_100FULL))
+-			phy->duplex = DUPLEX_FULL;
+-		else
+-			phy->duplex = DUPLEX_HALF;
+-		if (lpa & (LPA_100FULL | LPA_100HALF))
+-			phy->speed = SPEED_100;
+-		else
+-			phy->speed = SPEED_10;
++		phy->speed = SPEED_10;
++		phy->duplex = DUPLEX_HALF;
+ 		phy->pause = 0;
++
++		if (lpa & (LPA_100FULL | LPA_100HALF)) {
++			phy->speed = SPEED_100;
++			if (lpa & LPA_100FULL) 
++				phy->duplex = DUPLEX_FULL;
++		} else if (lpa & LPA_10FULL)
++			phy->duplex = DUPLEX_FULL;
+ 	}
+ 	/* On non-aneg, we assume what we put in BMCR is the speed,
+ 	 * though magic-aneg shouldn't prevent this case from occurring
