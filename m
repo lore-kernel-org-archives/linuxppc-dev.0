@@ -1,29 +1,38 @@
-Date: Tue, 4 Dec 2001 07:45:32 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Phil <ibm405.linux@laposte.net>
-Cc: Matt Porter <mporter@mvista.com>,
-	Simon Winwood <sjw@cse.unsw.edu.au>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: More walnut boottime "fun"
-Message-ID: <20011204144532.GF17651@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011127103042.A11612@cse.unsw.edu.au> <20011126221728.D13091@cpe-24-221-152-185.az.sprintbbd.net> <20011127050754.B15728@cx258813-a.chnd1.az.home.com> <3C0CD3C6.ECB0E61B@laposte.net> <20011204141147.GD17651@cpe-24-221-152-185.az.sprintbbd.net> <3C0CDCB1.9F3A9423@laposte.net>
-Mime-Version: 1.0
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3C0CE281.2E0F451C@seranoa.com>
+Date: Tue, 04 Dec 2001 09:49:37 -0500
+From: Andrew Dixon <andrew.dixon@seranoa.com>
+MIME-Version: 1.0
+To: ppclist <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: programming ppcboot onto an sbc8260 with a vision ice
+References: <3C0BD4F1.DB6591F3@seranoa.com>
+	 <3C0BDBB4.68EB3E72@chinook.com> <5.1.0.14.2.20011203165059.01c83e20@falcon.si.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3C0CDCB1.9F3A9423@laposte.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Dec 04, 2001 at 03:24:49PM +0100, Phil wrote:
+Jerry Van Baren wrote:
+>
+> Your PPCBoot image is linked at 0x40000000 and your convert defaults are
+> converting from 0xfe000000..0xfe020000 (this is where EST puts the boot
+> memory unless you've changed the HRCW to ORG it at 0x00000000 -- glossing
+> over quite a few details here).  Anyway, there ain't no data in that range,
+> which is exactly what the error message is telling you.
+>
+> The EST convert utility doesn't allow you to relocate the code, only to set
+> the lower and upper boundaries of the conversion.  You can use an elf tool
+> (objcopy) to re-org the code or change your link mechanism to re-org your
+> code.  You can also leave it at 0x40000000 and change your visionICE setup
+> to map the ROM into that memory area (hmm, isn't that the secondary
+> flash?  Maybe you just need to program it and switch your CS0/CS6 jumper).
 
-> I resync the kernel sources today at 7:15 am GMT.
-> Any idea ?
+Yes that is the start of Flash.  For our final product we want our
+bootloader to live in Flash but I'm rethinking that for the EST board.
+>From what I've read on the list is sounds like PPCBoot wants to live in
+ROM on the sbc8260 right?
 
-Have you run a 'make distclean' anytime recently?  If not, try that..
-(and save your .config someplace).
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Is the above documented anywhere?  I don't feel the need to reinvent the
+wheel for this board and I'd rather start off the right way.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
