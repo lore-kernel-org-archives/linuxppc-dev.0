@@ -1,34 +1,22 @@
-Date: Fri, 19 Nov 1999 12:39:23 +0100
-From: Leif Lindholm <leif@datessa.se>
-Reply-To: Leif Lindholm <leif@datessa.se>
-Message-ID: <19527.991119@datessa.se>
+From: Sorin Balea <sorin@nitechinc.com>
+Reply-To: sorin@nitechinc.com
 To: linuxppc-embedded@lists.linuxppc.org
-CC: Jim Chapman <jim.chapman@iname.com>
-Subject: Re: configuring swap on a diskless mpc860 embedded target
-In-reply-To: <38351D54.34124FBD@switchboard.ericsson.se>
-References: <38351D54.34124FBD@switchboard.ericsson.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: IDE on MBX board
+Date: Fri, 19 Nov 1999 09:31:04 -0500
+Content-Type: text/plain
+MIME-Version: 1.0
+Message-Id: <99111909331400.01435@splash.nitechinc.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Hello all
 
-KJ> A question:
-KJ>     Have you ever swapped over nfs on any linux system?  I don't think it
-KJ> works.
+I've noticed that the MBX board has an IDE port. Has anyone been able to
+use it, let's say with a hard disk? Any tips regarding this problem?
 
-KJ> The only way I know of is using the network block device and a patch to make
-KJ> swapping over that work.
+Regards
 
-There was a patch for this for the 2.0.2x kernels.
-
-It is available at http://www.vu.union.edu/~hagopiar/linuxnfsswap/ if
-someone would like to upgrade it.
-
-regards
-/
-       Leif
-
+Sorin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
