@@ -1,55 +1,44 @@
-Date: Fri, 14 Jan 2000 16:12:55 -0600
-From: Grant Erickson <grant@lcse.umn.edu>
-To: Niklaus Giger <n.giger@netstal.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Help Sought: 8390-Ethernet Troubles on PowerPC 4xx Port
-In-Reply-To: <s87fa3ee.073@netstal.com>
-Message-ID: <Pine.SGI.4.10.10001141601470.264375-100000@brule.borg.umn.edu>
+Message-ID: <3881266E.828DAED5@ctam.com.au>
+Date: Sun, 16 Jan 2000 13:01:19 +1100
+From: Brendan J Simon <Brendan.Simon@ctam.com.au>
+Reply-To: Brendan.Simon@ctam.com.au
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: dony <dony.he@huawei.com.cn>
+CC: linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Cross-compile Applications for 860 on x86
+References: <386C150F.22B1A3D0@huawei.com.cn> <386ABF52.922267E9@ctam.com.au> <38701F3A.FAD6263E@huawei.com.cn> <386ADE53.D3411F6A@ctam.com.au> <38704D0B.94438516@huawei.com.cn> <386AFFC5.E0134DB8@ctam.com.au> <38708C86.2CD58E66@huawei.com.cn> <387142DF.7A3025D0@ctam.com.au> <38715DAE.B6CBC772@huawei.com.cn> <3871572F.FA4E7842@ctam.com.au> <38717C52.ECF1AFFD@huawei.com.cn> <3871953B.345DDA23@ctam.com.au> <38754F28.B6B4CE70@huawei.com.cn> <38754419.20D95C5A@ctam.com.au> <3876A6E5.3488738B@huawei.com.cn> <3876C6FD.794BD1BF@ctam.com.au> <387A87DF.4ED23CA6@huawei.com.cn> <387A81F3.702B29A2@ctam.com.au> <387C4D8D.9C058F1C@huawei.com.cn> <387D3212.A4E9904F@ctam.com.au> <387DAFAF.DB0096C7@huawei.com.cn> <387E460F.B007CE56@ctam.com.au> <387E7F82.99AF83CE@huawei.com.cn> <387E7AF5.A92A6122@ctam.com.au> <387E9927.48689C08@huawei.com.cn> <387EBEB9.B69B1680@ctam.com.au> <387EDEF5.DBD612FA@huawei.com.cn>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 14 Jan 2000, Niklaus Giger wrote:
-> Are you sure that the ethernet interrupt are correclty handled? It
-> seems to me that the oak board never answers.
+dony wrote:
 
-I definitely receive and handle the interrupt. The call chain is as
-follows when I chase it with single-step from 0x500.
+> Hi,
+>      When I compile the SASH  with "-static" options and then replace /bin/sh with sash.
+> When reseting my MPC860 based board, the kernel boot normally and can show the boot messages. But at last it
+> cannot show the "bash#" prompt. If I input "ls" or such commands,
+> It justs shows :
+>
+>     ls
+>     pid 8: killed (signal 11)
+>     ls
+>     pid 9: killed (signal 11)
+>     ls
+>     pid 10: killed (signal 11)
+>
+> Do you know why? What do I miss?
 
-                  
-  0x500 -> do_IRQ -> oak_get_irq -> ppc4xx_pic_get_irq -> IRQ = 27
-              |
-              `----> ppc_irq_dispatch_handler
-                              |
-                              `---> ppc4xx_pic_mask_and_ack
-                              `---> ei_interrupt
-                              `---> ppc4xx_pic_unmask
+Maybe.  Did you redefine SASH to 1 in init/main.c ?
+I'm not sure if it is necessary but it might help.  It looks like SASH is running but you do not have a prompt.
 
-> Have you ever serviced correctly a interrupt on the PPC403? If you
-> have HW-debug possiblity through the JTAG, try to break on external
-> interrupt at address 0x500 and step through the interrupt code to
-> verify that it works correctly.
+Typing "ls" causes the ls executable in /bin to run (or try to).  You are getting signal 11 (seg fault) because
+of shared library problems.  I too haven't solved these yet :(
 
-Yes, it appears to be working correctly. I haven't dove into the actual
-logic of ei_interrupt, however. I'm presuming (perhaps incorrectly) that
-the 8390.c code is pretty architecture neutral.
+Type "help" and you will see the list of builtin commands.  Try "-ls" and you should get a directory listing
+using the builtin version of ls instead of /bin/ls.
 
-> Other idea: Do you need a byte swapping to set the controller
-> TCP/IP-address/ethernet adresses?
-
-That's a possibility. The Ethernet address is OK and can be verified by
-looking at the ARP trace I sent (the MAC addresses from the PROM-generated
-and Linux-generated ARPs are the same). I don't think* the IP address
-should come into play until the Oak controller has grabbed the ARP reply
-from the server, right?
-
-Thanks again for the input!
-
-Regards,
-
-Grant
+Brendan Simon.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
