@@ -1,23 +1,19 @@
-To: <acurtis@onz.com>
-Cc: "Ppc Developers" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: irc.openprojects.net?
-References: <NCBBIINEHIPFGJPLBEIFOEOJEAAA.acurtis@onz.com>
-From: Momchil Velikov <velco@fadata.bg>
-In-Reply-To: <NCBBIINEHIPFGJPLBEIFOEOJEAAA.acurtis@onz.com>
-Date: 15 Jan 2003 18:09:53 +0200
-Message-ID: <87smvucs32.fsf@fadata.bg>
-MIME-Version: 1.0
+Date: Thu, 16 Jan 2003 11:44:40 -0700
+From: "Tim M. Sanders" <tsanders@synergymicro.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Processor Sets patch (pset) for 2.4.19 kernel
+Message-ID: <20030116114440.E22719@synergy>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Allen" == Allen Curtis <acurtis@onz.com> writes:
+I am interested in finding a pset patch for the 2.4.19 kernel.  I have a patch
+for the 2.4.12.  I have not found anything on the web for the 2.4.19 kernel.
+Anyone have a patch?  If not, I will attempt the port.
 
-    Allen> Does anyone know what happened to this IRC site? This URL
-    Allen> does not resolve.  Has #mklinux moved to a new server? I
-    Allen> checked on irc.oftc.net but it looked pretty dead.
+Thanks.
 
-irc.freenode.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
