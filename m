@@ -1,20 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mailout08.sul.t-online.com (mailout08.sul.t-online.com
-	[194.25.134.20]) by ozlabs.org (Postfix) with ESMTP id A672F2BF51
+Return-Path: <telkimcs@empal.com>
+Received: from tx7.empal.com (unknown [220.90.209.157])
+	by ozlabs.org (Postfix) with ESMTP id EF4F72BDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Nov 2004 08:15:59 +1100 (EST)
-To: Peter Asemann <peter.asemann@web.de>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 11 Nov 2004 13:42:26 +0100."
-	<41935E32.3090202@web.de>
-Date: Thu, 11 Nov 2004 22:15:44 +0100
-Sender: wd@denx.de
-Message-Id: <20041111211549.3B221C14B3@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Which board is similar to mine,
-	and how do I build a custom config?
+	Fri, 12 Nov 2004 12:10:03 +1100 (EST)
+Received: from empal.com ([10.151.12.144])
+	by tx7.empal.com (8.11.6/8.11.6) with ESMTP id iAC13ga00914
+	for <linuxppc-embedded@ozlabs.org>; Fri, 12 Nov 2004 10:03:42 +0900
+Message-ID: <20041112100340.41940bec0001b4f300056bfc.1368@empal.com>
+From: =?ks_c_5601-1987?B?IrHoIMOivcQi?= <telkimcs@empal.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Fri, 12 Nov 2004 10:03:40 +0900
+MIME-Version: 1.0
+Content-Type: text/html; charset="ks_c_5601-1987"
+Subject: [Micropatch]I wanted micropatch in mpc852t
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,24 +23,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <41935E32.3090202@web.de> you wrote:
-> Well... as you know I need to get that custom board running...
-> 
-> I read the U-BOOT readme and try to write my own config now.
-
-Did you? So why don't you DO what you've been told there?  Especially
-in the "Where to get help" section?
-
-Your question is completely off topic on _this_ mailing list.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-See us @ Embedded/Electronica Munich, Nov 09 - 12, Hall A.6 Booth 513
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"There's always been Tower of Babel sort of  bickering  inside  Unix,
-but  this  is the most extreme form ever. This means at least several
-years of confusion." - Bill Gates, founder and chairman of Microsoft,
-about the Open Systems Foundation
+PEhUTUw+PEhFQUQ+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4wMC4yODAwLjE0NzYiIG5hbWU9
+R0VORVJBVE9SPg0KPFNUWUxFPlAgew0KCU1BUkdJTjogNXB4IDBweA0KfQ0KPC9TVFlMRT4NCjwv
+SEVBRD4NCjxCT0RZIHN0eWxlPSJGT05ULVNJWkU6IDEwcHQ7IENPTE9SOiBibGFjazsgRk9OVC1G
+QU1JTFk6ILG8uLIiPg0KPFA+SSB0cmllZCB0byB1c2UgbWljcm9wYXRjaCBpbiBtcGM4NTJ0LiA8
+L1A+DQo8UD5CZWNhdXNlIEkgdXNlIFNDQzMgYW5kIFNNQzEgY29uY3VycmVudGx5LjwvUD4NCjxQ
+PkJ1dCBpdCBkaWRuJ3Qgd29yay48L1A+DQo8UD5JIHVzZWQgbGludXgga2VybmVsIDIuNC4xOC4g
+VGhpcyBzb3VyY2UgaW5jbHVkZSBtaWNyb3BhdGNoLmMgaW4gYXJjaC9wcGMvOHh4X2lvLzwvUD4N
+CjxQPkhvdyBkaWQmbmJzcDtpdCB1c2U/LiZuYnNwOyA8L1A+DQo8UD4mbmJzcDs8L1A+DQo8UD5U
+aGFuayB5b3UgZm9yIHJlYWRpbmcgYSBwb29yIGVuZ2xpc2ggbWFpbC48L1A+DQo8UD4mbmJzcDs8
+L1A+DQo8UD5Gcm9tIGNzIGtpbS48L1A+DQo8UD4mbmJzcDs8L1A+CjxzdHlsZSB0eXBlPSJ0ZXh0
+L2NzcyI+CnRkLGZvbnQsYQl7Zm9udC1zaXplOjlwdDsgZm9udC1mYW1pbHk6tbi/8jsgd29yZC1i
+cmVhazpicmVhay1hbGw7fQphCQl7Y3Vyc29yOmhhbmR9Cjwvc3R5bGU+Cgo8dGFibGUgYm9yZGVy
+PTAgY2VsbHBhZGRpbmc9MCBjZWxsc3BhY2luZz0wIHdpZHRoPTY2MCBzdHlsZT0iYm9yZGVyLXRv
+cDpkYXNoZWQgMXB4ICNGRkNGMDAiPgo8dHI+Cjx0ZCB2YWxpZ249dG9wIHN0eWxlPSJwYWRkaW5n
+OjEwIDEwIDAgM3B4IiB3aWR0aD0xMDE+PGEgaHJlZj0iaHR0cDovL3d3dy5lbXBhcy5jb20vP3Jl
+Zj1tIiB0YXJnZXQ9X2JsYW5rPjxpbWcgc3JjPSJodHRwOi8vaWIuZW1pbWcuY29tL2VtcGFsL3Ns
+b2dhbi9sb2dvX2FkbWFpbC5naWYiIGJvcmRlcj0wPjwvYT48L3RkPgo8dGQgc3R5bGU9InBhZGRp
+bmctdG9wOjEwcHgiIHZhbGlnbj10b3A+CgoJPHRhYmxlIGJvcmRlcj0wIGNlbGxwYWRkaW5nPTAg
+Y2VsbHNwYWNpbmc9MCB3aWR0aD0xMDAlPgoJPHRyPjx0ZD48Zm9udCBzdHlsZT1jb2xvcjpGRjU5
+MDA7PrDLu/bG98XQILrOua4gsbmwobDtsLS4uMG3tbUgNLPiIL+svNMgMcCnPC9mb250Pjxicj48
+L3RkPjwvdHI+Cgk8dHI+PHRkIHN0eWxlPSJwYWRkaW5nLXRvcDoycHgiPjxmb250IGNvbG9yPTMz
+MzMzMz6/pcbEvbogtLq9uiAtIDxhIGhyZWY9Imh0dHA6Ly9uZXdzLmVtcGFzLmNvbS9tb25pdG9y
+cHIuaHRtbC8/cmVmPW0iIHRhcmdldD1fYmxhbms+J7jwtM/Fzbi1JyC9xcO7x8+46Swgx8+35yAx
+NSwwMDCwxyC0ur26tbbBoSE8L2E+PC9mb250PjwvdGQ+PC90cj4KCTwvdGFibGU+Cgo8L3RkPgo8
+dGQgc3R5bGU9InBhZGRpbmctdG9wOjdweCIgYWxpZ249cmlnaHQ+PGEgaHJlZj0iaHR0cDovL2Js
+b2cuZW1wYXMuY29tLz9yZWY9bSIgdGFyZ2V0PV9ibGFuaz48aW1nIHNyYz0iaHR0cDovL2liLmVt
+aW1nLmNvbS9lbXBhbC9zbG9nYW4vYmxvZ19ta3kuZ2lmIiBib3JkZXI9MD48L2E+PC90ZD4KPC90
+cj4KPC90YWJsZT4KCjwvQk9EWT48L0hUTUw+PGltZyB3aWR0aD0xIGhlaWdodD0xIHNyYz0iaHR0
+cDovL21haWwuZW1wYXMuY29tL3JzZC9lbXBhbHJjcHQuaHRtbC9uSFF3dG1acWFtWmthQS9YZkJT
+S0JNelk0TS9mQ05IU0dOTGM2dkRnNE1iYVN0ckV5c2pJeXNqQW52VFl3c1RtM0Y3a3pzL2Zvby5n
+aWYiPg0KDQo=
