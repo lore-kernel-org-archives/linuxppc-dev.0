@@ -1,77 +1,40 @@
-To: "Luo Yanjun" <yjluo@udtech.com.cn>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: How to run SELF without Hardhat 2.0? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 09 Sep 2002 17:42:37 +0800."
-             <03e001c257e5$48cc96d0$6100a8c0@udtech.net>
-Date: Mon, 09 Sep 2002 12:08:49 +0200
-Message-Id: <20020909100854.D2D16FA8B@denx.denx.de>
+Subject: Caching in the MPC107
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain
+Date: 09 Sep 2002 15:23:24 +0100
+Message-Id: <1031581408.30396.81.camel@newt>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Luo Yanjun,
+I've just been debugging an interesting problem with a new board that
+uses a MPC107 bridge with a 7445 processor. The symptoms were that the
+ethernet device never saw updated transmit descriptors unless another
+bus master was active in the system.
 
-in message <03e001c257e5$48cc96d0$6100a8c0@udtech.net> you wrote:
->
-> I just installed ELDK and compiled the kernel, I don't know how to make a
-> ramdisk,
-> and I searched the list find that you have made a SELF can build kernel with
-> ramdisk,
-> so I want to try, but I found that the SELF just use Hardhat 2.0 as develop
-> environment,
-> I don't have Hardhat 2.0 now, only ELDK, so can I use SELF?
+The underlying problem is that linuxppc_2_4_devel only sets the
+_PAGE_COHERENT flag on memory when CONFIG_SMP is enabled. This doesn't
+allow for the fact that the MPC107 contains caches. The cache causing
+the problem was the PCI-to-Local-Memory-Read-Buffer (PCMRB), which can
+store two 32-byte cache lines.
 
-Of course you can.
+This wouldn't have been seen on previous boards, because the 750 had
+only MEI cache states, and the 7400 required the S state to be
+explicitly enabled in MSSCR0. The S state cannot be disabled on the
+7450, leading to the possibility of a cache line being allocated in both
+the 7450 and the MPC107.
 
-You should see the SELF package as a construction kit  for  your  own
-envrionment;  all  you  need to do to use SELF with our ELDK (version
-1.x) is to create a  new  file  "config/LIB_LIST.ELDK-1.0"  with  the
-following content:
+My current thinking is to produce a patch which introduces a new option:
+CONFIG_CACHING_HOSTBRIDGE which boards combining the MPC107 and the
+MPC7450 can set. This will probably be needed for Motorola's Valis or
+Gyrus PMCs.
 
------ cut here -----
-lib/ld-2.2.1.so
-lib/ld.so.1
-lib/libc-2.2.1.so
-lib/libc.so.6
-lib/libcrypt-2.2.1.so
-lib/libcrypt.so.1
-lib/libdl-2.2.1.so
-lib/libdl.so.2
-lib/libnsl-2.2.1.so
-lib/libnsl.so.1
-lib/libnss_compat-2.2.1.so
-lib/libnss_compat.so.2
-lib/libnss_files-2.2.1.so
-lib/libnss_files.so.2
-lib/libresolv-2.2.1.so
-lib/libresolv.so.2
-lib/libutil-2.2.1.so
-lib/libutil.so.1
------ cut here -----
+Comments?
 
-Then make your board's config file look like this:
+-- Adrian Cox
+http://www.humboldt.co.uk/
 
-	CROSS_PREFIX    = ppc_8xx-
-	CDK_DIR         = /opt/eldk/usr
-	LIB_DIR         = /opt/eldk/ppc_8xx
-	LIBRARIES       = LIB_LIST.ELDK-1.0
-
-That's all.
-
-
-BTW: The next version of our ELDK will contain an adapted version  of
-SELF,  with pre-build images for all supported arcitectures. ELDK-2.0
-is based on YD-2.3 and will be available in 2 or 3 weeks from now.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-When you die, the first thing you lose is your life. The  next  thing
-is the illusions.                       - Terry Pratchett, _Pyramids_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
