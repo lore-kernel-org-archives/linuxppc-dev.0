@@ -1,50 +1,69 @@
-Message-ID: <0F48024310E5D6118D200002B3A440DB08B079E9@zil01exm08.mcil.comm.mot.com>
-From: Meriin Michael-BMM063 <BMM063@motorola.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: baud rate question
-Date: Sun, 16 May 2004 12:50:21 +0300
+Date: Sun, 16 May 2004 14:57:36 +0200 (CEST)
+From: Oliver Korpilla <okorpil@fh-landshut.de>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Memory layout question
+Message-ID: <Pine.LNX.4.33.0405161456020.1169-100000@lux32.if.fh-landshut.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Are you sure that you are using the same definition  of "bd_t" in u-boot and in Linux?
-You have to include the file named ppcboot.h instead of the bd_t definition, this definition is located in your platform
-definition include file like rpxlite.h
+Hello!
 
-Best Regards,
-     Michael Meriin
+I'm currently trying out the VMIC Tundra Universe II driver, a PCI-VME bus
+bridge quite common in embedded devices (from VMIC and Motorola). VMIC
+manufactures mostly x86 boards, but I try to use the driver on a MVME5500
+with 7455 Motorola PPC.
 
+There seems to be a memory problem involved, as follows:
 
+The device will react if a PCI cycle contains addresses stored in its
+device registers. If you tell the device, that it has a window starting
+from 0x40000000 with size 0x100000, it will try to satisfy requests on the
+bus for that addresses with data from the VME bus (the VME address, that
+is separate from the PCI address, is stored in the device registers as
+well).
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Brian Hawley
-Sent: Thursday, May 13, 2004 19:39
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: baud rate question
+This seems to work fine and dandy on the x86, and there seems to be
+something wrong on the PowerPC.
 
+The device driver module uses allocate_resource (&iomem_resource, ...... )
+to request a set of physical addresses, and uses ioremap_nocache to map
+those addresses to virtual ones. Idea behind this is, that any request to
+the I/O memory will trigger bus cycles, and those bus cycles will be
+catched by the device.
 
+There is no actual I/O memory involved in the device - its registers are
+read and written elsewhere. The addresses are only used to trigger bus
+accesses.
 
-Forgive the obvious newbie question, but we've tried everything, reviewed
-the readme's, etc.
+Well, guess what, those accesses don't happen. While the DMA part of the
+driver happens to work (relying on a different mechanism), this fails.
 
-We are using the linux-2.5-ocp tree from bk.
+Actually the addresses returned by allocate_resource seem to come from
+system memory, because ioremap_nocache logs a debug statement that is only
+triggered if the remapping is below the high_memory bound. (And there
+already seems to be a virtual address associated with it - physical
+0x40000000 is RAM 0xc<whatever> - kernel space, I guess)
 
-We are using u-boot 1.0.0.
+But the address returned is 0x40000000 !! Isn't that the 2nd GB of address
+space? My board only has 512 MB of storage, and is only upgradable to 1GB,
+so shouldn't an address starting at 0x40000000 physically never be a
+memory address and never be below the high_memory bound?
 
-We set u-boot to 38400 in the config.  linux wants to be 9600 by
-default.  So, we realize
-that we can't see the kernel boot up.
+When calling allocate_resource you can already limit the range of possible
+addresses - in my case default is 0x00000000 and 0xffffffff (no limit).
+The value returned seems to be consistently 0x40000000. What could be a
+safe value for the lower bound, say e.g. 0x80000000 or something?
 
-We've tried changing u-boot back to 9600, but haven't been able to.
+Can I even dereference an I/O memory pointer on the PowerPC? (It can be
+done on x86) I know, I know, I _should_ use readb and friends, but can it
+be done? Or _must_ I strictly use the macros because it won't work the
+other way round?
 
-Is there a way to tell linux to come up at a different baud rate?  We've
-tried the earlyserialpk option, and the console options...but no luck.
-
-Thanks for any assistance.
-
--- Brian
+Thanks in advance,
+Oliver Korpilla
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
