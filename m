@@ -1,17 +1,18 @@
-Return-Path: <BlakesleeS@embeddedplanet.com>
-Received: from embeddedplanet.com (unknown [66.94.95.194])
-	by ozlabs.org (Postfix) with ESMTP id E8EDE2BF0E
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao11.cox.net (fed1rmmtao11.cox.net [68.230.241.28])
+	by ozlabs.org (Postfix) with ESMTP id 7893E2BF16
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Jan 2005 00:55:47 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 12 Jan 2005 08:55:38 -0500
-Message-ID: <1628E43D99629C46988BE46087A3FBB912F207@ep-01.EmbeddedPlanet.local>
-From: "Steven Blakeslee" <BlakesleeS@embeddedplanet.com>
-To: "Vijay Padiyar" <vijay_padiyar@hotmail.com>,
-	"LinuxPPC Support" <linuxppc-embedded@ozlabs.org>
-Subject: RE: Some issues with kernel 2.6 for MPC8260 target
+	Thu, 13 Jan 2005 01:06:32 +1100 (EST)
+Date: Wed, 12 Jan 2005 07:06:30 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Message-ID: <20050112140630.GP3391@smtp.west.cox.net>
+References: <JPEALJAFNGDDLOPNDIEEMEPMCPAA.joakim.tjernlund@lumentis.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <JPEALJAFNGDDLOPNDIEEMEPMCPAA.joakim.tjernlund@lumentis.se>
+Cc: "Linuxppc-Embedded@Ozlabs. Org" <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] Handle I-TLB Error and Miss separately on 8xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,78 +23,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I would suggest going to the latest 2.6.10 kernel.  I have it running
-with several ethernets running on all the 82xx processors.=20
+On Wed, Jan 12, 2005 at 08:53:17AM +0100, Joakim Tjernlund wrote:
+> > As the code stands currently, there is a bug in the 2.4 and 2.6 handling
+> > of I-TLB Miss and Error exceptions on 8xx.  The problem is that since we
+> > treat both of them as the same exception when we hit do_page_fault,
+> > there is a case where we can incorrectly find that a protection fault
+> > has occured, when it hasn't.  This is because we check bit 4 of SRR1 in
+> > both cases, but in the case of an I-TLB Miss, this bit is always set,
+> > and it only indicates a protection fault on an I-TLB Error.
+> 
+> Patch looks good to me, but I want to ask when this error
+> can be triggered in practice?
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces@ozlabs.org=20
-> [mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of=20
-> Vijay Padiyar
-> Sent: Wednesday, January 12, 2005 5:37 AM
-> To: LinuxPPC Support
-> Subject: Some issues with kernel 2.6 for MPC8260 target
->=20
-> Hi all
->=20
-> I wish to discuss some strange issues that I faced with=20
-> respect to the Linux
-> 2.6.8 kernel (downloaded from kernel.org). Firstly, I wish to=20
-> know whether this has been known to work on an MPC8260 PowerPC target.
->=20
-> Secondly, when I tried to compile the Linux kernel with my=20
-> toolchain (built with Dan Kegel's crosstool for the PowerPC=20
-> 603e core, which is what my processor has), I got some errors=20
-> which I found to rather queer after investigation. Firstly,=20
-> let me state the errors that I got:
->=20
-> ------------------------------------------------------
->=20
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> arch/ppc/8260_io/built-in.o(.text+0x103c): In function=20
-> `mii_queue_relink':
-> arch/ppc/8260_io/fcc_enet.c:1254: undefined reference to=20
-> `schedule_task'
-> arch/ppc/8260_io/built-in.o(.text+0x1074): In function=20
-> `mii_queue_config':
-> arch/ppc/8260_io/fcc_enet.c:1263: undefined reference to=20
-> `schedule_task'
->=20
-> ------------------------------------------------------
->=20
-> On further investigation, I find that 'schedule_task()' is=20
-> simply not defined anywhere in the 2.6.8 kernel sources. This=20
-> is quite wierd! However, it is defined in a file 'context.c'=20
-> (linux-src/kernel) in the 2.4.27 kernel sources, which we=20
-> were using earlier. How is it that a function is being called=20
-> but its definition has been removed from the sources?
->=20
-> Another such example is with the structure 'tq_struct'. It is=20
-> referred to in the file 'fcc_enet.c'=20
-> (linux-src/arch/ppc/8260_io) but it's not defined anywhere!=20
-> Again, after checking in the 2.4.27 sources, I find that it's=20
-> defined in the file 'tqueue.h' (linux-src/include/linux)!
->=20
-> A third thing is that the 2.4.27 kernel source file 'uart.c'
-> (linux-src/arch/ppc/cpm2_io) is not present in the=20
-> corresponding folder in the 2.6.8 source=20
-> (linux-src/arch/ppc/8260_io). There is one 'uart.c' in the=20
-> folder '8xx_io', but it doesn't get compiled during the=20
-> kernel build process. Will my UART work correctly with this build?
->=20
-> Can someone please tell me if there's some explanation for=20
-> this that I'm unaware of? Which would be the proper forum to=20
-> report this? Again I would like to ask: Has the 2.6.8 kernel=20
-> been tested successfully on the MPC8260 PowerPC platform?
->=20
-> Lastly, where can I get the latest stable Linux kernel source=20
-> for the PowerPC platform?
->=20
-> Regards
->=20
-> Vijay Padiyar
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->=20
+It is possible to see this in the real world, as we (<hat=mvista>) found
+this with a customers app.
+
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
