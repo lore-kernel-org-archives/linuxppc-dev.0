@@ -1,59 +1,36 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14786.65401.393966.936283@argo.linuxcare.com.au>
-Date: Sat, 16 Sep 2000 16:04:57 +1100 (EST)
+Message-Id: <200009160921.KAA19271@hyperion.valhalla.net>
+Date: Sat, 16 Sep 2000 10:21:49 +0100
+Subject: Policy on "one size fits all" builds
+From: "Iain Sandoe" <iain@sandoe.co.uk>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: recent fixes in devel tree
-Reply-To: paulus@linuxcare.com.au
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've been fixing a few things in the development kernel (2.4.0-test8)
-lately:
+I have a (small) dilemma.
 
-PCMCIA.  I have fixed an endianness bug in the pcmcia/cardbus support
-in the kernel, and added some code to get the interrupt routing right
-on my 1999 G3 powerbook ("lombard").  I also fixed a bad bug that we
-had in our free_irq() implementation.  I have been testing with a 3com
-combo ethernet/modem card which seems to work just fine now, although
-there does seem to be some sort of a problem on the initial card
-insertion still.
+discussion relates to dmasound driver (but prop relates elsewhere).
 
-Machine checks on accesses to non-existent I/O ports on powermacs.
-I changed the definitions of inb/w/l and outb/w/l so that they use a
-sync instruction after the load or store, instead of eieio.  If the
-location doesn't respond and we get a machine check, it should occur
-at the sync instruction and we then use the existing exception
-handling mechanism that we use for get_user/put_user etc. to recover
-and keep going.  An inb/w/l to a non-existent port will return -1
-rather than crashing the system as before.
+The idea of :
 
-As part of this I added code to sort the exception table.  Because we
-have so many sections (pmac, prep, chrp, apus, etc. as well as the
-usual init section and the main text section) the exception table gets
-out of order and it is necessary to sort it so that the binary search
-works correctly.
+"one size fits all" compiles
 
-Copy speedups using cache prefetching.  I found that on the G4, using
-the dcbt instruction to prefetch data into the cache in the inner loop
-of copy_to/from_user and copy_page gives very substantial speedups.
-For example, `cat largefile >/dev/null' used to go at around 140MB/s
-on my 450MHz G4 cube (assuming largefile fits into memory) and now it
-goes at around 400MB/s. :-)  Interestingly, dcbt makes no difference
-at all on the G3 machines I tried.  I presume it is a no-op on the G3.
+is in direct conflict with:
 
-The fixes are in the linuxppc_2_3 bk tree and in my rsync tree at
-ppc.samba.org::linux-pmac-devel.  Cort or I will send some patches to
-Linus soon and hopefully they will go in.
+"I want to build the smallest version and don't want to look for any
+hardware I know I don't have".
 
-Paul.
+for example, I can put wrappers round the cuda usage in dmasound_awacs that
+will prevent it being compiled in if someone switches off CONFIG_CUDA (it
+has already been done at 2.4.0 by someone).
 
---
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+So.  Should I wrapper or should available resources be probed at run-time?
+
+(I don't mind which way I do it - but I'd like some guidance from those who
+ultimately determine what is acceptable)
+
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
