@@ -1,45 +1,62 @@
-To: linuxppc-dev@lists.linuxppc.org
-From: Alexander Larsson <alex@signum.se>
-Subject: Re: Booting Linux from Flash
-Date: 15 Apr 1999 18:06:32 +0200
-Message-ID: <w1g16198c7.fsf@tammy.signum.se>
-References: <01BE8665.A0E7B070.john.vanloon@oregonchain.com> <37156C34.C1DEE82F@dgs.monash.edu.au>
+Message-ID: <3716103B.E1F6D4C4@email.com>
+Date: Thu, 15 Apr 1999 12:13:48 -0400
+From: Luke Andrews-Hakken <landrews@email.com>
+Reply-To: landrews@email.com
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Subject: Booting IDE B&W G3. (it's easy!)
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-brendan@dgs.monash.edu.au (Brendan Simon) writes:
+Okay this is the third time I have tried sending this message. I don't
+know what the problem is but if you get multiple copies I'm sorry.
 
-> I would certainly like to get a flash filesystem driver.  I'm not sure if it
-> is the same thing you are talking about.
-> 
-> I want to boot linux on an powerpc embedded system which has no hard disk.  I
-> do not want to use lilo.  I imagine that I would have write a simple
-> bootloader to get the kernel booting.  I want to store the kernel at a known
-> location in Flash and store a boot image at a known location in Flash.  I then
-> want to execute the kernel somehow (jump to appropriate address) and pass to
-> it any parameters required to let it place the boot image in a ram disk.  I
-> think the kernel lives in the file system so it's a bit of a chicken and egg
-> problem as far as I can see.  Is the kernel that is booting stored in the boot
-> image.  If so I guess the boot image has to be uncompressed.  The root
-> filesystem can be a compressed image though.
+It is most definately possible to boot linuxppc with the new kernal on a
+B&W. I know I'm sitting here right now in X and I'm happy to be back.
+Okay here's the deal:
 
-The way I'm doing it is i just place the bootcode and a zImage at place in the
-flash-mem where the machine boots. Then i just set up the machine and copy the
-zImage down to ram and jump to it.
+first off. You Must have a second IDE Hard Drive. I'm useing an old 2GB
+from a motorola Starmax. (i don't know the model, it just has an OEM
+sticker on it). The hard drive is sitting in the Zip slot with the
+pre-installed apple IDE cable running into it.
 
-You could probably get it to read a compressed fs image from flash and mount it
-as a ram-disk by either using some initrd hacking or doing some kernel startup
-modifications.
+2) Use the kernal linked from www.linuxppc.org/news/BlueG3.shtml
 
-> Anyone know where I should start with regards to bootloaders or how to get the
-> kernel booting if I have the kernel and bootimage in Flash somewhere.  Note
-> the Flash is just memory mapped on a SIMM.  There is no IDE driver or
-> filesystem on it.  Do I need a Flash device driver ??
+3) You'll need bootX of course. And the ram disk. And the utils.sit that
+are listed in the imac install. MAKE SURE YOU FTP THESE IN BINARY
+FORMAT. Also place the folder in / on your mac partition. (I.E. not on
+the desktop).
 
-No, you don't need a Flash device driver unless you want to write to the flash.
+4) Rename the vmlinux-2.2.1-challenger2.gz to just vmlinux and place it
+in the same directory as BootX. Fire it up with the "no video driver"
+and "use ramdisk" buttons checked. This should dump you into the redhat
+installer.
 
-/ Alex
+5)From there on it's gravy. use pdisk to partition. check the packages
+you want. Etc. The installer runs get the packages and bingo. Your
+golden
+
+NOTE: Near the end of the installer it asks you to install the boot
+?blockers? I skipped this because it didn't seem right. Anyway if anyone
+has any idea if this is good or bad tell me.
+
+Also I haven't moved the bootX foler, or any componets from there
+original place. I also have to specify the partition number in the bootx
+window.
+                          /dev/hdb6 <-- for example.
+
+Well that's it good luck guys (and girls) any further questions please
+email me
+
+_luke
+http://raptor.slc.edu/~apex/
+
+( yes I was the guy who compiled linuxppc quake. Don't ask me about that
+right now. It's very painful when a server goes down taking all of your
+data with it).
+
 
 
 
