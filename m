@@ -1,61 +1,41 @@
-Date: Tue, 13 Nov 2001 18:09:37 -0300
-From: Ricardo Scop <scop@digitel.com.br>
-Reply-To: scop@digitel.com.br
-Message-ID: <19756.011113@digitel.com.br>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Ricardo Scop <scop@vanet.com.br>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re[2]: Linuxppc and MPC8255 routing performance
-In-reply-To: <3BF164B2.8080000@embeddededge.com>
-References: <3BF164B2.8080000@embeddededge.com>
-Mime-Version: 1.0
+Message-ID: <3BF1939A.B96072AC@labs.mot.com>
+Date: Tue, 13 Nov 2001 15:41:46 -0600
+From: Steve Rossi <srossi@labs.mot.com>
+MIME-Version: 1.0
+To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: mmap & no cache regions 
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
+Hi All -
 
-Tuesday, November 13, 2001, 3:21:38 PM, you wrote:
+I'm writing a driver for custom hardware on an 8xx based system. I'm
+using MontaVista's Journeyman 2.0 (2.4.2 kernel). The driver uses
+consistent_alloc to allocate a region of memory which is used for DMA. I
+mmap that region to user space (using remap_page_range) such that the
+user-level application can directly access the data that has been DMA'd
+from the device. I learned that consistent_alloc is not sufficent to
+guarantee cache coherency on the mmaped region - in fact I had to mark
+these pages PAGE_NO_CACHE in the user space application's memory map as
+well. Having figured that out, it all works great now - but my question
+is: do I need to pay attention to how I deallocate and unmap that
+space? I use consistent_free in the driver so that takes care of marking
+the pages cacheable again in the kernel level mapping - but is it safe
+to assume that the application's memory map will be destroyed so I don't
+have to worry about marking the pages in that map as cacheable again?
 
-DM> Ricardo Scop wrote:
+Thanks,
+Steve
 
-
->> As for our performance troubles, there have been some improvements; we were
->> making some mistakes regarding both FCC and PHY programming.
-
-
-DM> FYI, a major telecommuniation company paid for independent laboratory
-DM> certifcation of this driver (and Linux) under a variety of performance
-DM> and error conditions.  After a couple of iterations, it passed the
-DM> certification testing and I believe all of the modifications are in
-DM> this driver (at least it was my intention to ensure they are public).
-
-I'm really glad to know about that. FYI, we never had any doubts about
-linuxppc implementation quality, or we wouldn't use it in the first
-place.
-
-DM> I don't remember which PHY was used for the testing, but please don't
-DM> attack this as a "can't possibly work" problem and start hacking it up.
-
-Oh, we don't! The 'mistakes' I referred were made by _myself_, in two
-places:
-       - LXT970A PHY in PPCBoot (our hardware MDIO interface don't
-       conform to Linux MDIO driver, so I hacked PPCBoot to program
-       the chip to megotiate full-duplex, but I did it wrong in our
-       earlier tests);
-
-       - in arch/ppc/8260io/fcc_enet.c: the driver we have, pulled
-       from linuxppc_2_4 mvista cvs mirror some two weeks ago,
-       programs the FCC to half-duplex mode, by default; so, I tryed to
-       hack it to full-duplex for our tests and, again, made a
-       mistake, which is now fixed).
-
-As I said, all _my_ mistakes. Linux FCC driver works perfectly well!
-
-Thanks again.
-
-~Ricardo
+--
+-------------------------------------------------------
+Steven K. Rossi                     srossi@labs.mot.com
+Staff Engineer
+Multimedia Communications Research Laboratory
+Motorola Labs
+-------------------------------------------------------
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
