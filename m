@@ -1,30 +1,32 @@
-Message-ID: <3D0A6251.9040107@embeddededge.com>
-Date: Fri, 14 Jun 2002 17:38:25 -0400
-From: Dan Malek <dan@embeddededge.com>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-To: Dan Brennan <dmb8@optonline.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: compact flash and true IDE mode
-References: <3D0A3DA4.586D0956@optonline.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15626.55392.839931.746121@argo.ozlabs.ibm.com>
+Date: Sat, 15 Jun 2002 16:02:08 +1000 (EST)
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Dan Malek <dan@embeddededge.com>,
+	David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: consistent_free()
+In-Reply-To: <20020614153954.GL13541@opus.bloom.county>
+References: <20020614042928.GK26146@zax>
+	<20020614153954.GL13541@opus.bloom.county>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Brennan wrote:
+Tom Rini writes:
 
-> ....Is anyone using CF in this
-> mode? Any recommendations?
+> My only concern is that is it a good idea to make a 'consistent_alloc'
+> and 'consistent_free' functions for  cache-cohernet processors, which
+> aren't doing what the name implies?  The only possible caller of these
+> are pci_alloc_consistent and pci_free_consistent, in a cache-cohernet
+> processor.
 
-Yes, I see this quite frequently on products I help integrate.
-You just need the right IDE board support functions to initialize
-a few things and the standard IDE drivers "just work."  Take a look
-at the work Matthew Locke did for the MPC8xx IDE.  If you find
-yourself writing more than about 50 lines of total code in these few
-setup functions, you're likely trying too hard :-)
+"Consistent" means "the cpu and the device see the same stuff in
+memory".  On a cache-coherent system that is true of all normal
+memory.  Surely that is obvious?
 
-
-	-- Dan
-
+Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
