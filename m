@@ -1,29 +1,43 @@
-Date: Thu, 15 Jan 2004 08:20:47 +0100
-From: valvoline <valvoline@vrlteam.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: temp.c and cputable.c issues
-Message-ID: <20040115072047.GS2658@adapter.n0skillz.org>
-Reply-To: valvoline@vrlteam.org
-References: <20040114193910.GN2658@adapter.n0skillz.org> <20040114221018.GB983@stop.crashing.org> <20040114201153.GO2658@adapter.n0skillz.org> <125601c3db40$50b11bc0$3cc8a8c0@ANOSP>
+Date: Thu, 15 Jan 2004 08:44:39 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sven Luther <sven.luther@wanadoo.fr>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: OF properties access ?
+Message-ID: <20040115074439.GB14039@iliana>
+References: <20040113114625.GA9294@iliana> <1074131387.818.43.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <125601c3db40$50b11bc0$3cc8a8c0@ANOSP>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1074131387.818.43.camel@gaston>
+From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 15, 2004 at 09:19:37AM +0100, Colin Leroy wrote:
+On Thu, Jan 15, 2004 at 12:49:47PM +1100, Benjamin Herrenschmidt wrote:
+>
+> > But, the pmac OF (at least on the powerbook i got someone to check for
+> > me), does have a l2cr property, not a l2cr-value one. The same goes on
+> > for voltaire.debian.org, which is a dual G4 500MHz.
+> >
+> > Does this mean that the -value appended is for looking at the content of
+> > l2cr, or something such ?
+>
+> No. The L2 is assumed to be set by the firmware. That "l2cr-value" is just
+> an optional thing that BootX can set before booting the kernel to force
+> a different L2 setup, typically used with G3 upgrade cards.
 
-> What's your computer model ?
-> You can try to do a
-> `find /proc/device-tree -name fan|grep -v aliases`
+Ok.
 
-i've an iBook G4/12"/firewire. it's branded as PowerMac6,3 and it should
-be the lastest available from apple.
+But this doesn't reply me on why my attempts to read back integer values
+from OF property only result in the machine hanging, and since it is
+really early on, i don't even get serial console output to have an idea
+why :/
 
---
-[ valvoline :: VRL Team :: s0ftpj :: freaknet Medialab :: GPG key available  ]
-[ key fingerprint :: - :: B7E2 48BC 705F AE8F 9ABE  E422 076A 2561 1D67 B4DD ]
-[ GPG key available on keyserver :: pgp.mit.edu :: with keyID :: 1D67B4DD :: ]
+in particular i cloned the code reading l2cr-value, and changed it to
+l2cr and instead of reading the value, i got only kernel silently dying.
+
+Friendly,
+
+Sven Luther
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
