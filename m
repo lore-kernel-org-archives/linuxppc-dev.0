@@ -1,63 +1,36 @@
-Date: Thu, 10 May 2001 20:49:44 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: frowand@mvista.com
-Cc: Brian Kuschak <brian.kuschak@skystream.com>,
-	"'Dan Malek'" <dan@mvista.com>, Eli Chen <eli@routefree.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: dcache BUG()
-In-Reply-To: <3AFAE055.3396344C@mvista.com>
-Message-ID: <Pine.HPX.4.10.10105102042500.29518-100000@gra-ux1.iram.es>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: "=?big5?B?S2lyayBMZWU=?=" <mpc@mail2000.com.tw>
+Reply-To: mpc@mail2000.com.tw
+Subject: =?big5?B?RGVidWcgcHBjbGludXggd2l0aCBCREkyMDAw?=
+Message-ID: <989520948.8638.mpc@mail2000.com.tw>
+To: "=?big5?B?bGludXhwcGMtZW1iZWRkZWQ=?=" <linuxppc-embedded@lists.linuxppc.org>
+Date: Fri, 11 May 2001 02:55:48 +0800 (CST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=big5
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 10 May 2001, Frank Rowand wrote:
+Dear All:
 
-> Gabriel Paubert wrote:
-> >
-> > On Wed, 9 May 2001, Brian Kuschak wrote:
->
->
-> > >
-> > > static __inline__ void atomic_set(atomic_t *v, int a)
-> > > {
-> > > c004f9e8:       38 00 00 01     li      r0,1
-> > >         int t;
-> > >
-> > >         __asm__ __volatile__("\n\
-> > > c004f9ec:       7d 60 f8 28     lwarx   r11,r0,r31
-> > > c004f9f0:       60 0b 00 00     ori     r11,r0,0
-> > > c004f9f4:       7d 60 f9 2d     stwcx.  r11,r0,r31
-> > > c004f9f8:       40 a2 ff f4     bne-    c004f9ec <d_alloc+0x90>
-> > >
-> > >         atomic_set(&dentry->d_count, 1);
-> >
-> > Is there any reason for atomic_set to use this sequence. I believe that a
-> > simple store (stw in this case) would be ok. This looks like a very
-> > convoluted and bloated way to set a variable. An aligned stw is guaranteed
-> > to set the variable atomically wrt all other processors.
->
-> Sorry I wasn't around for the beginning of this discussion (I was off with
-> visiting family...), but I'll jump in now.
->
-> I put this version of atomic_set() into Brian's source.  It is one of the
-> things that helped reduce the severity of the dcache symptoms.  You can't
-> just use a stw in atomic_set(), because the other atomic operations depend
-> upon the stwcx.
+ I am trying to debug ppclinux running on TQM8xxL
+ with BDI2000.
 
-Why not ? I'd like to find an explanation of a possible failure mode.
-All PPC systems have always used a simple store for atomic_set. If it does
-not work, there is something seriously wrong, perhaps even a hardware bug.
+ I followed the procedure mentioned in BDI's manual
+ (Sec3.3.4, P29).
+ I just type 'load' on BDI's telnet terminal to load
+ target zImage file(arch/ppc/mbxboot/zImage).
+ After that BDI shows:
+ "File offset 0x00010000 to address 0x00210000 size
+  514200"
+ Then I type "go 0x00210000" on BDI's telnet terminal.
+ However, nothing happened!!
+ I can not get any responce from serial console.
+ Did I lose something?
 
-This is especially true on a UP system. Whatever value is stored by a stw
-should be seen by any following lwarx/stwcx., on SMP you may need an
-eieio. But on UP I can't see how it can affect anything.
+ Thanks
 
-Did it actually have any effect on Brian's system ?
-
-	Gabriel.
+ kirk
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
