@@ -1,56 +1,64 @@
-Date: Sun, 2 Jun 2002 23:11:44 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Keyboard identification on TiBooks
-To: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
-Message-Id: <E17Ecdh-0000Cy-00@piglet.grunz.lu>
+Date: Mon, 3 Jun 2002 07:35:16 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: S3 trio config
+Message-ID: <20020603143516.GE8193@opus.bloom.county>
+References: <15608.22619.81123.994767@argo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <15608.22619.81123.994767@argo.ozlabs.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+On Sat, Jun 01, 2002 at 03:15:07PM +1000, Paul Mackerras wrote:
 
-Just to share a bit of information and (hopefully) make it appear in the
-list archives :)
+> We have this difference between drivers/video/Config in linuxppc_2_4
+> compared to the official tree:
+>
+> diff -urN linux-2.4.19-pre9/drivers/video/Config.in linuxppc_2_4/drivers/video/Config.in
+> --- linux-2.4.19-pre9/drivers/video/Config.in	Tue May 28 22:39:29 2002
+> +++ linuxppc_2_4/drivers/video/Config.in	Sat Jun  1 14:40:58 2002
+> @@ -73,7 +73,7 @@
+>        dep_bool '  Apple "valkyrie" display support' CONFIG_FB_VALKYRIE $CONFIG_ALL_PPC
+>        bool '  Chips 65550 display support' CONFIG_FB_CT65550
+>        bool '  IMS Twin Turbo display support' CONFIG_FB_IMSTT
+> -      bool '  S3 Trio display support' CONFIG_FB_S3TRIO
+> +      dep_bool '  S3 Trio display support' CONFIG_FB_S3TRIO $CONFIG_ALL_PPC
+>        tristate '  VGA 16-color graphics console' CONFIG_FB_VGA16
+>     fi
+>     if [ "$CONFIG_PARISC" = "y" ]; then
+>
+> Does anyone know why we have this?  Is the S3 Trio display really only
+> used on PReP or CHRP machines, not on any PCs?
 
-Lately I had to pull apart my first-gen TiBook (I had dropped it, and
-the DVD drive was bnt inide).
+IIRC, when I did this the S3Triofb code was full of OF'isms, so it's
+really only useful on some CHRP machines.  And just checking, it's still
+got:
+int __init s3triofb_init(void)
+{
+        struct device_node *dp;
 
-Anyway, I found that the PMU is in fact on a separate PCB above the DVD
-drive, together with it's backup battery, where keyboard, touchpad and
-mouse button are also attached. Why, in the presence of backup
-batteries, the clock _still_ resets to 1904 when the 'book runs out of
-power, is a mistery....
+        dp = find_devices("S3Trio");
+        if (dp != 0)
+            s3triofb_of_init(dp);
+        return 0;
+}
 
-My 'book has a swiss-french keyboard, referred to as an 'ISO' keyboard,
-with an additional key vs. US 'ANSI' keyboards. This key is between 'y'
-and left shift, and has symbols '<' and '>' printed on it.
+So it certainly won't link on !CONFIG_ALL_PPC.
 
-Now, after I reassembled the 'book, my keyboard was suddenly reported as
-'ANSI' type, and not 'ISO' anymore. Therefore, the additional key was
-not swapped anymore with the one left of '1'... xmodmap fixed that
-(keycodes 49 and 94, for the curious).
+But more importantly, that needs to be cleaned up a bit to be more like:
+if [ "$CONFIG_PPC32" = "y" ]; then
+   if [ "$CONFIG_ALL_PPC" = "y" ]; then
+      ... apple drivers ...
+      ... S3Trio ...
+   fi
+   ... other drivers ...
+fi
 
-Yesterday the 'book switched itself off somehow while I wasn't looking
-(while on mains...), and now, the keyboard is back to ISO type!
-
-Go figure... I suspect the switchoff to be related to the PMU somehow
-getting reset, which also brought the keyboard type back, meaning that
-the PMU has some setting configuring keyboard type somewhere. But I
-don't know where....
-
-Cheers
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
