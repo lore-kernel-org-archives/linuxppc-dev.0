@@ -1,28 +1,19 @@
-Date: Thu, 11 Feb 1999 12:54:59 -0500 (EST)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Francis Augusto Medeiros <francis@mgate.com.br>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: My Linux is not obeying me !!!!!!
-In-Reply-To: <199902111459.MAA20513@feijao.mgate.com.br>
-Message-ID: <Pine.LNX.3.96L.990211125307.1962A-100000@caskley.weh.andrew.cmu.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <l03130300b2e8cf05cf76@[206.55.224.120]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 11 Feb 1999 10:25:16 -0800
+To: linuxppc-dev@lists.linuxppc.org
+From: Brian Griffith <bagrif@mbay.net>
+Subject: Anyone using GGI?
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 11 Feb 1999, Francis Augusto Medeiros wrote:
-> 
-> This is the thing: I change the /etc/issue, the /etc/host.conf and some 
-> other stuff and... when I reboot, they get back to their original form.
-> 
-> What's wrong ? 
+Has anyone used GGI with LinuxPPC? I'm interested in possibly trying to use
+it on a PowerBase with the built in ATI video. Thanks for any information,
 
-Check the FOM please...
+Brian Griffith
 
-http://www.dartmouth.edu/cgi-bin/cgiwrap/jonh/lppc/faq.pl?_highlightWords=motd&file=421
-
--Hollis
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
