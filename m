@@ -1,6 +1,6 @@
-Message-ID: <1831.80.7.99.14.1086886556.squirrel@www.solinno.co.uk>
-Date: Thu, 10 Jun 2004 17:55:56 +0100 (BST)
-Subject: [RFC][PATCH 3/9] Support for old IBM PReP boxes
+Message-ID: <1843.80.7.99.14.1086886876.squirrel@www.solinno.co.uk>
+Date: Thu, 10 Jun 2004 18:01:16 +0100 (BST)
+Subject: [RFC][PATCH 4/9] Support for old IBM PReP boxes
 From: "Leigh Brown" <leigh@solinno.co.uk>
 To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
@@ -9,166 +9,154 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This patch adds a function residual_pcidev_irq() which finds out
-from the residual data which IRQ the given PCI device should use.
-The interesting part about this patch is the changes I made to
-prep_pcibios_fixup().  The old code was more than a little
-opaque so I tried to change it to make it a bit clearer.  I'd
-definitely be pleased if someone could cast their eyes over
-that bit.
+This patch adds a function to determine the edge/level mask for the
+8259.  Now, it turns out the answer it gave for my 140 is different
+to the hardcoded value in the code already.  However, I think my
+code is right.  With this patch, we now have all the information
+we need to write a setup_pci function with data taken completely
+from residual data.  If anyone could explain what this magic
+code does, I'd be grateful (it doesn't seem to be needed on my
+140):
+
+ 	/* Set up mapping from slots */
+	for (i = 1;  i <= 4;  i++)
+		ibc_pirq[i-1] = Motherboard_routes[i];
+	/* Enable PCI interrupts */
+	*ibc_pcicon |= 0x20;
+
 
 
 diff -urNX .diffex linux-2.6.6-prev/arch/ppc/platforms/prep_pci.c
 linux-2.6.6/arch/ppc/platforms/prep_pci.c
 --- linux-2.6.6-prev/arch/ppc/platforms/prep_pci.c	2004-06-10
-14:03:56.000000000 +0100
-+++ linux-2.6.6/arch/ppc/platforms/prep_pci.c	2004-06-10
 14:04:19.000000000 +0100
-@@ -1171,38 +1171,52 @@
- prep_pcibios_fixup(void)
- {
-         struct pci_dev *dev = NULL;
-+	int irq;
-+	int have_openpic = (OpenPIC_Addr != NULL);
-
- 	prep_route_pci_interrupts();
-
- 	printk("Setting PCI interrupts for a \"%s\"\n", Motherboard_map_name);
--	if (OpenPIC_Addr) {
--		/* PCI interrupts are controlled by the OpenPIC */
--		while ((dev = pci_find_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
--			if (dev->bus->number == 0) {
--                       		dev->irq =
-openpic_to_irq(Motherboard_map[PCI_SLOT(dev->devfn)]);
--				pci_write_config_byte(dev, PCI_INTERRUPT_LINE, dev->irq);
--			} else {
--				if (Motherboard_non0 != NULL)
--					Motherboard_non0(dev);
--			}
--		}
--
--		/* Setup the Winbond or Via PIB */
--		prep_pib_init();
--
--		return;
--	}
-
--	dev = NULL;
-+	/* Iterate through all the PCI devices, setting the IRQ */
- 	while ((dev = pci_find_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
- 		/*
--		 * Use our old hard-coded kludge to figure out what
--		 * irq this device uses.  This is necessary on things
--		 * without residual data. -- Cort
-+		 * If we have residual data, then this is easy: query the
-+		 * residual data for the IRQ line allocated to the device.
-+		 * This works the same whether we have an OpenPic or not.
-+		 */
-+		if (have_residual_data()) {
-+			irq = residual_pcidev_irq(dev);
-+			dev->irq = have_openpic ? openpic_to_irq(irq) : irq;
-+		}
-+		/*
-+		 * If we don't have residual data, then we need to use
-+		 * tables to determine the IRQ.  The table organisation
-+		 * is different depending on whether there is an OpenPIC
-+		 * or not.  The tables are only used for bus 0, so check
-+		 * this first.
- 		 */
--		unsigned char d = PCI_SLOT(dev->devfn);
--		dev->irq = Motherboard_routes[Motherboard_map[d]];
-+		else if (dev->bus->number == 0) {
-+			irq = Motherboard_map[PCI_SLOT(dev->devfn)];
-+			dev->irq = have_openpic ? openpic_to_irq(irq)
-+						: Motherboard_routes[irq];
-+		}
-+		/*
-+		 * Finally, if we don't have residual data and the bus is
-+		 * non-zero, use the callback (if provided)
-+		 */
-+		else {
-+			if (Motherboard_non0 != NULL)
-+				Motherboard_non0(dev);
-+
-+			continue;
-+		}
-+
-+		pci_write_config_byte(dev, PCI_INTERRUPT_LINE, dev->irq);
- 	}
-+
-+	/* Setup the Winbond or Via PIB */
-+	prep_pib_init();
++++ linux-2.6.6/arch/ppc/platforms/prep_pci.c	2004-06-10
+14:06:10.000000000 +0100
+@@ -901,6 +901,17 @@
  }
 
- static void __init
+ void __init
++prep_residual_setup_pci(char *irq_edge_mask_lo, char *irq_edge_mask_hi)
++{
++	if (have_residual_data()) {
++		Motherboard_map_name = res->VitalProductData.PrintableModel;
++		Motherboard_map = NULL;
++		Motherboard_routes = NULL;
++		residual_irq_mask(irq_edge_mask_lo, irq_edge_mask_hi);
++	}
++}
++
++void __init
+ prep_sandalfoot_setup_pci(char *irq_edge_mask_lo, char *irq_edge_mask_hi)
+ {
+ 	Motherboard_map_name = "IBM 6015/7020 (Sandalfoot/Sandalbow)";
+@@ -1022,10 +1033,13 @@
+ 	}
+
+ 	/* Set up mapping from slots */
+-	for (i = 1;  i <= 4;  i++)
+-		ibc_pirq[i-1] = Motherboard_routes[i];
+-	/* Enable PCI interrupts */
+-	*ibc_pcicon |= 0x20;
++	if (Motherboard_routes) {
++		for (i = 1;  i <= 4;  i++)
++			ibc_pirq[i-1] = Motherboard_routes[i];
++
++		/* Enable PCI interrupts */
++		*ibc_pcicon |= 0x20;
++	}
+ }
+
+ void __init
+diff -urNX .diffex linux-2.6.6-prev/arch/ppc/platforms/prep_setup.c
+linux-2.6.6/arch/ppc/platforms/prep_setup.c
+--- linux-2.6.6-prev/arch/ppc/platforms/prep_setup.c	2004-06-10
+14:04:01.000000000 +0100
++++ linux-2.6.6/arch/ppc/platforms/prep_setup.c	2004-06-10
+14:06:10.000000000 +0100
+@@ -80,6 +80,7 @@
+
+ int _prep_type;
+
++extern void prep_residual_setup_pci(char *irq_edge_mask_lo, char
+*irq_edge_mask_hi);
+ extern void prep_sandalfoot_setup_pci(char *irq_edge_mask_lo, char
+*irq_edge_mask_hi);
+ extern void prep_thinkpad_setup_pci(char *irq_edge_mask_lo, char
+*irq_edge_mask_hi);
+ extern void prep_carolina_setup_pci(char *irq_edge_mask_lo, char
+*irq_edge_mask_hi);
+@@ -210,6 +211,13 @@
+ }
+
+ static int __prep
++prep_gen_cpuinfo(struct seq_file *m)
++{
++	prep_ibm_cpuinfo(m);
++	return 0;
++}
++
++static int __prep
+ prep_sandalfoot_cpuinfo(struct seq_file *m)
+ {
+ 	unsigned int equip_reg = inb(PREP_IBM_EQUIPMENT);
+@@ -822,7 +830,16 @@
+ 				ppc_md.show_cpuinfo = prep_thinkpad_cpuinfo;
+ 				break;
+ 			default:
+-				printk(" -- unknown! Assuming Carolina");
++				if (have_residual_data()) {
++					prep_gen_enable_l2();
++					setup_ibm_pci = prep_residual_setup_pci;
++					ppc_md.power_off = prep_halt;
++					ppc_md.show_cpuinfo = prep_gen_cpuinfo;
++					break;
++				}
++				else
++					printk(" - unknown! Assuming Carolina");
++					/* fall through */
+ 			case PREP_IBM_CAROLINA_IDE_0:
+ 			case PREP_IBM_CAROLINA_IDE_1:
+ 			case PREP_IBM_CAROLINA_IDE_2:
 diff -urNX .diffex linux-2.6.6-prev/arch/ppc/platforms/residual.c
 linux-2.6.6/arch/ppc/platforms/residual.c
 --- linux-2.6.6-prev/arch/ppc/platforms/residual.c	2004-06-10
-14:03:56.000000000 +0100
-+++ linux-2.6.6/arch/ppc/platforms/residual.c	2004-06-10
 14:04:19.000000000 +0100
-@@ -827,6 +827,66 @@
- 	return 0;
++++ linux-2.6.6/arch/ppc/platforms/residual.c	2004-06-10
+14:06:10.000000000 +0100
+@@ -887,6 +887,36 @@
+ 	return (irq < 0) ? 0 : irq;
  }
 
-+static int __init
-+residual_scan_pcibridge(PnP_TAG_PACKET * pkt, struct pci_dev *dev)
++void __init residual_irq_mask(char *irq_edge_mask_lo, char
+*irq_edge_mask_hi)
 +{
-+	int irq = -1;
-+
-+#define data pkt->L4_Pack.L4_Data.L4_PPCPack.PPCData
-+	if (dev->bus->number == data[16]) {
-+		int i, size;
-+
-+		size = 3 + ld_le16((u_short *) (&pkt->L4_Pack.Count0));
-+		for (i = 20; i < size - 4; i += 12) {
-+			unsigned char pin;
-+			int line_irq;
-+
-+			if (dev->devfn != data[i + 1])
-+				continue;
-+
-+			pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &pin);
-+			if (pin) {
-+				line_irq = ld_le16((unsigned short *)
-+						(&data[i + 4 + 2 * (pin - 1)]));
-+				irq = (line_irq == 0xffff) ? 0
-+							   : line_irq & 0x7fff;
-+			} else
-+				irq = 0;
-+
-+			break;
-+		}
-+	}
-+#undef data
-+
-+	return irq;
-+}
-+
-+int __init
-+residual_pcidev_irq(struct pci_dev *dev)
-+{
++	PPC_DEVICE *dev;
 +	int i = 0;
-+	int irq = -1;
-+	PPC_DEVICE *bridge;
++	unsigned short irq_mask = 0x000; /* default to edge */
 +
-+	while ((bridge = residual_find_device
-+	       (-1, NULL, BridgeController, PCIBridge, -1, i++))) {
-+
++	while ((dev = residual_find_device(-1, NULL, -1, -1, -1, i++))) {
 +		PnP_TAG_PACKET *pkt;
-+		if (bridge->AllocatedOffset) {
-+			pkt = PnP_find_large_vendor_packet(res->DevicePnPHeap +
-+					   bridge->AllocatedOffset, 3, 0);
-+			if (!pkt)
-+				continue;
++		unsigned short mask;
++		int size;
++		int offset = dev->AllocatedOffset;
 +
-+			irq = residual_scan_pcibridge(pkt, dev);
-+			if (irq != -1)
-+				break;
-+		}
++		if (!offset)
++			continue;
++
++		pkt = PnP_find_packet(res->DevicePnPHeap + offset,
++					      IRQFormat, 0);
++		if (!pkt)
++			continue;
++
++		size = tag_small_count(pkt->S1_Pack.Tag) + 1;
++		mask = ld_le16((unsigned short *)pkt->S4_Pack.IRQMask);
++		if (size > 3 && (pkt->S4_Pack.IRQInfo & 0x0c))
++			irq_mask |= mask;
 +	}
 +
-+	return (irq < 0) ? 0 : irq;
++	*irq_edge_mask_lo = irq_mask & 0xff;
++	*irq_edge_mask_hi = irq_mask >> 8;
 +}
 +
  PnP_TAG_PACKET *PnP_find_packet(unsigned char *p,
@@ -177,25 +165,15 @@ linux-2.6.6/arch/ppc/platforms/residual.c
 diff -urNX .diffex linux-2.6.6-prev/include/asm-ppc/residual.h
 linux-2.6.6/include/asm-ppc/residual.h
 --- linux-2.6.6-prev/include/asm-ppc/residual.h	2004-06-10
-14:03:56.000000000 +0100
-+++ linux-2.6.6/include/asm-ppc/residual.h	2004-06-10 14:05:25.000000000
+14:05:25.000000000 +0100
++++ linux-2.6.6/include/asm-ppc/residual.h	2004-06-10 14:06:10.000000000
 +0100
-@@ -315,11 +315,18 @@
-   } RESIDUAL;
-
-
-+/*
-+ * Forward declaration - we can't include <linux/pci.h> because it
-+ * breaks the boot loader
-+ */
-+struct pci_dev;
-+
- extern RESIDUAL *res;
- extern void print_residual_device_info(void);
- extern PPC_DEVICE *residual_find_device(unsigned long BusMask,
+@@ -327,6 +327,7 @@
  					unsigned char * DevID, int BaseType,
  					int SubType, int Interface, int n);
-+extern int residual_pcidev_irq(struct pci_dev *dev);
+ extern int residual_pcidev_irq(struct pci_dev *dev);
++extern void residual_irq_mask(char *irq_edge_mask_lo, char
+*irq_edge_mask_hi);
  extern PnP_TAG_PACKET *PnP_find_packet(unsigned char *p, unsigned
 packet_tag,
  				       int n);
