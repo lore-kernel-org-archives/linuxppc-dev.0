@@ -1,38 +1,24 @@
-Message-ID: <BE1C564723B3D21191FD0000F840E39801D81620@rfcmx2.rfc.comm.harris.com>
-From: "Brown, David (dbrown03)" <DBrown03@harris.com>
-To: "'Christopher Huffine'" <huffine@wopr.nrl.navy.mil>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: RE: 823 ports access question
-Date: Mon, 28 Aug 2000 10:05:14 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <200008281426.QAA29658@denx.local.net>
+To: Christopher Huffine <huffine@wopr.nrl.navy.mil>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 823 ports access question 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 28 Aug 2000 07:18:55 EDT."
+             <Pine.LNX.3.96.1000828071718.5707A-100000@wopr.nrl.navy.mil>
+Date: Mon, 28 Aug 2000 16:26:04 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Port D:
-  immr->pio.pdpar = 0;
-  immr->pio.pddir = 0x1F0;
-  if (turnOn)
-    immr->pio.pddat |= (1<<(8-led));
-  else
-    immr->pio.pddat &= ~(1<<(8-led));
---
-Dave Brown <dbrown03@harris.com>
-
-> -----Original Message-----
-> From: Christopher Huffine [mailto:huffine@wopr.nrl.navy.mil]
-> Sent: Monday, August 28, 2000 7:19 AM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: 823 ports access question
->
->
+In message <Pine.LNX.3.96.1000828071718.5707A-100000@wopr.nrl.navy.mil> you wrote:
 >
 > Sorry to write another simplistic question; hopefully
 > there is a simplistic answer as well:
->
-> I'm trying to figure out to write to specific
+
+There is :-)
+
 > PPC ports.  For example, the Bright Star
 > ipEngine I have has LEDs connected to the LCD ports
 > from the PowerPC.  I'm looking for the right
@@ -43,12 +29,17 @@ Dave Brown <dbrown03@harris.com>
 > what I need to make this work (im_lcd), but I'm missing
 > the bigger picture.  Anyone have any example
 > code for anything like this?
->
-> Thanks,
->
-> Chris
->
->
->
+
+See the tqm_led demo driver code under
+http://www.denx.de/solutions-en.html#drivers
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Do we define evil as the absence of goodness? It seems only  logical
+that shit happens--we discover this by the process of elimination."
+                                                        -- Larry Wall
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
