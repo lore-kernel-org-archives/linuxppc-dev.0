@@ -1,47 +1,44 @@
-Message-ID: <3AA78B20.83FFA1B0@raleigh.ibm.com>
-Date: Thu, 08 Mar 2001 08:37:36 -0500
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+Subject: RE: Going to sleep atomically
 MIME-Version: 1.0
-To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Going to sleep atomically
-Content-Type: multipart/mixed;
- boundary="------------57CF454B1F4A9FB492876AFC"
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Thu, 8 Mar 2001 14:12:43 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E3108AFB6@kolkrabbi.flaga.is>
+From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
+To: "Embedded Linux list" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------57CF454B1F4A9FB492876AFC
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Like in blocking read() and poll() etc?
+interruptable_sleep_on()
+or
+sleep_on()
 
-In a device driver, What is the best way to go to sleep atomically?
+in poll() use poll_wait()
 
-Thanks
+K.D.
 
-Chip
---------------57CF454B1F4A9FB492876AFC
-Content-Type: text/x-vcard; charset=us-ascii;
- name="rcblach.vcf"
-Content-Description: Card for Ralph Blach
-Content-Disposition: attachment;
- filename="rcblach.vcf"
-Content-Transfer-Encoding: 7bit
+P.S.
+"Linux Device Drivers" by Rubini is an excellent guide to driver
+writing, although
+it is getting quite old (in kernel-time space).
+Other drivers can serve as tutrials too.
 
-begin:vcard
-n:Blach;Ralph
-tel;work:919-543-1207
-x-mozilla-html:TRUE
-url:www.ibm.com
-org:IBM MicroElectronics
-adr:;;3039 Cornwallis		;RTP;NC;27709;USA
-version:2.1
-email;internet:rcblach@raleigh.ibm.com
-x-mozilla-cpt:;15936
-fn:Ralph Blach
-end:vcard
+K.D.
 
---------------57CF454B1F4A9FB492876AFC--
-
+> -----Original Message-----
+> From: Ralph Blach [mailto:rcblach@raleigh.ibm.com]
+> Sent: 8. mars 2001 13:38
+> To: Embedded Linux list
+> Subject: Going to sleep atomically
+>
+>
+> In a device driver, What is the best way to go to sleep atomically?
+>
+> Thanks
+>
+> Chip
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
