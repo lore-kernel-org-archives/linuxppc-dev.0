@@ -1,149 +1,82 @@
 Reply-To: <jwalden@digitalatlantic.com>
 From: "Jerry Walden" <jwalden@digitalatlantic.com>
 To: "Linux PPC embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: start / load addresses for kernel
-Date: Fri, 21 Mar 2003 16:43:45 -0500
-Message-ID: <EGEGIJHKDKJGAJMGIDPNGEPGCJAA.jwalden@digitalatlantic.com>
+Subject: default console settings for printk?
+Date: Sun, 23 Mar 2003 17:05:20 -0500
+Message-ID: <EGEGIJHKDKJGAJMGIDPNGEPJCJAA.jwalden@digitalatlantic.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
+In-Reply-To: <EGEGIJHKDKJGAJMGIDPNGEPGCJAA.jwalden@digitalatlantic.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello:  I have sent this query to the u-boot list and
-did not receive a response - I am hoping that the linux/ppc
-list might be a more appropriate list for this question -
-
-I apologize for the cross posting, however I am in real need
-of some direction
-
-Kindest Regards,
-
-Jerry Walden
------Original Message-----
-From: Jerry Walden [mailto:jwalden@digitalatlantic.com]
-Sent: Friday, March 21, 2003 3:12 PM
-To: U-Boot-Users@Lists. Sourceforge. Net
-Subject: start / load addresses for kernel
-
-
 Hello:
 
-I received the below advice recently:
+I'm still trying a variety of things to attempt to
+bring Linux up on my custom 405GPr board.
 
->since you are building for a non openbios kernel, you will need
->to change the make file.  The start/ load addresses and all are different
+I am using u-boot as my loader.
 
-I am trying to get more detail on what needs to change,
-I see 2 config options:
-
-1) CONFIG_KERNEL_START_BOOL - is set this to yes
-2) CONFIG_KERNEL_START -- what should this be set to - the default is
-0xc0000000 seems fine to me
-
-Are there any other options that I am missing?
-
-Below is a log of my attempt to boot the kernel - displayed are the
-command line that is getting passed in, and well as the startup parameters -
-do these look okay - I made sure that the kernel bd_info struct is the same
-as the u-boot struct
-
-****************************************************************************
-Script started on Fri Mar 21 14:43:27 2003
-Welcome to minicom 1.83.1
+I first start u-boot from a BDI-2000.
+Then I halt the board
+Next I load the vmlinux.PPCBoot file, and the initrd file.
+I then set a breakpoint on panic.
+Next I tell the BDI to let the u-boot monitor to continue to run.
+Lastly I issue the bootm command (i.e. bootm 0xllllllll 0xiiiiiiii)
 
 
+Two things happen that I need some help on:
+Before I hit the panic breakpoint many "garbage" characters appear in the
+minicom
+window that is connected to the target serial port.  u-boot behaves just
+fine, and
+all I/O works fine at 9600 baud - however it looks like the printk function
+is putting
+characters out to the serial port, however it seems that it is not putting
+them out
+at 9600 N81 - is there a default initializtion for the console?  It there a
+way
+to tell the kernel to setup the serial console for printk in a certain way.
 
+Below is my log_buf contents after the panic breakpoint is hit.  You can see
+the command
+line I am passing - does this look correct?
 
-
-U-Boot 0.2.0 (Mar 19 2003 - 12:09:59)
-CPU:   IBM PowerPC 405GPr Rev. A at 266.666 MHz (PLB=133, OPB=66, EBC=26
-MHz)
-           PCI async ext clock used, internal PCI arbiter enabled
-           16 kB I-Cache 16 kB D-Cache
-
-
-Board: ### No HW ID - assuming WALNUT405
-I2C:   ready
-DRAM:  64 MB
-Now running in RAM - U-Boot at: 03fcf000
-FLASH: 512 kB
-
-*** Warning - bad CRC, using default environment
-
-
-PCI:   Bus Dev VenId DevId Class Int
-PCI Autoconfig: Memory region: [20000000-27ffffff]
-PCI Autoconfig: I/O region: [800000-3ffffff]
-PCI Scan: Found Bus 0, Device 0, Function 0
-PCI Scan: Found Bus 0, Device 7, Function 0
-PCI Autoconfig: BAR 0, Mem, size=0x1000000, address=0x20000000
-PCI Autoconfig: BAR 1, I/O, size=0xffffff04, No room in resource
-PCI Autoconfig: BAR 2, I/O, size=0x1000000, address=0x1000000
-        00  07  1394  0978  0200  1c
-
-In:    serial
-Out:   serial
-Err:   serial
-
-
-U-Boot relocated to 03fcf000
-
-IDE:   Bus 0: port = c
-OK
-
- Device 0: Model: SanDisk SDCFB-64 Firm: Vdg 8.16. Ser#: 111913G1602X4714
-            Type: Removable Hard Disk
-            Capacity: 61.2 MB = 0.0 GB (125440 x 512)
-
-=>
-=> imi 0x200000
-
-## Checking Image at 00200000 ...
-   Image Name:   Linux-2.4.18_mvl30-walnut
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    298601 Bytes = 291.6 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-
-=> bootm 0x200000
-
-## Booting image at 00200000 ...
-
-   Image Name:   Linux-2.4.18_mvl30-walnut
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    298601 Bytes = 291.6 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-
-## Current stack ends at 0x03F9EBD8 => set upper limit to 0x00800000
-
-## cmdline at 0x007FFF00 ... 0x007FFF20
-root=/dev/ram console=ttyS0,9600
-
-memsize     = 0x04000000
-flashstart  = 0xFFF80000
-flashsize   = 0x00080000
-flashoffset = 0x00031000
-sramstart   = 0x00000000
-sramsize    = 0x00000000
-bootflags   = 0x001E8480
-procfreq    = 266.666 MHz
-plb_busfreq = 133.333 MHz
-pci_busfreq = 33.333 MHz
-ethaddr     = 00:00:00:00:00:00
-IP addr     = 0.0.0.0
-baudrate    =   9600 bps
-No initrd
-
-## Transferring control to Linux (at address 00000000) ...
-
+ BDI>md 0xc00a2d88 10000
+<4>Linux version 2.4.18_mvl30-walnut (root@hhl)(gcc version 3.2.1
+20020930(MontaVista)) #8
+ Sun Mar 23 13:02:27 EST 2003.
+<6>IBM Sycamore (IBM405GPr) Platform.
+<4>On node 0 totalpages: 16384.
+<4>zone(0): 16384 pages..
+<4>zone(1): 0 pages..
+<4>zone(2): 0 pages..
+<4>Kernel command line: root=/dev/ram console=ttyS0,9600.
+<4>Calibrating delay loop... 266.24 BogoMIPS.
+<6>Memory: 63744k available (512k kernel code, 212k data, 32k init, 0k
+highmem).
+<4>Dentry-cache hash table entries: 8192 (order:4, 65536 bytes).
+<4>Inode-cache hash table entries: 4096 (order:3, 32768 bytes).
+<4>Mount-cache hash table entries: 1024 (order:1, 8192 bytes).
+<4>Buffer-cache hash table entries: 4096 (order:2, 16384 bytes).
+<4>Page-cache hash table entries: 16384 (order:4, 65536 bytes).
+<4>POSIX conformance testing by UNIFIX.
+<6>Linux NET4.0 for Linux 2.4.
+<6>Based upon Swansea University Computer Society NET3.039.
+<4>OCP uart ver1.2 init complete.
+<4>Starting kswapd.
+<4>Disabling the Out Of Memory Killer.
+<6>Serial driver version 5.05c (2001-07-08) with no serial options enabled.
+<6>ttyS00 at 0xef600300 (irq = 0)is a 16550A.
+<6>ttyS01 at 0xef600400 (irq = 1) is a 16550A.
+<4>block: 128 slots per queue, batch=32.
+<4>RAMDISK driver initialized:  16 RAM disks of 4096K size 1024 blocksize.
+<6>Tracer: Initialization complete .
 
 Thanks
+
 
 Jerry Walden
 
