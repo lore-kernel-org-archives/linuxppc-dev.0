@@ -1,40 +1,41 @@
-Date: Sun, 25 Jul 2004 21:40:34 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Song Sam <samlinuxppc@yahoo.com.cn>,
-	"Robert P. J. Day" <rpjday@mindspring.com>,
+Date: Mon, 26 Jul 2004 09:49:08 +0200 (CEST)
+From: Marius Groeger <mgroeger@sysgo.com>
+To: Mark Chambers <markc@mail.com>
+Cc: "Kevin P. Dankwardt" <k@kcomputing.com>,
 	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 2.4 versus 2.6 patches
-Message-ID: <20040726044034.GA16491@gate.ebshome.net>
-References: <20040726025057.68338.qmail@web15204.mail.bjs.yahoo.com> <Pine.LNX.4.58.0407260009310.4160@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.58.0407260009310.4160@localhost.localdomain>
+Subject: Re: Linux is not reliable enough?
+In-Reply-To: <000f01c47172$591008d0$0301a8c0@chuck2>
+Message-ID: <Pine.LNX.4.61.0407260940220.2134@mag.sysgo.com>
+References: <KCEOLLHGFJIAFNAMGACHMEMODPAA.k@kcomputing.com>
+ <000f01c47172$591008d0$0301a8c0@chuck2>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Jul 26, 2004 at 12:13:17AM -0400, David Woodhouse wrote:
->
-> On Mon, 26 Jul 2004, [gb2312] Song Sam wrote:
-> > But 2.4 kernel is still a pet for 8xx,at least.I guess
-> > many embedded Linux development lean to 2.4 kernel for
-> > the moment.For Linux kernel hackers,2.4 kernel was
-> > dead but it is alive for most embedded
-> > developers.Right? :-)
->
-> I cannot speak for 'most embedded developers.'; only those with clue.
+On Sat, 24 Jul 2004, Mark Chambers wrote:
 
-I find this statement almost offensive, btw.
+> that the only way to prove reliability is with testing.  Linux is open
+> source, it won't cost anything to put it on a side by side test, and let
+> Linux speak for itself.
 
-> I would not consider deploying anything new on 2.4 today; it's just
-> not a viable, maintainable platform in my opinion.
+Getting to the point where you can run this side by side test *will*
+cost money, and typically rather much, what's more. It is not likely
+that Kevin's customer is going to pay the implementation for two OSes,
+even if it is only to the prototype stage.
 
-I would not consider deploying anything on 2.6 today. IMHO it's not mature
-enough to be used in production environment.
+So, thinking about the right OS for the job in advance, as they do, is
+a good idea. Only the thinking must be done right, of course :-)
 
-Just my $0.02
+Regards,
+Marius
 
-Eugene
+--
+Marius Groeger <mgroeger@sysgo.com>
+SYSGO AG                      Embedded and Real-Time Software
+Voice: +49 6136 9948 0                  FAX: +49 6136 9948 10
+www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
