@@ -1,36 +1,40 @@
-From: "Jerry Quinn" <jquinn@nortelnetworks.com>
+Date: Thu, 15 Jul 1999 13:44:24 -0500 (CDT)
+From: Joseph Palani Garcia <jpgarcia@execpc.com>
+To: Jerry Quinn <jquinn@nortelnetworks.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Broken sound?
+In-Reply-To: <14222.9603.505701.976724@gargle.gargle.HOWL>
+Message-ID: <Pine.SOL.4.10.9907151334160.21552-100000@earth.execpc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14222.9603.505701.976724@gargle.gargle.HOWL>
-Date: Thu, 15 Jul 1999 14:16:35 -0400 (EDT)
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Broken sound?
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+this is a known endian problem.  ppc archetecure is big endian, while most
+other linux-running platforms are little endian.  recent setups, like R5
+implement sound as little endian.  not everyone has caught up with this
+yet, so many programs still assume that we mac users need to have endians
+switched, so those little endian files we now can play, get reversed so
+that the older systems play fine, but not the newer ones.  Though i think
+there is inconsistency in this decision.  MacOS .au files are still big
+endian.  if we try to play them straight to the device like you are doing,
+it is assumed little endian.  whoops.  if i have this correct, then i
+think it is better the other way.  what is being done is file -> kernel ->
+device.  since the device cant be changed, and we shouldn't dictate more
+standards in audio files, it seems to me that having the kernel assume
+input is correct as is makes more sense.  let the PC users have thier
+little endian.  dont give us static about macs being big endian.
 
-I have a Powercenter 120 with 200Mhz 604e card running vanilla 2.2.10.  Sound
-seems to be broken.  I do 'cat junk.au > /dev/audio' and get very interesting
-sounding static.  Is there a patch in vger I should be using that hasn't made
-it into Linus' tree yet or is this an unfixed problem?  Or is my setup screwed
-up?  I've got an end of May installation of R5.
+sorry bout the rant. as for a fix, i think the au might have to be created
+on a PC for it to be little endian, so that the newer system can convert
+it back to big endian and waste some processing time.  Its all a mess.
+why do we want our big endian's to emulate little?  anyone?
 
-Also, if I send a sound to /dev/audio, it plays through both internal and
-external speakers.  If I try to send the sound to /dev/audio1, bash claims it
-doesn't exist even though it shows up on 'ls'.
-
-If I try to use 'play', I get an error from sox "sox: Invalid audio buffer
-size 0".
-
-Any help is appreciated.
-
-Thanks,
-
--- 
-Jerry Quinn                             Tel: (514) 761-8737
-jquinn@nortelnetworks.com               Fax: (514) 761-8505
-Speech Recognition Research
+---                                                                     ---
+Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
+CS Undergraduate                      Student Employee - Systems Programmer
+Univeristy of Wisconsin - Madison                            UW Lidar Group
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
