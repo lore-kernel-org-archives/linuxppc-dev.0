@@ -1,35 +1,39 @@
-Message-Id: <200110122006.WAA00806@piglet.grunz.lu>
-Date: Fri, 12 Oct 2001 22:06:56 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: no luck with Adaptec SCSI controller in 2.4.X
-To: dgatwood@apple.com
-Cc: gibbs@scsiguy.com, linuxppc-dev@lists.linuxppc.org,
+Message-Id: <200110122022.f9CKM7Y15760@aslan.scsiguy.com>
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Cc: linuxppc-dev@lists.linuxppc.org,
 	yellowdog-devel@lists.yellowdoglinux.com
-In-Reply-To: <01CBA9F0-BF3F-11D5-A238-003065B90BBC@apple.com>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Subject: Re: no luck with Adaptec SCSI controller in 2.4.X 
+In-Reply-To: Your message of "Fri, 12 Oct 2001 15:52:07 EDT."
+             <20011012194947.SUPU19094.tomts9-srv.bellnexxia.net@there>
+Date: Fri, 12 Oct 2001 14:22:07 -0600
+From: "Justin T. Gibbs" <gibbs@scsiguy.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  12 Oct, this message from David A. Gatwood echoed through cyberspace:
-> From what I gather, Quantum's high end drives were pretty
-> decent, but I have a stack of dead Fireballs to prove that their low end
-> drives weren't....  :-|
+>> I can already tell you what is happening.  We send a bunch of commands
+>> to the drive expecting it to respond with QUEUE FULL status should we
+>> send too many, but the drive instead accepts them for future completion
+>> but never actually responds to the commands.  This is why we time out.
+>
+>So there is really nothing anyone can do about it?  I will just need to
+>keep the tag depth at 8 for that drive.
 
-I can add one to your stack, a 1.2 Gig originally from my 7600/132. Took
-the Debian install on my Performa 475 with it when half of the disk
-surface went unreadable.
+The driver could lower the tag depth when timeouts occur, but Linux
+doesn't really tell you when a timeout happens.  The driver is only
+told that it should abort a particular transaction which could be for
+lots of different reasons.
 
-Michel
+>Earlier you said something about a firmware upgrade for those drives?
+>Would a firmware upgrade help solve this issue more cleanly or given that
+>it is now working should I just forget about it and leave well enough
+>alone.
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+Since this is a firmware type issue, if you can find better firmware
+it could fix the problem.  Based on the age of the drive, however, it
+might be pretty hard to get newer firmware.
 
+--
+Justin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
