@@ -1,58 +1,36 @@
-Message-ID: <20020501170822.7469.qmail@web13005.mail.yahoo.com>
-Date: Wed, 1 May 2002 10:08:22 -0700 (PDT)
-From: Brian Kuschak <bkuschak@yahoo.com>
-Subject: initrd in 2.4.19
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3CD040AB.5000702@mvista.com>
+Date: Wed, 01 May 2002 12:23:23 -0700
+From: Todd Poynor <tpoynor@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: andrew may <acmay@acmay.homeip.net>
+Cc: Venkatesh Ramamurthy <rpranesh@hotmail.com>, mporter@mvista.com,
+	frank_rowand@mvista.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux on 440GP Networking issues
+References: <F45zrLCCtgx8VUkRacU000059cf@hotmail.com> <20020501120137.B9360@ecam.san.rr.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I noticed initrd handling has changed recently in the
-kernel (init/do_mounts.c).  This new code is causing
-me problems.  Has anyone else run into this?
+>>Yep, the kernel tries to setup the second controller. But there is someting
+>>very strange. Eventhough there is no network cable connected to the second
+>>ethernet port , the OCP ENET driver says that it is 10Mbps, Link up and half
+>>duplex.
 
-Using the 'new style' (not terminating linuxrc)
-/linuxrc runs the following sequence:
-  mount -o ro /dev/hda2 /new-root
-  cd /new-root
-  mkdir initrd
-  pivot_root . initrd
-  exec chroot . sbin/init dev/console 2>&1
-But /linuxrc seems to be runnnig as PID 10, and
-sbin/init doesn't start.
+The above is the default provided when autonegotiation doesn't turn up
+anything useful, at least for the AMD Am79C875* PHYs (see ibm_ocp_phy.c:
+mii_parse_Am79C875_pcr), which probably isn't the way to go.  And
+handling of the "no link" case does seem to need some work.
 
-Using the 'old style' (linuxrc terminates and kernel
-starts init):
-  mount -o ro /dev/hda2 /new-root
-  cd /new-root
-  mkdir initrd
-  echo 0x0302 > /proc/sys/kernel/real-root-dev
-  exit 0
-The mount fails with EBUSY in mount_block_root()
-because the root device is already mounted:
-
-Attempting to find a root file system on hda2...
- hda1 hda2
- hda: hda1 hda2
-XFS mounting filesystem ide0(3,2)
-Starting XFS recovery on filesystem: ide0(3,2) (dev:
-3/2)
-Ending XFS recovery on filesystem: ide0(3,2) (dev:
-3/2)
-VFS: busy inodes on changed media.
-err=-16, p=ext2, name=/dev/root  <--
-VFS: Cannot open root device "" or 03:02
-Please append a correct "root=" boot option
-Kernel panic: VFS: Unable to mount root fs on 03:02
+Could verify whether the lockup is related to configuring 2 EMACs by a
+hack to ppc405_enet_open to return -ENODEV if fep->emac_num > 0.  If
+that boots fine then see if ppc405_eth_mal_dump shows registers such as
+EMAC0's TXCTP0R or RXCTP0R changing values after EMAC1 is configured.
+If so, that FIXME in the ppc405_enet_open code probably needs revisiting.
 
 
-For the old style to work, I have to not mount the
-filesystem at all in my /linuxrc. I'm using
-2.4.19-pre7 from bk (1.948)
-
--Brian
+--
+Todd
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
