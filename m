@@ -1,45 +1,50 @@
-To: t.vanremortel@ha.be
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: K-computing RTAI benchmark cross-compile 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 28 Aug 2003 10:43:47 +0200."
-             <1062060226.25974.5.camel@toni>
-Date: Thu, 28 Aug 2003 11:07:28 +0200
-Message-Id: <20030828090733.6F9D3C59E4@atlas.denx.de>
+Subject: Writing in virtual memory space failed
+From: Thomas RIVIERE <thomas.riviere@com2gether.net>
+To: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain
+Date: 28 Aug 2003 11:36:29 +0200
+Message-Id: <1062063390.17263.1304.camel@pcl1.com2gether-corp.net>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Toni,
+Hi all,
 
-in message <1062060226.25974.5.camel@toni> you wrote:
->
-> I'm trying to cross-compile the benchmark for RTAI, made by K-computing,
-> to ppc (EP405 board with IBM PPC 405GP cpu).
+I m trying to boot linux-2.4.21 kernel on a custom board with MPC852T
+proc.I use zImage.embedded and it hangs after "Now booting the kernel".
 
-I don't know this benchmakr (URL  ?),  but  judging  from  the  error
-messages:
+When debugging with gdb/BDI2000 in start_kernel (head_8xx.S) it doesn't
+recover from the following instruction :
+        stwu    r0,-STACK_FRAME_OVERHEAD(r1)
 
-> ppc_4xx-gcc -O -Wall -c timer_test.c
-> /tmp/ccUWN8MR.s: Assembler messages:
-> /tmp/ccUWN8MR.s:136: Error: Unrecognized opcode: `pushl'
-> /tmp/ccUWN8MR.s:137: Error: Unrecognized opcode: `pushl'
-> /tmp/ccUWN8MR.s:138: Error: Unrecognized opcode: `rdtsc'
-...
+Inserting another write operation in an unused mapped SDRAM location
+(c0700000) confirms that the first write access with MMU enabled always
+failed. I also try to store in IMMR space (internal RAM) and I have the
+same problem.
 
-...I  guess  that  this  source  file   contains   inline   assembler
-instructions, which are NOT meant for a PowerPC processor.
+BDI>t
+    Target state      : debug mode
+    Debug entry cause : trace
+    Current PC        : 0xc00020fc
+BDI>t
+    Target state      : running
+# Step timeout detected
 
-Best regards,
 
-Wolfgang Denk
+These write operations fail even without debugging with BDI2000.
+Cache inhibition doesn't change anything.
+SDRAM already used with MMU and cache by Redboot
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Behind every great man, there is a woman -- urging him on.
-	-- Harry Mudd, "I, Mudd", stardate 4513.3
+Kernel     : linux-2.4.21 from linuxppc_2_4 tree
+bootloader : redboot
+probe      : ABATRON BDI 2000 firmware 1.12
+processor  : MPC852T
+
+Any help will be appreciated.
+
+Thomas Riviere
+com2gether
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
