@@ -1,56 +1,47 @@
-Date: Wed, 24 Apr 2002 07:47:33 -0700
-From: Matt Porter <mporter@mvista.com>
-To: andrew may <acmay@acmay.homeip.net>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Status on 405GP i2c driver
-Message-ID: <20020424144733.GA11949@beef.az.mvista.com>
-References: <20020422141601.B16319@ecam.san.rr.com> <20020423160548.A5009@home.com> <20020423182301.B19665@ecam.san.rr.com>
+Date: Wed, 24 Apr 2002 08:18:57 -0700
+From: andrew may <acmay@acmay.homeip.net>
+To: Armin <akuster@pacbell.net>
+Cc: andrew may <acmay@acmay.homeip.net>,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH] IBM ocp I2C
+Message-ID: <20020424081857.B17930@ecam.san.rr.com>
+References: <20020423200127.G20394@ecam.san.rr.com> <20020423200151.H20394@ecam.san.rr.com> <3CC63655.1080108@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020423182301.B19665@ecam.san.rr.com>
+In-Reply-To: <3CC63655.1080108@pacbell.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Apr 23, 2002 at 06:23:01PM -0700, andrew may wrote:
-> On Tue, Apr 23, 2002 at 04:05:48PM -0700, Matt Porter wrote:
+On Tue, Apr 23, 2002 at 09:36:37PM -0700, Armin wrote:
+> andrew may wrote:
+> > On Tue, Apr 23, 2002 at 08:01:27PM -0700, andrew may wrote:
 > >
-> > On Mon, Apr 22, 2002 at 02:16:01PM -0700, andrew may wrote:
-> > >
-> > > It looks like this question was lasted asked around Jan/Feb, but
-> > > I have not seen an update on the status recently.
-> > >
-> > > I have looked at the i2c-2.6.3 and I am reluctant to spend any
-> > > time working on it since it needs to go through some formating
-> > > changes to get rid of the C++ style comments. I don't want to
-> > > deal with a merge issues of doing a style change unless I know
-> > > it will go in.
+> >>Would anyone be heartbroken if "struct i2c_algo_iic_data" went
+> >>away completely?
+> >>
+> >>In this patch I dump getown and getclock because they aren't
+> >>used and I am sure there is a better way to do things.
+> >>
+> >>Also calculate the I2C div value from the clock rate. I am
+> >>not sure if that will work on all 4xx types but it does the
+> >>right thing for my 405's.
+> >>
+> >>I also fixed a few C++ style comments.
+> >>
+> >>
+> > and the patch
 > >
-> > I pushed a modified version of Armin's latest updated patch in.
-> > I'd love to see the C-- comments go away but I'm too lazy to play
-> > with it beyond testing it on my platform.  If anybody sends patches
-> > that clean up some more of the ugliness then I'll push them in.
 >
-> I have just started to use BK and this does provide an interesting
-> test. I had started to merge the stuff in steps before you did your
-> push. So here are some bk export's -tpatch of what I tried. I go
-> lazy on the merge of the last Makefile and I thing I screwed it up.
+> Andrew,
 >
-> i2c-2.6.3.patch is a patch to bring this up to the i2c 2.6.3 level.
-> i2c-2.6.3-405.patch adds the 405 files in 2.6.3
-> i2c-2.6.3-armin.patch is Armin's patch without the file rename.
-> i2c-merge1 & 2 should be just file mv's but I didn't do it too
-> well.
+>
+> could you provide a single patch that would be applied on top of the
+> *devel.  I appreciate the changes and I will get back to you in on
+> "struct i2c_algo_iic_data".  I will need to try the div changes on the
+> redwoods (stb03 & stb04 cpus).
 
-It's not a good idea to merge the i2c-2.6.3 support into 2_4_devel.
-The idea here is to make available a 4xx IIC driver that can be used
-with the current i2c infrastructure in the 2.4 kernel and can be
-changed in sync with any ocp changes that are made.
-
-Regards,
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+This is a single patch, and you should be able to apply it without the
+other patches I sent.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
