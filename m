@@ -1,35 +1,45 @@
-Date: Sat, 7 Aug 1999 17:57:13 -0600 (CST)
-From: Kamran Karimi <karimi@cs.uregina.ca>
-To: linuxppc-announce@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
-        linuxppc-user@lists.linuxppc.org
-Subject: Distributed Programming under Linux/PowerPC
-Message-ID: <Pine.SGI.3.91.990807173836.12629A-100000@MERCURY.CS.UREGINA.CA>
+From: bob@kunk.jriver.com
+Message-ID: <19990808175727.19320.qmail@kunk.jriver.com>
+Subject: Re: Odd iMac ethernet problem
+In-Reply-To: <199908060541.PAA20067@tango.anu.edu.au> from Paul Mackerras at
+ "Aug 6, 1999 03:41:18 pm"
+To: Paul.Mackerras@cs.anu.edu.au
+Date: Sun, 8 Aug 1999 12:57:27 -0500 (CDT)
+CC: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+User Paul Mackerras says:
+> bob@kunk.jriver.com wrote:
+> 
+> > When the iMac talked to either Unix box from linux-ppc (several kernels
+> > tested), I would get nearly 100 percent on receive but REALLY slow
+> > response on transmit (like about 40k/sec). Watching the lights on the hub,
+> > it appears that there is a really big delay restarting transmit after
+> > a collision occurs. Perhaps duplex set wrong?
+> 
+> I have seen this too but I haven't figured out what's going wrong yet.
+> My suspicion is that some packets are getting corrupted somehow on
+> transmission and then we are having to wait for a TCP retransmit.  A
+> tcpdump might yield some interesting information.
 
- People interested in distributed programming are invited to try DIPC 
-(Distributed Inter-Process Communication). It allows you to transparently 
-use System V IPC's semaphores, messages and shared memories over a 
-network of computers. Its Transparent Distributed Shared Memory (DSM) 
-puts it in a different class from other systems like PVM or MPI. Using DIPC, 
-you can easily write distributed program even if you have only one machine. 
-The same code can later be used in a real cluster, or a multi-processor, 
-without any changes.
+I haven't got tcpdump setup on another linux box yet but I did borrow a 
+10/100 NWay switch from work and tested the 4 speed/duplex combinations.
 
- DIPC has been tested under Linux/PowerPC by Hugo Delchini and Paul 
-Mackerras. You can download the file dipc-2.0-pre3.tgz from 
-orion.cs.uregina.ca /pub/dipc (It also patches i386, Alpha, MIPS and 
-SPARC code in the kernel). Please try it and let me know the positive 
-and negative results. 
+The iMac transmits properly only on 100mb/half duplex (860 k/sec, it's
+talking to a redhat i386 linux box on 10mb on another switch port).
+All the rest of the combinations are 60k/sec or less on transmit.
 
- Recommendations and wish lists for the final package are welcome. 
+Hopefully I'll have time to do a packet trace this evening.
 
-Kamran
+Bob
+-- 
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
