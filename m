@@ -1,38 +1,37 @@
-Message-ID: <313680C9A886D511A06000204840E1CF08F42FE9@whq-msgusr-02.pit.comms.marconi.com>
-From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: FW: How reliable Linux 2.6 is on PowerPC platform at this point ?
-Date: Fri, 9 Jul 2004 05:30:12 -0400 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+From: "tuxtrix" <tuxtrix@indiatimes.com>
+Message-Id: <200407090951.PAA07870@WS0005.indiatimes.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Reply-To: "tuxtrix" <tuxtrix@indiatimes.com>
+Subject: Error in cross-compiling linux 2.6.7 for MPC8xx
+Date: Fri, 09 Jul 2004 15:37:07 +0530
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hi!
+I'm cross-compiling linux 2.6.7 for ppc(MPC8xx)
+I'm getting the following error.
 
-Any takers ?
+CHK     include/linux/compile.h
+CC      drivers/ide/ppc/mpc8xx.o
+drivers/ide/ppc/mpc8xx.c:150: error: `IDE0_INTERRUPT' undeclared here (not in a function)
+make[2]: *** [drivers/ide/ppc/mpc8xx.o] Error 1
+make[1]: *** [drivers/ide] Error 2
+make: *** [drivers] Error 2
 
-TIA,
-Best Regards,
-Alex Povolotsky
+I'm using gcc 3.4.1 as cross compiler for ppc and binutils 2.15.91
 
------Original Message-----
-From: Andrew Morton [mailto:akpm@osdl.org]
-Sent: Friday, July 09, 2004 5:27 AM
-To: Povolotsky, Alexander
-Subject: Re: How reliable Linux 2.6 is on PowerPC platform at this point?
+Can it be done away with some change in the configuration ?
+OR, is there any patch ?
 
-"Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com> wrote:
->
-> Hi Andrew,
->
-> How reliable Linux 2.6 is on PowerPC platform at this point ?
 
-I suspect it's good if you pick the right release, but I am very much not
-the right person to ask, sorry.
+Praveer Chaturvedi.
+Get Your Private, Free E-mail from Indiatimes at http://email.indiatimes.com
 
-I suggest you ask the folks on linuxppc-dev@lists.linuxppc.org
+ Buy The Best In BOOKS at http://www.bestsellers.indiatimes.com
+
+Bid for for Air Tickets @ Re.1 on Air Sahara Flights. Just log on to http://airsahara.indiatimes.com and Bid Now!
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
