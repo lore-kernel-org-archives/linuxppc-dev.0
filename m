@@ -1,33 +1,43 @@
-Message-ID: <20031210032056.82162.qmail@web40411.mail.yahoo.com>
-Date: Tue, 9 Dec 2003 19:20:56 -0800 (PST)
-From: Raghu <raghu_dk@yahoo.com>
-Subject: mpc8xx memory mapped 16550 external UART
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3FD69C13.5090107@vinesystech.com>
+Date: Tue, 09 Dec 2003 20:07:47 -0800
+From: Xiaoshan Zuo <xzuo@vinesystech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Dan Kegel <dank@kegel.com>
+Cc: zjzhou@newrocktech.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Which program can re-launch my application when this application
+ exit for exception?
+References: <000801c3bd55$5a1dd440$b702a8c0@newrock2> <3FD41F48.3030000@kegel.com>
+In-Reply-To: <3FD41F48.3030000@kegel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello All,
-I have been following the mail,
+daemontool is one (http://cr.yp.to/djb.html), but it doesn't start
+application in order.
 
-( Subject: mpc8xx memory mapped 16550 extrenal uart
-driver ) posted on the linux-embedded list. I have a
-MPC852T based custom board with TL16C752B Dual
-external UART Chip with 25 MHz clock mapped on CS6 and
-CS7 and a SMC1 UART. Following the intructions in the
-mail I am able to get both the SMC1 UART and Dual
-external UART configured and working. But I see couple
-of issues.
-1. When the SMC and Dual UART both are configured with
-CONSOLE outputs directed to SMC, the console outputs a
-line at a time and probably goes to sleep mode,
-displays another line only if I press a "CNTRL-Z" key.
-2. The /proc/tty/driver/serial entries shows only SMC
-entries.
+Xiaoshan
 
-Warm Regards
-Raghu.
+Dan Kegel wrote:
+
+>
+> John Zhou wrote:
+>
+>> Which program can re-launch my application when this application exit
+>> for exception or error?
+>
+>
+> Your own.  It's pretty easy to write a shell script to do this.
+> Or you can use initd to do the same thing; see 'man inittab'.
+>
+> Your questions seem to be fairly generic, not related to
+> the ppc; you might want to try asking
+> this kind of question on, say,
+> http://groups.google.com/groups?group=comp.os.linux.embedded
+> or http://www.embeddedtux.org/pipermail/etux/
+> - Dan
+>
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
