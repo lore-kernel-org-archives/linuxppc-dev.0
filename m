@@ -1,35 +1,41 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Dan Malek <dan@netx4.com>, linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Platform configuration (was: Re: CONFIG_PPC != Mac)
-Date: Thu, 31 Aug 2000 18:19:17 +0200
-Message-Id: <20000831161917.24142@mailhost.mipsys.com>
-In-Reply-To: <39AE80BD.D86B34DA@embeddededge.com>
-References: <39AE80BD.D86B34DA@embeddededge.com>
+Message-ID: <39AE85BD.1B4651BB@relog.ch>
+Date: Thu, 31 Aug 2000 18:20:13 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Gabriel Paubert <paubert@iram.es>
+CC: Dan Malek <dan@netx4.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+        Tony Mantler <nicoya@apia.dhs.org>,
+        Tom Rini <trini@kernel.crashing.org>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Platform configuration (was: Re: CONFIG_PPC != Mac)
+References: <Pine.HPX.4.10.10008311808260.15978-100000@gra-ux1.iram.es>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Yeah, well, I am used to continually losing this battle.  Although
->embedded PowerPC is likely to have _lots_ more installations than
->the desktop, we'll just survive on the pieces left behind.  A pretty
->running desktop gets lots of press coverage while code that acutally
->runs the infrastructure of the world is unknown (I guess we are doing
->a great job, then :-).
+Gabriel Paubert wrote:
 >
->I am just happy that I can finally build a kernel for the MPC8xx that
->doesn't require I configure an ADB keyboard.  I also like building the
->same sources for all of my Mac workstations and servers as well.
+> On Thu, 31 Aug 2000, Dan Malek wrote:
+>
+> > I would also like to see us spend a little more time trying to
+> > stabilize 2.4 instead of trying to solve elaborate configuration and
+> > boot schemes.  That is what 2.5 is for.
+>
+> What are your problems with 2.4 ? I'm at 2.4.0-test7 and I've not had any
+> problem so far, although I still need to upgrade my modutils.
 
-In the current bk, I made sure you can compile without ADB (even for
-pmac), without the backlight stuffs, etc...
+A few days ago, I rsynced linux-pmac-devel and tried 2.4.0-test7(-pre?) . I
+had problems with the network, no TCP connection could be established. Anyone
+seen this?
 
->I would also like to see us spend a little more time trying to
->stabilize 2.4 instead of trying to solve elaborate configuration and
->boot schemes.  That is what 2.5 is for.
 
-Agreed.
+Michel
 
+
+--
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and the DRI project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
