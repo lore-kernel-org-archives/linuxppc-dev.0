@@ -1,58 +1,51 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: "Juan Padron" <j_padron@joseane.zzn.com>
-Message-Id: <C398751347F4533458DB3F93154AAAFD@j_padron.joseane.zzn.com>
-Date: Thu, 15 Nov 2001 10:43:18 +0100
-Content-Type: text/plain; charset=iso-8859-1
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: CONFIG_IDE_PCCARD or  CONFIG_IDE_PCMCIA
-Mime-Version: 1.0
+Message-ID: <937610FE9B70D511B3E700508B8B65770E53B1@MAIL1>
+From: Shie Erlich <shie_e@elbit.co.il>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: a general bootloader question
+Date: Thu, 15 Nov 2001 11:51:55 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="windows-1255"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-  Hi:
+hi,
+i'm trying to get linux to run on my company's custom board (mainly ppc750
+and a cpc700 pci bridge).
+we've been using visionICE to download the kernel to the target board, and
+have also tried using the
+vxWorks bootloader (since it's already on the target's rom). The vxWorks
+bootloader fails bigtime, since
+it tries to load the kernel into --physical-- address 0xc0000000 and
+crashes. The ICE however, fails since
+it can't handle MMU and crashes as soon as it is turned on.
 
-  I need to put and IDE disk through the PCMCIA port in an MPC823FADS. I use the ppcboot 1.0.0
-I read the mailing list and i have a doubt: What is the diference between the IDE_PCCARD and the IDE_PCMCIA? What do i need to use?
-  This is the PCMCIA stuff configuration of an config_TQM823L.h (¿is it the same i need to include on my config_FADS823.h?)
+if anyone can help with the following question, i'd be really grateful:
+
+1) what is the proper way to get the kernel to boot - do i need a
+bootloader, if so, what ?
+
+2) what is the bootloader's functionality - except downloading the kernel ?
+does it modify
+    memory in any way ? is the kernel dependent on such modifications ?
+
+3) how can i make a bootloader load the kernel in low memory without
+changing KERNELBASE etc ?
 
 
-   #define CFG_PCMCIA_MEM_ADDR	   (0xE0000000)
-   #define CFG_PCMCIA_MEM_SIZE	   ( 64 << 20 )
-   #define CFG_PCMCIA_DMA_ADDR	   (0xE4000000)
-   #define CFG_PCMCIA_DMA_SIZE	   ( 64 << 20 )
-   #define CFG_PCMCIA_ATTRB_ADDR   (0xE8000000)
-   #define CFG_PCMCIA_ATTRB_SIZE   ( 64 << 20 )
-   #define CFG_PCMCIA_IO_ADDR	   (0xEC000000)
-   #define CFG_PCMCIA_IO_SIZE	   ( 64 << 20 )
-
-/*--------------------------------------------------------------------
- * IDE/ATA stuff (Supports IDE harddisk on PCMCIA Adapter)
- *-------------------------------------------------------------------
- */
-
-   #define CONFIG_IDE_PCCARD 1	/* Use IDE with PC Card	Adapter	*/
-
-   #undef CONFIG_IDE_PCMCIA 	/* Direct IDE    not supported	*/
-   #undef CONFIG_IDE_LED	/* LED   for ide not supported	*/
-   #undef CONFIG_IDE_RESET	/* reset for ide not supported	*/
-   #define CFG_IDE_MAXBUS    1	/* max. 1 IDE bus		*/
-   #define CFG_IDE_MAXDEVICE 1	/* max. 1 drive per IDE bus	*/
-   #define CFG_ATA_IDE0_OFFSET	0x0000
-   #define CFG_ATA_BASE_ADDR	CFG_PCMCIA_MEM_ADDR
-
-/* Offset for data I/O			*/
-   #define CFG_ATA_DATA_OFFSET	(CFG_PCMCIA_MEM_SIZE + 0x320)
-
-/* Offset for normal register accesses	*/
-   #define CFG_ATA_REG_OFFSET	(2 * CFG_PCMCIA_MEM_SIZE + 0x320)
-
-/* Offset for alternate registers	*/
-   #define CFG_ATA_ALT_OFFSET	0x0100
+		thanks in advance,
+			Shie Erlich
 
 
 
- Thank you very much for your help.
+    This e-mail message has been sent by Elbit Systems Ltd. and is for the
+use of the intended recipients only.  The message may contain information
+that is privileged or confidential.  If you are not the intended recipient
+you are hereby notified that any use, distribution or copying of this
+communication is strictly prohibited, and you are requested to delete the
+e-mail and any attachments and notify the sender immediately.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
