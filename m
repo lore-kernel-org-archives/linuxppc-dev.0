@@ -1,65 +1,42 @@
-From: Joe Green <jgreen@mvista.com>
-To: greyham@research.canon.com.au (Graham Stoney),
-        pavel_roskin@geocities.com (Pavel Roskin)
-Subject: Re: Unpacking the mvista kernel RPMs
-Date: Mon, 10 Apr 2000 09:18:30 -0700
-Content-Type: text/plain
-Cc: jason_wohlgemuth@gilbarco.com (Wohlgemuth Jason),
-        linuxppc-embedded@lists.linuxppc.org ('linuxppc-embedded@lists.linuxppc.org')
-References: <20000410031456.0B51D3C960@elph.research.canon.com.au>
-In-Reply-To: <20000410031456.0B51D3C960@elph.research.canon.com.au>
+Message-ID: <38F200CF.B4A07187@embeddededge.com>
+Date: Mon, 10 Apr 2000 12:26:55 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Message-Id: <00041010295400.03098@minotaur.mvista.com>
+To: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+CC: Pavel Roskin <pavel_roskin@geocities.com>,
+        "Wohlgemuth, Jason" <jason_wohlgemuth@gilbarco.com>,
+        "'linuxppc-embedded@lists.linuxppc.org'"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Software Emulation Exception...
+References: <Pine.LNX.4.21.0004071011570.19406-100000@sunapee.transcept.com> <38EE0267.FB881499@embeddededge.com> <kfywvm6s3dz.fsf@kieraypc01.p.y.ki.era.ericsson.se>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sun, 09 Apr 2000, Graham Stoney wrote:
-> Pavel Roskin writes:
-> > By the way, I found a newer kernel (March, 23) in
-> > ftp://ftp.mvista.com/pub/CDK/updates/1.0/ppc_8xx/SRPMS/
->
-> How does one go about unpacking one of these RPMs?
->
-> I tried ftp'ing the rpm and going:
-> % rpm -i hhl-kernel-2.2.13-7.src.rpm
-> % rpm -bp /usr/src/redhat/SPECS/hhl-kernel-2.2.13.spec
-> ...
-> ccp: configs/%{_hhl_kernel_configs}: No such file or directory
-> Bad exit status from /var/tmp/rpm-tmp.689 (%prep)
+Marcus Sundberg wrote:
 
-First of all, if you just want to build a kernel, you can use the
-kernel-source RPM rather than the SRPM.  This installs a kernel source
-tree that is preconfigured to use the cross-development tools.  You
-only need to use the SRPM if you want to rebuild the RPMs.
+> Well, it also happens to be typical to the MM problem solved by
+> the patches at http://www.zeta.org.au/~linsol/.....
 
-For rebuilding the RPMs, you need to use the "rpmconfig" support.  I've
-been meaning to write a README me about this.  We're defining our RPM
-spec files in terms of macros that can be changed for different hosts
-and targets, so that we can have a common source base for all.  You'll
-have to bear with us a while if you want to work with this architecture
-right now, because it's still developing.
+That's pretty interesting, since the Software Emulation trap is
+caused by fetching trash from memory, and the MMU changes are to
+properly track dirty data pages.  I don't buy it.  All you did
+by adding these changes was eliminate (or change) the data TLB
+miss timing.  Have you ever looked at the 8xx bus when it gets
+a TLB fault?  Pretty damn weird.  I've seen several external devices
+not behave properly because of this.
 
-To build the 2.2.13-7 kernel RPM, you need to install the
-hhl-rpmconfig-0.0.2-1 RPM.  Then you need to configure RPM to include
-the correct macro files.  When building on a Hard Hat Linux or Red Hat
-Linux system, I do this by creating a .rpmrc file in my home directory
-that contains the following:
 
-macrofiles:  /usr/lib/rpm/macros:/opt/hardhat/config/rpm/hosts/i686-pc-linux-gnu:/opt/hardhat/config/rpm/targets/%{_target}:~/.rpmmacros
+> And by Pavel's description it's almost 100% certain that the MM
+> bug is the problem.
 
-That should all be one line; not sure how it will come out in email.
+Well, almost 100% doesn't cut it for me.  If you can't determine the
+actual cause of the problem and prove it has been corrected, it is
+still broken.
 
-The /opt/hardhat/config/rpm/hosts/i686-pc-linux-gnu macro file will
-provide host-specific macros.  The
-/opt/hardhat/config/rpm/targets/%{_target} specification will select a
-target macro file based on the target specified when invoking rpm.  For
-the 8xx target, we use the rpm option "--target ppc_8xx-hardhat-linux".
 
-I hope this helps.
 
---
-Joe Green <jgreen@mvista.com>
-MontaVista Software, Inc.
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
