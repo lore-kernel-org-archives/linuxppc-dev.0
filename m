@@ -1,40 +1,31 @@
-Date: Sun, 22 Apr 2001 16:34:28 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Sound problem on Blue G3
-Message-ID: <20010422163428.D17749@plato.local.lan>
-References: <878zksmv5f.fsf@gibbon.cnet.aladdin.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="zS7rBR6csb6tI2e1"
-In-Reply-To: <878zksmv5f.fsf@gibbon.cnet.aladdin.de>; from cpg@aladdin.de on Mon, Apr 23, 2001 at 12:23:08AM +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Bogus interrupt -1
+References: <85itjzilbx.fsf@junk.nocrew.org>
+	<20010420171327.26883@mailhost.mipsys.com>
+From: Lars Brinkhoff <lars.spam@nocrew.org>
+Date: 23 Apr 2001 11:52:21 +0200
+In-Reply-To: <20010420171327.26883@mailhost.mipsys.com>
+Message-ID: <851yqkhrje.fsf@junk.nocrew.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---zS7rBR6csb6tI2e1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> >At first, the first six or so messages appeared, but everything seemed
+> >fine.  Later, the last messages appeared, and it seemed like one of
+> >the two processors in my 2001 Dual G4 had wedged.  According to "top",
+> >there was always at least 50% idle time.
+> Did you enable distribution of IRQs to all CPUs ?
+> I don't think it's completely safe yet.
 
-On Mon, Apr 23, 2001 at 12:23:08AM +0200, Christian Groessler wrote:
+Yes, IRQ distribution was enabled.  I disabled it, and now the
+messages don't appear any more.  However, it still seems like one CPU
+hangs after some time.
 
-> How can I get the sound working on the Blue G3?
->=20
-
-do you have external speakers attached?  the internal speaker does not
-work with linux.  (though i have not checked to see if this changed in
-2.4, i use 2.2.19)
-
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
-
---zS7rBR6csb6tI2e1
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
-
---zS7rBR6csb6tI2e1--
+--
+http://lars.nocrew.org/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
