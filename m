@@ -1,47 +1,55 @@
-Message-Id: <200004090913.LAA00374@piglet.grunz.lu>
-Date: Sun, 9 Apr 2000 11:13:55 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Blue & White & SCSI & Ultra 2 SCSI & Kernel > 2.2.10 -> No Disk
- s
-To: jpd@yami.w-d.org
-cc: rshaw@linuxppc.org, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <38EF50E4.872D76ED@w-d.org>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Message-Id: <l03130302b51668503c1e@[216.164.128.178]>
+In-Reply-To: <v04011700b515101599d8@[204.210.50.184]>
+References: <l03130302b5145fe8d18f@[209.122.247.115]>
+ <38EE7EDE.612EB99F@denise.shiny.it>
+ <l03130302b4fd80d3a908@[216.164.130.191]>
+ <l03130304b50c8e1b783f@[216.164.131.253]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sun, 9 Apr 2000 13:42:42 -0400
+To: Greg Noel <GregNoel@san.rr.com>
+From: "DeRobertis" <derobert@erols.com>
+Subject: Re: stty crtscts < /dev/ttyS1
+Cc: Giuliano Pochini <pochini@denise.shiny.it>,
+        linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   8 Apr, this message from John Doty echoed through cyberspace:
-> My Yosemite G3 (Rev 2) has *two* SCSI cards: an Adaptec 2930CU, and an
-> Adaptec 2940U2B (Ultra 2 Wide). Last summer, my son Matt (who
-> occasionally posts here on comp.os.linux.powerpc) set it up as a
-> LinuxPPC machine with a 2.2.10 kernel from Robert Shaw's site.  As a
-> compute/file server, it has been great.
+At 9:08 AM -0800 on 4/8/00, Greg Noel wrote:
+>At 8:35 PM -0400 on 4/7/00, Giuliano Pochini wrote:
 >
-> However,  attempts to upgrade to a more recent kernel invariably
-> encountered SCSI problems. The most common symptom was an inability to
-> mount the root  filesystem.
+>>I don't know why this happen exactly. It seems that the printer changes
+>>continuosly with very high frequency the state of CTS, which cause the
+>>serial driver to loop indefinitely.
 >
-> We have finally gotten partway to the bottom of this. Apparently, if the
-> 2930 controller is present the kernel cannot find the 2940 controller
-> (and the 2940 has the disks on it). With the 2930 pulled (I don't really
-> need it the way I'm currently using the system), SCSI works fine with
-> the newer kernels.
+>At 12:05 AM -0400 4/8/00, DeRobertis replied:
+>
+>>Ouch! Broken hardware... how can I document this is happening, so that
+>>I can demand an answer from Epson?
+>
+>From your messages, it's not clear to me that it's the printer.  It could
+>easily be the cable.  Try replacing the cable with one that only connects
+>the signals you're using and properly grounds all the other signals.
 
-Isn't this the OF resource assignment problem discussed here some time
-ago? Have a look at the mailing list archives...
+It's a Mac DIN-8 (I think that's the name) cable; I don't believe there
+are any unused signals. And pulling the printer off the remote end or
+the cable out of the local end both unfreeze linux. Same with turning
+off the printer.
 
+>>Or maybe I should just hack the serial driver to ignore this. And WTF
+>>is the serial driver doing looking at CTS on a port with no data?!
+>
+>If there are multiple ports, it may not be possible to disable a specific
+>interrupt for an individual port, so it always has to be enabled in case
+>any port needs it.  That was the case with the hardware I had.
 
-Michel
+Same hardware does not kill the MacOS -- even when it's using the port.
+Seems like a Linux problem.
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+However, I've come up with something interesting -- to run a Mac serial
+port at the speed the printer's docs say it can (1.8Mbps), you need
+external clocking... more on this in another message.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
