@@ -1,30 +1,28 @@
-Message-ID: <37D944A8.78051BB@wanadoo.fr>
-Date: Fri, 10 Sep 1999 19:49:28 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+Date: Fri, 10 Sep 1999 10:51:59 -0700 (PDT)
+From: Brad Midgley <brad@pht.com>
+To: Sacha Varma <sacha@ssl.co.uk>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: altivec
+In-Reply-To: <Pine.LNX.4.10.9909101030100.31612-100000@web1.turbolinux.com>
+Message-ID: <Pine.LNX.4.10.9909101048480.31817-100000@web1.turbolinux.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Paul's devel branch on Lombard?
-References: <Pine.LNX.4.10.9909101143540.23282-100000@mercator.cs.kuleuven.ac.be>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
-> 
+i should have explained this more. the library can't be abstracted at the
+level of "multiply these numbers..." it would have to be abstracted at a
+much higher level, such as "perform a single-precision fft up to frequency
+q" with a mathematician devising what high-level operations are useful.
 
-> Woops, didn't read thit that well. So please forgot about my former suggestion
-> to run `make oldconfig' :-)
+> the tough part will be designing a shared library and abstracting its
+> entry points with an eye on performance both with and without simd
+> capability. this is a problem that transcends altivec--it is relevant
+> to simd processor extensions on other architectures too.
 
-I try to use always 'make oldconfig'. But sometimes this doesn't work
-correctly, like in the case of the adbmouse or in 2.3.16 for the Apple
-partitions. 
-But now the big ADB merger is arriving, and everything is different
-again. Curious if 2.3.18 will compile... (1 minute later: No, this is
-not yet finished)
+Brad
+brad@pht.com | http://www.pht.com/~brad/
 
---
-Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
