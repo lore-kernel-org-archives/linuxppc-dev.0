@@ -1,30 +1,40 @@
-Date: Wed, 20 Dec 2000 22:09:55 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: jeramy b smith <ultrapenguin@netscape.net>
-cc: Josh Huber <huber@mclx.com>,
-        Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ethernet issue with lombard
-In-Reply-To: <20001220144559.22791.qmail@www0d.netaddress.usa.net>
-Message-ID: <Pine.LNX.4.10.10012202208380.10833-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <3A417BB1.22F6E226@wolf-359.net>
+Date: Wed, 20 Dec 2000 21:40:34 -0600
+From: "William J. Mittelstadt" <mittewil@wolf-359.net>
+Reply-To: mittewil@bigfoot.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: irda on pismo
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I've only seen it twice in 5-6 days of uptime myself.
->
-> Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de> wrote:
-> >
-> > I've seen problems recently with NFS over 100 Mbit - the server just
-> > 'disappears' for my Lombard. I'd say it's only in .18 because that's what
-> > I use most of the time and I don't recall trouble in .17
+I have been trying to get irda working on my powerbook to sync with my
+palm. I have followed the settings suggested in the irda faq but still
+can't seem to get it to work. I am running the 2.2.18 kernel from
+kernel.org with all the irda stuff compiled as modules. The only error i
+get is reported in dmesg:
 
-Losing NFS twice in 5 days uptime is a lot (in fact I can't lose the same
-NFS server twice, the machine needs a reboot in order to recover as the
-NFS tasks are blocked in the kernel).
+irda_setup timed out on 1st byte
+irda_setup timed out on 1st byte
+IrDA (tm) Protocols for Linux-2.2 (Dag Brattli)
+IrCOMM protocol (Dag Brattli)
+IrDA: Registered device irda0
+ircomm_tty_attach_cable()
+ircomm_tty_ias_register()
+irtty_net_open()
+irlap_change_speed(), setting speed to 9600
+ircomm_tty_close()
+ircomm_tty_shutdown()
+ircomm_tty_detach_cable()
+ircomm_close()
 
-	Michael
+This is the output when I run the irattach /dev/ttyS1 command. I saw
+that someone posted with this issue but never saw any fix. Any help
+would be appreciated.
+
+Thanks
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
