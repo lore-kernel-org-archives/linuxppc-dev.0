@@ -1,41 +1,28 @@
-Message-ID: <38E120DF.DD47F662@mandrakesoft.com>
-Date: Tue, 28 Mar 2000 16:15:11 -0500
-From: Jeff Garzik <jgarzik@mandrakesoft.com>
+From: Paul Mackerras <paulus@linuxcare.com>
+To: Linux/PPC Developer list <linuxppc-dev@lists.linuxppc.org>
+Subject: adb_buttons kernel argument
+Date: Wed, 29 Mar 2000 11:37:21 +1000
+Content-Type: text/plain
 MIME-Version: 1.0
-To: jlquinn@us.ibm.com
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: readw byte sex?
-References: <852568B0.00703001.00@D51MTA03.pok.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <00032911415300.05568@argo.linuxcare.com.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-jlquinn@us.ibm.com wrote:
->
-> I've seen info about this go by in the past, but wasn't paying careful
-> attention...
->
-> I'm working on trying to get my Advansys 970UW working under PPC linux
-> 2.2.x.  I'm not tackling 2.3.x because I don't think the driver itself is
-> up to date with respect to the 2.3 tree, while it is OK for x86 and alpha
-> 2.2.x.  I'm having (surprise, surprise) byte swapping problems, which I so
-> far am tracing to the following construct and pals:
->
->  x = le16_to_cpu(readw(addr))
->
-> Both of these are byteswapping, leaving me with a reversed value, which of
-> course causes havoc later.  What's the correct way to do this?  I can't
-> find where the exact platform-independent semantics of readw are defined.
->
-> Is this a FAQ?
+I have just realized that with 2.3.xx (since 2.3.18) the format of the
+arguments for the adb_buttons=xxx kernel command-line argument has
+changed.  With 2.2 you can say adb_buttons=1 to emulate buttons 2 and 3
+with the right control and option keys, or you can say adb_buttons=xx,yy
+to use keycodes xx and yy to emulate buttons 2 and 3.  With 2.3 you now
+have to say adb_buttons=1,xx,yy.
 
-readw is defined as functioning on a little endian PCI bus, so it
-already should byte swap for you.
+I propose to change 2.3 back to the 2.2 behaviour since that is what is
+documented.  Does anybody have any problem with that?
 
 --
-Jeff Garzik              | Tact is the ability to tell a man
-Building 1024            | he has an open mind when he has a
-MandrakeSoft, Inc.       | hole in his head.  (-random fortune)
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
