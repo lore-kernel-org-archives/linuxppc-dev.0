@@ -1,34 +1,28 @@
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <16562.39169.380795.528880@cargo.ozlabs.ibm.com>
-Date: Tue, 25 May 2004 10:53:21 +1000
+Message-ID: <16562.40439.148880.532500@cargo.ozlabs.ibm.com>
+Date: Tue, 25 May 2004 11:14:31 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: linuxppc-dev@lists.linuxppc.org, debian-kernel@lists.debian.org
-Subject: Re: minimum required binutils for ppc32?
-In-Reply-To: <20040523095826.GA10105@lst.de>
-References: <20040523095826.GA10105@lst.de>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH 0/7] apus updates for 2.6
+In-Reply-To: <Pine.LNX.4.58.0405250206290.18932@scrub.local>
+References: <Pine.LNX.4.58.0405250206290.18932@scrub.local>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Christoph Hellwig writes:
+Roman Zippel writes:
 
-> What's the minimum required binutils version for ppc32 these days?
+> Following are some patches to get APUS closer to working in 2.6. These are
+> the simpler patches, other patches will follow later (of which are not
+> that much left, but may need a bit more work).
 
-Whichever version is the first to handle the altivec instructions.
+So, do you think these should go upstream to Andrew Morton?  I don't
+want to put these in linuxppc-2.5 if they are not going upstream
+promptly.
 
-> The debian kernel package ups it from 2.12.1 to 2.12.90.0.7, i.e. from
-> the first 2.12 maintaince release to one of hjl's later releases and
-> I wonder why it does that.  Either it's bogus and should be be dropped
-> or we should up it in mainline.
-
-Seems bogus to me.
-
-BTW, there is a recent change in binutils which make gas *not*
-recognize the altivec instructions by default.  (This was to fix the
-disassembler, go figure.)  We should probably add -many to ASFLAGS.
-
+Regards,
 Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
