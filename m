@@ -1,37 +1,58 @@
-Message-ID: <64885.213.107.143.228.1049136124.squirrel@www.solinno.co.uk>
-Date: Mon, 31 Mar 2003 19:42:04 +0100 (BST)
-Subject: Re: [PATCH] Fix memory size not being passed to kernel from prep boot loader
-From: "Leigh Brown" <leigh@solinno.co.uk>
-To: <trini@kernel.crashing.org>
-In-Reply-To: <20030327202554.GH31771@ip68-0-152-218.tc.ph.cox.net>
-References: <63228.213.107.143.228.1048441818.squirrel@www.solinno.co.uk>
-        <20030327201313.GG31771@ip68-0-152-218.tc.ph.cox.net>
-        <20030327202554.GH31771@ip68-0-152-218.tc.ph.cox.net>
-Cc: <paulus@samba.org>, <linuxppc-dev@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+Date: Mon, 3 Mar 2003 16:14:19 +1100
+From: Erik Christiansen <erik@dd.nec.com.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Calling __eabi
+Message-ID: <20030303051419.GB1169@dd.nec.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini said:
-> On Thu, Mar 27, 2003 at 01:13:13PM -0700, Tom Rini wrote:
->>
->> On Sun, Mar 23, 2003 at 05:50:18PM -0000, Leigh Brown wrote:
->>
->> > Current linuxppc_2_4 doesn't work on my 140 because the boot loader
->> isn't passing in the memory size.  This patch fixes that.
->>
->> Paul broke it in the massive merge of other PReP changes.  Can you try
->> just adding the BI_MEM_SIZE record code in?  The rest of those changes
->> should be superfluous.  Thanks.
->
-> Ah, I think not.  How about the following patch?  I didn't want to
-> remove the 'residual = hold_residual' line due to SMP things
-> referencing both.  Troy, can you explain why it's not consistenly
-> referencing 'hold_residual' ?
+   Despite compiling with;
 
-It works, anyway.
+powerpc-linux-gcc -Iinclude -g -meabi -c -o obj/app_init.o app_init.c
+
+   the expected compiler-generated call to __eabi() is not magically inserted
+at the start of main. (Using powerpc-linux-gcc version 2.95.3)
+
+   Have I perhaps misinterpreted the following in the GNU CC Manual?:
+
+>>>
+   Selecting -meabi means that the stack is aligned to an 8 byte boundary, a
+function __eabi is called to from main to set up the eabi environment, and the
+`-msdata' option can use both r2 and r13 to point to two separate small data
+areas.
+<<<
+
+   And in Motorola's AN1809:
+
+>>>
+   Much of the required EABI register setup is accomplished through a call to
+   __eabi(). The user does not call this function directly. Instead, the
+   compiler inserts the call to __eabi() at the beginning of main() in the user
+   program.
+<<<
+
+   From an objdump of the object file:
+
+>>>
+int main(void)^M
+{^M
+  104258:   94 21 ff f0    stwu  r1,-16(r1)
+  10425c:   7c 08 02 a6    mflr  r0
+  104260:   93 e1 00 0c    stw   r31,12(r1)
+  104264:   90 01 00 14    stw   r0,20(r1)
+  104268:   7c 3f 0b 78    mr r31,r1
+   init_led();                               // Whoof! Into it, but no __eabi!?
+  10426c:   48 00 07 89    bl 1049f4 <init_led>
+<<<
+
+   There's sommat else that needs to be done, to tickle it into
+delivering the goods, and I haven't twigged to it yet.
+
+Regards,
+Erik
 
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
