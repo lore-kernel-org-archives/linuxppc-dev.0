@@ -1,51 +1,69 @@
-Message-Id: <199906140516.HAA06439@denx.muc.de>
-To: linuxppc-dev@lists.linuxppc.org
-cc: "Michael R. Zucca" <mrz5149@acm.org>,
-        Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>,
-        =?ISO-8859-1?Q?Kolbj=F8rn_Barmen?= <kolla@nvg.ntnu.no>
-From: Wolfgang Denk <wd@denx.muc.de>
-Subject: Re: MPC8xx: Bad emulation 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 14 Jun 1999 05:31:37 +0200."
-             <Pine.LNX.4.10.9906140527340.30963-100000@daneel.nvg.ntnu.no>
-Date: Mon, 14 Jun 1999 07:16:21 +0200
+Date: Mon, 14 Jun 1999 09:12:25 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: "Henry A. Leinhos" <leinhos@arwyn.npt.nuwc.navy.mil>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: kernel for MVME 1600
+In-Reply-To: <37600530.8D2E52B8@arwyn.npt.nuwc.navy.mil>
+Message-ID: <Pine.HPP.3.96.990614090951.21444B-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 13 Jun 1999, Michael R. Zucca wrote:
->
-> I'm surprised. I thought we were already doing this.  This sort of thing
-
-So thought I; but the existing solution is far from being complete.
-
-> has been done forever on the 68k to emulate the 68881/2 FPU. It's slow but
-> if you don't plan on doing much floating point, it's perfectly acceptable.
-
-Agreed.
 
 
-On Mon, 14 Jun 1999, Kolbjørn Barmen wrote:
+On Thu, 10 Jun 1999, Henry A. Leinhos wrote:
+
+	Hi, 
+
 > 
-> It was working sometimes on some old 1.2.x kernels and perhaps older, it hasnt
-> been working since afaik, and hasnt been much of an issue until recently on
-> old macs, as most of atari and amiga owners has gotten ourselves 68881/2 chips
-> in the meantime.
+> Hi,
+> 
+> I've been trying to compile the 2.2.4 kernel using Garbiel's patches,
+> and everything seems to go fine until the final step (in make zImage). 
+> I (unfortunately) know only enough about this card to be dangerous, and
 
-It is perfectly understandable that there is  no  much  interest  for
-this on the workstation class of Linux boxen. But especially with the
-PPC port and Embedded Controllers like the Motorola MPC8xx or the IBM
-401x2  I  se  a  good chance for Linux entering the world of embedded
-(and realtime) systems. This opens a whole new set of requirements.
+We all go through this point ;-)
 
-Wolfgang Denk
+> get the following ld error messages:
+> 
+> make[1]: Entering directory `/home/leinhos/src/linux/arch/ppc/prepboot'
+> objcopy /home/leinhos/src/linux/vmlinux vmlinux -O binary -R .comment -S
+> gzip -vf9 vmlinux
+> vmlinux:                 58.6% -- replaced with vmlinux.gz
+> ld -o zImage head.o misc.o mm.o exception.o pci.o zlib.o em86.o
+> em86real.o console.o ravenfalcon.o
+> --just-symbols=/home/leinhos/src/linux/vmlinux \
+> -b binary vmlinux.gz -T ppcboot.lds -Map zImage.map
+> head.o: In function `start':
+> head.o(.text+0x76): relocation truncated to fit: R_PPC_SECTOFF_HA __size
+> head.o(.text+0x82): relocation truncated to fit: R_PPC_SECTOFF_LO __size
+> head.o(.text+0xba): relocation truncated to fit: R_PPC_SECTOFF_HA _edata
+> head.o(.text+0xc2): relocation truncated to fit: R_PPC_SECTOFF_LO _edata
+> head.o(.text+0x15a): relocation truncated to fit: R_PPC_SECTOFF_HA __size
+> head.o(.text+0x15e): relocation truncated to fit: R_PPC_SECTOFF_LO __size
+> head.o(.text+0x176): relocation truncated to fit: R_PPC_SECTOFF_HA _vmlinux_gz_size
+> head.o(.text+0x17e): relocation truncated to fit: R_PPC_SECTOFF_HA _vmlinux_size
+> head.o(.text+0x186): relocation truncated to fit: R_PPC_SECTOFF_LO _vmlinux_gz_size
+> head.o(.text+0x18a): relocation truncated to fit: R_PPC_SECTOFF_LO _vmlinux_size
+> make[1]: *** [zImage] Error 1
+> make[1]: Leaving directory `/home/leinhos/src/linux/arch/ppc/prepboot'
+> make: *** [zImage] Error 2
 
--- 
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-It is impractical for  the  standard  to  attempt  to  constrain  the
-behavior  of code that does not obey the constraints of the standard.
-                                                          - Doug Gwyn
+Upgrade your binutils, I don't remember in which version I fixed that bug
+but it is a binutils bug. 
+
+	Regards,
+	Gabriel.
+
+P.S: on the other hand I'm not sure that it will boot on a 1600, I only
+have 2000 series (2600 myself, but other people have used 2300, 2400 and
+2700 AFAIR). 
+
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
