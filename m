@@ -1,44 +1,103 @@
-Message-ID: <38D33510.7B31C928@iiic.ethz.ch>
-Date: Sat, 18 Mar 2000 08:49:36 +0100
-From: Michel Dänzer <michdaen@iiic.ethz.ch>
+Message-Id: <200003180903.KAA00291@piglet.grunz.lu>
+Date: Sat, 18 Mar 2000 10:03:05 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: controlfb: please test!
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-To: "James B. Parker" <pajama1@mindspring.com>
-CC: LinuxPPC Developer <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Xfree86 4.0 (mach stuff)
-References: <B4F7E62C.1C2E%pajama1@mindspring.com>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: MULTIPART/mixed; BOUNDARY="134392852-1804289383-953370185=:290"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"James B. Parker" wrote:
->
-> I noticed plenty of people working on getting rage128 hardware working with
-> 4.0, so where is the support for earlier hardware (rage pro, rage ++,
-> whatever)?
+--134392852-1804289383-953370185=:290
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 
-The ati driver is for them (although not very well accelerated yet), but I
-doubt it works on PPC yet due to the usual problems (endianness, endianness
-and endianness, ... :)
+Hi list,
 
-Kostas Gewrgiou, me and maybe others are working on a general solution to make
-most drivers work with only minor changes or no changes at all.
+You may remeber my problems (and the many other problems reported over
+the years ;-) with controlfb's detection of the amount of VRAM
+installed.
 
+Well, it seems control has some bugs, which makes detection less easy,
+and until now, only one of two possible schemes for the memory layout
+was correctly detected.
 
-> I am sure not everyone running LinuxPPC has a rage 128 setup.
-> Or am I just missing something (like the same config file works for both)?
+Well, I think it's time to clean this mess up, so I want _all_
+developers with any machine that has the control hardware
+(PowerMacs 7300, 7500, 7600, 8500, 8600, clones?) to try the following
+patch on a 2.3 kernel, and report the results to me.
 
-No, the Rage128 uses the r128 driver.
+Mine look like this, with 2 MB in bank2:
+....
+control: mem at 0x000000: no
+control: mem at 0x200000: no
+control: mem at 0x400000: no
+control: mem at 0x600000: yes
+controlfb: Memory bank 1 absent, bank 2 present, total VRAM 2MB
+....
 
+Please include yur VRAM configuration, and if you have the time, please
+try all possible combinations (2MB in either bank1 or bank2, and 4MB).
 
-> If I knew what the heck to do with the 4.0 config file to get it working
-> with my ATI rage pro chip, I certainly would give it a try.
-> Any suggestions?
-
-Look at the XF86Config manpage, the format of the file has changed.
-
+Thanks
 
 Michel
 
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
+--134392852-1804289383-953370185=:290
+Content-Type: TEXT/plain; CHARSET=US-ASCII
+Content-Description: memtest.patch
+
+--- linux-2.3.paul/drivers/video/controlfb.c	Fri Feb 11 00:20:08 2000
++++ linux-2.3.paul-work/drivers/video/controlfb.c	Sat Mar 18 09:48:38 2000
+@@ -715,6 +715,39 @@
+ 	 * - with 4M vram, it appears only as a 4M block at offset 0.
+ 	 */
+
++	/* Let's do the mem test... */
++	out_8(&p->frame_buffer[0x200000], 0xa5);
++	out_8(&p->frame_buffer[0x200001], 0x38);
++	asm volatile("eieio; dcbi 0,%0" : : "r" (&p->frame_buffer[0x200000]) : "memory" );
++
++	out_8(&p->frame_buffer[0], 0x5a);
++	out_8(&p->frame_buffer[1], 0xc7);
++	asm volatile("eieio; dcbi 0,%0" : : "r" (&p->frame_buffer[0]) : "memory" );
++
++	bank1 =  (in_8(&p->frame_buffer[0x000000]) == 0x5a)
++		&& (in_8(&p->frame_buffer[0x000001]) == 0xc7);
++	bank2 =  (in_8(&p->frame_buffer[0x200000]) == 0xa5)
++		&& (in_8(&p->frame_buffer[0x200001]) == 0x38);
++
++	printk(KERN_INFO "control: mem at 0x000000: %s\n", bank1 ? "yes" : "no");
++	printk(KERN_INFO "control: mem at 0x200000: %s\n", bank2 ? "yes" : "no");
++
++	out_8(&p->frame_buffer[0x400000], 0xc1);
++	out_8(&p->frame_buffer[0x400001], 0x02);
++	asm volatile("eieio; dcbi 0,%0" : : "r" (&p->frame_buffer[0x400000]) : "memory" );
++
++	out_8(&p->frame_buffer[0x600000], 0xb3);
++	out_8(&p->frame_buffer[0x600001], 0x71);
++	asm volatile("eieio; dcbi 0,%0" : : "r" (&p->frame_buffer[0x600000]) : "memory" );
++
++	bank1 =  (in_8(&p->frame_buffer[0x400000]) == 0xc1)
++		&& (in_8(&p->frame_buffer[0x400001]) == 0x02);
++	bank2 =  (in_8(&p->frame_buffer[0x600000]) == 0xb3)
++		&& (in_8(&p->frame_buffer[0x600001]) == 0x71);
++
++	printk(KERN_INFO "control: mem at 0x400000: %s\n", bank1 ? "yes" : "no");
++	printk(KERN_INFO "control: mem at 0x600000: %s\n", bank2 ? "yes" : "no");
++
+ 	/* We know there is something at 2M if there is something at 0M. */
+ 	out_8(&p->frame_buffer[0x200000], 0xa5);
+ 	out_8(&p->frame_buffer[0x200001], 0x38);
+
+--134392852-1804289383-953370185=:290--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
