@@ -1,17 +1,18 @@
 Return-Path: <arrigo@vision.caltech.edu>
 Received: from kla-tencor.com (smtp.kla-tencor.com [192.146.1.134])
-	by ozlabs.org (Postfix) with ESMTP id DFA0F2BDEB
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Nov 2004 12:40:42 +1100 (EST)
-Received: from [10.35.5.214] ([10.35.5.214])
-	by kla-tencor.com (8.11.6+Sun/KLAC-1.0i) with ESMTP id iA41efj09074
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Nov 2004 17:40:41 -0800 (PST)
-Message-ID: <4189888E.5070906@vision.caltech.edu>
-Date: Wed, 03 Nov 2004 17:40:30 -0800
+	by ozlabs.org (Postfix) with ESMTP id 2F7662BDEB
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Nov 2004 12:50:31 +1100 (EST)
+Message-ID: <41898ADC.5080707@vision.caltech.edu>
+Date: Wed, 03 Nov 2004 17:50:20 -0800
 From: Arrigo Benedetti <arrigo@vision.caltech.edu>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+References: <41893BFB.1010903@vision.caltech.edu>
+	<1099522581.31629.84.camel@gaston>
+In-Reply-To: <1099522581.31629.84.camel@gaston>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: problem with insmod
+Cc: 
+Subject: Re: printk problems
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,24 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-First of all I would like to thank everyone in this list who has 
-answered my questions so far, especially Ben...
+Benjamin Herrenschmidt wrote:
 
-Now I'm trying to write and and install a kernel module on 2.6, YDL 4.0. 
-I compiled the example module by
-Alessandro Rubin at http://www.linux.it/~rubini/docs/modules26/src.tar.gz
-When I try to load it with insmod I get:
+>On Wed, 2004-11-03 at 12:13 -0800, Arrigo Benedetti wrote:
+>  
+>
+>>For some reason I can't get printk() to work on a YDL 4.0 system. I have 
+>>followed all the instructions, like
+>>setting the correct log level in /proc/sys/kernel/printk, killing klogd 
+>>and then
+>>
+>>cat /proc/kmsg
+>>
+>>but I do not see any message from printk. The printk is in a new kernel 
+>>system call that I wrote.
+>>Any ideas?
+>>    
+>>
+>
+>Are you sure you are reaching your syscall at all ? Besides, why are you
+>adding a syscall in the first place ? (just curious ... it's usually the
+>wrong solution :)
+>
+>  
+>
 
-[root@localhost root]#  insmod empty.ko
-insmod: error inserting '/home/arrigo/linux/modules/src/empty.ko': -1 
-Invalid module format
+I'm pretty sure that the syscall is called, in fact at some point there 
+was a bug in the code which
+froze the system... I made a syscall just to do some quick timing tests. 
+I agree that a module is a
+better solution, and in fact I have just posted a message about that...
 
-After some research I found that to load a module on the 2.6 kernel one 
-should insmod from module-init-tools 
-<ftp://ftp.it.kernel.org/pub/linux/utils/kernel/module-init-tools/>,
-not the default insmod from the modutils package that comes with YDL.
-So I compile and install module-init-tools, but I get the same error.
-Does anyone know what's going on?
-
-Thanks
 -Arrigo
