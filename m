@@ -1,26 +1,41 @@
-Date: Tue, 25 Nov 2003 09:15:46 +0100
-From: xavier grave <grave@ipno.in2p3.fr>
-To: vinai <for_usenet@yahoo.com>
-Cc: "LinuxPPC Developers' List" <linuxppc-dev@lists.linuxppc.org>
-Subject: =?iso-8859-1?B?UmWg?=
-	=?iso-8859-1?Q?=3A?= Lacie FireWire disk howto ?
-Message-ID: <20031125081546.GA4508@ipnpcu9.acq.ami>
-References: <Pine.LNX.4.44.0311241009030.259-100000@kaiso.biophysics.mcw.edu>
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+Date: Tue, 25 Nov 2003 16:51:50 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: MPC5xxx updates
+Message-ID: <20031125235150.GC2541@stop.crashing.org>
 Mime-Version: 1.0
-Content-Type: text/plain; Format=Flowed; DelSp=Yes; charset=ISO-8859-1
-In-Reply-To: <Pine.LNX.4.44.0311241009030.259-100000@kaiso.biophysics.mcw.edu> (from 4_usenet@yahoo.com on lun, nov 24, 2003 at 17:12:05 +0100)
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Le 24.11.2003 17:12:05, vinai a écrit :
->
-> If you are using a kernel newer than about 2.4.16-18, get the
-> rescan-scsi-bus.sh script and run it after adding and removing
-> firewire devices.   "insmod" and "modprobe" of the individual
-> firewire modules no longer work.
-Thanks, It worked great for me... I have now to understand why :-)
+I've done a number of small changes since the last commit, and thus
+rebuilt the repo.  Please rm any copies you have and start over like I
+described in the first e-mail about this repo.
+- Mark mpc5xxx_set_bat as __init
+- Remove 'port by' printks (Paul doesn't like agree with the.  Wolfgang,
+  I've added DENX to the top of platforms/icecube.c, is this OK?).
+- Style things (don't #if out includes or externs, C99 struct
+  declarations).
+- Correct some dependencies in the code (IDE_MPC5xxx already depends on
+  IDE being set).
+- Audit MTD map file for MB/KB (change to MiB/KiB per the preference of
+  upstream MTD).
 
-xavier
+>From Wolfgang:
+- Add GPL boilerplate to a number of files.
+
+>From Dale:
+- Remove Bestcomm files we don't care about.
+
+Now based on the comments from Paul, Christoph and Ben, I think what we
+should do is try and clean up the code as best as possible to have a
+good patch for people that need the code to start from.  Is this
+agreeable?
+
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
