@@ -1,25 +1,37 @@
-Date: Fri, 3 Oct 2003 15:57:21 -0700
-Subject: Re: MPC823 and LCD?
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v552)
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-To: Dan Malek <dan@embeddededge.com>
-From: Scott Anderson <scott_anderson@mvista.com>
-In-Reply-To: <3F7AF44D.4040101@embeddededge.com>
-Message-Id: <F214EBBA-F5F4-11D7-8CE1-000A959CAB7C@mvista.com>
+Subject: Kernel versions
+From: Gary Thomas <gary@mlbassoc.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <20031003151729.GC21468@ip68-0-152-218.tc.ph.cox.net>
+References: <20031002121733.A2E32C59E4@atlas.denx.de>
+	 <001101c3894c$38833ab0$2803050a@JackyLam> <3F7D3238.2090400@bluewin.ch>
+	 <20031003151729.GC21468@ip68-0-152-218.tc.ph.cox.net>
+Content-Type: text/plain
+Message-Id: <1065224171.18201.805.camel@hermes>
+Mime-Version: 1.0
+Date: 03 Oct 2003 17:36:11 -0600
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wednesday, October 1, 2003, at 08:35  AM, Dan Malek wrote:
-> I know lots of people have touched this driver
-> since the beginning of time, and I think Scott Anderson actually
-> made it look pretty :-)
+Tom,
 
-Thanks for the credit, but it wasn't me.  First fb  I touched
-was the one I did for the Xilinx ML300.
+For more than a year now, I've been working from the linuxppc_2_4_devel
+tree, sending updates which have been merged in, etc.  I just looked at
+the recently discussed 2.4 tree (http://ppc.bkbits.net:8080/linuxppc-2.4)
+and I see none of this work present.
 
-    Scott
+So my questions are:
+* What is the "proper" tree to be working from (2.4, 2.6)?
+* What is the merge path from the work in 2_4_devel to these other trees?
+
+... I wouldn't want all of my efforts to just get lost.
+
+Thanks.
+
+--
+Gary Thomas <gary@mlbassoc.com>
+MLB Associates
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
