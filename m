@@ -1,63 +1,37 @@
-Message-Id: <200007301655.RAA17061@hyperion.valhalla.net>
-Date: Sun, 30 Jul 2000 17:56:09 +0100
-Subject: Re: LinuxPPC X Server
+Message-Id: <200007301812.TAA20476@hyperion.valhalla.net>
+Date: Sun, 30 Jul 2000 19:10:43 +0100
+Subject: 2.2.17pre13ben2 on Lombard
 From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: SteffenH@hyperion-software.de, Takashi Oe <toe@unlserve.unl.edu>
-CC: linuxppc-dev@lists.linuxppc.org
+To: linuxppc-dev@lists.linuxppc.org
+CC: Benjamin Herrenschmidt <bh40@calva.net>
 Mime-version: 1.0
 Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  Sun, Jul 30, 2000, Steffen Haeuser wrote:
-> Am 30-Jul-00 schrieb Takashi Oe:
->
-> Hi!
->
->>> Well, if it is not fixed it most likely WILL hold up...
->
->>What's wrong with XF68_FBDev?
->
-> Hmmm... I was told to use the ATI thing... did not think this was only a thing
-> related to the ATI Driver... but maybe I should try this.
->
->>> Hmmm... I was told that no DRI Drivers would exist even for r128 ... can
-> you
->>> point me to a place where I can get this ? And if they exist in Source
-> form,
->>> someone has them already in Binary form maybe ?
->
->>www.xfree86.org
->>4.0.1 has them.
->
-> Hmmm... I looked on the site, but could only see versions for x86 and Alpha
-> there,
-> not for PPC... has anybody TRIED this stuff (source) on PPC yet ?
->
-> I really do not have the time to try around with untried stuff...
->
-> *Has* anybody tried compiling this 4.0.1 version on PPC? Does it work ? Are
-> there
-> any problems ? Is a Binary Version available anywhere ?
+I ran this version for some time on my Lombard.
+at first no drama... but after a while the HD started to go beserk (good
+technical statement eh?).
 
-Look back through archive from this list for a post from Ani Joshi - it was
-an [ANN].
+If you remember the old machine control labs where you used to play tunes on
+servo actuators?
 
-I saw, also that there are some binaries (don't remember who, sorry) but
-these do not include the newest drivers.
+Well it was a bit like that only with less tuneful bursts.
 
-On the up side I built it yesterday (with Ani's rsync stuff in place of the
-xfree86 directory).  It build without problem - now all I need is time to
-test ;-)
+Possibly this is related to the earlier discussion about problems on
+sleep/wakeup.
 
-At present I'm not able to host the binaries (and not enough experienced
-with X to be sure of building the right collection :-)
+Fortunately the disk survived (nothing worse than an fsck required and the
+MacOS partitions were not touched).
 
-On the down side it took **all** day to build on my 300M G3.
+However, I'm a little reluctant to make a habit of trying this (I feel that
+this time I was lucky).
 
-And yes, there have been reports of people trying it (one yesterday - said
-it was quicker in some places & slower in others...)
+Is it possible to disable sleep on the PowerBooks and still have a run-able
+kernel?  Although I can't be 100% sure it was sleep related - at least this
+would eliminate that as a cause - it's really too nasty to want to try it
+often as an experiment.
 
 Iain.
 
