@@ -1,73 +1,117 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <004101c3eb87$d2cdf090$5e1312ac@yang>
-From: "yang" <wchyang_hn@sina.com>
-To: <linuxppc-embedded@lists.linuxppc.org>, <wchyang_hn@sina.com>
-Subject: Problem  of  linux's  kernel  booting
-Date: Thu, 5 Feb 2004 09:31:42 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+In-Reply-To: <1075910536.5199.5659.camel@chuck.arlut.utexas.edu>
+References: <1075910536.5199.5659.camel@chuck.arlut.utexas.edu>
+Mime-Version: 1.0 (Apple Message framework v609)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <E8829FA9-5795-11D8-9997-000393DBC2E8@motorola.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+From: Kumar Gala <kumar.gala@motorola.com>
+Subject: Re: mpc8540 and stack overflow
+Date: Wed, 4 Feb 2004 22:43:57 -0600
+To: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
-    I encounter a problem when booting linux 2.2.4 kernel on FADS860T board by ppcboot-2.0.
-    After mounting NFS filesystem on my host, the follow message was printed in console:
+It appears from the backtrace that you may be running out of stack
+space due to some external interrupt that is not getting services (just
+a guess).  What may be happening is that the StackOverflow is occurring
+because of an extensive functional depth.
 
-        ## Booting image at ffe80000 ...
-           Image Name:   Linux-2.4.4
-           Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-           Data Size:    457580 Bytes = 446.9 kB
-           Load Address: 00000000
-           Entry Point:  00000000
-           Verifying Checksum ... OK
-           Uncompressing Kernel Image ... OK
-        Linux version 2.4.4 (yang@vlinux) (gcc version 2.95.3 20010315 (release/MontaVis
-        ta)) #12 Tue Feb 3 19:37:20 CST 2004
-        On node 0 totalpages: 8192
-        zone(0): 8192 pages.
-        zone(1): 0 pages.
-        zone(2): 0 pages.
-        Kernel command line: root=/dev/nfs rw nfsroot=172.18.19.254:/opt/nfsfilesystem/
-        ip=172.18.19.253:172.18.19.254:172.18.19.1:255.255.255.0:vmlinux::off
-        Decrementer Frequency: 3125000
-        Warning: real time clock seems stuck!
-        Calibrating delay loop... 49.86 BogoMIPS
-        Memory: 30868k available (920k kernel code, 336k data, 44k init, 0k highmem)
-        Dentry-cache hash table entries: 4096 (order: 3, 32768 bytes)
-        Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
-        Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
-        Inode-cache hash table entries: 2048 (order: 2, 16384 bytes)
-        POSIX conformance testing by UNIFIX
-        Linux NET4.0 for Linux 2.4
-        Based upon Swansea University Computer Society NET3.039
-        Starting kswapd v1.8
-        CPM UART driver version 0.03
-        ttyS0 on SMC1 at 0x0280, BRG1
-        ttyS1 on SMC2 at 0x0380, BRG2
-        pty: 256 Unix98 ptys configured
-        block: queued sectors max/low 20440kB/6813kB, 64 slots per queue
-        eth0: CPM ENET Version 0.2 on SCC1, 44:00:00:00:00:00
-        CFI: Found no TQM8xxL Bank 0 device at location zero
-        CFI: Found no TQM8xxL Bank 1 device at location zero
-        CFI: Found no TQM8xxL Bank 2 device at location zero
-        CFI: Found no TQM8xxL Bank 3 device at location zero
-        TQM8xxL: No support flash chips found!
-        NET4: Linux TCP/IP 1.0 for NET4.0
-        IP Protocols: ICMP, UDP, TCP, IGMP
-        IP: routing cache hash table of 512 buckets, 4Kbytes
-        TCP: Hash tables configured (established 2048 bind 2048)
-        NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-        Looking up port of RPC 100003/2 on 172.18.19.254
-        Looking up port of RPC 100005/2 on 172.18.19.254
-        VFS: Mounted root (nfs filesystem).
-        Freeing unused kernel memory: 44k init
-        Kernel panic: No init found.  Try passing init= option to kernel.
-        Rebooting in 180 seconds..
+Are you able to see anything on the console from Linux?
 
-    Would you like to tell me how to make NFS filesystem on my host, especialy how to config the init options of kenel? Thank you very much!
-    Best regards,
-                                     yang
+- kumar
+
+On Feb 4, 2004, at 10:02 AM, Matthew S. McClintock wrote:
+
+>
+> 	I am trying to get the linux kernel working on a board with an MPC8540
+> cpu. I'm loading the kernel from u-boot and after transferring control
+> to the kernel from u-boot I immediately run into errors.
+>
+> 	Upon investigating with the bdi2000 I get the following backtrace:
+>
+> #0  printk (fmt=0xc0166ac0 "") at printk.c:448
+> #1  0xc0006dd8 in print_backtrace (sp=0xc01651f8) at process.c:594
+> #2  0xc0006874 in show_regs (regs=0xc0164798) at process.c:352
+> #3  0xc00044f0 in StackOverflow (regs=0xc0164798) at traps.c:485
+> #4  0xc00007a0 in ExternalInput ()
+>
+> So my question is what causes a StackOverflow? Is it because I have run
+> out of stack space? Do I need to make it bigger? If so, how does one do
+> that? Or perhaps I am misinterpreting the meaning of a stack overflow,
+> is it just bad code somewhere?
+>
+> Thanks,
+> Matthew
+>
+> The output from the console is:
+>
+> U-Boot 1.0.2 (Feb  3 2004 - 12:37:25)
+>
+> Motorola PowerPC ProcessorID=00000000 Rev. PVR=80200010
+> Board: Motorola MPC8540ADS Board
+>         CPU: 660 MHz
+>         CCB: 264 MHz
+>         DDR: 132 MHz
+>         LBC: 66 MHz
+> L1 D-cache 32KB, L1 I-cache 32KB enabled.
+> I2C:   ready
+> DRAM:  DDR module detected, total size:256MB.
+> 256 MB
+> Top of RAM usable for U-Boot at: 10000000
+> Reserving 141k for U-Boot at: 0ffdc000
+> Reserving 136k for malloc() at: 0ffba000
+> Reserving 72 Bytes for Board Info at: 0ffb9fb8
+> Reserving 48 Bytes for Global Data at: 0ffb9f88
+> Stack Pointer at: 0ffb9f68
+> New Stack Pointer is: 0ffb9f68
+> Now running in RAM - U-Boot at: 0ffdc000
+> FLASH:  8 MB
+> L2 cache enabled: 256KB
+> In:    serial
+> Out:   serial
+> Err:   serial
+> U-Boot relocated to 0ffdc000
+> Net:   MOTOROLA ETHERNE
+> ### main_loop entered: bootdelay=3
+>
+> ### main_loop: bootcmd="bootm 0xff800000"
+> Hit any key to stop autoboot:  0
+> ## Booting image at ff800000 ...
+>    Image Name:   Linux-2.4.23-rc1
+>    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+>    Data Size:    821468 Bytes = 802.2 kB
+>    Load Address: 00000000
+>    Entry Point:  00000000
+>    Verifying Checksum ... OK
+>    Uncompressing Kernel Image ... OK
+> ## Current stack ends at 0x0FFB9CE8 => set upper limit to 0x00800000
+> ## cmdline at 0x007FFF00 ... 0x007FFFAA
+> bd address  = 0x0FFB9FB8
+> memstart    = 0x00000000
+> memsize     = 0x10000000
+> flashstart  = 0xFF800000
+> flashsize   = 0x00800000
+> flashoffset = 0x00000000
+> sramstart   = 0x00000000
+> sramsize    = 0x00000000
+> immr_base   = 0xFDF00000
+> bootflags   = 0x40003F80
+> intfreq     =    660 MHz
+> busfreq     =    264 MHz
+> ethaddr     = 00:01:AF:07:9B:8A
+> eth1addr    = 00:01:AF:07:9B:8B
+> eth2addr    = 00:01:AF:07:9B:8C
+> IP addr     = 10.82.0.105
+> baudrate    = 115200 bps
+> No initrd
+> ## Transferring control to Linux (at address 00000000) ...
+>
+>
+> --
+> Matthew S. McClintock <mattsm@arlut.utexas.edu>
+>
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
