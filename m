@@ -1,19 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mailout10.sul.t-online.com (mailout10.sul.t-online.com
-	[194.25.134.21]) by ozlabs.org (Postfix) with ESMTP id 8B0BC67A6B
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao09.cox.net (fed1rmmtao09.cox.net [68.230.241.30])
+	by ozlabs.org (Postfix) with ESMTP id 57DA067A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Feb 2005 07:00:03 +1100 (EST)
-To: srinivas.surabhi@wipro.com
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 15 Feb 2005 19:04:52 +0530."
-	<EF9B29C78F41FA488927FCBC7750AF0E011DA5CB@hyd-mdp-msg.wipro.com>
-Date: Tue, 15 Feb 2005 20:59:39 +0100
-Sender: wd@denx.de
-Message-Id: <20050215195944.CBDEFC1430@atlas.denx.de>
+	Wed, 16 Feb 2005 07:45:34 +1100 (EST)
+Date: Tue, 15 Feb 2005 13:45:32 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: morten.banzon@axxessit.no
+Message-ID: <20050215204532.GG31436@smtp.west.cox.net>
+References: <OFBD33500D.E8DD3F33-ONC1256FA9.006C5F4F-C1256FA9.006CFE15@axxessit.no>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OFBD33500D.E8DD3F33-ONC1256FA9.006C5F4F-C1256FA9.006CFE15@axxessit.no>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Mounta Vista Linux prompt on serial console 
+Subject: Re: [PATCH][PPC32] Adds mcc cpm commands
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,47 +23,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <EF9B29C78F41FA488927FCBC7750AF0E011DA5CB@hyd-mdp-msg.wipro.com> you wrote:
+On Tue, Feb 15, 2005 at 08:50:11PM +0100, morten.banzon@axxessit.no wrote:
+> Tom Rini <trini@kernel.crashing.org>
+> 15.02.2005 20:23
 > 
-> My replies in blue tagged with surabhi
+>  
+>         To:     morten.banzon@axxessit.no
+>         cc:     linuxppc-embedded@ozlabs.org
+>         Subject:        Re: [PATCH][PPC32] Adds mcc cpm commands
+> 
+> 
+> On Mon, Feb 14, 2005 at 01:56:07PM +0100, morten.banzon@axxessit.no wrote:
+> 
+> >> This patch adds mcc cpm commands to the cpm2.h file in the 2.6.10 
+> kernel
+> >> 
+> >> Signed-off-by:  Morten Banzon  <morten.banzon at axxessit.no>
+> 
+> > What is this used for / needed by?  Thanks.
+> 
+> 
+> > -- 
+> > Tom Rini
+> > http://gate.crashing.org/~trini/
+> 
+> This is needed for a MPC82xx MCC driver. Curently no MCC driver is in the 
+> kernel.
 
-Don't do this. Email is a plain text medium only.
-
-Read the netiquette, and quote properly.
-
-> [surabhi --- start] could you please guide me how to provide a working
-> file system on SDRAM before decompressing the Linux Image on SDRAM. Is
-> it really related to init process failed.
-
-It is obviously related -there was a clear  error  message  that  the
-uncompressing of the cramfs filesystem failed.
-
-> Is the below doesn't mean that the mounted one is working one ?
-> "VFS: Mounted root (cramfs filesystem) readonly.
->  Mounted devfs on /dev "
-
-No, not at all. You can for example mount an empty  filesystem  -  it
-will mount perfectly fine, but it still doesn't work.
-
-
-You should also read my message until the end; I asked:
-
-
->> Do not ignore this error. How big is your cramfs iage? How  much  RAM
->> do you have?
-...
->> Is there any chance that you built your cramfs image on a x08 (or any
->> other little-endian) system and forgot  to  give  the  "-r"  (reverse
->> endian-ness of filesystem) option to mkcramfs??
-
-
-Best regards,
-
-Wolfgang Denk
+OK.  I'd recommend holding off until 2.6.12 open then.  Thanks, and
+queued.
 
 -- 
-See us @ Embedded World, Nuremberg, Feb 22 - 24,  Hall 10.0 Booth 310
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Looks clean and obviously correct to me, but then _everything_ I
-write always looks obviously correct to me.  - Linus Torvalds in
-<Pine.LNX.4.10.10012090054360.791-100000@penguin.transmeta.com>
+Tom Rini
+http://gate.crashing.org/~trini/
