@@ -1,10 +1,8 @@
-Message-ID: <67505026E29DD311A9AA00508B7315F31956F6@EXCHANGE>
-From: Julia Elbert <jelbert@enerdyne.com>
-To: "'greyham@research.canon.com.au'" <greyham@research.canon.com.au>,
-        "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: reboot
-Date: Thu, 14 Sep 2000 08:26:15 -0700
+Message-ID: <001701c01e61$958ed240$0a00010a@paoloweb>
+From: "Paolo Scaffardi" <arsenio@tin.it>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: rebooting with the FADS
+Date: Thu, 14 Sep 2000 17:36:41 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -12,33 +10,22 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Very cool, I did not think of using the ioctls.
-I will try it out.
-Thank you.
---Julia
+on my FADS, i see that it is not possible to reboot from software: you must
+press the reset buttons to do this.
 
+But, i sometimes have reboot problems. I see BCSRx registers have strange
+values and the bootrom seems to stop downloading the kernel randomly. This
+of because of erroneous values into memory configuration registers.
 
-		You don't need to reboot to change the IP address and
-routing.
+how can i make a soft-reboot?
+how can i resolve this problem with strange register-values on reboot?
 
-		Use the SOICSIFADDR, SIOCSIFNETMASK, SIOCSIFBRADDR ioctls on
-a PF_INET socket
-		with the appropriate ifr_name (probably "eth0") to change
-the IP address.
+=-> MAY THE PINGUIN B WITH U! <-=
 
-		Use SIOCDELRT and SOICADDRT to delete and add routes.
+Best regards,
+Paolo Scaffardi (arsenio@tin.it - pscaffardi@supereva.it)
+AIRVENT SAM s.p.a. - RIMINI (ITALY)
+Tel. 0541 383294 - Fax 0541 387086
 
-		No reboot required!
-
-		Regards,
-		Graham
-		--
-		Graham Stoney
-		Principal Hardware/Software Engineer
-		Canon Information Systems Research Australia
-		Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
-
-		** Sent via the linuxppc-embedded mail list. See
-http://lists.linuxppc.org/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
