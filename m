@@ -1,32 +1,34 @@
-Message-Id: <200007302123.WAA28673@hyperion.valhalla.net>
-Date: Sun, 30 Jul 2000 22:24:19 +0100
+From: Steffen Haeuser <SteffenH@hyperion-software.de>
+Reply-To: SteffenH@hyperion-software.de
+To: Michel Dnzer <daenzerm@student.ethz.ch>, Iain Sandoe <iain@sandoe.co.uk>
+CC: takashi oe <toe@unlserve.unl.edu>, linuxppc-dev@lists.linuxppc.org
+Date: Sun, 30 Jul 2000 23:33:48 +0100
+Message-ID: <yam8246.2404.148140032@mail.lf-online.de>
+In-Reply-To: <3984708A.D2D39371@student.ethz.ch>
 Subject: Re: LinuxPPC X Server
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: "Timothy A. Seufert" <tas@mindspring.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  Sun, Jul 30, 2000, Timothy A. Seufert wrote:
-> At 5:56 PM +0100 7/30/00, Iain Sandoe wrote:
->
->>On the down side it took **all** day to build on my 300M G3.
->
-> How much RAM do you have?  You might have been swapping a lot -- make
-> World took maybe 1 to 1.5 hours (didn't time it, but I think that's
-> about right) on my 500MHz G3 with 192MB RAM and a UW SCSI HD.
+Am 30-Jul-00 schrieb Michel Dnzer:
 
-I think I may have made a configuration mistake (see Michel's mail).
 
-However, 300M G3, UW SCSI + 256 Mb RAM ==> 6.5-ish Hours (*all* day was only
-a slight exaggeration :-).
+Hi!
 
-(OK, so I did a kernel build as well [30 mins] and had a screen saver
-running - but... )
+>Before building, you should have copied xc/config/cf/{xf86site,host}.def
 
-Iain.
+>Then edit the newly created host.def - you probably only want to build the
+>server and drivers, and choose the drivers you want.
+
+>For DRI, you may have to edit even more files in config/cf/, AFAIK DRI is
+only
+>built on i386 by default.
+
+Did anybody build a DRI-Driver on PPC successfully yet ?
+
+Steffen
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
