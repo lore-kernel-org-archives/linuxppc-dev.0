@@ -1,30 +1,41 @@
-From: Paul Mackerras <paulus@linuxcare.com>
-To: linuxppc-dev@lists.linuxppc.org, Geert Uytterhoeven <geert@linux-m68k.org>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [linux-fbdev] Retrace
-Date: Wed, 9 Feb 2000 13:45:15 +1100
-Content-Type: text/plain
-References: <Pine.LNX.4.05.10002081101510.27293-100000@callisto.of.borg>
+Message-ID: <20000209033740.16824.qmail@web1701.mail.yahoo.com>
+Date: Tue, 8 Feb 2000 19:37:40 -0800 (PST)
+From: Gabriel Ricard <g_ricard@yahoo.com>
+Subject: PowerPC Open Platform
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Message-Id: <00020913455600.26444@argo.linuxcare.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 08 Feb 2000, Geert Uytterhoeven wrote:
+I had a chance to talk with some IBM folks at LWCE
+last week about the PowerPC Open Platform reference
+boards. For some reason this time around there were no
+IBM employees on hand, who were working on the
+project, displaying information about it. At the last
+LWCE they had one of the boards there, literature, and
+knowledgeable folks ready to answer questions. This
+time... nada.
 
-> Nope. But perhaps we should remove the #if !defined(CONFIG_PPC) around the
-> port operations in drivers/char/mem.c?
+Anyways... The first guy I talked with thought I was
+asking about RS/6000s, and so I had to find someone
+else. But when I talked with the both of them the most
+information that I could get was that, to the
+knowledge of these two employees, the POP boards have
+already been licensed to mainboard manufacturers and
+it is just a matter of time until we start seeing them
+pop up.
 
-Sounds like a good way to get machine checks to me.  But then only root can
-do it so maybe it doesn't matter.
+I don't know if anyone else can verify this
+information, but I would be very pleased if I were
+able to purchase a POP board and build myself a nice
+PPC box at some point this year.
 
-Paul.
 
---
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+
+=====
+Gabriel Ricard
+g_ricard@yahoo.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
