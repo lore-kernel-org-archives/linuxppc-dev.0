@@ -1,63 +1,42 @@
-Message-ID: <3716103B.E1F6D4C4@email.com>
-Date: Thu, 15 Apr 1999 12:13:48 -0400
-From: Luke Andrews-Hakken <landrews@email.com>
-Reply-To: landrews@email.com
+Date: Thu, 15 Apr 1999 18:54:13 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Franz Sirl <Franz.Sirl@munich.netsurf.de>
+cc: costabel@wanadoo.fr, Tom Rini <tmrini@ntplx.net>,
+        linuxppc-dev@lists.linuxppc.org, bug-gnuplot@dartmouth.edu
+Subject: Re: [Patch] linuxppc gnuplot segfaults in save
+In-Reply-To: <4.2.0.32.19990415155955.03c13080@mail.lauterbach.com>
+Message-ID: <Pine.HPP.3.96.990415183406.1720B-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: Booting IDE B&W G3. (it's easy!)
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Okay this is the third time I have tried sending this message. I don't
-know what the problem is but if you get multiple copies I'm sorry.
-
-It is most definately possible to boot linuxppc with the new kernal on a
-B&W. I know I'm sitting here right now in X and I'm happy to be back.
-Okay here's the deal:
-
-first off. You Must have a second IDE Hard Drive. I'm useing an old 2GB
-from a motorola Starmax. (i don't know the model, it just has an OEM
-sticker on it). The hard drive is sitting in the Zip slot with the
-pre-installed apple IDE cable running into it.
-
-2) Use the kernal linked from www.linuxppc.org/news/BlueG3.shtml
-
-3) You'll need bootX of course. And the ram disk. And the utils.sit that
-are listed in the imac install. MAKE SURE YOU FTP THESE IN BINARY
-FORMAT. Also place the folder in / on your mac partition. (I.E. not on
-the desktop).
-
-4) Rename the vmlinux-2.2.1-challenger2.gz to just vmlinux and place it
-in the same directory as BootX. Fire it up with the "no video driver"
-and "use ramdisk" buttons checked. This should dump you into the redhat
-installer.
-
-5)From there on it's gravy. use pdisk to partition. check the packages
-you want. Etc. The installer runs get the packages and bingo. Your
-golden
-
-NOTE: Near the end of the installer it asks you to install the boot
-?blockers? I skipped this because it didn't seem right. Anyway if anyone
-has any idea if this is good or bad tell me.
-
-Also I haven't moved the bootX foler, or any componets from there
-original place. I also have to specify the partition number in the bootx
-window.
-                          /dev/hdb6 <-- for example.
-
-Well that's it good luck guys (and girls) any further questions please
-email me
-
-_luke
-http://raptor.slc.edu/~apex/
-
-( yes I was the guy who compiled linuxppc quake. Don't ask me about that
-right now. It's very painful when a server goes down taking all of your
-data with it).
 
 
+On Thu, 15 Apr 1999, Franz Sirl wrote:
+
+> Hmm, there was a change long ago I think. AFAIR it was due to ABI issues, 
+> but this has probably nothing to do with the bug in question here, which is 
+> a clear compiler bug. While setting up the function prologue it uses a 
+> variable which is not yet setup at this time. The net effect is that the 
+> prologue uses different offsets from the SP than the rest of the function :-(.
+
+Quite bad :-(
+
+> BTW, Gabriel, the latest gas snapshots (990413/14) contain a PPC related 
+> patch from you. Do you consider your patch a bugfix or an extension? I 
+> currently use the 990403 snapshot for R5 and don't wanna upgrade again 
+> before R5 release, unless it's a bugfix.
+
+IMHO there was a bug and I fixed it: my copy if the SYSV ABI claims that
+relocation type R_PPC_SECTOFF (value 33) is 16 bit wide and not 32.  I
+needed it for some glue assembly code compiled with -mrelocatable option.
+You may consider it as an obscure case: it was considered as 32 bit and
+nobody noticed, AFAIK the compiler never generates this kind of relocation
+(and when I upgrade to R5 I shall keep my copy of binutils around).
+
+	Gabriel.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
