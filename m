@@ -1,46 +1,114 @@
-Subject: Re: Problems using shared library in corss environment
-To: sugenius@doit.ajou.ac.kr (Seong-kyu Ko)
-Date: Tue, 22 Aug 2000 11:34:11 +1000 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.21.0008220121070.24904-100000@doit.ajou.ac.kr> from "Seong-kyu Ko" at Aug 22, 2000 01:22:29 AM
+Message-ID: <001a01c00be6$c5e3d400$4607a8c0@LocalHost>
+From: "Gong Zhuo" <gongzhuo@163.net>
+To: "Linux PPC Mailing List" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Fw: How to caculate the MIPS of my MVME2600?
+Date: Tue, 22 Aug 2000 11:12:02 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000822013411.88448206@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+Content-Type: text/plain;
+	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Seong-kyu Ko writes:
-> First, I compile the binutils for powerpc cpu.
-> Second, I build cross compiler with gcc.
-> Third, I compile glibc for powerpc with cross compiler that I made.
-> Last, I re-build cross compiler include glibc for library.
+----- Original Message -----
+From: Gong Zhuo <gongzhuo@163.net>
+To: Gong Zhuo <gongzhuo@163.net>
+Sent: Tuesday, August 22, 2000 11:10 AM
+Subject: Fw: How to caculate the MIPS of my MVME2600?
 
-OK, sounds good.
 
-> but I compile shell with shared labrary, it use ld.so.1 and libc.so.6
-> The problem is ld.so.1 can't found libc.so.6
-> The error message is this :
-> 'error in loading shared libraries: libc.so.6: cannot open shared object
-> file: No such file or directory'
+>
+> ----- Original Message -----
+> From: Gong Zhuo <gongzhuo@163.net>
+> To: linuxppc dev <linuxppc-dev@lists.linuxppc.org>
+> Sent: Monday, August 21, 2000 4:20 PM
+> Subject: How to caculate the MIPS of my MVME2600?
+>
+>
+> > Hi:
+> >    I am developing program under MVME2600. But I found the program is
+not
+> as
+> > fast as I think. So I tested my computer board using the mothed like
+this
+> > and get some impossible results:
+> >
+> >   * fill the mem from 0x4000 to 0x8000 with instruction 'or r0,r0,r0'
+> >   * DEC ==> r3, us counter value ==> r13 at 0x4000
+> >   * DEC ==> r4, us counter value ==> r14 at 0x8000
+> >   * breakpoint at 0x8008
+> >   * go from 0x4000
+> >
+> > The display of PPCbug like this:
+> >
+> > Copyright Motorola Inc. 1988 - 1997, All Rights Reserved
+> >
+> > PPC1 Debugger/Diagnostics Release Version 3.5 - 01/30/98 RM01
+> > COLD Start
+> >
+> > Local Memory Found =04000000 (&67108864)
+> >
+> > MPU Clock Speed =200Mhz
+> >
+> > BUS Clock Speed =67Mhz
+> >
+> > WARNING: Keyboard Not Connected
+> >
+> > Reset Vector Location  : ROM Bank A
+> > Mezzanine Configuration: Single-MPU
+> > Current 60X-Bus Master : MPUIdle MPU(s)            : NONE
+> >
+> > System Memory: 64MB, ECC Enabled (ECC-Memory Detected)
+> > L2Cache:       256KB
+> >
+> > PPC1-Bug>
+> >
+> > PPC1-Bug>bf 4000:4000 7c000378 ;w
+> > Effective address: 00004000
+> > Effective count  : &65536
+> > PPC1-Bug>as 4000
+> > 00004000 3D80FEF8  ADDIS       R12,R0,$FEF8?
+> > 00004004 81AC0100  LWZ         R13,$100(R12) ($00000100)
+> > 00004008 7C7602A6  MFSPR       R3,22
+> > 0000400C 7C000378  OR          R0,R0,R0? .
+> > PPC1-Bug>as 8000
+> > 00008000 7C9602A6  MFSPR       R4,22
+> > 00008004 81CC0100  LWZ         R14,$100(R12) ($00000100)
+> > 00008008 7C000378  OR          R0,R0,R0? .
+> > PPC1-Bug>br 8008
+> > BREAKPOINTS
+> > 00008008
+> > PPC1-Bug>g 4000
+> > Effective address: 00004000
+> > At Breakpoint
+> > IP     =00008008 MSR    =00003040 CR     =00000000 FPSCR  =00000000
+> > R0     =00000000 R1     =03F78000 R2     =00000000 R3     =3F0A7D37
+> > R4     =3F0A64CE R5     =00000000 R6     =00000000 R7     =00000000
+> > R8     =00000000 R9     =00000000 R10    =00000000 R11    =00000000
+> > R12    =FEF80000 R13    =0BF88E8D R14    =0BF89008 R15    =00000000
+> > R16    =00000000 R17    =00000000 R18    =00000000 R19    =00000000
+> > R20    =00000000 R21    =00000000 R22    =00000000 R23    =00000000
+> > R24    =00000000 R25    =00000000 R26    =00000000 R27    =00000000
+> > R28    =00000000 R29    =00000000 R30    =00000000 R31    =00000000
+> > SPR0   =00000000 SPR1   =00000000 SPR8   =00000000 SPR9   =00000000
+> > 00008008 7C000378  OR          R0,R0,R0
+> > PPC1-Bug>
+> >
+> >
+> > The result:
+> > r4 -r3 = 0x1869 , r14 - r13 = 0x17B (379us) . There are 0x1000 asm
+> > instruction from 0x4000 to 0x8000 (4096), than the MIPS = 4096/379 =
+> 10MIPS
+> > . It's impossilbe because the MPU is 200Mhz and bus is 67Mhz. The MIPS
+> > should be higher than 200MIPS.
+> >
+> >   I have made some mistakes? What are they?
+> >
+> >
+> >
+> >
+> >
+>
 
-In order to find libc.so.6 on the host, I found that I needed to edit
-$prefix/powerpc-linux/lib/libc.so to use an absolute path to refer to
-$prefix/powerpc-linux/lib/libc.so.6.  For some reason, gcc wouldn't find it
-otherwise, even when I specified --rpath.
-
-Next, to ensure that the dynamic linker could find libc.so.6 in the right
-place on the target, I edited $prefix/lib/gcc-lib/powerpc-linux/2.95.2/specs
-to add this right after -dynamic-linker:
-    --rpath /lib --rpath-link /opt/gcc-2.95.2/powerpc-linux/lib
-
-Good luck,
-Graham
---
-Graham Stoney
-Principal Hardware/Software Engineer
-Canon Information Systems Research Australia
-Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
