@@ -1,107 +1,73 @@
-Date: Tue, 27 Mar 2001 22:31:29 +0100
-Subject: Re: Sound stoppage
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Takashi Oe <toe@unlserve.unl.edu>
-Cc: "Michael R. Zucca" <mrz5149@acm.org>, phandel@cise.ufl.edu,
-	"linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010327213129.672B0DBA03@atlas.valhalla.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dan Malek <dan@mvista.com>, <linuxppc-commit@fsmlabs.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: PVR hell
+Date: Wed, 28 Mar 2001 00:51:38 +0200
+Message-Id: <20010327225138.22949@smtp.wanadoo.fr>
+In-Reply-To: <3AC0EF44.E2BCE2F6@mvista.com>
+References: <3AC0EF44.E2BCE2F6@mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Takashi,
-On Tue, Mar 27, 2001, Takashi Oe wrote:
-> On Tue, 27 Mar 2001, Iain Sandoe wrote:
 >
->> Well, when I first started "looking after" the driver I though this too.
->>
->> but... the status in the controller relates to the currently active dbdma
->> command (I believe - please correct me if you know better ;-).
->>
->> When we get the IRQ for the command completion - a new chained cmd may (in
->> fact *should* if sound is not to have breaks)  have started.
->>
->> Therefore we *must* look at the stored result - because the one in the chip
->> doesn't have any relationship to the IRQ we are handling.
->>
->> The same would apply to *any* dbdma work that involved chained commands
->> AFAICT.
->
-> Yes, in theory  :)  It doesn't apply to bmac case as I noted previously.
-> I think it's better to check cmdptr register of dbdma channel for finding
-> out how far ahead dbdma is.
+>I think we should just continue the ppc_md indirect function call
+>concept and just use it earlier in the kernel for more things.  All
+>of the low level initialization in 'head.S' or other processor specific
+>things in other files should just be indirect fucntion calls that are
+>processor specific.  Sure makes porting and understanding the software
+>much easier.
 
-I think this is a good point... if I compare them and find them equal (like
-in your code snippet) then I can look in the status register safely.  We are
-in the IRQ handler so ints are already masked.
+Well, at one point, we must fill up this function table depending on the PVR
+value. For my immediate Altivec & L2 needs (and for quite a bit of things
+with the "desktop" family of CPUs), a feature bit mask is enough.
 
-I want to implement SNDCTL_DSP_GETI/OPTR soon anyway... so maybe as part of
-that.
+So what I propose is to have head.S parse a table, and when a matching
+CPU is found, call it's init function (pointed to by a table entry) and
+load the feature value from it.
 
-> As for the "DEAD" status, doesn't the dbdma stop right there?
+The init function can then fill other ppc_md fields if needed. That can
+be done
+as a second step
 
-I guess so.  I don't have a PowerComputing machine to check on - I'm relying
-on two other guys helping out with testing...
+I'm not sure however there is real need of completely "virtualizing" CPU
+features as hard as MMU implementation or cache implementation. There is
+a quite clear distinction between embedded CPUs and "desktop" CPUs, and
+I see no immediate need to have a binary kernel that can run them all.
+(I may be wrong here, please correct me if I am).
 
->I'd think
-> looking at "status" register would suffice.  Is "xfer_status" field
-> serving any other purpose in your fix possibly?
+For now, my primary concern is about things that will affect the desktop
+systems, especially the powermacs using the whole range of PPC "32 bit
+desktop" CPUs from 601 to 7450. I don't think it's wise to try to have
+a common binary kernel that support both those and 4xx and 8xx.
 
-I suspect you are right - and I don't remember if I actually read the status
-register in my fix (I'm not on that machine right now)... I might well do.
+But it can be done if you really want. My proposed init table allow you
+to implement it on top of it.
 
-However, the effect will only be noticed after the loop check the
-xfer_status field and finds that it shows "DEAD" (IIRC).
+A typical table layout would be:
 
->> Well, if we get horrendous IRQ hold-offs then maybe - but at the moment I
->> think that the residue information stored in the dbdma command buffer will
->> do.
->
-> There is usually a res_count register (not the dbdma_cmd one) associated
-> with each dbdma channel somewhere.  IIRC, unless dbdma is "FLUSH"ed, the
-> res_count value may be off a bit.
+ u32    pvr_mask;
+ u32    pvr_value;
+ u32    feature_bits;
+ void   (*init_cpu)(void)
+ char*  name;
 
-Yes, OK that might be worth looking at - I'll see what I've done in my fix.
+The head.S code would then iterate the table, checking if
 
->> > Is it not possible to "fix" the command in place and let DBDMA go?
->>
->> That was my original idea too... but...
->>
->> It gets messy to do that - because the buffer start addresses are assigned
->> in XXXX_dbdma_setup()
->
-> What happes if you just issue (RUN|WAKE|PAUSE|DEAD)<<16|(RUN|WAKE) to
-> dbdma control register when DEAD condition is detected?  I wonder if it's
-> possible to let dbdma pick up where it left off without touching any dbdma
-> command..
+ (PVR & pvr_mask) == pvr_value
 
-I wish I knew whether it would resume... it's not clear from the
-documentation I've got... (the IBM stuff).
+And when found, would copy feature_bits to a global, eventually the table
+entry as well (to get the CPU name and whatever other stuffs we want to
+put in the table for this CPU), and call the init_cpu function.
 
-If it would, then we could save all this hassle completely...
+If you want to fill additional ppc_md entries from init_cpu(), then
+you are free to do it ;)
 
-BTW: I don't *think* it does because one of my testers tried a similar
-method to the one you proposed and said it chopped up/repeated sound.
+For now, I want something simple that can fit in _2_4 easily
 
-anyone else know?
+Ben.
 
->> a spare dbdma command block costs 16 bytes of memory.
->
-> Not 32?  No branch back to original command table?
-
-duh ;-) bad memory - should have looked at the code (it's just allocated as
-a standard dbdma cmd block - same as the others).
-
-Anyway I was, exaggerating a bit - because there's another 4 bytes for the
-pointer to the cmd ;-)))
-
-but the point was that I don't think the extra memory usage for this comes
-anywhere near what would be required for a fix based on re-setting the base
-addresses each time.
-
-ciao,
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
