@@ -1,8 +1,10 @@
-Message-ID: <002c01c3399b$51924380$7400a8c0@CCH>
-From: "Christian Charreyre - CIO" <christian.charreyre@cioinfoindus.fr>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Problem with 8250 in promiscuous mode : Ethernet received frames losts
-Date: Mon, 23 Jun 2003 17:22:53 +0200
+Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158D3A@norcom2.norcom.net>
+From: Lokesh Kumar <lokesh.kumar@wrx-us.com>
+To: "'li'" <slowforce@21cn.com>,
+	Lokesh Kumar <lokesh.kumar@wrx-us.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Booting linux on MPC custom Board
+Date: Mon, 23 Jun 2003 12:52:13 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -10,46 +12,62 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm working with a custom board based on 8250 PPC.
-It's using the fcc_enet.c driver on Linux 2.4.18 from Elinos distribution
-(version 0.3 of the driver).
+Thanks a lot. I am going to follow your advice and start rolling.
 
-I face the following problem :
+Lokesh
 
-When sending 802.3 frames from a PowerMac, and receiving them on my custom
-board in promiscuous mode, about 10% of the frames are lost.
-
-Does anyone know if the driver has bugs when working in promiscuous mode,
-that could explain such a phenomen ?
-
-Is this version of the driver the up to date version (looking in sources
-from RedHat Linux 9 for PPC, it seems that the driver version is only 0.2) ?
-
-Thanks for help or hints.
+-----Original Message-----
+From: li [mailto:slowforce@21cn.com]
+Sent: Monday, June 23, 2003 12:45 PM
+To: Lokesh Kumar
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Booting linux on MPC custom Board
 
 
-Christian Charreyre
+Hi Kumar,
+1. change the TEXT_BASE definition in the
+   board/yourboardname/config.mk to pointer to sdram
+   base
+2. change the CFG_FLASH_BASE and CFG_MONITOR_BASE
+   definition to that address in the
+   include/config_yourboardname.h
+3. comment the BR0 reset in section in
+   cpu/mpc8xx/cpu_init.c
+4. comment the sdram init function(initdram), just set
+   the ram size manually
+now, you can compile the ppcboot, and download the ppcboot.bin to the
+address which the TEXT_BASE point to and make it run.
+Good Luck!
+Li
 
---
-
-
-CIO Informatique Industrielle
-
-11 Avenue Marigny
-13014 Marseille
-
-Tél : 04 95 05 19 41
-Fax : 04 95 05 19 42
-
-
-1 rue de la Presse - BP 710
-42950 St Etienne Cedex 9
-
-Tél : 04 77 93 34 32
-Fax : 04 77 79 75 55
-
-mailto:christian.charreyre@cioinfoindus.fr
-http://www.cioinfoindus.fr
-
+>
+> Hi,
+> I have a custom board with a custom bootloader. The board is based on
+> MPC855T, with 8MB flash and 32MB RAM.
+>
+> I have to boot linux on this board. The issue I have is this - I have to
+use
+> the custom bootloader (to be able to boot older app as well). I think I
+have
+> two ways to go -
+>
+> 1. Custom bootloader enhanced to be able to load Linux. I do not think it
+is
+> faster approach given the time required.
+>
+> 2. Tell custom bootloader to load another bootloader like PPCBOOT (U-BOOT)
+> and then let it load Linux. Now, to go this route, I will have to run
+> PPCBOOT from RAM. Reading documentation of PPCBOOT, it says that it runs
+> from FLASH and relocates itself to RAM.
+> 	How can run PPCBOOT from RAM directly and then tell it to load
+> Linux?? Any HELP would be appreciated.
+>
+>
+> Lokesh Kumar
+> Wireless Matrix USA Inc.
+> 703-262-4032
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
