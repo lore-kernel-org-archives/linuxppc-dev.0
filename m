@@ -1,101 +1,98 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-Id: <sea6b726.000@mail.frequentis.com>
-Date: Wed, 23 Apr 2003 15:54:07 +0200
-From: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: PCMCIA Porting
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Wed, 23 Apr 2003 15:55:55 +0200
+Message-Id: <200304231355.h3NDttq00868@mailgate5.cinetic.de>
+MIME-Version: 1.0
+From: "Frank Haverkamp" <f.haverkamp@web.de>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Behaviour of consistent_{alloc|free}
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi!
+Hi,
 
-The last 2 weeks I worked full time on PCMCIA. We have a custom board with a MPC860T 10/100MBit Ethernet one PCMCIA slot 8MB flash and 32MB RAM.
+I am working with a PowerPC 405 based asic having PCI_DRAM_OFFSET to be defined not to be zero.
+I was using consistent_alloc to get a memory area to be used by my ethernet driver for its descriptor tables.
 
-First at all: It works now fine. And I want to thank everyone who posted information to this issue (Magnus Damm, Matthew Locke, Wolfgang Denk and all others). But this the point for my mail:
-It was/is very difficult to get all needed information, to get it to work, so I want to list my steps there, that it is maybe easier to do this work again.
+consistent_alloc returned a virtual address and the address on my pci bus. The address on the bus was
+returned correctly, but the mapping consistent_alloc was working was not like I expected it.
+It maps the virtual address to an address on the bus and not to the real address of my DRAM.
+A mapping to the real address in DRAM is, what I wanted to have. I tried to do a virt_to_phys
+on the virtual address, but got, again, the address on the bus. And a bus_to_phys I could not find ;-)
 
-O.K. here is a history of my work:
+Now I wondered, how consistent_free could work, since consistent_alloc did a get_free_pages, but did not store the physical address of that buffer somewhere. Instead it stored the bus address. I did the following experiment:
 
-I linked the pcmcia stuff directly to the kernel (driver/pcmcia), because I think I understand it right Wolfgang, your PCMCIA onyl works if PPCBoot setup the PCMCIA port. But we don't use PPCBoot (shame about that .... ) and it seems to be to complicated/more work to add the whole stuff into our boot up sequence. I know that we loose the possibilty to mount root from a flash card, but we could live with that. Maybe Wolfgang has another hint for me ... :-)
+TEST TEST TEST ...
+DESCR: virt_addr=0xc7b82000 bus_addr=0xf6e6b000
+       phys_addr=0xf6e6b000 pci_dram_offset=0xf4000000
+DESCR: virt_addr=0xc7b82000 bus_addr=0xf6e6a000
+       phys_addr=0xf6e6a000 pci_dram_offset=0xf4000000
+DESCR: virt_addr=0xc7b82000 bus_addr=0xf6e91000
+       phys_addr=0xf6e91000 pci_dram_offset=0xf4000000
+DESCR: virt_addr=0xc7b82000 bus_addr=0xf6e90000
+       phys_addr=0xf6e90000 pci_dram_offset=0xf4000000
+DESCR: virt_addr=0xc7b82000 bus_addr=0xf6e29000
+       phys_addr=0xf6e29000 pci_dram_offset=0xf4000000
+DESCR: virt_addr=0xc7b82000 bus_addr=0xf6e28000
+       phys_addr=0xf6e28000 pci_dram_offset=0xf4000000
 
-However, I start of course where everyone startet:
+I was wondering if that can be correct, since I am allocating the same amount of memory all the time and returning it immediatly after doing that. So I would expect, that the function returns the same physical and bus addresses again, since I expect it to be deterministic.
 
-http://lists.linuxppc.org/linuxppc-embedded/200002/msg00093.html and http://lists.linuxppc.org/linuxppc-embedded/200005/msg00227.html.
+After thinking about it I modified consistent_alloc in the following way:
 
-We portet also the mvista kernel 2.4.2 to the denx kernel 2.4.4
-Then I add the _IO_BASE etc to the board specific h file and ioremap it as desribed (arch/ppc/kernem/mm/init.c)
+        ....
+        /* Allocate some common virtual space to map the new pages.
+        */
+        area = get_vm_area(size, VM_ALLOC);
+        if (area == 0) {
+                free_pages(page, order);
+                return NULL;
+        }
+        va = VMALLOC_VMADDR(area->addr);
+        ret = (void *)va;
 
--Fine-
-
-Next step was to add the m8xx_pcmcia.c file to drivers/pcmcia and adapt the Config.in and Makefile. Then I do the board specific stuff for power supply in m8xx_pcmcia.c. Till now everything works fine.
-
-But from this point on it becomes difficult, because from now on the interrupts comes up.
-
-The first issue was in cs.c in drivers/pcmcia in the function pcmcia_request_irq
-
-     /* Short cut: if there are no ISA interrupts, then it is PCI */
-#if 0
-    if (!s->cap.irq_mask) {
-	irq = s->cap.pci_irq;
-	ret = (irq) ? 0 : CS_IN_USE;
-        printk("Uhu: %08x %08x\n",s->cap.irq_mask,s->cap.pci_irq);
+        /* This gives us the real physical address of the first page.
+        */
+#if defined(WITH_MY_FIX)
+        *dma_handle = virt_to_bus(page);
+        pa = virt_to_phys(page);
+#else
+        *dma_handle = pa = virt_to_bus(page);
 #endif
-    if (s->cap.irq_mask == (1 << s->cap.pci_irq)) {
-	irq = s->cap.pci_irq;
-        printk("Uhu: %08x %08x\n",s->cap.irq_mask,s->cap.pci_irq);
-#ifdef CONFIG_ISA
-    } else if (s->irq.AssignedIRQ != 0) {
-	/* If the interrupt is already assigned, it must match */
-	irq = s->irq.AssignedIRQ;
-	if (req->IRQInfo1 & IRQ_INFO2_VALID) {
-	    u_int mask = req->IRQInfo2 & s->cap.irq_mask;
-	    ret = ((mask >> irq) & 1) ? 0 : CS_BAD_ARGS;
-	} else
-	    ret = ((req->IRQInfo1&IRQ_MASK) == irq) ? 0 : CS_BAD_ARGS;
-    } else {
-	ret = CS_IN_USE;
-	if (req->IRQInfo1 & IRQ_INFO2_VALID) {
-	    u_int try, mask = req->IRQInfo2 & s->cap.irq_mask;
-	    for (try = 0; try < 2; try++) {
-		for (irq = 0; irq < 32; irq++)
-		    if ((mask >> irq) & 1) {
-			ret = try_irq(req->Attributes, irq, try);
-			if (ret == 0) break;
-		    }
-		if (ret == 0) break;
-	    }
-	} else {
-	    irq = req->IRQInfo1 & IRQ_MASK;
-	    ret = try_irq(req->Attributes, irq, 1);
-	}
-#else /* Right now m8xx specific */
-    } else if (s->irq.AssignedIRQ != 0) {
-	/* If the interrupt is already assigned, it must match */
-	irq = s->irq.AssignedIRQ;
-	if (req->IRQInfo1 & IRQ_INFO2_VALID) {
-	    mask = req->IRQInfo2 & s->cap.irq_mask;
-	    ret = ((mask >> irq) & 1) ? 0 : CS_BAD_ARGS;
-	} else
-	    ret = ((req->IRQInfo1&IRQ_MASK) == irq) ? 0 : CS_BAD_ARGS;
-    } else {
-	    ret = 0;
-	    irq = 7; //SIU_LEVEL4
-#endif
-    }
 
-The #if 0 and #if CONFIG_ISA tree is the original one, and the #else /*Right now m8xx specific */ part was taken from sourceforge pcmcia-cs 3.2.4.
+        flags = _PAGE_KERNEL | _PAGE_NO_CACHE;
 
-The last point was the request_irq function. I don't change the defines in the h files, I change the function itself: arch/ppc/kernel/ppc8xx_pic.c. There (in request_irq) I call always the request_8xxirq function.
+        err = 0;
+        for (i = 0; i < size && err == 0; i += PAGE_SIZE)
+                err = map_page(va+i, pa+i, flags);
+        ....
 
->From now on it works. I used for the first steps the file system from the eldk and copy then the necessary files (cardctl, cardmgr, scripts) to our filesystem.
+Now the returned mapping done to the physical memory instead of the bus addresses, which I cannot access directly on my system. Now my system can perform the consistent_free function correctly and it prints:
 
-I hope I didn't forget anything, please tell me if I've done a lot of nonsense, and I hope this will help in future if anyone has to do these steps anyway
+DESCR: virt_addr=0xc7b82000 bus_addr=0xf6e53000
+       phys_addr=0x02e53000 pci_dram_offset=0xf4000000
+DESCR: virt_addr=0xc7b82000 bus_addr=0xf6e53000
+       phys_addr=0x02e53000 pci_dram_offset=0xf4000000
+DESCR: virt_addr=0xc7b82000 bus_addr=0xf6e53000
+       phys_addr=0x02e53000 pci_dram_offset=0xf4000000
+DESCR: virt_addr=0xc7b82000 bus_addr=0xf6e53000
+       phys_addr=0x02e53000 pci_dram_offset=0xf4000000
+DESCR: virt_addr=0xc7b82000 bus_addr=0xf6e53000
+       phys_addr=0x02e53000 pci_dram_offset=0xf4000000
+DESCR: virt_addr=0xc7b82000 bus_addr=0xf6e53000
+       phys_addr=0x02e53000 pci_dram_offset=0xf4000000
 
-best regards
-Gerhard
+Which I consider to be ok. If I observed that correctly, consistent_alloc has a memory leak and strange things may happen if consistent_free is called. Any opinions on that?
+
+
+Frank Haverkamp
+
+--
+Frank Haverkamp
+f.haverkamp@web.de
+______________________________________________________________________________
+UNICEF bittet um Spenden für die Kinder im Irak! Hier online an
+UNICEF spenden: https://spenden.web.de/unicef/special/?mc=021101
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
