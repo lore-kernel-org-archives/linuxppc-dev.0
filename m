@@ -1,80 +1,31 @@
-Message-Id: <5.1.0.14.2.20011030114337.03089370@mail.lauterbach.com>
-Date: Tue, 30 Oct 2001 11:49:44 +0100
-To: paulus@samba.org
-From: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>
-Subject: Re: floating-point under ppc/linux
-Cc: linuxppc-dev@lists.linuxppc.org,
-	Geoff Keating <geoffk@geoffk.org>
+Message-ID: <XFMail.20011030123800.pochini@shiny.it>
+Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
 In-Reply-To: <15326.8355.242681.874353@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Date: Tue, 30 Oct 2001 12:38:00 +0100 (CET)
+From: Giuliano Pochini <pochini@shiny.it>
+To: Paul Mackerras <paulus@samba.org>
+Subject: RE: floating-point under ppc/linux
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 04:38 30.10.2001, Paul Mackerras wrote:
+> In other words, if a program blocks SIGFPE, does something that
+> generates a floating-point exception, then clears the exception status
+> in FPSCR, then unblocks SIGFPE, should it get a SIGFPE signal
+> delivered to it at that point ?
 
->Is there anyone on this list who does, or wants to do, serious
->floating point computations on PPC?  I know that our FP exception
->handling is a bit, um, deficient and I would like to fix it, but I
->would like some advice about what would be the most useful way to have
->it work.
->
->I am thinking that the FE0 and FE1 bits in the MSR will be set
->according to the disposition of the SIGFPE signal: SIG_IGN => 00
->(disabled), SIG_DFL => 01 (imprecise nonrecoverable mode), user
->handler => 10 (imprecise recoverable mode).
->
->What I am not sure about is whether we should change FE0/FE1 when
->SIGFPE is blocked.  Consider the case where SIGFPE has a user
->handler and an FP exception occurs.  The cpu will take an FP exception
->whenever the FEX bit in the FPSCR is set and (FE0 | FE1) is true.  So
->we take the exception, generate the SIGFPE signal and deliver it,
->which involves setting up the stack frame etc. for running the SIGFPE
->handler in userspace.
->
->Now during the execution of the signal handler, to avoid taking
->continual FP exceptions we need to do one of two things: either set
->FE0/FE1 to 00 in the MSR, or clear the FEX bit in the FPSCR.  Since
->the FEX bit is not directly writable (it's just the OR of the AND of
->the each of the exception status bits with the corresponding enable
->bit), we would need to either clear the status bit or the enable bit
->for the exception that occurred.
->
->I don't like the idea of the kernel changing the FPSCR.  Clearing the
->status bit means that the SIGFPE handler can't easily find out what
->exception occurred.  And clearing the exception enable bit will change
->the behaviour of various FP operations.
->
->On the other hand, running with FE0/1 = 00 means that we have to take
->account of whether SIGFPE is blocked, as well as its disposition, in
->determining what to set FE0/1 to.
->
->At a deeper level, when do we consider that the SIGFPE signal is
->generated?  Is it generated whenever FEX is set, even if SIGFPE is
->blocked at that time?  If that is the case, then SIGFPE will be
->generated afresh after it is delivered since there will be a time when
->the signal handler is running and has not yet cleared FEX.  Or is the
->signal generated only when FEX is set and SIGFPE is not blocked?
->
->In other words, if a program blocks SIGFPE, does something that
->generates a floating-point exception, then clears the exception status
->in FPSCR, then unblocks SIGFPE, should it get a SIGFPE signal
->delivered to it at that point?
->
->Finally, is it reasonable to say that it is the responsibility of the
->signal handler to clear FEX, by clearing either the status or enable
->bit for the exception that occurred?
->
->Opinions?
+AFAIK posix says that blocked signals have to be queued (at least one
+of them) and that signals have to be delivered when those signals are
+unblocked. I don't know if it makes sense about hardware signals, but
+that's the spec.
 
-I've cc'ed Geoff, as he probably knows this stuff by heart. Especially the
-interactions with glibc may be a problem, cause currently glibc is forced
-to change FE0/1 via generating a signal _in_ glibc, which is certainly not
-a nice thing. A syscall to change FE0/1 from userspace should be added to
-the kernel probably.
+I agree with the signal modes you proposed, but you should also
+allow the user to set the 11 mode in some way. Debuggers could need that.
 
-Franz.
+
+Bye.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
