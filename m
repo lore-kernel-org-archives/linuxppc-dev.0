@@ -1,66 +1,59 @@
-Message-ID: <38FF238C.C0DD8140@embeddededge.com>
-Date: Thu, 20 Apr 2000 11:34:36 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <38FF3543.19894457@adtran.com>
+Date: Thu, 20 Apr 2000 11:50:11 -0500
+From: Ron Flory <ron.flory@adtran.com>
 MIME-Version: 1.0
-To: W4OQM@aol.com
+To: Gabriel Paubert <paubert@iram.es>
 CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Re^2: char type is unsigned with PPC gcc?
-References: <c9.39dbd77.262faf77@aol.com>
+Subject: Re: char type is unsigned with PPC gcc?
+References: <Pine.HPX.4.10.10004192203100.19933-100000@gra-ux1.iram.es>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-W4OQM@aol.com wrote:
+Hi-
 
-> How about:
+ Despite the strongly worded exchanges, this isn't really a big deal.
+We all have opinions, which is good.  So long as the compiler lets us
+config it the way we think it should be, then I'm happy.
+
+ There are some problems with chars having different signed'ness, such
+as many of the GNU tools not compiling correctly on some platforms
+though-
+
+Gabriel Paubert wrote:
 >
-> #define BIT_8_OF_BYTE   (1<<0)
-> #define BIT_8_OF_WORD   (1<<8)
-> #define BIT_8_OF_LONG   (1<<24)
+> No, God meant bit 0 to be the MSB ;-) There is no other way around.
+> Personnally I always think in big endian with bits numbered from MSB to
+> LSB.
 
-Whoa there, youngster.....let the old man tell you a story.
-There is computing equipment in the world where a byte is not
-eight bits, a word is not two bytes, and so on.
+ Ummm, endianness has nothing to do with bit ordering from MSB->LSB, it
+refers to the order BYTES (or the minimum quanta of assessable data) are
+ordered in memory when accessing multi-byte values.  On big-endian
+machines the 2-bytes value 0x1234 is stored sequentially as 0x12, 0x34,
+whereas little-endian machines store it at 0x34, 0x12.  Notice the bits
+in these bytes are not 'mirrored' as you suggest.
 
-Left to right (big endian) bit numbering works just fine on
-these computers, as it does on all big endian machines.
+ All CPUs I'm aware of (even the PPC) correctly refer to the LSB as
+being the rightmost bit, being consistent with the conventions of number
+theory and representation, however the PPC is (almost) unique, and
+incorrect in labeling the LSB as D31 instead of D0.
 
-On big endian byte ordered machines, you also want big endian
-bit ordering.  If I load some address as a byte, word, long word
-or whatever, bit 6 is still bit 6.  You probably don't remember
-the bit instruction mess when Motorola added that to the '020......
+> Brain damage is believing that the fact that bit n represents 2 to the
+> n has any advantage or mathematical weight.
 
-If you had a programming language that supported bit array objects,
-how would you index the array?  How would that map into larger
-objects?
+ Actually not.  The association of data bits Dn as representing 2^n is a
+fundamental identity in computer science, electrical engineering, and
+mathematics.  A binary numerical value is defined as a polynomial of the
+form 2^n-1 + 2^n-2 + n^n-3 + .... 2^0.  The fact that IBM chose to
+ignore Mr. Boole's work is an unfortunate historical oversight that we
+are stuck with.
 
+> Ok, I have very strong and definitive opinions about these questions, so
+> let us agree to disagree. I don't expect to convince you anyway...
 
-> ...  Personally, the left-to-right bit numbering drives me nuts.
+ That's OK, I wish you well.  I've got this out of my system now...  ;)
 
-
-That's because you are worried about the implementation details and
-not solving the data communication application.  Look at flow of
-bits through a data communication system.  Serial stream, left to
-right.  Start numbering bits anywhere, stop anywhere, left to right
-makes perfect sense.  Map any aribitary object on top of the bits,
-still makes sense.  Look at coding theory and the algorithms they
-write...left to right bit ordering.
-
-The 2^n bit numbering is a mathematical convenience that can be
-easily hidden behind programming language macros or functions.  I have
-seen very little code make use of this convenience, while the real
-world data, mathematics, and computer science theory usually use
-big endian bit numbering.
-
-> ....  If God
-> meant bit numbering to start on the left, she'd have started with 1.
-
-You better read some of the bibles from the beginning of computer time.
-Lots of smart people provided insights into these discussions a very
-long time ago.
-
-
-	-- Dan
+ron
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
