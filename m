@@ -1,63 +1,38 @@
-Message-ID: <A33AEFDC2EC0D411851900D0B73EBEF7063E50@NAPA>
-From: Hua Ji <hji@netscreen.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: cross-compier with gcc
-Date: Wed, 17 Jan 2001 11:06:44 -0800
+Message-ID: <3A65F8AE.B702417F@mvista.com>
+Date: Wed, 17 Jan 2001 11:55:26 -0800
+From: Frank Rowand <frank_rowand@mvista.com>
+Reply-To: frowand@mvista.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Ramzi Maalouf <maalouf@pyxsys.net>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: insmod fails HardHat Linux on a Walnut eval kit
+References: <HLEMJIMPGFPIGKHADMOIOECACAAA.maalouf@pyxsys.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, guys,
+Ramzi Maalouf wrote:
+>
+> hello -
+>         I created a hello world module, cross-compiled, and then ran insmod.
+> Insmod causes a segmentation fault.  I ran the strace and this is the
+> output.  Has anybody has any similiar problems, what did you do ?
+>
+> -ramzi
 
-Good morning!
+Are you using the target file system from the "CDK 1.2 IBM PowerPC 405GP
+Targets" or another one (and if so, which one)?
 
-Help needed!
+Which kernel version are you using?
 
-I made a cross compiler on my solaris machine for powerpc-elf target.
-Everything looks fine when I did the make.
+Rev C or Rev D Walnut?
 
-When I used my powerpc-elf-gcc to compile and link my helloworld.c, I got
-some error described below. Basically,
-my helloworld.c is:
---------
-#include <stdio.h>
-void main()
-{
-	printf("Hello World!\n");
-}
---------
+Thanks,
 
-The command line used for compile and link is: powerpc-elf-gcc -v -o
-helloworld helloworld.c
-
-The error is: Can't link printf codes from library!!
-
----------
-GNU assembler version 2.9.1 (powerpc-elf), using BFD version 2.9.1
-
-/export/home4/hji/compilers/powerpc-elf-1-17/lib/gcc-lib/powerpc-elf/2.95.2/
-collect2 -V -Qy -dn -Bstatic
--L/export/home4/hji/compilers/powerpc-elf-1-17/lib/gcc-lib/powerpc-elf/2.95.
-2 -L/export/home4/hji/compilers/powerpc-elf-1-17/powerpc-elf/lib
-/var/tmp/ccAEuQ8q.o
-/export/home4/hji/compilers/powerpc-elf-1-17/lib/gcc-lib/powerpc-elf/2.95.2/
-libgcc.a
-/export/home4/hji/compilers/powerpc-elf-1-17/lib/gcc-lib/powerpc-elf/2.95.2/
-libgcc.a
-/export/home4/hji/compilers/powerpc-elf-1-17/powerpc-elf/bin/ld: warning:
-cannot find entry symbol _start; defaulting to 01800074
-/var/tmp/ccAEuQ8q.o: In function `ppctest':
-/var/tmp/ccAEuQ8q.o(.text+0x20): undefined reference to `printf'
-GNU ld version 2.9.1 (with BFD 2.9.1)
-  Supported emulations:
-   elf32ppc
---------------------
-
-Thanks, guys.
-
-Hua
+Frank
+--
+Frank Rowand <frank_rowand@mvista.com>
+MontaVista Software, Inc
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
