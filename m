@@ -1,34 +1,31 @@
-Date: Tue, 9 Feb 1999 12:59:24 +1100
-Message-Id: <199902090159.MAA04789@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: mavpion@fire.csua.ucla.edu
-CC: linuxppc-dev@lists.linuxppc.org, mavpion@fire.csua.ucla.edu
-In-reply-to: <Pine.LNX.3.96.990201154257.111F-100000@fire.csua.ucla.edu>
-	(message from Eric Guenterberg on Mon, 1 Feb 1999 15:53:25 -0800
-	(PST))
-Subject: Re: Linux 2.2.1 Kernel scsi troubles
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.LNX.3.96.990201154257.111F-100000@fire.csua.ucla.edu>
+Message-Id: <199902090234.TAA26936@mx0-smtp.goodnet.com>
+Date: Mon, 08 Feb 1999 19:34:56 -0700
+Subject: L2CR
+From: "Kyle Nesbit" <kyle.nesbit@asu.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Eric Guenterberg <mavpion@fire.csua.ucla.edu> wrote:
 
-> I recently compiled the the Linux 2.2.1 kernel, but I can't get it to boot
-> because when it is booting it aborts the reading of the harddrive that
-> contains my root partition.
-> 
-> I have a PowerMac 7600/132
-[snip]
-> It says:
-> scsi host 0 aborted
+I am currently looking for some more info on how to get my L2 backside cache
+running.  I am using a powerlogix card.
 
-Could you try the kernel (vmlinux.gz) in
-ftp://samba.anu.edu.au/pub/linux-pmac/test/
-and let me know if it does the same thing?
+I have used the powerlogix/Ben patch posted in the mailing list during Dec.
+The kernel compiled without and error.  When I try to pass the l2cr kernel
+argument I get nothing.  my /proc/sys/kernel/l2cr is 00000000: disabled,
+etc...
 
-Paul.
+Another thing that is strange is in /proc/cpuinfo the clock rate of my chip
+is off by over 100 MHZ.
+
+I would greatly appreciate if someone could point me to more info on the
+subject.
+
+Thanx,
+Kyle
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
