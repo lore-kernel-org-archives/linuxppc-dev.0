@@ -1,38 +1,39 @@
-Message-Id: <199907112114.QAA23812@www2.tuckeris.com>
-Date: Sun, 11 Jul 1999 16:02:38 -0500
-Subject: Re: Serial Ports on USB
+Message-Id: <199907112116.QAA23835@www2.tuckeris.com>
+Date: Sun, 11 Jul 1999 16:03:54 -0500
+Subject: Netbooting Linux on an iMac
 From: "Charles A. Jolley" <charles.jolley@zeratec.com>
-To: Nathan Hurst <njh@drongo.anu.edu.au>
-CC: linuxppc-dev@lists.linuxppc.org
+To: linuxppc-dev@lists.linuxppc.org
 Mime-version: 1.0
 Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->From: Nathan Hurst <njh@drongo.anu.edu.au>
+Hi all:
 
-> On Fri, 9 Jul 1999, Charles A. Jolley wrote:
->
->>     And while I'm on this topic, I would really like to get my kernel
->> booting on an iMac, but I'm not sure how to access my debugger, etc. without
->> having video, keyboard, or serial support.  How was this done when getting
->> LinuxPPC up on the iMac?
->
-> network?
->
+Has anyone gotten LinuxPPC to net-boot using OF?  It doesn't look as if this
+should be a big deal if we know the format that OF expects the kernel boot
+image to be in.  A compiled-in ramdisk with the root filesystem that
+contains enough data to mount other NFS filesystems (like /usr, /home, /etc,
+etc...) should be enough to handle the diskless nature of things, right?
 
-Network was my first thought as well...but then you have to support the
-ethernet card and some protocol stack (most likely TCP/IP) to get much use
-out of it...
+I suppose one other issue that would need to be dealt with would be creating
+separate /etc, /var, /tmp, and /usr/local filesystems for each machine and
+then making sure that the kernel mounts the right one...but this doesn't
+seems to be insurmountable either.  The machine could be identified using
+kernel args passed from firmware which is then used by scripts to mount the
+right system.
 
-But then I realized that in fact the answer is simple:  Why not use the
-modem?  The iMac documentation says it appears as a serial port that
-responds to AT commands and from the looks of the OF tree and the Linux
-source, this is the case at the hardware level (unlike ADB compatibility,
-which is done via software shims...)  A null modem cable and (maybe) a few
-AT initialization commands at startup to put the modem into online mode
-ought to do the trick...this will be easier than I thought.
+That way, a simple utility could be created that involves booting off of a
+CD (maybe into the MacOS since Linux can do that yet) and running a utility
+where you identify the machine.  The utility would then configure OF to
+netboot and pass the appropriate kernel args.  Talk about easy
+configuration...
+
+Forgive my creative rant here but to facilitate faster development times, I
+intend to make the kernel I am developing for my company here netboot, so if
+I can figure it out for that, then I think it would be just be a short step
+to accomplishing the above under Linux as well...
 
 -Charles
 
