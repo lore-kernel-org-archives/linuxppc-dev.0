@@ -1,54 +1,114 @@
-Date: Sat, 19 Jun 1999 23:37:05 -0500 (CDT)
-From: Kevin Heflin <kheflin@shreve.net>
-To: linuxppc-dev@lists.linuxppc.org
-cc: linuxppc-dev-digest@lists.linuxppc.org
-Subject: Ethernet troubles and R5
-In-Reply-To: <199906190459.XAA32534@lists.linuxppc.org>
-Message-ID: <Pine.LNX.4.10.9906192326580.2461-100000@mercury.shreve.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <199906201323.PAA19742@wanadoo.fr>
+Date: Sun, 20 Jun 1999 15:22:25 +0200
+Subject: LinuxPPC1999: shared libraries and dlopen not working ?
+From: "Gilles Depeyrot" <Gilles.Depeyrot@wanadoo.fr>
+To: "linuxppc-user" <linuxppc-user@lists.linuxppc.org>,
+        "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+Mime-version: 1.0
+Content-type: multipart/mixed;
+   boundary="MS_Mac_OE_3012736945_83587_MIME_Part"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sorry to post to this list, because I'm certainly not a developer. But was
-hoping to get some suggestions on the following trouble.
+> CE MESSAGE EST AU FORMAT MIME. Comme votre lecteur de courrier ne comprend pas
+ce format, il se peut que tout ou partie de ce message soit illisible.
 
-I've just recently installed the new R5 release from the shipped CD
-version. My internet connection is via an ISDN router. All I've ever had
-to do with LinuxppcR4 was plug in basic network info like IP address,
-Gateway address, subnet mask and DNS numbers. My file transfers for ftp
-and http always seemed faster when compared to the MacOS.
+--MS_Mac_OE_3012736945_83587_MIME_Part
+Content-type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 
-However, since installing R5, it does not matter from where I ftp or view
-web pages from, my transfers never get above 1.5 kB/s
-I have another macintosh on my same network, running macos. I can try
-downloading files from any of the same locations, and I can get anywhere
-from 10 kB/s to 15 kB/s 
-I'm certain this is not an isolated incident or the ftp sites I'm hitting
-are slow. I just never see transfers above 1.45 kB/s
+Hi,
 
-Things like telneting to other machines on the net.. seem very responsive,
-and if I try pinging other locations they are the same as I've usually
-seen. It's just sustained transfers never get above the magic number of
-1.5 kB/s
+I'm having trouble getting shared libraries and dlopen to work under
+LinuxPPC1999.
 
-I've tried posting this question to the linuxppc users list, but got no
-response. I'm wondering if this has anything to do with the fact that I'm
-running a UMAXS900 with whatever ethernet card it has, instead of the
-standard Apple hardware and ethernet?
+I have attached three small files dltest.c, lib1.c and lib2.c. lib1 and
+lib2 must be built as shared libraries and dltest as an executable.
 
-I didn't know if there were any other kernels I can try? Any suggestions
-would be appreciated.
+The test does the following:
 
-Kevin
+/* dltest
+ * test functionality of dlopen(), dlsym() and dladdr()
+ *
+ * dlopen()  test, w/ and w/o .init function
+ * dlsym()   test, can we retrieve address from symbol
+ * dladdr()  test, given an address, can we find where its from
+ */
 
+It fails on the first dlopen...
 
---------------------------------------------------------------------
-Kevin Heflin          | ShreveNet, Inc.      | Ph:318.222.2638 x103
-VP/Mac Tech           | 333 Texas St #175    | FAX:318.221.6612
-kheflin@shreve.net    | Shreveport, LA 71101 | http://www.shreve.net
---------------------------------------------------------------------
+Any help appreciated,
+Thanks,
+Gilles
+
+--
+Gilles Depeyrot                    <mailto:Gilles.Depeyrot@wanadoo.fr>
+                             <http://perso.wanadoo.fr/gilles.depeyrot>
+
+--MS_Mac_OE_3012736945_83587_MIME_Part
+Content-type: application/octet-stream; name="lib2.c";
+ x-mac-creator="3F3F3F3F";
+ x-mac-type="3F3F3F3F"
+Content-disposition: attachment
+Content-Transfer-Encoding: base64
+
+CiNpbmNsdWRlICJzdGRpby5oIgoKI2RlZmluZSBUV0lOX0dDQ0lOSVQKI2RlZmluZSBMSUJF
+TlRSWV9ERUNMKGVudHJ5KSB2b2lkIGVudHJ5KCkgX19hdHRyaWJ1dGVfXyAoKGNvbnN0cnVj
+dG9yKSkKCkxJQkVOVFJZX0RFQ0woVFdJTl9MaWJFbnRyeV9saWIyKTsKCmludAloSW5zdGFu
+Y2UgPSAyOwoKdm9pZApUV0lOX0xpYkVudHJ5X2xpYjIoKQp7CglwcmludGYoImxpYjIgLmlu
+aXQgZnVuY3Rpb24gY2FsbGVkXG4iKTsKCXJldHVybjsKfQoKdm9pZApUV0lOX0xpYkVudHJ5
+X2NvbW1vbigpCnsKCXByaW50ZigibGliMiBUV0lOX0xpYkVudHJ5X2NvbW1vbiBmdW5jdGlv
+biBjYWxsZWRcbiIpOwp9Cg==
+
+--MS_Mac_OE_3012736945_83587_MIME_Part
+Content-type: application/octet-stream; name="lib1.c";
+ x-mac-creator="3F3F3F3F";
+ x-mac-type="3F3F3F3F"
+Content-disposition: attachment
+Content-Transfer-Encoding: base64
+
+CiNpbmNsdWRlICJzdGRpby5oIgoKaW50CWhJbnN0YW5jZSA9IDE7CnZvaWQKVFdJTl9MaWJF
+bnRyeV9saWIxKCkKewoJcHJpbnRmKCJsaWIxIC5pbml0IGZ1bmN0aW9uIGNhbGxlZFxuIik7
+Cn0KCnZvaWQKVFdJTl9MaWJFbnRyeV9jb21tb24oKQp7CglwcmludGYoImxpYjEgVFdJTl9M
+aWJFbnRyeV9jb21tb24gZnVuY3Rpb24gY2FsbGVkXG4iKTsKfQo=
+
+--MS_Mac_OE_3012736945_83587_MIME_Part
+Content-type: application/octet-stream; name="dltest.c";
+ x-mac-creator="3F3F3F3F";
+ x-mac-type="3F3F3F3F"
+Content-disposition: attachment
+Content-Transfer-Encoding: base64
+
+CiNpbmNsdWRlICJzdGRpby5oIgojaW5jbHVkZSAiZGxmY24uaCIKCnR5cGVkZWYgdm9pZCAo
+KmYpKCk7CgovKiBkbHRlc3QKICogdGVzdCBmdW5jdGlvbmFsaXR5IG9mIGRsb3BlbigpLCBk
+bHN5bSgpIGFuZCBkbGFkZHIoKQogKiAKICogZGxvcGVuKCkgIHRlc3QsIHcvIGFuZCB3L28g
+LmluaXQgZnVuY3Rpb24KICogZGxzeW0oKSAgIHRlc3QsIGNhbiB3ZSByZXRyaWV2ZSBhZGRy
+ZXNzIGZyb20gc3ltYm9sCiAqIGRsYWRkcigpICB0ZXN0LCBnaXZlbiBhbiBhZGRyZXNzLCBj
+YW4gd2UgZmluZCB3aGVyZSBpdHMgZnJvbQogKi8KCmludAptYWluKGludCBhcmdjLGNoYXIg
+Kiphcmd2KQp7Cgl2b2lkICpoc287CglmICAgICBmcDsJCglpbnQgICpwOwoJRGxfaW5mbyBk
+OwoKCXByaW50ZigiZGxvcGVuIHRlc3RzXG4iKTsKCWhzbyA9IGRsb3BlbigiLi9saWIxLnNv
+IiwgUlRMRF9HTE9CQUwpOwkKCglpZihoc28pIHsKCQljaGFyICplbnRyeSA9ICJUV0lOX0xp
+YkVudHJ5X2xpYjEiOwogCQlmcCA9IChmKSBkbHN5bShoc28sCWVudHJ5KTsKCgkJcHJpbnRm
+KCJ0ZXN0MTogcGFzc2VkOiBkbG9wZW4obGlicmFyeSk6IG5vIC5pbml0IGZ1bmN0aW9uXG4i
+KTsKCQkKCQlpZihmcCkgewoJCQkoKmZwKSgpOwoJCQlwcmludGYoInRlc3QgMjogcGFzc2Vk
+PzogZGxzeW0oKS5pbml0IGZ1bmN0aW9uIGNhbGxlZFxuIik7CgkJfSBlbHNlCgkJCXByaW50
+ZigidGVzdCAyIGZhaWxlZFxuIik7CgkJCgkJZGxjbG9zZShoc28pOwoJfSBlbHNlIAoJCXBy
+aW50ZigidGVzdCAxIGZhaWxlZFxuIik7CgoKCWhzbyA9IGRsb3BlbigiLi9saWIyLnNvIixS
+VExEX0dMT0JBTCk7CQoKCWlmKGhzbykgewoJCWNoYXIgKmVudHJ5ID0gIlRXSU5fTGliRW50
+cnlfY29tbW9uIjsKCQlwcmludGYoInRlc3QzOiBwYXNzZWQ/OiB2ZXJpZnkgbGliMiAuaW5p
+dCBmdW5jdGlvbiBjYWxsZWRcbiIpOwoKIAkJZnAgPSAoZikgZGxzeW0oaHNvLAllbnRyeSk7
+CgkJCgkJaWYoZnApIHsKCQkJKCpmcCkoKTsKCQkJcHJpbnRmKCJ0ZXN0NDogcGFzc2VkPzog
+dmVyaWZ5IGxpYjIgY29tbW9uIGZ1bmN0aW9uIGNhbGxlZFxuIik7CgkJfSBlbHNlIAoJCQlw
+cmludGYoInRlc3QgNCBmYWlsZWRcbiIpOwoJCgkJZW50cnkgPSAiaEluc3RhbmNlIjsKIAkJ
+cCA9IChpbnQgKikgZGxzeW0oaHNvLAllbnRyeSk7CgkKCQlwcmludGYoInRlc3Q1OiBwYXNz
+ZWQ/OiB2ZXJpZnkgJWQgPT0gMlxuIiwqcCk7CgkJCgkJbWVtc2V0KCZkLDAsc2l6ZW9mKERs
+X2luZm8pKTsKCQlkbGFkZHIocCwmZCk7CgkJcHJpbnRmKCJ0ZXN0NjogcGFzc2VkPzogdmVy
+aWZ5ICVzID09IGhJbnN0YW5jZVxuIiwKCQkJZC5kbGlfc25hbWUpOwoJCXByaW50ZigiZmls
+ZT0lcyBkbGFkZHI9JXAgYWRkcmVzcz0lcFxuIiwKCQkJZC5kbGlfZm5hbWUsZC5kbGlfc2Fk
+ZHIscCk7CgkJCgkJZGxjbG9zZShoc28pOwoJfQoJcmV0dXJuIDA7Cn0K
+
+--MS_Mac_OE_3012736945_83587_MIME_Part--
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
