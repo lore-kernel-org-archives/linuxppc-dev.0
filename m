@@ -1,53 +1,30 @@
-Subject: Re: TLB and CSSBAR problems with MPC8540 and BDI2000
-From: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>
-To: Dan Malek <dan@embeddededge.com>
-Cc: fabidi@ultsol.com, linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3FFEEAD9.80308@embeddededge.com>
-References: 
-	 <704F2B356FCC3E49A909C625BD9E5C4002143D@ultsol01.tewks.ultsol.local>
-	 <3FFEEAD9.80308@embeddededge.com>
-Content-Type: text/plain
-Message-Id: <1073677509.10794.14.camel@chuck.arlut.utexas.edu>
-Mime-Version: 1.0
-Date: Fri, 09 Jan 2004 13:45:09 -0600
+Message-ID: <D73A25AA6E54D511AD74009027B1110F5BAFEB@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: downloading source with specific changeset 
+Date: Fri, 9 Jan 2004 15:30:28 -0500 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- So more specifically, if the bdi2000 init section moves the CCSRBAR and
-maps a TLB to the location the CCSRBAR was moved too you can't just
-moved the CCSRBAR back to its default location? One would also need to
-remap the TLB entry to CCSRBAR?
+I was hoping someone with experience with bitkeeper could advise me on what
+I am doing wrong.
 
-        Could anyone familiar with that workaround listed below verify
-that
-this could be causing the CPU to freeze/crash?
+I am trying to download a specific revision of the linuxppc_2_4_devel tree,
+tag v2.4.21_linuxppc_2_4_devel, at
+http://ppc.bkbits.net:8080/linuxppc_2_4_devel
 
-Thanks,
-Matthew
+The command I give is
+bk clone -r1.1308.1.36 http://ppc.bkbits.net/linuxppc_2_4_devel
 
-On Fri, 2004-01-09 at 11:54, Dan Malek wrote:
-> Fahd Abidi wrote:
->
-> > I think my problem is all centered around TLB's and the CCSRBAR.
->
-> Yes, it is.
->
-> The debug control registers are part of the CCSRBAR space.  The
-> BDI2000 tracks modifications it makes if the space is moved, however,
-> if your software moves that space the BDI2000 doesn't know it and
-> can't access the registers.
->
-> If you are debugging code, like u-boot here, you have to make
-> several code modifications so the CCSR space isn't moved during your
-> debugging (among other things).
->
->
-> 	-- Dan
->
->
---
-Matthew S. McClintock <mattsm@arlut.utexas.edu>
+I thought the -r1.1308.1.36 would tell it to download up to changset
+1.1308.1.36 but I keep getting the most recent version.  Can you please tell
+me what I am doing wrong.
 
+Thank you,
+Steven Blakeslee
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
