@@ -1,59 +1,48 @@
-Message-Id: <200007242101.WAA16532@hyperion.valhalla.net>
-Date: Mon, 24 Jul 2000 21:58:12 +0100
-Subject: Re: Kernel build headers [was: Re: problems about __cli()]
+Message-Id: <200007242244.XAA21388@hyperion.valhalla.net>
+Date: Mon, 24 Jul 2000 23:44:04 +0100
+Subject: [ANN] IRQ Latency tool 0.1.3 release.
 From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Josh Huber <huber@mclx.com>, linuxppc-dev@lists.linuxppc.org
+To: linuxppc-dev@lists.linuxppc.org
+CC: jsun@mvista.com
 Mime-version: 1.0
 Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jul 24, 2000, Josh Huber wrote:
-> On Mon, Jul 24, 2000 at 09:11:08AM +0100, Iain Sandoe wrote:
->> On 2.2.17pre10 (having done a make mrproper, menuconfig, dep):
-[snip]
+Hi list...
 
-Thanks for the info. read & understood... guess I'll have to continue this
-way until my distro settles into the new way (or I have time to change
-distro)...
+Well, here is a tool that should allow identification of rogue IRQ blocks
+(ints held off for a long time).
 
->> Also, as I am doing, if you have a user-land program that accesses a
->> kernel-maintained structure via a syscall - the layout of the kernel
->> structure is (properly) defined in a header in linux/include/asm - but you
->> also need to get at it when compiling the user-land program.
->
-> In this case you should ship the corresponding header files that your
-> user space program uses with that user-space utility.  This makes sure
-> that it gets things right and doesn't depend on having a kernel tree
-> around that you know the location of.  For example, for a program I'm
-> working with, which uses an ioctl interface on a /dev entry (used to
-> use system calls, but switched), I've set up a directory tree like:
-> src    all the code
-> include
->     linux  header files copied from the kernel tree (just the ones I
->            need)
->     other header files
->
-> This way, when autoconf places a -Ibuild_root/include with each
-> compile, it uses the local header files.
->
-> Before I did this, building was hell -- it's SO much better being able
-> to build the user-space code on any box without having to untar kernel
-> source.
->
-> Again, just my opinion, but I've found that this works very well.
->
-> I believe in general, unless the program you're writing needs to track
-> the kernel very closely, it's bad practice to include kernel headers
-> in user-space code.
+This is important to those of us trying to do audio on LinuxPPC - it would
+be a great shame if we couldn't succeed where MacOS 9 already performs...
 
-Well, the user space prog. (posting due in about an hour ;-) is mainly for
-kernel/driver developers so they would naturally need to track the two
-together - I'm entirely in agreement that it is a bad idea to have general
-user programs that require kernel sources :-)
+Many thanks to Jun Sun for the code that was the inspiration (and basis) of
+this...
 
-Thanks,
+It is well-tested on my system but needs other input...
+
+It needs some development input before it's going to work on Gemini/APUS/8xx
+- because the code is too hairy to do without a system to test on (well for
+me it is anyway :-)
+
+Take a look, have a go, tell me what happens....
+
+http://www.drfruitcake.com/linux/irq_blk.html
+
+BTW: on my system ll_rw_blk.c gets up to 750 us quite often when the system
+is loaded... this **IS** a potential problem for audio use.
+
+log entry : 3  (16  history entries)
+        Peak Block Time  :        430.0 us  (    7185) [ OK ]
+        startFilename    : ll_rw_blk.c                    Line : 167
+        endFileName      : ll_rw_blk.c                    Line : 179
+
+I still haven't found the "hard-block" that is effecting the overall audio
+latency performance... ah well, back to the drawing board...
+
+ciao,
 Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
