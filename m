@@ -1,42 +1,50 @@
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16495.17942.533062.268583@cargo.ozlabs.ibm.com>
-Date: Sun, 4 Apr 2004 09:17:42 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Brad Boyer <flar@allandria.com>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Problems with dma_alloc_coherent()
-In-Reply-To: <20040403173358.GA19686@pants.nu>
-References: <2C2F00BD-8410-11D8-9FF0-000A95A07384@sands-edge.com>
-	<20040401191715.GC3786@gate.ebshome.net>
-	<406C8104.9050609@acm.org>
-	<20040401220018.GA4130@gate.ebshome.net>
-	<D7F4C570-84C5-11D8-9FF0-000A95A07384@sands-edge.com>
-	<406DB5DC.6060508@acm.org>
-	<C9A11702-84DB-11D8-9FF0-000A95A07384@sands-edge.com>
-	<406DCAF1.1040602@acm.org>
-	<F6294392-84E8-11D8-9FF0-000A95A07384@sands-edge.com>
-	<1080978857.7999.813.camel@newt>
-	<20040403173358.GA19686@pants.nu>
+Date: Sat, 03 Apr 2004 19:59:26 -0500
+From: ERIC NORTHUP <eric.northup@jhu.edu>
+Subject: Re: 4way smp on ppc32
+To: Mark Guertin <mguertin@macdiscussion.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Message-id: <a85093a81050.a81050a85093@jhumail.jhu.edu>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Brad Boyer writes:
+On Wednesday, March 31, 2004 12:56 pm, Mark Guertin wrote:
+> I'll try and find some time to test this stuff on my daystar quad
+> as
+> well.  I know that right up to latest 2.4.x all 4 of my CPU's are
+> still
+> working fine.
 
-> It's generally better not to decide this sort of thing at compile time
-> if you want it to be portable. If you want an example of a kernel that
-> can do everything, try compiling Linux for m68k sometime. You can have
-> one kernel that can support Amigas, Ataris, Macs, and a few others all
-> at once. I'm sure it goes without saying that pretty much everything
-> other than the base CPU is different on each platform.  In fact, even
-> just with 68k based Macs, Apple changed stuff so often that any two
-> models may have almost nothing in common.
+OK, I have just gotten a 2.4 smp kernel booted, and it does find all 4 cpus.  However, the machine is far from stable.  GCC dies on a fatal signal or reports an "internal compiler error", but when re-inovked on the same file it works.  Other times, it takes the ssh connection down with it.  I was trying to build LTP or some other code to narrow down the problem areas, but gcc is too flaky for this to work.
 
-We tend not to do that with kernels for embedded systems, mainly
-because memory is at a premium and people developing embedded systems
-don't want to include any code that isn't going to get used.
+> On 31-Mar-04, at 3:17 AM, Benjamin Herrenschmidt wrote:
+>
+> >
+> > Actually, there is at least one problem, can you try this patch:
+> >
+> > ===== arch/ppc/platforms/pmac_smp.c 1.30 vs edited =====
+> > --- 1.30/arch/ppc/platforms/pmac_smp.c	Tue Mar 23 12:46:59 2004
+> > +++ edited/arch/ppc/platforms/pmac_smp.c	Wed Mar 31 18:16:54 2004
+> > @@ -316,6 +316,8 @@
+> >
+> >  	psurge_type = psurge_quad_probe();
+> >  	if (psurge_type != PSURGE_DUAL) {
+> > +        	psurge_smp_ops.take_timebase = smp_generic_take_timebase;
+> > +        	psurge_smp_ops.give_timebase = smp_generic_give_timebase;
+> >          	psurge_quad_init();
+> >          	/* All released cards using this HW design have 4 CPUs */
+> >          	ncpus = 4;
 
-Paul.
+I applied this patch with the addition of a forward declaration
+
+struct smp_ops_t psurge_smp_ops;
+
+The system did not boot (it crashed earler than without the patchbut i did not get an oops on the serial console)
+
+--Eric
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
