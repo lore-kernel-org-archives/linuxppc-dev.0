@@ -1,57 +1,44 @@
-Message-ID: <3CDAB8FC.D833842C@esteem.com>
-Date: Thu, 09 May 2002 10:59:24 -0700
-From: Conn Clark <clark@esteem.com>
-MIME-Version: 1.0
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20020510031854.87945.qmail@web15005.mail.bjs.yahoo.com>
+Date: Fri, 10 May 2002 11:18:54 +0800 (CST)
+From: =?gb2312?q?Dross=20Zhou?= <zjuzhou@yahoo.com.cn>
+Subject: Why system panic after sometimes?
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Performance on PPC8xx using string and multiple load instructions?
- (finalized)
-Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hello all,
+This question has bothered me,I use linux-2.4.4 (
+downloaded from denx.de and porting to our borad
+MPC850+4Mflash+32Mram+USB).We run a server application
+in borad,but after sometimes such as about a day or
+even several hours ,system will panic. I check our
+program, i think there are no memory leak(or it will
+panic in same time) and other fatal error.
+Here is my dump information:
 
-        Does anyone know how using the -mstring and -mmultiple GCC
-code optimization switches affect performance on the PPC8xx ? The
-book I have on PPC assembly says the use of the string and
-load-multiple instrutions may be signifigantly slower than the
-multiple instruction equivalent on some processors. It does not tell
-me which processors or why. I think it might be due to ther fact
-that multiple instructions can be paired in multi instruction
-pipelined chips. Since the 8xx has only a sigle pipeline I was
-wondering if this was the case.
-
-        In the kernel source they use the -mmultiple and -mstring
-switches in the PPC architecture dependant code. This may have been
-done to reduce code size or it was done with the impression that it
-would make things faster as I first thought before looking into it.
-I also discovered (according to GCC documentation) that these
-instructions don't work on most processors in Little-Endian Mode
-(not that it gets used much). If these instructions are
-signifigantly slower on some processors and won't work on most in
-Little-Endian Mode is this a good idea to have them as default
-optimizations for all processors?
-
-        Unfortunatly I only have access to our proprietary MPC850
-board and have little experience in benchmarking. If anybody ever
-benchmarked code with and with out these instructions on an 8xx
-processor or other processor I would like to see the results.
-
-Thanks in advance
-
-        Conn
-
-
---
-
-*****************************************************************
-  If you live at home long enough, your parents will move out.
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
+# Oops: Kernel Mode Software FPU Emulation, sig: 8
+NIP: 00001FFC XER: E0007B7F LR: 0000098C SP: C011AE90
+REGS: c011ade0 TRAP: 1000
+MSR: 00001000 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
+TASK = c0118fe0[0] 'swapper' Last syscall: 120
+last math 00000000 last altivec 00000000
+GPR00: 00000002 C011AE90 C0118FE0 C011AEA0 0035E000
+C18FDDE8 C0118FE0 00000017
+GPR08: C0124094 000E711D C18FC000 C014B3E0 30026438
+100195BC 94FF7FD7 B97FDD3E
+GPR16: DBFFE6E5 028002E8 FA200000 FFFFFFF6 00001032
+0011AE90 C000BEDC 00009032
+GPR24: 00000000 00000001 C18FC000 0020000D C03E2190
+00002000 C03E2190 C011AF50
+Call backtrace:
+C0003800 00009032 C0003E44 C0003E5C C0128750 C00021E4
+Kernel panic: Attempted to kill the idle task!
+In idle task - not syncing
+Rebooting in 180 seconds.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
