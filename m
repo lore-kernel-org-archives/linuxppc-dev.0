@@ -1,52 +1,81 @@
-Date: Wed, 24 Mar 1999 23:32:01 -0500 (EST)
-From: "David T. McWherter" <dtm@vramp.net>
-To: Cort Dougan <cort@ppc.kernel.org>
-cc: Darron Froese <darron@calgary.westworld.ca>,
-        linuxppc-dev@lists.linuxppc.org,
-        linuxppc-ans-support@hellfire.dusers.drexel.edu
-Subject: Re: ANS Patches en route to the 2.2.x kernel?
-In-Reply-To: <19990323205715.A15285@persephone.ppc.kernel.org>
-Message-ID: <Pine.NEB.3.96.990324232731.28326B-100000@water.vramp.net>
+Date: Thu, 25 Mar 1999 12:20:33 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Paul.Mackerras@cs.anu.edu.au
+cc: bh40@calva.net, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Blue G3 and machine check
+In-Reply-To: <199903242312.KAA31937@tango.anu.edu.au>
+Message-ID: <Pine.HPP.3.96.990325105034.1078R-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Just another bit of good news:
 
-v2.2.4 is up on 
-ftp://hellfire.dusers.drexel.edu/pub/linuxppc/v2.2.4
-And soon will be finished uploading to 
-ftp://linuxppc.cs.nmt.edu/pub/linuxppc/patches/ans/v2.2.4
 
-And the good news is that it seems that if you give it
-a 'root=/blah' argument during bootup, it'll boot from
-the internal scsi chain (at least it does so for us).
+On Thu, 25 Mar 1999, Paul Mackerras wrote:
 
-The file listing:
-
-	patches.tgz - The files changed in the source tree (from vger)
-	linux-pmac-2.2.1.ans.tgz - The modified source tree
-	vmlinux(_2.2.4) - The compiled kernel
-
--David
-
-On Tue, 23 Mar 1999, Cort Dougan wrote:
-
-> Watch vger.  That's where all the patches go through for PPC.
+> Gabriel Paubert <paubert@iram.es> wrote:
 > 
-> I don't have an up-to-date copy of the ANS patches but should be getting
-> them soon.  ANS is on its way into the main kerenl but has taken quite a
-> while, yes.
+> > Note that you probably only need to protect the PCI config space accesses,
 > 
-> } Is there a way to look and see if various patches have been
-> } sent/accepted/waiting in queue? I've grepped through some of the latest
-> } patches without finding it....anyone know where it is and it's status?
-> 
+> If we are getting machine checks on config space accesses, then it is
+> truly borken.  Config spaces accesses in PCI are supposed to return ~0
+> if there is no device there, precisely so that you can safely probe to
+> see whether the device is there.
 
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-       David T. McWherter     dtm@waterw.com
+No, the PCI connector also has a presence detect pin which should be used
+for this. The PCI specification is very clear that the only cycles
+which are expected to end with a Master Abort are the special cycles.
+Configuration cycles are like any other cycles and a Mater Abort may
+result in a device pulling the SERR line and taking exceptions in this
+case. 
+  
+> Did the original poster say whether the machine checks were on config
+> space accesses or I/O or memory space accesses?  It's common enough for
+> drivers written for intel linux to go probing I/O ports to try to find
+> devices to talk to. 
+
+They were on PCI config space IIRC. 
+
+> I think this is not sufficient because you are not generally
+> guaranteed anything about the state of the registers after a machine
+> check.  AFAICS, we would have to save the contents of all the
+> registers (at least all of the callee-saved ones) and restore them
+> from memory if a machine check occurs.  We could use setjmp/longjmp to
+> do this.  And yes, we do need the sync after the access, but I don't
+> see why we would need the isync.
+
+
+No I don't think we need the isync after either, and perhaps not before
+since sync guarantees "that no subsequent instructions appear to be
+initiated until the sync instruction completes".  There is also a
+recoverable flag in the MSR and I don't know what its state was in this
+case. 
+
+But the worst is that you are not guaranteed anything about SRR0, so an in
+memory per processor flag telling 'hey, I might actually get a machine
+check, might be required'. For the registers, I can't believe that after a
+sync/isync sequence, any implementation will ever randomly modify any
+other register than the destination for the loads (and the address
+register for update form instructions). 
+
+And yes, I just reread the following: "Note that if the error is caused by
+the memory subsystem, incorrect data could be loaded into the processor
+and register contents could be corrupted regardless of whether the
+exception is considered recoverable by the SRR1 bit corresponding to
+MSR[RI]." 
+
+But I interpret it as the registers modified by the instruction and the
+potential use of the corrupted data by subsequent instructions, which
+should be bounded by following sync; if you interpret it very liberally
+all registers could be corrupted, not only GPR (including the stack
+pointer) but why not also LR, CTR, XER, CR, FPRs, FPSCR, BATS, segments,
+timebase, decrementer, SDR1, SPRGn, HID0 and others.
+
+	Gabriel.
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
