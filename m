@@ -1,27 +1,50 @@
-Subject: Converting zImage to S-records for CLLF/860T
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Thu, 25 Nov 1999 17:58:49 +1100 (EST)
+Date: Thu, 25 Nov 1999 09:45:33 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Frank Smith <frank.smith@aeat.co.uk>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: All
+In-Reply-To: <s83c1bbf.061@a-hgwd3.harwell.aeat.co.uk>
+Message-ID: <Pine.HPX.4.10.9911250940280.5120-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <19991125065849.55731F393@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear fellow Embedees,
 
-Now that our RPX CLLF/860T boards have arrived, I'm attempting to download a
-kernel built from the mpc8xx-2.2.13.tgz sources via 100Mb Ethernet. The board
-expects S-records, and the embedded_notes file mentions using 'zsrec' to
-convert the zImage, but I can't find zsrec anywhere and I'm equally unsure of
-the magic incantation to objcopy. The output from the obvious:
-    powerpc-linux-objcopy -O srec zImage zImage.srec
-is far too small to be correct.
 
-Could someone please point me in the right direction to find zsrec?
+On Wed, 24 Nov 1999, Frank Smith wrote:
 
-Thank you,
-Graham
+> 
+> All
+> 
+> Forgive me as a mostly silent interested party...
+> 
+> Please believe me their are people out here desperately wanting Linux on PPC MVME cards.
+> Our problems are that we cannot necessarily afford to input to ports etc but even on such 
+> relatively luxurious cards space and speed can and will be a problem.  We have code which 
+> when running native takes up most of a card with 32 M Byte RAM and must run in less then 20 ms.
+> 
+
+Look at the images on my site, my only boards are MVME2603 (I shall
+probably get get 2700 or 5500 soon). I have 2 MVME2600 running in
+production since 6 weeks ago doing 100+ VME interrupts and 64 DMA
+transfers peer second.
+
+	ftp://vlab1.iram.es/pub/linux-2.2
+
+this includes images, patches...
+
+Note that I basically only use the standalone (for development), server
+(only one of the producttion machines has disk, the other ones boot
+from it) and nfsroot (other production machines) images, the other ones
+may be out of date...
+
+> If you don't do it we will be stuck with Motorola some time next century and I gave up on one
+> of their OSes before we started with Lynx OS which is now driving us *!?%*! mad! 
+
+	Regards,	
+	Gabriel.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
