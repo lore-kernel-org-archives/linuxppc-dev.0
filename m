@@ -1,77 +1,56 @@
-Message-ID: <XFMail.991024203926.kburtch@bellsouth.net>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <3813AFA8.FF28094F@drgw.net>
+Date: Sun, 24 Oct 1999 20:17:28 -0500
+From: Troy Benjegerdes <hozer@drgw.net>
 MIME-Version: 1.0
-Date: Sun, 24 Oct 1999 20:39:26 -0400 (EDT)
-From: Kevin Burtch <kburtch@bellsouth.net>
-To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
-Subject: Cache on PowerStack disabled & ethernet problems (& sound & PCI question)
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: need Open PIC infos
+References: <19991016191421.027499@smtp.calvacom.fr>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Benjamin Herrenschmidt wrote:
+> 
+> Hi !
+> 
+> I'm working on support for new UMA machines (beginning with iBook). I
+> have already figured out a lot of things and am now coding a very
+> preliminary support (I'm not sure yet the PMU99 will work out of the box
+> or not, but it looks similar to the old PMU from an interface point of view).
+> 
+> However, the new Apple ASICs contains an Open PIC interrupt controller
+> (advertised as beeing a "chrp,open-pic" controller). After looking at the
+> various docs I have and a quick search on Altavista, I couldn't find any
+> relevant documentation on the chip.
+> There's already some OpenPIC support in the kernel, but I'll have to
+> change it a little bit since, for example, Apple hardware is not a good
+> place to search for a 8259 master ;)
+> I'd like some docs in order to have better understanding of the chip.
+> 
+> Anyone knows if such a doc exist ? Apparently, if the register map is not
+> completely bogus, the current code returns an OpenPIC versio 1.2, and the
+> timer freq is 0x80000000 (ouch !).
 
+You might try the programmers manual for the Motorola MTX series
+motherboard, which has an OpenPIC (and an 8259, unfortunately). I believe
+arch/ppc/kernel/openpic.c is a mostly complete implementation. Last I
+checked (about kernel 2.2.5 or so) the only major thing missing was some
+interprocessor interrupt support.
 
-Well, I finally dug out my PowerStack (604-100 w/256k cache) and loaded R5
-on it.
+If you haven't already, you might check out the PReP and CHRP specific
+kernel code, since both CHRP and some PReP machines use it.
 
-After the installation, I found I could not use my ethernet... so I grabbed
-a spare SCSI drive, made a filesystem (on my x86 box) and dumped the current
-source tree to it (2.2.13 - stock... they did merge, right?) and moved the
-drive to the PPC. I configured and built an appropriate kernel, slapped it on
-a floppy, and tried it out.
+Hope this helps. 
 
-I noticed that it is slower than my overclocked 486, which is quite sad.
-I checked /proc/cpuinfo and sure enough, cache is "none".
+Troy-- Anxiously awaiting a Sawtooth G4 to start hacking on
 
-I also found that my ethernet still wouldn't work... at least not well
-enough to use. I tried the tulip module for the heck of it (hey, it _is_
-a tulip chip), then went back to the de4x5 module. I get about 60-85%
-packet loss with this... is anyone using this board with the onboard
-ethernet?
-
-It is possible that my hub is not working as advertised... it's a D-Link
-DH5P, dual-speed hub. It's supposed to work like a switch, in the sense
-that the 100Mb and 10Mb connections can talk to each-other, but I don't
-have any other 10Mb equipment to test this out on. I might have to dig
-out my old DX50 and slap some boards into it...
-
-Anyways...
-I grepped through all the old emails from the list (since Feb. '98) and
-only found a couple referring to the PowerStack and cache problems
-(couldn't find anything about e'net problems, 'cept that you have to use
- the de4x5 module).
-
-I went to the Motorola site and searched the online manual, and it appears
-as though you can enable the cache in ppcbug1 (whatever that means) using
-the "cf" (configure) command. I tried it out, and sure enough, it asked
-about enabling the instruction cache twice(?), both times defaulted to yes.
-
-I booted Linux again, no change.
-
-Has anyone found a way to enable the cache on the PowerStack/Blackhawk
-systems? This is quite frustrating to have such a nice machine with such
-poor performance.
-
-
-Also, do the PCI or ISA boards have to be PPC specific, or can you use
-generic boards? I thought non-bootable network cards should work, since
-they don't have any ROM (x86 code) to get confused about. I also hoped
-I could use my generic Bt848 board in it (no ROM, unless it's in the
-Bt848), but the system would lock up before it even got to the self-tests
-with either board installed (it would start to print it's ID screen).
-The ethernet board I tried was a generic PCI/NE2000 clone.
-
-
-As long as I'm babbling... what selection do you make for the on-board
-sound? I grepped through the sources, and the CS4231 chip is supported,
-but only as a subset of other drivers. I didn't see anything else on
-the board that indicated what other driver I should be looking into.
-If I ever get the cache enabled, and ethernet working, I'm going to want
-sound too.   ( boy, aren't _I_ demanding? )     ;^)
-
-
-Thank you very much,
-Kevin Burtch
-
+-- 
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |  troy@blacklablinux.com    |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
