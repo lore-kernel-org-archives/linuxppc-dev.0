@@ -1,93 +1,93 @@
-Message-ID: <3C0BE612.51F79C59@intldata.ca>
-Date: Mon, 03 Dec 2001 15:52:34 -0500
-From: Heather Peterson <hpeterson@intldata.ca>
-MIME-Version: 1.0
+Message-Id: <5.1.0.14.2.20011203165059.01c83e20@falcon.si.com>
+Date: Mon, 03 Dec 2001 17:11:50 -0500
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: linuxrc thread doesn't terminate
-Content-Type: text/plain; charset=us-ascii
-Reply-To: hpeterson@intldata.ca
+From: Jerry Van Baren <vanbaren_gerald@si.com>
+Subject: Re: programming ppcboot onto an sbc8260 with a vision ice
+In-Reply-To: <3C0BE2DA.53C39E1B@seranoa.com>
+References: <3C0BD4F1.DB6591F3@seranoa.com>
+ <3C0BDBB4.68EB3E72@chinook.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Your PPCBoot image is linked at 0x40000000 and your convert defaults are
+converting from 0xfe000000..0xfe020000 (this is where EST puts the boot
+memory unless you've changed the HRCW to ORG it at 0x00000000 -- glossing
+over quite a few details here).  Anyway, there ain't no data in that range,
+which is exactly what the error message is telling you.
 
-I'm relatively new to linux.  I hope this isn't a repeat
-question, but I tried searching through the old postings
-and couldn't find an answer.
+The EST convert utility doesn't allow you to relocate the code, only to set
+the lower and upper boundaries of the conversion.  You can use an elf tool
+(objcopy) to re-org the code or change your link mechanism to re-org your
+code.  You can also leave it at 0x40000000 and change your visionICE setup
+to map the ROM into that memory area (hmm, isn't that the secondary
+flash?  Maybe you just need to program it and switch your CS0/CS6 jumper).
 
-I'm using an 860P custom board running the 2.2.14 kernel
-from HardHat.  I got it working using both NFS and with an
-initial ramdisk.  However, now I want to start up with a
-small initrd and then mount the real root filesystem off a
-compact flash card.
+By the way, PPCBoot will load a new HRCW which will ORG the boot memory at
+0x00000000 (first instruction at 0x100) instead of 0xFFF00000 (first
+instruction at 0xFFF00100).  There are benefits and drawbacks to either
+start up location and PPCBoot can be configured to boot high as well as low.
 
-My system is configured with CONFIG_BLK_DEV_INITRD and
-my boot argument is root=/dev/cfda2 (my compact flash
-device).  My initrd has a linuxrc file that loads the
-drivers neccessary to access the compact flash device.
+gvb
 
-I put print statements in init/main.c
 
-    pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
+At 03:38 PM 12/3/2001 -0500, Andrew Dixon wrote:
 
-    printk("My printk: launched thread to call linuxrc,
-            pid = %d\n", pid);
-
-    if (pid>0)
-        while (pid != wait(&i));
-
-    printk("\nMy printk: Thread terminated\n");
-
-Here is my linuxrc file:
-    #!/bin/sh
-
-    echo 'Loading compact flash drivers.'
-    insmod ports.o
-    insmod i2c.o
-    insmod cfd.o
-    echo 'End of linuxrc.'
-
-When it runs I see the first print statement, I see the
-output from my linuxrc script, but I never see the second
-print statement.  Is the thread not terminating properly?
-How can I tell?
-
-I also tried adding a counter to the loop and using waitpid
-instead of wait:
-    pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
-    printk("My printk: launched thread to call linuxrc,
-            pid = %d\n", pid);
-    rc = 0;
-    loopCount = 0;
-    if (pid>0)
-    {
-        printk("My printk: waiting:\n");
-        while ((pid != rc) && (loopCount++ < 80000))
-        {
-            current->policy |= SCHED_YIELD;
-            schedule();
-            rc = waitpid(pid, &i, WNOHANG);
-        }
-    }
-    if (rc == pid)
-        printk("\nMy printk: Thread terminated\n");
-    else
-        printk("\nMy printk: continuing without
-                  termination of linuxrc thread\n");
-
-This seems to work.  My drivers load from the linuxrc
-script and then I see the print statement "continuing
-without termination of linux rc thread", and it goes on
-to call change_root().  Any ideas why wait and waitpid
-never return with the pid of the linuxrc thread?  What
-am I doing wrong?
-
-Any help would be greatly appreciated.
-
-Thanks,
-
-Heather
+>Peter Desnoyers wrote:
+> >
+> > You need to take the ELF file, ppcboot, and convert it into a .bin file
+> > using the vision ICE convert utility.
+> >
+> > The file format referred to as "BIN" in the visionICE documentation
+> > isn't a real binary image - it has a special header.
+> >
+>
+>OK.  When I try that it tells me:
+>
+>Conversion Failed: no data was extracted from the selected address
+>range.
+>
+>Where the address ranges are:
+>/var/opt/visionXD/bin/convert  -w ppcboot -b
+>convert v7.8A Copyright (c) 1996-2001 Wind River HSI
+>convert ELF file ppcboot to BDX file ppcboot.bdx
+>Extracting image from 'ppcboot'
+>Writing binary download image to 'ppcboot.bdx'
+>Maximum packet size: 0x100
+>Lower address: 0x0
+>Upper address: 0xffffffff
+>Execution address: 0x40000000
+>Image written
+>Processing time: 0.011 seconds
+>
+>Lower Image Address: 0xfe000000
+>Upper Image Address: 0xfe020000
+>
+>
+>I also tried:
+>
+>/var/opt/visionXD/bin/convert  -w ppcboot -b
+>convert v7.8A Copyright (c) 1996-2001 Wind River HSI
+>convert ELF file ppcboot to BDX file ppcboot.bdx
+>Extracting image from 'ppcboot'
+>Writing binary download image to 'ppcboot.bdx'
+>Maximum packet size: 0x100
+>Lower address: 0x0
+>Upper address: 0xffffffff
+>Execution address: 0x40000000
+>Image written
+>Processing time: 0.011 seconds
+>
+>which gives me a file "ppcboot.bdx".  VisionXD still complains that it's
+>not a flat binary though.
+>
+>Any thoughts?
+>
+>Thanks,
+>Andy
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
