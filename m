@@ -1,17 +1,22 @@
-Return-Path: <BlakesleeS@embeddedplanet.com>
-Received: from embeddedplanet.com (unknown [66.94.95.194])
-	by ozlabs.org (Postfix) with ESMTP id C1E9667A6C
+Return-Path: <jonathan@jonmasters.org>
+Received: from smtp.mailbox.co.uk (smtp.mailbox.co.uk [195.82.125.32])
+	by ozlabs.org (Postfix) with ESMTP id 414C667A6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Mar 2005 22:53:07 +1000 (EST)
+	Thu, 31 Mar 2005 22:58:06 +1000 (EST)
+Message-ID: <424BEDFC.8080300@jonmasters.org>
+Date: Thu, 31 Mar 2005 13:33:00 +0100
+From: Jon Masters <jonathan@jonmasters.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Date: Thu, 31 Mar 2005 07:53:04 -0500
-Message-ID: <1628E43D99629C46988BE46087A3FBB9205376@ep-01.EmbeddedPlanet.local>
-From: "Steven Blakeslee" <BlakesleeS@embeddedplanet.com>
-To: "Atit_Shah" <Atit_Shah@Satyam.com>,
-	<linuxppc-embedded@ozlabs.org>
-Subject: RE: Linux crashes during memory mapping
+To: Kumar Gala <kumar.gala@freescale.com>
+References: <424ACFF1.5000403@bitsim.se>
+	<111d2ae873d1bfee413409dfc4f2f064@freescale.com>
+In-Reply-To: <111d2ae873d1bfee413409dfc4f2f064@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>,
+	Sylvain Munaut <tnt@246tNt.com>,
+	Andrei Konovalov <akonovalov@ru.mvista.com>,
+	Jakob Viketoft <jakob.viketoft@bitsim.se>
+Subject: Re: Platform bus/ppc sys model...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,64 +27,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> 	I do not have any problem with the functioning of U-Boot but
-Linux crashes after      =20
-> printing "Uncompressing Kernel ... OK" and then it seems that nothing
-is happening.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Do you have the SYPCR(serial watch dog timer) disabled?
+Kumar Gala wrote:
 
-=09
+|> My intention was to give a device tree structure to the kernel at boot
+|> time via a (pseudo?) pointer in bd_info or similar. Then you would only
+|>  need to recompile a little bootloader (which is needed for setting up
+|> the FPGA anyway) with this structure for every specific card. You could
+|> even be shrewd enough to have a single kernel image but several
+|> structures to launch several processors on the same chip. Does it sound
+|> like a sane solution?
 
+This got resurrected recently. Some of us have been talking privately
+about it and I should have time with a board and BDI shortly. The idea
+above about the bd_info pointer is precisely what I've been working with
+people off list on.
 
->	3. The memory map of the VPN Board (MY BOARD) is as folllows:=20
->
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=20
->	Memory Region            Size
-Address Range                        =20
->
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=20
->	SDRAM                    32MByte                      0000_0000
--- 01FF_FFFF                 =20
->	Flash                    32MByte                      FF00_0000
--- FFFF_FFFF  =20
+| I think this is reasonable.  The best device tree would be a flattened
+| OF tree since we are trying to move the world in that direction.  Jon
+| Masters around?
 
-Have you done a full test to make sure your RAM is correctly mapped?
+Yes, but I've been tied up with worky and magazine stuff again. If
+someone wants to work with me then this might actually happen.
 
-	 =20
+Cheers,
 
->	This is what the console log buffer has shown:=20
->
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=20
->	md 0x00177e34=20
->
->	00177e34: 3c363e6d 73746172 743d303c 363e6d73
-<6>mstart=3D0<6>ms=20
->	00177e44: 697a653d 303c363e 66737461 72743d30
-ize=3D0<6>fstart=3D0=20
->	00177e54: 3c363e66 73697a65 3d303c36 3e696d6d
-<6>fsize=3D0<6>imm=20
->	00177e64: 723d303c 363e626f 74666c61 673d303c
-r=3D0<6>botflag=3D0<=20
->	00177e74: 363e6970 6164643d 303c363e 65616464
-6>ipadd=3D0<6>eadd=20
->	00177e84: 3d633031 35303032 383c363e 65737065
-=3Dc0150028<6>espe=20
->	00177e94: 643d303c 363e696e 6974663d 303c363e
-d=3D0<6>initf=3D0<6>=20
->	00177ea4: 62757366 3d303c36 3e63706d 663d303c
-busf=3D0<6>cpmf=3D0<=20
->	00177eb4: 363e6272 67663d30 3c363e73 6363663d
-6>brgf=3D0<6>sccf=3D=20
->	00177ec4: 303c363e 76636f3d 303c363e 62617564
-0<6>vco=3D0<6>baud=20
->	00177ed4: 3d304f6f 70733a20 6b65726e 656c2061    =3D0Oops: kernel
-a=20
-=09
-These values do not look correct.  Everything is zero.
+Jon.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
+
+iD8DBQFCS+38eTyyexZHHxERAhKmAJ9v2k8rvFjB+W9OmXu4P7blHiWIkQCglEFk
+AA2fZEsXmpWV0Jj/Z2OCrxA=
+=oVje
+-----END PGP SIGNATURE-----
