@@ -1,33 +1,43 @@
-Message-Id: <v02140b00b2a6453f1cd9@[209.157.72.95]>
+In-Reply-To: <v02140b00b2a6453f1cd9@[209.157.72.95]>
+Date: Wed, 23 Dec 1998 10:00:26 +0100
+To: linuxppc-dev@lists.linuxppc.org
+CC: "Timothy A. Seufert" <tas@mindspring.com>, David Ray <daver@idiom.com>,
+        Paul Mackerras <paulus@cs.anu.edu.au>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Test kernels for chipsfb (2400/3400)
+Message-Id: <19981223100026.009089@mail.mipsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 22 Dec 1998 23:15:47 -0800
-To: Benjamin Herrenschmidt <bh40@calva.net>
-From: daver@idiom.com (David Ray)
-Subject: Re:Test kernels for chipsfb (2400/3400)
-Cc: "Timothy A. Seufert" <tas@mindspring.com>, linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 5:21 AM 12/23/98, Benjamin Herrenschmidt wrote:
-> I've uploaded two test kernels at:
-> 
-> <http://calvaweb.calvacom.fr/bh40/vmlinux_test.gz>
-> <http://calvaweb.calvacom.fr/bh40/vmlinux_test2.gz>
+I got a first round of feedback and I uploaded 2 new test kernels:
 
+ <http://calvaweb.calvacom.fr/bh40/vmlinux_test3.gz>
+ <http://calvaweb.calvacom.fr/bh40/vmlinux_test4.gz>
 
-I just tested these 2 kernels on my Powerbook 2400. The first kernel (vmlinux_test.gz) worked perfectly in 8-bit and 16-bit mode, both in the console (run level 3) as well as in X.
+(the first one uses truecolor for chipsfb, the second directcolor). offb
+is "fixed" to disable the ATI kuldge when not in 8 bits (apparently
+breaks some models like PowerBook G3 Series) so "No video driver" should
+work all the time again.
 
-The second kernel (vmlinux_test2.gz) worked in the console at both depths, but X failed to work in either depth. The screen went black. I had to use the key combination option-power to kill X.
+Note that those kernel will do funny things with your ADB like
+auto-setting handler IDs of mice to 2 or 4 (depending on what the mouse
+supports) and detecting the powerbook trackball. All this is quite
+verbose (lots of printks) and I would like to know if it breaks
+something. The result of those changes should be that now, mice should
+use better capabilities by default and mousemode should not be necessary
+most of the time.
+Note also that the trackpad tapping is partially implemented (you will be
+able to click by tapping but sometimes it behaves strangely).
 
-These were both with the 2400/3400 enhanced version of X from inria.fr.
+I'll post cleaned up patches for all this later today or later this week.
 
-The XF86_FBDev from the recent 3.3.3 release fails to work on any kernel I have tried on my PB 2400, including 2.1.115, and 2.1.130. Somebody posted to the list on Dec 15 claiming that the amount of VRAM is hard coded into chipsfb.c and this value doesn't match the correct amount -- and this is why XF86_FBDev doesn't work on a PB 2400. They posted a patch to chipsfb.c that raised the VRAM that X thought it had. They they claimed fixed the problem with XF86_FBDev at least partially. I haven't had time yet to try that patch myself. I believe you can find a copy of that post in the archives.
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
--Dave
-
-PS I'm off the list for a couple weeks during the holidays, so please copy me by personal email for any email/postings about the Chips 65550 issue. Thanks.
 
 
 
