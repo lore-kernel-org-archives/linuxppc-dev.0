@@ -1,17 +1,19 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.201])
-	by ozlabs.org (Postfix) with ESMTP id 82D4A67A66
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Jan 2005 06:34:08 +1100 (EST)
-Received: by rproxy.gmail.com with SMTP id 1so222121rny
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jan 2005 11:34:07 -0800 (PST)
-Message-ID: <c3d0340b050121112736cccbf5@mail.gmail.com>
-Date: Fri, 21 Jan 2005 11:27:27 -0800
-From: Shawn Jin <shawnxjin@gmail.com>
-To: linuxppc <linuxppc-dev@ozlabs.org>
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id DA5A267A6B
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Jan 2005 07:08:44 +1100 (EST)
+Date: Fri, 21 Jan 2005 12:08:40 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Shawn Jin <shawnxjin@gmail.com>
+Message-ID: <20050121200840.GA28935@gate.ebshome.net>
+References: <c3d0340b050121112736cccbf5@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Subject: ppc440 and ebony support in 2.6
-Reply-To: Shawn Jin <shawnxjin@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <c3d0340b050121112736cccbf5@mail.gmail.com>
+Cc: linuxppc <linuxppc-dev@ozlabs.org>
+Subject: Re: ppc440 and ebony support in 2.6
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Fri, Jan 21, 2005 at 11:27:27AM -0800, Shawn Jin wrote:
+> I'd like to know which kernel version and source tree is the best
+> choice to be ported into our embedded system with ppc440x5. The
+> evaluation board used is Ebony.
+> 
+> Is there enough support for ppc440 in 2.6 release?
 
-I'd like to know which kernel version and source tree is the best
-choice to be ported into our embedded system with ppc440x5. The
-evaluation board used is Ebony.
+Yes, PPC440 is supported in 2.6.
 
-Is there enough support for ppc440 in 2.6 release?
+Use kernel.org tree.
 
-There are a bunch of sources releasing 2.6 ppc. For example,
- - official release from www.kernel.org
- - source.mvista.com
- - DENX's release
- - www.ppckernel.org
-
-Which one is the best choice to start with ppc440 and Ebony? Please
-shed some light to this issue.
-
-Thanks a lot.
--Shawn.
+--
+Eugene
