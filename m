@@ -1,41 +1,28 @@
-To: "Stephen Williams" <612dlag102@sneakemail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Relationship between bk libuxppc-2.4 and denx linuxppc_2_4_devel 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 10 Jun 2004 16:53:28 PDT."
-             <11675-28654@sneakemail.com>
-Date: Fri, 11 Jun 2004 09:30:54 +0200
-Message-Id: <20040611073059.D13E8C109F@atlas.denx.de>
+Subject: RE: U-Boot and kernel 2.6
+From: David Woodhouse <dwmw2@infradead.org>
+To: Meriin Michael-BMM063 <Meriin@motorola.com>
+Cc: "'Ricardo DIz'" <rdiz@alumni.deec.uc.pt>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <0F48024310E5D6118D200002B3A440DB08B07A3D@zil01exm08.mcil.comm.mot.com>
+References: 
+	 <0F48024310E5D6118D200002B3A440DB08B07A3D@zil01exm08.mcil.comm.mot.com>
+Content-Type: text/plain
+Message-Id: <1086950206.15845.1268.camel@hades.cambridge.redhat.com>
+Mime-Version: 1.0
+Date: Fri, 11 Jun 2004 11:36:47 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <11675-28654@sneakemail.com> you wrote:
->
-> What is the relationship between the linuxppc-2.4 tree from
-> bk, and the anonymous cvs linuxppc_2_4_devel hosted by Denx?
+On Thu, 2004-06-10 at 09:45 +0300, Meriin Michael-BMM063 wrote:
+> Check the bd_t definition, it MUST be the same in u-boot and Linux platform definition.
+> bd_t in Linux is defined in ppcboot.h
 
-Our linuxppc_2_4_devel CVS tree is a (modified, extended) copy of the
-BK tree of the same name, which used to be the "official" development
-tree but has been declared dead a long time ago.
-
-> The latter *seems* more stable, but I'm hoping to integrate
-> in patches for me JSE board after cleaning up patches, and
-> it's not clear which tree I should work with.
-
-You should work with  the  official  trees,  i.  e.  linuxppc-2.4  or
-linuxppc-2.5.
-
-Best regards,
-
-Wolfgang Denk
+We really need to throw this crap away and start using structured tags
+like ARM does.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-It would be illogical to assume that all conditions remain stable
-	-- Spock, "The Enterprise" Incident", stardate 5027.3
+dwmw2
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
