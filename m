@@ -1,59 +1,46 @@
-Date: Thu, 1 Jun 2000 21:54:59 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Josh Huber <huberj@wpi.edu>
-cc: Michel Lanners <mlan@cpu.lu>, jgarzik@mandrakesoft.com,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Lite-On ethernet controller
-In-Reply-To: <20000601085349.A307@mclinux.com>
-Message-ID: <Pine.LNX.4.05.10006012152150.2148-100000@callisto.of.borg>
+Date: Fri, 2 Jun 2000 09:50:30 +0200 (MET DST)
+From: Henning Loeser <Henning.Loeser@Physik.Uni-Marburg.DE>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re:mesh in 2.4.0-test1
+In-Reply-To: <200006010459.XAA15887@lists.linuxppc.org>
+Message-ID: <Pine.OSF.4.02.10006020942310.32075-100000@ax1305.physik.uni-marburg.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 1 Jun 2000, Josh Huber wrote:
-> On Wed, May 31, 2000 at 08:40:57PM +0200, Michel Lanners wrote:
-> > 00:05.0 Ethernet controller: Lite-On Communications Inc: Unknown device c115 (rev 25)
-> >         Subsystem: Asante Technologies, Inc.: Unknown device f001
-> >         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR- FastB2B-
-> >         Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-> >         Latency: 8 min, 56 max, 32 set, cache line size 08
-> >         Interrupt: pin A routed to IRQ 30
-> >         Region 0: I/O ports at 1c00 [size=256]
-> >                   ^^^^^^^^^    ^^^^
-> >         Region 1: Memory at c3002000 (32-bit, non-prefetchable) [size=256]
-> >         Expansion ROM at c1240000 [disabled] [size=256K]
-> >
-> > The IO port region above might be your problem. What machine type is
+Hi Geert
+> Is there anyone who is succesfully using SCSI devices connected to MESH SCSI
+> with 2.4.0-test1 (or late 2.3.99-preX, e.g. pre9)?
+I do, everything is detected fine, I use
+Linux version 2.4.0-test1-ac4 (root@ma1311) (gcc version 2.95.2 19991024
+(release/franzo))
 
-I/O port is OK, since the card does work most of the time.
+The ac1 version I tried before worked aswell. dmesg looks like:
 
-> > this? Do you have any ISA slots in your machine? Form the i8259
-> > interrupt controller I deduce it's not a PowerMac...
->
-> It's not a powermac...it's a CHRP Longtrail board.  Geert's board has an ISA
-> slot, and I believe mine has all the hardware for an ISA slot, except the
-> actual slot was removed.
+mesh: target 0 synchronous at 10.0 MB/s
+  Vendor: QUANTUM   Model: FIREBALL_TM3200S  Rev: 300X
+  Type:   Direct-Access                      ANSI SCSI revision: 02
+Detected scsi disk sda at scsi1, channel 0, id 0, lun 0
+mesh: target 1 synchronous at 10.0 MB/s
+  Vendor: MICROP    Model: 4345NS            Rev: x43h
+  Type:   Direct-Access                      ANSI SCSI revision: 02
+Detected scsi disk sdb at scsi1, channel 0, id 1, lun 0
+mesh: target 3 synchronous at 10.0 MB/s
+  Vendor: PLEXTOR   Model: CD-ROM PX-32TS    Rev: 1.03
+  Type:   CD-ROM                             ANSI SCSI revision: 02
+Detected scsi CD-ROM sr0 at scsi1, channel 0, id 3, lun 0
+scsi : detected 1 SCSI cdrom 2 SCSI disks total.
 
-CHRP LongTrail has ISA. Interrupts are controlled by an OpenPIC master, and the
-traditional dual i8259 cascade as a slave.
+Mounting a crdrom doesen't work for me either,
+mount -t hfs /dev/cdrom /mnt/cdrom yields:
 
-> Geert, how did you get the tulip-diag program to compile on your chrp
-> machine?  I'd like to give it a try and see what it tells me.
+mount: wrong fs type, bad option, bad superblock on /dev/cdrom,
+       or too many mounted file systems
 
-By pathing it to map ISA I/O space :-) I mailed the patch to you.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Cheers
+Henning
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
