@@ -1,35 +1,35 @@
-Date: Wed, 12 Mar 2003 16:31:01 -0700
-From: Matt Porter <porter@cox.net>
-To: Don Easton <dhe@omnibyte.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: OpenPIC help
-Message-ID: <20030312163101.D28769@home.com>
-References: <0A0CCED2EF0FD41196950060089FDFED1A5EE0@nt0.omnibyte.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0A0CCED2EF0FD41196950060089FDFED1A5EE0@nt0.omnibyte.com>; from dhe@omnibyte.com on Wed, Mar 12, 2003 at 02:51:13PM -0600
+Message-ID: <00df01c2e90a$85fc3b80$af85efcb@qhavm>
+From: "Q-ha Park" <qhpark@jchyun.com>
+To: "Q-ha Park" <qhpark@jchyun.com>,
+	"Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+References: <000d01c2e6c2$621e1de0$af85efcb@qhavm>
+Subject: Re: kernel stops after the msg, "Now booting the kernel"
+Date: Thu, 13 Mar 2003 11:44:51 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Mar 12, 2003 at 02:51:13PM -0600, Don Easton wrote:
 >
-> Could someone point to some documentation on how this
-> works? I'm trying to setup Linux on a custom board and
-> looking at the code isn't filling in all the blanks. Every
-> hit on a web search points to a non-exsistant link to AMD's
-> site, and a email to openpic@amd.com per the comments in the
-> file open_pic_defs.h just bounced...
+> I've been using the kernel 2.4.17 for redwood5 from montavista. recently, I tried to use the 2.4.21-pre5 kernel, but it stops right after the msg: "Now booting the kernel".
+> ----------------
+<snip>
+> Linux/PPC load: console=ttyS0,115200
+> Uncompressing Linux...done.
+> Now booting the kerne
+> <stopped>
+>
+works with the default config file in arch/ppc/configs/redwood5_defconfig.
+okay, that was stupid. i'm going to go out and commit a suicide now.
 
-http://mcg.motorola.com/cfm/templates/lit.cfm?PageID=829
+BTW, FYI, to get the nfs root mount to work, i had to append the cmdline paramters like:
+"root=nfs rw ip=auto"
 
-Enter "Harrier".  Download the manual and check out the
-MPIC description.
+at first, i didn't add that since netroot_string is declared in misc-embedded.c and the old kernel i had mounted the root filesystem without the 'root=' parm.
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+well, that was a change.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
