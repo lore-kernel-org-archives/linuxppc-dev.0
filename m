@@ -1,60 +1,30 @@
-Message-ID: <38994521.CD0878F5@digigram.com>
-Date: Thu, 03 Feb 2000 10:06:41 +0100
-From: Olivier DERVYN <dervyn@digigram.com>
+To: Wolfgang Denk <wd@denx.de>
+Cc: greyham@research.canon.com.au (Graham Stoney),
+        alan@packetengines.com (Alan Mimms),
+        linuxppc-embedded@lists.linuxppc.org (Linux PPC Embedded)
+Subject: Re: Using LinuxPPC executables on 8xx processors
+References: <200002030826.JAA27945@denx.local.net>
+From: Marcus Sundberg <erammsu@kieray1.p.y.ki.era.ericsson.se>
+Date: 03 Feb 2000 12:32:38 +0100
+In-Reply-To: Wolfgang Denk's message of "Thu, 03 Feb 2000 09:26:21 +0100"
+Message-ID: <kfyu2jq34ix.fsf@kieraypc07.p.y.ki.era.ericsson.se>
 MIME-Version: 1.0
-To: Linux PPC Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Linux PPC on Sandpoint or YellowKnife board with 750
-Content-Type: multipart/mixed;
- boundary="------------801D627E75B896E0D9492656"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Il s'agit d'un message multivolet au format MIME.
---------------801D627E75B896E0D9492656
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Wolfgang Denk <wd@denx.de> writes:
 
+> Well, in fact even the original (for instance LinuxPPC  R4)  binaries
+> *and*  libraries run pretty stable on the MPC8xx system once you have
+> the FPU emulation working. It seems that the cache line problem  does
+> not  show  up most of the time.
 
-I am a novice in Linux Embedded. I search information to
-use it on Motorola board.
+IIRC R4 was not based on glibc2, so I'd expect it to never show up.
 
-Does anyone have successfully cross-compiled linux for MOTOROLA
-Sandpoint board or a PPC linux binary kernel can be used on this
-board ?
-
-Does anyone have information to do it ?
-
-Thanks very much
-
+//Marcus
 --
-Cordialement,
-
-Olivier DERVYN
---------------801D627E75B896E0D9492656
-Content-Type: text/x-vcard; charset=us-ascii;
- name="dervyn.vcf"
-Content-Description: Carte pour Olivier DERVYN
-Content-Disposition: attachment;
- filename="dervyn.vcf"
-Content-Transfer-Encoding: 7bit
-
-begin:vcard
-n:DERVYN;Olivier
-tel;fax:04 76 52 18 44
-tel;work:04 76 52 55 09
-x-mozilla-html:FALSE
-url:http://www.digigram.com
-org:DIGIGRAM;Département R&D
-version:2.1
-email;internet:dervyn@digigram.com
-title:Chef de projet / Project manager
-adr;quoted-printable:;;Parc de Pr=E9 Milliet=0D=0A;Montbonnot;;38330;France
-note;quoted-printable:DIGIGRAM=0D=0AParc de Pr=E9 Milliet=0D=0A38330 Montbonnot=0D=0AFRANCE
-fn:Olivier DERVYN
-end:vcard
-
---------------801D627E75B896E0D9492656--
-
+Signature under construction, please come back later.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
