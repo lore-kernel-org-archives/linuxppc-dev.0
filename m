@@ -1,40 +1,30 @@
-Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4DFF9FB3@mail.mediatrix.com>
-From: Jean-Denis Boyer <jdboyer@mediatrix.com>
-To: "'Jim Thompson'" <jim@musenki.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Bogomips and loops_per_jiffy
-Date: Mon, 22 Apr 2002 11:57:58 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+From: toy4x4-admin@moab.off-road.com
+Date: Mon, 22 Apr 2002 10:44:04 -0700
+Message-Id: <200204221744.g3MHi4003217@moab.off-road.com>
+Subject: Your message to Toy4x4 awaits moderator approval
+To: linuxppc-embedded@lists.linuxppc.org
+List-Help: <mailto:toy4x4-request@lists.off-road.com?subject=help>
+List-Post: <mailto:toy4x4@lists.off-road.com>
+List-Subscribe: <http://lists.off-road.com/mailman/listinfo/toy4x4>,
+	<mailto:toy4x4-request@lists.off-road.com?subject=subscribe>
+List-Unsubscribe: <http://lists.off-road.com/mailman/listinfo/toy4x4>,
+	<mailto:toy4x4-request@lists.off-road.com?subject=unsubscribe>
+List-Archive: <http://lists.off-road.com/pipermail/toy4x4/>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jim
-
-> I've noticed that about half the time, the kernels I build take what I
-> think is a long time (> 20 seconds) in calibrate_delay().
-
-I have exactly the same problem with my custom board using an 8260.
-At every 5-10 times I start the kernel, it hangs on
-'Calibrating delay loop...' for about 1 minute, and then yields
-the same result (130.66 BogoMips).
-
-I begun to try to debug that problem, but without any success yet. :-(
-I've searched through the mailing lists, but did not find anything of
-interest.
-
-This problem is very annoying and I really want to fix it!
+Your mail to 'Toy4x4' with the subject
 
 
---------------------------------------------
- Jean-Denis Boyer, B.Eng., System Architect
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
+
+Is being held until the list moderator can review it for approval.
+
+The reason it is being held:
+
+    Post by non-member to a members-only list
+
+Either the message will get posted to the list, or you will receive
+notification of the moderator's decision.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
