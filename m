@@ -1,51 +1,56 @@
-To: rajendra.mishra@timesys.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Unable to locate request_8xxirq() ! 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 01 May 2002 15:19:25 +0530."
-             <200205010949.g419nPI11057@localhost.localdomain>
-Date: Wed, 01 May 2002 18:50:48 +0200
-Message-Id: <20020501165053.8BB39FF6C@denx.denx.de>
+Message-ID: <3CD02066.5070800@pacbell.net>
+Date: Wed, 01 May 2002 10:05:42 -0700
+From: Armin <akuster@pacbell.net>
+MIME-Version: 1.0
+To: andrew may <acmay@acmay.homeip.net>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH] IBM ocp I2C
+References: <20020423200127.G20394@ecam.san.rr.com> <20020423200151.H20394@ecam.san.rr.com> <20020424112626.A22212@ecam.san.rr.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200205010949.g419nPI11057@localhost.localdomain> you wrote:
+andrew may wrote:
+> This patch is also needed to get it to compile. I forgot
+> to check things after I removed the stuff from the headers.
 >
->    I am unable to locate request_8xxirq() function in the 2.4.18 source code.
+>
+> ------------------------------------------------------------------------
+>
+> # This is a BitKeeper generated patch for the following project:
+> # Project Name: Linux 2.4 for PowerPC development tree
+> # This patch format is intended for GNU patch command version 2.5 or higher.
+> # This patch includes the following deltas:
+> #	           ChangeSet	1.966   -> 1.967
+> #	drivers/i2c/i2c-adap-ibm_ocp.c	1.2     -> 1.3
+> #
+> # The following is the BitKeeper ChangeSet Log
+> # --------------------------------------------
+> # 02/04/24	amay@infosec-server.infosec	1.967
+> # remove dead code
+> # --------------------------------------------
+> #
+> diff -Nru a/drivers/i2c/i2c-adap-ibm_ocp.c b/drivers/i2c/i2c-adap-ibm_ocp.c
+> --- a/drivers/i2c/i2c-adap-ibm_ocp.c	Wed Apr 24 11:21:27 2002
+> +++ b/drivers/i2c/i2c-adap-ibm_ocp.c	Wed Apr 24 11:21:27 2002
+> @@ -304,8 +304,6 @@
+>        iic_ibmocp_data[i]->data = (struct iic_regs *)iic_ibmocp_adaps[i];
+>        iic_ibmocp_data[i]->setiic = iic_ibmocp_setbyte;
+>        iic_ibmocp_data[i]->getiic = iic_ibmocp_getbyte;
+> -      iic_ibmocp_data[i]->getown = 0;
+> -      iic_ibmocp_data[i]->getclock = 0;
+>        iic_ibmocp_data[i]->waitforpin = iic_ibmocp_waitforpin;
+>        iic_ibmocp_data[i]->udelay = 80;
+>        iic_ibmocp_data[i]->mdelay = 80;
+>
 
-You shoudl install an update of "grp" on  your  system,  it  must  be
-broken if ir doesn;t find the definition in the kernel sources..
+Andrew,
 
-> Can anyone tell me where is this function located and what does it do ?
-> I  did a search in "lxr.linux.no" , but still i was not able to locate the
-> function it is invisible  :( .
+the entier ibm_ibmocp_data has beeen removed, found other ways arround it
 
-"arch/ppc/kernel/irq.c":
 
-...
-#if (defined(CONFIG_8xx) || defined(CONFIG_8260))
-/* Name change so we can catch standard drivers that potentially mess up
- * the internal interrupt controller on 8xx and 8260.  Just bear with me,
- * I don't like this either and I am searching a better solution.  For
- * now, this is what I need. -- Dan
- */
-#define request_irq     request_8xxirq
-#elif defined(CONFIG_APUS)
-#define request_irq     request_sysirq
-#define free_irq        sys_free_irq
-#endif
-...
+Armin
 
-Next question, please...
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-You can observe a lot just by watching.                  - Yogi Berra
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
