@@ -1,41 +1,49 @@
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: SCC3 UART for MPC850 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 03 Mar 2003 16:46:18 MST."
-             <20030303234618.GA12721@ip68-0-152-218.tc.ph.cox.net>
-Date: Tue, 04 Mar 2003 01:03:30 +0100
-Message-Id: <20030304000335.13A00C6E0C@atlas.denx.de>
+Message-ID: <007a01c2e1e2$493c43e0$020120b0@jockeXP>
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: "Dan Malek" <dan@embeddededge.com>
+Cc: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
+References: <IGEFJKJNHJDCBKALBJLLOEKGFKAA.joakim.tjernlund@lumentis.se> <3E63C905.5000306@embeddededge.com>
+Subject: Re: Improved copy_page() function, about 30% speed up for mpc860!
+Date: Tue, 4 Mar 2003 01:09:12 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20030303234618.GA12721@ip68-0-152-218.tc.ph.cox.net> you wrote:
+> Joakim Tjernlund wrote:
 >
-> > Sorry, this is one of our patches that never  was  accepted  for  the
-> > official source trees (also including hardware flow control).
+> > I have been playing with the copy_page() function in arch/ppc/kernel/misc.S
+> > and gained about 30% speed up for my mpc860, rev D4 MHz.
 >
-> ... because you never split things out into logical chunks which make
-> life easier on people trying to understand what changed and why.  Our
-> last merge went well I thought, and I'm up for another round if you are.
+> Have you found the discussion in linuxppc-dev about the work Paul has done
+> on this in general for PowerPC?  It may help avoid repeating some work and
+> provide some guidance.....
 
-It would be too much trouble to separate the  hardware  flow  control
-stuff  from the other port configuration options. I feel it should be
-sufficient to have a set of changes local to one single source file.
+I have searched but I did not find anything conclusive. Pointers?
 
-You say it is not sufficent. OK. You are the maintainer, I ain't.
+> And don't forget....many applications aren't heavily 'copy-centric' and it
+> may be beneficial to not blow away the caches in those cases.  That is, if
 
-It's your decision, and I won't discuss it.
+If you are referring to the copy_page() that I attached in my first mail, then
+yes it uses more icache, but if you have seen my later post where I took it
+back and stated that just enabling dcbz in the existing version of copy_page()
+would give the same speed up, I don't follow you. How am I wasting caches?
 
+In the end I would like to modify copy_tofrom_user() so that dcbz is used on kernel space
+addresses but not on user space without adding a lot of code. Ideas welcome.
 
-Wolfgang Denk
+> you apply systems engineering methods to your testing instead of just focusing
+> on such a low level detail, you may discover you are wasting your time and
+> from an overall system application you may be providing little benefit or
+> even a overall degradation in system performance.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Most people would like to be delivered  from  temptation  but  would
-like it to keep in touch."                             - Robert Orben
+I am just trying make 8xx perform a little better and I focus on areas I know something
+about such as crc32, the enet.c driver and in this case various memory copy stuff. Hopefully
+the end result will be useful to me and others.
+
+  Jocke
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
