@@ -1,71 +1,24 @@
-Message-ID: <387E4D1C.C2B61B95@ctam.com.au>
-Date: Fri, 14 Jan 2000 09:09:33 +1100
-From: Brendan J Simon <Brendan.Simon@ctam.com.au>
-Reply-To: Brendan.Simon@ctam.com.au
+Subject: Porting 8xxROM to Embedded Planet CLLF board
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Fri, 14 Jan 2000 10:20:55 +1100 (EST)
 MIME-Version: 1.0
-To: dony <dony.he@huawei.com.cn>
-CC: linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Cross-compile Applications for 860 on x86
-References: <386C150F.22B1A3D0@huawei.com.cn> <386ABF52.922267E9@ctam.com.au> <38701F3A.FAD6263E@huawei.com.cn> <386ADE53.D3411F6A@ctam.com.au> <38704D0B.94438516@huawei.com.cn> <386AFFC5.E0134DB8@ctam.com.au> <38708C86.2CD58E66@huawei.com.cn> <387142DF.7A3025D0@ctam.com.au> <38715DAE.B6CBC772@huawei.com.cn> <3871572F.FA4E7842@ctam.com.au> <38717C52.ECF1AFFD@huawei.com.cn> <3871953B.345DDA23@ctam.com.au> <38754F28.B6B4CE70@huawei.com.cn> <38754419.20D95C5A@ctam.com.au> <3876A6E5.3488738B@huawei.com.cn> <3876C6FD.794BD1BF@ctam.com.au> <387A87DF.4ED23CA6@huawei.com.cn> <387A81F3.702B29A2@ctam.com.au> <387C4D8D.9C058F1C@huawei.com.cn> <387D3212.A4E9904F@ctam.com.au> <387D7A4B.FCA07105@huawei.com.cn>
 Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000113232055.F284515C14@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-dony wrote:
+Hi folks,
 
-> ##################################
-> Cross Development for Linux/PPC
->
-> LibC
-> Get
-> ftp://sourceware.cygnus.com/pub/glibc/glibc-2.1.tar.gz
-> ftp://sourceware.cygnus.com/pub/glibc/glibc-linuxthreads-2.1.tar.gz
-> ftp://ftp.funet.fi/pub/gnu/funet/glibc-crypt-2.1.tar.gz
-> Build
-> ln -sf $CVS_LINUX_TOP/include/asm /usr/local/powerpc-linux/include/asm
-> ln -sf $CVS_LINUX_TOP/include/linux /usr/local/powerpc-linux/include/linux
-> tar zxf glibc-2.1.tar.gz
-> cd glibc-2.1
-> tar zxf ../glibc-crypt-2.1.tar.gz
-> tar zxf ../glibc-linuxthreads-2.1.tar.gz
-> mkdir build
-> cd build
-> CC=powerpc-linux-gcc AR=powerpc-linux-ar RANLIB=powerpc-linux-ranlib ../configure
-> --host=powerpc-linux --with-headers=$CVS_LINUX_TOP/include
-> --enable-add-ons=crypt,linuxthreads --prefix=/usr/local/powerpc-linux
-> make
-> make install
-> ############################################
->
-> All except the last step are right. When I do "make install" , I get the following error:
->
-> ########################################
-> ../sysdeps/unix/sysv/linux/i386/profil-counter.h: In function `profil_counter':
-> In file included from ../sysdeps/unix/sysv/linux/powerpc/profil-counter.h:2,
->                  from ../sysdeps/posix/profil.c:54,
->                  from ../sysdeps/unix/sysv/linux/profil.c:3:
-> ../sysdeps/unix/sysv/linux/i386/profil-counter.h:26: structure has no member named `regs'
-> ../sysdeps/posix/profil.c:39: warning: inlining failed in call to `profil_count'
-> ../sysdeps/unix/sysv/linux/i386/profil-counter.h:26: warning: called from here
-> make[2]: *** [/usr/local/powerpc-linux/glibc-2.1/build/gmon/profil.o] Error 1
-> make[2]: Leaving directory `/usr/local/powerpc-linux/glibc-2.1/gmon'
-> make[1]: *** [gmon/subdir_lib] Error 2
-> make[1]: Leaving directory `/usr/local/powerpc-linux/glibc-2.1'
-> make: *** [install] Error 2
-> ################################
->
-> Since the glibc package is very very large, locating the file where errors occur (ie, where
-> struct singcontext is defined?) is a bit difficult.
-> Do you have any experience?
+Before I set off to re-invent the wheel, I'm wondering if anyone has attempted
+to port the 8xxROM code (from http://www.s4l.de/powerpc.html) to the Embedded
+Planet CLLF 860T board?
 
-I do not have the solution to your installation problem but I would just like to make a
-suggestion for CC= when configuring for your mpc860 target.  Try CC="powerpc-linux-gcc
--mcpu=860" if the 860 is not your default processor when invoking gcc.  I think you can do
-this at the configuration stage when building your cross-compiler or you can manually change
-the specs file.
+Alternatively, has anyone tried using Motorola's DINK32 ROM monitor from:
+http://www.mot.com/SPS/PowerPC/teksupport/tools/DINK32/VERSION12/dinkindex.htm
 
-Brendan Simon.
-
+Thanks,
+Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
