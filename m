@@ -1,22 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de.ibm.com", Issuer "Equifax" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8E6972BDDC
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Oct 2004 19:04:18 +1000 (EST)
-In-Reply-To: <416B67DE.3050909@nortelnetworks.com>
-References: <416709B8.8080107@vision.caltech.edu>
-	<4A39EEF2-1B6B-11D9-AE5A-000A95A4DC02@kernel.crashing.org>
-	<416B67DE.3050909@nortelnetworks.com>
-Mime-Version: 1.0 (Apple Message framework v619)
-Message-Id: <AB928930-1C2D-11D9-925F-000A95A4DC02@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Tue, 12 Oct 2004 11:04:06 +0200
-To: Chris Friesen <cfriesen@nortelnetworks.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@ozlabs.org,
-	Arrigo Benedetti <arrigo@bologna.vision.caltech.edu>
-Subject: Re: Update frequency of Time Base reg?
+Return-Path: <mgroeger@sysgo.com>
+Received: from mailgate.sysgo.de (ns.sysgo.de [213.68.67.98])
+	by ozlabs.org (Postfix) with ESMTP id B4B9A2BDB8
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Oct 2004 19:20:48 +1000 (EST)
+Date: Tue, 12 Oct 2004 11:20:41 +0200 (CEST)
+From: Marius Groeger <mgroeger@sysgo.com>
+Sender: mag@sysgo.com
+To: Jeff Angielski <jangiels@speakeasy.net>
+In-Reply-To: <1097515329.8508.66.camel@nighteyes.localdomain>
+Message-ID: <Pine.LNX.4.61.0410121116290.1960@mag.sysgo.com>
+References: <1097515329.8508.66.camel@nighteyes.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: Creating rootfs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,9 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Look where in which device tree?
+On Mon, 11 Oct 2004, Jeff Angielski wrote:
 
-In the "timebase-frequency" property under any CPU node.
+> So how are people creating the rootfs for their embedded target these
+> days?  Busybox?  PTX?  Strip down some existing filesystem?
+>
+> I have an opportunity to start "fresh" with our current rootfs and could
+> not find anything definitive when google-ing for solutions.  So I am
+> curious to hear what the rest of the community is using.
 
+For the records, see my_signature->urls[1] for what I'm using. Feel 
+free to PM me for details.
 
-Segher
+Note that I'm biased. :-)
+
+Regards,
+Marius
+
+-- 
+Marius Groeger <mgroeger@sysgo.com>
+SYSGO AG                      Embedded and Real-Time Software
+Voice: +49 6136 9948 0                  FAX: +49 6136 9948 10
+www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
