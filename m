@@ -1,42 +1,43 @@
-Date: Wed, 10 Jan 2001 14:29:47 +0000
-Subject: Re: ibook sound, limping mixer
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Christof Petig <christof@petig-baender.de>,
-        Conrad H Ziesler <cziesler@umich.edu>, linuxppc-dev@lists.linuxppc.org
+Date: Wed, 10 Jan 2001 17:43:18 +0100
+Subject: Kernel 2.4.0 and Netatalk
+From: Chris Boot <bootc@worldnet.fr>
+To: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <B6824E71.8287%bootc@worldnet.fr>
 Mime-version: 1.0
 Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010110143207.0568BDB9FD@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-on  Wed, Jan 10, 2001, Christof Petig wrote:
-> Conrad H Ziesler wrote:
->> in case this is of any use to anyone:
-> Yes, I'm very interested. Since I actually started looking into the
-> specs and sources, but did not find the time to start coding the same.
+Hi,
 
-so am I (of course).  I've taken a copy over to my devl area - and I will
-figure out how to include it into the next stage of dmasound devl soon.
+After I upgraded to kernel 2.4.0 (bk linuxppc_2_4), I found that netatalk
+could not access my Zip drive.  This worked in the 2.2 series kernels.  If I
+add my zip drive's mount point to my .AppleVolumes file, when the zip is not
+mounted, all works fine, but if a zip disk is mounted and I try to log in,
+when I try to mount a volume, my computer complains that it lost the
+connection.
 
->> since the dac3550a has write-only i2c registers, its pretty hard to debug
->> the i2c interface.  probably if someone puts an oscilloscope probe on the
->> i2c bus signals it should all become clear.
->>
-> I would recommend a logic analyzer or better an i2c analyzer. I have an
-> oscilloscope but I would not dare to try reading i2c signals by hand.
+If I look in /var/log/messages, all I see is messages like this:
+Jan 10 18:29:05 tequila afpd[594]: login bootc (uid 500, gid 500)
+Jan 10 18:29:05 tequila afpd[568]: server_child[1] 594 killed
 
-well, I have a storage scope (which would possibly do it) [I don't run to a
-logic analyser]
+The volume appears in the volume list.
 
-- but more fundamental problem - no iBook - if someone in the UK (unless
-someone from elsewhere is prepared to ship one) wants to lend one - I'll see
-what I can do... it's not a machine I can justify buying at the moment.
+I originally thought that this may be due to an incompatibility with autofs,
+which I had been using, but even if I disable it, the messages are exactly
+the same.  I'm mounting with mount options "fork=netatalk,uid=500,gid=500".
 
-[my test set is G3/Beige, Lombard, 9600/233, and, when I get the disk
-re-partitioned G4/500].
+Is there any way I can make this work?  Would upgrading to the latest
+development release of netatalk help?
 
-ciao,
-Iain.
+Thanks for any information,
+
+--
+    .-.        Chris Boot
+    /v\     bootc@worldnet.fr
+   // \\
+  /(   )\   L   I   N   U   X
+   ^^-^^   >Phear the Penguin<
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
