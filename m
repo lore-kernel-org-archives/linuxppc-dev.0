@@ -1,31 +1,36 @@
-Date: Fri, 2 Feb 2001 12:51:43 -0600
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Dan Malek <dan@mvista.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Fast Altivec
-Message-ID: <20010202125143.D31120@altus.drgw.net>
-References: <3A7AE117.628B22A6@mvista.com>
-Mime-Version: 1.0
+Message-ID: <20010203030351.28012.qmail@web1003.mail.yahoo.com>
+Date: Fri, 2 Feb 2001 19:03:51 -0800 (PST)
+From: Dan Bethe <dan_bethe@yahoo.com>
+Subject: Re: powerbook doubles as a frying pan
+To: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <v04220800b69d5088a9c4@[10.0.0.42]>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3A7AE117.628B22A6@mvista.com>; from dan@mvista.com on Fri, Feb 02, 2001 at 11:32:23AM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Feb 02, 2001 at 11:32:23AM -0500, Dan Malek wrote:
->
-> I don't think of things like this......
->
-> Matt Porter thought people would be interested to know we are
-> showing a 750 MHz 7450 running Linux (linuxppc_2_5) here at Linux
-> World this week.
+> However, from what I've heard the G4 sensor is essentially useless.
+> On my own dual processor 500, a MacOS temperature readout utility
+> consistently tells me that one processor is 24 degC (or more) cooler
+> than the other.  Both CPUs are the same die revision of course.
 
-Heheheh, I have to ask.. is it really running that fast, and do you have all
-the neat features turned on?
+	Maybe one is being used more than the other.  :)  That would often be
+the case.
+	I'm not sure if you guys discussed this, but I have two points on the
+temperature issue.
+	One is that the Wallstreet II series had a revision that had a
+motherboard bus somewhere around 83 MHz and was way hotter than the
+rest, which were often at 66 MHz.  I'm pretty sure the cpu speed was
+292 MHz on that faster motherboard.  They had to lower the motherboard
+bus for subsequent models because it was too hot.
+	The second point is that I heard that about 1 week before Macworld
+Expo, somebody checked in Macintosh power management code to Darwin's
+CVS.  :)
 
-
---------------------------------------------------------------------------
-Troy Benjegerdes                'da hozer'                hozer@drgw.net
+=====
+"Don't expect your own messiah; this neverworld which you desire is
+only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
