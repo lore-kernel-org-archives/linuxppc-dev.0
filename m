@@ -1,51 +1,43 @@
-From: okorpil@fh-landshut.de
-Date: Thu, 1 Apr 2004 12:55:47 +0200 (CEST)
-Reply-To: okorpil@fh-landshut.de
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Serial Console / Booting Linux with the PPCbug on MVME2100?
-Message-ID: <Pine.LNX.4.58.0404011242110.11973@ppcproject1>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 1 Apr 2004 08:09:43 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: okorpil@fh-landshut.de
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Serial Console / Booting Linux with the PPCbug on MVME2100?
+Message-ID: <20040401150943.GE21709@smtp.west.cox.net>
+References: <Pine.LNX.4.58.0403311359540.21912@ppcproject1> <20040331170924.GL13819@smtp.west.cox.net> <Pine.LNX.4.58.0404011015410.476@ppcproject1>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.58.0404011015410.476@ppcproject1>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-To complete the information about what I tried to make it work:
+On Thu, Apr 01, 2004 at 10:26:28AM +0200, okorpil@fh-landshut.de wrote:
 
-Network PReP-Boot Mode Enable [Y/N] = Y
+> Hello!
+>
+> I'm using a plain vanilla 2.4.25 kernel with the attached config.
+>
+> As you may have noted I'm using the zImage.prep.
+>
+> Do I need to make a mkbugboot by hand? (It's only configured to be done
+> for the CONFIG_LOPEC, CONFIG_PPLUS and CONFIG_PRPMC750)
 
-is in NVRAM.
+This is what I expected.  Looking quickly over the prep_* files in
+arch/ppc/platform confirms that the MVME2100 is not supported by these
+files.  As an aside, mkbugboot is only needed to put an image into flash
+and boot it. mkprep is used for hd(/cd?), floppy and network.
 
-The board is a MVME2100 with a MPC8240 microcontroller (both from
-Motorola). I want to use a serial console only (no PMC VGA card). I may
-use either netboot or from RAM/Flash (with NFS after) for booting, but I
-have no harddisk.
+Now, a quick googling for Linux and MVME2100 gives this very old, but
+mostly sufficient patch:
+http://www.aps.anl.gov/asd/people/anj/mvme2100.patch.gz
+Since you have the hardware, from here it should be not too hard, using
+the LoPEC as an example, port the code in that patch to 2.4 and 2.6 (if
+you do a patch vs 2.6 we can get that support into kernel.org, if you're
+willing to try and keep the platform working).
 
-I've built kernels for CHRP/PREP and for Sandpoint.
-
-I've built kernels for PPLUS, LOPEC and PRMPC750, and tried their bugboot
-images.
-
-I've tried a mkbugboot modified zImage.prep and vmlinux.gz (for PREP).
-
-I do not get beyond the "Residual Data Located at xxx" step, then it seems
-to hang (with the PREP image). All others images produce Alignment or
-other errors. Several others seem to have gone beyond the step with a
-similar config, so I wonder.
-
-I attached my .config to another post to the same Subject.
-
-Some people seem to have built for a similar configuration with
-CONFIG_PREP, but this seems to have already vanished from the list of
-configuration macros (and from grepping the kernel source).
-
-I seem to have problems building a kernel for a 8260 config - is this
-broken?
-
-I've nearly completely run out of ideas and hope someone of you people
-knows something about this.
-
-Thanks in advance,
-Oliver Korpilla
+-
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
