@@ -1,18 +1,20 @@
-Return-Path: <vijay_padiyar@hotmail.com>
-Received: from OMC3-S15.phx.gbl (omc3-s15.bay6.hotmail.com [65.54.249.89])
-	by ozlabs.org (Postfix) with ESMTP id B38A767A70
+Return-Path: <jason.mcmullan@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id 6A6F767A33
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Apr 2005 20:48:28 +1000 (EST)
-Message-ID: <BAY1-DAV13A9814EECCF1E48C86E2D8B380@phx.gbl>
-From: "Vijay Padiyar" <vijay_padiyar@hotmail.com>
-To: <dmarty@enib.fr>
-References: <20050401100354.70hbtqjfs33cos04@imp.enib.fr>
-Date: Fri, 1 Apr 2005 16:06:47 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: LinuxPPC Support <linuxppc-embedded@ozlabs.org>
-Subject: Re: Embedded linux on powerpc
+	Fri,  1 Apr 2005 23:50:18 +1000 (EST)
+From: Jason McMullan <jason.mcmullan@timesys.com>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <1112301225.3337.19.camel@ad.doubleclick.net>
+References: <1112298886.3337.14.camel@ad.doubleclick.net>
+	<1112301225.3337.19.camel@ad.doubleclick.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-/Jg6bAcXKvaK1Jf4S7o/"
+Date: Fri, 01 Apr 2005 08:50:15 -0500
+Message-Id: <1112363416.9748.5.camel@ad.doubleclick.net>
+Mime-Version: 1.0
+Subject: Re: [PATCH 2.6.11.6] CPM2 Timers API
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,102 +25,111 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi David
 
-If your file was compiled statically (i.e. you gave the -static flag while
-compiling & linking the file) then it will execute the application without
-any problems.
-
-If you have not used that flag (i.e. you're compiling your application using
-dynamic library linking, which is preferrable) then you need to have the GNU
-library and loader files (libc-2.3.3.so and ld-2.3.3.so and their symbolic
-links, libc.so.6 and ld.so.6) in your target's /lib directory. You'll find
-these in your toolchain's lib folder
-(/home/yourname/tools/powerpc-603e-linux-gnu/lib). Copy these to your root
-filesystem's lib directory.
-
-Here is a snapshot of my root filesystem's /lib directory:
-
-[chandrashekharp@linux lib]$ ls
-ld-2.3.3.so        libm-2.3.3.so           libnss_files.so.2
-libstdc++.so.6
-ld.so.1            libm.so.6               libpthread-0.10.so
-libstdc++.so.6.0.1
-libc-2.3.3.so      libnsl-2.3.3.so         libpthread.so.0
-libthread_db-1.0.so
-libcrypt-2.3.3.so  libnsl.so               libresolv-2.3.3.so
-libthread_db.so
-libcrypt.so.1      libnsl.so.1             libresolv.so.2
-libthread_db.so.1
-libc.so.6          libnss_compat-2.3.3.so  librt-2.3.3.so
-libutil-2.3.3.so
-libdl-2.3.3.so     libnss_compat.so        librt.so            libutil.so.1
-libdl.so.2         libnss_compat.so.2      librt.so.1          modules
-libgcc_s.so        libnss_files-2.3.3.so   libstdc++.la
-libgcc_s.so.1      libnss_files.so         libstdc++.so
-
-Similarly, you can copy whatever library files you require from your
-toolchain's lib folder to your root filesystem's lib folder.
-
-To find out which library files your executable needs, you need to do a
-readelf on the executable and search for shared library dependencies:
-
-~ $ powerpc-603e-linux-gnu-readelf -a hello | grep "Shared"
-
-Executing this command will give you an output like this:
-
- 0x00000001 (NEEDED)                     Shared library: [libc.so.6]
-
-This means hello needs libc.so.6 (libc-2.3.3.so) to execute properly. Next,
-using the same command on libc.so.6 gives:
-
-~ $ powerpc-603e-linux-gnu-readelf -a libc-2.3.3.so | grep "Shared"
-
- 0x00000001 (NEEDED)                     Shared library: [ld.so.1]
-
-So libc-2.3.3.so needs ld.so.1 (ld-2.3.3.so) to work. I think you can copy
-these two files to your root filesystem's /lib directory and your app should
-execute fine.
-
-Regards
-
-Vijay Padiyar
-
-http://www.vijaypadiyar.eu.tf
------ Original Message ----- 
-From: <dmarty@enib.fr>
-To: <vijay_padiyar@hotmail.com>
-Sent: Friday, April 01, 2005 1:33 PM
-Subject: Embedded linux on powerpc
+--=-/Jg6bAcXKvaK1Jf4S7o/
+Content-Type: multipart/mixed; boundary="=-Ujry4cRiYTH9m7Gw4ZXp"
 
 
-> Hello,
->
-> You wrote:
->
-> >When I try to execute the resulting file on my target from the Linux
-kernel
-> >prompt, I get a message saying:
-> >
-> >/home # ./hello
-> >/bin/sh: hello: File not found (or something like that)
->
-> I have the same problem did you find a solution,
-> thank you in advance for your response
->
-> David
->
->
-> ----------------------------------------------------------------
-> The content of this message is only under the responsibility
-> of its sender. Moreover, the internet can not guarantee the
-> integrity of this message. The ENIB shall (will) not
-> therefore be liable for the message if modified.
-> ----------------------------------------------------------------
-> Le contenu de ce message est de la seule responsabilite
-> de son expediteur. De plus, l'internet ne permettant pas
-> d'assurer l'integrite de ce message, l'ENIB decline toute
-> responsabilite au titre de ce message, dans l'hypothese
-> ou il aurait ete modifie.
->
->
+--=-Ujry4cRiYTH9m7Gw4ZXp
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+
+And here's the test-case kernel module....
+
+
+--=20
+Jason McMullan <jason.mcmullan@timesys.com>
+TimeSys Corporation
+
+
+--=-Ujry4cRiYTH9m7Gw4ZXp
+Content-Disposition: attachment; filename=cpm_timer_test.c
+Content-Transfer-Encoding: base64
+Content-Type: text/x-csrc; name=cpm_timer_test.c; charset=iso-8859-1
+
+LyoNCiAqIENQTSBUaW1lcnMgdGVzdA0KICoNCiAqIENvcHlyaWdodCAyMDA0LCBUaW1lc3lzIENv
+cnAuDQogKiBKYXNvbiBNY011bGxhbiA8amFzb24ubWNtdWxsYW5AdGltZXN5cy5jb20+DQogKi8N
+Cg0KI2luY2x1ZGUgPGxpbnV4L2luaXQuaD4NCiNpbmNsdWRlIDxsaW51eC9tb2R1bGUuaD4NCiNp
+bmNsdWRlIDxsaW51eC9kZWxheS5oPg0KI2luY2x1ZGUgPGxpbnV4L3dhaXQuaD4NCg0KI2luY2x1
+ZGUgPGFzbS9jcG1fdGltZXIuaD4NCg0Kc3RhdGljIGludCBmYWlsZWQgPSAwOw0Kc3RhdGljIHZv
+bGF0aWxlIGludCBvbmNlLCBldmVyeTsNCg0Kc3RhdGljIHdhaXRfcXVldWVfaGVhZF90IHF1ZXVl
+Ow0KDQojZGVmaW5lIEZBSUxFRCh4LCBhcmdzLi4uKSBkbyB7IGZhaWxlZCsrOyBwcmludGsoS0VS
+Tl9JTkZPICJjcG1fdGltZXJfdGVzdDogIiB4ICwgIyMgYXJncyApOyBpZiAodG0gIT0gTlVMTCkg
+eyBjcG1fdGltZXJfc3RvcCh0bSk7IGNwbV90aW1lcl9mcmVlKHRtKTsgfSByZXR1cm4gLUVJTlZB
+TDsgfSB3aGlsZSAoMCkNCg0Kc3RhdGljIHZvaWQgY3BtX3RpbWVyX3Rlc3RfY2FsbGJhY2soY3Bt
+X3RpbWVyX3QgdG0sIHZvaWQgKmRhdGEpDQp7DQoJaWYgKGRhdGEgPT0gJm9uY2UpIHsNCgkJdW5z
+aWduZWQgbG9uZyB2YWwgPSBjcG1fdGltZXJfZ2V0X3RpY2tzKHRtKTsNCgkJcHJpbnRrKEtFUk5f
+SU5GTyAiY3BtX3RpbWVyX3Rlc3Q6IENhbGxlZCBvbmNlIGF0IHRpY2sgJWxkLlxuIiwNCgkJICAg
+ICAgIHZhbCk7DQoJCW9uY2UrKzsNCgkJd21iKCk7DQoJfQ0KDQoJaWYgKGRhdGEgPT0gJmV2ZXJ5
+KSB7DQoJCXVuc2lnbmVkIGxvbmcgdmFsID0gY3BtX3RpbWVyX2dldF90aWNrcyh0bSk7DQoJCXBy
+aW50ayhLRVJOX0lORk8NCgkJICAgICAgICJjcG1fdGltZXJfdGVzdDogQ2FsbGVkIGV2ZXJ5KCVk
+KSwgdGljayAlbGQuXG4iLCBldmVyeSwNCgkJICAgICAgIHZhbCk7DQoJCWV2ZXJ5Kys7DQoJCWlm
+IChldmVyeSA+IDUpDQoJCQljcG1fdGltZXJfY2FsbF9ub25lKHRtKTsNCgkJd21iKCk7DQoJfQ0K
+DQoJd2FrZV91cF9pbnRlcnJ1cHRpYmxlKCZxdWV1ZSk7DQp9DQoNCnN0YXRpYyBpbnQgdGVzdF90
+aW1lcihpbnQgdGltZXJfaWQpDQp7DQoJY3BtX3RpbWVyX3QgdG0gPSBOVUxMOw0KCWludCBlcnI7
+DQoJdW5zaWduZWQgbG9uZyByZXMsIHZhbDsNCg0KCXByaW50ayhLRVJOX0lORk8gImNwbV90aW1l
+cl90ZXN0OiBUZXN0IHRpbWVyIElEIDB4JS4yeFxuIiwgdGltZXJfaWQpOw0KCWVyciA9IGNwbV90
+aW1lcl9hbGxvYyh0aW1lcl9pZCwgJnRtKTsNCglpZiAoZXJyIDwgMCkNCgkJRkFJTEVEKCJDYW4n
+dCBhbGxvY2F0ZSB0aW1lciAweCUuMnhcbiIsIHRpbWVyX2lkKTsNCg0KCXJlcyA9IGNwbV90aW1l
+cl9nZXRfcmVzb2x1dGlvbih0bSk7DQoJcHJpbnRrKEtFUk5fSU5GTyAiY3BtX3RpbWVyX3Rlc3Q6
+IG5hbm9zZWNvbmRzL3RpY2sgPSAlbGRcbiIsIHJlcyk7DQoNCgl2YWwgPSBjcG1fdGltZXJfZ2V0
+X3RpY2tzKHRtKTsNCglwcmludGsoS0VSTl9JTkZPICJjcG1fdGltZXJfdGVzdDogY3VycmVudCB2
+YWx1ZSA9ICVsZFxuIiwgdmFsKTsNCg0KCWNwbV90aW1lcl9zdG9wKHRtKTsNCgljcG1fdGltZXJf
+cmVzZXQodG0pOw0KCXZhbCA9IGNwbV90aW1lcl9nZXRfdGlja3ModG0pOw0KCXByaW50ayhLRVJO
+X0lORk8gImNwbV90aW1lcl90ZXN0OiB2YWx1ZSBhZnRlciBzdG9wL3Jlc2V0PSAlbGRcbiIsIHZh
+bCk7DQoJaWYgKHZhbCAhPSAwKQ0KCQlGQUlMRUQoIlRpbWVyIDB4JS4yeCBkaWRuJ3Qgc3RvcCFc
+biIsIHRpbWVyX2lkKTsNCg0KCWNwbV90aW1lcl9zdGFydCh0bSk7DQoJdWRlbGF5KDUpOw0KCXZh
+bCA9IGNwbV90aW1lcl9nZXRfdGlja3ModG0pOw0KCXVkZWxheSg1KTsNCglyZXMgPSBjcG1fdGlt
+ZXJfZ2V0X3RpY2tzKHRtKTsNCglwcmludGsoS0VSTl9JTkZPICJjcG1fdGltZXJfdGVzdDogdmFs
+dWUgYWZ0ZXIgIDUgdXM9ICVsZFxuIiwgdmFsKTsNCglwcmludGsoS0VSTl9JTkZPICJjcG1fdGlt
+ZXJfdGVzdDogdmFsdWUgYWZ0ZXIgMTAgdXM9ICVsZFxuIiwgcmVzKTsNCglpZiAodmFsID09IDAg
+fHwgcmVzID09IDApDQoJCUZBSUxFRCgiVGltZXIgMHglLjJ4IGRpZG4ndCBpbmNyZW1lbnQhXG4i
+LCB0aW1lcl9pZCk7DQoNCglpbml0X3dhaXRxdWV1ZV9oZWFkKCZxdWV1ZSk7DQoNCglvbmNlID0g
+MDsNCgllcnIgPQ0KCSAgICBjcG1fdGltZXJfY2FsbF9vbmNlKHRtLCA1MDAwMCwgY3BtX3RpbWVy
+X3Rlc3RfY2FsbGJhY2ssDQoJCQkJKHZvaWQgKikmb25jZSk7DQoJaWYgKGVyciA8IDApDQoJCUZB
+SUxFRCgiQ2FuJ3QgY2FsbCBjcG1fdGltZXJfY2FsbF9vbmNlIGZvciAweCUuMnhcbiIsIHRpbWVy
+X2lkKTsNCg0KCXByaW50ayhLRVJOX0lORk8gImNwbV90aW1lcl90ZXN0OiBXYWl0aW5nIGZvciBv
+bmUtc2hvdC4uLlxuIik7DQoJY3BtX3RpbWVyX3N0YXJ0KHRtKTsNCgllcnIgPSB3YWl0X2V2ZW50
+X2ludGVycnVwdGlibGUocXVldWUsIG9uY2UgIT0gMCk7DQoJaWYgKGVyciA8IDApDQoJCUZBSUxF
+RCgiSW50ZXJydXB0ZWQgc2xlZXAgZm9yIDB4JS4yeFxuIiwgdGltZXJfaWQpOw0KDQoJZXZlcnkg
+PSAwOw0KCWVyciA9DQoJICAgIGNwbV90aW1lcl9jYWxsX2V2ZXJ5KHRtLCA1MDAwMCwgY3BtX3Rp
+bWVyX3Rlc3RfY2FsbGJhY2ssDQoJCQkJICh2b2lkICopJmV2ZXJ5KTsNCglpZiAoZXJyIDwgMCkN
+CgkJRkFJTEVEKCJDYW4ndCBjYWxsIGNwbV90aW1lcl9jYWxsX2V2ZXJ5IGZvciAweCUuMnhcbiIs
+DQoJCSAgICAgICB0aW1lcl9pZCk7DQoNCglwcmludGsoS0VSTl9JTkZPICJjcG1fdGltZXJfdGVz
+dDogV2FpdGluZyBmb3IgbXVsdGktc2hvdCB4NS4uLlxuIik7DQoJY3BtX3RpbWVyX3N0YXJ0KHRt
+KTsNCgllcnIgPSB3YWl0X2V2ZW50X2ludGVycnVwdGlibGUocXVldWUsIGV2ZXJ5ID4gNSk7DQoJ
+aWYgKGVyciA8IDApDQoJCUZBSUxFRCgiSW50ZXJydXB0ZWQgc2xlZXAgZm9yIDB4JS4yeFxuIiwg
+dGltZXJfaWQpOw0KCWNwbV90aW1lcl9jYWxsX25vbmUodG0pOw0KCXByaW50ayhLRVJOX0lORk8g
+ImNwbV90aW1lcl90ZXN0OiBDb3VudGVkIHVwIHRvICVkLlxuIiwgZXZlcnkpOw0KDQoJY3BtX3Rp
+bWVyX3N0b3AodG0pOw0KCWNwbV90aW1lcl9mcmVlKHRtKTsNCg0KCXJldHVybiAwOw0KfQ0KDQpz
+dGF0aWMgaW50IGNwbV90aW1lcl90ZXN0X2luaXQodm9pZCkNCnsNCglpbnQgZXJyOw0KDQoJcHJp
+bnRrKEtFUk5fSU5GTyAiQ1BNMiBUaW1lciBUZXN0IE1vZHVsZS5cbiIpOw0KDQojZGVmaW5lIFRF
+U1QoeCkgZG8geyBlcnI9dGVzdF90aW1lcih4KTsgaWYgKGVyciAhPSAwKSBnb3RvIGJhZDsgfSB3
+aGlsZSAoMCkNCg0KCVRFU1QoQ1BNMl9USU1FUjE2XzEpOw0KCVRFU1QoQ1BNMl9USU1FUjE2XzIp
+Ow0KCVRFU1QoQ1BNMl9USU1FUjE2XzMpOw0KCVRFU1QoQ1BNMl9USU1FUjE2XzQpOw0KDQoJVEVT
+VChDUE0yX1RJTUVSMzJfMSk7DQoJVEVTVChDUE0yX1RJTUVSMzJfMik7DQoNCiAgICAgIGJhZDoN
+CglpZiAoZmFpbGVkKSB7DQoJCXByaW50ayhLRVJOX0lORk8gImNwbV90aW1lcl90ZXN0OiBGQUlM
+RUQgJWQgdGVzdHNcbiIsIGZhaWxlZCk7DQoJfSBlbHNlIHsNCgkJcHJpbnRrKEtFUk5fSU5GTyAi
+Y3BtX3RpbWVyX3Rlc3Q6IFBBU1NFRFxuIik7DQoJfQ0KDQoJcmV0dXJuIDA7DQp9DQoNCnN0YXRp
+YyB2b2lkIGNwbV90aW1lcl90ZXN0X2V4aXQodm9pZCkNCnsNCglwcmludGsoS0VSTl9JTkZPICJD
+UE0yIFRpbWVyIFRlc3QgTW9kdWxlIHVubG9hZGVkLlxuIik7DQoJcmV0dXJuOw0KfQ0KDQpNT0RV
+TEVfTElDRU5TRSgiR1BMIik7DQptb2R1bGVfaW5pdChjcG1fdGltZXJfdGVzdF9pbml0KTsNCm1v
+ZHVsZV9leGl0KGNwbV90aW1lcl90ZXN0X2V4aXQpOw0K
+
+
+--=-Ujry4cRiYTH9m7Gw4ZXp--
+
+--=-/Jg6bAcXKvaK1Jf4S7o/
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQBCTVGX8/0vJ5szK6kRAgZyAJ96B6Cgp4+onB7HXxJ8AJF0U7mhoACglLCt
+E0+rmAlYEhtB3WzgIFIvLAw=
+=Q4Cr
+-----END PGP SIGNATURE-----
+
+--=-/Jg6bAcXKvaK1Jf4S7o/--
