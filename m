@@ -1,43 +1,37 @@
-Message-Id: <199904042044.WAA03236@piglet.cpu.lu>
-Date: Sun, 4 Apr 1999 22:44:23 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: [ANNC] New release of PlanB
-To: video4linux-list@redhat.com, linuxppc-dev@lists.linuxppc.org,
-        linuxppc-user@lists.linuxppc.org, linux-pmac@samba.anu.edu.au
+Message-Id: <199904042337.XAA00413@Taygeta.gom.dorm.org>
+Date: Sun, 4 Apr 1999 23:37:53 +0000 (Local time zone must be set--see zic manual page)
+From: Guillaume Laures <GoM@Taygeta.gom.dorm.org.cybercable.fr>
+Subject: Re: [ANNC] New release of PlanB
+To: mlan@cpu.lu
+cc: linux-pmac@samba.anu.edu.au, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <199904042044.WAA03236@piglet.cpu.lu>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Content-Type: TEXT/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+On  5 Avr, Michel Lanners wrote:
+> Hi all,
+> 
+> I just uploaded a new version of the PlanB driver to my site:
+Patches begin to be hard to follow :-) (but it's better like that)
 
-I just uploaded a new version of the PlanB driver to my site:
+>From the previous release, I have to say that switching to console when
+xawtv (2.40 --fb) is runnig is really uglier than before. Didn't try
+0.06 yet to see if it has changed.
 
-http://www.cpu.lu/~mlan/ftp/planb-0.06.tgz
+Anyway I must report that I had several crashes recently (actually 3 in
+a week, which is definitely much for linux) since I upgraded to 2.2.5,
+with the planb as well. I have only controlfb in the kernel on a
+8600/250 and use the XFB, and i get hard locks when switching quickly
+beetwen X and console.
+Don't know to what it could be related to. Can other people comment on
+this ?
 
-It now includes support for grabbing to disk. It contains a patch for
-the official 2.2.5 kernel sources.
-
-Please try it out and let me know of any bugs or problems you see. I'd
-like to send this to the gurus for inclusion in the official kernel
-sources.
-
-More info can be found here:
-
-http://www.cpu.lu/~mlan/planb.html
-
-Have fun!
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+-- 
+---
+Guillaume Laurès laures@esiea.fr
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
