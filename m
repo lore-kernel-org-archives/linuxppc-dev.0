@@ -1,51 +1,43 @@
+Message-Id: <199904031910.TAA00349@Taygeta.gom.dorm.org>
+Date: Sat, 3 Apr 1999 19:10:50 +0000 (Local time zone must be set--see zic manual page)
+From: Guillaume Laures <GoM@Taygeta.gom.dorm.org.cybercable.fr>
+Subject: i128 console drivers
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Apple Job Posting and Good News for LinuxPPC developers
-References: <9904021711.AA35268@marc.watson.ibm.com>
-From: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-Date: 03 Apr 1999 19:42:53 +0200
-In-Reply-To: David Edelsohn's message of Fri, 02 Apr 1999 12:11:12 -0500
-Message-ID: <8xbth5siqq.fsf@s52.informatik.uni-bremen.de>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-David Edelsohn <dje@watson.ibm.com> writes:
+Hi,
 
-> 
-> >>>>> Holger Bettag writes:
-> 
-> Holger> I have heard rumours that the "Max" core has provisions to
-> Holger> physically address more than 4GB of memory (via the MMU's segment
-> Holger> registers). Processes would still be limited to a 4GB logical
-> Holger> address space, though.
-> 
-> 	The PowerPC architecture always has been able to address more than
-> 32-bits of "logical" address space.  That is the reason for the PowerPC
-> terminology of "effective address", "virtual address", and "real address".
-> The intermediate "virtual address" space of a 32-bit PowerPC
-> implementation is 52 bits.
-> 
-OK, that's true in the usual PowerPC terminology.
+I'm in the planning of thinking of how I could try to... write a imagine
+128 driver.
+Basically I have a Mactell Vision 3D ProII Lite that I'd like to see supported,
+first in the console, later in the XFB architecture (Raah cool GL  !).
 
-> 	Pointers still are 32-bits, but a cooperating operating system and
-                           ^^
-That's what I meant with processes being limited to a 4GB logical address
-space, because the segment registers are not accessible with only user mode
-privileges.
+First I picked the drivers in XFree 3.3.3.1, and saw they was suitable
+for i128 first and second generation as well as for the Revolution 3D
+card (Ticket2Ride, Mactell... in the powermac world) so why not make a
+generic i128 driver ?
 
-> compiler can allow an application to address more virtual memory through
-> runtime modifications to the virtual segments mapped by the segment
-> registers, like memory overlays.  That was the original reason for the
-> design of the MMU in the POWER (predecessor of PowerPC) architecture.  I
-> do not believe that any compiler / OS combination takes advantage of this
-> facility. 
->
-Well, so far there are no 32bit PowerPCs that can handle more than 4GB of
-RAM. The rumours I heard indicate that "Max" might be able to handle more.
-That would make messing with segments worth the effort (and would generate
-all the neat problems of segmented addressing schemes).
+Then I need pointers on the functions that need to be implemented
+in the console driver, I think looking at the other drivers won't be
+easy.
 
-  Holger
+And I need testers of course, I may won't be able to try this out by
+myself (lack of a 2nd pci machine, I need my 8600 to be on 24/24, and I
+don't think a module could be used here).
+
+
+Thank to anybody who may help... at his level.
+
+
+
+-- 
+---
+Guillaume Laurès laures@esiea.fr
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
