@@ -1,59 +1,35 @@
-From: "David W. Patmore" <dwp@bluesteelnet.com>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: G4 + Linux + PCI device + x86 driver = 0
-Date: Sat, 13 Nov 1999 16:55:22 -0800
-Message-ID: <NDBBKOPFGLPEGICBJFDIAEDMCCAA.dwp@bluesteelnet.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <199911140940.BAA29983@easystreet01.easystreet.com>
+Date: Sun, 14 Nov 1999 01:40:50 -0800
+Subject: Would HFS+ read only capability be useful?
+From: "Dave Camp" <dave@thinbits.com>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Since HFS+ development seems to be stalled, I was thinking of throwing my 
+hat in the ring. Now, before you call me crazy...
 
-I'm trying to port a device driver from working x86 code over to a G4 (early
-350MHz) running LinuxPPC.  The driver will load up, but the memory access
-isn't working.
+I've got the HFS+ spec. I've got code I wrote for MacOS that was going to be
+used for a disk repair program I was working on, but has been put on hold
+due to a lack of free time to complete it. The code implements objects for
+reading/manipulating the bitmap, volume header, both B*Tree's, extent lists,
+HFS wrapper volumes, etc. It also has a nice caching system built into it.
 
-Linux version: 2.2.6 Sat Oct 30 1999
-gcc version: egcs-2.91.66
+There is enough code, I would think, to implement read only data fork access
+for HFS+ volumes without much trouble.
 
-warning sign:  I get warning message "pcidrv.o was compiled for kernel
-version
-2.2.6-15apmac, while this kernel is version 2.2.6".  I force the driver to
-load
-using "insmod -f pcidrv.o".
+Problem is, I don't know anything about Linux coding, or more specifically,
+what the API looks like for adding a file system module (or whatever the
+proper term is).
 
-The original x86 (Redhat 6.0) driver uses virt_to_bus() to get the address
-to write to.  In LinuxPPC, that function is not available (not in name
-table).  I guess that I'm supposed to use ioremap(), but that doesn't seem
-to do it for me either.
+Would this be useful? If so, can someone suggest a book or two on coding in
+this area of Linux? Also, are there Unicode API's in Linux (since HFS+ uses
+Unicode to store filenames)?
 
-Code snip:
-	ul_reg_addr = p_dev->base_address[0];
-
-	pul_remapped =ioremap( ul_reg_addr, 32 );
-
-	printk( "pcidrv: base addr %08X \n", ul_reg_addr );
-	printk( "pcidrv: pul_remapped %08X \n", pul_remapped );
-	printk( "pcidrv: remapped data: %08X \n", *pul_remapped );
-
-	iounmap( pul_remapped );
-
-The outcome of running this code is:  pci base address (0x80890000),
-remapped (0xC8271000), data (0xFFFFFFFF).  The data is a status word which I
-expect to be not
-all "F"s.  Note that iounmap is "TBD" in the source, so each time the code
-runs per
-reboot, iomap returns a new address.
-
-If anyone has some advice, I'd be very pleased to hear it.  I need to go on
-the G4, because that is what I have on hand.
-
-Thanks very much,
-
-David Patmore
-
+Thanks,
+Dave
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
