@@ -1,48 +1,48 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0927@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'Kent Borg'" <kentborg@borg.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Heretical Question
-Date: Wed, 9 Jul 2003 16:09:01 -0400 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Kent Borg <kentborg@borg.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Heretical Question 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 09 Jul 2003 15:57:23 EDT."
+             <20030709155723.G20807@borg.org>
+Date: Wed, 09 Jul 2003 22:14:50 +0200
+Message-Id: <20030709201455.C2393C6D82@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-ddd will let you specify a gdb debugger to use. You have to add -g -ggdb to
-the CFLAGS and compile the kernel.  Then give the command
+In message <20030709155723.G20807@borg.org> you wrote:
+>
+> I know it is wrong for me to ask, but is there (possibly already
+> lurking in my Red Hat box?) a graphical front end to GDB that will
+> work with embedded programming?  Emacs already lets me debug with
 
-ddd --debugger ppc_8xx-gdb vmlinux
+There is: "ddd".
 
-Replace ppc_8xx-gdb with your debugger of choice, gdb is the default if you
-do not specify.
+Use it for example like this:
 
------Original Message-----
-From: Kent Borg [mailto:kentborg@borg.org]
-Sent: Wednesday, July 09, 2003 3:57 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Heretical Question
+	bash$ export CROSS_COMPILE=ppc_82xx-
+	bash$ ddd --debugger ${CROSS_COMPILE}gdb &
 
+> It is possible ddd would do, but it also seems to be for native
+> debugging only too.
 
+No, with  the  "--debugger"  option  you  can  tell  it  to  use  the
+cross-GDB, too.
 
-I know it is wrong for me to ask, but is there (possibly already
-lurking in my Red Hat box?) a graphical front end to GDB that will
-work with embedded programming?  Emacs already lets me debug with
-source code pretty well (not assembly, however), and that is nice, but
-what I really miss is a way to browse through data structures.  Kdbg
-looks good, but it seems to be for native debugging only (though I
-might hack at it a little to issue the elusive "target remote ...").
-It is possible ddd would do, but it also seems to be for native
-debugging only too.
+> Suggestions?
 
-Suggestions?
+RTFM :-)
 
+Best regards,
 
-Thanks,
+Wolfgang Denk
 
--kb
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Clothes make the man. Naked people have little  or  no  influence  on
+society.                                                 - Mark Twain
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
