@@ -1,36 +1,43 @@
-Date: Thu, 7 Sep 2000 13:16:52 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Dan Malek <dan@netx4.com>
-cc: frowand@mvista.com, Geert Uytterhoeven <geert@linux-m68k.org>,
-        Rolf Liu <rolfl@sc23.sc.mcel.mot.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: question about 'r2' !!!
-In-Reply-To: <39B6B21C.9A3ACA5B@embeddededge.com>
-Message-ID: <Pine.LNX.4.10.10009071312200.24134-100000@opal.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 7 Sep 2000 14:09:58 +0200
+From: Olaf Hering <olh@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: newer xfree86 4.0.1 patches
+Message-ID: <20000907140958.A23956@suse.de>
+References: <20000906213248.A3749@suse.de> <Pine.LNX.4.10.10009071151320.461-100000@cassiopeia.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.10.10009071151320.461-100000@cassiopeia.home>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > If you're unable to use gcc for building your kernels, ....
+On Thu, Sep 07, Geert Uytterhoeven wrote:
+
 >
-> With the gcc/gas specific syntax, and the reliance on gcc inline
-> assembler, there is lots of work to do to make something else
-> compile this software in any case.
+> On Wed, 6 Sep 2000, Olaf Hering wrote:
+> > There is also a keycode file for ps/2 based machines like PReP and CHRP,
+> > called "powerpcps2". It is a workaround, the arrow keys and the page
+> > up/down block are dead as example. I guess it is a kernel bug.
+>
+> So prefixed scancodes don't work? Sounds familiar. I guess this has something
+> to do with the X server putting the keyboard in RAW mode (send raw scancodes,
+> including prefixes) instead of MEDIUMRAW mode (send keycodes, 1 code for each
+> key pres/release) or vice versa.
 
-I know. He's been advised to forget compiling the kernel with that other
-compiler numerous times on this list. He happily seems to ignore that
-advice and try it anyway, so who am I to dissuade someone from a great
-learning experience?
+Franz and me tried to find a solution a couple of weeks/months ago. The
+codes above 0xe0 and above are not handled properly AFAIK.
 
-> Then, all you have done is the easy part, which is getting a kernel
-> to boot.  What about applications, libraries and other tools that
-> actually make a system do something?
+Franz, can you remember that?
 
-I'd assume that you can just use any old distribution (unless you broke
-binary compatibility).
 
-	Michael
+Gruss Olaf
 
+--
+ $ man clone
+
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
