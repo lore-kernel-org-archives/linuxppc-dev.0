@@ -1,28 +1,29 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 757022BDB3
+Return-Path: <tony.p.lee@gmail.com>
+Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.199])
+	by ozlabs.org (Postfix) with ESMTP id 3FA782BDB3
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Oct 2004 12:19:51 +1000 (EST)
-In-Reply-To: <20041007224220.GV14773@smtp.west.cox.net>
-References: <1096517265.27208.18.camel@localhost.localdomain>
-	<20041007154029.GE14773@smtp.west.cox.net>
-	<Pine.LNX.4.60.0410071158320.5191@dell.enoriver.com>
-	<20041007173023.GK14773@smtp.west.cox.net>
-	<Pine.LNX.4.60.0410071354340.6526@dell.enoriver.com>
-	<20041007184840.GN14773@smtp.west.cox.net>
-	<0927BD6D-18A9-11D9-9049-003065F9B7DC@embeddededge.com>
-	<Pine.LNX.4.60.0410071817420.8278@dell.enoriver.com>
-	<20041007224220.GV14773@smtp.west.cox.net>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <CF1BBAC1-18D0-11D9-9049-003065F9B7DC@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Thu, 7 Oct 2004 22:21:49 -0400
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] remove obsolete arch/ppc/8xx_io/uart.c
+	Fri,  8 Oct 2004 12:54:00 +1000 (EST)
+Received: by mproxy.gmail.com with SMTP id 75so1584489rnl
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 07 Oct 2004 19:53:53 -0700 (PDT)
+Message-ID: <470b6397041007195371655afb@mail.gmail.com>
+Date: Thu, 7 Oct 2004 19:53:52 -0700
+From: Tony Lee <tony.p.lee@gmail.com>
+To: Jon Masters <jonathan@jonmasters.org>
+In-Reply-To: <4165DB83.8080001@jonmasters.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+References: <000001c4aace$245a5060$6500a8c0@PortatileLG>
+	<35fb2e5904100508157a393ee2@mail.gmail.com>
+	<4162C649.6060900@ru.mvista.com>
+	<35fb2e590410051507367017a@mail.gmail.com>
+	<41641222.6080405@ru.mvista.com>
+	<470b63970410071534422f6617@mail.gmail.com>
+	<4165DB83.8080001@jonmasters.org>
+Cc: Andrei Konovalov <akonovalov@ru.mvista.com>, linuxppc-embedded@ozlabs.org,
+	Luca Giuliani <l.giuliani@tiscali.it>
+Subject: Re: Linux on Memec Virtex II Pro V4P7 Rev. 3
+Reply-To: Tony Lee <tony.p.lee@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,38 +34,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Fri, 08 Oct 2004 01:12:51 +0100, Jon Masters <jonathan@jonmasters.org> wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> > 
+> The polled approach is worse IMO although I agree that there is very
+> little overhead in the actual ISR. Where the author went wrong (well
+> perhaps not wrong per se but didn't provide enough protection) was in
+> the unlikely case that the hardware is braindead and generates
+> interrupts that you didn't ask it to - the xsysace driver should also
+> catch interrupts when we're QUEUE_EMPTY and should not try to manipulate
+> an empty request queue.
+> 
+> Jon.
 
-On Oct 7, 2004, at 6:42 PM, Tom Rini wrote:
+The problem I saw was that I can't turn off the interrupt at all.
+Once I start one write command, the ISR keep coming in.
+I review the verilog code and schematic multiple times with the
+HW group but can't figure out what went wrong.   My best
+guess was the BUFRDY line is mix up with the ISR line some
+how when write cmd and when IDEN drive command is issued.  
 
-> Oh, that.  console=ttyCPM1 is the answer if both SMC1 and SMC2 are
-> UARTs.
+I try turn off the ISR on write with SYSACE register and 
+the ppc interrupt control register.  None of them worked.
 
-Yeah, that's normally the way it's done.
+Jon, 
 
-> Anticipating Dan screaming about this,
+Do you think if we add a small DMA engine would help
+the performance or the performance problem is caused
+by the sysace firmware + the CF disk?
 
-What kind of a person do you think I am?  I don't scream about
-anything.  I just point out facts and if others choose to ignore it
-I'll just remind everyone later.
-
-The original CPM uart drivers had lots of hard coded things
-because the 'console=' option wasn't available at the time it
-was developed.  It just was never updated when the command
-line options appeared because the old config options were around.
-It's also required information to the boards that use the 'simple'
-zImage boot loader because there usually isn't any way for it
-to know what to use as the console port.
-
-The console= option is fine, it's used on many embedded boards,
-including 8xx and 82xx when U-boot is used.  Just remember,
-removing these console selection options from config will break
-some things.  Be prepared to fix it, not just ignore it.
-
-I'm most concerned with the Alternate SMC pin configurations, although
-the new IO support functions that Kumar and I are looking at will
-correct that.  Until those are done, you have to ensure there is
-some way to 8xx parts with the small pin counts and the SMC pins
-moved to work properly.
+The sysace controller IS VERY fast on loading the bitstream
+and linux boot image.
 
 
-	-- Dan
+-- 
+-Tony
+Having a lot of fun with Xilinx Virtex Pro II reconfigurable HW + ppc + Linux
