@@ -1,41 +1,37 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: roger blofeld <blofeldus@yahoo.com>,
+To: "Timothy A. Seufert" <tas@mindspring.com>,
+	Christopher Murtagh <christopher.murtagh@mcgill.ca>,
 	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Sungem bug or something else?
-Date: Thu, 6 Jun 2002 21:45:18 +0200
-Message-Id: <20020606194518.27675@smtp.wanadoo.fr>
-In-Reply-To: <20020606192510.58822.qmail@web11106.mail.yahoo.com>
-References: <20020606192510.58822.qmail@web11106.mail.yahoo.com>
+Subject: Re: SMP/HIGHMEM/7450 status ?
+Date: Thu, 6 Jun 2002 21:46:36 +0200
+Message-Id: <20020606194636.7979@smtp.wanadoo.fr>
+In-Reply-To: <a05111b00b92567b867f3@[10.0.0.42]>
+References: <a05111b00b92567b867f3@[10.0.0.42]>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->I encounter an oops during boot bringing up a sungem
->interface. (smp g4 450/gcc 3.1/glibc 2.2.5) If I defer
->bringing up the network at boot, I can successfully
->start eth0 (sungem) if I start eth1 (tulip) first, so
->it may not be the sungem driver itself. This happens
->on benh 2.4.19-Bpre10, and pre9.
+>Apple did hold off on dual 7450 until rev 2.1 came out and fixed some
+>of the nastier SMP errata, so presumably they at least thought there
+>were no SMP showstoppers left in rev 2.1.  As far as I can tell they
+>are pretty stable under OS X.
 
-What kind of error is it ? A Machine Check ?
+There is an SMP showstopper with HW hashtable walk, but Apple
+claims to have a HW workaround.
 
-Looking at your backtrace, it looks like the driver is
-trying to access the PHY chip. That can sometimes happen
-if you have some tool like miitool or ethtool trying to
-get at the link status while the chip isn't powered up.
+>Linux is probably just missing some deep magic needed for working
+>around one or more of the errata that do still apply to rev 2.1.  The
+>trouble is figuring out exactly what's wrong... it can be VERY
+>difficult to understand all the ramifications of a CPU bug
+>(particularly a SMP related bug) until you use a bus analyzer to
+>snapshot bus traffic during a crash, or probe CPU registers via JTAG
+>after it has crashed, etc.
 
-The problem here is that sungem on Apple HW only powers
-the chip when the interface is brought up, and powers it
-down about 10 seconds after bringing the interface down.
-
-This improve power management, but kills link monitoring
-tools.
-
-There may be also a bug in the driver causing it to try
-to access the PHY registers when the chip is in down
-mode & getting the ethtool ioctl's
+Especially since you don't have the connector on the motherboard
+to put such a tool, and since I don't even have physical access
+to any of these machines.
 
 Ben.
 
