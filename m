@@ -1,37 +1,39 @@
-Message-ID: <39D89C8F.4F328DAF@home.com>
-Date: Mon, 02 Oct 2000 09:32:47 -0500
-From: Tim Montgomery <tjmontgo@home.com>
+Date: Mon, 2 Oct 2000 16:59:18 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Olaf Hering <olh@suse.de>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Patch: PCI resource fixup for atyfb (was: Re: xf 4.0.1 + ati
+ driver with rage II/rage pro)
+In-Reply-To: <20001001224427.A18368@suse.de>
+Message-ID: <Pine.LNX.4.10.10010021658320.1581-100000@cassiopeia.home>
 MIME-Version: 1.0
-To: Linux PPC Developer <linuxppc-dev@lists.linuxppc.org>
-Subject: flying blind with BATs
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hello,
+On Sun, 1 Oct 2000, Olaf Hering wrote:
+> while we are about to improve the atyfb, is it possible to fix the color
+> depth switching?
+> When I boot without a kernel arg I end up with 8 bit at console. I can't
+> increase the color depth afterwards with fbset, and mol crashes when it
+> tries to do that. When I specify atyfb:cmode:24 everythings works fine
+> and I can switch down to 8 and back to 24 and mol starts fine.
 
-I am trying to get the ppc kernel loaded on a 750-based embedded board,
-and I've got an ultra-basic bootloader (the board is not PReP or
-CHRP-compliant), but I believe I am having trouble with the BAT
-mappings.
+Does it also crash when you increase the color depth with fbset?
 
-I have the BATs configure (by the bootloader) such that 0xc0000000
-(virtual) is mapped to 0x00000000 (phys SDRAM base), but after
-the image is decompressed (to the virtual addr), I get garbage when
-I do a dump at 0xc0000000 (i.e. the kernel isn't there.)
+I don't use MOL (I don't have MacOS), but I never saw this problem.
 
-I am executing the bootloader itself out of a region well above
-(4MB) the kernel space.
+Gr{oetje,eeting}s,
 
-Before I spend too much time reinventing the wheel (and beating my
-head against the wall), I was curious if there was a 7xx-based
-bootloader out there that I could modify to fit my needs.
+						Geert
 
-Any other pointers/tips regarding machine state required on a 750
-prior to jumping to the kernel would also be appreciated.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Regards,
-Tim
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
