@@ -1,20 +1,20 @@
-Return-Path: <joakim.tjernlund@lumentis.se>
-Received: from dmz.lumentis.net (unknown [212.105.56.244])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 06DDA2BDEB
+Return-Path: <Gerald.VanBaren@smiths-aerospace.com>
+Received: from smtp1.smiths.com (smtp1.smiths.com [192.208.34.50])
+	by ozlabs.org (Postfix) with ESMTP id 60BBA2BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Oct 2004 22:27:24 +1000 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Pantelis Antoniou" <panto@intracom.gr>
-Date: Fri, 29 Oct 2004 14:27:02 +0200
-Message-ID: <JPEALJAFNGDDLOPNDIEEEEMOCNAA.joakim.tjernlund@lumentis.se>
+	Fri, 29 Oct 2004 22:50:18 +1000 (EST)
+Received: from COSSMGIMS01.email.corp.tld (unknown [10.225.225.177])
+	by smtp1.smiths.com (Postfix) with ESMTP id 61EFE1C00AD5
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 29 Oct 2004 06:50:04 -0600 (MDT)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-In-Reply-To: <41823396.40001@intracom.gr>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Merge 8xx to Linus tree?
+Date: Fri, 29 Oct 2004 06:50:00 -0600
+Message-ID: <065ACD8E84315E4394C835E398C8D5EB95AABA@COSSMGMBX02.email.corp.tld>
+From: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: RE: CLI for Embedded Systems
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,50 +25,58 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Joakim Tjernlund wrote:
-> 
-> >>On Thu, Oct 14, 2004 at 04:53:49PM +0200, Joakim Tjernlund wrote:
-> >>
-> >>    
-> >>
-> >>>Is it not time to merge 8xx from linuxppc-2.5 into Linus tree?
-> >>>
-> >>>I know the 8xx is not fully functional yet but this isn't done
-> >>>soon I think it won't happen at all. The 8xx arch can be made to 
-> >>>depend on BROKEN in Linus tree to make it clear that it isn't
-> >>>working properly yet.
-> >>>      
-> >>>
-> >>I've been the hard-ass about holding back on moving 8xx forward.  Once
-> >>2.6.9 finally comes out (assuming and hoping that Linus really intends
-> >>to do a release and not -rc5), I'll start moving stuff over and make it
-> >>depend on BROKEN hopefully in time for 2.6.10-rc1.
-> >>
-> >>-- 
-> >>Tom Rini
-> >>    
-> >>
-> >
-> >Any progress?
-> >
-> > Jocke
-> >_______________________________________________
-> >Linuxppc-embedded mailing list
-> >Linuxppc-embedded@ozlabs.org
-> >https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >
-> >
-> >  
-> >
-> I'm currently battling to make 2.6.10-rc1 work the same way it used do.
-> 
-> But something changed in slab management and the kmallocs in request_irq
-> called by init_IRQ fails.
 
-hmm, I think I saw something about that in the www log for Linus kernel. It is offline so
-I can't check now.
+> From: linuxppc-embedded-bounces@ozlabs.org
+[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Mukund JB.
+> Sent: Friday, October 29, 2004 2:38 AM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: CLI for Embedded Systems
+>=0D
+>=0D
+> Hello all,
+> Good news. Linux on a new device.
+> =0D
+> Now, we are porting Linux to a Intrusion Detection & protection
+Device.
+> I need some help in finding out Embedded Command Line Interface (CLI).
+> =0D
+> Where can I find the source code & some documentation about CLI?
+> =0D
+> Thanks for the help in advance.
+> =0D
+> Regards,
+> Mukund jampala
 
-The www I/F for both Linus tree(http://linux.bitkeeper.com/) and the ppc tree(http://ppc.bitkeeper.com/)
-are offline alot. Anyone who knows whats going on?
 
- Jocke
+Check out the "hush" shell
+  http://www.cs.vu.nl/~eliens/online/hush/index.html
+an example of the use of hush in an embedded environment is u-boot
+  http://www.denx.de/twiki/bin/view/DULG/CommandLineParsing
+I assume the first link is what is used in u-boot, I did not look into
+it closely (my doubts are because the hush shell in the first link talks
+about C++ and u-boot is C).
+
+Check out BusyBox
+  http://www.busybox.net/
+
+gvb
+
+
+******************************************
+The following messages are brought to you by the Lawyers' League of
+IdioSpeak:
+
+******************************************
+The information contained in, or attached to, this e-mail, may contain=
+ confidential information and is intended solely for the use of the=
+ individual or entity to whom they are addressed and may be subject to=
+ legal privilege.  If you have received this e-mail in error you should=
+ notify the sender immediately by reply e-mail, delete the message from=
+ your system and notify your system manager.  Please do not copy it for any=
+ purpose, or disclose its contents to any other person.  The views or=
+ opinions presented in this e-mail are solely those of the author and do=
+ not necessarily represent those of the company.  The recipient should=
+ check this e-mail and any attachments for the presence of viruses.  The=
+ company accepts no liability for any damage caused, directly or=
+ indirectly, by any virus transmitted in this email.
+******************************************
