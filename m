@@ -1,22 +1,32 @@
-From: "Ryan Nielsen" <ran@krazynet.com>
-Message-ID: <19981205164713.A30036@gondolin>
-Date: Sat, 5 Dec 1998 16:47:13 -0800
-To: Tom Rini <tmrini@ntplx.net>, linuxppc-dev@lists.linuxppc.org
+Date: Sat, 5 Dec 1998 19:53:43 -0500 (EST)
+From: Tom Rini <tmrini@ntplx.net>
+To: Ryan Nielsen <ran@krazynet.com>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: ksymoops
-References: <Pine.LNX.4.05.9812051203360.1133-100000@p04-08.hartford.dialin.ntplx.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.05.9812051203360.1133-100000@p04-08.hartford.dialin.ntplx.com>; from Tom Rini on Sat, Dec 05, 1998 at 12:04:23PM -0500
+In-Reply-To: <19981205164713.A30036@gondolin>
+Message-ID: <Pine.LNX.4.05.9812051953170.954-100000@pc.wackyland.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Hello,
->   Has anyone played around with getting ksymoops working on PPC yet?
-> Would be a rather useful tool (gonna take a stab at it if not).
+On Sat, 5 Dec 1998, Ryan Nielsen wrote:
 
-I assume you mean linux/scripts/ksymoops.cc, a package that does similar
-and works on PPC can be got from ftp://ftp.ocs.com.au/pub/ksymoops.tar.gz
+> > Hello,
+> >   Has anyone played around with getting ksymoops working on PPC yet?
+> > Would be a rather useful tool (gonna take a stab at it if not).
+> 
+> I assume you mean linux/scripts/ksymoops.cc, a package that does similar
+> and works on PPC can be got from ftp://ftp.ocs.com.au/pub/ksymoops.tar.gz
+
+Yeah, found that a bit later on.  Ever pass on the patch for more detailed
+oops to Cort/Paul?
+
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
