@@ -1,29 +1,32 @@
-From: duncanp@research.canon.com.au
-Date: Wed, 2 Feb 2000 10:54:56 +1100 (EST)
-Subject: Re: Low memory problems in 8xx Linux
-To: Dan Malek <dan@netx4.com>
-Cc: linuxppc-embedded@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <3897386A.8A1411D@netx4.com>
+Message-ID: <38977354.82777153@netx4.com>
+Date: Tue, 01 Feb 2000 18:59:16 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
-Message-Id: <20000201235813.4F5611B51A@elph.research.canon.com.au>
+To: Peter Allworth <linsol@zeta.org.au>
+CC: linuxppc-embedded@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Low memory problems in 8xx Linux
+References: <kfy3drel1xy.fsf@kieraypc07.p.y.ki.era.ericsson.se> <38964A23.3CAFFD88@zeta.org.au> <kfyoga04wy2.fsf@kieraypc01.p.y.ki.era.ericsson.se> <3897386A.8A1411D@netx4.com> <38976C9D.9217DF6E@zeta.org.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
+Peter Allworth wrote:
 
-On  1 Feb, Dan Malek wrote:
-> I have already incorporated most of these into 2.3.xx
-> kernel, and a 2.2.13 version that I will update as a tar file
-> on a server.
 
-would you mind posting a diff against the current 2.2.13 kernel on the
-ftp server when you do this as well? we've got a kernel in CVS here (i
-imagine plently of others are doing this too), and it would be easier
-for us if we can patch it.
+> So far I've only forwarded these to Marcus Sundberg for alpha testing
 
-Dunk.
 
+I have collected all of the patches, and I am heading off to
+Linux World with my PowerBook and an RPX-CLLF 860P.  I'll have
+them integrated before I return later this week.  I will also
+take the time to regression test the changes.....
+
+There are a couple of other changes that need to be made as
+well, and I will add some of the "easier" TLB performance
+enhancements.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
