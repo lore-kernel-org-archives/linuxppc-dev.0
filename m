@@ -1,50 +1,104 @@
-Date: Thu, 1 Apr 2004 09:16:22 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-Cc: Kumar Gala <kumar.gala@motorola.com>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: mpc5xxx support (Was: Re: Proposed Kconfig update patch for help text)
-Message-ID: <20040401161622.GA26876@smtp.west.cox.net>
-References: <67423B18-83E3-11D8-B6FB-000393DBC2E8@motorola.com> <20040401150211.90D85C10A4@atlas.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040401150211.90D85C10A4@atlas.denx.de>
+Mime-Version: 1.0 (Apple Message framework v613)
+In-Reply-To: <9EB527A2-83F5-11D8-9FF0-000A95A07384@sands-edge.com>
+References: <9EB527A2-83F5-11D8-9FF0-000A95A07384@sands-edge.com>
+Content-Type: multipart/mixed; boundary=Apple-Mail-26--549400491
+Message-Id: <DAA3135C-83F9-11D8-9FF0-000A95A07384@sands-edge.com>
+From: John Whitney <jwhitney-linuxppc@sands-edge.com>
+Subject: Re: Problems with dma_alloc_coherent()
+Date: Thu, 1 Apr 2004 11:30:14 -0500
+To: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Apr 01, 2004 at 05:02:06PM +0200, Wolfgang Denk wrote:
+--Apple-Mail-26--549400491
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset=US-ASCII;
+	format=flowed
 
->
-> In message <67423B18-83E3-11D8-B6FB-000393DBC2E8@motorola.com> you wrote:
-> >
-> > Also, what about 52xx?
->
-> Excellent question. OTOH - what do we need a Kconfig option for, when
-> the whole 52xx code is still missing in the official trees?   Tom?
+Whoops.  I accidentally had some previous changes in the patch I
+submitted.  Here is the cleaned up version.
 
-I'll take the high road and avoid an easy april fools joke here.
+--- dma-mapping.h.orig	2004-04-01 10:38:33.000000000 -0500
++++ dma-mapping.h	2004-04-01 11:27:44.000000000 -0500
+@@ -35,7 +35,18 @@
+  		return pci_alloc_consistent(to_pci_dev(dev), size, dma_handle);
+  #endif
 
-In all seriousness, when the 52xx code for 2.4 was brought up, there
-were a number of objections to the Motorola provided code, from it's
-buggy to it being unacceptable crap.  Finally, 2.4 is about to enter a
-"deep freeze", or so Marcelo intends at least, so I think it's out of
-the question for the mainline.  I don't mind keeping the
-linux-2.4-mpc5xxx tree up to date so others can pull for what they need,
-but it's a dead end.
++#ifdef CONFIG_NOT_COHERENT_CACHE
+  	return consistent_alloc(flag, size, dma_handle);
++#else
++	void *ret;
++
++	ret = (void *)__get_free_pages(flag, get_order(size));
++	if (ret != NULL) {
++		*dma_handle = virt_to_bus(ret);
++	}
++
++    return ret;
++#endif /* CONFIG_NOT_COHERENT_CACHE */
+  }
 
-For 2.6, I think one of the following options needs to be done.
-- Motorola code, cleaned up with input from the community (and the bits
-  Linux just doesn't need, left out).
-- Ignore the Motorola code, or since it's GPL (must be to be in the
-  kernel, so I'm just making the assumption here...) use it as a guide
-  for how things work to implement a clean Linux implementation of the
-  code.   I know there's someone working on this (who pops up on
-  #mklinux on freenode from time to time) but I don't know how far
-  they've gotten.
+  static inline void
+@@ -49,7 +60,11 @@
+  	}
+  #endif
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
++#ifdef CONFIG_NOT_COHERENT_CACHE
+  	consistent_free(vaddr);
++#else
++	free_pages((unsigned long)vaddr, get_order(size));
++#endif
+  }
+
+  static inline dma_addr_t
+
+
+
+--Apple-Mail-26--549400491
+Content-Transfer-Encoding: 7bit
+Content-Type: application/octet-stream;
+	x-unix-mode=0600;
+	name="dma-mapping.h.patch"
+Content-Disposition: attachment;
+	filename=dma-mapping.h.patch
+
+--- dma-mapping.h.orig	2004-04-01 10:38:33.000000000 -0500
++++ dma-mapping.h	2004-04-01 11:27:44.000000000 -0500
+@@ -35,7 +35,18 @@
+ 		return pci_alloc_consistent(to_pci_dev(dev), size, dma_handle);
+ #endif
+
++#ifdef CONFIG_NOT_COHERENT_CACHE
+ 	return consistent_alloc(flag, size, dma_handle);
++#else
++	void *ret;
++
++	ret = (void *)__get_free_pages(flag, get_order(size));
++	if (ret != NULL) {
++		*dma_handle = virt_to_bus(ret);
++	}
++
++    return ret;
++#endif /* CONFIG_NOT_COHERENT_CACHE */
+ }
+
+ static inline void
+@@ -49,7 +60,11 @@
+ 	}
+ #endif
+
++#ifdef CONFIG_NOT_COHERENT_CACHE
+ 	consistent_free(vaddr);
++#else
++	free_pages((unsigned long)vaddr, get_order(size));
++#endif
+ }
+
+ static inline dma_addr_t
+
+--Apple-Mail-26--549400491--
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
