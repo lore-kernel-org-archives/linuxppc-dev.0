@@ -1,54 +1,72 @@
-Message-ID: <017101c0189c$de480300$2a6cabd3@dolbae>
-From: "SangTae Ha" <stha@netstech.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: PPC cross compiled dhcpd doesn't work.
-Date: Thu, 7 Sep 2000 16:25:53 +0900
+Date: Thu, 7 Sep 2000 16:06:25 +0200 (MEST)
+From: Tobias Otto-Adamczak <Tobias.Otto-Adamczak@e-technik.tu-chemnitz.de>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: SPI Port on the MPCXX / microcode patches
+Message-ID: <Pine.LNX.4.21.0009071605380.11678-100000@odoaker.hrz.tu-chemnitz.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all.
+> I was wondering if you had any success getting Ethernet and the SPI
+> port working together.
 
-I'm making root file system. My problem is ...
-If I compile the dhcp server in x86 environment, It works well. But in ppc environment, it doesn't.
-No compile error comes out.. But it doesn't work.
-In bugging messages, "ip length 328 disagrees with bytes received 332". Is it an endian problem?
-I aready sniffed packets, but I can't find a clue. I am using libc.so.6 which obtained montavista hardhat linux CDK.
+On my 860 I now have SPI working in loopback mode. The real SPI traffic
+will be tested in the next days when I have put together my external
+hardware...
 
-Does any one succeeded in compiling and running dhcpd ?
-My dhcpd is from http://www.isc.org/products/DHCP/ and ftp site ftp://ftp.isc.org/isc/dhcp/dhcp-2.0pl4.tar.gz
+> I am also using I2C.  Did you end up using the microcode patch or
+> swapping between I2C and SPI, or some other method.
 
-Thanks in advance.
+My understanding of that microcode/relocation stuff is as follows,
+ANYBODY PLEASE CORRECT ME IF ANYTHING IS WRONG HERE:
 
-Debugging message ....
------------------------------------------------------------------------------
-# /sbin/dhcpd-v2 -d -f eth1
-Internet Software Consortium DHCP Server 2.0pl4
-Copyright 1995, 1996, 1997, 1998, 1999 The Internet Software Consortium.
-All rights reserved.
+When using Ethernet on SCC1, it's not possible to use I2C without a patch
+because extended SCC1 parameters overlay I2C parameter RAM area. However,
+SPI parameter RAM should not be affected. So it should be possible to use
+Ethernet on SCC1 and SPI together without the patch.
 
-Please contribute if you find this software useful.
-For info, please visit http://www.isc.org/dhcp-contrib.html
+When applying one of these microcode patches, depending on the setting of
+the 4 risc controller trap registers relocation is activated for SPI
+and/or I2C parameter RAM. The meaning of the values in these registers is
+unclear to me. However, RCTR1/RCTR2 affect SPI parameter RAM relocation
+and RCTR3/RCTR4 affect I2C parameter RAM relocation. I would be glad to
+have more information here. I assumed that 0 in these trap registers means
+that CP does not relocate the areas.
 
-Listening on LPF/eth1/00:10:ec:00:14:42/192.168.10.0
-Sending on   LPF/eth1/00:10:ec:00:14:42/192.168.10.0
-Sending on   Socket/fallback/fallback-net
-ip length 328 disagrees with bytes received 332.
-accepting packet with data after udp payload.
-DHCPDISCOVER from 00:00:0e:d2:98:e5 via eth1
-no free leases on subnet 192.168.10.0
-ip length 328 disagrees with bytes received 332.
-accepting packet with data after udp payload.
-DHCPDISCOVER from 00:00:0e:d2:98:e5 via eth1
-no free leases on subnet 192.168.10.0
-ip length 328 disagrees with bytes received 332.
-accepting packet with data after udp payload.
-DHCPDISCOVER from 00:00:0e:d2:98:e5 via eth1
-no free leases on subnet 192.168.10.0
--------------------------------------------------------------------------------
+Otherwise (when relocation takes place) the CP looks in the I2C's/SPI's
+RPBASE registers for the start address of their relocated parameter RAM
+areas instead of using 0x3c80 and 0x3d80. Programmers can decide where to
+put the relocated parameter RAM.
+
+In my case, I use a MBX board. The EPPCbug Firmware does the following
+steps (regarding this stuff) after reset: It ...
+
+... loads a microcode patch into parameter RAM
+... writes 0x1cc0 to I2C's RPBASE register, 0 to SPI's RPBASE register
+... writes 0x802a to RCTR1 and 0x8028 to RCTR2 to activate SPI relocation
+... writes 0x802e to RCTR3 and 0x802c to RCTR4 to activate I2C relocation
+... writes 1 to register RCCR to enable microcode execution
+
+Booting my kernel (compiled without the microcode patch option enabled)
+all these parameters are left untouched. So I was left with a
+configuration that relocated SPI parameter RAM to the beginning of the
+DPRAM what should be a prohibited area because microcode is located there.
+Not knowing about this relocation stuff, I had a hard time searching for
+non-existent faults in my SPI initialisation code.
+
+Finally, using default SPI parameter RAM location I tried two methods to
+get it working:
+
+* clear RCTR1/2 - disabling only SPI relocation
+or
+* clear RCCR[ERAM] - disabling microcode execution at all
+
+Both methods worked for me. I first applied them together to be on the
+safe side but seams to be not necessary.
+
+Ciao - Tobias
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
