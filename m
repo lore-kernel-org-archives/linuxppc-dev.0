@@ -1,62 +1,54 @@
-Message-ID: <D53137D1F3DDD211A3750800060DA31301702394@viee122a.erd.siemens.at>
-From: Eisenzopf Thomas <thomas.eisenzopf@siemens.at>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: 8xxROM with MPC860ADS - ATA Flash Card not recognized?
-Date: Thu, 30 Mar 2000 10:11:39 +0200
+Subject: Re: Another try at the run-from-Flash issue for MPC8xx/MBX/custom
+References: <38E27471.83CCAC10@innocon.com>
+From: Markus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+Date: 30 Mar 2000 10:51:52 +0200
+In-Reply-To: Doug Rogers's message of "Wed, 29 Mar 2000 16:24:01 -0500"
+Message-ID: <kfyg0t8yh5j.fsf@kieraypc25.p.y.ki.era.ericsson.se>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hallo,
+Doug Rogers <rogers@innocon.com> writes:
 
-does anyone know this problem:
+> I, too, would like to run from Flash. The question for me isn't speed,
+> isn't cost, nor EMI effects. It is simply a matter of size. We have a
+> very small area in which to squeeze the parts, and the best we could do
+> is 32M RAM and 16M ROM. Our application code is in the 10M range (text
+> only, even after chopping over half of it out!), but it is expected to
+> grow. So for us it's not really a matter of cost or (running) speed,
+> since the Flash runs fast enough for our purposes.
+>
+> As another constraint, our card needs to be able to run very soon after
+> power-up. I've hacked the LynxOS startup monitor to detect either gzip'd
+> or bzip2'd KDI's. I've timed the decompression of our smaller test image
+> and it takes over 40 seconds on a 40MHz MBX860 board. That's too slow.
+> We could live with 20, perhaps, but not much more than that. For now I
+> boot my images over the network since our MBX board has only 4M Flash.
+> It's faster than decompressing!
+>
+> With LynxOS, we're able to keep in Flash both the text sections of the
+> kernel AND of all binaries on the filesystem. Wow! That allows us to put
+> only the RAM disk and vector/data/bss sections into RAM. Shweet!
+>
+> I was hoping that Linux was to that point, but apparently not.
 
-Using 8xxROM on a MPC860ADS board does not recognize my ATA flash card in
-the PCMCIA slot (SanDisk compact flash with PCMCIA adapter). In the
-beginning of the bootloader startup I get the message "pcmcia: no card
-present". Parts of my "config.h" (I tried with and without PCMCIABUG):
+I haven't seen anyone say it couldn't be done. I wrote:
 
-.
-.
-.
-#define MPC860 1
+  Well, I see no reason why it shouldn't be possible, but not without
+  modifying things.
 
-#define CONFIG_ADS 1   /* define if your board is FADS */
-.
-.
-.
-/* disk configuration */
+  You'd need to link the .data, .data.cacheline_aligned, .data.init
+  and .bss sections so they are located in RAM, and the former
+  three plus the exception vectors would have to be copied from flash
+  to their linked location.
 
-#define CONFIG_DISK_ATA 1
-#undef CONFIG_DISK_ATA_PCMCIABUG
-#undef CONFIG_DISK_ROM
+I haven't tried it myself though.
 
-#define CONFIG_DISK_SPINUP_TIME 1000000
-
-#if 0
-#define CONFIG_DISK_DEFAULTDEV "ata"
-#define CONFIG_DISK_DEFAULTPART "1"
-#endif
-
-/* PCMCIA configuration */
-#define PCMCIA_MAX_SLOTS    2
-
-#ifdef MPC860
-#  define PCMCIA_SLOT_A 1
-#endif
-#if defined(MCP823) || defined(MPC860)
-#  define PCMCIA_SLOT_B 1     /* 823 does only have a B slot */
-#endif
-.
-.
-.
-
-Any help is appreciated!
-
-Best regards,
-Thomas.
+//Marcus
+--
+Signature under construction, please come back later.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
