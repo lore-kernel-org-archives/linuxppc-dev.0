@@ -1,28 +1,31 @@
-Date: Wed, 6 Oct 1999 14:03:08 -0500
-From: Shaw Terwilliger <sterwill@io.nu>
-To: Hollis <hollis@andrew.cmu.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Lombard patches - which tree?
-Message-ID: <19991006140308.A4084@io.nu>
-References: <199910061815.OAA09180@smtp3.andrew.cmu.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199910061815.OAA09180@smtp3.andrew.cmu.edu>
+Date: Wed, 6 Oct 1999 15:48:28 -0700 (PDT)
+From: Louis Kowolowski <louisk@usw-dsl125.pond.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: OpenFirm ware
+In-Reply-To: <Pine.GSO.4.10.9910060857230.24804-100000@dandelion.sonytel.be>
+Message-ID: <Pine.LNX.4.10.9910060844290.5875-100000@usw-dsl125.pond.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hollis wrote:
-> I'm looking to compile a Lombard kernel which has patches for both ethernet
-> and USB (it does need a USB patch, right?). Have the patches made their way
-> into Paul's rsync, or anywhere for that matter?
+I hope this is the right list to post to about this, please correct me if
+I'm wrong.
+I recently got a 3Dfx Voodoo3 card, which works fine for linux, but I'd
+like to be able to boot from OF instead of bootx.  I know that I have to
+point the display to /bandit/3Dfx,Voodoo3 but this only gives me a res of
+640x480 and vmode doesn't allow me to change it (if I boot from bootx I
+can get my typical 1280x1024). I'm wondering if there are options to pass
+or set in OF that will allow me to change the resolution.
+the machine is an PM8600
+thanks in advance
 
-Paul's tree has had these patches for quite a while (weeks/months).
-I'm using a version of his tree from a few weeks ago on my Lombard,
-and Ethernet and USB both work great (I'm always plugged into the
-net and I use a USB Logitech mouse for X).
 
--- 
-Shaw Terwilliger (sterwill@io.nu)
+L
+--
+gpg key/info                http://usw-dsl125.pond.net/~louisk/gpgsig.html
+gpg fingerprint         6D82 323C D0B2 B568 FD37  9F50 91B0 3547 EBBC B27E
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
