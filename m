@@ -1,32 +1,28 @@
-Message-Id: <200007121112.MAA14217@hyperion.valhalla.net>
-Date: Wed, 12 Jul 2000 12:12:08 +0100
-Subject: Re: [ANN] Dmasound backport to 2.2.17pre7/10 patch
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Derek Homeier <supas100@astrophysik.uni-kiel.de>,
-        Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Wed, 12 Jul 2000 13:16:24 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Iain Sandoe <iain@sandoe.co.uk>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.0-t1/t3: mlockall()
+In-Reply-To: <200007121103.MAA12586@hyperion.valhalla.net>
+Message-ID: <Pine.HPX.4.10.10007121314380.9548-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jul 12, 2000, Derek Homeier wrote:
-> On Tue, 11 Jul 2000, Benjamin Herrenschmidt wrote:
+On Wed, 12 Jul 2000, Iain Sandoe wrote:
+
 >
-[...]
->
-> _But_ after some hours of sleep, the machine would not wake up properly.
-> First, the backlight didn't switch on. I tried the usual tricks of playing
-> with the brightness control, but to no effect. The machine was running at
-> first, as I could tell from the usual disk activity caused by slocate.
+> mlockall() is broken under 2.4.0-test1-ac21 & 2.4.0-test3
 
-are you using the sound stuff as modules? If so does the effect manifest
-without sound loaded?  There is code in the sound stuff that talks to the
-PMU...
+Well, it is a matter of include file. The value of MCL_CURRENT and
+MCL_FUTURE changes at some point in the 2.3.xx cycle.
 
-which PB (if Lombard - I'll see if I can replicate the effect here).
+Yes, it breaks binary compatibility and I've suffered from it, and no,
+don't ask me why this was done.
 
-Iain.
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
