@@ -1,59 +1,154 @@
-To: "Joseph P. Garcia" <jpgarcia@execpc.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: aty128fb.c missing from rync'd benh sources...
-References: <20010726200759.A19851@garmonbozia.productivitynet.com>
-	<20010726200901.C8790@localhost.localdomain>
-	<87elr3xjov.fsf@cgsoftware.com>
-	<20010726212643.31b93eeb.jpgarcia@execpc.com>
-From: Daniel Berlin <dan@cgsoftware.com>
-Date: Fri, 27 Jul 2001 01:26:43 -0400
-In-Reply-To: <20010726212643.31b93eeb.jpgarcia@execpc.com> ("Joseph P. Garcia"'s message of "Thu, 26 Jul 2001 21:26:43 -0500")
-Message-ID: <87ae1rx7qk.fsf@cgsoftware.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Fri, 27 Jul 2001 20:45:11 +0100
+Subject: [dmasound] Power Computing DEAD dbdma fix (finally)
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: multipart/mixed;
+   boundary="MS_Mac_OE_3079111511_34090_MIME_Part"
+Message-Id: <20010727194525.345C0DBB0C@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Joseph P. Garcia" <jpgarcia@execpc.com> writes:
+> THIS MESSAGE IS IN MIME FORMAT. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-> On Thu, 26 Jul 2001 21:08:32 -0400
-> Daniel Berlin <dan@cgsoftware.com> wrote:
->> You just aren't using the --delete flag, so it never deleted the file.
->
-> Confirmed.  Just ran a sync.
->
-> ...
-> deleting toto
-> deleting fs/cramfs/cramfs.h
-> deleting drivers/video/aty128fb.c
-> deleting drivers/ieee1394/guid.h
-> deleting drivers/ieee1394/guid.c
-> deleting drivers/ieee1394/aic5800.h
-> deleting drivers/ieee1394/aic5800.c
-> ...
->
-> And rsync will only delete files if run with the --delete flag.
+--MS_Mac_OE_3079111511_34090_MIME_Part
+Content-type: text/plain; charset="utf-8"
+Content-transfer-encoding: 7bit
 
+Hi List,
 
-Right. Mirrors with extra space will keep older, deleted, versions of files
-around (remember, rsync is a mirroring tool), while those with less
-space will just want an exact mirror (or whatever). Hence the
---max-delete flag, and whatnot.
+Here is (finally working, we think) a patch for people with Power Computing
+machines which exhibit DEAD dbdma status on PCI/dma interaction.
 
+This patch is for test - the driver ID comes up 99.7 - and please ignore the
+comment about spin-locks.  I've left those out of the patch because they are
+still under test.
 
+Many thanks to Michael Zucca who tested the latest set of changes and Kostas
+Gewrgiou who did most of the orignally trials...
 
+Please note that it cannot cure the "glitch" - by the time dbdma is DEAD the
+damage is done - what it should do is to keep the sound going with minimum
+disruption
 
->
-> --
-> Joseph P. Garcia
-> http://www.lycestra.com/
->
+The patch should apply to either BK 2.4.x  (after my other patch has been
+applied) or to Ben H's tree (which already has those patches).
 
---
-"I didn't get a toy train like the other kids.  I got a toy
-subway instead.  You couldn't see anything, but every now and
-then you'd hear this rumbling noise go by.
-"-Steven Wright
+enjoy - and Power Computing machine owners - tell us how it does.
+
+Iain.
+--MS_Mac_OE_3079111511_34090_MIME_Part
+Content-type: audio/x-mpeg; name="dmasound-power-comp.diff";
+ x-mac-creator="3F3F3F3F";
+ x-mac-type="3F3F3F3F"
+Content-disposition: attachment
+Content-transfer-encoding: base64
+
+LS0tIC91c3IvbG9jYWwvYmVuaC0yLTQvZHJpdmVycy9zb3VuZC9kbWFzb3VuZC9kbWFzb3Vu
+ZF9hd2Fjcy5jCVdlZCBKdWwgMTggMTA6MzE6MjcgMjAwMQorKysgZG1hc291bmRfYXdhY3Mt
+cG93LWNvbXAtdGVzdC5jCUZyaSBKdWwgMjcgMjA6MzE6MzIgMjAwMQpAQCAtMjksMTcgKzI5
+LDIyIEBACiAgKiAgICAgICAgICAgICAgICBpbnB1dCBzZWxlY3RvcnMgYXJlIGp1c3QgdHdv
+LXN0YXRlICg+NTAlID09IE9OKSBhbmQgdGhlCiAgKiAgICAgICAgICAgICAgICBJbnB1dCBH
+YWluIHNsaWRlciBoYW5kbGVzIHRoZSByZXN0IG9mIHRoZSBnYWluIGlzc3Vlcy4KICAqICAg
+ICAgICAgICAgICAtIHRyeSB0byBwaWNrIHNsaWRlciByZXByZXNlbnRhdGlvbnMgdGhhdCBt
+b3N0IGNsb3NlbHkgbWF0Y2gKLSAqICAgICAgICAgICAgICAgIHRoZSBhY3R1YWwgdXNlIC0g
+ZS5nLiBJR2FpbiBmb3IgaW5wdXQgZ2Fpbi4uLiAKKyAqICAgICAgICAgICAgICAgIHRoZSBh
+Y3R1YWwgdXNlIC0gZS5nLiBJR2FpbiBmb3IgaW5wdXQgZ2Fpbi4uLgorICogICAgIAkJLSBm
+aXJzdCBzdGFiIGF0IG92ZXIvdW5kZXItcnVuIGRldGVjdGlvbi4KICAqCQktIG1pbm9yIGNv
+c21ldGljIGNoYW5nZXMgdG8gSVJRIGlkZW50aWZpY2F0aW9uLgogICoJCS0gZml4IGJ1ZyB3
+aGVyZSByYXRlcyA+IG1heCB3b3VsZCBiZSByZXBvcnRlZCBhcyBzdXBwb3J0ZWQuCiAgKiAg
+ICAgICAgICAgICAgLSBmaXJzdCBzdGFiIGF0IG92ZXIvdW5kZXItcnVuIGRldGVjdGlvbi4K
+ICAqICAgICAgICAgICAgICAtIG1ha2UgdXNlIG9mIGkyYyBmb3IgbWl4ZXIgc2V0dGluZ3Mg
+Y29uZGl0aW9uYWwgb24gcGVyY2gKLSAqICAgICAgICAgICAgICAgIHJhdGhlciB0aGFuIGN1
+ZGEgKHNvbWUgbWFjaGluZXMgd2l0aG91dCBwZXJjaCBoYXZlIGN1ZGEpLiAKKyAqICAgICAg
+ICAgICAgICAgIHJhdGhlciB0aGFuIGN1ZGEgKHNvbWUgbWFjaGluZXMgd2l0aG91dCBwZXJj
+aCBoYXZlIGN1ZGEpLgorICogICAgIAkJLSBmaXggYnVnIHdoZXJlIFRYIHN0b3BzIHdoZW4g
+ZGJkbWEgc3RhdHVzIGNvbWVzIHVwICJERUFEIgogICoJCSAgc28gZmFyIG9ubHkgcmVwb3J0
+ZWQgb24gUG93ZXJDb21wdXRpbmcgY2xvbmVzIC4uLiBidXQuCiAgKgkJLSBwdXQgaW4gQVdB
+Q1MvU2NyZWFtZXIgcmVnaXN0ZXIgd3JpdGUgdGltZW91dHMuCiAgKgkJLSBwYXJ0IHdheSB0
+byBwYXJ0aXRpb25pbmcgdGhlIGluaXQoKSBzdHVmZgogICoJCS0gZmlyc3QgcGFzcyBhdCAn
+dHVtYmxlcicgc3R1ZmYgKG5vdCBzdXBwb3J0IC0ganVzdCBhbiBhdHRlbXB0CiAgKgkJICB0
+byBhbGxvdyB0aGUgZHJpdmVyIHRvIGxvYWQgb24gbmV3IEc0cykuCisgKgkyOC8wNC8yMDAx
+IFs5OS43XSAqKipURVNUIFZFUlNJT04gd2lsbCBiZSAwLjcgd2hlbiBpdCdzIHdvcmtpbmcg
+KioqCisgKgkJLSBwdXQgaW4gc3Bpbl9sb2Nrcy4KKyAqCTI2LzA3LzIwMDAgLSBtb2RzIHRv
+IERFQUQgc3RhdHVzIGhhbmRsaW5nLgogKi8KIAogLyogR0VORVJBTCBGSVhNRS9UT0RPOiBj
+aGVjayB0aGF0IHRoZSBhc3N1bXB0aW9ucyBhYm91dCB3aGF0IGlzIHdyaXR0ZW4gdG8KQEAg
+LTc3LDggKzgyLDggQEAKICNpbmNsdWRlICJhd2Fjc19kZWZzLmgiCiAjaW5jbHVkZSAiZG1h
+c291bmQuaCIKIAotI2RlZmluZSBETUFTT1VORF9BV0FDU19SRVZJU0lPTiAwCi0jZGVmaW5l
+IERNQVNPVU5EX0FXQUNTX0VESVRJT04gNgorI2RlZmluZSBETUFTT1VORF9BV0FDU19SRVZJ
+U0lPTiA5OQorI2RlZmluZSBETUFTT1VORF9BV0FDU19FRElUSU9OIDcKIAogI2RlZmluZSBB
+V0FDU19CVVJHVU5EWQkxMDAJLyogZmFrZSByZXZpc2lvbiAjIGZvciBidXJndW5keSAqLwog
+I2RlZmluZSBBV0FDU19UVU1CTEVSICAgIDkwCS8qIGZha2UgcmV2aXNpb24gIyBmb3IgdHVt
+YmxlciAqLwpAQCAtNjg5LDkgKzY5NCw2IEBACiAJCWlmIChzdGF0ICYgREVBRCkgewogCQkJ
+dW5zaWduZWQgc2hvcnQgcmVxLCByZXMgOwogCQkJdW5zaWduZWQgaW50IHBoeSA7Ci0jaWZk
+ZWYgREVCVUdfRE1BU09VTkQKLXByaW50aygiZG1hc291bmRfcG1hYzogdHgtaXJxOiB4ZmVy
+IGRpZWQgLSBwYXRjaGluZyBpdCB1cC4uLlxuIikgOwotI2VuZGlmCiAJCQkvKiB0byBjbGVh
+ciBERUFEIHN0YXR1cyB3ZSBtdXN0IGZpcnN0IGNsZWFyIFJVTgogCQkJICAgc2V0IGl0IHRv
+IHF1aWVzY2VudCB0byBiZSBvbiB0aGUgc2FmZSBzaWRlICovCiAJCQkodm9pZClpbl9sZTMy
+KCZhd2Fjc190eGRtYS0+c3RhdHVzKTsKQEAgLTcxNCw3ICs3MTYsNyBAQAogCQkJc3RfbGUx
+NigmY3AtPnJlc19jb3VudCwgMCk7CiAJCQlzdF9sZTE2KCZjcC0+eGZlcl9zdGF0dXMsIDAp
+OwogCQkJc3RfbGUzMigmY3AtPnBoeV9hZGRyLCBwaHkpOwotCQkJc3RfbGUxNigmY3AtPmNv
+bW1hbmQsIE9VVFBVVF9NT1JFICsgSU5UUl9BTFdBWVMpOworCQkJc3RfbGUxNigmY3AtPmNv
+bW1hbmQsIE9VVFBVVF9NT1JFICsgSU5UUl9BTFdBWVMgKyBCUl9BTFdBWVMpOwogCQkJLyog
+cG9pbnQgYXQgb3VyIHBhdGNoZWQgdXAgY29tbWFuZCBibG9jayAqLwogCQkJb3V0X2xlMzIo
+JmF3YWNzX3R4ZG1hLT5jbWRwdHIsIHZpcnRfdG9fYnVzKGNwKSk7CiAJCQkvKiB3ZSBtdXN0
+IHJlLXN0YXJ0IHRoZSBjb250cm9sbGVyICovCkBAIC03MjIsNiArNzI0LDkgQEAKIAkJCS8q
+IHNob3VsZCBjb21wbGV0ZSBjbGVhcmluZyB0aGUgREVBRCBzdGF0dXMgKi8KIAkJCW91dF9s
+ZTMyKCZhd2Fjc190eGRtYS0+Y29udHJvbCwKIAkJCQkoKFJVTnxXQUtFKSA8PCAxNikgKyAo
+UlVOfFdBS0UpKTsKKyNpZmRlZiBERUJVR19ETUFTT1VORAorcHJpbnRrKCJkbWFzb3VuZF9w
+bWFjOiB0eC1pcnE6IHhmZXIgZGllZCAtIHBhdGNoZWQgaXQgdXAuLi5cbiIpIDsKKyNlbmRp
+ZgogCQkJYnJlYWs7IC8qIHRoaXMgYmxvY2sgaXMgc3RpbGwgZ29pbmcgKi8KIAkJfQogCQlp
+ZiAoKHN0YXQgJiBBQ1RJVkUpID09IDApCkBAIC03ODQsOSArNzg5LDYgQEAKIAkJICAgVE9E
+TzogZmlndXJlIG91dCBob3cgYmVzdCB0byBmaXggaXQgdXAKIAkJKi8KIAkJaWYgKHN0YXQg
+JiBERUFEKXsKLSNpZmRlZiBERUJVR19ETUFTT1VORAotcHJpbnRrKCJkbWFzb3VuZF9wbWFj
+OiByeC1pcnE6IERJRUQgLSBhdHRlbXB0aW5nIHJlc3VyZWN0aW9uXG4iKTsKLSNlbmRpZgog
+CQkJLyogdG8gY2xlYXIgREVBRCBzdGF0dXMgd2UgbXVzdCBmaXJzdCBjbGVhciBSVU4KIAkJ
+CSAgIHNldCBpdCB0byBxdWllc2NlbnQgdG8gYmUgb24gdGhlIHNhZmUgc2lkZSAqLwogCQkJ
+KHZvaWQpaW5fbGUzMigmYXdhY3NfdHhkbWEtPnN0YXR1cyk7CkBAIC04MDQsNiArODA2LDkg
+QEAKIAkJCS8qIHNob3VsZCBjb21wbGV0ZSBjbGVhcmluZyB0aGUgREVBRCBzdGF0dXMgKi8K
+IAkJCW91dF9sZTMyKCZhd2Fjc19yeGRtYS0+Y29udHJvbCwKIAkJCQkoKFJVTnxXQUtFKSA8
+PCAxNikgKyAoUlVOfFdBS0UpKTsKKyNpZmRlZiBERUJVR19ETUFTT1VORAorcHJpbnRrKCJk
+bWFzb3VuZF9wbWFjOiByeC1pcnE6IERJRUQgLSBhdHRlbXB0ZWQgcmVzdXJyZWN0aW9uXG4i
+KTsKKyNlbmRpZgogCQkJcmV0dXJuOyAvKiB0cnkgdGhpcyBibG9jayBhZ2FpbiAqLwogCQl9
+CiAJCS8qIENsZWFyIHN0YXR1cyBhbmQgbW92ZSBvbiB0byBuZXh0IGJ1ZmZlci4KQEAgLTEw
+MTYsNiArMTAyMSwxMCBAQAogCQlvdXRfbGUzMigmYXdhY3MtPmJ5dGVzd2FwLCAwKTsKIH0K
+IAorLyogSWFpbjogYWxsIGN1cnJlbnQgbW9kZWxzIHN1cHBvcnQgcG93ZXItc2F2aW5nIC0g
+c2hvdWxkIHRoaXMgc3R1ZmYgcmVhbGx5CisgICBiZSBjb25kaXRpb25hbCBvbiBQb3dlckJv
+b2tzPworKi8KKwogI2lmZGVmIENPTkZJR19QTUFDX1BCT09LCiAvKgogICogU2F2ZSBzdGF0
+ZSB3aGVuIGdvaW5nIHRvIHNsZWVwLCByZXN0b3JlIGl0IGFmdGVyd2FyZHMuCkBAIC0xNzcz
+LDggKzE3ODIsMTIgQEAKIAogCWNwID0gYXdhY3NfdHhfY21kczsKIAltZW1zZXQoKHZvaWQg
+KiljcCwgMCwgKHdyaXRlX3NxLm1heF9jb3VudCsxKSAqIHNpemVvZihzdHJ1Y3QgZGJkbWFf
+Y21kKSk7Ci0JZm9yIChpID0gMDsgaSA8IHdyaXRlX3NxLm1heF9jb3VudDsgKytpLCArK2Nw
+KSB7CisJZm9yIChpID0gMDsgaSA8IHdyaXRlX3NxLm1heF9jb3VudDsgaSsrLCBjcCsrKSB7
+CisJCXN0X2xlMzIoJmNwLT5jbWRfZGVwLCB2aXJ0X3RvX2J1cyhjcCsxKSk7IC8qIGZvciBE
+RUFEIHJlY292ICovCiAJCXN0X2xlMzIoJmNwLT5waHlfYWRkciwgdmlydF90b19idXMod3Jp
+dGVfc3EuYnVmZmVyc1tpXSkpOworCQlzdF9sZTE2KCZjcC0+Y29tbWFuZCwgT1VUUFVUX01P
+UkUgKyBJTlRSX0FMV0FZUyk7CisJCXN0X2xlMTYoJmNwLT5yZXFfY291bnQsIHdyaXRlX3Nx
+LmJsb2NrX3NpemUpOworCQlzdF9sZTE2KCZjcC0+eGZlcl9zdGF0dXMsIDApOwogCX0KIAlz
+dF9sZTE2KCZjcC0+Y29tbWFuZCwgREJETUFfTk9QICsgQlJfQUxXQVlTKTsKIAlzdF9sZTMy
+KCZjcC0+Y21kX2RlcCwgdmlydF90b19idXMoYXdhY3NfdHhfY21kcykpOwpAQCAtMTgzMSw2
+ICsxODQ0LDcgQEAKIAkvKiBTZXQgZG1hIGJ1ZmZlcnMgdXAgaW4gYSBsb29wICovCiAJZm9y
+IChpID0gMDsgaSA8IHJlYWRfc3EubWF4X2NvdW50OyBpKyssY3ArKykgewogCQlzdF9sZTMy
+KCZjcC0+cGh5X2FkZHIsIHZpcnRfdG9fYnVzKHJlYWRfc3EuYnVmZmVyc1tpXSkpOworCQlz
+dF9sZTMyKCZjcC0+Y21kX2RlcCwgdmlydF90b19idXMoY3ArMSkpOyAvKiBmb3IgREVBRCBy
+ZWNvdiAqLwogCQlzdF9sZTE2KCZjcC0+Y29tbWFuZCwgSU5QVVRfTU9SRSArIElOVFJfQUxX
+QVlTKTsKIAkJc3RfbGUxNigmY3AtPnJlcV9jb3VudCwgcmVhZF9zcS5ibG9ja19zaXplKTsK
+IAkJc3RfbGUxNigmY3AtPnhmZXJfc3RhdHVzLCAwKTsKQEAgLTIyNTgsMTAgKzIyNzIsMTAg
+QEAKIAkJCWJyZWFrOwogCQl9CiAJfQotCWlmIChyZXYgPT0gMikgeworCWlmIChyZXYgPT0g
+MiB8fCByZXYgPT0gMykgewogCQlod19jYW5fYnl0ZXN3YXAgPSAwOwogI2lmZGVmIERFQlVH
+X0RNQVNPVU5ECi1wcmludGsoImRtYXNvdW5kX3BtYWM6IGZvdW5kIEtleWxhcmdvIHJldiAy
+IC0gSC9XIGJ5dGUtc3dhcCBkaXNhYmxlZFxuIikgOworcHJpbnRrKCJkbWFzb3VuZF9wbWFj
+OiBmb3VuZCBLZXlsYXJnbyByZXYgMi8zIC0gSC9XIGJ5dGUtc3dhcCBkaXNhYmxlZFxuIikg
+OwogI2VuZGlmCiAJfQogfQpAQCAtMjI5Myw2ICsyMzA3LDcgQEAKIAkJCURCRE1BX0FMSUdO
+KGJlZXBfZGJkbWFfY21kX3NwYWNlKTsKIAkvKiBzZXQgdXAgZW1lcmdlbmN5IGRiZG1hIGNt
+ZCAqLwogCWVtZXJnZW5jeV9kYmRtYV9jbWQgPSBiZWVwX2RiZG1hX2NtZCsxIDsKKwogCWJl
+ZXBfYnVmID0gKHNob3J0ICopIGttYWxsb2MoQkVFUF9CVUZMRU4gKiA0LCBHRlBfS0VSTkVM
+KTsKIAlpZiAoYmVlcF9idWYgPT0gTlVMTCkgewogCQlwcmludGsoS0VSTl9FUlIgImRtYXNv
+dW5kX3BtYWM6IG5vIG1lbW9yeSBmb3IgYmVlcCBidWZmZXJcbiIpOwo=
+
+--MS_Mac_OE_3079111511_34090_MIME_Part--
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
