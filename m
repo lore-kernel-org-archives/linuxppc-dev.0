@@ -1,64 +1,41 @@
-Message-ID: <3A0C23CA.13ADFE8A@mvista.com>
-Date: Fri, 10 Nov 2000 08:35:22 -0800
-From: Cal Erickson <cal_erickson@mvista.com>
-Reply-To: cal_erickson@mvista.com
-MIME-Version: 1.0
-To: john zhan <johnzhan@btamail.net.cn>
-CC: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <00c401c04bb1$dbf78420$57c809c0@fel>
+Reply-To: "john zhan" <johnzhan@btamail.net.cn>
+From: "john zhan" <johnzhan@btamail.net.cn>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Cc: "Daris A Nevil" <dnevil@snmc.com>,
+        "Cal Erickson" <cal_erickson@mvista.com>
+References: <006001bf448c$4aee3aa0$57c809c0@fel> <3A0BFE46.A7366165@snmc.com>
 Subject: Re: GDB for host development platform
-References: <006001bf448c$4aee3aa0$57c809c0@fel>
-Content-Type: text/plain; charset=us-ascii
+Date: Sat, 11 Nov 2000 15:34:32 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-John,
-Why not take a look at the Cross Development Kit from
-MontaVista Software? If you go to their web site you
-can download it for free. It comes with GDB and
-GDB server which uses the ethernet to debug.
+Thank you, Daris and Cal, for your reponse.
+I believe cross-debugger is good way,no mater the
+connection method, serial or Ethernet.
+My point is the native debugger targeted exec-file.
+The background of my idea is that I will build a new
+ ppc system which have all necessary peripheral including
+a harddisk, keyboard ,  graphics device and other
+standard port.
+Base this platform to develop embedded applications,
+In fact,I am afraid I will break the traditional development
+ mode ,discard the host machine, combine host and  target
+ physically, all in one,  like programming in linux/pc.
+ I think it can be easy acceptable.
+So,I hope GDB can work with exec-file target in a standalone
+linux/ppc machine.
+It is the worst news that GDB is not ready for linux/ppc exec-file target.
+Can someone tell me more about this?
+But I can still use GDB targeted extended-remote in native environment.right?
 
-Cal Erickson
+Thanks in advance.
 
-john zhan wrote:
-
-> I have now successfully build GDB-4.18 for linux/ppc.
-> Both target and host are powerpc-linux.
-> When I was trying to run a executable in my target
-> hardware(8xx) with gdb(target for exec),
->  e.g. hello,
-> GDB said
-> "
-> Starting program: ./hello
-> Don't know how to run.  Try "help target".
-> "
-> Questions:
->     1. what's going on it?
->     2. Does(Did) anyone do the same thing?
->     3.The cross-debugger + target gdb server with a serial connection
->          is the unique choices?
->     4. I wonder which is the best way to debug a linux/ppc application
->         on the embedded platform.
->     5. What do you think a full host development environment
->         (including native comilper,debugger etc) in the embedded
->         system.
->
-> thank for any response.
->
-> regards.
-> john zhan.
->
-
---
-===========================================================================
-Cal Erickson                 MontaVista Software Inc.
-Customer Support Engineer    490 Potrero Avenue
-Phone (408) 328-0304         Sunnyvale CA 94085
-Fax   (408) 328-9204         e-mail cal_erickson@mvista.com
-Pager 877-566-2012           support 1-800-759-8888 pin 202-7489
-web http://www.mvista.com    support e-mail: support@mvista.com
-eCode: http://cal@work.com.ecode.com
-===========================================================================
+john zhan.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
