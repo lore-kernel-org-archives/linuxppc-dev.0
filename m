@@ -1,30 +1,32 @@
-Subject: Re: Altivec Vector code bug
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: John Whitney <jwhitney-linuxppc@sands-edge.com>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <BE309A52-8807-11D8-B1DF-000A95A07384@sands-edge.com>
-References: <BE309A52-8807-11D8-B1DF-000A95A07384@sands-edge.com>
-Content-Type: text/plain
-Message-Id: <1081319452.1382.44.camel@gaston>
+Date: Wed, 7 Apr 2004 09:15:19 +0200
+From: Marc Leeman <marc.leeman@barco.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PCI Memory mapping
+Message-ID: <20040407071519.GE2426@smtp.barco.com>
+Reply-To: Marc Leeman <marc.leeman@barco.com>
 Mime-Version: 1.0
-Date: Wed, 07 Apr 2004 16:30:53 +1000
+Content-Type: text/plain; charset=iso-8859-15
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2004-04-07 at 06:19, John Whitney wrote:
-> The attached patch corrects the following problem with the Altivec
-> vector:
->
-> When running Linux 2.6.5-rc2 (Altivec NOT configured in) on a 7410-base
-> platform, and running a program that attempts to use a vector register,
-> the kernel will lock up.  This is due to vectoring to 0xf20, which is
-> in the middle of the exception prolog as the exception handler is now
-> written.
+I now realise I sent to the wrong mailing list :-/
+(thread was on linuxppc-dev instead of linuxppc-embedded).
 
-Thanks, forwarded upstream.
+Hi,
 
-Ben.
+I know I've been flooding the mailing list with this particular little
+topic and thanks to some valuable comments [1], we were able to
+pinpoint our problem fairly quickly.
 
+Partly based on a number of related known silicon bugs, I have drafted
+the following description (and work-around) that explains our data
+corruption.
+
+http://scorpius.homelinux.org/~marc/masterwrite/
+
+[1] There is still one comment which is in the queue to be investigated.
+
+ marc.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
