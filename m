@@ -1,70 +1,67 @@
-Message-ID: <3BAA4F46.1020002@mc.com>
-Date: Thu, 20 Sep 2001 16:19:18 -0400
-From: Mark Salisbury <mbs@mc.com>
+Message-ID: <3BAA6C43.455873D@mvista.com>
+Date: Thu, 20 Sep 2001 18:22:59 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
-	linuxppc-dev@lists.linuxppc.org
+To: Mark Salisbury <mbs@mc.com>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: ppc LE questions (seeking help hand info pointers)
-References: <20010920171002.37DCA2B54A@marcus.pants.nu>	<3BAA363B.5010400@mc.com> <8xlmj9psnw.fsf@s62.informatik.uni-bremen.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+References: <3BAA0E6F.5050503@mc.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Holger Bettag wrote:
+Mark Salisbury wrote:
 
-> Mark Salisbury <mbs@mc.com> writes:
->
-> [... linux in ppc little endian mode ...]
->
->>well, this is in the context of a multi-CPU type (x86/ppc, sparc/ppc,
->>ppc/ppc, mips/ppc) shared memory multicomputer.
->>
->>when dealing w/ direct mapped, shared memory, uniformity of endian-ness
->>makes many multicomputer problems easier to solve.(not to mention easier
->>for the customer to program...)
->>
->>
-> You are aware that a PPC in little endian mode is merely tricking with the
-> low order address bits, but does not actually lay out its data in a little
-> endian fashion in physical memory?
->
+> assume I have a valid reason for wanting to run ppc's in LE mode
 
-not according to section 3.1 of the motorola ppc "green book"
+This is where it starts to fall apart.  I didn't know there were
+any valid reasons to support LE mode, except to run some software
+from a certain company that never materialized.  I was fortunate to
+be part of the PowerPC design discussions from the beginning.  The LE
+mode was never popular.
 
-according to that it is a sort of munged le representation,
+A technical reason is the PowerPC never supported a true little
+endian mode.  It basically does byte swapping between the cache
+and core processing units, and I believe always (or at least usually)
+supported a big endian bus.  You can't properly attach the processor
+to true little endian busses or devices when this is done, so you don't
+gain any hardware design advantage.  As you know, properly byte
+swapping depends upon the size of the object, so if you happen
+to access something in smaller units than it's natural size you
+aren't going to get the results you expect.  For someone that is
+comfortable programming in an LE environment (is there anyone? :-),
+this will eventually bite you.
 
-which thanks to a "one trick pony" PCI bridge looks like standard LE to
-the PCI based  x86 host.
+Another technical reason is as the processor family moves forward,
+less and less little endian support is provided.  In the case of
+the 7450, there are instructions that trap to the kernel to be
+emulated in LE mode, that are executed in the core in BE mode.
 
-understand please that what I am proposing is a config option. as a
-sub-architecture port.  it would not affect any code that it didn't
-absolutely need to, and would only be compiled if sombody selected that
-particular config.
+> question 2.  if 1, what is the primary reason for rejection.
 
-I am _NOT_ suggesting running pmacs in LE mode.
+It was LE (sorry, couldn't resist :-)?
 
-as in:
-ppc---
-      |-- PREP
-      |-- CHRP
-      |-- MAC
-      |-- MERCURY ---
-                    |-- Big Endian
-                    |-- Little Endian
+> question 3.  is there a general issue of endian safety in linux (I would
+> think not) or just in the ppc-specific code?
+
+Linux is very aware of endian issues.  For all but I guess two of
+you now, everyone assumes PowerPC is big endian and we make adjustments
+when working on little endian I/O.  Without hardware for testing,
+the rest of us are just likely to break any LE software, and you
+are just going to end up chasing fixes behind lots of the rest of us.
+
+> ..........what would be the primary
+> obstacle to inclusion in the main line.
+
+Like I always say, the kernel is the easy part.  None of us have
+the hardware, tools, libraries, or applications to utilize a LE kernel.
+It more than doubles the work we need to do trying to keep the
+software up to date, if we had all of that for testing.  It may
+be easier to just keep your patch up to date, than to try and keep
+up with the rest of us making changes to software we can't test.
 
 
-
-
-
-
---
-/*------------------------------------------------**
-**   Mark Salisbury | Mercury Computer Systems    **
-**   mbs@mc.com     | System OS - Kernel Team     **
-**------------------------------------------------**
-**         Infinite Justice is niether.           **
-**------------------------------------------------*/
-
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
