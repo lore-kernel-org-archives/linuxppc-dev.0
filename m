@@ -1,42 +1,58 @@
-Date: Wed, 11 Aug 1999 14:03:23 -0500 (CDT)
-From: Vinai <vroopcha@post.its.mcw.edu>
-To: Naushit Sakarvadia <nsakarvadia@telogy.com>
-cc: "'LinuxPPC Developpers'" <linuxppc-dev@lists.linuxppc.org>
-Subject: PowerPC info URL's (was Re: Assembly)
-In-Reply-To: <61891BA043DED21180920090273F173829B113@argentina.telogy.com>
-Message-ID: <Pine.SOL.3.96.990811135814.14503A-100000@post.its.mcw.edu>
+Date: Wed, 11 Aug 1999 14:36:51 -0500 (CDT)
+From: Grant Erickson <grant@lcse.umn.edu>
+To: linuxppc-dev@lists.linuxppc.org
+cc: cort@cs.nmt.edu
+Subject: Patch for mkprep.c
+Message-ID: <Pine.SGI.3.91.990811143033.161699B-100000@brule.lcse.umn.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I believe I've solved the problem with mkprep core dumping with a bus 
+error on Sun UltraSPARC/Solaris and SGI MIPS/Irix machines.
 
-Take a look at the following pages.  I keep meaning to actually go into
-some of this stuff, but there's "the pathway to hell" etc, etc ;-) Hope
-they have what you are looking for:
+The bus error was due to an unaligned word access. This occured because
+'pe' was based on &block[0x1BE], thus referencing pe->beginning_sector or
+pe->number_of_sectors attempts to do a word access at an unaligned byte 
+address--which neither UltraSPARCs nor R5000s appear to like.
 
-	http://www.mot.com/SPS/PowerPC/
-	http://www.mot.com/SPS/PowerPC/teksupport/
-	http://www.mot.com/SPS/PowerPC/teksupport/teklibrary/
+The following patch should address the issue. Applying and running it on
+both 386 and Solaris machines result in identical zImage files from a
+given zvmlinux.  However, I don't have a PReP machine to verify the
+resultant image on.  Anyone care to give it a whirl? 
 
-Some of the stuff on the last page may be what you need ??
-
-cheers
-vinai
-
-}I am trying to learn assembly language of Powerpc.
-}
-}Anybody can suggest good point to start?
-}
-}I tried to read User Manual of MPC860 and InstrucionManual but it
-}doesnt talk about architecture of PPC,meas how many register it has...
-}how many flags..etc...
-}
-}I need something like programmer's guide ,which is not I couldnt find on
-}Motarola website.
-
+*** mkprep.c    1999/08/05 01:59:31     1.1.1.1
+--- mkprep.c    1999/08/11 19:27:18
+***************
+*** 145,151 ****
+  void write_prep_partition(int in, int out)
+  {
+    unsigned char block[512];
+!   partition_entry_t *pe = (partition_entry_t *)&block[0x1BE];
+    dword_t *entry  = (dword_t *)&block[0];
+    dword_t *length = (dword_t *)&block[sizeof(long)];
+    struct stat info;
+--- 145,151 ----
+  void write_prep_partition(int in, int out)
+  {
+    unsigned char block[512];
+!   partition_entry_t pent, *pe = &pent;
+    dword_t *entry  = (dword_t *)&block[0];
+    dword_t *length = (dword_t *)&block[sizeof(long)];
+    struct stat info;
+***************
+*** 214,219 ****
+--- 214,221 ----
+  #else
+    pe->number_of_sectors = cpu_to_le32(2*18*80-1);
+  #endif /* __i386__ */
++ 
++   memcpy(&block[0x1BE], pe, sizeof (pent));
+  
+    write( out, block, sizeof(block) );
+    write( out, entry, sizeof(*entry) );
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
