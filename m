@@ -1,52 +1,49 @@
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Ebony Board, PPC440GP and NFS panics
-Date: Wed, 19 May 2004 09:23:29 +0200
-References: <4.2.2.20040518092928.05070d90@bhawley.mailhost.luminex.com>
-In-Reply-To: <4.2.2.20040518092928.05070d90@bhawley.mailhost.luminex.com>
-Cc: Brian Hawley <bhawley@luminex.com>
+Message-ID: <CA78D1B723D8D411AF0300508BDCF74F01F7E99D@NTCORREO>
+From: IGOR LURI <iluri@fagorautomation.es>
+To: =?ISO-8859-1?Q?EMBEDDED_LINUXPPC_=28Correo_electr=F3nico=29?= <linuxppc-embedded@lists.linuxppc.org>
+Subject: Is it posible to have Ethernet on SCC3 , RS line on SMC1 and USB in
+	 host mode?
+Date: Wed, 19 May 2004 10:43:56 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200405190923.29890.g.jaeger@sysgo.com>
+	charset=ISO-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi all!
 
-sorry if this is too obvious, but could it be, that you missed to set the
-following kernel option:
-CONFIG_IP_PNP_DHCP=y
-Also setting bootarg to ip=auto will be a good idea. What made me suspicious
-from your logs is, that I do not see any output from the kernel sayin'
-something about received IP-addresses etc...
+We have a custom board based on PowerPC 823 with the folowing configuration:
 
-Correct me if I'm wrong (I use bootp and tftp here), but at least you should
-get something like this even for DHCP:
+-	A RS line on SMC1
+-	A RS line on SCC2
+-	Ethernet on SCC3
+-	USB
 
-Sending BOOTP requests .. OK
-IP-Config: Got BOOTP answer from 172.40.1.130, my address is 172.40.1.131
-IP-Config: Complete:
-      device=eth0, addr=192.168.1.131, mask=255.255.255.0, gw=255.255.255.255,
-     host=pappnase, domain=, nis-domain=(none),
-     bootserver=192.168.1.130, rootserver=192.168.130, rootpath=/tftpboot/pappnase
+To have a RS line on SMC1 and  Ethernet on SCC3 working together we have to
+install a microcode patch. We have done it and it works fine.
 
-Hope this helps,
-  Gerhard
+Also, to have USB working as host mode, we have to intall another microcode
+patch and we done it and it works fine too.
 
+If we install a microde patch to have working ethernet on SCC3 and RS line
+on SMC1, we can´t install the other microcode patch to have USB in host
+mode.
 
-On Tuesday 18 May 2004 18:32, Brian Hawley wrote:
->  > We've been trying to get linux-2.5-ocp up and running on the ebony
->  > board. Thanks to those who have helped, but we are still stuck, and have
->  > figured out a
->  > few things, but need some advice on others.
->  >
->  > Using the default ebony config (ebony_defconfig) we found that the
->  > default bootargs (ip=on) always overrode whatever we passed from the
->  > bootargs in u-boot. This always ended up with retries and NFS
->  > timeouts...
-[SNIPSNAP]
+Is there any posibility to have ethernet on SCC3 , RS line on SMC1 and USB
+in host mode working together?
 
+Is there any microcode patch that solves both problems?
+
+Thanks in advance.
+
+Igor Luri Bravo
+Tecnico I+D Software
+Fagor Automation S. Coop.
+P. O. Box 144
+E-20500 Mondragón-Arrasate
+Tel. ++34 943 71 92 00 - ++34 943 03 98 00
+Fax. ++34 943 79 17 12
+www.fagorautomation.com <http://www.fagorautomation.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
