@@ -1,34 +1,34 @@
-From: kris_kelvin@excite.com
-To: linuxppc-embedded@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Looking for glibc-0.961212-1o.src.rpm
-Message-Id: <942104017.13033.909@excite.com>
-Date: Mon, 08 Nov 1999 15:33:37 PST
+Message-ID: <382768B8.BEDD4E41@netx4.com>
+Date: Mon, 08 Nov 1999 19:20:08 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: kris_kelvin@excite.com
+CC: linuxppc-embedded@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Looking for glibc-0.961212-1o.src.rpm
+References: <942104017.13033.909@excite.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi, there.
-
-I do apologize for asking a stupid question but, although
-I look here every once in a while, I am not a regular
-subscriber.
-
-I wonder if somebody can point me to a place where I can
-find glibc-0.961212-1o.src.rpm. I have tried a few
-obvious places and the best I've been able to
-come up with is glibc-0.961212-1h.src.rpm.
-
-Thanks in advance,
-
-Kris
+kris_kelvin@excite.com wrote:
 
 
+> I wonder if somebody can point me to a place where I can
+> find glibc-0.961212-1o.src.rpm.
 
 
-________________________________________________________________
-Get FREE voicemail, fax and email at http://voicemail.excite.com
-Talk online at http://voicechat.excite.com
+I don't have that, but I used glibc-0.961212-1r for my
+latest 8xx embedded libraries.  I put the SRPM on the
+ppc.kernel.org server, in the embedded directory.  You
+certainly don't want to use the -1h version.
+
+You need to make a patch to dl-machine.h so you can use
+the 8xx copyback cache with dynamic libraries.....different
+cache line size.  Once I find that patch, I'll post it up
+there as well.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
