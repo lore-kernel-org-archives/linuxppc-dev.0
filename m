@@ -1,41 +1,30 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <000b01c24a85$0596a620$cc00a8c0@ycigrnd.ycig.com>
-From: "leeyang" <leeyang@ycig.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: linux booting
-Date: Fri, 23 Aug 2002 17:11:08 +0800
+Message-ID: <3D65FD25.4CDCCA5@opensource.se>
+Date: Fri, 23 Aug 2002 11:15:17 +0200
+From: Magnus Damm <damm@opensource.se>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
+To: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>
+Cc: Marius Groeger <mag@sysgo.de>,
+	John Fisher <John.Fisher@nec.com.au>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: cygwin and embedded linux
+References: <000501c24979$6348a190$37d34c93@neca.nec.com.au> <3.0.3.32.20020822173918.006dbb00@hollabaugh.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi,all!
-These days I am trying to upgrade kernel from
-2.2.14 to 2.4.20-pre2 in my 860T custom board.
+> How many out there actually are compiling PPC code natively
+> on a PowerPC Linux box for their embedded devices?
 
-The old 2.2.14 kernel and ppcboot do work,and
-I add some custom board file to the 2.4.20-pre2
-soure tree from linuxppc_2_4_devel,and comile
-it successfully.(no any warn or error in my modify)
+Not me. I cross compile all my distributions from x86 hosts.
+I like the idea of separating the target system from the
+host system. To keep track of used libraries and to be able
+to recreate the same distribution in the future with another
+host.
 
-When I "bootm 0x10000"in ppcboot,it runs to
-"Transferring control to linux kernel",then hangs
-there,and I see nothing in the console.:(
+I've always wanted a sleek laptop from apple,
+but I would like more than one mouse button...
 
-In the PPCBoot guide(FAQ section),it mentioned
-2 possible causes,wrong bdinfo and clocks_in_mhz
-I do check it and feel nothing wrong,however
-nothing yet.
-
-I have a BDI2000,but I think I should debug the bootm
-part of ppcboot,however someone says it is quite
-difficult to do so( at least for me).
-so I am seeking errors in blind.
-
-hope some light!
-
-leeyang
+/ magnus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
