@@ -1,30 +1,28 @@
-In-Reply-To: <1091811981.4179.20.camel@localhost.localdomain>
-References: <1091647026.4233.95.camel@localhost.localdomain> <1091811981.4179.20.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <E2044456-E7D9-11D8-BF1B-003065F9B7DC@embeddededge.com>
-Cc: LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: rpx8260_defconfig problems
-Date: Fri, 6 Aug 2004 14:53:19 -0400
-To: Jeff Angielski <jeff@theptrgroup.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <41140944.2060704@icarus.com>
+Date: Fri, 06 Aug 2004 15:42:12 -0700
+From: Stephen Williams <steve@icarus.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Embedded SDRAM memory tester
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Aug 6, 2004, at 1:06 PM, Jeff Angielski wrote:
+Does anybody out there know of a good quality memory stress tester
+for embedded use? I have a PPC based system that seems to work
+fine in general (linuxppc-2.4) but I'm seeing soem occasional odd
+behavior and I would like to eliminate SDRAM as a potential
+problem.
 
-> 1) arch/ppc/platforms/rpx8260.h defined it's own bd_info structure
-> which
-> was not consistent with u-boot.
-
-Just realize the default configuration for this board uses the EP boot
-rom.  Don't mess this up for the default build selection of zImage.
-
-Thanks.
-
-
-	-- Dan
+To that end, a memory tester a la memtest86 would be really really
+nice. Especially if it is bootable via u-boot:-)
+--
+Steve Williams                "The woods are lovely, dark and deep.
+steve at icarus.com           But I have promises to keep,
+http://www.icarus.com         and lines to code before I sleep,
+http://www.picturel.com       And lines to code before I sleep."
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
