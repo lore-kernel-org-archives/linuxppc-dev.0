@@ -1,38 +1,28 @@
-Date: Wed, 17 May 2000 08:04:41 -0700 (MST)
-From: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
-Subject: Re: Pismo status
-In-reply-to: <39226066.BF822A70@mpifr-bonn.mpg.de>
-To: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
-Message-id: <Pine.SOL.3.95.1000517080150.18633B-100000@dana.ucc.nau.edu>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 17 May 2000 08:20:38 -0700 (PDT)
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Today's rsync of linux-pmac-devel -- Running "more /proc/ppc_htab"
+  causes a kernel check.
+In-Reply-To: <3922583A.A23F9A57@wanadoo.fr>
+Message-ID: <Pine.LNX.4.10.10005170818080.9299-100000@shell.unixbox.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 17 May 2000, Albrecht [iso-8859-1] Dreß wrote:
+On Wed, 17 May 2000, Martin Costabel wrote:
 
-> Tim Wojtulewicz wrote:
-> > No it's definitely supposed to have a fan.  It comes on in MacOS.
-> > The problem is that the PMU is not fully supported yet, so it doesn't
-> > understand that the processor is too hot.  I'm trying to find
->                       ^^^^^^^^^^^^^^^^^^^^
-> Does this mean that I can damage the machine if I just run a high-load
-> program?!?
+> I remember several reports about this in the past weeks. Just for the
+> record: I never had this problem, neither with the pmac-devel nor with
+> the bitkeeper kernels. So this must be machine or option specific.
 
-There won't be any damage to the machine.  The problem is that when the
-processor reaches a certain temperature (one that is above limits) it puts
-out a halt instruction.  This causes the machine to lock up.  The
-protection against overheating is built into the processor (last time I
-checked).  What should happen is that the OS should realize that the
-processor is getting too warm, and turn on the fan before that limit is
-reached.  Unfortunately, the temperature sensing code doesn't work so
-well (or maybe something else), and the fan never comes on.
+I recall you having a 6400, thus a 603e.  The 603e does not have a hash
+table.
 
-Don't worry about the machine, somewhere I heard the plastic case can
-handle around 250 degrees F, so it's not in any danger of melting.
 
-Tim
+ani
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
