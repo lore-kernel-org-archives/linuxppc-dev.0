@@ -1,15 +1,25 @@
-Message-ID: <B895EFF5AF34724880036BDB5B5B8148135684@amer22.avnet.com>
+Message-ID: <B895EFF5AF34724880036BDB5B5B8148135685@amer22.avnet.com>
 From: "Kerl, John" <John.Kerl@Avnet.com>
 To: "Kerl, John" <John.Kerl@Avnet.com>,
 	"'Brian S. Park'" <brian@corelis.com>
 Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
 Subject: RE: getting Linux working on IBM Walnut demo board
-Date: Wed, 28 May 2003 12:02:15 -0700
+Date: Wed, 28 May 2003 12:03:46 -0700
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Also, 'set tagstack' in your ~/.vimrc.
+
+-----Original Message-----
+From: Kerl, John
+Sent: Wednesday, May 28, 2003 12:02 PM
+To: Kerl, John; 'Brian S. Park'
+Cc: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: RE: getting Linux working on IBM Walnut demo board
 
 
 Ooooops, not reading your message well enough.
