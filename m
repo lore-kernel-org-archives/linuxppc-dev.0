@@ -1,98 +1,83 @@
-Subject: Re: Build issues with 2.6.0-test3
-From: Gary Thomas <gary@mlbassoc.com>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Dan Malek <dan@embeddededge.com>,
-	linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20030812152503.GK807@ip68-0-152-218.tc.ph.cox.net>
-References: <3F33BC10.8060407@imc-berlin.de>
-	 <3F33EADE.4010908@embeddededge.com> <3F38DEC4.8050708@imc-berlin.de>
-	 <1060696614.31273.419.camel@hermes>
-	 <20030812152503.GK807@ip68-0-152-218.tc.ph.cox.net>
-Content-Type: text/plain
-Message-Id: <1060702819.31273.534.camel@hermes>
-Mime-Version: 1.0
-Date: 12 Aug 2003 09:40:20 -0600
+To: David Jander <david.jander@protonic.nl>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Memory map with "holes"... 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 12 Aug 2003 17:00:11 +0200."
+             <200308121700.11708.david.jander@protonic.nl>
+Date: Tue, 12 Aug 2003 17:41:44 +0200
+Message-Id: <20030812154149.40702C59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2003-08-12 at 09:25, Tom Rini wrote:
-> On Tue, Aug 12, 2003 at 07:56:55AM -0600, Gary Thomas wrote:
+In message <200308121700.11708.david.jander@protonic.nl> you wrote:
 >
-> > * How best to handle optional support?  One of the patches fixes
-> >   a problem of a missing system call (sys_pciconfig_iobase).  In
-> >   this case, the platform I was building for has no PCI, so it's
-> >   not configured in.  The way I fixed it was to conditionalize
-> >   the syscall table.  An alternate way would be to have a module
-> >   which is compiled if CONFIG_PCI is *not* set (or alternately
-> >   have arch/ppc/kernel/pci.c always be compiled and export the
-> >   appropriate functions that just return -ENOSYS).  Comments?
->
-> 'cond_syscall' is _supposed_ to work here.  But in this one case, it
-> does not.  I've tried tracking this down a little bit, and the 'weak'
-> asm bits make it as far as the pci.s file, but not the pci.o.  And to
-> make it all the more odd, if I threw the cond_syscall into a file in
-> kernel/ (just to try it out), it works.
->
+> I wanted to connect the bank select lines BA0 and BA1 of the SDRAM
+> chips to A6 and A5 respectively, and use only one CS (Chip-Select).
 
-Which "pci.c"?  The one in arch/ppc/kernel isn't even being compiled
-in this case.  Are you saying that it should (and behave differently
-when CONFIG_PCI isn't set)?
+Arghhhh... don't do that.
 
-> > * I have a number of boards/platforms that I support that have
-> >   not been moved into 2.6.  Can I just send patches for those
-> >   as well?
->
-> In the same manner you did for 2.4, yes (logical patches, and preferably
-> against linux-2.5 (linux-2.6 now?) tree.  If something is missing there
-> (it shouldn't be, but it could be :)) that is in linuxppc-2.5, either
-> move it over in another changeset, or bug myself / paul / ben.
->
+> What I pretend to do is something like this:
+> Memory mapped on CS0:
+> Region                  What
+> --------------------------------
+> 0x00000000-0x007fffff   RAM
+> 0x00800000-0x01ffffff   invalid
+> 0x02000000-0x027fffff   RAM
+> 0x02800000-0x03ffffff   invalid
+> 0x04000000-0x047fffff   RAM
+> 0x04800000-0x05ffffff   invalid
+> 0x06000000-0x067fffff   RAM
 
-OK.
+You will not get lucky with such a design, for several reasons.
 
-> > * Has anyone succeeded in building & running 2.6 (or late 2.5)
-> >   on any embedded boards (8xx/8260/405)?
->
-> No / Yes / Yes.
-       ^^^ How?  These compile errors would prevent this.
+CS0 is the boot device. RAM will not work on CS0.
 
->
-> BTW:
-> > Index: arch/ppc/8260_io/uart.c
-> > ===================================================================
-> > RCS file: /home/gthomas/my_cvs/develop/linuxppc-2.5/arch/ppc/8260_io/uart.c,v
-> > retrieving revision 1.1
-> > diff -u -5 -p -r1.1 uart.c
-> > --- arch/ppc/8260_io/uart.c	12 Aug 2003 12:18:15 -0000	1.1
-> > +++ arch/ppc/8260_io/uart.c	12 Aug 2003 13:30:40 -0000
-> > @@ -2389,11 +2389,11 @@ void kgdb_map_scc(void)
-> >  	up->smc_mrblr = RX_BUF_SIZE;		/* receive buffer length */
-> >  	up->smc_maxidl = RX_BUF_SIZE;
-> >  }
-> >  #endif
-> >
-> > -static kdev_t serial_console_device(struct console *c)
-> > +static struct tty_driver *serial_console_device(struct console *c, int *index)
-> >  {
-> >  	*index = c->index;
-> >  	return serial_driver;
-> >  }
->
-> After looking at the similar code in drivers/serial, I don't think this
-> is sufficient.  But I didn't dig too far into seee what c->data was
-> there.
+Second, you make your design unecessarily  complicated.  Attach  each
+bank  of  RAM  to  nother CS, and let the memory controller map it as
+needed.
 
-It seems to be [virtually] the same as in
-  arch/ppc/8xx_io/uart.c
-  drivers/char/amiserial.c
-  drivers/char/serial_tx3912.c
-  drivers/char/sh-sci.c
-  drivers/macintosh/macserial.c
+> marked as "invalid" to be, well, invalid. With a MMU this should not
+> matter, only the kernel must know what to do.
+>
+> For example I found in /arch/ppc/init.c, in the function
+> set_phys_avail(), this piece of code:
+>
+> phys_avail.regions[0].address = PPC_MEMSTART; regions[0].size =
+> phys_avail.total_memory; n_regions = 1;
+>
+> This looks fairly easy to modify, but I wonder why nobody seems to use
+> more than one region in linux-ppc??
+
+Why make a design more complicated than necessary?
+
+> What's the policy? To not use this?
+> Am I the only one who wants something like this?
+
+>From what I've seen so far: yes. All boards I've seen allowed to  map
+the system RAM as one contiguous area.
+
+> Should I start implementing this myself on u-boot and linux-ppc ('cause I
+
+Note that U-Boot does not use the MMU.
+
+> should I better restrict my design to contiguous blocks of RAM only
+> (this would make me waste 4 CS lines, and unnecessarily complex
+> hardware)?
+
+I would prefer such a design, but hey, I'm a software  developer  and
+I'm  supposed  to  bring  up  requirements  that  make  life  it more
+difficult to the hardware guys :-)
+
+Best regards,
+
+Wolfgang Denk
 
 --
-Gary Thomas <gary@mlbassoc.com>
-MLB Associates
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"It is easier to port a shell than a shell script."      - Larry Wall
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
