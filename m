@@ -1,43 +1,56 @@
-Date: Tue, 25 Apr 2000 18:03:34 -0500
-From: erik cameron <cameron@senta.uchicago.edu>
-To: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
-Cc: LinuxPPC <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Dual head on a Powerbook
-Message-ID: <20000425180334.G542@senta.uchicago.edu>
-References: <3906199F.1D7F995@dana.ucc.nau.edu>
+Date: Wed, 26 Apr 2000 01:12:23 +0200
+From: Olaf Hering <olh@suse.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: quik fail on RS/6000 B50
+Message-ID: <20000426011223.A21204@suse.de>
+Reply-To: linuxppc-dev@lists.linuxppc.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3906199F.1D7F995@dana.ucc.nau.edu>; from Tim.Wojtulewicz@NAU.EDU on Tue, Apr 25, 2000 at 03:18:07PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-i was trying to do this a while ago (lombard, linuxppc1999, pre11) and
-didn't have any luck.  i think there was some talk of support, but
-the code simply isn't there.  (it also doesn't support waking from the
-usb bus yet; if you want to use the external monitor on these instead
-of the lcd, under macos you would sleep it, close it and wake it from
-the external keyboard.  which isn't an option yet, iirc.)
+Hi,
 
-please, if i was just being silly and i'm wrong, correct me.  i'd love
-to know how to do this too.  :)
+we have a strange problem with quik. It fails to open the file system
+after a cold start or a reboot in Linux. A warm reboot with "reset-all"
+at the OF prompt after typing "halt" works always.
 
-on 04/25/00, 15:18:07 -0700, Tim Wojtulewicz said...
->
-> I'm trying to connect a projector to the monitor port on the back of my
-> powerbook, so I can do a presentation with it.  Anyone have any
-> information on dual headed support on powerbooks?  Pismo, LinuxPPC2000,
-> 2.2.15pre19
->
-> Tim
->
->
->
+I included a lot of debug messages and it seems to fail in
+./e2fsprogs-1.18/lib/ext2fs/openfs.c:55:
+EXT2_CHECK_MAGIC(manager, EXT2_ET_MAGIC_IO_MANAGER);
+
+The return value of ext2fs_open is always 2133571335 for all the 3 partitions.
+linux_io_manager isn't zero, it is always 3F9E44.
+
+After the warm reboot the return value of the first partition
+(41 PReP Boot) is 2133571347 aka EXT2_ET_BAD_MAGIC.
+
+The fdisk -l output looks like this:
+
+Disk /dev/sda: 64 heads, 32 sectors, 8678 cylinders
+Units = cylinders of 2048 * 512 bytes
+
+   Device Boot    Start       End    Blocks   Id  System
+/dev/sda1   *         1         5      5104   41  PPC PReP Boot
+/dev/sda2             6       133    131072   83  Linux
+/dev/sda3           134      8678   8750080   83  Linux
+
+It doesnt help if I reduce the first partition to 1 cylinder.
+
+
+The machine is a RS6k model B50 with 1GB ram.
+
+Any suggestion how to solve that?
+
+
+
+Gruss Olaf
 
 --
-erik cameron  unix systems administrator
-jfi/mrsec @ the university of chicago
-e-cameron@uchicago.edu
-http://senta.uchicago.edu/gnupg for public key
+ $ man clone
+
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
