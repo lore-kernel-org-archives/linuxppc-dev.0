@@ -1,114 +1,78 @@
-Date: Thu, 10 Aug 2000 05:08:10 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: rtc again...
-In-Reply-To: <20000809224802.27760@192.168.1.10>
-Message-ID: <Pine.HPX.4.10.10008100048080.22126-100000@gra-ux1.iram.es>
+Message-ID: <20000810034057.3645.qmail@kunk.jriver.com>
+Subject: Mace on 7200 problem debug output
+To: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 9 Aug 2000 22:40:56 -0500 (CDT)
+From: Robert E Brose II <bob@kunk.jriver.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 10 Aug 2000, Benjamin Herrenschmidt wrote:
+Here is some possibly interesting info on the problem with the MACE ethernet
+on the 7200. I've setup the 7200 with an iMac on a 10 mb hub. Using PCI
+ethernet cards on the 7200 works fine. The internal does the following
+(note: I set the arps by hand (arp -s) to make the trace easier to
+follow). I've come to the conclusion from these dumps that it is the
+7200 that is dropping the incoming packets.
 
-> >This last function could also be performed by returning the timebase in
-> >the READ_TIME function as an extra parameter. The best solution is the one
-> >which gives the minimal permanent kernel size, __init code size is
-> >irrelevant.
->
-> Ok.
+This problem occurs on 7200/75 and 7200/90. Both machines tested
+HAVE the ethernet xtal. I've tried this with and without the AAUI port.
 
-So now it might be time to start coding :-)
+I've tested several 7200 kernels but this one is 2.2.17pre15
 
-> >What use does it have if no daemon will change the timezone anyway ?
->
-> Well, when travelling with a PowerBook, you tend to regulary change the
-> timezone, and you like the kernel to remember what it was ;) Paul added
-> the write back of the sys_tz, so I beleive he has some userland tool to
-> set it too, Paul ?
+This is with tcpdump listening ON the 7200 and a ping TO the 7200
+FROM the iMac....
 
-Perhaps timeconfig does this.
+root@7200 /root]# tcpdump -i eth0
+Kernel filter, protocol ALL, datagram packet socket
+tcpdump: listening on eth0
+21:47:37.370000 P 192.168.1.2 > 192.168.1.1: icmp: echo request
+21:47:38.370000 M 192.168.1.2 > 192.168.1.1: icmp: echo request
+21:47:38.380000 > 192.168.1.1 > 192.168.1.2: icmp: echo reply
+21:47:39.380000 P 192.168.1.2 > 192.168.1.1: icmp: echo request
+21:47:40.380000 P 192.168.1.2 > 192.168.1.1: icmp: echo request
+21:47:41.380000 P 192.168.1.2 > 192.168.1.1: icmp: echo request
+21:47:42.390000 P 192.168.1.2 > 192.168.1.1: icmp: echo request
+21:47:43.390000 P 192.168.1.2 > 192.168.1.1: icmp: echo request
+21:47:44.390000 P 192.168.1.2 > 192.168.1.1: icmp: echo request
+21:47:45.390000 P 192.168.1.2 > 192.168.1.1: icmp: echo request
+21:47:46.400000 M 192.168.1.2 > 192.168.1.1: icmp: echo request
+21:47:46.400000 > 192.168.1.1 > 192.168.1.2: icmp: echo reply
+21:47:47.400000 P 192.168.1.2 > 192.168.1.1: icmp: echo request
+21:47:48.400000 P 192.168.1.2 > 192.168.1.1: icmp: echo request
 
-BTW, from hwclock manual on my PC about DST:
+Notice how the 7200 only appears to reply to the pings when the
+P flag is NOT set..... (95% packet loss)
 
-       locality at the present time.  In practice, the  DST  part
-       of the timezone value is almost never used, so if the geo-
-       graphical part were to be set to its  correct  value,  the
-       users  of  the  timezone  value would actually compute the
-       wrong local time.
+However, when tcpdump is listening on the iMac and the 7200 is pinging
+the iMac receives and replies to every request but the 7200 doesn't
+see any of the replies!! The 7200 and a third machine on the
+same network also see the outgoing packets but the third machine
+sees the return packets and the 7200 doesn't!!!
 
-       Therefore, hwclock violates the definition of the kernel's
-       timezone  value  and always sets the DST part to zero.  If
-       DST is supposed to be in effect, hwclock  simply  adds  an
-       hour to the geographical part.
 
-So it's still another convention, where as usual theory and practice
-are different, but in practice match MacOS RTC. My head hurts...
+22:15:38.560000 > 192.168.1.1 > 192.168.1.2: icmp: echo request
+22:15:39.560000 > 192.168.1.1 > 192.168.1.2: icmp: echo request
+22:15:40.560000 > 192.168.1.1 > 192.168.1.2: icmp: echo request
+22:15:41.560000 > 192.168.1.1 > 192.168.1.2: icmp: echo request
+22:15:42.560000 > 192.168.1.1 > 192.168.1.2: icmp: echo request
+22:15:43.560000 > 192.168.1.1 > 192.168.1.2: icmp: echo request
+22:15:44.560000 > 192.168.1.1 > 192.168.1.2: icmp: echo request
+22:15:45.560000 > 192.168.1.1 > 192.168.1.2: icmp: echo request
+22:15:46.560000 > 192.168.1.1 > 192.168.1.2: icmp: echo request
+22:15:47.560000 > 192.168.1.1 > 192.168.1.2: icmp: echo request
 
-Given the broken FAT code which needs fixing, couldn't we simply decide
-that DST in the kernel is merely informative and that
-localtime = UTC - sys_tz.minutes_west (hopefully I got the sign right).
+--- 192.168.1.2 ping statistics ---
+87 packets transmitted, 0 packets received, 100% packet loss
 
-> With this current code, any write to our pmac-specific /dev/rtc will
-> cause ppc_md.set_rtc_time to update both the RTC and the xpram sys_tz.
->
-> So either we make a userland tool for that, or eventually add such a
-> feature to pmud along with other PowerBook-specific tasks, accessing /
-> dev/nvram directly, or we find a way to make sure updates to sys_tz are
-> written back to nvram. I was not specifically thinking about results of a
-> DST change. We could eventually add this code along with other nvram
-> write code (for flash based nvram) in the restart/shutdown routines if we
-> don't want to do it from every ppc_md.set
+Any ideas on what to look for next??
 
-I have no strong feeling about this, maybe I'll have the day I can afford
-a PowerBook ;-)
 
->
-> >How does MacOS handle DST changes (on the fly or only at reboot) ?
->
-> On the fly.
-
-Ok, that changes a few things in the equation. But I would not like to
-type `make' around a DST change on a filesystem which uses local time.
-
-> Ok, I understand that. That's indeed a nice feature. Changing the
-> "global" timezone is specifically useful for portables. You can consider
-> it as the machine's physical location instead of a kind of "global" timezone.
-
-I still don't get it. For my portable physical location would be my house,
-and I might change TZ or /etc/localtime when I travel, but if I have a
-filesystem which uses localtime, I would prefer these to be correct for
-the most frequent case: when I'm at home. Otherwise it becomes a nightmare
-when you have a mixture of local time and UTC filesystems:
-
-- I'm in California, I do a copy from ext2 to hfs with local time set to
-Pacific coast (GMT-8).
-
-	ext2 timestamp 6 pm, hfs time 10 am
-	I reboot under MacOS (why not), modify the file, let us
-	say that it takes an hour so the modification time is now 11am
-	Reboot under Linux, ls shows ext2 at 10 am, hfs at 11am
-
-- now I go back to Europe, I change the kernel timezone to Madrid (GMT+1)
-
-	ls shows now 7pm for ext2, but 12am for hfs, so the timestamp
-	order has been screwed up.
-
-My opinion is that any change which make potentially reorder timestamps
-between file systems is so bad that it should be avoided at all costs.
-
-Conclusion: you should never change the kernel timezone if you don't want
-this to happen and you have a mixture of UTC and non UTC filesystems.
-(Note that I did not put a network transfer in the example, if you do
-this, you rapidly reach the conclusion that you must be able to always get
-the timestamps back to UTC from whatever the filesystem stores).
-
-Hmm, from what I see, HFS+ seems to use UTC filestamps. That's fine.
-
-	Regards,
-	Gabriel.
-
+Bob
+--
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
