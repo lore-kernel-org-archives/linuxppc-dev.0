@@ -1,36 +1,35 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: <linux-fbdev-devel@lists.sourceforge.net>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Scaling registers on r128
-Date: Mon, 12 Nov 2001 14:16:50 +0100
-Message-Id: <20011112131650.6754@smtp.adsl.oleane.com>
-In-Reply-To: <3BEF952D.9000306@humboldt.co.uk>
-References: <3BEF952D.9000306@humboldt.co.uk>
+Date: Mon, 12 Nov 2001 14:29:14 +0100 (MET)
+From: "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Jun Sun <jsun@mvista.com>,
+	Linux/MIPS Development <linux-mips@oss.sgi.com>,
+	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [RFC] generic MIPS RTC driver
+In-Reply-To: <Pine.GSO.4.21.0111121410230.11251-100000@mullein.sonytel.be>
+Message-ID: <Pine.GSO.3.96.1011112142501.24771K-100000@delta.ds2.pg.gda.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->This patch to aty128fb is experimental, and intended for the brave.
->
->The attached patch turns on the panel scaling registers of the R128.
->I've run this on my iBook2, and I've been able to display 640x480 and
->800x600 modes on the panel successfully.
->
->The panel sizes are currently hardwired on the iBook. This code will
->benefit greatly from a reliable means to find the panel size.
->
->This has revealed problems in the X server: if the XF86Config-4
->specifies 800x600 and the current console is in 1024x768, the display is
->broken. This looks like a generic problem in fbdevhw based Xservers, as
->I saw something similar on 69030.
+On Mon, 12 Nov 2001, Geert Uytterhoeven wrote:
 
-great. I'm working on some way to probe the panel type on those
-machines as it doesn't seem to follow any standard. Once don
+> >  Unless you use a non-MC146818 RTC, which you need to write a separate
+> > driver for anyway.
+>
+> Yep, so that's why both m68k and PPC have common routines to read/write the
+> RTC, with a /dev/rtc-compatible abstraction on top of it.
 
-Ben.
+ OK, then you need an RTC chipset-specific driver and not a CPU
+architecture-specific one.  Otherwise we'll end with a zillion of similar
+RTC drivers like we already have for LANCE and SCC chips.
+
+--
++  Maciej W. Rozycki, Technical University of Gdansk, Poland   +
++--------------------------------------------------------------+
++        e-mail: macro@ds2.pg.gda.pl, PGP key available        +
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
