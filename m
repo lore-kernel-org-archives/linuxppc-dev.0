@@ -1,33 +1,56 @@
-From: greggiraud@netcourrier.com
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: omanakuttan@tataelxsi.co.in
-Subject: bdi2000
-Date: Mon, 28 Apr 2003 11:40:33 CEST
-Mime-Version: 1.0
-Message-Id: <mnet1.1051522833.27729.greggiraud@netcourrier.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <004e01c30db8$10b3d3b0$370da8c0@aman>
+From: "Aman" <aman@mistralsoftware.com>
+To: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Shell prompt - Command not visible
+Date: Tue, 29 Apr 2003 00:27:50 +0530
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-I am using a bdi2000. I have a ppcboot and a linux working well. I want to debug it. My ppcboot is in flash, my kernel is loading by TFTP and my file system is from NFS.
+Hi All
 
-The problem is how using the bdi2000.
+To enable/ disable the shell prompt in linuxppc for IBM 440GP, I wrote two
+script files. They are as follows
 
-telnet 192.1....
->reset
+/**********************************************************************/
+/* enable_cli.sh: This script is to enable the shell prompt */
 
-and it prints things on the telnet, but the card is not reset. Why?
-Then I make a hard reset, and stop at the prompt of ppcboot. Ant then connect via telnet. bi 0xc0000000 (start_here).
-go
-and in my minicom, at the ppcboot prompt I can't write anything!
+grep -v 'sh:123:respawn:/bin/sh < /dev/console > /dev/console 2>
+/dev/console' /etc/inittab > inittab.tmp
+echo 'sh:123:respawn:/bin/sh < /dev/console > /dev/console 2> /dev/console'
+>> inittab.tmp
+mv inittab.tmp /etc/inittab
+init q
+/**********************************************************************/
+/*disable_cli.sh: This script is to disable the shell prompt */
 
-How can I use this bdi2000???
+grep -v 'sh:123:respawn:/bin/sh < /dev/console > /dev/console 2>
+/dev/console' /etc/inittab > inittab.tmp
+mv inittab.tmp /etc/inittab
+init q
+/**********************************************************************/
 
-greggiraud@netcourrier.com
-thanks
-grego
+To enable shell prompt ,  I give the command "sh enable_cli.sh, to disable
+the shell prompt "sh disable_cli.sh"
+
+First time things work fine ie enable/disable shell prompt.When enabled, in
+the shell prompt I can execute the command from the shell prompt. If I
+disable the shell prompt and enable for the second time, I get the prompt
+and I can execute command in the prompt, however the commands I type on the
+prompt is not visible.
+I type the enter key continuously I get the shell prompt like this
+sh-2.05a#  sh-2.05a#   sh-2.05a#  sh-2.05a#  sh-2.05a#  sh-2.05a#  sh-2.05a#
+sh-2.05a# sh-2.05a# sh-2.05a#  sh-2.05a#   sh-2.05a#  sh-2.05a#  sh-2.05a#
+sh-2.05a#  sh-2.05a#  sh-2.05a# sh-2.05a# sh-2.05a#  sh-2.05a#   sh-2.05a#
+sh-2.05a#  sh-2.05a#  sh-2.05a#  sh-2.05a#  sh-2.05a# sh-2.05a#
+
+Can anybody help me in solving this issue
+
+Regards
+Aman
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
