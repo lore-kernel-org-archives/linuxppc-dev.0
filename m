@@ -1,145 +1,97 @@
-Message-Id: <v04003a02b2fac8f8e52a@[204.22.210.180]>
-In-Reply-To: <Pine.LNX.4.04.9902242145360.503-100000@narn.local.drgw.net>
-References: <Pine.LNX.3.96.990223143830.3620A-100000@lx1.microbsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 25 Feb 1999 10:28:42 +0000
-To: linuxppc-dev@lists.linuxppc.org
-From: "sean o'malley" <somalley@ed.mde.state.mi.us>
-Subject: Re: PowerPC Beowulf Who?
+Message-ID: <19990225113953.9356.rocketmail@send203.yahoomail.com>
+Date: Thu, 25 Feb 1999 03:39:53 -0800 (PST)
+From: "D.J. Barrow" <barrow_dj@yahoo.com>
+Subject: signal handling bug demo....
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
+        Gary Thomas <gdt@linuxppc.org>, Lauro Whately <whately@cos.ufrj.br>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="0-2145174067-919942793=:21848"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Brief:
-Firewire is _begging_ for clustering/Assymetrical processing (think about a
-block of networked RAM). Its almost a waste not to use it for that.
+--0-2145174067-919942793=:21848
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Second its begging to _not_ to use TCP/IP
+Here is a demonstration of the bug I described in earlier mails about signals being lost by the kernel.
+I am now quite sure the bug will manifest itself in all variants of linux unless the signal dispatching has changed radically. The code is I believe posix compilant ( Thanks Lauro ).
 
-Third I dont think it needs routers/switches and it definately doesnt need
-as much work to install a network vs fibre.
+The bug arises when (sig)longjmp gets called out of a signal handler sys_sigreturn dosen't get called & the signals queued on the user stack get trashed.
 
-Fourth if someone wants to hack at a firewire driver try (I dont have a
-firewire)
-http://www.edu.uni-klu.ac.at/~epirker/ieee1394.html
 
-Fifth, I really need to read up on this stuff =)
+To Demo:
+put parent.c child.c & testmake in the same
+directory. Compile using testmake  run parent.
+Note "the bug" that only one signal gets delivered per loop of the child.
 
-Sixth, Compaq is selling Linux clusters with the new Alphas. (or so i read
-somewhere)
+This bug I believe can be fixed by simplifing the kernel. There is no reason  (I'm aware of ) to queue the signals on the user stack sys_sigreturn gets called in the kernel for every signal delivered so this queueing is fundamentally a braindamaged idea.
 
-Sean
 
->On Tue, 23 Feb 1999, Robert G. Werner wrote:
->
->>
->> I'm pretty new to Beowulf myself but I haven't ran across any groups
->> specifically oriented toward supporting PPC.
->>
->> As in regards to the General Beowulf:
->> Turnkey systems for Beowulf are still a new phenomenon.  Most of the famous
->> clusters I've ever heard of were hand built.
->> I've heard of some companies (don't remember names) that will sell turnkey
->> systems but I'm assuming those are IA32 or Aplha.
->> What exactly do you mean by SW revision support?
->>
->> On the PPC:
->> IIRC Firewire isn't even working under LinuxPPC as a regular interface
->>yet.
->> Looking into using it for networking in a Beowulf cluster is a bit
->> premature IMHO.  Is there even any commercial HW for this?
->> I really do have a hunch that once you can get Firewire,  say,  to work
->>with
->> Linux on PPC,  then it will be trivial to make it work with the clustering
->> libs.
->
->I wouldn't hold out high hopes for firewire.. Fast ethernet and Gigabit
->ethernet are both much more cost effective, and available now. One of the
->things that makes fast ethernet work so well for Beowulf applications is
->the price/performance one can get with fast ethernet switches. Gigabit
->ethernet is quickly getting very affordable also.
->
->I doubt firewire switches will be available any time in the near future,
->not to mention TCP/IP support for firewire.
->>
->> Check out the Linux Paralale-HOWTO
->> (at http://metalab.unc.edu/mdw/HOWTO/Parallel-Processing-HOWTO-2.html)
->> for some information on who is developing the non-ethernet networking
->> technologies for clustering.  Perdue is big in this field,  IIRC.  They
->>have
->> a nice technique using the paralale port for networking even(PAPERS).
->> As far as I know,  all of these are great questions but Beowulf clustering
->> technology is still experimental enough that many of your questions haven't
->> been completely answered for IA32 and Alpha let alone PPC.
->> Again,  I'm not an expert.  Just an enthusiastic beginer like yourself.
->>
->
->Also see http://www.scl.ameslab.gov/Projects/ClusterCookbook/
->
->Actually, I would say Beowulf applications are quite useable.. I work at
->the Scalable Computing Lab (the above url), and we regularly users running
->scientific applications on a 64 node Pentium Pro cluster.
->
->> BTW,  what applications are you looking to use your cluster for?  Do you
->>have a
->> specific task in mind or are you just looking to make sure that LinuxPPC
->>can do
->> clusters too?
->>
->> Robert G. Werner
->> rwerner@lx1.microbsys.com
->> Impeach Conggress!!
->>
->> "Just think, with VLSI we can have 100 ENIACS on a chip!"
->> -- Alan Perlis
->>
->> On Tue, 23 Feb 1999, Campbell, Marc wrote:
->>
->> > There are several issues.  Some PPC specific and some not.
->> >
->> > General issues would include the ability to procure turn key system
->>and software revision support.
->> >
->> > PPC specific issues start with the assurance that the necessary  libs
->>(e.g. MPI) have been checked out on PPC hardware clusters.
->> >
->> > Another PPC issue is cluster communication.  In some cases standard
->>ethernet is not enough cluster bandwidth.  In what case does FireWire
->>make sense in a PPC Beowulf (Linux) cluster?  Is Myrinet (www.myri.com) a
->>more appropriate clustering communication
->>  system? If Myrinet, then where are the LinuxPPC or YDL drivers?
->>Myrinet lists Alpha Linux and x86 Linux but NOT PPC Linux
->>(http://www.myri.com:80/GM/).
->> >
->> > Who is taking initiative in the PowerPC/AltiVec Beowulf (Linux
->>clustering) area?
->
->It seems the Linux clustering area is a rather small (but quickly growing)
->niche, and the PPC niche even smaller. To compound the problem, PPC
->hardware either isn't supported very well under Linux (the new Apple
->G3's), or is expensive (Motorola's MTX boards). This isn't to say the new
->G3's won't get support eventually, but by the time it's available, the
->hardware is old. Someone building a cluster wants it to work ASAP, and
->doesn't want year-old hardware.
->
->I personally think the Motorola MTX boards would be terrific for clusters
->since one could rack mount the boards on an approximately 2-3 inch
->spaceing since SCSI and fast ethernet are built on the board. Then there's
->the bonus that they only draw 30 watts for a dual 604e, cutting down on
->cooling and power bills. The only difficulty is you're going to pay about
->twice what a similiar Pentium II cluster will cost. (of course, rack
->mounting PII's isn't exactly cheap either)
->
->--------------------------------------------------------------------------
->| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
->|    Unix is user friendly... You just have to be friendly to it first.  |
->| This message composed with 100% free software.    http://www.gnu.org   |
->--------------------------------------------------------------------------
->
+The bug can be fixed I believe by
+1) Removeing the while loop in do signal 
+2) Removing the current sys_sigreturn
+3) Making do_signal also function as sys_sigreturn.
+4) Remove handle_signal.
+5) Unblock the signal before delivering it ( this would enable longjmp out of signal handlers to behave correctly also ) rather than leaving the signal blocked forever.
+
+So no do_signal will get called for each signal delivered. The thing would be a lot stabiler & use less userstack & remove -200 lines of really crap code.
 
 
 
+
+
+_________________________________________________________
+DO YOU YAHOO!?
+Get your free @yahoo.com address at http://mail.yahoo.com
+
+--0-2145174067-919942793=:21848
+Content-Type: application/octet-stream; name="child.c"
+Content-Description: child.c
+Content-Disposition: attachment; filename="child.c"
+Content-Transfer-Encoding: base64
+
+I2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNsdWRlIDxzaWduYWwuaD4KI2luY2x1
+ZGUgPHNldGptcC5oPgoKaW50IG1haW4oaW50IGFyZ2MsY2hhciAqYXJndltd
+KQp7CiAgIGludCBjbnQ7CiAgIHByaW50ZigiSW4gY2hpbGRcbiIpOwogICBm
+b3IoY250PTA7Y250PDMwO2NudCsrKQogICB7CiAgICAgIHByaW50ZigibG9v
+cGluZyBpbiBjaGlsZFxuIik7CiAgICAgIGtpbGwoZ2V0cHBpZCgpLFNJR1VT
+UjEpOwogICAgICBraWxsKGdldHBwaWQoKSxTSUdVU1IyKTsKICAgICAgc2xl
+ZXAoMSk7CiAgIH0KfQo=
+
+--0-2145174067-919942793=:21848
+Content-Type: application/octet-stream; name="parent.c"
+Content-Description: parent.c
+Content-Disposition: attachment; filename="parent.c"
+Content-Transfer-Encoding: base64
+
+I2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNsdWRlIDxzaWduYWwuaD4KI2luY2x1
+ZGUgPHNldGptcC5oPgoKc2lnam1wX2J1ZiBnZW52OwoKdm9pZCBteXNpZ25h
+bChpbnQgc2lnKQp7CiAgcHJpbnRmKCJyZWNlaXZlZCBzaWduYWwgJWRcbiIs
+c2lnKTsKICBzaWdsb25nam1wKGdlbnYsMSk7Cn0KCgppbnQgbWFpbihpbnQg
+YXJnYyxjaGFyICphcmd2W10pCnsKICBpbnQgY2hpbGRwaWQ7CgogIHNpZ25h
+bChTSUdVU1IxLG15c2lnbmFsKTsKICBzaWduYWwoU0lHVVNSMixteXNpZ25h
+bCk7CiAgaWYoKGNoaWxkcGlkPWZvcmsoKSk9PS0xKQogIHsKICAgICAgcHJp
+bnRmKCJmb3JrIGZhaWxlZFxuIik7CiAgICAgIGV4aXQoLTEpOwogIH0KICBl
+bHNlIGlmKGNoaWxkcGlkPT0wKQogIHsKICAgICAgcHJpbnRmKCJleGVjbHBp
+bmcgY2hpbGQgcGlkPSVkIixnZXRwaWQoKSk7CiAgICAgIGlmKGV4ZWNscCgi
+Li9jaGlsZCIsIi4vY2hpbGQiLChjaGFyICopMCk9PS0xKQogICAgICB7Cgkg
+cHJpbnRmKCJleGVjbHAgZmFpbGVkIik7CgkgZXhpdCgtMSk7CiAgICAgIH0K
+ICB9CiAgc2lnc2V0am1wKGdlbnYsMSk7CiAgZm9yKDs7KQogIHsKICAgIHBy
+aW50ZigibG9vcGluZyBpbiBwYXJlbnRcbiIpOwogICAgc2xlZXAoMSk7CiAg
+fQp9Cg==
+
+--0-2145174067-919942793=:21848
+Content-Type: application/octet-stream; name=testmake
+Content-Description: testmake
+Content-Disposition: attachment; filename=testmake
+Content-Transfer-Encoding: base64
+
+Z2NjIC1EX19VU0VfQlNEX1NJR05BTCAtRF9fVVNFX0JTRCBjaGlsZC5jIC1v
+IGNoaWxkCmdjYyAtRF9fVVNFX0JTRF9TSUdOQUwgLURfX1VTRV9CU0QgIHBh
+cmVudC5jIC1vIHBhcmVudAo=
+
+--0-2145174067-919942793=:21848--
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
