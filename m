@@ -1,27 +1,31 @@
-Message-ID: <3D810AF2.2034238C@koffie.nl>
-Date: Thu, 12 Sep 2002 23:45:22 +0200
-From: Segher Boessenkool <segher@koffie.nl>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15745.23603.313915.127474@argo.ozlabs.ibm.com>
+Date: Fri, 13 Sep 2002 13:32:03 +1000 (EST)
+To: Segher Boessenkool <segher@koffie.nl>
 Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: RFC: Performance Monitor Counters device
-References: <3D80F2F7.3FB3AE4B@koffie.nl> <20020912095217.449@192.168.4.1>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3D80F2F7.3FB3AE4B@koffie.nl>
+References: <3D80F2F7.3FB3AE4B@koffie.nl>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
-> Hrm... you should check the various CPU erratas, I think
-> the perf. counter exception suffers from the same bugs
-> the thermal exceptions has regarding clashing with DEC
-> and thus losing exception context information on some
-> G4s. If this is the case, that would basically prevent
-> using it.
+Segher Boessenkool writes:
 
-Ooh, that sounds bad!  Thanks for the hint.
+> I'm currently implementing a Linux driver to use the PowerPC
+> performance monitor counters (PMC's).  I thought I'd ask here
 
+Cool. :)
 
-Segher
+> For 1), the program-to-be-monitored just needs to be able to
+> select a set of PMC's, and read the counters.  Pretty easy.
+
+I'm curious - how are you going to cope with the fact that different
+PPC implementations have different numbers of PMCs and different
+sets of events (and numbering of the events) that the PMCs will count?
+
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
