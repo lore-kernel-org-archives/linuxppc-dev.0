@@ -1,27 +1,26 @@
-Message-ID: <3BC5D333.E47A9975@mvista.com>
-Date: Thu, 11 Oct 2001 13:13:23 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <35C119252057D511BB9F0003476BF8A208E5F6@freexc01.smartm.com>
+From: "Prasad, Siva" <Siva.Prasad@smartm.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: HHL 2.0 with force-pcore680 LSP
+Date: Thu, 11 Oct 2001 10:21:22 -0700
 MIME-Version: 1.0
-To: laurent.pinchart@capflow.com
-Cc: linuxppc-embedded@lists.linuxppc.org, wd@denx.de
-Subject: Re: FEC on MPC860T & race condition
-References: <3BC58BE6.8000302@capflow.com> <3BC5B2F6.8000705@capflow.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Laurent Pinchart wrote:
+Hi,
 
-> At boot time, bit 17.1 is not set, and thus the FDS/MDINT signal is low
-> when the network cable is disconnect. The PHY interrupt handler gets
-> registered when fec_enet_init() is called, and thus spurious interrupts
-> are generated and the kernel freezes.....
+Where can I find the cdimage for HHL 2.0 with force-pcore680 LSP.
+Information about force-pcore6750 would also be great.
 
-You may want to try later versions of the kernel before posting bugs.
-This has already been fixed......
+I downloaded the je-d2-hhl2.0.cdimage (Journeyman CD2 image) from mvista.com
+ftp site. But it has only Sandpoint and rpxlite LSP's.
 
+Can some one point me to place where I can download HHL 2.0 with
+force-pcore680 LSP.
 
-	-- Dan
+-- Siva
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
