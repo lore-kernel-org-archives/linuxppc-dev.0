@@ -1,5 +1,5 @@
-Message-ID: <20011025073438.72109.qmail@web15001.mail.bjs.yahoo.com>
-Date: Thu, 25 Oct 2001 15:34:38 +0800 (CST)
+Message-ID: <20011025073649.16418.qmail@web15005.mail.bjs.yahoo.com>
+Date: Thu, 25 Oct 2001 15:36:49 +0800 (CST)
 From: =?gb2312?q?Dross=20Zhou?= <zjuzhou@yahoo.com.cn>
 Subject: Re: About ppp and pppoe in linux 2.4.2
 To: linuxppc-embedded@lists.linuxppc.org
@@ -10,8 +10,16 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- --- Mark Hatle <fray@mvista.com> µÄÕýÎÄ£º> Dross Zhou
-wrote:
+Oh,i add these config option ,then they works well
+now.
+It can connect server by adsl-start scripts.
+Thanks.
+
+
+
+
+ --- Mark Hatle <fray@mvista.com>
+> Dross Zhou wrote:
 > >
 > > Now I have make a little progrss.
 > > In Hard Hat 1.2(linuxppc2.2.14),I used pppd and
