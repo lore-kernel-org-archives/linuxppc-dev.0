@@ -1,70 +1,36 @@
-Date: Thu, 24 Oct 2002 17:46:45 +0200
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: [PATCH] arch/ppc/8xx_io/enet.c, version 2
-In-reply-to: <20021024145931.GI669@opus.bloom.county>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-embedded@lists.linuxppc.org, scop@digitel.com.br,
-	thomas@corelatus.com
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLOEFLFHAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+Date: Thu, 24 Oct 2002 09:10:53 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	sensors@stimpy.netroedge.com
+Subject: Re: 8xx i2c refers to unspecified chip errata
+Message-ID: <20021024161053.GK669@opus.bloom.county>
+References: <20021015165731.GG695@opus.bloom.county> <IGEFJKJNHJDCBKALBJLLEEEIFHAA.joakim.tjernlund@lumentis.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <IGEFJKJNHJDCBKALBJLLEEEIFHAA.joakim.tjernlund@lumentis.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+On Tue, Oct 22, 2002 at 11:15:38AM +0200, Joakim Tjernlund wrote:
 >
+> > On Fri, Oct 11, 2002 at 11:12:02AM +0200, Joakim Tjernlund wrote:
+> >
+> > > OK, here it is.
+> > >
+> > > Perhaps someone can add it to the ppctree?
+> >
+> > If you can submit this as a patch vs what's in the i2c CVS tree or the
+> > ppctree, than yes, this can be committed there, and to the ppctrees.
 >
-> On Thu, Oct 24, 2002 at 04:23:31PM +0200, Joakim Tjernlund wrote:
->
-> > This is the second version of my patch that removes the expensive memcpy of
-> > received
-> > ethernet frames in interrupt context.
-> >
-> > I have 1 report(from Ricardo Scop) of 20% increase in packets/second, packet
-> > size 1500 when
-> > applied to 8260 FEC(needs to be applied manually). But min packet size
-> > decreased with 10 %.
-> > This version should fix the 10% decrease case.
-> >
-> > This patch could be adapted 8xx_io/fec.c and 8260_io/enet.c and
-> > 8260/fcc_enet.c with little effort.
-> >
-> > Better fix a bug in set_multicast_list(), move the dmi list forward when
-> >     walking it(dmi = dmi->next;)
-> >
-> > New stuff:
-> >    - Configrable: copy small packets or pass them directly, see
-> > COPY_SMALL_FRAMES in code.
-> >    - Collision reporting fix form Thomas Lange.
-> >    - Don't pass receive frames which has error upwards.
-> >    - Report RX_OV errors as fifo errors, not crc errors.
-> >
-> > Please test and report any problems and performace improvements.
->
-> All of this sounds good, but can you please break this one patch up into
-> seperate logical patches?
+> Here is a patch against the PPC 2.4 devel tree for the i2c-algo-8xx.c
 
-I rather not.
+Can you please split this into logical chunks, or give me a list of each
+fix in here?  Thanks.
 
-The logical pices in this patch are:
- 1) remove the expensive memcpy.
-   - This is the main part of the patch.
-
- 2) dmi->next fix, which is a one liner.
-    Don't pass receive frames which has error upwards.
-   - Trival stuff.
-
- 3) Collision reporting fix form Thomas Lange.
-    Report RX_OV errors as fifo errors, not crc errors.
-   - These are just minor accounting fixes.
-
-So I don't think it's worth the effort. Let's just wait a few days and see
-if it was success or not.
-
-Folks, please report you findings to the list.
-
-    Jocke
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
