@@ -1,47 +1,46 @@
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Kumar Gala <kumar.gala@motorola.com>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Proposed Kconfig update patch for help text) 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 01 Apr 2004 10:19:56 PDT."
-             <20040401171956.GD26876@smtp.west.cox.net>
-Date: Thu, 01 Apr 2004 20:56:51 +0200
-Message-Id: <20040401185656.871ECC10A4@atlas.denx.de>
+Date: Thu, 1 Apr 2004 10:59:56 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Dan Malek <dan@embeddededge.com>
+Cc: John Whitney <jwhitney-linuxppc@sands-edge.com>,
+	Matt Porter <mporter@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Problems with dma_alloc_coherent()
+Message-ID: <20040401185956.GB3786@gate.ebshome.net>
+References: <9EB527A2-83F5-11D8-9FF0-000A95A07384@sands-edge.com> <20040401100546.A27472@home.com> <4317F0F4-8405-11D8-9FF0-000A95A07384@sands-edge.com> <20040401181926.GA3630@gate.ebshome.net> <406C658E.10500@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <406C658E.10500@embeddededge.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <20040401171956.GD26876@smtp.west.cox.net> you wrote:
+On Thu, Apr 01, 2004 at 01:55:10PM -0500, Dan Malek wrote:
+> >Current implementation just relies on the fact that PCI devices view system
+> >memory the same way as other-bus devices (e.g. OCP devices which sit on
+> >OPB).
 >
-> > So far, it's all we have, right? Or do you have anything significant-
-> > ly better?
+> I don't think so.  PCI devices are known to go through bridges, while
+> others are assumed to not.
+
+Well, bridge doesn't necessarily mean there is an address translation :).
+Currently 4xx systems (not sure all, at least ones I use) use PCI == phys
+address mapping, and yes, bridge is setup so this is the case.
+
+Although, I understand in more general case, bridge will translate address.
+
+> >In more general case, yes, "views" can be different for each bus type or
+> >even
+> >for each bus...
 >
-> As I said, someone is working on the second option I described, but I
-> don't know how far they have gotten.
+> So, we should always have some kind of 'bus type' device handle, that
+> provides
+> this information.  It's clear that all Linux APIs are designed from the
+> viewpoint of PC-like workstations.  They have always fallen very short when
+> pressed into the more prevalent embedded computing space :-)
 
-Is this a secret or what? Why don't you give names?  Why  doesn't  he
-show up on this list?
+I think we should use "device" parameter passed to DMA API for such stuff, it
+already has a member "struct bus_type* bus".
 
-> 2.6 support, without the Motorola code.  If there's a specific person at
-> Motorola who'd be interested in what the Linux community has to say
-> about the DMA code, no one has told me who.
-
-You are not working on this, or are you?
-
-> > Also, isn't this kind of wasted effort as the target is still moving?
->
-> What target?  The Motorola code?  The 5xxx hw line?  If you're talking
-
-The Motorola code, and to some extend the hardware.
-
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-How does a project get to be a year late?      ... One day at a time.
+Eugene
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
