@@ -1,29 +1,36 @@
-Message-Id: <200405110451.XAA02966@lists.linuxppc.org>
-Date: Tue, 11 May 2004 12:52:53 +0800
-From: "jeffy" <leo_guo@jisung.cn>
-To: "John Zhan" <zhanz@fel.com.cn>
-Cc: "linuxppc-embedded@lists.linuxppc" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MPC8245:PCI unstable
-Mime-Version: 1.0
-Content-Type: text/plain
+Message-ID: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6D068@renexch3.rennes.thmulti.com>
+From: Fillod Stephane <stephane.fillod@thomson.net>
+To: "'Bob White'" <bwhite@perigee.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: DPRAM driver on 440gp
+Date: Tue, 11 May 2004 11:15:49 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-John Zhan,
-	Maybe you should tell more detail messages:)
+>Given that the physical address has already been mapped, via
+>ioremap64(), do I need remap_page_range()?  Does anyone have any ideas
+>on what the mmap file_op for this driver would look like?  Do I even
+>need mmap() or should I just use an ioctl to return the pointer I've
+>already got to the user?
 
->I am working on a custom board based on XPC8245LZU333B, 2 ethernet
->adapters (DP83816) were used on the PCI bus. Of cause with Linux. The
->100base-tx of the board was connect to LAN and perform a data transfer
->. The transfer just like ping some host or pinged by some host.The
->transfer can keep for some time. But Linux maybe crash occasionally.
->the duration from the start of the transfer to the Linux crash maybe
->some dozens of minutes or hours. My Linux port from mvista 2.4.26
->sandpoint. I noticed that XPC8245LZU333B's PCI host can't support
->Type 2 Fast back-to-back transactions, but I am not sure if this
->cause the problem? If the drivers should be updated to avoid PCI Fast
->back-to-back transactions in 8245 systems? If anything else should be
->taken into account to make the PCI stable?
+The ioctl won't do because the virtual address returned by the ioremap64
+is not valid in process context. You could remap it through mmap file_op,
+but why bother?
+Rem: reading ioremap64 and drivers/char/mem.c is very instructive.
+
+Since you're accessing your DPRAM guarded/uncached, you may simply
+map it both in kernel with ioremap64 and in userland with mmap64
+of /dev/mem.
+
+For more information, search the archive (or DENX PPC FAQ) on userland
+mapping of physical memory.
+
+
+Regards,
+Stephane
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
