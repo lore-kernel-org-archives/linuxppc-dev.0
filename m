@@ -1,38 +1,29 @@
-Date: Thu, 31 Dec 1998 12:24:12 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: temporary freeze with Debian init
-Message-ID: <Pine.LNX.4.03.9812311219300.21390-100000@mercator.cs.kuleuven.ac.be>
+Date: Sun, 15 Nov 1998 18:27:09 -0700 (MST)
+From: Brad Midgley <brad@pht.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: floppy driver bug: write-protect
+Message-ID: <Pine.LNX.3.95.981115182106.10912A-100000@pacific.pht.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+is this a known bug?
 
-In the early stage of the boot process, init seems to freeze for 15-20 seconds.
-First it freezes, a few seconds later it dumps
+on intel linux, if you try to mount a write-protected floppy disk
+read-write, the mount succeeds but is demoted to read-only. 
 
-    NET3: Unix domain sockets 0.16 for Linux NET3.038.
+the current pmac kernel will mount the disk read-write and will allow
+"writes" to the disk. the writes even appear to succeed and the mounted
+filesystem returns really strange results when you look at it (it's
+caching the "writes" and everything seems normal until uncached data has
+to be loaded from the disk!)
 
-Freeze for some more seconds, and continue. This even happens when I boot in
-emergency mode (-b), after entering the root password.
+is it known how to query the drive for the write-protect status? does this
+problem affect any other removable media?
 
-I'm using Debian. Kernel version is irrelevant, and it didn't happen with my
-old red Hat setup.
-
-Anyone with a clue?
-
-Greetings,
-
-			    Geert (who likes fast boot ups, since rebooting
-				   development machines is an important aspect
-				   of life)
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+brad
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
