@@ -1,30 +1,34 @@
-Message-ID: <3C4EA691.5020008@gatekeeper.informatik.fh-dortmund.de>
-Date: Wed, 23 Jan 2002 13:03:29 +0100
-From: Ralf Weidemann <linuxppc@gatekeeper.informatik.fh-dortmund.de>
-MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: 2.4.17-ben0/DRI: r128 kernel module to old for xfree86 4.2 ?
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: 2.4.17-ben0/DRI: r128 kernel module to old for xfree86 4.2 ?
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Ralf Weidemann <linuxppc@gatekeeper.informatik.fh-dortmund.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <3C4EA691.5020008@gatekeeper.informatik.fh-dortmund.de>
+References: <3C4EA691.5020008@gatekeeper.informatik.fh-dortmund.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 23 Jan 2002 14:29:44 +0100
+Message-Id: <1011792584.959.3451.camel@pismo>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+On Mit, 2002-01-23 at 13:03, Ralf Weidemann wrote:
 
-must I need a 2.4.18preX version of the kernel to
-use DRI for the R128 cards under XFree86 4.2 or
-where could I get a newer kernel module version
-from ?
+> must I need a 2.4.18preX version of the kernel to
+> use DRI for the R128 cards under XFree86 4.2
 
-Btw, is there a final 4.2 version of XFree86 any-
-where as ppc.rpm or src.rpm ? Thanks.
+The current DRM hasn't even been integrated there yet AFAICS.
 
-Ralf
+> or where could I get a newer kernel module version
+> from ?
+
+http://www.xfree86.org/~alanh/
+
+(or maybe another random kernel tree :)
 
 
-(EE) R128(0): [dri] R128DRIScreenInit failed because of a version mismatch.
-[dri] r128.o kernel module version is 2.1.6 but version 2.2 or greater is needed.
-[dri] Disabling the DRI.
-
+--
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
