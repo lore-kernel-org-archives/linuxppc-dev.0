@@ -1,36 +1,38 @@
-Message-ID: <3A37B818.CC0C5718@ssh.com>
-Date: Wed, 13 Dec 2000 19:55:36 +0200
-From: Arto Vuori <avuori@ssh.com>
+Message-ID: <67505026E29DD311A9AA00508B7315F350A606@EXCHANGE>
+From: Julia Elbert <jelbert@enerdyne.com>
+To: "'Phillip Soltan'" <psoltan@pacificsw.com>,
+        "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: scc2 using brg4 in uart.c
+Date: Wed, 13 Dec 2000 10:59:22 -0800
 MIME-Version: 1.0
-To: Dan Malek <dan@mvista.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 2.5 or 2.4 kernel profiling
-References: <20001212182856.A8336@brixi.research.canon.com.au> <Pine.GSO.4.21.0012120933330.24199-100000@eos> <20001213121554.B17129@brixi.research.canon.com.au> <3A37A048.46E692A0@mvista.com> <3A37B08A.3FE08AF7@ssh.com> <3A37B2E4.B3944354@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
-> I have been pushing driver updates into the BK linuxppc_2_5 tree,
-> but not into the linuxppc_2_3 tree as we are trying to stablize
-> that for 2.4.  All of these you mentioned, and others have been
-> updated.  The MII interface is still broken for some PHYs.
+Hi Phillip,
+Thank you for responding. One of these days I will hopefully need less help.
 
-OK
+Did you enable the transceiver hardware through the appropriate BSCR
+register?
+yep, we are o.k. here
+ Did you configure the SCC2 priority in the CICR register?
+yes, CICR_SCB_SCC2 is enabled in commproc.c
 
-> For all processors, the BK linuxppc_2_5 tree has many more updates
-> than the more visible 2_3 tree.
+I am using the 860T
+Originally, we wrote a hdlc synchronous driver on SCC2 using BRG4 that was
+loaded and worked with this port, if that helps.
 
-Is there any way to get BK linuxppc_2_5 tree without using BitKeeper
-tools?? I found only older snapshots on FTP site. Also rsync is unable
-to find linuxppc_2_5 snapshot.
+Hmm. darn I just found that my sicr is wrong, it should be. Dan had it right
+and I killed it with a 26. uuuggh, I should know better.
+ cp ->cp_sicr |= 0x0000 1b 00;
 
-	-Arto
+scc2 has interrupts! Amazing, how that works. Now, maybe I can find my data
+somewhere....
+Thank you.
+ --Julia
 
---
-Arto Vuori
-email: avuori@ssh.com
-mobile:	+358 40 754 5223
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
