@@ -1,36 +1,48 @@
-Message-ID: <20010920143200.79354.qmail@web11002.mail.yahoo.com>
-Date: Thu, 20 Sep 2001 07:32:00 -0700 (PDT)
-From: Dan Bethe <dan_bethe@yahoo.com>
-Subject: Re: [Question] I want to use CSCOPE to port Linux kernel.
+Mime-Version: 1.0
+Message-Id: <p04330104b7cfaa0a7830@[63.220.231.138]>
+In-Reply-To: <20010920201330.Postino-024975@smtp01.highway.ne.jp>
+References: <200109200500.AAA17467@lists.linuxppc.org>
+ <20010920.201024.730567552.t-matsuu@protein.osaka-u.ac.jp>
+ <20010920201330.Postino-024975@smtp01.highway.ne.jp>
+Date: Thu, 20 Sep 2001 10:52:13 -0400
 To: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <200109201107.UAA15781@ldap.dacom.co.kr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: Re: 2.4.10-pre12 sysrq.c compile error
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I have already libncurses.so.5.2
+>  > `wakeup_bdflush' was defines in two defrent files.
+>>
+>  > linuxppc_2_4_devel/drivers/char/sysrq.c (line: 35)
+>>  extern void wakeup_bdflush(int);
+>>
+>>  linuxppc_2_4_devel/include/linux/fs.h (line: 1347)
+>>  extern void wakeup_bdflush(void);
+>>
 >
-> So I tried as below, but I had the same result.
-> ---------------------------------------------------
-> # ln -s libncurses.so.5.2 libncurses.so.4
-> # rpm -ivh cscope-15.3-1.i386.rpm
-> error: failed dependencies:
->         libncurses.so.4 is needed by cscope-15.3-1
+>if it's same extern , it's no problem.
+>Different paramenter is no good.
 
-	Hi there.  RPM's dependancies are based on its database, and not on the actual
-filesystem.  So the 'ln' wouldn't make any difference in this case.  Try this:
+Right. I should have supplied more info about what I have tried.
 
-# rpm -ivh --nodeps cscope-15.3-1.i386.rpm
+I attempted to make everything consistent each way. IOW, I have made
+the function definition and extern declarations all with a void
+argument, and also all with an int argument. In one case, the
+compiler error is "too many arguments in wakeup_bdflush" and in the
+other case the compiler error is "too few arguments in
+wakeup_bdflush".
 
-	That bypasses RPM's opinion of what is and should be installed, so you might
-always have to remember that as a one-off.
+I have noted numerous instances of wakeup_bdflush() and
+wakeup_bdflush(0) but I'm not sure this is an issue.
 
-=====
-Medium System Administrator and Junior I.T. Manager of 5 yrs
- -- Now available -- Linux, MacOS, Unix-like systems
-    -- http://mmmgood.net -- dan_bethe@yahoo.com
+There's an inconsistency here that first appeared straightforward to
+me but now I'm not sure of the changes that are needed.
 
+I rsynced this morning but still the same result.
+
+
+Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
