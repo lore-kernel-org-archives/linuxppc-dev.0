@@ -1,46 +1,57 @@
-Message-Id: <v03110700b50123f3f40f@[129.100.29.243]>
-In-Reply-To: <Pine.LNX.4.10.10003231730190.10447-200000@shell.unixbox.com>
+In-Reply-To: <Pine.LNX.4.10.10003241443040.21215-100000@opal.biophys.uni-duesseldorf.de>
+Date: Fri, 24 Mar 2000 15:10:12 +0100
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        linuxppc-dev@lists.linuxppc.org, geert@linux-m68k.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: LongTrail PCI resource assignment
+Message-Id: <20000324151012.019222@mailhost.mipsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 24 Mar 2000 09:03:23 -0500
-To: Ani Joshi <ajoshi@shell.unixbox.com>
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Subject: proper regw and regrw16?
-Cc: linuxppc-dev@lists.linuxppc.org, bh40@calva.net
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Ani and Ben,
+On Fri, Mar 24, 2000, Michael Schmitz
+<schmitz@opal.biophys.uni-duesseldorf.de> wrote:
 
-I asked about the "correct" form for regr and regw to the list a while back
-(and it generated a big discussion!) and I put in the "best" suggested form
-but it obviously impacts something.
+>> Don't touch the resources which correspond to assigned PCI bus addresses
+>> because they correspond to the address ranges to which chip decoders
+>> respond. Lying in this area makes dynamic allocation and hotplugging
+>> impossible by giving the resource allocator the impression that some area
+>> is free. Rather attach asubtree to the already existing device resources.
+>
+>So it's perfectly legal for resources within the same device to overlap?
+>WTF does X not tolerate this and disables the overlapping one?
+>
+>(Side note: X also reports the mem resources in reverse order, or maybe
+>sorted by end address, and disables the larger of the two apertures
+>because it saw the smaller one first, even though the smaller one is
+>completely embedded in the larger).
+>
+>I'm not sure adding subtrees will help - I guess X might go ahead and
+>disable the main resources anyway. Will the subtree resources remain
+>accessible in that case?
 
-So exactly what in the generated code is different about these two cases
-that makes such a big difference in performance?  I need to understand why
-the "output constraint" approach has such a bad performance impact?
+Two things:
 
+ - It's not legal to have overlapping BARs (well, maybe it is if they are
+doing hard decoding), but it's out of spec. At least, that's my
+understanding of the spec. ATI does this, so we need a workaround.
 
---- r128_reg.h.orig	Thu Mar 23 18:10:17 2000
-+++ r128_reg.h	Thu Mar 23 18:15:43 2000
-@@ -50,9 +50,7 @@
+ - X will always try to fix any PCI conflict it finds, with or without
+fbdev drivers. That's what I understands after discussing with some X
+coders. To handle various OSes and all sort of legacy crap, X has to play
+weird tricks with PCI and no-one in the XFree group wants to change this.
+They don't want to make this remapping optional neither for support
+reasons, so we have to make sure there's no conflict detected by X so it
+doesn't try to mess with assignements.
 
- static inline void regw(volatile unsigned long base_addr, unsigned long
-regindex, unsigned long regdata)
- {
-- asm volatile ("stwbrx %1,%2,%3; eieio"
--          : "=m" (*(volatile unsigned *)(base_addr+regindex))
--          : "r" (regdata), "b" (regindex), "r" (base_addr));
-+	asm volatile ("stwbrx %0,%1,%2; eieio" : : "r"(regdata), "b"
-(regindex), "r"(base_addr) : "memory");
- }
+However, Egbert is working on improving the X PCI interface so that we
+know in the kernel what's going on the PCI bus and can keep kernel
+resources in sync. I beleive we can use this not-yet-existing mecanism to
+"hide" some of those stuffs to X if really necessary.
 
-Could you post the assembler (.S) file that each of these makes?
-
-Thanks,
-
-Kevin
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
