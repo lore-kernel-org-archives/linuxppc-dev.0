@@ -1,33 +1,60 @@
-Date: Thu, 20 Jul 2000 09:00:48 -0700 (PDT)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-cc: Sacha Varma <sacha@ssl.co.uk>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: PCI compatibility
-In-Reply-To: <39771F7D.EC15EC8D@biophys.uni-duesseldorf.de>
-Message-ID: <Pine.LNX.4.10.10007200858200.22862-100000@shell.unixbox.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 21 Jul 2000 01:18:16 -0700 (PDT)
+From: howarth@bromo.med.uc.edu (Jack Howarth)
+Message-Id: <200007210818.BAA36993@bromo.med.uc.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: xf4 bug report
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 20 Jul 2000, Michael Schmitz wrote:
+   Steffen Haeuser reported the following XFree86 4.0 bugs in linuxppc
+in case anyone is interested in looking into these problems...
 
-> > Correct, there is nothing preventing any PCI graphics device from working
-> > in linux unless there is something extremely fundamentally wrong with it
-> > (like relying on PC BIOS too much, but that is very rare)
->
-> Or Linux not finding the card because it didn't get an OF device tree
-> node?
+----------------------------------------------------------------------
+Hi!
 
-No, all devices get OF device tree nodes, just not 'real' ones if they
-don't have an OF rom.  Also, relying on OF device tree nodes in video
-display drivers is not smart because I've noticed in the past that some of
-the address in the node are off a bit.  It is always wiser to use the PCI
-nodes instead of 'fake' (or even real) OF nodes.
+Despite the fact I cannot use LinuxPPC for release-version games currently I
+am
+keeping the LinuxPPC version (which is basically just a different makefile
+than
+the Linux-x86 version :) ) of the game I am currently working on on the latest
+state.
+On this I encountered some bugs in the V4 X Server. I guess you are interested
+in
+bugreports ? :)
 
+1. VidModeExtension
 
-ani
+If I have a 640x480 and a 1024x768 mode defined in XF86Config, after the call
+of
 
+XF86VidModeGetAllModeLines
+
+I get those reported as
+
+640x481
+1024x769
+
+If I just ignore this and switch to the mode anyways, I get a display which is
+completely
+garbaged, as if a wrong BytesPerRow is used. This only happens in 640x480
+though,
+in 1024x768 this works fine.
+
+Next is: When I do a XGetVisualInfo for a different depth like the current
+screen
+this fails (as I understand it it should not fail, and if a image with the
+different
+depth is then created, the XShmPutImage should convert for the X Server V
+4.0).
+
+Asides from that I did not find any bugs - yet :)
+
+Of course these issues are minor issues for myselves... the big issue is the
+3D
+Acceleration for me :) ...
+
+Steffen
+----------------------------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
