@@ -1,27 +1,43 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Catching bus errors in kernel mode
-Date: Fri, 4 Apr 2003 09:55:14 +0200
-Message-ID: <30C145E544071F4FB8B627789F7910BD32BDD9@csy-exchange1.giat.intra>
-From: "ARIBAUD Albert" <A.ARIBAUD@giat-industries.fr>
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Linux on Force Computers CPCI-3750 eth drivers
+From: luca gambazzi <luca.gambazzi@epfl.ch>
+To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20030329154326.GE5343@ip68-0-152-218.tc.ph.cox.net>
+References: <1048949739.5125.126.camel@shampoo.epfl.ch>
+	 <20030329154326.GE5343@ip68-0-152-218.tc.ph.cox.net>
+Content-Type: text/plain
+Message-Id: <1049456953.14675.53.camel@shampoo.epfl.ch>
+Mime-Version: 1.0
+Date: 04 Apr 2003 13:49:13 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi
 
-I'm using DENX ELDK 2.0 on a mpc855t based custom board, and I am currently writing a loadable kernel module that drives a custom FPGA.
+i'm still trying to bild a running linux kernel for a Force Computers
+CPCI-3750.
 
-The FPGA might optionally not be there in production, but the module must be loaded anyway, and therefore must check for the presence of the FPGA.
+I've got one more error, the ethernet card doesn't work.
+is a Digital DS21143 Tulip
 
-There is no dedicated signal provided (and will not be), so the only option is reading from the FPGA's address and catching a possible bus error.
+i've installed the kernel drivers (i've tried with 2.4 and 2.5
+penguinppc kernel tree), and the drivers found in
+http://sourceforge.net/projects/tulip, but the error is always the same.
 
-What would be the cleanest way to achieve this?
+NETDEV WATCHDOG: eth0: transmit timed out
 
-Thanks in advance,
+here can you find a bootlog (kernelboot.txt), the tcpdump on my pc, and
+the .config file I used in this case (config_2_5_66.txt)
 
-Albert.
+http://lsa1pc32.epfl.ch/~gamba/robox/
+
+Maybe somebody has experence with this kind of error and can help me.
+
+Thanks a lot
+Luca Gambazzi
+
+PS Tom: I don't find the .config file who caused the crash I've posted
+last week, i'll search in my pc, sorry
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
