@@ -1,48 +1,68 @@
-Date: Tue, 9 Dec 2003 11:06:31 +0100
-To: linuxppc-dev@lists.linuxppc.org
-Subject: apple mach-o library and ppc kernel modules.
-Message-ID: <20031209100631.GA5551@iliana>
+Date: Wed, 10 Dec 2003 13:28:40 +0100
+From: Olaf Hering <olh@suse.de>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] boot/ld.script dependency missing
+Message-ID: <20031210122840.GA11183@suse.de>
+References: <20031201212931.GA10959@suse.de> <20031203160958.GF912@stop.crashing.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-From: Sven Luther <sven.luther@wanadoo.fr>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20031203160958.GF912@stop.crashing.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+ On Wed, Dec 03, Tom Rini wrote:
 
-I am trying to make a build of the bewan adsl pci modem driver for
-powerpc.
+> On Mon, Dec 01, 2003 at 10:29:31PM +0100, Olaf Hering wrote:
+>
+> > fiddling with ld.script doesnt trigger a rebuild of the boot files.
 
-The driver in question comes with a proprietary binary only soft-ADSL
-library, and the driver actually provides a wrapper on top of this one.
+This one is for 2.4.23.
 
-Bewan doesn't actually have access to the source of it, and i was not
-able to convince them to convince STm to make a ppc build of the
-soft-ADSL library.
 
-That said, they have a macos X copy of this binary library, which is a :
+--- ./arch/ppc/boot/pmac/Makefile~	2003-08-25 13:44:40.000000000 +0200
++++ ./arch/ppc/boot/pmac/Makefile	2003-12-10 13:11:52.000000000 +0100
+@@ -84,7 +84,7 @@ vmlinux.initrd.coff: coffboot.initrd $(H
+ 	rm -f coffboot.initrd
+ 	ln -sf vmlinux.initrd.coff ../images/zImage.initrd.pmac
 
-  Mach-O object ppc
+-vmlinux.elf-pmac: $(CHRPOBJS) $(LIBS) $(MKNOTE) image.o
++vmlinux.elf-pmac: $(CHRPOBJS) $(LIBS) $(MKNOTE) image.o ../ld.script
+ 	$(LD) $(CHRP_LD_ARGS) -o ../images/$@ $(CHRPOBJS) $(LIBS) image.o
+ 	$(MKNOTE) > note
+ 	$(OBJCOPY) ../images/$@ ../images/$@ --add-section=.note=note \
+@@ -92,7 +92,7 @@ vmlinux.elf-pmac: $(CHRPOBJS) $(LIBS) $(
+ 	rm -f note
 
-If it would have been an elf object file, using it in the kernel would
-have been possible, but i don't know how (and if) it is possible to
-convert this Mach-O object file to something usable by the kernel.
+ vmlinux.initrd.elf-pmac: $(CHRPOBJS) $(LIBS) $(MKNOTE) image.o \
+-		../images/ramdisk.image.gz
++		../images/ramdisk.image.gz ../ld.script
+ 	$(OBJCOPY) image.o image-elf.o \
+ 		--add-section=.ramdisk=../images/ramdisk.image.gz \
+ 		--set-section-flags=.ramdisk=contents,alloc,load,readonly,data
+--- ./arch/ppc/boot/chrp/Makefile~	2003-06-13 16:51:31.000000000 +0200
++++ ./arch/ppc/boot/chrp/Makefile	2003-12-10 13:11:25.000000000 +0100
+@@ -50,13 +50,13 @@ ifdef CONFIG_XMON
+ 		--set-section-flags=.sysmap=contents,alloc,load,readonly,data
+ endif
 
-Other alternatives would be to use some kind of emulator to run the x86
-version of the library, but i guess this is not possible kernel-side.
+-zImage: $(OBJS) $(LIBS) $(ADDNOTE)
++zImage: $(OBJS) $(LIBS) $(ADDNOTE) ../ld.script
+ 	$(LD) $(LD_ARGS) -o ../images/$@.chrp $(OBJS) $(LIBS)
+ 	$(OBJCOPY) ../images/$@.chrp ../images/$@.chrp -R .comment -R .ramdisk
+ 	cp ../images/$@.chrp ../images/$@.chrp-rs6k
+ 	$(ADDNOTE) ../images/$@.chrp-rs6k
 
-Any hint of information about this would be welcome. Or simply
-links documentation on the Mach-O object format too, but i guess google
-will help me out there.
+-zImage.initrd: $(OBJS) $(LIBS) $(ADDNOTE) ../images/ramdisk.image.gz
++zImage.initrd: $(OBJS) $(LIBS) $(ADDNOTE) ../images/ramdisk.image.gz ../ld.script
+ 	$(OBJCOPY) image.o image.o \
+ 		--add-section=.ramdisk=../images/ramdisk.image.gz \
+ 		--set-section-flags=.ramdisk=contents,alloc,load,readonly,data
 
-BTW, it is also compiled with an apple patched gcc 2.95, so i guess i
-will run in problems when using a gcc 3.3 compiled kernel, but probably
-in a later iteration of the macos X build, they will also use gcc 3.3,
-since apple is using that now.
+--
+USB is for mice, FireWire is for men!
 
-Friendly,
-
-Sven Luther
+sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
