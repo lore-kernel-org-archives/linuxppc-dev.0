@@ -1,31 +1,41 @@
-Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158D8E@norcom2.norcom.net>
-From: Lokesh Kumar <kumar.lokesh@wrx-us.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: pcmcia slot A problem
-Date: Fri, 26 Sep 2003 10:03:14 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Fri, 26 Sep 2003 09:31:02 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Jean-Denis Boyer <jdboyer@m5t.com>,
+	Steffen Rumler <Steffen.Rumler@siemens.com>,
+	linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Problem of concurrency in arch/ppc/8260_io/uart.c
+Message-ID: <20030926163102.GB904@ip68-0-152-218.tc.ph.cox.net>
+References: <IGEFJKJNHJDCBKALBJLLEEGCFPAA.joakim.tjernlund@lumentis.se> <IGEFJKJNHJDCBKALBJLLGEGDFPAA.joakim.tjernlund@lumentis.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <IGEFJKJNHJDCBKALBJLLGEGDFPAA.joakim.tjernlund@lumentis.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
+On Wed, Sep 17, 2003 at 06:33:06PM +0200, Joakim Tjernlund wrote:
 
-With all you guys help, I got my mpc855 board working with PCMCIA-3.2.5 and
-cisco 350 card in slot B. However, the does not work in slot A. It gets
-recognized properly (seems to me), but then setup card fails with "BAP setup
-failed too many retries". I have also tried 3com 3c589 card and that card
-also works in slot B but in slot A, it does not work as well. I have looked
-at the resources and they do not seem to be in conflict. I am using
-m8xx_pcmcia.c file from 2.4.4 kernel from DENX engineering while my kernel
-is 2.4.18.
+>
+> > > Whatever the boot rom initializes.
+> >
+> > OK, then I will assume TX buffer length of 1, until serial_console_setup has run and
+> > initialize it to 4.
+> >
+> >  Jocke
+>
+> Here we go again. This patch adds the above. I am unable to break it, please try to :)
 
-Any ideas??
+What tree is this against, specifically?  It doesn't apply cleanly to
+2_4_devel, 2_4 or kernel.org.
 
-Lokesh Kumar
-Wireless Matrix USA Inc.
-703-262-4032
+I've just moved a bunch of Dan's old changes from _devel out to a tree
+Marcelo pulls from as well as linuxppc-2.4, so can you please re-do this
+patch against that tree?  Thanks.
 
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
