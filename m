@@ -1,52 +1,62 @@
-Date: Thu, 27 Jun 2002 10:41:44 +1000
+Date: Thu, 27 Jun 2002 12:42:06 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Anderson <scott_anderson@mvista.com>
+To: Paul Mackerras <paulus@samba.org>
 Cc: Tom Rini <trini@kernel.crashing.org>,
-	Armin Kuster <akuster@mvista.com>,
-	linuxppc-embedded@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: Trivial cleanup in ocp_uart.c
-Message-ID: <20020627004144.GR9087@zax>
-References: <20020620073440.GC20689@zax> <20020620155026.GE16052@opus.bloom.county> <20020621005216.GH20689@zax> <20020621143903.GO16052@opus.bloom.county> <20020624074019.GA9087@zax> <3D19F965.86668872@mvista.com>
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: consistent_free()
+Message-ID: <20020627024206.GU9087@zax>
+References: <20020614042928.GK26146@zax> <20020614055711.GA1124@zax> <20020624021538.GX9087@zax> <20020625143937.GN3489@opus.bloom.county> <20020626051735.GM9087@zax> <15641.53391.924751.554517@argo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3D19F965.86668872@mvista.com>
+In-Reply-To: <15641.53391.924751.554517@argo.ozlabs.ibm.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Jun 26, 2002 at 10:27:01AM -0700, Scott Anderson wrote:
+On Wed, Jun 26, 2002 at 10:32:47AM -0400, Paul Mackerras wrote:
 >
-> David Gibson wrote:
-> > Basically there are two quite distinct approaches either of which
-> > would make sense (for any given peripheral/bus type):
-> >         a) Register each device as it is discovered.  Register each
-> > driver as the appropriate module loads.  Whenever either event happens
-> > the common code calls init or probe callbacks in a driver to connect
-> > it to any devices of appropriate type.
-> >         b) No registration.  When a driver loads, it searches for all
-> > devices of appropriate type, and initializes each of them in turn.
-> >
-> > Examples of (a) include the new PCI interface, PCMCIA, and the 2.5
-> > unified device model.  Examples of (b) include the old PCI interface
-> > (pci_find_device()) and (some?/all?) non-PCI devices on OF machines
-> > (e.g. Airport).
-> >
-> > Approach (a) is clearly needed to handle hotplug.  But that's not an
-> > issue for OCPs (indeed device (not driver) registration will always be
-> > degenerate) so either approach would do.  Frankly (a) seems overkill
-> > for OCPs, but it does have the advantage of being easily integrated
-> > into the unified device model.
+> David Gibson writes:
 >
-> I wouldn't be quite so quick to dismiss the issue of hotplug from OCP.
-> I have heard rumblings of people having FPGAs with on-chip processors
-> wanting to reprogram the FPGAs on the fly with different sets of
-> peripherals.
+> > Well, I had a look at the ARM version and now I'm a bit confused.  As
+> > far as I can tell it does two things differently from us:
+> > 	1) After making the allocation rounded up to the appropriate
+> > order it frees any leftover pages.  That certainly seems worthwhile.
+> > 	2) It sets PageReserved on each struct page that it
+> > allocates/remaps.
+> >
+> > (2) seems very strange.  It doesn't seem in keeping with the meaning
+> > of PageReserved (well my best guess at the meaning from only slightly
+>
+> PageReserved means that the VM system shouldn't try to manage this
+> page.  In particular, it shouldn't try to do the page aging/move to
+> swap cache/swap out stuff that it will do on normal pages.
 
-Eek, wibble.  It still seems somewhat unlikely to me that you'd be
-changing the peripherals "on the fly" in a real life embedded
-application.  Especially considering that reboots are likely to be
-much less of an issue on an embedded system than on a big server.
+Ok, it's still not clear to me whether we need to set PageReserved or
+not.  Is memory we've allocated with get_free_pages() safe to use
+without fear of it being swapped from under us or not?
+
+Surely it couldn't be swapped, since it resides in the kernel lowmem
+mapping.
+
+> > illuminating comments in page.h). Apparently it's so that
+> > remap_page_range() works - as indeed it wouldn't without this because
+> > of a test in remap_pte_range() which that calls.  But that test looks
+> > to be precisely inverted from what it should be.  Which makes me
+>
+> No, it's right.  remap_page_range() is only meant to be used for pages
+> that are either memory-mapped I/O (the !VALID_PAGE(page) test) or for
+> pages that are "special" (the PageReserved(page) test).  You aren't
+> supposed to use remap_page_range on normal RAM that the VM is
+> managing.
+
+Ah, ok that makes some sense.  I think the comment above
+remap_page_range() needs rewriting, though.
+
+> > wonder how the hell anything works now, since remap_page_range() is
+> > apparently called from several places.
+>
+> It's only called from drivers (such as /dev/mem) or from arch-specific
+> code AFAICS.
 
 --
 David Gibson			| For every complex problem there is a
