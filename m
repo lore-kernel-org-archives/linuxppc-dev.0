@@ -1,34 +1,41 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3F0A7020.6030205@tataelxsi.co.in>
-Date: Tue, 08 Jul 2003 12:47:52 +0530
-From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
+Message-ID: <3F0A8B40.8000706@dgt-lab.com.pl>
+Date: Tue, 08 Jul 2003 11:13:36 +0200
+From: Wojciech Kromer <krom@dgt-lab.com.pl>
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: mpc8260: ncurses -> keypad() failing.
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: Problem installing Denx Eldk on Mandrake 9.1
+References: <20030708000947.48998.qmail@web10010.mail.yahoo.com>
+In-Reply-To: <20030708000947.48998.qmail@web10010.mail.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-We have developed a BRouter and use ncurses for some CUI stuff, like
-configuring our router on a custom designed board (ppc 8260) running
-eldk linux, kernel is different :-)
+>
+>
+>
+>Is it because of Mandrake 9.1?
+>
+>
+>
+>
+Yes. They (mandrake maintainers) like newer versions of rpm, and it have
+some problems with redirection
 
-When I issue the call keypad(), it returns failure (ERR).
-I don't know what the error is. it does not set errno, so I cannot use
-perror().
-My terminal type is set to
-$ export TERM=vt100
-$ export TERMINFO=/usr/share/terminfo
+try:
+for f in *.rpm;do rpm -hiv $f --force --nodeps --relocate /=/opt/eldk;done
 
-I have made sure that /usr/share/terminfo contains v directory and vt100
-  files.The same code works in RH 7.2 on i386, where we tested the
-functionality.
+if this won't  help rename  /var/lib/__db*
 
-Any idea/suggestion ?
-Thanks for your time.
-Om.
+another method is downgrade rpm (sorry dont remember version)
+
+my sollution was copy /opt/eldk from previous installation on another
+machine
+
+--
+* * * * * * * * * * * *
+* per pedes ad astra! *
+* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
