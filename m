@@ -1,37 +1,74 @@
-From: Philip.Lougher@Zarlink.Com
-Subject: Re: Trouble running hardhat linux on EP405
-To: Phillip.Treddenick@colorado.edu
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF2D3D12BD.2E935242-ON80256CCC.0042A7FF@zarlink.com>
-Date: Thu, 13 Feb 2003 12:32:33 +0000
+Message-ID: <3E4B9D4E.7080808@intracom.gr>
+Date: Thu, 13 Feb 2003 15:27:42 +0200
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>,
+	Paul Mackerras <paulus@samba.org>, Dan Malek <dan@embeddededge.com>,
+	Tom Rini <trini@kernel.crashing.org>
+Subject: [2.5] Hang on 8xx in head_8xx.S
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On a first read,  the answer to your question is in the ELF header....
+Hello
 
-> Entry point address:               0xc0000000
+I'm trying to make 2.5 work for 8xx processors.
 
-and
+After some tweaking it compiles, but now it hangs
+in arch/ppc/kernel/head_8xx.S  at the marked point
+below.
 
->Program Header:
->Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
->LOAD           0x010000 0xc0000000 0xc0000000 0x18a010 0x1b1850 RWE
-0x10000
+I know this is not enough to make it work, since
+it appears that the calling convention and registers
+used for exception are changed between 2.4 <-> 2.5.
 
-However, this assumes you've given us the ELF header of the zImage
-(executable bootloader with kernel).
-The fact that the virtual address starts at 0xC0000000 makes me wonder
-whether you actually given us, and are trying to boot, the vmlinux image
-without a bootloader.  If that's the case, then it won't work because the
-kernel expects to be entered with various registers set up to point to
-various goodies like the command line string, and initrd location.
+I could use some help in trying to understand what's going on.
 
 Regards
 
-Phillip Lougher
+Pantelis
+
+
+/*
+ * Go back to running unmapped so we can load up new values
+ * and change to using our exception vectors.
+ * On the 8xx, all we have to do is invalidate the TLB to clear
+ * the old 8M byte TLB mappings and load the page table base register.
+ */
+        /* The right way to do this would be to track it down through
+         * init's THREAD like the context switch code does, but this is
+         * easier......until someone changes init's static structures.
+         */
+        lis     r6, swapper_pg_dir@h
+        ori     r6, r6, swapper_pg_dir@l
+        tophys(r6,r6)
+#ifdef CONFIG_8xx_CPU6
+        lis     r4, cpu6_errata_word@h
+        ori     r4, r4, cpu6_errata_word@l
+        li      r3, 0x3980
+        stw     r3, 12(r4)
+        lwz     r3, 12(r4)
+#endif
+        mtspr   M_TWB, r6
+        lis     r4,2f@h
+        ori     r4,r4,2f@l
+        tophys(r4,r4)
+        li      r3,MSR_KERNEL & ~(MSR_IR|MSR_DR)
+        mtspr   SRR0,r4
+        mtspr   SRR1,r3
+
+---> Gets here <---
+
+        rfi
+2:
+
+---> Never gets here <---
+
+        SYNC                    /* Force all PTE updates to finish */
+        tlbia                   /* Clear all TLB entries */
+        sync                    /* wait for tlbia/tlbie to finish */
+        TLBSYNC                 /* ... on all CPUs */
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
