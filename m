@@ -1,20 +1,21 @@
-Return-Path: <jakob.viketoft@bitsim.se>
-Received: from amsfep20-int.chello.nl (amsfep20-int.chello.nl [213.46.243.18])
-	by ozlabs.org (Postfix) with ESMTP id 28F5867A2F
+Return-Path: <srinivas.surabhi@wipro.com>
+Received: from wip-ectls-mx3.wipro.com (wip-ectls-mx3.wipro.com
+	[203.101.113.41])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wip-ectls-mx3.wipro.com",
+	Issuer "certserv.wipro.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B9A1E67A85
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Feb 2005 21:18:48 +1100 (EST)
-Received: from [192.168.0.27] (really [80.216.174.242])
-	by amsfep20-int.chello.nl
-	(InterMail vM.6.01.04.01 201-2131-118-101-20041129) with ESMTP
-	id <20050215101841.SZRL1891.amsfep20-int.chello.nl@[192.168.0.27]>
-	for <linuxppc-embedded@ozlabs.org>; Tue, 15 Feb 2005 11:18:41 +0100
-Message-ID: <4211CC97.1050801@bitsim.se>
-Date: Tue, 15 Feb 2005 11:19:03 +0100
-From: Jakob Viketoft <jakob.viketoft@bitsim.se>
+	Tue, 15 Feb 2005 21:33:23 +1100 (EST)
 MIME-Version: 1.0
-To: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Stuck in booting 2.6.10-ac11 on Memec Design FF1152...
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Tue, 15 Feb 2005 16:02:48 +0530
+Message-ID: <EF9B29C78F41FA488927FCBC7750AF0E011DA5C5@hyd-mdp-msg.wipro.com>
+From: <srinivas.surabhi@wipro.com>
+To: <wd@denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: Mounta Vista Linux prompt on serial console 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,34 +26,108 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello everyone!
 
-I seem to be promptly stuck at a place in booting (and has been for a 
-while now) so I figured I'd ask the list and see if anyone of you has 
-any ideas. This is all on a Memec Design FF1152 Rev. 3 Evaluation board 
-containing a XC2VP20 Virtex-II pro chip (two ppc 405GP processors). 
-Since the excellent Xilinx tools crash on ELF files, the only option is 
-to download a binary and debug using the serial port.
+Hi,
 
-After enabling SERIAL_DEBUG_IO_BASE to the serial port, the last 
-printout is "MMU:exit()". Checking the PC and the System.map, I seem to 
-halt in the function __delay() which I believe is the function in 
-arch/ppc/kernel/misc.S since it's global. Now, I have two problems:
+Today somehow after removing many options I build the kernel and able to
+succeed till the VFS: "Mounted root (cramfs filesystem) readonly." But
+then I am seeming "kernel panic". Actually what option has to be given
+for init. We have given init=3D/bin/sh but no luck.
 
-1. How does it get to (and get stuck in) __delay()? Can it be triggered 
-by some interrupt if the controller isn't properly configured or is it 
-called from init/main.c and there is some missing timer 
-(initialization)? Looking at Andrei Konovalovs ML300 setup I can't see 
-any external timer configured...
+Please pull me out.
 
-2. gen550_progress() (or something else) seem to be hogging the console 
-(serial port) one way or the other, disabling printk() and making it 
-much harder to debug. Any suggestions how I could deal with this? The 
-serial device is a generic 16550 UART (Xilinx made).
+One more observation is that the U-boot bootargs are overwriting the
+Kernel boot arguments given at the time of build. Even though using
+setenv I removed the bootargs but still the kernel arguments given at
+the time of build using devrocket are not still active.
 
-Thanks in advance!
 
-	/Jakob
+The end part on the hyperterminal is given below
 
-(PS. Andrei: You seem to be using a DCR_INTC on your card and yet 
-setting the parameter USE_DCR set to 0. Why is that?)
+RAMDISK: Compressed image found at block 0
+Freeing initrd memory: 2640k freed
+VFS: Mounted root (cramfs filesystem) readonly.
+Mounted devfs on /dev
+Freeing unused kernel memory: 60k init
+Warning: unable to open an initial console.
+Error -3 while decompressing!
+0015fd20(1928974736)->00141000(4096)
+Kernel panic: No init found.  Try passing init=3D option to kernel.
+ <0>Rebooting in 180 seconds..
+
+
+Thanks & Regards
+Surabhi Srinivas
+
+-----Original Message-----
+From: wd@denx.de [mailto:wd@denx.de]=0D
+Sent: Tuesday, February 15, 2005 3:20 AM
+To: Srinivas Surabhi (WT01 - EMBEDDED & PRODUCT ENGINEERING SOLUTIONS)
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Mounta Vista Linux prompt on serial console=0D
+
+In message
+<EF9B29C78F41FA488927FCBC7750AF0E011DA5A1@hyd-mdp-msg.wipro.com> you
+wrote:
+>=0D
+> Our target is somewhat like this. It has PPC8270, Flash and SDRAM. We
+> are using the uboot for booting. Successfully built the linux kernel
+and
+> Ramdisk images using devrocket. The problem is that the kernel and
+
+Are you sure that your Linux kernel is configured to be booted by
+U-Boot?
+
+> Ramdisk images although getting extracted successfully to 0M location
+of
+> SDRAM from Flash with the help of uboot, the serial console says
+nothing
+> except "uboot ist nicht tot..."
+
+Funny. This message is neiter part of the standard U-Boot code nor of
+the standard Linux kernel. Try to find out where this code is  coming
+from.
+
+> 1. How do I know that the control was given to linux kernel?
+
+Set a breakpoint at a low address like 0x000C. If the debugger  stops
+there you are executing Linux kernel code.
+
+Alternatively, enable DEBUG when building your U-Boot image (at least
+when compiling file "common/cmd_bootm.c").
+
+> 2. Is it that the linux kernel got the control but unable to put the
+> prompt on the serial line? FYI.  I modified the inittab to reflect the
+> console to come on the serial line.
+
+Inittab has nothing to do with the kernel's startup messages. Is your
+kernel configured correctly for using a serial console?
+
+> 3. Is there any documentation which gives the detailed debugging of
+the
+> linux kernel from the loading of kernel?
+
+This is partially covered in the DULG, see
+http://www.denx.de/twiki/bin/view/DULG/Manual
+
+Best regards,
+
+Wolfgang Denk
+
+--=0D
+See us @ Embedded World, Nuremberg, Feb 22 - 24,  Hall 10.0 Booth 310
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Cogito cogito ergo cogito sum - "I think that I  think,  therefore  I
+think that I am."          - Ambrose Bierce, "The Devil's Dictionary"
+
+
+
+Confidentiality Notice=0D
+
+The information contained in this electronic message and any attachments to=
+ this message are intended
+for the exclusive use of the addressee(s) and may contain confidential or=
+ privileged information. If
+you are not the intended recipient, please notify the sender at Wipro or=
+ Mailadmin@wipro.com immediately
+and destroy all copies of this message and any attachments.
