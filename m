@@ -1,47 +1,56 @@
-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: make module_install 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 17 Dec 2002 16:58:49 +0100."
-             <000701c2a5e5$30b5a660$0700a8c0@pc005>
-Date: Tue, 17 Dec 2002 17:39:01 +0100
-Message-Id: <20021217163906.0E610C6139@atlas.denx.de>
+Message-ID: <3DFF5466.3050606@embeddededge.com>
+Date: Tue, 17 Dec 2002 11:44:22 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Pantelis Antoniou <panto@intracom.gr>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: kmalloc and startup process
+References: <3DFF1DF4.8010005@intracom.gr>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Gianfranco,
+Pantelis Antoniou wrote:
 
-in message <000701c2a5e5$30b5a660$0700a8c0@pc005> you wrote:
->
-> I have implemented a loadable driver and I have compiled the source code
-> with the command "make modules". When I try to run the install script with
 
-OK so far.
+> At what point in the startup process is it OK to call
+> kmalloc?
 
-> the command "make modules_install" it exits with the following message:
+Before you start hacking up things that are "broken", you
+should probably take a moment to understand why they are
+currently implemented the way they are.
 
-This is wrong; it will try to install the modules not on your  target
-filesystem,  but  on your development host, and (if you're running as
-root and the copy actually succeeds - which is another mistake: never
-do such things  as  root!)  your  development  host's  "depmod"  will
-complain.
+The CPM support functions are called _very_ early in the
+kernel to support such features as KGDB on the serial ports.
+Currently, the host memory allocator uses bootmem pages
+because they are only option for allocating memory that early.
 
-You should pass a "INSTALL_MOD_PATH=<target_dir>" parameter  to  your
-make command, something like
+There are three host memory allocators that are used to
+support CPM functions.  One is the 'cpm_hostalloc()' space,
+which is available early and used for small objects like
+uart fifos.  Second is the consistent DMA functions which
+are used in the places like the Ethernet driver.  Third is
+the kernel kmalloc() function which must be futher managed
+with the cache coherency functions.  They all have advantages
+and features that meet various driver requirements.  You may
+need to use several layers of initialization to make this
+happen, just like any other Linux driver.  Some must be
+done at kernel initialization, others can be postponed until
+later.  When you think driver support functions are "broken"
+you may want to stop and consider that maybe your driver
+writing techniques are broken and investigate how these
+functions are working successfully for others.
 
-	make modules_install INSTALL_MOD_PATH=/opt/eldk/ppc_8xx
+I would strongly suggest that the only thing to "fix" is to
+add a trivial space manager to some statically configurable
+number of bootmem pages.  The old UNIX resouce map allocator
+would be a perfect algorithm to manage this space.
 
-Best regards,
+Thanks.
 
-Wolfgang Denk
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-There are three ways to get something  done:  do  it  yourself,  hire
-someone, or forbid your kids to do it.
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
