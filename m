@@ -1,46 +1,63 @@
-Message-ID: <004e01c1e5ac$a084adf0$1a11efcb@industrialDiv.hanasys.co.kr>
-Reply-To: "Sangmoon Kim" <dogoil@etinsys.com>
-From: "Sangmoon Kim" <dogoil@etinsys.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Cross compiling glibc-2.2.3
-Date: Wed, 17 Apr 2002 10:10:13 +0900
+From: "Jacky Wang" <jacky@premierme.com.tw>
+To: "Conn Clark" <clark@esteem.com>
+Cc: "May Ling List" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Does anyone port m8xx_pcmcia driver to Linux Kernel successfully?
+Date: Wed, 17 Apr 2002 09:23:19 +0800
+Message-ID: <NFBBLKLHNAGPKBMPDMALIEICKAAA.jacky@premierme.com.tw>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+	charset="iso-8859-1"
+In-Reply-To: <3CBC55BF.C3E5870F@esteem.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, IGOR LURI
+Conn,
 
-> Anybody has already crosscompiled glibc 2.2.3 for mpc8xx?
-I crosscompiled glibc-2.2.5.
+hmm......
+sounds good.
 
-> I know that for glibc-2.1.2 there is a patch in denx page, but for glibc
-> 2.2.3 is there any patch?
+but, I am a newbie about programming with linux kernel and MPC850.
+Could you tell me which kernel release and how to port it smoothly?
 
-I referenced the patch in denx page, and fixed the crosscompile problem by following procedure.
+Jacky
+-----Original Message-----
+From: root@esteem.com [mailto:root@esteem.com]On Behalf Of Conn Clark
+Sent: Wednesday, April 17, 2002 12:48 AM
+To: Jacky Wang
+Cc: May Ling List
+Subject: Re: Does anyone port m8xx_pcmcia driver to Linux Kernel successfully?
 
-1. Move the sysdeps/powerpc/fclrexcpt.c to sysdeps/powerpc/fpu/
-mv sysdeps/powerpc/fclrexcpt.c sysdeps/powerpc/fpu/
 
-2. Delete the sysdeps/powerpc/memset.S
-rm sysdeps/powerpc/memset.S
+Jacky Wang wrote:
+>
+> Hi everyone,
+>
+> I am interesting about how to port m8xx_pcmcia driver to linux kernel w/ MPC850.
+>
+> Would you mind to share your successful experience with me?
+>
+> Best Regards
+> Jacky Wang
+>
 
-3. Edit the sysdeps/powerpc/Makefile
-#ifeq ($(subdir),gmon)
-#libm-support += fenv_const fe_nomask
-#endif
+We have done it. There shouldn't be much to do provided you have the
+PCMCIA interface connected correctly.
 
-4. Compile
-CC=${TARGET}-gcc AR=${TARGET}-ar RANLIB=${TARGET}-ranlib \
-        CFLAGS="-msoft-float -D_SOFT_FLOAT -mcpu=860 -O2" \
-        ../${GLIBC}/configure --host=$TARGET --prefix=${PREFIX} \
-        --enable-add-ons=linuxthreads --with-headers=${PREFIX}/include \
-        --without-fp
+There was a mistake in the Motorola manual on the MPC850. It involved
+two lines having to be swapped.
 
-Good luck.
-- Sangmoon Kim -
+Conn
+
+--
+
+*****************************************************************
+  If you live at home long enough, your parents will move out.
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
