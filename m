@@ -1,32 +1,39 @@
-Mime-Version: 1.0
-Message-Id: <v04220801b594480d9ab1@[10.0.0.42]>
-In-Reply-To: <20000713150406.B1379@mclx.com>
-References: <20000713142202.A1289@mclx.com> <20000713203507.A8255@suse.de>
- <20000713144024.A1379@mclx.com> <20000713204634.A9569@suse.de>
- <20000713150406.B1379@mclx.com>
-Date: Thu, 13 Jul 2000 21:34:39 -0700
-To: Josh Huber <huber@mclinux.com>, Olaf Hering <olh@suse.de>
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: > 512 MB of ram on G4?
-Cc: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-Id: <20000714153901.Postino-029953@smtp01.highway.ne.jp>
+Date: Fri, 14 Jul 2000 15:39:01 +0900
+To: ian geiser <geiseri@msoe.edu>
+CC: <linuxppc-dev@lists.linuxppc.org>
+From: Kaoru Fukui <k_fukui@highway.ne.jp>
+Subject: Re: What causes this error on LinuxPPC?
+In-Reply-To: <396E95F3.66DB2A25@msoe.edu>
+References: <396E95F3.66DB2A25@msoe.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 3:04 PM -0400 7/13/00, Josh Huber wrote:
->>  No, 768MB is the maximum on chrp (B50), the newer PowerMacs can handle
->>  only that 703M. I have no reports about oldworlds.
+From: ian geiser <geiseri@msoe.edu>
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: What causes this error on LinuxPPC?
+Date: Thu, 13 Jul 2000 23:24:19 -0500
+
 >
->one would think that this is a linux limitation then?  Apple's store sells
->G4s with 1.5G, so one would hope that at least macos could handle it.  For
->some reason I doubt it can, but why would they sell machines with that much
->memory?
+> Greetings
+>
+>     I am trying to compile a program using gcc version 2.95.3 19991030 (prerelease/
+franzo/20000622)
+>
+>     for some reason i get this error.  I do not get this error on my stock Linux
+Mandrake 7.1
+>
+>     box though.  Any ideas?
 
-Current Apple G4 hardware can handle 2 GB (four 512MB DIMMs).  1.5 is
-a MacOS limitation (and there's a further limitation in MacOS of
-approx. 1GB per process or something like that).
+See  at
 
-   Tim Seufert
+/usr/gcc-lib/ppc-redhatt-linux/2.95.3/include/va-ppc.h
+
+
+Kaoru
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
