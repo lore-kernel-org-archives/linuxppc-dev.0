@@ -1,19 +1,22 @@
-Return-Path: <wd@denx.de>
-Received: from mailout05.sul.t-online.com (mailout05.sul.t-online.com
-	[194.25.134.82]) by ozlabs.org (Postfix) with ESMTP id 993A32BC0F
+Return-Path: <jonmasters@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.199])
+	by ozlabs.org (Postfix) with ESMTP id 1BC462BDA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Oct 2004 05:20:04 +1000 (EST)
-To: grave <grave@ipno.in2p3.fr>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 25 Oct 2004 10:51:08 -0000."
-	<1098701468l.31592l.0l@ipnnarval>
-Date: Mon, 25 Oct 2004 20:12:31 +0200
-Sender: wd@denx.de
-Message-Id: <20041025181236.4096EC1430@atlas.denx.de>
+	Tue, 26 Oct 2004 07:13:48 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 43so92105wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 25 Oct 2004 14:13:47 -0700 (PDT)
+Message-ID: <35fb2e59041025140776cfe174@mail.gmail.com>
+Date: Mon, 25 Oct 2004 22:07:07 +0100
+From: Jon Masters <jonmasters@gmail.com>
+To: Peter Ryser <peter.ryser@xilinx.com>
+In-Reply-To: <417D2B5E.8050200@xilinx.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+References: <1098701468l.31592l.0l@ipnnarval> <417D2B5E.8050200@xilinx.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: uboot and ppc405 
+Subject: Re: uboot and ppc405
+Reply-To: jonathan@jonmasters.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,23 +27,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <1098701468l.31592l.0l@ipnnarval> you wrote:
-> 
-> We re starting a disign with xilinx chip Virtex II pro and I wonder the =20
-> typical size of an uboot binary. This is for our electronician disigner =20
-> in order to dimension the prom and so on...
+On Mon, 25 Oct 2004 09:35:42 -0700, Peter Ryser <peter.ryser@xilinx.com> wrote:
 
-Depending on your configuration (selected features) U-Boot  typically
-needs 100...240 kB of flash memory. If you reseve 256 kB in flash you
-should have no problems.
+> please have a look at "Getting started with U-Boot and ML300"
+> http://www.xilinx.com/bvdocs/appnotes/xapp542.pdf that describes how to
+> use U-Boot with Xilinx Virtex-II Pro devices.
 
-Best regards,
+This appnote assumes that he's using the ML300, has the Montavista
+tree, and a few other general assumptions that might well not be true
+here, but is otherwise interesting if they decide to heed our
+suggestions of using the SystemACE in the design.
 
-Wolfgang Denk
+btw Peter, I've been moaning about the weird interrupt behaviour of
+the SysACE on e.g. the Memec board for some time (see archives for
+various other people's experiences too) - and I've spoken to several
+folks at Xilinx without getting very far. If there's a fundamental
+problem then it probably makes sense for us to help get it fixed.
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"More software projects have gone awry for lack of calendar time than
-for all other causes combined."
-                         - Fred Brooks, Jr., _The Mythical Man Month_
+Cheers,
+
+Jon.
