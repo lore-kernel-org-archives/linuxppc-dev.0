@@ -1,36 +1,47 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>,
-	<yellowdog-devel@lists.yellowdoglinux.com>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: some questions on new dual 1Gig G4's support?
-Date: Sun, 3 Feb 2002 13:04:26 +0100
-Message-Id: <20020203120426.22252@smtp.wanadoo.fr>
-In-Reply-To: <20020202201734.KLTB18463.tomts7-srv.bellnexxia.net@there>
-References: <20020202201734.KLTB18463.tomts7-srv.bellnexxia.net@there>
-MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: MATSHITADVD-ROM SR-8176
+From: AMANO Kazuhiro <haa13142@jnb.odn.ne.jp>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20020203155250172.VDPS.18601.t-mta3.odn.ne.jp@mta3.odn.ne.jp>
+Date: Mon, 4 Feb 2002 00:52:50 +0900
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Thanks!  I see you have hit the big time!  The /. inerview article was
->great!  Now I can say I actually know someone famous!  ;-)
->
->One last question:
->
->The 7455 errata basically says to disable the L2 hardware prefetch engine
->(MSSCR0[L2PFE] = 0 when disabling the L1 data cache.
->
->It goes on to say that the L1 data cache may be disabled during cache
->flushing on some systems or be disabled upon startup.
->
->Do we disable L1 cache's during cache flushing?  If so were should I be
->looking for this code to get the workaround in place?
+I'm in trouble with MATSHITA DVD-ROM SR-8176 drive on iBook2
+ under kernel-2.4.18-pre7-ben0.
 
-I don't think we disable L1 except when changing L2CR value or when
-going to sleep.
+First problem is in audio CD play. I'm using xmms-cdread-0.14a, but
+I cannot get track list of CD and cannot play.
 
-Ben.
+To solve this problem, I made a tiny patch:
+--- linux/drivers/ide/ide-cd.c-ORIG	Mon Jan 28 20:20:31 2002
++++ linux/drivers/ide/ide-cd.c	Sun Feb  3 22:03:42 2002
+@@ -2644,7 +2644,8 @@
+ 	 * but they do support reading TOC & audio datas
+ 	 */
+ 	if (strcmp (drive->id->model, "MATSHITADVD-ROM SR-8187") == 0 ||
+-	    strcmp (drive->id->model, "MATSHITADVD-ROM SR-8186") == 0)
++	    strcmp (drive->id->model, "MATSHITADVD-ROM SR-8186") == 0 ||
++	    strcmp (drive->id->model, "MATSHITADVD-ROM SR-8176") == 0)
+ 		CDROM_CONFIG_FLAGS (drive)->audio_play = 1;
 
+ #if ! STANDARD_ATAPI
+---
+
+Second problem is in DVD-video play. I'm using xine-0.4.3 or
+vlc(videolan)-0.2.92, but I get only low performance.
+
+In /var/log/messages, some errors were reported:
+Feb  3 23:40:17 phaser kernel: hdb: DMA disabled
+Feb  3 23:40:17 phaser kernel: hdb: command error: status=0x51 { DriveReady SeekComplete Error }
+Feb  3 23:40:17 phaser kernel: hdb: command error: error=0x54
+Feb  3 23:40:17 phaser kernel: end_request: I/O error, dev 03:40 (hdb), sector 369232
+
+I can pass through this problem, by "hdparm -d1 -X34 /deb/hdb" to force
+Multiword DMA 2 Mode. But this hdparm command sometimes cause hung up.
+
+Both problem do not appear with ide-scsi driver.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
