@@ -1,38 +1,55 @@
-To: Jaap-Jan <jjboor@lucent.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: occasionally segmentation faults 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 31 Jul 2002 12:28:38 +0200."
-             <200207311028.MAA25657@hzsms01.nl.lucent.com>
-Date: Wed, 31 Jul 2002 13:18:05 +0200
-Message-Id: <20020731111810.B306010876@denx.denx.de>
+Message-ID: <3D47CD6E.8080200@icn.siemens.de>
+Date: Wed, 31 Jul 2002 13:43:42 +0200
+From: Steffen Rumler <Steffen.Rumler@icn.siemens.de>
+MIME-Version: 1.0
+To: linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: RPM: excludepath broken
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200207311028.MAA25657@hzsms01.nl.lucent.com> you wrote:
->
-> I've some problems with my built cross environment
-> from sparc-solaris to powerpc 8xx.
->
-> I configured and built gcc2.95.2 and glibc-2.1.3
-> and used that to build the file and sh utils etc.
+Hi,
 
-These versions are pretty old.
+I'm actually using RPM 3.0.6.
 
-Why don't you use our ELDK,  which  is  available  for  Solaris  host
-environment, too? It's working fine...
+I want to exclude distinct files for installation.
 
-See http://www.denx.de/ELDK/
+When I run the following command:
 
-Wolfgang Denk
+   rpm -ihvv --excludepath /usr/X11R6/lib  calctool.rpm
+   ...
+   D: installing binary packages
+   D: getting list of mounted filesystems
+   D: excluding directory /usr/X11R6/lib/
+   ...
+   D:    file: /usr/X11R6/bin/calctool action: create
+   D:    file: /usr/X11R6/lib/calctool.help action: create
+   D:    file: /usr/X11R6/man/man1/calctool.1.gz action: create
+   D: running preinstall script (if any)
+   calctool                    #################################################
+   ...
+   D: running postinstall scripts (if any)
+
+it seems --excludepath does not work ?
+/usr/X11R6/lib/calctool.help was created.
+
+
+Steffen
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-An age is called Dark not because  the  light  fails  to  shine,  but
-because people refuse to see it.           -- James Michener, "Space"
+
+
+--------------------------------------------------------------
+
+Steffen Rumler
+ICN ON PNE SB 4
+Siemens AG
+Hofmannstr. 51                 Email: Steffen.Rumler@icn.siemens.de
+D-81359 Munich                 Phone: +49 89 722-44061
+Germany                        Fax  : +49 89 722-36703
+
+--------------------------------------------------------------
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
