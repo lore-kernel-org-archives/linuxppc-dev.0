@@ -1,32 +1,35 @@
-Message-ID: <3ADB6E8B.4D6D7565@mvista.com>
-Date: Mon, 16 Apr 2001 18:13:31 -0400
+Message-ID: <3ADB7589.EE24D53B@mvista.com>
+Date: Mon, 16 Apr 2001 18:43:21 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: David Blythe <blythe@routefree.com>
+To: Laura Dean <tralad@yahoo.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 4xx tlbmiss renables interrupts while in kgdb
-References: <3AD78DB3.6077A539@routefree.com>
+Subject: Re: Mounting NFS on RPX-Lite
+References: <20010416185955.41462.qmail@web12402.mail.yahoo.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Blythe wrote:
->
-> The 4xx tlbmiss handler reenables interrupts while handling a page
-> fault.
+Laura Dean wrote:
 
-I have completely rewritten the 4xx TLB software, and this no
-longer happens.  Please use the linuxppc_2_5 tree from the FSM Labs
-BitKeeper tree.
+> I expect this on the kernel I built from source, but I
+> was expecting the Hard Hat kernel to be mounting
+> /opt/hardhat/devkit/ppc/8xx/target. I assumed the
+> "option root-path" line in dhcpd.conf configured this.
 
-> ...  Sometimes kgdb
+Version 2.0 DHCP doesn't work properly with some BOOTP
+clients, in particular when providing this "extended"
+type of information.  I suspect this may be the
+problem, and suggest you check out isc.org for information.
 
-Unfortunately, I'm not sure of the state of KGDB in this same
-linuxppc_2_5 software.  You should be able to do things like
-set breakpoints and examine memory, but some of the single stepping
-may not work correctly (yet).
+I personally run Beta 3.0.
 
+It still looks like you may have some NFS related
+configuration problems on the server, too.
+
+Oh yeah, NFS root works fine, whether you recompile or
+use the ready made kernels.
 
 	-- Dan
 
