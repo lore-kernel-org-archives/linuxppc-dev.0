@@ -1,53 +1,54 @@
-Message-Id: <4.2.2.20000121163838.05255ad0@mail.munich.netsurf.de>
-Date: Fri, 21 Jan 2000 16:47:33 +0100
-To: Gabriel Paubert <paubert@iram.es>
-From: Franz Sirl <Franz.Sirl@munich.netsurf.de>
-Subject: Re: Fwd: Re: still no accelerated X ($#!$*)
-Cc: Kevin Hendricks <khendricks@ivey.uwo.ca>,
-        David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.HPX.4.10.10001202357570.18916-100000@gra-ux1.iram.es>
-References: <00012023473100.01038@enzo.bigblue.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <004c01bf642b$a7c8a8a0$0e01a8c0@betamax.azkoul.com>
+From: "Brad Douglas" <brad@neruo.com>
+To: <khendricks@ivey.uwo.ca>, "Benjamin Herrenschmidt" <bh40@calva.net>,
+        "anthony tong" <atong@uiuc.edu>
+Cc: <linuxppc-dev@lists.linuxppc.org>, <linux-fbdev@vuser.vu.union.edu>
+Subject: Re: [linux-fbdev] Re: Fwd: Re: still no accelerated X ($#!$*)
+Date: Fri, 21 Jan 2000 11:22:00 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 01:05 21.01.00 , Gabriel Paubert wrote:
+-----Original Message-----
+From: Benjamin Herrenschmidt <bh40@calva.net>
+
+>
+>>Okay, I went and looked at the latest aty128fb.c code and it does not use
+>>eieio
+>>anywhere.  I looked at ealier verions of this file and it at one time had
+>>eieio
+>>but they have since been removed.
+>>
+>>I also looked and the endian conversion routines do not use the output
+>>contraint approach you took but do include the memory clobber on the
+writes.
+>
+>I just looked at atyfb.c and aty128fb.c in my source tree (atyfb is
+>2.2.14 one and aty128fb is the latest backport done by atong) and neither
+>uses eieio nor mb(), wmb(), ...
+>
+>This looks bogus to me. I've spotted a few cases where those calls should
+>be in.
+>
+>We can either put the eieio back in the access functions (less optimal,
+>but we can also fix the constraints to get rid of the memory clobber as
+>discussed previously), or we can fill the code with carefuly placed mb()
+>and wmb() but this requires more knowledge of the chipset than I actually
+>have.
+>
+>I'll put back eieio() in the access macros for my kernels until a
+>definitive answer pops up on this issue.
 
 
+I'm forwarding this to Anthony...
 
->On Thu, 20 Jan 2000, Franz Sirl wrote:
->
-> > It depends a little bit on the usage of the asm's if the memory (either
-> > global or local) clobber is needed or not. If you use them for
-> read/writes to HW
-> > registers needing ordering (which is very likely here since we talk about
-> > graphics HW), the compiler can only decide on the memory usage defined
-> by the
-> > clobbers/memory inputs on how to order the inlines (volatile has no
-> effect on
-> > this).
->
->Do you mean that a volatile memory reference can be reordered wit an asm
->volatile statement ? I thought theat this was not possible.
->
-> >From GCC's documentation:
->
->    "You can prevent an `asm' instruction from being deleted, moved
->significantly, or combined, by writing the keyword `volatile' after the
->`asm'."
->
->You might disagree, but I consider that moving across a volatile memory
->reference is a _significant_ move, a very significant one.
+Thanks,
 
-asm volatile doesn't declare any volatile memory references! What makes you
-think it does?
-There was a lengthy discussion about this with Richard Henderson on the
-gcc/egcs lists a while ago. The result was a rewrite of
-linux/include/asm-ppc/io.h in the kernel to it's current state.
-
-Franz.
+Brad Douglas
+brad@neruo.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
