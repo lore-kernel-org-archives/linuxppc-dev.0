@@ -1,59 +1,33 @@
-Message-ID: <3E81FA3A.9010306@embeddededge.com>
-Date: Wed, 26 Mar 2003 14:06:34 -0500
-From: Dan Malek <dan@embeddededge.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: Dmitriy.Zavin@infineon.com
+Message-ID: <FD90897E35ABD311AE0E0008C7E6404A07192EDE@ca02exch4.sjc.infineon.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: SCC2 and SCC3 serial ports on RPX Classic (MPC860)
+Date: Wed, 26 Mar 2003 11:17:18 -0800
 MIME-Version: 1.0
-To: Till Straumann <strauman@slac.stanford.edu>
-Cc: joakim.tjernlund@lumentis.se,
-	Tom Rini <trini@kernel.crashing.org>,
-	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: dcbz works on 862 everywhere!
-References: <IGEFJKJNHJDCBKALBJLLGEHAFLAA.joakim.tjernlund@lumentis.se> <3E810DA7.1060605@slac.stanford.edu> <3E81C4B3.2080006@embeddededge.com> <3E81ED56.7050105@slac.stanford.edu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Till Straumann wrote:
+Hey all,
 
-> - TLB Miss, copy EPN to DAR (DAR is semi-correct, i.e. to
->    a page boundary).
-> - RFI, dcbz is restarted
+I'm using the Embedded Planet RPX Classic LF SBC (MPC860 onboard).
+I compiled the 2.4.7 kernel (from TimeSYS) with SCC2 and SCC3 enabled for IO. I have a break-out board where I manually hook into the TXD/RXD/GND pins (Port A, pins 12/13). Now, I'm sending a pattern (FOOOOOO) from the SBC to /dev/tts/1 (SCC2) which is connected to a windows box on COM1. All I get on COM1 is garbage. But its not random. I made sure to set all the baud/stop bits/parity manually through IOCTL calls to make sure its right, but still no go. And SCC3 (/dev/tts/2) is completely unresponsive. Writing data to it always blocks the program. I have to ^C, because nothing shows up on the other side of the serial link. Its very puzzling.
 
-The EPN has never been copied to DAR.  Some bits of DAR are copied
-to EPN so we can use the hardware assist in the TLB Error exception.
+Do I have to hook up all the CTS/RTS lines in order to get it to work? I thought that TX/RX/GND was enough?
 
->
-> --- here, task switching could occur ---
+Any ideas??
 
-No, it can't because the TLB Miss rfi is likely to immediately result in
-a TLB Error.  The TLB Miss doesn't return through a path that causes
-a context switch.
+Thanks a lot in advance.
 
-> Under the premise that TLB Miss always sets EPN correctly
-> and TLB Error always sets DAR correctly, this should work
-> even if a task switch (or IRQ) sneaks in.
+--Dima
 
-The current implementation relies on TLB Miss always setting EPN
-(and other hardware assist registers) correctly, and TLB Error
-relies on DAR being set correctly.  Everything works fine until
-you get a TLB Error on a dcbz/dcbt that doesn't properly update DAR.
-In this case EPN isn't set correctly either.
+Some info:
 
-> Again: I thought you said that TLB Error _does_ set DAR?
-
-It does, except in the case of some cache instruction exceptions.
-
-> ... But you gain the huge advantage that you don't
-> have to carefully screen any software you intend to port for cache
-> instructions.
-
-The instructions that don't work properly are dcbz/dcbt.  We have
-corrected this in the kernel and all GNU libraries long ago.  There
-are other reasons to need a unique 8xx (and 4xx) set of libraries
-other than the use of these cache instructions.
-
-
-	-- Dan
-
+CPM UART driver version 0.03
+ttyS00 at 0x0280 is a SMC
+ttyS01 at 0x0100 is a SCC
+ttyS02 at 0x0200 is a SCC
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
