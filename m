@@ -1,17 +1,12 @@
-Return-Path: <marc.leeman@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.194])
-	by ozlabs.org (Postfix) with ESMTP id 14EAC2BF45
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Nov 2004 19:36:32 +1100 (EST)
-Received: by rproxy.gmail.com with SMTP id j1so41477rnf
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Nov 2004 00:36:28 -0800 (PST)
-Message-ID: <1f729c480411110036445cd8aa@mail.gmail.com>
-Date: Thu, 11 Nov 2004 09:36:28 +0100
-From: Marc Leeman <marc.leeman@gmail.com>
-To: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: 2.4 -> 2.6: problem probing PCI
-Reply-To: Marc Leeman <marc.leeman@gmail.com>
+Return-Path: <ivan@vmfacility.fr>
+From: "Ivan Warren" <ivan@vmfacility.fr>
+To: <linuxppc-dev@ozlabs.com>
+Date: Sat, 13 Nov 2004 23:03:46 +0100
+Message-ID: <IOEOJNOGAAKFBLIMGDCJAEJMCAAA.ivan@vmfacility.fr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Issue with ppc64/vibmscsi
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,58 +16,136 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Folks,
 
-before digging into the lower ppc specific code myself, I thought to
-ask and describe my problem here first. I am currently porting a 2.4
-based embedded solution to a 2.6 kernel (basically for the fun of it)
-and have come accross the following:
+I am running into the following problem :
 
-When probing the PCI bus (of an embedded solution DBG enabled; 2.6.9):
+I have started experimenting running linux ppc64 on a newly acquired IBM
+9111-520 (p520).
 
-PCI: Probing PCI hardware
-PCI: bridge rsrc 0..bfffff (100), parent c0172188
-PCI: reparented dma1 [0..1f] under PCI host bridge
-PCI: reparented pic1 [20..3f] under PCI host bridge
-PCI: reparented timer [40..5f] under PCI host bridge
-PCI: reparented dma page reg [80..8f] under PCI host bridge
-PCI: reparented pic2 [a0..bf] under PCI host bridge
-PCI: reparented dma2 [c0..df] under PCI host bridge
-PCI: bridge rsrc 80000000..fcffffff (200), parent c017216c
-PCI:0000:00:00.0: Resource 1: 00000000-00000fff (f=3D200)
-PCI: Cannot allocate resource region 1 of device 0000:00:00.0
-PCI:  parent is c01b6054: 80000000-fcffffff (f=3D200)
-PCI:0000:00:10.0: Resource 0: bffff000-bfffffff (f=3D200)
-PCI:0000:00:10.0: Resource 1: 00bfffc0-00bfffff (f=3D101)
-PCI:0000:00:10.0: Resource 2: bffc0000-bffdffff (f=3D200)
-PCI:0000:00:11.0: Resource 0: bffbf000-bffbffff (f=3D200)
-PCI:0000:00:11.0: Resource 1: 00bfff80-00bfffbf (f=3D101)
-PCI:0000:00:11.0: Resource 2: bff80000-bff9ffff (f=3D200)
-PCI:0000:00:12.0: Resource 0: bf800000-bfbfffff (f=3D1208)
-PCI:0000:00:12.0: Resource 1: bf000000-bf7fffff (f=3D200)
-PCI:0000:00:12.0: Resource 2: 00bfff70-00bfff7f (f=3D101)
-PCI:0000:00:13.0: Resource 0: 00bfff60-00bfff6f (f=3D101)
-PCI:0000:00:13.0: Resource 1: befffff0-beffffff (f=3D200)
+I am attempting to run a linux kernel (2.6.9) in a partition. All the
+devices are virtual.
 
-There is a problem with an FPGA register map (I assume) since:
-ppc2fpga: BAR 0 (0xbfff60-0xbfff6f), len=3D16, flags=3D0x000101
-ppc2fpga: BAR 1 (0xbefffff0-0xbeffffff), len=3D16, flags=3D0x000200
-ppc2fpga: remapped 0xbfff60 with size 16 to 0xc3004f60
+I (shamelessly) used the debian ppc d-i installer... It wouldn't complete,
+but went far enough to have a usable root filesystem. So I installed yaboot,
+did the ybin, etc.. so I could boot from the disk..
 
+The kernel is cross compiled (on a ia32 system)...
 
-On a 2.4.28-rc1, this reads (same hardware):
-ppc2fpga: BAR 0 (0xfebfff40-0xfebfff5f), len=3D32, flags=3D0x000101
-ppc2fpga: BAR 1 (0xbefffff0-0xbeffffff), len=3D16, flags=3D0x000200
-ppc2fpga: remapped 0xfebfff40 with size 32 to 0xfebfff40
+Now.. My problem starts when I attempt to do some heavy I/O operations..
+(namely debian's apt-get something which I believe to do heavy I/O using
+db)..
 
-This last one has the correct behaviour and is the one currently being
-installed. Both the size and the address is wrong. When I read data
-from the FPGA, I get 0xFF while it should be ASCII information (the
-FPGA is the PPC watchdog).
+At this point, I start getting heavy I/O errors - to a point where the root
+fs is remounted read-only.. The virt scsi client adapter is then made
+disabled (all further I/O fail).
 
-My obvious question is now: any pointers in how to proceed in
-debugging this or possible reasons for this change in behaviour?
+the virtual I/O server shows this :
+<ERRLOG>
+LABEL:          CLIENT_FAILURE
+IDENTIFIER:     37DDE80C
 
---=20
-ash nazg durbatul=FBk, ash nazg gimbatul,
-ash nazg thrakatul=FBk agh burzum-ishi krimpatul
+Date/Time:       Sat Nov 13 13:07:51 CST 2004
+Sequence Number: 54
+Machine Id:      00C1721E4C00
+Node Id:         vios1
+Class:           S
+Type:            TEMP
+Resource Name:   vhost3
+
+Description
+Misbehaved Virtual SCSI Client
+
+Probable Causes
+Bad IU, or SRP Violation
+
+Failure Causes
+Bad IU, or SRP Violation
+
+        Recommended Actions
+        Remove Virtual SCSI Client, then Configure the same instance
+
+Detail Data
+                  Module     RC   Location   Data
+srp_parse_descriptor_lis 0000000000000002 00000006 C00000000126B3C0 2E000
+</ERRLOG>
+
+And the console shows :
+
+ibmvscsi: Virtual adapter failed!
+SCSI error : <0 0 1 0> return code = 0x70000
+end_request: I/O error, dev sda, sector 13438632
+SCSI error : <0 0 1 0> return code = 0x70000
+end_request: I/O error, dev sda, sector 13438640
+SCSI error : <0 0 1 0> return code = 0x70000
+.. ad libidum ...
+
+I added a few printk to the srp/rdma driver and I get this :
+(notes in () are hand edited comments)
+<LOG>
+(Note : This is the srp_event_struct iu field dump)
+Sending IU : 02000000 00010000 00000000 00000000
+ 00000000 81000000 00000000 00000000
+ 280000CD 0EA00000 08000000 00000000
+ 00000000 02050000 00000000 00001000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+(note : this is the CRQ request for the above SRP block)
+rpa_scsi : CRQ_SEND : CRQ = 8001000000000100 - 4300
+(failing SRP)
+Sending IU : 02000000 00020002 00000000 00000000
+ 00000000 81000000 00000000 00000000
+ 280000CD 0EA80001 70000000 00000000
+ 00000000 00004444 00000000 00000020
+ 0002E000 00000000 02052000 00000000
+ 0000E000 00000000 0C000000 00000000
+ 00020000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+ 00000000 00000000 00000000 00000000
+(failing CRQ)
+rpa_scsi : CRQ_SEND : CRQ = 8001000000000100 - 4400
+ibmvscsi: Virtual adapter failed!
+SCSI error : <0 0 1 0> return code = 0x70000
+end_request: I/O error, dev sda, sector 13438632
+...
+</LOG>
+
+Basically, I cannot see anything wrong with the last failing request... (SRP
+Request type 02 : SRP_TYPE_CMD, data in format 2 (indirect) - 2 data in
+descriptors) - and some of the CDB fields I recognize : SCSI Command code 28
+and LBA CD0EA8 (which matches sector 13438632 indicated afterwards..).. The
+rest is way to obscure for me..
+
+This problem is *almost* always reproducible (~90% of the time - occurs when
+attempting the same operation).. I attempted deleting/recreating the virtual
+device, changed the size, to no avail..
+
+Question :
+
+- Is this *really* a misbehaving client - or - a buggy server (VIOS at
+1.1.20, p520 FW at SF220_51)?
+- In the latter case, how do I report this to IBM (knowing roll-your-own
+kernels are probably not supported)..
+- If this is a misbehaving client, When extra information is needed (knowing
+that my SRP, SCSI, VSCSI knowledge is somewhat limited) ?
+
+Thanks,
+
+--Ivan
