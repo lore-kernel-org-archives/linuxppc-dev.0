@@ -1,44 +1,58 @@
+Message-ID: <408EACA5.8090005@gcctech.com>
+Date: Tue, 27 Apr 2004 14:55:33 -0400
+From: "Christopher R. Johnson" <cjohnson@gcctech.com>
+Reply-To: cjohnson@gcctech.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: 826x FCC ethernet in promiscuous mode
-Date: Tue, 27 Apr 2004 13:39:12 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DAC5@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+To: Wolfgang Denk <wd@denx.de>
+Cc: Sergey Urvanov <abs@dts.ru>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ioperm
+References: <20040427164405.B19C9C109F@atlas.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+Normally I would agree, except that he's getting link errors with
+ioperm, inb and outb - he's not even running the code.  As to whether
+the code will work, you have an excellent point.  Maybe we're both
+right, so beers all around!
 
-I cannot seem to get  the FCC ethernet controller on a 8266 to do
-promiscous mode correctly.
-I am trying to use tcpdump to show some traffic on a hub it is
-conneccted to (and yes it is a hub, not a switch). Tcpdump does not show
-anything but what it would show normally (ie broadcast and packets
-addressed to the interface)
+Wolfgang Denk wrote:
 
-I have tested the hub using another computer running ethereal and it can
-se everything it is supposed to.
+>In message <408E8346.9070202@gcctech.com> you wrote:
+>
+>>I've seen that also - if I remember correctly, it was an issue with the
+>>toolchain.  I don't use eldk however, I roll my own.  Check your include
+>>
+>
+>I bet a few beer that this is not a toolchain issue.
+>
+>>>I'm getting it while trying to compile  for a ppc405EP based board,
+>>>
+>...
+>
+>>>#define BASEPORT 0x378
+>>>
+>
+>That smells like x86 PC code. It cannot run on a PowerPC.
+>
+>
+>Best regards,
+>
+>Wolfgang Denk
+>
+>--
+>Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+>Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+>I've got a bad feeling about this.
+>
+>
 
-Any ideas?
-(I had a quick look in the sources, and it seems that the promiscous bit
-gets set)
+--
+Christopher R. Johnson
+Principal Software Engineer
+GCC Printers
+(781)276-8763
 
-This is running on 2.6.5
-
-
-
-On a related note... Anybodyu know how to get linux to see RFC-1042
-formated ARP packets?
-
-Rune Torgersen
-System Developer
-Innovative Systems LLC
-1000 Innovative Drive
-Mitchell, SD 57301
-Ph: 605-995-6120
-www.innovsys.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
