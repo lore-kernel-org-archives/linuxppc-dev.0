@@ -1,49 +1,51 @@
-Message-ID: <3FCF540C.3010302@embeddededge.com>
-Date: Thu, 04 Dec 2003 10:34:36 -0500
-From: Dan Malek <dan@embeddededge.com>
+From: "Stefan Roese" <stefan.roese@esd-electronics.com>
+To: "'Eugene Surovegin'" <ebs@ebshome.net>
+Cc: "'Linuxppc-Embedded'" <linuxppc-embedded@lists.linuxppc.org>,
+	<benh@kernel.crashing.org>, <akuster@mvista.com>,
+	"'Matt Porter'" <mporter@kernel.crashing.org>
+Subject: RE: PPC4xx enet driver problem (version 2.0)
+Date: Thu, 4 Dec 2003 16:54:21 +0100
+Message-ID: <000101c3ba7e$e22be900$0212000a@PCSTEFAN>
 MIME-Version: 1.0
-To: Pantelis Antoniou <panto@intracom.gr>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: the door is closing for 2.4
-References: <16334.33020.624995.521330@cargo.ozlabs.ibm.com> <3FCEFB59.80300@intracom.gr> <3FCF3CE0.4020008@embeddededge.com> <3FCF4D78.9000706@intracom.gr>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20031203193545.GB28733@gate.ebshome.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pantelis Antoniou wrote:
+> 2.5 tree has an _old_ driver + some modifications + some 440GX code.
+>
+> linuxppc-2.4 has a new driver re-written by Ben + some 440GX
+> code. Eventually 2.4 version will be merged into 2.5. So it
+> is _not_ a dead end, although it has some problems as you noticed.
 
-> Once upon a time I had it at least compile, but for my board only.
-> But then you mentioned you were working on it and I dropped it.
+OK, good to know!
 
-I had been working on it, primarily to get the processor specific
-changes done.
+> Currently, Matt Porter is hacking on 440GX support and
+> probably he (?) will be the one who will merge 2.4 into 2.5.
+>
+> I also have something done (mostly some stuff Ben havn't
+> finished during re-write, and some NAPI bits) sitting in my
+> tree (I'm pretty busy now to finish and push it to Matt :( ).
 
-> Could you please elaborate on the tasks that need to be done?
-> I know that the head_8xx.S file definetely needs alot of work,
-> and you mentioned the drivers.
+If you have an updated driver, I would be glad to test it on our 405ep
+board.
 
-The serial driver doesn't compile since the serial subsystem was
-reworked.  The old data structures used to represent port
-information (in particular serial_state) no longer works.
-Yes, head_8xx.S needs lots of work, but to me that is the easy part :-)
+> I'll try to look at your problem during this weekend, I don't
+> have 405ep boards with two EMACs (yet), so I'll try to
+> reproduce the problem on 440GP/GX eval boards.
 
+That would be great. Please let me know, if you need any further
+infos...
 
-> What is the minimum stuff needed to make it work at least for my
-> boards?
+> If you have some fixes feel free to post them here :).
 
-Make it compile again, I'll take it from there.
+Sorry, I tried to dig deeper into this problem, but without a solution
+so far.
 
-> I'd be happy to help at least as long as my busy schedule permits.
-
-Me, too.  Just don't be annoyed if it takes me a while to respond,
-especially if testing changes is involved.
-
-Thanks.
-
-
-	-- Dan
+Thanks,
+Stefan.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
