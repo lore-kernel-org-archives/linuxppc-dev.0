@@ -1,27 +1,17 @@
-Date: Fri, 28 May 1999 18:11:31 -0400 (EDT)
+Date: Sat, 29 May 1999 19:55:09 -0400 (EDT)
 From: Tom Rini <tmrini@ntplx.net>
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-cc: Dan Malek <dmalek@jlc.net>, linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Sound stuff (was Re: G3 sound recording)
-In-Reply-To: <Pine.LNX.3.96L.990528094356.1314B-100000@unix47.andrew.cmu.edu>
-Message-ID: <Pine.LNX.4.05.9905281810100.794-100000@pc.wackyland.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.2.9 compile problem (and 2.2.10-pre1)
+Message-ID: <Pine.LNX.4.05.9905291951430.794-100000@pc.wackyland.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 28 May 1999, Hollis R Blanchard wrote:
-
-> Second, this reminded me of two sound things, both about the CD player. 1) If
-> I'm playing an mp3, any sox output (like Licq's notifications) gets played
-> after the mp3 has finished. Kinda like Windows, except the sound does
-> eventually play instead of getting dropped. But, if I'm playing a CD, I can
-> hear ICQ messages fine, simultaneously (more like the Mac OS). I assume this
-
-This can be fixed in part by esound and esound compliant apps.  Ie: stick
-x11amp into esd mode, and find an icq client that can send its sounds to
-esd.  Then you'll here 'em like in MacOS.
+Ok.  2.2.10-pre1 is out right now, and doesn't seem to have the needed fix
+for ppc.  If no one volunteers to patch this (i'll wait a few hrs <g>)
+I'll give it a shot and send to Cort/Linus.
 
 ---
 Tom Rini (TR1265)
