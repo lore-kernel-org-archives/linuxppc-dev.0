@@ -1,32 +1,48 @@
-Message-ID: <3A8C11E7.D0CA22F9@mvista.com>
-Date: Thu, 15 Feb 2001 12:29:11 -0500
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: mmu_context_overflow
-References: <Pine.LNX.4.05.10102151820520.23079-100000@callisto.of.borg>
+Date: Thu, 15 Feb 2001 12:48:01 -0500
+From: Daniel Jacobowitz <dmj+@andrew.cmu.edu>
+To: Anton Blanchard <anton@linuxcare.com.au>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ltrace for ppc
+Message-ID: <20010215124800.A22625@drow.them.org>
+References: <20010214081000.A28509@linuxcare.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010214081000.A28509@linuxcare.com>; from anton@linuxcare.com.au on Wed, Feb 14, 2001 at 08:10:00AM +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
+On Wed, Feb 14, 2001 at 08:10:00AM +1100, Anton Blanchard wrote:
 >
-> I found this in my kernel message log:
+> Hi,
 >
-> | mmu_context_overflow
+> ltrace is a cool little program for tracing library calls. I ported it
+> to ppclinux a while ago but the ltrace maintainer seems to have ignored
+> my patch.
 >
-> running 2.4.1 from January 31 on a CHRP LongTrail with 604e.
+> For anyone interested the patch can be found at:
+>
+> http://linuxcare.com.au/anton/patches/ltrace_ppc_patch
+>
+> It should apply cleanly to the latest source (I got mine from the debian
+> archive).
 
-I'm assuming this occurred just once.  It's really no big deal
-(except it is a one-time overhead to invalidate all contexts).
-If it continues to happen, let me know and I'll ask for more
-system information.
+You did?  Wow!  I spent ages trying to do this...
 
-Thanks.
+Oh, looking at your patch I remember what happened.  It's a bloody
+miracle that ltrace works at all on any architecture; the PLT tricks
+that the PPC plays are not at all uncommon, as I recall.  I got
+derailed trying to make it insert breakpoints at the proper time.
 
+Thanks for the patch; I'll probably keep bugging the author about
+this...
 
-	-- Dan
+Dan
+
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
