@@ -1,37 +1,45 @@
-Date: Tue, 6 Jun 2000 21:25:35 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Michel Dänzer <daenzerm@student.ethz.ch>,
-        Takashi Oe <toe@unlserve.unl.edu>, Michel Lanners <mlan@cpu.lu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: [patch] VRAM detection in controlfb
-In-Reply-To: <Pine.LNX.4.05.10006031120360.1278-100000@callisto.of.borg>
-Message-ID: <Pine.LNX.4.10.10006062123240.1984-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <393D5429.32BEFB20@relog.ch>
+Date: Tue, 06 Jun 2000 21:42:33 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Joseph Garcia <jpgarcia@execpc.com>
+CC: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        Francois Felix Ingrand <felix@ingrand.net>,
+        Stephan Leemburg <stephan@jvc.nl>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Debian pmud package available
+References: <Pine.LNX.4.10.10006062043470.29453-100000@zirkon.biophys.uni-duesseldorf.de> <393D4D15.7CF12E4E@execpc.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > > Probably XF4 handles fix.smem_start being not on a page boundary
-> > > incorrectly.
-> >
-> > What would it have to do to handle it?
->
-> Round down smem_start and mmap() it, and readd the offset. Cfr.
->
->     addr = (unsigned long)mmap(NULL, ati_smem_len, PROT_READ | PROT_WRITE,
-> 				MAP_SHARED, fb_fd, 0);
->
->     ati_smem = addr+ati_smem_offset;
->
+Joseph Garcia wrote:
 
-Basically what we do in fbdev.c since two years or so (first happened on
-Mac68k). But I don't think that's it: mmap would have barfed if you feed
-it a start address that isn't page aligned.
-Maybe a timing problem with the monitor?
+> What PMU_VERSION id does the Pismo have?  the plugin is written to support
+> up to 12 (keylargo/iBook).
 
-	Michael
+Is reported as 12 on my Pismo.
 
+> My page lists Pismo as unsupported because I know nothing about how PMUD
+> handles it.  Looking at the code, it appears as if it is just another smart
+> battery.  But there is no evidence to a PMU_VERSION relating to it.
+
+The gkrellm plugin (v0.9) always shows an empty battery and 0:00 rest time.
+
+> Does Batmon display for Pismo systems?  I could update it to support Pismo
+> ASAP if I get some input.
+
+Francois told me it does; haven't tested it myself.
+
+
+Michel
+
+
+--
+Been there, done that, can't remember why...
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
