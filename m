@@ -1,33 +1,33 @@
-To: Linh Dang <linh@home.earth>
-Cc: "Embedded Linux PPC list" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Linux is not reliable enough? 
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: different device file name when relocating SMC1? 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 23 Jul 2004 23:02:15 EDT."
-             <wn5pt6mw1jc.fsf@linhd-2.ca.nortel.com>
-Date: Sun, 25 Jul 2004 18:23:26 +0200
-Message-Id: <20040725162332.05AC2C109F@atlas.denx.de>
+In-reply-to: Your message of "Sat, 24 Jul 2004 09:07:46 EDT."
+             <Pine.LNX.4.60.0407240816340.11139@localhost.localdomain>
+Date: Sun, 25 Jul 2004 18:27:35 +0200
+Message-Id: <20040725162740.AF9C3C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <wn5pt6mw1jc.fsf@linhd-2.ca.nortel.com> you wrote:
+In message <Pine.LNX.4.60.0407240816340.11139@localhost.localdomain> you wrote:
 >
-> Well, X server doesn't run in the same vm space as the
-> kernel. however, on my PC, X is the thing that would most likely to
-> put the system into an unusable state (frozen keyboard, mouse and
-> screen).
+>       so, simple question -- until now, we've identified the console as
+> ttyS0, and it's worked fine.  does relocation require referring to the
+> console with a different device file name?  i (vaguely) recall /dev
 
-This just means that X is crashed. I'm  pretty  sure  the  system  is
-stillr  unning  fine, and you can for example login over the network.
-This example has lttle relevance to embedded system.
+No.
 
-> QNX's drivers run in their own process space but they still have
-> direct access to the hardware. A driver can screw up the hw regardless
-> whatever vm-sandbox in which it run.
+> entries with names like cpmuart0 or something like that.  given
 
-Indeed.
+No.
+
+> relocation, should i be using something other than "ttyS0"?
+
+No. [Unless you changed the driver and/or configured your  system  so
+that SMC1 is not the first entry in the port table.]
 
 Best regards,
 
@@ -36,7 +36,7 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Dear Lord: I just want *one* one-armed manager so  I  never  have  to
-hear "On the other hand", again.
+Never underestimate the bandwidth of a station wagon full of tapes.
+                                -- Dr. Warren Jackson, Director, UTCS
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
