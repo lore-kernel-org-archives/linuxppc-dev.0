@@ -1,51 +1,43 @@
-Date: Thu, 15 Mar 2001 12:37:35 -0600 (CST)
-From: Takashi Oe <toe@unlserve.unl.edu>
+From: bob@kunk.jriver.com
+Message-ID: <20010315193345.17142.qmail@kunk.jriver.com>
+Subject: Multiple PCI buses in 2.4?
 To: linuxppc-dev@lists.linuxppc.org
-Subject: anyone with bmac network problem?
-Message-ID: <Pine.A41.3.96LJ1.1b7.1010315122129.41552B-100000@unlserve.unl.edu>
+Date: Thu, 15 Mar 2001 13:33:45 -0600 (CST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I'm wondering what the state of support for multiple pci buses on
+PowerMacs is in 2.4? I see by looking at the code and reading the
+lists that work is being done on it since 2.4.1.
 
-I'm looking for testers on a possible workaround for bmac network problem.
-As some of you might know, bmac tx dies abruptly when network environment
-is very busy and never recovers.  A patch enclosed might alleviate the
-situation, and I want to know if it works for anybody else.
+The 7X00/8X00 has 2 bridge devices both of which are recognized by
+2.42 in the  boot messages but an lspci only shows one bus.
 
-This problem is hard to reproduce in that it takes time and you must have
-busy traffic.  I can say I have not been able to reproduce the problem
-when the patch is applied, whereas I could eventually reproduce the bmac
-hang without the patch, but YMMV.
+00:0b.0 Host bridge: Apple Computer Inc. Bandit PowerPC host bridge (rev 03)
+00:0d.0 Ethernet controller: Digital Equipment Corporation DECchip 21142/43 (rev 21)
+00:0e.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RT8029(AS)
+00:0f.0 Communication controller: Comtrol Corporation RocketPort 8 Intf (rev 02)00:10.0 Class ff00: Apple Computer Inc. Grand Central I/O (rev 02)
 
-The patch should apply cleanly to reasonably recent 2.2.x source and with
-offsets to 2.4.x.
+The planb video4linux device is on the other bus and upon attempting to
+load the planb module I get the following...
 
-Let me know if you see any (or no) changes or problems with this patch.
+Linux video capture interface: v1.00
+PlanB: Found on bus 1, dev 13, func 0, membase 0x90000000 (base reg. 0x10)
+PlanB: cannot find PCI device!
 
+The call that fails...
 
-Takashi Oe
+pdev = pci_find_slot (bus, dev_fn);
 
---- bmac.c.ORIG	Sun Dec 10 18:49:42 2000
-+++ bmac.c	Thu Mar 15 12:38:00 2001
-@@ -772,7 +772,13 @@
- 		if (txintcount < 10) {
- 			XXDEBUG(("bmac_txdma_xfer_stat=%#0x\n", stat));
- 		}
--		if (!(stat & ACTIVE)) break;
-+		if (!(stat & ACTIVE)) {
-+			/*
-+			 * status field might not have been filled by DBDMA
-+			 */
-+			if (cp == bus_to_virt(in_le32(&bp->tx_dma->cmdptr)))
-+				break;
-+		}
+I've worked most recently with the 2_5 kernel from bitkeeper.
 
- 		if (bp->tx_bufs[bp->tx_empty]) {
- 			++bp->stats.tx_packets;
-
+Bob
+--
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
