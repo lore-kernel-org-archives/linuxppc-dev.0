@@ -1,57 +1,55 @@
-In-Reply-To: <14404.17703.247016.528826@cpu.wpi.edu>
-Date: Wed, 1 Dec 1999 12:39:16 +0100
-To: Josh Huber <huberj@wpi.edu>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: wallstreet power usage...
-Message-Id: <19991201123916.024054@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Wed, 1 Dec 1999 14:02:17 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Momchil Velikov <velco@fadata.bg>
+cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+        Stephen Edie <sedie@terraplex.com>, linuxppc-dev@lists.linuxppc.org,
+        yellowdog-devel@lists.yellowdoglinux.com
+Subject: Re: Frame buffer / mmap() weirdness
+In-Reply-To: <38450059.BF0F99DF@fadata.bg>
+Message-ID: <Pine.HPX.4.10.9912011342440.10294-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Nov 30, 1999, Josh Huber <huberj@wpi.edu> wrote:
 
->Hey, for those who know, how could I extend the battery life for my
-WallStreet
->when it's both sleeping, and when it's awake...
->
->does the /proc/sys/kernel/powersave-nap setting do anything for the
-wallstreet
->series machines?
->
->With Batmon, it seems that the power usage is like:
->powersave-nap      current
->0                  -1350
->1                  -1550
->
->the number varies, of course...but they appear to be about 200 off from
->eachother.
->
->Doesn't this seem a little backwards to any of you? It seems backwards
-to what
->Paul is doing for the 3400 in the pwrctl script.
->
->Any other tips?  Is it possible to turn off hardware like: ethernet, sound,
->video (I know this is a little buggy...for my machine anyway)?
->
->I ask, because while the machine is sleeping, in about 6 hours 25% of the
->battery seems to be used, which is far far more than used when sleeping in
->macos.
 
-be careful with nap mode, it will turn cache coherency OFF, and so any
-device doing DMA will end up doing weird things....
+On Wed, 1 Dec 1999, Momchil Velikov wrote:
 
-Sleeping is another matter. It may still eat power because some devices
-may not yet be fully powered down. In my latest kernel, I added code to
-turn off the sound chip, it may help (but you need to have dmasound
-module insmod'ed or insmod'ed and rmmod'ed at least once for this to work).
+> The POSIX I have (POSIX 1003.1b-1993) allows the implementation
+> to require the off parameter to be a multiple of the page size.
+> But:
+>    "NOTE: It is expected that a later amendment of this standard will
+>     disallow the implementation from imposing the restriction on the 
+>     alignment of the off and addr arguments".
+> Anyway, whatever is the offset it is still required that
+>     pa[i] == [lseek(fildes, off+i, SEEK_SET)] for each i : 0 <= i < len
+> after a successful
+>     pa = mmap( addr, len, prot, flags, fildes, off)
+> 
+> Frankly speaking, I can't imagine why addresses returned by mmap()
+> have to be page aligned. If the frame buffer at address range
+> [a, a+off) is to be mapped at [b, b+off), just map the range
+>   [a & ~PAGE_MASK, (a + off + PAGE_SIZE - 1) & ~PAGE_SIZE)
+> to
+>   [b & ~PAGE_MASK, (b + off + PAGE_SIZE - 1) & ~PAGE_SIZE)
 
-I'm still wondering about a strange piece of code Apple used in their own
-sleep stuff, it's possible that without that hack, the PCI bridge doesn't
-go to sleep. I'll try to do more experiments with that one of those days.
+Some PAGE_SIZE are actually PAGE_MASK in this snippet...
 
-Video sleep should work fine as long as you have a correct mclk/pll setting.
+> and give the user the value b. Upon munmap() mask the lower
+> bits of the address and you'll get the actual start address
+> of the mapping. Note that this can be implemented in the
+> library even if the kernel imposes restrictions on the
+> alignment of the addr and off parameters.
+
+You can do anything when mapping a file privately (although being block
+aligned certainly helps), not when mapping hardware or a file with write
+sharing. At least the low order bits of a and b have to be the same
+(that's only a problem when using MAP_FIXED).
+
+	Regards,
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
