@@ -1,51 +1,59 @@
-Date: Tue, 23 Oct 2001 07:32:58 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "David M?ller (ELSOFT AG)" <d.mueller@elsoft.ch>
+Message-ID: <3BD5B7D8.C060B6AF@mvista.com>
+Date: Tue, 23 Oct 2001 14:32:56 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: David =?iso-8859-1?Q?M=FCller?= (ELSOFT AG) <d.mueller@elsoft.ch>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] Various patches against linuxppc_dev-2.4.13-pre6
-Message-ID: <20011023073258.B30012@cpe-24-221-152-185.az.sprintbbd.net>
-References: <3BD50D4E.6060401@elsoft.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BD50D4E.6060401@elsoft.ch>
+Subject: Re: Additional IRQ handlers in ppc4xx_init_IRQ()
+References: <3BD517E5.5090204@elsoft.ch>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Oct 23, 2001 at 08:25:18AM +0200, David M?ller (ELSOFT AG) wrote:
+"David Müller (ELSOFT AG)" wrote:
 
-> Hello again
+> I have a question regarding the registration of additional IRQ handlers
+> for a PPC405GP based board.
+
+Where are Matt's changes for the Tivo?  It would address this and give
+us another example of how this should be structured.
+
+
+> extended ppc4xx_init_IRQ as follows:
+
+This is not an appealing solution.  We should change ppc4xx_pic_init()
+to initialize the internal interrupt controller irq descriptor, and then
+create a standard board initialization call for board specific changes.
+
+
+> static void __init
+> ppc4xx_init_IRQ(void)
+> {
+>         int i;
 >
-> The attached patch fixes the following issues:
+>         ppc4xx_pic_init();
 >
->   - arch/ppc/mm/fault.c
->      missing get_pteptr() prototype
-
-Applied.
-
->   - arch/ppc/kernel/i8259.c
->      consistent nameing (rather cosmetic change)
-
-Not sure about.  Why either of those changes?
-
->   - arch/ppc/ppc_ksyms.c
->      missing flush_dcache_all() export
-
-This only exists on CONFIG_NOT_CACHE_COHERENT, fixed and applied.
-
->   - arch/ppc/kernel/ppc4xx_setup.c
->      added "l" format flag to sprintf() to make compiler happy
->      (cosmetic)
++	  ppc4xx_pic_board_init();
+>         return;
+> }
 >
->   - arch/ppc/kernel/ppc405_pci.c
->      adjust include file name
 
-Applied.
+The '...board_init()' function can be empty for those boards that don't
+require any additional controller initialization.
 
-Thanks!
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+>         for (i = 0; i < NR_IRQS; i++)
+>                 irq_desc[i].handler = ppc4xx_pic;
+
+The NR_IRQS should represent the total number of interrupts across all
+controllers.  The pic_init() should change this loop to initialize either
+NR_AIC or NR_UIC depending upon a 403 or 405 interrupt controller.  No
+#ifdefs necessary.
+
+Thanks.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
