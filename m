@@ -1,38 +1,28 @@
-Message-Id: <200002031219.NAA07401@denx.local.net>
-To: Marcus Sundberg <erammsu@kieray1.p.y.ki.era.ericsson.se>
-cc: greyham@research.canon.com.au (Graham Stoney),
-        alan@packetengines.com (Alan Mimms),
-        linuxppc-embedded@lists.linuxppc.org (Linux PPC Embedded)
-Subject: Re: Using LinuxPPC executables on 8xx processors
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "03 Feb 2000 12:32:38 +0100."
-             <kfyu2jq34ix.fsf@kieraypc07.p.y.ki.era.ericsson.se>
-Date: Thu, 03 Feb 2000 13:19:05 +0100
+From: Michael Thompson <mickey@berkeley.innomedia.com>
+Message-Id: <200002031505.HAA04494@berkeley.innomedia.com>
+Subject: Re: Linux PPC on Sandpoint or YellowKnife board with 750
+To: dervyn@digigram.com (Olivier DERVYN)
+Date: Thu, 3 Feb 2000 07:05:20 -0800 (PST)
+Cc: linuxppc-embedded@lists.linuxppc.org (Linux PPC Embedded)
+In-Reply-To: <38994521.CD0878F5@digigram.com> from "Olivier DERVYN" at Feb 03, 2000 10:06:41 AM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <kfyu2jq34ix.fsf@kieraypc07.p.y.ki.era.ericsson.se>
-Marcus Sundberg wrote:
->
-> > Well, in fact even the original (for instance LinuxPPC  R4)  binaries
-> > *and*  libraries run pretty stable on the MPC8xx system once you have
-> > the FPU emulation working. It seems that the cache line problem  does
-> > not  show  up most of the time.
->
-> IIRC R4 was not based on glibc2, so I'd expect it to never show up.
 
-Of course you are right. I know there was another reason why I  stick
-with R4 for the native test environment.
+> Does anyone have successfully cross-compiled linux for MOTOROLA
+> Sandpoint board or a PPC linux binary kernel can be used on this
+> board ?
 
-Wolfgang Denk
+I have gotten linux to boot on the sandpoint. The changes require
+the sandpoint port of OpenFirmware (firmworks.com).  The hardware
+was flakey, the documentation misleading.  My sandpoint system
+eventually died and I abandoned work on the port.  I still have
+the patches if anyone wants them, of course.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-When you die, the first thing you lose is your life. The  next  thing
-is the illusions.                       - Terry Pratchett, _Pyramids_
+-Michael Thompson
+mickey@berkeley.innomedia.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
