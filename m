@@ -1,26 +1,27 @@
-Message-ID: <3B9D17F0.17E0BBB2@denise.shiny.it>
-Date: Mon, 10 Sep 2001 21:43:44 +0200
+Message-ID: <3B9D190A.5C227976@denise.shiny.it>
+Date: Mon, 10 Sep 2001 21:48:26 +0200
 From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
+To: "Marcus H. Mendenhall" <mendenmh@telalink.net>
 Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: mvista tree
-References: <3B992EE7.F9DDEF28@denise.shiny.it> <20010908123944.E635@cpe-24-221-152-185.az.sprintbbd.net>
+References: <200109090459.XAA25323@lists.linuxppc.org> <p04330100b7c26acbf9cc@[129.59.235.75]>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > Ehm.. Am I the only one who get thes error compiling
-> > the stable tree from mvista ?
->
-> Er, you mean the rsync version of linuxppc_2_4?
+> This is probably the same problem which caused me much grief for
+> about 2 weeks.  Check that in .config, this first  xxxIDE_DMAxxx
+> option is turned on, along with the PCI_IDE_DMA and anything
+> mentioning PPC/powemac.  I would be more specific, except I am not
+> sitting next to my kernel .config file right now (it's at home).
+> The PCI IDE DMA code depends on this earlier option to avoid many
+> unresolved symbols.
 
-Y
+Well, up to 2.4.7 I had no probs with the same .config .
 
-> What .config is this?
-
-Solved, tnx.
+I enabled some more options in the IDE page and it's OK now.
 
 Bye.
 
