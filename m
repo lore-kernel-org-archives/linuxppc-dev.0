@@ -1,43 +1,41 @@
+Date: Thu, 7 Feb 2002 14:43:08 -0700
+From: Val Henson <val@nmt.edu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Highmem on PPC?
+Message-ID: <20020207144308.C19569@boardwalk>
+References: <20020205115618.D6834@boardwalk> <20020205193316.19866@smtp.wanadoo.fr>
 Mime-Version: 1.0
-Message-Id: <p05101400b888906c9a08@[10.0.0.42]>
-In-Reply-To: 
- <Pine.LNX.4.43.0202071127340.16392-100000@andromeda.dsdk12.net>
-References: <Pine.LNX.4.43.0202071127340.16392-100000@andromeda.dsdk12.net>
-Date: Thu, 7 Feb 2002 12:35:48 -0800
-To: Derrik Pates <dpates@dsdk12.net>
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: two aty128 frame buffers?
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020205193316.19866@smtp.wanadoo.fr>; from benh@kernel.crashing.org on Tue, Feb 05, 2002 at 08:33:16PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 11:29 AM -0700 2/7/02, Derrik Pates wrote:
->On Wed, 6 Feb 2002, Ani Joshi wrote:
+On Tue, Feb 05, 2002 at 08:33:16PM +0100, Benjamin Herrenschmidt wrote:
 >
->>  You can't use 2 cards which require ISA IO (vgaHW uses ISA IO on rage128)
->>  right now, because of the multiple busses on the G4 machines.  You can
->>  comment out all the vgaHW calls and that will probably work, but without
->>  doing that it will always crash on any ISA IO operation.  The reason is
->>  because your second bus's ISA IO isn't mapped.
->
->The issue is the same with the G3 tower - the video card is by default in
->the 32-bit, 66 MHz PCI slot, which is a logically separate bus from the
->64-bit, 33 MHz bus that the other 3 slots are part of.
+> And let me know if you find something ;)
 
-Actually it's not the same issue.  The blue&white G3 tower really has
-just one logical PCI bus.  The host bridge interfaces the processor
-to the 66 MHz bus, and the 33 MHz bus is bridged to the 66 MHz bus
-via a PCI-to-PCI bridge IC.  I'm pretty sure ISA I/O is already
-supposed to work for busses behind bridges.
+I pulled the latest linuxppc_2_4_devel, ported gemini to it, and ran
+an overnight test with:
 
-The problem in the G4s is that Apple's Uni-N host bridge has three
-logically distinct PCI busses which are peers rather than
-subordinates.  Each of them thinks it is PCI bus #0 -- the namespaces
-are separate.  The Linux kernel APIs for ISA I/O don't account for
-the possibility of multiple PCI roots.
---
-Tim Seufert
+NFS mounted root filesystem
+while (true) do make clean; make -j8 zImage; done
+crashme +2000 666 100 8:00:00 2
+Flood ping in and out
+
+On a dual 7410 Gemini with 1 GB RAM.  Used all but 70MB of memory.  No
+hangs.
+
+The weird thing is that crashme was supposed to run for 8 hours but
+it's been running for over 14 hours now.  Any ideas?
+
+Also, I don't think this was a particularly good test of highmem since
+I don't think many bounce buffers were used, or that the kernel had
+much reason to map/unmap many highmem pages.  Unfortunately, my SCSI
+controller isn't working quite right and I can't test with a hard disk
+as a result.  Any ideas for stressing the system harder?
+
+-VAL
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
