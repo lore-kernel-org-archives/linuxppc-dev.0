@@ -1,37 +1,43 @@
-Message-ID: <37AFE5B4.A8599342@agelectronics.co.uk>
-Date: Tue, 10 Aug 1999 09:41:24 +0100
-From: Adrian Cox <apc@agelectronics.co.uk>
-MIME-Version: 1.0
-To: Andrew_Klosterman@3com.com
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: What is being setup in chrp_setup_pci_ptrs()?
-References: <882567C9.000F1D9D.00@hqoutbound.ops.3com.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <199908100538.HAA00316@piglet.cpu.lu>
+Date: Tue, 10 Aug 1999 10:45:03 +0200
+To: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Trying a Promise Ultra/66 on powerpc
+Message-Id: <19990810104503.021289@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Andrew_Klosterman@3com.com wrote:
->      In the function chrp_setup_pci_ptrs() at the end of the file
-> /arch/ppc/kernel/chrp_pci.c there are three different variables that are
-> initialized depending on the system being used:
+On Tue, Aug 10, 1999, Michel Lanners <mlan@cpu.lu> wrote:
 
->      pci_dram_offset,
-The PCI address of physical memory address 0 (which should also be
-kernel virtual address 0xc0000000). If physical memory does not start at
-0, then things are a bit more complicated. 
+>Exactly what I meant. I feel drivers shouldn't read addresses directly
+>from config space, but rather from the pci_dev struct, so that any
+>necessary pcibios_fixup() can be made. By the way, the same is true for
+>interrupts....
 
->      isa_mem_base and
-The kernel virtual address to which you have mapped ISA memory space.
-You may need this for the ROMs on ISA cards.
+I fully agree with that, except that we should keep a way for a driver to
+know which offset to apply, in case it really needs to go thru config
+space hacks. (There are some exceptional cases where devices are
+incorrectly mapped).
 
->      isa_io_base.
-The kernel virtual address to which you have mapped IO space. This is
-used by insb and similar instructions.
+I beleive we should fixup this way both io addresses and interrupt
+numbers. OF dev tree is great, but we should keep things coherent with
+other archs, especially for generic PCI drivers.
 
-For more details of these, read include/asm-ppc/io.h
+Finally, the pci subsystem could export a couple of function to
+re-allocate an i/o or memory range on a given bus (and return the
+appropriate offset) for the few drivers that need to hack with their
+original mappings.
 
-- Adrian Cox, AG Electronics
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
