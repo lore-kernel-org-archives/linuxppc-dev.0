@@ -1,114 +1,72 @@
-Date: Sat, 21 Dec 2002 15:25:40 +0100
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: New invalidate/clean/flush_dcache functions
-In-reply-to: <3E034380.1080404@tataelxsi.co.in>
-To: linuxppc-embedded@lists.linuxppc.org
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLCEABFJAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+To: "Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MMU on the power pc 860 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 20 Dec 2002 11:01:43 PST."
+             <885489B3B89FB6449F93E525DF78777F06451E@srvnt506.ALLOPTIC.COM>
+Date: Sat, 21 Dec 2002 21:59:00 +0100
+Message-Id: <20021221205905.1518EC6139@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-[Resending again as it did not reach the list, is it me or problems with the list?]
+Dear Cecilia,
 
-How about adding new xxx_dcache_range() functions functions to PPC.
-Below is my suggestion which is more logical and more efficient:
+in message <885489B3B89FB6449F93E525DF78777F06451E@srvnt506.ALLOPTIC.COM> you wrote:
+>
+> I am porting the timeSys Linux to a custom Power PC 860 board.  Our board
+> currently runs
+> windRiver VxWorks.  I have modified the VxWorks bootrom to allow me to
+> download a motorola
+> hex record, and I have modified the timeSys bootcode
+> arch/ppc/boot/mbx/misc.c:decompress_kernel
+
+This is the generic Linux bootstrap loader, it has nothing to do with
+TimeSys.
+
+> loaded at:     00400000 0040C30C
+> board data at: 004001C0 004001E4
+> relocated to:  0040C0E8 0040C10C
+> zimage at:     0040C30C 004BC440
+> avail ram:     004BD000 00800000
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This loos strange to me. Didn't you map RAM to 0x0000?
+
+> I was able to use the VisionICE BDM to single step, and see it does jump to
+> the address 0, and
+> begin execute the instruction in kernel/arch/ppc/kernel/head_8xx.S:_start
+
+You will not get far  with  the  Vision*;  better  use  a  tool  that
+understands the MMU, like the Abatron BDI2000.
+
+> I think the MMU TLB setup I have is not exactly correct, since the vxWorks
+> BOOTROM does not
+> initialize any MMU registers.  Can someone tell me if I need to initialize
+> the M_TWB register for the
+
+MMU should be switched off when starting Linux.
+
+> to be the value for this register?  My physical memory map consists of RAM
+> at location 0 to 0x1ffffff
+
+This is not what I see above.
+
+> and my IMMR is set to 0x2b00 0000
+
+And this is plain wrong. The IMMR _must_ be mapped above 0xF0000000.
 
 
-static inline void invalidate_dcache_region(void *adr, unsigned long len)
-{
-	if(len == 0) return;
-	len = ((len-1) >> LG_L1_CACHE_LINE_SIZE) +1;
-	do {
-		asm  ("dcbi     0,%0" : : "r" (adr));
-		adr += L1_CACHE_LINE_SIZE;
-	} while(--len > 0);
-}
 
-static inline void clean_dcache_region(void *adr, unsigned long len)
-{
-	if(len == 0) return;
-	len = ((len-1) >> LG_L1_CACHE_LINE_SIZE) +1;
-	do {
-		asm  ("dcbst     0,%0" : : "r" (adr));
-		adr += L1_CACHE_LINE_SIZE;
-	} while(--len > 0);
-	asm  ("sync" : : );
-}
+Best regards,
 
-static inline void flush_dcache_region(void *adr, unsigned long len)
-{
-	if(len == 0) return;
-	len = ((len-1) >> LG_L1_CACHE_LINE_SIZE) +1;
-	do {
-		asm  ("dcbf     0,%0" : : "r" (adr));
-		adr += L1_CACHE_LINE_SIZE;
-	} while(--len > 0);
-	asm  ("sync" : : );
-}
+Wolfgang Denk
 
-int *ptr1;
-char *ptr2;
-void *ptr3;
-
-main()
-{
-	unsigned long len1 = 1600;
-	unsigned long len2 = 900;
-	unsigned long len3 = 702;
-
-	invalidate_dcache_region(ptr1, len1);
-	clean_dcache_region(ptr2, len2);
-	flush_dcache_region(ptr3, len3);
-}
-
-/* Assembler output:
-ppc_8xx-gcc -O2 -S inv_dcache.c -mregnames inv_dcache.c
-
-        .file   "inv_dcache.c"
-gcc2_compiled.:
-        .section        ".text"
-        .align 2
-        .globl main
-        .type    main,@function
-main:
-        li %r0,100
-        mtctr %r0
-        lis %r9,ptr1@ha
-        lwz %r9,ptr1@l(%r9)
-.L39:
-        dcbi     0,%r9
-        addi %r9,%r9,16
-        bdnz .L39
-        li %r0,57
-        mtctr %r0
-        lis %r9,ptr2@ha
-        lwz %r9,ptr2@l(%r9)
-.L30:
-        dcbst     0,%r9
-        addi %r9,%r9,16
-        bdnz .L30
-        sync
-        li %r0,44
-        mtctr %r0
-        lis %r9,ptr3@ha
-        lwz %r9,ptr3@l(%r9)
-.L36:
-        dcbf     0,%r9
-        addi %r9,%r9,16
-        bdnz .L36
-        sync
-        blr
-.Lfe1:
-        .size    main,.Lfe1-main
-        .comm   ptr1,4,4
-        .comm   ptr2,4,4
-        .comm   ptr3,4,4
-        .ident  "GCC: (GNU) 2.95.3 20010315 (release/MontaVista)"
-
-*/
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Use C++ to confuse your enemies; use C to produce stable code.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
