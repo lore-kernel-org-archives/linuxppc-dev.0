@@ -1,31 +1,32 @@
-Subject: Re: OF properties access ?
+Subject: Re: Broadcom BCM94306
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040119120621.GD18112@iliana>
-References: <20040113114625.GA9294@iliana> <1074131387.818.43.camel@gaston>
-	 <20040115074439.GB14039@iliana> <1074310140.8360.27.camel@gaston>
-	 <20040118120722.GA4603@iliana> <1074468096.795.27.camel@gaston>
-	 <20040118143225.GA6717@iliana> <1074502892.813.41.camel@gaston>
-	 <20040119101728.GB18112@iliana> <1074512524.10581.20.camel@gaston>
-	 <20040119120621.GD18112@iliana>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Gabriel Paubert <paubert@iram.es>, linas@austin.ibm.com,
+	valvoline <valvoline@vrlteam.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <64789114-4A89-11D8-9C4D-000A95A4DC02@kernel.crashing.org>
+References: <20040114161107.GM2658@adapter.n0skillz.org>
+	 <20040114181350.B40506@forte.austin.ibm.com>
+	 <70D6BF86-473D-11D8-A8C3-000A95A4DC02@kernel.crashing.org>
+	 <20040115115023.GA12001@iram.es>
+	 <C404D01A-475A-11D8-A8C3-000A95A4DC02@kernel.crashing.org>
+	 <20040116195406.GA25566@iram.es>
+	 <64789114-4A89-11D8-9C4D-000A95A4DC02@kernel.crashing.org>
 Content-Type: text/plain
-Message-Id: <1074548161.12326.28.camel@gaston>
+Message-Id: <1074549957.10585.57.camel@gaston>
 Mime-Version: 1.0
-Date: Tue, 20 Jan 2004 08:36:02 +1100
+Date: Tue, 20 Jan 2004 09:05:58 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Doing only : np = find_type_devices("cpu"); worked fine. I guess this
-> will catch any cpus in the system, and be ok. There are not yet
-> multi-cpu pegasos boxes, so i think it is ok to just check the first CPU
-> and enable the L2 cache there, i will make sure the OF of future
-> multi-cpu systems will set the L2 cache properly.
+> The BAT thing at least is documented (and has been documented
+> _for ever_ -- see the PEM, the 970 is a 64-bit chip.  Get the
+> rev 2.0 PEM from the 970 doc page).
 >
-> Or is it better to go for the first child of cpus ?
+> The large page thing is cpu specific afaik (from memory).
 
-What you do should be fine.
+POWER3 had BATs
 
 Ben.
 
