@@ -1,26 +1,33 @@
-Message-Id: <200206100348.XAA28254@makai.watson.ibm.com>
-To: pberge@stny.rr.com
+Date: Mon, 10 Jun 2002 19:42:37 +0000
+From: Owen Stampflee <owen@penguinppc.org>
+Subject: Re: Why I can't bind the 1023 port?
+In-reply-to: <200206111046140.SM00168@------>
+To: Daniel Lao <laodx@gzjpg.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: docs for ppc gnu gcc inline asm? 
-In-Reply-To: Message from Patrick Berge <pberge@stny.rr.com>
-   of "Sun, 09 Jun 2002 23:32:56 EDT." <200206100333.g5A3WxD26836@mailout6.nyroc.rr.com>
-Date: Sun, 09 Jun 2002 23:48:21 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Message-id: <1023738158.3382.17.camel@whitefusion.lan>
+MIME-version: 1.0
+Content-type: text/plain
+References: <200206111046140.SM00168@------>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Patrick Berge writes:
+On Tue, 2002-06-11 at 02:18, Daniel Lao wrote:
+> The running result was that I could not bind these ports: 1023, 1022, ...
+> but it was success in bind 1024 port.
+> And while I su to as the super-user, I could bind all these ports!
+> I am wondering if the ports were really protected, and how can I use the ports?
 
-Patrick> I would like a complete list of the mnemonics (and extended) that the PPC
-Patrick> gnu as uses.
+Yes, ports < 1024 are reserved ports for "public" applications and only
+the superuser can bind them. To use them, you need to be a superuser. I
+am not familar with rcp (I would use scp even for local transfers) but
+it should be able to run on another port.
 
-	GNU as supports all of the PowerPC mnemonics.  The GCC Further
-Readings link on the main page has a list of links for various
-architectures, including the PowerPC Assembler manuals for AIX.  Both IBM,
-Motorola, and Apple all have documentation about the instruction set
-available through their websites.
+Owen
 
-David
+--
+Owen Stampflee - owen@penguinppc.org
+http://penguinppc.org/~owen
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
