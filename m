@@ -1,43 +1,67 @@
-To: Dan Malek <dan@netx4.com>
-Cc: Pavel Roskin <pavel_roskin@geocities.com>,
-        "Wohlgemuth, Jason" <jason_wohlgemuth@gilbarco.com>,
-        "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Software Emulation Exception...
-References: <Pine.LNX.4.21.0004071011570.19406-100000@sunapee.transcept.com> <38EE0267.FB881499@embeddededge.com>
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 10 Apr 2000 11:37:28 +0200
-In-Reply-To: Dan Malek's message of "Fri, 07 Apr 2000 11:44:39 -0400"
-Message-ID: <kfywvm6s3dz.fsf@kieraypc01.p.y.ki.era.ericsson.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Ruedi.Hofer@ascom.ch
+Date: Mon, 10 Apr 2000 14:59:08 +0100 (CED)
+Subject: Bootloader 8xxrom on ADS860, gcc 2.95
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: systemboot@linux01.hasler.ascom.ch
+Message-id: <0FSS009D0XGBQZ@pmdf-it.hasler.ascom.ch>
+MIME-version: 1.0
+Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_+Mb/Gb7eSdblNZY0hBzvLg)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek <dan@netx4.com> writes:
+--Boundary_(ID_+Mb/Gb7eSdblNZY0hBzvLg)
+Content-type: TEXT/PLAIN
+Content-Transfer-Encoding: 7BIT
 
-> > > "Software Emulation %s/%d NIP: %lx *NIP: 0x%x code: %x"
->
-> So, decode the address/instruction and see if it makes sense.
->
-> > The problem has gone after upgrading to the Montavista kernel (from their
-> > CDK 1.0)
->
-> Since I know something about both of your custom board designs, I
-> can say that the software is unlikely to be the trouble, although it
-> could affect the problem.  This exception is typical of custom designs
-> that haven't properly designed the external device interfaces to the
-> 8xx bus.
+Hi
 
-Well, it also happens to be typical to the MM problem solved by
-the patches at http://www.zeta.org.au/~linsol/ (which are included
-in the Montavista kernel).
+I'm using almost the standard 8xxrom bootloader on my ADS860 board.
 
-And by Pavel's description it's almost 100% certain that the MM
-bug is the problem.
+When I cross compile it on my I386 Linux host using the egcs-2.91, it works ok.
 
-//Marcus
---
-Signature under construction, please come back later.
+When I cross compile it on my I386 Linux host using the gcc 2.95.2, it doesn't work.
+That means, it always crashes like:
+
+-----
+8xxROM 0.3.0
+
+compiletime options:
+board: ADS DRAM_25MHZ
+disk: DISK_ATA PCMCIABUG
+
+cpu: XPC860xxZPnnA3 at 25 MHz: 4Kbyte icache 4Kbyte dcache
+
+<warning: cpu core has silicon bugs, check the errata>
+
+board: ADS rev A - warning, read errata
+flash: 2 Mbytes, delay 90 ns
+dram: 32 Mbyte, 70 ns, OK
+pcmcia: 5V and 3V
+pcsr = 0x0070fe70
+
+ATA disk: 'SunDisk SDP'.
+
+Boot device list:ata.c : Card Not Ready 0x0
+
+disk: No disk found.
+NIP: 00000000 XER: E0004A7F LR: FE004604 REGS: 01fefb80 TRAP: 1000
+MSR: 00001002 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
+
+GPR00: 00000000 01FEFC70 FE004310 00000000 00000001 01FEFC88 FFFFFFFB 01FEFE10
+GPR08: 00000000 FE00B264 00000000 00012600 01FEFD48 1011AFB0 000125C0 00000000
+GPR16: 00000000 00000000 00000002 FE010000 00009032 000125B8 00010000 C0002544
+GPR24: 00000002 00000001 00000001 01FF0000 01FEFEE8 FF002FDC 01FEFF08 01FEFEA8
+Call backtrace:
+Software Emulation Exception
+-----
+
+Did someone encounter the same problem??
+
+Maybe the gcc 2.95 does some better optimisations!
+
+Cheers, Ruedi
+
+--Boundary_(ID_+Mb/Gb7eSdblNZY0hBzvLg)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
