@@ -1,41 +1,50 @@
-In-Reply-To: <Pine.HPP.3.96.990119224947.19824A-100000@falstaff.ucs.indiana.edu>
-Date: Wed, 20 Jan 1999 23:20:32 +0100
-To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: 3-button mouse
-Message-Id: <19990120232032.031426@smtp.calvacom.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Wed, 20 Jan 1999 15:40:43 -0700 (MST)
+From: Matt Porter <mmporter@home.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: DEC21143 on PPC
+Message-ID: <Pine.LNX.3.96.990120153418.12180A-100000@liberty.chnd1.az.home.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jan 19, 1999, Brent H Mundy <bmundy@indiana.edu> wrote:
+Is anybody running a 21143 on Linux/PPC using either de4x5.c or tulip.c?
+I'm having problems getting either to work on the newer Motorola VME
+boards.
 
->I have looked on the F-o-M for a supplier of 3-button mice.  All I could
->find were entries for installing/trouble shooting.  Can anyone suggest a
->3-button mouse (ADB).  I am looking to spend ~$30.  All I can find is
->either 2-button mice, expensive 3-button mice, or 3-button USB mice.
->Suggestions?  
+Here's the boot dump from a 2.0pre4 de4x5.c:
 
-Let's be off-topic too ;-)
+TCP compression code copyright 1989 Regents of the University of
+California
+PPP line discipline registered.
+eth0: DC21143 at 0x11000 (PCI bus 0, device 14), h/w address
+08:00:3e:26:a3:0f,
+      and requires IRQ10 (provided by PCI BIOS).
+de4x5.c:V0.543 1998/12/30 davies@maniac.ultranet.com
+NIP: C000F104 XER: 00000000 LR: C000F0E8 REGS: c01d3cc0 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c01d2000[1] 'swapper' mm->pgd c013a000 Last syscall: 120 
+last math 00000000
+GPR00: 00001032 C01D3DB0 C01D2000 00000001 00008000 C01CD0D4 00000000
+00018583 
+GPR08: 00000001 00007800 80000000 000001E0 0000001F 01F818C0 00000000
+00000000 
+GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+00000000 
+GPR24: 00000000 00000000 C0160000 C0160000 00000000 00009032 C01CD76C
+C01D3DB0 
+Call backtrace: 
+00000000 C00DF338 C00D8DE4 C00D7764 C00D749C C0075278 C00762E0 
+C015D480 C015DDE0 C015CC8C C015EB7C C01548B0 C0004140 C0008010 
+Kernel panic: kernel access of bad area pc c000f104 lr c000f0e8 address
+7804 tsk swapper/1
+Rebooting in 180 seconds..
 
-I'm looking for a place where I could order one or two 3 button mice. My
-problem is that I want mice that currently cause trouble with Linux (in
-order to fix them of course ;-). I'm looking for a MacX compatible one,
-and eventually one of those that needs mousehack to work but I don't know
-where to find them since those people don't usually put the kind of
-protocol used by their mice on the web page...
-
-So if someone could give me a set (model,place_to_buy,protocol_used) I
-would be grateful !
-
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
+--
+Matt Porter
+mmporter@home.com
+Unix is a Linux-like operating system.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
