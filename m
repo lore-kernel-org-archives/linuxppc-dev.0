@@ -1,46 +1,47 @@
-To: "Dustin Byford" <dustin@firein.net>
+To: Dustin Byford <dustin@firein.net>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: custom mpc8240 student project (long) 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 18 Feb 2002 16:17:24 EST."
-             <web-8690106@zipmail.com>
-Date: Mon, 18 Feb 2002 22:44:09 +0100
-Message-Id: <20020218214414.69EE4109E2@denx.denx.de>
+In-reply-to: Your message of "Mon, 18 Feb 2002 15:32:14 MST."
+             <auto-000008693306@zipmail.com>
+Date: Mon, 18 Feb 2002 23:32:56 +0100
+Message-Id: <20020218223301.57292109E2@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dustin,
+In message <auto-000008693306@zipmail.com> you wrote:
+> I understand what you're saying about the COP so I need to evaluate my
+> options.  We are all students working on this so I don't think my coleauges
+> will spring for the BDI since we don't have one available to us at the
+> University.  Is the BDI1000/2000 the least expensive way to use the JTAG/COP?
 
-in message <web-8690106@zipmail.com> you wrote:
->
-> Thanks for your response.  I was hoping to use something I
->  build myself to do the BDM programming.  Something similar
+In terms of time AND money AND power: definitely.
 
-If it was just for the hardware, you could just use the parallel port
-adapter of the BDM4GDB project.
+> An alternate idea:  What if I jumper in a 32 pin PDIP 8-bit EEPROM somewhere
+> that I can boot from (RCS0/8-bit).  I can pull this part off of the board and
+> throw it in a programmer we have at the university.  Hopefully I'll be able
+> to program it with something that will "simply" program itself onto the TSOP
+> AMD flash (which would then be jumpered to (32-bit/RCS1).  Remove the jumpers
+> and reset the board and maybe I would have a ROM that can downlaod stuff
+> through the UART.  Not the quickest of development cycles but it is a no-cost
+> solution.
 
-But this is just the hardware, and you still need the software part...
+OK, now you can program your boot device. You plug it in,  power  on,
+and you are lucky: no magic smoke to be seen.
 
->  to what people are doing for the LART project with JFlash.
->   I understand a NDA is required for all the details about
->  the JTAG/COP port on the MPC8240 but all I really need
->  here is basic flash programming so I can bootstrap
+But your code doesn't run (and I guarantee you that it will  not  run
+on first attempt).
 
-Forget it. The JTAG/COP is much more complicated than the BDM  inter-
-face.  Even  if  you get he information (under NDA), you will spend a
-lot of work implementing the stuff, and  getting  things  worling  is
-probably anything else but fun.
+I bet you'd like to have a debugger then...
 
->  something that will load a real bootloader through the
->  uart.  Is enough information about the BDM available to do
->  this?  I'm not afraid of hacking something together if the
->  information is there.
+> Or: Leave the EEPROM on RCS0 all the time.  The AMD Flash on RCS1 all the
+> time and find another place to put the UART.  Suggestions?
 
-Even if you calculate just a very low hourly rate you will be  better
-off with buying a BDI2000.
+Yes, two: find some working hardware which already has  the  firmware
+running, or get yourself the neccesary tools.
 
 Wolfgang Denk
 
