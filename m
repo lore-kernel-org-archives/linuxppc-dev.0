@@ -1,16 +1,16 @@
-Return-Path: <ksraghavan@yahoo.com>
-Received: from web51001.mail.yahoo.com (web51001.mail.yahoo.com
-	[206.190.38.132]) by ozlabs.org (Postfix) with SMTP id 9B74467A7F
+Return-Path: <mgreer@mvista.com>
+Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id B8DAC67A85
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 29 Jan 2005 06:15:25 +1100 (EST)
-Message-ID: <20050128184558.8006.qmail@web51001.mail.yahoo.com>
-Date: Fri, 28 Jan 2005 10:45:58 -0800 (PST)
-From: Srinivasa Kanduru <ksraghavan@yahoo.com>
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <20050128030429.70F0267ABB@ozlabs.org>
+	Sat, 29 Jan 2005 08:27:45 +1100 (EST)
+Message-ID: <41FAAE4C.3060300@mvista.com>
+Date: Fri, 28 Jan 2005 14:27:40 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: Re: Linuxppc-embedded Digest, Vol 5, Issue 52
+To: akpm <akpm@osdl.org>
+Content-Type: multipart/mixed; boundary="------------020707020608070004000400"
+Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH][PPC32] MPC8245 erratum 28 workaround
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,73 +21,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Alex,
 
-I wouldn't suspect the serial driver because it printed 3 characters correctly.
-It might be better to look at where the kernel is being loaded. I guess somehow
-the image is getting corrupted. Maybe you could move it farther away.
+This is a multi-part message in MIME format.
+--------------020707020608070004000400
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Regards,
-Srini.
+The 8241/8245 have an erratum where PCI reads from local memory may 
+return stale data.  One of the two workarounds is to set PICR2[0].  This 
+patch does that.
 
-> ATTACHMENT part 3.2 message/rfc822 
-> From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-> To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>,
-> 	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-> Date: Thu, 27 Jan 2005 21:07:26 -0500
-> Subject: console_init() question 
-> 
-> > Hi,
-> > 
-> I am struggling with bringing up the MPC 880 board on Linux 2.6-10.rc3 ...
-> I could see that only 3 characters (see below) from the linux_banner are
-> printed
-> in __init start_kernel() (init/main.c) upon booting.
-> Then a lot of garbage is outputted and eventually kernel hangs ...
-> ...
-> after gunzip
-> done.
-> Now booting the kernel
-> LinÿÿÿÿÿÿÿÿÀÿÿÿÿÿÿÿÿÀ8ÀÿÿÿÿÿÿÿÿÀXÀÿÿÿÿÿÿÿÿÀxÀÿÿÿÿÿÿÿÿÀ~ÀÿÿÿÿÿÿÿÿÀ¸ÀÿÿÿÿÿÿÿÿÀ
-> ØÀÿÿ
-> <more garbage>
-> <hangs> ... 
-> ...
-> 
-> Very laborious debugging (without BDM and soft reset button - but with great
-> help) shows that the hang is caused by the console
-> serial driver at about (or just soon after) 
-> 
->     console_drivers = console;
-> 
->  statement in
-> 
->  register_console(struct console * console)
-> 
-> function (in kernel/printk.c ) 
->  
-> I can not find (so far ) any specific error in values supplied vi bd_info
-> from the ("custom" modified pSOS bootloader) causing above problem.
-> >  
-> The debug output showing my serial settings was saved into log buffer and
-> read at "bootloader time" after 
-> "software stimulated" "soft reboot" - it is listed here.
-> Could someone kindly spare 5 min examining supplied debug output  from  both
-> cpm_uart_set_termios()
-> > (in drivers/serial/cpm_uart/cpm_uart_core.c)  and cpm_setbrg() (in
-> > arch/ppc/8xx_io/commproc.c) and tell
-> me what is wrong there   ?
-> > The output is supplied at the end of my e-mail after the listings of
-> > functions (with my print statements)
-> > 
-> > Thanks,
-> > Alex
-> > 
+This patch assumes that the previous mpc10x patch has been applied.
 
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+--
 
+--------------020707020608070004000400
+Content-Type: text/plain;
+ name="mpc10x_2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="mpc10x_2.patch"
 
-		
-__________________________________ 
-Do you Yahoo!? 
-Yahoo! Mail - Easier than ever with enhanced search. Learn more.
-http://info.mail.yahoo.com/mail_250
+diff -Nru a/arch/ppc/syslib/mpc10x_common.c b/arch/ppc/syslib/mpc10x_common.c
+--- a/arch/ppc/syslib/mpc10x_common.c	2005-01-28 14:23:25 -07:00
++++ b/arch/ppc/syslib/mpc10x_common.c	2005-01-28 14:23:25 -07:00
+@@ -323,6 +323,24 @@
+ 			MPC10X_CFG_PICR1_REG, picr1);
+ 	}
+ 
++	/*
++	 * 8241/8245 erratum 28: PCI reads from local memory may return
++	 * stale data.  Workaround by setting PICR2[0] to disable copyback
++	 * optimization.  Oddly, the latest available user manual for the
++	 * 8245 (Rev 2., dated 10/2003) says PICR2[0] is reserverd.
++	 */
++	if (host_bridge == MPC10X_BRIDGE_8245) {
++		ulong	picr2;
++
++		early_read_config_dword(hose, 0, PCI_DEVFN(0,0),
++			MPC10X_CFG_PICR2_REG, &picr2);
++
++		picr2 |= MPC10X_CFG_PICR2_COPYBACK_OPT;
++
++		early_write_config_dword(hose, 0, PCI_DEVFN(0,0),
++			 MPC10X_CFG_PICR2_REG, picr2);
++	}
++
+ 	if (ppc_md.progress) ppc_md.progress("mpc10x:exit", 0x100);
+ 	return 0;
+ }
+diff -Nru a/include/asm-ppc/mpc10x.h b/include/asm-ppc/mpc10x.h
+--- a/include/asm-ppc/mpc10x.h	2005-01-28 14:23:25 -07:00
++++ b/include/asm-ppc/mpc10x.h	2005-01-28 14:23:25 -07:00
+@@ -108,6 +108,9 @@
+ #define	MPC10X_CFG_PICR1_SPEC_PCI_RD	0x00000004
+ #define	MPC10X_CFG_PICR1_ST_GATH_EN	0x00000040
+ 
++#define	MPC10X_CFG_PICR2_REG		0xac
++#define	MPC10X_CFG_PICR2_COPYBACK_OPT	0x00000001
++
+ #define	MPC10X_CFG_MAPB_OPTIONS_REG	0xe0
+ #define	MPC10X_CFG_MAPB_OPTIONS_CFAE	0x80	/* CPU_FD_ALIAS_EN */
+ #define	MPC10X_CFG_MAPB_OPTIONS_PFAE	0x40	/* PCI_FD_ALIAS_EN */
+
+--------------020707020608070004000400--
