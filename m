@@ -1,38 +1,42 @@
-Date: Fri, 11 Jul 2003 11:14:13 -0400
-From: Kent Borg <kentborg@borg.org>
-To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Heretical Question
-Message-ID: <20030711111413.A6059@borg.org>
-References: <D73A25AA6E54D511AD74009027B1110F3C0927@ORION>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <D73A25AA6E54D511AD74009027B1110F3C0927@ORION>; from BlakesleeS@embeddedplanet.com on Wed, Jul 09, 2003 at 04:09:01PM -0400
+To: "Muhammad Sarwar" <msarwar@mangrovesystems.com>
+Cc: "Steven Rothweiler" <Stevenr@raritan.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: AgileDB and Abatron BDI 2000 ICE 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 11 Jul 2003 10:58:03 EDT."
+             <8529B5552D4EAA4DAEDF49650C64B2B436E4ED@TARPON.mangrovesystems.com>
+Date: Fri, 11 Jul 2003 17:28:42 +0200
+Message-Id: <20030711152847.E7C14C6D82@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Jul 09, 2003 at 04:09:01PM -0400, Steven Blakeslee wrote:
-> ddd will let you specify a gdb debugger to use. You have to add -g -ggdb to
-> the CFLAGS and compile the kernel.  Then give the command
+In message <8529B5552D4EAA4DAEDF49650C64B2B436E4ED@TARPON.mangrovesystems.com> you wrote:
 >
-> ddd --debugger ppc_8xx-gdb vmlinux
->
-> Replace ppc_8xx-gdb with your debugger of choice, gdb is the default if you
-> do not specify.
+> You may be rite, Agile may not be for those who have been using GDB for
+> some time...and know how to add "some custom-defined buttons" in
+> DDD....;-)
 
-Yes, that works.  Thanks.
+Now this is _really_ simple. For example:
 
+Start DDD. Click "Commands" => "Edit Buttons"
+Enter:	"target remote bdi:2001 //  Connect to BDI"
+Click "OK".
+See a new button "Connect to BDI" appear. Click it.
 
-But it isn't as nice as I had hoped.  The display feature chews up
-lots and lots of screen space, and little things like clicking on
-something that began with "/x" fails, making it hard to browse values
-in hex.  I was starting to get the hang of how to sort of use it when
-I realized that I could do better with gdb inside emacs.  Hmmm.  I'll
-have to try insight next.
+Don't forget to "Save Options" if you want to make  your  definitions
+permanent.
 
+Best regards,
 
--kb
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I will not say that women have no character;  rather, they have a new
+one every day.                                               -- Heine
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
