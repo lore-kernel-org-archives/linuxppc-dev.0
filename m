@@ -1,68 +1,50 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: 5 Jun 2002 11:21:13 -0000
-Message-ID: <20020605112113.25323.qmail@webmail3.rediffmail.com>
+Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4DFFA05C@mail.mediatrix.com>
+From: Jean-Denis Boyer <jdboyer@mediatrix.com>
+To: "'acurtis@onz.com'" <acurtis@onz.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Debugging Network Performance
+Date: Wed, 5 Jun 2002 08:18:23 -0400 
 MIME-Version: 1.0
-From: "vandana  mehtani" <vandana_mehtani123@rediffmail.com>
-Reply-To: "vandana  mehtani" <vandana_mehtani123@rediffmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Re: problem when compiling gcc for pwerpc
-Content-type: text/plain;
-	format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-ya i can do this ..
-but the error if can be solved wld be nice...
-it is looking for ppc-linux-ar..
-which is made in the binutils in the bin diretory..
-why it is not taking in the path ..
-i donot understand..
-bye
-vandana
+Allen,
 
+With my 200MHz 8260 based board, using kernel 2.4.19-pre7,
+I fetch a large file (~50Mb) with ftp, and send it to /dev/null
+  get large_file /dev/null
+and I obtain the following performance:
+  50216878 bytes received in 5.52 seconds (9090508 bytes/s)
 
-On Wed, 05 Jun 2002 Wolfgang Denk wrote :
->Dear Vandana,
->
->in message <20020605091527.20240.qmail@webmail9.rediffmail.com>
->you wrote:
-> >
-> > i am trying to make a crosscompiler for powerpc using the
->option
-> > powerpc-linux...
->
->Why don't you just use existing, working tools?  Our  Embedded
->Linux
->Development  Kit  is  free for download, just us it. It also
->includes
->instructions how to rebuild  from  prstine  source  files  if
->you're
->really in the mood to do so. See http://www.denx.de/ELDK/
->
-> > when i was trying to configure gcc for powerpc with the
->following
-> > command
-> > usr/src/gcc/gcc-2.96-20000731/configure --target=ppc-linux
->
->You're heading for trouble anyway.  GCC  2.96  was  never
->officially
->released.  It  is a known fact that it cannot be used for
->instance to
->compile a Linux kernel. Even if you manage to build it, you will
->not
->have much fun using it.
->
->Wolfgang Denk
->
->--
->Software Engineering:  Embedded and Realtime Systems,  Embedded
->Linux
->Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email:
->wd@denx.de
->Real programmers don't comment their code. It was hard to  write,
->it
->should be hard to understand.
+About 8977 kbytes/sec! This is around the maximum for a 100Mbps link.
 
+In 10Mbps half duplex, I achieve a
+
+The connection is in half duplex on the board side,
+and full duplex on the ftp server (It crosses a switch).
+Switching to full duplex for both does not affect the performance.
+
+If the performance drops in 100Mbps full duplex, the problem might be
+one of configuration between your BCM switch and the external switch.
+
+Are both ends of the link (between your BCM switch and external switch)
+set to auto-negotiation? If you disable auto-negociation on one side
+only (you force it in full duplex for example), you should also the other to
+full duplex.
+That is important, and caused me hours of research. ;-)
+
+Hope this helps.
+
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., System Architect
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
