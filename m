@@ -1,52 +1,79 @@
-Message-ID: <3A6877E3.AA2238C2@matrox.com>
-Date: Fri, 19 Jan 2001 12:22:43 -0500
-From: Sébastien Côté <scote1@matrox.com>
+From: "Ron Bianco" <ronb@junction.net>
+To: "Gregory Allen" <gallen@arlut.utexas.edu>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Ethernet controller
+Date: Fri, 19 Jan 2001 12:23:16 -0800
+Message-ID: <000001c08255$a7bf3150$4d012ac7@warp-speed>
 MIME-Version: 1.0
-To: Matt Porter <mporter@mvista.com>
-CC: LinuxPPC-embedded list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: initrd problems
-References: <3A671191.A0254C18@matrox.com> <3A676DC6.FD21D5D8@matrox.com> <20010118130139.A5256@cx258813-a.chnd1.az.home.com>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-reply-to: <200101181805.MAA88737@ns5.arlut.utexas.edu>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matt Porter wrote:
-> > I was also wondering if I loaded the kernel correctly.  I put my
-> > zImage+initrd (zvmlinux.initrd) at address 0 of ram.  Since I compiled
-> > the kernel with debug symbols, it takes a few Megs... Could it be too
-> > large for it's own good?  Maybe somebody knows about the answer to that
-> > one!
+Hi Greg,
+
+We've been using the 82559 on our custom 8240 board.
+The microBGA package required really tiny vias because of the tight pad spacing, but
+otherwise was easy to deal with in layout.
+BTW, we put in interstitial vias for all the pads, for a couple of reasons.  I can
+elaborate if desired.
+
+We used a suggested xformer:  Pulse H1012, and kept the pairs of ethernet signals as
+short as possible and the xformer really close to the connector.  Total board space
+used was about 2" x 1" including connector!
+
+The eepro100 driver seems to work well and we're getting good 100baseT performance.
+Haven't really had time to come up with hard benchmarks, yet, as I've been really
+busy working on a custom device driver for another subsystem.  If you had a test
+method to suggest, I could probably sqeeze it in.   Pretty modern bus mastering chip
+tho' I'd say.
+
+We've been struggling along with linux 2.3.16 which, due to a probably mm(u) related
+bug, is unstable if using either an initrd or SCSI disk as root.  Especially
+difficult loading and running init properly from initrd.
+
+We'll be porting to 2.4.x as soon as time allows, and for now an nfsroot is working
+OK.
+
+Cheers, Ron
+
+Ron Bianco
+Computer Systems Technologist
+Level Control Systems
+email: ronb@junction.net
+phone: 250-549-2558 Ext 8
+web:  www.lcsaudio.com
+
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Gregory
+> Allen
+> Sent: Thursday, January 18, 2001 10:05 AM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Subject: Ethernet controller
 >
-> What does the bootloader show when it relocates the zImage and initrd?
-> How about a progress dump so we have something to help you with?  You
-> make some comments about not using a special bootloader then say
-> you are loading a zImage (from the Sandpoint port) which does have
-> a relocating bootloader.  This smells like a custom board port where
-> you've gutted or dropped a bootloader and don't have the r3-r6 set
-> up correctly for entry into arch/ppc/kernel/head.S.  Are you really
-> just dropping vmlinux at address 0?  Details details...
+>
+>
+> I am designing an embedded PPC8240 board with an ethernet interface. I am
+> down to 2 choices: i82559 and RTL8139
+>
+> I prefer to avoid the BGA package of the i82559, but the RTL8139 driver
+> support is listed as having "limited PowerPC testing". I am also curious
+> about their relative performance.
+>
+> Can anyone speak to this?
+>
+> Thanks,
+> -Greg
+>
+> ------
+>  Gregory E. Allen, MSEE Research Engineer
+>  Applied Research Laboratories:
+>  The University of Texas at Austin
+>
+>
 
-I'll try to see what happens when the image is moved now that I know
-this might be the problem, but my stupid debugger isn't friendly at all
-and it's very difficult to do so.
-
-I tought the image wouldn't be moved if I placed it a address 0.  I copy
-my zvmlinux.initrd at this address so I tought it wouldn't be used.
-This is indeed a custom board and I'm really just dropping vmlinux at
-address 0.
-
-I also found out that the values of initrd_start and initrd_end aren't
-valid when assigned from r4 and r5, so something must be overwriting
-these values (intrd_end is smaller than initrd_start)
-
-What's the use for r3?  I read it's board identification but I don't
-really care if my board isn't identified correctly (for now at least).
-A looked for documentation about this but couldn't find any (the booting
-process of linux on a PowerPc seems to be terribly undocumented)
-
-Thanks for your help,
-
-Sébastien Côté
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
