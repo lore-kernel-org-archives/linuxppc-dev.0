@@ -1,126 +1,50 @@
-Date: Mon, 23 Oct 2000 21:30:18 +0200 (CEST)
-From: Buffalo Bill <buffalo@the7lg.de>
+Date: Tue, 24 Oct 2000 15:16:44 +1100
+From: Chris Leishman <masklin@debian.org>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.4.0-test10-pre4
-Message-ID: <Pine.LNX.4.21.0010232120590.1646-200000@uranus.solar-system.the7lg.de>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463809971-670301205-972329418=:1646"
+Subject: airport woes?
+Message-ID: <20001024151644.A660@nina.dev.fol>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+Hi all,
 
----1463809971-670301205-972329418=:1646
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Something appears to be odd with the airport under PPC.
 
-Hi !
-I am new to ppc linux. I tried to get a recent developer kernel from
-ppc.samba.org without succes, so i tried to use 2.4.0-test10-pre4.
-After some minor changes it worked on my ibook. If anyone is interrested
-in the diff, here it is. I hope i did nothing wrong posting this to this
-list.
+Unfortunatly I've been stuck behind a fairly awful link recently, and have
+had to open interactive connections to remote hosts.  The quality of the link
+is terrible with average ping times of up to 1sec, and packet loss between 12
+and 25 percent.
 
-P.s. Who can tell me, where to get specs about the ATI Rage Mobility.
+I've been using ssh to connect to remote hosts, and needless to say the
+response time is shocking.
 
-Have a nice day ...
+However, I've also had problems where the session totally locks up - I type at
+the terminal as much as I like, but nothing reaches the other end.  At first I
+put this down to the crappy network link.  However I've also noticed more
+recently that only _half_ the connection craps out - I can still receive data
+from the remote server.  Weird.
 
----1463809971-670301205-972329418=:1646
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name="ppc-test10-pre4.diff"
-Content-ID: <Pine.LNX.4.21.0010232130180.1646@uranus.solar-system.the7lg.de>
-Content-Description: 
-Content-Disposition: attachment; filename="ppc-test10-pre4.diff"
-Content-Transfer-Encoding: BASE64
+Then today I switched to use ethernet instead of the airport (I was
+transfering some large files and wanted to use 100Mb), and I noticed that I
+wasn't getting the lockup problems with the remote hosts.
 
-ZGlmZiAtciAtdSBsaW51eC5vcmlnL2FyY2gvcHBjL2tlcm5lbC9wcGNfa3N5
-bXMuYyBsaW51eC9hcmNoL3BwYy9rZXJuZWwvcHBjX2tzeW1zLmMNCi0tLSBs
-aW51eC5vcmlnL2FyY2gvcHBjL2tlcm5lbC9wcGNfa3N5bXMuYwlTdW4gU2Vw
-IDE3IDE4OjQ4OjA3IDIwMDANCisrKyBsaW51eC9hcmNoL3BwYy9rZXJuZWwv
-cHBjX2tzeW1zLmMJTW9uIE9jdCAyMyAxNToxMjo1OCAyMDAwDQpAQCAtMjIy
-LDYgKzIyMiw4IEBADQogI2lmZGVmIENPTkZJR19BREJfUE1VDQogRVhQT1JU
-X1NZTUJPTChwbXVfcmVxdWVzdCk7DQogRVhQT1JUX1NZTUJPTChwbXVfcG9s
-bCk7DQorRVhQT1JUX1NZTUJPTChwbXVfcmVzdW1lKTsNCitFWFBPUlRfU1lN
-Qk9MKHBtdV9zdXNwZW5kKTsNCiAjZW5kaWYgLyogQ09ORklHX0FEQl9QTVUg
-Ki8NCiAjaWZkZWYgQ09ORklHX1BNQUNfUEJPT0sNCiBFWFBPUlRfU1lNQk9M
-KHBtdV9yZWdpc3Rlcl9zbGVlcF9ub3RpZmllcik7DQpAQCAtMjUzLDYgKzI1
-NSw3IEBADQogRVhQT1JUX1NZTUJPTChmZWF0dXJlX2NsZWFyKTsNCiBFWFBP
-UlRfU1lNQk9MKGZlYXR1cmVfdGVzdCk7DQogRVhQT1JUX1NZTUJPTChmZWF0
-dXJlX3NldF9nbWFjX3Bvd2VyKTsNCitFWFBPUlRfU1lNQk9MKGZlYXR1cmVf
-c2V0X2dtYWNfcGh5X3Jlc2V0KTsNCiBFWFBPUlRfU1lNQk9MKGZlYXR1cmVf
-c2V0X3VzYl9wb3dlcik7DQogRVhQT1JUX1NZTUJPTChmZWF0dXJlX3NldF9m
-aXJld2lyZV9wb3dlcik7DQogI2VuZGlmIC8qIGRlZmluZWQoQ09ORklHX0FM
-TF9QUEMpICovDQpkaWZmIC1yIC11IGxpbnV4Lm9yaWcvZHJpdmVycy9pZGUv
-aWRlLXBtYWMuYyBsaW51eC9kcml2ZXJzL2lkZS9pZGUtcG1hYy5jDQotLS0g
-bGludXgub3JpZy9kcml2ZXJzL2lkZS9pZGUtcG1hYy5jCVR1ZSBKdW4gMjAg
-MTY6NTI6MzYgMjAwMA0KKysrIGxpbnV4L2RyaXZlcnMvaWRlL2lkZS1wbWFj
-LmMJTW9uIE9jdCAyMyAxMzoxMjoxMSAyMDAwDQpAQCAtMTEwLDcgKzExMCw3
-IEBADQogc3RhdGljIHZvaWQgcG1hY19pZGVfc2V0dXBfZG1hKHN0cnVjdCBk
-ZXZpY2Vfbm9kZSAqbnAsIGludCBpeCk7DQogc3RhdGljIGludCBwbWFjX2lk
-ZV9kbWFwcm9jKGlkZV9kbWFfYWN0aW9uX3QgZnVuYywgaWRlX2RyaXZlX3Qg
-KmRyaXZlKTsNCiBzdGF0aWMgaW50IHBtYWNfaWRlX2J1aWxkX2RtYXRhYmxl
-KGlkZV9kcml2ZV90ICpkcml2ZSwgaW50IGl4LCBpbnQgd3IpOw0KLXN0YXRp
-YyBpbnQgcG1hY19pZGVfdHVuZV9jaGlwc2V0KGlkZV9kcml2ZV90ICpkcml2
-ZSwgYnl0ZSBzcGVlZCk7DQogc3RhdGljIHZvaWQgcG1hY19pZGVfdHVuZXBy
-b2MoaWRlX2RyaXZlX3QgKmRyaXZlLCBieXRlIHBpbyk7DQogc3RhdGljIHZv
-aWQgcG1hY19pZGVfc2VsZWN0cHJvYyhpZGVfZHJpdmVfdCAqZHJpdmUpOw0K
-IA0KZGlmZiAtciAtdSBsaW51eC5vcmlnL2RyaXZlcnMvaW5wdXQva2V5YmRl
-di5jIGxpbnV4L2RyaXZlcnMvaW5wdXQva2V5YmRldi5jDQotLS0gbGludXgu
-b3JpZy9kcml2ZXJzL2lucHV0L2tleWJkZXYuYwlGcmkgSnVsIDI4IDAzOjM2
-OjU0IDIwMDANCisrKyBsaW51eC9kcml2ZXJzL2lucHV0L2tleWJkZXYuYwlN
-b24gT2N0IDIzIDEzOjEyOjExIDIwMDANCkBAIC05MCw3ICs5MCw3IEBADQog
-CXJldHVybiAwOw0KIH0NCiANCi0jZWxpZiBkZWZpbmVkKENPTkZJR19BREJf
-S0VZQk9BUkQpDQorI2VsaWYgZGVmaW5lZChDT05GSUdfQURCKQ0KIA0KIHN0
-YXRpYyB1bnNpZ25lZCBjaGFyIG1hY19rZXljb2Rlc1sxMjhdID0NCiAJeyAw
-LCA1MywgMTgsIDE5LCAyMCwgMjEsIDIzLCAyMiwgMjYsIDI4LCAyNSwgMjks
-IDI3LCAyNCwgNTEsIDQ4LA0KZGlmZiAtciAtdSBsaW51eC5vcmlnL2ZzL25m
-c2QvbmZzZmguYyBsaW51eC9mcy9uZnNkL25mc2ZoLmMNCi0tLSBsaW51eC5v
-cmlnL2ZzL25mc2QvbmZzZmguYwlNb24gT2N0IDIzIDE2OjExOjQxIDIwMDAN
-CisrKyBsaW51eC9mcy9uZnNkL25mc2ZoLmMJTW9uIE9jdCAyMyAxMzoxMjox
-MSAyMDAwDQpAQCAtMzc5LDcgKzM3OSw3IEBADQogCS8qIEl0J3MgYSBkaXJl
-Y3RvcnksIG9yIHdlIGFyZSByZXF1aXJlZCB0byBjb25maXJtIHRoZSBmaWxl
-J3MNCiAJICogbG9jYXRpb24gaW4gdGhlIHRyZWUuDQogCSAqLw0KLQlkcHJp
-bnRrKCJuZnNfZmg6IG5lZWQgdG8gbG9vayBoYXJkZXIgZm9yICVkLyVsZFxu
-IixzYi0+c19kZXYsaW5vKTsNCisJZHByaW50aygibmZzX2ZoOiBuZWVkIHRv
-IGxvb2sgaGFyZGVyIGZvciAlZC8lZFxuIixzYi0+c19kZXYsaW5vKTsNCiAJ
-ZG93bigmc2ItPnNfbmZzZF9mcmVlX3BhdGhfc2VtKTsNCiANCiAJLyogY2xh
-aW1pbmcgdGhlIHNlbWFwaG9yZSBtaWdodCBoYXZlIGFsbG93ZWQgdGhpbmdz
-IHRvIGdldCBmaXhlZCB1cCAqLw0KZGlmZiAtciAtdSBsaW51eC5vcmlnL2lu
-Y2x1ZGUvYXNtLXBwYy9wZ3RhYmxlLmggbGludXgvaW5jbHVkZS9hc20tcHBj
-L3BndGFibGUuaA0KLS0tIGxpbnV4Lm9yaWcvaW5jbHVkZS9hc20tcHBjL3Bn
-dGFibGUuaAlNb24gT2N0IDIzIDE2OjExOjU0IDIwMDANCisrKyBsaW51eC9p
-bmNsdWRlL2FzbS1wcGMvcGd0YWJsZS5oCU1vbiBPY3QgMjMgMTM6MjE6NDQg
-MjAwMA0KQEAgLTMwMSw2ICszMDEsNyBAQA0KICNkZWZpbmUgU0laRU9GX1BU
-Ul9MT0cyCTINCiANCiAjZGVmaW5lIHB0ZV9ub25lKHB0ZSkJCSghcHRlX3Zh
-bChwdGUpKQ0KKyNkZWZpbmUgcHRlX3NhbWUocHRlMSwgcHRlMikJKHB0ZV92
-YWwocHRlMSkgPT0gcHRlX3ZhbChwdGUyKSkNCiAjZGVmaW5lIHB0ZV9wcmVz
-ZW50KHB0ZSkJKHB0ZV92YWwocHRlKSAmIF9QQUdFX1BSRVNFTlQpDQogI2Rl
-ZmluZSBwdGVfY2xlYXIocHRlcCkJCWRvIHsgcHRlX3ZhbCgqKHB0ZXApKSA9
-IDA7IH0gd2hpbGUgKDApDQogDQpkaWZmIC1yIC11IGxpbnV4Lm9yaWcvaW5j
-bHVkZS9saW51eC90aW1lLmggbGludXgvaW5jbHVkZS9saW51eC90aW1lLmgN
-Ci0tLSBsaW51eC5vcmlnL2luY2x1ZGUvbGludXgvdGltZS5oCU1vbiBPY3Qg
-IDIgMjA6MDE6MTcgMjAwMA0KKysrIGxpbnV4L2luY2x1ZGUvbGludXgvdGlt
-ZS5oCU1vbiBPY3QgMjMgMTM6MjE6MzggMjAwMA0KQEAgLTk0LDYgKzk0LDcg
-QEANCiAjZGVmaW5lIE5GREJJVFMJCQlfX05GREJJVFMNCiANCiAjaWZkZWYg
-X19LRVJORUxfXw0KK2V4dGVybiBpbnQgZG9fc3lzX3NldHRpbWVvZmRheShz
-dHJ1Y3QgdGltZXZhbCAqdHYsIHN0cnVjdCB0aW1lem9uZSAqdHopOw0KIGV4
-dGVybiB2b2lkIGRvX2dldHRpbWVvZmRheShzdHJ1Y3QgdGltZXZhbCAqdHYp
-Ow0KIGV4dGVybiB2b2lkIGRvX3NldHRpbWVvZmRheShzdHJ1Y3QgdGltZXZh
-bCAqdHYpOw0KIGV4dGVybiB2b2lkIGdldF9mYXN0X3RpbWUoc3RydWN0IHRp
-bWV2YWwgKnR2KTsNCmRpZmYgLXIgLXUgbGludXgub3JpZy9pbmNsdWRlL2xp
-bnV4L3VzYmRldmljZV9mcy5oIGxpbnV4L2luY2x1ZGUvbGludXgvdXNiZGV2
-aWNlX2ZzLmgNCi0tLSBsaW51eC5vcmlnL2luY2x1ZGUvbGludXgvdXNiZGV2
-aWNlX2ZzLmgJTW9uIE9jdCAgMiAyMDowMjo1MiAyMDAwDQorKysgbGludXgv
-aW5jbHVkZS9saW51eC91c2JkZXZpY2VfZnMuaAlNb24gT2N0IDIzIDEzOjI0
-OjQxIDIwMDANCkBAIC0xNjIsMTYgKzE2MiwxNiBAQA0KIA0KICNkZWZpbmUg
-SVJPT1QgICAgICAxDQogDQotLyoNCi0gKiBzaWdoLiByd3NlbWFwaG9yZXMg
-ZG8gbm90ICh5ZXQpIHdvcmsgZnJvbSBtb2R1bGVzDQotICovDQotDQotI2Rl
-ZmluZSByd19zZW1hcGhvcmUgc2VtYXBob3JlDQotI2RlZmluZSBpbml0X3J3
-c2VtIGluaXRfTVVURVgNCi0jZGVmaW5lIGRvd25fcmVhZCBkb3duDQotI2Rl
-ZmluZSBkb3duX3dyaXRlIGRvd24NCi0jZGVmaW5lIHVwX3JlYWQgdXANCi0j
-ZGVmaW5lIHVwX3dyaXRlIHVwDQogDQogDQogc3RydWN0IGRldl9zdGF0ZSB7
-DQo=
----1463809971-670301205-972329418=:1646--
+I'm using benh's latest kernel and airport driver.  Now I can't think what
+would be causing this, but I thought you'd like to know.  Anyone else seen
+this problem?
+
+
+Regards,
+
+Chris
+
+
+--
+----------------------------------------------------------------------
+       Knuth: premature optimization is the root of all evil.
+----------------------------------------------------------------------
+Reply with subject 'request key' for GPG public key.  KeyID 0xB4E24219
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
