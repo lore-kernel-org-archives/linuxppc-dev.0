@@ -1,35 +1,43 @@
-Date: Tue, 6 Jun 2000 22:05:58 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-cc: "David L. Thompson" <dthompsn@vizsolutions.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: XFree86-4.0 Status?
-In-Reply-To: <3938C6EC.40FFE599@student.ethz.ch>
-Message-ID: <Pine.LNX.4.10.10006062201100.1984-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <393D59E8.9656E51E@relog.ch>
+Date: Tue, 06 Jun 2000 22:07:04 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+CC: Sinan Gürkan <sgurkan@superonline.com>,
+        linux-apus-user@lists.sourceforge.net, debian-powerpc@lists.debian.org,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: New experimental X 4.0 not working
+References: <Pine.LNX.4.10.10006062156360.1984-100000@opal.biophys.uni-duesseldorf.de>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > I was wondering if anybody could comment on the status of
-> > XFree86-4.0. I tried installing this on a PowerBook G3/250 and have
-> > had no luck. I've seen just a few posts in regards to "support isn't
-> > there yet" so I was wondering if anybody could comment.
+Michael Schmitz wrote:
 >
-> I suppose that's Mach64 hardware, so you have to use the fbdev driver _and_ a
-> patched kernel to correct broken OF PCI memory mappings.
+> > > I installed XFree4.0b...but it doesn`t work...
+> > > after startx command it loads a bit and it freezes the whole system.
+> > > You have to reboot and filesystem is corrupted..(I ran fsck 3 times :) )
+> >
+> > Do you use update/bdflush/whatever? I get lotsa lockups when hacking
+> > kernels and X servers, but I've never had to run fsck more than twice
+> > (once automatically and once manually).
 >
-> Ask Michael Schmitz :)
+> I had a case where such a freeze hosed various things on my root and usr
+> partitions. That was during the XFree 4.0 PCI resources trouble hacking.
+> Is the machine in question one with Mach64 graphics?
 
-I haven't tried it on that machine but if it's a Mach64 chipset there will
-likely be a PCI resource collision between VRAM and MMIO space. I had to
-patch both 2.3.99pre7 and 2.2.15 to make it work. For 2.3.x, Geert's old
-PCI resource patch did fine, reassignment for 2.2.15 is a bad hack likely
-to break on other machines (I just guessed a free PCI address range
-instead of walking the resource tree).
+No, it's an Amiga with Permedia2 and he used the wrong binary.
 
-	Michael
 
+Michel
+
+
+--
+So many Christians, so few lions.
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
