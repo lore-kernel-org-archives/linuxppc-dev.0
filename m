@@ -1,32 +1,52 @@
-To: None Atall <linux_meis@yahoo.com>
-Cc: Bruno Coudoin <bcoudoin@anfora.fr>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Raven Cop 8260 Utility 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 14 Feb 2002 05:46:01 PST."
-             <20020214134601.48635.qmail@web9706.mail.yahoo.com>
-Date: Thu, 14 Feb 2002 15:02:45 +0100
-Message-Id: <20020214140250.EE70B109E1@denx.denx.de>
+Mime-Version: 1.0
+Message-Id: <a05101404b891963659eb@[10.8.16.89]>
+Date: Thu, 14 Feb 2002 10:29:12 -0600
+To: linuxppc-embedded@lists.linuxppc.org
+From: Greg Allen <gallen@arlut.utexas.edu>
+Subject: Re: serial ports on 8245
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20020214134601.48635.qmail@web9706.mail.yahoo.com> you wrote:
->  We have the same board. But we haven't been able to
-> program ppcboot to flash. For some reason the boot
-> sector of the flash can't be writen. So I had to run
+>mpc10x_bridge_init() is always called before $(PLATFORM)_map_io()
 
-You probably have to unlock it first. Some flashes start with sectors
-locked, and you have to write an unlock sequence before you can erase
-and/or program the sector(s).
+No -- it's the other way around. Mapping IO is very early.
 
-Wolfgang Denk
+arch/ppc/kernel/head.S start_here:
+-  calls machine_init() in arch/ppc/kernel/setup.c
+       calls platform_init() in arch/ppc/platforms/$(PLATFORM)_setup.c
+          sets ppc_md.setup_io_mappings = $(PLATFORM)_map_io
+          sets ppc_md.setup_arch = $(PLATFORM)_setup_arch
 
+-  then calls MMU_init() in arch/ppc/mm/init.c
+       calls ppc_md.setup_io_mappings() (which is $(PLATFORM)_map_io)
+
+-  then calls start_kernel() in init/main.c
+       calls setup_arch() arch/ppc/kernel/setup.c
+          calls ppc_md.setup_arch() (which is $(PLATFORM)_setup_arch)
+             calls mpc10x_bridge_init() eventually
+
+
+Also, look in arch/ppc/mm/pgtable.c:
+---------------------------------------------------------------
+/*
+  * Set up a mapping for a block of I/O.
+  * virt, phys, size must all be page-aligned.
+  * This should only be called before ioremap is called.
+  */
+void __init io_block_mapping(unsigned long virt, unsigned long phys,
+			     unsigned int size, int flags)
+---------------------------------------------------------------
+
+mpc10x_bridge_init() calls ioremap(), so all calls to
+io_block_mapping() from $(PLATFORM)_map_io must be done earlier.
+
+Thanks,
+-Greg
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-See us @ Embedded Systems Nuremberg, Feb 19-21, Hall 12 K01 (with TQ)
+  Gregory E. Allen, MSEE Engineering Scientist
+  Applied Research Laboratories:
+  The University of Texas at Austin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
