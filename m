@@ -1,39 +1,35 @@
-From: hollis@austin.ibm.com
-Date: Tue, 29 Jan 2002 10:56:14 -0600
-To: Leigh Brown <leigh@solinno.co.uk>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	Sven Dickert <Sven.Dickert@planb.de>
-Subject: Re: /proc/residual (CONFIG_PREP_PROCRESIDUAL)
-Message-ID: <20020129165614.GV510@austin.ibm.com>
-References: <20020128160822.GH19960@opus.bloom.county> <Pine.LNX.4.33.0201291556160.3031-100000@fridge.solinno.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.33.0201291556160.3031-100000@fridge.solinno.co.uk>
+Date: Tue, 29 Jan 2002 11:01:36 -0600 (CST)
+Message-Id: <200201291701.g0TH1a318829@pacific.somerset.sps.mot.com>
+From: Edward Swarthout <Ed.Swarthout@Motorola.com>
+To: hobold@Informatik.Uni-Bremen.DE
+Cc: christopher.murtagh@mcgill.ca, linuxppc-dev@lists.linuxppc.org,
+	yellowdog-devel@lists.yellowdoglinux.com
+In-reply-to: <8xn0yxyzez.fsf@s61.informatik.uni-bremen.de> (message from
+	Holger Bettag on 29 Jan 2002 16:01:08 +0100)
+Subject: Re: Support for new Dual G4 1 Gig machines?
+References: <Pine.LNX.4.33.0201290949451.12240-100000@blues.wcg.mcgill.ca> <8xn0yxyzez.fsf@s61.informatik.uni-bremen.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jan 29, 2002 at 04:08:43PM +0000, Leigh Brown wrote:
->
-> It works for me.  The comment needs to be changed to say it can't be a
-> module.  I've attached the version I came up with, mainly because I went
-> to some trouble to do it.  Differences:
->
-> 2. Remove #ifdef __KERNEL__ from header file for use space utility
+Holger wrote:
+> 4 additional DBATs and 4 additional IBATs. I am not sure if those
+> require initialization at early startup to not interfere with later
+> operation.
 
-This encourages user applications to include kernel header files, which has
-been deemed ungood. I believe there should be many lengthy threads on the
-subject in the lkml archives, but more practically speaking Paul has said he'd
-be perfectly happy if all kernel headers were completely protected from user
-space.
+They are not used until enabled in HID0.
 
-> 4. Only create entry if residual size > 0 'coz what you can't see won't
->    hurt you + eliminate chance of people wondering why they are getting an
->    error trying to read it.
+See HID0[HIGH_BAT_EN] on page 49 of
+  http://e-www.motorola.com/brdata/PDFDB/docs/MPC7450TS.pdf
 
-I don't like that, because it leaves you wondering if you compiled in residual
-support at all... I'd much rather have it be 0 length.
+An debug hint for early users:
 
--Hollis
+The 7455 uses bit 8 for HIGH_BAT_EN.  On the 7400/7410, bit 8 is DOZE
+Enable and on the 7450 it is ignored.  So, code ported from the 7400
+which happens to set bit 8 will work fine on the 7450 but cause great
+grief on the 7455.  Random translations whose side effects don't get
+detected until much later tend to make system debug difficult...
+
+Ed.Swarthout@Motorola.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
