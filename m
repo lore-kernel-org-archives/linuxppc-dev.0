@@ -1,17 +1,16 @@
-Return-Path: <magnus.damm@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.202])
-	by ozlabs.org (Postfix) with ESMTP id 61C372BEA0
-	for <linuxppc-dev@ozlabs.org>; Sun, 12 Dec 2004 01:54:50 +1100 (EST)
-Received: by wproxy.gmail.com with SMTP id 49so259888wri
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Dec 2004 06:54:48 -0800 (PST)
-Message-ID: <aec7e5c304121106482fcdba62@mail.gmail.com>
-Date: Sat, 11 Dec 2004 15:48:07 +0100
-From: Magnus Damm <magnus.damm@gmail.com>
-To: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <bunk@stusta.de>
+Received: from mailout.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
+	by ozlabs.org (Postfix) with SMTP id 431CB2BE83
+	for <linuxppc-dev@ozlabs.org>; Sun, 12 Dec 2004 15:11:06 +1100 (EST)
+Date: Sun, 12 Dec 2004 03:10:56 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
+	paulus@samba.org, linuxppc-dev@ozlabs.org, jdike@karaya.com,
+	user-mode-linux-devel@lists.sourceforge.net, dhowells@redhat.com
+Message-ID: <20041212021056.GL22324@stusta.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----=_Part_164_2615098.1102776487641"
-Subject: [PATCH] drivers/ide/ppc/mpc8xx.c - volatile fix
-Reply-To: Magnus Damm <magnus.damm@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Subject: [2.6 patch] (mostly i386) mm cleanup
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,36 +20,126 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_164_2615098.1102776487641
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+The patch below contains the following fixes:
+- arch/i386/mm/boot_ioremap.c: make a variable static:
+- frv/ppc highmem.c: remove stale kmap_init prototypes
+- arch/um/kernel/mem.c: make kmap_init static
+- arch/i386/mm/init.c: make five functions static.
 
-Hello,
 
-I fixed this in a local tree for a customer half a year ago (mvl-3.1)
-and forgot to report it to the lists. Now I came across it in vanilla
-2.5.10-rc3. I have not tested the fix but it is pretty obvious that
-access with a non-volatile pointer to hardware is bad, at least with
-gcc-3 or above.
+diffstat output:
+ arch/i386/mm/boot_ioremap.c |    4 ++--
+ arch/i386/mm/init.c         |   10 +++++-----
+ arch/um/kernel/mem.c        |    2 +-
+ include/asm-frv/highmem.h   |    2 --
+ include/asm-i386/highmem.h  |    2 --
+ include/asm-ppc/highmem.h   |    2 --
+ 6 files changed, 8 insertions(+), 14 deletions(-)
 
-Please apply. Or ignore if already fixed. =)
 
-Thanks.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-/ magnus (needs CC)
-
-------=_Part_164_2615098.1102776487641
-Content-Type: application/octet-stream;
-	name="linux-2.6.9-mpc8xx-volatile.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="linux-2.6.9-mpc8xx-volatile.patch"
-
-LS0tIGxpbnV4LTIuNi45L2RyaXZlcnMvaWRlL3BwYy9tcGM4eHguYwkyMDA0LTEyLTExIDEzOjA1
-OjA5LjAwMDAwMDAwMCArMDEwMAorKysgbGludXgtMi42LjktbXBjOHh4LXZvbGF0aWxlL2RyaXZl
-cnMvaWRlL3BwYy9tcGM4eHguYwkyMDA0LTEyLTExIDE1OjQ5OjE2LjAwMDAwMDAwMCArMDEwMApA
-QCAtMTcyLDcgKzE3Miw3IEBACiAJdm9sYXRpbGUgcGNtY2lhX3dpbl90ICp3aW47CiAJdm9sYXRp
-bGUgcGNtY29uZjh4eF90ICpwY21wOwogCi0JdWludCAqcGdjcng7CisJdm9sYXRpbGUgdWludCAq
-cGdjcng7CiAJdTMyIHBjbWNpYV9waHlfYmFzZTsKIAl1MzIgcGNtY2lhX3BoeV9lbmQ7CiAJc3Rh
-dGljIHVuc2lnbmVkIGxvbmcgcGNtY2lhX2Jhc2UgPSAwOwo=
-------=_Part_164_2615098.1102776487641--
+--- linux-2.6.10-rc2-mm4-full/arch/i386/mm/boot_ioremap.c.old	2004-12-11 23:55:28.000000000 +0100
++++ linux-2.6.10-rc2-mm4-full/arch/i386/mm/boot_ioremap.c	2004-12-11 23:55:49.000000000 +0100
+@@ -61,8 +61,8 @@
+ /* the virtual space we're going to remap comes from this array */
+ #define BOOT_IOREMAP_PAGES 4
+ #define BOOT_IOREMAP_SIZE (BOOT_IOREMAP_PAGES*PAGE_SIZE)
+-__initdata char boot_ioremap_space[BOOT_IOREMAP_SIZE] 
+-		__attribute__ ((aligned (PAGE_SIZE)));
++static __initdata char boot_ioremap_space[BOOT_IOREMAP_SIZE] 
++		       __attribute__ ((aligned (PAGE_SIZE)));
+ 
+ /*
+  * This only applies to things which need to ioremap before paging_init()
+--- linux-2.6.10-rc2-mm4-full/include/asm-frv/highmem.h.old	2004-12-11 23:57:40.000000000 +0100
++++ linux-2.6.10-rc2-mm4-full/include/asm-frv/highmem.h	2004-12-11 23:57:51.000000000 +0100
+@@ -44,8 +44,6 @@
+ #define kmap_pte ______kmap_pte_in_TLB
+ extern pte_t *pkmap_page_table;
+ 
+-extern void kmap_init(void);
+-
+ #define flush_cache_kmaps()  do { } while (0)
+ 
+ /*
+--- linux-2.6.10-rc2-mm4-full/include/asm-ppc/highmem.h.old	2004-12-11 23:58:00.000000000 +0100
++++ linux-2.6.10-rc2-mm4-full/include/asm-ppc/highmem.h	2004-12-11 23:58:03.000000000 +0100
+@@ -35,8 +35,6 @@
+ extern pgprot_t kmap_prot;
+ extern pte_t *pkmap_page_table;
+ 
+-extern void kmap_init(void) __init;
+-
+ /*
+  * Right now we initialize only a single pte table. It can be extended
+  * easily, subsequent pte tables have to be allocated in one physical
+--- linux-2.6.10-rc2-mm4-full/arch/um/kernel/mem.c.old	2004-12-11 23:58:14.000000000 +0100
++++ linux-2.6.10-rc2-mm4-full/arch/um/kernel/mem.c	2004-12-11 23:58:21.000000000 +0100
+@@ -141,7 +141,7 @@
+ 	pte_offset_kernel(pmd_offset(pml4_pgd_offset(pml4_offset_k(vaddr), \
+ 						     vaddr), (vaddr)), (vaddr))
+ 
+-void __init kmap_init(void)
++static void __init kmap_init(void)
+ {
+ 	unsigned long kmap_vstart;
+ 
+--- linux-2.6.10-rc2-mm4-full/include/asm-i386/highmem.h.old	2004-12-11 23:58:54.000000000 +0100
++++ linux-2.6.10-rc2-mm4-full/include/asm-i386/highmem.h	2004-12-11 23:58:57.000000000 +0100
+@@ -33,8 +33,6 @@
+ extern pgprot_t kmap_prot;
+ extern pte_t *pkmap_page_table;
+ 
+-extern void kmap_init(void);
+-
+ /*
+  * Right now we initialize only a single pte table. It can be extended
+  * easily, subsequent pte tables have to be allocated in one physical
+--- linux-2.6.10-rc2-mm4-full/arch/i386/mm/init.c.old	2004-12-11 23:58:29.000000000 +0100
++++ linux-2.6.10-rc2-mm4-full/arch/i386/mm/init.c	2004-12-12 00:15:07.000000000 +0100
+@@ -254,7 +254,7 @@
+ #define kmap_get_fixmap_pte(vaddr)					\
+ 	pte_offset_kernel(pmd_offset(pml4_pgd_offset(pml4_offset_k(vaddr), vaddr), (vaddr)), (vaddr))
+ 
+-void __init kmap_init(void)
++static void __init kmap_init(void)
+ {
+ 	unsigned long kmap_vstart;
+ 
+@@ -265,7 +265,7 @@
+ 	kmap_prot = PAGE_KERNEL;
+ }
+ 
+-void __init permanent_kmaps_init(pgd_t *pgd_base)
++static void __init permanent_kmaps_init(pgd_t *pgd_base)
+ {
+ 	pgd_t *pgd;
+ 	pmd_t *pmd;
+@@ -294,7 +294,7 @@
+ }
+ 
+ #ifndef CONFIG_DISCONTIGMEM
+-void __init set_highmem_pages_init(int bad_ppro) 
++static void __init set_highmem_pages_init(int bad_ppro) 
+ {
+ 	int pfn;
+ 	for (pfn = highstart_pfn; pfn < highend_pfn; pfn++)
+@@ -408,7 +408,7 @@
+ }
+ 
+ #ifndef CONFIG_DISCONTIGMEM
+-void __init zone_sizes_init(void)
++static void __init zone_sizes_init(void)
+ {
+ 	unsigned long zones_size[MAX_NR_ZONES] = {0, 0, 0};
+ 	unsigned int max_dma, high, low;
+@@ -545,7 +545,7 @@
+  * but fortunately the switch to using exceptions got rid of all that.
+  */
+ 
+-void __init test_wp_bit(void)
++static void __init test_wp_bit(void)
+ {
+ 	printk("Checking if this processor honours the WP bit even in supervisor mode... ");
+ 
