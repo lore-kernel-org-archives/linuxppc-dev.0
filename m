@@ -1,29 +1,73 @@
-From: "Navin Boppuri" <nboppuri@myiagent.com>
-To: "Kirk Haderlie" <khaderlie@vividimage.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: FADS 823
-Date: Thu, 15 Jun 2000 18:22:03 +0100
-Message-ID: <NEBBLLEGJMLHPJEFEOKPCEBPCAAA.nboppuri@myiagent.com>
+From: hugh.mcdonald@nokia.com
+Message-ID: <4FC68B779807D31191B10008C7731C4D579921@meeis01nok>
+To: Ruedi.Hofer@ascom.ch
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: SCC used for WAN connection
+Date: Fri, 16 Jun 2000 02:21:16 +0300
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <319E391E2049D311843500609457383D07FC57@exchange.vividimage.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Kirk,
+On 30/5/00 Ruedi Hofer wrote,
+>
+>I'd like to use one of the currently unused SCC's as WAN interface.
+>My ultimate dream is to run PPP or Frame Relay at a speed of
+>2Mb/s on it.
+>......
 
-I followed all the instructions on the web site correctly. I installed
-patches for kernel and 8xxrom. I successfully compiled the kernel modules.
-All the files in the 8xxrom compile almost correctly expect for the serial.o
-file which gives me an error in one of its include files, the commproc.h
- error! Undefined configuration). When I scan the commproc.h file, I
-understand that error shows up when CONFIG_SCC1_ENET or CONFIG_SCC2_ENET are
-not defined. But I do the MP8XX CPM configuration during the kernel
-configuration and set the SCC2 for ethernet which should define this
-variable. I dont understand how this can be wroing?
+Hi Ruedi,
+    I too am hoping to one day run one SCC on an MBX860 board as a 2M WAN
+port. My general plan was to run the SCC in HDLC synchronous mode and use
+the PPP protocol on top of this.  From my quick investigation I found that
+in the LinuxPPc /kernel/drivers/char area there some files synclink.c
+(rewrite of serial.c) and n_hdlc.c (rewrite of ppp.c). Together they form a
+Linux Device Driver & line disipline for a synchrouous PPP link.
+Unfortunately the synclink.c driver is dedicated to a PCI serial card
+produced by MicroGate.
+   What is needed is a new version of 8xx_io/uart.c that sets up and drives
+the SCC as a synchronous serial port. This may then be useable with the sync
+PPP line disipline from the above driver.
+  I have started playing with it but only when I have some spare time....
+and I dont seem to get much of that these days :-(
 
-Navin
+   Please let me know if you get any info from other people or find out any
+other possible solutions....
+
+Regards
+   Hugh McDonald
+   hugh.mcdonald@nokia.com
+
+>-----Original Message-----
+>From: EXT Ruedi.Hofer@ascom.ch [mailto:Ruedi.Hofer@ascom.ch]
+>Sent: Tuesday, May 30, 2000 1:51 AM
+>To: linuxppc-embedded@lists.linuxppc.org
+>Cc: kernel@linux01.hasler.ascom.ch
+>Subject: SCC used for WAN connection
+>
+>
+>Hi,
+>
+>I'd like to use one of the currently unused SCC's as WAN interface.
+>My ultimate dream is to run PPP or Frame Relay at a speed of
+>2Mb/s on it.
+>
+>Is someone out there, who has
+>1. seen something like this?
+>2. written some kernel modules which support this functionality?
+>3. seen links containing related information?
+>4. ideas on how to do this?
+>
+>If you were doin' something like that, would you first buy a
+>WAN Interface
+>card for the PC? (eg. Sangoma, for tests?)
+>5. Has someone done tests with such a WAN card?
+>
+>Thanx for any information,
+>
+>Ruedi
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
