@@ -1,31 +1,52 @@
-From: Josh Huber <huberj@WPI.EDU>
+Date: Tue, 30 Nov 1999 15:06:17 -0700 (MST)
+From: Stephen Edie <sedie@terraplex.com>
+To: linuxppc-dev@lists.linuxppc.org, yellowdog-devel@lists.yellowdoglinux.com
+Subject: Frame buffer / mmap() weirdness
+Message-ID: <Pine.LNX.4.10.9911301456090.6524-100000@newhope.terraplex.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14404.17703.247016.528826@cpu.wpi.edu>
-Date: Tue, 30 Nov 1999 16:44:07 -0500 (EST)
-To: linuxppc-dev@lists.linuxppc.org
-Subject: wallstreet power usage...
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hey, for those who know, how could I extend the battery life for my WallStreet when it's both sleeping, and when it's awake...
+Hello,
 
-does the /proc/sys/kernel/powersave-nap setting do anything for the wallstreet series machines?
+I have been noticing some strange behavior while working with Linux frame
+buffer devices on PPC.  Perhaps I am just doing something stupid.  I open
+the frame buffer using:
 
-With Batmon, it seems that the power usage is like:
-powersave-nap      current
-0                  -1350
-1                  -1550
+fbdev_handle = open("/dev/fb0", O_RDWR);
 
-the number varies, of course...but they appear to be about 200 off from eachother.
+I can draw to the frame buffer using:
 
-Doesn't this seem a little backwards to any of you? It seems backwards to what Paul is doing for the 3400 in the pwrctl script.
+lseek(fbdev_handle, 0, SEEK_SET);
+write(fbdev_handle, pixmap, size);
 
-Any other tips?  Is it possible to turn off hardware like: ethernet, sound, video (I know this is a little buggy...for my machine anyway)?
+This part works fine.  What causes problems is attempting to memory map
+the frame buffer using:
 
-I ask, because while the machine is sleeping, in about 6 hours 25% of the battery seems to be used, which is far far more than used when sleeping in macos.
+address = mmap(0, screen.height * screen.stride * screen.bpp / 8,
+               PROT_READ | PROT_WRITE, MAP_SHARED, fbdev_handle, 0);
 
-Josh
+When doing this, address[0] points outside of the video memory and
+strangely enough, address[512] points to the first pixel in memory!  So if
+I do the following, everything works as expected:
+
+address = (char *)(mmap(0, screen.height * screen.stride * screen.bpp / 8
+                        + 512, PROT_READ | PROT_WRITE, MAP_SHARED,
+                        fbdev_handle, 0)) + 512;
+
+I don't think this is right!  Is this a kernel bug in the frame buffer
+driver code?  (This is being tested using OFFB by the way)  Is there
+something weird going on here with page alignment or something?
+
+Thanks,
+Stephen
+
+Terra Soft Solutions, Inc.
+   Yellow Dog Linux
+   "The Ultimate Companion for a Dedicated Server"
+   http://www.yellowdoglinux.com/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
