@@ -1,9 +1,10 @@
-Message-ID: <3BD912A4.A623F870@imc-berlin.de>
-Date: Fri, 26 Oct 2001 09:37:08 +0200
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3BD9158B.D3067C74@imc-berlin.de>
+Date: Fri, 26 Oct 2001 09:49:31 +0200
 From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
 To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: USB and MPC855T/860T ???
+Subject: CAN and MPC855T/860T
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
@@ -11,19 +12,17 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 Hi there,
 
-I'd love to put some USB functionality to my custom MPC855T board.
+I need a CAN controller on my custom MPC855T board.
 
-I noticed USB support for USB devices. But which USB controllers are
-actually supported? Which controller would be the best?
+I know that TQ Components integrated two intel 82527 on their TQMs /
+STK8xxL.
+But I couldn't find any sources supporting them by now.
+Could you please give me some pointers to driver source code.
 
-I guess I'll want to use the MPC as a USB host and as a USB slave - well
-not at the same time I suppose.
-Is that possible? Or does Linux include support only for USB host
-controllers?
+BTW I'd actually prefer Phillips SJA1000 due to some nice features.
+Intel's chip is quiet ancient by now anyway.
 
-TIA!
-
-Cheers,
+Thanks for any reply.
 
 Steven
 
