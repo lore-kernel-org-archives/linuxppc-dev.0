@@ -1,86 +1,61 @@
-Date: Wed, 28 Mar 2001 09:37:24 +0100
-Subject: Re: Sound stoppage: TRIAL code to re-start DEAD dma
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Takashi Oe <toe@unlserve.unl.edu>
-Cc: "Michael R. Zucca" <mrz5149@acm.org>, phandel@cise.ufl.edu,
-	"linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010328083727.6F528DB9E9@atlas.valhalla.net>
+Date: Wed, 28 Mar 2001 12:09:12 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: Takashi Oe <toe@unlserve.unl.edu>,
+	"Michael R. Zucca" <mrz5149@acm.org>, <phandel@cise.ufl.edu>,
+	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Sound stoppage
+In-Reply-To: <20010328070644.8D1F9DB9D3@atlas.valhalla.net>
+Message-ID: <Pine.LNX.4.31.0103281106470.21059-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Wed, 28 Mar 2001, Iain Sandoe wrote:
 
-attached is a replacement for the dmasound_awacs tx_irq routine to test out
-Takashi's idea of clearing the DEAD status and then re-starting dma.
+>
+> On Wed, Mar 28, 2001, Takashi Oe wrote:
+>
+> > I have no idea if how AWACS' tx dbdma behaves, but it may be necessary to
+> > make the write to control register multi-step or something, i.e., clear
+> > RUN [in order to clear DEAD bit] and wait until RUN bit is cleared by hw,
+> > then set RUN|WAKE..
+>
+> OK... that is different (in detail) from what was tried before - I think
+> I'll ask for a volunteer to test this...  Peter?
 
-it is *not* a diff - you will have to replace the routine by cut-and-paste
+Thats more or less what i first tried (with no luck...)
 
-(I've done it this way because my current tree has lots of other changes
-which aren't relevant to this test).
+> >> If it would, then we could save all this hassle completely...
+> >>
+> >> BTW: I don't *think* it does because one of my testers tried a similar
+> >> method to the one you proposed and said it chopped up/repeated sound.
+>
+> > Hmm, I think it has to be either "chopped up" or "repeated" not both..  As
+> > far as dbdma is concerned, those two are quite different effects.
+>
+> Well, with fragments of a few tens of ms - it's all highly subjective.
 
-I checked it builds - but can't test 'cos I don't have a PowerComputing
-machine.
+With any ide activity the dbdma commands can fail repeatedly for a looong time
+in my machine (some times up to 10secs).....
 
-Please try it with big-ish fragments - so that there is a chance of hearing
-whether resumed blocks repeat sound.
+> I see it like this:
+>
+> The sound is chopped up (since some form of blocking has caused the problem
+> in the first place)  and then the "fix" causes part of the sound to be
+> repeated - I think this is the origin of the apparently conflicting report.
 
-ciao,
-Iain.
+If the failed command is ignored then we have the "chopped up" effect (a
+3min song finishes in less than 30secs this way under heavy ide activity..)
+The "repeated" effect shows up if the packet is resend to dbdma.
 
-=====
+btw about the sound related macos patch for some powercomputing machines
+might have nothing to do with this problem. Sound works fine in macos in my
+PowerWave without it, so macos already handles it right.
 
-static void
-pmac_awacs_tx_intr(int irq, void *devid, struct pt_regs *regs)
-{
- int i = write_sq.front;
- int stat;
- volatile struct dbdma_cmd *cp;
+  Kostas
 
- while (write_sq.active > 0) {
-  cp = &awacs_tx_cmds[i];
-  stat = ld_le16(&cp->xfer_status);
-  if ( ((stat & ACTIVE) == 0) ) {
-   if (stat & DEAD) {
-    int count = 300 ; /* > 2 samples at slowest AWACS rate */
-    out_le32(&awacs_txdma->control, (RUN) << 16);
-    st_le16(&cp->xfer_status, 0); /* reset the xfer status */
-
-    /* this is a bit nasty - we could hold IRQs off for up to
-       300 us
-    */
-    while ( (in_le32(&awacs_txdma->status) & RUN) && count--)
-     udelay(1) ;
-/* debug */
-if (count <= 0)
- printk("dmasound_pmac: tx IRQ: timed out trying to restart DEAD dma\n") ;
-
-    /* may as well try anyway - I guess all bets are off now */
-    out_le32(&awacs_txdma->control, ((RUN|WAKE) << 16) + (RUN|WAKE));
-
-    return; /* we want to be as quick out of here as possible */
-   } else {
-    break; /* this frame is still going */
-   }
-  }
-  --write_sq.count;
-  --write_sq.active;
-  if (++i >= write_sq.max_count)
-   i = 0;
- }
-
- if (i != write_sq.front)
-  WAKE_UP(write_sq.action_queue);
- write_sq.front = i;
-
- PMacPlay();
-
- if (!write_sq.active)
-  WAKE_UP(write_sq.sync_queue);
-}
-
-=========
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
