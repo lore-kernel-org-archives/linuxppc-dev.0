@@ -1,45 +1,67 @@
-Date: Mon, 2 Aug 2004 08:43:12 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Giuliano Pochini <pochini@shiny.it>
+Message-ID: <410E85EE.8050707@mvista.com>
+Date: Mon, 02 Aug 2004 11:20:30 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: Adrian Cox <adrian@humboldt.co.uk>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH][PPC32] Makefile cleanups and gcc-3.4+binutils-2.14 c
-Message-ID: <20040802154312.GA4743@smtp.west.cox.net>
-References: <20040728220733.GA16468@smtp.west.cox.net> <XFMail.20040729100549.pochini@shiny.it> <20040729144347.GE16468@smtp.west.cox.net> <20040730205901.4d4181f4.pochini@shiny.it> <20040730190731.GQ16468@smtp.west.cox.net> <20040730224828.0f06e37a.pochini@shiny.it> <20040730210318.GS16468@smtp.west.cox.net> <20040731145303.26170308.pochini@shiny.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040731145303.26170308.pochini@shiny.it>
+Subject: Re: [PATCH] Workaround for 745x data corruption bug
+References: <1091291276.987.57.camel@localhost>
+In-Reply-To: <1091291276.987.57.camel@localhost>
+Content-Type: multipart/mixed;
+ boundary="------------090609080203030905040801"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Jul 31, 2004 at 02:53:03PM +0200, Giuliano Pochini wrote:
+This is a multi-part message in MIME format.
+--------------090609080203030905040801
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> On Fri, 30 Jul 2004 14:03:18 -0700
-> Tom Rini <trini@kernel.crashing.org> wrote:
+Adrian Cox wrote:
+
+>Recently released errata documents show a new bug in all 745x family
+>processors. This can cause data corruption when memory is mapped
+>non-coherent and one of these conditions is true:
+>1) L2 hardware prefetch is enabled (as it is in Linux)
+>2) instructions and data are fetched from the same or adjacent cache
+>lines.
 >
-> >
-> > On Fri, Jul 30, 2004 at 10:48:28PM +0200, Giuliano Pochini wrote:
-> >
-> > [snip]
-> > > gcc 3.3.3 + binutils 2.15 fails quite soon here:
-> > >
-> > >   AS      arch/ppc/kernel/l2cr.o
-> > > arch/ppc/kernel/l2cr.S: Assembler messages:
-> > > arch/ppc/kernel/l2cr.S:110: Error: Unrecognized opcode: `dssall'
-> > > arch/ppc/kernel/l2cr.S:278: Error: Unrecognized opcode: `dssall'
-> > > arch/ppc/kernel/l2cr.S:387: Error: Unrecognized opcode: `dssall'
-> > > make[1]: *** [arch/ppc/kernel/l2cr.o] Error 1
-> >
-> > Can you try with the following ?
-> > [...]
+>The attached patch adds a workaround, by setting CPU_FTR_NEED_COHERENT
+>on all 745x processors.
 >
-> It doesn't apply to plain 2.6.7. What version I have to use ?
 
-That was against then-current 2.6 bk, but might have been OK vs -rc2.
-It is also part of now-current 2.6 bk, so if you can get that..
+Well that sucks (the bug, not the patch :).  Many people like to turn
+off coherency when using Marvell host bridges b/c they struggle
+performance-wise with coherency on (at least on some versions).
 
+One change to the patch, though.  According to the 7447/7457 errata doc,
+rev 1.2 doesn't have the bug.  The attached patch accounts for that.
+
+Mark
 --
-Tom Rini
-http://gate.crashing.org/~trini/
+
+--------------090609080203030905040801
+Content-Type: text/plain;
+ name="coherent2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="coherent2.patch"
+
+===== arch/ppc/kernel/cputable.c 1.25 vs edited =====
+--- 1.25/arch/ppc/kernel/cputable.c	2004-08-01 17:30:29 -07:00
++++ edited/arch/ppc/kernel/cputable.c	2004-08-02 11:12:37 -07:00
+@@ -352,7 +352,7 @@
+     	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_NAP |
+ 	CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+ 	CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
+-	CPU_FTR_HAS_HIGH_BATS | CPU_FTR_NEED_COHERENT,
++	CPU_FTR_HAS_HIGH_BATS,
+ 	COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ 	32, 32,
+ 	__setup_cpu_745x
+
+--------------090609080203030905040801--
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
