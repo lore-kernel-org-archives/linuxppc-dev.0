@@ -1,9 +1,8 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0A5D@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'Steven Scholz'" <steven.scholz@imc-berlin.de>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: MPC823 and LCD?
-Date: Tue, 30 Sep 2003 08:52:56 -0400
+From: =?iso-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: 8260 FCC enet driver problem
+Date: Tue, 30 Sep 2003 17:20:35 +0200
+Message-ID: <000001c38766$68b14d90$5201a8c0@GEG2400>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,31 +10,37 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-It should work on all 823E boards.  Specific support for your LCD may be
-required.
+Hi,
 
------Original Message-----
-From: Steven Scholz [mailto:steven.scholz@imc-berlin.de]
-Sent: Tuesday, September 30, 2003 7:18 AM
-To: Steven Blakeslee
-Cc: Linuxppc-Embedded
-Subject: Re: MPC823 and LCD?
+I use a 2.4.18 Linux kernel on my custom 8260 board with 3 FCC ports.
+These 3 ports work fine at 100Mbs half or full duplex.
 
+I connect 2 boards on the first port via a 10Mbs hub.
+The ports auto-negotiate and fall into 10Mbs half duplex mode.
 
-Steven,
+A board sends short udp messages as fast as possible to the other one
+and vice-versa.
 
->> 1. Has someone a working driver for linux > 2.4.20?
-> check out drivers/video/rpxfb.c
+I get the following message and the two ports are locked forever :
 
-Thanks for that hint.
-Is this driver in any way special to RPX boards?
-Or could we make it available to other MPC823 boards as well?
+> NETDEV WATCHDOG: eth0: transmit timed out
+> eth0: transmit timed out.
+>  Ring data dump: cur_tx c0164220 (full) cur_rx c01641e8.
+>  Tx @base c0164208 :
+> 9c00 0048 018d1ee2
+> 9c00 0048 018d15e2
+> 9c00 0048 018d1ae2
 
-IIRC the lcd823.c driver in DENX kernel is quite generic.
+The PHY devices seem to be well configured.
 
-Thanks,
+Does anyone know what are the conditions to fall into this trap ?
+Is it a PHY problem, a driver configuration problem or something else ?
+Why does the problem not disappear when the traffic is interrupted ?
+Only a board reset can reactivate the ports.
 
-Steven
+Thank you for your help.
+
+Gérard
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
