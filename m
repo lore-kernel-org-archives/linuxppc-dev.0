@@ -1,138 +1,62 @@
-Subject: RE: CONFIG_SERIAL_TEXT_DEBUG causes exception
-From: "Gary D. Thomas" <gary.thomas@mind.be>
-To: "jwalden@digitalatlantic.com" <jwalden@digitalatlantic.com>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <200303200308.VAA21457@lists.linuxppc.org>
-References: <200303200308.VAA21457@lists.linuxppc.org>
+Subject: Re: kgdb and console output
+From: Ibon Gotxi Garcia <igotxi@jazzfree.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <20030314172536.GF6421@ip68-0-152-218.tc.ph.cox.net>
+References: <1047642589.367.19.camel@muse>
+	 <20030314172536.GF6421@ip68-0-152-218.tc.ph.cox.net>
 Content-Type: text/plain
-Date: 20 Mar 2003 07:01:36 -0700
-Message-Id: <1048168897.9579.9313.camel@hermes.chez-thomas.org>
+Message-Id: <1048172718.4458.15.camel@muse>
 Mime-Version: 1.0
+Date: 20 Mar 2003 15:05:18 +0000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 2003-03-19 at 20:05, jwalden@digitalatlantic.com wrote:
+On Fri, 2003-03-14 at 17:25, Tom Rini wrote:
+> On Fri, Mar 14, 2003 at 11:49:50AM +0000, Ibon Gotxi Garcia wrote:
 >
-> Thanks for the info -
->
-> It doesn't look to me like the 4xx has a BAT -
-> what would I use instead?
->
+> [snip]
+> > INIT: INIT: NIT: IT: T: : version 2.78 bootingersion 2.78 bootingrsion
+> > 2.78 bootingsion 2.78 bootingon 2.78 booting
+> >
 
-One way would be to use a locked TLB.  I'm sure there are others.
+>
+> It's related to the 'console' support inside of the serial driver / kgdb
+> stub.  The best way, IMHO, around this is to use the 'kgdb_demux'
+> script.  I don't have the URL handy, but google knows.
 
-> Jerry Walden
+I have found it in
+http://linux.junsun.net/porting-howto/src/kdmx-1.02.tar.gz
+
+but I'm still unable of making it work. I seems fine when the kernel is
+loading, but it begins to do funny thing when we move to userland.
+
+I think the hole point is character scape: GDB packets are
+$data#checksum, so when some output (no debug output, just normal one)
+is made to the console having '$', '#' or even '+' and '-', the kdmx
+script goes mental.
+
+I'm thinking in two possible solutions:
+
+1.- Wait till kgdb has LAN support (gdb packets over udp, instead of
+over the serial port).
+2.- Patch the console driver (no idea how) to avoid printing '$' or '#'.
+Probably a terrible hack, but perhaps useful for development.
+
+Any idea about this?
+
+
+Cheers.
+Ibon.
+
 >
-> -----Original Message-----
-> From: Gary D. Thomas [mailto:gary.thomas@mind.be]
-> Sent: Wednesday, March 19, 2003 4:19 PM
-> To: Jerry Walden
-> Cc: linuxppc embedded
-> Subject: RE: CONFIG_SERIAL_TEXT_DEBUG causes exception
->
->
-> On Wed, 2003-03-19 at 14:04, Jerry Walden wrote:
-> > What other embedded board (hopefully a ppc) would you suggest -
-> > I don't see any special provisions in the kernel for a custom
-> > mapping of these registers based on a configuration option for any
-> > specific board - this appears to be generic code that meant for
-> > all platforms - I believe what you say regarding what I have to
-> > do:
-> >
-> > 1) I can't find sample code that you refer to.
-> > 2) I am confused as to why this code is in the kernel in the way it is
-> >    because it seems to me that most embedded processors have an MMU,
-> >    so why the comment in that section of code that says "assuming the
-> >    firmware setup the board properly...."
-> >
->
-> As soon as the kernel starts, there are *no* mappings, other than
-> RAM, unless explicitly set up.
->
-> Try looking at arch/ppc/platforms/pumaA.c (in the 2_4_devel kernel).
-> This explicit mapping  happens in the "platform_init" function,
-> near the end.
->
-> n.b. it's polite to copy such dialogue to the mailing list so that
-> everyone else can benefit.  If you want (or need) private help, you
-> can arrange for it.
->
-> > Thanks Much for Your Help
-> >
-> > Jerry Walden
-> >
-> > -----Original Message-----
-> > From: owner-linuxppc-embedded@lists.linuxppc.org
-> > [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Gary D.
-> > Thomas
-> > Sent: Wednesday, March 19, 2003 12:54 PM
-> > To: jwalden@digitalatlantic.com
-> > Cc: linuxppc embedded
-> > Subject: Re: CONFIG_SERIAL_TEXT_DEBUG causes exception
-> >
-> >
-> >
-> > On Wed, 2003-03-19 at 10:47, Jerry Walden wrote:
-> > >
-> > > Hello:
-> > >
-> > > I have a custom PPC405GPr board that I have successfully ported u-boot to.
-> > >
-> > > I am now at the stage of trying to bring Linux up on the board.
-> > >
-> > > I have CONFIG_SERIAL_TEXT_DEBUG defined for the kernel that I am trying to
-> > > bring up.  I would like to have this option so I can trace through the
-> > > kernel.
-> > > The comments in ppc4xx_setup.c in the function serial_putc indicate that
-> > as
-> > > long
-> > > as the firmware (in my case u-boot) has been initialized properly, then
-> > this
-> > > function
-> > > should work.  I have verified the addresses that the function is trying to
-> > > write to
-> > > and they are correct.  However, when serial_putc calls the first readb, I
-> > > get an
-> > > exception.
-> > >
-> > > Can someone please provide some pointers as to what might be wrong?
-> >
-> > You need to make sure that the serial registers are mapped at
-> > that point.  I don't know the details of your U-boot implementation,
-> > but the kernel will most certainly not have this region mapped
-> > unless you make it happen explicitly.  Look at some other embedded
-> > boards and you'll find code to set this up, typically using a BAT or
-> > some other special mapping.
-> >
-> > --
-> > .--------------------------------------------------------.
-> > |       Mind: Embedded Linux and eCos Development        |
-> > |--------------------------------------------------------|
-> > | Gary Thomas              email:  gary.thomas@mind.be   |
-> > | Mind ( http://mind.be )  tel:    +1 (970) 229-1963     |
-> > | gpg: http://www.chez-thomas.org/gary/gpg_key.asc       |
-> > '--------------------------------------------------------'
-> >
-> >
-> >
 > --
-> --------------------------------------------------------.
-> |       Mind: Embedded Linux and eCos Development        |
-> |--------------------------------------------------------|
-> | Gary Thomas              email:  gary.thomas@mind.be   |
-> | Mind ( http://mind.be )  tel:    +1 (970) 229-1963     |
-> | gpg: http://www.chez-thomas.org/gary/gpg_key.asc       |
-> '--------------------------------------------------------'
+> Tom Rini
+> http://gate.crashing.org/~trini/
 >
 --
-.--------------------------------------------------------.
-|       Mind: Embedded Linux and eCos Development        |
-|--------------------------------------------------------|
-| Gary Thomas              email:  gary.thomas@mind.be   |
-| Mind ( http://mind.be )  tel:    +1 (970) 229-1963     |
-| gpg: http://www.chez-thomas.org/gary/gpg_key.asc       |
-'--------------------------------------------------------'
+Ibon Gotxi Garcia <igotxi@jazzfree.com>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
