@@ -1,55 +1,45 @@
-To: Dave Lawrence <dgl@integrinautics.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC5200LITE U-boot/Linux howto 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 10 Nov 2003 07:43:14 PST."
-             <3FAFB212.CFB06600@integrinautics.com>
-Date: Mon, 10 Nov 2003 17:12:45 +0100
-Message-Id: <20031110161250.981BAC5F59@atlas.denx.de>
+Message-ID: <159C486347C8D3119B1D005004A4694002CD3A60@OLIVE>
+From: Steven Rothweiler <Stevenr@raritan.com>
+To: Chris Simmonds <chris@2net.co.uk>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: USB for mpc8270/80
+Date: Mon, 10 Nov 2003 11:24:59 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Dave,
+Chris,
 
-in message <3FAFB212.CFB06600@integrinautics.com> you wrote:
->
-...
-> The linuxppc_2_4_mpc5200 kernel source directory from CVS
-
-Just a minor correction: the linuxppc_2_4_mpc5200 module on  our  CVS
-server is obsolete. We just keep it because of the change logs.
-
-Please use the linuxppc_2_4_devel tree instead.  All  MGT5100/MPC5200
-relevant stuff has been merged, and actually new stuff has been added
-since.
-
-> #Linux
-> cvs -d :pserver:anonymous@www.denx.de:/cvsroot login
-> (no password)
-> cvs -z6 -d :pserver:anonymous@www.denx.de:/cvsroot co -P
-> linuxppc_2_4_mpc5200
-
-Please use instead:
-
-	cvs -d :pserver:anonymous@www.denx.de:/cvsroot login
-	cvs -z6 -d :pserver:anonymous@www.denx.de:/cvsroot co -P linuxppc_2_4_devel
-
-
-> #here endeth the lesson
-
-Thanks a lot!
-
-Best regards,
-
-Wolfgang Denk
-
+Yes, my company will have a need for this in the future.
+We have a custom MPC8270 board we'd like to use it on.
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A person with one watch knows what time it  is;  a  person  with  two
-watches is never sure.                                       Proverb
+Steven Rothweiler               Raritan Computer Inc
+Senior Embedded Engineer        400 Cottontail Lane
+mailto:stevenr@raritan.com      Somerset, NJ   08873
+732-764-8886 x1256
+
+
+> -----Original Message-----
+> From: Chris Simmonds [mailto:chris@2net.co.uk]
+> Sent: Monday, November 10, 2003 10:17 AM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Subject: USB for mpc8270/80
+>
+> Hi,
+>
+> Has anyone got a USB driver for the SCC on the mpc8270/8280? Anyone
+> interested in having one if one doesn't exist already?
+>
+> Chris.
+>
+> --
+> Chris Simmonds                        2net Limited
+> chris@2net.co.uk                      http://www.2net.co.uk/
+> Tel:   +44 (0)1962 869003             Fax:   +44 (0)870 056 7556
+> "If it's not connected, it's not effective"(tm)
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
