@@ -1,47 +1,31 @@
-Message-Id: <199904302021.WAA00338@piglet.cpu.lu>
-Date: Fri, 30 Apr 1999 22:21:02 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: mesh problem ?
-To: ralfw@gatekeeper.informatik.fh-dortmund.de
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <14119.28843.240109.664411@onyx.nowhere.net>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Message-ID: <19990430150834.G30433@cygnus.com>
+Date: Fri, 30 Apr 1999 15:08:34 -0700
+From: Richard Henderson <rth@cygnus.com>
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Cc: egcs-patches@egcs.cygnus.com, meissner@cygnus.com,
+        David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: PATCH: Fix 2 PPC/SYSV varargs problems
+References: <4.2.0.37.19990430013458.0489a950@mail.lauterbach.com> <4.2.0.37.19990430013458.0489a950@mail.lauterbach.com> <19990429194817.B20300@cygnus.com> <4.2.0.37.19990430153444.048303a0@mail.lauterbach.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4.2.0.37.19990430153444.048303a0@mail.lauterbach.com>; from Franz Sirl on Fri, Apr 30, 1999 at 03:42:26PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  28 Apr, this message from Ralf Weidemann echoed through cyberspace:
-> 
-> I have today installed a new drive, so I'm not sure if it is
-> a problem with the drive itself or maybe a mesh problem. I
-> got several system lockups until yet and the below I got while
-> I tried to fsck the disk after an ealier crash. After rebooting
-> I tried again fsck the drive and all went fine. 
-> 
-> Hmm, should I get a new drive or could it be a mesh problem ?
-> This is a wide scsi drive with an adapter if it somehow matter.
+> Can you check in this stuff in that shape?
 
-That could be a problem with the IBM drive attempting negotiation for
-SCSI parameters the MESH driver doesn't know about. If I'm reading your
-log correctly, your new drive is a 'wide' type? Did you use a
-wide-to-narrow adaptor, and terminate the upper 8 bits? 
+Done.
 
-Then, you might want to look for jumpers on the drive disabling certain
-features, like wide negotiation, Target Initiated Sync negotiation
-(that used to be my problem with an IBM drive a long time ago), and so
-on. Try disabling thes features and see if it helps.
+> And maybe the second part (the 
+> gnuplot fix) of my patch if it is OK and the testcase?
 
-Michel
+I'll look at this again later tonight or tomorrow -- despite
+the subject line, I'd missed the fact that you were trying to
+fix two separate problems.
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
 
+r~
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
