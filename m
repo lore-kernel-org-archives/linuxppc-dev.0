@@ -1,42 +1,87 @@
-Date: Fri, 19 Oct 2001 09:28:53 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Larry McVoy <lm@bitmover.com>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.linuxppc.org, tytso@thunk.org
-Subject: Re: Renames, BK, PPC, etc
-Message-ID: <20011019092853.A10163@cpe-24-221-152-185.az.sprintbbd.net>
-References: <15312.6740.808012.183783@cargo.ozlabs.ibm.com> <20011019081353.C7765@cpe-24-221-152-185.az.sprintbbd.net> <20011019081649.A17049@work.bitmover.com> <20011019083430.D7765@cpe-24-221-152-185.az.sprintbbd.net> <20011019091645.B17049@work.bitmover.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011019091645.B17049@work.bitmover.com>
+Date: Fri, 19 Oct 2001 10:24:14 -0700
+From: Till Straumann <Till.Straumann@TU-Berlin.de>
+Subject: Re: IRDA/IRCOMM on a TiBook patch (UPDATED)
+To: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+Cc: linuxppc-dev@lists.linuxppc.org, linux-irda@pasta.cs.uit.no
+Message-id: <3BD061BE.680BEF25@TU-Berlin.de>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+References: <3BCC104D.B5770ADE@TU-Berlin.de> <1003453347.24371.912.camel@pismo>
+ <3BCFCA2C.CACD571B@TU-Berlin.de> <1003500642.4732.451.camel@pismo>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Oct 19, 2001 at 09:16:45AM -0700, Larry McVoy wrote:
+Michel Dänzer wrote:
+>
+> On Fri, 2001-10-19 at 08:37, Till Straumann wrote:
+> >
+> > Michel Dänzer wrote:
+> > >
+> > > On Tue, 2001-10-16 at 12:47, Till Straumann wrote:
+> > >
+> > > > I (and I believe other people as well) had problems
+> > > > setting up IRDA/IRCOMM on a TiBook / 2.4.12-benh and
+> > > > older 2.4 series kernels [on powerpc].
+> > > >
+> > > > As far as I could find out there are several problems:
+> > > >
+> > > > 1) There seems to be a timing problem when opening
+> > > >    the irda port which prevents it from being properly
+> > > >    initialized.
+> > > >
+> > > >    When I run "irattach /dev/ttyS1 -s 1", my Nokia 8890
+> > > >    is never discovered. However, when I issue a 'cat /dev/ttyS1',
+> > > >    prior to starting irattach (i.e. by opening the device
+> > > >    [and holding it open until irattach starts]),
+> > > >    things are properly initialized
+> > > >    and discovery works. Putting 'mdelay(100);' somewhere
+> > > >    in macserial.c:rs_open() does the job. However, I have
+> > > >    not yet figured out what exactly causes the problem.
+> > > >    A user space work-around involves patching irattach.c
+> > > >
+> > > > 2) There is an endianness bug. A possible solution is attached.
+> > >
+> > > Your patch seems to be missing a bit (in qos.c IIRC) though.
+> >
+> > What is it missing? Please, be a little bit more verbose :-)
+>
+> The same thing you're doing for the other files, i.e. replace param->pv.b
+> by param->pv.b.ll and param->pv.s by param->pv.s.l . The build fails for
+> that file otherwise.
+>
 
-> The question is this: if Linus & Co were to start using BK, does anyone
-> here care whether it is the current PPC maintained tree or are you willing
-> to start over?  BK is not going to let you pull from the new tree to your
-> current tree, as far as BK is concerned those are completely unrelated
-> repositories.  So you'd have to switch.
+Oops - thanks for pointing this out. I had fixed it but forgotten to
+keep
+the original version and therefore, the patch generator  missed that
+one...
 
-Well, I guess part of the question/problem is how easy is it to keep one
-of the trees up to date?  We still haven't decided what to do for 2.5
-yet (I'd like to for linux_2_4 and keep going w/ the _devel tree as a
-2_5 tree, but that's just me probably.)  If Ted's tree is reasonably up
-to date (or it'd be possible for myself/Paul to help keep it so), I
-wouldn't be opposed to trying linuxppc_2_5 as a subtree of Ted's.
+> I'm talking about net/irda/qos.c BTW.
+>
+> > > > 3) When applying 1) and 2), IRCOMM works provided that
+> > > >    /proc/sys/net/irda/max_baud_rate is clamped to 57600.
+> > > >    Apparently, there is another problem in 'macserial.c' where speeds
+> > > >    higher than 57600 are treated especially.
+> > >
+> > > Have you managed to do anything 'real' yet? I tried your patch, and it
+> > > does seem to improve things, irdadump seems to show data from my Palm,
+> > > but I haven't succeeded to synchronize yet.
+> > >
+> >
+> > Sure - I can open a modem connection to my cellphone and issue any AT
+> > command I want. However, I have to take care of all of the three issues
+> > mentioned. (I.e. use patched irattach, use patched kernel and
+> > echo 57600 > /proc/sys/net/irda/max_baud_rate).
+>
+> I have done the latter two and used cat to work around the first. I see
+> something with irdadump but none of the pilot sync tools work. I'm
+> afraid they're broken on PPC yet. :(
 
-> If you haven't been maintaining the renames all along and there is lots
-> of crud in the tree, then I can see you not caring at all.  In fact, it
-> would probably be desirable to do a reset.  Paul?  Cort?  Others?
+Hmm - I still have one of the old PalmPilot devices without irda. What
+exactly
+do you see with irdadump? (Forgive me the stupid question: you have set
+PILOT_PORT to /dev/ircomm0, right?)
 
-I don't think the crud is hurting much tho..  I'd rather keep history,
-but I'm also not opposed to change. :)
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+--Till
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
