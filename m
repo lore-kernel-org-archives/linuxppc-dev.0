@@ -1,63 +1,36 @@
-Date: Thu, 4 Mar 2004 10:18:11 +0100 (CET)
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-To: Ricardo Scop <scop@digitel.com.br>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: early return set_multicast
-In-Reply-To: <200403031601.28119.scop@digitel.com.br>
-Message-ID: <Pine.LNX.4.44.0403041013290.1901-100000@linpc003.aimsys.nl>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <00a101c401d4$26140fc0$0400a8c0@portatile>
+Reply-To: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
+From: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
+To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Subject: "mkimage" not found
+Date: Thu, 4 Mar 2004 11:33:33 +0100
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 3 Mar 2004, Ricardo Scop wrote:
+Hi,
 
-> Hi,
->
-> On Wednesday 03 March 2004 13:09, Jaap-Jan Boor wrote:
-> > Hi,
-> >
-> > does somebody know why there is an early return;
-> > statement in the set_multicast_list() function
-> > of 8260_io/fcc_enet.c (or cpm2_io/fcc_enet.c)?
-> >
->
-> [snip]
->
-> Well, probably the code after the early return is broken ;).
+I have just downloaded the new ELDK 3.0 installed and compiled for the
+EST8260 board.
 
-that's what I was afraid for yes
+With the previous ELDK2.0 I would have generated the image with the "make
+pImage" command while now I suppose the command "make uImage" must be used.
+Is this correct?
 
-> Which kernel version is that?
+Then at the end of compilation process, I have the following message:
+"mkimage" not found - U-boot Images will not be built.
+I have checked the presence of mkimage as executable file (which exist
+because prior to compile the linux tree I have generate the U-boot
+executable) and its functionality (by calling it directly without script).
+Anybody has an idea where I am wrong?
 
-all I checked (denx latest 2.4.24-pre2, bk linuxppc 2.4.26-pre1
-and kernel.org 2.4.22)
+Thanks
 
-> There used to be at least one bug
-> in the for statement (lack
-> of a dmi=dmi->next statement inside it, AFAIR).
-
-
-thanks again.
-
-Jaap-Jan
-
->
-> >
-> > thanks,
-> >
-> > Jaap-Jan
->
-> Your welcome.
->
->
-
---
-J.G.J. Boor			  Anton Philipsweg 1
-Software Engineer		  1223 KZ Hilversum
-AimSys bv              		  tel. +31 35 689 1941
-Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
+Gianfranco
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
