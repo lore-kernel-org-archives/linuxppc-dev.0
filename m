@@ -1,28 +1,28 @@
-Date: Wed, 25 Aug 1999 12:36:12 +0200
-From: Hubert Figuiere <hub@point-barre.fr>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Performa 5200
-Message-ID: <19990825123612.C2225@rhodan.businessobjects.com>
-References: <v04003a04b3e7e12ecd82@[216.81.20.86]> <19990824110602.000653@mail.mipsys.com>
-Mime-Version: 1.0
+Message-ID: <37C3EF54.1B04E967@cable.a2000.nl>
+Date: Wed, 25 Aug 1999 15:27:48 +0200
+From: Otto Moerbeek <otto@cable.a2000.nl>
+MIME-Version: 1.0
+To: linux-kernel@vger.rutgers.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: General purpose serial PCI driver available for testing 
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19990824110602.000653@mail.mipsys.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-According to Benjamin Herrenschmidt <bh40@calva.net>:
+Hi to you all,
 
-> is this a NuBus class machine or a PCI based one ?
+The third version of the serial driver PCI patch is available at my
+little site <http://people.a2000.nl/omoerbe/>. The maximum number of PCI
+serial ports supported can now be configured at config time. Also, an
+error introduced in include/asm-i386/serial.h is fixed. Actually, this
+file and include/asm-alpha/serial.h are not patched at all anymore. 
 
-5200 is basically, like the 6200, which is a LC 63O with a
-PowerPC... :-) This means that Linux Mac68k may be of great help,
-and this may lead to a mix of PPC and 68k source trees :-)
+Regards,
+Otto
 
-
-
-Hub
+-- 
+Otto Moerbeek
+otto@cable.a2000.nl
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
