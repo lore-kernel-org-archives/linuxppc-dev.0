@@ -1,41 +1,41 @@
-Message-ID: <8D7C5F56B409554D9D46AC22195807F3061D70@exchwenz01.dmcwave.co.nz>
-From: Rod Boyce <rod_boyce@stratexnet.com>
-To: "'David Woodhouse'" <dwmw2@infradead.org>,
-	Gary Thomas <gary@mlbassoc.com>
-Cc: j.murali@gdatech.co.in, linux-mtd@lists.infradead.org,
-	linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: cfi probe for two different flash devices
-Date: Tue, 7 Oct 2003 07:51:40 +1300 
-MIME-Version: 1.0
-Content-Type: text/plain
+To: "Jacky Lam" <jackylam@astri.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Walnut boot problem solved 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 06 Oct 2003 11:06:14 +0800."
+             <009a01c38bb6$ceb84f40$2803050a@JackyLam>
+Date: Tue, 07 Oct 2003 00:40:17 +0200
+Message-Id: <20031006224023.069E7C59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In fact is was so easy that I went from knowing of the existence of the
-MTD subsystem to booting a Linux kernel and file-system on a custom map
-in 2 days. You MTD guys have done a fantastic job.
+Hi Jacky,
 
-Regards,
-Rod Boyce.
+in message <009a01c38bb6$ceb84f40$2803050a@JackyLam> you wrote:
+>
+>     I have figured out why my kernel hanged while booting on Walnut
+> platform. It is because the structure of board_info is different between
+> u-boot-0.4.8 and linuxppc-2.4-devel. After syncing the structure, I can boot
 
-PS sorry for the wasted channel space but I had to say something.
+Does the fact that this is a FAQ tell you something?
 
-> -----Original Message-----
-> From: David Woodhouse [mailto:dwmw2@infradead.org]
-> Sent: Tuesday, 7 October 2003 6:16 a.m.
-> Subject: Re: cfi probe for two different flash devices
->
-> On Mon, 2003-10-06 at 11:10 -0600, Gary Thomas wrote:
-> > This question would be best asked of the MTD folks (cc'd), but I
-> > think you'll need a customized "map" function that recognizes these
-> > two FLASH device types and creates the appropriate MTD sub-devices
-> > appropriately.
->
-> What Gary said.
->
-> If you poke around in drivers/mtd/maps you'll find useful examples of
-> such, including how to concatenate them together into one logical MTD
-> device and have a file system spanning them both, etc.
+> up to where the kernel tries to mount the filesystem. Attached is a patch
+> for the fix.
+
+This patch is not really useful. Instead of redefining the  structure
+yourself you should simply #include <asm/ppcboot.h>.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+By the way, ALL software projects are done by iterative  prototyping.
+Some companies call their prototypes "releases", that's all.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
