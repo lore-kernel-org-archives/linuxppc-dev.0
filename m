@@ -1,13 +1,25 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Leonardo Pereira Santos <lsantos@pd3.com.br>
-Subject: Re: Can software discover MPC8xx variant?
-Date: Wed, 29 Jan 2003 14:29:37 -0200
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C05EC@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Leonardo Pereira Santos'" <lsantos@pd3.com.br>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Can software discover MPC8xx variant?
+Date: Wed, 29 Jan 2003 12:02:21 -0500
 MIME-Version: 1.0
-Message-Id: <200301291429.38410.lsantos@pd3.com.br>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Or you could set it in some type of data structure in your bootloader.  No
+hardware change this way.
+
+-----Original Message-----
+From: Leonardo Pereira Santos [mailto:lsantos@pd3.com.br]
+Sent: Wednesday, January 29, 2003 11:30 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Can software discover MPC8xx variant?
+
 
 
 
@@ -40,7 +52,8 @@ On Wednesday 29 January 2003 12:13, Marius Groeger wrote:
 > Regards,
 > Marius
 >
-> ---------------------------------------------------------------------------
+>
+---------------------------------------------------------------------------
 >-- Marius Groeger           SYSGO Real-Time Solutions AG
 > mgroeger@sysgo.de Software Engineering     Embedded and Real-Time Software
 >   www.sysgo.de Voice: +49-6136-9948-0   Am Pfaffenstein 14
