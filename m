@@ -1,70 +1,152 @@
-Message-ID: <3A35DC82.7250A663@wtal.de>
-Date: Tue, 12 Dec 2000 09:06:26 +0100
-From: Christof Petig <christof.petig@wtal.de>
+Date: Tue, 12 Dec 2000 10:12:18 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+cc: Linux/m68k <linux-m68k@lists.linux-m68k.org>
+Subject: Mac/m68k patches?
+Message-ID: <Pine.GSO.4.10.10012121010320.1109-100000@escobaria.sonytel.be>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Sound on an iBook?
-References: <3A3490B9.ECA71E0D@wtal.de> <19341105063039.15551@192.168.1.2>
-Content-Type: multipart/mixed;
- boundary="------------4FA69D0C1CA6ADA4A2C3CE84"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------4FA69D0C1CA6ADA4A2C3CE84
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Hi,
 
-Benjamin Herrenschmidt wrote:
+I have these Mac/m68k patches in my patchqueue which affect PowerMac as well.
+Anyone who has a problem with them, or can I send them to Linus?
 
-> No you can't. Darwin is using a different licence that is not compatible
-> with the GPL. You can "use" the Apple code as a reference to how the
-> hardware works, but you can't re-use it "as is".
+diff -urN linux-2.4.0-test12/drivers/input/keybdev.c linux-m68k-2.4.0-test12/drivers/input/keybdev.c
+--- linux-2.4.0-test12/drivers/input/keybdev.c	Fri Jul 28 03:36:54 2000
++++ linux-m68k-2.4.0-test12/drivers/input/keybdev.c	Tue Dec 12 09:02:47 2000
+@@ -90,7 +90,7 @@
+ 	return 0;
+ }
 
-Ok. Understood. I vaguely remember RMStallman warning of the apple source
-license.
-Another time to reimplement the wheel.
+-#elif defined(CONFIG_ADB_KEYBOARD)
++#elif defined(CONFIG_INPUT_ADBHID)
 
-Here is a port of the unofficial hack to 2.4. It works well for me (booting via
-OF without Apple OS).
-Volume setting still needs to be resolved. I'll try it via linux' IIC layer.
+ static unsigned char mac_keycodes[128] =
+ 	{ 0, 53, 18, 19, 20, 21, 23, 22, 26, 28, 25, 29, 27, 24, 51, 48,
+diff -urN linux-2.4.0-test12/drivers/macintosh/adb.c linux-m68k-2.4.0-test12/drivers/macintosh/adb.c
+--- linux-2.4.0-test12/drivers/macintosh/adb.c	Sun Sep 17 18:48:05 2000
++++ linux-m68k-2.4.0-test12/drivers/macintosh/adb.c	Tue Dec 12 09:02:47 2000
+@@ -61,7 +61,7 @@
+ #ifdef CONFIG_ADB_IOP
+ 	&adb_iop_driver,
+ #endif
+-#ifdef CONFIG_ADB_PMU
++#if defined(CONFIG_ADB_PMU) || defined(CONFIG_ADB_PMU68K)
+ 	&via_pmu_driver,
+ #endif
+ #ifdef CONFIG_ADB_MACIO
+@@ -335,7 +335,7 @@
+ 	    int flags, int nbytes, ...)
+ {
+ 	va_list list;
+-	int i;
++	int i,len;
+ 	struct adb_request sreq;
 
-Christof
+ 	if ((adb_controller == NULL) || (adb_controller->send_request == NULL))
+@@ -347,13 +347,22 @@
+ 		req = &sreq;
+ 		flags |= ADBREQ_SYNC;
+ 	}
+-	req->nbytes = nbytes+1;
++	if (flags & ADBREQ_RAW) {
++		i = 0;
++		len = nbytes;
++	} else {
++		req->data[0] = ADB_PACKET;
++		i = 1;
++		len = nbytes+1;
++	}
++	req->nbytes = len;
+ 	req->done = done;
+ 	req->reply_expected = flags & ADBREQ_REPLY;
+ 	req->data[0] = ADB_PACKET;
+ 	va_start(list, nbytes);
+-	for (i = 0; i < nbytes; ++i)
+-		req->data[i+1] = va_arg(list, int);
++	while(i < len) {
++		req->data[i++] = va_arg(list, int);
++	}
+ 	va_end(list);
 
+ 	if (flags & ADBREQ_NOSEND)
+diff -urN linux-2.4.0-test12/drivers/macintosh/adbhid.c linux-m68k-2.4.0-test12/drivers/macintosh/adbhid.c
+--- linux-2.4.0-test12/drivers/macintosh/adbhid.c	Sun Sep 17 18:48:05 2000
++++ linux-m68k-2.4.0-test12/drivers/macintosh/adbhid.c	Tue Dec 12 09:02:45 2000
+@@ -855,8 +855,10 @@
 
---------------4FA69D0C1CA6ADA4A2C3CE84
-Content-Type: text/plain; charset=us-ascii;
- name="iBook_Sound_2.4.diff"
-Content-Disposition: inline;
- filename="iBook_Sound_2.4.diff"
-Content-Transfer-Encoding: 7bit
+ static int __init adbhid_init(void)
+ {
++#ifndef CONFIG_MAC
+ 	if ( (_machine != _MACH_chrp) && (_machine != _MACH_Pmac) )
+ 	    return 0;
++#endif
 
---- dmasound_awacs.c.orig	Mon Dec 11 22:35:59 2000
-+++ dmasound_awacs.c	Mon Dec 11 22:49:24 2000
-@@ -1978,7 +1978,7 @@
- 		 * with a child called "sound".
- 		 */
- 		struct device_node *sound;
--		np = find_devices("davbus");
-+		np = find_devices("i2s-a");
- 		sound = find_devices("sound");
- 		if (sound != 0 && sound->parent == np) {
- 			unsigned int *prop, l, i;
-@@ -2029,8 +2029,9 @@
- 		int vol;
- 		dmasound.mach = machPMac;
+ 	led_request.complete = 1;
 
--		awacs = (volatile struct awacs_regs *)
--			ioremap(np->addrs[0].address, 0x80);
-+		/* awacs = (volatile struct awacs_regs *)
-+			ioremap(np->addrs[0].address, 0x80); */
-+		awacs = kmalloc(sizeof(struct awacs_regs),GFP_KERNEL);
- 		awacs_txdma = (volatile struct dbdma_regs *)
- 			ioremap(np->addrs[1].address, 0x100);
- 		awacs_rxdma = (volatile struct dbdma_regs *)
+diff -urN linux-2.4.0-test12/drivers/macintosh/via-cuda.c linux-m68k-2.4.0-test12/drivers/macintosh/via-cuda.c
+--- linux-2.4.0-test12/drivers/macintosh/via-cuda.c	Sun Sep 17 18:48:05 2000
++++ linux-m68k-2.4.0-test12/drivers/macintosh/via-cuda.c	Tue Dec 12 09:02:48 2000
+@@ -220,12 +220,19 @@
+ static int
+ cuda_init(void)
+ {
++#ifdef CONFIG_PPC
+     if (via == NULL)
+ 	return -ENODEV;
+-#ifndef CONFIG_PPC
++    return 0;
++#else
++    int err = cuda_init_via();
++    if (err) {
++	printk(KERN_ERR "cuda_init_via() failed\n");
++	return -ENODEV;
++    }
++
+     return via_cuda_start();
+ #endif
+-    return 0;
+ }
+ #endif /* CONFIG_ADB */
 
---------------4FA69D0C1CA6ADA4A2C3CE84--
+diff -urN linux-2.4.0-test12/include/linux/adb.h linux-m68k-2.4.0-test12/include/linux/adb.h
+--- linux-2.4.0-test12/include/linux/adb.h	Sun Sep 17 18:48:05 2000
++++ linux-m68k-2.4.0-test12/include/linux/adb.h	Tue Dec 12 09:02:49 2000
+@@ -67,6 +67,7 @@
+ #define ADBREQ_REPLY	1	/* expect reply */
+ #define ADBREQ_SYNC	2	/* poll until done */
+ #define ADBREQ_NOSEND	4	/* build the request, but don't send it */
++#define ADBREQ_RAW	8	/* send raw packet (don't prepend ADB_PACKET) */
+
+ /* Messages sent thru the client_list notifier. You should NOT stop
+    the operation, at least not with this version */
+diff -urN linux-2.4.0-test12/include/linux/pmu.h linux-m68k-2.4.0-test12/include/linux/pmu.h
+--- linux-2.4.0-test12/include/linux/pmu.h	Sun Sep 17 18:48:05 2000
++++ linux-m68k-2.4.0-test12/include/linux/pmu.h	Tue Dec 12 09:02:50 2000
+@@ -63,6 +63,8 @@
+ 	PMU_HEATHROW_BASED,	/* PowerBook G3 series */
+ 	PMU_PADDINGTON_BASED,	/* 1999 PowerBook G3 */
+ 	PMU_KEYLARGO_BASED,	/* Core99 motherboard (PMU99) */
++	PMU_68K_V1,		/* 68K PMU, version 1 */
++	PMU_68K_V2, 		/* 68K PMU, version 2 */
+ };
+
+ /* PMU PMU_POWER_EVENTS commands */
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
