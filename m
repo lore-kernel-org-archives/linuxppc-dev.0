@@ -1,42 +1,31 @@
-Message-ID: <3E39898E.5060804@embeddededge.com>
-Date: Thu, 30 Jan 2003 15:22:38 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
-	laurent.pinchart@capflow.com
-Subject: Re: was: FEC on MPC860T & race condition
-References: <3E395B40.9090506@imc-berlin.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: nitesh_ppc@lycos.com, linuxppc-embedded@lists.linuxppc.org,
+	"Steven Blakeslee" <BlakesleeS@embeddedplanet.com>
+Date: Thu, 30 Jan 2003 15:26:54 -0500
+From: "Nitesh Goyal" <nitesh_ppc@lycos.com>
+Message-ID: <KMFIGHDLLFILEBAA@mailcity.com>
+Mime-Version: 1.0
+Reply-To: nitesh_ppc@lycos.com
+Subject: RE: Howto install bootloader using jtag?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steven Scholz wrote:
-
-> You, Laurent, told us about a race condition.
-> You, Dan, first claimed, it was already fix but mentioned later that the
-> patch
-> was somehow lost.
-
-IIRC, it was the usual problem of having it fixed in only one of the
-two 2.4 trees.  I ensured both trees were made up to date.
-
-> Now I have this problem as well and realised that in 2.4.20 the
-> "mii_link_interrupt interrupt handler is still registered before the
-> PHY chip is initialized".
-
-The link interrupt is board design and PHY dependent.  I don't think there
-is any one "right" way to initialize this interrupt handler.  If you have
-something that isn't working to your liking, we may have to extend the
-MII logic in some way to accomodate this.  Keep in mind that the existing
-driver is likely working with other boards, and you don't want to break
-those configurations.
-
-Thanks.
+>The first thing you do is create an appropriate config file for the debugger
+>and board.  If you go to ftp://ftp.denx.de/pub/BDI2000/ you can get Abatron
+>BDI config files for the ep405 board.  You run this script then download the
+>pcl____.ep file that is on the documentation CD.
+I have downloaded the script(config file) on my host machine (x86). How do I run the script ? If I am right, it has to be run on the board, but the problem is, I can't communicate to the board with serial-port.
 
 
-	-- Dan
+>You should be able to download and execute it in one
+>simple step.
+The problem is I do not know how to download an image from the host to the board because I've overwritten the bootloader.
+
+Also, if I'm right, the JTAG has to be connected to the parallel port of host and the bootloader image needs to be downloaded using "some" utility ?
+
+TIA,
+-nitesh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
