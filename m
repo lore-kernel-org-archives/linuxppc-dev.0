@@ -1,42 +1,69 @@
-In-Reply-To: <1088078926.1372.13.camel@localhost>
-References: <1087746455.1547.23.camel@newt> <282B6E73-C58F-11D8-9384-000393DBC2E8@freescale.com> <1088078926.1372.13.camel@localhost>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <786932E0-C600-11D8-8121-000393DBC2E8@freescale.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>,
-	Kumar Gala <kumar.gala@motorola.com>, <mgreer@mvista.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: [PATCH][RFC] Second version of MPC10x OCP
-Date: Thu, 24 Jun 2004 12:03:52 -0500
-To: Adrian Cox <adrian@humboldt.co.uk>
+Reply-To: <tcurran@ultsol.com>
+From: "Tom Curran" <tcurran@ultsol.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: On the MPC85xx development boards
+Date: Thu, 24 Jun 2004 10:40:00 -0700
+Message-ID: <000601c45a12$469704f0$6601a8c0@curranusi>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <1088085327022.mikko.alutoin.17388.vROgRbiXwfx6jgnkf5FAxQ@luukku.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Jun 24, 2004, at 11:36 AM, Adrian Cox wrote:
+You might also want to check out Artis Microsystems for MPC85xx devel
+boards:
+http://www.artismicro.com/
 
-> On Thu, 2004-06-24 at 04:32, Kumar Gala wrote:
->> I'm confused are we adding the OCP struct for every 10x device?  Did
->> we
->> get closure on the question if 105, 106 & 8240 would also work?
->
-> According to the chip manuals:
-> 107, 8240, and 8245 have the internal peripherals and should work.
-> 105 and 106 don't have internal peripherals.
->
-> mpc10x_common.c supports 106, 107, 8240, and 8245, but does not support
-> 105.
->
-> The code only adds the OCP devices if the device is not 106.
->
-> My patch is slightly broken where I edited out a local board variant by
-> hand. I'll produce a cleaned up patch based on my Sandpoint tree once
-> I've tested it together with the 85xx I2C driver.
+--Tom
 
-Ok, I think the 1st patch had this code, and 2nd seemed to lose it (or
-I did not see it).
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Mikko
+Alutoin
+Sent: Thursday, June 24, 2004 6:55 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: On the MPC85xx development boards
 
-- kumar
+
+
+Hi folks!
+
+I would be happy to receive some comments on pros & cons of different
+development boards for MPC85xx cause I'm in the process of selecting one.
+The final design will be using MPC8560 to implement a 1 Gbps Ethernet card
+for a router. ATM support will be needed later on.
+The development environment includes a Linux PC and Abatron BDI2000
+emulator.
+
+Here are the boards that I am aware of:
+
+1)	MPC8560ADS by Motorola
+2)	CW8540DSEVAL by Motorola
+3)	SBC8560 by Windriver
+4)	Silicon Tx GP3 8560
+5)	MPC8540 RDK by GDATech
+
+Are these boards all there is?
+
+I am under the impression that 1, 2, 4 and 5 (but not 3) come with a Linux
+BSP included? Is this correct?
+
+Being the lazy person that I am, I'm trying to minimize the work to get
+Linux up and running on the board. I wonder which board/package gives me
+least headache? Are there any pitfalls that I should know about?
+
+Let us assume that the final product will not be based on a commercial
+Embedded Linux distro, but a custom 2.6 kernel with busybox & uclibc. Should
+that effect the choice in any way?
+
+Forgive me if the questions seem a bit foolish. The bottom line is that I
+have not used any kind of development boards in the past and I would like to
+receive some insight on which one of the above to choose.
+
+Cheers,
+Mikko
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
