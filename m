@@ -1,34 +1,44 @@
-Date: Thu, 22 Apr 1999 00:54:07 -0400 (EDT)
-From: Tom Vier <nester@erols.com>
-Reply-To: Tom Vier <thomassr@erols.com>
-To: "David A. Gatwood" <marsmail@globegate.utm.edu>
-cc: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
-        root <roboj@ibm.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Kernel 2.2.6-ac1 problem
-In-Reply-To: <Pine.LNX.3.96.990420144859.24907A-100000@globegate.utm.edu>
-Message-ID: <Pine.LNX.4.10.9904220050550.19091-100000@localhost.erols.com>
+Date: Thu, 22 Apr 1999 08:46:23 +0200 (CEST)
+From: Alexander Larsson <alex@signum.se>
+To: Dan Malek <dmalek@jlc.net>
+cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Embedded 8xx 2.2.5 kernel tarball
+In-Reply-To: <371E0DB4.4D0EB787@jlc.net>
+Message-ID: <Pine.LNX.4.04.9904220844570.30192-100000@tammy.signum.se>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 20 Apr 1999, David A. Gatwood wrote:
 
-> The related code I noticed changing was related to quota support.  It
-> doesn't appear to be in the ext2fs code changes, though, because I tried
-> backdating all of those (other than simple formatting and notational
-> changes0 to no avail.  I'm thinking it might be in the general filesystem
-> code.
 
-any chance it could be the quota code? i have it enabled, but i don't have
-it setup (no quotas) and i get minor corruption when copying and deleting
-lots of files. does it happen with quotas disabled?
+On Wed, 21 Apr 1999, Dan Malek wrote:
 
---
-Tom Vier - 0x82B007A8
-thomass@erols.com
-http://www.erols.com/thomassr/zero/
+> Alexander Larsson wrote:
+> 
+> > I just merged my local changes with the 2.2.5-embedded sources.
+> > I get an error when starting init. (Booting from nfs.)
+> >
+> > It just says:
+> > Freeing unused kernel memory: 32k init
+> > put_dirty_page: page already exists
+> 
+> Ummm.....it would help if I knew a little more about what you are using.
+> Like, what kind of board and the kernel configuration?
+
+ I'm gonna look into it myself now, i just wondered if it was something
+you've seen before and knew how to fix. It worked in 2.2p7.
+
+> I would see a similar problem when I would configure IDE and not
+> configure PCI.  This is because the IDE probes (and other I/O in/out
+> operations) map to real memory locations and tend to write on top of
+> kernel data structures.  This is my only guess without more information.
+
+ I've turned of both IDE and PCI (i hope, better check).
+
+ / Alex
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
