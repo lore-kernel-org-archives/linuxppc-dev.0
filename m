@@ -1,38 +1,52 @@
-Message-Id: <200007301812.TAA20476@hyperion.valhalla.net>
-Date: Sun, 30 Jul 2000 19:10:43 +0100
-Subject: 2.2.17pre13ben2 on Lombard
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
-CC: Benjamin Herrenschmidt <bh40@calva.net>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-ID: <3984708A.D2D39371@student.ethz.ch>
+Date: Sun, 30 Jul 2000 20:14:35 +0200
+From: Michel D	nzer <daenzerm@student.ethz.ch>
+MIME-Version: 1.0
+To: Iain Sandoe <iain@sandoe.co.uk>
+CC: SteffenH@hyperion-software.de, takashi oe <toe@unlserve.unl.edu>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: LinuxPPC X Server
+References: <200007301959.UAA25203@hyperion.valhalla.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I ran this version for some time on my Lombard.
-at first no drama... but after a while the HD started to go beserk (good
-technical statement eh?).
+Iain Sandoe wrote:
 
-If you remember the old machine control labs where you used to play tunes on
-servo actuators?
+> >>And yes, there have been reports of people trying it (one yesterday - said
+> >>it was quicker in some places & slower in others...)
 
-Well it was a bit like that only with less tuneful bursts.
+He didn't provide any numbers though. For all chipsets which have an
+accelerated driver in X 4, it's almost certainly faster than anything else -
+and also for the others it should be faster than X 3.3.x .
 
-Possibly this is related to the earlier discussion about problems on
-sleep/wakeup.
 
-Fortunately the disk survived (nothing worse than an fsck required and the
-MacOS partitions were not touched).
+> > Did these sources you have compiled include the DRI Drivers ?
+>
+> Don't know - I did a make "World" so I guess that should have built everything?
 
-However, I'm a little reluctant to make a habit of trying this (I feel that
-this time I was lucky).
+See my remark at the end.
 
-Is it possible to disable sleep on the PowerBooks and still have a run-able
-kernel?  Although I can't be 100% sure it was sleep related - at least this
-would eliminate that as a cause - it's really too nasty to want to try it
-often as an experiment.
 
-Iain.
+> > You told it took 1 day to do... so there were big problems/source code changes to do
+> > ? Or what caused this ?
+>
+> No problems, no changes, it's just *BIG* :-)
+
+Before building, you should have copied xc/config/cf/{xf86site,host}.def
+
+Then edit the newly created host.def - you probably only want to build the
+server and drivers, and choose the drivers you want.
+
+For DRI, you may have to edit even more files in config/cf/, AFAIK DRI is only
+built on i386 by default.
+
+
+Michel
+
+
+--
+#include <stdsig.h>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
