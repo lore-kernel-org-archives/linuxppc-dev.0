@@ -1,61 +1,69 @@
-Date: Thu, 24 Oct 2002 20:21:50 +0200
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: 8xx i2c refers to unspecified chip errata
-In-reply-to: <20021024161053.GK669@opus.bloom.county>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	sensors@stimpy.netroedge.com
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLMEFNFHAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-ID: <3DB84A2C.89BC0C38@corelatus.com>
+Date: Thu, 24 Oct 2002 21:29:48 +0200
+From: Thomas Lange <thomas@corelatus.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: patch for arch/ppc/8xx_io/fec.c
+Content-Type: multipart/mixed;
+ boundary="------------B618876DE50B60AB20A10161"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> >
-> > Here is a patch against the PPC 2.4 devel tree for the i2c-algo-8xx.c
->
-> Can you please split this into logical chunks, or give me a list of each
-> fix in here?  Thanks.
+This is a multi-part message in MIME format.
+--------------B618876DE50B60AB20A10161
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-ohh, kind of hard to remember all that went into that patch. The path
-has evoled over many days, but I can try summarize. I have tested this code
-pretty well it does not fail for me. Speed has been between 10-150KHz. The
-old code fails as soon you start to stress it a little.
+Against bk:linuxppc_2_4
 
- - replace invalidate_dcache_range with flush_dcache_range, since buffers are
-   NOT cache aligned. flush will write to memory AND invalidate the cache.
+Use retry counter (RC) to detect collisions instead of
+Defer (DEF).
 
- - move the chip errata stuff from irq routine into read/write routines. Made
-   it default off since it causes lock ups on my I2C device. I think it causes
-   a too short STOP condition. If enabled I2C will behave better than before, but
-   may still cause problems if the read/write is interrupted with a signal while
-   microcode is enabled.
+>From Table 6-29: (MPC860T (Rev. D) Fast Ethernet Controller 0.8)
 
- - set default speed to 60 KHz instead.
+6 DEF Defer indication, written by FEC (valid if L = 1). Set when the
+FEC had to defer while trying to
+transmit a frame. This bit is not set if a collision occurs during
+transmission.
 
- - missing/faulty initialization of parameter ram when I2C micro patch is active.
+10-13 RC Retry count, written by FEC (valid if L = 1). Counts retries
+needed
+to successfully send this frame. If RC = 0, the frame was sent correctly
+the first time. If RC = 15, the frame was sent successfully while the
+retry
+count was at its maximum value. If RL = 1, RC has no meaning.
 
- - replaced assingments with mask operations with relevant bits. Example:
-      /* Shut down IIC. */
-      i2c->i2c_i2mod = 0;
-	i2c->i2c_i2mod &= ~1;
+/Thomas
+--------------B618876DE50B60AB20A10161
+Content-Type: text/plain; charset=us-ascii;
+ name="fec_collision_patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fec_collision_patch"
 
- - When reading from I2C device, let the receive BD generate interrupt instead of
-   the dummy trasmit. This is important since the TX interrupt will be too early sometimes, before
-   the RX BD has closed. There is one case where the RX irq is before the TX irq, if iic_mrblr is set
-   to match the number of bytes to read. Therefore must the iic_mrblr be one byte larger than
-   the expected number of bytes.
+--- fec.c	2002-10-15 14:58:00.000000000 +0200
++++ fec_cfix.c	2002-10-24 20:59:20.000000000 +0200
+@@ -502,11 +502,12 @@
+ 		if (bdp->cbd_sc & BD_ENET_TX_READY)
+ 			printk("HEY! Enet xmit interrupt and TX_READY.\n");
+ #endif
+-		/* Deferred means some collisions occurred during transmit,
+-		 * but we eventually sent the packet OK.
+-		 */
+-		if (bdp->cbd_sc & BD_ENET_TX_DEF)
+-			fep->stats.collisions++;
++		/* Check retry counter, i.e. collision counter */
++		/* Only valid if LAST is set, but it should always be. */
++		if (bdp->cbd_sc & BD_ENET_TX_RCMASK){
++			/* Note that counter cannot go higher than 15 */
++			fep->stats.collisions+=(bdp->cbd_sc & BD_ENET_TX_RCMASK)>>2;
++		}
 
- - busy wait for small transfers since it's faster.
+ 		/* Free the sk buffer associated with this last transmit.
+ 		 */
 
- - save_flags(flags); cli(); cleanups
-
- - interruptible_sleep_on_timeout() instead of interruptible_sleep_on() so it won't hang forever if an
-   irq is lost.
-
- Jocke
+--------------B618876DE50B60AB20A10161--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
