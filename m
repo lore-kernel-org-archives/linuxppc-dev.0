@@ -1,68 +1,42 @@
-Date: Fri, 10 Sep 1999 20:06:17 -0700
-From: Hugh Caley <hcaley@loomer.com>
-Subject: More with Mozilla and glibc
-To: Franz.Sirl@munich.netsurf.de, linuxppc-dev@lists.linuxppc.org
-Message-id: <37D9C729.6BED554E@loomer.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+From: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: linuxppc-dev@lists.linuxppc.org, Hugh Caley <hcaley@loomer.com>,
+        Franz.Sirl@munich.netsurf.de, linuxppc-dev@lists.linuxppc.org
+Subject: Re: More with Mozilla and glibc
+Date: Fri, 10 Sep 1999 23:11:52 -0400
+Content-Type: text/plain
+References: <37D9C729.6BED554E@loomer.com>
+MIME-Version: 1.0
+Message-Id: <99091023185500.02403@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I upgraded to glibc-2.1.2-7b; same problem, it segfaults almost immediately.
+Hi,
 
-Program received signal ?, Unknown signal.
-0xf6a0e90 in Letext () at soinit.c:59
-soinit.c:59: No such file or directory.
+I get this same error trying to debug the native threads version of the jdk.  I
+don't think the problem is in glibc at all.  
 
-Backtrace is slightly different:
+The problem is in 4.17 versions of gdb under glibc 2.1.  In fact gdb can't
+handle the realtime signals yet and so it stops when it receives one. 
+Therefore the error message in no way indicates the actual seg-fault or bug you
+are trying to find and fix.
 
-(gdb) bt
-#0  0xf6a0e90 in Letext () at soinit.c:59
-#1  0xf69fb78 in __sigsuspend (set=0x7fffde68)
-    at ../sysdeps/unix/sysv/linux/sigsuspend.c:48
-#2  0xfd424f4 in __pthread_create_2_1 (thread=0x7fffdf9c, attr=0xfd5c794,
-    start_routine=0, arg=0x100d09c0) at restart.h:32
-#3  0xfd91608 in _PR_CreateThread ()
-#4  0xfd91770 in PR_CreateThread ()
-#5  0xfe90da8 in nsThread::Init ()
-#6  0xfe91594 in NS_NewThread ()
-#7  0xfe91bf8 in nsThreadPool::Init ()
-#8  0xfe925e8 in NS_NewThreadPool ()
-#9  0xef4027c in nsFileProtocolHandler::Init ()
-#10 0xef40698 in nsFileProtocolHandler::Create ()
-#11 0xfe85df8 in nsGenericFactory::CreateInstance ()
-#12 0xfe82b58 in nsComponentManagerImpl::CreateInstance ()
-#13 0xfe8bd2c in nsComponentManager::CreateInstance ()
-#14 0xfe8cffc in nsServiceManagerImpl::GetService ()
-#15 0xfe8da30 in nsServiceManager::GetService ()
-#16 0xf0bbfcc in nsService::nsService ()
-#17 0xf0ab780 in nsIOService::GetProtocolHandler ()
-#18 0xf0abb58 in nsIOService::NewURI ()
-#19 0xf0abf08 in nsIOService::NewChannel ()
-#20 0xef694bc in nsResourceProtocolHandler::NewChannel ()
-#21 0xf0abdf4 in nsIOService::NewChannelFromURI ()
-#22 0xffd5f44 in NS_OpenURI ()
-#23 0xffbe9f8 in ImageNetContextImpl::GetURL ()
-#24 0xffca2cc in IL_GetImage ()
-#25 0xffc0f50 in ImageRequestImpl::Init ()
-#26 0xffbc2c4 in ImageGroupImpl::GetImage ()
-#27 0xf3949e4 in nsThrobber::LoadThrobberImages ()
-#28 0xf3942ec in nsThrobber::Init ()
-#29 0x100140f0 in nsBrowserWindow::CreateToolBar ()
-#30 0x10013320 in nsBrowserWindow::Init ()
-#31 0x1001caa0 in nsViewerApp::OpenWindow ()
-#32 0x10022634 in nsNativeViewerApp::Run ()
-#33 0x100229e8 in main ()
-#34 0xf69841c in Letext () at ../sysdeps/powerpc/elf/libc-start.c:106
+I think gdb simply has no maintainer yet (Kevin Buettner will be keeping it
+up, if he hasn't started already) and no one has updated it to reflect all of
+the new realtime signals now available in glibc 2.1.  The error message you get
+just prevents me from using gdb 4.17 when debugging any native threads
+(libpthread code).    Once the new thread signals numbers are included, you
+should be able to use the handle nostop command in gdb to prevent the
+libpthread signals from disrupting your debugging.
 
+The only workaround I know of is to rebuild linuxthreads (part of glibc) and
+manually turn off the use of the new realtime signals and instead use the old
+SIGUSR1 and SIGUSR2 signals for libpthreads until gdb gets fixed.
 
+I hope this helps.
 
---
-Hugh Caley, Unix Administrator
-Babcock & Brown, San Francisco
-510-524-1672
-hughc@babcockbrown.com
+Kevin
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
