@@ -1,67 +1,76 @@
-Message-ID: <3BAA6C43.455873D@mvista.com>
-Date: Thu, 20 Sep 2001 18:22:59 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Mark Salisbury <mbs@mc.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ppc LE questions (seeking help hand info pointers)
-References: <3BAA0E6F.5050503@mc.com>
+Date: Thu, 20 Sep 2001 15:22:46 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	Debian PowerPC <debian-powerpc@lists.debian.org>, dan@debian.org
+Subject: Re: [ANN] yaboot maintainer change
+Message-ID: <20010920152246.B14835@plato.local.lan>
+References: <20010920150939.32251@smtp.adsl.oleane.com>
+Mime-Version: 1.0
+In-Reply-To: <20010920150939.32251@smtp.adsl.oleane.com>; from benh@kernel.crashing.org on Thu, Sep 20, 2001 at 05:09:39PM +0200
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Mark Salisbury wrote:
+On Thu, Sep 20, 2001 at 05:09:39PM +0200, Benjamin Herrenschmidt wrote:
+> Hi all !
+>
+> The maintenance of yaboot releases & packaging will now be handled by
+> Ethan Benson. He should shortly release 1.3 (which is the same as 1.2.5
+> code wise for those who caught it), the version bump is here to avoid
+> confusion with versions I released.
+>
+> The archives of older versions on my page will remain, users should
+> however now get their versions from Ethan, I'll let him explain that all.
 
-> assume I have a valid reason for wanting to run ppc's in LE mode
+Basically the main goal of this is to merge ybin and yaboot into a
+single unified source tree.  In the past yaboot contained virtually no
+documentation and no userland installation and configuration tools,
+those were only part of the ybin distribution.  Now both ybin and
+yaboot are part of the same source tree, which I will call yaboot.
 
-This is where it starts to fall apart.  I didn't know there were
-any valid reasons to support LE mode, except to run some software
-from a certain company that never materialized.  I was fortunate to
-be part of the PowerPC design discussions from the beginning.  The LE
-mode was never popular.
+The distribution pages will be:
 
-A technical reason is the PowerPC never supported a true little
-endian mode.  It basically does byte swapping between the cache
-and core processing units, and I believe always (or at least usually)
-supported a big endian bus.  You can't properly attach the processor
-to true little endian busses or devices when this is done, so you don't
-gain any hardware design advantage.  As you know, properly byte
-swapping depends upon the size of the object, so if you happen
-to access something in smaller units than it's natural size you
-aren't going to get the results you expect.  For someone that is
-comfortable programming in an LE environment (is there anyone? :-),
-this will eventually bite you.
+http://www.alaska.net/~erbenson/yaboot
 
-Another technical reason is as the processor family moves forward,
-less and less little endian support is provided.  In the case of
-the 7450, there are instructions that trap to the kernel to be
-emulated in LE mode, that are executed in the core in BE mode.
+and http://penguinppc.org/usr/yaboot
 
-> question 2.  if 1, what is the primary reason for rejection.
+the old ~erbenson/ybin and /usr/ybin links will continue to work
+indefinitly, you will however get the exact same page (they are just
+symlinks now).
 
-It was LE (sorry, couldn't resist :-)?
+Before ybin-X.Y.Z.tar.gz required no compilation since ybin is writtin
+in sh rather then C, now that this is a single tree containing yaboot,
+you will have to compile the source to get binaries, if this is
+impossible i have also provided a binary tarball dist
+yaboot-binary-X.Y.Z.tar.gz.  I highly recommend compiling and
+installing from the source tarball over the binary tarball however.
 
-> question 3.  is there a general issue of endian safety in linux (I would
-> think not) or just in the ppc-specific code?
+the source tree is in the yaboot-1.3.tar.gz tarball, precompiled
+binary dist is in yaboot-binary-1.3.tar.gz
 
-Linux is very aware of endian issues.  For all but I guess two of
-you now, everyone assumes PowerPC is big endian and we make adjustments
-when working on little endian I/O.  Without hardware for testing,
-the rest of us are just likely to break any LE software, and you
-are just going to end up chasing fixes behind lots of the rest of us.
+Distributions who have in the past distributed separate ybin and
+yaboot packages should merge them into a single yaboot package.
 
-> ..........what would be the primary
-> obstacle to inclusion in the main line.
+As I have done in the past these tarballs are signed with my GnuPG
+key, verifying these signatures is as always highly recommended.
 
-Like I always say, the kernel is the easy part.  None of us have
-the hardware, tools, libraries, or applications to utilize a LE kernel.
-It more than doubles the work we need to do trying to keep the
-software up to date, if we had all of that for testing.  It may
-be easier to just keep your patch up to date, than to try and keep
-up with the rest of us making changes to software we can't test.
+The current web page is still mostly the same as the ybin page, I will
+eventually redo this, and probably rewrite the README (which is also
+pretty much just ybin's).  these are non-technical merging issues
+however.
 
+I have released version 1.3, it's available at the above URLs.  I will
+probably release a 1.3.1 within the next day or two to change a couple
+aspects about the binary dist tarball (don't include ./etc/yaboot.conf).
 
-	-- Dan
+comments and suggestions are welcome, flames should go to /dev/null.
+
+Enjoy.
+
+--
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
