@@ -1,40 +1,25 @@
-Date: Tue, 15 Dec 1998 23:36:30 +0000
-From: Hartmut Koptein <koptein@et-inf.fho-emden.de>
-To: VALETTE Eric <valette@crf.canon.fr>
-Cc: Andries.Brouwer@cwi.nl, debian-powerpc@lists.debian.org,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Support for cfdisk for Linux-PowerPC
-Message-ID: <19981215233630.A5922@ramses>
-References: <UTC199812120128.CAA111349.aeb@texel.cwi.nl> <m0zpbhD-0000WVC@tri-yann.crf.canon.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <m0zpbhD-0000WVC@tri-yann.crf.canon.fr>; from VALETTE Eric on Mon, Dec 14, 1998 at 06:22:11PM +0100
+Date: Tue, 15 Dec 1998 18:51:09 -0500 (EST)
+From: satadru pramanik <satadru@umich.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: inet.h
+Message-ID: <Pine.LNX.4.05.9812151850260.1072-100000@beer.pub.umich.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Andries>  I have alreday got a lot of patches for powerpc.
-> Andries> ...
-> Andries> I'll try to make util-linux-2.9f within a week. No promises.
-> 
-> Andries> See ftp.win.tue.nl
-> 
-> I tried it  => congratulation works fine. I even noticed you added the 0x41
-> partition type. This is very kind. I now have cfdisk able to work on 
-> 
-> 	  - RH4 for powerpc,
-> 	  - Debian slink (aka 2.1) for powerpc,
-> 
-> Please note that this may highly interest debian people who have no
-> working cfdisk yet. I tested the logical partitions : they work great as 
-> shown below.
-
-Have you tried if this harddisk works then also with an intel-linux box?
-
-Regards,
+does anyboy have a fixed copy of this?
+compiling always lands in trouble because of this file.
 
 
-        Hartmut
+----
+satadru pramanik `satadru@umich.edu'
+"Put your hand on a hot stove for a minute, and it seems like an hour. Sit
+with a pretty girl for an hour, and it seems like a minute. THAT'S
+relativity." 
+-Albert Einstein
+---
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
