@@ -1,21 +1,13 @@
 Return-Path: <jason.mcmullan@timesys.com>
-Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id 1B8942BDEB
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Dec 2004 23:21:55 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <48C50EC3-480D-11D9-8A5A-000393DBC2E8@freescale.com>
-References: <48C50EC3-480D-11D9-8A5A-000393DBC2E8@freescale.com>
-Date: Tue, 7 Dec 2004 07:02:15 -0500
-Message-ID: <1102421377.6162.8.camel@jmcmullan>
-From: "McMullan, Jason" <jason.mcmullan@timesys.com>
-To: "Kumar Gala" <kumar.gala@freescale.com>
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: Second Attempt: Driver model usage on embedded processors
+Date: Tue, 7 Dec 2004 08:20:31 -0500
+From: Jason McMullan <jason.mcmullan@timesys.com>
+To: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org,
+	linux-kernel@vger.kernel.org
+Message-ID: <20041207132031.GA23542@jmcmullan.timesys>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: Jason.McMullan@TimeSys.com
+Subject: [PATCH] include/asm-ppc/dma-mapping.h macro patch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +17,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2004-12-06 at 23:03 -0600, Kumar Gala wrote:
-> The intent was that I would use the platform_data pointer to pass =
-board=20
-> specific information to the driver.  We would have board specific code =
+Signed-off-by: Jason McMullan <jason.mcmullan@timesys.com>
+Summary: [ppc] dma-mapping.h - Fix macro semantics
+Description:
+	This patch makes the macros for dma_* semantically
+	equivalent to the functions they mask. For example,
+	dma_cache_inv(func_with_side_effects(), sizeof(foo))
+	will execure 'func_with_side_effects()' in the function
+	case, but would not execute it in the macro case.
+	This patch fixes this discrepancy.
+Comment: More landmines like this may be all over the kernel.
+	 Janitor project, anyone?
 
-> which would fill in the information.  The question I have is how to=20
-> handle the device variant information which is really static?
 
-I use a 'struct device_ethernet_data' in my MPC85xx platform-device
-patches at http://www.evillabs.net/~gus/patches
-
-That seems to work well, and we could move it from
-include/asm-ppc/device-ethernet.h to include/linux/device-ethernet.h to
-make it more arch-independant. That covers MAC addrs and phy locations.
-
-As for PHY IRQ, that's a thornier issue. For now, I put that in the
-ethernet device's resource list.
-
---=20
+--- linux-2.6.9.old/include/asm-ppc/dma-mapping.h	2004-12-07 08:14:32.769502853 -0500
++++ linux-2.6.9/include/asm-ppc/dma-mapping.h	2004-12-07 08:14:02.777362775 -0500
+@@ -36,22 +36,22 @@
+  * Cache coherent cores.
+  */
+ 
+-#define dma_cache_inv(_start,_size)		do { } while (0)
+-#define dma_cache_wback(_start,_size)		do { } while (0)
+-#define dma_cache_wback_inv(_start,_size)	do { } while (0)
+-
+-#define __dma_alloc_coherent(gfp, size, handle)	NULL
+-#define __dma_free_coherent(size, addr)		do { } while (0)
+-#define __dma_sync(addr, size, rw)		do { } while (0)
+-#define __dma_sync_page(pg, off, sz, rw)	do { } while (0)
++#define dma_cache_inv(_start,_size)		do { (void)(_start); (void)(_size); } while (0)
++#define dma_cache_wback(_start,_size)		do { (void)(_start); (void)(_size); } while (0)
++#define dma_cache_wback_inv(_start,_size)	do { (void)(_start); (void)(_size); } while (0)
++
++#define __dma_alloc_coherent(gfp, size, handle)	((void)(gfp),(void)(size),(void)(handle),NULL)
++#define __dma_free_coherent(size, addr)		do { (void)(size); (void)(addr); } while (0)
++#define __dma_sync(addr, size, rw)		do { (void)(addr); (void)(size); (void)(rw); } while (0)
++#define __dma_sync_page(pg, off, sz, rw)	do { (void)(pg); (void)(off); (void)(sz); (void)(rw); } while (0)
+ 
+ #endif /* ! CONFIG_NOT_COHERENT_CACHE */
+ 
+-#define dma_supported(dev, mask)	(1)
++#define dma_supported(dev, mask)	((void)(dev), (void)(mask), 1)
+ 
+ static inline int dma_set_mask(struct device *dev, u64 dma_mask)
+ {
+-	if (!dev->dma_mask || !dma_supported(dev, mask))
++	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
+ 		return -EIO;
+ 
+ 	*dev->dma_mask = dma_mask;
+@@ -121,7 +121,7 @@
+ }
+ 
+ /* We do nothing. */
+-#define dma_unmap_page(dev, handle, size, dir)	do { } while (0)
++#define dma_unmap_page(dev, handle, size, dir)	do { (void)(dev); (void)(handle); (void)(size); (void)(dir); } while (0)
+ 
+ static inline int
+ dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
+@@ -141,7 +141,7 @@
+ }
+ 
+ /* We don't do anything here. */
+-#define dma_unmap_sg(dev, sg, nents, dir)	do { } while (0)
++#define dma_unmap_sg(dev, sg, nents, dir)	do { (void)(dev); (void)(sg); (void)(nents); (void)(dir); } while (0)
+ 
+ static inline void
+ dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle,
+@@ -190,9 +190,9 @@
+ #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
+ #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
+ #ifdef CONFIG_NOT_COHERENT_CACHE
+-#define dma_is_consistent(d)	(0)
++#define dma_is_consistent(d)	((void)(d), 0)
+ #else
+-#define dma_is_consistent(d)	(1)
++#define dma_is_consistent(d)	((void)(d), 1)
+ #endif
+ 
+ static inline int dma_get_cache_alignment(void)
+-- 
 Jason McMullan <jason.mcmullan@timesys.com>
+TimeSys Corporation
