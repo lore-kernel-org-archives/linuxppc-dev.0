@@ -1,48 +1,60 @@
-Date: Mon, 2 Jun 2003 16:26:56 +1000
-From: Erik Christiansen <erik@dd.nec.com.au>
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Cc: Ron Flory <ron.flory@adtran.com>
-Subject: Re: embedded gcc PPC toolchain questions
-Message-ID: <20030602062656.GD833@dd.nec.com.au>
-References: <3ED6298C.3070901@adtran.com> <20030529162243.ED346C5492@atlas.denx.de>
+Subject: Re: Internal interrupts on the MPC107
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <3ED7EFB4.2050400@mvista.com>
+References: <1054119003.23151.23.camel@newt>  <3ED7EFB4.2050400@mvista.com>
+Content-Type: text/plain
+Date: 02 Jun 2003 12:46:37 +0100
+Message-Id: <1054554408.20568.86.camel@newt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20030529162243.ED346C5492@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-in message <3ED6298C.3070901@adtran.com> Ron Flory wrote:
+On Sat, 2003-05-31 at 00:56, Mark A. Greer wrote:
 
-> 4.  I know the question of embedded libc comes up often.  For
->     the most part, we basically need the 'strxxx' and 'memxxx'
->     functions, but 'sprintf' is quite a different critter.  Since
->     we are running an 860, we won't have FP support (and we don't
->     want to deal with emulation).  Do most folks use a hand-patched
->     'sprintf' source file, manually removing the floating-point ops?
->     I've looked into this a few years ago (the gcc sprintf source
->     file is a horror).  Has the 'ulibc' that i've heard about been
->     used with success by anybody on this list for embedded non-linux
->     projects?
 
-Ron,
+> [snip]
+>  My guess is
+> that your board's fw (or early kernel init code) is setting it up with
+> the correct value but on the other systems you mentioned, the fw doesn't
+> (and the reset value of 0x00 is returned).  Basically, if I'm
+> interpreting the manual correctly, you probably need to do something
+> other than count on the fw setting up that field in that reg correctly.
 
-   We're happily using newlib's sprintf on the mpc850, in a piece of
-   seriously embedded non-linux equipment.
+For boards derived from the linuxppc_2_4_devel tree, everything works.
+I've now done kernel ports for several MPC107 based boards, all derived
+from that tree, which use the "new way" you describe below.
 
-   According to my rough notes, µClibc is LGPL, so static linking may not
-   be a good idea. Newlib's BSD-like terms seemed more appealing to me.
+> [description of "old way" snipped]
 
-   http://sources.redhat.com/newlib
+I think I may force the driver to run in polled mode on kernels which
+use the "old way". Many of them fail to initialise the vector in the
+EPIC.
 
-   Bill Gatliff wrote an article on it, in the December 2001 issue of
-   Embedded Systems Programming.
+> The "new way" of initializing the openpic uses the openpic_set_sources()
+> routine which allows you to select just the vectors you want to
+> initialize and assign them the IRQ values that you want (independent of
+> their offset).  Much nicer and it doesn't write to vectors/locations
+> that you don't want written.
+>
+> The problem for an I2C driver is that the IRQ is now board specific.
+>
+> So what to do?  Well, the board-specific file needs to initialize the
+> I2C vector.  Also, there has to be some mechanism for the board-specific
+> file to tell your driver what the IRQ is.  Maybe the best solution is to
+> have the board-specific code set up the vector field in the IIVPR0 reg
+> with the proper IRQ and then your driver won't need to change.  Seems
+> fairly clean but you'll have to hack the board-specific code of any
+> boards that will use the I2C driver.
 
-   There's apparently also dietlibc and sglibc, but I haven't
-   investigated either.
+If there's any interest I could tidy up the driver and submit it into
+linuxppc_2_4_devel along with a patch that collects MPC107 configuration
+into one place.
 
-Regards,
-Erik
+- Adrian Cox
+http://www.humboldt.co.uk/
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
