@@ -1,40 +1,39 @@
-Message-ID: <3C987DEB.14F4E05A@imc-berlin.de>
-Date: Wed, 20 Mar 2002 13:17:47 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Date: Wed, 20 Mar 2002 15:27:16 +0100
+Message-Id: <200203201427.g2KERAv17415@mailgate5.cinetic.de>
 MIME-Version: 1.0
-To: Steve Rossi <srossi@labs.mot.com>
-Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: IDE DMA on 8xx ??
-References: <3C20E057.B9983C96@labs.mot.com>
-Content-Type: text/plain; charset=us-ascii
+From: Frank Haverkamp <f.haverkamp@web.de>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Debugging Multithreaded applications
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Steve,
+Hi,
 
-> Has anyone attempted to use the internal 8xx IDMA controller to do
-> DMA to a IDE disk? I'm considering making an attempt at it, but I just
-> want to hear first if anyone has tried already and if so what the
-> experience is.
+a friend of mine told me that he had problems debugging multithreaded
+applications on a powerpc Linux based platform. I think he is using
+glibc 2.1.3 and gcc-2.95.2 and libpthread-0.8.
 
-I did last summer. Well actually I tried. It wasn't too hard to use the
-IDMA to transfer data from/to ide disk.
+Does anybody has made experiences with that? Unfortunatly I have no
+more information about the system he is using. Are there any known
+problems with the gcc, glibc or libpthread concering debugging?
+Should he update? Which version should he than take?
 
-But at that time my code just started polling after setting up the dma.
-So the cpu was busy waiting instead of doing something useful. But I
-reckon it's not to hard to use irqs for signaling the end of DMA
-transfer to the ide driver.
-
-I noticed that the cycle time of the normal (i.e. two-address) IDMA mode
-is huge. So the performance wasn't great.
-
-I have to pick up that work again now.
-
-So I wonder if you or anybody else has done something on this topic?
+Which are the latest version of gcc, glibc and libpthread known to be
+working with powerpc Linux?
 
 Thanks,
 
-Steven
+Frank
+
+
+--
+Frank Haverkamp
+f.haverkamp@web.de
+________________________________________________________________
+Keine verlorenen Lotto-Quittungen, keine vergessenen Gewinne mehr!
+Beim WEB.DE Lottoservice: http://tippen2.web.de/?x=13
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
