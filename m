@@ -1,39 +1,66 @@
-Message-ID: <89DEFCC5DB33D411A27F00508BCF8A820A8D5A14@ZCH07EXM05.corp.mot.com>
-From: Liu Fred-a18596 <fred.liu@motorola.com>
-To: BREUVART Jean-Charles <jean-charles.breuvart@airbus.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: pb compiling cross gcc, binutils, glibc and so on ...
-Date: Fri, 20 Dec 2002 09:57:40 +0800
+Message-ID: <3E02D02A.9090307@intracom.gr>
+Date: Fri, 20 Dec 2002 10:09:14 +0200
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: New style dpalloc/hostalloc routines (diff).
+References: <3E006C94.2090503@intracom.gr> <15874.23846.177956.192840@argo.ozlabs.ibm.com>
+In-Reply-To: <15874.23846.177956.192840@argo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> 5. build gcc core 2.95.3 for powerpc cross compile, and install it in
-> /opt/powerpc-linux/ :
->       - cd /usr/src/gcc-2.95.3/
->       - make clean
->       - make distclean
->       - CC=/usr/local/bin/gcc ./configure --target=powerpc-linux
-> --enable-shared --enable-languages=c --with-newlib
-> --prefix=/opt/powerpc-linux
->       - add /opt/powerpc-linux at the end of $PATH, otherwise
-> make doesn't
-> find powerpc-linux-as, powerpc-linux-ld and so on
->       - make
+Paul Mackerras wrote:
+
+>Pantelis Antoniou writes:
 >
-> Here is the trouble :
 >
-> choose-temp.c:29: stdio.h: Aucun fichier ou r?pertoire de ce type
-> choose-temp.c:30: sys/types.h: Aucun fichier ou r?pertoire de ce type
-> choose-temp.c:32: unistd.h: Aucun fichier ou r?pertoire de ce type
-> choose-temp.c:35: stdlib.h: Aucun fichier ou r?pertoire de ce type
-> choose-temp.c:38: sys/file.h: Aucun fichier ou r?pertoire de ce type
+>>+# Support new type of routines, usable from modules
+>>+bool 'Use new type dpalloc routines()' CONFIG_NEW_DPALLOC
+>>+bool 'Use new type hostalloc routines()' CONFIG_NEW_HOSTALLOC
+>>+if [ "$CONFIG_NEW_DPALLOC" = "y" -o "$CONFIG_NEW_HOSTALLOC" = "y" ]; then
+>>+  define_bool CONFIG_CPM_RHEAP y
+>>+fi
+>>
 >
-> there aren't any of those in /opt/powerpc-linux/ or its subdirs
+>I don't want to see config options that select between different
+>internal implementations of the same thing.  Either your new routines
+>are better, and we'll use them, or they are worse, and we'll use the
+>old ones.  Having a config option just leads to tons of ifdefs
+>throughout the code, which makes it harder to read and understand.
+>Having two implementations of the same thing is just bloat.
 >
-It's true that there are no any of those files. They are in glibc which you have not compiled yet.
-Some useful tips at: http://www.mock.com/receiver/tools/
+>Similarly, I don't like the way all your new routines have a "new_"
+>prefix on the name.  You should be thinking of replacing the existing
+>routines rather than providing an alternative implementation with a
+>different name.  Where you have changed the API, either fix the
+>drivers or provide a compatibility routine.
+>
+>The way it looks at the moment, it seems that you don't really have
+>the conviction that your code is better than what is there already.
+>Please redo your patch so that it just replaces the old routines.  And
+>please don't send it as a bkpatch since they are impossible to read, a
+>plain diff -u is much better.
+>
+>Paul.
+>
+>
+>
+>
+>
+Well that's easy to do since that's the way it is in my tree.
+
+The only reason for the new_ prefixes and the config options was to
+make it easy for people to test them.
+
+I didn't sent it only as a bkpatch, a following mail had the patch in
+diff format.
+
+Anyway I'll repost them as per you suggestions...
+
+Pantelis
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
