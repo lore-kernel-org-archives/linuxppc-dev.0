@@ -1,44 +1,27 @@
-Message-ID: <3B722F61.90541B0F@genetel.co.kr>
-Date: Thu, 09 Aug 2001 15:36:17 +0900
-From: hychon <hychon@genetel.co.kr>
-Reply-To: hychon@genetel.co.kr
-MIME-Version: 1.0
+Date: Thu, 9 Aug 2001 01:11:17 -0700 (PDT)
+From: James F Dougherty <jfd@GigabitNetworks.COM>
+Message-Id: <200108090811.BAA02438@krakatoa.gigabitnetworks.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: to controll the serial baudrate?
-Content-Type: multipart/mixed;
- boundary="------------76D152ACEC26E0BFDDA61697"
+Subject: modprobe error messages on console
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-MIME 형식의 멀티-파트 메시지입니다.
---------------76D152ACEC26E0BFDDA61697
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: 7bit
+So, I have my development board up, and am trying to
+build some apps and get disk working, running fdisk
+emits the block device error, while attempting to
+build emacs and then run it emacs the binfmt-eedb
+error ...
 
-Hi!
-I work to use two serial port(SMC1 , SMC2) on MPC860T running
-kernel-2.4.4 .
-I want to controll the seral speed(baudrate) of SMC serial.
+How does one compile the below drivers into the kernel?
 
-question) where I can controlled the serial baudrate?
---------------76D152ACEC26E0BFDDA61697
-Content-Type: text/x-vcard; charset=EUC-KR;
- name="hychon.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Description: Card for hychon
-Content-Disposition: attachment;
- filename="hychon.vcf"
 
-begin:vcard
-n:;
-x-mozilla-html:FALSE
-adr:;;;;;;
-version:2.1
-x-mozilla-cpt:;0
-end:vcard
+modprobe: modprobe: Can't locate module binfmt-eedb
+modprobe: modprobe: Can't locate module block-major-3
 
---------------76D152ACEC26E0BFDDA61697--
-
+				Thanks,
+				-James
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
