@@ -1,27 +1,25 @@
 Return-Path: <panto@intracom.gr>
 Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id 7C5D767A65
+	by ozlabs.org (Postfix) with ESMTP id 786F967A7D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Mar 2005 01:07:16 +1100 (EST)
+	Fri, 25 Mar 2005 01:14:30 +1100 (EST)
 Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j2OEB0aR005929
+	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j2OEIGFu009677
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Mar 2005 16:11:00 +0200 (EET)
-Received: from ifaistos.intranet.gr (ifaistos.intranet.GR [146.124.20.203])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j2OEAxNJ005920
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Mar 2005 16:10:59 +0200 (EET)
-Received: from [146.124.120.118] (voipkopsias.intranet.GR [146.124.120.118])
-	by ifaistos.intranet.gr (8.11.7p1+Sun/8.11.7) with ESMTP id
-	j2OE2C913884 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Mar 2005 16:02:12 +0200 (EET)
-Message-ID: <4242C768.407@intracom.gr>
-Date: Thu, 24 Mar 2005 15:58:00 +0200
+	Thu, 24 Mar 2005 16:18:17 +0200 (EET)
+Message-ID: <4242C919.5050303@intracom.gr>
+Date: Thu, 24 Mar 2005 16:05:13 +0200
 From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Content-Type: multipart/mixed; boundary="------------070503030309000507090302"
-Subject: [PATCH] 8xx typo fix
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+References: <c5f8c158f9254cbb0a8e085cf0fda8de@embeddededge.com>	<20050210170658.GA20153@logos.cnet>	<20050210170859.GB20153@logos.cnet>
+	<423F4071.1000001@mrv.com>	<20050322130426.GE2498@logos.cnet>	<f4f476b5e54e9f005dd28082bd5f16fe@embeddededge.com>	<20050322175815.GB7846@logos.cnet>	<ab78e7b7625e4293bf29fded17f589c2@embeddededge.com>	<20050323102501.GF7846@logos.cnet>	<f8d4fefc4fc282e699ee279e92c3c2ef@embeddededge.com>
+	<20050323160544.GB5305@logos.cnet>
+In-Reply-To: <20050323160544.GB5305@logos.cnet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "Smith, Craig" <craig.d.smith@siemens.com>, paulus@samba.org,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Linux 2.6.x on 8xx status
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,45 +30,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------070503030309000507090302
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Marcelo Tosatti wrote:
+> On Wed, Mar 23, 2005 at 11:12:11AM -0500, Dan Malek wrote:
+> 
+>>On Mar 23, 2005, at 5:25 AM, Marcelo Tosatti wrote:
+>>
+>>
+>>>You misunderstood: get_mmu_context() _wont_ be called if the mm 
+>>>structures
+>>>are the same.
+>>
+>>I understood.  At most, get_mmu_context() will only do a 'tlbia'
+>>instruction, I didn't see your reason for thinking this would have
+>>an effect on the tlbie usage.
+> 
+> 
+> OK. That is not a good reason, indeed.
+> 
+> 
+>>>>Well, that's interesting.  It's likely to only happen on an 860 
+>>>>variant
+>>>>that
+>>>>has the large TLB.
+>>>
+>>>For what reasoning?
+>>
+>>My initial debugging seemed to indicate a stale TLB entry.  With
+>>the larger TLB this is more likely to happen.  The bug was never
+>>seen on the 823/850 with smaller TLBs.
+>>
+>>I have a new 8xx board now, so I'll have to start working on these
+>>issues as well.
+> 
+> 
+> OK!
 
-Hi all
+I've just managed to get 2.6.12-rc1 running on my 870 based board
+and the tlb invalidate is still needed.
 
-The following patch fixes a typo which was introduced in the great
-SPRN_ renaming.
-
-The patch is against the latest linus bk tree (2.6.12-rc1).
-
-Please apply.
+Investigating...
 
 Regards
 
 Pantelis
-
-P.S. I want 4 hours of my life back.
-
-Signed-off-by: Pantelis Antoniou <panto@intracom.gr>
-
---------------070503030309000507090302
-Content-Type: text/x-patch;
- name="8xx-insn-tlbmiss-fix.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="8xx-insn-tlbmiss-fix.patch"
-
---- linux-2.5/arch/ppc/kernel/head_8xx.S	2005-03-15 14:22:24.000000000 +0200
-+++ linux-2.5-intracom/arch/ppc/kernel/head_8xx.S	2005-03-24 15:43:22.000000000 +0200
-@@ -307,7 +307,7 @@
- 	stw	r11, 4(r0)
- 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
- 	DO_8xx_CPU6(0x3780, r3)
--	mtspr	SPRN_MD_EPN, r1	/* Have to use MD_EPN for walk, MI_EPN can't */
-+	mtspr	SPRN_MD_EPN, r10	/* Have to use MD_EPN for walk, MI_EPN can't */
- 	mfspr	r10, SPRN_M_TWB	/* Get level 1 table entry address */
- 
- 	/* If we are faulting a kernel address, we have to use the
-
---------------070503030309000507090302--
