@@ -1,45 +1,32 @@
-Subject: Re: linuxppc-embedded: main kernel tree
-To: dan@netx4.com (Dan Malek)
-Date: Thu, 27 Jan 2000 11:45:24 +1100 (EST)
-Cc: alan@packetengines.com (Alan Mimms),
-        linuxppc-embedded@lists.linuxppc.org (linuxppc-embedded)
-In-Reply-To: <388F677E.59321B87@netx4.com> from "Dan Malek" at Jan 26, 2000 04:30:38 PM
+Message-ID: <002201bf6861$20f24d10$69f001dc@sjzhu.sps.mot.com>
+From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
+To: "Dan Malek" <dan@netx4.com>
+Cc: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Help about MPC823 Video and Cache
+Date: Thu, 27 Jan 2000 08:54:54 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000127004524.3F1A519933@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+Content-Type: text/plain;	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek writes:
-> Alan Mimms wrote:
->
-> > Thank you.  However, since I started out with the 2.2.13 sources and found
-> > they just didn't work really at all on the CLLF
->
->
-> Huh?  They should.  The only bug was the FEC driver.
+Hello, everyone
 
-There were also changes to arch/ppc/kernel/head.S required to get 2.2.13 from
-ftp.ppc.kernel.org. to work on the CLLF boards.
+I'm using kernel version 2.2.13 on my MPC823 FADS board
+to display on TV. I have a problem:
 
-Alan, in case you aren't aware, these changes are included in the kit at:
-    ftp://mail.netx4.com/pub/cllf-2.2.13.tgz
+After the system boot up, the text on the TV flicker fiercely out,
+if I disable the I-Cache throught the EST visionProbe tool,
+TV will not flicker out again.
+Of course, if I disable the cache when the system boot up,
+TV display OK.
+So there is some relation between the cache and the video, I guess.
 
-This should be your starting point if you wish to switch to 2.2.x on the
-CLLF's.
 
-> Of course not.  I sometimes wonder why I bother posting messages
-> and writing development notes......The 2.2.xx kernels do not have
-> any up to date 8xx functions.  You must use the tar files from
-> ppc.kernel.org that I have updated......
+Do you have any suggestion?
+Thanks in advacned!
 
-Well, I for one am particularly glad you do -- I sure read 'em!  I try to
-point others to them too; most newcomers don't realise that you've already
-answered their question before they ask...
-
-Regards,
-Graham
+BRs,
+Shuangjun
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
