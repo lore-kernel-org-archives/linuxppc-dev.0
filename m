@@ -1,19 +1,18 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp10.wanadoo.fr (smtp10.wanadoo.fr [193.252.22.21])
-	by ozlabs.org (Postfix) with ESMTP id 141AF2BF12
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jan 2005 04:30:39 +1100 (EST)
-Date: Wed, 5 Jan 2005 18:39:08 +0100
-To: Christian <evilninja@gmx.net>
-Message-ID: <20050105173908.GC29131@pegasos>
+Return-Path: <marvin24@gmx.de>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id DEEC02BF12
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jan 2005 07:58:29 +1100 (EST)
+From: Marc Dietrich <marvin24@gmx.de>
+To: Sven Luther <sven.luther@wanadoo.fr>
+Date: Wed, 5 Jan 2005 21:57:25 +0100
 References: <200412261435.13562.marc.dietrich@ap.physik.uni-giessen.de>
-	<200501041504.57588.marvin24@gmx.de>
-	<1104850036.6164.25.camel@weizen.left.earth>
-	<200501051233.25622.marvin24@gmx.de>
-	<20050105154753.GA26760@pegasos> <41DC1F7E.5030003@gmx.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <41DC1F7E.5030003@gmx.net>
-From: Sven Luther <sven.luther@wanadoo.fr>
+	<200501051733.06350.marvin24@gmx.de>
+	<20050105165551.GA29287@pegasos>
+In-Reply-To: <20050105165551.GA29287@pegasos>
+MIME-Version: 1.0
+Message-Id: <200501052157.25302.marvin24@gmx.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: [FYI] linux 2.6 still not working with PReP (ppc32)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,51 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 05, 2005 at 06:10:22PM +0100, Christian wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Am Dienstag, 4. Januar 2005 15:47 schrieb Sebastian Heutling:
-> >>
-> >>>Hello again Marc,
-> >>>
-> >>>
-> >>>>>>Can you put a working zImage.prep somewhere on the web (<1.44 MB, so I
-> >>>>>>can write it to a floppy disk)?
-> >>>>>
-> >>>(...)
-> >>>It is on: http://sengor.ath.cx/~sheutlin/prep/zImage.prep
-> >>
-> 
-> yes, it's booting, but i get timeouts here on my PReP (however Marc says,
-> that he does not get errors). would you be so kind and publish the .config
->  too?
-> 
-> > Did you try : 
-> > 
-> >   http://people.debian.org/~luther/prep/d-i-2005.01.03-prep
-> > 
-> 
-> and Sven: nice d-i, really. but i couldn't see any config for this kernel
-> either. it would be nice if you could put the config somewhere too.
 
-It is the standard powerpc debian kernel. apt-get install
-kernel-image-2.6.8-powerpc, and you will find the config in
-/boot/config-2.6.8-powerpc. All the rest of the stuff can be found in the
-debian kernel svn repo : 
+Hi all,
 
-  http://svn.debian.org/wsvn/kernel/trunk/kernel/
+I didn't recognise that the kernel from Sebastian - which was working fine 
+here - was build from the debian sources (no hint in the kernel version). 
+So I build everything again from debian source and fixed the irq's in 
+prep_pci.c.
 
-> mine are here, now with SCSI enabled too and thus errors showing up:
-> 
-> http://www.nerdbynature.de/bits/hal/daily/configs/config-ppc-2.6.10
-> http://www.nerdbynature.de/bits/hal/daily/boot/dmesg-2.6.10
-> 
-> (but network is fine now ;-))
+I can confirm now, that this debian+irq_fix kernel 2.6.8 runs fine and 
+produces no scsi timeouts!
 
-Well, i am really interested to know if the above debian kernel boots for you
-or not. And to find the patches that fix it if it doesn't.
+Something happend in kernels >= 2.6.9 which makes the scsi unusable. Also it 
+seems, that even in 2.6.8 kernels and with ide hard disks (Sebastians setup) 
+the scsi controller timeouts, but continues to operate - correct?
 
-Friendly,
+That's all for now (and this year), because I have to leave this nice machine 
+alone and go home. Thanks to all who helped me - maybe see you next year 
+again...
 
-Sven Luther
+Greetings
+
+Marc
+
+Am Mittwoch, 5. Januar 2005 17:55 schrieben Sie:
+>
+> (...)
+>
+> Also, apt-get install kernel-patch-debian-2.6.8 should give you the latest
+> debian patch. No idea how it applies to the non-free pruned stuff though.
+>
+> > Do you have any idea, why a stock 2.6.8 kernel (with prep_pci.c patch)
+> > doesn't boot a prep image?
+>
+> Either a missing patch or a wrong .config.
+>
+> I am personally much more interested in having the debian kernel working
+> correctly though.
+>
+> Friendly,
+>
+> Sven Luther
