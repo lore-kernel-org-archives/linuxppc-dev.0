@@ -1,45 +1,29 @@
-Message-Id: <200003140918.JAA19674@hyperion.valhalla.net>
-Date: Tue, 14 Mar 2000 09:18:17 +0000
-Subject: Different Mac Models.
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Tue, 14 Mar 2000 10:51:00 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: phandel@cise.ufl.edu
+cc: "James B. Parker" <pajama1@mindspring.com>,
+        LinuxPPC Developer <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Xfree86 4.0
+In-Reply-To: <Pine.LNX.4.21.0003131705480.27743-100000@adsl-78-160-189.gnv.bellsouth.net>
+Message-ID: <Pine.LNX.4.10.10003141039330.12222-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello All,
-I new to the list so apologies if this is a bit dumb.
+> > Actually, I do have a XF86Config file.  After the build/install I ran
+> > Xconfigurator (it finally recognized 6mb of vram) and then just skipped the
+> > test section.
+>
+> Xconfigurator & Xautoconfig will not create an XF86Config file that
+> XFree86 4.0 can use.  Check out one of Kostas' examples, or send me a note
+> and I'll send you mine.
 
-Is there a cross-reference matrix anywhere between Mac Machine IDs (the one
-you can get out of system profiler) and the required kernel build config
-flags?  Preferably ;) by kernel version.
+Please post an URL for Kostas' example files :-) I'd also like to compare
+my hand-edited config with something known to work on LinuxPPC.
 
-I have G3 minitower (Apple UW scsi), G3 PB (although if it's a "1999" or
-"lombard" beats me) & a 9600/233 604.
+	Michael
 
-I succeeded (by trial & error) to find the right combinations to build
-2.2.14p9 on both G3 & PB (but never got the USB mouse working on the PB, and
-the trackpad is frustratingly fast to say the least)... and then had to
-spend some time of paid work - restarted last week...
-
-I am about to (if it hasn't been claimed already) think about doing an ALSA
-driver for pmac internal sound.
-
-I have (just about) succeeded in getting the latest (yesterday) rsyncs
-(2.3.51) from linuxcare to build and boot on the G3 minitower - although I
-had to leave a lot of PB stuff in to get it to build.
-
-However, (I appreciate this is not going to be helpful so I don't expect an
-answer) once X (Xpmac rev 6) is up the machine stops dead after a few
-minutes... three finger salute required to get anywhere :(
-
-Would I be better off sticking with the 2.2.XX tree for ALSA driver
-development - or should I be in amongst the 2.3.xx tree?
-I think this is a PPC rather than ALSA question (?).
-
-regards,
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
