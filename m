@@ -1,41 +1,40 @@
-Message-ID: <3A9A8976.884C49C2@mvista.com>
-Date: Mon, 26 Feb 2001 11:51:02 -0500
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Steve Ferri <sferri@ss7-link.com>
-CC: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Cache Inhibit on 860?
-References: <F1BD619B2A58D41197990050DA2C08E41A5E2C@SLINK12>
-Content-Type: text/plain; charset=us-ascii
+To: "dony" <dony.he@huawei.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Which board use 8260 CPU? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 26 Feb 2001 19:40:08 +0800."
+             <000901c09fe8$def06760$8021690a@huawei.com>
+Date: Mon, 26 Feb 2001 21:04:59 +0100
+Message-Id: <20010226200504.00F03287EA@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steve Ferri wrote:
+In message <000901c09fe8$def06760$8021690a@huawei.com> you wrote:
+>
+>     I just downloaded ppcboot.tar.gz files.
+>    Since my custom board use 8260, I want to find a board  using 8260 from ppcboot/board as a example.  I know "cogent"  board supports 8260, but it seems to be a little complex for me.
+> Are there other boards using  8260 CPU which can meet the following requirements:
 
-> Is there a way to alloc memory and mark it as cache inhibited ?
+Just check the top  level  Makefile;  it  contains  targets  for  all
+standard board configurations, and the definition of the CPU variable
+give  you  some hints; there are 3 boards with 82xx CPU at the moment
+(some more in the works): sandpoint (8240), hymod (8260)  and  cogent
+(8260).
 
-In a few minutes :-).  I finally created a common set of 'dma_consistent'
-functions for 8xx and 4xx (and anything else that may need them)
-based upon implementations from other architectures.  I am now checking
-this into the linuxppc_2_5 BitKeeper tree.
+>  1  Initialize CPU core registers , SDRAM, MMU,SIU, CPM
+>  2  Initialize Serial Port and Network (SMC , FCC).
+> 3  Download kernel from tftp server or load kernel from on-board flash ?
 
-> This would eliminating the need for the invalidate and flush calls.
+AFAIK, all of them do that.
 
-But, if you already have this working, it is probably better performance
-unless these are tiny, frequently used buffers.
+Wolfgang Denk
 
-> .....  I am
-> currently
-> running a 2.2.14 version of the kernel on an 860 processor.
-
-For 2.2.14, look at the arch/ppc/8xx_io/enet.c Ethernet driver as
-an example.  It calls __get_free_page(), then tracks down the
-page table entry and sets the cache inhibit flag.  Do the same thing
-in your driver.  The stuff done in 'commproc.c' is different because
-it is called earlier in the kernel.
-
-
-	-- Dan
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The software required `Windows 95 or better', so I installed Linux.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
