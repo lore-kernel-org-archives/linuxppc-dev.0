@@ -1,80 +1,51 @@
-Message-ID: <19990114172509.A16588@steed.u-strasbg.fr>
-Date: Thu, 14 Jan 1999 17:25:09 +0100
-From: luther sven <luther@steed.u-strasbg.fr>
-To: Jes Sorensen <Jes.Sorensen@cern.ch>, Jesper Skov <jskov@cygnus.co.uk>
-Cc: Cort Dougan <cort@persephone.cs.nmt.edu>, linuxppc-dev@lists.linuxppc.org,
-        alan@cymru.net, Linux/APUS mailing list <linux-apus@sunsite.auc.dk>
-Subject: Re: Synchronization [was Re: The Magic Show: kernel_map() disappearing]
-References: <13980.23937.676502.388522@lassi.cygnus.co.uk> <Pine.LNX.3.96.990113130000.3632F-100000@persephone.cs.nmt.edu> <13981.45420.95483.559227@lassi.cygnus.co.uk> <d390f69o12.fsf@valhall.cern.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <d390f69o12.fsf@valhall.cern.ch>; from Jes Sorensen on Thu, Jan 14, 1999 at 10:55:37AM +0100
+Date: Thu, 14 Jan 1999 12:12:51 -0500 (EST)
+From: Jon Howell <jonh@cs.dartmouth.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: AtyFB problem solved -> should go into a FAQ or something
+In-Reply-To: <199901140800.CAA24661@lists.linuxppc.org>
+Message-ID: <Pine.GSO.3.96.990114103025.1036C-100000@shovel.cs.dartmouth.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 14, 1999 at 10:55:37AM +0100, Jes Sorensen wrote:
-> >>>>> "Jesper" == Jesper Skov <jskov@cygnus.co.uk> writes:
-> 
-> >>>>> "Cort" == Cort Dougan <cort@persephone.cs.nmt.edu> writes:
-> Cort> You're right, that was an oversight on my part.  I'll fix the
-> Cort> mistake.  I'll commit that to vger now.  I'm going to leave the
-> Cort> sync in there as well, to make sure that things stall until the
-> Cort> writes are done.
-> 
-> Jesper> OK, core of the problem is that I don't know what mb() is
-> Jesper> supposed to do. Here's what we have on the PPC:
-> 
-> mb() is supposed to ensure that the CPU does not reschedule
-> instructions' memory access beyond the mb().
-> 
-> Jesper>  sync : stall CPU until all IO has completed.  eieio: prevent
-> Jesper> CPU from reordering/collapsing reads/writes to memory.  (but
-> Jesper> otherwise run at full steam!)
-> 
-> [snip]
-> 
-> Jesper> That's why I added the iobarrier() macros (adding _w/_r/_rw on
-> Jesper> Alan's request) that are only related to IO synchronization
-> Jesper> within the same CPU. Essentially it's just renaming the
-> Jesper> eieio() macro already used in many PPC drivers because it's a
-> Jesper> bad name; Linux/APUS will be sharing drivers with Linux/m68k
-> Jesper> where eieio isn't such a helpful name.
-> 
-> Jesper> Given that mb() was defined as sync, I assumed mb() to be the
-> Jesper> common Linux name for a thingie used for SMP synchronization.
-> 
-> I guess you would normally use a spinlock() for that, mb() is supposed
-> to ensure the ordering regarding access to memory which is really what
-> is happening in most of our drivers (at least all the Amiga ones) -
-> this is why I was moaning about the iobarrier() stuff as it was not
-> clear to me what it was supposed to do differently from mb() - except
-> if you want ordering when going out on an I/O bus like on the PC.
-> 
-> Jesper> I may have been wrong. iobarrier() may not be such a good name
-> Jesper> after all, but I think it's important for the names to reflect
-> Jesper> the semantics of the function. And there are two separate
-> Jesper> synchronization semantics required (at least on the PPC) - I
-> Jesper> don't want to merge them just because there's already a common
-> Jesper> Linux function that's named mb() (memory barrier, presumably).
-> 
-> When considering the name, memory barrier is the right name, after
-> all, all your driver registers are memory mapped and therefore `just'
-> another type of memory.
+> Date: Wed, 13 Jan 1999 09:20:21 +0100
+> Subject: AtyFB problem solved -> should go into a FAQ or something
 
-If i understood things correctly, it shopuld be :
+So it's been a while since I've given the faqomatic sales pitch. :v)
+(This is addressed to the whole community, not the original author
+above.)
 
-mb() is in fact an eieio call.
+A couple years ago, I had an answer to a ppp question that I
+thought "should go into a FAQ or something." But I was too lazy to start
+a FAQ, or even to track down the maintainer of a FAQ. So, instead, I
+wrote the faqomatic, so that everybody who comes up with an answer
+that "should go into a FAQ or something" can just stuff the answer
+in there and forget about it.*
 
-spinlock() should be an sync() call.
+If you've used the linux/powerpc faqomatic, maybe you didn't notice,
+but you can add new answers. Find an appropriate category, click [Show
+Edit Commands], click [New Answer] at the top of the page. If you
+haven't used it before, you will need to create a password (to verify
+that your email address is real); then it will ask you for the question
+and its answer.
 
-so the current use of mb() is either wrong or misdefined.
+Thanks to all who have contributed to the faqomatic. If everybody puts
+in one or two answers, then all of us get to be lazy. :v)
 
-Did i miss something here ?
+	--Jon
 
-Friendly;
+* There are also moderators who watch over various categories in the
+FAQ, and make some effort to see that they stay organized. This is much
+less effort than a typical FAQ, since you don't have to actually *add*
+any answers. If you are interested in moderating a category of the FAQ,
+just ask the moderator of the next section up (turn on "show moderator"
+in the Appearance page), or ask me.
 
-Sven LUTHER
+ Jon Howell  jonh@cs.dartmouth.edu     finger jonh@cs.dartmouth.edu | pgp -kaf
+ http://www.cs.dartmouth.edu/~jonh     170AE827  ADAB6559  9C2E3DB3  37BD72EC
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
