@@ -1,61 +1,41 @@
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-To: Pierre Sarrazin <sarrazip@machinasapiens.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: R_PPC_REL24 relocation out of range, with trivial program
-Date: Mon, 3 Apr 2000 23:34:02 +0200
-Content-Type: text/plain
-References: <38E90159.DB89C967@machinasapiens.com>
-In-Reply-To: <38E90159.DB89C967@machinasapiens.com>
+Message-ID: <20000404002128.28700.qmail@web1005.mail.yahoo.com>
+Date: Mon, 3 Apr 2000 17:21:28 -0700 (PDT)
+From: Dan Bethe <dan_bethe@yahoo.com>
+Subject: read-only root (was Re: Help I've been cracked!!!)
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Message-Id: <00040323364000.01288@enzo.bigblue.local>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Am Mon, 03 Apr 2000 schrieb Pierre Sarrazin:
->Last month I posted the following message:
+--- Greg Noel <GregNoel@san.rr.com> wrote:
 >
->From: Pierre Sarrazin
->Date: Thu, 02 Mar 2000 18:25:46 -0500
->> This is another message about the "R_PPC_REL24 relocation out of range"
->> problem. I have a trivial program and library system that illustrates it.
->> I have read some of the previous messages on this topic but the solutions
->> proposed did not make a difference.
->>
->> The problem happens when the dlopened library exports a C++
->> function returning 'string', but not when it exports a function
->> returning 'const char *'.
->>
->> Here is the program:
->	[...]
+> At 7:33 AM -0500 4/2/00, Justin Shore wrote:
 >
->
->The full message is at:
->http://lists.linuxppc.org/listarcs/linuxppc-dev/200003/msg00025.html
->
->
->I would like to know if there is a chance that this problem will
->be fixed soon. I have had to suspend my LinuxPPC work for the
->last month. My company's support for the LinuxPPC platform is
->delayed by this issue.
->
->Is there a way to ask gcc to generate only long branch instructions
->so as to avoid this whole problem? Thanks.
+> >... has anyone ever setup [sic - that's a noun, you want "set up"] a
+> >system where root was on CD or some other non-writable volume ... ?
 
-This seems to be fixed in the current toolchain:
+	Any host acting as a network appliance, such as a router or firewall,
+should do that.  Linux Router Project does that.  You can have a
+read-only boot medium such as cdrom, floppy, or hard drive.  Hopefully,
+it's physically read-only like a cd or a jumpered hard drive.  To deal
+with logs, I suggest the following:
 
-[fsirl@entropy:~/bugs/reloc]$ make
-g++ -g -Wall -fPIC -DSTRING_EXAMPLE -c prog.cpp
-g++ -g -Wall -fPIC -DSTRING_EXAMPLE -o prog prog.o -ldl
-g++ -g -Wall -fPIC -DSTRING_EXAMPLE -c f.cpp
-g++ -shared -o libf.so f.o
-[fsirl@entropy:~/bugs/reloc]$ ./prog
-f()
-s = [pizza]
+* A ramdisk filesystem for logs, periodically emailed to you and then
+deleted by logrotate
 
-Either upgrade your distribution or go to
-<ftp://devel.linuxppc.org/users/fsirl>.
+* a completely read-only filesystem with a network-based syslog host
+for security
 
-Franz.
+* Or just no logs at all.
+
+	Also note that Yggdrasil's "Plug and Play Linux" distribution can
+optionally boot completely off the cdrom.
+
+=====
+"Don't expect your own messiah; this neverworld which you desire is
+only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
