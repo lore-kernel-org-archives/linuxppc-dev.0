@@ -1,33 +1,36 @@
-Message-ID: <3873C65B.54932D84@execpc.com>
-Date: Wed, 05 Jan 2000 16:31:55 -0600
-From: Joseph Garcia <jpgarcia@execpc.com>
+Message-ID: <3873D1E9.916117E0@ctam.com.au>
+Date: Thu, 06 Jan 2000 10:21:14 +1100
+From: Brendan J Simon <Brendan.Simon@ctam.com.au>
+Reply-To: Brendan.Simon@ctam.com.au
 MIME-Version: 1.0
-To: Naoki Takebayashi <ntakebay@bio.indiana.edu>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: enhanced RTC and SMP on PowerMac
-References: <Pine.SOL.4.10.10001051648140.262-100000@sunflower.bio.indiana.edu>
-Content-Type: text/plain; charset=iso-2022-jp
+To: erammsu@kieraypc01.p.y.ki.era.ericsson.se
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
+        glibc-linux <glibc-linux@ricardo.ecn.wfu.edu>
+Subject: glibc patches for mpc860
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Naoki Takebayashi wrote:
-> 
-> Is enhanced RTC supposed to work on PowerMac?  When I compile with
-> CONFIG_RTC, the kernel doesn't boot up and dies when it hits the following
-> line:
-> 
->    /* Initialize periodic freq. to CMOS reset default, which is 1024Hz */
->    CMOS_WRITE(((CMOS_READ(RTC_FREQ_SELECT) & 0xF0) | 0x06), RTC_FREQ_SELECT);
+> Graham Stoney wrote:
+> > Thanks for your great tips on building glibc for the '860. It would
+be great if
+> > we could get some mods into the next glibc release so that it would
+configure
+> > out-of-the-box without patching...
 
-I have the same problem.  I dont think it should work.  (CMOS on a ppc?)
+> Marcus Sundberg wrote:
+> Yes definitely. I intend to submit some patches as soon as I've had
+> time to try out glibc 2.1.2pre3 and verified that there are no
+> problems with that. Don't know if I will have time before they
+> release the final 2.1.2 though. :(
 
-I have noticed that the 'clock' program seems to access the rtc.  Assuming it
-is, it may have the code we want to put in the kernel.
+Are the 860 pathces in the latest glibc releases ?
+If not, what about in the CVS tree ?
 
--- 
-Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
-CS Undergraduate                      Student Employee - Systems Programmer
-University of Wisconsin - Madison                            UW Lidar Group
+Thanks,
+Brendan Simon.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
