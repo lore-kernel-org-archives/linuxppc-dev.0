@@ -1,35 +1,52 @@
-Message-Id: <200006052102.XAA01374@piglet.grunz.lu>
-Date: Mon, 5 Jun 2000 23:02:28 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: New experimental X 4.0
-To: bh40@calva.net
-cc: daenzerm@student.ethz.ch, debian-powerpc@lists.debian.org,
-        linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20000605203311.2488@192.168.1.10>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Message-Id: <v04003a01b561eb4b5a92@[24.66.67.194]>
+In-Reply-To: <Pine.LNX.4.05.10006051614100.5397-100000@callisto.of.borg>
+References: <200006051351.PAA19854@mcp.cpu.lu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Mon, 5 Jun 2000 18:49:33 -0500
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Michel Lanners <mlan@mcp.cpu.lu>
+From: Tony Mantler <nicoya@apia.dhs.org>
+Subject: Re: [patch] VRAM detection in controlfb
+Cc: mlan@cpu.lu, drow@false.org, linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   5 Jun, this message from Benjamin Herrenschmidt echoed through cyberspace:
-(about XF4)
-> Did you use my patch or did you fix the r128 driver yourself ? Also, did
-> you already submit the patch to xfree ? (I didn't submit mine yet, I was
-> planning to do so once I've fixed the PLL/BIOS probe)
+At 9:15 AM -0500 6/5/2000, Geert Uytterhoeven wrote:
+>On Mon, 5 Jun 2000, Michel Lanners wrote:
+>> So I guess the optimum would be to mark the VRAM cacheable, but in a way
+>>that
+>> writes don't go into the cache. Would that be write-through?
+>
+>That's indeed write-through. Note that writes will still be cached in such a
+>way that a consecutive read from the same location will return the cached
+>value.  But writes will immediately be sent to the host bridge.
 
-And how about the fbdev framebuffer memory start offset problem? Anybody
-looking at that?
+True enough. Is the vram genuinley behind the PCI bridge, or is it just
+magically managed as a PCI resource from the main bus? If the reads and
+writes don't really go through the bridge then, again, I don't see that
+there would be much benefit in using a write-through cache, with perhaps
+the exception of SMP.
 
-Michel
+It would atleast be worthwhile mapping it non-cached until the driver can
+be proven 100% stable (well, 95% atleast) :), then turn caching back on
+(write-through, of course) and see what breaks again, knowing this time
+that it's definatley cache-related.
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+
+And I mean, if all else fails, stability should always prevail over speed,
+right?... right?... *tumbleweed rolls by*
+
+;)
+
+
+Cheers - Tony :)
+
+
+--
+Tony Mantler       Renaissance Nerd Extraordinaire     nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada                     http://nicoya.feline.pp.se/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
