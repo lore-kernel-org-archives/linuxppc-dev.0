@@ -1,59 +1,36 @@
-Date: Sun, 21 Jan 2001 15:42:01 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Steven Hanley <sjh@wibble.net>
-Cc: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [patch] missing exported symbols
-Message-ID: <20010121154201.D6223@opus.bloom.county>
-References: <20010121144057.A27643@wibble.net> <20010121142823.B6223@opus.bloom.county> <20010122091135.A19788@chiru.svana.org>
+Date: Sun, 21 Jan 2001 19:47:14 -0600
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.1p8:don't "mount" audio CDs
+Message-ID: <20010121194713.C22549@altus.drgw.net>
+References: <20010121092528.53BFBDBA71@atlas.valhalla.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010122091135.A19788@chiru.svana.org>; from sjh@svana.org on Mon, Jan 22, 2001 at 09:11:35AM +1100
+In-Reply-To: <20010121092528.53BFBDBA71@atlas.valhalla.net>; from iain@sandoe.co.uk on Sun, Jan 21, 2001 at 09:25:24AM +0000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jan 22, 2001 at 09:11:35AM +1100, Steven Hanley wrote:
+On Sun, Jan 21, 2001 at 09:25:24AM +0000, Iain Sandoe wrote:
 >
-> On Sun, Jan 21, 2001 at 02:28:23PM -0700, Tom Rini wrote:
-> > On Sun, Jan 21, 2001 at 02:40:57PM +1100, Steven Hanley wrote:
-> >
-> > > The first one I am pretty sure belongs in this file as i have noticed a few
-> > > other archs have to export it here.
-> >
-> > Err, what needs this symbol tho?  And are you sure this is actually needed?
-> > I'm about to re-do my modtest config vs 2.4.1pre9, but as of ~2.4.0 release
-> > or an early 2.4.1 the bk tree was fine wrt modules now..  And, as of 2.4.1pre9
-> > only sh exports flush_dcache_page, and sparc64 exports __flush_dcache_page,
-> > so are you sure this is needed?
+> It seems that if you (accidentally) do:
 >
-> smbfs and nfs modules, I need nfsa, I notice it works fine in 2.4.0 on i386,
-> jiust it has not worked for more than a month in the 2.4) type kernels on
-> ppc.
-
-Er, I would switch trees if I were you then.  NFS in bk 2_4/2_5 has been
-working great here (nfs & nfsd) and neither need flush_dcache_page added there
-(Because it's been added to the normal netsyms, now that I think of it.)
-
-> > > The gmac one i am unsure if this is the best place to put the export, but it
-> > > works so I put it here.
-> >
-> > This has been fixed in the 2_4 bk for atleast a week, and 2_5 for much longer.
+> mount /dev/cdrom /mnt/cdrom  (with an audio CD in the tray)
 >
-> Was that the correct place to export it?
+> (because it happens to be in your command history & you forgot ;)
+>
+> it completely locks up the kernel.
+>
+> no oops, no SysRq, no <option> power, no switch console - three keys is the
+> only way out.
+>
+> (so not much useful info really) more of a "don't do that"... although it
+> seems a bit drastic for such an easy mistake.
+>
+> Iain.
 
-For 2_4, yes.  2_5 I moved lots of garbage (makefile junk > preprocessor
-magic) and has feature_xxx exported in feature.c
-
-> I tend to run paulus kernels, probably mostly because I have rsync or cvs
-> available, have not played with bk yet (though I am su re it is easy) and
-> also that I tend to be able to go speak with paulus in person or such if I
-> want to ask him stuff or some such.
-
-The 2_4 bk tree has an rsync avail.  Paulus even commits to the bk tree from
-time to time. :)
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+I managed to do this with a debian-woody cd, of all things..
+no chance to debug it yet.. :-/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
