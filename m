@@ -1,45 +1,33 @@
-Message-Id: <5.1.0.14.2.20030603114931.034e0ea8@falcon.si.com>
-Date: Tue, 3 Jun 2003 11:50:37 -0400
-To: Flavio.Pereira@za.flextronics.com, wd@denx.de
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-Subject: RE: System crash in kernel_thread
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <00047904.C22236@za.flextronics.com>
+Message-ID: <3EDCC621.37AFC76F@opersys.com>
+Date: Tue, 03 Jun 2003 12:00:33 -0400
+From: Karim Yaghmour <karim@opersys.com>
+Reply-To: karim@opersys.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+To: brian.auld@adic.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Bare bones filesytem using Karim's book
+References: <995FF289C9D69747A09E4299264459540C109862@penguin.adic.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-What initialization is your BDI doing?  How does it compare to the actual
-initialization that works?  Answering those two questions should be
-enlightening.
-
-gvb
-
-
-At 05:16 PM 6/3/2003 -0400, Flavio.Pereira@za.flextronics.com wrote:
-
->Hi Wolfgang
+brian.auld@adic.com wrote:
+> Regarding my tool chain, for and x86-host --> ppc-target setup, the following packages were suggested in the book:
 >
-> >It is most likely that the RAM errors happen when you use  bust  mode
-> >accesses - which happens a lot when Linux starts working.
-> >guess you know that there are already pretty extensive memory tests
-> >available in U-Boot (see the post/ code).
-> >The problem is, all these tests will not exercise burts mode accesses
-> >the same way as Linux will do it, especially when Linux starts moving
-> >lot's of data over the network (DMA).
+> gcc - 2.95.3
+> binutils - 2.10.1
+> glibc - 2.2.1
 >
->Weird, I was trying to boot with the BDI connected, i.e. issuing a go
->from the BDI> as there was a problem with the HRCW. Now we've fixed that
->(HRCW) and if I do a power reset boot without the BDI, the problem went
->away. It is still there with a BDI start. Well thanks for the help; we
->have the kernel up and running now.
->
->Regards
->Flavio Pereira
->
->
+> When I tried to build this tool chain (on RH8.0 system) glibc would not compile.
 
+Interesting. You may want to try uClibc.
+
+Karim
+
+--
+Author, Speaker, Developer, Consultant
+Pushing Embedded and Real-Time Linux Systems Beyond the Limits
+http://www.opersys.com || karim@opersys.com || 514-812-4145
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
