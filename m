@@ -1,26 +1,39 @@
-In-Reply-To: <v04220801b4d927f346db@[10.0.0.42]>
-Date: Wed, 23 Feb 2000 10:38:33 +0100
-To: "Timothy A. Seufert" <tas@mindspring.com>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: PowerMac G4 and pcmcia flash cards
-Message-Id: <20000223103833.001863@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <001101bf7de6$07263dc0$571170c1@honda.isltd.insignia.com>
+From: "jjs" <Jerry.Sexton@insignia.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: gdb and multi-threaded applications.
+Date: Wed, 23 Feb 2000 10:09:10 -0000
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Feb 22, 2000, Timothy A. Seufert <tas@mindspring.com> wrote:
+I recently installed linuxppc-1999 on my beige G3. The main motivation for
+doing this was to debug a multi-threaded application, which I could not do
+under the Release 4 that I previously had installed.
 
->Well, you're going to face a pretty fundamental barrier in that the
->G4 does not have any PCMCIA sockets.  Despite appareances, the
->internal AirPort socket on the AGP models is not PCMCIA.  It will not
->work at all with anything other than an AirPort card.
+The version of gdb that comes with the distribution (which I got from
+ftp.linuxppc.org) is 4.17.0.11, which is not multi-thread aware. I therefore
+got hold of the sources for 4.17 from ftp.gnu.org and H.J.Lu's patches for
+4.17.0.14 and compiled up the resulting sources. According to the release
+notes for 4.17.0.14, the change form 4.17.0.11 to 4.17.0.12 adds support for
+LinuxThreads on PowerPC, so the version I have should work for
+multi-threaded applications. However, typing 'info threads' on the
+resultingexecutable, just returns me to the gdb prompt. Typing 'thread 1',
+yields the message 'Thread ID 1 not known. Use the "info threads" command to
+see the IDs of currently known threads.'. According to the gdb info, this is
+typical behaviour of a gdb that does not have multi-threaded support.
 
-Actually, it smells a lot like a PCMCIA (not CardBus). It looks like a
-kind of bastard of a PCMCIA and an IDE bus, and it's possible that some
-PCMCIA card be made to work on it. I don't have enough infos for this yet
-however.
+Also, running the gdb.threads test in the testsuite that comes with the
+distribution, tells me that my gdb does not support pthreads for this
+machine.
+
+All the evidence points to my gdb build not supporting multiple threads. Can
+anybody tell me what I am doing wrong?
+
+Cheers, Jerry.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
