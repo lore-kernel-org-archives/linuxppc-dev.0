@@ -1,43 +1,46 @@
-Message-ID: <39F732EA.8D97C914@occamnetworks.com>
-Date: Wed, 25 Oct 2000 12:22:18 -0700
-From: Scott Iveland <siveland@occamnetworks.com>
-MIME-Version: 1.0
+From: MAC21C@chollian.net
+Message-Id: <200010260055.JAA14919@ldap.dacom.co.kr>
+Date: Thu, 26 Oct 2000 09:56:23 +0900
 To: linuxppc-embedded@lists.linuxppc.org
-CC: Dan Malek <dan@mvista.com>
-Subject: Re: bug in m8260_mask_and_ack() in Linux/PPC 2.4.x ??
-References: <2098.972444748@msa.cmst.csiro.au> <39F722A9.DC7C7EC0@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+Subject: QM_MODULES
+Reply-To: MAC21C@chollian.net
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+hello all!!
 
-> Murray Jensen wrote:
-> >
-> > Either I'm going crazy, or this code in m8260_mask_and_ack(),
->
-> Yes, it looks wrong to me, too.  Now, how in the hell does it work :-)?
-> I will immediately fix it in the kernel sources, and once I get 8260
-> to build properly again I will test it......
->
-> Thanks.
->
->         -- Dan
->
+I have a problum.
 
-We found this bug  causes problems when you need to use interrupts from an IRQ
-line.
-Most internal 8260 devices clear this bit when the interrupt is cleared in the
-parameter
-ram for that device(e.g. FCCE,FCCM).  That is why it worked with the FCC,SMC
-etc.
-We found and fixed this when we tried to use an IRQ line into the 8260. If you
+I made the test.c file for device driver test.
 
-change it as indicated, it does work properly for things like the external IRQ
-line interrupts.
+========== test.c ===================
+#define MODULE
+#include <linux/kernel.h>
+#include <linux/module.h>
 
-Scott
+#if CONFIG_MODVERSIONS==1
+#define MODVERSION
+#include <linux/modversions.h>
+#endif
 
+int init_module(void) { printk("Hello, kim\n"); return 0; }
+void cleanup_module(void) { printk("Goodbye Kim\n"); }
+======================================
+And, compile options
+powerpc-linux-gcc -D__KERNEL__ -O -c test.c
+/tmp/cc8k7ews.s: Assembler messages:
+/tmp/cc8k7ews.s:6: Warning: Ignoring changed section attributes for .modinfo
+
+warning message and i execute the insmod
+
+insmod test.o
+insmod : QM_MODULES function not implmented
+
+I don't know, warning message and error message.
+
+help me~~!!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
