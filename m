@@ -1,39 +1,42 @@
-From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
-To: Gary Thomas <gdt@linuxppc.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Message-Id: <v0311071fb5e2e24fca01@[129.100.29.243]>
-In-Reply-To: <XFMail.20000911131642.gdt@linuxppc.org>
-References: <v03110715b5e2cd19ce42@[129.100.29.243]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 11 Sep 2000 15:27:55 -0400
-Subject: Re: Roles for distributions
+Message-Id: <200009112000.WAA00793@piglet.grunz.lu>
+Date: Mon, 11 Sep 2000 22:00:43 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Discrepancy in BAT mapping?
+To: toe@unlserve.unl.edu
+cc: bh40@calva.net, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.3.96LJ1.1b7.1000910124843.660G-100000@ofey.earthlink.net>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Actually,
-
-This was all a big conspiracy by myself, Dan, Daniel, and David just to see
-if we could get you to respond!!!!!    ;-)
-
-Glad to hear you are not gone!
-
-Kevin
-
-
->To [mis]quote Mark Twain, "the tale of my departure is greatly exagerated".
+On  10 Sep, this message from Takashi Oe echoed through cyberspace:
+> In arch/ppc/kernel/prom.c, frame buffer is mapped via BAT with
+> _PAGE_GUARDED for 603, 604, 750, etc.  The same value is loaded to both
+> IBAT and DBAT in arch/ppc/kernel/head.S.
 >
->Yes, I have been silent, but not ignorant.  I read these lists constantly,
->and try and keep up.  Although I do not currently have the capacity [mostly
->time] to contribute much, I am ever watching and kibitzing.
+> However, in arch/ppc/mm/init.c's setbat(), G bit is stripped off for IBAT.
+>
+> I suppose it doesn't matter too much since it's frame buffer, but which is
+> correct technically?
 
---
-Kevin B. Hendricks, Associate Professor of Operations and Information
-Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+Hmmm, setting the G bit for instruction pages should never be necessary.
+I may be totally wrong, but as I see the logic, your instructions are
+not supposed to modify themselves when read. So there is no reason to
+protect them from speculative access. Hence, clear the G bit on all
+instruction-only mappings, so speculative access may be used to a
+performance advantage.
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
