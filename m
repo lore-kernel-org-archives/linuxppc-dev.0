@@ -1,40 +1,105 @@
-Message-ID: <3BCD96E2.C87EECEC@raleigh.ibm.com>
-Date: Wed, 17 Oct 2001 10:34:10 -0400
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+Message-ID: <3BCD9FA4.57626142@comdev.cc>
+Date: Wed, 17 Oct 2001 08:11:32 -0700
+From: Adam Wozniak <adam.wozniak@comdev.cc>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: pci_dma_sync_single
-References: <15308.8725.416230.867981@cargo.ozlabs.ibm.com> <3BCC324C.9EE9C105@raleigh.ibm.com> <15308.58189.136492.881833@cargo.ozlabs.ibm.com> <20011017072636.F28679@cpe-24-221-152-185.az.sprintbbd.net>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: 8260 FCC ethernet timeout
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom,
+I occassionally and randomly get ethernet transmit timeouts.
+I'm using an 8260, with ethernet on FCC 3, kernel 2.4.4.
+I added code to print the fccp and intctl registers when
+this happens, but I still don't see the problem:
 
-No, the 405 and 403 are not Book E.
 
-Chip
+NETDEV WATCHDOG: eth0: transmit timed out
+eth0: transmit timed out.
+fccp============================
+fccp->fcc_gfmr          2000003C
+fccp->fcc_fpsmr         14200080
+fccp->fcc_ftodr             1420
+fccp->fcc_fdsr              D555
+fccp->fcc_fcce              0000
+fccp->fcc_fccm              001A
+fccp->fcc_fccs                00
+fccp->fcc_ftirr_phy[0]        00
+fccp->fcc_ftirr_phy[1]        00
+fccp->fcc_ftirr_phy[2]        00
+fccp->fcc_ftirr_phy[3]        00
+================================
+intctl=====================
+intctl->ic_sicr        0000
+intctl->ic_sivec   00000000
+intctl->ic_sipnrh  00000000
+intctl->ic_sipnrl  00000000
+intctl->ic_siprr   05309770
+intctl->ic_scprrh  05309770
+intctl->ic_scprrl  05309770
+intctl->ic_simrh   00000000
+intctl->ic_simrl   20001801
+intctl->ic_siexr   00000000
+===========================
 
-Tom Rini wrote:
->
-> On Wed, Oct 17, 2001 at 11:47:56AM +1000, Paul Mackerras wrote:
-> >
-> > Ralph Blach writes:
-> >
-> > > This would probably work, except on Book E platforms, where DR off
-> > > simpley gets you another translaton and NOT
-> > > a physical address.
-> >
-> > We don't support any Book E platforms at the moment anyway.  When we
-> > do this will be one of the issues we have to address.
->
-> Eh?  Aren't the 403 and 405 both Book E?
->
-> --
-> Tom Rini (TR1265)
-> http://gate.crashing.org/~trini/
+ Ring data dump: cur_tx c0163318 (full) cur_rx c0163208.
+ Tx @base c0163308 :
+1c00 0042 03d44cbe
+1c00 05ea 0311985e
+3c00 007c 0335a85e
+1c00 0067 0311905e
+1c00 0055 0335a05e
+1c00 0052 0335a85e
+1c00 0042 03d44ebe
+1c00 006b 0300885e
+bc00 0042 03d44dbe
+1c00 004e 033b585e
+1c00 0043 033b585e
+1c00 0043 033b585e
+1c00 0043 033b585e
+1c00 0043 033b585e
+1c00 0043 033b585e
+3c00 0043 033b585e
+ Rx @base c0163208 :
+9c00 015a 03d43000
+9c00 005c 03d43800
+9c00 015a 03d42000
+9c00 015d 03d42800
+9c00 015a 03d41000
+9c00 015a 03d41800
+9c00 015a 03d40000
+9c00 015a 03d40800
+9c00 010b 03d3f000
+9c00 015a 03d3f800
+9c00 015d 03d3e000
+9c00 015a 03d3e800
+9c00 015a 03d3d000
+9c00 015a 03d3d800
+9c00 015a 03d3c000
+9c00 015a 03d3c800
+9c00 015d 03d3b000
+9c00 015a 03d3b800
+9c00 015a 03d3a000
+9c00 015a 03d3a800
+9c00 015a 03d39000
+9c00 015a 03d39800
+9c00 015d 03d38000
+9c00 015a 03d38800
+9c00 015a 03d37000
+9c00 015a 03d37800
+9c00 015a 03d36000
+9c00 01f5 03d36800
+9c00 01f2 03d35000
+9c00 015a 03d35800
+9c00 015d 03d34000
+bc00 015a 03d34800
+
+--
+Adam Wozniak (KG6GZR)   COM DEV Wireless - Digital and Software Systems
+awozniak@comdev.cc      3450 Broad St. 107, San Luis Obispo, CA 93401
+                        http://www.comdev.cc
+                        Voice: (805) 544-1089       Fax: (805) 544-2055
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
