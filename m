@@ -1,31 +1,31 @@
-Date: Wed, 20 Sep 2000 10:01:29 -0500 (CDT)
-From: ian reinhart geiser <geiseri@msoe.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Build problems with the latest BenH Rsync
-Message-ID: <Pine.OSF.3.96.1000920100052.25487C-100000@torres.msoe.edu>
+Message-ID: <39C8D1CE.1847B996@mpifr-bonn.mpg.de>
+Date: Wed, 20 Sep 2000 17:03:42 +0200
+From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "D.J. Osguthorpe" <djosg@mgu.bath.ac.uk>
+CC: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: CPU Temperature Patch
+References: <10009201242.AA11420@mgu.bath.ac.uk> or <11420.10009201242@mgu.bath.ac.uk>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Greetings,
-        I cannot seem to get the latest Ben H kernel to build.
-        I get the following error:
-cc -D__KERNEL__ -I/usr/src/linux/include -Wall -Wstrict-prototypes -O3
--fomit-frame-pointer -fno-strict-aliasing -D__powerpc__ -fsigned-char
--msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple
--mstring   -c -o keyboard.o keyboard.c
-./mkmap.adb > keymap-mac.c
-/bin/sh: ./mkmap.adb: Permission denied
-make[3]: *** [keymap-mac.c] Error 126
-make[3]: Leaving directory `/usr/src/linux/drivers/usb'
-make[2]: *** [first_rule] Error 2
+"D.J. Osguthorpe" wrote:
+> Here are two patches that appear to fix the cpu_temp function in setup.c.
+> They have been applied to a number of Ben Herrenschmidt kernels on a 500 MHz
+> Pismo powerbook and print reasonable values when you cat /proc/cpuinfo.
 
-        Is this an issue with my rsync arguments?
+The patch seems to work on my Lombard/333, too... Really great!
 
-        Thanks
-        -ian reinhart geiser
+> +       /* this set for 500 MHz Pismo - how do we get access to clock?? */
+
+There is, in the same file, around line 319 code to read the clock speed from
+the device tree. However, is it really necessary to include the clock speed at
+this point? What is the drawback if we just assume 500 MHz (or even the max
+value) for every G3 based machine?
+
+Albrecht.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
