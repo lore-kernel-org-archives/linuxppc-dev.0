@@ -1,25 +1,21 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Tue, 24 Apr 2001 11:22:1 +0800
-From: byf <byfmail@yeah.net>
-To: embeded powerpc <linuxppc-embedded@lists.linuxppc.org>
-Subject: How to use loads to load kernel?
-Mime-Version: 1.0
-Content-Type: text/plain; charset="GB2312"
-Message-Id: <20010424032233.D58AE1CA239C9@smtp2.yeah.net>
+Message-ID: <3AE4F9AE.B31BFE34@fiberlogic.com>
+Date: Tue, 24 Apr 2001 11:57:34 +0800
+From: "Lin, Nan-Hung" <carl@fiberlogic.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Which evaluation board to buy for MPC82xx ?
+Content-Type: text/plain; charset=big5
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi,
 
-I have a question about ppcboot, how to use loads to load kernel to ram via serial?
-where the kernel should be put in host?
+I will buy an evaluation board for MPC82xx to run PPCBoot and
+Linux kernel 2.4.3.
 
-Thank you!
-
-
-                byf
-            byfmail@yeah.net
-
+Which board to buy for MPC8260/8255 ?    and
+Which board to buy for MPC8240 ?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
