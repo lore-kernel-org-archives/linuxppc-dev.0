@@ -1,40 +1,80 @@
-Date: Fri, 24 May 2002 20:09:53 -0700
-From: Matt Porter <porter@cox.net>
-To: Rajappa Iyer <rsi@panix.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: P2P bridge (DEC 21154) initialization on MCP750
-Message-ID: <20020524200953.A21781@home.com>
-References: <200205250114.g4P1ELi08721@panix1.panix.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200205250114.g4P1ELi08721@panix1.panix.com>; from rsi@panix.com on Fri, May 24, 2002 at 09:14:21PM -0400
+Message-ID: <000c01c20513$5bf29fe0$7301a8c0@zhongqx>
+From: "zhongqx" <zhongqx@guoguang.com.cn>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: problem for booting linux
+Date: Mon, 27 May 2002 08:13:40 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, May 24, 2002 at 09:14:21PM -0400, Rajappa Iyer wrote:
->
-> I'm having problems with the PCI-PCI bridge (DEC 21154) on the MCP750
-> and would appreciate any words of wisdom.  Basically, this bridge does
-> not get initialized and therefore no devices are probed on the
-> secondary bus.
->
-> I've tried all three kernel trees from source.mvista.com
-> (linuxppc_2_4, linuxppc_2_4_devel and linuxppc_2_5).  The devel branch
-> does not get past the Bogomips calibration loop.  The other two do not
-> initialize the bridge.
->
-> Any ideas on how to fix this?
+Sir,
+    I use GDB to debug my linux 2.4.4 kernel,I find when the program run to Setup_arch(),like the flowing:
+when go to the line number 752,it turn to the program /arch/ppc/mm/mem_pieces.c and invoke the function of
+mem_pieces_find(unsigned int size, unsigned int align) and then it repeated in this function and not to continue.
+it seems like find some memory!did you have this problem ?can you give me some advise? MY FADS board have 8M DRAM
+and 2M Flash,does it be enough for version of 2.4.4-2002-03-21? Sorry for bother you again!
 
-Use _devel and start with the pplus port.  'make pplus_config'
-Although code still exists for the PowerPlus architecture
-boards within the legacy PReP port, it isn't maintained for
-those boards (except maybe for MTX).
+void __init setup_arch(char **cmdline_p)
+{
+ extern int panic_timeout;
+ extern char _etext[], _edata[];
+ extern char *klimit;
+ extern void do_init_bootmem(void);
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+ /* so udelay does something sensible, assume <= 1000 bogomips */
+ loops_per_jiffy = 500000000 / HZ;
+
+#ifdef CONFIG_ALL_PPC
+ feature_init();
+#endif
+#ifdef CONFIG_XMON
+ xmon_map_scc();
+ if (strstr(cmd_line, "xmon"))
+  xmon(0);
+#endif /* CONFIG_XMON */
+ if ( ppc_md.progress ) ppc_md.progress("setup_arch: enter", 0x3eab);
+
+#if defined(CONFIG_KGDB)
+ kgdb_map_scc();
+ set_debug_traps();
+ breakpoint();
+#endif
+
+ /*
+  * Set cache line size based on type of cpu as a default.
+  * Systems with OF can look in the properties on the cpu node(s)
+  * for a possibly more accurate value.
+  */
+ dcache_bsize = icache_bsize = 32; /* most common value */
+ switch (_get_PVR() >> 16) {
+ case 1:  /* 601, with unified cache */
+  ucache_bsize = 32;
+  break;
+ /* XXX need definitions in here for 8xx etc. */
+ case 0x40:
+ case 0x41:
+ case 0x35: /* 64-bit POWER3, POWER3+, POWER4 */
+  dcache_bsize = icache_bsize = 128;
+  break;
+ }
+
+ /* reboot on panic */
+ panic_timeout = 180;
+
+ init_mm.start_code = PAGE_OFFSET;
+ init_mm.end_code = (unsigned long) _etext;
+ init_mm.end_data = (unsigned long) _edata;
+ init_mm.brk = (unsigned long) klimit;
+
+ /* Save unparsed command line copy for /proc/cmdline */
+752: strcpy(saved_command_line, cmd_line);
+ *cmdline_p = cmd_line;
+
+    ...
+
+}
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
