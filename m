@@ -1,28 +1,32 @@
-In-Reply-To: <19990805153718.E21817@rhodan.businessobjects.com>
-Date: Thu, 5 Aug 1999 16:23:08 +0200
-To: Hubert Figuiere <hub@point-barre.fr>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: Some pmac patches
-Message-Id: <19990805162308.006281@mail.mipsys.com>
+From: o.moerbeek@syllogic.com
+Reply-To: otto@cable.a2000.nl
+To: linuxppc-dev@lists.linuxppc.org
+cc: gewrgiou@imbc.gr, rshaw@inficad.com, otto@cable.a2000.nl
+Message-ID: <C12567C4.005220FB.00@syllogic.com>
+Date: Thu, 5 Aug 1999 16:57:03 +0200
+Subject: Re: 2.2.10 kernel and Apple ISO USB keyboards
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Aug 5, 1999, Hubert Figuiere <hub@point-barre.fr> wrote:
 
->Hopefully the archive available on the web in not in a
->proprietary format... :-)
 
-Oops, sorry, I forgot to uncheck automatic stuffit in my mailer. The
-archive posted on the list is a stuffit containing a gzip containing a tar ;-)
+Hi to you all,
 
--- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+With some help from  Kostas Gewrgiou (thanks!) I solved my keyboard key to mouse
+button mapping problem. There's a How To on <http://www.xs4all/nl~om>. The
+tricky part for me was seeing that due to some Xautoconfig problem the X server
+did not use the xkb extension. Actually xkb not only works with USB ISO
+keyboards, but with ALL Mac keyboards, be it ADB or USB.
 
+Happily running 2.2.10,
+Otto
+
+--
+Otto Moerbeek
+otto@cable.a2000.nl
 
 
 
