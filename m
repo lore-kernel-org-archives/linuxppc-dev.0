@@ -1,40 +1,36 @@
-Message-ID: <38343836.9C6EE509@arcormail.de>
-Date: Thu, 18 Nov 1999 18:32:40 +0100
-From: Michael Fenske <michael.fenske@arcormail.de>
-Reply-To: michael.fenske@arcormail.de
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@linuxcare.com>
-CC: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <38343836.9C6EE509@arcormail.de>
+Date: Thu, 18 Nov 1999 19:30:16 +0100
+To: michael.fenske@arcormail.de, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: Kernel debugging??
-References: <Pine.LNX.4.05.9911172207200.25661-100000@callisto.of.borg> <99111813390003.04211@argo.linuxcare.com.au>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <19991118193016.014231@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+On Thu, Nov 18, 1999, Michael Fenske <michael.fenske@arcormail.de> wrote:
 
-> is old, maybe I should just remove it.  I will be putting stuff on
-> linuxcare.com.au (== ftp.linuxcare.com.au) generally from now on.
+>Is there something wrong with linuxcare.com.au ? If I do
+>
+> rsync -arvz linuxcare.com.au::linux-pmac-stable .
+>
+>I get this:
+>
+>  Welcome to the Linuxcare Australia rsync server
+>  For information about Linuxcare see http://linuxcare.com.au/
+>
+>
+>  receiving file list ... done
+>  ./
+>  COPYING
+>  deflate on token returned -2 (700 bytes left)
+>  unexpected EOF in read_timeout
+>
+>rsync from samba.anu.edu.au works just fine.
 
-Is there something wrong with linuxcare.com.au ? If I do
-
- rsync -arvz linuxcare.com.au::linux-pmac-stable .
-
-I get this:
-
-  Welcome to the Linuxcare Australia rsync server
-  For information about Linuxcare see http://linuxcare.com.au/
-
-
-  receiving file list ... done
-  ./
-  COPYING
-  deflate on token returned -2 (700 bytes left)
-  unexpected EOF in read_timeout
-
-rsync from samba.anu.edu.au works just fine.
-
-Michael
+I had the same problem today. Just remove the "z" option, it will eat
+more bandidth but it works. I beleive it's time to update my rsync or zlib...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
