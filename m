@@ -1,35 +1,46 @@
-Message-ID: <3CB43E6F.4020804@embeddededge.com>
-Date: Wed, 10 Apr 2002 09:30:23 -0400
-From: Dan Malek <dan@embeddededge.com>
+Date: Wed, 10 Apr 2002 09:47:22 -0400 (EDT)
+From: Christopher Murtagh <christopher.murtagh@mcgill.ca>
+To: <benh@kernel.crashing.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>, <tech@totalimpact.com>
+Subject: Re: 2.4 kernel on briQ
+In-Reply-To: <20020410090856.24020@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.4.33.0204100945320.25920-100000@blues.wcg.mcgill.ca>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Bootloader (Re: CONFIG_GENERIC_PPC32)
-References: <0204091952.AA24042@ivan.Harhan.ORG> <20020410102842.21408@mailhost.mipsys.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-benh@kernel.crashing.org wrote:
+On Wed, 10 Apr 2002 benh@kernel.crashing.org wrote:
+>> Just wondering if anyone has gotten a 2.4 kernel to compile and run on a
+>>briQ with 1GB of RAM?
 
-> Just for your information, I noticed the OpenBIOS folks ....
+<snip>
 
-A few embedded boards have done this in the past, in particular
-all of the Cogent Computer boards.
+>I'm working on it. Though I don't have 1Gb of RAM, I expect it to work ;)
+>
+>Hopefully, by next week I will have something. I've been a bit too busy
+>lately to give it time.
 
-The only advantage was for the few (one :-) PCI I/O boards that
-may have OF initialization roms.  In all other cases I found
-it a PITA, because no one cares to write any documentation
-about how it runs on their boards.  The response was "It's
-standard OF".....yeah, right.
+ Awesome. Thanks Ben. I might be able to send/lend you the RAM if it would
+help at all. Let me know if it would.
 
-IMHO, if we would just standardize on ASCII bi_recs we would
-actually make some progress :-).  If you want an OS in a boot
-rom, just flash Linux and get it over with.
+Cheers,
+
+Chris
 
 
-	-- Dan
+--
+
+Christopher Murtagh
+Webmaster / Sysadmin
+Web Communications Group
+McGill University
+Montreal, Quebec
+Canada
+
+Tel.: (514) 398-3122
+Fax:  (514) 398-2017
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
