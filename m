@@ -1,72 +1,29 @@
-Subject: Re: consistent_alloc changes for 4xx/8xx
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF15CE0A9C.B48A773C-ON85256B4B.004A34B7@raleigh.ibm.com >
-From: "Ralph Blach" <rcblach@us.ibm.com>
-Date: Thu, 24 Jan 2002 08:30:54 -0500
-MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Date: Thu, 24 Jan 2002 09:04:51 -0500
+From: Kent Borg <kentborg@borg.org>
+To: Mark Pilon <mpilon@midrivers.com>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: gdb / gdbserver part 2
+Message-ID: <20020124090451.A22567@borg.org>
+References: <3C4EEFAA.1108DF1B@midrivers.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3C4EEFAA.1108DF1B@midrivers.com>; from mpilon@midrivers.com on Wed, Jan 23, 2002 at 10:15:22AM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have just looked at the code for pinning tlbs and have several
-suggestions for improvement.
+On Wed, Jan 23, 2002 at 10:15:22AM -0700, Mark Pilon wrote:
+> I've made some progress but have hit a strange snag and would
+> appreciate any context / suggestions you might have.
 
-1)put the tlb_4xx_index   in the first 64 k of memory.
-2)add a tlb_4xx_watermark  in the same cache line as the index register.
+I don't know if the symptoms you describe fit, be we had a related
+problem recently.
 
-Next, change the tlb miss code for pinning to
+Our boot ROM was not clearing the debug hardware at boot.  The ptrace
+trap handling code was then tripping over spurious bits in whatever
+the status word is called.
 
-li   r22, tlb_4xx_index@l          #Since the tlb is in the first 64k, get
-its address
-                         #this saves two cycles and covers the access to
-the watermark into the data cache.
-lwz  r23,0(r22)               #now get the tlb index
-li   r22,tlb_4xx_watermark@l  #get the watermark address
-lwz  r22,0(r22)               #now get the watermark
-cmpw cr0,r23,r22              #compare the index to the watermark
-blt  66f
-li   r23,0                    #set the watermark to 0
-li   r22,tlb_4xx_index        #get the address of the index
-stw  r23,0(r22)               #save the new index.
-
-This has the advantange of allowing the user to select the number of tlb's
-they wish to pin, although software in the tlb pin routines should limit it
-to the current 4.
-
-It also has very good performance, being about as long as the current
-replacement mechanism.
-Since the TLBs water mark are paired in a cache line accessing the index
-covers the access to the
-watermark so that it only takes one extra cycle, even if the line is a
-cache miss.
-
-Of course the tlb_pin routine has to correctly set up the watermark
-register, which is not a big deal.
-
-Another suggestion would be to load the address of the index and  eariler
-and do a dcbt and allow these be brought into the
-data cache eariler and save a possible miss.
-
-Also, I modified the Journeyman kernel to allow riscwatch to function
-correctly  and I performed the following experiment.
-In finnish_tlb_load, there is a tlbsx instruction and I wanted to see if
-tlbsx every made a match.
-
-To do this I split the different paths and put a breakpoint on the tlbsx
-matching path.
-I never saw a match.  If we are really concerned about performance and this
-instructionever produces a match,
-it should be eliminated from the instruction path and thus saving two
-instructions.
-
-Chip
-
-
-
-
-
-Chip
+-kb
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
