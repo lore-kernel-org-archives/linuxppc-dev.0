@@ -1,19 +1,28 @@
-Return-Path: <felix@allot.com>
-Received: from mail.allot.com (r2.allot.com [199.203.223.3])
-	by ozlabs.org (Postfix) with ESMTP id 4BEAC67A79
+Return-Path: <f.savane@caramail.com>
+Received: from lmfilto02.st1.spray.net (lmfilto02.st1.spray.net
+	[212.78.202.66]) by ozlabs.org (Postfix) with ESMTP id 0CF1D67A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 Mar 2005 20:05:26 +1100 (EST)
-From: Felix Radensky <felix@allot.com>
-To: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <b8995d61612e5e38680a3ce37fcd7dcc@freescale.com>
-References: <1111313350.10719.18.camel@felix.allot.com>
-	<b8995d61612e5e38680a3ce37fcd7dcc@freescale.com>
-Content-Type: multipart/alternative; boundary="=-myppQ3FbrNIJtO29jPxe"
-Date: Mon, 21 Mar 2005 11:05:23 +0200
-Message-Id: <1111395923.14412.23.camel@felix.allot.com>
+	Mon, 21 Mar 2005 21:44:44 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by lmfilto02.st1.spray.net (Postfix) with ESMTP id 00760123D8D
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 21 Mar 2005 10:26:34 +0000 (GMT)
+Received: from cmcodec02.st1.spray.net ([212.78.202.183])
+	by localhost (lmfilto02.st1.spray.net [212.78.202.32]) (amavisd-new,
+	port 10024)
+	with ESMTP id 24005-05 for <linuxppc-embedded@ozlabs.org>;
+	Mon, 21 Mar 2005 10:26:33 +0000 (GMT)
+Received: from cmcodec02.st1.spray.net (localhost [127.0.0.1])
+	by cmcodec02.st1.spray.net (Postfix) with SMTP id AA2C582D00
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 21 Mar 2005 10:26:33 +0000 (GMT)
+From: "=?windows-1252?Q?Fr=E9d=E9ric=20Savane?=" <f.savane@caramail.com>
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <1111400793011690@lycos-europe.com>
 Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: New PowerQUICC III support
+Date: Mon, 21 Mar 2005 10:26:33 GMT 
+Content-Type: multipart/mixed; boundary="=_NextPart_Lycos_0116901111400793_ID"
+Subject: DS1306 RTC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,93 +33,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
---=-myppQ3FbrNIJtO29jPxe
-Content-Type: text/plain
+--=_NextPart_Lycos_0116901111400793_ID
+Content-Type: text/html; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi, Kumar
+<html><head><style type="text/css">body{font:12px Arial;margin:3px;overflow-y:auto;overflow-x:auto}p{margin:0px;}blockquote, ol, ul{margin-top:0px;margin-bottom:0px;}</style></head>
 
-Thanks for answering. There isn't much info regarding new PQ3 chips on
-Freescale site, so It's hard to tell how similar they are to 8540/8560.
-I'm interested in basic support and Gigabit ethernet driver. Are you
-saying
-that gianfar driver will work with new PQ3 chips ?
+<body><div style="DISPLAY: block; FONT-SIZE: 12px; FONT-FAMILY: Arial"><P>Hello !</P>
+<P>&nbsp;</P>
+<P>I saw you had a programm for the ds1306 do you have it for initialize read and write the RTC ?</P>
+<P>I use a pifc8f458 and a ds1306, and i want to have a RTC with ccs compiler.</P>
+<P>&nbsp;</P>
+<P>Please send me your programm.</P>
+<P>&nbsp;</P>
+<P>Best regards.</P>
+<P>&nbsp;</P>
+<P>Many thanks</P>
+<P>Hi<BR><BR>Personnaly I use a DS1306 on SPI to do RTC on a<BR>MPC860.<BR>I don't use it under linux still now. But succesfully<BR>run it under RTOS.<BR><BR>It's port under U-Boot so it's should not be difficult<BR>to<BR>use it under linux. If someone have some more<BR>information<BR>about DS1306 under linux (or throught U-Boot may be).<BR><BR>If you want to look at the DS1306 U-Boot driver, look<BR>at<BR>		boot/u-boot/rtc/ds1306.c<BR><BR>Expects that help<BR><BR>Cedric<BR></P></br><p style="margin-top:11px;padding-top:3px;background-image: url(http://mail.lycos.co.uk/Images/Mail/_content/dot.gif);background-repeat: repeat-x;background-position: 0px 0px;"><img src="http://premiummail.caramail.lycos.fr/Images/Mail/_icons/premium.gif"><font color="#CC0000"><b> 300 Mo gratuits sur CaraMail : </b></font><a href="http://secure.caramail.lycos.fr/services/signin/mail.jsp?TARGETCODE=FR_footermail_link" target="_blank">Cliquez ici pour en profiter!</a></div></body></html>
 
-Thanks a lot.
 
-Felix.
-
-On Sun, 2005-03-20 at 12:43 -0600, Kumar Gala wrote:
-
-> Felix,
-> 
-> Is there something specific about the new PQ3 chips you are looking 
-> for?  The basic support that is in the kernel for the existing PQ3 line 
-> (8540, 8541, 8555, 8560) should work on these devices w/o much change.
-> 
-> - kumar
-> 
-> On Mar 20, 2005, at 4:09 AM, Felix Radensky wrote:
-> 
-> >  Hi, folks
-> >
-> >  Are there any plans to support new PowerQUICC III models (e.g. 8543, 
-> > 8548)
-> >  in the near future ? Is anyone working on it ?
-> >
-> >  TIA.
-> >
-> >  Felix. <ATT325611.txt>
-> 
-
---=-myppQ3FbrNIJtO29jPxe
-Content-Type: text/html; charset=utf-8
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
-<HTML>
-<HEAD>
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
-  <META NAME="GENERATOR" CONTENT="GtkHTML/3.2.4">
-</HEAD>
-<BODY>
-Hi, Kumar<BR>
-<BR>
-Thanks for answering. There isn't much info regarding new PQ3 chips on<BR>
-Freescale site, so It's hard to tell how similar they are to 8540/8560.<BR>
-I'm interested in basic support and Gigabit ethernet driver. Are you saying<BR>
-that gianfar driver will work with new PQ3 chips ?<BR>
-<BR>
-Thanks a lot.<BR>
-<BR>
-Felix.<BR>
-<BR>
-On Sun, 2005-03-20 at 12:43 -0600, Kumar Gala wrote:
-<BLOCKQUOTE TYPE=CITE>
-<PRE>
-<FONT COLOR="#000000">Felix,</FONT>
-
-<FONT COLOR="#000000">Is there something specific about the new PQ3 chips you are looking </FONT>
-<FONT COLOR="#000000">for?  The basic support that is in the kernel for the existing PQ3 line </FONT>
-<FONT COLOR="#000000">(8540, 8541, 8555, 8560) should work on these devices w/o much change.</FONT>
-
-<FONT COLOR="#000000">- kumar</FONT>
-
-<FONT COLOR="#000000">On Mar 20, 2005, at 4:09 AM, Felix Radensky wrote:</FONT>
-
-<FONT COLOR="#000000">&gt;  Hi, folks</FONT>
-<FONT COLOR="#000000">&gt;</FONT>
-<FONT COLOR="#000000">&gt;  Are there any plans to support new PowerQUICC III models (e.g. 8543, </FONT>
-<FONT COLOR="#000000">&gt; 8548)</FONT>
-<FONT COLOR="#000000">&gt;  in the near future ? Is anyone working on it ?</FONT>
-<FONT COLOR="#000000">&gt;</FONT>
-<FONT COLOR="#000000">&gt;  TIA.</FONT>
-<FONT COLOR="#000000">&gt;</FONT>
-<FONT COLOR="#000000">&gt;  Felix. &lt;ATT325611.txt&gt;</FONT>
-
-</PRE>
-</BLOCKQUOTE>
-</BODY>
-</HTML>
-
---=-myppQ3FbrNIJtO29jPxe--
+--=_NextPart_Lycos_0116901111400793_ID--
