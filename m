@@ -1,38 +1,41 @@
-Message-ID: <008301c15225$06bb99b0$d8020101@aztec.local>
-From: "Frederic Soulier" <soulier@aztec-radiomedia.com>
-To: "Rudolf Ladyzhenskii" <rudolf.ladyzhenskii@act-aus.net>,
-	"PPC-Linux list (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-References: <619D608DD3F0D311882C009027732E1A83626C@ntserver.act.domain>
-Subject: Re: Numbering of system calls
-Date: Thu, 11 Oct 2001 09:19:07 +0200
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3BC55726.AAC2D093@imc-berlin.de>
+Date: Thu, 11 Oct 2001 10:24:06 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: timebase_interrupts on MPC8xx ???
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sorry for my last "very interesting" message...
+Hi there,
 
-> Kernel crashes and, among other things, it shows "Last syscall: 4".
-> How can I relate that to actual syscall being executed?
+I pulled linuxppc_2_4_devel yesterday, built and ran it on my MPC8xx
+board.
 
-This is related to the last syscall executed by the current thread.
-Have a look at $KERNELDIR/arch/ppc/kernel/process.c
+Now I get load of
 
-For the corresponding system call you should look at the
-$KERNELDIR/include/asm-ppc/unistd.h (or $KERNELDIR/arch/ppc/kernel/misc.S),
-the 4th syscall is "write".
+timebase_interrupt()
+timebase_interrupt()
+timebase_interrupt()
 
-Regards,
+messages, which come from
 
-Fred
+/* A place holder for time base interrupts, if they are ever enabled. */
+void timebase_interrupt(int irq, void * dev, struct pt_regs * regs)
+{
+	printk ("timebase_interrupt()\n");
+}
 
----
-     Frederic Soulier    -    Aztec Radiomedia  /  Digigram Europe
-  31, rue du chemin de fer,  F-67087 Strasbourg Cedex 2, France
-   Phone : +33 (0) 3 88 30 90 90  /  Fax : +33 (0) 3 88 30 90 99
-                     Web site : http://www.digigram.com
+in arch/ppc/kernel/m8xx_setup.c.
 
+I've never seen them before, so I guess they were never enabled.
+Are they enabled now? Why? Hardly just for making noise! ;-)
+
+Cheers,
+
+Steven Scholz
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
