@@ -1,37 +1,37 @@
-Message-Id: <199909100518.WAA05129@soda.CSUA.Berkeley.EDU>
+Message-ID: <37D8A113.E95181A5@loomer.com>
+Date: Thu, 09 Sep 1999 23:11:32 -0700
+From: Hugh Caley <hcaley@loomer.com>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: note about compiling SMP kernels 
-In-Reply-To: Your message of "Fri, 10 Sep 1999 14:14:20 +1000."
-             <199909100414.OAA07651@tango.anu.edu.au>
-Date: Thu, 09 Sep 1999 22:18:09 -0700
-From: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
+Subject: Problems with Samba 2.2 tree
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+FYI, Paul, I have been rsyncing the stable tree on my Lombard laptop, and I
+haven't been able to boot the kernels built with it since sometime after 9/3
+or so.
 
-> So, before compiling for SMP for the first time, do a make clean in
-> the tree first, even if the tree has no object files in it.
+I get the "booting" line, but the little Tux pic never comes up and it hangs
+there (I have waited for disk activity to continue for a couple of minutes
+afterwards).
 
-Is the correct procedure still:
+I have tried it at both 16 and 32 bpp, and with and without the Video Driver
+checkbox in bootx.  Current kernel args are:
 
-cd /usr/src/linux
-make mrproper
-make pmac_config
-make menuconfig (or whatever you please)
-make dep
-make clean
-gmake -j 3 vmlinux 
+video=atyfb:vmode:16,cmode:32,mclk:67 (I've also tired mclk:100).
 
-Just as a side note: I recently upgraded to LinuxPPC R5 and was able
-to sucessfully compile a SMP 2.2.12 kernel from stock sources from
-ftp.kernel.org.
+This is with the 2.95 gcc from dev.linuxppc.org; I then downgraded and tried
+it with egcs 1.1.2 from there; same thing.
 
-I have since determined that my problems with LinuxPPC R4.1 were due
-to an older version of gcc/egcs. The stock gcc in R4.1 is egcs 1.02,
-but it looks like I needed egcs 1.1.2 to sucessfully build a SMP
-kernel.
+Hugh
 
-----ranga <ranga@soda.berkeley.edu>
+--
+Hugh Caley, Unix Administrator
+Babcock & Brown, San Francisco
+510-524-1672
+hughc@babcockbrown.com
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
