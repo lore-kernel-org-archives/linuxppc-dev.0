@@ -1,86 +1,50 @@
-Date: Fri, 7 Dec 2001 17:34:34 -0500
-From: Daniel Jacobowitz <drow@mvista.com>
-To: Kevin Buettner <kevinb@redhat.com>
-Cc: Kumar Gala <kumar.gala@motorola.com>,
-	linuxppc-dev@lists.linuxppc.org, gdb@sources.redhat.com,
-	ezannoni@cygnus.com, fsirl@kernel.crashing.org, paulus@samba.org
-Subject: Re: AltiVec register ptrace support
-Message-ID: <20011207173434.A28783@nevyn.them.org>
-References: <Pine.GSO.4.40.0112071443310.2903-300000@softail.somerset.sps.mot.com> <1011207222302.ZM10835@ocotillo.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1011207222302.ZM10835@ocotillo.lan>
+Message-Id: <200112072352.AAA00762@piglet.grunz.lu>
+Date: Sat, 8 Dec 2001 00:52:52 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: HIGHMEM + serial console + SMP + 2GB freeze on pmac
+To: hozer@drgw.net
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20011206182524.B23942@altus.drgw.net>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Dec 07, 2001 at 03:23:02PM -0700, Kevin Buettner wrote:
-> On Dec 7,  2:57pm, Kumar Gala wrote:
+On   6 Dec, this message from Troy Benjegerdes echoed through cyberspace:
 >
-> > I have two different patches to the ptrace mechanism to add support
-> > for AltiVec registers.
-> >
-> > linux-2.4.8-altivec-ptrace.patch:  Adds support similar to existing
-> > mechanisms to get/set registers via PEEK/POKE calls extending the FPU
-> > model.
-> >
-> > linux-2.4.16-altivec-ptrace.patch: Adds support for new ptrace commands
-> > that match sparc/x86 PTRACE_{GET,SET}*REGS.  These dump the full register
-> > state in a single call.
-> >
-> > Personally, I would like to see the PTRACE_{GET,SET}*REGS method adopted
-> > for 2.4.x.  RedHat is trying to push out some GDB changes for AltiVec that
-> > require closure on this matter.
+>> I'm going to try several other combinations of things, including taking
+>> one memory stick out since this could actually be that the hardware
+>> doesn't like that much memory.
 >
-> I would like to better understand your reasons for preferring
-> PTRACE_{GET,SET}*REGS.  Is it just because that's what x86 does
-> or do you think that this mechanism improves GDB's performance?
+> There is at least one problem with serial console on pmac.. I removed the
+> memory (except for 1 512mb dimm)
+>
+>
+> If I turn serial console on, I get a machine check in
+> serial_console_write during the PCI probing.
+>
+> This only shows up if Xmon is NOT compiled in.. since xmon tries to use
+> the port (and presumably dies also)
 
-I think that it improves performance and that it is generally cleaner.
+At one point there was a problem with Mac serial support doing a
+kmalloc() (IIRC...), which would evidently fail at the very early
+stages, such as when opening a serial console (one of the first things
+done after the kernel runs) or maybe when using xmon early on, since the
+VM subsystem is not yet initialized at that time.
 
-> My personal opinion is that GETREGS/SETREGS does not greatly enhance
-> performance.  Try running strace on gdb debugging itself on x86 and on
-> PPC and compare the number of PTRACE_PEEKUSR calls on PPC vs.
-> PTRACE_????  calls on x86.  (The ????  is printed because strace
-> doesn't know about the various PTRACE_{GET,SET}*REGS calls.) When I
-> tried it just a moment ago using gdb to debug itself and running to a
-> breakpoint set on main(), I saw _more_ PTRACE_???? calls on x86 than
-> PEEKUSR/POKUSR calls on PPC.  Now, I admit that my testing wasn't very
-> exhaustive, but even if the number of PEEKUSR/POKEUSR calls were
-> higher, I think you'd find that calls to PEEKTEXT (for prologue
-> analysis) would dominate.  I.e, the majority of the ptrace() traffic
-> is due to reading memory, not reading registers.
+BenH allegedly found a fix and commited it; at least his 2.4.12 rsync
+and 2.4.16 kernel.org do run fine wth serial console here...
 
-You get more because there are three sets, and we gratuitously fetch
-all registers instead of just the needed type of register.  I'd bet a
-lot that a third of the 18 ????'s I see are for SSE registers and a
-third for FP registers.  That would bring it down to 6 vs the 16 on PPC
-using PEEKUSER.
+Michel
 
-Also, while I think _GETREGS is better than PEEKUSER, we're talking
-here specifically about VRREGS.  It's four ptrace calls per vector
-register, since ptrace() can only transfer a word at a time (so far at
-least; I'm contemplating proposing a change to that).  And when you
-want one vector register the odds are very good that one wants to get
-another.
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-Also, while single stepping there ought to be no PEEKTEXT calls, only
-PEEKUSER, and at least two of them on PPC (in fact we do a lot of
-gratuitous poking around in the text segment).
-
-> Furthermore, I think that introducing GETREGS/SETREGS will make
-> ppc-linux-nat.c (in the GDB sources) more complicated.  We'll need
-> compile time tests to check for the presence of GETREGS/SETREGS and
-> use these mechanisms if they exist.  If they don't, this code will
-> have to fall back to using the old PEEKUSR/POKEUSR mechanism.  Also,
-> it may be necessary to have runtime tests which attempt to use
-> GETREGS/SETREGS and fall back to using PEEKUSR/POKEUSR.  In order to
-> see just how messy it can get, take a look at i386-linux-nat.c.
-
-This part is definitely true.
-
---
-Daniel Jacobowitz                           Carnegie Mellon University
-MontaVista Software                         Debian GNU/Linux Developer
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
