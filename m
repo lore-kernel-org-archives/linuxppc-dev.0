@@ -1,44 +1,34 @@
-Date: Fri, 25 Feb 2000 09:04:17 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Dan Bethe <dan_bethe@yahoo.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on ppc
- with r128
-In-Reply-To: <20000225000750.19162.qmail@web1002.mail.yahoo.com>
-Message-ID: <Pine.LNX.4.05.10002250902530.12473-100000@callisto.of.borg>
+Message-ID: <38B64309.80D4D15B@mpifr-bonn.mpg.de>
+Date: Fri, 25 Feb 2000 09:53:29 +0100
+From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
+Subject: PCMCIA on PowerBook G3
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 24 Feb 2000, Dan Bethe wrote:
-> 	Hi there Kevin.  Thanks for your good work.  I was wondering if we can
-> have similar benefits for users of ATI Rage LT Pro in the Powerbook G3
-> Series.
-> 	And I assume that when you say you have full acceleration on Rage 128,
-> that this is just 2D acceleration.  And do you mean that the
-> acceleration implements all features of the card?  Or just that it's a
-> lot better than without acceleration support?
-> 	I would be willing to help pay/motivate someone on a gift basis for 2D
-> and 3D acceleration of ATI Rage LT Pro.  I'm serious.
+I tried to get the PCMCIA stuff running on a PowerBook G3/333 (Lombard) with
+Linux 2.2.14 and 2.2.15, both from the pmac-stable tree.  Using pcmcia-cs-3.0.14
+plus a patch I found in the mailing list, I get kernel freezes each time I
+insert a cardbus card.  With vanilla pcmcia-cs-3.1.11, the system doesn't
+recognise the card correctly, e.g. (from /var/log/messages):
 
-For 2D acceleration, it looks like the ATI Mach64 is again accelerated in
-XFree86 3.9.18. But I guess it doesn't work with fbdev yet, nor on big endian
-machines.
+cardmgr[284]: initializing socket 0
+cardmgr[284]: unsupported card in socket 0
+kernel: cs: cb_alloc(bus 1): vendor 0xffff, device 0xffff
+kernel: cs: no valid ROM images found!
+cardmgr[284]:   no product info available
 
-So we need someone to dive into this...
+If I type lspci -vv, I also get messages like
 
-Gr{oetje,eeting}s,
+01:00.0 Class ffff: Illegal Vendor ID: Unknown device ffff (rev ff) (prog-if ff)
+        !!! Unknown header type 7f
 
-						Geert
+Maybe some parts of the bridge were not initialized correctly?  Any ideas?
 
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Thanks for your help, Albrecht.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
