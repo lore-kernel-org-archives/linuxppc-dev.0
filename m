@@ -1,33 +1,44 @@
-Date: Mon, 17 May 2004 08:27:02 +0200
-From: Marc Leeman <marc.leeman@barco.com>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: http sharing in linux
-Message-ID: <20040517062702.GA22960@smtp.barco.com>
-Reply-To: Marc Leeman <marc.leeman@barco.com>
-References: <20040514072949.GD4043@smtp.barco.com> <20040514154612.AABE3C108D@atlas.denx.de>
+Subject: Re: Stability of network/io on MPC8540ADS?
+From: Stefan Nickl <Stefan.Nickl@kontron.com>
+To: Yuji Nishimura <yujin@pp.iij4u.or.jp>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <40A515E2.30401@pp.iij4u.or.jp>
+References: <1084462045.4683.68.camel@lucy.pep-kaufbeuren.de>
+	 <40A515E2.30401@pp.iij4u.or.jp>
+Content-Type: text/plain
+Message-Id: <1084776514.4828.6.camel@lucy.pep-kaufbeuren.de>
 Mime-Version: 1.0
-In-Reply-To: <20040514154612.AABE3C108D@atlas.denx.de>
-Content-Type: text/plain; charset=iso-8859-15
+Date: Mon, 17 May 2004 08:48:34 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > solution=(embedded)?boa:apache;
+On Fri, 2004-05-14 at 20:54, Yuji Nishimura wrote:
+> Helo Stefan,
 >
-> Ummm... depending on requirements, Mbedthis AppWeb, GoAhead,
+> I evaluated MPC8540ADS and found out similar problem few weeks ago. I
+> made tiny patch and it works well.
+> I also evaluated with NEC ehci pci device. The result was fine.
+> I wrote 1GB data to external usb-2.0 HDD via USB-2.0(ehci), that works well.
+> I also try to use ftp(MPC8540=server) and transfer (R/W) 2047MB data via
+> TSEC(gianfar) and it also works well.
+> If you try to use this patch, please let me know. I think patch requires
+> more evaluation...
 
-hm.
-/me will need to check these out then.
+Please send me the patch, althought I won't have time to
+test it this week.
 
-The nice thing about boa (we are using this one), is that it's easily
-configured and the setup can be very basic. Furthermore, it seems to
-support more than the website (boa.org) advertises.
+The funny thing is, that I got our self-build board working
+partially by now, and in a very short test (<1min) it didn't
+lock up (only the network, it doesn't have any PCI).
+I'll keep an eye on it and maybe revisit those little
+DIP-switches on the ADS...
 
-The same might be said about the others too, it will be interesting to
-check these out.
+Thanks,
 
-> khttpd,
+--
+Stefan Nickl
+Kontron Modular Computers
 
-Only for static pages IIRC.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
