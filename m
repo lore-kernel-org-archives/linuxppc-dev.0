@@ -1,21 +1,19 @@
 Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
-	by ozlabs.org (Postfix) with ESMTP id C51D12BDAB
+Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
+	by ozlabs.org (Postfix) with ESMTP id 5D1E32BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Sep 2004 02:43:30 +1000 (EST)
-Date: Tue, 28 Sep 2004 09:43:27 -0700
+	Wed, 29 Sep 2004 03:04:17 +1000 (EST)
+Date: Tue, 28 Sep 2004 10:04:13 -0700
 From: Matt Porter <mporter@kernel.crashing.org>
-To: Piotr Perak <peri@aqua.aspd.pwr.wroc.pl>
-Message-ID: <20040928094327.B1532@home.com>
-References: <20040928064442.A31883@home.com>
-	<Pine.LNX.4.21.0409281735560.6394-100000@aqua.aspd.pwr.wroc.pl>
+To: alebas@televes.com
+Message-ID: <20040928100413.C1532@home.com>
+References: <1096380738.415971420df80@webmail.televes.com:443>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.21.0409281735560.6394-100000@aqua.aspd.pwr.wroc.pl>;
-	from peri@aqua.aspd.pwr.wroc.pl on Tue, Sep 28, 2004 at
-	05:47:57PM +0200
+In-Reply-To: <1096380738.415971420df80@webmail.televes.com:443>;
+	from alebas@televes.com on Tue, Sep 28, 2004 at 04:12:18PM +0200
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 2.6.x on 405CR
+Subject: Re: Full duplex, MDIO and both Ethernet in MPC8272ADS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,33 +24,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 28, 2004 at 05:47:57PM +0200, Piotr Perak wrote:
-> On Tue, 28 Sep 2004, Matt Porter wrote:
-> > Hrm, I see. Did your firmware change between your working 2.4 kernel
-> > and your non-working 2.6 kernel?  If you're failing in there that would
-> > be my first thought. I suppose that's probably not that case though.
-> 
-> 2.4.23 still runs on board I try to port 2.6.8.1 to. So I guess firmware
-> is not the problem?
+On Tue, Sep 28, 2004 at 04:12:18PM +0200, alebas@televes.com wrote:
+> So, is there any plan to merge any of Arabella's changes into the ppc tree? Or
+> is there anyone currently working on that ethernet stuff for current 2.4.26
+> tree? Is  it planned to provide a patch soon?
 
-In that case, it shouldn't be.
- 
-> > then you're an interesting spot.  Can you trace it down to the exact
-> > failure in __alloc_bootmem_core?
-> I already did it. Can you please read
-> http://ozlabs.org/pipermail/linuxppc-dev/2004-September/000104.html? I
-> described there what weird things are happening in __alloc_bootmem_core.
-
-I see. Can you move the reset instruction to isolate the offending
-instruction? 
- 
-BTW, it's not clear how you are guaranteeing that the processor has
-bit 2 or 3 asserted before the dbcr0 load. If you preloaded r12 out of
-the scope of the code fragments shown, it's clear that r12 is getting
-clobbered in the subf instruction of the 2.6.8.1 fragment.
-
-Is this a hobby project or a "for profit" project? If it's for profit,
-then consider investing in a JTAG emulator (like BDI2000)...it'll pay
-for itself many times over.
+Have you asked Arabella what their plans are to submit changes to the
+PPC tree? They would be the maintainer of those changes so it's up
+to them. It should go into 2.6 first, though, and could go into a
+PPC 2.4 tree. Marcelo's 2.4 tree is not taking new features.
 
 -Matt
