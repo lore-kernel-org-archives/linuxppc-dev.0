@@ -1,44 +1,53 @@
-Date: Thu, 6 Jan 2000 21:18:54 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andreas Tobler <toa@pop.agri.ch>
-cc: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: remote debugging?
-In-Reply-To: <3874C8D8.835DBC64@pop.agri.ch>
-Message-ID: <Pine.LNX.4.05.10001062118200.11905-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <20000106122119.A2174@work.bitmover.com>
+Date: Thu, 6 Jan 2000 12:21:19 -0800
+From: Larry McVoy <lm@bitmover.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Benjamin Herrenschmidt <bh40@calva.net>
+Cc: jlquinn@us.ibm.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Building 2.3.35?
+References: <20000106171919.015242@mailhost.mipsys.com> <Pine.LNX.4.05.10001062117021.11905-100000@callisto.of.borg>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.05.10001062117021.11905-100000@callisto.of.borg>; from Geert Uytterhoeven on Thu, Jan 06, 2000 at 09:17:25PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 6 Jan 2000, Andreas Tobler wrote:
-> I try to remote debugging a kernel.
-> Configuration as follows:
+I'm taking a more active role in keeping the PPC/linux/BK trees working.
+Please bug me on a regular basis if you have problems.  
+
+I'm in the middle of cloning the trees to bitkeeper.com and I'll be putting
+bitkeeper.com on the net as a big fast machine that I'll let anyone into to
+do work.
+
+On Thu, Jan 06, 2000 at 09:17:25PM +0100, Geert Uytterhoeven wrote:
 > 
-> pm7200 Linux <------ serial cable------> PowerBook MacOS ZTerm
+> On Thu, 6 Jan 2000, Benjamin Herrenschmidt wrote:
+> > On Thu, Jan 6, 2000,  <jlquinn@us.ibm.com> wrote:
+> > >2.3.35 is the first unstable kernel that I've put some effort in getting to
+> > >build.  I only get to play with stuff for 2-3 hours a week, so it's hard to
+> > >really do debugging at the rate of kernel development :-)
+> > >
+> > >How does merging of the vger tree into Linus' development kernel work right
+> > >now?
+> > 
+> > The main ppc tree, for now, is not vger but Cort's bitkeeper. (I don't
+> > know if Cort keeps vger updated).
 > 
-> the physical Link is ok, when cat'ing a file to /dev/ttyS1 I get it on
-> the ZTerm window.
+> Vger is no longer kept up-to-date, except through Linus (which isn't up-to-date
+> neither :-(
 > 
-> But when I boot with BootX I add the kernel args 'console=/dev/ttyS1' in
-> the corresponding field.
+> Gr{oetje,eeting}s,
+> --
+> Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
 > 
-> The first stage text I see on the pm7200, afterwards Tux comes up and no
-> booting messages are seen either on the pm7200 (what I expect) nor on
-> the ZTerm window. (what I don't expect).
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+> 							    -- Linus Torvalds
+> 
 
-And you did enable CONFIG_SERIAL_CONSOLE?
-
-I'm not 100% sure that it works on PowerMac (don't have one), but at least
-CONFIG_SERIAL_CONSOLE is in the macserial code.
-
-Gr{oetje,eeting}s,
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+-- 
+---
+Larry McVoy            	   lm@bitmover.com           http://www.bitmover.com/lm 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
