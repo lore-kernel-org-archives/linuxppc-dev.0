@@ -1,54 +1,38 @@
-From: phandel@cise.ufl.edu
-Date: Sun, 10 Dec 2000 00:56:54 -0800 (PST)
-Subject: kernel oops with rm in hfs - hit BUG() in line 236 of dcache.h
-To: linuxppc-dev@lists.linuxppc.org
-Cc: asun@cobaltnet.com, asun@asun.cobaltnet.com
-Message-id: <Pine.LNX.4.21.0012100040330.1317-100000@like.mine.nu>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <3A341F7E.972371F5@mvista.com>
+Date: Sun, 10 Dec 2000 19:27:42 -0500
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: ddickey@charter.net
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Most current linux source for ppc?
+References: <3A32B971.1E847A99@charter.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-PowerCenter Pro 210mhz 604e, 224MB RAM, Linux 2.4-pre11 (rsync from Paul 12/8)
+"Dan A. Dickey" wrote:
 
-I was removing multiple files from my hfs drive, when I hit the BUG() at
-line 236 in /usr/src/linux/include/linux/dcache.h:
+> .....and would like to be on the leading edge instead.
+> I'm currently working with a compact pci powerpc board with
+> an IBM405GP on it.
 
-static __inline__ struct dentry * dget(struct dentry *dentry)
-{
-        if (dentry) {
-                if (!atomic_read(&dentry->d_count))
-                        BUG();
-                atomic_inc(&dentry->d_count);
-        }
-        return dentry;
-}
+I'm trying to merge the 4xx changes into the main 2_5 tree in a
+way that minimizes the effect on everyone.  I also want to take the
+opportunity to restructure some of the horrible code in places
+like mm/init.c in the process.  With the work Tom Rini is doing on
+some of the configuration options, I think I can make this happen
+soon.
 
-
-Dec  9 18:09:21 like kernel: kernel BUG at /usr/src/linux/include/linux/dcache.h:236!
-Dec  9 18:09:21 like kernel: Oops: Exception in kernel mode, sig: 7
-Dec  9 18:09:21 like kernel: NIP: C00712FC XER: 00000000 LR: C00712FC SP: C1087DB0 REGS: c1087d00 TRAP: 0700
-Dec  9 18:09:21 like kernel: MSR: 00089032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-Dec  9 18:09:21 like kernel: TASK = c1086000[12310] 'rm' Last syscall: 10
-Dec  9 18:09:21 like kernel: last math c1086000 last altivec 00000000
-Dec  9 18:09:21 like kernel: GPR00: C00712FC C1087DB0 C1086000 00000039 00001032 00000001 C0210000 00000000
-Dec  9 18:09:21 like kernel: GPR08: 00000000 C01B0000 0000001F C1087CF0 22822842 1001ECE8 100302E8 10030000
-Dec  9 18:09:21 like kernel: GPR16: 10030000 10030000 10030000 10030000 00000000 C96D7C20 00000000 C0210000
-Dec  9 18:09:21 like kernel: GPR24: C291D62C C0180000 C0180000 C291D600 C4193C60 C291EE40 C291D628 C9947520
-Dec  9 18:09:21 like kernel: Call backtrace:
-Dec  9 18:09:21 like kernel: C00712FC C0047854 C00479A8 C00048D8 10001D8C 100031D0 10001358
-Dec  9 18:09:21 like kernel: 0FF0B734 00000000
-
->From the System.map:
-c007122c T hfs_unlink
-c00476d8 T vfs_unlink
-c00478c0 T sys_unlink
-c00048d8 T ret_from_syscall_1
+For now, the best place to get the 405GP is from the stuff Frank
+Rowand posts on the MontaVista web site.  There isn't anything in
+the BitKeeper trees that will work for you right now.
 
 
-Thanks,
-Peter
+	-- Dan
 
+--
+
+	I like MMUs because I don't have a real life.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
