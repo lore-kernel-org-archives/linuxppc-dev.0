@@ -1,44 +1,29 @@
-Message-ID: <3A6C7970.2E3E88CA@relog.ch>
-Date: Mon, 22 Jan 2001 19:18:24 +0100
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: michdaen@iiic.ethz.ch
+Message-ID: <3A6C7DB4.516E2897@mvista.com>
+Date: Mon, 22 Jan 2001 13:36:36 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Roman Zippel <zippel@fh-brandenburg.de>
+To: michdaen@iiic.ethz.ch
 CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
         Jeff Hartmann <jhartmann@valinux.com>,
         Gareth Hughes <gareth@valinux.com>, linuxppc-dev@lists.linuxppc.org,
         dri-devel@lists.sourceforge.net, Paul Mackerras <paulus@linuxcare.com>
 Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
-References: <Pine.GSO.4.10.10101221854100.18061-100000@zeus.fh-brandenburg.de>
+References: <3A686DFE.9030308@valinux.com> <19341214104258.22601@mailhost.mipsys.com> <3A68FC06.7BEEA13D@iiic.ethz.ch> <3A691166.DC6DCD81@iiic.ethz.ch> <3A6C6EEC.D1A84557@mvista.com> <3A6C7143.E49ADF33@relog.ch>
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Roman Zippel wrote:
+Michel Dänzer wrote:
 
-> > > [drm] drm_sg_alloc
-> > > i: ca292000
-> > > pgd: c014dca0
-> > > pmd: c014dca0
-> > > pte: 00000a48
-> > > Oops: kernel access of bad area, sig: 11
-> >
-> > Looking at pgd/pmd, pte seems fishy for a pointer. Any reason why this
-> > code shouldn't work on PPC?
->
-> There is no pte table and so there is nothing mapped at that address, you
-> can use (pgd|pmd|pte)_present() to test for that.
+> No, that's not the problem, pagelist is struct page ** :-/ (and pagelist is
+> allocated)
 
-You are saying we should use *_present() to check each of these before using
-*_offset to get the pointer? And what if *_present() is false?
+Then, what the heck were you trying to print out with that
+piece of code, and who further down the food chain uses
+the page struct?
 
 
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
