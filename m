@@ -1,64 +1,33 @@
-Message-ID: <368106DF.F355F4AF@andrew.cmu.edu>
-Date: Wed, 23 Dec 1998 10:06:07 -0500
-From: Randy Gobbel <gobbel@andrew.cmu.edu>
-MIME-Version: 1.0
-To: Troy Benjegerdes <hozer@drgw.net>
-CC: linuxppc-dev@lists.linuxppc.org, apenwarr@foxnet.net, eric@aib.com
-Subject: Re: workaround for broken 'make xconfig' on ppc
-References: <Pine.LNX.4.04.9812222301100.28200-100000@narn.local.drgw.net>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <l03130300b2a6e21c2a5d@[172.16.10.14]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 24 Dec 1998 07:15:35 +1300
+To: linuxppc-dev@lists.linuxppc.org
+From: Bryan Christianson <bryanc@ihug.co.nz>
+Subject: egcs 1.1.1 and outl
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Troy Benjegerdes wrote:
-> 
-> After using make xconfig on i386 earlier today, I finally decided to
-> figure out why it's broke on PPC. I found that there's something not
-> working right in scripts/tkgen.c where 'global CONFIG_SOUND' isn't being
-> put into the tk script in the 'update_mainmenu' function.
-> 
-> This cause the script to bomb with a 'can't find variable $CONFIG_SOUND'
-> error.
-> 
-> This doesn't show up on i386 since CONFIG_SOUND isn't the last item, like
-> it is on PPC.
-> 
-> By adding the following to linux/arch/ppc/, make xconfig now works:
-> 
-> -----
-> 
-> mainmenu_option next_comment
-> comment 'make Xconfig is broken'
-> bool 'Xconfig is broken' CONFIG_BROKEN_XCONFIG
-> endmenu
+I am running Kernel 2.0.130 compiled with egcs 1.0.2. I upgraded the
+compiler to egcs 1.1.1 and recompiled the driver I'm working on. The driver
+crashed the machine on its first call to outl with amessage saying
+something like 'invalid msr' and then a dump of all the registers.
 
-I submitted a fix for this a while ago, not sure why it hasn't been
-checked in (I don't have write access to vger).  Here's the patch.  I
-have tested this on both PPC and x86, and it works for me--I have not
-had any problem with make xconfig for a while.  If someone could check
-this in to vger I'd appreciate it (and so would a bunch of other
-people).
+I've reverted back to egcs 1.0.2 and the driver works fine.
 
--Randy
+Is this a known issue - couldn't find anything in the FAQ.
 
-Index: scripts/tkgen.c
-===================================================================
-RCS file: /cvsroot/linux/scripts/tkgen.c,v
-retrieving revision 1.22
-diff -c -r1.22 tkgen.c
-*** tkgen.c     1998/07/26 06:09:03     1.22
---- tkgen.c     1998/11/11 22:39:21
-***************
-*** 913,918 ****
---- 913,919 ----
-     * correct.
-     */
-    printf("proc update_mainmenu {w}  {\n");
-+   clear_globalflags(scfg);
-    for(cfg = scfg; cfg != NULL; cfg = cfg->next)
-      {
-        switch (cfg->tok)
+I can reproduce it and get more detail if required. I presume this is a
+problem with the compiler unless there is something weird with the code for
+outl in <io.h>
+
+--
+Bryan Christianson
+email:		<mailto:bryanc@ihug.co.nz>
+Home Page:	<http://crash.ihug.co.nz/~bryanc>
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
