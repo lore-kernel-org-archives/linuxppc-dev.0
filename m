@@ -1,59 +1,33 @@
-In-Reply-To: <4109B225.8020604@mvista.com>
-References: <41090F9A.8000901@mvista.com> <BA214A7E-E195-11D8-8E6C-000393DBC2E8@freescale.com> <4109B225.8020604@mvista.com>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <FCFD4600-E231-11D8-858D-000393DBC2E8@freescale.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>,
-	Kumar Gala <kumar.gala@motorola.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: Patch for debug setcontext
-Date: Fri, 30 Jul 2004 09:08:53 -0500
-To: Corey Minyard <cminyard@mvista.com>
+Date: Fri, 30 Jul 2004 17:30:07 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Leigh Brown <leigh@solinno.co.uk>
+Cc: paulus@samba.org, trini@kernel.crashing.org,
+	linuxppc-dev@lists.linuxppc.org, barbieri@gmail.com
+Subject: Re: [0/9] Support for old IBM PReP boxes
+Message-ID: <20040730153007.GA12298@lst.de>
+References: <20040729213319.GA5857@george.solinno.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040729213319.GA5857@george.solinno.co.uk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-If you can look at on of the 2.6.8-rc releases that would be good.  In
-adding support for e500, I cleaned up some CONFIG_BOOKE references, and
-changed the load_4xx_dbcr0 code to just load_dbcr0 since it applies to
-both 4xx and Book-E.
-
-thanks
-
-- kumar
-
-On Jul 29, 2004, at 9:27 PM, Corey Minyard wrote:
-
-> I'm using stock 2.6.7.  Is there a different kernel I should be using?
+On Thu, Jul 29, 2004 at 10:33:19PM +0100, Leigh Brown wrote:
 >
-> -Corey
+> This set of patches add support for old IBM PReP machines.  They are
+> not perfect, but they are known working on the E20, E30, 140, 240
+> and F30.  The F40 is not currently working, but it doesn't work at
+> all without these patches so I'm not too concerned right now.
 >
-> Kumar Gala wrote:
->
->>
->> On Jul 29, 2004, at 9:54 AM, Corey Minyard wrote:
->>
->>> Kumar Gala wrote:
->>>
->>> > I'm guessing, this should really be #if defined(CONFIG_4xx) ||
->>> > defined(CONFIG_BOOKE)
->>> > There are a number of similar cases later in this code as well.
->>>
->>> That may be the case, but it is very confusing in entry.S.  The
->>> dbcr0 register seems to only be defined on 4xx processor, not on
->>> book E.  Look, for instance, at load_4xx_dbcr0:, it is only defined
->>> if 4xx is enabled, not if book E is enabled.
->>
->>
->> Corey,
->>
->> I think you may have an old linux-2.6 tree.  I remember renaming
->> load_4xx_dbcr0 to just load_dbcr0 because of such issues.  Hopefully
->> a newer tree (one with e500 support, if its going head_e500.S) should
->> be cleaner.  If not, let me know.
->>
->> - kumar
->>
+> As 060-old-openpic.diff has not shown up any problems on any machines
+> I think it's worth applying, but if Tom is still unhappy then it can
+> be left for now.
+
+I know everyone hates beeing put under pressure, but I'd be really
+grateful on a quick okay or not on this for mainline so we can decide on
+taking the full patchkit or the small patch for Debian Sarge which will
+freeze soon.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
