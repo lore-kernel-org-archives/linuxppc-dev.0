@@ -1,49 +1,47 @@
-Message-ID: <3BF52F0C.7020608@humboldt.co.uk>
-Date: Fri, 16 Nov 2001 15:21:48 +0000
-From: Adrian Cox <adrian@humboldt.co.uk>
+Message-ID: <3BF53B55.90900@embeddededge.com>
+Date: Fri, 16 Nov 2001 11:14:13 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: [PATCH] Allow small areas in io_block_mapping
-Content-Type: multipart/mixed;
- boundary="------------050005070500070601060905"
+To: Adrian Cox <adrian@humboldt.co.uk>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] Allow small areas in io_block_mapping
+References: <3BF52F0C.7020608@humboldt.co.uk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------050005070500070601060905
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Adrian Cox wrote:
 
-The attached patch stops io_block_mapping() from attempting to use BATs
-for areas too small to fit in a BAT.  (On the port I'm currently
-developing, the board uses high-order address lines to distinguish
-between register groups, and I'm trying to allocate a page for each group.)
+> The attached patch stops io_block_mapping() from attempting to use BATs
+> for areas too small to fit in a BAT.
 
---
-Adrian Cox   http://www.humboldt.co.uk/
+Hmmmm....Is io_block_mapping() supposed to be a replacement for ioremap()?
+If so, it doesn't do anything I want.  What you are asking for is already
+done by ioremap.  If someone has already wired BATs, you get them, and
+if not then single PTEs will be allocated.  In this case, just don't allocate
+BATs for I/O in the space you want individual pages when you do the board
+initialization, and call ioremap().
 
---------------050005070500070601060905
-Content-Type: text/plain;
- name="pgtable.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="pgtable.patch"
+I think we still need to define a better set of functions here.  I want to:
 
-===== arch/ppc/mm/pgtable.c 1.7 vs edited =====
---- 1.7/arch/ppc/mm/pgtable.c	Sun Nov  4 18:54:46 2001
-+++ edited/arch/ppc/mm/pgtable.c	Fri Nov 16 15:12:48 2001
-@@ -242,7 +242,7 @@
- 	/*
- 	 * Use a BAT for this if possible...
- 	 */
--	if (io_bat_index < 2 && is_power_of_2(size)
-+	if (io_bat_index < 2 && is_power_of_2(size) && size >= 0x20000
- 	    && (virt & (size - 1)) == 0 && (phys & (size - 1)) == 0) {
- 		setbat(io_bat_index, virt, phys, size, flags);
- 		++io_bat_index;
+	1.) Control the virt->phys mapping when necessary by forcing both
+		virtual and physical addresses (kind like io_block_mapping now)
 
---------------050005070500070601060905--
+	2.) Cover a very large space with a single BAT or large page entry
+
+	3.) Have an ioremap()-like function that will use the physical address
+		to either match in 1 or 2 above, or allocate single PTEs if
+		no match.
+
+The functions used to set up 1 and 2 above are performed very early during
+memory management initialization and are not subject to change once we
+start using these mapped spaces.
+
+Thanks.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
