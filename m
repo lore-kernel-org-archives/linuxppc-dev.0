@@ -1,18 +1,17 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1B7782BF16
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
+	by ozlabs.org (Postfix) with ESMTP id B2B982BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Jan 2005 10:42:59 +1100 (EST)
-Date: Wed, 12 Jan 2005 15:42:56 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
+	Thu, 13 Jan 2005 10:48:20 +1100 (EST)
+Date: Wed, 12 Jan 2005 16:48:09 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
 To: "Goforth, Edward" <Ed.Goforth@gd-ais.com>
-Message-ID: <20050112234256.GA26091@gate.ebshome.net>
+Message-ID: <20050112164809.F22626@home.com>
 References: <9A48EF7239039B48834A3F6B644B0C71EF8679@vaff06-mail01.ad.gd-ais.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9A48EF7239039B48834A3F6B644B0C71EF8679@vaff06-mail01.ad.gd-ais.com>
+In-Reply-To: <9A48EF7239039B48834A3F6B644B0C71EF8679@vaff06-mail01.ad.gd-ais.com>;
+	from Ed.Goforth@gd-ais.com on Wed, Jan 12, 2005 at 06:25:45PM -0500
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: board with no RTC
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -30,11 +29,14 @@ On Wed, Jan 12, 2005 at 06:25:45PM -0500, Goforth, Edward wrote:
 > have a RTC. Has anyone had any success with a board without a RTC, or is
 > it even possible?  How much of a problem will this cause?  
 > 
+> Should we get the board respun with a RTC?  We would prefer using a 2.4
+> kernel, but would certainly go to a 2.6 kernel if that made things
+> easier.
+> 
+> Thanks in advance for any advice.
 
-There shouldn't be any problems without RTC except the fact that you 
-need to worry about getting correct time.
+No problems. Just set your time from another source. Many PPC boards
+do this that don't need local time retention across power cycles.
+I've got a 440gx board sitting here running happily this way.
 
-I have many 4xx-based boards without RTC. They "just work".
-
---
-Eugene
+-Matt
