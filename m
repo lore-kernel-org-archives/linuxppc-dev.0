@@ -1,39 +1,42 @@
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: cpu_setup_6xx.S:19:22: ppc_defs.h: No such file or directory
-Date: Thu, 15 Jan 2004 19:25:23 +0000
-Cc: Christian <evil@g-house.de>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-References: <1074025766.23751.2.camel@chuck.arlut.utexas.edu> <1074131648.5123.48.camel@gaston> <1074186989.23751.9.camel@chuck.arlut.utexas.edu>
-In-Reply-To: <1074186989.23751.9.camel@chuck.arlut.utexas.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200401151925.24746.hollisb@us.ibm.com>
+Date: Thu, 15 Jan 2004 12:36:19 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Andreas Oberritter <obi@saftware.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ibmstb4 fixes
+Message-ID: <20040115193619.GF983@stop.crashing.org>
+References: <1074028643.1526.42.camel@shiva.eth.saftware.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1074028643.1526.42.camel@shiva.eth.saftware.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thursday 15 January 2004 17:16, Matthew S. McClintock wrote:
-> On Wed, 2004-01-14 at 19:54, Benjamin Herrenschmidt wrote:
-> >
-> > If it's not created for you, then something is wrong in your build
-> > process, or you source tree contains crap or whatever. It definitely
-> > works fine with the upstream sources.
->
-> Well it is from the same kernel tree and same config, I just copy it
-> because sometimes the current tree does not make that file correctly. I
-> don't know what else to do, does anyone have any idea why my tree is not
-> building this file every time correctly in the first place?
+On Tue, Jan 13, 2004 at 10:17:23PM +0100, Andreas Oberritter wrote:
 
-Just a guess, but I don't think 2.4 trees work perfectly with parallel builds
-(make -jN). It could be that one build needs ppc_defs.h before the other has
-created it yet.
+> Hi Tom,
+>
+> here are three trivial patches for linuxppc-2.4:
+> - two typo fixes for i2c and the ocp definition
+
+Is the first one related to dgibsons latest changes?
+
+> - the ide driver ported to the current ocp api
+
+Thanks.
+
+> Now that linuxppc_2_4_devel seems to be rather dead, would you accept a
+> patch that adds the smc91111 network driver to linuxppc-2.4?
+
+I'd rather the smc91111 driver be sent to Jeff Garzik for review so he
+can push it into linux-2.4 and offer hints / help to get it into 2.6.
+
+> What is the status of the 405 wdt driver?
+
+I don't know, but Matt Porter might.
 
 --
-Hollis Blanchard
-IBM Linux Technology Center
-
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
