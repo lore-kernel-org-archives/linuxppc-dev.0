@@ -1,49 +1,36 @@
-Message-ID: <001101c2ee43$3831ea10$370da8c0@aman>
-From: "Aman" <aman@mistralsoftware.com>
-To: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: PPC kernel tree download error
-Date: Wed, 19 Mar 2003 23:43:18 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <5.1.0.14.2.20030319101554.02b3c668@mail.ebshome.net>
+Date: Wed, 19 Mar 2003 10:19:11 -0800
+To: "Callebaut, Beno?t" <benoit.callebaut@barco.com>
+From: Eugene Surovegin <ebs@ebshome.net>
+Subject: Re: /drivers/mtd/mtdblock_ro.c is buggy
+Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <81A66F72DCACD511B0600002A551BFCB02ABC2D4@kuumex05.barco.co
+ m>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="koi8-r"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All
+At 08:05 AM 3/19/2003, Callebaut, Benoît wrote:
+>After a lot of debugging I seen that there is a bug in the MTD read only
+>block driver.
+>It seems that in the mtdblock_request, something goes wrong withe the
+>handling of the request structure.
+>between two calls to end_request, the pointer bh->req_qnext of the last used
+>buffer head is corrupted.
+>I didn't find the cause but since this happens only with the
+>mtdblock_request function I suppose there is something wrong in it.
+>
+>If I ever find what's wrong I will try to correct it, but don't hope too
+>much I don't have a lot of time.
 
-This the first time , I am downloading the linuxppc_2_4_devel tree from the
-following site using Bitkeeper for PPC IBM 440 image
-http://penguinppc.org/dev/kernel.shtml. I used the following command to
-download the linuxppc_2_4 tree
+I submitted fix for mtdblock_ro.c to MTD CVS several months ago.
 
-bk clone -d http://ppc.bkbits.net/linux_2_4_devel
+Please, get the latest mtdblock_ro.c from
+http://www.linux-mtd.infradead.org/, it should solve your problems.
 
-After some time I get the following error
-==========================================================================
-Sfio has detected a name conflict between
-"include/linux/netfilter_ipv4/SCCS/s.i
-pt_dscp.h" and "include/linux/netfilter_ipv4/SCCS/s.ipt_DSCP.h";
-This usually happens when you transfer file from a case-sensitive file
-system (e.g. Unix) to a case insensitive file system (e.g FAT, NTFS)
-Please rename one of the files and retry (see also "bk helptool mv")
-Note: You must do the rename in the sending repository.
-==========================================================================
-write on fd gzip_in gunzip2fd: Broken pipe
-ERROR: process 1064 is exiting and it has left the repository at
-. write locked!!  This is the result of a process that has been
-killed prematurely or is a bug.
-socket2pipe: shutting down write socket
-
-Administrator@WIN2KHOSTB ~
-$ socket2pipe: reader error 2
-
-Can anybody suggest , how  to overcome this error
-
-Thanking you in advance
-
-Regards
-Aman
+Eugene
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
