@@ -1,32 +1,32 @@
-To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-Cc: Steve Rossi <Steve.Rossi@motorola.com>,
-	Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 823 Video Controller Driver - where ? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 16 Dec 2002 09:16:55 EST."
-             <D73A25AA6E54D511AD74009027B1110F3C04C7@ORION>
-Date: Mon, 16 Dec 2002 16:52:21 +0100
-Message-Id: <20021216155226.B37F7C6139@atlas.denx.de>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Discovery II (was Re: Support for Arctic platform (405LP based))
+References: <20021213043628.GI21319@zax.zax>
+	<20021212215126.V23952@duath.fsmlabs.com>
+	<20021213151808.GI19456@opus.bloom.county>
+	<20021215121526.M30941@duath.fsmlabs.com>
+	<15869.5023.549830.146265@argo.ozlabs.ibm.com>
+	<20021215174120.E30568@duath.fsmlabs.com>
+	<20021216150442.GJ6095@opus.bloom.county>
+	<20021216150839.GK6095@opus.bloom.county>
+From: Roland Dreier <roland@topspin.com>
+Date: 16 Dec 2002 08:25:57 -0800
+In-Reply-To: <20021216150839.GK6095@opus.bloom.county>
+Message-ID: <52smwyorqi.fsf_-_@topspin.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <D73A25AA6E54D511AD74009027B1110F3C04C7@ORION> you wrote:
->
-> We have Linux frame buffer drivers for our 823E(LITE DW) and our
-> IBM405GP(EP405PC).
+    Tom> ... with the exception of the current gt64260 code, which
+    Tom> will hopefully get an update so that it could move
+    Tom> up-and-out.  But no promises there.
 
-Where can I download the sources?
+This reminds me... can someone tell me what the status of Discovery II
+(MV64340) is at the moment?
 
-Best regards,
+Thanks,
+  Roland
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-How much net work could a network work, if a network could net work?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
