@@ -1,41 +1,38 @@
-Date: Fri, 15 Jan 1999 02:27:54 -0500 (EST)
-From: Ty Hedrick <thedrick@netspace.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Powerbase IDE: DMA & ohare-ata
-Message-ID: <Pine.LNX.4.05.9901150212250.26871-100000@netspace.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Jesper Skov <jskov@cygnus.co.uk>
+Message-ID: <13982.64423.455552.730846@lassi.cygnus.co.uk>
+Date: Fri, 15 Jan 1999 08:26:15 +0000 (GMT)
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+Cc: Alan Cox <alan@cymru.net>, linuxppc-dev@lists.linuxppc.org,
+        Jes.Sorensen@cern.ch, linux-apus@sunsite.auc.dk
+Subject: Re: Synchronization [was Re: The Magic Show: kernel_map() disappearing]
+In-Reply-To: <Pine.LNX.3.96.990114145156.7359A-100000@persephone.cs.nmt.edu>
+References: <199901142052.UAA24588@snowcrash.cymru.net>
+	<Pine.LNX.3.96.990114145156.7359A-100000@persephone.cs.nmt.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I just noticed the thread from a few days ago on greatly speeding up IDE
-transfer rates by poking at ohare and thought I'd give it a shot
-on my Powerbase. The first thing I noticed is that my IDE drive was still
-operating in PIO mode, even with BenH.'s latest test kernel.  
+>>>>> "Cort" == Cort Dougan <cort@persephone.cs.nmt.edu> writes:
 
-It seems that even though the Powerbase is perfectly capable of DMA, the
-test in ide-pmac.c to setup DMA 
+Cort> That's my rationale for doing the sync and eieio in the mb().
+Cort> That way, we're guaranteed no races no matter what assumptions
+Cort> someone makes about the x86 when adding barriers to their driver
+Cort> code.  Is that unreasonable?
 
-#ifdef CONFIG_BLK_DEV_IDEDMA_PMAC
-                if (np->n_addrs >= 2 && np->n_intrs >= 2) {
+Cort> Alan} x86 and most other processors dont have the notion of a store
+Cort> Alan} barrier and an i/o barrier beign different
 
-fails because n_intrs is 0.  Risking my mostly worthless IDE drive I
-removed the test and recompiled.  DMA appears to work without a hitch -
-transfer rates are almost identical to those under PIO, but cpu usage was 
-much lower.
+IMHO, it is unreasonable. Why should the majority of PPC drivers run
+with suboptimal performance because of bad programmer assumptions?
 
-After looking at DMA I decided to enable the ohare register mentioned
-earlier, stuffing the new value in also resulted in a working system, and
-approximately doubled the IDE transfer rate as measured by hdparm - to a
-whopping 3.7 MB/s.
+I'd suggest changing mb() (or whatever an appropriate name would be)
+to 'eieio'. MP code and generic drivers that expect inter-CPU
+synchronization to happen when using this macro should be fixed.
 
-Is there any way to be kind to all the Powerbase owners out there and
-enable DMA by default without breaking any other systems?  Also, the mod
-to ohare and heathrow does seem to help lots of platforms.
 
-Ty    
+...but then, what do I know? :)
 
+Jesper
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
