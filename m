@@ -1,70 +1,39 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: Need testers with MESH SCSI
-Date: Thu, 21 Dec 2000 10:33:25 +0100
-Message-Id: <19341115030509.14383@192.168.1.10>
+Date: Thu, 21 Dec 2000 13:23:14 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: ATI mach64 GT Rev 0.x??
+Message-ID: <Pine.LNX.4.05.10012211316390.676-100000@callisto.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I need some feedback about the following change to the MESH driver. Does
-it fix previously non-working configurations ? Does it break currently
-working configurations ?
+Anybody who has an ATI Mach64 GT (RAGE) with chip ID 0x4754 and a revision
+number where (rev & 7) is 0?
 
-in drivers/scsi/mesh.c, replace the mesh_init function with:
+Revision encoding is defined as: mmFFFMMM, with
+  - mm: minor revision
+  - FFF: foundry
+  - MMM: major revision
 
-static void mesh_init(struct mesh_state *ms)
-{
-    volatile struct mesh_regs *mr = ms->mesh;
-    volatile struct dbdma_regs *md = ms->dma;
+AFAIK, only the following revision codes exist: 0x01, 0x41, 0x1a, 0x5a, 0x9a,
+which map to revisions 1.0, 1.1, 2.0, 2.1, 2.3.
 
-    udelay(100);
+Atyfb has some tests for (rev & 7) and (rev & 3), but if I'm right, these are
+always true, and can be removed.
 
-    /* Reset DBDMA & mask interrupts */
-    out_le32(&md->control, (RUN|PAUSE|FLUSH|WAKE) << 16);
-    out_8(&mr->intr_mask, 0);
+Gr{oetje,eeting}s,
 
-    /* Pre-reset mesh to make sure it's in an approx. sane state */
-    out_8(&mr->exception, 0xff);	/* clear all exception bits */
-    out_8(&mr->error, 0xff);	/* clear all error bits */
-    out_8(&mr->sequence, SEQ_RESETMESH);
-    (void)in_8(&mr->sequence);
-    udelay(10);
+				Geert (working on making atyfb less complex)
 
-    /* Reset bus */
-    out_8(&mr->bus_status1, BS1_RST);
-    (void)in_8(&mr->bus_status1);
-    udelay(30);
-    out_8(&mr->bus_status1, 0);
-    (void)in_8(&mr->bus_status1);
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-    /* Let bus and some devices settle down (Apple) */
-    mdelay(250);
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-    /* Reset MESH again (for real), clear any error occured during
-     * bus reset
-     */
-    out_8(&mr->exception, 0xff);	/* clear all exception bits */
-    out_8(&mr->error, 0xff);	/* clear all error bits */
-    out_8(&mr->sequence, SEQ_RESETMESH);
-    (void)in_8(&mr->sequence);
-    udelay(10);
-    out_8(&mr->sequence, SEQ_FLUSHFIFO);
-    (void)in_8(&mr->sequence);
-    udelay(1);
-
-    /* Initialize the chip */
-    out_8(&mr->error, 0xff);	/* clear all error bits */
-    out_8(&mr->interrupt, 0xff);	/* clear all interrupt bits */
-    out_8(&mr->intr_mask, INT_ERROR | INT_EXCEPTION | INT_CMDDONE);
-    out_8(&mr->source_id, ms->host->this_id);
-    out_8(&mr->sel_timeout, 25);	/* 250ms */
-    out_8(&mr->sync_params, ASYNC_PARAMS);	 /* asynchronous initially */
-}
-
-
-Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
