@@ -1,66 +1,34 @@
-Date: Thu, 3 Aug 2000 14:31:42 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Keith Owens <kaos@ocs.com.au>
+Date: Thu, 3 Aug 2000 14:44:12 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Ronald Wahl <rwa@peppercon.de>
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Where does ppc define __start___ksymtab? 
-In-Reply-To: <31728.965305116@ocs3.ocs-net>
-Message-ID: <Pine.HPX.4.10.10008031422570.9070-100000@gra-ux1.iram.es>
+Subject: Re: iounmap
+In-Reply-To: <Pine.LNX.4.21.0008030950020.1647-100000@goliath.issistance.de>
+Message-ID: <Pine.LNX.4.10.10008031443520.425-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 3 Aug 2000, Keith Owens wrote:
+On Thu, 3 Aug 2000, Ronald Wahl wrote:
+> I'm currently writing a device driver for an pci controller and have to
+> map very large amounts of pci memory and i/o ranges via ioremap. The
+> problem is that there is no iounmap and ioremap returns NULL after some
+> insmod/rmmod cycles. When gets this implemented?
 
-> On Thu, 3 Aug 2000 14:01:44 +0200 (METDST),
-> Gabriel Paubert <paubert@iram.es> wrote:
-> >On Thu, 3 Aug 2000, Keith Owens wrote:
-> >> If we want anything in the kernel then we put it there, and say where
-> >> we want it.  Anything not explicitly listed is discarded.  I just did
-> >> this with ix86 and vmlinux shrank by 9K, mainly in .bss.  It would not
-> >> boot afterwards so obviously some part of that 9K is required but right
-> >> now it works by some "magic" storing the unknown sections.  I'm going
-> >> to track down which sections are not being explicitly placed.
-> >
-> >I have trouble parsing this, since the bss by definition does not occupy
-> >any space in vmlinux.
->
-> It is wierd.
+When someone steals some spare time and writes the code.
 
-Indeed, Try to generate a linker map, it should help you tracking these
-phantoms. In my Makefile for the prepboot bootloader (not yet
-in the official kernel, not even bk tree), I have the following:
+Gr{oetje,eeting}s,
 
+						Geert
 
-zImage: $(OBJECTS) $(IMAGES) ppcboot.lds
-        $(OBJCOPY) $(TOPDIR)/vmlinux vmlinux -R .comment -S -K _start -K _end
-        $(LD) -o zImage $(OBJECTS) --just-symbols=vmlinux \
-        -b binary $(IMAGES) -T ppcboot.lds -Map zImage.map
-					   ^^^^^^^^^^^^^^^
-        rm vmlinux
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-and the .bss in zImage.map for my zImage looks like:
-
-.bss            0x000b8320     0x1134
- *(.sbss)
- .sbss          0x000b8320       0x10 zlib.o
- *(.bss)
- .bss           0x000b8330     0x1090 zlib.o
-                0x000b93c0                .=ALIGN(0x4)
- COMMON         0x000b93c0       0x94 em86.o
-                                  0x0 (size before relaxing)
-                0x000b93c0                v86_private
-                0x0000044d                __bss_words=(SIZEOF(.bss)>>=0x2)
-                0x000b8000
-
-These might be the COMMON sections then.
-
-	Gabriel.
-
-P.S: I just received you other mail while finishing this, so my guess was
-right. But generating a map is still a useful trick when you are lost in a
-linker script (been there, done that).
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
