@@ -1,32 +1,46 @@
+Message-Id: <199901161111.GAA00502@smtp-gw.vma.verio.net>
+Date: Sat, 16 Jan 1999 06:11:03 -0500 (EST)
+From: baccala@freesoft.org
+Subject: RS/6000 860 portable - who wrote the display code?
 To: linuxppc-dev@lists.linuxppc.org
-Subject: SA_ONSTACK problems in the libraries.
-Reply-To: minyard@acm.org
-From: Corey Minyard <minyard@acm.org>
-Date: 16 Jan 1999 02:07:10 -0600
-Message-ID: <m2zp7j4p5d.fsf@wf-rch.cirr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi -
 
-It have added SA_ONSTACK support to the kernel (support for separate
-signal stacks).  Some library fixes are required.  I have
-glibc-961212-1m and it has the following problems:
+I've got an IBM RS/6000 860 portable running Linux/ppc.  I've having
+strange problems with the display - characters that show up in the
+wrong places; garbled scanlines; it's rather hard to describe in words.
+I've checked the video memory with KGDB - it's contents are correct.
 
-   the /usr/include/signal.h has the ss_flag and ss_size parameters
-   reversed in the sigaltstack structure (as opposed to
-   /usr/include/asm/signal.h).
+I'm becoming more and more convinced that my display problems are
+either in hardware or in the VGA controller programming.  I've found
+that the problem exists in the boot loader as well as the Linux kernel
+proper.  Even more suspicious is a section of code in
+arch/ppc/boot/vreset.c that's just for my Aurora64V+ display
+controller chip (the section labeled "IBM Portable 860" - but it's keyed
+off the chip's ID code).  I've determined that the code does run during
+my boot cycle, and that commenting it out gives me a blank screen.
 
-   SA_ONSTACK needed to be added to /usr/include/sigaction.h
-
-   the sigaltstack() call just returns and error and doesn't do
-   the library call.
-
-Who fixes these types of problems, since they are PowerPC specific?
-
+I've got the databook on the chip, but right now I feel like I'm just
+flailing at something I don't understand.  Does anyone know who wrote the
+Aurora64V+ code in vreset.c?  Does anyone else on this list have an 860
+laptop?  Any help is appreciated.
 -- 
-Corey Minyard               Internet:  minyard@acm.org
-  Work: minyard@nortel.ca       UUCP:  minyard@wf-rch.cirr.com
+					-bwb
+
+					Brent Baccala
+					baccala@freesoft.org
+
+-------------------------------------------------------------------------
+To receive periodic news about what's happening at freesoft.org, send
+email to "announce@freesoft.org", with "SUBSCRIBE" as the message, i.e:
+		echo SUBSCRIBE | mail announce@freesoft.org
+-------------------------------------------------------------------------
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
