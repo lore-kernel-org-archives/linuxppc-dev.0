@@ -1,40 +1,26 @@
-Message-ID: <3A417BB1.22F6E226@wolf-359.net>
-Date: Wed, 20 Dec 2000 21:40:34 -0600
-From: "William J. Mittelstadt" <mittewil@wolf-359.net>
-Reply-To: mittewil@bigfoot.com
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: <mittewil@bigfoot.com>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: irda on pismo
+Date: Thu, 21 Dec 2000 08:32:37 +0100
+Message-Id: <19341115010421.21343@192.168.1.10>
+In-Reply-To: <3A417BB1.22F6E226@wolf-359.net>
+References: <3A417BB1.22F6E226@wolf-359.net>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: irda on pismo
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have been trying to get irda working on my powerbook to sync with my
-palm. I have followed the settings suggested in the irda faq but still
-can't seem to get it to work. I am running the 2.2.18 kernel from
-kernel.org with all the irda stuff compiled as modules. The only error i
-get is reported in dmesg:
+>
+>This is the output when I run the irattach /dev/ttyS1 command. I saw
+>that someone posted with this issue but never saw any fix. Any help
+>would be appreciated.
 
-irda_setup timed out on 1st byte
-irda_setup timed out on 1st byte
-IrDA (tm) Protocols for Linux-2.2 (Dag Brattli)
-IrCOMM protocol (Dag Brattli)
-IrDA: Registered device irda0
-ircomm_tty_attach_cable()
-ircomm_tty_ias_register()
-irtty_net_open()
-irlap_change_speed(), setting speed to 9600
-ircomm_tty_close()
-ircomm_tty_shutdown()
-ircomm_tty_detach_cable()
-ircomm_close()
+I've not looked into this special issue, but I guess you'll run into
+another one with irda on this machine: we need some new code for the
+pismo to power up/down the IR led (via bits in the KeyLargo ASIC instead
+of a PMU command).
 
-This is the output when I run the irattach /dev/ttyS1 command. I saw
-that someone posted with this issue but never saw any fix. Any help
-would be appreciated.
-
-Thanks
-
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
