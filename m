@@ -1,45 +1,53 @@
-To: Tony Mantler <eek@escape.ca>
-Cc: Claude Robitaille <crobitaille@videotron.ca>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Debugging with thread(s)
-References: <0FMD0095OJDI5C@falla.videotron.net> <v04003a00b47368afb81b@[216.81.20.221]>
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 08 Dec 1999 14:14:17 +0100
-In-Reply-To: Tony Mantler's message of "Tue, 7 Dec 1999 19:50:29 -0600"
-Message-ID: <kfyvh69ziae.fsf@kieraypc07.p.y.ki.era.ericsson.se>
+Message-Id: <199912081427.IAA30654@lists.linuxppc.org>
+Date: Wed, 8 Dec 1999 09:24:50 -0500 (EST)
+From: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
+Reply-To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
+Subject: Need developer to help move JDK ppc port forward
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tony Mantler <eek@escape.ca> writes:
+Hi,
 
-> At 6:59 PM -0600 12/7/99, Claude Robitaille wrote:
-> >I donwloaded the SRPMS but it contains 3 ...tar.bz2 files. I do not know
-> >what compression format is bz2. I tried gunzip and unzip but it did not
-> >worked. Anybody knows what format it is?
-> 
-> >From <http://sourceware.cygnus.com/bzip2/>:
-> 
-> [...snip...]
-> What is bzip2?
-> 
-> bzip2 is a freely available, patent free (see below), high-quality data
-> compressor. It typically compresses files to within 10% to 15% of the best
-> available techniques, whilst being around twice as fast at compression and
-> six times faster at decompression.
-> [...snip...]
-> 
-> I actually found it to be a bit slower than gzip on my 68k boxes, but it
-> probably optimizes better on PPC or x86.
+Due to recent events, I will no longer be producing JDK's for PowerPC. 
 
-The text is referring to "the best available techniques", not gzip.
-bzip2 is signifficantly slower than gzip on all platforms I've tried
-it on.
+If you or your firm needs a Java Developmnet Kit for PowerPC and if you have 
+some time, please consider helping out the Blackdown porting team move forward 
+and keep supporting other non-86 platforms.
 
-//Marcus
--- 
-Signature under construction, please come back later.
+If at all interested, please contact 
+
+Scott Hutinger at : srh@www.mprojects.wiu.edu
+
+I will be removing the current JDK for Linux PPC site soon (everything has been 
+copied to www.linuxppc.org/java/) so nothing will be lost.
+
+I would also be happy to bring anyone who wants, up to speed on the build 
+process, etc to help make sure PPC keeps its Java capability going for use with 
+Mozilla and other projects.
+
+If anyone knows if IBM has or is considering an Open Source Java platform, I 
+would be happy to help contribute to porting it to LinuxPPC.  Please let me 
+know.  Unfortunately, kaffe has previously refused my help since I have seen the 
+Sun source code.
+
+Also, if anyone needs a 40 something year old former PDP-8 and PDP-11 programmer 
+with time on his hands to help out a *true* Open Source project, let me know... 
+
+Thanks,
+
+Kevin
+
+
+--
+Kevin B. Hendricks
+Associate Professor of Operations and Information Technology
+Richard Ivey School of Business, University of Western Ontario
+London, Ontario  N6A-3K7  CANADA   
+khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
