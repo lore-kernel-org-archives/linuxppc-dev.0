@@ -1,40 +1,51 @@
-Message-ID: <398E6051.6DA84197@student.ethz.ch>
-Date: Mon, 07 Aug 2000 09:08:01 +0200
+Message-ID: <398E61C2.BF0ED1ED@student.ethz.ch>
+Date: Mon, 07 Aug 2000 09:14:10 +0200
 From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: Kostas Gewrgiou <gewrgiou@imbc.gr>, linuxppc-dev@lists.linuxppc.org
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+CC: dri-devel@lists.sourceforge.net, linuxppc-dev@lists.linuxppc.org
 Subject: Re: [Dri-devel] Re: Kind of success! (r128 on PPC (Re: LinuxPPC X
  Server))
-References: <Pine.LNX.4.21.0008041831040.29474-100000@idd-01.imbc.gr> <20000805184351.19510@192.168.1.10>
+References: <Pine.LNX.4.21.0008041831040.29474-100000@idd-01.imbc.gr>
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
->
-> >> At 32 bit, it flickers badly on my Pismo, probably because it only has
-> >8 megs
-> >> of VRAM. (These messages appear in the log:
-> >> (EE) r128(0): Unable to reserve depth buffer
-> >> (EE) r128(0): Unable to reserve texture space in frame buffer
-> >> ) Curious how it works out for people with more...
-> >
-> >Not enough memory for all the buffers indeed, you could try with a lower
-> >res (if prismo allows that) to save some memory.
->
-> The Pismo allows that by scaling the LCD, but I don't think code for that
-> is implemented in the XFree r128 driver (I didn't check lately).
+Kostas Gewrgiou wrote:
 
-No it doesn't work, neither with aty128fb. Would that be hard to implement?
+> > The remaining problems are:
+> >
+> > 16 bit doesn't work neither with fbdev (colors completely off - does
+> > aty128fb still use 15 bit in fact?) nor without (at least the grey tones
+> > are right there - wrong endianness?)
+>
+> Yes aty128fb still doesn't support 16 bit, you could run the r128 driver
+> without fbdev to get 16 bits, but the code to switch the framebuffer to do
+> byteswapping is missing so the colors will be wrong
+
+Yep, that's the second thing I was referring to.
+
+> (easy to add though).
+
+Where and how?
+
+
+> > About performance: It's much better than software rendering (at least for
+> > big windows) of course, however not too fast with lots of polygons. AGP
+> > GART would definitely be a good thing I guess (Ben: hint, hint :)
+>
+> Do you have any numbers from gears, glquake etc ??
+
+The numbers are very varying and not too high yet. AGP GART should change
+that.
 
 
 Michel
 
 
 --
-If the box says `Windows 95 or better'', it should run on Linux, right?
+                                Tax the rich.
 ______________________________________________________________________________
 Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
 Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
