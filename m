@@ -1,18 +1,24 @@
-Return-Path: <steve@icarus.com>
-Received: from icarus.com (icarus.icarus.com [64.105.89.2])
-	by ozlabs.org (Postfix) with ESMTP id CBC502BDB0
+Return-Path: <jonmasters@gmail.com>
+Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.192])
+	by ozlabs.org (Postfix) with ESMTP id 0EADE2BDB0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Oct 2004 01:50:35 +1000 (EST)
-Received: from icarus.com (wing [192.168.1.7]) (authenticated)
-	by icarus.com (8.11.6/8.11.6) with ESMTP id i91FoYe19450
-	for <linuxppc-embedded@ozlabs.org>; Fri, 1 Oct 2004 08:50:34 -0700
-Message-ID: <415D7CCA.6090907@icarus.com>
-Date: Fri, 01 Oct 2004 08:50:34 -0700
-From: Stephen Williams <steve@icarus.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: Performance of mmap/munmap on linuxppc 2.4
+	Sat,  2 Oct 2004 07:54:50 +1000 (EST)
+Received: by mproxy.gmail.com with SMTP id 76so4672409rnk
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 01 Oct 2004 14:54:32 -0700 (PDT)
+Message-ID: <35fb2e590410011454270f2698@mail.gmail.com>
+Date: Fri, 1 Oct 2004 22:54:32 +0100
+From: Jon Masters <jonmasters@gmail.com>
+To: Jon Masters <jonathan@jonmasters.org>
+In-Reply-To: <415D3C2C.7050704@jonmasters.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+References: <35fb2e59040930165327f2dd59@mail.gmail.com>
+	<87127382-1357-11D9-8EFC-000393DBC2E8@freescale.com>
+	<1096602008.14803.16.camel@gaston> <415D3C2C.7050704@jonmasters.org>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: bi_recs
+Reply-To: jonathan@jonmasters.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,28 +29,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Fri, 01 Oct 2004 12:14:52 +0100, Jon Masters <jonathan@jonmasters.org> wrote:
+> Benjamin Herrenschmidt wrote:
 
-I need to allocate, reallocate(down), and release lage image
-buffers, and I've been thinking in terms of using mmap and
-anonymous mapping to get the memory:
+> > I'd rather see you guys sync with what I did on ppc64 and use that
+> > kind of OF device-tree, we already have all the code for using it
+> > and it would make the mecanism compatible with the prep/chrp/pmac
+> > kernel...
+> 
+> Yeah. I'm going to start ripping through your code at the weekend and
+> figure out how what you've done - not having a nice shiney ppc64 box
+> means I've not yet got an excuse to play with that tree myself. I am
+> however hopefull that my next Powerbook will be a G5 :-).
 
-       void*ptr = mmap(0, cur->size_, PROT_READ|PROT_WRITE,
-                       MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+Hmmm...
 
-I also munmap the tail of this region when I know how big the
-image really is, and munmap the rest when the image is done.
-I'm doing this the hard way (instead of using malloc/realloc)
-because I want to guarantee that the realoc functionality doesn't
-move the data.
+ppc64 head.S and startup looks quite fun. After jumping through a few
+hoops you eventually end up in prom_init and start setting up the OF
+device-tree (btw it looks like at least one call to prom_panic doesn't
+relocate the string it wants to print to real memory - is this what
+the comments are referring to out of sheer interest?). I am assuming
+that you always expect to see an Open Firmware on ppc64 and simply use
+bi_recs to pass accross additional information from the bootloader,
+but I've only had a cursory look on the train on the way home from
+work this evening so please be gentle.
 
-So am I shooting myself in the foot performance-wise here?
-I'm using a 233MHz 405GPr. I expect to be allocating/freeing
-these image buffers 30-50 times a second for 4meg-ish regions,
-or somewhat slower for regions 60meg or so. I have no swap.
+I'll give this a go through over the weekend and figure out how to get
+this hooked in to the ppc32 tree.
 
-
--- 
-Steve Williams                "The woods are lovely, dark and deep.
-steve at icarus.com           But I have promises to keep,
-http://www.icarus.com         and lines to code before I sleep,
-http://www.picturel.com       And lines to code before I sleep."
+Jon.
