@@ -1,85 +1,77 @@
-Date: Thu, 11 Jan 2001 17:28:20 -0900
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: pdisk weirdness
-Message-ID: <20010111172820.T29805@plato.local.lan>
-References: <3A5E21E6.DE26A121@wanadoo.fr>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ESALR2nqcUcb10U9"
-In-Reply-To: <3A5E21E6.DE26A121@wanadoo.fr>; from costabel@wanadoo.fr on Thu, Jan 11, 2001 at 10:13:10PM +0100
+Message-ID: <3A5EC2BB.945162F2@petig-baender.de>
+Date: Fri, 12 Jan 2001 09:39:23 +0100
+From: Christof Petig <christof@petig-baender.de>
+MIME-Version: 1.0
+To: Conrad H Ziesler <cziesler@umich.edu>
+CC: Linux PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: iBook's daca mixer, was Re: sources
+References: <Pine.SOL.4.10.10101101013560.1041-100000@gorf.gpcc.itd.umich.edu>
+Content-Type: multipart/mixed;
+ boundary="------------99946EFA773910AD76389D18"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---ESALR2nqcUcb10U9
+This is a multi-part message in MIME format.
+--------------99946EFA773910AD76389D18
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Thu, Jan 11, 2001 at 10:13:10PM +0100, Martin Costabel wrote:
->=20
-> Having observed for a while that pdisk (linux) doesn't work on my iBook,
-> I tried to understand what is going on. It's weird.
+Conrad H Ziesler wrote:
 
-pdisk sucks, deal with it. =20
+> here's the code i've been using.  probably you need to add a few bits to
+> feature.c in addition to this stuff to enable power to the audio device.
+> if you unpack the tar file at the
+> base of your linux source tree, you should get an i2c-0.1 directory,
+> typing make in there should give you a czi2c.o and dmasound.o modules.
+>
+> i use aumix to test the mixer.
 
-> Doesn't work means that 'pdisk /dev/hda' (or 'pdisk -l' likewise) gives
-> me the output:
->=20
-> pdisk: Can't read block 0 from '/dev/hda'
-> Edit /dev/hda -
-> Command (? for help): p
-> No partition map exists
-> Command (? for help): q
-> Segmentation fault
+Hi Conrad,
 
-see above.  you can probably create a new partition table with the `i'
-command, though i have seen this has a tendency to create wildly bogus
-partition tables (tables wtih the size of the disk being 500GB or some
-such bollocks)
+I did some minimal porting to 2.4.0 (just make it compile) and will
+(perhaps this evening?) port your changes to the 2.4 Version of dmasound
+(the split up one (dmasound_awacs.c & co)). And I plan to compare the code
+with Darwin's.
+Yes, I was able to turn off sound by fiddling with the mixer, but no way to
+turn it on again ... (I did not yet look at the feature bits)
+And changing the pcm2 volume in aumix changed the balance (indicates a bug
+somewhere ...)
 
-> This is pdisk version 0.8a2 (16 May 2000) from the pdisk-0.8-1.ppc.rpm
-> as it is contained in LinuxPPC 2000 and LinuxPPC 2000 Q4 aka Halloween.
-> When I downgrade to the pdisk-0.7-2 RPM from LinuxPPC 1999, it works as
-> it is supposed to. Also I think I remember that the new pdisk works when
-> run with a 2.2 kernel. Only the combination of new pdisk and 2.4 kernel
-> doesn't work.
+Here's the minimal patch for 2.4 to make it compile
 
-i have been told that some versions of pdisk do not use the ioctl to
-the kernel correctly, perhaps thats why. =20
-
-> What is weirder is that there is (almost) no source to be found for this
-> pdisk-0.8-1! On the LPPC 2000 source CD, there is no pdisk at all, and
-> in the LPPC 2000 Q4 source directory, there is the SRPM for the old
-> pdisk-0.7-2. I finally found the sources at the defunct dev-rel CVS
-> repository at gate.crashing.org.
-
-i don't know.
-
-> There is a llseek-patch (by Tom Rini, IIUC) which seems to be the origin
-> of the problem. If I back it out, pdisk works again.
->=20
-> Is anyone successfully running pdisk-0.8-1 with kernel 2.4?
-
-why use pdisk when you can use GNU parted?  here is the correct
-solution to pdisk:
-
-rm -rf pdisk=20
-get ftp://ftp.gnu.org/gnu/parted/parted-1.4.5.tar.gz
-tar -zxvf parted-1.4.5.tar.gz
-cd parted-1.4.5
-=2E/configure && make && make install
-
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
-
---ESALR2nqcUcb10U9
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Christof
 
 
---ESALR2nqcUcb10U9--
+--------------99946EFA773910AD76389D18
+Content-Type: application/x-gzip;
+ name="i2c1-2.4.diff.gz"
+Content-Disposition: inline;
+ filename="i2c1-2.4.diff.gz"
+Content-Transfer-Encoding: base64
+
+H4sICMsiXjoCA2kyYzEtMi40LmRpZmYA7VZtb9s2EP4s/4pDCxSWLdmS4le1HZLOHtYtaYEm
+GQYMg6BJVExEplRRqusU+e87krJebMfJh31cEIS69zvyubuENIrALDKgTmBaA3sYPODXIICY
+suK7ma79wAzJNxIP9xQ6pmnuG2nXBYPffAYwBefMHc/c0Qwcy7I7/X7/WY/azaqQ1rYNju2e
+zVx7rKzPz8GcTEbGDPrqOD/vgMbzjAXptktZlAyYvyYGvFpc/HxhordXBnD6QJKolur6WzSq
+yL8O5Kb9N7wHq9JaJyGNtl6QFCwnGYrW9DvJ9thvO6YWJOnWyxOv4CTzMpJ30WkOPd3P7gx4
+I3wZgGqa1sxJN8Bc/nJxe3mDefU1GkG36eeYj6a1rgNaAQDGKzK28yWSLzmiEPXzqD4CnxO4
+/nz7aeFdffxz+cX7srxYeIvlH1cX17+78pKn47lhT6AvT1tecwd47uc0wCMrghwiGhMvSUmG
+zIRxdSlelKQc3nfgB9bJ8WZCL+aE3BtIfrq9vDSw+GGv1M2IH0JveEy0yWhOnpAJs5BmT0jT
+JI6VSNE0CfL4aPj12k+bmlgL21OM4oKvmjoZiQnenoFXnmwYyVzt5teP197V58Xt5VJwY1mu
+C63a8VVFFi60UkIXGHHHVNH7WhnBhb2A8IjP+JowxBy+RbjfraEf+KbC5YmWbWq1+rYp0G4K
+opp3Do7jWpOq/U42b9tFu4PHrmPVHezYsoPV8X8H6zoaaf9Z+x5CY+1LNJ4ERqXThkXFbk50
+a+qOR67zkonecNCGxBh9TGpITOeGmDZzYyoBgR2H86bTH/ZeUxbERUjgnYwxDBIW0bvB6ieh
+si/E9yxigsJDEQ9WJDwqyekaoYASuVxGY0yhPxlNykw06Gnl9X+gOdhAOXCSu+BDlCHUBJ3G
+/payO6k8lJDLdzyBqXJebnyae18Lgs3Vk+NNEQb0ROtXBN+yQBECS7WRt8Kx56GbpmnTsmmo
+cpBSvJOK8U/Bt0pRpgayZPtsdiZqxnNUFv14OO3lLXkx5eiFkNSTNDbSj93ABPXXkr/+xg+4
+xxL59lhGVLBAbAl3TyKHWhXqW0LDUmF9LxW6BeP0jpEQRPqrBwNaDDS657qqYj635MbCD/ul
+K4t/feG+QsV6WSEhH+G4zrHNhKJ6LSFxbCchu15ISJzeRjJYtYqeWDoySxfqfKs9VOewW0JV
+xMYGagYpX0rNb8uWiMHunRtz1SZi6KF+wbBJ3oGlI6scYMJOJDxoIBeBg4wavYquEayGN6aL
+7jzRA3ULdN+0Xemn9OoIJ9XqwHKxIEd0SrlBkIF3v1n5OU62DLZJgePunoDPBbqyvEhB9BhE
+SQZDnH7DkKfGbs+NJCbxwzFs62WYRCk5BUulIKC2jyApOP6fU210FJ9SWkP0QCTB8oSsgVpJ
+PwPcMpHnsCtSdaFZa4XURpQmWNuOd3j9F4yfERvXDAAA
+--------------99946EFA773910AD76389D18--
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
