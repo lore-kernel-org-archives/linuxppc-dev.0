@@ -1,39 +1,51 @@
-Date: Sun, 17 Oct 1999 16:16:06 +0200 (MET DST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: need Open PIC infos
-In-Reply-To: <19991016191421.027499@smtp.calvacom.fr>
-Message-ID: <Pine.GSO.4.10.9910171614310.16259-100000@dandelion.sonytel.be>
+Message-ID: <3809FB72.43C36176@tiac.net>
+Date: Sun, 17 Oct 1999 12:38:13 -0400
+From: Patrick Callahan <pac1@tiac.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "yellowdog-general@lists.yellowdoglinux.com"
+ <yellowdog-general@lists.yellowdoglinux.com>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: How does it all fit together?
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 16 Oct 1999, Benjamin Herrenschmidt wrote:
-> However, the new Apple ASICs contains an Open PIC interrupt controller
-> (advertised as beeing a "chrp,open-pic" controller). After looking at the
-> various docs I have and a quick search on Altavista, I couldn't find any
-> relevant documentation on the chip.
-> There's already some OpenPIC support in the kernel, but I'll have to
-> change it a little bit since, for example, Apple hardware is not a good
-> place to search for a 8259 master ;)
-> I'd like some docs in order to have better understanding of the chip.
 
-The i8259 slaves are not mandatory in OpenPIC.
+Where can I read and research about how the video settings and the
+software that uses the settings  fit together in the context of he MAC
+OS, BootX, Linux Boot, Linux Console and X Window processes on PPC
+hardware.
 
-Do you have the OpenPIC docs? They are somewhere on the AMD website. If you
-can't find them, please ask me, I have a copy on my docs CD-ROM, as usual :-)
+The relevant settings are:
 
-Greetings,
+    MacOS Monitor Settings
 
-						Geert
+    BootX
+        no video driver option checked/unchecked
+        several kernel arguments related to video
 
---
-Geert Uytterhoeven ----------------- Sony Suprastructure Center Europe (SUPC-E)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
-Phone +32-2-7248632 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+    XConfig values for monitor settings.
+
+Various video drivers.
+
+At the moment, I can make Linux and X work by choosing values that are
+known to work on my hardware.  Using values for bootX kernel arguments
+suggested by others in various mail messages also frequently works.
+
+I'd like to go beyond this and find or write documentation on these
+items as a group, explaining how they work together with specific pieces
+of software to determine the final outcome you see on your monitor.  I'd
+like to pull together information that will illuminate how things
+actually work together, in addition to documenting sets of values that
+actually work on various machines.
+
+If there is  any information like this out there, I've been unable to
+find it so far.  If you know of any, can you point me in the right
+direction?
+
+If there is no existing documentation along these lines, is anyone
+interested in working on such a project?
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
