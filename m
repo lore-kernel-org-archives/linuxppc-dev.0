@@ -1,18 +1,21 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
-	by ozlabs.org (Postfix) with ESMTP id CC2FC2BDA0
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Dec 2004 05:54:18 +1100 (EST)
-Date: Mon, 6 Dec 2004 11:54:16 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Linus Torvalds <torvalds@osdl.org>,
-	Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
-Message-ID: <20041206185416.GE7153@smtp.west.cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Sven Hartge <hartge@ds9.gnuu.de>, Meelis Roos <mroos@linux.ee>,
-	Christian Kujau <evil@g-house.de>
-Subject: [PATCH 2.6.10-rc3][PPC32] Fix Motorola PReP (PowerstackII Utah) PCI
-	IRQ map
+Return-Path: <evil@g-house.de>
+Received: from mail.g-house.de (ns1.g-housing.de [62.75.136.201])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 74D3B2BDA0
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Dec 2004 06:33:39 +1100 (EST)
+Message-ID: <11324.195.126.66.126.1102361610.squirrel@housecafe.dyndns.org>
+In-Reply-To: <20041206184921.GD7153@smtp.west.cox.net>
+References: <41B23DF2.4010303@g-house.de>
+	<1102207299.6778.16.camel@weizen.left.earth>
+	<41B36845.4080004@g-house.de>
+	<20041206184921.GD7153@smtp.west.cox.net>
+Date: Mon, 6 Dec 2004 20:33:30 +0100 (CET)
+From: "Christian" <evil@g-house.de>
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Subject: Re: [PATCH] linux 2.6 not^Wnow working with PReP (ppc32)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,30 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PCI IRQ map for the old Motorola PowerStackII (Utah) boards was
-incorrect, but this breakage wasn't exposed until 2.5, and finally fixed
-until recently by Sebastian Heutling <sheutlin@gmx.de>.
+On Mon, December 6, 2004 19:49, Tom Rini said:
+>
+> This doesn't cause anything bad to happen on mine (and it shouldn't,
+> being a Blackhawk and all :)), so I'll send this on.  Thanks.
 
-Signed-off-by: Christian Kujau <evil@g-house.de>
-Signed-off-by: Tom Rini <trini@kernel.crashing.org>
 
---- 1.32/arch/ppc/platforms/prep_pci.c	2004-10-12 14:29:11 -07:00
-+++ edited/arch/ppc/platforms/prep_pci.c	2004-12-06 09:20:52 -07:00
-@@ -49,10 +49,10 @@
-         0,   /* Slot 1  - unused */
-         5,   /* Slot 2  - SCSI - NCR825A  */
-         0,   /* Slot 3  - unused */
--        1,   /* Slot 4  - Ethernet - DEC2114x */
-+        3,   /* Slot 4  - Ethernet - DEC2114x */
-         0,   /* Slot 5  - unused */
--        3,   /* Slot 6  - PCI Card slot #1 */
--        4,   /* Slot 7  - PCI Card slot #2 */
-+        2,   /* Slot 6  - PCI Card slot #1 */
-+        3,   /* Slot 7  - PCI Card slot #2 */
-         5,   /* Slot 8  - PCI Card slot #3 */
-         5,   /* Slot 9  - PCI Bridge */
-              /* added here in case we ever support PCI bridges */
+oh, fine! sounds good!
 
+thanks,
+Christian.
 -- 
-Tom Rini
-http://gate.crashing.org/~trini/
+make bzImage, not war
