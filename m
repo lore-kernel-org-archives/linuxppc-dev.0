@@ -1,51 +1,72 @@
-From: tom_gall@vnet.ibm.com
-Message-ID: <397D9744.31E6BDC6@vnet.ibm.com>
-Date: Tue, 25 Jul 2000 13:33:56 +0000
-Reply-To: tom_gall@vnet.ibm.com
+Message-ID: <397D98EC.2E9C36C3@relog.ch>
+Date: Tue, 25 Jul 2000 15:41:00 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: John Grimes <jpgrimes@johngrimes.dyndns.org>
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: diff to tonight's kaffe cvs tree to work on ppc
-References: <200007250345.VAA22028@faith.cs.utah.edu> <397D926F.111AF60E@ivey.uwo.ca>
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: Xfree86 version 4.01
+References: <Pine.LNX.4.21.0007250902380.1123-100000@johngrimes.dyndns.org>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Kevin B. Hendricks" wrote:
+John Grimes wrote:
+
+> > > > > For some reason I can not get any other mode to work (i.e.
+> > > > > 640x480,1024x768, 800x600).  If any would fail I would expect it to
+> > > > > be 1280x1024 not the smaller modes.  I have no modelines defined,
+> > > > > just letting XF86 decided which modes to use.  Any ideas why the
+> > > > > defaults don't work?
+> > > >
+> > > > Look at the log. There should be a reason for every rejected mode.
+> > >
+> > > There aren't any rejected modes.
+> >
+> > How exactly do they not work then?
+> >
+> > > I think the suggestion taht I use fbset to create modelines is right on.
+> >
+> > Try it, but I think if that was the problem your modes would get rejected.
+> > Do you use Option "UseFBDev"?
 >
-> Hi Godmar,
->
-> > Is the stack alignment code 64bit safe?
->
-> As promised, here is the clean up patch.  It should be applied after my first
-> patch.
->
-> The only assumption I am making here is that sizeof(unsigned int) = sizeof(void
-> *).
+> Your right, didn't work.  I still can use only 1280x1024, the other modes
+> are definetely screwed up when I cycle through them although I am using
+> modelines taken from fbset -x.  So I don't know what's wrong.  Some modes
+> are rejected but all of these should be rejected (1600x1200, ...)  It
+> definetely s finding modes it thinks are OK (or using my modelines) but it
+> isn't working.
 
-> This should be true on both 64 bit and 32 bit systems.
+So it looks like that bug still isn't fixed.
 
-Hi Kevin,
+Ani, Ben, Kostas, Kevin: Any reason the r128 driver can't use fbdevhw to set
+up modes? (like glint)
 
-  This is only true as far as the 64 bit systems running on the 32 bit kernel,
-which is all there is at the moment.
 
-  Work has started on the 64 bit PowerPC Linux kernel, if Kaffe is compiled as a
-64 bit app for that kernel then sizeof(unsigned long) = sizeof(void *) will be
-true. Certainly not a big deal at this stage, but thought you'd be interested
-none the less.
+> > If the internal video isn't the default framebuffer device (where the
+> > initial console comes up on), you'll have to add
+> >
+> >       Option  "fbdev" "/dev/fb1"
+> >
+> yup, this was exactly what I needed, unfortunately althought i definetely
+> is finding this monitor it is not working either.  However I suspect this
+> is a monitor config issue and will keep working on it (or maybe try
+> another monitor).
 
-  Regards,
+Does the console work there? If yes, just don't specify any modelines and it
+will use the console mode.
 
-  Tom
+And beware: With Xinerama, all screens must have the same depth...
+
+
+Michel
+
 
 --
-Tom Gall - PowerPC Linux Team    "Where's the ka-boom? There was
-Linux Technology Center           supposed to be an earth
-(w) tom_gall@vnet.ibm.com         shattering ka-boom!"
-(w) 507-253-4558                 -- Marvin Martian
-(h) tgall@uswest.net
-http://oss.software.ibm.com/developerworks/opensource/linux
+The three Rs of Microsoft support: Retry, Reboot, Reinstall.
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
