@@ -1,39 +1,30 @@
-Message-ID: <37C1AF16.695C8998@motorola.com>
-Date: Mon, 23 Aug 1999 13:29:11 -0700
+Message-ID: <37C1B1CD.B61A915C@motorola.com>
+Date: Mon, 23 Aug 1999 13:40:45 -0700
 From: Robert Shaw <robert.shaw@motorola.com>
 Reply-To: rshaw@inficad.com
 MIME-Version: 1.0
-To: brad allison <jackal@aol.net>
-CC: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
-        puetzk@iastate.edu
+To: Tom Rini <trini@disparity.net>
+CC: brad allison <jackal@aol.net>, Benjamin Herrenschmidt <bh40@calva.net>,
+        linuxppc-dev@lists.linuxppc.org, puetzk@iastate.edu
 Subject: Re: BootX enhancement request
-References: <Pine.SGI.4.00.9908231613030.7470-100000@osiris.office.aol.com>
+References: <Pine.BSF.3.96.990823162311.86405K-100000@silver.teardrop.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I think you missed my point.  Don't get me wrong, that's cool to know.
-> But I was thinking more along the lines of a drop down menu to set the
-> resolution from BootX rather than cryptic kernel arguements.
+> This, BETA, driver. :)
 
-Ok, that's reasonable. Any thoughts Ben?
+Yeah, but it works, and it's much faster than the plain frame buffer device. :)
 
-> It seems the 2.2.10 kernel will not sync to the video settings at all
-> without the kernel arguements.
+> What, aty128fb?  It's beta and not done.  You're prolly better off using
+> No Video Driver, unles you're gonna play w/ the source (Anthony, speak up
+> if i'm wrong). :)
 
-Strange, mine does. :|
-Have you tried the latest 2.2.10 kernel I posted last night? Does it mess up also?
+It may be beta, but it works just fine. I've had several users indicate it works
+without any problems.
 
->
-> Well i think putting Xautoconfig in the rc.local file is still a good
-> idea.
->
-
-Not if you make changes to the XF86Config file for the USB xkb stuff. Xautoconfig
-will mess it all up and switch it back to PC settings. There is a warning in the
-Kernel HOWTO about this when setting up the xkb settings.
-
+--
 -Robert
 mailto:rshaw@inficad.com
 http://www.inficad.com/~rshaw/
