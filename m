@@ -1,30 +1,22 @@
-Date: Mon, 29 Mar 1999 04:44:46 -0500 (EST)
-From: Satadru Pramanik <satadru@umich.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: /usr/include files
-Message-ID: <Pine.LNX.4.10.9903290441460.22943-100000@beer.pub.umich.edu>
+Message-ID: <36FF53A7.5FB500AC@iwate-u.ac.jp>
+Date: Mon, 29 Mar 1999 20:19:20 +1000
+From: Piotr Muszynski <u0295020@iwate-u.ac.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: vger 2.2.5 kernel breaks (on scsi?)
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Exactly wher can I get a copy of all the files in the /usr/include dir?  I
-have egcs 1.1.2, and glibc 2.1, and my compilation of MySQL is failing due
-to problems with the files in that dir.   I already have my
-/usr/include/linux dir symlinked to a cvs updated src dir, so I just need
-to get these include files fixed, I think.   Which rpm file would this be
-in?  I have the RedHat 5.9 Starbuck SRPMS files, so I just need to know
-which one to use.
+Vger sources as of ca. 10 hours before,  compiled with default or custom
+config,  PowerMac7500/601,  MESH,  BootX, R4.
+On boot the kernel repetitively resets scsi.  Had to cut that sad
+spectacle and come back to 2.2.4.
+Any thoughts (I keep compiler playfield in case someone might wish to
+look for clues)?
 
-thanks.
-
---=
-satadru pramanik `satadru@umich.edu' www.umich.edu/~satadru
-Online Editor, The Michigan Daily
-"I'm old enough to be living in the future I was warned about."
-  - Myron Krueger
-=--
+piotru
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
