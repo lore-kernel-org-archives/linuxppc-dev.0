@@ -1,36 +1,53 @@
-To: Steven Rothweiler <Stevenr@raritan.com>
+Subject: Re: Boa Cross Compile for MPC8266ADS?
+From: Craig Hollabaugh <craig@hollabaugh.com>
+To: C Doyle <cdoyle35@hotmail.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: HOWTO Status?? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 25 Jul 2003 17:53:42 EDT."
-             <159C486347C8D3119B1D005004A4694002593E8A@OLIVE>
-Date: Sat, 26 Jul 2003 00:09:37 +0200
-Message-Id: <20030725220942.8F430C602D@atlas.denx.de>
+In-Reply-To: <Law10-F14oFLaqSOc7w000291b9@hotmail.com>
+References: <Law10-F14oFLaqSOc7w000291b9@hotmail.com>
+Content-Type: text/plain
+Date: 26 Jul 2003 08:38:40 -0600
+Message-Id: <1059230320.506.11.camel@ch>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <159C486347C8D3119B1D005004A4694002593E8A@OLIVE> you wrote:
+Doyle,
+
+Sorry so long on the reply.
+
+This page
+
+http://www.embeddedlinuxinterfacing.com/projectboa.shtml
+
+explains how to cross compile boa
+
+Craig
+
+
+On Tue, 2003-07-22 at 08:19, C Doyle wrote:
 >
-> Isn't it here:
-> http://penguinppc.org/embedded/howto/PowerPC-Embedded-HOWTO.html
-
-Did you read it? It says:
-
-"Boas Betzler, 21 August 2001"
-
-And AFAICT it has not been changed since.
-
-
-Wolfgang Denk
-
+> Hello all,
+> I'm a student working with Motorola for a dissertation project. I'm
+> using the MPC8266ADS-PCI development board to write a device driver for
+> a usb peripheral. What I'm intending to do is use the Boa Webserver to
+> throw up a webpage and run cgi-scripts to configure the device driver
+> from a remote host and also give some Tx/Rx/Error reporting. I'm quite
+> new to the embedded world and I can't seem to get Boa to cross compile
+> for the board. I'm using the hardahat devkit cross compiler but when I
+> point the Make file to the compiler its not happy. Is there anyone who
+> has already compiled this for the MPC8266 and can I use the ./configure
+> shell script with flags to tell it I want to cross compile? Any help
+> would be greatly appreciated as the homepage only describes the setup
+> with the default ./configure script. Thanx
+>
+>
+>
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-On our campus the UNIX system has proved to be not only an  effective
-software tool, but an agent of technical and social change within the
-University.                          - John Lions (U. of Toronto (?))
+------------------------------------------------------------
+Dr. Craig Hollabaugh, craig@hollabaugh.com
+Author of Embedded Linux: Hardware, Software and Interfacing
+www.embeddedlinuxinterfacing.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
