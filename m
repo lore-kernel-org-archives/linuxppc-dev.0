@@ -1,12 +1,10 @@
-Message-ID: <D5E932F578EBD111AC3F00A0C96B1E6F0545CA64@orsmsx31.jf.intel.com>
+Message-ID: <D5E932F578EBD111AC3F00A0C96B1E6F0545CA67@orsmsx31.jf.intel.com>
 From: "Dunlap, Randy" <randy.dunlap@intel.com>
-To: "'Daniel Gonzalez'" <daniel.gonzalez@pandora.be>,
-        Matthew Dharm
-	 <mdharm-usb@one-eyed-alien.net>
-Cc: Sheldon Easterbrook <sheldie@hotmail.com>, linuxppc-dev@lists.linuxppc.org,
-        linux-usb@suse.com
+To: "'Daniel Gonzalez'" <daniel.gonzalez@pandora.be>
+Cc: Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+        linuxppc-dev@lists.linuxppc.org, linux-usb@suse.com
 Subject: RE: [linux-usb] Close to a solution. Please help !
-Date: Mon, 24 Apr 2000 08:22:31 -0700
+Date: Mon, 24 Apr 2000 09:06:44 -0700
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -16,55 +14,93 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 Hi Daniel,
 
-Please send us your linux/.config file.
+I don't see anything that is obviously wrong in the
+linux/.config file.
+
+The recent advice from Joseph Fannin looks good.
+Have you tried it?  (except change:
+  alias char-major-8 sd_mod
+to
+  alias block-major-8 sd_mod
+)
+
+Give us a list of modules that are loaded when you connect
+the Zip drive.
+
+Switching to the main linux tree is likely just to give
+you/us a different set of problems, but I'm just guessing
+that based on Brad Hards's comments.
+
+For USB source file comparisons, all of my 2.3.99-pre6-5
+unzipped .c files are dated between Mar. 10 and Apr. 21, 2000.
+None from the Jan.-Feb. timeframe as you listed.
+There have been beaucoups changes in this time, especially
+to the usb-storage driver.
+
+~Randy
 
 
-> Well. The sources I have are taken from linuxcare (I think that is Paul's
-tree,
-> isn't?). I am using the devel tree, since I heard that was performing
-better for the
-> USB subsystem.
-
-and from kernel messages:
-
-> Apr 24 13:58:26 dhcp-213-224-12-204 kernel: Linux version 2.3.99-pre6
-(root@dhcp-213-224-12-204.kabel.pandora.be) (gcc version 2.95.2 19991024
-(release)) #5 Mon Apr 24 13:25:37 EDT 2000
-
-> Apr 24 13:51:11 dhcp-213-224-12-204 kernel: usb-ohci: Warning! Gobs of
-> debugging output has been enabled.
-> Apr 24 13:51:11 dhcp-213-224-12-204 kernel:           Check your
-kern.debug
-> logs for the bulk of it.
-> Apr 24 13:51:11 dhcp-213-224-12-204 kernel: usbcore: Registered new driver
-mouse
-> Apr 24 13:51:11 dhcp-213-224-12-204 kernel: USB HID boot protocol mouse
-> driver registered.
-> Apr 24 13:51:11 dhcp-213-224-12-204 kernel: usbcore: Registered new driver
-keyboard
-> Apr 24 13:51:11 dhcp-213-224-12-204 kernel: usbcore: Registered new driver
-hub
-> Apr 24 13:51:11 dhcp-213-224-12-204 kernel: usbcore: Registered new driver
-usb_scsi
-> Apr 24 13:51:11 dhcp-213-224-12-204 kernel: USB SCSI support registered.
-
-
-I'm still confused about what version of the kernel code this is.
-
-The Linux boot message says 2.3.99-pre6, but the USB code is clearly
-MUCH earlier than that.
-Could you explain a little of how you came by this code?
-I don't want the complete history, just enough to help us
-understand what you are trying to use here.
-
-Thanks,
-Randy
-___________________________________________________
-|Randy Dunlap     Intel Corp., DAL    Sr. SW Engr.|
-|randy.dunlap.at.intel.com            503-696-2055|
-|NOTE:  Any views presented here are mine alone   |
-|and may not represent the views of my employer.  |
-|_________________________________________________|
+> -----Original Message-----
+> From: Daniel Gonzalez [mailto:daniel.gonzalez@pandora.be]
+> Sent: Monday, April 24, 2000 2:54 PM
+> To: Dunlap, Randy
+> Cc: Matthew Dharm; Sheldon Easterbrook;
+> linuxppc-dev@lists.linuxppc.org;
+> linux-usb@suse.com
+> Subject: Re: [linux-usb] Close to a solution. Please help !
+>
+> > > Well. The sources I have are taken from linuxcare (I
+> think that is Paul's tree,
+> > > isn't?). I am using the devel tree, since I heard that
+> was performing better for the USB subsystem.
+> >
+> >
+> > I'm still confused about what version of the kernel code this is.
+> >
+> > The Linux boot message says 2.3.99-pre6, but the USB code is clearly
+> > MUCH earlier than that.
+> > Could you explain a little of how you came by this code?
+> > I don't want the complete history, just enough to help us
+> > understand what you are trying to use here.
+> >
+>
+> I am using a development tree targeted for the PowerPC
+> community. I suppose this code
+> is periodically merged with the main linux tree, but I do not
+> know how they put together
+> the sources. Maybe I should use the main linux tree ?
+>
+> The usb sources are:
+>
+> [root@dhcp-213-224-12-204 usb]# grep \$Id /usr/src/linux/drivers/usb/*
+> 2>/dev/nul
+> /usr/src/linux/drivers/usb/dabusb.c: *  $Id: dabusb.c,v 1.45
+> 2000/01/31
+> 10:23:44 fliegl Exp $
+> /usr/src/linux/drivers/usb/devices.c: * $Id: devices.c,v 1.5
+> 2000/01/11
+> 13:58:21 tom Exp $
+> /usr/src/linux/drivers/usb/devio.c: *  $Id: devio.c,v 1.7
+> 2000/02/01 17:28:48
+> fliegl Exp $
+> /usr/src/linux/drivers/usb/drivers.c: * $Id: drivers.c,v 1.3
+> 2000/01/11
+> 13:58:24 tom Exp $
+> /usr/src/linux/drivers/usb/inode.c: *  $Id: inode.c,v 1.3
+> 2000/01/11 13:58:25
+> tom Exp $
+> /usr/src/linux/drivers/usb/plusb.c: *  $Id: plusb.c,v 1.18
+> 2000/02/14 10:38:58
+> fliegl Exp $
+> /usr/src/linux/drivers/usb/usb-uhci.c: * $Id: usb-uhci.c,v
+> 1.228 2000/04/02
+> 19:55:51 acher Exp $
+> /usr/src/linux/drivers/usb/usb-uhci.h:   $Id: usb-uhci.h,v
+> 1.54 2000/04/02
+> 19:55:53 acher Exp $
+> /usr/src/linux/drivers/usb/usb.c: * $Id: usb.c,v 1.53
+> 2000/01/14 16:19:09 acher
+> Exp $
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
