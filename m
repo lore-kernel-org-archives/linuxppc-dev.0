@@ -1,32 +1,42 @@
-Message-ID: <3EE861B8.2030503@imc-berlin.de>
-Date: Thu, 12 Jun 2003 13:19:20 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
-To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: 8xx FEC: test for fep->link ???
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <200306121119.h5CBJsq32189@p2.parker.boston.ma.us>
+To: Zhang Qiang MT-CN <Qiang.Zhang@mt.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>,
+	brad@p2.parker.boston.ma.us
+Subject: Re: smbclient on my MPC823 board 
+In-Reply-To: Message from Zhang Qiang MT-CN <Qiang.Zhang@mt.com>
+   of "Tue, 10 Jun 2003 17:01:56 +0800." <299848370240D611A24400B0D079FBEB91CFDB@smtcn3>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Thu, 12 Jun 2003 07:19:54 -0400
+From: Brad Parker <brad@parker.boston.ma.us>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+This is a one line fix - you need to specify
 
-the (old) version of arch/ppc/8xx_io/fec.c I have contains
+samba_cv_HAVE_IFACE_IFCONF=yes export samba_cv_HAVE_IFACE_IFCONF
 
-         if (!fep->link) {
-                 /* Link is down or autonegotiation is in progress. */
-                 return 1;
-         }
+before you ./configure.
 
-in fec_enet_start_xmit().
+-brad
 
-The recent BitKeeper version does _not_ test this.
+Zhang Qiang MT-CN wrote:
+>
+>Hello, my friends:
+>  I'm trying to get Samba-2.2.1a running on my MPC823 board. I've got
+>everything compiled and loaded into my target board successfully, when I
+>invoke the following command:" /usr/local/samba/bin/smbclient -L WinHost",
+>it print "ERROR: Could not determine network interfaces, you must use a
+>interfaces config line" and exit.  I can't find the way to solve this
+>problem after some tries, could someone tell me how to overcome it? The
+>kernel of my target board is 2.4.4. Thanks very much.
+>
+>Best Regards
+>
+>Frank Zhang
+>
+>
 
-Why? Is it not nessessary anymore? Because of the introduced
-start/stop_mii_queue() maybe???
-
-Thanks a million,
-
-Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
