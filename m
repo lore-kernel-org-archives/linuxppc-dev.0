@@ -1,51 +1,36 @@
-Message-ID: <39D388AD.939709DF@mvista.com>
-Date: Thu, 28 Sep 2000 11:06:37 -0700
+Message-ID: <39D3891D.2C82F64E@mvista.com>
+Date: Thu, 28 Sep 2000 11:08:29 -0700
 From: Matthew Locke <mlocke@mvista.com>
 MIME-Version: 1.0
-To: rshaw@graftononline.net
+To: jonb@marel.is
 CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Using both (the 10Mbps and 100 Mbps) ports on CLLF 860T with Hard
- Hat Linux
-References: <002401c0296a$a321fe00$0100000a@nonewr2gx24hxi>
+Subject: Re: 823e LCD display - Microwindows
+References: <OFFAB81681.9CA422F8-ON00256968.00595E55@marel.is>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-rshaw@graftononline.net wrote:
+jonb@marel.is wrote:
 >
-> I'm using a CLLF 860T with Embedded PowerPC Cross Development Kit Rev. 1.2
-> Hard Hat Linux. I'm very new to Linux and developing for a board. Currently,
-> I'm booting manually (loading the kernel with tftp) using the 10 Mbps
-> ethernet port.
-
-> I had to configure the kernel to use SCC1 so the 10 Mbps line
-> is used during the BOOTP requests.
-
-Everything you need to run on a cllf is enabled in the cllf kernel lsp.
-I suggest starting from the cllf lsp and then add/change kernel
-configuration options as needed.
-
+> Hi
 >
-> From the prompt in minicom I can make the cllf board ping my pc and from my
-> pc I can ping the cllf board, and this is using the 10 Mbps line. I will
-> also need to use the 100 Mbps line except I don't know if its possible to
-> use both ethernet ports and how to do it.
+> I have now successfully gotten Linux running on a custom 823e board,
+> using Monta Vista CDK 1.2, Linux version 2.2.14.  I am using an NFS
+> root file system and I have created a custom lsp for the board.
+>
+> Our board uses the 823 LCD controller for a 640x480 TFT display.
+>
+> I would like to activate the 823 LCD driver and try out the Microwindows
+> demo from Monta Vista, but I do not know what needs to be done.
+>
+> When I configure the kernel with CONFIG_RPXLCD, I get a lot of
+> undefined symbols when linking the kernel, such as fb_display,
+> fb_default_cmap.
+>
+> Can anyone point me in the right direction ?
 
-of course it is possible.  There are many different ways to do this.  I
-am not sure what you need but here is one way.  Simply use the cllf lsp,
-which already has both ethernet ports enabled and auto configure with
-bootp enabled. Then put the ethernet addresses for both ports in your
-dhcpd.conf with different ip's and only one with the root-path option.
-
-> Even if I could find a way to
-> switch between these ports, using only one port at a time, I would be happy.
-> Surely this is possible because the 10 Mbps port and 100 Mbps port have
-> different MAC addresses.
-
-you can do this as well.  just enable the port you want in the kernel
-configuration and disable the one you do not want.
-
+Enable framebuffer support in the kernel configuration.
 
 Matthew Locke
 Montavista Software
