@@ -1,32 +1,53 @@
-Message-ID: <3CE2C88D.6010908@embeddededge.com>
-Date: Wed, 15 May 2002 16:43:57 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH 2.5] More i8259 cleanups
-References: <20020515171104.GQ721@opus.bloom.county>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Dan Malek <dan@embeddededge.com>
+Cc: OTAVIO ISAMU SUGENO <otavio.sugeno@siemens.com.br>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: How to configure 2 ethernet devices 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 15 May 2002 16:36:27 EDT."
+             <3CE2C6CB.20402@embeddededge.com>
+Date: Wed, 15 May 2002 23:15:33 +0200
+Message-Id: <20020515211539.1356D1196A@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+In message <3CE2C6CB.20402@embeddededge.com> Dan Malek wrote:
+>
+> If you like to use DNS, routing or other networking features you have
+> to use some kind of userland configuration to make that happen.
 
-> Hey all.  I've been doing more OpenPIC/i8259 work and here's the next
-> patch I'll be pushing to linuxppc-2.5 soon.
+Rigth, for more complicated configurations this is the way to go.
 
-Looks good.....just one little thing, how about we wrap some more of these
-functions with __init attributes?  There are a bunch of these couple of
-line functions, like openpic_enable_sie(), that are only called from the
-init function.  That's one of the reasons I originally surrounded them
-by ifdefs......probably doesn't amount to much, but it is at least logically
-consistent since the function(s) that call them are also __init's :-)
+> I think it's kind of amusing when you use "dynamic" configuration to
+> get a network configuration to boot a kernel, then have a bunch of
+> static configuration files to support the application environment :-)
+> If you are always booting from the same server on the same static
+> network, why not just boot a ramdisk with some static configuration
+> and network set up?  It will boot up faster.
 
-Thanks.
+But we don't have a static configuration. We use something like this:
 
+=> setenv bootargs $(bootargs) ip=$(ipaddr):$(serverip):$(gatewayip):$(netmask):$(hostname):$(netdev):off
 
-	-- Dan
+Right,  we  use  PPCBoot  as  firmware  and  get  all  the  "dynamic"
+configuration   by  PPCBoot's  feature  to  define,  store,  and  use
+variables.
 
+> If you are truly using a dynamic environment where you could plug in
+> anywhere and have the application automatically adapt, you need to
+> follow through with dynamic userland configuration.
+
+... not when we can pass all the necessary parameters on the  command
+line (or in bi_recs :-)
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I have made mistakes, but have never made the mistake of  claiming  I
+never made one.                                     - James G. Bennet
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
