@@ -1,82 +1,68 @@
-Message-ID: <3EE8D12D.4020507@bluewin.ch>
-Date: Thu, 12 Jun 2003 21:14:53 +0200
-From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
-MIME-Version: 1.0
-To: Mark Hatle <fray@mvista.com>
-Cc: Christophe.LINDHEIMER@fr.thalesgroup.com,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Running Linux with 2Mo of Ram.
-References: <D96E2AFA0DF3D211B139009027454948037362FE@helios.gnv.tcc.thomson-csf.com> <3EE8A746.7010901@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+Date: Thu, 12 Jun 2003 22:37:20 +0200
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: PPC405GP Cache/MMU mystery
+To: linuxppc-embedded@lists.linuxppc.org
+Reply-To: tglx@linutronix.de
+Message-id: <200306122237.20622.tglx@linutronix.de>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 06/12/2003 06:16 PM Mark Hatle wrote:
-> Christophe.LINDHEIMER@fr.thalesgroup.com wrote:
->> Hi.
->>
->> I am trying to run linux on a custom board ( Mpc8xx )
->> There is only 2Mo of RAM.
->> I use romfs to save RAM.
->>
->> I use U-boot to start the kernel.
->>
->> The kernel starts correctly.
->> the kernel is launched with init=/bin/sh
->>
->> The kernel stops to tell me to press enter to activate the console ( to
->> launch the sh ) and then crash because it is running out of memory.
->>
->> The question is to know if it is really impossible to make Linux work on
->> this target or is I have missed something that could explain that there is
->> no more memory available.
->
-> You will need some type of "execute in place", i.e. run the kernel and/or
-> userspace applications out of ROM in order to work with 2MB of RAM.
->
-> This type of thing is generally very board, processor and application specific.
->   So I don't believe there is existing (open source) code to do it.
+Hi all !
 
-Some time ago I got XIP working for MPC 8xx with our DENX Linux 2.4.4
-kernel by collecting and integrating the various pieces already around.
-Below are some results about the amount of memory you can save. Note
-that this is for our standard, normally RAMdisk based run time
-environment SELF (see ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/). If
-you have little RAM and plenty of Flash memory XIP might be an option.
+We run into a strange Cache / MMU problem, when the init process is started.
+In fs/bifmt_elf.c/create_elf_tables the setup of the arg / env pointers
+failes.
 
-Hope it's useful.
+The reason is, that the page, which is accessed via the virtual userspace
+address contains no valid data.
 
-Wolfgang.
+The page is created and filled with data in /fs/exec.c/copy_strings(). The
+data are correct there. The page is then given to userspace context by
+creating a pte in /fs/exec.c/put_dirty_pages(), which is called from
+/fs/exec.c/set_arg_pages().
 
+We have dumped the corresponding TLB entries. The mapping there is correct.
+TLB 63	Virt 0xc0000000	Phys 0x00000000, Zone 0
+TLB 7 	Virt 0x7ffff0000	Phys 0x0014a000, Zone 1
 
+if we dump the page via the virtual virtual userspace address  we see invalid
+data.
+0x7fffffda : 613bb1a7 5e861acf 5b2dce9f 6bce583b  a;..^...[-..k.X;
+0x7fffffea : 19140130 dea63ed4 958de876 d52957e4  ...0..>....v.)W.
 
-Normal kernel + linear cramfs (patched):
+If we dump the page via the virtual kernel address we see the correct data.
+0xc014afda : 696e6974 00484f4d 453d2f00 5445524d  init.HOME=/.TERM
+0xc014afea : 3d6c696e 7578002f 7362696e 2f696e69  =linux./sbin/ini
 
-  pImage:  538062
-  cramfs: 1081344
+Then we write some crap to the virtual userspace address and get the follwing,
+when we read both addresses back
 
-          total:    used:    free:  shared: buffers:  cached:
-  Mem:  14921728  3866624 11055104  2781184        0  2240512
+0x7fffffda : 67617267 656c7075 002dce9f 6bce583b  gargelpu.-..k.X;
+0x7fffffea : 19140130 dea63ed4 958de876 d52957e4  ...0..>....v.)W.
 
-XIP kernel + linear cramfs:
+0xc014afda : 67617267 656c4f4d 453d2f00 5445524d  gargelOME=/.TERM
+0xc014afea : 3d6c696e 7578002f 7362696e 2f696e69  =linux./sbin/ini
 
-  pImage: 1395952
-  cramfs: 1081344
+We have already tried to flush and invalidate the dcache, but no change in
+behaviour.
 
-          total:    used:    free:  shared: buffers:  cached:
-  Mem:  16175104  3940352 12234752  2822144        0  2240512
+The real strange thing is, that the rest of the kernel is running stable, e.g.
+it services a flood ping without complaints
 
+Any ideas ?????
 
-XIP kernel + XIP cramfs (chmod +t: busybox, initd, libc)
+Bootloader: 	UBoot
+Kernel 		2.4.21-rc2-powerpc (2003-05-15)
 
-  pImage: 1395952
-  cramfs: 1871872
-
-          total:    used:    free:  shared: buffers:  cached:
-  Mem:  16175104  2367488 13807616   610304        0   671744
-
-The net saving is > 1.1MB + 1.5M = 2.6 MB.
+--
+Thomas
+________________________________________________________________________
+linutronix - competence in embedded & realtime linux
+http://www.linutronix.de
+mail: tglx@linutronix.de
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
