@@ -1,5 +1,6 @@
-Date: Thu,  2 Aug 2001 12:11:16 -0700
-Message-Id: <200108021211.AA923271506@redsonic.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Thu,  2 Aug 2001 12:12:46 -0700
+Message-Id: <200108021212.AA3393323056@redsonic.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 From: "Zeke  Burgess" <zburgess@redsonic.com>
