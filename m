@@ -1,55 +1,36 @@
-Message-Id: <v04003a00b4e344920669@[216.81.6.109]>
-In-Reply-To: 
- <Pine.LNX.3.96.1000301112749.15584D-100000@deepspace.mklinux.org>
-References: <12QCy8-16pAwaC@fmrl00.sul.t-online.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Wed, 1 Mar 2000 16:33:36 -0600
-To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>,
-        John L Grantham <jgrantha@hannover.sgh-net.de>
-From: Tony Mantler <eek@escape.ca>
-Subject: Re: LinuxPPC vs. RedHat???
-Cc: Info <info@amberjack.net>, linuxppc-user@lists.linuxppc.org,
-        linuxppc-dev@lists.linuxppc.org
+Message-ID: <38BE41BF.EAF1A0DD@ict.ac.cn>
+Date: Thu, 02 Mar 2000 18:26:07 +0800
+From: LiuTao <tliu@ict.ac.cn>
+MIME-Version: 1.0
+To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>,
+        "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: problem on MPC8xx
+References: <NCBBKJKKGDLPHKDPAFFMKEBMCDAA.jsw-embedded@mindspring.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 1:28 PM -0600 3/1/2000, David A. Gatwood wrote:
->On Wed, 1 Mar 2000, John L Grantham wrote:
->
-[...]
->> <nitpick>Not Debian...</nitpick>
->
->Is the Debian distribution a working distribution now?  I'd gotten the
->impression that it was still a work-in-progress.
+Hi:
 
-A little while back I went about the proscess of converting my friend's
-7600 and PBG3 to Linux. He chose LinuxPPC for the 7600, and I went for
-Debian on his PBG3, since I had worked with it a lot in my 68k and
-subsequent x86 dealings.
+I can see everything on console port now.
+The last a few messages are:
 
-This was before Debian's installer had PowerMac support (which may still be
-the case, I haven't checked), so installing the system manually was a bit
-entertaining to say the least.
+CPM UART driver version 0.02
+ttyS00 at 0x0280 is a SMC
+ttyS01 at 0x0100 is a SCC
+ttyS02 at 0x0200 is a SCC
+RAM disk driver initialized:  16 RAM disks of 4096K size
+eth0: CPM ENET Version 0.2, 00:00:00:00:00:00
+RAMDISK: Compressed image found at block 0
+VFS: Mounted root (ext2 filesystem).
+mount_initrd:1,dev:256,256,ma:1,mi:0Freeing unused kernel memory: 32k in
 
-However, after all that was dealt with and the system was installed, it
-proved to be (imho) a much better system than his LinuxPPC desktop system.
-I never had to search for rpms, every package came with very sane, useable
-default configuration files, and pretty much every package I've installed
-on that box has worked first try, without any fussing or messing about.
+Then, what should happen? Is that all right?
 
-No offense to the LinuxPPC guys here, :) but the difference has been enough
-to convince him to get me to install Debian to replace LinuxPPC on his 7600
-too.
+Thanks!
 
-
-Cheers - Tony :)
-
-
---
-Tony Mantler         Renaissance Nerd Extraordinaire         eek@escape.ca
-Winnipeg, Manitoba, Canada                       http://www.escape.ca/~eek
-
+LiuTao
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
