@@ -1,399 +1,209 @@
-Message-Id: <200003142211.XAA00663@piglet.grunz.lu>
-Date: Tue, 14 Mar 2000 23:11:35 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: [linux-fbdev] [PATCH 2.3.x] fbdev reversion
-To: Geert.Uytterhoeven@sonycom.com, mj@ucw.cz
-cc: bh40@calva.net, linux-fbdev@vuser.vu.union.edu,
-        linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.GSO.4.10.10003141104380.15255-100000@dandelion.sonytel.be>
-MIME-Version: 1.0
-Content-Type: MULTIPART/mixed; BOUNDARY="134392852-1804289383-953071895=:662"
+From: jlquinn@us.ibm.com
+To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <852568A2.007C5808.00@D51MTA03.pok.ibm.com>
+Date: Tue, 14 Mar 2000 17:38:14 -0500
+Subject: Patch for keyboard on Mac-clones for linuxppc
+Mime-Version: 1.0
+Content-type: multipart/mixed;
+	Boundary="0__=0BZysqfmfeZtrbDSq7xENymGEvrP20a4ZyBo80yWDIs1G65WAYFtjRWJ"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---134392852-1804289383-953071895=:662
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+--0__=0BZysqfmfeZtrbDSq7xENymGEvrP20a4ZyBo80yWDIs1G65WAYFtjRWJ
+Content-type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Hi all,
+Hi all.  I've been using for some time a patch to fix the behavior of the
+capslock key on Powercomputing keyboards.  It even allows capslock to be
+remapped to control with xmodmap.  The trick is to have a single piece of
+code that doesn't stomp on Apple keyboards.
 
-On  14 Mar, this message from Geert Uytterhoeven echoed through cyberspace:
->> Well, while we are at it, we could also work on fixing the PCI problems:
->> Instead of relying on XFree knowing the host bridge and deducing the
->> iobase, I beleive we should export from the kernel either one iobase per
->> PCI device (there can be different busses with different iobases, that's
->> the case on the new macs and they have the same bus number), or we can
->> have /proc/bus/pci export "fixed'up" IO addresses (already including the
->> iobase).
+Based on conversations with Ben Herrenschmidt, this patch tests register 2
+of adb keyboards during bootup.  I don't have any apple keyboards to test
+with myself, so could some kind souls apply this patch and see if their
+capslock key behaves well?   The patch is against stock 2.2.14, but should
+probably appply to other kernels as well.
 
-I'd clearly vote for this approach. Something along those lines is
-neede as well if you want to use more than one IDE controller at the
-same time (or anything other than Apple's integrated controller, for
-that matter).
+In particular, the Apple keyboards that Ben has return 0xff in the second
+byte of the reply at runtime.  But I don't know about during boot - PCC
+keyboards return a different value during boot than during runtime.  So,
+please try starting with capslock pressed as well as with it unpressed.  If
+the capslock doesn't behave, can you send me the reg 2 data which should
+have been saved into the messages log file?
 
->> I can code those fixes, but I'm not sure what solution has most chances
->> of beeing accepted (especially changing /poc/bus/pci semantics). The
->> problem is that exporting an IO address alone (without the iobase) has
->> really no meaning on arch that don't have a x86-like separate IO space at
->> the CPU level.
+Thanks,
+Jerry Quinn
+jlquinn@us.ibm.com
 
-I have just yesterday completed my patch doing exactly that (ported
-over from 2.2.x); it is, however, PowerMac-only. It's attached below,
-and also fixes the missing scan of PCI buses other than bus 0 on
-PowerMacs.
+---------------------- Forwarded by Jerome L Quinn/Watson/IBM on 03/14/2000
+05:35 PM ---------------------------
 
-> Have you talked to Martin Mares about this?
+Jerry Quinn <jerome.lyle.quinn.adv91@sneezy.dartmouth.org> on 03/13/2000
+06:59:36 PM
 
-Martin, what is your feeling about this? I think the IO-port-fixup
-scheme could be generalized on PPC (or any PCI platform lacking true IO
-space); however, it would be best if there were a generic way to find
-out the processor base address of the IO space of a specific bus. On
-PowerMacs, we get that from OF.
+To:   Jerome L Quinn/Watson/IBM@IBMUS
+cc:
+Subject:  Re: Patch for keyboard on Mac-clones for linuxppc
 
-I'm thinking about something along the lines of a resource of the
-parent bridge's PCI dev; much like it is available for P2P bridges. So
-even though the information is not given directly by host bridges, the
-platform fixup code would need to provide those through other means
-(typically something firmware-derived).
 
-This would be a step in the direction of a complete resource tree
-starting at the host bridges, which, at least on PMacs, is not there
-right now. That is needed, however, if dynamic resource allocation is
-to produce working results ;-)
 
-Please try this patch if you expierence PCI trouble, and also if you
-have IDE in your machine; I'd like to verify I didn't break built-in
-PowerMac IDE. Be warned, however....
+>Date: Fri, 3 Mar 2000 00:28:42 -0500
+>To: BenH <bh40@calva.net>
+>From: Jerry Quinn <jerome.lyle.quinn.adv91@pop.dartmouth.org>
+>Subject: Re: Patch for keyboard on Mac-clones for linuxppc
+>Cc:
+>Bcc:
+>X-Attachments: :System/Apps backup:2:pcccaps.patch1.txt:
+>
+>Could you try out this patch against vanilla 2.2.14?  In particular, I'd
+>like to see if it identifies Apple keyboards correctly as such.  I'm
+>reading reg2 of the keyboard during initialization, when it's apparently
+>safer.
+>
+>On my PCC keyboards, during boot, reg2 returns FFC3 and FFFB respectively.
+>If Apple keyboards return FFFF during boot, then the rest of the code will
+>do the right thing.
+>
+>Jerry
+>
+>jlquinn@us.ibm.com
+>
+>
 
-Flames, comments, cookies, ideas? Beer?
+(See attached file: pcccaps.patch1.txt)
 
-Michel
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+--0__=0BZysqfmfeZtrbDSq7xENymGEvrP20a4ZyBo80yWDIs1G65WAYFtjRWJ
+Content-type: application/octet-stream;
+	name="pcccaps.patch1.txt"
+Content-Disposition: attachment; filename="pcccaps.patch1.txt"
+Content-Description: Text - character set unknown
+Content-Transfer-Encoding: base64
 
---134392852-1804289383-953071895=:662
-Content-Type: TEXT/plain; CHARSET=US-ASCII
-Content-Description: pci.diff
+LS0tIG1hY19rZXliLmMub3JpZwlNb24gRmViIDI4IDIyOjMwOjI1IDIwMDANCisrKw0KbGludXgv
+ZHJpdmVycy9tYWNpbnRvc2gvbWFjX2tleWIuYwlGcmkgTWFyICAzIDAwOjA4OjQwIDIwMDANCkBA
+IC0xNiw3DQorMTYsNyBAQA0KICAqDQogICogLSBTdGFuZGFyZCAxIGJ1dHRvbiBtb3VzZQ0KICAq
+IC0gQWxsIHN0YW5kYXJkIEFwcGxlDQpFeHRlbmRlZCBwcm90b2NvbCAoaGFuZGxlciBJRCA0KQ0K
+LSAqIC0gbW91c2VtYW4gYW5kIHRyYWNrbWFuIG1pY2UgJg0KdHJhY2tiYWxscw0KKyAqIC0gbW91
+c2VtYW4gYW5kIHRyYWNrbWFuIG1pY2UgJiB0cmFja2JhbGxzIA0KICAqIC0gUG93ZXJCb29rDQpU
+cmFja3BhZCAoZGVmYXVsdCBzZXR1cDogZW5hYmxlIHRhcHBpbmcpDQogICogLSBNaWNyb1NwZWVk
+IG1vdXNlICYgdHJhY2tiYWxsDQoobmVlZHMgdGVzdGluZykNCiAgKiAtIENIIFByb2R1Y3RzIFRy
+YWNrYmFsbCBQcm8gKG5lZWRzIHRlc3RpbmcpDQpAQCAtMjI3LDExDQorMjI3LDEyIEBADQogc3Rh
+dGljIHZvaWQga2JkX3JlcGVhdCh1bnNpZ25lZCBsb25nKTsNCiBzdGF0aWMgc3RydWN0DQp0aW1l
+cl9saXN0IHJlcGVhdF90aW1lciA9IHsgTlVMTCwgTlVMTCwgMCwgMCwga2JkX3JlcGVhdCB9Ow0K
+IHN0YXRpYyBpbnQNCmxhc3Rfa2V5Y29kZTsNCitzdGF0aWMgaW50IGxhc3RfaWQ7DQogDQogc3Rh
+dGljIHZvaWQgbWFja2V5Yl9wcm9iZSh2b2lkKTsNCiANCg0Kc3RhdGljIHZvaWQga2V5Ym9hcmRf
+aW5wdXQodW5zaWduZWQgY2hhciAqLCBpbnQsIHN0cnVjdCBwdF9yZWdzICosDQppbnQpOw0KLXN0
+YXRpYyB2b2lkIGlucHV0X2tleWNvZGUoaW50LCBpbnQpOw0KK3N0YXRpYyB2b2lkIGlucHV0X2tl
+eWNvZGUoaW50LA0KaW50LCBpbnQpOw0KIHN0YXRpYyB2b2lkIGxlZHNfZG9uZShzdHJ1Y3QgYWRi
+X3JlcXVlc3QgKik7DQogc3RhdGljIHZvaWQNCm1hY19wdXRfcXVldWUoaW50KTsNCiANCkBAIC0y
+NjIsNiArMjYzLDEyIEBADQogc3RhdGljIHN0cnVjdCBhZGJfaWRzDQptb3VzZV9pZHM7DQogc3Rh
+dGljIHN0cnVjdCBhZGJfaWRzIGJ1dHRvbnNfaWRzOw0KIA0KKy8qIEtpbmQgb2Yga2V5Ym9hcmQN
+CmNhcHNsb2NrICovDQorI2RlZmluZSBBREJLQkRfQ0FQU19BUFBMRQkwCS8qIFN0YW5kYXJkIGFw
+cGxlIGxvY2tpbmcNCmNhcHNsb2NrICovDQorI2RlZmluZSBBREJLQkRfQ0FQU19QQ0MJCTEJLyog
+UG93ZXJjb21wdXRpbmcNCmtleWJvYXJkIGNhcHNsb2NrICovDQorDQorc3RhdGljIGludCBhZGJf
+a2JkY2Fwc19raW5kc1sxNl07DQorDQogLyogS2luZCBvZg0KbW91c2UgICovDQogI2RlZmluZSBB
+REJNT1VTRV9TVEFOREFSRF8xMDAJMAkvKiBTdGFuZGFyZCAxMDBjcGkNCm1vdXNlIChoYW5kbGVy
+IDEpICovDQogI2RlZmluZSBBREJNT1VTRV9TVEFOREFSRF8yMDAJMQkvKiBTdGFuZGFyZA0KMjAw
+Y3BpIG1vdXNlIChoYW5kbGVyIDIpICovDQpAQCAtMzA2LDcgKzMxMyw3IEBADQogDQogaW50DQpt
+YWNrYmRfdW5leHBlY3RlZF91cCh1bnNpZ25lZCBjaGFyIGtleWNvZGUpDQogew0KLQlyZXR1cm4g
+MHg4MDsNCisNCglyZXR1cm4gMHg4MDsNCiB9DQogDQogc3RhdGljIHZvaWQNCkBAIC0zMTYsMTcg
+KzMyMyw5MCBAQA0KIAlpZiAobmIgIT0gMw0KfHwgKGRhdGFbMF0gJiAzKSAhPSBLRVlCX0tFWVJF
+RykNCiAJCXJldHVybjsJCS8qIGlnbm9yZQ0KaXQgKi8NCiAJa2JkX3B0X3JlZ3MgPSByZWdzOw0K
+LQlpbnB1dF9rZXljb2RlKGRhdGFbMV0sIDApOw0KKw0KCWlucHV0X2tleWNvZGUoKGRhdGFbMF0+
+PjQpLCBkYXRhWzFdLCAwKTsNCiAJaWYgKCEoZGF0YVsyXSA9PQ0KMHhmZiB8fCAoZGF0YVsyXSA9
+PSAweDdmICYmIGRhdGFbMV0gPT0gMHg3ZikpKQ0KLQ0KCWlucHV0X2tleWNvZGUoZGF0YVsyXSwg
+MCk7DQorCQlpbnB1dF9rZXljb2RlKChkYXRhWzBdPj40KSwNCmRhdGFbMl0sIDApOw0KIH0NCiAN
+CiBzdGF0aWMgdm9pZA0KLWlucHV0X2tleWNvZGUoaW50IGtleWNvZGUsIGludA0KcmVwZWF0KQ0K
+K2lucHV0X2tleWNvZGUoaW50IGlkLCBpbnQga2V5Y29kZSwgaW50IHJlcGVhdCkNCiB7DQorCXN0
+YXRpYyBpbnQNCnBjY19jYXBzX3N0YXRlID0gMDsNCisNCiAJc3RydWN0IGtiZF9zdHJ1Y3QgKmti
+ZDsNCiAJaW50IHVwX2ZsYWc7DQogDQorDQorDQoJLyogS2x1ZGdlIHRvIHRyeSB0byBmaXggY2Fw
+c2xvY2sgYmVoYXZpb3IgZm9yIHBvd2VyY29tcHV0aW5nDQorDQprZXlib2FyZHMuICBPbiB0aGVz
+ZSwgMHhiOSBpcyByZXR1cm5lZCBvbiBhbHRlcm5hdGluZw0KKwkgICBjYXBzbG9jayBkb3duDQpl
+dmVudHMuICBjYXBzbG9jayB1cCByZXR1cm5zIDB4ODAgLSB0aGUgc2FtZQ0KKwkgICBhcyBBLiAg
+RnVuIGZ1bi4gICovDQorDQoJLyogVGhpcyBpcyBhIHN0YXRlIG1hY2hpbmUgdG8gdW50YW5nbGUg
+Y2Fwc2xvY2sgdXANCisJICAgYW5kICdhJw0KdXAgb24gcG93ZXJjb21wdXRpbmcga2V5Ym9hcmRz
+ICovDQorCWlmIChhZGJfa2JkY2Fwc19raW5kc1tpZF0gPT0NCkFEQktCRF9DQVBTX1BDQykgew0K
+KwkJc3dpdGNoIChrZXljb2RlKSB7DQorCQljYXNlDQoweDM5Og0KKwkJY2FzZSAweGI5Og0KKwkJ
+CXN3aXRjaCAocGNjX2NhcHNfc3RhdGUpIHsNCisNCgkJCWNhc2UgMDoNCisNCglwY2NfY2Fwc19z
+dGF0ZSA9IDI7DQorCQkJCWJyZWFrOw0KKw0KCQljYXNlIDE6DQorCQkJCXBjY19jYXBzX3N0YXRl
+ID0NCjM7DQorCQkJCWJyZWFrOw0KKwkJCWNhc2UgNDoNCisNCgkJCQlwY2NfY2Fwc19zdGF0ZSA9
+IDU7DQorDQoJYnJlYWs7DQorCQkJZGVmYXVsdDoNCisNCglicmVhazsNCisJCQl9DQorCQkJa2V5
+Y29kZSA9DQoweDM5OwkvKiBDaGFuZ2UgdG8gY2Fwc2xvY2sgZG93biAqLw0KKwkJCWJyZWFrOw0K
+Kw0KCWNhc2UgMHgwMDoNCisJCQlzd2l0Y2ggKHBjY19jYXBzX3N0YXRlKSB7DQorDQoJCWNhc2Ug
+MDoNCisJCQkJcGNjX2NhcHNfc3RhdGUgPQ0KMTsNCisJCQkJYnJlYWs7DQorCQkJY2FzZSAyOg0K
+Kw0KCQkJY2FzZSA0OgkvKiBXZSBndWVzc2VkIHJpZ2h0IGluIHJldHVybmluZyBBIHVwDQpwcmV2
+aW91c2x5ICovDQorCQkJCXBjY19jYXBzX3N0YXRlID0gMzsNCisNCgkJYnJlYWs7DQorCQkJZGVm
+YXVsdDoNCisNCgkJYnJlYWs7DQorCQkJfQ0KKw0KCWJyZWFrOw0KKw0KKwkJCS8qIFRoaXMgaXMg
+dGhlIGJyb2tlbiAweDgwIHJldHVybg0KY29kZSBmcm9tIGNhcHNsb2NrDQorCQkJICAgb3IgQS4g
+IFdlIGFsd2F5cyBhc3N1bWUgQQ0KcmVsZWFzZSBmaXJzdC4gKi8NCisJCWNhc2UgMHg4MDoNCisJ
+CQlzd2l0Y2gNCihwY2NfY2Fwc19zdGF0ZSkgew0KKwkJCWNhc2UgMDoNCisNCgljYXNlIDE6CQkv
+KiBBIHVwICovDQorDQoJcGNjX2NhcHNfc3RhdGUgPSAwOw0KKwkJCQlicmVhazsNCisNCgkJY2Fz
+ZSAyOgkJLyogQ2Fwc0xvY2sgdXAgKi8NCisNCglwY2NfY2Fwc19zdGF0ZSA9IDA7DQorCQkJCWtl
+eWNvZGUgPSAweGI5Ow0KKw0KCQkJCWJyZWFrOw0KKwkJCWNhc2UgMzoNCgkvKiBBc3N1bWUgQSB1
+cCAtIHdlIGRvbid0IHJlYWxseSBrbm93ICovDQorDQoJcGNjX2NhcHNfc3RhdGUgPSA0Ow0KKwkJ
+CQlrZXljb2RlID0gMHg4MDsNCisNCgkJCQlicmVhazsNCisJCQljYXNlIDQ6DQoJLyogTm93IGFz
+c3VtZSBDYXBzTG9jayB1cCAqLw0KKw0KCXBjY19jYXBzX3N0YXRlID0gMDsNCisJCQkJa2V5Y29k
+ZSA9IDB4Yjk7DQorDQoJCQkJYnJlYWs7DQorCQkJY2FzZSA1Og0KCS8qIFJldHVybiBhbiBBIHVw
+ICovDQorCQkJCXBjY19jYXBzX3N0YXRlID0NCjQ7DQorCQkJCWtleWNvZGUgPSAweDgwOw0KKw0K
+CWJyZWFrOw0KKwkJCX0NCisJCQlicmVhazsNCisNCgkJZGVmYXVsdDoNCisJCQlicmVhazsNCisJ
+CX0NCisNCgl9DQorCQkgIA0KICAJa2JkID0ga2JkX3RhYmxlICsgZmdfY29uc29sZTsNCiAJdXBf
+ZmxhZyA9DQooa2V5Y29kZSAmIDB4ODApOw0KIAlrZXljb2RlICY9IDB4N2Y7DQpAQCAtMzc3LDYg
+KzQ1Nyw3IEBADQogCWlmDQooa2JkLT5rYmRtb2RlICE9IFZDX1JBVykgew0KIAkJaWYgKCF1cF9m
+bGFnICYmDQohZG9udF9yZXBlYXRba2V5Y29kZV0pIHsNCiAJCQlsYXN0X2tleWNvZGUgPSBrZXlj
+b2RlOw0KKw0KCQkJbGFzdF9pZCA9IGlkOw0KDQoJcmVwZWF0X3RpbWVyLmV4cGlyZXMgPSBqaWZm
+aWVzICsgKHJlcGVhdD8gSFovMTU6IEhaLzIpOw0KDQoJCWFkZF90aW1lcigmcmVwZWF0X3RpbWVy
+KTsNCiAJCX0NCkBAIC0zODYsMTkNCis0NjcsMjggQEANCiAJCSAqIGdlbmVyYXRpbmcgYW4gdXAv
+ZG93biBldmVudCBmb3IgZWFjaCB0aW1lIGNhcHMNCg0KCQkgKiBpcyBwcmVzc2VkL3JlbGVhc2Vk
+LiBBbHNvLCBtYWtlcyBzdXJlIHRoYXQgdGhlDQoNCgkgKiBMRURhcmUgaGFuZGxlZC4gIGF0b25n
+QHVpdWMuZWR1DQorCQkgKg0KKwkJICogU2tpcCB0aGUNCmNhcHMgbG9jayBrbHVkZ2UgZm9yIHBv
+d2VyY29tcHV0aW5nIGtleWJvYXJkcy4gIFdlDQorCQkgKiBkZWFsDQp3aXRoIGl0IHdpdGggdGhl
+IHN0YXRlIG1hY2hpbmUgYXQgdGhlIGJlZ2lubmluZyBvZiB0aGUNCisJCSAqDQpmdW5jdGlvbi4g
+ICBqbHF1aW5uQHVzLmlibS5jb20NCiAJCSAqLw0KLQkJIHN3aXRjaA0KKGtleWNvZGUpIHsNCi0J
+CSAvKmNhc2UgMHhiOToqLw0KLQkJIGNhc2UgMHgzOToNCi0NCgkJaGFuZGxlX3NjYW5jb2RlKDB4
+MzksIDEpOw0KLQ0KCWhhbmRsZV9zY2FuY29kZSgweDM5LCAwKTsNCi0NCgltYXJrX2JoKEtFWUJP
+QVJEX0JIKTsNCi0JCSAJcmV0dXJuOw0KLQ0KY2FzZSAweDQ3Og0KLQkJIC8qY2FzZSAweGM3Oiov
+DQotDQoJbWFya19iaChLRVlCT0FSRF9CSCk7DQotCQkgCWJyZWFrOw0KLQ0KfQ0KKwkJDQorCQlz
+d2l0Y2ggKGtleWNvZGUpIHsNCisJICAgICAgICAvKmNhc2UNCjB4Yjk6Ki8NCisJCWNhc2UgMHgz
+OToNCisJCQlpZg0KKGFkYl9rYmRjYXBzX2tpbmRzW2lkXSAhPSBBREJLQkRfQ0FQU19QQ0MpIHsN
+CisNCgloYW5kbGVfc2NhbmNvZGUoMHgzOSwgMSk7DQorDQoJaGFuZGxlX3NjYW5jb2RlKDB4Mzks
+IDApOw0KKw0KCW1hcmtfYmgoS0VZQk9BUkRfQkgpOw0KKwkJCQlyZXR1cm47DQorDQoJCX0NCisJ
+CQltYXJrX2JoKEtFWUJPQVJEX0JIKTsNCisNCglicmVhazsNCisJCWNhc2UgMHg0NzoNCisJCS8q
+Y2FzZSAweGM3OiovDQorDQoJCQltYXJrX2JoKEtFWUJPQVJEX0JIKTsNCisJCSAgCWJyZWFrOw0K
+Kw0KCQl9DQogCX0NCiANCiAJaGFuZGxlX3NjYW5jb2RlKGtleWNvZGUsICF1cF9mbGFnKTsNCkBA
+DQotNDExLDcgKzUwMSw3IEBADQogDQogCXNhdmVfZmxhZ3MoZmxhZ3MpOw0KIAljbGkoKTsNCi0N
+CglpbnB1dF9rZXljb2RlKGxhc3Rfa2V5Y29kZSwgMSk7DQorCWlucHV0X2tleWNvZGUobGFzdF9p
+ZCwNCmxhc3Rfa2V5Y29kZSwgMSk7DQogCXJlc3RvcmVfZmxhZ3MoZmxhZ3MpOw0KIH0NCiANCkBA
+IC01MTYsNiArNjA2LDExIEBADQoNCgkJZGF0YVsyXSA9IChkYXRhWzJdICYgMHg3ZikgfCAoKGRh
+dGFbM10gJiAweDAxKSA8PCA3KTsNCg0KCWRhdGFbM10gPSAoZGF0YVszXSAmIDB4NzcpIHwgKChk
+YXRhWzNdICYgMHgwMikgPDwgNik7DQoNCglicmVhazsNCisJICAgIGNhc2UgQURCTU9VU0VfTVNf
+QTM6DQorCQlkYXRhWzFdID0NCihkYXRhWzFdICYgMHg3ZikgfCAoKGRhdGFbM10gJiAweDAxKSA8
+PCA3KTsNCisJCWRhdGFbMl0gPSAoZGF0YVsyXQ0KJiAweDdmKSB8ICgoZGF0YVszXSAmIDB4MDIp
+IDw8IDYpOw0KKwkJZGF0YVszXSA9ICgoZGF0YVszXSAmIDB4MDQpDQo8PCA1KTsNCisJCWJyZWFr
+Ow0KIAl9DQogDQogCWlmDQooYWRiX21vdXNlX2ludGVycnVwdF9ob29rKQ0KQEAgLTcyNyw3ICs4
+MjIsNyBAQA0KIHsNCiAJc3RydWN0IGFkYl9yZXF1ZXN0DQpyZXE7DQogCWludCBpOw0KLQ0KK2lu
+dCBqOw0KICNpZmRlZiBDT05GSUdfQURCTU9VU0UNCg0KCWFkYl9yZWdpc3RlcihBREJfTU9VU0Us
+IDAsICZtb3VzZV9pZHMsIG1vdXNlX2lucHV0KTsNCiAjZW5kaWYgLyoNCkNPTkZJR19BREJNT1VT
+RSAqLw0KQEAgLTc1NCw2ICs4NDksMjUgQEANCiAJCQlwcmludGsoIkFEQg0Ka2V5Ym9hcmQgYXQg
+JWQsIGhhbmRsZXIgc2V0IHRvIDNcbiIsIGlkKTsNCiAJCWVsc2UNCg0KCXByaW50aygiQURCIGtl
+eWJvYXJkIGF0ICVkLCBoYW5kbGVyIDFcbiIsIGlkKTsNCisNCisJCS8qDQpUcnkgdG8gZGV0ZWN0
+IGEgUG93ZXJjb21wdXRpbmcga2V5Ym9hcmQgKi8NCisJCWFkYl9yZXF1ZXN0KCZyZXEsDQpOVUxM
+LCBBREJSRVFfU1lOQyB8IEFEQlJFUV9SRVBMWSwgMSwNCisJCQkgICAgQURCX1JFQURSRUcoaWQs
+DQoyKSk7DQorCQlwcmludGsoIkFEQiBrZXlib2FyZCBhdCAlZCwgcmVnIDIgcmV0dXJucyAlZCBi
+eXRlczoiLCBpZCwNCnJlcS5yZXBseV9sZW4pOw0KKwkJZm9yKGo9MTsgajxyZXEucmVwbHlfbGVu
+OyBqKyspDQorDQoJICBwcmludGsoIiAleCIsIHJlcS5yZXBseVtqXSk7DQorCQlwcmludGsoIlxu
+Iik7DQorDQorDQoJCWlmIChyZXEucmVwbHlfbGVuID09IDMgJiYgcmVxLnJlcGx5WzFdID09IDB4
+ZmYgJiYgDQorDQoJICAgIHJlcS5yZXBseVsyXSAhPSAweGZmKSB7DQorDQoJYWRiX2tiZGNhcHNf
+a2luZHNbaWRdID0gQURCS0JEX0NBUFNfUENDOw0KKw0KCXByaW50aygiQURCIGtleWJvYXJkIGF0
+ICVkIGlzIFBvd2VyY29tcHV0aW5nXG4iLCBpZCk7DQorCQl9DQorDQoJCWVsc2Ugew0KKwkJCWFk
+Yl9rYmRjYXBzX2tpbmRzW2lkXSA9DQpBREJLQkRfQ0FQU19BUFBMRTsNCisJCQlwcmludGsoIkFE
+QiBrZXlib2FyZCBhdCAlZCBpcw0KQXBwbGVcbiIsIGlkKTsNCisJCX0NCisNCiAJfQ0KIA0KIAkv
+KiBUcnkgdG8gc3dpdGNoIGFsbCBtaWNlDQp0byBoYW5kbGVyIDQsIG9yIDIgZm9yIHRocmVlLWJ1
+dHRvbg0KQEAgLTEwMDIsNCArMTExNiw0IEBADQogIA0KDQoJYWRiX3JlcXVlc3QoJnJlcSwgTlVM
+TCwgQURCUkVRX1NZTkMsIDEsIEFEQl9GTFVTSChpZCkpOw0KICB9DQotIA0KKw0K
 
-diff -uNr linux-2.3.paul/include/asm-ppc/io.h linux-2.3.paul-work/include/asm-ppc/io.h
---- linux-2.3.paul/include/asm-ppc/io.h	Sat Mar 11 06:09:07 2000
-+++ linux-2.3.paul-work/include/asm-ppc/io.h	Sun Mar 12 17:08:44 2000
-@@ -32,7 +32,9 @@
- extern unsigned long isa_io_base;
- extern unsigned long isa_mem_base;
- extern unsigned long pci_dram_offset;
--#define _IO_BASE	isa_io_base
-+/* We're correcting io base addresses in pci fixup code */
-+/* #define _IO_BASE	isa_io_base */
-+#define _IO_BASE	0
- #define _ISA_MEM_BASE	isa_mem_base
- #define PCI_DRAM_OFFSET	pci_dram_offset
- #endif /* CONFIG_APUS */
-diff -uNr linux-2.3.paul/arch/ppc/kernel/pmac_pci.c linux-2.3.paul-work/arch/ppc/kernel/pmac_pci.c
---- linux-2.3.paul/arch/ppc/kernel/pmac_pci.c	Fri Feb 11 00:19:51 2000
-+++ linux-2.3.paul-work/arch/ppc/kernel/pmac_pci.c	Mon Mar 13 21:07:21 2000
-@@ -27,6 +27,15 @@
+--0__=0BZysqfmfeZtrbDSq7xENymGEvrP20a4ZyBo80yWDIs1G65WAYFtjRWJ--
 
- #include "pci.h"
-
-+#undef DEBUG
-+#define DEBUG
-+
-+#ifdef DEBUG
-+#define DBG(x...) printk(x)
-+#else
-+#define DBG(x...)
-+#endif
-+
- struct bridge_data **bridges, *bridge_list;
- static int max_bus;
-
-@@ -41,6 +50,10 @@
- static int uninorth_default = -1;
-
- static void add_bridges(struct device_node *dev);
-+void fix_chaos (struct bridge_data *);
-+void fix_planb (struct pci_dev *);
-+
-+extern struct pci_ops generic_pci_ops;
-
- /*
-  * Magic constants for enabling cache coherency in the bandit/PSX bridge.
-@@ -54,6 +67,10 @@
- #define BANDIT_MAGIC	0x50
- #define BANDIT_COHERENT	0x40
-
-+#define CONTROL_DEVID	3
-+#define PLANB_DEVID	4
-+#define PLANB_BASE      0xf1000000
-+
- __pmac
- void *pci_io_base(unsigned int bus)
- {
-@@ -629,7 +646,7 @@
- 				ioremap(addr->address + 0x800000, 0x1000);
- 			bp->cfg_data = (volatile unsigned char *)
- 				ioremap(addr->address + 0xc00000, 0x1000);
--			bp->io_base = (void *) ioremap(addr->address, 0x10000);
-+			bp->io_base = (void *) ioremap(addr->address, 0x800000);
- 		}
- 		if (isa_io_base == 0)
- 			isa_io_base = (unsigned long) bp->io_base;
-@@ -664,8 +681,11 @@
- 		if (reg == 0 || ((reg[0] >> 8) & 0xff) != dev->devfn)
- 			continue;
- 		/* this is the node, see if it has interrupts */
--		if (node->n_intrs > 0)
-+		if (node->n_intrs > 0)  {
- 			dev->irq = node->intrs[0].line;
-+			DBG("PCI: Setting IRQ %d on device %s.\n",
-+				dev->irq, dev->slot_name);
-+		}
- 		break;
- 	}
- }
-@@ -674,35 +694,214 @@
- pmac_pcibios_fixup(void)
- {
- 	struct pci_dev *dev;
-+	struct bridge_data *bp;
-+	int i;
-
- 	/*
--	 * FIXME: This is broken: We should not assign IRQ's to IRQless
--	 *	  devices (look at PCI_INTERRUPT_PIN) and we also should
--	 *	  honor the existence of multi-function devices where
--	 *	  different functions have different interrupt pins. [mj]
-+	 * The generic PCI code scans only bus 0 for devices and P2P
-+	 * bridges. We fix this here based on the array of host
-+	 * bridges.
- 	 */
-+	for (bp = bridge_list; bp != NULL; bp = bp->next) {
-+
-+		if (bp->bus_number == 0) continue;
-+
-+		if (strcmp(bp->node->name, "chaos") == 0)
-+			fix_chaos(bp);
-+		else
-+			pci_scan_bus(bp->bus_number, &generic_pci_ops, NULL);
-+	}
-+
- 	pci_for_each_dev(dev)
- 	{
--		/*
--		 * Open Firmware often doesn't initialize the,
--		 * PCI_INTERRUPT_LINE config register properly, so we
--		 * should find the device node and se if it has an
--		 * AAPL,interrupts property.
--		 */
- 		struct bridge_data *bp = bridges[dev->bus->number];
- 		unsigned char pin;
-+
-+		DBG("PCI: Fixing device %02x:%02x (%04x:%04x)\n",
-+			dev->bus->number, dev->devfn,
-+			dev->vendor, dev->device);
-+
-+		/* SPECIAL DEVICES
-+		 * ---------------
-+		 * control was fixed in fix_chaos().
-+		 */
-+		if (dev->vendor == APPLE_VENDID &&
-+		    dev->device == CONTROL_DEVID) {
-+			continue;
-+		}
-+		/* planb needs special care.
-+		 */
-+		if (dev->vendor == APPLE_VENDID &&
-+		    dev->device == PLANB_DEVID) {
-+			fix_planb (dev);
-+			continue;
-+		}
-+		/* INTERRUPT FIXING
-+		 * ----------------
-+		 * Open Firmware doesn't initialize the PCI_INTERRUPT_LINE
-+		 * config register, so we need to find the device node and
-+		 * see if it has an AAPL,interrupts property.
-+		 *
-+		 * Note that INTA# - INTD# are OR'ed together per slot,
-+		 * so no need to worry about multifunction cards.
-+		 */
-
--		if (pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &pin) ||
--		    !pin)
--			continue; /* No interrupt generated -> no fixup */
--		/* We iterate all instances of uninorth for now */
--		if (uninorth_count && dev->bus->number == 0) {
--			int i;
--			for (i=0;i<uninorth_count;i++)
--				fix_intr(uninorth_bridges[i].node->child, dev);
--		} else
--                	fix_intr(bp->node->child, dev);
-+		/* Is there an interrupt? */
-+		if ( !(pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &pin) ||
-+		    !pin) ) {
-+			/* We iterate all instances of uninorth for now */
-+			if (uninorth_count && dev->bus->number == 0) {
-+				int i;
-+				for (i=0;i<uninorth_count;i++)
-+					fix_intr(uninorth_bridges[i].node->child, dev);
-+			} else
-+       		         	fix_intr(bp->node->child, dev);
-+		}
-+		/*
-+		 * Since the PMac host bridges do translate IO accesses,
-+		 * we correct the kernel PCI device database here with an
-+		 * offset we add to IO region's base address. The exact
-+		 * offset is provided by the bridge controling the
-+		 * device's bus.
-+		 */
-+		if (dev->hdr_type != PCI_HEADER_TYPE_NORMAL) goto nextfix;
-+
-+		for(i=0; i<6; i++) {
-+			struct resource *res = &dev->resource[i];
-+			unsigned long base;
-+			unsigned long a = res->start;
-+
-+			if (res->flags & PCI_BASE_ADDRESS_SPACE_IO) {
-+				base = (unsigned long)
-+					pci_io_base(dev->bus->number);
-+				/* unassigned region? */
-+				if (a == 0) continue;
-+				/* strange value? */
-+				if (a > 0x800000) continue;
-+				if (a < base) a += base;
-+				if (a > base) {
-+					res->start = a;
-+					res->end += base;
-+					DBG("PCI: Correcting IO address %d on "
-+					    "device %s, now %08lx.\n",
-+					    i, dev->slot_name, a);
-+				}
-+			}
-+		}
-+nextfix:
-+		/*
-+		 * Open Firmware does not enable I/O and memory space
-+		 * response on PCI devices. We try to fix this, but we need
-+		 * to be sure that OF didn't forget to assign an address
-+		 * to the device. [mj]
-+		 *
-+		 * FIXME: How can we know? We should use OF properties....
-+		 *        Or maybe the new 2.3 resource code?
-+		 */
-+		pcibios_enable_device(dev);
- 	}
-+}
-+
-+/*
-+ * The chaos hostbridge, controlling the separate video bus
-+ * on the 7x00/8x00 PowerMacs, doesn't like being probed for
-+ * attached devices. Therefore, we rely on OF to discover those.
-+ */
-+
-+void __init
-+fix_chaos (struct bridge_data *bp)
-+{
-+	struct device_node *nd;
-+	struct pci_dev temp;
-+	struct pci_dev *dev = NULL;
-+	struct pci_bus *b;
-+
-+	b = pci_alloc_primary_bus(bp->bus_number);
-+	b->sysdata = NULL;
-+	b->ops = &generic_pci_ops;
-+	b->subordinate = bp->max_bus;
-+	/*
-+	 * Walk OF's list of devices on this bus.
-+	 */
-+	for (nd = bp->node->child; nd; nd = nd->sibling) {
-+		/*
-+		 * We need at least one address entry to get the PCI
-+		 * device / function values.
-+		 */
-+		if (nd->n_addrs == 0) {
-+			printk(KERN_ERR "PCI: %s: not a PCI device!\n",
-+				nd->name);
-+			continue;
-+		}
-+		temp.devfn = (nd->addrs[0].space >> 8) & 0xff;
-+		temp.bus = b;
-+		pci_scan_slot(&temp);
-+	}
-+	return;
-+}
-+
-+void __init
-+fix_planb (struct pci_dev *pcidev)
-+{
-+	/* There is a bug with the way OF assigns addresses
-+	 * to the devices behind the chaos bridge.
-+	 * control needs only 0x1000 of space, yet decodes only
-+	 * the upper 16 bits. It therefore occupies a full 64K.
-+	 * OF assigns the planb controller memory within this space;
-+	 * so we need to change that here in order to access planb.
-+	 * Note that the new address (0xf1000000) is within chaos'
-+	 * address space, so it should never get assigned to other
-+	 * devices by OF.
-+	 * planb also gets its interrupt set.
-+	 */
-+	struct device_node *planb_device;
-+	struct resource *res;
-+	unsigned char bus, devfn, confreg;
-+	unsigned int reg;
-+	u32 sz;
-+
-+	DBG("PCI: fixing PlanB...\n");
-+	planb_device = find_devices("planb");
-+	if (planb_device == 0) {
-+		printk(KERN_WARNING "PCI: Error fixing planb: no OF device.\n");
-+		return;
-+	}
-+	if (planb_device->next != NULL)
-+		printk(KERN_WARNING "PCI: Only fixing first planb device.\n");
-+
-+	if (planb_device->n_addrs != 1) {
-+		printk(KERN_WARNING "PCI: Error fixing planb: expected 1 "
-+			"address, got %d.\n", planb_device->n_addrs);
-+		return;
-+	}
-+	if (planb_device->n_intrs == 0) {
-+		printk(KERN_WARNING "PCI: Error fixing planb: no IRQ.\n");
-+		return;
-+	}
-+	bus = (planb_device->addrs[0].space >> 16) & 0xff;
-+	devfn = (planb_device->addrs[0].space >> 8) & 0xff;
-+	if ((bus != pcidev->bus->number) || (devfn != pcidev->devfn)) {
-+		printk(KERN_WARNING "PCI: Error fixing planb: OF and PCI "
-+			"device don't match!\n");
-+		return;
-+	}
-+	pcidev->irq = planb_device->intrs[0].line;
-+	confreg = planb_device->addrs[0].space & 0xff;
-+	reg = (confreg - PCI_BASE_ADDRESS_0) >> 2;
-+	/* Set the new base address */
-+	pcibios_write_config_dword(bus, devfn, confreg, ~0);
-+	pcibios_read_config_dword(bus, devfn, confreg, &sz);
-+	pcibios_write_config_dword(bus, devfn, confreg, PLANB_BASE);
-+	res = &pcidev->resource[reg];
-+	res->start = PLANB_BASE & PCI_BASE_ADDRESS_MEM_MASK;
-+	sz = ~(sz & PCI_BASE_ADDRESS_MEM_MASK);
-+	res->end = res->start + (unsigned long) sz;
-+	/*
-+	 * Everything else should be set up right from the generic scan
-+	 * code. Now enable PlanB...
-+	 */
-+	pcibios_enable_device(pcidev);
-+	return;
- }
-
- void __init
-
---134392852-1804289383-953071895=:662--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
