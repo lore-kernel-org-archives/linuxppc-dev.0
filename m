@@ -1,60 +1,44 @@
-Message-ID: <40EBB6FA.9080009@cefriel.it>
-Date: Wed, 07 Jul 2004 10:40:26 +0200
-From: Roberto Farina <roberto.farina@cefriel.it>
-Reply-To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: PRoblem with VirtexII Pro: maybe the toolchain?
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Reply-To: <fabidi@ultsol.com>
+From: "Fahd Abidi" <fabidi@ultsol.com>
+To: "'Marco Schramel'" <Schramel.Linux@go.bartec.de>,
+	"PPC_LINUX" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: BDI kernel debug
+Date: Wed, 7 Jul 2004 07:42:19 -0400
+Message-ID: <81C69D96BDD30640952C7A404004AA25018722@h0007e95d9fa7.ne.client2.attbi.com>
+In-Reply-To: <200407061331.08613.Schramel.Linux@go.bartec.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Marco,
 
-Hi list,
-I'm currently trying to make Linux booting on my Memec XC2VP7 board that
-holds a Xilinx V2Pro device.
+Please look online at the Ultimate Solutions website, I documented this
+issue a little while ago, http://www.ultsol.com/faq-P305.htm. Wolfgang made
+the right suggestion, using BDI_CONFIG_SWITCH will cure this problem.
 
-I'm using gcc version 3.3.2 for ppc405 compiled with crosstool (thx D.
-Kegel) ;)
+Fahd
 
-This toolchain makes me succeded in compiling the kernel; downloading it
-with xilinx tools brings this output to the serial console
+-----Original Message-----
+From: Marco Schramel [mailto:Schramel.Linux@go.bartec.de]
+Sent: Tuesday, July 06, 2004 6:31 AM
+Subject: BDI kernel debug
 
-loaded at:     00800000 008561C8
-board data at: 00085EB4 00085EEC
-relocated to:  00805308 00805340
-zimage at:     00805833 00852A7C
-avail ram:     00857000 4D046405
+i have some problems with debugging my kernel. This is the first time i
+use bdi for kernel debugging. ELDK 3.0 is my toolchain (Target 8270). My
+bdi2000 can sync with the gdb (ddd) debugger. I let the kernel run until
+"start_here", at example. Then i try to step through the source. I see
+the source and i can step in it. Sometimes it happens that i spend a lot
+of time in linux/kernel/timer.c. Then the output of gdb is "
+(gdb) next
+ Single stepping until exit from function __cli,
+ which has no line number information.
 
-Linux/PPC load:
-Uncompressing Linux...done.
-Now booting the kernel
+ Program received signal SIGSTOP, Stopped (signal).
+ 0xc0007dec in __cli ()"
 
-At this point the system hangs...
+The same output with "step". "Cont" ends also there, although i had set
+a breakpoint later in the source.
 
-I'm still trying to figure out where the system stops or what's
-happening: I'll give more detail when I'll find them :(
-I'm sorry for the poor info I can give you at this point.
-
-I tried to compile the same kernel with the Xilinx toolchain (gcc
-2.95.3) but many linking steps require some file that must be copied
-from the Xilinx EDK prj: after copying them I face lots of multiple
-definition problems... I stopped this investigation for now.
-
-Did anyone experienced the same problems (or knows about a possible
-reason for this kind of hangs?)
-
-Thanks in advance for any help
-Best regards
-
-- ---------------------------------------------------------
-Roberto Farina
-CEFRIEL - Digital Technologies and Operating Systems Unit
-Via Fucini, 2 - 20133 MILANO (ITALY)
-Phone:  +39 02 23954 236
-Fax:    +39 02 23954 254
-~        178 606 5693
-- ---------------------------------------------------------
+Are there some options in the kernel or in the gdb to set ?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
