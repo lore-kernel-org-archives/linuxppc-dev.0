@@ -1,44 +1,42 @@
-Date: Thu, 13 Jul 2000 20:46:34 +0200
-From: Olaf Hering <olh@suse.de>
-To: Josh Huber <huber@mclinux.com>
-Cc: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: > 512 MB of ram on G4?
-Message-ID: <20000713204634.A9569@suse.de>
-References: <20000713142202.A1289@mclx.com> <20000713203507.A8255@suse.de> <20000713144024.A1379@mclx.com>
-Mime-Version: 1.0
+Message-ID: <396E0FD1.B43AC724@embeddededge.com>
+Date: Thu, 13 Jul 2000 14:52:01 -0400
+From: Dan Malek <dan@netx4.com>
+MIME-Version: 1.0
+To: daniel.marmier@lightning.ch
+CC: Dan Malek <dan@netx4.com>, linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Help with string.S
+References: <3967B1E3.80CAC746@embeddededge.com> <396969E1.A7256E4A@lightning.ch> <396A5162.411F49EF@embeddededge.com> <396AB595.DC926132@lightning.ch>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20000713144024.A1379@mclx.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jul 13, Josh Huber wrote:
-
-> On Thu, Jul 13, 2000 at 08:35:07PM +0200, Olaf Hering wrote:
-> > On Thu, Jul 13, Josh Huber wrote:
-> >
-> > > Hey, I'm trying to put 1GB of ram in an Apple G4 box here, but I'm having
-> > > trouble.  Anything higher (well, in increments of 256M) is dumping me into
-> > > xmon early on boot (before the fbcons is initialized).
-> > >
-> > > Any thoughts?  I'm unable to use xmon because of the USB
-> > > keyboard...unfortunately.  Too bad Apple didn't put a real serial port on
-> > > these machines :(
-> >
-> > use mem= as argument, the highest mem I got was mem=703M.
+Daniel Marmier wrote:
 >
-> So is it not (at this time) possible to use 1GB of memory on ppc?
+> Dan Malek wrote:
+> > These are becoming a pain in the ass instructions.
 
-No, 768MB is the maximum on chrp (B50), the newer PowerMacs can handle
-only that 703M. I have no reports about oldworlds.
+> I have seen this happen on cacheable memory with copyback enabled.
+> The dcbz-memcpy caused the destination to be zeroed, IIRC.
 
 
-Gruss Olaf
+OK, I think I am bailing out here.  For some reason, if I remove
+the 'dcbz' instructions on the MPC8xx processor the world is just
+a better place.  I don't know why, maybe because of some of the
+TLB mapping, but I can't find a reason.
 
---
- $ man clone
+I am going to put #ifdef CONFIG_8xx around the dcbz instructions,
+and where they are actually used to zero-fill memory I will use
+store operations.  The other option is to make the changes at a
+higher level (like make 'clear_page' call 'memset' with 0), but I
+think the direct assembly changes are preferable.  Suggestions welcome.
 
-BUGS
-       Main feature not yet implemented...
+I'll keep looking for a better solution, but I can't hold up others
+trying to use this kernel.
+
+Thanks.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
