@@ -1,18 +1,18 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-vd1.iram.es (gra-vd1.iram.es [150.214.224.250])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 173C767A46
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Mar 2005 20:23:22 +1000 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Mon, 28 Mar 2005 12:16:49 +0200
+	by ozlabs.org (Postfix) with ESMTP id 0E62467A2F
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Mar 2005 21:08:18 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Pavel Fedin <sonic_amiga@rambler.ru>
-Message-ID: <20050328101649.GA27913@iram.es>
-References: <42485636.4000106@rambler.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <42485636.4000106@rambler.ru>
-Cc: linuxppc-dev@ozlabs.org
+References: <42485636.4000106@rambler.ru>
+Content-Type: text/plain
+Date: Mon, 28 Mar 2005 21:07:49 +1000
+Message-Id: <1112008070.5473.58.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Subject: Re: Again ISA DMA question
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,28 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 28, 2005 at 02:08:38PM -0500, Pavel Fedin wrote:
->  Hello, all!
+On Mon, 2005-03-28 at 14:08 -0500, Pavel Fedin wrote:
+>   Hello, all!
 > 
->  In a source code or AROS operating system (http://www.aros.org) i 
+>   In a source code or AROS operating system (http://www.aros.org) i 
 > found this comment:
 > 
->  --- cut ---
->     The older PReP machines have the DMA area limited to first 16MB of 
+>   --- cut ---
+>      The older PReP machines have the DMA area limited to first 16MB of 
 > system
->     memory. Therefore it is reasonable, to place the kernel at the end 
+>      memory. Therefore it is reasonable, to place the kernel at the end 
 > of DMA
->     RAM. Both areas may be then easily separated.
->  --- cut ---
+>      RAM. Both areas may be then easily separated.
+>   --- cut ---
 > 
->  Does this mean that Linux has an option to limit DMA memory space to 
+>   Does this mean that Linux has an option to limit DMA memory space to 
 > first 16 MB? PReP machines are fully supported i guess. Or not fully?
 
-Well, actually if you are courageous, many PreP machines have an
-extended ISA DMA with 32 bits addressing capability (this depends
-on the ISA bridge). But ISA DMA is only used for floppy and I have 
-never connected a floppy to my Prep machines sicne I got the first 
-one back in 1997. 
+Linux can do it, but we choose no to implement this on ppc, as slicing
+the memory into zones has disadvantages. Only legacy ISA DMA is
+concerned, which is mostly not a problem. PCI DMA shouldn't be limited.
 
-	Regards,
-	Gabriel
+Ben.
