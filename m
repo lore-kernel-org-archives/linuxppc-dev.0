@@ -1,114 +1,138 @@
-Subject: RE: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom MPC8260 board 
+Message-ID: <3F869E9B.9020208@siemens.com>
+Date: Fri, 10 Oct 2003 13:57:15 +0200
+From: Steffen Rumler <Steffen.Rumler@siemens.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Fri, 10 Oct 2003 11:23:48 +0100
-Message-ID: <DEF39A0710293E489D45B10E06645CBD0243B22E@dub-msx1.spectelcorp.com>
-From: "Joao Vicente" <joao.vicente@spectel.com>
-To: "DONG-IN KANG" <dkang@east.isi.edu>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+To: linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: cfi_cmdset_0002.c: MTD do_write_oneword(): Wacky!  Unable to decode
+ failure status
+Content-Type: multipart/mixed;
+ boundary="------------090707010003080007070708"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Dong-In
+This is a multi-part message in MIME format.
+--------------090707010003080007070708
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I do have -g compiler flag, but my gcc does not recognize -gdb.
+Hi,
+
+I'm using the 2.4.20 kernel running on a TQM8260 board,
+with FUJITSU 29LV652UE90 flash chips.
+
+Sometimes a have seen the following problem inside MTD's
+do_write_oneword() and do_erase_oneblock() functions:
+
+    + After starting the erase/write operation, the function
+      waits until the flash chips have indicated the end of
+      the operation (via dq6 or dq7).
+
+    + After that, the function makes some kind of control read
+      in order to check the correctness of the operation.
+
+    + Sometimes this control read fails.
+
+
+When I make the control read more lazy and try it multiple times (see attached patch),
+the problem disappears. The contents of the flash is always correct.
+
+As far as I know, the control read is not performed by the PPCboot.
+
+Has anybody seen the same problem ?
+
 
 Thanks
 
-Joao
+--
 
------Original Message-----
-From: DONG-IN KANG [mailto:dkang@east.isi.edu]
-Sent: Thursday, October 09, 2003 8:03 PM
-Subject: RE: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom MPC8260 board
 
- Did you set the compiler flag "-g -gdb" when you configure the kernel?
+--------------------------------------------------------------
 
------Original Message-----
-From: Joao Vicente
-Sent: Thursday, October 09, 2003 10:55 AM
-Subject: RE: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom MPC8260 board
+Steffen Rumler
+ICN CP D NT SW 7
+Siemens AG
+Hofmannstr. 51                 Email: Steffen.Rumler@siemens.com
+D-81359 Munich                 Phone: +49 89 722-44061
+Germany                        Fax  : +49 89 722-36703
 
-I am affraid I am still unable to debug the kernel.
+--------------------------------------------------------------
 
-I have tried to define the line
-MMU  XLAT
-and defined the PTBASE as shown below
 
-MMU         XLAT        ;translate effective to physical address
-PTBASE      0x000000f0  ;address where kernel/user stores pointer to page
-table
 
-As you can see I defined PTBASE as 0x000000f0.
-Is this the right address for this build ?
 
-I tried it to debug the target with this configuration file but was
-still unable to get the symbols.
 
-I notice the BDI user manual suggests to use the following line
-WM32    0x000000f0      0x00000000      ;Invalidate page table base.
+--------------090707010003080007070708
+Content-Type: text/plain;
+ name="cfi_cmdset_0002.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="cfi_cmdset_0002.patch"
 
-which I also tried without success.
+ZGlmZiAtTmF1ciBvbGQvY2ZpX2NtZHNldF8wMDAyLmMgbmV3L2NmaV9jbWRzZXRfMDAwMi5j
+Ci0tLSBvbGQvY2ZpX2NtZHNldF8wMDAyLmMJRnJpIE9jdCAxMCAxMzo0NjoyMiAyMDAzCisr
+KyBuZXcvY2ZpX2NtZHNldF8wMDAyLmMJRnJpIE9jdCAxMCAxMzo0NTo1OCAyMDAzCkBAIC00
+NzIsNiArNDcyLDcgQEAKIAogCWNmaV93b3JkIG9sZHN0YXR1cywgc3RhdHVzLCBwcmV2X29s
+ZHN0YXR1cywgcHJldl9zdGF0dXM7CiAJY2ZpX3dvcmQgZHE2OworICAgICAgICBpbnQgaTsK
+IAogICAgIC8qIFdlIHVzZSBhIDFtcyArIDEgamlmZmllcyBnZW5lcmljIHRpbWVvdXQgZm9y
+IHdyaXRlcyAobW9zdCBkZXZpY2VzIGhhdmUKICAgICAgICBhIG1heCB3cml0ZSB0aW1lIG9m
+IGEgZmV3IGh1bmRyZWRzIHVzZWMpLiBIb3dldmVyLCB3ZSBzaG91bGQgdXNlIHRoZQpAQCAt
+NjE4LDE3ICs2MTksMjEgQEAKIAkgKiBiaXRzIGFyZW4ndCBzdGlsbCBjaGFuZ2luZyAgYW5k
+IHRoYXQgdGhlIHN0YXR1cwogCSAqIGJpdHMgZXJyb25lb3VzbHkgbWF0Y2ggdGhlIGRhdHVt
+IHRoYXQgd2FzIHdyaXR0ZW4uCiAJICovCi0JcHJldl9vbGRzdGF0dXMgPSBvbGRzdGF0dXM7
+Ci0JcHJldl9zdGF0dXMgPSBzdGF0dXM7Ci0Jb2xkc3RhdHVzID0gY2ZpX3JlYWQobWFwLCBh
+ZHIpOwotCXN0YXR1cyA9IGNmaV9yZWFkKG1hcCwgYWRyKTsKLQlERUJVRyggTVREX0RFQlVH
+X0xFVkVMMywgIk1URCAlcygpOiBDaGVjayAweCUuOHggMHglLjh4XG4iLAotCSAgICAgICBf
+X2Z1bmNfXywgb2xkc3RhdHVzLCBzdGF0dXMgKTsKLQotCWlmICggb2xkc3RhdHVzID09IGRh
+dHVtICYmIHN0YXR1cyA9PSBkYXR1bSApIHsKLQkJLyogc3VjY2VzcyAtIGRvIG5vdGhpbmcg
+Ki8KLQkJZ290byB3cml0ZV9kb25lOwotCX0KKyAgICAgICAgZm9yKGk9MDsgaTwxMDsgaSsr
+KXsKKyAgICAgICAgICAgIAorICAgICAgICAgICAgcHJldl9vbGRzdGF0dXMgPSBvbGRzdGF0
+dXM7CisgICAgICAgICAgICBwcmV2X3N0YXR1cyA9IHN0YXR1czsKKyAgICAgICAgICAgIG9s
+ZHN0YXR1cyA9IGNmaV9yZWFkKG1hcCwgYWRyKTsKKyAgICAgICAgICAgIHN0YXR1cyA9IGNm
+aV9yZWFkKG1hcCwgYWRyKTsKKyAgICAgICAgICAgIERFQlVHKCBNVERfREVCVUdfTEVWRUwz
+LCAiTVREICVzKCk6IENoZWNrIDB4JS44eCAweCUuOHhcbiIsCisgICAgICAgICAgICAgICAg
+ICAgIF9fZnVuY19fLCBvbGRzdGF0dXMsIHN0YXR1cyApOworCisgICAgICAgICAgICBpZiAo
+IG9sZHN0YXR1cyA9PSBkYXR1bSAmJiBzdGF0dXMgPT0gZGF0dW0gKSB7CisgICAgICAgICAg
+ICAgICAgLyogc3VjY2VzcyAtIGRvIG5vdGhpbmcgKi8KKyAgICAgICAgICAgICAgICBnb3Rv
+IHdyaXRlX2RvbmU7CisgICAgICAgICAgICB9CisgICAgICAgICAgICB1ZGVsYXkoMSk7Cisg
+ICAgICAgIH0KIAogCWlmICggdGEgKSB7CiAJCWNmaV93b3JkIGRxNW1hc2sgPSAoICggc3Rh
+dHVzIF4gb2xkc3RhdHVzICkgJiBkcTYgKSA+PiAxOwpAQCAtMTEyNSw3ICsxMTMwLDYgQEAK
+IAkgICAgICAgX19mdW5jX18sIHN0YXR1cyApOwogCiAJd2hpbGUoICgoc3RhdHVzICYgZHE3
+KSAhPSBkcTcpICYmIAotCSAgICAgICAoKHN0YXR1cyAmIGRxNSkgIT0gZHE1KSAmJgogCQkh
+KCB0YSA9IHRpbWVfYWZ0ZXIoamlmZmllcywgdGltZW8pICkpIHsKIAkJaW50IHdhaXRfcmVw
+czsKIApAQCAtMTE3NCwyOSArMTE3OCwzNCBAQAogCQlERUJVRyggTVREX0RFQlVHX0xFVkVM
+MywgIk1URCAlcygpOiBDaGVjayAweCUuOHhcbiIsCiAJCSAgICAgICBfX2Z1bmNfXywgc3Rh
+dHVzICk7CiAJfQotCXByZXZfc3RhdHVzICAgICA9IHN0YXR1czsKLQlzdGF0dXMgICAgICAg
+ICAgPSBjZmlfcmVhZChtYXAsIGFkcik7CiAKLQlERUJVRyggTVREX0RFQlVHX0xFVkVMMywg
+Ik1URCAlcygpOiBDaGVjayAweCUuOHhcbiIsCi0JICAgICAgIF9fZnVuY19fLCBzdGF0dXMg
+KTsKKyAgICAgICAgZm9yKGk9MDsgaTwxMDsgaSsrKXsKIAotCWlmICggY2ZpX2J1c3dpZHRo
+X2lzXzEoKSApIHsKLQkJb25lcyA9ICAoX191OCl+MDsKLQl9IGVsc2UgaWYgKCBjZmlfYnVz
+d2lkdGhfaXNfMigpICkgewotCQlvbmVzID0gKF9fdTE2KX4wOwotCX0gZWxzZSBpZiAoIGNm
+aV9idXN3aWR0aF9pc180KCkgKSB7Ci0JCW9uZXMgPSAoX191MzIpfjA7Ci0JfSBlbHNlIGlm
+ICggY2ZpX2J1c3dpZHRoX2lzXzgoKSApIHsKLQkJb25lcyA9IChfX3U2NCl+MDsKLQl9IGVs
+c2UgewotCQlwcmludGsoS0VSTl9XQVJOSU5HICJVbnN1cHBvcnRlZCBidXN3aWR0aCAlZFxu
+IixDRklERVZfQlVTV0lEVEgpOwotCQlnb3RvIGVyYXNlX2ZhaWxlZDsKLQl9CisgICAgICAg
+ICAgICBwcmV2X3N0YXR1cyAgICAgPSBzdGF0dXM7CisgICAgICAgICAgICBzdGF0dXMgICAg
+ICAgICAgPSBjZmlfcmVhZChtYXAsIGFkcik7CiAKLQlpZiAoIHByZXZfc3RhdHVzID09IG9u
+ZXMgJiYgc3RhdHVzID09IG9uZXMgKSB7Ci0JCS8qIHN1Y2Nlc3MgLSBkbyBub3RoaW5nICov
+Ci0JCWdvdG8gZXJhc2VfZG9uZTsKLQl9CisgICAgICAgICAgICBERUJVRyggTVREX0RFQlVH
+X0xFVkVMMywgIk1URCAlcygpOiBDaGVjayAweCUuOHhcbiIsCisgICAgICAgICAgICAgICAg
+ICAgIF9fZnVuY19fLCBzdGF0dXMgKTsKKworICAgICAgICAgICAgaWYgKCBjZmlfYnVzd2lk
+dGhfaXNfMSgpICkgeworICAgICAgICAgICAgICAgIG9uZXMgPSAgKF9fdTgpfjA7CisgICAg
+ICAgICAgICB9IGVsc2UgaWYgKCBjZmlfYnVzd2lkdGhfaXNfMigpICkgeworICAgICAgICAg
+ICAgICAgIG9uZXMgPSAoX191MTYpfjA7CisgICAgICAgICAgICB9IGVsc2UgaWYgKCBjZmlf
+YnVzd2lkdGhfaXNfNCgpICkgeworICAgICAgICAgICAgICAgIG9uZXMgPSAoX191MzIpfjA7
+CisgICAgICAgICAgICB9IGVsc2UgaWYgKCBjZmlfYnVzd2lkdGhfaXNfOCgpICkgeworICAg
+ICAgICAgICAgICAgIG9uZXMgPSAoX191NjQpfjA7CisgICAgICAgICAgICB9IGVsc2Ugewor
+ICAgICAgICAgICAgICAgIHByaW50ayhLRVJOX1dBUk5JTkcgIlVuc3VwcG9ydGVkIGJ1c3dp
+ZHRoICVkXG4iLENGSURFVl9CVVNXSURUSCk7CisgICAgICAgICAgICAgICAgZ290byBlcmFz
+ZV9mYWlsZWQ7CisgICAgICAgICAgICB9CisKKyAgICAgICAgICAgIGlmICggcHJldl9zdGF0
+dXMgPT0gb25lcyAmJiBzdGF0dXMgPT0gb25lcyApIHsKKyAgICAgICAgICAgICAgICAvKiBz
+dWNjZXNzIC0gZG8gbm90aGluZyAqLworICAgICAgICAgICAgICAgIGdvdG8gZXJhc2VfZG9u
+ZTsKKyAgICAgICAgICAgIH0KKyAgICAgICAgICAgIHVkZWxheSgxKTsKKyAgICAgICAgfQog
+CiAJaWYgKCB0YSApIHsKIAkJY2ZpX3dvcmQgZHE1bWFzayA9ICggKCBzdGF0dXMgXiBwcmV2
+X3N0YXR1cyApICYgZHE3ICkgPj4gMjsK
+--------------090707010003080007070708--
 
-I also got a trial version of 5.1.1 which I believe you recommended to
-fix a similar problem.
-
-"Wolfgang was able to point me to a trial version of gdb which reports
-itself as 5.1.1 but which has a patch applied that fixes the problem.
-I have attached this version to this email so you can try it for
-yourself."
-
-I am not unsure if this is relevant but this is the method I am using to
-build the kernel
-
-make TQM8260_config
-make menuconfig (where I am changing FCC, MDIO and SCC parameters only)
-make oldconfig
-make dep
-make uImage
-
-Do you reckon is there anything else I could try to fix this problem.
-
------Original Message-----
-From: Wolfgang Denk [mailto:wd@denx.de]
-Sent: Thursday, October 09, 2003 1:38 PM
-Subject: Re: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom MPC8260 board
-
-in message <DEF39A0710293E489D45B10E06645CBD0243B1A7@dub-msx1.spectelcorp.com> you wrote:
->
-> I am trying to boot the ppc kernel on a MPC8260 based custom board.
-...
-> One of the doubts that I have is that when I look into the system.map
-> file, it shows that the start address is at 0xc0000000 (as shown
-> below)
->
-> c0000000 T _start
-
-Yes, this is the correct kernel virtual address.
-
-> To the best of my knowledge the kernel image is not relocatable, so
-> I am wondering if this could be my problem or just one of them ...
-> Should the map file be showing
->
-> 00000000 T _start
-
-No!!!
-
-> If so, where should I change the .text address so that that happens ?
-
-Don't change anything!
-
-> I am also trying to debug the code from that address with gdb/BDI2000,
-> but I am not getting very far. Basically I can see the program counter
-> incrementing when I single step, but I cannot see the source even
-> though I am trying to load the symbol table at 0x00000000 with the
-> 'add-symbol-file vmlinux 0x00000000' gdb command, after invoking gdb
-> from the kernel base directory (where vmlinux is)
-
-Just use the vmlinux file _without_ relocating  any  addresses.  Make
-sure  to  enable  "MMU  XLAT"  and define "PTBASE" in your BDI config
-file.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
