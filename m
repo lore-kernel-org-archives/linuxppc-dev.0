@@ -1,34 +1,37 @@
-Date: Wed, 31 Mar 1999 08:49:14 -0600 (CST)
-From: nathan ingersoll <ningerso@d.umn.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Yesterday vger and ioremap (fwd)
-Message-ID: <Pine.SO4.4.02.9903310848450.26194-100000@ub.d.umn.edu>
+Date: Wed, 31 Mar 1999 10:23:34 -0500 (EST)
+From: John Buswell <johnb@one.net>
+To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+cc: "Charles E. Leiserson, Jr." <locutus@MIT.EDU>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.2.5 on an iMac 
+In-Reply-To: <Pine.LNX.3.96L.990330223921.27821A-100000@unix48.andrew.cmu.edu>
+Message-ID: <Pine.LNX.3.96.990331102220.2854h-100000@shell>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
----------- Forwarded message ----------
-On Tue, Mar 30, 1999, Nathan Ingersoll <ningerso@d.umn.edu> wrote:
+On Tue, 30 Mar 1999, Hollis R Blanchard wrote:
 
->I've noticed the ethernet part too. I've been working with the writer of the
->epic100 driver to get it working for PPC, but I haven't been able to test his
->changes since upgrading. I get a total lock up whenever I try to bring up the
->interface. It's not IP because I've been able to connect using PPP.
+> It doesn't; check the Readme for the latest BootX. Obviously, BootX found
+> enough of the kernel to boot from it...
 
-Cort just fixed the ioremap problem, I'll try again a kernel later today
-or tomorrow, in the meantime, you may want to post the above message to
-the dev mailing lists too so that other people know that it's not an
-isolated problem (but I beleive we are not alone with that bug ;-)
+My problem wasn't bootx related, the problem was related to the ide
+drivers in the linux source tree, I pulled the ide driver source from the
+linux-pmac source tree and patched up to 2.2.5 and it works fine.
 
+check: http://w3.one.net/~johnb/imaclinux/
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+under the kernel howto.
+
+Regards
 
 
-
+John Buswell
+Systems Administrator
+OneNet Communications, Inc.
+(513) 618-1000 - johnb@one.net
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
