@@ -1,55 +1,24 @@
-Date: Thu, 22 Mar 2001 23:01:43 -0700
-From: Cort Dougan <cort@fsmlabs.com>
-To: Subodh Nijsure <subodh@best.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: request_irq in a module casues kernel crash
-Message-ID: <20010322230143.G26659@ftsoj.fsmlabs.com>
-References: <200103230550.VAA03749@shell9.ba.best.com>
-Mime-Version: 1.0
+Message-ID: <3ABB0E14.FF15EC0A@cern.ch>
+Date: Fri, 23 Mar 2001 09:49:24 +0100
+From: Pei-Jie Hong <Pei-Jie.Hong@cern.ch>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Linux on IBM "Spruce" system
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200103230550.VAA03749@shell9.ba.best.com>; from subodh@best.com on Thu, Mar 22, 2001 at 09:50:11PM -0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Try request_8xxirq, not request_irq.  The 8xx has its own name for
-request_irq.
+Hi all,
+	Recently I read a newsletter from IBM that says Montavista Software
+demonstrated the IBM PowerPC 750CX solution on the "Spruce" Development
+system. Does that mean Montavista has a linux that can run on the
+"Spruce"
+system?
+	Have anyone had the experience porting linux on to the "Spruce" system?
+Thanks.
 
-} I am trying to write a module where I am trying to register an interrupt
-} handler using request_irq() sample code for which appears below, when
-} I try to load this module, I am getting kernel panic. Anybody knows reason
-} why?
-} I have compiled the kernel with  CONFIG_MODULES=y CONFIG_MODVERSIONS=y
-} CONFIG_KMOD=y
-}
-} I am using  2.4.2-pre3 on a 860 platform.
-}
-}
-} void handler(int irq, void *dev_id, struct pt_regs * regs)
-} {
-}     printk("Interrupt handler invoked for irq %d \n",irq);
-} }
-}
-} /* load the module */
-} int init_module(void)
-} {
-}     int result;
-}     result = request_irq (SIU_IRQ7, my_handler,SA_INTERRUPT,
-} 		"cxeHandler",NULL);
-}     if ( result )
-}         printk("Interrupt not assigned");
-}     else
-}         printk("Interrupt  assigned");
-}     return 0;
-} }
-}
-} /* remove the module */
-} void cleanup_module(void)
-} {
-}     return;
-} }
-}
-} /Subodh Nijsure
-}
+Best Regards,
+Pei-Jie Hong
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
