@@ -1,34 +1,32 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Mon, 15 May 2000 11:08:34 +0100 (CED)
-Subject: CVS
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: host@linux01.hasler.ascom.ch
-Message-id: <0FUL00C4EG2IEL@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
+Message-ID: <391FE782.7BB93BA3@switchboard.ericsson.se>
+Date: Mon, 15 May 2000 14:03:14 +0200
+From: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
+MIME-Version: 1.0
+To: Coenraad Jacobsz <cjj@research.canon.com.au>
+CC: Linux PPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: SCC1 Serial on 855T
+References: <391FB289.D27AD998@research.canon.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+Hi All,
 
-I have a slightly off topic question: How do you control your Linux files?
+The SCC support is pretty limited in uart.c...
+So - no modem control, and receive works pretty bad.
 
-I tried to use CVS and wanted to keep all files stored in there. I imported
-directories containing complete Linux distributions....
+To get modem control to work as good as in serial.c you will
+need to hook interrupts on the status pins and do much more.
 
-I ran into problems with those files:
-- /dev/xxx
-- binary, executable files
+I am working on a new serial driver with support for modem control on SCCs.
+It's not finished yet, I'm busy with some other things right now.
+I've been able to control a modem with modem control at 115200 bps with SCC2.
 
-I need ideas, scripts
-- How to preserve the permissions for the /dev and executable files.
-  (The PRESERVEPERMISSIONS switch is too strong and complains
-    about 'hard linkage errors' when rebuilding binaries and committing
-    to the repo again!)
-- How to distinguish automatically between binaries and text files.
-  (Automatic control of the -kb switch!)
+I suggest you wait a while...
 
-Cheers,
-Ruedi Hofer
+Cheers /
+
+Magnus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
