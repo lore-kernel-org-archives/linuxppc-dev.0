@@ -1,33 +1,33 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Steven Hanley <sjh@wibble.net>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: kernel ftp ?
-Date: Mon, 16 Jul 2001 09:38:12 +0200
-Message-Id: <20010716073812.31069@smtp.wanadoo.fr>
-In-Reply-To: <20010716142208.A430@wibble.net>
-References: <20010716142208.A430@wibble.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Mon, 16 Jul 2001 16:38:20 +0200
+From: Jure Menart <jure@activetools.si>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Flash programming tools
+Message-ID: <20010716163820.A3572@foo.sys.si.tlan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->all the latet kerneles for ppc tend to also be available with rsync, install
->rsync and grab the kernels with something like
->
->benh rsync -avz --delete-after penguinppc.org::linux-2.4-benh .
->
->paulus rsync -avz --delete-after penguinppc.org::linux-pmac-
->{stable,devel,etc} .
+Hello all,
+I've got one 'off topic' question, but I assume that all of you had to that
+kind of problem...
+I'm wondering what kind of Jtag programmer should use for my custom made board
+with IBM 405gp power pc processor.Any experience in that field would help me,
+especially with home made JTags... I already tried with jtag from Motorola's
+homepage, but had some problems with it...
 
-Paul no longer maintains his own tree, his work is directly merged
-in either bk _2_4 or _2_4_devel now.
+So, does anyone know for any other open source, home made Flash programmers.
 
->bk rsync -avz --delete-after bitkeeper.fsmlabs.com::linuxppc_2_4 linuxppc_2_4
+Thank you in advance...
 
-The bk has moved, I beleive new access infos can be found at
-www.penguinppc.org
-
-Ben.
+--
+Ah, kakor pot je nase zivljenje,
+temna, zavita,                                             LP, Jure
+brez dalj -
+V prsi zabodeno hrepenenje,
+negativni total.
+--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
