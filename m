@@ -1,21 +1,27 @@
-Return-Path: <Martin.Krause@tqs.de>
-Received: from mail.tqs.de (mail.tqs.de [213.68.230.225])
-	by ozlabs.org (Postfix) with ESMTP id 92C062BF07
+Return-Path: <Alexander.Povolotsky@marconi.com>
+Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
+	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id F20412BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Dec 2004 04:20:25 +1100 (EST)
-Received: from tq-mailsrv-1.tq-net.de (tq-mailsrv-1 [172.20.1.1])
-	by mail.tqs.de (Postfix) with ESMTP id D59FA3C1C
+	Fri, 24 Dec 2004 04:24:13 +1100 (EST)
+Received: from mailman.pit.comms.marconi.com (mailman.pit.comms.marconi.com
+	[169.144.2.12])
+	by mailgate.pit.comms.marconi.com (8.12.10+Sun/8.12.10) with ESMTP id
+	iBNHO3Xm004456 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 23 Dec 2004 12:24:03 -0500 (EST)
+Received: from uspitsmsgrtr01.pit.comms.marconi.com
+	(uspitsmsgrtr01.pit.comms.marconi.com [169.144.2.221])
+	by mailman.pit.comms.marconi.com (8.9.3/8.9.3) with ESMTP id MAA07419
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 22 Dec 2004 18:20:14 +0100 (CET)
+	Thu, 23 Dec 2004 12:24:02 -0500 (EST)
+Message-ID: <313680C9A886D511A06000204840E1CF0A6473F8@whq-msgusr-02.pit.comms.marconi.com>
+From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
+To: linuxppc-embedded@ozlabs.org
+Date: Thu, 23 Dec 2004 12:24:00 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Date: Wed, 22 Dec 2004 18:20:14 +0100
-Message-ID: <DE2CC66C40EAB74EA6D66AC71BF98E1E03055B12@TQ-MAILSRV-1>
-From: "Martin Krause" <Martin.Krause@tqs.de>
-To: <achim.machura@berghof.com>
-Cc: "Linuxppc-Embedded \(E-Mail\)" <linuxppc-embedded@ozlabs.org>
-Subject: AW: BestCommApi on MPC5200
+Subject: 2.6.10-rc3 for 8xx  booting "load_kernel(...)" function problem v
+	s configuring and initializing serial console ?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,22 +32,91 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Achim,
+Hi,
 
-Achim Machura wrote on Mittwoch, 22. Dezember 2004 15:22:
-> I work on a 5200 board and want to enable an Bestcomm-task to copy
-> Data from PSC to a shared memory.
-> Have anyone an example for doing this?
+with
 
-There is a BestComm API user guide. Maybe this is helpful.
-You could find it in the linuxppc_2_4_devel linux source
-tree from denx CVS-Server (look at www.denx.de -> Software):
+CONFIG_CMDLINE_BOOL=y
+CONFIG_CMDLINE="console=ttyCPM0 panic=3 root=/dev/ram"
+...
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+CONFIG_SERIAL_NONSTANDARD=y
+# CONFIG_COMPUTONE is not set
+# CONFIG_ROCKETPORT is not set
+# CONFIG_CYCLADES is not set
+# CONFIG_DIGIEPCA is not set
+# CONFIG_DIGI is not set
+# CONFIG_MOXA_INTELLIO is not set
+# CONFIG_MOXA_SMARTIO is not set
+# CONFIG_SYNCLINKMP is not set
+# CONFIG_N_HDLC is not set
+# CONFIG_RISCOM8 is not set
+# CONFIG_SPECIALIX is not set
+# CONFIG_SX is not set
+# CONFIG_RIO is not set
+# CONFIG_STALDRV is not set
 
-linuxppc_2_4_devel\arch\ppc\5xxx_io\bestcomm\doc\BestCommAPIUserGuide.pdf=
+#
+# Serial drivers
+#
+# CONFIG_SERIAL_8250 is not set
 
+#
+# Non-8250 serial port support
+#
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+CONFIG_SERIAL_CPM=y
+CONFIG_SERIAL_CPM_CONSOLE=y
+CONFIG_SERIAL_CPM_SCC1=y
+CONFIG_SERIAL_CPM_SCC2=y
+# CONFIG_SERIAL_CPM_SCC3 is not set
+# CONFIG_SERIAL_CPM_SCC4 is not set
+# CONFIG_SERIAL_CPM_SMC1 is not set
+# CONFIG_SERIAL_CPM_SMC2 is not set
+CONFIG_UNIX98_PTYS=y
+CONFIG_LEGACY_PTYS=y
+CONFIG_LEGACY_PTY_COUNT=256in my .config file,
 
-If you want, I could send the document to you without CC to the
-linuxppc-embedded list (because it is about 120 kByte).
+ still somehow in 2.6.10-rc3 (for 8xx) the "load_kernel(...)" function in
+the 
+ ./arch/ppc/boot/simple/misc-embedded.c is not getting called during the
+ boot ? (I think ...) ... or serial is not getting initialiazed correctly
+within this function 
+ when "serial_init(...)" function is called within it ?...
 
-Regards,
-Martin
+ (no JTAG emulator debugging is available to me on this board ...)
+ 
+ **********On Linux 2.4.26 I used to see during the boot:*********
+ 
+ (M)odify any of this or (C)ontinue? [M] C
+ Updating parameter storage. This may take a while...
+ Done writing in Storage Area
+ Starting Application from bank 1
+ Done
+ 
+ ********(then from load_kernel() I would see)********** 
+ loaded at:     00180000 0035622C
+ board data at: 0035313C 0035317C
+ relocated to:  001852CC 0018530C
+ zimage at:     001857F9 00226057
+ initrd at:     00227000 00352ADF
+ avail ram:     00357000 02000000
+ 
+ Linux/PPC load: panic=3 root=/dev/ram
+ Uncompressing Linux...done.
+ initrd moved:  00400000 0052BADF
+ Now booting the kernel
+ Running from bank 1
+ Selecting default root device 1f04
+ Linux version 2.4.26 (apovolot@localhost.localdomain) (gcc version 3.4.1)
+#2
+ Fri  Dec 10 13:37:12 EST 2004
+ .....
+ 
+ On 2.6.10-rc3 nothing "happens" (and then it is just getting reexecuted)
+after I see:     Done
+ 
+ Any ideas ?
