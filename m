@@ -1,36 +1,54 @@
-MIME-Version: 1.0
-Subject: RE: Hangs after "Now Booting the kernel "
-Date: Thu, 31 Oct 2002 10:20:41 +0530
-Message-ID: <4223A04BF7D1B941A25246ADD0462FF5026B22@blr-m3-msg.wipro.com>
-From: "Prabhu Kubendran" <prabhu.kubendran@wipro.com>
-To: "Aman" <aman@mistralsoftware.com>,
-	"linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+To: Erik Christiansen <erik@dd.nec.com.au>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Assembler "Error: unsupported relocation against r0" 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 31 Oct 2002 14:39:59 +1100."
+             <20021031033959.GA1806@dd.nec.com.au>
+Date: Thu, 31 Oct 2002 09:19:24 +0100
+Message-Id: <20021031081929.86C1410158@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi Aman,
-	you may need to select a different processor type for your custom
-board. In make menuconfig, go to platform support, click on processor
-type, check if you have your processor option available on the list and
-select it.
+In message <20021031033959.GA1806@dd.nec.com.au> you wrote:
+>
+>    powerpc-linux-as, built according to Penguinppc.org's "Cross
+> Development mini-howto for PPC Linux", is giving me stick about the
+> simplest assembler statements:
+>
+> fred.s >>>
+>    .text
+>    .align 2
+>    li          r0,0
+>    addi        r0,0,0
+> <<<
+>
+> $ powerpc-linux-as fred.s
+> fred.s: Assembler messages:
+> fred.s:3: Error: unsupported relocation against r0
+> fred.s:4: Error: unsupported relocation against r0
 
-regard,
-prabu
+Try this instead:
 
+fred.s >>>
+	.text
+	.align 2
+	li	0,0
+	addi	0,0,0
+<<<
 
------Original Message-----
-From:	Aman [mailto:aman@mistralsoftware.com]
-Sent:	Thu 10/31/2002 2:05 AM
-To:	linuxppc embedded
-Subject:	Hangs after "Now Booting the kernel "
+or #include something like "ppc_asm.tmpl" (in the Linux  kernel  tree
+as arch/ppc/kernel/ppc_asm.tmpl)
 
-I have build a image using the command make zImage.initrd. This gives a
-linux image zImage.initrd.ebony[Ramdisk + Kernel Image]. This image run fine
-in the PPC440 evalkit. However the same image if I run in my custom board
-which has a 440GP processor, it hangs after saying "now booting the kernel".
-What might be the problem ?.
-I have one more question , is the TLB setting is reconfigured during linux
-image booting , if so is it possible to get the memory map of that.
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I paid too much for it, but its worth it.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
