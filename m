@@ -1,38 +1,38 @@
-Date: Thu, 27 Jul 2000 21:27:29 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: powerbook hang from post-sleep cdrom access - fix
-In-Reply-To: <20000727131240.11712@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.10.10007272123550.19106-100000@zirkon.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200007271931.UAA32685@hyperion.valhalla.net>
+Date: Thu, 27 Jul 2000 20:32:01 +0100
+Subject: pre10 ben2 9600/IMSTTFB (part2)
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >Aye. Can you be more specific about 'do whatever needs to be done'? Can I
-> >just send the disk a read command to wake it up? Send a reset
-> >command?? Will a reset command hurt if I always send a drive reset
-> >there?
->
-> I don't know yet ;) I have to look more closely at my ATA spec. It may
-> not be necessary to wakeup the disk in fact, the current code seems to be
-> ok for the hard disk once the timeout has been bumped.
+OK, it's a bit weird...
 
-Except that when the disk has been shut down with hdparm -Y, it needs a
-reset and that will only come after quite some number of retries ans
-timeouts. Not for the faint of heart :-)
+I'm trying to boot "single" now with no imsttfb option...
 
-Let me know when you have some code to test. I can test with CD-ROM and
-Zip in the media bay as well BTW. Are your current changes in Paul's
-stable tree or in the bk stable only? Six rsync trees is a bit much for me
-to manage :-)
+I have the new input layer selected in the compile (and the changes made in
+/dev)
 
-XFree86 related PCI resource diff follows separate.
+It doesn't work (i.e. I get a blank screen) with the no video option ticked
+either... until...
+I do sysrq-k at which point I get the init 5 stuff (and an X server with a
+login prompt)...
 
-	Michael
+So I can get in (and check that it is the kernel I thought I was trying) and
+also look at messages - which seems to reveal no log for the previous
+attempt (in spite of the fact that it seems to have made it to 'single' -
+because I could type 'reboot').
 
+No mouse working... although all the correct messages (for the new input
+layer) appear in dmesg....
+keyboard is OK.
+
+I've never had a problem booting "single"  with the OF display before...
+Ho Hum...
+
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
