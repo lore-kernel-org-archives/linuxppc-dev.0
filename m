@@ -1,41 +1,35 @@
-Message-Id: <200012081959.TAA30962@hyperion.valhalla.net>
-Date: Fri, 08 Dec 2000 19:34:47 +0000
-Subject: Re: AW: Sound on an iBook?
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: "D.J. Barrow" <barrow_dj@yahoo.com>,
-        "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
-CC: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        "Halfmann, Klaus" <khalfmann@libra.de>,
-        linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-ID: <3A316DDD.E1B5B28F@student.ethz.ch>
+Date: Sat, 09 Dec 2000 00:25:17 +0100
+From: Michel Dänzer <daenzerm@student.ethz.ch>
+MIME-Version: 1.0
+To: Leonhard Jaschke <jaschke@inf.ethz.ch>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: XF4.01 + r128 + 3D hardware accel?
+References: <3A2F811A.B54AC48D@inf.ethz.ch>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-D.J. Barrow wrote:
+Leonhard Jaschke wrote:
 
-> No I2C is as old as the hills, I2C is a philips serial
-> bus standard for talking to upto 256 devices on the
-> one two wire bus. It is pretty crappy simple & slow &
-> philips generally used it to talk to digital tuners on
-> radios.
+> Just wondered: Is there a 3D hardare accelleration in XF4.01 for
+> the Rage 128? If so, how can I make use of that feature?
 
-well, there are other versions faster and with bigger address ranges... but
-that wasn't my point.
+No.
 
-we are all quite familiar with i2c.
+I have been working on PPC support in a branch of the DRI CVS repository, but
+due to the lack of AGP or PCI GART support it's not really usable yet.
 
-the new thing here is the particular Apple hardware, registers etc. used to
-implement the bus interface... another set of stuff we may have to deduce
-the hard way.
-
-it's not the cuda - the iBook doesn't have a cuda - AFAIK.  (PMU, I expect).
-
-and... actually, I think the asics are more there to keep costs down... but
-each to his own ;-)
+This is hopefully going to change soon, the author of the driver intends to
+add PCI GART support. I'll post back here when it's ready.
 
 
-Iain.
+Michel
+
+
+--
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
