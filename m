@@ -1,28 +1,38 @@
-Date: Tue, 15 Oct 2002 09:57:31 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Cc: bart@ardistech.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 8xx i2c refers to unspecified chip errata
-Message-ID: <20021015165731.GG695@opus.bloom.county>
-References: <3DA682D8.AE9E968A@ardistech.com> <IGEFJKJNHJDCBKALBJLLMEAKFHAA.joakim.tjernlund@lumentis.se>
+Date: Tue, 15 Oct 2002 12:58:57 -0400
+From: Kurt Wall <kurt.wall@timesys.com>
+To: gguevel <gguevel@interfaceconcept.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problem with module installation under 2.4.x kernel
+Message-ID: <20021015125857.I1562@timesys.com>
+References: <000001c27467$6fd3cc00$3101a8c0@DOMAIN>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <IGEFJKJNHJDCBKALBJLLMEAKFHAA.joakim.tjernlund@lumentis.se>
+In-Reply-To: <000001c27467$6fd3cc00$3101a8c0@DOMAIN>; from gguevel@interfaceconcept.com on Tue, Oct 15, 2002 at 06:25:11PM +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Oct 11, 2002 at 11:12:02AM +0200, Joakim Tjernlund wrote:
-
-> OK, here it is.
+Speaking on condition of anonymity, gguevel told us:
 >
-> Perhaps someone can add it to the ppctree?
+> I worked under Linux 2.2.x Kernel and I have no problem with the module
+> generation.
+>
+> Now under Linux 2.4.x Kernel, I can compile modules and install them but
+> I have the following warning while running "insmod xxxx"
+> Warning: loading xxxx will taint the kernel: no license.
+>
+> Does anyone know what I must add to my module to avoid this warning ?
 
-If you can submit this as a patch vs what's in the i2c CVS tree or the
-ppctree, than yes, this can be committed there, and to the ppctrees.
+Putting
 
+MODULE_LICENSE("GPL");
+
+somewhere in the module source code should do nicely. Providing,
+of course, that you wish to GPL your module.
+
+Kurt
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Q:	What is the difference between Texas and yogurt?
+A:	Yogurt has culture.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
