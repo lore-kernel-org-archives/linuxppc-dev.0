@@ -1,33 +1,25 @@
-Message-Id: <200102060654.HAA00731@piglet.grunz.lu>
-Date: Tue, 6 Feb 2001 07:54:34 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: long delays in drivers.
-To: iain@sandoe.co.uk
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20010204031946.58FDD2F04E@apollo.valhalla.net>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Date: Tue, 06 Feb 2001 07:38:57 +0000
+Subject: Re: SOLVED: mesh SCSI bus locks hard on 7500 when burning a CD-R
+	 in
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Takashi Oe <toe@unlserve.unl.edu>,
+        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Cc: bob@kunk.jriver.com, linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010206073853.6DE76DBA0E@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   4 Feb, this message from Iain Sandoe echoed through cyberspace:
-> if I need to implement a long delay (say 1 second) in the initialisation of
-> a driver... what is the best mechanism to use to ensure that resources are
-> not wasted?
 
-Use a waitqueue. Relativly easy to implement....I can dig out an example
-at work, if you need it. Just let me know.
+> 7100.  G3 desktop comes with mesh.
 
-Michel
+I have 9600 with both MESH & 53C94 - both have devices - and my CD-RW is on
+that machine (not tried under linux yet).
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+So, time willing, I'm happy to test things.
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
