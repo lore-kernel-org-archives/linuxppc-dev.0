@@ -1,41 +1,46 @@
-Date: Tue, 4 Sep 2001 17:38:06 -0700 (PDT)
-From: John Tyner <jtyner@cs.ucr.edu>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: can't compile linuxppc_2_4_devel for 405gp
-Message-ID: <Pine.LNX.4.30.0109041733050.15177-100000@hill.cs.ucr.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 5 Sep 2001 11:04:51 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 4xx - a question and a patch
+Message-ID: <20010905110451.A599@zax>
+References: <20010830175217.H858@zax> <3B95307D.1BE64A98@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3B95307D.1BE64A98@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm trying to compile the kernel for some 405gp's we have here, and the
-make seems to fail at/near the last step.
+On Tue, Sep 04, 2001 at 03:50:21PM -0400, Dan Malek wrote:
+>
+> David Gibson wrote:
+> >
+> > First the question: is there a good reason that set_dec() is a no-op
+> > on 4xx, rather than setting the PIT?
+>
+> Yes.  The PIT is far from a perfect approximation of the decrementer.
+> When you "set the PIT" you actually set the reload register, not the
+> value that is decrementing.
 
-I'm using a working .config from our 2.4.6 version. The only changes I
-made to the new kernel were to change the Makefile to set ARCH = ppc and to
-point CROSS_COMPILE at our cross compiler which is hhl 2.0.
+The 405gp manual implies that an mtspr to the PIT writes both the
+decrementing value and the reload register.  Is this a hardware /
+documentation bug?  Could the PIT be used this way if auto-reload was
+disabled?
 
-Here is the last bit of the error:
+> > Second a patch - the below adds floating point emulation to the 4xx.
+>
+> Got it.  Thanks.  Since we now have libraries built specially for
+> processors without floating point, emulation isn't necessary.  Try
+> them out.
 
-/opt/hardhat/devkit/ppc/405/bin/ppc_405-objcopy -O elf32-powerpc -R
-.comment \
-	--add-section=image=../images/vmlinux.gz \
-	zvmlinux.tmp zvmlinux
-rm -f zvmlinux.tmp
-../utils/mktree zvmlinux ../images/zImage.treeboot
-zvmlinux is not an ELF image
-make[2]: *** [zImage-TREE] Error 4
-make[2]: Leaving directory `/local/home/jtyner/linuxppc_2_4_devel/arch/ppc/boot/simple'
-make[1]: *** [zImage] Error 2
-make[1]: Leaving directory `/local/home/jtyner/linuxppc_2_4_devel/arch/ppc/boot'
-make: *** [zImage] Error 2
-
-Any help is appreciated. Thanks.
+Sure, but it's still useful to be able to run binaries copied from
+"normal" PPC machines.
 
 --
-John Tyner
-jtyner@cs.ucr.edu
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
