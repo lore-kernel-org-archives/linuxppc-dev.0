@@ -1,31 +1,34 @@
-Date: Tue, 3 Oct 2000 19:23:04 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-cc: Olaf Hering <olh@suse.de>, Geert Uytterhoeven <geert@linux-m68k.org>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Patch: PCI resource fixup for atyfb (was: Re: xf 4.0.1 +
- atidriverwith rage II/rage pro)
-In-Reply-To: <39DA138F.EFC230F@relog.ch>
-Message-ID: <Pine.LNX.4.10.10010031920530.15957-100000@opal.biophys.uni-duesseldorf.de>
+Message-Id: <200010032004.WAA09422@piglet.grunz.lu>
+Date: Tue, 3 Oct 2000 22:04:33 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: l2cr function corrections for G4
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > > Looks like that special chip needs a little extra setup in the kernel
-> > > code?
-> >
-> > Nope, X doesn't handle 32 bit depth (I've looked at the ati driver for
-> > hours to no avail). The kernel driver has all necessary code to set up
-> > the engine for 32 bit depth (rgb weight 8888).
->
-> I'll say it again: 32 bpp is depth 24, 32 fbbpp in X 4 terms. No depth 32 yet.
+Hi Ben,
 
-That's what I meant to say. Sorry if it was prone to misunderstanding, my
-intention wasn't to bash X.
+Attached are two patches that fix handling of G4 processors in the
+_get/_set_L2CR() functions. Nothing fancy; basically just a branch that
+got lost.
 
-	Michael
+You might want to push this into both 2.2 and 2.4 trees asap...
+
+Cheers
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
