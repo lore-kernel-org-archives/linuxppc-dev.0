@@ -1,104 +1,77 @@
-Message-ID: <408E0DFE.9000302@siemens.com>
-Date: Tue, 27 Apr 2004 09:38:38 +0200
-From: Steffen Rumler <Steffen.Rumler@siemens.com>
+Date: Tue, 27 Apr 2004 11:51:02 +0400
+From: Sergey Urvanov <abs@dts.ru>
+Reply-To: Sergey Urvanov <abs@dts.ru>
+Message-ID: <1682990395.20040427115102@dts.ru>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ioperm
 MIME-Version: 1.0
-To: linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Debugging deadlocks using SV semaphores via PROC FS
-Content-Type: multipart/mixed;
- boundary="------------060706000701040404050100"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------060706000701040404050100
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi
+Anybody seen this error?
+I'm getting it while trying to compile  for a ppc405EP based board,
+using the ELDK 2.1 toolchain (ppc_4xx).
 
-Hi,
+I have a problem with next test code:
 
-I have extended the PROC FS entry in ipc/sem.c for the 2.4.20 DEVEL
-in order to debug deadlock problems; see attachment.
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <errno.h>
+#include <asm/io.h>
 
-For each semaphore array, now also all array elements: (last-pid, sem.-value)
-will be traced.
-
-In this way, I can easy answer the question:
-
-     "Which process is holding a distinct semaphore in a permanent way ?"
-
-An subsequent strace of the found process provides additional information.
+#define BASEPORT 0x378
 
 
+int main (int   argc,
+          char  *argv[])
+{
+        int kz=0;
+        if (ioperm(BASEPORT, 3, 1))
+         {
+                perror ("ioperm");
+                exit (1);
+         }
+        outb(0, BASEPORT);
+        printf ("status 1 %d\n", kz);
+        usleep (100000);
+        kz=inb(BASEPORT+1);
+        printf ("status 2 %d\n", kz);
+        if (ioperm(BASEPORT, 3, 0))
+         {
+                perror ("ioperm");
+                exit (1);
+         }
+        printf ("Stop \n");
+        return 0;
+}
 
-Steffen
 
---
+I try to make:
 
+/opt/eldk/usr/ppc-linux/bin/gcc -o -O2 test test.o
+/opt/eldk/usr/ppc-linux/bin/gcc -o test test.o
 
---------------------------------------------------------------
+And in the answer:
 
-Steffen Rumler
-ICN CP D NT SW 3
-Siemens AG
-Hofmannstr. 51                 Email: Steffen.Rumler@siemens.com
-D-81359 Munich                 Phone: +49 89 722-44061
-Germany                        Fax  : +49 89 722-36703
+test.o: In function `main':
+test.o(.text+0x2c): undefined reference to `ioperm'
+test.o(.text+0x2c): relocation truncated to fit: R_PPC_REL24 ioperm
+test.o(.text+0x54): undefined reference to `outb'
+test.o(.text+0x54): relocation truncated to fit: R_PPC_REL24 outb
+test.o(.text+0x78): undefined reference to `inb'
+test.o(.text+0x78): relocation truncated to fit: R_PPC_REL24 inb
+test.o(.text+0x98): undefined reference to `ioperm'
+test.o(.text+0x98): relocation truncated to fit: R_PPC_REL24 ioperm
+collect2: ld returned 1 exit status
 
---------------------------------------------------------------
+Any help would be appreciated.
 
-
-
-
-
---------------060706000701040404050100
-Content-Type: text/plain;
- name="sem.c"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="sem.c"
-
-c3RhdGljIGludCBzeXN2aXBjX3NlbV9yZWFkX3Byb2MoY2hhciAqYnVmZmVyLCBjaGFyICoq
-c3RhcnQsIG9mZl90IG9mZnNldCwgaW50IGxlbmd0aCwgaW50ICplb2YsIHZvaWQgKmRhdGEp
-CnsKCW9mZl90IHBvcyA9IDA7CglvZmZfdCBiZWdpbiA9IDA7CglpbnQgaSwgbGVuID0gMDsK
-ICAgICAgICBpbnQgajsKICAgICAgICBzdHJ1Y3Qgc2VtICpzZW1fYmFzZTsKCglsZW4gKz0g
-c3ByaW50ZihidWZmZXIsICIgICAgICAga2V5ICAgICAgc2VtaWQgcGVybXMgICAgICBuc2Vt
-cyAgIHVpZCAgIGdpZCAgY3VpZCAgY2dpZCAgICAgIG90aW1lICAgICAgY3RpbWVcbiIpOwoJ
-ZG93bigmc2VtX2lkcy5zZW0pOwoKCWZvcihpID0gMDsgaSA8PSBzZW1faWRzLm1heF9pZDsg
-aSsrKSB7CgkJc3RydWN0IHNlbV9hcnJheSAqc21hOwoJCXNtYSA9IHNlbV9sb2NrKGkpOwoJ
-CWlmKHNtYSkgewoJCQlsZW4gKz0gc3ByaW50ZihidWZmZXIgKyBsZW4sICJcbiUxMGQgJTEw
-ZCAgJTRvICUxMGx1ICU1dSAlNXUgJTV1ICU1dSAlMTBsdSAlMTBsdVxuIiwKCQkJCXNtYS0+
-c2VtX3Blcm0ua2V5LAoJCQkJc2VtX2J1aWxkaWQoaSxzbWEtPnNlbV9wZXJtLnNlcSksCgkJ
-CQlzbWEtPnNlbV9wZXJtLm1vZGUsCgkJCQlzbWEtPnNlbV9uc2VtcywKCQkJCXNtYS0+c2Vt
-X3Blcm0udWlkLAoJCQkJc21hLT5zZW1fcGVybS5naWQsCgkJCQlzbWEtPnNlbV9wZXJtLmN1
-aWQsCgkJCQlzbWEtPnNlbV9wZXJtLmNnaWQsCgkJCQlzbWEtPnNlbV9vdGltZSwKCQkJCXNt
-YS0+c2VtX2N0aW1lKTsKCgkJCXBvcyArPSBsZW47CgkJCWlmKHBvcyA8IG9mZnNldCkgewoJ
-CQkJbGVuID0gMDsKCSAgICAJCQliZWdpbiA9IHBvczsKCQkJfQoJCQlpZihwb3MgPiBvZmZz
-ZXQgKyBsZW5ndGgpewogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHNlbV91bmxv
-Y2soaSk7CgkJCQlnb3RvIGRvbmU7CiAgICAgICAgICAgICAgICAgICAgICAgIH0KCiAgICAg
-ICAgICAgICAgICAgICAgICAgIC8qICBTLlIuOiAgcHJpbnQtb3V0IChwaWQsIHZhbCkgcGFp
-cnMgZm9yIHNlbWFwaG9yZSBhcnJheQogICAgICAgICAgICAgICAgICAgICAgICAgKi8KICAg
-ICAgICAgICAgICAgICAgICAgICAgc2VtX2Jhc2UgPSBzbWEtPnNlbV9iYXNlOwogICAgICAg
-ICAgICAgICAgICAgICAgICBmb3Ioaj0wOyBqIDwgc21hLT5zZW1fbnNlbXM7IGorKyl7Cgog
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgbGVuICs9IHNwcmludGYoYnVmZmVyICsgbGVu
-LCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICIgICAgICAg
-ICAgICAgICAlbGQgKHBpZCkgICVsZCAodmFsKVxuIiwgCiAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAoc2VtX2Jhc2UtPnNlbXBpZCkgJiAweGZmZmYsIAog
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc2VtX2Jhc2UtPnNl
-bXZhbCk7CgogICAgICAgICAgICAgICAgICAgICAgICAgICAgcG9zICs9IGxlbjsKICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgIGlmKHBvcyA8IG9mZnNldCkgewogICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgIGxlbiA9IDA7CiAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgYmVnaW4gPSBwb3M7CiAgICAgICAgICAgICAgICAgICAgICAgICAgICB9CiAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICBpZihwb3MgPiBvZmZzZXQgKyBsZW5ndGgpewogICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgIHNlbV91bmxvY2soaSk7CiAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgZ290byBkb25lOwogICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgfQoKICAgICAgICAgICAgICAgICAgICAgICAgICAgIHNlbV9iYXNlKys7CiAgICAg
-ICAgICAgICAgICAgICAgICAgIH0gCiAgICAgICAgICAgICAgICAgICAgICAgIHNlbV91bmxv
-Y2soaSk7CgkJfQoJfQoJKmVvZiA9IDE7CmRvbmU6Cgl1cCgmc2VtX2lkcy5zZW0pOwoJKnN0
-YXJ0ID0gYnVmZmVyICsgKG9mZnNldCAtIGJlZ2luKTsKCWxlbiAtPSAob2Zmc2V0IC0gYmVn
-aW4pOwoJaWYobGVuID4gbGVuZ3RoKQoJCWxlbiA9IGxlbmd0aDsKCWlmKGxlbiA8IDApCgkJ
-bGVuID0gMDsKCXJldHVybiBsZW47Cn0K
---------------060706000701040404050100--
+Thanx and regards
+Sergey Urvanov
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
