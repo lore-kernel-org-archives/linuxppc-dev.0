@@ -1,43 +1,46 @@
-Message-ID: <20040319173859.61444.qmail@web21113.mail.yahoo.com>
-Date: Fri, 19 Mar 2004 09:38:59 -0800 (PST)
-From: Lou Rickard <lou_rickard@yahoo.com>
-Subject: Re: coffboot?
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: dan@embeddededge.com
-In-Reply-To: <405B09D7.2010307@embeddededge.com>
+From: =?iso-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC8260 HDLC RX length errors
+Date: Fri, 19 Mar 2004 19:32:50 +0100
+Message-ID: <000c01c40de0$99954af0$5201a8c0@GEG2400>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <000101c3aaae$e61e4240$5201a8c0@GEG2400>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yeah, the Bright Star Engineering IP-Engine.
+Hi,
 
-When I build the kernel from the bse development kit,
-which has the 2.2 kernel, I see that a zImage file
-(well, zImage is a sym. link to another file called
-zvmlinux) gets built in the boot directory, and so
-does zImage.gz in the coffboot directory.
+I work on a custom 8260 board and a 2.4.18 Kernel
+with an HDLC driver on SCCs ports.
 
-The version in the coffboot directory works (when
-built into the ramdisk image) works, the other one
-(using the real file, not the symbolic link) doesn't.
+I want to limit the frame length to 1501,
+so I use the mflr register :
 
-When I build the kernel from my 2.4 directory, I end
-up with a zImage.gz in the boot/images directory, but
-it doesn't work.
+volatile scc_hdlc_t *hp     = (scc_hdlc_t *)chan->mem_start;
+...
+/* set the MTU */
+hp->mflr = chan->conf.hdlc_hdl_conf.hdlc_mtu;
+...
 
-I'm guessing there's something I've got to do to
-convert the zImage.gz in my 2.4 boot/images directory
-to coffboot format, but I don't know what that is, and
-can't see how they do it in the bse dev kit.
+The driver works fine with all frames lower than 1501.
 
-~lr
+When the CPM receives a frame of 1502 characters, it
+closes the buffer descriptor with a BD_HDLC_RX_LG error.
+That's right but all the following frames with a right
+length (< 1501) are rejected with the same BD_HDLC_RX_LG error.
 
---- Dan Malek <dan@embeddededge.com> wrote:
-> You mean the Bright Star Engineering IP-Engine?  Or
-> is
-> this something else with the same name?
+The BD flags are correctly erased after each error
+and new buffers are provided to the CPM.
+
+The problem is not bound to the frame rate.
+
+Any idea
+
+Thanks
+Gérard Guével
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
