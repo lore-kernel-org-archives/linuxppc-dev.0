@@ -1,100 +1,60 @@
-Message-Id: <sc84a63e.016@gw_tms_syd2.pty.tms.thomson-csf.com>
-Date: Tue, 05 Mar 2002 11:04:11 +1100
-From: "Jeremy Rosen" <Jeremy.Rosen@au.thalesgroup.com>
-To: "Jeremy Rosen" <Jeremy.Rosen@au.thalesgroup.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: [PATCH] use of /proc/iomem in 8xx boards
+Date: Mon, 4 Mar 2002 19:53:28 -0800
+From: andrew may <acmay@acmay.homeip.net>
+To: Armin <akuster@pacbell.net>
+Cc: andrew may <acmay@acmay.homeip.net>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] ocp enet
+Message-ID: <20020304195328.B15551@ecam.san.rr.com>
+References: <Pine.LNX.4.30.0202271525500.15001-200000@hill.cs.ucr.edu> <3C7D0AB9.5070801@pacbell.net> <20020304131703.A15551@ecam.san.rr.com> <3C838533.6050603@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=_4518F09E.C3A2CA9D"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3C838533.6050603@pacbell.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a MIME message. If you are reading this text, you may want to
-consider changing to a mail reader or gateway that understands how to
-properly handle MIME multipart messages.
+On Mon, Mar 04, 2002 at 02:31:15PM +0000, Armin wrote:
+> andrew may wrote:
+> > On Wed, Feb 27, 2002 at 04:35:05PM +0000, Armin wrote:
+> >
+> >>Thanks,
+> >>
+> >>I want to try in on a few boards I have before it goes in.
+> >>
+> >>--armin
+> >>
+> >
+> > Have you gotten a chance to try it yet? The testing I have
+> > done has not shown any problems and I have been able to test
+> > just about all of the cases. Boards with/without the correct
+> > pull-ups. Remove the correct phy-id from the table. Booting
+> > without a link.
+> >
+> > Here is another patch that for the driver. It removes some
+> > cut and paste code from the rx interupts and breaks the work
+> > into rx_clean and rx_fill functions. rx_fill is also called from
+> > open.
+> >
+>
+>
+> Yes I have.
+>
+> I added history info and sent it to Tom to check in.
 
---=_4518F09E.C3A2CA9D
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+Thanks
+>
+> I will look into this patch and will try it after Tom gets done.
 
-ooops, forgot the patch
+Well I just noticed that building as a module is pretty far from
+working at the moment. Are there any plans to fix this? I am not
+sure how to cleanly get this working since there are all sorts of
+exports/externs that need to be fixed up. The tulip driver should
+be a good example, but it is broken off into it's own dir and I
+don't know if we want to do this for the ocp_enet as well.
 
->>> "Jeremy Rosen" <Jeremy.Rosen@au.thalesgroup.com> 03/05/02 10:59am
->>>
+I can resend with a .h change and config.in change to pull the
+skb_res value out as a build option, but I want to see if anyone
+has any other comments before hand.
 
-Here is a patch to have the memory map displayed in /proc/iomem.
-it was mainly adapted from arch/ppc/i386/kernel/setup.c
-
-I have tested it with my board ( FADS with an 860T ) but I didn't test
-for other board.
-This also mean that the names for the IO regions of other board were
-my
-best guess :-)
-
-Thx
-
-Jeremy
-
-
-
---=_4518F09E.C3A2CA9D
-Content-Type: text/plain
-Content-Disposition: attachment; filename="iomem.patch"
-
---- oldlinux/arch/ppc/kernel/m8xx_setup.c	Mon Jan  7 09:41:16 2002
-+++ linux/arch/ppc/kernel/m8xx_setup.c	Tue Mar  5 11:52:26 2002
-@@ -47,6 +47,8 @@
- #include <asm/time.h>
- #include "ppc8xx_pic.h"
-
-+#include <linux/ioport.h>
-+
- static int m8xx_set_rtc_time(unsigned long time);
- static unsigned long m8xx_get_rtc_time(void);
- void m8xx_calibrate_decr(void);
-@@ -315,9 +328,40 @@
-  * All of this fits into the same 4Mbyte region, so it only
-  * requires one page table page.  (or at least it used to  -- paulus)
-  */
-+struct resource standard_io_resources[] = {
-+	{ "IMAP", IMAP_ADDR, IMAP_ADDR + IMAP_SIZE -1, IORESOURCE_BUSY },
-+#ifdef CONFIG_MBX
-+	{ "NVRAM", NVRAM_ADDR, NVRAM_ADDR + NVRAM_SIZE -1, IORESOURCE_BUSY },
-+	{ "MBX CSR", MBX_CSR_ADDR, MBX_CSR_ADDR + MBX_CSR_SIZE -1, IORESOURCE_BUSY },
-+	{ "PCI CSR", PCI_CSR_ADDR, PCI_CSR_ADDR + PCI_CSR_SIZE -1, IORESOURCE_BUSY },
-+	{ "PCI ISA IO", PCI_ISA_IO_ADDR, PCI_ISA_IO_ADDR + 0x4000 -1, IORESOURCE_BUSY },
-+	{ "PCI IDE Address", PCI_IDE_ADDR, PCI_IDE_ADDR + 0x4000 -1, IORESOURCE_BUSY },
-+#endif
-+#if defined(CONFIG_RPXLITE) || defined(CONFIG_RPXCLASSIC)
-+	{ "RPX CSR", RPX_CSR_ADDR, RPX_CSR_ADDR + RPX_CSR_SIZE -1, IORESOURCE_BUSY },
-+#if !defined(CONFIG_PCI)
-+	{ "IO map", _IO_BASE, _IO_BASE + _IO_BASE_SIZE -1, IORESOURCE_BUSY },
-+#endif
-+#endif
-+#ifdef CONFIG_HTDMSOUND
-+	{ "HTDM CSR", HIOX_CSR_ADDR, HIOX_CSR_ADDR + HIOX_CSR_SIZE -1, IORESOURCE_BUSY },
-+#endif
-+#ifdef CONFIG_FADS
-+	{ "FADS BCSR", BCSR_ADDR, BCSR_ADDR + BCSR_SIZE -1, IORESOURCE_BUSY },
-+#endif
-+#ifdef CONFIG_PCI
-+	{ "PCI CSR", PCI_CSR_ADDR, PCI_CSR_ADDR + PCI_CSR_SIZE -1, IORESOURCE_BUSY }
-+#endif
-+};
-+#define STANDARD_IO_RESOURCES (sizeof(standard_io_resources)/sizeof(struct resource))
-+
- static void __init
- m8xx_map_io(void)
- {
-+
-+	int i;
-+	for (i = 0; i < STANDARD_IO_RESOURCES; i++)
-+		request_resource(&iomem_resource, standard_io_resources+i);
-         io_block_mapping(IMAP_ADDR, IMAP_ADDR, IMAP_SIZE, _PAGE_IO);
- #ifdef CONFIG_MBX
-         io_block_mapping(NVRAM_ADDR, NVRAM_ADDR, NVRAM_SIZE, _PAGE_IO);
-
---=_4518F09E.C3A2CA9D--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
