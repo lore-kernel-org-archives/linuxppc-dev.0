@@ -1,9 +1,9 @@
-Message-ID: <001101c2e18f$4791b6e0$0700a8c0@pc005>
-Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-Subject: "printk" does not print 
-Date: Mon, 3 Mar 2003 15:15:00 +0100
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C06CF@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Donald MacArthur'" <dmacarth@ufl.edu>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: SCC3 UART for MPC850
+Date: Mon, 3 Mar 2003 09:16:44 -0500 
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,22 +11,27 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi to all,
+Are you sure that particular variant of the 850 processor has an SCC3?
 
-I'm trying to trace the execution path of a custom ISDN driver, and I have
-used some printk() instructions to give some messages out.
+-----Original Message-----
+From: Donald MacArthur [mailto:dmacarth@ufl.edu]
+Sent: Monday, March 03, 2003 8:53 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: SCC3 UART for MPC850
 
-Now, everything is going well, but when I try to open the ttyI0 device (or
-ttyIx it is the same) the printk() that I have placed into the file
-isdn_tty.c does not print any messages. I am sure that such procedure has
-been executed because I have placed a breakpoint on the "isdn_tty_open()"
-and the program stopped.
 
-Anybody has an idea what happens?
 
-many thanks
+I am currently working with an embedded planet LICCE MPC850 Credit card
+board with the associated MPC860 Timesys Linux Kernel.  I would like to use
+as many SCC and SMC channels for UARTs as possible.  I have successfully
+enabled SMC1, SMC2, and SCC2 for UART but SCC3 does not work.  Normally for
+the UART channels the TX lines go high when the kernel boots but the SCC3 Tx
+channel does not.  Does anyone know of modifications required for the kernel
+to get SCC3 to work as a UART or were possible conflicts might arise?
 
-Gianfranco
+Thank You
+Don MacArthur
+dmacarth@ufl.edu
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
