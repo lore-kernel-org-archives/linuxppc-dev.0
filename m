@@ -1,37 +1,33 @@
-Subject: Linux 2.6 and MVME5100
-From: Jean-Christophe Dubois <jcd@tribudubois.net>
-To: linuxppc-embedded@lists.linuxppc.org
-Content-Type: text/plain
-Message-Id: <1085837483.3434.31.camel@lancelot.dubois.etowns.net>
-Mime-Version: 1.0
-Date: Sat, 29 May 2004 15:31:23 +0200
+Message-ID: <40B8EECF.7050503@246tNt.com>
+Date: Sat, 29 May 2004 22:13:03 +0200
+From: Sylvain Munaut <tnt@246tnt.com>
+MIME-Version: 1.0
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Making a "paged" sram aread appear as linear.
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+
 Hi,
 
-I recently downloaded Linux 2.6.6 from kernel.org and found that the
-support for the MVME5100 was added to the 2.6 kernel.
+Let's say I have a device on the SRAM bus that an internal RAM of
+8Mbyte. It's connected to the MCU on it's SRAM bus. But on the SRAM
+bus, It only has two window of 64k. One is all the control registers
+and the other can be mapped to any 64k segment of the device internal RAM.
 
-Unfortunately it seems that the mvme5100 related files are out of sync
-with the 2.6 tree (the compilation fails with prototype errors, unknown
-header files ...). Actually it seems that no or little porting has been
-done since Monta-Vista contributed them from their Linux 2.4 kernel.
+Now, I'd like that a user space process can mmap / open / read / write
+this aread as if it was linear. So what I thinked of was to allocate a
+contiguous area of 8Mb, then only really map the current active 64k
+area and then set a "handler" to catch access to the others area so it
+can set the active page. The problem is that I have no idea if that's
+possible, or how to do it.
 
-I am in the process of fixing things so that I can compile 2.6 for the
-VME board but before going too far, I'd like to know if this is a known
-problem, if others already compiled 2.6 successfully for the MVME5100
-(If so please a brief explanation would be appreciated) and if there is
-a person responsible for consolidating all changes related to the
-MVME5100.
+Any advice, pointers ?
 
-Thanks for your time
 
-JC
-
---
-Jean-Christophe Dubois <jcd@tribudubois.net>
+Sylvain Munaut
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
