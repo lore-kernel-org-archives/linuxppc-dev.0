@@ -1,31 +1,37 @@
-Date: Mon, 20 Mar 2000 23:04:49 -0600
-From: anthony tong <atong@uiuc.edu>
-To: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Cc: Kostas Gewrgiou <gewrgiou@imbc.gr>,
-        Benjamin Herrenschmidt <bh40@calva.net>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Patches to fix aty128fb and xf400 r128 to work with both Rage128 and Rage128Pros
-Message-ID: <20000320230448.A30849@rogue.genunix.net>
-References: <Pine.LNX.4.21.0003151544550.3091-100000@idd-01.imbc.gr> <00032021464800.00801@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <00032021464800.00801@localhost.localdomain>; from khendricks@ivey.uwo.ca on Mon, Mar 20, 2000 at 09:48:30PM -0500
+Date: Tue, 21 Mar 2000 00:23:48 -0800 (PST)
+From: Matt Brubeck <mbrubeck@hmc.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: aty128fb patch on iMac DV
+Message-ID: <Pine.GSO.4.21.0003202326590.17973-100000@turing.cs.hmc.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kevin Hendricks (Mon, Mar 20, 2000 at 09:48:30PM -0500):
-> Assuming they test out fine, Kostas would you see about getting the r128 patch
-> integrated into the next xf40X release while I see about getting Paul and/or
-> Anthony to integrate the aty128fb.c patch into both the stable and development
-> kernels.
->
-> Hopefully with these in place, new G4s will work as well as older G4s
-> and G3s.
+I'm running linux-pmac-stable on my iMac 350. The aty128 framebuffer on
+this machine has had similar problems to the new G4s, though it doesn't
+have a Rage Pro card. Specifically, video appears in several frames and at
+odd colors for any color depth above 8-bit. In 8-bit mode video appears
+fine except that the entire screen is shifted down exactly one pixel,
+about halfway across the screen.
 
-Looks good and works fine here..
+The offb driver works fine on this machine, but will not switch to any
+color depth other than 8.
 
-Thanks for the hard work, Kevin!
--at
+I applied Kevin Hendricks' latest rage128.patch, and aty128fb now works
+perfectly in 8-bit color. It still fails as before in 15/16, 24, and
+32-bit modes. I get the following message when I do "fbset -depth 16":
+
+fbcon_setup: No support for fontwidth 8
+fbcon_setup: type 0 (aux 0, depth 16) not supported
+
+So the patch was an improvement, but there are still problems. I don't
+know anything about video drivers, but am willing to help test out any
+changes, or muck around with the driver myself if someone will give me a
+few pointers or a place to start.
+
+Matt Brubeck
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
