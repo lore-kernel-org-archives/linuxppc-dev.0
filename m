@@ -1,35 +1,48 @@
-Date: 31 Aug 2000 17:41:14 -0500 
-Subject: Re: asm in OF? YES!
-From: "Bruce Anderson" <brucea@spacestar.net>
-To: "Gabriel Paubert" <paubert@iram.es>
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <39AF028E.1C024B66@wanadoo.fr>
+Date: Fri, 01 Sep 2000 03:12:46 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Message-Id: <B5D4493E-53821@192.168.2.21>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4 problems
+References: <39AEC1C7.E0894CFB@wanadoo.fr> <20000831214724.8428@192.168.1.10>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Aug 31, 2000 2:52 AM, Gabriel Paubert <mailto:paubert@iram.es>
-wrote:
+Benjamin Herrenschmidt wrote:
 >
->You've just got to love OF portability across machines and architecture
->independance :-( Add to this the fact that I have somewhere a FirmWorks
->document which claims that on PPC the top of the stack is always in r28,
->r20/r21 are scratch registers. r31 is still the stack pointer (and r30 the
->return stack AFAIR).
+> >On my 6400, both bk-test8 and pmac-devel-test7 are running nicely. The
+> >one major problem is random sudden freezes that can happen after some
+> >minutes or after 3 days and which have been reported a couple of times
+> >by others, too. It is like the ADB interrupt dies. There are no
+> >messages, the computer is still alive, it goes on compiling or
+> >downloading, and today I even could ssh in over the net, but locally,
+> >keyboard and mouse are dead, even MagicSysRq, the only working key combo
+> >is ctrl-cmd-power :-(
+> >
+> >I never saw this with 2.2.X kernels (not recently, in any case).
 >
->
+> Interesting. Do you have the new input layer enabled or are you still
+> running the old keyboard and mouse drivers ?
 
-Your asumption about OF portability is in error. Apple does not
-use FirmWorks OF code.  Apple created their own "OF" version that
-resembles FirmWorks OF vocabulary.
+I am now running the new input layer (with old keycodes). But I saw
+(rather, suffered from) these freezes already before the arrival of the
+new input layer. For a while I blamed it on Xpmac, where I seem to
+remember having had these even with 2.2.x kernels, but I am using now
+XFree-4.0.1-fbdev.
 
+>                                              If you telnet to the box, do
+> you still see ADB interrupts increasing when typing keys or not ?
 
+You mean when I type on the local "dead" keyboard? I couldn't test this
+yet, because the machine from which I sshed in was 15 km away at work.
+And after a while I had the bad idea to type "hwclock -r", upon which
+the 6400 was really dead, so I could not test it any further. While I
+observed it, the ADB interrupt did not increase.
 
-" Stamp out root logins .  .  .  . su "   --Bruce Anderson
- This message was created and sent using Cyberdog 2.0, MacOS 8.6,
- awk, find, sed, sendmail, sh, and NetBSD a free Multi-Platform OS.
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
