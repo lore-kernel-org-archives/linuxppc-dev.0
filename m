@@ -1,44 +1,37 @@
-Date: Thu, 12 Aug 1999 14:52:24 +1000
-Message-Id: <199908120452.OAA30014@tango.anu.edu.au>
+Date: Thu, 12 Aug 1999 15:00:46 +1000
+Message-Id: <199908120500.PAA30022@tango.anu.edu.au>
 From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: weasel@cs.stanford.edu
-CC: linuxppc-dev@lists.linuxppc.org, rth@cygnus.com
-In-reply-to: <v04210106b3d7d41042e2@[209.239.164.148]> (message from Peter
-	Chang on Wed, 11 Aug 1999 18:39:11 -0700)
+To: rth@cygnus.com
+CC: Jes.Sorensen@cern.ch, Geert.Uytterhoeven@cs.kuleuven.ac.be,
+        linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu
+In-reply-to: <19990811214049.A14692@cygnus.com> (message from Richard
+	Henderson on Wed, 11 Aug 1999 21:40:49 -0700)
 Subject: Re: [linux-fbdev] Re: readl() and friends and eieio on PPC
 Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: 
- <Pine.LNX.4.10.9908091008460.25523-100000@mercator.cs.kuleuven.ac.be>
- <199908100100.LAA28784@tango.anu.edu.au> <d34si8xfwi.fsf@lxp03.cern.ch>
- <199908110023.KAA23996@tango.anu.edu.au> <d34si6kcge.fsf@lxp03.cern.ch>
- <19990811003805.A11890@cygnus.com>
- <199908120013.KAA25039@tango.anu.edu.au> <v04210106b3d7d41042e2@[209.239.164.148]>
+References: <Pine.LNX.4.10.9908091008460.25523-100000@mercator.cs.kuleuven.ac.be> <199908100100.LAA28784@tango.anu.edu.au> <d34si8xfwi.fsf@lxp03.cern.ch> <199908110023.KAA23996@tango.anu.edu.au> <d34si6kcge.fsf@lxp03.cern.ch> <19990811003805.A11890@cygnus.com> <199908120017.KAA25043@tango.anu.edu.au> <19990811214049.A14692@cygnus.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Peter Chang <weasel@cs.stanford.edu> wrote:
+Richard Henderson <rth@cygnus.com> wrote:
 
-> When I did glide for the mac it definitely helped not do do an eieio 
-> after every pci write. The current generations of 3dfx hw use a sw 
-> managed fifo, and an eieio was only necessary when the sw layer 
-> needed to do do things to insert a 'barrier' in the fifo for later 
-> accounting.
+> But it isn't zero cost.  It's not high cost, but that's not the same
+> thing.
 
-Interesting.  What was the magnitude of the effect?  Are we talking
-about 1%, 10%, or 100% faster?
+Show us the numbers?
 
-This would have been from user level, right?  Driving a 3D card
-through a kernel device driver would seem to be a bit painful.
+I'm starting to sound like Larry McVoy, I know. :-)
 
-Would it have been possible to use double-precision floating loads and
-stores to transfer 8 bytes at a time?  That can double the available
-bandwidth to PCI devices under some conditions.
+The measurements I did showed no measurable difference in performance
+for copying stuff around a framebuffer on PPC (Richard, I guess you
+may not have seen that post).  As far as PPC is concerned, I am
+unwilling to break drivers for the sake of an infinitesimal
+performance gain.  I don't believe the frame-buffer guys will actually
+see any measurable improvement in performance from taking out the
+eieio from readl/writel on PPC.
 
-Thinking about it, it seems to me that if your device needs to be fed
-so fast that the eieio makes a difference, you *should* be feeding it
-from user level rather than the kernel anyway, so then the behaviour
-of readl/writel is irrelevant.
+Of course, it may be different on alpha, and I would be very
+interested to know how big the effect is there.
 
 Paul.
 
