@@ -1,32 +1,55 @@
-Date: Tue, 30 Nov 1999 01:04:10 -0600 (CST)
-From: Grant Erickson <erick205@tc.umn.edu>
-To: linuxppc-dev@lists.linuxppc.org
-cc: "Steven J. Hill" <sjhill@plutonium.net>
-Subject: Re: Building PPC cross compiling environment...
-In-Reply-To: <199911300559.XAA26048@lists.linuxppc.org>
-Message-Id: <Pine.SOL.4.20.9911300058260.3527-100000@garnet.tc.umn.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <4.2.2.19991130110534.00b563b0@mail.lauterbach.com>
+Date: Tue, 30 Nov 1999 11:58:19 +0100
+To: Jason Kim <jwk2@EECS.Lehigh.EDU>
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Subject: Re: patch for problem with va-ppc.h included with egcs and
+  gcc-2.95.2
+Cc: linuxppc-dev@lists.linuxppc.org, gcc-patches@gcc.gnu.org
+In-Reply-To: <38436801.81D6CE60@eecs.lehigh.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 29 Nov 1999, Steven Hill <sjhill@plutonium.net> wrote:
-> I am attempting to build a cross compiling environment for PPC under
-> my RH 6.1 Linux system. I am new at this, however, I looked through
-> the mailing list archives, DejaNews, and a few other FAQs and was
-> unable to find anything on this. This my first attempt at this, I
-> beg for your patience. Please reply to me personally as I am not
-> subscribed to the list currently. Thanks.
+At 07:00 30.11.99 , Jason Kim wrote:
+>Agreed, ssh2 code isn't necessarily the cleanest in the world, but then again
+>the varargs situation in PPC world is a bit peculiar.
+>
+>
+>typedef struct A {
+>   char foo;
+>   char *bar;
+>} B[1], C[1];
+>
+>typedef C D;
+>
+>
+>void tst(D d1)
+>{
+>   D d2;
+>   d1 = d2; // this is legal
+>   // d2 = d1; // this is not
+>}
+>
+>declaring arrays of fixed size seems a bit strange for a type which will 
+>be used
+>by user code, since it makes d1 and d2 be different types sometimes. Not to
+>mention, having struct _va_list_tag  AS va_list seem to fix the problems 
+>neatly.
+>
+>Is there a technical reason for keeping va_list as an array of 1 element?
+>(instead of just a single element??)
 
-Complete instructions can be found at:
+1. this behaviour is mandated by the ABI
+2. it nicely spots a common programming error
 
-	http://www.lcse.umn.edu/~grant/Linux/cross.html
+I see nothing peculiar about it :-).
 
-It's written for a cross-compiler on SPARC Solaris 2.7, but just plug in
-your host system where necessary and things should* work fine.
+BTW, it would be nice if you could fix your spam filter, my last message 
+was rejected, even though there was no faked IP in it.
 
-Grant
+Franz.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
