@@ -1,20 +1,30 @@
-Message-ID: <19990902041315.5379.qmail@nwcst268.netaddress.usa.net>
-Date: 1 Sep 99 23:13:15 CDT
-From: jeramy b smith <ultrapenguin@netscape.net>
-To: Alan Wang <wung_y@263.net>,
-        linuxppc mail list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [memory protection without MMU]
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 2 Sep 1999 13:02:02 -0400 (EDT)
+From: Gabe Ricard <gabe@admin.arhs.net>
+To: linuxppc-user@lists.linuxppc.org
+cc: linuxppc-workstation@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Really Slow Video
+Message-ID: <Pine.LNX.4.10.9909021255350.22779-100000@admin.arps.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Alan Wang" <wung_y@263.net> wrote:
-is momery protection possible? 
+I've got a UMAX S900DP Dual 250MHz system with an IMS Twin Turbo 8MB video
+card. I installed LinuxPPC on it some time ago and I've been getting
+really annoyed at how slow the video performance is in X. I've done a
+little investigation and it turns out that it's using some kind of OF
+frame buffer support for the card. Is there no direct support for this
+card in the kernels? Is this what is causing X to be so slow? I also
+noticed that it won't let me run in any mode other than 32bpp, which for
+me is totally unnecessary and unneeded. My monitor is an older SuperMac
+19" fixed rate monitor (1152 x 875 or something).
 
-Possible through software, but not very feasible. People have gone thru hell
-to do it on the 286, 68000, and the MMU-less processors in PDAs.
+Anyway I can make X Windows faster?
+
+--
+Gabe Ricard
+gabe@admin.arps.org
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
