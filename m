@@ -1,28 +1,44 @@
-Message-Id: <4.2.0.56.19990621150313.0368d840@mail.lauterbach.com>
-Date: Mon, 21 Jun 1999 15:05:49 +0200
-To: Eric Ding <ericding@applix.com>
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: ld bug with -Bsymbolic --noinhibit-exec
-  (2.9.1.0.990418-1c)
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <4.2.0.56.19990621112016.009bd720@mail.lauterbach.com>
-References: <199906181954.PAA01284@tuxedo.applix.com>
- <Message from Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
- <99061723274300.01016@ns1102.munich.netsurf.de>
+From: kd@flaga.is
+To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <00256797.004D1A24.00@notes.flaga.is>
+Date: Mon, 21 Jun 1999 14:02:09 +0000
+Subject: MPC8xx Interrupt vectors
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hello,
 
->Ok, the LD_RUN_PATH should be fixed now with:
->
->ftp://dev.linuxppc.org/users/fsirl/R5/RPMS/ppc/binutils-2.9.4.0.6-1a.ppc.rpm
+Two problems:
 
-Damned, I forgot a patch, please use the 1b version.
+1) When I make an application do a page_fault (segmentation fault) the
+kernel crasses insted of just the application crassing.
+Needless to say I do not have an secondary storage or an swap device, but I
+am running rootfs from /dev/nfs. System has
+only 4MB of ram.
+2)When the system crasses it goes into the "Rebootting in 180 s" prompt,
+but fails to reboot, i.e. it goes into endless loop, like:
+Rebooting in 180 seconds..<0>Kernel panic: Kernel Mode Software FPU
+Emulation
+Rebooting in 180 seconds..<0>Kernel panic: Kernel Mode Software FPU
+Emulation
+Rebooting in 180 seconds..
 
-Franz.
+In the reset vector there are probably some corrupted data that looks like
+FPU instuction that triggers the FPU trap.
+
+This makes me think that the Interrupt vectors are somehow screwed.
+
+Do you guys recognise this behaviour?
+
+System is embedded 2.2.5 with mpc 823 CPU  4MB of Ram.
+
+Thanks,
+
+K.D.
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
