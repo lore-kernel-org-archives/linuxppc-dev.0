@@ -1,19 +1,25 @@
-Return-Path: <afleming@freescale.com>
-Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
-	by ozlabs.org (Postfix) with ESMTP id D86D22BD6A
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2004 04:24:49 +1000 (EST)
-Received: from il06exr04.mot.com (il06exr04.mot.com [129.188.137.134])
-	by motgate8.mot.com (Motorola/Motgate8) with ESMTP id i8FIPuF7001374
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Sep 2004 11:25:56 -0700 (MST)
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <82589812-0744-11D9-AA47-000393C30512@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Date: Wed, 15 Sep 2004 13:24:41 -0500
-To: "<linuxppc-dev@ozlabs.org> <linuxppc-dev@ozlabs.org>"
-	<linuxppc-dev@ozlabs.org>
-Cc: "Kumar K. Gala" <kumar.gala@motorola.com>
-Subject: [RFC] 85xx Spurious Interrupt Bug
+Return-Path: <tnt@246tNt.com>
+Received: from outmx011.isp.belgacom.be (outmx011.isp.belgacom.be
+	[195.238.3.3])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 06B822BD3C
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2004 05:40:29 +1000 (EST)
+Received: from outmx011.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx011.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id i8FJeMsP007576
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Sep 2004 21:40:22 +0200
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <41489AE8.7060203@246tNt.com>
+Date: Wed, 15 Sep 2004 21:41:28 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: roger blofeld <blofeldus@yahoo.com>
+References: <20040915143520.6335.qmail@web53507.mail.yahoo.com>
+In-Reply-To: <20040915143520.6335.qmail@web53507.mail.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] mpc52xx: fix early text output
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,88 +29,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-About a month ago, OPENPIC_VEC_SPURIOUS got changed to 239, causing a 
-bogus value to be put in the PIC for the 85xx, because 85xx reserves 64 
-interrupts instead of 16.  So, instead, I'm suggesting we set 
-OPENPIC_VEC_SPURIOUS to 255, and use that value, rather than adding an 
-offset to it, so it's always 255 for all PowerPC parts.
 
-I've tested this on an MPC8560 ADS board.
+Hi Roger,
 
-Andy Fleming
-PowerPC Software Enablement
-Freescale Semiconductor, Inc
+roger blofeld wrote:
 
-# This is a BitKeeper generated patch for the following project:
-# Project Name: Linux kernel tree
-# This patch format is intended for GNU patch command version 2.5 or 
-higher.
-# This patch includes the following deltas:
-#                  ChangeSet    1.1913  -> 1.1914
-#       include/asm-ppc/open_pic.h      1.18    -> 1.19
-#       arch/ppc/syslib/open_pic.c      1.36    -> 1.37
+>This patch fixes early serial text output
+>-rb
+>  
+>
+Thanks for pointing that out. The output is nicer ;)
+
+However, I would leave the test to add a \r in front of a \n.
+Even if it doesn't happen in current code, someone may use it (I know I 
+did at somepoint in the debug ... )
+
+Applied to my public tree. I'll post it as [PATCH 10/9] in the group of 
+updates I'm trying to push upstream.
+
+
+    Sylvain
+
+
+# This is a BitKeeper generated diff -Nru style patch.
 #
-# The following is the BitKeeper ChangeSet Log
-# --------------------------------------------
-# 04/09/15      afleming@nerfherder.somerset.sps.mot.com        1.1914
-# The Spurious interrupt assignment for OpenPIC was the constant,
-# OPENPIC_VEC_SPURIOUS plus the offset passed in.  Due to bugs in some
-# OpenPICs, the end value needed to be 255 on those systems.  However,
-# the constant was then chosen to be 239, because offset on most
-# systems is 16.  The 85xx has an offset of 64, however, and so this
-# assignment caused lock-ups during boot.  The proposed solution is to
-# declare OPENPIC_VEC_SPURIOUS to be 255, and use that value directly,
-# instead of adding the offset to it.
-# --------------------------------------------
+# ChangeSet
+#   2004/09/15 21:23:46+02:00 tnt@246tNt.com
+#   ppc: Fix output of low-level serial debug on Freescale MPC52xx
+#  
+#   Thanks to Roger Blofeld for pointing that out.
+#  
+#   Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 #
-diff -Nru a/arch/ppc/syslib/open_pic.c b/arch/ppc/syslib/open_pic.c
---- a/arch/ppc/syslib/open_pic.c        Wed Sep 15 13:11:02 2004
-+++ b/arch/ppc/syslib/open_pic.c        Wed Sep 15 13:11:02 2004
-@@ -412,7 +412,7 @@
-
-         /* Initialize the spurious interrupt */
-         if (ppc_md.progress) ppc_md.progress("openpic: spurious",0x3bd);
--       openpic_set_spurious(OPENPIC_VEC_SPURIOUS+offset);
-+       openpic_set_spurious(OPENPIC_VEC_SPURIOUS);
-         openpic_disable_8259_pass_through();
-  #ifdef CONFIG_EPIC_SERIAL_MODE
-         openpic_eicr_set_clk(7);        /* Slowest value until we know 
-better */
-@@ -865,7 +865,7 @@
-                         irq = cirq;
-                         openpic_eoi();
-                 }
--        } else if (irq == OPENPIC_VEC_SPURIOUS + open_pic_irq_offset)
-+        } else if (irq == OPENPIC_VEC_SPURIOUS)
-                 irq = -1;
-         return irq;
-  }
-@@ -988,9 +988,9 @@
-
-         /* OpenPIC sometimes seem to need some time to be fully back 
-up... */
-         do {
--               
-openpic_set_spurious(OPENPIC_VEC_SPURIOUS+open_pic_irq_offset);
-+               openpic_set_spurious(OPENPIC_VEC_SPURIOUS);
-         } while(openpic_readfield(&OpenPIC->Global.Spurious_Vector, 
-OPENPIC_VECT
-OR_MASK)
--                       != (OPENPIC_VEC_SPURIOUS + 
-open_pic_irq_offset));
-+                       != OPENPIC_VEC_SPURIOUS);
-
-         openpic_disable_8259_pass_through();
-
-diff -Nru a/include/asm-ppc/open_pic.h b/include/asm-ppc/open_pic.h
---- a/include/asm-ppc/open_pic.h        Wed Sep 15 13:11:02 2004
-+++ b/include/asm-ppc/open_pic.h        Wed Sep 15 13:11:02 2004
-@@ -23,7 +23,7 @@
-
-  #define OPENPIC_VEC_TIMER      110     /* and up */
-  #define OPENPIC_VEC_IPI                118     /* and up */
--#define OPENPIC_VEC_SPURIOUS   239
-+#define OPENPIC_VEC_SPURIOUS   255
-
-  /* OpenPIC IRQ controller structure */
-  extern struct hw_interrupt_type open_pic;
+# arch/ppc/syslib/mpc52xx_setup.c
+#   2004/09/15 21:23:06+02:00 tnt@246tNt.com +14 -10
+#   ppc: Fix output of low-level serial debug on Freescale MPC52xx
+#
+diff -Nru a/arch/ppc/syslib/mpc52xx_setup.c 
+b/arch/ppc/syslib/mpc52xx_setup.c
+--- a/arch/ppc/syslib/mpc52xx_setup.c   2004-09-15 21:24:24 +02:00
++++ b/arch/ppc/syslib/mpc52xx_setup.c   2004-09-15 21:24:24 +02:00
+@@ -100,24 +100,28 @@
+ #error "mpc52xx PSC for console not selected"
+ #endif
+ 
++static void
++mpc52xx_psc_putc(struct mpc52xx_psc * psc, unsigned char c)
++{
++       while (!(in_be16(&psc->mpc52xx_psc_status) &
++                MPC52xx_PSC_SR_TXRDY));
++       out_8(&psc->mpc52xx_psc_buffer_8, c);
++}
++
+ void
+ mpc52xx_progress(char *s, unsigned short hex)
+ {
+        struct mpc52xx_psc *psc = (struct mpc52xx_psc *)MPC52xx_CONSOLE;
+        char c;
+ 
+-               /* Don't we need to disable serial interrupts ? */
+-      
+        while ((c = *s++) != 0) {
+-               if (c == '\n') {
+-                       while (!(in_be16(&psc->mpc52xx_psc_status) &
+-                                MPC52xx_PSC_SR_TXRDY)) ;
+-                       out_8(&psc->mpc52xx_psc_buffer_8, '\r');
+-               }
+-               while (!(in_be16(&psc->mpc52xx_psc_status) &
+-                        MPC52xx_PSC_SR_TXRDY)) ;
+-               out_8(&psc->mpc52xx_psc_buffer_8, c);
++               if (c == '\n')
++                       mpc52xx_psc_putc(psc, '\r');
++               mpc52xx_psc_putc(psc, c);
+        }
++      
++       mpc52xx_psc_putc(psc, '\r');
++       mpc52xx_psc_putc(psc, '\n');
+ }
+ 
+ #endif  /* CONFIG_SERIAL_TEXT_DEBUG */
