@@ -1,42 +1,44 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Subject: using cpm interrupts on 8xx
-From: Nate Pletcher <pletch@po.cwru.edu>
-To: linuxppc-embedded@lists.linuxppc.org
-Content-Type: text/plain
-Date: 22 May 2002 10:58:47 -0400
-Message-Id: <1022079528.1226.15.camel@soundgarden>
-Mime-Version: 1.0
+To: =?gb2312?q?Dross=20Zhou?= <zjuzhou@yahoo.com.cn>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Why can't uncommpress kernel after download s-rec file via tftp? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 22 May 2002 21:59:54 +0800."
+             <20020522135954.45659.qmail@web15003.mail.bjs.yahoo.com>
+Date: Wed, 22 May 2002 18:16:56 +0200
+Message-Id: <20020522161701.22E4E1196F@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Dear Dross Zhou,
 
-I'm trying to use IDMA CPM interrupts on custom MPC855t hardware similar
-to an Embedded Planet CLLF or RPX Lite board.  We're using MontaVista's
-Hard Hat Linux CDK 1.2 with the 2.2.14 kernel and included tools.
+in message <20020522135954.45659.qmail@web15003.mail.bjs.yahoo.com> you wrote:
+>
+> I just added some config option in make menuconfig,
+> then make zImage and make s-recorde file.
 
-I'm writing a kernel module to control an onboard FPGA that must DMA
-data.  I've read through the kernel source in arch/ppc/kernel/irq.c and
-arch/ppc/8xx_io/commproc.c and searched the linuxppc-embedded archives,
-but I'm still not clear on how to use request_8xxirq() and
-cpm_install_handler().  Do I need to register a handler for the SIU
-interrupt for the CPM and then another handler for the individual IDMA
-interrupt from the CPM?  Perhaps someone could point me to some
-documentation on how to register a CPM interrupt handler.
+What is this good for?
 
-The interrupt hardware on the 8xx is multilevel (CPM interrupts
-multiplexed into SIU) so it seems that both functions would be
-necessary.  I have read all the MPC8xx documentation on the interrupt
-hardware so I'm familiar with the structure, but I'm unsure how PPC
-Linux is setup to handle this.  What do I need to do myself and what is
-provided by the request_/free_irq interface?
+TFTP is a binary protocol, it needs a binary image,  not  a  s-record
+file.
 
-This is my first Linux device driver so any help on registering
-interrupt handlers on PPC 8xx would be appreciated.
+> Then download this file into sdram vai tftp,it just
+> hang at uncompressing kernel image, and can't boot
+> kernle.
 
-Thanks,
-Nate
+This is most probably due to the fact that your  firmware  expects  a
+binary image but finds a text file.
 
+What sort of firmware are you using anyway?
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+As far as we know, our computer has never had an undetected error.
+		                                           -- Weisert
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
