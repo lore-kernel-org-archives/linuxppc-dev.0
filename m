@@ -1,93 +1,43 @@
-Message-ID: <20020803200625.52603.qmail@web20703.mail.yahoo.com>
-Date: Sat, 3 Aug 2002 13:06:25 -0700 (PDT)
-From: bhupinder sahran <bhup_sah@yahoo.com>
-Subject: Re: Problems with I2C reads
-To: Keith Outwater <Keith_Outwater@mvis.com>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <668950F487446B4FB0CEAE9760FD2D620BE6B3@taurus.primary.local>
+Date: 5 Aug 2002 04:30:39 -0000
+Message-ID: <20020805043039.4380.qmail@webmail6.rediffmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: "Narendra  " <narengh@rediffmail.com>
+Reply-To: "Narendra  " <narengh@rediffmail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: CS_BAD_VCC Error during Card Configaration.
+Content-type: text/plain;
+	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi
+Hi.
 
-I think u r missing onr thing.
+I am involved in porting WLAN driver to Embedded Planet RPX-LITE
+board.
 
-sequence should be like this
+I am using HHL - 2,4,2 and Pcmcia-cs (3.1.24). When i insert
+D-Link DWL 350 prism2 card (intersil) my driver is invoked by
+cardmgr.
 
+But as i found through debug message, socket is configured for
+5volts and the CIS read from my card wants 3.3V. So my Config()
+routine is failing since there is a mismatch in configured Vcc and
+Requested Vcc. and Kernel is crashing.
 
-> Start signal
-> Slave address (r/w/ bit = write)
-> Register address
-> Start signal
-> Slave address (r/w/ bit = read)
-> Read register data
->NO ack.......................u have to give
-> Stop signal
+Where i need to do modification to configure EP socket for 3.3v?
 
+Should i need to make any modification in m8xx_pcmcia.c?
 
-Try to give No ack after reading the register data.
+I didn`t come across this problem when i tested my driver in
+Compaq Armada notebook.
 
-bye
-Bhupi
-Deep  into silicon with Linux.....
-www.gdatech.com
+I am struck at this point. All inputs are welcome.
 
---- Keith Outwater <Keith_Outwater@mvis.com> wrote:
->
-> Greetings all -
->
-> I am trying to talk to an I2C device (Analog Devices
-> AD9888) using the
-> MPC860 CPM I2C interface from userland.
-> Writes work fine, but the chip requires a strange
-> write-read sequence
-> for reading back registers.  For example, to read a
-> register:
->
-> Start signal
-> Slave address (r/w/ bit = write)
-> Register address
-> Start signal
-> Slave address (r/w/ bit = read)
-> Read register data
-> Stop signal
->
-> Note that there is no stop between the write and the
-> read.  If you put a
-> stop in, the chip will not acknowledge the read, so
-> using /dev/i2c-0
-> with write() and read() does not work.
->
-> I tried using the ioctl() interface and passed
-> I2C_RDWR to try to
-> suppress the stop command between messages, but it
-> does not seem to work
-> (checked it on a scope).
-> I looked at the ioctl() handler for I2C_RDWR and it
-> was not clear to me
-> whether that particular ioctl option should work
-> with a write-read
-> sequence or not.  As far as I can tell it does not
-> work.
-> I looked for other ways to do this, but found
-> nothing.
->
-> Has anyone used I2C like this before? Any hints or
-> suggestions?
->
-> Thanks!
-> Keith
->
-> Keith Outwater
-> Senior Staff Engineer
-> Microvision, Inc.
-> (425) 415-6693
->
->
->
+Thanks in advance,
+
+Regards,
+Naren
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
