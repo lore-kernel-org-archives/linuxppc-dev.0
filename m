@@ -1,49 +1,57 @@
-From: acmay@acmay.homeip.net
-Date: Thu, 19 Apr 2001 08:05:45 -0700
-To: Stefan Roese <stefan.roese@esd-electronics.com>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PPC405GPWalnutPciBusMaster
-Message-ID: <20010419080545.C1111@sink.san.rr.com>
-References: <20010418193652.B19053@ecam.san.rr.com> <EFEAIMDCOOOHIEPHDNFJOEFGCMAA.stefan.roese@esd-electronics.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <EFEAIMDCOOOHIEPHDNFJOEFGCMAA.stefan.roese@esd-electronics.com>; from stefan.roese@esd-electronics.com on Thu, Apr 19, 2001 at 10:07:55AM +0200
+Message-ID: <C50AB9511EE59B49B2A503CB7AE1ABD10163E245@cceexc19.americas.cpqcorp.net>
+From: "Cagle, John" <John.Cagle@compaq.com>
+Reply-To: jcagle@kernel.org
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: PPC405GPWalnutPciBusMaster
+Date: Thu, 19 Apr 2001 10:06:34 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-2022-jp"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Apr 19, 2001 at 10:07:55AM +0200, Stefan Roese wrote:
->
-> > On Thu, Apr 19, 2001 at 10:44:08AM +0900, Hideo Noda wrote:
-> > > Has anyone tried PCI cards with BUS MASTER operations for Walnut
-> > > PPC405GP?
-> >
-> > I have tried and failed. I have other things to work on right now
-> > so I have just delayed looking into it anymore until the 2.0 CDK
-> > comes out. I think that should be by the end of the month.
-> >
-> > I think there is a problem with the virt_to_phys matching the
-> > PTM1/BAR1. In the preliminary 405gp docs that I have Fig 17-59
-> > on page 17-62 give a good overview on how things need to be
-> > setup on the chip, but I am not sure on what the values
-> > need to be.
->
-> Which bootloader/firmware are you using? The pci configuration should be
-> done within the bootloader. If you are using PPCBoot, I am not shure if the
-> configuration is correct regarding the busmaster setup (although I did the
-> port based on the IBM OpenBios). The bus master functionality was never
-> tested - sorry for that.
+Try this command before loading the eepro100 driver module:
 
-I am just using the OpenBios for now. We will be spinning our own board
-within the year so I was going to delay looking into doing the PPCBoot
-code until then. I was able to look at the PCI registers when the kernel
-booted and they appeared to be OK. For the hell of it I tried to change them
-in the kernel and it hung during boot. I did not see in the docs the constraints
-on when I could change those registers. Is it possible to do it very early in
-the Linux boot code?
-Thanks
---
-Andrew May
+	setpci -s 0:0.1 14.L=0x8
 
+It seems that the latest openbios doesn't program the PCI bridge registers
+appropriately.
+
+Regards,
+John
+jcagle@kernel.org
+
+> -----Original Message-----
+> From: Hideo Noda [mailto:Hideo_Noda@mutoh.co.jp]
+> Sent: Wednesday, April 18, 2001 8:44 PM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Subject: PPC405GPWalnutPciBusMaster
+>
+>
+>
+> Hi,
+>
+> I am trying to install Intel eepro100 onto WalnutPPC405GP.
+> Basic PCI settings seem good but no frame is transmitted.
+> The environment is WalnutPPC305GP with HardHatLinux 2.4.2 from
+> MonraVista.
+>
+> I can read or write eepro configuration registers and other control
+> registers via PCI memory space.
+> But Bus Master operations do not seem functional. I am confirmed that
+> MASTER operation bit in eepro100 is enabled.
+> I think some more settings are needed for PPC405GP built-in
+> PCI control
+> registers and/or Walnut board jumpers/dipswitches.
+>
+> Has anyone tried PCI cards with BUS MASTER operations for Walnut
+> PPC405GP?
+>
+> Thanks in advance,
+>
+> Hideo
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
