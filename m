@@ -1,35 +1,35 @@
-Date: Mon, 25 Oct 1999 13:08:49 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: luther@dpt-info.u-strasbg.fr
-cc: Sean Chitwood <darkmane@w-link.net>,
-        LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Modern PowerPC Assembly?
-In-Reply-To: <19991025101727.A4528@maxime.u-strasbg.fr>
-Message-ID: <Pine.HPX.4.10.9910251300440.21757-100000@gra-ux1.iram.es>
+Date: Mon, 25 Oct 1999 18:11:43 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: atyfb and ppc config
+In-Reply-To: <Pine.LNX.4.10.9910250832260.18574-100000@shell.unixbox.com>
+Message-ID: <Pine.LNX.4.05.9910251811010.32285-100000@callisto.of.borg>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-
-
-On Mon, 25 Oct 1999, Sven LUTHER wrote:
-
-> Gabriel, ...
+On Mon, 25 Oct 1999, Ani Joshi wrote:
+> hey geert, i was playing with 2.3.23 last nite and fixing it up for ppc
+> when i noticed my vmode/cmode kernel args weren't "working" with 2.3.23,
+> then i when back and realized that in atyfb_setup, you only allow these if
+> CONFIG_PMAC is defined, and i had build a "common" CONFIG_PPC_ALL kernel.
 > 
-> Do you think it would be possible to use your emulator to have a ppc
-> based dosemu ?
+> should you add #ifdefined CONFIG_PMAC || or defined CONFIG_PPC_ALL
+> or for a more general solution, if CONFIG_PPC_ALL is defined, shouldn't
+> CONFIG_PMAC also be defined, along with PREP, etc...
 
-Well, this is real mode only... So plain DOS, I have ideas to add
-protected mode and _efficient_ paging, but no time to do so. This would
-unfortunately significantly bloat the code. There is also no FPU. The most
-positive points of this emulator are the compact size and perhaps also
-reasonable speed (if what I've heard about other emulators is true),
-approximately equivalent to a 33MHz 386DX on a 200MHz 603e.
+What do you guys think about this? I like the idea of having CONFIG_PMAC etc.
+be defined if CONFIG_PPC_ALL is defined.
 
-	Regards,
-	Gabriel.
+Gr{oetje,eeting}s,
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
