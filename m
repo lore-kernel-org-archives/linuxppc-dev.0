@@ -1,75 +1,91 @@
-From: laurent.mohin@acterna.com
-To: =?iso-8859-1?Q?=22David_M=FCller_=28ELSOFT_AG=29=22?= <d.mueller@elsoft.ch>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <C1256B3A.0034ACD5.00@magnus.eni.wago.de>
-Date: Mon, 7 Jan 2002 10:31:29 +0100
-Subject: Re: 405GP + SouthBridge
-Mime-Version: 1.0
-Content-type: multipart/mixed;
-	Boundary="0__=rMeXPrz58Q2W9gJfB35Xk9wLdAuNPZQZfEhQ2fZmXBW9ddBb3y6OCCrp"
+Subject: RE: Kernel Oops when receiving a lot of UDP packets while booting
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Mon, 7 Jan 2002 12:30:57 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E31459414@kolkrabbi.flaga.is>
+From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
+To: "Peter Desnoyers" <pdesnoyers@chinook.com>,
+	"LEROY Christophe" <christophe.leroy@c-s.fr>
+Cc: "linuxppc" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---0__=rMeXPrz58Q2W9gJfB35Xk9wLdAuNPZQZfEhQ2fZmXBW9ddBb3y6OCCrp
-Content-type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-transfer-encoding: quoted-printable
+Hi,
 
+I have verified that I am getting packets over the ethernet
+before the scc_enet_open() is called, I somehow suspect that
+this might be causing my random crashes.
 
+I inserted the following in enet.c
 
+static int opened = 0
 
-Thanks for your link, David
-It's a very valuable ressource.
+and in scc_enet_open() I put
 
-Laurent
+opened = 1;
 
+and in scc_enet_interrupt() I put
 
+if(opened == 0)
+	printk("ETHO IRQ before open\n");
 
+How do you propose to that the initialization is done to prevent this?
 
-"David M=FCller (ELSOFT AG)" <d.mueller@elsoft.ch> on 05/01/2002 09:59:=
-49
+I have tried simply to move
 
-To:   Laurent Mohin/SE/Wavetek@Global
-cc:
-Subject:  Re: 405GP + SouthBridge
+sccp->scc_gmrl |= (SCC_GSMRL_ENR | SCC_GSMRL_ENT);
 
+from scc_enet_init() to scc_enet_open() both before and after the
+netif_start_queue()
+call. But it only makes thing worse.
 
-=
+Thanks,
 
---0__=rMeXPrz58Q2W9gJfB35Xk9wLdAuNPZQZfEhQ2fZmXBW9ddBb3y6OCCrp
-Content-type: text/plain; charset=us-ascii
-Content-Disposition: inline
+K.D.
 
-
-Hi
-
-I hope the following links helps a little bit. The product is using a
-PIIX4 chip to implement IDE, USB, ISA, ...
-
-[commercial on]
-http://www.mpl.ch/2460.html
-[commercial off]
-
-laurent.mohin@acterna.com wrote:
-
-> Hello,
+> -----Original Message-----
+> From: Peter Desnoyers [mailto:pdesnoyers@chinook.com]
+> Sent: 28. desember 2001 16:10
+> To: LEROY Christophe
+> Cc: linuxppc
+> Subject: Re: Kernel Oops when receiving a lot of UDP packets while
+> booting
 >
-> Has anybody tried to connect a SouthBridge (Intel PIIX4E type) to a 405GP PCI
-> interface?
-> Any pointer or tip about this subject is welcome.
 >
-> Thanks,
 >
-> Laurent
+> LEROY Christophe wrote:
+> >
+> > What is HHL2.0 ?
 >
-
-Dave
-
-
-
-
---0__=rMeXPrz58Q2W9gJfB35Xk9wLdAuNPZQZfEhQ2fZmXBW9ddBb3y6OCCrp--
-
+> Montevista hardhat linux 2.0.  A couple of days ago someone had an
+> ethernet question about that, and I was confused.
+>
+> > I'm using the official 2.4.16 kernel from kernel.org with
+> the ppc ports
+> > patch for 2.4.15.
+> > I'm not using FEC but MC68160A (that is enet.c). But that's
+> probably the
+> > same problem.
+> > Any idea how to solve the problem ?
+>
+> Check to make sure that ethernet packet reception is disabled when you
+> leave the init() function, and doesn't get enabled until the _open()
+> function is called.  You might have to actually do work to
+> disable it if
+> the bootloader already enabled things...
+>
+> First you could use some flags and printks to see whether the crash is
+> really due to early packets, as I suspect.
+>
+> --
+> .....................................................................
+>  Peter Desnoyers            (781) 457-1165   pdesnoyers@chinook.com
+>  Chinook Communications     (617) 661-1979   pjd@fred.cambridge.ma.us
+>  100 Hayden Ave, Lexington MA 02421
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
