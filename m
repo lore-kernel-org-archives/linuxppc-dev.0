@@ -1,36 +1,35 @@
-Date: Wed, 21 Aug 2002 14:52:59 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Armin Kuster <akuster@mvista.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: request_irq() bug in ENET driver?
-Message-ID: <20020821045259.GG18818@zax>
+Message-Id: <5.1.0.14.2.20020820231900.03a9e008@pop.prodigy.net>
+Date: Tue, 20 Aug 2002 23:26:03 -0700
+To: linuxppc-embedded@lists.linuxppc.org
+From: Eugene Surovegin <ebs@innocent.com>
+Subject: Re: Restructuring of ibm_ocp_enet driver
+Cc: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20020821043627.GF18818@zax>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This code comes from ppc405_enet_open():
+David,
 
-	if (!(get_mal_dcrn(fep->mal, DCRN_MALTXCASR))) {
- 		request_irq(BL_MAC_WOL,ppc405_eth_wakeup,0,"OCP EMAC Wakeup",dev);
-		request_irq(BL_MAL_SERR,ppc405_eth_serr,0,"OCP EMAC MAL SERR",dev);
-		request_irq(BL_MAL_TXDE,ppc405_eth_txde,0,"OCP EMAC TX DE ",dev);
+At 09:36 PM 8/20/2002, you wrote:
+>The patch below make some first steps to restructuring the
+>ibm_ocp_enet driver .
 
-		request_irq(BL_MAL_RXDE,ppc405_eth_rxeob,0,"OCP EMAC RX DE",dev);
+Wouldn't it be nice BEFORE another ibm_ocp_enet restructuring to fix bugs
+introduced in the previous one?
 
-		request_irq(BL_MAL_TXEOB,ppc405_eth_txeob,0,"OCP EMAC TX EOB",dev);
-		request_irq(BL_MAL_RXEOB,ppc405_eth_rxeob,0,"OCP EMAC RX EOB",dev);
-	}
+Current version has broken rx ring buffer management and the typo in
+requesting IRQ for RXDE event.
 
-ppc405_eth_rxeob is being registed twice, both for the MAL_RXEOB and
-for the MAL_RXDE interrupts, and ppc405_eth_rxde() is registered
-never.  Is there a reason for this, or is it just a bug?
+I send bug report and a fix (maybe not the most elegant one) to Armin two
+weeks ago. Nothing happened :(
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.
-http://www.ozlabs.org/people/dgibson
+
+Thanks,
+
+  Eugene Surovegin <mailto:ebs@innocent.com>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
