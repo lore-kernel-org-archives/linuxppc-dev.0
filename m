@@ -1,48 +1,50 @@
-Message-ID: <38E27471.83CCAC10@innocon.com>
-Date: Wed, 29 Mar 2000 16:24:01 -0500
-From: Doug Rogers <rogers@innocon.com>
+Subject: Tiny fix to fec.c for RPX boards using only fast ethernet
+To: linuxppc-embedded@lists.linuxppc.org (LinuxPPC Embedded Mailing List)
+Date: Thu, 30 Mar 2000 10:11:15 +1000 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Another try at the run-from-Flash issue for MPC8xx/MBX/custom
 Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000330001115.4B3FF5067E@brixi.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I, too, would like to run from Flash. The question for me isn't speed,
-isn't cost, nor EMI effects. It is simply a matter of size. We have a
-very small area in which to squeeze the parts, and the best we could do
-is 32M RAM and 16M ROM. Our application code is in the 10M range (text
-only, even after chopping over half of it out!), but it is expected to
-grow. So for us it's not really a matter of cost or (running) speed,
-since the Flash runs fast enough for our purposes.
+Hi y'all,
 
-As another constraint, our card needs to be able to run very soon after
-power-up. I've hacked the LynxOS startup monitor to detect either gzip'd
-or bzip2'd KDI's. I've timed the decompression of our smaller test image
-and it takes over 40 seconds on a 40MHz MBX860 board. That's too slow.
-We could live with 20, perhaps, but not much more than that. For now I
-boot my images over the network since our MBX board has only 4M Flash.
-It's faster than decompressing!
+There's an elegant engineering solution in fec.c to the problem of RPX boards
+with both FEC and SCC ethernet ports. Unfortunately, it isn't desirable if the
+SCC port isn't being used, because it still renumbers the FEC MAC address from
+the one in the board info structure.
 
-With LynxOS, we're able to keep in Flash both the text sections of the
-kernel AND of all binaries on the filesystem. Wow! That allows us to put
-only the RAM disk and vector/data/bss sections into RAM. Shweet!
+Here's a simple patch that only enables the renumbering if SCC ethernet is
+also being used. It also makes the decision non-board-specific, so other boards
+with dual FEC & SCC ports benefit too:
 
-I was hoping that Linux was to that point, but apparently not. Just
-having the kernel run from ROM would be helpful for now, so if anyone
-out there has done so, I'd be very appreciative of any feedback.
 
-Thanks!
+*** fec.c.old	Thu Mar 30 10:05:58 2000
+--- fec.c	Thu Mar 30 10:06:30 2000
+***************
+*** 994,1000 ****
+  	eap = (unsigned char *)my_enet_addr;
+  	iap = bd->bi_enetaddr;
 
-Doug
+! #ifdef CONFIG_RPXCLASSIC
+  	/* The Embedded Planet boards have only one MAC address in
+  	 * the EEPROM, but can have two Ethernet ports.  For the
+  	 * FEC port, we create another address by setting one of
+--- 994,1000 ----
+  	eap = (unsigned char *)my_enet_addr;
+  	iap = bd->bi_enetaddr;
+
+! #ifdef CONFIG_SCC_ENET
+  	/* The Embedded Planet boards have only one MAC address in
+  	 * the EEPROM, but can have two Ethernet ports.  For the
+  	 * FEC port, we create another address by setting one of
 
 --
---_._-__-____------_--_-_-_-___-___-____-_--_-___--____-___--_-__--___-_
-Doug Rogers, ICI   | The strongest reason for the people to retain the
-V:703.893.2007x220 | right to keep and bear arms is, as a last resort,
-www.innocon.com    | to protect themselves against tyranny in
-___________________| Government. [Thomas Jefferson]
-
+Graham Stoney
+Principal Hardware/Software Engineer
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
