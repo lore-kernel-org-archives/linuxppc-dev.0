@@ -1,35 +1,33 @@
-Date: Tue, 31 Jul 2001 08:05:52 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: James F Dougherty <jfd@GigabitNetworks.COM>
-Cc: mgreer@mvista.com, linuxppc-embedded@lists.linuxppc.org,
-	ppcboot-users@lists.sourceforge.net
-Subject: Re: ISA SIO Problems
-Message-ID: <20010731080552.B15710@opus.bloom.county>
-References: <200107310352.UAA02739@krakatoa.gigabitnetworks.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200107310352.UAA02739@krakatoa.gigabitnetworks.com>
+Message-ID: <A3E34B558F5CD211B4980008C7A4A99003C58340@GSO-SPARROW-SRV>
+From: "Williams, Kevin M." <kevin.m.williams@marconi.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Compiling and using hhl's glibc
+Date: Tue, 31 Jul 2001 11:15:01 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Jul 30, 2001 at 08:52:09PM -0700, James F Dougherty wrote:
+>I am getting ready, at long last, to start using glibc on our 603e based
+>embedded board. Hitherto, I have not used and of the HHL tools. It does,
+>however, look like their glibc has the best patches, so I'd like to give
+>it a try.
+....
+>My first big question is whether or not all of the needed patched are
+>already applied?
 
-> When I fixed this, I immediately got console garbage (DLL value wrong for baud),
-> so I hard-coded the com1 uart baud to 9600 as a temporary hack.
+IMHO, if you want support for using HHL, you should purchase a MV
+subscription.  Everything you get for free is already on their FTP site.
 
-Er, check out the 'serial_struct' I think it is, in include/linux/serial.h,
-you might try setting the 'custom_divisor' field, maybe..
+And no...I am not an MV employee.
 
-> On the baud mismatch, I found out that my system uses a 14.3Mhz UART crystal,
-> so the baud rates should change. Is there a clean way to change a #define, or
-> should I define my own baud2code/code2baud translation routines. What is the
-> cleanest way todo this?
+>What modifications would need be made
+>to the specs file to compile against this installed library.
 
-In include/asm-ppc/mousse_serial.h: #define BASE_BAUD (14300000 / 16) maybe?
+I used --with-libs when I built gcc.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Kevin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
