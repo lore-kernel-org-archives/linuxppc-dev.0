@@ -1,46 +1,45 @@
-Message-ID: <3F4ACF31.9010506@laurelnetworks.com>
-Date: Mon, 25 Aug 2003 23:08:33 -0400
-From: "Michael J. Accetta" <mja@laurelnetworks.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: pciauto_setup_bars() allocation algorithm tweak
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16202.58416.134657.827441@cargo.ozlabs.ibm.com>
+Date: Tue, 26 Aug 2003 14:38:08 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: sound on dual G4 powermac
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-We recently had to bring up linuxppc on a new custom board with a PCI
-device providing a 512Mb BAR region.
-This appeared to run into some resource exhaustion issue when the
-allocated addresses dropped below 0x80000000 (which I don't purport to
-understand, not being that familar with the ppc address layout).
- However, the 512Mb BAR was clearly our culprit, since its alignment
-requirement forced the current allocator to waste much of the address
-space aligning the 512Mb BAR.  We implemented a relatively minor tweak
-to  arch/ppc/kernel/pci_auto.c which while not a completely general
-allocator handles cases like this much better. The change is described
-below and I can supply a patch against MVL 2.4.18 if this might be of
-any general interest.
+I have been using this patch in 2.5/2.6 kernels on my dual G4 powermac
+for some time.  Without it, I get no sound at all, even after
+unmuting.  I don't know exactly why this fixes it, but this is what I
+came up with in the process of doing a binary search between a kernel
+that worked and one that didn't.
 
-/*
- * tweak to reduce fragmentation of the BAR address space.
- *
- * Previously, pciauto_setup_bars() simply allocated BAR addresses by
- * subtracting from these two upper limits, wasting any intervening
-space left
- * unused due to the alignment required by the BAR size.  This can be fatal
- * with very large alignments that can exhaust the available address space.
- * To mitigate this a bit, we now also record the size and lower bound
-of any
- * hole in the address space created by an allocation from either of these
- * upper limits.  Each setup will now try first to allocate space in the
- * hole "above" the previous allocation.  If it succeeds, the hole is
-reduced
- * by the allocation size.  If it fails, allocation proceeds as before and a
- * new (possibly empty) hole is created.
- */
+Paul.
 
-Mike Accetta
+diff -urN linux-2.5/sound/ppc/tumbler.c pmac-2.5/sound/ppc/tumbler.c
+--- linux-2.5/sound/ppc/tumbler.c	2003-08-02 09:37:36.000000000 +1000
++++ pmac-2.5/sound/ppc/tumbler.c	2003-08-09 09:53:12.000000000 +1000
+@@ -976,6 +976,9 @@
+ 	chip->mixer_data = mix;
+ 	chip->mixer_free = tumbler_cleanup;
 
++	if ((err = tumbler_init(chip)) < 0)
++		return err;
++
+ 	/* set up TAS */
+ 	tas_node = find_devices("deq");
+ 	if (tas_node == NULL)
+@@ -1022,9 +1025,6 @@
+ 	if ((err = snd_ctl_add(chip->card, chip->speaker_sw_ctl)) < 0)
+ 		return err;
+
+-	if ((err = tumbler_init(chip)) < 0)
+-		return err;
+-
+ #ifdef CONFIG_PMAC_PBOOK
+ 	chip->resume = tumbler_resume;
+ #endif
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
