@@ -1,43 +1,27 @@
-Date: Mon, 25 Nov 2002 14:44:32 -0500
-From: Stefano Bodini <s.bodini@comcast.net>
-Subject: Frozen ! any idea ?
+Message-ID: <F9102D41F595D311ACA7009027DE2C84033FFE27@c3po.heurikon.com>
+From: "Montgomery, Tim" <timm@artesyncp.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <5.1.0.14.0.20021125143442.00aa8df0@pop3.norton.antivirus>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; format=flowed
+Subject: PPC RTC on I2C
+Date: Mon, 25 Nov 2002 16:13:17 -0600
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all !
+Hey all,
 
-I have (for me) a curious problem.
-I have an Embedded Planet RXP Classic credit card (ppc860) loaded with a
-2.4.17 kernel (compiled with MontaVista Pro 2.1).
-I'm able to load correctly the kernel and the filesystem .. all is working
-just fine, but after 1 minute since the last command issued, the system
-just freeze.
-1 minute without any command issued and the system is gone .. no errors, no
-messages, no logs, nothing.
-Just doesn't accept anymore commands .. even the echo on the tty port is gone.
+I'm working on getting i2c support working on a module that has its RTC on i2c.
 
-About the 1 minute value, I did some tests to figure out the timing and is
-more or less 1 minute.
-Up to 30-45 secs. and the system still react, after (50-70 secs) the system
-freeze.
-If you continue to issue commands the system doesn't freeze .. but it do it
-as long as you stop to issue commands.
+I've got my i2c client written, but i2c-core and friends don't load until very late in the game; setting ppc_md.get/set (at least in platform_init) is not very useful.
 
-I tried to load also the default kernel image for that board .. same result.
-It seems a kind of watch dog or timer .. but I don't understand why all is
-frozen !
+Any thoughts on a graceful way to implement kernel RTC support using an i2c-based RTC (w/o bypassing the kernel's i2c layer)?
 
-Any idea ?
+Apologies if I've missed something obvious.
 
-Thanks in advance
-
-C'ya
-	Steve
+Regards,
+Tim
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
