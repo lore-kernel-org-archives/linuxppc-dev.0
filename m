@@ -1,66 +1,48 @@
-Date: Sun, 30 Jul 2000 16:56:02 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-cc: Tony Mantler <nicoya@apia.dhs.org>, Tom Rini <trini@kernel.crashing.org>,
-        Dan Malek <dan@netx4.com>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: CONFIG_PPC != Mac
-In-Reply-To: <39842797.3EDD80B6@student.ethz.ch>
-Message-ID: <Pine.LNX.4.10.10007301642120.810-100000@cassiopeia.home>
+From: Steffen Haeuser <SteffenH@hyperion-software.de>
+Reply-To: SteffenH@hyperion-software.de
+To: Takashi Oe <toe@unlserve.unl.edu>
+CC: linuxppc-dev@lists.linuxppc.org
+Date: Sun, 30 Jul 2000 17:13:27 +0100
+Message-ID: <yam8246.1353.146560040@mail.lf-online.de>
+In-Reply-To: <Pine.LNX.3.96LJ1.1b7.1000730092023.1508H-100000@ofey.inetnebr.com>
+Subject: Re: LinuxPPC X Server
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 30 Jul 2000, Michel [iso-8859-1] Dänzer wrote:
-> Geert Uytterhoeven wrote:
-> > The Master PPC Penguin decided to no longer allow to build machine specific
-> > kernels, but treat PowerMac/PReP/MTX/CHRP as one big machine type
-> > (`CONFIG_ALL_PPC').
->
-> Where does APUS fit in there?
+Am 30-Jul-00 schrieb Takashi Oe:
 
-APUS is something different (CONFIG_APUS, cfr. arch/ppc/config.in). Currently
-it's not possible to build one kernel that supports both APUS and any other
-machine type anyway.
+Hi!
 
-So currently you have to compile a kernel for _either_
+>> Well, if it is not fixed it most likely WILL hold up...
 
-    PowerMac/PReP/MTX/CHRP (CONFIG_ALL_PPC)
- or Gemini (CONFIG_GEMINI)
- or EST8260 (CONFIG_EST8260)
- or APUS (CONFIG_APUS)
+>What's wrong with XF68_FBDev?
 
-Personally I'd more like a configuration where you can select whatever you
-want of
+Hmmm... I was told to use the ATI thing... did not think this was only a thing
+related to the ATI Driver... but maybe I should try this.
 
-  - PowerMac (CONFIG_PMAC)
-  - PReP (CONFIG_PREP)
-  - MTX (CONFIG_MTX)
-  - CHRP (CONFIG_CHRP)
-  - Gemini (CONFIG_GEMINI)
-  - EST8260 (CONFIG_EST8260)
-  - APUS (CONFIG_APUS)
+>> Hmmm... I was told that no DRI Drivers would exist even for r128 ... can
+you
+>> point me to a place where I can get this ? And if they exist in Source
+form,
+>> someone has them already in Binary form maybe ?
 
-with of course some extra logic to prevent illegal combinations.
+>www.xfree86.org
+>4.0.1 has them.
 
-The main reason why the Master PPC Penguin chose for the CONFIG_ALL_PPC option
-was to be able to compile one kernel that would run on all his machines,
-instead of having to compile multiple kernels, one for each machine.
-I don't understand why he didn't want the flexibele scheme above, since it
-would support anything you want, including his favorite configuration.
+Hmmm... I looked on the site, but could only see versions for x86 and Alpha
+there,
+not for PPC... has anybody TRIED this stuff (source) on PPC yet ?
 
-Gr{oetje,eeting}s,
+I really do not have the time to try around with untried stuff...
 
-						Geert
+*Has* anybody tried compiling this 4.0.1 version on PPC? Does it work ? Are
+there
+any problems ? Is a Binary Version available anywhere ?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Steffen
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
