@@ -1,32 +1,25 @@
-Message-ID: <20030406175811.8467.qmail@web41403.mail.yahoo.com>
-Date: Sun, 6 Apr 2003 10:58:11 -0700 (PDT)
-From: Aurel Wisse <aurel_wisse@yahoo.com>
-Subject: Stiatus of OPTi 82C861 controller
-To: linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+Subject: Re: [linux-usb-devel] Stiatus of OPTi 82C861 controller
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Aurel Wisse <aurel_wisse@yahoo.com>
+Cc: linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
 	linuxppcdev <linuxppc-dev@lists.linuxppc.org>,
 	yddev <yellowdog-devel@lists.terrasoftsolutions.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030406175811.8467.qmail@web41403.mail.yahoo.com>
+References: <20030406175811.8467.qmail@web41403.mail.yahoo.com>
+Content-Type: text/plain
+Message-Id: <1049653722.1602.6.camel@dhcp22.swansea.linux.org.uk>
+Mime-Version: 1.0
+Date: 06 Apr 2003 19:28:43 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->From what I can see, there is no workaround yet in the
-usb-ohci source for the bug in the hc. However, there
-is a workaround in  the Darwin source which I want to
-look at (on an iMac).
+On Sul, 2003-04-06 at 18:58, Aurel Wisse wrote:
+> If I want to work on this, which source tree should I
+> use, the 2.4.21 or the 2.5.??
 
-Questions:
-If I want to work on this, which source tree should I
-use, the 2.4.21 or the 2.5.??
+2.5.x going forward, but fixing 2.4 should be very similar
+as the code is mostly the same
 
-Anybody knows whether OPTi is out of business? The
-links to their Support and Contact pages don't work
-anymore.
-
-Aurel
-
-Yahoo! Tax Center - File online, calculators, forms, and more
-http://tax.yahoo.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
