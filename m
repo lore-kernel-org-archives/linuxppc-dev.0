@@ -1,28 +1,17 @@
-Return-Path: <srinivas.surabhi@wipro.com>
-Received: from wip-ectls-mx1.wipro.com (wip-ectls-mx1.wipro.com
-	[203.101.113.37])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wip-ectls-mx1.wipro.com",
-	Issuer "VeriSign Trust Network" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1D08067A78
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
+	by ozlabs.org (Postfix) with SMTP id AAC6B67A2F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Feb 2005 01:39:09 +1100 (EST)
-Received: from wip-ectls-mx1.wipro.com (localhost.localdomain [127.0.0.1])
-	by localhost (Postfix) with ESMTP id 6068B2200E3
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 14 Feb 2005 19:56:22 +0530 (IST)
-Received: from blr-ec-bh1.wipro.com (blr-ec-bh1.wipro.com [10.200.50.91])
-	by wip-ectls-mx1.wipro.com (Postfix) with ESMTP id 54BBC220003
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 14 Feb 2005 19:56:22 +0530 (IST)
+	Tue, 15 Feb 2005 02:37:38 +1100 (EST)
+Message-ID: <4210C801.2000204@ru.mvista.com>
+Date: Mon, 14 Feb 2005 18:47:13 +0300
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Mon, 14 Feb 2005 19:55:35 +0530
-Message-ID: <EF9B29C78F41FA488927FCBC7750AF0E011DA5A1@hyd-mdp-msg.wipro.com>
-From: <srinivas.surabhi@wipro.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Mounta Vista Linux prompt on serial console 
+To: mporter@kernel.crashing.org
+Content-Type: multipart/mixed; boundary="------------030809020300080903070107"
+Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Subject: [PATCH][PPC32] Move irq_desc[].status,
+	IRQ_LEVEL bit setup to xilinx_pic.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,43 +22,86 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------030809020300080903070107
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+
+This patch applies to the kernel 2.6.11-rc3.
+It moves the code that informs the kernel if the particular interrupt is edge triggered
+or level sensitive from the board specific file to a "CONFIG_VIRTEX_II_PRO-specific" file.
+Using old IRQ numbering in that code is also fixed.
+
+Signed-off-by: Andrei Konovalov <akonovalov@ru.mvista.com>
 
 
-Our target is somewhat like this. It has PPC8270, Flash and SDRAM. We
-are using the uboot for booting. Successfully built the linux kernel and
-Ramdisk images using devrocket. The problem is that the kernel and
-Ramdisk images although getting extracted successfully to 0M location of
-SDRAM from Flash with the help of uboot, the serial console says nothing
-except "uboot ist nicht tot..."
+--------------030809020300080903070107
+Content-Type: text/plain;
+ name="xilinx_pic.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="xilinx_pic.diff"
 
-The command used is bootm "kernelImageLocation in Flash" "RAMdisk Image
-in Flash"
+diff -uprN linux-2.5.base/arch/ppc/platforms/4xx/xilinx_ml300.c linux-2.5.cur/arch/ppc/platforms/4xx/xilinx_ml300.c
+--- linux-2.5.base/arch/ppc/platforms/4xx/xilinx_ml300.c	2005-02-11 17:19:08.000000000 +0300
++++ linux-2.5.cur/arch/ppc/platforms/4xx/xilinx_ml300.c	2005-02-14 18:37:26.000000000 +0300
+@@ -122,25 +122,7 @@ ml300_setup_arch(void)
+ void __init
+ ml300_init_irq(void)
+ {
+-	unsigned int i;
+-
+ 	ppc4xx_init_IRQ();
+-
+-	/*
+-	 * For PowerPC 405 cores the default value for NR_IRQS is 32.
+-	 * See include/asm-ppc/irq.h for details.
+-	 * This is just fine for ML300.
+-	 */
+-#if (NR_IRQS != 32)
+-#error NR_IRQS must be 32 for ML300
+-#endif
+-
+-	for (i = 0; i < NR_IRQS; i++) {
+-		if (XPAR_INTC_0_KIND_OF_INTR & (0x80000000 >> i))
+-			irq_desc[i].status &= ~IRQ_LEVEL;
+-		else
+-			irq_desc[i].status |= IRQ_LEVEL;
+-	}
+ }
+ 
+ void __init
+diff -uprN linux-2.5.base/arch/ppc/syslib/xilinx_pic.c linux-2.5.cur/arch/ppc/syslib/xilinx_pic.c
+--- linux-2.5.base/arch/ppc/syslib/xilinx_pic.c	2005-02-11 17:20:49.000000000 +0300
++++ linux-2.5.cur/arch/ppc/syslib/xilinx_pic.c	2005-02-14 16:57:40.000000000 +0300
+@@ -114,6 +114,14 @@ ppc4xx_pic_init(void)
+ {
+ 	int i;
+ 
++	/*
++	 * NOTE: The assumption here is that NR_IRQS is 32 or less
++	 * (NR_IRQS is 32 for PowerPC 405 cores by default).
++	 */
++#if (NR_IRQS > 32)
++#error NR_IRQS > 32 not supported
++#endif
++
+ #if XPAR_XINTC_USE_DCR == 0
+ 	intc = ioremap(XPAR_INTC_0_BASEADDR, 32);
+ 
+@@ -138,6 +146,12 @@ ppc4xx_pic_init(void)
+ 
+ 	ppc_md.get_irq = xilinx_pic_get_irq;
+ 
+-	for (i = 0; i < NR_IRQS; ++i)
++	for (i = 0; i < NR_IRQS; ++i) {
+ 		irq_desc[i].handler = &xilinx_intc;
++
++		if (XPAR_INTC_0_KIND_OF_INTR & (0x00000001 << i))
++			irq_desc[i].status &= ~IRQ_LEVEL;
++		else
++			irq_desc[i].status |= IRQ_LEVEL;
++	}
+ }
 
-i.e bootm 0xfe080000 0xff080000
-
-
-1. How do I know that the control was given to linux kernel?
-
-2. Is it that the linux kernel got the control but unable to put the
-prompt on the serial line? FYI.  I modified the inittab to reflect the
-console to come on the serial line.
-
-3. Is there any documentation which gives the detailed debugging of the
-linux kernel from the loading of kernel?
-
-
--Thanks=0D
-SS
-
-
-
-
-Confidentiality Notice=0D
-
-The information contained in this electronic message and any attachments to=
- this message are intended
-for the exclusive use of the addressee(s) and may contain confidential or=
- privileged information. If
-you are not the intended recipient, please notify the sender at Wipro or=
- Mailadmin@wipro.com immediately
-and destroy all copies of this message and any attachments.
+--------------030809020300080903070107--
