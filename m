@@ -1,11 +1,10 @@
-Date: Thu, 10 Feb 2000 13:44:33 -0700 (MST)
-From: Dan Burcaw <dburcaw@terraplex.com>
-To: Gabriel Ricard <g_ricard@yahoo.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: system lockups, kernel debugging, usb->serial adapter device
- driver
-In-Reply-To: <20000210203225.28315.qmail@web1704.mail.yahoo.com>
-Message-ID: <Pine.LNX.4.10.10002101342570.16445-100000@newhope.terraplex.com>
+Date: Thu, 10 Feb 2000 17:38:14 -0800 (PST)
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+To: Jeremy Knope <swttiggr2@yahoo.com>
+cc: Eric Benard <ebenard@ifrance.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.3.42 & B&W G3
+In-Reply-To: <20000211011937.3611.qmail@web1202.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.10.10002101737300.9545-100000@shell.unixbox.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -13,30 +12,11 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-> I don't know much about this particular hardware and
-> the kernel, but I'm wondering if it is an overheating
-> problem... The PB seemed a bit hot and the fan on the
-> left side of the PB was not running. BTW, is it
-> possible to turn that fan on via the OS? Or is it
-> automatically turned on when the temperature gets too
-> high near the cpu?
 
-The fans on the lombard are turned on via hardware when the
-temperature gets too hot. On my PB, I've only had the fans turn on
-once since I've had it, so it seems they staypretty cool under normal
-conditions.
+don't bother with 2.3.42 and patches, use 2.3.43... huge ppc merge in .43
 
-Regards,
-Dan
 
-Terra Soft Solutions, Inc.
- Yellow Dog Linux
- "The Ultimate Companion for a Dedicated Server"
- http://www.yellowdoglinux.com/
-
- Black Lab Linux
- Advanced Workstations and Parallel Solutions
- http://www.blacklablinux.com/
+ani
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
