@@ -1,125 +1,67 @@
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: Jeffrey Hawkins <Jeffrey.F.Hawkins@motorola.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: do md5sums differ across architectures?
-Date: Thu, 22 Feb 2001 17:12:47 -0500
-Content-Type: text/plain;
-  charset="us-ascii"
-References: <200102221857.f1MIvW706290@ashley.ivey.uwo.ca> <3A9571F2.4751730C@motorola.com> <01022216133800.04317@localhost>
-In-Reply-To: <01022216133800.04317@localhost>
+Date: Thu, 22 Feb 2001 19:08:54 -0800 (PST)
+From: William Blew <wblew@home.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: OT: A XF4 patch that gives the mach64 a HW cursor
+Message-ID: <Pine.LNX.4.30.0102221907020.9423-100000@apollo.kulian.net>
 MIME-Version: 1.0
-Message-Id: <01022217124700.04392@localhost>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+For Your Information; I have submitted a patch to Ani Joshi that
+provides the ati driver's mach64 support with a hardware cursor
+and thus silken mouse support.
 
-I upgraded my Solaris 7 to the gnu 2.0 version and now it matches ppc linux
-completely.
+Should anyone want an "advance" copy of the patch, just drop me a
+request via email.
 
-That still leaves MacOSX out in the cold but...
+-------- Original Message --------
+Subject: A patch to 4.0.2-1e that enhances the ati driver (HW cursor for
+m64)
+Date: Mon, 19 Feb 2001 21:54:27 -0800
+From: William Blew <wblew@nospan.home.com>
+To: Ani Joshi <ajoshi@shell.unixbox.com>
 
-Thanks for the hint.
+I have finished (and attached) a patch to the XF4 tree that
+provides the following changes:
 
-Kevin
+1) Fixup the "ati" driver so that it doesn't SIGSEGV on the PPC
+when the XFree86 server doesn't support loadable modules.
 
-On Thursday 22 February 2001 16:13, Kevin B. Hendricks wrote:
-> Hi,
->
-> Here is what md5sum --version says on my machine.
->
-> [kbhend@localhost kbhend]$ md5sum --version
-> md5sum (GNU textutils) 2.0e
-> Written by Ulrich Drepper.
->
-> Copyright (C) 1999 Free Software Foundation, Inc.
-> This is free software; see the source for copying conditions.  There is NO
-> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-> [kbhend@localhost kbhend]$
->
->
-> This appears to be newer that yours.  I will upgrade textutils again on both
-> my box and the solaris 7 box.  Hopefully eventually they will coincide.
->
-> I still don't know why MacOSX differs from both.  I thought it would match
-> one or the other so that I knew which one to upgrade.
->
-> Thanks,
->
-> Kevin
->
->
-> On Thursday 22 February 2001 15:09, Jeffrey Hawkins wrote:
-> > Kevin,
-> >
-> >
-> > Don't know what is going on with your md5sum, but
-> > I ran it on a LinuxPPC 2.2.17 System and a SunOS 5.6,
-> > and got the same results ??????  The version of md5sum
-> > on Linux was 1.22, and the version on Sun was 2.0.
-> >
-> >
-> > Jeff
-> >
-> > ,"Kevin B. Hendricks" wrote:
-> > >
-> > > Hi,
-> > >
-> > > Just to have a bit of fun, how about this (3 different systems)
-> > > Each generates a different md5sum but all generate the same cksum!
-> > > (and adding -b to md5sum makes no difference)
-> > >
-> > > Darwin khendricksmac 1.2 Darwin Kernel Version 1.2: Wed Aug 30 23:32:53
-> PDT 2000; root:xnu/xnu-103.obj~1/RELEASE_PPC  Power Macintosh powerpc
-> > >
-> > > [khendricksmac:~] kbhend% md5sum oo619b_src.tar.bz2
-> > > 9c6a44ad66572c834e282eb1ec665374  oo619b_src.tar.bz2
-> > > [khendricksmac:~] kbhend% cksum oo619b_src.tar.bz2
-> > > 2458761606 56057947 oo619b_src.tar.bz2
-> > >
-> > > SunOS crunch 5.7 Generic_106541-04 sun4u sparc SUNW,Ultra-250
-> > >
-> > > kbhend$ md5sum oo619b_src.tar.bz2
-> > > 278c21a764126027cba9cb685b7e96cf  oo619b_src.tar.bz2
-> > > kbhend$ cksum oo619b_src.tar.bz2
-> > > 2458761606      56057947        oo619b_src.tar.bz2
-> > >
-> > > Linux localhost 2.2.17pre10-ben2 #3 Sun Aug 13 13:03:45 EDT 2000 ppc
-> unknown
-> > >
-> > > [kbhend@localhost /src2]$ md5sum oo619b_src.tar.bz2
-> > > c4a5d7bda6973f6b56e725295d1b3dfb  oo619b_src.tar.bz2
-> > > [kbhend@localhost /src2]$ cksum oo619b_src.tar.bz2
-> > > 2458761606 56057947 oo619b_src.tar.bz2
-> > >
-> > > I guess md5sum is not a very reliable or consistent checksum measure for
-> moving
-> > > files between ppc linux, MacOSX, and Solaris 7 Sparc.
-> > >
-> > > Back to the old cksum for me.
-> > >
-> > > Kevin
-> > >
-> >
-> > --
-> > ************************************************
-> >
-> > Jeffrey Hawkins
-> > Senior Staff Software Engineer
-> > Motorola Wireless Data Solutions Engineering
-> >
-> > Address: DEPT:  DQ525
-> >          MS:    IL-02-1055A              .-.
-> >          1301 East Algonquin Road        /v\
-> >          Schaumburg, IL 60196           // \\
-> >                                        /(   )\
-> > Phone:   (847)576-7463                  ^^ ^^
-> > FAX:     (847)576-7737
-> >
-> > ************************************************
-> >
->
+     as in "xc/config/cf/host.def" "DoLoadableServer NO"
+
+   I found that this made debugging XF4 under PPC more doable...
+
+2) Added hardware cursor support for mach64 to the "ati" driver
+and thus a "silken mouse". And boy, is it smooth, even under
+serious loads.
+
+   This included another public option for the ati driver:
+      SwCursor (bool) "use the SW cursor instead of the HW cursor?"
+
+There are a few caveats with this patch:
+
+2.1) It probably doesn't support doublescan modes properly.
+
+Within the r128 driver's SetCursorPostiion, when the current
+mode had the doublescan bit set, the y was doubled.
+
+However as under some circumstances the ati driver has no
+currentMode I left this out of the atimach64.c routine.
+
+2.2) While this patch should work with x86 hardware, I
+have no such with which to test it.
+
+I own a beige G3/266 rev2 with its builtin mach64 support.
+It is noted as being a 3D RAGE PRO [0x4750 rev 0x7c]. I
+have only tested this patch with this particular mach64 chip.
+
+Overall I would describe this patch as unstable, pending
+some testing by other people even tho it works great for me!
+--
+William Blew, wblew@home.com
+Gamer by Choice, Geek by Birth
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
