@@ -1,46 +1,38 @@
-From: Nathan Sheeley <nsheeley@ibmoto.com>
-Message-Id: <199906221621.LAA28496@shippy.ibmoto.com>
-Subject: bug in head.S
-To: linuxppc-dev@lists.linuxppc.org
-Date: Tue, 22 Jun 1999 11:21:02 -0500 (CDT)
+Message-ID: <376FB99E.8F4DA833@msoe.edu>
+Date: Tue, 22 Jun 1999 11:28:14 -0500
+From: ian geiser <geiseri@msoe.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: "linuxppc-user@lists.linuxppc.org" <linuxppc-user@lists.linuxppc.org>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Newer Tech MaxPower G3 400MHz w/1024k cache 2:1 and LinuxPPC w/ 2.2.6
+ Kernel...
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Greetings,
 
-This is more or less the same message that I posted earlier, but no one 
-replied.  Please at least tell me to go away ;^)
+    I have just purchased a Newer Tech MaxPower G3 400MHz w/1024k cache
+2:1 from
+    <plug>www.macsales.com</plug> and I am wondering if anyone has had
+any problems
+    with it under LinuxPPC.  I have not had any problems with it under
+MacOS but someone
+    told me that the backside cache would not work under LinxuPPC even
+with BootX.
 
-I was poking around in arch/ppc/kernel/head.S and I noticed this:
+    Are there any problems I will run into with the G3 under the 2.2.6
+kernel or any of the programs.
 
-  oris  r18,r8,0x20000000@h
-  oris  r21,r11,(KERNELBASE+0x20000000)@h
-  mtspr DBAT2L,r18    /* N.B. 6xx (not 601) have valid */
-  mtspr DBAT2U,r21    /* bit in upper BAT register */
-  mtspr IBAT2L,r28
-               ^^^^^^^^^^^^^^^^Wouldn't r18 make more sense here?
-  mtspr IBAT2U,r21    
+    I am hopeing to put this in one of our servers.  We use it for some
+C++ development, Appletalk Services
+    DNS and firewall.  A 400MHz G3 would really take the box and send it
+into orbit if it works.
 
-Has anyone tried to build/run a pmac SMP kernel with a recent (2.2.9)
-version of Linux?  
+    Thanks in advance.
 
-    o I've got a 9500 with 2 604e/200MHz.
-    o A UP kernel works fine.  
-    o Compliling the same kernel with the SMP support box checked results in
-      a kernel that doesn't boot on UP(a G3) or SMP(the 9500) machines. 
-    o I also replaced the dual card with a single 133 MHz CPU, which also fails 
-    to boot the SMP kernel.
-
-Can I expect a SMP kernel to boot on a UP?  I thought so, although it might
-be slower than a UP kernel on a UP.
-
-The symptoms are that it gets to the point of "opening the display", which
-activates the display (all white, I assume painted that way by OF), prints 
-"copying OF device tree...done" and stops.  
-
-Nathan Sheeley
+    -ian reinhart geiser
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
