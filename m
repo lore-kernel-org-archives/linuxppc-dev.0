@@ -1,37 +1,33 @@
-Message-ID: <3CD80A2A.CF796A79@lvl7.com>
-Date: Tue, 07 May 2002 13:08:58 -0400
-From: "John W. Linville" <linville@lvl7.com>
-MIME-Version: 1.0
-To: "Jeffrey W. Daugherty" <jwdaugherty@lucent.com>
+Date: Tue, 7 May 2002 11:33:04 -0700
+From: andrew may <acmay@acmay.homeip.net>
+To: Armin <akuster@pacbell.net>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux w/o disk, network, or ROM
-References: <Pine.LNX.4.44.0205071135570.29700-100000@localhost.localdomain>
+Subject: [PATCH]IBM OCP I2C
+Message-ID: <20020507113304.A22181@ecam.san.rr.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Jeffrey W. Daugherty" wrote:
+Here is a patch that provides a new iic_xfer function. It is
+inside of a #if 1 and all the code it should replace is in the
+#else clause.
 
-> I've tried setting ROOT_DEV to MKDEV(RAMDISK, 0) in setup.c
-> and cmdline argument "root=/dev/ram".
->
-> Does anyone have any suggestions?  What might be missing either
-> in kernel configuration or platform_init()?  Help!
+I have not been gotten to test the stuff from user space and I have
+not checked the return values of the function yet. I don't know
+how I can test failure conditions on the bus itself either.
 
-Are you sure that the kernel is recoginzing your command line
-parameters?  It should echo them out in an earlier boot message.
+I have been sucked into doing some other stuff recently but seeing
+how others are starting to play with this now I though I should get
+this out there again.
 
-My guess is that you have a mistake somewhere in passing the command
-line parameters to the kernel, leaving the kernel unable to find it's
-root fs.  YMMV... :-)
+There is also a fix in iic_ibmocp_init for some unused/unitilized
+vars.
 
-John
+I also removed some unneeded #if MODULE's.
 
-P.S.  Another possibility is that your initrd image isn't getting
-uncompressed correctly or to the correct location...
---
-John W. Linville
-LVL7 Systems, Inc.
+I did not pull out my clk div stuff so that part of the patch
+can be dropped.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
