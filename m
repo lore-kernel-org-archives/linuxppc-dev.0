@@ -1,36 +1,42 @@
-From: Jim Thompson <jim@musenki.com>
+Message-ID: <3C7FD350.F6FEC68F@mvista.com>
+Date: Fri, 01 Mar 2002 14:15:28 -0500
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
+To: Tzahi Oved <tzahio@voltaire.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: ppcboot 1.1.4 & MPSC
+References: <20083A3BAEF9D211BDB600805F8B14F3010A15AB@NTSERVER>
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <15487.53844.344907.816896@zaphod.musenki.com>
-Date: Fri, 1 Mar 2002 13:11:16 -0600
-To: Kit Plummer <kp@yak.vme.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PPC board
-In-Reply-To: <1015007601.26089.19.camel@fox.vme.com>
-References: <B8A5057F.106E7%kj-list@jeppesens.com>
-	<1015007601.26089.19.camel@fox.vme.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kit Plummer writes:
->
-> I have a BriQ and it is really nice.  But, the BriQ is way overpriced
-> when compared to a development board from Embedded Planet (hobbyist
-> mindset).
->
-> YellowDog has a yellow version of the BriQ as well...
+Where are you getting the source, linuxppc_2_4_devel or linux-galileo?
+linux-galileo, I hope, because there is not mpsc driver in 2_4_devel.
 
-If you don't want to pay $2k for a G4 briq (and I think they're cool,
-btw.) I know this little company in Texas that makes 8245 and
-8241-based boards.  :-)
+Some gotcha:
+1) you must change jumpers J42 & J43 to pins 2&3 for mpsc.
+2) DINK will not put anything out the mpsc but will still run so you have to
+wait some unknown amount of time before running your image (assuming you're
+downloading with a bdi or something like that).
+3) You have turned on the mpsc and turned off the 16550 in make config, right?
 
-Jim
+That's all I can think of right now?
 
-
+Mark
 --
-"Life begins when you can spend your spare time programming
-instead of watching television."  -- Cal Keegan
+
+Tzahi Oved wrote:
+
+> Hi,
+> I'm trying to work with the internal uart (MPSC) on the Galileo EVB64260
+> board. When I set the definition CONFIG_MPSC in the EVB64260 config file
+> (which supposed to set the terminal to work on the MPSC) I'm not getting any
+> response on my console, do I need to configure anything else ?? any
+> suggestions ?
+>
+> Thanks
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
