@@ -1,22 +1,32 @@
-Date: Thu, 25 Mar 2004 11:43:15 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: IBM 440GX performance (was Re: IBM 440GX, Ocotea...)
-Message-ID: <20040325194315.GA13911@gate.ebshome.net>
-References: <20040323183122.GA6724@gate.ebshome.net> <4057CCD40004167A@mssbzhh-int.msg.bluewin.ch> <20040324234025.GA11675@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040324234025.GA11675@gate.ebshome.net>
+MIME-Version: 1.0
+Subject: RE: O(1) scheduler for PPC?
+Date: Thu, 25 Mar 2004 13:36:14 -0700
+Message-ID: <BC1D6832B887974A8A4BE71B8E34E0510115D69B@cossmgmbx03.email.corp.tld>
+From: "Diekema, Jon (AGRE)" <Jon.Diekema@smiths-aerospace.com>
+To: "Eugene Surovegin" <ebs@ebshome.net>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Mar 24, 2004 at 03:40:25PM -0800, Eugene Surovegin wrote:
-> All systems were running identical highly patched 2.4.21 based kernel (preempt,
-> low-lat, aa-VM).
+The newest patch that I have found for 2.4.x is
+sched-O1-rml-2_4_20-rc3-1_patch.
+Do you of know of anything newer?
 
-... + O(1), HZ=1000
+http://www.kernel.org/pub/linux/kernel/people/rml/sched/ingo-O1/sched-O1-rml
+-2.4.20-rc3-1.patch
 
-Eugene
+> -----Original Message-----
+> From: Eugene Surovegin
+> Sent: Thursday, March 25, 2004 1:01 PM
+> Subject: Re: O(1) scheduler for PPC?
+>
+> On Thu, Mar 25, 2004 at 02:16:57PM +0100, Steven Scholz wrote:
+> > is the backport of Ingo Molnar's O(1) scheduler in the official
+> > linux-2.4.2x tree and is it available for the PPC?
+>
+> O(1) scheduler for 2.4 exists as a patch and it works just fine on
+> PPC.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
