@@ -1,49 +1,60 @@
-Date: Tue, 15 Jul 2003 11:43:37 -0400
-From: Kent Borg <kentborg@borg.org>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: ptrace Problem
-Message-ID: <20030715114337.A12505@borg.org>
+Date: Tue, 15 Jul 2003 08:46:56 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Eugene Surovegin <ebs@ebshome.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [RFC] consistent_sync and non L1 cache line aligned buffers
+Message-ID: <20030715154656.GQ1211@ip68-0-152-218.tc.ph.cox.net>
+References: <5.1.0.14.2.20030714210220.0308a070@mail.zultys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5.1.0.14.2.20030714210220.0308a070@mail.zultys.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am trying to get ptrace() working correctly so I can use gdbserver
-so we can debug with more power than printf()'s.
+On Mon, Jul 14, 2003 at 09:32:07PM -0700, Eugene Surovegin wrote:
 
-The kernel is 2.4.21-rc1 with stuff done to it to support some
-hardware that is under development (the chip has a 603-style core).
+> I think this is a known problem.
 
-I can fire up gdbserver, I can attach to it with a gdb on my host.  I
-can watch the little ptrace transactions go by and (after eliminating
-some false leads) they all do seem to be doing sensible things.  But
-when I try an "si", everything seems OK upto the _switch at which
-point the kernel SIGSTOPs on a 0x0 instruction at the first
-instruction of my application (or is it the second instruction?--I am
-not sure, the address complained about is first+4, maybe one worked).
+Yes, fortunatly.
 
-Once this happens my Abatron BDI-2000 is somehow hosed and can no
-longer write to memory.  My next download takes all the time I would
-expect, but the results are all 0x0 unless I first powercycle the
-Abatron.
+> According to MV kernel, there are USB devices that use such buffers.
+>
+> After spending last weekend with RISCWatch :) I can say that SCSI subsystem
+> is also guilty of this behavior (drivers/scsi/scsi_scan.c::scan_scsis,
+> scsi_result0).
 
-The kernel seems to otherwise be working quite well.  As this is new
-hardware, I cannot state that it is certainly working correctly.
+Owch.
 
-Obviously I suspect that something is wrong with how some memory
-management data structure is set up when the ptrace calls are being
-made by gdbserver, but I am not smart enough to have a clear idea of
-what to look for.  (I don't want to get lost in walking page tables
-and tracing TBL faulting and whatnot for another week--not if I don't
-have to.)  I have tried changing from our previous gdb and gdbserver
-to the Denx versions with same results.
+> Unfortunately, I don't know how many similar places of code are still
+> waiting to be found :(.
+> To be safe I think it's better to modify consistent_sync to handle such
+> "bad" buffers.
+>
+> If start and/or end of the buffer are not properly aligned I use "dcbf" to
+> flush corresponding cache line(s) and then call invalidate_dcache_range.
+>
+> This change doesn't affect performance of consistent_sync noticeably (like
+> in the variant I found in MV kernel, where invalidate_dcache_range was
+> changed to flush_dcache_range if USB was enabled)
 
-Suggestions?
+Good to know.
 
+> I don't know whether we should "ifdef" this for CONFIG_4xx and I know this
+> fix is ugly :)
+> I'm not even sure that such hacks should be included in the kernel :)))
+> (but I will definitely use it in my tree)
+>
+> Comments/suggestions are welcome!
 
-Thanks,
+Well, one thing that is worth noting is that the USB people knew this
+was a problem, and it was / should have been fixed in the 2.5 cycle.
+Similarly, SCSI was cleaned up a lot, so perhaps this has been fixed
+there.  I think it's generally known that doing DMA off of the stack is
+a bad idea, and should be fixed when found.
 
--kb
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
