@@ -1,67 +1,189 @@
-Date: Tue, 4 Feb 2003 12:32:24 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: was: FEC on MPC860T & race condition
-Message-ID: <20030204193224.GB3522@ip68-0-152-218.tc.ph.cox.net>
-References: <3E395B40.9090506@imc-berlin.de> <3E39898E.5060804@embeddededge.com> <3E3A3EE9.7000608@imc-berlin.de> <20030203210959.GA7857@ip68-0-152-218.tc.ph.cox.net> <3E3F7C29.8030807@imc-berlin.de> <20030204160401.GA30936@ip68-0-152-218.tc.ph.cox.net> <3E3FE6D0.1010600@imc-berlin.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3E3FE6D0.1010600@imc-berlin.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: brian.auld@adic.com
+Message-ID: <995FF289C9D69747A09E42992644595405B23649@penguin.adic.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Kernel boot: 'Kernel command line' not getting bootargs?????
+Date: Tue, 4 Feb 2003 11:39:39 -0800 
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Feb 04, 2003 at 05:14:08PM +0100, Steven Scholz wrote:
+Ebony/440GP progress update.
 
-> I'll attach my patch. It is not configurable since I think it won't break
-> anything.
+I'm almost there ... I can smell it, I can taste it, I can hear it .... but
+I just can't see or feel it yet.
 
-Okay.  Moving along the process, I have a comment:
+Wolfgang mentioned this in a previous post. As everyone knows, appropriate
+bootargs need to be passed for the kernel to boot with an nfs-mounted root
+filesystem. I've triple checked everything and am 99.9999% sure I'm setting
+the bootargs appropriately. For some reason, whenever I try booting, the
+'Kernel command line:' always says 'ip=on'. I searched the archives and
+couldn't anyone that had a similar problem.
 
-> @@ -2285,6 +2278,39 @@
->  	fep->old_status = 0;
->  #endif	/* CONFIG_USE_MDIO */
->
-> +#ifdef CONFIG_USE_MDIO
-> +# ifndef PHY_INTERRUPT
-> +#  error Want to use MII, but PHY_INTERRUPT not defined!
-> +# endif
-> +	/* before requesting the irq, we should wait until PHY is discovered
-> +	 * to avoid race conditions
-> +	 */
-> +	while (!fep->phy_id_done) {
-> +		udelay(5);
-> +	}
+I 'll attach my boot log with a printout of my u-boot env vars along the
+way:
 
-I believe this is wrong, in that trying to udelay() here is a bad idea.
-I don't have the time right now, but I suspect google, or #kernelnewbies
-might be able to suggest a more appropriate way of waiting here.
+*************************************************************************
+*************************************************************************
+***************************   BOOT LOG  *********************************
+*************************************************************************
+*************************************************************************
+U-Boot 0.2.0 (Jan 31 2003 - 05:12:55)
 
-Or perhaps classes have fried my mind, and this is correct.
+IBM PowerPC 440 Rev. C
+Board: IBM 440GP Evaluation Board (Ebony)
+        VCO: 800 MHz
+        CPU: 400 MHz
+        PLB: 133 MHz
+        OPB: 66 MHz
+        EPB: 66 MHz
+I2C:   ready
+DRAM:  I2c read: failed 4
+I2c read: failed 4
+128 MB
+FLASH:  4.5 MB
+PCI:   Bus Dev VenId DevId Class Int
+In:    serial
+Out:   serial
+Err:   serial
+KGDB:  kgdb ready
+ready
+BEDBUG:ready
+=> printenv
+baudrate=9600
+ethaddr=00:04:AC:E3:1B:54
+serial#=ADIC-Ebony1-iSCSI
+bootcmd=bootp; setenv bootargs root=/dev/nfs rw
+nfsroot=$(serverip):$(rootpath)
+ip=$(ipaddr):$(serverip):$(gatewayip):$(netmask):$(hostname)::off; bootm
+bootdelay=5
+stdin=serial
+stdout=serial
+stderr=serial
 
-> +	/* I found the following lines in a post from yhkim@da-san.com>
-> +	 * (http://lists.linuxppc.org/linuxppc-embedded/200110/msg00206.html)
-> +	 * But I am not sure if and why this is necessary.
-> +	 * Enable it just to be sure, be sure ... ?
-> +	 * It works for me without it.
-> +	 */
-> +#if 0
-> +	mii_do_cmd(dev, fep->phy->ack_int);
-> +	mii_do_cmd(dev, fep->phy->startup);
-> +
-> +	{
-> +		int tmp;
-> +		for (tmp = 0; tmp < 50; tmp++)
-> +			udelay(5);
-> +	}
-> +#endif
+Environment size: 272/4092 bytes
+=> bootp
+ENET Speed is 100 Mbps - HALF duplex connection
+BOOTP broadcast 1
+DHCP client bound to address 172.16.77.152
+ARP broadcast 1
+TFTP from server 172.16.77.151; our IP address is 172.16.77.152
+Filename '/tftpboot/vmlinux.PPCBoot'.
+Load address: 0x100000
+Loading: #################################################################
+         ####################################################
+done
+Bytes transferred = 594015 (9105f hex)
+=> printenv
+baudrate=9600
+ethaddr=00:04:AC:E3:1B:54
+serial#=ADIC-Ebony1-iSCSI
+bootcmd=bootp; setenv bootargs root=/dev/nfs rw
+nfsroot=$(serverip):$(rootpath)
+ip=$(ipaddr):$(serverip):$(gatewayip):$(netmask):$(hostname)::off; bootm
+bootdelay=5
+stdin=serial
+stdout=serial
+stderr=serial
+bootfile=/tftpboot/vmlinux.PPCBoot
+filesize=9105f
+gatewayip=172.16.77.1
+netmask=255.255.255.0
+hostname=ebony1-linux-iSCSI
+rootpath=/opt/eldk/ppc_4xx
+ipaddr=172.16.77.152
+serverip=172.16.77.151
 
-I believe this is an attempt at waiting as well.  Kick the PHY and do
-nothing until it's hopefully discovered.
+Environment size: 465/4092 bytes
+=> bootm
+## Booting image at 00100000 ...
+   Image Name:   Linux-2.4.20
+   Created:      2003-02-03  18:02:31 UTC
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    593951 Bytes = 580 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Linux version 2.4.20 (root@ppc-dev) (gcc version 2.95.4 20010319
+(prerelease/franzo/20011204)) #1 Mon Feb 3 12:59:58 EST 2003
+IBM Ebony port (C) 2002 MontaVista Software, Inc. (source@mvista.com)
+On node 0 totalpages: 32768
+zone(0): 4096 pages.
+zone(1): 28672 pages.
+zone(2): 0 pages.
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+****************************
+Kernel command line: ip=on * Why does this not reflect my bootarg??
+****************************
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+Calibrating delay loop... 599.65 BogoMIPS
+Memory: 127720k available (968k kernel code, 356k data, 212k init, 0k
+highmem)
+Dentry cache hash table entries: 16384 (order: 5, 131072 bytes)
+Inode cache hash table entries: 8192 (order: 4, 65536 bytes)
+Mount-cache hash table entries: 2048 (order: 2, 16384 bytes)
+Buffer-cache hash table entries: 8192 (order: 3, 32768 bytes)
+Page-cache hash table entries: 32768 (order: 5, 131072 bytes)
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd
+pty: 256 Unix98 ptys configured
+Serial driver version 5.05c (2001-07-08) with MANY_PORTS SHARE_IRQ
+SERIAL_PCI enabled
+ttyS00 at 0xfdfe9200 (irq = 0) is a 16550A
+ttyS01 at 0xfdfe8300 (irq = 1) is a 16550A
+Zmii bridge in RMII mode
+eth0: Phy @ 0x8, type Am79c875A (0x00225541)
+Reset ethernet interfaces
+Zmii bridge in RMII mode
+eth1: Phy @ 0x9, type Am79c875A (0x00225541)
+Reset ethernet interfaces
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP
+IP: routing cache hash table of 1024 buckets, 8Kbytes
+TCP: Hash tables configured (established 8192 bind 8192)
+eth0: IBM EMAC: link up, 100 Mbps Half Duplex, auto-negotiation complete.
+eth0: IBM EMAC: MAC 00:04:ac:e3:1b:54.
+eth0: IBM EMAC: open completed
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+eth1: IBM EMAC: link up, 10 Mbps Half Duplex.
+eth1: IBM EMAC: MAC 00:04:ac:e3:1b:55.
+eth1: IBM EMAC: open completed
+
+Sending BOOTP requests . OK
+IP-Config: Got BOOTP answer from 172.16.77.151, my address is 172.16.77.152
+IP-Config: Complete:
+      device=eth0, addr=172.16.77.152, mask=255.255.255.0, gw=172.16.77.1,
+     host=ebony1-linux-iSCSI, domain=adic.com, nis-domain=(none),
+     bootserver=172.16.77.151, rootserver=172.16.77.151,
+rootpath=/opt/eldk/ppc_4xx
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+Looking up port of RPC 100003/2 on 172.16.77.151
+Looking up port of RPC 100005/1 on 172.16.77.151
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 212k init
+modprobe: modprobe: Can't open dependencies file
+/lib/modules/2.4.20/modules.dep (No such file or directory)
+INIT: version 2.78 booting
+INIT: /etc/inittab[2]: missing action field
+INIT: /etc/inittab[13]: missing action field
+INIT: /etc/inittab[16]: missing action field
+INIT: /etc/inittab[20]: process field too long
+INIT: /etc/inittab[21]: missing action field
+INIT: /etc/inittab[22]: missing action field
+INIT: Entering runlevel: 3
+INIT: no more processes left in this runlevel
+
+*************************************************************************
+*************************************************************************
+*********************** BOOT LOG END     ********************************
+*************************************************************************
+*************************************************************************
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
