@@ -1,33 +1,31 @@
-Subject: MPC855T, SCC1 as UART hangs
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Mon, 16 Jun 2003 17:17:56 +0200
-Message-ID: <30C145E544071F4FB8B627789F7910BD328FF1@csy-exchange1.giat.intra>
-From: "ARIBAUD Albert" <A.ARIBAUD@giat-industries.fr>
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Date: Mon, 16 Jun 2003 11:27:08 -0400
+Message-Id: <200306161527.h5GFR8L20194@hyper.wm.sps.mot.com>
+From: Peter Barada <pbarada@mail.wm.sps.mot.com>
+To: Stephan.Linke@epygi.de
+Cc: rshen@udtech.com.cn, linuxppc-embedded@lists.linuxppc.org
+In-reply-to: <FCEAKDJJAPHPLJFINDAJIEKCDCAA.Stephan.Linke@epygi.de>
+Subject: Re: debugging using BDI2000 on MPC860
+References: <FCEAKDJJAPHPLJFINDAJIEKCDCAA.Stephan.Linke@epygi.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+>I don't know how to interprete this but it always stops with the following status:
+>
+>    Target state      : debug mode
+>    Debug entry cause : machine check interrupt
+>    Current PC        : 0x00000100
+>    Data  address     : 0x00000000
+>    DSISR value       : 0x00000000
 
-I have a MPC855T-based board with SMC1, SMC2 and SCC1 configured as UARTs (ttyS0 to 2).
-I also use SPI and I2C, and the FEC.
-The kernel is 2.4.4 from the ELDK; I tried the CVS linux_2.4 also.
+>From this you can see that the BDI stopped processing at address 0x100
+(Current PC) because of a machine check (Debug entry cause).  You
+should check the values of srr0/srr1, etc to determine why it took the
+machine check.
 
-My problem is:
-
-When I boot the board with the 2.4.4 kernel and the ELDK pRamdisk,
-I can cat /etc/protocols >/dev/ttyS2 alright; but if I boot using the same kernel but with an NFS-mounted root, then the same cat hangs until I ctrl-C it.
-
-Since the kernel is exactly the same in both cases, I thought I'd find something in /etc that would play tricks on ttyS2 during bootup, but I found none.
-
-Does anyone here use SCC1 as an UART on an MPC8xx, or have experienced similar problems trying?
-
-Thanks in advance,
-
-Albert.
-
+--
+Peter Barada                             Peter.Barada@motorola.com
+Wizard                                   781-852-2768 (direct)
+WaveMark Solutions(A Motorola Company)   781-270-0193 (fax)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
