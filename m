@@ -1,26 +1,26 @@
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Thu, 24 Apr 2003 08:56:36 -0700
-To: Chris Heintzelman <heintz@mail.utexas.edu>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: booting MGT5100?
-Message-ID: <20030424155636.GA2886@rover.farnsworth.org>
-References: <3EA70BDE.9080609@mail.utexas.edu> <20030424020846.GA1283@rover.farnsworth.org> <3EA8035E.3040705@mail.utexas.edu>
+Date: Thu, 24 Apr 2003 12:33:13 -0400
+From: Kent Borg <kentborg@borg.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: boot/simple in ROM?
+Message-ID: <20030424123313.A8490@borg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3EA8035E.3040705@mail.utexas.edu>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Apr 24, 2003 at 03:31:42PM +0000, Chris Heintzelman wrote:
-> Thanks for the info!  I'm also using an icecube board.  I'll grab the
-> code from mv when you post it there.
-> Do you use a bootloader or do you just use dbug to run a zImage?
->
-> -Chris H.
+The boot loader thingie in arch/ppc/boot/simple is nifty.  So why
+isn't there a provision for putting it on ROM?  (Or is there and I
+missed it?)  Because boot/simple decompresses to RAM at 0x0, it seems
+obvious that it might be decompressing from ROM.
 
-I'm using the boot_simple boot wrapper code.
+What is the right way to do this?  (Or, pointers on how to make it
+ROMable would be appreciated.)
 
--Dale
+
+Thanks,
+
+-kb, the Kent who got as far as Linux booting most of the way but not
+finding initrd because he has it messed up.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
