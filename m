@@ -1,32 +1,31 @@
-Message-ID: <67505026E29DD311A9AA00508B7315F350A61D@EXCHANGE>
-From: Julia Elbert <jelbert@enerdyne.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: uart.c 
-Date: Tue, 19 Dec 2000 17:10:01 -0800
+Message-ID: <3A402D0F.D7AED59E@mvista.com>
+Date: Tue, 19 Dec 2000 22:52:47 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Matthew Locke <mlocke@onemain.com>
+CC: Brett Carswell <BrettC@nulec.com.au>,
+        "'linuxppc-embedded@lists.linuxppc.org'"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: RPX Lite w MontaVista 1.2
+References: <383010226.977253498093.JavaMail.root@web621-wrb.mail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
-I want to send video/raw data over scc2 using uart.c on ttyS1.
-I am using 860T and 2.2.14 kernel
+Matthew Locke wrote:
 
-The receive side hangs, stops receiving data, it won't start up if it gets
-into a weird state, which I don't know what that is. I am thinking it is in
-my data somewhere or my port settings that turns off the receive all
-together? Could this be? Can I start it back up somehow? I used stty with
-raw to allow for all characters, but it does not seem to make a difference.
-Transmit works like a charm.
+> ..... In the new
+> bootloader NVRAM is not mapped by default. if you enable NVRAM in its config
 
-My goal is to then bind ttyS1 to ppp.
 
-Any clues are greatly appreciated,
-thank you in advance...
+I apologize....major confusion.  I thought the reference was to
+the NVRAM configuration in the Linux kernel, not the menu item on
+the bootloader menu.
 
---Julia
+That's why it works.  Thanks.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
