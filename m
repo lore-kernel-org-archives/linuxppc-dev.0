@@ -1,10 +1,10 @@
-Message-ID: <001401c0d901$6b166b80$3a10530c@default>
-From: "Navin Boppuri" <navin.boppuri@worldnet.att.net>
-To: "Sacha J. Bernstein" <sachab@wciatl.com>
+Message-ID: <004501c0d902$f9f7c320$8021690a@huawei.com>
+From: "machael thailer" <dony.he@huawei.com>
+To: "Freddy Lugo" <wilflugo@yahoo.com>, "Dan Malek" <dan@mvista.com>,
+	"Michael Habermann" <MHabermann@gmx.de>
 Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <686970000.986832826@sacha>
-Subject: Re: Embedded PPC Root FIlesystem
-Date: Wed, 9 May 2001 20:29:26 -0700
+Subject: Re: Uncompress Ok, but cannot run linux kernel...
+Date: Thu, 10 May 2001 11:40:36 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -12,40 +12,83 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-It's not really that bad. You do not need a PPC based desktop. Cross
-compilers from the MVista people lets you build stuff on an x86 machine for
-your MPC. For your file system, you can look at BootDisk HOWTO where they
-talk about building a root file system from scratch.
-http://www.linuxdoc.org/HOWTO/Bootdisk-HOWTO/
-Also, you learn how to reduce the file system size to fit into your embedded
-environment.
-I would also suggest you read the PowerPC Embedded HOWTO by Graham Stoney.
-http://penguinppc.org/usr/embedded/howto/PowerPC-Embedded-HOWTO.html
+> turn_on_mmu:
+>     .....
+>     SYNC
+>     RFI
 
-Hope this helps.
 
-Navin Boppuri
+>I am dealing with same problem.  After the rfi (on
+>turn_on_mmu) instruction an signal is generated and
+>the progam counter is lost.  When performing an rfi
+>most of the bits of the SRR1 registers become the MSR
+>bits and the SRR0 register become the next instruction
+>pointer (NIA).  I read the manual and if the new MSR
+>value enables some pending exceptions then this
+>exceptions are processed by exception priority.  The
+>bits modified after the rfi are MSR_IR & MSR_DR so I
+>think (I am not sure yet) this bits enables a waiting
+>exception of some kind and when the rfi is processed
+>the exception is executed.  gdb only said it recevies
+>a SIGSTOP signal.  I will be working with that today.
+>If I found anything I will let you know.
 
->
-> I'm currently trying to build a complete (with gcc and all other toosl
-> you'd expect to find on a full desktop install, but not X11) root
-> filesystem for an embedded device (with hard drive).  Is there already one
-> out there, or does anyone have any suggestions on how to do it?  I have no
-> desktop PPC machines, only x86.  I'm currently using one of the boot
-images
-> from hard hat linux, but it doesn't have a compiler and some other things
-I
-> wanted.  This is all on a MPC857T processor.  I've done embedded linux on
-> x86 machines before, and I'm now finding that it's more difficult than I
-> would have thought when I don't have a desktop depelopment machine if the
-> same archetecture...
->
-> Thank You
->
-> Sacha
->
->
->
+Now I can "turn_on_mmu" and run "start_here" . I make a mistake when I try
+to debug by outputing a character vi SERIAL Port after "turn_on_mmu".
+The serial port IO is 0xfe0003f8, and the "initial_bats" only do the
+physical address 0~256M to virtual address 0xc0000000~0xc0000000+256M
+memory-mapping. To make the serial port output work, we have to do
+additional memory-mapping from physical address 0xf000000-0xffffffff to
+virtual address 0xf0000000~0xffffffff as following:
+
+initial_bats:
+        ......
+        ......
+       mtspr DBAT0L,r8
+        mtspr DBAT0U,r11
+        mtspr IBAT0L,r8
+        mtspr IBAT0U,r11
+
+/*the start added  lines  */
+        lis r9,0xf000
+        ori    r9,r9,0x1ffe
+        lis r8,0xf000
+        ori r8,r8,0x2a
+        mtspr DBAT1L,r8
+        mtspr DBAT1U,r9
+/*the end added lines*/
+
+        isync
+        blr
+
+Now I meet a new problem. I can run through here:
+start_here:
+...
+bl identify_machine
+bl MMU_init
+lis r4,2f@h
+ ori r4,r4,2f@l
+ tophys(r4,r4)
+ li r3,MSR_KERNEL & ~(MSR_IR|MSR_DR)
+ FIX_SRR1(r3,r5)
+ mtspr SRR0,r4
+ mtspr SRR1,r3
+ SYNC
+ RFI
+
+  /*Here I add my serial output codes, but it outputs nothing. System seems
+to halt here?*/
+
+2:
+  sync
+  tlbia
+  sync
+
+Do you have any ideas?
+thank you very much.
+
+
+machael thailer
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
