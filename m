@@ -1,57 +1,42 @@
-Date: Fri, 10 Mar 2000 09:31:18 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Patrick Lerda <Lerda@microprocess.com>
-cc: David Monro <davidm@amberdata.demon.co.uk>,
-        "'Gabriel Paubert'" <paubert@iram.es>,
-        Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
-Subject: RE: IBM 850 - Open Firmware or not? and more on the ide byteswapg
- ame...
-In-Reply-To: <902CA06399F5D311AAAC00500422FC63094031@iis000.microdata.fr>
-Message-ID: <Pine.LNX.4.05.10003100925530.13249-100000@callisto.of.borg>
+Date: Fri, 10 Mar 2000 10:18:36 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+cc: Sean Harding <sharding@dogcow.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: compiler optimization? something else?
+In-Reply-To: <4.3.2.20000309152803.00ca9100@mail.munich.netsurf.de>
+Message-ID: <Pine.HPX.4.10.10003100954580.22162-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 9 Mar 2000, Patrick Lerda wrote:
-> I think porting Linux PPC to little endian could be a great idea. Now, all
-> systems
-> use PCI, and little endian is the native mode of this bus. Trying
-> to get all PCI hardware well supported on Linux i386 working on a PowerPC
-> box
-> is an headache, and a lot of drivers and programs don't work proberly for
-> only one
-> reason: endianess... Using PowerPC in big endian mode is only understandable
 
-Endianness is definitely not the only reason for drivers and programs that
-don't work. We also have problems with mb(), char (un)signedness and I/O
-mappings, just to name a few.
 
-While having a little endian Linux/PPC may seem to solve this issue, it would
-introduce a lot of other CPU-related problems (cvfr. Gabriel Paubert's mails).
-Furthermore it would remove one more reason for people not trying to write
-portable and clean code. And there are other big endian platforms as well.
+On Thu, 9 Mar 2000, Franz Sirl wrote:
 
-Also having a little endian Linux/PPC would drop us to the same level as a
-well-known company from Redmond that doesn't seem to be able to write portable
-OSses. Even their embedded gimmick is available for little endian (or
-bi-endian) CPUs only.
+> But what compiler options did it use on with your compile? I downloaded it
+> myself and it seems to default to a simple -O, which is a rather
+> non-optimal choice. Try editing the Makefile and play with combinations of
+> these options:
+>
+> -O2, -O3, -funroll-loops, -funroll-all-loops, -ffast-math (dunno if this
+> one has an effect on PPC at all), -finline-functions, -mcpu=604, -mcpu=750
 
-> in closed
-> computers like iMac.
+-ffast_math has some effects in the generic part of the compiler
+(simplifying some expressions and constant folding) since even some
+obvious mathematical relationships do not hold with IEEE floating point.
+Main reasons are the existence of NaNs and the distinction between
+positive and negative zeroes. (x+0 and x-0 can't be simplified, x==x may
+not be true...).  -ffast-math will also replace divisions by constants
+with multiplies, which may be slightly less precise but is always
+significantly faster (especially on a 604).
 
-There are lots of technical reasons running big endian OSses on PPC.
+If you don't have a 601 -fgfxopt might also help since it will generate
+fsel instructions for min/max/conditional moves. fsel is unfortunately not
+implemented on 601 so you can't set gfxopt for distributions.
 
-Gr{oetje,eeting}s,
+	Gabriel.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
