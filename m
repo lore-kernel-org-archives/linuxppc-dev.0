@@ -1,60 +1,54 @@
-Message-Id: <199908122005.WAA00317@piglet.cpu.lu>
-Date: Thu, 12 Aug 1999 22:05:47 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Trying a Promise Ultra/66 on powerpc
-To: drow@false.org
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <19990808232621.B352@them.org>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Date: Fri, 13 Aug 1999 11:51:53 +1000
+Message-Id: <199908130151.LAA31102@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: dgatwood@mvista.com
+CC: Jes.Sorensen@cern.ch, Geert.Uytterhoeven@cs.kuleuven.ac.be,
+        linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu,
+        rth@cygnus.com
+In-reply-to: <Pine.LNX.3.96.990812115345.25431A-100000@mvista.com>
+	(dgatwood@mvista.com)
+Subject: Re: [linux-fbdev] Re: readl() and friends and eieio on PPC
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <Pine.LNX.3.96.990812115345.25431A-100000@mvista.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   8 Aug, this message from Daniel Jacobowitz echoed through cyberspace:
-> On Sun, Aug 08, 1999 at 09:54:12PM +0200, Michel Lanners wrote:
->> >> > /dev/hdc:
->> >> >   Timing buffered disk reads:  32 MB in  5.83 seconds = 5.49 MB/sec
->> ;-)) How about this:
->> 
->> /dev/hde:
->>  Timing buffered disk reads:  64 MB in  6.60 seconds = 9.70 MB/sec
->> Maxtor 91024D4; 10G 7200 RPM, UDMA-2 ie 33 MB/s.
-> 
-> Eek.  I want that :)
+David A. Gatwood <dgatwood@mvista.com> wrote:
 
-No, you'd rather want _this_:
+> No, that's not the only argument.  eieio and... isync, I think... causes
+> the PPC 601 to shift one of its registers a few bits and send out an
+> address only transaction using the address that results from that.  I
 
-/dev/hda:
- Timing buffered disk reads:  64 MB in  4.67 seconds =13.70 MB/sec
+I can understand eieio causing an address-only transaction, but the
+address should just be ignored.
 
-bonnie looks even more impressive:
+> can't remember which register off the top of my head.  MkLinux ran into
+> this in the late Pre-DR3 stage and it nearly cost us a large percentage of
+> x100 support do to a hardware bug that can cause the machine to hang if an
+> address only transaction is done into certain parts of the address space.
 
-              -------Sequential Output-------- ---Sequential Input-- --Random--
-              -Per Char- --Block--- -Rewrite-- -Per Char- --Block--- --Seeks---
-Machine    MB K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU  /sec %CPU
-max       200 12816 86.2 12382 38.7  5104 32.4 12365 84.6 20219 50.6 156.4  2.7
+Hmmm, I didn't see any such problems with the 7200 and 7500 powermacs,
+which have a 601 cpu.  It's a hardware bug in the x100's memory
+controller or nubus bridge, right?  I guess it's lucky you actually
+have some control over the address that gets put out. :-)
 
-This is still with the Maxtor drive, but with forcing the burst bit
-enabled:
+> The workaround is a really nasty bunch of code that creates a sizable
+> performance hit by forcing that register to be cleared before the eieio
+> and restored afterwards.  As a result, putting eieio in those macros will
+> have a _very_ major performance hit if yuo ever start supporting x100
 
-PDC202XX_FORCE_BURST_BIT=y
+Surely it should only take a couple of cycles to move a register to
+another and clear it?  I agree it's a pain though.  Actually, with gcc
+the asm statement that uses the eieio could just specify the register
+(which one is it?) as an input and give it the value 0.
 
-I suppose this changes the way data is transfered across the PCI bus,
-making the Promise send bursts of data rather than single longs.
+I think a resolution of this issue is going to have to involve Linus
+and the whole Linux community.  We may need two forms of the bus
+access macros, one with the eieio's and one without.  I think the
+`ordinary' form should have the eieio's, though.
 
-So try it for yourself....
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
