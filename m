@@ -1,62 +1,47 @@
-Date: Wed, 11 Oct 2000 21:09:08 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+Date: Wed, 11 Oct 2000 15:26:33 -0400
+From: Josh Huber <huber@mclx.com>
+To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: dual head r128
-To: Josh Huber <huber@mclx.com>
-Cc: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Message-id: <39E4BAD4.E78B4E3B@student.ethz.ch>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-References: <20001011141722.A1437@missioncriticallinux.com>
- <39E4B4D0.FA62D929@student.ethz.ch>
- <20001011145249.B1437@missioncriticallinux.com>
+Message-ID: <20001011152633.A1614@missioncriticallinux.com>
+References: <20001011141722.A1437@missioncriticallinux.com> <39E4B4D0.FA62D929@student.ethz.ch> <20001011145249.B1437@missioncriticallinux.com> <39E4BAD4.E78B4E3B@student.ethz.ch>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-md5;
+	protocol="application/pgp-signature"; boundary="J/dobhs11T7y2rNN"
+In-Reply-To: <39E4BAD4.E78B4E3B@student.ethz.ch>; from daenzerm@student.ethz.ch on Wed, Oct 11, 2000 at 09:09:08PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Josh Huber wrote:
+--J/dobhs11T7y2rNN
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > Have you built X yourself? If yes, you need patches from Ani Joshi. The
-> > memory and clock values it probes are obviously bogus.
->
-> > Wait a minute, I see you are using debs, which should contain Ani's stuff.
-> > Does aty128fb work on the second card? If yes, try Option "UseFBDev".
->
-> Yeah, I'm using the debs, but it looks like the latest xserver-xfree86
-> ppc packages are still at phase2v5, while the other packages are up to
-> phase2v15.  Perhaps the code is just a little too old?
+On Wed, Oct 11, 2000 at 09:09:08PM +0200, Michel D?nzer wrote:
+> I guess it's because Branden doesn't build the powerpc debs himself or An=
+i's
+> patches didn't apply cleanly anymore.
 
-I guess it's because Branden doesn't build the powerpc debs himself or Ani's
-patches didn't apply cleanly anymore.
+Yeah, like Tom said, I think it's because the patches broke x86
+systems.  What I think I'm going to do is get the source package for
+xfree 4, rsync ani's stuff and rebuild a package.
 
+I'll also upgrade to 2.4 to see if that makes a difference.
 
-> BTW, no...I don't have aty128fb working on the secondary head -- is
-> there some option to tell the driver to scan for all cards?  does it
-> do this by default?
+btw, dmesg shows that the fbcon system only detected one card -- the
+AGP one.
 
-I think you need to add a second video=aty128fb and/or video=map:000001 or
-similar. Oh, and while we're at it, maybe you also need the libfbdevhw.a from
-http://n.ethz.ch/student/daenzerm/download/X4-fbdev-test.tar.bz2 for the
-second head to work with fbdev.
+Thanks for the help,
+--=20
+Josh
+| huber@mclx.com |
+1024D/6B21489A 61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
 
-
-> The secondary card is a PC card, so it's not initialized by OF, but I
-> think the r128 fb driver does a proper initialization of the card, so
-> that shouldn't be the problem.
-
-AFAIK it may be a problem with 2.2 kernels (for aty128fb) though.
+--J/dobhs11T7y2rNN
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 
-> btw, I'm using the debian kernel that shipped with potato -- perhaps I
-> should try a newer one?  ben's or a 2.4 kernel perhaps?
-
-That might be a good idea at any rate.
-
-
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
+--J/dobhs11T7y2rNN--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
