@@ -1,42 +1,54 @@
-Date: Fri, 3 May 2002 10:14:13 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: initrd in 2.4.19
-Message-ID: <20020503001413.GT9043@zax>
-References: <D769D33A5A2FBD4381E1F6030D28DBFA01029C92@hq-ex-6>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <D769D33A5A2FBD4381E1F6030D28DBFA01029C92@hq-ex-6>
+Message-ID: <003a01c1f23d$37cad0d0$3200a8c0@genetelhychon>
+From: =?ks_c_5601-1987?B?wPzH/b+1?= <hychon@corebell.co.kr>
+To: "linuxppc_mailing" <linuxppc-embedded@lists.linuxppc.org>
+Subject: can you terll me how to find  sources 
+Date: Fri, 3 May 2002 09:55:19 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, May 02, 2002 at 10:13:30AM -0700, Brian Kuschak wrote:
->
-> > I want to use pivot_root, so I don't use the special /linuxrc running
-> > code.  Instead I use "init=/linuxrc" as part of the command line.  If
-> > you do this your first script should work fine (pivot follwed by
-> > chroot).  But to be honest, I don't chroot.  I don't think it's
-> > necessary.
->
-> Using init=/linuxrc allows my first script to work.
->
-> However, it's a bit restrictive:  if I want to override the usual boot
-> sequence and get the kernel to mount the real root and drop into a shell I
-> can't use this method.  With the 'old-style' script, I can set
-> "init=/bin/bash".  These get applied AFTER /linuxrc terminates.  If I use
-> your method, I can't do that.
+hello!
 
-Remember that any kernel command line options that the kernel doesn't
-recognize get passed to init - as environment variables if they
-contain a "=" and as command line arguments otherwise.  So it's fairly
-easy to invent a new parameter to control the "real" init and have
-your linuxrc interpret it and act accordingly.
+I looking for source/binaries ( example> sh, init etc... ) for MPC8xx.
+but It was difficult!
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
+
+Could you tell me how to find the sources??
+Are you konw How to find the sources ( for 860 )   where ?
+
+
+I read a following message in mailling web site ( http://lists.linuxppc.
+org/linuxppc-embedded/200003/msg00077.html )
+I go to the http://www.mvista.com site , but I can't anyting source
+
+I know that Montavista was support CDK1.2 and CDK2.0 jornal version  in free before,
+but that is not support now
+
+I want to konw that how to get the source and how to compile??
+
+when I was compile the source from GNU(gnu.org) ,
+it was not like to support powerpc-linux cross- compiling.
+( cross-compiler was made in gcc-2.95 and glib-2.2.3)
+
+I was compile the download source("bash-xxx.tar.gz" ) from  ftp.gnu.org  with following option
+#./configure --host=poweprc-linux --build=i386-linux
+
+but It was appear following error message
+
+checking  whetehr setvbuf argument are reserved... configure: error cannot
+run test program while cross compiling
+
+I think it was correct!
+what's problem?? I'm not understanding.
+help me?
+
+Could you tell me how to find  sources and  how to correct compiling ??
+
+and I can you give me the SRPMS file for CDK1.2 (in free!)
+
+Thanks for reading!!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
