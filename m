@@ -1,33 +1,40 @@
-Message-Id: <l03010d00b29c9d33a288@[207.244.110.41]>
+Date: Tue, 15 Dec 1998 23:36:30 +0000
+From: Hartmut Koptein <koptein@et-inf.fho-emden.de>
+To: VALETTE Eric <valette@crf.canon.fr>
+Cc: Andries.Brouwer@cwi.nl, debian-powerpc@lists.debian.org,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Support for cfdisk for Linux-PowerPC
+Message-ID: <19981215233630.A5922@ramses>
+References: <UTC199812120128.CAA111349.aeb@texel.cwi.nl> <m0zpbhD-0000WVC@tri-yann.crf.canon.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 15 Dec 1998 18:17:38 -0500
-To: linuxppc-user@lists.linuxppc.org
-From: Ezekiel <dwheeler@eris.cs.umb.edu>
-Subject: power center pro framebuffer not working
-Cc: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <m0zpbhD-0000WVC@tri-yann.crf.canon.fr>; from VALETTE Eric on Mon, Dec 14, 1998 at 06:22:11PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-accel X does not work with the onboard ATI RAGE II graphics on the power
-center pro 210. my configuration is such: kernel: 2.1.130, fb0 is
-configured as  mknod fb0 c 29 0(i think thats it, I basically took  the set
-up out of the fb readme that came with 2.1.130)I have the  appropriate
-stuff compiled into the kernel. I will gladly provide a dmesg or .config if
-wanted.  4mb video, also an XclaimVR card with 4 mb ram on it in the 2nd
-pci slot (not in use, due to lack of monitor). If anyone has any info on
-this I'd appreciate getting the low-down on it, otherwise, I suppose this
-is a bug report on either 2.1.130  or XF68_FBDev 121098
+> Andries>  I have alreday got a lot of patches for powerpc.
+> Andries> ...
+> Andries> I'll try to make util-linux-2.9f within a week. No promises.
+> 
+> Andries> See ftp.win.tue.nl
+> 
+> I tried it  => congratulation works fine. I even noticed you added the 0x41
+> partition type. This is very kind. I now have cfdisk able to work on 
+> 
+> 	  - RH4 for powerpc,
+> 	  - Debian slink (aka 2.1) for powerpc,
+> 
+> Please note that this may highly interest debian people who have no
+> working cfdisk yet. I tested the logical partitions : they work great as 
+> shown below.
 
--zk
+Have you tried if this harddisk works then also with an intel-linux box?
 
-<><><><><><><><><><><><><><><><><><><><>
-Donn Ezekiel Wheeler
-dwheeler@eris.cs.umb.edu
-dwheeler@mars.cs.umb.edu
-http://www1.shore.net/~cp/zk/zk.html
+Regards,
 
+
+        Hartmut
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
