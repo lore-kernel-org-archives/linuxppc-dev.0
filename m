@@ -1,34 +1,43 @@
-Message-ID: <3F0C7B57.1030509@paulidav.org>
-Date: Wed, 09 Jul 2003 13:30:15 -0700
-From: Vladimir Gurevich <vag@paulidav.org>
-MIME-Version: 1.0
-To: Kent Borg <kentborg@borg.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Heretical Question
-References: <20030709155723.G20807@borg.org>
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+To: Kent Borg <kentborg@borg.org>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
 In-Reply-To: <20030709155723.G20807@borg.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+References: <20030709155723.G20807@borg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 09 Jul 2003 22:53:15 +0200
+Message-Id: <1057783996.3430.275.camel@spawn>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Kent,
+On Wed, 2003-07-09 at 21:57, Kent Borg wrote:
+>
+> I know it is wrong for me to ask, but is there (possibly already
+> lurking in my Red Hat box?) a graphical front end to GDB that will
+> work with embedded programming?  Emacs already lets me debug with
+> source code pretty well (not assembly, however), and that is nice, but
+> what I really miss is a way to browse through data structures.  Kdbg
+> looks good, but it seems to be for native debugging only (though I
+> might hack at it a little to issue the elusive "target remote ...").
+> It is possible ddd would do, but it also seems to be for native
+> debugging only too.
+>
+> Suggestions?
+>
 
-I guess
+http://sourceware.redhat.com/insight/
 
-        ddd --gdb --debugger ${CROSS_COMPILE}gdb <elf_file>
+Never tried but since this is the old cygnus stuff it really should do
+cross debugging well.
 
-is what you are looking for.
 
-With regards to assembly language debugging your mileage may
-vary. While GDB supports assemblty language there seem to be
-a couple of bugs which sometimes prevent you from doing it
-(mostly when the code is being relocated). Wolfgang Denk
-is working on it. And make sure you compile your assembly
-code with -gstabs to enable line number information.
-
-Thanks,
-Vladimir
+--
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 719 70 20
+Tellusborgsvägen  90              Fax: +46 8 719 29 45
+126 25 Stockholm                  ken@switchboard.ericsson.se
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
