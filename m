@@ -1,29 +1,25 @@
-Message-ID: <3BD82D8A.F0DC3B77@mvista.com>
-Date: Thu, 25 Oct 2001 11:19:38 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Okehee Goh <ogoh@asu.edu>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MMU in MBX860
-References: <AEEDJHMEPHBIHBAHOOCDIELKCAAA.ogoh@asu.edu>
+Date: Thu, 25 Oct 2001 11:24:01 -0400
+From: Kent Borg <kentborg@borg.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: source.mvista.com::linuxppc_2_4_devel rsync alive?
+Message-ID: <20011025112401.B11751@borg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Okehee Goh wrote:
+Is the source.mvista.com::linuxppc_2_4_devel rsync alive and current?
+I though I had a nice system for grabbing changes from it, and I can
+do an rsync to it, but I am not seeing any changes for quite a few
+days.  Commit e-mails are going by...
 
->  The problem is that it shares one global page table between kernel and
-> application processes.
+Am I doing something wrong?
 
-You can support any type of memory mapping and protection you wish using a
-combination of features supported by the 8xx MMU and standard operating
-system mapping techniques.  What you are asking to do isn't difficult, but
-asking us to design your system for you in a reasonable period of time
-isn't likely to happen on this mailing list :-).
 
-Good Luck.
+Thanks,
 
-	-- Dan
+-kb
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
