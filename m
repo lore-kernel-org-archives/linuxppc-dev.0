@@ -1,50 +1,35 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Tue, 03 Oct 2000 16:15:33 +0100 (CED)
-Subject: VxWorks Bootloader, PowerQuicc II, HHL1.2
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: kernel@linux01.hasler.ascom.ch
-Message-id: <0G1U002DRYBDLP@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_eGNhMvxyPmND48jgsemcjw)"
+Message-ID: <085701c02daa$2d8a9140$2a6cabd3@dolbae>
+From: "SangTae Ha" <stha@netstech.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC850 and ATA/IDE 
+Date: Wed, 4 Oct 2000 11:24:05 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---Boundary_(ID_eGNhMvxyPmND48jgsemcjw)
-Content-type: TEXT/PLAIN
-Content-Transfer-Encoding: 7BIT
+Hi,
+I am looking for the solution that I can use ATA/IDE general hard disk like that of PC in my MPC 850 based board.
+Our board spec. is as follows.
 
-Hi
+MPC850 CPU
+2M Intel FLASH Memory
+2 Ethernet interfaces
+16M SDRAM
+...
 
-I try to boot Linux on my SBC8260 PowerQuicc II evaluation board using
-HHL1.2.
+After finishing our embedded linux porting project on MPC850, successfully done, we want to add some features like supporting IDE hard disk. But it's not easy, I feel.
 
-I'm now able to decompress the kernel but booting doesn't work.
-
-
-[VxWorks Boot]: g 400000
-Starting at 0x400000...
-
-loaded at:     00400000 0040B278
-zimage at:     0040B278 0047CBA6
-avail ram:     0047D000 01000000
-
-Linux/PPC load:
-Uncompressing Linux...done.
-Now booting the kernel
-<crash>
+ MPC860 or MPC821 CPU is used and Wind bond 83C553 is used for EIDE port in MBX board. MPC850 also can be used for that purpose?
+Could you recommend the reference board  which we can refer to?
 
 
-Did someone experience the same problem?
 
-I checked the kernel 2.4.0-test8 out with the same frustrating result!
+Please~~ Help me.
 
-Do I have to provide some magic kernel params?
+Thanks in advance.
 
-Thank you
-
-Ruedi
-
---Boundary_(ID_eGNhMvxyPmND48jgsemcjw)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
