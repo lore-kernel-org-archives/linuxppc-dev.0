@@ -1,13 +1,11 @@
-Date: Mon, 27 Mar 2000 11:58:25 +0200 (CEST)
+Date: Mon, 27 Mar 2000 12:01:12 +0200 (CEST)
 From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Michel Dänzer <michdaen@iiic.ethz.ch>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Gabriel Paubert <paubert@iram.es>,
-        Benjamin Herrenschmidt <bh40@calva.net>,
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Gabriel Paubert <paubert@iram.es>, Benjamin Herrenschmidt <bh40@calva.net>,
         linuxppc-dev@lists.linuxppc.org
 Subject: Re: LongTrail PCI resource assignment
-In-Reply-To: <38DF2D3E.2E5B19E7@iiic.ethz.ch>
-Message-ID: <Pine.LNX.4.10.10003271147390.31775-100000@opal.biophys.uni-duesseldorf.de>
+In-Reply-To: <Pine.GSO.4.10.10003271148530.11532-100000@dandelion.sonytel.be>
+Message-ID: <Pine.LNX.4.10.10003271159060.31775-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -16,24 +14,40 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 > > Applying Geerts patch (minus the PCIBIOS_MIN_MEM patch) plus the following
 > > one solves my PCI address conflict for the Mach64 by reallocating the MMIO
+>
+> So it works without changing PCIBIOS_MIN_MEM? I'm wondering what address is
+> assigned to the secondary aperture? Can you please send me the output of
+> `lspci -vv'? Thx!
+
+00:11.0 VGA compatible controller: ATI Technologies Inc: Unknown device
+4c49 (rev dc)
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR- FastB2B-
+	Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 8 min, 32 set, cache line size 08
+	Interrupt: pin A routed to IRQ 24
+	Region 0: Memory at 81000000 (32-bit, non-prefetchable)
+	Region 1: I/O ports at <unassigned>
+	Region 2: Memory at 00010000 (32-bit, non-prefetchable)
+	Capabilities: [5c] Power Management version 1
+		Flags: PMEClk- AuxPwr- DSI- D1+ D2+ PME-
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+
 > > aperture, and allows XFree86 4.0 to run on my Lombard.
 >
-> Great news! So how does it compare to 3.3.x for you?
+> Guess I have to try 4.0 as well...
 
-It feels a lot slower (15/16 bpp as fast as 32 before), 16 bpp have messed
-up color (green too bright, maybe 565 is wrong after all), 32 bpp fails to
-start (no screen found, weight 000 inconsistent with depth 32).
+Does this mean you didn't compile it already? :-)
 
-I need to figure out what the pixel format for 16 and 32 bpp really is.
-Currently the X server refuses to start up if the RGB weights don't add up
-to the screen depth, and depth 32 isn't supported at all. 24 bpp works but
-it's really slower than 32 bpp before. Plus the X server refuses to
-cooperate with xscreensaver and consistently kicks me out after 10
-minutes.
+> > -					r->start -= r->end;
+> > +					r->end -= r->start;
+> >  					r->start = 0;
+> >  				}
+> >  			}
+>
+> I copied this buglet from arch/i386/kernel/pci-i386.c.
 
-Even with not loading the more arcane extensions the X server weighs in at
-21 MB (I recall 17 or so before), that might explain the slowdown a bit.
-Need to work on the accelerated Mach64 driver perhaps.
+I noticed after reading linux-m68k - how did that thread move there?
 
 	Michael
 
