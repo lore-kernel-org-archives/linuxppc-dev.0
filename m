@@ -1,44 +1,51 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Eddy Raineri <eraineri@axiom-tx.com>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Quad SMP on G4
-Date: Mon, 16 Apr 2001 19:01:58 +0200
-Message-Id: <20010416170158.17749@smtp.wanadoo.fr>
-In-Reply-To: <000d01c0c68c$b65be250$3e03a8c0@dnaent.com>
-References: <000d01c0c68c$b65be250$3e03a8c0@dnaent.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: bigmouth@pionet.net
+Message-Id: <200104162315.SAA24595@mail1.pionet.net>
+Subject: LinuxPPC and interrupt assignment of non-mac cards (adaptec 3950U2W)
+To: linuxppc-dev-digest@lists.linuxppc.org
+Content-type: text/plain
+Mime-version: 1.0
+Date: Mon, 16 Apr 2001 18:15 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->4)  One more simple question.  I'm unclear as to which 2_4 version I should
->pull from I have been using the linuxppc_2_4 kernel and not linus' is this
->correct?  I'm trying to stay current on the PPC fixes for the 2_4 kernel.  I
->am assuming that any fixes Linus makes to the kernel will be put into the
->linuxppc_2_4 version however any fixes made in general by the PPC group
->might not make it into the Linus version.
->
->I apologize if this is repeated.  I'm trying desperately to find the
->resources necessary for me to stay informed but may have not found it yet.
->
+Well, I seem to have opened up a big can of worms for a kernel/device driver novice.  Working on trying to get an adaptec 3940u2w card behaving on my G3 beige.  I know that the macos won't support this card in a million years, but I thought that linux would like it better.  It seems that the pci subsystem sees the card and identifies a memory address, but no IRQ.  A friend told me that all the irq information is taken from OF.  Is there no way for linux to say, "wait a minute, this has no IRQ.  Better get it one" to provide better support for non-mac cards?  Or does it already do that?  Here's the /proc/pci dump...
 
-The linuxppc_2_4 is the current kernel for PPC, yes. It contains the
-latest PPC fixes and Linus patches are regulary merged in (it's currently
-at 2.4.4pre3).
+PCI devices found:
+  Bus  0, device   0, function  0:
+    Host bridge: Motorola MPC106 Grackle (rev 64).
+      Fast devsel.  Fast back-to-back capable.  Master Capable.  No bursts.
+  Bus  0, device  13, function  0:
+    Ethernet controller: LiteOn Unknown device (rev 37).
+      Vendor id=11ad. Device id=c115.
+      Medium devsel.  Fast back-to-back capable.  IRQ 23.  Master Capable.  Latency=32.  Min Gnt=8.Max Lat=56.
+      I/O at 0xc00 [0xc01].
+      Non-prefetchable 32 bit memory at 0x81800000 [0x81800000].
+  Bus  0, device  14, function  0:
+    SCSI storage controller: Adaptec AHA-3940U2 (rev 0).
+      Medium devsel.  Fast back-to-back capable.  BIST capable.  Master Capable.  Latency=32.  Min Gnt=39.Max Lat=25.
+      I/O at 0x800 [0x801].
+      Non-prefetchable 64 bit memory at 0x81802000 [0x81802004].
+  Bus  0, device  14, function  1:
+    SCSI storage controller: Adaptec AHA-3940U2 (rev 0).
+      Medium devsel.  Fast back-to-back capable.  BIST capable.  Master Capable.  Latency=32.  Min Gnt=39.Max Lat=25.
+      I/O at 0x400 [0x401].
+      Non-prefetchable 64 bit memory at 0x81801000 [0x81801004].
+  Bus  0, device  16, function  0:
+    Hot Swap Controller: Apple Unknown device (rev 1).
+      Vendor id=106b. Device id=10.
+      Medium devsel.  Master Capable.  Latency=32.
+      Non-prefetchable 32 bit memory at 0xf3000000 [0xf3000000].
+  Bus  0, device  18, function  0:
+    VGA compatible controller: ATI Mach64 GT (Rage II) (rev 154).
+      Medium devsel.  Fast back-to-back capable.  IRQ 22.  Master Capable.  Latency=32.  Min Gnt=8.
+      Non-prefetchable 32 bit memory at 0x82000000 [0x82000000].
+      I/O at 0x400 [0x401].
 
-As far as you lock problem is concerned, I can't help you. All I can say
-for now is that it workes well on other SMP machines like the Apple dual
-G4, so this makes me think you might have a bus arbitration problem.
 
-Also, do you have the kernel BAT mapped or did you remove that optim ?
-I'm not too sure the hash table code is very safe to run without this.
-I beleive that without the BAT mapping, the code & data that are
-touched when the hash table lock is held should be locked in the TLB as
-well to avoid deadlocks.
+Please, any help would be great for me and the adaptec maintainer...
 
-Ben.
+Sean
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
