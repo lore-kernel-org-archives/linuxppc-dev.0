@@ -1,23 +1,41 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from mwinf0610.wanadoo.fr (smtp6.wanadoo.fr [193.252.22.25])
-	by ozlabs.org (Postfix) with ESMTP id 125F92BF0E
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jan 2005 02:39:34 +1100 (EST)
-Received: from smtp6.wanadoo.fr (mwinf0608 [172.22.137.38])
-	by mwinf0610.wanadoo.fr (SMTP Server) with ESMTP id DB4018011E1
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Jan 2005 16:39:25 +0100 (CET)
-Date: Wed, 5 Jan 2005 16:47:53 +0100
-To: Marc Dietrich <marvin24@gmx.de>
-Message-ID: <20050105154753.GA26760@pegasos>
-References: <200412261435.13562.marc.dietrich@ap.physik.uni-giessen.de>
-	<200501041504.57588.marvin24@gmx.de>
-	<1104850036.6164.25.camel@weizen.left.earth>
-	<200501051233.25622.marvin24@gmx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200501051233.25622.marvin24@gmx.de>
-From: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [FYI] linux 2.6 still not working with PReP (ppc32)
+Return-Path: <hollis@penguinppc.org>
+Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "over.ny.us.ibm.com",
+	Issuer "Network Services" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id EC3122BF0E
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jan 2005 02:49:41 +1100 (EST)
+Received: from e33.co.us.ibm.com (e33.esmtp.ibm.com [9.14.4.131])
+	by pokfb.esmtp.ibm.com (8.12.10/8.12.10) with ESMTP id j05FjQjK019504
+	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Jan 2005 10:45:26 -0500
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e33.co.us.ibm.com (8.12.10/8.12.9) with ESMTP id j05FjGCO686844
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Jan 2005 10:45:17 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay05.boulder.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
+	j05FjGQn147388
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Jan 2005 08:45:16 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11/8.12.11) with ESMTP id
+	j05FjFfI013141
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Jan 2005 08:45:15 -0700
+In-Reply-To: <20050105114719.GB14332@pegasos>
+References: <33721.82.10.231.190.1104781370.squirrel@82.10.231.190>
+	<33151.82.10.231.190.1104878355.squirrel@82.10.231.190>
+	<20050105090318.GA12317@pegasos> <200501051049.19225.pguyot@cvf.fr>
+	<20050105114719.GB14332@pegasos>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <C9ACD772-5F30-11D9-A2C3-000A95A0560C@penguinppc.org>
+From: Hollis Blanchard <hollis@penguinppc.org>
+Date: Wed, 5 Jan 2005 09:45:13 -0600
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: Ulrich Teichert <krypton@ulrich-teichert.org>, linuxppc-dev@ozlabs.org,
+	mikemartin@linux.ca, debian-powerpc@lists.debian.org,
+	Philippe Guyot <pguyot@cvf.fr>
+Subject: Re: 43p-140 install issues
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,57 +45,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 05, 2005 at 12:33:25PM +0100, Marc Dietrich wrote:
-> 
-> Hallo Sebastian,
-> 
-> Am Dienstag, 4. Januar 2005 15:47 schrieb Sebastian Heutling:
-> > Hello again Marc,
-> >
-> > > > >Can you put a working zImage.prep somewhere on the web (<1.44 MB, so I
-> > > > > can write it to a floppy disk)?
-> > > >
-> > (...)
-> > It is on: http://sengor.ath.cx/~sheutlin/prep/zImage.prep
-> 
-> hehe! It is booting!!!
-> 
-> Different to your setup, I get no timeouts here (boot.log is attached) - this 
-> makes me wondering if there are different board revisions out there.
-> 
-> Another thing is,  I tried to compile a stock 2.6.8 kernel with your config 
-> from "/proc/config.gz" and the modified irq tables in prep_pci.c (I guess you 
-> also did this modification). This kernel does not boot! It even doesn't show 
-> the boot loader - it just hangs after finished loading the kernel from floppy 
-> disk. Either a) I have a corrupt kernel tree, b) my compiler (gcc 3.3.4, 
-> debian/sarge) has problems or c) you changed something else in your kernel. 
-> 
-> I check a) and I think it is ok.
-> for b) I'm currently downloading the 3.3.5 compile from unstable debian (the 
-> you you are using I guess), and will try it again.
-> c) how does you prep_pci.c looks like, any other changes?
-> 
-> I have to leave this machine alone tomorrow, so I won't be able to do any 
-> testing further. From what we have now here, it seems that something is 
-> broken for kernels >2.6.8. It would be nice, if someone can double check 
-> this.
+On Jan 5, 2005, at 5:47 AM, Sven Luther wrote:
 
-Did you try : 
+> On Wed, Jan 05, 2005 at 10:49:19AM +0100, Philippe Guyot wrote:
+>>> BTW, i have another question. I am trying to fix debian-installer to 
+>>> create
+>>> the prep partition, but i would like to have some info on the 
+>>> expected
+>>> constraints of said partition. Some tell it has to be entirely in 
+>>> the first
+>>> 8MB, others the first 5MB, and my powerstack has a 17MB boot 
+>>> partition
+>>> right now.
+>>
+>> All I can say, it's that my boot PReP partition is the 1st and about 
+>> 4 MB in
+>> size (cannot size it less than 1% of the disk.....)
+>> second partition is /
+>> third is swap.
+>
+> BTW, for debian, it makes more sense to have the second partition as 
+> swap, and
+> the third as /, i think, since it was decided some time back to 
+> default to
+> root=/dev/sda3, and not sda2.
+>
+>> That works for me.
+>
+> Until the kernel grows beyond 4MB.
 
-  http://people.debian.org/~luther/prep/d-i-2005.01.03-prep
+The size of that partition depends on firmware limitations. I have 
+definitely seen reports of systems not booting when the PReP boot 
+partition was too large. I think on some systems that has even happened 
+at 8MB.
 
-It is the debian kernel with the prep_pci patch, and the debian-installer
-(yesterdays or so daily-built) initrd on top of it. I simply boot it from
-netboot with :
+In other words, should you need more space than 4-5MB at some point in 
+the future, you cannot simply make a bigger boot partition.
 
-  boot enet:192.168.1.10,d-i-2005.01.03-prep,192.168.1.17
-
-(where .10 is my tftp server, and .17 a random free address on the subnet).
-
-And it works fine. I plan to do a kernel upload soonishly to fix those issues
-in debian, but i would like to have also the fixes for the other prep systems
-if needed.
-
-Friendly,
-
-Sven Luther
+-Hollis
