@@ -1,41 +1,32 @@
-Message-ID: <3A02ECF3.1E072842@iigi.net>
-Date: Fri, 03 Nov 2000 11:50:59 -0500
-From: John Jones <john@iigi.net>
-MIME-Version: 1.0
-To: LinuxPPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
-Subject: How do I get the c++ compiler
+Date: Fri, 3 Nov 2000 14:22:15 -0500
+From: Brad Dixon <brad.dixon@gtri.gatech.edu>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: mklibs.sh script for ppc
+Message-ID: <20001103142215.E15852@sen-mail.gtri.gatech.edu>
+Reply-To: brad.dixon@gtri.gatech.edu
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-How do I get the c++ compiler on the nfs drive?  I have an Embedded
-Planet clcc.
+Hello:
 
-I try to install the: hhl-ppc_8xx-c++-2.95.2-13.ppc.rpm by running the
-command
+I'm tweaking the mklibs.sh library squeezing script from the debian
+distribution to work on PPC targets. While I was working on that I thought
+I should ask if anyone else has already done this before.
 
-rpm -ihv hhl-ppc_8xx-c++-2.95.2-13.ppc.rpm (from my i386 host machine)
-and Iget the error: package hhl-ppc_8xx-c++-2.95.2-13 is for a different
-architecture.
+If you did and you don't mind sharing your work I'd love to see your
+script.
 
-I have already installed the i386 version, but I think that is just for
-my i386 host, right?
+Thanks,
 
-Am I supposed to install the ppc.rpm FROM the target machine?  It does
-not seem to
-have the rpm program to do so.
-
-HELP.
-
-Thanks.
-
--John
-
+Brad
 
 --
-<Help further Linux by signing the Linux Driver Petition:
-http://www.libranet.com/petition.html>
+Brad Dixon <brad.dixon@gtri.gatech.edu>
+- Electronic Systems Laboratory, Systems Engineering Division
+- Georgia Tech Research Institute, Atlanta, GA
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
