@@ -1,73 +1,63 @@
-Mime-Version: 1.0
-Message-Id: <a05010406b7033c861041@[192.168.240.10]>
-In-Reply-To: <20010418115224.25139@mailhost.mipsys.com>
-References: <a05010404b703232d1b66@[192.168.240.10]>
- <20010418115224.25139@mailhost.mipsys.com>
-Date: Wed, 18 Apr 2001 15:25:33 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Alain RICHARD <alain.richard@equation.fr>
-Subject: Re: benh 2.4.4-pre3, Titanium and AirPort
-Cc: linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain; charset="iso-8859-1" ; format="flowed"
+Date: Wed, 18 Apr 2001 15:39:07 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: Tony Mantler <nicoya@apia.dhs.org>,
+	martin costabel <costabel@wanadoo.fr>,
+	michel d=?ISO-8859-1?B?5A==?=nzer <michdaen@iiic.ethz.ch>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: XF4, SysRq, VT, mouse buttons, Keymaps and all that
+In-Reply-To: <20010418124421.7E7702EFE5@apollo.valhalla.net>
+Message-ID: <Pine.HPX.4.10.10104181533390.11443-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->  >I am currently using Benjamin Herrenschmidt 2.4.4-pre3 kernel on my
->>Titanium. The only problem I am currently experiencing is that the
->  >kernel PCMCIA i82365.c driver do not recognized the PCI cardbus
->>adaptator.
->
->Looks like I'll really have to find a PCMCIA card...
-
-not needed for the test, what seems to be not functionning is the
-loading of i82365 module (in the errorlog, it indicates he found no
-adaptator). Under a pismo there is no such problem.
+On Wed, 18 Apr 2001, Iain Sandoe wrote:
 
 >
->>Is there any solution (patch) to get it recognized ?
->>
->>Also as the current airport driver is now based on the orinoco_cs
->>(and hermes) driver that depends on PCMCIA support, I am unable to
->>get airport working. Is there any solution to get it working without
->>PCMCIA ?
+> >>I guess we could use <CNTL>-power as the SysRq modifier - but it starts to
+> >>become a little unwieldy - because you need to hold down three keys to get
+> >>the SysRq action (well, you do now as it happens)...
+> >>
+> >>so, perhaps, <CNTL>-<Power>-k etc.
+> >>
+> >>thoughts?
+> >
+> > On my Apple Adjustable keyboard, control and power are about as far away
+> > from eachother as you can get and still be on the same keyboard. Not
+> > exactly 2-of-3-key-combo material. I don't have very small hands, but even
+> > on my AppleDesign, it's a bit of a stretch.
 >
->The airport driver should work if you built PCMCIA in the kernel
->(no need to actually have a working PCMCIA).
-
-I have built PCMCIA in the kernel, but the problem is that to load
-orinico_cs, we must first load the PCMCIA support because it depends
-on ds that depends on a working pcmcia adaptor driver (i82365 in
-previous powerbooks).
-
-The problem seems that i82365 seems not recognizing the cardbus on
-titanium. lspci output is :
-
-01:1a.0 CardBus bridge: Texas Instruments PCI1211
-         Flags: bus master, medium devsel, latency 16, IRQ 58
-         Memory at 80080000 (32-bit, non-prefetchable) [size=4K]
-         Bus: primary=01, secondary=02, subordinate=05, sec-latency=32
-         I/O window 1: 00000000-00000003
-         16-bit legacy interface ports at 1011
-
+> yeah, on mine too - which is why I was originally attracted to just <power>
+> as the modifier.
 >
->I'm working on a separation of the airport and pcmcia stuffs so
->that the airport driver can be used without pcmcia, but it's not
->done yet.
-
-Yes, probably we need a separate orinoco_cs and airport driver,
-perhaps depending both on the same implementation module (hermes
-driver ?).
-
+> > Also, what happens if someone wants to hook up a PC USB keyboard to their
+> > mac? Obviously not generating an NMI is a given, but no access to SAK is
+> > avoidable.
 >
->Ben.
+> Apparently, some Apple keyboards don't have a <power> key either.
 
-Regards,
---
--------------------------------------------------------
-Alain RICHARD <mailto:alain.richard@equation.fr>
-EQUATION SA <http://www.equation.fr/>
-Tel : +33 477 79 48 00	 Fax : +33 477 79 48 01
-Applications client/serveur, ingénierie réseau et Linux
+Unless I missed it there is no power key on the keyboard delivered with my
+2001 G4/466 (109 keys including volume/mute/media-eject, but nothing
+looking like a power key.)
+
+> Anyway the SysRq key for USB must be handled somewhere else - I'm looking at
+> the mac_hid/adb/mac_keyb code which is specific to adb-based machines IIUC.
+>
+> >(Also can't forget non-mac PPCs)
+>
+> Which must handle it in their hid section... depending on whether they have
+> serial or USB (or something special).
+
+If somebocy is going to touch the input layer, I would like the raw
+keyboard mode to stay raw. Right now in some configuration combinations
+there is no difference between raw and medium-raw (used by X). They both
+return medium-raw keycodes, I can't get to the scancodes.
+
+	Regards,
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
