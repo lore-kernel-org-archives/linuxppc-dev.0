@@ -1,37 +1,52 @@
-Message-ID: <3EE4CC45.6010505@mvista.com>
-Date: Mon, 09 Jun 2003 11:04:53 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: invictus rm <invictus_rm@hotmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Rabeeh Khoury <rabeeh@il.marvell.com>
-Subject: Re: mv64360 in 2.5
-References: <BAY7-F109isC4noVQjy0002de31@hotmail.com>
-In-Reply-To: <BAY7-F109isC4noVQjy0002de31@hotmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "XOL" <xol@mail.ru>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Re[4]: initrd problem. CRC Error. 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 09 Jun 2003 17:05:55 +0400."
+             <E19PMLT-000Hhi-00.xol-mail-ru@f16.mail.ru>
+Date: Mon, 09 Jun 2003 22:21:27 +0200
+Message-Id: <20030609202132.A0579C5FD7@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-invictus rm wrote:
-
+In message <E19PMLT-000Hhi-00.xol-mail-ru@f16.mail.ru> you wrote:
 >
-> Hi list....
->    Is there any plan to include the mv64360 in the linuxppc-2.5 kernel
-> from
-> the galileo tree ?? Unless the generic code for mv64360_common.c /
-> mv64360_pic.c are included , board specific port based on mv64360
-> cannot be
-> added .......
+> I think I found out what is a problem
+> The thread bi_record and initrd
+> http://lists.linuxppc.org/linuxppc-embedded/200211/msg00286.html
 >
-> Any clarification will be highly apprecitated .....
+> Discuss the problem of corrupting initrd by bi_record - board info record.
+> As I have no good background in bootloading could you please let me know
+> 1. What is a current status of fixing the bug. Are there any
+> new kernel version there it was fixed
 
-It will eventually happen.  Rabeeh Khoury has support in the
-linux-galileo tree () but that hasn't made it to linuxppc_2_4_devel or
--2.5 yet.  Its not on my list of immediate things to do so I won't get
-to it for a while.  I don't know about Rabeeh's schedule or intentions.
+Don't know. Never ran into this problem.
 
-Mark
+> 2. Does this problem depends on bootloader. Will u-boot fix it?
 
+Yes, it probably depends on the bootloader. More exactly, itt depends
+on the interface between the bootloader and the Linux kernel.
+
+U-Boot works fine if your kernel is configured for U-Boot. I  am  not
+aware of a problem that needs fixing.
+
+> 3. Does anybody succeded to use 2.4.18 with initrd? How?
+
+Yes, we did. Many times. We use  U-=Boot,  and  make  sure  that  the
+kernel interface fits.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"That unit is a woman."
+"A mass of conflicting impulses."
+	-- Spock and Nomad, "The Changeling", stardate 3541.9
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
