@@ -1,52 +1,115 @@
-Message-ID: <3D106DC2.B50D7100@icn.siemens.de>
-Date: Wed, 19 Jun 2002 13:40:50 +0200
-From: Steffen Rumler <Steffen.Rumler@icn.siemens.de>
+Message-ID: <3D109982.26B0EDE@opensource.se>
+Date: Wed, 19 Jun 2002 16:47:30 +0200
+From: Magnus Damm <damm@opensource.se>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Cc: Neil Horman <nhorman@lvl7.com>,
-	linuxppc <linuxppc-embedded@lists.linuxppc.org>,
-	Frank Rowand <frank_rowand@mvista.com>
-Subject: Re: Accessing the user stack inside system call service routine
-References: <3D084D1F.95AFFCBB@icn.siemens.de>
-		<3D087D95.5070206@lvl7.com>
-		<3D08AA25.9AF41113@icn.siemens.de> <15625.4799.671581.186354@argo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+To: =?iso-8859-1?Q?=C0=FC=C7=FD=BF=B5?= <hychon@corebell.co.kr>
+Cc: linuxppc_mailing <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: can I  find the patch files for mpc860T
+References: <001d01c2173a$557e2e70$cf6eb796@corebellhychon>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> That is indeed very strange.  The first word should be non-zero at the
-> very least.  Is it possible that your program has in fact trashed its
-> stack?  Another thing to try would be to check the contents of
-> current->user_stack_xxx immediately after you copy it to see whether
-> it is all zero at that point.
+Search the list!
 
-Thank you all for the answer, it is now working fine.
+http://lists.linuxppc.org/
 
-I have basically used the LTT routine to analyze the EABI stack
-frames, provided by Frank.
+See this answer for more information:
 
-When I copy the relevant addresses (backchain pointer, saved link
-register)
-to separate static buffer and not to the task structure it is
-working.
+http://lists.linuxppc.org/linuxppc-embedded/200103/msg00026.html
 
+/ Magnus
 
-Steffen
-
-
---
-
-
---------------------------------------------------------------
-
-Steffen Rumler
-ICN ON PNE SB 4
-Siemens AG
-Hofmannstr. 51                 Email: Steffen.Rumler@icn.siemens.de
-D-81359 Munich                 Phone: +49 89 722-44061
-Germany                        Fax  : +49 89 722-36703
-
---------------------------------------------------------------
+ÀüÇý¿µ wrote:
+>
+> hello !
+>
+> I have some problems, when I compile with bash-2.05a  for Powerpc (mpc860).
+> I download the sources from LFS stie , but it is not support for MPC860T
+> when I build the sources, it was occur some errors with following error message
+>
+> can you help me what's problem and I can find the patch files for mpc860T
+>
+> ==== error MESAGE =====================
+>
+> [root@CBLinux bash-2.05a]# CC=powerpc-linux-gcc AR=powerpc-linux-ar
+> RANLIB=powerpc-linux-ranlib ./configure --host=powerpc-linux
+> --build=i686-pc-linux-gnu
+>
+> checking build system type... i686-pc-linux-gnu
+> checking host system type... powerpc-unknown-linux-gnu
+> Beginning configuration for bash-2.05a for powerpc-unknown-linux-gnu
+> checking for powerpc-linux-gcc... powerpc-linux-gcc
+> checking whether powerpc-linux-gcc needs -traditional... no
+> checking for a BSD compatible install... /usr/bin/install -c
+> checking for ar... powerpc-linux-ar
+> checking for powerpc-linux-ranlib... powerpc-linux-ranlib
+> checking for bison... bison -y
+> checking whether make sets ${MAKE}... yes
+> checking for powerpc-linux-gcc option to accept ANSI C... none needed
+> checking for an ANSI C-conforming const... yes
+> checking for inline... inline
+> checking whether byte ordering is bigendian... yes
+> checking for preprocessor stringizing operator... yes
+> checking for long double... yes
+> checking for function prototypes... yes
+> checking for ANSI C header files... yes
+> checking for sys/types.h... yes
+> checking for sys/stat.h... yes
+> checking for stdlib.h... yes
+> checking for string.h... yes
+> checking for memory.h... yes
+> checking for strings.h... yes
+> checking for inttypes.h... yes
+> checking for stdint.h... yes
+> checking for unistd.h... yes
+> checking whether char is unsigned... yes
+> checking for dirent.h that defines DIR... yes
+> checking for opendir in -ldir... no
+> checking whether time.h and sys/time.h may both be included... yes
+> checking for inttypes.h... (cached) yes
+> checking for unistd.h... (cached) yes
+> checking for stdlib.h... (cached) yes
+> checking for stdarg.h... yes
+> checking for varargs.h... yes
+> checking for limits.h... yes
+> checking for string.h... (cached) yes
+> checking for memory.h... (cached) yes
+> checking for locale.h... yes
+> checking for termcap.h... yes
+> checking for termio.h... yes
+> checking for termios.h... yes
+> checking for dlfcn.h... yes
+> checking for stddef.h... yes
+> checking for stdint.h... (cached) yes
+> checking for netdb.h... yes
+> checking for grp.h... yes
+> checking for strings.h... (cached) yes
+> checking for sys/ptem.h... no
+> checking for sys/pte.h... no
+> checking for sys/stream.h... no
+> checking for sys/select.h... yes
+> checking for sys/file.h... yes
+> checking for sys/resource.h... yes
+> checking for sys/param.h... yes
+> checking for sys/socket.h... yes
+> checking for sys/time.h... yes
+> checking for sys/times.h... yes
+> checking for sys/wait.h... yes
+> checking for netinet/in.h... yes
+> checking for arpa/inet.h... yes
+> checking for working alloca.h... yes
+> checking for alloca... yes
+> checking whether getpgrp takes no argument... yes
+> checking whether setvbuf arguments are reversed... configure: error: cannot run test program while cross compiling
+> =======================================
+>
+> This version is not support for powerpc architecture??
+> if you have a some solutions, please help me !
+> Do you know where I can get some patchs???
+>
+> thanks for reading and have a good day!
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
