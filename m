@@ -1,81 +1,46 @@
-Message-ID: <3AB65B72.F77A0760@raleigh.ibm.com>
-Date: Mon, 19 Mar 2001 14:18:10 -0500
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+Message-ID: <3AB65FCD.44826199@mvista.com>
+Date: Mon, 19 Mar 2001 14:36:45 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Dan Malek <dan@mvista.com>
+To: Ralph Blach <rcblach@raleigh.ibm.com>
 Cc: Ralph Blach <rblach@intrex.net>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: es1371.o sound module on a IBM 405 walnut platform
-References: <3AB4E3BA.AF71AFE6@intrex.net> <3AB52248.D2411FF2@mvista.com>
-Content-Type: multipart/mixed;
- boundary="------------6B9A86563C4DC368FA630183"
+References: <3AB4E3BA.AF71AFE6@intrex.net> <3AB52248.D2411FF2@mvista.com> <3AB65B72.F77A0760@raleigh.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------6B9A86563C4DC368FA630183
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Ralph Blach wrote:
 
-Dan,
+> Well it does.  And I recomend a new kernel interface, and Dan, I KNOW
+> YOU WILL not like THE VERY IDEA,
+> by here it is.
 
-Well it does.  And I recomend a new kernel interface, and Dan, I KNOW
-YOU WILL not like THE VERY IDEA,
-by here it is.
+You are right, I won't :-).  Here is why.  First of all, all Linux
+ports understand how to manage the little-endian PCI interface.  We
+don't want help from hardware swapping bytes in the lanes because it
+just complicates software with special case functions and actually
+introduces more overhead instead of removing it like the design you
+thought would work.  Second, I have worked with hardware like this
+in the past, and have painfully learned you simply can't arbitrarily
+swap the bytes in the lanes.  If you have data structures you are
+trying to share, the data has to be swapped based upon the size of
+the object.  The hardware has no clue what you are trying to access
+and will screw it up.  Just believe me, I've been there.
 
-I beleive that a kmalloc_little_endian and a kmalloc_nocache should be
-added to the port.
-The ability to allocate a little endian memory would by defaut handle
-conversion in a seamless and quick manner.
-copy_from_user and copy_to_use would then do the bit to little endian
-conversions.
+> copy_from_user and copy_to_use would then do the bit to little endian
+> conversions.
 
-By the same token, an interface to allocate noncached memory would be
-spiffy.  I would also assist in the porting of device drivers that need
-lots of little non cached spaces like scsi and USB drivers.
+Nope, the sound drivers already know how to do this if necessary.
 
+> By the same token, an interface to allocate noncached memory would be
+> spiffy.
 
-
-Chip
+That's already been done for the 8xx and 4xx ports in the kernel
+trees.
 
 
-The 405gp has the ability
-
-Dan Malek wrote:
->
-> Ralph Blach wrote:
->
-> > ... Will this driver have to be made
-> > endian aware?
->
-> Probably.  I've had a couple of the ES boards running in Walnut, I
-> don't remember the details now.  The board was confiscated for
-> other more urgent work, so someday I hope to get back to it.
->
->         -- Dan
->
---------------6B9A86563C4DC368FA630183
-Content-Type: text/x-vcard; charset=us-ascii;
- name="rcblach.vcf"
-Content-Description: Card for Ralph Blach
-Content-Disposition: attachment;
- filename="rcblach.vcf"
-Content-Transfer-Encoding: 7bit
-
-begin:vcard
-n:Blach;Ralph
-tel;work:919-543-1207
-x-mozilla-html:TRUE
-url:www.ibm.com
-org:IBM MicroElectronics
-adr:;;3039 Cornwallis		;RTP;NC;27709;USA
-version:2.1
-email;internet:rcblach@raleigh.ibm.com
-x-mozilla-cpt:;15936
-fn:Ralph Blach
-end:vcard
-
---------------6B9A86563C4DC368FA630183--
-
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
