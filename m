@@ -1,57 +1,63 @@
-Date: Thu, 12 Aug 1999 14:31:25 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Paul.Mackerras@cs.anu.edu.au
-cc: rth@cygnus.com, Jes.Sorensen@cern.ch, linuxppc-dev@lists.linuxppc.org,
-        linux-fbdev@vuser.vu.union.edu
-Subject: Re: [linux-fbdev] Re: readl() and friends and eieio on PPC
-In-Reply-To: <199908120707.RAA30438@tango.anu.edu.au>
-Message-ID: <Pine.LNX.4.10.9908121428020.14133-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <37B2C0A5.55A07C87@usa.net>
+Date: Thu, 12 Aug 1999 08:40:06 -0400
+From: David Riley <happyoscar42@usa.net>
+Reply-To: happyoscar42@usa.net
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+CC: Naushit Sakarvadia <nsakarvadia@telogy.com>,
+        LinuxPPC Developpers <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Assembly
+References: <XFMail.990812092025.heinz@bintec.de>
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 12 Aug 1999, Paul Mackerras wrote:
-> Richard Henderson <rth@cygnus.com> wrote:
-> The results tended to vary quite a lot from run to run, but here's a
-> typical set:
-> 
-> 17 10 9 9 9
-> 24 17 16 16 16
-> 732 731 736 786 727
-> 666 755 840 774 801
-> 
-> So the eieio doesn't look to be nearly as expensive on PPC as wmb is
-> on alpha.  (16 - 9) / 7 = 1 cycle for the eieio, which is going to be
+Heinz Blaettner wrote:
 
-I'm seeing different things (results don't tend to vary a lot):
+> On 11-Aug-99 Naushit Sakarvadia wrote:
+> >
+> > Hello,
+> >
+> > I am trying to learn assembly language of Powerpc.
+> >
+> > Anybody can suggest good point to start?
+> >
+> > I tried to read User Manual of MPC860 and InstrucionManual but
+> > it doesnt talk about architecture of PPC,meas how many register it has...
+> > how many flags..etc...
+> >
+> > I need something like programmer's guide ,which is not I couldnt find on
+> > Motarola website.
+> >
+> Have a look at Motorola page:
+>
+>         www.mot-sps.com/home/lit_ord.html
+>
+>         order following doc's:
+>         MCPFPE/AD
+>         MPCPFE32B/AD
+>         MPCPRG/D
+>         MPCPRGREF/D
 
-| [14:27:01]/tmp# ./a.out 0xc2800000
-| 35 29 30 31 28 
-| 261 251 247 248 248 
-| 429 332 358 374 348 
-| 541 532 529 531 529 
-| [14:27:05]/tmp# 
+I'm not sure where I got it, but I have a nice book on PPC assembly that gives
+quite a bit of help, called "Optimizing PowerPC Code", by Gary Kacmarcik.
+It's a fairly early book, but not much has changed since the PowerPC was new.
+All you need to know is that the 604 and up have three integer units instead
+of one.
 
-Hence eieio() is quite expensive on memory.
+As far as registers go, the powerPC has 32 64-bit floating-point registers
+(great for blitters) and 32 32-bit general purpose registers.there are also
+several special registers (machine state, link, counter, rtc (only on 601),
+etc).
 
-This in on an IBM LongTrail (CHRP), with 604e at 200 MHz, 512 KB L2 cache,
-66 MHz SDRAM bus, and 33 MHz PCI to an ATI RAGE II+.
+Does anyone know if 64-bit powerPC's ever came out (e.g. the 620)?  I noticed
+that the vger kernels (I think at least the 2.3 ones) have had them for a
+while now.
 
-> insignificant in the context of an access to a device register, which
-> can easily take ~ 50 to 100 cycles.
-
-For ISA (through PCI/ISA bridge). Isn't real PCI faster?
-
-Greetings,
-
-						Geert
 
 --
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+--"Your mouse has been moved.  Windows 95 must be restarted for change to take
+effect."
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
