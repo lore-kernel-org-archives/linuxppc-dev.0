@@ -1,53 +1,35 @@
-Message-Id: <199909101825.UAA14339@piglet.cpu.lu>
-Date: Fri, 10 Sep 1999 20:25:23 +0200 (CEST)
+Message-Id: <199909101833.UAA17210@piglet.cpu.lu>
+Date: Fri, 10 Sep 1999 20:33:11 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: Re: UW SCSI PCI cards
-To: saulngeo@MLE.CO.UK
-cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-In-Reply-To: <199909101014.AA08041@LONSF24318.MLE.CO.UK>
+Subject: Re: controlfb.c bug in VRAM bank2 check if bank1
+To: ldl@chpc.utah.edu
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <37D929E4.205A04B8@chpc.utah.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  10 Sep, this message from Saulnier, Geoff (London) echoed through cyberspace:
-> Finally managed to get linuxppc installed, from the CD, onto my Beige G3
-> minitower.  It has a PCI Ultra-Wide SCSI card and 2 4Gb UW SCSI disks of
-> that card.  I had to install it onto a 1Gig Jaz cart because of the
-> following problems:
-> 
-> No matter how well partitioned my drives were (with Mac pdisk), the intaller
-> would not see them, and pdisk in the linux X installer environment would not
-> see them.  In fact, it would see not partitions at all of any kind.
+On  10 Sep, this message from Lou Langholtz echoed through cyberspace:
+> After getting an extra 2MB VRAM for my PowerMac7500 and seeing that only
+> 2MB were still being recognized (despite having just added the 2MB to
+> total to 4MB VRAM), I dug into the controlfb.c code from 2.2.11 and
+> 2.2.12 and made the following changes to get all 4MB VRAM recognized:
 
-That depends on the exact model of PCI SCSI card you have. If it's an
-original Apple part, it should be recognized by the installer. If not,
-chances are that it doesn't contain OpenFirmware code to make it
-recognized upon boot; so the installer will not see it.
+> <  out_8(&p->frame_buffer[0x600000], 0xa5);
+> <  out_8(&p->frame_buffer[0x600001], 0x38);
+> ---
+>>  out_8(&p->frame_buffer[0x200000], 0xa5);
+>>  out_8(&p->frame_buffer[0x200001], 0x38);
 
-Plus, I don't know what SCSI drivers are built into the installer.
+Hmm, if I remember right, there have been half a dozen patch pairs that
+changed 0x600000 to 0x200000 and back over the years ;-)
 
-> So, my questions are:
->   -  what PCI UW SCSI cards are supported in the final version
-
-Basically all that Linux supports, although some more exotic ones might
-not work on PowerPC...
-
->   -  are there any plans to support others (I am assuming that the one that
-> came in my box is not supported!)
-
-Sure.. hack them yourself so that they work on PowerPC ;-)
-
->   -  does this problem sound like it has nothing to do with the card?
-
-As I said, it's either the card lacking OF code, or the installer
-lacking the proper driver.
-
-If the latter is your problem, you can always install on the Jaz, then
-builkd a kernel including the driver for your SCSI board, then copy the
-whole system over.
+I guess it's time to clear thgis up once and for all. By the way, I do
+have 4 MB of VRAM, and all of it is detected with the current version
+of controlfb.....
 
 Michel
 
