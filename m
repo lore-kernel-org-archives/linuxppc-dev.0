@@ -1,30 +1,50 @@
-Message-ID: <0D9416AE7F95D411A8710008C7332F3F054362@GUILDFORD4_NT>
-From: Daniel Furse <daniel.furse@iptest.com>
-To: "Linux Embedded List (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Neighbour table overflow
-Date: Mon, 22 Jan 2001 11:33:24 -0000
+Message-ID: <3A6C3BDF.4D6142F2@raleigh.ibm.com>
+Date: Mon, 22 Jan 2001 08:55:43 -0500
+From: Ralph Blach <rcblach@raleigh.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
+Subject: 8260 hdlc driver
+Content-Type: multipart/mixed;
+ boundary="------------8B3C342950639C273C198C15"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+This is a multi-part message in MIME format.
+--------------8B3C342950639C273C198C15
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-I am getting 'neighbour table overflow' when I try to mount a root
-filesystem
-via NFS. Eventually the kernel panics and resets.
+Is there an HDLC driver for the motorola power quick module anyplace?
+This would be the HDLC thats in the
+CPM.
 
-The NFS server is working correctly, I have verified by mounting on another
-linux box.
+Thanks
 
-When linux tries to mount the nfs root filesystem, the activity LED on the
-ethernet port on the card stops flashing, this implies that something has
-clobbered the phy? Does anyone have any suggestions?
+Chip
+rcblach@raleigh.ibm.com
+--------------8B3C342950639C273C198C15
+Content-Type: text/x-vcard; charset=us-ascii;
+ name="rcblach.vcf"
+Content-Description: Card for Ralph Blach
+Content-Disposition: attachment;
+ filename="rcblach.vcf"
+Content-Transfer-Encoding: 7bit
 
-Many thanks,
+begin:vcard
+n:Blach;Ralph
+tel;work:919-543-1207
+x-mozilla-html:TRUE
+url:www.ibm.com
+org:IBM MicroElectronics
+adr:;;3039 Cornwallis		;RTP;NC;27709;USA
+version:2.1
+email;internet:rcblach@raleigh.ibm.com
+x-mozilla-cpt:;15936
+fn:Ralph Blach
+end:vcard
 
-Dan Furse
+--------------8B3C342950639C273C198C15--
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
