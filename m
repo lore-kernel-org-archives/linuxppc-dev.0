@@ -1,30 +1,42 @@
-Date: Tue, 31 Aug 1999 10:00:22 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@mvista.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-cc: Jes Sorensen <Jes.Sorensen@cern.ch>, Paul.Mackerras@cs.anu.edu.au,
-        ddkilzer@computer.org, schmitz@opal.biophys.uni-duesseldorf.de,
-        linux-mac68k@mac.linux-m68k.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: mac-2.3.14.diff: adb
-In-Reply-To: <Pine.LNX.4.10.9908311110520.2087-100000@mercator.cs.kuleuven.ac.be>
-Message-ID: <Pine.LNX.3.96.990831095951.17873D-100000@mvista.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <199908310148.LAA14647@tango.anu.edu.au>
+Date: Tue, 31 Aug 1999 19:20:04 +0200
+To: Paul.Mackerras@cs.anu.edu.au
+CC: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: A few sleep patches
+Message-Id: <19990831192004.022815@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 31 Aug 1999, Geert Uytterhoeven wrote:
 
-> Linux' advertisement should become: we have more Lance drivers than supported
-> architectures.
-> 
-> Last time I counted them, I needed more fingers.
+At:
 
-Nah, you just have to count in binary.  Thumb is 2^0, first finger is 2^1,
-etc.
+<http://calvaweb.calvacom.fr/bh40/test.html>
 
+You'll find a few patches to apply to your latest stable tree. I've
+changed a bit of things in the media bay code (increasing reset timer and
+a few more hacks to make sure the states goes to MB_NO before switching
+to a new device, just in case...), it looks a lot more reliable on my
+wallstreet (no more CD badly inserted printk, at least not today ;-)
 
-David
+I've added the sleep code for media bay, macserial (untested) and fixed a
+minor thing in the sleep code for video (added a chipid, enabled FB
+backup (we may be able to get rid of it, I'm not sure for LP_CHIP_ID)).
+
+There may be one or two more things, I don't remember if I included my
+root partition detect fix (actually, I don't remember if my mkpatch
+script did diff drivers/block/genhd.c and can't test now).
+
+Tell me if it causes trouble on your machine, I'll try to do more tests
+tomorrow.
+
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
