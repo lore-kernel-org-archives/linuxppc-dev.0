@@ -1,1282 +1,1547 @@
-Date: Fri, 21 May 2004 15:03:28 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: paulus@samba.org, linuxppc-dev@lists.linuxppc.org
-Subject: [PATCH] Reorg (PCI) DMA API and add consistent alloc from irq
-Message-ID: <20040521150328.A25951@home.com>
+Subject: Re: BriQ & Linux 2.6
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jamie Heilman <jamie@audible.transient.net>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <20040521074018.GD8520@audible.transient.net>
+References: <20040521074018.GD8520@audible.transient.net>
+Content-Type: text/plain
+Message-Id: <1085181034.6755.7.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Sat, 22 May 2004 09:10:34 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The following patch reorgs the PCI DMA API and DMA API implementations
-on PPC32.  It throws away the old consistent_*() routines that were
-arch-specific because 2.6 drivers should be using the generic DMA
-API.  It defines all previous functionality natively in terms of
-the DMA API calls.  The PCI DMA API is implemented by including
-asm-generic/pci-dma-compat.h. In addition, this pulls in the ARM
-implemented method of performing dma_alloc_coherent()/dma_free_coherent()
-(previously consistent_alloc()/consistent_free()) so that we
-comply with the requirement to be able to allocate consistent
-memory out of an interrupt context.  We were previously unable
-to do that on CONFIG_NOT_COHERENT_CACHE, resulting in drivers
-like sym53c8xx_2 that are unable to be used on 4xx, etc.
+On Fri, 2004-05-21 at 17:40, Jamie Heilman wrote:
+> I attempted to boot a 2.6.6 kernel on my BriQ today and ran into a
+> snag... it appears that the IBM,CPC710 PCI bridge handling stuff
+> didn't make it into 2.6.  As such the host won't boot as all the
+> goodies hanging off the PCI bus vanish.  Any plans to roll the code
+> forward in the near future?
 
-It has been tested with a bunch of PCI and on-chip DMA devices on
-7xx, 74xx, and 4xx successfully.
+I have a few patches for the briq, I didn't push them upstream yet,
+as I'm trying to find a clean way to deal with an issue relative
+to the serial port clock setting.
 
-Comments?
+Enclosed is my latest version of that patch (may need some hand-applying
+as it's a couple of monthes old).
 
--Matt
+Ben.
 
-diff -Nru a/arch/ppc/Kconfig b/arch/ppc/Kconfig
---- a/arch/ppc/Kconfig	Fri May 21 11:01:23 2004
-+++ b/arch/ppc/Kconfig	Fri May 21 11:01:23 2004
-@@ -1070,6 +1070,30 @@
- 	hex "Size of user task space" if TASK_SIZE_BOOL
- 	default "0x80000000"
-
-+config CONSISTENT_START_BOOL
-+	bool "Set custom consistent memory pool address"
-+	depends on ADVANCED_OPTIONS && NOT_COHERENT_CACHE
-+	help
-+	  This option allows you to set the base virtual address
-+	  of the the consistent memory pool.  This pool of virtual
-+	  memory is used to make consistent memory allocations.
-+
-+config CONSISTENT_START
-+	hex "Base virtual address of consistent memory pool" if CONSISTENT_START_BOOL
-+	default "0xff100000" if NOT_COHERENT_CACHE
-+
-+config CONSISTENT_SIZE_BOOL
-+	bool "Set custom consistent memory pool size"
-+	depends on ADVANCED_OPTIONS && NOT_COHERENT_CACHE
-+	help
-+	  This option allows you to set the size of the the
-+	  consistent memory pool.  This pool of virtual memory
-+	  is used to make consistent memory allocations.
-+
-+config CONSISTENT_SIZE
-+	hex "Size of consistent memory pool" if CONSISTENT_SIZE_BOOL
-+	default "0x00200000" if NOT_COHERENT_CACHE
-+
- config BOOT_LOAD_BOOL
- 	bool "Set the boot link/load address"
- 	depends on ADVANCED_OPTIONS && !PPC_MULTIPLATFORM
-diff -Nru a/arch/ppc/kernel/Makefile b/arch/ppc/kernel/Makefile
---- a/arch/ppc/kernel/Makefile	Fri May 21 11:01:23 2004
-+++ b/arch/ppc/kernel/Makefile	Fri May 21 11:01:23 2004
-@@ -24,8 +24,8 @@
- obj-$(CONFIG_6xx)		+= l2cr.o cpu_setup_6xx.o
- obj-$(CONFIG_POWER4)		+= cpu_setup_power4.o
- obj-$(CONFIG_MODULES)		+= module.o ppc_ksyms.o
-+obj-$(CONFIG_NOT_COHERENT_CACHE)	+= dma-mapping.o
- obj-$(CONFIG_PCI)		+= pci.o
--obj-$(CONFIG_PCI)		+= pci-dma.o
- obj-$(CONFIG_KGDB)		+= ppc-stub.o
- obj-$(CONFIG_SMP)		+= smp.o smp-tbsync.o
- obj-$(CONFIG_TAU)		+= temp.o
-diff -Nru a/arch/ppc/kernel/dma-mapping.c b/arch/ppc/kernel/dma-mapping.c
---- /dev/null	Wed Dec 31 16:00:00 1969
-+++ b/arch/ppc/kernel/dma-mapping.c	Fri May 21 11:01:23 2004
-@@ -0,0 +1,439 @@
-+/*
-+ *  PowerPC version derived from arch/arm/mm/consistent.c
-+ *    Copyright (C) 2001 Dan Malek (dmalek@jlc.net)
-+ *
-+ *  Copyright (C) 2000 Russell King
-+ *
-+ * Consistent memory allocators.  Used for DMA devices that want to
-+ * share uncached memory with the processor core.  The function return
-+ * is the virtual address and 'dma_handle' is the physical address.
-+ * Mostly stolen from the ARM port, with some changes for PowerPC.
-+ *						-- Dan
-+ *
-+ * Reorganized to get rid of the arch-specific consistent_* functions
-+ * and provide non-coherent implementations for the DMA API. -Matt
-+ *
-+ * Added in_interrupt() safe dma_alloc_coherent()/dma_free_coherent()
-+ * implementation. This is pulled straight from ARM and barely
-+ * modified. -Matt
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/config.h>
-+#include <linux/module.h>
-+#include <linux/signal.h>
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/string.h>
-+#include <linux/types.h>
-+#include <linux/ptrace.h>
-+#include <linux/mman.h>
-+#include <linux/mm.h>
-+#include <linux/swap.h>
-+#include <linux/stddef.h>
-+#include <linux/vmalloc.h>
-+#include <linux/init.h>
-+#include <linux/delay.h>
-+#include <linux/bootmem.h>
-+#include <linux/highmem.h>
-+#include <linux/dma-mapping.h>
-+
-+#include <asm/pgalloc.h>
-+#include <asm/prom.h>
-+#include <asm/io.h>
-+#include <asm/hardirq.h>
-+#include <asm/mmu_context.h>
-+#include <asm/pgtable.h>
-+#include <asm/mmu.h>
-+#include <asm/uaccess.h>
-+#include <asm/smp.h>
-+#include <asm/machdep.h>
-+
-+int map_page(unsigned long va, phys_addr_t pa, int flags);
-+
-+#include <asm/tlbflush.h>
-+
-+/*
-+ * This address range defaults to a value that is safe for all
-+ * platforms which currently set CONFIG_NOT_COHERENT_CACHE. It
-+ * can be further configured for specific applications under
-+ * the "Advanced Setup" menu. -Matt
-+ */
-+#define CONSISTENT_BASE	(CONFIG_CONSISTENT_START)
-+#define CONSISTENT_END	(CONFIG_CONSISTENT_START + CONFIG_CONSISTENT_SIZE)
-+#define CONSISTENT_OFFSET(x)	(((unsigned long)(x) - CONSISTENT_BASE) >> PAGE_SHIFT)
-+
-+/*
-+ * This is the page table (2MB) covering uncached, DMA consistent allocations
-+ */
-+static pte_t *consistent_pte;
-+static spinlock_t consistent_lock = SPIN_LOCK_UNLOCKED;
-+
-+/*
-+ * VM region handling support.
-+ *
-+ * This should become something generic, handling VM region allocations for
-+ * vmalloc and similar (ioremap, module space, etc).
-+ *
-+ * I envisage vmalloc()'s supporting vm_struct becoming:
-+ *
-+ *  struct vm_struct {
-+ *    struct vm_region	region;
-+ *    unsigned long	flags;
-+ *    struct page	**pages;
-+ *    unsigned int	nr_pages;
-+ *    unsigned long	phys_addr;
-+ *  };
-+ *
-+ * get_vm_area() would then call vm_region_alloc with an appropriate
-+ * struct vm_region head (eg):
-+ *
-+ *  struct vm_region vmalloc_head = {
-+ *	.vm_list	= LIST_HEAD_INIT(vmalloc_head.vm_list),
-+ *	.vm_start	= VMALLOC_START,
-+ *	.vm_end		= VMALLOC_END,
-+ *  };
-+ *
-+ * However, vmalloc_head.vm_start is variable (typically, it is dependent on
-+ * the amount of RAM found at boot time.)  I would imagine that get_vm_area()
-+ * would have to initialise this each time prior to calling vm_region_alloc().
-+ */
-+struct vm_region {
-+	struct list_head	vm_list;
-+	unsigned long		vm_start;
-+	unsigned long		vm_end;
-+};
-+
-+static struct vm_region consistent_head = {
-+	.vm_list	= LIST_HEAD_INIT(consistent_head.vm_list),
-+	.vm_start	= CONSISTENT_BASE,
-+	.vm_end		= CONSISTENT_END,
-+};
-+
-+static struct vm_region *
-+vm_region_alloc(struct vm_region *head, size_t size, int gfp)
-+{
-+	unsigned long addr = head->vm_start, end = head->vm_end - size;
-+	unsigned long flags;
-+	struct vm_region *c, *new;
-+
-+	new = kmalloc(sizeof(struct vm_region), gfp);
-+	if (!new)
-+		goto out;
-+
-+	spin_lock_irqsave(&consistent_lock, flags);
-+
-+	list_for_each_entry(c, &head->vm_list, vm_list) {
-+		if ((addr + size) < addr)
-+			goto nospc;
-+		if ((addr + size) <= c->vm_start)
-+			goto found;
-+		addr = c->vm_end;
-+		if (addr > end)
-+			goto nospc;
-+	}
-+
-+ found:
-+	/*
-+	 * Insert this entry _before_ the one we found.
-+	 */
-+	list_add_tail(&new->vm_list, &c->vm_list);
-+	new->vm_start = addr;
-+	new->vm_end = addr + size;
-+
-+	spin_unlock_irqrestore(&consistent_lock, flags);
-+	return new;
-+
-+ nospc:
-+	spin_unlock_irqrestore(&consistent_lock, flags);
-+	kfree(new);
-+ out:
-+	return NULL;
-+}
-+
-+static struct vm_region *vm_region_find(struct vm_region *head, unsigned long addr)
-+{
-+	struct vm_region *c;
-+
-+	list_for_each_entry(c, &head->vm_list, vm_list) {
-+		if (c->vm_start == addr)
-+			goto out;
-+	}
-+	c = NULL;
-+ out:
-+	return c;
-+}
-+
-+/*
-+ * Allocate DMA-coherent memory space and return both the kernel remapped
-+ * virtual and bus address for that space.
-+ */
-+void *
-+__dma_alloc_coherent(size_t size, dma_addr_t *handle, int gfp)
-+{
-+	struct page *page;
-+	struct vm_region *c;
-+	unsigned long order;
-+	u64 mask = 0x00ffffff, limit; /* ISA default */
-+
-+	if (!consistent_pte) {
-+		printk(KERN_ERR "%s: not initialised\n", __func__);
-+		dump_stack();
-+		return NULL;
-+	}
-+
-+	size = PAGE_ALIGN(size);
-+	limit = (mask + 1) & ~mask;
-+	if ((limit && size >= limit) || size >= (CONSISTENT_END - CONSISTENT_BASE)) {
-+		printk(KERN_WARNING "coherent allocation too big (requested %#x mask %#Lx)\n",
-+		       size, mask);
-+		return NULL;
-+	}
-+
-+	order = get_order(size);
-+
-+	if (mask != 0xffffffff)
-+		gfp |= GFP_DMA;
-+
-+	page = alloc_pages(gfp, order);
-+	if (!page)
-+		goto no_page;
-+
-+	/*
-+	 * Invalidate any data that might be lurking in the
-+	 * kernel direct-mapped region for device DMA.
-+	 */
-+	{
-+		unsigned long kaddr = (unsigned long)page_address(page);
-+		memset(page_address(page), 0, size);
-+		flush_dcache_range(kaddr, kaddr + size);
-+	}
-+
-+	/*
-+	 * Allocate a virtual address in the consistent mapping region.
-+	 */
-+	c = vm_region_alloc(&consistent_head, size,
-+			    gfp & ~(__GFP_DMA | __GFP_HIGHMEM));
-+	if (c) {
-+		pte_t *pte = consistent_pte + CONSISTENT_OFFSET(c->vm_start);
-+		struct page *end = page + (1 << order);
-+
-+		/*
-+		 * Set the "dma handle"
-+		 */
-+		*handle = page_to_bus(page);
-+
-+		do {
-+			BUG_ON(!pte_none(*pte));
-+
-+			set_page_count(page, 1);
-+			SetPageReserved(page);
-+			set_pte(pte, mk_pte(page, pgprot_noncached(PAGE_KERNEL)));
-+			page++;
-+			pte++;
-+		} while (size -= PAGE_SIZE);
-+
-+		/*
-+		 * Free the otherwise unused pages.
-+		 */
-+		while (page < end) {
-+			set_page_count(page, 1);
-+			__free_page(page);
-+			page++;
-+		}
-+
-+		return (void *)c->vm_start;
-+	}
-+
-+	if (page)
-+		__free_pages(page, order);
-+ no_page:
-+	return NULL;
-+}
-+
-+/*
-+ * free a page as defined by the above mapping.
-+ */
-+void __dma_free_coherent(size_t size, void *vaddr)
-+{
-+	struct vm_region *c;
-+	unsigned long flags;
-+	pte_t *ptep;
-+
-+	size = PAGE_ALIGN(size);
-+
-+	spin_lock_irqsave(&consistent_lock, flags);
-+
-+	c = vm_region_find(&consistent_head, (unsigned long)vaddr);
-+	if (!c)
-+		goto no_area;
-+
-+	if ((c->vm_end - c->vm_start) != size) {
-+		printk(KERN_ERR "%s: freeing wrong coherent size (%ld != %d)\n",
-+		       __func__, c->vm_end - c->vm_start, size);
-+		dump_stack();
-+		size = c->vm_end - c->vm_start;
-+	}
-+
-+	ptep = consistent_pte + CONSISTENT_OFFSET(c->vm_start);
-+	do {
-+		pte_t pte = ptep_get_and_clear(ptep);
-+		unsigned long pfn;
-+
-+		ptep++;
-+
-+		if (!pte_none(pte) && pte_present(pte)) {
-+			pfn = pte_pfn(pte);
-+
-+			if (pfn_valid(pfn)) {
-+				struct page *page = pfn_to_page(pfn);
-+				ClearPageReserved(page);
-+
-+				__free_page(page);
-+				continue;
-+			}
-+		}
-+
-+		printk(KERN_CRIT "%s: bad page in kernel page table\n",
-+		       __func__);
-+	} while (size -= PAGE_SIZE);
-+
-+	flush_tlb_kernel_range(c->vm_start, c->vm_end);
-+
-+	list_del(&c->vm_list);
-+
-+	spin_unlock_irqrestore(&consistent_lock, flags);
-+
-+	kfree(c);
-+	return;
-+
-+ no_area:
-+	spin_unlock_irqrestore(&consistent_lock, flags);
-+	printk(KERN_ERR "%s: trying to free invalid coherent area: %p\n",
-+	       __func__, vaddr);
-+	dump_stack();
-+}
-+EXPORT_SYMBOL(dma_free_coherent);
-+
-+/*
-+ * Initialise the consistent memory allocation.
-+ */
-+static int __init dma_alloc_init(void)
-+{
-+	pgd_t *pgd;
-+	pmd_t *pmd;
-+	pte_t *pte;
-+	int ret = 0;
-+
-+	spin_lock(&init_mm.page_table_lock);
-+
-+	do {
-+		pgd = pgd_offset(&init_mm, CONSISTENT_BASE);
-+		pmd = pmd_alloc(&init_mm, pgd, CONSISTENT_BASE);
-+		if (!pmd) {
-+			printk(KERN_ERR "%s: no pmd tables\n", __func__);
-+			ret = -ENOMEM;
-+			break;
-+		}
-+		WARN_ON(!pmd_none(*pmd));
-+
-+		pte = pte_alloc_kernel(&init_mm, pmd, CONSISTENT_BASE);
-+		if (!pte) {
-+			printk(KERN_ERR "%s: no pte tables\n", __func__);
-+			ret = -ENOMEM;
-+			break;
-+		}
-+
-+		consistent_pte = pte;
-+	} while (0);
-+
-+	spin_unlock(&init_mm.page_table_lock);
-+
-+	return ret;
-+}
-+
-+core_initcall(dma_alloc_init);
-+
-+/*
-+ * make an area consistent.
-+ */
-+void __dma_sync(void *vaddr, size_t size, int direction)
-+{
-+	unsigned long start = (unsigned long)vaddr;
-+	unsigned long end   = start + size;
-+
-+	switch (direction) {
-+	case DMA_NONE:
-+		BUG();
-+	case DMA_FROM_DEVICE:	/* invalidate only */
-+		invalidate_dcache_range(start, end);
-+		break;
-+	case DMA_TO_DEVICE:		/* writeback only */
-+		clean_dcache_range(start, end);
-+		break;
-+	case DMA_BIDIRECTIONAL:	/* writeback and invalidate */
-+		flush_dcache_range(start, end);
-+		break;
-+	}
-+}
-+
-+#ifdef CONFIG_HIGHMEM
-+/*
-+ * __dma_sync_page() implementation for systems using highmem.
-+ * In this case, each page of a buffer must be kmapped/kunmapped
-+ * in order to have a virtual address for __dma_sync(). This must
-+ * not sleep so kmap_atmomic()/kunmap_atomic() are used.
-+ *
-+ * Note: yes, it is possible and correct to have a buffer extend
-+ * beyond the first page.
-+ */
-+static inline void __dma_sync_page_highmem(struct page *page,
-+		unsigned long offset, size_t size, int direction)
-+{
-+	size_t seg_size = min((size_t)PAGE_SIZE, size) - offset;
-+	size_t cur_size = seg_size;
-+	unsigned long flags, start, seg_offset = offset;
-+	int nr_segs = PAGE_ALIGN(size + (PAGE_SIZE - offset))/PAGE_SIZE;
-+	int seg_nr = 0;
-+
-+	local_irq_save(flags);
-+
-+	do {
-+		start = (unsigned long)kmap_atomic(page + seg_nr,
-+				KM_PPC_SYNC_PAGE) + seg_offset;
-+
-+		/* Sync this buffer segment */
-+		__dma_sync((void *)start, seg_size, direction);
-+		kunmap_atomic((void *)start, KM_PPC_SYNC_PAGE);
-+		seg_nr++;
-+
-+		/* Calculate next buffer segment size */
-+		seg_size = min((size_t)PAGE_SIZE, size - cur_size);
-+
-+		/* Add the segment size to our running total */
-+		cur_size += seg_size;
-+		seg_offset = 0;
-+	} while (seg_nr < nr_segs);
-+
-+	local_irq_restore(flags);
-+}
-+#endif /* CONFIG_HIGHMEM */
-+
-+/*
-+ * __dma_sync_page makes memory consistent. identical to __dma_sync, but
-+ * takes a struct page instead of a virtual address
-+ */
-+void __dma_sync_page(struct page *page, unsigned long offset,
-+	size_t size, int direction)
-+{
-+#ifdef CONFIG_HIGHMEM
-+	__dma_sync_page_highmem(page, offset, size, direction);
-+#else
-+	unsigned long start = (unsigned long)page_address(page) + offset;
-+	__dma_sync((void *)start, size, direction);
-+#endif
-+}
-diff -Nru a/arch/ppc/kernel/ppc_ksyms.c b/arch/ppc/kernel/ppc_ksyms.c
---- a/arch/ppc/kernel/ppc_ksyms.c	Fri May 21 11:01:23 2004
-+++ b/arch/ppc/kernel/ppc_ksyms.c	Fri May 21 11:01:23 2004
-@@ -181,9 +181,6 @@
- #endif /* CONFIG_PCI */
-
- #ifdef CONFIG_NOT_COHERENT_CACHE
--EXPORT_SYMBOL(consistent_alloc);
--EXPORT_SYMBOL(consistent_free);
--EXPORT_SYMBOL(consistent_sync);
- EXPORT_SYMBOL(flush_dcache_all);
+diff -urN linux-2.5/arch/ppc/configs/briq_defconfig linux-briq/arch/ppc/configs/briq_defconfig
+--- linux-2.5/arch/ppc/configs/briq_defconfig	Thu Jan 01 10:00:00 1970
++++ linux-briq/arch/ppc/configs/briq_defconfig	Wed Mar 24 13:29:54 2004
+@@ -0,0 +1,855 @@
++#
++# Automatically generated make config: don't edit
++#
++CONFIG_MMU=y
++CONFIG_RWSEM_XCHGADD_ALGORITHM=y
++CONFIG_HAVE_DEC_LOCK=y
++CONFIG_PPC=y
++CONFIG_PPC32=y
++CONFIG_GENERIC_NVRAM=y
++
++#
++# Code maturity level options
++#
++CONFIG_EXPERIMENTAL=y
++CONFIG_CLEAN_COMPILE=y
++# CONFIG_STANDALONE is not set
++CONFIG_BROKEN_ON_SMP=y
++
++#
++# General setup
++#
++CONFIG_SWAP=y
++CONFIG_SYSVIPC=y
++# CONFIG_BSD_PROCESS_ACCT is not set
++CONFIG_SYSCTL=y
++CONFIG_LOG_BUF_SHIFT=14
++CONFIG_HOTPLUG=y
++# CONFIG_IKCONFIG is not set
++CONFIG_EMBEDDED=y
++CONFIG_KALLSYMS=y
++CONFIG_FUTEX=y
++CONFIG_EPOLL=y
++CONFIG_IOSCHED_NOOP=y
++CONFIG_IOSCHED_AS=y
++CONFIG_IOSCHED_DEADLINE=y
++# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
++
++#
++# Loadable module support
++#
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++# CONFIG_MODULE_FORCE_UNLOAD is not set
++CONFIG_OBSOLETE_MODPARM=y
++CONFIG_MODVERSIONS=y
++CONFIG_KMOD=y
++
++#
++# Processor
++#
++CONFIG_6xx=y
++# CONFIG_40x is not set
++# CONFIG_44x is not set
++# CONFIG_POWER3 is not set
++# CONFIG_POWER4 is not set
++# CONFIG_8xx is not set
++CONFIG_ALTIVEC=y
++# CONFIG_TAU is not set
++# CONFIG_CPU_FREQ is not set
++# CONFIG_PPC601_SYNC_FIX is not set
++CONFIG_PPC_STD_MMU=y
++
++#
++# Platform options
++#
++CONFIG_PPC_MULTIPLATFORM=y
++# CONFIG_APUS is not set
++# CONFIG_WILLOW is not set
++# CONFIG_PCORE is not set
++# CONFIG_POWERPMC250 is not set
++# CONFIG_EV64260 is not set
++# CONFIG_SPRUCE is not set
++# CONFIG_LOPEC is not set
++# CONFIG_MCPN765 is not set
++# CONFIG_MVME5100 is not set
++# CONFIG_PPLUS is not set
++# CONFIG_PRPMC750 is not set
++# CONFIG_PRPMC800 is not set
++# CONFIG_SANDPOINT is not set
++# CONFIG_ADIR is not set
++# CONFIG_K2 is not set
++# CONFIG_PAL4 is not set
++# CONFIG_GEMINI is not set
++# CONFIG_EST8260 is not set
++# CONFIG_SBS8260 is not set
++# CONFIG_RPX6 is not set
++# CONFIG_TQM8260 is not set
++CONFIG_PPC_CHRP=y
++CONFIG_PPC_PMAC=y
++CONFIG_PPC_PREP=y
++CONFIG_PPC_OF=y
++CONFIG_PPCBUG_NVRAM=y
++# CONFIG_SMP is not set
++# CONFIG_PREEMPT is not set
++CONFIG_HIGHMEM=y
++CONFIG_KERNEL_ELF=y
++CONFIG_BINFMT_ELF=y
++CONFIG_BINFMT_MISC=m
++CONFIG_PROC_DEVICETREE=y
++CONFIG_PPC_RTAS=y
++# CONFIG_PREP_RESIDUAL is not set
++# CONFIG_CMDLINE_BOOL is not set
++
++#
++# Bus options
++#
++CONFIG_ISA=y
++CONFIG_GENERIC_ISA_DMA=y
++CONFIG_PCI=y
++CONFIG_PCI_DOMAINS=y
++CONFIG_PCI_LEGACY_PROC=y
++CONFIG_PCI_NAMES=y
++
++#
++# PCMCIA/CardBus support
++#
++# CONFIG_PCMCIA is not set
++CONFIG_PCMCIA_PROBE=y
++
++#
++# Advanced setup
++#
++CONFIG_ADVANCED_OPTIONS=y
++# CONFIG_HIGHMEM_START_BOOL is not set
++CONFIG_HIGHMEM_START=0xfe000000
++# CONFIG_LOWMEM_SIZE_BOOL is not set
++CONFIG_LOWMEM_SIZE=0x30000000
++# CONFIG_KERNEL_START_BOOL is not set
++CONFIG_KERNEL_START=0xc0000000
++# CONFIG_TASK_SIZE_BOOL is not set
++CONFIG_TASK_SIZE=0x80000000
++CONFIG_BOOT_LOAD=0x00800000
++
++#
++# Device Drivers
++#
++
++#
++# Generic Driver Options
++#
++# CONFIG_FW_LOADER is not set
++# CONFIG_DEBUG_DRIVER is not set
++
++#
++# Memory Technology Devices (MTD)
++#
++# CONFIG_MTD is not set
++
++#
++# Parallel port support
++#
++# CONFIG_PARPORT is not set
++
++#
++# Plug and Play support
++#
++# CONFIG_PNP is not set
++
++#
++# Block devices
++#
++# CONFIG_BLK_DEV_FD is not set
++# CONFIG_BLK_DEV_XD is not set
++# CONFIG_BLK_CPQ_DA is not set
++# CONFIG_BLK_CPQ_CISS_DA is not set
++# CONFIG_BLK_DEV_DAC960 is not set
++# CONFIG_BLK_DEV_UMEM is not set
++CONFIG_BLK_DEV_LOOP=y
++# CONFIG_BLK_DEV_CRYPTOLOOP is not set
++# CONFIG_BLK_DEV_NBD is not set
++# CONFIG_BLK_DEV_CARMEL is not set
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_SIZE=4096
++CONFIG_BLK_DEV_INITRD=y
++CONFIG_LBD=y
++
++#
++# ATA/ATAPI/MFM/RLL support
++#
++CONFIG_IDE=y
++CONFIG_BLK_DEV_IDE=y
++
++#
++# Please see Documentation/ide.txt for help/info on IDE drives
++#
++CONFIG_BLK_DEV_IDEDISK=y
++# CONFIG_IDEDISK_MULTI_MODE is not set
++# CONFIG_IDEDISK_STROKE is not set
++CONFIG_BLK_DEV_IDECD=y
++# CONFIG_BLK_DEV_IDETAPE is not set
++CONFIG_BLK_DEV_IDEFLOPPY=y
++# CONFIG_IDE_TASK_IOCTL is not set
++# CONFIG_IDE_TASKFILE_IO is not set
++
++#
++# IDE chipset support/bugfixes
++#
++CONFIG_IDE_GENERIC=y
++CONFIG_BLK_DEV_IDEPCI=y
++CONFIG_IDEPCI_SHARE_IRQ=y
++# CONFIG_BLK_DEV_OFFBOARD is not set
++CONFIG_BLK_DEV_GENERIC=y
++# CONFIG_BLK_DEV_OPTI621 is not set
++CONFIG_BLK_DEV_SL82C105=y
++CONFIG_BLK_DEV_IDEDMA_PCI=y
++# CONFIG_BLK_DEV_IDEDMA_FORCED is not set
++CONFIG_IDEDMA_PCI_AUTO=y
++# CONFIG_IDEDMA_ONLYDISK is not set
++CONFIG_BLK_DEV_ADMA=y
++# CONFIG_BLK_DEV_AEC62XX is not set
++# CONFIG_BLK_DEV_ALI15X3 is not set
++# CONFIG_BLK_DEV_AMD74XX is not set
++# CONFIG_BLK_DEV_CMD64X is not set
++# CONFIG_BLK_DEV_TRIFLEX is not set
++# CONFIG_BLK_DEV_CY82C693 is not set
++# CONFIG_BLK_DEV_CS5520 is not set
++# CONFIG_BLK_DEV_CS5530 is not set
++# CONFIG_BLK_DEV_HPT34X is not set
++# CONFIG_BLK_DEV_HPT366 is not set
++# CONFIG_BLK_DEV_SC1200 is not set
++# CONFIG_BLK_DEV_PIIX is not set
++# CONFIG_BLK_DEV_NS87415 is not set
++# CONFIG_BLK_DEV_PDC202XX_OLD is not set
++# CONFIG_BLK_DEV_PDC202XX_NEW is not set
++# CONFIG_BLK_DEV_SVWKS is not set
++# CONFIG_BLK_DEV_SIIMAGE is not set
++# CONFIG_BLK_DEV_SLC90E66 is not set
++# CONFIG_BLK_DEV_TRM290 is not set
++# CONFIG_BLK_DEV_VIA82CXXX is not set
++# CONFIG_BLK_DEV_IDE_PMAC is not set
++# CONFIG_IDE_CHIPSETS is not set
++CONFIG_BLK_DEV_IDEDMA=y
++# CONFIG_IDEDMA_IVB is not set
++CONFIG_IDEDMA_AUTO=y
++# CONFIG_DMA_NONPCI is not set
++# CONFIG_BLK_DEV_HD is not set
++
++#
++# SCSI device support
++#
++# CONFIG_SCSI is not set
++
++#
++# Old CD-ROM drivers (not SCSI, not IDE)
++#
++# CONFIG_CD_NO_IDESCSI is not set
++
++#
++# Multi-device support (RAID and LVM)
++#
++# CONFIG_MD is not set
++
++#
++# Fusion MPT device support
++#
++# CONFIG_FUSION is not set
++
++#
++# IEEE 1394 (FireWire) support
++#
++# CONFIG_IEEE1394 is not set
++
++#
++# I2O device support
++#
++# CONFIG_I2O is not set
++
++#
++# Macintosh device drivers
++#
++# CONFIG_ADB is not set
++# CONFIG_ADB_CUDA is not set
++# CONFIG_ADB_PMU is not set
++# CONFIG_MAC_FLOPPY is not set
++# CONFIG_MAC_SERIAL is not set
++
++#
++# Networking support
++#
++CONFIG_NET=y
++
++#
++# Networking options
++#
++CONFIG_PACKET=y
++# CONFIG_PACKET_MMAP is not set
++# CONFIG_NETLINK_DEV is not set
++CONFIG_UNIX=y
++# CONFIG_NET_KEY is not set
++CONFIG_INET=y
++CONFIG_IP_MULTICAST=y
++# CONFIG_IP_ADVANCED_ROUTER is not set
++# CONFIG_IP_PNP is not set
++# CONFIG_NET_IPIP is not set
++# CONFIG_NET_IPGRE is not set
++# CONFIG_IP_MROUTE is not set
++# CONFIG_ARPD is not set
++# CONFIG_INET_ECN is not set
++CONFIG_SYN_COOKIES=y
++# CONFIG_INET_AH is not set
++# CONFIG_INET_ESP is not set
++# CONFIG_INET_IPCOMP is not set
++
++#
++# IP: Virtual Server Configuration
++#
++# CONFIG_IP_VS is not set
++# CONFIG_IPV6 is not set
++# CONFIG_DECNET is not set
++# CONFIG_BRIDGE is not set
++CONFIG_NETFILTER=y
++# CONFIG_NETFILTER_DEBUG is not set
++
++#
++# IP: Netfilter Configuration
++#
++CONFIG_IP_NF_CONNTRACK=m
++CONFIG_IP_NF_FTP=m
++CONFIG_IP_NF_IRC=m
++CONFIG_IP_NF_TFTP=m
++CONFIG_IP_NF_AMANDA=m
++# CONFIG_IP_NF_QUEUE is not set
++CONFIG_IP_NF_IPTABLES=m
++CONFIG_IP_NF_MATCH_LIMIT=m
++CONFIG_IP_NF_MATCH_IPRANGE=m
++CONFIG_IP_NF_MATCH_MAC=m
++CONFIG_IP_NF_MATCH_PKTTYPE=m
++CONFIG_IP_NF_MATCH_MARK=m
++CONFIG_IP_NF_MATCH_MULTIPORT=m
++CONFIG_IP_NF_MATCH_TOS=m
++CONFIG_IP_NF_MATCH_RECENT=m
++CONFIG_IP_NF_MATCH_ECN=m
++CONFIG_IP_NF_MATCH_DSCP=m
++CONFIG_IP_NF_MATCH_AH_ESP=m
++CONFIG_IP_NF_MATCH_LENGTH=m
++CONFIG_IP_NF_MATCH_TTL=m
++CONFIG_IP_NF_MATCH_TCPMSS=m
++CONFIG_IP_NF_MATCH_HELPER=m
++CONFIG_IP_NF_MATCH_STATE=m
++CONFIG_IP_NF_MATCH_CONNTRACK=m
++CONFIG_IP_NF_MATCH_OWNER=m
++CONFIG_IP_NF_FILTER=m
++CONFIG_IP_NF_TARGET_REJECT=m
++CONFIG_IP_NF_NAT=m
++CONFIG_IP_NF_NAT_NEEDED=y
++CONFIG_IP_NF_TARGET_MASQUERADE=m
++CONFIG_IP_NF_TARGET_REDIRECT=m
++CONFIG_IP_NF_TARGET_NETMAP=m
++CONFIG_IP_NF_TARGET_SAME=m
++# CONFIG_IP_NF_NAT_LOCAL is not set
++CONFIG_IP_NF_NAT_SNMP_BASIC=m
++CONFIG_IP_NF_NAT_IRC=m
++CONFIG_IP_NF_NAT_FTP=m
++CONFIG_IP_NF_NAT_TFTP=m
++CONFIG_IP_NF_NAT_AMANDA=m
++# CONFIG_IP_NF_MANGLE is not set
++# CONFIG_IP_NF_TARGET_LOG is not set
++# CONFIG_IP_NF_TARGET_ULOG is not set
++CONFIG_IP_NF_TARGET_TCPMSS=m
++CONFIG_IP_NF_ARPTABLES=m
++CONFIG_IP_NF_ARPFILTER=m
++CONFIG_IP_NF_ARP_MANGLE=m
++CONFIG_IP_NF_COMPAT_IPCHAINS=m
++# CONFIG_IP_NF_COMPAT_IPFWADM is not set
++
++#
++# SCTP Configuration (EXPERIMENTAL)
++#
++CONFIG_IPV6_SCTP__=y
++# CONFIG_IP_SCTP is not set
++# CONFIG_ATM is not set
++# CONFIG_VLAN_8021Q is not set
++# CONFIG_LLC2 is not set
++# CONFIG_IPX is not set
++# CONFIG_ATALK is not set
++# CONFIG_X25 is not set
++# CONFIG_LAPB is not set
++# CONFIG_NET_DIVERT is not set
++# CONFIG_ECONET is not set
++# CONFIG_WAN_ROUTER is not set
++# CONFIG_NET_FASTROUTE is not set
++# CONFIG_NET_HW_FLOWCONTROL is not set
++
++#
++# QoS and/or fair queueing
++#
++# CONFIG_NET_SCHED is not set
++
++#
++# Network testing
++#
++# CONFIG_NET_PKTGEN is not set
++CONFIG_NETDEVICES=y
++
++#
++# ARCnet devices
++#
++# CONFIG_ARCNET is not set
++# CONFIG_DUMMY is not set
++# CONFIG_BONDING is not set
++# CONFIG_EQUALIZER is not set
++# CONFIG_TUN is not set
++
++#
++# Ethernet (10 or 100Mbit)
++#
++CONFIG_NET_ETHERNET=y
++CONFIG_MII=y
++# CONFIG_MACE is not set
++# CONFIG_BMAC is not set
++# CONFIG_OAKNET is not set
++# CONFIG_HAPPYMEAL is not set
++# CONFIG_SUNGEM is not set
++# CONFIG_NET_VENDOR_3COM is not set
++# CONFIG_LANCE is not set
++# CONFIG_NET_VENDOR_SMC is not set
++# CONFIG_NET_VENDOR_RACAL is not set
++
++#
++# Tulip family network device support
++#
++# CONFIG_NET_TULIP is not set
++# CONFIG_AT1700 is not set
++# CONFIG_DEPCA is not set
++# CONFIG_HP100 is not set
++# CONFIG_NET_ISA is not set
++CONFIG_NET_PCI=y
++CONFIG_PCNET32=y
++# CONFIG_AMD8111_ETH is not set
++# CONFIG_ADAPTEC_STARFIRE is not set
++# CONFIG_AC3200 is not set
++# CONFIG_APRICOT is not set
++# CONFIG_B44 is not set
++# CONFIG_FORCEDETH is not set
++# CONFIG_CS89x0 is not set
++# CONFIG_DGRS is not set
++# CONFIG_EEPRO100 is not set
++# CONFIG_E100 is not set
++# CONFIG_FEALNX is not set
++# CONFIG_NATSEMI is not set
++# CONFIG_NE2K_PCI is not set
++# CONFIG_8139CP is not set
++# CONFIG_8139TOO is not set
++# CONFIG_SIS900 is not set
++# CONFIG_EPIC100 is not set
++# CONFIG_SUNDANCE is not set
++# CONFIG_TLAN is not set
++# CONFIG_VIA_RHINE is not set
++# CONFIG_NET_POCKET is not set
++
++#
++# Ethernet (1000 Mbit)
++#
++# CONFIG_ACENIC is not set
++# CONFIG_DL2K is not set
++# CONFIG_E1000 is not set
++# CONFIG_NS83820 is not set
++# CONFIG_HAMACHI is not set
++# CONFIG_YELLOWFIN is not set
++# CONFIG_R8169 is not set
++# CONFIG_SIS190 is not set
++# CONFIG_SK98LIN is not set
++# CONFIG_TIGON3 is not set
++
++#
++# Ethernet (10000 Mbit)
++#
++# CONFIG_IXGB is not set
++# CONFIG_FDDI is not set
++# CONFIG_HIPPI is not set
++# CONFIG_PPP is not set
++# CONFIG_SLIP is not set
++
++#
++# Wireless LAN (non-hamradio)
++#
++CONFIG_NET_RADIO=y
++
++#
++# Obsolete Wireless cards support (pre-802.11)
++#
++# CONFIG_STRIP is not set
++# CONFIG_ARLAN is not set
++# CONFIG_WAVELAN is not set
++
++#
++# Wireless 802.11b ISA/PCI cards support
++#
++# CONFIG_AIRO is not set
++CONFIG_HERMES=m
++CONFIG_APPLE_AIRPORT=m
++# CONFIG_PLX_HERMES is not set
++# CONFIG_TMD_HERMES is not set
++# CONFIG_PCI_HERMES is not set
++# CONFIG_ATMEL is not set
++
++#
++# Prism GT/Duette 802.11(a/b/g) PCI/PCMCIA support
++#
++# CONFIG_PRISM54 is not set
++CONFIG_NET_WIRELESS=y
++
++#
++# Token Ring devices
++#
++# CONFIG_TR is not set
++# CONFIG_RCPCI is not set
++# CONFIG_SHAPER is not set
++# CONFIG_NETCONSOLE is not set
++
++#
++# Wan interfaces
++#
++# CONFIG_WAN is not set
++
++#
++# Amateur Radio support
++#
++# CONFIG_HAMRADIO is not set
++
++#
++# IrDA (infrared) support
++#
++# CONFIG_IRDA is not set
++
++#
++# Bluetooth support
++#
++# CONFIG_BT is not set
++# CONFIG_NETPOLL is not set
++# CONFIG_NET_POLL_CONTROLLER is not set
++
++#
++# ISDN subsystem
++#
++# CONFIG_ISDN is not set
++
++#
++# Telephony Support
++#
++# CONFIG_PHONE is not set
++
++#
++# Input device support
++#
++# CONFIG_INPUT is not set
++
++#
++# Userland interfaces
++#
++
++#
++# Input I/O drivers
++#
++# CONFIG_GAMEPORT is not set
++CONFIG_SOUND_GAMEPORT=y
++# CONFIG_SERIO is not set
++# CONFIG_SERIO_I8042 is not set
++
++#
++# Input Device Drivers
++#
++
++#
++# Character devices
++#
++# CONFIG_VT is not set
++# CONFIG_SERIAL_NONSTANDARD is not set
++
++#
++# Serial drivers
++#
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++CONFIG_SERIAL_8250_NR_UARTS=4
++# CONFIG_SERIAL_8250_EXTENDED is not set
++
++#
++# Non-8250 serial port support
++#
++CONFIG_SERIAL_CORE=y
++CONFIG_SERIAL_CORE_CONSOLE=y
++# CONFIG_SERIAL_PMACZILOG is not set
++CONFIG_UNIX98_PTYS=y
++CONFIG_LEGACY_PTYS=y
++CONFIG_LEGACY_PTY_COUNT=256
++CONFIG_BRIQ_PANEL=y
++# CONFIG_QIC02_TAPE is not set
++
++#
++# IPMI
++#
++# CONFIG_IPMI_HANDLER is not set
++
++#
++# Watchdog Cards
++#
++# CONFIG_WATCHDOG is not set
++CONFIG_NVRAM=y
++CONFIG_GEN_RTC=y
++# CONFIG_GEN_RTC_X is not set
++# CONFIG_DTLK is not set
++# CONFIG_R3964 is not set
++# CONFIG_APPLICOM is not set
++
++#
++# Ftape, the floppy tape device driver
++#
++# CONFIG_FTAPE is not set
++# CONFIG_AGP is not set
++# CONFIG_DRM is not set
++# CONFIG_RAW_DRIVER is not set
++
++#
++# I2C support
++#
++# CONFIG_I2C is not set
++
++#
++# Misc devices
++#
++
++#
++# Multimedia devices
++#
++# CONFIG_VIDEO_DEV is not set
++
++#
++# Digital Video Broadcasting Devices
++#
++# CONFIG_DVB is not set
++
++#
++# Graphics support
++#
++# CONFIG_FB is not set
++
++#
++# Sound
++#
++# CONFIG_SOUND is not set
++
++#
++# USB support
++#
++# CONFIG_USB is not set
++
++#
++# USB Gadget Support
++#
++# CONFIG_USB_GADGET is not set
++
++#
++# File systems
++#
++CONFIG_EXT2_FS=y
++CONFIG_EXT2_FS_XATTR=y
++# CONFIG_EXT2_FS_POSIX_ACL is not set
++# CONFIG_EXT2_FS_SECURITY is not set
++CONFIG_EXT3_FS=y
++CONFIG_EXT3_FS_XATTR=y
++CONFIG_EXT3_FS_POSIX_ACL=y
++CONFIG_EXT3_FS_SECURITY=y
++CONFIG_JBD=y
++# CONFIG_JBD_DEBUG is not set
++CONFIG_FS_MBCACHE=y
++# CONFIG_REISERFS_FS is not set
++# CONFIG_JFS_FS is not set
++CONFIG_FS_POSIX_ACL=y
++# CONFIG_XFS_FS is not set
++# CONFIG_MINIX_FS is not set
++# CONFIG_ROMFS_FS is not set
++# CONFIG_QUOTA is not set
++# CONFIG_AUTOFS_FS is not set
++# CONFIG_AUTOFS4_FS is not set
++
++#
++# CD-ROM/DVD Filesystems
++#
++CONFIG_ISO9660_FS=y
++# CONFIG_JOLIET is not set
++# CONFIG_ZISOFS is not set
++# CONFIG_UDF_FS is not set
++
++#
++# DOS/FAT/NT Filesystems
++#
++CONFIG_FAT_FS=m
++CONFIG_MSDOS_FS=m
++CONFIG_VFAT_FS=m
++# CONFIG_NTFS_FS is not set
++
++#
++# Pseudo filesystems
++#
++CONFIG_PROC_FS=y
++CONFIG_PROC_KCORE=y
++# CONFIG_DEVFS_FS is not set
++CONFIG_DEVPTS_FS_XATTR=y
++# CONFIG_DEVPTS_FS_SECURITY is not set
++CONFIG_TMPFS=y
++# CONFIG_HUGETLB_PAGE is not set
++CONFIG_RAMFS=y
++
++#
++# Miscellaneous filesystems
++#
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
++# CONFIG_CRAMFS is not set
++# CONFIG_VXFS_FS is not set
++# CONFIG_HPFS_FS is not set
++# CONFIG_QNX4FS_FS is not set
++# CONFIG_SYSV_FS is not set
++# CONFIG_UFS_FS is not set
++
++#
++# Network File Systems
++#
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3=y
++CONFIG_NFS_V4=y
++# CONFIG_NFS_DIRECTIO is not set
++CONFIG_NFSD=y
++CONFIG_NFSD_V3=y
++CONFIG_NFSD_V4=y
++# CONFIG_NFSD_TCP is not set
++CONFIG_LOCKD=y
++CONFIG_LOCKD_V4=y
++CONFIG_EXPORTFS=y
++CONFIG_SUNRPC=y
++CONFIG_SUNRPC_GSS=y
++CONFIG_RPCSEC_GSS_KRB5=y
++CONFIG_SMB_FS=m
++# CONFIG_SMB_NLS_DEFAULT is not set
++# CONFIG_CIFS is not set
++# CONFIG_NCP_FS is not set
++# CONFIG_CODA_FS is not set
++# CONFIG_AFS_FS is not set
++
++#
++# Partition Types
++#
++CONFIG_PARTITION_ADVANCED=y
++# CONFIG_ACORN_PARTITION is not set
++# CONFIG_OSF_PARTITION is not set
++# CONFIG_AMIGA_PARTITION is not set
++# CONFIG_ATARI_PARTITION is not set
++CONFIG_MAC_PARTITION=y
++CONFIG_MSDOS_PARTITION=y
++# CONFIG_BSD_DISKLABEL is not set
++# CONFIG_MINIX_SUBPARTITION is not set
++# CONFIG_SOLARIS_X86_PARTITION is not set
++# CONFIG_UNIXWARE_DISKLABEL is not set
++# CONFIG_LDM_PARTITION is not set
++# CONFIG_NEC98_PARTITION is not set
++# CONFIG_SGI_PARTITION is not set
++# CONFIG_ULTRIX_PARTITION is not set
++# CONFIG_SUN_PARTITION is not set
++# CONFIG_EFI_PARTITION is not set
++
++#
++# Native Language Support
++#
++CONFIG_NLS=y
++CONFIG_NLS_DEFAULT="iso8859-1"
++# CONFIG_NLS_CODEPAGE_437 is not set
++# CONFIG_NLS_CODEPAGE_737 is not set
++# CONFIG_NLS_CODEPAGE_775 is not set
++# CONFIG_NLS_CODEPAGE_850 is not set
++# CONFIG_NLS_CODEPAGE_852 is not set
++# CONFIG_NLS_CODEPAGE_855 is not set
++# CONFIG_NLS_CODEPAGE_857 is not set
++# CONFIG_NLS_CODEPAGE_860 is not set
++# CONFIG_NLS_CODEPAGE_861 is not set
++# CONFIG_NLS_CODEPAGE_862 is not set
++# CONFIG_NLS_CODEPAGE_863 is not set
++# CONFIG_NLS_CODEPAGE_864 is not set
++# CONFIG_NLS_CODEPAGE_865 is not set
++# CONFIG_NLS_CODEPAGE_866 is not set
++# CONFIG_NLS_CODEPAGE_869 is not set
++# CONFIG_NLS_CODEPAGE_936 is not set
++# CONFIG_NLS_CODEPAGE_950 is not set
++# CONFIG_NLS_CODEPAGE_932 is not set
++# CONFIG_NLS_CODEPAGE_949 is not set
++# CONFIG_NLS_CODEPAGE_874 is not set
++# CONFIG_NLS_ISO8859_8 is not set
++# CONFIG_NLS_CODEPAGE_1250 is not set
++# CONFIG_NLS_CODEPAGE_1251 is not set
++CONFIG_NLS_ISO8859_1=m
++# CONFIG_NLS_ISO8859_2 is not set
++# CONFIG_NLS_ISO8859_3 is not set
++# CONFIG_NLS_ISO8859_4 is not set
++# CONFIG_NLS_ISO8859_5 is not set
++# CONFIG_NLS_ISO8859_6 is not set
++# CONFIG_NLS_ISO8859_7 is not set
++# CONFIG_NLS_ISO8859_9 is not set
++# CONFIG_NLS_ISO8859_13 is not set
++# CONFIG_NLS_ISO8859_14 is not set
++# CONFIG_NLS_ISO8859_15 is not set
++# CONFIG_NLS_KOI8_R is not set
++# CONFIG_NLS_KOI8_U is not set
++# CONFIG_NLS_UTF8 is not set
++
++#
++# Library routines
++#
++CONFIG_CRC32=y
++
++#
++# Kernel hacking
++#
++CONFIG_DEBUG_KERNEL=y
++# CONFIG_DEBUG_SLAB is not set
++# CONFIG_MAGIC_SYSRQ is not set
++# CONFIG_DEBUG_SPINLOCK is not set
++# CONFIG_DEBUG_HIGHMEM is not set
++# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
++# CONFIG_KGDB is not set
++CONFIG_XMON=y
++# CONFIG_BDI_SWITCH is not set
++# CONFIG_DEBUG_INFO is not set
++CONFIG_BOOTX_TEXT=y
++
++#
++# Security options
++#
++# CONFIG_SECURITY is not set
++
++#
++# Cryptographic options
++#
++CONFIG_CRYPTO=y
++# CONFIG_CRYPTO_HMAC is not set
++# CONFIG_CRYPTO_NULL is not set
++# CONFIG_CRYPTO_MD4 is not set
++CONFIG_CRYPTO_MD5=y
++# CONFIG_CRYPTO_SHA1 is not set
++# CONFIG_CRYPTO_SHA256 is not set
++# CONFIG_CRYPTO_SHA512 is not set
++CONFIG_CRYPTO_DES=y
++# CONFIG_CRYPTO_BLOWFISH is not set
++# CONFIG_CRYPTO_TWOFISH is not set
++# CONFIG_CRYPTO_SERPENT is not set
++# CONFIG_CRYPTO_AES is not set
++# CONFIG_CRYPTO_CAST5 is not set
++# CONFIG_CRYPTO_CAST6 is not set
++# CONFIG_CRYPTO_ARC4 is not set
++# CONFIG_CRYPTO_DEFLATE is not set
++# CONFIG_CRYPTO_TEST is not set
+diff -urN linux-2.5/arch/ppc/kernel/pci.c linux-briq/arch/ppc/kernel/pci.c
+--- linux-2.5/arch/ppc/kernel/pci.c	2004-03-01 18:11:11.000000000 +1100
++++ linux-briq/arch/ppc/kernel/pci.c	2004-03-19 16:03:57.000000000 +1100
+@@ -45,11 +45,16 @@
+ static int reparent_resources(struct resource *parent, struct resource *res);
+ static void fixup_rev1_53c810(struct pci_dev* dev);
+ static void fixup_cpc710_pci64(struct pci_dev* dev);
++
++#ifdef CONFIG_PPC_CHRP
++extern void chrp_pci_fixup_winbond_ata(struct pci_dev* dev);
++#endif /* CONFIG_PPC_CHRP */
+ #ifdef CONFIG_PPC_PMAC
+ extern void pmac_pci_fixup_cardbus(struct pci_dev* dev);
+ extern void pmac_pci_fixup_pciata(struct pci_dev* dev);
+ extern void pmac_pci_fixup_k2_sata(struct pci_dev* dev);
+-#endif
++#endif /* CONFIG_PPC_PMAC */
++
+ #ifdef CONFIG_PPC_OF
+ static u8* pci_to_OF_bus_map;
  #endif
+@@ -69,6 +74,9 @@
+ 	{ PCI_FIXUP_HEADER,	PCI_VENDOR_ID_NCR,	PCI_DEVICE_ID_NCR_53C810,	fixup_rev1_53c810 },
+ 	{ PCI_FIXUP_HEADER,	PCI_VENDOR_ID_IBM,	PCI_DEVICE_ID_IBM_CPC710_PCI64,	fixup_cpc710_pci64},
+ 	{ PCI_FIXUP_HEADER,	PCI_ANY_ID,		PCI_ANY_ID,			pcibios_fixup_resources },
++#ifdef CONFIG_PPC_CHRP
++	{ PCI_FIXUP_FINAL,	PCI_VENDOR_ID_WINBOND,	PCI_DEVICE_ID_WINBOND_82C105,	chrp_pci_fixup_winbond_ata },
++#endif /* CONFIG_PPC_CHRP */
+ #ifdef CONFIG_PPC_PMAC
+ 	/* We should add per-machine fixup support in xxx_setup.c or xxx_pci.c */
+ 	{ PCI_FIXUP_FINAL,	PCI_VENDOR_ID_TI,	PCI_ANY_ID,			pmac_pci_fixup_cardbus },
+diff -urN linux-2.5/arch/ppc/platforms/chrp_pci.c linux-briq/arch/ppc/platforms/chrp_pci.c
+--- linux-2.5/arch/ppc/platforms/chrp_pci.c	2004-03-01 18:11:11.000000000 +1100
++++ linux-briq/arch/ppc/platforms/chrp_pci.c	2004-03-19 16:03:58.000000000 +1100
+@@ -25,6 +25,9 @@
+ /* LongTrail */
+ unsigned long gg2_pci_config_base;
 
-diff -Nru a/arch/ppc/mm/Makefile b/arch/ppc/mm/Makefile
---- a/arch/ppc/mm/Makefile	Fri May 21 11:01:23 2004
-+++ b/arch/ppc/mm/Makefile	Fri May 21 11:01:23 2004
-@@ -12,4 +12,3 @@
- obj-$(CONFIG_PPC_STD_MMU)	+= hashtable.o ppc_mmu.o tlb.o
- obj-$(CONFIG_40x)		+= 4xx_mmu.o
- obj-$(CONFIG_44x)		+= 44x_mmu.o
--obj-$(CONFIG_NOT_COHERENT_CACHE)	+= cachemap.o
-diff -Nru a/arch/ppc/mm/cachemap.c b/arch/ppc/mm/cachemap.c
---- a/arch/ppc/mm/cachemap.c	Fri May 21 11:01:23 2004
-+++ /dev/null	Wed Dec 31 16:00:00 1969
-@@ -1,174 +0,0 @@
--/*
-- *  PowerPC version derived from arch/arm/mm/consistent.c
-- *    Copyright (C) 2001 Dan Malek (dmalek@jlc.net)
-- *
-- *  arch/ppc/mm/cachemap.c
-- *
-- *  Copyright (C) 2000 Russell King
-- *
-- * Consistent memory allocators.  Used for DMA devices that want to
-- * share uncached memory with the processor core.  The function return
-- * is the virtual address and 'dma_handle' is the physical address.
-- * Mostly stolen from the ARM port, with some changes for PowerPC.
-- *						-- Dan
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- */
--
--#include <linux/config.h>
--#include <linux/module.h>
--#include <linux/signal.h>
--#include <linux/sched.h>
--#include <linux/kernel.h>
--#include <linux/errno.h>
--#include <linux/string.h>
--#include <linux/types.h>
--#include <linux/ptrace.h>
--#include <linux/mman.h>
--#include <linux/mm.h>
--#include <linux/swap.h>
--#include <linux/stddef.h>
--#include <linux/vmalloc.h>
--#include <linux/init.h>
--#include <linux/delay.h>
--#include <linux/bootmem.h>
--#include <linux/highmem.h>
--#include <linux/dma-mapping.h>
--
--#include <asm/pgalloc.h>
--#include <asm/prom.h>
--#include <asm/io.h>
--#include <asm/hardirq.h>
--#include <asm/mmu_context.h>
--#include <asm/pgtable.h>
--#include <asm/mmu.h>
--#include <asm/uaccess.h>
--#include <asm/smp.h>
--#include <asm/machdep.h>
--
--int map_page(unsigned long va, phys_addr_t pa, int flags);
--
--/* This function will allocate the requested contiguous pages and
-- * map them into the kernel's vmalloc() space.  This is done so we
-- * get unique mapping for these pages, outside of the kernel's 1:1
-- * virtual:physical mapping.  This is necessary so we can cover large
-- * portions of the kernel with single large page TLB entries, and
-- * still get unique uncached pages for consistent DMA.
-- */
--void *consistent_alloc(int gfp, size_t size, dma_addr_t *dma_handle)
--{
--	int order, err;
--	struct page *page, *free, *end;
--	phys_addr_t pa;
--	unsigned long flags, offset;
--	struct vm_struct *area = NULL;
--	unsigned long va = 0;
--
--	BUG_ON(in_interrupt());
--
--	/* Only allocate page size areas */
--	size = PAGE_ALIGN(size);
--	order = get_order(size);
--
--	free = page = alloc_pages(gfp, order);
--	if (! page)
--		return NULL;
--
--	pa = page_to_phys(page);
--	*dma_handle = page_to_bus(page);
--	end = page + (1 << order);
--
--	/*
--	 * we need to ensure that there are no cachelines in use,
--	 * or worse dirty in this area.
--	 */
--	invalidate_dcache_range((unsigned long)page_address(page),
--				(unsigned long)page_address(page) + size);
--
--	/*
--	 * alloc_pages() expects the block to be handled as a unit, so
--	 * it only sets the page count on the first page.  We set the
--	 * counts on each page so they can be freed individually
--	 */
--	for (; page < end; page++)
--		set_page_count(page, 1);
--
--
--	/* Allocate some common virtual space to map the new pages*/
--	area = get_vm_area(size, VM_ALLOC);
--	if (! area)
--		goto out;
--
--	va = (unsigned long) area->addr;
--
--	flags = _PAGE_KERNEL | _PAGE_NO_CACHE;
--
--	for (offset = 0; offset < size; offset += PAGE_SIZE) {
--		err = map_page(va+offset, pa+offset, flags);
--		if (err) {
--			vfree((void *)va);
--			va = 0;
--			goto out;
--		}
--
--		free++;
--	}
--
-- out:
--	/* Free pages which weren't mapped */
--	for (; free < end; free++) {
--		__free_page(free);
--	}
--
--	return (void *)va;
--}
--
--/*
-- * free page(s) as defined by the above mapping.
-- */
--void consistent_free(void *vaddr)
--{
--	BUG_ON(in_interrupt());
--	vfree(vaddr);
--}
--
--/*
-- * make an area consistent.
-- */
--void consistent_sync(void *vaddr, size_t size, int direction)
--{
--	unsigned long start = (unsigned long)vaddr;
--	unsigned long end   = start + size;
--
--	switch (direction) {
--	case DMA_NONE:
--		BUG();
--	case DMA_FROM_DEVICE:	/* invalidate only */
--		invalidate_dcache_range(start, end);
--		break;
--	case DMA_TO_DEVICE:		/* writeback only */
--		clean_dcache_range(start, end);
--		break;
--	case DMA_BIDIRECTIONAL:	/* writeback and invalidate */
--		flush_dcache_range(start, end);
--		break;
--	}
--}
--
--/*
-- * consistent_sync_page make a page are consistent. identical
-- * to consistent_sync, but takes a struct page instead of a virtual address
-- */
--
--void consistent_sync_page(struct page *page, unsigned long offset,
--	size_t size, int direction)
--{
--	unsigned long start;
--
--	start = (unsigned long)page_address(page) + offset;
--	consistent_sync((void *)start, size, direction);
--}
--
--EXPORT_SYMBOL(consistent_sync_page);
-diff -Nru a/include/asm-ppc/dma-mapping.h b/include/asm-ppc/dma-mapping.h
---- a/include/asm-ppc/dma-mapping.h	Fri May 21 11:01:23 2004
-+++ b/include/asm-ppc/dma-mapping.h	Fri May 21 11:01:23 2004
-@@ -6,15 +6,48 @@
- #define __ASM_PPC_DMA_MAPPING_H
-
- #include <linux/config.h>
--/* we implement the API below in terms of the existing PCI one,
-- * so include it */
--#include <linux/pci.h>
- /* need struct page definitions */
- #include <linux/mm.h>
- #include <linux/device.h>
- #include <asm/scatterlist.h>
- #include <asm/io.h>
-
-+#ifdef CONFIG_NOT_COHERENT_CACHE
-+/*
-+ * DMA-consistent mapping functions for PowerPCs that don't support
-+ * cache snooping.  These allocate/free a region of uncached mapped
-+ * memory space for use with DMA devices.  Alternatively, you could
-+ * allocate the space "normally" and use the cache management functions
-+ * to ensure it is consistent.
-+ */
-+extern void *__dma_alloc_coherent(size_t size, dma_addr_t *handle, int gfp);
-+extern void __dma_free_coherent(size_t size, void *vaddr);
-+extern void __dma_sync(void *vaddr, size_t size, int direction);
-+extern void __dma_sync_page(struct page *page, unsigned long offset,
-+				 size_t size, int direction);
-+#define dma_cache_inv(_start,_size) \
-+	invalidate_dcache_range(_start, (_start + _size))
-+#define dma_cache_wback(_start,_size) \
-+	clean_dcache_range(_start, (_start + _size))
-+#define dma_cache_wback_inv(_start,_size) \
-+	flush_dcache_range(_start, (_start + _size))
++/* BriQ stuff */
++extern int chrp_is_briq;
 +
-+#else /* ! CONFIG_NOT_COHERENT_CACHE */
-+/*
-+ * Cache coherent cores.
-+ */
-+
-+#define dma_cache_inv(_start,_size)		do { } while (0)
-+#define dma_cache_wback(_start,_size)		do { } while (0)
-+#define dma_cache_wback_inv(_start,_size)	do { } while (0)
-+
-+#define __dma_alloc_coherent(gfp, size, handle)	NULL
-+#define __dma_free_coherent(size, addr)		do { } while (0)
-+#define __dma_sync(addr, size, rw)		do { } while (0)
-+#define __dma_sync_page(pg, off, sz, rw)	do { } while (0)
-+
-+#endif /* ! CONFIG_NOT_COHERENT_CACHE */
-+
- #define dma_supported(dev, mask)	(1)
-
- static inline int dma_set_mask(struct device *dev, u64 dma_mask)
-@@ -28,28 +61,38 @@
- }
-
- static inline void *dma_alloc_coherent(struct device *dev, size_t size,
--				       dma_addr_t * dma_handle, int flag)
-+				       dma_addr_t * dma_handle, int gfp)
- {
--#ifdef CONFIG_PCI
--	if (dev && dev->bus == &pci_bus_type)
--		return pci_alloc_consistent(to_pci_dev(dev), size, dma_handle);
-+#ifdef CONFIG_NOT_COHERENT_CACHE
-+	return __dma_alloc_coherent(size, dma_handle, gfp);
-+#else
-+	void *ret;
-+	/* ignore region specifiers */
-+	gfp &= ~(__GFP_DMA | __GFP_HIGHMEM);
-+
-+	if (dev == NULL || dev->coherent_dma_mask < 0xffffffff)
-+		gfp |= GFP_DMA;
-+
-+	ret = (void *)__get_free_pages(gfp, get_order(size));
-+
-+	if (ret != NULL) {
-+		memset(ret, 0, size);
-+		*dma_handle = virt_to_bus(ret);
-+	}
-+
-+	return ret;
- #endif
--
--	return consistent_alloc(flag, size, dma_handle);
- }
-
- static inline void
- dma_free_coherent(struct device *dev, size_t size, void *vaddr,
- 		  dma_addr_t dma_handle)
- {
--#ifdef CONFIG_PCI
--	if (dev && dev->bus == &pci_bus_type) {
--		pci_free_consistent(to_pci_dev(dev), size, vaddr, dma_handle);
--		return;
--	}
-+#ifdef CONFIG_NOT_COHERENT_CACHE
-+	__dma_free_coherent(size, vaddr);
-+#else
-+	free_pages((unsigned long)vaddr, get_order(size));
- #endif
--
--	consistent_free(vaddr);
- }
-
- static inline dma_addr_t
-@@ -58,7 +101,7 @@
- {
- 	BUG_ON(direction == DMA_NONE);
-
--	consistent_sync(ptr, size, direction);
-+	__dma_sync(ptr, size, direction);
-
- 	return virt_to_bus(ptr);
- }
-@@ -72,12 +115,14 @@
- 	     enum dma_data_direction direction)
- {
- 	BUG_ON(direction == DMA_NONE);
--	consistent_sync_page(page, offset, size, direction);
-+
-+	__dma_sync_page(page, offset, size, direction);
-+
- 	return (page - mem_map) * PAGE_SIZE + PCI_DRAM_OFFSET + offset;
- }
-
- /* We do nothing. */
--#define dma_unmap_page(dev, addr, size, dir)	do { } while (0)
-+#define dma_unmap_page(dev, handle, size, dir)	do { } while (0)
-
- static inline int
- dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
-@@ -89,8 +134,7 @@
-
- 	for (i = 0; i < nents; i++, sg++) {
- 		BUG_ON(!sg->page);
--		consistent_sync_page(sg->page, sg->offset,
--				     sg->length, direction);
-+		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
- 		sg->dma_address = page_to_bus(sg->page) + sg->offset;
- 	}
-
-@@ -107,50 +151,50 @@
- {
- 	BUG_ON(direction == DMA_NONE);
-
--	consistent_sync(bus_to_virt(dma_handle), size, direction);
-+	__dma_sync(bus_to_virt(dma_handle), size, direction);
- }
-
- static inline void
- dma_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
--			   size_t size,
--			   enum dma_data_direction direction)
-+			size_t size,
-+			enum dma_data_direction direction)
- {
- 	BUG_ON(direction == DMA_NONE);
-
--	consistent_sync(bus_to_virt(dma_handle), size, direction);
-+	__dma_sync(bus_to_virt(dma_handle), size, direction);
- }
-
- static inline void
--dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
--		    int nelems, enum dma_data_direction direction)
-+dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nents,
-+		    enum dma_data_direction direction)
- {
- 	int i;
-
- 	BUG_ON(direction == DMA_NONE);
-
--	for (i = 0; i < nelems; i++, sg++)
--		consistent_sync_page(sg->page, sg->offset,
--				     sg->length, direction);
-+	for (i = 0; i < nents; i++, sg++)
-+		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
- }
-
- static inline void
--dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
--		       int nelems, enum dma_data_direction direction)
-+dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg, int nents,
-+		    enum dma_data_direction direction)
- {
- 	int i;
-
- 	BUG_ON(direction == DMA_NONE);
-
--	for (i = 0; i < nelems; i++, sg++)
--		consistent_sync_page(sg->page, sg->offset,
--				     sg->length, direction);
-+	for (i = 0; i < nents; i++, sg++)
-+		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
- }
-
--/* Now for the API extensions over the pci_ one */
--
- #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
- #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
-+#ifdef CONFIG_NOT_COHERENT_CACHE
-+#define dma_is_consistent(d)	(0)
-+#else
- #define dma_is_consistent(d)	(1)
-+#endif
-
- static inline int dma_get_cache_alignment(void)
- {
-@@ -163,26 +207,26 @@
-
- static inline void
- dma_sync_single_range_for_cpu(struct device *dev, dma_addr_t dma_handle,
--			      unsigned long offset, size_t size,
--			      enum dma_data_direction direction)
-+		      	      unsigned long offset, size_t size,
-+		      	      enum dma_data_direction direction)
- {
--	/* just sync everything, that's all the pci API can do */
-+	/* just sync everything for now */
- 	dma_sync_single_for_cpu(dev, dma_handle, offset + size, direction);
- }
-
- static inline void
- dma_sync_single_range_for_device(struct device *dev, dma_addr_t dma_handle,
--				 unsigned long offset, size_t size,
-+		    		 unsigned long offset, size_t size,
- 				 enum dma_data_direction direction)
- {
--	/* just sync everything, that's all the pci API can do */
-+	/* just sync everything for now */
- 	dma_sync_single_for_device(dev, dma_handle, offset + size, direction);
- }
-
- static inline void dma_cache_sync(void *vaddr, size_t size,
- 				  enum dma_data_direction direction)
- {
--	consistent_sync(vaddr, size, (int)direction);
-+	__dma_sync(vaddr, size, (int)direction);
- }
-
- static inline int dma_mapping_error(dma_addr_t dma_addr)
-diff -Nru a/include/asm-ppc/io.h b/include/asm-ppc/io.h
---- a/include/asm-ppc/io.h	Fri May 21 11:01:23 2004
-+++ b/include/asm-ppc/io.h	Fri May 21 11:01:23 2004
-@@ -388,43 +388,5 @@
- 	return 0;
- }
-
--#ifdef CONFIG_NOT_COHERENT_CACHE
--
--/*
-- * DMA-consistent mapping functions for PowerPCs that don't support
-- * cache snooping.  These allocate/free a region of uncached mapped
-- * memory space for use with DMA devices.  Alternatively, you could
-- * allocate the space "normally" and use the cache management functions
-- * to ensure it is consistent.
-- */
--extern void *consistent_alloc(int gfp, size_t size, dma_addr_t *handle);
--extern void consistent_free(void *vaddr);
--extern void consistent_sync(void *vaddr, size_t size, int rw);
--extern void consistent_sync_page(struct page *page, unsigned long offset,
--				 size_t size, int rw);
--
--#define dma_cache_inv(_start,_size) \
--	invalidate_dcache_range(_start, (_start + _size))
--#define dma_cache_wback(_start,_size) \
--	clean_dcache_range(_start, (_start + _size))
--#define dma_cache_wback_inv(_start,_size) \
--	flush_dcache_range(_start, (_start + _size))
--
--#else /* ! CONFIG_NOT_COHERENT_CACHE */
--
--/*
-- * Cache coherent cores.
-- */
--
--#define dma_cache_inv(_start,_size)		do { } while (0)
--#define dma_cache_wback(_start,_size)		do { } while (0)
--#define dma_cache_wback_inv(_start,_size)	do { } while (0)
--
--#define consistent_alloc(gfp, size, handle)	NULL
--#define consistent_free(addr)			do { } while (0)
--#define consistent_sync(addr, size, rw)		do { } while (0)
--#define consistent_sync_page(pg, off, sz, rw)	do { } while (0)
--
--#endif /* ! CONFIG_NOT_COHERENT_CACHE */
- #endif /* _PPC_IO_H */
- #endif /* __KERNEL__ */
-diff -Nru a/include/asm-ppc/kmap_types.h b/include/asm-ppc/kmap_types.h
---- a/include/asm-ppc/kmap_types.h	Fri May 21 11:01:22 2004
-+++ b/include/asm-ppc/kmap_types.h	Fri May 21 11:01:22 2004
-@@ -16,6 +16,7 @@
- 	KM_IRQ1,
- 	KM_SOFTIRQ0,
- 	KM_SOFTIRQ1,
-+	KM_PPC_SYNC_PAGE,
- 	KM_TYPE_NR
- };
-
-diff -Nru a/include/asm-ppc/pci.h b/include/asm-ppc/pci.h
---- a/include/asm-ppc/pci.h	Fri May 21 11:01:23 2004
-+++ b/include/asm-ppc/pci.h	Fri May 21 11:01:23 2004
-@@ -9,6 +9,7 @@
- #include <asm/scatterlist.h>
- #include <asm/io.h>
- #include <asm/pci-bridge.h>
-+#include <asm-generic/pci-dma-compat.h>
-
- struct pci_dev;
-
-@@ -54,246 +55,17 @@
- extern unsigned long pci_phys_to_bus(unsigned long pa, int busnr);
- extern unsigned long pci_bus_to_phys(unsigned int ba, int busnr);
-
--/*
-- * Dynamic DMA Mapping stuff
-- * Originally stolen from i386 by ajoshi and updated by paulus
-- * Non-consistent cache support by Dan Malek
-- */
--
- /* The PCI address space does equal the physical memory
-  * address space.  The networking and block device layers use
-  * this boolean for bounce buffer decisions.
-  */
--#define PCI_DMA_BUS_IS_PHYS	(1)
--
--/* Allocate and map kernel buffer using consistent mode DMA for a device.
-- * hwdev should be valid struct pci_dev pointer for PCI devices,
-- * NULL for PCI-like buses (ISA, EISA).
-- * Returns non-NULL cpu-view pointer to the buffer if successful and
-- * sets *dma_addrp to the pci side dma address as well, else *dma_addrp
-- * is undefined.
-- */
--extern void *pci_alloc_consistent(struct pci_dev *hwdev, size_t size,
--				  dma_addr_t *dma_handle);
--
--/* Free and unmap a consistent DMA buffer.
-- * cpu_addr is what was returned from pci_alloc_consistent,
-- * size must be the same as what as passed into pci_alloc_consistent,
-- * and likewise dma_addr must be the same as what *dma_addrp was set to.
-- *
-- * References to the memory and mappings associated with cpu_addr/dma_addr
-- * past this call are illegal.
-- */
--extern void pci_free_consistent(struct pci_dev *hwdev, size_t size,
--				void *vaddr, dma_addr_t dma_handle);
--
--/* Map a single buffer of the indicated size for DMA in streaming mode.
-- * The 32-bit bus address to use is returned.
-- *
-- * Once the device is given the dma address, the device owns this memory
-- * until either pci_unmap_single or pci_dma_sync_single_for_cpu is performed.
-- */
--static inline dma_addr_t pci_map_single(struct pci_dev *hwdev, void *ptr,
--					size_t size, int direction)
--{
--	BUG_ON(direction == PCI_DMA_NONE);
--
--	consistent_sync(ptr, size, direction);
--
--	return virt_to_bus(ptr);
--}
--
--static inline void pci_unmap_single(struct pci_dev *hwdev, dma_addr_t dma_addr,
--				    size_t size, int direction)
--{
--	BUG_ON(direction == PCI_DMA_NONE);
--	/* nothing to do */
--}
--
--/* pci_unmap_{page,single} is a nop so... */
--#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)
--#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)
--#define pci_unmap_addr(PTR, ADDR_NAME)		(0)
--#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL)	do { } while (0)
--#define pci_unmap_len(PTR, LEN_NAME)		(0)
--#define pci_unmap_len_set(PTR, LEN_NAME, VAL)	do { } while (0)
--
--/*
-- * pci_{map,unmap}_single_page maps a kernel page to a dma_addr_t. identical
-- * to pci_map_single, but takes a struct page instead of a virtual address
-- */
--static inline dma_addr_t pci_map_page(struct pci_dev *hwdev, struct page *page,
--				      unsigned long offset, size_t size,
--				      int direction)
--{
--	BUG_ON(direction == PCI_DMA_NONE);
--	consistent_sync_page(page, offset, size, direction);
--	return (page - mem_map) * PAGE_SIZE + PCI_DRAM_OFFSET + offset;
--}
--
--static inline void pci_unmap_page(struct pci_dev *hwdev, dma_addr_t dma_address,
--				  size_t size, int direction)
--{
--	BUG_ON(direction == PCI_DMA_NONE);
--	/* Nothing to do */
--}
--
--/* Map a set of buffers described by scatterlist in streaming
-- * mode for DMA.  This is the scather-gather version of the
-- * above pci_map_single interface.  Here the scatter gather list
-- * elements are each tagged with the appropriate dma address
-- * and length.  They are obtained via sg_dma_{address,length}(SG).
-- *
-- * NOTE: An implementation may be able to use a smaller number of
-- *       DMA address/length pairs than there are SG table elements.
-- *       (for example via virtual mapping capabilities)
-- *       The routine returns the number of addr/length pairs actually
-- *       used, at most nents.
-- *
-- * Device ownership issues as mentioned above for pci_map_single are
-- * the same here.
-- */
--static inline int pci_map_sg(struct pci_dev *hwdev, struct scatterlist *sg,
--			     int nents, int direction)
--{
--	int i;
--
--	BUG_ON(direction == PCI_DMA_NONE);
--
--	/*
--	 * temporary 2.4 hack
--	 */
--	for (i = 0; i < nents; i++, sg++) {
--		BUG_ON(!sg->page);
--		consistent_sync_page(sg->page, sg->offset,
--				     sg->length, direction);
--		sg->dma_address = page_to_bus(sg->page) + sg->offset;
--	}
--
--	return nents;
--}
--
--/* Unmap a set of streaming mode DMA translations.
-- * Again, cpu read rules concerning calls here are the same as for
-- * pci_unmap_single() above.
-- */
--static inline void pci_unmap_sg(struct pci_dev *hwdev, struct scatterlist *sg,
--				int nents, int direction)
--{
--	BUG_ON(direction == PCI_DMA_NONE);
--	/* nothing to do */
--}
--
--/* Make physical memory consistent for a single
-- * streaming mode DMA translation after a transfer.
-- *
-- * If you perform a pci_map_single() but wish to interrogate the
-- * buffer using the cpu, yet do not wish to teardown the PCI dma
-- * mapping, you must call this function before doing so.  At the
-- * next point you give the PCI dma address back to the card, you
-- * must first perform a pci_dma_sync_for_device, and then the device
-- * again owns the buffer.
-- */
--static inline void pci_dma_sync_single_for_cpu(struct pci_dev *hwdev,
--					       dma_addr_t dma_handle,
--					       size_t size, int direction)
--{
--	BUG_ON(direction == PCI_DMA_NONE);
--
--	consistent_sync(bus_to_virt(dma_handle), size, direction);
--}
--
--static inline void pci_dma_sync_single_for_device(struct pci_dev *hwdev,
--						  dma_addr_t dma_handle,
--						  size_t size, int direction)
--{
--	BUG_ON(direction == PCI_DMA_NONE);
--
--	consistent_sync(bus_to_virt(dma_handle), size, direction);
--}
--
--/* Make physical memory consistent for a set of streaming
-- * mode DMA translations after a transfer.
-- *
-- * The same as pci_dma_sync_single_for_* but for a scatter-gather list,
-- * same rules and usage.
-- */
--static inline void pci_dma_sync_sg_for_cpu(struct pci_dev *hwdev,
--					   struct scatterlist *sg,
--					   int nelems, int direction)
--{
--	int i;
--
--	BUG_ON(direction == PCI_DMA_NONE);
--
--	for (i = 0; i < nelems; i++, sg++)
--		consistent_sync_page(sg->page, sg->offset,
--				     sg->length, direction);
--}
--
--static inline void pci_dma_sync_sg_for_device(struct pci_dev *hwdev,
--					      struct scatterlist *sg,
--					      int nelems, int direction)
--{
--	int i;
--
--	BUG_ON(direction == PCI_DMA_NONE);
--
--	for (i = 0; i < nelems; i++, sg++)
--		consistent_sync_page(sg->page, sg->offset,
--				     sg->length, direction);
--}
--
--/* Return whether the given PCI device DMA address mask can
-- * be supported properly.  For example, if your device can
-- * only drive the low 24-bits during PCI bus mastering, then
-- * you would pass 0x00ffffff as the mask to this function.
-- */
--static inline int pci_dma_supported(struct pci_dev *hwdev, u64 mask)
--{
--	return 1;
--}
-+#define PCI_DMA_BUS_IS_PHYS     (1)
-
  /*
-  * At present there are very few 32-bit PPC machines that can have
-  * memory above the 4GB point, and we don't support that.
-  */
- #define pci_dac_dma_supported(pci_dev, mask)	(0)
--
--static inline dma64_addr_t
--pci_dac_page_to_dma(struct pci_dev *pdev, struct page *page, unsigned long offset, int direction)
--{
--	return (dma64_addr_t) page_to_bus(page) + offset;
--}
--
--static inline struct page *
--pci_dac_dma_to_page(struct pci_dev *pdev, dma64_addr_t dma_addr)
--{
--	return mem_map + (unsigned long)(dma_addr >> PAGE_SHIFT);
--}
--
--static inline unsigned long
--pci_dac_dma_to_offset(struct pci_dev *pdev, dma64_addr_t dma_addr)
--{
--	return (dma_addr & ~PAGE_MASK);
--}
--
--static inline void
--pci_dac_dma_sync_single_for_cpu(struct pci_dev *pdev, dma64_addr_t dma_addr, size_t len, int direction)
--{
--	/* Nothing to do. */
--}
--
--static inline void
--pci_dac_dma_sync_single_for_device(struct pci_dev *pdev, dma64_addr_t dma_addr, size_t len, int direction)
--{
--	/* Nothing to do. */
--}
--
--static inline int pci_dma_mapping_error(dma_addr_t dma_addr)
--{
--	return 0;
--}
+  * The VLSI Golden Gate II has only 512K of PCI configuration space, so we
+  * limit the bus number to 3 bits
+@@ -166,6 +169,29 @@
+ 	}
+ }
 
- /* Return the index of the PCI controller for device PDEV. */
- #define pci_domain_nr(bus) ((struct pci_controller *)(bus)->sysdata)->index
++/* SL82C105 IDE Control/Status Register */
++#define SL82C105_IDECSR                0x40
++
++void chrp_pci_fixup_winbond_ata(struct pci_dev *sl82c105)
++{
++	u8 progif;
++
++	/* If non-briq machines need that fixup too, please speak up */
++	if (_machine != _MACH_chrp || !chrp_is_briq)
++		return;
++
++	if ((sl82c105->class & 5) != 5) {
++		printk("W83C553: Switching SL82C105 IDE to PCI native mode\n");
++		/* Enable SL82C105 PCI native IDE mode */
++		pci_read_config_byte(sl82c105, PCI_CLASS_PROG, &progif);
++		pci_write_config_byte(sl82c105, PCI_CLASS_PROG, progif | 0x05);
++		sl82c105->class |= 0x05;
++		/* Disable SL82C105 second port */
++		pci_write_config_word(sl82c105, SL82C105_IDECSR, 0x0003);
++	}
++}
++
++
+ #define PRG_CL_RESET_VALID 0x00010000
+
+ static void __init
+@@ -257,6 +283,19 @@
+ 			hose->cfg_data = (unsigned char *)
+ 				ioremap(GG2_PCI_CONFIG_BASE, 0x80000);
+ 			gg2_pci_config_base = (unsigned long) hose->cfg_data;
++		} else if (!strncmp(model, "IBM,CPC710", 10)) {
++			setup_indirect_pci(hose,
++				dev->addrs[0].address + 0x000f8000,
++				dev->addrs[0].address + 0x000f8010);
++			if (index == 0) {
++				dma = (unsigned int *)
++				get_property(dev, "system-dma-base", &len);
++				if (dma && len >= sizeof(*dma)) {
++					dma = (unsigned int *)(((unsigned long)dma) +
++					len - sizeof(*dma));
++					pci_dram_offset = *dma;
++				}
++			}
+ 		} else {
+ 			printk("No methods for %s (model %s), using RTAS\n",
+ 			       dev->full_name, model);
+diff -urN linux-2.5/arch/ppc/platforms/chrp_setup.c linux-briq/arch/ppc/platforms/chrp_setup.c
+--- linux-2.5/arch/ppc/platforms/chrp_setup.c	2004-03-01 18:11:11.000000000 +1100
++++ linux-briq/arch/ppc/platforms/chrp_setup.c	2004-03-24 15:59:42.759566376 +1100
+@@ -54,6 +54,12 @@
+ #include <asm/open_pic.h>
+ #include <asm/xmon.h>
+
++#ifdef CONFIG_SERIAL_8250
++#include <linux/serial.h>
++#include <linux/serialP.h>
++#endif
++
++
+ unsigned long chrp_get_rtc_time(void);
+ int chrp_set_rtc_time(unsigned long nowtime);
+ void chrp_calibrate_decr(void);
+@@ -83,6 +89,9 @@
+ extern unsigned long loops_per_jiffy;
+ static int max_width;
+
++int chrp_is_briq __chrpdata;
++static unsigned int* briq_SPOR __chrpdata; /* To be replaced by RTAS when available */
++
+ #ifdef CONFIG_SMP
+ extern struct smp_ops_t chrp_smp_ops;
+ #endif
+@@ -321,6 +330,15 @@
+ 	return irq;
+ }
+
++static void __chrp briq_restart(char *cmd)
++{
++	local_irq_disable();
++	if (briq_SPOR)
++		out_be32(briq_SPOR, 0);
++	for(;;)
++		;
++}
++
+ /*
+  * Finds the open-pic node and sets OpenPIC_Addr based on its reg property.
+  * Then checks if it has an interrupt-ranges property.  If it does then
+@@ -378,12 +396,39 @@
+ 	}
+ }
+
+-void __init chrp_init_IRQ(void)
++static void __init chrp_init_irq_openpic(unsigned long intack)
+ {
+-	struct device_node *np;
+ 	int i;
+-	unsigned long chrp_int_ack;
+ 	unsigned char init_senses[NR_IRQS - NUM_8259_INTERRUPTS];
++
++	chrp_find_openpic();
++
++	prom_get_irq_senses(init_senses, NUM_8259_INTERRUPTS, NR_IRQS);
++	OpenPIC_InitSenses = init_senses;
++	OpenPIC_NumInitSenses = NR_IRQS - NUM_8259_INTERRUPTS;
++
++	openpic_init(NUM_8259_INTERRUPTS);
++
++	for (i = 0; i < NUM_8259_INTERRUPTS; i++)
++		irq_desc[i].handler = &i8259_pic;
++	i8259_init(intack);
++}
++
++static void __init chrp_init_irq_8259(unsigned long intack)
++{
++	int i;
++
++	ppc_md.get_irq = i8259_irq;
++	for (i = 0; i < NUM_8259_INTERRUPTS; i++)
++		irq_desc[i].handler = &i8259_pic;
++	i8259_init(intack);
++}
++
++void __init chrp_init_IRQ(void)
++{
++	struct device_node *np;
++	unsigned long intack = 0;
++	struct device_node *main_irq_ctrler = NULL;
+ #if defined(CONFIG_VT) && defined(CONFIG_INPUT_ADBHID) && defined(XMON)
+ 	struct device_node *kbd;
+ #endif
+@@ -394,23 +439,28 @@
+
+ 		if (addrp == NULL)
+ 			continue;
+-		chrp_int_ack = addrp[prom_n_addr_cells(np)-1];
++		intack = addrp[prom_n_addr_cells(np)-1];
+ 		break;
+ 	}
+ 	if (np == NULL)
+ 		printk(KERN_ERR "Cannot find PCI interrupt acknowledge address\n");
+
+-	chrp_find_openpic();
+-
+-	prom_get_irq_senses(init_senses, NUM_8259_INTERRUPTS, NR_IRQS);
+-	OpenPIC_InitSenses = init_senses;
+-	OpenPIC_NumInitSenses = NR_IRQS - NUM_8259_INTERRUPTS;
++	/* Look for the node of the toplevel interrupt controller.
++	 * If we don't find it, we assume openpic
++	 */
++	np = find_path_device("/chosen");
++	if (np) {
++		phandle *irq_ctrler_ph =
++			(phandle *)get_property(np, "interrupt-controller", NULL);
++		if (irq_ctrler_ph)
++			main_irq_ctrler = find_phandle(*irq_ctrler_ph);
++	}
+
+-	openpic_init(NUM_8259_INTERRUPTS);
++	if (main_irq_ctrler && device_is_compatible(main_irq_ctrler, "8259"))
++		chrp_init_irq_8259(intack);
++	else
++		chrp_init_irq_openpic(intack);
+
+-	for (i = 0; i < NUM_8259_INTERRUPTS; i++)
+-		irq_desc[i].handler = &i8259_pic;
+-	i8259_init(chrp_int_ack);
+
+ #if defined(CONFIG_VT) && defined(CONFIG_INPUT_ADBHID) && defined(XMON)
+ 	/* see if there is a keyboard in the device tree
+@@ -427,10 +477,9 @@
+ void __init
+ chrp_init2(void)
+ {
+-#ifdef CONFIG_NVRAM
+-// XX replace this in a more saner way
+-//	pmac_nvram_init();
+-#endif
++	/* This is to be replaced by RTAS when available */
++	if (chrp_is_briq)
++		briq_SPOR = (unsigned int *)ioremap(0xff0000e8, 4);
+
+ 	request_region(0x20,0x20,"pic1");
+ 	request_region(0xa0,0x20,"pic2");
+@@ -447,6 +496,9 @@
+ chrp_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ 	  unsigned long r6, unsigned long r7)
+ {
++	struct device_node *root = find_path_device("/");
++	char *machine;
++
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	/* take care of initrd if we have one */
+ 	if ( r6 )
+@@ -461,6 +513,17 @@
+ 	DMA_MODE_WRITE = 0x48;
+ 	isa_io_base = CHRP_ISA_IO_BASE;		/* default value */
+
++	/* Check if it's a briq */
++	machine = get_property(root, "model", NULL);
++	chrp_is_briq = machine && strncmp(machine, "TotalImpact,BRIQ-1", 18) == 0;
++#ifdef CONFIG_SERIAL_8250
++	if (chrp_is_briq) {
++		/* briQ has a different serial clock */
++		extern int alternate_serial_clock;
++		alternate_serial_clock = 7372800;
++	}
++#endif /* CONFIG_SERIAL_8250 */
++
+ 	ppc_md.setup_arch     = chrp_setup_arch;
+ 	ppc_md.show_percpuinfo = of_show_percpuinfo;
+ 	ppc_md.show_cpuinfo   = chrp_show_cpuinfo;
+@@ -470,7 +533,7 @@
+
+ 	ppc_md.init           = chrp_init2;
+
+-	ppc_md.restart        = chrp_restart;
++	ppc_md.restart        = chrp_is_briq ? briq_restart : chrp_restart;
+ 	ppc_md.power_off      = chrp_power_off;
+ 	ppc_md.halt           = chrp_halt;
+
+diff -urN linux-2.5/arch/ppc/syslib/prom.c linux-briq/arch/ppc/syslib/prom.c
+--- linux-2.5/arch/ppc/syslib/prom.c	2004-03-01 18:11:12.000000000 +1100
++++ linux-briq/arch/ppc/syslib/prom.c	2004-03-24 16:01:34.776537208 +1100
+@@ -80,7 +80,7 @@
+ static unsigned long finish_node(struct device_node *, unsigned long,
+ 				 interpret_func *, int, int);
+ static unsigned long finish_node_interrupts(struct device_node *, unsigned long);
+-static struct device_node *find_phandle(phandle);
++struct device_node *find_phandle(phandle);
+
+ extern void enter_rtas(void *);
+ void phys_call_rtas(int, int, int, ...);
+@@ -1133,8 +1133,7 @@
+ /*
+  * Find the device_node with a given phandle.
+  */
+-static struct device_node * __init
+-find_phandle(phandle ph)
++struct device_node * find_phandle(phandle ph)
+ {
+ 	struct device_node *np;
+
+diff -urN linux-2.5/drivers/char/Kconfig linux-briq/drivers/char/Kconfig
+--- linux-2.5/drivers/char/Kconfig	2004-03-17 12:02:08.000000000 +1100
++++ linux-briq/drivers/char/Kconfig	2004-03-19 16:04:02.000000000 +1100
+@@ -497,6 +497,18 @@
+ 	  When not in use, each legacy PTY occupies 12 bytes on 32-bit
+ 	  architectures and 24 bytes on 64-bit architectures.
+
++config BRIQ_PANEL
++	tristate 'Total Impact briQ front panel driver'
++	---help---
++		The briQ is a small footprint CHRP computer with
++		a frontpanel VFD, a tristate led and two switches.
++		It is the size of a CDROM drive.
++		If you have such one and want anything showing
++		on the VFD then you must answer Y here.
++		This driver can be built as a module.
++		The module name will be "briq_panel.o"
++			It's safe to say N.
++
+ config PRINTER
+ 	tristate "Parallel printer support"
+ 	depends on PARPORT
+diff -urN linux-2.5/drivers/char/Makefile linux-briq/drivers/char/Makefile
+--- linux-2.5/drivers/char/Makefile	2004-03-22 10:36:57.000000000 +1100
++++ linux-briq/drivers/char/Makefile	2004-03-24 12:38:23.000000000 +1100
+@@ -45,6 +45,7 @@
+ obj-$(CONFIG_SGI_L1_SERIAL)	+= sn_serial.o
+ obj-$(CONFIG_VIOCONS) += viocons.o
+ obj-$(CONFIG_VIOTAPE)		+= viotape.o
++obj-$(CONFIG_BRIQ_PANEL)	+= briq_panel.o
+
+ obj-$(CONFIG_PRINTER) += lp.o
+ obj-$(CONFIG_TIPAR) += tipar.o
+diff -urN linux-2.5/drivers/char/briq_panel.c linux-briq/drivers/char/briq_panel.c
+--- linux-2.5/drivers/char/briq_panel.c	Thu Jan 01 10:00:00 1970
++++ linux-briq/drivers/char/briq_panel.c	Wed Mar 24 16:01:17 2004
+@@ -0,0 +1,293 @@
++/*
++ * Drivers for the Total Impact PPC based computer "BRIQ"
++ * by Dr. Karsten Jeppesen
++ *
++ *
++ * 010407		Coding started
++ *
++ * 04/20/2002	1.1	Adapted to 2.4, small cleanups
++ */
++
++#include <linux/module.h>
++
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <linux/sched.h>
++#include <linux/tty.h>
++#include <linux/timer.h>
++#include <linux/config.h>
++#include <linux/kernel.h>
++#include <linux/wait.h>
++#include <linux/string.h>
++#include <linux/slab.h>
++#include <linux/ioport.h>
++#include <linux/delay.h>
++#include <linux/miscdevice.h>
++#include <linux/fs.h>
++#include <linux/mm.h>
++#include <linux/init.h>
++
++#include <asm/uaccess.h>
++#include <asm/io.h>
++#include <asm/prom.h>
++
++#define		TOTALIMPACT_VFD_MINOR	156
++#define		VFD_IOPORT		0x0390
++#define		LED_IOPORT		0x0398
++#define		TI_VER                  "1.1 (04/20/2002)"
++#define		TI_MSG0			"Loading Linux"
++
++static int		vfd_is_open;
++static unsigned char	vfd[40];
++static int		vfd_cursor;
++static unsigned char	ledpb, led;
++
++
++#if 0
++/*
++  Apparently every PPC machine comes with a PC keyboard.
++  Well - the briQ does NOT.
++  But since you insist....
++  Let us satisfy the PC people
++*/
++void __init pckbd_init_hw(void) {
++}
++#endif
++
++
++static void update_vfd( void )
++{
++	int	i;
++
++	/* cursor home */
++	outb(0x02, VFD_IOPORT);
++	for (i=0; i<20; i++)
++		outb(vfd[i], VFD_IOPORT + 1);
++
++	/* cursor to next line */
++	outb(0xc0, VFD_IOPORT);
++	for (i=20; i<40; i++)
++		outb(vfd[i], VFD_IOPORT + 1);
++
++}
++
++static void set_led( char state)
++{
++	if ( state == 'R' )
++		led = 0x01;
++	else if ( state == 'G' )
++		led = 0x02;
++	else if ( state == 'Y' )
++		led = 0x03;
++	else if ( state == 'X' )
++		led = 0x00;
++	outb(led, LED_IOPORT);
++}
++
++static int do_open(struct inode *ino, struct file *filep)
++{
++	if (vfd_is_open)
++		return -EBUSY;
++
++	MOD_INC_USE_COUNT;
++
++	vfd_is_open = 1;
++
++	return 0;
++}
++
++static int do_release(struct inode *ino, struct file *filep)
++{
++	if (!vfd_is_open)
++		return -ENODEV;
++
++	MOD_DEC_USE_COUNT;
++
++	vfd_is_open = 0;
++
++	return 0;
++}
++
++
++static ssize_t do_read(struct file *file, char *buf, size_t count,
++			 loff_t *ppos)
++{
++	unsigned short c;
++	unsigned char cp;
++
++	/*  Can't seek (pread) on this device  */
++	if (ppos != &file->f_pos)
++		return -ESPIPE;
++
++	if (!vfd_is_open)
++		return -ENODEV;
++
++	c = (inb( LED_IOPORT ) & 0x000c) | (ledpb & 0x0003);
++	set_led(' ');
++	/* upper button released */
++	if ((!(ledpb & 0x0004)) && (c & 0x0004)) {
++		cp = ' ';
++		ledpb = c;
++		if (copy_to_user(buf, &cp, 1))
++			return -EFAULT;
++		return 1;
++	}
++	/* lower button released */
++	else if ((!(ledpb & 0x0008)) && (c & 0x0008)) {
++		cp = '\r';
++		ledpb = c;
++		if (copy_to_user(buf, &cp, 1))
++			return -EFAULT;
++		return 1;
++	} else {
++		ledpb = c;
++		return 0;
++	}
++}
++
++
++static void scroll_vfd( void )
++{
++	int	i;
++
++	for (i=0; i<20; i++) {
++		vfd[i] = vfd[i+20];
++		vfd[i+20] = ' ';
++	}
++	vfd_cursor = 20;
++}
++
++
++static ssize_t do_write(struct file *file, const char *buf, size_t len,
++			  loff_t *ppos)
++{
++	size_t indx = len;
++	int i, esc = 0;
++
++	/*  Can't seek (pwrite) on this device  */
++	if (ppos != &file->f_pos)
++		return -ESPIPE;
++
++	if (!vfd_is_open)
++		return -EBUSY;
++
++	for (;;) {
++		if (!indx)
++			break;
++		if (esc) {
++			set_led(*buf);
++			esc = 0;
++		} else if (*buf == 27) {
++			esc = 1;
++		} else if (*buf == 12) {
++			/* do a form feed */
++			for (i=0; i<40; i++)
++				vfd[i] = ' ';
++			vfd_cursor = 0;
++		} else if (*buf == 10) {
++			if (vfd_cursor < 20)
++				vfd_cursor = 20;
++			else if (vfd_cursor < 40)
++				vfd_cursor = 40;
++			else if (vfd_cursor < 60)
++				vfd_cursor = 60;
++			if (vfd_cursor > 59)
++				scroll_vfd();
++		} else {
++			/* just a character */
++			if (vfd_cursor > 39)
++				scroll_vfd();
++			vfd[vfd_cursor++] = *buf;
++		}
++		indx--;
++		buf++;
++	}
++	update_vfd();
++
++	return len;
++}
++
++
++static struct file_operations vfd_fops = {
++	.read		= do_read,
++	.write		= do_write,
++	.open		= do_open,
++	.release	= do_release,
++};
++
++
++static struct miscdevice ti_vfd_miscdev = {
++	TOTALIMPACT_VFD_MINOR,
++	"vfd",
++	&vfd_fops
++};
++
++
++static int __init briq_panel_init(void)
++{
++	struct device_node *root = find_path_device("/");
++	char *machine;
++	int i;
++
++	machine = get_property(root, "model", NULL);
++	if (!machine || strncmp(machine, "TotalImpact,BRIQ-1", 18) != 0)
++		return -ENODEV;
++
++	printk(KERN_INFO "ti_briq: v%s Dr. Karsten Jeppesen (kj@totalimpact.com)\n",
++	       TI_VER);
++
++	if (!request_region( VFD_IOPORT, 4, "BRIQ Front Panel"))
++		return -EBUSY;
++	if (!request_region( LED_IOPORT, 2, "BRIQ Front Panel")) {
++		release_region(VFD_IOPORT, 4);
++		return -EBUSY;
++	}
++	ledpb = inb( LED_IOPORT ) & 0x000c;
++
++	if (misc_register(&ti_vfd_miscdev) < 0) {
++		release_region(VFD_IOPORT, 4);
++		release_region(LED_IOPORT, 2);
++		return -EBUSY;
++	}
++
++	outb(0x38, VFD_IOPORT);	/* Function set */
++	outb(0x01, VFD_IOPORT);	/* Clear display */
++	outb(0x0c, VFD_IOPORT);	/* Display on */
++	outb(0x06, VFD_IOPORT);	/* Entry normal */
++	for (i=0; i<40; i++)
++		vfd[i]=' ';
++#ifndef MODULE
++	vfd[0] = 'L';
++	vfd[1] = 'o';
++	vfd[2] = 'a';
++	vfd[3] = 'd';
++	vfd[4] = 'i';
++	vfd[5] = 'n';
++	vfd[6] = 'g';
++	vfd[7] = ' ';
++	vfd[8] = '.';
++	vfd[9] = '.';
++	vfd[10] = '.';
++#endif /* !MODULE */
++
++	update_vfd();
++
++	return 0;
++}
++
++
++static void __exit briq_panel_exit(void)
++{
++	misc_deregister(&ti_vfd_miscdev);
++	release_region(VFD_IOPORT, 4);
++	release_region(LED_IOPORT, 2);
++}
++
++
++module_init(briq_panel_init);
++module_exit(briq_panel_exit);
++
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Karsten Jeppesen <karsten@jeppesens.com>");
++MODULE_DESCRIPTION("Driver for the Total Impact briQ front panel");
+diff -urN linux-2.5/drivers/serial/8250.c linux-briq/drivers/serial/8250.c
+--- linux-2.5/drivers/serial/8250.c	2004-03-17 12:02:09.000000000 +1100
++++ linux-briq/drivers/serial/8250.c	2004-03-19 16:04:07.000000000 +1100
+@@ -1830,6 +1830,8 @@
+
+ static struct uart_8250_port serial8250_ports[UART_NR];
+
++int alternate_serial_clock;
++
+ static void __init serial8250_isa_init_ports(void)
+ {
+ 	struct uart_8250_port *up;
+@@ -1844,7 +1846,10 @@
+ 	     i++, up++) {
+ 		up->port.iobase   = old_serial_port[i].port;
+ 		up->port.irq      = irq_canonicalize(old_serial_port[i].irq);
+-		up->port.uartclk  = old_serial_port[i].baud_base * 16;
++		if (alternate_serial_clock)
++			up->port.uartclk  = alternate_serial_clock;
++		else
++			up->port.uartclk  = old_serial_port[i].baud_base * 16;
+ 		up->port.flags    = old_serial_port[i].flags |
+ 				    UPF_RESOURCES;
+ 		up->port.hub6     = old_serial_port[i].hub6;
+diff -urN linux-2.5/include/asm-ppc/prom.h linux-briq/include/asm-ppc/prom.h
+--- linux-2.5/include/asm-ppc/prom.h	2004-03-01 18:13:06.000000000 +1100
++++ linux-briq/include/asm-ppc/prom.h	2004-03-24 16:00:47.614706896 +1100
+@@ -69,6 +69,7 @@
+ extern struct device_node *find_compatible_devices(const char *type,
+ 						   const char *compat);
+ extern struct device_node *find_all_nodes(void);
++extern struct device_node *find_phandle(phandle);
+
+ /* New style node lookup */
+ extern struct device_node *of_find_node_by_name(struct device_node *from,
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
