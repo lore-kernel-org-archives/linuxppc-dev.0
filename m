@@ -1,48 +1,33 @@
-Message-Id: <199908292028.WAA00305@piglet.cpu.lu>
-Date: Sun, 29 Aug 1999 22:28:38 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Zero Pages / Cache Coherency
-To: apc@agelectronics.co.uk
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <37C65FF0.A5FBD535@agelectronics.co.uk>
+Message-ID: <37C9DA7A.14DF14B0@dgs.monash.edu.au>
+Date: Mon, 30 Aug 1999 11:12:26 +1000
+From: Brendan Simon <brendan@dgs.monash.edu.au>
+Reply-To: brendan@dgs.monash.edu.au
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: GLIBC wont compile for MPC860
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  27 Aug, this message from Adrian Cox echoed through cyberspace:
-> 
-> I'm currently trying out the pre-zeroing of pages in the idle task, and
-> I'm a little worried about its effect on cache-coherency. I can't prove
-> to
-> my satisfaction that none of the pages being cleared by zero_paged() is
-> in the cache, and I'm not sure that turning off caching in the PTE will
-> have any effect on cache lines already allocated in L1 or L2.
+I am using egcs-1.1.2 powerpc-linux cross-compiler to compile
+glibc-2.1.1.  The whole thing compiles fine (gee, doesn't it take a
+while).
 
-Cort Dougan had a paper about memory management in Linux on the PowerPC
-online at NMT, but at this time the link is broken
-(http://www.cs.nmt.edu/~cort/papers/linuxppc-mm/). If I remeber right,
-he also spoke about zeroing pegaes in the idle task.
+I tried compiling for the MPC860 with the following command "make
+CFLAGS=-mcpu=860".  It got a little way but then died.  I think it is
+trying to do something with floating point.
 
-Cort, are you among us? What's up with your personal pages?
+Is glibc known to compile for this processor ?
+I'm pretty sure I need the -mcpu=860 option so that only mpc860 valid
+instructions are generated.  Is this correct ?
 
-> Obviously, any incoherency would be extremely rare, but ensuring that
-> the page is invalidated from the caches before it is zeroed has the
-> added bonus of removing the need for a flush_page_to_ram() in my
-> modified anonymous memory allocator.
+I don't have the error message at hand but will post it if it will help.
 
-I can't remeber whether Cort also treated this subject.
+What can I do to compile glibc for the MPC860 processor.
 
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+Thanks,
+Brendan Simon.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
