@@ -1,31 +1,41 @@
-Message-ID: <009801c02392$d9011ca0$22227c92@intranet.gr>
-From: "Yannis Plevrakis" <iple@intracom.gr>
-To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>,
-        "Paolo Scaffardi" <arsenio@tin.it>
-References: <001701c01e61$958ed240$0a00010a@paoloweb>
-Subject: Re: rebooting with the FADS
-Date: Thu, 21 Sep 2000 09:11:57 +0300
+Date: Thu, 21 Sep 2000 20:03:42 +0530 (IST)
+From: Ankush Varma <ee97220@agasthya.ee.iitm.ernet.in>
+To: Wojciech Kromer <krom@dgt-lab.com.pl>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: linux on MPC850FADS
+In-Reply-To: <39ADFF02.70188A38@dgt-lab.com.pl>
+Message-ID: <Pine.LNX.4.04.10009211952360.25898-100000@agasthya.ee.iitm.ernet.in>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
-> on my FADS, i see that it is not possible to reboot from software: you
-must
-> press the reset buttons to do this.
->
+Dear Mr. Kromer,
 
-Just a "brute force" alternative:
-In case you don't mind having a latency of tens/hundrends of miliseconds
-before rebooting
-and you want a soft reboot very similar to a hardware one, generating a
-HRESET signal,
-a very simple approach could be to use the software watchdog timer.
+I'm still having problems with 8xxrom on the MPC850 FADS.
+- It compiles properly.
+- I obtained 8xxrom.bin.s19 and loaded it to flash.
+- switched board off
+- disconnected ADI port
+- switched board on.
 
-Yannis.
+The board just hangs. The green "run" LED stays on, but nothing happens.
+
+I put some assembly code to switch an auxiliary LED on into start.S, but
+still nothing happened. I don't know what is going on. Did you also face
+similar problems? Do you have some idea what my problem might be?
+
+Thank you,
+Ankush
+
+-----------------------------------------------------------------------------
+Ankush Varma
+Senior Year Undergraduate Student
+Indian Institute of Technology, Madras, India
+
+email: ankush@ee.iitm.ernet.in,ankushv@hotmail.com,ankush@somethingorother.com
+-----------------------------------------------------------------------------
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
