@@ -2,21 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3715C2BDB5
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Nov 2004 08:50:30 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 8CE4C2BDB5
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Nov 2004 08:52:13 +1100 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Keith Conger <keith.conger@gmail.com>
-In-Reply-To: <4517b8e0411220858256619b4@mail.gmail.com>
-References: <1100847411.25521.42.camel@gaston>
-	<1100852423.3855.2.camel@gaston> <1101083578.13597.5.camel@gaston>
-	<6ullcuggfr.fsf@zork.zork.net>
-	<4517b8e04112208383cc9b24c@mail.gmail.com>
-	<4517b8e0411220858256619b4@mail.gmail.com>
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+In-Reply-To: <Pine.LNX.4.44.0411221758220.2076-100000@zirkon.biophys.uni-duesseldorf.de>
+References: <Pine.LNX.4.44.0411221758220.2076-100000@zirkon.biophys.uni-duesseldorf.de>
 Content-Type: text/plain
-Date: Tue, 23 Nov 2004 08:48:58 +1100
-Message-Id: <1101160138.13612.119.camel@gaston>
+Date: Tue, 23 Nov 2004 08:50:37 +1100
+Message-Id: <1101160237.13598.121.camel@gaston>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, gentoo-ppc-user@gentoo.org,
 	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
 Subject: Re: TEST: Sleep patch #4
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -28,18 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2004-11-22 at 11:58 -0500, Keith Conger wrote:
-> Hi,
+On Mon, 2004-11-22 at 18:04 +0100, Michael Schmitz wrote:
+> > Ok, here's the 4th iteration of the patch. It includes John Steele Scott fixes for
+> > cpufreq and the sound driver and fixes a problem where memory refresh wouldn't properly
+> > be re-enabled on the video chip upon wakeup. I also cleaned a bit more the MDLL reset
+> > code for r300, plus a couple of other things.
+> >
+> > http://gate.crashing.org/~benh/albook-ibookg4-sleep-4.diff
 > 
-> Two things I forgot to include, the sound problem happens with or
-> without going to sleep. Also here is something that apears in my
-> dmesg:
-> Oops: kernel access of bad area, sig: 11 [#3]
-> PREEMPT
->
-> .../...
+> Sorry for coming late to the party ... the current code works nicely on
+> the 17" PB. On the first boot with that code, I had the PLL freak out (or
+> so it looked like) but I couldn't reproduce that. Needless to say, the
+> new PLL fixup code produces the same dividers as the hardcoded fixup
+> before, so it should work :-)
 
-Alsa bugs (as well). You should probably report this to the proper
-driver author/maintainer.
+It reads them from OF at boot. What do you mean by "freak out" ? the
+usual problem with those models where the display gets all fuzzy ? I'm
+not completely sure what's up, I tend to blame the panel power sequence
+nowadays ...
 
 Ben.
