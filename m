@@ -1,31 +1,43 @@
-Date: Sun, 29 Aug 1999 20:14:00 -0500
-From: Dave Wolfe <dwolfe@lists.linuxppc.org>
-To: Nobody <nobody@lists.linuxppc.org>
-Subject: [Admin] New web pages
-Message-ID: <19990829201400.A26847@lists.linuxppc.org>
-Reply-To: dave_wolfe@computer.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Ira K Weiny <iweiny@falcon.csc.calpoly.edu>
+Message-Id: <199908300507.WAA11832@falcon.csc.calpoly.edu>
+Subject: Re: Communicator Crashes X II
+To: lambert@jeol.com, linuxppc-user@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org
+Date: Sun, 29 Aug 1999 22:07:53 -0700 (PDT)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've reworked the web site for lists.linuxppc.org. The important change
-is the addition of a set of rules for the lists. If everyone will go to
-http://lists.linuxppc.org/rules.html it'll save the bandwidth of mailing
-them to the lists. Following these guidelines will help make these lists
-more rewarding for everyone. Thank you in advance for your cooperation.
+Well I may have some more news about this problem...
 
-On a related topic, what are your thoughts on the 4-line footer that
-gets inserted at the end of every message? Is it helpful? Or just adds
-to the noise? The original list owner wanted it, but I could live
-without it.
+Fisrt I just locked up using lynx!!!  Box rebooted after? 1min?  Again proves
+this is not Netscape, nor a font issue etc.
+ 
+I had 2 hard crashes one right after the other.  The first after having set up
+my printer on my other serial port.  One thing I did during this was to unplug
+my Pilot cradle and plug in my Printer.  The two crashes occured shortly after
+that.  Could this be a problem with the serial code/our hardware.  (PS I know
+that you are not supposed to hot swap the serial ports.  I just have gotten
+into bad habbits over the years. ;-)
 
-As always, let me know if you have problems with or suggestions for the
-new web pages or the lists.
+I don't know about others but my 8500 has been moved from dorm room to home and
+around more times that I can think.  I have plug/unpluged the serial port more
+time that I can think.  A couple of us have said they use Cable modems and I am
+going to DSL as soon as Pac Bell can get out here to hook me up.  This tends to
+rule out the networking code...
 
--- 
- Dave Wolfe
+So what about the serial ports.  I am thinking the problem may lie there.  Does
+anyone else have thoughts/info which might support this theory.
+
+Thanks
+Ira Weiny
+
+BTW I am trying to get 2.2.10 compiled so I can start messing with the code.
+Have not gotten it to boot yet...  ;-(  Was just trying to get some OF info off
+the web when this problem acted up...
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
