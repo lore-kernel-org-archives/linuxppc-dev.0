@@ -1,57 +1,35 @@
-Subject: Re: Virtex II Pro/405GP
-From: James Campbell <jcampbell@omnigon.com>
-To: Peter Ryser <Peter.Ryser@xilinx.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3CBC9FBC.CC205D36@xilinx.com>
-References: <1018722334.3710.3.camel@skoll.omnigon.com>
-	<3CBC7F1B.FF597841@xilinx.com> <1018990141.2034.12.camel@skoll.omnigon.com>
-	 <3CBC9FBC.CC205D36@xilinx.com>
-Content-Type: text/plain
-Date: 16 Apr 2002 15:54:18 -0700
-Message-Id: <1018997659.1463.2.camel@skoll.omnigon.com>
-Mime-Version: 1.0
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Anyone got eepro100 working on Walnut?
+Date: Tue, 16 Apr 2002 21:08:41 -0400
+Message-ID: <FF6CF34C346E724596A2FB5CAAB2C4978844FF@voyager.ops.infiniswitch.com>
+From: "Wright, David" <dwright@infiniswitch.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2002-04-16 at 15:03, Peter Ryser wrote:
->
-> > I was just curious if you had to use any esoteric patches on the (v2.5
-> > I'm assuming) kernel?
->
-> There are some patches. They are not esoteric and not publicly available at this
-> time :-(
+I've been trying to get an Intel eepro100 card working on a
+Walnut board.  I've tried both the 1.09 and 1.19 versions of
+the driver (eepro100.c).  Initially, both failed the self-
+test step.  I was able to get past that one by invalidating
+the dcache after issuing the self-test directive.  However,
+I now find that the card is neither transmitting nor receiving
+reliably.  I get messages like:
 
-Ah, we have a very good relationship with our FAE here through
-Insight/Xilinx, any chance we would be able to get the patches even if
-they were not public (yet)?
+   eth1: Unknown receiver error, status=0x5048.  [lots of these]
 
-> >  Also, did you have to worry about using a full
-> > featured boot loader like ppcboot?
->
-> No, just use an external debugger to load the kernel into memory or use external
-> ROM or use the internal BRAM or System ACE (my favorite).
-> We are working on PPCBoot if you really need a full-blown boot loader.
->
-> - Peter
+and
 
-Erm, we have alot of experiance porting PPCBoot to the MPC8260, and with
-the BDI-2000, so I'll have to see what I can make of it.
+eth1: Transmit timed out: status 0050  0000 at 2/8 commands 00a00300 00a003000.
+eth1: Restarting the chip...
+eth1: Command unit failed to mark command 00030000 as complete at 6.
 
-Thanks for all the info.
 
-Cheers,
+Any suggestions (other than junking this card, which is not an option
+for me) most welcome.
 
-James Campbell
-
---
-James Campbell          -|-   Embedded Systems Engineer
-jcampbell@omnigon.com   -|-     Omnigon International
-pgp:  DA57 E174 4769 1B9D D0DF 73E6 D639 D867 A576 A5AE
-work: +1.760.804.8884 x 332       cell: +1.760.803.8476
---
-I bestride this world like a Colossus.  A very small
-Colussus.  Without a torch.  Made of meat.
-
+  -- David Wright, InfiniSwitch Corp.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
