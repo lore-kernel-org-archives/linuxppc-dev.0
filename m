@@ -1,11 +1,8 @@
-Message-ID: <20040308022549.97042.qmail@web15204.mail.bjs.yahoo.com>
-Date: Mon, 8 Mar 2004 10:25:49 +0800 (CST)
+Message-ID: <20040308041510.59522.qmail@web15202.mail.bjs.yahoo.com>
+Date: Mon, 8 Mar 2004 12:15:10 +0800 (CST)
 From: =?gb2312?q?song=20sam?= <samsongshzu@yahoo.com.cn>
-Subject: Re: PCI daughter card with USB on a 405GP
-To: Matt Porter <mporter@kernel.crashing.org>
-Cc: Wolfgang Denk <wd@denx.de>,
-	Xavier Miville <xmiville@oerlikon.ca>, v.sudeep@exgate.tek.com,
-	linuxppc-embedded@lists.linuxppc.org
+Subject: Solution of USB in HOST mode on RPXLITE DW 823e board
+To: linuxppc-embedded@lists.linuxppc.org
 In-Reply-To: <20040305105421.67799.qmail@web15202.mail.bjs.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -13,19 +10,15 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Mr. Matt,
+Hi,
 
-I mistook your 405 patch on 8xx for
-test.Actually,there is a perfect solution for RPXlite
-USB in HOST mode problem on Brad Parker's webpage.
+I posted this message for clarification of USB problem
+in HOST mode on RPXLITE DW 823e board.There were some
+'complaint's when using USB host mode.Under the
+instrution of Brad Parker,the problem was solved fine.
+Following is README of m8xxhci driver 1.4 from Brad
+Parker's webpage.
 http://www.heeltoe.com/software/usb/usb.html
-
-Egg on face! I should be blamed to disturb you all.
-
-I list the README of m8xxhci driver 1.4 as follows for
-clarification.After removing R74/R75(1.5K) as two
-20Ks(I only have 20K at hand) to ground on LITE_DW,USB
-keyboard worked fine.
 
 Best regards,
 
