@@ -1,27 +1,32 @@
-From: John Steele Scott <toojays@toojays.net>
-To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [PATCH] cpufreq support for 7447A on 2004 iBooks
-Date: Sat, 5 Jun 2004 22:23:52 +0930
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Christiaan Welvaart <cjw@daneel.dyndns.org>, cpufreq@www.linux.org.uk
-References: <200406051846.50718.toojays@toojays.net>
-In-Reply-To: <200406051846.50718.toojays@toojays.net>
+Message-ID: <40C1C67A.6010908@g-house.de>
+Date: Sat, 05 Jun 2004 15:11:22 +0200
+From: Christian Kujau <evil@g-house.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200406052224.02684.toojays@toojays.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] fix typo in binutils version check
+References: <20040605074341.GA15279@suse.de> <40C1A334.5010402@g-house.de> <20040605111135.GA30640@suse.de>
+In-Reply-To: <20040605111135.GA30640@suse.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-Sorry, it seems that my mailer and I broke the last important line of the
-patch. I have uploaded a copy here which has the long lines preserved:
+Olaf Hering wrote:
+|>why is this check bogus then? i tried to compile a kernel with some
+|>recent binutils which didn't pass the test - compilation failed.
+|>H.J.Lu's binutils [1] are working quite well, the releases from redhat
+|>[2] seem to produce these results you wrote about.
+|
+|
+| The checkbin target fails with current binutils cvs, you need an
+| additional option like -many
 
-http://www.toojays.net/~toojays/misc/7447a_cpufreq_20040605.patch
+...or i just stick to the hjl branch and everything works fine :)
 
-cheers,
+- --
+BOFH excuse #399:
 
-John
+We are a 100% Microsoft Shop.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
