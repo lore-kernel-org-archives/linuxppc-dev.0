@@ -1,63 +1,62 @@
-Message-ID: <005901bfe55b$c2714110$1952df8d@SOYANG>
-From: "Hyun-Joon Cha" <tachyon@postech.ac.kr>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: PCMCIA timing prob.
-Date: Tue, 4 Jul 2000 11:01:25 +0900
+Date: Tue, 4 Jul 2000 09:25:52 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Gianluca Costa <gcosta@essegi.net>
+cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: PReP kernel making
+In-Reply-To: <3960A691.4934D982@essegi.net>
+Message-ID: <Pine.HPX.4.10.10007040922010.21326-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello.
+On Mon, 3 Jul 2000, Gianluca Costa wrote:
 
-Someone has kindly responded that I have to upgrade RPX Utility software to change SYPCR value.
+>
+> Hi,
+>
+> I am trying  to compile the 2.2.15 kernel sources (Debian potato for the
+> ppc) for MCPN750 borad but
+> I am not able to understand why my zImage don't run. The output from
+> PPCBUG is:
+> ...
+> PPC1-Bug>nbo
+>
+> Network Booting from: DEC21143, Controller 0, Device 0
+> Device Name: /pci@80000000/pci1011,19@e,0:0,0
+> Loading: zImage
+>
+> Client IP Address      = 192.168.30.189
+> Server IP Address      = 192.168.30.181
+> Gateway IP Address     = 0.0.0.0
+> Subnet IP Address Mask = 255.255.255.0
+> Boot File Name         = zImage
+> Argument File Name     =
+>
+> Network Boot File load in progress... To abort hit <BREAK>
+>
+> Bytes Received =&1021571, Bytes Loaded =&1021571
+> Bytes/Second   =&340523, Elapsed Time=3 Second(s)
+>
+> Residual-Data Located at: $03F88000
+>
+> (end)
+>
+> I am using the default config that came with the kernel, but nothing
+> changes.
 
-As suggestion, I changed SYPCR to make it's maximum value of BMT - 0xff - with a BDM.
+Well, I don't know exactly how the MPCN750 work (I've only MVME boards),
+but the images and the patches at ftp://vlab1.iram.es/pub/linux-2.[23]
+help to boot kernels on Motorola machines with Raven/Falcon or HHawk host
+bridges. This is as  much help as I can offer right now.
 
-And I tried several values for clocks then I got some messages from cardmgr which is somewhat hopeful.
+Do you use a hard disk (IDE or SCSI) or attempt to mount root via NFS ?
 
-/* message from console */
+Do you need to other boards plugged into the CompactPCI backplane ?
 
-bash-2.03# insmod pcmcia_core
-Linux PCMCIA Card Services 3.1.10
-  kernel build: 2.2.13 #29 Sun Jul 2 04:50:02 KST 2000
-  options:  none
-bash-2.03# insmod m8xx_pcmcia gClocks=48
-gClocks=48
-m8xx_pcmcia: Version 0.03, 14-Feb-2000, Magnus Damm
-m8xx_pcmcia: RPX CLASSIC or RPX LITE using SLOT_B with IRQ 13.
-bash-2.03# insmod ds
-bash-2.03# cardmgr
-cardmgr[47]: starting, version is 3.1.10
-bash-2.03# cardmgr[47]: watching 1 sockets
-cardmgr[47]: initializing socket 0
-cardmgr[47]: socket 0: Anonymous Memory
-cardmgr[47]: executing: 'insmod /lib/modules/2.2.13/pcmcia/memory_cs.o'
-__ioremap(): phys addr 0 is RAM lr c0009d98
-memory_cs: mem0:<7>m8xx_pcmcia: Service(0, 8, 0xc0cf906c)
-NIP: C43C12BC XER: C000007F LR: C43C12B8 REGS: c0b318a0 TRAP: 0300
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c0b30000[47] 'cardmgr' mm->pgd c0d13000 Last syscall: 54
-last math 00000000
-GPR00: C43C12B8 C0B31950 C0B30000 00000000 00000001 C00D0B94 C00C0000 C00C0000
-GPR08: 00001000 C400C874 E4001FFF 00000000 53033039 100214D0 100B47B0 00000000
-GPR16: 100B4AF0 7FFFDC68 7FFFDC48 00000000 00009032 00000000 C016EC84 00000000
-GPR24: C016EC00 C0B31988 00000001 C016ED54 C016EC00 C0B31958 0000000C 00000000
-Call backtrace:
-C43C12B8 C43C1654 C43C2E54 C4002118 C4003860 C43C1140 C400E834
-C400F518 C00334AC C00022D8 0FF8CBA8 10002B9C 10003FD0 0FF09E78
-00000000
-Kernel panic: kernel access of bad area pc c43c12bc lr c43c12b8 address 0 tsk c7
-Rebooting in 180 seconds..
+	Regards,
+	Gabriel.
 
-/* message ends */
-
-What's the meaning of Anonymous memory?
-
-To be sure, I have read all the posts about PCMCIA in this group and applied all patches from ftp://ftp.absolval.com/rpxlite.
-
-My board is RPX Lite 850 SR and I used Xircom CE3-10BT and 3Com 3CCFE574BT cards.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
