@@ -1,93 +1,65 @@
-Date: Fri, 10 Sep 1999 16:31:33 +0200
-From: Maurice DIAMANTINI <diam@pmdiam.ensta.fr>
-To: Franz Sirl <Franz.Sirl@munich.netsurf.de>, linuxppc-dev@lists.linuxppc.org
-Cc: Maurice DIAMANTINI <diam@pmdiam.ensta.fr>
-Subject: Re: bug glibc strlen() or tcl8.2
-Message-ID: <19990910163126.A19797@pmdiam.ensta.fr>
-References: <19990909164200.A17615@pmdiam.ensta.fr> <4.2.0.58.19990909192900.00af6450@mail.lauterbach.com>
-Mime-Version: 1.0
+Message-ID: <37D929E4.205A04B8@chpc.utah.edu>
+Date: Fri, 10 Sep 1999 09:55:16 -0600
+From: Lou Langholtz <ldl@chpc.utah.edu>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: controlfb.c bug in VRAM bank2 check if bank1
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4.2.0.58.19990909192900.00af6450@mail.lauterbach.com>; from Franz Sirl on jeu, sep 09, 1999 at 07:35:41 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-    Vous disiez:
-    > 
-    > >I'm unable to execute tcl8.2 on linuxppc R5. Although it compile and
-    > >and run very simply on intel box, solaris, ... but not on linuxppc
-    > > ...
-    > >The programm compils OK, but get a core dump at the first execution
-    > >of a tcl command (in fact at the "make test")
-    > ...
-    > >     memcpy ((VOID *) &tmpArgList, (VOID *) &argList, sizeof \
-    >                                                (tmpArgList));
-    >       ^^^^^^^^
-    > This is unportable in combination with va_list. Try:
-    >        __va_copy (tmpArgList, argList);
-     
-    Danke Franz,
-    
-    But when I modify the code (from the true tcl distrib):
-    (I do'nt thes function which aren't part of the tcl distrib.
-    
-            // string = va_arg(tmpArgList, char *);
-            string = __va_arg(tmpArgList, argList);
-    
-    then "make clean" then "make test" but I get:
-    
-    cc -c -O -D__NO_STRING_INLINES -D__NO_MATH_INLINES  -fPIC
-    -I/home/diam/local/src/tcl/unix/../generic
-    -I/home/diam/local/src/tcl/unix -DHAVE_UNISTD_H=1 -DHAVE_LIMITS_H=1
-    -DHAVE_GETCWD=1 -DHAVE_OPENDIR=1 -DHAVE_STRSTR=1 -DHAVE_STRTOL=1
-    -DHAVE_TMPNAM=1 -DHAVE_WAITPID=1 -DHAVE_UNISTD_H=1
-    -DHAVE_SYS_PARAM_H=1 -DUSE_TERMIOS=1 -DHAVE_SYS_TIME_H=1
-    -DTIME_WITH_SYS_TIME=1 -DHAVE_TM_ZONE=1 -DHAVE_TM_GMTOFF=1
-    -DHAVE_TIMEZONE_VAR=1 -DHAVE_ST_BLKSIZE=1 -DSTDC_HEADERS=1
-    -DNEED_MATHERR=1 -DRETSIGTYPE=void -D__CHAR_UNSIGNED__=1
-    -DHAVE_SIGNED_CHAR=1 -DHAVE_SYS_IOCTL_H=1
-    -DTCL_SHLIB_EXT=\".so\"
-    /home/diam/local/src/tcl/unix/../generic/tclResult.c 
-    /home/diam/local/src/tcl/unix/../generic/tclResult.c: \
-        In function `Tcl_AppendResultVA':
-    /home/diam/local/src/tcl/unix/../generic/tclResult.c:488:\
-        incompatible types in assignment
-    make: *** [tclResult.o] Error 1
+I've posted before about this problem but to a different audience. As
+I'm hoping to get this resolved (fixed) though in the main source tree
+but don't have the chance to test this entirely myself I'm resending
+here hoping someone else can test things out...
 
+After getting an extra 2MB VRAM for my PowerMac7500 and seeing that only
+2MB were still being recognized (despite having just added the 2MB to
+total to 4MB VRAM), I dug into the controlfb.c code from 2.2.11 and
+2.2.12 and made the following changes to get all 4MB VRAM recognized:
 
-    
-    Sorry but I'm not very clever in system! I just need to be able
-    to compil a standard distrib for tcl...
-    Anybody there has tried to compil tcl/tk last version?
-    
-    (available from http://www.scriptics.com/products/tcltk/8.2.html)
-    
-    
-    When I read this html page :
-    
-         Supported Platforms 
-    
-         Tcl/Tk 8.2 is compatible with most releases of the
-         following operating systems: 
-    
-              Windows 95 and 98 
-              Windows NT 
-              Solaris and SunOS 
-              Linux 
-              HP-UX 
-              SGI 
-              IRIX 
-              Digital Unix 
-              AIX 
-              SCO Unix 
-              NetBSD, FreeBSD, BSDi 
-              Most other Unix-like operating systems 
-              Macintosh (68K and Power Mac) 
-    
-    but not linuppc :-((
+diff controlfb.c.orig controlfb.c
+714,719c714,719
+<  out_8(&p->frame_buffer[0x600000], 0xa5);
+<  out_8(&p->frame_buffer[0x600001], 0x38);
+<  asm volatile("eieio; dcbi 0,%0" : : "r" (&p->frame_buffer[0x600000])
+: "memory" );
+<  bank2 = (in_8(&p->frame_buffer[0x600000]) == 0xa5)
+<   && (in_8(&p->frame_buffer[0x600001]) == 0x38);
+<
+---
+>  out_8(&p->frame_buffer[0x200000], 0xa5);
+>  out_8(&p->frame_buffer[0x200001], 0x38);
+>  asm volatile("eieio; dcbi 0,%0" : : "r" (&p->frame_buffer[0x200000])
+: "memory" );
+>  bank2 = (in_8(&p->frame_buffer[0x200000]) == 0xa5)
+>       && (in_8(&p->frame_buffer[0x200001]) == 0x38);
+>
+720a721
+>  printk(KERN_INFO "Total VRAM = %dMB\n", (int) (p->total_vram / 1024 /
+1024));
+724,725c725,726
+<   p->frame_buffer += 0x600000;
+<   p->frame_buffer_phys += 0x600000;
+---
+>   p->frame_buffer += 0x200000;
+>   p->frame_buffer_phys += 0x200000;
 
--- 
-Maurice DIAMANTINI   | Ecole Nationale Superieure de Techniques Avancees
-mailto:diam@ensta.fr | 32 Boulevard Victor 75739 PARIS Cedex 15 - France
+What I've heard though is that bank2 is indeed found at 0x600000 at
+least when bank1 is not there. That seems pretty strange to me but this
+info was from a reputable source. If I had the time I'd just add some
+code to check in 1MB increments to confirm this and try rebooting with
+various VRAM cards in and figure out exactly where things are
+recognized. Unfortunately I don't have the time and as the above changes
+makes 4MB VRAM work now that's good enough for me. But it'd be a shame
+if this didn't get fixed once and for all for everyone with the control
+graphics card found on PowerMac 7500's (and perhaps some others too).
+
+So hopefully someone else on this list has a spare 7500 to check this
+out on and get the fix into the main tree.
+
+Cheers ;-)
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
