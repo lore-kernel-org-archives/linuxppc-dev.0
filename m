@@ -1,52 +1,23 @@
-Message-ID: <3AC86B13.7FDCC53B@raleigh.ibm.com>
-Date: Mon, 02 Apr 2001 08:05:39 -0400
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+Message-ID: <3AC8743B.8BC64EA5@opensource.se>
+Date: Mon, 02 Apr 2001 14:44:43 +0200
+From: Magnus Damm <damm@opensource.se>
 MIME-Version: 1.0
-To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Why does the linux kernel?
-Content-Type: multipart/mixed;
- boundary="------------86843B62CC4E3667168AC860"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: glibc-2.2.2
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------86843B62CC4E3667168AC860
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Hi all,
 
-A few days ago I posted an append to this forum asking to what error a
-segmentation fault refered.
-I finally discovered my problem in my kernel.  I was marking all user
-pages as user/read/write.
-Why does the linux kernel care if some pages are marked read only and
-others are marked read/write.
+Anyone tried glibc-2.2.2?
 
-Thanks in advance.
+It cross-compiles cleanly, but acts wierd on my mpc8xx target.
 
-Chip
---------------86843B62CC4E3667168AC860
-Content-Type: text/x-vcard; charset=us-ascii;
- name="rcblach.vcf"
-Content-Description: Card for Ralph Blach
-Content-Disposition: attachment;
- filename="rcblach.vcf"
-Content-Transfer-Encoding: 7bit
+I've browsed through my old 2.1.3 patches for the cacheline-
+size and I'm not sure if everything is ok with 2.2.2...
 
-begin:vcard
-n:Blach;Ralph
-tel;work:919-543-1207
-x-mozilla-html:TRUE
-url:www.ibm.com
-org:IBM MicroElectronics
-adr:;;3039 Cornwallis		;RTP;NC;27709;USA
-version:2.1
-email;internet:rcblach@raleigh.ibm.com
-x-mozilla-cpt:;15936
-fn:Ralph Blach
-end:vcard
-
---------------86843B62CC4E3667168AC860--
-
+/ Magnus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
