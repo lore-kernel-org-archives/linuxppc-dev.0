@@ -1,44 +1,54 @@
-Message-ID: <398FC8FB.E4423F51@relog.ch>
-Date: Tue, 08 Aug 2000 10:46:51 +0200
+Message-ID: <398FCA03.5EE01236@relog.ch>
+Date: Tue, 08 Aug 2000 10:51:15 +0200
 From: Michel Dänzer <daenzer@relog.ch>
 Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-To: Sven Goethel <sgoethel@jausoft.com>
-CC: Kostas Gewrgiou <gewrgiou@imbc.gr>, dri-devel@lists.sourceforge.net,
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+CC: Michel Dänzer <daenzerm@student.ethz.ch>, dri-devel@lists.sourceforge.net,
         linuxppc-dev@lists.linuxppc.org
 Subject: Re: [Dri-devel] Re: Kind of success! (r128 on PPC (Re: LinuxPPC
  XServer))
-References: <Pine.LNX.4.21.0008072058480.21201-100000@idd-01.imbc.gr> <398F1346.B81B3756@jausoft.com>
+References: <Pine.LNX.4.21.0008072058480.21201-100000@idd-01.imbc.gr>
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sven Goethel wrote:
+Kostas Gewrgiou wrote:
 
->         - which kernel ? (I currently use 2.4.0-test5)
+> > > [...] you could run the r128 driver without fbdev to get 16 bits, but
+> > > the code to switch the framebuffer to do byteswapping is missing so the
+> > > colors will be wron (easy to add though).
+> >
+> > Where and how?
+>
+>   Somewhere in R128ModeInit (or the functions that get called from it) will
+> do fine i think.
 
-That should be fine, at least it works for me with test4 and test6 :)
+I'll be trying in R128{Save,Restore}Crtc... , adding a config field to the
+...Save... struct for the CONFIG_CNTL register. Does that make sense?
 
->         - XF4.0.1 ?
 
-Maybe. I've got it working using the DRI CVS trunk, but the differences
-against X4.0.1 are minor.
+> About how now look at the following code from aty128fb that does the same
+> thing.
+>
+>     config = aty_ld_le32(CONFIG_CNTL) & ~3;
+> #if defined(__BIG_ENDIAN)
+>     if (par->crtc.bpp >= 24)
+>         config |= 2;    /* make aperture do 32 byte swapping */
+>     else if (par->crtc.bpp > 8)
+>         config |= 1;    /* make aperture do 16 byte swapping */
+> #endif
+>     aty_st_le32(CONFIG_CNTL, config);
 
->         - When and/or where can I get the working r128 linux kernel
->           sources for ppc - they seemed not to be included in the current
->           CVS tree.
->           I only get a LOCK_PREFIX unknown ...
-
-Apply the patch I have posted to the linuxppc-dev list yesterday. I can send
-it to you privately if you can't get it for some reason.
+Thanks, that code also caught my eye this morning on the train :)
 
 
 Michel
 
 
 --
-The computer revolution is over. The computers won.
+Why drink & drive when you can smoke and fly???
 ______________________________________________________________________________
 Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
 Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
