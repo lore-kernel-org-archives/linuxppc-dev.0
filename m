@@ -1,43 +1,31 @@
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: random ramblings on 8xx patches (long and tedious :-) 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 23 Jul 2004 08:34:54 EDT."
-             <Pine.LNX.4.60.0407230821050.4487@localhost.localdomain>
-Date: Fri, 23 Jul 2004 15:36:58 +0200
-Message-Id: <20040723133703.1A753C109F@atlas.denx.de>
+Subject: [PATCH] export m8xx_cpm_hostalloc
+From: Andreas Oberritter <obi@saftware.de>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain
+Message-Id: <1090590567.3939.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: Fri, 23 Jul 2004 15:49:27 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <Pine.LNX.4.60.0407230821050.4487@localhost.localdomain> you wrote:
->
->    CONFIG_850
->    CONFIG_PPC_850
->    CONFIG_8xx_850
->
-> thoughts?  yes, this is just me being pedantic.  it gets worse. :-)
+Hi Tom,
 
-How far do you want to take this?
+to build an i2c driver as a module, m8xx_cpm_hostalloc must be exported.
+We are using a driver which is not in the kernel tree[1]. I tried to
+merge the in-kernel i2c driver with it, but I failed and don't have the
+time to investigate why our driver works with the dbox2 board and the
+in-kernel driver doesn't.
 
-"850" may not  be  detailed  enough  -  is  it  a  MPC850,  MPC850DE,
-MPC850DSL, or a MPC850SR ?
+This function has been exported in 2.4. Is it ok to do that for 2.6,
+too?
 
+Regards,
+Andreas
 
-There is at least 40 differnt models of 8xx processors.  Go  and  add
-82xx  and  85xx  and  52xx  and than start working down the 4xx, 7xx,
-74xx, ... lines? I think this gives a LONG list...
+[1]:
+http://cvs.tuxbox.org/cgi-bin/viewcvs.cgi/tuxbox/driver/i2c/dbox2_i2c.c?rev=1.28&content-type=text/vnd.viewcvs-markup
 
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-If something is different, it's either better or worse,  and  usually
-both.                                                    - Larry Wall
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
