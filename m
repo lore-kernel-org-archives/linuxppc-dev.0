@@ -1,41 +1,108 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Content-Type: text/plain;
-  charset="iso-8859-15"
-From: Rakesh jagota <j.rakesh@gdatech.co.in>
-Reply-To: j.rakesh@gdatech.co.in
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Linux booting problem
-Date: Sat, 14 Jun 2003 18:44:05 +0530
+Message-ID: <20030614181357.55542.qmail@web41503.mail.yahoo.com>
+Date: Sat, 14 Jun 2003 11:13:57 -0700 (PDT)
+From: bhupinder sahran <bhup_sah@yahoo.com>
+Subject: Re: Problem in booting kernel
+To: j.rakesh@gdatech.co.in, linuxppc-embedded@lists.linuxppc.org
+Cc: j.rakesh@gdatech.co.in
+In-Reply-To: <1iiwzz6cccr670f.140620031003@gda-server>
 MIME-Version: 1.0
-Message-ID: <2f6qkz3a8wsqzda.140620031834@gda-server>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-I am working on custom design board based on IBM405ppc, I am getting the
-error message, " oops... out of memory".
+Hi Jagota
 
-Can anyone suggest me where can I find the the SDRAM size defination in the
-kernel. And where are they doing the memory mapping. I have modified the
-partitons in  drivers/mtd/maps/redwood.c file  as per our board. but couldnt
-loacte anything relted to SDRAM.
+If u see ur ppcboot messages carefully. u will see
 
-In arch/ppc/boot/simple/Makefile, I could not undersatnd one thing:
-
-whats the meaning of this line:
-
-LD_ARGS				= -T ../ld.script -Ttext 0x00800000 -Bstatic
-ifeq ($(CONFIG_8260)$(CONFIG_4xx)$(CONFIG_8xx),y)
-LD_ARGS				:= -T ../ld.script -Ttext 0x00400000 -Bstatic
-endif
+ avail ram:     004AE000 04000000 ->64 MB
 
 
-can anyone help me out to make it work.
+It means ur PPCboot is understanding that u have 64MB
+of SDRAM but really u have 32MB of SDRAM.
 
-Thanks & Regards,
+Try to resolve this issue in PPCBOOT first. then
+things may become OK.
 
-Rakesh
 
+Thanx
+Bhupi
+linux+Hypertransport --> Silicon
+www.gdatech.com
+
+
+
+
+--- Rakesh jagota <j.rakesh@gdatech.co.in> wrote:
+>
+> Hi all,
+> I am working on custom design board based on IBM405
+> PPC. I am using OpenBios
+> code and Linux -2.4.17 version from montavista. I am
+> downloading the os image
+> using serial port. After downoading the image, I am
+> getting the follwoinbg
+> messeges:
+>
+>
+>
+=========================================================================
+>
+>
+> Loaded successfully ...
+> Entry point at 0x500000 ...
+>
+> loaded at:     00500000 005AD1F8
+> relocated to:  00400000 004AD1F8
+> board data at: 004AA128 004AA168
+> relocated to:  00405544 00405584
+> zimage at:     00405BA0 004A9671
+> avail ram:     004AE000 04000000
+>
+> Linux/PPC load: console=ttyS0,9600
+> Uncompressing Linux...
+>
+> opps... out of memory
+> pause
+> opps... out of memory
+> pause
+> opps... out of memory
+> pause
+> opps... out of memory
+> pause
+> opps... out of memory
+> pause
+> opps... out of memory
+> pause
+> opps... out of memory
+> pause
+> opps... out of memory
+> pause
+> opps... out of memory
+> pause
+> opps... out of memory
+> pause
+> done.
+> Now booting the kernel
+>
+========================================================================
+>
+> And after this it stops.
+>
+> Can anyone suggest me how to resolve this problem. I
+> am using 4MB flash. And
+> Single SDRAM with single bank  of size 32MB. Can
+> anyone helpme out to sort
+> out this issue.
+>
+> Thanks & Regards,
+>
+> rakesh
+>
+>
+
+
+SBC Yahoo! DSL - Now only $29.95 per month!
+http://sbc.yahoo.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
