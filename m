@@ -1,50 +1,19 @@
-Message-ID: <XFMail.990802052054.gdt@linuxppc.org>
-Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-In-Reply-To: <990801202455.ZM22552@redrock.lan>
-Date: Mon, 02 Aug 1999 05:20:54 -0600 (MDT)
-From: Gary Thomas <gdt@linuxppc.org>
-To: Kevin Buettner <kev@primenet.com>
-Subject: Re: gdb broken under linuxppc r5 tools
-Cc: linuxppc-dev@lists.linuxppc.org
-Cc: linuxppc-dev@lists.linuxppc.org,
+From: kbhend <kbhend@business.wm.edu>
+To: "Kevin Buettner" <kev@primenet.com>,
         Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-        "Kevin B. Hendricks" <kbhend@business.wm.edu>
+        linuxppc-dev@lists.linuxppc.org, gdt@linuxppc.org
+Subject: Re: gdb broken under linuxppc r5 tools
+Date: Mon, 2 Aug 1999 11:21:19 -0400
+Content-Type: text/plain
+References: <990801202455.ZM22552@redrock.lan>
+MIME-Version: 1.0
+Message-Id: <99080211313600.00413@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi Kevin,
 
-On 01-Aug-99 Kevin Buettner wrote:
-> 
-> On Aug 1,  9:03pm, Franz Sirl wrote:
-> 
->> Am Son, 01 Aug 1999 schrieb Kevin B. Hendricks:
->> >Hey,
->> >
->> >Does anyone know what's up with gdb lately?  It used to be quite stable but
->> >since I upgraded to the glibc, binutils, egcs, gdb from Linuxppc R5 cd, I
->> >can't seem to set any breakpoints in shared libraries (or they show up
->> >someplace else at random).  Functions are missing (or don't show up) and if
->> >I try to disassemble one function in a shared library, I often get another.
->> >
->> >I really need a working stable gdb.
->> >
->> >Has anyone else run into this.  If so, exactly what versions of gdb, glibc,
->> >binutils, egcs are stable together, especially when working with shared
->> >libraries?
->> 
->> Well, you've hit one of our weakest points here. AFAIK there's currently
->> nobody
->> taking care of gdb on Linux/PPC. In fact we are lucky that Kevin Buettner's
->> old
->> patch could be converted to 4.17.x. Unfortunately it's still not integrated
->> into gdb's mainline due to copyright issues, so we have to reintegrate the
->> patch
->> in every new version :-(.
->> 
->> So, is someone willing to take care of gdb on Linux/PPC?
-> 
 > Kevin, Franz, et.al,
 > 
 > Earlier this year, Metrowerks and I signed the copyright assignments
@@ -52,21 +21,34 @@ On 01-Aug-99 Kevin Buettner wrote:
 > Cygnus as a GDB engineer.  One of the things that I'll work on is a
 > merge of my patches into the current gdb mainline.  It'll be my goal
 > to get a solid, usable gdb up and running on Linux/PPC again.
-> 
 
-Kevin B.,
+Congrats!  It is good to hear from you again!  We still miss you on the LinuxPPC
+JDK porting team!  Care to rejoin?!? :-)
 
-Firstly, congratulations and welcome to the fold :-)
+As for gdb, something changed seriously between Paul's 2.2.1 kernel running on
+a R4.1 build (gdb was very very stable when debugging shared libs) and Paul's
+2.2.10 kernel running LinuxPPC R5 or YDL.
 
-Secondly, while you're in there, can you look at my patches for GDB-4.18.
-I've made a useable GDB for this version, with no input from any of the
-4.17 patches BTW.  They might be easier to make into a "clean" set for
-the latest version.  You can find my patches in the RPM I uploaded to
-  ftp://ftp.linuxppc.org/users/gdt/redhat/SRPMS
+I tried Gary's 4.18 src rpm and it rebuilt fine under R5 but shows exactly the
+same error mode as the 4.17 builds.  I will put a breakpoint at a function in a
+shared lib (such as awt_allocate_colors in libawt.so) and the function address
+returned by gdb when it says it places the breakpoint is typically not a valid
+address (typically something in 0x00XXXXXX or 0x0XXXXXXX range).  
+Sometimes it ends up putting the breakpoint into another routine (often glibc)
+which you can see if luckily your code uses that other shared lib.
 
-When you get something ready, let me know and I'll help check it out.
+This is so frustrating.  If I can find (by chance) the actual location of the
+shared lib routine (by disassmebling large pieces of memory) and use the exact
+address to place the breakpoint, it will actually stop there.
 
-Thanks.
+Some change to the debugging symbols must have been made to cause this I think,
+but I am not sure.
+
+Anyway, I hope you can recreate these problems and can find a solution!!!!
+
+Thanks,
+
+Kevin H.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
