@@ -1,37 +1,46 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
-MIME-Version: 1.0
+Date: Wed, 13 Sep 2000 22:21:21 -0600
+From: Cort Dougan <cort@fsmlabs.com>
+To: Michel Lanners <mlan@cpu.lu>
+Cc: paulus@linuxcare.com.au, linuxppc-dev@lists.linuxppc.org
+Subject: Re: zeroing pages in the idle task?
+Message-ID: <20000913222121.K4546@hq.fsmlabs.com>
+References: <200009122018.WAA00786@piglet.grunz.lu> <200009131951.VAA00816@piglet.grunz.lu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14784.18464.5736.911672@argo.linuxcare.com.au>
-Date: Thu, 14 Sep 2000 14:38:08 +1100 (EST)
-To: Takashi Oe <toe@unlserve.unl.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: success 2.4.0-test8 with latest bk
-In-Reply-To: <Pine.A41.3.96LJ1.1b7.1000913195933.37860A-100000@unlserve.unl.edu>
-References: <200009132025.WAA00853@piglet.grunz.lu>
-	<Pine.A41.3.96LJ1.1b7.1000913195933.37860A-100000@unlserve.unl.edu>
-Reply-To: paulus@linuxcare.com.au
+In-Reply-To: <200009131951.VAA00816@piglet.grunz.lu>; from Michel Lanners on Wed, Sep 13, 2000 at 09:51:25PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Takashi Oe writes:
+I missed a lot of this thread, this is the first message I picked up on.
 
-> Could you try the following change for arch/ppc/mm/init.c?
-[snip]
-> 		Hash = mem_pieces_find(Hash_size, Hash_size);
-> 		clear_hash_table();
+} To come back to my original question...
 
-Huh?  There is a __clear_user(Hash, Hash_size) call in there but it's
-commented out, which I don't understand at all.  Certainly the hash
-table needs to be cleared.  Using cacheable_memzero would probably be
-the fastest way to do it.
+It's a dead loss on SMP, but it can be just run on UP machines.  The main
+problem was I didn't have enough time to finish it and didn't want to leave
+something running in the idle task that I hadn't finished studying the
+effect of.
 
-Paul.
+I really wanted to push it up to the freelist since I don't think it's a
+PPC-only optimization.  I never bothered trying to push it since at that
+point the tree was moving to the stable point and wasn't going to be
+changing that radically soon.
 
---
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+} > - is there any problem with using this feature?
+}
+} I didn't have any, but that's only my box then....
+
+Not without a lot of study and testing.  I haven't touched the code in a
+long time...
+
+} What do you think, Paul, Cort?
+
+It's not a matter of turning it on - it's a matter of making it work again
+and testing it.
+
+} Maybe enabling it by default would be a good choice? It can always be
+} disabled...
+}
+} I'll post a patch on sourceforge.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
