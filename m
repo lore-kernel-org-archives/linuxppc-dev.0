@@ -1,24 +1,31 @@
-Date: Thu, 29 Jan 2004 12:16:18 +0800
-Message-Id: <200401291216.AA122618076@actinium.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: "Arun Kumar" <arunkumar@actinium.org>
-Reply-To: <arunkumar@actinium.org>
-To: <openh323@openh323.org>
-Subject: Re:Problem in Cross compiling Pwlib for LINUX
+To: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: How to pass "-Wa,e500" to gcc when building a bootstrap compiler ? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 28 Jan 2004 19:44:02 CST."
+             <0B0A39652BB0D411BCCF00508B9512EC0E5962B3@tx14exm05.ftw.mot.com>
+Date: Thu, 29 Jan 2004 09:02:32 +0100
+Message-Id: <20040129080237.69A67C115D@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+In message <0B0A39652BB0D411BCCF00508B9512EC0E5962B3@tx14exm05.ftw.mot.com> you wrote:
+>
+> Is there any trick to make gcc have a default option like '-Wa,e500' ?
 
-I am cross compiling the pwlib of release 1.1pl19 in linux for the MPC8xx target using i386 as host.
-I got a problem while cross compiling the pwlib and the problem is in ldap.h. No such file/directory is there. Even though it exists in /usr/include directory and I copied that file in /usr/local/include directory and also to /usr/local/lib directory. but the problem still exists. I had seen a mail in mailarchives for the month of Aug'2003 (with Subject LDAP.h memory leak) and the program code in file pldap.cxx has some code changes which are not there in new version and after equalto sign I had noticed 3D which is also not there in current version.
+Edit .../usr/lib/gcc-lib/ppc-linux/X.Y.Z/specs
 
-Are those really required for rosscompilation is that problem persists me.
 
-Hope an early reply from u,
-Thanks in advance,
-Arunkumar.
+Wolfgang Denk
+
+--
+See us @ Embedded World, Nuremberg, Feb 17 - 19,  Hall 12.0 Booth 440
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Harrisberger's Fourth Law of the Lab:
+	Experience is directly proportional to the
+	amount of equipment ruined.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
