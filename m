@@ -1,54 +1,82 @@
-To: Steven Rothweiler <Stevenr@raritan.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: AgileDB and Abatron BDI 2000 ICE 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 11 Jul 2003 09:58:46 EDT."
-             <159C486347C8D3119B1D005004A469400244BC18@OLIVE>
-Date: Fri, 11 Jul 2003 16:29:25 +0200
-Message-Id: <20030711142930.5E970C6D82@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: AgileDB and Abatron BDI 2000 ICE
+Date: Fri, 11 Jul 2003 10:31:56 -0400
+Message-ID: <8529B5552D4EAA4DAEDF49650C64B2B437128C@TARPON.mangrovesystems.com>
+From: "Muhammad Sarwar" <msarwar@mangrovesystems.com>
+To: "Steven Rothweiler" <Stevenr@raritan.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <159C486347C8D3119B1D005004A469400244BC18@OLIVE> you wrote:
->
-> We have neither product in house right now, and we
-> are trying to decide whether to evaluate them for
-> the development of our product.
+You are right about Abatron, it is definitely a good tool to have.
 
-You definitely should evaluate AgileDB befroe buing it.
-[You cannot go wrong when buying a BDI2000:-) ]
+I recently evaluated Agile Software for 8260.
 
-> I've seen a lot of good remarks about the Abatron
-> BDI 2000 ICE (that you shouldn't leave home without
-> it), but not much about AgileDB.  The product data
-> sheet looks impressive.  Any strong opinions out
-> there?
+Few thoughts:
 
-A very strong opinion: you have to decide this yourself. Ask what  it
-costs, and what you get for it.
+Main advantage of Agile is that it integrates Abatron's commands and
+GDB debugging services.=20
 
-Ask questions like:
+Some features I liked were=20
 
-* Does it run under Linux (fit in a Linux based development
-  envrionment)?
-* Is it a new propriatary debugger, or just another inteface for GDB?
-* Which advantages has it over existing free solutions like DDD?
-* How much are you willing to pay for these advantages?
+Nice GUI for all BDI and GDB features at one place=20
+Ability to move registers, structs etc to same watch window(by click
+and drag)=20 Tools to automate some processes like loading of register
+init file, playing back command script=20
+Ability to set PC, other registers etc=20
+Ability to use the same software for debugging of user applications=20
 
-etc.
+However there are some problems:=20
 
-Hope this helps.
+Program crashes frequently, they are offering new version of SW which
+is supposed to be more stable. Problems in setting break points.
+Problem in getting stack info display. Bug in display of struct
+info=20
 
-Wolfgang Denk
+I think overall it brings good value for boot and kernel debugging.
+Regards,
 
+Muhammad Sarwar
+Mangrove Systems Inc.
+
+
+-----Original Message-----
+From: Steven Rothweiler [mailto:Stevenr@raritan.com]
+Sent: Friday, July 11, 2003 9:59 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: AgileDB and Abatron BDI 2000 ICE
+
+
+Hi,
+
+My organization is moving to Linux on MPC8270 (HW
+being designed right now) and I was wondering what
+everyone thought of the AgileDB-LX debugger, when
+used with the Abatron BDI 2000 ICE.
+
+We have neither product in house right now, and we
+are trying to decide whether to evaluate them for
+the development of our product.
+
+I've seen a lot of good remarks about the Abatron
+BDI 2000 ICE (that you shouldn't leave home without
+it), but not much about AgileDB.  The product data
+sheet looks impressive.  Any strong opinions out
+there?
+
+Also, we have an opening for an embedded PPC/Linux
+engineer.  Where is the best place to post the ad?
+
+Thanks.
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Compassion -- that's the one things no machine ever had.  Maybe it's
-the one thing that keeps men ahead of them.
-	-- McCoy, "The Ultimate Computer", stardate 4731.3
+Steven Rothweiler               Raritan Computer Inc
+Embedded Engineer               400 Cottontail Lane
+mailto:stevenr@raritan.com      Somerset, NJ   08873
+732-764-8886 x1256
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
