@@ -1,32 +1,25 @@
-Message-ID: <3A12D4B2.2DD888C6@mvista.com>
-Date: Wed, 15 Nov 2000 13:23:46 -0500
+Message-ID: <3A12D741.E79341F6@mvista.com>
+Date: Wed, 15 Nov 2000 13:34:41 -0500
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Brian Ford <ford@vss.fsi.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: glibc and kernel build problems (EST8260)
-References: <Pine.GSO.4.21.0011150916280.493-100000@eos>
+To: Brad Parker <brad@parker.boston.ma.us>
+CC: Ian Abbott <abbotti@mev.co.uk>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: I2C problems
+References: <200011151433.JAA93259@p2.parker.boston.ma.us>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brian Ford wrote:
+Brad Parker wrote:
+>
+> fyi: I created a working i2c driver for the 8xx family for Dan a week
+> or two ago.  It's in the 2_5 tree as I recall.  It's integrated with
+> the existing i2c code and should work reasonably well.
 
-> Do you know if their 8260 glibc is compiled for soft or hard float?  Also,
-> did they apply the less than 32 byte cache line patch?  That is removing
-> optimization for the 8260 instead of fixing things.
-
-
-The MontaVista CDK is a complete package built for a specific target.
-In the case of the 8260, this is hardware floating point, PowerPC 603
-instruction scheduling in the utilities and compilers, and the proper
-cache line size (which is 32 bytes).  All of the libraries and
-applications are built using these tools, and it is highly recommended
-you rebuild any applications not provided in the MontaVista CDK
-that you may download from other sites rather than just install
-generic PowerPC RPMS.
-
+Bah....I didn't check it in yet....sorry.  I was chasing down some
+other generic problems in the tree.  I plan to check it in for both
+the 8xx and 8260.  I'll check it in right now, but not test it :-).
 
 
 	-- Dan
