@@ -1,37 +1,33 @@
-Date: Thu, 25 Jul 2002 10:29:49 -0700
-From: Matt Porter <porter@cox.net>
-To: steve.cameron@hp.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Tigon3 driver, broadcom 5307, 440GP, working?
-Message-ID: <20020725102949.A24858@home.com>
-References: <20020724132923.A31993@zuul.cca.cpqcorp.net>
+From: ghannon@cspi.com
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <85256C01.006330D5.00@pine.cspi.com>
+Date: Thu, 25 Jul 2002 14:16:43 -0400
+Subject: VME driver (Universe II)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020724132923.A31993@zuul.cca.cpqcorp.net>; from scameron@zuul.cca.cpqcorp.net on Wed, Jul 24, 2002 at 01:29:23PM -0500
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Jul 24, 2002 at 01:29:23PM -0500, Stephen Cameron wrote:
->
-> I've been playing around with the tigon3 driver and a broadcom
-> 5307 gigabit NIC in my IBM ebony... No luck so far.  The driver compiles
-> and even loads, I can run ifconfig(busybox really) to configure
-> the NIC,  and if I pull the network cable, the driver seems to
-> notice (get log messages about link is down, link is up) but so
-> far, I can't actually transmit or receive any packets.
->
-> Anyone had any luck with this combination?
+Greetings,
 
-I assume you mean a BCM5703?
+Has the universe II driver been updated against the 2_4_devel tree?
 
-FWIW, BCM5700/5701 on 440GP works for me with the current tg3 driver.
+I have found the patches from Gabriel Paubert, against 2_2.
+Should I attempt to merge that into the 2.4.11 area to get a
+driver for VME?   It would be a learning experience for me, but
+one that I'd rather avoid if possible.
 
+The board is MVME-5100 using 2.4.11 from the devel tree.
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+Any pointers would be appreciated.
+
+Thanks,
+Gary
+
+Gary Hannon
+CSPI
+(978)663-7598 x1509
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
