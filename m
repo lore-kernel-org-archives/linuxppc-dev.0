@@ -1,29 +1,26 @@
-Message-Id: <200007251853.TAA18713@hyperion.valhalla.net>
-Date: Tue, 25 Jul 2000 19:53:35 +0100
+Message-Id: <200007251926.UAA20564@hyperion.valhalla.net>
+Date: Tue, 25 Jul 2000 20:25:05 +0100
 Subject: Re: sound again [was: Re: xf4 bug report]
 From: "Iain Sandoe" <iain@sandoe.co.uk>
 To: SteffenH@hyperion-software.de, linuxppc-dev@lists.linuxppc.org
-CC: Benjamin Herrenschmidt <bh40@calva.net>,
-        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 Mime-version: 1.0
 Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Steffen,
-On Wed, Jul 26, 2000, Steffen Haeuser wrote:
+ Wed, Jul 26, 2000,  Steffen Haeuser wrote:
 > Am 25-Jul-00 schrieb Iain Sandoe:
-[...]
 
-> and the file contains
+> Okay, installed the new one...
 >
-> burgundyawacs
->
-> if this says anything to you :)
+> Well, it behaves just the same like the old kernel... same error-message...
 
-AH HA!!! - you are the first "burgundy" reply I've had... I will be *very*
-interested to hear how it goes...
+Glad to hear it boots OK (I wasn't sure that the AppleSCSI driver wouldn't
+panic on boot - it used to on my Lombard)...
+
+But... does the sound work when you load the modules by hand? (see web-page
+for details).  I suspect you have a bogus entry in your conf.modules...
 
 Iain.
 
