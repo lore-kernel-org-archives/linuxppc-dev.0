@@ -1,29 +1,27 @@
-Date: Wed, 3 Dec 2003 04:44:16 -0500 (EST)
-To: linuxppc-dev@lists.linuxppc.org
-Subject: userspace testing an ati fb driver
-Message-ID: <Pine.LNX.4.50L0.0312030435240.3077-100000@rosencrantz.pok.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-From: random <eger-temp_addy-1071049257.71afe9@theboonies.us>
+Date: Wed, 3 Dec 2003 09:09:58 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Olaf Hering <olh@suse.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] boot/ld.script dependency missing
+Message-ID: <20031203160958.GF912@stop.crashing.org>
+References: <20031201212931.GA10959@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20031201212931.GA10959@suse.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On my Powerbook, /proc/iomem lists 0xb0000000-0xb000ffff as the location
-of the programming registers for my ATI Radeon R250 Lf.
+On Mon, Dec 01, 2003 at 10:29:31PM +0100, Olaf Hering wrote:
 
-This seems to be the same spot XFree86 finds in its log:
-(II) RADEON(0): MMIO registers at 0xb0000000
+> fiddling with ld.script doesnt trigger a rebuild of the boot files.
 
-I've been trying to mimic the XFree86 fb accel code to make a Linux 2.6 fb
-port, but i've had little luck. To try to pare down the new code, I've
-written a userspace program which will open "/dev/mem" and then mmap in
-this file starting at '0xb0000000' going for 0x10000 bytes.  Poking at the
-"registers" there seems to have no effect; reading from these "registers"
-(for example, to verify the engine idling) indicates that I'm perhaps
-reading from the wrong place in memory, i.e. the engine never indicates
-that it's idle.  Any ideas?
+This looks to be an incomplete patch.  Please fix the rest of
+arch/ppc/boot/ and verify that arch/ppc64/boot/ doesn't have the issue
+as well.  Thanks.
 
--eger david
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
