@@ -1,31 +1,33 @@
-Date: Thu, 4 Feb 1999 22:49:42 +0100 (CET)
-From: Gerd Knorr <kraxel@goldbach.in-berlin.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+Date: Thu, 4 Feb 1999 15:14:30 -0700 (MST)
+From: Brad Midgley <brad@pht.com>
+Reply-To: Brad Midgley <brad@pht.com>
+To: Paul.Mackerras@cs.anu.edu.au
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: I/O port access ???
-In-Reply-To: <Pine.LNX.4.03.9902042132120.17258-100000@mercator.cs.kuleuven.ac.be>
-Message-ID: <Pine.LNX.4.05.9902042243220.1124-100000@macintoy.masq.in-berlin.de>
+Subject: Re: rsync kernel is incomplete
+In-Reply-To: <199902040611.RAA04100@tango.anu.edu.au>
+Message-ID: <Pine.LNX.3.95.990204145554.26689A-100000@pacific.pht.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 4 Feb 1999, Geert Uytterhoeven wrote:
+paul,
 
-> On Thu, 4 Feb 1999, Gerd Knorr wrote:
-> > Is there some way to access the I/O ports, for example the VGA registers
-> > of some graphics board (assuming the I/O ports are enabled in the PCI
-> > config space) on ppc boxes?  How can I do that with Linux?  From kernel
-> > space?  From user space?
-> 
-> You have to mmap() /dev/mem. Which address depends on the type of PPC box.
-> You can find the correct addres in <asm/io.h> (*_ISA_IO_BASE).
+is there a special keymap or something that i should be using? the 2.2.1
+kernel boots great but now i can't type at the console (the result is
+garbage). it used to be that i could type at the console but typing inside
+X was the only place a problem showed up. now it's both. 
 
-Can I easily figure out the machine type (at runtime) somehow?  Parse 
-/proc/cpuinfo?
+it didn't look like the files at
+ftp://samba.anu.edu.au/pub/linux-pmac/imac/ would be of help. 
 
-   Gerd
+thanks
+brad
+
+ps. does everybody use X with 8-bit ofonly? that's the only way i could
+get x on imac to display correctly. 
+
 
 
 
