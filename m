@@ -1,42 +1,45 @@
-Date: Tue, 20 Apr 2004 09:45:55 +0800
-From: llee <llee@huawei.com>
-Subject: Re: fail to disable MMU on ppc 8241
-In-reply-to: <1082352050.1689.9.camel@gaston>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Message-id: <408480D3.1030009@huawei.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; format=flowed
-References: <40834DC0.2030408@huawei.com> <1082352050.1689.9.camel@gaston>
+Message-ID: <4085483B.1090604@nortelnetworks.com>
+Date: Tue, 20 Apr 2004 11:56:43 -0400
+From: Chris Friesen <cfriesen@nortelnetworks.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: asm code
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+I'm trying to do an indirect address lookup in entry.S.  I've added a
+lookup table at the end of entry.S as follows:
 
->On Mon, 2004-04-19 at 13:55, llee wrote:
->
->
->>Hi, there,
->>I boot linux (2.6.3) on my ppc 8241 through vxworks bootloader. I'd got
->>a port (on address 0x70020006) to constrol three LEDs, so I could know
->>where the kernel going. But after the disable_mmu is called, I lost
->>control to the LEDs, Any suggestion on this? As I know, vxworks use a
->>one-to-one mapping MMU setup, I should must constrol the LEDs through
->>the same address.
->>
->>
->
->With mmu off, I suspect the 8241 acts as if the entire address space
->was cacheable, which is a BAD THING for IOs typically.
->
->Ben.
->
->
->
->
->
->
-Thanks Ben, It works when I disable DATA CACHE!
+hrt_ak_offsets:
+	.byte HRT_AK_USER_USER_SYNC
+	.byte HRT_AK_SIGM_USER_SYNC
+	.byte HRT_AK_SIGU_USER_SYNC
+	.byte HRT_AK_USER_SIG_SYNC
+	.byte HRT_AK_SIGM_SIG_SYNC
+	.byte HRT_AK_SIGU_SIG_SYNC
+	.byte HRT_AK_USER_USER_ASYN
+	.byte HRT_AK_SIGM_USER_ASYN
+<etc...>
+
+I then have some code that wants to load up one of these values and use
+it as an offset into another struct.  Coming into the following stretch
+of code, r6 contains the entry number within hrt_ak_offsets, and r4
+contains the base address of the other struct.
+
+	lis	r5,hrt_ak_offsets@ha
+	addi	r5,r5,hrt_ak_offsets@l
+	lbzx	r6,r6,r5
+	add	r10,r4,r6
+
+I'm having a small problem, in that when I run this code it hangs my
+kernel.  Any ideas what's wrong?  The values in r6 and r5 seem to match
+what I expect, but when I do the lbzx it dies.
+
+Thanks,
+
+Chris
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
