@@ -1,23 +1,29 @@
-Date: Sat, 8 Sep 2001 12:39:44 -0700
+Date: Sat, 8 Sep 2001 12:41:18 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Giuliano Pochini <pochini@denise.shiny.it>
+To: Larry McVoy <lm@bitmover.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: mvista tree
-Message-ID: <20010908123944.E635@cpe-24-221-152-185.az.sprintbbd.net>
-References: <3B992EE7.F9DDEF28@denise.shiny.it>
+Subject: Re: hosting service change
+Message-ID: <20010908124118.F635@cpe-24-221-152-185.az.sprintbbd.net>
+References: <200109080511.f885BSF22039@work.bitmover.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3B992EE7.F9DDEF28@denise.shiny.it>
+In-Reply-To: <200109080511.f885BSF22039@work.bitmover.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Sep 07, 2001 at 10:32:39PM +0200, Giuliano Pochini wrote:
+On Fri, Sep 07, 2001 at 10:11:28PM -0700, Larry McVoy wrote:
 
-> Ehm.. Am I the only one who get thes error compiling
-> the stable tree from mvista ?
+> In the meantime, I'll shift the DNS records to point at the slower DSL
+> line this weekend so you won't be disrupted, it just means somewhat
+> slower access.  I doubt you'll notice.
+>
+> As soon as I get the new T1 line, we'll switch over to that.  In any case,
+> you should not see any loss of access, just somewhat reduced performance
+> until we get the T1 line.  If you notice problems, let us know.
 
-Er, you mean the rsync version of linuxppc_2_4?  What .config is this?
+And as always, source.mvista.com has up-to-date mirrors of all of the trees
+both in BK and rsync.
 
 --
 Tom Rini (TR1265)
