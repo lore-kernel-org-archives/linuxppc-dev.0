@@ -1,57 +1,57 @@
-Message-ID: <3EFB5D4C.8070605@esteem.com>
-Date: Thu, 26 Jun 2003 13:53:32 -0700
-From: Conn Clark <clark@esteem.com>
+Subject: Using the Linux kgdb-kernel with the Walnut.
+To: May Ling List <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <OF89113F6E.86CEDB29-ON87256D17.00567A5E-86256D51.00767452@us.ibm.com>
+From: Andrew H Pham <apham@us.ibm.com>
+Date: Thu, 26 Jun 2003 16:32:03 -0500
 MIME-Version: 1.0
-To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-Cc: May Ling List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: (Sudo off topic)Simple cheap IDE intrerface for IBM 405
-References: <3EF8CDF4.3050700@esteem.com> <3EFABFF4.9010707@esd-electronics.com>
-In-Reply-To: <3EFABFF4.9010707@esd-electronics.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Matthias,
+Hi,
 
-	Actualy it was a quest for a compact flash interface that started me on
-this IDE interface saga to begin with. I knew you could build an adapter
-to access compact flash cheaply/easily.
+I am trying to boot up the Linux kgdb-kernel.2.4.18 on a Walnut board, but
+it just freezes after it uncompressed the kernel.  Here is a screen shot:
+"..
+EMAC0 Ethernet Test OK.
+ENET Speed is 100 Mbs...
+FULL duplex connection
+Booting from [ENET] Ethernet     ...
+Sending bootp request ...
 
-	Would it be posssible to give me ( or post ) a list of signal names of
-what 405 signal connects to what compact flash signal in your interface?
-I can understand if you say no.
 
-	Also was the compact flash connected dirrectly to the data and address
-bus or did you need to buffer it in some way?
+Loading file "//zImage" ...
+Sending tftp boot request ...
+Transfer Complete ...
+Loaded successfully ...
+Entry point at 0x500000 ...
 
-Matthias Fuchs wrote:
-> Hi Conn,
->
-> we attached a CompactFlash socket to the 405's external bus on our CPCI405
-> CompactPCI board. The board is directly supported by the
-> linuxppc_2_4_devel tree.
-> The tree includes a driver for simple memorymapped CompactFlash cards.
->
-> Matthias
->
+loaded at:     00500000 005A9238
+relocated to:  00400000 004A9238
+board data at: 004A6168 004A61A8
+relocated to:  004A6128 004A6168
+zimage at:     004059DC 004A54DA
+avail ram:     004AA000 02000000
 
-	Just the fact that I now know it can be done is of great help.
+Linux/PPC load: root=/dev/nfs
+              ip=192.003.1.5:192.003.1.1::255.255.255.0:walnut:eth0:off
+              nfsroot=192.168.1.1:/home/nfs/walnut
+Uncompressing Linux...done.
+Now booting the kernel
+..."
 
-Thanks
+And it just hangs.  I think this when it's waiting for input from the
+              serial port 2 from the debugger then proceeds.  I hooked up
+              an other session
+of minicom to the second serial port on the Walnut, but only see garbages,
+              "$S04#b7,..." .  I tried all the baudrates available and got
+              different outputs or blank, all of which are
+incomprehensible.
 
-	Conn
+Has anyone got the Linux kgdb-kernel.2.4.18 to work with the Walnut board?
 
---
-
-*****************************************************************
-   If you live at home long enough, your parents will move out.
-  (Warning they may try to sell their house out from under you.)
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
-
+Any help would be appreciated,
+Andy
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
