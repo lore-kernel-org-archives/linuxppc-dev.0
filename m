@@ -1,44 +1,29 @@
-Message-ID: <20031201190828.20157.qmail@web40911.mail.yahoo.com>
-Date: Mon, 1 Dec 2003 11:08:28 -0800 (PST)
-From: Brian Kuschak <bkuschak@yahoo.com>
-Subject: Re: routing performance w/embedded linux on ppc?
-To: "Vladimir A. Gurevich" <vag@paulidav.org>
-Cc: linuxppc-embedded@lists.linuxppc.org, linuxppc@opqua.com
-In-Reply-To: <3FC59BAE.3020801@paulidav.org>
+Message-ID: <003501c3b85e$eb138ef0$020120b0@jockeXP>
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: <linuxppc-embedded@lists.linuxppc.org>,
+	"Tom Rini" <trini@kernel.crashing.org>
+Subject: tx_full v.s tx_free race fix in 8xx_io/enet.c?
+Date: Tue, 2 Dec 2003 00:00:27 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Vlad,
+I don't see the race the tx_free patch fixes. So I tried to generate a race by running 3-4 parallel
+ping floods from my Linux PC. Still no race/malfunction. So I removed the spin_lock_irq()/
+spin_unlock_irq() in scc_enet_start_xmit(). Still no race/malfunction. I applied
+the tx_free patch. Got an oops after only a few seconds. Added the spin_lock_irq()/
+spin_unlock_irq() again. Now it worked again.
 
->
-> Starting with 2.4.19 or so, I'd recommend looking at
-> NAPI to do
-> interrupt mitigation instead. Please look at
-> ftp://robur.slu.se/pub/Linux/net-development/NAPI/
->
+It seems to me that the old tx_full stuff is working better that the new tx_free. Which
+race is it supposed to fix and how do I generate it?
 
-Yes, it looks interesting!  I'm glad this is being
-introduced as a mechanism for all drivers to use.
+This is the changeset that introduces tx_free:
+http://ppc.bitkeeper.com:8080/linuxppc_2_4_devel/diffs/arch/ppc/8xx_io/enet.c@1.12.1.8?nav=index.html|src/.|src/arch|src/arch/ppc|src/arch/ppc/8xx_io|hist/arch/ppc/8xx_io/enet.c
 
-I haven't had time to study it in detail, but I'm a
-little concerned about NAPI using the softirq context.
- In the 2.4 kernels I've seen various performance
-issues related to ksoftirqd.  Perhaps this has been
-fixed in 2.6...
-
-> > On top of that, you can implement
-> > CONFIG_NET_FASTROUTE in the driver, bypassing most
-> of
-> > the IP stack.
->
-> But, of course, you'll loose IP tables. Also,
-
-Yes, an important point.
-
--Brian
+ Jocke
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
