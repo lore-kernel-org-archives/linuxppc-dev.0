@@ -1,29 +1,29 @@
-From: linuxppcdev@qbjnet.com
-Date: 26 Mar 2004 10:32:04 -0600
-Message-ID: <20040326163204.7277.qmail@kunk.qbjnet.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: 7248 PreP VGA_CONSOLE not working in 2.6.5-rc2
+Date: Fri, 26 Mar 2004 18:48:14 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+Subject: Re: PREEMPT on PPC
+In-Reply-To: <1080201697.1217.3.camel@gaston>
+Message-ID: <Pine.LNX.4.44.0403261442210.3900-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Perhaps it requires a boot time arg now however it worked in 2.6.0
-without a boot arg. Maybe someone can clue me in?
+> > I've start looking into the various issues of running CONFIG_PREEMPT
+> > on ppc32. I found some problems, there may be more, but here's a
+> > first patch that should apply on a recent 2.6.x.
+> >
+> > I suggest if you want to try this out that you run with the various
+> > kernel debugging options enabled. Report me remaining problems.
+>
+> And here's an updated version of that patch that doesn't break sleep
+> on laptops.
 
-dmesg line for 2.6.0:
-Console: colour VGA+ 80x25
+Works fine here on 2.6.5-rc2-ben0 . Including disk suspend.
 
-dmesg for 2.6.5-rc2 shows the dummy console and results in a blank screen.
-
-Out of curiosity, I tried the VGA_16 framebuffer as well and it is detected
-vga16fb: initializing
-vga16fb: mapped to 0xf00a0000
-fb0: VGA16 VGA frame buffer device
-Console: switching to colour frame buffer device 80x30
-
-But it results in a distorted version of the original POWERPC power on
-graphic.
-
-Bob
+	Michael
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
