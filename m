@@ -1,35 +1,31 @@
-Date: Mon, 10 Dec 2001 21:20:03 +0100 (CET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-Cc: Kevin Hendricks <khendricks@ivey.uwo.ca>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: unkillable zombies from using gdb and kernel 2.4.15 and higher?
-In-Reply-To: <1008013153.17478.28.camel@pismo>
-Message-ID: <Pine.LNX.4.33.0112102117570.24633-100000@gra-lx1.iram.es>
+Message-ID: <3C15194C.8020807@humboldt.co.uk>
+Date: Mon, 10 Dec 2001 20:21:32 +0000
+From: Adrian Cox <adrian@humboldt.co.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Machine Check / Blue Smoke
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 10 Dec 2001, Michel [ISO-8859-1] Dänzer wrote:
+I've just posted an updated version of my machine check patch:
 
->
-> On Mon, 2001-12-10 at 15:11, Kevin Hendricks wrote:
->
-> > So these zombies are ignoring kill -9  signals which I thought was a big
-> > no-no?
->
-> Zombies are dead, they don't get more dead if you kill them. ;)
->
-> AFAIR zombies have died but are waiting for their return value to be
-> read out of the process table. I'd like to know myself how that can
-> happen when their parents are gone...
+http://www.humboldt.co.uk/ppc_patches.html
 
-They are reparented to init. One of init tasks is to reap all
-processes who lose their parents.
+I'd appreciate any feedback on this - I'm not happy with the current
+approach taken to machinecheck on PPC. My experience of burn-in test on
+7400 hardware suggests that internal machine checks indicate genuine
+hardware failures.
 
-	Gabriel.
+My patch attempts to ensure that if an internal machine check occurs,
+none of the potentially corrupt data in memory gets written out to disk.
+It also provides a place for platform handlers to deal with the external
+causes of machine check, as used on Powermac and Qspan. It includes an
+example handler to provide ECC memory support on the MPC107.
+
+--
+Adrian Cox   http://www.humboldt.co.uk/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
