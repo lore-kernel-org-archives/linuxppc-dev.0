@@ -1,52 +1,50 @@
-Date: Sat, 29 Jul 2000 14:40:08 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-cc: Roman Zippel <zippel@fh-brandenburg.de>,
-        Linux/PPC on APUS <linux-apus-devel@lists.sourceforge.net>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: bogus dmasound.o module (was: Re: 2.4.0-test4 success (Re: affs))
-In-Reply-To: <3981DBA6.7203A5B9@student.ethz.ch>
-Message-ID: <Pine.LNX.4.10.10007291437400.1201-100000@cassiopeia.home>
+From: Steffen Haeuser <SteffenH@hyperion-software.de>
+Reply-To: SteffenH@hyperion-software.de
+To: linuxppc-dev@lists.linuxppc.org, howarth@nitro.med.uc.edu,
+        xpert@XFree86.org, daenzerm@student.ethz.ch
+Date: Sat, 29 Jul 2000 14:31:59 +0100
+Message-ID: <yam8245.2994.151871328@mail.lf-online.de>
+Subject: LinuxPPC X Server
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 28 Jul 2000, Michel [iso-8859-1] Dänzer wrote:
-> 'make modules_install' tries to install dmasound.o (which doesn't exist
-> anymore) instead of dmasound_paula.o and dmasound_core.o
+Hi!
 
-Does this help? IIRC, I have it in my tree since a while, but I forgot about
-it.
+Again me concerning the X Server...
 
---- linux-2.4.0-test5/drivers/sound/Makefile.orig	Tue Jul 18 14:09:03 2000
-+++ linux-2.4.0-test5/drivers/sound/Makefile	Sat Jul 29 14:37:01 2000
-@@ -92,11 +92,11 @@
+I had yesteday a "critical" discussion concerning the LinuxPPC Version of Sin.
+It ended in the question "Do we want to delay the release of the Linux-x86
+version because of the LinuxPPC version ?" All present people agreed with "No"
+(including myselves). At the end I was asked - which I can of course not
+answer, so I am asking for it - "At what *likely* timeframe would be the
+problems in the LinuxPPC X Server being fixed, at least as much problems
+fixed, that Sin it at least USABLE on LinuxPPC?"
 
- ifeq ($(CONFIG_DMASOUND),y)
-   SUB_DIRS += dmasound
--  MOD_SUB_DIRS += dmasound
-+  MOD_IN_SUB_DIRS += dmasound
-   obj-y += dmasound/dmasound.o
- else
-   ifeq ($(CONFIG_DMASOUND),m)
--    MOD_SUB_DIRS += dmasound
-+    MOD_IN_SUB_DIRS += dmasound
-   endif
- endif
+We are not yet completely finished with the coding of Sin, but we are VERY
+close to finishing it. And on that meeting was decided "no delaying of the
+release". Of course even if Sin for LinuxPPC falls through there is still the
+option to release Shogo or other future Linux titles of us for LinuxPPC also.
+But I would like to release also Sin for LinuxPPC, as it is the project I am
+working on it, and I am the biggest promotor of LinuxPPC in our company...
 
+It might still happen... but what would really help me in my argumentation in
+the company to put the LinuxPPC executable "on" would be:
 
-Gr{oetje,eeting}s,
+- A bugfix so that Fullscreen 640x480
+  works
+- A likely timeframe for first 3D Drivers
+  to be released, which optimally should
+  not be more than 3 months from now
 
-						Geert
+When is the next Beta for the X Server likely to happen, BTW ?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Knowing a likely timeframe would help my argumentation a lot... especially if
+that timeframe is not TOO far away in the future...
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Steffen
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
