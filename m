@@ -1,43 +1,37 @@
-Message-ID: <3C968679.7040307@embeddededge.com>
-Date: Mon, 18 Mar 2002 19:29:45 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Ethan Benson <erbenson@alaska.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: new bi_rec interface (was Re: [Ppcboot-users] Re: EV-64260 booting)
-References: <20020312195125.GB25926@cpe-24-221-152-185.az.sprintbbd.net> <21274.1015997038@msa.cmst.csiro.au> <20020313155503.GB721@opus.bloom.county> <20020318152329.B324434@brule.borg.umn.edu> <20020318143326.B26309@plato.local.lan>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: airport transmit power
+From: Ryan Boder <boder@cmu.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain
+Date: 19 Mar 2002 01:39:53 -0500
+Message-Id: <1016519993.843.21.camel@TOBY>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ethan Benson wrote:
+I'm using airport in a big 802.11b network at school, with access points
+all around campus. I have noticed that networking does not work as well
+for me as it does for those using intel machines.
 
-> from a logistical point of view this really seems to be the best
-> approach.
+But the thing I just noticed tonight, is that my machine seems to
+receive signals just as well as the intel machines, it's the
+transmissions that cause trouble.
 
-This has been the normal mode of operation for the embedded boards.
-Many of us think it is the logical approach, and quite a while ago
-some of us started talking about how we can combine these ideas
-in an effort to remove a reasonable amount of board specific code
-from the kernel setup functions.
+For example, I was downloading a 700 MB files and it kept downloading
+withought a problem, but at the same time, I was trying to work on a
+remote machine with ssh and it was acting really bad. Sometimes it would
+not respond to my keyboard pressing for 30 seconds or more.
 
-There were some challenges while trying to move from one method
-to another, with the transition being the 2.4 source tree.  For
-2.5 we just "declared" this will be the way.
+I also noticed that this is the only available txpower from iwlist.
 
-> of course if someone doesn't want to use the wrapper they can just use
-> the vmlinux and write thier own bootloader to handle all this stuff
-> and take on the effort of ensuring its up to date with what the kernel
-> wants.
+eth1      1 available transmit-powers :
+	  15 dBm  	(31 mW)
 
-There are people that want to do this and see value in doing so.  It
-does present a challenge as I was one that broke ppcboot when I changed
-the interface between the bootloader and the kernel (thinking everyone
-used the bootloader wrapper on embedded boards :-).
+So for anyone who hacks the aiport driver, is that the only txpower the
+card supports? Is it a hardware limitation or a driver limitation? Or is
+it something that's unknown since apple won't release the documentation?
 
-
-	-- Dan
+Ryan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
