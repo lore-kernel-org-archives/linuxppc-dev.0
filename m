@@ -1,36 +1,46 @@
-Date: Sun, 30 Sep 2001 12:22:11 -0500
-From: "Joseph P. Garcia" <jpgarcia@execpc.com>
-To: Jan Nieuwenhuizen <janneke@gnu.org>
-Cc: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Joseph P. Garcia" <jpgarcia@execpc.com>,
+	<linuxppc-dev@lists.linuxppc.org>
 Subject: Re: 2.4.10-ben0 doesn't see ide1
-Message-Id: <20010930122211.2cf9b2f7.jpgarcia@execpc.com>
-In-Reply-To: <m3adzddmfh.fsf@appel.lilypond.org>
-References: <m3adzddmfh.fsf@appel.lilypond.org>
-Mime-Version: 1.0
+Date: Sun, 30 Sep 2001 19:51:48 +0200
+Message-Id: <20010930175148.29787@smtp.wanadoo.fr>
+In-Reply-To: <20010930122211.2cf9b2f7.jpgarcia@execpc.com>
+References: <20010930122211.2cf9b2f7.jpgarcia@execpc.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 30 Sep 2001 12:04:34 +0200
-Jan Nieuwenhuizen <janneke@gnu.org> wrote:
-
+>Rack this up as an OF bug on some systems I think.  I got it too
+>(Wallstreet2/300).  The OF IDE nodes request what look like twice memory
+>as much as they need.  Linux doesn't even use most of it anyway.
 >
-> Hi,
+>The two ide busses in my system have resources 0x10000 apart, while they
+>both reserve a size of 0x20000 (IIRC).  Since BenH's recent kernels
+>reserve space based on OF, and then request it realistically, in this
+>situation, it will fail on half of the resource allocation.  Even though
+>we don't use the overlapping area...
 >
-> Yesterday's 2.4.10-ben0 (Sat Sep 29 23:32:51 CEST 2001) kernel doesn't
-> see my ide1 device.  Previous kernels had no problems.  There's an
->
->     ide-pmac(ide): can't request IO resource
+>Quick fix? halve all the resource sizes of the ide nodes. (DMA's space
+>also does this).  I don't know what the long term fix would be.
 
-Rack this up as an OF bug on some systems I think.  I got it too (Wallstreet2/300).  The OF IDE nodes request what look like twice memory as much as they need.  Linux doesn't even use most of it anyway.
+Ok, thanks for figuring out what was breaking request_OF_node on
+those machines, I didn't yet had a chance to look at it in more
+details ;)
 
-The two ide busses in my system have resources 0x10000 apart, while they both reserve a size of 0x20000 (IIRC).  Since BenH's recent kernels reserve space based on OF, and then request it realistically, in this situation, it will fail on half of the resource allocation.  Even though we don't use the overlapping area...
+A "good" fix would probably be to fixup OF ranges early during
+boot, but for now, I think just limiting how much memory is
+requested will be enough.
 
-Quick fix? halve all the resource sizes of the ide nodes. (DMA's space also does this).  I don't know what the long term fix would be.
+BTW. Once that's fixed, does media bay works on lombard & wallstreet
+machines with my new kernel ? I rewrote the media bay driver but
+didn't yet have a chance to test it on anything but Pismo.
 
---
-Joseph P. Garcia
-http://www.lycestra.com/
+Also, Joseph, did you notice similar problem with other OF resources
+ranges or is this specific to IDE ?
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
