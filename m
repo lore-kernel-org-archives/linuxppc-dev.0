@@ -1,28 +1,58 @@
-Message-ID: <000f01c3ad19$16bc9070$3d40000a@wisdom>
-From: "Srinivasa Hebbar" <sshebbar@yahoo.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: bash: Segmentation fault on 8280
-Date: Mon, 17 Nov 2003 20:12:46 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Subject: fstream on PPC?
+From: Toni Van Remortel <t.vanremortel@ha.be>
+Reply-To: t.vanremortel@ha.be
+To: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain
+Message-Id: <1069081757.25853.5.camel@toni>
+Mime-Version: 1.0
+Date: Mon, 17 Nov 2003 16:09:18 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear All,
+Hi all,
 
-We have 2 identical custom board with MPC-8260 and MPC-8280 CPUs.
-The bash (Came with denx CD) works fine on MPC-8260 board.
-But the same bash program encounters a "Segmentation Fault"
-on 8280 based custom board.
+A programmer has written an GUI application that has to run on my EP405
+board. When compiling the application without any fstream calls, it
+works fine.
+But when I allow the functions that use fstream (for saving and loading
+small files over NFS), I get the following error:
 
-We are using ppc_82xx-gcc compiler to build the linux.
-The linux version is denx-2.4.20
+Linking test...
+/opt/eldk/usr/ppc-linux/bin/ld: warning: libstdc++-libc6.2-2.so.3,
+needed by /opt/PPC_X/usr/X11R6/lib/libGLU.so, not found (try using
+-rpath or -rpath-link)
+test.o: In function `figure::save(ofstream &)':
+test.o(.text+0x1574): undefined reference to
+`ostream::operator<<(double)'
+test.o(.text+0x1574): relocation truncated to fit: R_PPC_REL24
+ostream::operator<<(double)
+test.o(.text+0x157c): undefined reference to `ostream::operator<<(char
+const *)'
+....
+and more than a dozen of these errors. It's a linking problem, that's
+what I know. But I don't know how to get to the problem-core. Can I
+solve this by a quick hack? Or is it hopeless to start messing with
+fstream on PPC?
 
-Any help is highly appreciated.
+The app is written with FLTK support, and is compiled as a test-program
+inside the standard FLTK-tree (after adding a Makefile entry for the
+app, which is currently called test.cxx).
+All written in C++.
 
-Regards,
-S. Hebbar.
+PS: don't mind the warning about libstdc++-libc6.2-2.so.3, it's in place
+on the embedded system.
+
+PPS: Had to do a hack for the stream functions, because the original was
+developed on Windows with MS Visual Studio. Calling them all with &f_in
+etc)
+--
+                           Toni Van Remortel
+              Wetenschappelijk Medewerker - D-science lab
+  Real time Linux for embedded systems: http://linemb.d-sciencelab.com
+              Tel: +32 3 205 61 72 - Fax: +32 3 205 61 95
+                      E-mail: t.vanremortel@ha.be
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
