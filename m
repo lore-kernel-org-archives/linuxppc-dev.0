@@ -1,23 +1,41 @@
-From: Ryan Nielsen <ran@krazynet.com>
-Date: Mon, 13 Sep 1999 22:22:35 -0700
-To: Daniel Jacobowitz <drow@false.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: resource forks (Re: New booter)
-Message-ID: <19990913222235.A587@gondolin.asf>
-References: <19990913192403.030901@mailhost.mipsys.com> <m3aeqqoai5.fsf@soma.andreas.org> <19990913141229.A30982@them.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19990913141229.A30982@them.org>; from Daniel Jacobowitz on Mon, Sep 13, 1999 at 02:12:30 -0400
+Date: Mon, 13 Sep 1999 23:50:18 -0700
+From: Hugh Caley <hcaley@loomer.com>
+Subject: PCMCIA on Powerbook G3 Series
+To: linuxppc-dev@lists.linuxppc.org
+Message-id: <37DDF029.25A4839F@loomer.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Daniel Jacobowitz wrote:
-> You don't.  You can hack them with a hex editor if you prefer.  Are
-> there decent tools for dealing with hfs resource forks from linux? Not
-> that I know of but there is nothing stopping someone from writing one.
+Is it possible yet to use PCMCIA on a PB G3 Series laptop?  I used to have a
+Wallstreet, and now I have a Lombard, plus Paul Mackerras' kernel source tree,
+and I never got it working on either.  I just installed the latest 3.1
+pcmcia-cs, and simply inserting my little Viking smart card adaptor causes a
+kernel panic every time, and having it in at boot does the same thing.
 
-A start would be http://www.con.weslayan.edu/~jsproul/linux/macfontutils.html
-http://krazynet.com/hx/cicn.tar.gz is an Apple Color Icon viewer using code from macfontutils.
+This card works fine under MacOS, and also under Linux for x86; it just shows
+up as another drive on the desktop (or as another mountable drive).
+
+There is an old patch for the Mac serial driver at:
+
+http://xenu.phys.uit.no/~alvin/linux/pcmcia-serial.patch
+
+but I'm afraid to use something that out of date, and the other text there
+seems to imply that a special kernel config is necessary.  Also, it seems
+related to Mac serial support and modems, and my card doesn't have anything to
+do with either one, as far as I can tell.
+
+Anyone have more up to date information?
+
+Hugh
+
+--
+Hugh Caley, Unix Administrator
+Babcock & Brown, San Francisco
+510-524-1672
+hughc@babcockbrown.com
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
