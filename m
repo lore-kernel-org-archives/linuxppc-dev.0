@@ -1,182 +1,335 @@
-Message-ID: <C51ED84B6F47D211917A0000F8BCBD117EB4A5@zcard00g.ca.nortel.com>
-From: "Michael Ward" <Michael.Ward.mkward@nt.com>
-To: Jose Ferreira de Rezende <rezende@gta.ufrj.br>, list@rzuni1.fh-bingen.de
-Cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: RE: kernel 2.1.129 in a 43P
-Date: Fri, 11 Dec 1998 12:01:52 -0500
+Date: Fri, 11 Dec 1998 16:03:26 -0500
+From: "Hollis Blanchard" <hollis@andrew.cmu.edu>
+To: "Giovanni Liotine" <s156658@studenti.ing.unipi.it>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: ***iostream.h*** (was Re: Compiler porblems)
+Message-ID: <333322.3122381006@reality.res.cmu.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Jose,
+> I've some problem compiling c++ apps under linuxppc with egcs.1.0.2
+> prerelease:
+> during compiling this code 
+> "#include <iostream.h>
+>  main
+>     {
+>     } "
+> 
+> gcc output are a long series of warnings: invalid type 'void *' for
+> default argument to 'ostream *'
 
- I had trouble with shutdown's on my 43P's and I knew it was related to
-networking
-but couldn't pinpoint it until I looked in the shutdown scripts to trace
-what happened after the last visible message "Unmounting remote
-filesystems".
+The problem, which has been mentioned a few times on this list, is that egcs
+is a more picky compiler than gcc, but iostream.h hasn't been changed since
+gcc, hence the errors. Actually, though, they're not errors, just warnings.
+But, if you're compiling something with -Wall, they will be treated as
+errors and cause problems.
 
-Someone suggested that I comment out some lines in /etc/rc.d/init.d/network
-so I did and it now shuts all the way down (even though the network is not
-shut
-down using ifdown). This doesn't seem to bother it at all as I have full
-network capability
-and is better for the fs than having to cycle/remove power when only halfway
-down. The lines are :
+The solution: typecast the arguments correctly. Since I guess some people
+aren't comfortable with that, I'm appending my iostream.h to the end of this
+message so people can download it from the web archives. I'd post a diff,
+but I'm in the Mac OS right now... and I can only pray the tabs get sent
+right... =)
 
-# for i in $interface; do
-# 	./ifdown $i boot
-# done
+> When compiling some applications (that compile fine with gcc 2.8.1 under
+> Intel/Linux) like MidsEye gcc results in internal compiler error, e.g:
+> 
+> In method 'void MatrixImage <float>::drawLine(int, int, int, int, float)
+> Internal compiler error.
+> 
+> Is it a compiler bug or what?
+> Any suggestion? Note that this code compile under Intel/Linux box.
 
-It seems to hang when trying "ifdown ifcfg-eth0 boot" and originally it
-seemed like the ifcfg-eth0 file
-was not in my directory (/etc/sysconfig/network-scripts) but it is now.
-Maybe someone will help chase
-this down sometime, as I'm not exactly sure what is wrong but I remember the
-network hanging while trying
-to install the 2.0.3x kernel using the old FD_SETUP, FD_BOOT method.
+The usual solution to "internal compiler errors" is to reduce the level of
+optimization. It's probably set to -O2. Reduce that (in the Makefile) to -O1
+or -O0
 
-I have also noticed a lot of TX errors on all my PReP machines (3 43P-100
-and 1 PowerStack).
-At first I double checked to make sure I was reading the right fields. I am
-not having any real
-network problems as I routinely telnet, FTP, and use remote X fairly well. I
-have noticed that when
-FTPing large files, the network usage on my shared hub goes through the roof
-(>75%)[good] but the
-collisions due as well [bad]. I'm not sure how I'm getting data through at
-all if they are all being jammed
-by the hub causing runt packets. Also, the collision counter below shows
-zero, which is suspect for a shared
-network.
+-Hollis
 
-ifconfig output
---------------------
-lo        Link encap:Local Loopback  
-          inet addr:127.0.0.1  Bcast:127.255.255.255  Mask:255.0.0.0
-          UP LOOPBACK RUNNING  MTU:3924  Metric:1
-          RX packets:64 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:6624 dropped:64 overruns:0 carrier:0 coll:0
 
-eth0      Link encap:Ethernet  HWaddr 08:00:5A:FC:10:74  
-          inet addr:47.27.16.8  Bcast:47.27.31.255  Mask:255.255.240.0
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:66098 errors:1 dropped:0 overruns:0 frame:2
-          TX packets:0 errors:146595633 dropped:116495 overruns:3822
-carrier:0 coll:0
-          Interrupt:15 Base address:0x200
 
-I would like to run some netperf tests between the boxes, but I am having
-trouble compiling on my
-43P (7248-100) with 2.1.119. I saw that Cort suggested using the older
-source kernel headers (2.1.24) which I have
-in my system under /usr/src/linux-2.1.24 when I installed it. Since then I
-have tried a few other kernels (2.1.117,
-2.1.126) for other purposes. Does anyone know how I can get the programs to
-use the right kernel headers ?
-Do I have to manually place them in /usr/include, or do I have to explicity
-change the program source or makefile
-to include the header files directly (-I/usr/src/linux-2.1.24/include or
-</usr/src/linux-2.1.24/include/socket.h>)? 
 
-I also downloaded the newest firmware (v1.11) and SMS (v1.09 I think) from
-IBM and it allowed the machine
-to power all the way down (including shutting off the breaker), although I
-think it now always
-cycles the power even when I only do a halt (shutdown -h now). But this is
-better than just sitting there
-with the power on. Try
-http://www.ibm.rs6000.com/support/micro/download.html. (7248-1xx). Microcode
-above v1.09 supports async console during initialization, which can be handy
-to some.
 
-BTW, I don't have any X server working on my 43P and I read that there was a
-problem when the code
-went from 2.0.xxx to 2.1.xxx that someone would have to spend some time on.
-I didn't think it was possible to try and compile the XF86 stuff from Intel
-arch and x86 assembler, although
-I have seen lots of people trying without much success. Gabriel also replied
-to this thread that
-it needed some work and he had the docs but not the time, so that tells me
-it needs some more expertise
-than I have. I read that S3 wants direct access to device memory that newer
-kernels don't allow. I' not fussy
-about getting the X server to run locally as I remote X anyway. I will wait
-until there is a working
-version of S3 (for PReP) or maybe try the fbcon stuff if I get some time
-(not likely).
+-- Begin iostream.h --
+/*  This is part of libio/iostream, providing -*- C++ -*- input/output.
+Copyright (C) 1993 Free Software Foundation
 
-Regards,
-Mike
+This file is part of the GNU IO Library.  This library is free
+software; you can redistribute it and/or modify it under the
+terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2, or (at your option)
+any later version.
 
-> -----Original Message-----
-> From:	Jose Ferreira de Rezende [SMTP:rezende@gta.ufrj.br]
-> Sent:	December 3, 1998 11:03 AM
-> To:	list@rzuni1.fh-bingen.de
-> Cc:	linuxppc-user@lists.linuxppc.org
-> Subject:	Re: kernel 2.1.129 in a 43P
-> 
-> 
-> >> list@rzuni1.fh-bingen.de writes:
-> 
->  > On Tue, 1 Dec 1998, Jose Ferreira de Rezende wrote:
-> 
->  >>  Hi,
->  >> 
->  >> I've got a 43P Machine and I'm using a 2.1.129 kernel. When I try to
->  >> compile everything that deals with the network I get the following
->  >> messages: /usr/include/linux/in.h:110: parse error before
->  >> `sa_family_t' /usr/include/linux/in.h:110: warning: no semicolon at
->  >> end of struct or union /usr/include/linux/in.h:117: parse error
->  >> before `}'
->  >> 
->  >> Is this kernel bugged? Which kernel must I use? 2.1.130?
->  >> 
->  >> Thanks, Jose
->  >> 
->  >> 
-> 
->  > Hello Jose...
-> 
->  > there seems to be a bug in 2.1.xxx for the networking... my 43p
->  > machine hangs if I do a normal shutdown... I don't know why... and
->  > older 2.0.xx kernels didn't work on my machine (networking
->  > problem)...
-> 
->  > Is X working on your 43p???
-> 
-> In fact, I found where was the problem. In the include socket.h from the
-> kernel there is a test like that:
-> 
-> #if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
->                                                   ^^^^^^^^^^^^^^^
-> This avoids that some includes be done. I commented out this line and
-> everything compiles. There is the same line in the asm/posix_types.h.
-> 
-> I'm having problems as well with the shutdown. I couldn't figure out
-> where is the problem. How are you shutting down your machine??
-> 
-> For the X, I've got the XF86_S3 server from ftp://vcorr1.iram.es/pub/XF*
-> but it doesn't work with my S3 card, the display goes black after
-> launching. However the X server works fine, that's I can launch X
-> applications to other displays.
-> 
-	[snip] 
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-> Keep in touch, Jose
-> 
-> 
-> 
-> [[ This message was sent via the linuxppc-user mailing list. Replies are
-> ]]
-> [[ not forced back to the list, so be sure to  Cc linuxppc-user  if your
-> ]]
-> [[ reply is of general interest. To unsubscribe from linuxppc-user, send
-> ]]
-> [[ the message 'unsubscribe' to linuxppc-user-request@lists.linuxppc.org
-> ]]
+You should have received a copy of the GNU General Public License
+along with this library; see the file COPYING.  If not, write to the Free
+Software Foundation, 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+USA.
+
+As a special exception, if you link this library with files
+compiled with a GNU compiler to produce an executable, this does not cause
+the resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why
+the executable file might be covered by the GNU General Public License. */
+
+#ifndef _IOSTREAM_H
+#ifdef __GNUG__
+#pragma interface
+#endif
+#define _IOSTREAM_H
+
+#include <streambuf.h>
+
+extern "C++" {
+class istream; class ostream;
+typedef ios& (*__manip)(ios&);
+typedef istream& (*__imanip)(istream&);
+typedef ostream& (*__omanip)(ostream&);
+
+extern istream& ws(istream& ins);
+extern ostream& flush(ostream& outs);
+extern ostream& endl(ostream& outs);
+extern ostream& ends(ostream& outs);
+
+class ostream : virtual public ios
+{
+    // NOTE: If fields are changed, you must fix _fake_ostream in
+stdstreams.C!
+    void do_osfx();
+  public:
+    ostream() { }
+    ostream(streambuf* sb, ostream* tied= (ostream*)NULL);
+    int opfx() {
+	if (!good()) return 0;
+	else { if (_tie) _tie->flush(); _IO_flockfile(_strbuf); return 1;} }
+    void osfx() { _IO_funlockfile(_strbuf);
+		  if (flags() & (ios::unitbuf|ios::stdio))
+		      do_osfx(); }
+    ostream& flush();
+    ostream& put(char c) { _strbuf->sputc(c); return *this; }
+#ifdef _STREAM_COMPAT
+    /* Temporary binary compatibility.  REMOVE IN NEXT RELEASE. */
+    ostream& put(unsigned char c) { return put((char)c); }
+    ostream& put(signed char c) { return put((char)c); }
+#endif
+    ostream& write(const char *s, streamsize n);
+    ostream& write(const unsigned char *s, streamsize n)
+      { return write((const char*)s, n);}
+    ostream& write(const signed char *s, streamsize n)
+      { return write((const char*)s, n);}
+    ostream& write(const void *s, streamsize n)
+      { return write((const char*)s, n);}
+    ostream& seekp(streampos);
+    ostream& seekp(streamoff, _seek_dir);
+    streampos tellp();
+    ostream& form(const char *format ...);
+    ostream& vform(const char *format, _IO_va_list args);
+
+    ostream& operator<<(char c);
+    ostream& operator<<(unsigned char c) { return (*this) << (char)c; }
+    ostream& operator<<(signed char c) { return (*this) << (char)c; }
+    ostream& operator<<(const char *s);
+    ostream& operator<<(const unsigned char *s)
+	{ return (*this) << (const char*)s; }
+    ostream& operator<<(const signed char *s)
+	{ return (*this) << (const char*)s; }
+    ostream& operator<<(const void *p);
+    ostream& operator<<(int n);
+    ostream& operator<<(unsigned int n);
+    ostream& operator<<(long n);
+    ostream& operator<<(unsigned long n);
+#if defined(__GNUC__)
+    __extension__ ostream& operator<<(long long n);
+    __extension__ ostream& operator<<(unsigned long long n);
+#endif
+    ostream& operator<<(short n) {return operator<<((int)n);}
+    ostream& operator<<(unsigned short n) {return operator<<((unsigned
+int)n);}
+#if _G_HAVE_BOOL
+    ostream& operator<<(bool b) { return operator<<((int)b); }
+#endif
+    ostream& operator<<(double n);
+    ostream& operator<<(float n) { return operator<<((double)n); }
+#if _G_HAVE_LONG_DOUBLE_IO
+    ostream& operator<<(long double n);
+#else
+    ostream& operator<<(long double n) { return operator<<((double)n); }
+#endif
+    ostream& operator<<(__omanip func) { return (*func)(*this); }
+    ostream& operator<<(__manip func) {(*func)(*this); return *this;}
+    ostream& operator<<(streambuf*);
+#ifdef _STREAM_COMPAT
+    streambuf* ostreambuf() const { return _strbuf; }
+#endif
+};
+
+class istream : virtual public ios
+{
+    // NOTE: If fields are changed, you must fix _fake_istream in
+stdstreams.C!
+protected:
+    _IO_size_t _gcount;
+
+    int _skip_ws();
+  public:
+    istream(): _gcount (0) { }
+    istream(streambuf* sb, ostream*tied= (ostream*)NULL);
+    istream& get(char* ptr, int len, char delim = '\n');
+    istream& get(unsigned char* ptr, int len, char delim = '\n')
+	{ return get((char*)ptr, len, delim); }
+    istream& get(char& c);
+    istream& get(unsigned char& c) { return get((char&)c); }
+    istream& getline(char* ptr, int len, char delim = '\n');
+    istream& getline(unsigned char* ptr, int len, char delim = '\n')
+	{ return getline((char*)ptr, len, delim); }
+    istream& get(signed char& c)  { return get((char&)c); }
+    istream& get(signed char* ptr, int len, char delim = '\n')
+	{ return get((char*)ptr, len, delim); }
+    istream& getline(signed char* ptr, int len, char delim = '\n')
+	{ return getline((char*)ptr, len, delim); }
+    istream& read(char *ptr, streamsize n);
+    istream& read(unsigned char *ptr, streamsize n)
+      { return read((char*)ptr, n); }
+    istream& read(signed char *ptr, streamsize n)
+      { return read((char*)ptr, n); }
+    istream& read(void *ptr, streamsize n)
+      { return read((char*)ptr, n); }
+    istream& get(streambuf& sb, char delim = '\n');
+    istream& gets(char **s, char delim = '\n');
+    int ipfx(int need = 0) {
+	if (!good()) { set(ios::failbit); return 0; }
+	else {
+	  _IO_flockfile(_strbuf);
+	  if (_tie && (need == 0 || rdbuf()->in_avail() < need)) _tie->flush();
+	  if (!need && (flags() & ios::skipws)) return _skip_ws();
+	  else return 1;
+	}
+    }
+    int ipfx0() { // Optimized version of ipfx(0).
+	if (!good()) { set(ios::failbit); return 0; }
+	else {
+	  _IO_flockfile(_strbuf);
+	  if (_tie) _tie->flush();
+	  if (flags() & ios::skipws) return _skip_ws();
+	  else return 1;
+	}
+    }
+    int ipfx1() { // Optimized version of ipfx(1).
+	if (!good()) { set(ios::failbit); return 0; }
+	else {
+	  _IO_flockfile(_strbuf);
+	  if (_tie && rdbuf()->in_avail() == 0) _tie->flush();
+	  return 1;
+	}
+    }
+    void isfx() { _IO_funlockfile(_strbuf); }
+    int get() { if (!ipfx1()) return EOF;
+		else { int ch = _strbuf->sbumpc();
+		       if (ch == EOF) set(ios::eofbit);
+		       return ch;
+		     } }
+    int peek();
+    _IO_size_t gcount() { return _gcount; }
+    istream& ignore(int n=1, int delim = EOF);
+    int sync ();
+    istream& seekg(streampos);
+    istream& seekg(streamoff, _seek_dir);
+    streampos tellg();
+    istream& putback(char ch) {
+	if (good() && _strbuf->sputbackc(ch) == EOF) clear(ios::badbit);
+	return *this;}
+    istream& unget() {
+	if (good() && _strbuf->sungetc() == EOF) clear(ios::badbit);
+	return *this;}
+    istream& scan(const char *format ...);
+    istream& vscan(const char *format, _IO_va_list args);
+#ifdef _STREAM_COMPAT
+    istream& unget(char ch) { return putback(ch); }
+    int skip(int i);
+    streambuf* istreambuf() const { return _strbuf; }
+#endif
+
+    istream& operator>>(char*);
+    istream& operator>>(unsigned char* p) { return operator>>((char*)p); }
+    istream& operator>>(signed char*p) { return operator>>((char*)p); }
+    istream& operator>>(char& c);
+    istream& operator>>(unsigned char& c) {return operator>>((char&)c);}
+    istream& operator>>(signed char& c) {return operator>>((char&)c);}
+    istream& operator>>(int&);
+    istream& operator>>(long&);
+#if defined(__GNUC__)
+    __extension__ istream& operator>>(long long&);
+    __extension__ istream& operator>>(unsigned long long&);
+#endif
+    istream& operator>>(short&);
+    istream& operator>>(unsigned int&);
+    istream& operator>>(unsigned long&);
+    istream& operator>>(unsigned short&);
+#if _G_HAVE_BOOL
+    istream& operator>>(bool&);
+#endif
+    istream& operator>>(float&);
+    istream& operator>>(double&);
+    istream& operator>>(long double&);
+    istream& operator>>( __manip func) {(*func)(*this); return *this;}
+    istream& operator>>(__imanip func) { return (*func)(*this); }
+    istream& operator>>(streambuf*);
+};
+
+class iostream : public istream, public ostream
+{
+  public:
+    iostream() { }
+    iostream(streambuf* sb, ostream*tied= (ostream*)NULL);
+};
+
+class _IO_istream_withassign : public istream {
+public:
+  _IO_istream_withassign& operator=(istream&);
+  _IO_istream_withassign& operator=(_IO_istream_withassign& rhs)
+    { return operator= (static_cast<istream&> (rhs)); }
+};
+
+class _IO_ostream_withassign : public ostream {
+public:
+  _IO_ostream_withassign& operator=(ostream&);
+  _IO_ostream_withassign& operator=(_IO_ostream_withassign& rhs)
+    { return operator= (static_cast<ostream&> (rhs)); }
+};
+
+extern _IO_istream_withassign cin;
+// clog->rdbuf() == cerr->rdbuf()
+extern _IO_ostream_withassign cout, cerr;
+
+extern _IO_ostream_withassign clog
+#if _G_CLOG_CONFLICT
+__asm__ ("__IO_clog")
+#endif
+;
+
+extern istream& lock(istream& ins);
+extern istream& unlock(istream& ins);
+extern ostream& lock(ostream& outs);
+extern ostream& unlock(ostream& outs);
+
+struct Iostream_init { } ;  // Compatibility hack for AT&T library.
+
+inline ios& dec(ios& i)
+{ i.setf(ios::dec, ios::dec|ios::hex|ios::oct); return i; }
+inline ios& hex(ios& i)
+{ i.setf(ios::hex, ios::dec|ios::hex|ios::oct); return i; }
+inline ios& oct(ios& i)
+{ i.setf(ios::oct, ios::dec|ios::hex|ios::oct); return i; }
+} // extern "C++"
+
+#endif /*!_IOSTREAM_H*/
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
