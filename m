@@ -1,80 +1,67 @@
-Message-ID: <000101bedfdd$9250fc20$6401a8c0@everyone>
-From: "Neil Blackwood" <nb@terrafix.co.uk>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: PROBLEMS BOOTING KERNEL ON EMBEDDED PROCESSOR MBX821
-Date: Thu, 5 Aug 1999 17:59:29 +0100
+Message-Id: <199908051808.UAA00314@piglet.cpu.lu>
+Date: Thu, 5 Aug 1999 20:08:43 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: OF booting of G3-upgraded 7600?
+To: Paul.Mackerras@cs.anu.edu.au
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <199908050141.LAA10285@tango.anu.edu.au>
 MIME-Version: 1.0
-Content-Type: text/plain;charset="iso-8859-1"
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-        I have just downloaded the 2.2.0pre6 kernel for MBX8xx processors
-from
-the embedded directory of linuxppc.cs.nmt.edu.
+Hi Paul,
 
-We are running it on a MXX821-004A development board.
+On   5 Aug, this message from Paul Mackerras echoed through cyberspace:
+>> Default Catch!, code=FFF00400
+> 
+> That's an instruction access exception.  What were the srr0 and srr1
+> values?  Also, doing ".registers" will show the state of all of the
+> registers.
 
-Unfortunately we seem to have a problem during the booting of the kernel.
+Here you are:
 
-The messages
+(values are correct (5 in %CR), the layout is 'by hand')
 
-                        iack = -1
+0> boot CLAIM FAILED!, code=FFF00400
+ ok
+0> .registers
+	Client's Fix Pt Regs:
+  00 DEADBEEF DEADBEEF DEADBEEF 003F4400 00000020 FF8099B8 DEADBEEF 000000FF
+  08 00000002 00000008 DEADBEEF DEADBEEF DEADBEEF DEADBEEF 003F0000 DEADBEEF
+  10 DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF
+  18 DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF
 
-and
-                        irq = 7
+	Special Regs:
+   %IV: 00000400 %SRR0: 003F4058 %SRR1: 08003070
+   %CR: 5EADBEEF   %LR: DEADBEEF  %CTR: 00000000 %XER: C000BE6F
+  %DAR: 00001000 %DISR: 42000000 %SDR1: 06FE0000
+ ok
+0> msr@ ok 
+1> u. B070 ok
+0>
 
-are displayed continuously.
+>> - on subsequent 'boot' commands:
+>> 
+>> 0> boot Claim failed
+> 
+> The loader is trying to use memory that is already allocated, since it
+> was allocated by the loader last time. :-)
 
-We have managed to track down the iack message in the kernel source.
+Seems reasonable...
 
-In directory
+Thanks
 
-linux/arch/ppc/kernel
+Michel
 
-in File
-
-ppc8xx_pic.c
-
-In function
-
-mbx_i8259_action()
-is the code
-
-                int irq;
-
-                irq = (inl(0x508)>>24)&0xff;
-                if (irq!= 0xff)printk("iack 5d\n", irq);
-
-We think this is inconsistent if the value of irq is printed out as -1.
-
-
-
-We have previously run a 2.1 version of the kernel successfully. Do you have
-any ideas to solve the problem?
-
-
-I am also looking at including floating point libraries into the kernel.
-Does anything currently exist?
-
-
-
-                                Neil Blackwood
-
-ps Is this type of enquiry suitable for this mailing list or should I use
-USERS.
-
-pps I am completely new to LINUX and operating systems in general, so my
-current level of understanding is very low.
-------------------------------------------------------
-www.terrafix.co.uk
-
-Terrafix Ltd
-23c Newfield Industrial Estate
-Tunstall, Stoke on Trent
-Staffordshire, UK, ST6 5PD
-
-+44 1782 577015, +44 1782 835667 (fax)
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
