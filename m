@@ -1,37 +1,38 @@
-Message-ID: <39034610.7556461F@embeddededge.com>
-Date: Sun, 23 Apr 2000 14:50:56 -0400
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: Brad Parker <brad@parker.boston.ma.us>
-CC: linuxppc-embedded@lists.linuxppc.org
+Date: Sun, 23 Apr 2000 21:56:49 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Dan Malek <dan@netx4.com>
+cc: Brad Parker <brad@parker.boston.ma.us>,
+        linuxppc-embedded@lists.linuxppc.org
 Subject: Re: CONFIG_ALL_PPC
-References: <200004231142.HAA65437@p2.parker.boston.ma.us>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <39034610.7556461F@embeddededge.com>
+Message-ID: <Pine.HPX.4.10.10004232152510.19933-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brad Parker wrote:
+On Sun, 23 Apr 2000, Dan Malek wrote:
 
-> Is CONFIG_ALL_PPC really "all ppc" or is it really "all macintosh platforms"?
+>
+> Brad Parker wrote:
+>
+> > Is CONFIG_ALL_PPC really "all ppc" or is it really "all macintosh platforms"?
+>
+> It is really used to build a kernel that you want to boot on "all
+> PPC platforms."  I don't build any of the embedded systems with this,
+> althought I suppose (if you _really_ wanted this :-) you could get
+> the same binary to boot on the 8xx as the G4....It's not on my list
+> of things to do.
 
-It is really used to build a kernel that you want to boot on "all
-PPC platforms."  I don't build any of the embedded systems with this,
-althought I suppose (if you _really_ wanted this :-) you could get
-the same binary to boot on the 8xx as the G4....It's not on my list
-of things to do.
+There is no way to make CONFIG_ALL_PPC working as claimed, it actually
+means all desktop PPC (my VME PreP boards use it). Embedded PPC are so
+different, especially wrt MMU (page tables versus hash tables, some
+umay use bats, while the other ahve variable size TLB entries...)
+that is would be very complex to implement and probably not worth
+the effort.
 
-> I can put a #ifndef CONFIG_ALL_PPC around the feature_init call but I
-> thought I'd ask the larger question... (and risk a tomato ;_)
+	Gabriel.
 
-Something is messed up.  I am currently editing -pre6, and there isn't
-a call to feature_init from setup_arch like there used to be......
-In fact, I can't find a call to it at all right now.  I am in the middle
-of a ton of 8260 edits, so maybe it changed over the past day or so.
-
-If you must, make the #ifdef in the file match the Makefile.....
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
