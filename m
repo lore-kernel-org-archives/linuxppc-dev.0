@@ -1,19 +1,26 @@
-Return-Path: <schmitz@zirkon.biophys.uni-duesseldorf.de>
-Received: from zirkon.biophys.uni-duesseldorf.de
-	(zirkon.biophys.uni-duesseldorf.de [134.99.176.3])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sneakums@zork.net>
+Received: from zork.zork.net (zork.zork.net [64.81.246.102])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 54F342BDF2
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Nov 2004 19:05:42 +1100 (EST)
-Date: Tue, 23 Nov 2004 09:05:35 +0100 (CET)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+	by ozlabs.org (Postfix) with ESMTP id 429492BDF2
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Nov 2004 19:27:53 +1100 (EST)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1101160237.13598.121.camel@gaston>
-Message-ID: <Pine.LNX.4.44.0411230900020.6419-100000@zirkon.biophys.uni-duesseldorf.de>
+References: <1100847411.25521.42.camel@gaston>
+	<1100852423.3855.2.camel@gaston> <1101083578.13597.5.camel@gaston>
+	<6ullcuggfr.fsf@zork.zork.net>
+	<4517b8e04112208383cc9b24c@mail.gmail.com>
+	<6uzn19g299.fsf@zork.zork.net> <1101160349.22529.123.camel@gaston>
+From: Sean Neakums <sneakums@zork.net>
+Date: Tue, 23 Nov 2004 08:27:43 +0000
+In-Reply-To: <1101160349.22529.123.camel@gaston> (Benjamin Herrenschmidt's
+	message of "Tue, 23 Nov 2004 08:52:29 +1100")
+Message-ID: <6upt25ezr4.fsf@zork.zork.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+	Keith Conger <keith.conger@gmail.com>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
+	gentoo-ppc-user@gentoo.org
 Subject: Re: TEST: Sleep patch #4
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,26 +31,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > > http://gate.crashing.org/~benh/albook-ibookg4-sleep-4.diff
-> >
-> > Sorry for coming late to the party ... the current code works nicely on
-> > the 17" PB. On the first boot with that code, I had the PLL freak out (or
-> > so it looked like) but I couldn't reproduce that. Needless to say, the
-> > new PLL fixup code produces the same dividers as the hardcoded fixup
-> > before, so it should work :-)
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+
+> On Mon, 2004-11-22 at 18:36 +0000, Sean Neakums wrote:
+>> Keith Conger <keith.conger@gmail.com> writes:
+>> 
+>> > Works great here also (15" 1GHz PB). One issue which may be unrelated
+>> > I have some sound issues. For instance one a sound is played it sounds
+>> > fine but if a sound is played right after its volume is extremely low.
+>> > But with headphones this doesn't occur.
+>> 
+>> I have a similar problem post-resume -- sound from the speakers is
+>> very quiet (although it seems to be louder at the very beginning) and
+>> I had to plug and re-plug the headphones to get sound from them.  I
+>> tried unloading and reloading snd_powermac, to no avail.
 >
-> It reads them from OF at boot. What do you mean by "freak out" ? the
-> usual problem with those models where the display gets all fuzzy ? I'm
+> Tried playing with the DRC setting in Alsa mixer ?
 
-Yep - the display get totally unreadable, worse than before when the PLL
-wouldn't lock properly. When I turned down the backlight (using the
-f-keys), it would switch off and not come back up until X had fully
-started. Though that might be a bug in pbbuttonsd as well, to be honest (I
-turned the backlight off before pbbuttonsd started, perhaps).
+I hadn't noticed that this was happening pre-suspend, too, and
+cranking DRC up fixed it.  Thanks!
 
-> not completely sure what's up, I tend to blame the panel power sequence
-> nowadays ...
-
-Anything I can do to test that?
-
-	Michael
+On resume this morning, though, the display was behaving oddly, both
+in X and on the console: it was sort of shimmering, split and repeated
+about 1/5 of the screen's width to the right in what looked like
+8-pixel horizontal stripes.  Rebooting seemed to sort it.
