@@ -1,43 +1,29 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Differing PCI layouts trigger porting driver problem [Was: Memory layout question]
-Date: Wed, 19 May 2004 13:33:06 -0500
-Message-ID: <DB1DE297F535B340AEAE1E51B221C3D0016B3DCC@FTWMLVEM02.e2k.ad.ge.com>
-From: "Heater, Daniel (GE Infrastructure)" <Daniel.Heater@gefanuc.com>
-To: <okorpil@fh-landshut.de>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com>
+Date: Wed, 19 May 2004 12:36:50 -0700
+To: Wolfgang Denk <wd@denx.de>
+From: Brian Hawley <bhawley@luminex.com>
+Subject: Re: Ebony Board, PPC440GP and NFS panics 
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20040519195405.98971C109F@atlas.denx.de>
+References: <Your message of "Wed, 19 May 2004 10:16:29 PDT." <4.2.2.20040519101456.0509d340@bhawley.mailhost.luminex.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
--- snip --
+At 09:54 PM 5/19/04 +0200, Wolfgang Denk wrote:
 
-> I guess the correct new order would be:
-> allocate_resource(&iomem_resource, ... ) to obtain a range of
-> physical addresses, ioremap_nocache that physical start address to
-> obtain virtual addresses for the ->virt pointer in the master
-> window structure (now done in vme_master_window_map() I think),
-> and then use virt_to_bus () to obtain the address to store in the
-> master window base register. Then the driver should work both on
-> (nearly) arbitrary setups for x86 and PPC.
 
-That sounds about right. This type of issue is sprinkled throughout.
-I'm on a tight deadline for another project, but I will refer you
-to another developer who is currently working on a maintenance release
-of that driver. I'll see if we can add porting to PPC to the scope
-of the next release.
+>The question is: does your "arch/ppc/platforms/ebony.h" include
+><asm/ppcboot.h> or not, i. e. does it use the U-Boot definitions at
+>all?
 
-BTW, I am the original developer, so all bugs can be blamed on me!
-If you need help digging through the driver code, just let me know.
-
-> Of course I have to try that out first (I'm still home now),
-> and let you know if that produced any results. Did VMIC run into
-> similar problems when trying to run the driver module on the
-> VMIVME7050 (750FX/GX IBM PowerPC board)?
-
-We have not started that port yet, but I'm sure we will run into
-the same issue.
+There is no ebony.h in arch/ppc/platforms...the board isn't listed there at
+all, neither
+is the walnut [ 405 ], but I've seen numerous people discuss the fact that
+they have
+the ebony board working with this (linux-2.5-ocp from bk) working.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
