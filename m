@@ -1,38 +1,55 @@
-In-Reply-To: <19981214104446.A3769@bleck.ksu.ksu.edu>
-Date: Thu, 17 Dec 1998 14:57:00 +0100
-To: linuxppc-dev@lists.linuxppc.org, Zach Metzinger <wizkid@ksu.edu>
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: Restructure of arch/ppc/kernel and include/asm-ppc
-Message-Id: <19981217145700.030398@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 17 Dec 1998 09:46:30 -0600 (CST)
+From: nathan ingersoll <ningerso@d.umn.edu>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org, paulus@cs.anu.edu.au
+Subject: Re: BootX, ramdisk and root device
+In-Reply-To: <19981215143756.003692@mail.mipsys.com>
+Message-ID: <Pine.SO4.4.02.9812170944030.9640-100000@ub.d.umn.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Dec 14, 1998, Zach Metzinger <wizkid@ksu.edu> wrote:
+>From my experience, using the "No Video" option cancels out any video
+arguments passed to the kernel. In fact, when I first started using BootX
+I was passing "video=atyfb" then I decided to try the No Video option. I
+didn't remove the video argument, but the screen came up like it was
+suppoed to with the option checked. Using XF68 also says that the video
+driver is OFfb.
 
->Anyone been hunting down the serial port problems with early g3s? Is the
->macrocell in apple's chip a true clone of the 8530 ESCC?
+Hope this helps,
 
-It should be more CHRP-like, so additional registers defined by CHRP may
-be available. I'm wondering if there may be a problem like a wrong
-default value in the register that indicates the number of cycles to wait
-on each access. This would explain some of the problems.
-
-Some people I know working on Geoport-based hardware had lots of troubles
-with the G3 machines. It looks like quickly repeated access to the data
-register will just cause corrupted datas to be transmitted. The problem
-is especially visible when DMA is used. I plan to do experiments with
-this but I didn't find the time yet.
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+Nathan
 
 
+On Tue, 15 Dec 1998, Benjamin Herrenschmidt wrote:
 
-
+> 
+> Hi All !
+> 
+> A couple of questions for which I would like feed-back before changing BootX:
+> 
+> I've seen users having troubles because they both checked the "Use RAM
+> Disk" box and wrote some incorrect infos in the /dev/xxx edit field of BootX.
+> 
+> I was wondering: Is there any case where a user may want to have both
+> "Use RamDisk" and a specified root device ? Should I ignore the content
+> of the root device field when ram disk is used ? (It still possible to
+> force it by typing the parameter manually in the kernel args anyway).
+> 
+> Similar issue: should I lookup and remove any "video=xxxx" option from
+> the kenrnel args prior to booting the kernel when "no video driver" is
+> checked or is this harmless ?
+> 
+> -- 
+>            E-Mail: <mailto:bh40@calva.net>
+> BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+> 
+> 
+> 
+> 
+> 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
