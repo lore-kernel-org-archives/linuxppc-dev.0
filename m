@@ -1,58 +1,42 @@
-Message-ID: <3D081C8D.8070901@embeddededge.com>
-Date: Thu, 13 Jun 2002 00:16:13 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@au1.ibm.com>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: First cut at large page support on 40x
-References: <20020531042153.GD16537@zax>	<3CFC0D3F.9030901@embeddededge.com>	<20020604035947.GH2762@zax>	<3CFCFC20.80101@embeddededge.com>	<15614.37065.549142.218906@argo.ozlabs.ibm.com>	<3CFEE9A3.5060300@embeddededge.com>	<15614.63160.272890.683586@argo.ozlabs.ibm.com>	<3CFF1624.2070808@embeddededge.com>	<20020612035203.GQ25800@zax>	<3D06E702.4000709@embeddededge.com>	<20020612064344.GT25800@zax>	<3D07D80F.9050306@embeddededge.com>	<15623.56408.342901.245259@argo.ozlabs.ibm.com>	<3D07E743.6090206@embeddededge.com> <15623.61149.22953.9238@argo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <5.1.0.14.2.20020612211908.02c7b0e8@mail.attbi.com>
+Date: Wed, 12 Jun 2002 21:24:31 -0700
+To: Dan Malek <dan@embeddededge.com>
+From: Eugene Surovegin <ebs@innocent.com>
+Subject: Re: consistent_alloc from an interrupt context
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <3D081A1A.70309@embeddededge.com>
+References: <5.1.0.14.2.20020612200144.00ab2398@mail.zultys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+Dan,
+
+At 09:05 PM 6/12/2002, you wrote:
+Hmmmm.....Why did I think this was corrected in the past?  I see all of
+>the consistent_alloc users are doing the same thing.  I know we discussed
+>this, and the solution was actually quite trivial.  All we have to do is
+>pass a GFP_ATOMIC into the kmalloc() (called by get_vm_area()).  IIRC,
+>we added a 'gfp' parameter to get_vm_area() (and changed all callers, which
+>was just a few), and then passed the 'gfp' into the kmalloc().  I know
+>many of us tried it and everything worked sweetly :-)
+>
+>I thought the change was readily accepted by the generic code powers, I guess
+>no one actually checked it in :-)  You could make the change locally and have
+>a good day :-)  All you have to do is add the parameter to get_vm_area(),
+>find all of the places it is currently called and add 'GFP_KERNEL' as the
+>parameter.  In consistent_alloc(), just pass the 'gfp' variable.
+
+I thought of it, but is it OK to modify arch-independent code with such a hack?
+
+Maybe this is the reason it never was accepted.
+
+Though, it's obviously much simpler than solution I used :)
 
 
-> Not by me, doing a range check in virt_to_* would be perfectly
-> appropriate.
+  Eugene Surovegin <mailto:ebs@innocent.com>
 
-OK.  So, why don't we just look up the right address? :-)
-
-
-> Drivers shouldn't be doing virt_to_* on the address they get from a
-> consistent-alloc function.  Given that doing it the right way is easy
-> (just remember the physical address that the consistent alloc function
-> gives you) I don't have any qualms about breaking drivers that do it
-> the wrong way.
-
-It isn't the drivers doing it themselves.  I believe the biggest problem
-was with drivers that wanted to do a scatter/gather list (like SCSI seems
-to like to do).  They just stuff the virtual address, regardless of where
-it came from, and expect virt_to_bus() to do the right thing.  I know,
-you are going to tell me that shouldn't have been a consistent_alloc()
-space, and perhaps that has been fixed by now.
-
-> (I should note that I'm not intending to break them in 2.4, not even
-> in 2_4_devel; virt_to_* can continue to use iopa there.  But in 2.5 we
-> can be more brutal.)
-
-Let's be brutal :-)
-
-> There is the issue of making sure that we don't have DMA buffers and
-> other variables in the same cache line.  This is being thrashed out on
-> linux-kernel at the moment. :)
-
-That's a totally different subject, and it comes up on many mailing lists.
-There was a discussion about the eepro100 again today on a MIPS list,
-where David (again :-) pointed out the problems with it on noncoherent systems.
-There are enough people that know about this and the solution, I'm just
-sitting back until the generic software is updated to deal with it :-)
-
-Thanks.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
