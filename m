@@ -1,96 +1,60 @@
-Date: Wed, 19 May 2004 15:09:04 +1000 (EST)
-Message-Id: <200405190509.PAA20836@sprint.tenix.com>
+Message-ID: <40AB03EB.7040105@fh-landshut.de>
+Date: Wed, 19 May 2004 08:51:23 +0200
+From: Oliver Korpilla <okorpil@fh-landshut.de>
+Reply-To: okorpil@fh-landshut.de
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Error calling timer_create
-From: "MERRITT Nigel" <Nigel.MERRITT@Tenix.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+To: "Heater, Daniel (GE Infrastructure)" <Daniel.Heater@gefanuc.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Differing PCI layouts trigger porting driver problem [Was: Memory
+ layout question]
+References: <DB1DE297F535B340AEAE1E51B221C3D0016B3DCB@FTWMLVEM02.e2k.ad.ge.com>
+In-Reply-To: <DB1DE297F535B340AEAE1E51B221C3D0016B3DCB@FTWMLVEM02.e2k.ad.ge.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am trying to get timers working on a Embedded Planet 405GP running Timesys Linux.
-The code is compiled using the correct tool chain and is based on the example in Timesys documentation, however, when calling the timer_create function, I get an error, and errno is set to 38, which is listed as:
+Hello, Daniel!
 
-   #define ENOSYS  38 /* Function not implemented */
+I think I very much erred when trying to identify the error - the
+problem is a memory layout one, but a PCI related one.
 
-in errno.h
+The driver works on x86 because the PCI bus and the CPU physical
+addresses match - the Universe Master Window Base Register (LSI_BSx) is
+given the start address of the address range to map (the set of
+addresses on the PCI bus the Tundra Universe chip will try to answer
+to). In the driver the Universe is till now given the CPU physical address.
 
-The code for calling timer_create is:
+But the Tundra Universe is a PCI device. All the addresses it sees need
+to be bus addresses, not CPU physical ones. This is - if I figured it
+out correctly - because of the host-to-PCI-bridge mapping. All physical
+addresses dereferenced by the CPU will correctly translate to their
+corresponding mapped PCI bus addresses because of the host bridge, but
+if you want the Universe chip to catch those addresses, it needs to have
+the bus address stored in its registers (the address matching the
+original physical address after the host-bridge translation).
 
+So I hope this can actually resolved by converting the address to a bus
+address and storing that. Doing this will keep the module portable,
+because the mapping would resolve to identity on x86, or at least I
+think so.
 
-#include <time.h>
-#include <signal.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <errno.h>
+I guess the correct new order would be:
+allocate_resource(&iomem_resource, ... ) to obtain a range of physical
+addresses, ioremap_nocache that physical start address to obtain virtual
+addresses for the ->virt pointer in the master window structure (now
+done in vme_master_window_map() I think), and then use virt_to_bus () to
+obtain the address to store in the master window base register. Then the
+driver should work both on (nearly) arbitrary setups for x86 and PPC.
 
-// Define a timer signal value.
-#define TEMP_MON_TIMER_SIGNAL (SIGRTMIN + 1)
+Of course I have to try that out first (I'm still home now), and let you
+know if that produced any results. Did VMIC run into similar problems
+when trying to run the driver module on the VMIVME7050 (750FX/GX IBM
+PowerPC board)? Because it is not yet in the list of supported boards?
 
-// Prototype for the timer handling function.
-void TimerHandler(int signo, siginfo_t *info, void *context);
+Thanks for the reply!
 
-int main(int argc, char** argv) {
-
-   struct sigevent   stEvent;
-   struct sigaction  stSignalAction;
-   struct itimerspec stITimerSpec;
-
-   struct timespec stClockRes;
-   timer_t nTimerId;if (sigemptyset(&stSignalAction.sa_mask))
-{
-   printf("Signal mask could not be emptied (err=%d).\n", errno);
-   return -1;
-}
-
-stSignalAction.sa_flags = SA_SIGINFO;
-stSignalAction.sa_sigaction = TimerHandler;
-
-// Register the handler.
-if (sigaction(TEMP_MON_TIMER_SIGNAL, &stSignalAction, NULL))
-{
-   printf("Signal mask could not be emptied (err=%d).\n", errno);
-   return -1;
-}
-
-// The signal has been created, now set up the event that will
-// trigger the signal.
-stEvent.sigev_signo = TEMP_MON_TIMER_SIGNAL;
-stEvent.sigev_notify = SIGEV_SIGNAL;
-stEvent.sigev_value.sival_ptr = &nTimerId;
-
-// Use the event that was just set up to set up the timer.
-if ((clock_getres(CLOCK_REALTIME, &stClockRes)) < 0)
-{
-   printf("Clock resolution could not be obtained (err=%d).\n", errno);
-   return -1;
-}
-
-stITimerSpec.it_interval.tv_sec = 1;
-stITimerSpec.it_interval.tv_nsec = 0 * stClockRes.tv_nsec;
-stITimerSpec.it_value = stITimerSpec.it_interval;
-
-// Initialise the timer.
-if (timer_create(CLOCK_REALTIME, &stEvent, &nTimerId))
-{
-   printf("Timer could not be created (err=%d).\n", errno);
-   return -1;
-}
-.
-.
-.
-
-... with the result:
-
-   Timer could not be created (err=38).
-
-The code obviously compiles so I can't work out why it would claim the function does not exist.  The code is compiled with static linking so all libraries should be included in the executable.
-
-Any help would be appreciated...
-
-   NJM
+With kind regards,
+Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
