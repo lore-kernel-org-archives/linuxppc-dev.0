@@ -1,57 +1,46 @@
-Date: Wed, 27 Sep 2000 19:42:34 +0200
-From: Olaf Hering <olh@suse.de>
-To: "Jon Erick Ween" <jween@som.llu.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Xfree86-4.0.1, Lombard, Mach64 driver, X-server Crash
-Message-ID: <20000927194234.A2778@suse.de>
-References: <B5F77AFE.62A%jween@som.llu.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <B5F77AFE.62A%jween@som.llu.edu>
+Date: Wed, 27 Sep 2000 20:49:48 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, Matt Porter <mmporter@home.com>,
+        Olaf Hering <olh@suse.de>,
+        Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display!
+In-Reply-To: <Pine.LNX.4.10.10009271341020.383-100000@cassiopeia.home>
+Message-ID: <Pine.LNX.4.21.0009272018090.9846-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Sep 27, Jon Erick Ween wrote:
+On Wed, 27 Sep 2000, Geert Uytterhoeven wrote:
 
-> OK, I've switched from BootX to Yboot using a stable 2.2.17 kernel and the
-> most recent XF86-4.0.1 and ati driver sources I can find. I seem to get
-> different PCI assignments to the ATI chip on boot-up (looking at dmesg
-> compared with using BootX) but the X-server still doesn't detect the chip
-> with "startx" or "XFree86" and exits with a "device not found" and "no
-> screens" error. Any further suggestions?
+>
+> On Tue, 26 Sep 2000, Benjamin Herrenschmidt wrote:
+> > One thing: I'd be interested in figuring out what happens if you simply
+> > leave this nasty ATI BAR unassigned (write 0xffffffff and then 0 to it).
+> > Will the controller fail ?
+>
+> Well, according to Matt Porter, 0 is a valid address in PCI 2.2. So how do you
+> disable BARs for PCI 2.2-compliant devices?
+>
+> And I'm afraid what XFree86 4.x will do with BARs set to 0. Probably it will
+> try to relocate them. I guess that's how it crashes on my box with an
+> unitialized S3...
 
-There is a Modes line in the screen section, use a generic mode.
-Don't specify a Modes section.
+Yeap unless i am wrong it will try to relocate them, for prep i fear that
+without correct BusAddrToHostAddr/HostAddrToBusAddr functions in the xserver
+this isn't going to work at all :(
 
-It could look like that:
+Don't expect it to initialize the S3 card in any case, the int10 module
+needs ISA IO/mem accesses and both don't work at the moment for linux/ppc
+you can imagine what the following code will do to your machine :(
 
-Section "Screen"
-  DefaultDepth  24
-  SubSection "Display"
-    Depth       24
-    Modes       "1024x768"
-  EndSubSection
-  Device        "Device[0]"
-  Identifier    "Screen[0]"
-  Monitor       "Monitor[0]"
-EndSection
-Section "Device"
-  BoardName     "mycard"
-  BusID         "0:16:0"
-  Driver        "ati"
-  Identifier    "Device[0]"
-  Option        "sw_cursor"
-  VendorName    "ATI"
-EndSection
+ #define V_RAM 0xA0000
+ INTPriv(pInt)->vRam = xf86MapVidMem(screen,VIDMEM_MMIO,V_RAM,size);
 
+ Kostas
 
-Gruss Olaf
-
---
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
