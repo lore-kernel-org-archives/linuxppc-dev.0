@@ -1,29 +1,39 @@
-Reply-To: <zjzhou@newrocktech.com>
-From: "John Zhou" <zjzhou@newrocktech.com>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: how to link a posix function
-Date: Thu, 12 Feb 2004 17:12:30 +0800
-Message-ID: <000b01c3f148$585a2d30$b702a8c0@newrock2>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20040212060756.GG2200@adapter.n0skillz.org>
+Date: Fri, 13 Feb 2004 21:30:43 +0100
+From: Olaf Hering <olh@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Video For Linux on ppc32 in kernel 2.6
+Message-ID: <20040213203043.GA11477@suse.de>
+References: <20040204101249.GA25776@suse.de> <0d5001c3eb09$0d02dbb0$3cc8a8c0@epro.dom> <1075892614.4021.0.camel@gaston>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1075892614.4021.0.camel@gaston>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+ On Wed, Feb 04, Benjamin Herrenschmidt wrote:
 
-I wrote a program that used some POSIX function such as timer_create(),
-timer_settime(), timer_delete(). But, it is report "undefined reference
-to 'timer_create', etc.." when linking.
+> On Wed, 2004-02-04 at 21:24, Colin Leroy wrote:
+> > Hi,
+> >
+> > > CONFIG_VIDEO_DEV triggers CONFIG_VIDEO_BUF. If compiled as module,
+> > > video-buf.c wants clear_user_page(). This is a define on most archs
+> > > (maps to clear_page()), on ppc32 it is an unexported function. This
+> > > leads to unresolved symbols.
+> >
+> >
+> > It's been fixed in BenH's tree since a few weeks.
+> > (
+> > http://ppc.bkbits.net:8080/linuxppc-2.5-benh/diffs/arch/ppc/kernel/ppc_ksyms.c@1.72 )
+>
+> Yup, hopefully, if I don't forget, I'll get that in 2.6.3
 
-my question is: how to link with POSIX lib?
+its also required on ppc64.
 
-I know I must add "-lpthread" flag in Makefile when linking
-pthread_create() function.
+--
+USB is for mice, FireWire is for men!
 
-Best Regards,
-John
+sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
