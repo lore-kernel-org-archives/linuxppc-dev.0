@@ -1,21 +1,45 @@
-From: "challaharikumar" <challaharikumar@tataelxsi.co.in>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: PCI configuration How to
-Date: Sat, 28 Feb 2004 17:00:25 +0530
-Message-ID: <002a01c3fdee$42fdf810$3401080a@telxsi.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+Date: Sat, 28 Feb 2004 08:33:59 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Leigh Brown <leigh@solinno.co.uk>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Please revert "use todc time functions for PPC_PREP" changeset
+Message-ID: <20040228153359.GP1052@smtp.west.cox.net>
+References: <1180.80.7.99.14.1077956583.squirrel@www.solinno.co.uk> <20040228003259.3dd5c25a.akpm@osdl.org> <1275.80.7.99.14.1077957786.squirrel@www.solinno.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1275.80.7.99.14.1077957786.squirrel@www.solinno.co.uk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
-all ..
+On Sat, Feb 28, 2004 at 08:43:06AM -0000, Leigh Brown wrote:
+> Andrew Morton said:
+> >
+> > "Leigh Brown" <leigh@solinno.co.uk> wrote:
+> >>
+> >> Hi Tom,
+> >>
+> >>  Your patch (ChangeSet@1.1557.41.25) breaks the 43p140 and Carolina, and
+> >>  probably quite a few other RS/6000 based PRePs.  I was a bit surprised
+> >>  to see it 2.6.3.
+> >>
+> >>  http://linux.bkbits.net:8080/linux-2.5/patch@1.1557.41.25?nav=index.html|ChangeSet@-3w|cset@1.1557.41.25
+> >>
+> >>  Can we revert this until there is a working version, please?
+> >
+> > It wouild help if you could define "breaks".
+>
+> Sorry!  It hangs during boot, before any output on the serial console.  I
+> got as far as working out that it hangs somewhere in
+> arch/ppc/kernel/time.c:time_init() (or one of the called functions).
 
-I want to know how to configure the PCI driver for MPC8272. Is there any PCI
-source code available for MPC8272.
+Er.. Didn't we talk about this awhile ago, and get a different version
+of this patch working back in 2.4?  The problem was that we couldn't use
+todc_calibrate_decr we had to still grab the value from the residual
+data.  And I thought I had kept that logic still..
 
-Thanks in advance
-Harikumar
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
