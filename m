@@ -1,14 +1,11 @@
-Return-Path: <ostampflee@terrasoftsolutions.com>
-Received: from castle.comp.uvic.ca (castle.comp.uvic.ca [142.104.5.97])
-	by ozlabs.org (Postfix) with ESMTP id 4CC702BDA2
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Sep 2004 13:41:31 +1000 (EST)
-Received: from [192.168.0.103] (S010600095bdadbc7.gv.shawcable.net
-	[24.68.237.111])
-	by castle.comp.uvic.ca (8.12.11/8.12.11) with ESMTP id i8P3DRvm5013740
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2004 20:13:27 -0700
-From: Owen Stampflee <ostampflee@terrasoftsolutions.com>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <1096081315.576.15.camel@gaston>
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao12.cox.net (fed1rmmtao12.cox.net [68.230.241.27])
+	by ozlabs.org (Postfix) with ESMTP id 858632BD6A
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Sep 2004 03:57:44 +1000 (EST)
+Date: Sat, 25 Sep 2004 10:57:39 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20040925175739.GJ2107@smtp.west.cox.net>
 References: <20040923164655.0472a8b9.sfr@ozlabs.org>
 	<20040923233035.GH27238@smtp.west.cox.net>
 	<36b714c80409231731257ca5d0@mail.gmail.com>
@@ -16,10 +13,10 @@ References: <20040923164655.0472a8b9.sfr@ozlabs.org>
 	<DA7E9084-0DED-11D9-A74B-003065F9B7DC@embeddededge.com>
 	<20040924164146.GG2107@smtp.west.cox.net>
 	<1096081145.475.12.camel@gaston> <1096081315.576.15.camel@gaston>
-Content-Type: text/plain
-Message-Id: <1096081696.2453.22.camel@beast.terraplex.com>
 Mime-Version: 1.0
-Date: Fri, 24 Sep 2004 20:08:16 -0700
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1096081315.576.15.camel@gaston>
+Cc: linuxppc-dev@ozlabs.org
 Subject: Re: New mailing list specifically for embedded PowerPC development
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -30,26 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, Sep 25, 2004 at 01:01:56PM +1000, Benjamin Herrenschmidt wrote:
 
+> On Sat, 2004-09-25 at 12:59, Benjamin Herrenschmidt wrote:
+> > I specifically asked for the split.
+> 
 > Oh, and another reason, which, though, is also a signal/noise
 > ratio matter. I expect most patches addressing ppc32 to be CCed
 > to linuxppc-dev. This is important for distro people to keep track
 > of bug fixes that went in after the kernel version they decided to
 > freeze on.
-> 
-> That will simply not happen if the embedded traffic is mixed in
 
-Agreed. I've already missed a patch or two in this big mess.
+Are you referring to the pmac distro people, the embedded distro people
+or the 'other' distro people here?
 
-There is just way too much noise about various embedded issues. Myself
-and many others simply don't want to know about latest and greatest
-serial/ethernet/foo driver for the latest SoC out of Freescale and it
-makes it really really difficult to follow the occasional thread about
-stuff we do care about.
-
-Embedded people, think about your complaints if the ppc64 list were
-merged too... there would be a whole bunch of email you don't care about
-on a list that should be fairly focused.
-
-Cheers,
-Owen
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
