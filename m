@@ -1,48 +1,36 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-From: "challaharikumar" <challaharikumar@tataelxsi.co.in>
-To: <linuxppc-dev@lists.linuxppc.org>, <dan@embeddededge.com>
-Subject: MPC8260 Hang
-Date: Fri, 23 Apr 2004 12:31:06 +0530
-Message-ID: <004101c42900$c082e880$3401080a@telxsi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "challaharikumar" <challaharikumar@tataelxsi.co.in>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: MPC8260 Hang 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 23 Apr 2004 12:31:06 +0530."
+             <004101c42900$c082e880$3401080a@telxsi.com>
+Date: Fri, 23 Apr 2004 12:24:07 +0200
+Message-Id: <20040423102412.B88B0C109F@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
-All ...
+In message <004101c42900$c082e880$3401080a@telxsi.com> you wrote:
+>
+> I having been trying to bring up the ADS8260 board and incidentally ran
+> into some problems.
 
-I having been trying to bring up the ADS8260 board and incidentally ran
-into some problems.
+You posted the very same question yesterday, and received two replies
+which should help solving your problem (which  basicly  results  from
+not reading the FAQ).
 
-I initially tried using Linux 2.4.1 kernel and it worked fine and the
-board was up.
+Now you ignore the replies, and ask the same stuff again?
 
-I upgraded to 2.4.17 and I found out that the system started hanging
-during boot up.
-
-I compiled 2.4.17 for ppc boot. (I already have ppc boot on my ADS board
-and I test my development by tftp boot'ing the kernel image.
-
-I tried tracking down where the hang could be and ended up at the RFI
-instruction where its waiting to complete the MMU initialization. The
-system executes SYNC instruction and then hangs. (arch/ppc/kernel/head.S)
-
-I tried comparing the file head.S between 2.4.1 and 2.4.17. I found out
-some patches done inside the 2.4.1 had been made generic. There were
-patches for the BAT initialization and RAM mapping on the MPC8260.
-
-Is there an update on the files?
-Should the patches be done for 2.4.17 as well ?
-
-Any suggestions or pointers could be very helpful.
-
-[Running on x86 with Red Hat 8.0 and cross compiling for PPC.]
+What exactly do you want?
 
 
-regards
-Hari
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The light at the end of the tunnel is usually a "No Exit" sign.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
