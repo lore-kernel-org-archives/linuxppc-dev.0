@@ -1,20 +1,19 @@
-Return-Path: <edjubenville@adelphia.net>
-Received: from mta11.adelphia.net (mta11.adelphia.net [68.168.78.205])
-	by ozlabs.org (Postfix) with ESMTP id D6FDC67A6C
+Return-Path: <wd@denx.de>
+Received: from mailout01.sul.t-online.com (mailout01.sul.t-online.com
+	[194.25.134.80]) by ozlabs.org (Postfix) with ESMTP id DA0BC67A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Mar 2005 06:57:26 +1000 (EST)
-Received: from EJ1 ([69.166.195.214]) by mta11.adelphia.net
-	(InterMail vM.6.01.04.01 201-2131-118-101-20041129) with SMTP
-	id <20050330205724.JCFI5402.mta11.adelphia.net@EJ1>
-	for <linuxppc-embedded@ozlabs.org>; Wed, 30 Mar 2005 15:57:24 -0500
-From: "Edward Jubenville" <edjubenville@adelphia.net>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Wed, 30 Mar 2005 12:57:23 -0800
-Message-ID: <GPECLCIGPLHEOMGPMCPAOEOJCMAA.edjubenville@adelphia.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: USB support on Lite5200
+	Thu, 31 Mar 2005 07:40:40 +1000 (EST)
+To: "Edward Jubenville" <edjubenville@adelphia.net>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 30 Mar 2005 12:57:23 -0800."
+	<GPECLCIGPLHEOMGPMCPAOEOJCMAA.edjubenville@adelphia.net>
+Date: Wed, 30 Mar 2005 23:40:11 +0200
+Sender: wd@denx.de
+Message-Id: <20050330214016.EE37CC108D@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: USB support on Lite5200 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,19 +24,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm using a FreeScale Lite5200 development board with an MPC5200.  I used
-ELDK 1.3 and DAS U-Boot to get a working kernel, booted, etc., but I later
-found that the configuration I chose (icecube_5200_defconfig) didn't have
-USB support enabled.
+Dear Ed,
 
-My first USB goal is hook up a SanDisk cruzer 256 MB memory stick.  Which
-configuration options need to change?  Is there a HOWTO or example
-configuration file somewhere?
+in message <GPECLCIGPLHEOMGPMCPAOEOJCMAA.edjubenville@adelphia.net> you wrote:
+> I'm using a FreeScale Lite5200 development board with an MPC5200.  I used
+> ELDK 1.3 and DAS U-Boot to get a working kernel, booted, etc., but I later
+> found that the configuration I chose (icecube_5200_defconfig) didn't have
+> USB support enabled.
+> 
+> My first USB goal is hook up a SanDisk cruzer 256 MB memory stick.  Which
+> configuration options need to change?  Is there a HOWTO or example
+> configuration file somewhere?
 
-Eventually, I would like to support at least one kind of USB keyboard.
-Where can I find guidance for that configuration.
+See Documentation/Configure.help for a description  of  the  configu-
+ration options.
 
-If there's a better place to post these questions, please advise.
+> Eventually, I would like to support at least one kind of USB keyboard.
+> Where can I find guidance for that configuration.
 
-Thanks in advance,
-Ed
+For a start, you can use  the  "icecube_5200_CoralP"  which  has  USB
+support (for mouse, keyboard, mass storage devices) enabled.
+
+For example, compare the config files like this:
+
+	diff arch/ppc/configs/icecube_5200{,_CoralP}_defconfig
+
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Brontosaurus Principle: Organizations  can  grow  faster  than  their
+brains  can manage them in relation to their environment and to their
+own physiology: when this occurs, they are an endangered species.
+                                                - Thomas K. Connellan
