@@ -1,73 +1,64 @@
-Date: Fri, 28 Feb 2003 12:10:13 +0100 (CET)
-From: Samuel Ortiz <samuel.ortiz@smartdata.ch>
-To: okisoftxman <okisoftxman@hotmail.com>
-Cc: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>,
-	linux-emb <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Good Books
-In-Reply-To: <OE59kK5LqN33HFnwpGR00000319@hotmail.com>
-Message-ID: <Pine.LNX.4.44.0302281209560.585-100000@jourdain>
+Message-Id: <200302281227.AA02348@kishinami.cs.fujitsu.co.jp>
+From: KISHINAMI Masaya <kishinami@cs.fujitsu.co.jp>
+Date: Fri, 28 Feb 2003 21:27:56 +0900
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 405GP Networking issue
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Check it out here :
+Dear all, it's first time to post.
 
-http://www.amazon.com/exec/obidos/ASIN/0672322269/qid%3D1015445968/sr%3D1-2/ref%3Dsr%5F1%5F2/002-1581213-6875226
+We are debugging a custom board designed based on the 405GP
+(200MHz) and have a problem not being sent ECHO REPLY ping
+packet from custom board to our PC via repeater hub on the
+heavy traffic under 10Mbps and half duplex condition.
+We used the latest version of ibm_ocp LAN device driver at
+that time from kernel 2.4.21-pre3 and ported it to work on
+the kernel 2.4.18 because it costs many time to boot our
+custom board on the latest one. The board works fine unless
+not be such a case.
 
-Cheers,
-Samuel.
+Following are the our simplest duplication process and the
+results.
 
+1. Connect the repeater hub to backbone LAN.
+2. Connect custom board, test PC to ping and other PCs to the
+   repeater hub to the full. This case, 10 or more PCs are
+   connected to repeater hub and each PC works normally by
+   using network.
+3. Increase the traffic by using ftp command. The ftp data was
+   never addressed to the custom board.
+4. Ping from our PC to custom board at one time.
+5. The 60% pings were lost such condition.
+6. We investigated the ping lost case.
+   - LAN protocol analyzer captured the ECHO REQUEST which was
+     address to custom board. It shows ECHO REQUEST was issued
+     from our PC to LAN cable.
+   - Logic analyzer captured the same ping packet which was
+     already been captured by LAN analyzer between PHY(Intel
+     LXT971A) and EMAC. It shows ECHO REQUEST was reached just
+     before the EMAC.
+   - The LAN device driver's receive buffer did not receive the
+     ECHO REQUEST by using printk command. We suspected that the
+     ECHO REQUEST was not issued to the MAL(Memory Access Layer),
+     therefore ECHO REQUEST was not translated to the receive
+     buffer.
 
-On Fri, 28 Feb 2003, okisoftxman wrote:
+At the same time, many 4 byte short packet(0x000000f0) which was
+not addressed to custom board was received to the LAN device driver's
+receive buffer with error status. According to 405GP manual, EMAC
+discards the packet which is not of its own.
 
->
-> Hi
->         How & Where to get this book?
->
-> Best Regards!
->
->
-> ----- Original Message -----
-> From: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>
-> To: <john@corelis.com>; <linuxppc-embedded@lists.linuxppc.org>
-> Sent: Friday, February 28, 2003 11:24 AM
-> Subject: Re: Good Books
->
->
-> >
-> > At 05:05 PM 2/27/2003 -0800, John Chan wrote:
-> > >
-> > >Hello, Folks,
-> > >
-> > >I am looking for reference books which are related to PPC 440GP or/and
-> > >embedded PPC or/and Linux on PPC. Do you have any suggestion?
-> >
-> > John,
-> >
-> > My book, Embedded Linux: Hardware, Software and Interfacing, uses a PPC860
-> (Embedded Planet RPX-CLLF) in numerous interfacing examples. This might help
-> with general PPC issues, not specifically the 440 though.
-> >
-> > Craig
-> >
-> >
-> >
-> >
-> > ___________________________________________________________
-> > Dr. Craig Hollabaugh                   craig@hollabaugh.com
-> > Author of Embedded Linux
-> >
-> > P.O. Box 1405
-> > Ouray, CO 81427-1405        See my "kitchen sink" resume at
-> > 970 325 4810 home            www.hollabaugh.com/resume.html
-> > 970 325 0509 office
-> >
-> >
-> >
->
->
+Have anyone experienced a problem like this?
+Any help would be appreciated.
 
+Regards, Kishinami.
+
+-----
+KISHINAMI Masaya
+Fujitsu Limited (Japan)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
