@@ -1,33 +1,52 @@
-Message-ID: <3D6E4A4A0000123A@charlotte.ccc-dcs.com> (added by charlotte.ccc-dcs.com)
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: jim <jduey@ccc-dcs.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <CA78D1B723D8D411AF0300508BDCF74FD5BC75@NTCORREO>
+From: GOTZON ASTONDOA <gastondoa@fagorautomation.es>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Delay on starting init
-Date: Thu, 12 Sep 2002 10:27:01 +0000
-References: <20020911175118.04A9E38E9D@server.weathercom.com> <20020912012457.GX13670@zax>
-In-Reply-To: <20020912012457.GX13670@zax>
+Subject: Just a little compilation error if i2c like NO module
+Date: Thu, 12 Sep 2002 13:56:56 +0200
 MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Well, that's three datapoints.  I'm also using an NFS root.  I tracked it as
-far as the sys_execve call that's in arch/ppc/kernel/process.c.  It seems to
-execute that function fast enough.  I got hung up trying to determine exactly
-what was going on in include/asm-ppc/unistd.h with the _syscall3 macro.
-Those two files are where I'd start looking.
+Hi all:
 
-If anyone finds the cause of the delay on starting init with NFS root file
-systems, please post to the list.
+	I have the kernel version 2.4.4 of 2001-7-23
+	I try to compile i2c like no module and i find that it has problems.
+	In drivers/i2c/i2c-simple.c (lines 48 to 59):
+		/*
+		* Deal with CONFIG_MODVERSIONS
+		 */
+		#if CONFIG_MODVERSIONS==1
+		/* # define MODVERSIONS */
+		# include <linux/modversions.h>
+		#endif
 
-Jim
+		#ifdef MODULE
+		MODULE_AUTHOR("Wolfgang Denk, wd@denx.de");
+		MODULE_DESCRIPTION("Simple I2C Driver for LWMON Project");
+		#endif	/* MODULE */
 
-On Thursday 12 September 2002 01:24 am, David Gibson wrote:
->
-> I've observed this as well, but I haven't tracked it down much.  When
-> I looked into it the delay seemed to be due to NFS delays and timeouts
-> (I'm using an NFS root), but that doesn't explain why it is so much
-> worse in recent 2.4 and (especially) 2.5.
+	And the new code order i put is:
+
+
+		/*
+		 * Deal with CONFIG_MODVERSIONS
+		 */
+
+		#ifdef MODULE
+		#	if CONFIG_MODVERSIONS==1
+				/* # define MODVERSIONS */
+		# 		include <linux/modversions.h>
+		#	endif
+			MODULE_AUTHOR("Wolfgang Denk, wd@denx.de");
+			MODULE_DESCRIPTION("Simple I2C Driver for LWMON
+Project");
+		#endif	/* MODULE */
+
+	It now compiles fine.
+	Bye.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
