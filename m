@@ -1,44 +1,57 @@
-Message-ID: <20021121022612.96391.qmail@web13402.mail.yahoo.com>
-Date: Wed, 20 Nov 2002 18:26:12 -0800 (PST)
-From: Norm Legare <normlegare@yahoo.com>
-Subject: mkcramfs building
+Message-Id: <5.1.0.14.2.20021120212220.00aebfa0@pop.prodigy.net>
+Date: Wed, 20 Nov 2002 21:47:34 -0800
 To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Eugene Surovegin <ebs@innocent.com>
+Subject: [PATCH] correct initialization sequence in ppc405_enet_open
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+	Armin Kuster <akuster@dslextreme.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi!
 
-I would like to create 2 cramfs filesystems on my flash so that I can
-copy the kernel and the root filesystem on each, but I am having
-trouble getting mkcramfs to run on my target.  I built it on the host
-with the cross-compiler and when I ran it on the target, I got the
-error:
+This patch fixes problem in drivers/net/ibm_ocp/ibm_ocp_enet.c.
+Ring buffers initialization (init_rings) is called _after_ enabling MAL rx
+channel.
+If a packet arrives just after MAL was enabled but before init_rings
+initialized buffers, you can see random crashes during EMAC open or receive
+descriptor error interrupt.
 
-"mkcramfs: error while loading shared libraries: libz.so.1: cannot load
-shared object file: No such file or directory".
+This bug affects all systems that use drivers/net/ibm_ocp/ibm_ocp_enet.c
+(405GP based, 440GP based, etc).
+This patch is against current devel_2_4, but I think should apply without
+any problems to devel_2_5 also.
 
-So I proceeded to statically link mkcramfs and libz.so.1.  The filesize
-grew from 79169 to about 1,719,000 bytes.  I am using the SELF set of
-tools and kernel from DENX and it contains a Ramdisk which seems to be
-limited to about 2MB (I'm just speculating here), because when I ran
-the mkcramfs utility (in its bloated size of 1.7MB), it responded with:
-"No more room on device" (or something very similar).  I noticed that
-the libz.so.1 is only about 65K and the mkcramfs without the library is
-about 79K.
+Thanks.
 
-So, I ask, is it possible to increase the total number of bytes (from
-files) that the root filesystem can contain or can I run the mkcramfs
-utility without the library statically linked and somehow have the
-library libz.so.1 linked at runtime?  Or is there something that I
-missed altogether?
+===== drivers/net/ibm_ocp/ibm_ocp_enet.c 1.55 vs edited =====
+--- 1.55/drivers/net/ibm_ocp/ibm_ocp_enet.c     Thu Aug 22 11:29:32 2002
++++ edited/drivers/net/ibm_ocp/ibm_ocp_enet.c   Wed Nov 20 21:34:30 2002
+@@ -375,13 +375,15 @@
+                 request_irq(BL_MAL_RXEOB,ppc405_eth_rxeob,0,"OCP EMAC RX
+EOB",dev);
+         }
 
-TIA,
-Norm
+-       /* enable all MAL transmit and receive channels */
++       /* init buffer descriptors rings */
++       init_rings(dev);
 
-Yahoo! Mail Plus – Powerful. Affordable. Sign up now.
-http://mailplus.yahoo.com
++       /* enable all MAL transmit and receive channels */
+         enable_mal_chan(fep);
+
+         /* set transmit and receive enable */
+         out_be32(&emacp->em0mr0, EMAC_M0_TXE | EMAC_M0_RXE);
+-       init_rings(dev);
++
+         netif_start_queue(dev);
+         printk(KERN_NOTICE "%s: IBM EMAC: open completed\n\n", dev->name);
+
+
+
+  Eugene Surovegin <mailto:ebs@innocent.com>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
