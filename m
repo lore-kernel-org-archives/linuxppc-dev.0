@@ -1,17 +1,17 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 85BC12BDB5
+Return-Path: <blofeldus@yahoo.com>
+Received: from web53507.mail.yahoo.com (web53507.mail.yahoo.com
+	[206.190.37.68]) by ozlabs.org (Postfix) with SMTP id 29CA42BF14
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 Nov 2004 01:25:22 +1100 (EST)
+	Sat, 20 Nov 2004 01:53:56 +1100 (EST)
+Message-ID: <20041119145354.59388.qmail@web53507.mail.yahoo.com>
+Date: Fri, 19 Nov 2004 06:53:53 -0800 (PST)
+From: roger blofeld <blofeldus@yahoo.com>
+To: tnt@246tNt.com
+In-Reply-To: <20041116201654.GA3088@xyzzy>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Date: Fri, 19 Nov 2004 08:25:18 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DBC9@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <morten.banzon@axxessit.no>
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: MPC82xx -- DPRAM1
+Subject: Re: Lite5200 FEC Driver on linux 2.6 broken? (fixed again)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,17 +22,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces@ozlabs.org=20
-> [mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of=20
-> morten.banzon@axxessit.no
-> Sent: Thursday, November 18, 2004 20:24
-> I think the only thing missing from the=20
-> driver is to setup the now famous SMCx_BASE pointers. This is=20
-> ofcourse=20
-> possible to do, but there might be good reasons why it is not=20
-> done.
+>What tree are you exactly using ?
+>In mainstream XLB snooping is not configured so if you have the 
+>mainstream + added DMA,
+>the problem may come from this.
+>
+>
+>    Sylvain
 
-Send a patch to fix this in the driver. I think most people on this list
-would like the seriaql drivers to be totally independent of the
-bootloader (no matter what it is).
+I did a bk clone of the linux-2.5 tree (2.6.10-rc2), then a bk pull of
+your tree. You're probably right about the snooping. Since the driver
+is working at the moment, I'll wait until your tree is updated before
+doing more testing.
+Thanks
+-rb
+
+
+		
+__________________________________ 
+Do you Yahoo!? 
+The all-new My Yahoo! - Get yours free! 
+http://my.yahoo.com 
+ 
