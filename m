@@ -1,36 +1,44 @@
-Date: Sun, 13 Feb 2000 21:16:29 -0800 (PST)
-From: Brad Midgley <brad@turbolinux.com>
-To: Jack Howarth <howarth@bromo.med.uc.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: linux-pmac-devel
-In-Reply-To: <200002140006.QAA49713@bromo.med.uc.edu>
-Message-ID: <Pine.LNX.4.20.0002132115280.7804-100000@mail.turbolinux.com>
+Message-ID: <38A7C1DF.99A5346@wanadoo.fr>
+Date: Mon, 14 Feb 2000 09:50:39 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Paul Mackerras <paulus@linuxcare.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.3.43 failed
+References: <38A6C19F.92468821@wanadoo.fr> <00021410380401.14021@argo.linuxcare.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-yes. it's probably an easy fix but then you could just use make
-menuconfig.
+Paul Mackerras wrote:
+>
+> On Mon, 14 Feb 2000, Martin Costabel wrote:
+[]
+> > Feb 13 15:06:14 rennes-231 kernel: Warning: kfree_skb on hard IRQ
+> > c7159770
+> > Feb 13 15:07:24 rennes-231 last message repeated 421 times
+> > Feb 13 15:12:01 rennes-231 last message repeated 97 times
+> > and so on.
+> >
+> > How can I get rid of the warnings (short of disabling the line that
+> > produces it in net/core/skbuff.c)?
+>
+> Find the places where dev_kfree_skb is called from interrupt context and
+> change them to dev_kfree_skb_irq.  If you aren't sure you can say
+>
+>         if (in_irq())
+>                 dev_kfree_skb_irq(skb);
+>         else
+>                 dev_kfree_skb(skb);
 
->
->    I think there is error somewhere in the config scripts in the 2.3.xx
-> tree. When I rsync, do a make clean and then make config I get...
->
-> *
-> * General setup
-> *
-> scripts/Configure: [: missing `]'
-> Networking support (CONFIG_NET) [Y/n/?]
-> Sysctl support (CONFIG_SYSCTL) [Y/n/?] make: *** [config] Error 1
->
-> Is anyone else seeing this now?
->                Jack
->
+Thanks. Your new version in 2.3.45pre works correctly (shows me once
+more why I'm not a kernel developer: I replaced all 3 occurrences of
+dev_kfree_skb by if (in_irq()) ... else ..., which worked, too; you
+replaced just one of them by dev_kfree_skb_irq; I had tried this before,
+but always got the wrong one :-( ).
 
-Brad
-brad@turbolinux.com | http://www.turbolinux.com/~brad/
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
