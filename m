@@ -1,35 +1,46 @@
-Message-Id: <200404021549.i32FnZT35302@makai.watson.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>,
-	Pantelis Antoniou <panto@intracom.gr>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [OT?] Unimplemented instructions on a G5? 
-In-Reply-To: Message from Segher Boessenkool <segher@kernel.crashing.org>
-   of "Fri, 02 Apr 2004 17:32:17 +0200." <EC443756-84BA-11D8-89ED-000A95A4DC02@kernel.crashing.org>
-References: <406C1E50.1010806@intracom.gr>  <EC443756-84BA-11D8-89ED-000A95A4DC02@kernel.crashing.org> 
-Date: Fri, 02 Apr 2004 10:49:35 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Subject: Re: PREEMPT problems
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Colin LEROY <colin@colino.net>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <1080867387.1203.19.camel@gaston>
+References: <1b6001c417f6$229c2a70$3cc8a8c0@epro.dom>
+	 <1080867387.1203.19.camel@gaston>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <1080921611.11826.13.camel@thor.asgaard.local>
+Mime-Version: 1.0
+Date: Fri, 02 Apr 2004 18:00:11 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> The offending instruction is the seemingly harmless:
->>
->> mcrxr crX
->>
->> (Move to condition register from XER).
->>
->> Does anyone have any idea if IBM left this instruction
->> unimplemented. Searching the docs I've found nothing.
+On Fri, 2004-04-02 at 02:56, Benjamin Herrenschmidt wrote:
+> On Fri, 2004-04-02 at 00:32, Colin LEROY wrote:
+> >
+> > This won't be really helpful, as I have no time to investigate, but I seem
+> > to have problems with preempt (and latest main-tree BK). After a few hours
+> > of uptime, I get hanging processes (sed, cvs (can't be network related as
+> > the CVSROOT is local)) and gcc segfaults while compiling kernel.
 
->>>>> Segher Boessenkool writes:
-Segher> Well, the newest PowerPC architecture docs say that it is
-Segher> an optional insn, i.e., not all cpus might implement it.
+Same here, but at least some of the stuck processes continue after 'a
+while'.
 
-Segher> I can't say whether the 970 implements it or not.
+Note that the stuck processes only started with 2.6.5-rc3-ben0 here; the
+last iteration of 2.6.5-rc2-ben0 is actually quite usable, albeit not
+perfect either.
 
-	mcrxr is obsolete and not implemented in PPC970.  Executing the
-instruction will result in an illegal instruction trap.
+> Oh, btw, finding out where those are beeing stuck may help. A good
+> way to do that is to use xmon "P" command, look at the KSP for one
+> of those processes (kernel stack pointer) and do a backtrace based
+> on it with "b <ksp value>"
 
-David
+How do I get into xmon again? Unfortunately, I didn't load the
+System.map with this kernel...
+
+
+--
+Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
+Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
