@@ -1,20 +1,20 @@
-From: "LEROY Christophe" <christophe.leroy@c-s.fr>
+Message-ID: <3C41776F.F5F4A79A@disca.upv.es>
+Date: Sun, 13 Jan 2002 13:02:55 +0100
+From: David de =?iso-8859-1?Q?Andr=E9s=20Mart=EDnez?= <ddandres@disca.upv.es>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Hard Hat Linux
-Date: Sun, 13 Jan 2002 08:46:33 +0100
-Message-ID: <775444AB1219.AAA1C97@hermes17.si.c-s.fr>
+Subject: LinuxPPC for the MPC555?
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I know it's a bit strange, but we are looking for a LinuxPPC port for
+the Motorola MPC555.
 
-Does anybody have an idea of the price of a subscription for one developper
-to Montavista Hard Hat Linux Professionnal ?
+Does anyone know a port, or if it can be done in an easy way?
 
-Thanks
-
-C.Leroy
-
+Thank you.
+David de Andrés.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
