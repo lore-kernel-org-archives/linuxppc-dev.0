@@ -1,35 +1,32 @@
-To: "OTAVIO ISAMU SUGENO" <otavio.sugeno@siemens.com.br>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: CPU performance measurement 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 22 Jul 2002 08:01:37 -0300."
-             <B7AC573479F05C438F232539B961A1686C4CF0@CUR1006V.br002.siemens.net.br>
-Date: Mon, 22 Jul 2002 19:27:16 +0200
-Message-Id: <20020722172721.8D8AD10874@denx.denx.de>
+Message-ID: <007301c231a5$497a1e60$0700a8c0@pc005>
+Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Subject: mpc8260 TDM I/O programming
+Date: Mon, 22 Jul 2002 19:29:08 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <B7AC573479F05C438F232539B961A1686C4CF0@CUR1006V.br002.siemens.net.br> you wrote:
->
-> I would like to measure the cpu performance in my custom board.
-> Basically to know how many of cpu performance each process or driver is
-> spending, something like TOP command in PCs.
->
-> Anyone has already this experience or can give me suggestion?
+Hello,
 
-Why don't you simply run "top" on your board, then?
+I'm working with a board which is derived from EST SBC8260 with Linux
+2.4.0-test2 where I'm trying to program the MCC in conjunction with TDM1C
+and TDM1D.
+On the same pins, can be configured both SCC3 and SCC4. For this reason I
+have disabled the I/O programming which is performed into the module
+arch/ppc/8260_io/uart.c.
+Now, upgrading the kernel revision, by using the file uart.c of 2.4.18 I
+have performed the same operation but I'm not able to load anymore the
+related mcc driver (with "insmod" command).
+Anybody can give me the some reference to understand what is changed?
 
-Or read /proc/stat?
+Many thanks
 
-Wolfgang Denk
+Gianfranco Morandi
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Put your Nose to the Grindstone!
-                 -- Amalgamated Plastic Surgeons and Toolmakers, Ltd.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
