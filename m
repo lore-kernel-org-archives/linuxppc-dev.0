@@ -1,43 +1,45 @@
-Date: 7 Sep 2002 10:07:46 -0000
-Message-ID: <20020907100746.2950.qmail@mailweb34.rediffmail.com>
-MIME-Version: 1.0
-From: "atul srivastava" <atulsrivastava9@rediffmail.com>
-Reply-To: "atul srivastava" <atulsrivastava9@rediffmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Ramdisk and load_elf_binary problem....
-Content-type: text/plain;
-	format=flowed
+Date: Sat, 7 Sep 2002 08:29:25 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: "Dayton, Dean" <deand@aiinet.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Irq 0 problem
+Message-ID: <20020907152925.GA917@opus.bloom.county>
+References: <638AA0336D7ED411928700D0B7B0D75B0189BAFA@aimail.aiinet.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <638AA0336D7ED411928700D0B7B0D75B0189BAFA@aimail.aiinet.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Does anybody have a hint towards my problem.?
+On Fri, Sep 06, 2002 at 01:32:12PM -0400, Dayton, Dean wrote:
 
-on using Ramdisk
+> I have been trying to port Linux 2.4.18-pre2 to the MPC8266ADS board. I
+> grabbed the SCC uart.c from 2.5.31.
 
-1. I get original and computed both CRC and legth o.k
-2. Ramdisk uncompression goes fine..
-3.filesysten ext2_fs mount also goes fine.
+Why did you grab a file from 2.5.31?  And is there any reason you aren't
+using 2.4.18 final or 2.4.19 final instead ?
 
-but when I try to exec any programme say "/bin/sh"
-in do_execve() it calls load_elf_binary
-  , there it checks for,
+> The kernel loads and runs, the ramdisk is uncompressed and mounted. Then I
+> take an interrupt with SIVEC=0. SIVEC is now 0 everytime it is read, this
+> causes do_IRQ() to go into an endless loop.
+[snip]
+> -		if (irq >= 0)
+> +		if (irq > 0)
+> 			ppc_irq_dispatch_handler()
+[snip]
+> This appears to solve (or at least hide) my problem. Has anyone else run
+> into this? I think it is occuring during the open of the console port (SCC
+> 1). I ran into the same thing while trying to run on an EST8260 using an SMC
+> as the console. Am I simply covering up a problem with a misconfigured
+> device driver?
 
-if(elf_ex.e_type != ET_EXEC && elf_ex.e_type != ET_DYN)
-goto out;
+I think the problem is you're using a kernel which doesn't have the 8260
+irq function updated to return -1 when there's nothing pending..  Can
+you verify that this is a problem with 2.4.19 or 2.4.18 ?
 
-in my case e_type always comes 0x200 that is not expected anway
-and it fails there.
-
-also earlier when i try to open "/dev/ttS0" it reports
-error 2 that is "no such file found"
-
-since i amn't subscribed to list pls. cc to me.
-
-Thanks...
-Atul
-
-__________________________________________________________
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
