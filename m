@@ -1,55 +1,41 @@
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Mark Chambers <markc@mail.com>
+Reply-To: markc@mail.com
+To: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Control-C in bash ???
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: markc@mail.com
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <200301131409.00113.markc@mail.com>
-References: <200301131409.00113.markc@mail.com>
-Content-Type: text/plain
-Date: 14 Jan 2003 13:31:45 +0000
-Message-Id: <1042551106.8605.109.camel@zambia>
-Mime-Version: 1.0
+Date: Tue, 14 Jan 2003 08:44:09 -0500
+References: <20030113193102.E7B7CC608E@atlas.denx.de>
+In-Reply-To: <20030113193102.E7B7CC608E@atlas.denx.de>
+MIME-Version: 1.0
+Message-Id: <200301140844.09234.markc@mail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Mark,
+Thanks for your help on this one.  I changed the last line of etc/inittab to
 
-I had exactly the same problem with ash (busybox version), but I found
-it went away when I replaced
+        3:2345:respawn:/sbin/mingetty --noclear tts/0
 
-ttyS0::respawn:-/bin/sh
+and added "tts/0" to etc/securetty and now I get a console with job control.
+I don't know how long it would have taken me to discover "job control" or "controlling tty"!!
+(I'm learning linux from the ground up)
 
-in /etc/inittab with
-
-ttyS0::respawn:/sbin/login
-
-I have no idea why....
-
-Alex
+Thanks again,
+Mark Chambers
 
 
+Original message:
+> On a PC, I can, for instance, enter "ping 192.168.1.4", then hit Control-C and
+> stop the ping.  For the life of me, I can't figure out how to do the same on
+> my MPC860 system!!!
 
-On Mon, 2003-01-13 at 19:09, Mark Chambers wrote:
->
-> On a PC, I can, for instance, enter "ping 192.168.1.4", then hit Control-C
-> and stop the ping.  For the life of me, I can't figure out how to do the
-> same on my MPC860 system!!!
->
 > I have an MPC860 running 2.4.19, with a mostly unmodified eldk distribution
 > from Wolfgang Denx.  I did modify the init script to use /dev/console instead
 > of /ttyx (standard driver using SMC1).  I'd not only like a solution, I want
-> to undertand how cancelling a shell command is supposed to work  - I've poked
-> around and I can't figure out what's supposed to happen - Does the shell
-> generate a SIGINT, or the uart driver, or what?  Any enlightenment will be
-> greatly appreciated...
->
-> Mark Chambers
-> markc@mail.com
->
-> -------------------------------------------------------
->
->
->
+> to undertand how this works - I've poked around and I can't figure out what's
+> supposed to happen - Is the shell that generates a SIGINT, or the uart
+> driver, or what?  Any enlightenment will be greatly appreciated...
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
