@@ -1,28 +1,41 @@
-Date: Fri, 10 Sep 1999 10:51:59 -0700 (PDT)
-From: Brad Midgley <brad@pht.com>
-To: Sacha Varma <sacha@ssl.co.uk>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: altivec
-In-Reply-To: <Pine.LNX.4.10.9909101030100.31612-100000@web1.turbolinux.com>
-Message-ID: <Pine.LNX.4.10.9909101048480.31817-100000@web1.turbolinux.com>
+Message-ID: <37D947AA.85EE4650@ne.mediaone.net>
+Date: Fri, 10 Sep 1999 18:02:18 +0000
+From: Vitaly Oratovsky <vitaly_oratovsky@ne.mediaone.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: altivec
+References: <Pine.LNX.4.10.9909101030100.31612-100000@web1.turbolinux.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-i should have explained this more. the library can't be abstracted at the
-level of "multiply these numbers..." it would have to be abstracted at a
-much higher level, such as "perform a single-precision fft up to frequency
-q" with a mathematician devising what high-level operations are useful.
+Brad Midgley wrote:
 
-> the tough part will be designing a shared library and abstracting its
-> entry points with an eye on performance both with and without simd
-> capability. this is a problem that transcends altivec--it is relevant
-> to simd processor extensions on other architectures too.
+> the kernel needs to know how & when to stack and unstack the altivec
+> registers.
 
-Brad
-brad@pht.com | http://www.pht.com/~brad/
+To really do Altivec vector regs save/restore efficiently will require
+cooperation between kernel and compiler.  Altivec architecture defines
+a VRSAVE register, which is just a general purpose 32-bit wide bitmask.
+The intention is for compiler to record usage of altivec registers in
+the prologue of every function which uses them.  Likewise, the epilogue
+is supposed to restore VRSAVE to the caller's state.  Of course, hand-
+written assembly routines have to play by the same rules.
 
+This approach permits saving/restoring the absolute minimum number of
+vector unit regs, and [perhaps more importantly] only when the
+interrupted
+thread was truly using them.
+
+A less ambitious approach which doesn't require the compiler to mock
+with
+VRSAVE would be to allow the kernel to discover whether a particular
+process
+uses the vector unit by "faulting" in the vector unit enable bit in MSR
+for
+each process individually.
+
+Cheers, Vitaly.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
