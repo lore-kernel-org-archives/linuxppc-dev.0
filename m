@@ -1,42 +1,38 @@
-Message-ID: <005601bf3648$6e726840$73f102de@sjzhu>
-Reply-To: "Shuangjun Zhu (r44089)" <r44089@email.sps.mot.com>
-From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
-To: "LinuxPPC Developers List" <linuxppc-dev@lists.linuxppc.org>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: ~{;X84~}: Need help: shell for MPC860
-Date: Wed, 24 Nov 1999 14:51:59 +0800
+Date: Wed, 24 Nov 1999 08:32:59 +0100 (MET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Cort Dougan <cort@fsmlabs.com>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
+        paulus@linuxcare.com
+Subject: Re: bootloader & head.S weirdness (patch)
+In-Reply-To: <19991123132116.A17270@hq.fsmlabs.com>
+Message-ID: <Pine.GSO.4.10.9911240831570.4319-100000@dandelion.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain;	charset="hz-gb-2312"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sorry, it's the wrong of the EST visionICE tool.
-Now Linux 2.2.13 is running on my MPC860 board now.
+On Tue, 23 Nov 1999, Cort Dougan wrote:
+> } No we don't. The structure isn't that large, and the kernel is padded to a multiple
+> } of the page size anyway (the structure is after the kernel in memory).
+> } 
+> } Gr{oetje,eeting}s,
+> } P.S. How much Belgian Beer do I have to send you to convince you to put your
+> }      comments _below_ the text you quote, like all other people do? ;-)
+> 
+> If you send me Juliper (I think that was the one I had) just one will do :)
 
------Original Message-----
-From: Shuangjun Zhu (r44089) <r44089@email.sps.mot.com>
-To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
-Cc: linuxppc-embedded@lists.linuxppc.org <linuxppc-embedded@lists.linuxppc.org>
-Date: Wednesday, November 24, 1999 2:08 PM
-Subject: Need help: shell for MPC860
+Jupiler (`Mannen weten waarom' / `Les hommes savent pourqoui' / `Real men know
+why')...
 
+Gr{oetje,eeting}s,
 
->
->Hello,everyone
->
->I built the kernel version 2.2.13 for a MPC860 board.
->After the kernel boot and mount the RAMDISK as the root,
->it begins to execute the /bin/sh, it catch a software emulation
->exception. Is something wrong with the file linux/arch/ppc/kernel/softemu8xx.c?
->
->Any suggestion?
->Thanks in advanced.
->
->
->Shuangjun
->
->
+						Geert
+
+--
+Geert Uytterhoeven ----------------- Sony Suprastructure Center Europe (SUPC-E)
+Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
+Phone +32-2-7248632 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
