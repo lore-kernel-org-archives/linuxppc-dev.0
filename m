@@ -1,39 +1,39 @@
-To: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
+Message-ID: <3D541AE9.40007@dslextreme.com>
+Date: Fri, 09 Aug 2002 12:41:29 -0700
+From: akuster <akuster@dslextreme.com>
+Reply-To: akuster@dslextreme.com
+MIME-Version: 1.0
+To: David Gibson <david@gibson.dropbear.id.au>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: /dev/flash and MTD 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 09 Aug 2002 11:34:58 PDT."
-             <3D540B52.8080709@redswitch.com>
-Date: Fri, 09 Aug 2002 21:33:08 +0200
-Message-Id: <20020809193313.21BAA10DE1@denx.denx.de>
+Subject: Re: First steps to OCP device model integration
+References: <20020809042605.GC23642@zax>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3D540B52.8080709@redswitch.com> you wrote:
-> To enable MTD on a board, do we still need /dev/flash? In other words,
+David Gibson wrote:
+> THe patch below implements the first steps in transitioning the
+> handling of 4xx OCP devices to the unfied device model (in 2.5).  So
+> far the code just registers an ocp bus and registers each device
+> described in core_ocp on that bus.  The next step is to convert the
+> actual device drivers so that that they register with the unified
+> driver tree rather than through the old ocp_register() mechanism.
+>
+> I will commit this shortly unless there are serious objections.
+>
 
-No, this is not needed for MTD.  It's  an  alternative  interface  to
-access  flash  memory; we mostly keep it for compatibility with older
-projects, and because it provides some nice features like allowing to
-mmap() the flash (RO).
+I object seriously.
 
-> is there any relationship between /dev/flash and MTD? I found that only
-> on Denx distribution of 2.4.4 there is such a device '/dev/flash'. Thanks.
+  Some of what you have might be useful.:) OCP is not just for 4xx.  In
+fact the name may need to change.  I have been working on overhalling
+this interface and testing the ideas before having a review of the
+changes.  I am on the hook to Paul and others to get this out in the
+open to discuss and am not ready.  So if you could just relax and wait I
+would appriciate it.  I would rather see the 2.5 kernel boot on a few
+4xx boards
 
-These are two independend solutions to the task of  providing  access
-to  flash  memory;  MTD is superior when you also need a block device
-interface.
+Armin
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-When you say "I wrote a program that crashed  Windows",  people  just
-stare  at you blankly and say "Hey, I got those with the system, *for
-free*".        - Linus Torvalds in <3itc77$9lj@ninurta.fer.uni-lj.si>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
