@@ -1,143 +1,51 @@
-Message-ID: <20030207170213.99854.qmail@web41203.mail.yahoo.com>
-Date: Fri, 7 Feb 2003 09:02:13 -0800 (PST)
-From: Prakash kanthi <pkanthi@yahoo.com>
-Subject: Re: Kernel build: not recognizing 'tlbre' instruction
-To: brian.auld@adic.com, linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <995FF289C9D69747A09E42992644595405B23656@penguin.adic.com>
-MIME-Version: 1.0
+Date: Fri, 7 Feb 2003 10:12:22 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: was: FEC on MPC860T & race condition
+Message-ID: <20030207171222.GA21351@ip68-0-152-218.tc.ph.cox.net>
+References: <3E395B40.9090506@imc-berlin.de> <3E39898E.5060804@embeddededge.com> <3E3A3EE9.7000608@imc-berlin.de> <20030203210959.GA7857@ip68-0-152-218.tc.ph.cox.net> <3E3F7C29.8030807@imc-berlin.de> <20030204160401.GA30936@ip68-0-152-218.tc.ph.cox.net> <3E3FE6D0.1010600@imc-berlin.de> <20030204193224.GB3522@ip68-0-152-218.tc.ph.cox.net> <3E436221.8040903@imc-berlin.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3E436221.8040903@imc-berlin.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brian,
+On Fri, Feb 07, 2003 at 08:37:05AM +0100, Steven Scholz wrote:
+> Tom Rini wrote:
+> >...
+> >Okay.  Moving along the process, I have a comment:
+> >
+> >
+> >>@@ -2285,6 +2278,39 @@
+> >>	fep->old_status = 0;
+> >>#endif	/* CONFIG_USE_MDIO */
+> >>
+> >>+#ifdef CONFIG_USE_MDIO
+> >>+# ifndef PHY_INTERRUPT
+> >>+#  error Want to use MII, but PHY_INTERRUPT not defined!
+> >>+# endif
+> >>+	/* before requesting the irq, we should wait until PHY is discovered
+> >>+	 * to avoid race conditions
+> >>+	 */
+> >>+	while (!fep->phy_id_done) {
+> >>+		udelay(5);
+> >>+	}
+> >
+> >
+> >I believe this is wrong, in that trying to udelay() here is a bad idea.
+> >I don't have the time right now, but I suspect google, or #kernelnewbies
+> >might be able to suggest a more appropriate way of waiting here.
+> >
+> >Or perhaps classes have fried my mind, and this is correct.
+> No. I bet you're right.
+> But can you make any suggestion on how to wait for some I/O to become ready?
 
-Following could be the problems.
+How about what Dan mentioned, with a function pointer and whatnot?
 
-1. Compiler flags.
-2. 'mmu' pin is not grounded in PPC configuration.
-
-GoodLuck,
-Prakash
-
-
---- brian.auld@adic.com wrote:
->
-> Using ELDK to run embedded linux on 440GP eval
-> board.
->
-> After getting the above running, I decided to test
-> the waters with a custom
-> kernel another group in our company has used on a
-> custom 440GP board
-> (Ultimately, the directive from mgmt is to leverage
-> the work done on this
-> other custom board). This group used a Mac as their
-> development server as
-> opposed to cross-developing on an x86.
->
-> When I try to build this 'custom kernel', I get the
-> following error:
->
-> ...
-> Unrecognized opcode: 'tlbre' in the file
-> arch/ppc/kernel/misc.S
-> ...
->
-> I diffed the custom kernel against the kernel I'm
-> successfully running on
-> ebony (ELDK kernel), and have attached it below. It
-> seems the the previous
-> version of misc.S (1.76) had a smattering of 'tlbre'
-> commands, but in 1.77
-> they are gone.
->
-> Any thoughts or background? I read some background
-> info on the mailing list
-> about the use of mcpu=403/405 for ppc_4xx. I also
-> read the documentation for
-> the 405 and compared it to the 440GP, and they both
-> support the tlbre
-> opcode.
->
-> Why is the ELDK not recognizing this opcode? I also
-> tried cross-compiling
-> this kernel with a backup 'made by hand' gnu
-> tool-chain and I got the same
-> error.
->
-> General question: Is there a way to get previous
-> versions of
-> linuxppc_2_4_devel kernels?
->
->
-==========================================================================
-> --- linuxppc/arch/ppc/kernel/misc.S	2003-02-04
-> 10:02:50.000000000 -0500
-> +++ custom-kernel/arch/ppc/kernel/misc.S	2003-02-06
-> 06:56:16.000000000 -0500
-> @@ -1,5 +1,5 @@
->  /*
-> - * BK Id: SCCS/s.misc.S 1.77 10/09/02 10:47:02
-> paulus
-> + * BK Id: SCCS/s.misc.S 1.76 09/20/02 07:53:45
-> trini
->   */
->  /*
->   * This file contains miscellaneous low-level
-> functions.
-> @@ -478,6 +478,42 @@
->  #endif /* CONFIG_40x */
->  	blr
->
-> +
-> +/*
-> + * invalidate_dcache_range(unsigned long start,
-> unsigned long stop)
-> + */
-> +_GLOBAL(invalidate_icache_range)
-> +	li	r5,L1_CACHE_LINE_SIZE-1
-> +	andc	r3,r3,r5
-> +	subf	r4,r3,r4
-> +	add	r4,r4,r5
-> +	srwi.	r4,r4,LG_L1_CACHE_LINE_SIZE
-> +	beqlr
-> +	mtctr	r4
-> +
-> +1:	icbi	0,r3
-> +	addi	r3,r3,L1_CACHE_LINE_SIZE
-> +	bdnz	1b
-> +	sync				/* wait for icbi's to get to ram */
-> +	blr
-> +
-> +
-> +/*
-> + * void get_tlb(int* entry, int index)
-> + */
-> +_GLOBAL(get_tlb)
-> +        tlbre	r0, r4, 0
-> +	stw	r0, 4(r3)
-> +	mfspr	r0, SPRN_MMUCR
-> +	andi.	r0, r0, PPC440_MMUCR_TID
-> +	stw	r0, 0(r3)
-> +        tlbre	r0, r4, 1
-> +	stw	r0, 8(r3)
-> +        tlbre	r0, r4, 2
-> +	stw	r0, 12(r3)
-> +	blr
-> +
-> +
->  /*
->   * Flush instruction cache.
->   * This is a no-op on the 601.
->
-============================================================================
->
-> Thanks
->
-> -- Brian
->
->
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
