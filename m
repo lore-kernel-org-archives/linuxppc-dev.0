@@ -1,23 +1,33 @@
-Return-Path: <MGIA2172@motorola.com>
-Received: from motgate3.mot.com (motgate3.mot.com [144.189.100.103])
-	by ozlabs.org (Postfix) with ESMTP id F21B02BDB5
+Return-Path: <kjoutwater@raytheon.com>
+Received: from dfw-gate2.raytheon.com (dfw-gate2.raytheon.com [199.46.199.231])
+	by ozlabs.org (Postfix) with ESMTP id 809722BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Nov 2004 09:37:52 +1100 (EST)
-Received: from az33exr04.mot.com (pobox4.mot.com [10.64.251.243])
-	by motgate3.mot.com (8.12.11/Motgate3) with ESMTP id iAHMfZqr023151
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Nov 2004 15:41:35 -0700 (MST)
-Received: from pa06exm02.e1.bcs.mot.com (pa06exm02.e1.bcs.mot.com
-	[168.84.156.53])
-	by az33exr04.mot.com (Motorola/az33exr04) with ESMTP id iAHKbDTp030140
-	for <linuxppc-embedded@ozlabs.org>; Wed, 17 Nov 2004 14:37:14 -0600
-Message-ID: <852DAFF1FD3BD611B68000D0B76FE77409F47A29@pa06exm01.e1.bcs.mot.com>
-From: Mar James-MGIA2172 <MGIA2172@motorola.com>
-To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Date: Wed, 17 Nov 2004 17:37:31 -0500
+	Thu, 18 Nov 2004 10:28:05 +1100 (EST)
+Received: from ds02c00.directory.ray.com (ds02c00.directory.ray.com
+	[147.25.138.118])
+	by dfw-gate2.raytheon.com (8.12.10/8.12.10) with ESMTP id
+	iAHMT00S010637 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 17 Nov 2004 16:29:00 -0600 (CST)
+Received: from ds02c00 (localhost [127.0.0.1])
+	by ds02c00.directory.ray.com (Switch-3.1.4/Switch-3.1.0) with ESMTP id
+	iAHMSriJ002437
+	for <linuxppc-embedded@ozlabs.org>; Wed, 17 Nov 2004 22:28:53 GMT
+Received: from ds02c00.directory.ray.com with LMTP by ds02c00
+	(2.0.6/sieved-2-0-build-559)
+	for <linuxppc-embedded@ozlabs.org>; Wed, 17 Nov 2004 22:28:52 +0000
+Received: from tu2-mta01.rsc.raytheon.com (tu2-mta01.RSC.RAYTHEON.COM
+	[147.24.232.78])
+	by ds02c00.directory.ray.com (Switch-3.1.4/Switch-3.1.0) with ESMTP id
+	iAHMSHom002202
+	sender kjoutwater@raytheon.com for <linuxppc-embedded@ozlabs.org>;
+	Wed, 17 Nov 2004 22:28:21 GMT
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: 2.6.x IPsec
+Message-ID: <OF58CA8327.E29A3083-ON07256F4F.007B13AE-07256F4F.007B6FBC@mck.us.ray.com>
+From: Keith J Outwater <kjoutwater@raytheon.com>
+Date: Wed, 17 Nov 2004 15:28:00 -0700
+Content-Type: text/plain; charset="us-ascii"
+Subject: Best kernel for MPC8540 support?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,19 +38,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 18, 2004 at 09:41:17PM -0400, Mar James-MGIA2172 wrote:
->> Has anyone gotten IPsec to work on 2.6.x ppc?
->> In particular, success in compiling ipsec-tools.
->>  
->> Jim
-
-> I haven't - but I'll have to. 
->
-> What problems you encountered?
+Hello all - 
+I am starting a kernel port to a custom design based on the MPC8540.
+Does anyone have a suggestion (and a download link) as to the best 2.4.x 
+series kernel on which to base the port?
 
 
-I was having problems cross-compiling the ipsec tools.
-But then I just used the binaries from debian.org, and
-IPsec worked flawlessly for 2.6.9.
-
-Jim
+Thanks,
+Keith Outwater
