@@ -1,19 +1,19 @@
-Return-Path: <tglx@linutronix.de>
-Received: from tglx.tec.linutronix.de (pD953A967.dip.t-dialin.net
-	[217.83.169.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 922A52BF0E
+Return-Path: <aubrey1127@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.204])
+	by ozlabs.org (Postfix) with ESMTP id 97D6C2BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  9 Jan 2005 23:31:26 +1100 (EST)
-Date: Sun, 9 Jan 2005 13:22:11 +0100
-From: tglx@linutronix.de
-Message-ID: <20050109132202.1.patchmail@tglx>
+	Mon, 10 Jan 2005 16:28:03 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id 36so234097wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 09 Jan 2005 21:28:02 -0800 (PST)
+Message-ID: <7f834d4e050109212155be7b19@mail.gmail.com>
+Date: Mon, 10 Jan 2005 13:21:21 +0800
+From: Aubrey Lee <aubrey1127@gmail.com>
+To: linuxppc-embedded@ozlabs.org
 Mime-Version: 1.0
-Content-Type: text/plain
-To: trini@kernel.crashing.org
-Cc: akpm@osdl.org, mingo@elte.hu, linuxppc-embedded@ozlabs.org
-Subject: [PATCH 2.6.10-mm2] Fix idle with interrupts disabled (PPC)
+Content-Type: text/plain; charset=UTF-8
+Subject: Build cross tools for PowerQUICCIII
+Reply-To: Aubrey Lee <aubrey1127@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,37 +24,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The idle-thread-preemption-fix.patch in mm1/2 leads to a stalled box
-on PPC machines which do not provide a powersave function and therefor
-poll the idle loop with interrupts disabled. The patch reenables interrupts.
+     Hi, I want to build cross tools for PowerQUICCIII=EF=BC=88mpc8540, e50=
+0 core=EF=BC=89,=20
+     Had anyone built cross tools successfully by cross-tools-0.28?
+     What type of target should I set? Could you tell me the versions
+you have used?
+     Thank you!
+     Best regards
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
----
- idle.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
----
-Index: 2.6.10-mm2/arch/ppc/kernel/idle.c
-===================================================================
---- 2.6.10-mm2/arch/ppc/kernel/idle.c	(revision 141)
-+++ 2.6.10-mm2/arch/ppc/kernel/idle.c	(working copy)
-@@ -41,14 +41,17 @@
- 	if (!need_resched()) {
- 		if (powersave != NULL)
- 			powersave();
-+		else {
- #ifdef CONFIG_SMP
--		else {
- 			set_thread_flag(TIF_POLLING_NRFLAG);
-+			local_irq_enable();
- 			while (!need_resched())
- 				barrier();
- 			clear_thread_flag(TIF_POLLING_NRFLAG);
-+#else
-+			local_irq_enable();
-+#endif
- 		}
--#endif
- 	}
- 	if (need_resched())
- 		schedule();
+    Aubrey
