@@ -1,38 +1,55 @@
-Subject: Re: nearly-working support for cpufreq on 2004 iBook G4 with 7447A
-	cpu
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: John Steele Scott <toojays@toojays.net>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	Christiaan Welvaart <cjw@daneel.dyndns.org>
-In-Reply-To: <200406022039.07672.toojays@toojays.net>
-References: <200405302331.35357.toojays@toojays.net>
-	 <200405311807.59356.toojays@toojays.net> <1086047232.1930.74.camel@gaston>
-	 <200406022039.07672.toojays@toojays.net>
-Content-Type: text/plain
-Message-Id: <1086301583.1838.39.camel@gaston>
-Mime-Version: 1.0
-Date: Fri, 04 Jun 2004 08:26:24 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16575.53851.142603.669967@cargo.ozlabs.ibm.com>
+Date: Fri, 4 Jun 2004 11:37:31 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Stef Simoens" <stef.simoens@pi.be>
+Cc: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: align.c handling of lswi / stswi
+In-Reply-To: <HYMQXY$68CD56C10E486DAA5C77966D406CE84C@scarlet.be>
+References: <HYMQXY$68CD56C10E486DAA5C77966D406CE84C@scarlet.be>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2004-06-02 at 21:08, John Steele Scott wrote:
+Stef Simoens writes:
 
-> I don't know much about manipulating the GPIO stuff, but I guess I will learn
-> it sometime in the next few days and hopefully get to a fully working patch.
+> While testing the PPC601 MQ patch, some programs were giving
+> reproducible BUS errors. gcc 601-optimized code uses lswi / stswi,
+> and the fix_alignment function didn't know how to handle this. I
+> worked the alignment fix out for these instructions
+> (arch/ppc/kernel/align.c)
+>
+> My changes work (testing right now, with the MQ patch), however I'm
+> not sure if my coding style is OK.
+> The main changes are:
+> - "union data" to "union data[7]" to store up to 4 * 8 = 32 bytes.
 
-GPIO just means "general purpose IO", it's just IO bits hanging out of
-the KeyLargo chipsets and connected to various things on the motherboard,
-in that case, one is connected to the power supply controller to control
-the power to the CPU.
+Hmmm, it would be nice to do lswx/stswx as well as lswi/stswi, and the
+x versions can do up to 128 bytes.  I think we should just have
+special cases for lsw* and stsw* instead of trying to use the existing
+LD and ST cases.
 
-Look at the cpufreq code for gpios_set_cpuspeed(), it's used on models
-were both the clock frequency and the voltage are controller by GPIOs,
-keep the voltage part. Remember to ramp up the voltage before setting
-the frequency to high, and ramp it down after setting the frequency to
-low.
+> I looked in the 64-bit alignment code (arch/ppc64/kernel/align.c)
+> and found 'switch (nb)' cleaner than the existing 'for (i = 0; i <
+> nb; ++i)'.
 
-Ben.
+It's a matter of taste; the for loop is certainly more compact.
 
+> Is my patch to fix the alignment of stswi / lswi wanted? I'm not
+> planning to use #ifdef because stswi/lswi are valid ppc instructions
+> (however, because of timing, gcc probably won't generate them on non
+> 601).
+
+I think it would be good to handle lswi/stswi properly.  While we are
+at it we should do lswx/stswx and lwm/stmw as well.
+
+> Is it wanted to 'restyle' the ppc32 align.c to the ppc64 version --
+> with only ppc32 instructions and the same functionality of the
+> existing ppc32 align.c of course...
+
+Not particularly.
+
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
