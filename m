@@ -1,55 +1,40 @@
-To: Amit.Lubovsky@infineon.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: u-boot on mbx860 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 18 Sep 2003 16:48:39 +0200."
-             <AD2F581BD7340A4C908AF1AFB066EA3B0E4819@ntah901e.savan.com>
-Date: Thu, 18 Sep 2003 17:17:46 +0200
-Message-Id: <20030918151751.3A948C59E4@atlas.denx.de>
+Date: Thu, 18 Sep 2003 11:00:56 -0500
+Subject: Re: question about UART ST16C2552 
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v552)
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+To: "Yuxiao Xi" <xiyuxiao@harbournetworks.com>
+From: Kumar Gala <kumar.gala@motorola.com>
+In-Reply-To: <200309180127.UAA09566@lists.linuxppc.org>
+Message-Id: <49B80398-E9F1-11D7-8529-000393DBC2E8@motorola.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Amit,
+For 824x the detection code for the on-chip UART does NOT currently
+detect it as a 16550A.  There is a patch that Tom Rini and I are
+working on getting accepted by the serial maintainers, that should fix
+this.
 
-in message <AD2F581BD7340A4C908AF1AFB066EA3B0E4819@ntah901e.savan.com> you wrote:
+However, its not clear to me from your email if you also have a
+ST16C2552 in addition to the DUART on the 8240.
+
+- kumar
+
+On Wednesday, September 17, 2003, at 08:37 PM, Yuxiao Xi wrote:
+
 >
-> The process has finished sucessfully but after switching the power and
-> setting back the J4 jumper nothing came up.
-
-I'm sorry, but I never used  a  MBX  board  with  PPCBoot  or  U-Boot
-myself, so my experience is limited.
-
-> EPPC-Bug>pflash 4000:83fff fc000100
+> Hi,all,
+>     Does Linux support UART ST16C2552 ?
+>     There is a UART ST16C2552 on my board with CPU ppc8240.
+> While the linux system booting,sometimes function autoconfig(struct
+> serial_state * state) in ./drivers/char/serial.c detected ST16C2552 as
+> 16450,sometimes as 8250,can anyone tell me why?
 >
-> Source Starting/Ending Addresses      =00004000/00087FFE
+> !!!!!!!!!!!!!!!!Yuxiao Xi
+> !!!!!!!!!!!!!!!!xiyuxiao@harbournetworks.com
+> !!!!!!!!!!!!!!!!!!!!2003-09-18
 >
-> Destination Starting/Ending Addresses =FC000100/FC0840FE
->
-> Number of Effective Bytes             =00083FFF (&540671)
 
-There are two obvious errors here:
-
-First, U-Boot must start at offset 0, not  0x100;  I  don't  know  if
-FC000100  is  the correct address - if the "FC" prefix is correct (*)
-then you must program the image to FC000000, not FC000100.
-
-(*) The U-Boot configuration  for  the  MBX-Board  sets  TEXT_BASE  =
-0xFE000000 so please double-check your address.
-
-Second, the image size of >500  kB  is  wrong.  You  must  flash  the
-"u-boot.bin" image, which should be in the 120..130 kB range.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Always borrow money from a pessimist; they don't expect  to  be  paid
-back.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
