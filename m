@@ -1,27 +1,29 @@
-Message-Id: <s0f7edc2.025@EMAIL>
-Date: Fri, 16 Jul 2004 14:55:34 +0530
-From: "Rupesh S" <rupeshs@myw.ltindia.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Why not kmalloc() ??
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <54144.127.0.0.1.1089973521.squirrel@junkerhq.net>
+In-Reply-To: <s0f7edc2.025@EMAIL>
+References: <s0f7edc2.025@EMAIL>
+Date: Fri, 16 Jul 2004 12:25:21 +0200 (CEST)
+Subject: kernel 2.4.26 doesn't seem to work with a MPC859T
+From: "Pedro Aguilar" <paguilar@junkerhq.net>
+To: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-I just figured out that I need to use m8xx_cpm_hostalloc() to allocate memory for "buffer" that needs to be attached to the "Buffer Descriptor" of an  MPC8xx CPM peripheral (like IIC, SPI, SCC etc). Instead, if I try to use kmalloc() or a static memory allocation, my driver isn't working.
+I have a custom board with a MPC859T. When I do the 'gmake xconfig' in the
+ processor type option, the MPC859T does not appear. I have tried the 860L
+and FADS but the kernel does not boot, it doesn't print any message.
 
-1) Can somebody throw some light on what exactly is the difference between m8xx_cpm_hostalloc() and kmalloc().
-2) Why is the difference important in ppc linux ?
+Wich processor type could be compatible with the 859T?
+Are there other options that are affecting this behaviour?
 
+I download a vanilla kernel 2.4.26 and I'm using ELDK 3.0.
 
+Thanks in advance.
 
-
-Thanks
---
-Rupesh S
-
+Pedro Aguilar
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
