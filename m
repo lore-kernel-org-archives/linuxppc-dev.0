@@ -1,47 +1,42 @@
-Message-ID: <38AD50A9.B95BEA7F@execpc.com>
-Date: Fri, 18 Feb 2000 08:01:13 -0600
-From: Joseph Garcia <jpgarcia@execpc.com>
+Message-ID: <38AD7505.8F8A4595@cnet.francetelecom.fr>
+Date: Fri, 18 Feb 2000 16:36:22 +0000
+From: FASSINO Jean-Philippe <jeanphilippe.fassino@cnet.francetelecom.fr>
 MIME-Version: 1.0
 To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: bmac module broken
-Content-Type: text/plain; charset=iso-2022-jp
+Subject: Yaboot vs BootX
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-With the recent mention of making dmasound a module to turn off sound when not
-in use and save power, i wondered about the status of two other chips in the
-pbg3.  Specifically, the bmac, and the mesh.  Bmac panics upon a second install,
-so something is missing in the cleanup i guess.  also, it doesn't power it off.
-borrowing from the sleep code, adding the following lines before freeing
-bmac_devs does turn it off.  i dont know if i need the reset.
+Hello,
 
-    feature_set(bp->node, FEATURE_BMac_reset);
-    udelay(10000);
-    feature_clear(bp->node, FEATURE_BMac_IO_enable);
-    udelay(10000);
+just a question about yaboot.
+I'm using BootX to boot linux on my powerbook G3 and powermac G4.
 
-However, it still panics on a second install.  this is similar to the problem
-with dmasound a few months ago.  I think i tried changing the free_irq's second
-parameter to that of the last param in the corresponding request_irq, but it
-didn't work for me.  Ideas/patches?
+Does bootX will be maintained any more ?
 
-Also, mesh would be a nice one to modulize.  building the module, it complains
-about kernel version.  modversions are not enabled in this.  i plan on a fix.
-Also, there is no module_init or cleanup in it, but other scsi modules dont
-either.  But like the others, I'd want to be able to rmmod this just so it turns
-off the chip, and later i can reinstall it without a panic.  I'd think the
-powerdown would have to go in the cleanup since the only calls to mesh_power are
-in init(on only) and sleep.  Any tips?
+Does yaboot or bootX is better ?
 
-Any other chips that can/should be turned off?  are media bays are off when not
-in use?  Pcmcia?
+My disk is partionning with 4 partitions (1: HFS, 2: sap, 3: ext2
+system, 4: ext2 data)
 
-Thank you for your time.
+Does i can install yaboot without reinstall linux just by kill HFS
+partition,
+cut it in two other partition and install yaboot in one and macos in
+second ?
+
+Thanks
+
+Jean-Philippe
+
+PS: sorry for my bad english !
 
 --
-Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
-CS Undergraduate                      Student Employee - Systems Programmer
-University of Wisconsin - Madison                            UW Lidar Group
+--------------------------------------------------------------------------
+Jean-Philippe FASSINO  Tel :  04 76 76 45 52
+CNET : DTL/ASR         mailto:jeanphilippe.fassino@cnet.francetelecom.fr
+--------------------------------------------------------------------------
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
