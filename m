@@ -1,51 +1,35 @@
-Date: Tue, 19 Jan 1999 02:18:17 -0500 (EST)
-From: Scott Venier <scottven@umich.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: problem with 8500
-Message-ID: <Pine.SUN.4.05.9901190159490.10492-100000@toastman.us.itd.umich.edu>
+From: Brad Boyer <flar@cegt201.bradley.edu>
+Message-Id: <199901191033.EAA19277@cegt201.bradley.edu>
+Subject: Re: 15 partitions max prob revisited
+To: kjacob@wantree.com.au (Keith Jacob)
+Date: Tue, 19 Jan 1999 04:33:38 -0600 (CST)
+Cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <199901190430.MAA01225@mule.wantree.com.au> from "Keith Jacob" at Jan 19, 99 03:00:04 pm
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've got an 8500/120.  I've had linuxppc on it for a long time (2.0.25 is
-the kernel that came with it).  I recently got another harddrive, so I
-though I'd install pre-R5 on it.  Here's where I ran into the problems.  I
-posted them on linuxppc-user, but didn't get any response.
+> So the question is: can I add more devices (e.g. sdb16, sdb17, ...), or 
+> do I need to "reclaim" some HFS partitions if I want more ext2 ones? BTW, 
+> it was the installer that choked on the extra partitions I had created, 
+> so I would need to know how to fix that as well (if possible).
+> 
+> I'm sure this is not a Powermac/Linux prob, per se, but perhaps others 
+> have had this problem and found a neat fix for it (although HFS+ is not a 
+> solution for me until the Mac HFS+ disk tools improve).
 
-The problem comes when mounting the newly created filesystems.  The mount
-fails when done from the installer or with mount on tty2.  tty4 shows me
-what the problem is...  My root partition is supposed to be sdb2
-(major/minor 8,18).  The error message on tty4 is (sorry, I can't paste
-the exact one) VFS: couldn't find ext2 fs on device 08:12.  I check the
-device file and it is correctly set to 8,18.  I've created new device
-files at 8,18.  Nothing seems to help.  It always tries 08:12.
+No, this is a Linux problem.  You cannot have more than 15 partitions
+on a drive because there are not device numbers allocated for anything
+higher than partition number 15.  So even if you create a partion 16,
+there is no way to access it under Linux.  This is the way that the
+device numbers were allocated.  As far as I know, there isn't a
+reasonable way to change this either.  Sorry I have to be the bearer
+of bad news, but that's the way things currently stand.
 
-This happens with 2.2.0pre2, 2.1.121, 2.1.131 (all booted from BootX)  I
-tried to boot the 2.0.25 kernel that my old install uses, but BootX just
-freezes on that kernel.  The old install still works fine.  It's on sdc.
-The old install has the same problem with trying to mount the new drive.
-
-sda is on the internal scsi chain, id 0 (mac os)
-sdb is on the internal scsi chain, id 4
-sdc is on the external scsi chain, id 1
-
-This one has me quite stumpped.  I can't come up with any reason why it
-tries a different minor number then the one on the device file.
-
-Thanks
-
-Scott
-
-=====================================================================
-Scott Venier               *ResComp Senior Network Support Technician
-scottven@umich.edu                        *Consultant for Ingematics,
-scott@compu-aid.com                     a division of Compu-Aid, Inc.
----------------------------------------------------------------------
-I'm not as dorky as I used to be,
-                             only because now it's cool to be a geek.
-
+       Brad Boyer
+       flar@cegt201.bradley.edu
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
