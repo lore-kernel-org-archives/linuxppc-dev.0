@@ -1,37 +1,29 @@
-Message-ID: <3C18336D.7030706@embeddededge.com>
-Date: Wed, 12 Dec 2001 23:49:49 -0500
+Message-ID: <3C18445A.80505@embeddededge.com>
+Date: Thu, 13 Dec 2001 01:02:02 -0500
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Steve Rossi <srossi@labs.mot.com>
-Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: high priority interrupts disabled - problem found
-References: <3C112297.6DE37608@labs.mot.com> <3C114C63.3050102@embeddededge.com> <3C14F91F.F382ABE3@labs.mot.com> <3C177748.1A1342C2@labs.mot.com> <3C17E3B4.9E73B22E@labs.mot.com>
+To: Andrew Dixon <andrew.dixon@seranoa.com>
+Cc: ppclist <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: root=/dev/nfs on sbc8260
+References: <3C17E07F.7144B7BF@seranoa.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steve Rossi wrote:
+Andrew Dixon wrote:
 
 
-> So the problem is that mask & ack only masks the pending interrupts....
+> Any insight that people could give would be greatly appreciated.
+It's either the FCC or the server.  Since you have the FCC working in PPCBoot
+and I've used FCC2 on other boards, I may assume the driver is working.
 
-You are right.  Sorry, but I didn't have time today to reply to your first
-message.  The problem with the 8xx (and 8260, and 4xx) is there isn't any
-notion of priorities within the interrupt nesting.  As you have seen, any
-interrupt can interrupt another, and although SIVEC (or the software bit
-search) gives us the highest priority pending interrupt, once we enable
-them again we get the next one delivered.
-
-We should mask all lower priority interrupts, and the challenge is keeping
-the proper nesting of the masks so the nested interrupts can be "unwound"
-properly.  I'm thinking about it, and since you have been looking at the
-functions so closely, if you have any implementation details let us know :-).
-Perhaps we could look at the pending and enabled masks and unmask up to the
-next pending interrupt to be serviced.
+Since you have DHCP/BOOTP configured in the kernel, do you have a dhcp server
+and can you simply try 'root=/dev/nfs rw ip=any' and see if you can talk to
+dhcp?  You could also use your favorite network sniffer to see what traffic,
+if any, went along the network.
 
 Thanks.
-
 
 	-- Dan
 
