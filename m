@@ -1,51 +1,46 @@
-In-Reply-To: <001301c489f8$82f426b0$5201a8c0@GEG2400>
-References: <001301c489f8$82f426b0$5201a8c0@GEG2400>
+In-Reply-To: <001201c489f6$926db540$5201a8c0@GEG2400>
+References: <001201c489f6$926db540$5201a8c0@GEG2400>
 Mime-Version: 1.0 (Apple Message framework v619)
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <853DF87E-F5F7-11D8-B036-000393DBC2E8@freescale.com>
+Message-Id: <C9701947-F5F7-11D8-B036-000393DBC2E8@freescale.com>
 Cc: <linuxppc-embedded@lists.linuxppc.org>
 From: Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: MPC8560 util.S compilation error with E500 core support
-Date: Tue, 24 Aug 2004 13:00:44 -0500
+Subject: Re: MPC8560 boot console (CPM SCC) driver problem
+Date: Tue, 24 Aug 2004 13:02:39 -0500
 To: =?ISO-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Most of the boards that use 85xx use u-boot as their bootloader.  This
-code does not get built for kernel images loaded by u-boot, and this
-does not currently build for e500.
-
-The issue is that mtsrin is 'classic' ppc instruction that does not
-exist on e500.  If you want to use the common boot code you will need
-to go through the effort of making it work for e500 and 85xx.
-
-- kumar
-
-On Aug 24, 2004, at 11:36 AM, Gérard Guével wrote:
+On Aug 24, 2004, at 11:22 AM, Gérard Guével wrote:
 
 >
 > Hi,
 >
-> I first download a 2.6.7 Linux kernel to port it to a custom 8560
-> board.
-> The ./arch/ppc/boot/common/util.S compiles fine.
+> I download a 2.6.8 Linux kernel to port it to a custom 8560 board
+> similar to MPC8560_ADS board..
 >
-> Then I download a 2.6.8 kernel. The same file util.S does not
-> compile any more because of "mtsrin" instruction not found with E500.
+> In the arch/ppc/boot directory there is no 85xx_io directory with
+> a CPM uart driver.
 >
-> Between the 2 kernels, the -me500 option is distributed all over the
-> ./arch/ppc directory. So the ./arch/ppc/boot is compiled with this
-> option
-> and fails.
+> The kernel link waits for some serial basic functions like
+> serial_getc().
 >
-> What is the right solution ?
-> Compile the boot whitout -me500 option or change util.S code ?
+> I found the generic ./drivers/serial/cpm_uart driver, but it seems to
+> only
+> be
+> used later when Linux is installed.
 >
-> Thanks for any idea.
-> Gérard Guével
->
->
+> Surely I miss something.
+> How can I have a console for my boot ?
+> Are 8260 cpm2 definitions compatible with 85xx ?
+
+The common boot code in the kernel has not been ported to e500 or 85xx.
+Thus the lack of proper serial support for the 8560.  I would recommend
+using u-boot as the boot loader.  U-boot already has support for the
+8560 and several boards.
+
+- kumar
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
