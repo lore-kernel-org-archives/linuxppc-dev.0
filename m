@@ -1,82 +1,38 @@
-Message-ID: <392C0B5D.A87105C@embeddededge.com>
-Date: Wed, 24 May 2000 13:03:25 -0400
+Message-ID: <392C0CFE.8FE51FCF@embeddededge.com>
+Date: Wed, 24 May 2000 13:10:22 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: mporter@mvista.com
-CC: tjroberts@lucent.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: QUERY: Embedded PowerPC Linux?
-References: <39243D0C.68406C9D@lucent.com> <slrn8iernk.lpg.mmporter@liberty.chnd1.az.home.com> <39289187.3AEDEE47@chicago.avenew.com> <slrn8ik4mu.349.mmporter@liberty.chnd1.az.home.com>
+To: Brent <bimhoff@ns1.planetspork.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MBX boot problems
+References: <Pine.GSO.4.05.10005211739380.9894-100000@ns1.planetspork.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matt Porter wrote:
+Brent wrote:
 
-> >Good advice, and that's what I was doing. However -- head.S is
-> >incredibly convuoluted and complicated -- it's like someone insisted on
-> >shaving nanoseconds and bytes everywhere possible, which is silly given
-> >the rest of Linux....
->
-> head.S is the start of everything.
+> Memory: 67572k available (732k kernel code, 1292k data, 36k init)
+> [c0000000,c440 0000]
+> PCI: Probing PCI hardware
+> NIP: C00085A4 XER: 20000000 LR: C0008314 REGS: c00ce958 TRAP: 0200
+> MSR: 00001932 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+> TASK = c00ccb08[0] 'swapper' mm->pgd c00ca000 Last syscall: 0
+> last math 00000000
+> GPR00: 0000000C C00CEA48 C00CCB08 00000086 00000000 0000000E C00CEA80
+> 00000000
+> GPR08: FA210500 0000000D 0000000C FA210500 C00CEA68 00000000 00000000
+> 00000000
 
+The kernel is built for a system that has the Tundra QSpan PCI
+bridge.  Your system doesn't have one or it is not working.  The
+machine check exception occurred when it tried to probe for devices.
 
-There is nothing that should be modified in kernel/head.S for any
-board/system port.  This file looks convoluted and complicated because
-we are working with limited resources, touching special processor
-registers and changing processor state.  There may be situations where it
-appears we are trying to shave nanoseconds, but this is often due to
-alignment or other processor restrictions.  While the techniques may
-look the same, the reasons are different.
-
-
-> >My other problem is that I do not have any sort of boot ROM, and
-
-> Again, we are talking about kernel/head.S, right?  Well, no.  Linux
-> isn't going to be what you want it to be into you add to it.  The
-
-I will continue to point out that the Linux kernel is not a boot rom.
-You first argue that head.S is too complicated, and then want to make
-it initialize your processor???  I don't get it.  This is not the place
-for processor initialization beyond what is necessary for Linux to
-operate.  There is software in arch/ppc/mbxboot that does a little
-more processor initialization for embedded systems, but that still isn't
-a boot rom.
-
-Further, writing processor initilization functions is very tedious. I
-certainly don't want to be downloading a half megabyte or more of kernel
-just to test a few processor initialization instructions.  When the
-kernel doesn't boot, where do you start?
-
-For example, if you write some minimal boot rom to initialize an 8xx
-or 82xx processor, verify that you can read/write memory, you can boot
-a Linux kernel very quickly.  If you have a boot rom, I can have a Linux
-kernel running in a day or two by changing a couple of lines of code
-in arch/ppc/mbxboot/embed_config.c.  Set up an environment for Linux
-to run, and it does so very easily.
-
-> I have several ports in which I simply set the MSR to a known value, ...
-> .....  I can simply load/boot vmlinux at this point with
-> no problems.
-
-Absolutely.  The code within the Linux kernel is known to work on
-all of these processors.  The more you change it, the less likely this
-is to happen.  Localize your initialization outside of the kernel,
-make it look like something that exists as much as possible, and you
-are running very quickly.
-
-> >I think we need to separate the CPU from the machine....
->
-> It's being worked on as far as making a framework for non-chrp/pmac/prep
-> 6xx/7xx/74xx ports.  There just hasn't been a real pressing need until
-> lately.
-
-The CPU and system/board are separate.  Some boards imply a particular
-CPU, or vice versa.  You have to specify both for the configuration,
-and depending upon which you ask first, you can reduce the selection
-set for the latter.  Updating the configuration choices is just part
-of adding a new board or processor.
-
+Some evidence for this.....First, the message was printed and the
+system immediately failed.  Registers 8 and 11, typically used for
+indirect references, hold the address of the PCI configuration
+registers, and it failed with a machine check exception.....
 
 
 	-- Dan
