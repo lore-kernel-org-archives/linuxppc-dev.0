@@ -1,34 +1,39 @@
-Subject: Re: 2.4.x swim3 performance problem on PM4400 identified
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: mikpe@csd.uu.se
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <16026.33208.382857.751115@gargle.gargle.HOWL>
-References: <16004.27866.270601.561756@gargle.gargle.HOWL>
-	 <16005.35950.570218.844672@nanango.paulus.ozlabs.org>
-	 <16026.33208.382857.751115@gargle.gargle.HOWL>
-Content-Type: text/plain
-Message-Id: <1050314560.5575.68.camel@zion.wanadoo.fr>
-Mime-Version: 1.0
-Date: 14 Apr 2003 12:02:40 +0200
+Message-ID: <20030415034001.20841.qmail@kunk.qbjnet.com>
+Subject: XFS patches and 2.4.20-ben10
+To: linuxppc-dev@lists.linuxppc.org
+Date: Mon, 14 Apr 2003 22:40:01 -0500 (CDT)
+From: Robert E Brose II <bob@kunk.jriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2003-04-14 at 11:39, mikpe@csd.uu.se wrote:
+I've been using xfs for several months and I wanted to apply the
+current devel xfs patches to the 2.4.20-ben10 kernel and ran into
+a name clash in include/linux/sysctl.h.
 
-> I finally got around to testing your updates to swim3.c. I haven't
-> observed any problems with it, and it solved my slow-writes problem.
-> Great work -- thanks.
->
-> There are two compile warnings on unused variables 'swim3_buf' and
-> 'max_wait_inactive' that your update introduces. Did you intend
-> to use them or what?
+In the enumeration of the CTL_VM names, the patch is trying to insert
+VM_PAGEBUF=14
+when there already exists a
+VM_HEAP_STACK_GAP=14
 
-I fixed those in the version I merged in my tree, Paul's updates to
-swim3 are in 2.4.20-ben10.
+VM_HEAP_STACK_GAP=14 doesn't exist in the stock 2.4.20 kernel.
 
-Ben.
+Is there a preferred way to work around this until the problem is
+solved? I assume that changing VM_PAGEBUF=14 to 15 would mean a
+recompile of all the xfs utils as well.
 
+Since there seem to be several patches to the 2.4 kernel
+series with different values for VM_HEAP_STACK_GAP would it be
+safe to assume I can change that? (sorry for the my lack of
+understanding of what is going on here).
+
+Bob
+--
+/~\ The ASCII
+\ / Ribbon Campaign | http://www.qbjnet.com/
+ X  Help cure
+/ \ HTML Email      | public key at http://www.qbjnet.com/key.html
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
