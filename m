@@ -1,27 +1,26 @@
-Message-ID: <3C711A52.8B063685@ardistech.com>
-Date: Mon, 18 Feb 2002 16:14:26 +0100
-From: "bart@ardistech.com" <bart@ardistech.com>
-Reply-To: bart@ardistech.com
+Message-ID: <3C712B65.3040305@embeddededge.com>
+Date: Mon, 18 Feb 2002 11:27:17 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: David Dart <DavidD@nulec.com.au>,
-	Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: HZ=1000 network problem?
-References: <1072F1A27E99D3119747005004B9A380C6DCEA@MAIL>
-Content-Type: text/plain; charset=us-ascii
+To: None Atall <linux_meis@yahoo.com>
+Cc: Sarnath Kannan <sparc64@rediffmail.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: USB in RPXLITE 823
+References: <20020218084214.48551.qmail@web9701.mail.yahoo.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi David,
+None Atall wrote:
 
->         we have, just the other day, had the same problem  on linux-2.4.17.
-> If you find out what is causing it would you please let me know.
->
+>  Well, I have come to that message too, but for 8260.
 
-The problem is also there with HZ=500. It looks HZ=250 works, I'm testing it
-right now.
+The last time I check, nothing in the 8260 family had
+an integrated USB controller...........
 
-Regards,
-		Bart
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
