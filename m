@@ -1,37 +1,29 @@
-Message-ID: <3E53E4F2.3020805@mvista.com>
-Date: Wed, 19 Feb 2003 12:11:30 -0800
-From: Todd Poynor <tpoynor@mvista.com>
+From: "Bradley A. Bosch" <bbosch@iphase.com>
 MIME-Version: 1.0
-To: Prakash kanthi <pkanthi@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: rs_timer
-References: <20030219181822.14372.qmail@web41205.mail.yahoo.com>
-In-Reply-To: <20030219181822.14372.qmail@web41205.mail.yahoo.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15955.61193.448312.568754@lachman.com>
+Date: Wed, 19 Feb 2003 14:54:33 -0600
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: bclemens@iphase.com
+Subject: MPC107 I2C slave driver code
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Prakash kanthi wrote:
-> Hi Folks,
->
-> I observed that, even after linux boots and INIT
-> process starts, rs_timer stays active and causes the
-> rs_interrupt_single to be called.
+Greetings,
 
-Depending on your board and the kernel version you're using, this might
-be the result of using IRQ 0 for ttyS0 interrupts (as occurs for ppc_405
-boards).  The stock kernel from kernel.org does not recognize IRQ 0 as a
-valid value, and sets up rs_timer polling instead.  Recent
-linuxppc_2_4_devel kernels (and perhaps other ppc kernel trees) are
-modified to remove this restriction; see modifications to
-drivers/char/serial.c that remove checks for "irq != 0" and such.
-MontaVista Linux makes this an optional feature, enabled by defining
-SERIAL_IRQ0_VALID.
+We need to support I2C slave mode on an MPC8241 so we can exchange
+messages with another processor asynchronously via I2C.  Adrian's
+timely announcement of his new driver was greatly appreciated, but it
+doesn't (yet) support slave mode.
 
+Is anyone else working on a driver for slave mode using the I2C
+controller in the MPC107, MPC8245 or MPC8241?  If so, we would like to
+hear from you and perhaps help, or at least help test your code.
 
---
-Todd
+Thanks,
 
+--Brad Bosch
+Interphase Corp.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
