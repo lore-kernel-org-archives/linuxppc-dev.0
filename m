@@ -1,28 +1,36 @@
-Date: Tue, 5 Oct 1999 20:40:16 -0400
-From: Eric Dorland <dorland@lords.com>
-To: Elliot Lee <sopwith@redhat.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: esound for PPC
-Message-ID: <19991005204016.A3979@HSE-MTL-ppp4439.qc.sympatico.ca>
-References: <19991005105431.012853@mailhost.mipsys.com> <Pine.LNX.4.10.9910050733100.1006-100000@lacrosse.corp.redhat.com>
-Mime-Version: 1.0
+Message-ID: <37FAB661.CB729B2D@usa.net>
+Date: Tue, 05 Oct 1999 22:39:30 -0400
+From: David Riley <happyoscar42@usa.net>
+Reply-To: happyoscar42@usa.net
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: controlfb working at 1024x768@60 Hz
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.10.9910050733100.1006-100000@lacrosse.corp.redhat.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Oct 05, 1999 at 07:36:19AM -0400, Elliot Lee wrote:
-> In ftp://people.redhat.com/sopwith/esound-0.2.15.tar.gz (not a final
-> release), it explicitly sets big-endian mode on big-endian machines, so
-> things should work a bit better. There is also a related bug in the sound
-> file playback code fixed, that should help davem's "esdplay plays garbage"
-> problems. Please try this out and let me know.
+After several inquiries without answer, I decided to find out for myself
+why controlfb always reverted to vmode 17 when I set it to 14 (even with
+fbset).  Apparently, whenever the geometry is set to 1024x768, the
+refresh rate is automatically set to 75 Hz.  I set the default value to
+60 Hz instead, and now it works fine with my monitor (which doesn't do
+75 Hz).  If anyone has a similar problem, there's your fix.  However,
+controlfb still doesn't do kernel args (for what reason I can't fathom),
+and having a default value for every resolution is not the right way to
+go.  I, however, have no idea how to implement a more permanent solution
+(i.e., it actually goes to vmode 14 when you set it there, and vmode 17
+when you set it there).
 
-Unfortunately, under my machine (G3/266 DT) this version works even more
-poorly than the one I was using before. The startup beeps are now more like
-startup hisses, and wavs (whether 8-bit or 16) sound like a bunch of
-hissing. To compile it I just did a vanilla ./configure; make; make install
-which seemed to be the right thing to do.
+Anyway, I'd include a patch for this if I knew how to use diff, but I
+suppose you'll just have to find the spot yourself if you need to fix it.
+
+Hope this helped,
+	David
+
+
+-- 
+--"Your mouse has been moved.  Windows 95 must be restarted for change
+to take effect."
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
