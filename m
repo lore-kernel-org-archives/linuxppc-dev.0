@@ -1,44 +1,57 @@
-Message-Id: <199907291407.HAA09629@meer.meer.net>
-Subject: Re: G3 Upgrade Questions....
-Date: Thu, 29 Jul 1999 09:11:15 -0500
-From: David DeHaven <daved@trestle.com>
-To: <linuxppc-dev@lists.linuxppc.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Date: Thu, 29 Jul 1999 10:15:01 -0500 (CDT)
+From: "ian reinhart geiser (ADMIN)" <geiseri@msoe.edu>
+To: Jerry Quinn <jquinn@nortelnetworks.com>
+cc: "Timothy A. Seufert" <tas@mindspring.com>,
+        linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: I still cannot get L2cr to activate!
+In-Reply-To: <14240.24158.383303.417568@gargle.gargle.HOWL>
+Message-ID: <Pine.OSF.3.96.990729101400.20733B-100000@torres.msoe.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->	i have a powercenter 132, is it feasable that the 
->	motherboard can only run a 200MHz CPU or is the
->	card being set to half speed some how?
->
->	under MacOS it says it is at 400 and when i run
->	MacBench i get the numbers a little lower than
->	what the box says ( like 25 points low ).
->
->	under LinuxPPC my setiat home client takes almost
->	24h to process a block while my P][ 400 takes
->	only 10 hours....
->
->	is this the client?
->	am i really running half as fast?
->
->	should i send this bugger back and just get
->	a 200Mhz one because that is all my board can	
->	do?
->
->	thanks for the input all.
+On Thu, 29 Jul 1999, Jerry Quinn wrote:
 
-ian,
+> 
+> 
+> ian geiser <geiseri@msoe.edu> wrote:
+> > "Timothy A. Seufert" wrote:
+> > > At 7:47 PM -0500 7/28/99, ian reinhart geiser (ADMIN) wrote:
+> > > >
+> > > >b9000000:  enabled,no parity,1M,+2 clock,pipelined burst SRAM,ZZ
+> 
+> > what confused me was the enabled,no.
+> 
+> I think this should be parsed as 1) enabled, 2) no parity, 3) 1M, etc.
+> 
 
-Go to http://www.newertech.com, click on the "Downloads" button on the 
-left side, click on "Guage Utilities" and download "Clockometer". This 
-will give you an accurate measurement of your CPU's clock. You can also 
-try "Cache-22" to see if your L2 cache is really being enabled. If it 
-shows up at 400MHz, then it's working properly.
+	ahhhhh.....
+	i see...
+	thankyou for that little tidbit...
+	now where is this documented so i can read up on it some more?
 
--DrD-
+	thanks
+
+	-ian reinhart geiser
+
+.-----------------------------------------------------------.
+|[]                   NeXT Generation                    [X]|
+|--------------------------,--------------------------------.
+|  UNIX GEEK,              | Office:    I have none...      |
+|  Macintosh Specialist @  | Phone:     414.277.7288        |
+|  Milwaukee School of     |                                |
+|        Engineering       |--------------------------------|
+|                          |                                |
+|   ian reinhart geiser    | phone:   414.220.9683          |
+|   Apt #5                 | email:   geiseri@msoe.edu      |
+|   828 N Milwaukee St     | web:     www.msoe.edu/~geiseri |
+|   Milwaukee, WI 53202    |  NeXT/Be/Cyberdog Mail okay!   |
+|                          |   MIME or BinHex preferred     |
+|--------------------------'--------------------------------|
+'-----------------------------------------------------------'
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
