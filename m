@@ -1,44 +1,36 @@
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Dan Malek <dan@embeddededge.com>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: set_rtc_time() cleanup / normalization 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 15 May 2003 20:04:28 +0200."
-             <20030515180427.GB20958@iram.es>
-Date: Thu, 15 May 2003 20:21:24 +0200
-Message-Id: <20030515182129.270C0C6092@atlas.denx.de>
+Date: Thu, 15 May 2003 12:01:58 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] educate users about x86 specific kludges instead of hiding thier ignorance
+Message-ID: <20030515190158.GD11565@ip68-0-152-218.tc.ph.cox.net>
+References: <20030515074214.GA787@plato.local.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030515074214.GA787@plato.local.lan>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <20030515180427.GB20958@iram.es> Gabriel Paubert wrote:
+On Wed, May 14, 2003 at 11:42:14PM -0800, Ethan Benson wrote:
+
+> the phony bzImage target in the ppc Makefiles is not helping anything,
+> rather it just changes the confusion from `why doesn't make bzImage
+> work?' to `where is my bzImage?'
 >
-> And to go against the existing documentation of hwclock(8) so that
-> the behaviour depends on the architecture, the exact RTC chip model,
-> the phase of the moon:
+> lets not hide users ignorance lets teach them instead.  the attached
+> patch replaces the phony bzImage target with a error explaining that
+> bzImage is x86 only and to use zImage instead.
+>
+> please apply.
 
-hwclock(8) does not correctly describe the current  situation.  There
-are  already  several  boards where the documentation and the code do
-not match. [Please note that I avoid writing  "the  documentation  is
-wrong" - I think it is, but YMMV.]
-
-> I personally believe that explicitly implementing something which goes
-> against the existing documentation is one of the worst things that
-> can happen, espcecially since (after a few years of experience with
-
-If the documentation is wrong, or does not make sense,  it  would  be
-even  worse  to  stick  with it just because it is "existing documen-
-tation".
-
-
-Wolfgang Denk
+I agree that it's a stupid thing to do (and, btw, 'bzImage' on m68k is,
+or was anyhow, a bzip2 image adding to the fun) but this came in,
+intentionally, from Paul exactly because the system said 'Now use make
+bzImage'.  Maybe this can die in 2.5, but I haven't paid attention in
+some time.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A wise person makes his  own  decisions,  a  weak  one  obeys  public
-opinion.                                           -- Chinese proverb
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
