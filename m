@@ -1,37 +1,18 @@
-Message-ID: <3AB8A8BD.4DD4C839@raleigh.ibm.com>
-Date: Wed, 21 Mar 2001 08:12:29 -0500
-From: Ralph Blach <rcblach@raleigh.ibm.com>
-MIME-Version: 1.0
-To: Mark Powell <medp@primagraphics.co.uk>
+To: "Mark Powell" <medp@primagraphics.co.uk>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Compiling/debugging 405GP and RISCWatch
-References: <03ee01c0b206$c4878ea0$3000a8c0@primag>
-Content-Type: multipart/mixed;
- boundary="------------6398484B73E12732C4CDD26B"
+Subject: Re: Compiling/debugging 405GP and RISCWatch 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 21 Mar 2001 12:59:30 GMT."
+             <03ee01c0b206$c4878ea0$3000a8c0@primag>
+Date: Wed, 21 Mar 2001 14:24:18 +0100
+Message-Id: <20010321132423.B903A28826@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------6398484B73E12732C4CDD26B
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-
-Mark,
-
-Yes, this is sadly true.  There is a bug in gcc which causes this to
-happen.
-With the Walnut kit, the evaluation copy of the Metaware compiler is
-shipped.  You might want to try this.
-
-Chip
-
-
-Mark Powell wrote:
->
-> Hi,
-> I'm at the beginning of a project using the 405GP. I have HardHat linux
-> (01.03.03 kernel) up and running on a Walnut eval card. That bit is fine.
+In message <03ee01c0b206$c4878ea0$3000a8c0@primag> you wrote:
 >
 > However, for one very deeply embedded part of the hardware I can't use linux
 > (not enough RAM and ROM), I just want a bootstrap to run a single program.
@@ -42,43 +23,26 @@ Mark Powell wrote:
 > debugging symbols. The RISCWatch manual says it can read ELF/DWARF files,
 > and indeed it seems to download my executable, but gives an error
 > "DwarfCompilationUnit: invalid FORM = 0"
->
-> I would be grateful for any info on these points...
->
+
+Another suggestion: replace the Walnut ROM Monitor  by  PPCBoot,  the
+Open  Source Firmware project (see ppcboot.sourceforge.net), and load
+and run your program under PPCboot. This  is  explicitely  supported;
+see the code in the examples directory.
+
 > Is it possible to use RISCWatch with the GNU toolchain?
 > Is it possible to use the RISCWatch/JTAG interface as a backend to gdb?
 > Any other suggestions for debugging (with no network connection on the
 > target)?
-> Any pointers to more info.
->
-> TIA
-> --
-> Mark Powell, Senior Software Engineer, Primagraphics Limited
-> New Cambridge House, Litlington, nr.Royston, Herts, SG8 0SS, UK
-> Tel. +44 1763 852222, Fax. 853324, http://www.primagraphics.co.uk
->
---------------6398484B73E12732C4CDD26B
-Content-Type: text/x-vcard; charset=us-ascii;
- name="rcblach.vcf"
-Content-Description: Card for Ralph Blach
-Content-Disposition: attachment;
- filename="rcblach.vcf"
-Content-Transfer-Encoding: 7bit
 
-begin:vcard
-n:Blach;Ralph
-tel;work:919-543-1207
-x-mozilla-html:TRUE
-url:www.ibm.com
-org:IBM MicroElectronics
-adr:;;3039 Cornwallis		;RTP;NC;27709;USA
-version:2.1
-email;internet:rcblach@raleigh.ibm.com
-x-mozilla-cpt:;15936
-fn:Ralph Blach
-end:vcard
+Get yourself a BDI2000. It's a great tool and  works  perfectly  with
+GDB, even for Linux, where MMU support is essential.
 
---------------6398484B73E12732C4CDD26B--
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+When a program is being  tested,  it  is  too  late  to  make  design
+changes.                  -- Geoffrey James, "The Tao of Programming"
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
