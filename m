@@ -1,47 +1,40 @@
-Message-ID: <20000110120653.16499.qmail@web1901.mail.yahoo.com>
-Date: Mon, 10 Jan 2000 04:06:53 -0800 (PST)
-From: jc duyrat <jcduyrat@yahoo.com>
-Subject: help on copy_thread
+Date: Mon, 10 Jan 2000 14:08:32 +0200 (EET)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
 To: linuxppc-dev@lists.linuxppc.org
+cc: bh40@calva.net, olh@suse.de
+Subject: Re: [patch] MacAlly 2-buttons mouse support for 2.2.14
+In-Reply-To: <20000109204245.C17984@suse.de>
+Message-ID: <Pine.LNX.4.21.0001101335111.22237-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hy everybody, <br>
- <br>
-I have a question about copy_thread in <br>
-arch/ppc/kernel/process.c (linux ver 2.2.13, 2.3.34
-and others..): <br>
+On Sun, 9 Jan 2000, Olaf Hering wrote:
 
-why don't we want to execute <br>
-     childregs->gpr[2] = (unsigned long) p; <br>
-when we are forking a process user ? <br>
-What is the purpose of keeping the father's tss in
-childregs->gpr[2] ?<br><br>
-thank you for your help. <br>
-<br>
-	JC <br> 
-<br>
-copy_thread(int nr, unsigned long clone_flags,
-unsigned long usp, <br>struct task_struct * p, struct
-pt_regs *regs)<br>
-{<br>
-	struct pt_regs * childregs, *kregs;<br>
-#ifdef __SMP__<br>
-	extern void ret_from_smpfork(void);<br>
-#else<br>
-	extern void ret_from_syscall(void);<br>
-#endif<br>
-	/* Copy registers */<br>
-	childregs = ((struct pt_regs *)<br>
-		     ((unsigned long)p + sizeof(union
-task_union)<br>
-		      - STACK_FRAME_OVERHEAD)) - 2;<br>
-	*childregs = *regs;<br>
-	if ((childregs->msr & MSR_PR) == 0) <br>
-		childregs->gpr[2] = (unsigned long) p;<br>	
-....
+> 
+> We have also a nice mouse patch :-)
+> 
+.....
+> 
+> Right mouse button is CMND , middle mouse button is CTRL.
+> Would be nice to get some feedback. 
+> 
+> 
+> Gruss Olaf
+> 
+
+
+  Hmm how are you going to get double clicks with this ? 
+Also keep in mind that many window managers/programs use
+ctrl|meta|alt-mousebutton.
+
+I still feel that at least for X it should (and can) be 
+handled from inside X and not from the kernel. We still
+need something for the console though.
+
+ Kostas Gewrgiou
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
