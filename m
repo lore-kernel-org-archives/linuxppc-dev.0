@@ -1,34 +1,67 @@
-Message-ID: <39AF5AD7.B23D0FA3@ctam.com.au>
-Date: Fri, 01 Sep 2000 17:29:27 +1000
-From: Brendan J Simon <brendan.simon@ctam.com.au>
-Reply-To: brendan.simon@ctam.com.au
+From: kd@flaga.is
+Subject: Re: grey area open-source issues..
+To: ben bodley <benb@m2tech.co.nz>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OF2116073F.F39CAFE6-ON0025694D.0038B177@flaga.is>
+Date: Fri, 1 Sep 2000 10:26:15 +0000
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Where is the embedded-ppc ftp site ???
-Content-Type: text/plain; charset=us-ascii
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The following URLs don't seem to exist anymore.
+ben wrote:
+>
+>
+>hello all,
+>
+>i have a few questions regarding the publishing of linux kernel source
+>code.. i know its a little off topic, but i'm sure many developers here
+>will have experienced some sort of issues when it comes to a customer
+>paying for kernel development, and wanting to keep certain ip in-house..
+>
+>the thing is, i have ported a lot of code over to linux, that has an
+>object only license (ie. we cannot give away the source code, but object
+>code is fine).. the linux kernel however is under the GPL license, and
+>having modified parts of it, i must make this code available publically
+>with the product..
+>
+>the code i have ported has to be compiled into the kernel..
+>
+>i can't give it away as i break one license, but break another if i dont
+>make it public..
+>
+>
+>
+>what is the story here??, and is there exceptions for modules??
 
-www.ppc.kernel.org
-ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded
+Well I believe there is a additional clause to the Linux kernel licence
+that
+allows developers to link in their propriatary driver to the kernel.
+So if you can make your code link in as a driver it should be o.k.
+Changes to the kernel it self should be released under the same licence as
+the
+linux kernel, i.e. the GPL with this additional clause.
 
-I haven't played with embedded linux for sometime now but am lucky
-enough to be starting a project that will use linux on an 8260
-processor.  Where can I get kernel source with drivers for this
-processor ?  Are they integrated into the main kernel source or is it
-seperated ?
+This is how e.g. that the sound drivers from
+http://www.4front-tech.com/linux.html
+can link in their proprietary drivers.
 
-What about support for the 860 ?  Is the 860 code integrated to the main
-kernel ?
+>
+>cheers for any insights,
+>
+>ben
 
-Is there a CVS repository for Linux kernels with embedded procoessor
-support ?
+Hope this helps,
 
-Thanks,
-Brendan Simon.
+K.D.
+
+>
+>--
+>/\\------------------------------------------------------------------
+>ben.bodley/.m2technologyltd.nz/.benb@m2tech.co.nz/.64.9.4448307ext130
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
