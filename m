@@ -1,47 +1,53 @@
-Message-ID: <374985BC.3FAE197C@wanadoo.fr>
-Date: Mon, 24 May 1999 19:00:44 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+Date: Mon, 24 May 1999 13:37:04 -0400 (EDT)
+From: Kevin Hendrickson <hndrcksn@net178019.hcv.com>
+Reply-To: Kevin Hendrickson <hndrcksn@net178019.hcv.com>
+To: roboj <roboj@ibm.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: CDROM Problems with 2.2.9
+In-Reply-To: <Pine.LNX.3.96.990515172702.20309B-100000@net178019.hcv.com>
+Message-ID: <Pine.LNX.3.96.990519115540.3051B-100000@net178019.hcv.com>
 MIME-Version: 1.0
-To: Oliver Neukum <Oliver.Neukum@lrz.uni-muenchen.de>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: semaphores in 2.3.3
-References: <199905241630.SAA25266@dv.ba.dlr.de>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Oliver Neukum wrote:
+On Sat, 15 May 1999, Kevin Hendrickson wrote:
+
 > 
-> Hi,
+> On Fri, 14 May 1999, roboj wrote:
 > 
-> as you may have noticed linux-2.3.3  doesn't compile on powerpc due to
-> changes in semaphores and waitqueues. This means that ppc is again at a
-> disadvantage.
-> I hope for ppc to become one of the stable ports.
-> I've attached a patch that ports the basic change from i386 to ppc.
-> As yet, the kernel will not compile. It needs to include semaphore.h at a
-> few places. In addition i've found ide-pmac.c and adbmouse.c to be broken.
+> > 
+> > After compiling the recent linux kernel (2.2.9), I've been getting an error
+> > message which I have included below.  I get it at boot time and it continues
+> > printing in an infinite loop.  Also, the computer seems to be trying to access
+> > my cd-rom drive (Toshiba scsi, /dev/scd0 linked to /dev/cdrom). Running power
+> > computing powerbase.  Anyone ever got a similar error message that can offer
+> > any suggestions?  Everything works ok in linux vers. 2.2.6-ac3.
 > 
-> People, this can't be that hard.
+> I get something similar on my S900 dual 180Mhz machine with a Matshita CD. 
+> It seems more likely to happen when I'm cold booting up my machine, but
+> can also happen after launching from BootX in the Finder. I noticed it
+> after I moved to the 2.2.6 kernels (I'm currently using 2.2.6-15apmac.) 
+> Sometimes I have to reboot several times in a row before it gets past the
+> CD which is target 3 on my internal SCSI bus (MESH) 
 
-AFAICT, this is not a problem of finding the right patches, but to get
-them accepted by Linus.
+I just noticed this morning that I cannot mount anything in this CD drive. 
+I have a CD-R drive at target 5 on my external SCSI bus that can mount CDs
+fine, but the CD drive mentioned above gives I/O errors and can lock up
+the machine if I try to mount it or run od on it too many times. I don't
+know whether this happened with earlier 2.2.x kernels because I haven't
+had to mount anything in a while. This CD drive mounted fine under the
+2.1.x kernels.
 
-The vger cvs tree has had a compiling 2.3.3 kernel for some time (I am
-running it right now). The one I am running is from last Friday, the one
-checked out today compiles, but doesn't boot.
+Kevin Hendrickson 
+*--------+---------+---------+---------+---------+---------+---------+-*
+Kevin Hendrickson          "On the internet, no one knows you're a dog."
+hndrcksn@net178019.hcv.com   "Why, oh why, didn't I take the BLUE pill?"   
+hndrcksn@braincraft.com   _DreaD_    http://net178019.hcv.com/~hndrcksn/ 
 
-I think if you want to use 2.3.x kernels, you have to accept that these
-are development kernels, and that there are periods when they don't
-work.
 
-After all, there is the stable just one week old version 2.2.9 (although
-the official 2.2.9 kernel includes this broken patch of
-arch/ppc/kernel/syscalls.c that didn't come from vger).
 
---
-Martin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
