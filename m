@@ -1,58 +1,49 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Hans Feldt" <Hans.Feldt@uab.ericsson.se>
+Message-ID: <001c01c28b4b$28665b80$4f158a86@default>
+From: "Hans Feldt" <Hans.Feldt@uab.ericsson.se>
+To: <joakim.tjernlund@lumentis.se>
 Cc: <linuxppc-embedded@lists.linuxppc.org>, <scop@digitel.com.br>,
 	<thomas@corelatus.com>
-Subject: RE: [PATCH] arch/ppc/8xx_io/enet.c, version 2
-Date: Wed, 13 Nov 2002 17:35:36 +0100
-Message-ID: <IGEFJKJNHJDCBKALBJLLAEPLFHAA.joakim.tjernlund@lumentis.se>
+References: <IGEFJKJNHJDCBKALBJLLAEPLFHAA.joakim.tjernlund@lumentis.se>
+Subject: Re: [PATCH] arch/ppc/8xx_io/enet.c, version 2
+Date: Wed, 13 Nov 2002 20:30:41 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <3DD25896.6020603@uab.ericsson.se>
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> On 10/24/02 04:23 PM, Joakim Tjernlund wrote:
-> > Hi
-> >
-> > This is the second version of my patch that removes the expensive memcpy of
-> > received
-> > ethernet frames in interrupt context.
->
-> Isn't it so that this patch works because you have snooping? Without
-> snooping the driver would fail because of cache line replacement which
-> could trash received data.
+----- Original Message -----
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
 
-I don't have snooping(mpc860).
+> You may be right, perhaps one must invalidate the whole buffer before giving it
+> to the CPM/DMA. Suppose you reuse a buffer which has been modified before it
+> was freed and the dcache must write back data to free up space and the buffer,
+> which now is owned by the CPM, get written to.
 
->
-> The buffer invalidate in this case is unneeded. But if you wanna
-> optimise you should invalidate the whole buffer before giving it to DMA
-> thus getting rid of the flush implied by memory coherence.
+I beleive this could happen. Since IP does not perform checksumming
+but relies on the link (don't know this really) in that matter, I guess
+the application could get wrong data...
 
-In my first version I did invalidate the whole buffer BEFORE I gave it
-to the CPM/DMA. I moved it because I thougth it was better to invalidate
-after I received it, since the packet len is known at that time
-so I don't have to invalidate the whole buffer, just the received number of bytes.
+> I have not seen any corrupted packets and you are the first to report
+> any problems.
 
->
-> Tried this out in a driver for a processor without snooping, now and
-> then received packets got corrupted, cache line wise...
+Did you run any data integrity tests?
 
-You may be right, perhaps one must invalidate the whole buffer before giving it
-to the CPM/DMA. Suppose you reuse a buffer which has been modified before it
-was freed and the dcache must write back data to free up space and the buffer,
-which now is owned by the CPM, get written to.
+> What modifications have you done?
 
-I have not seen any corrupted packets and you are the first to report
-any problems. What modifications have you done?
+I haven't used your driver patch. I used the __idea__ of delaying the
+invalidate to the point where you know how much has been received. This was
+in an RTOS ATM driver for a 405. An integrity test showed that some few
+packets was wrong. Data was changed by means of cache lines.
 
-What CPU?
-Post the driver please.
+> What CPU?
+> Post the driver please.
 
- Jocke
+Irrelevant, non-linux
+
+Cheers,
+Hans
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
