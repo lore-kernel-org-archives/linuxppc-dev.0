@@ -1,44 +1,117 @@
-Subject: Re: Vga on sandpoint
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: maurie <maurie@risc.sps.mot.com>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <000a01c38ce9$4c8ec740$9b7c520a@sps.mot.com>
-References: <000a01c38ce9$4c8ec740$9b7c520a@sps.mot.com>
-Content-Type: text/plain
-Message-Id: <1065561997.31018.54.camel@gaston>
-Mime-Version: 1.0
-Date: Tue, 07 Oct 2003 23:28:03 +0200
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Fix for autonegotiation of ppc 40x ethernet driver
+From: Ronald Wahl <rwa@peppercon.com>
+Date: Wed, 08 Oct 2003 10:17:11 +0200
+Message-ID: <m3brss87p4.fsf@gandalf.peppercon.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2003-10-07 at 17:40, maurie wrote:
-> Linuxppc developers,
->
-> 	I am attempting to get pci vga working on the sandpoint platform
-> using dink32 to start linux.  I have tried several S3 cards with no video
-> success.  The kernel has vga driver support for SIS and ATI support, but
-> these are classified as experimental and will not compile, undefined
-> externals for __floatsidf, __divdf3, __adddf3, __fixunsdfsi, __muldf3, and
-> __vmalloc.
+Hello,
 
-What kernel is this exactly ? Those symbols seem to imply something
-is trying to do floating point in the kernel, which is totally
-forbidden. Most video cards need to be soft-booted (POSTed) some way
-before a kernel driver can use them. This require some firmware support,
-typically an x86 BIOS emulator, do you have that in dink32 ? Some
-fbdev's, afaik, can run a card booted from scratch (I think Matroxfb
-with earlier cards and some clgen but I don't know the details).
+I have found a bug in the ethernet driver for the PPC 40x. The problem
+is that the driver doesn't deal correctly if a user wants a limited
+advertising range (via ethtool interface) - lets say 10Mbps/Halfduplex
+and 10MBps/Fullduplex. The link always enters 100MBps/Fullduplex mode if
+the link partner supports it. This is an incorrect behavior. I appended
+a fix for this (against 2.4.22+ of the linuxppc 3.4 devel tree). It
+would be nice if this change could be reviewed and incorporated into the
+official code. If any questions arise - just ask...
 
-Regarding __vmalloc, that should be defined (and exported) by the
-core kernel.
+- ron
 
-Now, regarding he availability of the VGA space, that depends how
-your host bridge is configured, do you have a pass-through window
-to legacy VGA addresses on the PCI ?
+Index: drivers/net/ibm_emac/ibm_ocp_enet.c
+===================================================================
+RCS file: /var/CVS/eric_firmware/linuxnew/drivers/net/ibm_emac/ibm_ocp_enet.c,v
+retrieving revision 1.1.23.1
+diff -u -r1.1.23.1 ibm_ocp_enet.c
+--- drivers/net/ibm_emac/ibm_ocp_enet.c	4 Sep 2003 12:27:54 -0000	1.1.23.1
++++ drivers/net/ibm_emac/ibm_ocp_enet.c	8 Oct 2003 07:59:34 -0000
+@@ -928,8 +928,7 @@
+ 	int forced_duplex;
 
-Ben.
+ 	/* Default advertise */
+-	advertise = ADVERTISED_10baseT_Half | ADVERTISED_10baseT_Full |
+-		    ADVERTISED_100baseT_Half | ADVERTISED_100baseT_Full;
++	advertise = fep->advertising;
+ 	autoneg = fep->want_autoneg;
+ 	forced_speed = fep->phy_mii.speed;
+ 	forced_duplex = fep->phy_mii.duplex;
+@@ -938,6 +937,7 @@
+ 	if (ep) {
+ 	    if (ep->autoneg == AUTONEG_ENABLE) {
+ 		advertise = ep->advertising;
++		fep->advertising = advertise;
+ 		autoneg = 1;
+ 	    } else {
+ 		autoneg = 0;
+@@ -1114,7 +1114,7 @@
+ emac_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
+ {
+ 	struct ocp_enet_private *fep = dev->priv;
+-	uint *data = (uint *) & rq->ifr_data;
++	ushort *data = (ushort *) & rq->ifr_data;
 
+ 	switch (cmd) {
+         case SIOCETHTOOL:
+@@ -1367,8 +1367,12 @@
+ 	if (ep->phy_mii.def->ops->init)
+ 	        ep->phy_mii.def->ops->init(&ep->phy_mii);
+ 	netif_carrier_off(ndev);
+-        if (ep->phy_mii.def->features & SUPPORTED_Autoneg)
++        if (ep->phy_mii.def->features & SUPPORTED_Autoneg) {
+                 ep->want_autoneg = 1;
++		ep->advertising =
++			ADVERTISED_10baseT_Half | ADVERTISED_10baseT_Full |
++			ADVERTISED_100baseT_Half | ADVERTISED_100baseT_Full;
++	}
+ 	emac_start_link(ep, NULL);
+
+
+Index: drivers/net/ibm_emac/ibm_ocp_enet.h
+===================================================================
+RCS file: /var/CVS/eric_firmware/linuxnew/drivers/net/ibm_emac/ibm_ocp_enet.h,v
+retrieving revision 1.1.23.1
+diff -u -r1.1.23.1 ibm_ocp_enet.h
+--- drivers/net/ibm_emac/ibm_ocp_enet.h	4 Sep 2003 12:27:54 -0000	1.1.23.1
++++ drivers/net/ibm_emac/ibm_ocp_enet.h	8 Oct 2003 07:59:34 -0000
+@@ -136,6 +136,7 @@
+ 	struct mii_phy phy_mii;
+         int mii_phy_addr;
+         int want_autoneg;
++	u32 advertising;
+         int timer_ticks;
+ 	struct timer_list link_timer;
+ 	struct net_device *mdio_dev;
+Index: drivers/net/ibm_emac/ibm_ocp_phy.c
+===================================================================
+RCS file: /var/CVS/eric_firmware/linuxnew/drivers/net/ibm_emac/ibm_ocp_phy.c,v
+retrieving revision 1.1.23.1
+diff -u -r1.1.23.1 ibm_ocp_phy.c
+--- drivers/net/ibm_emac/ibm_ocp_phy.c	4 Sep 2003 12:27:54 -0000	1.1.23.1
++++ drivers/net/ibm_emac/ibm_ocp_phy.c	8 Oct 2003 07:59:34 -0000
+@@ -151,16 +151,17 @@
+
+ static int genmii_read_link(struct mii_phy *phy)
+ {
+-	u16 lpa;
++	u16 adv, lpa;
+
+ 	if (phy->autoneg) {
++		adv = phy_read(phy, MII_ADVERTISE);
+ 		lpa = phy_read(phy, MII_LPA);
+
+-		if (lpa & (LPA_10FULL | LPA_100FULL))
++		if ((lpa & adv) & (LPA_10FULL | LPA_100FULL))
+ 			phy->duplex = DUPLEX_FULL;
+ 		else
+ 			phy->duplex = DUPLEX_HALF;
+-		if (lpa & (LPA_100FULL | LPA_100HALF))
++		if ((lpa & adv) & (LPA_100FULL | LPA_100HALF))
+ 			phy->speed = SPEED_100;
+ 		else
+ 			phy->speed = SPEED_10;
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
