@@ -1,15 +1,13 @@
-Message-ID: <3A6C7022.12506FC9@valinux.com>
-Date: Tue, 23 Jan 2001 04:38:42 +1100
-From: Gareth Hughes <gareth@valinux.com>
+Message-ID: <3A6C7143.E49ADF33@relog.ch>
+Date: Mon, 22 Jan 2001 18:43:31 +0100
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: michdaen@iiic.ethz.ch
 MIME-Version: 1.0
 To: Dan Malek <dan@mvista.com>
-CC: Michel Dänzer <michdaen@iiic.ethz.ch>,
-        Benjamin 
-	Herrenschmidt <benh@kernel.crashing.org>,
-        Jeff Hartmann 
-	<jhartmann@valinux.com>,
-        linuxppc-dev@lists.linuxppc.org, dri-devel@lists.sourceforge.net,
-        Paul Mackerras <paulus@linuxcare.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Jeff Hartmann <jhartmann@valinux.com>,
+        Gareth Hughes <gareth@valinux.com>, linuxppc-dev@lists.linuxppc.org,
+        dri-devel@lists.sourceforge.net, Paul Mackerras <paulus@linuxcare.com>
 Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
 References: <3A686DFE.9030308@valinux.com> <19341214104258.22601@mailhost.mipsys.com> <3A68FC06.7BEEA13D@iiic.ethz.ch> <3A691166.DC6DCD81@iiic.ethz.ch> <3A6C6EEC.D1A84557@mvista.com>
 Content-Type: text/plain; charset=iso-8859-1
@@ -28,14 +26,22 @@ Dan Malek wrote:
 > The pte_page returns the kernel's page_struct for a physical
 > memory page, not the physical address which you are after......
 > You ignored the compiler warning here, didn't you :-).
->
-> Just do this:
->
->         entry->pagelist[j] = (unsigned long)(pte_val(*pte)) & PAGE_MASK;
 
-Umm, entry->pagelist should contain a list of "struct page *"s, not
-physical addresses.  I believe your code does not do this...
+No, that's not the problem, pagelist is struct page ** :-/ (and pagelist is
+allocated)
 
--- Gareth
+BTW I tried to replace this construct with entry->pagelist[j]= virt_to_page(i)
+and it ran through this loop, but died even worse later (pagelist[j]->virtual
+!= i). Why doesn't that work?
+
+
+Seems I have a lot to learn...
+
+Michel
+
+
+--
+Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
+CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
