@@ -1,151 +1,67 @@
-From: yama@isd.mci.mei.co.jp
-Message-Id: <200006290359.MAA09991@ms.tokyo.jcom.ne.jp>
-Date: Thu, 29 Jun 2000 12:54:24 +0900
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: kernel stuck when decompress initrd
-In-Reply-To: <NEBBLJBIIKANNNOGGKNDGEKJCAAA.jykim@raonet.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
+Message-ID: <001a01bfe190$40457fe0$1952df8d@SOYANG>
+From: "Hyun-Joon Cha" <tachyon@postech.ac.kr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: [PCMCIA] cardmgr (or something) crashes the kernel.
+Date: Thu, 29 Jun 2000 15:07:05 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hello.
 
-But,this is not the answer on this problem( kernel stuck when decompress
-initrd)
-I also worry about the same proglem.
-I'm trying to run LINUX 2.2.13 image on our custom board.
-I also found the kernel stopped in flush_window() in drivers/block/rd.c after
-showing following messages on console.
+After I've posted PCMCIA network card recommendation related message, I have optain one card from a friend.
 
-Does anybody advise on this problem?
+It is named as "3Com Megahertz 10/100 LAN PC Card Model 3CCFE574BT".
 
-Regards,
-Seiji Yamazaki
-yama@isd.mci.mei.co.jp
+I accomplished everything from ftp://ftp.absolval.com/pub/rpxlite/.
 
---- message start --------------------------------------------------------
-loaded at:     00800000 00816E18
-board data at: 0081030C 00816D18
-relocated to:  0081030C 00816D18
-zimage at:     0081B000 008859FF
-initrd at:     008859FF 00A5C83C
-relocated to:  00886000 00A5CE3D
-avail ram:     00400000 00800000
+When I executed rc.pcmcia script this message follows and kernel is crashed.
 
-Linux/PPC load:
-Uncompressing Linux...done.
-Now booting the kernel
-PReP architecture
-Total memory = 32MB; using 0kB for hash table (at 00000000)
-Linux version 2.2.13 (root@pc.tokyo.jcom.ne.jp) (gcc version egcs-2.91.66
-199903
-14 (egcs-1.1.2 release)) #36 Wed May 10 09:23:10 JST 2000
-Boot arguments:
-time_init: decrementer frequency = 1080001500/60 (17MHz)
-Calibrating delay loop... 215.45 BogoMIPS
-Memory: 29380k available (732k kernel code, 708k data, 64k init)
-[c0000000,c2000
-000]
-000]
-Buffer-cache hash table entries: 32768 (order: 5, 131072 bytes)
-Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
-POSIX conformance testing by UNIFIX
-PCI: Probing PCI hardware
-Setting PCI interrupts for a "Blackhawk (Powerstack)"
-Linux NET4.0 for Linux 2.2
-Based upon Swansea University Computer Society NET3.039
-NET4: Unix domain sockets 1.0 for Linux NET4.0.
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP, IGMP
-TCP: Hash tables configured (ehash 32768 bhash 32768)
-Starting kswapd v 1.5
-Serial driver version 4.27 with no serial options enabled
-ttyS00 at 0x03f8 (irq = 4) is a 16550A
-ttyS01 at 0x02f8 (irq = 3) is a 16550A
-pty: 256 Unix98 ptys configured
-RAM disk driver initialized:  16 RAM disks of 4096K size
-loop: registered device at major 7
-PPP: version 2.3.7 (demand dialling)
-TCP compression code copyright 1989 Regents of the University of California
-PPP line discipline registered.
-IP-Config: No network devices available.
-RAMDISK: Compressed image found at block 0
---- message end --------------------------------------------------------
+/* message from console */
 
-At 22:15 00/06/21 +0900, you wrote:
->
-> Hello,
->
-> I'm trying to run LINUX 2.3.99 image on SBC8260 boards.
->
-> The kernel stopped after showing following messages on console.
-> I'm really novice to LINUX, so only debugging way is printk.
-> I found the kernel stopped in flush_window() in drivers/block/rd.c.
-> It is in the middle of gunzip() procedure.
-> Any idea?  Something wrong in the sequence?
-> I'm using vWARE boot rom from EST to boot LINUX.
-> I tried to boot LINUX from FLASH SIMM on the board(it is 0xe0100000),
-> but worse than from RAM. it only shows first boot loader messages.
->
-> Regards,
-> Jin
-> jykim@raonet.com
->
-> ========================
-> loaded at:     00400000 0040C274
-> board data at: 00100000 0010002C
-> relocated to:  00200100 0020012C
-> zimage at:     0040D000 0047A105
-> initrd at:     0047B000 00653A15
-> avail ram:     00654000 01000000
->
-> Linux/PPC load:
-> Uncompressing Linux...done.
-> Now booting the kernel
-> Total memory = 16MB; using 0kB for hash table (at 00000000)
-> Linux version 2.4.0-test1-ac21 (jykim@raonet.com) (gcc version 2.95.2
-19991024 (release)) #176 呪 6杉 21 21:57:00 KST 2000
-> PowerPC Architecture (id:0x810101)
-> Boot arguments: root=/dev/ram
-> On node 0 totalpages: 4096
-> zone(0): 4096 pages.
-> zone(1): 0 pages.
-> zone(2): 0 pages.
-> Kernel command line: root=/dev/ram
-> Calibrating delay loop... 166.30 BogoMIPS
-> Memory: 12824k available (824k kernel code, 464k data, 40k init)
-[c0000000,c1000000]
-> Dentry-cache hash table entries: 2048 (order: 2, 16384 bytes)
-> Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
-> Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
-> kmem_create: Poisoning requested, but con given - bdev_cache
-> Inode-cache hash table entries: 1024 (order: 1, 8192 bytes)
-> kmem_create: Poisoning requested, but con given - inode_cache
-> kmem_create: Poisoning requested, but con given - file lock cache
-> POSIX conformance testing by UNIFIX
-> Linux NET4.0 for Linux 2.3
-> Based upon Swansea University Computer Society NET3.039
-> kmem_create: Poisoning requested, but con given - skbuff_head_cache
-> NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-> NET4: Linux TCP/IP 1.0 for NET4.0
-> IP Protocols: ICMP, UDP, TCP, IGMP
-> IP: routing cache hash table of 512 buckets, 4Kbytes
-> TCP: Hash tables configured (established 1024 bind 1024)
-> Starting kswapd v1.6
-> CPM UART driver version 0.01
-> ttyS00 at 0x0000 is a SMC
-> ttyS01 at 0x0040 is a SMC
-> ttyS02 at 0x8100 is a SCC
-> ttyS03 at 0x8200 is a SCC
-> pty: 256 Unix98 ptys configured
-> RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-> eth0: SCC ENET Version 0.1, 08:00:3e:26:15:59
-> RAMDISK: Compressed image found at block 0
->
->
->
->
+bash-2.03# export PCMCIA=yes
+bash-2.03# export PCIC=m8xx_pcmcia
+bash-2.03# bash /etc/rc.d/rc.pcmcia start
+/etc/rc.d/rc.pcmcia: PCIC: readonly variable
+Starting PCMCIA services: modulesLinux PCMCIA Card Services 3.1.10
+  kernel build: 2.2.13 #6 Wed Jun 28 22:11:22 KST 2000
+  options:  none
+m8xx_pcmcia: Version 0.03, 14-Feb-2000, Magnus Damm
+m8xx_pcmcia: RPX CLASSIC or RPX LITE using SLOT_B with IRQ 13.
+ cardmgr.
+bash-2.03# cardmgr[53]: starting, version is 3.1.10
+cardmgr[53]: watching 1 sockets
+cardmgr[53]: initializing socket 0
+Machine check in kernel mode.
+Caused by (from msr): regs c0a9d850 Unknown values in msr
+NIP: C4003C94 XER: E000047F LR: C4003C70 REGS: c0a9d850 TRAP: 0200
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c0a9c000[53] 'cardmgr' mm->pgd c0cd9000 Last syscall: 54
+last math 00000000
+GPR00: C4012000 C0A9D900 C0A9C000 C4011000 C0AB0044 000001DF C00B3000 00000011
+GPR08: 00000C40 C4011000 C0CB6FAC 00001000 35F35F3C 100214D0 100ADFF0 00000000
+GPR16: 100A0E50 7FFFDC68 7FFFDC48 00000000 00009032 00A9DE80 00000000 C0002544
+GPR24: C0002284 00000002 C01E906C C0A9D96A 00000002 00000000 C01E9000 C4011000
+Call backtrace:
+C4003C70 C4004418 C4004978 C4004700 C400608C C40038C8 C400F4C8
+C00335E8 C00022D8 00000000 10001880 10002A30 10003FD0 0FF09E78
+00000000
+Kernel panic: machine check
+Rebooting in 180 seconds..
+
+/* message end */
+
+I've assigned M8XX_BUSFREQ in pcmcia-cs-3.1.10/modules/m8xx_pcmcia.c to 50 * 1000000, since my board is RPX Lite 850 SR 50Mhz
+
+What's the main cause of problem?
+
+The cardmgr?, The modules - pcmcia_core, m8xx_pcmcia, ds - ? or that The card itself is unsupported?
+
+Please answer.
+
+Thanks in advance.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
