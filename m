@@ -1,64 +1,66 @@
-Date: Sat, 19 Jun 1999 14:22:36 -0400 (EDT)
-From: "P. Barrette" <barretp@mcmail.cis.McMaster.CA>
-To: Akiko Tanaka <tanak002@gold.tc.umn.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: a question
-In-Reply-To: <376BA9B3.6773@gold.tc.umn.edu>
-Message-ID: <Pine.SOL.3.96.990619142028.669D-100000@mcmail.cis.McMaster.CA>
+Message-ID: <376C01F3.666112C3@primenet.com>
+Date: Sat, 19 Jun 1999 20:47:47 +0000
+From: Bob Doyle <doyle@primenet.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Nye Liu <nyet@nbase.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Motorola MPC8240 Sandpoint embedded linux
+References: <376AD199.43D25@mrv.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I think you need to put it in the main directory, ie. just drop it on the
-"Macintosh HD" hard drive icon.  It should be in the same area as your
-system folder.  Re partitions, hda5 should be right, I don't know about
-the ata stuff though.
-
---------
-Paul Barrette
-Ph.D. Candidate Classics (Latin Literature)
-System Administrator
-McMaster University
-
-"Oppositaque ad os manu nescio quid taetrum 
-exsibilavit, quod postea Graecum esse affirmabat."
-                                      --Petronius
-
-On Sat, 19 Jun 1999, Akiko Tanaka wrote:
-
+Nye Liu wrote:
 > 
-> I've been tryint to install Linux (downloaded from 
-> mklinux.apple.com/pub site) on my Mac (power Mac 5400), but it seems 
-> like I don't know the basics that the READ ME's and your FAQ's don't 
-> explain, and am having trouble for hours.  The problem I have is the 
-> "bootstrap cannot find configuration file" message that I get, which 
-> seems to be a common problem.  But, I think my problem is that I Don't 
-> know how to do "4) Place the "mach_servers" folder at the top level 
-> (ie. not on the desktop)
->    of a suitable volume on your Mac."  Am I supposed to put 
-> "mach_server" folder inside the patrition for MacHFS when I look at 
-> through the pdisk?  How do you do that?  I just don't know how to put 
-> things above the desktop level.
-> 
-> Also, if I manage to put it where it's supposed to go and edit the 
-> line in lilo.conf, am I supposed to just put rootdev=/dev/hda (or 
-> ata0.0) or whatever, or supposed to write 
-> /dev/boot_device/mach_servers/bootstrap.conf, which comes up in the 
-> error message when I try to boot it?  Also, it seems that I have to 
-> specify a patition when I do this.  How do I do that?  If the 
-> patrition # in pdisk is 5, do I put rootdev=/dev/hda/5 or hda5? or 
-> what?  If it's ata0.0, does it become ata0.5 or ata0.0/5 or some other 
-> kind of way?
-> 
-> Please Help!!
-> 
-> Akiko Tanaka
-> tanak002@gold.tc.umn.edu
+> I have just started work on the MPC8240 Sandpoint platform (its
+> basically an 603e with some integrated peripherals) but this is my first
+> try at embedded linux devel. I have plenty of experience getting psos
+> and vxworks running on a few different processors, but I am unfamiliar
+> with the internals of how linux is booted.
 
-> 
+I've got one too.  I'm a newbie with the ppc so this is my platform to
+learn things.  I've mostly got a working VGA display configured and
+running...
 
+> I'm using ESTC's cheapo visionICE emulator solution, and would
+> appriciate any help with getting this thing up and running.
+
+The jury is still out on the ESTC emulator...
+ 
+> The main problems that I see are:
+> 
+> Its not CHRP or PREP.
+> 
+> No prom, so i need to:
+> Set up the memory map.
+> Program the EPIC.
+
+Dink does all that for you.  How 'bout booting linux from dink
+until linux is running?  Then go back remove dink and fix the
+startup stuff.
+
+> Verify that the current serial drivers work with the Sandpoint's NS
+> PC87308.
+
+The code in dink has code to initialize the two serial ports.
+
+If you want to get the floppy, mouse, keyboard, parallel ports, etcs
+going you've got to configure the '87308 for that.  It looks like all
+you have to do is provide the base addresses for the peripherals
+to the '87308.
+
+I couldn't find docs on National's website for the '87308 but I was
+able to get the floppy going by just reading the dink code.  Anybody
+know where to get docs?
+
+I was considering patching dink to add a command that would copy a
+floppy into memory.  That might ease hacking.
+
+> Please email me directly, as I am not subscribed to this list, although
+> i do read it regularly on the linuxppc site.
+> 
+> nyet@nbase.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
