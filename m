@@ -1,24 +1,17 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp1.wanadoo.fr (smtp1.wanadoo.fr [193.252.22.30])
-	by ozlabs.org (Postfix) with ESMTP id 196BB67A84
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Mar 2005 09:25:23 +1000 (EST)
-Received: from me-wanadoo.net (fake.juicyvision.com [127.0.0.1])
-	by mwinf0112.wanadoo.fr (SMTP Server) with ESMTP id E13601C00614
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Mar 2005 01:25:20 +0200 (CEST)
-Received: from pegasos (AStrasbourg-251-1-52-128.w82-126.abo.wanadoo.fr
-	[82.126.142.128])
-	by mwinf0112.wanadoo.fr (SMTP Server) with ESMTP id C1B1B1C00613
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Mar 2005 01:25:20 +0200 (CEST)
-Received: from luther by pegasos with local (Exim 4.50) id 1DG3aN-0000zi-Ja
-	for linuxppc-dev@ozlabs.org; Tue, 29 Mar 2005 01:23:55 +0200
-Date: Tue, 29 Mar 2005 01:23:55 +0200
-To: linuxppc-dev@ozlabs.org
-Message-ID: <20050328232355.GA1982@pegasos>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 119EC67A6C
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Mar 2005 13:29:33 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Tue, 29 Mar 2005 13:28:54 +1000
+Message-Id: <1112066934.6809.4.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-From: Sven Luther <sven.luther@wanadoo.fr>
-Subject: PREP sym53c8xx sym53c8xx brokeness due to 2.6.9-rc1-bk1 introduced
-	residual data patch ...
+Cc: "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+Subject: [PATCH] sleep & cpufreq problems
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,45 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Hi !
 
-I have been investigating the prep breakage of the sym53c8xx driver on my
-powerstack II in recent kernels, and traced it to the residual data patch,
-or more exactly to the whole prep_pci.c/prep_setup.c patches that where
-introduced between 2.6.9-rc1 and 2.6.9-rc1-bk1. I didn't have time to find
-more details as the patch is not so small, and seems to do many things, and
-linux.bkbits.net seems done right now.
+Here are a couple of patches against current linus bk (one was already
+posted to this list) that should fix a number issues related to sleep
+and wakeup, especially in conjunction with cpufreq transitions.
 
-Mmm, after a bit more of investigation, the changeset breaking it is :
+Please test and let me know if it fixes a problem you had, it adds a new
+problem, or it has no effect, stuff still doesn't work (if it used to
+work and still work, no need to bug me).
 
-# This is a BitKeeper generated diff -Nru style patch.
-#
-# ChangeSet
-#   2004/08/16 10:35:18-07:00 trini@kernel.crashing.org
-#   ppc32: On PReP, use residual data for PCI dev -> IRQ, and use it.
-#
-#   Signed-off-by: Leigh Brown <leigh@solinno.co.uk>
-#   Signed-off-by: Tom Rini <trini@kernel.crashing.org>
-#
-# include/asm-ppc/residual.h
-#   2004/08/16 10:35:09-07:00 trini@kernel.crashing.org +7 -0
-#   This adds a function to use the residual data to determine the IRQ
-#   for a given PCI device, and changes prep_pcibios_fixup() to use it.
-#
-# arch/ppc/platforms/residual.c
-#   2004/08/16 10:35:09-07:00 trini@kernel.crashing.org +60 -0
-#   This adds a function to use the residual data to determine the IRQ
-#   for a given PCI device, and changes prep_pcibios_fixup() to use it.
-#
-# arch/ppc/platforms/prep_pci.c
-#   2004/08/16 10:35:09-07:00 trini@kernel.crashing.org +37 -23
-#   This adds a function to use the residual data to determine the IRQ
-#   for a given PCI device, and changes prep_pcibios_fixup() to use it.
+Thanks !
 
-Mmm, i guess this makes sense, since it seems the sym53c8xx doesn'y find its
-irq anymore or something. Tom Rini, or Leigh Brown, do you have any comments
-on this one ? 
+Patches are at:
 
-Friendly,
+http://gate.crashing.org/~benh/ppc32-pmac-sleep-fix.diff
+http://gate.crashing.org/~benh/ppc32-cpufreq-gpio-off.diff
 
-Sven Luther
+Thanks,
+Ben.
