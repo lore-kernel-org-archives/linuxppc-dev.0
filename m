@@ -1,74 +1,55 @@
-Date: Wed, 9 Dec 1998 10:31:27 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: "Timothy A. Seufert" <tas@mindspring.com>
-cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
-        paulus@cs.anu.edu.au, daveray@WellsFargo.COM
-Subject: Re: Complete fix for PB 2400 16-bit video problem
-In-Reply-To: <v04011702b2928a54e303@[209.86.155.254]>
-Message-ID: <Pine.LNX.4.03.9812091029240.27644-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <366E47E0.24DD93F4@wanadoo.fr>
+Date: Wed, 09 Dec 1998 10:50:24 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Takashi Oe <toe@unlinfo.unl.edu>
+CC: Tom Rini <tmrini@ntplx.net>,
+        Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: XF68_FBDev and option keys (was Re: XF68_FBDev under MkLinux? and Re:
+ pre-R5&miscs)
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 8 Dec 1998, Timothy A. Seufert wrote:
-> I figured out why 16-bit doesn't work in the console today.  I wasn't
-> checking "Advanced driver options" in the console setup screen (I use make
-> menuconfig).  This resulted in CONFIG_FBCON_CFB16 (I think that's the name)
-> not getting set, which .  Perhaps the CONFIG_FBCON_CFBxx settings should
-> default to Y?
+Hi,
 
-You're right. If CONFIG_FB_CT65550 is enabled but Advanced driver options
-isn't, it should enable support for cfb8 and cfb16 automatically. I'll fix
-that.
+one of my several problems with X servers is solved, thanks to Takashi
+Oe. I can now use the option keys as modifiers for the keyboard under
+XF68_FBDev, and this in both R4 and pre-R5.
 
-> Also, since I proved in my earlier message that I didn't know how to use
-> diff, and got told about it :), here is a better diff for
-> drivers/video/chipsfb.c.  This will patch it to correctly change bitdepth.
-> 
-> 
-> ---------cut-----------------
-> --- chipsfb.orig.c	Mon Dec  7 00:24:13 1998
-> +++ chipsfb.c	Mon Dec  7 01:27:17 1998
-> @@ -358,6 +358,7 @@
->  		if (con == currcon) {
->  			write_cr(0x13, 200);		// 16 bit display
-> width (decimal)
-  ^^^^^^^^^^^^^^^
-Please use a mailer that doesn't wrap long lines, since patch doesn't like
-that.
+This was in fact a problem of my configuration, so it seems I did not
+read enough documentation (or maybe there isn't enough, hint, hint :-)).
 
->  			write_xr(0x81, 0x14);		// 15 bit
-> (TrueColor) color mode
-> +			write_xr(0x82, 0x00);		// disable palettes
->  			write_xr(0x20, 0x10);		// 16 bit blitter mode
->  		}
-> 
-> @@ -379,6 +380,7 @@
-                 ^
->  		if (con == currcon) {
->  			write_cr(0x13, 100);		// 8 bit display
-> width (decimal)
->  			write_xr(0x81, 0x12);		// 8 bit color mode
-> +			write_xr(0x82, 0x08);		// Graphics gamma
-> enable
->  			write_xr(0x20, 0x00);		// 8 bit blitter mode
->  		}
-> ---------cut-----------------
-  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-You cut an important empty line. The `7' means the patch hunk will result in
-_7_ lines, not 6.
+Takashi Oe <toe@unlinfo.unl.edu> wrote on Tue, 8 Dec 1998:
+> You might want to double check that xkb is really used when you fire up
+> XF68_FBDev.  XF68_FBDev should say something about "System: xkb bra bra
+> bra ..." to stderr but nothing else about xkb.
 
-Greetings,
+There was, in fact, an error message that I neglected. It came from the
+line
+    xkb_symbols     { include "symbols/macintosh"  };
+in /usr/X11/lib/X11/xkb/keymap/macintosh.
+I did not know that this had to be changed. 
 
-						Geert
+I think this is a bug, it should be "symbols/macintosh/us" in the
+standard distribution, and it is now "symbols/macintosh/fr" for me, and
+this makes my French keyboard work in XF68_FBDev just as it had been
+working in XPmac all the time. 
+
+If I don't set XkbKeymap "macintosh" in XF86Config, or if there is an
+error as above, then XF68_FBDev uses the console keymap, but apparently
+only incompletely, without the options keys as modifiers.
+
+My two other problems persist: No mouse buttons 2&3 in XF68_FBDev (and
+no, adb_buttons=1 in the boot command line is no solution!), neither in
+R4 nor in pre-R5; and mixed-up color palette in XPmac in pre-R5. The
+latter problem would, of course, lose its importance if the former were
+solved.
 
 --
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-
+Martin
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
