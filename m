@@ -1,64 +1,43 @@
-Date: Sat, 25 Aug 2001 10:26:48 -0700 (PDT)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: Jeff Rugen <jprugen@earthlink.net>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: XFree86 4.1 with clgenfb framebuffer
-In-Reply-To: <000f01c12d79$63013200$0401a8c0@trex>
-Message-ID: <Pine.BSF.4.32.0108251022560.34990-100000@shell.unixbox.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: Kaoru Fukui <k_fukui@highway.ne.jp>
+Subject: Re: glibc 2.1 -> 2.2 gotchas?
+Date: Sat, 25 Aug 2001 13:44:34 -0400
+Cc: Keith Clayton <keith@claytons.org>,
+	linuxppc-dev@lists.linuxppc.org
+References: <998751333.12597.3.camel@yoda> <01082511424509.15847@localhost.localdomain> <20010826005515.Postino-022357@smtp01.highway.ne.jp>
+In-Reply-To: <20010826005515.Postino-022357@smtp01.highway.ne.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <01082513443402.16172@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I assume you are using the unaccelerated "fbdev" driver, which uses the
-shadow framebuffer by default.  To turn it off you must add:
+Hi
 
-Option "ShadowFB" "no"
-
-As for DPMS, I doubt you are in a DPMS mode unless your dpms settings in
-your XF86Config file are really off.  The "fbdev" uses the console _blank
-functions for DPMS.
-
-Something to look into is that make sure you're using 8bpp in your
-XF86Config and make sure clgenfb has a proper palette setup.
-
-
-ani
-
-
-On Sat, 25 Aug 2001, Jeff Rugen wrote:
-
+> it's no needs.
+> Please read glibc's FAQ  which has glibc source
 >
-> I've installed XFree86 4.1 for the powerpc from xfree86.org, and am trying
-> to get X working again.  I am using a Motorola Powerstack (prep) with the
-> clgenfb framebuffer, and linux 2.2.20pre6.  The console works fine on the
-> framebuffer (I only have a framebuffer console in the kernel right now).  I
-> have what almost seems to be a working XF86Config file, but when I start X
-> (using the startx script), it doesn't work completely.  I get a blank
-> screen.  However, when I look at the running processes, xinit. xclock, and
-> twm are running with my permissions, and X and 3 xterms are running with
-> root permissions (shouldn't the xterms be with my permissions too?).  When I
-> quit X, the screen stays blank (though I do see a flicker), and I have to
-> reboot to get a display back.  One thing that makes me curious is that the
-> shadow framebuffer is being loaded, and I don't specify it in the XF86Config
-> file.  (And yes, it is using the config file I think it is using -- the
-> output from starting it verifies that).  Another is that it indicates that
-> DPMS is enabled (could I be going into DPMS mode and not coming out of it?)
+> I have here also at
 >
-> Does anyone have any suggestions, or alternate XF86Config files I could try?
-> I don't remember if I pulled the 2.4 clgen framebuffer code back into my 2.2
-> tree, but my tree is based on rsync from vger.samba.org/vger-2.2, so I could
-> pretty easily generate a diff on it (though if you'd like this, telling me
-> the command to generate the diff would save me the time from looking it up
-> :)  ).
->
-> Thanks for any help.
->
-> Jeff
->
->
->
+>  ftp://ftp.linuxppc.org/users/kfukui/glibc-2.2.x-room/RPMS/FAQ.glibc-2.2.3
 
+All I saw here was for installing after building from source code.  I did not
+see anything about installing using a package manager.
+
+Perhaps my use of "ldconfig -v; sync; sync; shutdown -r now" comes from the
+days when rpm was not always staticaly linked with libc?
+
+What I recommend won't hurt and can certainly help flush older shared
+libraries out of memory.
+
+It is of-course Keith's choice but I still recommend it.
+
+Kevin
+
+(ps. you might want to check out RedHat's instructions for using rpm to
+upgrade glibc, that used to be on their site.  That is what I based my
+procedure on a long time ago (around mklinux rel 1).
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
