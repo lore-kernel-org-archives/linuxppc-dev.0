@@ -1,31 +1,29 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Conrad H Ziesler <cziesler@umich.edu>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ibook, hda power off sequence (for IBM travelstar) 
-Date: Mon, 8 Jan 2001 12:26:25 +0100
-Message-Id: <19341203045809.13248@mailhost.mipsys.com>
-In-Reply-To: 
- <Pine.SOL.4.10.10101061727190.28634-100000@frogger.gpcc.itd.umich.edu>
-References: 
- <Pine.SOL.4.10.10101061727190.28634-100000@frogger.gpcc.itd.umich.edu>
+Date: Mon, 8 Jan 2001 08:20:23 -0500 (EST)
+From: alex avriette <alex@macachu.yi.org>
+Reply-To: <alex@cosmo.allay.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Iain Sandoe <iain@sandoe.co.uk>, drscholl <drscholl@users.sourceforge.net>,
+        "Clayton,Keith - Programmer" <Clayton@ltcc.cc.ca.us>,
+        "'alex@cosmo.allay.net'" <alex@cosmo.allay.net>,
+        <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Endianness and comparing IP's
+In-Reply-To: <Pine.LNX.4.05.10101080815200.27204-100000@callisto.of.borg>
+Message-ID: <Pine.LNX.4.31.0101080818490.3039-100000@macachu.ex-pressnet.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->This bit of code replaces pmu_shutdown from via-pmu.c, its the easiest
->hack to get the IDE code to issue a sleep command to the disk at shutdown
->time.
+Thank you all. The problem has been solved. solution (as per Iain and
+Geert):
 
-Broadcasting fake sleep requests is definitely not the correct way to
-acheive what you want. Either add direct call to some ide-pmac sleep
-function in the arch shutdown function, or use the shutdown notifiers in
-ide-pmac to force a disk shutdown.
+#define BSWAP32(c)
+((((c)>>24)&0xff)|(((c)>>8)&0xff00)|(((c)<<8)&0xff0000)|((c)<<24))
 
-I'll have a look at it when I'm really back.
 
-Ben.
+thanks again.
+alex
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
