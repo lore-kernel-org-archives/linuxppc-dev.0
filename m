@@ -1,38 +1,33 @@
-Date: Tue, 1 Oct 2002 12:17:46 +0200
-From: Frank Panno <fpanno@delphintech.com>
-To: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <3D997780.A135D8D1@imc-berlin.de>
+Date: Tue, 01 Oct 2002 12:22:56 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
+MIME-Version: 1.0
+To: Frank Panno <fpanno@delphintech.com>
 Cc: LinuxPPC-Embedded <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: mkdosfs on powerpc?
-Message-ID: <20021001101746.GA13419@tux.delphin-dom-1>
-References: <3D99533C.B858DF9F@imc-berlin.de>
-Mime-Version: 1.0
+References: <3D99533C.B858DF9F@imc-berlin.de> <20021001101746.GA13419@tux.delphin-dom-1>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3D99533C.B858DF9F@imc-berlin.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Steven,
+Frank Panno wrote:
 
-> Is someone using mkdosfs on a powerpc platform?
+> > Is someone using mkdosfs on a powerpc platform?
+>
+> Yes, like you, for formatting a CF-Card.
+>
+> > Do I have to patch the original source somehow?
+>
+> I can crosscompile and run dosfstools-2.8
+> out of the box.
 
-Yes, like you, for formatting a CF-Card.
+Thanks!
 
+I tried that as well. It works fine.
 
-> Do I have to patch the original source somehow?
+Cheers,
 
-I can crosscompile and run dosfstools-2.8
-out of the box.
-
-Best regards.
-
---
-Frank Panno
-
-Delphin Technology AG
-Offermannsheider Str. 184, 51515 Kuerten, Germany
-Tel: +49 2207 96450, Fax: +49 2207 964535
-mailto:fpanno@delphintech.com
-http://www.delphintech.de/
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
