@@ -1,48 +1,35 @@
-To: leeyang <leeyang@ycig.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linux booting 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 24 Aug 2002 08:07:28 +0800."
-             <002301c24b03$038024f0$fc4bb73d@leeyang>
-Date: Sun, 25 Aug 2002 20:35:12 +0200
-Message-Id: <20020825183517.4C07711822@denx.denx.de>
+Date: Sun, 25 Aug 2002 12:09:50 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>
+Cc: Paul Mackerras <paulus@samba.org>, acurtis@onz.com,
+	Ppc Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 8260 Memory Management
+Message-ID: <20020825190950.GB15348@opus.bloom.county>
+References: <3D65C19C.2070503@embeddededge.com> <NCBBIINEHIPFGJPLBEIFAEBNDLAA.acurtis@onz.com> <15718.52527.24904.317204@argo.ozlabs.ibm.com> <3D6797F8.4000106@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3D6797F8.4000106@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-
-in message <002301c24b03$038024f0$fc4bb73d@leeyang> you wrote:
+On Sat, Aug 24, 2002 at 10:28:08AM -0400, Dan Malek wrote:
 >
-> > > I have a BDI2000,but I think I should debug the bootm
-> > > part of ppcboot,however someone says it is quite
-> > > difficult to do so( at least for me).
-> >
-> > Well, it's not _that_ difficult. Try it out, so you get used to is ;-)
+> Paul Mackerras wrote:
 >
-> I wish it is not that hard,however I can not debug the kernel or
-> ppcboot according the  brief introduction in BDI manual.:(
+> >Dan, can we *please* take out the #define request_irq request_8xxirq
+> >and just use request_irq like everyone else?
+>
+> I was doing that as part of the 2.5 interrupt changes, but if you
+> want to do it now we can try.  On the 8260 it's not as bad as the 8xx,
+> but you have to ensure the legacy and PCI interrupts are outside of
+> the internal controller and CPM ranges.
 
-There are some more hints at
-http://www.denx.de/doc/TQM8xxL/debugging.html
-
-> I want to watch r3,r4,r5,r6,r7 register when ppcboot transferring
-> to kernel.Could you tell me how to get that? thanks a lot!
-
-Start PPCBoot, setup bootargs etc., load  the  kernel  image.  Before
-finally typing the "bootm" command set a (hardware) breakpoint at the
-kernel entry point (= physical address 0x0000).
-
-When hitting the breakpoint, print the registers...
-
-Wolfgang Denk
+Well, for 2.4 and 8260, this is quite easily done, as was shown in the
+patch which remove request_8xxirq altogether a while back.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-You don't have to worry about me. I might have been born yesterday...
-but I stayed up all night.
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
