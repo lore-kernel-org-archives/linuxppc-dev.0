@@ -1,19 +1,18 @@
-Return-Path: <Steffen.Rumler@siemens.com>
-Received: from goliath.siemens.de (goliath.siemens.de [192.35.17.28])
-	by ozlabs.org (Postfix) with ESMTP id 0035867A6E
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
+	by ozlabs.org (Postfix) with SMTP id 072BB67A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Feb 2005 19:55:48 +1100 (EST)
-Message-ID: <42033888.4090706@siemens.com>
-Date: Fri, 04 Feb 2005 09:55:36 +0100
-From: Steffen Rumler <Steffen.Rumler@siemens.com>
+	Fri,  4 Feb 2005 22:22:38 +1100 (EST)
+Message-ID: <42035D27.50901@ru.mvista.com>
+Date: Fri, 04 Feb 2005 14:31:51 +0300
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-References: <4202408A.7050200@siemens.com>
-	<754ecc31c2497b32a0c3f6df5ce21881@embeddededge.com>
-In-Reply-To: <754ecc31c2497b32a0c3f6df5ce21881@embeddededge.com>
+To: Joshua Lamorie <jpl@xiphos.ca>
+References: <4202E286.1010206@xiphos.ca>
+In-Reply-To: <4202E286.1010206@xiphos.ca>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc <linuxppc-embedded@ozlabs.org>
-Subject: Re: uart.c: avoid changing parameter RAM on-the-fly for the console
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Edge Interrupts (Virtex-II Pro)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,39 +23,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> would you please read Documentation/CodingStyle and
-> try sending the patch again?
+Joshua Lamorie wrote:
+> Gidday there,
+> 
+> Is there a cleaner way to specify that an interrupt is edge triggered 
+> other than directly accessing irq_desc_t irq_desc []?
 
-What in detail is wrong concerning the coding style ?
-Note, this is a serious problem for us.
+In case of ML300 (which is the only Virtex-II Pro board in the linux-2.5
+tree so far) this is done in platforms/xilinx_ml300.c:ml300_init_irq()
+based on XPAR_INTC_0_KIND_OF_INTR value defined in the xparameters.h:
 
-> Although it doesn't make too much difference in this case,
-> 2.4.20 is pretty old and it helps to get patches against
-> the latest kernels.
+         for (i = 0; i < NR_IRQS; i++) {
+                 if (XPAR_INTC_0_KIND_OF_INTR & (0x80000000 >> i))
+                         irq_desc[i].status &= ~IRQ_LEVEL;
+                 else
+                         irq_desc[i].status |= IRQ_LEVEL;
+         }
 
-2.4.20 is the kernel we are actually using.
+As this code is not board specific at all,
+I would move it to arch/ppc/syslib/xilinx_pic.c:ppc4xx_pic_init().
+Does it sound reasonable (I'll prepare the patch this weekend then)?
 
-> I suspect there is something else amiss, but I'll take a
-> look at it.  What is the speed of the processor and the
-> baud rate?
+Hmm...
+Looks like I've forgotten to change the irq numbering here...
+Must be
+   if (XPAR_INTC_0_KIND_OF_INTR & (0x00000001 << i))
+I think...
+Will check.
 
-CPU:       MPC859T
-CPU clock: 133Mhz
-Baud Rate: 19200
+Thanks,
+Andrei
 
+P.S.
+Just in case you use 2.4.
+2.4 kernel is almost the same to 2.6 in this sense.
+But the irq numbering is different.
 
-Steffen
-
--- 
-
-
---------------------------------------------------------------
-
-Steffen Rumler
-ICN CP D NT SW 3
-Siemens AG
-Hofmannstr. 51                 Email: Steffen.Rumler@siemens.com
-D-81359 Munich                 Phone: +49 89 722-44061
-Germany                        Fax  : +49 89 722-36703
-
---------------------------------------------------------------
+> In my module, when I request_irq, if it succeeds I do the following.
+> 
+>      irq_desc[iIRQ].status &= ~(IRQ_LEVEL);
+> 
+> Is there a better way?
+>
+> Thanks in advance
+> 
+> Joshua
+> 
