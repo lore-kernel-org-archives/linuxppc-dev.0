@@ -1,32 +1,31 @@
-Message-ID: <3C0BB15B.9000101@embeddededge.com>
-Date: Mon, 03 Dec 2001 12:07:39 -0500
-From: Dan Malek <dan@embeddededge.com>
+Reply-To: <joakim.tjernlund@lumentis.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: linuxppc_2_4 broken for 8xx arch's?
+Date: Mon, 3 Dec 2001 18:09:20 +0100
+Message-ID: <IGEFJKJNHJDCBKALBJLLAEDKFAAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
-To: Andrew Dixon <andrew.dixon@seranoa.com>
-Cc: ppclist <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: anyone using an sbc8260
-References: <3C0B9711.A7EDF8ED@seranoa.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Andrew Dixon wrote:
+I have been trying to make the latest linuxppc_2_4 kernels to run on my
+custom ppc860 board for some time now, but it always fails with a
+Oops: kernel access of bad area, sig: 11 during the boot process.
 
+One workaround is to replace printk.c with a printk.c from 2.4.2 and
+compile the kernel with -O1 instead of -O2. That way it boots but I get
+an Oops later when I copy files around in my JFFS2 FS.
 
-> I was just wondering if other people on the list were using the sbc8260
-> from Wind River.  If not, does anybody know of a linux oriented list
-> where people use this board?
+I don't think I have a timing problem on my bus since I can run Monta Vistas
+kernel without Oops:es. I have tried to lower my bus frequency also
+but that does not help either.
 
-I have, but not for a long time.  There is a kernel configuration for this
-board, and along with it come lots of challenges associated with boot roms
-and debuggers trying to get it loaded.  I have used three different boards
-(from EST at the time) a year or more ago.  They all failed with hardware
-problems shortly after development was under way, so I no longer have anything
-for testing.
+Does the latest kernel work for all but me on 8xx(mpc860 to be exact)
+arch?
 
-
-	-- Dan
-
+        Jocke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
