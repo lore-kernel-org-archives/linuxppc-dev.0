@@ -1,40 +1,46 @@
-Date: Wed, 11 Jul 2001 00:34:02 -0700
-From: Ira Weiny <iweiny@acm.org>
-Subject: Re: IBM Microdrive PCCard on TiBook (ide-cs module)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>, blythe@routefree.com
-Message-id: <3B4C016A.CA1BEFB0@acm.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-References: <3B460601.6A3AA7D9@acm.org> <20010707103519.972@smtp.wanadoo.fr>
+Message-ID: <3B4C0567.9BC25E5B@india.infogain.com>
+Date: Wed, 11 Jul 2001 13:21:03 +0530
+From: ashish anand <ashisha@india.infogain.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: PCI BAR initialisation..?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
->
-> I think the problem has more to do with disabling the interrupt at
-> the proper place in the IDE layer, I can try to find that discussion
-> on linux-kernel to see if they came up with a solution, the problem
-> seem to happen on x86 as well.
->
+I need a little explanation for following from pci experts.
+As per the pci specs , to determine the resource requirement by  BAR in pci config space
+we write 0xffffffff and then read back , and from the data read we decide the size and
+alignment requirement for pci address in either pci i/o or memory spaces.
 
-Thanks to Ben and David Blythe for your responses.  Indeed I think you
-are correct.  Unfortunatly I found a patch posted by Gunther Mayer on
-the Linux-kernel mailing list which does not seem to fix things either.
-His patch looks like it does what David described; disabling interrupts
-and then reenabling them in init_irq...  But it does not work...  ;-(
+In case the firmware hasn't initialised the pci devices BAR in slot we have to handle
+it  at our own as I have to do for sandpoint + mcp750 with DINK32 as firmware.
 
-At this point the only thing I can think of is that the device is not
-responding to the interrupt disable?  Or I have missed something with
-the patch.  David, you would not happen to be able to send me a patch or
-your entire ide tree?
+But by any chance if somebody has come across a random feature of pci BAR.
+that is if you write the required pci addresses in BAR after writing 0xffffffff and
+reading it back , and to confirm if the actual value has reached the BAR , we read it again
+but then it returns funny values.
 
-Oh well I just thought I would thank you guys for leading me the correct
-way.
+more surprisingly if i move the code in some other function then everything behaves correctly.
+I am more then sure that nothing relevant is happening betwen two places.
 
-Thanks again,
-Ira Weiny
-iweiny@acm.org
+my sequence is like this,.
+
+1.pcibios_write_config_dword(bus,devfn, PCI_BASE_ADDRESS_1, 0xffffffff);
+2.pcibios_read_config_dword( bus,devfn, PCI_BASE_ADDRESS_1, &add);
+
+3.now I decode the value of add to determine the size and alignment requirement
+  let us say decoded value is "ADD"
+
+4.pcibios_write_config_dword(bus,devfn, PCI_BASE_ADDRESS_1,ADD);
+
+5.now confirming the bar value by,
+    pcibios_read_config_dword(..., ..., base address register , &add);
+
+but value of add is not the actual one written.
+
+sometimes this behaviour gets automatically corrected and then i can read the actual value
+written.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
