@@ -1,20 +1,24 @@
-Return-Path: <mgroeger@sysgo.com>
-Received: from mailgate.sysgo.de (ns.sysgo.de [213.68.67.98])
-	by ozlabs.org (Postfix) with ESMTP id B62032BF12
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id CF4BD2BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Jan 2005 01:26:03 +1100 (EST)
-Date: Thu, 6 Jan 2005 14:56:20 +0100 (CET)
-From: Marius Groeger <mgroeger@sysgo.com>
-Sender: mag@sysgo.com
-To: Robin <robin@india.tejasnetworks.com>
-In-Reply-To: <41DC9568.6090106@india.tejasnetworks.com>
-Message-ID: <Pine.LNX.4.61.0501061450190.4945@mag.sysgo.com>
-References: <20050106121238.BB99AC108D@atlas.denx.de>
-	<41DC9568.6090106@india.tejasnetworks.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: Linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: TZ variable setting for denx 2.4.20
+	Fri,  7 Jan 2005 04:13:58 +1100 (EST)
+Date: Thu, 6 Jan 2005 09:13:55 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Andy Fleming <afleming@freescale.com>
+Message-ID: <20050106171355.GB6539@gate.ebshome.net>
+References: <FC6D9B81-5514-11D9-8D51-000393C30512@freescale.com>
+	<A3A281FF-5525-11D9-80ED-000393C30512@freescale.com>
+	<20050106070245.GA6539@gate.ebshome.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050106070245.GA6539@gate.ebshome.net>
+Cc: Netdev <netdev@oss.sgi.com>,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [RFC] Patch to Abstract Ethernet PHY support (using driver
+	model)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,30 +29,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Robin,
+On Wed, Jan 05, 2005 at 11:02:45PM -0800, Eugene Surovegin wrote:
+> 5) PHY interrupt sharing looks broken. Although you request_irq using 
+> SA_SHIRQ flag, in the handler itself you don't detect whether this 
+> interrupt is for this PHY or not, and return IRQ_HANDLED. This will 
+> result in first registered PHY hijacking IRQs from other PHYs (or 
+> devices) sharing the same IRQ line.
 
-On Thu, 6 Jan 2005, Robin wrote:
+Doh, ignore this. I wasn't thinking straight...
 
-> I have tried with the standard linux date too. That too doesnt seem 
-> to consider timezone variable that has been set. Can you give me a 
-> way for setting timezone for southern hemisphere countries?? The 
-> busybox code uses strftime function. But that does not seem to 
-> consider TZ variable...
-
-You should read up on how glibc handles all that timezone stuff:
-
-   sh# info libc "TZ Variable"
-
-Most notably, make sure you /etc/localtime is set up correctly. There 
-is also a tool (script) called tzselect which may be helpful for you.
-
-Note I'm not exactly an expert on this, I'm just giving pointers...
-
-Regards,
-Marius
-
--- 
-Marius Groeger <mgroeger@sysgo.com>
-SYSGO AG                      Embedded and Real-Time Software
-Voice: +49 6136 9948 0                  FAX: +49 6136 9948 10
-www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
+--
+Eugene
