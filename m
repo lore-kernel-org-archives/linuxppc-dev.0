@@ -1,59 +1,54 @@
 From: Ruedi.Hofer@ascom.ch
-Date: Thu, 09 Dec 1999 08:46:19 +0100 (CET)
-Subject: Re: Re: fadsrom.tgz
-To: dony.he@huawei.com.cn
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-id: <0FMG00J04QXOGM@pmdf-it.hasler.ascom.ch>
+Date: Thu, 09 Dec 1999 11:06:48 +0100 (CET)
+Subject: fadsrom -> mkrombin
+To: linuxppc-embedded@lists.linuxppc.org
+Message-id: <0FMG00K37XFTD5@pmdf-it.hasler.ascom.ch>
 MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_W1ReRDURpdY9F7/Tupq4Qg)"
+Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_3pAdkIEiiU5H78nvp/QEqw)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 
---Boundary_(ID_W1ReRDURpdY9F7/Tupq4Qg)
+--Boundary_(ID_3pAdkIEiiU5H78nvp/QEqw)
 Content-type: TEXT/PLAIN
 Content-Transfer-Encoding: 7BIT
 
-ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/
+After some little changes I'm now able to compile fadsrom.
 
-Please tell me if you found out how it works!
-
-Cheers, Ruedi
+(I had to define __fswab16, __fswab32 and ffz)
 
 
 
+Next problem: mkrombin doesn't work. It fails with an output message of
 
+"something wrong with file fadsrom" in line 63
 
-dony.he@huawei.com.cn on 09.12.99 04:37:54
-An: ruedi.hofer@ascom.ch @ MailGate
-Kopie: linuxppc-embedded@lists.linuxppc.org @ MailGate 
-Thema: Re: fadsrom.tgz
+I compiled mkrombin with debug options and had a look why it fails.
 
-Where can I download the "fadsrom.tgz"? Thank you very much.
-dony
+It expects a value of 2 for nscns but it gets:
 
-Ruedi Hofer wrote:
+(gdb) print nscns
+$3 = 512
+(gdb) 
 
-> Hi there
->
-> I would like to see the embedded linux running on a 860 FADS board.
-> I downloaded therefore the fadsrom.tgz but didn't succeed in compiling
-> it on an Intel Linux Box. It seems as if it's not prepared for being
-> cross compiled...
->
-> ... and what to do next, if the fadsrom is running?
->
-> Please help!
->
-> --
-> Best regards
->
-> Ruedi Hofer
+whereas nscns is basically a copy of ehp->e_phnum
+
+(gdb) print *ehp
+$1 = {e_ident = "\177ELF\001\002\001\000\000\000\000\000\000\000\000", 
+e_type = 512, e_machine = 5120, e_version = 16777216, e_entry = 254, 
+e_phoff = 872415232, e_shoff = 3837985280, e_flags = 0, e_ehsize = 13312, 
+e_phentsize = 8192, e_phnum = 512, e_shentsize = 10240, e_shnum = 2560, 
+e_shstrndx = 1792}
+(gdb) 
 
 
 
+Any ideas? Is cross-"mkrombin" a problem? (We develop on Intel)
 
---Boundary_(ID_W1ReRDURpdY9F7/Tupq4Qg)--
+Ruedi
+
+
+--Boundary_(ID_3pAdkIEiiU5H78nvp/QEqw)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
