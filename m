@@ -1,19 +1,17 @@
-Return-Path: <Joakim.Tjernlund@lumentis.se>
-Received: from dmz.lumentis.net (unknown [212.105.56.244])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 048822BDB5
+Return-Path: <Alexander.Povolotsky@marconi.com>
+Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
+	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id 919D72BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  3 Jan 2005 02:52:00 +1100 (EST)
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Wolfgang Denk" <wd@denx.de>, <linuxppc-embedded@ozlabs.org>
-Date: Sun, 2 Jan 2005 15:12:01 +0100
-Message-ID: <BCEFJBPJCGFCNMMMIDBHOEPBCJAA.Joakim.Tjernlund@lumentis.se>
+	Mon,  3 Jan 2005 03:09:22 +1100 (EST)
+Message-ID: <313680C9A886D511A06000204840E1CF0A64743F@whq-msgusr-02.pit.comms.marconi.com>
+From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
+To: "'Dan Malek'" <dan@embeddededge.com>
+Date: Sun, 2 Jan 2005 11:07:54 -0500 
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Subject: CPU15 errata workaround for 8xx by WD
-Reply-To: Joakim.Tjernlund@lumentis.se
+Cc: 'Jeff Angielski' <jangiels@speakeasy.net>, linuxppc-embedded@ozlabs.org
+Subject: RE: inflate returned FFFFFFFD - what does this error exactly mean ? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,25 +22,67 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Wolfgang
+>You need to load the
+>image into memory at a higher address like 0x400000.
 
-Had a look at your CPU15 errata workaround for 8xx and I have a comment
-or two:
+Where the initial load address is getting set ?
 
-1) I think you should make the sysctl support a compile time option
-   as the overhead for sysctl support in the TLB handler is 6 instr. when
-   the fix itself is only 4 instr.
+-----Original Message-----
+From: Dan Malek [mailto:dan@embeddededge.com]
+Sent: Sunday, January 02, 2005 10:33 AM
+To: Povolotsky, Alexander
+Cc: 'Jeff Angielski'; 'wd@denx.de'; linuxppc-embedded@ozlabs.org
+Subject: Re: inflate returned FFFFFFFD - what does this error exactly mean ?
 
-2) You placed the workaround in the middle of the CPU6 workaround which will
-   disable the CPU6 workaround(I think). Move it before the #ifdef CONFIG_8xx_CPU6
-   and you should be fine.
 
-3) Your test program uses the dcbst and dcbi instr. and these are buggy as they do not
-   update the DAR register in the TLB exceptions. I guess you made sure that such errors
-   will not happen?
+On Jan 2, 2005, at 12:58 AM, Povolotsky, Alexander wrote:
 
-4) The CPU15 bug has been around for years I think, what made it show up now? New toolchains?
-   
+> Originally I had relocation address be 0x00400000;
+> I also tried 0x00500000 and finally 0x00600000 (shown below)
+> - all 3 cases give the same error.
+>
+>
+> loaded at:     00180000 00268160
+> relocated to:  00600000 006E8160
 
- Jocke
-   
+You are doing this backward.  You need to load the
+image into memory at a higher address like 0x400000.
+According to this message, you are loading at 0x180000.
+Don't change the relocation address for the build, just
+the address where you initially load it into memory.
+
+
+	-- Dan
+-----Original Message-----
+From: Povolotsky, Alexander 
+Sent: Sunday, January 02, 2005 12:58 AM
+To: 'wd@denx.de'; 'Jeff Angielski'
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: inflate returned FFFFFFFD - what does this error exactly
+mean ? 
+
+
+>Try storing the compressed image at  a  higher  address
+>(like 0x400000 or so).
+
+Originally I had relocation address be 0x00400000;
+I also tried 0x00500000 and finally 0x00600000 (shown below)
+- all 3 cases give the same error.
+
+
+loaded at:     00180000 00268160
+relocated to:  00600000 006E8160
+board data at: 006E6124 006E6140
+relocated to:  0060509C 006050B8
+zimage at:     0060587D 006E5F82
+avail ram:     006E9000 02000000
+
+Linux/PPC load: console=ttyCPM0 panic=3 root=/dev/ram
+Uncompressing Linux...
+in gzip
+after zalloc
+after zlib_inflateInit2
+after zlib_inflate
+inflate returned FFFFFFFD
+exit
+-- 
