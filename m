@@ -1,35 +1,25 @@
-Message-ID: <3CF3612B.8020102@embeddededge.com>
-Date: Tue, 28 May 2002 06:51:23 -0400
+Message-ID: <3CF36385.8020505@embeddededge.com>
+Date: Tue, 28 May 2002 07:01:25 -0400
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Armin <akuster@pacbell.net>,
-	Tom Rini <trini@kernel.crashing.org>,
-	Armin Kuster <akuster@mvista.com>,
-	linuxppc-embedded@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: Another OCP enet patch
-References: <20020527040330.GH16537@zax> <20020527162323.GB32718@opus.bloom.county> <20020528005728.GO16537@zax> <20020528012516.GE1295@opus.bloom.county> <3CF32B87.4010908@pacbell.net> <20020528065027.GT16537@zax>
+To: Murray Jensen <Murray.Jensen@csiro.au>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] enhanced i2c driver for MPC8xx/MPC8260 CPM ...
+References: <17978.1022564604@msa.cmst.csiro.au>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
+Murray Jensen wrote:
 
-> ...  In some ways, since we're PPC specific anyway, I think it would
-> make as much sense as anything just to directly call
-> dcache_flush_range() and so forth, rather than consistent_sync() or
-> dma_cache_*().
+> enhanced i2c driver for MPC8xx/MPC8260 CPM ...
 
-Yes, that's true.  These consistent_* functions were added when we
-started using non-PCI drivers that are common across multiple platforms.
-It seems none of the platforms had common names for data cache management
-functions, so people started using the consistent_sync() in it's place.
-It also made sense because they were using the other consistent_* functions
-as well.  No one probably noticed, but at the same time we also changed
-the cache management function names to be similar to other architectures
-as well.
+These have to be submitted through the i2c project on sourceforge (or
+where ever it is).  The i2c isn't part of the kernel source tree, it is
+applied on top from their repository from time to time.
+
+Thanks.
 
 
 	-- Dan
