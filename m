@@ -1,34 +1,45 @@
-Subject: Re: Broadcom BCM94306
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Gabriel Paubert <paubert@iram.es>, linas@austin.ibm.com,
-	valvoline <valvoline@vrlteam.org>,
+Date: Mon, 19 Jan 2004 23:08:20 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sven Luther <sven.luther@wanadoo.fr>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
 	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <64789114-4A89-11D8-9C4D-000A95A4DC02@kernel.crashing.org>
-References: <20040114161107.GM2658@adapter.n0skillz.org>
-	 <20040114181350.B40506@forte.austin.ibm.com>
-	 <70D6BF86-473D-11D8-A8C3-000A95A4DC02@kernel.crashing.org>
-	 <20040115115023.GA12001@iram.es>
-	 <C404D01A-475A-11D8-A8C3-000A95A4DC02@kernel.crashing.org>
-	 <20040116195406.GA25566@iram.es>
-	 <64789114-4A89-11D8-9C4D-000A95A4DC02@kernel.crashing.org>
-Content-Type: text/plain
-Message-Id: <1074549957.10585.57.camel@gaston>
+Subject: Re: multiple separate pci bridges ...
+Message-ID: <20040119220820.GA29347@iliana>
+References: <20040118144412.GA6897@iliana> <1074503490.4547.52.camel@gaston> <Pine.GSO.4.58.0401191108100.6038@waterleaf.sonytel.be> <1074512479.12326.18.camel@gaston> <20040119120347.GC18112@iliana> <1074548106.12326.26.camel@gaston>
 Mime-Version: 1.0
-Date: Tue, 20 Jan 2004 09:05:58 +1100
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1074548106.12326.26.camel@gaston>
+From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> The BAT thing at least is documented (and has been documented
-> _for ever_ -- see the PEM, the 970 is a 64-bit chip.  Get the
-> rev 2.0 PEM from the 970 doc page).
+On Tue, Jan 20, 2004 at 08:35:06AM +1100, Benjamin Herrenschmidt wrote:
 >
-> The large page thing is cpu specific afaik (from memory).
+> > Mmm, should it also be needed to put 0 in the Memory Space and IO space
+> > bits of the Command register ?
+>
+> Probably a good idea, yes.
 
-POWER3 had BATs
+Mmm.
 
-Ben.
+> > Also, about the Interrupt line, i believe that there is no interrupt
+> > used by the northbridge at this time. We were not speaking about the pci
+> > config space of the graphic card, but of the bridge, so it should have
+> > no influence with DRI or anything else, right ?
+>
+> Yup.
+
+BTW, xfree86 with voodoo cards and the tdfx driver dies with :
+
+  (EE) TDFX(0): No valid PIO address in PCI config space
+
+But again, this is with the graphic card which should not be touched
+here. Tdfxfb is ok though, as is X with the fbdev driver.
+
+Friendly,
+
+Sven Luther
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
