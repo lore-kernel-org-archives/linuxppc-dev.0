@@ -1,272 +1,172 @@
-Date: Mon, 16 Apr 2001 21:07:34 -0700 (PDT)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-Cc: Iain Sandoe <iain@sandoe.co.uk>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: XF4 (mach64) help please
-In-Reply-To: <3ADB6887.F67E9DDE@iiic.ethz.ch>
-Message-ID: <Pine.BSF.4.32.0104162102160.80302-200000@shell.unixbox.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-1756603301-987480454=:80302"
+Date: Tue, 17 Apr 2001 04:03:46 -0300
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Quad SMP on G4
+Message-ID: <20010417040346.C15047@llama.nslug.ns.ca>
+References: <200104170459.XAA21609@lists.linuxppc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200104170459.XAA21609@lists.linuxppc.org>; from owner-linuxppc-dev-digest@lists.linuxppc.org on Mon, Apr 16, 2001 at 11:59:09PM -0500
+From: Peter Cordes <peter@llama.nslug.ns.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
-
---0-1756603301-987480454=:80302
-Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-
-
-
-On Mon, 16 Apr 2001, Michel [iso-8859-1] D=E4nzer wrote:
-
-> > fbdevHWInit failed
-> > crapping out here
+> Date: Mon, 16 Apr 2001 10:48:42 -0500
+> From: "Eddy Raineri" <eraineri@axiom-tx.com>
+> Subject: Quad SMP on G4
 >
-> Do you use atyfb in console? The ati driver only works with that with opt=
-ion
-> "UseFBDev". No idea what it will do without that option, you'd have to fi=
-nd
-> out.
+> Hello,
+>
+> If this is not the correct forum for these questions; I apologize and could
+> someone please direct me to the correct one forum for me to post this.
+>
+> 1)  I am currently working on a quad G4 custom processor board.  I have been
+> trying to keep up with the linuxppc_2_4 tree on bitkeeper.fsmlabs.com.  I
+> have successfully brought the board up with all 4 processors however at
+> times I get various lock ups in the spin locks.  These spinlock debugs
+> follow.
+>
+> 	spin_unlock(c0157384): no lock cpu 0 curr PC c0040500 mke2fs/22
+> 	_spin_unlock(c0157384): cpu 0 trying clear of cpu 2 pc c00404f0 val
+> ffffffff
+> 	_spin_unlock(c0157384): cpu 2 trying clear of cpu 0 pc 28/680bc val
+> ffffffff
+> 	29/68_spin_unlock(c0157384): cpu 2 trying clear of cpu 0 pc c00400bc
+>
+> This spin_lock is lru_list_lock.
+>
+> I've also seen common instances where everything locks up inside of the
+> hash_table_lock.  I have gotten this by running Bonnie on my SCSI harddrive.
 
-No, the "UseFBDev" option is totally useless in that version of the driver
-as it is hardcoded to force the use of fbdevhw.
+ I've had similar instability problems with my quad PPC604 (Daystar Genesis
+MP).  I bought the computer used from some random guy (who bought it from
+somebody else), so I figured there was a good chance I had some bogus
+hardware.  Since I'm not the only one to see this, I guess it's not my
+hardware.   I've got another computer next to my ppc machine, so it's pretty
+good for debugging.  I took notes, though, so here's what I've got:
 
-The attatched patch fixes the ati driver properly without the use of
-fbdev.  Don't bother to try the option, it is not even implemented in the
-driver.  The patch is against a current cvs tree.  If you try to hand
-patch it against that older version with the fbdev hacks you will run into
-problems as getting rid of the hacks is painful and time consuming.
+ I was running 2.4.3-pre2 from the bk tree.  I started up the
+distributed.net client, dnetc, and left the computer while I ate supper.
+(dnetc starts a cruncher thread for every CPU.  Each thread runs in a tight
+loop doing a known-plaintext attack against 64bit RC5 (the inner loop
+basically doesn't use RAM, just registers).  see the web page for more
+details.  There's a decent chance of two threads finishing their block at
+the same time, since the amount of work per block is constant and there is
+no memory access to make it dependent on stalls due to other processors.
+When a thread finishes it's block, it saves the result (usually, that the
+key was not in that block of keyspace :( ) and loads a new block to work on.
+(a block is of course just a start/length, since keys are tested
+sequentially.)
 
-I'm fairly sure this patch will be fine for all nonGX mach64's, although
-I'm not entirely sure about the Lx/Mobility ones as I don't have one to
-hack with.  Feedback is very welcome.
+ When I came back from supper, these were lots of these messages, in random
+order, on the screen.  A new one showed up every ~10 seconds, but not at
+regular intervals:
+
+_spin_lock(c0151484) CPU#0 NIP c002c358 holder: cpu 0 pc C002CD30
+ "         c0151484     #1 NIP c002ce1c holder: cpu 0 pc C002CD30
+ "         c014f740     #2 NIP c0080130 holder: cpu 0 pc C0043E8C
+ "         c014f740     #3 NIP c9855800 holder: cpu 0 pc C0043E8C
+
+ When these came up, the keyboard was half functional.  I could switch
+consoles, scroll back, and use the magic sysrq key.  Regular typing doesn't
+produce any characters on screen, so of course I couldn't log in.  I could
+ping and make TCP connections, but user space sshd doesn't answer, so the
+connection hangs.
 
 
-ani
+System.map tells me that c0151484 is pagecache_lock and c014f740 is
+kernel_flag.
+CPU 0:
+c002c358 is in filemap_fdatasync.  C002CD30 is inside __find_get_page.
+CPU 1:
+c002ce1c is in __find_lock_page.  C002CD30 same as above
+CPU 2:
+c0080130 is in tty_write.  C0043E8C is in sync_old_buffers.
+CPU 3:
+c9855800 is past the end of the kernel?!?  Maybe I copied it wrong.
 
---0-1756603301-987480454=:80302
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name="ati.diff"
-Content-ID: <Pine.BSF.4.32.0104162107340.80302@shell.unixbox.com>
-Content-Description: 
-Content-Disposition: attachment; filename="ati.diff"
-Content-Transfer-Encoding: BASE64
+ BTW, I left dnetc running on a console, instead of in its daemon-like mode,
+which makes it plausible for tty_write to show up here.
 
-ZGlmZiAtdU5yIGF0aS5vcmlnL2F0aW1hY2g2NC5jIGF0aS9hdGltYWNoNjQu
-Yw0KLS0tIGF0aS5vcmlnL2F0aW1hY2g2NC5jCU1vbiBBcHIgMTYgMTk6MDk6
-MzEgMjAwMQ0KKysrIGF0aS9hdGltYWNoNjQuYwlNb24gQXByIDE2IDE5OjA5
-OjI1IDIwMDENCkBAIC0xMTEsNyArMTExLDEzIEBADQogICAgIH0NCiANCiAg
-ICAgYnVzX2NudGwgPSBpbnIoQlVTX0NOVEwpOw0KKyNpZiAhZGVmaW5lZChf
-X3Bvd2VycGNfXykNCiAgICAgcEFUSUhXLT5idXNfY250bCA9IChidXNfY250
-bCAmIH5CVVNfSE9TVF9FUlJfSU5UX0VOKSB8IEJVU19IT1NUX0VSUl9JTlQ7
-DQorI2Vsc2UNCisgICAgcEFUSUhXLT5idXNfY250bCA9IGJ1c19jbnRsOw0K
-KyAgICBwQVRJSFctPmNvbmZpZ19jbnRsID0gaW5yKENPTkZJR19DTlRMKTsN
-CisjZW5kaWYNCisjaWYgIWRlZmluZWQoX19wb3dlcnBjX18pDQogICAgIGlm
-IChwQVRJLT5DaGlwIDwgQVRJX0NISVBfMjY0VlRCKQ0KICAgICB7DQogICAg
-ICAgICBwQVRJSFctPmJ1c19jbnRsICY9IH4oQlVTX0ZJRk9fRVJSX0lOVF9F
-TiB8IEJVU19ST01fRElTKTsNCkBAIC0xNzUsMTIgKzE4MSwxNyBAQA0KICAg
-ICAgICAgZWxzZQ0KICAgICAgICAgICAgIHBBVElIVy0+Y29uZmlnX2NudGwg
-fD0gU2V0Qml0cygyLCBDRkdfTUVNX0FQX1NJWkUpOw0KICAgICB9DQorI2Vu
-ZGlmIC8qICFfX3Bvd2VycGNfXyAqLw0KIA0KICAgICBpZiAocEFUSS0+Q2hp
-cCA+PSBBVElfQ0hJUF8yNjRWVEIpDQogICAgIHsNCisjaWYgIWRlZmluZWQo
-X19wb3dlcnBjX18pDQogICAgICAgICBwQVRJSFctPm1lbV9jbnRsID0gKHBB
-VEktPkxvY2tEYXRhLm1lbV9jbnRsICYNCiAgICAgICAgICAgICB+KENUTF9N
-RU1fTE9XRVJfQVBFUl9FTkRJQU4gfCBDVExfTUVNX1VQUEVSX0FQRVJfRU5E
-SUFOKSkgfA0KICAgICAgICAgICAgIFNldEJpdHMoQ1RMX01FTV9BUEVSX0JZ
-VEVfRU5ESUFOLCBDVExfTUVNX0xPV0VSX0FQRVJfRU5ESUFOKTsNCisjZWxz
-ZQ0KKwlwQVRJSFctPm1lbV9jbnRsID0gaW5yKE1FTV9DTlRMKTsNCisjZW5k
-aWYNCiANCiAgICAgICAgIHN3aXRjaCAocEFUSS0+Yml0c1BlclBpeGVsKQ0K
-ICAgICAgICAgew0KQEAgLTE5MCwxMyArMjAxLDIxIEBADQogICAgICAgICAg
-ICAgICAgIGJyZWFrOw0KIA0KICAgICAgICAgICAgIGNhc2UgMTY6DQorI2lm
-IFhfQllURV9PUkRFUiA9PSBYX0xJVFRMRV9FTkRJQU4NCiAgICAgICAgICAg
-ICAgICAgcEFUSUhXLT5tZW1fY250bCB8PSBTZXRCaXRzKENUTF9NRU1fQVBF
-Ul9XT1JEX0VORElBTiwNCiAgICAgICAgICAgICAgICAgICAgIENUTF9NRU1f
-VVBQRVJfQVBFUl9FTkRJQU4pOw0KKyNlbHNlDQorCQlwQVRJSFctPm1lbV9j
-bnRsIHw9IDB4NDAwMDAwMDsNCisjZW5kaWYNCiAgICAgICAgICAgICAgICAg
-YnJlYWs7DQogDQogICAgICAgICAgICAgY2FzZSAzMjoNCisjaWYgWF9CWVRF
-X09SREVSID09IFhfTElUVExFX0VORElBTg0KICAgICAgICAgICAgICAgICBw
-QVRJSFctPm1lbV9jbnRsIHw9IFNldEJpdHMoQ1RMX01FTV9BUEVSX0xPTkdf
-RU5ESUFOLA0KICAgICAgICAgICAgICAgICAgICAgQ1RMX01FTV9VUFBFUl9B
-UEVSX0VORElBTik7DQorI2Vsc2UNCisJCXBBVElIVy0+bWVtX2NudGwgfD0g
-MHg4MDAwMDAwOw0KKyNlbmRpZg0KICAgICAgICAgICAgICAgICBicmVhazsN
-CiAgICAgICAgIH0NCiAgICAgfQ0KQEAgLTc4MSw2ICs4MDAsNyBAQA0KICAg
-ICAgICAgfQ0KICAgICB9DQogDQorI2lmICFkZWZpbmVkKF9fcG93ZXJwY19f
-KQ0KICAgICAvKiBBcGVydHVyZSBzZXR1cCAqLw0KICAgICBvdXRyKE1FTV9W
-R0FfV1BfU0VMLCBwQVRJSFctPm1lbV92Z2Ffd3Bfc2VsKTsNCiAgICAgb3V0
-cihNRU1fVkdBX1JQX1NFTCwgcEFUSUhXLT5tZW1fdmdhX3JwX3NlbCk7DQpA
-QCAtNzg5LDYgKzgwOSw3IEBADQogDQogICAgIG91dHIoQ09ORklHX0NOVEws
-IHBBVElIVy0+Y29uZmlnX2NudGwpOw0KICAgICBvdXRyKEJVU19DTlRMLCBw
-QVRJSFctPmJ1c19jbnRsKTsNCisjZW5kaWYNCiANCiAgICAgaWYgKHBBVEkt
-PkNoaXAgPj0gQVRJX0NISVBfMjY0VlRCKQ0KICAgICAgICAgb3V0cihNRU1f
-Q05UTCwgcEFUSUhXLT5tZW1fY250bCk7DQpAQCAtMTYwMCw2ICsxNjIxLDI0
-IEBADQogICAgICAgICAgKi8NCiAgICAgICAgIHN3aXRjaCAoaURXb3JkKQ0K
-ICAgICAgICAgew0KKyNpZiBYX0JZVEVfT1JERVIgPT0gWF9CSUdfRU5ESUFO
-DQorICAgICAgICAgICAgY2FzZSAgMDogIHhmODZXcml0ZU1taW8zMkJlKHBE
-c3QgKyAgMCwgMCwgKihwU3JjICsgIDApKTsNCisgICAgICAgICAgICBjYXNl
-ICAxOiAgeGY4NldyaXRlTW1pbzMyQmUocERzdCArICAxLCAwLCAqKHBTcmMg
-KyAgMSkpOw0KKyAgICAgICAgICAgIGNhc2UgIDI6ICB4Zjg2V3JpdGVNbWlv
-MzJCZShwRHN0ICsgIDIsIDAsICoocFNyYyArICAyKSk7DQorICAgICAgICAg
-ICAgY2FzZSAgMzogIHhmODZXcml0ZU1taW8zMkJlKHBEc3QgKyAgMywgMCwg
-KihwU3JjICsgIDMpKTsNCisgICAgICAgICAgICBjYXNlICA0OiAgeGY4Nldy
-aXRlTW1pbzMyQmUocERzdCArICA0LCAwLCAqKHBTcmMgKyAgNCkpOw0KKyAg
-ICAgICAgICAgIGNhc2UgIDU6ICB4Zjg2V3JpdGVNbWlvMzJCZShwRHN0ICsg
-IDUsIDAsICoocFNyYyArICA1KSk7DQorICAgICAgICAgICAgY2FzZSAgNjog
-IHhmODZXcml0ZU1taW8zMkJlKHBEc3QgKyAgNiwgMCwgKihwU3JjICsgIDYp
-KTsNCisgICAgICAgICAgICBjYXNlICA3OiAgeGY4NldyaXRlTW1pbzMyQmUo
-cERzdCArICA3LCAwLCAqKHBTcmMgKyAgNykpOw0KKyAgICAgICAgICAgIGNh
-c2UgIDg6ICB4Zjg2V3JpdGVNbWlvMzJCZShwRHN0ICsgIDgsIDAsICoocFNy
-YyArICA4KSk7DQorICAgICAgICAgICAgY2FzZSAgOTogIHhmODZXcml0ZU1t
-aW8zMkJlKHBEc3QgKyAgOSwgMCwgKihwU3JjICsgIDkpKTsNCisgICAgICAg
-ICAgICBjYXNlIDEwOiAgeGY4NldyaXRlTW1pbzMyQmUocERzdCArIDEwLCAw
-LCAqKHBTcmMgKyAxMCkpOw0KKyAgICAgICAgICAgIGNhc2UgMTE6ICB4Zjg2
-V3JpdGVNbWlvMzJCZShwRHN0ICsgMTEsIDAsICoocFNyYyArIDExKSk7DQor
-ICAgICAgICAgICAgY2FzZSAxMjogIHhmODZXcml0ZU1taW8zMkJlKHBEc3Qg
-KyAxMiwgMCwgKihwU3JjICsgMTIpKTsNCisgICAgICAgICAgICBjYXNlIDEz
-OiAgeGY4NldyaXRlTW1pbzMyQmUocERzdCArIDEzLCAwLCAqKHBTcmMgKyAx
-MykpOw0KKyAgICAgICAgICAgIGNhc2UgMTQ6ICB4Zjg2V3JpdGVNbWlvMzJC
-ZShwRHN0ICsgMTQsIDAsICoocFNyYyArIDE0KSk7DQorICAgICAgICAgICAg
-Y2FzZSAxNTogIHhmODZXcml0ZU1taW8zMkJlKHBEc3QgKyAxNSwgMCwgKihw
-U3JjICsgMTUpKTsNCisjZWxzZQ0KICAgICAgICAgICAgIGNhc2UgIDA6ICBN
-TUlPX09VVDMyKHBEc3QgKyAgMCwgMCwgKihwU3JjICsgIDApKTsNCiAgICAg
-ICAgICAgICBjYXNlICAxOiAgTU1JT19PVVQzMihwRHN0ICsgIDEsIDAsICoo
-cFNyYyArICAxKSk7DQogICAgICAgICAgICAgY2FzZSAgMjogIE1NSU9fT1VU
-MzIocERzdCArICAyLCAwLCAqKHBTcmMgKyAgMikpOw0KQEAgLTE2MTYsNiAr
-MTY1NSw3IEBADQogICAgICAgICAgICAgY2FzZSAxMzogIE1NSU9fT1VUMzIo
-cERzdCArIDEzLCAwLCAqKHBTcmMgKyAxMykpOw0KICAgICAgICAgICAgIGNh
-c2UgMTQ6ICBNTUlPX09VVDMyKHBEc3QgKyAxNCwgMCwgKihwU3JjICsgMTQp
-KTsNCiAgICAgICAgICAgICBjYXNlIDE1OiAgTU1JT19PVVQzMihwRHN0ICsg
-MTUsIDAsICoocFNyYyArIDE1KSk7DQorI2VuZGlmDQogDQogICAgICAgICAg
-ICAgZGVmYXVsdDogICAgLyogTXVmZmxlIGNvbXBpbGVyICovDQogICAgICAg
-ICAgICAgICAgIGJyZWFrOw0KQEAgLTE2ODIsNyArMTcyMiwxMCBAQA0KICAg
-ICAgKiBVc2Ugc2NhbmxpbmUgdmVyc2lvbiBvZiBjb2xvdXIgZXhwYW5zaW9u
-LCBub3Qgb25seSBmb3IgdGhlIG5vbi1peDg2DQogICAgICAqIGNhc2UsIGJ1
-dCBhbHNvIHRvIGF2b2lkIFBDSSByZXRyaWVzLg0KICAgICAgKi8NCi0gICAg
-cFhBQUluZm8tPlNjYW5saW5lQ1BVVG9TY3JlZW5Db2xvckV4cGFuZEZpbGxG
-bGFncyA9DQorI2lmIFhfQllURV9PUkRFUiA9PSBYX0JJR19FTkRJQU4NCisg
-ICAgcFhBQUluZm8tPlNjYW5saW5lQ1BVVG9TY3JlZW5Db2xvckV4cGFuZEZp
-bGxGbGFncyA9IEJJVF9PUkRFUl9JTl9CWVRFX01TQkZJUlNUOw0KKyNlbmRp
-Zg0KKyAgICBwWEFBSW5mby0+U2NhbmxpbmVDUFVUb1NjcmVlbkNvbG9yRXhw
-YW5kRmlsbEZsYWdzIHw9DQogICAgICAgICBMRUZUX0VER0VfQ0xJUFBJTkcg
-fCBMRUZUX0VER0VfQ0xJUFBJTkdfTkVHQVRJVkVfWCB8DQogICAgICAgICBD
-UFVfVFJBTlNGRVJfUEFEX0RXT1JEIHwgU0NBTkxJTkVfUEFEX0RXT1JEOw0K
-ICAgICBpZiAocEFUSS0+WE1vZGlmaWVyICE9IDEpDQpkaWZmIC11TnIgYXRp
-Lm9yaWcvYXRpcHJlaW5pdC5jIGF0aS9hdGlwcmVpbml0LmMNCi0tLSBhdGku
-b3JpZy9hdGlwcmVpbml0LmMJTW9uIEFwciAxNiAxOTowOTozMSAyMDAxDQor
-KysgYXRpL2F0aXByZWluaXQuYwlNb24gQXByIDE2IDE5OjA5OjI1IDIwMDEN
-CkBAIC02NDAsNiArNjQwLDcgQEANCiANCiAjZW5kaWYgLyogQVZPSURfQ1BJ
-TyAqLw0KIA0KKyNpZiAhZGVmaW5lZChfX3Bvd2VycGNfXykNCiAgICAgcEFU
-SS0+QmxvY2swQmFzZSA9IDA7ICAgICAgIC8qIE1pZ2h0IG5vIGxvbmdlciBi
-ZSB2YWxpZCAqLw0KICAgICBpZiAoKHBWaWRlbyA9IHBBVEktPlBDSUluZm8p
-KQ0KICAgICB7DQpAQCAtNjU1LDYgKzY1NiwxMCBAQA0KICAgICAgICAgICAg
-ICAgICBwQVRJLT5CbG9jazBCYXNlICs9IDB4MDQwMFU7DQogICAgICAgICB9
-DQogICAgIH0NCisjZWxzZQ0KKyAgICBpZiAoKHBWaWRlbyA9IHBBVEktPlBD
-SUluZm8pKQ0KKyAgICAgICBwQVRJLT5CbG9jazBCYXNlID0gcFZpZGVvLT5t
-ZW1CYXNlWzBdICsgMHg3ZmYwMDA7DQorI2VuZGlmDQogDQogICAgIHBTY3Jl
-ZW5JbmZvLT5yYWNJb0ZsYWdzID0NCiAgICAgICAgIFJBQ19GQiB8IFJBQ19D
-T0xPUk1BUCB8IFJBQ19WSUVXUE9SVCB8IFJBQ19DVVJTT1I7DQpAQCAtNzc5
-LDYgKzc4NCw3IEBADQogICAgICAgICBjYXNlIEFUSV9BREFQVEVSX01BQ0g2
-NDoNCiAgICAgICAgICAgICAvKiBGaW5kIGFuZCBtbWFwKCkgTU1JTyBhcmVh
-ICovDQogICAgICAgICAgICAgQmxvY2swQmFzZSA9IHBBVEktPkJsb2NrMEJh
-c2U7DQorI2lmICFkZWZpbmVkKF9fcG93ZXJwY19fKQ0KICAgICAgICAgICAg
-IGRvDQogICAgICAgICAgICAgew0KICAgICAgICAgICAgICAgICAvKiBPbmx5
-IGFsbG93IGF1eGlsaWFyeSBhcGVydHVyZSBpZiBpdCBleGlzdHMgKi8NCkBA
-IC04MDgsNiArODE0LDkgQEANCiAgICAgICAgICAgICAgICAgQVRJTWFwTWFj
-aDY0KHBTY3JlZW5JbmZvLT5zY3JuSW5kZXgsIHBBVEkpOw0KICAgICAgICAg
-ICAgIH0gd2hpbGUgKDApOw0KICAgICAgICAgICAgIHBBVEktPkJsb2NrMEJh
-c2UgPSBCbG9jazBCYXNlOw0KKyNlbHNlDQorICAgICAgICAgICAgQVRJTWFw
-TWFjaDY0KHBTY3JlZW5JbmZvLT5zY3JuSW5kZXgsIHBBVEkpOw0KKyNlbmRp
-Zg0KIA0KICNpZmRlZiBBVk9JRF9DUElPDQogDQpAQCAtOTc3LDYgKzk4Niw3
-IEBADQogICAgICAgICBwQVRJLT5DbG9ja0Rlc2NyaXB0b3IgPSBBVElDbG9j
-a0Rlc2NyaXB0b3JzW0FUSV9DTE9DS19GSVhFRF07DQogICAgICAgICBwQVRJ
-LT5DbG9ja051bWJlclRvUHJvZ3JhbW1lID0gLTE7DQogDQorI2lmICFkZWZp
-bmVkKF9fcG93ZXJwY19fKQ0KICAgICAgICAgUk9NVGFibGUgPSBCSU9TV29y
-ZCgweDQ4VSk7DQogICAgICAgICBpZiAoKFJPTVRhYmxlICsgMHgxMlUpID4g
-QklPU1NpemUpDQogICAgICAgICAgICAgUk9NVGFibGUgPSAwOw0KQEAgLTEw
-MjIsNiArMTAzMiw3IEBADQogICAgICAgICAgICAgfQ0KICAgICAgICAgfQ0K
-ICAgICAgICAgZWxzZQ0KKyNlbmRpZiAvKiAhX19wb3dlcnBjX18gKi8NCiAg
-ICAgICAgIHsNCiAgICAgICAgICAgICAvKg0KICAgICAgICAgICAgICAqIENv
-bXBlbnNhdGUgZm9yIEJJT1MgYWJzZW5jZS4gIE5vdGUgdGhhdCB0aGUgcmVm
-ZXJlbmNlDQpkaWZmIC11TnIgYXRpLm9yaWcvYXRpcHJvYmUuYyBhdGkvYXRp
-cHJvYmUuYw0KLS0tIGF0aS5vcmlnL2F0aXByb2JlLmMJTW9uIEFwciAxNiAx
-OTowOTozMSAyMDAxDQorKysgYXRpL2F0aXByb2JlLmMJTW9uIEFwciAxNiAx
-OTowOToyNSAyMDAxDQpAQCAtNjQxLDYgKzY0MSwxNSBAQA0KICAgICAgICAg
-cEFUSS0+UENJSW5mbyA9IHBWaWRlbzsNCiAgICAgICAgIENoaXBUeXBlID0g
-cFZpZGVvLT5jaGlwVHlwZTsNCiANCisjIGlmIGRlZmluZWQoX19wb3dlcnBj
-X18pDQorICAgICAgICBwQVRJLT5CbG9jazBCYXNlID0gcFZpZGVvLT5tZW1C
-YXNlWzBdICsgMHg3ZmYwMDA7DQorICAgICAgICBpZiAoQVRJRGV0ZWN0TWFj
-aDY0KHBBVEksIENoaXBUeXBlLCBDaGlwKSkgew0KKyAgICAgICAgICAgIHJl
-dHVybiBwQVRJOw0KKyAgICAgICAgfSBlbHNlIHsNCisgICAgICAgICAgICBy
-ZXR1cm4gTlVMTDsNCisgICAgICAgIH0gDQorI2VuZGlmICAgDQorDQogICAg
-ICAgICAvKg0KICAgICAgICAgICogUHJvYmUgdGhyb3VnaCBhdXhpbGlhcnkg
-TU1JTyBhcGVydHVyZSBpZiBvbmUgZXhpc3RzLiAgQmVjYXVzZSBzdWNoDQog
-ICAgICAgICAgKiBhcGVydHVyZXMgY2FuIGJlIGVuYWJsZWQvZGlzYWJsZWQg
-b25seSB0aHJvdWdoIFBDSSwgdGhpcyBwcm9iZXMgbm8NCkBAIC0xMzMxLDYg
-KzEzNDAsNyBAQA0KIA0KICAgICBpZiAoeGY4NlBjaVZpZGVvSW5mbykNCiAg
-ICAgew0KKyNpZiAhZGVmaW5lZChfX3Bvd2VycGNfXykNCiAgICAgICAgIGlm
-IChuQVRJR0RldikNCiAgICAgICAgIHsNCiANCkBAIC0xNjk5LDYgKzE3MDks
-NyBAQA0KICNlbmRpZiAvKiBBVk9JRF9DUElPICovDQogDQogICAgICAgICB9
-DQorI2VuZGlmDQogDQogICAgICAgICAvKiBMYXN0bHksIGxvb2sgZm9yIGJs
-b2NrIEkvTyBkZXZpY2VzICovDQogICAgICAgICBmb3IgKGkgPSAwOyAgKHBW
-aWRlbyA9IHhmODZQY2lWaWRlb0luZm9baSsrXSk7ICApDQpAQCAtMTc1MCw3
-ICsxNzYxLDExIEBADQogICAgICAgICAgICAgLyogUHJvYmUgZm9yIGl0ICov
-DQogICAgICAgICAgICAgeGY4NlNldFBjaVZpZGVvKHBWaWRlbywgTUVNX0lP
-KTsNCiANCisjaWYgZGVmaW5lZChfX3Bvd2VycGNfXykNCisJICAgIHBBVEkg
-PSBBVElNYWNoNjRQcm9iZShwVmlkZW8sIHBWaWRlby0+bWVtQmFzZVswXSwg
-TUVNX0lPLCBDaGlwKTsNCisjZWxzZQ0KICAgICAgICAgICAgIHBBVEkgPSBB
-VElNYWNoNjRQcm9iZShwVmlkZW8sIHBWaWRlby0+aW9CYXNlWzFdLCBCTE9D
-S19JTywgQ2hpcCk7DQorI2VuZGlmDQogICAgICAgICAgICAgaWYgKHBBVEkp
-DQogICAgICAgICAgICAgew0KICAgICAgICAgICAgICAgICBzcHJpbnRmKElk
-ZW50aWZpZXIsICJTaGFyZWQgUENJL0FHUCBNYWNoNjQgaW4gc2xvdCAlZDol
-ZDolZCIsDQpkaWZmIC11TnIgYXRpLm9yaWcvYXRpcmVncy5oIGF0aS9hdGly
-ZWdzLmgNCi0tLSBhdGkub3JpZy9hdGlyZWdzLmgJTW9uIEFwciAxNiAxOTow
-OTozMSAyMDAxDQorKysgYXRpL2F0aXJlZ3MuaAlNb24gQXByIDE2IDE5OjA5
-OjI1IDIwMDENCkBAIC01Myw5ICs1MywxNCBAQA0KICNkZWZpbmUgU1BBUlNF
-X0lPX1BPUlQJCShTUEFSU0VfSU9fQkFTRSB8IElPX0JZVEVfU0VMRUNUKQ0K
-ICNkZWZpbmUgQkxPQ0tfSU9fUE9SVAkJKEJMT0NLX0lPX0JBU0UgfCBJT19C
-WVRFX1NFTEVDVCkNCiANCisjaWYgIWRlZmluZWQoX19wb3dlcnBjX18pDQog
-I2RlZmluZSBJT1BvcnRUYWcoX1NwYXJzZUlPU2VsZWN0LCBfQmxvY2tJT1Nl
-bGVjdCkJXA0KIAkoU2V0Qml0cyhfU3BhcnNlSU9TZWxlY3QsIFNQQVJTRV9J
-T19TRUxFQ1QpIHwJXA0KIAkgU2V0Qml0cyhfQmxvY2tJT1NlbGVjdCwgRFdP
-UkRfU0VMRUNUKSkNCisjZWxzZQ0KKyNkZWZpbmUgSU9Qb3J0VGFnKF9TcGFy
-c2VJT1NlbGVjdCwgX0Jsb2NrSU9TZWxlY3QpICAgICBcDQorCVNldEJpdHMo
-X0Jsb2NrSU9TZWxlY3QsIEJMT0NLX1NFTEVDVCB8IE1NX0lPX1NFTEVDVCkN
-CisjZW5kaWYNCiAjZGVmaW5lIFNwYXJzZUlPVGFnKF9JT1NlbGVjdCkJSU9Q
-b3J0VGFnKF9JT1NlbGVjdCwgMCkNCiAjZGVmaW5lIEJsb2NrSU9UYWcoX0lP
-U2VsZWN0KQlJT1BvcnRUYWcoMCwgX0lPU2VsZWN0KQ0KIA0KZGlmZiAtdU5y
-IGF0aS5vcmlnL2F0aXNjcmVlbi5jIGF0aS9hdGlzY3JlZW4uYw0KLS0tIGF0
-aS5vcmlnL2F0aXNjcmVlbi5jCU1vbiBBcHIgMTYgMTk6MDk6MzEgMjAwMQ0K
-KysrIGF0aS9hdGlzY3JlZW4uYwlNb24gQXByIDE2IDE5OjA5OjI1IDIwMDEN
-CkBAIC0yMjUsOCArMjI1LDEwIEBADQogDQogI2VuZGlmIC8qIEFWT0lEX0NQ
-SU8gKi8NCiANCisjaWYgIWRlZmluZWQoX19wb3dlcnBjX18pDQogICAgIC8q
-IEluaXRpYWxpc2UgREdBIHN1cHBvcnQgKi8NCiAgICAgKHZvaWQpQVRJREdB
-SW5pdChwU2NyZWVuSW5mbywgcFNjcmVlbiwgcEFUSSk7DQorI2VuZGlmDQog
-DQogICAgIC8qIFNldHVwIGFjY2VsZXJhdGlvbiAqLw0KICAgICBpZiAoIUFU
-SUluaXRpYWxpemVBY2NlbGVyYXRpb24ocFNjcmVlbkluZm8sIHBTY3JlZW4s
-IHBBVEkpKQ0KZGlmZiAtdU5yIGF0aS5vcmlnL2F0aXZpZG1lbS5jIGF0aS9h
-dGl2aWRtZW0uYw0KLS0tIGF0aS5vcmlnL2F0aXZpZG1lbS5jCU1vbiBBcHIg
-MTYgMTk6MDk6MzEgMjAwMQ0KKysrIGF0aS9hdGl2aWRtZW0uYwlNb24gQXBy
-IDE2IDE5OjA5OjI1IDIwMDENCkBAIC0xMzMsNyArMTMzLDExIEBADQogKQ0K
-IHsNCiAgICAgaWYgKHBBVEktPnBNTUlPKQ0KKyNpZiAhZGVmaW5lZChfX3Bv
-d2VycGNfXykNCiAgICAgICAgIHhmODZVbk1hcFZpZE1lbShpU2NyZWVuLCBw
-QVRJLT5wTU1JTywgZ2V0cGFnZXNpemUoKSk7DQorI2Vsc2UNCisJeGY4NlVu
-TWFwVmlkTWVtKGlTY3JlZW4sIHBBVEktPnBNTUlPLCAweDFjMDApOw0KKyNl
-bmRpZg0KIA0KICAgICBwQVRJLT5wTU1JTyA9IHBBVEktPnBCbG9ja1swXSA9
-IHBBVEktPnBCbG9ja1sxXSA9IE5VTEw7DQogfQ0KQEAgLTI2MSw5ICsyNjUs
-MTUgQEANCiAgICAgew0KICAgICAgICAgdW5zaWduZWQgbG9uZyBNTUlPQmFz
-ZSA9IHBBVEktPkJsb2NrMEJhc2UgJiB+KFBhZ2VTaXplIC0gMSk7DQogDQot
-ICAgICAgICBpZiAocFZpZGVvKQ0KKyAgICAgICAgaWYgKHBWaWRlbykgew0K
-ICAgICAgICAgICAgIHBBVEktPnBNTUlPID0geGY4Nk1hcFBjaU1lbShpU2Ny
-ZWVuLCBWSURNRU1fTU1JTywNCisjaWYgIWRlZmluZWQoX19wb3dlcnBjX18p
-DQogICAgICAgICAgICAgICAgIFRhZywgTU1JT0Jhc2UsIFBhZ2VTaXplKTsN
-CisjZWxzZQ0KKwkJVGFnLCBNTUlPQmFzZSwgMHgxYzAwKTsNCisJICAgIHBB
-VEktPnBNTUlPICs9IDB4YzAwOw0KKyNlbmRpZg0KKwl9DQogICAgICAgICBl
-bHNlDQogICAgICAgICAgICAgcEFUSS0+cE1NSU8gPSB4Zjg2TWFwVmlkTWVt
-KGlTY3JlZW4sIFZJRE1FTV9NTUlPLA0KICAgICAgICAgICAgICAgICBNTUlP
-QmFzZSwgUGFnZVNpemUpOw0K
---0-1756603301-987480454=:80302--
+ I typed in some magic-sysrq register dumps:
+
+NIP: C00137A8 XER: 20000000 LR: C00137DC SP: c05bfe80 REGS: c05bfdd0 TRAP: 0500
+MSR: 00009032 EE: 1 PR: 0 RP: 0 ME: 1 IR/DR: 11
+TASK = c05be000[6] 'kupdate' Last syscall: -1
+last math 00000000 last altivec 00000000 CPU: 0
+GPR00: c00137d0 c05bfe80 c05be000 ffffffff c0151484 ffffffff ffffffff 00000000
+GRP08: c6a75220 00000000 00000000 c05bfdc0 24882044 059a44a1 00000000 00000000
+GPR16: 00000000 00000000 00000000 00000000 003ff000 c0160000 c016629c c0150000
+GPR24: 00000000 c0068cd8 c0150000 c0160000 c0110000 00000000 c0151484 09b36540
+
+(repeated, with same NIP.  _only_ change is GPR31 = 09452A6F.)
+
+NIP: C00137A4 XER: 20000000 LR: C00137DC SP: c05bfe80 REGS: c05bfdd0 TRAP: 0500
+(only change is in GPRs, where GRP31 = 087389cf.)
+
+ holding down alt+sysrq+p (to produce a whole lot of dumps, for comparison
+purposes) NIP can be:
+c0006a08, c00137dc, or c00137a4
+
+(usually c00137a8.  sometime trap is 0900).
+
+ When NIP is c0006a08, GRP3 = c0151484.  Other times, it's ffffffff.
+NIP: c05bfb60 XER: C0093e54 LR: c05bfb60 SP: 0000001e regs: c05bfa90 trap: \
+c0113b0c
+MSR: c0150000 EE: 0 PR: 0 FP: 0 ME: 0 IR/DR: 00
+TASK = (same kupdate)
+last math (same)
+GPR00: c05bfad0 c00b7690 00000000 00000000 c05bfb10 c0150000 30303030 30333033
+GPR08: c05bfad0 00000006 c01e2198 c01e2198 c05bfae0 c6a75276 00000009 ffffffff
+GPR16: c05bfad0 c01e2198 00000018 00000006 c05bfaf0 c01b6889 00000001 c05bfaf0
+GPR24: c05bfad0 c00148b8 00009032 c01e2198 c05bfb40 c0093e54 c05bfbb0 00000000
+
+ As I said, I've got the System.map, so if anybody wants, I can decode it or
+post it or something.  I've also got the vmlinux and the .config.
+
+ I also had a crash with 2.4.4pre1 (bk tree), again with dnetc.  This time,
+it dropped me into xmon.  I was able to move the mouse, and X redrew its
+background window under the mouse, which was odd.  After I pressed 's' in
+xmon, the system totally locked.  (I don't know xmon, so I don't even know
+what that did.)
+
+ I did get a backtrace and a register dump.  I'm not going to decode it all
+right now, but I've got vmlinux, System.map, and the .config I compiled it
+from.  If anyone wants to debug, I'll send the info.
+
+ I'll have more time to work on this in a couple weeks after I graduate from
+university.  :)
+
+> 4)  One more simple question.  I'm unclear as to which 2_4 version I should
+> pull from I have been using the linuxppc_2_4 kernel and not linus' is this
+> correct?  I'm trying to stay current on the PPC fixes for the 2_4 kernel.  I
+> am assuming that any fixes Linus makes to the kernel will be put into the
+> linuxppc_2_4 version however any fixes made in general by the PPC group
+> might not make it into the Linus version.
+
+ Yup, that's the deal. see http://penguinppc.org/dev/kernel.shtml.  They've
+got an rsync mirror of the bk tree (and others, like paulus and benh,
+AFAIK).  e.g. rync --delete -avz rsync://penguinppc.org/linux-2.4-bk .
+adjust as necessary.
+
+ I point this out mainly because I found that I had to export the bk tree to
+another directory to compile it, since all the filenames were wrong.
+
+> I apologize if this is repeated.  I'm trying desperately to find the
+> resources necessary for me to stay informed but may have not found it yet.
+
+ AFAIK, this is _the_ mailing list for the Linux kernel on PowerPC.
+
+ I'll have to give Michael Wortman's patch a try, if I still get the crash
+with 2.4.4pre3.  (which compiled cleanly right off the bat.  Thanks Ben :)
+
+
+--
+#define X(x,y) x##y
+Peter Cordes ;  e-mail: X(peter@llama.nslug. , ns.ca)
+
+"The gods confound the man who first found out how to distinguish the hours!
+ Confound him, too, who in this place set up a sundial, to cut and hack
+ my day so wretchedly into small pieces!" -- Plautus, 200 BCE
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
