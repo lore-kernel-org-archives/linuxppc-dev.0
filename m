@@ -1,75 +1,123 @@
-From: "Jim Lin" <jimmlin@solomon.com.tw>
-To: "linuppc" <linuxppc-embedded@lists.linuxppc.org>,
-	"Georg Klug" <gklug@giga-stream.de>, <clark@esteem.com>,
-	<jcampos@mvista.com>
-Subject: RE: Poor 8xx SCC Ethernet mode performence..
-Date: Wed, 17 Jul 2002 11:39:14 +0800
-Message-ID: <NFBBLLKCILMGHKJGDFGHEEMGCCAA.jimmlin@solomon.com.tw>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="big5"
-In-Reply-To: <FFECLICFNBJAHONLGAKMKEGICFAA.gklug@giga-stream.de>
+Date: Wed, 17 Jul 2002 10:07:12 -0500
+From: Stephen Cameron <steve.cameron@hp.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: ioremap on powerpc question
+Message-ID: <20020717100712.A23115@zuul.cca.cpqcorp.net>
+Reply-To: steve.cameron@hp.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi :
+Hmm, I continue to have difficulties...
 
-After I change 10/100 T hub . It's speed up to 370KBps at Half duplex. 480 KBps at Full duplex in NFS envirment.
-I had work follow ..
-
-1. 10/100 HUB turn to Halt duplex because RTL 8201 not  support auto-negotiaon.
-    I check our hardware component PHY Rtl 8201. It's not support  auto-negotiation when it's wired SMI .
-
-2.enable  SCC_PMSR_FDE | SCC_PMSR_LPB  , and Tested FTP Transfer again through 10/100 T HUB at Full           duplex .  It's about 200KBps.It's collision between HUB and RTL8201..
-
-3.enfore FTP host nic running at 10 Full duplex  mode ,  pulg cross line between  FTP host and custom board .
-   It's got 470 KBps .
-
-4. Due to custom board running in  NFS  envirment . It's cost some throughput.. now I trying test it without NFS envirment.
-    If I got more  information  I will post again.
-
-
-Thanks and Regards
-
-Sent: Tuesday, July 16, 2002 8:28 PM
-To: Jim Lin
-Subject: AW: Poor 8xx SCC Ethernet mode performence..
-
-
-Hi Jim,
-
-> I  was testing SCC ethernet performance at our 850 custom board and
-> found somting interesting.
+Matt Porter wrote:
 >
-> 1. Tested FTP  Transfer about 20MB file with 10T hub  I got  about
-> 250 k bps (someting poor ..)
-
-Yes that is poor, indeed.
-
-> 2. and I found the hhl20 arch/ppc/8xx_io/enet.c source code NOT
-> enable full duplex ..
->      and I had  pmsr  added SCC_PMSR_FDE | SCC_PMSR_LPB .. and
-> compiling , tested FTP Transfer again.
->      I got about 200 Kbps!
 >
-> I do not understand what is happen? Has anyone experience this?
+> On Mon, Jul 15, 2002 at 01:58:21PM -0500, Cameron, Steve wrote:
+[...]
+> > I want to create a huge RAM buffer for i/o purposes, so I
+> > boot the kernel with parameter "mem=64M" (actually, my
+> > system, an IBM ebony 440, has 128M RAM) [...]
+> >
+> > 	unsigned char *buf;
+> > 	buf = ioremap_nocache(64*1024*1024, 64*1024*1024);
+> >
+[...]
+> > However, on powerpc, as soon as I try to do, for example:
+> >
+> > 	*buf = '\0'; // write one char to virt addr returned by ioremap
+> >
+> > It blows up with a machine check.
+>
+> You are hitting a 440GP specific feature.  ioremap is trapping
+> ranges of addresses and "fixing them up" with the proper ERPN.
+> Unfortunately, I left the default on a no match as an ERPN=1
+> which will ioremap 1 0400 0000.   That's why you get a bus error.
+>
+> Try this patch:
+>
+> ===== arch/ppc/mm/pgtable.c 1.19 vs edited =====
+> --- 1.19/arch/ppc/mm/pgtable.c	Wed Jun 26 15:00:59 2002
+> +++ edited/arch/ppc/mm/pgtable.c	Mon Jul 15 16:12:32 2002
+> @@ -93,7 +93,7 @@
+>  ioremap(unsigned long addr, unsigned long size)
+>  {
+>  	unsigned long long addr64;
+> -	unsigned long long page_4gb = PPC440_IO_PAGE;
+> +	unsigned long long page_4gb = 0;
+>
+>  	/*
+>  	 * Trap the least significant 32-bit portions of an
+>
 
-The other performance is also poor.
+Ok, I tried this all day yesterday.  This does allow me to
+use the virtual address returned by ioremap_nocache.  However,
+when I attempt to DMA into the physical address with my PCI device,
+it is as if the DMA never occurs.  Prior to the DMA, I fill the
+buffer with 0x55's, and after the DMA, the 0x55's are still there.
+I'm thinking either caching is getting me, or else the physical
+address mapped by ioremap is not what I think it is.  Attacking
+the caching problem first, I tried, just before the DMA,
 
-First I think you should check your whole ethernet. If you really have
-2 stations at a 10BaseT Hub, you definetely need half duplex traffic. It
-might be that not all station are half duplex connected, so there would be
-collisions and even late collisions on the network that could not be
-detected. This would make the performance decrease.
+	consistent_sync(buf, length, data_direction);
 
-Probably your hub has a collision LED This would make it easier for you to
-debug the situation.
+where buf is (a page aligned offset from) the virtual address returned by
+ioremap, length is either the buffer length, or the buffer length
+rounded up to next multiple of SMP_CACHE_BYTES (tried both), and data_direction
+is in this case, PCI_DMA_FROMDEVICE.  (I also tried using for "buf",
+virt_to_phys(physaddr) where physaddr was the physical address
+which I (presumably) know because I set it up via ioremap...that is
+passing 0xC0000000 + physaddr to consistent_sync...that panicked).
 
-What about installing a little switch with 10/100 connectors? Then you
-could use full duplex on each connector and that would boost your
-performance.
+I also tried ioremap() vs. ioremap_nocache(), thinking possibly that
+using ioremap_nocache() was somehow short-circuiting the action of
+consistent_sync() (though not seeing any code that does that.) No dice.
+Always the same result, the DMA does not work.
 
-Georg Klug
+BTW, my device seems happy with the physical addresses I pass it,
+and the response I get from it indicate the DMA occurred...to
+_somewhere_.  Maybe it's time to break out the pci analyzer.
+Any ideas what's going on here?
+
+I caught some idea from someone here at HP that the caching attributes
+were implemented on the 440 such that they applied to 128M physical
+regions, so it wasn't really possible to set up 64M to be non-cached
+with the other 64M cached.... not sure if that's right or not,
+but perhaps it's related to my problem somehow.
+
+>
+> You could use alloc_bootmem_pages() to get a large buffer more
+> elegantly than lopping off memory and ioremapping. IMHO, it is
+> a slightly more flexible approach to large allocations.
+>
+
+Since I was having no luck with ioremap, and this did seem more
+elegant, I tried this approach too.  In init/main.c, I added code
+to call alloc_bootmem_pages via a __setup() type function with
+the amount of ram to alloc passed on kernel cmdline.
+
+Here, I could allocate memory.  However, if I allocated more than
+about 8M, the kernel would hang, the last thing output being
+"POSIX conformance testing by UNIFIX".  I tried allocating 32M,
+then 64M, then freeing the original 32M, thknking perhaps the first
+allocation was grabbing some specific memory needed by something
+later, this allowed things to get a little bit further, but ultimately
+panicked the system.
+
+Allocating small amounts of memory (4M), I did get DMA to succeed at
+least once, but without being able to get all the memory I need
+this wasn't really useful.
+
+I also tried moving the allocation around in main.c to various
+places, but found nothing that worked.
+
+Any ideas on this alloc_bootmem_pages front?
+
+Thanks,
+
+-- steve
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
