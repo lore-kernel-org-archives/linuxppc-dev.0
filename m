@@ -1,66 +1,48 @@
-From: "Jerry Quinn" <jquinn@nortelnetworks.com>
+From: "Robert E. Brose II" <bob@jriver.com>
+Message-Id: <199907282124.QAA06117@jriver.com>
+Subject: Re: usb mouse in 2.2.10
+In-Reply-To: <199907280146.LAA01847@tango.anu.edu.au> from Paul Mackerras at
+	"Jul 28, 1999 11:46:35 am"
+To: Paul.Mackerras@cs.anu.edu.au
+Date: Wed, 28 Jul 1999 16:24:15 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14239.28171.5732.716574@gargle.gargle.HOWL>
-Date: Wed, 28 Jul 1999 16:54:35 -0400 (EDT)
-To: Alain Birtz <abz@videotron.ca>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Realloc() problem with Efence
-In-Reply-To: <379F7AB9.E8D230CE@videotron.ca>
-References: <379F7AB9.E8D230CE@videotron.ca>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+User Paul Mackerras says:
+> Robert Brose <bob@jriver.com> wrote:
+> 
+> > 1) The keyboard response is somewhat odd. If I type "cd /anything" at the
+> > prompt, it fairly
+> > regularly does cdcd /anything on the echo. It's hard to pin down because it
+> 
+> This is a problem in the USB keyboard driver, where it doesn't handle
+> the `key rollover error' keycode correctly.  The iMac keyboard gives
+> this keycode if you press more than 2 keys (other than modifiers) at
+> once.
 
-Alain Birtz <abz@videotron.ca> writes:
-Alain> What is wrong with this code ?
-Alain> Code is executed correctly without Electric Fence
-Alain> But linked with Efence library, dbg complaint:
-Alain> 
-Alain> 	  Electric Fence 2.0.5 Copyright (C) 1987-1998 Bruce Perens.
-Alain> 	  ...
-Alain> 	  ...
-Alain> 	  Program received signal SIGSEGV, Segmentation fault.
-Alain> 
-Alain> when trying to write the first B, just after the first memory allocation
-Alain> buffer
-Alain> (at the instruction (*c_ptr++ = 'B'))
-Alain> 
-Alain> 
-Alain> void tst ()
-Alain> {
-Alain> 	int i;
-Alain> 	char *c_buf, *c_ptr, *temp_c_buf;
-Alain> 
-Alain> 	c_buf = (char *)malloc(5000);
-Alain> 	if (c_buf != NULL)
-Alain> 	 {
-Alain> 	 c_ptr = c_buf;
-Alain> 	 for (i = 0; i < 5000; i++)
-Alain> 	  *c_ptr++ = 'A';
-Alain> 	 temp_c_buf = c_buf;
-Alain> 	 realloc(temp_c_buf, 5000 + 5000);
-Alain> 	 if (temp_c_buf != NULL)
-Alain> 	  {
-Alain> 	  for (i = 0; i < 5000; i++)
-Alain> 	   *c_ptr++ = 'B';
-Alain> 	  }
-Alain> 	 }
-Alain> }
-Alain> 
+Aha, I am definitely a N-Key rollover person!
+ 
+> > If I cat /dev/mouse and move it I get moving lines of junk as I would expect.
+> > The bus mouse
+> > protocol looks suspicious but it works in 2.2.5 and I haven't found anything to
+> > replace it with
+> > yet.
+> 
+> Use "IMPS/2" (or "imps2" for gpm).
 
-realloc can (and did) move the block.  Therefore, when you start writing 'B's, 
-they are going into invalid memory.  The fact that it works without Electric
-Fence is luck.
+Works well but if I pick up a window and move it around quickly a lot I
+can make the mouse cursor go bye-bye.
 
-To do this, you need to set the pointer to the whole block to the output of
-realloc and then you can start writing B's at the new location + 5000.
+Bob
 
 -- 
-Jerry Quinn                             Tel: (514) 761-8737
-jquinn@nortelnetworks.com               Fax: (514) 761-8505
-Speech Recognition Research
+|   Robert E. Brose II         (N0QBJ)          | J. River, Inc.         |
+|      WWW:   http://www.jriver.com/~bob/       | 125 North First Street |
+|      EMAIL: mailto:bob@jriver.com             | Minneapolis, MN 55401  |
+|                                               | 612-339-2521 x212      |
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
