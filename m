@@ -1,46 +1,53 @@
-Date: Sun, 6 Dec 1998 16:13:38 +0100 (MET)
-From: Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>
-Reply-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF68_FBDev under MkLinux?
-In-Reply-To: <366A3198.105944B9@wanadoo.fr>
-Message-ID: <Pine.LNX.4.02.9812061549490.323-100000@cassiopeia.home>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Geert.Uytterhoeven@cs.kuleuven.ac.be
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: New XF68_FBDev
+In-Reply-To: Your message of "Sat, 5 Dec 1998 20:43:38 +0100 (MET)"
+	<Pine.LNX.4.02.9812051920310.864-100000@cassiopeia.home>
+References: <Pine.LNX.4.02.9812051920310.864-100000@cassiopeia.home>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <19981207010902R.roikawa@rr.iij4u.or.jp>
+Date: Mon, 07 Dec 1998 01:09:02 +0900
+From: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 6 Dec 1998, Martin Costabel wrote:
-> Geert Uytterhoeven wrote:
-> > Another thing is keyboard and mouse (ADB) handling. Xpmac uses the plain
-> > /dev/adb device, while XF68_FBDev takes the standard Linux keyboard input and
-> > uses the adbmouse driver. I assume keyboard won't be a problem. But the mouse
-> > requires the adbmouse driver.
+> > > Oops, I meant `Ryuichi's latest changes for mach64im.c'. I start to wonder
+> > > whether I really need them, since these things worked fine before, too. Or am I
+> > > getting insane and talking nonsenses?
+> >  Excuse me, what are "them" exactly ?
 > 
-> Did you fix the problem with the non-working option (alt) keys?
-> In the XF68_FBDev of the new R5beta linuxppc, it is still there.
-> For me (PM6400, standard Apple keyboard and 1-button mouse), XF68_FBDev
-> is pretty much useless. 
+> The byteorder stuff in mach64im.c. I don't see a difference with or without
+> them.
+ Sorry, but I don't believe that different data give the same result.
+I think you can see difference for example by experimentally changeing to
+    if ( 1 /* (alu != MIX_SRC) || ((planemask & PMask) != PMask)*/ ) {
+	mach64ImageWriteHW(x, y, w, h, psrc, pwidth, px, py,
+			   alu, planemask);
+and executing XPutImage function.
 
-What about the XF68_FBDev from XFree86 3.3.3?
+As a matter of fact, I added byte/bit reordering because I didn't any
+documents about Mach64 registers other than XFree86 code. Now that I
+have got the documents(thanks!), I understand all should be done is
+simply setting host control register appropriately, for at least
+Mach64VT or above. I intend to rewrite mach64im.c faster and more
+efficiently.
 
-> If you need more information to get to the bottom of this problem, just
-> say what kind of tests to perform.
+> Never trust mail ordering.
+ Indeed. Original messages are coming several days after followups
+these days. It is difficult for me to understand what are discussed.
+I wonder I subscribe the list wrong way.
 
-Problem is that I don't know anything about ADB, nor have ADB devices :-(
+BTW, I think it is better to revert this to the original
+ because mach64MaxX and mach64MaxY are not sizes but coordinates.
++    mach64VirtX = mach64MaxX = mach64InfoRec.virtualX;
++    mach64VirtY = mach64MaxY = mach64InfoRec.virtualY;
 
-Greetings,
+Regards,
 
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-
-
+Ryuichi Oikawa
+roikawa@rr.iij4u.or.jp
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
