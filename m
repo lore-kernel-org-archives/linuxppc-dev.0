@@ -1,29 +1,66 @@
-Message-ID: <3BAAF48B.2C734E71@mvista.com>
-Date: Fri, 21 Sep 2001 04:04:27 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3BAAF8AF.3C29A886@disca.upv.es>
+Date: Fri, 21 Sep 2001 10:22:07 +0200
+From: David de =?iso-8859-1?Q?Andr=E9s=20Mart=EDnez?= <ddandres@disca.upv.es>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Errata 67/77 / walnut bugs (was: Re: Erratum 51 bugfix?)
-References: <20010917152316.O3851@zax> <3BA62583.55E48A97@mvista.com> <20010918102901.A1183@zax> <3BA7980B.EEBF1F5D@mvista.com> <20010919121954.D13693@zax> <3BA83D9D.87F9B1E1@mvista.com> <20010921143645.F20058@zax> <3BAACEBA.F71605F@mvista.com> <20010921153359.G20058@zax>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: libc.so.6 error but not in Montavista
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
+ I am trying to build a ramdisk for a TQM823L module using the LinuxPPC
+ (2.4.4) and CDK provided by DENX.
 
-> ... but it's certainly improved from what it was before.
+ I have built the CDK withouth any problems and so the ramdisk.
+ But when I try to boot the system, I obtain the following error:
+ ....
+ EXT2-fs warning: checktime reached, running e2fsck is recommended
+ VFS: Mounted root (ext2 filesystem).
+ Freeing unused kernel memory: 52k init
+ init: error in loading shared libraries: libc.so.6: cannot open shared
+ object fi
+ le: No such file or directory
+ Kernel panic: Attempted to kill init!
+ Rebooting in 180 seconds..
 
-I pushed the patch.  It would be nice if you could send patches
-against the latest version of the tree, like do a pull and test
-it just before you post it.  There were parts of the patch that
-wouldn't apply and I had to do it manually.  Check it to ensure
-I got everything OK.
+ I have been searching the lists for a solution but it seems that people
+ with the same problem were using the Montavista version, not the DENX
+ one.
+ The proposed solution for Montavista is:
+ --------
+ If your shared libraries are (as usual) in the "/lib" directory, add
+the
+ following option to the GCC command line when linking your binary:
+ -Wl,-R/lib
+ --------
+ In fact, I don't know where to add this option.
 
-Thanks.
+ The /lib/libc.so in the ramdisk shows the following code:
+ ---------------------
+ /* GNU ld script
+    Use the shared library, but some functions are only in
+    the static library, so try that secondarily.  */
+ GROUP ( /LinuxPPC/CDK/lib/libc.so.6 /LinuxPPC/CDK/lib/libc_nonshared.a
+)
+ ---------------------
+ I think that this isn't right.
 
+ Any help would be great.
 
-	-- Dan
+--
+----------------------------------------------------------------------
+| David de Andrés Martínez   | Fault Tolerant Systems research Group |
+|                            |                                       |
+| Computer Science Engineer  | Email: ddandres@disca.upv.es          |
+| Doctorate Student          | Phone: +34 96 387.75.74 Ext 75774     |
+|                            | Fax: +34 96 387.75.79                 |
+-------Address--------------------------------------------------------
+|                 DISCA-EUI                                          |
+|                 Universidad Politécnica de Valencia                |
+|                 Campus de Vera #14                                 |
+|                 Valencia E-46021                                   |
+|                 Spain                                              |
+----------------------------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
