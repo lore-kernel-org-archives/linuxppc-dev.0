@@ -1,55 +1,86 @@
-Subject: Re: ppc405 floating point emulation
-From: Toni Van Remortel <t.vanremortel@ha.be>
-Reply-To: t.vanremortel@ha.be
-To: Jon Masters <jonathan@jonmasters.org>
+Subject: Re: mpc / linux kernel - user space
+From: Jaap-Jan Boor <jjboor@aimsys.nl>
+To: Juergen Oberhofer <e9826367@student.tuwien.ac.at>
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3FC4BACC.6000606@jonmasters.org>
-References: <3FC4BACC.6000606@jonmasters.org>
+In-Reply-To: <Pine.GHP.4.58.0311271903490.4360@stud3.tuwien.ac.at>
+References: <Pine.GHP.4.58.0311271703390.25225@stud3.tuwien.ac.at>
+	 <7E0B03AE-2100-11D8-BF18-003065E2BB06@aimsys.nl>
+	 <Pine.GHP.4.58.0311271903490.4360@stud3.tuwien.ac.at>
 Content-Type: text/plain
-Message-Id: <1070009213.4140.9.camel@toni>
+Message-Id: <1070011018.1263.27.camel@linpc003.aimsys.nl>
 Mime-Version: 1.0
-Date: Fri, 28 Nov 2003 09:46:53 +0100
+Date: Fri, 28 Nov 2003 10:16:59 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Op wo 26-11-2003, om 15:38 schreef Jon Masters:
-> Hi there,
+Hi Juergen,
+
+What I more ment with 'signal your application process' is you have
+a user thread block waiting in the read() system call of your driver
+and your driver will wake up that blocking read, so the application
+thread returns from read.
+
+If you want to send a signal to user code, you can use kill_proc()
+I think.
+
+Jaap-Jan
+
+On Thu, 2003-11-27 at 19:08, Juergen Oberhofer wrote:
+> Thank you! You mean that the application should install a signal handler
+> and
+> the module sends on every interrupt a signal to the application process.
+> Do you know, Which function does exist to send a signal? I guess, the
+> module has to know the pid of the application process? How can the module
+> be informed about it?
+> Regards,
+> Juergen
 >
-> Can someone tell me what they think the status of the mathemu on ppc405
-> currently is? I am faced with a situation in which we will probably
-> require some kind of library or kernel emulation support and all around
-> people suggest not to even go there :-).
-
-That's what they told me too, but I did go there. And the result is
-still quite good.
-I'm currently writing the last documentation on our laser-projector.
-This projects figures which are calculated by sin and cos together with
-a pow function. Off course, we used lookup-tables and approx-functions,
-but it works pretty well. Yesterday was the big show of it, and most
-people liked it.
-
-Anyhow, I use it in combination with real-time, and you cannot rely on
-float calculations then. So you need a good implementation to get full
-result of it.
-
-Calculation isn't very fast, but on half a second, my module calculates
-360 X and Y coordinates with 2 sin, 2 cos and 3 pow functions each
-point.
-
-So it is possible to use softfloat, but you MUST know that you cannot
-rely on speed then. So far my small experience with it :)
-
-PS: next week, I hope the docs will be ready and available on my website
-under 'cases'/'our case'.
-
-Regards,
---
-                           Toni Van Remortel
-              Wetenschappelijk Medewerker - D-science lab
-  Real time Linux for embedded systems: http://linemb.d-sciencelab.com
-              Tel: +32 3 205 61 72 - Fax: +32 3 205 61 95
-                      E-mail: t.vanremortel@ha.be
+> On Thu, 27 Nov 2003, Jaap-Jan Boor wrote:
+>
+> > Hi Juergen,
+> >
+> > That's normally not something you do and I don't know if it's possible.
+> > Application code normally communicates with your driver code using
+> > system
+> > calls (read/write). So either your appl procedure must be part
+> > of your module, or you must signal e.g. a user thread the timer
+> > interrupt happened, so the thread can execute that code.
+> > Hope this helps,
+> >
+> > Jaap-Jan
+> >
+> >
+> > On 27-nov-03, at 17:07, Juergen Oberhofer wrote:
+> >
+> > >
+> > > Hi,
+> > >
+> > > I have a module and an application program in user space:
+> > >
+> > > The Module performs the following task: at init it initializes the cpm
+> > > timer register of the mpc823,
+> > > such that an interrupt is generated every x microseconds. Thus, I
+> > > installed an interrupt handling function f that handles the timer
+> > > interrupts.
+> > >
+> > > My problem is that the module / the interrupt handling function should
+> > > execute a procedure defined in the application program. How can I pass
+> > > a
+> > > pointer (which points to that function) from the appl.program to the
+> > > module, such that the handler can execute this function every x
+> > > milliseconds? I thought to create a procedure in the module that
+> > > accepts
+> > > a function pointer as argument. But how can I achieve, that this module
+> > > procedure is visible to the application program? Does somebody have a
+> > > suggestion or know another way to do it?
+> > >
+> > > Regards,
+> > > Juergen
+> > >
+> > >
+> >
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
