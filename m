@@ -1,32 +1,41 @@
-Date: Mon, 19 Jul 1999 18:20:37 -0400 (EDT)
+Date: Mon, 19 Jul 1999 18:47:52 -0400 (EDT)
 From: Tom Rini <trini@disparity.net>
-To: Aidan Cully <aidan@kublai.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH]: Support for Mouse Systems A3 protocol mice
-In-Reply-To: <19990718144949.A764@xanadu.kublai.com>
-Message-ID: <Pine.BSF.3.96.990719181948.50420N-100000@silver.teardrop.net>
+To: Johnnie Peters <jpeters@phx.mcd.mot.com>
+cc: Matt Porter <mmporter@home.com>, VALETTE Eric <valette@crf.canon.fr>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Is the vger 2.2 kernel branch dead
+In-Reply-To: <37939E1D.1964B05@phx.mcd.mot.com>
+Message-ID: <Pine.BSF.3.96.990719184634.50420O-100000@silver.teardrop.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 18 Jul 1999, Aidan Cully wrote:
+On Mon, 19 Jul 1999, Johnnie Peters wrote:
 
-> This patch adds 3-button support for (at least) the Mouse Systems A3
-> Trackball, and Mac Point Pro products.  I've also changed a bit of how
-> the button-change logic works, since I think it's allowed for mice to
-> slip back into the 1-button mouse protocol.  I don't know if that's
-> entirely appropriate, but both Darwin and NetBSD seem to take that
-> precaution..
+> Matt Porter wrote:
+> > 
+> > On Mon, 19 Jul 1999, VALETTE Eric wrote:
+> > 
+> > > I tried to upgrade here and no changes during one month!!!
+> > > As there still some important bugs in 2.2.10++, I wonder
+> > > why nothing happens???
+> > 
+> > Perhaps nobody has submitted any bug fixes?
+> 
+> Actually that is not true.  Motorola has submitted changes to both Paul
+> and Cort that have not made it into vger.  Last I know the sources in
+> vger would not boot on Motorola platforms other than Blackhawks and
+> Utahs.
 
-It works fine here.  It also looks like it shoudln't break other mice,
-pass it along directly to Ben H. :)
+Try putting 'em vs 2.3.x.  I think right now the push is to fix all the
+little annoyances/problems that we're stuck w/ in 2.2.x and move forward
+in 2.3.x.  Then backport things later on.
 
 ---
 Tom Rini (TR1265)
 http://gate.crashing.org/~trini/
-
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
