@@ -1,36 +1,60 @@
-Message-ID: <01C183C1.37F31990.svacca@valcom.com>
-From: Steven Vacca <svacca@valcom.com>
-Reply-To: "svacca@valcom.com" <svacca@valcom.com>
-To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Proper syntax to open() device driver from app.
-Date: Thu, 13 Dec 2001 10:30:42 -0500
+Message-ID: <3C18CB10.EEFD6586@seranoa.com>
+Date: Thu, 13 Dec 2001 10:36:48 -0500
+From: Andrew Dixon <andrew.dixon@seranoa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: ppclist <linuxppc-embedded@lists.linuxppc.org>
+Subject: [Fwd: Re: root=/dev/nfs on sbc8260]
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have a test driver, which turns an onboard LED ON or OFF,
-resident and directly linked to the kernel image.
+Sorry, I ment to send this to the list.
 
-In chr_dev_init(), the driver's init func is called and the
-device registers itself with a specified MAJOR number.
-When my app runs, I'm not exactly sure of
-what the proper syntax is to open() the driver (call the driver's
-open() func in the file_operations struct) and then execute
-ioctl() to send an LED ON or OFF cmd to the driver.
+-------- Original Message --------
+Subject: Re: root=/dev/nfs on sbc8260
+Date: Thu, 13 Dec 2001 10:32:45 -0500
+From: Andrew Dixon <andrew.dixon@seranoa.com>
+Organization: Seranoa Networks
+To: Dan Malek <dan@embeddededge.com>
+References: <3C17E07F.7144B7BF@seranoa.com>
+<3C18445A.80505@embeddededge.com>
 
-Does anyone have some examples of this?
-Most info regards modules rather than resident drivers.
+Dan Malek wrote:
+>
+> Andrew Dixon wrote:
+>
+> > Any insight that people could give would be greatly appreciated.
+> It's either the FCC or the server.  Since you have the FCC working in PPCBoot
 
-Am I correct in assuming that I should do something similar
-to the following:
+Yes PPCBoot works like a charm.
 
-	hndl = open("/dev/led",O_WRONLY,0);
-	ioctl(hndl,LED_ON,0);
+<snip>
+
+You could also use your favorite network sniffer to see what traffic,
+> if any, went along the network.
+>
+
+OK.  I used tcpdump to listen for traffic that this board generates and
+I don't see anything once Linux starts up.  Here's what the output looks
+like:
+
+rowling:/home/dixon# tcpdump -i eth0 ether src 00a01e901555
+<snip>
+10:29:53.882149 172.16.1.162.2811 > 172.16.1.202.32828:  udp 4 (DF)
+10:29:53.882570 172.16.1.162.2811 > 172.16.1.202.32828:  udp 4 (DF)
+10:29:53.882981 172.16.1.162.2811 > 172.16.1.202.32828:  udp 4 (DF)
+10:29:53.883393 172.16.1.162.2811 > 172.16.1.202.32828:  udp 4 (DF)
+10:29:53.883833 172.16.1.162.2811 > 172.16.1.202.32828:  udp 4 (DF)
+10:29:53.884245 172.16.1.162.2811 > 172.16.1.202.32828:  udp 4 (DF)
+10:29:53.884688 172.16.1.162.2811 > 172.16.1.202.32828:  udp 4 (DF)
+10:29:53.885099 172.16.1.162.2811 > 172.16.1.202.32828:  udp 4 (DF)
+
+Then Linux starts and I get nothing.  Very odd.
+
+Any ideas?
 
 Thanks,
-
-ShutEye Thinkin
+Andy
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
