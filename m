@@ -1,71 +1,49 @@
-From: v.sudeep@exgate.tek.com
-Message-ID: <301A812E6528D511A8F70008C71E57860290F93F@ap-bang-m02.india.tek.com>
-To: jbeisert@eurodsn.de, linuxppc-embedded@lists.linuxppc.org
-Subject: RE: dummy_con
-Date: Tue, 16 Dec 2003 04:45:36 -0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: reboot by software
+From: Gary Thomas <gary@mlbassoc.com>
+To: zjzhou@newrocktech.com
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <000101c3c3b8$68333110$b702a8c0@newrock2>
+References: <000101c3c3b8$68333110$b702a8c0@newrock2>
+Content-Type: text/plain
+Message-Id: <1071580258.17911.69.camel@hermes>
+Mime-Version: 1.0
+Date: 16 Dec 2003 06:10:59 -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi !!!
+On Tue, 2003-12-16 at 02:38, John Zhou wrote:
+> Hello!
+>
+> I have a linux running on my mpc8260 board( power on reset at
+> 0xfff00100, I use 32 bit flash, and directly maping
+> 0xF0000000 ~ 0xFFFFFFF in kernel).
+>
+> Now, I want to reboot system by software. But, when I jump
+> to 0xfff00100 in kernel mode, it's going dead. Can anybody help me?
 
-First and foremost.... THANKS a MILLION for your response.
+Just jumping into the reset vector of the ROM/FLASH isn't going
+to work since Linux is running with the MMU on, etc.  What you
+really need is some way to tell the hardware to reenter the
+RESET condition.
 
-I did what you suggested and got an error while building.(error message
-attached below) I am not sure how I should be proceeding.
+Probably the best way on that platform is to cause a machine
+check (checkstop) and set it up to reset on checkstop.  Look
+at the description of HID0 on the 8260 to see how to do it.
 
-Like I said before I have a S3 ViRGE/GX card. Since I did not find ViRGE/GX
-in the menuconfig, I enabled S3 Trio. Do you think there is any chance of
-this working ?
+Here's how I did it on an 8250 (same core):
+    unsigned long hid0;
+    // Need interrupts off to force checkstop
+    cli();
+    ((immap_t *)IMAP_ADDR)->im_clkrst.car_rmr |= 0x01;  // Checkstop reset enable
+    // Force a checkstop by turning on parity which is not implemented
+    hid0 = mfspr(HID0);
+    hid0 |= 0x30000000;
+    mtspr(HID0, hid0);
 
-I searched up the net for similar error conditions...
-http://lists.terrasoftsolutions.com/yellowdog-general/July01/0930.html
-For them the simple solution was to unselect S3 Trio in menuconfig. It cant
-apply in my case right. Now what do I do ???
+--
+Gary Thomas <gary@mlbassoc.com>
+MLB Associates
 
-Any leads on how to proceed are deeply appreciated.
-
-Thanks in advance.
-
-- S u d e e p    V
-If at first you dont succeed, skydiving is not for you.
-
-
-
-
-
------Original Message-----
-From: Juergen Beisert [mailto:jbeisert@eurodsn.de]
-Sent: Monday, December 15, 2003 9:03 PM
-To: Sudeep, V
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: dummy_con
-
-
-Hi!
-
-> THE PROBLEM:  While compiling the kernel I get the following error.
-> arch/ppc/kernel/kernel.o: In function `ppc4xx_setup_arch':
-> arch/ppc/kernel/kernel.o(.text.init+0xbee): undefined reference to
-> `dummy_con'
-> arch/ppc/kernel/kernel.o(.text.init+0xbf2): undefined reference to
-> `dummy_con'
-> arch/ppc/kernel/kernel.o(.text.init+0xbf6): undefined reference to
-> `conswitchp'
-> arch/ppc/kernel/kernel.o(.text.init+0xbfa): undefined reference to
-> `conswitchp'
-> drivers/char/char.o: In function `chr_dev_init':
-> drivers/char/char.o(.text.init+0x248): undefined reference to `fbmem_init'
-> drivers/char/char.o(.text.init+0x248): relocation truncated to fit:
-> R_PPC_REL24 fbmem_init
-> make: *** [vmlinux] Error 1
-
-Try activate the "Virtual terminal" and "Support for console on virtual
-terminal".
-
-JB
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
