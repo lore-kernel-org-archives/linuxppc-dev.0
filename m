@@ -1,28 +1,39 @@
-Subject: Anyone ported Nils Faerber's LCD driver?
-To: linuxppc-embedded@lists.linuxppc.org (LinuxPPC Embedded Mailing List)
-Date: Tue, 22 Feb 2000 11:36:08 +1100 (EST)
+Message-ID: <20000222083924.6809.qmail@web204.mail.yahoo.com>
+Date: Tue, 22 Feb 2000 00:39:24 -0800 (PST)
+From: Sebastien Articlaux <sebastien_articlaux@yahoo.com>
+Subject: Boot process - Crash in serial_init fonction
+To: embedded linuxppc <linuxppc-embedded@lists.linuxppc.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000222003608.AE92E7A2@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi gang,
+Hi all!
 
-Nils Faerber has written a simple Linux parallel port-based driver for
-character based LCD displays, at:
-    http://www.home.unix-ag.org/nils/lcd.html
+When going through the fonction serial_init of the
+bootloader, I access to the address FA100000 but it
+doesn't correspond to anything in our mapping.
+So the program stops.
+But for a MBX board this correspond to MBX status/
+control registers.
+My board is customize so I don't have this.
+Do you think I will modify serial_init source code?
+I've found this fonction in m8xxtty.c and in mbxtty.c
 
-Has anyone ported it to 8xx by any chance?
+The mapping of our memory is the following one:
 
-Thanks,
-Graham
---
-Graham Stoney
-Principal Hardware/Software Engineer
-Canon Information Systems Research Australia
-Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
+RAM     0        to   7FFFFFF
+FLASH   8000000  to   803FFFF
+IMMR    FF000000
+
+I've seen that for MBX board the mapping for FLASH
+starts at FE000000 and for IMMR at FA200000.
+Should I use this?
+
+Thank you in advance.
+
+Sebastien ARTICLAUX
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
