@@ -1,8 +1,8 @@
 From: =?iso-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
 To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC8560 boot console (CPM SCC) driver problem
-Date: Tue, 24 Aug 2004 18:22:32 +0200
-Message-ID: <001201c489f6$926db540$5201a8c0@GEG2400>
+Subject: MPC8560 util.S compilation error with E500 core support
+Date: Tue, 24 Aug 2004 18:36:23 +0200
+Message-ID: <001301c489f8$82f426b0$5201a8c0@GEG2400>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -13,23 +13,20 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 Hi,
 
-I download a 2.6.8 Linux kernel to port it to a custom 8560 board
-similar to MPC8560_ADS board..
+I first download a 2.6.7 Linux kernel to port it to a custom 8560 board.
+The ./arch/ppc/boot/common/util.S compiles fine.
 
-In the arch/ppc/boot directory there is no 85xx_io directory with
-a CPM uart driver.
+Then I download a 2.6.8 kernel. The same file util.S does not
+compile any more because of "mtsrin" instruction not found with E500.
 
-The kernel link waits for some serial basic functions like serial_getc().
+Between the 2 kernels, the -me500 option is distributed all over the
+./arch/ppc directory. So the ./arch/ppc/boot is compiled with this option
+and fails.
 
-I found the generic ./drivers/serial/cpm_uart driver, but it seems to only
-be
-used later when Linux is installed.
+What is the right solution ?
+Compile the boot whitout -me500 option or change util.S code ?
 
-Surely I miss something.
-How can I have a console for my boot ?
-Are 8260 cpm2 definitions compatible with 85xx ?
-
-Thanks
+Thanks for any idea.
 Gérard Guével
 
 
