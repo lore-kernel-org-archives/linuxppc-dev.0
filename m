@@ -1,60 +1,38 @@
-Message-ID: <3912AE0C.9C8D096B@mpifr-bonn.mpg.de>
-Date: Fri, 05 May 2000 13:18:36 +0200
-From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
+Date: Fri, 5 May 2000 13:38:26 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Jeff Garzik <jgarzik@mandrakesoft.com>
+cc: linux-fbdev@vuser.vu.union.edu,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: PATCH 2.3.99.7.5: update for clgenfb fbdev driver
+In-Reply-To: <391270BD.A170EC15@mandrakesoft.com>
+Message-ID: <Pine.LNX.4.10.10005051335010.428-100000@cassiopeia.home>
 MIME-Version: 1.0
-To: FireWire devel <linux1394-devel@eclipt.uni-klu.ac.at>
-CC: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>, tas@mindspring.com
-Subject: FireWire on Apple PowerBook PISMO
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+On Fri, 5 May 2000, Jeff Garzik wrote:
+> updates my cirrus logic fbdev driver with a few cleanups, fix 0xA0000
+> bug (note to alan), module and PCI cleanups, ...
 
-With the information from some people on the LinuxPPC list, I was able to talk
-to the FireWire OHCI controller in the new Apple PowerBook (PISMO).  I had to
-add the vendor/device id of the chip and (as usual, as OpenFirmware does not do
-it) add a few lines to enable the pci device.  The "basic" startup seems to
-work, but any further operation (e.g. testlibraw) hangs.  Maybe one of the FW
-gurus can tell me from the logs below what is missing?
+Since clgen_of_init() is exactly the same as clgenfb_init(), and since clgenfb
+uses PCI resource management, can't we simply get rid of the OF specific stuff
+in clgenfb?
 
-Thanks, Albrecht.
+Can someone please test this by disabling Offb (CONFIG_FB_OF=n) and seeing
+whether everything still works fine? Thanks!
 
+Gr{oetje,eeting}s,
 
-from lspci:
-00:0e.0 FireWire (IEEE 1394): Apple Computer Inc.: Unknown device 0018 (rev 01)
-(prog-if 10)
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping-
-SERR- FastB2B-
-	Status: Cap- 66Mhz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort-
-<MAbort- >SERR- <PERR-
-	Interrupt: pin A routed to IRQ 40
-	Region 0: Memory at f5000000 (32-bit, non-prefetchable) [disabled]
+						Geert
 
-from /var/log/messages:
-ieee1394: registered ohci1394 driver, initializing now
-ohci1394: looking for Ohci1394 cards
-ohci1394_0: allocated interrupt 40
-ohci1394_0: The 1st byte at offset 0x404 is: 0x31
-ohci1394_0: remapped memory spaces reg 0xdc8b1000
-ohci1394_0: soft reset finished
-ohci1394_0: max packet size = 2048 bytes
-ohci1394_0: 4 iso contexts available
-ohci1394_0: Receive DMA ctx=2 initialized
-ohci1394_0: Receive DMA ctx=0 initialized
-ohci1394_0: Receive DMA ctx=1 initialized
-ohci1394_0: AT dma ctx=0 initialized
-ohci1394_0: AT dma ctx=1 initialized
-ohci1394_0: request csr_rom address: D4A8DC00
-ohci1394_0: Cancel request received
-ohci1394_0: resetting bus on request and attempting to become root
-ieee1394: detected 1 ohci1394 adapter
-ohci1394_0: SelfID process finished (phyid 1, root)
-ohci1394_0: selfid packet 0x807f8494 rcvd
-ohci1394_0: selfid packet 0x817f84d2 rcvd
-ohci1394_0: This node self-id is 0x817f84d2
-ohci1394_0: calling self-id complete
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
