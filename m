@@ -1,38 +1,33 @@
-To: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: LXT972 FEC problem on MPC855 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 26 Aug 2002 11:04:13 PDT."
-             <3D6A6D9D.20404@redswitch.com>
-Date: Mon, 26 Aug 2002 20:27:02 +0200
-Message-Id: <20020826182707.BA14B11829@denx.denx.de>
+Message-ID: <E1836A7F3557D311A14000805F9F36FC0141C85B@usdfo011.usac.danfoss.net>
+From: Hihn Jason <JasonHihn@DANFOSS.com>
+To: "Linuxppc-Embedded@Lists. Linuxppc. Org (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: 4 bit LCD interface on 823e not working
+Date: Mon, 26 Aug 2002 21:12:06 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3D6A6D9D.20404@redswitch.com> you wrote:
->
-> > After running ppcboot on our board successfully (including the fast
-> > ethernet LXT972), we have trouble on enabling FEC on linux kernel. The
-> > problem is that we cannot send any packets through the network after the
-> > kernel is booted. The ethernet looks OK during initialization according
-> > to the printed messages. We are trying to locate the problem but haven't
-> > found yet so far. Any hints on what caused such problem?
-...
-> eth0: config: auto-negotiation on, 100FDX, 100HDX, 10FDX, 10HDX.
-> IP-Config: Incomplete network configuration information.
+As you probably can guess I'm trying to get this Optrex display working.
+Well I've finally scoped it out, and I can't find the cause (or solution to)
+my problems.
 
-You are passing bad/insufficient boot arguments to the Linux  kernel;
-unfortunaltely you don;t show us this part of the boot messages, so I
-cannot even guess what you're doing wrong.
+When I write the following nibbles for display, I get these bit patterns out
+of the pins and on screen:
+0: 1111
+1: 1010
+2: 0111
+4: 0100
+5: 1011
+8: 0100
+A: 0110
+F: 1101
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Do not underestimate the value of print statements for debugging.
+There seems to be no rhyme or reason, at least I don't have a clue. The bits
+are all clocked in parallel, 4 at a time. Can any please help?
+I'm digging in the 823e book for any registers that may need to be changed.
+-Jason
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
