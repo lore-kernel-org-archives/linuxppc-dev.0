@@ -1,27 +1,51 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: <ajoshi@unixbox.com>, <linuxppc-dev@lists.linuxppc.org>,
-	Daniel Berlin <dan@cgsoftware.com>
-Subject: Re: [PATCH]: Make radeonfb work alot better with new powerbooks
-Date: Thu, 8 Nov 2001 18:11:52 +0100
-Message-Id: <20011108171152.28209@smtp.adsl.oleane.com>
-In-Reply-To: <3BEABBDA.6080000@humboldt.co.uk>
-References: <3BEABBDA.6080000@humboldt.co.uk>
+Message-ID: <3BEAD844.380F227A@mvista.com>
+Date: Thu, 08 Nov 2001 12:08:52 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: paulus@samba.org
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: The Plan
+References: <15337.7275.266062.777161@cargo.ozlabs.ibm.com>
+		<3BE9D4B8.6A2E8603@mvista.com> <15337.62287.965562.545296@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->On the other chip I work on (CT69030) I deal with panel issues by
->assuming that the boot firmware set the correct panel width, height and
->type. How safe is this approach on the r128?
+Paul Mackerras wrote:
 
-Doesn't work. Some radeon firmwares will set a device-tree property
-with the panel EDID, but r128's wont afaik, and I think it's bogus
-in some cases. I'd prefer we use the i2c.
+> Mark A. Greer writes:
+>
+> > I would move harrier.c and pplus_common.c to the "kernel" dir since they
+> > are both bridge related files (kinda like the mpc10x_common.c file).
+>
+> I wondered about pplus_common.c, actually.  Are pplus_common.c and
+> harrier.c likely to be used by more than one or two platforms in the
+> future?
 
-Ben.
+Depends what  you mean by "platform".
+
+Basically, most of the older MCG boards will use pplus_common.c (supports
+falcon/raven and hawk); most of the newer ones will use the harrier.  It
+depends on whether the MCG boards are supported by one or two "board ports"
+or if each board has its own "board port".  Lately, we've been separating
+them out because there have been more significant differences between the
+various boards and having things like residual data are not assured anymore
+(or residual data that's close to correct).
+
+Any comments Matt?
+
+> If we leave them in kernel then we need to move the
+> corresponding header files to include/asm-ppc.
+
+> BTW, I would love to find a way to move all the platform-specific
+> files (mvme5100.h, for instance) from include/asm-ppc to
+> arch/ppc/platforms too.  The obstacle at the moment is the serial
+> stuff.
+
+Sounds like the right place to me too.
+
+Mark
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
