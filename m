@@ -2,18 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D015B67A79
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Mar 2005 08:45:06 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 83DF967A77
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Mar 2005 08:55:29 +1000 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sven Luther <sven.luther@wanadoo.fr>
-In-Reply-To: <20050327123703.GA23113@pegasos>
-References: <20050327123703.GA23113@pegasos>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
 Content-Type: text/plain
-Date: Mon, 28 Mar 2005 08:44:47 +1000
-Message-Id: <1111963487.5474.12.camel@gaston>
+Date: Mon, 28 Mar 2005 08:55:11 +1000
+Message-Id: <1111964111.6099.19.camel@gaston>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: ppc32 power3/4 pmac_cache.S build breakage fix.
+Subject: [PATCH] Fix sleep/wakeup problems on iBook G3
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2005-03-27 at 14:37 +0200, Sven Luther wrote:
-> Hello,
-> 
-> Find attached a trivial fix for the 32bit power3 and power4 introduced by
-> benh's latest round of pmac sleep fixes.
-> 
-> I am not sure if this is the best way to solve this problem, but it fixes the
-> issue.
+Hi !
 
-Bah, fixe plustot dans le code ... ajout un #ifdef CONFIG_ALTIVEC autour
-du dssall (enfin, de la section entiere avec le BEGIN/END inclus) pour
-le moment, quoi que ici, le mieux est encore de dire a l'asm de pas
-moufter. En ce qui concerne pmac_sleep vs. pmac_cache, #ifdef aussi pour
-le moment.
+There have been various reports lately of sleep beeing broken on iBook
+G3. Frank (no name provided here) found a typo in my code that cleans
+the L1 cache on these CPU models. This patch fixes it, I'd appreciate
+some feedback about wether that fixes the problem or not.
 
 Ben.
+
+Index: linux-work/arch/ppc/platforms/pmac_cache.S
+===================================================================
+--- linux-work.orig/arch/ppc/platforms/pmac_cache.S	2005-03-15 11:56:42.000000000 +1100
++++ linux-work/arch/ppc/platforms/pmac_cache.S	2005-03-28 08:51:46.000000000 +1000
+@@ -73,7 +73,7 @@
+ 
+ 	/* disable / invalidate / enable L1 data */
+ 	mfspr	r3,SPRN_HID0
+-	rlwinm	r0,r0,0,~HID0_DCE
++	rlwinm	r3,r3,0,~HID0_DCE
+ 	mtspr	SPRN_HID0,r3
+ 	sync
+ 	isync
