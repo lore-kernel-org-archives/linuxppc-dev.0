@@ -1,72 +1,58 @@
-Date: Mon, 3 May 1999 01:59:04 -0400 (EDT)
-From: Alexander Derbes <acd@po.cwru.edu>
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-cc: "Jason Y. Sproul" <jsproul@mail.wesleyan.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Mozilla for PPC
-In-Reply-To: <Pine.LNX.4.10.9905030730010.1025-100000@idd-01.imbc.gr>
-Message-ID: <Pine.LNX.4.04.9905030152290.24134-100000@discordia.student.cwru.edu>
+Date: Mon, 3 May 1999 11:52:32 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Mike Ladwig <mike@twinpeaks.prc.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: atyfb and 8500+ATI RagePro
+In-Reply-To: <372B4B1A.1B496127@twinpeaks.prc.com>
+Message-ID: <Pine.LNX.4.10.9905031145560.3092-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+	Hi Mike,
 
-BTW,
+> I've been having major problems using the atyfb driver with my 8500, and
+> finally have a clue or two to report.
+> 
+> If I try booting the 2.2.6 kernel from the new beta R5 with an unchecked
+> "No video driver" and "video=atyfb:vmode:19,cmode:16", I get a frozen
+> machine and a colored static rectangle on my display.  If I use the same
+> command line, but specify a lower mclk value (most all lower ones work),
+> the system will boot, but I will get the same types of colored static rectangles.
+> 
+> Recently, I came across a post my Hugy Caley about a "hacked" atyfb
+> driver from Abe White.  I thought I'd give it a try.  Using the
+> parameter line, "video=atyfb:vmode:19,cmode:16", I actually get a
+> somewhat reasonable display, although the text of the console lines are
+> repeated several times on each  line; every ~25 characters, the line
+> starts over.  Also, the kernel Hugh sent me didn't boot all the way, not
 
-   What is the deal with Communicator for PPCLinux?  is that what still
-what is holding up the R5 release?
+Usually such repeats are caused by incorrect DSP values for the display FIFO.
 
-2nd question:  I am thinking about getting a lombard powerbook, based on
-the initial data available on the chipset etc, how much kernel work will
-be required to get linux running?
+> finding my boot device - probably unrelated to the video issue. The
+> atyfb driver prints out (a close reconstruction from the garbled video):
+> 
+> /bandit, ATY,XCLAIMVRPro atyfb: 3D RagePro(BGA, PCI) 0x479 rev 0x7c 12M
+> SGRAM 230 MhzPLL, 100 Mhz MCLK
+> 
+> Anyway, I'm not sure where to go from here.  I'm a programmer and
+> willing to jump in, but not knowledgable about device driver debugging.
+> 
+> Any help or advice would be greatly appreciated!
 
--alex
+Sorry, no more clues :-(
 
-On Mon, 3 May 1999, Kostas Gewrgiou wrote:
+Greetings,
 
-> 
-> 
-> 
-> On Sun, 2 May 1999, Jason Y. Sproul wrote:
-> 
-> > 
-> > Tom Vier <nester@erols.com> posted back in March about the need for someone
-> > to hack up a PowerPC linkage function for XPCOM. Netscape's XPCOM will be
-> > essential to Mozilla in the near future, and the functions in question are
-> > only a few dozen lines long. I've been in touch with the module owner about
-> > doing this, but I won't be able to work on it for at least a week or two
-> > (possibly more). I'm also not familiar with LinuxPPC calling conventions
-> > (although I am familiar with other ABIs, and with PPC asm).
-> > 
-> > Furthermore, it appears that a pre-R5 glibc2 system is necessary to make
-> > Mozilla work at all, and I've yet to set that up. I've got a partition I
-> > can use, but I have to clean it up and download and install pre-R5. And
-> > hopefully R5 will be out soon anyway.
-> > 
-> > Does someone else want to volunteer for this? Alternatively, could anyone
-> > point me to a good reference on the LinuxPPC ABI? Extra bonus points if you
-> > can make Mozilla work on my R4 system... Thanks!
-> > 
-> > ........................................................................
-> > Jason Y. Sproul                    http://www.con.wesleyan.edu/~jsproul/
-> > jsproul@wesleyan.edu            jsproul@iced.com    http://www.iced.com/
-> >      Eagles may soar, but weasels don't get sucked into jet engines.
-> > 
-> > 
-> 
-> Mozilla works fine under R4, i am using the XFree libs so i am not sure
-> if it will work with the X libs installed with R4 (you are going to need
-> a newer version anyways since the default libs aren't thread safe). 
-> I do have an rpm of mozilla (built with no changes from the R5 srpm) if
-> you want it.
-> 
->   Kostas Gewrgiou.
-> 
-> 
-> 
-> 
+						Geert
+
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
