@@ -1,72 +1,63 @@
-Date: Thu, 10 May 2001 11:49:09 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Albert D. Cahalan" <acahalan@cs.uml.edu>
-Cc: linuxppc-embedded@lists.linuxppc.org, Murray.Jensen@cmst.csiro.au
-Subject: Re: linuxppc_2_5 source tree (and others)
-Message-ID: <20010510114909.B28206@opus.bloom.county>
-References: <200105101840.f4AIe5d413262@saturn.cs.uml.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200105101840.f4AIe5d413262@saturn.cs.uml.edu>; from acahalan@cs.uml.edu on Thu, May 10, 2001 at 02:40:05PM -0400
+Date: Thu, 10 May 2001 20:49:44 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: frowand@mvista.com
+Cc: Brian Kuschak <brian.kuschak@skystream.com>,
+	"'Dan Malek'" <dan@mvista.com>, Eli Chen <eli@routefree.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: dcache BUG()
+In-Reply-To: <3AFAE055.3396344C@mvista.com>
+Message-ID: <Pine.HPX.4.10.10105102042500.29518-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, May 10, 2001 at 02:40:05PM -0400, Albert D. Cahalan wrote:
->
-> Tom Rini writes:
-> > On Thu, May 10, 2001 at 06:38:02PM +1000, Murray Jensen wrote:
->
-> >> Hi, I see that the linuxppc_2_5 bk tree has disappeared from fsmlabs, and
-> >> has been replaced with a linuxppc_2_4_devel tree. Could someone in the
-> >> know please post a quick update what this means, and perhaps what the
-> >> future holds wrt 2.4/2.5 linuxppc (embedded)?
+On Thu, 10 May 2001, Frank Rowand wrote:
+
+> Gabriel Paubert wrote:
 > >
-> > I was hoping Cort would mention this here, but 2_5 has been 'dead' for a
-> > while and is finally gone too.  There's still mirrors of it however.
-> > It will exist again, but when 2.5.0 appears and will be based off the
-> > linux_2_4 tree or so.  Right now 2_4_devel isn't up to date wrt 8xx/4xx, and
-> > some new boards 2_5 had.  I'm working on it. :)
+> > On Wed, 9 May 2001, Brian Kuschak wrote:
 >
-> Oh, lovely.
 >
-> I'm very glad to have ignored this BitKeeper nonsense for
-> the most part then. I knew there was a good reason to rely
-> on the one true source tree from Linus. I'm not screwed like
-> all the people working from linuxppc_2_5 are.
+> > >
+> > > static __inline__ void atomic_set(atomic_t *v, int a)
+> > > {
+> > > c004f9e8:       38 00 00 01     li      r0,1
+> > >         int t;
+> > >
+> > >         __asm__ __volatile__("\n\
+> > > c004f9ec:       7d 60 f8 28     lwarx   r11,r0,r31
+> > > c004f9f0:       60 0b 00 00     ori     r11,r0,0
+> > > c004f9f4:       7d 60 f9 2d     stwcx.  r11,r0,r31
+> > > c004f9f8:       40 a2 ff f4     bne-    c004f9ec <d_alloc+0x90>
+> > >
+> > >         atomic_set(&dentry->d_count, 1);
+> >
+> > Is there any reason for atomic_set to use this sequence. I believe that a
+> > simple store (stw in this case) would be ok. This looks like a very
+> > convoluted and bloated way to set a variable. An aligned stw is guaranteed
+> > to set the variable atomically wrt all other processors.
 >
+> Sorry I wasn't around for the beginning of this discussion (I was off with
+> visiting family...), but I'll jump in now.
+>
+> I put this version of atomic_set() into Brian's source.  It is one of the
+> things that helped reduce the severity of the dcache symptoms.  You can't
+> just use a stw in atomic_set(), because the other atomic operations depend
+> upon the stwcx.
 
-Right.  But the "one true source tree from Linus" doesn't always work for
-other arches.  Why?  Keeping stuff in 100% never works.  There almost always
-has been a slightly more up-to-date tree than Linus' for ages (when did the
-first -ac patch come out, anyone know?).  And, who exactly is screwed that's
-working from the old 2_5 tree?  There hasn't been any new activity in it for
-ages.  Shortly (mainly once I'm done w/ finals) it'll be little more than
-exporting your local changes from '2_5' and applying them in 2_4_devel.  Yes,
-history bits will be lost, but such is life. :)
+Why not ? I'd like to find an explanation of a possible failure mode.
+All PPC systems have always used a simple store for atomic_set. If it does
+not work, there is something seriously wrong, perhaps even a hardware bug.
 
-> On the other hand, I had to do my own PowerCore 6750 VME port
-> for the 2.4 kernel. That sucked. It would be nice if everyone
-> had the decency to submit stuff to Linus in a way that he finds
-> acceptable, rather than hoarding source code in obscure places
-> that are only accessible via non-standard non-free software.
+This is especially true on a UP system. Whatever value is stored by a stw
+should be seen by any following lwarx/stwcx., on SMP you may need an
+eieio. But on UP I can't see how it can affect anything.
 
-So use rsync and import into your own CVS tree.  I think it sucks too
-that bk isn't gpl'ed, but hey.  I don't really care that much.  I'd wager
-your port would have sucked much less if you were working off the 2_5 tree
-too (mvme5100 support is currently 4 mvme-specific files, and some new
-common ones other boards use too.  Some pcore boards are about as simple
-too).
+Did it actually have any effect on Brian's system ?
 
-> So, how did _you_ know that 2_5 has been 'dead' for a while?
+	Gabriel.
 
-Well, it was on the linuxppc-commit list, which Cort has mentioned a few time
-(hence it's majordomo now and not a sendmail alias like it used to be).
-It's even mentioned on the page that talks about the bk trees:
-http://www.fsmlabs.com/linuxppcbk.html
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
