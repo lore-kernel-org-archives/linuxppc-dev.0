@@ -1,41 +1,43 @@
-Message-Id: <200004242105.XAA00390@piglet.grunz.lu>
-Date: Mon, 24 Apr 2000 23:05:06 +0200 (CEST)
+Message-Id: <200004242111.XAA00393@piglet.grunz.lu>
+Date: Mon, 24 Apr 2000 23:11:19 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: Re: aty128 and offb and linux-2.3.99pre6 
-To: geert@linux-m68k.org
+Subject: Re: aty128 and offb and linux-2.3.99pre6
+To: drow@false.org
 cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.10.10004242008100.316-100000@cassiopeia.home>
+In-Reply-To: <20000424150752.A25359@drow.res.cmu.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  24 Apr, this message from Geert Uytterhoeven echoed through cyberspace:
-> On Mon, 24 Apr 2000, Chas Williams wrote:
->> In message <200004240651.IAA00313@piglet.grunz.lu>,Michel Lanners writes:
->> >It does work... but it changes the order my fbs are detected. Grrr....
+On  24 Apr, this message from Daniel Jacobowitz echoed through cyberspace:
+> On Mon, Apr 24, 2000 at 08:51:12AM +0200, Michel Lanners wrote:
+>> control is only PCI-based with some abstractions.... It can, however,
+>> be made to look entirely like a PCI device, if you can avoid poking at
+>> it afterwards.
 >>
->> i have to agree.  this is fairly annoying since i have 2 rage pro's
->> (one on the agp and one on the pci bus) and the console should be on
->> the agp!
+>> I have patches for control anyway (adding it to the PCI device chain,
+>> precisely); so I might try and implement the changes for control. Or
+>> are you already working on this, Dan?
 >
-> Huh? This has nothing to do with the order of 2 RAGE PROs. Atyfb is probed for
-> before offb (like it should be) since a long time, and the order is always the
-> same.
->
-> Try `video=map:1' to map all your virtual consoles to the second card.
+> I've been too busy with Debian to touch controlfb lately; patches would
+> be appreciated.
 
-Geert, is there any documentation available about these things? Like
-how you go about 'advanced' framebuffer use (multiple fb's, switching
-consoles between fb's, ...)? Where are the userland tools, and what do
-they do (fbset and others)?
+I'll see what I can do ;-)
 
-I do have some things figured out, but am still not really comfortable
-with framebuffers...
+> Also, what is the current state of your memory testing?  Or was that
+> not you?
 
-Thanks
+Yes, that was me. I got some reports, but I couldn't conclude anything
+out of them. I still haven't found a way to identify the VRAM config in
+all cases... We might need to do two different detections, based on the
+board type: 7x00 (TNT) or 8x00 (Nitro); but I have no idea how to
+differentiate them except by looking for additional device(s) in the
+device tree (Sixty6, video out?).
+
+Or get some info out of Apple, either directly or reverse-engineered....
 
 Michel
 
