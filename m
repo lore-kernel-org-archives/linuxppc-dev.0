@@ -1,36 +1,26 @@
-From: clark@esteem.com
-Message-Id: <5.0.0.25.1.20001108090609.00a4ead0@pop.esteem.com>
-Date: Wed, 08 Nov 2000 10:12:30 -0800
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: SPI driver?
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Date: Wed, 8 Nov 2000 19:37:09 +0100 (MET)
+From: Tobias Otto-Adamczak <tobias.otto-adamczak@e-technik.tu-chemnitz.de>
+To: clark@esteem.com
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: SPI driver?
+In-Reply-To: <5.0.0.25.1.20001108090609.00a4ead0@pop.esteem.com>
+Message-ID: <Pine.LNX.4.21.0011081931320.13081-100000@pandora.hrz.tu-chemnitz.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-	Hello,
+> I was wondering if anbody has a working SPI driver yet.
 
-	I was wondering if anbody has a working SPI driver yet. I noticed one that
-wasn't working yet was included in HHL 1.2 . Has anyone made any progress
-on it since then? I also noticed it relied on CPM_IIC micro code patch
-,  does it have any known side effects?
+I have no ready-to-use driver but a few functions (init, transfer,
+disable) that I use successfully with my MBX.
 
-Many thanks in advanced
+> I also noticed it relied on CPM_IIC micro code patch,
 
-	Conn Clark
-*****************************************************************
-   If you live at home long enough, your parrents will move out.
-*****************************************************************
+My code works with or witout the patch; MBX uses SCC1 for Ethernet.
 
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
-
-Stock Ticker Symbol				ELST
-
-"clark@esteem.com" Copyright 2000 all rights reserved. May not be sold or
-used for advertisements.
+Ciao - Tobias
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
