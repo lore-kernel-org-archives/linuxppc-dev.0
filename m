@@ -1,68 +1,64 @@
-Message-ID: <3D4760C7.7070001@dslextreme.com>
-Date: Tue, 30 Jul 2002 21:00:07 -0700
-From: akuster <akuster@dslextreme.com>
-Reply-To: akuster@dslextreme.com
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <200207311028.MAA25657@hzsms01.nl.lucent.com>
+Date: Wed, 31 Jul 2002 12:28:38 +0200 (MEST)
+From: Jaap-Jan <jjboor@lucent.com>
+Reply-To: Jaap-Jan <jjboor@lucent.com>
+Subject: occasionally segmentation faults
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Ralph Blach <rcblach@us.ibm.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Changes to "The plan"
-References: <OFA1123D85.667B22FB-ON85256C06.004182DD@raleigh.ibm.com > <20020731013958.GI27711@zax>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
-> On Tue, Jul 30, 2002 at 08:02:42AM -0400, Ralph Blach wrote:
->
->>Armin
->>
->>It has always been my contention the the 4xx should be organized in the
->>following structure
->>Core
->>Chip
->>board
->>
->>This would tree would then reflect the reallity of chip design methodology.
->>the 405 now has many variants
->>so it would be
->>405 Core
->>   Chip
->>      405CR
->>      405GP
->>      Board
->>                 Walnut
->>                  .
->>                  .
->>                  .
->>      NPE405L
->>       .
->>       .
->>       .
->>
->
-> It's not clear to me what you're proposing.  Are you talking about the
-> layout of the Config.in options, the layout of the .c files in various
-> directories or the call structure of the platform initialization code?
->
->
+Hi,
 
-Well, the lastest 2.5 model working after having some local discusions is:
+I've some problems with my built cross environment
+from sparc-solaris to powerpc 8xx.
 
-board files are in /platforms/4xx such as walnut.*, ebony.*
+I configured and built gcc2.95.2 and glibc-2.1.3
+and used that to build the file and sh utils etc.
 
-implimentation files are in /kernel/4xx such as ibm405gp.*, ibm44gp.*,
-ppc4xx_* & ppc405_*, I guess head should go there too.
+I applied the cache line size patch, removed sysdeps/powerpc/memset.S
+and used this config command for glibc:
 
-the core files like ibm4xx, ibm405.h & ibm440.h are in include/asm-ppc
-as well as ibm_ocp.h
+CC=powerpc-linux-gcc AR=powerpc-linux-ar RANLIB=powerpc-linux-ranlib
+CFLAGS="-mcpu=860 -msoft-float -O2 -DNDEBUG=1"
+../../src-nfp/glibc-2.1.3/configure  --host=powerpc-linux
+--with-headers=$HOME/linux/include --enable-add-ons=crypt,linuxthreads
+--enable-shared --without-fp --prefix=$HOME/crosstools/target/powerpc-linux-gnu
 
-Things like ocp.c and ocp_proc will most likely end up in drivers/ocp
-since ocp can support more than just ppc.
+All seems to work initially on our target, however sometimes
+I get a segmentation fault. E.g. I can run 5 times 'ls', then
+suddenly the 6th time I get a seg. fault, the 7th time I get
+this error from bash: 'child setpgid (266 to 265): Operation not permitted'
 
-comments
-armin
+I also cross-compiled ldconfig and ran it on target to create a ld.so.cache
+but that doesn;t help
+
+eg:
+
+bash-2.04# ls
+bin  etc   lib      linuxrc     mnt   root  tmp
+dev  home  libexec  lost+found  proc  sbin  usr
+
+bash-2.04# ls
+Segmentation fault
+
+bash-2.04# ls
+bash: child setpgid (266 to 265): Operation not permitted
+bin  etc   lib      linuxrc     mnt   root  tmp
+dev  home  libexec  lost+found  proc  sbin  usr
+
+bash-2.04# cat /proc/ppc_htab
+Non-error misses: 67059
+Error misses    : 44
+
+Anyone an idea?
+
+thanks,
+
+Jaap-Jan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
