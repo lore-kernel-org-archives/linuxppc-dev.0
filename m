@@ -1,35 +1,51 @@
-Message-ID: <37860DC4.5165CC7B@usa.net>
-Date: Fri, 09 Jul 1999 10:57:11 -0400
-From: David Riley <happyoscar42@usa.net>
-Reply-To: happyoscar42@usa.net
-MIME-Version: 1.0
-To: "P. Barrette" <barretp@mcmail.cis.McMaster.CA>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: R5 on 7200 yet?
-References: <Pine.SOL.3.96.990709101423.29395A-100000@mcmail.cis.McMaster.CA>
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: altivec
+References: Sacha Varma's message of Fri, 09 Jul 1999 12:29:35 +0100
+	<3785DD1F.B853E731@ssl.co.uk> <v04020a00b3aba2034899@[192.168.0.2]>
+From: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
+Date: 09 Jul 1999 17:33:41 +0200
+In-Reply-To: Mike DeSimone's message of Fri, 9 Jul 1999 08:04:03 -0500
+Message-ID: <8xyagpbzxm.fsf@s53.informatik.uni-bremen.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"P. Barrette" wrote:
+Mike DeSimone <Hot-Wire@mail.utexas.edu> writes:
 
-> I have r4 with kernel 2.2.2 with vram patches and glibc1.99 patches, and I
-> have been apprehensive about upgrading to r5.  But I've heard that r5 uses
-> glibc6 as does the intel version RH (?), which makes me think that source
-> will compile better with less  changes.  The other thing is that I have a
-> blind OF machine, 7200, with no mac volumne.  Will r5 install nicely on
-> this machine with the current OF settings?  Any tips or warnings about the
-> 7200 would be appreciated.
+> 
+> 
+> >> 2. would it be possible to trap altivec instructions on a non-altivec
+> >>    processor and reroute them through code using generic instructions?
+> >
+> >Possible - yes. Dead slow - absolutely. (Apple's simulator is strictly a
+> >development tool, nothing more.)
+> 
+> It shouldn't be dead slow, but it will be much slower than it would be on
+> Altivec processors (esp. since cache pipelining won't work nearly the
+> same).  Basically, most Altivec instructions can be replaced with for
+> loops.  So long as the iteration count of the loop is high, the overhead
+> from the illegal instruction trap activity should be minimized, so it
+> should boil down to about the same time as an assembly-coded loop.
+> 
+Well, if you do instruction-by-instruction emulation, the iteration count is
+at most 16 (16 bytes in a vector). Furthermore, the overhead of a context
+switch into privileged mode and back again is not negligible (at the very
+least a pipeline flush and some saving/restoring of registers). Finally,
+keeping the emulated vector registers somewhere in memory means that you will
+quite often be limited by the availability of 'only' one load/store unit.
 
-A lot of people seem to be having problems with the 7200, especially with SCSI
-(or so it would appear).  The CD drive seems to be dying on some people.
-That's my warning.  It will install, eventually.
+[...]
+>
+> I'm also wondering what has been done on this issue on the Intel side of
+> the fence, since KNI and 3Dnow! are similar to Altivec in concept and, at
+> least for 3Dnow!, implementation.
+>
+Similar? Please forgive my ranting, but AltiVec is feature-complete,
+orthogonal, and implemented without compromises. MMX, 3DNow!, and ISSE have
+none of the above three qualities. They were available sooner, but that's
+about it.
 
-
---
---"Your mouse has been moved.  Windows 95 must be restarted for change to take
-effect."
+  Holger
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
