@@ -1,27 +1,21 @@
-Message-ID: <3C237239.22876237@c-s.fr>
-Date: Fri, 21 Dec 2001 18:32:41 +0100
-From: "LEROY Christophe" <christophe.leroy@c-s.fr>
+From: "Sally Wang" <swang@otcwireless.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RTLINUX for PPC8241
+Date: Fri, 21 Dec 2001 16:37:36 -0800
+Message-ID: <JEEJJBIBHMGFHCANFACIGEHACAAA.swang@otcwireless.com>
 MIME-Version: 1.0
-To: linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Kernel BOOT (kernel 2.4.16)
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20011221165406.GV763@cpe-24-221-152-185.az.sprintbbd.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi Everybody:
 
-I'm trying to boot a 2.4.16 linux kernel on a MPC860 based board,
-and it hangs up early in
-MMU_init().....m8xx_map_io()....io_block_mapping(IMAP_ADDR,...).....mem_pieces_find()....
+Does anybody know where to get RTLINUX for PPC8241 ?
 
-because it cannot find any piece for IMAP_ADDR,   as set_phys_avail()
-only put map for RAM in phys_avail table.
+Sally
 
-Can someone help me ?
-
-Thanks
-
-C.Leroy
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
