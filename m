@@ -1,20 +1,15 @@
-Return-Path: <greg.weeks@timesys.com>
-Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id CCD0D67A67
+Return-Path: <blind_miksu@hotmail.com>
+Received: from hotmail.com (bay12-f14.bay12.hotmail.com [64.4.35.14])
+	by ozlabs.org (Postfix) with ESMTP id 28C2067A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 05:20:58 +1100 (EST)
-Message-ID: <42387908.5010003@timesys.com>
-Date: Wed, 16 Mar 2005 13:20:56 -0500
-From: Greg Weeks <greg.weeks@timesys.com>
-MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <42386274.2020504@timesys.com>
-	<f37ebc53776184342f4eb01eb23efcac@freescale.com>
-In-Reply-To: <f37ebc53776184342f4eb01eb23efcac@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [patch] fix unitilized spinlock in cpm driver when used as
-	console
+	Thu, 17 Mar 2005 08:39:34 +1100 (EST)
+Message-ID: <BAY12-F147D953D7254016B942F2994480@phx.gbl>
+From: "veikko romppainen" <blind_miksu@hotmail.com>
+To: linuxppc-embedded@ozlabs.org
+Date: Wed, 16 Mar 2005 23:22:25 +0200
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Subject: porting linux & u-boot on Mdp Pro 8xx board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,24 +20,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+Hi
 
-> This may already be resolved by this patch which is in the latest bk 
-> tree.
->
-> http://ozlabs.org/ppc32-patches/patch.pl?id=280
->
-> - kumar
->
-> On Mar 16, 2005, at 10:44 AM, Greg Weeks wrote:
->
->> Fix unitilized spinlock in the cpm scc driver when used as console.
->>
->> Signed-off-by: Greg Weeks <greg.weeks@timesys.com>
->>
->>  <cpm.console.spinlock.patch><ATT247771.txt>
->
->
-Yes that fixes it.
+I have currently running wxWorks on Mdp Pro 823 board. Now i'm trying port 
+Linux on it. Firstable i have to get u-boot working on it. I hope someone 
+has done this.
 
-Greg Weeks
+Is there working configuration from u-boot to this board?
+I have modified QS823 conf, because it looks quite similar.
+
+Can I use VisionIce 2 and SingleStep to flash u-boot?
+We dont't have BDI in our school, shame. I flashed u-boot by using Ice 
+starting at 0xfff00000. It seemed that it went correct place but nothing 
+happened when i started my board.
+I suppose that I can't  debug it with Ice and SingleStep.
+
+Do i have to flash more than just u-boot.bin in right address? 
+(Environment?)
+Do i need  some reg files or prj files?
+
+I would appreciate if someone could help me with these addresses and 
+configs.
+
+Board specs:
+MPC 823 66 Mhz
+4Mb flash
+128 Mb RAM
+512 K SRAM
+8 K eeprom
+
+Mika Nieminen
+
+_________________________________________________________________
+Nopeampi kuin sähköposti. Henkilökohtaisempi kuin chat. Lataa ilmainen MSN 
+Messenger. http://messenger.msn.fi Lataa nyt koneellesi ilmainen MSN 
+Messenger.
