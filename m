@@ -1,67 +1,49 @@
-Message-ID: <19990916125231.12806.rocketmail@web601.yahoomail.com>
-Date: Thu, 16 Sep 1999 14:52:31 +0200 (CEST)
-From: sébastien tadéoni <sebastien_tadeoni@yahoo.fr>
-Subject: Cross compilation for MPC860
-To: linux ppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <37E10DA8.4E819A64@netx4.com>
+Date: Thu, 16 Sep 1999 11:32:56 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+To: Graham Stoney <greyham@research.canon.com.au>
+CC: Dan Malek <dmalek@jlc.net>, bsimon@ctam.com.au,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: mpc8xx-2.3.10 configuration questions.
+References: <19990916073633.38BA67B8@elph.research.canon.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Graham Stoney wrote:
 
-Dear PPC People
 
-I'm student working on a project with linux.
-I want to import the linux OS on a MPC860PowerQuick MBX custom card.
+> Accordingly, I offer the following changes, which were necessary to build a
+> kernel for the RPCg CLLF board with an 860T.
 
-I'm working on a PII 400 computer with the linux Mandrake 6.0 release .
-I follow the instructions given on the
-www.member.home.com/mmporter/cross.html site.
+The CLLF isn't a really a lite...it's a Classic with less stuff.
+I am currently working on this now, and if you actually have a
+CLLF (I don't know how you would) the FEC isn't going to work
+because of the faulty magnetics on the board (not RPCg fault, the
+manufacturer acknowledged an error after we found it).  The new
+CLLFs will be available within a few days.
 
-I encount some problems with this procedure for building my own
-environment.
 
-I have no problem for installing binutils-2.2.1.0.19a.
-But during the make of egcs-core-1.1.2, some command like
-'powerpc-linux-ar' were unknown.
 
-I found it in /usr/local/bin, so I assume I must modified the $PATH .
+> *** arch/ppc/8xx_io/fec.c.dist  Wed Sep 15 17:32:26 1999
 
-With this manipulation I didn't encount error any more (just some
-warning).
+What is fec.c.dist?  It seems like I am always fixing this one.
+I pretty sure I got it right in the 2.3.18 kernel.
 
-Concerning the kernel sources, I took an embedded-2.2.5.tar.gz file on
-the linuxppc site.
 
-I don't know where I must put the linux sources directory to, so I make
-it in /home (like the two precedent files).
 
-I make menuconfig, dep and then clean with no problems.
+> + /* Interrupt level assignments.
+> + */
+> + #define FEC_INTERRUPT SIU_LEVEL1      /* FEC interrupt */
+> +
 
-During the make zImage I get the following errors:
+The CLLF will be built from the Classic configuration, so it
+isn't appropriate to put this here.  There is also more that needs
+to be added for the MII interrupts through a Port C bit.
 
-ppc_ksyms.c:71:'isa_io_base' undeclared here (not in a fonction)
 
-ppc_ksyms.c:71:'initializer element for '--ksymtab_isa_io_base.value'
-is not constant,
-
-And the same thing with the variable pci_dram_offset.
-
-Perhaps is there a configuration problem or I didn't install correctly
-the powerpc-linux environment for cross development?
-
-On top of that the /usr/local/powerpc_linux/include directory is empty
-so that I can't make the ln -s with the include/linux and include/asm
-directories(in my linux sources directory) before I want to build the
-LibC.
-
-I will appreciate any suggestions and help  from you on this subject.
-
-Thanks in advance.
-Have a good day.
-
-Sébastien.
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
