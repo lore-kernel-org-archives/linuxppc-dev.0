@@ -1,37 +1,61 @@
-Date: Wed, 5 Mar 2003 10:32:20 -0800
-From: Chris Zimman <chris@cryptoapps.com>
-To: John Chan <john@corelis.com>
+Message-ID: <20030305183324.96783.qmail@web40908.mail.yahoo.com>
+Date: Wed, 5 Mar 2003 10:33:24 -0800 (PST)
+From: Brian Kuschak <bkuschak@yahoo.com>
+Subject: RE: Network performance loss when migrating to 2.4.18 on Walnut 4 05GP
+To: jperri@viadux.com
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: u-boot and ibm boot
-Message-ID: <20030305183220.GA8768@mail.cryptoapps.com>
-Reply-To: Chris Zimman <chris@cryptoapps.com>
-References: <3E663ED6.1030808@corelis.com>
-Mime-Version: 1.0
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3E663ED6.1030808@corelis.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Mar 05, 2003 at 10:15:50AM -0800, John Chan wrote:
-> my walnut board comes with ibm's boot "rom monitor" (and source code in
-> CD). I wonder if I can load a linux kernal image (EDLK for example) from
-> it? I heard that there is another boot code called u-boot. I wonder if
-> anyone had use it before on Walnut? if yes, do you recommand me to use it?
+>> I applied a patch (from Andrea A. I think?) that
+>> backed out the ksoftirq addition.
+>
+> Do you have any more specifics concerning the patch
+> to remove ksoftirqd? I browsed all of Andrea's
+> 2.4/2.5 patches on kernel.org and found a few
+> relating to ksoftirqd, but none that removed it
+> entirely. A google search didn't turn up anything
+> either.  Could the patch have come from someone
+> other than Andrea?
 
-Yes, the Walnut platform is well supported under U-Boot.
+You're right.  Andrea and Ingo Molnar both posted
+numerous ksoftirq-related patches.  I think the one I
+was referring to is here, by Ingo:
+http://people.redhat.com/mingo/irqrate-patches/irqrate-2.4.17-A1
 
-> I would like to add an audio PCI board in the walnut board and would
-> like to configure/diagnosis the board during the boot time. IBM come
-> with their ROM monitor source code but the compiler is not free (High
-> C). I want to have capability to modify the rom monitor/boot loader to
-> add my own diagnostic code.
+>> With other tricks I was able to hit 35K+ pps...
+>
+> If you're willing to share, I'd like to hear about
+> these other "tricks" :-)
+>
 
-U-Boot is built with a GNU toolchain which is freely available.  I'm not
-sure why you'd want to configure an audio device inside of U-Boot, since
-you could probably do it just as easily in Linux.  But if you really want
-to for whatever reason, you could do it.
+If you do some profiling, you'll notice that the
+interrupts from the ethernet interfaces constitute a
+large amount of CPU time.  A common technique to
+reduce this is interrupt mitigation.  If you keep
+track of the rx/tx packet rate and reduce or limit the
+interrupt rate when it exceeds a threshold, you can
+improve performance significantly.  There are several
+techniques you can use.  I chose an interrupt-based
+polling mode.  The ethernet driver switches to polling
+mode when packet rate is high and back to interrupt
+mode when packet rate drops.  (The PPC FIT timer (at
+1500Hz) makes a good polling interrupt).
 
---Chris
+By adjusting the length of your DMA rings you can also
+put a hard limit on the number of packets/sec that the
+system will process.  This will help you to limit or
+avoid packet-flood D.O.S. attacks.
+
+Combine the ksoftirq backout, the ethernet interrupt
+mitigation, and enable CONFIG_FASTROUTE (and implement
+fastroute for the 405 ethernet driver), and you will
+forward 50K+ packets/sec on a 200Mhz 405GP.
+
+-Brian
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
