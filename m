@@ -1,45 +1,42 @@
-To: v.sudeep@exgate.tek.com
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	mporter@kernel.crashing.org, samsongshzu@yahoo.com.cn, wd@denx.de,
-	xmiville@oerlikon.ca
-Subject: RE: PCI daughter card with USB on a 405GP
-MIME-Version: 1.0
-Message-ID: <OF073609E6.7694C121-ONC1256E46.0053AAA6-C1256E46.00549D37@se.wavetek.com>
-From: "Laurent Mohin" <laurent.mohin@acterna.com>
-Date: Thu, 26 Feb 2004 16:22:33 +0100
-Content-Type: text/plain; charset="us-ascii"
+Subject: Re: Activating SystemACE support
+From: Jeff Angielski <jeff@theptrgroup.com>
+To: Stephen Williams <612dlag102@sneakemail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <10318-29667@sneakemail.com>
+References: <10318-29667@sneakemail.com>
+Content-Type: text/plain
+Message-Id: <1077811344.4225.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 26 Feb 2004 11:02:24 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+On Wed, 2004-02-25 at 22:54, Stephen Williams wrote:
+>
+> I have a board that, like the Xilinx ml300 board, has a SystemACE
+> chip on it. I would like to activate the existing SystemACE drivers
+> support in the kernel, but it is not clear to me how I pass to the
+> drivers the base address and IRQ that has been assigned. Does anyone
+> has any suggestions?
+>
 
-lspci command gives you a dump of the configuration registers of your
-PCI devices. In your example, it detects only the IBM405GP PCI bridge
+The SystemACE driver is currently written as a subset of the
+CONFIG_XILINX_OCP code.  So the easiest thing is to just add another
+xparameters_xxxx.h and have it conditionally included into the
+arch/ppc/platforms/xilinx_ocp/xparameters.h file.  Put your board
+specific information in that file and you should be fine from there.
 
-The initial lines are a text traduction of what was read:
+You might have to also munge the config.in files and/or Makefiles to
+make sure everything gets included that needs to be there to support the
+SystemACE.
 
-00:00.0 Host bridge: IBM 405GP PLB to PCI Bridge (rev 01)
-...
+Incidentally, I would be interested in hearing what kind of transfer
+rates people are seeing using the SystemACE.  I have run some Bonnie
+tests on the filesystem on my MPC8266 board and it is pretty slow.
 
-The last four lines are an hex dump
-00: 14 10 56 01 06 00 10 22 01 00 00 06 00 07 00 00
+Jeff Angielski
+The PTR Group
 
-10: 00 00 00 00 08 00 00 00 00 00 00 00 00 00 00 00
-
-20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-30: 00 00 00 00 58 00 00 00 00 00 00 00 00 01 00 00
-
-(14 10 and 56 01 are PCI vendor ID and PCI device ID for the 405GP - be
-careful PCI is little endian whereas 405GP is big endian)
-
-I don't see any PCI daughter card from your output.
-Have you disconnected it to be able to boot?
-If yes, try to disable the usb driver in your kernel, and see the result
-of the lspci command.
-
-Laurent MOHIN
-ACTERNA
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
