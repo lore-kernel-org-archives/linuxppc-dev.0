@@ -1,33 +1,46 @@
-Date: Sun, 8 Feb 2004 20:10:41 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: JACK HWAN <jhfami@yahoo.co.kr>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Booting time
-Message-ID: <20040209041041.GA3901@gate.ebshome.net>
-References: <20040209013945.68409.qmail@web21506.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040209013945.68409.qmail@web21506.mail.yahoo.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: "Prabhakar Kalasani" <kalasani@sena.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: PCMCIA modem card is not responding
+Date: Mon, 9 Feb 2004 14:16:16 +0900
+Message-ID: <NCEHKHHDAHEBBGFMCFHCEEHPCAAA.kalasani@sena.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Feb 09, 2004 at 10:39:45AM +0900, JACK HWAN wrote:
->
-> Hi.
->  I ported linux-2.4.x to my motorola ppc8xx custom
-> board. And it works quite
-> well.
-> But the problem is booting time. It cosume too much
-> time than other embedded
-> OSes.
-> I disabled all options that I can. But it still slow.
->  I took about 15~16 sec. the others are only takes
-> about 8 sec.
->  How can I reduce the booting time?
+Hi all,
+I'm working with MPC855T Processor based target board, I'm trying to support
+3CXM556 Megahertz Cellular Modem PC Card , I could able to detetect the card
+like...
 
-Try turning off serial system console.
+root@192.168.6.6:/# cardctl ident
 
-Eugene
+Socket 0:
+  product info: "3Com", "3CXM/3CCM556", "Megahertz 56K Cell/Telephony Modem"
+  manfid: 0x0101, 0x0034
+  function: 2 (serial)
+
+root@192.168.6.6:/# cardctl config
+
+Socket 0:
+  Vcc 5.0V  Vpp1 0.0V  Vpp2 0.0V
+  interface type is "memory and I/O"
+  irq 9 [exclusive] [level]
+  speaker output is enabled
+  function 0:
+    config base 0x0300
+      option 0x60 status 0x08
+    io 0x03f8-0x03ff [8bit]
+
+But I couldn't communicate with the card, If i send Modem string from
+Minicom I'm not getting any responce from the target , Do i need to change
+anything related to MPC855T .
+
+Please help me out.
+
+Thanks and Regards,
+Prabhakar Kalasnai
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
