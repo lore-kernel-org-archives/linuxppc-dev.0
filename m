@@ -1,89 +1,56 @@
 From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
-To: Daniel Jacobowitz <dmj+@andrew.cmu.edu>, linuxppc-dev@lists.linuxppc.org
-Message-Id: <v03110711b5e2c475c683@[129.100.29.243]>
-In-Reply-To: <20000911111716.A1460@drow.them.org>
-References: <v03110706b5e196db363a@[64.229.14.120]>; from
- khendricks@ivey.uwo.ca on Sun, Sep 10, 2000 at 03:52:16PM -0400
- <v03110706b5e196db363a@[64.229.14.120]>
+To: David Edelsohn <dje@watson.ibm.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-Id: <v03110715b5e2cd19ce42@[129.100.29.243]>
+In-Reply-To: <200009111757.NAA23936@mal-ach.watson.ibm.com>
+References: Message from "Hendricks, Kevin" <khendricks@ivey.uwo.ca>    of
+ "Mon, 11 Sep 2000 13:32:16 EDT." <v03110711b5e2c475c683@[129.100.29.243]>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 11 Sep 2000 13:32:16 -0400
+Date: Mon, 11 Sep 2000 14:04:31 -0400
 Subject: Re: Roles for distributions
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Daniel,
+Hi David,
 
-At 11:17 -0400 9/11/00, Daniel Jacobowitz wrote:
->Kevin, with due respect, I don't see how you can post something like
->this and NOT expect to get flamed hard in return.  I'm going to try not
->to, though.
-
-I will say this publicly once more.  I NEVER in *any* way implied or stated
-that *people* at distributions were not working hard or don't contribute
-enough.
-
-The only things in the entire system with any financial resources at all
-are the distributions and many distributions do have people working on the
-toolchain and things.
-
-I was trying to say that Franz needs help and I was trying to goad the
-distributions into providing some more help (at least someone with glibc
-checkin privledges would be nice).
-
->Because no one can afford to.  The PPC linux market, while growing, is
->small.  LinuxPPC, Inc. makes what contribution they can, in the form of
->supporting existing volunteers; I'm sure some of the other
->distributions do the same.
-
-Yes, that is exactly what Dan Burcaw and Olaf said.  Even someone part-time
-would be a big help.
-
->It takes a tremendous amount of experience, as I'm sure you're aware,
->to contribute usefully to the toolchain.
-
-There has to be someone there who can at least make builds, file bug
-reports, and point out when things are broken.  Even that would be a big
-help.  I filed a make check report with the glibc maintainers and basicaly
-got back a "we are not interested, fix it yourself if you want it fixed".
-That generally doesn't happen if someone from ppc is contributing in some
-way to the project.  Luckily, some of the other glibc developers chimed in
-to rephrase the reply.
-
->> And what about the other key projects: mozilla, helix/gnome, KDE, galeon,
->> apache, etc?
+>	Kevin, I think that your initial message was much more hostile
+>than necessary.  It did not come across as PowerPC Linux volunteers need
+>more help.  Instead of attacking everyone who had a negative reaction to
+>your original note, maybe you should consider that it was phrased poorly.
+>You have jumped down my throat enough times when I came across differently
+>than I had intended.
 >
->I wonder why you put apache here... Apache needed almost no fixes for
->powerpc; the last batch I recall were glibc 2.1 / db2 related, and
->several of us got them fixed about two years ago.
+>David
 
-Just to make sure it stayed that way.  I have been told that apache does
-have volunteers helping out there and it is no worry.  The list was not
-meant to be exhaustive, just to represent some important projects we might
-want to get involved in.  My main focus was and continues to be the
-toolchain.
+Yes, you are absolutely correct.  Hindsight is 20/20.
 
->There are volunteers working on all of the above.  No one can afford to
->pay anyone to.
+I still don't read my note as "hostile" to distribution individuals or
+developers but enough people have and continue to do so.  That means what I
+meant to say and what they read are not the same thing.
 
-That I understand now.  But if the distributions have no money to do this
-than no-one does.
+Unfortunately, empiricial evidence is nice but after the fact! ;-)  I just
+don't like things becoming personal and still don't.  It just isn't needed.
 
->> (and I do try to help out with glibc and things when I have time).
->
->And that is all we can ask of anyone.
+I tried to correct my "error" by saying that it was never my intent to
+imply or state that individuals do not contribute enough.  It was to say
+the toolchain is important and we are basically down to Franz and he
+doesn't even have glibc checkin privleges.
 
-You are right!
+I still think the distributions could free up someone even part time now
+that Gary Thomas has gone away and should. They are the only ones making
+any money and the only ones that have the financial resources.  The rest of
+us just volunteer our time.
 
-So why does this deserve a personal attack on me not buying distributions
-and not contributing time?  Nothing I have said or done is personal and I
-have just now received from someone something that could be easily be
-construed as a personal threat.   How's that for fun?!
-
-You gotta love it!
+Thanks for pointing that out.
 
 Kevin
+
+
+
+
+
 
 
 
