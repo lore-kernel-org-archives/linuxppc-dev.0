@@ -1,35 +1,57 @@
-Date: Tue, 14 Oct 2003 11:36:04 +0200
-From: Olaf Hering <olh@suse.de>
-To: Colin Leroy <colin@colino.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Fw: [PATCH] Right-click modifier
-Message-ID: <20031014093604.GC29143@suse.de>
-References: <02cc01c39231$dce0d200$3cc8a8c0@ANOSP>
+Date: Tue, 14 Oct 2003 12:26:14 +0200
+From: Colin Leroy <colin@colino.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Fw: [PATCH] hcd-pci.c compile fix
+Message-Id: <20031014122614.036ac493.colin@colino.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <02cc01c39231$dce0d200$3cc8a8c0@ANOSP>
+Content-Type: multipart/mixed;
+ boundary="Multipart_Tue__14_Oct_2003_12:26:14_+0200_10304998"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- On Tue, Oct 14, Colin Leroy wrote:
+This is a multi-part message in MIME format.
 
-> [Forwarding, just in case.]
->
-> > Hi,
-> >
-> > this patch adds an entry in /proc,
-> > /proc/sys/dev/mac_hid/rclick_key_modifier.
-> >
-> > It lets the kernel report a right-click when KEY+Left click are pressed,
-> > where KEY is the KEY specified by echoing its code to the /proc entry.
+--Multipart_Tue__14_Oct_2003_12:26:14_+0200_10304998
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Its certainly a nice thing, but all this mouse button emulation stuff
-should be handled in userland. Its just the question how and where.
+[Forwarding this one too :)]
 
---
-USB is for mice, FireWire is for men!
+> Hi,
 
-sUse lINUX ag, nÜRNBERG
+> this patch fixes compilation of drivers/usb/core/hcd-pci.c
+> with gcc 2.95.
+
+> hth,
+> --
+> Colin
+
+--Multipart_Tue__14_Oct_2003_12:26:14_+0200_10304998
+Content-Type: text/plain;
+ name="hcd-pci.fix.patch"
+Content-Disposition: attachment;
+ filename="hcd-pci.fix.patch"
+Content-Transfer-Encoding: 7bit
+
+--- drivers/usb/core/hcd-pci.c.orig	Mon Oct 13 23:30:39 2003
++++ drivers/usb/core/hcd-pci.c	Mon Oct 13 23:30:32 2003
+@@ -302,10 +302,11 @@
+ 			dev_dbg (hcd->controller, "suspend fail, retval %d\n",
+ 					retval);
+ 		else {
+-			hcd->state = USB_STATE_SUSPENDED;
+ #ifdef CONFIG_PPC_PMAC
+ 			struct device_node	*of_node;
+-
++#endif
++			hcd->state = USB_STATE_SUSPENDED;
++#ifdef CONFIG_PPC_PMAC
+ 			/* Disable USB PAD & cell clock for Keylargo built-in controller */
+ 			of_node = pci_device_to_OF_node (dev);
+ 			if (of_node)
+
+
+--Multipart_Tue__14_Oct_2003_12:26:14_+0200_10304998--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
