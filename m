@@ -1,44 +1,93 @@
-Message-ID: <XFMail.990407081256.gdt@linuxppc.org>
+Message-ID: <XFMail.990407081744.gdt@linuxppc.org>
 Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-In-Reply-To: <1288712801-202206156@mail.centricsystems.ca>
-Date: Wed, 07 Apr 1999 08:12:56 +0100 (BST)
+In-Reply-To: <B0002009499@icamail.ica.net>
+Date: Wed, 07 Apr 1999 08:17:44 +0100 (BST)
 From: Gary Thomas <gdt@linuxppc.org>
-To: Roy Wood <roy@centricsystems.ca>
-Subject: RE: Resurrecting mkLinux
-Cc: linuxppc-dev@lists.linuxppc.org
+To: Trevor Woerner <twoerner@ica.net>
+Subject: RE: [LinuxPPC] Gary Thomas' libc sources
+Cc: Developer LinuxPPC <linuxppc-dev@lists.linuxppc.org>
+Cc: Developer LinuxPPC <linuxppc-dev@lists.linuxppc.org>,
+        Users LinuxPPC <linuxppc-user@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-On 06-Apr-99 Roy Wood wrote:
+On 07-Apr-99 Trevor Woerner wrote:
+> dear friends,
 > 
-> I've got a little time and an old 6100, so I'm giving some thought to 
-> raiding the mkLinux sources and getting a monolithic version of the 
-> kernel going (i.e. getting rid of the whole Mach layer).
+> i was looking into compiling glibc for myself so i downloaded
+> Gary Thomas' sources from ftp.linuxppc.com under the subdir
+> /linuxppc/users/gdt/redhat/SRPMS/. i downloaded glibc-961212-1o.src.rpm.
 > 
-> My plan is to get video working first, then the ADB keyboard, followed by 
-> SCSI and network support.  Oh-- and maybe serial too, eventually.
+> once on my system i did a:
+>  
+>   root# rpm -i <...glibc-961212...>
 > 
-> Stop me right now if this is a stupid idea, please, but don't forget to 
-> tell me why it is.  :-)
+> and in my /usr/src/redhat/SOURCES directory (or something like that)
+> i ended up with a whole pile of stuff that i'm not sure what to
+> do with. i would appreciate some guidance.
 > 
+> i ended up with the following:
+>    axp-extras-960810.tar.gz
+>    libc-961117-ldd.patch
+>    libc-961212-ewt.tar.gz
+>    libc-fsstnd-4.diff.gz
+>    libc-rev1i.patch
+>    libc-rev1j.patch
+>    libc-rev1k.patch
+>    libc-rev1l.patch
+>    libc-rev1m.patch
+>    libc.works-ppc.patch
+>    libc.zic.synlink.hack.diff.gz
+>    nsswitch.conf
 > 
-> Anyway, I was hoping some of you people here might be able to offer 
-> advice or have some useful comments about what I'm considering doing.
+> what the heck are all of these :-? so i unzipped and untarred the 
+> libc-961212-ewt.tar.gz (since it seemed, out of this bunch to be
+> the most obvious, even though i'm not sure what an "ewt" is...)
+> and it created a libc.works directory (or something like that) which
+> had thousands of files: 90% of which were zero-length!
 > 
-> Anybody?  Anyone?
+> could someone tell me what's going on? what do i need to compile libc?
+> have the patches already been applied (if not now would i do that)?
+> what is the "conf" file for? or the "symlink.hack" for? etc... etc...
+> etc...
 > 
 
-Your biggest problems will be:
-  * Booting - perhaps BootX can be made to help here
-  * Lack of Open Firmware - used to "size up" the hardware
-  * 601 support - biggest worries are actually the in the hardest
-    to debug - boot time and machine initialization.
+To build an RPM from the SRPM file:
 
-Other than that, it should work.  Of course, I'm not saying it is
-easy or else I would have done it myself long ago...
+  # cd /usr/src/redhat/SPECS
+  # rpm -i <SRPM-file>
+  # rpm -ba <SPEC-file>    // You need to figure out this file name
+                           // there is no standard and it will appear
+                           // in this directory after the previous step.
+
+That's it.  The last step (-ba) takes care of all of the unpacking, patching,
+building, installing, ...
+
+If you want to install this [potentially new] package "live" on your
+system, just use the normal install runes:
+
+  # rpm -ivUh ../RPMS/ppc/<RPM-file>  // Created by the -ba step
+
+BTW - I've just uploaded version "1p" of the GLIBC package.  You should
+work from that.
+
+For more details, look at my tutorial:
+
+  http://www.chez-thomas.demon.co.uk/RPMS/RPM_tutorial.html
+
+
+------------------------------------------------------------------------
+Gary Thomas                              |
+email: gdt@linuxppc.org                  | "Fine wine is a necessity of
+   ... opinions expressed here are mine  |        life for me"
+       and no one else would claim them! |
+                                         |      Thomas Jefferson
+------------------------------------------------------------------------
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
