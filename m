@@ -1,33 +1,45 @@
-Date: Thu, 3 Jul 2003 10:32:40 -0600 (MDT)
-From: daRonin <daronin@digimerc.com>
-To: Jim Baughman <jbaughmn@arlut.utexas.edu>
+Date: Thu, 3 Jul 2003 09:44:08 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Chuck Meade <chuckmeade@mindspring.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 17" Apple laptops supported?
-In-Reply-To: <3F039495.4010207@arlut.utexas.edu>
-Message-ID: <Pine.LNX.4.56.0307031028570.1608@daronin.digimerc.com>
-References: <3F039495.4010207@arlut.utexas.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: official patches ceasing at 2.4.18 on kernel.org?
+Message-ID: <20030703164408.GJ954@ip68-0-152-218.tc.ph.cox.net>
+References: <IIEEICKJLNEPBBDJICNGAEBGDIAA.chuckmeade@mindspring.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <IIEEICKJLNEPBBDJICNGAEBGDIAA.chuckmeade@mindspring.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2 Jul 2003, Jim Baughman wrote:
+On Wed, Jul 02, 2003 at 10:26:45PM -0400, Chuck Meade wrote:
 
+> I am creating a local ppc 2.4.21 tree.  I see the following are
+> the most recent 2.4.21 tags on the BK server:
 >
-> Are Apple's 17" laptops supported in current 2.4 or 2.5 kernels?  If so,
-> are there any iso's available for installation?
+>   v2.4.21_linuxppc_2_4_devel
 
-  It's not a question of kernel. 2.4.20 runs fine on the hardware. However
-you are rather restricted because of closed chipset. First you have Nvidia
-video card in it. The basic support for it is there in the kernel and
-Xfree, however you can forget about DRI and even about having 24bit
-colors.
+The linuxppc_2_4_devel tree, as of 2.4.21.
 
-  And then you have Airport Extreme, which is a closed chipset as well,
-and doesn't work in Linux at all.
+>   v2.4.21_linuxppc
 
-  daRonin
+The linuxppc_2_4 tree, as of 2.4.21
 
+>   v2.4.21
+
+kernel.org, as of 2.4.21.
+
+> What would be great is for the patches under ports on kernel.org
+> to be carried forward/kept up to date.  If that is not going to
+> be continued, then what is the best way to create the same thing,
+> i.e. a solid 2.4.21 ppc tree, using what is available via BK?
+
+bk export -tpatch -rv2.4.21 -rv2.4.21_linuxppc_2_4_devel
+Should give you a patch against 2.4.21, to get the 2_4_devel tree, for
+example.
+
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
