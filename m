@@ -1,60 +1,33 @@
-Message-ID: <37727221.211AEEFD@alexa.com>
-Date: Thu, 24 Jun 1999 11:00:01 -0700
-From: joshua@alexa.com (Joshua Winsor)
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Mount Partitions on CDs
-Content-Type: multipart/alternative;
- boundary="------------3BE66D0F3F46418CF403C980"
+From: Ryan Nielsen <ran@krazynet.com>
+Date: Thu, 24 Jun 1999 12:41:38 -0700
+To: =?iso-8859-1?Q?Albrecht_Dre=DF?= <ad@MPIfR-Bonn.MPG.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Help: Porting PCI driver from Linux/Intel -> PPC
+Message-ID: <19990624124138.A1051@gondolin.asf>
+References: <3771D987.C59A9374@mpifr-bonn.mpg.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: =?iso-8859-1?Q?=3C3771D987=2EC59A9374=40mpifr-bonn=2Empg=2Ede=3E=3B_from?=
+ =?iso-8859-1?Q?_Albrecht_Dre=DF_on_Thu=2C_Jun_24=2C_1999_at_09:08:55AM_+?=
+ =?iso-8859-1?Q?0200?=
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Albrecht Dreß wrote:
+> Now I try to insmod my driver, which reads the configuration space (using calls
+> to pci_read_config_dword) and dumps it, reads irq and board revision, reads the
+> base adresses of the five io regions, and reads one io address via inl().  The
+> last operation leads to a panic:
 
---------------3BE66D0F3F46418CF403C980
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+you might need to enable memory with somthing like:
+	u16 cmd;
 
-Since the user list wasn't able to give me any help I figured I'd see if
-the dev group could
-
-I have some CDRoms which have more than one partition, if I do a pdisk
-/dev/scd0 with these disks in the drive I get a list of partitions with
-their partition type,  however if I do a 'mount -t ufs -o type=openstep
-/dev/scd0 /mnt/cdrom' my machine crashes (I have successfully mounted
-other ufs partitions which are on hard disk).  I can mount the hfs
-partition by simply doing 'mount -t hfs /dev/scd0 /mnt/cdrom', but the
-openstep partition seems to be lost.
-
-Is there anyway to get the CDRom to appear as a normal device or to be
-able to get the other partitions off the CDRom so that I could mount
-them as a loopback device?
-
-
-
---------------3BE66D0F3F46418CF403C980
-Content-Type: text/html; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-
-<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
-<html>
-<tt>Since the user list wasn't able to give me any help I figured I'd see
-if the dev group could</tt><tt></tt>
-<p><tt>I have some CDRoms which have more than one partition, if I do a
-pdisk /dev/scd0 with these disks in the drive I get a list of partitions
-with their partition type,&nbsp; however if I do a 'mount -t ufs -o type=openstep
-/dev/scd0 /mnt/cdrom' my machine crashes (I have successfully mounted other
-ufs partitions which are on hard disk).&nbsp; I can mount the hfs partition
-by simply doing 'mount -t hfs /dev/scd0 /mnt/cdrom', but the openstep partition
-seems to be lost.</tt><tt></tt>
-<p><tt>Is there anyway to get the CDRom to appear as a normal device or
-to be able to get the other partitions off the CDRom so that I could mount
-them as a loopback device?</tt>
-<br><tt></tt>&nbsp;
-<br>&nbsp;</html>
-
---------------3BE66D0F3F46418CF403C980--
-
+	/* on OpenFirmware machines (PowerMac at least), PCI memory cycle */
+	/* response on cards with no firmware is not enabled by OF */
+	pci_read_config_word(dev, PCI_COMMAND, &cmd);
+	cmd |= PCI_COMMAND_MEMORY;
+	pci_write_config_word(dev, PCI_COMMAND, cmd);
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
