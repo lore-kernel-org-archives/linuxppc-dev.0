@@ -1,34 +1,30 @@
-Date: Mon, 18 Nov 2002 12:46:52 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: joakim.tjernlund@lumentis.se, mds@paradyne.com,
-	linuxppc-embedded@lists.linuxppc.org, sensors@Stimpy.netroedge.com
-Subject: Re: 8xx i2c refers to unspecified chip errata
-Message-ID: <20021118194651.GE18374@opus.bloom.county>
-References: <3DD939B5.3D1F2B6E@paradyne.com> <IGEFJKJNHJDCBKALBJLLIEBKFIAA.joakim.tjernlund@lumentis.se> <20021118204248.0a3b6bda.khali@linux-fr.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20021118204248.0a3b6bda.khali@linux-fr.org>
+Date: 19 Nov 2002 00:01:43 -0000
+Message-ID: <20021119000143.24950.qmail@webmail8.rediffmail.com>
+MIME-Version: 1.0
+From: "sanjay k k" <fren00@rediffmail.com>
+Reply-To: "sanjay k k" <fren00@rediffmail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ioctl call for  i2c driver +PPC440 returns "No such Process"
+Content-type: text/plain;
+	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Nov 18, 2002 at 08:42:48PM +0100, Jean Delvare wrote:
->
-> > Patch was(and still is, I think) against linuxppc_2_4_devel. Don't
-> > know your tree, is it not the same as linuxppc? Anyhow, too much time
-> > has passed for me to remember all details and I don't have the time to
-> > go back and do it all over again. I suggest you take the linuxppc
-> > version, patch it and adopt it to your tree.
->
-> Why the hell are there two different trees? :'( Can't we work all
-> together for a better result?
+Hi ,
+I am writing some i2c based program in user space to read SEEPROM
+using ioctl interface. When i tried to tun it says "No such
+process". I tried to debug the i2c-algo-ibm-ocp.c code. I found
+that analyze_status returns Incomplete transfer. It seems to me
+that data transfer on i2c bus has to be slowed down.
+For eaxample after putting the slave address on i2c bus and before
+putting the data bytes , i need to provide some delay around
+100micro sec.
+Does any body has idea , how to put theses delays on I2c bus????
 
-Because the linuxppc tree doesn't track the whole i2c tree, as that would
-be quite silly. :)
+Any help will be greatly appreciated!
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Thankx
+Sanjay
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
