@@ -1,46 +1,52 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: Daniel Berlin <dan@cgsoftware.com>
-Subject: Re: DFP support for kernel radeonfb.c added
-Date: Thu, 15 Nov 2001 17:23:10 -0500
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	<linuxppc-dev@lists.linuxppc.org>
-References: <Pine.LNX.4.33.0111151649150.27274-100000@www.cgsoftware.com>
-In-Reply-To: <Pine.LNX.4.33.0111151649150.27274-100000@www.cgsoftware.com>
+Message-ID: <20011115225047.20820.qmail@kunk.jriver.com>
+Subject: Re: E15 Carolina Frame Buffer Driver for 2.4
+In-Reply-To: <3BF411A7.4000500@amberdata.demon.co.uk> "from David Monro at Nov
+ 15, 2001 07:04:07 pm"
+To: David Monro <davidm@amberdata.demon.co.uk>
+Date: Thu, 15 Nov 2001 16:50:47 -0600 (CST)
+From: Robert E Brose II <bob@kunk.jriver.com>
+Cc: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Message-Id: <20011115222028.CWJE7882.tomts5-srv.bellnexxia.net@there>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Daniel,
-
-> No, it's actually the setting of dfp parameters from the EDID that
-> causes problems
+User David Monro says:
+> Robert E Brose II wrote:
 >
-> If i remove of_edid from the command line, it works great.
-> Add it back, and i get the flashing.
-> If i change the if (use_OF_EDID) in radeon_get_dfpinfo to if (0), all is
-> good again.
+> > One caution:
+> >
+> [..]
+> >
+> > A big difference between the ibm_e15 fb driver running on 2.4 as opposed
+> > to 2.2 is that this code that tries to get the frame buffer base address
+> > succeeds in 2.4 but failed (and was hacked to a "default address") in
+> > 2.2.
 >
-> So something is wrong.
+>
+> There's a really good reason why 2.4 kernels don't need the hack which
+> maps it to the default; 2.4 kernels will assign PCI BARs which weren't
+> set up by the firmware. This code should be removed completely in the
+> 2.4 version.
 
-Can you send me a copy of your /proc EDID1 one file (use hexdump to
-convert it to hex) and I can run xxd -r to convert it back to binary and
-run my edid parser on it.
+Makes sense to me. It APPEARS the crashing problems I was having
+were with the 2.4.15-pre4 kernel. I'm running a kernel.org 2.4.14 kernel
+with only the ext3 patch and the addition of the e15 driver and
+it works fine so far...
 
-That way we can compare your timings and dotclock in the EDID1 block to
-the timing you use normally.  Perhaps your EDID block has numerous timing
-and the first is not the right one to use.  My code only looks at the
-first set of detailed timings but could be easily changed to grab them all.
+I was thinking of hacking the mmap stuff into it to give the illusion
+of acceleration. That's probably as far as I can take it. I'm sure it
+would be nice to merge it with the S3 code, whether in the 2.4 kernel
+trio  code or elsewhere however that's likely more that I can budget
+time for now... If you change the driver more perhaps you can put it
+back up on your carolina page?
 
-My guess it is defintely timing related.  You also might want to turn
-debug on in radeonfb.c so that we can see what timings are actually being
-used under both methods.
-
-Thanks for testing it!
-
-Kevin
+Regards,
+Bob
+--
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
