@@ -1,46 +1,49 @@
-Date: Sat, 7 Feb 2004 09:45:30 +0100 (CET)
-From: Christiaan Welvaart <cjw@daneel.dyndns.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: alsa dmasound in bk 2.6.2
-In-Reply-To: <20040206192023.13791.qmail@kunk.qbjnet.com>
-Message-ID: <Pine.LNX.4.58.0402070937400.13765@zem.cjw.nep>
-References: <20040206192023.13791.qmail@kunk.qbjnet.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 7 Feb 2004 09:17:48 +0000
+From: Gabriel Paubert <paubert@iram.es>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Mikolaj Krzewicki <mkrzewicki@lycos.nl>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: benh performance problem
+Message-ID: <20040207091748.A6427@mrt-lx3.iram.es>
+References: <401FE138.8080807@lycos.nl> <1075847083.17327.31.camel@gaston>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1075847083.17327.31.camel@gaston>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 6 Feb 2004, Bob Brose wrote:
-
-> With a 2.6.2 bk kernel I compile dmasound under the mac alsa drivers
-> as a module. When depmod comes along, I get:
+On Wed, Feb 04, 2004 at 09:24:44AM +1100, Benjamin Herrenschmidt wrote:
 >
-> f [ -r System.map ]; then /sbin/depmod -ae -F System.map  2.6.2; fi
-> WARNING: /lib/modules/2.6.2/kernel/sound/ppc/snd-powermac.ko needs unknown symbol i2c_smbus_write_block_data
-> WARNING: /lib/modules/2.6.2/kernel/sound/ppc/snd-powermac.ko needs unknown symbol i2c_add_driver
-> WARNING: /lib/modules/2.6.2/kernel/sound/ppc/snd-powermac.ko needs unknown symbol i2c_smbus_write_byte_data
-> WARNING: /lib/modules/2.6.2/kernel/sound/ppc/snd-powermac.ko needs unknown symbol i2c_del_driver
-> WARNING: /lib/modules/2.6.2/kernel/sound/ppc/snd-powermac.ko needs unknown symbol i2c_detach_client
-> WARNING: /lib/modules/2.6.2/kernel/sound/ppc/snd-powermac.ko needs unknown symbol i2c_attach_client
+> On Wed, 2004-02-04 at 04:58, Mikolaj Krzewicki wrote:
+> > hi all,
+> > starting 2.6.0-test9-benh3 i noticed an increased system overhead on my
+> > ibook 500. Each process eats much more cpu time than in 2.4 or even
+> > vanilla 2.6.
+> > gkrellm takes 1% instead of 0.1, xmms 5% instead of ~1% and so on.
+> > I benchmarked the lot with octave and it indeed runs ~10% slower on the
+> > benh kernels.
+> > I would use vanilla 2.6.1 but it won't sleep/wake correctly (at all).
+> > All pre-2.6.0-test9-benh3 kernels worked fast but would't sleep/wake either.
+> > I tried to isolate the patch responsible but failed.
+> > Has anybody come across similar behaviour?
+> > greetings, M
 >
-> So, I assume that dmasound needs I2C but I can't get I2C to configure
-> into the kernel. I tried make mrproper as well.
+> I switched to HZ=1000, the userland procps utilities (like ps and top)
+> tend to not properly deal with that, at least earlier versions, afaik.
 >
-> The result:
-> # using defaults found in arch/ppc/defconfig
-> #
-> arch/ppc/defconfig:708: trying to assign nonexistent symbol MOUSE_PS2_SYNAPTICS
-> arch/ppc/defconfig:762: trying to assign nonexistent symbol I2C_CHARDEV
->
-> and so on for every I2C symbol.
+> I suspect it's just display crap.
 
-http://marc.theaimsgroup.com/?l=linux-kernel&m=107607571627355&w=2
+The other problem is that measuring CPU time just by sampling which
+process is running at timer interrupt is a crappy method bound to be
+inaccurate, espcially on very bursty workloads, or one which depend
+on other frequencies which beat with the timer.
 
-I "fixed" it by applying the 2.6.2-mm1 patch, but still need to find time
-for a reboot so can't say if that was a good idea.
+Didn't somebody implemented CPU process accounting based on the
+timebase? Or was it for another architecture (maybe s390)?
 
 
-    Christiaan
+	Regards,
+	Gabriel
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
