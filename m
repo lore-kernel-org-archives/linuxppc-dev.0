@@ -1,31 +1,23 @@
-From: Eric Benard <ebenard@ifrance.com>
+Date: Sun, 7 Nov 1999 10:14:48 -0600 (CST)
+From: Mark Hatle <devel@gate.crashing.org>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: BW G3 & Kernel 2.3.25
-Date: Sun, 7 Nov 1999 15:16:16 +0100
-Content-Type: text/plain
+Subject: 2.3.x and Blue G3
+Message-ID: <Pine.LNX.4.10.9911071013160.7166-100000@gate.crashing.org>
 MIME-Version: 1.0
-Message-Id: <99110715194202.06096@localhost.localdomain>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Is anyone working on getting 2.3.x working on Blue G3 (or newer)?
 
-I got the sources of 2.3.25 form kernel.org, applied the patch from Ani Joshi
-and successfully compiled the kernel.
-But this kernel doesn't want to boot and allways let me with a black screen.
+The current version fails in head.S after the MMU_init.  I don't know
+enough about the MMU and such to see if things are going wrong or what.
+The rfi after the MMU_init seems to jump to never never land and the
+computer needs a reboot.
 
-Has someone here managed to boot this kernel on a b&w g3 ?
-
-thank you
-
-eric
- 
-______________________________________________________________________
-Message envoye depuis iFrance >>  http://www.ifrance.com
-Gratuit >> Hebergement (50 Mo)/Vos emails (POP&HTML,20 Mo)
-Votre agenda online gratuit >> http://agenda.ifrance.com
-NOUVEAU : Faxez gratuitement ! >> http://fax.ifrance.com
+Thanks
+Mark
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
