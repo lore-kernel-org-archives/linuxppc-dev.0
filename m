@@ -1,270 +1,41 @@
-Date: Tue, 29 Jun 2004 18:50:29 +0200
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Pegasos 2 support patch ...
-Message-ID: <20040629165029.GA13468@pegasos>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="u3/rZRmxL6MmkK24"
-From: Sven Luther <sven.luther@wanadoo.fr>
+From: "Tameen Khan" <tameen@cisco.com>
+To: "'linuxppc-dev list'" <linuxppc-dev@lists.linuxppc.org>
+Subject: Kgdb on Motorola 8451 ppc board
+Date: Tue, 29 Jun 2004 10:54:14 -0700
+Message-ID: <004401c45e02$172f7c30$273147ab@amer.cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---u3/rZRmxL6MmkK24
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+I'm trying to run kgdb on  Motorola 8451 ppc board.
+I've compiled the kernel with the CONFIG_KGDB option.
+The test machine is a linux host. I'm using gdb compiled for target ppc
+architecture.
+When I try to connect to the dev machine from the test machine, I get the
+following error.
 
-Hello,
+(gdb) set remotebaud 9600
+(gdb) target remote /dev/ttyS1
+Remote debugging using /dev/ttyS1
+^^
+^^^^Ignoring packet error, continuing...
+^^^Ignoring packet error, continuing...
+Ignoring packet error, continuing...
+Ignoring packet error, continuing...
+Couldn't establish connection to remote target
+Malformed response to offset query, timeout
+(gdb)
 
-Please find here attached a patch which adds support for the Pegasos 2
-motherboard, and partial support for the Pegasos 1. I would like to have
-some review of it, and if it is ok, see how it would be possible to have
-it included in the main kernel. The patch is against 2.6.7.
+I've tried other baudrates, but get the same error with them.
+Any pointers to where I can get info to get kgdb working for this cross arch
+debugging will be helpful.. So far I've searched the web without much luck
+on this topic.
 
-The remaining problem for the pegasos 2 is with the via82cxxx ide
-driver, which needs to support a different irq for both channels, thus
-breakign when a device is present on the second ide channel. The
-pegasos-via82cxxx.diff patches is a hcky soltuion for this, but is
-naturally not fit for mainstream inclusion. I would welcome any hint on
-how to solve this issue.
+Thanks
+-Tameen
 
-The pegasos1 support is not complete, but i believe this is due to some
-brokeness in the OF. The main problem being that the translate function
-is broken, and altough phys has the right value (0x00010000) before
-calling it, it is 0 afterwards. I suppose the initial value is taken
-from &_stext, so it should be feasible to detect that this is the
-correct value before calling the translate OF method, or fixing it if we
-detect a Pegasos 1 with the model OF property. Comments on this would
-also be welcome. There may be some interrupt level thing left on pegasos
-1 also, but i would need to check that.
-
-Thanks for your comments,
-
-Friendly,
-
-Sven Luther
-
---u3/rZRmxL6MmkK24
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: attachment; filename="pegasos2.diff"
-
-diff -urN kernel-source-2.6.7.orig/arch/ppc/platforms/chrp_pci.c kernel-source-2.6.7.peg2/arch/ppc/platforms/chrp_pci.c
---- kernel-source-2.6.7.orig/arch/ppc/platforms/chrp_pci.c	2004-06-16 07:20:26.000000000 +0200
-+++ kernel-source-2.6.7.peg2/arch/ppc/platforms/chrp_pci.c	2004-06-29 18:10:43.951806408 +0200
-@@ -97,8 +97,9 @@
- rtas_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 		 int len, u32 *val)
- {
-+	struct pci_controller *hose = bus->sysdata;
- 	unsigned long addr = (offset & 0xff) | ((devfn & 0xff) << 8)
--		| ((bus->number & 0xff) << 16);
-+		| (((bus->number - hose->first_busno) & 0xff) << 16) | (pci_domain_nr(bus) << 24);
-         unsigned long ret = ~0UL;
- 	int rval;
-
-@@ -111,8 +112,9 @@
- rtas_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 		  int len, u32 val)
- {
-+	struct pci_controller *hose = bus->sysdata;
- 	unsigned long addr = (offset & 0xff) | ((devfn & 0xff) << 8)
--		| ((bus->number & 0xff) << 16);
-+		| (((bus->number - hose->first_busno) & 0xff) << 16) | (pci_domain_nr(bus) << 24);
- 	int rval;
-
- 	rval = call_rtas("write-pci-config", 3, 1, NULL, addr, len, val);
-@@ -186,6 +188,26 @@
- 	iounmap(reg);
- }
-
-+/* Marvell Discovery II based Pegasos 2 */
-+//#define PEGASOS_USE_PCI_DOMAINS
-+
-+static void __init
-+setup_peg2(struct pci_controller *hose, struct device_node *dev)
-+{
-+	struct device_node *root = find_path_device("/");
-+	struct device_node *rtas;
-+
-+	rtas = of_find_node_by_name (root, "rtas");
-+	if (rtas) {
-+		hose->ops = &rtas_pci_ops;
-+	} else {
-+		printk ("RTAS supporting Pegasos OF not found, please upgrade your firmware\n");
-+	}
-+#ifndef PEGASOS_USE_PCI_DOMAINS
-+	pci_assign_all_busses = 1;
-+#endif
-+}
-+
- void __init
- chrp_find_bridges(void)
- {
-@@ -195,7 +217,7 @@
- 	struct pci_controller *hose;
- 	unsigned int *dma;
- 	char *model, *machine;
--	int is_longtrail = 0, is_mot = 0;
-+	int is_longtrail = 0, is_mot = 0, is_pegasos = 0;
- 	struct device_node *root = find_path_device("/");
-
- 	/*
-@@ -207,6 +229,8 @@
- 	if (machine != NULL) {
- 		is_longtrail = strncmp(machine, "IBM,LongTrail", 13) == 0;
- 		is_mot = strncmp(machine, "MOT", 3) == 0;
-+		if (strncmp(machine, "Pegasos2", 8) == 0) is_pegasos = 2;
-+		else if (strncmp(machine, "Pegasos", 7) == 0) is_pegasos = 1;
- 	}
- 	for (dev = root->child; dev != NULL; dev = dev->sibling) {
- 		if (dev->type == NULL || strcmp(dev->type, "pci") != 0)
-@@ -257,6 +281,10 @@
- 			hose->cfg_data = (unsigned char *)
- 				ioremap(GG2_PCI_CONFIG_BASE, 0x80000);
- 			gg2_pci_config_base = (unsigned long) hose->cfg_data;
-+		} else if (is_pegasos == 1) {
-+			setup_indirect_pci(hose, 0xfec00cf8, 0xfee00cfc);
-+		} else if (is_pegasos == 2) {
-+			setup_peg2(hose, dev);
- 		} else {
- 			printk("No methods for %s (model %s), using RTAS\n",
- 			       dev->full_name, model);
-@@ -274,6 +302,9 @@
- 			printk("pci_dram_offset = %lx\n", pci_dram_offset);
- 		}
- 	}
--
--	ppc_md.pcibios_fixup = chrp_pcibios_fixup;
-+
-+	if (is_pegasos)
-+		ppc_md.pcibios_fixup = NULL;
-+	else
-+		ppc_md.pcibios_fixup = chrp_pcibios_fixup;
- }
-diff -urN kernel-source-2.6.7.orig/arch/ppc/platforms/chrp_setup.c kernel-source-2.6.7.peg2/arch/ppc/platforms/chrp_setup.c
---- kernel-source-2.6.7.orig/arch/ppc/platforms/chrp_setup.c	2004-06-16 07:19:52.000000000 +0200
-+++ kernel-source-2.6.7.peg2/arch/ppc/platforms/chrp_setup.c	2004-06-29 18:10:44.191769928 +0200
-@@ -214,6 +214,37 @@
- 	}
- }
-
-+void pegasos_set_l2cr(void)
-+{
-+	struct device_node *root = find_path_device("/");
-+	char *machine;
-+	struct device_node *np;
-+	int l2cr_value;
-+
-+	/* On Pegasos, enable the l2 cache if needed, as the OF forgets it */
-+	if (root == NULL)
-+		return;
-+	machine = get_property(root, "model", NULL);
-+	if (machine == NULL)
-+		return;
-+	if (strncmp(machine, "Pegasos", 7) == 0) {
-+		/* Enable L2 cache if needed */
-+		np = find_type_devices("cpu");
-+		if (np != NULL) {
-+			unsigned int *l2cr = (unsigned int *)
-+				get_property (np, "l2cr", NULL);
-+			if (l2cr == NULL) {
-+				printk ("Pegasos l2cr : no cpu l2cr property found\n");
-+				return;
-+			}
-+			if (!((*l2cr) & 0x80000000)) {
-+				printk ("Pegasos l2cr : L2 cache was not active, activating\n");
-+				_set_L2CR(0);
-+				_set_L2CR((*l2cr) | 0x80000000);
-+			}
-+		}
-+	}
-+}
-
- void __init
- chrp_setup_arch(void)
-@@ -236,6 +267,9 @@
- 	/* Lookup PCI host bridges */
- 	chrp_find_bridges();
-
-+	/* On pegasos, enable the L2 cache if not already done by OF */
-+	pegasos_set_l2cr();
-+
- #ifndef CONFIG_PPC64BRIDGE
- 	/*
- 	 *  Temporary fixes for PCI devices.
-@@ -387,6 +421,8 @@
- #if defined(CONFIG_VT) && defined(CONFIG_INPUT_ADBHID) && defined(XMON)
- 	struct device_node *kbd;
- #endif
-+	struct device_node *root = find_path_device ("/");
-+	char *machine;
-
- 	for (np = find_devices("pci"); np != NULL; np = np->next) {
- 		unsigned int *addrp = (unsigned int *)
-@@ -400,16 +436,20 @@
- 	if (np == NULL)
- 		printk(KERN_ERR "Cannot find PCI interrupt acknowledge address\n");
-
--	chrp_find_openpic();
--
--	prom_get_irq_senses(init_senses, NUM_8259_INTERRUPTS, NR_IRQS);
--	OpenPIC_InitSenses = init_senses;
--	OpenPIC_NumInitSenses = NR_IRQS - NUM_8259_INTERRUPTS;
--
--	openpic_init(NUM_8259_INTERRUPTS);
--	/* We have a cascade on OpenPIC IRQ 0, Linux IRQ 16 */
--	openpic_hookup_cascade(NUM_8259_INTERRUPTS, "82c59 cascade",
-+	/* Pegasos doesn't have openpic */
-+	machine = get_property(root, "model", NULL);
-+	if (strncmp(machine, "Pegasos", 7) != 0) {
-+		chrp_find_openpic();
-+
-+		prom_get_irq_senses(init_senses, NUM_8259_INTERRUPTS, NR_IRQS);
-+		OpenPIC_InitSenses = init_senses;
-+		OpenPIC_NumInitSenses = NR_IRQS - NUM_8259_INTERRUPTS;
-+
-+		openpic_init(NUM_8259_INTERRUPTS);
-+		/* We have a cascade on OpenPIC IRQ 0, Linux IRQ 16 */
-+		openpic_hookup_cascade(NUM_8259_INTERRUPTS, "82c59 cascade",
- 			       i8259_irq);
-+	}
-
- 	for (i = 0; i < NUM_8259_INTERRUPTS; i++)
- 		irq_desc[i].handler = &i8259_pic;
-@@ -450,6 +490,8 @@
- chrp_init(unsigned long r3, unsigned long r4, unsigned long r5,
- 	  unsigned long r6, unsigned long r7)
- {
-+	struct device_node *root = find_path_device ("/");
-+	char *machine;
- #ifdef CONFIG_BLK_DEV_INITRD
- 	/* take care of initrd if we have one */
- 	if ( r6 )
-@@ -469,7 +511,11 @@
- 	ppc_md.show_cpuinfo   = chrp_show_cpuinfo;
- 	ppc_md.irq_canonicalize = chrp_irq_canonicalize;
- 	ppc_md.init_IRQ       = chrp_init_IRQ;
--	ppc_md.get_irq        = openpic_get_irq;
-+	machine = get_property(root, "model", NULL);
-+	if (strncmp(machine, "Pegasos", 7) == 0)
-+		ppc_md.get_irq        = i8259_irq;
-+	else
-+		ppc_md.get_irq        = openpic_get_irq;
-
- 	ppc_md.init           = chrp_init2;
-
-diff -urN kernel-source-2.6.7.orig/arch/ppc/platforms/chrp_time.c kernel-source-2.6.7.peg2/arch/ppc/platforms/chrp_time.c
---- kernel-source-2.6.7.orig/arch/ppc/platforms/chrp_time.c	2004-06-16 07:18:57.000000000 +0200
-+++ kernel-source-2.6.7.peg2/arch/ppc/platforms/chrp_time.c	2004-06-29 18:10:44.032794096 +0200
-@@ -41,6 +41,8 @@
- 	int base;
-
- 	rtcs = find_compatible_devices("rtc", "pnpPNP,b00");
-+	if (rtcs == NULL)
-+		rtcs = find_compatible_devices("rtc", "ds1385-rtc");
- 	if (rtcs == NULL || rtcs->addrs == NULL)
- 		return 0;
- 	base = rtcs->addrs[0].address;
-
---u3/rZRmxL6MmkK24--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
