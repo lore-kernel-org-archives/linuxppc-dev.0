@@ -1,47 +1,37 @@
+Date: Sat, 21 Aug 2004 11:41:55 +1000
+From: CaT <cat@zip.com.au>
+To: Stefan Jeglinski <jeglin@4pi.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.6 hoses 2.4 on old-world?
+Message-ID: <20040821014155.GB1005@zip.com.au>
+References: <p06100200bd4c49c3daeb@[192.168.0.23]>
 Mime-Version: 1.0
-Message-Id: <p06100200bd4c49c3daeb@[192.168.0.23]>
-Date: Fri, 20 Aug 2004 21:04:23 -0400
-To: linuxppc-dev@lists.linuxppc.org
-From: Stefan Jeglinski <jeglin@4pi.com>
-Subject: 2.6 hoses 2.4 on old-world?
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <p06100200bd4c49c3daeb@[192.168.0.23]>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Been running a 2.4 kernel on my PowerTowerPro for a long time. Over
-the months I've tried building 2.6.x, and succeeded for the first
-time last night with 2.6.8-rc1. Tried booting (via BootX of course),
-but lost all video immediately (completely black on the console, thin
-green pinstripes when I [blindly] start X).
+On Fri, Aug 20, 2004 at 09:04:23PM -0400, Stefan Jeglinski wrote:
+> But if I try e2fsck /dev/sda6, I get 'couldn't open /dev/null
+> (read-only file system)' despite what mtab says. I can't seem to
+> umount anything to try remounting.
 
-Rebooted to the default 2.4 but I'm hosed: The first part of the boot
-starts, and sometime shortly after I get to the yellow Welcome to
-Yellowdog lettering, then I'm seeing a lot of "/dev/null, read-only
-file system" messages, and I'm dropped (after a root password) in a
-shell with the prompt
+do an 'ls -l /dev/null'. Does it look something like this?
 
-	(Repair filesystem) N #
+crw-rw-rw-  1 root root 1, 3 2004-08-14 04:37 /dev/null
 
-where N starts at one and increases if I type certain things at the
-prompt, like "ls."
+If not then remove it and type
 
-/etc/mtab shows:
+mknod /dev/null c 1 3
 
-	/dev/sda6 / ext3 rw 0 0
-	none /proc proc rw 0 0
+You'll need to mount the fs rw first though. This should do it:
 
-But if I try e2fsck /dev/sda6, I get 'couldn't open /dev/null
-(read-only file system)' despite what mtab says. I can't seem to
-umount anything to try remounting.
+mount -o 'remount,rw' /
 
-I was running journaled in 2.4, and I might have forgotten to build
-in ext3 support in 2.6 - did this hose my installation? It's been
-such a long time since I had to fsck anything, am I forgetting
-something simple?
+And don't forget to remount ro when you're done.
 
-
-Stefan Jeglinski
-
+--
+    Red herrings strewn hither and yon.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
