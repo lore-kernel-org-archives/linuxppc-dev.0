@@ -1,20 +1,22 @@
-Return-Path: <listmember@orkun.us>
-Received: from www65.dixiesys.com (ns65a.dixiesys.com [65.254.42.90])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 235C467A46
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2005 11:43:55 +1100 (EST)
-Message-ID: <41ED49E2.5050401@orkun.us>
-Date: Tue, 18 Jan 2005 11:39:46 -0600
-From: Tolunay Orkun <listmember@orkun.us>
+Return-Path: <schwab@suse.de>
+Received: from Cantor.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "mail.suse.de",
+	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 9B04167A2C
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2005 12:37:38 +1100 (EST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <1106011958.4533.25.camel@gaston>
+From: Andreas Schwab <schwab@suse.de>
+Date: Wed, 19 Jan 2005 02:37:31 +0100
+In-Reply-To: <1106011958.4533.25.camel@gaston> (Benjamin Herrenschmidt's
+	message of "Tue, 18 Jan 2005 12:32:37 +1100")
+Message-ID: <je7jmaurl0.fsf@sykes.suse.de>
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-References: <41EC29A8.1040703@mvista.com>	<20050118161515.GI28724@smtp.west.cox.net>
-	<93780AB0-696D-11D9-81BE-003065F9B7DC@embeddededge.com>
-In-Reply-To: <93780AB0-696D-11D9-81BE-003065F9B7DC@embeddededge.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC] Option to disable mapping genrtc calls to ppc_md calls
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH] ppc32: pmac sleep support update
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dan Malek wrote:
-> 
-> On Jan 18, 2005, at 11:15 AM, Tom Rini wrote:
-> 
->> On Mon, Jan 17, 2005 at 02:10:00PM -0700, Mark A. Greer wrote:
-> 
-> 
->>> There are 2 reasons to not use the ppc_md.get_rtc_time() et. al. 
->>> interfaces:
->>> 1) They are called before the i2c driver is initialized and even loaded
->>> if its a module.
-> 
-> 
-> There are three reasons.  You don't want to use an I2c rtc clock at
-> all in these functions because they get can get called from the
-> clock interrupt to update the time in the rtc.  If it does happen to work,
-> it creates long latencies in the timer interrupt.  If the i2c requires an
-> interrupt, they system will crash or hang.
-> 
-> A system using an I2C RTC should find some way to access the
-> clock from application space as a standard I2C device and manage
-> time/clock from the application, not from the kernel.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-This is exactly what I've done for our PPC405GP based Linux port 
-(2.4.25). I've written a clone of hwclock utility using /dev/i2c0 to 
-access Dallas RTC chip with I2C interface. I setthe system clock from 
-RTC within /etc/rcS (Busybox). It is less than perfect as early logs 
-have the date wrong but it was the direction of least resistance.
+> Hi !
+>
+> This patch updates the PowerMac sleep support. The ability to sleep is now broken
+> into 2 different flags, one, "may sleep" is set for all motherboards that we know
+> how to put to sleep and wakeup. It gets turned into "can sleep" upon a call from
+> the video driver indicating the ability to wakeup the video card. This doesn't
+> deal with head-less machines, but this can be improved later. It also adds better
+> cache flush code, which improves stability with cpufreq as well as sleep.
+>
+> This patch actually breaks sleep support until the video drivers for the affected
+> machines have been updated. This will come as separate patches.
 
-Still, I think there should be a better standardized RTC interface to 
-help deal with I2C/SMBus based RTC chips.
+With all your patches applied I'm getting an oops during wakeup inside
+pci_bus_read_config_word on my iBook/G3.  Call trace: pci_set_master,
+pci_device_resume, resume_device, dpm_resume, device_resume,
+pmac_wakeup_devices, pmu_ioctl, sys_ioctl.
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
