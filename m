@@ -1,57 +1,27 @@
-Subject: Re:  PPC Boards?
-Date: Fri, 7 Jan 2000 21:34:59 -0800
-From: Grant Erickson <erick205@tc.umn.edu>
-To: "James Bredijk" <jbredijk@nac.net>
-cc: <linuxppc-dev@lists.linuxppc.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Message-Id: <iss.30ff.3876cc41.b73bb.1@mhub2.tc.umn.edu>
+To: Patrick Callahan <pac1@tiac.net>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Endian issue questions
+References: <20000106110448.004741@mailhost.mipsys.com> <387536E5.98AE2413@tiac.net>
+From: Jesper Skov <jskov@cygnus.co.uk>
+Date: 08 Jan 2000 09:43:33 +0100
+In-Reply-To: Patrick Callahan's message of "Thu, 06 Jan 2000 20:44:26 -0400"
+Message-ID: <otso096jii.fsf@thinktwice.zoftcorp.dk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-James,
+>>>>> "Patrick" == Patrick Callahan <pac1@tiac.net> writes:
 
-It really depends on what kind of target applications you are looking 
-for. It seems to me that the 6xx, 7xx, and 8xx boards have gotten a 
-healthy amount of and successful use from a large number of users on the 
-list. I'll let others with more exposure to them comment on those.
+Patrick> What book or manual would you read first if you'd never faced
+Patrick> an endian issue before?  Gulliver's Travels?  Is there some
+Patrick> linux code that is a classic example for this?  How do you
+Patrick> like your eggs?
 
-For embedded type applications, I've been using IBMs "Oak" 403GCX and 
-semi-functional "Walnut" 405GP boards for porting Linux to the PowerPC 
-4xx processors. Both seem like pretty competent evaluation board designs 
-and if you elect to purchase IBM's RISCWatch JTAG debugger for either, 
-it's a pretty nice, well-developed, and easy-to-use debug tool.
+I just submitted an endian fix for the Minix code to Alan Cox. It
+allows an initrd image created on a PC to be used on the PPC.
 
-Regards,
+But you are probably more after endian issues in drivers...
 
-Grant Erickson
-
-On 1/7/2000 12:26 AM, Linux PPC Developer Digest wrote:
->Date: Thu, 6 Jan 2000 14:02:27 -0500
->From: "James Bredijk" <jbredijk@nac.net>
->Subject: PPC Boards?
->
->I'm new to the list, and I'm seeing references to PReP & PPC boards that are
->being used for development. What boards (or dev kits) are available & where
->would I find them?
->
->If you prefer, please respond directly: jbredijk@nac.net
->
->Thanx,
->James
->- ---
->James Bredijk
->jbredijk@nac.net
->
->"Life is a word problem, not an equation"
->"Talent does what it can, Genius does what it must"
-
-
-
- Grant Erickson                       University of Minnesota Alumni
-  o mail:erick205@tc.umn.edu                              1996 BSEE
-  o http://www.tc.umn.edu/~erick205                       1998 MSEE
-
+Jesper
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
