@@ -1,19 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.29.151])
+Return-Path: <jangiels@speakeasy.net>
+Received: from mail1.speakeasy.net (mail1.speakeasy.net [216.254.0.201])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de.ibm.com", Issuer "Equifax" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C90A32BDB5
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Oct 2004 19:52:52 +1000 (EST)
-In-Reply-To: <416709B8.8080107@vision.caltech.edu>
-References: <416709B8.8080107@vision.caltech.edu>
-Mime-Version: 1.0 (Apple Message framework v619)
-Message-Id: <4A39EEF2-1B6B-11D9-AE5A-000A95A4DC02@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Mon, 11 Oct 2004 11:52:40 +0200
-To: Arrigo Benedetti <arrigo@bologna.vision.caltech.edu>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: Update frequency of Time Base reg?
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F0B5D2BD6A
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Oct 2004 03:28:36 +1000 (EST)
+Received: from dsl017-104-254.spk0.dsl.speakeasy.net (HELO [192.168.0.10])
+	(jangiels@[69.17.104.254]) (envelope-sender <jangiels@speakeasy.net>)
+	by mail1.speakeasy.net (qmail-ldap-1.03) with SMTP
+	for <linuxppc-dev@ozlabs.org>; 11 Oct 2004 17:21:54 -0000
+From: Jeff Angielski <jangiels@speakeasy.net>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1097515329.8508.66.camel@nighteyes.localdomain>
+Mime-Version: 1.0
+Date: Mon, 11 Oct 2004 13:22:09 -0400
+Subject: Creating rootfs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,12 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I'm looking for information about the update frequency of the Time 
-> Base register
-> for the latest dual G5 Powermac and Xserve models.
-> By the way, what is the best way to find this kind of information?
 
-Look in the device-tree.
+So how are people creating the rootfs for their embedded target these
+days?  Busybox?  PTX?  Strip down some existing filesystem?
+
+I have an opportunity to start "fresh" with our current rootfs and could
+not find anything definitive when google-ing for solutions.  So I am
+curious to hear what the rest of the community is using.
 
 
-Segher
+Jeff Angielski
