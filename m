@@ -1,52 +1,40 @@
-Message-ID: <3F2A21D5.2040204@windriver.com>
-Date: Fri, 01 Aug 2003 09:16:21 +0100
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3F2A2CB6.4030104@windriver.com>
+Date: Fri, 01 Aug 2003 10:02:46 +0100
 From: Richard Danter <richard.danter@windriver.com>
 MIME-Version: 1.0
 To: Wolfgang Denk <wd@denx.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: 750/107 CHRP question
-References: <20030731233230.59FBCC602D@atlas.denx.de>
+References: <20030801082845.A38F6C602D@atlas.denx.de>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Wolfgang,
-
-I am CC'ing the list as there may be some useful info in here...
-
 Wolfgang Denk wrote:
-> In message <3F298CED.8010701@windriver.com> you wrote:
->>Yes, I work for WRS, but this is a little personal project just for the
->>hell of it. I just happen to be using a WRS board and vICE to do the
->>debugging.
+> In message <3F2A21D5.2040204@windriver.com> you wrote:
 >
-> Did you try what happens when you disconnect the visionIce?
-> Are you 100% sure it understands virtual addresses correctly?
+>>There is a command in the vICE-II called "CF MMU LINUX" which turns on
+>>MMU handling (doesn't have to be Linux running) and then you use the
+>>MMUA command to set up the mapping (eg MMUA C0000000 0 F0000000) and hey
+>>presto!
+>
+> Will this work just for code statically linked with  the  kernel,  or
+> also  for  dynamically  loaded  modules?  How about accessing dynamic
+> variables on the stack?
+>
+> My understanding is that more than just a static  mapping  is  needed
+> for full MMUP support.
 
-Yes, in fact besides my personal interest in Linux, my job is supporting
-visionXXX customers (I worked for EST before it was bought by WR).
+You are correct. Only the kernel and drivers statically linked can be
+easily debugged. It could be possible to debug modules but since the
+addresses change every time you load them it would not be practical. You
+would have to edit the symbol files (*.ab) each time.
 
-There is a command in the vICE-II called "CF MMU LINUX" which turns on
-MMU handling (doesn't have to be Linux running) and then you use the
-MMUA command to set up the mapping (eg MMUA C0000000 0 F0000000) and hey
-presto!
-
-I have been stepping through the kernel source code quite happily. I
-tracked the problem down the the point where the 1st write occurs to the
-serial port. If I let it run on from there I end up in an inf. loop
-which just jumps to itself. When I reach that point I can stop the
-target and use the memory window to dump the "log_buf" which is where
-all the kprintf messages are going and I can get the back trace from
-that and it points to the same offending instruction in serial setup.
-
-I also tried not having a serial port compiled in and everything works
-perfectly.
-
-It is fixed now tho as I decided to add a ioremap() call. The other
-suggestions I got ware probably more flexible but this was so simple -
-just editing 1 line.
-
+For complete MMU handling the debugger would need to know where to find
+the mapping tables and remap it's symbol info. None of our debuggers can
+do that yet.
 
 Rich
 
