@@ -1,33 +1,32 @@
-To: Giuliano Pochini <pochini@denise.shiny.it>
+Date: Fri, 2 Jul 2004 17:37:28 +0200 (CEST)
+From: Giuliano Pochini <pochini@denise.shiny.it>
+To: Wolfgang Denk <wd@denx.de>
 Cc: linuxppc <linuxppc@4bridgeworks.com>,
 	Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Kernel versions 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 02 Jul 2004 16:29:42 +0200."
-             <Pine.LNX.4.58.0407021623360.22661@denise.shiny.it>
-Date: Fri, 02 Jul 2004 16:54:28 +0200
-Message-Id: <20040702145433.5BA0EC109F@atlas.denx.de>
+In-Reply-To: <20040702145433.5BA0EC109F@atlas.denx.de>
+Message-ID: <Pine.LNX.4.58.0407021725210.22661@denise.shiny.it>
+References: <20040702145433.5BA0EC109F@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <Pine.LNX.4.58.0407021623360.22661@denise.shiny.it> you wrote:
+On Fri, 2 Jul 2004, Wolfgang Denk wrote:
+
+> > The official 2.6.7 kernel works just fine on ppc machines.
 >
-> The official 2.6.7 kernel works just fine on ppc machines.
+> Please define "ppc machines". It doesn't work on most of the  systems
+> we have in the lab (like MPC8xx or MPC5200 etc.)
 
-Please define "ppc machines". It doesn't work on most of the  systems
-we have in the lab (like MPC8xx or MPC5200 etc.)
+The question was: "Is there a linuxppc-2.6 kernel tree or are they
+still using the linuxppc-2.5 tree?".  "They" isn't a good definition
+of what machines (or people ?) he was referring to.  I guessed he
+meant the majority of ppc machines.
 
-Best regards,
-
-Wolfgang Denk
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-It is easier to write an incorrect program than understand a  correct
-one.
+Giuliano.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
