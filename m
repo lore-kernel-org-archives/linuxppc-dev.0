@@ -1,48 +1,49 @@
-Subject: Re: 2.6.0-test5 "incorrect section attributes for .plt"
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Cliff White <cliffw@osdl.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <200309192258.h8JMwWs04059@mail.osdl.org>
-References: <200309192258.h8JMwWs04059@mail.osdl.org>
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <1064060622.1347.45.camel@thor.holligenstrasse29.lan>
+Date: Sat, 20 Sep 2003 08:59:00 -0700
+From: Dale Harris <rodmur@maybe.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: problems with 2.4.23-pre4-ben0
+Message-ID: <20030920155900.GB26953@maybe.org>
 Mime-Version: 1.0
-Date: Sat, 20 Sep 2003 14:23:42 +0200
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2003-09-20 at 00:58, Cliff White wrote:
-> System is an iBook2,
-> distro is Debian unstable
-> kernel is 2.6.0-test5 or current from
-> bk://ppc.bkbits.net/linuxppc-2.5
->
-> gcc version 3.3.2 20030908 (Debian prerelease)
->
-> When compiling modules, i get this warning, repeatedly:
->  CC [M]  sound/ppc/pmac.o
-> {standard input}: Assembler messages:
-> {standard input}:3: Warning: setting incorrect section attributes for .plt
->
-> Then, this failure:
->
->   AS      arch/ppc/boot/common//util.o
-> arch/ppc/boot/common/util.S: Assembler messages:
-> arch/ppc/boot/common/util.S:220: Warning: setting incorrect section attributes
-> for .relocate_code
-> arch/ppc/boot/common//util.o: File truncated
-> arch/ppc/boot/common/util.S:281: FATAL: Can't write
-> arch/ppc/boot/common//util.o: File truncated
-> make[2]: *** [arch/ppc/boot/common//util.o] Error 1
-> make[1]: *** [arch/ppc/boot/common/] Error 2
+There is couple of compile problem I have with the kernel at
+source.mvista.com::linuxppc_2_4_benh
 
-See http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=211668 .
+Missing a comma in /usr/src/linuxppc_2_4_benh/include/linux/agp_backend.h
 
+--- agp_backend.h.orig  2003-09-17 19:02:27.000000000 -0400
++++ agp_backend.h       2003-09-20 11:25:15.000000000 -0400
+@@ -99,7 +99,7 @@
+        ATI_RS300_100,
+        ATI_RS300_133,
+        ATI_RS300_166,
+-       ATI_RS300_200
++       ATI_RS300_200,
+        APPLE_UNINORTH
+ };
+
+
+gcc -D__ASSEMBLY__ -D__KERNEL__ -I/usr/src/linuxppc_2_4_benh/include -I/usr/src/linuxppc_2_4_benh/arch/ppc -D__BOOTER__   -c -o ../common/util.o ../common/util.S
+../common/util.S: Assembler messages:
+../common/util.S:207: Warning: setting incorrect section attributes for .relocate_code
+../common/util.o: File truncated
+../common/util.S:268: FATAL: Can't write ../common/util.o: File truncated
+make[3]: *** [../common/util.o] Error 1
+
+
+Looks like is from:
+
+.section ".relocate_code","xa"
+
+Which I have no idea what the proper setting is supposed to be.
 
 --
-Earthling Michel Dänzer   \  Debian (powerpc), XFree86 and DRI developer
-Software libre enthusiast  \     http://svcs.affero.net/rm.php?r=daenzer
-
+Dale Harris
+rodmur@maybe.org
+/.-)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
