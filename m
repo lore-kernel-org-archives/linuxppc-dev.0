@@ -1,43 +1,50 @@
-In-Reply-To: <20040619141602.GD18025@pegasos>
-References: <1087595028.2061.295.camel@gaston> <Pine.LNX.4.44L0.0406190953120.19842-100000@netrider.rowland.org> <20040619141602.GD18025@pegasos>
-Mime-Version: 1.0 (Apple Message framework v618)
-Message-Id: <9A441082-C35B-11D8-B9CB-000A95A4DC02@kernel.crashing.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-	Alan Cox <alan@www.pagan.org.uk>, Nicolas DET <nd@bplan-gmbh.de>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Linux-USB <linux-usb-devel@lists.sourceforge.net>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [linux-usb-devel] [Patch] for UHCI driver (from kernel 2.6.6).
-Date: Mon, 21 Jun 2004 10:18:40 +0200
-To: Sven Luther <sven.luther@wanadoo.fr>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Subject: Re: Asiliantfb (Frame Buffer) Driver
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: Dieu Morales <dieumorales@yahoo.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20040620204028.58544.qmail@web60402.mail.yahoo.com>
+References: <20040620204028.58544.qmail@web60402.mail.yahoo.com>
+Content-Type: text/plain
+Message-Id: <1087806284.1547.44.camel@newt>
+Mime-Version: 1.0
+Date: Mon, 21 Jun 2004 09:24:44 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Enforced In-Order Execution of I/O. Page 8-61 of the Programing
-> Environments for 32-Bit Microprocessors, by motorola, well, at least on
-> my version.
+On Sun, 2004-06-20 at 21:40, Dieu Morales wrote:
+[snip]
+> I have added console=tty0 to the kernel command line
+> and have not identified any other configuration items
+> needed.  The serial console I/O which I am expecting
+> to see on the monitor shows the driver initialized
+> without errors.  Am I missing something in terms of
+> configuration?  I have also noticed that when using
+> vga_con no graphics card is detected in vgacon.c so
+> goto no_vga and conswitchp = &dummy_con;
+> Would this be related to the problem?
 
-Don't use that old stuff; use either the new PEM or the Book I/II/III:
+The problem is that vgacon and frame buffer consoles are different
+things:
 
-PEM (64- and 32-bit) v2.0:
-http://www-3.ibm.com/chips/techlib/techlib.nsf/techdocs/
-F6153E213FDD912E87256D49006C6541/$file/pem._64bit.d20030611.pdf
+vgacon is a console using the text modes of VGA cards. To stand a chance
+of working it requires the boot firmware of your board to execute the
+VGA BIOS code on the graphics adapter. It works on PCs and possibly some
+non-x86 workstations.
 
-PowerPC Book I/II/III v2.01:
-www-106.ibm.com/developerworks/eserver/pdfs/archpub1.pdf
-www-106.ibm.com/developerworks/eserver/pdfs/archpub2.pdf
-www-106.ibm.com/developerworks/eserver/pdfs/archpub3.pdf
+Frame buffer consoles (fbcon) use the graphics modes of the video card,
+and chipset specific drivers.  I wrote the original asiliantfb for the
+69030 chip. Saito.K & Jeanne replaced the 69030 support with 69000, and
+it got into the kernel.
 
-Most of the time the Books are better; sometimes the PEM helps
-as well.
+First, try removing vgacon and checking that you have fbcon enabled.
+If that fails, try contacting the driver's authors. There's no contact
+address for them in the source, though Google finds one other driver by
+them with this attribution:
+MODULE_AUTHOR("Saito.K & Jeanne <ksaito at interface.co.jp>");
 
-Have fun,
-
-
-Segher
+- Adrian Cox
+Humboldt Solutions Ltd.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
