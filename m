@@ -1,67 +1,38 @@
-Date: Sat, 20 Mar 2004 14:43:34 -0500 (EST)
-From: Pavel Roskin <proski@gnu.org>
-Subject: Re: [TRIVIAL PATCH] Correctly print MAC address of BMAC
-In-reply-to: <Pine.LNX.4.58.0403201433570.20621@portland.hansa.lan>
-To: linuxppc-dev@lists.linuxppc.org, netdev@oss.sgi.com
-Message-id: <Pine.LNX.4.58.0403201442550.20651@portland.hansa.lan>
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_Azwbs0bgwDPYonrtkB6GSQ)"
-References: <Pine.LNX.4.58.0403201433570.20621@portland.hansa.lan>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Powerbook Pismo not waking from sleep with 2.6.4
+Reply-To: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
+From: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
+Date: 21 Mar 2004 17:33:06 +0100
+Message-ID: <hhwu5eupml.fsf@theorie.physik.uni-muenchen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+Hi,
 
---Boundary_(ID_Azwbs0bgwDPYonrtkB6GSQ)
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Content-transfer-encoding: 7BIT
+I've tried to upgrade the kernel to 2.6.4 on my Pismo Powerbook, and
+found that it doesn't sleep properly any more (which it did with
+2.6.3-ben2).  Rather, the machine falls asleep, and then wakes up to
+some extent: It gets as far as
 
-On Sat, 20 Mar 2004, Pavel Roskin wrote:
+ mediabay 0 IDE ready
 
-> Somehow the loop to print the address was moved before the code that
-> prints the rest of the line.  The attached patch fixes that.
+but never reaches the following message
 
-Sorry, forgot the patch.
+ hda: Wakeup request inited, waiting for !BSY
+
+that comes next if it resumes properly with 2.6.3-ben2.  In fact, it
+never even tries to spin up the hard disk at all, I checked by
+enabling debugging in the drivers/ide code.
+
+Any hints would be appreciated.
+
+Regards, Jens.
 
 --
-Regards,
-Pavel Roskin
-
---Boundary_(ID_Azwbs0bgwDPYonrtkB6GSQ)
-Content-id: <Pine.LNX.4.58.0403201443340.20651@portland.hansa.lan>
-Content-type: TEXT/plain; charset=US-ASCII; name=bmac_mac.diff
-Content-transfer-encoding: 7BIT
-Content-disposition: attachment; filename=bmac_mac.diff
-Content-description: 
-
---- linux.orig/drivers/net/bmac.c
-+++ linux/drivers/net/bmac.c
-@@ -1312,10 +1312,6 @@ static int __devinit bmac_probe(struct m
- 	bmwrite(dev, INTDISABLE, DisableAll);
-
- 	rev = addr[0] == 0 && addr[1] == 0xA0;
--	for (j = 0; j < 6; ++j) {
--		dev->dev_addr[j] = rev? bitrev(addr[j]): addr[j];
--		printk("%c%.2x", (j? ':': ' '), dev->dev_addr[j]);
--	}
-
- 	/* Enable chip without interrupts for now */
- 	bmac_enable_and_reset_chip(dev);
-@@ -1380,6 +1376,10 @@ static int __devinit bmac_probe(struct m
- 	}
-
- 	printk(KERN_INFO "%s: BMAC%s at", dev->name, (is_bmac_plus? "+": ""));
-+	for (j = 0; j < 6; ++j) {
-+		dev->dev_addr[j] = rev? bitrev(addr[j]): addr[j];
-+		printk("%c%.2x", (j? ':': ' '), dev->dev_addr[j]);
-+	}
- 	XXDEBUG((", base_addr=%#0lx", dev->base_addr));
- 	printk("\n");
-
-
---Boundary_(ID_Azwbs0bgwDPYonrtkB6GSQ)--
+J'qbpbe, le m'en fquz pe j'qbpbe!
+Le veux aimeb et mqubib panz je pézqbpbe je djuz tqtaj!
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
