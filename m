@@ -1,66 +1,76 @@
-Message-Id: <200011192002.eAJK28Y23640@shell.faradic.net>
-Date: Sun, 19 Nov 2000 15:02:08 -0500
-From: jingai <jingai@floatingpenguins.com>
-To: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
-Subject: No Subject
-Reply-To: jingai@floatingpenguins.com
+Message-ID: <003301c0528f$d22d29b0$69f001dc@r44089-d1.sps.mot.com>
+From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: kernel BUG at sched.c:656
+Date: Mon, 20 Nov 2000 09:18:40 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain;	charset="gb2312"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This may not be the appropriate list to post this on, but since it
-does work on my x86 box at work, here goes...
+I built the linux-2.4.0-test1 kernel on x86 platform,
+the powerpc-linux-gcc version is 2.95.2,
+the target board is MPC8260ADS-L2C board from Motorola.
 
-I'm having trouble burning multisession discs with cdrdao.  My
-TOC file is as follows:
+What do this trace information mean?
+Has the root file system mounted on RAM disk?
 
-CD_ROM_XA
-TRACK AUDIO
-FILE "audio.raw" 0
+Thanks.
 
-TRACK MODE2_FORM1
-DATAFILE "data.raw"
+==========================================
 
-And the command line:
+Starting at: 0x400000
 
-cdrdao write --multi --device 1,4,0 my.toc
+loaded at:     00400000 005C1274
+board data at: 0001126C 00011290
+relocated to:  003F0100 003F0124
+zimage at:     0040A120 0047A8BF
+initrd at:     0047A8BF 005BCE98
+avail ram:     005FD000 01000000
 
-Here is the output from cdrdao:
-
-Cdrdao version 1.1.3 - (C) Andreas Mueller <mueller@daneb.ping.de>
-  SCSI interface library - (C) Joerg Schilling
-  L-EC encoding library - (C) Heiko Eissfeldt
-  Paranoia DAE library - (C) Monty
-
-1,4,0: YAMAHA CRW6416S  Rev: 1.0c
-Using driver: Generic SCSI-3/MMC - Version 1.0 (data) (options 0x0000)
-
-Starting write simulation at speed 6...
-Pausing 10 seconds - hit CTRL-C to abort.
-Process can be aborted with QUIT signal (usually CTRL-\).
-Using POSIX real time scheduling.
-Executing power calibration...
-cdrdao: No such device or address. Cannot set SG_SET_TIMEOUT.
-
-It is apparently failing on the power calibration, but with the same
-CD writer at work, it does not fail here.
-
-My second problem happens both on x86 and PowerPC.  If I
-specify the --multi option to cdrdao, it fails shortly after the
-burn begins (it does write some data to the disc though) with
-a buffer underrun.  If I omit the --multi option, it burns fine
-on x86.  Seeing as I am trying to burn a multisession disc,
-it's kind of necessary (I think?) to specify the --multi
-option.
-
-Both boxes are running Debian woody and kernel 2.2.18pre21.
-
-Any help would be greatly appreciated.
-
-Regards,
-Jonathan
-
+Linux/PPC load:
+Uncompressing Linux...done.
+Now booting the kernel
+Total memory = 16MB; using 0kB for hash table (at 00000000)
+Linux version 2.4.0-test1 (sjzhu@Linux586.mcel.mot.com) (gcc version 2.95.2
+1990
+Boot arguments: root=/dev/ram
+On node 0 totalpages: 4096
+zone(0): 4096 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/ram
+Calibrating delay loop... 6.20 BogoMIPS
+Memory: 13452k available (888k kernel code, 392k data, 36k init)
+[c0000000,c100]
+Dentry-cache hash table entries: 2048 (order: 2, 16384 bytes)
+Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
+kmem_create: Poisoning requested, but con given - bdev_cache
+Inode-cache hash table entries: 1024 (order: 1, 8192 bytes)
+kmem_create: Poisoning requested, but con given - inode_cache
+POSIX conformance testing by UNIFIX
+Linux NET4.0 for Linux 2.3
+Based upon Swansea University Computer Society NET3.039
+kmem_create: Poisoning requested, but con given - skbuff_head_cache
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 1024 bind 1024)
+Starting kswapd v1.6
+CPM UART driver version 0.01
+ttyS00 at 0x0000 is a SMC
+ttyS01 at 0x0040 is a SMC
+ttyS02 at 0xttyS03 at 0x8100 is a SCC
+ttyS04 at 0x8200 is a SCC
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+RAMDISK: Compressed image found at block 0
+Freeing initrd memory: 4194301k freed
+kmem_create: Forcing size word alignment - nfs_fh
+VFS: Mounted root (ext2 filesystem).
+bad magic 0 (should be c045b2e0, creator 0), wq bug, forcing oops.
+kernel BUG at sched.c:656!
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
