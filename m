@@ -1,44 +1,45 @@
-Date: Wed, 18 Jun 2003 09:23:57 -0500
-From: Chris Zimman <chris@cryptoapps.com>
-To: Seb James <seb@peak.uklinux.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: failing i2c driver on mpc8xx - interruptible_sleep_on()
-Message-ID: <20030618142357.GA9894@dingdong.cryptoapps.com>
-Reply-To: Chris Zimman <chris@cryptoapps.com>
-References: <3EF0660F.90909@peak.uklinux.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3EF0660F.90909@peak.uklinux.net>
+To: linuxppc-dev@lists.linuxppc.org
+Cc: Dan Malek <dan@embeddededge.com>
+Subject: Re: "slow" ports on MPC8255 ? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 17 Jun 2003 22:47:03 +0200."
+Date: Wed, 18 Jun 2003 16:24:03 +0200
+Message-Id: <20030618142408.8C4BAC5FD7@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jun 18, 2003 at 02:15:59PM +0100, Seb James wrote:
+Hello,
 
-> This function contains a line:
->
->        interruptible_sleep_on(&iic_wait);
->
-> Which is causing my mpc8xx to hang (no serial console response, no telnet
-> access).
->
-> cpm_iic_read(), also has an interruptible_sleep_on() call which hangs my
-> target in the same way.
->
-> Does anyone know why this might be? interruptible_sleep_on() is in sched.c
-> and looks like:
+I wrote:
 
-Seb,
+> has anybody of you experienced problems with accesses  to  port  data
+> registers on a MPC8255 yet?
+...
+> - writing port A data register (as 32  bit  word)  and  then  looping
+>   reading  it back will show that it takes some time for the write to
+>   take effect, i. e. we can read the old  value  for  some  time  and
+>   then, bit for bit, the new value becomes visible.
 
-What's going on is that when you call interruptible_sleep_on(), you're
-putting the process to sleep until an interrupt comes in and wakes it
-up.  iic_wait is the wait queue that you're using.  So in order for the
-process to continue, and interrupt has to occur and wake this process
-up.
+Problem solved. The solution was simple. Looking closer I found  that
+the  effect  showed only up for bits changing from 0 to 1. Then I saw
+that ports pins in  question  are  configured  as  open  drain.  When
+switching  a  pin  to 1 the level would rise slow enough that reading
+the data register would pick up a low (0) for several cycles.
 
-The most likely reason that you're hanging is because the interrupt is
-never coming in.
+So actually it was no problem at all, just some slow circuitry and  a
+fast  CPU.  Don't  know why the MPC8260 behaves differently (internal
+pull-ups?).
 
---Chris
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The human mind ordinarily operates at only ten percent of its capaci-
+ty - the rest is overhead for the operating system.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
