@@ -1,53 +1,48 @@
-Message-ID: <39C8C584.D845678A@siemens.at>
-Date: Wed, 20 Sep 2000 16:11:16 +0200
-From: Rainer Kloud <rainer.kloud@siemens.at>
+Message-ID: <67505026E29DD311A9AA00508B7315F350A513@EXCHANGE>
+From: Julia Elbert <jelbert@enerdyne.com>
+To: "'jari.nguyen@serialsystem.com.sg'" <jari.nguyen@serialsystem.com.sg>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Ram Disk
+Date: Wed, 20 Sep 2000 08:58:37 -0700
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 8260 FCC Ethernet driver, cpm_8260.h
-References: <39C1DE70.F1D90668@siemens.at> <39C24395.756E3252@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Dan,
+Hi,
+Hi Jari,
+Maybe you were talking to Jacob? Hmmm.
+I have posted this already. Look at 8/24. But here you go and feel free to
+post it again if you like.
+Thanks,
+Julia
 
-> Rainer Kloud wrote:
->
-> > So my question is: Does anyone have a Ethernet Driver
-> > for the FCC?
->
-> Ummmm.....arch/ppc/8260_io/fcc_enet.c should do the trick......
->
-> I am constantly making updates to the sources for 8260, and recently
-> updated the driver (there is another major update coming).  You should
-> probably get used to using the BitKeeper tree from FSM Labs...
->         www.fsmlabs.com/linuxppcbk/html
+>From John's note my code change was as follows:
+I moved a close comment down 5 lines.
 
-Thank you for your tip, the source file wasn't included in my
-old distribution.
+lines 405 - 409 commented out in linux/mm/vmscan.c
 
-But one further question:
-After compelation of your driver I was able to send some
-data (bootp request), but I couldn't receive any. Further
-I got no transmit interrupt. So I took a look to the FCC
-mask register and I saw that the FCCM (and of course FCCE)
-register is a 32 bit register where only the higher word is
-used. But when useing the event constants (f.e. FCC_ENET_TXB)
-from cpm_8260.h only the bits in the lower word are set.
-So setting the desired events in the FCC mask register has
-no effect!
-After that I have changed the constants to manipulate the
-high word and everything seems to work correct (I got my
-transmit and receive interrupts).
-I have seen, that the FCCM/FCCE are different from other
-channels, f.e the SCC. There the mask register is only
-defined as 16 bit register.
+/* Then, try to page stuff out..
+		while (swap_out(priority, gfp_mask)) {
+			if (!--count)
+				goto done;
+		}
+*/
 
-What do you think about this?
+John wrote:
 
-Bye,
-Rainer
+In *my* code (I am running a modified 2.2.15 kernel), I merely commented out
+the "swap_out ()" code in routine do_try_to_free_pages in mm/vmscan.c (in my
+code, it's lines 405-409).  Since I made this change, my system has been
+rock-steady (and I run a LOT of applications, including the Apache web
+server and various CGI scripts I have written).  I now see free memory go
+down as new images are read from the ramdisk, and back up as memory is freed
+by the system.
+Hope this helps your problem...
+John Whitney
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
