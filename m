@@ -1,60 +1,48 @@
-Message-ID: <39043DF4.92CE26D3@pop.agri.ch>
-Date: Mon, 24 Apr 2000 14:28:38 +0200
+Message-ID: <39043F06.CDED1B99@pop.agri.ch>
+Date: Mon, 24 Apr 2000 14:33:13 +0200
 From: Andreas Tobler <toa@pop.agri.ch>
 Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-To: unit@panix.com
+To: Bernhard Reiter <bernhard@intevation.de>
 CC: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Serial driver problem (modem Lombard)
-References: <Pine.SUN.4.21.0004240012000.3430-100000@panix.com>
+References: <20000422123747.B8503@cheops.usf.Uni-Osnabrueck.DE> <3901D09B.4B25722F@pop.agri.ch> <20000424125228.A15804@cheops.usf.Uni-Osnabrueck.DE>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-unit@panix.com wrote:
+Bernhard Reiter wrote:
 >
-> On Sat, 22 Apr 2000, Andreas Tobler wrote:
+> > Now I can report a clean, more or less, well ppp operation.
+> As I wrote, it always works on the first try.
+> It sometimes fials on the second and following tries with 2.2.15pre19.
+> It always works with the 2.2.15pre3 which does not have ir support build
+> in.
+
+I'm not sure, is it possible to disable IR in the kernel build? worth a try.
+
+> If wvdialconf scans the ir port ttyS1 on 2.2.15pre19, die machine bombs.
+
+have you tried with something other than wvdial? (which I don't know), I
+use netcfg.
+
+> > > wvdail cannot open /dev/ttyS0 twice with 2.2.51pre19.
+> > > After I ctrl-ced wvdial to interrupt the network connection
+> > > I get an I/O error when I try to open it again.
+> >
+> > Do you have the module option in char/devices/serial on? (dumb serial device)
 >
-> i've also been having problems with ppp and kernels > 2.2.15pre9
-> somewhat similar to below .. only with hard crashes. I can't get
-> ppp to work w/ either prre17 or pre19 .. seems to be line dicipline:
->
-> Apr 16 18:34:05 sophix pppd[2541]: Serial connection established.
-> Apr 16 18:34:05 sophix modprobe: can't locate module tty-ldisc-3
-> Apr 16 18:34:05 sophix pppd[2541]: ioctl(TIOCSETD): Invalid argument(22)
-> Apr 16 18:34:05 sophix pppd[2541]: Hangup (SIGHUP)
-> Apr 16 18:34:05 sophix pppd[2541]: Exit.
+> Not that I know of. I admit that I have to learn a bit more about
+> kernel configuration to be sure, though.
 
-Have you built in ppp support or module support?
-If you have mod, then have you added the lines below to
-/etc/modules.conf or conf.modules?
+This makes only sense when you have a pcmcia/cadbus modem.
 
-alias   ppp-compress-21         bsd_comp
-alias   ppp-compress-24         ppp_deflate
-alias   ppp-compress-26         ppp_deflate
-alias   tty-ldisc-3             ppp
+> Most interestingly right now I cannot reproduce the I/O error.
+> So it works, most of the time. I hate this kind of errors.
+> So a hardware problem is still possible with this machine.
 
-Which ppp-pkg are you using? I use ppp-2.4.0b2, but ppp-2.3.11 should
-also work fine.
-(ftp.linuxcare.com.au/pub/ppp)
-
->
-> w/ 2.2.15pre14 i can connect but if i reconnect linux crashes w/ no
-> option other than a force reboot (this has happened on three occasions
-> under the exact same circumstances).
-
-How do you connect? I use netcfg. No problems so far.
-
-> i rsynced the pre19 two days back so i'm not sure where i fall into the
-> loop. However it would seem the/my problem is further back
-
-Be sure not having something like ppp_async/ppp_generic in drivers/net/.
-If so you may have the same situation I had.
-rsync -avz linuxcare.com.au:linux-pmac-stable <dest-dir> should help to
-get a clean download.
-
-Otherwise???
+:-((
 
 Andreas
 
