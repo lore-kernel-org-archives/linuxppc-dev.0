@@ -1,39 +1,43 @@
-Date: Tue, 20 Jun 2000 19:40:32 -0400 (EDT)
-From: James Simmons <jsimmons@acsu.buffalo.edu>
-To: Thomas HXhenleitner <th@visuelle-maschinen.de>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Adrian Cox <apc@agelectronics.co.uk>,
-        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>,
-        LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: name space pollution Was Re: [linux-fbdev] CTFB 0.30 now availiable
- (CT65554...CT69000)
-In-Reply-To: <00062011283507.10856@iris>
-Message-ID: <Pine.LNX.4.10.10006201939080.2081-100000@maxwell.futurevision.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 21 Jun 2000 13:16:55 +1200
+From: Gwyn Judd <b.judd@xtra.co.nz>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: dmasound module and AWACS errors
+Message-ID: <20000621131655.A7267@thislove.dyndns.org>
+References: <Pine.LNX.4.21.0006200827480.1155-100000@pegmatite.iu13.k12.pa.us>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.21.0006200827480.1155-100000@pegmatite.iu13.k12.pa.us>; from kevin_myer@iu13.k12.pa.us on Tue, Jun 20, 2000 at 09:09:40AM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> If we have several submodules as parts of a framebuffer we have some symbols
-> within the namespace of this framebuffer. When we compile it as a separate
-> module for modprobe there is no problem. But when we compile it as part of the
-> kernel these frambuffer specific symbols are polluting the kernel namespace. Is
-> there an elegant way to make the framebuffer specific symbols invisible for the
-> kernel after we have  our xxxfb.o?
+On Tue, Jun 20, 2000 at 09:09:40AM -0400, Kevin M. Myer wrote:
+>
+> Hello,
 
-Hum? I don't know. Anyone? I usually don't think about namespace
-pollution. I just makes sure I bizarre names so they don't conflict with
-anything else.
+<snip>
 
-Q: Why did they deprecate a.out support in linux?
-A: Because a nasty coff is bad for your elf.
+> Now, I'm experiencing a phenomenon of the Windows world - random
+> reboots.  I go home at night with the machine running Linux and I come
+> to work in the morning with the machine rebooted into MacOS.  Or
+> sometimes, the machine is just frozen and nothing except a reboot will
+> bring it back.  I've noticed on several occasions that there is a problem
+> with the sound module.  When the dmasound module is loaded, the following
+> error message is logged:
+>
+> AWACS error: f
 
-James Simmons  [jsimmons@linux-fbdev.org]               ____/|
-fbdev/console/gfx developer                             \ o.O|
-http://www.linux-fbdev.org                               =(_)=
-http://linuxgfx.sourceforge.net                            U
-http://linuxconsole.sourceforge.net
+I get this too. I don't get the "AWACS error" thing but I get the random
+reboots and/or crashes. It usually comes after a couple of days of
+playing mp3s. I have sound loaded as a module. This is on 2.2.16 but I
+also got it on 2.2.15 as well.
 
+Hardware:
+G3 266/64Mb
+Linuxppc 2000
+
+--
+Gwyn Judd (b.judd@xtra.co.nz)
+MY income is ALL disposable!
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
