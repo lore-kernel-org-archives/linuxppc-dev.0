@@ -1,61 +1,40 @@
-Message-Id: <v0313030db3ece7c8caa1@[192.168.1.1]>
-In-Reply-To: <19990827163237.012324@mailhost.mipsys.com>
-References: <v03130308b3ec440550d3@[192.168.1.1]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 27 Aug 1999 20:20:13 -0500
-To: linuxppc-dev@lists.linuxppc.org,
-        Linux/mac68k List <linux-mac68k@mac.linux-m68k.org>
-From: "David D. Kilzer" <ddkilzer@computer.org>
-Subject: Re: mac-2.3.14.diff: adb
-Cc: Benjamin Herrenschmidt <bh40@calva.net>
+Date: Sat, 28 Aug 1999 13:27:47 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: BootX enhancement request
+In-Reply-To: <19990827112042.001235@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.4.10.9908281327290.8134-100000@mercator.cs.kuleuven.ac.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->On Fri, Aug 27, 1999, David D. Kilzer <ddkilzer@computer.org> wrote:
->>Well, drivers/macintosh is PPC ADB code.  If drivers/macintosh shouldn't
->>exist, then shouldn't it be changed or moved at a higher level?
->>
->>In reality, there is some ADB mouse code in drivers/char, too, so I wonder
->>if drivers/char/adb would make more/less sense than drivers/adb?
+On Fri, 27 Aug 1999, Benjamin Herrenschmidt wrote:
+> On Thu, Aug 26, 1999, Tom Rini <trini@kernel.crashing.org> wrote:
+> 
+> >> Thus I can remove the nvram code from atyfb?
+> >
+> >Why?  It works fine on lots of older machines w/ ati cards and older MacOS
+> >versions.  If you remove it I can garrenty people will notice and
+> >complain.
+> 
+> We should get rid of it for atyfb once we have DDC working. According to
+> Apple, all machines with ATI controllers are using DDC now. The nvram
+> setting would still be useful for the older video controllers.
 
-Benjamin Herrenschmidt <bh40@calva.net> wrote:
->I personally like drivers/macintosh, from my point of view, it makes
->things clearer. except for macserial, which should be killed in favor of
->a more generic zilog driver, most of those drivers are really mac-centric
->stuffs with no "generic" userland interface. Also, drivers/char is
->already enough of a mess like this.
->
->I didn't look at the those new patches, but the adb code in
->driver/macintosh was abstracted to use a generic "adb controller"
->sub-driver interface some time ago and so adb.c should be platform
->independant (useable as-is on PPC and 68k). mac_keyb.c too, with all it's
->specific mouse support.
+The NVRAM code should be separated from atyfb, so it can be used by all Mac
+drivers.
 
-Joshua Thompson did some rewriting of the adb.c code (and moved some header
-files around) in order to fully integrate the m68k and PPC ADB code.
+Greetings,
 
->David, did you make a generic (m68k/ppc) cuda driver too ?
+						Geert
 
-Joshua Thompson made the patch, but I didn't include it in the patch I
-submitted to Jes Sorensen (m68k maintainer) since I thought he only wanted
-m68k stuff.  Joshua submitted the PPC side of the patch to Paul Mackerras.
-
-Jes doesn't want to patch anything into drivers/macintosh.  He believes
-that ADB code should be split into the bus code (drivers/adb) and into
-device code (drivers/char/adb or drivers/char) and that drivers/macintosh
-should go away.
-
-I'm afraid that the m68k stuff is going to appear in drivers/[char/]adb
-while the PPC stuff is going to remain in drivers/macintosh, and we'll be
-worse off than we were before the merge!
-
-Do we need to raise this issue on linux-kernel to get it resolved,
-especially since the NeXT port (another m68k-based system) uses ADB as well?
-
-Dave
-
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
