@@ -1,39 +1,49 @@
-Message-Id: <200007161155.MAA19420@hyperion.valhalla.net>
-Date: Sun, 16 Jul 2000 12:55:57 +0100
-Subject: update: ppc IRQ blocking.
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
-CC: jsun@mvista.com
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-ID: <3971A48E.64668BE9@pop.agri.ch>
+Date: Sun, 16 Jul 2000 14:03:27 +0200
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
+MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Martin Costabel <costabel@wanadoo.fr>,
+        Benjamin Herrenschmidt <bh40@calva.net>,
+        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: cards initialized from offb (was: Re: [linux-fbdev] Re: [patch]VRAM
+ detection in controlfb)
+References: <Pine.LNX.4.10.10007151622130.721-100000@cassiopeia.home>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hi Geert,
 
-Well, much of the info presented in my message yesterday was bogus...
+Geert Uytterhoeven wrote:
+>
+> This patch moves the initialization of some frame buffer devices from offb.c
+> to fbmem.c. It also reorders the initialization calls in fbmem.c.
+>
+> The patch mainly affects the users of the following frame buffer devices on
+> PowerMac and CHRP:
 
-The instrumentation needs improvement... it's missing too many cases where
-IRQs are switched on/off behind the back of the measurement (which is making
-it very difficult to narrow down the rogue...)
+>   - platinumfb
 
-I'm working on it.
+^^^^^^^^^^^^^^^^^
+pm7200
 
-The latency measurements *do* indicate a problem... I don't think that is
-bogus.. but...
+>
+> Except for a simple compile test (except for the new ofonly logic), it is
+> untested. Please test it!! Many many thanks!
 
-So unless:
-(a) you have an idea where there might be a 8 to 10ms hold off in IRQ or
-(b) you already have an IRQ blocking measurement set that includes all the
-cases (in which case I'd love a copy ;-)
+I applied it with some massive handwork to a 2.4.0-test4 from
+hq.fsmlabs.com. So far I can't see some oddities.
+Afterstep runs....
 
-Ignore the post of yesterday...
-Iain.
+Do yu have some special testcases?
 
-P.S. Jun - do you want a copy of what I've got so far? or wait 'till it's
-done... I covered a lot more cases but still need to deal with all the stuff
-going on in head.S :-(
+Regards,
+
+Andreas
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
