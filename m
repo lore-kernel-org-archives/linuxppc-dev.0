@@ -1,37 +1,42 @@
-From: Paul Mackerras <paulus@samba.org>
+Date: Wed, 14 Nov 2001 13:20:04 -0500 (EST)
+From: Daniel Berlin <dan@cgsoftware.com>
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: DFP support for kernel radeonfb.c added
+In-Reply-To: <20011114175006.VAAL9849.tomts10-srv.bellnexxia.net@there>
+Message-ID: <Pine.LNX.4.33.0111141318380.20197-100000@www.cgsoftware.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15346.46026.126227.601357@cargo.ozlabs.ibm.com>
-Date: Thu, 15 Nov 2001 05:11:22 +1100 (EST)
-To: Jrn Nettingsmeier <nettings@folkwang-hochschule.de>
-Cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-	Vincent Katz <vincent.katz@laposte.net>,
-	jhartmann@precisioninsight.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: AGP : ATI128,powerpc
-In-Reply-To: <20011114230308.04E9D18077@haven.ozlabs.ibm.com>
-References: <20011114230308.04E9D18077@haven.ozlabs.ibm.com>
-Reply-To: paulus@samba.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-J”rn Nettingsmeier writes:
-
-> i've been using ben's tree for a powerbook for quite some time, and
-> i used to see the same error, so i disabled agp and dri.
+Just a note, on the tibook rev b, the EDID is in EDID1 for the LCD.
+No idea if it'll make an EDID2/EDID if you plug in an external monitor.
 >
-> has this been fixed lately ?
-> i'm desperate for faster video. 2d performance under x is pathetic,
-> and scrolling is a major pita.
+> All of this depends on their being an EDID block in /proc under the Radeon
+> device tree (it exists on my machine).  You can simply look in /proc in
+> the device_tree to see if one exists on your machine (need to have the
+> monitor connected for it to be created).
+>
+> Since there are a lot of changes and since other people have submitted
+> radeon patches recently, I have attached my complete files (radeonfb.c and
+> radeon.h) in the form of a tar archive to this e-mail so that others may
+> more easily understand the changes.
+>
+> I hope this helps others with flat panels but be warned I have only tested
+> them on my own machine.  So don't come back to me if your FP goes up in
+> smoke.  Use at your own RISK!
+>
+> BTW: Using a dviAtor, and an Apple 17 inch flat panel is a real blast and
+> now all of my eye strain is gone!
+>
+> Have fun!
+>
+> Kevin
+>
+>
+>
 
-Getting reasonable 2D performance for things like scrolling doesn't
-need DRI and/or AGP, you just need an X server that knows how to drive
-the rage 128 chip.  I'm using XFree86 4.1.0 (from debian unstable) on
-my Ti powerbook and it works just fine.  I can send you my
-XF86Config-4 if you like (you would need to tweak it a little for a
-pismo) or you could ask Ben Herrenschmidt for the config he uses on
-his pismo.
-
-Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
