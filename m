@@ -1,41 +1,45 @@
-Date: Fri, 4 Feb 2000 19:37:50 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Ani Joshi <ajoshi@shell.unixbox.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] 2.3.42-ppc patch...
-In-Reply-To: <Pine.LNX.4.10.10002032158180.18255-200000@shell.unixbox.com>
-Message-ID: <Pine.HPX.4.10.10002041845230.1866-100000@gra-ux1.iram.es>
+Message-ID: <389B26DA.DE41F422@socal.rr.com>
+Date: Fri, 04 Feb 2000 11:22:02 -0800
+From: Richard Young <beethoven@socal.rr.com>
+Reply-To: beethoven@socal.rr.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Help with ethernet setup on 450 G4.
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi,
+
+    I'm new to this whole Linux thing and I'm trying to find the
+quickest way
+to the information I need to get my networking working on a Sawtooth G4,
+450
+with the built in 10/100 base-t.
+
+I did the installation from getting FTP files and not from CD so I may
+be missing
+something. I am using Ben H's kernel 2.2.15.pre3.  Most everything seems
+to be
+working (after some painful updates, not knowing which RPM's hold which
+files
+such as libraries) except for the ethernet stuff.
+I don't have much of an idea how the ethernet stuff is handled under
+Linux.
+I get complaints about eth2 not being a device and the like.  Is there a
+conf file
+somewhere that specifies something more about the eth2 device?
+I tried using linuxconf to set it up but the error log also showed
+similar problems
+when trying to run those network scripts.
+Is the eth2 support compiled into the kernel or is it supposed to be a
+module or
+something like that? At this point, I'm lost!
 
 
-On Thu, 3 Feb 2000, Ani Joshi wrote:
+Thanks anyone,
 
->
-> hello all, attatched you'll find a patch which should apply to 2.3.41 and
-> .42.
->
-> this gives ppc the new dyn dma "support" and the stuff for the new rw
-> semaphores.
->
->
-> any feedback would be appreciated, thanks
-
-Hmmm, about the semaphores: you are basing it on the Alpha port by Andrea
-Arcangeli which has been criticized for not using the load with
-reservation and conditional store instructions which have AFAICT the same
-semantics on Alpha and PPC (and MIPS for the matter). Could you produce a
-revised patch when the new Alpha implementation comes out (no need for a
-spinlock in the structure) ?
-
-The alpha version was published on the axp-list from what R.Henderson
-says, but I have trouble locating it right now.
-
-	Gabriel.
-
+Rich Young
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
