@@ -1,37 +1,20 @@
-Message-ID: <638AA0336D7ED411928700D0B7B0D75B0189BB33@aimail.aiinet.com>
-From: "Dayton, Dean" <deand@aiinet.com>
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Enabling timebase on 8245
-Date: Thu, 26 Sep 2002 16:29:40 -0400
-MIME-Version: 1.0
-Content-Type: text/plain
+Message-Id: <200209270447.g8R4lEO01101@attbi.com>
+From: Michael Thompson <mickey@berkeley.innomedia.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Are 8260 and 8250 CPM interface compatible?
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 26 Sep 2002 21:47:12 -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am trying to run a variant of 2.4.19-rc3 on a Cogent CSB281 board
-(MPC8245). The kernel boots to the point of printing
-
-time_init: decrementer frequency = 0.000000MHz
-Warning: real time clock seems stuck!
-Calibrating delay loop...
-
-The decrementer frequency is supposed to be determined by polling reading
-the timebase before and after a one second delay. But the timebase is not
-changing. I can't figure out out how to enable the timebase on an 8245 (it
-doesn't seem to have a Timebase Status and Control Register like the 860).
-
-Can anyone point me in the right direction?
-Thanks
-Dean
+How much of each of the drivers in arch/ppc/8260_io/ can be reused
+for the 8250?  Is the 8250 CPM interface backward compatible
+with the 8260 CPM interface? Or will everything have to be written
+from the ground up?
 
 
-
--------------
-Dean Dayton
-System Architect - Applied Innovation Inc.
-(614)923-1174
-deand@aiinet.com
-
+Michael Thompson
+mickey@berkeley.innomedia.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
