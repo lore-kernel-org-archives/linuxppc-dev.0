@@ -1,32 +1,28 @@
-Date: Thu, 8 Jul 1999 14:29:37 -0400 (EDT)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Mark Abene <phiber@radicalmedia.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: platinum video makes me cry...
-In-Reply-To: <19990708080415.A822@radicalmedia.com>
-Message-ID: <Pine.LNX.3.96L.990708142815.2134H-100000@unix47.andrew.cmu.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <9907081832.AA28950@marc.watson.ibm.com>
+To: Charles Lepple <clepple@mitre.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PowerPC assembly question 
+In-Reply-To: Message from Charles Lepple <clepple@mitre.org>
+   of "Thu, 08 Jul 1999 13:39:17 EDT." <3784E245.8930A1B4@mitre.org>
+Date: Thu, 08 Jul 1999 14:32:55 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 8 Jul 1999, Mark Abene wrote:
-> 
-> The good news is that I finally got around to installing linuxppc-1999 (R5)
-> on my 7200.  The BAD news is that much to my chagrin, the changes I made to
-> fix the platinum video driver in the newer kernels (which I submitted to the
-> code maintainer nearly a month ago, if not more) are NOT present in R5!
-> I was greeted by the sickly-looking psychedelic arch-nemesis of Tux the
-> penguin.
-> Suffice to say, gnome came up looking like a bad acid trip.
+>>>>> Charles Lepple writes:
 
-Strangely enough, the kernel the installer uses was right. I was very
-pleasently surprised to see Tux in the correct colors when I went to install.
-Of course, the kernel the installer actually installs is screwed up in this
-respect.
+Charles> I've been poking around with some disassembled C code, and I'm wondering
+Charles> if there is a source of documentation on register usage guidelines
+Charles> (maybe an ABI? I'm just not used to this concept of passing arguments in
+Charles> registers as opposed to the stack). Any help would be appreciated.
 
--Hollis
+	All of this is defined in the appropriate ABI (AIX PowerOpen and
+SVR4 PowerPC ABI).  The ABI specifies the uses of each register when
+targeting code to the calling convention (argument passing, volatile and
+non-volatile registers, etc.)
+
+David
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
