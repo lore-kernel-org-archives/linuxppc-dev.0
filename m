@@ -1,37 +1,38 @@
-Message-Id: <199912290021.TAA23598@mal-ach.watson.ibm.com>
-To: Geoff Keating <geoffk@cygnus.com>
-cc: drow@false.org, linuxppc-dev@lists.linuxppc.org,
+Date: Tue, 28 Dec 1999 16:54:38 -0800
+From: Geoff Keating <geoffk@cygnus.com>
+Message-Id: <199912290054.QAA13250@localhost.cygnus.com>
+To: dje@watson.ibm.com
+CC: eek@escape.ca, drow@false.org, linuxppc-dev@lists.linuxppc.org,
         libc-alpha@sourceware.cygnus.com
-Subject: Re: DB_THREAD support in Berkeley DB/glibc 
-In-Reply-To: Message from Geoff Keating <geoffk@cygnus.com>
-   of "Tue, 28 Dec 1999 15:52:47 PST." <199912282352.PAA11865@localhost.cygnus.com>
-Date: Tue, 28 Dec 1999 19:21:36 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+In-reply-to: <199912290015.TAA24316@mal-ach.watson.ibm.com> (message from
+	David Edelsohn on Tue, 28 Dec 1999 19:15:59 -0500)
+Subject: Re: DB_THREAD support in Berkeley DB/glibc
+References: <199912290015.TAA24316@mal-ach.watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Geoff Keating writes:
+> Date: Tue, 28 Dec 1999 19:15:59 -0500
+> From: David Edelsohn <dje@watson.ibm.com>
 
-Geoff> We don't need 'isync', 'sync' will do just fine, and is faster.  We
-Geoff> are only concerned here with memory coherency.  In fact, 'isync' does
-Geoff> not imply 'sync' in a multiprocessor implementation; 'sync' does an
-Geoff> extra broadcast on the bus.  The PowerPC User's Manual says
+You were right about sync being slower than isync.  I expect
+the difference is caused by sync needing to perform bus operations
+where isync does not.
 
-Geoff> The sync instruction can be used to ensure that the result of all
-Geoff> stores into a data structure, performed in a "critical section" of a
-Geoff> program, are seen by other processors before the data structure is
-Geoff> seen as unlocked.
+Anyway, they're not substitutes for each other; they do different
+things, and in a given situation only one (or, possibly, both in
+sequence) will be right.
 
-Geoff> We probably want 'sync' before and after, although it's probable the
-Geoff> 'after' is unnecessary.
+> 	If you only are using the TSL_UNSET in the context that one
+> already has the lock, then the lwarx/stwcx are unnecessary.  What you have
+> written, however, is not a general atomic clear macro.
 
-	"sync" is not faster; sync is a full context synchronization
-instruction.  As I had mentioned to David, the necessity of a sync *after*
-the store depends on the semantics of this programming model.  Maybe in
-this context one should sync before acquiring the lock and then sync after
-releasing the lock.
+How is it not atomic?
 
-David
+The PUM says "With the exception of double-precision floating-point
+accesses on 32-bit implementations, all aligned accesses are atomic."
+
+-- 
+- Geoffrey Keating <geoffk@cygnus.com>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
