@@ -1,33 +1,37 @@
-Message-ID: <39871F8A.C2B1D262@student.ethz.ch>
-Date: Tue, 01 Aug 2000 21:05:46 +0200
+Message-ID: <398726FD.C1A79E2B@student.ethz.ch>
+Date: Tue, 01 Aug 2000 21:37:33 +0200
 From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <bh40@calva.net>
 CC: Takashi Oe <toe@unlserve.unl.edu>,
         linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: LinuxPPC X Server
-References: <20000731140748.1481@mailhost.mipsys.com>
+References: <39871F8A.C2B1D262@student.ethz.ch> <20000801191739.26835@mailhost.mipsys.com>
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Benjamin Herrenschmidt wrote:
+>
+> >
+> >Great, I'd happily beta-test and/or help, will that be in your rsync-tree
+> > or in 2.4?
+>
+> It's far from finished yet. It will be in 2.4 bk tree once done
 
-> I'm working on a /dev/agpgart implementation for new machines.
+Cool, so it will be in our APUS 2.4 tree :)
 
-Great, I'd happily beta-test and/or help, will that be in your rsync-tree or
-in 2.4?
 
-> But DRI should be already port-able using the PCI GART provided by most ATI
-> chipsets.
+> Also, I need to figure out why XF4 (Franz 4.0.1 RPMs) die with 2.4 on
+> both my Pismo and my G4. It works fine on any 2.2 with the exact same
+> overall setup. It dies late (after all driver initialize), with or
+> without the r128 driver, with or without aty128fb in the kernel. Black
+> screen and no answer to signals. I can kill it remotely (telnet) and I
+> can get the screen back by launching Xpmac. I didn't yet manage to figure
+> out what's wrong.
 
-The latest r128 DRI driver should work without AGP GART, but AFAIK PCI GART
-support is only planned yet - I assume and hope it should work anyway?
-
-> Any volunteer ?
-
-I'll have a try. (checking out the DRI CVS tree now :)
+Strange, it works fine here running 2.4.0-test4 from linux-pmac-devel...
 
 
 Michel
