@@ -1,27 +1,31 @@
-Message-ID: <3A01A578.B2F2BF6A@mvista.com>
-Date: Thu, 02 Nov 2000 09:33:44 -0800
-From: Matthew Locke <mlocke@mvista.com>
+Message-ID: <3A01AEB4.B49D209B@iigi.net>
+Date: Thu, 02 Nov 2000 13:13:08 -0500
+From: John Jones <john@iigi.net>
 MIME-Version: 1.0
-To: John Jones <john@iigi.net>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Warning: unable to open an initial console.
-References: <3A01842B.85FF7078@iigi.net>
+To: LinuxPPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Subject: ld.so.1
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Any ideas?  I took a look at the /opt/hardhat/devkit/ppc/8xx/target
-> directory, I can find a "dev" directory but there is nothing in it.  Is
-> there some RPM I need to install?  I think that I have
-> downloaded/installed all of the RPM's from the mvista ftp site.
->
+I am trying to install the rpm:  hhl-ppc_8xx-binutils-2.10.0.12-1 and I
+am getting the error:
 
-either you missed an RPM or you were not root when you installed. try
-installing the filesystem RPM again.
+ld.so.1 is needed by hhl-ppc_8xx-binutils
+
+I checked the .../target/lib and that file (link) is there.
+
+Anyone know what I should do?
+
+Thanks.
+
+-John
 
 
-Matthew Locke
-Montavista Software
+--
+<Help further Linux by signing the Linux Driver Petition:
+http://www.libranet.com/petition.html>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
