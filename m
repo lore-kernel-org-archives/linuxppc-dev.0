@@ -1,25 +1,22 @@
-Message-ID: <3B9645EB.DC7F3A6C@mvista.com>
-Date: Wed, 05 Sep 2001 11:34:03 -0400
+Message-ID: <3B964B6D.A2CB29DF@mvista.com>
+Date: Wed, 05 Sep 2001 11:57:33 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 4xx - a question and a patch
-References: <20010830175217.H858@zax> <3B95307D.1BE64A98@mvista.com> <20010905110451.A599@zax> <3B95A796.248A0E99@mvista.com> <20010905144125.H6636@zax>
+To: Peter Barada <pbarada@mail.wm.sps.mot.com>
+Cc: kentborg@borg.org, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 405 Walnut Status?
+References: <20010830161812.A4855@borg.org> <3B954538.786491A3@mvista.com> <200109051450.f85Eo0b22969@hyper.wm.sps.mot.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
+Peter Barada wrote:
 
-> But when it hits zero we'll also get another timer interrupt and will
-> shortly be updating it with a corrected value.  Why does it matter
-> that the value is reloaded?
+> Ahhh, I think I figured it out.
 
-I don't understand the reason for this discussion.  Is something
-not working correctly?  If so, make it work better and send me a
-patch.
+Cool.  I don't cross compile, so I don't usually think of
+those things :-).
 
 
 	-- Dan
