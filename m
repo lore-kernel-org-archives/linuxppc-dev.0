@@ -1,47 +1,28 @@
-Message-ID: <4034C37D.20909@ru.mvista.com>
-Date: Thu, 19 Feb 2004 17:09:01 +0300
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
+Message-ID: <4034F658.2050501@embeddededge.com>
+Date: Thu, 19 Feb 2004 12:46:00 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: [PATCH] Xilinx ML300 board support in linuxppc-2.4 tree
+To: Marcus Overhagen <marcus.overhagen@ims.fhg.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 2.6 kernel ppc tree
+References: <A3240F62EF3C2749B1A25D3BC9548F410309FE@ExchWENZ02.wenz.global.vpn> <20040217221957.GH16881@smtp.west.cox.net> <007b01c3f648$14ce2bc0$4a34a8c0@av34> <4033B7DB.8050905@embeddededge.com> <001601c3f6d7$8291ca60$4a34a8c0@av34>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Marcus Overhagen wrote:
 
-The patch fixes/updates ML300 support in linuxppc-2.4 tree.
-This is mostly a move from linuxppc_2_4_devel tree with few
-additions:
-
-- /proc/interrupts now contains correct information about whether
-   the interrupt is edge triggered or level sensitive
-   (linuxppc_2_4_devel tree shows all the interrupts as edge
-   triggered).
-   For this arch/ppc/platforms/xilinx_ml300.c sets the proper
-   bit in irq_desc[], and arch/ppc/kernel/xilinx_pic.c uses
-   this information to decide when to acknowledge the interrupt.
-
-- GPIO driver is fixed to support the GPIO IP as it is in EDK
-   (GPIO IP changed from V2PDK to EDK).
-
-- xilinx_ml300_defconfig matches the EDK reference design
-   (http://www.xilinx.com/ise/embedded/edk_examples.htm, example #6).
-   The following devices are supported by default:
-     GPIO, IIC/RTC, UARTs (two 16x50 compatible ones), SPI, TFT LCD,
-     PS/2 (kbd and mouse), System ACE, touchscreen, 10/100 ethernet.
-   UART Lite driver is included in the patch. But the reference
-   design doesn't have UART Lites, so none is in the default configuration.
+>>The 8xx stuff hasn't worked at all for a long time......if ever.
+>
+> Well, it was working in 2.4.4 ...
 
 
-The patch itself can be found here:
-http://source.mvista.com/~ank/xilinx_ml300.03.diff
+I meant in 2.6.x, as we have been discussing.  It works fine in
+all 2.4 and prior releases.
 
-The patch is against the kernel version 2.4.25-rc2.
 
-Best regards,
-Andrei Konovalov
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
