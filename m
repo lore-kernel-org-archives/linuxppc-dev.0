@@ -1,15 +1,15 @@
-Return-Path: <morten.banzon@axxessit.no>
-Received: from pt20-qms-02.ptn.no (pt20-qms-02.ptn.no [64.28.25.139])
-	by ozlabs.org (Postfix) with SMTP id C3BCC2BEA0
+Return-Path: <blofeldus@yahoo.com>
+Received: from web53505.mail.yahoo.com (web53505.mail.yahoo.com
+	[206.190.37.66]) by ozlabs.org (Postfix) with SMTP id A6FC02BDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 Nov 2004 03:18:08 +1100 (EST)
+	Tue, 16 Nov 2004 03:39:25 +1100 (EST)
+Message-ID: <20041115163244.57008.qmail@web53505.mail.yahoo.com>
+Date: Mon, 15 Nov 2004 08:32:43 -0800 (PST)
+From: roger blofeld <blofeldus@yahoo.com>
 To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Message-ID: <OFF3BFC73F.53C5A7DE-ONC1256F4D.00564648-C1256F4D.0058DF9F@axxessit.no>
-From: morten.banzon@axxessit.no
-Date: Mon, 15 Nov 2004 17:10:42 +0100
-Content-Type: text/plain; charset="us-ascii"
-Subject: MPC82xx -- DPRAM1
+Content-Type: text/plain; charset=us-ascii
+Subject: Lite5200 FEC Driver on linux 2.6 broken?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,30 +20,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+I'm trying to get a simple app running on a Lite5200 and am having a
+TCP/IP problem. Using tcpdump/ethereal I have learned that the Lite5200
+ethernet works fine until the client sends a TCP retransmission
+request. Then the Lite5200 replies with packets having incorrect
+checksums. Each successive Lite5200 packet appears to also lose two
+bytes of data (i.e., the packet size is correct, but the data is not
+the same for each retransmission because two bytes have been dropped
+from the start of the payload).
 
-I am using 2.6.9 for a mpc8280 project, and am having trouble using dpram1 
-from offset zero, which I need for a mcc hdlc driver.
+Could this be a problem with the FEC driver? Bestcomm? How can I figure
+out what is broken here? Any help gladly accepted!
+ 
+I started with Sylvain Munaut's kernel at
+http://www.246tnt.com/mpc52xx/ and have also tried starting with the
+linux-2.5 tree and pulling Sylvain's tree into it to see if newer
+kernels worked better. I also tried using the recently updated bestcomm
+interface from denx.de with these kernels with the same result.
 
- In the file include/asm-ppc/cpm2.h there is a constant CPM_DATAONLY_BASE
-In the same file the code comment say that the first 128 bytes are used 
-for SMC1 and SMC2. 
-
-When I examine the smc (cpm_uart) driver i do not find any reference to 
-this region of the dpram1.
-I have replaced the calls to cpm_dpalloc with cpm_dpalloc_fixed and an 
-adress way up in the dpram1 region.
-
-My question is; do you know which code is using the dpram1 addresses below 
-CPM_DATAONLY_BASE ?
-
-This region must be used by something (smc ?), because when I clear from 
-offset 0x00 to 0x80 the serial port stop responding.
-I can ssh to the device and things seems to be normal util I try to reboot 
-the system, whereupon everything hangs.
-
-I am stuck, so if you have any suggestions, please advice.
+Thanks
+-roger
 
 
-Regards,
-Morten
+
+		
+__________________________________ 
+Do you Yahoo!? 
+Check out the new Yahoo! Front Page. 
+www.yahoo.com 
+ 
