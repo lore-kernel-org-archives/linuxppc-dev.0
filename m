@@ -1,33 +1,24 @@
-Return-Path: <johndavi@us.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.129])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "e32.co.us.ibm.com",
-	Issuer "Network Services" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1E99C67A6E
+Return-Path: <andrew.dennison@motec.com.au>
+Received: from mail.netspace.net.au (thunder.netspace.net.au [203.10.110.71])
+	by ozlabs.org (Postfix) with ESMTP id E7C6E67AC8
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Feb 2005 07:53:07 +1100 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e31.co.us.ibm.com (8.12.10/8.12.9) with ESMTP id j19Kr1H5411940
-	for <linuxppc-embedded@ozlabs.org>; Wed, 9 Feb 2005 15:53:01 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay05.boulder.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
-	j19Kr1X5264826
-	for <linuxppc-embedded@ozlabs.org>; Wed, 9 Feb 2005 13:53:01 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11/8.12.11) with ESMTP id
-	j19Kr00V016682
-	for <linuxppc-embedded@ozlabs.org>; Wed, 9 Feb 2005 13:53:01 -0700
-In-Reply-To: <p0611041bbe2f959b9dda@mail.iridescent.org>
-To: "Lawrence E. Bakst" <ml@iridescent.org>
+	Thu, 10 Feb 2005 09:12:35 +1100 (EST)
+Received: from motec.com.au (dsl-210-15-234-78.VIC.netspace.net.au
+	[210.15.234.78])
+	by mail.netspace.net.au (Postfix) with SMTP id 4D82E42CA1
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 10 Feb 2005 09:12:33 +1100 (EST)
+From: "Andrew Dennison" <andrew.dennison@motec.com.au>
+To: "'Caruso, Nick'" <ncaruso@irobot.com>,
+	<linuxppc-embedded@ozlabs.org>
+Date: Thu, 10 Feb 2005 09:12:32 +1100
+Message-ID: <002501c50ef4$73da69b0$4000a8c0@CAT>
 MIME-Version: 1.0
-Message-ID: <OF903B0110.E2AB6D67-ON87256FA3.00726A1F-85256FA3.0073324C@us.ibm.com>
-From: John F Davis <johndavi@us.ibm.com>
-Date: Wed, 9 Feb 2005 15:53:00 -0500
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: ppc405 core, VIA VT82C686A chipset, linux_2.4.22_pre5,
- and IDE DMA woes
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <712A2DEC228C7448978CBD7A7AD5B090592CB5@fever.wardrobe.irobot.com>
+Subject: RE: Question for all the folks who are ALSO building custom
+	MPC5200boards
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,34 +29,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-"Lawrence E. Bakst" <ml@iridescent.org> 
-02/09/2005 05:34 AM
+On , linuxppc-embedded-bounces@ozlabs.org wrote:
 
-To
-John F Davis/Raleigh/IBM@ibmus, linuxppc-embedded@ozlabs.org
-cc
+> I spoze this is slightly off topic, but... since a number of
+> people have recently mentioned they're building custom MPC5200 boards:
+>=20
+> Have any of you had trouble with the 32kHz oscillator, when
+> trying to use the crystal-and-passive-network approach
+> instead of the big-ugly-reliable-metal-can-oscillator
+> technique?  Anyone actually get the crystal to oscillate properly?
+>=20
+> Replies off list would be fine if this is too off-topic...
+>=20
+>   best regards,
+>      Nick Caruso
 
-Subject
-Re: ppc405 core, VIA VT82C686A chipset, linux_2.4.22_pre5,      and IDE 
-DMA woes
-
-
-
-
-
-
-1. Can you say exactly which 405 core you are using?
-D4V6
-
-2. Is it Xilinx?
-No
-
-3. Have you read all the eratta for your core?
-Yes
-
-4. How is the VIA VT82C686A hooked to the 405? Via a bus mastering EBC?
-
-PCI PLB Macro
-Best,
-
-leb
+No problems here. Thought I would have to tweak some of the values I =
+chose
+but it just worked.
