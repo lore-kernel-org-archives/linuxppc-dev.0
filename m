@@ -1,44 +1,36 @@
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
-        LinuxPPC List <linuxppc-user@lists.linuxppc.org>
-Subject: Re: G3 Upgrade Questions....
-References: <Pine.LNX.4.10.9907291349260.10509-100000@mercator.cs.kuleuven.ac.be>
-From: Andreas Bogk <andreas@andreas.org>
-Date: 29 Jul 1999 15:30:04 +0200
-In-Reply-To: Geert Uytterhoeven's message of "Thu, 29 Jul 1999 13:50:03 +0200 (CEST)"
-Message-Id: <m3vhb37fdv.fsf@soma.andreas.org>
+From: "Jerry Quinn" <jquinn@nortelnetworks.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14240.24158.383303.417568@gargle.gargle.HOWL>
+Date: Thu, 29 Jul 1999 09:59:58 -0400 (EDT)
+To: ian geiser <geiseri@msoe.edu>
+Cc: "Timothy A. Seufert" <tas@mindspring.com>,
+        linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: I still cannot get L2cr to activate!
+In-Reply-To: <37A05228.3DFEDF87@msoe.edu>
+References: <XFMail.990728151208.jeremy@goop.org> <v04011707b3c5d8700e76@[199.174.198.69]> <37A05228.3DFEDF87@msoe.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be> writes:
 
-> Since the 750 is derived from the 603e, it scores 1 bogomips per MHz. The 604e
-> does 2 bogomips per MHz.
+ian geiser <geiseri@msoe.edu> wrote:
+> "Timothy A. Seufert" wrote:
+> > At 7:47 PM -0500 7/28/99, ian reinhart geiser (ADMIN) wrote:
+> > >
+> > >b9000000:  enabled,no parity,1M,+2 clock,pipelined burst SRAM,ZZ
 
-This contradicts my readings:
+> what confused me was the enabled,no.
 
-processor       : 0
-cpu             : 750
-temperature     : 67 C
-clock           : 297MHz
-revision        : 2.2
-bogomips        : 599.65
-zero pages      : total 0 (0Kb) current: 0 (0Kb) hits: 0/688 (0%)
-machine         : PowerBook
-motherboard     : AAPL,PowerBook1998 MacRISC
-L2 cache        : 1024K unified pipelined-syncro-burst
-memory          : 192MB
+I think this should be parsed as 1) enabled, 2) no parity, 3) 1M, etc.
 
-But I wouldn't be surprised if the second level cache would influence
-the BogoMIPS value by a factor of two.
 
-Andreas
 
 -- 
-"We show that all proposed quantum bit commitment schemes are insecure because
-the sender, Alice, can almost always cheat successfully by using an
-Einstein-Podolsky-Rosen type of attack and delaying her measurement until she
-opens her commitment." ( http://xxx.lanl.gov/abs/quant-ph/9603004 )
+Jerry Quinn                             Tel: (514) 761-8737
+jquinn@nortelnetworks.com               Fax: (514) 761-8505
+Speech Recognition Research
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
