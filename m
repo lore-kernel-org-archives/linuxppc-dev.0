@@ -1,44 +1,41 @@
-Message-ID: <XFMail.990201161825.gdt@linuxppc.org>
-Content-Type: text/plain; charset=us-ascii
+Date: Mon, 1 Feb 1999 17:25:54 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: matroxfb, anybody? (More details...)
+In-Reply-To: <19990201165538.009774@mail.mipsys.com>
+Message-ID: <Pine.LNX.4.03.9902011723560.17350-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
-In-Reply-To: <19990201105850.A1612@wogglebug.cygnus.com>
-Date: Mon, 01 Feb 1999 16:18:25 -0000 (GMT)
-From: Gary Thomas <gdt@linuxppc.org>
-To: Michael Meissner <meissner@cygnus.com>
-Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
-Cc: Cort Dougan <cort@persephone.cs.nmt.edu>, Dan Malek <dmalek@jlc.net>,
-        linuxppc-dev@lists.linuxppc.org, linux-kernel@vger.rutgers.edu,
-        Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
-        Johnnie Peters <jpeters@phx.mcd.mot.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-
-On 01-Feb-99 Michael Meissner wrote:
-> On Wed, Jan 20, 1999 at 03:21:36PM -0000, Gary Thomas wrote:
->> I have put up all my patches against 2.2.0p7 at:
->>   ftp://ftp.linuxppc.org/gary/diffs-2.2.0p7-Jan20
->> These are diffs against the virgin 2.2.0-pre7.
+On Mon, 1 Feb 1999, Benjamin Herrenschmidt wrote:
+> On Mon, Feb 1, 1999, Geert Uytterhoeven
+> <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
 > 
-> Over the weekend, I moved the PowerPC to my home, and confirmed Gary's patches
-> do allow me to boot on my Utah machine.  Note, the patch for
-> drives/char/pc_keyb.c won't apply to 2.2.1, but its a simple matter to adjust
-> the patch.
+> >Since BootX creates a fake OF device tree, I suspect it to appear in the
+> tree.
+> >Can you use your Mystique under MacOS? This is of course a prerequisite for
+> >BootX seeing your board.
 > 
+> OF in the machine's ROM (not the card's ROM) should make _any_ PCI board
+> visible provided that it contains correct config-space registers with a
+> vendorID and a deviceID, which is required for all PCI cards anyway. The
 
-I'll re-post these for 2.2.1 later [possibly today], along with a
-couple of others I have.
+I'd expect that, too. But my DawiControl DC-2976UW Sym875 SCSI board doesn't
+show up in /pci, while my S3 Vision968 is visible as /pci/display. Both boards
+don't have OF ROMs.
 
+Greetings,
 
-------------------------------------------------------------------------
-Gary Thomas                              |
-email: gdt@linuxppc.org                  | "Fine wine is a necessity of
-   ... opinions expressed here are mine  |        life for me"
-       and no one else would claim them! |
-                                         |      Thomas Jefferson
-------------------------------------------------------------------------
+						Geert
 
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
