@@ -1,31 +1,30 @@
-Message-ID: <3A63D100.34158C8B@mvista.com>
-Date: Mon, 15 Jan 2001 23:41:36 -0500
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Shuangjun Zhu <r44089@email.sps.mot.com>
-CC: mpc@mail2000.com.tw, linuxppc-embedded@lists.linuxppc.org
+From: "Kirk Lee" <mpc@mail2000.com.tw>
+Reply-To: mpc@mail2000.com.tw
 Subject: Re: linux kernel patch for Motorola FADS
-References: <007801c07f6e$beb9c670$69f001dc@r44089-d1.sps.mot.com>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <979625731.65029.mpc@mail2000.com.tw>
+To: "" <dan@mvista.com>
+Cc: "" <linuxppc-embedded@lists.linuxppc.org>
+Date: Tue, 16 Jan 2001 14:15:31 +0800 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=big5
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Shuangjun Zhu wrote:
+Hi:
+> >? ? ? However,? I? am? wondering? that? whether? the? lastest? linux-2.4.0? works
+> >? ? ? under? Motorola? FADS? or? not.
+> Yeah,? it's? on? the? MontaVista? server,? in? Area51.? ? There? is? an
+> Abatron? BDI2000? configuration? file? for? BDM? downloading? as? well.
 
->   However, I am wondering that whether the lastest linux-2.4.0 works
->   under Motorola FADS or not.
+  Thanks for your reply!
 
-Yeah, it's on the MontaVista server, in Area51.  There is an
-Abatron BDI2000 configuration file for BDM downloading as well.
+  And how to get the Area51 of Montavista server??
+  I do not find a link pointing to Area51 yet!!
 
->   Besides, is there any document describing how to build gcc cross-compile
->   environment for MPCxxx series CPU??
+  regards
 
-You don't need to build this stuff.  It is also on the MontaVista
-server.
+  kirk
 
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
