@@ -1,12 +1,14 @@
 Return-Path: <CWernham@Airspan.com>
-Message-ID: <41FDF480.9040204@airspan.com>
-Date: Mon, 31 Jan 2005 09:04:00 +0000
+Message-ID: <41FDF641.2010507@airspan.com>
+Date: Mon, 31 Jan 2005 09:11:29 +0000
 From: Colin Wernham <cwernham@airspan.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <41FDF480.9040204@airspan.com>
+In-Reply-To: <41FDF480.9040204@airspan.com>
+Content-Type: multipart/mixed; boundary="------------020308090904010902000505"
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: [PATCH]PPC4XX Dma fixes, burst and sg improvements
+Subject: Re: [PATCH]PPC4XX Dma fixes, burst and sg improvements
 Reply-To: cwernham@airspan.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -17,53 +19,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here's the resubmitted patches for PPC4XX DMA improvements/fixes. If 
-these are still mangled by my mailer then I'll resend them as attachments.
+This is a multi-part message in MIME format.
+--------------020308090904010902000505
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+
+I think they are still mangled, so here's the attachments
 
 Colin.
 
 
+--------------020308090904010902000505
+Content-Type: text/x-patch;
+ name="ppc4xx_dma.c.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ppc4xx_dma.c.patch"
 
-===============================================================
---- linux-2.6.10/arch/ppc/syslib/ppc4xx_dma.c	2004-12-24 
-21:35:40.000000000 +0000
-+++ linux-current/arch/ppc/syslib/ppc4xx_dma.c	2005-01-19 
-15:34:30.000000000 +0000
+--- linux-2.6.10/arch/ppc/syslib/ppc4xx_dma.c	2004-12-24 21:35:40.000000000 +0000
++++ linux-current/arch/ppc/syslib/ppc4xx_dma.c	2005-01-19 15:34:30.000000000 +0000
 @@ -512,6 +512,8 @@ ppc4xx_get_channel_config(unsigned int d
-  		return DMA_STATUS_BAD_CHANNEL;
-  	}
-
+ 		return DMA_STATUS_BAD_CHANNEL;
+ 	}
+ 
 +	memcpy(p_dma_ch, &dma_channels[dmanr], sizeof (ppc_dma_ch_t));
-+
-  #if DCRN_POL > 0
-  	polarity = mfdcr(DCRN_POL);
-  #else
++ 
+ #if DCRN_POL > 0
+ 	polarity = mfdcr(DCRN_POL);
+ #else
 @@ -604,6 +606,84 @@ ppc4xx_get_peripheral_width(unsigned int
-  	return (GET_DMA_PW(control));
-  }
-
+ 	return (GET_DMA_PW(control));
+ }
+ 
 +/*
 + * Clears the channel status bits
 + */
-+int
++int 
 +ppc4xx_clr_dma_status(unsigned int dmanr)
 +{
 +	if (dmanr >= MAX_PPC4xx_DMA_CHANNELS) {
 +		printk(KERN_ERR "ppc4xx_clr_dma_status: bad channel: %d\n", dmanr);
 +		return DMA_STATUS_BAD_CHANNEL;
 +	}
-+	mtdcr(DCRN_DMASR, ((u32)DMA_CH0_ERR | (u32)DMA_CS0 | (u32)DMA_TS0) >> 
-dmanr);
++	mtdcr(DCRN_DMASR, ((u32)DMA_CH0_ERR | (u32)DMA_CS0 | (u32)DMA_TS0) >> dmanr);
 +	return DMA_STATUS_GOOD;
 +}
 +
 +/*
-+ * Enables the burst on the channel (BTEN bit in the control/count 
-register)
++ * Enables the burst on the channel (BTEN bit in the control/count register)
 + * Note:
-+ * For scatter/gather dma, this function MUST be called before the
-+ * ppc4xx_alloc_dma_handle() func as the chan count register is copied 
-into the
++ * For scatter/gather dma, this function MUST be called before the 
++ * ppc4xx_alloc_dma_handle() func as the chan count register is copied into the
 + * sgl list and used as each sgl element is added.
 + */
 +int
@@ -79,15 +86,13 @@ into the
 +	return DMA_STATUS_GOOD;
 +}
 +/*
-+ * Disables the burst on the channel (BTEN bit in the control/count 
-register)
++ * Disables the burst on the channel (BTEN bit in the control/count register)
 + * Note:
-+ * For scatter/gather dma, this function MUST be called before the
-+ * ppc4xx_alloc_dma_handle() func as the chan count register is copied 
-into the
++ * For scatter/gather dma, this function MUST be called before the 
++ * ppc4xx_alloc_dma_handle() func as the chan count register is copied into the
 + * sgl list and used as each sgl element is added.
 + */
-+int
++int 
 +ppc4xx_disable_burst(unsigned int dmanr)
 +{
 +	unsigned int ctc;
@@ -100,7 +105,7 @@ into the
 +	return DMA_STATUS_GOOD;
 +}
 +/*
-+ * Sets the burst size (number of peripheral widths) for the channel
++ * Sets the burst size (number of peripheral widths) for the channel 
 + * (BSIZ bits in the control/count register))
 + * must be one of:
 + *    DMA_CTC_BSIZ_2
@@ -108,12 +113,11 @@ into the
 + *    DMA_CTC_BSIZ_8
 + *    DMA_CTC_BSIZ_16
 + * Note:
-+ * For scatter/gather dma, this function MUST be called before the
-+ * ppc4xx_alloc_dma_handle() func as the chan count register is copied 
-into the
++ * For scatter/gather dma, this function MUST be called before the 
++ * ppc4xx_alloc_dma_handle() func as the chan count register is copied into the
 + * sgl list and used as each sgl element is added.
 + */
-+int
++int 
 +ppc4xx_set_burst_size(unsigned int dmanr, unsigned int bsize)
 +{
 +	unsigned int ctc;
@@ -126,38 +130,43 @@ into the
 +	mtdcr(DCRN_DMACT0 + (dmanr * 0x8), ctc);
 +	return DMA_STATUS_GOOD;
 +}
-
-  EXPORT_SYMBOL(ppc4xx_init_dma_channel);
-  EXPORT_SYMBOL(ppc4xx_get_channel_config);
+ 
+ EXPORT_SYMBOL(ppc4xx_init_dma_channel);
+ EXPORT_SYMBOL(ppc4xx_get_channel_config);
 @@ -622,3 +702,7 @@ EXPORT_SYMBOL(ppc4xx_get_dma_residue);
-  EXPORT_SYMBOL(ppc4xx_enable_dma_interrupt);
-  EXPORT_SYMBOL(ppc4xx_disable_dma_interrupt);
-  EXPORT_SYMBOL(ppc4xx_get_dma_status);
+ EXPORT_SYMBOL(ppc4xx_enable_dma_interrupt);
+ EXPORT_SYMBOL(ppc4xx_disable_dma_interrupt);
+ EXPORT_SYMBOL(ppc4xx_get_dma_status);
 +EXPORT_SYMBOL(ppc4xx_clr_dma_status);
 +EXPORT_SYMBOL(ppc4xx_enable_burst);
 +EXPORT_SYMBOL(ppc4xx_disable_burst);
 +EXPORT_SYMBOL(ppc4xx_set_burst_size);
-===============================================================
---- linux-2.6.10/include/asm-ppc/ppc4xx_dma.h	2004-12-24 
-21:35:01.000000000 +0000
-+++ linux-current/include/asm-ppc/ppc4xx_dma.h	2005-01-19 
-10:59:55.000000000 +0000
-@@ -137,9 +137,10 @@ extern unsigned long DMA_MODE_WRITE, DMA
-  #define DMA_TCE_ENABLE     (1<<(8-DMA_CR_OFFSET))
-  #define SET_DMA_TCE(x)     (((x)&0x1)<<(8-DMA_CR_OFFSET))
 
+--------------020308090904010902000505
+Content-Type: text/x-patch;
+ name="ppc4xx_dma.h.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ppc4xx_dma.h.patch"
+
+--- linux-2.6.10/include/asm-ppc/ppc4xx_dma.h	2004-12-24 21:35:01.000000000 +0000
++++ linux-current/include/asm-ppc/ppc4xx_dma.h	2005-01-19 10:59:55.000000000 +0000
+@@ -137,9 +137,10 @@ extern unsigned long DMA_MODE_WRITE, DMA
+ #define DMA_TCE_ENABLE     (1<<(8-DMA_CR_OFFSET))
+ #define SET_DMA_TCE(x)     (((x)&0x1)<<(8-DMA_CR_OFFSET))
+ 
 -#define DMA_DEC            (1<<(2)	/* Address Decrement */
 +#define DMA_DEC            (1<<(2))	/* Address Decrement */
-  #define SET_DMA_DEC(x)     (((x)&0x1)<<2)
-  #define GET_DMA_DEC(x)     (((x)&DMA_DEC)>>2)
-+
-
-  /*
-   * Transfer Modes
+ #define SET_DMA_DEC(x)     (((x)&0x1)<<2)
+ #define GET_DMA_DEC(x)     (((x)&DMA_DEC)>>2)
++    
+ 
+ /*
+  * Transfer Modes
 @@ -244,6 +245,14 @@ typedef uint32_t sgl_handle_t;
-  #define DMA_SG2            (1<<5)
-  #define DMA_SG3            (1<<4)
-
+ #define DMA_SG2            (1<<5)
+ #define DMA_SG3            (1<<4)
+ 
 +/* DMA Channel Count Register */
 +#define DMA_CTC_BTEN     (1<<23)    /* Burst Enable/Disable bit */
 +#define DMA_CTC_BSIZ_MSK (3<<21)    /* Mask of the Burst size bits */
@@ -166,89 +175,92 @@ into the
 +#define DMA_CTC_BSIZ_8   (2<<21)
 +#define DMA_CTC_BSIZ_16  (3<<21)
 +
-  /*
-   * DMA SG Command Register
-   */
+ /*
+  * DMA SG Command Register
+  */
 @@ -482,6 +491,7 @@ typedef struct {
-  	char td;		/* transfer direction */
-  #endif
-
+ 	char td;		/* transfer direction */
+ #endif
+ 
 +	char int_on_final_sg;/* for scatter/gather - only interrupt on last sg */
-  } ppc_dma_ch_t;
-
-  /*
+ } ppc_dma_ch_t;
+ 
+ /*
 @@ -545,6 +555,9 @@ extern int ppc4xx_delete_dma_sgl_element
-  extern int ppc4xx_alloc_dma_handle(sgl_handle_t *, unsigned int, 
-unsigned int);
-  extern void ppc4xx_free_dma_handle(sgl_handle_t);
-  extern int ppc4xx_get_dma_status(void);
+ extern int ppc4xx_alloc_dma_handle(sgl_handle_t *, unsigned int, unsigned int);
+ extern void ppc4xx_free_dma_handle(sgl_handle_t);
+ extern int ppc4xx_get_dma_status(void);
 +extern int ppc4xx_enable_burst(unsigned int);
 +extern int ppc4xx_disable_burst(unsigned int);
 +extern int ppc4xx_set_burst_size(unsigned int, unsigned int);
-  extern void ppc4xx_set_src_addr(int dmanr, phys_addr_t src_addr);
-  extern void ppc4xx_set_dst_addr(int dmanr, phys_addr_t dst_addr);
-  extern void ppc4xx_enable_dma(unsigned int dmanr);
-===============================================================
---- linux-2.6.10/arch/ppc/syslib/ppc4xx_sgdma.c	2004-12-24 
-21:35:18.000000000 +0000
-+++ linux-current/arch/ppc/syslib/ppc4xx_sgdma.c	2005-01-19 
-15:07:47.000000000 +0000
-@@ -120,6 +120,12 @@ ppc4xx_add_dma_sgl(sgl_handle_t handle,
-  		psgl->ptail = psgl->phead;
-  		psgl->ptail_dma = psgl->phead_dma;
-  	} else {
+ extern void ppc4xx_set_src_addr(int dmanr, phys_addr_t src_addr);
+ extern void ppc4xx_set_dst_addr(int dmanr, phys_addr_t dst_addr);
+ extern void ppc4xx_enable_dma(unsigned int dmanr);
+
+--------------020308090904010902000505
+Content-Type: text/x-patch;
+ name="ppc4xx_sgdma.c.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ppc4xx_sgdma.c.patch"
+
+--- linux-2.6.10/arch/ppc/syslib/ppc4xx_sgdma.c	2004-12-24 21:35:18.000000000 +0000
++++ linux-current/arch/ppc/syslib/ppc4xx_sgdma.c	2005-01-19 15:07:47.000000000 +0000
+@@ -120,6 +120,12 @@ ppc4xx_add_dma_sgl(sgl_handle_t handle, 
+ 		psgl->ptail = psgl->phead;
+ 		psgl->ptail_dma = psgl->phead_dma;
+ 	} else {
 +		if(p_dma_ch->int_on_final_sg) {
-+			/* mask out all dma interrupts, except error, on tail
++			/* mask out all dma interrupts, except error, on tail 
 +			before adding new tail. */
 +			psgl->ptail->control_count &=
 +				~(SG_TCI_ENABLE | SG_ETI_ENABLE);
 +		}
-  		psgl->ptail->next = psgl->ptail_dma + sizeof(ppc_sgl_t);
-  		psgl->ptail++;
-  		psgl->ptail_dma += sizeof(ppc_sgl_t);
+ 		psgl->ptail->next = psgl->ptail_dma + sizeof(ppc_sgl_t);
+ 		psgl->ptail++;
+ 		psgl->ptail_dma += sizeof(ppc_sgl_t);
 @@ -160,7 +166,7 @@ ppc4xx_enable_dma_sgl(sgl_handle_t handl
-  	p_dma_ch = &dma_channels[psgl->dmanr];
-  	psgl->ptail->control_count &= ~SG_LINK;	/* make this the last dscrptr */
-  	sg_command = mfdcr(DCRN_ASGC);
+ 	p_dma_ch = &dma_channels[psgl->dmanr];
+ 	psgl->ptail->control_count &= ~SG_LINK;	/* make this the last dscrptr */
+ 	sg_command = mfdcr(DCRN_ASGC);
 -
-+
-  	ppc4xx_set_sg_addr(psgl->dmanr, psgl->phead_dma);
-
-  	sg_command |= SSG_ENABLE(psgl->dmanr);
-@@ -217,7 +223,7 @@ ppc4xx_get_dma_sgl_residue(sgl_handle_t
-  	}
-
-  	sgl_addr = (ppc_sgl_t *) __va(mfdcr(DCRN_ASG0 + (psgl->dmanr * 0x8)));
++  
+ 	ppc4xx_set_sg_addr(psgl->dmanr, psgl->phead_dma);
+ 
+ 	sg_command |= SSG_ENABLE(psgl->dmanr);
+@@ -217,7 +223,7 @@ ppc4xx_get_dma_sgl_residue(sgl_handle_t 
+ 	}
+ 
+ 	sgl_addr = (ppc_sgl_t *) __va(mfdcr(DCRN_ASG0 + (psgl->dmanr * 0x8)));
 -	count_left = mfdcr(DCRN_DMACT0 + (psgl->dmanr * 0x8));
 +	count_left = mfdcr(DCRN_DMACT0 + (psgl->dmanr * 0x8)) & SG_COUNT_MASK;
-
-  	if (!sgl_addr) {
-  		printk("ppc4xx_get_dma_sgl_residue: sgl addr register is null\n");
+ 
+ 	if (!sgl_addr) {
+ 		printk("ppc4xx_get_dma_sgl_residue: sgl addr register is null\n");
 @@ -351,10 +357,11 @@ ppc4xx_delete_dma_sgl_element(sgl_handle
-  int
-  ppc4xx_alloc_dma_handle(sgl_handle_t * phandle, unsigned int mode, 
-unsigned int dmanr)
-  {
+ int
+ ppc4xx_alloc_dma_handle(sgl_handle_t * phandle, unsigned int mode, unsigned int dmanr)
+ {
 -	sgl_list_info_t *psgl;
 +	sgl_list_info_t *psgl=NULL;
-  	dma_addr_t dma_addr;
-  	ppc_dma_ch_t *p_dma_ch = &dma_channels[dmanr];
-  	uint32_t sg_command;
+ 	dma_addr_t dma_addr;
+ 	ppc_dma_ch_t *p_dma_ch = &dma_channels[dmanr];
+ 	uint32_t sg_command;
 +	uint32_t ctc_settings;
-  	void *ret;
-
-  	if (dmanr >= MAX_PPC4xx_DMA_CHANNELS) {
+ 	void *ret;
+ 
+ 	if (dmanr >= MAX_PPC4xx_DMA_CHANNELS) {
 @@ -412,6 +419,11 @@ ppc4xx_alloc_dma_handle(sgl_handle_t * p
-  	mtdcr(DCRN_ASGC, sg_command);
-  	psgl->sgl_control = SG_ERI_ENABLE | SG_LINK;
-
+ 	mtdcr(DCRN_ASGC, sg_command);
+ 	psgl->sgl_control = SG_ERI_ENABLE | SG_LINK;
+ 
 +	/* keep control count register settings */
-+	ctc_settings = mfdcr(DCRN_DMACT0 + (dmanr * 0x8))
++	ctc_settings = mfdcr(DCRN_DMACT0 + (dmanr * 0x8)) 
 +		& (DMA_CTC_BSIZ_MSK | DMA_CTC_BTEN); /*burst mode settings*/
 +	psgl->sgl_control |= ctc_settings;
-+
-  	if (p_dma_ch->int_enable) {
-  		if (p_dma_ch->tce_enable)
-  			psgl->sgl_control |= SG_TCI_ENABLE;
-===============================================================
-[End]
++ 
+ 	if (p_dma_ch->int_enable) {
+ 		if (p_dma_ch->tce_enable)
+ 			psgl->sgl_control |= SG_TCI_ENABLE;
+
+--------------020308090904010902000505--
