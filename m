@@ -1,40 +1,36 @@
-To: iida <iida@ztec.com.br>
-Cc: linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: driver SPI for MPC5200 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 01 Jun 2004 11:18:21 -0300."
-             <40BC902D.7080804@ztec.com.br>
-Date: Tue, 01 Jun 2004 19:37:58 +0200
-Message-Id: <20040601173804.04313C109F@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Reset for MPC8245
+Date: Tue, 1 Jun 2004 10:56:37 -0700
+Message-ID: <1F306944A986B144A9B8C8E0A2C21DED01191280@svr-ca-e2k1.usa.alliedtelesyn.com>
+From: "Arunachalam, Saravanan" <Saravanan_Arunachalam@alliedtelesyn.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <40BC902D.7080804@ztec.com.br> you wrote:
->
-> i am tring to find a driver SPI for MPC5200.
-> In  linuxppc-2.4.25-denx
-> there is cpm_spi.c in arch/ppc/8260_io
-> It can be used in mpc5200 ?
+Hi,
 
-No, it cannot. It's a driver for the MPC8260's CPM; the MPC5200  does
-not have such a thing.
+I am trying to do Internal Hard Reset from the kernel for MPC8245 based
+custom board. I tried the Machine check stop approach but it doesn't
+work. I am able to successfully do from the u-boot bootloader. The
+following code generates Instruction Exception at the instruction that
+turns off MMU.
 
-> Or what i have to modify to use in mpc5200
+msr = mfmsr();
 
-You need to write a new driver.
+/* Interrupts and MMU off */
+__asm__ __volatile__ ("mfmsr    %0":"=r" (msr));
 
-Best regards,
+msr &= ~0x1030;
+__asm__ __volatile__ ("mtmsr    %0"::"r" (msr)); <--- Instruction Except
+addr = 0xfff00100;
+((void (*)(void)) addr) ();
 
-Wolfgang Denk
+If anyone has a solution to this, I would greatly appreciate it.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"It ain't so much the things we don't know that get  us  in  trouble.
-It's  the  things  we know that ain't so." - Artemus Ward aka Charles
-Farrar Brown
+Thanks
+Arun
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
