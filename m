@@ -1,56 +1,57 @@
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Cross compiling : problem linking 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 02 Oct 2003 16:24:07 +0200."
-             <1065104646.13376.8.camel@toni>
-Date: Thu, 02 Oct 2003 17:01:44 +0200
-Message-Id: <20031002150149.4E451C59E4@atlas.denx.de>
+Date: Thu, 2 Oct 2003 08:12:01 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Stuart Vivian <stuartvivian@domo.co.uk>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux 2_4_devel kernel hangs after control transferred from u-boot
+Message-ID: <20031002081201.A2929@home.com>
+References: <A4EB77D93A60F347A518AC05291647D9032E5E@domosvr1.domo.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <A4EB77D93A60F347A518AC05291647D9032E5E@domosvr1.domo.local>; from stuartvivian@domo.co.uk on Thu, Oct 02, 2003 at 02:29:18PM +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <1065104646.13376.8.camel@toni> you wrote:
+On Thu, Oct 02, 2003 at 02:29:18PM +0100, Stuart Vivian wrote:
 >
-> > Without more information (i. e. what sort of code this is and how you
-> > intend it to run - stdandalone, in kernel or in user context)  nobody
-> > can help you.
+> Hi all,
 >
-> Final goal is a kernel module, but now I'm writing a test program in
-> user space (standalone, dynamic compiled).
-
-These are two completely different issues.
-
-> Code is quite simple (but I'm unsure about the correctness, due to the
-> fact that my C knowledge has collapsed since I didn't use it anymore
-> last 2 years):
+> I am trying to get a linux kernel to build and run on a Cogent CSB272
+> (IBM PPC 405GP processor) running a U-boot 0.4.0 bootloader. I can tftp
+> a uImage into ram and it passes check, but when I run bootm it
+> uncompresses the kernel and hangs after it starts executing the kernel
+> at address 0x00000000.
 >
-> #include <stdlib.h>
-> #include <stdio.h>
-> #include <unistd.h>
-> #include <asm/io.h>
+> I was given a hardhat vmlinux elf file that I can package to a uImage
+> and run (although it stops at the Calibrating Delay loop... Stage, but
+> that's another issue). I need to be able to recompile a kernel for the
+> board and downloaded linuxppc_2_4_devel from mvista. This compiles fine
+> and produces a new vmlinux. I've started off by using the walnut 405
+> config file to build the kernel, since they're pretty similar.
 
-You're including a kernel header file here. You must not do this. The
-functions / macros you're looking for are not available in user space
-(for example, outb is #defined only when __KERNEL__ is defined  which
-is never the case for user space applications.)
+Hrm, it used to be that everybody said their board was "just like
+a Sandpoint".  I guess walnut is like that in the 4xx world. :)
 
-> So somewhere, there is a linker problem.
+At any rate, you need to "port" the kernel to your specific board.
+There are many board-specific parameters/devices that have to be
+accounted for.  The first thing that you are running into is that
+a Walnut kernel has code to set clocking to use the external clock,
+in addition it expects to get it's timer frequencies passed into the
+kernel in the board info pointer...are you providing the correct
+info?  See arch/ppc/kernel/ppc4xx_setup.c and
+arch/ppc/platforms/walnut.c...then go from there.
 
-No, it's a misunderstanding on your side. You cannot run kernel  code
-in user space or vice versa.
+> Any ideas where to start debugging this? I'm relatively new in embedded
+> stuff and linux in general, so it might be something simple, but don't
+> know where to start. Have a BDI2000 but no gdb driver yet, so can't put
+> in breakpoints etc.
 
+For early bringup, it's far easier to just use the telnet interface
+and keep a window or two handy to look at the vmlinux disassembly
+and grep for important symbol addresses like log_buf.  Every developer
+I work with does new board bringup and they never use gdb on top of
+the BDI.
 
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I have yet to add the ESP-driver to the kernel to read  the  mind  of
-the user...                                       - Linus Torvalds in
-      <Pine.LNX.3.91.960426110644.24860I-100000@linux.cs.Helsinki.FI>
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
