@@ -1,39 +1,27 @@
-Date: Mon, 14 Aug 2000 16:29:24 -0400 (EDT)
-From: Todd Lipcon <tlipcon@mercea.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Java JIT status?
-Message-ID: <Pine.LNX.4.10.10008141626130.10013-100000@mercea.net>
+Date: Mon, 14 Aug 2000 22:34:26 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Josh Kindler <josh@antihype.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: atyfb problems?
+In-Reply-To: <B5BC31B9.2C74%josh@antihype.com>
+Message-ID: <Pine.LNX.4.10.10008142231390.3451-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all, especially the Java porting team:
+> Hmm... I jsut got the latest (as of last night) rsync of Ben's kernel. When
+> I compiled it, I got the following error. Previous kernels compiled fine, is
+> this a known issue or am I just stupid?
+>
+> atyfb.c:641: redefinition of `reset_GTC_3D_engine'
+> atyfb.c:631: `reset_GTC_3D_engine' previously defined here
 
-	I was wondering what the current state of teh Java1.2 JIT runtime
-is. I've recently set up Apache Tomcat 3.1 (servlet, JSP, etc. container)
-and fou~nd the performance to be a bit sluggish using the newest 1.2.2
-runtime released a couple weeks ago. I have yet to try it with the 1.1.8
-JIT (not sure if it's even completely compatible), but I have heard many
-reports from the PC world that JIT can yield speed improvements of 10x or
-more.
-	If it's not in any usable stage, is there any help I can give
-without having to undergo the legendary Sun NDA bit? :) I'm half-decent at
-C and Java :)
+Just remove the duplicate code block between lines 631 and 640 of atyfb.c.
+Somehow the whole reset_GTC_3D_engine got duplicated. A look at the source
+would have spotted that one in no time.
 
--Todd
-
-P.S. Please excsuse the bad typing... I'm on a nasty Compaq laptop for the
-time being (on vacation, but still mucking with Linux)
-
-+---------------------------------------------------------------+
-| Perl CGI scripting                    email tlipcon@csoft.net |
-| Web Design                            email tlipcon@csoft.net |
-|        My Current Projects:                                   |
-| NewsWire				www.squirrelsw.com	|
-| JavaGroove				www.squirrelsw.com	|
-+---------------------------------------------------------------+
-
+	Michael
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
