@@ -1,41 +1,23 @@
-Date: Mon, 25 Oct 1999 22:36:13 +0200
+Date: Mon, 25 Oct 1999 13:51:02 -0700 (PDT)
+Message-Id: <199910252051.NAA07105@sade.ddi.com>
+From: Jim Terman <terman@ddi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 To: linuxppc-dev@lists.linuxppc.org
-CC: jmb@montana.edu
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: iBook/UMA pre3
-Message-Id: <19991025223613.011624@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: question about altivec registers
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I updated the patches and kernel to a new version. PCI config is fully
-working now, USB works too. I'n now running MacOS under mac-on-linux (the
-new version that doesn't require you to patch the kernel) on linux on the
-iBook ;)
+I have a question about using the altivec registers on a G4 Macintosh
+running linuxppc.  Will there be any conflicts.  I don't expect any
+kernal support, but can I be confident that the kernal will not touch
+any of the altivec registers.  Any info will be greatly appreciated.
 
-I had to hack horribly in the arch/ppc/kernel/prom.c code that parses the
-"interrupt-map" property, I'll do a cleaner fix later this week.
-
-The PCI code looks good (but I'd prefer using RTAS) and should support
-bridges on the "middle" bus of uni-north (the one at f2000000 - if you
-have a better idea to identify this one, tell me !). So PCI should work
-on G4 and new iMac's too.
-
-I didn't fix the ADB interrupt yet (and I'm wondering if my timer is the
-cause of the large amount of BAD interrupts I'm getting all the time),
-I'll look into this later too.
-
-The kernel seems stable. Things are slow, especially with X, since the
-hard disk is very slow (1.1Mb/sec). This will be better once I have
-figured out how to set it to a better PIO mode, use DMA on it, and
-eventually use this new Ultra/ATA feature (are there specs for this ?
-Mine are still ATA-3 specs).
-
-Have fun !
-
-Benjamin.
-
+-- 
+______________________________________________________________________________
+Jim Terman       |   323 Vintage Park Dr.   |   Voice: (650) 356-5446
+terman@ddi.com   |   Foster City, CA        |   Fax:   (650) 356-5490
+Diab-SDS, Inc.   |   94404                  |   web site - http://www.ddi.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
