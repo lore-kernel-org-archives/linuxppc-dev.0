@@ -1,45 +1,57 @@
-Date: Tue, 26 Sep 2000 17:58:47 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: phandel@cise.ufl.edu
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: kernel panic starting XFree86 4.0.1 / Voodoo3 on 2.4-test9 -
-In-Reply-To: <Pine.LNX.4.21.0009251704210.2150-100000@like.mine.nu>
-Message-ID: <Pine.LNX.4.21.0009261710470.23380-100000@idd-01.imbc.gr>
+Date: Tue, 26 Sep 2000 18:26:33 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+cc: R Shapiro <rshapiro@bbn.com>,
+        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display!
+In-Reply-To: <Pine.LNX.4.10.10009251439380.31592-100000@zirkon.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.10.10009261825540.373-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 25 Sep 2000 phandel@cise.ufl.edu wrote:
-
+On Mon, 25 Sep 2000, Michael Schmitz wrote:
+> >  > Anything about PCI problems in the server log?
+> >
+> > The only server log I have right now is for the X I left running
+> > yesterday with the fbdev driver.  There are a couple of PCI warnings
+> > in this one but no errors (no surprise, since everything is working
+> > well with fbdev):
+> >
+> > (**) (null)(2): claimed PCI slot 0:15:0
+> > (II) FBDev(2): using /dev/fb2
+> > (WW) ****INVALID IO ALLOCATION**** b: 0x400 e: 0x4ff correcting
+> > (II) window:
+> >         [0] -1  0x00000000 - 0x0000ffff (0x10000) IXB
+> > (II) resSize:
+> > (II) window fixed:
+> >         [0] -1  0x00000000 - 0x0000ffff (0x10000) IXB
+> > (WW) ****INVALID IO ALLOCATION**** b: 0x400 e: 0x4ff correcting
 >
-> I have been successfully using Ani's penguinppc.org::xfree86-pmac tree
-> with my Voodoo3 card with a stable 2.2 series kernel (from
-> ppc.samba.org::linux-pmac-stable, with the voodoo3 driver from the 2.3
-> series).  Today I tried the 2.4-test9 kernel from
-> ppc.samba.org::linux-pmac-devel and got the following panic while trying
-> to startx:
-...
-> >From the System.map:
-> c00f9fb4 t atyfb_get_var
-> c00fa018 t atyfb_set_disp
-> c00fa17c t atyfb_set_var
-> c00fa388 t atyfb_pan_display
-> c00fa410 t atyfb_get_cmap
-> c00fa500 t atyfb_set_cmap
+> These shouldn't be critical (but they shouldn't happen, either).
 >
+> > Are there known X-related problems using BootX?
 >
-> When I tell XFree86 to use the ATI card instead (via "Screen 1" instead
-> of "Screen 2" at the end), it works fine.
->
+> You were looking at it, from what I guess. Apple's drivers set up
+> overlapping areas for MMIO and VRAM, and X fixes this by disabling one of
+> these. Unfortunatly, the kernel doesn't notice.
 
-  The tdfxfb driver doesn't use resource management yet, as a result both
-offb and tdfxfb drive the same card, this might be the cause of your
-problems.
+Fortunately these PCI assignment bugs should be circumvented by the new PCI
+code we're working on.
 
+Gr{oetje,eeting}s,
 
- Kostas
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
