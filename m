@@ -1,116 +1,41 @@
-Message-ID: <20030326172709.74531.qmail@web41206.mail.yahoo.com>
-Date: Wed, 26 Mar 2003 09:27:09 -0800 (PST)
-From: Prakash kanthi <pkanthi@yahoo.com>
-Subject: Re: Flash File System
-To: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3E816D42.AD351615@lucent.com>
-MIME-Version: 1.0
+Date: Wed, 26 Mar 2003 10:45:09 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: i2c-algo-8xx ???
+Message-ID: <20030326174509.GA22018@ip68-0-152-218.tc.ph.cox.net>
+References: <3E801F80.2000305@imc-berlin.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3E801F80.2000305@imc-berlin.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Jaap Jan,
+On Tue, Mar 25, 2003 at 10:21:04AM +0100, Steven Scholz wrote:
 
-Thanks for your reply. What do you mean by 'works out
-of the box with denx'? I see the code you referred to
-but not sure how to use it. I still have some
-concerns. Like,
-
-1. How can i initially store the image into flash? My
-flash chip is on the board.
-2. How can i boot linux from flash?
-
-3. Currently i have a 32MB SDRAM along with flash. I
-have tools to download linux image into SDRAM. Even if
-i go with MTD/JFFS, my concern is unless linux runs
-flash can not be accessed and vice versa.
-
-4. Lets say, i download linux into a safe place in
-SDRAM, boot it and then access flash thru MTD/JFFS and
-store linux image into flash. Even in this case, what
-all i need to take care of for making my flash a boot
-device.
-
-Any detailed documentation is appreciated.
-
-Thanks,
-Prakash
-
-
-
-
---- Jaap-Jan Boor <jjboor@lucent.com> wrote:
-> Hi,
+> Hi there,
 >
-> I use strata flash with MTD and JFSS2 as file system
-> on top of it. Works out of the box with denx' eldk
-> kernel and
-> toolchain. I've provided my own flash map but you
-> can also use an existing one (look e.g. in
-> linux/drivers/mtd/maps)
+> if I understand correctly:
 >
-> Jaap-Jan
+> if one want to use i2c-algo-8xx on a MPC8xx one need to init the CPM,
+> install
+>  an irq handler and add an i2c bus handler.
+> That all is done in i2c-rpx.c. But I think what's done there is pretty
+> generic
+> to MPC8xx boards using the CPM for I2C.
+> (I just forced a build of this file and it works on my board.)
 >
-> Wolfgang Denk wrote:
-> >
-> > In message
-> <20030326070131.88176.qmail@web41202.mail.yahoo.com>
-> you wrote:
-> > >
-> > > I have a 32MB Intel Strata flash on my PPC405
-> based
-> > > custom board. I need to create access
-> routines/APIs to
-> > > access the flash. I was thinking of creating a
-> Flash
-> > > File System and mount it as a device in Linux
-> > > environment.
-> > >
-> > > Are there any off the shelf FFS packages
-> available?
-> > > Generally, how the flash is used?
-> >
-> > Use the MTD layer.
-> >
-> > > I am working with micro-monitor to use its Tiny
-> File
-> > > System on flash support and eventually mount
-> into
-> > > linux. Did anyone use this combination before?
-> >
-> > I think you cannot do this. AFAIK the TFS code is
-> not available under
-> > a GPL compatible license which prevents it from
-> being linked with the
-> > Linux kernel code.
-> >
-> > Best regards,
-> >
-> > Wolfgang Denk
-> >
-> > --
-> > Software Engineering:  Embedded and Realtime
-> Systems,  Embedded Linux
-> > Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88
->  Email: wd@denx.de
-> > There is is no reason for any individual to have a
-> computer in  their
-> > home.      -- Ken Olsen (President of Digital
-> Equipment Corporation),
-> >               Convention of the World Future
-> Society, in Boston, 1977
-> >
->
-> --
-> J.G.J. Boor
-> Room:  BE-525
-> Lucent Technologies Nederland b.v.
-> Phone: +31 35 687 4721
-> Optical Networking Group TMS Data
-> Fax:   +31 35 687 5976
-> P.O. Box 1168, 1200 BD, Hilversum, The Netherlands
-mailto:jjboor@lucent.com
+> So shouldn't we rename the file and the entry in Config.in to something less
+> "misleading" ?
 
+I2C on the 8xx, in terms of the existing code, is a bit of a mess.  In
+short, yes, it should, and I must kick myself for not moving a verion of
+the code which does that already out.  I've stuck it at the top of my
+list, so I'll try and get to it this week.
+
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
