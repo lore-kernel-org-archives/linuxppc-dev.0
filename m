@@ -1,20 +1,24 @@
-Return-Path: <jonmasters@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.198])
-	by ozlabs.org (Postfix) with ESMTP id 444992BDA5
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2004 05:56:39 +1000 (EST)
-Received: by rproxy.gmail.com with SMTP id 76so58795rnk
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2004 12:56:36 -0700 (PDT)
-Message-ID: <35fb2e59041021125652e56c36@mail.gmail.com>
-Date: Thu, 21 Oct 2004 20:56:36 +0100
-From: Jon Masters <jonmasters@gmail.com>
-To: Fillod Stephane <stephane.fillod@thomson.net>
-In-Reply-To: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6D18E@renexch3.rennes.thmulti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-References: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6D18E@renexch3.rennes.thmulti.com>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: old mailing list archives
-Reply-To: jonathan@jonmasters.org
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BBE2F2BC0F
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2004 06:07:31 +1000 (EST)
+In-Reply-To: <1098385953.8619.38.camel@nighteyes.localdomain>
+References: <A3240F62EF3C2749B1A25D3BC9548F4148BCF1@ExchWENZ02.wenz.global.vpn>
+	<721875C6-236D-11D9-9860-003065F9B7DC@embeddededge.com>
+	<1098371711.3508.9.camel@nighteyes.localdomain>
+	<B9C9EB8C-2378-11D9-9860-003065F9B7DC@embeddededge.com>
+	<1098379749.8619.16.camel@nighteyes.localdomain>
+	<1098385953.8619.38.camel@nighteyes.localdomain>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <2BE1C900-239D-11D9-9860-003065F9B7DC@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Thu, 21 Oct 2004 16:09:53 -0400
+To: Jeff Angielski <jangiels@speakeasy.net>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: SCC UART -"tx interrupt buffer pointer"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,13 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 20 Oct 2004 11:05:48 +0200, Fillod Stephane
-<stephane.fillod@thomson.net> wrote:
 
-> Archives helps a lot reducing the FAQ trafic.
+On Oct 21, 2004, at 3:12 PM, Jeff Angielski wrote:
 
-Only once google starts to have it all indexed. Most people will try
-google first, then post, then discover a list archive in my own
-experience.
+> ..... The "Tx interrupt buffer pointer" in the SCC parameter
+> ram was outside the range of valid buffer addresses.
 
-Jon.
+That's not exactly outside of the range.  It is just one byte past
+the end of the last buffer, which will get reset when it reads
+the first BD.  Don't confuse yourself by looking at that internal
+data.  Without knowledge of the microcode, it can be misleading :-)
+
+> There are 4 buffers starting at: 0x00194284, 0x001942a4, 0x001842c4, 
+> and
+> 0x001842e4.
+
+I hope these are typos.  The last two should be 0x001942c4, and
+0x001942e4.  If they aren't, something is really broken.
+
+
+	-- Dan
