@@ -1,55 +1,38 @@
-Message-ID: <3BDD92DF.F9714CE0@mvista.com>
-Date: Mon, 29 Oct 2001 09:33:19 -0800
+Message-ID: <3BDD9729.6E73E4A3@mvista.com>
+Date: Mon, 29 Oct 2001 09:51:37 -0800
 From: Armin Kuster <akuster@mvista.com>
 MIME-Version: 1.0
-To: lokes@naradnetworks.com
-Cc: Dan Malek <dan@mvista.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Compressing S-REC ?!?!
-References: <NEBBIIHKKKOGHDOKEPOMIEDGCEAA.lokes@naradnetworks.com>
-Content-Type: text/plain; charset=us-ascii
+To: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: linuxppc_2_4_devel on walnut
+References: <3BDD855B.8D3FC72F@inn.ericsson.se>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Srinivas Loke wrote:
+Kenneth Johansson wrote:
 >
-> Dan:
+> I tried the latest version on my walnut card and noticed two things.
 >
-> We are trying to use the new prototype board from Embedded Planet
-> (EP405) and I can't seem to install the HardHat Linux on it. Ofcourse
-> I have the 1.x version of Linux and I just downloaded the HardHat 2.x
-> JourneyMan but I can't seem to have any luck with this new board.
-> Any clues?
+> 1. The default configuration don't compile
+>
+> 2. The ethernet driver gets confused. It reports 10mb and half duplex when it
+> really is 100Mb full duplex. And it reports 100Mb full duplex when only 10Mb
+> half duplex exist.
+>
 > --
-> Srini Loke
->
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Dan
-> Malek
-> Sent: Monday, October 29, 2001 9:48 AM
-> To: Sarnath Kannan
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: Compressing S-REC ?!?!
->
-> Sarnath Kannan wrote:
->
-> > Hi All,
-> >  I have the "zsrec" program that accompanies
->
-> That program converts a zImage file into S-records.
-> It was originally written for the Embedded Planet
-> boards, and I guess has found some uses beyond that.
->
->         -- Dan
->
+> Kenneth Johansson
+> Ericsson Business Innovation AB   Tel: +46 8 404 71 83
+> Viderögatan 3                     Fax: +46 8 404 72 72
+> 164 80 Stockholm                  kenneth.johansson@inn.ericsson.se
 
 
-Use the  bits are in linuxppc_2_4_devel. MVista does not have an hhl 2.0
-version out but the tools work.
+Kenneth
 
-Select B in "Enter (B)inary or (S)record input mode <B> " when
-downloading a kernel.
+1) Just pulled this morning (2.4.14-pre3), built  & booted fine
+
+2) Ethernet driver matches what openbios says. I 'll do more tests..
 
 -- armin
 
