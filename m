@@ -1,36 +1,50 @@
-To: Mark Hatle <fray@mvista.com>
-Cc: Christophe.LINDHEIMER@fr.thalesgroup.com,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Running Linux with 2Mo of Ram. 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 12 Jun 2003 11:16:06 CDT."
-             <3EE8A746.7010901@mvista.com>
-Date: Thu, 12 Jun 2003 23:53:05 +0200
-Message-Id: <20030612215310.7D7E6C5FD7@atlas.denx.de>
+Message-ID: <000601c33173$8610e4c0$11a2a2c8@scomguo>
+From: "yong_guo" <yong_guo@scomcenter.com>
+To: "Callebaut Benoit" <callebaut@mailandnews.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <3EEDFF92@mailandnews.com>
+Subject: Re: RE :how to do:root filesystem on flash?
+Date: Fri, 13 Jun 2003 14:17:42 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3EE8A746.7010901@mvista.com> you wrote:
+----- Original Message -----
+From: "Callebaut Benoit" <callebaut@mailandnews.com>
+To: "linuxppc-embedded mailing list" <linuxppc-embedded@lists.linuxppc.org>
+Sent: Thursday, June 12, 2003 5:33 PM
+Subject: RE :how to do:root filesystem on flash?
+
+
 >
-> You will need some type of "execute in place", i.e. run the kernel and/or
-> userspace applications out of ROM in order to work with 2MB of RAM.
+> I,
+> 1 : Create a cramfs filesystem with the right endianess from your nfs
+> filesystem using mkcramfs.
+> Burn it into the flash( at the start of the flash).
+Is it must be burned from the start of the flash?  My u-boot bin code is
+burned at the start of the flash.
+
 >
-> This type of thing is generally very board, processor and application specific.
->   So I don't believe there is existing (open source) code to do it.
+> 2 : In your kernel config set the "root=" option to : "/dev/mtdblock0"
+In my system, the flash is registered as /dev/flasha, should i pass the
+parameter "root=/dev/flasha" to kernel?
 
-It's easy to add, at least for  a  8xx  system  booting  with  U-Boot
-(which supports XIP).
+> Enable Flash MTDBlock support and the right options like CFI,...
+> Set up the start of the flash and its length
+> Enable Cramfs in filesystem
+> Disable NFS as root filesystem.
+>
+> Rebuild your kernel and flash it.
+> Reboot the board en enjoy.
+>
+> PS : This question was already a 100 times answered. Search in the mailing
+> list before asking such a question.
+> Or maybe a better idea : One may build a FAQ or a list of Howtos on such
+> common questions.
+>
+> Benoit Callebaut
+>
+>
 
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Brain fried - Core dumped
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
