@@ -1,13 +1,15 @@
-Return-Path: <frannk_m1@yahoo.com>
-Message-ID: <20041024215018.26468.qmail@web13802.mail.yahoo.com>
-Date: Sun, 24 Oct 2004 14:50:18 -0700 (PDT)
-From: Frank <frannk_m1@yahoo.com>
+Return-Path: <wd@denx.de>
 To: Ryan Wilkins <ryan@elevated-networks.com>
-In-Reply-To: <002D5C38-25FC-11D9-BA35-0050E4B0DC64@elevated-networks.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 24 Oct 2004 16:33:44 EDT."
+	<002D5C38-25FC-11D9-BA35-0050E4B0DC64@elevated-networks.com>
+Date: Sun, 24 Oct 2004 22:45:50 +0200
+Sender: wd@denx.de
+Message-Id: <20041024204555.C38ECC1430@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.com
-Subject: Re: MPC850 and GDB help
+Subject: Re: MPC850 and GDB help 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,48 +20,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I think I may have confused you a little. When I said running
-u-boot from ram, I meant booting it from ram as if it had boot
-from flash. Normally, at some point, u-boot _will_ run from ram
-by copying itslef there and continung to run. But getting it to
-run from ram it's reset vector (first linked address + 0x100) is
-totally different.
-I'm not sure what you mean by "running Linux from ram". Although
-the kernel may reside in flash, it is at some point unzipped,
-copied to ram and then runs from there. Someone on this list may
-be able to help you more here. Maybe you will have beteer luck
-then me getting an answer from these guys. They don't seem to
-respond to my questions.:-(
-
---- Ryan Wilkins <ryan@elevated-networks.com> wrote:
-
-> Thanks for the idea.  I'll check it out.
+In message <002D5C38-25FC-11D9-BA35-0050E4B0DC64@elevated-networks.com> you wrote:
 > 
-> What about running the Linux kernel from ram?  Will I
-> encounter the 
+> What about running the Linux kernel from ram?  Will I encounter the 
 > same difficulties?
-> 
-> Thanks,
-> Ryan Wilkins
-> 
-> On Oct 24, 2004, at 3:33 PM, Frank wrote:
-> 
-> > You probably want to post this to the u-boot users mailing
-> > lists. Compiling and linking u-boot to run out of ram is not
-> a
-> > straight forward task. I've done it on more then one board,
-> but
-> > it is not easy if you're a u-boot novice.
-> > Search the list for "running out of ram" or something like
-> that
-> > and you'll see what I mean.:-)
-> 
-> 
 
+No, this is what Linux is designed for.
 
+But this doesn't help you. Before Linux can run, you need  a  working
+boot loader to initialize the hardware.
 
-		
-_______________________________
-Do you Yahoo!?
-Declare Yourself - Register online to vote today!
-http://vote.yahoo.com
+Before you start you should ask yourself if  you  have  all  required
+documentation  available.  You will need a detailed hardware descrip-
+tion, which documents which pins of the MPC8xx  are  used  for  which
+purpose,  what  board control registers, CPLDs etc. are there and how
+they are expected to be initialized, etc.
+
+With all the documentation available, you will need to get a thorough
+understanding of the hardware. Only then you  should  try  porting  a
+boot loader.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Carelessly planned projects take three times longer to complete  than
+expected.  Carefully  planned  projects  take  four  times  longer to
+complete than expected, mostly  because  the  planners  expect  their
+planning to reduce the time it takes.
