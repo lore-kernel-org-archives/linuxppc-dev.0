@@ -1,65 +1,84 @@
-Subject: Re: Ethernet on 8260
-From: Brad Bonkoski <bradb59@home.com>
-To: Murray Jensen <Murray.Jensen@cmst.csiro.au>
-Cc: ppc-embed <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <26051.995343741@msa.cmst.csiro.au>
-Content-Type: text/plain
-Date: 16 Jul 2001 22:30:24 -0700
-Mime-Version: 1.0
-Message-Id: <20010717053606.PQKG23117.femail17.sdc1.sfba.home.com@cx263713-b.mesa1.az.home.com>
+Message-ID: <003601c10e93$7f5a72e0$df0fa8c0@mystore>
+From: "Nguyen Trung Thanh" <jari.nguyen@serialsystem.com.sg>
+To: "Matthew Locke" <mlocke@mvista.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <3B52C152.F5FB58B7@genetel.co.kr> <000901c10df4$f1e85100$df0fa8c0@mystore> <3B532093.4010004@mvista.com>
+Subject: Re: PCMCIA Nokia Cardphone 2.0 for MPC823
+Date: Tue, 17 Jul 2001 15:38:39 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="EUC-KR"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 17 Jul 2001 14:22:21 +1000, Murray Jensen wrote:
->
-> On 16 Jul 2001 17:19:36 -0700, Brad Bonkoski <bradb59@home.com> writes:
-> >Essentailly, I have them all set up on the same
-> >network: 192.168.0.X.
->
-> Use different IP network numbers for each ethernet interface. e.g.
->
-> FCC1 - eth0 - 192.168.1.x
-> FCC2 - eth1 - 192.168.2.x
-> FCC3 - eth2 - 192.168.3.x
->
-> (assuming a netmask of 255.255.255.0). If they all have the same IP *network*
-> number (i.e. the number is the same after applying the netmask), then Linux
-> will only use one of them. In other words, you can only have one route for
-> each subnet.
->
+Hi Matthew Locke,
+Thank you very much for your reply.
 
-Does Linux _really_ do this?  Shouldn't it route at the host layer
-before the network layer?  Like it I ping 192.168.0.1 it should return
-the ping on that interface regardless of if another network device lives
-on this network!  Or, do I have to explicitly set up host routes in the
-routing table?  I guess what is the point of having multiple interfaces
-on one board live on the same network, but even so, I would still think
-it should choose the host route before the network route.  Any thoughts
-on this?
+As you said, I moved to the newest version of Pcmcia Card Service which I
+could find from ftp.mvista.com
+Its version is 3.1.24.. I don't know it is good enough or not.
 
+Of course, I changed something to avoid conflicts between 8xx serial driver
+(uart.c) and serial.c.
+I mapped the _IO_BASE 0x80000000, hardcode irq = 9.
+Then it worked well with PCMCIA modem such as Xircom.
 
-> By the way, if you want Linux to forward packets between the interfaces, then
-> ensure you enable forwarding (echo 1 > /proc/sys/net/ipv4/ip_forward).
->
-> Also, you could by-pass all this IP stuff and do things at the ethernet level
-> (using a RAW socket?). Cheers!
->
+Now I could use this version with Nokia Cardphone2.0, but the result is the
+same.
+I just wonder why this PCMCIA cardphone can run smoothly in a Sony VAIO
+laptop using this version of linux kernel 2.2.14 and pcmcia-3.1.24, but when
+I run it with my board, I must add some delay in function receive_chars in
+file: serial.c.
+Otherwise, I'd receive a lot of gabage charaters. For example:
+I wrote a string "ATZ" , and then received:
+"aATZOKaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+instead of "ATZOK"???
 
-This is a good idea, but I would like to keep it simple, as they say
-simplicity is the 'key' to High availability.
+Would you pls tell me what is the problem here?
+I think that it is due to the timing of 16550A chip, is it right?
+Or it is due to the serial speed?
+If you have any idea about my problem, pls tell me...
 
-Regards,
-Brad
+Thanks for you kindness,
+Jari
 
-                                                          Murray...
-> --
-> Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
-> Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
-> Internet: Murray.Jensen@cmst.csiro.au  (old address was mjj@mlb.dmt.csiro.au)
+>
+> Nguyen Trung Thanh wrote:
+>
+> > Hi all,
+> >
+> > Pls help me, I'm stuck with this card.
+> > Now I used kernel Powerpc Hardhat 2.2.14,
+> > and pcmcia-cs-3.1.21 in a custom board using
+> > MPC823.
 >
 >
+> You should consider moving to 3.1.26, many bugs have been fixed.
 >
+> >
+> > I could dial up with this card, but it is not stable,
+> > and I could not transfer data such as ftp....
+> >
+> > Furthermore, I must set the maximum value for
+> > psst = 4, psht = 4, and psl = 20.
+> > and add some delay between each time I read from serial port ( in
+function
+> > receive_chars from file serial.c).
+>
+>
+> In general, there are conflicts between 8xx serial driver (uart.c) and
+> serial.c.  They may be stepping on each other.
+>
+> >
+> > Have anyone done it, before? Or you have any information about thi card
+> > phone, pls give me.
+> >
+> > Does this card use 16550A, and follow the standard of this chip?
+> > Is there any special thing about it spec, timing?
+> >
+> > Thanks very much,
+> > Jari
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
