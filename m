@@ -1,50 +1,48 @@
-Date: Tue, 8 Feb 2000 10:29:59 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.linuxppc.org,
-        linux-fbdev@vuser.vu.union.edu
-Subject: Re: [linux-fbdev] Retrace
-In-Reply-To: <20000207200203.007111@mailhost.mipsys.com>
-Message-ID: <Pine.HPX.4.10.10002081020040.1866-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <v04220803b4c59205ed9e@[10.0.0.42]>
+In-Reply-To: <87d7q943zc.fsf@hades.nocrew.org>
+References: <87d7q943zc.fsf@hades.nocrew.org>
+Date: Tue, 8 Feb 2000 01:38:16 -0800
+To: Stefan Berndtsson <stefan@nocrew.org>, linuxppc-dev@lists.linuxppc.org
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: adaptec 2940
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+At 1:00 PM +0100 2/7/00, Stefan Berndtsson wrote:
+>If I buy a normal adaptec 2940, with x86-bios, will that be found
+>on a b&w g3 and usable in linux?
 
+Probably yes, as long as the aic7xxx driver (generic driver for
+almost all Adaptec cards) is compiled into the kernel.  I think most
+current 2.2.x precompiled kernels have this driver, so it should work
+without any trouble.
 
-On Mon, 7 Feb 2000, Benjamin Herrenschmidt wrote:
+>I assume it won't be bootable, due to x86 bios,
 
->
-> On Mon, Feb 7, 2000, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->
-> >And now the bad news: the address you have to mmap() depends on the machine
-> >type :-(
->
-> We need to find a solution for that one day or another. The iobase is not
-> only arch-dependant (PReP, PowerMac, CHRP...) but also machine dependant,
-> since it depends on the host bridge type.
+Correct.
 
-On x86 you have /dev/port which is disabled on PPC. I once or twice
-suggested (but was greeted with a deafening silence) that we could
-resurrect it and add an mmap method so that privileged programs may access
-I/O ports with:
+>  but if it's
+>usable as a dumb scsi-card, that's good enough for me.
 
-	io_fd= open("/dev/port", O_RDWR);
-	iobase=mmap(0, device_size, PROT_READ|PROT_WRITE, MAP_SHARED,
-			io_fd, device_base);
+If it's a 2940UW, rather than a plain 2940, you may actually be able
+to re-flash the card with the current Mac firmware (version 4.1),
+which is available for download from Adaptec.  Then you'd be fully
+bootable through either MacOS or OF (versions 4.0 onward have OF
+support, earlier versions did not).  The one issue is that not all
+2940UW cards are created completely equal; some of the OEM versions
+for PCs ship with a smaller flash ROM than the name-brand Adaptec
+cards and the Mac/UNIX versions.  It at least used to be the case
+that the Mac firmware absolutely required the larger flash ROM,
+though I've heard that 4.x can fit in the smaller flash.  If you get
+a 2940UW it's worth a shot.  The firmware might even work with a
+plain 2940.
 
+(If you need to convert the card back later, you can always plug it
+into a PC and run the PC flasher.)
 
-> Unfortunately, with weird host bridges like Apple Uni-N (that has 3
-> busses with 3 different io bases but the same bus number), it's almost
-> impossible to get it correct, or eventually by parsing /proc/device-tree.
-
-Not a problem if device_base is unique, you have to check that
-device_base+device_size fits within one area. It must be unique at one
-point to distinguish them from the processor perspective.
-
-	Gabriel.
-
+   Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
