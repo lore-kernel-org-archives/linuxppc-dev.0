@@ -1,53 +1,52 @@
-To: Walser Martin <walser.martin@rw.hirschmann.at>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: what files should be included in initrd 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 09 May 2001 07:49:35 +0200."
-             <040944A92C91D211954D00C095EE82680168FF32@POST>
-Date: Wed, 09 May 2001 09:02:07 +0200
-Message-Id: <20010509070212.1FF202814D@denx.denx.de>
+Date: Wed, 9 May 2001 13:06:34 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Brian Kuschak <brian.kuschak@skystream.com>
+Cc: "'Dan Malek'" <dan@mvista.com>, Eli Chen <eli@routefree.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: dcache BUG()
+In-Reply-To: <B25E2E5A003CD311B61E00902778AF2A02044652@SERVER1>
+Message-ID: <Pine.HPX.4.10.10105091149320.29518-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <040944A92C91D211954D00C095EE82680168FF32@POST> you wrote:
->
-> sorry for this question, but it's the first time I try to use linux on my
+On Tue, 8 May 2001, Brian Kuschak wrote:
 
-It's a good question, but it has been asked many, many times before.
-See http://penguinppc.org/usr/embedded/howto/PowerPC-Embedded-HOWTO-13.html#ss13.2
-and http://www.linux.org/docs/ldp/howto/Bootdisk-HOWTO/buildroot.html
+> Yes, I agree.  Like I said it definitely runs longer now than it did before,
+> but unfortunately shows the same symptom.  Here is a little more information
+> that I gleaned last night which may or may not be useful.
 
-> I'm using PPCBoot and the MontaVista kernel. Both work fine, but I don't
-> know how to make a initrd image.
+Ok, so you were hitting 2 bugs (or more, shudder).
 
-See "Documentation/initrd.txt" in your Linux source directory.
+> I noticed that arch/ppc/kernel/misc.S still had the (old?) assembly
+> functions for doing atomic operations.  They are similar but slighly
+> different to the inline functions in atomic.h.  I ran yesterday for about 4
+> hours with these "alternative" atomic functions, and I did not see the
+> failure.  I'm not sure if this was just a coincidence (the timing changed
+> slightly), or whether it indicates a problem with the inline atomic
+> functions.
 
-> Can someone give me a short overwiew on how to build such an image and what
-> files should be included?
+Interesting, which compiler are you using? I've been experimenting with my
+own modifications to gcc, in case I hit a problem I often do objdump
+--disassemble vmlinux | less and search the instruction in which I'm
+interested. In your case it would be lwarx, but there are probably too
+many occurrences to make the hunt worthwhile.
 
-You include those files you need in your embedded system. The minimum
-(without any tricks and modifications  to  the  Linux  kernel)  is  a
-special  file  for  /dev/console (c 5 1) and a regular file with your
-statically linked application that is started as init process.
-
-See ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SIMPLE-PPCBOOT-ramdisk for
-an example - this is a PPCBoot image ready for use; you can use
-
-	dd if=SIMPLE-PPCBOOT-ramdisk bs=64 skip=1 of=ramdisk.image.gz
-
-to create a "normal" ramdisk image.
+Note that the semaphore code has been modified over and over again
+recently to make it work (I'm still unable too convince me that it is
+correct, I need to study it more). But the semaphore code should be
+independent of reference count handling.
 
 
-Wolfgang Denk
+> Sure, I'll post it next time I get it.  (I already cleared the one I got
+> last night).
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"There are three principal ways to lose money: wine, women, and engi-
-neers. While the first two are more pleasant, the third is by far the
-more certain."                           - Baron Rothschild, ca. 1800
+Thanks,
+
+	Regards,
+	Gabriel.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
