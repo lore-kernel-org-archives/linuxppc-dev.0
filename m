@@ -1,43 +1,38 @@
-Date: Tue, 8 Aug 2000 20:23:54 +0200
-From: Olaf Hering <olh@suse.de>
-To: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Backlight control on Lombard PB
-Message-ID: <20000808202354.B18552@suse.de>
-References: <20000808174916.32452@mailhost.mipsys.com> <Pine.SOL.3.95.1000808200844.1384E-100000@juliet>
-Mime-Version: 1.0
+Message-ID: <39905DDE.4E7F9A68@student.ethz.ch>
+Date: Tue, 08 Aug 2000 21:22:06 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
+MIME-Version: 1.0
+To: Giuliano Pochini <pochini@denise.shiny.it>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: How to get up-to-speed on the 3D / DRI in Rage 128
+References: <39902BE4.44DE97C1@ivey.uwo.ca> <39902E69.67F50604@relog.ch> <3990AF84.9E5FBD5A@denise.shiny.it>
 Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <Pine.SOL.3.95.1000808200844.1384E-100000@juliet>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Aug 08, Derek Homeier wrote:
+Giuliano Pochini wrote:
 
-> > >Besides, the keycodes 10 and 50 (less/greater and asciicircum/degree) on
-> > >the german keyboard seem to have been swapped in pre13-pre15.
-> >
-> > Actually, I think it's more that they are now correct (they used to be
-> > wrong) ;) You should probably update your keymaps.
-> >
-> Must have been wrong for quite a while, but I vaguely recall some problems
-> with those keys when I first installed Linux (think ^/deg was giving <>
-> then, and <> did nothing at all, or vice versa).
+> Please let me understand... I d/l the latest X + DRI patches and I compile
+> them. If all goes right I get a working X, but how can I use the 3D
+> acceleration ?
 
-Please check it first:
-
-^° should be 50 at console and 58 in X
-<> should be 10 at console and 18 in X
-
-Use xev and showkeys to display the values.
+For the user aspects of DRI, check the DRI user guide at sourceforge and/or
+the dri-user mailing list there.
 
 
-Gruss Olaf
+> Do I need a patched version of Mesa too, or what ?
+
+No, the needed libGL is included.
+
+
+Michel
+
 
 --
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
+Why drink & drive when you can smoke and fly???
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
