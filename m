@@ -1,47 +1,44 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "'Peter Bergner'" <bergner@vnet.ibm.com>,
-	"'Franz Sirl'" <Franz.Sirl-ppc@lauterbach.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: TASK_UNMAPPED_BASE
-Date: Thu, 5 Feb 2004 09:57:41 +0100
-Message-ID: <001301c3ebc6$1d9f0a80$0a01a8c0@LUMENTIS02>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <1075905440.2895.23.camel@otta.rchland.ibm.com>
+Date: Thu, 5 Feb 2004 08:46:35 -0600
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Jeff Garzik <jgarzik@pobox.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Cc: "David D. Kilzer" <ddkilzer@kilzer.net>
+Subject: Re: [PATCH] Fix byte-swapped ethernet addr for Asante Fast 10/100 PCI Adapter
+Message-ID: <20040205144635.GA5984@permusion.kilzer.net>
+References: <Pine.LNX.4.44.0312231423020.1925-100000@zirkon.biophys.uni-duesseldorf.de> <Pine.GSO.4.58.0312231500350.1139@waterleaf.sonytel.be> <40132070.4080704@pobox.com> <1074995318.835.129.camel@gaston> <20040202054938.GA1814@permusion.kilzer.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040202054938.GA1814@permusion.kilzer.net>
+From: ddkilzer@kilzer.net (David D. Kilzer)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> On Tue, 2004-02-03 at 09:22, Franz Sirl wrote:
-> > At 14:05 03.02.2004, Joakim Tjernlund wrote:
-> >> I changed TASK_UNMAPPED_BASE to well under 0x01fffffc and it worked
-> >> as well.
-> >>
-> >> My question: Why is TASK_UNMAPPED_BASE=0x30000000 and would
-> >> changing it to something less, say 0x00100000 be a problem?
-> >
-> > Hmm, might work, but it can also break in subtle ways, cause the
-> > shared lib loading algorithm makes a few assumptions about the used
-> > address ranges IIRC. But I don't see any use for it if you consider
-> > what I said above.
+On Sun, Feb 01, 2004 at 11:49:38PM -0600, David D. Kilzer wrote:
+
+> Finally, it may be possible to replace the new
+> needs_mac_addr_byte_swapped() function with a check of the PCI vendor
+> and device IDs, assuming all tulip ethernet cards using the LC82C168
+> chipset have this same problem (and the same PCI IDs):
 >
-> I've seen problems with HPC apps/benchmarks with huge bss's that fail
-> to run because TASK_UNMAPED_BASE is set too low.
+> 	if (pdev->vendor == PCI_VENDOR_ID_LITEON
+> 		&& pdev->device == PCI_DEVICE_ID_LITEON_LNE100TX)
+>  		for (i = 0; i < 6; i+=2) {
+> 			...
+> 		}
 
-Too low, does that mean TASK_UNMAPED_BASE < 0x00100000 will fail with
-huge bss's as well? Or will it just fail for
-0x30000000 => TASK_UNMAPED_BASE <= 0x10000000?
+FWIW, I've ordered both a Kingston KNE100TX and a Netgear FA310TX card
+to do some testing on.  I should have results in a week or so, depending
+on how fast they're shipped from the eBay sellers.
 
-To me it seems like it is a good idea to change(at least in 2.6
-where the bugs you mentioned has been fixed) TASK_UNMAPED_BASE to
-0x00100000(or lower).
+Netgear 10/100 Network Card - NO SHIPPING!
+http://cgi.ebay.com/ws/eBayISAPI.dll?ViewItem&category=58299&item=3075759665
 
-Is there a way I can tell glibc to load it's libs around TASK_UNMAPED_BASE?
-Currently only ld.so follows TASK_UNMAPED_BASE, the other libs always
-loads at 0x0fxxxxxx. Glibc/ld.so version is 2.2.3
+Kingston KNE100TX 10/100 Ethernet Card
+http://cgi.ebay.com/ws/eBayISAPI.dll?ViewItem&category=20319&item=3074775351
 
-   Jocke
+Dave
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
