@@ -1,47 +1,40 @@
-Subject: Re: why so slowly when use serial to download S-record file?
-From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-To: caixupeng <edmoon@huawei.com>
-Cc: Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <001701c292aa$b061a4c0$33690b0a@DBKQW41X>
-References: <001701c292aa$b061a4c0$33690b0a@DBKQW41X>
-Content-Type: text/plain
-Date: 25 Nov 2002 09:56:05 +0100
-Message-Id: <1038214565.542.27.camel@spawn>
-Mime-Version: 1.0
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Mon, 25 Nov 2002 18:59:56 +0800
+From: caixupeng <edmoon@huawei.com>
+Subject: ppcboot, linux , hang  at the last step
+To: linuxppc-embedded@lists.linuxppc.org
+Message-id: <000d01c29471$ca5b94d0$92690b0a@DBKQW41X>
+MIME-version: 1.0
+Content-type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The reason is that ppcboot/u-boot only support a very simple version of
-kermit where the sender waits for an ack before sending another block.
+Dear all,
 
-kermit should have a mode that is as efficient as some of the
-[x|y|z]-modem maybe you could add that code to u-boot.
+When I boot a linux image use "bootm ffa00000 ffb00000"
+the linux hang at the last step:
 
-On Sat, 2002-11-23 at 05:42, caixupeng wrote:
->
-> Dear all,
->
-> my ppcboot is 1.2.1
-> and I set baud rate to 38400, but it need almost 4 hours to download a 2 Mega bytes file.
-> what's wrong ?
->
-> my board is ebony.
->
-> Who know the reason?
->
-> please tell me.
->
-> thanks!
->
-> edmoon
->
->
---
-Kenneth Johansson
-Ericsson AB                       Tel: +46 8 404 71 83
-Borgafjordsgatan 9                Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
+VFS: Cannot open root device "" or 16:01
+Please append a correct "root=" boot option
+Kernel panic: VFS: Unable to mount root fs on 16:01
 
+I have set the "bootargs=root=/dev/ram"
+
+what's wrong ?
+
+Is my linux kernel's erro or ppcboot's problem?
+Does ppcboot send the bootargs to linux kernel correctly?
+
+Where can set the boot params in the linux source code ?
+I want to set the params in code to force it correctly.
+
+I use linux-2.4-develop-rc1 which download from bitkeeper.
+
+my board is Ebony.
+
+thanks!
+
+                    edmoon
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
