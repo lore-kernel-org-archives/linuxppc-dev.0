@@ -1,43 +1,40 @@
-Message-ID: <3A915EEE.664737E1@mvista.com>
-Date: Mon, 19 Feb 2001 12:59:10 -0500
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Matt Porter <mmporter@home.com>
-Cc: Subodh Nijsure <SNijsure@SkyStream.com>,
-	linuxppc-embedded@lists.linuxppc.org
+Message-Id: <200102191915.OAA29416@world.std.com>
+To: linuxppc-embedded@lists.linuxppc.org
+From: mod+linuxppc-embedded@world-f.std.com
 Subject: Re: How does one get physical address for iorempped window?
-References: <B25E2E5A003CD311B61E00902778AF2A0148B711@SERVER1> <20010218092828.A14685@cx258813-a.chnd1.az.home.com>
-Content-Type: text/plain; charset=us-ascii
+Date: Mon, 19 Feb 2001 14:15:35 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matt Porter wrote:
-
-> Well, the base problem is that virt_to_*/*_to_virt were only ever
-> intended to work on addresses mapped to system RAM.
-
-I know.....But, even for someone like me that works with this
-on a nearly daily basis it is sometimes confusing.  It's truly
-easy to have one function that can tell you virt/phys/virt mappings,
-other OS implementations have done that for years.  If you want
-a "fast" RAM only mapping, use __pa()/__va(), they have been around
-forever.  The virt_to_*/*_to_virt functions _should_ have become
-something more generic, but they are just yet another macro name
-for doing the same thing.  Now, we have gone of and created some pci_*
-mapping functions, which are not at all useful for highly integrated
-processors because their integrated features are not PCI devices.
-Yet another set of functions for integrated processors?  I don't think so.
-
-I think that requiring knowledge of the object attributes for a VM or
-physical space so you can call the proper mapping or other management
-functions is just a poor design.  If you know this information and
-wish to take performance enhancement shortcuts, that's fine, but it
-shouldn't be required.
-
-I'm working on it........
+>virt_to_*/*_to_virt functions _should_ have become
+>something more generic, but they are just yet another macro
+>name for doing the same thing.  Now, we have gone of and
+>created some pci_* mapping functions, which are not at all
+>useful for highly integrated processors because their
+>integrated features are not PCI devices.  Yet another set
+>of functions for integrated processors?  I don't think so.
+>
+>I think that requiring knowledge of the object attributes
+>for a VM or physical space so you can call the proper
+>mapping or other management functions is just a poor
+>design.  If you know this information and wish to take
+>performance enhancement shortcuts, that's fine, but it
+>shouldn't be required.
 
 
-	-- Dan
+What if you're working on a system with multiple PCI
+busses (or even multiple disparate bus types) and it's
+not possible to map Host memory at the same address on
+all busses?  Being able to refer to something like, say,
+the appropriate pci_bus* when invoking virt_to_bus()
+could make it possible to accomodate those different
+mappings.  I'm certainly not a fan of pointlessly
+complex code, but the one-size-fits-all implementation
+of virt_to_bus() seen in my 25Jan-vintage kernel sources
+(it just lops off the KERNEL_OFFSET bits and adds
+pci_dram_offset) won't work in situations such as those
+I just described.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
