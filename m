@@ -1,63 +1,46 @@
-Date: Mon, 13 Mar 2000 11:19:30 +0200 (EET)
+Date: Mon, 13 Mar 2000 14:10:34 +0200 (EET)
 From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Kevin Hendricks <khendricks@ivey.uwo.ca>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Help! Getting aty128fb.c to work with newest sawtooth machines
-In-Reply-To: <00031109361000.07471@localhost.localdomain>
-Message-ID: <Pine.LNX.4.21.0003131025250.734-100000@idd-01.imbc.gr>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+cc: Michel Dänzer <michdaen@iiic.ethz.ch>,
+        "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work
+ onppcwithr128
+In-Reply-To: <Pine.LNX.4.10.10003131026030.29249-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.21.0003131341340.748-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 11 Mar 2000, Kevin Hendricks wrote:
+On Mon, 13 Mar 2000, Michael Schmitz wrote:
 
-> Hi Kostas,
+.....
+> I found some mention of this in messages from this list, but not a
+> complete patch. I changed ppc_icache_flush to only flush one cache line
+> (removed the add 32 to r3; repeat flush stuff) and applied the patch to
+> the loader I found on the list. That results in no more sig4 or sig11
+> during module loads but I still get the Lombard to lock up during real
+> server startup. The screen base and size used to map the video memory is
+> OK (i.e. taken from the kernel atyfb driver, right aperture and all) but
+> it hangs after that. I'll keep digging.
+.....
+> > Try the fbdev driver with the BusID. (Mach is only minimally accelerated ATM
+> > anyway)
 >
-> If just received a G4 450 but if I try to use aty128fb.c in any resolution
-> higher than 1024x768 8bpp it will fail miserably with the screen split into 3
-> vertical panes.
->
-> If I try blindly launching xf 4.0 r128, it inherits the fb mode and I end up
-> with 3 panes as well.
->
-> This is obviously a aty128fb.c problem since it occurs in the console.
->
-> I looked at Anthony's code (remember the problem I had earlier when he tried to
-> read values for the dotclock and xclk out of the of device tree?) and then used
-> lsprop to print out the graphics card info.
->
-> Unfortunately, there were no nice of-tree variables in my G4 tree at all but it
-> did report my card as a Rage128Pro and not a simple Rage128.
->
-> Is a Rage128Pro different from a Rage128 when it comes to setting it up,
-> register usage, etc or is this simply a problem with the default timings
-> setting being incorrect for this card?
+> Adding the BusID results in the PCI warnings, no change otherwise. The
+> server never uses fb_open_pci anyways.
 >
 
-  Rage128Pro should be the same as Rage128, so its possible that its a
-timing issue. We need to find a way to get the correct values for ppc,
-i wonder if the OF rom has any info we can use.
+  Without the BusID line the XServer will disable the pci memory/io
+for the card, it doesn't matter if fbdev_open_pci is used or not.
+What probably happens is that even with the BusID defined the xserver
+still disables your card.
+The PCI warnings that you get most likely will tell us where the problem
+is, can you send the logfile over ?
 
-> Interestingly enough, I can boot with aty128fb with 1024x768 and 8bpp and the
-> console is fine (no 3 panes) and I can then successfully start up XFree4.0 with
-> r128 acceleration so things do appear to be working under some cases.
->
-> Is there any tool (code piece, etc) I can use to probe the timing info as used
-> under MacOS?
->
-
- Ben's ATIGrab (http://ppclinux.apple.com/~benh/ATIGrab.sit) utility might
-help you there, the source is included there and it shouldn't be hard to
-modify it to get it working for rage128.
-
-> Thanks,
->
-> Kevin
->
-
-  Kostas
+ Kostas
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
