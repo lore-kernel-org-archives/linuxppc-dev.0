@@ -1,23 +1,39 @@
-Date: Sat, 11 Sep 1999 13:37:45 +1000
-Message-Id: <199909110337.NAA12425@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: costabel@wanadoo.fr
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <37D98144.97257D77@wanadoo.fr> (message from Martin Costabel on
-	Sat, 11 Sep 1999 00:08:04 +0200)
+Message-Id: <v03130305b3ff80d77246@[192.168.1.1]>
+In-Reply-To: <37D98144.97257D77@wanadoo.fr>
+References: 
+ <Pine.LNX.4.10.9909101143540.23282-100000@mercator.cs.kuleuven.ac.be>
+ <37D944A8.78051BB@wanadoo.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 10 Sep 1999 22:47:16 -0500
+To: Martin Costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org
+From: "David D. Kilzer" <ddkilzer@computer.org>
 Subject: Re: 2.3.18 and CONFIG_ADB_MOUSE
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.LNX.4.10.9909101143540.23282-100000@mercator.cs.kuleuven.ac.be> <37D944A8.78051BB@wanadoo.fr> <37D98144.97257D77@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Martin Costabel <costabel@wanadoo.fr> wrote:
+Martin Costabel wrote:
 
-> if [ "$CONFIG_ADB" = "y" ; then
+>In the latest vger-2.3.18 and also Paul's linux-pmac-devel, the
+>ADB_MOUSE cannot be selected any more, neither in 'make oldconfig' nor
+>in 'make menuconfig'.
+>
+>While the logic in drivers/char/Config.in:
+>
+>if [ "$CONFIG_ADB" = "y" ; then
+>    dep_tristate 'Apple Desktop Bus mouse support' CONFIG_ADB_MOUSE
+>$CONFIG_BUSMOUSE
+>
+>looks OK, it doesn't work. This never shows up in 'make menuconfig'.
 
-Simple syntax error, somehow I missed a ] before the ;.
+There's a missing ']' before the semi-colon '; then' if you copied that
+verbatim.
 
-Paul.
+If that's not the problem, then did you say "y" to ADB bus support (or did
+it even ask)?
+
+Dave
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
