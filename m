@@ -1,84 +1,46 @@
-Reply-To: <trevor@carts.com>
-From: "Trevor Coolidge" <trevor@carts.com>
-To: "Dan Malek" <dan@mvista.com>, "Kevin Fry" <kevin@carts.com>
-Cc: "linuxppc emb3dd3d list" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: 8260 Communications Proccessor overload??
-Date: Thu, 11 Oct 2001 11:11:36 -0700
-Message-ID: <NFBBLOLDFLCOPBEGODOHAEDNCKAA.trevor@carts.com>
+Message-ID: <207ED16333297540B90E2C3F0BA95F0949CFF5@XCH-SW-02.ds.boeing.com>
+From: "Larsen, Kent B" <Kent.Larsen@West.Boeing.com>
+To: "'Prasad, Siva'" <Siva.Prasad@smartm.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: HHL 2.0 with force-pcore680 LSP
+Date: Thu, 11 Oct 2001 16:09:02 -0700
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <3BC48D49.6FB5279@mvista.com>
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
+load the motorola-sandpoint
+and then from make menuconfig select:
+Platform support->Processor Type (6xx/7xx/74xx/82xx) and
+Platform support->Machine Type (Force-PowerCore)
 
-   We figured out the problem.  As expected it was a software issue.  We had
-the internal clock mux set up incorrectly.  The external RXCLK from the phy
-was feeding the TXCLK inside FCC3.  Strange that it worked most of the time.
+The board type is selected in pcore_pci.c (in arch/ppc/kernel)
+depending on which bridge is detected.
 
-   I can confirm that 3 FCC's can run at full rate.  I will have benchmarks
-soon.
-
-Trevor
+-Kent
 
 -----Original Message-----
-From: dan@netx4.com [mailto:dan@netx4.com]On Behalf Of Dan Malek
-Sent: Wednesday, October 10, 2001 11:03 AM
-To: Kevin Fry
-Cc: linuxppc emb3dd3d list
-Subject: Re: 8260 Communications Proccessor overload??
-
-
-Kevin Fry wrote:
->
->    Has anyone ever run all 3 FCC ports at the same time with a
-> 100Mbit link?
-
-Yeah.....
-
-> ....  I think I'm seeing the Communications Processor get
-> overloaded, but Motorola claims there is no problem.
-
-What clock speeds are you running?  Are they full or half duplex
-connections?
+From: Prasad, Siva [mailto:Siva.Prasad@smartm.com]
+Sent: Thursday, October 11, 2001 10:21 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: HHL 2.0 with force-pcore680 LSP
 
 
 
-> the Ethernet PHY (AM79C874) indicates no errors, but the MAC is
-> reporting
-> CRC errors.
+Hi,
 
-Hmmm...Do you ever see any buffering problems on the Linux driver
-side, like the CPU can't keep up with the data?
+Where can I find the cdimage for HHL 2.0 with force-pcore680 LSP.
+Information about force-pcore6750 would also be great.
 
-> .... I have captured the MAC --> PHY transfers on a logic
-> analyzer
-> and am decoding them at present (I hate computing a CRC-32 by hand).  I
-> was
-> hoping someone else has experience relative to this situation.
+I downloaded the je-d2-hhl2.0.cdimage (Journeyman CD2 image) from mvista.com
+ftp site. But it has only Sandpoint and rpxlite LSP's.
 
-I have seen some noise problems with some boards between the MAC and
-PHY.  Some crappy looking layouts worked great, some really pretty
-ones had trouble :-).  I don't know if this would be represented as
-a CRC error or something else.
+Can some one point me to place where I can download HHL 2.0 with
+force-pcore680 LSP.
 
-Good Luck!  Keep us posted :-).
-
-
-	-- Dan
-
----
-Incoming mail is certified Virus Free.
-Checked by AVG anti-virus system (http://www.grisoft.com).
-Version: 6.0.282 / Virus Database: 150 - Release Date: 9/25/2001
-
----
-Outgoing mail is certified Virus Free.
-Checked by AVG anti-virus system (http://www.grisoft.com).
-Version: 6.0.282 / Virus Database: 150 - Release Date: 9/25/2001
+-- Siva
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
