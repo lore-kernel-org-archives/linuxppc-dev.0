@@ -1,38 +1,51 @@
-Date: Fri, 5 Oct 2001 20:34:19 -0700
-From: Tom Rini <trini@kernel.crashing.org>
+Message-ID: <3BBE7D81.6E0E64E3@mvista.com>
+Date: Fri, 05 Oct 2001 23:41:53 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
 To: Ricardo Scop <scop@digitel.com.br>
-Cc: Dan Malek <dan@mvista.com>, Andrew Johnson <anj@aps.anl.gov>,
-	linuxppc-embedded@lists.linuxppc.org
+Cc: Andrew Johnson <anj@aps.anl.gov>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Tom Rini <trini@kernel.crashing.org>
 Subject: Re: BK to CVS? + MDIO
-Message-ID: <20011005203419.A10494@cpe-24-221-152-185.az.sprintbbd.net>
 References: <20011003130559.F31866@borg.org> <01100519044401.01029@scop.digitel.com.br> <3BBE6B92.60497E1@mvista.com> <01100523524704.16297@scop.digitel.com.br>
-Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <01100523524704.16297@scop.digitel.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Oct 05, 2001 at 11:52:47PM +0300, Ricardo Scop wrote:
+Ricardo Scop wrote:
 
-> However, I didn't tell the whole truth. Actually, I'm currently not using BK,
-> but instead rsyncing from the source.mvista.com mirror. Is that all right for
+> I can assure you that I intend to follow strictly your orders :^)
+
+Yeah, orders......There are (too many :-) other cooks if you would
+rather send your recipe to them :-).
+
+> ...... Is that all right for
 > obtaining the current sources?
 
-Yes.  The rsync is usually only a few minutes behind the bk mirror
-(which is a few minutes behind the master bk tree).
+Sure.
 
-> BTW, I'm staring right now at the FCC driver for the MPC8260, looking for
-> MDIO support, and I can see that it's not compiled by default. Can you tell
-> me if it's operational? Our board has a Level One LTX960A PHY Transceiver
-> which is only working at 10 Mbps, and I would like to force it to 100 Mbps at
+> BTW, I'm staring right now at the FCC driver for the MPC8260,
+
+There have been lots of cooks there recently as well.  I think the MDIO
+enable is an artifact of something that was added for the 8xx configuration.
+I guess I better look at this driver again and see if I can remember how
+it attained its current state.  The MDIO has always been a challenge on
+the 8260.  It is usually software managed, and when it works for one PHY
+it seems to be broken for another.  Basically, it works for the last
+person that added a PHY :-).
+
+> ..... and I would like to force it to 100 Mbps at
 > user's will.
 
-If you turn on CONFIG_USE_MDIO, it _may_ work.  You might have to add in
-support for the LTX960A tho (only 970 and 971 are explicitly supported).
+You are welcome to make it work :-).  I just let them autonegotiate the
+highest performance and declare victory.  I'm sufficiently challenged
+to just send bits......
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Well that's interesting....I just discovered my tibook clock is set
+incorrectly......sorry about that.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
