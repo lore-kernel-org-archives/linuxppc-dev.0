@@ -1,31 +1,26 @@
-Subject: Re: Video mirroring with radeon mobility 9600
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ken Offer <koffer@arlut.utexas.edu>
-Cc: linuxppcdev <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <6EA3E629-099A-11D8-B1A5-000393467F1A@arlut.utexas.edu>
-References: <6EA3E629-099A-11D8-B1A5-000393467F1A@arlut.utexas.edu>
-Content-Type: text/plain
-Message-Id: <1067386942.3332.49.camel@gaston>
+Date: Tue, 28 Oct 2003 23:49:25 -0900
+From: Ethan Benson <erbenson@alaska.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: explanation of the varied vmlinux-es ?
+Message-ID: <20031029084924.GL3648@plato.local.lan>
+References: <1067336822.3f9e4476e7287@mail.theboonies.us>
 Mime-Version: 1.0
-Date: Wed, 29 Oct 2003 11:22:23 +1100
+In-Reply-To: <1067336822.3f9e4476e7287@mail.theboonies.us>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2003-10-29 at 09:59, Ken Offer wrote:
-> Hi all,
+On Tue, Oct 28, 2003 at 04:27:02AM -0600, David Eger wrote:
 >
-> Anyone out there had any luck getting video mirroring to work on the
-> 2003 15" PowerBook?
+> so in my happy 2.6-benh tree, I've got the following files:
 >
-> My modified 2.4 kernel won't mirror.
-> I've tried the latest radeon driver from the 2.6 kernel and I can't get
-> it to work either.
+> /usr/src/linux/vmlinux
 
-The whole mirroring thing must be re-implemented differently. It's
-on my todolist, though not done yet
+use this one, its the only one yaboot will accept.
 
-Ben.
-
+--
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
