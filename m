@@ -1,17 +1,38 @@
-Date: Fri, 12 Dec 2003 07:45:41 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Stefan Roese <stefan.roese@esd-electronics.com>
-Cc: "'DaveyWu'" <daveywu@transengines.com>,
-	"'Linuxppc-Embedded'" <linuxppc-embedded@lists.linuxppc.org>,
-	benh@kernel.crashing.org, akuster@mvista.com
-Subject: Re: PPC4xx enet driver problem (version 2.0)
-Message-ID: <20031212074541.A32360@home.com>
-References: <01b001c3c059$35107840$5100a8c0@davey033ce6193> <004601c3c09e$8cfea410$0212000a@PCSTEFAN>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <004601c3c09e$8cfea410$0212000a@PCSTEFAN>; from stefan.roese@esd-electronics.com on Fri, Dec 12, 2003 at 11:56:09AM +0100
+From: "Brijesh K Singh" <brijesh.ksingh@patni.com>
+To: "'Linuxppc-Embedded'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: tcp retrans timeout!!!
+Date: Fri, 12 Dec 2003 21:07:54 +0530
+Message-ID: <HJEKJLMPPGBKKGCNCHOGIEGHCCAA.brijesh.ksingh@patni.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20031212074541.A32360@home.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Hello,
+
+I have a question about TCP packet retrans timeout.
+
+(1) How to know TCP packet retrans timeout(how long)?
+(2) How to change TCP packet retrans timeout?
+
+Thanks in advance.
+
+Brijesh
+
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Matt
+Porter
+Sent: Friday, December 12, 2003 8:16 PM
+To: Stefan Roese
+Cc: 'DaveyWu'; 'Linuxppc-Embedded'; benh@kernel.crashing.org;
+akuster@mvista.com
+Subject: Re: PPC4xx enet driver problem (version 2.0)
+
 
 
 On Fri, Dec 12, 2003 at 11:56:09AM +0100, Stefan Roese wrote:
@@ -32,5 +53,6 @@ a particular EMAC device to provide MDIO operations for both EMACs.
 440gp/gx don't follow this code path.
 
 -Matt
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
