@@ -1,81 +1,28 @@
-Message-ID: <20021106152213.37134.qmail@web14307.mail.yahoo.com>
-Date: Wed, 6 Nov 2002 07:22:13 -0800 (PST)
-From: "Usman S. Ansari" <uansari@yahoo.com>
-Subject: Linux Kernel Debugging
-To: linuxppc-dev@lists.linuxppc.org
+Date: Thu, 7 Nov 2002 18:21:09 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: screen_info in 2.4.20-rc1
+Message-ID: <Pine.GSO.4.21.0211071816370.3669-100000@vervain.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I am trying to setup Linux kernel for debugging.
+In 2.4.20-rc1, the declaration and export of screen_info[] depends on
+CONFIG_VGA_CONSOLE. However, it's also needed by vga16fb, which can be modular
+as well.
 
-Linux is running on PPC 8xx, The most luck I have is with following setup.
+Gr{oetje,eeting}s,
 
-- ppcboot is installed
-- pImage is installed
-- root filesystem is mounted on NFS
+						Geert
 
-When not debugging, system comes up fine, etc.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-When debugging. I connect my bdi2000,
-
-- start bdi, start ppc
-- BDI>load
-Loading pImage , please wait ....
-Loading program file passed
-BDI>go
-- TARGET: target has entered debug mode
-
-- start minicom on serial, see messages from ppcboot and Linux kernel upto
-.
-.
-.
-Dentry-cache hash table entries: 2048 (order: 2, 16384 bytes)
-Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
-Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
-Inode-cache hash table entries: 1024 (order: 1, 8192 bytes)
-POSIX conformance testing by UNIFIX
-
-Start gdb as (see below)
-ppc_8xx-gdb vmlinux
-target remote bdi:2001
-
-I get
-
-Remote debugging using bdi:2001
-0xc0004d8c in kernel_thread () at time.c:464
-464     }
-
-After that if I try to set breakpoint
-(gdb) b send_signal
-Breakpoint 1 at 0xc0019128: file signal.c, line 403.
-(gdb)c
-Continuing.
-warning: Cannot insert breakpoint 1:
-Error accessing memory address 0xc0019128: Operation not permitted.
-
-Questions:
-(1) Why is my breakpoint not working ?
-(2) If I remove breakpoint, and "cont", it seems like nothing is happening. I do not see any
-    progree on minicom screen for kernel boot up and than loading of modules and application. If
-    I ctrl-c on gdb, I get
-
-Program received signal SIGSTOP, Stopped (signal).
-0xc0003eac in idled () at idle.c:70
-70                      if (!current->need_resched && htab_reclaim_on)
-
-I know it is in idle thread, but not very usefull, since I cannot proceed. No telnet window, no
-minicom window.
-
-I am missing a step or so, any ideas what is it ?
-
-Thanks for reading this far.
-
-Please cc me, as I am not subscribed to this list.
-
-Usman
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
