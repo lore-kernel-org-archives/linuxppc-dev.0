@@ -1,47 +1,43 @@
-Date: Thu, 05 Apr 2001 02:45:23 +0100
-Subject: device-trees
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="utf-8"
-Message-Id: <20010405014513.36328DBA28@atlas.valhalla.net>
+Message-ID: <3ACBD134.3ECFACAD@netfall.com>
+Date: Wed, 04 Apr 2001 18:58:12 -0700
+From: Andrew Sharp <andy@netfall.com>
+MIME-Version: 1.0
+To: debian-powerpc@lists.debian.org
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: External Monitor under Pismo
+References: <20010404172943.E1AD92EFBC@apollo.valhalla.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi List,
+Iain Sandoe wrote:
+>
+> > One has to question whether anyone would be interested in adding
+> > this to a frame buffer driver, assuming that it isn't already
+> > there.
+>
+> because it's useful? ;-)
 
-I'm doing quite well at making an OF device-trees collection, but I'm
-missing a few (this is to try and match dmasound_pmac better to the
-different Pmac H/W).
+Interesting word.  I wonder what it means.  But all seriousness
+aside, what I meant was that if I was going to do some development
+on this, I would also simultaneously work on getting the aty128
+direct driver to work.  In other words if it's already in the 128
+driver, then I would try to get that working on Pismo, rather than
+try adding CRT support to the fb driver.  I'm trying to make sense,
+really I am.  Someone else mentioned that X4 and X3 vary greatly.  I
+am aware of those differences.
 
-I've already parsed all the ones suse has on-line.
-Thanks to dmasound testers who've supplied theirs.
+> > I've actually seen an XF86Config for driving the external monitor at
+> > different resolution(s) from the LCD, but I can't find that info at
+> > the moment.  I don't know if it works with the frame buffer
+> > server/driver, but I know that it works with the mach64 server for
+> > 3.3.6.  If I could find it, it would be worth trying....
 
-I'd like:
+OK, some I'm starting to get the clue that Pismo is the G3 powerbook
+w/ rage128, as opposed to Wallstreet, which is G3 PB w/mach64?  A
+couple more years and I'm sure I'll have it straight.
 
-pre-9500 machines.
-
-clones.
-
-iMac rev B & C
-
-iBook (other than PowerBook2,1)
-
-Pismo (other than PowerBook3,1)
-
-G4 PowerBook
-
-G4 machines with "device-tree:compatible" settings:
-PowerMac3,2 PowerMac3,3
-
-If anyone could spare 10 minutes to generate & mail me an html version of
-their device-tree I can point them at a script to do it.
-
-please mail me off list if you can help.
-
-I'll post the collection on penguinppc in the near future.
-TIA,
-Iain.
+a
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
