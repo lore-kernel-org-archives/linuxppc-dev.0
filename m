@@ -3,21 +3,21 @@ Received: from honk1.physik.uni-konstanz.de (honk1.physik.uni-konstanz.de
 	[134.34.140.224])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C1C492BDB8
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Oct 2004 17:08:05 +1000 (EST)
-Date: Tue, 5 Oct 2004 08:57:44 +0200
+	by ozlabs.org (Postfix) with ESMTP id 55FFA2BDB8
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Oct 2004 17:08:48 +1000 (EST)
+Date: Tue, 5 Oct 2004 08:58:28 +0200
 From: Guido Guenther <agx@sigxcpu.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Message-ID: <20041005065744.GA8169@bogon.ms20.nix>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20041005065828.GB8169@bogon.ms20.nix>
 References: <20041004112105.GA5637@bogon.ms20.nix>
 	<1096897172.23141.87.camel@gaston>
 	<20041004135108.GB5637@bogon.ms20.nix>
 	<1096899251.15766.101.camel@gaston>
 	<20041004151259.GC5637@bogon.ms20.nix>
-	<A5A9FF28-163F-11D9-B39F-000A95A4DC02@kernel.crashing.org>
+	<1096931912.23141.107.camel@gaston>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <A5A9FF28-163F-11D9-B39F-000A95A4DC02@kernel.crashing.org>
+In-Reply-To: <1096931912.23141.107.camel@gaston>
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: [agx@sigxcpu.org: [PATCH]: swsusp on linux-2.6.9-rc3]
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -29,12 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 04, 2004 at 02:57:40PM -0500, Segher Boessenkool wrote:
-> >Nice. Can you think of a way to monitor calls of MacOS X into the OF?
+On Tue, Oct 05, 2004 at 09:18:33AM +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2004-10-05 at 01:12, Guido Guenther wrote:
+> > On Tue, Oct 05, 2004 at 12:14:11AM +1000, Benjamin Herrenschmidt wrote:
+> > > A hack I wrote a while ago that allows to run the MacOS "ndrv" video
+> > > driver within a userland "shell" in linux. It works with old-style
+> > > 'ndrv's that ATI still uses but not with the newer nVidia 'fully native'
+> > > drivers and it can spy all IOs done by the driver
 > 
-> The video driver is not calling into OF -- OF is long
-> dead and gone by the time the video driver runs.
-I was told that MacOS X reexecutes the cards OF code to reinitialize it
-after resume. I'd be nice for linux to do the same.
-Cheers,
+> > Nice. Can you think of a way to monitor calls of MacOS X into the OF?
+> 
+> It has nothing to do with OF. We need to spy the IO accesses. Roughly
+Well at least the nv driver uses the cards OF code to reiinitialize it
+after resume.
  -- Guido
