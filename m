@@ -1,21 +1,16 @@
 Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
-	by ozlabs.org (Postfix) with ESMTP id 0DEC167A87
+Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
+	by ozlabs.org (Postfix) with ESMTP id 8AD9367A7A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 19 Feb 2005 02:56:26 +1100 (EST)
-Date: Fri, 18 Feb 2005 08:56:24 -0700
+	Sat, 19 Feb 2005 04:12:50 +1100 (EST)
+Date: Fri, 18 Feb 2005 10:12:46 -0700
 From: Matt Porter <mporter@kernel.crashing.org>
-To: "Barbier, Renaud (GE Infrastructure)" <Renaud.Barbier@ge.com>,
-	linuxppc-embedded@ozlabs.org, Matt Porter <mporter@kernel.crashing.org>
-Message-ID: <20050218085624.A11439@cox.net>
-References: <45ABD2373C33C4459D42B40EC4F346F205E1A4F0@FTWMLVEM03.e2k.ad.ge.com>
-	<20050217225414.GA32623@gate.ebshome.net>
-	<20050217233605.GA10915@gate.ebshome.net>
+To: jgarzik@pobox.com
+Message-ID: <20050218101245.D11439@cox.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050217233605.GA10915@gate.ebshome.net>;
-	from ebs@ebshome.net on Thu, Feb 17, 2005 at 03:36:05PM -0800
-Subject: Re: 440GX interrupt
+Cc: netdev@oss.sgi.com, linuxppc-embedded@ozlabs.org
+Subject: [PATCH] emac: filter illegal frame sizes
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,21 +21,119 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 17, 2005 at 03:36:05PM -0800, Eugene Surovegin wrote:
-> On Thu, Feb 17, 2005 at 02:54:14PM -0800, Eugene Surovegin wrote:
-> > Probably it's a race which cannot be avoided anyway because external 
-> > IRQs are completely async, and your version of ppc4xx_pic.c just has a 
-> > bug. I'll think about it a little more.
-> 
-> Uhh, yes, I think it's a bug in 4xx version of disable_irq.
-> 
-> We have to ACK parent UIC after disabling IRQ to prevent false 
-> triggering in case this IRQ was already pending during disable_irq 
-> call.
-> 
-> Here is a patch against current 2.6, so you can get an idea what I'm 
-> talking about :):
+Fix to drop frames that are too large for the current MTU.
 
-Gah, yes. Please add the sign off line and it can go in the mainline.
+Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
 
--Matt
+===== drivers/net/ibm_emac/ibm_emac_core.c 1.9 vs edited =====
+--- 1.9/drivers/net/ibm_emac/ibm_emac_core.c	2005-01-20 13:25:10 -07:00
++++ edited/drivers/net/ibm_emac/ibm_emac_core.c	2005-02-18 09:23:08 -07:00
+@@ -665,14 +665,21 @@
+ 				fep->rx_skb[i]->dev = dev;
+ 				fep->rx_skb[i]->protocol =
+ 				    eth_type_trans(fep->rx_skb[i], dev);
+-				error = netif_rx(fep->rx_skb[i]);
+ 
+-				if ((error == NET_RX_DROP) ||
+-				    (error == NET_RX_BAD)) {
+-					fep->stats.rx_dropped++;
++				/* Filter frame sizes > our MTU */
++				if (fep->rx_skb[i]->len <= (dev->mtu + ENET_HEADER_SIZE + ENET_FCS_SIZE)) {
++					error = netif_rx(fep->rx_skb[i]);
++					if ((error == NET_RX_DROP) ||
++							(error == NET_RX_BAD)) {
++						fep->stats.rx_dropped++;
++					} else {
++						fep->stats.rx_packets++;
++						fep->stats.rx_bytes += frame_length;
++					}
+ 				} else {
+-					fep->stats.rx_packets++;
+-					fep->stats.rx_bytes += frame_length;
++					dev_kfree_skb(fep->rx_skb[i]);
++					fep->stats.rx_length_errors++;
++					fep->stats.rx_errors++;
+ 				}
+ 				fep->rx_skb[i] = NULL;
+ 			} else {
+@@ -752,15 +759,23 @@
+ 					fep->rx_skb[buf[0]]->protocol =
+ 					    eth_type_trans(fep->rx_skb[buf[0]],
+ 							   dev);
+-					error = netif_rx(fep->rx_skb[buf[0]]);
+ 
+-					if ((error == NET_RX_DROP)
+-					    || (error == NET_RX_BAD)) {
+-						fep->stats.rx_dropped++;
++					/* Filter frame sizes > our MTU */
++					if (fep->rx_skb[buf[0]]->len <= (dev->mtu + ENET_HEADER_SIZE + ENET_FCS_SIZE)) {
++						error = netif_rx(fep->rx_skb[buf[0]]);
++
++						if ((error == NET_RX_DROP)
++								|| (error == NET_RX_BAD)) {
++							fep->stats.rx_dropped++;
++						} else {
++							fep->stats.rx_packets++;
++							fep->stats.rx_bytes +=
++								fep->rx_skb[buf[0]]->len;
++						}
+ 					} else {
+-						fep->stats.rx_packets++;
+-						fep->stats.rx_bytes +=
+-						    fep->rx_skb[buf[0]]->len;
++						fep->stats.rx_length_errors++;
++						fep->stats.rx_errors++;
++						dev_kfree_skb(fep->rx_skb[buf[0]]);
+ 					}
+ 					for (b = 0; b < bnum; b++)
+ 						fep->rx_skb[buf[b]] = NULL;
+@@ -1041,7 +1056,7 @@
+ 	/* set speed (default is 10Mb) */
+ 	switch (speed) {
+ 	case SPEED_1000:
+-		mode_reg |= EMAC_M1_JUMBO_ENABLE | EMAC_M1_RFS_16K;
++		mode_reg |= EMAC_M1_RFS_16K;
+ 		if (fep->rgmii_dev) {
+ 			struct ibm_ocp_rgmii *rgmii = RGMII_PRIV(fep->rgmii_dev);
+ 
+@@ -1118,6 +1133,7 @@
+ {
+ 	struct ocp_enet_private *fep = dev->priv;
+ 	int old_mtu = dev->mtu;
++	unsigned long mode_reg;
+ 	emac_t *emacp = fep->emacp;
+ 	u32 em0mr0;
+ 	int i, full;
+@@ -1160,10 +1176,17 @@
+ 			fep->rx_skb[i] = NULL;
+ 		}
+ 
+-		/* Set new rx_buffer_size and advertise new mtu */
+-		fep->rx_buffer_size =
+-		    new_mtu + ENET_HEADER_SIZE + ENET_FCS_SIZE;
++		/* Set new rx_buffer_size, jumbo cap, and advertise new mtu */
++		mode_reg = in_be32(&emacp->em0mr1);
++		if (new_mtu > ENET_DEF_MTU_SIZE) {
++			mode_reg |= EMAC_M1_JUMBO_ENABLE;
++			fep->rx_buffer_size = EMAC_MAX_FRAME;
++		} else {
++			mode_reg &= ~EMAC_M1_JUMBO_ENABLE;
++			fep->rx_buffer_size = ENET_DEF_BUF_SIZE;
++		}
+ 		dev->mtu = new_mtu;
++		out_be32(&emacp->em0mr1, mode_reg);
+ 
+ 		/* Re-init rx skbs */
+ 		fep->rx_slot = 0;
+===== drivers/net/ibm_emac/ibm_emac_core.h 1.3 vs edited =====
+--- 1.3/drivers/net/ibm_emac/ibm_emac_core.h	2005-02-08 22:24:52 -07:00
++++ edited/drivers/net/ibm_emac/ibm_emac_core.h	2005-02-18 09:30:07 -07:00
+@@ -77,6 +77,8 @@
+ 
+ #define ENET_HEADER_SIZE	14
+ #define ENET_FCS_SIZE		4
++#define ENET_DEF_MTU_SIZE	1500
++#define ENET_DEF_BUF_SIZE	(ENET_DEF_MTU_SIZE + ENET_HEADER_SIZE + ENET_FCS_SIZE)
+ #define EMAC_MIN_FRAME		64
+ #define EMAC_MAX_FRAME		9018
+ #define EMAC_MIN_MTU		(EMAC_MIN_FRAME - ENET_HEADER_SIZE - ENET_FCS_SIZE)
