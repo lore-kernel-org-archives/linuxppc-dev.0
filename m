@@ -1,18 +1,16 @@
-Return-Path: <dadair@ariodata.com>
-Received: from orion.ariodata.com (adsl-64-170-199-186.dsl.snfc21.pacbell.net
-	[64.170.199.186]) by ozlabs.org (Postfix) with ESMTP id 920D32BF12
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15608.mail.cnb.yahoo.com (web15608.mail.cnb.yahoo.com
+	[202.165.102.62]) by ozlabs.org (Postfix) with SMTP id 732002BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 Nov 2004 12:57:31 +1100 (EST)
-From: "David Adair" <dadair@ariodata.com>
-To: <dadair@ariodata.com>, <linuxppc-embedded@ozlabs.org>
-Date: Wed, 10 Nov 2004 17:57:35 -0800
+	Thu, 11 Nov 2004 18:22:58 +1100 (EST)
+Message-ID: <20041111072256.26845.qmail@web15608.mail.cnb.yahoo.com>
+Date: Thu, 11 Nov 2004 15:22:56 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: linuxppc-embedded@ozlabs.org
+In-Reply-To: <4191694C.60305@esteem.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <ORIONhx27kBnccYTjr800000173@orion.ariodata.com>
-Message-ID: <ORIONnKGXlMuYtSACMa00000004@orion.ariodata.com>
-Subject: RE: Problems with MII mode operation on 440GP ethernet
-Reply-To: dadair@ariodata.com
+Content-Type: text/plain; charset=gb2312
+Subject: Re: How much easier makes owning a BDI2000 things?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,25 +21,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Conn Clark <clark@esteem.com> wrote:
+> Wolfgang Denk wrote:
+[snip]
+> > Seems you never had to deal with any time critical
+> > problems, then.
+> > 
 > 
-> > I have a custom board with the same configuration (on 2.6). The
-> > driver in that tree works in this configuration. FWIW, the port
-> > also uses ocp calls to remove the three unused interfaces. In
-> 
-> This sounds reasonable to me -- OCP stays cpu generic but exact
-> use is refined by the board port.
-> 
-> Can you give me any hints were to find the "ocp calls?"
-> 
+> I have, however I used I/O bits and an Oscilliscope
+> ;-)
 
-Ok, this was too dumb to let stand -- asm/ocp.h is pretty clear
-and:
+But how about the time you solved the problem? Suppose
+a sudden power failure happened and the monitor port
+of your custom board couldn't give any output. Could
+you find the problem in no time like 5 - 10 minutes at
+most? I met this problem twice on my custom board. It
+took me one night to find out the problem at first
+under help of BDI2000 and Oscilliscope without any
+experience. The problem was SDRAM damage. And BDI2000
+helped me make sure that 4 SDRAM chips on board were
+all broken. Second time, I just found out the real
+problem in 10 minutes or so with BDI2000. There were 2
+broken of 4 parallel FLASH chips in 8-bit. 
 
-    /* Remove emac1 -- this board uses MII so there can only be one */
-    ocp_remove_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 1);
+So, IMHO, for the sake of efficiency and accurateness,
+BDI2000 is much better than Oscilliscope, at least in
+time critical situation like trouble shooting.
 
-makes my board work without hacking up the ibm_emac driver.
+=====
+Best regards,
 
-Thanks again Matt.
+Sam
 
-David
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
