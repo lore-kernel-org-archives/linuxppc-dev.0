@@ -1,55 +1,30 @@
-Date: Thu, 13 Sep 2001 17:51:39 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Dan Malek <dan@mvista.com>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: Some more 4xx exception fixes
-Message-ID: <20010913175139.A3851@zax>
-References: <20010912133344.S4823@zax> <3B9F8260.DA1C7EA@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3B9F8260.DA1C7EA@mvista.com>
+Date: Thu, 13 Sep 2001 10:18:33 -0400
+Message-Id: <200109131418.f8DEIXB20179@hyper.wm.sps.mot.com>
+From: Peter Barada <pbarada@mail.wm.sps.mot.com>
+To: qiuqingjun@263.net
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-reply-to: <008b01c13c12$0d452e00$0200a8c0@aiwa> (qiuqingjun@263.net)
+Subject: Re: In initrd, init program is needed or not?
+References: <002a01c13b93$72b3c5a0$0200a8c0@aiwa> <200109121441.f8CEf1016518@hyper.wm.sps.mot.com> <008b01c13c12$0d452e00$0200a8c0@aiwa>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Sep 12, 2001 at 11:42:24AM -0400, Dan Malek wrote:
+>Hi, Peter Barada,
+>Thank your explaination of init program in detail, however , I have
+>another question:
 >
-> David Gibson wrote:
->
-> > The problem was that the DSI handler would not call do_page_fault()
-> > for zone protection faults which were writes
->
-> The real problem is the zone protection isn't set up properly
-> on the kernel space.  The normal logic of the DSI will work
-> correctly without testing specifically for a zone protection error
-> if the zone is properly configured.  I noticed this error the other
-> day while fixing the other MMU problems, but it wasn't detrimental
-> to simply making the kernel run, so I'm fixing it today.
+>Where can I find the source code of the init program?
+>Thank you again!
 
-Sorry, can you elaborate on that?  I don't see how we can detect the
-case of user writes to kernel (writable) pages without checking the
-ESPRN_DIZ bit.
-
-> > The wart is that the ISI handler passed SRR1 (i.e. saved MSR) to
-> > do_page_fault(), whereas the comment above do_page_fault() says that
-> > do_page_fault() should be passed 0 for instruction faults on 4xx.
->
-> I guess....this is left over from a common exception handler I
-> suppose.  The only bit position tested is ESR_DST, which for the
-> last few years has always been reserved and zero in the MSR.  This
-> is a larger problem on other processors, where we overload this
-> code into the fault handler with bits that do mean something......
-
-No argument there, but it seems better to make the exception handler
-match the documentation on do_page_fault(), given that I can't see any
-disadvantage to the changed version.
+We 'borrowed' the init code from the ucLinux distribution (user/init).
+I'm thinking of changing to the version that is distributed with HardHat.
+I know that will be more code(hence larger footprint), but the
+benifit of using an actively developing piece of code is very appealing.
 
 --
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
-
+Peter Barada                                   Peter.Barada@motorola.com
+Wizard                                         781-852-2768 (direct)
+WaveMark Solutions(wholly owned by Motorola)   781-270-0193 (fax)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
