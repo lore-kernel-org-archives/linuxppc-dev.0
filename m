@@ -1,17 +1,15 @@
-Return-Path: <wd@denx.de>
-Received: from mailout05.sul.t-online.com (mailout05.sul.t-online.com
-	[194.25.134.82]) by ozlabs.org (Postfix) with ESMTP id 4E6C62BDF2
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15810.mail.cnb.yahoo.com (web15810.mail.cnb.yahoo.com
+	[202.165.102.90]) by ozlabs.org (Postfix) with SMTP id 7A6D02BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Jan 2005 22:31:48 +1100 (EST)
-To: Clemens Koller <clemens.koller@anagramm.de>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 14 Jan 2005 11:50:56 +0100."
-	<41E7A410.6060008@anagramm.de>
-Date: Fri, 14 Jan 2005 12:31:21 +0100
-Sender: wd@denx.de
-Message-Id: <20050114113126.434C4C108D@atlas.denx.de>
+	Sat, 15 Jan 2005 00:19:08 +1100 (EST)
+Message-ID: <20050114131857.46447.qmail@web15810.mail.cnb.yahoo.com>
+Date: Fri, 14 Jan 2005 21:18:57 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20050114113126.434C4C108D@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: Kernel 2.6.x to MPC8540/Microsys Board 
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -24,31 +22,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <41E7A410.6060008@anagramm.de> you wrote:
+Wolfgang Denk <wd@denx.de> wrote：
+> > Now I 've tried the official 2.6.10 Kernel and
+> > (cross-)compiled it
+> > within ELDK 3.1 (btw: is there any difference in
+> > between ppc_6xx- and 
+> > ppc_82xx- ?) which works fine, too.
 > 
-> Now I 've tried the official 2.6.10 Kernel and (cross-)compiled it
-> within ELDK 3.1 (btw: is there any difference in between ppc_6xx- and 
-> ppc_82xx- ?) which works fine, too.
+> ppc_82xx is a symbolic link ppc_6xx
 
-ppc_82xx is a symbolic link ppc_6xx
+Well, I also have a puzzle here. In ELDK3.1, could 
+ppc_6xx package work for 6xx/7xx/82xx[603e] and 85xx
+[e500] target at the same time?
 
-> Which is the best Kernel source tree to start porting 2.6.x to the pm854 
-> platform? I would prefer to stuck with the official sources. Is that a 
-> good idea?
+Thanks in advance!
 
-Yes.
-
-> Is it a good idea to just 'copy' the pm854 platform specific files (PCI 
->   initialization and some MTD driver options) to the 2.6.10 tree and see
-> how it works?
-
-Copy from where? from 2.4? No.
-
+=====
 Best regards,
 
-Wolfgang Denk
+Sam
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A fail-safe circuit will destroy others.                 -- Klipstein
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
