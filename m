@@ -1,67 +1,31 @@
-Message-ID: <4926614F7A31D411820F00D0B74FF7E0013D1998@RDC03>
-From: "Gallant, John" <jgallant@vanteon.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Pointers for the information on the Low-core stuff and the Boot R
-	OM interactions
-Date: Tue, 1 Oct 2002 16:07:05 -0400 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Tue, 1 Oct 2002 14:31:32 -0700
+From: Matt Porter <porter@cox.net>
+To: Aman <aman@mistralsoftware.com>
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Downloading Linux image using Riscwatch
+Message-ID: <20021001143132.A32379@home.com>
+References: <3D6BB90D.FEA66532@redswitch.com> <001c01c24df2$76195030$370da8c0@aman> <001201c23a50$1057cf20$370da8c0@aman>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <001201c23a50$1057cf20$370da8c0@aman>; from aman@mistralsoftware.com on Fri, Aug 02, 2002 at 11:41:46PM +0530
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
->You can download the kernel, but it will not run ;-)
->
->The Linux kernel relies on a lot of initialization to be done by  the
->firmware  -  things  like initializing and sizing the memory, passing
->boot arguments etc.
+On Fri, Aug 02, 2002 at 11:41:46PM +0530, Aman wrote:
+> I am using PPC 440GP processor on custom board. This board doesnt not have
+> Ethernet support and there is no rom monitor code in the board. Is it
+> possible to download the Linux image to the board using JTAG . If so what
+> type of image should I build.
 
-This is perfect timing on my part, I have a project to port PPC Linux to a
-custom
-board that is based on an 8245.  I've been searching on and off for the last
-few
-days to try and get a handle on the low level files, i.e. platform/* or
-ppc/kernel/*
-and how they are interrelated.  I've also tried to understand what files I
-will need
-to create, i.e. newBoardFoo_setup.c or newBoardBar() in head.S.
+The arch/ppc/boot/images/zvmlinux.* file is a standard ELF image.
+Your tool should either allow you to load that format directly
+or should accept a format to which it can be easily converted.
 
-My upfront question(s) to this group, and those who frequent the PPCBoot
-list is:
-Can you give me pointers of Doc's, white papers or even a Doctoral Thesis to
-read
-up on to understand what I will need to do for a New Board LSP effort.
-Along
-with this, what documents might describe the interface/interactions needed
-for
-the PPCLinux kernel and the PPCBoot support.
-
-I'm not looking to be spoon fed this stuff (honest), even an RTFM will be
-fine
-if you can tell me where the FM's are.
-
->I suggest you start porting PPCBoot.
-
-Well I planned on it, but after the Kernel work.  Perhaps it is time to
-readdress the schedule :-)
-
-Thanks a lot!
-
---------------------------------------------
-John A. Gallant
-Sr. Embedded Software Engineer
-Vanteon Inc.
-2851 Clover Street
-Pittsford, NY 14534
-Phone: 585.248.0510 x279
-Fax  : 585.248.0537
-email: jgallant@vanteon.com
-web: www.vanteon.com
-
-Delivering Innovative Engineering Solutions
---------------------------------------------
-
+Regards,
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
