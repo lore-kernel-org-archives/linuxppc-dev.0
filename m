@@ -1,26 +1,36 @@
-Date: Tue, 11 Apr 2000 15:19:58 -0400
-From: Josh Huber <huberj@wpi.edu>
-To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Preserving memory...
-Message-ID: <20000411151958.H771@mclinux.com>
-Mime-Version: 1.0
+Message-ID: <38F3C93A.5BEDC95F@amberdata.demon.co.uk>
+Date: Wed, 12 Apr 2000 01:54:18 +0100
+From: David Monro <davidm@amberdata.demon.co.uk>
+MIME-Version: 1.0
+To: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: Prep interrupt routing (carolina-type board)
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hey, I'm working to get some in-memory crash dump kernel patches, and I've
-run into some problems.  I've got a couple of questions that I hope someone
-can answer for me:
+Hi all,
 
-First, is there a way to tell powerpc hardware (Macs in particular -- for
-now) to preserve memory across a system restart?  It looks like it does this
-by default, partially.
 
-Secondly, if I can get the first part to work reliably, does anyone know
-what regions of memory should be avoided, i.e. are thrashed by OF etc?
+Does anybody know for sure if the ibm8xx_pci_IRQ_map structure in
+prep_pci.c is correct? I'm trying to use an ncr53c825 board in one of
+the PCI slots, and I'm getting the exact symptoms I used to get on my
+intel box when the PCI bios screwed up and assigned the wrong irq to it
+(it goes into an endless loop:
 
-Thanks,
-Josh
+scsi : aborting command due to timeout : pid 0, scsi0, channel 0, id 0,
+lun 0 Te
+st Unit Ready 00 00 00 00 00
+ncr53c8xx_abort: pid=0 serial_number=1 serial_number_at_timeout=1
+
+
+etc...)
+
+Should the PCI interrupts turn up in the residual data in one of these
+boards?
+
+Cheers,
+
+	David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
