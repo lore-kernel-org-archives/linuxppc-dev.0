@@ -1,74 +1,61 @@
-From: clark@esteem.com
-Message-Id: <5.0.0.25.1.20010508130110.0207deb0@pop.esteem.com>
-Date: Tue, 08 May 2001 13:28:40 -0700
-To: Arturo Nunez <artnpp@cs.ucf.edu>
-Subject: Re: Wireless Advice
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <200105081540.LAA10976@iris.cs.ucf.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20010508212135.87447.qmail@web9906.mail.yahoo.com>
+Date: Tue, 8 May 2001 14:21:35 -0700 (PDT)
+From: Freddy Lugo <wilflugo@yahoo.com>
+Subject: Re: Uncompress Ok, but cannot run linux kernel... 
+To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20010508152157.613E32814D@denx.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 11:40 AM 5/8/01 -0400, you wrote:
+--- Wolfgang Denk <wd@denx.de> wrote:
+> Single-stepping over an RFI instruction? I  don't
+> think  you'll  get
+> this working.
 
->Hello:
->         I have the following board:
->
->         RPX CLLF
->         Cpu:XPC860TZ
->
->         From Embbeded Planet.
->
->         Now, I need to do some research in Wireless, I was thinking to
-> use one of these cards:
->
->         -       Cisco Aironet 340 Series Card  or
->         -       Linksys WPC11
->
->         Any advice of which one use ??
->
->         Best Regards
->
->         Arturo Nunez
->
+thanks, I discovered that the 'hard' way!.
 
-I asume you want to do 802.11 or 802.11b.
+However I found the problem but I don't have any clue
+what is happenning.  On the start_here after
+turn_on_mmu there are some memory access instructions:
 
-         I recomend you use a pcmcia card based on the prism 2 chipset. You
-can get the driver for the prism 2 cards at http://www.linux-wlan.com .
-They also have a list of cards they have tested with the driver. They also
-sell an access point development kit. the development kit includes a RPX
-lite board.
+start_here:
+....
+c000361c addi r11,r11,_endl@l
+c0003620 lis r8, __bss_start@h
+c0003624 addi r8,r8,__bss_start@l
+c0003628 subf r11,r8,r11
+....
+c0003644 stwu r0,4(r8)
 
-         Our company will be selling an access point and pcmcia cards soon
-(as soon as we get the software finished ;-) ). Our access point will
-operated at the legal power limit of 1 watt. The pcmcia cards we will be
-selling put out about 100 milliwatts and we know they work with linux. If
-your willing to wait check our site out http://www.esteem.com .
+the problem is that for some reason the when the
+c000361c instruction is executed the program counter
+jumps to the c0003644 instruction.  R8 don't have the
+value it should be and the current value is way out of
+the 16MB declare initialy on initial_bats.
+This cause an SIGSTOP signal cause the MMU can't
+translate the address requested.  I think this should
+be a debuging or compiler issue cause I don't have any
+explanation about what is happenning.
 
+I repeated the procedure several times and it is not
+on the same instruction but is the same cause, and in
+the same procedure (start_here).  Previous
+instructions were not executed, and a memory access is
+tried with anunexpected value on the register.
 
-Good luck
+Any suggestions?
 
-Conn Clark
+Debugging Environment:
+BDI2000 -> gdb 5.0
+MPC750 (6xx,7xx,7400) using a PReP Type
 
+Thanks,
 
-
-*****************************************************************
-   If you live at home long enough, your parrents will move out.
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
-
-(509) 735 - 9092 EXT. 15
-
-Stock Ticker Symbol				ELST
-
-"clark@esteem.com" Copyright 2000 all rights reserved. May not be sold or
-used for advertisements.
+Freddy Lugo
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
