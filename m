@@ -1,87 +1,693 @@
-Message-ID: <20030707044600.37837.qmail@web9707.mail.yahoo.com>
-Date: Sun, 6 Jul 2003 21:46:00 -0700 (PDT)
-From: None Atall <linux_meis@yahoo.com>
-Subject: Re: MPC8260 ATM channel allocation.
-To: Sanjay Kumar <skumar@giga-stream.de>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <FKEJLMJFECLAHOKCGJFPIEAFCBAA.skumar@giga-stream.de>
+Message-ID: <3F093B09.8040605@peak.uklinux.net>
+Date: Mon, 07 Jul 2003 10:19:05 +0100
+From: Seb James <seb@peak.uklinux.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: i2c linux drivers
+Content-Type: multipart/mixed;
+ boundary="------------060507080201020405020105"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- MPC8260 supports 255 internal chans and 64k external
-for each FCC. (There is no sharing among resources).
-Thats the same for the BDs.
- ATM switching has not been implemented for the 8260
-(as far as I know). Alex has implemented one for 860.
-You could import that (switcher.c). So you will have
-to open 1 bidirectional channel for each FCC.
+This is a multi-part message in MIME format.
+--------------060507080201020405020105
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-               Hope this helps
-                   Dimitris.
+Hello all,
 
---- Sanjay Kumar <skumar@giga-stream.de> wrote:
->
-> Dear all,
->
-> I am using MPC8260 for ATM cell switching between
-> FCC1 and FCC2.I have two
-> UTOPIA interface connected,one each to FCC1 and
-> FCC2.FCC1 is connected 16
-> PHY devices and FCC2 is connected 2 PHY devices.I
-> have following
-> questions.
-> 1.MPC8260 supports 255 internal channels and upto
-> 64k using external
-> memory. Does this number of channels(upto 64k) are
-> for both FCC1 and FCC2
-> ? If yes how these channels can be distributed
-> between FCC1 and FCC2. For
-> transfering ATM cells from FCC1 to FCC2 and
-> vice-versa I have to open an
-> input channel on FCC1 and an output channel on
-> FCC2.Does this input and
-> output channel number should be unique?
->
-> 2. MPC8260 limits 256k for RX BDs(buffer
-> descriptors) and 256k for TX BDs.
-> Does this limitation is per FCCs ? I mean can I
-> allocate 256k RX BDs and
-> 256K TX BDs for FCC1 and then
-> 256k RX BDs and 256K TX BDs for FCC2?
->
-> Any idea....
->
-> regards,
-> sanjay
->
->
->
-==============================================================
->  Sanjay Kumar
-> skumar@giga-stream.de
->  GIGA-STREAM UMTS Technologies GmbH  Tel: +49
-> (07243) 94976-119
->  Im Ermlisgrund 8                    Fax: +49
-> (07243) 94976-100
->  76337 Waldbronn
->
->
-==============================================================
->
->
+I'm trying to write an i2c driver to interface a ds1307 realtime clock
+to linux. I'm having no luck getting linux to do anything at all on the
+i2c bus.
+
+System:
+mpc823e on tqm823 module. ds1307 in a custom designed circuit. Linux
+kernel 2.4.4 from Denx cvs, with label: LABEL_2003_05_01_1320
+
+I've verified the i2c hardware as the bootloader u-boot (v 0.4.0) will
+talk quite happily with the realtime clock.
+
+In order to get some sort of traffic I decided to modify i2c-r360.c so
+that it would do something (anything really would do) on the i2c bus.
+Now, i2c-r360.c on its own doesn't do much and insmods and rmmods fine
+on my target. If I apply this diff:
+
+-----------------------------------------------------------------------------------------------------
+[seb@mst26 i2c]$ diff -puN i2c-r360.c i2c-r360.c.new
+--- i2c-r360.c  2003-07-07 09:57:30.000000000 +0100
++++ i2c-r360.c.new      2003-07-07 09:54:51.000000000 +0100
+@@ -103,7 +103,7 @@ static struct i2c_adapter r360_ops = {
+        r360_unreg,
+ };
+
+-#define I2C_PWM_ADDR        0x58    /* Power management coprocessor */
++#define I2C_PWM_ADDR        0x68    /* Not: Power management coprocessor */
+ #define I2C_KBD_ADDR        0x50    /* Keyboard coprocessor */
+ #define I2C_TERM_ADDR       0x49    /* Temperature Sensors */
+
+@@ -217,6 +217,9 @@ int __init i2c_r360_init(void)
+                return -ENODEV;
+        }
+
++       /* ssj adds: */
++       r360_pwm_write(0,0);
++
+        return 0;
+ }
+-----------------------------------------------------------------------------------------------------
 
 
-=====
-------------------------------------------------------------
--Dhmhtrios Meidanis
--Degree in Mathematics, University of the Aegean.
--Master in Computer Architecture and Digital
- Systems, University of Crete.
- Greece.
-------------------------------------------------------------
+....then I think it should be writing a 0 to register 0 of an i2c device
+on the bus with address 0x68 when the module is initialized.
+
+Unfortunately my system hangs as it waits for an interrupt that never
+arrives.
+
+I'm wondering if I have missed something in my kernel configuration? My
+.config is attached.
+
+Can anyone confirm that this is a reasonable change to make to
+i2c-r360.c in order to get some traffic on the i2c bus to look at on my
+'scope?
+
+I'm getting rather fed up with i2c now....
+
+regards,
+
+Seb James.
+
+--------------060507080201020405020105
+Content-Type: text/plain;
+ name="i2c-r360.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="i2c-r360.diff"
+
+--- i2c-r360.c	2003-07-07 09:57:30.000000000 +0100
++++ i2c-r360.c.new	2003-07-07 09:54:51.000000000 +0100
+@@ -103,7 +103,7 @@ static struct i2c_adapter r360_ops = {
+ 	r360_unreg,
+ };
+
+-#define I2C_PWM_ADDR        0x58    /* Power management coprocessor */
++#define I2C_PWM_ADDR        0x68    /* Not: Power management coprocessor */
+ #define I2C_KBD_ADDR        0x50    /* Keyboard coprocessor */
+ #define I2C_TERM_ADDR       0x49    /* Temperature Sensors */
+
+@@ -217,6 +217,9 @@ int __init i2c_r360_init(void)
+ 		return -ENODEV;
+ 	}
+
++	/* ssj adds: */
++	r360_pwm_write(0,0);
++
+ 	return 0;
+ }
+
+
+--------------060507080201020405020105
+Content-Type: text/plain;
+ name="I2C_ENET.config"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="I2C_ENET.config"
+
+#
+# Automatically generated by make menuconfig: don't edit
+#
+# CONFIG_UID16 is not set
+# CONFIG_RWSEM_GENERIC_SPINLOCK is not set
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+
+#
+# Code maturity level options
+#
+CONFIG_EXPERIMENTAL=y
+
+#
+# Loadable module support
+#
+CONFIG_MODULES=y
+# CONFIG_MODVERSIONS is not set
+CONFIG_KMOD=y
+
+#
+# Platform support
+#
+CONFIG_PPC=y
+# CONFIG_6xx is not set
+# CONFIG_8240 is not set
+# CONFIG_4xx is not set
+# CONFIG_POWER3 is not set
+# CONFIG_POWER4 is not set
+CONFIG_8xx=y
+# CONFIG_CU824 is not set
+CONFIG_SERIAL_CONSOLE=y
+# CONFIG_AMX860 is not set
+# CONFIG_BSEIP is not set
+# CONFIG_C2MON is not set
+# CONFIG_CCM is not set
+# CONFIG_ETX094 is not set
+# CONFIG_FADS860 is not set
+# CONFIG_FPS850L is not set
+# CONFIG_FPS860L is not set
+# CONFIG_HERMES is not set
+# CONFIG_HERMES_SH is not set
+# CONFIG_ICU862 is not set
+# CONFIG_IDIF855 is not set
+# CONFIG_IP860 is not set
+# CONFIG_IPS16 is not set
+# CONFIG_IVML24 is not set
+# CONFIG_IVMS8 is not set
+# CONFIG_LANTEC is not set
+# CONFIG_LWMON is not set
+# CONFIG_MBX is not set
+# CONFIG_R360MPI is not set
+# CONFIG_PCU_E is not set
+# CONFIG_RPXCLASSIC is not set
+# CONFIG_RPXLITE is not set
+# CONFIG_SM850 is not set
+# CONFIG_SPD823TS is not set
+# CONFIG_RRVISION is not set
+CONFIG_TQM823L=y
+# CONFIG_TQM850L is not set
+# CONFIG_TQM855L is not set
+# CONFIG_TQM860 is not set
+# CONFIG_TQM860L is not set
+# CONFIG_KUP4K is not set
+# CONFIG_TTTech is not set
+# CONFIG_WINCEPT is not set
+CONFIG_TQM8xxL=y
+# CONFIG_LOGBUFFER is not set
+# CONFIG_PPC601_SYNC_FIX is not set
+# CONFIG_ALL_PPC is not set
+# CONFIG_SMP is not set
+CONFIG_RTHAL=y
+CONFIG_MACH_SPECIFIC=y
+CONFIG_MATH_EMULATION=y
+# CONFIG_SASH is not set
+
+#
+# General setup
+#
+# CONFIG_HIGHMEM is not set
+# CONFIG_ISA is not set
+# CONFIG_EISA is not set
+# CONFIG_SBUS is not set
+# CONFIG_MCA is not set
+# CONFIG_PCI_QSPAN is not set
+# CONFIG_PCI is not set
+CONFIG_NET=y
+CONFIG_SYSCTL=y
+CONFIG_SYSVIPC=y
+# CONFIG_BSD_PROCESS_ACCT is not set
+CONFIG_KCORE_ELF=y
+CONFIG_BINFMT_ELF=y
+CONFIG_KERNEL_ELF=y
+# CONFIG_BINFMT_MISC is not set
+# CONFIG_HOTPLUG is not set
+# CONFIG_PCMCIA is not set
+
+#
+# Parallel port support
+#
+# CONFIG_PARPORT is not set
+
+#
+# Memory Technology Devices (MTD)
+#
+# CONFIG_MTD is not set
+
+#
+# Plug and Play configuration
+#
+# CONFIG_PNP is not set
+# CONFIG_ISAPNP is not set
+
+#
+# Block devices
+#
+# CONFIG_BLK_DEV_FD is not set
+# CONFIG_BLK_DEV_XD is not set
+# CONFIG_PARIDE is not set
+# CONFIG_BLK_CPQ_DA is not set
+# CONFIG_BLK_CPQ_CISS_DA is not set
+# CONFIG_BLK_DEV_DAC960 is not set
+# CONFIG_BLK_DEV_LOOP is not set
+# CONFIG_BLK_DEV_NBD is not set
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_SIZE=4096
+CONFIG_BLK_DEV_INITRD=y
+
+#
+# Multi-device support (RAID and LVM)
+#
+# CONFIG_MD is not set
+# CONFIG_BLK_DEV_MD is not set
+# CONFIG_MD_LINEAR is not set
+# CONFIG_MD_RAID0 is not set
+# CONFIG_MD_RAID1 is not set
+# CONFIG_MD_RAID5 is not set
+# CONFIG_BLK_DEV_LVM is not set
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+# CONFIG_PACKET_MMAP is not set
+CONFIG_NETLINK=y
+# CONFIG_RTNETLINK is not set
+# CONFIG_NETLINK_DEV is not set
+# CONFIG_NETFILTER is not set
+# CONFIG_FILTER is not set
+CONFIG_UNIX=y
+CONFIG_INET=y
+# CONFIG_IP_MULTICAST is not set
+# CONFIG_IP_ADVANCED_ROUTER is not set
+CONFIG_IP_PNP=y
+# CONFIG_IP_PNP_BOOTP is not set
+# CONFIG_IP_PNP_RARP is not set
+# CONFIG_NET_IPIP is not set
+# CONFIG_NET_IPGRE is not set
+# CONFIG_INET_ECN is not set
+# CONFIG_SYN_COOKIES is not set
+# CONFIG_IPV6 is not set
+# CONFIG_KHTTPD is not set
+# CONFIG_ATM is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+# CONFIG_DECNET is not set
+# CONFIG_BRIDGE is not set
+# CONFIG_X25 is not set
+# CONFIG_LAPB is not set
+# CONFIG_LLC is not set
+# CONFIG_NET_DIVERT is not set
+# CONFIG_ECONET is not set
+# CONFIG_WAN_ROUTER is not set
+# CONFIG_NET_FASTROUTE is not set
+# CONFIG_NET_HW_FLOWCONTROL is not set
+
+#
+# QoS and/or fair queueing
+#
+# CONFIG_NET_SCHED is not set
+
+#
+# ATA/IDE/MFM/RLL support
+#
+CONFIG_IDE=y
+
+#
+# IDE, ATA and ATAPI Block devices
+#
+CONFIG_BLK_DEV_IDE=y
+# CONFIG_BLK_DEV_HD_IDE is not set
+# CONFIG_BLK_DEV_HD is not set
+CONFIG_BLK_DEV_IDEDISK=y
+CONFIG_IDEDISK_MULTI_MODE=y
+# CONFIG_BLK_DEV_IDEDISK_VENDOR is not set
+# CONFIG_BLK_DEV_IDEDISK_FUJITSU is not set
+# CONFIG_BLK_DEV_IDEDISK_IBM is not set
+# CONFIG_BLK_DEV_IDEDISK_MAXTOR is not set
+# CONFIG_BLK_DEV_IDEDISK_QUANTUM is not set
+# CONFIG_BLK_DEV_IDEDISK_SEAGATE is not set
+# CONFIG_BLK_DEV_IDEDISK_WD is not set
+# CONFIG_BLK_DEV_COMMERIAL is not set
+# CONFIG_BLK_DEV_TIVO is not set
+# CONFIG_BLK_DEV_IDECS is not set
+# CONFIG_BLK_DEV_IDECD is not set
+# CONFIG_BLK_DEV_IDETAPE is not set
+# CONFIG_BLK_DEV_IDEFLOPPY is not set
+# CONFIG_BLK_DEV_IDESCSI is not set
+# CONFIG_BLK_DEV_CMD640 is not set
+# CONFIG_BLK_DEV_CMD640_ENHANCED is not set
+# CONFIG_BLK_DEV_ISAPNP is not set
+CONFIG_BLK_DEV_MPC8xx_IDE=y
+CONFIG_IDE_8xx_PCCARD=y
+# CONFIG_IDE_8xx_DIRECT is not set
+# CONFIG_IDE_EXT_DIRECT is not set
+# CONFIG_IDE_CHIPSETS is not set
+# CONFIG_IDEDMA_AUTO is not set
+# CONFIG_DMA_NONPCI is not set
+CONFIG_BLK_DEV_IDE_MODES=y
+
+#
+# SCSI support
+#
+# CONFIG_SCSI is not set
+
+#
+# Network device support
+#
+CONFIG_NETDEVICES=y
+
+#
+# ARCnet devices
+#
+# CONFIG_ARCNET is not set
+# CONFIG_DUMMY is not set
+# CONFIG_BONDING is not set
+# CONFIG_EQUALIZER is not set
+# CONFIG_TUN is not set
+# CONFIG_ETHERTAP is not set
+# CONFIG_NET_SB1000 is not set
+
+#
+# Ethernet (10 or 100Mbit)
+#
+CONFIG_NET_ETHERNET=y
+# CONFIG_MACE is not set
+# CONFIG_BMAC is not set
+# CONFIG_GMAC is not set
+# CONFIG_NCR885E is not set
+# CONFIG_OAKNET is not set
+# CONFIG_NET_VENDOR_3COM is not set
+# CONFIG_LANCE is not set
+# CONFIG_NET_VENDOR_SMC is not set
+# CONFIG_NET_VENDOR_RACAL is not set
+# CONFIG_AT1700 is not set
+# CONFIG_DEPCA is not set
+# CONFIG_NET_ISA is not set
+# CONFIG_NET_PCI is not set
+# CONFIG_NET_POCKET is not set
+
+#
+# Ethernet (1000 Mbit)
+#
+# CONFIG_ACENIC is not set
+# CONFIG_HAMACHI is not set
+# CONFIG_YELLOWFIN is not set
+# CONFIG_SK98LIN is not set
+# CONFIG_FDDI is not set
+# CONFIG_HIPPI is not set
+# CONFIG_PPP is not set
+# CONFIG_SLIP is not set
+
+#
+# Wireless LAN (non-hamradio)
+#
+# CONFIG_NET_RADIO is not set
+
+#
+# Token Ring devices
+#
+# CONFIG_TR is not set
+# CONFIG_NET_FC is not set
+# CONFIG_RCPCI is not set
+# CONFIG_SHAPER is not set
+
+#
+# Wan interfaces
+#
+# CONFIG_WAN is not set
+
+#
+# Amateur Radio support
+#
+# CONFIG_HAMRADIO is not set
+
+#
+# IrDA (infrared) support
+#
+# CONFIG_IRDA is not set
+
+#
+# ISDN subsystem
+#
+# CONFIG_ISDN is not set
+
+#
+# Old CD-ROM drivers (not SCSI, not IDE)
+#
+# CONFIG_CD_NO_IDESCSI is not set
+
+#
+# Console drivers
+#
+
+#
+# Frame-buffer support
+#
+# CONFIG_FB is not set
+
+#
+# Input core support
+#
+# CONFIG_INPUT is not set
+
+#
+# Macintosh device drivers
+#
+
+#
+# Character devices
+#
+# CONFIG_VT is not set
+# CONFIG_SERIAL is not set
+# CONFIG_SERIAL_TTTECH is not set
+# CONFIG_SERIAL_EXTENDED is not set
+# CONFIG_SERIAL_NONSTANDARD is not set
+CONFIG_UNIX98_PTYS=y
+CONFIG_UNIX98_PTY_COUNT=32
+
+#
+# I2C support
+#
+CONFIG_I2C=m
+# CONFIG_I2C_ALGOBIT is not set
+# CONFIG_I2C_ALGOPCF is not set
+# CONFIG_I2C_ELEKTOR is not set
+CONFIG_I2C_ALGO8XX=m
+# CONFIG_I2C_RPXLITE is not set
+CONFIG_I2C_LWMON=m
+CONFIG_I2C_R360MPI=m
+# CONFIG_I2C_TTTECH is not set
+CONFIG_I2C_CHARDEV=m
+
+#
+# Mice
+#
+# CONFIG_BUSMOUSE is not set
+# CONFIG_MOUSE is not set
+
+#
+# Joysticks
+#
+# CONFIG_JOYSTICK is not set
+# CONFIG_QIC02_TAPE is not set
+
+#
+# Watchdog Cards
+#
+# CONFIG_WATCHDOG is not set
+# CONFIG_INTEL_RNG is not set
+# CONFIG_NVRAM is not set
+# CONFIG_RTC is not set
+# CONFIG_PCF8563_RTC is not set
+# CONFIG_RTC_8XX is not set
+# CONFIG_DTLK is not set
+# CONFIG_R3964 is not set
+# CONFIG_APPLICOM is not set
+CONFIG_FLASH=y
+CONFIG_AMD_FLASH=y
+# CONFIG_INTEL_FLASH is not set
+# CONFIG_STATUS_LED is not set
+
+#
+# Ftape, the floppy tape device driver
+#
+# CONFIG_FTAPE is not set
+# CONFIG_AGP is not set
+# CONFIG_DRM is not set
+# CONFIG_AD7415 is not set
+
+#
+# Misc devices
+#
+
+#
+# Multimedia devices
+#
+# CONFIG_VIDEO_DEV is not set
+
+#
+# File systems
+#
+# CONFIG_QUOTA is not set
+# CONFIG_AUTOFS_FS is not set
+# CONFIG_AUTOFS4_FS is not set
+# CONFIG_REISERFS_FS is not set
+# CONFIG_REISERFS_CHECK is not set
+# CONFIG_ADFS_FS is not set
+# CONFIG_ADFS_FS_RW is not set
+# CONFIG_AFFS_FS is not set
+# CONFIG_HFS_FS is not set
+# CONFIG_BFS_FS is not set
+CONFIG_FAT_FS=y
+CONFIG_MSDOS_FS=y
+# CONFIG_UMSDOS_FS is not set
+# CONFIG_VFAT_FS is not set
+# CONFIG_EFS_FS is not set
+# CONFIG_JFFS_FS is not set
+# CONFIG_JFFS2_FS is not set
+# CONFIG_CRAMFS is not set
+# CONFIG_TMPFS is not set
+# CONFIG_RAMFS is not set
+# CONFIG_ISO9660_FS is not set
+# CONFIG_JOLIET is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_NTFS_FS is not set
+# CONFIG_NTFS_RW is not set
+# CONFIG_HPFS_FS is not set
+CONFIG_PROC_FS=y
+# CONFIG_DEVFS_FS is not set
+# CONFIG_DEVFS_MOUNT is not set
+# CONFIG_DEVFS_DEBUG is not set
+CONFIG_DEVPTS_FS=y
+# CONFIG_QNX4FS_FS is not set
+# CONFIG_QNX4FS_RW is not set
+# CONFIG_ROMFS_FS is not set
+CONFIG_EXT2_FS=y
+# CONFIG_SYSV_FS is not set
+# CONFIG_SYSV_FS_WRITE is not set
+# CONFIG_UDF_FS is not set
+# CONFIG_UDF_RW is not set
+# CONFIG_UFS_FS is not set
+# CONFIG_UFS_FS_WRITE is not set
+
+#
+# Network File Systems
+#
+# CONFIG_CODA_FS is not set
+CONFIG_NFS_FS=y
+CONFIG_NFS_V3=y
+CONFIG_ROOT_NFS=y
+# CONFIG_NFSD is not set
+# CONFIG_NFSD_V3 is not set
+CONFIG_SUNRPC=y
+CONFIG_LOCKD=y
+CONFIG_LOCKD_V4=y
+# CONFIG_SMB_FS is not set
+# CONFIG_NCP_FS is not set
+# CONFIG_NCPFS_PACKET_SIGNING is not set
+# CONFIG_NCPFS_IOCTL_LOCKING is not set
+# CONFIG_NCPFS_STRONG is not set
+# CONFIG_NCPFS_NFS_NS is not set
+# CONFIG_NCPFS_OS2_NS is not set
+# CONFIG_NCPFS_SMALLDOS is not set
+# CONFIG_NCPFS_NLS is not set
+# CONFIG_NCPFS_EXTRAS is not set
+
+#
+# Partition Types
+#
+CONFIG_PARTITION_ADVANCED=y
+# CONFIG_ACORN_PARTITION is not set
+# CONFIG_OSF_PARTITION is not set
+# CONFIG_AMIGA_PARTITION is not set
+# CONFIG_ATARI_PARTITION is not set
+CONFIG_MAC_PARTITION=y
+CONFIG_MSDOS_PARTITION=y
+# CONFIG_BSD_DISKLABEL is not set
+# CONFIG_MINIX_SUBPARTITION is not set
+# CONFIG_SOLARIS_X86_PARTITION is not set
+# CONFIG_UNIXWARE_DISKLABEL is not set
+# CONFIG_SGI_PARTITION is not set
+# CONFIG_ULTRIX_PARTITION is not set
+# CONFIG_SUN_PARTITION is not set
+# CONFIG_SMB_NLS is not set
+CONFIG_NLS=y
+
+#
+# Native Language Support
+#
+CONFIG_NLS_DEFAULT="y"
+# CONFIG_NLS_CODEPAGE_437 is not set
+# CONFIG_NLS_CODEPAGE_737 is not set
+# CONFIG_NLS_CODEPAGE_775 is not set
+# CONFIG_NLS_CODEPAGE_850 is not set
+# CONFIG_NLS_CODEPAGE_852 is not set
+# CONFIG_NLS_CODEPAGE_855 is not set
+# CONFIG_NLS_CODEPAGE_857 is not set
+# CONFIG_NLS_CODEPAGE_860 is not set
+# CONFIG_NLS_CODEPAGE_861 is not set
+# CONFIG_NLS_CODEPAGE_862 is not set
+# CONFIG_NLS_CODEPAGE_863 is not set
+# CONFIG_NLS_CODEPAGE_864 is not set
+# CONFIG_NLS_CODEPAGE_865 is not set
+# CONFIG_NLS_CODEPAGE_866 is not set
+# CONFIG_NLS_CODEPAGE_869 is not set
+# CONFIG_NLS_CODEPAGE_936 is not set
+# CONFIG_NLS_CODEPAGE_950 is not set
+# CONFIG_NLS_CODEPAGE_932 is not set
+# CONFIG_NLS_CODEPAGE_949 is not set
+# CONFIG_NLS_CODEPAGE_874 is not set
+# CONFIG_NLS_ISO8859_8 is not set
+# CONFIG_NLS_CODEPAGE_1251 is not set
+CONFIG_NLS_ISO8859_1=y
+# CONFIG_NLS_ISO8859_2 is not set
+# CONFIG_NLS_ISO8859_3 is not set
+# CONFIG_NLS_ISO8859_4 is not set
+# CONFIG_NLS_ISO8859_5 is not set
+# CONFIG_NLS_ISO8859_6 is not set
+# CONFIG_NLS_ISO8859_7 is not set
+# CONFIG_NLS_ISO8859_9 is not set
+# CONFIG_NLS_ISO8859_13 is not set
+# CONFIG_NLS_ISO8859_14 is not set
+CONFIG_NLS_ISO8859_15=y
+# CONFIG_NLS_KOI8_R is not set
+# CONFIG_NLS_KOI8_U is not set
+# CONFIG_NLS_UTF8 is not set
+
+#
+# Sound
+#
+# CONFIG_SOUND is not set
+
+#
+# MPC8xx CPM Options
+#
+CONFIG_CPM_TRACK_LOAD=y
+# CONFIG_CPM_MULTILEVEL_IRQ is not set
+CONFIG_SCC_ENET=y
+# CONFIG_SCC1_ENET is not set
+CONFIG_SCC2_ENET=y
+# CONFIG_SCC3_ENET is not set
+# CONFIG_FEC_ENET is not set
+CONFIG_ENET_BIG_BUFFERS=y
+CONFIG_SMC1_UART=y
+CONFIG_CONS_SMC1=y
+CONFIG_UART_MAXIDL_SMC1=1
+CONFIG_SMC1_UART_RX_BDNUM=4
+CONFIG_SMC1_UART_RX_BDSIZE=32
+CONFIG_SMC1_UART_TX_BDNUM=4
+CONFIG_SMC1_UART_TX_BDSIZE=32
+# CONFIG_SMC2_UART is not set
+# CONFIG_USE_SCC_IO is not set
+CONFIG_8xx_COPYBACK=y
+# CONFIG_8xx_CPU6 is not set
+CONFIG_UCODE_PATCH=y
+# CONFIG_8XX_USE_RISC_TIMERS is not set
+# CONFIG_8xx_LCD is not set
+# CONFIG_8xx_VIDEO is not set
+# CONFIG_8xx_PWM is not set
+# CONFIG_CPM_SPI is not set
+
+#
+# USB support
+#
+# CONFIG_USB is not set
+
+#
+# Kernel hacking
+#
+# CONFIG_MAGIC_SYSRQ is not set
+# CONFIG_KGDB is not set
+# CONFIG_XMON is not set
+CONFIG_BDI_SWITCH=y
+
+--------------060507080201020405020105--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
