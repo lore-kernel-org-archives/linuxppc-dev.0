@@ -1,52 +1,40 @@
-Message-Id: <200007051449.PAA31335@hyperion.valhalla.net>
-Date: Wed, 05 Jul 2000 15:49:31 +0100
-Subject: Re: GNU Parted, linuxppc support coming :-)
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
-CC: Andrew Clausen <clausen@gnu.org>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-ID: <39634DA6.3DBC0CCB@relog.ch>
+Date: Wed, 05 Jul 2000 17:00:54 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
+MIME-Version: 1.0
+To: me@johngrimes.com
+CC: Gwyn Judd <b.judd@xtra.co.nz>,
+        LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: seemingly random lock-up with kernel 2.2.17p7
+References: <Pine.SGI.4.21.0007050940370.24528-100000@rainbow.uchicago.edu>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Andrew Clausen wrote:
-> Hollis Blanchard wrote:
->> Andrew Clausen wrote:
+me@johngrimes.com wrote:
 
->> > Note: I'm not adding HFS support at this stage - it's a LOT of work.
->> > So you'll be able to resize ext2 partitions in the near future, but
->> > not HFS partitions :-/  Unless there are some volunteers...
->>
->> There seems to be a shortage of HFS folks these days. :) But ext2
->> resizing sounds very cool.
->
-> Excuse my ignorance... what FS's do people usually use with MacOS?
-> HFS/HFS+?
->
-> (Is the point "no-one uses MacOS", or "no-one's hacking on HFS
-> in Linux"?)
+> It also might be time to try Xfree86-4 (although I don't think this would
+> fix it).
 
-People are still using a hybrid of both - this is because dual-boot machines
-(e.g. all of mine) must use HFS if they want to talk to linux.
+I use 4.0x ...
 
-However, HFS is deprecated in the Mac world and is/will be replaced by HFS+
-which includes the necessary support for MacOS X/Darwin and fits more
-comfortably into the u*ix world (in general).
 
-There is an Apple Paper on the issues
-(http://www.mit.edu/people/wsanchez/papers/USENIX_2000/) which is quite
-readable.
+> I really want to get multihead to work but I didn't have any luck with
+> Xfree86-4 in the earlier incarnations to even get one monitor working.
 
-There are also some developers on the list who are actively working on HFS+
-(I should be contributing, sorry guys, but am a bit tied up with audio stuff
-right now).
+At least one head should work well now. You may want to use Jack Howarth's
+RPMs.
 
-We should keep HFS/HFS+ support - because there are still reasons to
-dual/multi-boot Macs (e.g. Darwin work and some apps/stuff which just isn't
-there on Linux... yet).
 
-Hope that helps,
-Iain.
+Michel
+
+
+--
+True programmers never die, they just branch to an odd address.
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
