@@ -1,37 +1,59 @@
-Message-Id: <199908052138.RAA29909@mail-1.global2000.net>
-Date: Thu, 05 Aug 1999 17:22:55 -0400
-Subject: Re: How DOES OF Work? (ie multi-OS woes)
-From: "Andrew B. Arthur" <arthur99@global2000.net>
-To: Sean James Swallow <olaph@takilma.nurk.org>,
-        "Ira K. Weiny" <iweiny@kdat.csc.calpoly.edu>
-CC: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-ID: <37AA04D5.DC423FA2@motorola.com>
+Date: Thu, 05 Aug 1999 14:40:37 -0700
+From: Robert Shaw <robert.shaw@motorola.com>
+Reply-To: rshaw@inficad.com
+MIME-Version: 1.0
+To: bh40@calva.net, LinuxPPC User <linuxppc-user@lists.linuxppc.org>,
+        LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: New BootX 1.1.2 problems...
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I wish you good luck... Maybe you could come up w/ a way to boot from a
-> selection of OS'es via OF. But the mac crowd will still wine, as there is
-> no icons to click on in OF... =/
+Ben,
 
-See http://www.linuxppc.org/userguide/bootMenu.html for the Open Firmware
-boot menu.
+Thanks for the new version of BootX 1.1.2. However, after trying it,
+I've some things to report:
 
-It always used to work quite well, so I expect it would work good now.
+   * Sound works from the extension or the application.
+   * The resolution properly switches when booting with the extension.
 
-Supports timeout (after 180 seconds), and presents you with a boot list like
-this:
+Ok, that's the good news. Now for the bad news:
 
-<m>ac os
-<l>inux-pmac
-<o>pen firmware
+   * When using the extension to boot into Linux, once you click the
+     Linux button the screen resolution switches to normal, and I
+     immediately get a system error of the following:
 
-Thanks,
+     Sorry, a system error occured.
+     "* BootX Extension"
+     error type 11
+     To temporarily turn off extensions....blah blah blah.
 
-Andrew Arthur a.k.a. AArthur
-arthur99@global2000.net
-AIM: arthur998
+     The only button is the Restart button, so I click it, and it boots
+     into Linux fine. (this is with the G3 Cache profiler extension
+     enabled). Now, if I disable the "G3 Cache Profiler" extension, the
+     system error does not appear, but it doesn't indicate that my L2
+     cache is enabled on the boot screen like it does with the cache
+     profiler extension loaded.
+   * Now, here's the weird one, no matter what I choose in the kernel
+     pop-up, it ALWAYS loads the first on in the list! No matter what.
+     This is of course bad. :(
+
+Hope this info is helpful.  If you need anything more, let me know.
+
+Oh, I almost forget, I have a 400MHz, Rev.1, Blue&White G3. You can
+check my web page for exact hardware configuration if you need it.
+
+Thanks for all your dedication on this! We truly appreciate it!!!
+
+-- Robert
+rshaw@inficad.com
+http://www.inficad.com/~rshaw/
+
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
