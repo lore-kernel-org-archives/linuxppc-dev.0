@@ -1,53 +1,43 @@
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <v04011702b2928a54e303@[209.86.155.254]>
-In-Reply-To: <v04011702b2914dc3594d@[209.86.156.28]>
-Date: Tue, 8 Dec 1998 00:38:39 -0800
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
-        paulus@cs.anu.edu.au, daveray@wellsfargo.com
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Complete fix for PB 2400 16-bit video problem
+Date: Tue, 8 Dec 1998 09:49:45 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Tom Rini <tmrini@ntplx.net>
+cc: Martin Costabel <costabel@lie.univ-rennes1.fr>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: pre-R5&miscs
+In-Reply-To: <Pine.LNX.4.05.9812071636130.1031-100000@pc.wackyland.com>
+Message-ID: <Pine.LNX.4.03.9812080947230.15479-100000@mercator.cs.kuleuven.ac.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I figured out why 16-bit doesn't work in the console today.  I wasn't
-checking "Advanced driver options" in the console setup screen (I use make
-menuconfig).  This resulted in CONFIG_FBCON_CFB16 (I think that's the name)
-not getting set, which .  Perhaps the CONFIG_FBCON_CFBxx settings should
-default to Y?
+On Mon, 7 Dec 1998, Tom Rini wrote:
+> On Mon, 7 Dec 1998, Martin Costabel wrote:
+> > The 2 servers from Geert's that I tried didn't want to run on pre-R5. I don't 
+> > quite know why, because they dump 2 pages of messages on the screen, only the
+> > second of which is visible. This is a help file. I guess the real errors are
+> > mentioned on the first, invisible, page. Not very helpful.
+> 
+> Hmm.  Possibly a problem running it on valkfb?  Geert?
 
+That's quite reasonable. There were some changes in XF68_FBDev that may make it
+break on frame buffer devices that aren't 100% compliant. Guess I need to dump
+more info with the -verbose flag.
 
-Also, since I proved in my earlier message that I didn't know how to use
-diff, and got told about it :), here is a better diff for
-drivers/video/chipsfb.c.  This will patch it to correctly change bitdepth.
+Martin: what about redirecting the X server output to a file, like
 
+    XF68_FBDev >& /tmp/out
 
----------cut-----------------
---- chipsfb.orig.c	Mon Dec  7 00:24:13 1998
-+++ chipsfb.c	Mon Dec  7 01:27:17 1998
-@@ -358,6 +358,7 @@
- 		if (con == currcon) {
- 			write_cr(0x13, 200);		// 16 bit display
-width (decimal)
- 			write_xr(0x81, 0x14);		// 15 bit
-(TrueColor) color mode
-+			write_xr(0x82, 0x00);		// disable palettes
- 			write_xr(0x20, 0x10);		// 16 bit blitter mode
- 		}
+Greetings,
 
-@@ -379,6 +380,7 @@
- 		if (con == currcon) {
- 			write_cr(0x13, 100);		// 8 bit display
-width (decimal)
- 			write_xr(0x81, 0x12);		// 8 bit color mode
-+			write_xr(0x82, 0x08);		// Graphics gamma
-enable
- 			write_xr(0x20, 0x00);		// 8 bit blitter mode
- 		}
----------cut-----------------
+						Geert
 
-  Tim Seufert
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
