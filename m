@@ -1,19 +1,17 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao08.cox.net (fed1rmmtao08.cox.net [68.230.241.31])
-	by ozlabs.org (Postfix) with ESMTP id 0232967A45
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2005 05:33:40 +1100 (EST)
-Date: Tue, 18 Jan 2005 11:33:37 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Tolunay Orkun <listmember@orkun.us>
-Message-ID: <20050118183337.GK28724@smtp.west.cox.net>
+Return-Path: <mgreer@mvista.com>
+Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id 3B81667A45
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2005 05:40:55 +1100 (EST)
+Message-ID: <41ED5832.2040602@mvista.com>
+Date: Tue, 18 Jan 2005 11:40:50 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 References: <41EC29A8.1040703@mvista.com>
-	<20050118161515.GI28724@smtp.west.cox.net>
-	<93780AB0-696D-11D9-81BE-003065F9B7DC@embeddededge.com>
-	<41ED49E2.5050401@orkun.us>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <41ED49E2.5050401@orkun.us>
-Cc: linuxppc-dev@ozlabs.org
+	<Pine.GSO.4.61.0501181017110.20681@waterleaf.sonytel.be>
+In-Reply-To: <Pine.GSO.4.61.0501181017110.20681@waterleaf.sonytel.be>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 Subject: Re: [RFC] Option to disable mapping genrtc calls to ppc_md calls
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,42 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 18, 2005 at 11:39:46AM -0600, Tolunay Orkun wrote:
-> Dan Malek wrote:
-> >
-> >On Jan 18, 2005, at 11:15 AM, Tom Rini wrote:
-> >
-> >>On Mon, Jan 17, 2005 at 02:10:00PM -0700, Mark A. Greer wrote:
-> >
-> >
-> >>>There are 2 reasons to not use the ppc_md.get_rtc_time() et. al. 
-> >>>interfaces:
-> >>>1) They are called before the i2c driver is initialized and even loaded
-> >>>if its a module.
-> >
-> >
-> >There are three reasons.  You don't want to use an I2c rtc clock at
-> >all in these functions because they get can get called from the
-> >clock interrupt to update the time in the rtc.  If it does happen to work,
-> >it creates long latencies in the timer interrupt.  If the i2c requires an
-> >interrupt, they system will crash or hang.
-> >
-> >A system using an I2C RTC should find some way to access the
-> >clock from application space as a standard I2C device and manage
-> >time/clock from the application, not from the kernel.
-> 
-> This is exactly what I've done for our PPC405GP based Linux port 
-> (2.4.25). I've written a clone of hwclock utility using /dev/i2c0 to 
-> access Dallas RTC chip with I2C interface. I setthe system clock from 
-> RTC within /etc/rcS (Busybox). It is less than perfect as early logs 
-> have the date wrong but it was the direction of least resistance.
-> 
-> Still, I think there should be a better standardized RTC interface to 
-> help deal with I2C/SMBus based RTC chips.
+Geert Uytterhoeven wrote:
 
-There kind of is now, arch/arm/common/rtctime.c (thought of for I2C RTCs
-and has alarm support).
+>On Mon, 17 Jan 2005, Mark A. Greer wrote:
+>  
+>
+>><snip>
+>>
+>>There are 2 reasons to not use the ppc_md.get_rtc_time() et. al. interfaces:
+>>1) They are called before the i2c driver is initialized and even loaded if its
+>>a module.
+>>    
+>>
+>
+>How is this solved by your patch if genrtc is builtin?
+>
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+It solved because the rtc interface isn't called until you do an hwclock 
+presumably in a startup script.
+
+> How is your solution
+>different from setting ppc_md.get_rtc_time to your get_rtc_time routine?
+>
+
+It arch independent which was the whole motivation for doing it this 
+way.  However, it does rely on a startup script to do a 'hwclock 
+--hctosys' which happen after driver initialization.  From what I can 
+tell sysvinit used to do the hwclock but doesn't anymore so you need a 
+script.  The mvl userland has a startup script that does this; others 
+probably do too.  Note that using a startup script to do a hwclock is 
+pretty standard AFAICT.
+
+>>2) Its ppc-specific.  Implementing get_rtc_time() et. al. directly makes it
+>>generic across all architectures.
+>>    
+>>
+>
+>... but prevents you from building a kernel that supports both normal RTCs and
+>your i2c RTC.
+>
+
+Well, yes but you aren't going to be able to do this and be 
+arch-agnostic.  If you don't care about running on anything but ppc then 
+you can to it the way i2c rtc's have been done before and either kludge 
+into the i2c driver during early startup or setup ppc_md.get_rtc_time() 
+once the i2c/rtc driver(s) are initialized.  This patch will not 
+interfere with that unless you deliberately set that option.
+
+I think the real question you should be ask is are the 
+ppc_md.get_rtc_time() et. al. calls really necessary?  Or to put it 
+another way, should we be grilling the people who are submitting 
+ppc-only solutions and not the ones submitting generic solutions?  :)
+
+Mark
