@@ -1,46 +1,38 @@
-Subject: Re: firewire in 2.4.21-ben2
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: daRonin <daronin@digimerc.com>
+Message-ID: <3F140C6E.2080609@stinkfoot.org>
+Date: Tue, 15 Jul 2003 10:15:10 -0400
+From: Ethan Weinstein <e-d0uble@stinkfoot.org>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.56.0307141313050.1861@daronin.digimerc.com>
-References: <Pine.LNX.4.56.0307141313050.1861@daronin.digimerc.com>
-Content-Type: text/plain
-Message-Id: <1058261452.628.36.camel@gaston>
-Mime-Version: 1.0
-Date: 15 Jul 2003 11:30:52 +0200
+Subject: Re: aic7xxx panics (long)
+References: <3EFFD86B.7060007@stinkfoot.org>	 <1056957083.32576.112.camel@gaston>  <3F00E86B.1000309@stinkfoot.org>	 <1057053589.32576.310.camel@gaston>  <3F02537C.1090801@stinkfoot.org>	 <1057148769.32104.422.camel@gaston>  <3F04D1EA.6060906@stinkfoot.org> <1057590248.11707.62.camel@gaston>
+In-Reply-To: <1057590248.11707.62.camel@gaston>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2003-07-14 at 21:19, daRonin wrote:
-> Hi,
->
->   I just upgraded to 2.4.21-ben2 kernel. And I can't mount my firewire
-> HDDs any longer.
->
->   These are the commands I am executing:
->
->   modprobe -k ieee1394
->   modprobe -k ohci1394
->   modprobe -k sbp2
->   modprobe -k raw1394
->   modprobe -k sd_mod
->   mount /dev/sda2 /mnt/fire
->
->   Judging by the logs everything seems to go fine up to inserting sd_mod.
-> sbp2 module seems to see the device and such.
->
->   But after inserting sd_mod absolutely nothing happens. I tried rmmod'ing
-> the modules and inserting them again, tried to switch the order around,
-> etc. No luck...
->
->   After I reboot back in 2.4.20-ben10 everything works fine...
+Benjamin Herrenschmidt wrote:
 
-That's a change in the firewire layer, you have to trigger a scsi probe
-yourself now. Either using the rescan-scsi-bus.sh script, or the scsiadd
-command for example
+  > Right now, I'm a bit clueless...
+>
+> You can try asking the driver maintainer ?
+>
+> Tell him that from what I see, the card seems to be properly mapped
+> on the PCI bus, function 0 works, but access to a function 1 register
+> is causing a Target Abort error on the PCI...
+>
+> Ben.
+>
 
-Ben.
+Ben,
+
+Looks as if Gibbs is uninterested in helping here, he hasn't replied to
+several problem reports regarding this issue and I'm not going to push
+it.  For the hell of it, I tried out CONFIG_SCSI_AIC7XXX_OLD and it
+prodces the _exact_ same oops.. Different driver, same crash.. thoughts?
+
+Ethan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
