@@ -1,32 +1,45 @@
-Date: Thu, 9 Dec 1999 10:51:41 -0600
-From: Grant Erickson <grant@lcse.umn.edu>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: PowerPC 4xx Patches vs. 2.3.31 Available
-Message-ID: <Pine.SGI.4.10.9912091037340.158405-100000@brule.borg.umn.edu>
+Message-ID: <384FF0B4.E59398ED@netx4.com>
+Date: Thu, 09 Dec 1999 13:11:00 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+CC: Graham Stoney <greyham@research.canon.com.au>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: FEC ERROR 41200000 on CLLF-860T
+References: <19991209002442.41D86118CD@elph.research.canon.com.au> <kfyr9gwz7j7.fsf@kieraypc07.p.y.ki.era.ericsson.se>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've posted my latest set of patches for the PowerPC 4xx against the
-2.3.31 kernel at
+Marcus Sundberg wrote:
 
-	http://www.lcse.umn.edu/~grant/Linux/index.html
 
-along with a bit of status and "to-do" information.
+> On vxworks the same program gives about 27 Mbit throughput, and
+> Windriver claims this is a limitation in the hardware...
 
-The kernel should most definitely compile and link. However, you must be
-sure that you configure INITRD to "off" as it doesn't appear to work in
-the 2.3 kernels yet.
+Of course they would.  There are lots of stories floating
+around about the 8xx hardware limitations.  There are manual
+pages and application notes that describe how the 8xx hardware
+works (in particular the CPM), and how you compute the capabilities.
+In my experience, it has lived up to the publications.  You can
+do things that are simply inefficient, or think about the
+system architecture or application and program it to do the
+things it can perform.
 
-As always with highly-experimental development stuff, this isn't for the
-faint of heart. But if you've got a good hardware single-step debugger, a
-PowerPC 4XX Developer's Manual, and some time, dive in!
+Even if it is "only" 20 something Mbits, how does that affect
+your application?  That is more than double what Graham was
+expecting for his.
 
-Regards,
+Remember Ethernet is a shared resource without any
+deterministic or bandwidth guarantees.  If it doesn't meet
+your requirements, perhaps you should choose from the
+variety of other interfaces the 8xx provides.
 
-Grant
+It can run an infinite loop as fast as anything else........
 
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
