@@ -1,25 +1,36 @@
-From: "Lee Rhodes" <daddy_rhodes@hotmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: kernel thread and NULL active_mm (MPC860)
-Date: Fri, 14 May 2004 16:20:00 +0100
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
-Message-ID: <BAY19-F12mLng8FSZDh0000bc92@hotmail.com>
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: "Pantelis Antoniou" <panto@intracom.gr>,
+	"Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Cc: "Tom Rini" <trini@kernel.crashing.org>,
+	"Dan Malek" <dan@embeddededge.com>, "Wolfgang Denk" <wd@denx.de>,
+	<sanjeevr@myw.ltindia.com>
+Subject: RE: [PATCH] Driver for FECs on motorola DUET (87x/88x)
+Date: Fri, 14 May 2004 17:23:20 +0200
+Message-ID: <JPEALJAFNGDDLOPNDIEEOEHHCIAA.joakim.tjernlund@lumentis.se>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <40A4DC36.1000707@intracom.gr>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-Can anyone tell me what would cause my kernel thread to have a NULL
-active_mm? The thread is waking up from a down_interruptible (it's a DPC
-thread) and, in doing so, it triggers the BUG_ON on line 559 of sched.c.
+> From: Pantelis Antoniou [mailto:panto@intracom.gr]
+>
+> Progress report.
+>
+> Got it to move even further.
 
-I'm just wondering if anyone can provide me with some theories on what might
-be going wrong. The same could runs fine on an i386 Linux desktop machine.
-I'm only encountering this issue when I port it to MPC860.
+Great!
 
-Thanks for any tips,
-Lee
+>
+> No longer crashes but it seems stuck in something related
+> to the serial console.
+
+If you are going to mess with the 8xx_io/uart.c, you might
+want to port this from 2.4:
+http://ppc.bkbits.net:8080/linuxppc-2.4/diffs/arch/ppc/8xx_io/uart.c@1.14.1.9?nav=index.html|src/.|src/arch|src/arch/ppc|src/arch/pp
+c/8xx_io|hist/arch/ppc/8xx_io/uart.c
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
