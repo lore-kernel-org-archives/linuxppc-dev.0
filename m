@@ -1,198 +1,102 @@
-Message-ID: <3BE83FC2.6090300@oerlikon.ca>
-Date: Tue, 06 Nov 2001 14:53:38 -0500
-From: "sruel@oerlikon.ca" <sruel@oerlikon.ca>
+Subject: Re: mvista 2.0 cdk and login username and password
+To: Mark Hatle <fray@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OFC00EF5EC.1C13B6AA-ON85256AFC.006E1C01@raleigh.ibm.com>
+From: "John F Davis" <johndavi@us.ibm.com>
+Date: Tue, 6 Nov 2001 16:15:25 -0500
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: AKC@pel.dk
-Subject: JFFS on RPX-CLLF board
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-If you are using an Embedded Planet RPX-CLLF board and want to install
-JFFS, here is a source file that I have modify to define a JFFS/MTD
-partition.
+Hello Mark,
 
-Place this file in:  /opt/.. <linux>../drivers/mtd
+I don't have a /etc/passwd file.  Thus I can't login.  I didn't use the
+install script.  I just installed the rpm's by hand
+like we did in cdk 1.2. i.e rpm -ivh --ignorearch *.rpm.  I didnt want to
+use the script because I didn't use the
+cdrom.  I had a copy of the cdrom filesystem mounted via AFS.  The script
+seems to think it is only used via a cdrom or mountable media.
+I figured it would be easier to just install all the rpm's rather than try
+to patch your script.  I already have problems installing
+both a 405 CDK and 750 CDK on the same machine.  I get errors about rpm
+conflicts with common files.  My coworker says mvista has
+released a patch for this, but I haven't tried using it yet.
 
-This was tested with linux kernel 2.4.4 (PPC).
+I will try to reinstall the passwd package again by hand.  However, I don't
+see how installing the rpm manualy would cause
+it not to create the /etc/passwd file.  I also don't understand why the rpm
+which creates the files doesnt register with the rpm database
+that it owns the file.  ie. 'rpm -q -f
+/opt/hardhat/devkit/ppc/7xx/target/etc/passwd' comes up blank.
 
-Hope this can help other saving some time...
-If you find any bugs, let me know. I'm not a specialist linux programmer!
+Also, I didnt see anything in the install script which would make a
+etc/passwd file so it must be as you said below.  The file is
+created via a rpm.
+
+I got my hhzone password now.  I look forward to seeing what's up there.
+
+Thanks to you and the rest of the mvista team for the quick response.  I
+dont consider the issue closed yet, but
+I do appreciate your help so far.
+
+John
+
+Mark Hatle <fray@mvista.com>@mvista.com on 11/05/2001 05:44:46 PM
+
+Sent by:  fray@mvista.com
 
 
-/*
- * $Id: rpxlite.c,v 1.15 2001/10/02 15:05:14 dwmw2 Exp $
- *
- * Handle mapping of the flash on the RPX Lite and CLLF boards
- * Modified by S.Perusse / S.Ruel 06/11/2001
- *
- */
-
-#include <linux/module.h>
-#include <linux/types.h>
-#include <linux/kernel.h>
-#include <asm/io.h>
-#include <linux/mtd/mtd.h>
-#include <linux/mtd/map.h>
-#include <linux/mtd/partitions.h>
-
-#define NB_OF(x)  (sizeof(x)/sizeof(x[0]))
-
-// For 32 MB FLASH
-//#define WINDOW_ADDR 0xfe000000
-//#define WINDOW_SIZE 0x800000
-
-// For 16 MB FLASH (RPX-CLLF board)
-#define WINDOW_ADDR 0xff000000
-#define WINDOW_SIZE 0x400000
-
-// Define one partition: part 0 = 14MB for JFFS filesystem.
-// This partition is offset from 2MB to leave plenty of space for
-bootloader & linux kernel image in flash.
-static struct mtd_partition partition_info[]={
-   /* { name: "RPX flash boot partition",
-      offset: 0,
-      size: 0x200000 },*/
-    { name: "RPX flash partition 1 (root fs)",
-      offset: 0x200000,
-      size: 0xE00000 },
-
-};
-
-static struct mtd_partition *parsed_parts;
-static struct mtd_info *mymtd;
-
-__u8 rpxlite_read8(struct map_info *map, unsigned long ofs)
-{
-    return __raw_readb(map->map_priv_1 + ofs);
-}
-
-__u16 rpxlite_read16(struct map_info *map, unsigned long ofs)
-{
-    return __raw_readw(map->map_priv_1 + ofs);
-}
-
-__u32 rpxlite_read32(struct map_info *map, unsigned long ofs)
-{
-    return __raw_readl(map->map_priv_1 + ofs);
-}
-
-void rpxlite_copy_from(struct map_info *map, void *to, unsigned long
-from, ssize_t len)
-{
-    memcpy_fromio(to, (void *)(map->map_priv_1 + from), len);
-}
-
-void rpxlite_write8(struct map_info *map, __u8 d, unsigned long adr)
-{
-    __raw_writeb(d, map->map_priv_1 + adr);
-    mb();
-}
-
-void rpxlite_write16(struct map_info *map, __u16 d, unsigned long adr)
-{
-    __raw_writew(d, map->map_priv_1 + adr);
-    mb();
-}
-
-void rpxlite_write32(struct map_info *map, __u32 d, unsigned long adr)
-{
-    __raw_writel(d, map->map_priv_1 + adr);
-    mb();
-}
-
-void rpxlite_copy_to(struct map_info *map, unsigned long to, const void
-*from, ssize_t len)
-{
-    memcpy_toio((void *)(map->map_priv_1 + to), from, len);
-}
-
-static struct map_info rpxlite_map = {
-    name: "RPX",
-    size: WINDOW_SIZE,
-    buswidth: 4,
-    read8: rpxlite_read8,
-    read16: rpxlite_read16,
-    read32: rpxlite_read32,
-    copy_from: rpxlite_copy_from,
-    write8: rpxlite_write8,
-    write16: rpxlite_write16,
-    write32: rpxlite_write32,
-    copy_to: rpxlite_copy_to
-};
+To:   John F Davis/Raleigh/IBM@ibmus
+cc:   linuxppc-embedded@lists.linuxppc.org, support@mvista.com
+Subject:  Re: mvista 2.0 cdk and login username and password
 
 
 
-int __init init_rpxlite(void)
-{
+John F Davis wrote:
+>
+> Hello
+>
+> What's the root login password for a newly installed sbs-k2, cdk 2.0,
+> target login?  The final paragraph of the sbs-k2
+> installation section (in the pdf) says to login, but doesn't specify a
+> password for root.
 
-    struct mtd_partition *parts;
-    int nb_parts = 0;
-    int parsed_nr_parts = 0;
-    char *part_type;
+There is no root password by default.  Normally you type root and you
+are logged in.. (Security hole?  for a desktop/workstation distro yes,
+but not for an embedded distro!)
 
-    part_type = "static";
-    parts = partition_info;
-    nb_parts = NB_OF(partition_info);
+> I installed the cd and when I try to login to a nfs root mounted
+partition,
+> I get a login prompt, but I can't login.
+> My installation doesn't   have a /..../target/etc/passwd file, which
+leads
+> me to believe I missed something during
+> the install.  However, I searched the CD for rpm's and none of them
+> owns/supplies  the /.../target/etc/passwd file.
+> Am I supposed to modify the inittab on the host machine so it boots
+single
+> user mode and create the /etc/password
+> file by hand, modify the inittab for multiuser mode and then reboot?
 
-    printk(KERN_NOTICE "RPX Lite or CLLF flash device: %x at %x\n",
-WINDOW_SIZE*4, WINDOW_ADDR);
-    rpxlite_map.map_priv_1 = (unsigned long)ioremap(WINDOW_ADDR,
-WINDOW_SIZE * 4);
+Sounds like the install did not work.  (Did you use the installer?)  The
+"base-passwd" package controls the password files.  It installs a
+passwd/group template into (target filesystem) /usr/share/base-passwd
+and then proceeds to copy them over into /etc/passwd,group.  This is
+done in case you already have an /etc/passwd,group so that it will not
+be over written, but "upgraded".
 
-    if (!rpxlite_map.map_priv_1) {
-        printk("Failed to ioremap\n");
-        return -EIO;
-    }
-    mymtd = do_map_probe("cfi_probe", &rpxlite_map);
-    if (!mymtd)
-        return -ENXIO;
+> Also, when am I going to get a hardhat zone login id?  I am sure MVista
+has
+> a FAQ which addresses this issue.
 
+If you are a paying customer, contact your support representative, and
+not the linuxppc-embedded list as they have nothing to do with our
+product.
 
-    mymtd->module = THIS_MODULE;
-
-
-    if (parsed_nr_parts > 0) {
-        parts = parsed_parts;
-        nb_parts = parsed_nr_parts;
-    }
-
-    if (nb_parts == 0) {
-        printk(KERN_NOTICE "RPX flash: no partition info available,
-registering whole flash at once\n");
-        add_mtd_device(mymtd);
-    } else {
-        printk(KERN_NOTICE "Using %s partition definition\n", part_type);
-        add_mtd_partitions(mymtd, parts, nb_parts);
-    }
-    return 0;
-
-
-    iounmap((void *)rpxlite_map.map_priv_1);
-    return -ENXIO;
-}
-
-
-static void __exit cleanup_rpxlite(void)
-{
-    if (mymtd) {
-        del_mtd_device(mymtd);
-        map_destroy(mymtd);
-    }
-    if (rpxlite_map.map_priv_1) {
-        iounmap((void *)rpxlite_map.map_priv_1);
-        rpxlite_map.map_priv_1 = 0;
-    }
-}
-
-module_init(init_rpxlite);
-module_exit(cleanup_rpxlite);
-
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Arnold Christensen <AKC@pel.dk>");
-MODULE_DESCRIPTION("MTD map driver for RPX Lite and CLLF boards");
+Mark Hatle
+MontaVista Software, Inc.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
