@@ -1,53 +1,48 @@
-Message-ID: <004501c39473$761a4990$2803050a@JackyLam>
-From: "Jacky Lam" <jackylam@astri.org>
-To: <linuxppc-embedded@lists.linuxppc.org>
-References: <001801c3946b$48d84390$6401a8c0@sazabimobile>
-Subject: Re: Problem with EP405's PCI 
-Date: Fri, 17 Oct 2003 13:56:51 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="big5"
+Subject: Doing floating point calculations in kernel space
+From: Toni Van Remortel <t.vanremortel@ha.be>
+Reply-To: t.vanremortel@ha.be
+To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain
+Message-Id: <1066374939.735.45.camel@toni>
+Mime-Version: 1.0
+Date: Fri, 17 Oct 2003 09:15:39 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-    Please see my previous post and the reply from xzuo@vinesystech.com .
-Hope it can help.
+Hi all,
 
-Jacky
------ Original Message -----
-From: "Shih-Ying Chou" <sschou@mtu.edu>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Friday, October 17, 2003 12:58 PM
-Subject: Problem with EP405's PCI
+When I thought it was a /proc problem, it was a float problem.
+The CPU (405GP) has no FPU, but I need to calculate sin and cos in a
+kernel module.
+Why? Well, we use a formula to draw figures (all deformed circles).
+Those figures can be defined with only 6 parameters, which are passed
+from the control-panel (in userspace) to the RTAI-powered kernel module.
+That module calculates the X and Y positions, creates PWM signals from
+it and outputs them to GPIO1 and 2.
 
+I don't see another approach to get this working, because the
+control-panel isn't real time, while the kernel module is. So the module
+needs to calculate the X and Y positions from the 6 parameters.
 
->
-> Hi All,
->     Have anyone successfully made the EP405's PCI (through PC/104 plus)
-> work?  If anyone does, please help me, I have struggle with it for over a
-> month now.
->     Right now I am using the linuxppc_2_4_devel kernel, and I can get the
-> EP405 to boot successfully.  But I can get the PCI interface to work
-right.
-> When booting up, the kernel can recognize the card weither USB or Sound
-> card, but it can seem to assign the right irq to the card.  Because USB
-card
-> always complain about no IRQ assign and ask to check BIOS.
->     I have look at the ep405.c and ppc405_pci.c and ppc4xx_pic.c files,
-but
-> I cannot find out what is wrong.  I know that I need to modify the
-> ppc405_devtable [] in the ep405.c file. I also check the registers such as
-> DCRN_UIC_PR, DCRN_UIC_TR, and DCRN_UIC_SR and all the value seems to be
-> correct, except DCRN_UIC_PR.  In the ep405.c DCRN_UIC_PR is set to be
-> 0xffffff80 which makes the PCI interrupt to be high, so as the User manual
-> stated.  But isn't PCI's interrupt should be active low?
->
-> Any pointer will be helpful, thank you in advance!
->
-> Shih-Ying Chou
->
->
+To make it short: can I use floating points in kernel space? The info
+I've found just tells me 'no', but I'm wondering if there are any
+workarounds for this.
+I did find some 'faster math functions' which don't require any sin or
+cos anymore, but they do require floating points.
+
+A possible solution to me, is using 'unsinged long int' multiplied by
+some factor of 10.
+
+Anybody a better solution?
+
+PS: might be a bit off topic here, sorry about that.
+--
+                           Toni Van Remortel
+              Wetenschappelijk Medewerker - D-science lab
+  Real time Linux for embedded systems: http://linemb.d-sciencelab.com
+              Tel: +32 3 205 61 72 - Fax: +32 3 205 61 95
+                      E-mail: t.vanremortel@ha.be
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
