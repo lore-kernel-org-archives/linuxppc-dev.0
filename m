@@ -1,36 +1,25 @@
-Message-ID: <38C28434.E79774E6@dynamite.com.au>
-Date: Sun, 05 Mar 2000 15:58:44 +0000
-From: Brad Hards <bradh@dynamite.com.au>
+Subject: Linux PowerPC-Embedded HOWTO
+To: linuxppc-embedded@lists.linuxppc.org (LinuxPPC Embedded Mailing List)
+Date: Mon, 6 Mar 2000 20:42:59 +1100 (EST)
 MIME-Version: 1.0
-To: Björn Lundberg <bjorn.lundberg@inu.se>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: commproc.c
-References: <4.2.2.20000302111129.00a638d0@mail.kerbango.com> <38C16DAC.81460D77@inu.se>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000306094259.D74832EB20@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Björn Lundberg wrote:
->
-> Steve Calfee wrote:
-> >
-> > Hi all,
-> >
-> > I have been working on doing a 823 USB driver. It is my first driver for
-> snip
->
-> We've got an USB host driver in alpha stage for the 850 (done with the
-> 823 manual since 850 lacked documentation).
-The 850 Users Manual contains info (including how to program) on the USB
-host as part of CPM doco - it is chapter 32, and has been recently
-updated:
-http://www.mot.com/SPS/RISC/netcomm/aesop/mpc8XX/850/32_USB.pdf
+Hi gang,
 
-The whole users manual is linked off:
-http://www.mot.com/SPS/RISC/netcomm/docs/pubs/850UM.html
+I've written a brief HOWTO with info from the last few months from this
+mailing list, and I'd be very interested in any feedback anyone could offer.
+It's on the web at:
+    http://members.xoom.com/greyhams/linux/PowerPC-Embedded-HOWTO.html
 
+I'm especially interested in any gross inaccuracies it may contain!
+If you spot one, please drop me some email.
 
-Brad
+Thanks,
+Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
