@@ -1,37 +1,46 @@
-From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-To: "Robert E Brose II" <bob@kunk.jriver.com>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: usb-storage.o - Unresolved symbol ppc_generic_ide_fix_driveid
- in 2.4.20-pre7-ben0
-Date: Fri, 4 Oct 2002 14:05:38 +0200
-Message-Id: <20021004120538.12787@192.168.4.1>
-In-Reply-To: <20021004052905.2189.qmail@kunk.jriver.com>
-References: <20021004052905.2189.qmail@kunk.jriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Fri, 4 Oct 2002 12:49:30 -0500
+Subject: Re: RFC: generic vector unit support?
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v546)
+Cc: <linuxppc-dev@lists.linuxppc.org>
+To: Daniel Jacobowitz <drow@false.org>
+From: Kumar Gala <kumar.gala@motorola.com>
+In-Reply-To: <20021003213143.GA9675@nevyn.them.org>
+Message-Id: <A1FE3890-D7C1-11D6-9BAC-003065BFB10E@motorola.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Tried to get all the info in the title..
->
->usb-storage.o - Unresolved symbol ppc_generic_ide_fix_driveid in 2.4.20-
->pre7-ben0
->
->This worked in 2.4.19.
->
->Ide is not enabled on this machine which is a SuperMac S900 (though if
->I remember right, enabling it didn't make any difference).
+On Thursday, October 3, 2002, at 04:31  PM, Daniel Jacobowitz wrote:
 
-It doeds make a difference, that function is only exported if you have
-IDE enabled in the .config. However, if you just enable it and redo
-the make, it may not work, as the actual export table may not be
-rebuilt properly.
+> On Thu, Oct 03, 2002 at 04:20:14PM -0500, Kumar Gala wrote:
+>> I am not sure about what to do about ptrace.  We extended the
+>> interface
+>> to have two new request types (PTRACE_GETVRREGS, PTRACE_SETVRREGS)
+>> which return the full altivec state (all registers, vscr, vrsave).  We
+>> could overload these request types to return all the 'vector' state
+>> depending on which processor we are.  This would mean debuggers would
+>> have to know which processor we are to know how big of a buffer to
+>> have
+>> for ptrace calls, the memory layout, etc.
+>
+> I'd rather see you do it the other way around:  Add PTRACE_GETSPEREGS
+> in the e500, so that the debugger can use ptrace to figure out which
+> registers are available.
 
-I suggest you enable IDE, backup .config, make distclean,
-restore .config, make oldconfig, then make.
+This seems reasonable, make life easier on the debugger.
 
-Ben.
+>
+>> We also extend generic vector idea to allow dumping of altivec/SPE
+>> register state into core files (which we do not do currently).
+>
+> That's a great idea.  Again, I think Altivec and SPE registers should
+> be tagged differently even though they can't coexist.
+
+I was thinking, by doing this we can add a dump_vector into the generic
+code that handles the creation of core files.
+
+- kumar
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
