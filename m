@@ -1,63 +1,31 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: gdbserver and gdb cross debug?
+Subject: Re: TLB SETTING in 440GP
 From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-To: jack.sun@bmrtech.com
+To: Aman <aman@mistralsoftware.com>
 Cc: Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <3DCF5E9B.406F7565@bmrtech.com>
-References: <200210260458.g9Q4wpq15745@ftp1.mvista.com>
-	<3DCF5E9B.406F7565@bmrtech.com>
+In-Reply-To: <005901c288bc$3ed80990$370da8c0@aman>
+References: <005901c288bc$3ed80990$370da8c0@aman>
 Content-Type: text/plain
-Date: 11 Nov 2002 14:12:02 +0100
-Message-Id: <1037020322.22840.70.camel@spawn>
+Date: 11 Nov 2002 14:20:29 +0100
+Message-Id: <1037020830.22840.79.camel@spawn>
 Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 2002-11-11 at 08:39, sjk wrote:
+On Sun, 2002-11-10 at 14:22, Aman wrote:
 >
-> Hi,
+> Hi All
 >
-> I am porting Linux on EP405 board. So I use gdbserver and gdb to debug
-> applications,but only the first
-> breakpoint could be stopped.Then if i press 'step', the program will
-> execute to end straightforwardly . Any other breakpoints could not break
-> the execution.
->
-> Please give me some advice!
+> Can anybody tell me how the TLB setting is done in PPC 440GP linux. I did a
+> comparison of TLB mapping between  eval kit and my proprietary board. There
+> is a huge difference between the both.
 
-I did some testing on the devel source and with gdb from debian I got
-the same result. Strangely doing a next works ??
+I'm not sure what you are doing but unless the 440 code locks some tlb
+entries to be static they should all change to what the system needs in
+that instant. Generally TLB is a dynamic thing that should not be the
+same so it's not an indication of a problem.
 
-I turned off bdi and kgdb but still got the same problem. From reading
-kernel/ptrace.c it dose look like the only problem should be single
-step. The problem is probably that there exist some return path to user
-space where we miss restoring the msr or debug register but I have to
-look deeper into this.
-
-Do somebody have testing code for ptrace?? running gdb is a bit heavy
-I'm not even sure it's the single step that is wrong.
-
-Also I tried to cross compile gdb5.2 and that did not work as I want
-both host and target to be the same and build to be set to i386 but host
-and build is the same in the makefile :(
-
-Has anybody tried the bdi2000 is that also broken now ?
-
-What version and patches do people use for gdb on 4xx ?
-
-Strace do not use singlestep but still fails spectacularly when I tested
-with my main application. I did not expect tracing an app to make this
-app fail to run. tracing simple shell commands like ls works just fine.
-
-What type of problems should I expect to have with strace ?
-
-
-
-/me really should get my toolchain in order but print(f|k) is so much
-easier to use than first fix the debugger :(
-
-
+The contents is loaded by the kernel so you should not have to do that.
 
 --
 Kenneth Johansson
