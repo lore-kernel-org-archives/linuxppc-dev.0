@@ -1,40 +1,55 @@
-Message-ID: <B25E2E5A003CD311B61E00902778AF2A02044652@SERVER1>
-From: Brian Kuschak <brian.kuschak@skystream.com>
-To: "'Gabriel Paubert'" <paubert@iram.es>
-Cc: "'Dan Malek'" <dan@mvista.com>, Eli Chen <eli@routefree.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: dcache BUG()
-Date: Tue, 8 May 2001 10:43:43 -0700 
+Message-ID: <3AF8348F.FEBF22DE@routefree.com>
+Date: Tue, 08 May 2001 11:01:51 -0700
+From: David Blythe <blythe@routefree.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: dcache BUG()
+References: <Pine.HPX.4.10.10105072359470.22253-100000@gra-ux1.iram.es> <3AF72CA8.52163E55@mvista.com> <03a001c0d74e$60022c70$4b00000a@foolio1> <3AF73161.26986237@mvista.com> <040a01c0d754$1bf6d5c0$4b00000a@foolio1> <3AF740C0.F65FBCB8@mvista.com> <047301c0d75c$2da00a00$4b00000a@foolio1> <3AF747C4.9C2D74A5@mvista.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I think that we agree that my patch fixes a real bug, but that, sadly, it
-> is _not_ the bug you are seeing. Given the "prevent interrups in atomic
-> operation" patch that apparently fixes the bug, I looked for possibilities
-> of stale reservations. Now your bug is even more puzzling...
+Dan Malek wrote:
 
-Yes, I agree.  Like I said it definitely runs longer now than it did before,
-but unfortunately shows the same symptom.  Here is a little more information
-that I gleaned last night which may or may not be useful.
 
-I noticed that arch/ppc/kernel/misc.S still had the (old?) assembly
-functions for doing atomic operations.  They are similar but slighly
-different to the inline functions in atomic.h.  I ran yesterday for about 4
-hours with these "alternative" atomic functions, and I did not see the
-failure.  I'm not sure if this was just a coincidence (the timing changed
-slightly), or whether it indicates a problem with the inline atomic
-functions.
+> There may be something else wrong with the Ethernet driver itself.
+> When I updated it to the 2.4_devel baseline, there were some weird
+> cache management calls that didn't make sense.  My updates were to
+> use the standard non-coherent cache management functions, and I
+> changed the logic to make sense (to me :-).  From this quick update,
+> I noticed it would be nice to make the transmit more efficient
+> and higher performance by handling multiple frames, but it should
+> function properly.
 
-> Can we get an oops trace if you hit it ? For now I'm puzzled.
+There are a large number of bugs in the 405 ethernet driver.  We (I)
+were waiting until we had resolved this reference count problem, and had
+a some workable solution to the starvation under packet floods problem
+discussed a few weeks ago with other embedded processors before posting
+a patch (i.e., have the driver stand up to reasonable stress tests).
+Among the bugs are:
 
-Sure, I'll post it next time I get it.  (I already cleared the one I got
-last night).
+leaks of all the receive buffers, plus other memory on every device
+close,
+not checking for failed allocations in skb allocations,
+poor choice of cache operations when manipulating buffers,
+race conditions in data structure access between the rxde and rxeob
+interrupt handlers
 
-Regards,
-Brian
+In either event we had proven to ourselves that this "reference count"
+bug happened with other nic cards when used with the 405GP processor, so
+we are reasonably certain that it is not specific to the 405 ethernet
+driver.  As Eli mentioned ping flooding demonstrates the problem too so
+we still believe that it is a generic atomic op problem.  However, we
+can only make it happen on our 405GP walnut board(s) and not our
+prototype 405GP board(s) (they both have rev D processors).
+
+Just to refresh everyone's memory, the other reference count problems we
+were seeing were "Freeing alive device" messages indicating the dev
+reference count had gone to zero, and another one in the skb code when
+ping flooding with large packet sizes (causing lots of fragments to be
+generated).
+
+	david
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
