@@ -1,35 +1,31 @@
-Message-ID: <3A650676.21610495@snmc.com>
-Date: Tue, 16 Jan 2001 20:41:58 -0600
-From: Daris Nevil <dnevil@snmc.com>
+Message-ID: <20010117133223.25513.qmail@web3001.mail.yahoo.com>
+Date: Wed, 17 Jan 2001 05:32:23 -0800 (PST)
+From: Rajesh S <srj102@yahoo.com>
+Subject: Linux Kernel restart
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: srj102@yahoo.com
 MIME-Version: 1.0
-To: Wang Chao Feng <chfwang@sina.com.cn>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Where can download MPC860 scc drivers?
-References: <5D2136DF3DD5D311AE89009027C67FB001D8F288@fmsmsx96.fm.intel.com> <004201c08025$461c9f00$12c809c0@farout>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wang,
+Hi,
 
-I have written an HDLC driver for the MPC850 SCC's that you could easily adapt
-to the 860.  You can download the source from ftp://qslinux.org/pub/qslinux.
-After you untar the tarball, go to snmc/qslinux/drivers/net.
+1)  Is there a way how we can launch the linux kernel
+ alone(from linux) without having to go to the
+ System Reset Vector etc .. I want to avoid
+ all processor initializations
 
-Regards,
-Daris Nevil
-SNMC
+2) How does the shutdown command ultimately achieve
+   the reboot... Where can I fnd the code ?
+   I have the sysvinit source code distributoin
+   from hard-hat and I can see that init_reboot()
+   maps to reboot(magic) .. Then I lose track..
 
 
-Wang Chao Feng wrote:
-
-> I only found uart & enet drivers at /arch/ppc/8xx-io
-> Where can download hdlc drivers of MPC860 scc?
->
-> Best Regards,
-> WCF
->
+Thanks in advance,
+Rajesh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
