@@ -1,37 +1,54 @@
-Message-Id: <3.0.6.32.19990302103849.007ecc50@hsins.uia.ac.be>
-Date: Tue, 02 Mar 1999 10:38:49 +0100
-To: Guy Jennings <jennings@anl.gov>
-From: David De Ridder <david.de.ridder@bitsmart.com>
+Date: Tue, 2 Mar 1999 10:45:44 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: loopback <david.de.ridder@bitsmart.com>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Kernel boot arguments over network
-Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <36DAFF5D.4E7A3746@anl.gov>
-References: <Pine.SO4.4.05.9903011559500.22676-100000@hsins.uia.ac.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <Pine.SO4.4.05.9903011559500.22676-100000@hsins.uia.ac.be>
+Message-ID: <Pine.HPP.3.96.990302103807.3871Y-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 14:58 1-3-99 -0600, Guy Jennings wrote:
 
->While I'm not sure it's absolutely what you want, you might find
->something useful
->from Richard Hirst's site
->http://www.sleepie.demon.co.uk/linuxvme/index.html
->which describes linux for the M68K-based VME cards.   This has a link to
->a version of lilo that can be used with diskless systems.
 
- Thanks for the URL but...the MVME230x series are all PPC-based :-(
+On Mon, 1 Mar 1999, David.DeRidder wrote:
 
- I'll check it out anyway,
+> Hi,
+> 
+> in my continueing efforts to get our MVME2306 board running, I ran
+> across another problem. All Linux (mini-)HOWTOs talk about passing
+> boot arguments (like 'root=/dev/nfs') to the kernel. Some also
+> mention the case where one is booting a diskless station (such as
+> an MVME230x board). However, no document describes *how* to pass these
+> arguments over the network to the kernel.
 
-+-----------------------------------------------------------------+
-  David 'Septimus' De Ridder       <david.de.ridder@bitsmart.com> 
+You don't have to (and can't AFAICT). For now on my MVME2302, I have to
+sit at the serial console and add root=/dev/nfs to the LinuxPPC boot
+prompt. If you don't have a bootp server correctly settup, you also have
+to add other parameters like internet addresses in the ip or nfsaddrs
+parameter as explained in Documentation/nfsroot.txt.
 
-"Philosophy is not a supermarket."
+When I have time, I'll merge code to take default parameters from the
+NVRAM in prepboot. The code exists, but I'm too busy on the VME driver
+right now.
 
-+-----------------------------------------------------------------+
-  
+> I'm starting to doubt whether this is possible. I want the BOOTP/TFTP
+> server to have the initial boot arguments for each of its clients, and
+> pass them when a client (i.c. an MVME2306 board) boots over the
+> network. Other than the file name, BOOTP doesn't seem capable to me
+> to passing anything as long as a command line - but I may be wrong.
+
+The right solution is to use the NVRAM I think, at least for very early
+setup since you'll end up with a chicken and egg problem (you have to
+tell the kernel root=/dev/nfs so that it attempts to use bootp to
+configure its network interface).
+
+BTW: the latest version on my ftp server is a tested version which I have
+actually booted.
+
+	Gabriel. 
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
