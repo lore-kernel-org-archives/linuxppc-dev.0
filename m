@@ -1,31 +1,40 @@
-Message-Id: <200101291918.OAA28870@mal-ach.watson.ibm.com>
-To: "Iain Sandoe" <iain@sandoe.co.uk>
-cc: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: network stack oops 2.4.1/gcc 2.95.3 
-In-Reply-To: Message from "Iain Sandoe" <iain@sandoe.co.uk>
-   of "Mon, 29 Jan 2001 19:12:36 GMT." <20010129191225.AB75C2EFD2@apollo.valhalla.net>
-Date: Mon, 29 Jan 2001 14:18:24 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Date: Mon, 29 Jan 2001 15:54:35 -0600
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: brad@turbolinux.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: powerbook doubles as a frying pan
+Message-ID: <20010129155435.K15043@altus.drgw.net>
+References: <200101280019.QAA15270@mail.turbolinux.com> <19341224043310.26390@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <19341224043310.26390@mailhost.mipsys.com>; from benh@kernel.crashing.org on Mon, Jan 29, 2001 at 12:01:26PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Iain Sandoe" writes:
+On Mon, Jan 29, 2001 at 12:01:26PM +0100, Benjamin Herrenschmidt wrote:
+>
+> >
+> >is everyone *totally* sure that activating the fan is entirely handled in
+> >hardware? is there no
+> >register for controlling the threshold?
+>
+> I've seen nothing in Apple's own Darwin OS related to controlling the
+> powerbook fan neither. However, they do have code that use the CPU's
+> temperature sensors to control the ICTC (instruction cache throttling).
+>
+> Troy have some code that allow to read the temp from /proc. However, it
+> looks like a lot of CPUs are so badly calibrated that the information
+> returned is almost useless... Maybe that's not the case in CPUs used in
+> portables, that's the case in some of the G4s used in dual G4s.
 
-Iain> It is not a regression test.  It would not be particularly easy, either to
-Iain> put 2.95.2 back up and wind back the system to the build conditions...
+The IBM manufactured 750's are much better in calibration than the G4's.
+Brad, recent 2.4 kernels should have my 'CONFIG_TAU' config option to turn on
+the CPU temp monitoring. This code is interrupt driven, so someone could
+easily ad code to tweak the ICTC when the temp exceeds certain thresholds.
 
-Iain> but the version used was 2.95.3-test2. and the bk pull was 2.4.1-pre10.
+--------------------------------------------------------------------------
+Troy Benjegerdes                'da hozer'                hozer@drgw.net
 
-	A regression is different from a regression test.  I never called
-it a regression test.
-
-	I do not mean rewinding all of the way to gcc-2.95.2, but to
-Franz's patched version of GCC prior to the gcc-2.95.3 changes.
-
-	I am just trying to narrow down whether this is something new.
-
-David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
