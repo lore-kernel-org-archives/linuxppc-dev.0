@@ -1,48 +1,32 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
-MIME-Version: 1.0
+Date: Sun, 27 Aug 2000 16:28:08 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Linuxppc-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: status note: 2.4.0-test6 paulus on 7200
+Message-ID: <20000827162808.C19122@opus.bloom.county>
+References: <398E9829.714A608@pop.agri.ch>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14761.39952.597917.43823@argo.linuxcare.com.au>
-Date: Mon, 28 Aug 2000 09:54:08 +1100 (EST)
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Patches for 2.4.0-test7
-In-Reply-To: <Pine.LNX.4.10.10008271823320.3745-100000@opal.biophys.uni-duesseldorf.de>
-References: <39A8379C.E4EBB33A@wanadoo.fr>
-	<Pine.LNX.4.10.10008271823320.3745-100000@opal.biophys.uni-duesseldorf.de>
-Reply-To: paulus@linuxcare.com.au
+In-Reply-To: <398E9829.714A608@pop.agri.ch>; from toa@pop.agri.ch on Mon, Aug 07, 2000 at 01:06:17PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz writes:
+On Mon, Aug 07, 2000 at 01:06:17PM +0200, Andreas Tobler wrote:
 
-> That would have been me - I still claim that keeping adbmouse working for
-> backwards compatibility would be a good thing, but my word doesn't carry
-> much weight.
->
-> The adbmouse driver only relies on the keyboard driver for mouse button
-> emulation. At least in 2.2.17, it won't interfere with the new input code,
-> I haven't tried 2.4.0 yet.
+> a short status note, the 7200 boots again with the latest linux-pmac-devel. It
+> took a long time, but finally it works again. Thanks to all who helped.
+> One thing I have, although. My 7200 doesn't use the internal SCSI bus nor the
+> external. I use a 2940UW to boot from. But this device gets only recognized when
+> I apply the attached patch. From Geert.
+> So, I don't know who to contact to comment this patch. (Well, I actually know
+> who, but I get few to no responses)
 
-The way it is at the moment in the linuxppc_2_3 bk tree and in my
-rsync tree, you have 3 choices:
-
-1. use mac_keyb.c/adbmouse.c and don't have the input layer at all
-2. use the input layer for USB devices and mac_keyb.c/adbmouse.c for
-   ADB keyboard and mouse
-3. use the input layer for both USB and ADB devices.
-
-The adbmouse driver references some external variables which are
-declared in mac_keyb.c.  If there is really a need to have adbmouse.c
-in the system without mac_keyb.c, we can probably work out a way to
-allow that, but I don't see the need.
-
-Paul.
+This doesn't work for me with 2.4.0-test7 (todays BK).  I now get failed to
+allocate resource {0,1} for device Adaptec-7881U and then aic7xxx fails to
+active the device due to a pci resource conflict.
 
 --
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
