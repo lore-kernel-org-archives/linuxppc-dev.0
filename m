@@ -1,29 +1,25 @@
-Message-ID: <3C0567C5.55CF9D64@mvista.com>
-Date: Wed, 28 Nov 2001 15:40:05 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Troy Benjegerdes <hozer@drgw.net>
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 28 Nov 2001 17:04:59 -0600
+From: Troy Benjegerdes <hozer@drgw.net>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: arch/ppc/boot broken include in currenty 2_4_devel
+Message-ID: <20011128170459.N23942@altus.drgw.net>
 References: <20011128162242.M23942@altus.drgw.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20011128162242.M23942@altus.drgw.net>; from hozer@drgw.net on Wed, Nov 28, 2001 at 04:22:43PM -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Troy,
+Okay, the problem is I was running with 'make -e' and somehow that
+screwed everything up. Oh well.
 
-Go back one rev of boot/common/Makefile.  I think new one should still work,
-tho??
 
-Mark
---
-
-Troy Benjegerdes wrote:
-
+On Wed, Nov 28, 2001 at 04:22:43PM -0600, Troy Benjegerdes wrote:
+>
 > Somehow, the
 >
-> CFLAGS  += -fno-builtin -D__BOOTER__ -I$(TOPDIR)/arch/$(ARCH)/boot/include
+> CFLAGS	+= -fno-builtin -D__BOOTER__ -I$(TOPDIR)/arch/$(ARCH)/boot/include
 >
 > line in arch/ppc/boot/Makefile is not getting picked up, causeing me
 > problems like:
@@ -40,6 +36,7 @@ Troy Benjegerdes wrote:
 > zlib.c: At top level:
 > zlib.c:337: parse error before `('
 >
+>
 > because it's picking up the wrong zlib.h.
 >
 > I've been messing around with the makefile, but I can't get it to do
@@ -52,6 +49,14 @@ Troy Benjegerdes wrote:
 > because life wouldn't have any meaning for them if they didn't. That's
 > why I draw cartoons. It's my life." -- Charles Shulz
 >
+>
+>
 
+--
+Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
+-----"If this message isn't misspelled, I didn't write it" -- Me -----
+"Why do musicians compose symphonies and poets write poems? They do it
+because life wouldn't have any meaning for them if they didn't. That's
+why I draw cartoons. It's my life." -- Charles Shulz
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
