@@ -1,43 +1,37 @@
-Date: Mon, 15 Jan 2001 22:56:10 +1100
-From: Steven Hanley <sjh@svana.org>
-To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: setting the frequency on an airport card?
-Message-ID: <20010115225610.A11116@wibble.net>
-Reply-To: Steven Hanley <sjh@wibble.net>
-References: <20010115212843.A10256@wibble.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010115212843.A10256@wibble.net>; from sjh@svana.org on Mon, Jan 15, 2001 at 09:28:43PM +1100
+Date: Mon, 15 Jan 2001 17:13:41 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Iain Sandoe <iain@sandoe.co.uk>
+cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: bk 2.4.1pre2 Lombard PCI allocation fails.
+In-Reply-To: <20010115081732.43695DB9FD@atlas.valhalla.net>
+Message-ID: <Pine.LNX.4.30.0101151710020.9336-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jan 15, 2001 at 09:28:43PM +1100, Steven Hanley wrote:
+> as the title says...
+> The machine boots and (seems) OK.
 >
-> The aiport.c contains
-> if ((port_type != 3) || (wrq->u.freq.m > 1000) || (wrq->u.freq.e > 0))
->    rc = -EOPNOTSUPP;
+> FWIW: I boot this machine with BootX [1.2.2] (and always have, without
+> problem, until this time).
+> PCI: Cannot allocate resource region 2 of device 00:11.0
+> PCI: Resource 80880000-80880fff (f=200, d=0, p=0)
+> PCI: Resource 00000c00-00000cff (f=101, d=1, p=1)
+> PCI: Cannot allocate resource region 1 of device 00:11.0
+>   got res[10000000:10000fff] for resource 2 of ATI Technologies Inc 3D Rage
+> LT Pro
 
-I must be in stupid mode today or something, I looked at this for a minute
-or two and suddenly wondered, what hte heck is that port_type thing, of
-course a quick glance at the top of the file shows it is a module paramater,
-so when I set it on modporbe or insmode on both machines suddenly I can use
-the ioctls, duh, anyway I will probably put this up on a web page or some
-such in the next day or so (my how to get this running page) as it was not
-exactly obvious to me and I didnt see mention of the port type paramater (I
-suppose airports and their clients are usually managed)
+BootX uses the MacOS PCI mappings which are bogus for the Rage LT Pro.
+Though I'm certain Geert's old PCI resource allocation patch worked fine
+in spite of this. There was some message about resource conflict but that
+was fixed by the kernel.
 
-Anyway happy now :)
+What's the PCI resourced for the card after the kernel has finished
+booting?
 
-	See You
-	    Steve
+	Michael
 
---
-sjh@wibble.net http://wibble.net/~sjh/
-Look Up In The Sky
-   Is it a bird?  No
-      Is it a plane?  No
-         Is it a small blue banana?
-YES
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
