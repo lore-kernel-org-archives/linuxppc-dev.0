@@ -1,58 +1,33 @@
 From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Avery
- Pennarun <apenwarr@worldvisions.ca>
+To: Hadess <hadess@writeme.com>
 Cc: <linuxppc-dev@lists.linuxppc.org>, <debian-powerpc@lists.debian.org>
 Subject: Re: apmd and other archs
-Date: Fri, 24 Nov 2000 14:40:41 +0100
-Message-Id: <19341019071225.5885@192.168.1.2>
-In-Reply-To: 
- <Pine.LNX.4.10.10011230936470.22746-100000@opal.biophys.uni-duesseldorf.de>
-References: 
- <Pine.LNX.4.10.10011230936470.22746-100000@opal.biophys.uni-duesseldorf.de>
+Date: Fri, 24 Nov 2000 14:51:02 +0100
+Message-Id: <19341019072246.27236@192.168.1.2>
+In-Reply-To: <974986581.3a1d1d55698b0@imp.free.fr>
+References: <974986581.3a1d1d55698b0@imp.free.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> Not APM support exactly... simply support for the same interface.
-Just like
->> powermacs have totally different sound systems and still use /dev/dsp.
->> /proc/apm and /dev/apm_bios are so simple that it should be easy to
-convince
->> any power management system to provide those API's.
+>Hi,
 >
->The info logged to /proc/apm is currently logged to /etc/power/apm. I have
->no idea what /dev/apm does aside from providing that log info, and I have
->no clue what /dev/apm_bios does, either. There should be no major problems
->duplicating the pmu logging code in the kernel, and interfacing that with
->some apm glue code, assuming the apm interface is reasonably architecture
->independent. I just don't see a good reason to change from pmud to apmd,
->if that's what you're suggesting.
+>Seems like I missed a good part of the discussion... First reason I
+>wanted apmd
+>marked as x86 only, is because it is useless _now_ on power-pc. We have
+a PMU,
+>not an APM BIOS (ugh!), we have pmud not apmd. What is the point compiling it
+>for powerpc if it's not working and will probably never ?
 
-At least one reason: the current pmud does continuous polling of the PMU
-via /dev/pmu. On newer (core99) machines, the PMU itself will send
-messages to the CPU when any environement info change (battery status,
-lid closed, ...). We currently don't use this feature and so end up
-communicating with the PMU more than we would really need.
+Don't mix PowerPC and PowerMac. PowerMacs rely on pmud. But PReP and CHRP
+machines can be more PC-like that you'd like them to in some cases :)
+They don't really have an apm bios, but who knows... They certainly don't
+have a PMU and don't use pmud.
 
-We can "fix" that by either having the PMU driver on core99 continuously
-send those infos via /dev/pmu without explicit request. It may also be
-interesting to replace this by a kernel thread. That would allow more
-flexibility in communicating with userland (things like signaling
-processes that asked for it to be notified of a sleep request, etc...).
-
-One other issue we have with sleep is that we need to prevent the kernel
-to do a bunch of thigns while going to sleep. scheduling from within the
-sleep ioctl is dangerous, but will happen occasionally, especially when
-sleeping & waking up the IDE layer.
-
-I beleive it should be possible to hack the scheduler so that only our
-sleep thread gets scheduled at all (disabling scheduling on the main CPU
-and freezing other CPUs in sleep loops) during the sleep & wakeup process.
-
-Any better ideas ?
+I've been told there's an IBM PReP thinkpad out there. What does this box
+use for power management ? It's own mecanism ?
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
