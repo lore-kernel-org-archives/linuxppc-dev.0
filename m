@@ -1,63 +1,29 @@
-Message-ID: <000b01c11134$81939930$2502a8c0@cwx053a>
-From: "David Burg" <david.burg@nero.com>
-To: <linuxppc-dev@lists.linuxppc.org>
-References: <002a01c11120$1895f130$2502a8c0@cwx053a>
-Subject: Re: R_PPC_REL24 relocation out of range
-Date: Fri, 20 Jul 2001 17:56:15 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Fri, 20 Jul 2001 17:09:35 +0100
+Subject: [DMASOUND] - BK patch updated for 2.4.7p8
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010720161146.672F62F003@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello again,
+Hi all,
 
-I "simply"* need to update my tool chain. The bug seems to be fixed in newer
-release.
+I finally got round to getting all my stuff back in sync:
 
-Sorry for disturbing you,
+The following is a patch against BK 2.4.7-pre8 (as of this morning BST)
+which includes all the dmasound stuff already in Ben H's tree.
 
-David Burg.
-*: compiler compilation, so much fun and crasy error messages...
------ Original Message -----
-From: "David Burg" <david.burg@nero.com>
-To: <linuxppc-dev@lists.linuxppc.org>
-Sent: Friday, July 20, 2001 3:30 PM
-Subject: R_PPC_REL24 relocation out of range
+ftp://ftp.penguinppc.org/users/iain/kernel/2_4_x/2.4.7p8-dmasound/dmas-2.4.7
+p8.diff.bz2
 
+one patch - all the way to rev 0.6.
 
->
-> Hello,
->
-> I'm making cross-compilation from x86 to powerpc and I got such nice error
-> while executing :
-> dlopen: ./libf.so: R_PPC_REL24 relocation at 0x6fdb6458 for symbol
-> `L_OFFSET_TABLE_' out of range
->
-> With dynamic linked libraries. Making a search on the internet, I have
-seen
-> someone got the same trouble :
->
-> http://lists.linuxppc.org/listarcs/linuxppc-dev/200003/msg00025.html
->
-> I try this simple program and got the error with the cross-compiler (a
-> powerpc-linux-gcc 2.95.2 with matching g++ and ld behind). This web page
-was
-> of previous year, so I bet there exist a fix now but I can't find it.
->
-> I allready use -fpic -fPIC flags to my g++ calls. Note that the bug happen
-> when cross-compiling the libraries but not when localy compiling the
-> libraries.
->
->
->
-> Best regards,
->
-> David Burg.
->
->
->
+right, now to do something actually useful ;-)
 
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
