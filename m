@@ -1,22 +1,27 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3C16208F.5A9CF684@ardistech.com>
-Date: Tue, 11 Dec 2001 16:04:47 +0100
-From: "bart@ardistech.com" <bart@ardistech.com>
-Reply-To: bart@ardistech.com
+Content-Type: text/plain; charset="iso-8859-1"
+From: Gerard Flynn <flynn@lure.u-psud.fr>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: TQM8xx modules
+Date: Tue, 11 Dec 2001 16:56:23 +0100
 MIME-Version: 1.0
-To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: 823e video immap
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <E16DpGa-0004k0-00@tamesis.lure.u-psud.fr>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+  Is anyone using the linux-ppc kernel tree for TQM minimodules ?
 
-Does anyone has an updated 8xx_immap.h for the MPC823e where the video
-controller registers and VCRAM are defined?
+  I tried to compile the development branch for the TQM855L but the zImage
+build fails because no embed_config function is defined for this
+configuration.
 
-Thanks in advance,
-		Bart Thissen,	Ardis Technologies bv
+  If anyone has a pointer to the simplest way to get a kernel running on this
+type of module I'd greatly appreciate it.  (I know Denx has a patch for these
+modules for a 2.2 kernel but the kernel against which it was made appears no
+longer to be available.)
+
+  Thanks,
+  Gerard Flynn
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
