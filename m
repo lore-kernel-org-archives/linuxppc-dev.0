@@ -1,42 +1,48 @@
-Message-Id: <200009190556.HAA00805@piglet.grunz.lu>
-Date: Tue, 19 Sep 2000 07:56:26 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-To: paulus@linuxcare.com.au
-cc: geert@linux-m68k.org, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <14790.58502.25252.825448@argo.linuxcare.com.au>
+Message-ID: <39C77719.311C0F52@cetia.fr>
+Date: Tue, 19 Sep 2000 16:24:25 +0200
+From: Rigis Odeyi <rod@cetia.fr>
+Reply-To: rod@cetia.fr
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Linux SMP and G3
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Paul,
+Hi everybody,
 
-On  19 Sep, this message from Paul Mackerras echoed through cyberspace:
-> What I am intending to do is to map the I/O space of all the PCI host
-> bridges in consecutive areas beginning at some address such as
-> 0xff000000, with some amount of space such as 64kB or 1MB per bridge,
-> whatever is appropriate.  Then we adjust the I/O port numbers in the
-> pci_dev structures by adding on host_bridge_nr * space_per_bridge.  As
-> a side effect, isa_io_base (which is really pci_io_base) becomes a
-> constant.
+I'm going to get involved into a linux project to port a linux SMP on a
+dual-PPC750 box.
 
-Good idea. Keep in mind however, that not all bridges reserve the same
-amount of space for IO. So you either need to cope with that, or chose
-smaller, fixed-size regions, and be prepared to squeeze all devices into
-that space. Which shouldn't be a problem, since I can't see why someone
-would want to access something larger than a few bytes via IO...
+So before starting to do this job, I'm trying to analyse some particular
+points which are quite important for G3 in SMP configuration:
 
-Michel
+First, I know that the G3 is not broadcasting the tlbie instruction
+(Invalidate Entries of Translation Lookaside Buffers) on the CPU bus.
+And I was happy to find a message passing mecanism emulating this
+broadcast using IPI interruption (see arch/ppc/kernel/smp.c on a 2.2.15
+source tree).
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+But it seems (perhaps I'm wrong) that the CPU initiating the broadcast
+is not waiting for the full completion of the tlbie on the other CPU(s)
+which may be delayed. But perhaps it is not really necessary...
 
+Any experiences, ideas, suggestions ?
+
+Then, the G3 is not broadcasting the icbi instruction either (Invalidate
+L1 I-cache Entries). So, I was expecting the same kind of mecanism like
+tlbie. But the sequences like:
+	flush_cache_page() (some icbi)
+	set_pte( **mark dirty** )
+	flush_tlb_page() (tlbie is broadcasted)
+may be enough to be sure I-caches are coherent.
+
+Can anybody help me to become a "doubtless" guy ?
+
+Merci,
+ROD.
+
+PS: Sorry about my poor english...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
