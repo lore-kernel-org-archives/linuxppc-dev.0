@@ -1,38 +1,47 @@
-Date: Thu, 22 Nov 2001 01:28:43 -0700 (MST)
-From: Derrik Pates <dpates@dsdk12.net>
-To: Stefan Piger <piger@rvs.uni-hannover.de>
-Cc: benh@kernel.crashing.org, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Again with the firewire
-In-Reply-To: <1006413308.947.0.camel@grobi>
-Message-ID: <Pine.LNX.4.40.0111220058320.14868-100000@andromeda.dsdk12.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 22 Nov 2001 00:30:12 -0900
+From: Ethan Benson <erbenson@alaska.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [ANN] yaboot 1.3.6pre1 
+Message-ID: <20011122003011.A7803@plato.local.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 22 Nov 2001, Stefan Piger wrote:
+yaboot 1.3.6pre1 is available for testing at:
 
-> After loading the modules, there is no /proc/ohci1394 as I remember from
-> earllier versions of linux1394.
-> When I plug in a firewire device the keyboard becomes unusable, but the
-> machine doesn't crash, I can reboot it via ssh.
-> I get no error messages in /var/log/messages.
+http://master.penguinppc.org/projects/yaboot/1.3.6pre/
 
-I actually just had the same thing happen, only the entire console froze,
-X and all. I don't know if the kernel was still working or not, I didn't
-have another machine connected at the time. However, this is actually an
-improvement for me - the ohci1394 module doesn't lock the PMU up and cause
-the system to suddenly shutdown (this is a FireWire iBook). If I boot the
-system with the FireWire device - a QPS CD-RW drive - plugged in, all is
-fine.
+This version should now again work properly on IBM CHRP hardware, but
+I would like it tested on both IBM CHRP and pmac to ensure both still
+work properly.
 
-Ben? The FireWire controller didn't seem to have a problem with power
-management per se - I ran 'gscanbus' after a suspend/unsuspend cycle, and
-it seemed to be ok with that.
+IBM CHRP testing is especially wanted since I do /not/ have access to
+this hardware.
 
-Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
-dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
+Note that you must use ybin to install yaboot on IBM CHRP, if you
+don't you must run addnote on the yaboot binary yourself, addnote is
+installed at /usr/lib/yaboot/addnote.  Using ybin is highly recommended.
 
+ChangeLog:
+
+pre1:
+        - The "IBM needs to test prereleases" release.
+	- New IGNORE^H^H^H^H^H^HREADME, thanks to Chris Tillman for
+	  cleaning up the pile of cruft that this thing was.
+	- (ybin) Automatically use fstype=raw on IBM CHRP, it no longer needs
+	  to be explicitly set in /etc/yaboot.conf.
+	- Deprecate ybin's yaboot.conf auto-generation, use yabootconfig
+	  instead.
+	- Fix device path parsing to support devices containing a comma,
+	  but not including a filename.
+	- Fix IBM CHRP support.
+	- Add support for zImage.initrd (Peter Bergner).
+
+
+--
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
