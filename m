@@ -1,61 +1,58 @@
-In-Reply-To: <l03130300b2c736ad27de@[141.213.6.249]>
-Date: Sun, 17 Jan 1999 13:57:11 +0100
-To: linuxppc-dev@lists.linuxppc.org, mukesh agrawal <agrawal@ais.org>
+Date: Sun, 17 Jan 1999 14:35:57 +0100
+To: linuxppc-dev@lists.linuxppc.org, Paul Mackerras <paulus@cs.anu.edu.au>
 From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: PowerBook battery test
-Message-Id: <19990117135711.016083@smtp.calvacom.fr>
+Subject: wrong termbits.h vs. tty_io.c
+Message-Id: <19990117143557.001993@smtp.calvacom.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Jan 17, 1999, mukesh agrawal <agrawal@ais.org> wrote:
+Hi !
 
->here's what i get on my Powerbook 2400. The battery monitor CSM
-indicates that
->	1. battery is fully charged (8 bars)
->	2. power in plugged in
->	3. battery is not charging
->
->Having fun with your batteries !
->
->Global battery status: 0x01, power: 0x5b
-> [charger connected]
->1 batteries :
-><1> 12.399994V
->     exp: 0s, min: -1s, max: -1s, timeUntilCharge: -1s
->     info - fl:0xa0, warn_level:0, resrv:0, bat_level:255
->       [battery installed]
->       [charger connected]
->
->
->Now calling PMU...
->
->0x68 (1) : r:3,s:03 -> 01 5b 35 00 00 00 00 00 00 00 00 00 00 00 00
->0x6b (1) : r:3,s:08 -> e5 00 b6 35 1a 61 00 00 00 00 00 00 00 00 00
->0x6f (1) : r:3,s:04 -> 05 53 52 00 00 00 00 00 00 00 00 00 00 00 00
->Trying to interpret 0x6f command:
-> 00 [battery present]
-> 01 [charger connected]
-> 01 [battery charging]
+During my explorations of the serial driver, I've discovered something
+strange for which I would like your point of view:
 
-It looks like the PMU reacts quite differently on the 2400, we'll
-probably have to setup different code for 2400/3400/3500 and new G3 "Series". 
+It looks like the definitions here on PPC are just wrong and break
+"normal" tty_io.c code of the kernel.
 
-The 6f command seems to be returning something different. I get 10 bytes
-of response, you get only 4 and the flags interpretation looks wrong.
-(Could you try removing the battery and/or the charger and see what
-happens with those flags).
+Specifically, here is the problem:
 
-So we definitely need a way to make the difference between those
-different kinds of PowerBooks. (There are some issues with the backlight
-too). I was thinking about using the presence of o-hare to recognize and
-older model, this is a little bit "hackish" but should work.
+#define  B38400	0000017
+#define EXTA B19200
+#define EXTB B38400
+#define CBAUDEX 0000020
+#define  B57600   00020
+#define  B115200  00021
+#define  B230400  00022
+#define  B460800  00023
 
-I have added backlight control commands to /dev/pmu, I'll add some
-battery status commands too, but I would like to make them independant of
-the kind of machine.
+This should be:
+
+#define  B38400	0000017
+#define EXTA B19200
+#define EXTB B38400
+#define CBAUDEX 0000020
+#define  B57600   00021
+#define  B115200  00022
+#define  B230400  00023
+#define  B460800  00024
+
+Note that ((B57600 & CBAUD) & ~CBAUDEX) should be 1, not 0.
+
+The current definition breaks the tty_get_baud_rate() function in
+tty_io.c, which is called by other drivers, like serial.c (for PC-style
+or PCMCIA serial ports). 
+macserial.c uses it's own table that works, but it's not a solution.
+
+The problem is that changing termbits requires recompiling userland apps too.
+
+Currently, any serial driver other than macserial.c will use wrong speeds
+if they are > than 38400.
+
+I also suggest using hex instead of octal like sparc does ;-)
+
 
 -- 
            E-Mail: <mailto:bh40@calva.net>
