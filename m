@@ -1,34 +1,62 @@
-Message-ID: <38A6A0C4.12F41E57@pop.agri.ch>
-Date: Sun, 13 Feb 2000 13:17:08 +0100
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+From: Markus Froeschle <mfro@ibm.net>
+Reply-To: mfro@ibm.net
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Subject: Powerbook G3 Problems
+Date: Sun, 13 Feb 2000 13:17:30 +0100
+Content-Type: text/plain
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@linuxcare.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.3.43 failed
-References: <00021211003504.00821@linux.eric.fr> <00021318311301.12422@argo.linuxcare.com.au>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <00021313182503.02707@patsch.potzblitz.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
-> I just updated linuxcare.com.au::linux-pmac-devel to 2.3.44 final.  I
-> fixed a couple of problems where it would hang during boot if you booted
-> from OF (or with quik or yaboot) and it couldn't find the screen.  Try it
-> now.  If it doesn't work, let me know (and tell me how you are booting it).
+Hi all,
 
-Updated to 2.3.44 this morning.
-Compiles but doesn't boot, hangs on the message booting.....
-PM7200, booting via BootX ext & app (BootX V: 1.2b1)
-I try to get the latest BootX.
+I have a (brand new) Powerbook G3 (bronze keyboard) with LinuxPPC 1999 installed
+(pretty much following the instructions found at www.linuxppc.com: BootX 1.2b3
+and the 'USB Lombard 2.2.12' kernel).
 
-Andreas
+While everything works as desired, I have one annoying problem that I'm unable
+to solve although I'm quite familiar with PPC Linux (I have a 9500 running for
+years now):
+
+Every now and then (not exactly reproducable) after a clean shutdown, the system
+refuses to boot. On power up, I then just get the flashing question mark icon
+indicating no boot device was found. Indeed, the disk obviously does not spin
+up (silence...) and OF reports the disk as unavailable when I try to enforce
+startup by "boot hd:". Resetting the PRAM does not change anything.
+
+The first time this happened, I took the Powerbook back to the store in the
+clear assumption that the disk was defect. The technican checked the system,
+confirmed a broken disk and sent the system to warrenty repair.
+When I received it a few days later, I was just stunned that my Linux
+installation was still there and booting (obviously, they did not change the
+disk).
+
+Since then, I repeatedly see the same symptoms now and then. I have found (I
+think) one way to reanimate the system: when I change the boot device in OF to
+something impossible, restart once and set boot device back to hd:,\\:tbxi
+(the default setting) the disk spins up eventually and the system boots
+(sometimes I have to repeat this sequence several times until it works).
+
+The problem only happens when I do a clean shutdown from Linux (and not every
+time). Shutting down from MacOS (which I rarely use) did not lead to those
+problems yet. I'm pretty sure its not a hardware defect.
+
+The only reason for the problem which I can think of is that Linux changes some
+hardware settings (possibly some power saving settings ?) when running which
+prevent the disk from spinning up.
+
+Has anybody seen this behaviour ?
+Could somebody imagine what the Apple repair folks have done when I had the
+computer "repaired" ?
+
+Thanks for any ideas,
+Markus
 --
-| Andreas Tobler
-| CH-8004 Zuerich
-| E-Mail:   a.tobler@schweiz.ch
------------------------------------------------
 
+**********************************
+* Markus Froeschle (mfro@ibm.net *
+**********************************
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
