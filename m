@@ -1,54 +1,37 @@
-Message-ID: <003301c375c4$866c2520$960aa8c0@ksshin>
-From: "???" <ksshin@essetel.com>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <Pine.LNX.4.21.0308262014240.17370-100000@stimpy.bivio.net> <007301c36c53$079163c0$960aa8c0@ksshin> <3F4CE88B.2050307@mvista.com>
-Subject: Re: interrupt handling in 7410+64260
-Date: Mon, 8 Sep 2003 13:49:01 +0900
+Message-ID: <3F5C15E8.70802@kegel.com>
+Date: Sun, 07 Sep 2003 22:38:48 -0700
+From: Dan Kegel <dank@kegel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: ??? <ksshin@essetel.com>
+Cc: "Mark A. Greer" <mgreer@mvista.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: interrupt handling in 7410+64260
+References: <Pine.LNX.4.21.0308262014240.17370-100000@stimpy.bivio.net> <007301c36c53$079163c0$960aa8c0@ksshin> <3F4CE88B.2050307@mvista.com> <003301c375c4$866c2520$960aa8c0@ksshin>
+In-Reply-To: <003301c375c4$866c2520$960aa8c0@ksshin>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thank you for your response.
+??? wrote:
+> according to your message, I try to find example source in
+> my linux kernel(my Linux kernel is 2.4.18 from montavista)
+> but I cannot find sources like cpci690.c, hxeb100.c and ev64260.c
 
-according to your message, I try to find example source in
-my linux kernel(my Linux kernel is 2.4.18 from montavista)
-but I cannot find sources like cpci690.c, hxeb100.c and ev64260.c
+Search http://marc.theaimsgroup.com/?l=linux-ppc for cpci690.c
+You'll find a patch that refers to the arch/ppc/platforms/cpci690.c
+in the linuxppc_2_4_devel tree.  This tree can be found at
+http://www.penguinppc.org/dev/kernel.shtml
 
-I also try to handle an external interrupt from MPP in various way.
-But I Failed until now.
-
-please help me...
-
------ Original Message -----
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: "???" <ksshin@essetel.com>
-Cc: "Paul White" <pwhite@bivio.net>; <linuxppc-embedded@lists.linuxppc.org>
-Sent: Thursday, August 28, 2003 2:21 AM
-Subject: Re: interrupt handling in 7410+64260
+Maybe those files are in other trees, but hey, at least you know
+where one example of them is now.
+- Dan
 
 
->
-> ksshin@essetel.com wrote:
->
-> >In Linux kernel, there is a example about handling internal
-> >interrupt(mpsc as serial, ethernet), but I can't find the example for
-> >about handling external interrupt with GPP.
-> >
-> There are plenty of examples including DUART & PCI interrupts in ev64260.c.
->
-> >Is there anyone who know that how to handle the external interrupt
-> >with GPP in 7410/64260?
-> >
-> >
-> Just look at ev64260.c, cpci690.c, hxeb100.c, ...
->
-> Mark
->
->
->
+--
+Dan Kegel
+http://www.kegel.com
+http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
