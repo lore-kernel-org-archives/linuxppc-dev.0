@@ -1,59 +1,46 @@
-Message-Id: <200112052037.fB5KbG623486@mailout6-0.nyroc.rr.com>
 Content-Type: text/plain;
-  charset="utf-8"
-From: Armando Di Cianno <armando@nycap.rr.com>
-Reply-To: diciaa@rpi.edu
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: kernel pcmcia drivers/ide-cs stopped working in ben's tree at >= 2.4.16
-Date: Wed, 5 Dec 2001 15:37:15 -0500
+  charset="iso-8859-1"
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Message-Id: <200112052146.16467@enzo.bigblue.local>
+To: Corey Minyard <minyard@acm.org>
+Subject: Re: Changes to PPC Linux required for GCC 3.1
+Date: Wed, 5 Dec 2001 21:51:02 +0100
+Cc: linuxppc-dev@lists.linuxppc.org
+References: <5.1.0.14.2.20011205134825.024d8ed8@mail.lauterbach.com> <3C0E48D2.6000409@acm.org>
+In-Reply-To: <3C0E48D2.6000409@acm.org>
 MIME-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello all,
+On Wednesday 05 December 2001 17:18, Corey Minyard wrote:
+> Franz Sirl wrote:
+> > Ah, I see, I only saw this problem in aty128fb. I'll add the fix to
+> > the linuxconsole CVS for 2.5.x.
+>
+> What about 2.4?  I'm sure people will want to compile 2.4 with gcc 3.x.
 
-Every time I post a problem I always remeber to thank the Linux PowerPC devs
-for all their hard work; so a big thanks to all. ;-)
+That has to go thru the usual channels.
 
-At some point, kernel pcmcia drivers/ide-cs stopped working.  I've never been
-able to get the pcmcia-package drivers working, and have always used the
-kernel drivers, with the utils from the pcmcia-package.  (The symptoms I will
-describe happen in both pcmcia package 3.1.29 and 3.1.30).  I tend to rely
-grealty on these drivers as they have always made it easier to get images off
-my digital cameras' media.
+> >> * In include/linux/sunrpc/clnt.h, I removed a bogus function declaration
+> >> which was messing up inlining.
+> >
+> > I guess this is 3.1 specific? I don't remember problems with 3.0.x.
+>
+> Probably.  I've seen some other problems with GCC being fairly picky
+> about declarations, and I think it's fairly new.  But the declaration
+> both wrong and unnecessary.
 
-I'm running my own distro (mostly LFS style), and using ben's sources.
-Hardware is a 400Mhz G4 TiBook.
+Ah yes, I browsed this discussion on the lists.
 
-In 2.4.14-ben0, and 2.4.15-pre6-ben0, after pcmcia services are started,
-dmesg reports the same happy information (these examples done with a 340Mb
-IBM microdrive, but the symptoms happen for my 8 and 32Mb CF cards, with the
-same pcmcia adaptor):
-cs: memory probe 0x80000000-0x80ffffff: excluding 0x80000000-0x800fffff
-hde: IBM-DMDM-10340, ATA DISK drive
-ide2 at 0x100-0x107,0x10e on irq 58
-ide-floppy driver 0.97.sv
-hde: 700560 sectors (359 MB) w/96KiB Cache, CHS=695/16/63
- /dev/ide/host2/bus0/target0/lun0: p1
-ide_cs: hde: Vcc = 3.3, Vpp = 0.0
+> > What about the FAT filesystem? Is gcc-3.1 now able to correctly
+> > optimize the 64bit signed divide by const into a ASHIFT+fixup?
+>
+> Nope.  I was going to ask about that one.  Do you have a GCC PR on this?
 
-In 2.4.16-ben0, this is what dmesg reports:
-cs: memory probe 0x80000000-0x80ffffff: excluding 0x80000000-0x80ffffff
-cs: unable to map card memory!
-cs: unable to map card memory!
+Nope, probably I should add one, cause I don't have time to continue with a
+divdi3_32 pattern anytime soon :-(.
 
-In 2.4.17-pre2-ben0, in console mode, the laptop immeadiately shuts down; in
-X, the laptop freezes.
-
-I'm 99.9% sure my /etc/pcmcia/* info is correct (as it still works for older
-kernels, with all of the pcmcia-package version's I've tried).  If these
-symptoms can help any of the ppc kernel hackers solve this problem, I'd be so
-very happy.
-
-Again, thanks for making Linux viable on powerpc.
-
-__Armando Di Cianno
-diciaa@rpi.edu
+Franz.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
