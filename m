@@ -1,38 +1,56 @@
-Date: Wed, 19 Sep 2001 15:57:42 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@mvista.com>
-Cc: Stefan Roese <stefan.roese@esd-electronics.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
-	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
-Subject: Re: CPCI-405 port (PPC405GP)
-Message-ID: <20010919155742.D8132@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20010918115722.A5967@cpe-24-221-152-185.az.sprintbbd.net> <EFEAIMDCOOOHIEPHDNFJCEKKDCAA.stefan.roese@esd-electronics.com> <20010919071751.B8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA8DF9E.FD235CF6@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BA8DF9E.FD235CF6@mvista.com>
+Date: Wed, 19 Sep 2001 16:01:01 -0700 (PDT)
+From: John Tyner <jtyner@cs.ucr.edu>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: building multiple kernels under linuxppc_2_4_devel
+Message-ID: <Pine.LNX.4.30.0109191555210.12262-100000@hill.cs.ucr.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Sep 19, 2001 at 02:10:38PM -0400, Dan Malek wrote:
+We're trying to build for i386 and PPC machines under the same tree, but
+one section of code is causing us some problems...
 
-> > Well, do you forsee the need to put in board-specific defines?
->
-> This isn't the right way.  If you notice the way the ports work,
-> everything 4xx (or 8xx, or 6xx, or whatever), include the single
-> header file, in this case ppc4xx.h.  This include file will select
-> the proper board specific file.  The board specific file, contains,
-> well, the stuff specific to a board.
+linuxppc_2_4_devel/include/linux/highmem.h
 
-Er, yes.  But if there's nothing specific to the CPCI405, why add in an
-empty file and the
-#ifdef CONFIG_CPCI405
-#include <asm/cpci405.h> /* Empty */
+-----------------
+
+/*
+#ifndef __HAVE_ARCH_USER_PAGE
+static inline void clear_user_page(struct page *page, unsigned long vaddr)
+{
+        void *addr = kmap_atomic(page, KM_USER0);
+        clear_page(addr, vaddr);
+        kunmap_atomic(addr, KM_USER0);
+}
+
+static inline void copy_user_page(struct page *to, struct page *from,
+unsigned long vaddr)
+{
+        char *vfrom, *vto;
+
+        vfrom = kmap_atomic(from, KM_USER0);
+        vto = kmap_atomic(to, KM_USER1);
+        copy_user_page(vto, vfrom, vaddr);
+        kunmap_atomic(vfrom, KM_USER0);
+        kunmap_atomic(vto, KM_USER1);
+}
 #endif
-in ppc4xx.h?
+*/
+
+------------------
+
+As you can see, we've commented it out, which causes the kernel to build
+correctly for both arch's, but the clear_page macro only takes one
+parameter from what I can see and we get _all_ kinds of parse errors
+starting with the line immediately following the #ifndef.
+
+Any ideas?
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+John Tyner
+jtyner@cs.ucr.edu
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
