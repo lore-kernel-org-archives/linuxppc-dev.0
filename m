@@ -1,41 +1,55 @@
-Message-ID: <3ACB9EB3.2661FFCE@iiic.ethz.ch>
-Date: Thu, 05 Apr 2001 00:22:43 +0200
-From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+Message-ID: <3ACBA866.50404@amberdata.demon.co.uk>
+Date: Thu, 05 Apr 2001 00:04:06 +0100
+From: David Monro <davidm@amberdata.demon.co.uk>
 MIME-Version: 1.0
-To: "Jason E. Stewart" <jason@openinformatics.com>
-Cc: debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: External Monitor under Pismo
-References: <20010404092143.EFE4C2F01B@apollo.valhalla.net> <3ACB537B.99B851B9@netfall.com> <87hf0433qs.fsf@amadeus.openinformatics.com> <3ACB6167.3B2E0242@iiic.ethz.ch> <878zlg31mw.fsf@amadeus.openinformatics.com> <3ACB9611.C95D16A2@iiic.ethz.ch> <87ae5w1ce3.fsf@amadeus.openinformatics.com>
-Content-Type: text/plain; charset=iso-8859-1
+To: linuxppc-dev@lists.linuxppc.org
+Subject: asm-ppc/ide.h and the evil insw hack.
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Jason E. Stewart" wrote:
+Hi,
 
-> > > Should I just use apt-get to grab the server source, or do I need Ani
-> > > Joshi's tree especially?
-> >
-> > Both should be more or less equivalent. The best would of course be to get
-> > it from CVS.
->
-> Fine by me. What repository should I use,
->    anoncvs@anoncvs.xfree86.org:/cvs
+first a couple of caveats: I'm using a vanilla kernel.org tree and I
+don't normally follow linuxppc-dev, so I may be saying something stupid,
+but here goes...
 
-Yes. Note that the current trunk doesn't contain CRTOnly anymore in "favour"
-of a "UseBIOSDisplay" option (very portable ;). I suggest getting the
-xf-4_0_2-branch .
+Can we possibly get rid of the really evil hac in asm-ppc/ide.h where
+insw and outsw get redefined?
 
+Reasons for wanting to do this:
 
-> or is there a PPC specific tree I need?
+1) any unsuspecting soul who includes <asm/ide.h> into some random file
+suddenly gets these redefined underneath them
 
-There's only Ani's tree I know of, but the r128 driver is rather well
-integrated in the official XFree86 so you shouldn't need it. And I personally
-prefer submitting stuff upstream directly.
+2) because we only hack the "w" versions, setting the interface to 32
+bit transfers (hdparm -c1) breaks horribly.
 
+3) its an evil hack.
 
---
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
+In fact I have an ulterior motive; the only easy way for me to get ide
+working properly on my IBM 850 (PReP architecture) is to remove the hack
+and set ppc_ide_md.fix_driveid to be ppc_generiv_ide_fix_driveid() at
+which point the interface works absolutely perfectly (including 32 bit
+transfers and IDE cdroms which always break if the hack is in place at
+least for me).
+
+The problem is I am sure including these changes will break somebody
+else. I'm guessing that the chrp systems are probably broken in the same
+way as the PReP ones are at the moment (most of the chrp systems I know
+about seem to use SCSI so maybe noone has tested it). I'm really much
+more worried about the macs.
+
+Anyone care to comment?
+
+btw if you do some experiments and find that you end up in a state where
+the interface seems to work but your partition table isn't recognized
+you may need the hdx=swapdata option.
+
+Cheers,
+
+	David
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
