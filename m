@@ -1,44 +1,55 @@
-To: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
-Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: "mkimage" not found 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 04 Mar 2004 11:33:33 +0100."
-             <00a101c401d4$26140fc0$0400a8c0@portatile>
-Date: Thu, 04 Mar 2004 12:07:37 +0100
-Message-Id: <20040304110742.949A1C0655@atlas.denx.de>
+Message-ID: <40473464.8010203@imc-berlin.de>
+Date: Thu, 04 Mar 2004 14:51:32 +0100
+From: Steven Scholz <steven.scholz@imc-berlin.de>
+MIME-Version: 1.0
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: uncached user space mapping with mmap() ???
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <00a101c401d4$26140fc0$0400a8c0@portatile> you wrote:
->
-> With the previous ELDK2.0 I would have generated the image with the "make
-> pImage" command while now I suppose the command "make uImage" must be used.
-> Is this correct?
+Hi there,
 
-This is correct, but "make pImage" will still work, too.
+I am trying to access a hardware timer implemented in an FPGA from
+user space. I implemented a simple mmap() functionality (taken from
+Runbini's Linux Device Driver)
 
-> Then at the end of compilation process, I have the following message:
-> "mkimage" not found - U-boot Images will not be built.
+int simple_remap_mmap(struct file *filp, struct vm_area_struct *vma)
+{
+      unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
 
-The "mkimage" should be in your PATH when using the ELDK  -  it  gets
-installed in /opt/eldk/usr/bin/
+      if (offset >= __pa(high_memory) || (filp->f_flags & O_SYNC)) {
+          vma->vm_flags |= VM_IO;
+      }
+      vma->vm_flags |= VM_RESERVED;
 
-> Anybody has an idea where I am wrong?
+      if (remap_page_range(vma->vm_start, offset,
+	vma->vm_end-vma->vm_start, vma->vm_page_prot))
+	        return -EAGAIN;
 
-Maybe your PATH ist not correct?
+      return 0;
+}
 
-Best regards,
+I just learned that
 
-Wolfgang Denk
+ > getting an uncached user space mapping is architecture dependent.
+ > On ARM, however, passing pgprot_noncached(vma->vm_page_prot) to
+ > remap_page_range() will alter the page protections such that the
+ > mapping will be uncached.
+
+How could I do this on an MPC8xx?
+
+Thanks a million!
+
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Felson's Law:
-	To steal ideas from one person is plagiarism; to steal from
-	many is research.
+Steven Scholz
+
+imc Measurement & Control               imc Meﬂsysteme GmbH
+Voltastr. 5                             Voltastr. 5
+13355 Berlin                            13355 Berlin
+Germany                                 Deutschland
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
