@@ -1,45 +1,36 @@
-Date: Thu, 05 Apr 2001 18:29:42 -0400
-From: ultrapenguin@netscape.net (jeramy b smith)
-To: iain@sandoe.co.uk
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: HTML device-trees posted
-Mime-Version: 1.0
-Message-ID: <6DC64F7D.03DD9023.A41E0FAA@netscape.net>
-References: <20010405181155.95D9FDB9C8@atlas.valhalla.net>
-Content-Type: text/plain; charset="us-ascii"
+Message-ID: <3ACCFFBB.58CC75D2@iiic.ethz.ch>
+Date: Fri, 06 Apr 2001 01:28:59 +0200
+From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+MIME-Version: 1.0
+To: "Jason E. Stewart" <jason@openinformatics.com>
+Cc: debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: External Monitor under Pismo
+References: <20010404092143.EFE4C2F01B@apollo.valhalla.net> <3ACB537B.99B851B9@netfall.com> <87hf0433qs.fsf@amadeus.openinformatics.com> <3ACB6167.3B2E0242@iiic.ethz.ch> <878zlg31mw.fsf@amadeus.openinformatics.com> <3ACB9611.C95D16A2@iiic.ethz.ch> <87ae5w1ce3.fsf@amadeus.openinformatics.com> <3ACB9EB3.2661FFCE@iiic.ethz.ch> <87u242zz7y.fsf@amadeus.openinformatics.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I noticed the IBM device trees on tibitt's page. Do we want to make a combined page and put it in the 'developer library/reference' section ?
+"Jason E. Stewart" wrote:
 
--jeramy b smith
+> I don't want to mess up my existing configuration so I only want to
+> 'make install' if I can get it to happily install someplace other than
+> /usr/X11R6/*
 
-"Iain Sandoe" <iain@sandoe.co.uk> wrote:
+You'd have to set ProjectRoot in host.def before the build.
+
+
+> Shouldn't I just need to install
 >
+> xc/programs/Xserver/hw/xfree86/drivers/ati/r128_drv.o
 >
-> Hi List,
->
-> I've posted the html versions of the device trees I've collected to date at:
->
-> http://penguinppc.org/files/users/iain/dev-trees-html/trees-index.html
->
-> It's not great rocket-science - but could be quite useful...
->
-> thanks to all those who sent trees - and more are still welcome (if yours is
-> not there - consider sending it ;-)
->
-> only takes ten minutes to do..
->
-> ciao,
-> Iain.
->
->
+> into /usr/X11R6/lib/modules/drivers and restart the X server?
+
+Bingo! Backup the original one though. ;)
+
+
 --
--jeramy b smith
-
-
-"Linux is Fun!" -Linus Torvalds
-
+Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
+CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
