@@ -1,37 +1,24 @@
-Message-ID: <001401c3334f$c2e079f0$ca8d100a@justin>
-From: "Shenrong" <rshen@udtech.com.cn>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC755 L2 Cache data parity error
-Date: Sun, 15 Jun 2003 23:06:38 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Mon, 16 Jun 2003 10:58:23 +1200
+From: Dmytro Bablinyuk <dmytro.bablinyuk@tait.co.nz>
+Subject: linux for PowerPC
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Message-id: <3EECFA0E.7537501A@tait.co.nz>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-   Anybody has experienced with MPC755 L2 Cache data parity error?
-We use XPC755B Rev. E at 400M Hz, and 1M L2 Cache at 200M Hz.
-After the Linux is up and with busy disk accessing or network
-operations for several hours, 755 will receive L2 Cache data parity checking
-error machine check. If we don't enable L2 Cache data parity checking,
-the system will still crash for some time silently. But if we don't enable
-L2 Cache, this problem won't occur. Reduce the L2 Cache freq to
-160M Hz, 133M Hz or even less won't avoid this problem. It seems
-the system will be some more stable(still has problem) if we set the L2
-Cache
-size to 512k or 256k, but don't know why. We use both the PBGA and
-CBGA packages, seems CBGA version are some more stable(still has problem),
-don't know why too.
-   It's more strange that I can simply let the error occur under Linux with
-continuous file copying in ram disk. But I can't let it occur under PPCBoot
-with whatever memory operations for even one time, whether use the L2 Cache
-memory as L2 Cache or as private memory. The L2 Cache has the same setting
-in the above two circumstances.
-   Any ideas and suggestions? Thanks.
+Does anybody could suggest me any free of charge real-time linux distribution or way
+to make it for 859T?
+We have some options for commercial linux suppliers but first we would like to get
+linux running ourself.
+Our requirements are "soft real-time" and it would be good if could use a latest
+kernel.
+The flash we expect to have a 8mb and 16mb of RAM, the eval board is 859T.
 
-Shenrong
+Thank you in advance for any suggestions.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
