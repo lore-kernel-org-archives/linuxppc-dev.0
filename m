@@ -1,36 +1,52 @@
-Date: 10 Jun 2002 08:44:44 -0000
-Message-ID: <20020610084444.8528.qmail@webmail14.rediffmail.com>
+Message-ID: <3D04A571.4020309@cray.com>
+Date: Mon, 10 Jun 2002 08:11:13 -0500
+From: David Updegraff <dave@cray.com>
 MIME-Version: 1.0
-From: "navinb" <ppc4@rediffmail.com>
-Reply-To: "navinb" <ppc4@rediffmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: usb host and slave connection....
-Content-type: text/plain;
-	format=flowed
+To: Stefan Roese <stefan.roese@esd-electronics.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 405GPr
+References: <EFEAIMDCOOOHIEPHDNFJIELDEAAA.stefan.roese@esd-electronics.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Stefan
 
-If any body has tested MPC8xx board in usb slave mode i have quick
-maybe naive question here.
+We got one in I made some "proof of concept" changes to PPCBOOT/LinuxPPC
+to make it boot ok.. have not played with the extra clocking
+register strap values though; we just plopped it into our
+405GP socket and ran @200 Mhz.  Worked...
 
-A host does have two 10k pull up resistor on data lines where as a
-device as one 1.5k pulldown on appropiate dataline ( high/low
-speed) , now how the same port can be used as host and slave  mode
-both.
+I noticed that the PVR on the unit we got was a bit different:
+ibm specs said
+	0x50910950
+..but I got
+	0x50910951
 
-mpc8xx have series A usb receptable which normally resides toward
-host side.
+Is there a doc. somewhere that tells us what the ranges of PVRs
+for this chip can legitimately be?
 
-I am asking this question because i am getting repeated reset
-events when I connect one mpc8xx board running as slave connected
-by a normal usb cable ( i assume it is a high speed cable used for
-12/480 mbs) to another mpc8xx board running as host ..and both
-identical board have series A receptable.
+>>>Anyone playing with adding IBM 405GPr to the cputable?
+>>
+>>Stephan said on the PPCboot list that he will have boards with
+>>them soon. He has done patches for PPCBoot so the kernel may not
+>>be far off. It will still be a couple of weeks before I get a
+>>board with one yet.
+>
+>
+> Right! As promised PPCBoot will be done next week, and linux will follow (if
+> I am still the first) pretty soon.
+>
+> Stefan.
+>
+>
+>
 
-Best Regards,
+
+
+--
+David Updegraff / dave@cray.com / 218.525.1154
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
