@@ -1,26 +1,25 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp8.wanadoo.fr (smtp8.wanadoo.fr [193.252.22.23])
-	by ozlabs.org (Postfix) with ESMTP id 3650667A76
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 23:25:01 +1100 (EST)
-Date: Fri, 25 Feb 2005 13:15:37 +0100
-To: Christian <evil@g-house.de>
-Message-ID: <20050225121536.GA20174@pegasos>
-References: <20041206185416.GE7153@smtp.west.cox.net>
-	<Pine.SOC.4.61.0502221031230.6097@math.ut.ee>
-	<20050224074728.GA31434@pegasos>
-	<Pine.SOC.4.61.0502241746450.21289@math.ut.ee>
-	<20050224160657.GB11197@pegasos> <421E7033.1030600@g-house.de>
-	<20050225063609.GA21244@pegasos>
-	<49984.195.126.66.126.1109332744.squirrel@housecafe.dyndns.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <49984.195.126.66.126.1109332744.squirrel@housecafe.dyndns.org>
-From: Sven Luther <sven.luther@wanadoo.fr>
-Cc: Tom Rini <trini@kernel.crashing.org>, Meelis Roos <mroos@linux.ee>,
-	Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Sven Hartge <hartge@ds9.gnuu.de>
-Subject: Re: [PATCH 2.6.10-rc3][PPC32] Fix Motorola PReP (PowerstackII Utah)
-	PCI IRQ map
+Return-Path: <mikpe@user.it.uu.se>
+Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "aun.it.uu.se",
+	Issuer "Uppsala University CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id E4CDA67A70
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Feb 2005 01:27:57 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16927.13776.382746.406875@alkaid.it.uu.se>
+Date: Fri, 25 Feb 2005 15:27:28 +0100
+From: Mikael Pettersson <mikpe@csd.uu.se>
+To: Jakub Jelinek <jakub@redhat.com>
+In-Reply-To: <16926.63745.143566.413488@alkaid.it.uu.se>
+References: <16924.59237.581247.498382@alkaid.it.uu.se>
+	<1109210688.15027.2.camel@gaston>
+	<16925.60927.49095.758660@alkaid.it.uu.se>
+	<20050224160139.GF853@devserv.devel.redhat.com>
+	<16926.63745.143566.413488@alkaid.it.uu.se>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: ppc32 weirdness with gcc-4.0 in 2.6.11-rc4
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,54 +29,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 25, 2005 at 12:59:04PM +0100, Christian wrote:
-> On Fri, February 25, 2005 7:36, Sven Luther said:
-> > So, now, we need to find out what the problems where, i think it is
-> > something that went in between 2.6.8 and 2.6.10, and leigh said he had
-> > some ideas.
-> 
-> may i ask what patches were applied to a vanilla 2.6.8 kernel to build the
-> 2.6.8-d-i then?
+Mikael Pettersson writes:
+ > Jakub Jelinek writes:
+ >  > On Thu, Feb 24, 2005 at 04:08:47PM +0100, Mikael Pettersson wrote:
+ >  > > _However_, the 0k data message is due to a gcc-4.0 bug, and below
+ >  > > you'll find a test program which illustrates it.
+ >  > 
+ >  > http://gcc.gnu.org/PR20196
+ > 
+ > Jakub's patch to gcc4 solved the mysterious "0k data" message,
+ > but my eMac's USB is still dysfunctional. I'll try to look into
+ > that next week.
 
-Some backports that i got from the list. The complete list of patches is at :
+CONFIG_USB_DEBUG gave the following dmesg diff between gcc-3.4.3 and 4.0.0:
 
-  http://svn.debian.org/wsvn/kernel/trunk/kernel/source/kernel-source-2.6.8-2.6.8/debian/patches/?rev=0&sc=0
+@@ -118,6 +118,8 @@
+ hub 1-0:1.0: Single TT
+ hub 1-0:1.0: TT requires at most 8 FS bit times
+ hub 1-0:1.0: power on to power good time: 20ms
++hub 1-0:1.0: hub controller current requirement: 0mA
++hub 1-0:1.0: 500mA bus power budget for children
+ hub 1-0:1.0: local power source is good
+ hub 1-0:1.0: enabling power on all ports
+ ohci_hcd: 2004 Nov 08 USB 1.1 'Open' Host Controller (OHCI) Driver (PCI)
 
-And i guess the one at hand here is : 
+There are several more of these diffs, and they are what's eventually
+causing USB to label the hub as bus-powered and refuse to connect it.
 
-  http://svn.debian.org/wsvn/kernel/trunk/kernel/source/kernel-source-2.6.8-2.6.8/debian/patches/powerpc-prep-powerstack-irq.dpatch?op=file&rev=0&sc=0
+The root problem is that code like:
+    get_status(..., &status);
+    cpu_to_le16s(&status);
+    if ((status & (1 << BITNO)) == 0) { ... }
+gets miscompiled so that the if statement triggers when it shouldn't.
 
---- kernel-source-2.6.8.orig/arch/ppc/platforms/prep_pci.c	2004-12-28
-08:24:07.000000000 +0100
-+++ kernel-source-2.6.8/arch/ppc/platforms/prep_pci.c	2005-01-03
-11:15:30.604274816 +0100ll lines beginning with `## DP:' are a description of
-the patch.
-## DP: Description: Fix PReP - motorola powerstack II utah pci irq mapping.
-## DP: Patch author: Tom Rini <trini@kernel.crashing.org>
-## DP: Upstream status: backport
+Below is a standalone test program which reproduces the bug.
+It does involve some PPC-specific asm(), so the bug may be
+in gcc-4.0.0 or it may be in the asm() constraints.
 
-. $(dirname $0)/DPATCH
+/Mikael
 
-@DPATCH@
-@@ -115,13 +115,13 @@
- static char Utah_pci_IRQ_map[23] __prepdata =
- {
-         0,   /* Slot 0  - unused */
--        0,   /* Slot 1  - unused */
-+        4,   /* Slot 1  - IDE - SL82C105 */
-         5,   /* Slot 2  - SCSI - NCR825A  */
-         0,   /* Slot 3  - unused */
--        1,   /* Slot 4  - Ethernet - DEC2114x */
-+        3,   /* Slot 4  - Ethernet - DEC2114x */
-         0,   /* Slot 5  - unused */
--        3,   /* Slot 6  - PCI Card slot #1 */
--        4,   /* Slot 7  - PCI Card slot #2 */
-+        2,   /* Slot 6  - PCI Card slot #1 */
-+        3,   /* Slot 7  - PCI Card slot #2 */
-         5,   /* Slot 8  - PCI Card slot #3 */
-         5,   /* Slot 9  - PCI Bridge */
-              /* added here in case we ever support PCI bridges */
+/* gcc4bug2.c
+ * Written by Mikael Pettersson <mikpe@csd.uu.se>, 2005-02-25.
+ *
+ * This program is abstracted from drivers/usb/core/hub.c in
+ * the 2.6.11-rc5 Linux kernel sources.
+ *
+ * With gcc-3.4.3, gcc-3.3.5, or gcc-3.2.3, usb_configure()
+ * correctly returns 0.
+ *
+ * With gcc-4.0.0 20050220, usb_configure() erroneously returns 1.
+ * The error occurs at -O1 and higher. -O0 hides the error.
+ *
+ * All gcc versions were configured for powerpc-unknown-linux-gnu.
+ */
+#include <stdio.h>
 
-Friendly,
+extern __inline__ __attribute__((always_inline))
+void st_le16(volatile unsigned short *addr, const unsigned val)
+{
+    __asm__ __volatile__ ("sthbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
+}
 
-Sven Luther
+static __inline__ __attribute__((always_inline))
+void swab16s(unsigned short *addr)
+{
+    st_le16(addr, *addr);
+}
+
+unsigned short raw_hubstatus;
+
+void usb_get_status(unsigned short *hubstatusp)
+{
+    *hubstatusp = raw_hubstatus;
+}
+
+int usb_configure(void)
+{
+    unsigned short hubstatus;
+
+    usb_get_status(&hubstatus);
+    swab16s(&hubstatus);
+    return (hubstatus & 1) == 0;
+}
+
+int main(void)
+{
+    int ret;
+
+    raw_hubstatus = 0x0300;
+    ret = usb_configure();
+    if (ret) {
+	fprintf(stderr, "gcc bug! usb_configure() returned %d\n", ret);
+	return 1;
+    } else
+	return 0;
+}
