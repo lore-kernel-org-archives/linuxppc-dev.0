@@ -1,71 +1,83 @@
-Date: Tue, 2 Feb 1999 10:47:38 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-Reply-To: Gabriel Paubert <paubert@iram.es>
-To: David De Ridder <david.de.ridder@bitsmart.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC on MVME 2306 board
-In-Reply-To: <3.0.6.32.19990202101943.007e4d30@hsins.uia.ac.be>
-Message-ID: <Pine.HPP.3.96.990202101833.16636J-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <19990202023740.A479@toocool.calpoly.edu>
+Date: Tue, 2 Feb 1999 02:37:40 -0800
+From: "dhiltgen@toocool.calpoly.edu" <dhiltgen@toocool.itslab.calpoly.edu>
+To: Owen Waller <O.Waller@ee.qub.ac.uk>,
+        "Petr Vandrovec Ing. VTEI" <VANDROVE@vc.cvut.cz>
+Cc: mlan@cpu.lu, Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: matroxfb, anybody? (More details...)
+References: <1EB9B063356@vcnet.vc.cvut.cz> <Pine.SGI.4.02A.9902011106470.11398-100000@myst.ee.qub.ac.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.SGI.4.02A.9902011106470.11398-100000@myst.ee.qub.ac.uk>; from Owen Waller on Mon, Feb 01, 1999 at 11:35:16AM -0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+OK, I've made a bit more progress...
+
+Using con2fb makes the console switching much happier...  I associated
+tty2 to matrox and left the rest on control.  The tty2 console didn't
+move immediately; I had to run fbset -i -fb /dev/fb1 on tty2 (still
+visually on control) at which point it popped over to matrox.  From then
+on I could switch back and forth and everything worked as expected.
+
+The cursor tends to get messed up on matrox... a second "large"
+multi-color funky cursor square (about 4x larger) exists after an fbset.
+As soon as I switch consoles back to control, the cursor cleared back up.
+(This was consistent every time I ran fbset.)
+
+Scrolling is still messed up.  When the matrox scrolls off the end,
+control gets the scroll action.  Again, if I switch consoles things get
+reset as they should be. ^L will also clean it up temporarily.
+
+I can get two X servers started, and I tried to use "X :0 tty1" for one
+of them and "X :1 tty2" for the other, but I can't get them to co-exist
+happily.  The first one always takes tty7.  I even tried "-keeptty" as
+it sounded like it might force the X server to stick to the initial tty
+instead of 7.  Bottom line:  I can switch from either one to console,
+but I can only get back to the first one that I started through
+tty7. (Either matrox or control but never both)
+
+Also, only the active X server is "alive."  The second one just freezes
+as if it thinks it lost the console to a VC switch.... not the desired
+result.  So is this an X server issue, (Should ignore the VC switch) or a
+kernel issue?  Sounds like a kernel issue, as the kernel should realize
+that the X server still has the framebuffer, and therefore should still
+"think" that it is active.  If no-one speaks up I might go hacking next
+week and see if I can cludge something to get it to the point where both
+X servers get console data...  Geert, any thoughts?
+
+So, two questions.    
+
+1) How can I get the two X servers to use different VCs so that I can 
+switch between them.  Alternatively...
+
+2) Is there any way to get the mouse to "fall off" one side and end
+up on the other X server (Like Sun's with multiple heads.)  XFree86 4.0
+maybe?  Is it even close to usable yet if I signed up to be a developer,
+or is it really messy right now?
+
+Oh, and I've downloaded 3.3.3 and applied the SVGA patch and it didn't
+build out of the box (unrelated to the patch, looks like ppc issues with
+other parts of the build.)  I haven't started tweaking yet but as soon
+as I get some more free time I'll see if I can get it to build.
 
 
-On Tue, 2 Feb 1999, David De Ridder wrote:
 
-> At 14:13 1-2-99 +0100, Gabriel Paubert wrote:
-> 
-> >At least simliar ones, I don't remember exactly what the 230x has. But as
-> >long as it has a DEC21x4x Ethernet, there should not be any problem...
-> 
->  It has a DEC21140 Ethernet controller (with RJ-45 plug) and a serial
->  interface (PC16550 UART).
+Note:  All of this was without passing any kernel parameters.  I'm now
+running with "video=matrox:vesa:0x11a,nopan,fv:80" and only using the
+matrox buffer and it works great as /dev/fb0.  Now all I have to do is
+get that darn accelerated X server working. ;)   Of course if I try to do
+stuff with control (/dev/fb1 now) things start getting screwy again.
 
-Ok, I have a 21140 too. So it should work (I also have compiled kernels
-with root on NFS on this machine, no cross compile) 
+Thanks.
 
-> >> 2) Since we don't have a spare developer PPC machine, is it possible
-> >>    to crosscompile the LinuxPPC kernel from the standard Linux sources
-> >>    on an Intel based machine ? I tried it and had problems with an
-> >>    unfound 'semaphore.h' file.
-> >> 
-> >
-> >Yes, you'll need a rather recent egcs version. 
-> 
->  The egcs on that machine came with a Slackware 3.6 (Octobre 1998?). It
->  should be recent. And how will a new egcs prevent the unfound-include-file-
->  problem from happening ?
+-- 
+Daniel Kerry Hiltgen     Computer Science     Cal Poly, San Luis Obispo, CA  
+dhiltgen@www.itslab.calpoly.edu    http://www.itslab.calpoly.edu/~dhiltgen/
 
-You might have to tweak the main Makefile for cross compiling, this
-depends on which kernel you are using, and how egcs (in which
-directories) has been installed.
-
-However the following:
-
-	make ARCH=ppc CROSS_COMPILE=<correct directory name> 
-
-should work most of the time.
-
-> >I have put an untested zImage on my ftp server (I want to test it soon):
-> >
-> >ftp://vcorr1.iram.es/pub/linux-2.2/zImage.nfsroot-2.2.0
-> 
->  Thank you. BTW, is is possible to use 'rdev' on a cross-compiled
->  kernel image ? I mean : can I set the root device for a LinuxPPC with
->  a PC's rdev ?
-
-No, I don't think so. Ah, and BTW the kernel I put on the ftp server has a
-serial console: all message will be logged to the serial port and you can
-also set a getty on the serial port in /etc/inittab:
-
-S0:12345:respawn:/sbin/getty -h ttyS0 DT9600 vt100
-
-	Regards,
-	Gabriel.
-
+"In a world without fences who needs Gates?"  1997 JavaOne Conference
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
