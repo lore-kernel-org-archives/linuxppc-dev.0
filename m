@@ -1,37 +1,40 @@
-Date: Mon, 7 Jun 1999 17:19:42 -0700 (MST)
-From: Matt Porter <mporter@phx.mcd.mot.com>
-To: Gabriel Paubert <paubert@iram.es>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2.9 patch for Motorola support.
-In-Reply-To: <Pine.HPP.3.96.990607140855.27048C-100000@gra-ux1.iram.es>
-Message-ID: <Pine.LNX.3.96.990607150045.28505D-100000@fwrsl-11.phx.mcd.mot.com>
+Date: Mon, 7 Jun 1999 20:44:11 -0500 (CDT)
+From: Mark Lin <mlin@MPI-Softtech.Com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Support for Motorola Platforms
+In-Reply-To: <19990604183720.A29199@drow.res.cmu.edu>
+Message-ID: <Pine.SOL.4.05.9906072043240.8223-100000@mpi.mpi-softtech.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 7 Jun 1999, Gabriel Paubert wrote:
-> On Wed, 26 May 1999, Matt Porter wrote:
-> 
-> > 
-> > Below is a cumulative patch versus official 2.2.9 to support Motorola
-> > boards.  Fixes OpenPIC irq handling, kbd controllerless board support, and
-> > initrd relocation.
-> 
-> Fine, butif you set CONFIG_VT to off the kernel won't link.  
-> BTW why don't you set CONFIG_VT to off for machines without KB
-> controller ?
 
-To fit in with the Debian dist I needed a PReP kernel image that can
-handle ser_con, vga_con, and fb_con so something works on all systems out 
-of the box. I've since changed my VT-based hack to a more generic method
-using the keyboard presence flag that is set in prep_pci.c.  This solves
-the build problem with the old method...
- 
+
+Yeah, that's what I was looking for -- the patches for egcs and Altivec.
+
 --
-Matt Porter				Motorola Computer Group
-mporter@mcg.mot.com			Real Time Software Support
+Mark Lin
+MPI Software Technology, Inc.
+
+On Fri, 4 Jun 1999, Daniel Jacobowitz wrote:
+
+> 
+> On Fri, Jun 04, 1999 at 04:18:41PM -0700, Johnnie Peters wrote:
+> > Mark Lin wrote:
+> > > 
+> > > Can you point me to the exact URL?  I'm having problems finding it.
+> > 
+> > They are not on any URL.  I attached them to the post that all this
+> > originated from.  I will attach them here again.
+> > 
+> > Johnnie
+> 
+> I'm guessing he meant the patches to egcs for Altivec...
+> 
+> 
+> Dan
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
