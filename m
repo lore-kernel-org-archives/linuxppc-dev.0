@@ -1,25 +1,28 @@
-Message-ID: <3AE9972D.FEF28339@nexus-tech.net>
-Date: Fri, 27 Apr 2001 11:58:37 -0400
-From: Kyle Harris <kharris@nexus-tech.net>
+Message-ID: <3AE9BEB4.2BC372D5@mvista.com>
+Date: Fri, 27 Apr 2001 14:47:16 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: [Ppcboot-users] 16 Bit wide Flash on MPC8xx]
+To: John Traill <john.traill@motorola.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 8260 SCC as Console
+References: <3AE859E4.8CF5063A@mvista.com> <3AE919BA.950AACA@motorola.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Geir Frode Raanes wrote:
+John Traill wrote:
 
-[..snip..]
+> I should have been more specific - Do you have a patch for the ADS8260 ?
 
-> to DQ_mpc8xx[31..24(#WE3), 23..16(#WE2)]/#OE(GPL1)/#CS0
-> http://www.amd.com/products/nvd/techdocs/21415.pdf)
+Not really.  We (or at least I) and working in three different source
+trees now.  There is the 2.4 tree, the linuxppc_2_5 tree and a "merged"
+tree.  I did the ADS8260 in this "merged" tree, so any patch would
+include lots more than either of the FSM Labs trees.  Tom Rini is
+quickly moving all of this into the 2.4 tree, and it will probably
+appear there very soon.
 
-Is this signal numbering mpc style (0 = MSB)? If so, shouldn't this be
-D0..D7(#WE0) and D8..D15(#WE1)? We're getting ready to spin hardware and
-I want to make sure I understand this correctly.
 
-Kyle.
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
