@@ -1,40 +1,56 @@
-Date: Thu, 15 Nov 2001 22:58:36 -0800
-From: Neil Russell <neil@c-side.com>
-To: James F Dougherty <jfd@krakatoa.gigabitnetworks.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Reading SDRAM Memory Configuration via EEPROM on SIMM
-Message-ID: <20011115225836.B19227@lx.c-side.com>
-References: <200111160524.fAG5OI6U000706@krakatoa.gigabitnetworks.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200111160524.fAG5OI6U000706@krakatoa.gigabitnetworks.com>; from jfd@krakatoa.gigabitnetworks.com on Thu, Nov 15, 2001 at 09:24:18PM -0800
+Subject: Antwort: Replacement for MC68160A
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OFCC31A5A2.6B532C2B-ONC1256B06.002B06AD@uk.marconicomms.com>
+From: "Thomas Wollenhaupt" <Thomas.Wollenhaupt@marconi.com>
+Date: Fri, 16 Nov 2001 08:51:36 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Most SDRAM chip specs have enough stuff to figure this out.  I don't
-have an address handy, but if you look at a chip and go to the
-manufacturer's web site, ...
+Hello,
 
-Also, LiMon has some code to do some of the SDRAM stuff.  It is written
-in C, so it won't work on many CPUs, and it doesn't (yet) handle timing;
-just geometry.  (C works on the 8260 before SDRAM is available because
-you can use the internal RAM as a stack.)
+we use the Intel/LevelOne LXT905 without any problems.
 
-	www.thinsys.com/limon.html
+Regards
+Thomas
 
 
-Neil.
 
 
-On Thu, Nov 15, 2001 at 09:24:18PM -0800, James F Dougherty wrote:
->
-> Does anyone know how to read an SDRAM SIMM EEPROM
-> to get the memory configuration data? I remember
-> there was a spec for this ... forgot the name...
->
-> You basically read I2C data bytes from an EEPROM
-> in a standard format.... PC's do this to find memory
-> settings..
+|--------+------------------------------------------>
+|        |          Subodh Nijsure <subodh@best.com>|
+|        |          Gesendet von:                   |
+|        |          owner-linuxppc-embedded@lists.li|
+|        |          nuxppc.org                      |
+|        |                                          |
+|        |                                          |
+|        |          16.11.2001 01:23                |
+|        |                                          |
+|--------+------------------------------------------>
+  >-----------------------------------------------------------------------------------------------------------|
+  |                                                                                                           |
+  |       An:     linuxppc-embedded@lists.linuxppc.org                                                        |
+  |       Kopie:                                                                                              |
+  |       Thema:  Replacement for MC68160A                                                                    |
+  >-----------------------------------------------------------------------------------------------------------|
+
+
+
+
+
+Hello,
+
+Does anybody out here have design with MC68160A motorola transceivers for
+their SCC ethernets? We have been told by Motorola this product is at
+end-of-life and we can purchase the part only upto Jan 2002. After that
+we are on our own i.e. we need to replace the part or do one time buy.
+
+Anybody here has recommendation for transceiver that has worked without
+any problem on 860 SCCs?
+
+/Subodh
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
