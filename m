@@ -1,49 +1,106 @@
-To: Fillod Stephane <stephane.fillod@thomson.net>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Cross compiling : problem linking 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 02 Oct 2003 18:34:19 +0200."
-             <2C1BAF8F8E1DD611862B0002A5D4C3FC01BC068F@renexch3.rennes.thmulti.com>
-Date: Thu, 02 Oct 2003 23:26:40 +0200
-Message-Id: <20031002212645.2FC78C59E4@atlas.denx.de>
+Message-ID: <001101c3894c$38833ab0$2803050a@JackyLam>
+From: "Jacky Lam" <jackylam@astri.org>
+To: "Wolfgang Denk" <wd@denx.de>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <20031002121733.A2E32C59E4@atlas.denx.de>
+Subject: Re: Queston about Walnut 
+Date: Fri, 3 Oct 2003 09:18:12 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Stephane,
-
-in message <2C1BAF8F8E1DD611862B0002A5D4C3FC01BC068F@renexch3.rennes.thmulti.com> you wrote:
+> > > Who gave you such (obviously wrong) instructions?
+> >
+> >         I take the example of u-boot to create the "uImage" and download
+it
+> > to the board.
 >
-> Wolfgang, you've got my agreement to put the following in the FAQ
-> if it's not already.
+> Please show me which U-Boot document uses 0x00400000 as load or entry
+> point address so I can fix this immediately. It is WRONG  and  CANNOT
+> work.
 
-AFAIK it's not.
+    I take the "step" from u-boot's README file only. Because I got an
+exception, I try to load it to other address. I use 0x00400000 because
+zImage seems to be loaded at there....anyway, just a guess.
 
-> This code is for accessing hardware registers from *userland*.
-> You need CAP_SYS_RAWIO and /dev/mem permissions.
+>
+> Please start by giving a precise description of  what  you  did.  and
+> which error messages you got.
 
-Thanks!
+    Here is the exact step that I have done so far:
 
-Or do you want to add it yourself? All you have to do is  registering
-at  http://www.denx.de/twiki/bin/view/TWiki/TWikiRegistration ...
+    <Compile toolcahin by crosstools>
+    <Patch 2.4.22 kernel with patch on
+http://www.kernel.org/pub/linux/kernel/ports/ppc/2.4/linuxppc-2.4.22.patch.bz2>
+    <Compile kernel with cross toolchain>
+    powerpc-405-linux-gnu-objcopy -O binary -R .note -R .comment -S vmlinux
+linux.bin
+    gzip -9  linux.bin
+    ./mkimage -A ppc -O linux -T kernel -C gzip -a 0x00000000 -e
+0x00000000 -n "test" -d linux.bin.gz uImage
+    <run ftpd on host>
+    <boot up the board and enter command prompt of u-boot>
 
-Then you can edit / add to the U-Boot and Linux Guide at
-http://www.denx.de/twiki/bin/view/DULG/WebHome yourself...
+    Here is the u-boot log:
+
+    U-Boot 0.4.0 (Sep 29 2003 - 11:44:31)
+
+CPU:   IBM PowerPC 405GP Rev. D at 200 MHz (PLB=100, OPB=50, EBC=33 MHz)
+           PCI sync clock at 33 MHz, external PCI arbiter enabled
+           16 kB I-Cache 8 kB D-Cache
+Board: ### No HW ID - assuming WALNUT405
+I2C:   ready
+DRAM:  64 MB
+FLASH: 512 kB
+In:    serial
+Out:   serial
+Err:   serial
+KGDB:  kgdb ready
+ready
+BEDBUG:ready
+Hit any key to stop autoboot:  0
+=> tftpboot
+ENET Speed is 100 Mbps - FULL duplex connection
+TFTP from server 10.5.6.76; our IP address is 10.5.3.45
+Filename 'uImage'.
+Load address: 0x400000
+Loading: #################################################################
+         #######################################################
+done
+Bytes transferred = 612748 (9598c hex)
+=> bootm
+## Booting image at 00400000 ...
+   Image Name:   test
+   Created:      2003-10-03   1:08:06 UTC
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    612684 Bytes = 598.3 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+id mach(): done
+MMU:enter
+MMU:hw init
+MMU:mapin
+
+<hang>
 
 
-Hint: _anybody_ is welcome to contribute.
+>
+> You "get an exception" - when? When running "mkimage"?  When  booting
+> the kernel? Which sort of exception? What is the exact error message?
+> Please include a complete log of your actions and all output.
+
+    Maybe I do something wrong before. Now, it just hangs. Thanks your
+suggestion about the load address.
 
 
-Best regards,
 
-Wolfgang Denk
+Best Regards,
+Jacky
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Never worry about theory as long as  the  machinery  does  what  it's
-supposed to do.                                      - R. A. Heinlein
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
