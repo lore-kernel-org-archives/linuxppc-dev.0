@@ -1,32 +1,28 @@
-Message-ID: <3857E630.5B63BD3E@netx4.com>
-Date: Wed, 15 Dec 1999 14:04:16 -0500
+Message-ID: <3857E6CC.2D99B69C@netx4.com>
+Date: Wed, 15 Dec 1999 14:06:52 -0500
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: bsimon@ctam.com.au
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+To: Brian Kuschak <bkuschak@yahoo.com>
+CC: bsimon@ctam.com.au,
+        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: linuxppc embedded boot problems.
-References: <3856C0D7.4E1404C9@ctam.com.au> <385703C2.AA4298E7@netx4.com> <38570544.476D42C9@ctam.com.au> <385714D8.8AD74656@netx4.com> <3857103E.6608A366@ctam.com.au>
+References: <19991215055541.23843.qmail@web301.mail.yahoo.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brendan Simon wrote:
+Brian Kuschak wrote:
 
 
-> I now get the attached output.  Notice the "VFS: Mounted root (NFS
-> filesystem) readonly." message.
+> Other potential problem, which has bitten me, is to
+> make sure you don't have any lines locked in cache
+> before you jump to the kernel loader.
 
 
-
-At some point, long ago, the generic kernel root mounting had
-a subtle change for some reason.  The result is that all file
-systems are now mounted read-only by default.  All you need
-to do is add "rw" to the command line.  It should look like
-this: root=/dev/nfs rw......Now, the more interesting part is
-I thought I did that as part of the default command line in
-arch/ppc/mbxboot/misc.c......where did it go?
-
+This is all part of the documented steps necessary to
+properly initialize the 8xx after power up........things
+a boot rom should perform.
 
 
 	-- Dan
