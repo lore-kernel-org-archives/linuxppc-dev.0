@@ -1,52 +1,26 @@
-Message-ID: <6B546A602AD2D211BFF00008C7A4288905843FEB@hrtades2.atea.be>
-From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
-To: "'??? '" <goodyjc@hanmail.net>,
-	"'linuxppc-embedded@lists.linuxppc.org '" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Question about the dcache of ppcboot??
-Date: Thu, 21 Feb 2002 08:31:14 +0100
+Message-ID: <3C74B50C.CE9EAEB@multitech.co.in>
+Date: Thu, 21 Feb 2002 14:21:24 +0530
+From: srinivas pulipati <srinivasp@multitech.co.in>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="euc-kr"
+To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Software FPU emulation
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+hi all,
 
-I think I have seen discussions on the ppcboot-users mailing list
-mentioning that it is normal that ppcboot crashes when you switch dcache on
-(icache should work)
+i have ported linux-2.4.4 to my custmoboard based on mpc860.
+i got the bash prompt succesfully.
 
-Fred
+but is is crashing sometimes and giving FPU emulation., sig:8.
+sometimes working perfectly.
 
------Original Message-----
-From: ???
-To: linuxppc-embedded@lists.linuxppc.org
-Sent: 2/21/02 6:33 AM
-Subject: Question about the dcache of ppcboot??
+is it because of UPM programming problem or something else?
 
-
-Hello.
-Greetings from korea.
-My name is jaechol, and I'm a newbie.
-Please excuse my English.
-
-I ported ppcboot-1.1.4 to my custom board with mpc862 cpu.
-Everything is OK, except of dcache.
-Icache works fine. but dcache don't work
-Atfer issuing dcache on,  my custom board hangs.
-Is there a need that I do for dcache on??
-
-my board:
-                cpu mpc862
-                2MByte Boot-flash on CS0
-                SDRAM on CS2
-
-========================================================================
-======
-?? ???, Daum http://www.daum.net
-- Daum??? ?? ????? + ?? ???? ? http://hmm.daum.net/shop_0202
-- 100% ?? ??! Daum?? ???? ? http://hmm.daum.net/keyword_top_0202
+thanks
+srinivas
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
