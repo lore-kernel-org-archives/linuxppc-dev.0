@@ -1,66 +1,36 @@
-Message-ID: <007e01c3e0c9$cefe81a0$9104050a@JACKYLAM>
-From: "Jacky Lam" <jackylam@astri.org>
-To: "Andrew May" <acmay@acmay.homeip.net>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <00b101c3de3e$9c34f200$9104050a@JACKYLAM> <20040119052806.GA26841@gate.ebshome.net> <015501c3deef$27263030$9104050a@JACKYLAM> <20040120010227.GA32018@gate.ebshome.net> <20040120232342.GA20399@acmay.homeip.net> <20040121011650.GA3905@gate.ebshome.net> <20040121020501.GA22956@acmay.homeip.net>
-Subject: Re: Small UDP packet performance
-Date: Thu, 22 Jan 2004 17:26:22 +0800
+Message-ID: <400FFCDF.7050807@il.marvell.com>
+Date: Thu, 22 Jan 2004 18:39:59 +0200
+From: Ronen Shitrit <rshitrit@il.marvell.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: PCI graphic card - help
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi all
 
-        Thanks for you patch. I tried your patch and see the throughput is
-really improved a lot. For packet size of 512, the throughput jumps from 2%
-to 55%. For packet size of 1024, the throughput jumps from 50% to 66%.
-Although the improvement for packet size of 256 and 188 doesn't change much
-(0%->4% and 0%->2% respectively), it helps a lot already.
+I ported the Linux Kernel to support Marvell board MV64460 with MPC7457.
+I also succeed to load graphical YDL on it using PCI Cirrus Logic
+Graphic card 5446
+by using the Kernel drivers.
+I tried to upgrade the graphic card to Invidia GF3 but it didn't work
+fine.(I didn't even got the linux symbol on it)
+Can anyone recommend me on a good PCI graphic card that has support in
+the kernel
+buffer frame drivers, that is proved to be working properly.
 
-Regards,
-Jacky
------ Original Message -----
-From: "Andrew May" <acmay@acmay.homeip.net>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Wednesday, January 21, 2004 10:05 AM
-Subject: Re: Small UDP packet performance
+Thanks a lot
 
+--
+Ronen Shitrit
 
->
-> On Tue, Jan 20, 2004 at 05:16:50PM -0800, Eugene Surovegin wrote:
-> > On Tue, Jan 20, 2004 at 03:23:42PM -0800, Andrew May wrote:
-> > > Here is what I have done for a NAPI version of the driver. I don't
-have time
-> > > either to do a patch or merge this up to the latest kernel. I have
-frozen down
-> > > at 2.4.21-pre4 somewhere and I won't be merging anytime soon. It is
-stable for
-> > > me.
-> >
-> > Looks OK, although I chose another way to disable RX IRQs :)
->
-> Do tell.
->
-> > Sad thing is because of bad MAL design NAPI will be limited to one
-> > EMAC per MAL (there is no way to disable IRQ generation on channel
-> > basis), it's not an issue for 405, but for 440 I haven't figured
-> > out how to overcome this limitation yet.
->
-> Yep it is a problem and even for the 405's with more than one ethernet.
->
-> > Andrew, I'm just curious, you probably did some measurements with
-> > your NAPI driver, care to share them :) ?
->
-> It may be hard to compare them. I am adding some data to each packet
-> and routing them to another PCI device. I think things max out around
-> 18kpps one way. Going full-duplex things even out pretty good both
-> ways with the total pps being slightly higher. The most important
-> thing is that when the input rate goes higher the output stays at
-> the max instead of going down.
->
+M.S.I.L
+D.N. Misgav  20184
+Tel:   +972-4-9951000
+Fax:   +972-4-9951001
+Email: mailto: ronen.shitrit@il.marvell.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
