@@ -1,32 +1,59 @@
-Date: Tue, 13 Jan 2004 10:06:31 -0700
-From: Tom Rini <trini@kernel.crashing.org>
+Date: Tue, 13 Jan 2004 18:09:38 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: linuxppc trees, what is going on ?
-Message-ID: <20040113170631.GD10912@stop.crashing.org>
-References: <20040110084155.GA19817@iliana> <16385.63143.132872.395486@cargo.ozlabs.ibm.com> <20040112073217.GC20938@iliana>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040112073217.GC20938@iliana>
+Cc: Debian PowerPC List <debian-powerpc@lists.debian.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4.21-ben2 issues: RTC, Thermal and RTAS
+In-Reply-To: <20040113151230.GA12089@iliana>
+Message-ID: <Pine.GSO.4.58.0401131806560.9060@waterleaf.sonytel.be>
+References: <20030823171845.GA1963@dat.etsit.upm.es> <20031217011849.GA26643@iliana>
+ <Pine.GSO.4.58.0312171042530.24864@waterleaf.sonytel.be> <20031217095241.GD2283@iliana>
+ <Pine.GSO.4.58.0312171056030.24864@waterleaf.sonytel.be> <20031217100358.GA2655@iliana>
+ <Pine.GSO.4.58.0312171112040.24864@waterleaf.sonytel.be> <20040113151230.GA12089@iliana>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jan 12, 2004 at 08:32:17AM +0100, Sven Luther wrote:
+On Tue, 13 Jan 2004, Sven Luther wrote:
+> On Wed, Dec 17, 2003 at 11:13:58AM +0100, Geert Uytterhoeven wrote:
+> > On Wed, 17 Dec 2003, Sven Luther wrote:
+> > > On Wed, Dec 17, 2003 at 10:57:07AM +0100, Geert Uytterhoeven wrote:
+> > > > It uses the PC-style RTC driver (genrtc.o is not loaded).
+> > >
+> > > Mmm, what was your box again ? a chrp no ?
+> >
+> > Yep, CHRP LongTrail. It has a Winbond/Symphony Labs W83C553 SouthBridge.
+>
+> Could you tell me the content of your rtc OF node ? In particular i am
+> interested in the reg value (probably 70/71 in isa space or so), and of
+> the compatible stuff (i have ds1385-rtc).
 
-> Ok, anyway linuxppc_2_4 is supposed to be dead. But my point was, from
-> which TAG should i extract kernels from the linuxppc-2.4 to make debian
-> packages ? I tried the v2.4.24 tag, which seemed ok, but the version was
-> still 2.4.24-rc1. I guess this was a problem due to the haste of the
-> 2.4.24 release or something, but it would be nice if it was clear which
-> tag we should export.
+/proc/device-tree/pci/isa@1/rtc/ has:
 
-There is no tag you can use to do this.  Just like how 'v2.4.24' in the
-old linuxppc_2_4* trees would get you 2.4.24 w/o any PPC changes, the
-same will happen here.
+total 0
+-r--r--r--    1 root     root           11 Jan 13 18:06 compatible
+-r--r--r--    1 root     root            4 Jan 13 18:06 device_type
+-r--r--r--    1 root     root            4 Jan 13 18:06 linux,phandle
+-r--r--r--    1 root     root            4 Jan 13 18:06 name
+-r--r--r--    1 root     root           12 Jan 13 18:06 reg
+
+compatible:	pnpPNP,b00			(ASCII)
+device_type:	rtc				(ASCII)
+linux,phandle:	ff86 2aa4			(hexdump)
+name:		rtc				(ASCII)
+reg:		0000 0001 0000 0070 0000 0002	(hexdump)
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-Tom Rini
-http://gate.crashing.org/~trini/
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
