@@ -1,52 +1,54 @@
-From: Juergen Beisert <jbeisert@eurodsn.de>
-Reply-To: jbeisert@eurodsn.de
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: dcbz-instruction on PPC405GP
-Date: Fri, 11 Jul 2003 16:23:45 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200307111623.45470.jbeisert@eurodsn.de>
+To: Steven Rothweiler <Stevenr@raritan.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: AgileDB and Abatron BDI 2000 ICE 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 11 Jul 2003 09:58:46 EDT."
+             <159C486347C8D3119B1D005004A469400244BC18@OLIVE>
+Date: Fri, 11 Jul 2003 16:29:25 +0200
+Message-Id: <20030711142930.5E970C6D82@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+In message <159C486347C8D3119B1D005004A469400244BC18@OLIVE> you wrote:
+>
+> We have neither product in house right now, and we
+> are trying to decide whether to evaluate them for
+> the development of our product.
 
-I want to speed up some data copy in my Linux driver and so I want to use the
-dcbz-instruction.
-I get the memory with a kmalloc()-call with GFP_KERNEL argument. After that I
-call a small assembler routine that uses dcbz to set this memory to zero. I
-am shure this memory starts at 32 byte boundary and ends at another 32 byte
-boundary. But if I call the dcbz-instruction I get an alignment exception.
-I have tried to test the "Write Trough" and "Caching Inhibit" bits for this
-TLB, but I'm not shure that I have found the right one. I have called
-get_pteptr() with the kmalloc() returned virtual address. Is this the right
-way to get informations about this TLB? The returned value seems ok (caching
-enabled and write back, if Linux uses the same bit positions like the 405GP
-manual).
-With caching enabled and write back the dcbz-instruction should work (that's
-what I have read in the manual). Right?
+You definitely should evaluate AgileDB befroe buing it.
+[You cannot go wrong when buying a BDI2000:-) ]
 
-I have seen the alignment exception while BDI is running for debugging. If I
-start my system without a connected BDI it hangs forever.
+> I've seen a lot of good remarks about the Abatron
+> BDI 2000 ICE (that you shouldn't leave home without
+> it), but not much about AgileDB.  The product data
+> sheet looks impressive.  Any strong opinions out
+> there?
 
-Is the dcbz-instruction broken on 405GP?
+A very strong opinion: you have to decide this yourself. Ask what  it
+costs, and what you get for it.
 
-Best regards
-Juergen Beisert
+Ask questions like:
+
+* Does it run under Linux (fit in a Linux based development
+  envrionment)?
+* Is it a new propriatary debugger, or just another inteface for GDB?
+* Which advantages has it over existing free solutions like DDD?
+* How much are you willing to pay for these advantages?
+
+etc.
+
+Hope this helps.
+
+Wolfgang Denk
+
 --
-*********************************
-Fa. EuroDesign
-embedded technologies GmbH
-Waldstr. 4a
-85414 Kirchdorf a.d. Amper/Germany
-
-Tel: +49/8166/99495-77
-Fax: +49/8166/99495-81
-
-EMAIL: jbeisert@eurodsn.de
-Web: http://www.eurodsn.de
-*********************************
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Compassion -- that's the one things no machine ever had.  Maybe it's
+the one thing that keeps men ahead of them.
+	-- McCoy, "The Ultimate Computer", stardate 4731.3
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
