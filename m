@@ -1,34 +1,32 @@
-Date: Mon, 21 Aug 2000 13:25:11 +0200 (CEST)
+Date: Mon, 21 Aug 2000 13:33:04 +0200 (CEST)
 From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Michel Lanners <mlan@cpu.lu>, dmj+@andrew.cmu.edu,
-        linuxppc-dev@lists.linuxppc.org
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+cc: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org, dmj+@andrew.cmu.edu
 Subject: Re: Control fb problem on 8500
-In-Reply-To: <Pine.LNX.4.10.10008191410200.525-100000@cassiopeia.home>
-Message-ID: <Pine.LNX.4.10.10008211320490.11699-100000@opal.biophys.uni-duesseldorf.de>
+In-Reply-To: <39A0EF0C.EDC3D3A1@student.ethz.ch>
+Message-ID: <Pine.LNX.4.10.10008211331570.11699-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > That's what I was thinking about. However, I'm not sure that XFree
-> > supports a display with discontiguous lines in video memory. I think I
-> > read that somewhere in some mailing list or X doc... Can any of the
-> > XFree specialists confirm?
+> > It does support that, if not directly then certainly via shadowfb. Maybe the
+> > shadowfb RefreshArea function would have to be modified to take account of
+> > this.
 >
-> I can speak for XFree86 3.x only, not for 4.x.
+> That's not even needed, the fbdev driver is just broken. Line 430:
 >
-> The only way to work with this is to make xres_virtual = xres+0x20. But then
-> XFree86 will draw into the cursor region, too.
+> 	pScrn->displayWidth = pScrn->virtualX; /* FIXME: might be wrong */
+>
+> is indeed wrong. virtualX is obvious, but displayWidth should be the memory
+> pitch of a scanline.
 
-I think it used to work without such a hack - some old m68k Macs had the
-video scan lines start every 1024 bytes but the actual xres was smaller.
-I'll have to look at the macfb code to see what xres_virtual was set to.
-I'm sure the X server didn't draw to the offscreen region as that would
-have caused a bus error (at least the earlier 3.3.x versions didn't.
-Later X versions drawing beyond xres would in fact explain bus errors
-some people saw ...).
+That would indeed be silly.
+
+> Now you just have to find out where to get the correct value for displayWidth.
+
+Something like xres*bpp/8 ??
 
 	Michael
 
