@@ -1,43 +1,45 @@
+Message-ID: <3E8B0058.4030503@mvista.com>
+Date: Wed, 02 Apr 2003 09:23:04 -0600
+From: Mark Hatle <fray@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Linux support for MPC859T processor
-Date: Wed, 2 Apr 2003 09:41:17 -0500
-Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093BF4@mail1.mediatrix.com>
-From: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
-To: "Dmytro Bablinyuk" <dmytro.bablinyuk@tait.co.nz>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+To: Toni Van Remortel <t.vanremortel@ha.be>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: EP405 Kernel Panic
+References: <20030402140215.47965273.t.vanremortel@ha.be>
+In-Reply-To: <20030402140215.47965273.t.vanremortel@ha.be>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> 4.    The '859T has a dedicated 10/100Mbps ethernet MAC
-> whereas the '860 has to use the serial communication controllers
-> for ethernet operations.
+This comes up weekly on the mailing list, if you search the archives you'll find
+the canned response:
 
-OK for the 860, but the 860T has the Fast Ethernet Controller,
-which is already supported (and very stable) in the kernel.
+Make sure you have all of the libraries required by your shell.  If there are
+missing libraries it will return back no init found.
 
-> * Could somebody please give me an advice on how much S/W
-> work might be involved in the future to port linux from '860
-> to '859T based on 1-5 (see above)
+Use objdump or ldd to get a list of the required libraries.  (At the minimum you
+will need /lib/ld.so and /lib/libc.so.)  Alternative is to statically link your
+shell.
 
-I don't see very much work. The first step is to make
-the boot loader work. As long as your boot loader
-correctly configure the various clocks, and pass this
-information to the kernel through the board information
-structure, the kernel should boot correctly. For the RTC,
-we have never used this functionality on our 860T based boards.
-For the core voltage, well, this is not related to the software.
+--Mark
 
-Regards,
---------------------------------------------
- Jean-Denis Boyer, B.Eng., Technical Leader
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
+> RAMDISK: Compressed image found at block 0
+> Freeing initrd memory: 1771k freed
+> VFS: Mounted root (ext2 filesystem) readonly.
+> Freeing unused kernel memory: 76k init
+> Kernel panic: No init found.  Try passing init= option to kernel.
+>
+>
+> So as you can see, the kernel parameters are root=/dev/ram
+> init=/bin/bash, but why does the kernel panic on No init!?
+> /bin/bash does exist in the initrd.
+>
+> Anybody an idea where to look?
+>
+> # file bin/bash
+> bin/bash: ELF 32-bit MSB executable, PowerPC or cisco 4500, version 1 (SYSV), for GNU/Linux 2.2.5, dynamically linked (uses shared libs), stripped
+> Needed libs are in /lib.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
