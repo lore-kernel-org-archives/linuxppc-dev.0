@@ -1,31 +1,49 @@
-Message-ID: <3DF10EC0.7E6F1561@xilinx.com>
-Date: Fri, 06 Dec 2002 12:55:29 -0800
-From: "Peter Ryser" <Peter.Ryser@xilinx.com>
+Message-ID: <002e01c29d74$628b03c0$0300a8c0@jockeXP>
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: "Dan Malek" <dan@embeddededge.com>
+Cc: "Matt Porter" <porter@cox.net>,
+	"Pantelis Antoniou" <panto@intracom.gr>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <IGEFJKJNHJDCBKALBJLLOEJHFIAA.joakim.tjernlund@lumentis.se> <3DF1018C.7080508@embeddededge.com>
+Subject: Re: Regarding consistent_alloc
+Date: Fri, 6 Dec 2002 23:11:11 +0100
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: Alexander.J@lntinfotech.com
-Subject: Re: Target CPU selection for Real time Embedded Linux
-References: <OFB8D7A27E.4DFEB42B-ON65256C86.003DE12F@lntinfotech.com> <20021206024109.S1931@mind.be>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> - Xilinx Virtex II Pro with Linux (Linux port posted 2 months ago and on ftp.mind.be)
+>
+> Joakim Tjernlund wrote:
+>
+> > Yes and no, someone changed the m8xx_cpm_hostalloc() implementation and now
+> > it does not behave as it used to. Earlier both __pa(adr) and __va(__pa(adr))
+> > worked on addresses returned by m8xx_cpm_hostalloc().
+>
+> I changed it a while back so single large pages could be used to map the
+> kernel space.  Just use iopa() on the virtual address to get the physical
+> address.  I don't understand the current condition of commproc.c today, but
+> I'm not the only one that updates it anymore.  The bk comments are quite
+> useless since all they indicate is some obscure patch was applied.
+>
+> > I think in it's current form it's useless and should either be changed back to what
+> > it was or die.
+>
+> It seems quite useful to the drivers that currently use it.........It's
+> only purpose is to provide small non-cached objects like uart fifos and control
+> areas.  Don't try to use it for things not intended.
 
-The Xilinx Virtex-II Pro FPGA is supported and developed as part of the
-linuxppc_2_4_devel tree. The drivers for the various peripherals are implemented by
-Xilinx. Integration work into the Linux kernel is done and support is available from
-MontaVista.
+Exacly, I was using it as a small fifo for my SPI driver(not really mine, I found it on the net).
+Since  __pa() and __va() doesn't work anymore, it should be documented becauase I think
+most people expect __pa() and __va() to work on kernel memory and it did work in 2.4.2.
 
-- Peter
+Anyway, I have fixed my driver now so this is not a problem for me anymore.
 
+ Jocke
 
-
-FYI:
-Virtex-II Pro:
-http://www.xilinx.com/xlnx/xil_prodcat_landingpage.jsp?title=Virtex-II+Pro+FPGAs
-Linux running on the Virtex-II Pro based ML300 board: http://www.xilinx.com/ml300
+PS.
+   Dan, are you still working/testing my 8xx_io/enet.c patch?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
