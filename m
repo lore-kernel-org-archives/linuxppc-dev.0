@@ -1,24 +1,30 @@
-Date: Mon, 25 Feb 2002 12:47:43 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3C7A22D3.80905@dgt-lab.com.pl>
+Date: Mon, 25 Feb 2002 12:41:07 +0100
+From: Wojciech Kromer <krom@dgt-lab.com.pl>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: EP405 PCI interrupt mapping
-Message-ID: <20020225014743.GD15788@zax>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: MPC8xx IDE
+References: <20011024120458.1F51110CD8@denx.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Is the current PCI interrupt mapping stuff for the EP405
-(i.e. ppc405_map_irq() in ep405.c) expected to work, or has it just
-been copied from walnut and never updated for ep405?  It looks bogus
-to me.
+>
+>
+>
+>  EXT_DIRECT is used for IDE devices directly connected to the 8xx
+>             bus using some glue logic, but _not_ the 8xx internal
+>             PCMCIA interface (example: IDIF860 systems)
+>...
+>
+What does it mean 'some glue logic'? I have to use CompactFlash on 8260. How to connect it?
 
 --
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
+* * * * * * * * * * * *
+* per pedes ad astra! *
+* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
