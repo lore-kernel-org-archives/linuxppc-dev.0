@@ -1,36 +1,43 @@
-Date: Sun, 24 Mar 02 22:47:19 PST
-From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0203250647.AA26997@ivan.Harhan.ORG>
-To: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Linux-galileo] Re: EV-64260-BP & GT64260 bi_recs
+To: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Cc: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [Linux-galileo] Re: EV-64260-BP & GT64260 bi_recs 
+In-Reply-To: Message from msokolov@ivan.Harhan.ORG (Michael Sokolov)
+   of "Sun, 24 Mar 2002 22:47:19 PST." <0203250647.AA26997@ivan.Harhan.ORG>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Mon, 25 Mar 2002 18:44:31 +1100
+Message-ID: <17636.1017042271@msa.cmst.csiro.au>
+From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Murray Jensen <Murray.Jensen@cmst.csiro.au> wrote:
+On Sun, 24 Mar 02 22:47:19 PST, msokolov@ivan.Harhan.ORG (Michael Sokolov) writes:
+>It is wrong. Every platform in 2_4_devel my hacky hands have touched uses
+>bi_recs exclusively. bi_recs work very well for me as they are right now.
 
-> 2_4_devel does "use the bd_info crap".
+Which part of "very limited and only used by certain platforms" is wrong? OK,
+maybe its half-and-half then (half the platforms use them, half don't) - that's
+a long way from all platforms. The proposal is that 2.5 use bi_recs exclusively
+for all platforms (something I agree with, by the way). The discussion is in the
+detail of the implementation.
 
-Thankfully not for EV-64260 or any other almost-non-embedded 6xx/7xx/74xx
-systems, only for 4xx/8xx/82xx stuff that's completely off my radar screen for
-now and probably for the foreseeable future.
+>For me it has been ironed out perfectly a long time ago, which is why I haven't
+>participated much in that "discussion".
 
-> It is my impression that bi_recs support
-> in 2_4_devel is very limited and only used by certain platforms, so you could
-> safely say that it doesn't use bi_recs (correct me if this is wrong - I don't
-> know all the other platforms intimately).
+Well, you'd better get involved then - because the proposal is to change them
+(or maybe "extend slightly in a backwards compatible way", would better describe
+it) so if they're perfect for you now, you wouldn't want this :-) I think they
+are too limited at the moment, but could be very useful if implemented properly.
+benh's current proposal appears to give me all that I want (except for some
+formal definition of "dimension"), so I support it. Cheers!
+								Murray...
+--
+Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
+Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
+Internet: Murray.Jensen@csiro.au
 
-It is wrong. Every platform in 2_4_devel my hacky hands have touched uses
-bi_recs exclusively. bi_recs work very well for me as they are right now.
+Hymod project: http://www.msa.cmst.csiro.au/projects/Hymod/
 
-> The whole huge discussion on this very
-> list recently (with exactly this same subject line) has been to determine how
-> best to get rid of "the bd_info crap" and only use bi_recs. I'm sure as soon as
-> this is ironed out, [...]
-
-For me it has been ironed out perfectly a long time ago, which is why I haven't
-participated much in that "discussion".
-
-MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
