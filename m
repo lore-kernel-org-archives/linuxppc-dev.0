@@ -1,39 +1,28 @@
-Mime-Version: 1.0
-Message-Id: <p06001805bb31dea62840@[192.168.9.138]>
-In-Reply-To: <XFMail.20030709165850.pochini@shiny.it>
-References: <XFMail.20030709165850.pochini@shiny.it>
-Date: Wed, 9 Jul 2003 11:42:12 -0400
-To: linuxppc-dev@lists.linuxppc.org
-From: Stefan Jeglinski <jeglin@4pi.com>
+Date: Wed, 9 Jul 2003 15:48:53 -0700
 Subject: Re: OT: wanting to write PCI daemon
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v552)
+From: Tim Seufert <tas@mindspring.com>
+To: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <XFMail.20030709095244.pochini@shiny.it>
+Message-Id: <842BCE20-B25F-11D7-8E2C-003065F22EAA@mindspring.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->  > see <http://www.apple.com/Power Mac/specs.html>, the low end model.
+On Wednesday, July 9, 2003, at 12:52  AM, Giuliano Pochini wrote:
+
+> On 09-Jul-2003 Tim Seufert wrote:
+>> Recent
+>> cards are usually Universal, but there must be enough 5V only cards
+>> still in common use that Apple felt it necessary to make at least one
+>> model compatible with them.
 >
->It's http://www.apple.com/powermac/specs.html
+> What model ?  AFAIK none of the G5 pmacs is compatible with
+> V5 PCI cards. See page 73 of the preliminary specs.
 
-I have no idea how I screwed that link up.
+Ah.  I jumped to what seemed like the logical conclusion instead of
+reading the specs.  :)
 
-
->I can't see anything about 5V PCI compatibility in that
->page.
-
-We had mistakenly interpreted "Three open full-length 33MHz, 64-bit
-PCI slots" as 5V PCI slots, the same as their past PowerMac models.
-
->  But in the preliminary specs
-><http://developer.apple.com/documentation/Hardware/Developer_Notes/Macintosh_CPUs-G5/PowerMacG5/PowerMacG5.pdf>
->at pages 27 and 73:
->
->"The connectors to the PCI or PCI-X slots are 3.3V keyed [...]
->5V keyed or signalling cards do not work in the Power Mac G5 computer".
-
-Yup. Dawn's early light...
-
-
-Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
