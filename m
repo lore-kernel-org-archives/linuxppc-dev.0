@@ -1,38 +1,42 @@
-Date: Mon, 1 Feb 1999 19:38:20 -0100
-From: Owen Waller <O.Waller@ee.qub.ac.uk>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.2.1 & serial ports
-In-Reply-To: <Pine.LNX.4.03.9902011814220.17350-100000@mercator.cs.kuleuven.ac.be>
-Message-Id: <Pine.SGI.4.02A.9902011932560.11398-100000@myst.ee.qub.ac.uk>
+Date: Mon, 1 Feb 1999 22:18:53 +0100
+To: linuxppc-dev@lists.linuxppc.org, Paul Mackerras <paulus@cs.anu.edu.au>
+CC: Cort Dougan <cort@ladron.cs.nmt.edu>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Bogus mouse key events
+Message-Id: <19990201221853.005850@mail.mipsys.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Folks,
+I finally found where my conflicts on the PowerBook G3 Series and the
+"Fn" key came from. It's simple: the "fake" keycode used by the console
+code (and so by Xpmac) for the middle button is 0x3f, which is also the
+keycode used by this "Fn" key...
 
-I've compiled a stock v2.2.1 kernel _without_ UNIX98 support so I don't
-have a /proc/tty filesystem but I can't seem to access the serial ports
-since the upgrade. In particular ppp won't dial out - it pickes up and
-senses the carrier but thats it. It's almost as if the modem doesn't have
-a dial tone (although it certainly does). Also minicom takes an age to
-initialise and then pretty much refuses to talk to the modem.
+So either we change the middle key code in both the kernel and Xpmac, or
+(simpler), we add code for remapping the "Fn" key to something else.
 
-But if I drop back to my last good kernel (v2.1.127) things work
-perfectly.
+I'm not (yet) very familiar with the linux keymap and keycode-map, so I
+would like someone who knows this better than me to suggest a keycode to
+which I could remap the "Fn" key without conflicting. I was thinking
+about the equivalent of PC's alt-gr, but it may cause other kind of trouble.
 
-I know you need glib v2+ to be able to use the UNIX98 support but as I'm
-on a stock R4 system I explicity turned this off in the kernel config.
+This key must be handled in a really special way, since it may be used as
+a mouse button modifier (using the "adb_buttons=2,x,y" patch), but it
+should be ingnored in some cases (page-up, page down for example) since
+the keyboard hardware will automatically send the correct modified keycodes.
 
-Has anybody got ppp to work with a v2.2 kernel?
+So, any suggestion for a new keycode that won't conflict with anyone ?
 
--------------------------------------------------------------------------
-Owen Waller                     |   "...sometimes I think I'm a little
-PhD. Student in Control Eng.    |    more English than I am French..."
-Queens University               |              - Alain Prost 
-Belfast                         |
-Tele: +44 (0)1232 274085        |    Fax: +44 (0)1232 667023
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
