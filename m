@@ -1,72 +1,73 @@
-Message-ID: <20000927121938.2547.qmail@dag.newtech.fi>
-To: <linuxppc-embedded@lists.linuxppc.org>
-cc: dag@newtech.fi
-Subject: Crosscompiler broken ?
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Mime-Version: 1.0
-Date: Wed, 27 Sep 2000 15:19:38 +0300
-From: Dag Nygren <dag@newtech.fi>
+From: Ruedi.Hofer@ascom.ch
+Date: Wed, 27 Sep 2000 16:11:48 +0100 (CED)
+Subject: VxWorks bootloader & PowerQUICC II, Booting the kernel
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: dan@mvista.com, vanbaren_gerald@si.com, kernel@linux01.hasler.ascom.ch
+Message-id: <0G1J00L5RU694U@pmdf-it.hasler.ascom.ch>
+MIME-version: 1.0
+Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_4BxJnlZCieyH3nEZJ3Efnw)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi again,
+--Boundary_(ID_4BxJnlZCieyH3nEZJ3Efnw)
+Content-type: TEXT/PLAIN
+Content-Transfer-Encoding: 7BIT
 
-tracing down a severe probem I am seeing when
-porting Linux to a PPC-board.
+Hi,
 
-The  compilation of the kernel is done with a crosscompiler
-on an Intel x86 system and strange things are happening:
+I try to boot the Linux kernel on a SBC8260 evaluation board using
+the VxWorks bootloader.
 
-This is the part of the code from fs/dcache.c:
+In order to be able to load the whole kernel at address 0x900000,
+I had to modify the ELF header of the zImage file. I basically changed
+the length and the start address.
 
-==================== Code =============
-    do {
-        unsigned long tmp;
+Question:
 
-        nr_hash = (1UL << order) * PAGE_SIZE /
-            sizeof(struct list_head);
-        d_hash_mask = (nr_hash - 1);
+1. Why is the length in the ELF header wrong?
 
-        tmp = nr_hash;
-        d_hash_shift = 0;
-        while ((tmp >>= 1UL) != 0UL)
-            d_hash_shift++;
-
-        dentry_hashtable = (struct list_head *)
-            __get_free_pages(GFP_ATOMIC, order);
-printk("dentry_hashtable(0.5)(addr = 0x%lx) = 0x%lx\n", &dentry_hashtable,
-dentry_hashtable);   /* DEB
-UG */
-    } while (dentry_hashtable == NULL && --order >= 0);
-printk("dentry_hashtable(0.7)(addr = 0x%lx) = 0x%lx\n", &dentry_hashtable,
-dentry_hashtable);   /* DEB
-UG */
-
-==================== Code  end =============
-
-here is the output:
-
-__get_free_pages(): page = 0xC024A000, page_address = 0xC0240000
-&dentry_hashtable = 0xc01cf0d4, stack = 0xc018af68
-__get_free_pages(): page = 0xC0274000, page_address = 0xC0CC0000
-dentry_hashtable(0.5)(addr = 0xc01cf0d4) = 0xc0cc0000
-dentry_hashtable(0.7)(addr = 0xc01cf0d4) = 0x5
+2. Why is the start address set to 0x400000 and not to 0x900000?
 
 
-The last line is really strange, who the %&¤&%¤/ is messing around
-with the contents of dentry_hashtable ?
+After loading the kernel, I try to run it:
 
-Compiler bug ?
+Attaching network interface lo0... done.
+Loading... 493164
+entry = 0x900000
+[VxWorks Boot]: g 900000
+Starting at 0x900000...
+
+program
+Exception current instruction address: 0x00900000
+Machine Status Register: 0x00089000
+Condition Register: 0x24000082
+Task: 0xfd37f8 "tBoot"
+
+r0     =   e02684   sp     =   fd3498   r2     =        0   r3     =        0
+r4     =  1000000   r5     =        0   r6     =        0   r7     =        0
+r8     = 40000000   r9     =   e60000   r10    =   e5f1dc   r11    =   fd3498
+r12    =        0   r13    =        0   r14    =        0   r15    =        0
+r16    =        0   r17    =        0   r18    =        0   r19    =        0
+r20    =        0   r21    =        0   r22    =        0   r23    =        0
+r24    =        0   r25    =        0   r26    =        0   r27    =        0
+r28    =   e010b8   r29    =   900000   r30    =        0   r31    =   fd3498
+msr    =    89000   lr     =   e02690   ctr    =        0   pc     =   900000
+
+[VxWorks Boot]:
 
 
---
-Dag Nygren                               email: dag@newtech.fi
-Oy NewTech Ab                            phone: +358 9 8024910
-Trasktorpet 3                              fax: +358 9 8024916
-02360 ESBO                                 GSM: 0400-426312
-FINLAND
+.. but it crashes.
 
+Any ideas? I'm using the kernel from HHL1.2, standard config but initrd disabled!
+
+3. What am I doing wrong?
+
+Thank you
+
+Ruedi
+
+
+--Boundary_(ID_4BxJnlZCieyH3nEZJ3Efnw)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
