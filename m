@@ -1,29 +1,35 @@
-Date: Fri, 11 Jul 2003 14:59:47 -0700
-Subject: Re: Linux on the Virtex II Pro?
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v552)
-Cc: linuxppc-embedded@lists.linuxppc.org
-To: Charles Lockhart <lockhart@jeans.ifa.hawaii.edu>
-From: Scott Anderson <scott_anderson@mvista.com>
-In-Reply-To: <3F0DCE1A.2020301@irtf.ifa.hawaii.edu>
-Message-Id: <FCEA1916-B3EA-11D7-AD12-000A959CAB7C@mvista.com>
+From: "Frank Smith" <smith@amirix.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Cc: "Frank Smith" <smith@amirix.com>
+Subject: FEC and ETH on EP860
+Date: Fri, 11 Jul 2003 19:02:05 -0300
+Message-Id: <03Jul11.185300adt.7313@dragon.appliedmicro.ns.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thursday, July 10, 2003, at 01:35  PM, Charles Lockhart wrote:
-> I was looking to see who supports the Virtex2Pro chip for Linux?  In
-> terms of a tool chain, support, etc?  Has anyone tried building a
-> custom
-> tool chain for it on their own?  Results?
-It sounds like you are interested in a commercial solution, so I
-thought I would mention that MontaVista Software (www.mvista.com)
-supports the Xilinx ML300 and did the port and drivers for it that you
-see in linuxppc_2_4_devel.
+Hello,
 
-Good luck on your project,
-   Scott Anderson
-   MontaVista Software
+Is anyone aware of any issues involving use of the FEC and ETH
+at the same time on an Embedded Planet EP860 running Linux?
+
+If I bring the board up with Planet Core thinking DefaultENET=FENET,
+I can boot Linux, and both Ethernets work.  If I bring the board up
+with DefaultENET=ENET, the ETH works, but the FEC doesn't.  The FEC
+driver attaches OK, but when I go to send some traffic out the FEC,
+I get ring buffer dumps because packets aren't being transmitted.
+CONFIG_USE_MDIO is not set in my configuration.
+
+I'm using a 2.4.18 kernel (design constraint).  I'm just beginning
+to dig into the details of this problem so I don't have much more
+in the way of specifics to report yet.  Has anybody encountered the
+same problem?
+
+
+Thanks,
+-Frank.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
