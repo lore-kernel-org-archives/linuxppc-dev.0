@@ -1,35 +1,33 @@
-Date: Tue, 15 Jan 2002 14:10:30 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Larry McVoy <lm@bitmover.com>
-Cc: Gabriel Paubert <paubert@iram.es>,
+Date: Wed, 16 Jan 2002 12:28:53 +0100 (CET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Larry McVoy <lm@bitmover.com>,
 	Kenneth Johansson <ken@kieraypc01.p.y.ki.era.ericsson.se>,
 	"linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Problems with linuxppc_2_4_devel
-Message-ID: <20020115211030.GH764@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20020115162546.GB764@cpe-24-221-152-185.az.sprintbbd.net> <Pine.LNX.4.33.0201151756200.11139-100000@gra-lx1.iram.es> <20020115112233.E15959@work.bitmover.com> <20020115205755.GF764@cpe-24-221-152-185.az.sprintbbd.net> <20020115130203.K15959@work.bitmover.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020115130203.K15959@work.bitmover.com>
+In-Reply-To: <20020115205755.GF764@cpe-24-221-152-185.az.sprintbbd.net>
+Message-ID: <Pine.LNX.4.33.0201161227550.21073-100000@gra-lx1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jan 15, 2002 at 01:02:03PM -0800, Larry McVoy wrote:
+On Tue, 15 Jan 2002, Tom Rini wrote:
 
-> a) try and connect to a well known time server and see if the time is too
->    far off at commit time.  May or may not work.
+> On Tue, Jan 15, 2002 at 11:22:33AM -0800, Larry McVoy wrote:
+>
+> > Would you like me to make you a "pre-commit" trigger which catches these
+> > problems?
+>
+> If you've got the time, sure.  Hopefully we're all done breaking our
+> clocks tho. :)
 
-This would require some external program tho, wouldn't it?
+Never underestimate the capability of people to screw up, seven something
+as trivial as the clock ;-)
 
-> b) see if the time is "too different" from the last changeset.  Most trees
->    are fairly active and if the time is too far ahead (say a month?), then
->    raise a warning and ask the user to confirm this is the correct time.
+	Regards,
+	Gabriel.
 
-I'd say 'b' with an override option (yes, the clock IS fine, the tree
-has just been dead for awhile).
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
