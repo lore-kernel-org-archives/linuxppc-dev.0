@@ -1,46 +1,34 @@
-Date: Thu, 29 Jan 2004 00:35:09 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-	Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-	Hugang <hugang@soulinfo.com>,
-	Patrick Mochel <mochel@digitalimplant.org>,
-	Nigel Cunningham <ncunningham@users.sourceforge.net>,
-	ncunningham@clear.net.nz,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: pmdisk working on ppc (WAS: Help port swsusp to ppc)
-Message-ID: <20040128233509.GA336@elf.ucw.cz>
-References: <Pine.LNX.4.44.0401281707260.21460-100000@opal.biophys.uni-duesseldorf.de> <1075326924.5658.299.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1075326924.5658.299.camel@gaston>
+Message-Id: <p06020429bc3df88e63e3@[10.0.1.2]>
+Date: Wed, 28 Jan 2004 16:59:29 -0700
+To: linuxppc-dev@lists.linuxppc.org
+From: Greg Watson <gwatson@lanl.gov>
+Subject: Boot code stack size
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+I'm working on the PPC LinuxBIOS project and have recently managed to
+boot the Sandpoint (Altimus 7410 PMC) using the latest
+linuxppc_2_4_devel kernel (2.4.24-pre2).
 
-> > > > Battery requests might have been underway; pmud is running. If I read
-> > > > pmu_suspend() right, pending battery requests should result in pmu_suspend
-> > > > waiting for them to finish?
-> > >
-> > > Normally yes... pmud isn't running at this point (all processes are frozen)
-> >
-> > OK. I put a mdelay(100) between the PMU_SYSTEM_READY request and the
-> > pmu_suspend() call in pmu_sys_resume and it seems to work so far. Side
-> > note: if you are saving a large system and have multiple swap files, play
-> > with swap priorities to make sure the pages are swapped out to the file
-> > _not_ used for suspend.
->
-> Ah ? What's up ? suspend trashes the swap ? That's very bad...
+However while getting Linux to run on this machine, I hit a problem
+with this and earlier kernels running out of stack while
+uncompressing the kernel image. The symptom I see is that inflate
+returns -3 (FFFFFFFD). To get around the problem, I have to modify
+arch/ppc/boot/common/relocate.S and increase the stack size from 8K
+(4096*2) to 28K (4096*7). The kernel image is 792890 bytes compressed
+and 1734312 bytes uncompressed. The Sandpoint boots reliably with the
+increased stack size.
 
-No, it does not.
+I'm wondering a) if anyone has seen this problem while booting other
+PPC based systems, and b) if it would be worth adding a configuration
+option that allows this early stack size to be specified, rather than
+hard-coding it in relocate.S.
 
-But swap space is shared between suspend and swap. And if that place
-is full (unlikely), you've got a problem.
-								Pavel
---
-When do you have a heart between your knees?
-[Johanka's followup: and *two* hearts?]
+Regards,
+
+Greg
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
