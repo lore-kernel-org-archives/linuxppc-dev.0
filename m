@@ -1,37 +1,36 @@
-Message-ID: <003501c43360$1b3e20f0$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: <bhawley@luminex.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Next steps
-Date: Thu, 6 May 2004 07:48:50 -0400
+From: "Bob White" <bwhite@perigee.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Thu, 06 May 2004 11:35:31 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: DPRAM driver on 440gp
+Message-ID: <409A2303.2640.2967B3DD@localhost>
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Bob,
+I've got a basic read/write driver working (thanks to O'reilly ldd2) on
+the dpram on the peripheral bus.
 
-I would definitely recommend NFS.  As Bob White pointed out, you can get a
-directory structure all set up from eldk.  The thing about NFS is you have a
-PC with visual tools and all to mess with the same files that your embedded
-system is accessing.  Plus of course you have much more file space.  And if
-you're new to Linux it's a whole lot easier to get up to speed on the PC.
+I remap the physical addresses using "io_base = ioremap64(...)" in the
+driver open call and then the user read and write functions can access
+the dpram just fine.
 
-dhcp & bootp are really different things from NFS, although I think you have
-to enable them in the [embedded] kernel for nfsboot to work.  But you
-probably want to set your board up with a fixed IP and compressed kernel (or
-tftp it in) from u-boot, just feeding a command line to the kernel that
-tells it the root is nfs something.  No sense adding more complexity than
-you need!
+I'd like the user to be able to access the dpram using a pointer, but I
+am having trouble figuring out the mmap examples.
 
-When it comes to stand-alone booting of an embedded system you can also
-consider jffs2 or cramfs instead of initrd.  (I can tell you more if you're
-interested).
+Given that the physical address has already been mapped, via
+ioremap64(), do I need remap_page_range()?  Does anyone have any ideas
+on what the mmap file_op for this driver would look like?  Do I even
+need mmap() or should I just use an ioctl to return the pointer I've
+already got to the user?
 
-Mark Chambers
-WV Computronics
+Bob
+--
+Robert B. White        Perigee, A Division of Sensis Corp
+Software Design Engr   316 Commerce Blvd.
+TEL: 315.453.7842x29   Liverpool, NY  13088
+FAX: 315.453.7917      www.Perigee.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
