@@ -1,34 +1,41 @@
-Message-ID: <37DF2A5A.29E810BD@wanadoo.fr>
-Date: Wed, 15 Sep 1999 07:10:50 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
-MIME-Version: 1.0
-To: Ira K Weiny <iweiny@falcon.csc.calpoly.edu>
-CC: linuxdev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: kernel sources
-References: <199909142111.OAA26938@falcon.csc.calpoly.edu>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <v04210105b404ed46f043@[192.168.0.1]>
+Date: Wed, 15 Sep 1999 11:39:05 +0200
+To: Ethan Benson <erbenson@alaska.net>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: New booter
+Message-Id: <19990915113905.031280@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ira K Weiny wrote:
-> 
-> Where is the proper place to get the kernel source?
-> 
-> I have both 2.2.12 and 2.3.16 from kernel.org but neither seem to be in sync
-> with the other developers on this list.  (I had to hand patch the PCI changes
-> submitted. And the 2.3.16 will not even build due to a missing header?)
-> 
-> I know 2.3.16 is a development snapshot and I can't complain about that.  I
-> have seen many posts for the "vger" trees and the only web/ftp site I have
-> found was for Sparc and only has 2.1 version kernels?
+On Tue, Sep 14, 1999, Ethan Benson <erbenson@alaska.net> wrote:
 
-Look at http://www.ppc.kernel.org/homepage.html#kernel
-There is the link to anonymous cvs access to the vger tree.
-The link to Paul Mackerras' site on that page doesn't work, but if you
-browse the list archive  of the last week or so, you'll find this, too.
+>yes it does this on all machines, and frankly I think its a 
+>disgusting kludge, that would be OK as a absolute LAST RESORT *after* 
+>all attempts to get a proper booter working have failed.
+>
+>linux in my view is about doing things better, and doing them *right* 
+>Linus himself is fairly picky about doing things right instead of 
+>doing a kludge that `works'
+>
+>Apple's attitude seems to be `why do it right when a kludge will do?' 
+>I do not want to see linux choose the same philosophy.
 
---
-Martin
+>From Apple perspective, it's not a kludge since the final MacOS X will
+boot from HFS+ partitions, so it seems logical to have the bootinfo on an
+HFS volume.
+
+>sorry to be blunt but just because apple has chosen to kludge their 
+>bootloader does NOT mean that is what we should do.
+>
+
+
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
