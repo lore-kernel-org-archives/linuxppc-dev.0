@@ -1,41 +1,41 @@
-In-Reply-To: <v03130308b3ec440550d3@[192.168.1.1]>
-Date: Fri, 27 Aug 1999 16:32:37 +0200
-To: "David D. Kilzer" <ddkilzer@computer.org>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: mac-2.3.14.diff: adb
-Message-Id: <19990827163237.012324@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Fri, 27 Aug 1999 10:33:25 -0400
+From: brad allison <jackal@aol.net>
+To: Multiple recipients of list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: no more processes crash
+In-Reply-To: <E11KJ0t-00076W-00@mail2.zrz.tu-berlin.de>
+Message-ID: <Pine.SGI.4.00.9908271030280.15912-100000@osiris.office.aol.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Aug 27, 1999, David D. Kilzer <ddkilzer@computer.org> wrote:
 
->Well, drivers/macintosh is PPC ADB code.  If drivers/macintosh shouldn't
->exist, then shouldn't it be changed or moved at a higher level?
->
->In reality, there is some ADB mouse code in drivers/char, too, so I wonder
->if drivers/char/adb would make more/less sense than drivers/adb?
+On Fri, 27 Aug 1999, Wulf Hofbauer wrote:
 
-I personally like drivers/macintosh, from my point of view, it makes
-things clearer. except for macserial, which should be killed in favor of
-a more generic zilog driver, most of those drivers are really mac-centric
-stuffs with no "generic" userland interface. Also, drivers/char is
-already enough of a mess like this.
+> > I'm not running much.  Just about 10 aterms, netscape and aim.
+> 
+> Are you using LinuxPPC 1999? The utempter package as distributed by LinuxPPC
+> is broken, xterms for example will never terminate (except by kill -9) and
+> will fill up entries in the process table. I don't know if LinuxPPC has a
+> fix for it (I doubt it), but you'll find the fix at www.redhat.com.
 
-I didn't look at the those new patches, but the adb code in
-driver/macintosh was abstracted to use a generic "adb controller"
-sub-driver interface some time ago and so adb.c should be platform
-independant (useable as-is on PPC and 68k). mac_keyb.c too, with all it's
-specific mouse support.
+Anyone know if there's a fix for this?
 
-David, did you make a generic (m68k/ppc) cuda driver too ?
+I searched on lists.linuxppc.org for utempter and found no mention of this
+problem.
 
--- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+I found rpm updates for utempter on www.redhat.com for i386, sparc, and
+alpha but not for linuxppc.
+
+-b
+
+
+
+--
+AOL SAPI 		                        703.265.0908     AIM:jackal242
+http://jackal.fudge.org        `I was never more certain of how far away I was
+from my goal than when I was standing right beside it.' - Ethan Hawke, Gattaca
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
