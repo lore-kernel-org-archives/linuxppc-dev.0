@@ -1,36 +1,18 @@
-Message-ID: <38981EBE.97B3CD6A@col.bsf.alcatel.fr>
-Date: Wed, 02 Feb 2000 13:10:38 +0100
-From: duyrat1 <duyrat1@col.bsf.alcatel.fr>
+Message-ID: <389861EE.332AF5B5@email.sps.mot.com>
+Date: Wed, 02 Feb 2000 10:57:18 -0600
+From: "Richard Hendricks" <ra6353@email.sps.mot.com>
 MIME-Version: 1.0
-To: Dan Malek <dmalek@jlc.net>, linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
-        "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Unhandled relocation of type 18
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: New preliminary version of the MPC823/MPC823E manual
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hy,
-
-I am working on a mpc860 with linux 2.2.12 and I use modutils-2.1.121
-I have a problem when I try to load my module :
-  >      insmod ca_kernel.o
-
-ca_kernel.o: Unhandled relocation of type 18 for __gedf2
-ca_kernel.o: Unhandled relocation of type 18 for __fixdfsi
-ca_kernel.o: Unhandled relocation of type 18 for __adddf3
-ca_kernel.o: Unhandled relocation of type 18 for __fixdfsi
-ca_kernel.o: Unhandled relocation of type 18 for free
-ca_kernel.o: Unhandled relocation of type 18 for malloc
-ca_kernel.o: Unhandled relocation of type 18 for __builtin_new
-ca_kernel.o: Unhandled relocation of type 18 for _exit
-ca_kernel.o: Unhandled relocation of type 18 for __lshrdi3
-ca_kernel.o: Unhandled relocation of type 18 for __lshrdi3
-ca_kernel.o: Unhandled relocation of type 18 for __make_fp
-ca_kernel.o: Unhandled relocation of type 18 for __make_dp
-
-Does anyone understand why ?
-
+has been placed on our website.  The dates are still kinda screwed
+up, but the new files are there now.  Due to popular demand, the
+annoying black PRELIMINARY across each page has been removed.  Any
+issues/problems with the new manual can be sent to me or brought
+up here.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
