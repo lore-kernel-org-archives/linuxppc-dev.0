@@ -1,39 +1,28 @@
-Date: Mon, 10 Mar 2003 21:11:58 +0100 (CET)
-From: Mich Lanners <mlan@cpu.lu>
-Subject: Re: Upgrade Blues 2.4.20 Ben H kernel
-To: iweiny@acm.org
+From: Brian Waite <waite@skycomputers.com>
+To: linux-galileo@source.mvista.com
+Subject: MV64360 eval board
+Date: Mon, 10 Mar 2003 16:10:06 -0500
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <1047135968.12345.81.camel@zion.wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
-Message-Id: <E18sTcy-0006un-00@piglet.grunz.lu>
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <200303101610.06400.waite@skycomputers.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   8 Mar, this message from Benjamin Herrenschmidt echoed through
-cyberspace:
->> 1) My Microdrive which I had hacked in does not work any more.  What
->>    is the status of the ide-cs driver?  Anyone know?  It is different
->>    than when I got it to work before and I am not sure where to begin
->>    again.
->
-> There are some problems with ide-cs currently. I'll try to work on it
-> this week-end.
 
-You can always try and see whether this helps:
+Hi all,
+I am soon to be recieving an eval MV64260 board to start some work before our
+custom board is ready. I am wondering if the linux galileo tree is resonibly
+stable at this point. Also, is anyone planning to migrate this to _devel? I
+know the 64260 has been moving over there slowly but I haven't seen movement
+on the 64360 side. Also, I would like to use u-boot as a bootloader. Is
+anyone doing work on that at the moment? Once I get a board I would be more
+that happy to help with the port. Otherwise I'll start on it myself. :)
 
-http://lists.linuxppc.org/linuxppc-dev/200302/msg00103.html
+Thanks
+Brian
 
-Cheers
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
