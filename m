@@ -1,21 +1,25 @@
-Date: Wed, 28 May 2003 09:50:55 +0200
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: Revisions missing in http://ppc.bitkeeper.com:8080/linuxppc_2_4_devel
-To: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLIEPHFMAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+Message-Id: <5.1.1.6.0.20030528113555.01acc0a8@dns.struinfo.it>
+Date: Wed, 28 May 2003 11:42:01 +0200
+To: linuxppc-embedded@lists.linuxppc.org
+From: llandre <r&d@wawnet.biz>
+Subject: Driver for STE100P (Ethernet PHY)
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I just noticed that the www i/f (http://ppc.bitkeeper.com:8080/linuxppc_2_4_devel) does not
-show all revisions. For example, 1.1305, 1.1325 does not show up, but I can se them in
-bk revtool. Is this a bug or is it supposed to be like this? I hope is a bug because it is
-very annoying.
+Hi all,
 
-     Jocke
+I'm developing a PPC405EP-based board with the ST STE100P chip as Ethernet
+PHY. Unfortunately this is not supported by the current driver
+(drivers/net/ibm_ocp/ibm_ocp_phy.c). Anybody has a patch to add the support
+for it?
+
+Thanks in advance.
+
+
+llandre
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
