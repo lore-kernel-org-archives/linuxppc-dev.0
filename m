@@ -1,30 +1,72 @@
-Message-ID: <3CAB41C0.70007@embeddededge.com>
-Date: Wed, 03 Apr 2002 12:54:08 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <000901c1db3a$931e30e0$6649a8c0@LEIYINGDU>
+From: "Leiying Du" <ldu@solectek.com>
+To: "'LinuxPPC-Embedded'" <linuxppc-embedded@lists.linuxppc.org>
+References: <8D4C69676E66D511A1CB00508BBBB19215796D@ranmx1.ran.harris.com>
+Subject: Re: pcmcia problems
+Date: Wed, 3 Apr 2002 10:08:31 -0800
 MIME-Version: 1.0
-To: "barry.fisher" <barry.fisher@seranoa.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: kgdb support for 8260
-References: <000a01c1db25$add3db20$7d0110ac@Seranoa.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-barry.fisher wrote:
+Q3. You are right. This is caused by the bad CIS or you do not have CIS info
+on the card at all. Try to use the dump_cisreg & dump_cis utilities to see
+what's on your card.
 
-> More importantly, does anyone know if remote kdgb debugging on the 8260
-> is supported.
-
-It was all done in the MontaVista Journeyman kernel.  There was some
-discussion about the 4xx version of this, but we should be able to push
-those changes for the other PowerPC processors without trouble.
-
-I'll check into it.  I originally wrote all of the code, so if necessary
-I can just do it again...........
+Leiying
+----- Original Message -----
+From: "Fend, Matthias" <mfend@harris.com>
+To: "'LinuxPPC-Embedded'" <linuxppc-embedded@lists.linuxppc.org>
+Sent: Wednesday, April 03, 2002 12:55 AM
+Subject: pcmcia problems
 
 
-	-- Dan
+>
+> hello everybody,
+>
+> i'm trying to run pcmcia service (ISDNCard (Fritz PCMCIA V2.0) on a custom
+> mpc860 board.
+>
+> i started with pcmcia-cs-3.1.33 i changed the  PCMCIA_MEM_WIN_BASE in
+> m8xx_pcmcia to 0xE0000000
+> i also implemented the adapter methods for the voltage selection
+>
+> in /arch/ppc/mm/init.c  MMU_init(void)
+> i added the line
+>   ioremap(0xE0000000,0x1000);
+>
+> i load the modules pcmcia_core.o ds.o and m8xx_pcmcia.o
+>
+> the iopins (CD,VS,WP..) seem to work fine (tested with cardctl status 0)
+>
+> but if i try to run
+> > ./cardctl ident 0
+> i only get:
+> > no product info available
+> > function: 2 (serial)
+> >sh-2.03#
+>
+> if i turn debug on i get this message
+> cs: overrun in get_next_tuple for socket 0
+>
+>
+> so now it don't know if it is a software problem or a hardware problem...
+>
+> Q1: any ideas what i could try in next step
+>
+> Q2: what is the difference between MEM_BASE and IO_BASE
+>
+> Q3: cardmgr always think that he detects an anonyoumous memory and start
+this
+> service .. is this caused by the
+> bad cis reading or is this another problem?
+>
+> thx matthias
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
