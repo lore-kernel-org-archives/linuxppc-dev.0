@@ -1,52 +1,28 @@
-Date: Wed, 9 Jun 1999 10:39:44 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: David De Ridder <david.de.ridder@bitsmart.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2.9 patch for Motorola support.
-In-Reply-To: <3.0.6.32.19990608182608.0089b480@sins.uia.ac.be>
-Message-ID: <Pine.HPP.3.96.990609100216.27048N-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 9 Jun 1999 11:26:02 +0200
+From: massin@col.bsf.alcatel.fr (Raphael Massin)
+Message-Id: <199906090926.LAA26233@c5s144.clb>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Linux Training available
+Cc: massin@cabs40
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hello all,
 
+An industrial project based on a MPC8xx processor is going to start soon and
+Linux may be chosen as operating system. In this case, i am looking for
+technical training about kernel internals. If anybody knows where i can find
+such courses, thank you to tell me it.
 
-On Tue, 8 Jun 1999, David De Ridder wrote:
+Maybe Cygnus provide teachers in Linux kernel internals ?
 
-> I have a suggestion for your PRePboot patches. (I don't know whether you've
-> already incorporated it in the latest patch, since I don't have access to
-> the patched source tree right now).
-> 
-> It's something that could make people using root NFS on MVME boards (like
-> the MVME230x series) happy and their lives easier ;-)
-> 
-> You could do something like (in pseudo-C) :
-> 
-> #ifdef CONFIG_ROOT_NFS
->  strcpy(kernelarguments,"console=ttyS0 root=/dev/nfs");
-> #else
->  strcpy(kernelarguments,"console=ttyS0");
-> #endif
-> 
-> As I said, I don't have the sources right now, but I think
-> you see what I mean. This way people who use NFS for their
-> root file system do not have to type "root=/dev/nfs".
-> It's hardly a 'patch', but it could make life easier...
+The aim is to be able to understand and correct problems more quickly
+than by studying the source code.
 
-Indeed, but I was rather thinking of stealing some of Corey's patches
-and use a global NVRAM variable which you can set with GEVEDIT under
-PPCbug.
+Greetings,
 
-The only minor problem I have with his patch is that it uses the name
-'bootargs' which is a standard OF parameter AFAIR. But what if you want to
-switch between various OS ?  I would rather have used linux-bootargs or
-something like that to avoid possible confusion. 
-
-	Regards,
-	Gabriel.
-
+	Raphael Massin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
