@@ -1,22 +1,16 @@
 Return-Path: <jonathan@jonmasters.org>
-Received: from smtp.mailbox.co.uk (smtp.mailbox.co.uk [195.82.125.32])
-	by ozlabs.org (Postfix) with ESMTP id 414C667A6F
+Received: from smtp.mailbox.co.uk (smtp.mailbox.net.uk [195.82.125.32])
+	by ozlabs.org (Postfix) with ESMTP id E1A8E67A6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Mar 2005 22:58:06 +1000 (EST)
-Message-ID: <424BEDFC.8080300@jonmasters.org>
-Date: Thu, 31 Mar 2005 13:33:00 +0100
+	Thu, 31 Mar 2005 23:12:27 +1000 (EST)
+Message-ID: <424BEECD.8020303@jonmasters.org>
+Date: Thu, 31 Mar 2005 13:36:29 +0100
 From: Jon Masters <jonathan@jonmasters.org>
 MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <424ACFF1.5000403@bitsim.se>
-	<111d2ae873d1bfee413409dfc4f2f064@freescale.com>
-In-Reply-To: <111d2ae873d1bfee413409dfc4f2f064@freescale.com>
+To: jakob.viketoft@bitsim.se
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>,
-	Sylvain Munaut <tnt@246tNt.com>,
-	Andrei Konovalov <akonovalov@ru.mvista.com>,
-	Jakob Viketoft <jakob.viketoft@bitsim.se>
-Subject: Re: Platform bus/ppc sys model...
+Cc: tnt@246tNt.com, akonovalov@ru.mvista.com, linuxppc-embedded@ozlabs.org
+Subject: Platform bus/ppc sys model - [Fwd: bi_recs and u-boot ppcboot.h]
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,27 +24,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-Kumar Gala wrote:
+Hi all,
 
-|> My intention was to give a device tree structure to the kernel at boot
-|> time via a (pseudo?) pointer in bd_info or similar. Then you would only
-|>  need to recompile a little bootloader (which is needed for setting up
-|> the FPGA anyway) with this structure for every specific card. You could
-|> even be shrewd enough to have a single kernel image but several
-|> structures to launch several processors on the same chip. Does it sound
-|> like a sane solution?
+I hope Wolfgang doesn't mind me forwarding this :-) This is what I have
+some limited time for at the moment - but work takes priority!
 
-This got resurrected recently. Some of us have been talking privately
-about it and I should have time with a board and BDI shortly. The idea
-above about the bd_info pointer is precisely what I've been working with
-people off list on.
+Cheers,
 
-| I think this is reasonable.  The best device tree would be a flattened
-| OF tree since we are trying to move the world in that direction.  Jon
-| Masters around?
+Jon.
 
-Yes, but I've been tied up with worky and magazine stuff again. If
-someone wants to work with me then this might actually happen.
+- -------- Original Message --------
+Subject: bi_recs and u-boot ppcboot.h
+Date: Fri, 11 Mar 2005 03:00:18 +0000
+From: Jon Masters <jonathan@jonmasters.org>
+Organization: World Organi[sz]ation Of Broken Dreams
+To: Wolfgang Denk <wd@denx.de>
+
+Hi Wolfgang,
+
+I'm looking at this bi_recs replacement again. Do you have any
+particular objection to me extending bd_info (at the end, only if
+CONFIG_FAKEOFTREE is selected) to add a pointer to a BLOB of fake OF
+device tree?
+
+Assuming not, I'm going to try to figure out how to do this in u-boot.
+Do you have a ppc405 board online at the moment with a BDI2000 OOI? I
+can't see one on pollux or xpert at the moment - if you've got one spare
+that can be made available at some point, please let me know.
+
+( basically, I've got ppcboot on an old CPCI405 here but it's not
+trivial to fix if I break it and I don't know much about whether u-boot
+supports chaining in to a new u-boot loaded from within itself...but it
+probably does, I guess. Bah, it's late, I'm rambling...).
 
 Cheers,
 
@@ -59,7 +64,7 @@ Jon.
 Version: GnuPG v1.2.4 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
 
-iD8DBQFCS+38eTyyexZHHxERAhKmAJ9v2k8rvFjB+W9OmXu4P7blHiWIkQCglEFk
-AA2fZEsXmpWV0Jj/Z2OCrxA=
-=oVje
+iD8DBQFCS+7NeTyyexZHHxERAsVkAJ9WK/eHANzVdMTiPVRneHVuitt5FgCeOJCE
+Oxf9aVCY4OG5+2kgmJfGgAw=
+=BF/h
 -----END PGP SIGNATURE-----
