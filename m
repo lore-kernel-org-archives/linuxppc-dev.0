@@ -1,42 +1,65 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
+Message-ID: <398A522C.77172439@ncal.verio.com>
+Date: Thu, 03 Aug 2000 22:18:36 -0700
+From: Henry Worth <haworth@ncal.verio.com>
 MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: CDDA playback on Pismo (and other newer models)
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14730.9953.112006.773228@argo.linuxcare.com.au>
-Date: Fri, 4 Aug 2000 12:13:53 +1000 (EST)
-To: Ronald Wahl <rwa@peppercon.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: iounmap
-In-Reply-To: <Pine.LNX.4.21.0008030950020.1647-100000@goliath.issistance.de>
-References: <Pine.LNX.4.21.0008030950020.1647-100000@goliath.issistance.de>
-Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ronald Wahl writes:
+As most of you know, the newer Mac models lack analog CD playback
+capabilities. So I've been experimenting with using cdparanoia
+piped through play for CD playback on my Pismo with
+2.2.17pre15-ben1 (btw, very stable so far).
 
-> I'm currently writing a device driver for an pci controller and have to
-> map very large amounts of pci memory and i/o ranges via ioremap. The
-> problem is that there is no iounmap and ioremap returns NULL after some
-> insmod/rmmod cycles. When gets this implemented?
+Using the ATAPI CD drivers there are underruns with significant
+dropouts every couple of seconds. Various hdparms and cdparanoia
+parms were tried with no significant change. These include various
+transfers modes and cdparanoia's buffer (-n) and speed (-S)
+parms and various data formats. Piping cdparanoia out to /dev/null
+showed data rates of 46 sectors/sec at -S1, 65sps at -S8, and
+133sps at -S12 and above (also the default and no significant
+changes with different transfer modes and -n values). At the higher
+speeds (>-S11) there is a high-level of continuous head-seek noise,
+suggesting a lot of overruns and reseeks on the CD i/f side.
 
-This should do the trick:
+Rebuilding the kernel to use SCSI generic devices with IDE SCSI
+emulation produced much better, even usable, results. At startup
+there are still a couple of dropouts in the first few seconds,
+but after that the playback is clean across multiple tracks (even
+with a concurrent kernel compile). Piping cdparanoia to /dev/null
+shows data rates of 187sectors/sec at all -S settings (and default).
+>From the the drive's spin-up sounds it seems to always be in
+high-speed mode, but unlike the ATAPI driver, there is little
+head movement noise.
 
-void iounmap(void *addr)
-{
-	if (addr > high_memory && (unsigned long) addr < ioremap_bot)
-		vfree((void *) (PAGE_MASK & (unsigned long) addr));
-}
+So, any thoughts as to whether this a lack of sufficent buffering
+in the CDDA path of the ATAPI CD driver? Or, more general
+performance problems in the ATAPI CD or low-level drivers?
 
-Could you replace the null iounmap in arch/ppc/mm/init.c with that,
-test it, and let me know if it works?
+I'll also be looking at cdparanoia (v9.7), it does diffentiate
+between ATAPI and SCSI interfaces, so it might not be reading
+ATAPI devices in an optimal manner. I'll also be giving cdda2wav
+a try now that I have SCSI emulation built in (btw, you don't
+need to leave the ATAPI cd driver out of the build, just use
+the hd[n]=ide-scsi boot parm to switch).
 
-Paul.
+Additionally there seems to be some clipping occuring somewhere
+in the A/D or mixer/preamp. It's independent of output
+volume on either the internal speakers or external port, and
+only occurs, consistently, on a few tracks I've tried. But in
+general using .aiff format instead of .wav seems to sound a
+bit better, with perhaps a bit less clipping (haven't tried
+the latest damsound patches).
 
---
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+I'd like to give XMMS a try, but the XMMS in LPPC2K and updates
+and builds of newer versions all generate white noise on .wav
+files (endiness?). Has anyone been able to get XMMS to work on
+a Pismo? And where can I find the XMMS CDDA playback plugin?
+
+TIA,
+Henry
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
