@@ -1,42 +1,45 @@
-Date: Wed, 7 Mar 2001 02:15:11 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Brad Parker <brad@parker.boston.ma.us>
+Message-Id: <200103070649.HAA00777@piglet.grunz.lu>
+Date: Wed, 7 Mar 2001 07:49:55 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: 2.4.2 USB and "mon>" (was Re: All 6 cards!!!)
+To: benh@kernel.crashing.org
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: asm/io.h; why does writel() write an le32 on ppc? 
-In-Reply-To: <200103062328.SAA01824@p2.parker.boston.ma.us>
-Message-ID: <Pine.HPX.4.10.10103070209260.3942-100000@gra-ux1.iram.es>
+In-Reply-To: <20010306230649.31714@mailhost.mipsys.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 6 Mar 2001, Brad Parker wrote:
-
+On   7 Mar, this message from Benjamin Herrenschmidt echoed through cyberspace:
 >
-> Gabriel Paubert wrote:
-> >On Tue, 6 Mar 2001, Brad Parker wrote:
-> ...
-> >> in asm/io.h it uses out_le32, unless the machine is an APUS, in which
-> >> case it just writes big endian...
-> >>
-> >> (is PCI defined as little endian?)
-> >
-> >Sadly, yes.
+>>Are you sure this is right? While trying to solve my
+>>2.4-paulus-doesn't-boot-my-7600 probelm, I came across that code; and
+>>sure enough, OF 1.0.5 (whic Stefan has in his 9500 also) doesn't have a
+>>'quiesce' OF word.
 >
-> Ok, so the APUS pci bridge must be doing byte swapping.  I assume the
-> ppc macintosh pci bridges do not byte swap...
+> It doesn't, yes, but did it break ?
 
-Nor any other PPC bridge that I know (unless you put it in little-endian
-mode because of the address munging that the processor does, but the
-munging is not dependant on the size of the transfer). Byte
-swapping bridges are painful to handle when you try to move structures as
-a block across the bridges (the way the byte lanes are connected between
-both sides of the bridges changes depending on the size of the transfer).
-I prefer very much byte address preserving bridges, like PMAC/PreP/CHRP.
+Oh yes, sure enough. However, I am unable to tell you _where_ exactly it
+breaks.
 
-	Regards,
-	Gabriel.
+I've been unable to boot _any_ 2.3/2.4 kernels on my machine since
+around 2.3.99 or a bit earlier. Some revisions would boot part of the
+time, but most of them not at all. Symtom is always the same: hang
+before initializing the framebuffer, i.e. still on the OF screen.
+
+I get the 'retunring 0x... from prom_init' string, but nothing after
+that.....
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
