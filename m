@@ -1,30 +1,30 @@
-Date: Wed, 18 Apr 2001 19:36:52 -0700
-From: andrew may <acmay@acmay.homeip.net>
-To: Hideo Noda <Hideo_Noda@mutoh.co.jp>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PPC405GPWalnutPciBusMaster
-Message-ID: <20010418193652.B19053@ecam.san.rr.com>
-References: <3ADE42E8.6552066B@mutoh.co.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3ADE42E8.6552066B@mutoh.co.jp>
+Message-ID: <01139FC052A0D411900B00508B9535FC01748F1E@ZCH07EXM04.corp.mot.com>
+From: Liu HongXun-a16975 <a16975@motorola.com>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Why I can't compile linuxppc using DWARF format as debugging ?
+Date: Thu, 19 Apr 2001 12:06:33 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Apr 19, 2001 at 10:44:08AM +0900, Hideo Noda wrote:
-> Has anyone tried PCI cards with BUS MASTER operations for Walnut
-> PPC405GP?
+Hi, all,
+I want to get a debug version of linux2.2.14 for ppc. The debug information should be in DWARF format.
+So, I use the option "-gdwarf" to compile the kernel. But that failed,telling me :
 
-I have tried and failed. I have other things to work on right now
-so I have just delayed looking into it anymore until the 2.0 CDK
-comes out. I think that should be by the end of the month.
+{standard input}: Assembler messages:
+{standard input}:42: Error: Rest of line ignored. First ignored character is `.'.
+{standard input}:43: Error: Rest of line ignored. First ignored character is `.'.
+{standard input}:52: Error: Rest of line ignored. First ignored character is `.'.
+...
 
-I think there is a problem with the virt_to_phys matching the
-PTM1/BAR1. In the preliminary 405gp docs that I have Fig 17-59
-on page 17-62 give a good overview on how things need to be
-setup on the chip, but I am not sure on what the values
-need to be.
+I changed the optimize option, O or O2, but no use. If I omit the optimize option, the kernel can't compile.
+My gcc for ppc is from HARD HAT, which is 2.95.2.
+
+Thanks a lot
+Rolf Liu
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
