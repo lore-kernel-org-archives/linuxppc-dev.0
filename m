@@ -1,27 +1,30 @@
-Date: Thu, 8 Jul 2004 18:04:31 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: what's the value of CONFIG_8xx_UART?
-Message-ID: <Pine.LNX.4.60.0407081800340.1772@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Date: Thu, 8 Jul 2004 16:07:13 -0700
+From: Greg KH <greg@kroah.com>
+To: sensors@Stimpy.netroedge.com,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] PPC4xx IIC driver: 0-length transactions bit-banging implementation
+Message-ID: <20040708230713.GF20431@kroah.com>
+References: <20040622185116.GA4146@gate.ebshome.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040622185116.GA4146@gate.ebshome.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-   under MPC8xx CPM Options, what's the purpose of selecting
+On Tue, Jun 22, 2004 at 11:51:16AM -0700, Eugene Surovegin wrote:
+> Greg,
+>
+> IBM PPC 4xx i2c controller doesn't support 0-length transactions (e.g. used by
+> SMBUS_QUICK). This patch implements bit-banging emulation for such requests and
+> removes temporary kludge added earlier.
+>
+> Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
+>
+> Please, apply.
 
-   [ ] Use UART         (representing option CONFIG_8xx_UART)
+Applied, thanks.
 
-i mean, i already have SMC1 serial port support, and a working
-console, and SMC1 is on a UART.  so what else would this give me?
-there is no help for this option.  if i select it, i get the chance of
-now selecting "SMC2 for UART", which kind of implies that SMC1 is the
-default anyway, which is already working, etc, etc.
-
-   thoughts?  this is going to lead in to yet another question
-regarding SMC1/SCC3 co-existence.  but now, time for supper.
-
-rday
+greg k-h
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
