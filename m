@@ -1,53 +1,53 @@
-To: "=?iso-8859-1?Q?J=F3n_Benediktsson?=" <jonb@marel.is>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: IDE on Lite5200 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 03 Mar 2004 17:55:15 GMT."
-             <OF12C112DE.67675BE6-ON00256E4C.0060B975-00256E4C.0062715E@marel.is>
-Date: Wed, 03 Mar 2004 19:47:08 +0100
-Message-Id: <20040303184713.3056EC1183@atlas.denx.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Ricardo Scop <scop@digitel.com.br>
+To: Jaap-Jan Boor <jjboor@aimsys.nl>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: early return set_multicast
+Date: Wed, 3 Mar 2004 16:01:28 -0300
+References: <Pine.LNX.4.44.0403031706440.10579-100000@linpc003.aimsys.nl>
+In-Reply-To: <Pine.LNX.4.44.0403031706440.10579-100000@linpc003.aimsys.nl>
+MIME-Version: 1.0
+Message-Id: <200403031601.28119.scop@digitel.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <OF12C112DE.67675BE6-ON00256E4C.0060B975-00256E4C.0062715E@marel.is> you wrote:
+Hi,
+
+On Wednesday 03 March 2004 13:09, Jaap-Jan Boor wrote:
+> Hi,
 >
-> I am working with a Lite5200 board.  I have u-boot running in a LOWBOOT
-> configuration and I can run the Denx linux kernel for MPC5200,
->  using an nfs root filesystem.
+> does somebody know why there is an early return;
+> statement in the set_multicast_list() function
+> of 8260_io/fcc_enet.c (or cpm2_io/fcc_enet.c)?
 >
-> Now I want to add IDE support to the kernel.  I already have IDE support in
-> u-boot and my disk is detected in the startup.
-> I have added what I can think of to the kernel config but I am stuck with a
-> linking error when running 'make uImage'.
-> Following is the last output of the make, indicating the error.
 
-This was a typo in the Makefile. Please update the sources  from  our
-CVS server, and it should work:
+[snip]
 
----------------------
-PatchSet 184
-Date: 2004/02/26 15:58:47
-...
-Fix typo which prevented IDE from working on MPC5200
+Well, probably the code after the early return is broken ;). Which kernel
+version is that? There used to be at least one bug in the for statement (lack
+of a dmi=dmi->next statement inside it, AFAIR).
 
-Members:
-...
-        drivers/ide/ppc/Makefile:1.4->1.5
-...
----------------------
+>
+> thanks,
+>
+> Jaap-Jan
 
-
-Best regards,
-
-Wolfgang Denk
+Your welcome.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-In Nature there are neither rewards nor punishments, there are conse-
-quences.                                            -- R.G. Ingersoll
+Ricardo Scop.
+
+  _________
+ /  _____  \
+ \_/(@ @)\_/
+   /  V  \   R SCOP Consult.
+  /(     )\  Linux-based communications
+---^^---^^------------------------------
+rscop@matrix.com.br
++55 51 999-36-777
+Porto Alegre, RS - BRazil
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
