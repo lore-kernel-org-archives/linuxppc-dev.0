@@ -1,57 +1,25 @@
-Message-Id: <v03010d00b2fdb9273872@[209.96.179.170]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 27 Feb 1999 10:09:39 -0500
-To: linuxppc-dev@lists.linuxppc.org, egcs@egcs.cygnus.com
-From: "Kevin B. Hendricks" <kbhend@business.wm.edu>
-Subject: PowerPC and egcs gurus: Help! egcs PPC Float Min != JCK Float Min
+Date: Sat, 27 Feb 1999 12:19:40 -0500 (EST)
+From: Tom Rini <tmrini@ntplx.net>
+To: /* Vinai */ <vroopcha@post.its.mcw.edu>
+cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: fixes in glibc ??
+In-Reply-To: <Pine.SOL.3.96.990227004727.16240B-100000@post.its.mcw.edu>
+Message-ID: <Pine.LNX.4.05.9902271218580.25299-100000@pc.wackyland.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-PowerPC and egcs Gurus,
+On Sat, 27 Feb 1999, /* Vinai */ wrote:
 
-I could really use some help here.  I am part of the Blackdown porting team
-that is porting JDK 1.2 to linux for powerpc.  In order to do an offical
-"release", our port must pass *all* of the Java Compatitiblity Kit (JCK)
-tests.
+> Can anyone say whether the R5 version of glibc will have this fix ??
 
-One of the JCK tests tries to pass what it thinks Float_Min is back and forth.
-The JCK says we *must* support a min Floating point value of
-1.40239846e-45F but according to <float.h> in egcs our FLT_MIN on powerpc
-is 1.17549435e-38F.  The Float max values are the same.
+It should.
 
-So we end up failing this test (and then can never offically release).
-
-I don't know enough about the float modes (normalized vs de-normalized, vs
-?) on the PPC chip to know if or how we can support such a min float value.
-
-I could use some help here.  Do you know anything (or could you point me to
-something or someone) that might explain, how the PPC processor can/will
-support a min Float value of 1.40239846e-45F?
-
-Is the FLT_MIN valkue in float.h of egcs, an egcs constraint or a real PPC
-constraint?
-
-Any ideas of how to get around this issue without have to write a floating
-point emulation software library (and kill what little floating point
-performance the JDK has)?
-
-
-Any help would be greatly appreciated.
-
-Thanks,
-
-Kevin
-
-Please cc in any replies, I am not on the egcs list.
-
-
-p.s. Other that this issue, the JDK 1.2 is running very nicely on LinuxPPC
-under green threads under Gary's glibc 1.99 clone and should now compile
-cleanly under glibc 2.1 (when I finally get an R5 disk).
-
-
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
