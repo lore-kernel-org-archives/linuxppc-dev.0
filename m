@@ -1,39 +1,76 @@
-Date: Sat, 13 Feb 1999 09:57:38 -0700 (MST)
-From: Jeff Rugen <jrugen@primenet.com>
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
-        Linux Framebuffer List <linux-fbdev@vuser.vu.union.edu>
-Subject: clgenfb updates (mainly for PReP)
-Message-ID: <Pine.BSI.3.96.990213095048.24001A-100000@usr07.primenet.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 13 Feb 1999 18:50:09 +0100
+To: Paul Mackerras <paulus@cs.anu.edu.au>,
+        Cort Dougan <cort@ladron.cs.nmt.edu>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Message-Id: <19990213185009.020602@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Well, I (mostly) have 16- and 32-bit color depths working.  A few modes are
-still causing problems, and I have some small problem with the accelleration
-code for those bit-depths, but they are coming up.  I also fixed a bug where
-I was only using 5 of the 6 bits for the clock denominator, so more modes
-are working then before.  In the higher color modes, occasionally my blit
-code will move or clear more pixes than it should -- usually either when
-deleting character or when scrolling up and down through the command
-history.  Higher color modes won't work as a module (with 2.2.1 anyway) --
-but you should just have to modify fbcon-cfbX.c the same way I have
-fbcon-cfb8.c patched.
+Hi !
 
-The fix may also allow higher color depths to work on non-prep boards
-(previously, text colormaps for other depths were not being set).
+I would like your point of view about the following:
 
-Thanks to Cort, I have the patches at
-ftp://linuxppc.cs.nmt.edu/pub/linuxppc/patches/clgenfb-prep
+The kernel entry code starts playing with BATs as soon as it is entered.
+Isn't that dangerous ? I mean, you must have enough luck for this BAT not
+to be used at this specific time, or not overlapping another BAT setup by
+MacOS (overlapping BATs causes undefined behaviour according to the PPC
+manual) ?
 
-Patches are against 2.2.1.
+I have made a test bootx that I'll upload to
+ftp.linuxppc.org/developement/users/benh later today (the archive will
+probably be called BootX_phys_test.sit). This version of BootX doesn't
+jump directly to the kernel but goes to a small piece of PPC asm that
+will cause the kernel to be entered with MMU (and interrupts) disabled. I
+beleive this should get rid of potential problems with TLB misses during
+boot too. Of course, all addresses passed to the kernel are turned into
+physical addresses (frame buffer, stack, boot_infos).
 
-----------------------------------------------------------------------------
-Jeff Rugen                      jrugen@primenet.com
+This version works on my desktop G3, I didn't have time to test it on
+other machines yet.
+The bootstrap code is simple (it's entered with the same parameters as
+the kernel, but with physical addresses and with the kernel physical
+entry in r6) :
 
-...Had this been an actual emergency, we would have fled in terror, and you 
-would not have been informed.
+    /* switch interrupts off */
+    mfmsr   r0;
+    ori     r31,r31,MSR_EE;
+    andc    r0,r0,r31;
+    sync;
+    mtmsr   r0;
+    sync;
+
+    /* put kernel entry (phys) in ssr0 */
+    mtspr   SSR0, r6;
+
+    /* Setup ssr1 (kernel entry MSR) */
+    ori     r31,r31,(MSR_IR|MSR_DR);
+    andc    r0,r0,r31;
+    mtspr   SSR1, r0;
+
+    /* Branch to the kernel */
+    rfi;
+
+Note: I wrote this little piece of asm with CodeWarrior. Since I would
+like to make a C boostrap that takes place between this and the kernel, I
+still need to figure out how to build code for this with egcs. If I could
+find the correct MakeFile options to get an output like prom.c
+(PC-relative branches, datas accessed thru a RELOC macro), I think it
+would be just fine. A better approach would be to store datas relative to
+a register that I can setup before entering the boostrap, but that means
+parsing enough of the ELF to extract the offset of the datas. I would
+appreciate if someone could give me some tips about what is usually done
+in those cases or some pointers to infos/samples.
+
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
