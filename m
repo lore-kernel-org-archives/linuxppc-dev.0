@@ -1,37 +1,30 @@
-Message-ID: <3BF0AED8.1020503@embeddededge.com>
-Date: Tue, 13 Nov 2001 00:25:44 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Sarnath Kannan <sparc64@rediffmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: IDE in Mode 1 (Sandpoint) how ?
-References: <20011113040707.18867.qmail@mailweb26.rediffmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Mon, 12 Nov 2001 22:42:04 -0800 (PST)
+From: James F Dougherty <jfd@krakatoa.gigabitnetworks.com>
+Message-Id: <200111130642.fAD6g4Zp019615@krakatoa.gigabitnetworks.com>
+To: dan@embeddededge.com, dag@newtech.fi,
+	jfd@krakatoa.gigabitnetworks.com
+Subject: Re: "OpenPIC versus EPIC" in MPC8240 !
+Cc: sparc64@rediffmail.com, ashisha@india.infogain.com,
+	linuxppc-embedded@lists.linuxppc.org, dag@newtech.fi
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sarnath Kannan wrote:
+I've been watching this thread for quite some
+time now. I spoke with Dan about adding some
+changes to this code last summer. I ran into
+some issues with OpenPIC as well on our MPC8240
+platform.
 
 
-> ..... But whatss troubling
-> my head is, the kernel boots up fine until the NFS mount.
-> Had the switch settings been wrong, the serial output
-> would be slow from early bootup, right ?
+If you guys would like to forward me your changes,
+I can merge your changes into mine (or see if they
+are relevant) and give you an interim release.
 
-Nope.  All of the kernel print out is polled I/O.
-
-> .....  But thats
-> not the case. Why should it be slow after INIT starts
-> up ?
-
-Because it uses interrupt driven serial I/O.
-
-Believe me, all of us using Sandpoints have seen this before.
-Your interrupt/arbitration routing switches on the board are wrong.
-
-
-	-- Dan
+Might I ask, could you describe the architecture
+of your MPC8240 IRQ mapping and IO devices?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
