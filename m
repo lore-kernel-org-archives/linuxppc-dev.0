@@ -1,40 +1,39 @@
-Message-ID: <3745949F.34E8B0F8@sei.co.kr>
-Date: Sat, 22 May 1999 02:15:12 +0900
-From: "KiPyo Ryu" <kpryu@sei.co.kr>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: About MBX (MPC860) boot
-Content-Type: text/plain; charset=EUC-KR
+Message-Id: <AF223B12F1FDD2119253006097C4FCEC05B138@cats.pdri.xerox.com>
+From: "Packer, Dave" <dPacker@uppercase.xerox.com>
+To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Subject: Umax S900 CD Rom problems...
+Date: Fri, 21 May 1999 11:02:32 -0700
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello all,
 
-I got 'embedded-2.2p7.tar.gz' file from linuxppc/embedded directory.
-I compiled this file for MBX(MPC860) on PowerPC 603e machine.
-When I compiled, I linked 'mbx_defconfig' to 'defconfig'.
-then I did following:
+Carlos - 
 
-make mrproper <enter>
-make config <enter>
-    -> All configuration set defaults.
-make dep <enter>
-make clean <enter>
-make zImage <enter>
+I have a UMAX S900/200 with the Matsashita drive.  I've been able to install
+without any problems.  What
+OS are you running? I'm running 8.5.1.  I've installed 4.1 and now am
+running Pre-R5, except for some very small FBDev problems I'm perfectly
+satisfied with what I have.  Are you installing with BootX? make sure you
+de-select no-video-driver and you can pass the arg of video='tt128fb' to the
+kernel.  
 
-Netboot was successful from this created zImage file.
-Server is PowerPC 603e, client is MBX Board have 32MB RAM, 4GB HDD and
-floppy drive.
+Other Notes:
 
-Here, first, I'd like to boot from floppy of MBX. How do I do this?
-and then, I'd like to install the linux on MBX HDD. How do I do this?
+Don't run the installer from a HFS+ partition
+I've had the best success by dragging the RedHat onto an non-HFS+ partition
+and installing from there
 
-Any help appreciated...
+If you are shooting for Pre-R5: I know that about a week ago I thought I
+might try re-installing and had some problems with the recent
+redhat.ramdisk.gz where it couldn't recognize any of my drives.  That might
+be where your problem is.  Can't help you there though probably have to wait
+until R5 comes out sometime in the next week or so.
 
-Thanks,
-
-Kipyo.
+Dave-
 
 
 
