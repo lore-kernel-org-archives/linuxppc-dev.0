@@ -1,38 +1,68 @@
-Message-ID: <003f01c3ec29$517014e0$0402a8c0@server>
-From: "Joseph Bennie" <jay@lincore.co.uk>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: nvidia framebuffer and broken pttys on G4 powerbook
-Date: Thu, 5 Feb 2004 20:47:49 -0000
+Message-ID: <4022BAB8.2060707@lycos.nl>
+Date: Thu, 05 Feb 2004 22:50:48 +0100
+From: Mikolaj Krzewicki <mkrzewicki@lycos.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-dev@lists.linuxppc.org
+Cc: benh@kernel.crashing.org
+Subject: Re: benh performance problem
+References: <401FE138.8080807@lycos.nl> <1075847083.17327.31.camel@gaston>
+In-Reply-To: <1075847083.17327.31.camel@gaston>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-What is the current solution to getting a working display on a 1Ghz G4
-powerbook using the nvidia GeForce4 440 Go chip.
+> On Wed, 2004-02-04 at 04:58, Mikolaj Krzewicki wrote:
+>
+>>> hi all,
+>>> starting 2.6.0-test9-benh3 i noticed an increased system overhead on my
+>>> ibook 500. Each process eats much more cpu time than in 2.4 or even
+>>> vanilla 2.6.
+>>> gkrellm takes 1% instead of 0.1, xmms 5% instead of ~1% and so on.
+>>> I benchmarked the lot with octave and it indeed runs ~10% slower on the
+>>> benh kernels.
+>>> I would use vanilla 2.6.1 but it won't sleep/wake correctly (at all).
+>>> All pre-2.6.0-test9-benh3 kernels worked fast but would't sleep/wake either.
+>>> I tried to isolate the patch responsible but failed.
+>>> Has anybody come across similar behaviour?
+>>> greetings, M
+>
+>
+> I switched to HZ=1000, the userland procps utilities (like ps and top)
+> tend to not properly deal with that, at least earlier versions, afaik.
+>
+> I suspect it's just display crap.
+>
+> Alos, you can find a more recent kernel than that  My bk tree is
+> currently at 2.6.2-rc3-ben1
+>
+> Ben.
 
-X =4.3
-kernel =2.6.2
+i tested 2.6.1-benh1 now with HZ=100
+the benchmark i used shows a speedup back to the values i'm used to.
+The benchmark itself is an octave script the execution time of which i
+tested with different kernels under similar circumstances, so here are
+the details:
 
-using the openfirmwarefb works for console, but using fbdev in X has limited
-and badly mapped colors. (bpp=4 )
+2.6.1-benh1, HZ=1000: timing=36.5s
+2.6.1-benh1, HZ=100 : timing=32s
 
-rivafb appears to be broken or incompatible - display just blanks after
-initial boot
-nvidia also dont appear to supply a ppclinux driver library :( - unless
-someone knows better
+this is with X running and a lot more processes(not running).
+the weird thing is it executes slightly faster (on average) with
+pbbuttonsd off.
+The machine is g3 500 ibook, the octave script is:
 
-Thanks in advance for any help. including pointers on where to start
-contributing to the solution.
-as this lump of tin cost me over 1700ukp and its of no use to me if i can
-get X to work. (i think i finally found my itch )
+   tic;
+     a = abs(randn(1500, 1500)/10);
+     b = a';
+     c= a*b;
+     a = reshape(b, 750, 3000);
+     b = a';
+   timing=toc;
 
-PS - also noticed that there is a problem allocating pttys with 2.6.2
+so lots of system calls and cache flushing is in order.
 
- Jay Bennie
- jay@lincore.co.uk
+Mikolaj.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
