@@ -1,82 +1,67 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: AgileDB and Abatron BDI 2000 ICE
-Date: Fri, 11 Jul 2003 10:31:56 -0400
-Message-ID: <8529B5552D4EAA4DAEDF49650C64B2B437128C@TARPON.mangrovesystems.com>
-From: "Muhammad Sarwar" <msarwar@mangrovesystems.com>
-To: "Steven Rothweiler" <Stevenr@raritan.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
+To: "Muhammad Sarwar" <msarwar@mangrovesystems.com>
+Cc: "Steven Rothweiler" <Stevenr@raritan.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: AgileDB and Abatron BDI 2000 ICE 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 11 Jul 2003 10:31:56 EDT."
+             <8529B5552D4EAA4DAEDF49650C64B2B437128C@TARPON.mangrovesystems.com>
+Date: Fri, 11 Jul 2003 16:48:29 +0200
+Message-Id: <20030711144834.C3B46C6D82@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You are right about Abatron, it is definitely a good tool to have.
+In message <8529B5552D4EAA4DAEDF49650C64B2B437128C@TARPON.mangrovesystems.com> Muhammad Sarwar wrote:
+>
+> Main advantage of Agile is that it integrates Abatron's commands and
+> GDB debugging services.
 
-I recently evaluated Agile Software for 8260.
+I have not used AgileDB yet. How does this integration work? I  mean,
+how much more do you get than when using GDB's "monitor" command?
 
-Few thoughts:
+> Nice GUI for all BDI and GDB features at one place
 
-Main advantage of Agile is that it integrates Abatron's commands and
-GDB debugging services.=20
+You can use DDD and add some custom-defined buttons.
 
-Some features I liked were=20
+> Ability to move registers, structs etc to same watch window(by click
+> and drag)  Tools to automate some processes like loading of register
+> init file, playing back command script
 
-Nice GUI for all BDI and GDB features at one place=20
-Ability to move registers, structs etc to same watch window(by click
-and drag)=20 Tools to automate some processes like loading of register
-init file, playing back command script=20
-Ability to set PC, other registers etc=20
-Ability to use the same software for debugging of user applications=20
+I suspect this might be just using GDB features?
 
-However there are some problems:=20
+> Ability to set PC, other registers etc
 
-Program crashes frequently, they are offering new version of SW which
-is supposed to be more stable. Problems in setting break points.
-Problem in getting stack info display. Bug in display of struct
-info=20
+Standard GDB features...
 
-I think overall it brings good value for boot and kernel debugging.
-Regards,
+> Ability to use the same software for debugging of user applications
 
-Muhammad Sarwar
-Mangrove Systems Inc.
+Standard GDB feature.
 
+> However there are some problems:
+>
+> Program crashes frequently, they are offering new version of SW which
+> is supposed to be more stable. Problems in setting break points.
+> Problem in getting stack info display. Bug in display of struct
+> info
+>
+> I think overall it brings good value for boot and kernel debugging.
 
------Original Message-----
-From: Steven Rothweiler [mailto:Stevenr@raritan.com]
-Sent: Friday, July 11, 2003 9:59 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: AgileDB and Abatron BDI 2000 ICE
+I'm sorry, but from what you listed I don't see any advantages...
 
+[But I have to admit that I've been using  GDB  and  CLI's  for  some
+time...]
 
-Hi,
+Best regards,
 
-My organization is moving to Linux on MPC8270 (HW
-being designed right now) and I was wondering what
-everyone thought of the AgileDB-LX debugger, when
-used with the Abatron BDI 2000 ICE.
+Wolfgang Denk
 
-We have neither product in house right now, and we
-are trying to decide whether to evaluate them for
-the development of our product.
-
-I've seen a lot of good remarks about the Abatron
-BDI 2000 ICE (that you shouldn't leave home without
-it), but not much about AgileDB.  The product data
-sheet looks impressive.  Any strong opinions out
-there?
-
-Also, we have an opening for an embedded PPC/Linux
-engineer.  Where is the best place to post the ad?
-
-Thanks.
 --
-Steven Rothweiler               Raritan Computer Inc
-Embedded Engineer               400 Cottontail Lane
-mailto:stevenr@raritan.com      Somerset, NJ   08873
-732-764-8886 x1256
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"The bad reputation UNIX has gotten is totally undeserved, laid on by
+people who don't understand, who have not gotten in there  and  tried
+anything."          -- Jim Joyce, owner of Jim Joyce's UNIX Bookstore
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
