@@ -1,49 +1,51 @@
-Date: Wed, 26 Jul 2000 13:54:16 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [ANN] IRQ Latency tool 0.1.3 release.
-In-Reply-To: <20000725213953.24969@192.168.1.10>
-Message-ID: <Pine.LNX.4.10.10007261351040.443-100000@cassiopeia.home>
+Message-ID: <397ED8AB.678FB32E@francetelecom.fr>
+Date: Wed, 26 Jul 2000 14:25:15 +0200
+From: FASSINO Jean-Philippe <jeanphilippe.fassino@francetelecom.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: RTAS on PowerMac Newworld
+References: <Pine.LNX.4.10.10007252036280.1490-100000@cassiopeia.home>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 25 Jul 2000, Benjamin Herrenschmidt wrote:
-> >> I still haven't found the "hard-block" that is effecting the overall audio
-> >> latency performance... ah well, back to the drawing board...
+Geert Uytterhoeven wrote:
+
+> On Tue, 25 Jul 2000, FASSINO Jean-Philippe wrote:
+> > Benjamin Herrenschmidt wrote:
+> > > >In the kernel for PPC, a lot a code is here just to do what doing RTAS :
+> > > >pci config,
+> > > >via (CUDA and PMU) (no need if no ADB keyboard), ...
+> > > >When doing embedded systems, this drivers is very big and can be saving by
+> > > >using
+> > > >RTAS which i think is a very good thing in  CHRP specification. It's
+> > > >strange that
+> > > >apple do not provide it fully.
+> > >
+> > > Well, they didn't care about it. Note that Macs are far from beeing
+> > > embedded boxes ;)
 > >
-> >Do you have IDE? The IDE driver turned out to be the major interrupt messing
-> >problem on m68k, since it can disable interrupts for quite a while.
+> > Yes, but i'm using embedded term for small system that doing dedicate task
+> > and only one (for example firewall, gateway, ... in only 50-100k kernel size).
+> >
+> > I'm actually experienced that with G4 with 4 network card.
 >
-> We have some great IRQ blockers in Linux currently. IDE is one,
-> especially in PIO mode where it disables IRQs by default during
-> transferts (AFAIK), but I think also in the fbdevs where, I think, a
-> bunch of lenghtly things like scrolling are done with IRQs disabled.
+> And what's the smallest amount of memory you can put in a G4? I guess it's an
+> order of magnitude larger than a kernel containing all possible drivers :-)
 
-> I don't know how the fbdev case can be improved, I beleive James has some
-> plans about that for 2.5...
+Sure, but G4 is just a good computer for experimentation !
 
-There's indeed a global lock on the console, to prevent multiple accesses to
-the console at once. This solves some problems, one being that some graphics
-hardware crashes when both the CPU and the graphics accelerator touch the video
-RAM at the same time.
+JP
 
-Interrupts in fbdev would be nice for some high-end hardware, which can
-trigger an interrupt when a bunch of graphics processing was done.
-
-Gr{oetje,eeting}s,
-
-						Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+--------------------------------------------------------------------------
+ Jean-Philippe FASSINO              France Telecom R&D : DTL/ASR
+ Tel : 04 76 76 45 52
+ mailto:jeanphilippe.fassino@francetelecom.fr
+--------------------------------------------------------------------------
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
