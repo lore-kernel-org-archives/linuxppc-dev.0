@@ -1,65 +1,43 @@
-Date: Tue, 30 Jan 2001 15:45:16 +0000
-Subject: Re: network stack oops 2.4.1/gcc 2.95.3 
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Cc: David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010130154506.51058DB9F1@atlas.valhalla.net>
+Date: Tue, 30 Jan 2001 10:45:26 -0500
+From: Josh Huber <huber@alum.wpi.edu>
+To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Graphics corruption with XF
+Message-ID: <20010130104526.B4903@missioncriticallinux.com>
+References: <20010126133941.A7973@missioncriticallinux.com> <3A721E68.6E85EB0E@iiic.ethz.ch>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <3A721E68.6E85EB0E@iiic.ethz.ch>; from michdaen@iiic.ethz.ch on Sat, Jan 27, 2001 at 02:03:36AM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Franz,
+On Sat, Jan 27, 2001 at 02:03:36AM +0100, Michel Dänzer wrote:
+> Josh Huber wrote:
+>
+> > X reports that it could only find 1 MB of video memory, when I'm
+> > pretty sure it's got 4 MB.  This of course severly limits my
+> > depth/resolution, and when paired with the rage 128 I'm currently
+> > using it's a little lacking.. :)
+>
+> man XF86Config, look for VideoRam.
 
-You are probably right - it's likely to be a red-herring.
+Yes, even with this option I get 1MB of SGRAM used, which severly
+limits my choices for resolutions.
 
-Mind you - an Oops is an Oops ;)
+> Anyone who has must have fixed the ati driver ;)
+>
+> I suppose it shouldn't be too hard to fix looking at the r128 or glint
+> drivers.
 
-- the compiler issue may be a red-herring the oops was definitely real.
+heh, if only I had the time to look at this...
 
-On Tue, Jan 30, 2001,  Franz Sirl wrote:
-> At least it would be nice if you could tell me the version of the RPM you
-> were using before. I haven't added new patches since early December and
-> most of my RPM patches are in test2 (even more in test3) now.
+> Oh, BTW - have you tried Ani's rsync tree?
 
-the 'fault' was with test2 (2.92.3-t2) + glibc 2.1.3-15g
+I haven't.  I'm in the process of downloading as I type this,
+however...so we'll see how that goes.
 
-the previous version (I have been using for some considerable time) was:
-
-2.95.2-1f + glibc 2.1.3-4a
-
-> Another datapoint:
-> [fsirl@entropy:~]$ cat /proc/version
-> Linux version 2.4.0 (trini@entropy.crashing.org) (gcc version 2.95.3
-> 20010111 (prerelease/franzo/20010111)) #1 Sun Jan 14 15:10:21 MST 2001
-> [fsirl@entropy:~]$ uptime
->    5:21am  up 11 days, 20:50,  2 users,  load average: 0.00, 0.00, 0.00
-
-FWIW: once it's up, mine stays there as well... but I'm rebooting a lot at
-the moment because of what I'm doing.  Also I'm using bk 2.4.1.
-
-I have a _hunch_ that it is a failure/timeout in connecting to the DNS that
-triggers the effect.
-
-> But this machine has a fairly weak net connection, so mabe this is never
-> triggered (define heavy network load?).
-
-I have a combined ethernet bridge/NAT/ISDN modem - this occurred when it was
-operating at full capacity downloading binary data (i.e. quite likely to
-drop packets).
-
-> I would rather think this is a new kernel bug...
-
-yeah, probably... I assume program error first, compiler bug second...
-
-It was just a little unusual... I'll try and find some more hard facts
-(otherwise I guess we should forget it unless someone else sees something).
-
-I haven't had time, yet, to look if any of the network code changed around
-that time.
-
-sorry if I wasted time here..
-Iain.
+--
+Josh Huber
+1024D/6B21489A 61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
