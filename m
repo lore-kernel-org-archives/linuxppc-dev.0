@@ -1,33 +1,44 @@
-Message-ID: <3C59AEE5.2070900@embeddededge.com>
-Date: Thu, 31 Jan 2002 15:53:57 -0500
-From: Dan Malek <dan@embeddededge.com>
+From: gopi@india.tejasnetworks.com
+Date: Thu, 31 Jan 2002 20:58:58 +0000 (GMT)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: why is tty->pgrp set to -1 for console?
+In-Reply-To: <Pine.LNX.4.21.0201301141250.25516-100000@tn100build.india.tejasnetworks.com>
+Message-ID: <Pine.LNX.4.21.0201312050570.1490-100000@tn100build.india.tejasnetworks.com>
 MIME-Version: 1.0
-To: David Boutcher <boutcher@us.ibm.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: why is tty->pgrp set to -1 for console?
-References: <OFA93F332E.5BEC00AC-ON86256B52.00699C5C-@86256B52.0069BC41LocalDomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-David Boutcher wrote:
+hi..
 
+  We had a problem that ctrl-c was not working on the console.  I
+figured out that, ctrl-c was getting recognized as the 'intr' signal,
+but the function isig (in drivers/char/n_tty.c) sends a signal only if
+the tty->pgrp > 0.
 
-> You need to be running something like mingetty on the console to have
-> signals (like ctrl-c) picked up.  If you start Linux with something like
-> "init=/bin/bash" then job control signals (like control C and control Z)
-> won't work.
+  I have put a print stmt in this function and checked that the value
+  is 'tty->pgrp = ffffffff' (which is -1).
 
-One of the main reasons for this is the process in slot 1 (i.e. init)
-has special signal handling in the kernel.  There are a variety of ways
-to get a shell with job control running on the console.  Starting some
-version of getty/mingetty as you mentioned is one, you can also fork a
-shell and use stty to set signals, or anything to get a shell running
-as process 2 or above.
+  What is the correct procedure to follow to get around this problem
+and get ctrl-c working on console?
 
+thanx
+gopi
 
-	-- Dan
-
+following is the output of stty -a on the console
+---------------------------------------------------------------------
+speed 9600 baud; rows 0; columns 0; line = 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^X; eof = ^D; eol = <undef>;
+eol2 = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R; werase =
+^W;
+lnext = ^V; flush = ^U; min = 1; time = 0;
+-parenb -parodd cs8 hupcl -cstopb -cread clocal -crtscts
+-ignbrk -brkint ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff
+-iuclc ixany -imaxbel
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+isig icanon -iexten echo -echoe -echok -echonl -noflsh -xcase -tostop echoprt
+echoctl echoke
+---------------------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
