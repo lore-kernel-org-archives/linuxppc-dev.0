@@ -1,62 +1,54 @@
-Date: Tue, 6 Jan 2004 09:20:38 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Sven Luther <sven.luther@wanadoo.fr>,
-	Marcus Barrow <mbarrow@sangate.com>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Date: Tue, 6 Jan 2004 15:40:30 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	Rob Baxter <robb@synergymicro.com>
 Subject: Re: multiple separate pci bridges ...
-Message-ID: <20040106082038.GB1644@iliana>
-References: <1073016223.1502.179.camel@gaston> <20040102074049.GA2032@iliana> <1073029796.1501.228.camel@gaston> <20040104210335.GA858@iliana> <1073252724.780.5.camel@gaston> <20040104220608.GA1667@iliana> <20040105164038.GA16158@iliana> <1073338730.9456.2487.camel@boat.sangate.com> <20040106071412.GB735@iliana> <1073375765.9499.215.camel@gaston>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1073375765.9499.215.camel@gaston>
-From: Sven Luther <sven.luther@wanadoo.fr>
+In-Reply-To: <20040106081143.GA1644@iliana>
+Message-ID: <Pine.GSO.4.58.0401061533510.5752@waterleaf.sonytel.be>
+References: <1073029796.1501.228.camel@gaston> <20040104210335.GA858@iliana>
+ <1073252724.780.5.camel@gaston> <20040104220608.GA1667@iliana>
+ <20040105164038.GA16158@iliana> <1073338095.9497.70.camel@gaston>
+ <20040105214239.GA20252@iliana> <1073340725.9497.105.camel@gaston>
+ <20040106073955.GF735@iliana> <1073376024.26508.220.camel@gaston>
+ <20040106081143.GA1644@iliana>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jan 06, 2004 at 06:56:05PM +1100, Benjamin Herrenschmidt wrote:
+On Tue, 6 Jan 2004, Sven Luther wrote:
+> On Tue, Jan 06, 2004 at 07:00:24PM +1100, Benjamin Herrenschmidt wrote:
+> > Type 0 is an access to the primary segment (doesn't contain a bus
+> > number), type 1 is to be forwarded to another bus segment by a P2P
+> > bridge. So for anything directly attached to the host bridge, it's a
+> > type 0 access. Anything else is type 1. Typically, if the bus number of
+> > your "target" == hose->first_busno, it's type 0, else type 1
 >
-> >
-> > Mmm, i understand that the 2.6.x pci domain will make this not
-> > necessary. I might be wrong though.
+> Yep, except we have two pci controllers, and it should be type 0 for
+> both of them.
+
+Yep, two hoses, with different hose->first_busno.
+
+> > They could have appeared as on-chip PCI devices on a "pseudo-bus", but
+> > we can eventually just match with the host's PCI device.
 >
-> What do those register actually do ? Is there a spec of that
-> host bridge I can download somewhere ?
+> Ok. but this can also be faked or something ? But, how can we match with
+> the host PCI device, if we are going to hide it ?
 
-There is a spec, but under NDA, i don't know if you can freely get a
-hand on it.
+Hide the memory BAR only, not the full PCI device.
 
-> > > 	If you insert pci cards which contain bridges on them,
-> > > 	they only work on the bus 0 slots...
-> >
-> > bus 1 is used as an agp bus anyway, and i doubt there are many agp
-> > graphic cards out there with pci bridges on them. When i inserted my
-> > Appian Jeronimo 2000 in that board, it refused to powerup at all, but
-> > then, maybe it is drawing too much power or something. After all, it has
-> > a 3dlabs gamma and two permedia3 on it.
-> >
-> > > 	Do you have something like ppcboot or uboot starting
-> > > 	your system or just a kernel? If you are using a real
-> >
-> > Well, there is a customized SmartFirmware OpenFirmware on the board. I
-> > even have (non-free though) access to the source of it. The board is
-> > mostly a CHRP design.
->
-> It has an x86 BIOS emulator for running the firmwares of the video cards ?
+Gr{oetje,eeting}s,
 
-Yep, that too. Not sure if the standard OF graphic cards would work too,
-i have none of such to test though. tdfx fbdev seems broken with a G4,
-since it uses the old access macros, and doesn't do eieios or something
-such. Didn't look at recent code though, and don't have voodoo cards
-handy anyway.
+						Geert
 
-That said, the OF only uses textmode, since fb8 support would mean vesa
-3.0 compliant card limit.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-There are some embedded drivers too, but they are not activated i think.
-
-Friendly,
-
-Sven Luther
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
