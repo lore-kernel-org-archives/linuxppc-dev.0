@@ -1,40 +1,29 @@
-Message-ID: <3ECE5CAC.8040304@mvista.com>
-Date: Fri, 23 May 2003 10:38:52 -0700
-From: Todd Poynor <tpoynor@mvista.com>
+Message-ID: <3ECE9678.2040506@embeddededge.com>
+Date: Fri, 23 May 2003 17:45:28 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?=22David_M=FCller_=28ELSOFT_AG=29=22?= <d.mueller@elsoft.ch>
+To: Jim Rowe <rowejames@acmsystems.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ERR51 / ERR77 on IBM405GPr
-References: <3ECDF370.7020808@elsoft.ch>
-In-Reply-To: <3ECDF370.7020808@elsoft.ch>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: MPC8250 + PCMCIA + airo_cs card + IO Port mapping proble
+References: <5.1.0.14.2.20030522143346.04b7e260@falcon.si.com>	 <1053662461.16860.17.camel@kneedragger> <1053728074.29793.30.camel@kneedragger>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Müller (ELSOFT AG) wrote:
-> Hello
->
-> According to the errata sheet, the IBM405GPr doesn't suffer from the
-> ERR51 / CPU_190 and ERR77 / CPU_210 bugs as the IBM405GP does.
->
-> But the workarounds are still enabled in "arch/ppc/config.in".
->
-> Shouldn't there be something like this:
->
->   if [ "$CONFIG_405GPR" = "y" ]; then
->     define_bool CONFIG_IBM405_ERR51 n
->     define_bool CONFIG_IBM405_ERR77 n
->   fi
+Jim Rowe wrote:
 
-Right -- actually need to avoid defining the symbols at all (such as
-removing ERR77 from the CONFIG_SYCAMORE case) since an "ifdef" check is
-used (that should probably be fixed as well).  We've just run the same
-kernel binary on 405GP "Walnut" and 405GPr "Sycamore" boards, so haven't
-been cleaning up the 405GPr specifics.
+> ....It would be even better if you are
+> using an MPC82xx chip with an integrated PCI controller.
 
---
-Todd
+Take a look at the 8245 with the integrated MPC10x PCI bridge.
+Basically, the Sandpoint port.  The 8250 is a more simple
+implementation than this.  The 405GP/Walnut would also be
+a good example, just don't get mired in the details that it
+doesn't have BATs :-)
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
