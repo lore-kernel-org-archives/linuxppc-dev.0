@@ -1,45 +1,36 @@
-Message-ID: <3DC5D6CC.6010905@embeddededge.com>
-Date: Sun, 03 Nov 2002 21:09:16 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <3DC634FB.29FAB5D2@bmrtech.com>
+Date: Mon, 04 Nov 2002 16:51:07 +0800
+From: sjk <jack.sun@bmrtech.com>
+Reply-To: jack.sun@bmrtech.com
 MIME-Version: 1.0
-To: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: dc* (Data Cache)  instructions in mem*() and *_page() functions
- not used on 8xx
-References: <IGEFJKJNHJDCBKALBJLLAEIPFHAA.joakim.tjernlund@lumentis.se> <3DC2BAD9.5020907@embeddededge.com> <002501c281dc$c92182c0$0200a8c0@telia.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Why the gdbserver can't debug step by step?
+References: <200210260458.g9Q4wpq15745@ftp1.mvista.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joakim Tjernlund wrote:
+Hi,
 
-> I don't follow you here, do you need to do all this for a modern(>=D4) 8xx CPU?
+I have a very curious problem about EP405 board. I make a kernel image
+from ibm-walnut405gp LSP and boot up the Linux kernel on EP405 board. So
+I use gdbserver and ppc_405-gdb to debug applications,but only the first
+breakpoint could be stopped.Then the
+programm will execute to end if you press 'step'. Any other breakpoints
+could break the execution.
 
-Yes.  On "working" silicon, the dcbz (among others) requires special
-processing.....probably enough to ensure it costs more to use this
-instruction in a general purpose case.
+We have encounter this problem on CSB272 405GP also.I think that
+IBM-WALNUT405gp should not have this problem.
 
-> I hope not, but something needs to be done since copytofrom_user does not
-> work for me.
-
-What do you mean it doesn't work?  It should work fine if you don't
-try to use the dcbz.  That is, leave the code alone.  The bigger problem
-is the newer glibc library has to be modified to conditionally not use
-this as well.
-
-> The same resoning goes for the new option. If you have a new enough(>=D4) CPU,
-> then you can enable this optimization(I think?!).
-
-I don't know.  Linux is the only OS that will cause VM faults on a dcbz,
-maybe it will never work.  Until someone verifies it works on the newer
-silicon we can't assume it will.  This certainly isn't a reason to not use
-the processor or not ship products.......
-
-Thanks.
+Please give me some advice!
 
 
-	-- Dan
+Best Regards
 
+
+Jikun Sun
+
+BMR
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
