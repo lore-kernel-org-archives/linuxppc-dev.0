@@ -1,39 +1,59 @@
-Message-Id: <199909011730.TAA00285@piglet.cpu.lu>
-Date: Wed, 1 Sep 1999 19:30:07 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: vger-2.3.16 on pmac
-To: costabel@wanadoo.fr
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <199909011613.SAA02982@mcp.cpu.lu>
+Message-ID: <37CD8C4B.43C595EE@broadlink.com>
+Date: Wed, 01 Sep 1999 13:27:55 -0700
+From: Scott Wood <scott@broadlink.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: GLIBC wont compile for MPC860
+References: <19990831003953.707A564E@elph.research.canon.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Graham Stoney wrote:
+> 
+> Scott Wood writes:
+> > The MPC8xx have no floating point, so it should be compiled with -msoft-float,
+> > (I think)...  ./configure --without-fp  will do it.
+> 
+> Is this implied when gcc has been configured --with-cpu=860?
 
-On   1 Sep, this message from Michel Lanners echoed through cyberspace:
-> That means that the patch I made for the PCI fixup code isn't in those
-> versions. I'm not at my machine right now; once at home, I'll see if I
-> get a chance to put it on my web page.
+I don't think so...  I put -msoft-float into the sysdeps/powerpc/Makefile and I see
+it twice below, so I would imagine that if you use both flags then -msoft-float
+will be used.
 
-Ooppsss... spoke too fast: the interupt fixup code is not mine at all;
-I did hack a bit on it, but it was already well in place and working
-before me...
+I am using YellowDog Linux now and instead of an 'internal compiler error',
+I get:
 
-So your best bet is to look at a diff betweem 2.3.15 and 2.3.16.
+make[1]: Entering directory `/usr/src/redhat/SOURCES/glibc-2.1.1/math'
+gcc ../sysdeps/powerpc/s_isnan.c -c -Wall -Winline -Wstrict-prototypes -Wwrite-strings -mcpu=860 -msoft-float   -fpic
+-msoft-float   -Wno-uninitialized -Wno-write-strings  -I../include -I.  -I.. -I../libio  -I../sysdeps/powerpc/elf
+-I../sysdeps/unix/sysv/linux/powerpc -I../sysdeps/unix/sysv/linux -I../sysdeps/gnu -I../sysdeps/unix/common -I../sysdeps/unix/mman
+-I../sysdeps/unix/inet -I../sysdeps/unix/sysv -I../sysdeps/unix -I../sysdeps/posix -I../sysdeps/powerpc -I../sysdeps/wordsize-32
+-I../sysdeps/ieee754 -I../sysdeps/libm-ieee754 -I../sysdeps/generic/elf -I../sysdeps/generic    -include
+../include/libc-symbols.h  -DPIC   -D__NO_MATH_INLINES -D__LIBC_INTERNAL_MATH_INLINES -DNO_LONG_DOUBLE -D_Mlong_double_=double -o
+s_isnan.os
+../sysdeps/powerpc/s_isnan.c: In function `__isnan':
+../sysdeps/powerpc/s_isnan.c:32: fixed or forbidden register 32 (0) was spilled for class FLOAT_REGS.
+This may be due to a compiler bug or to impossible asm
+statements or clauses.
+make[1]: *** [s_isnan.os] Error 1
 
-Michel
+I haven't even got a PowerPC 750 native build to work yet (even
+though I ran configure with the --disable-time and --disable-db2 options).  Any
+idea how I can exclude db2 (and other unnecessary things like locale and nis) 
+support so I can get a (c)lean build?  
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+I have been able to run many static binaries compiled for the 750 with
+--msoft-float on the MPC850 just fine, although snmpd and dhcpd segfault.  The
+glibc should work as well if it doesn't do hardware floating point, but it doesn't
+seem to compile without it.
 
+-Scott
+
+> 
+> Thanks,
+> Graham
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
