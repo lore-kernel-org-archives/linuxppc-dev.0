@@ -1,51 +1,40 @@
-From: Christophe.LINDHEIMER@fr.thalesgroup.com
-Message-ID: <D96E2AFA0DF3D211B139009027454948034CBDF7@helios.gnv.tcc.thomson-csf.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: jjboor@sun023.aimsys.nl
-Subject: About MTD.
-Date: Wed, 11 Jun 2003 14:45:37 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Wed, 11 Jun 2003 08:51:14 -0400
+From: Kent Borg <kentborg@borg.org>
+To: eric lescouet <eric.lescouet@Jaluna.COM>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Why ack interrupt before calling handler?
+Message-ID: <20030611085114.B26856@borg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3EE71F77.80200@Jaluna.COM>; from eric.lescouet@Jaluna.COM on Wed, Jun 11, 2003 at 02:24:23PM +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi.
+On Wed, Jun 11, 2003 at 02:24:23PM +0200, eric lescouet wrote:
+> This would prevent a level triggered interrupt to be raised again when enabling
+> interrupts at processor level, until the called handler clear the interrupt
+> condition on the device.
 
-I am trying to use MTD on my board.
+And it occurs to me that unless an interrupt can be "queued" between
+the time the handler has checked (one last time) for all pending work
+and the PPC code re-enables the interrupt at the PIC level, this would
+be a window in which an edge-triggered interrupt could be lost.
 
-I have two flash AMD LV160BB that are configured in 16 bits.
+> Any way, note that these routines called from irq.c are PIC driver
+> specific,
 
-They are in parallel so I have got a 32 bits bus wide.
+Yes.  I have one set of PIC code that is for an interrupt controller
+that is on-chip with the CPU, and I have a second set of PIC code for
+a cascaded interrupt controller that is implemented in an off-chip
+FPGA.  It is kind of cool that such nested complexity can be so nicely
+represented to the kernel by simply having a single flat list of IRQs.
+(I didn't spot that simple solution, Dale Farnsworth had to point it
+out to me.)
 
-Each flash is 2 Mo . So the total is 4 Mo.
 
-My flash starts at @ : 0x04000000.
+Thanks,
 
-So in the configuration for Linux I set
-	CFI : yes
-	Start @ : 0x04000000
-	Size : 0x00400000
-	Bus Width : 4
-
-The result at the boot is :
-
-physmap flash device: 400000 at 4000000
- Amd/Fujitsu Extended Query Table v1.0 at 0x0040
-number of JEDEC chips: 1
-0: offset=0x0,size=0x8000,blocks=1
-1: offset=0x8000,size=0x4000,blocks=2
-2: offset=0x10000,size=0x10000,blocks=1
-3: offset=0x20000,size=0x20000,blocks=31
-mtd: Giving out device 0 to Physically mapped flash
-
-Is it correct ?
-Why is there only one JEDEC Chip detected ?
-
-Regards
-
-Chris
-
+-kb, the Kent who is willing to learn from others.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
