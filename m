@@ -1,27 +1,23 @@
-Message-ID: <37DD90D8.790A15E7@jlc.net>
-Date: Mon, 13 Sep 1999 20:03:36 -0400
-From: Dan Malek <dmalek@jlc.net>
+Message-ID: <37DDA89E.8B35952D@tiac.net>
+Date: Mon, 13 Sep 1999 21:45:02 -0400
+From: Timothy Wall <twall@tiac.net>
 MIME-Version: 1.0
-To: "David J. Topper" <topper@virginia.edu>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC audio?
-References: <37DD7D3C.6D16FBEC@virginia.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: missing space on ext2fs scsi drive
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-David J. Topper wrote:
+I've run into an odd problem that I'm not quite sure how to diagnose.
 
+My root partition  (a 2Gb partition on an 8Gb drive) shows (with "df")
+around 55% usage (2203440 1k-blocks, a little over half used) and yet
+fails complaining that the disk is full.   I don't recall exactly how I
+partitioned the disk (probably pdisk).
 
-> Is full duplex audio a possibility?
+Is my ext2fs accounting screwed?  Why does the FS think there is no
+space when writing, but show space with "df" ?
 
-Recording and full duplex work in the 2.3.x kernels. I just
-never checked out a 2.2.x kernel to make the same updates.
-I'll get around to it after some of the other more pressing
-embedded things I have to do.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
