@@ -2,13 +2,25 @@ MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Subject: RE: ppc405ep GPIO register mmap'ing invalid argument
-Date: Tue, 27 Apr 2004 16:19:50 -0700
-Message-ID: <C7FFFEA58B43D311920D0004ACE5333F132B016D@amer25.avnet.com>
+Date: Tue, 27 Apr 2004 16:21:51 -0700
+Message-ID: <C7FFFEA58B43D311920D0004ACE5333F132B016E@amer25.avnet.com>
 From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "Charles Frey" <charlesf@wciatl.com>,
+To: "Kerl, John" <John.Kerl@Avnet.com>,
+	"Charles Frey" <charlesf@wciatl.com>,
 	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Also the offset must be a multiple of getpagesize().
+So you want to map a page (probably 4K) at 0xef600700,
+then read/write the returned offset, + 0x700.
+
+-----Original Message-----
+From: Kerl, John
+Sent: Tuesday, April 27, 2004 4:20 PM
+To: 'Charles Frey'; linuxppc-embedded@lists.linuxppc.org
+Subject: RE: ppc405ep GPIO register mmap'ing invalid argument
 
 
 Check the manpage:  length must be a multiple of getpagesize().
