@@ -1,87 +1,43 @@
-Date: Fri, 02 Apr 2004 13:33:07 -0500
-From: Jeff Tucker <jeff@jltnet.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Need help booting linux on IBM 405EP eval board
-Message-ID: <5357473.1080912787@[192.168.0.230]>
-In-Reply-To: <1866383.1080909296@[192.168.0.230]>
-References: <1866383.1080909296@[192.168.0.230]>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Jeff Tucker <jeff@jltnet.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Need help booting linux on IBM 405EP eval board 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 02 Apr 2004 12:34:56 CDT."
+             <1866383.1080909296@[192.168.0.230]>
+Date: Fri, 02 Apr 2004 20:51:02 +0200
+Message-Id: <20040402185107.B77E5C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---On Friday, April 02, 2004 12:34 PM -0500 Jeff Tucker <jeff@jltnet.com>
-wrote:
-
+In message <1866383.1080909296@[192.168.0.230]> you wrote:
 >
-> Hi, guys.
+> I sent a message like this to the U-Boot mailing list last night. I've been
+
+And you have received replies thaty pointed to the problem.
+
+> I'm aware that the denx.de site has a FAQ which appears to address this issue:
+> <http://www.denx.de/twiki/bin/view/DULG/LinuxHangsAfterUncompressingKernel>
 >
-> I sent a message like this to the U-Boot mailing list last night. I've
-> been
-> told this is definitely not a U-Boot problem, so I'm hoping that the
-> people
-> on this list can help me.
->
-> I'm having a hard time getting U-Boot to boot Linux on an IBM 405EP
-> evaluation board. Here's what I've tried:
->
+> However, the structure mentioned there (bd_info) doesn't even seem to apply
+> for a 405EP-based board. The ppcboot.h file isn't included by the files
+> used when building a 405EP kernel for the 405EP evaluation board.
 
-Just to follow up to my own posting. I've found that in my linux-2.4.18
-kernel, there is a file arch/ppc/platforms/evb405ep.h which does include a
-board_info struct which is quite a bit different from the struct in
-u-boot.h. I've made those match and re-built the kernel, still with no luck.
+OK. You found the problem: The ppcboot.h file isn't  included.  Seems
+you  must  adapt  your  board for use with U-Boot. See the FAQ quoted
+above.
 
-I've re-built U-Boot in debug mode so I can see what is going on. Here's
-what it spits out before the board locks up:
+Best regards,
 
-=> iminfo 500000
-
-## Checking Image at 00500000 ...
-   Image Name:   Linux-2.4.18_mvl30-405ep_eval
-   Created:      2004-04-02  17:59:23 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    733690 Bytes = 716.5 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-=> bootm 500000
-## Booting image at 00500000 ...
-   Image Name:   Linux-2.4.18_mvl30-405ep_eval
-   Created:      2004-04-02  17:59:23 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    733690 Bytes = 716.5 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Current stack ends at 0x07FB0598 => set upper limit to 0x00800000
-## cmdline at 0x007FFC00 ... 0x007FFC1B
-bd address  = 0x07FB0F8C
-memstart    = 0x00000000
-memsize     = 0x08000000
-flashstart  = 0xFFF80000
-flashsize   = 0x00080000
-flashoffset = 0x00027F00
-sramstart   = 0x00000000
-sramsize    = 0x00000000
-bootflags   = 0x0000A000
-procfreq    = 266.666 MHz
-plb_busfreq = 133.333 MHz
-pci_busfreq = 33.333 MHz
-ethaddr     = 00:04:AC:E3:24:A7
-IP addr     = 192.168.0.91
-baudrate    =   9600 bps
-No initrd
-## Transferring control to Linux (at address 00000000) ...
-
-Any ideas?
-
-Thanks
-Jeff
+Wolfgang Denk
 
 --
-Jeff Tucker
-jeff@jltnet.com
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Data is a lot like humans: It is  born.  Matures.  Gets  married  to
+other  data, divorced. Gets old. One thing that it doesn't do is die.
+It has to be killed."                                 - Arthur Miller
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
