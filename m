@@ -1,14 +1,48 @@
-Message-ID: <B895EFF5AF34724880036BDB5B5B8148135683@amer22.avnet.com>
+Message-ID: <B895EFF5AF34724880036BDB5B5B8148135684@amer22.avnet.com>
 From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'Brian S. Park'" <brian@corelis.com>
+To: "Kerl, John" <John.Kerl@Avnet.com>,
+	"'Brian S. Park'" <brian@corelis.com>
 Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
 Subject: RE: getting Linux working on IBM Walnut demo board
-Date: Wed, 28 May 2003 11:56:45 -0700
+Date: Wed, 28 May 2003 12:02:15 -0700
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Ooooops, not reading your message well enough.
+Of course you're using NFS, not RAM disk.
+
+You can do a couple things:
+
+*	cd into your export directory and make sure
+	stuff is really there -- this is the Linux
+	host looking at itself.
+
+*	A nice diagnostic is to use another Linux PC,
+	mounting the first Linux host's export directory
+	over NFS.  I.e. the second PC is the NFS client,
+	rather than the board.
+
+*	You can resort to printk's ... you might do the
+	following to assist in this:
+	-	cd to kernel directory
+	-	make tags
+	-	Set up your editor for tags, e.g. in vim,
+		.vimrc has a 'set tags=./tags' line in it.
+	-	vim init/main.c, find the function you want,
+		then control-] to dive in, control-t to
+		come back out.
+
+-----Original Message-----
+From: Kerl, John [mailto:John.Kerl@avnet.com]
+Sent: Wednesday, May 28, 2003 11:57 AM
+To: 'Brian S. Park'
+Cc: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: RE: getting Linux working on IBM Walnut demo board
+
 
 
 Brian:
