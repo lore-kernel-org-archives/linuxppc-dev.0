@@ -1,73 +1,48 @@
-Subject: Re: provision of "driver" type facilities from user-space
-To: iain@sandoe.co.uk (Iain Sandoe)
-Date: Fri, 9 Mar 2001 21:31:24 -0800 (PST)
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20010309181506.CB5212F00E@apollo.valhalla.net> from "Iain Sandoe" at Mar 09, 2001 06:15:03 PM
+Date: Sat, 10 Mar 2001 09:18:51 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Giuliano Pochini <pochini@denise.shiny.it>
+Cc: "Timothy A. Seufert" <tas@mindspring.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Console text selection bug
+In-Reply-To: <3AA69A1D.F1F85B48@denise.shiny.it>
+Message-ID: <Pine.LNX.4.05.10103100916270.765-100000@callisto.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20010310053124.2FB452B54B@marcus.pants.nu>
-From: flar@pants.nu (Brad Boyer)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Have you looked at the ALSA project? They have both a new kernel driver
-and a user-space library that does extra capabilities. It is backward
-compatible with OSS through an optional kernel module, and was just
-recently ported to PowerMacs (beta only).
+On Wed, 7 Mar 2001, Giuliano Pochini wrote:
+> >> It's an endian bug in fbcon when accessing the text/attribute buffer.
+>
+> > Nevertheless, it's a bug. Can someone please change fbcon_invert_region() to
+> > use scr_{read,write}w() to access the shadow screen buffer and see whether it
+> > works? Patches are accepted at linux-fbdev-devel@lists.sourceforge.net :-)
+>
+> Yes, it's an endianess bug.  scr_{read,write}w() are defined as normal
+> assignments in vt_buffer.h, so I wonder where is the bug. Is the shadow buffer
 
-http://www.alsa-project.org/
+No, their definition in vt_buffer.h depends on VT_BUF_HAVE_RW. If that is
+defined in <asm/vga.h>, vga.h must provide its own definitions.
 
-I'm not sure it's exactly what you're trying to do, but it might be worth
-investigating so you don't waste effort doing something that's already
-being worked on. I haven't taken the time to read all their documentation,
-but it might be a good place to start.
+> supposed to be native endian ?
 
-        Brad Boyer
-        flar@pants.nu
+It doesn't really matter, since all accesses must be done using
+scr_{read,write}w() anyway. For performance reasons we chose native endianness.
+Except when VGA (CONFIG_VGA_CONSOLE || CONFIG_MDA_CONSOLE) is defined, since on
+VGA/MDA the shadow buffer _is_ the screen image and must be little endian.
 
-Iain Sandoe wrote:
->
->
-> hi list,
->
-> I want to put a layer in between user-space and a driver (dmasound).
->
-> The reason is - that I want to provide facilities (transparently) to
-> applications and these facilities cannot be (sensibly) placed in the driver
-> [e.g. rate conversion and so on].
->
-> In this case to make dmasound look like it can do "anything" and help
-> support (easily) apps that don't really bother to check for h/w capabilities
-> properly.
->
-> It isn't really the best solution to bloat each and every app with code to
-> do the job - some form of sharing seems to be the right way.
->
-> so solution 1:
->
-> provide a pseudo-oss interface via a library:
->
-> psuedo_oss_open(), pseudo_oss_read() .... etc. etc.
->
-> so app source is amended and then linked with a lib providing the
-> appropriate stuff in user-space...
->
-> not, probably, going to be popular...
->
-> solution 2:
->
-> ??? is there a way of doing this without the apps being amended but _still_
-> making sure that code that belongs in user-space resides and is executed
-> there?
->
-> preferably allowing apps to think they are just talking to /dev/dsp
->
-> ciao,
-> Iain.
->
->
->
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
