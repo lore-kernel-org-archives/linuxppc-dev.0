@@ -1,27 +1,34 @@
-From: "Stefano Coluccini" <s.coluccini@caen.it>
-To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Sym53c875 problem with last 2_5 updates
-Date: Fri, 16 Mar 2001 09:38:47 +0100
-Message-ID: <NDBBIFIMCKPOADMAJOKMIECEDAAA.s.coluccini@caen.it>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3AB1E380.7E88EC47@esd-electronics.com>
+Date: Fri, 16 Mar 2001 10:57:20 +0100
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: flash writing with Linux
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-  few days ago (I don't remember the exact date) I have resynced my local
-repository of 2_5 and today I have recompiled a kernel. While before the
-updates my sym53c875 based board had always worked fine, now the driver
-unsuccesfully try to download script on the chip continually. I have seen
-that the sym53c8xx.c file is changed, in fact I have correct the problem
-replacing the new file with the old.
-I have not found any mention of sym53c8xx.c change in the changesets at
-http://www.bitmover.com:8888//home/ppc/linuxppc_2_5 so I have thinked it can
-be an erroneous update ... it is possible ?
+Hi,
 
-Stefano.
+does anybody know if a flash writing tool for Linux is available ?
+I want to update a flash image from a running Linux. The Linux is
+running from a ramdisk, so the flash can be erased and rewritten.
 
+I think what I need are two thing: A device driver for accessing the
+flash and a command line tool for erasing and writing to the flash.
+
+Matthias
+--
+-------------------------------------------------
+\ Matthias Fuchs                                 \
+ \ esd electronic system design Gmbh              \
+  \ Vahrenwalder Straﬂe 205                        \
+   \ D-30165 Hannover                               \
+    \ email: matthias.fuchs@esd-electronics.com      \
+     \ phone: +49-511-37298-0                         \
+      \ fax:   +49-511-37298-68                        \
+       --------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
