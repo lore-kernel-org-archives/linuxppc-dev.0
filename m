@@ -1,37 +1,41 @@
-Date: Tue, 17 Jul 2001 09:12:35 -0400
-From: Armando Di Cianno <diciaa@rpi.edu>
+Date: Tue, 17 Jul 2001 10:27:30 -0400
+From: Ethan Blanton <eblanton@cs.ohiou.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.4.7preX - unresolved symbols/compilation problem
-Message-ID: <20010717091235.G29799@garmonbozia.productivitynet.com>
+Subject: Clock drift on an iBook2
+Message-ID: <20010717102730.B22214@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed; micalg=pgp-md5;
+	protocol="application/pgp-signature"; boundary="S1BNGpv0yoYahz37"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I figured this post would do better on the dev list than the user list,
-sorry if I misinterpret the goal of both lists.
+--S1BNGpv0yoYahz37
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I started with an ultra-basic install of YellowDog 2.0 on my TiBook (I
-wanted the glibc 2.2, and I like compiling everything else by hand).
-However, now that everything is up to par, I tried compiling both the benh
-and bk 2.4.7preX trees, and while they compile, upon reboot, all modules
-complain about unresolved symbols, even though cat'ng System.map reveals
-that those symbols are there (stuff like printk!!!).
+Hi,
+I have a new iBook2 and I'm having *severe* clock drift problems -- on
+the order of several seconds gained per minute.  I'd like to get this
+taken care of, and it seems to be a linux problem as OSX appears to
+have a stable clock.
 
-Compiling a kernel is nothing new to me.  I place vmlinux and System.map in
-my boot directly, and place according entries in my yaboot.conf, as well as
-cleaning up symlinks, etc.
+I'm running BenH's 2.4.7-pre6 right now, but I also saw it on 2.4.6.
 
-Does anyone know if this could be a problem with a user-space kernel
-controlling utlity?  I believe I have the newest (or new-enough) mod-utils.
+Is this a known problem?  If not, what can I do to help get this fixed?
+Ethan
 
-Becuase I did the basic install of YDL 2.0, I could be missing something.
-However the included 2.4.4 sources with that distro compile and load fine.
+--=20
+If I've told you once, I've told you once
+And once is all that you needed.
+		-- The Refreshments, "Carefree"
 
-Any suggestions would be appreciated.
+--S1BNGpv0yoYahz37
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-__Armando Di Cianno
-diciaa@rpi.edu
+
+--S1BNGpv0yoYahz37--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
