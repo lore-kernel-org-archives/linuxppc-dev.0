@@ -1,14 +1,19 @@
-Return-Path: <nbarendt@vxitech.com>
-Received: from vxitech.com (mail.atiba.com [216.153.79.104])
-	by ozlabs.org (Postfix) with ESMTP id 7502467A6B
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Mar 2005 11:50:37 +1100 (EST)
-Message-Id: <5.2.1.1.0.20050310185814.02b26630@mail.atiba.com>
-Date: Thu, 10 Mar 2005 19:27:25 -0500
-To: linuxppc-dev@ozlabs.org
-From: Nick Barendt <nbarendt@vxitech.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-Subject: MPC5200 PCI TX/RX FIFO
+Return-Path: <kato.takeharu@jp.fujitsu.com>
+Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+	by ozlabs.org (Postfix) with ESMTP id E30CD67A6E
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Mar 2005 17:21:08 +1100 (EST)
+Message-ID: <4231387D.6030204@jp.fujitsu.com>
+Date: Fri, 11 Mar 2005 15:19:41 +0900
+From: Takeharu KATO <kato.takeharu@jp.fujitsu.com>
+MIME-Version: 1.0
+To: Takeharu KATO <takeharu1219@ybb.ne.jp>
+References: <20050303124435.GA24233@Redstar.dorchain.net>	<4227153C.3030201@gmx.net>	<20050303141832.GU25080@Redstar.dorchain.net>	<20050304075703.GA15637@Redstar.dorchain.net>	<422FD24F.4070108@jp.fujitsu.com>
+	<20050310072803.GR4017@Redstar.dorchain.net>
+	<423073A9.70404@ybb.ne.jp>
+In-Reply-To: <423073A9.70404@ybb.ne.jp>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: boot time scheduling hile atomic
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,40 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Joerg:
 
+First of all, I am sorry to making mistake on my stack analysis.
+After all, I found what is wrong.
 
-         Has anyone had luck getting the MPC5200 PCI RX or TX FIFOs 
-working, either directly or with Bestcomm DMA support?  I've been trying to 
-do so for a few weeks, on and off, with little luck.  I'm probably missing 
-something obvious.
-         I'm using Wolfgang's kernel tree, on a board similar to the IceCube.
-         I'd like to use the PCI RX FIFO to speed up moving data from a PCI 
-device - it looks like the RX FIFO is the most straight-forward mechanism 
-for bursting.  I've had some luck getting the RX FIFO to pull data back 
-from a PCI device, and can get a peripheral interrupt from the RX FIFO, but 
-no matter what I do (read data from FIFO to DDR, clear status bits, etc.), 
-I can't seem to acknowledge the interrupt at the peripheral end, so it 
-continues to fire.  I can't find anything in the MPC5200 user manual about 
-acknowledging the interrupt in the PCI controller, unlike the FEC, say, 
-which has documentation on how to ack FEC interrupts.
-         I then went the Bestcomm route, using the Bestcomm API, but I'm 
-clearly missing something there, because the DMA engine indicates a TEA 
-after a very long timeout.  That problem might be related to my PCI RX FIFO 
-interrupt problem, or might be completely different.  Might it be that the 
-Alarm signal to the DMA engine is the same as the interrupt signal to the core?
-         In the end, I'd like to go the DMA route.  It is likely that using 
-the RX FIFO would be a significant improvement over what I have right now, 
-though, and it is (hopefully) easier to get up and running.
-         Does anyone have any wisdom (or, better yet, sample code :-) they 
-can share on this?
+The syscall_exit_work is called(jumped) by fork, strictly speaking,
+this is caused by kernel_thead for init process.
+At this point, kernel set a need_resched flag in thread_info struct
+(flags member).
+So, the system executes syscall_exit_work when
+the swapper thread exited from syscall.
 
+However, the syscall_exit_work routine does not check
+preempt counts when it calls schedule function.
 
+FYI, I post the patch which fix this problem.
+I've confirmed the problem has been removed by this patch,
+but I can not figure out whether it is truely
+correct or not.
 
-Nick Barendt
-VXI Technology, Inc.
-Cleveland Instruments Division
-5425 Warner Road, Suite 13
-Valley View, OH 44125
-PH:  216-447-4059
-FAX: 216-447-8951
-nbarendt@vxitech.com
+Please review this.
+
+Signed-off-by: Takeharu KATO <kato.takeharu@jp.fujitsu.com>
+--- linux-2.6.11/arch/ppc/kernel/entry.S        2005-03-09 12:57:32.000000000 +0900
++++ linux-2.6.11-wdt/arch/ppc/kernel/entry.S    2005-03-11 14:39:16.345490784 +0900
+@@ -314,10 +314,16 @@ syscall_exit_work:
+         SYNC
+         MTMSRD(r10)             /* disable interrupts again */
+         rlwinm  r12,r1,0,0,18   /* current_thread_info() */
+-       lwz     r9,TI_FLAGS(r12)
+  5:
++#ifdef CONFIG_PREEMPT
++       lwz     r0,TI_PREEMPT(r12)
++       cmpwi   0,r0,0          /* if non-zero, we can not reschedule here */
++       bne     6f
++#endif
++       lwz     r9,TI_FLAGS(r12)
+         andi.   r0,r9,_TIF_NEED_RESCHED
+         bne     1f
++6:
+         lwz     r5,_MSR(r1)
+         andi.   r5,r5,MSR_PR
+         beq     syscall_exit_cont
+
+-- 
+Takeharu KATO
+Fujitsu Limited
+Email:kato.takeharu at jp.fujitsu.com
