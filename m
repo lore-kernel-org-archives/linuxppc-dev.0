@@ -1,39 +1,50 @@
-Date: Wed, 19 May 1999 13:19:20 -0400 (EDT)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Mark Lin <mlin@MPI-Softtech.Com>
-cc: linuxppc-dev@lists.linuxppc.org
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: 2.3.3 compile error on ppc
-In-Reply-To: <Pine.SOL.4.05.9905191112430.18118-100000@mpi.mpi-softtech.com>
-Message-ID: <Pine.LNX.3.96L.990519131538.1355C-100000@unix47.andrew.cmu.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <Pine.LNX.3.96L.990519131538.1355C-100000@unix47.andrew.cmu.edu>
+From: Andreas Bogk <andreas@andreas.org>
+Date: 19 May 1999 20:09:22 +0200
+In-Reply-To: Hollis R Blanchard's message of "Wed, 19 May 1999 13:19:20 -0400 (EDT)"
+Message-ID: <m31zgd0w4t.fsf@soma.andreas.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 19 May 1999, Mark Lin wrote:
-> 
-> gcc -D__KERNEL__ -I/usr/src/linux/include -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -D__powerpc__ -fsigned-char -msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple -mstring   -c -o fork.o fork.c
-> fork.c: In function `mm_alloc':
-> fork.c:306: warning: implicit declaration of function `init_MUTEX_LOCKED'
-> fork.c: In function `do_fork':
-> fork.c:539: warning: implicit declaration of function `DECLARE_MUTEX_LOCKED'
-> fork.c:539: `sem' undeclared (first use in this function)
-> fork.c:539: (Each undeclared identifier is reported only once
-> fork.c:539: for each function it appears in.)
-> make[2]: *** [fork.o] Error 1
-> make[2]: Leaving directory `/usr/src/linux/kernel'
-> make[1]: *** [first_rule] Error 2
-> make[1]: Leaving directory `/usr/src/linux/kernel'
-> make: *** [_dir_kernel] Error 2
-> 
-> Where's the site for the ppc patched kernels?
+Hollis R Blanchard <hollis+@andrew.cmu.edu> writes:
 
-I think it was Cort who said to stay away from 2.3.x for now, because it will
-be broken for us for a little. Were you having problems with 2.2.x?
+> be broken for us for a little. Were you having problems with 2.2.x?
 
--Hollis
+There is a problem with 2.2.9, and here's the patch:
 
+diff -r -u linux-2.2.9/arch/ppc/kernel/syscalls.c linux/arch/ppc/kernel/syscalls.c
+--- linux-2.2.9/arch/ppc/kernel/syscalls.c	Sat May  8 20:14:01 1999
++++ linux/arch/ppc/kernel/syscalls.c	Wed May 19 18:36:23 1999
+@@ -30,6 +30,7 @@
+ #include <linux/shm.h>
+ #include <linux/stat.h>
+ #include <linux/mman.h>
++#include <linux/file.h>
+ #include <linux/sys.h>
+ #include <linux/ipc.h>
+ #include <linux/utsname.h>
+
+I wonder why such trivial problems creep into so-called stable
+releases of the Linux kernel again and again. Does nobody care that on
+i386, you just go to ftp.kernel.org and download the latest version
+and it just works, whereas on PowerPC you have to find out:
+
+- what CVS is
+- what vger is
+- what CVS tags are
+- which tag the one is which gives you a stable version ?
+
+I don't care that the development kernel breaks on PPC. But that the
+official stable kernel breaks is a huge problem.
+
+Andreas
+
+-- 
+Reality is two's complement. See:
+ftp://ftp.netcom.com/pub/hb/hbaker/hakmem/hacks.html#item154
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
