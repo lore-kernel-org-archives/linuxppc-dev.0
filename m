@@ -1,21 +1,23 @@
+Message-ID: <3900617F.6813D9B3@raleigh.ibm.com>
+Date: Fri, 21 Apr 2000 10:11:11 -0400
+From: Ralph Blach <rcblach@raleigh.ibm.com>
 MIME-Version: 1.0
-Message-Id: <39002421.07687@mta1>
-Date: Fri, 21 Apr 2000 17:49:21 +0800 (CST)
-From: "zzh" <david-1z@263.net>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: memory map
+Subject: ATI Xclaim 3D Plus(ATI Rage LT  pro)
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,everyone.
-I have some questions about the memory map on linux on 8xx and ppc
-1)Some area eg BCSR mapped below KERNELBASE,is this safe?
-I check some process's vm area,it does not fall in this area,will
-it be unsafe under some circumstances?
-2)I read mapin_ram() in mm/init.c ,found that phys mem is also mapped
-both by bat and page table ,what is this for?
-Can someone help me?
+I am working in a port of linux on the PPC405gp and I would like to put
+in video support in.
 
+Does anybody have initialization code for the ATI Rage LT pro to
+initialize the card to 80x25 character mode?
+
+Thanks
+
+Chip
+IBM Microelectronics
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
