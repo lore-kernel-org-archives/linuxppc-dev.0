@@ -1,37 +1,38 @@
-Subject: Re: kgdb with 2.4.20pre7 kernel on 405 target 
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF324C35E4.14D3AE4E-ONC1256D80.00319F3E-C1256D80.00322E09@megacenter.de.ibm.com>
-From: "Michel Normand" <NORMAND@fr.ibm.com>
-Date: Tue, 12 Aug 2003 11:08:05 +0200
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: David Jander <david.jander@protonic.nl>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Memory map with "holes"...
+Date: Tue, 12 Aug 2003 14:32:09 +0200
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200308121432.09782.david.jander@protonic.nl>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-By looking at the history of kgdb problem on 405,  we found the two
-following messages
-related to kgdb failure on 405 target, messages dated from September 2002:
-http://lists.linuxppc.org/linuxppc-embedded/200209/msg00166.html
-http://lists.linuxppc.org/linuxppc-embedded/200209/msg00170.html
+Hi all,
 
-Is there now  in 2.4.20 kernel a patch to solve this problem ?
+We are designing a board based on the MPC852T (MPC866 serivate), and
+I want to make sure there is the possibility to mount different-size
+SDRAM chips on it, so I just connect the two bank-select pins to some
+higher address lines, leaving some out in between, in order to acomodate
+for bigger chips in the future. The bottom line is that I will get the
+memory map split up into 4 segments with vast holes between each segment
+that are undefined. What do I need to keep in mind regarding linux
+about this? I suppose it isn't an issue, but I want to be sure I don't
+get any trouble later. Any experience with memory holes? I suppose the
+boot-loader should tell the kernel about the memory-map, in a way just
+like lilo on an x86 machine, am I right? Does this work the same way on
+linux-ppc ?
 
->
->  In 2_4_devel, the 4xx debug infrastructure is in the middle of a
-> change which moves DBCR state from pt_regs to thread struct.
-> Without DBCR being context switched, anything using the 4xx
-> debug exception will be adversely affected. This includes
-> kgdb and ptrace.
->
->Regards,
-> --
->Matt Porter
->porter@cox.net
+Greetings,
 
-----
-Michel
-Internet addr:  normand@fr.ibm.com
-
+--
+David Jander
+Protonic Holland.
+tel.: +31 (0) 229 212928
+fax.: +31 (0) 229 210930
+Factorij 36 / 1628 AL Zwaag
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
