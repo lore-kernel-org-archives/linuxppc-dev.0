@@ -1,32 +1,28 @@
-Date: Tue, 23 Nov 1999 16:47:32 -0700 (MST)
-From: Dan Burcaw <dburcaw@terraplex.com>
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-cc: Cort Dougan <cort@fsmlabs.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: bootable CD's (Re: bootloader & head.S weirdness (patch))
-In-Reply-To: <Pine.LNX.3.96L.991123131603.3509E-100000@unix47.andrew.cmu.edu>
-Message-ID: <Pine.LNX.4.10.9911231646110.9358-100000@newhope.terraplex.com>
+Message-ID: <004b01bf3642$818e6ec0$73f102de@sjzhu>
+Reply-To: "Shuangjun Zhu (r44089)" <r44089@email.sps.mot.com>
+From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
+To: "LinuxPPC Developers List" <linuxppc-dev@lists.linuxppc.org>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Need help: shell for MPC860
+Date: Wed, 24 Nov 1999 14:09:29 +0800
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;	charset="gb2312"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hello,everyone
 
-Hollis,
+I built the kernel version 2.2.13 for a MPC860 board.
+After the kernel boot and mount the RAMDISK as the root,
+it begins to execute the /bin/sh, it catch a software emulation
+exception. Is something wrong with the file linux/arch/ppc/kernel/softemu8xx.c?
 
-> That's TurboLinux. And they use miBoot.
+Any suggestion?
+Thanks in advanced.
 
-We have new world rom bootable cds in-house and have for some time.
-Not using miBoot, but our own mods to quik. Note: there were issues with
-the bootable cds we tried and that info has been passed to Ben in hopes
-that the new bootloader solves them.
 
-Dan
-
-Terra Soft Solutions, Inc.
-   Yellow Dog Linux
-   "The Ultimate Companion for a Dedicated Server"
-   http://www.yellowdoglinux.com/
+Shuangjun
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
