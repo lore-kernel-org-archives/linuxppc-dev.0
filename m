@@ -1,52 +1,39 @@
-Date: Tue, 29 Jun 1999 22:09:09 -0500
-From: Kevin Puetz <puetz@penguinpowered.COM>
-Subject: Re: solution for the Macally two button mouse
-To: Scott Westbrook <swestbro@cse.unl.EDU>,
-        "Peter A. Padilla" <p.a.padilla@larc.nasa.GOV>
-Cc: linuxppc-dev@lists.linuxppc.org
-Message-id: <01JCZL09EO968WZUL9@uni.edu>
-MIME-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Wed, 30 Jun 1999 15:14:55 +0200
+To: linuxppc-dev@lists.linuxppc.org
+CC: Geert.Uytterhoeven@cs.kuleuven.ac.be, Christian.Bauer@uni-mainz.de
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: DGA applications not working
+Message-Id: <19990630151455.027635@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-If you set emulate 3 buttons in Xconfigurator, then hitting both buttons at
-once will be interperted as a middle-click.
+HI !
 
---
-+--------------------------------------------------------------------+
-|            .-'''''-.       Kevin Puetz                             |
-|          .'   _/|   `.                                             |
-|         :   =/_/      :    kp11901@cedarnet.org -preferred         |
-|        :   _/ |        :   Kevin.Puetz@039-server.pls.uni.edu      |
-|       (\  /  ,|        :   webmaster@039-server.pls.uni.edu        |
-|        \\/^\/||__     :                                            |
-|     _/~`~`""~`"` \_ .'  "Could you please continue the petty       |
-|  __/  -'/  `-._ `\_\__   bickering?  I find it - most intriguing." |
-|/     /-'`  `\   \  \-.\    --Data, STTNG, "Haven"                  |
-+--------------------------------------------------------------------+
+I'm having a problem with the XFBDev server that comes bundled with
+linuxppc R5, and I really don't know what's going on and how I can fix
+that. Basically, when I try to use a DGA-based application, I get an
+error message in the console saying:
 
-----------
->From: Scott Westbrook <swestbro@cse.unl.EDU>
->To: "Peter A. Padilla" <p.a.padilla@larc.nasa.GOV>
->Cc: linuxppc-dev@lists.linuxppc.ORG
->Subject: Re: solution for the Macally two button mouse
->Date: Mon, Jun 28, 1999, 10:15 PM
->
+"XF86DGAGetVideo: failed to mmap /dev/kmem (Device not configured)"
 
->
-> Thank so much for finding a way to get my old Macally mouse to work!  Now
-> that it does work correctly, is there any way to emulate the missing mouse
-> button without using a key on the keyboard?
->
-> ---
-> Scott Westbrook                | "If the women don't find you handsome,
-> swestbro@cse.unl.edu           |  they should at least find you handy!"
-> Computer Engineering           |  -- Red Green
->
->
- 
+I'm using a 2.2.10 kernel with controlfb.
+
+If someone what to test this, a DGA application that fails is Basilic II
+(Mac 68k emulator) that can be found at <http://www.uni-mainz.de/~bauec002/>
+
+Any clues ?
+
+
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
