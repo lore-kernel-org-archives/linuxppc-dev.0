@@ -1,42 +1,34 @@
+Message-ID: <6F9E5BBF912DD6119E7900B0D0FC51FC0415FF@DC-MAIL>
+From: "Hinkle, Mark" <MHinkle@dc.fti-net.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Sandpoint eval kit
+Date: Tue, 26 Mar 2002 10:02:01 -1200
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: External TA assertion timing on GPCM
-Date: Tue, 26 Mar 2002 10:44:56 -0600
-Message-ID: <D3A72C5007329A4F991C0DD87202259F096ABD@sekhmet.ad.newisys.com>
-From: "Navin Boppuri" <navin.boppuri@newisys.com>
-To: "Steven Scholz" <steven.scholz@imc-berlin.de>
-Cc: "Ppcboot-Users (E-mail)" <ppcboot-users@lists.sourceforge.net>,
-	"Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks guys. The answer was very helpful.
+I'm considering purchasing a Sandpoint X3 evaluation system for an embedded
+project I'm working on.  The specific package I'm looking at is the
+PPCEVALSP3745 [1].  What success/problems have people had with this board?
 
-Navin.
+It's going to need a few megs of ROM but the specs I've seen don't mention
+any kind of ROM.  I figure I can get away with using a hard drive connected
+to it because speed at this point is not _that_ much of an issue.
 
------Original Message-----
-From: Steven Scholz [mailto:steven.scholz@imc-berlin.de]
-Sent: Monday, March 25, 2002 1:55 AM
-To: Navin Boppuri
-Cc: Ppcboot-Users (E-mail); Linuxppc-Embedded (E-mail)
-Subject: Re: External TA assertion timing on GPCM
+Are there any issues with executing an application that is being stored on
+the drive rather than in ROM?  How about then accessing other information
+that is stored on the drive?
 
+[1] -
+http://e-www.motorola.com/webapp/sps/site/prod_summary.jsp?code=PPCEVALSP374
+5&nodeId=01M964472741978#
 
-Navin,
+Mark Hinkle
+Software Engineer, Frontier Technologies
+mhinkle@fti-net.com
+(703) 671-0508 x31
 
-I quotr from MPC860 User Man. Chapter 11.6 Bus Monitor
-"...The timing mechanism is clocked by the system clock devided by
-eight. The maximum value is 2040 system clocks..."
-
-The bus monitor timing is set in Bits 16-23 of SYPCR.
-
-Hope this helps,
-
-Steven
-
-
->I would like to know if there is a maximum limit from the time CS is asserted (during a read/write operation) till TA is asserted by the device externally.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
