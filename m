@@ -1,42 +1,42 @@
-Message-ID: <3BD17DE5.9A1DAAEB@nc.rr.com>
-Date: Sat, 20 Oct 2001 09:36:37 -0400
-From: Ricky West <rwwest@nc.rr.com>
-Reply-To: ricky.west@ericsson.com
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: xmon configuration for custom mpc860
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <sbd43a78.005@tms-pty.com>
+Date: Mon, 22 Oct 2001 15:25:37 +1100
+From: "Jeremy Rosen" <Rosen.Jeremy@tms-pty.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Problem using FEC on a860T
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am trying to configure xmon to run on a custom mpc860p based board
-that uses smc1 for a serial console.  My team is just begginning, this
-past 2 months, to explore the use of linux for an embedded os.  We have
-made alot of progress but need to understand and experience debugging
-options for the kernel.  Our motto has been to start simple and add
-complications as necessary.
+hello everybody
 
-Our intention is to use xmon for low-level target debugging.  Is this a
-good idea?  Next, how do we configure the kernel.  We have turned on the
-CONFIG_XMON option but are getting a vmlinux link failure.
+I am still struggling with my FADS, and the 2.4.4-07.23 kernel from
+Denx...
 
-arch/ppc/xmon/x.o: In function `xmon':
-arch/ppc/xmon/x.o(.text+0x600): undefined reference to `xmon_enter'
-arch/ppc/xmon/x.o(.text+0x600): relocation truncated to fit: R_PPC_REL24
-xmon_en
-ter
-arch/ppc/xmon/x.o(.text+0x664): undefined reference to `xmon_leave'
+I am trying to have the FEC working, but I hqve problems..
 
-In arch/ppc/xmon/Makefile, start.c is excluded in favor of start_8xx.c.
-Where should these references come from.
+when I compile without "MDIO for PHY configuration"
+the kernel prints forever the message  "fec.c[1374] mii_link_interrupt:
+unexpected Link interrupt
+on the console at boottime.
 
-We are using kernel 2.4.11 obtained from linuxppc_2_4 on 2001-10-10 with
-only configuration edits needed for our custom board.  We are using MV
-JE2.0 tools and a modified SELF enviornment from Wolfgang Denx.
+when I compile with it, the kernel Oopses.
+after carefull debugging, I tracked it down to the line 1367 in
+arch/ppc/8xx_io/
+    mii_do_cmd(dev, fep->phy->ack_int);
 
-Ricky W. West
-Ericsson Inc.
+it is a kernel access of bad area.
+
+It is possible that I have missed something in the configuration, but I
+really can't guess what...
+
+If anybody could help...
+
+Thanks.
+
+Jeremy
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
