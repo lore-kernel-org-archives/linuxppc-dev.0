@@ -1,5 +1,5 @@
-Message-ID: <20011023033704.44473.qmail@web13104.mail.yahoo.com>
-Date: Mon, 22 Oct 2001 20:37:04 -0700 (PDT)
+Message-ID: <20011023033817.16318.qmail@web13101.mail.yahoo.com>
+Date: Mon, 22 Oct 2001 20:38:17 -0700 (PDT)
 From: Dave Ray <g4tinker@yahoo.com>
 Subject: Re: Sound on G4 tower, almost 
 To: linuxppc-dev@lists.linuxppc.org
