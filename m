@@ -1,39 +1,43 @@
-Subject: Re: consistent_alloc changes for 4xx/8xx
+Date: Thu, 24 Jan 2002 11:20:05 -0800
+From: Ira Weiny <iweiny@acm.org>
 To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF130F6EBD.EC5FA854-ON85256B4B.00683BA1@raleigh.ibm.com >
-From: "Ralph Blach" <rcblach@us.ibm.com>
-Date: Thu, 24 Jan 2002 14:10:07 -0500
-MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Subject: Re: Walnut base board PCI problems
+Message-Id: <20020124112005.75d4b366.iweiny@acm.org>
+In-Reply-To: <20020118191321.7708fdaf.iweiny@acm.org>
+References: <20020118191321.7708fdaf.iweiny@acm.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I just looked closely at the code for pinned tlb's head_4xx.S and there
-needs to be a fix.
+Thank you all for you help.
 
-/* Load up the kernel context  */
-2: SYNC   /*For all PTE updates to finish */
-     tlbia
-     sync
+It turns out that the one board which was working had correct strapping with
+the PCI Sync clock at 33MHz.
 
-This is incorrect for a the pinned kernel configuration and because it
-would invalidate the pinned tlb's
+A mix up in manufacturing allowed our other boards to be straped with a 16MHz
+clock.  For those of you who don't know even if the PCI bus is in Asyncronous
+mode the Sync clock must be >= to the bus speed.  In our case 33MHz.
 
-I verifyed this with RiscWatch.
+Thanks so much for the input, it is always the simple ones which are hard to
+find.
 
-The code needs to be changes to
-/* Load up the kernel context  */
-2: SYNC   /*For all PTE updates to finish */
-#ifndef CONFIG_TLB_PIN
-     tlbia
-#endif
-     sync
+Ira Weiny
+iweiny@acm.org
 
+On Fri, 18 Jan 2002 19:13:21 -0800
+Ira Weiny <iweiny@acm.org> wrote:
 
-Thanks
-
-Chip
-
+>
+> It has been some time since I have written to the list with a question so
+> forgive me if this deficient in some way.
+>
+> We have a custom 405GP board which is basically a Walnut platform minus some of
+> the peripherals like keyboard/mouse, FPGA, etc.
+>
+> We manufactured 10 boards and one works.  The others all display the same
+> behavior below.
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
