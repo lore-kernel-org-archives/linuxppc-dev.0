@@ -1,68 +1,57 @@
-Message-ID: <3A8BE0AA.65554FA3@raleigh.ibm.com>
-Date: Thu, 15 Feb 2001 08:59:06 -0500
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+Message-ID: <003701c09760$1b754a20$74dee783@lboro.ac.uk>
+From: "Peter Uttley" <P.Uttley-97@student.lboro.ac.uk>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Embedded Linux for data acquisition and  control
+Date: Thu, 15 Feb 2001 15:00:26 -0000
 MIME-Version: 1.0
-To: Roland Dreier <roland@topspincom.com>
-CC: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Wait queue question
-References: <3A8A9EB2.660A7A2D@raleigh.ibm.com> <52snlh41g5.fsf@love-boat.topspincom.com>
-Content-Type: multipart/mixed;
- boundary="------------0DDE7413DE16C9B00EB20DBB"
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------0DDE7413DE16C9B00EB20DBB
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Hi Everyone,
 
-Roland,
+Hope someone can give me a bit of advice on the best way to tackle a
+university project I'm working on.
 
-Ok, but were is an example of how to use a wait_event macro.  I dont see
-it in any of the documentation.
+OK, I've currently ported Linux to my embedded MPC-850 board, many thanks to
+the help of Frank Przybylski with his BDM4GDB and the invaluable advice from
+Wolfgang Denx, thanks Guys!
 
-Chip
-Roland Dreier wrote:
->
->     Ralph> If I have a wait queue thats I am using to wake up a device
->     Ralph> driver read from an interrupt service routine.  If I get
->     Ralph> three interrupt and three wake_up_interrables, will I need
->     Ralph> to execute three sleep_ons to get the wait queue back to
->     Ralph> the null state, or is it just back after the first
->     Ralph> sleep_on?
->
-> You really don't want to use sleep_on() any more (Linux wants to
-> remove it out for 2.5).  Take a look at
->
-> <http://lwn.net/2001/0201/a/sleep-fix.php3>
->
-> for a safer way to sleep, or use the wait_event macro (in
-> linux/sched.h).
->
-> Roland
---------------0DDE7413DE16C9B00EB20DBB
-Content-Type: text/x-vcard; charset=us-ascii;
- name="rcblach.vcf"
-Content-Description: Card for Ralph Blach
-Content-Disposition: attachment;
- filename="rcblach.vcf"
-Content-Transfer-Encoding: 7bit
+Now what I want to do with the board is use it for data acquisition and
+control of peripheral systems via a web interface.
+I'm currently building my peripheral hardware which then simply dumps the
+data down the serial port to the MPC-850.
 
-begin:vcard
-n:Blach;Ralph
-tel;work:919-543-1207
-x-mozilla-html:TRUE
-url:www.ibm.com
-org:IBM MicroElectronics
-adr:;;3039 Cornwallis		;RTP;NC;27709;USA
-version:2.1
-email;internet:rcblach@raleigh.ibm.com
-x-mozilla-cpt:;15936
-fn:Ralph Blach
-end:vcard
+I would really appreciate some advice on the best why to handle the data
+coming in on the serial port and get it into the webserver.
 
---------------0DDE7413DE16C9B00EB20DBB--
+My initial thoughts are,
+
+I write a bit of software which monitors the serial port and has its own
+little protocols with my peripheral hardware, the data is then written into
+a file which is read by my web server (I'm using GoAhead-Thanks for the
+pointer Frank) which has a active server page to display the information.
+
+However this seems a bit of a hack way of doing it, and could cause problems
+when I'm trying to send data to my device to electronically open an door for
+instance.
+
+Is it possible therefore to directly receive and transmit data from my web
+server to the serial port, I know you can write any C code in ASP or CGI
+scripts but I need to have some sort of control, monitoring, waiting for
+data e.t.c. which seem best handled by some sort of daemon or device driver.
+
+Hope that makes sense and that someone can give me a few clues as to which
+direction I should take, the project time schedules quite tight so I don't
+want to be heading down too much of a blind alley.
+
+Thanks for you time,
+
+Regards,
+
+Pete.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
