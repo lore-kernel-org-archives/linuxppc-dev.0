@@ -1,54 +1,57 @@
-Date: Wed, 2 Aug 2000 23:33:25 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Gong Zhuo <gongzhuo@163.net>
-cc: Linux PPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: How to using Raven timer interrupt on MVME2600?
-In-Reply-To: <001f01bffc66$d4da4000$4607a8c0@LocalHost>
-Message-ID: <Pine.HPX.4.10.10008022331170.9070-100000@gra-ux1.iram.es>
+Message-ID: <001401bffcf8$1a391220$e573a7ca@saigonnet.vn>
+From: "Phuc Le" <lmphuc@yahoo.com>
+To: "Embedded Linux" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Installing PCMCIA hard disk on DVK MPC823
+Date: Thu, 3 Aug 2000 10:06:44 +0700
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 2 Aug 2000, Gong Zhuo wrote:
+Hi There,
 
->
-> Hi:
->    I want to using the timer of RAVEN to get cycle interrupt.
->    I have done sth. like this:
->
->    1. 0x1092f107 ==> timer base count 0 (0xfc001110) ( the cycle is 16s and
-> value is 0x07f19210 on pci bus)
->    2. 0x80000700 ==> timer 0 vector/priority reg.(0xfc001120) ( vector 80,
-> priority 7)
->    3. 0x01000000 ==> timer 0 destination reg. (0xfc001130) ( interrupt to
-> processor 0)
->    4. 0x06000000 ==> interrupt task priority reg. (0xfc020080) (task
-> priority is 6)
->
->    I can see the value of timer 0 current count reg. is changing and the 'T'
-> bit of timer 0 current count reg. changing between 0 and 1.
->    The 'ACT' bit of timer0 vector/priority reg. is 1 (the whole value is
-> 0x80000740) after interrupt enabled.
->
->    In my interrupt processing:
->    1. read interrupt ack reg.
->    2. judge the vector to see if it is 0x80 (the timer 0 vector)
->    3. do the interrupte processing
->    4. write a value to EOI register
->
->    But it seems that the interrupt has never happened. After I read the
-> interrupt ack reg. under PPCbug , the 'ACT' bit of vector/priority reg. will
-> not change. Is that right? Something else I should do?
+My name's Phuc Le. I am new on this field. I just installed
+PCMCIA HDD on the the DVK MPC823 but it failed. Following
+is step by step of the installing.
 
-Yes, write 0 to the processor EOI register. I donn't understand why you
-want to do it BTW, but have a look at the OpenPIC code to see how it's
-done (although I don't like the code nor generally the whole PPC interrupt
-mangement which was too messy last time I looked at it).
+1. Install the embedded linux and cross-platform development
+kit from Montavista in the pc-linux
+2. Install the pcmcia package in there
+3. Install the kernel patch supporting pcmcia
+4. Install the pcmcia patch
+5. Modify something belong to the document attached along with
+the pcmcia package
+6. Build and install the embedded kernel and also the pcmcia
+7. Boot the DVK via tftp
+8. Load pcmcia modules such as 'pcmcia_core.o', 'm8xx_pcmcia.o'
+and 'ds.o'
+9. Run the cardmgr
 
-	Regards,
-	Gabriel.
+At this point everything really seemed to be OK.
+
+10. Flug the pcmcia hard disk
+
+The result was the cardmgr detects the flugged pcmcia device to be
+ATA/IDE and it tried to load the 'ide_cs.o' module. But it failed. The error
+message were displayed as below:
+
+... ide_cs.o: unresolved symbol 'ide_register'
+... ide_cs.o: unresolved symbol 'ide_unregister'
+
+I tried to rebuilt the kernel with turn-on some IDE features in the
+configuration phase and recompile the pcmcia based on the new kernel.
+
+The result was still failed with the kernel to be panic status.
+
+Have someone done this task? please tell me how to fix that.
+
+Thanks in advances,
+LMP
+----------------------------------------------------------------
+Phuc My LE
+lmphuc@saigonnet.vn
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
