@@ -1,40 +1,50 @@
-Message-ID: <40B595F7.3080801@fh-landshut.de>
-Date: Thu, 27 May 2004 09:17:11 +0200
-From: Oliver Korpilla <okorpil@fh-landshut.de>
-Reply-To: okorpil@fh-landshut.de
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <40B5F176.2020805@ztec.com.br>
+Date: Thu, 27 May 2004 10:47:34 -0300
+From: iida <iida@ztec.com.br>
 MIME-Version: 1.0
-To: Eugene Surovegin <ebs@ebshome.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ioremap() question
-References: <40B4AB27.5020202@fh-landshut.de> <20040526171234.GA4255@gate.ebshome.net>
-In-Reply-To: <20040526171234.GA4255@gate.ebshome.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: how to use the i2c in mpc5200
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Eugene Surovegin wrote:
+i am using the linuxppc-2.4.25-denx and loaded
+this modules
 
->You cannot use virt_to_bus() on ioremap returned addresses.
->
->Eugene.
->
->
->
-Hello!
+Module                  Size  Used by    Not tainted
+i2c-icecube             1680   0 (unused)
+i2c-algo-mpc5xxx        4048   0 [i2c-icecube]
+i2c-core               18768   0 [i2c-algo-mpc5xxx]
+when i loaded the i2c-icecube i recived the message
 
-Maybe I may go like this:
+i2c-algo-5xxx.o: scanning bus Icecube I2C module #2 interface...
+................................................................................(0x50)..............................................(0x7f)
+i2c-icecube.o: I2C module #2 installed
 
-I know my PCI from the device bus, so:
+i created the i2c with
+mknod /dev/i2c c 89 1
 
-unsigned long bus_address;
-struct pci_bus *my_bus = universe_pci_dev->bus;
-bus_address = pci_phys_to_bus(physical_address, my_bus->number);
 
-Since pci_phys_to_bus() is an exported symbol, this should work in my
-module, shouldn't it?
+i am used the i2c-demo from bsp of the metrowerks
+but i recived the message
 
-Thanks in advance,
-Oliver Korpilla
+
+*** Pass the write-string optionally as argument ***
+/dev/i2c open: No such device
+eeprom_read: Illegal seek
+/dev/i2c open: No such device
+/dev/i2c open: No such device
+eeprom_read: Illegal seek
+
+
+
+what am i doing wrong ?
+
+Thanks
+
+Renato
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
