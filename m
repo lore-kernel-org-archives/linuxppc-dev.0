@@ -1,31 +1,29 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg Allen <gallen@arlut.utexas.edu>,
-	<linuxppc-dev@lists.linuxppc.org>
+Date: Mon, 22 Jul 2002 10:00:38 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Greg Allen <gallen@arlut.utexas.edu>,
+	linuxppc-dev@lists.linuxppc.org
 Subject: Re: Directly accessing I/O ports
-Date: Sat, 20 Jul 2002 20:10:58 +0200
-Message-Id: <20020720181058.30333@192.168.4.1>
-In-Reply-To: <p05111b16b95d05434f09@[10.8.16.89]>
-References: <p05111b16b95d05434f09@[10.8.16.89]>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <20020722170038.GD692@opus.bloom.county>
+References: <p05111b16b95d05434f09@[10.8.16.89]> <20020720181058.30333@192.168.4.1>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020720181058.30333@192.168.4.1>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->For that matter, what's the *right* way to access this sort of thing
->from userland?
+On Sat, Jul 20, 2002 at 08:10:58PM +0200, Benjamin Herrenschmidt wrote:
+>
+> >For that matter, what's the *right* way to access this sort of thing
+> >from userland?
+[snip]
 
-mmap /proc/bus/pci with proper flags. By defaults it's PIO,
-but you can use ioctl after the open() call and before the mmap()
-call to set the requested mapping type to MMIO, PIO, ...
+Or the other fix, which iirc Jeff Garzik has somewhere on his todo list
+is to make it work with ethtool ioctls.
 
-The code handling this is in drivers/pci/proc.c
-
-The important point is that on PPC, the PIO space isn't limited
-to one 64k space like on x86, but is a full set of separate address
-spaces (one per host PCI bus).
-
-Ben.
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
