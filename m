@@ -1,18 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 9A7D12BDA6
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2004 07:13:18 +1000 (EST)
-To: Andy Fleming <afleming@freescale.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 23 Sep 2004 15:13:46 CDT."
-	<12D6C166-0D9D-11D9-911D-000393C30512@freescale.com>
-Date: Thu, 23 Sep 2004 23:13:09 +0200
-Sender: wd@denx.de
-Message-Id: <20040923211314.D201AC108D@atlas.denx.de>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: Old mailing list archives 
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
+	by ozlabs.org (Postfix) with ESMTP id 0C8AD2BDB5
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2004 09:30:37 +1000 (EST)
+Date: Thu, 23 Sep 2004 16:30:35 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Stephen Rothwell <sfr@ozlabs.org>
+Message-ID: <20040923233035.GH27238@smtp.west.cox.net>
+References: <20040923164655.0472a8b9.sfr@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="xHFwDpU9dbj6ez1V"
+In-Reply-To: <20040923164655.0472a8b9.sfr@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: New mailing list specifically for embedded PowerPC development
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <12D6C166-0D9D-11D9-911D-000393C30512@freescale.com> you wrote:
-> Mine goes back to early March 2003.  I am, likewise, willing to tar it 
-> up, if we can find somewhere to put it.
 
-Mine start at 5 Dec 1998.
+--xHFwDpU9dbj6ez1V
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-But I still hope the original lists come back up again?
+On Thu, Sep 23, 2004 at 04:46:55PM +1000, Stephen Rothwell wrote:
 
+> Hi all,
+>=20
+> After some representations, I have created linuxppc-embedded@ozlabs.org
+> for the discussion of all things to do with the development of Linux on
+> embedded PowerPC platforms.
+>=20
+> General Linux on PowerPC development discussions should, of course, remain
+> on this list.
+>=20
+> I hope noone feels slighted :-)
 
-Wolfgang Denk
+Could we please not do this?  IMHO, it's better to keep everyone on one
+list.  Less cross posting, more communication and all of that.  Thanks.
+:)
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Two wrongs don't make a right, but three rights make a left.
+--=20
+Tom Rini
+http://gate.crashing.org/~trini/
+
+--xHFwDpU9dbj6ez1V
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+
+iD8DBQFBU1ybdZngf2G4WwMRAhXjAJoDhyktgc3/xNoq85HoXbA0XOoRBQCfbiLr
+ozPxETiv6OesjitpQCD0Xzw=
+=LArL
+-----END PGP SIGNATURE-----
+
+--xHFwDpU9dbj6ez1V--
