@@ -1,61 +1,40 @@
-To: Bret Indrelee <Bret.Indrelee@qlogic.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>,
-	Linux PPC Embedded mailing list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Any restrictions on DMA address boundry?
-References: <Pine.LNX.4.44.0309251306450.12966-100000@spider.ancor.com>
-From: Roland Dreier <roland@topspin.com>
-Date: 25 Sep 2003 11:26:12 -0700
-In-Reply-To: <Pine.LNX.4.44.0309251306450.12966-100000@spider.ancor.com>
-Message-ID: <52k77wk9mj.fsf@topspin.com>
+Message-ID: <3F73339C.4050007@mvista.com>
+Date: Thu, 25 Sep 2003 11:27:40 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: bradbosch@attbi.com
+Cc: Q-ha Park <qha@infoeq.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: using bdi2000 to debug ppcboot on mpc7455
+References: <004c01c382ff$de2da2f0$2a21a8c0@qha>	<3F725407.3020907@mvista.com> <16242.64239.133401.668446@waldo.lisle.iphase.com>
+In-Reply-To: <16242.64239.133401.668446@waldo.lisle.iphase.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-    Bret> What exactly is the issue?
+bradbosch@attbi.com wrote:
 
-    Bret> As I understand it, if there is a DMA to the same cache line
-    Bret> as something that the CPU is referencing, you've got a cache
-    Bret> problem.
+>Once you get all this working, could you please do me a favor and let
+>me know if you ever have any problems with single step ("mon ti" or
+>"stepi") not working?  I have a lot of trouble with this with my
+>7447/Discovery II combo and I am trying to figure out if it is a board
+>issue or a processor issue or a BDI issue.
+>
+>
+Hi Brad.
 
-The problem is the following.  Suppose for concreteness that we're
-working on a system with 32-byte cache lines, and there is no
-coherency between PCI and the CPU cache.  (This describes the IBM
-PowerPC 440GP)
+I almost exclusively use the telnet interface (and hard breakpoints) to
+the bdi b/c I do a lot of early on debug.  I have noticed with certain
+processors that a single step will occasionally go several instructions
+before stopping.  Unfortunately, I don't remember which processors I see
+that on and I've never had a 7447 to try.  What I'm getting at is: a)
+yes, I have seen some [minor] breakpoint problems with the bdi (or
+possibly the breakpoint implementation on the processor); and b) try
+using the telnet interface to eliminate a possible gdb-related problem.
 
-Now suppose you have a 16-byte DMA buffer, and some other unrelated
-data in the same cache line.  Let's say you want to start a DMA from
-an external PCI device into that buffer.  The first thing you do is
-invalidate the cache line containing the DMA buffer, so that you get
-the data the device is about to write and not any data that might
-already be in the CPU cache.
+Just my $0.02.
 
-You have to do this invalidate before you initiate the DMA, because
-otherwise there is the risk of the CPU evicting that cache line and
-writing it back to memory after the DMA has occurred, and stomping on
-the data the device has written.
+Mark
 
-Then you tell the device to do the DMA, and go off and do other stuff
-while waiting for the DMA to complete.  If that other stuff touches
-the other 16 bytes of unrelated data that shares the cache line with
-the DMA buffer, the CPU will bring it back into the cache.  But if you
-do this before the DMA happens, you won't see the data the device
-writes.
-
-People often come up with complicated schemes like flushing and
-invalidating the cache before and after the DMA transfer, but there's
-always a scenario where the DMA buffer and/or the unrelated data get
-corrupted.  The only solution is to make sure that you don't put
-unrelated data in the same cache line as a DMA buffer.
-
-    Bret> Does it matter what type of transfer the PCI device is
-    Bret> doing? If it always does 32-bit burst memory write transfers
-    Bret> instead of memory write & invalidate does that make a
-    Bret> difference?
-
-No.
-
- - Roland
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
