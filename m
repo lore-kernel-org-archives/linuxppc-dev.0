@@ -1,46 +1,53 @@
-Message-ID: <3B979787.8DC8E86@laposte.net>
-Date: Thu, 06 Sep 2001 17:34:31 +0200
-From: ibm405gp <ibm405.linux@laposte.net>
+Message-Id: <200109061544.LAA11977@orchid.cspi.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Brian Waite <bwaite@cspi.com>
+Reply-To: bwaite@cspi.com
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MVME5100 and bugboot fails
+Date: Thu, 6 Sep 2001 11:36:39 -0400
+References: <85256ABF.00549667.00@pine.cspi.com>
+In-Reply-To: <85256ABF.00549667.00@pine.cspi.com>
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: ppp for Walnut 405GP
-Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I tried that and I was unable to relocate just the initrd. Right now, I just
+tested to see:
+if  ((zImage_start >= 0xf0000000) || (zImage_start <= 0x00800000))
 
-I successfully compiled ppp-2.4.0 for my walnut board.
-But each time, i start "pppd", i have the following messages :
+That seems to work for now, but I'll take a peek at the gemeni and see how
+they do it.
 
-[root@maquette405GP /]# pppd call dialout
-mapped database of hash_size 128 map_size=8192
-bad magic 0x00000000 in free list
-tdb_allocate failed for size 17
-tdb_store failed: Success
-bad magic 0x00000000 in free list
-tdb_allocate failed for size 33
-tdb_store failed: Success
-bad magic 0x00000000 in free list
-tdb_allocate failed for size 23
-tdb_store key failed: Success
-bad magic 0x00000000 in free list
-tdb_allocate failed for size 51
-tdb_store failed: Success
-bad magic 0x00000000 in free list
-tdb_allocate failed for size 17
-tdb_store key failed: Success
-bad magic 0x00000000 in free list
-tdb_allocate failed for size 63
-tdb_store failed: Success
-Dialling
 
-I can dial-out with no problem, but i cant dial-in on my Walnut board.
-I suppose it's due to the previous messages.
-Does anyone met this pb ? (I'm running linux_2.4.2-mvista_010412 kernel)
+On Thursday 06 September 2001 11:23 am, you wrote:
+> On Thu, Sep 06, 2001 at 10:55:46AM -0400, Brian Waite wrote:
+> > I am playing with the MVME5100 and I am having a bit of trouble with
+>
+> booting
+>
+> > using bugboot and an initrd. I get a message at bootup saying initrd > 16
+>
+> MB
+>
+> > and then as it is booting it gets an oops in mem_init.
+>
+> [snip]
+>
+> > My question is is the failure due to the bootloader not relocating the
+>
+> initrd
+>
+> > or is it that ClearPageReserved() is being called when the initrd is in
+> > FLASH? Any ideas?
+>
+> Right now, we only see if we need to relocate the initrd if we need to
+> relocate
+> the kernel.  I'll go and fix this (I think gemini has the right idea).
+
+--
 Thanks
-
-Phil
+Brian
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
