@@ -1,14 +1,21 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from arnor.apana.org.au (arnor.apana.org.au [203.14.152.115])
-	by ozlabs.org (Postfix) with ESMTP id 83C7167A86
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Jan 2005 09:52:54 +1100 (EST)
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: md@Linux.IT (Marco d'Itri)
-In-Reply-To: <20050128140836.GA10777@wonderland.linux.it>
-Message-Id: <E1CueYJ-0000nX-00@gondolin.me.apana.org.au>
-Date: Sat, 29 Jan 2005 09:25:20 +1100
-Cc: linuxppc-dev@ozlabs.org, netdev@oss.sgi.com
-Subject: Re: networking-related oopses on 2.6.9
+Return-Path: <olh@suse.de>
+Received: from Cantor.suse.de (news.suse.de [195.135.220.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "mail.suse.de",
+	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id BCC7067A78
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Jan 2005 02:53:53 +1100 (EST)
+Date: Sat, 29 Jan 2005 16:53:44 +0100
+From: Olaf Hering <olh@suse.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>
+Message-ID: <20050129155344.GA9832@suse.de>
+References: <200501260514.j0Q5E5iq017078@hera.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <200501260514.j0Q5E5iq017078@hera.kernel.org>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] ppc32: Add support for Pegasos machines
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,18 +25,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Marco d'Itri <md@linux.it> wrote:
-> 
-> I have been able to capture the latest two oopses from the serial
-> console, is this a known problem?
-> 
-> KERNEL: assertion (!skb_queue_empty(&sk->sk_write_queue)) failed at net/ipv4/tc
+ On Wed, Jan 26, Linux Kernel Mailing List wrote:
 
-Yes these are known problems which should be fixed in 2.6.10.  However,
-there is at least one other similar issue in 2.6.10 so you'll either
-want to stay with 2.6.6 or go up to the latest bk snapshot.
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> ChangeSet 1.2046, 2005/01/25 20:33:08-08:00, benh@kernel.crashing.org
+> 
+> 	[PATCH] ppc32: Add support for Pegasos machines
+> 	
+> 	This patch, mostly from Sven Luther and reworked by me, adds support for
+> 	Pegasos machines to the ppc32 arch. The patch contains all of the arch
+> 	code. I'll send separately a few driver changes as well.
+> 	
+> 	Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 	Signed-off-by: Andrew Morton <akpm@osdl.org>
+> 	Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+> 
+> 
+> 
+>  arch/ppc/platforms/chrp_pci.c   |   38 +++++++++++++++++---
+
+> diff -Nru a/arch/ppc/platforms/chrp_pci.c b/arch/ppc/platforms/chrp_pci.c
+> --- a/arch/ppc/platforms/chrp_pci.c	2005-01-25 21:14:21 -08:00
+> +++ b/arch/ppc/platforms/chrp_pci.c	2005-01-25 21:14:21 -08:00
+> @@ -195,7 +215,7 @@
+>  	struct pci_controller *hose;
+>  	unsigned int *dma;
+>  	char *model, *machine;
+> -	int is_longtrail = 0, is_mot = 0;
+> +	int is_longtrail = 0, is_mot = 0, is_pegasos = 0;
+>  	struct device_node *root = find_path_device("/");
+>  
+>  	/*
+> @@ -207,6 +227,10 @@
+>  	if (machine != NULL) {
+>  		is_longtrail = strncmp(machine, "IBM,LongTrail", 13) == 0;
+>  		is_mot = strncmp(machine, "MOT", 3) == 0;
+> +		if (strncmp(machine, "Pegasos2", 8) == 0)
+> +			is_pegasos = 2;
+> +		else if (strncmp(machine, "Pegasos", 7) == 0)
+> +			is_pegasos = 1;
+>  	}
+>  	for (dev = root->child; dev != NULL; dev = dev->sibling) {
+>  		if (dev->type == NULL || strcmp(dev->type, "pci") != 0)
+> @@ -275,5 +303,7 @@
+>  		}
+>  	}
+>  
+> -	ppc_md.pcibios_fixup = chrp_pcibios_fixup;
+> +	/* Do not fixup interrupts from OF tree on pegasos */
+> +	if (is_pegasos != 0)
+> +		ppc_md.pcibios_fixup = chrp_pcibios_fixup;
+>  }
+
+This breaks other chrp boards, like a B50.
+
+PCI: Enabling device 0000:00:10.0 (0140 -> 0143)
+sym0: <875> rev 0x4 at pci 0000:00:10.0 irq 7
+sym0: No NVRAM, ID 7, Fast-20, SE, parity checking
+sym0: SCSI BUS has been reset.
+scsi0 : sym-2.1.18n
+sym0:0:0: ABORT operation started.
+sym0:0:0: ABORT operation timed-out.
+sym0:0:0: DEVICE RESET operation started.
+sym0:0:0: DEVICE RESET operation timed-out.
+sym0:0:0: BUS RESET operation started.
+sym0:0:0: BUS RESET operation timed-out.
+sym0:0:0: HOST RESET operation started.
+Uninitialised timer!
+This is just a warning.  Your computer is OK
+function=0xc02a0000, data=0x28000028
+Call trace:
+ [c0028028] check_timer_failed+0x7c/0x9c
+ [c0028074] del_timer+0x2c/0xb0
+ [c0111c68] __sym_eh_done+0x8c/0x98
+ [c0110654] sym_xpt_done+0x2c/0x40
+ [c0117930] sym_flush_comp_queue+0x160/0x190
+ [c0117fd0] sym_start_up+0x194/0x7d8
+ [c0111994] sym_eh_handler+0x1bc/0x2d0
+ [c0107644] scsi_try_host_reset+0x8c/0x104
+ [c0108ac0] scsi_error_handler+0x8c0/0xe68
+ [c0006e14] kernel_thread+0x44/0x60
+sym0: SCSI BUS has been reset.
+sym0:0:0: HOST RESET operation timed-out.
+scsi: Device offlined - not ready after error recovery: host 0 channel 0 id 0 lun 0
+
+
+Signed-off-by: Olaf Hering <olh@suse.de>
+
+--- ./arch/ppc/platforms/chrp_pci.c~	2005-01-29 16:22:09.288047704 +0100
++++ ./arch/ppc/platforms/chrp_pci.c	2005-01-29 16:44:03.905193820 +0100
+@@ -304,6 +304,6 @@
+ 	}
+ 
+ 	/* Do not fixup interrupts from OF tree on pegasos */
+-	if (is_pegasos != 0)
++	if (!is_pegasos)
+ 		ppc_md.pcibios_fixup = chrp_pcibios_fixup;
+ }
