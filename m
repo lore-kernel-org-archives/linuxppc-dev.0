@@ -1,38 +1,37 @@
-Message-ID: <A33AEFDC2EC0D411851900D0B73EBEF73D9FB4@NAPA>
-From: Hua Ji <hji@netscreen.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Problem with MSR_IR setting(Instruction Relocateable)
-Date: Tue, 24 Apr 2001 10:26:23 -0700
+From: zjuzhou@163.net
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="big5"
+Message-Id: <3AE6965D.28638@bjapp4>
+Date: Wed, 25 Apr 2001 17:18:21 +0800 (CST)
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: About BOOTP in hhl kernel 2.1.14
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Hi, folks,
-
-I met a issue very confusing. My target is the ppc405GP and I am writing my
-propertiey OS.
-
-In my codes, after I finished the TLB setting(and for safe, I also set up
-the ICCE, DCCR  and DCWR), I enabled
-the MSR_IR and MSR_DR so that the CPU will now work on the address
-translation mode.
-
-When I use JTAG for debugging, I am surprised to find this :
-
-**Every time when I step a "bl fool" in assember level, or setp a source
-line in c level, the MSR get changed and the MSR_IR
-got **disabled**!!. However, the MSR_DR stay. I am very confusing. Why
-changed my MSR??!!!:--(. This just suddently disabled
-all my TLB mapping for instruction as well as the caching settings!!
+hello all,
+	i use bootp to get a ip address to my borad.My host's dhcpd service is working.But when i boot my borad,he told me time out. I don't know why?
+	even i have config BOOTP ,i want to change ipconfig.c to give a vlaue to
+my borad and nfs server's ip address,can i do? need some others ?
+	thanks!
 
 
-Any hints are highly appreciated!
+dross chou
 
 
-Mike
+
+
+
+
+
+
+
+===============================================
+为你而建，为你而设，让你传递真心真意
+
+    ---- 163.net贺卡站（http://ecard.163.net）
+
+163电子邮局全新奉献，精彩无限的电子贺卡站。
+===============================================
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
