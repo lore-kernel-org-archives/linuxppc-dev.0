@@ -1,40 +1,67 @@
-Date: Wed, 7 Jul 1999 13:03:17 -0400
-From: Daniel Jacobowitz <drow@false.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: cc/gcc/egcs kernel compilation options?
-Message-ID: <19990707130317.A21114@drow.res.cmu.edu>
-References: <199907012249.XAA05762@calvin.demon.co.uk>
-Mime-Version: 1.0
+Message-ID: <3783A613.EEB26616@broadlink.com>
+Date: Wed, 07 Jul 1999 12:10:11 -0700
+From: Scott Wood <scott@broadlink.com>
+MIME-Version: 1.0
+To: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+CC: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: RPX Lite kernel
+References: <37823F71.2BD5AF5F@broadlink.com> <3782515B.471DCEBE@broadlink.com> <37834109.17B9FDC3@switchboard.ericsson.se>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199907012249.XAA05762@calvin.demon.co.uk>; from Barrie Spence on Thu, Jul 01, 1999 at 10:49:57PM +0000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jul 01, 1999 at 10:49:57PM +0000, Barrie Spence wrote:
+Thanks...  mkdep was taking over all my CPU/RAM on my machine, but it worked fine on another RedHat-5.2 box.  Now all I need is a
+cross-compiler... any idea where I can get ppc-linux-gcc?
+
+Marcus Sundberg wrote:
 > 
-> As a PPC newbie, why do we need/use "-msoft-float"? Is this 
-> to handle some processor implementations that don't have 
-> floating-point hardware? (and if so, does it have any overhead 
-> on the 603/604/G3 Macs?). If it does have some cost, could it 
-> not be enabled in the same way as on Intel?
+> Scott Wood wrote:
+> > I'd still like to know if anyone has a working 2.2 kernel on the RPX Lite...  I'd compile one myself, but my B&W G3 LinuxPPC box
+> > is getting its guts replaced and I've heard horror stories about cross-compling the kernel...
 > 
-> Next question, is there any advantage to building a kernel
-> with "-mcpu=604 -mtune=604"? (or whatever is most appropriate).
-
-Floating point operations in the kernel are pretty rare, and thus do
-not need to be optimized for speed; soft-float is thus acceptable.  The
-advantage is that we don't need to save/restore the FPU registers and
-state nearly as often.  And I do not know why x86 does not have this
-issue.
-
-Dan
-
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
+> Well, I've heard horror stories about compiling "hello world" too,
+> but that doesn't mean it's particularly complicated. ;)
+> 
+> If "cross-compiling" from PPC I can't see why you should need to do
+> anything else than configure the kernel properly.
+> And this diff is all that is needed to cross-compile from ix86 Linux:
+> 
+> diff -urN linux-2.2.10.orig/Makefile embedded-2.2.10/Makefile
+> --- linux-2.2.10.orig/Makefile  Sat May 29 03:10:19 1999
+> +++ embedded-2.2.10/Makefile    Tue Jul  6 18:32:40 1999
+> @@ -3,7 +3,8 @@
+>  SUBLEVEL = 10
+>  EXTRAVERSION =
+> 
+> -ARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/)
+> +ARCH := ppc
+> +#ARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/)
+> 
+>  .EXPORT_ALL_VARIABLES:
+> 
+> @@ -18,7 +19,7 @@
+>  HOSTCC         =gcc
+>  HOSTCFLAGS     =-Wall -Wstrict-prototypes -O2 -fomit-frame-pointer
+> 
+> -CROSS_COMPILE  =
+> +CROSS_COMPILE  = ppc-linux-
+> 
+>  AS     =$(CROSS_COMPILE)as
+>  LD     =$(CROSS_COMPILE)ld
+> 
+> //Marcus
+> --
+> -------------------------------+------------------------------------
+>         Marcus Sundberg        | http://www.stacken.kth.se/~mackan/
+>  Royal Institute of Technology |       Phone: +46 707 295404
+>        Stockholm, Sweden       |   E-Mail: mackan@stacken.kth.se
+-- 
++---------------------+----------------------+
+|     Scott Wood      |   Systems  Engineer  |
+|=====================+======================|
+|           BroadLink Communications         |
++--------------------------------------------+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
