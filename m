@@ -1,45 +1,34 @@
-Message-ID: <3E772F39.1090303@embeddededge.com>
-Date: Tue, 18 Mar 2003 09:37:45 -0500
-From: Dan Malek <dan@embeddededge.com>
+Date: Tue, 18 Mar 2003 16:59:45 +0100
+Message-Id: <HBYCFL$662FE8F3AA02562685A2FED9FE2287DA@libero.it>
+Subject: =?iso-8859-1?Q?Problem_with_interrupts_handling?=
 MIME-Version: 1.0
-To: "Penn, John" <jpenn@magisnetworks.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 8250  idma problem - cache?
-References: <BD92DBD34D62AC4FA034933E33E53F7E1724D6@grog>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+From: "=?iso-8859-1?Q?en=5Fch@libero.it?=" <en_ch@libero.it>
+To: "=?iso-8859-1?Q?linuxppc-embedded?=" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Penn, John wrote:
+Hi, all!!
 
-> Much better!!
+I have to realize a char driver to set ATM Utopia for a linux
+embedded system using motorola mpc850sar.
 
-Cool.
+I need help to cofigure interrupt (maybe with registering the interrupt handler function).I used this code
 
-> So for receiving, local bus to system memory, I assume
-> I need to set DGBL?
+if(request_8xxirq(INTERRUPT_LEVEL, MyHandler, 0, DEVICE_NAME, NULL)
+panic("Could not allocate irq");
+cpm_install_handler(CPMVEC_IDMA1, MyHandler, NULL);
 
-Yes.
+(note that INTERRUPT_LEVEL = 4 and CPMVEC_IDMA1 = 0x15)
 
-> What would be a wise choice?  Using system memory?
+I think i set correctly all the cpm and siu registers but it doesn't work!!!!!
 
-The system memory could be a better choice depending upon the
-speed of the device since both the device and local memory
-share the same bus.  It would just remove some contention and
-latency.  There are other system architecture considerations
-but usually pipelining the DMA like this is a performance advantage.
+is this the right code??
+Or there are errors in setting the registers???
+Can someone help me?!??!!!!
 
-> ...  Should I be able to use DPRAM for the BDs and system
-> memory for the buffers?
-
-Yes.  Just ensure the address or whatever indicators are used to
-point the parameter blocks to the BDs in the DPRAM (or local bus)
-are set correctly.  Also verify that the BDs can reside in DPRAM,
-IIRC some peripherals or configurations don't allow it.
-
-
-	-- Dan
+Tanks a lot!
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
