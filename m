@@ -1,47 +1,42 @@
-Date: Fri, 16 Aug 2002 13:50:24 -0700
-From: Matt Porter <porter@cox.net>
-To: Khai Trinh <kqtrinh@yahoo.com>
+Message-ID: <3D5D88C5.9030402@embeddededge.com>
+Date: Fri, 16 Aug 2002 19:20:37 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: joakim.tjernlund@lumentis.se
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 440 PCI adapter card DMA question
-Message-ID: <20020816135024.A2119@home.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: MPC860 reorder and invalidate dcache
+References: <IGEFJKJNHJDCBKALBJLLEELOFFAA.joakim.tjernlund@lumentis.se>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-[Please, always start a new mail when starting a new thread.  Don't
- reply to an old one and change the subject, it messes up people
- using mailbox threading.]
+Joakim Tjernlund wrote:
 
-On Fri, Aug 16, 2002 at 11:39:15AM -0700, Khai Trinh wrote:
-> On one of your response email to me, you said the
-> 440GP maps PCI<->PLB 1:1 and I can use the PCI bus
-> address directly as a PLB address to program the 440GP
-> DMA controller.
->
-> The thing is that the DMA high and low register only
-> allows 36-bit programming whereas the PCI bus address
-> given to me by the Host is 64-bit.
+> I wonder if the MPC860 really can reorder I/O memory accesses?
 
-I was answering with respect to the Ebony PCI-X host bridge
-configuration.
+I don't believe so.  I have sloppily written code that would have
+shown problems if it did, and have never seen it occur.
 
-> Don't I have to manually setup the PCI-PLB mapping
-> before I can program the DMA controller? OR the 440
-> kernel has already handle that?
+> .... affects performance somewhat.
+> Is the wmb() required or can I skip it?
 
-The PCI-X host bridge configuration in the Ebony port is
-implemented for host operation only (i.e. it has set up
-windows and controls BAR assignment within a controlled
-PCI address space).  If you need a special translation
-for your particular adapter application, you will need
-to modify that setup accordingly.
+Can you actually quantify the performance difference and is it important?
+I would strongly recommend using all of the proper memory/IO barriers since
+you never know what will happen with a new version of processor.  It is
+also nice to do this for someone that may wish to use the code in a more
+general manner. :-)
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+
+> Is there a faster way to invalidate the dcache for a big(256KB) area than using invalidate_dcache_range().
+> The area is PAGE aligned.
+
+There are cache operations using SPRs unique to the 8xx that can do this, however,
+I'm not sure it saves much over using the standard PowerPC functions. They are mostly
+useful during initialization and for special static MMU applications.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
