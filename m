@@ -1,53 +1,54 @@
-Date: Wed, 7 Jun 2000 17:20:54 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-cc: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>, mlan@cpu.lu,
-        schmitz@opal.biophys.uni-duesseldorf.de, daenzerm@student.ethz.ch,
-        toe@unlserve.unl.edu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [patch] VRAM detection in controlfb
-In-Reply-To: <Pine.GSO.4.10.10006071705280.652-100000@dandelion.sonytel.be>
-Message-ID: <Pine.LNX.4.10.10006071715540.7397-100000@zirkon.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 8 Jun 2000 01:35:17 +1000
+From: Chris Leishman <masklin@debian.org>
+To: Bernhard Reiter <bernhard@intevation.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Powerbook hard freeze summary (sort of)
+Message-ID: <20000608013517.A30902@freeonline.com.au>
+References: <20000524161837.M6396@cheops.usf.Uni-Osnabrueck.DE>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20000524161837.M6396@cheops.usf.Uni-Osnabrueck.DE>; from bernhard@intevation.de on Wed, May 24, 2000 at 04:18:37PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > Now you understand the fix is very simple:
-> > -		fPtr->fboff = fPtr->fix.smem_len & (PAGE_SIZE-1);
-> > +		fPtr->fboff = fPtr->fix.smem_start & (PAGE_SIZE-1);
+On Wed, May 24, 2000 at 04:18:37PM +0200, Bernhard Reiter wrote:
+> Okay, we have a couple of people running stable Lombards with
+> more than 64 MB.
 >
-> That's not sufficient (perhaps it is in this case, though): both fix.smem_start
-> and fix.smem_len may be not page aligned. To catch all cases, you have to use
-> the formula from my previous posting.
-
-Did that just get lost between XFree release 3 and 4, or did we have it
-wrong all along? I wonder if that was what caused problems on some m68k
-Mac video hardware ...
-
-> > Yes, this is wrong as the authur noted, but interestingly this code spreads
-> > over the all drivers supporting fbdev, though I can't distinguish which is
-> > the original :^)  Maybe polite solution is to fix each driver, but quick
-> > fix will be
-> >
-> > +	pScrn->displayWidth = fPtr->fix.line_width /
-> > +				(fPtr->var.bits_per_pixel >> 3)
+> On the other hand, we have people having hard freezes with
+> Lombard and Pismos even with 64 MB.
 >
-> Typo: the field is called `line_length', not `line_width'.
+> So my analysis is as follows:
 >
-> And that formula is valid for chunky displays only, not for interleaved
-> bitplanes (I suppose pScrn->displayWidth is the width of one line in memory,
-> counted in pixel units?).
+> High bus speed (400 Mhz) seems to be necessary to trigger this hard
+> freeze.
+> More memory makes it more likely for hard freezes to appear.
 >
-> If line_length is 0, you must fallback to xres_virtual / bytes_per_pixel.
+> If there is a problem with the memory it is more likely that it is with the
+> original 64 MB.
+>
+>
+> Is there somebody out there having a >=400 Mhz Lombard
+> and Pismo who is _not encountering hard freezes_ under high pressure?
+> (Preferably with more that 64MB. Because I never got the hard freeze
+> when I only used 64MB with the mem=64MB switch.)
+>
+> It might as well be a design problem of the Powerbooks. Can any of the
+> hardware kernel hackers comments on the differences in architecture
+> for powerbooks and the other G3s? Maybe a linux driver is written sloppy
+> in this area not taking in account how the hardware actually works?
+>
+> 	Bernhard
+>
+> ps.: Just I reminder: I am not subscribed ot the list.
 
-Is the displayWidth / xres_virtual synonymous to the line length (offset
-between start of subsequent lines), or might displayWidth be used for
-something else altogether? displayWidth seems a misnomer (on some
-hardware, there's no video RAM between the end of one scan line and the
-probably page aligned start of the next ...)?
 
-	Michael
+Just to let you know that I'm also running a Pismo with 192 megs ram,
+and it seems very stable.  I'm compiled kernels and run tripwire over the
+filesystem (lots of IO doing that) and no problems.  I'm running the
+linux-pmac-stable kernel.
 
+Chris
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
