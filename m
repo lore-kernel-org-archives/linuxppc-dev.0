@@ -1,84 +1,42 @@
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <v04104400b2e2791a2ac6@[152.173.248.113]>
-In-Reply-To: <19990205164543.000681@mail.mipsys.com>
-Date: Sat, 6 Feb 1999 15:03:31 -0800
-To: BenH <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
-        linuxppc-user@lists.linuxppc.org, linux-pmac@samba.anu.edu.au
-From: "Sandor W. Sklar" <ssklar@stanford.edu>
-Subject: Re: BootX test 1.0.2b1
+Message-ID: <36BD5515.885304BB@wanadoo.fr>
+Date: Sun, 07 Feb 1999 09:55:49 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Gnuplot-3.7 and fprintf format string length
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi,
 
-On my PowerBook G3 Series 250/13.3, your new BootX works *perfectly*,
-adding a feature that I had been hoping and praying for -- alias resolution.
+the new gnuplot-3.7 compiles out of the box on both R4 and pre-R5. It
+runs OK, but there is a bug, initially detected by Pascal Denis:
 
-I now have a folder of vmlinuxes, named with the build version and date.  I
-now can pick one, make an alias to it named "vmlinux", and put it in the
-system folder, and it works!  Thank you so much!
+The commands 'save' or 'save set' give segmentation faults. This does
+not happen on Solaris, so it is Linuxppc related, although it might be
+an egcs problem. More likely, it is a glibc problem, but it appears on
+both glibc-961212 and glibc-2.0.111.
 
-It also seemed to have no problem passing "video=atyfb:vmode:14,cmode:32"
-in the 'additional kernel arguments' line.
+I tracked the problem down to a fprintf with a long format string that
+writes 10 lines of output. If I break it up into 2 fprintf calls writing
+5 lines each, the problem goes away. In gnuplot-3.6, the corresponding
+code contained 10 fprintf statements writing 1 line each, and there was
+no problem.
 
-One other added benefit I noticed is an increase in speed.  With the 1.0.1
-BootX app, it would take between 30-45 seconds after pressing the "linux"
-button for anything to happen.  This version of the BootX app started
-working 5-10 seconds after pressing the "linux" button.
+So my question is: Is there somewhere a limit to the length of a format
+string or to the number of variables that can be printed with a single
+fprintf command? 
 
-Thanks again, and it worked great for me!
+The gdb backtrace on the glibc-2.0.111 version starts with
+#0  0x1431030 in strlen () at soinit.c:59
+#1  0x1415510 in _IO_vfprintf () at vfprintf.c:1529
+but in the glibc sources where I looked for soinit.c, I couldn't see any
+mention of strlen().
 
---Sandy
-
-PS:  Another feature that would be nice (if not too difficult) would be the
-ability to fire off an applescript that would make sure that the "Sound
-Monitoring" was set to Expansion Bay in the Monitors & Sound control panel
-before booting into Linux.  But I don't think that this is too important.
-Thanks again, --Sandy
-
-At 4:45 p  +0100 2/5/99, BenH wrote:
->At this address:
->
-><ftp://ftp.linuxppc.org/development/users/benh/BootX_1.0.2b1.sit>
->
->Is a test version of BootX. It contains some minor changes that I want to
->be tested before it becomes 1.0.2 final. Please tell me if it breaks
->something on your config that used to work with 1.0.1. Please also tell
->me if there is a difference in behaviour with 1.0.1.
->
->Changes:
->
-> - MacOS video drivers are closed before switching to linux
-> - Supports Finder aliases for the kernel and ramdisk
-> - Slight changes to the infos passed to the kernel, will do no harm for
->now and will improve compatibility once the appropriate kernel patch is
->released.
->
->
->--
->           E-Mail: <mailto:bh40@calva.net>
->BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
->
->
->
->
->
->[[ This message was sent via the linuxppc-user mailing list. Replies are ]]
->[[ not forced back to the list, so be sure to  Cc linuxppc-user  if your ]]
->[[ reply is of general interest. To unsubscribe from linuxppc-user, send ]]
->[[ the message 'unsubscribe' to linuxppc-user-request@lists.linuxppc.org ]]
-
-
-
------------------------------------------------------------
-     Sandor W. Sklar
-     Project Liaison, ITSS/OSS
-     Stanford University
-     Polya Hall, Room 256   MC: 4136
-     Stanford, CA 94305-4136
-     Tel:  (650) 723-0512
------------------------------------------------------------
+--
+Martin
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
