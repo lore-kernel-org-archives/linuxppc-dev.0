@@ -1,29 +1,43 @@
-Date: Fri, 5 Jan 2001 08:37:40 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: status of ppc support in official 2.4.0 or Alan's 2.4.0-ac1
-Message-ID: <20010105083740.B14321@opus.bloom.county>
-References: <200101051455.f05Et0v06700@ashley.ivey.uwo.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200101051455.f05Et0v06700@ashley.ivey.uwo.ca>; from khendricks@ivey.uwo.ca on Fri, Jan 05, 2001 at 09:55:00AM -0500
+Date: Fri, 05 Jan 2001 15:58:40 +0000
+Subject: Re: problems when recompiling dmasound modules
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: "Michel Dänzer" <michdaen@iiic.ethz.ch>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="ISO-8859-1"
+Message-Id: <20010105170002.57A401BFD9@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jan 05, 2001 at 09:55:00AM -0500, Kevin B. Hendricks wrote:
+Michel Dänzer wrote:
+>> > so they rely on `make oldconfig' and `make dep' instead...
+>>
+>> vi Makefile, change EXTRAVERSION to append -ids (my usual kinda practice)...
+>>
+>> make oldconfig dep vmlinux modules
+>>
+>>  - builds dmasound_core & dmasound_awacs
+>>
+>> make_install creates a new /lib/modules/2.4.0-test13-pre3-ids and the
+>> modules appear to be installed...
+>>
+>> so... it seems to work for me.
+>
+> The problem only shows up when I boot the new kernel and try to insmod the
+> dmasound modules, have you tried that?
 
-> I have not kept up with 2.4.0 development at all.  I see that Linus has
-> officially released 2.4.0.  Alan has also release 2.4.0-ac1.  What is the
-> status of ppc support in either of these kernels?
+yes, just double-checked (in case my mind was playing tricks...) all OK
+AFAICT.
 
-Don't bother with kernel.org, Alan's tree is better but not fully merged.
-2_3 bk is fine, 2_5 bk will be merged up shortly.
-http://www.fsmlabs.com/linuxppcbk.html
+> If make dep is always needed after make oldconfig that may be the problem as I
+> also rely on make oldconfig telling me if I have to do that. (real men, you
+> know ;)
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+I'd assumed it was necessary... I can't recall ever seeing the Makefile
+finish an oldconfig without saying "now do a make dep"...
+
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
