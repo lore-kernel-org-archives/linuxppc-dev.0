@@ -1,27 +1,33 @@
-Subject: Re: cpm_enet_down and MAC address change.
-To: dnevil@snmc.com (Daris A Nevil)
-Date: Mon, 4 Sep 2000 12:03:45 +1100 (EST)
+Subject: Re: kernel panic on mcp750
+To: stevebj@inxpress.net (Stephen B Johnson)
+Date: Mon, 4 Sep 2000 12:22:09 +1100 (EST)
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <39AFAD3C.C849E398@snmc.com> from "Daris A Nevil" at Sep 01, 2000 08:21:00 AM
+In-Reply-To: <39B28BB4.A52E1E69@inxpress.net> from "Stephen B Johnson" at Sep 03, 2000 12:34:44 PM
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000904010345.E061E251@elph.research.canon.com.au>
+Message-Id: <20000904012209.57872C2@elph.research.canon.com.au>
 From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Daris A Nevil writes:
-> I have been promising myself that I would re-work the ethernet driver ...
+Stephen B Johnson writes:
+> I'm observing a kernel panic when booting the kernel on a Motorola
+> MCP750.  The panic indicates "Kernel panic: No init found.  Try passing
+> init= option to kernel."
 
-If you do, I think it would be good to integrate similar changes to those I
-made to the FEC driver, in the patch at:
-    http://members.xoom.com/greyhams/linux/patches/2.2/fecdmaskb.patch
+Look in init/main.c:init, where the kernel tries to exec an init program.
+One of the steps is failing.  You can add printfs to find out which one.
 
-In particular, DMA directly into the skbuf avoids a copy, and received
-packets that get dropped should only be counted in rx_dropped -- not counted
-again in rx_packets.  Also, it's good to avoid reading the buffer descriptor
-status bits multiple times, especially since they're uncached.
+Check the following:
+    - Do you have CONFIG_SASH set?
+	If so:
+	    - does CONFIG_SASH_PATH exist?
+	    - Is it statically linked?
+	    - Do you have /dev/console on you root filesystem?
+
+    - Do any of /sbin/init, /etc/init, /bin/init, /bin/sh exist?
+    - Are the shared libraries set up to run the above correctly?
 
 Regards,
 Graham
