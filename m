@@ -1,36 +1,50 @@
-From: DavidHo@nanometrics.ca
-Subject: Input driver on 2.4.18 kernel
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: linuxconsole-dev@lists.sourceforge.net
-Message-ID: <OF275AEF2A.58524FF9-ON85256DBB.0076FAF2@nanometrics.ca>
-Date: Fri, 10 Oct 2003 18:11:11 -0400
-MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+To: "somshekar chandrashekar kadam" <som_kadam1@rediffmail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	"Joao Vicente" <joao.vicente@spectel.com>
+Subject: Re: relocate code 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "11 Oct 2003 07:13:22 -0000."
+             <20031011071322.23815.qmail@webmail28.rediffmail.com>
+Date: Sat, 11 Oct 2003 16:32:28 +0200
+Message-Id: <20031011143233.925CBC59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+In message <20031011071322.23815.qmail@webmail28.rediffmail.com> you wrote:
+>
+>
+> --Next_1065856402---0-203.199.83.38-23744
+> Content-type: text/html;
+> 	charset=iso-8859-1
+> Content-Transfer-Encoding: quoted-printable
+> Content-Disposition: inline
 
-     I have been looking into the most suitable way of implementing a
-keyboard driver for our custom device.  The hardware is a 5 button keypad
-that is hooked up directly to the GPIO lines on the processor.  What
-confuses me the most with the 2.4.18 kernel I'm using is there are two ways
-of implementing the driver.  The majority of the drivers in drivers/char
-are written in the old way but there is also a partial implementation of
-the new USB input subsystem that simplifies the driver code a great deal.
+Arghhh.... Please don't post HTML to the  mailing  list.  Send  plain
+text only.
 
-     Can anyone tell me if the USB input subsystem on the 2.4.18 is
-suitable for a non-USB input device?   Do I need a patch before I can use
-this subsystem?  The Dreamcast keyboard driver adapted its code from
-usb/usbkbd.c, is this a good starting point for my keypad driver as well?
-I really hope I can use the new framework since it will safe me from
-writing code for the old framework and then rewriting it later when it's
-removed in a future kernel.
+>  I have ppcboot-2.0.0 working on 8mb SDRAM ,
+> now i have moved to same type of board with 32mb SDRAM , with U-boot,
 
-Thanks,
-David Ho
-Nanometrics, Inc
+You are off topic here. You should rather ask questions like this  on
+the U-Boot-users mailing list.
 
+> my code gets hanged in relocate code , sdram pattern i swritten properly, and intilaized ,
+
+> ANY ideas please suggest , i dont get whats going wrong
+
+Your SDRAM initialization is broken.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+If in any problem you find yourself doing an immense amount of  work,
+the answer can be obtained by simple inspection.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
