@@ -1,53 +1,44 @@
-Subject: Why is search_exception_table disabled for modules on PPC?
+From: bob@kunk.jriver.com
+Message-ID: <20000413035855.19218.qmail@kunk.jriver.com>
+Subject: MACE ethernet problem
 To: linuxppc-dev@lists.linuxppc.org
-Date: Thu, 13 Apr 2000 11:09:37 +1000 (EST)
+Date: Wed, 12 Apr 2000 22:58:55 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000413010937.A91D73C998@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello again,
+Installed the latest stable kernel (2.2.15pre17) from Paul's rsync on a
+powermac 7200/90.
 
-A few days ago on the linuxppc-dev mailing list, I asked:
-> Can anyone tell me why arch/ppc/mm/extable.c:search_exception_table only
-> searches the kernel exception table on PowerPC in 2.2.14?  Why isn't the
-> per-module table search enabled like on every other architecture?
+If I do pings on the local network, 2/3 to 9/10's of the packets are lost.
+Looking at the switch it's connected to, I see the blips for the
+transmitted packets and also for the return packets but the 7200 doesn't
+seem to see most of the return packets.
 
-Well looks like everyone's asleep. Anyway, it looks wrong to me. I believe it
-means that modules which attempt their own user space accesses without using
-the uaccess stuff can cause a kernel panic. I think the following fix
-should be applied to the 2.2 and 2.3 branches:
+I believe this is not a hardware problem, the machine works great in MacOS.
+Also, if I put a mitron E3200p (ne2k pci card) in the machine and use it
+instead it works great. I feel fairly certain that this points to a driver
+problem.
 
-As an aside, is there a better address I should mail kernel patches to in
-order to ensure that they make it into the BitKeeper repository?
+Other info:
 
+The same OS and Kernel on a 7200/75 works fine (though it's connected to a
+hub and not a switch).
+The lights on the switch look OK, 10mb half duplex....
 
-Index: arch/ppc/mm/extable.c
-===================================================================
-retrieving revision 1.1.1.1
-diff -u -r1.1.1.1 extable.c
---- arch/ppc/mm/extable.c	1999/12/30 05:56:30	1.1.1.1
-+++ arch/ppc/mm/extable.c	2000/04/10 09:40:12
-@@ -36,7 +36,7 @@
- {
- 	unsigned long ret;
+I was thinking of trying to tweak parameters in the driver source
+but wondered if anyone had other ideas. Looking at the driver it
+is written by Paul M.
 
--#if 1 /*ndef CONFIG_MODULES*/
-+#ifndef CONFIG_MODULES
- 	/* There is only the kernel to search.  */
- 	ret = search_one_table(__start___ex_table, __stop___ex_table-1, addr);
- 	if (ret) return ret;
-
+Do you have any suggestions Paul??
 
 Thanks,
-Graham
+Bob
 --
-Graham Stoney
-Principal Hardware/Software Engineer
-Canon Information Systems Research Australia
-Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
