@@ -1,34 +1,29 @@
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Serial port text corruption
-Date: Tue, 18 May 2004 12:03:04 +0200
-Message-ID: <JPEALJAFNGDDLOPNDIEECEJBCIAA.joakim.tjernlund@lumentis.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+From: Martin Egholm Nielsen <martin@egholm-nielsen.dk>
+Subject: Interrupt handling triggered by GPIO-input on 405EP?
+Date: Tue, 18 May 2004 14:29:46 +0200
+Message-ID: <c8cvjr$m40$1@sea.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Details:
-Sometimes when connecting the RS323 port between a laptop on our custom board
-to login into a bash shell it looks like this:
+Hello there,
 
-Press return to get a login prompt, type username(root), hit return. Now
-I expect to see the "Password: " prompt, but instead I see
-random crap chars. Wait until the login timeouts, about 60 seconds, the timeout message
-is also crap chars, but the following login prompt displays OK and now
-I can login without any crap chars.
+I've done some initial coding with the ibmgpio driver with my PPC405EP
+(PPChamelon) board, and inspired by the "gpio_test.c"-application, I've
+succeeded in turning on some attached LEDs on some of the ports, and
+reading whether some of the others ports are set high or low using the
+(manually) attached pushbutton-switches.
 
-This is very confusing and I would fix it but I don't know where to start.
-Any guesses as to where the problem is? Kernel serial layer, the 8xx uart.c driver,
-the user space login program or somewhere else?
+However, the way the application is at the moment I need to poll the
+input-ports every so often in order to detect a pushbutton-activation.
+Hence, I would like to register an interrupt-handler (of some sort) that
+informs me when these events occur. Is that somehow possible?
 
-SMC1 is the serial HW used on a 860/862 CPU.
-Kernel: linuxppc_2_4_devel from around 2.4.21-rc6 with all 8xx_io/uart.c patched to
-current 2.4 version.
-Userspace progs are from MontaVista hardhat 2.0. Login uses PAM.
+Best regards,
+  Martin Egholm
 
- Jocke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
