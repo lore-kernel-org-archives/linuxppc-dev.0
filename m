@@ -1,35 +1,57 @@
-Message-Id: <200006281530.RAA30903@denx.local.net>
-To: Pei-Jie Hong <Pei-Jie.Hong@cern.ch>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: A question about head.S 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 28 Apr 2000 16:29:46 +0200."
-             <3909A05A.E1901D52@cern.ch>
-Date: Wed, 28 Jun 2000 17:30:03 +0200
+Message-ID: <395A1DC8.B5B13377@ocegr.fr>
+Date: Wed, 28 Jun 2000 17:46:16 +0200
+From: Zirong Wang <zirong.wang@ocegr.fr>
+MIME-Version: 1.0
+To: guinan@bluebutton.com
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MBX IDE
+References: <Pine.LNX.4.21.0006280808460.16924-100000@gemini.home.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3909A05A.E1901D52@cern.ch> you wrote:
+Jamie Guinan wrote:
 >
-> In arch/ppc/kernel/head.S, there are lines looks like
-> bne 4f or b 5f, I know they are branch instructions, but what
-> about 4f or 5f. Are they the relative length? and what is the unit,
-> I mean if 4f is a number , is it number of instructions or number
-> of bytes or words?
+> There was a thread back in November about getting IDE going on
+> an MBX,
+>
+> http://lists.linuxppc.org/listarcs/linuxppc-embedded/199911/msg00054.html
+>
+> Did anyone make any progress on this?  Meaning, is there a recent
+> kernel with working IDE-on-MBX.  I know its an oddball combination,
+> but I just wanted to check.
+>
+> With a few tweaks to MontaVista 2.2.13, I get as far as seeing,
+>
+> W82C105: IDE controller on PCI bus 00 dev 19
+> W82C105: not 100% native mode: will probe irqs later
+> SL82C105 command word: 5
+> IDE timing: 00000909, resetting to PIO0 timing
+> SL82C105 command word: 5
+> IDE timing: 000003e4, resetting to PIO0 timing
+>
 
-You will also see labels "4:" and "5:" etc. in the text.  "4f"  means
-"label  4  searching  forward",  while  "5b"  means "label 5 seaching
-backwards".
+I had a similar problem with a MTX board (not MBX), and the final
+thing that deblocked the situation was by changing the file
+/usr/src/linux/driver/block/sl82c105.c
 
-Wolfgang Denk
+I simply enabled the winbond by changing the line
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Heavier than air flying machines are impossible.
-                    -- Lord Kelvin, President, Royal Society, c. 1895
+  pci_write_pci_config_dword(dev,0x40,0x10ff08a1) to
+
+  pci_write_pci_config_dword(dev,0x40,0x10ff0011)
+
+I am not sure for your case since this line is enclosed between
+"#ifndef CONFIG_MBX", maybe you can try put the line outside the
+"ifdef" construct?
+
+I had changed the 0x44 register's value to 0x0260:
+  pci_write_pci_config_dword(dev,0x44,0x0260)
+
+hope this helps
+
+---------------------------------------------------------------------
+Zirong Wang    Oce Industries  1, Rue J. Lemoine 94015 Creteil France
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
