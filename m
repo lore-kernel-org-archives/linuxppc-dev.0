@@ -1,33 +1,48 @@
-Date: Tue, 14 Mar 2000 10:34:49 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Cort Dougan <cort@fsmlabs.com>
-cc: dony <dony.he@huawei.com.cn>, eric_mariacher@fr.ibm.com,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: RTlinux patches for mpc8xx-2.2.13 ...
-In-Reply-To: <20000313201813.D1280@medea.fsmlabs.com>
-Message-ID: <Pine.HPX.4.10.10003141033130.14941-100000@gra-ux1.iram.es>
+Message-ID: <20000314141913.16859.qmail@web219.mail.yahoo.com>
+Date: Tue, 14 Mar 2000 06:19:13 -0800 (PST)
+From: Sebastien Articlaux <sebastien_articlaux@yahoo.com>
+Subject: Hi!
+To: Wolfgang Denk <wd@denx.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Hello Wolfgang,
 
+My last e-mails on the mailing list wasn't very
+constructive...I'm agree!
+So,I've made some research to inform me on the process
+of creating a ramdisk.
+I've learned a lot of things and now I know the good
+questions to ask!
 
-On Mon, 13 Mar 2000, Cort Dougan wrote:
+Ok, tell me if I'm wrong!
+Normally there is two ramdisk, the init ramdisk and an
+other,bigger wich contain the complete system.
+and this is linuxrc in the initramdisk wich mount the
+real ramdisk, right?
+But for us,we just use the initramdisk "as ramdisk"...
+It's a minimal file system but to begin it's ok,
+right?
+So now I'm trying to create a good initramdisk.
+I've put the patch for SASH in source, but I must have
+to recompile SASH (that's what I understand when I
+look into your CDK files)
+Where can I found the source of SASH if I must
+recompile it?
+Then do I must put it in /bin/sash in my initrd and
+make a link?
+ln -s sash sh  to have /bin/sh -> sash  ?
+And need I have to create a linuxrc if I have just the
+initrd? if yes, what must I put in it because I don't
+understand.
 
->
-> It "should".  That means I can't see why it wouldn't but haven't tested ona
-> the 8xx's yet.  You can grab it from
-> ftp://ftp.fsmlabs.com/pub/rtlinux/v3.0/
->
-> If you try it out please let me know how it goes (or how it fails).
+Thanks you for your help
 
-Do you think it would work on MVME boards ? (OpenPIC interrupt
-controller). I might give it a try now that I've got VME working again on
-2.3.50 and 2.4 is in sight.
-
-	Gabriel.
+Sébastien ARTICLAUX
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
