@@ -1,31 +1,41 @@
-From: "Stefano Coluccini" <s.coluccini@caen.it>
-To: "Thomas Maeke" <thomas.maeke@gmd.de>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: RE: searching 2.2.14 patch for MVME5100
-Date: Sat, 7 Apr 2001 11:19:28 +0200
-Message-ID: <NDBBIFIMCKPOADMAJOKMIEADDBAA.s.coluccini@caen.it>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <01040612245604.15980@parry>
+From: phandel@cise.ufl.edu
+Date: Sat, 07 Apr 2001 03:39:08 -0700 (PDT)
+Subject: Re: DMASOUND->rev6  (2.4.3)(attn: Xine, MOL, PowerComputing, ibook,
+ Tumbler)
+In-reply-to: <20010405110853.8CFD5DB9DD@atlas.valhalla.net>
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-id: <Pine.LNX.4.21.0104070333010.1088-100000@like.mine.nu>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Hi Everybody,
->
-> has anybody a (complete) patch for 2.2.14 or can anybody
-> send me a compiled kernel for the motorola
-> mvme5100 board for booting via tftp
-> (and installing via nfs or ftp) ??
->
+On Thu, 5 Apr 2001, Iain Sandoe wrote:
 
-The 2_5 kernel support the MVME5100, you can download it from the bitkeeper
-repository. I have a MVME5100 at the office and I can send you a compiled
-image on monday when I go back work.
+> Please include the "i138" in any bug report -it's my local BK cset
+> identifier for the patch.
+[snip]
+>  - fix bug where TX stops when dbdma status comes up "DEAD"
+>    so far only reported on PowerComputing clones ... but.
+>    (PowerComputing clones - NOT TESTED - please let me know what happens).
 
-Bye.
-Stefano.
+Nope, I can still kill sound by merely moving the mouse.  Here is the new
+line from the console:
+
+Apr  7 03:31:13 like kernel: dmasound_pmac: tx-irq: xfer died - patching
+it up...
+
+...but sound is dead, along with the player app, just as before.
+
+This was with Paul's 2.4.3 (slight patch to work around missing
+process_bridge_ranges) and both patches you mentioned in this email.
+
+
+
+Thanks,
+Peter
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
