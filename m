@@ -1,26 +1,48 @@
-Message-Id: <5.0.2.1.2.20010327153842.00ad0768@mail.munich.netsurf.de>
-Date: Tue, 27 Mar 2001 15:41:40 +0200
-To: Bill Fink <billfink@capu.net>
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: xine, ppc and illegal instructions
-Cc: linuxppc-dev@lists.linuxppc.org, billfink@capu.net
-In-Reply-To: <Pine.LNX.4.21.0103262330001.19578-100000@gwiz.nasa.atd.net
- >
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Date: Tue, 27 Mar 2001 08:30:13 -0600 (CST)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: "Michael R. Zucca" <mrz5149@acm.org>
+Cc: phandel@cise.ufl.edu,
+	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Sound stoppage
+In-Reply-To: <l03130301b6e64356789c@[24.218.240.205]>
+Message-ID: <Pine.A41.3.96LJ1.1b7.1010327082411.54638A-100000@unlserve.unl.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 07:30 27.03.2001, Bill Fink wrote:
->         *  In configure, there's a case check for "powerpc-*-linux*)".
->            This should be changed to "powerpc-*-linux* | ppc-*-linux*)".
+On Tue, 27 Mar 2001, Michael R. Zucca wrote:
 
-This isn't correct, it's always powerpc-*-linux*, the other one is
-superflous. This usually happens if people didn't update their configure
-scripts for a _long_ time and your patch is just papering over that.
+> I'd be willing to bet this is the dbdma bug Iain mentioned. Like the dma
+> controller's getting wedged and the driver waits and waits for it to
+> complete a transaction. I can wait for the fix.
 
-Franz.
+It sounds exactly like the bmac bug.  So changing pmac_awacs_tx_intr()
+from
+
+	while (write_sq.active > 0) {
+		...
+		if ((stat & ACTIVE) == 0)
+			break;	/* this frame is still going */
+		...
+	}
+
+to
+
+	while (write_sq.active > 0) {
+		...
+		if ((stat & ACTIVE) == 0) {
+			if (cp == bus_to_virt(in_le32(&awacs_txdma->cmdptr)))
+				break;
+		}
+		...
+	}
+
+fixes it or something?
+
+
+Takashi Oe
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
