@@ -1,27 +1,26 @@
-Message-ID: <3B8A89B2.814DFA6B@mvista.com>
-Date: Mon, 27 Aug 2001 13:56:02 -0400
+Message-ID: <3B8A8E16.B26A9254@mvista.com>
+Date: Mon, 27 Aug 2001 14:14:46 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: acmay@acmay.homeip.net
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: get_cycles/get_tbl on 405
-References: <20010823185911.A3291@ecam.san.rr.com> <3B870EDE.711669EB@mvista.com> <20010825003547.J1165@sink.san.rr.com>
+To: Ralph Blach <rcblach@raleigh.ibm.com>
+Cc: Linix PPC Emmbedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: support for only 255 processes on a 405
+References: <3B8A3145.8F73BDA2@raleigh.ibm.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-acmay@acmay.homeip.net wrote:
+Ralph Blach wrote:
+>
+> Is there any support for having a special case for the 405 that would
+> limit the number of processes to 255.  This means that the pid and
+> context could be the same.  This might be a performance gain.
 
-> They did. I just confused myself with too many kernel versions.
-
-Cool.
-
-> The __ftr_fixup doesn't seem to be used much in any of the other
-> arch's.
-
-It's a PowerPC thing that Ben recently added to make it easier
-for us to manage the minor differences among the processor variations.
+The PID and context are already reused until there are more than 255
+(or whatever the MMU can support) active processes.  There isn't a
+special case needed, this is generic to all PowerPC with small context
+space resources.
 
 
 	-- Dan
