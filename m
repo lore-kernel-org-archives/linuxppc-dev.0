@@ -1,66 +1,60 @@
-Date: Tue, 27 Jun 2000 13:41:55 -0400 (EDT)
-From: "Mark S. Mathews" <mark@absoval.com>
-To: Dan Malek <dan@netx4.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PLPRCR & Checkstop reset
-In-Reply-To: <3957AB3D.7A0244D9@netx4.com>
-Message-ID: <Pine.LNX.3.96.1000627133308.22108D-100000@tristar.cc.absoval.com>
+Message-ID: <3958E94D.E55D4294@netx4.com>
+Date: Tue, 27 Jun 2000 13:50:05 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Mark S. Mathews" <mark@absoval.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PLPRCR & Checkstop reset
+References: <Pine.LNX.3.96.1000625172850.17884A-100000@tristar.cc.absoval.com> <3958E040.15B86909@netx4.com>
+Content-Type: multipart/mixed; boundary="------------AFCAF9F21A0B2FFFA3681894"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hmmm.  I'm not exactly sure which 'kind' of reset I should be using.
+This is a multi-part message in MIME format.
+--------------AFCAF9F21A0B2FFFA3681894
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-What I'm trying to accomplish is getting "init 6" or "reboot" to work as
-expected.  I.e. JLAPC (Just like a PC  ;-)
+Dan Malek wrote:
 
-I'd like the reset to result a reset to the RPXU2 which restarts my kernel
-via 'autoboot'.  Since the 'reset' command in the RPXU and U2 used the
-checkstop thing, I figured it would would work OK for me.
+> Here is the first installment.
 
-I haven't yet studied the reset part of the 823 manual close enough to
-figure out all of the available reset modes.
-
-I'll defer to your expertise the selection of the 'right way' to do this.
-;-)
-
-Thanks,
--Mark
-
-On Mon, 26 Jun 2000, Dan Malek wrote:
-
->
-> Mark S. Mathews wrote:
->
-> > We're using the mvista 2.2.13-3 kernel sources and I'd like to add a
-> > software reboot capability.
->
->
-> How do you actually want to reboot?  At one time, I had modified
-> the kernel "gorom()" function to simply jump into the boot rom as
-> if a reset occurred.  I should make this work again for many reasons.
->
-> If you really want the hard reset, which in some cases on some
-> designs will reset some external hardware sometimes, then the
-> checkstop reset will do the trick.  This is often confused with
-> performing a hard reset function, which really isn't the same thing.
->
-> I will dig up the code for both cases.
->
->
-> 	-- Dan
->
->
+Let's try this again.......I will actually attach something
+this time.  I am travelling and don't have access to a system
+or enought documentation to attempt checkstop/reset.
 
 
-Mark S. Mathews
 
-AbsoluteValue Systems      Web:    http://www.linux-wlan.com
-P.O. Box 941149            e-mail: mark@linux-wlan.com
-Maitland, FL 32794-1149    Phone:  407.644.8582
-USA                        Fax:    407.539.1294
+	-- Dan
+--------------AFCAF9F21A0B2FFFA3681894
+Content-Type: text/plain; charset=us-ascii; name="m8xx_setup.patch"
+Content-Disposition: inline; filename="m8xx_setup.patch"
+Content-Transfer-Encoding: 7bit
+
+--- linux.old/arch/ppc/kernel/m8xx_setup.c	Wed Feb 16 11:43:25 2000
++++ linux/arch/ppc/kernel/m8xx_setup.c	Tue Jun 27 09:47:27 2000
+@@ -228,9 +240,17 @@
+ void
+ m8xx_restart(char *cmd)
+ {
+-	extern void m8xx_gorom(void);
++	extern void m8xx_gorom(uint bp, uint startaddr);
++	uint	startaddr;
++
++	startaddr = 0xfff00100;
++
++	if (cmd != NULL) {
++		if (!strncmp(cmd, "startaddr=", 10))
++			startaddr = simple_strtoul(&cmd[10], NULL, 0);
++	}
+
+-	m8xx_gorom();
++	m8xx_gorom((uint)__pa(res), startaddr);
+ }
+
+ void
+
+--------------AFCAF9F21A0B2FFFA3681894--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
