@@ -1,26 +1,36 @@
-Mime-Version: 1.0
-Message-Id: <v04220800b63946df2900@[10.0.0.42]>
-In-Reply-To: <3A13D8D9.20F0F22@denise.shiny.it>
-References: <3A13D8D9.20F0F22@denise.shiny.it>
-Date: Thu, 16 Nov 2000 00:12:23 -0800
-To: Giuliano Pochini <pochini@denise.shiny.it>,
-        linuxppc-dev@lists.linuxppc.org
-From: "Timothy A. Seufert" <tas@mindspring.com>
+Message-ID: <3A13B00C.988212F9@inf.ethz.ch>
+Date: Thu, 16 Nov 2000 10:59:40 +0100
+From: Leonhard Jaschke <jaschke@inf.ethz.ch>
+MIME-Version: 1.0
+CC: linuxppc-dev@lists.linuxppc.org
 Subject: Re: G4 internal modem
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+References: <3A13D8D9.20F0F22@denise.shiny.it>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 7:53 AM -0500 11/16/00, Giuliano Pochini wrote:
->When I send something to ttyS0 I see from /proc/interrupts
->that interrupt counters for SCC change. Perhaps the serial
->interface works, but the modem is a winmodem... :(
+Giuliano Pochini wrote:
+>
+> When I send something to ttyS0 I see from /proc/interrupts
+> that interrupt counters for SCC change. Perhaps the serial
+> interface works, but the modem is a winmodem... :(
 
-No, they're normal serial modems.  Apple was one of the first
-companies to do "winmodems" with the old GeoPort pods, but they
-haven't done a single one since then.
+I have a problem with the internal modem on the dual G4 450. When I try
+to use minicom on /dev/ttyS0 it tells me that it can't find that device.
 
-   Tim Seufert
+This happens allthough the kernel (2.2.18pre18) told me that he
+recognized the internal modem (cobalt modem on tty00 .... is that right?
+I mean - there is no /dev/tty00)
+
+When minicom tries to access /dev/ttyS0 the speakers go on an off. Then
+minicom tells me that the device can't be found. That's kind of wierd.
+Could it be that there is some device driver inferring with the serial
+device driver? How can I check that?
+
+Can anybody help me?
+
+Regards
+	Leonhard
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
