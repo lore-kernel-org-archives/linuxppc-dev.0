@@ -1,39 +1,36 @@
-Date: Wed, 21 Jul 2004 09:17:59 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Wolfgang Denk <wd@denx.de>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: can the 8xx patch configuration be made more comprehensible? 
-In-Reply-To: <20040721125921.119FBC109F@atlas.denx.de>
-Message-ID: <Pine.LNX.4.60.0407210914450.4882@dell.enoriver.com>
-References: <20040721125921.119FBC109F@atlas.denx.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: c-pestka@innopsys.fr
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Bestcomm on mpc5200 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 21 Jul 2004 15:49:10 -0000."
+             <40FE9076.2080505@innopsys.fr>
+Date: Wed, 21 Jul 2004 16:35:42 +0200
+Message-Id: <20040721143547.39D3AC109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 21 Jul 2004, Wolfgang Denk wrote:
-
-> There are least 3 that are relevant here:
+In message <40FE9076.2080505@innopsys.fr> you wrote:
 >
-> - MPC850 microcode patch for relocating I2C/SPI parameters.
-> - MPC860 microcode patch for relocating I2C/SPI parameters
+>     I ' ve seen there is a Bestcomm API on the ELDK from Denx for the
+> mpc5200, but I don' t know how can I use it on a linux system.
+>     Is someone has ever used it, or an example to give me?
 
-   i can see that, in the 2.6 arch/ppc/8xx_io/micropatch.c file, there
-is a test for the macro USE_IIC_PATCH.  now, back in wolfgang's 2.4.25
-source tree, that macro is defined in include/asm-ppc/commproc.h
-thusly:
+See how is used by the Linux device drivers - I'm not  sure  if  this
+will serve as a good example or a bad one, though ;-)
 
-#ifdef CONFIG_UCODE_PATCH
-# define USE_IIC_PATCH
-#else
-# undef  USE_IIC_PATCH
-#endif
+On the CVS server there is also
+arch/ppc/5xxx_io/bestcomm/doc/BestCommAPIUserGuide.pdf
 
-   however, in the 2.6 tree, i see nowhere that that macro could
-possibly be set, so it seems that any tests for USE_IIC_PATCH in the
-2.6 tree are irrelevant, no?
+Best regards,
 
-rday
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Computers are not intelligent.  They only think they are.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
