@@ -1,41 +1,28 @@
-Date: Mon, 25 Sep 2000 14:26:17 -0400
-Subject: ybin, nvsetenv and MacOS X
-From: johnathan spectre <jspectre@lords.com>
-To: <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <B5F51108.2280%jspectre@lords.com>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Mon, 25 Sep 2000 20:38:08 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+        R Shapiro <reshapiro@mediaone.net>,
+        Michel Dänzer <daenzerm@student.ethz.ch>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.0/1 with rage II/rage pro -- should the ati driver work?
+In-Reply-To: <Pine.LNX.4.21.0009251945050.1113-100000@idd-01.imbc.gr>
+Message-ID: <Pine.LNX.4.10.10009251941450.5808-100000@zirkon.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Thanks to Ethan Benson's help I have ybin up and running, updating nvsetenv
-(available at
-ftp://www.penguinppc.org/users/hollis/pmac-utils-2.0-2.src.rpm) let me use
-nvsetenv with a PowerBook G3 (Firewire). ybin will now properly set OF's
-boot variables so I don't have to.
+>
+>   Hmm does this mean that mmapping the framebuffer doesn't give you the
+> start of vram but vram+offset ? if yes then we have a big problem here.
 
-I now have one problem left. The triple-booter works fine for MacOS 9 and
-Linuxppc (via yaboot), but when I try to boot MacOS X I have the following
-problem...
+No, atyfb reserved some space at the end of vram (MMIO mirrored there,
+please try to memset (0) that area for kicks. Makes you think you're
+melting your display).
 
-After an install of ybin (I've reinstalled it a few times) selecting "x"
-will result in some disk activity the first time I press "x". Then return me
-to ybin's boot menu.
-
-Pressing "x" every time after boots me into my MacOS 9 partition as if I
-pressed "m" or let the system boot to default (it doesn't cycle after that
-first time).
-
-I'm wondering if ybin hasn't been updated to MacOS X Beta yet or is
-something wrong? OS X is installed on partition 16 on my system and boots
-fine if I use Apple's boot disk app to set it as the boot volume.
-
-Additionally, I tried "boot hd:16,\\:tbxi" which is what I thought the boot
-menu was trying to do. I get an error message and nothing happens (I might
-be wrong though, I'm still learning what these scripts do).
-
-Any help? Suggestions? Thanks!
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
