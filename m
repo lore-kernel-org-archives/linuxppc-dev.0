@@ -1,51 +1,60 @@
-Message-ID: <3C39BA9E.7D2FAD56@chinook.com>
-Date: Mon, 07 Jan 2002 10:11:26 -0500
-From: Peter Desnoyers <pdesnoyers@chinook.com>
+Subject: RE: Kernel Oops when receiving a lot of UDP packets while booting
 MIME-Version: 1.0
-To: Liu HongXun-a16975 <a16975@motorola.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Question on the pcmcia module for ppc
-References: <01139FC052A0D411900B00508B9535FC04957C2E@ZCH07EXM04.corp.mot.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Mon, 7 Jan 2002 15:16:55 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E31459415@kolkrabbi.flaga.is>
+From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
+To: "Peter Desnoyers" <pdesnoyers@chinook.com>
+Cc: "LEROY Christophe" <christophe.leroy@c-s.fr>,
+	"linuxppc" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Liu HongXun-a16975 wrote:
+> -----Original Message-----
+> From: Peter Desnoyers [mailto:pdesnoyers@chinook.com]
+> Sent: 7. janúar 2002 15:02
+> To: Kári Davíðsson
+> Cc: LEROY Christophe; linuxppc
+> Subject: Re: Kernel Oops when receiving a lot of UDP packets while
+> booting
 >
-> Hi, Peter and all,
-> Could you give me some more detailed hints?
-
-I'll repeat what I said, more slowly and clearly :-)
-
-   I don't think that inb() and outb() are working to your PCMCIA
-   card, since it appears that the software does not like the
-   return value from what is probably the first inb() read from
-   the card's I/O space.
-
-That means that the code for inb() (_IOBASE and all that) doesn't match
-the way you're initializing your PCMCIA registers.
-
-> As to the IO space, I defined
 >
-> #define  _IO_BASE              0x80000000
-> #define  _IO_BASE_SIZE   0x1000
-> in the header file for my board.
-> And I use ioremap() in function  arch/ppc/mm/init.c/MMU_init().
-> ioremap( _IO_BASE, _IO_BASE_SIZE);
-> Is that OK for PCMCIA IO base access?
+> > I have verified that I am getting packets over the ethernet
+> > before the scc_enet_open() is called, I somehow suspect that
+> > this might be causing my random crashes.
+>
+> You just kludge it by looking at your 'opened' flag and dropping the
+> packet in scc_enet_rx if it's false.  If it stops the
 
-You'll have to tell me.  Or else you'll have to provide some information
-on how you're initializing the PCMCIA registers.
+Yes I will try that too.
 
-One very relevant question here - do you have PCI on your board?
-Mapping all this stuff properly is a bit harder if you do, but still
-doable.
+> crashes, you'll be
+> OK until you find a version of the driver that doesn't have this
+> problem.
+>
+> The version of the driver I use does all the hardware
+> initialization in
+> scc_enet_init, and then all that scc_enet_open does is call
+> netif_start_queue.
 
---
-.....................................................................
- Peter Desnoyers            (781) 457-1165   pdesnoyers@chinook.com
- Chinook Communications     (617) 661-1979   pjd@fred.cambridge.ma.us
- 100 Hayden Ave, Lexington MA 02421
+My enet.c does excactly this. And it is deffinitly not doing the right
+thing,
+try e.g. to flood ping the board while it is booting you will see all
+kinds
+of wonderful strange behaviour.
+
+Thanks,
+
+K.D.
+
+>
+> --
+> .....................................................................
+>  Peter Desnoyers            (781) 457-1165   pdesnoyers@chinook.com
+>  Chinook Communications     (617) 661-1979   pjd@fred.cambridge.ma.us
+>  100 Hayden Ave, Lexington MA 02421
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
