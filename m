@@ -1,36 +1,36 @@
-From: acmay@acmay.homeip.net
-Date: Sat, 25 Aug 2001 00:35:47 -0700
-To: Dan Malek <dan@mvista.com>
-Cc: andrew may <acmay@acmay.homeip.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: get_cycles/get_tbl on 405
-Message-ID: <20010825003547.J1165@sink.san.rr.com>
-References: <20010823185911.A3291@ecam.san.rr.com> <3B870EDE.711669EB@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3B870EDE.711669EB@mvista.com>; from dan@mvista.com on Fri, Aug 24, 2001 at 10:35:10PM -0400
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: "Elan Feingold" <elan@nxnetworks.com>
+To: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Driver question
+Date: Sun, 26 Aug 2001 14:53:47 -0500
+Message-ID: <NDBBLJKOJGKDOFBHNPGEGEIKCEAA.elan@nxnetworks.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Aug 24, 2001 at 10:35:10PM -0400, Dan Malek wrote:
-> andrew may wrote:
-> >
-> > I wanted to do some quick time measurements of some things on a driver
-> > running of the 405GP and I eneded up using get_tbl(). It seems like
-> > get_cycles....
->
-> Hmmm....these look like they should work exactly the same.....
-> It would help me if you could disassemble a little code snippet
-> around the place you use these so we could have a look.
+Hi,
 
-They did. I just confused myself with too many kernel versions.
-The 2.4.2 mvista kernel didn't have the same header file, but by
-just sticking the newer header in there with the one other header
-it pulls in along with it, it worked fine.
+Thanks to all those who helped me get my custom 860 board up and running!
+My next question is about mapping some physical memory to user space.  I
+have some devices with memory mapped registers.  One of them lives at
+0x84000800 (above 2Gb!).  I have been trying to mmap() this into user space
+memory, without success (the kernel doesn't like the >2Gb).
 
-The __ftr_fixup doesn't seem to be used much in any of the other
-arch's.
+>From what I understand, there are usually a few options.  Usually one can
+use mmap() -- although I don't know if I can -- or one can write a device
+driver to work with kmalloc and friends.
+
+What would be the easiest way to gain access to that physical memory
+(non-cached, of course) from user space?  Obviously, it would be nice to map
+it in at that very address in user space, but I don't think that's going to
+happen.  Any tips would be greatly appreciated, as I'm new to this game.
+
+Best regards,
+
+-elan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
