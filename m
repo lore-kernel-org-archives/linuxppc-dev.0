@@ -1,49 +1,44 @@
-Message-ID: <3A2EB9A5.65311F2E@mvista.com>
-Date: Wed, 06 Dec 2000 17:11:49 -0500
+Message-ID: <3A2EBFBF.9628F0CC@mvista.com>
+Date: Wed, 06 Dec 2000 17:37:51 -0500
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
+To: bgat@open-widgets.com
 CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 2.4.0-test11 - MPC860T FEC question.
-References: <200012040859.eB48wj301431@denx.local.net>
+Subject: Re: MBX860 serial on J19?
+References: <20001205163100.A7845@sr1.open-widgets.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+bgat@open-widgets.com wrote:
 
-> I was wrong here. The _interrupt_ comes  just  when  it  should.  The
-> problem is that the function which actually sets the "fep->link" flag
-> (mii_relink)  is  not  run  immediately,  but  from a queue_task(...,
+> I have a stock Motorola MBX860 board, and I'm trying to use the serial
+> ports connected to the Utility #2 connector, J19.  These ports are
+> connected to the SMSC 37c672.
+>
+> In short, nothing is working.
 
-I don't like the queue_task stuff (this wasn't my doing).  The MII/link
-interrupt should be handled as part of the interrupt handler like it
-used to be (until the late 2.3.99 code when this was changed).
+That's because there isn't any software for them.  The short answer
+is the MPC8xx parts have an internal interrupt controller and the CPM
+which provides serial ports.  The rest of the kernel assumes PC-style
+interrupt controllers and serial ports are the only things that exist.
+Making these co-exist required changes in the generic parts of the
+kernel that were never acceptable, so I simply ignore that hardware
+on these boards.  There are probably some hacks floating around that
+will enable more or less of these features (like the IDE, flopply,
+parallel port, and the serial ports), but nothing that anyone
+has ever sent me as a contribution that was acceptable.
 
-> &tq_scheduler) call - and it's scheduled much too late for  BOOTP  to
-> work.
+> I'm in the process of trying out the MontaVista HHL 2.2.14 kernel as I
+> write this.
 
-Well, BOOTP in the kernel is going away soon, so it won't matter
-much longer.
+Same thing, only better.
 
+> I think I must be missing something obvious, because the SMSC chip is
+> used in a lot of PCs and is therefore probably well supported...
 
-> How should we handle this? I've tried to  compare  against  the  82xx
-> code  in "fcc_enet.c", but this seems to be kind of incomplete; there
-> is no mii_link code at all, and the mii_relink()  function  is  never
-> used.
-
-The 8260 is very incomplete.  The problem is the MII control/status
-is disconnected from the ethernet controller.  The 860T FEC would
-generate an interrupt when the bit shifting was done, but the 8260
-requires software to do this.  The 8260 is going to get one of two
-equally ugly solutions, either a tasklet that runs for the purpose of
-managing the MII, or to simply to software shift and poll the MII in
-line with other functions.  I stared with the FEC driver on the 8260,
-hoping I could find a way to utilize the better multiple PHY support,
-but I ended up just hacking it out and leaving a few functions around
-as a reminder to try and find some common MII functions with the FEC.
-It's not happening very fast.
+Well supported in a PC.  This isn't a PC.
 
 
 	-- Dan
