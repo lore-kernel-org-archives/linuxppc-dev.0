@@ -1,67 +1,47 @@
-Message-ID: <21A8AE56EBB6D411A4520060973D360101A9F791@PEPINTERCOM>
-From: Claus Gindhart <Claus.Gindhart@kontron.com>
-To: "'Thomas Andrews'" <tandrews@mindspring.co.za>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Development hardware
-Date: Thu, 30 Jan 2003 08:32:33 +0100
+Message-ID: <005d01c2c837$70018720$0700a8c0@pc005>
+Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+To: "Junping Zhang" <JZhang@erinc.com>
+Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+References: <F4608F665DF5D311B231009027B70F700155D4D2@MAIL>
+Subject: Re: question on mcc driver
+Date: Thu, 30 Jan 2003 09:13:13 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-we have quit a bunch of boards with the 860T processor available.
-If interested, please check into
-http://www.pep.com/e2brain
-or
-http://www.pep.de/products/productdetails.php?productid=139
-or
-http://www.pep.de/products/productdetails.php?productid=133
+>    Do you have some test programs for MPC8260 mcc driver that I can use? I
 
-We supply a Linux-BSP including a 2.4.18 Kernel for all our PowerPC
-boards.
-One drawback i should mention: We have BSP's available for our 8245
-and 750CX platforms already; the 860T BSP's are under development
-in the moment.
+The driver itself does not need a particular code to be tested. Once it has
+been loaded,the function module_init() provides to initialize the MCC1 on
+the two TDMs C1 & D1. The interrupt handler is responsible of re-loading the
+BDs after the completion of receiving process.
+Obviously You must check it with an oscilloscope and verify that all the
+signal needed by the MCC are active.
 
---
-Mit freundlichen Gru?en / Best regards
+Be aware that all the I/O pins and accessories functions have been
+previously programmed, because the driver does not provide any configuration
+of the I/O neither than clocks routing
 
-Claus Gindhart
-Software Design Engineer
+> managed to compiled
+> and loaded your driver, but seems like it has some conflicts with Pete's
+ATM
+> driver, once I load
+> ATM driver, mcc driver won't load; if I load mcc driver first, then ATM
+> driver, mcc driver won't unload.
 
-PEP Modular Computers GmbH     phone:    +49-8341-803-374
-R&D Software                   fax:      +49-8341-803-40-374
-Sudetenstrasse 7               email:    claus.gindhart@kontron.com
-D-87600 Kaufbeuren             web page: http://www.pep.de
-                                         http://www.kontron.com
+We have succesfully tested the driver with both M.V. 2.4.0-test2 (by Linux
+CDK 1.2) and 2.4.4 (by ELDK 2.0.2), but unfotunately We did not implemented
+any ATM driver.
 
+Regards
 
------Original Message-----
-From: Thomas Andrews [mailto:tandrews@mindspring.co.za]
-Sent: Donnerstag, 30. Januar 2003 08:08
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Development hardware
-
-
-
-Hi Folks
-
-I see in the docs that the Motorola FADS board is to be avoided.
-Unfortunately this is all I have access to - Unless someone has
-an inexpensive alternative for me ? Suggestions ? I want to play
-with the 860T, which is what I currenly have on the FADS board.
-
-The BDM I have is an Ocdemon Raven. There is linux support for this on
-the ocdemon web site, but is there an open source bdm driver ? I really
-don't want to rely on binaries.
-
-Oh, and one more thing does anyone know if the Raven supports the MMU
-table-walk ?
-
-Many thanks,
-Thomas
+Ing.Gianfranco Morandi
+Eurostudio s.r.l.
+Rome Italy
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
