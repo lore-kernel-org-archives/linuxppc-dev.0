@@ -1,33 +1,30 @@
-From: Paul Mackerras <paulus@samba.org>
+Message-ID: <20020912050911.76262.qmail@web12905.mail.yahoo.com>
+Date: Thu, 12 Sep 2002 06:09:11 +0100 (BST)
+From: =?iso-8859-7?q?John=20Nikiforos?= <ppclinuxuser@yahoo.gr>
+Subject: MPC8260 + Interrupt 0
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15744.5564.428016.887779@argo.ozlabs.ibm.com>
-Date: Thu, 12 Sep 2002 14:19:08 +1000 (EST)
-To: jmar@terayon.com
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 8260 and HPTE
-In-Reply-To: <3D7FD2A3.EC0E0F06@terayon.com>
-References: <3D7FD2A3.EC0E0F06@terayon.com>
+Content-Type: text/plain; charset=iso-8859-7
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jim Mar writes:
+  As I can understand from the linux code,
+interrupt value 0 is a valid value. But,
+whats the expected number of such interrupts?
+We sould expect 0,1 or 2, or does the processor
+issue int 0 all the time? (when there is no
+pending interrupt (MPC8260 Manual)).
+In our system we count about 3000 BAD interrupts
+every 10 seconds. Is it normal?
 
-> I am using 2.4.18 on a proprietary 8260 board. It appears that
-> CPU_FTR_HPTE_TABLE is not supported for the 8260(603e). Therefore,
-> MMU_init_hw in ppc_mmu.c returns without patching create_hpte and
-> flush_hash_page in hashtable.S or allocating hash memory.
->
-> However, a Data Access Exception(0x300) eventually calls create_hpte,
-> trashing my memory.
+                            Thanks
+                              John
 
-This is fixed in the official 2.4.19 and in the current linuxppc_2_4
-and linuxppc_2_4_devel trees.  The code that calls hash_page (which calls
-create_hpte) in the DSI handler is in a feature section, which means
-it gets overwritten with NOPs if we don't have a hash table.
-
-Paul.
+=====
+--/ /  (_)__  __ ____  __  / _ \/ _ \/ ___/
+ / /__/ / _ \/ // /\ \/ / / /_ / /_ / /__
+/____/_/_//_/\_,_/ /_/\_\/_/  /_/  /____/--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
