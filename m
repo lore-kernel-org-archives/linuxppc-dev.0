@@ -1,37 +1,68 @@
-Date: Thu, 26 Aug 1999 10:39:13 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Takashi Oe <toe@unlserve.unl.edu>
-cc: David Riley <happyoscar42@usa.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: BootX enhancement request
-In-Reply-To: <Pine.A41.3.96LJ1.1b7.990825194557.72736C-100000@unlserve.unl.edu>
-Message-ID: <Pine.LNX.4.10.9908261010520.29782-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <37C4FD7C.BBEC0F1@wanadoo.fr>
+Date: Thu, 26 Aug 1999 10:40:28 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+CC: Paul.Mackerras@cs.anu.edu.au
+Subject: vger-2.3.15 on pmac
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 25 Aug 1999, Takashi Oe wrote:
-> On Tue, 24 Aug 1999, David Riley wrote:
-> > Some of the drivers don't do video=xxxx.  I know controlfb doesn't.  Is there
-> > a _good_ reason for this, or does controlfb just not like me?
-> 
-> It's probably a simple oversight.  Last I checked,
-> controlfb does have the necessary code for "video=...", while
-> drivers/video/fbmem.c lacks an entry for controlfb to actually activate
-> the code.
+Thanks to the efforts of Paul M. and Cort, the 2.3.15 kernel from
+cvs.on.openprojects is now compiling on a Pmac (first time after 2.3.6,
+2 months ago).
 
-Fixed this in vger, and sent a patch to Linus.
+I propose 2 patches: The first one is an obvious correction in the
+valkyriefb driver, and the second one allows to configure support for
+Apple partition maps without going to the section of exotic partitions.
+It is obvious, too.
 
-Greetings,
-
-						Geert
+In a second post, I'll have some questions about things that don't yet
+work. I hope this is the right forum for this. I didn't see many
+discussions on kernel development for the PPC like on the linux-kernel
+list.
 
 --
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+Martin
 
+Index: drivers/video/valkyriefb.c
+===================================================================
+RCS file: /cvs/linux/linux/drivers/video/valkyriefb.c,v
+retrieving revision 1.13
+diff -u -r1.13 valkyriefb.c
+--- drivers/video/valkyriefb.c  1999/08/20 01:43:36     1.13
++++ drivers/video/valkyriefb.c  1999/08/25 16:49:23
+@@ -763,7 +763,7 @@
+ {
+        memset(fix, 0, sizeof(*fix));
+        strcpy(fix->id, "valkyrie");
+-       fix->mmio_start = (char *)p->valkyrie_regs_phys;
++       fix->mmio_start = p->valkyrie_regs_phys;
+        fix->mmio_len = sizeof(struct valkyrie_regs);
+        fix->type = FB_TYPE_PACKED_PIXELS;
+ 
+Index: fs/partitions/Config.in
+===================================================================
+RCS file: /cvs/linux/linux/fs/partitions/Config.in,v
+retrieving revision 1.1
+diff -u -r1.1 Config.in
+--- fs/partitions/Config.in     1999/08/20 00:22:30     1.1
++++ fs/partitions/Config.in     1999/08/25 16:49:59
+@@ -23,6 +23,9 @@
+   if [ "$CONFIG_ATARI" = "y" ]; then
+     define_bool CONFIG_ATARI_PARTITION y
+   fi
++  if [ "$CONFIG_PMAC" = "y" ]; then
++    define_bool CONFIG_MAC_PARTITION y
++  fi
+   bool 'SMD disklabel (Sun partition tables) support'
+CONFIG_SMD_DISKLABEL
+   if [ "$ARCH" = "sparc" -o "$CONFIG_SMD_DISKLABEL" = "y" ]; then
+     define_bool CONFIG_SUN_PARTITION y
+
+===================================================================
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
