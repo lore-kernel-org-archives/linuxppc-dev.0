@@ -1,54 +1,55 @@
-Message-Id: <200105062011.WAA00674@piglet.grunz.lu>
-Date: Sun, 6 May 2001 22:11:33 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Airport in BenH's kernels
-To: linuxppc-dev@lists.linuxppc.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: <mlan@cpu.lu>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Airport in BenH's kernels
+Date: Sun, 6 May 2001 22:28:01 +0200
+Message-Id: <20010506202801.14354@smtp.wanadoo.fr>
+In-Reply-To: <200105062011.WAA00674@piglet.grunz.lu>
+References: <200105062011.WAA00674@piglet.grunz.lu>
 MIME-Version: 1.0
-Content-Type: MULTIPART/mixed; BOUNDARY="134458388-1804289383-989179897=:672"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---134458388-1804289383-989179897=:672
-Content-Type: TEXT/plain; charset=us-ascii
+>Hi all,
+>
+>For a few days airport doesn't work in BenH's kernels, due do an
+>unresolved symbol in orinoco.o.
+>
+>Below is a two-line patch that fixes the problem.
 
-Hi all,
+Thanks ! The driver have been a pretty quickly moving target lately
+as Jean Tourrihles and I were working to finally have a common code
+base for airport and orinoco_cs without duplicating the driver.
 
-For a few days airport doesn't work in BenH's kernels, due do an
-unresolved symbol in orinoco.o.
+The new driver is getting close to completion now and things should
+finally stabilize.
 
-Below is a two-line patch that fixes the problem.
+For those who missed part of the story, here are some tips for the
+new driver:
 
-Have fun!
+ - it's located in drivers/net/wireless and configured from the
+"wireless" sub-menu in the "network drivers" menu.
 
-Michel
+ - the interface is now always ethx (eth1 most of the time)
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+ - the card is no longer powered down when the inteface is off, this
+caused various troubles. If you want to make sure the interface is
+powered off when not used, rmmod airport.
 
---134458388-1804289383-989179897=:672
-Content-Type: TEXT/plain; CHARSET=US-ASCII
-Content-Disposition: attachment; filename="orinoco.patch"
+ - typicall setup sequence:
 
---- /usr/src/sources/2.4/linux-2.4.benh/drivers/net/wireless/orinoco.c	Sun May  6 18:32:27 2001
-+++ drivers/net/wireless/orinoco.c	Sun May  6 22:00:56 2001
-@@ -3520,7 +3520,9 @@
- 	return 0;
- }
+    modprobe airport
+    ifconfig eth1 <ip_address> netmask <mask> up
+    iwconfig essid <network name>
+    iwconfig enc <WEP key>
 
-+#ifdef ORINOCO_DEBUG
- EXPORT_SYMBOL(dldwd_debug);
-+#endif
- EXPORT_SYMBOL(dldwd_init);
- EXPORT_SYMBOL(dldwd_xmit);
- EXPORT_SYMBOL(dldwd_tx_timeout);
+The driver is made of 3 different modules (hermes.o, orinoco.o and
+airport.o). A fourth one (orinoco_cs.o) is used for the PCMCIA cards.
+This new driver should work properly with all airport incarnations, not
+only PCMCIA capables boxes.
 
---134458388-1804289383-989179897=:672--
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
