@@ -1,15 +1,22 @@
-Return-Path: <GARCIAJ@3il.fr>
-Received: from email.3il.fr (email.3il.fr [195.25.243.230])
-	by ozlabs.org (Postfix) with ESMTP id 4467767A72
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Mar 2005 01:10:38 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Tue, 29 Mar 2005 17:10:42 +0200
-Message-ID: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B16@exnet.3il.fr>
-From: =?iso-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
-To: <linuxppc-dev@ozlabs.org>
-Subject: when to do ioremap?
+Return-Path: <me@twolife.org>
+Received: from smtp2.mail.be.easynet.net (smtp2.mail.be.easynet.net
+	[212.100.160.76])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3C17B67A64
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Mar 2005 03:06:49 +1000 (EST)
+Date: Tue, 29 Mar 2005 18:34:22 +0200
+From: Sebastien NOEL <me@twolife.org>
+To: debian-powerpc@lists.debian.org
+Message-Id: <20050329183422.5c0e08ef.me@twolife.org>
+In-Reply-To: <1112066934.6809.4.camel@gaston>
+References: <1112066934.6809.4.camel@gaston>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__29_Mar_2005_18_34_22_+0200_BTpv3PrBYMnWGU5J"
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] sleep & cpufreq problems
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,50 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ladies and Gentlemen,
+--Signature=_Tue__29_Mar_2005_18_34_22_+0200_BTpv3PrBYMnWGU5J
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Even if I am a Linux kernel newbie, I'm in charge of adapting a =
-Montavista LSP (designed for the IBM 405EP evaluation board) to our =
-propietary hardware which uses a 405EP too.
-So, I created both files /arch/ppc/platforms/myBoard.c and myBoard.h =
-first copying the LSP files and then modifying them.=20
-However, you guess that our mapping is very different from the one used =
-by the IBM eval board. The fact is that I'm not at all familiar with =
-memory management (I'm a part time student/worker) and I try to =
-understand the board_setup_arch function provided by the LSP (cf. =
-below). I understand that the ioremap allows us to build new page tables =
-mapping physical addresses on a range of contiguous (linear) virtual =
-addresses. But why are we doing that at that early boot time and not in =
-a driver at a wanted time? In the IBM eval board case, only 2 fpga =
-registers are used but on my board, we are using up to 4K for our I/O =
-space (segmented in 4 different part -> ex: =
-engineer_purpose_regs,appli_regs, asic_regs,..). Then we have a software =
-that must play with those registers from the user-space.
-So could you explain me the original file to help me coding the new one. =
-I definitely don't understand what are the consequences of that (the =
-function return is void,nothing is done with the returns of ioremap =
-calls except test). Does it allow us to do something later? Couldn't we =
-do all of that in a driver or is there a serious reason to do it here?
+On Tue, 29 Mar 2005 13:28:54 +1000 , Benjamin Herrenschmidt wrote:
 
-void __init
-board_setup_arch(void)
-{
-#define EVB405EP_FPGA_BASE      0xF0300000
+> Hi !
+>=20
+> Here are a couple of patches against current linus bk (one was already
+> posted to this list) that should fix a number issues related to sleep
+> and wakeup, especially in conjunction with cpufreq transitions.
+>=20
+> Please test and let me know if it fixes a problem you had, it adds a new
+> problem, or it has no effect, stuff still doesn't work (if it used to
+> work and still work, no need to bug me).
+>=20
+> Thanks !
+>=20
+> Patches are at:
+>=20
+> http://gate.crashing.org/~benh/ppc32-pmac-sleep-fix.diff
+> http://gate.crashing.org/~benh/ppc32-cpufreq-gpio-off.diff
+>=20
+> Thanks,
+> Ben.
+>=20
 
-        void *fpga_reg0;
-        void *fpga_reg1;
+Hi Ben !
 
-        evb405ep_early_serial_map();
-        fpga_reg0 =3D ioremap(EVB405EP_FPGA_BASE, 8);
-        if (!fpga_reg0) {
-                printk(KERN_CRIT
-                       "evb405ep_setup_arch() fpga_reg0 ioremap =
-failed\n");
-                return;
-        }
+I apply your 3 patches on 2.6.12-rc1 and my ibook g4 doesn't crash anymore
+after wakeup when i change the cpu speed.
 
-        fpga_reg1 =3D fpga_reg0 + 1;
-}
+My gratitude is far bigger than my english vocabulary, thank you very much!
 
-Hoping that the question is not too stupid : tks a lot everyone for =
-helping a student lost in the linux kernel sources... :-)=20
+
+Sebastien
+
+--Signature=_Tue__29_Mar_2005_18_34_22_+0200_BTpv3PrBYMnWGU5J
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
+
+iD8DBQFCSYOWo1pObvABdcoRAtxFAKCfy69qLIQGm1cqvycFzPOSnuyB3QCfeyYG
+PlDc/kLjlqw8HZNt7qf62Cs=
+=D3we
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__29_Mar_2005_18_34_22_+0200_BTpv3PrBYMnWGU5J--
