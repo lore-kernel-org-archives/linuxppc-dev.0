@@ -1,86 +1,57 @@
-Date: Sat, 25 Jan 2003 19:04:27 +0100
-From: Till Straumann <till.straumann@tu-berlin.de>
-Subject: Re: [patch] ignore trackpad/mouse while typing
-In-reply-to: <1043529955.3683.41.camel@zion.wanadoo.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Vojtech Pavlik <vojtech@suse.cz>,
-	linuxppc-dev@lists.linuxppc.org, George Staikos <staikos@kde.org>
-Message-id: <71575D98-308F-11D7-9BDB-0003934F7CE4@tu-berlin.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
+From: Oliver Oppitz <o.oppitz@web.de>
+Reply-To: o.oppitz@web.de
+To: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+Date: Sat, 25 Jan 2003 19:41:32 +0100
+MIME-Version: 1.0
+Subject: Performance Counters on PPC
+Message-Id: <200301251941.32262.o.oppitz@web.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi.
+Dear *,
 
-Thanks for your feedback. Please let me work on this a little more.
-The first version of the patch has 2 flaws:
+I have a question on G4 (MPC 74xx) performance counters. I have some PPC
+assembly experience and started digging into the Linux kernel recently, but
+do not own a PPC box for experiments - yet.
 
-   - emulated mouse buttons are treated as normal key events and
-     are hence suppressed (that's already fixed but introduces a very
-     ugly dependency on the mac-hid driver).
-  - the same applies to modifier keys. Unfortunately, we need a list
-    of these keys (and there is obviously no way to know what keys
-    are 'modifiers' for a specific application program (such as X)).
+I would like to implement something like a deterministic scheduler, that
+schedules threads identically in multiple program executions (useful for
+debugging multithreaded code). For this I want to count the number of retired
+instructions at each task switch (during the first program execution).  In
+following executions I would use the performance monitoring interrupt to
+generate an interrupt after the same number of retired instructions and force
+a task switch.
 
-Unfortunately, I still see the kernel as the proper place to handle this
-(feature shared by all applications; 'semi-real time' nature of the
-feature.
-'input' is the place where mouse and key events come together.)
+Are the counters on PPC are accurate enough for this task? Does instr_retired
+counter give identical values in multiple program runs (assuming there is no
+input an no system calls)?
 
-Then, there is one more problem: I had a disk-crash and I have to wait
-for my new disk before I can continue working (or even look at the code).
+I am aware (from the PPC user manual), that reading the counters needs
+serialization instructions etc. for deterministic results (due to
+out-of-order execution). In my case I would count the _user_ mode
+instructions and read only in _supervisor_ mode (in the interrupt handler).
+So serialization should not be an issue, as all user mode instructions should
+have left the pipeline long ago, when my supervisor code reads the counter
+value.
 
-:-(
+I am also aware that the instr_retired events do not include folded branches.
+Is it correct that the number of actually folded branches depends on branch
+prediction? If so, I think this would make the count during multiple
+executions non-deterministic as interrupts would affect the branch prediction
+buffers. In that case I would disable branch folding - which to my knowledge
+is only possible in the G4.
 
-Regards
--- Till
+I evaluated some x86 hardware (PIII) and found that its performance counters
+are totally inadequate for my task (e.g. it does not count REP STOSB
+sequences at all). That's why I want to switch to PPC for this research
+project.
 
-PS: I added a few comments to the discussion below
+I am grateful for any help on the issue.
 
-On Saturday, January 25, 2003, at 10:25 , Benjamin Herrenschmidt wrote:
-
-> On Sat, 2003-01-25 at 22:04, Vojtech Pavlik wrote:
->
->>>> Well... the problem happpens in console as well, and with other
->>>> non-X apps like MacOnLinux. Some Apple PowerBooks have over-sensitive
->>>> trackpad. Apple themselves implement a similar mecanism in the kernel
->>>> driver of OS X.
-
-I agree.
-
->>>
->>>   Mine is one of those machines.  I have to turn off gpm for sure,
->>> and X is
->>> quite oversensitive too (tuned it in KDE, but still this
->>> functionality would
->>> be very nice).
->>
->> How about implementing it in mousedev.c?
->
-> Right, though it would need hooks in kbddev or something to know
-> about keystrokes.
-
-Yeah - that's why I put it into 'input' - that's the only piece of code
-who knows about both, key and mouse events. BTW: I put the control
-file into /proc/sys../input and not mac-hid because the feature is not
-limited to macs.
-
-> Also, I don't like the sysctl's as those need
-> allocating sysctl numbers,
-
-Unfortunately, the list of 'modifier' keys needs to be configurable as
-well.
-How can we do that without sysctl?
-
-> which are always a problem. In 2.5,
-> we could have these in sysfs, though for 2.4 I'm not sure what
-> to do.
->
-> Ben.
->
->
+Regards, Oliver
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
