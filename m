@@ -1,91 +1,43 @@
-To: cim@uk.research.att.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Accel ATI Rage 128 support, the very first step (Help needed)
-In-Reply-To: Your message of "Wed, 27 Oct 1999 11:46:15 +0100 (BST)"
-	<Pine.SO4.4.04.9910271119020.5658-100000@marrow>
-References: <Pine.SO4.4.04.9910271119020.5658-100000@marrow>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <19991028032624B.roikawa@rr.iij4u.or.jp>
-Date: Thu, 28 Oct 1999 03:26:24 +0900
-From: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
+Date: Wed, 27 Oct 1999 13:31:48 -0500 (CDT)
+From: Kumar Gala <kumar@chaos.ph.utexas.edu>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: ptrace
+Message-ID: <Pine.LNX.4.10.9910271325190.17521-100000@chaos.ph.utexas.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-From: Charlie McLachlan <cim@uk.research.att.com>
-Subject: Accel ATI Rage 128 support, the very first step (Help needed)
- 
-> I've taken a look at the the Suse code and the Antony's aty128 fb with a
-> mind to accelerating console scrolling (for a start).
-> 
-> Starting with the fb device. 
-> 
-> I've found the bmove function and guess that's what is used to copy
-> bits of the screen around.
-> 
-> As an experiment, I replace it with a  function that does nothing.
-> 
-> Thus,
-> 
-> (all the following based on  Antony's aty128fb.c)
-> 
-> add a display_switch to fb_info_aty128
-> 
-> struct fb_info_aty128 {
-> 	...
-> 	struct display_switch dispw;
-> 	...
-> 	};
-> 
-> then alter aty128_set_disp so that instead of just
-> 
-> disp->dispw = &fbcon_cfb<whatever>;
-> 
-> we have
-> 
-> disp->dispw= &info->dispw;
-> memcpy(&info->dispw,&fbcon_cfb<whatever>,sizeof(fbcon_cfb<whatever>));
-> info->dispw.bmove=fbcon_aty128_bmove;
-> 
-> where fbcon_aty128_bmove is a function of my own devising that does
-> nothing.
-> 
-> The result was that vertical scolling worked fine (i.e. when you typed
-> to the bottom of the screen the scroll upward was okay) but when scrooling
-> horizontally (like when you back cursor through a line then add more
-> characters) the remains of the line (the bit to the right of the cursor)
-> is not moved.
-> 
-> So on to the questions:
-> 
-> (I realise some of these might be RTFM answers, but I don't know which FM
-> I should be R'ing)
-> 
-> 1) What gives? Why isn't bmove (seemingly) used for vertical console
-> scrolls?
-> 
-> 2) If I recompile aty128fb, how do I replace the currently active version
-> without having to restart? (i.e. how do I change frame buffer modules?)
-> 
-> 3) Have I got this all wrong? Is bmove even what I should be thinking of?
-> 
-> 4) Where can I find more frame buffer documentation? I've worked most of
-> this out from the skellington framebuffer device and Antony's code.
-> 
-> 5) Antony's code references registers through info->regbase (which is a
-> big long hex number with some 8's in it). The Suse code references
-> registers through (PCIDevice->_basel & 0xffffff00), where PCIDevice is a
-> pciconfigPtr found through probing. Is this the same thing?
+Does anyone know why ptrace will only read and write a word at a time.  I
+know libc limits this but is there any reason.
 
-I have an Xpmac server with Rage128 acceleration support. If you have ADB
-keyboard and mouse, please try:
- ftp://ppc.linux.or.jp/pub/users/oikawa/Xserver/hw/powermac/Xpmac-3.3.3.1-19991028.gz
+The reason I ask is it seems from looking at other Unix implementations of
+ptrace that for operations like reading all the registers on a machine,
+or reading writing FP (and now AltiVec registers) that this is a big
+waste.
+
+ie. if I want to dump all the registers for the a process (GPRs, FPs, VRs)
+It is going to take 224 system calls with the current implementation.
+
+32 (for GPRs) + 64 (for FPs) + 128 (for VRs)
+
+plus additional calls for any status registers (PC, CRn, FPSCR, VSCR,
+etc.)
+
+rather being able to make a single call to ptrace to dump all the
+registers, 3 calls - one for GPRs, one for FPs, one for VRs would be much
+more efficient.  
+
+I think it is something that should be fixed, and most likely we could
+maintain the 'IMHO broken' way that things are currently done, and still
+have the nicer features I am taking about.
+
+- kumar
 
 
-Regards,
 
-Ryuichi Oikawa
-roikawa@rr.iij4u.or.jp
+ignorance is bliss.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
