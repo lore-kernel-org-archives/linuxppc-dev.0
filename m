@@ -1,54 +1,39 @@
-Message-ID: <366CBDC9.6BCB3C57@bivwood.com>
-Date: Tue, 08 Dec 1998 00:48:57 -0500
-From: "Mohammad A. Haque" <mhaque@bivwood.com>
+Date: Tue, 8 Dec 1998 01:13:29 -0500 (EST)
+From: Brad Ackerman <bsa3@cornell.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: pre-R5&miscs
+In-Reply-To: <3669CABC.411EC4DE@wanadoo.fr>
+Message-ID: <Pine.LNX.3.96.981208010859.4448A-100000@aynjalut.tam.cornell.edu>
 MIME-Version: 1.0
-To: "Tim Perdue, The Des Moines City.net" <tim@dmcity.net>
-CC: php3@lists.php.net, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Compilation Problems - PHP / APACHE
-References: <005e01be2251$f0d3a490$61246ccf@timnt.desm.uswest.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Did you compile php with ORACLE support?
+On Sun, 6 Dec 1998, Martin Costabel wrote:
 
---Mohammad
+> This is a new installer (Redhat 5.1, I guess). The old one doesn't work
+> with the files they put into the base folder. It is so new that
+> apparently they have not yet had the time to write instructions. The
+> following worked for me:
+[^O]
 
-"Tim Perdue, The Des Moines City.net" wrote:
-> 
-> I still have not solved my compilation problems with PHP 3.0.5 / Apache
-> 1.3.3
-> 
-> Apache compiles fine by itself, but if you try to compile it with support
-> for PHP, I get these errors. I'm seriously stuck on this one - for over a
-> day now.
-> 
-> Any takers?
-> 
-> This is what I get when I MAKE apache, after having made and installed PHP
-> (successfully).
-> 
-> util.c: In function `ap_find_token':
-> util.c:1015: `test_char_table' undeclared (first use this function)
-> util.c:1015: (Each undeclared identifier is reported only once
-> util.c:1015: for each function it appears in.)
-> util.c:1015: `T_HTTP_TOKEN_STOP' undeclared (first use this function)
-> util.c: In function `ap_escape_shell_cmd':
-> util.c:1074: `test_char_table' undeclared (first use this function)
-> util.c:1074: `T_ESCAPE_SHELL_CMD' undeclared (first use this function)
-> util.c: In function `ap_escape_path_segment':
-> util.c:1198: `test_char_table' undeclared (first use this function)
-> util.c:1198: `T_ESCAPE_PATH_SEGMENT' undeclared (first use this function)
-> util.c: In function `ap_os_escape_path':
-> util.c:1227: `test_char_table' undeclared (first use this function)
-> util.c:1227: `T_OS_ESCAPE_PATH' undeclared (first use this function)
-> make[3]: *** [util.o] Error 1
-> make[2]: *** [subdirs] Error 1
-> make[2]: Leaving directory `/tmp/apache_1.3.3/src'
-> make[1]: *** [build-std] Error 2
-> make[1]: Leaving directory `/tmp/apache_1.3.3'
-> make: *** [build] Error 2
+This may work for hard drives, but it doesn't work for install off CD-ROM.
+The installer quits after I select the CD-ROM installation option with a
+second-stage bootloader "file not found" error.
+
+[There's no vmlinux given for R5b1, so I'm using the R4 installer's copy. 
+The CD from which I am trying to install is in ISO-9660/RockRidge format,
+made with mkisofs on an IBM RS/6000 SP[1], with the RedHat directory in
+the root.]
+
+[1] Not that I think this part makes much difference [except to my CPU
+quota], but you never know.
+
+Brad Ackerman N1MNB      "...faced with the men and women who bring home
+bsa3@cornell.edu          the pork, voters almost always re-elect them."
+http://skaro.pair.com/                   -- _The Economist_, 31 Oct 1998
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
