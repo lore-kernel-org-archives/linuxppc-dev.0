@@ -1,21 +1,19 @@
-Return-Path: <matej.kupljen@ultra.si>
-Received: from deliver-1.mx.triera.net (deliver-1.mx.triera.net [213.161.0.31])
-	by ozlabs.org (Postfix) with ESMTP id D84C567A70
+Return-Path: <wd@denx.de>
+Received: from mailout06.sul.t-online.com (mailout06.sul.t-online.com
+	[194.25.134.19]) by ozlabs.org (Postfix) with ESMTP id 4C8CD67A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Feb 2005 20:54:18 +1100 (EST)
-From: Matej Kupljen <matej.kupljen@ultra.si>
-To: Sylvain Munaut <tnt@246tNt.com>
-In-Reply-To: <4213DAEE.5000802@246tNt.com>
-References: <1108547431.30212.37.camel@mbmatejdebian.ultra.si>
-	<4213B356.3060901@246tNt.com>
-	<1108588896.15304.7.camel@orionlinux.starfleet.com>
-	<4213DAEE.5000802@246tNt.com>
-Content-Type: text/plain
-Date: Thu, 17 Feb 2005 10:53:32 +0100
-Message-Id: <1108634012.2801.8.camel@mbmatejdebian.ultra.si>
-Mime-Version: 1.0
+	Thu, 17 Feb 2005 22:43:08 +1100 (EST)
+To: srinivas.surabhi@wipro.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 17 Feb 2005 10:50:06 +0530."
+	<EF9B29C78F41FA488927FCBC7750AF0E08DA14@hyd-mdp-msg.wipro.com>
+Date: Thu, 17 Feb 2005 12:42:54 +0100
+Sender: wd@denx.de
+Message-Id: <20050217114259.B974DC1430@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: bdi2000 debugging
+Subject: Re: Mounta Vista Linux prompt on serial console 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,22 +24,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
+In message <EF9B29C78F41FA488927FCBC7750AF0E08DA14@hyd-mdp-msg.wipro.com> you wrote:
+> 
+> But the problem is that it was stopping at
+> 
+> "No init found.  Try passing init= option to kernel". Before that there
+>  were no errors. Everthing looks fine Mounted VFS root file system was also
 
-> L25R marking on the top means rev 1.2 IIRC. That's the one I have. Also, 
-> if you have a
-> rev 2, you're lucky, I'd like one ;)
+Fine. So you can mount the root filesystem, but it obviously does not
+contain all the required files.
 
-Nope, mine has: 2L25R
-So 
+>  seen. From the net I understood is that the fstab file was the cause. So
+>  edited the filesytem parameter for / as /dev/ram earlier it used to be
+>  /dev/root.
 
-> Serial port console is OK the drivers I know don't use bestcomm. But
-> USB, Ethernet, IDE, Codec, ....
+No. /etc/fstab has absolutley nothing to do with  your  problem.  The
+kernel  cannot  start  the  init  porocess - make sure init is in the
+filesystem, plus all required libraries.
 
-O.K.
-I need Ethernet, because I use NFS rootfs :-(
+> So please tell me whether the given fstab file will suffice? The filesystem
 
-Thanks for the info.
+This is completley unrelated.
 
-BR,
-Matej
+> 2. I have one more doubt /sbin/init utility comes with what package?
+>  Because in /sbin directory although the init binary is present, not shown
+>  in the file system heirarchy view. For eg. if I select DHCPD package then
+>  able to see dhcpd related binary in the /sbin similarly my question was
+>  which package has to be selected to have init included.
+
+Please contact MV support. I have no  idea  how  they  package  their
+distribution,  or  how  their  config  tools might work. You paid for
+their stuff, so ask _them_.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+See us @ Embedded World, Nuremberg, Feb 22 - 24,  Hall 10.0 Booth 310
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+The most exciting phrase to hear in science, the one that heralds new
+discoveries, is not "Eureka!" (I found it!) but "That's funny ..."
+                                                      -- Isaac Asimov
