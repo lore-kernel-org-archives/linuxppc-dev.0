@@ -1,41 +1,54 @@
-Message-ID: <3ADFF92F.131937C5@opensource.se>
-Date: Fri, 20 Apr 2001 10:54:07 +0200
-From: Magnus Damm <damm@opensource.se>
+Date: Fri, 20 Apr 2001 11:10:33 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Steven Hein <ssh@sgi.com>
+Cc: Dan Malek <dan@mvista.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 860 RTC support
+In-Reply-To: <3ADF3F32.C42D6D6E@sgi.com>
+Message-ID: <Pine.HPX.4.10.10104201048060.11443-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: Michael Habermann <MHabermann@gmx.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC8xxFADS support
-References: <5.0.2.1.0.20010420083110.009f5850@pop.gmx.de>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Michael Habermann wrote:
+On Thu, 19 Apr 2001, Steven Hein wrote:
+
+> I looked through the source, and the difference between the 2.2.x
+> (2.2.13
+> and 2.2.14 mvista kernels) and the 2.4.3 kernel is that, in the
+> 2.2.x kernel, the set_rtc_time function in timer_interrupt()
+> can only be called if (time_status & STA_UNSYNC) != 0, where
+> in the 2.4.x kernel set_rtc_time can only be called if the
+> (time_status & STA_UNSYNC) == 0.  As I see it, the STA_UNSYNC bit
+> is always set, so the RTC will never be updated!
 >
-> I intend to use the MPC8xxFADS board with an 855T. I've read in this
-> newsgroup several times that the FADS are causing problems.
-> Which kind of problems do I have to expect? Is PCMCIA supported reliable?
+> At first I suspected just a bug in the PPC code regarding this bit,
+> but I glanced through the time code in some of the other arch's
+> (sh, sparc, arm, etc.) and saw the identical logic:
+>     - a call to do_settimeofday() *always* sets the
+>       STA_UNSYNC bit in time_status
+>     - the RTC is only updated when STA_UNSYNC is *not* set
+> And I don't see any way that STA_UNSYNC gets cleared (unless it's
+> cleared by adjtimex() or something like that......
 
-Don't get me started.
-I had some problems with the ZIF socket on my FADS860T.
-And the MACH chips might have some bugs which makes PCMCIA/FLASH
-accesses
-wierd if not done the right way. I think that the PCMCIA accesses was
-trashed
-in some way if the previous access was made to the flash...
-But that is usually no problem if you run Linux from memory.
+Right, I modified time handling to work like ther other archs when
+rewriting the timer code, mostly to make it more robust, keeping time
+despite bad-behaved code which masks interrupts long enough to lose ticks
+(framebuffer at the time, it's claimed to be fixed now, and also printk on
+serial consoles).
 
-Only some versions of the 860T chip seemed to work with my FADS860T,
-even if all my 860:s (T:s and non-T:s) acted normal with my ADS860
-board....
+Indeed, only adjtimex can clear STA_UNSYNC. ntp does it as soon as it
+acquires lock, don't ask me about adjtimex(8), I never used it.
 
-The socket driver for the pcmcia-cs package should support FADS860T.
-I don't know how the 855T is connected to the PCMCIA socket on the FADS,
-you might need to modify the socket driver...
+> I had printk's in m8xx_set_rtc, and they never printed.
+> (even after an hour or more).  Again, it looks like it all boils down
+> to the value of the STA_UNSYNC bit in 'time_status' and how
+> that gets manipulated.
 
-Cheers /
+Correct.
 
-Magnus
+	Regards,
+	Gabriel.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
