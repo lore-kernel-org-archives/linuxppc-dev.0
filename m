@@ -1,40 +1,38 @@
-Date: Mon, 26 Nov 2001 17:33:51 -0800
-From: Ira Weiny <iweiny@acm.org>
-To: linuxppc <linuxppc-dev@lists.linuxppc.org>
-Subject: TiBook, 1394, iPod working (sort of  ;-)
-Message-Id: <20011126173351.0490058c.iweiny@acm.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15362.65400.567302.796449@cargo.ozlabs.ibm.com>
+Date: Tue, 27 Nov 2001 13:50:32 +1100 (EST)
+To: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: VT82C686B IDE and Linux/PPC woes
+In-Reply-To: <0111262205.AA22280@ivan.Harhan.ORG>
+References: <0111262205.AA22280@ivan.Harhan.ORG>
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This past week I finaly got around to getting up to date with Ben's tree.  I
-built everything and except for a myserious hang on boot after upgrading to
-MacOS 9.2 everything is working _great_.
+Michael Sokolov writes:
 
-So, I decided to check out what could be done with the iPod.  I have an iPod
-connecting to Linux as a SBP2 drive.  All we need now for iPod support is
-working HFS+.  But I don't know much about that so...
+> Yet when I boot Linux/PPC, it sees the IDE ports, but doesn't see the drive
+> attached to the IDE0 port (see the session log below). My port in
+> arch/ppc/platforms does absolutely nothing IDE-related, in .config I have IDE
+> and VT82C686B support enabled. Is there something that my Linux/PPC port has to
+> do explicitly with IDE in order for it to work?
 
-I have 2 questions.
+Hmmm, there shouldn't be any problem.  You do have CONFIG_BLK_DEV_IDEPCI
+enabled I assume?  Your k2_ide_init_hwif_ports looks OK to me.  I
+would scatter some printks through drivers/ide/ide-pci.c to try to get
+an idea what it is doing and where it is going wrong.
 
-1) How are things with HFS+?  I don't know much but have done some poking
-around.  I notice that I can mount the iPod but the files it shows are not
-correct.  But I have another HFS+ drive which seems to mount ok?  I have looked
-at the volume info and have seen that the iPod version in the volume header is
-"05" and the other drive is version "06"?  This seems odd since I would think
-the earlier version would be better supported?  But I probably don't know what
-I am talking about...
+BTW, I can't see any reason why we still need to have
+ide_init_hwif_ports be platform-specific.  It is only used for
+PC-style IDE interfaces and for PCI IDE interfaces.  For other types
+of interface we should be adding a probe call in ide.c rather than
+trying to do it with ide_default_io_base and ide_init_hwif_ports.
+Not that this applies to the k2.
 
-2) Does anyone know if there are any specs on the DB file for the iPod.  I
-could work on reverse engineering it but if I could get some specs that would
-be nice.  Anyone have inside connections at Apple?  Am I treading on thin ice
-with licensing?
-
-Thanks,
-Ira Weiny
-iweiny@acm.org
-
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
