@@ -1,53 +1,59 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Tom Rini" <trini@kernel.crashing.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: RE: linuxppc_2_4_devel, rc1 and rc2 problem.
-Date: Thu, 21 Nov 2002 14:30:17 +0100
-Message-ID: <IGEFJKJNHJDCBKALBJLLGEDDFIAA.joakim.tjernlund@lumentis.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20021120191423.GA13132@opus.bloom.county>
+Subject: ppc_irq_dispatch_handler and unhandled interrupts
+From: Hollis Blanchard <hollis@austin.ibm.com>
+To: devel list <linuxppc-dev@lists.linuxppc.org>
+Date: 21 Nov 2002 10:58:55 -0600
+Message-Id: <1037897936.10521.89.camel@granite.austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-TBSwqz8ZMqhAJXfL84YF"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> On Wed, Nov 20, 2002 at 07:55:35PM +0100, Joakim Tjernlund wrote:
-> >
-> > > >
-> > > > hmm, my i2c stuff got into rc2 (and uart too?). I see this on rc2 AND rc1, but NOT in pre8.
-> > > > No, I have not tried to port it to vanilla 2.4.x. It requires some work to do that.
-> > >
-> > > They both made it in post rc1 I think, yes.  Try going back carefully
-> > > via bk changes and bk export -tr1.xxxxx (find when
-> > > /home/.../linuxppc_2_4 was merged into /home/.../linuxppc_2_4_devel).
-> >
-> > The error ocurres between changeset 1.1130 - 1.1137.
-> > I forgot to mention that the error only happens on a 862,100Mhz, 16KB icache, 8KB dcache.
-> > My 860,80Mz does not show the problem.
-> >
-> > Idea's ?
->
-> Can you narrow down the ChangeSet it occured at a bit?
+--=-TBSwqz8ZMqhAJXfL84YF
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Aaargh, now I am getting it in pre8 as well. However I have made
-some progress:
+Here's the failure mode:
+On a 405LP (using ppc405_pic), an irq is becoming unmasked[1] (in
+UIC0_ER). ppc_irq_dispatch_handler sees irq_desc[0].action =3D=3D NULL, and
+correctly complains of an unhandled interrupt and masks it off. However
+at the end of the same function (label "out"), the irq is unmasked again
+because irq_desc[0].handler =3D=3D ppc405_pic (irq_desc[0..NR_IRQS] =3D
+ppc405_pic; see ppc4xx_init_IRQ() ). So the irq is unmasked, occurs
+again, is masked, is unmasked, occurs again...
 
-I have 2 custom boards one mpc862(100Mhz, 16KB icache, 8KB dcache) and a
-mpc860(80Mz,4KB icache, 4KB dcache). If I overclock the mpc860 to 100MHz I get
-the same problem. If I set the clock on both boards to 95MHz all is well. If I overclock
-the mpc862 to 105 MHz it works fine.
+The attached patch fixes the problem by checking desc->action as well as
+desc->handler - there is no sense unmasking an interrupt if we already
+know there are no drivers ready to handle it.
 
-It turns out that syslog is actually running after the error. If I stop syslog and
-start it again it works fine. If adjust my script so klogd is started before
-syslogd all is well to.
+[1] In my particular case, UIC0_ER is being modified by BIOS when waking
+from sleep (the BIOS later returns control to Linux), which could be
+worked around in wakeup code. However in the interest of handling as
+many unexpected hardware and software errors as possible, I believe this
+patch should be applied.
 
-This looks like a race somewhere to me, but i have no clue as to where.
+-Hollis
+--=20
+PowerPC Linux
+IBM Linux Technology Center
 
-Anyone?
+--=-TBSwqz8ZMqhAJXfL84YF
+Content-Disposition: attachment; filename=unhandled-irq.diff
+Content-Type: text/plain; name=unhandled-irq.diff; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-    Jocke
+--- arch/ppc/kernel/irq.c	2001/12/18 00:18:00	1.1.1.2
++++ arch/ppc/kernel/irq.c	2002/11/21 16:13:22
+@@ -513,7 +513,7 @@
+ 	 * The ->end() handler has to deal with interrupts which got
+ 	 * disabled while the handler was running.
+ 	 */
+-	if (irq_desc[irq].handler) {
++	if (desc->handler && desc->action) {
+ 		if (irq_desc[irq].handler->end)
+ 			irq_desc[irq].handler->end(irq);
+ 		else if (irq_desc[irq].handler->enable)
 
+--=-TBSwqz8ZMqhAJXfL84YF--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
