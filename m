@@ -1,66 +1,47 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <20030211064911.50039.qmail@web8007.mail.in.yahoo.com>
-Date: Mon, 10 Feb 2003 22:49:11 -0800 (PST)
-From: rekha gvv <rekhagvvc@yahoo.co.in>
-Subject: Combine kernel and ramdisk image.
-To: linuxppc-embedded@lists.linuxppc.org
+From: "AUBERT Cedric" <cedric_aubert@softhome.net>
+To: "LinuxPPC Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: U-Boot question
+Date: Tue, 11 Feb 2003 09:03:34 +0100
+Message-ID: <NEEAIENMOLHNBKKFKIDMMEEICAAA.cedric_aubert@softhome.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-I want to combine the Linux kernel Image and the
-ramdisk image.I had used the mkimage tool for doing
-this
-./mkimage -A ppc -O Linux -T multi  -C gzip \
--n 'Linux-2.4.4-2002-03-21 Multiboot-Image' -e 0 -a 0
-\
--d /SELF/build/linux-2.4.4-2002-03-21/arch/ppc/
-coffboot/vmlinux.gz:/SELF/build/ramdisk_image.gz \
-/SELF/images/pMulti
+Hi,
 
-PMulti is the Combined kernal image ..
-wheni download it to the powerpc board using ppcboot I
-get this .
+I am in the state "while(learning){ .... }" of the U-Boot Porting Guide in
+the README file.
 
-bootm
-## Booting image at 00100000 ...
-   Image Name:   Linux-2.4.4-2002-03-21 Multiboot
-   Image Type:   PowerPC Linux Multi-File Image (gzip
-compressed)
-   Data Size:    1580442 Bytes = 1543 kB = 1 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Contents:
-   Image 0:   530861 Bytes = 518 kB = 0 MB
-   Image 1:  1049566 Bytes = 1024 kB = 1 MB
-   Verifying Checksum ... OK
-   Uncompressing Multi-File Image ... OK
-   Loading Ramdisk to 6fabe000, end 0075a4bc ...
+And there is a point that I don't understand.
 
+The option CFG_SDRAM_BASE is the physical start address of SDRAM.
 
+Okay, I understand that. But it's written _Must_ be 0 here.
 
-what could be the error....
-when i downlaod the kernel and  the ramdisk separately
-then the ramdisk gets loaded at this address
+How can I do if my SDRAM ( on a MPC860 Board ) start at 04000000 ???
 
-Loading Ramdisk to 0065a000, end 0075a3de ... OK
-Linux version 2.4.4 (root@UCLinuxServer.embedded) (gcc
-version 2.95.3 20010315
-.................
+Thanks a lot
 
-Thankyou.
+PS : Sorry to don't post to the U-Boot mailing list but I have a failure
+notice each time
+I try to post on it. (550-Envelope sender verification failed)
 
+---
+AUBERT Cedric
+SDEL Controle Commande
+Service R&D
+rue Nungesser & Coli
+44860 St Aignan de Grand Lieu
 
+Tel : +33 (0)2 40 84 50 00
+Poste : 5109
+Fax : +33 (0)2 40 84 51 10
 
-
-
-
-
-
-Yahoo! Shopping - Send Flowers for Valentine's Day
-http://shopping.yahoo.com
+E-mail : cedric_aubert@softhome.net
+Web : http://www.controle-commande.sdel.fr
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
