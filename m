@@ -1,40 +1,52 @@
-From: Alan Mimms <alan@packetengines.com>
-To: LiuTao <tliu@ict.ac.cn>,
-        "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: What does KERNELBASE mean?
-Date: Tue, 4 Jan 2000 21:11:15 -0800
-Content-Type: text/plain
-References: <3872CF70.45BCE11C@ict.ac.cn>
-In-Reply-To: <3872CF70.45BCE11C@ict.ac.cn>
-MIME-Version: 1.0
-Message-Id: <00010421122803.00773@alan.corp.packetengines.com>
+Message-Id: <387461B6.FDB5DB5C@ict.ac.cn>
+Date: Thu, 06 Jan 2000 17:34:46 +0800
+From: LiuTao <tliu@ict.ac.cn>
+Mime-Version: 1.0
+To: "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: the problem of booting kernel
+Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-KERNELBASE is the virtual address the physical RAM is mapped to.
+Hi all:
 
-On most kernels on PowerPC this is 0xC0000000.  If you subtract KERNELBASE from
-a virtual address, you get its physical address in RAM, since PowerPC platforms
-more or less universally define that RAM starts at 0x00000000.  Hence the name
-TOPHYS.
+I am porting Linux to a board which has MPC860MH50, 16M RAM and 2M
+Flash.
+I am using visionPROBE(emulator of EST) to debug my program.
+I download the zImage to the board by emulator, then run it.
+I can see the following:
 
-a
+loaded at:     00800000 0080B1C8
+board data at: 00800158 00800180
+relocated to:  007F0100 007F0128
+zimage at:     00830263 0088A2B1
+avail ram:     0088B000 01000000
 
-On Tue, 04 Jan
-2000, LiuTao wrote: > Hi:
-> 
-> In linux/arch/ppc/kernel/head.S, what does KERNELBASE mean?
-> What does the following mean?
-> ".long	TOPHYS(__start),0,0"
-> 
-> Thanks.
-> 
-> LiuTao
--- 
-Alan Mimms     Packet Engines, Inc.     Spokane, Washington [99214-0497]
-  USA, Earth, Sol, Milky Way, The Local Group, Virgo Supercluster, U0
-Despite the cost of living, have you noticed how popular it remains?
-  -- Steven Wright?
+Linux/PPC load:
+Uncompressing Linux...done.
+Now booting the kernel
+
+Now, I find that the program stoped at 0x111C.
+
+So I set a breakpoint at "blr" in head.S at which the program will jump
+to the kernel. I ran the program again, it stoped at the breakpoint.
+Then I ran it step by step, I found that it jumped to 0x0000000C, I
+think
+that's the correct address. Then, I ran it continuously, it stopped at
+0x111C again.
+
+That's very strange. If I don't set breakpoint at "blr" but set a
+breakpoint
+at 0x000C, the program can't stop at the breakpoint but stop at 0x111C.
+If I
+set breakpoint at "blr" and run it step by step, the program can get
+0x000C.
+
+Do you have any suggestions?
+Thanks!
+
+LiuTao
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
