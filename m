@@ -1,50 +1,41 @@
-Date: Fri, 27 Aug 2004 19:16:42 +0400
-From: Andrey Volkov <avolkov@varma-el.com>
-Reply-To: Andrey Volkov <avolkov@varma-el.com>
-Message-ID: <314790494.20040827191642@varma-el.com>
+Date: Fri, 27 Aug 2004 19:14:09 +0200
+Subject: Re: ushort fcc_fcce
+From: Jaap Jan Boor <jjboor@aimsys.nl>
 To: Dan Malek <dan@embeddededge.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re[2]: [RFC] Remove G2_LE core decl from CLASSIC_PPC part of arch/ppc/kernel/cputable.c
-In-Reply-To: <E832C827-F839-11D8-BF10-003065F9B7DC@embeddededge.com>
-References: <927068331.20040827153454@varma-el.com>
- <E832C827-F839-11D8-BF10-003065F9B7DC@embeddededge.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <BD553881.251%jjboor@aimsys.nl>
+In-Reply-To: <CE15CB43-F838-11D8-BF10-003065F9B7DC@embeddededge.com>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Dan,
+On 27-08-2004 16:53, "Dan Malek" <dan@embeddededge.com> wrote:
 
-Friday, August 27, 2004, 7:00:59 PM, you wrote:
+>
+> On Aug 27, 2004, at 5:31 AM, Jaap-Jan Boor wrote:
+>
+>> Why is
+>> include/asm-ppc/immap_8260.h:   ushort  fcc_fcce;
+>
+> Because in the original documentation I had under NDA
+> many years ago when this was written didn't describe
+> ATM nor HDLC.  It listed this as a 16-bit field for Ethernet.
+>
+> I've made a note to change it.
 
->> Since G2_LE is NOT a "classic" core ( in particular - true
->> little-endian),
+ok, thanks
 
-> How is it not a classic core?  It certainly isn't bookE, and it isn't
-> 8xx.
-> No one should care about little-endian anyway.  I'm voting for the
-> first candidate that makes that illegal. :-)
-Agree.
+Jaap-Jan
 
->> With that move we'll conserve some memory of kernel,
-
-> How does this single change save anything but a few bytes of
-> cpu table?
-
-Maybe ~2K of rubbish for somebody "few" - for me not :) (don't forget
-its embedded platform).
-
->> but need some explanations which PPCs based on
->> it, for modify Kconfig ( I know MPC52xx and MPC82xx based on it).
-
-> What other kernel changes would you make based on
-> this configuration?
-Only Kconfig, nothing more.
-
---
-Best regards,
- Andrey Volkov
+>
+> Thanks.
+>
+> -- Dan
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
