@@ -1,21 +1,19 @@
-Return-Path: <soar.wu@utstar.com>
-Received: from szsmtp.utstar.com.cn (szsmtp.utstar.com.cn [210.21.224.29])
-	by ozlabs.org (Postfix) with ESMTP id F03FA2BEA0
+Return-Path: <gjaeger@sysgo.com>
+Received: from mailgate.sysgo.de (ns.sysgo.de [213.68.67.98])
+	by ozlabs.org (Postfix) with ESMTP id 0C0D32BDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Oct 2004 23:07:14 +1000 (EST)
-Received: from SZ3Gsoarw (sz_3g_soarw.cn.utstarcom.com [172.19.19.228] (may be
-	forged))
-	by szsmtp.utstar.com.cn (8.11.6/8.11.1) with SMTP id i9RD74j29280
-	for <linuxppc-embedded@ozlabs.org>; Wed, 27 Oct 2004 21:07:04 +0800
-From: "soar.wu" <soar.wu@utstar.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Wed, 27 Oct 2004 21:08:48 +0800
-Message-ID: <PCEFKKAFFIJFPILJEMCHGEBBCGAA.soar.wu@utstar.com>
+	Wed, 27 Oct 2004 23:42:10 +1000 (EST)
+From: Gerhard Jaeger <gjaeger@sysgo.com>
+To: Matt Porter <mporter@kernel.crashing.org>
+Date: Wed, 27 Oct 2004 15:20:51 +0200
+References: <20041026135847.A16409@home.com>
+In-Reply-To: <20041026135847.A16409@home.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="gb2312"
-In-Reply-To: <004301c4bc1f$69fccdc0$0301a8c0@chuck2>
-Subject: RE: Help!
+  charset="iso-8859-1"
+Message-Id: <200410271520.51333.gjaeger@sysgo.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH][PPC32] Disable broken L2 cache on all 440GX revs
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,56 +24,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-RGVhciBNYXJrLA0KDQpUaGFuayB5b3UgZm9yIHlvdXIgZGV0YWlsZWQgcmVwbHkuDQoNCkkgd2ls
-bCBjb250aW51ZSB0byBjaGVjayBpdC4NCg0KVGhhbmsgeW91Lg0KDQpTb2FyIFd1DQoNCi0tLS0t
-T3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBNYXJrIENoYW1iZXJzIFttYWlsdG86bWFya2NA
-bWFpbC5jb21dDQpTZW50OiAyMDA0xOoxMNTCMjfI1SAyMDoyMA0KVG86IHNvYXIud3UNCkNjOiBs
-aW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnDQpTdWJqZWN0OiBSZTogSGVscCENCg0KDQo+IFll
-cywgdGhlICdIUEknIC0gYXJlIGNvbm5lY3RlZCB0byBhIFQuSS4gRFNQLCA2NDE2IHR5cGUuDQo+
-DQo+IEFib3V0IHRoZSBIUEkgcHJvYmxlbSBwcm9ncmVzcy4NCj4gbm93IHdlIGhhdmUgdGhlIGZv
-bGxvd2luZyByZXNvbHZlIG1ldGhvZDoNCj4NCj4gMSwgSWYgd2UgdXNlIGEgdGVtcCB2YXJpYWJs
-ZSB0byBzdG9yZSB0aGUgcmVhZCBvdXQgZGF0YSwgdGhlbiBzdG9yZSB0aGUNCmRhdGEgdG8gU0RS
-QU0sIGl0IGlzIE9LLCB0aGVyZSBpcyBubyBob3AuDQo+ICAgICAgdG1wUmVhZFJzdCA9IFJFQURf
-VUxfSFBJX1JFRyhVTF9IUElEQV9BRERSKTsNCj4gICAgICpwX2N1ciA9IHRtcFJlYWRSc3Q7DQo+
-ICAgICAgcF9jdXIrKzsNCj4NCj4gMiwgSWYgd2UgZG9ub3QgbW9kaWZ5IHRoZSBzb3VyY2UgY29k
-ZXMsIGJ1dCB3ZSB1c2UgdGhlIG9wdGltaXphdGlvbiBPMyB0bw0KY29tcGlsZSB0aGUgc291cmNl
-IGNvZGVzLCBpdCBpcyBPSy4NCj4gKnBfY3VyID0gUkVBRF9VTF9IUElfUkVHKFVMX0hQSURBX0FE
-RFIpOw0KPiBwX2N1cisrOw0KPg0KPiAzLCBJZiB3ZSBhZGQgYSBzeW5jIGluc3RydWN0aW9uIHRv
-IHRoZSBzb3VyY2UgIGNvZGVzLCBpdCBpcyBPSy4NCj4gKnBfY3VyID0gUkVBRF9VTF9IUElfUkVH
-KFVMX0hQSURBX0FERFIpOw0KPiAgICAgICAgICAgICBfX2FzbV9fKCIgIGVpZWlvOyBzeW5jIik7
-DQo+IHBfY3VyKys7DQo+DQo+IDQsIElmIHdlIG1vZGlmeSB0aGUgQlNQLCB1cGRhdGUgdGhlIG1l
-bW9yeSBvcGVyYXRpb24gb3B0aW9uLA0KPiBmcm9tIDoNCj4gUEhZU19NRU1fREVTQyBzeXNQaHlz
-TWVtRGVzYyBbXSA9DQo+IHsNCj4gLi4uDQo+ICAgICAvKmFsbCB0aGUgb3RoZXIgc21hbGwgY2hp
-cCovDQo+ICAgICB7DQo+ICAgICAodm9pZCAqKSAweDUwMDAwMDAwLA0KPiAgICAgKHZvaWQgKikg
-MHg1MDAwMDAwMCwNCj4gICAgIDB4MDgwMDAwMDAsDQo+ICAgICBWTV9TVEFURV9NQVNLX1ZBTElE
-IHwgVk1fU1RBVEVfTUFTS19XUklUQUJMRSB8DQpWTV9TVEFURV9NQVNLX0NBQ0hFQUJMRSwNCj4g
-ICAgIFZNX1NUQVRFX1ZBTElEICAgICAgfCBWTV9TVEFURV9XUklUQUJMRSAgICAgIHwgVk1fU1RB
-VEVfQ0FDSEVBQkxFX05PVA0KPiAgICAgfSwNCj4gLi4uDQo+IHRvOg0KPiBQSFlTX01FTV9ERVND
-IHN5c1BoeXNNZW1EZXNjIFtdID0NCj4gew0KPiAuLi4NCj4gICAgIC8qYWxsIHRoZSBvdGhlciBz
-bWFsbCBjaGlwKi8NCj4gICAgIHsNCj4gICAgICh2b2lkICopIDB4NTAwMDAwMDAsDQo+ICAgICAo
-dm9pZCAqKSAweDUwMDAwMDAwLA0KPiAgICAgMHgwODAwMDAwMCwNCj4gICAgIFZNX1NUQVRFX01B
-U0tfVkFMSUQgfCBWTV9TVEFURV9NQVNLX1dSSVRBQkxFIHwgVk1fU1RBVEVfTUFTS19DQUNIRUFC
-TEUNCnwgVk1fU1RBVEVfTUFTS19HVUFSREVELA0KPiAgICAgVk1fU1RBVEVfVkFMSUQgICAgICB8
-IFZNX1NUQVRFX1dSSVRBQkxFICAgICAgfCBWTV9TVEFURV9DQUNIRUFCTEVfTk9UDQp8IFZNX1NU
-QVRFX0dVQVJERUQNCj4gICAgIH0sDQo+IC4uLg0KPg0KPiBXZSBhZGRlZCB0aGUgb3B0aW9uIFZN
-X1NUQVRFX1ZNX01BU0tfR1VBUkRFRCBhbmQgVk1fU1RBVEVfR1VBUkRFRCwNCj4gc3RpbGwgdXNl
-IHRoZSBvbGQgc291cmNlIGNvZGVzOg0KPiAqcF9jdXIgPSBSRUFEX1VMX0hQSV9SRUcoVUxfSFBJ
-REFfQUREUik7DQo+IHBfY3VyKys7DQo+DQo+IE5vdyBXZSBmaW5kIHRoZXJlIGlzIG5vIGhvcC4g
-SXQgaXMgT0sNCj4NCj4NCj4gNSwgSWYgd2UgdXNlIHRoZSBtZW1vcnkgd2hpY2ggaXMgYWxsb2Nh
-dGVkIGJ5IGZ1bmN0aW9uIGNhY2hlRG1hTWFsbG9jKCksDQo+IHRoZSBob3Agc3RpbGwgZXhpc3Qs
-IGJ1dCB0aGUgbnVtYmVyIG9mICBob3AgaXMgbGl0dGxlIHRoYW4gd2hlbiB3ZSB1c2UNCm1hbGxv
-YygpLg0KPg0KPiBEbyB5b3UgdGVsbCBtZSB0aGUgcmVhc29uPz8NCj4NCg0Kc3lzUGh5c01lbURl
-c2M/IFRoaXMgaXMgVnhXb3Jrcywgbm90IGxpbnV4LCByaWdodD8gIFdlbGwsIHRoZSBzYW1lIGdl
-bmVyYWwNCnBvaW50cyBjYW4gYmUgbWFkZSwgYnV0IHRoaXMgbGlzdCBpcyBub3QgdGhlIHJpZ2h0
-IG9uZSBmb3IgVnhXb3JrcyBpc3N1ZXMuDQoNCjEpIEV2ZW4gdGhvdWdoIHRoZSA4MjYwIGlzIGNh
-Y2hlLWNvaGVyZW50IHlvdSBzaG91bGQgbWFrZSBzdXJlIHRoZSBNTVUgaXMNCnNldCB1cCBzbyB0
-aGUgSFBJIHNwYWNlIGlzIG5vbi1jYWNoZWQuDQoyKSBJbiBDIGNvZGUgbWFrZSBzdXJlIHRoZSBI
-UEkgc3BhY2UgaXMgZGVjbGFyZWQgYXMgJ3ZvbGF0aWxlJyBzbyB0aGUNCmNvbXBpbGVyIGRvZXNu
-J3Qgb3B0aW1pemUgb3V0IHJlZmVyZW5jZXMgdG8gdGhlIGFkZHJlc3MuDQozKSBSZW1lbWJlciB0
-aGF0IHRoZSBIUEkgaW50ZXJmYWNlIG9uIHRoZSBEU1AgaXMgRE1BIGRyaXZlbiBhbmQgZ29lcyB0
-aHJvdWdoDQphIEZJRk8sIHNvIHRoYXQgd3JpdGVzIHRvIERTUCBtZW1vcnkgaGF2ZSBhIGRlbGF5
-IGJlZm9yZSB0aGV5IGFjdHVhbGx5DQphcHBlYXIgaW4gRFNQIG1lbW9yeS4gIEFuZCBkb24ndCBm
-b3JnZXQgdG8gbG9vayBhdCBjYWNoZSBpc3N1ZXMgb24gdGhlIERTUA0Kc2lkZS4gIFlvdXIgcHJv
-YmxlbSBtYXkgYWN0dWFsbHkgYmUgb24gdGhlIERTUCBzaWRlIGFuZCB5b3VyIHZhcmlvdXMgZml4
-ZXMNCmFyZSBqdXN0IGludHJvZHVjaW5nIGVub3VnaCBkZWxheSBmb3IgdGhpbmdzIHRvIGNvbXBs
-ZXRlIG9uIHRoZSBEU1Agc2lkZS4NCg0KR29vZCBsdWNrLA0KTWFyayBDaGFtYmVycw0KDQo=
+On Dienstag 26 Oktober 2004 22:58, Matt Porter wrote:
+> Always disable L2 cache on PPC440GX. All revs/speeds of silicon
+> have parity error problems despite errata claims to the contrary.
+> Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
+
+Hi Matt,
+
+is there any test, with which you can reproduce these failures?
+We have here custom boards based on the 440GX latest rev and 
+we need to use them with enabled L2 cache...
+
+TIA,
+  Gerhard
