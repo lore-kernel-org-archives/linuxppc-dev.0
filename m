@@ -1,34 +1,32 @@
-Message-ID: <3B83D895.C5738613@mvista.com>
-Date: Wed, 22 Aug 2001 12:06:45 -0400
+Message-ID: <3B83D964.9DCFA510@mvista.com>
+Date: Wed, 22 Aug 2001 12:10:12 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benjamin.herrenschmidt@wanadoo.fr>
+To: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
 Cc: Stefan Roese <stefan.roese@esd-electronics.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
-	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
+	Linuxppc-Commit <linuxppc-commit@source.mvista.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: status of linuxppc_2_4_devel for ppc405gp
-References: <EFEAIMDCOOOHIEPHDNFJAEHDDBAA.stefan.roese@esd-electronics.com> <20010822134155.4105@mailhost.mipsys.com>
+References: <EFEAIMDCOOOHIEPHDNFJAEHDDBAA.stefan.roese@esd-electronics.com> <3B83A5D5.F3B7FD11@inn.ericsson.se>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+Kenneth Johansson wrote:
 
-> The function dereferences the regs of the init.task which no longer
-> exist. (And was previously not properly initialized anyway).
+> Well I was waiting on Dan making some kind of statement that his merge was
+> ready. Are you saying that he got in enough to actually run the kernel on a
+> 405 ?
 
-Oh, now don't say that, it used to work :-).  At least for now,
-don't enable KGDB.
-
-> Probably. In my tree, I changed it to use the initcalls.
-
-Will you please check that in?  I pused the files but couldn't
-decide which method of initialization was "current" :-).
-
-I'm still sorting out the bootloader stuff.
-
-Thanks.
+Almost all of the kernel proper is structurally sound.  I needed to
+get the files there so others could also start making their updates.
+I'm sure I missed a few little details, so when you see something
+let me know.  Some of the patches I have are nearly six months old
+and don't apply as well as they should :-).......then I wandered
+into bootloader land where nothing works for the 4xx right now.  If
+you don't need a 'treeboot' loader, or can stuff an image with a
+JTAG debugger, you can get the kernel to boot.
 
 
 	-- Dan
