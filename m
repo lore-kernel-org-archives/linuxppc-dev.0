@@ -1,67 +1,64 @@
-From: kvsukesh@yahoo.com
-Message-ID: <20010807174850.48250.qmail@web10406.mail.yahoo.com>
-Date: Tue, 7 Aug 2001 10:48:50 -0700 (PDT)
-Subject: Trouble getting the DMA work in IDE Driver  in kernel 2.4.2
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3B7034A0.C55D871F@snmc.com>
+Date: Tue, 07 Aug 2001 11:34:09 -0700
+From: Daris A Nevil <dnevil@snmc.com>
 MIME-Version: 1.0
+To: Tom Roberts <tjroberts@lucent.com>
+Cc: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Non-cacheable memory
+References: <Pine.LNX.4.33.0108071444530.16835-100000@localhost.localdomain> <3B70104B.C1E6F8EC@lucent.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-I am having some trouble getting the drivers
-for the IDE/ATA 100 ( iam using cmd 649 & and an IBM
-Deskstar )work in the DMA mode running kernel 2.4.2
-on a PPC405GP.
-If anybody has seen this problem, or has a fix for it
-please respond.
-I tried to enable the DMA using hdparam -d1 /dev/hda
-but it fails. I  looked into the code and put some
-printk's and found that the dma_base is set to 0 in
-the file ide-dma.cin the function
-ide_get_or_set_dma_base where it goes to
-the default case of the switch statement. Which
-results  in failure of the ioctl call to set the DMA
-from hdparm.
-What I understood is that the cmd649 is recognised as
-a simplex device because of which the dma_base is set
-to zero, but could not understand why ?
+Gus, Tom,
 
-thanks in advance
-SUKESH
+Here is the procedure I used to allocate pages and mark them as non-cached in
+the 2.2.5 kernel (SNMC's QSLinux):
+
+    mem_addr = __get_free_page(GFP_KERNEL);
+    pte = va_to_pe(&init_task, mem_addr);
+    pte_val(*pte) |= _PAGE_NO_CACHE;
+    flush_tlb_page(current->mm_mmap, mem_addr);
+
+I used these pages for SCC buffer descriptors, so they were never returned to
+the system. I'm not sure if this is the preferred way, but it certainly works.
+I have not tried this in the 2.4 kernel yet.  The functions __get_free_page()
+and flush_tlb_page() do exist in 2.4.4, but I could not locate va_to_pe()  (I
+think that was a macro in 2.2.5).
+
+You may also want to look at the file linux/asm/pgalloc.h, esp. the functions
+get_pgd_slow() and get_pgd_fast().
+
+Regards,
+Daris Nevil
 
 
+Tom Roberts wrote:
 
-Below is the boot up message log..
------------------------------------
-CMD649: IDE controller on PCI bus 00 dev 18
-> PCI: Enabling device 00:03.0 (0000 -> 0001)
-> CMD649: chipset revision 2
-> CMD649: not 100% native mode: will probe irqs later
-> CMD649: simplex device: DMA disabled
-> ide0: BM-DMA at 0x0060-0x0067, BIOS settings:
-hda:pio, hdb:pio
-> ide1: BM-DMA at 0x0068-0x006f, BIOS settings:
-hdc:pio, hdd:pio
-> hda: probing with STATUS(0x50) instead of
-ALTSTATUS(0xff)
-> hda: IC35L040AVER07-0, ATA DISK drive
-> hda: IRQ probe failed (0x0)
-> hdb: probing with STATUS(0x00) instead of
-ALTSTATUS(0xff)
-> hdb: IRQ probe failed (0x0)
-> hdb: probing with STATUS(0x00) instead of
-ALTSTATUS(0xff)
-> hdb: IRQ probe failed (0x0)
-> ide: Assuming 33MHz system bus speed for PIO modes;
-override with
-idebus=xx
-> ide0 at 0x040-0x047,0x246 on irq 30
-> hda: 80418240 sectors (41174 MB) w/1916KiB Cache,
-CHS=79780/16/63
-> Partition check:
-> hda: unknown partition table
+> "Justin (Gus) Hurwitz" wrote:
+> > Does the current 2_4_devel tree have support for allocating regions of
+> > non-cachable memory? And, if so, what is the proper (or preferred) way of
+> > doing this?
+>
+> What I did in 2.2.15 was to edit the main startup routine to call my driver
+> directly so it could "eat up" a region of memory before Linux started its
+> memory management. I then used a BAT to reference it uncached. Yes, this
+> is ugly, and requires care in making sure the BAT effective address is
+> otherwise unused by the kernel, but it works. This is on a MPC7400, and
+> other PowerPC CPUs might not have BATs available....
+
+--
+Daris A Nevil
+Simple Network Magic Corporation
+401 Kentucky Lane
+McKinney, TX 75069
+214-793-7757
+dnevil@snmc.com
+www.snmc.com
+quickstack.com
+qslinux.org
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
