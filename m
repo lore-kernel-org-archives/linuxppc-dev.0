@@ -1,44 +1,28 @@
-Message-ID: <002601bf81dc$184f9480$0a01010a@gamma>
-From: "Damjan Lampret" <damjan.lampret@arnes.si>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Cc: "Jurkas Vasja RDSS" <jurkas@iskratel.si>
-Subject: Data TLB error exception
-Date: Mon, 28 Feb 2000 12:08:08 +0100
+Message-ID: <38BA7722.7730C0E3@ict.ac.cn>
+Date: Mon, 28 Feb 2000 21:24:50 +0800
+From: LiuTao <tliu@ict.ac.cn>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>,
+        "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: problem on MPC8xx
+Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi:
 
-I am playing with 2.2.13 kernel on custom MPC860 board and I have a problem
-with DTLB error (1400h) exception. I downloaded my kernel via BDM and it
-boots ok until it starts /sbin/init (or any other user application). Most of
-the time I get DTLB error usually in do_load_elf_binary() followed by data
-access exception (data access exception normaly follows DTLB error exception
-as far as I can tell from kernel sources) and a fatal machine check
-exception in data access exception.
+I am debugging Linux on my customized board.
+The messages in log_buf are all right. The shell in RAM disk
+also runs. But I can't see anything on serial port.
+I want to know:
+1. May I use ramdisk.image.gz of mbx as my ramdisk?
+2. Need I modify the uart.c? If I need, which part I should modify?
+3. Is there any meathod to test if the serial port is OK?
 
-Another strange thing was happening with caches enabled when kernel hanged
-almost instantly after booting to the point where it starts init. When I
-disabled insn/data caches it is much more stable but it still hangs after a
-couple of minutes. Althougth in this case I don't get DTLB error exception
-AFAIK (I checked this only once). Perhaps this has something to do with BDM
-(MPC860 that I have is revision 1 and it does not have a commonly known data
-cache bug AFAIK)?
+Thanks!
 
-Any idea what is happening with my system? I would be happy to provide more
-information if someone would care to help me.
-
-regards, Damjan
-
-PS Also I have MBX860 that I could use for a reference. But I get "Network
-Boot Logic Error \ Packet Status: 0500" when trying to download kernel via
-TFTP. Also nping in EPPC-Bug is not working. In fact I can't make any
-network activity. Any idea? (I didn't yet tried to download kernel via
-serial)
-
+LiuTao
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
