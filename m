@@ -1,61 +1,33 @@
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Fri, 9 May 2003 19:00:14 -0700
-To: Kent Borg <kentborg@borg.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Shared Interrupts Question (2.4)
-Message-ID: <20030510020014.GA4135@rover.farnsworth.org>
-References: <20030508160856.A18714@borg.org> <20030508211426.GA1440@rover.farnsworth.org> <20030509133417.B26462@borg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030509133417.B26462@borg.org>
+To: rschmitt@bluepeach.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Trouble booting linux on EST8260 board 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 08 May 2003 13:57:53 EDT."
+             <49829.10.0.1.2.1052416673.squirrel@mail.bluepeach.com>
+Date: Sat, 10 May 2003 19:00:11 +0200
+Message-Id: <20030510170016.ED130C6092@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, May 09, 2003 at 05:34:17PM +0000, Kent Borg wrote:
-> On Thu, May 08, 2003 at 02:14:26PM -0700, Dale Farnsworth wrote:
-> > Create and register a board-specific interrupt driver.  Assign it
-> > a range of irqs (non-conflicting with the main interrupt driver).
-> > When called with an irq outside its range, the board-specific driver
-> > routines forward the call to the main driver.
+In message <49829.10.0.1.2.1052416673.squirrel@mail.bluepeach.com> you wrote:
 >
-> Cool, cool...
->
-> > The board-specific driver does a request_irq at init time for the
-> > one main irq it is multiplexing.
->
-> What does my handler on the main irq do?  Perhaps nothing?
+> As the subject says, I'm having trouble booting linux (both DENX and Hard
+> Hat) on our EST8260 board.  The symptoms sound a lot like a problem which
+> has been discussed on this list before, but I believe my problem is
+> different.  Let me explain:
 
-Nothing.  You make sure that get_irq never returns that irq, so
-the handler won't be called.
+The EST board has been tested and was working fine here.
 
-> I am figuring I supply my own get_irq call, and it returns one of this
-> new interrupt range, or if none, calls the previous get_irq.  If I
-> never let the main irq number come back, my handler on the main irq
-> never gets called, right?  If so, why am calling request_irq in the
-> first place?
 
-To enable (unmask) the main irq.  I think you're right, it's better
-to not call request_irq and just enable the irq directly.
+Wolfgang Denk
 
-> To keep the system from puking on spurious interrupts?
-> (But if I answer the get_irq, and if I never answer the main irq
-> number, how would it know?)
-
-I'd call the main get_irq before checking for interrupt in my range.
-
-my_get_irq() {
-	int irq = main_get_irq();
-
-	if (irq != my_irq)
-		return irq;
-
-	/* find which irq in my range cascaded into my_irq */
-	irq = find_cascaded_irq();
-
-	return irq;
-}
-
--Dale
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+It is easier to write an incorrect program than understand a  correct
+one.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
