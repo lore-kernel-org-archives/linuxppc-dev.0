@@ -1,42 +1,20 @@
-Message-Id: <5.0.2.1.2.20040428124651.035cbd98@bhawley.mailhost.luminex.com>
-Date: Wed, 28 Apr 2004 12:48:21 -0700
-To: linuxppc-embedded@lists.linuxppc.org
-From: Brian Hawley <bhawley@luminex.com>
-Subject: Ebony PPC440GP & linux 2.6.3
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <E380A44D523BD5118EAE0002A52CE5C40B8E02E5@zcard0k8.ca.nortel.com>
+From: "Andrew Williams" <awilliam@nortelnetworks.com>
+To: Brian Hawley <bhawley@luminex.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Ebony PPC440GP & linux 2.6.3
+Date: Wed, 28 Apr 2004 16:17:36 -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello.
+Are you sure it has stopped?
+This may sound too simplistic, but make sure
+it's not just 2 different Baud rates between
+U-boot and the linux kernel. (once bitten...)
 
-It is clear from the archives that people have gotten the Ebony 440GP
-working with linux.
+Andrew
 
-We are using the linux 2.6.3 kernel, and have had little luck getting it
-booted up.
-
-We are using u-boot as the boot loader to load the zImage.
-
-It decompresses the kernel, and says it transfers control, but then just stops.
-
-Any suggestions or directions would be most helpful and appreciated.
-
-
-Thanks,
-
--- Brian
-
-
-
-
-+==========================================================+
-Brian N. Hawley                 bhawley@luminex.com
-Luminex Software, Inc.          http://www.luminex.com
-PO Box 5908                     voice: 909-781-4100 x112
-Riverside, CA  92517            fax: 909-781-4105
-+==========================================================+
-
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
