@@ -1,41 +1,47 @@
-Message-ID: <37D947AA.85EE4650@ne.mediaone.net>
-Date: Fri, 10 Sep 1999 18:02:18 +0000
-From: Vitaly Oratovsky <vitaly_oratovsky@ne.mediaone.net>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: altivec
-References: <Pine.LNX.4.10.9909101030100.31612-100000@web1.turbolinux.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <4.2.0.58.19990910201708.00c47c30@mail.lauterbach.com>
+Date: Fri, 10 Sep 1999 20:19:56 +0200
+To: Maurice DIAMANTINI <diam@pmdiam.ensta.fr>
+From: Franz Sirl <Franz.Sirl@munich.netsurf.de>
+Subject: Re: bug glibc strlen() or tcl8.2
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <19990910163126.A19797@pmdiam.ensta.fr>
+References: <4.2.0.58.19990909192900.00af6450@mail.lauterbach.com>
+ <19990909164200.A17615@pmdiam.ensta.fr>
+ <4.2.0.58.19990909192900.00af6450@mail.lauterbach.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Brad Midgley wrote:
+At 16:31 10.09.99 , Maurice DIAMANTINI wrote:
 
-> the kernel needs to know how & when to stack and unstack the altivec
-> registers.
+>     Vous disiez:
+>     >
+>     > >I'm unable to execute tcl8.2 on linuxppc R5. Although it compile and
+>     > >and run very simply on intel box, solaris, ... but not on linuxppc
+>     > > ...
+>     > >The programm compils OK, but get a core dump at the first execution
+>     > >of a tcl command (in fact at the "make test")
+>     > ...
+>     > >     memcpy ((VOID *) &tmpArgList, (VOID *) &argList, sizeof \
+>     >                                                (tmpArgList));
+>     >       ^^^^^^^^
+>     > This is unportable in combination with va_list. Try:
+>     >        __va_copy (tmpArgList, argList);
+>
+>     Danke Franz,
+>
+>     But when I modify the code (from the true tcl distrib):
+>     (I do'nt thes function which aren't part of the tcl distrib.
+>
+>             // string = va_arg(tmpArgList, char *);
+>             string = __va_arg(tmpArgList, argList);
 
-To really do Altivec vector regs save/restore efficiently will require
-cooperation between kernel and compiler.  Altivec architecture defines
-a VRSAVE register, which is just a general purpose 32-bit wide bitmask.
-The intention is for compiler to record usage of altivec registers in
-the prologue of every function which uses them.  Likewise, the epilogue
-is supposed to restore VRSAVE to the caller's state.  Of course, hand-
-written assembly routines have to play by the same rules.
+??? I didn't tell you to do that. I meant: Replace the "memcpy" line in the 
+source with the "__va_copy" line I sent you.
 
-This approach permits saving/restoring the absolute minimum number of
-vector unit regs, and [perhaps more importantly] only when the
-interrupted
-thread was truly using them.
+Franz.
 
-A less ambitious approach which doesn't require the compiler to mock
-with
-VRSAVE would be to allow the kernel to discover whether a particular
-process
-uses the vector unit by "faulting" in the vector unit enable bit in MSR
-for
-each process individually.
-
-Cheers, Vitaly.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
