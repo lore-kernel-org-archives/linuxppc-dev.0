@@ -1,32 +1,35 @@
-Date: Tue, 1 Jun 2004 14:18:47 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: David Ho <DavidHo@nanometrics.ca>
-Cc: linuxppc <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <20040601211846.GB17412@gate.ebshome.net>
 Subject: Re: no core dump from the kernel on SIGSEGV
-Message-ID: <20040601211846.GB17412@gate.ebshome.net>
-References: <20040601173804.04313C109F@atlas.denx.de> <OF256E275C.8F4C3907-ON85256EA6.006EE439-85256EA6.006FEE36@nanometrics.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OF256E275C.8F4C3907-ON85256EA6.006EE439-85256EA6.006FEE36@nanometrics.ca>
+To: Eugene Surovegin <ebs@ebshome.net>
+Cc: linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <OF096B1DBE.952B9CCB-ON85256EA6.0076D881-85256EA6.00771DCE@nanometrics.ca>
+From: David Ho <DavidHo@nanometrics.ca>
+Date: Tue, 1 Jun 2004 17:41:04 -0400
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Jun 01, 2004 at 04:22:34PM -0400, David Ho wrote:
+> >
+> > I'm looking at making the kernel core dump on a process that seg
+vaulted.
+> > What I did was recompiled the kernel specifying a non-zero core file
+size
+> > rlim[RLIMIT_CORE] = { RLIM_INFINITY, RLIM_INFINITY }.  I was still not
+> > getting a core dump.
+> >
 >
-> Hi all,
+> DO NOT TOUCH the kernel!
 >
-> I'm looking at making the kernel core dump on a process that seg vaulted.
-> What I did was recompiled the kernel specifying a non-zero core file size
-> rlim[RLIMIT_CORE] = { RLIM_INFINITY, RLIM_INFINITY }.  I was still not
-> getting a core dump.
->
+> Please, read about ulimit shell command.
 
-DO NOT TOUCH the kernel!
+Okay, you point taken.  I assume ulimit will have the same effect of
+assigning it a non-zero value.
+What is troubling me is why it doesn't go to the core_dump function in
+fs/binfmt_elf.c
 
-Please, read about ulimit shell command.
-
-Eugene
+David
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
