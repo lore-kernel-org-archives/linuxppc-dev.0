@@ -1,22 +1,24 @@
-Date: Tue, 22 Feb 2000 17:44:50 -0800 (PST)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: mozilla builds...
-Message-ID: <Pine.LNX.4.10.10002221742350.15785-100000@shell.unixbox.com>
+Message-ID: <38B341A7.9F6E5DEC@grn.georet.net>
+Date: Tue, 22 Feb 2000 21:10:47 -0500
+From: Ryan Boder <rboder@grn.georet.net>
+Reply-To: rboder@grn.georet.net
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: PowerMac G4 and pcmcia flash cards
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi,
 
-for those who are intersted in mozilla, you can find daily builds at
+need to write a little boot prom and I would like to use my G4 to put it
+on a flash card. I have tried using pcmcia card services by David Hinds
+and it won't even install. This is no surprise since he claims in the
+HOWTO that Macs are not supproted yet. How you guys been using pcmcia
+devices and does anyone know if I can do it on my G4?
 
-http://entropy.crashing.org/~ajoshi/mozilla
-
-
-
-ani
+Ryan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
