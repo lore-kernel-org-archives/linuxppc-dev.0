@@ -1,61 +1,38 @@
-Date: Tue, 30 Nov 1999 22:19:11 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Stephen Edie <sedie@terraplex.com>
-cc: linuxppc-dev@lists.linuxppc.org, yellowdog-devel@lists.yellowdoglinux.com
-Subject: Re: Frame buffer / mmap() weirdness
-In-Reply-To: <Pine.LNX.4.10.9911301456090.6524-100000@newhope.terraplex.com>
-Message-ID: <Pine.LNX.4.05.9911302216440.389-100000@callisto.of.borg>
+Date: Tue, 30 Nov 1999 15:36:17 -0600
+From: Grant Erickson <grant@lcse.umn.edu>
+To: linuxppc-embedded@lists.linuxppc.org
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Ethernet Drivers for LAN/Controller-on-Board Systems
+Message-ID: <Pine.SGI.4.10.9911301438280.118603-100000@brule.borg.umn.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 30 Nov 1999, Stephen Edie wrote:
-> I have been noticing some strange behavior while working with Linux frame
-> buffer devices on PPC.  Perhaps I am just doing something stupid.  I open
-> the frame buffer using:
-> 
-> fbdev_handle = open("/dev/fb0", O_RDWR);
-> 
-> I can draw to the frame buffer using:
-> 
-> lseek(fbdev_handle, 0, SEEK_SET);
-> write(fbdev_handle, pixmap, size);
-> 
-> This part works fine.  What causes problems is attempting to memory map
-> the frame buffer using:
-> 
-> address = mmap(0, screen.height * screen.stride * screen.bpp / 8,
->                PROT_READ | PROT_WRITE, MAP_SHARED, fbdev_handle, 0);
-> 
-> When doing this, address[0] points outside of the video memory and
-> strangely enough, address[512] points to the first pixel in memory!  So if
-> I do the following, everything works as expected:
-> 
-> address = (char *)(mmap(0, screen.height * screen.stride * screen.bpp / 8
->                         + 512, PROT_READ | PROT_WRITE, MAP_SHARED,
->                         fbdev_handle, 0)) + 512;
-> 
-> I don't think this is right!  Is this a kernel bug in the frame buffer
-> driver code?  (This is being tested using OFFB by the way)  Is there
-> something weird going on here with page alignment or something?
+I seem to recall seeing a HOWTO on this issue some time ago; however,
+after checking the HOWTO archives, I find that my memory must be failing
+me.
 
-Perhaps the frame buffer memory is not aligned on a page boundary? What does
-`fbset --info' say about the address?
+Anyway, I'm working on a port for the IBM "Oak" 403GCX board. This board
+has on it, a National DP83902AV Ethernet MAC. The chip is more or less
+directly attached to the 403GCX's address/data buses and resides at the
+base physical address 0xF4000000.
 
-If it's not aligned to a page boundary, the application has to mmap()
-(address & 0xfffff000) and add (address & 0x00000fff) to the start address of
-the returned region. Make sure to increase the size you pass to mmap(), so the
-whole frame buffer memory is covered and size is a multiple of the page size.
+How are such Ethernet controllers accommodated by the kernel? It seems as
+though I cannot just use 8390.o directly as it is but a library used by
+drivers such as ne2k.o. However, I don't think I can or want to use a
+driver such as ne2k.o as this isn't a PCI or an ISA card-type controller
+either.
 
-Gr{oetje,eeting}s,
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+Do I need to write a small upper-layer wrapper driver, such as oak_8390.c,
+for this?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Any pointers, advice, or input would be appreciated.
+
+Regards,
+
+Grant
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
