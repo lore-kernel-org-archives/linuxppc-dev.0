@@ -1,35 +1,34 @@
-Message-ID: <396499F3.491EA41@erols.com>
-Date: Thu, 06 Jul 2000 10:38:43 -0400
-From: Nelson Abramson <pogtal@erols.com>
+Date: Thu, 6 Jul 2000 07:57:13 -0700 (PDT)
+From: Matt Brubeck <mbrubeck@hmc.edu>
+To: Iain Sandoe <iain@sandoe.co.uk>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Multi-boot advice.
+In-Reply-To: <200007052323.AAA07099@hyperion.valhalla.net>
+Message-ID: <Pine.GSO.4.21.0007060751390.17224-100000@turing.cs.hmc.edu>
 MIME-Version: 1.0
-To: Giuliano Pochini <pochini@shiny.it>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: bG3+damaged CD=crash
-References: <XFMail.000706092421.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Giuliano Pochini wrote:
+On Thu, 6 Jul 2000, Iain Sandoe wrote:
 
-> My blue-G3 hangs completely when I try to read a CDROM with some
-> errors. The whole system freezes and the only cure is reboot (no
-> logs, no errors, no panics, no oops). My older 7300 simply told
-> it couldn't read the disk. Is it a known bug ?
+> I think I read that I must put the Linux boot partition before the
+> MacOS - X one?
 
-Maybe it's a bad CD?  Chances are if it crashes one machine and another
-won't read it, that the CD-ROM itself is bad, not the reader....  If you
-purchased the CD (as opposed to burning it yourself), get in contact with
-the LinuxPPC people and ask for an exchange...
+If you are using yaboot with an OF-bootable partition (e.g. you are using
+ybin to set up a bootstrap partition), then placing that partition before
+MacOS will allow you to boot Linux by default without changing any open
+firmware settings.
 
-> Perhaps I'll buy a SCSI CD, I hate IDE junk.
+Other than that, partition order shouldn't matter.
 
-Your 7300 (I think, and AppleSpec backs me up) has a SCSI CD-ROM, so it's
-probably not the drives.
+Speaking of yaboot, I have a question. Can yaboot boot MacOS, or can I
+make it exit back to OF without rebooting?
 
-HTH
---Nelson Abramson
+I'd like to just have my machine always load yaboot, and then use the
+yaboot prompt to choose my OS. But once I'm in yaboot, Linux seems to be
+my only option. Is this true? If so, can it be changed?
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
