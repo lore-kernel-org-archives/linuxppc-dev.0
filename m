@@ -1,178 +1,72 @@
-Date: Wed, 21 Nov 2001 11:53:44 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Simon Winwood <sjw@cse.unsw.edu.au>
+Message-ID: <20011121185415.3785.qmail@web20407.mail.yahoo.com>
+Date: Wed, 21 Nov 2001 10:54:15 -0800 (PST)
+From: Venkat Raghu <venkatraghu2002@yahoo.com>
+Subject: Re: ppc405_eth_rxde...
+To: Armin Kuster <akuster@mvista.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Walnut boottime issues
-Message-ID: <20011121115344.H3436@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011121104517.A12111@cse.unsw.edu.au> <20011120173502.D821@cpe-24-221-152-185.az.sprintbbd.net> <20011122054437.A26819@cse.unsw.edu.au>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="YiEDa0DAkWCtVeE4"
-In-Reply-To: <20011122054437.A26819@cse.unsw.edu.au>
+In-Reply-To: <3BFAF4E0.6A42BAA0@mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---YiEDa0DAkWCtVeE4
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+  Is there any method to reproduce this interrupt,
+  so that "ppc405_eth_rxde" handler is called?
 
-On Thu, Nov 22, 2001 at 05:44:37AM +1100, Simon Winwood wrote:
-> On Tue, Nov 20, 2001 at 05:35:02PM -0700, Tom Rini wrote:
-> > On Wed, Nov 21, 2001 at 10:45:17AM +1100, Simon Winwood wrote:
+  Please mail to venkatraghu2002@yahoo.com. I did't
+  subscribe.
+
+   Raghava.
+
+
+
+--- Armin Kuster <akuster@mvista.com> wrote:
+> Venkat Raghu wrote:
 > >
-> > > 	Hi, the latest bitkeeper linuxppc_2_4_devel kernel is broken
-> > > for walnut (and any other board using misc-embedded.c in arch/ppc/boot/simple)
-> > >
-> > > 	Specifically, the ZIMAGE_START and ZIMAGE_SIZE macros are wrong (0)
-> > > and have been replaced by {__image}_{begin, end}.
-> > >
-> > > 	The command line stuff also appears to be broken (the kernel doesn't
-> > > get the command line properly)
-> > >
-> > > 	Is there a fix pending, or should I do it?
+> >    Hi
 > >
-> > Does the following work for you?  I thought I could do the changes
-> > easily w/o breaking 8xx/4xx, but...
+> >      I need help in understanding about following
+> >    interrupt handlers:
+> >    ppc405_eth_txde
+> >  and   ppc405_eth_rxde.
+> >
+> >   What operation exactly triggers these?
 >
-> 	After some slight hacking --- basically, I added
+> AFAIK, when the emac detects a problem with either
+> rx or tx descriptors
+> after being sent to the MAL then the approperate
+> interrupt handler is
+> used.
 >
-> 	#include <asm/bootmem.h>
+> > What is the
+> >   effect after these handlers have been called,
+> like
+> >   whether these handlers reset the drivers etc?
 >
-> and
-> 	avail_ram = 0x600000
-> 	end_avail = 0x800000
-
-Yeah, I noticed when I tried to compile it.
-
-> 	The only problem is that you can only boot with an empty command line,
-> otherwise it locks up after 'Now booting the kernel' (as far as I can tell)
-
-Hmm..  How's this go?
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
-
---YiEDa0DAkWCtVeE4
-Content-Type: text/plain; charset=unknown-8bit
-Content-Disposition: attachment; filename="4xx-2.patch.gz"
-Content-Transfer-Encoding: quoted-printable
-
-=1F=8B=08=08=14=F8=FB;=02=034xx.patch=00=BDZio=DBH=12=FD,=FF=8AZ=07=13K=A6N=
-=DF=EB#H=9C=0BB=9C=03=B1g=03=CCl PdK=E2=98=D7=F2=B0=EC=0C=E6=BF=EF=AB=EA&EJ=
-=B2=E3l=16#=C4=91=D4]]]]=FD=EA=A4=CE=CE=F0";qf=BD8vz=E3(=CAz=A9=17=C4=BE=EA=
-=05^=EAtT0V=AE=AB=DC=AEC=83=EE=CE=80nRR=AE=97)=97x=E1=D9F=A7=D3=91=89=DEcX4=
-=AErE=1F=A2=1B=1A=EC=D2`=EFx=F7=F0=B8?=A0=9D~=7F=B0aY=96=E1=FB8F_ =003=82D=
-=83=C1=F1=FE=CEq=7F_3z=FE=9C:=83=F6A=9F=ACA{=FF=90=9E?=DF=A0=DE=F6=06=D16=
-=9D=BF=A3=A1{L=BF=BC=F9=85~=19=E2=EF-=FE~=C5=DF=93_6:=B4=DD=DB=E8=80=0E=1F=
-=E8=85k=C7|=BEI=94=D0=A7h=AE=92O/i|Go=ED=E4=8E=AEfQ`=A7=CCNH?=ABy=E2e=99
-=99=E0e=94d=F4*=CA=A7vHM=07_=9E;i7=0C=B2=AEr=F3=96=90=7F=0C=15=B9=F6=1De=11=
-=8D=15%*=F6m=07=1Ba=ADM=A9=17N}E|f?=B2]=95=C8=FE=CE,=89{1({q`;]=82=B2y=9B=
-=0D=8B=B9%=DE=D4=0Bm=DF=C7r#r]=CC.=D1=FB=DC=99a=16=8A=F5"=90=D2<J=AEA%=EB=
-=AB=F2=9E=8A=BC=934=F0=EDq=DAu=A2=E0=19=16=7F=0C!iL=D1=84=B2=99=9DQ=9Ay=BEO=
-A=94=A8=1A=9BWX=FE=DE=F6=D55=9D=BA=01=BF?=FF=C3w=BA=A1=CA=9Euy^o=95'=89
-3H=1A=D8^=98=E1O=84=3D=A6=AB(=A0=CF^=E8=D1i=96=E0=ED=F9=B5JB=E5w=9D=C4NgPH7=
-J=A6=CFX=DB=BD=0D=DA=A0'^=E8=F8=B9=AB=E8=D4=F7=C2=FC=B6=E7D=E1=C4=9Bvg=CFV=
-=A7=B2=BBX=A5<=D3)g6=BF=F9=DE=B8;=DB=AC=0C=9D=DAi=D0KT=EA=B9=B9=ED=AF=E5=A3=
-=FCI=9D=8B,=89=ED=A9Z7=9CD=8EJ=D3(=E19=AB>=C7=F7=EA=85=93h=CD=947=0E=F6no=
-=97=B6=E7=89 =C8=D7=8D=C6=CE=D1zrL=EC=1C=F4=D7=08=B6=D8=C1Z=7F=10=EB=F1=07=
-=A9=A9=AB"=C2f=18=85i=E6z=11=AB=D8Z=D5:=95=F6=F5=C9Wv=AA(U=A1K=81"F;=D4c'.=
-=B1=82=C8=C6p=CA=B0u=ED=CC=16#=98ann=03va=94	=07=DFK=19=ED3=85=B14=A2!9=C0=
-=E0=B5R1e=89=ED\=B3-9
-=A0=05=82R=E2=85S=95A=FBSL{=CE=F5=9D=F0=98{=D9=0C$0Ho2Q=8CN=91=84=8D%I=F5=
-=ECbf=E2%=01K=00=A3=B8=9Ay<=ED=FB=C2e=A6=FC=98=CD=D9=BE=89< :Q=F6=B5=EC3+=
-=CF=15ed=D4=D9=95=15=85=05k=97=E3=E0l=B4m=DF=D8=9E?J=EC=E0=A4=18=81nF2z=B2a=
-=F5=B6=B1)=F8y!=AC=832=E5=FB)=E5=90A=8E=CF;y=01=AE=91<=D8;XZ=EA6=83=11=91=
-=F0=19=8Ddn4V=F0=14=ED=F2+=B8=9F,=13bw=D7K=AF=17=A4=C5=C0=1Ab=19"v=ACt=AE=
-=1C;=C7m=8A=93`!=03=89=0Dv=10=E5=D0=1BF=03=05=8FqGQH=85=F7n=93=C7:Q=00@&=AE=
-TT=C5j=83=A2=C6=BE
-RQ3|=A17=9D=AA4=C3=C9=B4=03=9Ak=A5=F2=C5=A6Thv
-9=85	=FC
-=EE=01^=D5=B73=EFF=C1=D7=F8=D1=BC=D8=9Eo=15W=D0=16t=B1=A0=17l=DE=A4=DD=0D=
-=9D=A7)D=85=1B=17F|=D4=D0M5C=D9+=8D=E1=A7Y=E1!=8B=0E0=89=1C=88CD_x=90=19=1A=
-Vif'=E6T=BC=D57=95D=A9=CC=9F_^j>r|=DB=07n9v(=EC|=C3=D7=CA=F7=08=F8'=81=CD=
-=AE=1Ag=15=B4=A4=F6=8D=D28gn=B1=0DAE=A8r?=04=9A =E09=C0C=13-L=A9%=0E=F8=11<=
-=F24=970R[J=12=B0=98.Uz=06=EA=C3=15@=E1cX=1D,=F7:=8C=E6a=A1=E1Y=E4+a=8C=0F=
-=E6=8A*=E7=E9j'.=E8n8=81;=1A=E7=93=DFw=F6=0F=BE=1A=C47=B6yP=CEpFf=1E=A8=13=
-=B8=D5=C9=F5=D8=03=E4Uk=B2V=ACI=DC=10]=AA=C4C4=8C9=02Bd=00=18=C6=C9=C6=B3~N=
-=E2O=1E=A6=DE=94=E3=96=1F=01=AAP=FB=88I
-;=10=B7=E0=E9=ABv=D5=C4=CE=FD=8C=05=13=115x9x"=EAO=81=CD=B0=B8=000O=08=93=
-=02=E6=CC=0BTW=EB}8=81=AF=C3=CA=B9=CD=E0S=8E7=F1=D8=A82=DE6=F6=90&0-=DF=C6=
-=16=982G=C6TTl=95=CE=A2=1Cw=C0AZ=B3=83=CF=E1@=CB=A7x=E2M =1E=BD=FC=F8=E1=CD=
-=F0=ED=E8=E5=FBW=17=C3=0F=AFG=E7=1F?^=14=97=A3wpG)G=E4=E9=EF_=A1=E1:uy/=8F=
-=A0=A4'=D0=BD71=BCq'	NZ]=B0=C9=03g=3DW=DD=F40=BBY=C0=01=E9=C3=03=94=E1$=A5d=
-N^|f=E7Y=B4Y=08=F4=18=F6=9A=F2=07=D9=D7=AF=98C=12=C2)=82=89R|q=F0=02CqE7=9E=
-=0B=13=B0I=D2:!=E3;f=92$=D2>J=AE*=17=9A=08=EE=85=ED^|=16.G=857^=12=85=01=87=
-=9B=AAMw%=A3=3D=D8m=FF=93=AC=83~{0=90=94v=83=C6=EE(=13[=1BID=D6=16=A0G=B7=
-=17=C3=B0k=9C=ED=E92]=A7=0Efd^Y=C2=F7=08=DF=05=F2~=BB=18=E1=10=8D=EF`=AC=0D=
-=E9=9B=8E=1FB=C8j)=C2B=9D=9D=99=B6=CAi	=8E=13?Og#=0FIB=92;=EC=13F=8E=ED=CCT=
-=93'[`V=A5=9D=E6=E17/=96)=DAfi=B2=F6b=0F-=8A=8C=D2=F6=F2J	2#=9D=196=B56=B6=
-=C7q=85jIT1=F6=11=1F=B7=C9=FC=C0=1B=C1O=AF=93e=AC=FC=C3=FD=F6=11Y=87{m]N=FC=
-=B9A=0D=A6e=1BL=DAT=E8=C4=FB=C6=CE=E8=B7=E1=FB=17o_=8F.=87=BF1=FA=1B=C6Y=C5=
-mp=86=DA=1B=0F=E9=AB=9C}=8C=BA=AC=C6=FA+=84=14=82=D7=06=00=FB=C6KR(=CEAm=90=
-=9BT=A1=88=C1=15W_xh=89=B9=88=80=0D=89=A5(=18l=9F=8F=C4=AB=B4=96=00=CB0=85=
-=97=17=D7=A8a9=E8=EF=B4=0FPi=F5=FBF7O=94=9F*>=F7=C2=3D7=B5=0EZ=CD=FE-
-4=BCZ=0B=B7`=81t=19=AC=E6=D6Z=CD=92=87E|=ACh=D24=9E=BE=C5=1C=F8=80N=14=17AK=
-=92Evp=0Do=02=16qK=CB=B7=8B=ABc=01w=F7=DA=FBG"a=A3=11=E7Y=DA=DC=FCw=B8)l=FE=
-=E2=90=C0=CC=10=DAf=1C)a=91i>=E6D2=A3=FE=ED=80%=D6=D1=13=13=A8=92=12=85q=B6=
-=EDh=FC=87=9B=071=E9L=D7d}`E$=E2=16=19=11*=08,=97=82n>=F3=90=D6b=1Fv;q=91	J=
-\lT-=AB=AA4N4F=9C=BDP=A7=94=C6*P=F6=F1=CD=9B=CB=D7W=82=06=E4=D6=16=DF=DC=17=
-=9D(R=94')o=0D=A1=FB=B7=FD=FE=91h=BE=C8W B=92=87=12=CD=91.E=8E=9D)=BDZ=AF=
-=BAQ=12=C7$=DD=BD=8C=98=EA=8F=1CiX=A8=80=9BZFY=F88=BDXd=EF=9A`#C=08=A8=F7=
-=1E=AC=06=DFV=F3i=8D=B1=1C=A9nX=F7.=00=92Z=D4=01}=A3=F1]=A6|=D5=8C=0F=1A~=
-=18^}~e=14H=A8=CE=1B=8D%'=B8^=F1=B5ub=B2=8C=F7=D5=D5}=9E=AB9Q=B3=92=1D=03=
-=F8T=C9=F9=AC=15=F3]=7F=D6J6nN=FB=00=D1=E2=B8l&=8CI=DC=8E=CA=F2=98=CA=DC=08=
-=A7=CA*)=CB=84]=05r=C3Drv=9E=CFS=1B=B9=B8^;=BE=D3=D9J=C8!=9F=F3h=18=82=AB*=
-=DD=08&=E2=8C=FD=DBPJ=11=8E]=FADe=DA3V=D9\=01zZAL=C0Gis=F9=06=D6w[7=06D=B6=
-=8F=1A=CA=85U3q=80=D4=D8E^=E30=12=BF=A8-=AE=E4=A2=C8ePO#dH=F3=12m=D4=D0f=B4=
-8=DF=02j=9F=D8T^\=0C=DF~h.=E9=AC=8AM=AB=02=B7=D6I=81=93=E6=C2=00=ADf=98=07#=
-$Un=BA=BD=D7j=D1=B3=E5kZ(W=F0=F4=F4)U=AC=F7=F4=8C=EDP`=04=0F=A8=11=B7N=D8{=
-=F7=AB=88=B4=B4=EFS-=FF=DF#=DEc=F6fQ=B5O-=BC=8B	=92=DAAk=FFkF=EC=EC=98=F8=
-=05gL=98=98=A9=DB=87.IX=EB=F5=0F=AChV=AE=D2=AA-=D7KJ=EF=DF)=AD=E3J<<=8C!=8C=
- =B4=9D=A2=02k=DE=A9=AC=C5P[=1CB=A3=9B=9D^=3D=8Eri/\8t=C4R9HF?=E1=C4n=E2=DB=
-=E9LR<0=3DB=DE=B8=B4=B6MC=BD=1A=85Y=8E=AA
-=97lt=A3m=C53=15=E2=E0=E0=3D=BBbng=E8f=D2=B4=C2=DF=080=0C=B5U;v=8A=F2=C0=BE=
-=F1|6b=B1g1D=CDQ=BC=B9=3D=8EnLt=D7=D5=AD=B1u=89=81=A8=06=E5=C8n=99=C5=16))=
-=C2=EF=84k=96p]
-!=1Cz=06=A8=0F\#=C0YA=DB}X=BB=DFn=EB)C=99=1Ep=E2 =E8[=02=9FqE=A5d=F5|=97=F7=
-=FF=93e=D0=C80=C4kpY]%=E0Y=83=C4=85=CB_=82=9A=F5s=B0-=D7=9B=B4=85w=EFI=B4=
-=8FB=14=EEE=E2=B2|d=9Cv=CE=CE=9D=FD=B1 	1=FB=0D=E3=85=D7=E3=B2=81=9F=A2=A5=
-=C5-=15=D3=CB=A9=B4=06=B8=87v=9D=F2bn=B1eQ=9A=9A,=87Ws=F7=B0l=93`=1B=D4CE7 =
-=8E"=9F=EC	W8zc=17=D5)=B6=FA5-=16=0B=F2l=E0=9Dq=9D=A94=EB=EA=89=9ED=D3U=FC=
-=D4=EE=AC=86=1F=92=DBk`g=07=E9`=D3T=0DU=F8t>=159=B9=B5=C4=B5=EC=0Ct*=F1=B9=
-=D5=16=86=8D=82Suk3U=8D=E6=1A=0B=CB=19=C0Ol_=E3=A7=B3=87=1As=AB=9ALh=E2=92Q=
-=C5~=EA9=06Si=08=15 =E18z=FC=1D=84=FF=08=C4A=FE=17=FF=C7)=91=B9=93=1F3=EB*g=
-=CD=CD=AA=DB+gG|=DD=D6=FD=C6j=E6=D6=99=D7J=82TR=7F=C7.=97=D2=AF=D6=C9j=05=
-=B1H=C0=FF=C7<=CBz(=CFZ=CE=AD>=BFx=FFjx=F9=AE=CD=F6-;-Xpx(r(=18;(=B5=D5	=E3=
-J=D3AJ=13=B02=0FwV=D2=F6=1F=BB=B9U=15I=EE=A9=F5=A4q=89=E9=EFE=FAE=82R=00=8B=
-=B4=86=D7=93=97=98_=C1a=F1M=9A=BC=BDO=9F^J6=7FLzV=EA=F6"Gwb=D3A=E4JSg=04=A5=
-?=D4=1Dv8=D0=8C;=C8=DC;=F5=9Ck=D1\=E2Mg=F56=8D=04J=13=97=BB=DC=FA(=01=F1=F3=
-=DC=A4$=1F=8A+=9F3=0F=DDB=E4v=DFJG=90=DD=B7g:R=C3=94>3=E7=15=06=E1V=86=C4[)=
-=13=1Et=C4's=7F=BCv=82=B4=BC-=B8H=89=DBb&=BB=90=DA=11=A0r#=D4=C7m=DD=CC=82=
-=FC=81=1C=C2=B4=D4=A8=B9=DCGkU=DA=8F=D6=CF=B31=08}=A8=91Ie,(.=B6=BD=DC=ACl=
-=97-=85=FAxK7'tQ=C7=BE=A7=E6=12=8D?=AA=B8=A3=167=14Vw=ABw"=CB=CD=EA=C3=BA=
-=8Da=1A&k=98=D4=9B=94%=93=FAp=AB=D2M=E94=E63=86B=93;Np=940=03=A7=89=8F=96%=
-=9E=AE6i<=DFb=9E=8Ay1=0F=CB=A2S=DA=DF=1E=98=F8J:$g)=16=B4=CC@A=0F=EF=00=13=
-=9A*=3D=F5=8F3=DA=FAw=B8E(/0.=DF=92-^=C1=ED=98=9D=BD=3Dn=17=ED=0C=F6=DB=BB=
-=FB=BA=1Bc:}=FD6"=FA=9E=C4=F3EGM=E2-=3D=AD=17f=D4=B8=AF3V=B8
-=98=BEd=1BE=E2%=F1B=13=D3=D8C=DE=E8D=9C=0D=E2]z=94=8D=06>=B1=97[%i=DD=EB=ED=
-=A4=0C=97=C5H=13=06tzJ;PT=87=06m*=BF=B6=16=EC;=CF2{=8A=3D=CE=87=A37=C3=CF=
-=97W'=E5=B8=A9=F8=CD=DD.=8B=D0:yX=BEe=C9=98=D2=A2=92=F1z	`+#=D3=C7/`=D7,}=
-=BC=90r3=ADM=0B$bg_=85%4[=D6=A0=F5=E8=13pz=BE=B4=1CC=83=FF=CF=C1=EE=CB=0E=
-=96N=AC=D3=A5=93=C5=0C=1F=F0=F7=FE=D7=87[-=8BNTu=D5=E0k%=1D=93nk9=FF}M=EC=
-=F0=EF!=183=86=A6=BEy=C9=EAG=94=A2=F95j=AA=91=D4i=F5=E2/^=FC=AD=C8=E3=C4=C8=
-=D8=E3=87h^=16=AD=8B=EA=A2H=A0=12=A4LIH=0F=15y =FBk=E3=AC=FES%=CD=84?=EE=DD=
-=DE=8E$=EF=D2?R:=BC=EFGJ=87=BD=87=177=AEf=B9=FEy=D2>=0D=8E=8Ew=F0o=F7=FE=9F=
-'=ADg=B1=F2=C3=A4=BD=C3=C5=0F=93v=8F=0E=DA;=F0=80=FC~d=1E=E4=E8=0E4=C2=19?7=
-=E4=1F=C64ML;=BFx7z=F5=FA_=06=BD=ADJ=B7b81=CF=8BQ[!=C3#=86+=C2x=AA=BBf=FA=
-=E1G=9E(.=CE=CB'=DE=89=DA=E2=E7N7=B6=EF=B9=A6#=C8=FE=95o=C4<=1C=97=A4=C3=93=
-=D4 =E3=AA=0D=C7=A9=15=F4=C9=9E)=B5=96*=9Dd=0F7=FF=EE=F5=E7=0F=AF/=CE_\=EA=
-=82=A4R=BC=10=93=EC=AF=90=A0T=D0a=8B=1F=AD=AD=3D=B1=EC=AC3=B2=97=DC=E8=AF=
-=94=A5=F5=87=DE=C94=E7=C7f=A9~=98=96=DA=13=A5=1F=C1u=0B=0E"=FD=81H=8F=C0=B5=
-]6=B3=92=C3=9AX=AD")=E4h=C1^q=E1=01=17K=0E=EAKZ=E6,=92=90,=DF 2=CF=BD=FE=FE=
-=E8=CB=AB=AB=96<v=BE=88=A2k=D1=F2=DC=CD=CE(=8A=E5I=7F=14=D6=8F#i=D2=0F=10S=
-=F1=E2SBp=FC=AB=08=BE=C9=AB7u=CC^~=F1C,=C1=C3=08D=E69=DF=F2K=9F;n=D3=F6=7FN=
-6=FE=0B=8A=12R=84,(=00=00
---YiEDa0DAkWCtVeE4--
+> The rx/tx descriptors should be clear/reset for
+> normal use.
+>
+> >What
+> >  happens to the traffic that comes when this is in
+> >  this interrupt mode.
+>
+> Packects may be dropped.
+>
+> >
+> >   Any pointer or links wil be helpful.
+>
+> see 405GP user manual
+>
+> >
+> >   Kindly mail back to venkatraghu2002@yahoo.com.
+> >   I didt subscribe to this list.
+> >
+> >   Thank You
+> >   Raghava.
+> >
+>
+>
+>  -- armin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
