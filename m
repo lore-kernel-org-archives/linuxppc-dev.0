@@ -1,24 +1,21 @@
-Message-ID: <411BECBA.1090602@eircom.net>
-Date: Thu, 12 Aug 2004 23:18:34 +0100
-From: Conor McLoughlin <cml3227@eircom.net>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20040813010711.41665.qmail@web53709.mail.yahoo.com>
+Date: Thu, 12 Aug 2004 18:07:11 -0700 (PDT)
+From: Junita Ajith <junita_ppc@yahoo.com>
+Subject: How to boot u-boot from RAM
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: "Cordes, Aaron M" <aaron.m.cordes@lmco.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux 2.4.27-pre6-bk hangs on MPC8540 board
-References: <EE7CAF713952AC4A970DD7CD8B4C12A042DCAC@emss09m06.us.lmco.com>
-In-Reply-To: <EE7CAF713952AC4A970DD7CD8B4C12A042DCAC@emss09m06.us.lmco.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Disable the cache. The processor uses a burst access to fill a cache line.
+Hi
 
-Conor
-
-Cordes, Aaron M wrote:
-> Is there a way in Linux or the 8540 to prevent burst accesses, in order
-> to test whether they are the problem?  I scanned the processor's
-> reference manual, but I didn't see anything that would let me do this.
+I am trying to have a different version of UBoot
+with some utilities added to it . So I'm trying to
+figure out a way to check if that upgraded version of
+UBoot works fine , without copying it to the default
+location where my original UBoot resides in the flash
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
