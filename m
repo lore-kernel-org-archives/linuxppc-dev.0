@@ -1,57 +1,109 @@
-Date: Mon, 8 May 2000 11:50:49 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: james  woodyatt <jhw@wetware.com>
-cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <20000508101331.16264.qmail@web204.mail.yahoo.com>
+Date: Mon, 8 May 2000 03:13:31 -0700 (PDT)
+From: "D.J. Barrow" <barrow_dj@yahoo.com>
 Subject: Re: Help with cross-endian bitfields?
-In-Reply-To: <v03110702b53c10dcc4d9@[208.177.152.17]>
-Message-ID: <Pine.LNX.4.10.10005081150260.312-100000@cassiopeia.home>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 8 May 2000, james  woodyatt wrote:
-> Daniel Jacobowitz <drow@false.org> wrote:
-> >On Fri, May 05, 2000 at 03:27:21PM -0400, jlquinn@us.ibm.com wrote:
-> >>
-> [...]
-> >> Can someone tell me what's going on here?  Am I going to have to have
-> >> ifdef's on these structs, or resort to mask macros, or is there a
-> >> reasonable solution here.
+If you are using gcc using __attribute__(packed)
+may help otherwise the compiler may optimise alignment
+info gcc for more info.
+struct blah
+{
+   uchar a : 3;
+   uchar b : 3;
+   uchar c : 2;
+} __attribute__(packed);
+
+to pack the array it also would be more correct to
+use unsigned as opposed to uchar.
+
+struct blah
+{
+   unsigned a : 3;
+   unsigned b : 3;
+   unsigned c : 2;
+} __attribute__(packed);
+
+I personally would be expecting to use ((*((u8
+*)&blah[0]))&0x0e0)>>5 to get the info from blah.a on
+both little & big endian machines.
+
+
+
+--- Daniel Jacobowitz <drow@false.org> wrote:
+>
+> On Fri, May 05, 2000 at 03:27:21PM -0400,
+> jlquinn@us.ibm.com wrote:
 > >
-> >As Dan Malek said, there is no defined ordering.  The compiler is free
-> >to do whatever it wishes.  You can't assume that.  (I think.)
-> [...]
+> > Hi, all.  I'm working on getting the Advansys
+> driver working and what
+> > appears to be the final stumbling block is a
+> difference in the layout of
+> > bitfields between little-endian and big-endian
+> systems.  In particular,
+> > there are structs like the following:
+> >
+> > struct blah {
+> >   uchar a : 3;
+> >   uchar b : 3;
+> >   uchar c : 2;
+> > }
+> >
+> > On a little endian machine, this works like I
+> expect.  (blah & 0x07) ==
+> > blah.a is true.  On linuxppc (and apparently MacOS
+> as well), this is NOT
+> > true.  blah.a refers to the 3 most significant
+> bits.  The linuxppc behavior
+> > seems counterintuitive to me because I expected
+> each successive member in a
+> > struct to be the next physical piece of data I
+> encounter.
+> >
+> > Can someone tell me what's going on here?  Am I
+> going to have to have
+> > ifdef's on these structs, or resort to mask
+> macros, or is there a
+> > reasonable solution here.
 >
-> It's absolutely true.
+> As Dan Malek said, there is no defined ordering.
+> The compiler is free
+> to do whatever it wishes.  You can't assume that.
+> (I think.)
 >
-> Not only is there no defined ordering, the ANSI standard says that it
-> doesn't even need to use bitfield operations in the machine code.  It's
-> allowed to pad arbitrarily between the bitfields.  It's allowed to
-> completely ignore the bitfield widths and treat the members like integers.
-> It's even allowed to order the very bits themselves in weird ways, if it
-> thinks the processor will like it better that way.
+> Also, by your intuition, the obvious thing IS
+> happening.  Remember that
+> we are big-endian - the first thing in memory is
+> big-endian.  Thus, it
+> follows logically that a should be in the first
+> three (most
+> significant) bits.
 >
-> Bitfields are just not even remotely portable.
+> Dan
 >
-> C structures should not be used to represent portable serializations of
-> external data.  Period.  Yes, they're convenient-- but your compiler and my
-> compiler don't have to agree on practically anything about them.
+> /--------------------------------\
+> /--------------------------------\
+> |       Daniel Jacobowitz        |__|        SCS
+> Class of 2002       |
+> |   Debian GNU/Linux Developer    __    Carnegie
+> Mellon University   |
+> |         dan@debian.org         |  |
+> dmj+@andrew.cmu.edu      |
+> \--------------------------------/
+> \--------------------------------/
+>
+>
 
-And we all use gcc to compile Linux kernels... So the only remaining issue is
-endianness.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+=====
+D.J. Barrow Linux for S/390 kernel developer
+eMail: djbarrow@de.ibm.com,barrow_dj@yahoo.com
+Phone: +49-(0)7031-16-2583
+IBM Germany Lab, Schönaicherstr. 220, 71032 Böblingen
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
