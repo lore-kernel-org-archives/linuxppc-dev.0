@@ -1,42 +1,51 @@
-To: Allen Curtis <acurtis@onz.com>
-Cc: "Ppc Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: IBM405/Linux Cross compiler 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 28 Jun 2002 20:45:18 PDT."
-             <NCBBIINEHIPFGJPLBEIFCEDLDJAA.acurtis@onz.com>
-Date: Sat, 29 Jun 2002 21:51:35 +0200
-Message-Id: <20020629195140.3EFDA10341@denx.denx.de>
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Date: Fri, 28 Jun 2002 07:53:39 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: linuxppc-dev@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: [PATCH/RFC] Fixing kd_mksound again...
+Message-ID: <20020628145339.GI26734@opus.bloom.county>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dear Allen,
+Currently in linuxppc_2_4 (and 2.5) we always use the PC-style
+kd_mksound on __powerpc__ (=> PPC32, not PPC64 ?) and override that in
+the pmac port to something more sensible.  I would like to propose the
+following patch which expands the test to __powerpc__ && CONFIG_6xx.
+While it is possible to override kd_mksound later on, in a
+per-board/platform fashion, I think it makes the most sense to default
+to the PC-style version when we can be reasonably sure that it will work
+(i.e., it does work on my LoPEC and I think Sandpoint X3 as well) and
+otherwise assume that it won't (i.e., 405, Redwood4, probably 8xx).
+In the cases where it currently isn't working anyhow[1] if someone wants
+to make this work, they will have to override the given _kd_mksound
+anyhow, so using the empty one by default is best here.
 
-in message <NCBBIINEHIPFGJPLBEIFCEDLDJAA.acurtis@onz.com> you wrote:
->
-> I have tried to build a cross compiler for the IBM405 processor under
-> Linux/x86. After much playing, I have decided that the problem is not a
-> compiler or linker problem but rather a configuration/installation issue.
-> The problem that I am having is that there are some 403/405 specific
-> pneumonics that are not recognized by the assembler. (as installed) The
-> problem appears to be that the option:
-
-You can download a complete and _working_ set  of  cross  and  native
-tools  (our  ELDK = Embedded Linux Development Kit) for free; you can
-also use our build scripts  and  patches  to  build  the  tools  from
-scratch if you like - see the documentation at
-http://www.denx.de/ELDK/
-
-Hope this helps,
-
-Wolfgang Denk
+The following patch applies cleanly against both 2.4.19-rc1 and 2.5.24.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Business is like a wheelbarrow. Nothing ever happens until you  start
-pushing.
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+[1]: I bring this up since I just got a report that it doesn't work on
+PPC405 systems, and based on the RW4 check in _devel in this code, I'm
+not supprised.  This patch will supersede the current _devel part, of
+course.
+
+===== drivers/char/vt.c 1.10 vs edited =====
+--- 1.10/drivers/char/vt.c	Mon May  6 09:18:24 2002
++++ edited/drivers/char/vt.c	Fri Jun 28 07:42:52 2002
+@@ -90,7 +90,8 @@
+  * comments - KDMKTONE doesn't put the process to sleep.
+  */
+
+-#if defined(__i386__) || defined(__alpha__) || defined(__powerpc__) \
++#if defined(__i386__) || defined(__alpha__) || \
++    || (defined(__powerpc__) && defined(CONFIG_6xx)) \
+     || (defined(__mips__) && defined(CONFIG_ISA)) \
+     || (defined(__arm__) && defined(CONFIG_HOST_FOOTBRIDGE)) \
+     || defined(__x86_64__)
+
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
