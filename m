@@ -1,33 +1,21 @@
-Return-Path: <robin.gilks@tait.co.nz>
-Received: from gatekeeper.tait.co.nz (unknown [202.37.96.21])
-	by ozlabs.org (Postfix) with ESMTP id 675F02BDF2
+Return-Path: <g.jaeger@sysgo.com>
+Received: from goliath.siemens.de (goliath.siemens.de [192.35.17.28])
+	by ozlabs.org (Postfix) with ESMTP id 3ABC92BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Dec 2004 14:31:47 +1100 (EST)
-Received: from gatekeeper.tait.co.nz (merlin.tait.co.nz [127.0.0.1])
-	by localhost.tait.co.nz (Postfix) with ESMTP id A51E610BA0D
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Dec 2004 16:07:50 +1300 (NZDT)
-Received: from sunstrike.tait.co.nz (unknown [172.25.40.92])
-	by gatekeeper.tait.co.nz (Postfix) with ESMTP id 0588A10BA83
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Dec 2004 16:07:50 +1300 (NZDT)
-Received: from conversion-daemon.sunstrike.tait.co.nz by sunstrike.tait.co.nz
-	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
-	id <0I8400701JGHL400@sunstrike.tait.co.nz>
-	(original mail from robin.gilks@tait.co.nz) for
-	linuxppc-embedded@ozlabs.org; Fri, 03 Dec 2004 16:07:49 +1300 (NZDT)
-Received: from [172.25.114.91] by sunstrike.tait.co.nz
-	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
-	with ESMTP id <0I8400N0SM110O80@sunstrike.tait.co.nz> for
-	linuxppc-embedded@ozlabs.org; Fri, 03 Dec 2004 16:07:49 +1300 (NZDT)
-Date: Fri, 03 Dec 2004 16:07:49 +1300
-From: Robin Gilks <robin.gilks@tait.co.nz>
-To: ppc embedded list <linuxppc-embedded@ozlabs.org>
-Message-id: <41AFD885.60007@tait.co.nz>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=ISO-8859-1
-Subject: Current PID in static kernel memory
-Reply-To: robin.gilks@tait.co.nz
+	Fri,  3 Dec 2004 22:35:42 +1100 (EST)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
+To: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 3 Dec 2004 11:46:55 +0100
+References: <200412020907.44778.g.jaeger@sysgo.com>
+	<349C6BAC-443A-11D9-ADCD-000393DBC2E8@freescale.com>
+	<200412020925.35851.g.jaeger@sysgo.com>
+In-Reply-To: <200412020925.35851.g.jaeger@sysgo.com>
+MIME-Version: 1.0
+Message-Id: <200412031146.55364.g.jaeger@sysgo.com>
+Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH][PPC32] Fix gianfar netdriver oops when using bootp...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,36 +26,97 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Greetings
+Hi,
 
-On a 2.4.22 kernel running on an 8xx CPU, I'm trying to find useful 
-static kernel memory locations that will help diagnose problems after a 
-crash has occured.
+On Thursday 02 December 2004 09:25, Gerhard Jaeger wrote:
+> On Thursday 02 December 2004 09:14, Kumar Gala wrote:
+> > Fun with mailers.  Try this url:
+> >
+> > http://tinyurl.com/6skww
+>
+> Thanks that works (I mean the URL ;)
+> I have not tested, but this might will work, as I noticed, that when
+> addidionally CONFIG_RARP is enabled, there are also no problems.
+>
+> Anyway, I'll test ASAP and will tell you the results.
 
-So far I have identified load averages, uptime, active & inactive memory 
-and interrupt counts and I can dump these out from the bootloader.
+I've now applied this ipconfig patch and removed my piece of code and:
+it works - so ignore my patch ;)
 
-What I'd really like is the pid of the current task but I can't find it 
-as the current task structure pointer is held in a register (r2) and 
-hence is not available after a reset.
+Thanx,
+Gerhard
 
-Any clues as to where I could find this information?
+>
+> Thanx so far,
+> Gerhard
+>
+> > - kumar
+> >
+> > On Dec 2, 2004, at 2:07 AM, Gerhard Jaeger wrote:
+> > > Hi,
+> > >
+> > > On Wednesday 01 December 2004 23:19, Kumar Gala wrote:
+> > >  > There is some belief that the following patch should fix the iss=
+ue:
+> > > >
+> > > > http://linux.bkbits.net:8080/linux-2.5/cset@1.2249.2.2?
+> > >
+> > > nav=3Dindex.html|ChangeSet@-3d
+> > >
+> > > > I would be interested to know if this helps w/o your patch.
+> > >
+> > > I'd like to cross-check this, but are you sure, you're referencing =
+the
+> > > correct
+> > >  changeset? Currently I only got:
+> > >  Error 500
+> > >  Unable to find revision 1.2249.2.2
+> > >
+> > > Gerhard
+> > >
+> > > > - kumar
+> > > >
+> > > > On Dec 1, 2004, at 10:07 AM, Gerhard Jaeger wrote:
+> > > > > Hi,
+> > > > >
+> > >  > > this patch fixes an issue, that occurs on my MPC8541CDS, when
+> > >
+> > > trying to
+> > >
+> > >  > >  use bootp to get the IP parameters. It seems, that the patch
+> > >
+> > > only=20
+> > >
+> > >  > > cures
+> > >  > >  the symptom but obviously not the cause ;)
+> > >  > >
+> > >  > > Signed-off-by: Gerhard Jaeger <gjaeger@sysgo.com>
+> > >  > >
+> > >  > > --- linux-2.6.10-rc2-mm4/drivers/net/gianfar.c.orig   =20
+> > >
+> > > 2004-11-15=20
+> > >
+> > > > > 02:26:34.000000000 +0100
+> > > > >
+> > >  > >  +++ linux-2.6.10-rc2-mm4/drivers/net/gianfar.c  2004-12-01=20
+> > > > >
+> > > > > 17:00:19.000000000 +0100
+> > > > >
+> > >  > >  @@ -1477,6 +1477,9 @@ static void gfar_phy_change(void *data)
+> > >  > >          struct gfar_private *priv =3D netdev_priv(dev);
+> > > > >
+> > > > >         int result =3D 0;
+> > > > >
+> > >  > >  =20
+> > >  > >  +       if( !priv->mii_info->phyinfo )
+> > >  > >  +               return;
+> > >  > >  +
+> > >  > >          /* Delay to give the PHY a chance to change the
+> > >  > >           * register state */
+> > > > >
+> > > > >          msleep(1);
 
--- 
-Robin Gilks
-Senior Design Engineer          Phone: (+64)(3) 357 1569
-Tait Electronics                Fax  :  (+64)(3) 359 4632
-PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
-New Zealand
-
-=======================================================================
-This email, including any attachments, is only for the intended
-addressee.  It is subject to copyright, is confidential and may be
-the subject of legal or other privilege, none of which is waived or
-lost by reason of this transmission.
-If the receiver is not the intended addressee, please accept our
-apologies, notify us by return, delete all copies and perform no
-other act on the email.
-Unfortunately, we cannot warrant that the email has not been
- altered or corrupted during transmission.
-=======================================================================
+--=20
+Gerhard Jaeger                             g.jaeger@sysgo.com
+SYSGO AG                      Embedded and Real-Time Software
+www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
