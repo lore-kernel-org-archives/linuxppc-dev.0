@@ -1,55 +1,47 @@
-Message-Id: <5.1.0.14.2.20030122062343.02762040@falcon.si.com>
-Date: Wed, 22 Jan 2003 06:28:41 -0500
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-Subject: Re: Problem Exporting Symbol
-In-Reply-To: <000028D3.C22236@hotmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-Id: <200301221443.PAA15378@hzsms01.nl.lucent.com>
+Date: Wed, 22 Jan 2003 15:43:53 +0100 (MET)
+From: Jaap-Jan Boor <jjboor@lucent.com>
+Reply-To: Jaap-Jan Boor <jjboor@lucent.com>
+Subject: Re: Lauterbach ICD In-Circuit Debugger
+To: linuxppc-embedded@lists.linuxppc.org, r&d@wawnet.biz
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I haven't checked the actual sources, but I bet 'va_to_pte' is _not_ a
-symbol... it is probably either an "inline" function so the compiler
-inserts the function's code everywhere it is "called" (saves the overhead
-of the call and return with associated stack pushing and popping).  When
-you try to export it, it isn't found.
+>
+> A lot of people suggest to use the Abatron BDI2000 as debug system. I used
+> the Lauterbach TRACE32-ICD system with ARM processors without MMU (no
+> Linux) and it works extremely well.
+> The manufacturer claims it fully supports both the MMU and the Linux kernel
+> (see here for more details
+> http://www.lauterbach.com/cgi-bin/docloc.pl?file=rtoslinux.pdf). Can
+> anybody who used it confirm this point?
 
-Solutions:
-1) Write your own non-inline "my_va_to_pte" in the kernel and export it.
-2) Figure out how to avoid "va_to_pte" in your driver?
-3) Don't make your SPI driver a loadable module?
-3) Other?
-4) Don't inline "va_to_pte" (BAD SOLUTION).
+I can. You can debug the kernel and e.g. interrupts using virtual
+addresses very well, you just have to specify the mapping
+(e.g. for ppc map phys 0x00000000 to 0xc0000000)
 
-gvb
+I've not looked in detail yet to debug user processes.
 
+Jaap-Jan
 
-At 07:25 PM 1/21/2003 -0500, shivkumarb@hotmail.com wrote:
+>
+> Many thanks in advance.
+>
+>
+> llandre
+>
+>
+>
 
->Hi All,
->
->       I am trying to write SPI driver for 8260, based on the SPI driver for
->the MPC860 that I got from this list. I am trying to export the symbol
->'va_to_pte', for the driver module, in the kernel.
->
->       I included this in arch/ppc/kernel/ppc_ksyms.c, by using the
->EXPORT_SYMTAB(va_to_pte) function. But when I tried to rebuild the kernel
->(make zImage), it keeps coming back with the following error:
->
->arch/ppc/kernel/kernel.o(__ksymtab+0x0370): undefined reference to
->'va_to_pte'
->
->      I have exported other symbols, by following similar procedure. Is there
->something that I am missing.
->
->       I am running Linux kernel 2.4.2. Any inputs will be very helpful.
->
->   Thanks and Regards,
->     Shiv
->
->
+---
+J.G.J. Boor
+Lucent Technologies Nederland b.v.	Room:  BE-525
+Optical Networking Group TMS Data 	Phone: +31 (0)35 687 4721
+Larenseweg 50, P.O. Box 1168, 		Fax:   +31 (0)35 687 5976
+1200 BD, Hilversum, The Netherlands	mailto:jjboor@lucent.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
