@@ -1,27 +1,26 @@
-Date: Thu, 6 Jul 2000 01:36:50 +1200
-From: Gwyn Judd <b.judd@xtra.co.nz>
-To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
-Subject: seemingly random lock-up with kernel 2.2.17p7
-Message-ID: <20000706013650.A2546@thislove.dyndns.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Benjamin Herrenschmidt <benh@mipsys.com>
+To: Christof Petig <christof.petig@wtal.de>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.2.17pre9-ben1 gmac problems on iBook
+Date: Wed, 5 Jul 2000 15:37:28 +0200
+Message-Id: <20000705133728.28733@mailhost.mipsys.com>
+In-Reply-To: <396201D1.B43A97F1@wtal.de>
+References: <396201D1.B43A97F1@wtal.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This has me puzzled. I'm not sure if it is a kernel panic or just X
-freezing since it never leaves anything in the logs. Has anyone had this
-problem? It seems to happen most often when I am listening to mp3's
-although it has happened a few times while it was just sitting there
-doing nothing.
+>
+>You're right.
+>Strange though that BootX gives this kind of weird behaviour (2.2.15pre14
+>works fine for me).
+>I'll report about yaboot soon.
 
-Also I am using BootX. Someone mentioned that the kernel is unreliable
-with BootX. I have not experienced any problems (barring the one that I
-mentioned) with it. What sorts of things are likely to happen? What is
-the upgrade process like to go to one of the newer bootloaders?
+You "think" it worked right, but I'm pretty sure that if you do an
+extensive memory testing, you'll discover that random bits of memory are
+damaged and that the kernel is actually not fully reliable when booting
+with BootX.
 
---
-Gwyn Judd (b.judd@xtra.co.nz)
-When we talk of tomorrow, the gods laugh.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
