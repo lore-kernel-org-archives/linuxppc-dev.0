@@ -1,52 +1,66 @@
-Message-ID: <20040823145515.29558.qmail@web15610.mail.cnb.yahoo.com>
-Date: Mon, 23 Aug 2004 22:55:15 +0800 (CST)
-From: Song Sam <samlinuxppc@yahoo.com.cn>
-Subject: RE: How to check MTD partition content? 
-To: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>,
-	Wolfgang Denk <wd@denx.de>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <40F7BFA600107805@mssbzhh-int.msg.bluewin.ch>
+Date: Mon, 23 Aug 2004 17:17:15 +0200 (MEST)
+From: "Patrick Huesmann" <tricknology@gmx.de>
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain
+Subject: How to port ppc-linux to new custom boards? (virtexII)
+Message-ID: <23479.1093274235@www38.gmx.net>
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch> wrote:
+Hi,
 
-> >I followed the command in DULG to check partition content but
-> >failed.Target console displayed no such command.
-> >
-> ># xd /dev/mtd3 | head -4
->
->http://www.denx.de/twiki/bin/view/DULG/FlashFilesystemsMTD
->
-> >Could anyone show me a light?
->
-> You can use any program to dump the data on the device, e.g. "od".
-> Type "man od" for further information.
+I'm trying to port Linux to a custom board built around a virtexII-fpga
+which features a PPC-405 cpu.
 
-Thanks for your hints. I did it and could see the
-content but not nice as expected as DULG said.
+I've downloaded the Montavista 2_4_devel tree, which already has some
+platform and driver support for the ml300 eval board, and made a few changes
+to the xilinx specific header files to reflect our FPGA design.
+Then I changed the tophys macro in include/asm/ppc_asm.h to have a sensible
+initial mmu.
+#define MY_PHYS_RAM 0x90000000
+#define tophys(rd,rs) addis	rd,rs,(MY_PHYS_RAM-KERNELBASE)@h;
+#define tovirt(rd,rs) addis	rd,rs,(KERNELBASE-MY_PHYS_RAM)@h;
 
-Fortunately, I searched the wanted command 'xxd'
-rather than DULG had 'xd'.I guess it's a typo.So pls
-Wolfgang Denk check it and make a correction.
+My kernel gets past the initial mmu setup, enters the C code and freezes in
+the middle of early_init in arch/ppc/kernel/setup.c when (after?) memset_io
+is called to zero the BSS region.
 
-root@172.16.115.7:/# od -tx /dev/mtd1 | head -4
-0000000 27051956 552d426f 6f742031 2e312e32
-0000020 20284175 67202037 20323030 34202d20
-0000040 32323a34 313a3334 29000000 00000000
-0000060 00000000 00000000 00000000 00000000
+I've some experience with porting ARM-Linux but, unfortunately, the PPC port
+seems to be significantly different (there are no mach-types and ATAG lists,
+for example).
 
-root@172.16.115.7:/# xxd /dev/mtd1 | head -4
-0000000: 2705 1956 552d 426f 6f74 2031 2e31 2e32 '..VU-Boot 1.1.2
-0000010: 2028 4175 6720 2037 2032 3030 3420 2d20 (Aug  7 2004 -
-0000020: 3232 3a34 313a 3334 2900 0000 0000 0000 22:41:34).......
-0000030: 0000 0000 0000 0000 0000 0000 0000 0000 ................
+1) Is there any comprehensive documentation / tutorial on how to port the
+ppc-linux to new machines? Where does my board specific fixup stuff go (for
+example, memory and IRQ declarations and such).
 
-Best regards,
+2) What requirements and responsibilities are imposed on the bootloader? I
+suspect that I can't use u-boot or something like that, because we have our
+own "company-specific" bootloader so that all our products use the same
+protocol for firmware updates.
 
-Sam
+3) Is there a way to get a self-decompressing kernel image? ARM linux
+provides a zImage which the cpu just has to jump into (with some registers
+initialized) and then decompresses vmlinux by itself. Now I have to use a
+vmlinux file and write it to flash directly, because zImage on powerpc lacks
+decompressor code (at least with my configuration). But the 1.3meg vmlinux
+file makes for pretty long turnaround times (I can only upload at 115k at
+the moment).
+
+Any help is greatly appreciated ;)
+
+Regards,
+Patrick
+
+
+
+
+
+
+--
+Supergünstige DSL-Tarife + WLAN-Router für 0,- EUR*
+Jetzt zu GMX wechseln und sparen http://www.gmx.net/de/go/dsl
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
