@@ -1,49 +1,61 @@
-Message-ID: <3712C0A0.C2C68F44@dgs.monash.edu.au>
-Date: Tue, 13 Apr 1999 03:57:20 +0000
-From: Brendan Simon <brendan@dgs.monash.edu.au>
-Reply-To: brendan@dgs.monash.edu.au
+Message-ID: <001c01be857a$bf894020$66f102de@sjzhu>
+Reply-To: "Shuangjun Zhu (r44089)" <r44089@email.sps.mot.com>
+From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Help about Kernel Image
+Date: Tue, 13 Apr 1999 14:56:20 +0800
 MIME-Version: 1.0
-To: linuxppc-user <linuxppc-user@lists.linuxppc.org>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
-        linux-embedded <linux-embedded@waste.org>
-Subject: Booting Linux from Flash
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;	charset="gb2312"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I want to run Linux (linuxppc) on a custom MPC860 board with 32MB DRAM
-and 2-4MB of Flash.  This is pure memory mapped flash (not ide
-compatible).
+Hello, everyone
+  I'm building a kernel for Motorola's FADS860 board.
+My code base is embedded-2_2p7.tar.gz. When I debug the code,
+I find some problems.
+In arch/ppc/boot/head.S, line 144, author using following code
+to clear the BSS segment:
+=======================================
+/* Clear all of BSS */
+lis r3,edata@h
+ori r3,r3,edata@l
+lis r4,end@h
+ori r4,r4,end@l
+subi r3,r3,4
+subi r4,r4,4
+li r0,0
+50: stwu r0,4(r3)
+cmp 0,r3,r4
+bne 50b
+=======================================
+But in my binary code of zImage, the kernel image is between "edata" and
+"end"
+following is symbols list:
+***************************************
+0010420c A _etext       = 0x104648
+00105320 A _edata       = 0x105320
+00106008 B zimage_start = 0x106000
+0010600c B orig_y
+00106010 B zimage_size
+00106014 B cols
+00106018 B end_avail
+0010601c B lines
+00111bc0 A _end         = 0x111bc0
+***************************************
+So, I have two questions:
+1. the address of kerenl image is same as some variables, such as
+   orig_y, cols and so on.
+2. clear the BSS segment, crash the kernel image befrom decompressing it.
 
-What do I need to build and boot an embedded linux system ?
 
-1) Cross Compiler:  I have egcs-1.1b built from the RTEMS build scripts
-for powerpc.
+Does anyone know why?
+Any suggestion is appreciated !
+Thanks in advanced!
 
-2) C libraries:  Do I need these and how are they compiled ?  Is newlib
-or glibc required ?
 
-3) Kernenl sources:  How to cross compile ?  Is it as simple as
-CC=powerpc-eabi-gcc & make ?
-
-4) What about support executables like init, bash/ash/sh ?  Are the
-sources included with the kernel or do I have to get them elsewhere and
-compile them with the cross compiler ?
-
-5) I guess I need to write a bootloader.  What does the bootloader have
-to do and how do I pass parameters to the kernel ?
-
-6) If I have a root file system image compressed in Flash, how does it
-get uncompressed into RAM.  How do I tell the kernel where the root FS
-is ?
-
-Thanks,
-Brendan Simon.
-
-PS.  Are there any HOWTOs which cover booting from Flash (not Flash IDE
-drives).
-Ta.
+Best Regards,
+Zhu Shuangjun
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
