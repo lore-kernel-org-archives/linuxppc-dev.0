@@ -1,40 +1,38 @@
-Date: Mon, 26 Nov 2001 23:24:15 -0900
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: TiBook, 1394, iPod working (sort of  ;-)
-Message-ID: <20011126232415.F10071@plato.local.lan>
-References: <2C5637A6A7CE844EA3C0A94565479F520B4787@dest-as20-002.int.bauer-partner.com>
-Mime-Version: 1.0
+From: Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2C5637A6A7CE844EA3C0A94565479F520B4787@dest-as20-002.int.bauer-partner.com>; from Klaus.Halfmann@bauer-partner.com on Tue, Nov 27, 2001 at 09:02:40AM +0100
+Message-ID: <15363.31192.101536.919771@gargle.gargle.HOWL>
+Date: Tue, 27 Nov 2001 22:32:40 +1100 (EST)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: include/asm-ppc/platforms/
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Nov 27, 2001 at 09:02:40AM +0100, Halfmann, Klaus wrote:
->
-> HFS+ Volumes are wrapped in a HFS-structure for security reasons, you
-> can
-> find out about his at some Website at Apple.
+I want to create a new directory, include/asm-ppc/platforms, for those
+files which mainly contain configuration information for specific
+platforms, such as address and IRQ assignments for on-board devices.
+The files that I want to move into include/asm-ppc/platforms are:
 
-uh, security reasons?  ive never heard that and can't believe it
-provides any sort of real security.  the only motivation ive ever
-read/heard about was to keep feebleminded macos users from being
-confused and frightened by older versions of MacOS helpfully offering
-to erase the HFS+ partitions/disks.
+bseip.h		  ibm405gp.h	    mvme5100_serial.h	  rpxclassic.h
+ccm.h		  ibmnp405.h	    oak.h		  rpxhiox.h
+ceder.h		  ibmstbx.h	    pcu_e.h		  rpxlite.h
+cpci405.h	  ip860.h	    powerpmc250.h	  sandpoint_serial.h
+ep405.h		  ivms8.h	    powerpmc250_serial.h  spd8xx.h
+est8260.h	  lantec.h	    ppc4xx_serial.h	  spruce.h
+ev64260_serial.h  lopec_serial.h    prpmc750.h		  spruce_serial.h
+fads.h		  lwmon.h	    prpmc750_serial.h	  tqm8260.h
+gemini.h	  mbx.h		    prpmc800.h		  tqm8xx.h
+gemini_serial.h   mcpn765_serial.h  prpmc800_serial.h	  walnut.h
+hermes.h	  mvme5100.h	    redwood.h		  zx4500_serial.h
 
-> I once started doing a set of HFS+ Tools but got stuck due to personal
-> reasons.
-> The current state is that _reading_ works and writing works a little
-> bit.
-> I'd be happy someone would care about these. There is a (rotten) tarball
+This requires corresponding minor changes to 14 files in
+arch/ppc/platforms and 5 files in include/asm-ppc, plus some changes
+in the files that move to include/asm-ppc/platforms.
 
-there are plenty of people who seem to care, just none of them a) know
-enough about filesystem hacking to help, or b) don't care enough to
-want to hack on it.  ;-)
+Does anyone have any comments or objections?
 
---
-Ethan Benson
-http://www.alaska.net/~erbenson/
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
