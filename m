@@ -1,9 +1,8 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0816@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'Andrew H Pham'" <apham@us.ibm.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Kernel panic: eth0:  PHY id 0x31903190 is not supported!
-Date: Wed, 30 Apr 2003 17:56:22 -0400
+Message-ID: <B895EFF5AF34724880036BDB5B5B81481355E7@amer22.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Virtex-II Pro/405 MMU-cache interaction?
+Date: Wed, 30 Apr 2003 18:15:54 -0700
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,88 +10,151 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've booted the linuxppc_2_4_devel tree on the EP405PC and the ethernet
-worked fine.
+Hi all,
 
------Original Message-----
-From: Andrew H Pham [mailto:apham@us.ibm.com]
-Sent: Wednesday, April 30, 2003 5:43 PM
-To: linuxppc-embedded@lists.linuxppc.org; akuster@mvista.com;
-BlakesleeS@embeddedplanet.com
-Subject: Kernel panic: eth0: PHY id 0x31903190 is not supported!
+I have a puzzler which I hope someone can shed some
+light on.
 
+For our Virtex-II Pro development board, we have two
+bit files:  one with SDRAM at address 0x00000000 and
+few peripherals, and another with SDRAM at address
+0x80000000 and many periperhals.  (I won't go into
+why; the details don't concern this mailing list.)
 
+I've successfully ported ELDK to the SDRAM-at-0 system.
+It runs great; I have a BusyBox prompt and commands
+are functional.
 
+Also, our simple debug monitor runs fine with SDRAM at
+either 0x00000000 or 0x80000000.  Exhaustive memory tests
+pass with cache on or off, for both systems.  It only
+remains to get Linux running as well with the second
+bit file as it does with the first.  (Why bother?  The
+reason is that with the second bit file, I have access
+to the flash for non-volatile storage.)
 
+(Side note:  With the SDRAM at address 0, on the PLB bus,
+memory performance is about 3x faster than when using
+the bit file with SDRAM at 0x80000000 on the OPB bus.
+This is believed to be due to propagation delay through
+the PLB-to-OPB bridge.)
 
+For the SDRAM-at-0x80000000, of course I needed to make
+the necessary mods to the tophys and tovirt macros for
+assembly code, and ___pa and ___va for C code, as well
+as misc. fixups in the boot wrapper (e.g. misc-embedded.c
+gunzips to a hard-coded 0 address).
 
-Hi,
+Having made those changes, the early init code runs
+fine -- i.e. machine_init() and MMU_init(), before
+start_kernel.  Note that this code runs with a pair
+of 16MB TLB mappings that cover all of the 32MB SDRAM.
+During this time, the "real" mappings are prepared
+in SDRAM -- 1st level in swapper_pg_dir (here, at
+0xc011d000) and 2nd level (here, at 0xc015f000).
 
-I loaded a 2.4.18 linux kernel onto my ICE Planet box ( a PPC box with EP
-405PC board and a 405GP chip) but when the kernel uncompresses itself and
-tries to start up I got the an error message:
+Here is the puzzler:
 
-A screen shot:
-...
-relocated to:  00494128 00494144
-zimage at:     004059F8 00493747
-avail ram:     00498000 04000000
-Linux/PPC load: console=ttyS0,9600 console=tty0 init=/bin/ash root=/dev/nfs
-nfsp
-Uncompressing Linux...done.
-Now booting the kernel
-Linux version 2.4.18-rc4 (root@sunflower2.austin.ibm.com) (gcc version
-3.2.3 203
-On node 0 totalpages: 16384
-zone(0): 16384 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line: console=ttyS0,9600 console=tty0 init=/bin/ash
-root=/dev/nfp
-Calibrating delay loop... 199.88 BogoMIPS
-Memory: 63124k available (1004k kernel code, 292k data, 72k init, 0k
-highmem)
-Dentry-cache hash table entries: 8192 (order: 4, 65536 bytes)
-Inode-cache hash table entries: 4096 (order: 3, 32768 bytes)
-Mount-cache hash table entries: 1024 (order: 1, 8192 bytes)
-Buffer-cache hash table entries: 4096 (order: 2, 16384 bytes)
-Page-cache hash table entries: 16384 (order: 4, 65536 bytes)
-POSIX conformance testing by UNIFIX
-PCI: Probing PCI hardware
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society NET3.039
-Initializing RT netlink socket
-Starting kswapd
-NTFS driver v1.1.22 [Flags: R/O]
-i2c-core.o: i2c core module
-Serial driver version 5.05c (2001-07-08) with MANY_PORTS SHARE_IRQ
-SERIAL_PCI ed
-ttyS00 at 0xef600300x (irq = 0) is a 16550A
-ttyS01 at 0xef600400x (irq = 1) is a 16550A
-block: 128 slots per queue, batch=32
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-loop: loaded (max 8 devices)
-Kernel panic: eth0: PHY id 0x31903190 is not supported!
+*	While the MMU is still on, in MMU_init et al.,
+	I can see data 0xc015f000 at 0xc011dc00.  Also
+	I see ASCII text at 0xc011e000 (cmd_line).
 
- <0>Rebooting in 180 seconds..<NULL>
+*	In head_4xx.S, after return from MMU_init,
+	the MMU is briefly switched off and a tlbia
+	is done.  Here, I still see ASCII text at
+	0x8011e000, but I read zeroes at 0x8011dc00!!
 
-PPC4xx PlanetCore Boot Loader v1.07
-Copyright 1998-2003 Embedded Planet, LLC. All rights reserved.
-...
+	(Note:  In perhaps 1 of 20 or 30 runs, I
+	will successfully data at 0x8011dc00 here.)
 
-I did some debuggings and found that the error message " eth0: PHY id
-0x31903190 is not supported!" is generated by the file "ibm.ocp_phy.c"
-within the kernel source code.
+	When the MMU is switched back on and head_4xx.S
+	rfi's to start_kernel, the first ITLB miss (which
+	is expected) fails to read page-table data from
+	swapper_pg_dir at 0x8011dc00, so there is now
+	an endless cycle of exceptions.
 
-Has anyone encountered this problem before?  I am just curious if my
-ethernet card is bad or it is not supported by this kernel.
+*	Here is the odd part:  Leaving the SDRAM intact
+	(our board has SRAM), I now download our debug
+	monitor to SRAM, and use it to view the SDRAM.
 
-Any help is appreciated.
+	And here, I manually set up TLB entries mapping *not*
+	0xc0000000 => 0x80000000 like Linux did, but rather
+	0x80000000 => 0x80000000 like Linux did.
 
-Andy
+	The result is clear:
 
-p.s. ibm.ocp.phy.c is attached below.
+	avmon> tlb enable
+	avmon> $b 0x8011dc00 0x10
+	8011dc00: c0 15 f0 00  c0 16 00 00  c0 16 10 00  c0 16 20 00 |
+.............. .
 
-(See attached file: ibm_ocp_phy.c)
+	avmon> tlb disable
+	avmon> $b 0x8011dc00 0x10
+	8011dc00: 00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00 |
+................
+
+	avmon> tlb enable
+	avmon> $b 0x8011dc00 0x10
+	8011dc00: c0 15 f0 00  c0 16 00 00  c0 16 10 00  c0 16 20 00 |
+.............. .
+
+	avmon> tlb disable
+	avmon> $b 0x8011dc00 0x10
+	8011dc00: 00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00 |
+................
+
+	avmon> tlb enable
+	avmon> $b 0x8011dc00 0x10
+	8011dc00: c0 15 f0 00  c0 16 00 00  c0 16 10 00  c0 16 20 00 |
+.............. .
+
+That is, the data goes away when the MMU is off, but comes back again
+when the MMU is on!
+
+I thought this might be cache staleness, but the weird thing is that:
+*	The kernel populated swapper_pg_dir with 0xc011dc00 virtual mapping.
+*	At physical address 0x8011dc00, the data is gone.
+*	When I map to a *different* virtual address, namely virtual
+0x8011dc00,
+	the data returns -- so I don't see how some cache line for
+0xc011dc00
+	could be used, given that I'm reading from a different virtual
+address
+	and getting the same data.
+
+Has anyone any advice?  I've been through the IBM 405 errata document and
+haven't seen anything that seems to apply ... any and all advice is
+appreciated.
+
+Thanks.
+
+For reference, here are my actual console printouts:
+
+MMU_init: total_lowmem 02000000
+adjust_total_lowmem: total_memory=02000000 total_lowmem=02000000
+max_low_mem=30000000
+MMU_init: total_lowmem 02000000
+MMU_init: total_lowmem 02000000
+MMU:hw init
+swapper_pg_dir @ c011dc00 = 00000000
+MMU:mapin
+mapinram: total_lowmem = 02000000
+MMU:mapin_ram done
+swapper_pg_dir @ c011dc00 = c015f000
+MMU:setio
+board_io_mapping: a0000000 => fdfff000  (Note:  ioremap() for my UART)
+swapper_pg_dir @ c011dc00 = c015f000
+MMU:exit
+spd @ c011dc00 = c015f000
+hi                   (Note:  this is in head_4xx.S with the MMU still on)
+3:c011dc00:c015f000  (swapper_pg_dir data still vislble)
+3:c011e000:636f6e73  (cmd_line data visible)
+ph                   (Note:  this is in head_4xx.S with the MMU off now)
+4:8011dc00:00000000  (swapper_pg_dir data is *invisible*)
+4:8011e000:636f6e73  (cmd_line data is visible)
+
+(Note: At this point XMD reveals an endless cycle of ITLB misses, since
+the ITLB miss handler can't read swapper_pg_dir.  Nothing more prints
+to the screen.)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
