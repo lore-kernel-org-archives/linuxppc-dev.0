@@ -1,34 +1,39 @@
-From: Christian =?iso-8859-1?q?Tr=F6ster?= <please.see.sig@gmx.de>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: what is the status of devfs?
-Date: Fri, 9 Jul 2004 13:17:45 +0200
+Message-ID: <003301c465ad$04db1230$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>,
+	"Embedded Linux PPC list" <linuxppc-embedded@lists.linuxppc.org>
 References: <Pine.LNX.4.60.0407081035280.32470@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.60.0407081035280.32470@localhost.localdomain>
+Subject: Re: what is the status of devfs?
+Date: Fri, 9 Jul 2004 08:05:18 -0400
 MIME-Version: 1.0
-Message-Id: <200407091317.46128.please.see.sig@gmx.de>
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Robert!
-
-Am Donnerstag, 8. Juli 2004 16:38 schrieb Robert P. J. Day:
+>
 >    probably should send this to the main kernel list, but in playing
 > around, i noticed that DEVFS_FS is labelled as both OBSOLETE and NEW,
 > but in the Kconfig file, it depends on EXPERIMENTAL.
 >
 >    it seems a bit inconsistent for anything to be simultaneously
 > EXPERIMENTAL, NEW and OBSOLETE, no?
-I assume you are talking about 2.6.x :)
-See Documentation/Changes line 115:
-"DevFS has been obsoleted in favour of udev
-(http://www.kernel.org/pub/linux/utils/kernel/hotplug/)"
+>
 
-Bye, Christian
+I found the following in udev-FAQ:
 
---
-| c dot troester at gmx dot de | PGP-Id: FA006C74 |
+Q: Why was devfs marked OBSOLETE if udev is not finished yet?
+A: To quote Al Viro (Linux VFS kernel maintainer):
+	- it was determined that the same thing could be done in userspace
+	- devfs had been shoved into the tree in hope that its quality will
+	  catch up
+	- devfs was found to have fixable and unfixable bugs
+	- the former had stayed around for many months with maintainer
+	  claiming that everything works fine
+	- the latter had stayed, period.
+	- the devfs maintainer/author disappeared and stoped maintaining
+	  the code.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
