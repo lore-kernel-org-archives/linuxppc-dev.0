@@ -1,23 +1,15 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx017.isp.belgacom.be (outmx017.isp.belgacom.be
-	[195.238.2.116]) by ozlabs.org (Postfix) with ESMTP id 2373A67A79
+Return-Path: <avolkov@varma-el.com>
+Received: from amanaus.varma-el.com (unknown [195.144.244.147])
+	by ozlabs.org (Postfix) with ESMTP id 31B5A67A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Mar 2005 19:02:20 +1100 (EST)
-Received: from outmx017.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx017.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id j29828Ht018439
-	for <linuxppc-embedded@ozlabs.org>; Wed, 9 Mar 2005 09:02:09 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <422EAD7E.5090309@246tNt.com>
-Date: Wed, 09 Mar 2005 09:02:06 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
+	Wed,  9 Mar 2005 23:20:53 +1100 (EST)
+Message-ID: <422EEA20.4050907@varma-el.com>
+Date: Wed, 09 Mar 2005 15:20:48 +0300
+From: Andrey Volkov <avolkov@varma-el.com>
 MIME-Version: 1.0
-To: Stephen Warren <SWarren@nvidia.com>
-References: <DBFABB80F7FD3143A911F9E6CFD477B0056A92CC@hqemmail02.nvidia.com>
-In-Reply-To: <DBFABB80F7FD3143A911F9E6CFD477B0056A92CC@hqemmail02.nvidia.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200 kernel with IDE *and* FEC?
+To: paulus@samba.org, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: RFC/Commit: New ocp id for CANbus devs
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,41 +20,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Stephen Warren wrote:
+Hi Paul,
 
->From: Dale Farnsworth [mailto:dale@farnsworth.org] 
->  
->
->>On Tue, Mar 08, 2005 at 05:34:20PM +0000, Stephen Warren wrote:
->>    
->>
->>>I looked at the 2.6.11 kernel.org kernel, and it has MPC5200 IDE
->>>support, but apparently no FEC driver support.
->>>      
->>>
->>Are you sure it has MPC5200 IDE support?  I have yet to see reliable
->>5200 IDE support and haven't seen a 5200 IDE driver for 2.6 at all.
->>    
->>
->
->Not sure, no. Looking at "xconfig", I don't see an option for it. A
->colleague said it did.
->  
->
-No it doesn't. Or it's very well hidden ;)
-But If you do write it, patches are welcomed.
+Pls. commit this patch, its needed for MPC5200 Can
 
->We've used IDE (for a DVD-ROM) using the Denx kernel. This didn't have
->DMA suppport, but Freescale gave us a derivate kernel that it, which
->seemed to work well. They said they were going to push this up through
->Denx into the main kernel. Didn't they bother to do this?
->  
->
-I guess they mean push it to Denx kernel which IS the main 2.4 kernel 
-for MPC5200.
-No new platform support will be accepted for 2.4 now. And freescale probably
-won't write driver for the tree I maintain since I'm not using the 
-official BestComm API.
+Regards
+Andrey Volkov
+
+Signed-off-by: Andrey Volkov <avolkov@varma-el.com>
+--
+ChangeSet@1.2159, 2005-03-09 15:05:37+03:00, avolkov@varma-el.com
+   ocp_ids.h:
+     New number for onboard CANbus devs.
 
 
-    Sylvain
+  ocp_ids.h |    1 +
+  1 files changed, 1 insertion(+)
+
+
+diff -Nru a/include/asm-ppc/ocp_ids.h b/include/asm-ppc/ocp_ids.h
+--- a/include/asm-ppc/ocp_ids.h	2005-03-09 15:07:51 +03:00
++++ b/include/asm-ppc/ocp_ids.h	2005-03-09 15:07:51 +03:00
+@@ -62,6 +62,7 @@
+  #define OCP_FUNC_RGMII		0x00D3
+  #define OCP_FUNC_TAH		0x00D4
+  #define OCP_FUNC_SEC2		0x00D5	/* Crypto/Security 2.0 */
++#define OCP_FUNC_CAN		0x00D6	/* CAN bus device */
+
+  /* Network 0x0200 - 0x02FF */
+  #define OCP_FUNC_EMAC		0x0200
