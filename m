@@ -1,8 +1,8 @@
-Message-ID: <A33AEFDC2EC0D411851900D0B73EBEF73D9B8D@NAPA>
+Message-ID: <A33AEFDC2EC0D411851900D0B73EBEF73D9B90@NAPA>
 From: Hua Ji <hji@netscreen.com>
-To: Wang Yong <wung_y@263.net>, linuxppc-embedded@lists.linuxppc.org
-Subject: RE: gdb load address and KERNELLOAD
-Date: Tue, 3 Apr 2001 20:04:46 -0700 
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: About sdata and sbss symbols.
+Date: Tue, 3 Apr 2001 21:36:20 -0700 
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="windows-1252"
@@ -10,44 +10,26 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Usually, if
+ Hi, folks,
 
-1. you want have soem fun
-2. Your physical memory size is bigger than 1G,
+I met a problem when using the powerpc-eabi-gcc, which I built with gnu
+source.
 
-You will try to change the PAGE_OFFSET, which is the 0xC00000000.
+When I built my codes, I opened the "-G 4" option, which means, sdata and
+sbss sections
+will be enabled for containing all 4*8 data(for example, pointers,
+integers).However, when I look at the map file, I found the symbols in sdata
+and sbss are messed up. For example, variable A and variable B even have the
+SAME ADDRESSES, allocated by the linker.
 
-Anyway, please find the link script as well as the PAGE_OFFSET settings in
-your corresponding arch directory and you will get the answer, even though
-this is usually discouraged.
+I tried to disable the sdata and sbss section by using compiler option
+"-msdata=none" and then
+all symbols went to data and bss sections and the system works well.
 
-Regards,
-
-Mike
-
------Original Message-----
-From: Wang Yong [mailto:wung_y@263.net]
-Sent: Tuesday, April 03, 2001 5:57 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: gdb load address and KERNELLOAD
-
-
-
-Hi, all:
-  I am debugging embedded Linux( linux-2.2.13 for MPC8XX) using bdm/wiggler.
-I do this
-on windowsNT with cygwin and insight downloaded from www.ocdemon.com. The
-question is: how
-can I download the vmlinux to a different address from KERNELLOAD which is
-set to 0xc0000000.
-I want to do this because the SDRAM is mapped to 0x00000000 and the MMU is
-of course not enabled
-when I download the kernel image via gdb. any comment on this subject is
-welcome.
-
-  thank you.
-
-W.Y.
+I guess I missed some points of how to use gcc for (embedde) power pc
+system.Could anyone know?
+Thanks in advance. BTW, my target is powerpc 405GP and I am using gcc
+version 2.95.2 19991024 (release)
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
