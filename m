@@ -1,27 +1,50 @@
-Message-ID: <3BAA3533.9010108@mc.com>
-Date: Thu, 20 Sep 2001 14:28:03 -0400
+Message-ID: <3BAA363B.5010400@mc.com>
+Date: Thu, 20 Sep 2001 14:32:27 -0400
 From: Mark Salisbury <mbs@mc.com>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
+To: Brad Boyer <flar@pants.nu>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: ppc LE questions (seeking help hand info pointers)
-References: <3BAA0E6F.5050503@mc.com> <20010920085825.F13721@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20010920171002.37DCA2B54A@marcus.pants.nu>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Brad Boyer wrote:
 
-> On Thu, Sep 20, 2001 at 11:42:39AM -0400, Mark Salisbury wrote:
->>question 1.  are there already existing patch sets (rejected from
->>mainline inclusion) available for use as a starting point?
+>>>>>question 4. assuming I was willing to deliver a clean, complete LE
+>>>>>enabling patch (including devices that are relevant to me), as a compile
+>>>>>time config option and maintain that patch, what would be the primary
+>>>>>obstacle to inclusion in the main line.
+>>>>>
+>>>>The objection to being an arch that attempts to support both LE and BE.
+>>>>
+>>>Note that we already have a precedent: mips and mipsel, both in arch/mips/.
+>>>
+>>And SH too, iirc.  I know it can be done.  But do we want to do it is the
+>>question.
+>>
 >
-> There was a bit of work, just for the kernel.  Nothing on the toolchain
-> side.
+> At least in the case of SH, there's a good reason. There's an external pin
+> that controls the native endianness of the processor, and most setups just
+> have it forcibly pulled high or low. I suspect the MIPS is the same reason,
+> since it's used in similar situations. We don't have that excuse with ppc.
+> Someone would have to come up with an excuse along the lines of "existing
+> hardware won't work unless we do this" like it would have been for SH.
+> (I had to work with the SH4e as used by Sega in the Dreamcast...)
 
-could you point me to the author/code?
-toolchain is not a problem, I have gcc sparc/ppc_le crosscompiler etc...
+
+well, this is in the context of a multi-CPU type (x86/ppc, sparc/ppc,
+ppc/ppc, mips/ppc) shared memory multicomputer.
+
+when dealing w/ direct mapped, shared memory, uniformity of endian-ness
+makes many multicomputer problems easier to solve.(not to mention easier
+for the customer to program...)
+
+
 
 
 --
