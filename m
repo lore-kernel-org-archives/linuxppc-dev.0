@@ -1,62 +1,41 @@
-Date: Wed, 14 Mar 2001 19:34:02 -0800
-From: andrew may <acmay@mace.penguinpowered.com>
+Message-ID: <3AB0B3A0.120FA5A2@esd-electronics.com>
+Date: Thu, 15 Mar 2001 13:20:48 +0100
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Cc: Frank Rowand <frank_rowand@mvista.com>
-Subject: Re: Walnut 405GP and a 3com 905 (PCI slot0 J31)
-Message-ID: <20010314193402.C5558@ecam.san.rr.com>
-References: <20010314145358.B5558@ecam.san.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010314145358.B5558@ecam.san.rr.com>
+Subject: I2C for IBM405CR under Hardhat Linux
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Well switching the card to J25 PCI Slot 3 seems to solve
-the problem.
+Hello,
 
-I was using J31 Slot 0. The docs on the board say that this
-slot can be used with a 3.3v card at 66MHz if the connector
-is reversed.
+I am trying to access my i2c eeprom (custom board) from MotaVista's
+HardHat Linux (kernel 2.4.0-test2).
 
-Since the connector on my board is in the 5v config, I
-would hope the programming resistors were shipped in
-the correct config, but I did not check.
+Here is a snippet from my kernel config:
+#
+# I2C support
+#
+CONFIG_I2C=y
+# CONFIG_I2C_ALGOBIT is not set
+# CONFIG_I2C_ALGOPCF is not set
+CONFIG_I2C_CHARDEV=y
 
-So I don't know what the problem was and I don't really
-care, but I will just stay away from using J31 for now.
+How can I enable i2c support for the 405 ? /proc/bus/i2c is empty. I
+expect the 405 i2c adapter listed there ! Am I right ?
 
-On Wed, Mar 14, 2001 at 02:53:58PM -0800, andrew may wrote:
->
-> Anyone try to use a 3com NIC card on the Walnut board?
->
-> I can load the module but when I try to bring up the
-> interface I get a stream of bus errors.
->
-> eth1: using NWAY autonegotiation
-> eth1: Host error, FIFO diagnostic register 0000.
-> eth1: PCI bus error, bus status 80000020
-> eth1: using NWAY autonegotiation
-> eth1: Host error, FIFO diagnostic register 0000.
-> eth1: PCI bus error, bus status 80000020
-> eth1: using NWAY autonegotiation
-> eth1: Host error, FIFO diagnostic register 0000.
->
-> I am using the 2.4.2 version of the Walnut kernel dated
-> Mar 1 on the ftp site.
->
-> There are changes to the 3com driver in the pre patches
-> but I have not tried it yet.
->
-> Most docs say this is a hardware failure so I might want
-> to change the PCI slot I am using.
->
-> Has anyone successfully used a PCI network card in the
-> Walnut board.
->
-> If it is just a driver bug I do not want to spend time
-> fixing it, I would just want to get a card that works.
->
-> I just want to do some perf testing on board itself.
+Matthias
+--
+-------------------------------------------------
+\ Matthias Fuchs                                 \
+ \ esd electronic system design Gmbh              \
+  \ Vahrenwalder Straﬂe 205                        \
+   \ D-30165 Hannover                               \
+    \ email: matthias.fuchs@esd-electronics.com      \
+     \ phone: +49-511-37298-0                         \
+      \ fax:   +49-511-37298-68                        \
+       --------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
