@@ -1,55 +1,45 @@
-Message-Id: <4.2.2.20040519131218.05091660@bhawley.mailhost.luminex.com>
-Date: Wed, 19 May 2004 13:14:10 -0700
-To: Wolfgang Denk <wd@denx.de>
+Message-Id: <4.2.2.20040519132218.050b0df0@bhawley.mailhost.luminex.com>
+Date: Wed, 19 May 2004 13:24:21 -0700
+To: Eugene Surovegin <ebs@ebshome.net>
 From: Brian Hawley <bhawley@luminex.com>
-Subject: Re: Ebony Board, PPC440GP and Ramdisk
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com
- >
-References: <20040519195405.98971C109F@atlas.denx.de>
- <Your message of "Wed, 19 May 2004 10:16:29 PDT." <4.2.2.20040519101456.0509d340@bhawley.mailhost.luminex.com>
+Subject: Re: Ebony Board, PPC440GP and NFS panics
+Cc: Wolfgang Denk <wd@denx.de>, linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20040519210438.GA13351@gate.ebshome.net>
+References: <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519101456.0509d340@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We aren't too successful at getting a ramdisk up either.
+Thanks Eugene.
+
+Actually, I had no intention of trying to port ebony to u-boot.  I just wanted
+to get something to work.
+
+Unfortunately, we've had no luck getting it to boot with the default ibm
+bootloader either.
 
 
-## Checking Image at 00100000 ...
-Image Name: Linux-2.6.5
-Created: 2004-05-19 19:39:09 UTC
-Image Type: PowerPC Linux Kernel Image (gzip compressed)
-Data Size: 787934 Bytes = 769.5 kB
-Load Address: 00000000
-Entry Point: 00000000
-Verifying Checksum ... OK
-## Checking Image at 00200000 ...
-Image Name: ramdisk image
-Created: 2004-05-19 20:40:12 UTC
-Image Type: PowerPC Linux RAMDisk Image (gzip compressed)
-Data Size: 1476478 Bytes = 1.4 MB
-Load Address: 00000000
-Entry Point: 00000000
-Verifying Checksum ... OK
 
-IBM Ebony port (MontaVista Software, Inc. (source@mvista.com))
-On node 0 totalpages: 32768
-DMA zone: 32768 pages, LIFO batch:8
-Normal zone: 0 pages, LIFO batch:1
-HighMem zone: 0 pages, LIFO batch:1
-Built 1 zonelists
-Kernel command line: root=/dev/ram rw
-PID hash table entries: 1024 (order 10: 8192 bytes)
-Memory: 127552k available (1220k kernel code, 436k data, 92k init, 0k highmem)
-[ *chopped extraneous msgs * ]
-IP: routing cache hash table of 1024 buckets, 8Kbytes
-TCP: Hash tables configured (established 8192 bind 16384)
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-Kernel panic: VFS: Unable to mount root fs on ram0
-<0>Rebooting in 180 seconds..<6>eth0: Link is Up
+At 02:04 PM 5/19/04 -0700, Eugene Surovegin wrote:
+>On Wed, May 19, 2004 at 12:36:50PM -0700, Brian Hawley wrote:
+> >
+> > At 09:54 PM 5/19/04 +0200, Wolfgang Denk wrote:
+>
+>It's arch/ppc/platforms/4xx/ebony.[ch]
+>
+>And no, ebony.[ch] doesn't support u-boot. So it cannot work with u-boot
+>if you
+>didn't change ebony.[ch].
+>
+>You cannot just substitute boot loader without changing board support in
+>Linux
+>kernel and expect it to work.
+>
+>.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
