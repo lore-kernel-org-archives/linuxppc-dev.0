@@ -1,103 +1,81 @@
-Message-Id: <199911222346.AAA00248@piglet.grunz.lu>
-Date: Tue, 23 Nov 1999 00:46:58 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Error accessing PCI config space
-To: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Date: Mon, 22 Nov 1999 16:55:35 -0700
+From: Cort Dougan <cort@fsmlabs.com>
+To: Christian Zankel <chris@mvista.com>
+Cc: linuxppc-dev@lists.linuxppc.org, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: bootloader & head.S weirdness & restructuring
+Message-ID: <19991122165535.A13360@hq.fsmlabs.com>
+References: <19991122120429.031138@mailhost.mipsys.com> <19991122143732.B12973@hq.fsmlabs.com> <3839CF18.5D600DE@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3839CF18.5D600DE@mvista.com>; from Christian Zankel on Mon, Nov 22, 1999 at 03:17:44PM -0800
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Not all machines.  The gemini and yellowknife don't have a bootloader.
 
-For some time now, I've had problems with the PlanB video grabber
-hardware in my G3-upgraded 7600. I've narrowed the problems down to
-errors accessing planb's PCI config space.
+I don't think this would work in all cases, although it would be great if
+we could do it.  We can't stomp on the interrupt vectors at physical 0
+because chrp/pmac need them to do the early OF calls to setup things and
+copy the device tree before we can safely stomp on physical 0.  If the
+bootloader did that, there wouldn't be a problem.  Then we have to pass all
+the OF info we need that the bootloader has gathered to the kernel.  The
+bootloaders would have to duplicate a lot of common code to do that, though
+(quik, bootx, chrpboot, arch/ppc/boot/, coffboot and so on).  We could have
+a common lib for them to use, though.
 
-In fact, I see the same errors accessing any of the two devices behind
-the chaos host bridge, namely control and planb.
+I'm all for doing something along these lines, though.  I'm just not sure
+how to do it.  Any suggestions one how to get around the above problem?
 
-The error is that whenever I read from config space, I get the value of
-the previous read, however long ago that read occured. See this:
+It would be ideal to have the kernel start at physical 0, with the bootinfo
+info passed along with the necessary data the bootloader has gathered.  If
+there's no bootloader then the arch specific calls can gather what they
+need.
 
-[mlan@piglet ~]$ lspci -vvx
-01:0d.0 Ethernet controller: Apple Computer Inc. PlanB Video-In (rev 14)
-        Control: I/O+ Mem+ BusMaster- SpecCycle+ MemWINV- VGASnoop+ ParErr+ Stepping- SERR- FastB2B-
-        Status: Cap- 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-        Interrupt: pin ? routed to IRQ 28
-        BIST is running
-        Region 0: Memory at <ignored> (32-bit, prefetchable)
-        Region 1: Memory at <ignored> (32-bit, non-prefetchable)
-00: 00 00 00 f1 6b 10 04 00 14 00 00 02 01 00 00 ff
-10: 08 20 00 00 00 00 00 f1 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+} It seems to me that on almost every machine linuxppc is running on
+} depends on having a bootloader to load the kernel. Would it be possible
+} to redesign all bootloaders to load the kernel to position 0, initialize
+} the OF path where necessary and jump to the kernel with the MMU switched
+} off? Then we could possibly remove all the conditional code (#if ...
+} #else .. #endif) in head.S mm/init.c, etc.
 
-Vendor & device ID are from the bus scan at bootup; the other values
-are read directly from config space by lspci. If you shift this by 4
-bytes to the left, all values will make sense.
+I don't agree.  It takes some manipulation in head.S or a clever
+bootloader, though.  If you have suggestions for a simpler/cleaner system I
+would be happy to add them, though!
 
-I can reproduce the same with setpci:
+} Right now, it is painfull to add a new machine that doesn't follow the
+} full PReP,CHRP specification, i.e. has no OF nor Residual Data
+} structures, etc.
 
-[root@piglet ~]# setpci -v -s 01:0d.0 BASE_ADDRESS_0
-01:0d.0:10 = f4000000
-[root@piglet ~]# setpci -v -s 01:0d.0 BASE_ADDRESS_0
-01:0d.0:10 = f4000000
-[root@piglet ~]# setpci -v -s 01:0d.0 DEVICE_ID     
-01:0d.0:02 = f400
-[root@piglet ~]# setpci -v -s 01:0d.0 BASE_ADDRESS_0
-01:0d.0:10 = 0004106b
+If you're doing the 82xx work we should talk before you do that too much.
+I'd like to find something that makes 8xx,6-7xx and 4xx happy before I
+start merging in large tree-changes.
 
-I've read BASE_ADDRESS_0 a few times; then the read of DEVICE_ID returns
-the corresponding 16 bits out of the BASE_ADDRESS_0 register, and a
-following read of BASE_ADDRESS_0 returns the value of the long
-previously read to determine DEVICE_ID....
+} I started to restructure the arch/ppc tree. However, I would like to
+} hear about your thoughts and recommendation. The goals I want to
+} achieve, are:
+} 
+} 1. The bootloader gets a more active part, i.e. does some
+} pre-initiaization, esp. to get rid of the 'bl prom_init' and the variaty
+} of copying the kernel back and forth.
 
-This leads me to beleive something is wrong with the
-pmac_pcibios_read_xx() calls when used on the chaos bridge.
+Do you mean something like the common build?  Right now that works on
+chrp/prep/pmac but the embedded systems would really hurt if we allowed
+them to bloat.  It think they're still not lean enough (they have to
+include a lot of non-board/processor specific code as it is).
 
-I've thought about the CPU reordering memory accesses; however, I've
-been unable to change this behaviour with either eieio() or sync().
+} 2. It should be possible to setup the kernel so that the same kernel
+} runs on all those machine that it is setup for. Of course, the more
+} machines you add the more overhead you get.
 
-I've also thought about the fact that according to Apples doc, PCI
-writes are always posted writes on PowerMac systems. So, the out_le32()
-of the config space address might not have completed when reading the
-register data.
+We have something very close to that now.  What specific problems are you
+having?  I'm not disagreeing that it's a problem, I just don't see where
+the problem is.
 
-However, inserting an in_le32(bp->cfg_addr) after the write, to insure
-the write completed before reading the resulting data, didn't really
-solve the problem: I'm then reading all sorts of garbage from config
-space.
-
-An other clue might be that on bootup, when the PCI initialization is
-done and the level2 cache is not yet turned on, the config space scan
-returns different values:
-
-  Planb: Dumping config space
-  00: 14 10 04 00 6b 00 00 02 14 00 00 ff 01 20 00 00
-  10: 08 00 00 f1 00 00 00 00 00 00 00 00 00 00 00 00
-  20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-Here it's less clear what the relationship between read value and real
-value is.
-
-Anybody have any clues to what's happening? By the way, I can reproduce
-the errors with the original 604 CPU; and as it used to work OK some
-time ago, I'll go and compile old kernels now.....
-
-Thanks for any help....
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+} 3. Each machine/architecture should get its own directory (pmac, prep,
+} chrp, apus, geminit, etc.)
+} 4. To add a new machine, only a new directory has to be added and only a
+} few files have to be changed (mainly: Config.in and Makefile).
+} 5. The _machine-ID is seperated into to fields, Vendor and Board.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
