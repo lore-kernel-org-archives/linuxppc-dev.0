@@ -1,76 +1,30 @@
-Date: Tue, 30 May 2000 08:34:01 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: FREESEC optimization
-Message-ID: <Pine.LNX.4.05.10005300830530.13793-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 29 May 2000 23:55:58 -0700
+From: Daniel Jacobowitz <drow@false.org>
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Debian pmud package available
+Message-ID: <20000529235558.A25312@quaketop.them.org>
+References: <B555F58A.7D5%rothomp3@vt.edu> <Pine.LNX.4.10.10005281352260.21987-100000@zirkon.biophys.uni-duesseldorf.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.10.10005281352260.21987-100000@zirkon.biophys.uni-duesseldorf.de>; from schmitz@zirkon.biophys.uni-duesseldorf.de on Sun, May 28, 2000 at 02:03:09PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I think this is a better algorithm to free unused sections (untested).
+On Sun, May 28, 2000 at 02:03:09PM +0200, Michael Schmitz wrote:
+> If the Debian powerpc release kernel is 2.2.15 I'll take care of that in
+> the Debian package. What you got was Stephan's LinuxPPC package, I can't
+> update that one, obviously.
 
---- arch/ppc/mm/init.c.orig	Mon May 22 11:19:43 2000
-+++ arch/ppc/mm/init.c	Mon May 22 11:24:04 2000
-@@ -796,42 +796,14 @@
- } while (0)
+It is.  Probably Cort's 2.2.16pre4, in fact - building it now.
 
- 	FREESEC(__init_begin,__init_end,num_freed_pages);
--	switch (_machine)
--	{
--	case _MACH_Pmac:
--		FREESEC(__apus_begin,__apus_end,num_apus_pages);
--		FREESEC(__prep_begin,__prep_end,num_prep_pages);
--		FREESEC(__chrp_begin,__chrp_end,num_chrp_pages);
--		break;
--	case _MACH_chrp:
--		FREESEC(__apus_begin,__apus_end,num_apus_pages);
--		FREESEC(__pmac_begin,__pmac_end,num_pmac_pages);
--		FREESEC(__prep_begin,__prep_end,num_prep_pages);
--		break;
--	case _MACH_prep:
--		FREESEC(__apus_begin,__apus_end,num_apus_pages);
--		FREESEC(__pmac_begin,__pmac_end,num_pmac_pages);
--		FREESEC(__chrp_begin,__chrp_end,num_chrp_pages);
--		break;
--	case _MACH_mbx:
--		FREESEC(__apus_begin,__apus_end,num_apus_pages);
--		FREESEC(__pmac_begin,__pmac_end,num_pmac_pages);
-+	if (_machine != _MACH_prep)
- 		FREESEC(__prep_begin,__prep_end,num_prep_pages);
-+	if (_machine != _MACH_chrp)
- 		FREESEC(__chrp_begin,__chrp_end,num_chrp_pages);
--		break;
--	case _MACH_apus:
-+	if (_machine != _MACH_Pmac)
- 		FREESEC(__pmac_begin,__pmac_end,num_pmac_pages);
--		FREESEC(__prep_begin,__prep_end,num_prep_pages);
--		FREESEC(__chrp_begin,__chrp_end,num_chrp_pages);
--		break;
--	case _MACH_gemini:
-+	if (_machine != _MACH_apus)
- 		FREESEC(__apus_begin,__apus_end,num_apus_pages);
--		FREESEC(__pmac_begin,__pmac_end,num_pmac_pages);
--		FREESEC(__prep_begin,__prep_end,num_prep_pages);
--		FREESEC(__chrp_begin,__chrp_end,num_chrp_pages);
--		break;
--	}
--
- 	if ( !have_of )
- 		FREESEC( __openfirmware_begin, __openfirmware_end,
- 			 num_openfirmware_pages );
+Dan
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
