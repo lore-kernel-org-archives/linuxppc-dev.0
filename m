@@ -1,13 +1,13 @@
-Date: Thu, 12 Jun 2003 13:44:44 -0700
-From: Larry McVoy <lm@bitmover.com>
+Date: Thu, 12 Jun 2003 13:45:19 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
 To: Christoph Hellwig <hch@lst.de>
 Cc: akuster@mvista.com, linuxppc-dev@lists.linuxppc.org
 Subject: Re: GPL inconsistency in arch/ppc/ocp/xlinx/
-Message-ID: <20030612204444.GA19453@work.bitmover.com>
+Message-ID: <20030612134519.C4693@home.com>
 References: <20030524201213.GA8256@lst.de> <20030612203205.GA23017@lst.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030612203205.GA23017@lst.de>
+In-Reply-To: <20030612203205.GA23017@lst.de>; from hch@lst.de on Thu, Jun 12, 2003 at 10:32:05PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
@@ -31,24 +31,14 @@ On Thu, Jun 12, 2003 at 10:32:05PM +0200, Christoph Hellwig wrote:
 > As there hasn't been any answer yet I think these files should be
 > remove to ensure the linuxppc tree is legally distributable.
 
-Note: I don't care one way or the other how or if this is resolved.  I'm
-just making an observation.
+Multiple people have found that Armin in no longer answering linuxppc
+related email so this doesn't really mean anything...he's disappeared
+from the community.  I'll query a couple folks in mvista, I would
+have thought the "right" person would see this here.
 
-You might want to be careful about advertising why you want these files
-removed because the Xilinx clause is just covering their butt.  If someone
-uses Linux in some life support system and someone dies, the fact that
-the community removed these files because of that clause could be construed
-as a statement that Linux was suitable for life support systems.  It gives
-the lawyers ammo.
-
-Personally, I wouldn't get that excited about that clause, I think that
-enforcing the GPL to that extent on principle is likely to backfire.  But
-that's my opinion and worth what you paid for it.
-
-Neither I nor BitMover have any sort of relationship with Xilinx, this is
-just my opinion.
+Regards,
 --
----
-Larry McVoy              lm at bitmover.com          http://www.bitmover.com/lm
+Matt Porter
+mporter@kernel.crashing.org
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
