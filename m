@@ -1,35 +1,34 @@
-Message-ID: <3BFC0C87.30658419@linux-m68k.org>
-Date: Wed, 21 Nov 2001 21:20:24 +0100
-From: Roman Zippel <zippel@linux-m68k.org>
-MIME-Version: 1.0
-To: Armin Kuster <akuster@mvista.com>
-Cc: ppcdevel <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: New API for non cache coherent ppc cpu's
-References: <Pine.LNX.4.33.0111211152230.6681-100000@serv> <3BFBF277.A05245D6@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: Scaling registers on r128
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+To: Adrian Cox <adrian@humboldt.co.uk>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	linux-fbdev-devel@lists.sourceforge.net
+In-Reply-To: <3BEF952D.9000306@humboldt.co.uk>
+References: <3BEF952D.9000306@humboldt.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 22 Nov 2001 02:42:53 +0100
+Message-Id: <1006393373.24727.23.camel@pismo>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Mon, 2001-11-12 at 10:23, Adrian Cox wrote:
 
-Armin Kuster wrote:
+> The attached patch turns on the panel scaling registers of the R128.
+> I've run this on my iBook2, and I've been able to display 640x480 and
+> 800x600 modes on the panel successfully.
 
-> mapping = pci_map_page(pdev,
->                                virt_to_page(cmd->request_buffer),
+So have I, but they both flicker noticeably, and there is corruption in
+X with the server built-in modes, but not with modes generated with
+fbset -x. Both effects are only slightly noticeable in 800x600 but more
+so in 640x480.
 
-This is the problem, virt_to_page doesn't work kmap'ed highmem pages.
+Nice work though!
 
-> > - I think it was never defined, what should be done if offset/size isn't
-> > cache line aligned. That's especially a problem in the invalidate only
-> > case. I'd prefer to make this illegal, as it's mostly not a problem for
-> > drivers.
->
-> wouldn't it also be a problem for consistent_sync?  we don't check for
-> offset/size are cache line aligned.
 
-Yes, same problem.
-
-bye, Roman
+--
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
