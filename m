@@ -1,41 +1,40 @@
-Date: Sun, 28 Oct 2001 20:17:45 -0900
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: GeForce on PPC == _no work_
-Message-ID: <20011028201745.F32547@plato.local.lan>
-References: <20011028033420.Q22102@plato.local.lan> <Pine.LNX.4.33.0110282056370.29516-100000@andromeda.dsdk12.net>
-Mime-Version: 1.0
-In-Reply-To: <Pine.LNX.4.33.0110282056370.29516-100000@andromeda.dsdk12.net>; from dpates@dsdk12.net on Sun, Oct 28, 2001 at 09:01:14PM -0700
+References: <Pine.LNX.4.33.0110282056370.29516-100000@andromeda.dsdk12.net>
+	<20011029043931.JNTD19597.tomts17-srv.bellnexxia.net@there>
+From: gtgj@pacbell.net (Gregorio Gervasio Jr.)
+Date: 28 Oct 2001 22:08:45 -0800
+In-Reply-To: <20011029043931.JNTD19597.tomts17-srv.bellnexxia.net@there>
+Message-ID: <m3elnnou4y.fsf@adsl-63-196-7-65.dsl.snfc21.pacbell.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Oct 28, 2001 at 09:01:14PM -0700, Derrik Pates wrote:
-> On Sun, 28 Oct 2001, Ethan Benson wrote:
->
-> > I suggest going to ebay and finding a Rage128 Mac edition.   I found
-> > quite a few there when i was tasked with setting up a Silver G4 for
-> > someone, i even got two Rage128s so i would have an extra just in case
-> > i would be able to afford one those nice machines in the near future.
-> >
-> > the Rage128 works very well in those machines, the mac edition is
-> > needed since you want to be able to see OpenFirmware.
->
-> Yeah, I know that part. But will any of those cards (or any Radeon boards
-> for Mac) have an ADC port? The problem is, the system has a flatpanel
-> display - in this case, a 17" Apple Cinema Display LCD - and the nVidia
-> driver might work if not for that.
+>>>>> On Sun, 28 Oct 2001 23:41:57 -0500, "Kevin B. Hendricks" <khendricks@ivey.uwo.ca> said:
 
-yes one of the Rage128's i bought on ebay has the ADC port.
+k> I went out and bought a Apple 17inch Flat panel and the Radeon Mac Edition
+k> card.  I also bought a DVIator which allows my to use the USB ports,
+k> power, and the Radeon DVI port to connect to the FlatPanel ADC connector.
+k> It works fine under MacOS in 1280x1024.
 
-> also FreeBSD people, since they also can't use nVidia's binary drivers. I
-> hope he has some success.
+k> I am now trying to help Ani by testing his driver (Ani does not have a
+k> Flat panel to test with) and trying to get things to work.  So hopefully
+k> Radeon FlatPanel support will be here at some point.  I bought the Radeon
+k> and the Dviator just because I wanted to get something that would drive a
+k> flatpanel and still hopefully work under Linux (I have no faith in nVidia
+k> releasing anything.)
 
-don't hold your breath, you might suffocate.
-
+        I also recently got a Radeon (PCI version) and its DVI port is
+connected directly to a Samsung flat panel.  It just works (both the
+radeon kernel driver and XFree86 driver from Ani).  Did I get lucky?
+(Maybe because I have an Old World machine and use BootX so MacOS may
+have set things up?)  Anyway, if I can help in some way to test/dump
+things, please let me know.
 --
-Ethan Benson
-http://www.alaska.net/~erbenson/
+Gregorio Gervasio, Jr.
+gtgj@pacbell.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
