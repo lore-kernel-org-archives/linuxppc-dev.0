@@ -1,63 +1,37 @@
-To: Ruedi.Hofer@ascom.ch
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PCMCIA support for 860
-References: <0FSF00NFMHXF1M@pmdf-it.hasler.ascom.ch>
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 03 Apr 2000 19:01:10 +0200
-In-Reply-To: Ruedi.Hofer@ascom.ch's message of "Mon, 03 Apr 2000 08:55:29 +0100 (CED)"
-Message-ID: <kfypus7w23t.fsf@kieraypc01.p.y.ki.era.ericsson.se>
+Message-ID: <38E8F720.40E7C0DB@embeddededge.com>
+Date: Mon, 03 Apr 2000 15:55:12 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
+To: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+CC: Ruedi.Hofer@ascom.ch, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PCMCIA support for 860
+References: <0FSF00NFMHXF1M@pmdf-it.hasler.ascom.ch> <kfypus7w23t.fsf@kieraypc01.p.y.ki.era.ericsson.se>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ruedi.Hofer@ascom.ch writes:
+Marcus Sundberg wrote:
 
-> In the february mailing list I found the PCMCIA patch from Magnus Damm. It looks
-> very interesting and useful.
-> >From reading the 'Kernel modification' list I assume that I need some help.
->
-> Extract from Mail http://lists.linuxppc.org/listarcs/linuxppc-embedded/200002/msg00093.html:
->
-> > 1. First of all you need to ioremap 64KByte at _IO_BASE.
-> >    This is for the emulated ISA-bus.
-> >    VIRT must be PHYS and I don't know how to do that
-> >    from a module.
+> -#define _IO_BASE        0
+> +#define _IO_BASE       0xf4000000
+> +#define _IO_BASE_SIZE  0x10000
+>  #define _ISA_MEM_BASE   0
 
-Hi,
 
-diff -u -b -u -r1.3 -r1.4
---- include/asm-ppc/mpc8xx.h	2000/01/31 16:37:46	1.3
-+++ include/asm-ppc/mpc8xx.h	2000/02/28 16:12:36	1.4
-@@ -53,7 +53,8 @@
- #define	_ISA_MEM_BASE PCI_ISA_MEM_ADDR
- #define PCI_DRAM_OFFSET 0x80000000
- #else
--#define _IO_BASE        0
-+#define _IO_BASE	0xf4000000
-+#define _IO_BASE_SIZE	0x10000
- #define _ISA_MEM_BASE   0
- #define PCI_DRAM_OFFSET 0
- #endif
+You have to be very careful with this.  These definitions won't work
+on any 8xx with a PCI bridge.  I get too many patches from people that
+hack these around to suit their configuration and it breaks everything
+else.
 
-Then just add:
+The correct (as best I have found :-) approach is to continue to make
+IO_BASE represent the PCI/ISA space for which it is intended.  Then
+separately map the PCMCIA and adjust the addresses for those drivers
+based upon the IO_BASE (so in/out, and so on work).  You can also map
+the PCMCIA into the PCI/ISA space as it has address decode priority
+over the memory controller.
 
-#ifdef _IO_BASE_SIZE
-        ioremap(_IO_BASE, _IO_BASE_SIZE);
-#endif
 
-together with the other ioremap()s in arch/ppc/mm/init.c.
-
-> > 2. All bus operations that are 16 bit or more should be
-> >    big endian - no swapping. This is the same as APUS in io.h.
-> >    We need to figure out how this should co-exist with
-> >    the swapped ISA.
-
-This proved to be wrong, and is not necessary.
-
-//Marcus
---
-Signature under construction, please come back later.
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
