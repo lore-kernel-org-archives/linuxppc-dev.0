@@ -1,41 +1,47 @@
-To: Andreas Plaickner <apxx@gmx.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 3Com 574BT PCMCIA Card on PowerPC 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 31 Jan 2003 13:04:38 +0100."
-             <2651.1044014678@www39.gmx.net>
-Date: Fri, 31 Jan 2003 21:16:21 +0100
-Message-Id: <20030131201626.51061C608E@atlas.denx.de>
+Reply-To: <ldu@solectek.com>
+From: "Leiying Du" <ldu@solectek.com>
+To: "Wolfgang Denk" <wd@denx.de>
+Cc: "'LinuxPPC-Embedded'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Ramdisk with wrong magic number 
+Date: Fri, 31 Jan 2003 12:20:12 -0800
+Message-ID: <DDEMKFCKCAHJDIFEOONBGEGMCAAA.ldu@solectek.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-reply-to: <20030131201258.04531C608E@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <2651.1044014678@www39.gmx.net> you wrote:
+Thanks, James and Wolfgang. I forgot to use the mkimage to convert it.
+
+All the best,
+
+Leiying
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Wolfgang
+Denk
+Sent: Friday, January 31, 2003 12:13 PM
+To: ldu@solectek.com
+Cc: 'LinuxPPC-Embedded'
+Subject: Re: Ramdisk with wrong magic number
+
+
+
+In message <DDEMKFCKCAHJDIFEOONBOEGLCAAA.ldu@solectek.com> you wrote:
 >
-> I have seen that there exists already a solution
-> for a wireless LAN card. I took these steps as
+>    I downloaded your mini ramdisk. The file name is
+> mini-2048kB-ramdisk.image.gz. If I check the image that I wrote into the
+> flash, I will get an wrong magic number error. Do you konw what's wrong
+with
+> this? Thanks.
 
-Which one are you talking about? Where did you get the kernel sources
-and the PCMCIA CS package from?
-
-> ## Booting image at 40040000 ...
->    Image Name:   Linux-2.4.4
->    Created:      2002-07-17  10:40:49 UTC
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-
-Looks suspiciously like one of "our" source trees. But  this  version
-is  much  too  old  for  WLAN support; this was added / fixed several
-months later.
-
-> I didn't create a new kernel, but I used one that was already
-> pre-installed on the board. Could this one be the reason
-> for the above error?
-
-Definitely. You will need a current kernel,  and  currend  PCMCIA  CS
-package.
-
+How do you "check" it? If this is by any chance  under  U-Boot,  then
+you  should  read  the docs how to convert a plain ramdisk image like
+the one you are using into a U-Boot  image  (hint:  use  the  mkimage
+tool).
 
 Best regards,
 
@@ -44,9 +50,7 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Niklaus Wirth has lamented that, whereas Europeans pronounce his name
-correctly  (Ni-klows  Virt),  Americans  invariably  mangle  it  into
-(Nick-les  Worth).  Which  is to say that Europeans call him by name,
-but Americans call him by value.
+I paid too much for it, but its worth it.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
