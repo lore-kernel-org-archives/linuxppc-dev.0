@@ -1,43 +1,45 @@
-Date: Wed, 4 Feb 2004 13:09:20 +0100
-To: linuxppc-dev@lists.linuxppc.org
-Cc: Linux/PPC Commit Mailing List <linuxppc-commit@source.mvista.com>
-Subject: Re: Incoming to linuxppc-2.5-benh
-Message-ID: <20040204120920.GA6212@iliana>
-References: <E1AoIYp-0006NW-00@source.mvista.com>
+Subject: Re: TASK_UNMAPPED_BASE
+From: Peter Bergner <bergner@vnet.ibm.com>
+To: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>
+Cc: joakim.tjernlund@lumentis.se, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <6.0.2.0.2.20040203161335.035fde58@mail.lauterbach.com>
+References: <000501c3ea56$60935060$0a01a8c0@LUMENTIS02>
+	 <6.0.2.0.2.20040203161335.035fde58@mail.lauterbach.com>
+Content-Type: text/plain
+Message-Id: <1075905440.2895.23.camel@otta.rchland.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <E1AoIYp-0006NW-00@source.mvista.com>
-From: Sven Luther <sven.luther@wanadoo.fr>
+Date: Wed, 04 Feb 2004 08:37:21 -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Feb 04, 2004 at 01:39:03AM -0700, Linux/PPC Kernel Mirrors wrote:
-> ChangeSet@1.1346, 2004-02-04 18:34:43+11:00, benh@kernel.crashing.org
->   merge
+On Tue, 2004-02-03 at 09:22, Franz Sirl wrote:
+> At 14:05 03.02.2004, Joakim Tjernlund wrote:
+>> I changed TASK_UNMAPPED_BASE to well under 0x01fffffc and it worked as well.
+>>
+>> My question: Why is TASK_UNMAPPED_BASE=0x30000000 and would changing it to
+>> something less, say 0x00100000 be a problem?
 >
-> ChangeSet@1.1345, 2004-02-04 18:24:45+11:00, benh@kernel.crashing.org
->   PCI "devspec" entries
->
-> ChangeSet@1.1344, 2004-02-04 17:58:37+11:00, benh@kernel.crashing.org
->   Workaround for Mac cards with DVI and ADC output when the only
->   monitor is plugged on DVI. We assume the firmware has set up the
->   second TMDS output properly, but we also must make sure we do
->   no set an odd PLL divider, that isn't supported on the second
->   output.
->
-> ChangeSet@1.497.3185.199, 2004-02-03 19:36:36-08:00, torvalds@home.osdl.org
->   Linux 2.6.2 aka "Feisty Dunnart"
->
->   See http://www.cse.unsw.edu.au/~gernot/persona/hobbies/dunnart.html
->   for more information about Dunnarts, in case you've never heard of
->   them before. Courtesy of Gernot Heiser.
->   TAG: v2.6.2
+> Hmm, might work, but it can also break in subtle ways, cause the shared lib
+> loading algorithm makes a few assumptions about the used address ranges
+> IIRC. But I don't see any use for it if you consider what I said above.
 
-Please don't forget to add a merge tag.
+I've seen problems with HPC apps/benchmarks with huge bss's that fail to
+run because TASK_UNMAPED_BASE is set too low.  I'll admit they fail to
+run due to a bug in the fs/binfmt_elf.c, but the fix has never been
+accepted yet.  The bug is that we don't reserve the bss region for the
+app (via a set_brk/do_brk call) until after we've loaded the loader so
+they get mapped to overlapping memory locations.  The fix is to move the
+update to current->mm.* and the set_brk/do_brk call to before the point
+we call load_elf_interp().
 
-Friendly,
+Another bug is that the calls to set_brk/do_brk in fs/binfmt_elf.c fail to
+check whether the set_brk/do_brk calls succeeded or not, so they implicitly
+assume they do.  With an app with a huge bss, the set_brk/do_brk call actually
+returns -ENOMEM which is then ignored.  The fix is to test for failure from
+the set_brk/do_brk calls.
 
-Sven Luther
+Peter
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
