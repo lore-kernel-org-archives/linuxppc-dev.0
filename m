@@ -1,21 +1,16 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
-	by ozlabs.org (Postfix) with ESMTP id 8334867A33
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Apr 2005 00:38:05 +1000 (EST)
-Date: Tue, 5 Apr 2005 07:38:02 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Sven Luther <sven.luther@wanadoo.fr>
-Message-ID: <20050405143802.GS25923@smtp.west.cox.net>
-References: <20050328232355.GA1982@pegasos>
-	<20050331142813.GH25923@smtp.west.cox.net>
-	<20050331184549.GA28069@pegasos> <4251D5BA.5080905@gmx.net>
-	<20050405053930.GD4604@pegasos>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050405053930.GD4604@pegasos>
+Return-Path: <stephane.fillod@thomson.net>
+Received: from dmzraw2.extranet.tce.com (dmzraw2.extranet.tce.com
+	[157.254.234.138]) by ozlabs.org (Postfix) with ESMTP id 9B64A67A82
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Apr 2005 01:09:13 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Tue, 5 Apr 2005 17:08:59 +0200
+Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0D2D@rennsmail02.eu.thmulti.com>
+From: "Fillod Stephane" <stephane.fillod@thomson.net>
+To: "Chris Friesen" <cfriesen@nortel.com>
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: PREP sym53c8xx sym53c8xx brokeness due to
-	2.6.9-rc1-bk1	introduced residual data patch ...
+Subject: RE: somewhat OT -- trying to build code on the fly then run it
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,48 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 05, 2005 at 07:39:31AM +0200, Sven Luther wrote:
-> On Tue, Apr 05, 2005 at 02:03:06AM +0200, Christian wrote:
-> > -----BEGIN PGP SIGNED MESSAGE-----
-> > Hash: SHA1
-> > 
-> > Sven Luther wrote:
-> > >>># This is a BitKeeper generated diff -Nru style patch.
-> > >>>#
-> > >>># ChangeSet
-> > >>>#   2004/08/16 10:35:18-07:00 trini@kernel.crashing.org
-> > >>>#   ppc32: On PReP, use residual data for PCI dev -> IRQ, and use it.
-> > >
-> > > I got through all the changesets one by one, and it is most definitively this
-> > > one. i unapply it and it works, i apply it and it breaks.
-> > 
-> > i can confirm this one.
-> > 
-> > the changesets are listed here:
-> > http://linux.bkbits.net:8080/linux-2.6/patch@1.1803.125.6
-> > 
-> > ...and because i had some troubles getting a GNU diff-style patch with
-> > /usr/bin/bk, i made one against 2.6.11.6:
-> > 
-> > http://nerdbynature.de/bits/hal/2.6.11.6/1.1803.125.6.diff
-> > 
-> > more info and dmesg under:
-> > 
-> > http://nerdbynature.de/bits/hal/2.6.11.6/
-> > 
-> > to summarize: i don't know exactly which changes, but *some* changes had
-> > to be made to arch/ppc/platforms/prep_pci.c to get the network card
-> > working [1] again (network code kept locking up the machine). after this
-> > issue was resolved, i too noticed the scsi errors [2] others were
-> > complaing about.
-> 
-> The issue seems obvious, the patch adds some different way of setting the
-> irqs, based on the residual data, which fails to do what it should on the
-> powerstack, and thus the irqs are fully left uninitialized. 
+Chris Friesen wrote:=20
+> I'm writing a testcase to test some code we wrote to allow userspace
+to=20
+> flush the whole dcache and invalidate the whole icache. =20
 
-Can either of you verify that say 2.6.11.6 w/ "noresidual" on the
-command-line works?  Thanks.
+Your testcase sounds like this kernel module for RT load generator:
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+	http://rtai.dk/cgi-bin/gratiswiki.pl?Latency_Killer/Flushy
+
+
+Comments welcome.
+--=20
+Stephane
