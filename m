@@ -1,28 +1,21 @@
-From: "barry.fisher" <barry.fisher@seranoa.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: User to kernel buffer size limitations
-Date: Mon, 11 Feb 2002 17:19:29 -0500
-Message-ID: <000001c1b34a$2c8dd910$7d0110ac@Seranoa.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+Date: Mon, 11 Feb 2002 16:36:05 -0800
+From: David Ashley <dash@xdr.com>
+Message-Id: <200202120036.g1C0a5215326@xdr.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux 2.4.17 bug, mmap of /dev/mem
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello All:
-Are there any buffer size limitations when transferring data from user
-space to the kernel. I have a application that is attempting to load an
-fpga by reading from a file (I am not sure how big this file will get)
-and sending (via a write) it down to a device driver which then feeds it
-to the fpga. I would like to maximize the thruput and any
-suggestions/comments would be greatly appreciated. Thanks in advance for
-any help!
-Regards,
-Barry O. Fisher
-Seranoa Networks
-barry.fisher@seranoa.com
-978-897-3434 x272
+I found out more about the problem. If I mmap 2 regions that are distinct,
+even though they map to the same physical address in non-cacheable memory,
+if I only use one for reading and the other for writing, there is no
+corruption of linux and the system works. The problem happens when I both
+read and write to the same mmap'd area.
 
+Easy enough workaround. Now maybe some kernel expert can figure it out???????
+
+Later--
+Dave
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
