@@ -1,63 +1,65 @@
-Date: Wed, 23 Jun 1999 13:14:29 -0700 (MST)
-From: chris <chris@ns1.aepnet.com>
+From: Jimasta@aol.com
+Message-ID: <68ce0e30.24a32e27@aol.com>
+Date: Thu, 24 Jun 1999 02:45:59 EDT
+Subject: Yes I know. . .
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PowerBook sleep, first try
-In-Reply-To: <Pine.LNX.3.96.990623091811.16972F-100000@mvista.com>
-Message-ID: <Pine.LNX.4.04.9906231306510.25771-100000@ns1.aepnet.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+this issue has been discussed ad nausea, BUT I have to ask.  How can I 
+get any sound playback on my Wallstreet PB G3 250 ?  I have no speaker 
+playback (i.e. digital sound *.wav, *.au etc...) and my CD-ROM bay 
+doesn't play through the speakers or line-out, for that matter, (the 
+?kcd?  shows the tracks playing and the time progressing but, _no_ 
+sound).  I _do_ however get the 'system' beep (although I think the 
+mechanism for that sound output is different than digital sound out).  
+And yes I have rebooted my Mac with the sound input on "None", "Built-In 
+Mic" and "Expansion Bay".
 
-On Wed, 23 Jun 1999, David A. Gatwood wrote:
+I'm running R4 with kernel "vmlinux-2.3.6-990616".
 
-> 
-> On Wed, 23 Jun 1999, Kevin Puetz wrote:
-> 
-> > Cool! Is there any hope of this working on the desktop machines that can 
-> > sleep? (I like my machine getting quiet when not in use, though I can live
-> > without.).
-> 
-> A desktop sleep is pretty different from a PowerBook sleep.  When a
-> desktop machine is asleep, it can still services network requests, and is
-> essentially still running, it just shuts a few things down.  The key there
-> is to figure out how to spin down and spin up the hard drive without
-> getting confused by the long delay on data access.  Then, when you do a
-> desktop sleep, you just cut the video sync, spin down the drives, and set
-> it up so that if there's any access to the drive, you spin it up long
-> enough to do the access, then wait a few seconds for the access to finish,
-> then spin back down.  Presumably, there's other stuff dealing with the
-> ADB, as far as shutting down other unused hardware and putting the
-> processor in a low speed setting or something, but I have no idea there.
-> Somebody else with actual cuda knowledge could probably say more in that
-> department.
-> 
-I've had good luck with using hdparm to set the timeout to spin down the
-disk in my powerbook.  I imagine it should work for most other people with
-ide drives.  also, I noticed a rather dramatic speed increase setting the
-PIO mode to 4, and "set IDE 32-bit IO setting"..  namely:
 
-hdparm -S 5 /dev/hda  # sets standby timeout to 25 seconds..
-hdparm -c 1 /dev/hda  # 32-bit transfer mode
-hdparm -p 4 /dev/hda  # PIO mode 4
-  or
-hdparm -S 5 -c 1 -p 4 /dev/hda
+BTW, Ben, have you ever gotten an positive response with the 
+expansion-bay ZIP fix you posted ? (it didn't work for me and I've used 
+all the kernels 2.1.125 thru 2.3.6)
 
-there's all sorts of other options in there too, but they didn't seem to
-make that much of a difference to me..  and note that I stopped using the
-standby option as I was getting tired of listening to the disk spin up and
-down, but that's how to do it if anyone cares..
 
-ttyl,
-  chris
+Thanx,
 
-> 
-> Later,
-> David
-> 
+-Jim
 
+              JJ                                       
+            JJ J                                       
+           JJ  J ii                                    
+           J   J i                                     
+      ***  J  J        mmmmm                           
+            JJJ   i   mm m m                           
+             J   i    m mm m          **********       
+            J    ii  m  m mm  **********************   
+           JJ            **************       *********
+*****  JJJJ     ***************                    ****
+**************************                           **
+**  *************                                    **
+**                                                   **
+**                             ..X..xxx.,.Xx         **
+**                           ...XXXXWWWWWWWWXXX      **
+**                       ....XXXW" M8N8GGG8^M"MXX    **
+**          ***********"XXXXXXW"   W88WWWW8@8  BBXX. **
+***********************""XXM::...  W889WWM@NW  ..:RX.**
+*************                MM:...  W88888W:...mmMMR**
+                                "MMm..M..M._mMM" :     
+                                    **********         
+            In Life,             **************        
+       there are no endings,   **********  *****       
+  ***    only beginnings.     ********    *******      
+ *****                     *******        ******       
+ ***                  *********           *****        
+  *****          ***********              ****         
+   *********************                   ***         
+      ************                         **
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
