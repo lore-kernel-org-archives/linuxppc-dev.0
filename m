@@ -1,29 +1,26 @@
-Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4D414C18@mail.mediatrix.com>
-From: Jean-Denis Boyer <jdboyer@mediatrix.com>
-To: "'RSR - Piero Dominioni'" <pdominioni@rsr.it>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: NFS mount for TQM823L
-Date: Thu, 27 Sep 2001 08:52:42 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <200109271310.JAA20256@missioncriticallinux.com>
+From: mod+linuxppc-embedded@MissionCriticalLinux.com
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Adding 'bus_offset' to pci_controller 
+In-Reply-To: Your message of "Wed, 26 Sep 2001 16:29:00 PDT."
+             <3BB264BC.8E7291FE@mvista.com>
+Date: Thu, 27 Sep 2001 09:10:08 -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The portmapper (portmap) and the lock daemon (rpc.lockd) are not running on
-your target.
-Either you start them, or just add option "-o nolock" when calling mount.
-  # mount -o nolock -t nfs 126.126.126.106:/home /tmp
+I'm just catching up with this thread and I'm
+not sure which problem it is that we're trying
+to solve here.  Isn't it true that the various
+pci_ops routines are passed a pci_dev from which
+they can extract pci_dev->pci_bus->number and
+decide which bus is meant from that?  Or does
+that constitute a namespace (or number-space)
+collision?  Aha - yes it might - each "node" in
+a PCI bus "tree" has its own bus number, right?
+So pci_dev->pci_bus->number is only intended to
+be meaningful within a given tree and each tree
+is (should be) its own domain...
 
-
---------------------------------------------
- Jean-Denis Boyer, B.Eng., Technical Leader
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
