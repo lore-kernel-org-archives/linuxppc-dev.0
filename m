@@ -1,80 +1,68 @@
-From: t.shantha.laxmi@exgate.tek.com
-Message-ID: <21F9768AF088D211BF1C0008C71E5786013C9BEC@ap-bang-m02.india.tek.com>
-To: nboppuri@trinetcommunication.com, linuxppc-embedded@lists.linuxppc.org
-Subject: RE: NFS problem
-Date: Tue, 26 Sep 2000 02:05:28 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+From: Ruedi.Hofer@ascom.ch
+Date: Tue, 26 Sep 2000 13:49:46 +0100 (CED)
+Subject: Limon & PowerQUICC II, Booting the kernel
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: kernel@linux01.hasler.ascom.ch
+Message-id: <0G1H00EA2SVED4@pmdf-it.hasler.ascom.ch>
+MIME-version: 1.0
+Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_B4qC+ywoA0F8kqKM32UTwQ)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is the problem with the ethernet driver. Make sure you have enabled the
-Ethernet Transciever. You need to add code in enet.c to enable the
-transciever and set the TENA bit.
+--Boundary_(ID_B4qC+ywoA0F8kqKM32UTwQ)
+Content-type: TEXT/PLAIN
+Content-Transfer-Encoding: 7BIT
 
-Hope this helps,
+Hi
 
-- Shantha
+Sorry for my 1st mail. The kernel gets loaded into RAM at 0x400000.
 
--> -----Original Message-----
--> From: Navin Boppuri [mailto:nboppuri@trinetcommunication.com]
--> Sent: Friday, May 26, 2000 6:58 PM
--> To: linuxppc-embedded@lists.linuxppc.org
--> Subject: NFS problem
-->
-->
-->
--> Hello,
-->
--> I am trying to boot my custom board with the linux 2.2.13
--> kernel. It boots
--> OK but when it tries to do the NFS mount, it fails.......
--> This is how it
--> looks. I dont understand what's going on. I testing the NFS
--> server with some
--> other board and same ip's and it works fine. Any ideas????
-->
--> lcd_lcvcr: 78000
--> loop: registered device at major 7
--> eth0: CPM ENET Version 0.2, 08:00:22:50:70:63
--> PPP: version 2.3.10 (demand dialling)
--> TCP compression code copyright 1989 Regents of the
--> University of California
--> PPP line discipline registered.
--> Looking up port of RPC 100003/2 on 216.118.31.76
--> neighbour table overflow
--> neighbour table overflow
--> neighbour table overflow
--> eth0: transmit timed out.
-->  Ring data dump: cur_tx ff0028d0 (full) cur_rx ff0028c8.
--> dc00 002a 0015c642
--> dc00 002a 0015c6e2
--> dc00 002a 0015c782
--> dc00 002a 0015c962
--> dc00 002a 0015ca02
--> dc00 002a 0015caa2
--> dc00 002a 0015c502
--> fc00 002a 0015cb42
--> 9c00 005a 00174000
--> 9c00 0076 00174800
--> 9c00 0076 00161000
--> 9c00 0076 00161800
--> 9c00 0040 00160000
--> 9c00 0040 00160000
--> 9c00 0076 0015f000
--> b000 7edd 0015f800
--> eth0: tx queue full!.
--> neighbour table overflow
--> eth0: transmit timed out.
-->
--> and it goes on and on. After some time, it says server
--> returned error -5 and
--> then tries a reboot. What's going on???
-->
--> Navin.
-->
-->
+Still, when I issue the 'run' command the target crashes.
+
+---------------- Linux Monitor 1.4.2-SBC-8260 ----------------
+limon>
+limon>
+limon> load
+BOOTP/TFTP from server 10.1.20.2; our IP address is 10.1.20.1.
+Filename '/usr/src/nfs/limonZImage'.
+Loading: >.................................................................<
+done.
+limon>
+limon> debug
+limon> dw 400000
+00400000   6e6a725e  00000000  0007864c  6b657230  njr^.......Lker0
+00400010   00078660  48000005  7c6b1b78  7cb92b78  ...`H...|k.x|.+x
+00400020   38600040  7c600124  3c800040  60840000  8`.@|`.$<..@`...
+00400030   7c6802a6  3863fffc  7c681b78  7c032000  |h..8c..|h.x|. .
+00400040   40820028  3c800040  60840000  3ca00040  @..(<..@`...<..@
+00400050   60a5b274  38a50003  7ca42850  54a5f0be  `..t8...|.(PT...
+00400060   7ca72b78  48000060  7c6802a6  3863fffc  |.+xH..`|h..8c..
+00400070   7c681b78  3c800040  60840000  3ca00040  |h.x<..@`...<..@
+limon>
+limon>
+limon> run
+... crash
+
+
+Question:
+
+1. Do I have to strip off the elf header from my kernel file?
+
+2. Does the run command relocate the kernel at addr 0?
+
+3. Some data are transferred from limon to the kernel.
+ - Does Limon handle this correctly?
+ - Where are these data located?
+
+4. Why does it crash?
+
+I guess that answering 3) should solve the problem.....
+
+Thank you for any help
+
+Ruedi
+
+--Boundary_(ID_B4qC+ywoA0F8kqKM32UTwQ)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
