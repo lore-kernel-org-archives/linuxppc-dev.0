@@ -1,23 +1,20 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
-	by ozlabs.org (Postfix) with ESMTP id EE7D967A6E
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jan 2005 05:08:43 +1100 (EST)
-Date: Wed, 19 Jan 2005 11:08:42 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Message-ID: <20050119180841.GP28724@smtp.west.cox.net>
-References: <41EC29A8.1040703@mvista.com>
-	<20050118161515.GI28724@smtp.west.cox.net>
-	<93780AB0-696D-11D9-81BE-003065F9B7DC@embeddededge.com>
-	<20050118181330.GJ28724@smtp.west.cox.net>
-	<41ED5C51.8020809@mvista.com>
-	<20050118190848.GM28724@smtp.west.cox.net>
-	<41ED66D0.2090506@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <41ED66D0.2090506@mvista.com>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC] Option to disable mapping genrtc calls to ppc_md calls
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 9BA5967A65
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jan 2005 05:54:27 +1100 (EST)
+In-Reply-To: <1106120622.10851.42.camel@baythorne.infradead.org>
+References: <1106120622.10851.42.camel@baythorne.infradead.org>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <BD84893E-6A28-11D9-AC28-000393DBC2E8@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 19 Jan 2005 08:45:19 -0600
+To: "David Woodhouse" <dwmw2@infradead.org>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linus Torvalds <torvalds@osdl.org>, Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] raid6: altivec support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,55 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 18, 2005 at 12:43:12PM -0700, Mark A. Greer wrote:
-> Tom Rini wrote:
-> 
-> >On Tue, Jan 18, 2005 at 11:58:25AM -0700, Mark A. Greer wrote:
-> > 
-> >
-> >>Tom Rini wrote:
-> >>
-> >>   
-> >>
-> >>>I think one of us wasn't clear.  I'm not arguing for nuking
-> >>>ppc_md.{get,set}_rtc_time(), I'm arguing for nuking
-> >>>get_rtc_time()/set_rtc_time() inlines from <asm-ppc/rtc.h> (which are
-> >>>used by drivers/char/genrtc.c) in favor of todc_time et al providing the
-> >>>functions for genrtc.  So all of the other places we use
-> >>>ppc_md.{get,set}_rtc_time() are unchanged.
-> >>>     
-> >>>
-> >>Ahh.  Okay, that's good but it should be done in drivers/rtc or 
-> >>something like and not just another arch specific solution.
-> >>   
-> >>
-> >
-> >It's not an arch specific solution today.
-> >
-> 
-> Okay, I see what you mean and yes moving that up (or something 
-> equivalent) would be a good idea.
-> 
-> That's not what my patch is about though.  My patch is just so I can 
-> provide a generic solution with what is there today.  Its not 
-> redesigning anything, its just getting asm-ppc/rtc.h out of the way so I 
-> can make my own, generic get_rtc_time(), etc.
+David,
 
-I guess the problem I have is you're not providing a generic solution
-(it won't work on PPC_MULTIPLATFORM), you're providing a different hook
-for your board(s) :)
+We did talk about looking at using some work Ben did in ppc64 with OF=20
+in ppc32.  John Masters was looking into this, but I havent heard much=20=
 
-Taking a look at arch/arm/common/rtctime.c again finally, it solves this
-problem rather elegantly.  The board registers with the driver the
-rtc_ops to get at the chip.
+from him on it lately.
 
-So until we get around to stealing arch/arm/common/rtctime.c, I'd rather
-you used something like:
-- arch/ppc/Kconfig (or where ever you add the board bits)
-  config PPC_DIFFERENT_GENRTC_HOOKS
-  default y if BOARD_A || BOARD_B
-- include/asm-ppc/rtc.h : what you had, basically.
+The firmware interface on the ppc32 embedded side is some what broken=20
+in my mind.
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+- kumar
+
+On Jan 19, 2005, at 1:43 AM, David Woodhouse wrote:
+
+> On Wed, 2005-01-19 at 15:11 +1100, Benjamin Herrenschmidt wrote:
+>  > We should probably "backport" that simplification to ppc32...
+>
+> Yeah.... I'm increasingly tempted to merge ppc32/ppc64 into one arch
+>  like mips/parisc/s390. Or would that get vetoed on the basis that we
+>  don't have all that horrid non-OF platform support in ppc64 yet, and
+> we're still kidding ourselves that all those embedded vendors will
+>  either not notice ppc64 or will use OF?
+>
+> --=20
+> dwmw2
+>
+>
+>
+> -
+>  To unsubscribe from this list: send the line "unsubscribe=20
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at=A0 http://vger.kernel.org/majordomo-info.html
+>  Please read the FAQ at=A0 http://www.tux.org/lkml/
