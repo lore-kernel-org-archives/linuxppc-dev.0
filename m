@@ -1,38 +1,84 @@
-Date: Tue, 28 May 2002 12:26:52 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Murray Jensen <Murray.Jensen@csiro.au>
+Message-ID: <20020528200203.56680.qmail@web11507.mail.yahoo.com>
+Date: Tue, 28 May 2002 13:02:03 -0700 (PDT)
+From: Khai Trinh <kqtrinh@yahoo.com>
+Subject: Re: FS problem when booting on IBM Ebony
+To: Der Herr Hofrat <der.herr@mail.hofr.at>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] Hymod board support and related changes ...
-Message-ID: <20020528192652.GM1295@opus.bloom.county>
-References: <17991.1022564915@msa.cmst.csiro.au>
-Mime-Version: 1.0
+In-Reply-To: <200205281605.g4SG5db30977@hofr.at>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17991.1022564915@msa.cmst.csiro.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, May 28, 2002 at 03:48:35PM +1000, Murray Jensen wrote:
-> Hymod board support and related changes ...
+Thanks, Der Her...I got the NFS problem now. But my
+question is the 440GP root filesystem. Where should I
+point the fs directory for it in the Ebony kernel
+directory? I just arbitrarily pointed it to a canned
+target file system dirextory existed on my Host
+system.
+
+Thanks,
+
+--Khai
+
+--- Der Herr Hofrat <der.herr@mail.hofr.at> wrote:
+> >
+> > I got the following boot up problem with 2.4 devel
+> > kernel when booting on the IBM ebony board:
+> >
+> > Sending BOOTP requests . OK
+> > IP-Config: Got BOOTP answer from 199.254.9.151, my
+> > address is 199.254.9.207
+> > IP-Config: Complete:
+> >       device=eth0, addr=199.254.9.207,
+> > mask=255.255.255.0, gw=199.254.9.254,
+> >      host=199.254.9.207, domain=,
+> nis-domain=(none),
+> >      bootserver=199.254.9.151,
+> > rootserver=199.254.9.151, rootpath=/projects/hard
+> > hat/khai/devkit/ppc/405/target
+> > NET4: Unix domain sockets 1.0/SMP for Linux
+> NET4.0.
+> > Looking up port of RPC 100003/2 on 199.254.9.151
+> > Root-NFS: Unable to get nfsd port number from
+> server,
+> > using default
+> > Looking up port of RPC 100005/1 on 199.254.9.151
+> > Root-NFS: Unable to get mountd port number from
+> > server, using default
+> > mount: server 199.254.9.151 not responding, timed
+> out
+> > Root-NFS: Server returned error -5 while mounting
+> > /projects/hardhat/khai/devkit/
+> > ppc/405/target
+> > VFS: Unable to mount root fs via NFS, trying
+> floppy.
+> > kmod: failed to exec /sbin/modprobe -s -k
+> > block-major-2, errno = 2
+> > VFS: Cannot open root device "" or 02:00
+> > Please append a correct "root=" boot option
+> > Kernel panic: VFS: Unable to mount root fs on
+> 02:00
+> >  <0>Rebooting in 180 seconds..
+> >
+> > It didn't seem to like the root filesystem
+> directory I
+> > specified on the Host. Where should I point the fs
+> > directory for it in the Ebony kernel directory? I
+> just
+> > arbitrarily pointed it to the 405 target file
+> system
+> > dir existed on my Host system.
+> >
+> I would recomend you check on the server side in
+> /var/log/messages what nfsd
+> is fussing about - did you export it with
+> (rw,no_root_squash) ?? if not then
+> uid 0 becommes uid -1 (nobody) and will have
+> access/perm problems.
 >
-> - Hymod board support
-> - 8260 fcc_enet: more flexible (or at least readable) approach to
->   configuring i/o pins
-> - 8260 fcc_enet: support different PHY interrupt "vector"s for each FCC
-> - 8260 setup: fixed ppcboot jump address; should be 0x...110 not 0x...104
-> - 8260 setup: turn off interrupts before jumping to the boot rom
+> hofrat
 
-Can you split this up into logical patches?  Also, instead of testing
-TQM8260 || HYMOD for PPCBoot, why don't we just add in something like:
-if [ "$CONFIG_TQM8260" = "y" -o  "$CONFIG_HYMOD" = "y" \
-	-o "$CONFIG_TQM8xx" = "y" ] ;then
-   define_bool CONFIG_PPCBOOT y
-fi
-
-And use that.
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
