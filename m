@@ -1,60 +1,43 @@
-Message-ID: <39DB51E3.1352F009@charter.net>
-Date: Wed, 04 Oct 2000 10:50:59 -0500
-From: "Dan A. Dickey" <ddickey@charter.net>
+Date: Wed, 4 Oct 2000 12:17:39 -0400 (EDT)
+From: Jamie Guinan <guinan@bluebutton.com>
+Reply-To: guinan@bluebutton.com
+To: Daniel Furse <daniel.furse@iptest.com>
+cc: "Linux Embedded List (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MBX860 Linux 
+In-Reply-To: <0D9416AE7F95D411A8710008C7332F3F0DEA@GUILDFORD4_NT>
+Message-ID: <Pine.LNX.4.21.0010041204500.7415-100000@gemini.home.net>
 MIME-Version: 1.0
-To: Dan Malek <dan@mvista.com>
-CC: "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: ethernet on fads850sar board?
-References: <39D7F8FB.9C508CF1@charter.net> <39D816D8.35ED965E@mvista.com> <39D87006.979C210@charter.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Dan A. Dickey" wrote:
-> Dan Malek wrote:
-> >
-> > "Dan A. Dickey" wrote:
-> >
-> > > Any ideas?
-> >
-> > Make sure the GP I/O pins are configured properly to be SCC2 Ethernet
-> > control/status lines.  Make sure the BCSR bits enable and properly
-> > configure the PHY (half/full duplex, loopback, etc.).
+On Wed, 4 Oct 2000, Daniel Furse wrote:
+
+> Hi all,
 >
-> I've been over them about three times already.  But I can certainly
-> check again.
+> Can anyone recommend a real-time embedded linux version for the MBX860
+> board?
 >
-> > > (And why do the baud rate generators that feed the ethernet
-> > >  clocks need to run at 2Mhz?)
-> >
-> > Ummm, no.....The PHY provides the clocks, they are inputs to port.
-> > I don't know why an external clock would be set to that value.
+> I am evaluating alternatives, but the only option I have so far found
+> is the MontaVista Hard Hat linux with their Real-Time Scheduler.
 
-Dan, Thank You!
-This cyptic comment (for me anyways) was the key to getting
-ethernet going on my fads850 board.  I now understand the ethernet
-clocks, and the parallel I/O ports much better than I did a few
-days ago.
+Is there a problem with this one?  Hard Hat worked great for me on an
+MBX821.
 
-And yes indeed, the baud rate generators are not needed at all;
-so now I'm leaving them alone all together.
+I used CDK 1.0 which includes hhl-ppc_8xx-kernel-2.2.13-3.noarch.rpm.
+I didn't have any hard realtime requirements, so I didn't bother to
+look at the realtime stuff (I believe that's in a separate patch anyway).
 
-> The only way that I could get a packet to go (otherwise I got a
-> TX Timeout) was by clocking SCC2 to one or two of the Baud Rate
-> Generators.  I've tried CLK4, and CLK1+CLK3.  It didn't work.
-> By this, I mean that right now I'm doing a:
->     immr->im_cpm.cp_sicr |= SICR_ENET_CLKRT;
-> Where SICR_ENET_CLKRT is:
-> #define SICR_ENET_CLKRT ((uint)0x00001300)  /* RCLK-BRG3, TCLK-BRG4 */
+The newer CDK 1.2 even comes with vi and other goodies - I can't
+see any reason not to use Hard Hat.
 
-What I needed to do and ended up doing was using CLK2 for the RCLK, and
-CLK4 for the TCLK; thusly:
-#define SICR_ENET_CLKRT    ((uint)0x00002f00)      /* RCLK-CLK2,
-TCLK-CLK4 */
+The only problem I had with the MBX was the lack of schematics (maybe
+someone at Motorola actually has them, but I was not able to locate
+that person).  If you're considering buying new boards, you might look
+at the Embedded Planet boards.
 
-Thanks again for everyones help.
-	-Dan
+-Jamie
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
