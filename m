@@ -1,18 +1,18 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from ftpbox.mot.com (ftpbox.mot.com [129.188.136.101])
-	by ozlabs.org (Postfix) with ESMTP id 313072BF22
+Return-Path: <clark@esteem.com>
+Received: from mail5.hsphere.cc (mail5.hsphere.cc [216.157.145.25])
+	by ozlabs.org (Postfix) with SMTP id 908CB2BF09
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Nov 2004 10:20:54 +1100 (EST)
-In-Reply-To: <20041109163726.30776.qmail@web53808.mail.yahoo.com>
-References: <20041109163726.30776.qmail@web53808.mail.yahoo.com>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <73CDD492-326F-11D9-9710-000393DBC2E8@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 9 Nov 2004 10:50:24 -0600
-To: "annamaya" <annamaya@yahoo.com>
+	Wed, 10 Nov 2004 12:05:30 +1100 (EST)
+Message-ID: <4191694C.60305@esteem.com>
+Date: Tue, 09 Nov 2004 17:05:16 -0800
+From: Conn Clark <clark@esteem.com>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
+References: <20041109195141.82111C1430@atlas.denx.de>
+In-Reply-To: <20041109195141.82111C1430@atlas.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8xx binaries running on a MPC82xx board
+Subject: Re: How much easier makes owning a BDI2000 things?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,42 +23,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-One of the main issues that occurs when trying to run applications from=20=
+Wolfgang Denk wrote:
+> In message <4190FE1F.4080105@esteem.com> you wrote:
+> 
+>>	Its worth it weight in gold bringing up custom boards the first time 
+>>and writing/debuging the boot rom. It allows you to change register 
+> 
+> 
+> ... or when debugging the Linux kernel, device drivers and especially
+> RTAI real-time modules (because you can really freeze the CPU  state,
+> including timers etc.).
+> 
+> 
+>>	We haven't used ours much for debugging once things were up and 
+>>running(we have fallen back to using printk statements for debugging). 
+>>Though it can be used for that and some core kernel developers do use 
+>>it. (probably for debugging the printk code of the kernel  ;-)  )
+> 
+> 
+> Seems you never had to deal with any time critical problems, then.
+> 
 
-8xx to 82xx is dealing with the difference in cache line size.  If code=20=
+	I have, however I used I/O bits and an Oscilliscope ;-)
 
-is written properly this difference will be invisible to the user.  It=20=
+> 
+> Best regards,
+> 
+> Wolfgang Denk
+> 
+Best Regards
 
-might be that 8xx code is not as optimal on 82xx because of it.
+-- Conn Clark
 
-Also since you are going from 8xx -> 82xx your applications most likely=20=
+*****************************************************************
+Give a man a match and you heat him for a moment. Set him on fire
+and you'll heat him for life.
+*****************************************************************
 
-are all integer code.  Going from 82xx -> 8xx may not be as successful.
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
 
-- kumar
-
-On Nov 9, 2004, at 10:37 AM, annamaya wrote:
-
-> I was under the assumption that the MPC8xx core was
->  different from the MPC82xx core (the 603e?). But I was
->  surprised to find that the MPC8xx binaries were
->  running fine on a MPC82xx binaries, even if they were
->  dynamically linked and were linking to the MPC82xx
->  libraries. What's going on here? Can I just use the
->  8xx toolkit to work with the 82xx? There must be SOME
-> differences between these two architectures. Can
->  someone here explain this to me?
->
->
->
-> =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0
->  __________________________________
->  Do you Yahoo!?
-> Check out the new Yahoo! Front Page.
-> www.yahoo.com
->  =A0
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
->  Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Stock Ticker Symbol				ELST
