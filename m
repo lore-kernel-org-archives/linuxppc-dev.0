@@ -1,45 +1,41 @@
-To: =?iso-8859-1?q?Michel_D=E4nzer?= <daenzer@debian.org>
-Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
 Subject: Re: PREEMPT on PPC
-References: <Pine.LNX.4.44.0403261442210.3900-100000@opal.biophys.uni-duesseldorf.de>
-	<1080329240.17435.293.camel@thor.asgaard.local>
-From: Mathieu Segaud <matt@minas-morgul.org>
-Date: Sat, 27 Mar 2004 10:14:26 +0100
-In-Reply-To: <1080329240.17435.293.camel@thor.asgaard.local> (Michel
- =?iso-8859-1?q?D=E4nzer's?= message of "Fri, 26 Mar 2004 20:27:20 +0100")
-Message-ID: <871xneabyl.fsf@minas-morgul.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <daenzer@debian.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+In-Reply-To: <1080201697.1217.3.camel@gaston>
+References: <1080197240.1210.2.camel@gaston>
+	 <1080201697.1217.3.camel@gaston>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <1080399924.2514.14.camel@thor.asgaard.local>
+Mime-Version: 1.0
+Date: Sat, 27 Mar 2004 16:05:24 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Dänzer <daenzer@debian.org> writes:
-
-> On Fri, 2004-03-26 at 18:48, Michael Schmitz wrote:
->>
->> Works fine here on 2.6.5-rc2-ben0 . Including disk suspend.
+On Thu, 2004-03-25 at 09:01, Benjamin Herrenschmidt wrote:
+> On Thu, 2004-03-25 at 17:47, Benjamin Herrenschmidt wrote:
+> >
+> > I've start looking into the various issues of running CONFIG_PREEMPT
+> > on ppc32. I found some problems, there may be more, but here's a first
+> > patch that should apply on a recent 2.6.x.
+> >
+> > I suggest if you want to try this out that you run with the various
+> > kernel debugging options enabled. Report me remaining problems.
 >
-> Have you hit swap with it? The problems with preempt usually only
-> started at that point here.
+> And here's an updated version of that patch that doesn't break
+> sleep on laptops.
 
-here I hit swap on my iBook2.2, and GCC gives ICE segfault every 5 minutes in a
-kernel compilation. And X does not last longer than one hour.
-Seems to be some other races.
+I appreciate a lot that you're working on this, but unfortunately, this
+patch doesn't seem to make any difference here. I still get random
+segfaults, weird behaviour in galeon, ... as soon as I hit swap. How can
+I provide useful debugging information?
+
 
 --
-Mathieu Segaud
+Earthling Michel DÃ¤nzer      |     Debian (powerpc), X and DRI developer
+Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
 
-"This, btw, is not something I would suggest you do in your living room.
- Getting a penguin to pee on demand is _messy_. We're talking yellow spots
- on the walls, on the ceiling, yea verily even behind the fridge. However.
- I would also advice against doing this outside - it may be a lot easier to
- clean up, but you're likely to get reported and arrested for public
- lewdness Never mind that you had a perfectly good explanation for it all."
-
- 	- Linus Torvalds on sprinkling holy penguin pee
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
