@@ -1,43 +1,59 @@
-Subject: Re: Linux on Force Computers CPCI-3750 eth drivers
-From: luca gambazzi <luca.gambazzi@epfl.ch>
-To: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20030329154326.GE5343@ip68-0-152-218.tc.ph.cox.net>
-References: <1048949739.5125.126.camel@shampoo.epfl.ch>
-	 <20030329154326.GE5343@ip68-0-152-218.tc.ph.cox.net>
-Content-Type: text/plain
-Message-Id: <1049456953.14675.53.camel@shampoo.epfl.ch>
-Mime-Version: 1.0
-Date: 04 Apr 2003 13:49:13 +0200
+Date: Fri, 04 Apr 2003 17:09:01 +0200
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: RE: dcbz works on 862 everywhere!
+In-reply-to: <IGEFJKJNHJDCBKALBJLLKEKBFLAA.joakim.tjernlund@lumentis.se>
+To: Dan Malek <dan@embeddededge.com>,
+	Till Straumann <strauman@slac.stanford.edu>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLIEMCFLAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+> > The current implementation relies on TLB Miss always setting EPN
+> > (and other hardware assist registers) correctly, and TLB Error
+> > relies on DAR being set correctly.  Everything works fine until
+> > you get a TLB Error on a dcbz/dcbt that doesn't properly update DAR.
+> > In this case EPN isn't set correctly either.
+>
+> I just want to point out(again) that TLB Miss caused by most of the
+> dcxx(dcbf, dcbi, dcbst, dcbz) instructions that end up in the slow path(DataAccess)
+> don't work with the current impl. since DAR isn't set. The code fragment below
+> will fix that(from my earlier patch). This won't affect the fast path at all
+> since it all of it can be in the slow path.
+>
+> +	/* Copy 20 msb from EPN to DAR since the dcxx instructions fails
+> +	 * update the DAR when they cause a DTLB Miss.
+> +	 */
+> +	mfspr	r21, MD_EPN
+> +	rlwinm	r21, r21, 0, 0, 19
+> +	mfspr	r20, DAR
+> +	rlwinm	r20, r20, 0, 20, 31
+> +	or	r20, r20, r21
+> +	mtspr	DAR, r20
+>
+> It is hard to end up in slow path for kernel space addresses, but
+> it's not impossible I guess. Comments?
 
-i'm still trying to bild a running linux kernel for a Force Computers
-CPCI-3750.
+hmm, no response from the maintainer(s). You don't agree?
 
-I've got one more error, the ethernet card doesn't work.
-is a Digital DS21143 Tulip
+Did another test. I tagged DAR with a bad address(0xdead0000) in
+the TLB Miss handler(after the mtspr MD_RPN, r20) shortly before
+rfi.
 
-i've installed the kernel drivers (i've tried with 2.4 and 2.5
-penguinppc kernel tree), and the drivers found in
-http://sourceforge.net/projects/tulip, but the error is always the same.
+Now the kernel won't boot. It turns out it's consistent_alloc that is
+doing a invalidate_dcache_range(). According to a comment, memory is allocated
+from the vmalloc memory space. Doing a invalidate_dcache_range() on this memory
+causes a DTLB error with the change bit cleared and since DAR isn't set by
+dcbi, linux hangs.
 
-NETDEV WATCHDOG: eth0: transmit timed out
+Clearly, the DTLB exeception procedure still is buggy.
 
-here can you find a bootlog (kernelboot.txt), the tcpdump on my pc, and
-the .config file I used in this case (config_2_5_66.txt)
-
-http://lsa1pc32.epfl.ch/~gamba/robox/
-
-Maybe somebody has experence with this kind of error and can help me.
-
-Thanks a lot
-Luca Gambazzi
-
-PS Tom: I don't find the .config file who caused the crash I've posted
-last week, i'll search in my pc, sorry
+   Jocke
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
