@@ -1,68 +1,40 @@
-Date: Mon, 28 Jun 2004 16:31:19 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 2.5 bk tree on 8xx board ... so close
-Message-ID: <20040628233119.GE28128@smtp.west.cox.net>
-References: <Pine.LNX.4.60.0406281743170.4213@localhost.localdomain>
-Mime-Version: 1.0
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.60.0406281743170.4213@localhost.localdomain>
+Message-ID: <16609.11061.282732.479208@cargo.ozlabs.ibm.com>
+Date: Tue, 29 Jun 2004 18:41:25 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Bob Doiron" <bob.doiron@amirix.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Possbile bug in hashtable.S : add_hash_page
+In-Reply-To: <NBBBIKIPCKOLLCLIHBIMMEPNEBAA.bob.doiron@amirix.com>
+References: <NBBBIKIPCKOLLCLIHBIMMEPNEBAA.bob.doiron@amirix.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Jun 28, 2004 at 05:48:07PM -0400, Robert P. J. Day wrote:
+Bob Doiron writes:
 
->   after messing with the kernel config of the latest "bk pull", and
-> building a new kernel and ramdisk, i got:
->
-> RAMDISK: Compressed image found at block 0
-> VFS: Mounted root (ext2 filesystem).
-> Mounted devfs on /dev
-> Freeing unused kernel memory: 60k init
-> Configuring localhost networking ...
-> SIOCSIFADDR: No such device   (ignore, i tried to configure eth0)
-> Mounting /proc filesystem ...
-> Mounting /tmp filesystem ...
-> There are no /dev/mtdblock devices here, aborting.  (no, not really)
-> Clearing /var/log/msgs and starting syslogd ...
-> I found portmap, so I'll start it now ...
-> I found telnetd, so I'll start it now ...
-> Bailing for testing purposes.
->
->
-> BusyBox v1.00-pre10 (2004.06.24-
->
-> ... and hang.
->
-> so, from the above, i got
->
-> 1) localhost networking configured
-> 2) /proc mounted
-> 3) /tmp (tmpfs) mounted
-> 4) syslog, portmap and telnet starting
-> 5) an exit from the startup script since i wanted to keep things
->    simple
->
-> at that point, /etc/inittab has the line:
->
-> ::respawn:-/bin/sh
->
-> /bin/sh being, of course, a link to busybox.  i'm not sure what to
-> make of the partial output, perhaps some problem with the serial or
-> console port that the shell is trying to use.  so i guess it's on to
-> poking around the console port, see if that's the issue.
->
-> getting so close ...
+> However - r1 remains unchanged within the function. As it stands, it seems
+> that an interrupt could come along and scrible on our return address by
+> using the unchanged stack pointer. What I've been seeing is that when under
 
-Which serial driver did you use?  For me 8xx_UART does not work, but
-CPM_UART will (it's still not quite correct, I have to config in both
-SMC1 and SCC1 to get SMC1 to work, but I'm burried under a bunch of
-other stuff right now).
+No - if an interrupt happens, it should decrement the stack pointer
+before writing to the stack.  An interrupt should never modify
+anything at or above the current stack pointer.
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+> heavy interrupt load (nfs mount kernel compile for example) my ppc gets
+> stuck in a "here: jump here" loop right at the blr instruction listed above.
+> Inspecting the stack @ 4(r1) showed that it did in fact have the address of
+> the blr instruction there, which led me to beleive that it is getting
+> corrupted by an interrupt. Simply changing the "4" offset in 4(r1) to 12
+> makes for a rock stable kernel, but it's a horrific hack.
+
+Well, it might be getting corrupted by an interrupt, in which case the
+most likely cause is some code using a local array variable and
+accessing outside the bounds of the array.  It's hard to see what that
+code would be doing to put the address of the blr in that word of
+memory though.
+
+Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
