@@ -1,33 +1,35 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: Arturo Nunez <artnpp@cs.ucf.edu>
-Message-Id: <200103130106.UAA18070@iris.cs.ucf.edu>
-Subject: Error Compiling Embedded 860
-To: linuxppc-embedded@lists.linuxppc.org (ppc)
-Date: Mon, 12 Mar 2001 20:06:40 -0500 (EST)
-MIME-Version: 1.0
+Date: Mon, 12 Mar 2001 19:29:09 -0800
+From: David Schleef <ds@schleef.org>
+To: Stefano Coluccini <s.coluccini@caen.it>
+Cc: Oliver Brown <obrown@adventnetworks.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 2.5 Kernel Tree
+Message-ID: <20010312192909.B8328@stm.lbl.gov>
+Reply-To: David Schleef <ds@schleef.org>
+References: <CD5CA14300A9D54A8D13D58CD3C87B42294BDF@advcorp-exc01.advent.com> <NDBBIFIMCKPOADMAJOKMIEPNCPAA.s.coluccini@caen.it>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <NDBBIFIMCKPOADMAJOKMIEPNCPAA.s.coluccini@caen.it>; from s.coluccini@caen.it on Mon, Mar 12, 2001 at 05:54:20PM +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello:
-	I have already installed :
+On Mon, Mar 12, 2001 at 05:54:20PM +0100, Stefano Coluccini wrote:
+>
+> >
+> > What is the host address (and port?) for the 2.5 LinuxPPC tree?
+> >
+>
+> bk clone bk://bitkeeper.fsmlabs.com:5005 linux_2_5
+>
+> Stefano.
 
-	- binutils-2.10.91.0.4
-	- gcc-2.95.2
-	- linuxppc_2_4 (from Bitkeeper)
+And nightly (weekly, *ly) patches/images?
 
-	But when I try to compile the Kernel for a
-	- 8xx Processor Type ( I have a 860)
-	Doesnt compile ..
-	The error I may see is:
-	-realpath(../8xx_io) failed, No such file or directory
-	Ok Seems to be that doesnt fin the File... But I already have..
-	Any Idea about the Problem ??
 
-	Regards
 
-	Arturo Nunez
+
+dave...
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
