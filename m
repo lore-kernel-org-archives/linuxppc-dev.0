@@ -1,56 +1,60 @@
-Date: Wed, 20 Mar 2002 01:03:02 +0100 (CET)
-From: Gabriel Paubert <paubert@iram.es>
 To: Tom Rini <trini@kernel.crashing.org>
 Cc: "Mark A. Greer" <mgreer@mvista.com>,
-	<linux-galileo@source.mvista.com>, <wd@denx.de>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: EV-64260-BP & GT64260 bi_recs
-In-Reply-To: <20020319224420.GO3762@opus.bloom.county>
-Message-ID: <Pine.LNX.4.33.0203200100150.15761-100000@gra-lx1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: EV-64260-BP & GT64260 bi_recs 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 19 Mar 2002 16:58:15 MST."
+             <20020319235815.GU3762@opus.bloom.county>
+Date: Wed, 20 Mar 2002 01:24:27 +0100
+Message-Id: <20020320002432.336DD109F3@denx.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 19 Mar 2002, Tom Rini wrote:
+In message <20020319235815.GU3762@opus.bloom.county> you wrote:
+>
+> > The systems I see shipping in the next 6 months or so will  be  based
+> > on 2.4 kernel; I think we should define this feature rather sooner or
+> > later to try it out and get it right.
+>
+> Yes, but the place to work on things isn't 2.4, it's 2.5.
 
->
-> On Tue, Mar 19, 2002 at 02:56:14PM -0500, Mark A. Greer wrote:
->
-> > I like what Michael has done but want to add more and change the
-> > BI_GT64260_ETH_CFG to a more generic BI_ETH_CFG.
->
-> I don't know about this.  Why?  From what I can tell, this is something
-> that will be useful for 8xx/8260, but would require changing the driver
-> to know about this, and it's currently over bd_t, and I'd rather leave
-> it for now.
->
-> > New (and [pretty much] generic):
-> > --------------------------------
-> >   BI_MEMSTART -- mem start
->
-> GT-64260 doesn't use this, does it?  We'll need this for Nubus and other
-> discontig memory situations, but not right now (except for APUS).
->
-> >   BI_INTFREQ -- internal CPU frequency??
-> >   BI_BUSFREQ -- CPU bus freqency?
-> >   BI_ETH_CFG -> struct with following:
-> >    -- mac addr
-> >    -- hdx/fdx; 10/100/1000/...; OR autonegotiate
-> >    -- phy addr
-> >    -- some bytes for driver specific info (e.g., on gt64260, is_rmii)
->
-> Looks fine, see above of course...
+OK. Then stop all efforts on 2.4 _now_ ???
 
-Don't forget timebase/decrementer frequency, it is not always easy to
-measure and very important for timekeeping.
+> > The command line is pretty limited in leght, and there are many  more
+> > "interesting"  things  you want to pass to proprietary drivers etc. I
+> > rather had common stuff like this somewhere else...
+>
+> Yes, but the question isn't what we'd rather do, it's what we need to do
+> for right now, and what we need to do for the future.  This does make
+> sense for the future, but not for right now.
 
-Still fighting lack of reproducible timebase frequency measurements at
-boot on some boards. Not very actively since I've got more urgent
-problems and NTP ends up hiding most of it.
+We are changing the interface from bd_info to bi_recs.
 
-	Gabriel.
+We had the baudrate in  bd_info,  and  nobody  complained.  I'm  just
+asking  to preserve the current state with as minimal changes visible
+to the user as possible.
 
+It is _you_ who is trying to start some cleanup removing things  that
+have "always" been there!
+
+
+> Right NOW we have something which works for most of the problems.  What
+> Mark is talking about would be adding in a few more defines to
+> include/asm-ppc/bootinfo.h and using them.  Not sort-of implementing
+> what's been talked about and then do something better later.
+
+If we replace  bd_info  now,  we  should  keep  all  the  entries  it
+provided, right?
+
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I used to be indecisive, now I'm not sure.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
