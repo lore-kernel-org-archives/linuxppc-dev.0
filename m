@@ -1,49 +1,56 @@
-To: brian.auld@adic.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linuxppc_2_4_devel from denx vs. bitkeeper 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 21 Feb 2003 12:55:13 PST."
-             <995FF289C9D69747A09E42992644595405B2367F@penguin.adic.com>
-Date: Sat, 22 Feb 2003 21:19:01 +0100
-Message-Id: <20030222201906.E598CC6E0D@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: brian.auld@adic.com
+Message-ID: <995FF289C9D69747A09E42992644595405B23680@penguin.adic.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Kernel Preemption patch
+Date: Sun, 23 Feb 2003 14:28:22 -0800
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Brian,
+Hello,
 
-in message <995FF289C9D69747A09E42992644595405B2367F@penguin.adic.com> you wrote:
->
-> How do you manage CVS and bk together? In other words, how do you pull
-> bitkeeper updates into your CVS controlled source tree?
+Has anyone successfully applied and run the linux kernel preemption patch on
+a 2.4.20 kernel. I have the following:
 
-Simply:  I  don't.  I  tried  several  ways,  but  probably  I  don't
-understand  enough of BK to make it work reliably. So I just generate
-patches between certain BK versions, which I  then  import  into  our
-CVS.
+- Latest Denx kernel (2_4_devel) running on 440GP ebony
+- 'preempt-kernel-rml-2.4.20-1.patch' applied to my kernel source
+  (I manually corrected a couple of fails and double checked a few
+   'successfully applied with fuzz' instances when applying the patch).
+- Kernel compiled with 'Kernel preemption =y' in make oldconfig
 
-> However, I ran a test to make sure this would work and ran into a problem.
-> This is what I tested:
+When I try to boot this kernel, I get the following error:
 
-I tried similar things, and always  ran  into  some  cases  where  an
-automatic approach would fail.
+<------- snipped
+Kernel command line: root=/dev/nfs rw
+nfsroot=172.16.77.152:/opt/eldk/ppc_4xx
+ip=172.16.77.155:172.16.77.152::255.255.255.0:EBONY-2::off
+kernel BUG at irq.c:575!
+Oops: Exception in kernel mode, sig: 4
+NIP: C0002B04 XER: 00000000 LR: C0002B04 SP: C0125F50 REGS: c0125ea0 TRAP:
+0700    Not tainted
+MSR: 00001030 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c0124060[0] 'swapper' Last syscall: 0
+last math 00000000 last altivec 00000000
+PLB0: bear= 0x00008000 acr=   0x9b000000 besr=  0x00000000
 
-> Any words of wisdom??
+GPR00: C0002B04 C0125F50 C0124060 00000019 00001030 00000001 00000020
+C0170000
+GPR08: 000001D8 00000002 00000000 C0125E70 C012A8A8 71000000 07FE7300
+007FFC73
+GPR16: 00000000 00000001 007FFC00 FFFFFFFF 00001032 C0125F60 00000000
+C00017CC
+GPR24: C0002AA0 007FFB90 00000E00 007FFC73 007FFC00 00000000 00000000
+007FFB90
+Call backtrace:
+C0002B04 C00017CC C0133504 C0000224
+Kernel panic: Attempted to kill the idle task!
+In idle task - not syncing
+ <0>Rebooting in 180 seconds..
+---------> the end
 
-Sorry, I'm neither a BK nor a CVS guru (but I manage  to  do  my  job
-with CVS).
-
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Faith may be defined briefly as an illogical belief in the  occurence
-of the improbable.                                    - H. L. Mencken
+-- Brian
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
