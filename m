@@ -1,28 +1,45 @@
-Message-ID: <37E582C0.D30E9F25@ctam.com.au>
-Date: Mon, 20 Sep 1999 10:41:37 +1000
-From: Brendan Simon <bsimon@ctam.com.au>
-Reply-To: bsimon@ctam.com.au
+Message-ID: <37E5B2EA.9C266862@netx4.com>
+Date: Mon, 20 Sep 1999 00:07:06 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Problems with initrd on linux-2.3.18
-References: <199909171404.QAA25414@denx.local.net> <37E1F2FF.BAA72804@broadlink.com>
+To: Claude Robitaille <crobitaille@videotron.ca>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Compiling 2.3.18
+References: <Pine.LNX.4.10.9909191611110.1836-100000@localhost.localdomain>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Scott Wood wrote:
+Claude Robitaille wrote:
 
-> On a somewhat related sidenote, is there any work being done to access
-> FLASH from within Linux, either as a file or a filesystem (or anything)?
-> It would be *very* useful to read/store machine-specific configuration data
-> IP address, etc) and/or update the kernel/initrd boot image remotely.
-> I hear uC/Linux has a FLASHFS for certain Motorola ColdFire CPU boards.
+> I have no success at compiling (actually just doing make dep) the
+> 2.3.18 kernel source I downloaded from linuxppc.cs.nmt.edu...
 
-I don't know the specifics but maybe "romfs" is what you are looking for ?
-There are some docs in the linux documentation directory.
+I'll download it and take a look, although this is now out
+of date with the CVS tree.
 
-Brendan Simon.
+> I downloaded 2.3.18 from edge.kernelnotes.org and I am able to compile
+> (after fixing one of the Config.in file).
 
+This looks like a mirror, so it is likely up to date.  What
+was the problem with Config.in?
+
+> Could it be a problem with Dave's tar (as for fadsrom.tar)?
+
+I don't understand why some people have problems with this file.
+I continually download and extract it just fine on any of my
+Linux machines.  What are you using?
+
+
+> I am targetting a board with an MPC8xx, does the source from the
+> embedded tree at linuxppc.cs.nmt.edu better....
+
+I usually put something there as a convenience for people that
+can't get CVS access through a fire wall.  It represents my
+source tree, which is known to build, just before I make CVS commits.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
