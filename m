@@ -1,28 +1,32 @@
-Date: Thu, 4 Feb 1999 17:11:24 +1100
-Message-Id: <199902040611.RAA04100@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: brad@pht.com
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <Pine.LNX.3.95.990203225338.8064A-100000@pacific.pht.com>
-	(message from Brad Midgley on Wed, 3 Feb 1999 22:56:21 -0700 (MST))
-Subject: Re: rsync kernel is incomplete
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.LNX.3.95.990203225338.8064A-100000@pacific.pht.com>
+Message-Id: <36B96117.8806C50E@pop.agri.ch>
+Date: Thu, 04 Feb 1999 09:58:00 +0100
+From: Andreas <toa@pop.agri.ch>
+Mime-Version: 1.0
+To: "linuxppc-user@lists.linuxppc.org" <linuxppc-user@lists.linuxppc.org>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Compiling option for LinuxPPC
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Brad Midgley <brad@pht.com> wrote:
+Hi all,
 
-> could you open drivers/uusbd?
-> 
-> rsync -avz samba.anu.edu.au::linux-pmac-devel /mnt/nfs/linux
->  [...]
-> receiving file list ... opendir(drivers/uusbd): Permission denied
+does under LinuxPPC a compiler option /preprocessor symbol exist in the manner
+as it does under FreeBSD?
 
-Oops, sorry, fixed now.
+i.e. __FreeBSD__ or in LinuxPPC __LinuxPPC__??
 
-Paul.
+Thanks for any hints,
+
+Andreas
+-- 
+------------------
+| Andreas Tobler								
+| CH-8004 Zuerich	
+| E-mail: toa@pop.agri.ch		
+------------------------------------------
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
