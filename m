@@ -1,22 +1,37 @@
-Message-ID: <391B00CC.AB24D4A6@fliegl.de>
-Date: Thu, 11 May 2000 20:49:48 +0200
-From: Deti Fliegl <deti@fliegl.de>
+Date: Fri, 12 May 2000 08:37:05 +0200 (MET DST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: compile problem with current bk tree
+Message-ID: <Pine.GSO.4.10.10005120835040.2055-100000@dandelion.sonytel.be>
 MIME-Version: 1.0
-To: Rolf Liu <rolfl@sc23.sc.mcel.mot.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: who has an opinion on porting source file to Windows ?
-References: <00d901bfbb08$ce61c670$bf0102c8@dell191.sc.mcel.mot.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Rolf Liu wrote:
->
-> Hi, all,
-> I am trying to compiling the kernel 2.2.13 under the Windows NT platform.
-Genius guy! Maybe you are interested in getting my Linux port for
-CPU-less coffee makers. You can get it from www.linux4percolators.com
+| make[2]: Entering directory `/extra/tmp/linuxppc_2_3/kernel'
+| gcc -D__KERNEL__ -I/extra/tmp/linuxppc_2_3/include -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -fno-strict-aliasing -D__powerpc__ -fsigned-char -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring -DEXPORT_SYMTAB -c signal.c
+| signal.c: In function `do_sigaction':
+| signal.c:915: fixed or forbidden register 68 (0) was spilled for class CR0_REGS.This may be due to a compiler bug or to impossible asm statements or clauses.
+| cpp: output pipe has been closed
 
-Deti
+| ccallisto$ gcc -v
+| Reading specs from /usr/lib/gcc-lib/powerpc-linux/egcs-2.91.66/specs
+| gcc version egcs-2.91.66 Debian GNU/Linux (egcs-1.1.2 release)
+| callisto$
+
+Any suggestions?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
