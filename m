@@ -1,19 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mailout05.sul.t-online.com (mailout05.sul.t-online.com
-	[194.25.134.82]) by ozlabs.org (Postfix) with ESMTP id 63FC967A46
+Return-Path: <lpetras@netspace.net.au>
+Received: from mail.netspace.net.au (whirlwind.netspace.net.au [203.10.110.76])
+	by ozlabs.org (Postfix) with ESMTP id 00EBC67A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  5 Feb 2005 04:21:53 +1100 (EST)
-To: Peter Asemann <peter.asemann@web.de>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 04 Feb 2005 16:26:07 +0100."
-	<4203940F.2010109@web.de>
-Date: Fri, 04 Feb 2005 18:21:39 +0100
-Sender: wd@denx.de
-Message-Id: <20050204172144.738C0C108D@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: eldk: compiling linux for custom hardware 
+	Sat,  5 Feb 2005 04:33:25 +1100 (EST)
+Received: from supernova (220-253-48-46.VIC.netspace.net.au [220.253.48.46])
+	by mail.netspace.net.au (Postfix) with ESMTP id 3103B10CB4F
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat,  5 Feb 2005 04:13:01 +1100 (EST)
+From: "Linas Petras" <lpetras@netspace.net.au>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Sat, 5 Feb 2005 04:13:01 +1100
+Message-ID: <000001c50adc$c814dae0$6401a8c0@supernova>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Problems with Serial Port on IceCube 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,40 +25,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <4203940F.2010109@web.de> you wrote:
-> I'm going to compile embedded power pc linux for a custom hardware.
-> I use the Denx ELDK.
-> The Linux Kernel configuration (make menuconfig) asks what machine type
-> to compile Linux for.
-> So I have the problem that I do not know which option to choose ("none"
-> is not an option in the dialogue) and that I also do not know what
+Hi All
 
-You will have to port the  Linux  kernel  for  your  hardware,  which
-includes adding appropriate entries to the config menues.
+I'm running Sylvain Munaut's version of 2.6.10-rc2 with DENX's 3.1 ELDK =
+as
+the cross
+compile tools with nfs mounted root filesystem and I seem to have a =
+probelm
+when I'm=20
+connected to the "icecube" development boards serial port.
 
-> choosing one of the existing options actually changes behind the scenes.
+I get the u-boot 1.1.3 bootrom messages from the serial port on the
+"icecube" and can=20
+boot the kernel using the serial port but I don't get any messages after =
+the
+early=20
+boot message "arch: exit". It appeared to me that the board was booting =
+so I
+tried to=20
+telnet via the network to the board and this worked fine. So the kernel =
+is
+running, I=20
+just don't get the "normal" bootup messages from the kernel.
 
-It will most certainly result in a configuration which is  wrong  for
-your board.
+If I use the standard DENX 2.4.25 kernel I get all the message going to =
+the
+serial=20
+port OK.
 
-> I'd like a Linux to drop out that supports my MPC875 chip, works with
-> the LXT 970A ethernet PHY chip and (if possible) the ISP1301
-> USB-on-the-go USB chip the board has and supports a serial terminal via
-> SCC4 via the RXD4/TXD4 signals.
+Any ideas of whats going on ????? Is their a problem with the console
+support in=20
+Sylvain's port or something in the "standard" init scripts that come =
+with
+DENX's ELDK=20
+3.1 when used with a 2.6.xx kernel or have I missed something obvious?
 
-You will have to create a port (more exactly: a configuration) of the
-Linux kernel for your board.
-
-
-[Note: this has nothing to do with the DENX ELDK -- your  subject  is
-somewhat misleading.]
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A morsel of genuine history is a  thing  so  rare  as  to  be  always
-valuable.                                          - Thomas Jefferson
+Linas Petras
+------------
+I know not with which weapons World War III will be faught, but World =
+War IV
+will be faught with sticks and stones. - Albert Einstein.
