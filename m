@@ -1,27 +1,27 @@
-Message-Id: <200010121341.IAA20116@lists.linuxppc.org>
-From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
-Reply-To: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-Cc: Josh Huber <huber@mclx.com>,
-        Linux/PowerPC Devel List
-	 <linuxppc-dev@lists.linuxppc.org>
-Date: Thu, 12 Oct 2000 09:41:22 -0400
-Content-Type: text/plain;
-	charset=us-ascii
-Subject: Re: dual head r128
-Mime-Version: 1.0 (Apple Message framework v337)
+Date: Thu, 12 Oct 2000 15:45:20 +0200 (CEST)
+From: Xavier Grave <grave@ipno.in2p3.fr>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4 kernel doesn't allocate resource for my PCI Board 
+In-Reply-To: <Pine.LNX.4.10.10010121326370.373-100000@cassiopeia.home>
+Message-ID: <Pine.LNX.4.21.0010121543220.10161-100000@ipnpcu5>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Thu, 12 Oct 2000, Geert Uytterhoeven wrote:
+> I assume you are using kernels from ftp.*.kernel.org? These don't have calls
+> to pci_read_bridge_bases() in any of the PPC specific files.
 
-> the patch breaks the calculations for the x86 cards
-> (thats the reason why its not in the xfree cvs), so don't expect to get
-> sane values for the x86 card. (aty128fb has the same problem as well btw)
+I've tryed a few from ftp.kernel.org, but also with the kernel from
+fsmlabs.com
 
-Why?  This should not be unless the bios on the x86 card never initializes the card in any way.  If the bios does do some basic initialization, the patch should work just as well for an x86 card as a ppc one if the main clock rate is the same.  If the main clock rate is different, as long as you can find out what it is, reading and calculating the  timings from those register settings really should work generically, shouldn't it?
+xavier
 
-Kevin
+33 (0) 1 69 15 79 59
+De chacun selon ses forces, a chacun selon ses besoins
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
