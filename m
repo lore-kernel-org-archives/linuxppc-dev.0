@@ -1,39 +1,64 @@
-Message-ID: <39860A50.E423F099@embeddededge.com>
-Date: Mon, 31 Jul 2000 19:22:56 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <39861265.FFE62C6F@mvista.com>
+Date: Mon, 31 Jul 2000 16:57:25 -0700
+From: Johnnie Peters <jpeters@mvista.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+To: Iain Sandoe <iain@sandoe.co.uk>
+CC: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Michel Dnzer <daenzerm@student.ethz.ch>,
+        Tony Mantler <nicoya@apia.dhs.org>,
+        Tom Rini <trini@kernel.crashing.org>, Dan Malek <dan@netx4.com>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: CONFIG_PPC != Mac
-References: <Pine.LNX.4.10.10007292003430.3886-100000@cassiopeia.home>
-Content-Type: text/plain; charset=us-ascii
+References: <200007301648.RAA16700@hyperion.valhalla.net>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
+Iain Sandoe wrote:
 
-> Given the flexibility I was used to on m68k[*], I find this a pity as well...
+> On  Sun, Jul 30, 2000,  Geert Uytterhoeven wrote:
+> > On Sun, 30 Jul 2000, Michel [iso-8859-1] Dänzer wrote:
+> >> Geert Uytterhoeven wrote:
+> >> > The Master PPC Penguin decided to no longer allow to build machine specific
+> >> > kernels, but treat PowerMac/PReP/MTX/CHRP as one big machine type
+> >> > (`CONFIG_ALL_PPC').
+> [snip]
+> > Personally I'd more like a configuration where you can select whatever you
+> > want of
+> >
+> >   - PowerMac (CONFIG_PMAC)
+> >   - PReP (CONFIG_PREP)
+> >   - MTX (CONFIG_MTX)
+> >   - CHRP (CONFIG_CHRP)
+> >   - Gemini (CONFIG_GEMINI)
+> >   - EST8260 (CONFIG_EST8260)
+> >   - APUS (CONFIG_APUS)
+> >
+> > with of course some extra logic to prevent illegal combinations.
+>
+> This would definitely get my vote too.  There are too many cases where you
+> can enable conflicting build options at present - it causes much
+> frustration.
+>
+> Iain.
+>
 
+There are also other considerations.  While there is almost always enough memory to
 
-Well, it looks like I opened up a big can of worms...........
+carry the extra functionality it is not always the case.  Some boards are being
+booted
+out of rom and may still only have a limited amount of space to hold the kernel.
+In any
+case do we really want to wast the space.
 
-I guess this is something that will get discussed as part of
-"restructuring" the PowerPC source tree when we jump into 2.5.xx.
-However, I need some kind of a simple solution that will help me with
-the embedded processors that will no longer build in the 2.4.xx
-kernel.  I know there must be some embedded Linux m68k boards that
-have a similar challenge that I may be able to use for insight.
+As Dan stated it also causes a lot of extra work on ports to new boards that
+probably
+do not need all the configuration parameters for the pmacs.
 
-What I would like to do in the short term, is create a CONFIG_PPCMAC
-that has the sole purpose of including the drivers/macintosh software,
-or perhaps overload the CONFIG_ALL_PPC to do this.  Perhaps I will
-look at what CONFIG_PPC really means, and not define this for embedded
-boards (although this sounds wrong).
+Johnnie
 
-Thanks for the comments.  We'll be back :-).
+MontaVista Software, Inc.
 
-
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
