@@ -1,87 +1,105 @@
-Subject: Re: PCI scanning and devices initialization
-To: "Sylvain Munaut <tnt" <tnt@246tnt.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF379F51C9.E590A00B-ONC1256EF6.003EC05A@uk.marconicomms.com>
+Subject: RE: PCI scanning and devices initialization
+To: "Juergen.Beisert" <Juergen.Beisert@windriver.com>
+Cc: "tnt" <tnt@246tnt.com>,
+	"Stefano.Gaiotto" <Stefano.Gaiotto@marconi.com>,
+	"linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <OFF26F8F49.DBE7C455-ONC1256EF6.003F44A2@uk.marconicomms.com>
 From: "Stefano Gaiotto" <Stefano.Gaiotto@marconi.com>
-Date: Fri, 20 Aug 2004 13:30:49 +0200
+Date: Fri, 20 Aug 2004 13:40:26 +0200
 MIME-Version: 1.0
 Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks Sylvain,
+Thanks Juergen,
 
-I examinated board schematics and I found that pin "IDSEL" of the bridge
-PCI/PCMCIA (PCI1410) in wired (at least in the schematics...) to line AD12
-of data/address bus. (What's device address? 12? or 2? or 16?)
+I don't know exactly what is a "PCI to anything" bridge, anyway u-boot
+bridge (60x/PCI) initilaization code seems to be almost identical to that
+in Linux.
+Anyway, I get the same result both in u-boot and Linux...
 
-With the help of the hardware boys I want now to chek signal integrity
+
+Linux:
+
+# cat iomem
+80000000-9fffffff : PCI prefetchable memory
+a0000000-afffffff : PCI memory
+#
+# cat ioports
+00000000-00ffffff : PCI I/O
+#
+# cat pci
+PCI devices found:
+  Bus  0, device   0, function  0:
+    Host bridge: Motorola MPC8265A/MPC8266 (rev 32).
+      Master Capable.  Latency=248.
+      Non-prefetchable 32 bit memory at 0x0 [0x1ffff].
+      Prefetchable 32 bit memory at 0x0 [0x3ffffff].
+#
+
+
+u-boot:
+
+...
+PCI Autoconfig: Memory region: [80000000-8fffffff]
+PCI Autoconfig: I/O region: [a0000000-afffffff]
+...
+
+
+
+=> pci
+Scanning PCI devices on bus 0
+BusDevFun  VendorId   DeviceId   Device Class       Sub-Class
+_____________________________________________________________
+00.00.00   0x1057     0x18c0     Bridge device           0x00
+00.00.01   0x1057     0x18c0     Bridge device           0x00
+00.00.02   0x1057     0x18c0     Bridge device           0x00
+00.00.03   0x1057     0x18c0     Bridge device           0x00
+00.00.04   0x1057     0x18c0     Bridge device           0x00
+00.00.05   0x1057     0x18c0     Bridge device           0x00
+00.00.06   0x1057     0x18c0     Bridge device           0x00
+00.00.07   0x1057     0x18c0     Bridge device           0x00
+=>
+
 
 Regards,
-      Stefano
+      Stefano Gaiotto
 
 
 
 
 
-Sylvain Munaut <tnt@246tnt.com> on 18/08/2004 14:54:43
+Juergen.Beisert@windriver.com on 18/08/2004 15:28:11
 
-To:    Stefano Gaiotto <Stefano.Gaiotto@marconi.com>,
-       "linuxppc-embedded@lists.linuxppc.org"
-       <linuxppc-embedded@lists.linuxppc.org>
-cc:
+To:    tnt@246tnt.com, Stefano.Gaiotto@marconi.com
+cc:    linuxppc-embedded@lists.linuxppc.org
 
-Subject:    Re: PCI scanning and devices initialization
+Subject:    RE: PCI scanning and devices initialization
 
 
-Stefano Gaiotto wrote:
+Hi,
 
->Dear colleagues,
->
->I'm trying to use a device connected to a PCI bus, more exactly a
->PCI/PCMCIA bridge
->with u-boot-1.1.1 and Linux (2.4.24 and 2.6.8) in a board with MPC8270.
->
->Both u-boot and Linux, during scanning procedure show me only the PCI
->bridge [1057/18c0] but I can't see the devices connected to the bus.
->
->I'm a novice with PCI bus and I'm not sure the board is good (is the first
->prototype) and so I'd like to know if scanning procedure should tell me
-the
->devices
->connected or I have to do some device initialization before I can see them
->during scanning.
->
->I suppose I should see them during scanning and then initialise them via
->PCI bus.
->
->If my assumption is true, shall I suppose my hardware is not good? Or
->anything else?
->
->
-Hi
+> Yes, there may be something wrong with your hardware.
 
-Yes, there may be something wrong with your hardware. I'm not familiar
-with the MPC8270 PCI code but your devices should show up during scan.
+This could only be _one_ reason
 
-At the PCI init, PCI devices don't yet have an address, so the host
-detects them using configuration cycles. Theses uses a different
-addressing scheme, using each address line as a kind of "chip select".
-So the devices know the host is "talking" to it just by looking at it's
-IDSEL line going asserted. If on your board the IDSEL isn't wired
-properly then it won't work. Hopefully if that's the case, you can just
-wire it by hand, it's not a high speed signal.
+> At the PCI init, PCI devices don't yet have an address, so the host
+> detects them using configuration cycles. Theses uses a different
+> addressing scheme, using each address line as a kind of "chip select".
+> So the devices know the host is "talking" to it just by
+> looking at it's
+> IDSEL line going asserted. If on your board the IDSEL isn't wired
+> properly then it won't work. Hopefully if that's the case,
+> you can just
+> wire it by hand, it's not a high speed signal.
 
-Also, I've come accross some simple FPGA implementation of PCI devices
-that just didn't respond to config ...
+Does the U-Boot PCI setup routine handles PCI devices behind a "PCI to
+anything" bridge? Sometimes simple code ignores bridges. Don't know the
+current U-Boot implementation. If not, there is no chance to access any
+devices behind it (even if the hardware is correct).
 
-
-Sylvain
-
-
-PS: I'm not a PCI expert and that's just my understanding. There is
-probably a lot of things that can go wrong.
+JB
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
