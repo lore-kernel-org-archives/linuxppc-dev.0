@@ -1,42 +1,33 @@
-Message-Id: <199903231631.LAA09001@mail-1.global2000.net>
-Date: Tue, 23 Mar 1999 11:31:30 -0500
-Subject: RE: HFS+ Support / Quick Question
-From: "AArthur" <arthur99@global2000.net>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="utf-8"
+Date: Tue, 23 Mar 1999 18:49:03 -0500 (EST)
+From: "David T. McWherter" <dtm@vramp.net>
+To: Darron Froese <darron@calgary.westworld.ca>
+cc: linuxppc-dev@lists.linuxppc.org,
+        linuxppc-ans-support@hellfire.dusers.drexel.edu
+Subject: Re: ANS Patches en route to the 2.2.x kernel?
+In-Reply-To: <199903230217.TAA11981@moses.odi.ca>
+Message-ID: <Pine.NEB.3.96.990323184611.16020B-100000@water.vramp.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->I was just wondering whether LinuxPPC 5.0, will be able to read and write to
->HFS Plus drives. I have had a look through your sites but could not find any
->info on this.
+> I've been trying to watch all of the recent kernel releases and ac patches
+> for signs of the ANS patches (video, ethernet, etc.) by David T. McWherter
+> and have been left unsatisfied.
+> 
+> Is there a way to look and see if various patches have been
+> sent/accepted/waiting in queue? I've grepped through some of the latest
+> patches without finding it....anyone know where it is and it's status?
 
-Nope. Don't count on HFS+ support in the near future, there is more
-important things to wait for in life.
+It's not in the pending queue, yet, as I've been too busy to 
+work on it up until now.  Within the week, I hope to work with
+G. Corville to get the patches into the queue...As they're 
+fairly stable, and no major updates are seemingly going to
+happen for a short while (at  least no updates from me -
+I'm working towards an installer and such, though.).
 
-It will not be ready for LinuxPPC 5.0, for certain.
-
-HFS+ support is underway, it will probably be at least a year before
-reliable HFS+ support will be useable. While the Darwin project is providing
-some answers on this, any work currently done is a extremely primitive. Some
-estimates say that Linux HFS+ support should be workable in the Summer of
-1999, at the earliest.
-
-Anyway, Mac OS 8.x's support of HFS+ is really bad, so I would stay away
-from HFS+ for a while. (HFS+ File Manger is emulated under Mac OS 8.x).
-That's why you see on MacFixit, that HFS+ benchmarks are slower then HFS
-benchmarks.
-
-You can continue to use a HFS disk to transfer data between the Mac OS and
-Linux for the mean time.
-
-Thanks,
-
-AArthur
-arthur99@global2000.net << Note Domain Change!
-
+-David
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
