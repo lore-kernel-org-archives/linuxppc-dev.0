@@ -1,59 +1,26 @@
-Message-ID: <3AD1FD10.B410748F@mvista.com>
-Date: Mon, 09 Apr 2001 14:18:56 -0400
+Message-ID: <3AD1FDDE.35D53285@mvista.com>
+Date: Mon, 09 Apr 2001 14:22:22 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: nunninger@web.de
-Cc: linuxppc-embedded List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Question about memorylocation of ramdisk
-References: <3AD1B573.457F6DC6@enst.fr>
+To: machael thailer <dony.he@huawei.com.cn>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: linuxppc MMU problems...
+References: <000b01c0c0dc$96cf9ae0$8021690a@huawei.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Stefan Nunninger wrote:
+machael thailer wrote:
+
+>       I want to know whether the ICache and DCache is enabled or disabled in
+> linuxppc kernel(2.4.3-pre4) and how can I do it (in which file)?
 
 
-> ..... Some time later the kernel
-> uncompresses the ramdisk and places it right behind the kernel in
-> memory. Thus the
-> uncompressed ramdisk reaches from 0x7d000 up to 0x47d000. However
-> this is clearly the location where the compressed ramdisk resides
-> which will be overwritten before being uncompressed completely.
-
-
-Not exactly....I _think_ it is supposed to work like this.
-
-When the kernel starts up, it "allocates" the area occupied by
-the compressed ram disk from it's available space before it does
-anything else.  The uncompressed ram disk is then stuffed into
-the file system buffer cache, which could be randomly scattered
-about memory in buffer cache size blocks.  These blocks are marked
-so they are always resident in the cache.  After this is done, the
-compressed ram disk area is placed back into the free page pool.
-
-
-> ...... I
-> can not put the binary file into flash though as I have only 512kB
-> of Flash available currently.
-
-...and if you could, you will discover the ramdisk is copied to
-RAM before the kernel is started.  This is because of the logic
-I described above about the kernel returning this space to the
-free page pool.  Pages of Flash in the page pool are not a good thing :-).
-
-
-> ...... I assume this is
-> due
-> to the problem described above.
-
-Probably not.  I use ramdisks greater than 4 MB quite often without
-trouble.  Since this is a custom board, you may want to ensure you
-don't have some memory related problems, like an incorrectly programmed
-memory controller.  It could be that your access patterns across
-some boundaries (like 4M or 8M or something) aren't actually to the
-area of part you assume.
-
+The caches are always enabled, and could be done in a variety of
+ways, sometimes even from the boot rom that starts the Linux kernel.
+It would help if you were a little more explicit about the processor
+and board you are using.
 
 
 	-- Dan
