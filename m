@@ -1,102 +1,68 @@
-Date: Tue, 25 Jun 2002 15:39:00 -0700
-From: Matt Porter <porter@cox.net>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Matt Porter <porter@cox.net>, Frank Rowand <frowand@mvista.com>,
+Message-ID: <3D192BDF.4050206@embeddededge.com>
+Date: Tue, 25 Jun 2002 22:50:07 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Matt Porter <porter@cox.net>
+Cc: Frank Rowand <frowand@mvista.com>,
 	linuxppc-dev@lists.linuxppc.org
 Subject: Re: Move kgdb init code?
-Message-ID: <20020625153900.B15298@home.com>
-References: <20020624221020.A14330@home.com> <3D1897FC.D7D7C5B2@mvista.com> <20020625135008.A15298@home.com> <3D18E933.7020402@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3D18E933.7020402@embeddededge.com>; from dan@embeddededge.com on Tue, Jun 25, 2002 at 06:05:39PM -0400
+References: <20020624221020.A14330@home.com> <3D1897FC.D7D7C5B2@mvista.com> <20020625135008.A15298@home.com> <3D18E933.7020402@embeddededge.com> <20020625153900.B15298@home.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jun 25, 2002 at 06:05:39PM -0400, Dan Malek wrote:
-> Matt Porter wrote:
->
-> > Actually, some ports have no virtual mapping prior to
-> > early_serial_init()
->
-> Ummmm....something doesn't seem right then.  The kernel has
-> to be mapped in order for it to be running at this time,  and
-> the I/O can actually move around.
+Matt Porter wrote:
 
-That should be "no serial port mapping prior to early_serial_init().
+> The only thing I was talking about was moving it toward the end
+> of setup_arch.  All _driver_ init is after that.
 
-> I did lots of this work to get kgdb, and more importantly xmon,
-> to initialize this early.  On the 8xx, the serial port is actually
-> moved at least three times as the VM and the driver initializations
-> are done.
+Hmmm.....why doesn't kgdb_map_scc call early_serial_init() instead
+of waiting for the 4xx platform setup to do that?  The purpose of
+kgdb_map_scc() is to do everything necessary to make the serial
+port accessible.  Is there something else done in platform specific
+setup that is needed?
+
+
+> I think we are talking two different things.  Kgdb does not work on
+> the vast number of 7xx/74xx designs with 16550's all at arbitrary
+> locations.  The ppc4xx_kgdb.c binding is non-functional is _devel
+> (relying on the old COM_PORT structure that is gone).
 >
-> Early in kgdb/xmon, they rely on the same mapping that is used by
-> the boot loader that brought the kernel to being.  If I can make this
-> work on 8xx, it should work on anything :-)  The 8xx can only do DMA
-> I/O, so it's particularly challenging to chase memory around that
-> can be used for these buffers.
->
->
-> > That doesn't seem to be the general purpose case, though.  When
-> > you have kgdb functionality in the kernel for functional board
-> > ports, later debug seems to be the general use of it.
->
-> You always want to start up kgdb as soon as possible.  It gives you
-> the opportunity to debug driver initialization.
+> You've got me confused Dan, where did I suggest removing a useful
+> feature?
 
-The only thing I was talking about was moving it toward the end
-of setup_arch.  All _driver_ init is after that.
+Well, it used to be a useful feature :-)  If people keep breaking
+kgdb by making changes it relies upon for proper operation, that
+should get fixed :-)
 
-> > It would seem that moving the default location has more general
-> > usefulness for existing board ports.
->
-> Huh?  All of the existing board ports use it as it is today.  How
-> can you say removing a useful feature would be useful to existing
-> systems? :-)
 
-I think we are talking two different things.  Kgdb does not work on
-the vast number of 7xx/74xx designs with 16550's all at arbitrary
-locations.  The ppc4xx_kgdb.c binding is non-functional is _devel
-(relying on the old COM_PORT structure that is gone).
+> I don't understand what you are suggesting.  I don't poke a static
+> serial port mapping in (to be used in STD_SERIAL_DEFS) because
+> early_serial_init()/ioremap() can do it dynamically for me.
 
-You've got me confused Dan, where did I suggest removing a useful
-feature?
+Well, that was one of the important changes (mapping the port
+or using an existing mapping) to allow an early kgdb.  I guess if
+you don't want to map it, that's a reason why it won't work.
 
-> > ....  IMHO, it is most important
-> > to have features like kgdb functioning in a general purpose way
-> > in the tree.
->
-> I don't know what that statement means.  All of the other architectures
-> use an early kgdb initialization, which is where we got the idea to
-> do the same a while back.  The kgdb/xmon used to initialize later, and
-> didn't make it very useful until a substantial amount of system initialization
-> was done.
->
-> > Is being expected to move kgdb_map_scc() to an earlier custom
-> > location too much?
->
-> Why don't you just use the normal serial port setup to enter kgdb
-> on those ports that have trouble, and do nothing in this early function?
 
-I don't understand what you are suggesting.  I don't poke a static
-serial port mapping in (to be used in STD_SERIAL_DEFS) because
-early_serial_init()/ioremap() can do it dynamically for me.
+> Hrm, so are you suggesting a do an early mapping (I use one for
+> early boot text support) init kgdb, and not use early_serial_setup()?
+> I think kgdb should be able to work with early_serial_setup().
 
-> >  ...  It only needs to be earlier until things
-> > are functional past setup_arch.
->
-> What board ports have trouble with the early initialization?  Any mostly
-> standard programmed I/O uart should work.  It's only the high performance
-> DMA only ports like 8xx and 8260 that seem to be the challenge.
+:-)
 
-Hrm, so are you suggesting a do an early mapping (I use one for
-early boot text support) init kgdb, and not use early_serial_setup()?
-I think kgdb should be able to work with early_serial_setup().
+The kgdb doesn't care how the port was set up, just that is has a
+way to use it.  You could call early_serial_setup() several times,
+depending upon how the mapping may change.  This is basically how
+the 8xx and 8260 work.  I use an early trivial mapping that was set
+up by the bootloader, then an intermediate mapping, then finally
+something after rs_init() is called.
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+I guess if moving it to later in setup_arch() is enough.......
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
