@@ -1,59 +1,104 @@
-Message-ID: <000b01c38e8a$0f4ef650$0202a8c0@homevl9biy3v7e>
-From: "Jacky Lam" <jackylam@astri.org>
-To: <linuxppc-embedded@lists.linuxppc.org>
-References: <006e01c38e1b$5f72b500$2803050a@JackyLam> <20031008223518.A10052@home.com> <008c01c38e2d$27feac20$2803050a@JackyLam> <20031009063812.A11979@home.com> <001901c38e7b$0f6ed830$0202a8c0@homevl9biy3v7e> <20031009093720.A13184@home.com>
-Subject: Re: General porting question
-Date: Fri, 10 Oct 2003 01:23:29 +0800
+From: "DONG-IN KANG" <dkang@east.isi.edu>
+To: "'Joao Vicente'" <joao.vicente@spectel.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom MPC8260 board 
+Date: Thu, 9 Oct 2003 15:02:51 -0400
+Message-ID: <001f01c38e97$f02a5d60$45a97241@Yongkoo>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="us-ascii"
+In-Reply-To: <DEF39A0710293E489D45B10E06645CBD0243B1E7@dub-msx1.spectelcorp.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > > You can not use virt_to_* on the address returned by
-> > > pci_alloc_consistent().
-> >
-> >     Why?
+ Did you set the compiler flag "-g -gdb" when you configure the kernel?
+
+ Dong-In
+
+-----Original Message-----
+From: Joao Vicente
+Sent: Thursday, October 09, 2003 10:55 AM
+Subject: RE: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom MPC8260 board
+
+I am affraid I am still unable to debug the kernel.
+
+I have tried to define the line
+MMU  XLAT
+and defined the PTBASE as shown below
+
+MMU         XLAT        ;translate effective to physical address
+PTBASE      0x000000f0  ;address where kernel/user stores pointer to page
+table
+
+As you can see I defined PTBASE as 0x000000f0.
+Is this the right address for this build ?
+
+I tried it to debug the target with this configuration file but was
+still unable to get the symbols.
+
+I notice the BDI user manual suggests to use the following line
+WM32    0x000000f0      0x00000000      ;Invalidate page table base.
+
+which I also tried without success.
+
+I also got a trial version of 5.1.1 which I believe you recommended to
+fix a similar problem.
+
+"Wolfgang was able to point me to a trial version of gdb which reports
+itself as 5.1.1 but which has a patch applied that fixes the problem.
+I have attached this version to this email so you can try it for
+yourself."
+
+I am not unsure if this is relevant but this is the method I am using to
+build the kernel
+
+make TQM8260_config
+make menuconfig (where I am changing FCC, MDIO and SCC parameters only)
+make oldconfig
+make dep
+make uImage
+
+Do you reckon is there anything else I could try to fix this problem.
+
+-----Original Message-----
+From: Wolfgang Denk [mailto:wd@denx.de]
+Sent: Thursday, October 09, 2003 1:38 PM
+Subject: Re: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom
+MPC8260 board
+
+in message <DEF39A0710293E489D45B10E06645CBD0243B1A7@dub-msx1.spectelcorp.com> you wrote:
 >
-> Because virt_to_*() is only defined for staticly mapped kernel virtual
-> addresses...consistent_alloc() is not guaranteed to return a staticly
-> mapped kernel virtual address so you can't use virt_to_*().  It is not
-> a generic address translation API.
+> I am trying to boot the ppc kernel on a MPC8260 based custom board.
+...
+> One of the doubts that I have is that when I look into the system.map
+> file, it shows that the start address is at 0xc0000000 (as shown below)
 >
-> >     By the way, this problem will only affect the consistency of dma
-buffer.
-> > In my case, it will only cause wrong output sound. But my card seems
-don't
-> > consume the dma and doesn't give any interrupt in return. It's fine on
-PC
-> > and I can receive interrupt if I write to the card's register to force
-an
-> > interrupt. What other possible porting problem can be here? Really
-> > strange....
+> c0000000 T _start
+
+Yes, this is the correct kernel virtual address.
+
+> To the best of my knowledge the kernel image is not relocatable, so
+> I am wondering if this could be my problem or just one of them ...
+> Should the map file be showing
 >
-> Endianness issues as another person pointed out.  You still have to
-> solve these address munging issues.
+> 00000000 T _start
 
-    Thanks. I will spend more time to understand those mapping stuff.....I
-still cannot understand very clearly...
+No!!!
 
-    Concerning endianness, I think the read/write to register of PCI card is
-ok because it is done by inl()/outl() which already handled the endian
-conversion. The remaining is the data written to dma buffer. I don't care it
-now because the card seems don't start to consume the data.
+> If so, where should I change the .text address so that that happens ?
 
-    I look through the code many times. I can't find out any porting related
-issues beside endianness and memory mapping that will make x86 and PPC
-different. Any idea?
+Don't change anything!
 
-Best regards,
-Jacky
+> I am also trying to debug the code from that address with gdb/BDI2000,
+> but I am not getting very far. Basically I can see the program counter
+> incrementing when I single step, but I cannot see the source even
+> though I am trying to load the symbol table at 0x00000000 with the
+> 'add-symbol-file vmlinux 0x00000000' gdb command, after invoking gdb
+> from the kernel base directory (where vmlinux is)
 
-P.S.: By the way, in embedded system, I know how much PCI memory are used.
-Why don't we just give up some on board memory, say 1MB, and map "simply"
-the memory with uncachable flag. Then this region of memory can be use by
-PCI cards without need to take care all those mapping stuffs.
-
+Just use the vmlinux file _without_ relocating  any  addresses.  Make
+sure  to  enable  "MMU  XLAT"  and define "PTBASE" in your BDI config
+file.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
