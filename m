@@ -1,43 +1,46 @@
-To: Kate Alhola <kate@iti.fi>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linuxppc_2_4_mpc5200 / 5200lite zImage 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 02 Nov 2003 14:08:18 +0200."
-             <3FA4F3B2.6050106@iti.fi>
-Date: Sun, 02 Nov 2003 14:35:11 +0100
-Message-Id: <20031102133516.775BEC5F59@atlas.denx.de>
+Message-ID: <3FA50B32.4010400@iti.fi>
+Date: Sun, 02 Nov 2003 15:48:34 +0200
+From: Kate Alhola <kate@iti.fi>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: linuxppc_2_4_mpc5200 / 5200lite zImage
+References: <3FA4F3B2.6050106@iti.fi>
+In-Reply-To: <3FA4F3B2.6050106@iti.fi>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3FA4F3B2.6050106@iti.fi> you wrote:
+Kate Alhola wrote:
+
 >
 > I just got Motorola5200 lite board and tried complie
 > linuxppc_2_4_mpc5200 from
 > denx to it.  When i say make bzImage it complains that __res is undefined
+>
+> __res is pointer to external scc buffer descriptors . Least it looks a
+> like that it is
+> defined in arch/ppc/platforms/icecube.c but this code looks a like
+> complete
+> board initialization code so i am not sure is it right module to add
+> defining __res
 
-Please "make uImage" and use U-Boot as boot loader.
+It looks a like that i have too much fixation from mpc8xx(x) programming
+in this case bd didnt stand for bufferr descriptor but board u-boot
+board descriptor
+and in this case the mgt5100_tty.c look a like have one dependence
+to ppcboot, it took the ibp bus clock frequency from ppcboot bd struct even
+not ppc-boot configuration. I replaced it with just plain #define .
+Now just i should do testing ...
 
-> Also i got Macraigor wiggler but  saddly noticed that ocd-cmdr does not
-> yet work with mpc5200. Any expreincies/suggestions with LOW COST
-> OCD debugger for 5200 that can be used loading initial code to empty
-> flash on my own board.
-
-I recommend to use a BDI2000 - not exactly low cost, but worth  every
-cent of it (expecially since you can alo use it for kernel and driver
-debugging).
-
-Best regards,
-
-Wolfgang Denk
+Kate
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-If there was anything that depressed him more than his own  cynicism,
-it was that quite often it still wasn't as cynical as real life.
-                                 - Terry Pratchett, _Guards! Guards!_
++==================================================================+
+! Kate Marika Alhola  Internet Technologies International Oy       !
+! kate@iti.fi         Phone +358 400 740701 Fax   +358 9 8138715   !
+! kate@iki.fi	      http://www.iti.fi    http://www.iki.fi/kate  !
++==================================================================+
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
