@@ -1,52 +1,34 @@
-Message-Id: <5.1.0.14.2.20030422133057.03796518@mail.ebshome.net>
-Date: Tue, 22 Apr 2003 13:33:18 -0700
-To: Wolfgang Denk <wd@denx.de>
-From: Eugene Surovegin <ebs@ebshome.net>
-Subject: Re: Opps...with ELDK-2.1.0 (ppc_4xx) 
-Cc: "Johnson, Stephen" <stevebj@artesyncp.com>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20030422195030.4B9A7C58B9@atlas.denx.de>
-References: <Your message of "Tue, 22 Apr 2003 14:38:23 CDT." <F9102D41F595D311ACA7009027DE2C840527B194@c3po.heurikon.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <001301c3093d$ad9c69f0$370da8c0@aman>
+From: "Aman" <aman@mistralsoftware.com>
+To: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Serial Console Login Fails
+Date: Wed, 23 Apr 2003 07:41:40 +0530
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 12:50 PM 4/22/2003, Wolfgang Denk wrote:
->It is pretty much consisten with what we're seeing here...
->
-> > Trace; c000f2dc <schedule+94/57c>
-> > Trace; c000f1ec <schedule_timeout+98/cc>
-> > Trace; c000fcec <interruptible_sleep_on_timeout+68/ac>
-> > Trace; c00dc510 <iic_wait_for_irq+88/1b0>
-> > Trace; c00dc860 <iic_sendbytes+228/29c>
-> > Trace; c00dcf74 <iic_xfer+1bc/1d0>
-> > Trace; c00da7a0 <i2c_transfer+8c/e0>
-> > Trace; c00db5cc <i2c_smbus_xfer_emulated+218/298>
-> > Trace; c00db720 <i2c_smbus_xfer+d4/f0>
-> > Trace; c00db110 <i2c_smbus_write_byte_data+34/44>
-> > Trace; c00dd664 <rtc_write+28/58>
-> > Trace; c00dd7e4 <m41t00_set_rtc_time+150/1b0>
-> > Trace; c0004f04 <timer_interrupt+1c4/254>
-> > Trace; c000376c <ret_from_intercept+0/8>
-> > Trace; c00228c8 <check_pgt_cache+20/30>
-> > Trace; c0004d04 <idled+58/70>
-> > Trace; c0004d2c <cpu_idle+10/24>
-> > Trace; c00011d0 <rest_init+30/40>
-> > Trace; c0181598 <start_kernel+168/17c>
-> > Trace; c0000224 <skpinv+1b8/1f0>
->
->This means you have a RTC on the I2C bus, right? Same here. It  works
->fine on all baords except those with a I2C based RTC. Which is why we
->detected the problem so late.
+Hi All
 
-It looks like a bug in m41t00_set_rtc_time.
+I am using IBM PPC 440 processor on custom board , which has no network
+support. I am using Monta Vista Linux with ramdisk enabled. In the ramdisk ,
+I have very less files. Since there is no network on the board , I am trying
+to enable the serial console login. To achieve this, I disabled serial
+console logging by saying "console=NULL " in the cmdline and in the
+/etc/inittab file added this line
+"T0:23:respawn:/sbin/getty -L ttyS0 9600 vt100"
+Bcos of which during the linux bootup , there wont be console message on the
+screen , after some time , there is a login prompt
+<none>login:
+If I try login then it waits for some seconds and then display the same i.e
+<none>login:
 
-Generic I2C layer is very high-level subsystem and can not be used from the
-interrupt context.
-
-Eugene.
+Can anybody help me in solving this issue?
+Thanking you in advance
+Regards
+Aman
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
