@@ -1,32 +1,45 @@
-Date: Tue, 24 Dec 2002 07:22:28 -0700
+Date: Tue, 24 Dec 2002 07:25:00 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Omanakuttan <omanakuttan@tataelxsi.co.in>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	kernelnewbies <kernelnewbies@nl.linux.org>
-Subject: Re: starting position of linux kernel in memory -- ppc
-Message-ID: <20021224142228.GD889@opus.bloom.county>
-References: <3E082775.1040503@tataelxsi.co.in>
+To: Pantelis Antoniou <panto@intracom.gr>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Dan Malek <dan@embeddededge.com>
+Subject: Re: New style dpalloc/hostalloc routines (diff).
+Message-ID: <20021224142500.GE889@opus.bloom.county>
+References: <3E006C94.2090503@intracom.gr> <15874.23846.177956.192840@argo.ozlabs.ibm.com> <3E02E984.8090904@intracom.gr> <20021223164928.GF15397@opus.bloom.county> <3E080647.8060407@intracom.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3E082775.1040503@tataelxsi.co.in>
+In-Reply-To: <3E080647.8060407@intracom.gr>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Dec 24, 2002 at 02:53:01PM +0530, Omanakuttan wrote:
+On Tue, Dec 24, 2002 at 09:01:27AM +0200, Pantelis Antoniou wrote:
+> Tom Rini wrote:
+>
+> >On Fri, Dec 20, 2002 at 11:57:24AM +0200, Pantelis Antoniou wrote:
+> >
+> >
+> >>Here is the updated patch in diff format as per your suggestions.
+> >>
+> >
+> >Looks good.  My only real issue is that this is a big change, so I would
+> >rather see either (or both) of the following happen:
+> >Make a patch vs 2.5.  This will require additional 8xx work to get
+> >things going again.
+> >Please hold on this until all of the otherwise stable 8xx work can get
+> >out of the linuxppc_2_4_devel tree and into linuxppc_2_4 / Marcelo.
+> >
+> >Also, Dan Malek, any comments on all of this?
+> >
+> Well, I'll try but I haven't messed with 2.5 yet.
+> Does it even work at all for 8xx?
 
-> Hi,
-> I cross compiled linux kernel using gnutools for mpc8260 and got a file
-> by name zimage.embedded.
-> We have ordered for a demo on the target board (8260ADS) and they are
-> asking for kernel with start address at 0x0000_0000.
-> How will I see that info in the kernel ? Or by default it will place
-> itself on 0x0000_0000 ?
+No, it does not.  As I said above, it needs a few fixups here and there.
 
-Erm.  Can you give more information here?  What firmware?  What 8260
-board, specifically?  The 'zImage.embedded' file you mentioned gets
-loaded into RAM at 0x0080_0000 by default and when it runs, it will
-uncompress the kernel and locate it at 0x0000_0000.
+> Has anybody in the list worked with it?
+
+On all of the other types of boards, yes.
 
 --
 Tom Rini (TR1265)
