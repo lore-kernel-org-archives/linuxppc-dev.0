@@ -1,45 +1,51 @@
-Date: Thu, 28 Sep 2000 12:00:41 +0200 (CEST)
+Date: Thu, 28 Sep 2000 13:08:46 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, Matt Porter <mmporter@home.com>,
-        Olaf Hering <olh@suse.de>,
-        Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display!
-In-Reply-To: <Pine.LNX.4.21.0009272018090.9846-100000@idd-01.imbc.gr>
-Message-ID: <Pine.LNX.4.10.10009281200120.3468-100000@cassiopeia.home>
+To: Takashi Oe <toe@unlserve.unl.edu>
+cc: Benjamin Herrenschmidt <bh40@calva.net>,
+        Jon Erick Ween <jween@som.llu.edu>, linuxppc-dev@lists.linuxppc.org,
+        linux-fbdev@vuser.vu.union.edu
+Subject: Re: Xfree86-4.0.1, Lombard, Mach64 driver, X-server Crash
+In-Reply-To: <Pine.LNX.3.96LJ1.1b7.1000927214454.666I-100000@ofey.earthlink.net>
+Message-ID: <Pine.LNX.4.10.10009281307020.3468-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 27 Sep 2000, Kostas Gewrgiou wrote:
-> On Wed, 27 Sep 2000, Geert Uytterhoeven wrote:
-> > On Tue, 26 Sep 2000, Benjamin Herrenschmidt wrote:
-> > > One thing: I'd be interested in figuring out what happens if you simply
-> > > leave this nasty ATI BAR unassigned (write 0xffffffff and then 0 to it).
-> > > Will the controller fail ?
+On Wed, 27 Sep 2000, Takashi Oe wrote:
+> On Wed, 27 Sep 2000, Benjamin Herrenschmidt wrote:
+> > >Here's a copy of my XF86Config file.
+> > >Two other minor nuisances:
+> > >
+> > >Since using yaboot, my console cursor has disappeared. Is this an OF or a
+> > >yaboot problem? It's very hard to navigate in vi to edit anything (.config
+> > >files for one thing) without a cursor!
 > >
-> > Well, according to Matt Porter, 0 is a valid address in PCI 2.2. So how do you
-> > disable BARs for PCI 2.2-compliant devices?
+> > Completely ? Or does it appear with different colors depending on the VC
+> > you are on ? I've seen such bug appear here or there but never took the
+> > time to track it down...
 > >
-> > And I'm afraid what XFree86 4.x will do with BARs set to 0. Probably it will
-> > try to relocate them. I guess that's how it crashes on my box with an
-> > unitialized S3...
+> > I suspect an atyfb problem ;)
 >
-> Yeap unless i am wrong it will try to relocate them, for prep i fear that
-> without correct BusAddrToHostAddr/HostAddrToBusAddr functions in the xserver
-> this isn't going to work at all :(
+> I think this is more of a generic fb device layer problem or a combination
+> of driver bug and upper layer bug.  Or I totally don't understand how
+> fbcon works.
 >
-> Don't expect it to initialize the S3 card in any case, the int10 module
-> needs ISA IO/mem accesses and both don't work at the moment for linux/ppc
-> you can imagine what the following code will do to your machine :(
->
->  #define V_RAM 0xA0000
->  INTPriv(pInt)->vRam = xf86MapVidMem(screen,VIDMEM_MMIO,V_RAM,size);
+> My understanding is this:
+> Video console uses 16 colors, and it only initializes the cmap
+> corresponding to those 16 colors.  The other entries in cmap are up to
+> each individual fb driver or undefined as far as console is concerned.
+> For software cursor, driver specific (struct display_switch *)ops->revc()
+> is used to make the cursor blink.  For the generic fbcon_cfb{16,32}_revc,
+> it xors each pixel with masks 0xffff (depth 16) or 0xffffffff (depth 32).
+> For controlfb which I am very familiar with, the "correct" masks are
+> 0x3def for 555 and 0x0f0f0f0f for 8888.  That is, only 4 LSBs or low 16
+> for each red, green, and blue are xor'ed since cmap entries corresponding
+> to higher bits are undefined as far as fbcon support is concerned.
 
-Yes, you have to know the ISA memory base address, which is machine dependent.
+In 2.5.x, we'll have a user-defined xor mask for the cursor as the 17th entry
+in the dispsw_data array.
 
 Gr{oetje,eeting}s,
 
