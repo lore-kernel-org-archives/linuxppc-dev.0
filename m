@@ -1,20 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Received: from cheetah.davemloft.net
-	(adsl-63-197-226-105.dsl.snfc21.pacbell.net [63.197.226.105])
-	by ozlabs.org (Postfix) with ESMTP id 93F962BDA0
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Dec 2004 17:25:08 +1100 (EST)
-Date: Wed, 8 Dec 2004 22:04:00 -0800
-From: "David S. Miller" <davem@davemloft.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <20041208220400.71906428.davem@davemloft.net>
-In-Reply-To: <1101506610.28048.23.camel@gaston>
-References: <1101439228.4633.74.camel@gaston>
-	<20041126200754.1123e8f8@jack.colino.net>
-	<1101506610.28048.23.camel@gaston>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: davem@redhat.com, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] sungem rework & wake on lan
+Return-Path: <CWernham@Airspan.com>
+Received: from mail.airspan.com (mail.airspan.com [62.189.116.4])
+	by ozlabs.org (Postfix) with ESMTP id 13DE52BEA0
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Dec 2004 21:25:51 +1100 (EST)
+Message-ID: <41B8255A.3040101@airspan.com>
+Date: Thu, 09 Dec 2004 10:13:46 +0000
+From: Colin Wernham <cwernham@airspan.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: PPC4XX DMA polarity bug in linuxppc-2.6.9
+Reply-To: cwernham@airspan.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,10 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 27 Nov 2004 09:03:30 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+I believe that there is a PPC4xx DMA driver bug in the following kernel, 
+file and function:
+   linuxppc-2.6.9,
+    /arch/ppc/syslib/ppc4xx_dma.c,
+    ppc4xx_init_dma_channel()
 
-> There is a problem with kenrel autoconfig
-> (ipconfig) which doesn't schedule and should probably be fixed.
+Symptoms are:
+DMA does not work as the polarity bits (DMA Req, Ack, EOT) are not set 
+correctly in the DMA controller using the ppc4xx_init_dma_channel() 
+function call, but when this is called twice in succession, then it does 
+work.
 
-This bug should be cured in current 2.6.x sources.
+Cause is (I believe):
+/arch/ppc/syslib/ppc4xx_dma.c:
+On line 469 the old polarity bits in p_dma_ch are ORed in when it should 
+be ORing in the new polarity bits from p_init. p_init is then saved into 
+p_dma_ch. This means that it only gets correctly programmed when the 
+function is called twice:
+
+    467  /* clear all polarity signals and then "or" in new signal levels */
+    468  polarity &= ~GET_DMA_POLARITY(dmanr);
+    469  polarity |= p_dma_ch->polarity;
+
+Fix could be:
+    469  polarity |= p_init->polarity;
+
+Is there anyone else using the PPC4XX DMA?
+
+Colin Wernham
