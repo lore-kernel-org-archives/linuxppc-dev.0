@@ -1,14 +1,44 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <B164B53F5BD6D511888D009027732E1A0249CB@ntserver.act.domain>
-From: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: autoboot with initial RAM disk
-Date: Fri, 21 Dec 2001 15:44:51 +1100
+Message-ID: <B25E2E5A003CD311B61E00902778AF2A039C3597@SERVER1>
+From: Subodh Nijsure <SNijsure@SkyStream.com>
+To: "'Rudolf Ladyzhenskii'" <rudolf.ladyzhenskii@act-aus.net>,
+	"Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: autoboot with initial RAM disk
+Date: Thu, 20 Dec 2001 21:17:48 -0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Hello,
+
+Not sure if this what you want --
+
+Create a multi-image using the ppcboot utility mkimage using command like
+
+mkimage -n "Linux Kernel And Ramdisk" -A ppc -O linux  -T multi -C gzip \
+-a 0x00000000  -e 0x00000000 -d
+./arch/ppc/coffboot/vmlinux.gz:ramdisk.image.gz linux-image
+
+This will create a file linux-image that has linux kernel and ramdisk that
+ppcboot
+can load.
+
+Now in your ppcboot you set bootcommand as,
+
+setenv bootcmd tftpboot 900000 /tftpboot/linux-image \; bootm 900000
+
+Now the autoboot will load the linux-image from your tftpserver.
+
+/Subodh
+
+-----Original Message-----
+From: Rudolf Ladyzhenskii [mailto:rudolf.ladyzhenskii@act-aus.net]
+Sent: Thursday, December 20, 2001 8:45 PM
+To: Linuxppc-Embedded (E-mail)
+Subject: autoboot with initial RAM disk
+
 
 
 Hi, all
