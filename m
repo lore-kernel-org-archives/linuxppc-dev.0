@@ -1,37 +1,35 @@
-Message-Id: <200012221356.eBMDu5S09523@denx.local.net>
-To: "qiuqingjun" <qiuqingjun@263.net>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: where can I find window management? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 22 Dec 2000 16:34:30 +0800."
-             <001301c06bf2$01c94840$c34a63ca@qqj>
-Date: Fri, 22 Dec 2000 14:56:04 +0100
+From: "Kwansuk Kim" <kskim@neowave.co.kr>
+To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Using gdbserver...
+Date: Thu, 28 Dec 2000 11:46:36 +0900
+Message-ID: <NEBBKFENMLEDKDHMEHPJIECCCCAA.kskim@neowave.co.kr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <001301c06bf2$01c94840$c34a63ca@qqj> you wrote:
->
-> I have correctly started linux 2.2.14 on my custom PPC823 board.(
+Hi, everyone!
 
-Congratulations!
+I'm using my MPC860 custon board, kernel 2.2.13, and cross-gdb 4.1.8
 
-> Thank Wolfgang Denk). The next step , I want to create window
+I copied the gdbserver in Monta Vista CDK on the NFS bin directory, and did cross-debug with the gdb in the CDK.
 
-:-)
+I used ethernet on SCC1, and it worked very well except Ctrl-C interrupt.
 
-> application on my embedded system. Where can I find available window
-> management (like X11-- too large), if there is, I can program base on
+It didn't worked.
 
-MontaVista has "microwindows" - maybe you can use this?
+I searched the GDB manual, and I found this...
 
-Wolfgang Denk
+'if you type the interrupt character (often <C-C>), GDB attempts to stop the program. This may or may not succeed, depending in part on the hardware and the serial drivers the remote system uses.'
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-backups: always in season, never out of style.
+Is it impossible to interrupt?
+
+I'm looking forward to your answer...
+
+Happy New Year!
+
+Kwansuk Kim.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
