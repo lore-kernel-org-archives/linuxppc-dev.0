@@ -1,38 +1,62 @@
-Subject: Re: /proc/sys/kernel/l2cr and the 750FX
-From: "Guy M. Streeter" <streeter@redhat.com>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20030925182151.GB7337@ip68-0-152-218.tc.ph.cox.net>
-References: <1064506838.1037.11.camel@jarjar.hsv.redhat.com>
-	 <20030925182151.GB7337@ip68-0-152-218.tc.ph.cox.net>
-Content-Type: text/plain
-Message-Id: <1064518676.1037.13.camel@jarjar.hsv.redhat.com>
+Date: Thu, 25 Sep 2003 12:56:53 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Bret Indrelee <Bret.Indrelee@qlogic.com>
+Cc: Roland Dreier <roland@topspin.com>,
+	Matt Porter <mporter@kernel.crashing.org>,
+	Linux PPC Embedded mailing list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Any restrictions on DMA address boundry?
+Message-ID: <20030925125653.A16002@home.com>
+References: <52oex8kb07.fsf@topspin.com> <Pine.LNX.4.44.0309251306450.12966-100000@spider.ancor.com>
 Mime-Version: 1.0
-Date: 25 Sep 2003 14:37:56 -0500
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.44.0309251306450.12966-100000@spider.ancor.com>; from Bret.Indrelee@qlogic.com on Thu, Sep 25, 2003 at 01:15:15PM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I don't see any difference in this section of code, in v2.4.23-pre5
-Was a change made someplace else to support the 750FX?
+On Thu, Sep 25, 2003 at 01:15:15PM -0500, Bret Indrelee wrote:
+> I've read through the old thread about short DMAs, but still there are
+> things that aren't clear to me.
+>
+> What exactly is the issue?
 
---Guy
+The issue is confined to processors which do not support hardware
+snooping of the external bus.  In this case, management of the
+caches is performed in software.  Software cache management is
+has a granularity of the processor's cache line size.  When a
+buffer is allocated using the allowed methods (as defined in
+DMA-mapping.txt) to obtain memory for use in DMA, there is
+no guarantee that the buffer is cacheline aligned.  Imagine
+one buffer allocated for internal driver management and another
+buffer allocated for inbound DMA transactions from a bus
+master.  They can share the same cacheline.  Inbound DMA
+read transaction occurs, the usual streaming DMA API call is
+made, and the platform-specific implementation invalidates the
+entire cacheline.  This could corrupt the contents of the
+allocated management buffer that is being accessed by the CPU
+only.
 
-On Thu, 2003-09-25 at 13:21, Tom Rini wrote:
-> On Thu, Sep 25, 2003 at 11:20:39AM -0500, Guy M. Streeter wrote:
->
-> > The 750FX has a different L2CR register layout than other processors.
-> > The attached patch against 2.4.22 makes /proc/sys/kernel/l2cr show a
-> > better decode of the register for the 750FX.
->
-> This shouldn't be needed in 2.4.23-current, can you verify?  Also,
-> adding more PVR_XXXX defines is deprecated, as there are cpufeatures for
-> such things.
->
-> --
-> Tom Rini
-> http://gate.crashing.org/~trini/
->
+> As I understand it, if there is a DMA to the same cache line as something
+> that the CPU is referencing, you've got a cache problem.
 
+On a certain type of processors, yes.
+
+> Does it matter what type of transfer the PCI device is doing? If it
+> always does 32-bit burst memory write transfers instead of memory
+> write & invalidate does that make a difference?
+>
+> Right now, I'm interested in the PPC and x86 compatible (Pentium,
+> Pentium 4, Geode) systems, trying to understand the differences and
+> requirements of each.
+
+Which PPCs?  Classic PPC != PPC8xx != PPC40x != Book E PPC. :)
+
+PPC8xx and PPC4xx require software cache coherency.  If you want
+your products to work on PPC44x (I hope you do, they are targetted
+at markets where qlogic storage controllers are used) ensuring that
+your DMA buffers are cacheline aligned at the head/tail is
+important.
+
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
