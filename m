@@ -1,30 +1,23 @@
-Message-ID: <39DFE65C.8FEAB6B5@emc.com>
-Date: Sat, 07 Oct 2000 23:13:32 -0400
-From: Zhaobin Zhu <zzhu@emc.com>
+Message-ID: <39E0A8A7.77843139@charter.net>
+Date: Sun, 08 Oct 2000 12:02:31 -0500
+From: "Dan A. Dickey" <ddickey@charter.net>
 MIME-Version: 1.0
+To: Gérard Guével <gguevel@interfaceconcept.com>
 CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Linux boot over NFS
-References: <39DCEA5A.2E9DDE3C@emc.com> <14813.60363.648514.72914@igor.jsc.nasa.gov>
-Content-Type: text/plain; charset=gb2312
+Subject: Re: Spanning tree algorithm on MPC860P
+References: <000201c02f6b$5df7c920$2901a8c0@none>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Gérard Guével wrote:
+> Hi all,
+> I want to load spanning tree algorithm on an electronic board based upon a
+> MPC860P. Does someone know where I could find this algorithm in C sources ?
 
-Did anybody successfully boot Hardhat linux
-over NFS on sandpoint ?
-
-Did anybody try to do this following steps
-instructed in Hardhat CDK1.2 manual ?
-
-Is it possible to boot linux on Sandpoint over NFS on an isolated
-(The only network connection is between PC and Sandpoint) redhat PC ?
-
-Thanks,
-
---
-Zhaobin
-
+I believe it is in the linux source code - look for the
+bridging code.
+	-Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
