@@ -1,28 +1,153 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <40BB6925.4090706@ztec.com.br>
-Date: Mon, 31 May 2004 14:19:33 -0300
-From: iida <iida@ztec.com.br>
-MIME-Version: 1.0
-To: linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: how to use the i2c in mpc5200
-References: <20040528203540.5383EC109F@atlas.denx.de>
-In-Reply-To: <20040528203540.5383EC109F@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: iida <iida@ztec.com.br>
+Cc: linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: how to use the i2c in mpc5200 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-Type: multipart/mixed ;
+	boundary="==_Exmh_-16103528960"
+Date: Mon, 31 May 2004 20:49:03 +0200
+Message-Id: <20040531184908.325BFC109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+This is a multipart MIME message.
 
->Just for the record: on my system I2C is working fine:
+--==_Exmh_-16103528960
+Content-type: text/plain; charset=ISO-8859-1
+Content-transfer-encoding: 8bit
+In-reply-to: Your message of "Mon, 31 May 2004 14:19:33 -0300."
+             <40BB6925.4090706@ztec.com.br>
+
+In message <40BB6925.4090706@ztec.com.br> you wrote:
 >
->...
->
->
-Can you send me your screen of modprobe and how you create the /dev/i2c ?
-Did you chaged the code of i2c-demo from bsp ?
-Thanks
-Renato
+> >Just for the record: on my system I2C is working fine:
+...
+> Can you send me your screen of modprobe and how you create the /dev/i2c ?
+
+I just used statically linked I2C drivers. See .config file below.
+
+-> ls -l /opt/eldk/ppc_82xx/dev/i2c*
+crw-r--r--    1 root     root      89,   0 May 24 12:04 /opt/eldk/ppc_82xx/dev/i2c
+
+
+> Did you chaged the code of i2c-demo from bsp ?
+
+I don't know what Metrowerks includes with their BSP; please see  our
+test code (mpc52xx-eeprom.c) below.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"The question of whether a computer can think is no more  interesting
+than the question of whether a submarine can swim"
+                                                - Edsgar W.  Dijkstra
+
+
+--==_Exmh_-16103528960
+Content-Type: application/x-bzip2 ; name="kernel.config.bz2"
+Content-Description: kernel.config.bz2
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="kernel.config.bz2"
+
+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
+WtvU
+
+--==_Exmh_-16103528960
+Content-Type: application/x-bzip2 ; name="mpc52xx-eeprom.c.bz2"
+Content-Description: mpc52xx-eeprom.c.bz2
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="mpc52xx-eeprom.c.bz2"
+
+QlpoOTFBWSZTWX2QdcQAAYnfgEAwW////y/j3c6//9/uUARb1262o6nZtooGEkhNTRPFT8gD
+UmmxqMjKabCgZPUANDQyBJInokm9U9TRo0AAAAAAAAAASEpqIymmg0MRmptTBBgRkyYGpoMI
+00OMmTQxGJowCMBMIAwE00aZGgGEik0AmENCNpNEMgaGQAAPUDTIZPLdSYnGCi/TLIx2lm22
+mxDTBabQprunx83p9eSgMg0dDVLQwG0MBiaX+yLsiSBIEkehLhtpjCm2my+yFiXnBMHGpUgn
+ZRhrmXBmwHcnVFdXXNy7aUBicAyQrCiVi7jKSAXNJhOrpYEg2DY9IS+7l6cCBu3LUMZTQ2Xw
+gQwfpGPi2bQnJA3DjS0ZIcn3Np5Qd3DdyTHFZPKQtN/bdTjfeVxgsITD6ZIsmXGpdOyjrjNQ
+GhvNVJg0XJ21CKYjM0FijSDckTJ6JIJKjlcY3CovqHZaHnNVOrZK9rr6CkUrJzOWaWhjfvg+
+/XteDLvKyEHJnbWJBqJGGVMwaVnFGiWM0D6iFCBdslT+d3rceUjyVgYttZYYV5GZZVoxbDtf
+y4UTVEX9FdE8m+JNtM96Z7PvQcyZlUp9Qy2TEvHUP1lFzNPigZy4YGXESe/Fz73W5kWzzbJL
+B/j158Er7RWug6IzT3DaXTg0gDGNhlxFC7MMH771fXGbXIjKLVywrDOpHQxg1gtrq5o9cKtS
+kFbV1PYX0RZNG1ngy0Mc6e9/D2Q19c+xwXaXO5XFets0VtwLqL0lXwcObWtd6ReTf9ALZaAx
+sc9uKYDmSncGcB+0NLL+fUE2Bb4XBWb+DrLJcKOs5DoOe5KpVjmJOUkIjCxZCFfSMY50ewzE
+tg8MpSMlKEO2/u0G9jU5yv+rG5ux27TY7p1tz0R5Q70m6so47DwW00A5HAV/gFZzMgdKo4ek
+FwjabMxZuFcwf4seD0xqG64sTNAxzcpeOqlBkxbb++Eyi+skCjSlvXhpFnMYRMLVANcIFPkH
+1EQVSXUH18RdLViCuKgclSGvxjnZs3U8YaEq9LES/eKPRkc9qA8HR4waXdxQW7pUWXg0FQbU
+aydKBBXsRLRcLabQyBcso1tC1bw2m1UQNYxsgru4lcChQFh+4BwA0XWc/BwyIjLbxJZQuWph
+OFn5VCbiliReSGYqwWg0xIjKo5LSU6xStidaFWZL1OQeyTqwJsfo1nNPG5TQOFiCulnWmcLU
+GDUkiQVTk3ZEJ2AWstrhyMUKLGUgOLRgiRHvoKtSmtC9ENrbcJQI4DBjYmjYQGg2ENCKOaWh
+BRMjFLjStqVcdSC+YBooFENlL5UGakzhnSMuSqnDZ2+KeR6h4BvopYYgwgqhZR1hEBz4ThFk
+wKdBAwDMliksN5XaUF1ZUpi6FspfCk1kJM44fDNsI9wNZYzuyUKrk24xP/i7kinChIPsg64g
+
+--==_Exmh_-16103528960--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
