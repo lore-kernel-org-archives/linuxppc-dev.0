@@ -1,32 +1,23 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Dan Malek" <dan@embeddededge.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: dc* (Data Cache)  instructions in mem*() and *_page() functions not used on 8xx
-Date: Tue, 29 Oct 2002 19:07:01 +0100
-Message-ID: <IGEFJKJNHJDCBKALBJLLMEHJFHAA.joakim.tjernlund@lumentis.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-reply-to: <3DBEB5EB.7000003@embeddededge.com>
+Subject: DBCR0 reset?
+From: Hollis Blanchard <hollis@austin.ibm.com>
+To: embedded list <linuxppc-embedded@lists.linuxppc.org>
+Date: 29 Oct 2002 13:18:19 -0600
+Message-Id: <1035919100.1013.1226.camel@granite.austin.ibm.com>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Joakim Tjernlund wrote:
->
-> > It seems that even the newest 8xx chips still has problems. I did not expect that.
->
-> It may be the parts are working fine.  I long ago removed the code necessary
-> to detect the exception conditions when the cache instructions faulted, so
-> I wouldn't expect them to work properly.
+Has anyone had problems with hardware breakpoints from external
+debuggers? I'm using RISCWatch, which sets DBCR0 and IAC1 for me (yes
+I've verified that). I'm then using 'echo > /proc/sys' to invoke my
+code. However by the time I get to my sysctl proc handler, DBCR0 has
+been reset from 0x80810000 to 0x00010000, hence IAC1 is ignored.
 
-Aah, that would explain why __copy_tofrom_user doesn't work I guess. But the
-rest seems to be fine. Maybe there should be a new config option that
-would one could enable for modern 8xx CPUs? With a big warning sign of cource
-and default to off. Maybe even add the missing exception handler?
+I don't see much use of DBCR0, other than initialization and then save
+during exception prologs and then restore during task restore. Can
+anyone point me to where it might be reset?
 
-   Jocke
-
+-Hollis
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
