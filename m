@@ -1,19 +1,36 @@
-Subject: Re: Asiliantfb (Frame Buffer) Driver
-From: Adrian Cox <adrian@humboldt.co.uk>
+Date: Mon, 21 Jun 2004 10:47:20 +0200 (MEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Dieu Morales <dieumorales@yahoo.com>
-Cc: linuxppc-dev@lists.linuxppc.org
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Asiliantfb (Frame Buffer) Driver
 In-Reply-To: <20040620204028.58544.qmail@web60402.mail.yahoo.com>
+Message-ID: <Pine.GSO.4.58.0406211046060.6543@waterleaf.sonytel.be>
 References: <20040620204028.58544.qmail@web60402.mail.yahoo.com>
-Content-Type: text/plain
-Message-Id: <1087806284.1547.44.camel@newt>
-Mime-Version: 1.0
-Date: Mon, 21 Jun 2004 09:24:44 +0100
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 2004-06-20 at 21:40, Dieu Morales wrote:
-[snip]
+On Sun, 20 Jun 2004, Dieu Morales wrote:
+> Greetings, I am working with the latest 2.6.7 kernel
+> source on a ppc radstone PPC7A board and have included
+> the CT69000 frame buffer to attempt to get a vga
+> console.  However, when I set
+> conswitchp = &dummy_con;
+> the video initializes (monitor signal LED turns green
+> from orange) and I get a green screen on the monitor.
+> And when I set
+> vgacon_remap_base = 0xfe000000;
+> conswitchp = &vga_con;
+> the video initializes (monitor signal LED turns green
+> from orange)  and 50% of the time I get nothing on the
+> monitor and the other 50% of the time I get what looks
+> to be a screen saver that displays colors fading into
+> one another (red->green->blue...) for about 10 sec
+> like some kind of a video test. I placed
+> vgacon_remap_base at the PCI0 I/O base, is this
+> correct?
 > I have added console=tty0 to the kernel command line
 > and have not identified any other configuration items
 > needed.  The serial console I/O which I am expecting
@@ -24,27 +41,19 @@ On Sun, 2004-06-20 at 21:40, Dieu Morales wrote:
 > goto no_vga and conswitchp = &dummy_con;
 > Would this be related to the problem?
 
-The problem is that vgacon and frame buffer consoles are different
-things:
+Does you firmware initialize the CT69000?
+Asiliantfb may need an initialized CT69000.
+Vgacon needs a graphics chip initialized to VGA mode.
 
-vgacon is a console using the text modes of VGA cards. To stand a chance
-of working it requires the boot firmware of your board to execute the
-VGA BIOS code on the graphics adapter. It works on PCs and possibly some
-non-x86 workstations.
+Gr{oetje,eeting}s,
 
-Frame buffer consoles (fbcon) use the graphics modes of the video card,
-and chipset specific drivers.  I wrote the original asiliantfb for the
-69030 chip. Saito.K & Jeanne replaced the 69030 support with 69000, and
-it got into the kernel.
+						Geert
 
-First, try removing vgacon and checking that you have fbcon enabled.
-If that fails, try contacting the driver's authors. There's no contact
-address for them in the source, though Google finds one other driver by
-them with this attribution:
-MODULE_AUTHOR("Saito.K & Jeanne <ksaito at interface.co.jp>");
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-- Adrian Cox
-Humboldt Solutions Ltd.
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
