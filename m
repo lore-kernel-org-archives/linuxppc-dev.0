@@ -1,34 +1,42 @@
-Message-ID: <B79009C85505D211B11100805FA784C803E79A90@s-il02-k.comm.mot.com>
-From: Ziolko Ryan-crz074 <Ryan.Ziolko@motorola.com>
-To: "Linuxppc-User (E-mail)" <linuxppc-user@lists.linuxppc.org>,
-        "Linux DEV (E-mail)" <linuxppc-dev@lists.linuxppc.org>
-Subject: Sharp LCD Panel
-Date: Wed, 21 Jul 1999 15:25:52 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <m117Djg-0000WZC@tri-yann.crf.canon.fr>
+Date: Thu, 22 Jul 1999 09:57:48 +0200 (CEST)
+From: "VALETTE Eric" <valette@crf.canon.fr>
+To: mmporter@home.com
+CC: jpeters@phx.mcd.mot.com, linuxppc-dev@lists.linuxppc.org
+In-reply-to: 
+	<Pine.LNX.3.96.990721082132.13818A-100000@liberty.chnd1.az.home.com>
+	(message from Matt Porter on Wed, 21 Jul 1999 09:20:42 -0700 (MST))
+Subject: Re: Is the vger 2.2 kernel branch dead
+References: <Pine.LNX.3.96.990721082132.13818A-100000@liberty.chnd1.az.home.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello All-
+>>>>> "Matt" == Matt Porter <mmporter@home.com> writes:
 
-I have a Sharp LM64K837 24cm [9.4"] Transflective type, B/W STN-LCD
-Module[VGA Format] panel.  Since it is VGA can I just hook it straight up to
-a video card?  If I can, what refresh rates would I use and such.  If you
-can't help me, do you know anyone that might be able to point me in the
-right direction?  I want to use it for my LinuxPPC box... to run in
-console... (and hopefully X).  I have seen LCDproc, but it doesn't have
-quite what I need yet.
+Matt> On Mon, 19 Jul 1999, Johnnie Peters wrote:
 
-http://www.sharpsma.com/datasheets/displays/cstn/lm64k837.pdf
+Matt> I was being facetious.  Honestly, somebody is feeding me a major line of
+Matt> crap.  Cort claims to get no patches from Motorola, yet Johnnie claims to
+Matt> be sending them in.  Since my stuff is in Johnnie's repository, it's a
+Matt> problem for me.  Hopefully, this time things start going in cause if
+Matt> not we'll have to find another route.
 
----------------------------------------------------------------
-Ryan Ziolko
-Secure Design Center, Motorola Inc.
-Phone: 847-538-6662
-Email: Ryan.Ziolko@motorola.com
----------------------------------------------------------------
+I was thinking Cort may be on vacation... If this is the case, It's bad
+it has not been announced. Nevertheless, once again, the lack of transparency
+for patch handling is *really* annoying...
+
+I understand patches can be rejected. At least I would like to know why...
+
+-- 
+   __                 
+  /  `                   	Eric Valette
+ /--   __  o _.          	Canon CRF - Communication Dept
+(___, / (_(_(__         	Rue de la touche lambert
+				35517 Cesson-Sevigne  Cedex
+				FRANCE
+Tel: +33 (0)2 99 87 68 91	Fax: +33 (0)2 99 84 11 30
+E-mail: valette@crf.canon.fr	http://www.crf.canon.fr
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
