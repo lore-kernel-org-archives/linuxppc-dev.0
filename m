@@ -1,32 +1,47 @@
-Date: Sun, 4 Jun 2000 18:40:49 -0500
-From: anthony tong <atong@uiuc.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: iMac sense codes & atyfb
-Message-ID: <20000604184049.A780@rogue.genunix.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200006050548.HAA00780@piglet.grunz.lu>
+Date: Mon, 5 Jun 2000 07:48:00 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: [patch] VRAM detection in controlfb
+To: drow@false.org
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20000604104844.A13914@quaketop.them.org>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I finally got curious enough (and finally had free time) to look
-at the monitor sense values on an iMac (rev D I think)..
+On   4 Jun, this message from Daniel Jacobowitz echoed through cyberspace:
+>
+> On Sun, Jun 04, 2000 at 10:08:39AM -0500, Tony Mantler wrote:
+>> dcbi = data cache block invalidate. If you do this on a dirty cache block,
+>> data will be lost.
+>>
+>> dcbf = data cache block flush. If you do this on a block that isn't in a
+>> coherent state, data will be lost.
+>>
+>> If you have a block that's both dirty and incoherent... well, don't do that. :)
+>
+> Ew.  I wonder if that's our problem...
 
-The iMac has a standard mac video connector mounted on the bottom
-of the motherboard like contraption. Simply, the builtin monitor
-doesn't return any Apple sense codes; unplugging the monitor gives
-the same sense results. I suppose the iMac assumes that a monitor
-is always attached. Connecting other monitors returns the proper
-sense codes (well, I only tried a vga monitor.. it's a PITA with
-the short cabling and that I don't have proper casing&ps for the
-guts of this computer).
+Would make sense, and I thought so too.... dcbi is wrong in any case for
+us, since we did modify that block. However, I wonder whether caching is
+on at all for the framebuffer adresses? (And if so, is that a good idea?
+Do we want to trash the cache with a xsetroot?)
 
-This brings up the question of why mac_map_monitor_sense() defaults
-to 640x480x67 if no sense codes/no monitor is attached. The only
-monitors that I can think of that use this mode are the old Apple
-RGB monitors; perhaps we can use a more sensible default value instead
-when using mac sense values?
+Anyway, a quick test showed no changes in the detection with dcbf
+instead of dcbi. I'll have to test more thoroughly, but only after I get
+Xpmac to run again...
 
-If only we had ddc..
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
