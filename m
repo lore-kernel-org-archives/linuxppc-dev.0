@@ -1,39 +1,31 @@
-Date: Thu, 13 Dec 2001 09:13:14 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Jeff Rugen <jprugen@earthlink.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: RTC and SCSI for PowerStack/2.4.6 Kernel
-Message-ID: <20011213161314.GF28967@cpe-24-221-152-185.az.sprintbbd.net>
-References: <000701c10782$96a31e60$0401a8c0@trex>
+From: Peter Bergner <bergner@brule.borg.umn.edu>
+Date: Thu, 13 Dec 2001 10:58:09 -0600
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Adam C Powell IV <hazelsct@mit.edu>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Why require CONFIG_BOOTX_TEXT for so much of offb?
+Message-ID: <20011213105809.A244378@brule.borg.umn.edu>
+References: <3C158758.5020608@mit.edu> <20011212130522.A238707@brule.borg.umn.edu> <20011213020019.GC28967@cpe-24-221-152-185.az.sprintbbd.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <000701c10782$96a31e60$0401a8c0@trex>
+In-Reply-To: <20011213020019.GC28967@cpe-24-221-152-185.az.sprintbbd.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Jul 08, 2001 at 12:49:58AM -0700, Jeff Rugen wrote:
+Tom Rini wrote:
+: BOOTX_TEXT != BootX now tho.  It's for writing on the screen early on.
+: Perhaps some name changing, define moving and a new header for ppc64?
 
-> Second, I am getting SCSI timeouts when running 2.4.6.  I don't know enough
-> about SCSI, but the log to the console is the following:
->
+That doesn't seem to be used for prom_prints(), so what early screen
+prints would these be?  If ppc64 can make use of them, then some
+"name changing, define moving and a new header for ppc64" would be the
+right thing.  If not, then just replacing the #ifdef CONFIG_BOOTX_TEXT
+with #ifndef CONFIG_PPC64 would seem to be the right decision.
+The later would fix the compile problem for ppc64 and things would
+be back to the way they used to work for ppc32.
 
-Boy, I hope you're still around to play with things :)
-Can you try the sym-2 driver in recent (2.4.16+ kernels?).  I've been
-doing some quick testing of my machine, and things seem OK so far.
+Peter
 
-> Which leads me to believe that I at least have the correct SCSI driver build
-> (NCR53C8XX, as the revision of 0x2 is less than the 16 that Configure.help
-> seems to indicate).  Should I instead be using the 53c7,8xx driver?  Or the
-> sym53c8xx?
-
-BTW, the sym53c8xx driver won't do the 810 or 825 chipsets, iirc.  The
-53c7,8xx driver needs a bit of work (it's still got an hold hack for PPC
-that I _think_ can just go, but I'm not sure...).  The sym-2 driver does
-all 8xx chipsets and some of the newer 10xx chipsets.
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
