@@ -1,31 +1,79 @@
-In-Reply-To: <19991006182556.021225@mailhost.mipsys.com>
-Date: Wed, 6 Oct 1999 18:50:07 +0200
-To: toe@ofey.inetnebr.com
-CC: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: update on macserial/DMA
-Message-Id: <19991006185007.004858@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: linuxppc-user@lists.linuxppc.org
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: scsi error playing mp3 file
+From: Chris Baker <cbaker@adrenalin.com>
+Date: 06 Oct 1999 10:18:11 -0700
+Message-ID: <wkzoxwh0h8.fsf@adrenalin.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Oct 6, 1999, Benjamin Herrenschmidt <bh40@calva.net> wrote:
+I'm getting scsi errors when I try to play an mp3 file.  This happens
+in linux playing off an nfs mount and in windows off an smb mount.  I
+don't have an mp3 player locally, so I haven't tested it directly.
+I've tried deleting the file and recreating it from the cd, but it
+still doesn't work.  I assumed that the disk was corrupted, but it
+fsck'd without errors.  I haven't had any problems with other files.
 
->I beleive this could be acheived by changing line 2404 to pass
->zs_channels_found-1. Not pretty but not less than my fix anyway... The
->fake zs_soft exist only because of the assumption zs_channel[i] matches
->zs_soft[i], I didn't take time to check if this assumption exist only in
->the probe code or not. I'll try to do something better next week-end if I
->find some spare time.
+Here is the output from /var/log/messages:
 
-Of course we must do this only when there's fake channel...
+Oct  5 20:36:49 trylon kernel: scsi0: MEDIUM ERROR on channel 0, id 6, lun 0, CDB: Request Sense 00 00 00 10 00  
+Oct  5 20:36:49 trylon kernel: Info fld=0x117b18, Current sd08:14: sense key Medium Error 
+Oct  5 20:36:49 trylon kernel: Additional sense indicates Read retries exhausted 
+Oct  5 20:36:49 trylon kernel: scsidisk I/O error: dev 08:14, sector 113624 
+Oct  5 20:37:02 trylon kernel: scsi0: MEDIUM ERROR on channel 0, id 6, lun 0, CDB: Request Sense 00 00 00 10 00  
+Oct  5 20:37:02 trylon kernel: Info fld=0x117b18, Current sd08:14: sense key Medium Error 
+Oct  5 20:37:02 trylon kernel: Additional sense indicates Read retries exhausted 
+Oct  5 20:37:02 trylon kernel: scsidisk I/O error: dev 08:14, sector 113624 
+Oct  5 20:37:04 trylon kernel: scsi0: MEDIUM ERROR on channel 0, id 6, lun 0, CDB: Request Sense 00 00 00 10 00  
+Oct  5 20:37:04 trylon kernel: Info fld=0x117b18, Current sd08:14: sense key Medium Error 
+Oct  5 20:37:04 trylon kernel: Additional sense indicates Read retries exhausted 
+Oct  5 20:37:04 trylon kernel: scsidisk I/O error: dev 08:14, sector 113624 
+Oct  5 20:37:05 trylon kernel: scsi0: MEDIUM ERROR on channel 0, id 6, lun 0, CDB: Request Sense 00 00 00 10 00  
+Oct  5 20:37:05 trylon kernel: Info fld=0x117b18, Current sd08:14: sense key Medium Error 
+Oct  5 20:37:05 trylon kernel: Additional sense indicates Read retries exhausted 
+Oct  5 20:37:05 trylon kernel: scsidisk I/O error: dev 08:14, sector 113624 
+Oct  5 20:37:07 trylon kernel: scsi0: MEDIUM ERROR on channel 0, id 6, lun 0, CDB: Request Sense 00 00 00 10 00  
+Oct  5 20:37:07 trylon kernel: Info fld=0x117b18, Current sd08:14: sense key Medium Error 
+Oct  5 20:37:07 trylon kernel: Additional sense indicates Read retries exhausted 
+Oct  5 20:37:07 trylon kernel: scsidisk I/O error: dev 08:14, sector 113624 
+Oct  5 20:37:09 trylon kernel: scsi0: MEDIUM ERROR on channel 0, id 6, lun 0, CDB: Request Sense 00 00 00 10 00  
+Oct  5 20:37:09 trylon kernel: Info fld=0x117b18, Current sd08:14: sense key Medium Error 
+Oct  5 20:37:09 trylon kernel: Additional sense indicates Read retries exhausted 
+Oct  5 20:37:09 trylon kernel: scsidisk I/O error: dev 08:14, sector 113624 
+Oct  5 20:38:15 trylon kernel: scsi0: MEDIUM ERROR on channel 0, id 6, lun 0, CDB: Request Sense 00 00 00 10 00  
+Oct  5 20:38:15 trylon kernel: Info fld=0x118c88, Current sd08:14: sense key Medium Error 
+Oct  5 20:38:15 trylon kernel: Additional sense indicates Read retries exhausted 
+Oct  5 20:38:15 trylon kernel: scsidisk I/O error: dev 08:14, sector 118088 
+Oct  5 20:38:26 trylon kernel: scsi0: MEDIUM ERROR on channel 0, id 6, lun 0, CDB: Request Sense 00 00 00 10 00  
+Oct  5 20:38:26 trylon kernel: Info fld=0x119540, Current sd08:14: sense key Medium Error 
+Oct  5 20:38:26 trylon kernel: Additional sense indicates Read retries exhausted 
+Oct  5 20:38:26 trylon kernel: scsidisk I/O error: dev 08:14, sector 120320 
+Oct  5 20:38:42 trylon kernel: scsi0: MEDIUM ERROR on channel 0, id 6, lun 0, CDB: Request Sense 00 00 00 10 00  
+Oct  5 20:38:42 trylon kernel: Info fld=0x118c88, Current sd08:14: sense key Medium Error 
+Oct  5 20:38:42 trylon kernel: Additional sense indicates Read retries exhausted 
+Oct  5 20:38:42 trylon kernel: scsidisk I/O error: dev 08:14, sector 118088 
+Oct  5 20:38:43 trylon kernel: scsi0: MEDIUM ERROR on channel 0, id 6, lun 0, CDB: Request Sense 00 00 00 10 00  
+Oct  5 20:38:43 trylon kernel: Info fld=0x118c88, Current sd08:14: sense key Medium Error 
+Oct  5 20:38:43 trylon kernel: Additional sense indicates Read retries exhausted 
+Oct  5 20:38:43 trylon kernel: scsidisk I/O error: dev 08:14, sector 118088 
+Oct  5 20:38:45 trylon kernel: scsi0: MEDIUM ERROR on channel 0, id 6, lun 0, CDB: Request Sense 00 00 00 10 00  
+Oct  5 20:38:45 trylon kernel: Info fld=0x118c88, Current sd08:14: sense key Medium Error 
+Oct  5 20:38:45 trylon kernel: Additional sense indicates Read retries exhausted 
+Oct  5 20:38:45 trylon kernel: scsidisk I/O error: dev 08:14, sector 118088 
+Oct  5 20:38:47 trylon kernel: scsi0: MEDIUM ERROR on channel 0, id 6, lun 0, CDB: Request Sense 00 00 00 10 00  
+Oct  5 20:38:47 trylon kernel: Info fld=0x118c88, Current sd08:14: sense key Medium Error 
+Oct  5 20:38:47 trylon kernel: Additional sense indicates Read retries exhausted 
+Oct  5 20:38:47 trylon kernel: scsidisk I/O error: dev 08:14, sector 118088 
 
--- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+This is easily repeatable, but I don't know where to start debugging.
+Does anyone have any ideas?
+
+TIA,
+
+cbb
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
