@@ -1,74 +1,53 @@
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Daniel Berlin <dan@www.cgsoftware.com>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ieee1394 status
-References: <Pine.LNX.4.33.0105042358480.6265-100000@www.cgsoftware.com>
-	<20010505135008.31470@smtp.wanadoo.fr>
-From: Daniel Berlin <dan@cgsoftware.com>
-Date: 05 May 2001 12:09:50 -0400
-In-Reply-To: <20010505135008.31470@smtp.wanadoo.fr> (Benjamin Herrenschmidt's message of "Sat, 5 May 2001 15:50:08 +0200")
-Message-ID: <87lmobdbg1.fsf@dynamic-addr-83-177.resnet.rochester.edu>
+Date: Sat, 5 May 2001 10:49:00 -0700 (PDT)
+From: Paul White <pwhite@networkrobots.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: IP Connection Tracking & Net Filter
+Message-ID: <Pine.LNX.4.21.0105051045550.13276-100000@stimpy.networkrobots.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+All,
 
-> >You can say whether you want the following swapped  or not (in any
-> >combination, they are just flags)
-> >
-> >1. selfid handling
-> >2. reading
-> >3. writing
-> >
-> >
-> >Pismo needs 2 and 3 to work right.
-> >Other OHCI on PPC (TI) need 1, 2, and 3.
-> >Your titanium probably needs 2 and 3, since i believe it's based on the
-> >uninorth, just a newer revision, right?
->
-> The titanium is the same logic board as the Pismo (well, almost). The
-> last TiPb I had a chance to play with had the exact same UniNorth revision
-> as the Pismo.
->
-> When you say you need byteswap on read & write, is this for data packets
-> read/written to/from memory (DMA) or is this for datas you feed to
-> (read from) a FIFO ? Just curious...
+Does anyone have IP Connection Tracking and Netfilter working on LinuxPPC?
 
-It's for the actual packet data in the third and fourth quadlets, at
-least right now.  It's necessary because motherboard implementations
-aren't required to support the byte swapping flag that normally takes
-care of this. And the uninorth doesn't.
-DMA is another issue altogether.
->
-> >It'll be on the 1394 list in about 10 minutes.
->
-> Is it against the 1394 CVS or will the current 2.4.4 1394 code work fine
-> with your patch as well ?
+I am currently using Kernel version 2.4.0 (drived from the linuxppc_24 tree).
+It is compiled for an MPC7410 embedded platform.  When compiling connection
+tracking and netfilter in, I receive the following error at bootup:
 
-It's against 1394 CVS, because that's what was easiest to diff against
-(cvs diff -c3p, hand edit, done).
-I always run your latest kernel, so i'm sure it works there too.
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd v1.8
+pty: 256 Unix98 ptys configured
+RAMDISK driver initialized: 16 RAM disks of 16384K size 1024 blocksize
+loop: enabling 8 loop devices
+Serial driver version 5.02 (2000-08-09) with MANY_PORTS SHARE_IRQ SERIAL_PCI enabled
+ttyS00 at 0xf1800020 (irq = 7) is a ST16650
+PPP generic driver version 2.4.1
+PPP Deflate Compression module registered
+SCSI subsystem driver Revision: 1.00
+request_module[scsi_hostadapter]: Root fs not mounted
+request_module[scsi_hostadapter]: Root fs not mounted
+usb.c: registered new driver usbdevfs
+usb.c: registered new driver hub
+usb.c: registered new driver hid
+mice: PS/2 mouse device common for all mice
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 2048 bind 2048)
+gal_eth_open : Assigned IRQ 8 to gal_eth0
+ip_conntrack (256 buckets, 2048 max)
+Kernel panic: Received Error on CPU BUS
 
-There are some 2.4 specific optimizations I made (use tasklets rather
-than bottom halves, use a kmem_cache for packet allocation [
-kmem_caches in 2.2 have some problems]) that i'd include if you want
-to put it in the kernel.
+In interrupt handler - not syncing
+Rebooting in 180 seconds..
 
+Thanks...
 
-> In that later case, I'll include your patch in my
-> kernels.
-
-
-
->
-> Ben.
->
-
---
-"If you were going to shoot a mime, would you use a silencer?
-"-Steven Wright
+Paul W.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
