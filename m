@@ -1,54 +1,43 @@
-To: "Pagnotta, Chris" <chris.pagnotta@viasat.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Hanging Init 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 10 Dec 2002 14:52:11 PST."
-             <0509218DDAD7D6118055006008F6D5F6A1E3A2@postal.viasat.com>
-Date: Wed, 11 Dec 2002 01:33:32 +0100
-Message-Id: <20021211003337.66353C613A@atlas.denx.de>
+From: acurtis@directvinternet.com
+Reply-To: <acurtis@directvinternet.com>
+To: "Tom Rini" <trini@kernel.crashing.org>,
+	"Pantelis Antoniou" <panto@intracom.gr>
+Cc: "Dan Malek" <dan@embeddededge.com>,
+	"Paul Mackerras" <paulus@au1.ibm.com>,
+	<joakim.tjernlund@lumentis.se>, "Matt Porter" <porter@cox.net>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Regarding consistent_alloc
+Date: Tue, 10 Dec 2002 19:52:40 -0800
+Message-ID: <NCBBIINEHIPFGJPLBEIFMEOMDPAA.acurtis@directvinternet.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <20021210174911.GB14786@opus.bloom.county>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <0509218DDAD7D6118055006008F6D5F6A1E3A2@postal.viasat.com> you wrote:
+> > 2. I have a requirement to have my drivers loaded as modules.
+> > m8xx_cpm_hostalloc has a very simplistic implementation, which
+> > makes it unsuitable for something like that. I have some patches
+> > that fix both m8xx_cpm_hostalloc and 8xx_cpm_dpalloc by implementing
+> > a proper heap, with free space management and coalescing.
+> > What is the proper way to push them, and to whom?
 >
-> I figure I am at the last stage in boot (I hope). I am however having an
-> issue that I was hoping someone
-> may shed some light on. I am having a hanging init.
->
-> 1) I rebuilt busybox and here are the dependencies:
+> <buck passing mode=on>Dan Malek still knows the most about the
+> 8xx-specific portions of the kernel, so he should really speak up here
+> when he gets a moment</buck passing>
 
-Ummm... why did  you  do  that?  The  ELDK  already  cntains  BusyBox
-binaries, both dymnamically and staically linked.
+m8xx_cpm_hostalloc(), if it is anything like the 8260 version, enables you
+to allocation memory from dual-port RAM. (which could be handy and/or
+required for certain CPM related operations) _va() and _pa() only work for
+main memory addresses. For all other address ranges the iopa() function must
+be used. (I hope this is helpful)
 
-> 3) Here is the output from PPCBoot. It looks like NFS mount was successfull.
-> I am using
+With that said, I would be interested in your modifications if you are
+willing to share.
 
-...and if you're using the root filesystem over NFS  you  don;t  need
-any busybox at all.
+THX
 
-If  you're   looking   for   a   ramdisk   environment,   check   for
-images/pRamdisk in your ELDK directory - there is a SELF RPM included
-with ELDK 2.0.
-
->    NFS mount server that run in user space NOT kernel. Don't know of this
-> makes any difference,
->    but I was able to NFS mount the directory from another machine.
-> 	mount -t nfs 172.25.4.55:/tftpboot/powerpc/ /mnt/nfs.
-
-Did you run the ELDK_MAKEDEV and ELDK_FIXOWNER sripts  as  documented
-in section "7. Mounting Target Components via NFS" ?
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-You're too beautiful to ignore.  Too much woman.
-	-- Kirk to Yeoman Rand, "The Enemy Within", stardate unknown
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
