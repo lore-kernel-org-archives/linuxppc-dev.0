@@ -1,41 +1,46 @@
-Message-Id: <6.0.0.22.2.20031014132031.02dc4820@mail.lauterbach.com>
-Date: Tue, 14 Oct 2003 13:34:58 +0200
-To: Colin Leroy <colin@colino.net>
-From: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>
-Subject: Re: Fw: [PATCH] Right-click modifier
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20031014122740.2a8a05a3.colin@colino.net>
-References: <02cc01c39231$dce0d200$3cc8a8c0@ANOSP>
- <20031014093604.GC29143@suse.de>
- <20031014122740.2a8a05a3.colin@colino.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Date: Tue, 14 Oct 2003 09:37:49 -0500
+Subject: Re: Need a Linux PPC kernel which supports the Radeon Mobility 9600
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v552)
+From: Ken Offer <koffer@arlut.utexas.edu>
+To: linuxppcdev <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <1065823660.601.0.camel@gaston>
+Message-Id: <FBD9E413-FE53-11D7-AB64-000393467F1A@arlut.utexas.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 12:27 14.10.2003, Colin Leroy wrote:
+On Friday, October 10, 2003, at 05:07  PM, Benjamin Herrenschmidt wrote:
 
->On 14 Oct 2003 at 11h36, Olaf Hering wrote:
+> On Fri, 2003-10-10 at 23:56, Ken Offer wrote:
+>> Hi all,
+>>
+>> Any of you know a kernel version or version of the radeonfb driver
+>> that
+>> supports the "ATI Mobility Radeon 9600" chip in the new 15"
+>> Powerbooks?
+>>   We've got one in house but the YDL 3.0.1 2.4.22-2a kernel doesn't
+>> seem
+>> to support it beyond text-mode.  X11 can't start up.
 >
->Hi,
+> I just fixed that in my 2.6 and I'll backport to 2.4 soon
 >
-> > Its certainly a nice thing, but all this mouse button emulation stuff
-> > should be handled in userland. Its just the question how and where.
->
->Any pointer about how it could be done?
+> Ben.
 
-Well, all this button emulation stuff currently is a hack that should go
-away, so Olaf is right here. Colin's patch itself is unacceptable to the
-kernel people, so it would be a benh-tree only solution at best.
+Anyone know how to get to Ben's 2.6 kernel?  Its not that I'm
+impatient, its just that the "powers-that-be" above me are. :)
 
-But since there is now the possibility to "grab" (input_grab_device()) away
-input devices from the input handler chain, one could write a input device
-kernel module that grabs keyboard and 1/2-button mice devices, massages the
-events and gives them back to the input layer via input_event(). I guess
-this is the only in-kernel solution acceptable to the kernel people.
+There are instructions at "http://penguinppc.org/~benh" concerning the
+2.4 stable, but not the 2.6.  I've tried substituting a "6" for the "4"
+in the path, but that didn't work.  And I cloned the "bk clone
+bk://ppc.bkbits.net/linuxppc-2.4" tree, but the radeonfb driver was
+identical to Ben's 2.4 stable.
 
-Franz.
++--------------------------------------------------------------+
+| Ken Offer                               Office: 512-835-3859 |
+| Email: koffer@arlut.utexas.edu             Fax: 512-835-3259 |
+| Applied Research Laboratories, University of Texas at Austin |
++--------------------------------------------------------------+
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
