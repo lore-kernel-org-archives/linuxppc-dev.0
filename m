@@ -1,27 +1,32 @@
-Subject: 405GP TLBHI "E" field
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Tue, 21 May 2002 10:04:21 -0400
-Message-ID: <3D296C067098F149B11A8F4FC37C054606F4E8@EXVS1.ops.infiniswitch.com>
-From: "Curry, Diane" <dcurry@infiniswitch.com>
-To: "Linuxppc Newsgroup (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: 405 I2C
+From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
+To: Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Cc: Armin Kuster <akuster@mvista.com>,
+	andrew may <acmay@acmay.homeip.net>
+Content-Type: text/plain
+Date: 21 May 2002 17:30:53 +0200
+Message-Id: <1021995053.7265.22.camel@swb11>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
-  I'm running 2.4.14pre3 on a custom ppc405GP board that has a little-endian device
-on the peripheral bus.  I've modified the finish_tlb_load code path to recognize the
-physical address of the device and set the "E" bit in the tlb entry for the page.
-The driver and device work fine using this feature, but what I did in finish_tlb_load
-is not a reasonable solution.  Is there a kernel interface callable from a driver
-that can be used to specify the endianness of a memory range, and set the "E"
-bit appropriately?  If not, are there any plans to implement this capability?
+How would you feel about merging the i2c-adap-ibm_ocp.c
+andi2c-algo-ibm_ocp.c into one file. This way it's possible to build the
+i2c drivers as a module.
 
-Thanks, in advance.
 
-Diane Curry
+Also I have a problem when accessing a device that is not present. The
+bus ends up in busy state an no other action can be taken. I solved the
+problem for me here by simply removing the test in iix_xfer but a proper
+solution has to be discussed. I have not tried Andrew's new iic_xfer is
+it going to be merged ??
 
+
+--
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 404 71 83
+Borgafjordsgatan 9                Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
