@@ -1,35 +1,33 @@
-To: "gao xiaoguo" <gaoxg@guoguang.com.cn>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: tftp on ppcboot 1.1.5 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 15 May 2002 16:46:48 +0800."
-             <001301c1fbed$0efb5da0$6801a8c0@guoguangacer>
-Date: Wed, 15 May 2002 13:49:35 +0200
-Message-Id: <20020515114940.37D1411968@denx.denx.de>
+Message-ID: <3CE25DB9.2090707@thales-bm.com>
+Date: Wed, 15 May 2002 15:08:09 +0200
+From: Julien Eyries <julien.eyries@thales-bm.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 8260 and SPI driver
+References: <20020515114940.37D1411968@denx.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <001301c1fbed$0efb5da0$6801a8c0@guoguangacer> you wrote:
->
-> I want to use tftp to download file into target machine,but always failed.
-...
-> ethaddr=00:00:00:01:02:03
+Hello !
 
-Get yourself a valid MAC address.
+I have searched the archive for an 8260 SPI driver and found some
+messages related to this topic, but it seems to me there is currently no
+working 8260 SPI driver. could someone confirm me that point ?
 
-Also, questions like this are off-topic here; you should ask  PPCBoot
-related stuff on the ppcboot-users mailing list.
 
-Wolfgang Denk
+thanks,
+
+
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The most difficult thing in the world is to know how to  do  a  thing
-and to watch someone else doing it wrong, without commenting.
-                                                        -- T.H. White
+Julien Eyries
+R&D engineer
+Thales Broadcast & Multimedia (ex-thomcast)
+email: julien.eyries@thales-bm.com
+fax: 33(0) 1 34 90 31 10
+tel: 33(0) 1 34 90 31 01
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
