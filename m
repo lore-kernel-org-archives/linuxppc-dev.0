@@ -1,75 +1,55 @@
-Message-ID: <3CFF7496.6050904@thales-bm.com>
-Date: Thu, 06 Jun 2002 16:41:26 +0200
-From: Julien Eyries <julien.eyries@thales-bm.com>
+Message-ID: <3CFF7C68.C6151B82@mvista.com>
+Date: Thu, 06 Jun 2002 10:14:48 -0500
+From: Mark Hatle <fray@mvista.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: [Fwd: Re: kernel command line for CRAMFS root filesystem]
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Steffen Rumler <Steffen.Rumler@icn.siemens.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: GDB/GDBSERVER and remote Thread Debugging
+References: <3CFF63A7.375F0644@icn.siemens.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
--------- Original Message --------
-Subject: Re: kernel command line for CRAMFS root filesystem
-Date: Thu, 06 Jun 2002 16:40:33 +0200
-From: Julien Eyries <julien.eyries@thales-bm.com>
-To: acurtis@onz.com
-References: <NCBBIINEHIPFGJPLBEIFKEEIDIAA.acurtis@onz.com>
+You will need to be working with GDB version 5.2 or newer to do thread
+debugging.
 
+--Mark
 
-i have never mounted it before .
-
-i am currently booting with initrd (good :-)) from my flash and it works
-fine( the commandline was : root=/dev/rd/0 );
-but now i want to replace that with a cramfs (better :-)) .
-
-anyway, i know i can acess to the range (start 0xfe100000 - length
-2MBytes) via my partition /dev/mtdblock/2 but if i try something like :
-   root=/dev/mtdblock/2 then JFFS2 try to mount it as root filesystem and
-fails !!!!!!
-
-maybe i should add something to the commandline, in order to tell the
-kernel that /dev/mtdblock/2 contains a CRAMFS partition ??
-
-
-
-
-
-
-Allen Curtis wrote:
-
- >>i have a cramfs image in flash, at address 0xfe100000 (length of image
- >>is 2MBytes).
- >>what is the kernel command line "root=..." to use this image as root
- >>filesystem ?
- >>
- >
- > What is the device name when you mount it from a bootp session? The
-name is
- > probably the same...
- >
- >
-
-
---
-Julien Eyries
-R&D engineer
-Thales Broadcast & Multimedia (ex-thomcast)
-email: julien.eyries@thales-bm.com
-fax: 33(0) 1 34 90 31 10
-tel: 33(0) 1 34 90 31 01
-
-
-
-
-
---
-Julien Eyries
-R&D engineer
-Thales Broadcast & Multimedia (ex-thomcast)
-email: julien.eyries@thales-bm.com
-fax: 33(0) 1 34 90 31 10
-tel: 33(0) 1 34 90 31 01
-
+Steffen Rumler wrote:
+>
+> Hello,
+>
+> I'm looking for a stable GDB/GDBSERVER extension
+> suitable for (remote) Debugging multiple threads.
+>
+> It should also possible to attach already running
+> threads.
+>
+> Actually I'm working with the GDB 5.0, but
+> I have problems with it. Sometimes breakpoints
+> are not hit, sometimes all threads seem to
+> be hanging in the debugging case only.
+>
+> Is there a stable extension for the GDB/GDBSERVER
+> providing thread debugging ?
+>
+> Thank you for help
+>
+> Steffen Rumler
+>
+> --
+>
+> --------------------------------------------------------------
+>
+> Steffen Rumler
+> ICN ON PNE SB 4
+> Siemens AG
+> Hofmannstr. 51                 Email: Steffen.Rumler@icn.siemens.de
+> D-81359 Munich                 Phone: +49 89 722-44061
+> Germany                        Fax  : +49 89 722-36703
+>
+> --------------------------------------------------------------
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
