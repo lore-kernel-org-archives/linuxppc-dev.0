@@ -1,44 +1,51 @@
-Message-ID: <29987-51510@sneakemail.com>
-Date: Wed, 03 Mar 2004 12:16:03 -0800
-From: "Stephen Williams" <612dlag102@sneakemail.com>
+Message-ID: <404665B3.20409@mvista.com>
+Date: Wed, 03 Mar 2004 16:09:39 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel hangs in early_init
-References: <20040302085159.1174CC0655@atlas.denx.de> <4522-80798@sneakemail.com> <4045A8FC.1090303@ru.mvista.com>
-In-Reply-To: <4045A8FC.1090303@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: Neil Wilson <NWilson@Airspan.com>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Stuart Yoder <stuart.yoder@conformative.com>
+Subject: Re: Porting Linux into IBM Spruce
+References: <3506EDCDEC47904CBE6FD2E1DEEA8984020CF952@fs5.airspan.com> <40460CEF.4050900@mvista.com>
+In-Reply-To: <40460CEF.4050900@mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Andrei Konovalov akonovalov-at-ru.mvista.com |PPC Linux Embedded| wrote:
-> Stephen Williams wrote:
+Mark A. Greer wrote:
 
->> Humm... The MMU comment makes me think. U-Boot is running with the
->> MMU off. The head_4xx.S entry code sets up a temporary MMU mapping
->> that includes the linked kernel address space, but that is only 32meg.
->> The stack at the time is still where U-Boot left it, near the end of
->> the 128Meg memory. Is this something I should address (pardon the pun)?
->>
 >
-> Just a suggestion. Check that the whole data cache is invalidated.
-> The kernel often relies on the bootloader to initialize dcache properly.
-> And there is a chance that the bootloader was written for 405GP, but
-> 405GPr's data cache is two times bigger.
+> Neil Wilson wrote:
+>
+>> What about the IBM 2*750FX + MV64360 dev board ?, would this be a port
+>> of Spruce + a different PCI bridge, I cannot seem to find an exact match
+>> in the platforms but there again maybe I am looking in the wrong
+>> tree/directory, thanks.
+>>
+> That's an Argan board and, as you note, its very different from a spruce
+> so it will get its own port.  That port is being worked on but isn't
+> ready yet.  If you can hold tight for a bit I will try to get you an
+> early version.
 
-BINGO!
+Okay, here is the problem.  We have a port that works (using 1 processor
+only) but its based on the 64360 code that was put into the -galileo
+tree.  AFAIK, that 64360 code it not acceptable for the _2_4_devel or
+the -2.4 tree so we can't put it in those trees.  There is also a file
+with a non-GPL license so that has to be rewritten before anything is
+released.
 
-I am using U-Boot, and in my JSE.h I had mis-set the CFG_DCACHE_SIZE
-to 8K, as it was copied from another config file that I used as a
-starting point. U-Boot does some cache management, but obviously
-made a mess when it was told the wrong thing:-)
+When that's done, I am told there will be a preview kit for it available
+from mvista.com.  Preview kits are freely available but you have to
+register (free).  Right now, that preview kit is expected to be
+available in ~4 weeks but no guarantees.
 
-I set it properly, and I'm farther along.
---
-Steve Williams                "The woods are lovely, dark and deep.
-steve at XXXXXXXXXX           But I have promises to keep,
-http://www.XXXXXXXXXX         and lines to code before I sleep,
-http://www.picturel.com       And lines to code before I sleep."
+That's the best I can do so if that's not good enough, you'll have to do
+it yourself or maybe someone else has a working src tree they are
+willing to share.
+
+Mark
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
