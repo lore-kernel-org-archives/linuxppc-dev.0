@@ -1,43 +1,73 @@
-Date: Sun, 23 May 2004 20:34:59 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Song Sam <samlinuxppc@yahoo.com.cn>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <20040524014947.68864.qmail@web15213.mail.bjs.yahoo.com>
+Date: Mon, 24 May 2004 09:49:47 +0800 (CST)
+From: Song Sam <samlinuxppc@yahoo.com.cn>
 Subject: Re: Module Compiling Problem
-Message-ID: <20040523183459.GA2335@mars.ravnborg.org>
-References: <20040522072520.67684.qmail@web15206.mail.bjs.yahoo.com> <20040523020029.65329.qmail@web15212.mail.bjs.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040523020029.65329.qmail@web15212.mail.bjs.yahoo.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20040523183459.GA2335@mars.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sun, May 23, 2004 at 10:00:29AM +0800, Song Sam wrote:
->
-> Song Sam <samlinuxppc@yahoo.com.cn> wrote
->
-> > A error happened when I compiled a module.Could any warmhearted person
-> > figure it out for me?
->
-> OK,I did it by myself.:-)
-> It turned out to be the fact that I enabled
-> CONFIG_MODVERSIONS=y in kernel configuration
-> and MODVERSIONS option in my module like
-> #if defined(CONFIG_MODVERSIONS)
-> #define MODVERSIONS
-> #include <linux/modversions.h>
-> #endif
-> at the same time.They conflicted against each other.Is
-> that so?A newbie error on module...
+Dear Mr. Sam,
 
-Looks wrong.
-When compiling an external module use:
-for 2.4:
-make -C $ERNELSRC SUBDIRS=$PWD modules
+Nice to meet you!
 
-for 2.6: (2.6.6 onwards)
-make -C $KERNELSRC M=$PWD
+Sam Ravnborg <sam@ravnborg.org> you wrote:
+> Looks wrong.
+> When compiling an external module use:
+> for 2.4:
+> make -C $ERNELSRC SUBDIRS=$PWD modules
 
-	Sam
+Uh,$ERNELSRC or $KERNELSRC?
+
+I use 2.4.18 for the moment.But after following your
+instruction,module compiling didn't get through.Pls
+see my making process and Makefile below.Did I do
+anything wrong or miss what?
+
+-------------------------------------------------
+[root@sgj ic]# make -C $KERNELSRC SUBDIRS=$PWD modules
+make: ***
+SUBDIRS=/workspace/myfilesystem/target/workdir/ic: No
+such file or directory.  Stop.
+
+[root@sgj ic]# make -C $ERNELSRC SUBDIRS=$PWD modules
+make: ***
+SUBDIRS=/workspace/myfilesystem/target/workdir/ic: No
+such file or directory.  Stop.
+
+[Makefile]
+CC = ppc_8xx-gcc
+
+# TOPDIR  := $(shell /bin/pwd)
+
+FILENAME = myic
+
+MYPATH  = /workspace/keep/dmt201/kernel
+
+CPPFLAGS := -D__KERNEL__ -D_REENTRANT
+-I$(MYPATH)/include
+
+CFLAGS := $(CPPFLAGS) -Wall -Wstrict-prototypes
+-Wno-trigraphs -O2 -fomit-frame-pointer \
+-fno-strict-aliasing -fno-common -g
+-I$(MYPATH)/arch/ppc -fsigned-char -msoft-float -pipe
+\
+-ffixed-r2 -Wno-uninitialized -mmultiple -mstring
+
+all : $(FILENAME).o
+
+clean :
+        rm $(FILENAME).o
+$(FILENAME).o : $(FILENAME).c
+        $(CC) $(CFLAGS) -DMODULE
+-DKBUILD_BASENAME=$(FILENAME) -c $(FILENAME).c
+
+Thanks a million for your notes.
+
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
