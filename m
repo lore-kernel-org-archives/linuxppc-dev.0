@@ -1,73 +1,42 @@
-Subject: [PATCH] fix redwood boot (linuxppc-2.4, from linuxppc_2_4_devel)
-From: Andreas Oberritter <obi@saftware.de>
-To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Content-Type: multipart/mixed; boundary="=-J0g6NrpZypqtMa2Tze16"
-Message-Id: <1066088250.1580.16.camel@shiva.eth.saftware.de>
+From: Gabriel Paubert <paubert@iram.es>
+Date: Tue, 14 Oct 2003 09:07:07 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Ethan Benson <erbenson@alaska.net>,
+	LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Time precision, adjtime(x) vs. gettimeofday
+Message-ID: <20031014070707.GA8972@iram.es>
+References: <20031011004541.5eda8953.billfink@mindspring.com> <20031011052716.GB24569@plato.local.lan> <1065884293.682.27.camel@gaston>
 Mime-Version: 1.0
-Date: Tue, 14 Oct 2003 01:37:30 +0200
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1065884293.682.27.camel@gaston>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---=-J0g6NrpZypqtMa2Tze16
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+On Sat, Oct 11, 2003 at 04:58:14PM +0200, Benjamin Herrenschmidt wrote:
+>
+> > > Assuming the fix works, is there a simple way to test for the
+> > > quickserver G4 model rather than doing the "#if 0", since I like to
+> > > run a common kernel across a variety of different processor models.
+> >
+> > i don't know, ive discussed it with benh, but he won't accept that VIA
+> > is a better choice here.
+>
+> Hrm... I do accept that it's a better choice, but I'm sure using
+> the KeyLargo timer is even better :) Anyway, I'll switch to VIA by
+> default on "PowerMac3,5" type machines for now.
 
-Hi,
+How does the Keylargo timer work? Any pointer?
 
-without this patch booting stops at "Calibrating delay loop" (jiffies
-don't increase). Please apply to linuxppc-2.4.
+Also for these machines it seems that OF also returns wrong values.
+Maybe there is an OF update somewhere.
 
-Regards,
-Andreas
+Does anybody know what MacOS X (most MacOS X machines probably use
+ntp) do?
 
---=-J0g6NrpZypqtMa2Tze16
-Content-Disposition: attachment; filename=embed_config.diff
-Content-Type: text/plain; name=embed_config.diff; charset=iso-8859-15
-Content-Transfer-Encoding: 7bit
+Sorry, more questions than answers. It superficially looks
+like a HW screw-up in one specific series of machines.
 
-===== arch/ppc/boot/simple/embed_config.c 1.16 vs edited =====
---- 1.16/arch/ppc/boot/simple/embed_config.c	Thu Sep 25 00:55:59 2003
-+++ edited/arch/ppc/boot/simple/embed_config.c	Tue Oct 14 01:12:29 2003
-@@ -684,26 +684,23 @@
- 			bd->bi_pci_enetaddr[i] = *cp++;
- #endif
- 		}
-+		bd->bi_tbfreq = 200000000;
- 		bd->bi_intfreq = 200000000;
- 		bd->bi_busfreq = 100000000;
- #ifdef CONFIG_PCI
- 		bd->bi_pci_busfreq = 66666666;
- #endif
--		/* Yeah, this look weird, but on Redwood 4 they are
--		 * different object in the structure.  When RW5 uses
--		 * OpenBIOS, it requires a special value.
--		 */
--#ifdef CONFIG_REDWOOD_5
--	bd->bi_intfreq = 200 * 1000 * 1000;
--	bd->bi_busfreq = 0;
--
--		bd->bi_tbfreq = 27 * 1000 * 1000;
--#elif CONFIG_REDWOOD_4
--		bd->bi_tbfreq = bd->bi_intfreq;
--#endif
- 	}
--}
-+	/* Yeah, this look weird, but on Redwood 4 they are
-+	 * different object in the structure.  When RW5 uses
-+	 * OpenBIOS, it requires a special value.
-+	 */
-+#if defined(CONFIG_REDWOOD_5) || defined (CONFIG_REDWOOD_6)
-+	bd->bi_tbfreq = 27000000;
- #endif
-+	timebase_period_ns = 1000000000 / bd->bi_tbfreq;
-+}
-+#endif /* CONFIG_IBM_OPENBIOS */
-
- #ifdef CONFIG_ARCTIC2
- /* Several bootloaders have been used on the Arctic.  We assume either
-
---=-J0g6NrpZypqtMa2Tze16--
-
+	Gabriel
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
