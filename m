@@ -1,39 +1,47 @@
-Date: Fri, 10 Sep 1999 11:47:22 +0200
-To: linuxppc-dev@lists.linuxppc.org, Paul.Mackerras@cs.anu.edu.au
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: New quik and iMac OF
-Message-Id: <19990910114722.029413@mailhost.mipsys.com>
+Message-Id: <199909101014.AA08041@LONSF24318.MLE.CO.UK>
+From: "Saulnier, Geoff (London)" <saulngeo@MLE.CO.UK>
+To: "'LinuxPPC Dev'" <linuxppc-dev@lists.linuxppc.org>,
+        "'LinuxPPC User'"
+	 <linuxppc-user@lists.linuxppc.org>
+Subject: UW SCSI PCI cards
+Date: Fri, 10 Sep 1999 11:09:51 +0100
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've seen the new quik 2.0 posted on linuxppc.org and tried it on an
-iMac. I used the "second" file (ELF image of secondary bootloader), put
-it on an HFS partition, and used the command
+Hi!
 
-boot hd:5,second
+My apologies fro posting to both lists, but this is a question that I think
+applies to both...
 
-(5 is the partition number of the HFS partition)
+Finally managed to get linuxppc installed, from the CD, onto my Beige G3
+minitower.  It has a PCI Ultra-Wide SCSI card and 2 4Gb UW SCSI disks of
+that card.  I had to install it onto a 1Gig Jaz cart because of the
+following problems:
 
-It works. However, quik itself won't do anything useful since I didn't
-setup the boot device correctly (and I didn't have a kernel to boot from
-anyway).
+No matter how well partitioned my drives were (with Mac pdisk), the intaller
+would not see them, and pdisk in the linux X installer environment would not
+see them.  In fact, it would see not partitions at all of any kind.
 
-So basically, it should be possible to make bootable CDs with an HFS
-partition, a boot-info file with the type "tbxi" containing the above
-command and the "second" bootstrap. I don't know yet if we can also add a
-"first.b"/"second.b" version on the same CD for old machines, or if they
-can also do the above trick (they may be able using Apple's System Disk
-control panel which contains the appropriate OF patches).
+When I formated and partitioned a Jaz cart, with the drive on the external,
+ordinary SCSI bus, it was seen by the installer and things went fine from
+there.
 
+So, my questions are:
+  -  what PCI UW SCSI cards are supported in the final version
+  -  are there any plans to support others (I am assuming that the one that
+came in my box is not supported!)
+or
+  -  does this problem sound like it has nothing to do with the card?
 
+Thanks for any help!!
 
--- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+Geoff Saulnier                    Merrill Lynch 
+TEL: +44 (0)171 867 4305          London GFX Systems 
+FAX: +44 (0)171 867 4478          6A Ropemaker Place
+MOB: +44 (0)976 27 16 16          geoff_saulnier@ml.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
