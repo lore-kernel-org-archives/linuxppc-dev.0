@@ -1,44 +1,38 @@
-To: "challaharikumar" <challaharikumar@tataelxsi.co.in>
-Cc: linuxppc-dev@lists.linuxppc.org, dan@embeddededge.com
-Subject: Re: ADS8260 Hang 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 22 Apr 2004 11:57:44 +0530."
-             <001101c42832$ec117760$3401080a@telxsi.com>
-Date: Thu, 22 Apr 2004 21:42:00 +0200
-Message-Id: <20040422194205.4736EC109F@atlas.denx.de>
+From: "Tameen Khan" <tameen@cisco.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Physical Memory map holes in PPC
+Date: Thu, 22 Apr 2004 21:26:41 -0700
+Message-ID: <00b001c428eb$2d8ae740$273147ab@amer.cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <001101c42832$ec117760$3401080a@telxsi.com> you wrote:
->
-> I initially tried using Linux 2.4.1 kernel and it worked fine and the
-> board was up.
-> I upgraded to 2.4.17 and I found out that the system started hanging
-> during boot up.
+Hi,
 
-I guess you didn't read the FAQ; see
-http://www.denx.de/twiki/bin/view/DULG/LinuxHangsAfterUncompressingKernel
+I am porting Linux kernel Core dumps (LKCD) to PPC platform (440GX).
+Need to figure out if there are holes in Pysical memory map for PPC
+architecture, and if yes where are they defined.
 
-I think you must unset the "clocks_in_mhz" environment variable.
+For example the equivalent funtion for i386 architecture is page_is_ram()
+defined in arch/i386/mm/init.c. It uses the e820 memory map, which is
+initialized by the setup code in setup.S ( or it is faked to contain 2
+regions 0->640K and 1M ->appropriate_end.... So there's at least a memory
+hole from 640K -> 1MB)
 
-> I tried tracking down where the hang could be and ended up at the RFI
-> instruction where its waiting to complete the MMU initialization. The
-> system executes SYNC instruction and then hangs. (arch/ppc/kernel/head.S)
+I have looked through the boot memory allocator code for PPC and I dont find
+a similar memory map. They use a phys_avail array for boot memory allocation
+which is initialized to a single region from PPC_MEMSTART to total_memory.
+>From this it appears that there are no "holes" in physical memory map for
+PPC.
 
-I think you are hunting a ghost; and again you didn't read the FAQ; see
-http://www.denx.de/twiki/bin/view/DULG/HowToSingleStepThroughRFIInstruction
+Am I right ??
+Any input will be appreciated
 
-Best regards,
+Thanks
+Tameen
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"When the only  tool  you  have  is  a  hammer,  you  tend  to  treat
-everything as if it were a nail."                    - Abraham Maslow
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
