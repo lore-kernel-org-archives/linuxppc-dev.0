@@ -1,25 +1,27 @@
-Message-ID: <399CC44F.C8CE6E2A@embeddededge.com>
-Date: Fri, 18 Aug 2000 01:06:23 -0400
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <002501c008fc$d8938060$020a0a0a@PaoloScaffardi>
+From: "Paolo Scaffardi" <arsenio@tin.it>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Porting X to PowerPC platform
+Date: Fri, 18 Aug 2000 12:11:50 +0200
 MIME-Version: 1.0
-To: Joe Green <jgreen@mvista.com>
-CC: "M. Tim Jones" <mtj@mtjones.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Doc/Serial problems in HHL 1.2?
-References: <399B9874.99CF5C1C@mtjones.com> <00081708394601.01481@minotaur.mvista.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joe Green wrote:
+I am writing a framebuffer device for my MPC823FADS platform, and i need to
+port a simple X-server based on the framebuffer to my PowerPC.
 
-> ....  I don't think we have an 860CLLF LSP, but the mbx860 or
-> linuxplanet configs should be close.
+I looked at the XFree86 sources but it's not clear hot to compile them for
+PowerPC targets!
 
-Yes, there is a LSP for the 860 CLLF.  It is called:
-	hhl-ppc_8xx-cllf-lsp-2.2.14-1.2.2-3.noarch.rpm
+Are you already done this?
+How can i proceed?
 
+I'm in a hurry... please help me soon!
 
-	-- Dan
+Bye,
+Paolo Scaffardi.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
