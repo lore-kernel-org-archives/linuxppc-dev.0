@@ -1,39 +1,63 @@
-Message-Id: <4.3.2.7.2.20000718131525.00d2e570@mail.munich.netsurf.de>
-Date: Tue, 18 Jul 2000 13:16:34 +0200
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-From: Franz Sirl <Franz.Sirl@munich.netsurf.de>
-Subject: Re: _linux.cfg file is wrong for powerpc in Mozilla builds
-Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <3973B620.6515067F@ivey.uwo.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <39744BAA.6E5984DA@wanadoo.fr>
+Date: Tue, 18 Jul 2000 14:20:58 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: strace doesn't work on 2.4.0-testX
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 03:42 18.07.00, Kevin B. Hendricks wrote:
+Hi,
 
->To (Whomever supports Mozilla on PowerPC).
->
->I have been trying to trackdown a bug with the forthcoming jdk 1.3 oji plugin
->for Mozilla (that will give mozilla full java capabilities).  It seems the
->plugin relies on the libnspr4.so shared lib provided by the mozilla source
->tree.  I noticed that the _linux.cfg file that is used to generate prcpucfg.h
->has the wrong alignment constraint for both int64 types and doubles.
->
->They are both set to 4 now and they should be 8.  Also the proper
->HAVE_ALIGNED_XXXXX definitions should be set for powerpc.
->
->This causes problem with pipes and things and some of the unions that are used
->in the code.
->
->Will whomever is supporting Mozilla on Linux PowerPC please check out
->_linux.cfg
->found in the nsprpub directory tree and get this fixed.
+now that the 2.4.0-testX kernel series seems to stabilize (famous last
+words...), I am trying to understand some of the basic showstoppers. One
+of them is the impossibility to use the loop device for mounting files
+as filesystems, for example ramdisk images.
 
-I'll take care of this.
+I would like to know whether this is a problem with mount (since one
+cannot mount hfs CDs either) or with the loop device which used to be
+broken for a long time. In order to see anything, I am trying to use
+strace.
 
-Franz.
+The problem is that strace stopped working somewhere between
+2.4.0-test1-ac18 and -ac21 (I have both kernels and verified just
+moments ago). It still doesn't work with 2.4.0-test5-pre2. Is this a
+known problem or am I doing something wrong? I haven't seen anything on
+the linux-kernel list (in the l-k archives, the last message with a
+similar subject is from 1996), so it could be a ppc-related problem.
 
+What strace is doing now looks like:
+
+[root@chezmoi /tmp]# strace mount -o loop ramdisk.image
+/mnt/ram1
+execve("/bin/mount", ["mount", "-o", "loop", "ramdisk.image",
+"/mnt/ram1"], [/* 29 vars */]) = 0
+memlock: Invalid argument
+Couldn't lock into memory, exiting.
+
+That is, it just repeats the command and gives the output. In pre-ac18,
+there were 48 lines, looking like
+
+execve("/bin/mount", ["mount", "-o", "loop", "ramdisk.image",
+"/mnt/ram1"], [/*
+25 vars */]) = 0
+brk(0)                                  = 0x10022470
+open("/etc/ld.so.preload", O_RDONLY)    = -1 ENOENT (No such file or
+directory)
+[and so on, up to:]
+write(2, "memlock: Invalid argument\n", 26memlock: Invalid argument
+) = 26
+write(2, "Couldn\'t lock into memory, exiti"..., 36Couldn't lock into
+memory, ex
+iting.
+) = 36
+exit(1)                                 = ?
+
+Any ideas?
+
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
