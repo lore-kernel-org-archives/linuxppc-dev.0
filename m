@@ -1,31 +1,32 @@
-Message-ID: <3B8D5E04.7FA12092@mvista.com>
-Date: Wed, 29 Aug 2001 14:26:28 -0700
-From: Scott Anderson <scott_anderson@mvista.com>
-MIME-Version: 1.0
-To: Matt Porter <mporter@mvista.com>
-Cc: Brian Waite <bwaite@cspi.com>,
-	linuxppc-embedded@lists.linuxppc.org
+Date: Wed, 29 Aug 2001 16:32:56 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Brian Waite <bwaite@cspi.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: trying to boot linux on a MVME5100
-References: <85256AB7.00607D65.00@pine.cspi.com> <200108292010.QAA06333@orchid.cspi.com> <20010829095835.C31027@cx258813-a.chnd1.az.home.com>
+Message-ID: <20010829163256.E18618@cpe-24-221-152-185.az.sprintbbd.net>
+References: <85256AB7.00607D65.00@pine.cspi.com> <200108292010.QAA06333@orchid.cspi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200108292010.QAA06333@orchid.cspi.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matt Porter wrote:
-> Tom just moved things around recently to consolidate some bootloaders but
-> you should find a ./images/zImage.initrd.pplus according to simple/Makefile.
-> YMMV, I haven't tried it since before the changes.
+On Wed, Aug 29, 2001 at 04:02:35PM -0400, Brian Waite wrote:
 
-and if that doesn't work out, you should be able to narrow the
-search down by doing something like:
+> I am also using an MVME5100 it works so far except with the new 2.4.9 devel
+> tree I can  no longer build a zImage.initrd. make zImage.initrd completes and
+> is happy, but I never find the file in the tree anywahere. I have cheked pp3,
+> prep, common, simple and images. The most I can find is a vmlinux.gz Any
+> ideas on this?
 
-	$ find . -type f -newer vmlinux
+G'arg...  It really should be:
+arch/ppc/boot/images/zImage.initrd.{pplus,bugboot}
 
-Good luck,
-    Scott Anderson
-    scott_anderson@mvista.com   MontaVista Software Inc.
-    (408)328-9214               1237 East Arques Ave.
-    http://www.mvista.com       Sunnyvale, CA  94085
+I'll go and make a quick dummy ramdisk and try this..
+
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
