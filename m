@@ -1,30 +1,40 @@
-Message-ID: <37E51AEB.AFE383E0@execpc.com>
-Date: Sun, 19 Sep 1999 12:18:35 -0500
-From: Joseph Garcia <jpgarcia@execpc.com>
-MIME-Version: 1.0
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: sound sleep (more)
-References: <19990919105401.015601@smtp.calvacom.fr> <37E50C29.CA2CE536@execpc.com> <19990919115435.A24214@io.nu> <37E51662.8ACADA16@execpc.com>
-Content-Type: text/plain; charset=iso-2022-jp
+Date: Sun, 19 Sep 1999 15:49:14 -0400 (EDT)
+From: Claude Robitaille <crobitaille@videotron.ca>
+Subject: Re: 2.2.X MACE driver broken on the PowerMac 7200.
+In-reply-to: <37E4532D.45BA7203@insu.com>
+To: "Francis J. Lacoste" <francis@insu.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-id: <Pine.LNX.4.10.9909191546330.537-100000@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-i forgot to add that i wrote the i/o interrupt handler code as a side thing
-while trying to debug the sound not waking up.  The thing it helped me determine
-is that the interrupts are still produced after sound disappears.  so the system
-is still there.  sound is produced after a sleep if the module is
-removed/slept/isntalled, but not if it is installed while sleeping.   so is the
-sound system handled by the PMU always or just when powered up?  is it powered
-up only when the module is installed?  If the PMU always handles sound upon
-sleeping, why does it work when the module isn't installed at sleep?  any way to
-check this further?
+Francis,
 
-more questions i cant answer.
+I had the same problem on an 7300. I switched to using
+dhcpcd instead of pump and it worked fine since then. I
+looks like pump does not configure properly the interface,
+however, I did not dig into the problem. (no need to).
 
--- 
-Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
-CS Undergraduate                      Student Employee - Systems Programmer
-University of Wisconsin - Madison                            UW Lidar Group
+
+Claude
+
+On Sat, 18 Sep 1999, Francis J. Lacoste wrote:
+
+> 
+> I wasn't able to use NFS or FTP for the upgrade, but resort
+> to a CDROM install. After the install, I realized that the
+> ethernet card wasn't working properly.  DHCP works fine
+> but nothing else works. If can grab an IP any time I want
+> with pump, but ping doesn't work. 
+> 
+> If I look at ifconfig, I see that there are a lot of dropped
+> packets plus some errors and some frames errors. I tried this
+> with kernel 2.2.6 and 2.2.12 both with booting with Open Firmware
+> or booting with BootX. 
+> 
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
