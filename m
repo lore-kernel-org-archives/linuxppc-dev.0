@@ -1,35 +1,55 @@
-In-Reply-To: <20040331230620.ACC3BC10A4@atlas.denx.de>
-References: <20040331230620.ACC3BC10A4@atlas.denx.de>
-Mime-Version: 1.0 (Apple Message framework v613)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <812363C6-8371-11D8-9FF0-000A95A07384@sands-edge.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-From: John Whitney <jwhitney-linuxppc@sands-edge.com>
-Subject: Re: Proposed Kconfig update patch for help text 
-Date: Wed, 31 Mar 2004 19:14:12 -0500
-To: Wolfgang Denk <wd@denx.de>
+Subject: Re: Proposed changes to io.h
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: John Whitney <johnw@sands-edge.com>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <49B568CB-832A-11D8-9FF0-000A95A07384@sands-edge.com>
+References: <49B568CB-832A-11D8-9FF0-000A95A07384@sands-edge.com>
+Content-Type: text/plain
+Message-Id: <1080787943.1434.47.camel@gaston>
+Mime-Version: 1.0
+Date: Thu, 01 Apr 2004 12:52:23 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-We can put in "8xx", but I didn't think that the listed processors was
-supposed to be an exhaustive list (just some examples).   Shall we just
-prune them down to "8xx", "4xx", etc.?
-
-John
-
-On Mar 31, 2004, at 6:06 PM, Wolfgang Denk wrote:
-
-> In message <B755A2F6-8364-11D8-9FF0-000A95A07384@sands-edge.com> you wrote:
->>
->> A couple of trivial changes for the processor choice help text to
->> make it a bit clearer.
-> ...
->>        types (601, 603, 604, 740, 750, 7400), the Motorola embedded
->> -     versions (821, 823, 850, 855, 860, 8260), the IBM embedded
->> versions
->> +     versions (821, 823, 850, 855, 860, 82xx), the IBM embedded
+On Thu, 2004-04-01 at 01:44, John Whitney wrote:
+> I've made few changes to include/asm-ppc/io.h that might want to be
+> incorporated into the mainline tree.  These changes include:
 >
-> How about types like 857, 862, the 866 family, the 885 family, ... ?
+> 1. Modifications to virt_to_bus, bus_to_virt, virt_to_phys, and
+> phys_to_virt.  With the use of fully virtual addresses for
+> cache-coherent allocations (consistent_alloc(), etc.), just subracting
+> KERNELBASE from the virtual address is no longer sufficient.  Because
+> of this, I have modified virt_to_phys and phys_to_virt to look like:
+
+Those functions are deprecated actually (the _bus_ ones at least,
+the _phys_ one can still be used by some internal arch code, though
+it's well known that they will only work with the linear mapping,
+thus a simple substraction is enough).
+
+> This simplifies the "bus" routines, and makes sure that they use the
+> standard virtual/physical translations.
+
+The proper simplification is to kill them
+>
+> 2. I'd like to add 64-bit __raw_readll and __raw_writell routines to
+> io.h, done using floating-point registers.  Currently, modules such as
+> MTD (when writing to 64-bit buses) perform two 32-bit, non-atomic
+> writes, which can cause problems.  Using a floating-point register to
+> guarantee a 64-bit write is ugly, but it works.  Code for these inlined
+> routines is as follows:
+
+First, the proper name is readq/writeq ;) Then, most machines may
+not have a 64 bits IO bus anyway, I don't think we need to provide
+those functions for ppc32 and the MSR munging will cost you more
+than the benefit of doing a 64 bits access.
+
+So unless you have a specific need for those, I don't think we
+need that in the kernel. Note about your implementation: you could
+probably clear MSR:EE at the same time as you set MSR:FP instead
+of using local_irq_save outside of the asm block ;)
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
