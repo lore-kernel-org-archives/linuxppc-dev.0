@@ -1,32 +1,33 @@
-Message-Id: <200007120131.CAA24936@hyperion.valhalla.net>
-Date: Wed, 12 Jul 2000 02:31:59 +0100
-Subject: Re: 2.4.0-test3 tree
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: toa@pop.agri.ch
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20000712141525.Postino-021702@smtp01.highway.ne.jp>
+Date: Wed, 12 Jul 2000 14:15:25 +0900
+To: linuxppc-dev@lists.linuxppc.org
+From: Kaoru Fukui <k_fukui@highway.ne.jp>
+Subject: today's problem kernel-2.4.0-t3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tue, Jul 11, 2000 Andreas Tobler wrote:
-> Iain Sandoe wrote:
->>
->> The bk rsync 2.4.0-test3 tree is not compiling (timer.c)
->> rsynced 16:00 BST [15:00 UTC/GMT]
->
-> kernel/timer.c line 580: if (p->nice > DEF_NICE) (ok)
-> arch/ppc/kernel/idle.c line 51: current->nice = 0; (not sure)
->
-> Runs here on a wallstreet.
+Hi!
 
-Thnx.
-and now on a G3/Beige :-))
+Priority member has gone.
 
-[doesn't solve the problem I have - no sound - but at least I can now try
-and fix that :-) ]
+Any help
 
-Iain
+Kaoru
+
+timer.c: In function `update_process_times':
+timer.c:580: structure has no member named `priority'
+timer.c:580: `DEF_PRIORITY' undeclared (first use in this function)
+timer.c:580: (Each undeclared identifier is reported only once
+timer.c:580: for each function it appears in.)
+make[2]: *** [timer.o] Error 1
+make[2]: Leaving directory `/usr/src/redhat/BUILD/linux/kernel'
+make[1]: *** [first_rule] Error 2
+make[1]: Leaving directory `/usr/src/redhat/BUILD/linux/kernel'
+make: *** [_dir_kernel] Error 2
+Bad exit status from /var/tmp/rpm-tmp.11753 (%build)
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
