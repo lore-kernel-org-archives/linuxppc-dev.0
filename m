@@ -1,73 +1,54 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
+Date: Sun, 1 Oct 2000 13:30:36 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Takashi Oe <toe@unlserve.unl.edu>
+cc: Benjamin Herrenschmidt <bh40@calva.net>,
+        Jon Erick Ween <jween@som.llu.edu>, linuxppc-dev@lists.linuxppc.org,
+        linux-fbdev@vuser.vu.union.edu
+Subject: Re: Xfree86-4.0.1, Lombard, Mach64 driver, X-server Crash
+In-Reply-To: <Pine.A41.3.96LJ1.1b7.1000929112058.7632A-100000@unlserve.unl.edu>
+Message-ID: <Pine.LNX.4.10.10010011330090.377-100000@cassiopeia.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14806.62164.27906.255635@argo.linuxcare.com.au>
-Date: Sun, 1 Oct 2000 19:16:20 +1100 (EST)
-To: Dan Malek <dan@mvista.com>
-Cc: frowand@mvista.com,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-In-Reply-To: <39D68EB8.4CAD5168@mvista.com>
-References: <19340822040932.8760@mailhost.mipsys.com>
-	<Pine.LNX.4.10.10009281150130.3468-100000@cassiopeia.home>
-	<14803.57550.118150.759977@argo.linuxcare.com.au>
-	<39D41AA2.C586D738@mvista.com>
-	<14804.7238.688771.238444@argo.linuxcare.com.au>
-	<39D4E85F.926CFD5B@mvista.com>
-	<14805.17492.766815.388301@argo.linuxcare.com.au>
-	<39D66E4D.4364FC8B@mvista.com>
-	<39D68EB8.4CAD5168@mvista.com>
-Reply-To: paulus@linuxcare.com.au
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek writes:
+On Fri, 29 Sep 2000, Takashi Oe wrote:
+> On Fri, 29 Sep 2000, Geert Uytterhoeven wrote:
+> > > > In 2.5.x, we'll have a user-defined xor mask for the cursor as the 17th entry
+> > > > in the dispsw_data array.
+> > >
+> > > Can we put it for 2.4?  As far as I can see, the actual size of
+> > > dispsw_data matters only between fb driver and fbcon-cfbxx.c, and the
+> > > changes required for each driver seem to be rather small.  Besides,
+> > > controlfb is not the only one which will benefit from this change.
+> >
+> > That's true. Personally, I see no problems with it if someone's willing to
+> > write the patch for _all_ drivers at once. The real 2.4.0 is still a long way
+> > to go, I think, and the impact of the required changes is known quite well.
+>
+> Good!  I'll work on it.  Only a few allocate memory for dispsw_data
+> dynamically, the changes should be trivial for most.
+>
+> > The main thing we need to be careful about is that the xor mask is different
+> > for truecolor and directcolor visuals: truecolor needs an `all ones' mask,
+> > while directcolor needs `15' for each color component (drivers that incorrectly
+> > report a directcolor instead of truecolor visual will easily be identified).
+>
+> I don't know how it will work out for atyfb, but we'll see...
 
-> This "equivalent" mapping is going to be the greatest challenge.  The
-> reason this happens is because we need access through the MMU before
-> the kernel has initialized the kernel VM allocator.  Parts of the early
-> kernel initialization that have to access control/status registers of
-> various types are going to be mapped 1:1.  After some of these proposed
-> changes, these mappings are going to be destroyed and remapped (to get
-> the "standard" 0xff000000 address).  This is really bad for the
+Atyfb is directcolor. Grep fro VISUAL_ to find out :-)
 
-Ummm, no, I think we may have a misunderstanding here.
+Gr{oetje,eeting}s,
 
-First, you can use ioremap before the kernel VM allocator is set up,
-and you can continue to use the virtual addresses you get by doing so.
-So no mappings are going to be destroyed and remapped.  All we do for
-early ioremaps of addresses < ioremap_base is to allocate addresses
-starting at ioremap_base and going down.  And yes, we will need to do
-that for addresses >= 0xff000000 too (in fact 0xfe000000 if we are
-using CONFIG_HIGHMEM).  Actually, there's really no reason why we
-shouldn't do that for all physical addresses.  So the code in ioremap
-would become something like this:
-
-	if (mem_init_done) {
-		struct vm_struct *area;
-		area = get_vm_area(size, VM_IOREMAP);
-		if (area == 0)
-			return NULL;
-		v = VMALLOC_VMADDR(area->addr);
-	} else {
-		v = (ioremap_bot -= size);
-	}
-
-(leaving out the "if (p >= ioremap_base)" test), and we could
-initialize ioremap_bot to 0xff000000 (or 0xfe000000 in the highmem
-case).
-
-Secondly, all your integrated devices would be using memory-mapped
-I/O, so the question of what _IO_BASE is, and how inb/outb work, is
-pretty much irrelevant to you, isn't it?
-
-Paul.
+						Geert
 
 --
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
