@@ -1,47 +1,36 @@
-Message-ID: <37DEF30C.EFB188F6@ctam.com.au>
-Date: Wed, 15 Sep 1999 11:14:53 +1000
+Message-ID: <37DEF583.3DC2F0D4@ctam.com.au>
+Date: Wed, 15 Sep 1999 11:25:23 +1000
 From: Brendan Simon <bsimon@ctam.com.au>
 Reply-To: bsimon@ctam.com.au
 MIME-Version: 1.0
-To: sébastien tadéoni <sebastien_tadeoni@yahoo.fr>
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Problem for compiling linux-2.2.5-embedded
-References: <19990914142953.21439.rocketmail@web601.yahoomail.com>
-Content-Type: text/plain; charset=iso-8859-1
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: mpc8xx-2.3.10 configuration questions.
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-sébastien tadéoni wrote:
+I have managed to compile a zImage for the BSE target.  Great.  It took
+a lot of trial and error to find out which options to leave out.  The
+serial and serial-console support is an obvious one which seems natural
+to include but causes the build to fail.
 
-> I've some problems with the cross-compilation of the 2.2.5-embedded
-> kernel for MPC860 (configure for a MBX card).
->
-> ppc_ksyms.c:77:'isa_io_base' undeclared here (not in a fonction)
->
-> ppc_ksyms.c:77:'initializer element for '--ksymtab_isa_io_base.value'
-> is not constant
->
-> In the ppc_ksyms.c I see EXPORT_SYMBOL(isa_io_base) and I don't no what
-> it minds.
+It fails to build if I include any of the following options.  I can't
+remember the exact error messages but can post them later if it helps.
+* CPU is too slow to handle full bandwidth.
+* MS-DOS, VFAT filesystems.
+* SMB network filesystems.
 
-First join the new linuxppc-embedded mailing list.  This is a ppc-embedded
-problem and there is no need to hassle the ppc-users or ppc-developers.
+Has anyone had similar problems ?  Must other options be included for
+any of these to work ?
 
-I had these problems too.  It is definately a configuration problem.  I am
-using the latest embedded source mpc8xx-2.3.10.tgz but had the same
-problems with embedded-2.2.5.  Send your .config file.
+I notice that the .config file has both 8xx and 6xx cpus defined even
+though I've chosen 8xx/860.  Similarly, CONFIG_PARIDE_PARPORT=y even
+though I don't enable it.  It looks as though there are some defaults
+that are set regardless of what the user sets.  This worries me a bit,
+especially having 8xx and 6xx cpus both defined.  Is this intentional ?
 
-Things you should NOT have included are :
-- serial support and serial-console support.  I know this sounds wrong but
-that's the way it is.
-- virtual terminals
-- make sure that no network cards are selected.
-
+Thanks,
 Brendan Simon.
-
-PS. I think there is a sample configuration file in embedded-notes.txt or
-mbx-notes.txt on the ftp site.
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
