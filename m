@@ -1,44 +1,36 @@
-Date: Wed, 28 Nov 2001 16:22:43 -0600
-From: Troy Benjegerdes <hozer@drgw.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: arch/ppc/boot broken include in currenty 2_4_devel
-Message-ID: <20011128162242.M23942@altus.drgw.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <p05101000b82b14bd6135@[10.0.0.42]>
+In-Reply-To: <3C0561FE.80489F5E@vnet.ibm.com>
+References: <15365.24592.409195.392505@gargle.gargle.HOWL>
+ <3C0561FE.80489F5E@vnet.ibm.com>
+Date: Wed, 28 Nov 2001 14:28:33 -0800
+To: tom_gall@vnet.ibm.com, paulus@samba.org,
+	linuxppc-dev@lists.linuxppc.org
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: CONFIG_ALL_PPC
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Somehow, the
+At 10:15 PM +0000 11/28/01, Tom Gall wrote:
+>Paul Mackerras wrote:
+>>
+>>  I want to rename CONFIG_ALL_PPC to CONFIG_PREP_PMAC_CHRP in the
+>>  linuxppc_2_4_devel tree (or if anyone can suggest a better name I'll
+>>  use that).
+>>
+>>  Does anyone object to this?
+>
+>Hmmm well not that I object because I don't... but I am working on this POP
+>board here and technically speaking it's the next in the great PREP / PMAC /
+>CHRP chain...
+>
+>CONFIG_PREP_PMAC_CHRP_POP?  ICK!
 
-CFLAGS	+= -fno-builtin -D__BOOTER__ -I$(TOPDIR)/arch/$(ARCH)/boot/include
-
-line in arch/ppc/boot/Makefile is not getting picked up, causeing me
-problems like:
-
-make[3]: Entering directory
-`/scratch/mvp/linuxppc_2_4_galileo/arch/ppc/boot/lib'
-ppc_8xx-gcc -D__KERNEL__ -I/scratch/mvp/linuxppc_2_4_galileo/include -Wall
--Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer
--fno-strict-aliasing -fno-common -D__powerpc__ -fsigned-char -msoft-float
--pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring -O2 -ggdb   -c -o
-zlib.o zlib.c
-zlib.c: In function `inflateEnd':
-zlib.c:330: too many arguments to function
-zlib.c: At top level:
-zlib.c:337: parse error before `('
-
-
-because it's picking up the wrong zlib.h.
-
-I've been messing around with the makefile, but I can't get it to do
-anything that seems sensible.
-
+How about CONFIG_AIM or similar (referencing the three combatants in
+the PPC platform wars)?
 --
-Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
------"If this message isn't misspelled, I didn't write it" -- Me -----
-"Why do musicians compose symphonies and poets write poems? They do it
-because life wouldn't have any meaning for them if they didn't. That's
-why I draw cartoons. It's my life." -- Charles Shulz
+Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
