@@ -1,42 +1,43 @@
-Message-Id: <v03130308b3ec440550d3@[192.168.1.1]>
-In-Reply-To: <199908270917.LAA04250@lxp03.cern.ch>
-References: <v03130327b3ebecbebbd3@[192.168.1.1]>
- <v03130327b3ebecbebbd3@[192.168.1.1]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 27 Aug 1999 08:41:29 -0500
-To: Jes Sorensen <Jes.Sorensen@cern.ch>
-From: "David D. Kilzer" <ddkilzer@computer.org>
-Subject: Re: mac-2.3.14.diff: adb
+Date: Fri, 27 Aug 1999 16:14:11 +0200
+Message-Id: <199908271414.QAA24261@lxp03.cern.ch>
+From: Jes Sorensen <Jes.Sorensen@cern.ch>
+To: "David D. Kilzer" <ddkilzer@computer.org>
 Cc: linux-mac68k@mac.linux-m68k.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: mac-2.3.14.diff: adb
+In-Reply-To: <v03130308b3ec440550d3@[192.168.1.1]>
+References: <v03130327b3ebecbebbd3@[192.168.1.1]>
+	<199908270917.LAA04250@lxp03.cern.ch>
+	<v03130308b3ec440550d3@[192.168.1.1]>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>>> "David" == David D Kilzer <ddkilzer@computer.org> writes:
->
->David> Hi Jes, Patch description:
->
->David> ADB merge with PowerPC.  These are the m68k patches that need to
->David> be updated.  Joshua Thompson has already sent the PPC patches to
->David> that group.
->
->David> NEW FILES: arch/m68k/mac/misc.c drivers/macintosh/adb-iop.c
->David> drivers/macintosh/via-macii.c include/asm-m68k/adb_iop.h
+>>>>> "David" == David D Kilzer <ddkilzer@computer.org> writes:
 
-Jes Sorensen <Jes.Sorensen@cern.ch> wrote:
+David> Jes Sorensen <Jes.Sorensen@cern.ch> wrote:
 
->Do not belong here, create a drivers/adb if you need it - stop putting
->things in drivers/macintosh.
+>> Do not belong here, create a drivers/adb if you need it - stop
+>> putting things in drivers/macintosh.
 
-Well, drivers/macintosh is PPC ADB code.  If drivers/macintosh shouldn't
-exist, then shouldn't it be changed or moved at a higher level?
+David> Well, drivers/macintosh is PPC ADB code.  If drivers/macintosh
+David> shouldn't exist, then shouldn't it be changed or moved at a
+David> higher level?
 
-In reality, there is some ADB mouse code in drivers/char, too, so I wonder
-if drivers/char/adb would make more/less sense than drivers/adb?
+IMHO yes, ADB code will be useful to the NeXT people if they ever get
+the port going.
 
-Dave
+David> In reality, there is some ADB mouse code in drivers/char, too, so
+David> I wonder if drivers/char/adb would make more/less sense than
+David> drivers/adb?
 
+No drivers/adb to handle the ADB bus, the char driver should go in
+drivers/char.
+
+I always disliked drivers/macintosh and drivers/sbus/char for that
+matter as it seems to me like it was just an easy way to get things past
+Linus.
+
+Jes
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
