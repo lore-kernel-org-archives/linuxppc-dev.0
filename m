@@ -1,63 +1,54 @@
-Message-ID: <3A32D8AE.A04CDFA7@hadess.net>
-Date: Sun, 10 Dec 2000 01:13:18 +0000
-From: Bastien Nocera <hadess@hadess.net>
-MIME-Version: 1.0
+From: phandel@cise.ufl.edu
+Date: Sun, 10 Dec 2000 00:56:54 -0800 (PST)
+Subject: kernel oops with rm in hfs - hit BUG() in line 236 of dcache.h
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Kernel Oops
-References: <3A32D416.7D65D47E@hadess.net>
-Content-Type: text/plain; charset=us-ascii
+Cc: asun@cobaltnet.com, asun@asun.cobaltnet.com
+Message-id: <Pine.LNX.4.21.0012100040330.1317-100000@like.mine.nu>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Bastien Nocera wrote:
->
-> Hi,
->
-> Just got a kernel Oops:
->
-> Dec  9 23:40:59 kara kernel: Linux video capture interface: v1.00
-> Dec  9 23:41:02 kara kernel: usb.c: registered new driver ov511
-> Dec  9 23:41:02 kara kernel: ov511.c: USB OV511+ camera found
-> Dec  9 23:41:02 kara kernel: ov511.c: camera: Creative Labs WebCam 3
-> Dec  9 23:41:02 kara kernel: ov511.c: Sensor is an OV7620
-> Dec  9 23:41:02 kara kernel: ov511.c: ov511 driver version 1.28
-> registered
-> Dec  9 23:41:06 kara kernel: Oops: kernel access of bad area, sig: 11
-> Dec  9 23:41:06 kara kernel: NIP: C001148C XER: 00000000 LR: C986F41C
-> SP: C31B3C90 REGS: c31b3be0 TRAP: 0300
-> Dec  9 23:41:06 kara kernel: MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1
-> IR/DR: 11
-> Dec  9 23:41:06 kara kernel: DAR: 00000000, DSISR: 42000000
-> Dec  9 23:41:06 kara kernel: TASK = c31b2000[5102] 'vanity' Last
-> syscall: 54
-> Dec  9 23:41:06 kara kernel: last math c17f8000 last altivec 00000000
-> Dec  9 23:41:06 kara kernel: GPR00: 00000001 C31B3C90 C31B2000 00000024
-> C31B3C94 0000001C FFFFFFFC 00000001
-> Dec  9 23:41:06 kara kernel: GPR08: 00000078 00000001 000000A0 00000004
-> 02000000 1001C6C8 00000000 100C3350
-> Dec  9 23:41:06 kara kernel: GPR16: 00000000 7FFFF938 00000000 00000000
-> 00009032 031B3E80 00000000 C0004CA4
-> Dec  9 23:41:06 kara kernel: GPR24: C00049D4 10003C04 3002676C 00000005
-> C31B3C98 403C7601 C4BCA000 00000000
-> Dec  9 23:41:06 kara kernel: Call backtrace:
-> Dec  9 23:41:06 kara kernel: C3394EC0 C98682E4 C0049A54 C0004A30
-> 3000BC54 10003308 10002EC8
-> Dec  9 23:41:06 kara kernel: 10001B34 0F76175C 00000000
->
-> Given the timings, et all, I guess the ov511 driver gave me this... and
-> I can't access the webcam or unload the module. Hope this can help. Oh,
-> I'm using kernel-2.4.0-test11 from Paulus' tree.
->
-> Cheers
+PowerCenter Pro 210mhz 604e, 224MB RAM, Linux 2.4-pre11 (rsync from Paul 12/8)
 
-OK, I even found out the code to make it crash. It definitely _is_ the
-driver. I stop disturbing you with that and send it to the kernel ML.
+I was removing multiple files from my hfs drive, when I hit the BUG() at
+line 236 in /usr/src/linux/include/linux/dcache.h:
 
-Sorry for the bandwidth
+static __inline__ struct dentry * dget(struct dentry *dentry)
+{
+        if (dentry) {
+                if (!atomic_read(&dentry->d_count))
+                        BUG();
+                atomic_inc(&dentry->d_count);
+        }
+        return dentry;
+}
 
---
-/Bastien Nocera
-http://hadess.net
+
+Dec  9 18:09:21 like kernel: kernel BUG at /usr/src/linux/include/linux/dcache.h:236!
+Dec  9 18:09:21 like kernel: Oops: Exception in kernel mode, sig: 7
+Dec  9 18:09:21 like kernel: NIP: C00712FC XER: 00000000 LR: C00712FC SP: C1087DB0 REGS: c1087d00 TRAP: 0700
+Dec  9 18:09:21 like kernel: MSR: 00089032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+Dec  9 18:09:21 like kernel: TASK = c1086000[12310] 'rm' Last syscall: 10
+Dec  9 18:09:21 like kernel: last math c1086000 last altivec 00000000
+Dec  9 18:09:21 like kernel: GPR00: C00712FC C1087DB0 C1086000 00000039 00001032 00000001 C0210000 00000000
+Dec  9 18:09:21 like kernel: GPR08: 00000000 C01B0000 0000001F C1087CF0 22822842 1001ECE8 100302E8 10030000
+Dec  9 18:09:21 like kernel: GPR16: 10030000 10030000 10030000 10030000 00000000 C96D7C20 00000000 C0210000
+Dec  9 18:09:21 like kernel: GPR24: C291D62C C0180000 C0180000 C291D600 C4193C60 C291EE40 C291D628 C9947520
+Dec  9 18:09:21 like kernel: Call backtrace:
+Dec  9 18:09:21 like kernel: C00712FC C0047854 C00479A8 C00048D8 10001D8C 100031D0 10001358
+Dec  9 18:09:21 like kernel: 0FF0B734 00000000
+
+>From the System.map:
+c007122c T hfs_unlink
+c00476d8 T vfs_unlink
+c00478c0 T sys_unlink
+c00048d8 T ret_from_syscall_1
+
+
+Thanks,
+Peter
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
