@@ -1,39 +1,39 @@
-Date: Wed, 21 Aug 2002 17:54:42 +0200 (CEST)
-From: Marius Groeger <mag@sysgo.de>
-To: John Fisher <John.Fisher@nec.com.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: cygwin and embedded linux
-In-Reply-To: <000301c248e8$9a2ce040$37d34c93@neca.nec.com.au>
-Message-ID: <Pine.LNX.4.40.0208211747420.7745-100000@mag.devdep.sysgo.de>
+Message-ID: <3D63BC50.5090801@dslextreme.com>
+Date: Wed, 21 Aug 2002 09:14:08 -0700
+From: akuster <akuster@dslextreme.com>
+Reply-To: akuster@dslextreme.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Brian Kuschak <bkuschak@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 4xx ethernet and power management
+References: <20020821003010.49406.qmail@web40209.mail.yahoo.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 21 Aug 2002, John Fisher wrote:
+Brian Kuschak wrote:
+> The new power management code is killing the 405GP
+> on-chip ethernet (no interrupts, no phy
+> communications, no packets).
+>
+> If I comment out the body of ppc4xx_pm_init() in
+> ppc4xx_pm.c, ethernet works again.
+>
+> I'm using the 2.4.19 kernel from
+> bk://ppc.bkbits.net/linuxppc_2_4_devel (CS 1.1114).
+>
+> Armin, any comments?
+>
+> Regards,
+> Brian Kuschak
 
-> Is anyone seriously trying to do embedded Linux development for power PC
-> using Cygwin as the host?
+Brian,
 
-We will do it for Elinos 3.0. There aren't any release dates fixed,
-unfortunately.
+That would be a bad thing.  I will double check but I think that might
+have been corrected in a later version.  Try pulling a later BK tree.
 
-Actually, my personal opinion on that matter is that I'm not very fond
-of using Windows for a Linux kernel development platform. Doing --
-ideally pure ANSI-C/C++ -- application development is a different
-story. Thus, I feel it is much more sane to split it right there, if
-you must:  develop application code whereever you like, but compile
-your kernel and integrate your project on Linux.
-
-Just my $.02,
-Marius
-
------------------------------------------------------------------------------
-Marius Groeger           SYSGO Real-Time Solutions GmbH     mgroeger@sysgo.de
-Software Engineering     Embedded and Real-Time Software    www.sysgo.de
-Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
-FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
+Armin
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
