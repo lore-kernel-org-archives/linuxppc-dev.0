@@ -1,72 +1,41 @@
-Date: Mon, 18 Nov 2002 19:43:17 +0100
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: csum_partial() and csum_partial_copy_generic() in badly optimized?
-In-reply-to: <3DD92C01.7080906@iram.es>
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Tim Seufert <tas@mindspring.com>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLMEBJFIAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+From: George Staikos <staikos@kde.org>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: New TiPB - PCMCIA settings
+Date: Mon, 18 Nov 2002 18:29:11 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200211181829.11725.staikos@kde.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
-> Joakim Tjernlund wrote:
->
-> > Ok, thanks for the lesson. I decided to have a closer look at arch/ppc/kernel/misc.S to
-> > see how it uses the bdnz instruction. I think i may have found a bug:
-> >
-> > /*
-> >  * Like above, but invalidate the D-cache.  This is used by the 8xx
-> >  * to invalidate the cache so the PPC core doesn't get stale data
-> >  * from the CPM (no cache snooping here :-).
-> >  *
-> >  * invalidate_dcache_range(unsigned long start, unsigned long stop)
-> >  */
-> > _GLOBAL(invalidate_dcache_range)
-> > 	li	r5,L1_CACHE_LINE_SIZE-1
-> > 	andc	r3,r3,r5
-> > 	subf	r4,r3,r4
-> > 	add	r4,r4,r5
-> > 	srwi.	r4,r4,LG_L1_CACHE_LINE_SIZE
-> > 	beqlr
-> > 	mtctr	r4
-> >
-> > 1:	dcbi	0,r3
-> > 	addi	r3,r3,L1_CACHE_LINE_SIZE
-> > 	bdnz	1b
-> > 	sync				/* wait for dcbi's to get to ram */
-> > 	blr
-> >
-> > Supposed you you do a invalidate_dcache_range(0,16) then 2 cachelines should be
-> > invalidated on a mpc8xx, since range 0 to 16 is 17 bytes and a cache line is 16 bytes.
->
-> I don't know this code, whether it is correct or not depends on what you
-> pass in r4. If it is invalidate_dcache_range(start, start+len), the code
-> is correct since start+len is one byte beyond the buffer. If it is
-> invalidate_dcache_range(first, last), then it is buggy. The former
-> definition of parameters is more frequent in practice.
+   After fighting for a short while, I have some settings for config.opts on
+the new Ti PowerBook.  These make PCMCIA work for me anyways:
 
-hmm, I think you are right. The practice seems to be invalidate_dcache_range(start, start+len).
-But then the interface should be invalidate_dcache_range(start, len) instead, IMHO.
-I guess it's too late to change it now.
+include memory 0xa0003000-0xa0ffffff
+include port 0x9100-0x9fff
 
->
-> This said, the first instruction can be removed:
-> _GLOBAL(invalidate_dcache_range)
->   	rlwinm	r3,r3,0,~(L1_CACHE_LINE_SIZE-1)
->   	subf	r4,r3,r4
->   	add	r4,r4,L1_CACHE_LINE_SIZE-1
->
-> should work.
+   Remove any other include memory/port lines to avoid oopses.
 
-I guess so.
+   It would really be nice if yenta_socket could be cleaned up and this stuff
+could be autodetected.  the algorithm was straightforward I think:
 
-   Regards
-          Jocke
+>From /proc/iomem, find the card services region and use a suitable sized
+region starting after that (assuming it is free).
+
+>From /proc/ioports, find the PCI entry for cardbus and use the ports available
+directly after the last cardbus slot for a suitable sized region.
+
+What doesn't work right now:
+- dmasound is aweful (lots of clicking and sounds bad)
+- video issues in XFree86 and fbdev, along with sleeping
+    - closing the screen causes lots of garbling on the screen.
+- v.92 modem (hcfusb doesn't work on it)
+
+--
+
+George Staikos
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
