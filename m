@@ -1,22 +1,25 @@
-Message-ID: <2F67A63DFFB1D31185D90090278CBB2D01679E37@apmail6.chn.agilent.com>
-From: "ZHANG,HAI-TAO (Non-A-China,ex1)" <hai-tao_zhang@non.agilent.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Anybody get 2.4 successful with sandpoint?
-Date: Mon, 25 Sep 2000 17:41:59 +0900
+Message-ID: <39CF1EA3.E9320359@centurysys.co.jp>
+Date: Mon, 25 Sep 2000 18:45:07 +0900
+From: Tania Boak <tania@centurysys.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: SCU_PMSR_TEVP definition in commproc.h
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I think we may have found a mistake in the definition of SCU_PMSR_TEVP
+in arch/ppc/8xx_io/commproc.h.  We are using a 2.2.13 kernel so please
+disregard if this has already been fixed.  I think the definition should
+be changed to
 
-Has anybody got successful boot of 2.4 kernel with sandpoint board? I am
-using sandpoint 603e with lastest 2.4-test-9, but it still gets hang up
-while executing /sbin/init.
+#define SCU_PMSR_TEVP    ((ushort)0x0002)
 
-Thanks,
-Haitao Zhang
+The value of 0x0003 in the file I have forces high parity when even
+parity is desired.
+
+Tania
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
