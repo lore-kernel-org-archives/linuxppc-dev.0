@@ -1,62 +1,39 @@
-Message-ID: <37D8C4AC.D23FB178@cable.a2000.nl>
-Date: Fri, 10 Sep 1999 10:43:24 +0200
-From: Otto Moerbeek <otto@cable.a2000.nl>
+Date: Fri, 10 Sep 1999 11:42:38 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: "David D. Kilzer" <ddkilzer@computer.org>
+cc: Martin Costabel <costabel@wanadoo.fr>, Shaw Terwilliger <sterwill@io.nu>,
+        Hugh Caley <hcaley@loomer.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Paul's devel branch on Lombard?
+In-Reply-To: <v03130303b3fdfbeb11d0@[192.168.1.1]>
+Message-ID: <Pine.LNX.4.10.9909101142001.23282-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
-To: Linux PowerMac List <linux-pmac@samba.anu.edu.au>,
-        Linux PPC Developer List <linuxppc-dev@lists.linuxppc.org>
-CC: rshaw@inficad.com
-Subject: Re: 2.2.12 and rev2 B&W G3: up and running!
-References: <37D5FB79.58CC83B5@cable.a2000.nl>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hmmm,
-
-I just rsynced Paul's stable tree again and now my machine freezes after
-displaying the Booting... message (just before the color logo is
-displayed.
-
-Luckily I had a tree from a few days back lying around. If I use that
-version everything seems to work, expect sound. I had to disable the
-sound daemon to make it run without problems.
-
-Anyone having a idea what code is changed the last days?
-
-Wouldn't it be a good idea to include some EXTRA_VERSION in the stable
-tree's Makefile, to make it more easy to distinguish different versions?
-
-Gr, Otto
-
-
-Otto Moerbeek wrote:
+On Thu, 9 Sep 1999, David D. Kilzer wrote:
+> Martin Costabel wrote:
 > 
-> Hi,
+> >2.3.17 is now running, although I had to recompile it once; make
+> >oldconfig had eaten my CONFIG_ADBMOUSE. Someone is playing games with
+> >the config options. In make menuconfig, the "APPLE DESKTOP MOUSE" is
+> >marked as "NEW". Mine doesn't look very new anymore :-)
 > 
-> I have been able to compile and run 2.2.12 using Paul Mackerras
-> linux-pmac-stable source tree. I am running it on a B&W G3, rev2, no
-> SCSI. Some comments:
-> 
-> - I had to use hda=noautotune as a kernel arg. Otherwise a DMA timeout
-> occurs when doing the partition check.
-> - I had to apply my USB-ISO keyboard patch (available at
-> <http://people.a2000.nl/omoerbe/>) to get all the keys on my keyboard
-> working.
-> 
-> Now doing a linux-pmac-devel rsync, to see what's there...
-> 
-> TX Paul, for doing a great job!
-> 
-> Gr,
-> Otto
-> 
-> --
-> Otto Moerbeek
-> otto@cable.a2000.nl
+> It probably changed to CONFIG_ADB_MOUSE.  This may be a side-effect of the
+> ADB merger between Linux/m68k and LinuxPPC.
 
--- 
-Otto Moerbeek
-otto@cable.a2000.nl
+Always run `make oldconfig' after updating your kernel sources, to make sure
+you catch the new options.
+
+Greetings,
+
+						Geert
+
+--
+Geert Uytterhoeven ----------------- SONY Suprastructure Center Europe (SUPC-E)
+Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
+Phone +32-2-7248608 Fax +32-2-7242686 ---------------- B-1130 Brussels, Belgium
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
