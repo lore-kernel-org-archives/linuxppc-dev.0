@@ -1,102 +1,60 @@
-Message-ID: <61347.213.107.143.228.1048365078.squirrel@www.solinno.co.uk>
-Date: Sat, 22 Mar 2003 20:31:18 -0000 (GMT)
-Subject: [RFC][PATCH] Put PReP boot arguments in a fixed location in the boot image
-From: "Leigh Brown" <leigh@solinno.co.uk>
-To: <linuxppc-dev@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----=_20030322203118_39109"
+Date: Sat, 22 Mar 2003 22:54:03 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org, Paul Mackerras <paulus@samba.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: ppc: Makefile tidy-up round 2
+Message-ID: <20030322215403.GA15911@mars.ravnborg.org>
+References: <20030320222759.GA12267@mars.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030320222759.GA12267@mars.ravnborg.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-------=_20030322203118_39109
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+More Makefile tidy-up - made on top of previous patches.
 
-Hi,
+1) fixed a few bugs introduced when cleaning up boot/prep/Makefile
+2) cleaned up boot/openfirmware/makefile
+3) Got rid of boot/common/dummy.c
+	It is now located in three copies but thats OK for a three line file
+See cset comments below.
 
-I have been using this patch very successfully for ages.  Having the
-boot arguments in a fixed location in the boot image makes it trivial
-to write a program to set the arguments.
+I have skipped "simple" clean up for now. Is it worth the effort?
 
-Please take a look at the patch and let me know what you think.  If
-there are no negative comments I shall post it again for inclusion.
-The patch should apply against linuxppc_2_4 and linuxppc_2_4-devel.
+Please pull from
+bk pull bk://linux-sam.bkbits.net/ppc-2.5
 
-Cheers,
+Regular patches will follow this mail.
 
-Leigh.
-
+	Sam
 
 
-------=_20030322203118_39109
-Content-Type: application/octet-stream; name="010-boot-args.diff"
-Content-Disposition: attachment; filename="010-boot-args.diff"
-Content-Transfer-Encoding: base64
 
-ZGlmZiAtdXJOIC0tZXhjbHVkZS1mcm9tIC9ob21lL2xlaWdoLy5kaWZmZXggbGludXhwcGNfMl80
-X2RldmVsLWxwcmV2L2FyY2gvcHBjL2Jvb3QvcHJlcC9oZWFkLlMgbGludXhwcGNfMl80X2RldmVs
-LWxvY2FsL2FyY2gvcHBjL2Jvb3QvcHJlcC9oZWFkLlMKLS0tIGxpbnV4cHBjXzJfNF9kZXZlbC1s
-cHJldi9hcmNoL3BwYy9ib290L3ByZXAvaGVhZC5TCTIwMDMtMDItMjggMTk6MDk6MTMuMDAwMDAw
-MDAwICswMDAwCisrKyBsaW51eHBwY18yXzRfZGV2ZWwtbG9jYWwvYXJjaC9wcGMvYm9vdC9wcmVw
-L2hlYWQuUwkyMDAzLTAzLTAxIDA5OjI3OjEyLjAwMDAwMDAwMCArMDAwMApAQCAtMTQsNiArMTQs
-MTcgQEAKICAqICAgICAgSnVtcCB0byB0aGUga2VybmVsIGVudHJ5CiAgKiAgICAgICAgICAgIC0t
-IENvcnQKICAqLworCisjZGVmaW5lIENNRF9CVUZfTEVOCTI1NgorCS5nbG9ibAljbWRfYnVmCQkv
-KiBjbWRfYnVmIGlzIGhlcmUgc28gdGhhdCBpdCBjYW4gZWFzaWx5ICovCitjbWRfYnVmOgkJCS8q
-IGJlIG1vZGlmaWVkIGJ5IGFuIGV4dGVybmFsIHRvb2wgICAgICAgKi8KKyNpZmRlZiBDT05GSUdf
-Q01ETElORQorCS5hc2NpeglDT05GSUdfQ01ETElORQorCS5iYWxpZ24JMjU2LDAKKyNlbHNlCisJ
-LnNwYWNlCUNNRF9CVUZfTEVOLDAKKyNlbmRpZgorCiAJLmdsb2JsCXN0YXJ0CiBzdGFydDoKIAli
-bAlzdGFydF8KQEAgLTQwLDggKzUxLDggQEAKIAltdG1zcglyMwogCiAJLyogY29tcHV0ZSB0aGUg
-c2l6ZSBvZiB0aGUgd2hvbGUgaW1hZ2UgaW4gd29yZHMuICovCi0JbGlzCXI0LHN0YXJ0QGgKLQlv
-cmkJcjQscjQsc3RhcnRAbAorCWxpcwlyNCxjbWRfYnVmQGgKKwlvcmkJcjQscjQsY21kX2J1ZkBs
-CiAJbGlzCXI1LGVuZEBoCiAJb3JpCXI1LHI1LGVuZEBsCiAJYWRkaQlyNSxyNSwzCQkvKiByb3Vu
-ZCB1cCAqLwpAQCAtNTIsNyArNjMsNyBAQAogCS8qIGNoZWNrIGlmIHdlIG5lZWQgdG8gcmVsb2Nh
-dGUgb3Vyc2VsdmVzIHRvIHRoZSBsaW5rIGFkZHIgb3Igd2VyZQogCSAqIHdlIGxvYWRlZCB0aGVy
-ZSB0byBiZWdpbiB3aXRoIC0tIENvcnQgKi8KIAltZmxyCXIzCi0Jc3ViaQlyMyxyMyw0CQkvKiB3
-ZSBnZXQgdGhlIG5pcCwgbm90IHRoZSBpcCBvZiB0aGUgYnJhbmNoICovCisJc3ViaQlyMyxyMyxD
-TURfQlVGX0xFTis0CS8qIGFkanVzdCBuaXAtPmlwLCArIGNtZF9idWYgbGVuZ3RoICovCiAJbXIJ
-cjgscjMKIAljbXAJMCxyMyxyNAogCWJlcQlzdGFydF9sZHIJLyogSWYgMCwgd2UgZG9uJ3QgbmVl
-ZCB0byByZWxvY2F0ZSAqLwpAQCAtNjAsMTEgKzcxLDExIEBACiAgKiBubyBtYXR0ZXIgd2hlcmUg
-d2UncmUgbG9hZGVkLCBtb3ZlIG91cnNlbHZlcyB0byAtVHRleHQgYWRkcmVzcwogICovCiByZWxv
-Y2F0ZToKLQltZmxyCXIzCQkvKiBDb21wdXRlIGNvZGUgYmlhcyAqLwotCXN1YmkJcjMscjMsNAor
-CW1mbHIJcjMJCQkvKiBDb21wdXRlIGNvZGUgYmlhcyAqLworCXN1YmkJcjMscjMsQ01EX0JVRl9M
-RU4rNAkvKiBhZGp1c3QgbmlwLT5pcCwgKyBjbWRfYnVmIGxlbmd0aCAqLwogCW1yCXI4LHIzCi0J
-bGlzCXI0LHN0YXJ0QGgKLQlvcmkJcjQscjQsc3RhcnRAbAorCWxpcwlyNCxjbWRfYnVmQGgKKwlv
-cmkJcjQscjQsY21kX2J1ZkBsCiAJbXIJcjUscjcJCS8qIEdldCB0aGUgIyBvZiBsb25nd29yZHMg
-YWdhaW4gKi8KIAltdGN0cglyNQkJLyogU2V0dXAgZm9yIGxvb3AgKi8KIAlsaQlyNiwwCmRpZmYg
-LXVyTiAtLWV4Y2x1ZGUtZnJvbSAvaG9tZS9sZWlnaC8uZGlmZmV4IGxpbnV4cHBjXzJfNF9kZXZl
-bC1scHJldi9hcmNoL3BwYy9ib290L3ByZXAvbWlzYy5jIGxpbnV4cHBjXzJfNF9kZXZlbC1sb2Nh
-bC9hcmNoL3BwYy9ib290L3ByZXAvbWlzYy5jCi0tLSBsaW51eHBwY18yXzRfZGV2ZWwtbHByZXYv
-YXJjaC9wcGMvYm9vdC9wcmVwL21pc2MuYwkyMDAzLTAyLTI4IDE5OjA5OjEzLjAwMDAwMDAwMCAr
-MDAwMAorKysgbGludXhwcGNfMl80X2RldmVsLWxvY2FsL2FyY2gvcHBjL2Jvb3QvcHJlcC9taXNj
-LmMJMjAwMy0wMy0wMSAwOToxMjoxMi4wMDAwMDAwMDAgKzAwMDAKQEAgLTIzLDEyICsyMyw2IEBA
-CiAjaW5jbHVkZSAibm9uc3RkaW8uaCIKICNpbmNsdWRlICJ6bGliLmgiCiAKLSNpZmRlZiBDT05G
-SUdfQ01ETElORQotI2RlZmluZSBDTURMSU5FIENPTkZJR19DTURMSU5FCi0jZWxzZQotI2RlZmlu
-ZSBDTURMSU5FICIiCi0jZW5kaWYKLQogI2lmIGRlZmluZWQoQ09ORklHX1NFUklBTF9DT05TT0xF
-KSB8fCBkZWZpbmVkKENPTkZJR19WR0FfQ09OU09MRSkKICNkZWZpbmUgSU5URVJBQ1RJVkVfQ09O
-U09MRQkxCiAjZW5kaWYKQEAgLTQ4LDggKzQyLDcgQEAKIGV4dGVybiBjaGFyIF9fcmFtZGlza19i
-ZWdpbiwgX19yYW1kaXNrX2VuZDsKIGV4dGVybiBjaGFyIF9lbmRbXTsKIAotY2hhciBjbWRfcHJl
-c2V0W10gPSBDTURMSU5FOwotY2hhciBjbWRfYnVmWzI1Nl07CitleHRlcm4gY2hhciBjbWRfYnVm
-WzI1Nl07CiBjaGFyICpjbWRfbGluZSA9IGNtZF9idWY7CiAKIGludCBrZXliX3ByZXNlbnQgPSAx
-OwkvKiBrZXlib2FyZCBjb250cm9sbGVyIGlzIHByZXNlbnQgYnkgZGVmYXVsdCAqLwpAQCAtMjc3
-LDcgKzI3MCw2IEBACiAKIAlwdXRzKCJcbkxpbnV4L1BQQyBsb2FkOiAiKTsKIAljcCA9IGNtZF9s
-aW5lOwotCW1lbWNweSAoY21kX2xpbmUsIGNtZF9wcmVzZXQsIHNpemVvZihjbWRfcHJlc2V0KSk7
-CiAJd2hpbGUgKCAqY3AgKQogCQlwdXRjKCpjcCsrKTsKICNpZmRlZiBJTlRFUkFDVElWRV9DT05T
-T0xFCmRpZmYgLXVyTiAtLWV4Y2x1ZGUtZnJvbSAvaG9tZS9sZWlnaC8uZGlmZmV4IGxpbnV4cHBj
-XzJfNF9kZXZlbC1scHJldi9hcmNoL3BwYy9ib290L3V0aWxzL21rcHJlcC5jIGxpbnV4cHBjXzJf
-NF9kZXZlbC1sb2NhbC9hcmNoL3BwYy9ib290L3V0aWxzL21rcHJlcC5jCi0tLSBsaW51eHBwY18y
-XzRfZGV2ZWwtbHByZXYvYXJjaC9wcGMvYm9vdC91dGlscy9ta3ByZXAuYwkyMDAzLTAyLTI4IDE5
-OjExOjA1LjAwMDAwMDAwMCArMDAwMAorKysgbGludXhwcGNfMl80X2RldmVsLWxvY2FsL2FyY2gv
-cHBjL2Jvb3QvdXRpbHMvbWtwcmVwLmMJMjAwMy0wMy0wMSAwOTowMzo0Ny4wMDAwMDAwMDAgKzAw
-MDAKQEAgLTE2MiwxMCArMTYyLDEwIEBACiAgCiAgIC8qIHNldCBlbnRyeSBwb2ludCBhbmQgYm9v
-dCBpbWFnZSBzaXplIHNraXBwaW5nIG92ZXIgZWxmIGhlYWRlciAqLwogI2lmZGVmIF9faTM4Nl9f
-Ci0gICplbnRyeSA9IDB4NDAwLyorNjU1MzYqLzsKKyAgKmVudHJ5ID0gMHg1MDAvKis2NTUzNiov
-OwogICAqbGVuZ3RoID0gaW5mby5zdF9zaXplLWVsZmhkcl9zaXplKzB4NDAwOwogI2Vsc2UKLSAg
-KmVudHJ5ID0gY3B1X3RvX2xlMzIoMHg0MDAvKis2NTUzNiovKTsKKyAgKmVudHJ5ID0gY3B1X3Rv
-X2xlMzIoMHg1MDAvKis2NTUzNiovKTsKICAgKmxlbmd0aCA9IGNwdV90b19sZTMyKGluZm8uc3Rf
-c2l6ZS1lbGZoZHJfc2l6ZSsweDQwMCk7CiAjZW5kaWYgLyogX19pMzg2X18gKi8KIAo=
+ChangeSet@1.875, 2003-03-22 22:45:13+01:00, sam@mars.ravnborg.org
+  ppc: boot/common/dummy.c deleted
 
-------=_20030322203118_39109--
+ChangeSet@1.874, 2003-03-22 22:40:45+01:00, sam@mars.ravnborg.org
+  ppc: boot/openfirmware/Makefile rewrite
+
+  Utilises kbuild infrastructure to build the images
+  Sample output with "make V=0":
+    AS      arch/ppc/boot/openfirmware/coffcrt0.o
+    GEN     arch/ppc/boot/openfirmware/image.o
+    COFF    arch/ppc/boot/openfirmware/coffboot
+    COFF    arch/ppc/boot/images/vmlinux.coff
+    AS      arch/ppc/boot/openfirmware/crt0.o
+    CC      arch/ppc/boot/openfirmware/newworldmain.o
+    ELF     arch/ppc/boot/images/vmlinux.elf-pmac
+    CC      arch/ppc/boot/openfirmware/chrpmain.o
+    CHRP    arch/ppc/boot/images/zImage.chrp
+    ADDNOTE arch/ppc/boot/images/zImage.chrp-rs6k
+    GEN     arch/ppc/boot/images/miboot.image
+    kernel: zImage is ready (arch/ppc/boot/images/vmlinux.coff)
+
+ChangeSet@1.873, 2003-03-22 22:26:02+01:00, sam@mars.ravnborg.org
+  ppc: Fix initrd build for prep
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
