@@ -1,36 +1,33 @@
-Date: Sat, 2 Jan 1999 21:55:36 +0100 (MET)
-From: Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>
-Reply-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: __init, __openfirmware, etc...
-In-Reply-To: <19990102162451.002014@mail.mipsys.com>
-Message-ID: <Pine.LNX.4.02.9901022154330.2266-100000@cassiopeia.home>
+Date: Sat, 2 Jan 1999 13:51:45 -0800
+From: Sean Harding <sharding@gutenberg.uoregon.edu>
+Reply-To: Sean Harding <sharding@oregon.uoregon.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Keyboard repeat problem
+Message-ID: <Pine.SGI.4.02.9901021348340.23664-100000@gutenberg.uoregon.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2 Jan 1999, Benjamin Herrenschmidt wrote:
-> Could someone explain me how those directive (__init, __openfirmware,
-> __pmac, ...) works in the kernel ? I guess those are directive for the
-> linker, and I also guess that __init marked sections will be removed from
-> memory after kernel initialisation, but what are the other ones ? 
+There's some strangeness in the adb code in the 2.2-pre2 kernel. My
+roommate reports seeing it in the newer vger kernels also. Every so often
+(I only get it a couple of times a day), when I type a letter, it will
+show up three times or so. I haven't been able to reliably duplicate it,
+but it has happened enough times that I'm sure it's not something I'm
+imagining. It doesn't appear to be related to the regular key-repeat
+function (the dleay for that is pretty long, and I'm not holding they keys
+down for any length of time at all).
 
-__init sections are indeed removed after kernel initialisation. The other ones
-are removed depending on the dynamic run type of the machine, e.g. __pmac
-sections are removed on PReP, and so on. Saves quite some valuable unswappable
-kernel memory.
+Any ideas?
 
-Greetings,
+sean
 
-						Geert
+-- 
+Sean Harding sharding@oregon.uoregon.edu|"art may imitate life
+http://gladstone.uoregon.edu/~sharding/ | but life imitates t.v."
+Consulting: http://www.efn.org/~seanh/  | --ani difranco
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
