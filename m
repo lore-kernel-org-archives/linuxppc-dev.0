@@ -1,45 +1,34 @@
-From: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Trevor Woerner <ppc339@vtnet.ca>
+Reply-To: ppc339@vtnet.ca
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ide interrupts
+Date: Sun, 25 May 2003 19:12:24 -0400
+References: <200305231136.51119.ppc339@vtnet.ca> <1053706196.580.1.camel@gaston>
+In-Reply-To: <1053706196.580.1.camel@gaston>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16080.45237.64314.364407@argo.ozlabs.ibm.com>
-Date: Sun, 25 May 2003 22:01:57 +1000
-To: akuster@mvista.com, Christoph Hellwig <hch@lst.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: GPL inconsistency in arch/ppc/ocp/xlinx/
-In-Reply-To: <20030524201213.GA8256@lst.de>
-References: <20030524201213.GA8256@lst.de>
+Message-Id: <200305251912.24266.ppc339@vtnet.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Christoph Hellwig writes:
-
-> you seem to have added the the directory in the topic to the LinuxPPC
-> trees.  Unfortunately they have a license consitency that basically
-> makes them illegal to distribute, they claim to be under GPL but have
-> the following notice:
+On May 23, 2003 12:09 pm, Benjamin Herrenschmidt wrote:
+> On Fri, 2003-05-23 at 17:36, Trevor Woerner wrote:
+> > There seems to be a lot of code in the IDE subsystem relating to
+> > interrupts. Is there a way to set a device in polled (i.e.
+> > non-interrupt) mode? Maybe some way to run the tasklet/bh
+> > periodically?
+> >
+> > Does the IDE system want to monitor my ATA device's Ready_NotBusy
+> > interrupt?
 >
-> *     Xilinx products are not intended for use in life support appliances,
-> *     devices, or systems. Use in such applications are expressly prohibited.
->
-> Could you please contact Xilinc to clarify the license and/or remove
-> those files from the tree?  Thanks.
+> No, linux IDE layer can't do that in a sane way, you are asking for
+> a _lot_ of trouble... (especially if doing DMA)
 
-It would depend on whether those files are a "Xilinx product" or not.
-I would take that statement as normally applying to the hardware they
-produce (i.e. their FPGAs).  I agree it needs to be clarified though.
+"No" there isn't a way to set the device into polled mode, or "No" it
+doesn't monitor the Ready_NotBusy interrupt?
 
-I also notice that their statement in upper case just above that says
-that you are responsible for obtaining any rights you may require for
-your implementation, which could be seen as conflicting with the
-patent grant section of the GPL.
-
-Armin, could you ask Xilinx if they would mind clarifying these two
-points?  Perhaps they could add a statement saying that if any of
-those terms conflict with the GPL then the GPL is to prevail - although,
-the best thing would be to remove the extra paragraphs, since the GPL
-covers the disclaimer of warranty, patent concerns, etc. already.
-
-Paul.
+	Trevor
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
