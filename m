@@ -1,38 +1,55 @@
-Date: Sun, 12 Jan 2003 22:49:08 +0100
-From: Richard Zidlicky <rz@linux-m68k.org>
-To: Helge Deller <deller@gmx.de>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, parisc-linux@parisc-linux.org,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-	Linux/m68k <linux-m68k@lists.linux-m68k.org>
-Subject: Re: Generic RTC driver in 2.4.x
-Message-ID: <20030112224908.A618@linux-m68k.org>
-References: <Pine.GSO.4.21.0301121214440.18673-100000@vervain.sonytel.be> <200301121333.17077.deller@gmx.de>
+Date: Tue, 14 Jan 2003 09:32:39 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Patch moving latest linux-galileo common & ev64260 code to 2_4_devel
+Message-ID: <20030114163239.GD791@opus.bloom.county>
+References: <3E088CAD.2030102@mvista.com> <3E08A93E.8000409@mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200301121333.17077.deller@gmx.de>; from deller@gmx.de on Sun, Jan 12, 2003 at 01:35:33PM +0100
+In-Reply-To: <3E08A93E.8000409@mvista.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Jan 12, 2003 at 01:35:33PM +0100, Helge Deller wrote:
+On Tue, Dec 24, 2002 at 11:36:46AM -0700, Mark A. Greer wrote:
 
-> > BTW, perhaps we should move the global RTC_* definitions in <asm/rtc.h> to
-> > <linux/genrtc.h>, or merge them with the ones in <linux/mc146818rtc.h> and
-> > move them to <linux/rtc.h>?
+> Okay, as requested, the big patch has been broken up into somewhat
+> logical pieces (although not perfect).  They are available here:
 >
-> IMHO leaving them architecture specific in <asm/rtc.h> seems best to me, and it
-> leaves the most possibilities to make them later more dependend on the hardware.
+> ftp://source.mvista.com/linuxppc/gal/
 
-in genrtc the RTC_* defs should be used only for interface definition,
-unlike rtc.c where they are 1:1 with some obscure bits in the rtc chip
-and also happen to be the interface..
-It would make sense to merge them into <linux/rtc.h>, whether it is
-a good idea to do it in 2.4 is another question.
-Stuff that is really hw dependent should use different naming (and stay
-in asm/rtc.h of course).
+I've applied all of this, in the interest of getting things back into
+sync.
 
-Richard
+What I want to know 'tho, is why is there still the 'reg base' being
+either here or there.  How hard would it be to always have it at the
+'other' location?  Or, was it decided that it was best to allow this to
+end up anywhere?
 
+Also, I would really like to see the if/else of PPCBoot go away in favor
+of something like parsing PPCBoot, if it exists, and if not setting up
+things the 'other' way.  ie:
+platform_init(...) {
+  if (r3 == ppcboot)
+    parse_ppcboot()
+  else
+    find_things_out()
+  ...
+}
+
+find_things_out() {
+  bd_t.memsize = gt64260_find_end_of_memory();
+  ...
+}
+
+IOW, if we don't have PPCBoot and it's 'bd_t', fill it out.[1]
+
+[1] And of course this brings us to bi_recs, which is another
+flamewar^H^H^H^H^H^H^H^Hdiscussion.
+
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
