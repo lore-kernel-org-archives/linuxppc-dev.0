@@ -1,26 +1,37 @@
-Message-Id: <l03130300b4c30a486a89@[213.6.51.210]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sun, 6 Feb 2000 12:31:58 +0100
-To: linuxppc-dev@lists.linuxppc.org
-From: Moritz Thomas <motho@gmx.net>
-Subject: bug in kernel header
+From: Brad Boyer <flar@pants.nu>
+Message-Id: <200002061155.GAA06862@marcus.pants.nu>
+Subject: Re: [patch] little-endian dmasound silently fails
+To: bh40@calva.net (BenH)
+Date: Sun, 6 Feb 2000 03:55:42 -0800 (PST)
+Cc: toe@unlserve.unl.edu (Takashi Oe), linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20000205142613.026592@192.168.1.10> from "BenH" at Feb 05, 2000 02:26:13 PM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi there,
+BenH wrote:
+> Actually, I had some reports about this problem too and I'm wondering if
+> all revisions of AWACS actually support byte swapping. (I think I
+> remember seeing a comment on this list telling explicitely that some
+> revisions didn't support it).
 
-when trying to compile some stuff the other day, I found that there is a
-bug in "include/asm-ppc/bitops.h" in linux-2.2.13. It's probably fixed
-by now (don't have any newer versions), but I thought it doesn't hurt to
-report.
+Well, I know I complained several times, but I found out recently when I
+did some more careful testing that I was wrong.  I have a rev 2 AWACS chip
+in my computer, and the byteswap does work.  My problem was that I had a
+number of programs which set the format improperly, and I didn't notice
+the problem when I looked at the code.  As an example, snes9x explicitly
+asks for a little-endian format, then generates the sound in native
+order.  Unless you can find someone with a rev 1 AWACS chip and test
+that one, I imagine you can assume that all of them support byteswap
+properly.  And since the 7600 I have is one of the oldest machines that
+is supported, I imagine you won't find anyone with rev 1 unless they
+changed in between the 7500 and 7600.  I would guess that rev 1 was
+used in the nubus powermacs.
 
-The function "ext2_find_next_zero_bit" uses "cpu_to_le32p" which is a
-kernel function. However, "ext2_find_next_zero_bit" is not in
-"#ifdef __KERNEL__". I guess the obvious solution would be to do just that.
-
-mo
+	Brad Boyer
+	flar@pants.nu
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
