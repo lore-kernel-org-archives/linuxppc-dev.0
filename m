@@ -1,60 +1,49 @@
-Date: Wed, 19 May 1999 23:04:58 +0200
-To: "Thomas C. Allison" <allison@dirac.nist.gov>
-Cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: possible egcs c compiler bug
-Message-ID: <19990519230458.C29936@isis.isis.de>
-References: <199905192019.QAA00884@dirac.nist.gov>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199905192019.QAA00884@dirac.nist.gov>; from Thomas C. Allison on Wed, May 19, 1999 at 04:19:17PM -0400
-From: Hartmut.Koptein@t-online.de (Hartmut Koptein)
+Date: Wed, 19 May 1999 16:20:42 -0500 (CDT)
+From: Mark Lin <mlin@MPI-Softtech.Com>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.3.3 compile error on ppc
+In-Reply-To: <374326A8.E8521A86@wanadoo.fr>
+Message-ID: <Pine.SOL.4.05.9905191619550.26011-100000@mpi.mpi-softtech.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I have found what *appears* to be a bug in the C compiler.  I have experienced
-> this bug in R4 (regardless of the compiler/library installed) as well as in
-> the latest (i.e. all the latest packages through 5/15/1999) pre-R5
-> installation.  I include a short program below which illustrates the problem
-> I am having.  The code compiles without error on my i386 machine
-> running RHL 5.2.  The version of EGCS on the PC is 1.0.3 versus 1.1.2 on my
-> PowerMac, so I don't know if this is a PPC problem or an EGCS problem.
-> Any input is greatly appreciated.
+
+What are the modules to check out?  "kernel" doesn't work as suggested
+on the web page.
+
+
+--
+Mark Lin
+MPI Software Technology, Inc.
+
+On Wed, 19 May 1999, Martin Costabel wrote:
+
+> Hollis R Blanchard wrote:
+> > 
+> > On Wed, 19 May 1999, Mark Lin wrote:
+> > >
+> > > gcc -D__KERNEL__ -I/usr/src/linux/include -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -D__powerpc__ -fsigned-char -msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple -mstring   -c -o fork.o fork.c
+> > > fork.c: In function `mm_alloc':
+> > > fork.c:306: warning: implicit declaration of function `init_MUTEX_LOCKED'
+> > > fork.c: In function `do_fork':
+> > > fork.c:539: warning: implicit declaration of function `DECLARE_MUTEX_LOCKED'
+> > > fork.c:539: `sem' undeclared (first use in this function)
+> > > fork.c:539: (Each undeclared identifier is reported only once
+> > > fork.c:539: for each function it appears in.)
+> > > make[2]: *** [fork.o] Error 1
+> > > make[2]: Leaving directory `/usr/src/linux/kernel'
+> > > make[1]: *** [first_rule] Error 2
+> > > make[1]: Leaving directory `/usr/src/linux/kernel'
+> > > make: *** [_dir_kernel] Error 2
+> > >
+> > > Where's the site for the ppc patched kernels?
 > 
-> The code is as follows:
-> 
-> test.c:
-> 
->      #include <stdio.h>
->      #include <stdarg.h>
-> 
->      static int myFunction(va_list inList)
->      {
->         va_list newList;
->         newList = inList;
->      }
+> See http://cvs.on.openprojects.net/
 
-
-Try this:
-
-      #include <stdio.h>
-      #include <stdarg.h>
-
-      static int myFunction(va_list inList)
-      {
-         va_list newList;
-         
-	 __va_copy(newList, inList);
-      }
-
-
-
-
--- 
- Dipl.-Ing. (FH) Hartmut Koptein                       EMail:
- Friedrich-van-Senden-Str. 7                           
- 26603 Aurich   
- Tel.: +49-4941-10390                                  koptein@debian.org
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
