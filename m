@@ -1,36 +1,33 @@
-Message-ID: <9CFB9DA5261CD611A29B00508B789048071AAB8F@ex-deu-munich02.force.de>
-From: "Demke, Torsten" <Torsten.Demke@fci.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: MPC852T with SCC3 and SMC1
-Date: Wed, 10 Dec 2003 18:23:57 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
+Date: Wed, 10 Dec 2003 12:19:10 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Hubert Figuiere <hub-linux-ppc@trantor.staff.proxad.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: the door is closing for 2.4
+Message-ID: <20031210191910.GH23731@stop.crashing.org>
+References: <16334.33020.624995.521330@cargo.ozlabs.ibm.com> <1071070737.29574.38.camel@trantor.staff.proxad.net> <20031210165509.GF23731@stop.crashing.org> <1071075468.29569.43.camel@trantor.staff.proxad.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1071075468.29569.43.camel@trantor.staff.proxad.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+On Wed, Dec 10, 2003 at 05:57:48PM +0100, Hubert Figuiere wrote:
 
-At one of our boards were using the MPC852T.
-It will use the SMC1 as UART _and_ SCC3 with ethernet.
-(SCC4 will also run  ethernet.)
-I know that SCC3 will overlap the Parameter RAM of SMC1 and
-I guess that there is a microcode patch to relocate the SMC1.
+> On mer, 2003-12-10 at 17:55, Tom Rini wrote:
+>
+> > > PrPMC 750 support would be nice to be merged in.
+> >
+> > Would you be able to test this, if I put up a tree?
+>
+> Sure I would.
 
-There is already a microcode patch mentioned in the 8xx_io/ directory
-but it doesnt work at my board. Somebody uses this microcode to relocate
-SMC1? (to which address?)
+Okay.  Please pull bk://stop.crashing.org/linux-2.4.24-pre and let me
+know if the PrPMC750 support works for you.  I've only compile-tested
+(and re-read) it.  Thanks.
 
-I also tried to find a microcode patch for MPC852T
-at the motorola web-site but without success.
-Can anybody give me a hint where to find this microcode?
-
-Thanks for your help.
-
-Best regards,
-
-Torsten Demke
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
