@@ -1,26 +1,30 @@
-Message-ID: <403F4830.40408@embeddededge.com>
-Date: Fri, 27 Feb 2004 08:37:52 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <1180.80.7.99.14.1077956583.squirrel@www.solinno.co.uk>
+Date: Sat, 28 Feb 2004 08:23:03 -0000 (GMT)
+Subject: Please revert "use todc time functions for PPC_PREP" changeset
+From: "Leigh Brown" <leigh@solinno.co.uk>
+To: "Tom Rini" <trini@kernel.crashing.org>
+Cc: akpm@osdl.org, linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-To: challaharikumar <challaharikumar@tataelxsi.co.in>
-Cc: "'Kumar Gala'" <kumar.gala@motorola.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: MPC8272 Fast Ethernet Controller drver
-References: <000d01c3fcff$ff4fdd70$3401080a@telxsi.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-challaharikumar wrote:
+Hi Tom,
 
-> Thanks for ur help. i've downloaded the bitkeeper linuxppc-2.4 kernel tree.
+Your patch (ChangeSet@1.1557.41.25) breaks the 43p140 and Carolina, and
+probably quite a few other RS/6000 based PRePs.  I was a bit surprised
+to see it 2.6.3.
 
-How did you "download" the tree?  You need to install bitkeeper, then
-follow the instructions on http://penguinppc.org
+http://linux.bkbits.net:8080/linux-2.5/patch@1.1557.41.25?nav=index.html|ChangeSet@-3w|cset@1.1557.41.25
 
+Can we revert this until there is a working version, please?  I don't
+really know enough about this stuff to fix it myself, unfortunately,
+although I'm working through the code to see how it works.
 
-	-- Dan
+Cheers,
+
+Leigh.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
