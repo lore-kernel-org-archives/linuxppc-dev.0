@@ -1,44 +1,45 @@
-Message-ID: <40473EC2.1010400@imc-berlin.de>
-Date: Thu, 04 Mar 2004 15:35:46 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
+Message-ID: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6CFC7@renexch3.rennes.thmulti.com>
+From: Fillod Stephane <stephane.fillod@thomson.net>
 To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: uncached user space mapping with mmap() ???
-References: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6CFC6@renexch3.rennes.thmulti.com>
-In-Reply-To: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6CFC6@renexch3.rennes.thmulti.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: RE: uncached user space mapping with mmap() ???
+Date: Thu, 4 Mar 2004 15:47:29 +0100 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Fillod Stephane wrote:
-
->>I am trying to access a hardware timer implemented in an FPGA from
->>user space. I implemented a simple mmap() functionality (taken from
->>Runbini's Linux Device Driver)
+Steven Scholz wrote:
+>> Please refer to "11.13. Accessing peripherals from user space"
+>> in the excellent FAQ from DENX's TWiki at :
+>>
+>>
+http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Accessin
+>> gPeripheralsFromUserSpace
+>>
+>> There's no need to implement kernel side stuff. /dev/mem is enough.
 >
-> Please refer to "11.13. Accessing peripherals from user space"
-> in the excellent FAQ from DENX's TWiki at :
->
-> http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Accessin
-> gPeripheralsFromUserSpace
->
-> There's no need to implement kernel side stuff. /dev/mem is enough.
+>Oh! Nice. Thanks a million! It actually works (on my ARM board!)
 
-Oh! Nice. Thanks a million! It actually works (on my ARM board!)
+Glad to hear it!
 
-So why will people need their own mmap() driver if this kind of things
-can be done via /dev/mem ???
+>So why will people need their own mmap() driver if this kind of things
+>can be done via /dev/mem ???
 
-And: Can I mmap() 32MB of peripheral memory into user space?
+For fun :)
+
+Or weird(read clever) mappings.
+
+>And: Can I mmap() 32MB of peripheral memory into user space?
+
+I don't see any reason why you would not be able to.
+The best answer is try it, and see for yourself.
+
+
+Regards,
 
 --
-Steven Scholz
-
-imc Measurement & Control               imc Meßsysteme GmbH
-Voltastr. 5                             Voltastr. 5
-13355 Berlin                            13355 Berlin
-Germany                                 Deutschland
-
+Stéphane
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
