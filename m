@@ -1,40 +1,39 @@
-Date: Wed, 1 Mar 2000 09:49:57 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Andreas Tobler <toa@pop.agri.ch>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, paulus@linuxcare.com,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: PPC should not use -fno-builtin (was Re: 2.3.47 imac build?)
-In-Reply-To: <38BC513A.9893292D@pop.agri.ch>
-Message-ID: <Pine.LNX.4.10.10003010915370.10015-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <XFMail.000301053713.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <00030117261302.01280@argo.linuxcare.com.au>
+Date: Wed, 01 Mar 2000 05:37:13 -0700 (MST)
+From: Gary Thomas <gdt@linuxppc.org>
+To: Paul Mackerras <paulus@linuxcare.com>
+Subject: RE: insw/outsw in ide.h
+Cc: Cort Dougan <cort@fsmlabs.com>
+Cc: Cort Dougan <cort@fsmlabs.com>,
+        Linux/PPC Developer list <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > Tried both. I get the arch: exit if I set ppc_md.progress in pmac_setup
-> > arch. Shortly after this output, the color fringe fun starts again.
-> >
-> > I'll strip my .config to the bare minimum to narrow this down. Thanks for
-> > getting me this far :-)
-> Well, I wanted to reply earlier, but unfortunately my telco dropped my
-> line for two hours and I was thinking about having destroied my modems
-> until I had a look to my /var/log/messages arghhhh.
+
+On 01-Mar-00 Paul Mackerras wrote:
 >
-> What I did: I have both trees living around on my PB. I did a diff
+> Is there any PPC platform that needs to use a byte-swapping insw/outsw in
+> the IDE driver?  (I can't see why any platform would, but you never
+> know...)
+>
+> I have changed the insw/outsw/insl/outsl in include/asm-ppc/io.h to be the
+> non-swapping form (in my tree at least, I'll push it to bk soon).  I would
+> like to take out the special definitions of insw/outsw in
+> include/asm-ppc/ide.h and just let the ide driver use the standard
+> (non-swapping) form.  Will this cause a problem for any PPC platforms?
+>
 
-Which trees? Unfortunatly I removed 2.3.29 before I could test 2.3.48 ...
+I can't tell for sure, but won't this break existing [already installed]
+systems?  I agree that the data path really doesn't matter, but once it's
+on the media it probably does.
 
-> I may post a patch, but I'm not quite satiesfied with since I don't know
-> at all what's really necessary. Sorry, but I think it's better not to
-> distribute a wrong patch.
+Have you tested this change on a system with an IDE drive that has a
+live file system in place?
 
-Just tell me which files you had to patch :-) I'll start poking around in
-drivers/video first. It seems like other parts of the kernel are fine
-(sound is switched on, the disk spins up) and it's just atyfb acting
-funny.
-
-	Michael
-
+.. just my 2c
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
