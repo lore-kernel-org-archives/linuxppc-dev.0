@@ -1,57 +1,72 @@
-Message-ID: <395A1DC8.B5B13377@ocegr.fr>
-Date: Wed, 28 Jun 2000 17:46:16 +0200
-From: Zirong Wang <zirong.wang@ocegr.fr>
+Message-ID: <395A8A30.5D99549A@m2tech.co.nz>
+Date: Thu, 29 Jun 2000 11:28:48 +1200
+From: ben bodley <benb@m2tech.co.nz>
 MIME-Version: 1.0
-To: guinan@bluebutton.com
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MBX IDE
-References: <Pine.LNX.4.21.0006280808460.16924-100000@gemini.home.net>
+To: Wentao Xu <xuwentao@yahoo.com>
+CC: mailing list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: why open("dev/console",O_RDWR,0) get stuck
+References: <20000627095430.17482.qmail@web2105.mail.yahoo.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jamie Guinan wrote:
+Wentao Xu wrote:
+
+> I have the code from Monta Vista on my prietary board,
+> I find
+> it get stuck in the open("dev/console",..) in fucntion
+> init()
+> in init/main.c, just before to start the shell from
+> ramdisk.
+> So I put a printk("ppc405_uic_enable\n") in function
+> ppc405_uic_enable()
+> and a printk("ppc405_uic_disable_and_ack\n") in
+> function ppc405_uic_disable_and_ack().
+> both functions are in file
+> arch\ppc\kernel\ppc4xx_pic.c.
 >
-> There was a thread back in November about getting IDE going on
-> an MBX,
+> At last I found a output of infinite train of
+> ppc405_uic_enable
+> ppc405_uic_disable_and_ack
+> ppc405_uic_enable
+> ppc405_uic_disable_and_ack
+> ppc405_uic_enable
+> ppc405_uic_disable_and_ack
+> ppc405_uic_enable
+> ppc405_uic_disable_and_ack
+> ........,
 >
-> http://lists.linuxppc.org/listarcs/linuxppc-embedded/199911/msg00054.html
->
-> Did anyone make any progress on this?  Meaning, is there a recent
-> kernel with working IDE-on-MBX.  I know its an oddball combination,
-> but I just wanted to check.
->
-> With a few tweaks to MontaVista 2.2.13, I get as far as seeing,
->
-> W82C105: IDE controller on PCI bus 00 dev 19
-> W82C105: not 100% native mode: will probe irqs later
-> SL82C105 command word: 5
-> IDE timing: 00000909, resetting to PIO0 timing
-> SL82C105 command word: 5
-> IDE timing: 000003e4, resetting to PIO0 timing
 >
 
-I had a similar problem with a MTX board (not MBX), and the final
-thing that deblocked the situation was by changing the file
-/usr/src/linux/driver/block/sl82c105.c
+this is occuring because you have not set the polarity/level of the interrupt
+pin correctly.. you must set the DCRs, UICPR (defines the polarity of the
+interrupt), and UICTR (which defines whether the pin is level or edge
+triggered, this is for external interrupts)...
 
-I simply enabled the winbond by changing the line
+-----------
+example: to set an external irq pin to positve, edge triggered:-
 
-  pci_write_pci_config_dword(dev,0x40,0x10ff08a1) to
+unsigned long uicpr, uictr;
 
-  pci_write_pci_config_dword(dev,0x40,0x10ff0011)
+uicpr = mfdcr(DCRN_UICPR);
+uicpr |= 1 << (31 - IRQ_NO);
+mtdcr(DCRN_UICPR, uicpr);
+uictr = mfdcr(DCRN_UICTR);
+uictr |= 1 << (31 - IRQ_NO);
+mtdcr(DCRN_UICTR, uictr);
+----------
 
-I am not sure for your case since this line is enclosed between
-"#ifndef CONFIG_MBX", maybe you can try put the line outside the
-"ifdef" construct?
+whats happening is the interrupt is going off constantly, as the pins default
+to negative, level triggering... see ibm stb guide chapter 6 for more info..
 
-I had changed the 0x44 register's value to 0x0260:
-  pci_write_pci_config_dword(dev,0x44,0x0260)
+cheers,
 
-hope this helps
+ben
 
----------------------------------------------------------------------
-Zirong Wang    Oce Industries  1, Rue J. Lemoine 94015 Creteil France
+--
+/\\------------------------------------------------------------------
+:::::::::::..ben.b..m2technologyltd.nz..64.9.4448307.130..:::::::::::
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
