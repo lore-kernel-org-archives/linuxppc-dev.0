@@ -1,38 +1,52 @@
-From: "Jon Erick Ween" <jween@som.llu.edu>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Jon Erick Ween <jween@som.llu.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2.18pre18 kernel panic on Lombard
-Date: Thu, 9 Nov 2000 07:13:04 -0800
-Message-ID: <77374543518.AAAEB2@som.llu.edu>
+Date: Thu, 9 Nov 2000 07:38:14 -0900
+From: Ethan Benson <erbenson@alaska.net>
+To: jcarr@mail.linuxppc.org
+Cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Example miboot on new world rom problem
+Message-ID: <20001109073814.A4577@plato.local.lan>
+References: <19341004061114.22300@192.168.1.2> <Pine.LNX.4.21.0011090829230.1582-100000@jcarr.linuxppc.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="BOKacYhQ+x31HxR3"
+In-Reply-To: <Pine.LNX.4.21.0011090829230.1582-100000@jcarr.linuxppc.org>; from jcarr@mail.linuxppc.org on Thu, Nov 09, 2000 at 08:57:21AM -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz <schmitz@mail.biophys.uni-duesseldorf.de> wrote:
->> I'm trying to get my usb ports to work on my Lombard. I have 2.2.8pre17
->> running OK but without USB or 3-button emulation working (in console or
-X).
->> rsynced and compiled 2.2.18pre18 without problems but wind up in a
-kernel
->> panic after loading the adb mouse handler and pty configuration (see
->> below). Is this a problem with the new input layer (I don't seem to have
+--BOKacYhQ+x31HxR3
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 
->> /dev/input/) or a problem with the Lombard's usb ports?
->
->Neither. I use a self compiled 2.2.18 and there's no such problem. At the
->time where you see the panic, the kernel doesn't yet know about the root
->filesystem, and consequently doesn't know about /dev/input/ either. What
->sort of USB mouse are you using? Do you have both ADB mouse and USB HID
->support configured?
+On Thu, Nov 09, 2000 at 08:57:21AM -0600, jcarr@mail.linuxppc.org wrote:
+>=20
+> Some new ibook I think. I get the same behavior on the iMac DV. Startup
+> disk doesn't change the boot-device value on there. Instead, it loads the
+
+thats insane, probably a bug in apple's startup disk control panel...
+
+> first TBXI file from the first HFS partition it finds. Then the MacOS ROM
+> finds out that "LinuxPPC Boot" is the name of the partition to boot and
+> then continues...
+>=20
+> Thus miboot is loaded on a new world rom machine.
+>=20
+> This is the reason I think either:
+>=20
+> 1) yaboot needs the code from pmac_support.c (aka SetPRAMBoot )
+>=20
+> 2) We'll have to write a new startup disk control panel( like system disk)
+
+or 3)  setup the correct type of bootstrap for the current type of
+machine.  then you don't have any of this nonsense. =20
+
+--=20
+Ethan Benson
+http://www.alaska.net/~erbenson/
+
+--BOKacYhQ+x31HxR3
+Content-Type: application/pgp-signature
 
 
-I have a logitech wheel mouse and configured in support for both adb (to
-use the track pad) and usb hid. Curiously, the options for confugring the
-mac input layer were not activated, only the "old driver" was available.
-Did I miss some important previous step?
-
-Jon
-
+--BOKacYhQ+x31HxR3--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
