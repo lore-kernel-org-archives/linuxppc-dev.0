@@ -1,34 +1,35 @@
-Message-Id: <200003061622.LAA34076@p2.parker.boston.ma.us>
-To: Brad Hards <bradh@dynamite.com.au>
-cc: Björn Lundberg <bjorn.lundberg@inu.se>,
+Message-ID: <38C3F276.94C7566B@netx4.com>
+Date: Mon, 06 Mar 2000 13:01:26 -0500
+From: Dan Malek <dan@netx4.com>
+MIME-Version: 1.0
+To: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+CC: Bjvrn Lundberg <bjorn.lundberg@inu.se>,
         linuxppc-embedded@lists.linuxppc.org
-Subject: Re: commproc.c
-In-reply-to: Your message of "Sun, 05 Mar 2000 15:58:44 GMT."
-             <38C28434.E79774E6@dynamite.com.au>
-Date: Mon, 06 Mar 2000 11:22:41 -0500
-From: Brad Parker <brad@parker.boston.ma.us>
+Subject: Re: Performance 2.2.13 and USB work
+References: <20000229054521.6C2385064E@brixi.research.canon.com.au> <38BCE4EF.85135592@inu.se> <kfyput8rv4y.fsf@kieraypc07.p.y.ki.era.ericsson.se>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Marcus Sundberg wrote:
 
-Brad Hards wrote:
-...
->The 850 Users Manual contains info (including how to program) on the USB
->host as part of CPM doco - it is chapter 32, and has been recently
->updated:
->http://www.mot.com/SPS/RISC/netcomm/aesop/mpc8XX/850/32_USB.pdf
->
->The whole users manual is linked off:
->http://www.mot.com/SPS/RISC/netcomm/docs/pubs/850UM.html
+> The fact that Dan's 2.2.13 uses write through cache is one thing that
+> will affect performance. Grep for DC_SFWT in kernel/head.S and change
+> the #if 0 to #if 1.
 
-I beg to differ - the docs don't really cover host mode at all and
-don't explain a number of things you might need to know to make it
-work.  I've sent feedback to MOT about this already.  The docs are
-really minimal and not very helpful for host mode.  They are just
-barely enough for function mode.
 
--brad
+I did this because many people were using the standard
+distribution libraries, which don't work with copyback
+enabled.
 
+For a real treat, download the linuxplanet-2.2.13 kernel
+sources from MontaVista.  It includes some configuration
+options that will be in the 2.3.xx sources once I get
+them to compile :-).  For example, the copyback cache
+and 860 Rev. B cpu6 silicon errata are configurable.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
