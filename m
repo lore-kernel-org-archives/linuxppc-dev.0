@@ -1,41 +1,34 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158D55@norcom2.norcom.net>
-From: Lokesh Kumar <lokesh.kumar@wrx-us.com>
-To: "'Brian Padalino'" <bpadalino@perigee.com>,
+To: Lokesh Kumar <lokesh.kumar@wrx-us.com>
+Cc: "'Brian Padalino'" <bpadalino@perigee.com>,
 	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: U-Boot and 2.6.0-test1 kernel
-Date: Thu, 24 Jul 2003 09:09:52 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: U-Boot and 2.6.0-test1 kernel 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 24 Jul 2003 09:09:52 EDT."
+             <3439AB3A99ECD5409F3A52ACF814744D158D55@norcom2.norcom.net>
+Date: Thu, 24 Jul 2003 15:27:25 +0200
+Message-Id: <20030724132730.41666C602D@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-See u-boot's readme file. It describes the image format required for u-boot,
-basically built from vmlinux using "mkimage" tool from denx eldk.
+In message <3439AB3A99ECD5409F3A52ACF814744D158D55@norcom2.norcom.net> you wrote:
+>
+> See u-boot's readme file. It describes the image format required for u-boot,
+> basically built from vmlinux using "mkimage" tool from denx eldk.
 
-Lokesh
-
------Original Message-----
-From: Brian Padalino [mailto:bpadalino@perigee.com]
-Sent: Thursday, July 24, 2003 8:35 AM
-To: Linuxppc-Embedded
-Subject: U-Boot and 2.6.0-test1 kernel
+Actually "mkimage" is part of U-Boot (see the  tools  directory)  and
+copied from U-Boot into the ELDK.
 
 
+Best regards,
 
-I just made and flashed U-Boot over the OpenBIOS on my Ebony board, and it
-appears to be working very well.  I was able to do a tftp transfer and I
-like the interface much better than the IBM OpenBIOS -- my only problem is
-that when I download a binary image file made from the 2.6.0-test1 kernel,
-it says something about a Bad Magic number if i do "imi" for "imageinfo".
+Wolfgang Denk
 
-Is there another utility I should be using to package this kernel up for
-U-Boot, or am I just not choosing the right file?
-
-Thanks,
-Brian
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Neckties strangle clear thinking.                       -- Lin Yutang
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
