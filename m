@@ -1,45 +1,34 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
+Message-ID: <39ED3EF5.FF4D52E6@mvista.com>
+Date: Wed, 18 Oct 2000 02:11:01 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14829.14063.44449.96097@argo.linuxcare.com.au>
-Date: Wed, 18 Oct 2000 16:36:47 +1100 (EST)
-To: Dan Malek <dan@mvista.com>
-Cc: Tilmann Bitterberg <tibit-ibm@bitterberg.de>,
+To: paulus@linuxcare.com.au
+CC: Tilmann Bitterberg <tibit-ibm@bitterberg.de>,
         Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: HIGHMEM now working
-In-Reply-To: <39EBE0E7.B9313EEE@mvista.com>
 References: <Pine.LNX.4.21.0010161220230.1783-200000@karl.rchland.ibm.com>
-	<14827.56089.260884.298273@argo.linuxcare.com.au>
-	<39EBE0E7.B9313EEE@mvista.com>
-Reply-To: paulus@linuxcare.com.au
+		<14827.56089.260884.298273@argo.linuxcare.com.au>
+		<39EBE0E7.B9313EEE@mvista.com> <14829.14063.44449.96097@argo.linuxcare.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek writes:
+Paul Mackerras wrote:
 
-> Right, but that is just the most recent implementation for something
-> we have to admit exists and we integrate into your HIGHMEM and other
-> changes.  We have to allow, somehow, mapping of board control registers
-> or other resources that must be used prior to page tables or other
-> VM initialization.  Right now we map things in BATs or large TLB
+> What do you have to initialize that can't wait until m8xx_setup_arch?
 
-OK, that means you need to access these things in the bootloader, or
-inside identify_machine() (which calls m8xx_init in your case) or
-MMU_init().  Once we get into setup_arch (and then m8xx_setup_arch) we
-can just ioremap as normal.
+I set up the 8xx/82xx CPM.  I can cheat here and grab some physical
+pages of memory before the VM grabs them and makes me jump through
+hoops to get pages I can just __pa() or __va() :-).  I could probably
+move this to later.  I also use a #define IMMR for a pointer to the
+internal space of the processor.  Saves a few cycles, but I should
+really make this a variable.  I can use the #define because I know
+the VM mapping is going to be 1:1.
 
-What do you have to initialize that can't wait until m8xx_setup_arch?
-Can you give me an example of what sorts of physical addresses you
-need to access?
+It's nothing I can't change......
 
-Thanks,
-Paul.
 
---
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
