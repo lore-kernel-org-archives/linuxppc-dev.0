@@ -1,38 +1,30 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Mon, 29 May 2000 16:51:22 +0100 (CED)
-Subject: SCC used for WAN connection
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: kernel@linux01.hasler.ascom.ch
-Message-id: <0FVB00990TA9R8@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_tBQh4f9ZzYj3VXpjTvwR9g)"
+Date: Mon, 29 May 2000 10:51:58 -0600
+Subject: Looking for development kit
+From: Mark Morrill <mmorrill@powersurfr.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <B557FC4D.6F72%mmorrill@powersurfr.com>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---Boundary_(ID_tBQh4f9ZzYj3VXpjTvwR9g)
-Content-type: TEXT/PLAIN
-Content-Transfer-Encoding: 7BIT
-
 Hi,
 
-I'd like to use one of the currently unused SCC's as WAN interface.
-My ultimate dream is to run PPP or Frame Relay at a speed of 2Mb/s on it.
+I'm interested in developing a specialized box that runs Linux on a G3 chip.
+My background is more software so I need to be pointed in the right
+direction here... :)
 
-Is someone out there, who has
-1. seen something like this?
-2. written some kernel modules which support this functionality?
-3. seen links containing related information?
-4. ideas on how to do this?
+I'm looking for a kit that would consist of a motherboard, chip,
+powersupply, ethernet, harddrive, ...
 
-If you were doin' something like that, would you first buy a WAN Interface
-card for the PC? (eg. Sangoma, for tests?)
-5. Has someone done tests with such a WAN card?
+I also need some raw resources to figure out where to go next :)  For
+example, is there a website on "How I built a PowerPC out of bits and
+pieces, a Swiss army knife, and a potato for power"?
 
-Thanx for any information,
+Thanks,
 
-Ruedi
+Mark
 
---Boundary_(ID_tBQh4f9ZzYj3VXpjTvwR9g)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
