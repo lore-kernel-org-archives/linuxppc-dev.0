@@ -1,14 +1,15 @@
-Return-Path: <ryan@elevated-networks.com>
-In-Reply-To: <20041024215018.26468.qmail@web13802.mail.yahoo.com>
-References: <20041024215018.26468.qmail@web13802.mail.yahoo.com>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <77988B3D-260C-11D9-BA35-0050E4B0DC64@elevated-networks.com>
-From: Ryan Wilkins <ryan@elevated-networks.com>
-Date: Sun, 24 Oct 2004 18:31:37 -0400
-To: Frank <frannk_m1@yahoo.com>
+Return-Path: <wd@denx.de>
+To: Ryan Wilkins <ryan@elevated-networks.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 24 Oct 2004 18:31:37 EDT."
+	<77988B3D-260C-11D9-BA35-0050E4B0DC64@elevated-networks.com>
+Date: Mon, 25 Oct 2004 01:39:55 +0200
+Sender: wd@denx.de
+Message-Id: <20041024234000.EADA1C1430@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.com
-Subject: Re: MPC850 and GDB help
+Subject: Re: MPC850 and GDB help 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,41 +20,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Ahh yes.. I wanted to get u-boot loaded into RAM and running from 
-there.  The reason being, I'm having a bit of a hard time writing a 
-flash chip definition file in the MPCBDM Flash.def format for the Intel 
-DA28F320J5 flash chip.  My thought was to boot u-boot from ram and then 
-see if it had better luck at detecting my flash chip and then try to 
-coerce it into writing u-boot to flash for me.
+In message <77988B3D-260C-11D9-BA35-0050E4B0DC64@elevated-networks.com> you wrote:
+> Ahh yes.. I wanted to get u-boot loaded into RAM and running from 
+> there.  The reason being, I'm having a bit of a hard time writing a 
+> flash chip definition file in the MPCBDM Flash.def format for the Intel 
+> DA28F320J5 flash chip.  My thought was to boot u-boot from ram and then 
+> see if it had better luck at detecting my flash chip and then try to 
+> coerce it into writing u-boot to flash for me.
 
-As for the "running Linux from ram" thing it was another fleeting 
-thought.  Something along the lines of if I can't get u-boot to run 
-from ram maybe I could get Linux to boot from ram and then go from 
-there.
+This is the wrong approach. First understand the problem, and fix it.
+You will need exavctly this understanding to be able to port U-Boot.
 
-Anyway, as you can tell I'm in way over my head but I'll figure 
-something out.  I've got a bit of raw programming experience with 8-bit 
-micros but nothing 32-bit.  I hate to have this MPC850 sitting here 
-doing nothing.
+You MUST go step by step. You cannot leapfrog problems.
 
-Answer me this if you would.. Does the MPC850 have some sort eeprom or 
-parameter RAM on-chip that would be remembered in the event of a hard 
-reset or power cycle and preclude the chip from booting from flash if 
-certain registers were changed?
-I'm looking through the manual for the 850 now but don't see anything 
-jumping out at me.
+> As for the "running Linux from ram" thing it was another fleeting 
+> thought.  Something along the lines of if I can't get u-boot to run 
+> from ram maybe I could get Linux to boot from ram and then go from 
+> there.
 
-On Oct 24, 2004, at 5:50 PM, Frank wrote:
+No, that would even be trying to jump over more than one problem, and
+is all the more bound to fail.
 
-> I think I may have confused you a little. When I said running
-> u-boot from ram, I meant booting it from ram as if it had boot
-> from flash. Normally, at some point, u-boot _will_ run from ram
-> by copying itslef there and continung to run. But getting it to
-> run from ram it's reset vector (first linked address + 0x100) is
-> totally different.
-> I'm not sure what you mean by "running Linux from ram". Although
-> the kernel may reside in flash, it is at some point unzipped,
-> copied to ram and then runs from there. Someone on this list may
-> be able to help you more here. Maybe you will have beteer luck
-> then me getting an answer from these guys. They don't seem to
-> respond to my questions.:-(
+> Answer me this if you would.. Does the MPC850 have some sort eeprom or 
+> parameter RAM on-chip that would be remembered in the event of a hard 
+> reset or power cycle and preclude the chip from booting from flash if 
+> certain registers were changed?
+
+No. There is no information kept in the MPC8xx processor itself after
+power-cycling it.  But  depending  on  your  hardware  there  may  be
+features like an EEPROM with VPD or programmable BCSR's or even plain
+old jumpers.
+
+> I'm looking through the manual for the 850 now but don't see anything 
+> jumping out at me.
+
+Check the documentation for your _board_. If you have  it,  that  is.
+[And  if  you  don't,  then either give up now or plan for a _lot_ of
+frustrating experience.]
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Boykottiert Microsoft - Kauft Eure Fenster bei OBI!
