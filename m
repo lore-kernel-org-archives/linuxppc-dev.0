@@ -1,54 +1,76 @@
-From: linuxppc_em@sina.com
-Message-ID: <00c301bf8fd9$48293ac0$1ac809c0@johnzhan>
-Reply-To: <linuxppc_em@sina.com>
-To: "zzh" <david-1z@263.net>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <38D88437.23494@mta2>
-Subject: Re: About rs232 on motorola mpc8260 ads board
-Date: Fri, 17 Mar 2000 14:23:15 +0800
+Message-ID: <38D1EDE5.E0FDF042@csem.ch>
+Date: Fri, 17 Mar 2000 09:33:41 +0100
+From: Amre El-Hoiydi <amre.el-hoiydi@csem.ch>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+To: Eisenzopf Thomas <thomas.eisenzopf@siemens.at>
+CC: "'linuxppc-embedded@lists.linuxppc.org'"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: problems with PPC860/ADS
+ board/8xxrom-0.3.0/mpc8xx-2.2.13/patches(from Raphael Bossek)
+References: <D53137D1F3DDD211A3750800060DA31301702339@viee122a.erd.siemens.at>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
------ Original Message -----
-From: zzh <david-1z@263.net>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Wednesday, March 22, 2000 4:28 PM
-Subject: About rs232 on motorola mpc8260 ads board
+Hi,
+
+I successfully applied the patches
+http://master.debian.org/~bossekr/powerpc/patch-2.2.13-mpc8xx.diff.gz
+http://master.debian.org/~bossekr/powerpc/patch-2.2.13-mpc8xx-damm.diff.gz
+to the kernel
+linux-2.2.13.tgz from www.ch.kernel.org/pub/linux/kernel/v2.2/
+using the following procedure:
+
+cd linux-2.2.13; patch -p1 [--dry-run] < patch-2.2.13-mpc8xx.diff.gz
+cd linux-2.2.13; patch -p1 < patch-2.2.13-mpc8xx.diff.gz
+
+cd linux-2.2.13; patch -p1 [--dry-run] < patch-2.2.13-mpc8xx-damm.diff
+cd linux-2.2.13; patch -p1  < patch-2.2.13-mpc8xx-damm.diff
+-modify the main Makefile: ARCH := ppc, CROSS_COMPILE = powerpc-linux-
+-make config, make dep, make zImage
+
+I could not run it on my FADS board because I have only 4 MBytes memory. I am
+using this kernel on a custom board with 16 MBytes memory. I had to do a few
+modifications for that.
+
+Is there ? Where is the "low-memory patch" that make the kernel 2.2.13 runable
+with only 4
+Mbytes memory ?
+
+Regs,
+
+Amre
 
 
+
+Eisenzopf Thomas wrote:
 >
-> Hello,everyone.
-> I'm trying to make the SCC1 drived rs232 port of a motorola
-> mpc8260 ads board work.The manual says it can direct connect
-> to pc com port.But it seems the output from this board is not
-> rs232 voltage.i.e -3 to -12 for logical one,3 to 12 for logical
-> zero,nor is it TTL,it seems that it use 0 for logical 1,5.0v for
-> logical 0,so it is rather annoying. I have to invert the output
-> from 8260 ads,then use a TTL->232 converter to connect with PC,
-> it works when i send char from 8260,but cannot work in the
-> other direction.
-> In addition,for a while,it output 232 signal,but i cannot
-> reproduce it!!
-> Does anyone has experience with this board?
-> Thanks for your advice.
->                     davidzhang
->                     3/22/2000
+> Hello!
 >
-> _____________________________________________
-> 首都在线--中国人的网上家园 http://www.263.net
-> @263.net中国最大的在线邮局 http://freemail.263.net
+> I磎 trying to get embedded Linux running on an ADS board with a PowerPC 860.
+>
+> For the beginning I used the informations from Raphael Bossek磗 WWW-page
+> http://www.s4l.de/powerpc.html.
+>
+> My main problem at this time is, that the patches (from Magnus Damm and
+> Raphael Bossek) from this internet page do not seem to fit to
+> mpc8xx-2.2.13.tgz; the dates of the files differ, and the patch program
+> delivers errors (e.g. Hunk #1 FAILED at 459....). But without these patches
+> I cannot build the system.
+>
+> Does anyone have some advice for me? Is there somewhere a complete archive
+> of the needed files (including the patches)? Where can I get additional
+> information?
+>
+> Thank you in advance,
+> Thomas.
 >
 
-
-Pavel Roskin is right , that means to check RTS(from ads) or enable it manually.
-
-b.r.
-john zhan.
-hacking time.
-
+--
+C       Amre El-Hoiydi, R&D Engineer,  amre.el-hoiydi@csem.ch
+S       System Engineering, Real-Time Software and Networking
+E       CSEM, Neuchatel, Switzerland   -   http://www.csem.ch
+M       Phone: +41(032)720 5188     -   Fax: +41(032)720 5720
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
