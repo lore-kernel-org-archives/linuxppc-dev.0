@@ -1,17 +1,23 @@
-Return-Path: <Alexander.Povolotsky@marconi.com>
-Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
-	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id E18E02BF07
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0FF8D2BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Jan 2005 11:53:55 +1100 (EST)
-Message-ID: <313680C9A886D511A06000204840E1CF0A64745A@whq-msgusr-02.pit.comms.marconi.com>
-From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-To: "'Tom Rini'" <trini@kernel.crashing.org>
-Date: Wed, 5 Jan 2005 19:53:52 -0500 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: simple bootloader 2.6.10-rc3 8xx
+	Thu,  6 Jan 2005 18:02:48 +1100 (EST)
+Date: Wed, 5 Jan 2005 23:02:45 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Andy Fleming <afleming@freescale.com>
+Message-ID: <20050106070245.GA6539@gate.ebshome.net>
+References: <FC6D9B81-5514-11D9-8D51-000393C30512@freescale.com>
+	<A3A281FF-5525-11D9-80ED-000393C30512@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <A3A281FF-5525-11D9-80ED-000393C30512@freescale.com>
+Cc: Netdev <netdev@oss.sgi.com>,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [RFC] Patch to Abstract Ethernet PHY support (using driver
+	model)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,100 +28,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-start_:
-
-Interestingly, - as soon as I additionally defined CONFIG_FORCE in head.S
-(after disabling MMU for my case 
-CONFIG_60POTS) to disable I-cache, my board would not
-even get to the booting level (of inflating kernel in zlib, where it
-currently fails ).
-
-Then I tried to reverse the order: first disable I-cache, then disable MMU
-(I just copied assembler code that was under 
-#ifdef CONFIG_FORCE to be under #if defined (CONFIG_V52) || defined
-(CONFIG_60POTS) || defined (CONFIG_COMBO) but 
-above # disable MMU...)  - but result again was the same... - so it looks
-like that irregardless of the order this 
-combination does not work ... ?
-
-....
-start_:
-
-#ifndef CONFIG_60POTS
-#define CONFIG_60POTS 1
-#endif
-
-
-#if defined (CONFIG_V52) || defined (CONFIG_60POTS) || defined
-(CONFIG_COMBO)
-
-# disable MMU
-        sync
-        mfmsr   r11
-        lis     r10,0xffff
-        ori     r10,r10,0xffcf
-        and     r11,r11,r10
-        mtmsr   r11
-        isync
-
-        lis     r11,0xfa20
-        mtspr   638,r11
-
-        lwz     r12,0x11c(r11)
-        lis     r10,0xfeff
-        ori     r10,r10,0xffff
-        and     r12,r12,r10
-        stw     r12,0x11c(r11)
-#endif
-
-#ifdef CONFIG_FORCE
-        /* We have some really bad firmware.  We must disable the L1
-         * icache/dcache now or the board won't boot.
-         */
-        li      r4,0x0000
-        isync
-        mtspr   HID0,r4
-        sync
-        isync
-#endif
-
------Original Message-----
-From: Tom Rini [mailto:trini@kernel.crashing.org]
-Sent: Wednesday, January 05, 2005 12:37 PM
-To: Steven Rostedt
-Cc: Povolotsky, Alexander; linuxppc-embedded@ozlabs.org
-Subject: Re: simple bootloader 2.6.10-rc3 8xx
-
-
-On Tue, Dec 28, 2004 at 12:47:57PM -0500, Steven Rostedt wrote:
-> On Tue, 2004-12-28 at 12:28 -0500, Povolotsky, Alexander wrote:
-> > Hi! (Thanks !) 
-> > 
-> > I guess I need some more education - since I am getting my problem right
-at
-> > the boot - is I-Cache enabled (by default ?) for 8xx on 2.6 at the
-booting ? - I do not
-> > see anything in .config 
-> > which controls it (or I am missing it there ?) 
-> > How (where and at what point during the boot)-) I could disable I-Cache
-?
+On Thu, Dec 23, 2004 at 03:00:13PM -0600, Andy Fleming wrote:
 > 
-> Since you where able to get to the prekernel portion (that was
-> relocated) I don't think you have a problem with caches, unless for some
-> reason the pre-kernel can relocate itself, but it doesn't know to
-> refresh the cache after relocating the actual kernel.
+> >Adds a Phy Abstraction Layer which allows ethernet controllers to 
+> >manage their PHYs without knowing the details of how the particular 
+> >PHY device operates.  This code steals heavily from BenH's  sungem 
+> >driver, and got some stuff out of Jason McMullan's patch.
 
-The in-kernel bootwrapper codes does indeed relocate itself (overlap
-isn't a problem either, except for a small window.  All of this can be
-avoided if you link the kernel where it will be loaded into memory by
-the firmware as well), but it should also do all needed cache flushing.
+Some random notes from quick look at the code:
 
-But as has been said before, since the CPU15 errata doesn't exist with
-i-cache disabled, the simple workaround would be to disable the i-cache
-as quickly as possible from the head.S portions of the in-kernel
-bootwrapper and make sure we don't re-enable it later on (I _think_ we
-do for speed reasons).
+1) IMO if we can extract some info from the PHY using _standard_ 
+registers we should use them, even if the PHY provides some custom 
+ones. 
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+I suspect that _all_ XXX_read_status functions for different PHYs in 
+your patch can be easily handled by generic IEEE 802.3 compliant code 
+(you need to update genphy_read_status to properly handle GigE of 
+course).
+
+2) genphy can be changed to handle GigE speeds as well.
+
+3) I think it's better for the genphy case to _detect_ PHY features 
+instead of hard coding PHY_BASIC_FEATURES. In this case you can easily 
+handle 10/100 and 10/100/1000 PHYs by genphy code.
+
+4) Pause negotiation/advertising is completely missing.
+
+5) PHY interrupt sharing looks broken. Although you request_irq using 
+SA_SHIRQ flag, in the handler itself you don't detect whether this 
+interrupt is for this PHY or not, and return IRQ_HANDLED. This will 
+result in first registered PHY hijacking IRQs from other PHYs (or 
+devices) sharing the same IRQ line.
+
+--
+Eugene
