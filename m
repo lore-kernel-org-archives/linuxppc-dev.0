@@ -1,22 +1,19 @@
-Return-Path: <joerg@dorchain.net>
-Received: from Redstar.dorchain.net (153-133-088-212.ip-addr.teresto.net
-	[212.88.133.153])
+Return-Path: <jchapman@katalix.com>
+Received: from ptb-relay02.plus.net (ptb-relay02.plus.net [212.159.14.213])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8F9BA67A46
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2005 01:06:54 +1100 (EST)
-Date: Tue, 15 Mar 2005 15:03:30 +0100
-From: Joerg Dorchain <joerg@dorchain.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20050315140329.GA15214@Redstar.dorchain.net>
-References: <1110767622.5787.215.camel@gaston>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="2oS5YaxWCcQjTEyO"
-In-Reply-To: <1110767622.5787.215.camel@gaston>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-Subject: Re: Newer laptops & CPU speed
+	by ozlabs.org (Postfix) with ESMTP id 374F467A65
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2005 03:47:46 +1100 (EST)
+Message-ID: <423711A8.3060104@katalix.com>
+Date: Tue, 15 Mar 2005 16:47:36 +0000
+From: James Chapman <jchapman@katalix.com>
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
+References: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B11@exnet.3il.fr>
+In-Reply-To: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B11@exnet.3il.fr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: Interrupts handling?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,46 +23,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Garcia Jérémie wrote:
 
---2oS5YaxWCcQjTEyO
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Hi everybody,
+> 
+> Although I am a newbie in linux powerPC development, I am in charge
+> of a related project.
+> 
+> The project is the following: I have to move a vXWorks application
+> to a Linux (montavista) environnment with a 405EP
+> processor. Unfotunately, my knowledges are very limited in BSP and
+> with all the board specific functions (device drivers too...).
+> 
+> In my application, we assign IRQ only at its early beginning and we
+> never change them after. 
 
-On Mon, Mar 14, 2005 at 01:33:42PM +1100, Benjamin Herrenschmidt wrote:
-> It seems the new laptops are booting with CPU set to low
-> speed. /proc/cpuinfo outputs the wrong fequency (thinks it's high speed)
-> but bogomips shows that it's running at about half speed. This patch
-> against 2.6.11 (will not apply on 2.6.10) adds proper cpufreq support so
-> that the boot speed is recognized (fixing /proc/cpuinfo output) and so
-> you can acutally use cpufreq interface & utilities to switch to full
-> speed (I recommend powernowd).
->=20
-> This is completely untested as I don't have access to any of those new
-> models yet, so I'm waiting for some feedback before submitting upstream.
+What sort of device does your application need to talk to?
 
-My ibook G4 boots at low speed. /proc/cpuinfo shows 666MHz and a smiliar
-bogomips value. Nevertheless, the cpu frequency scaler works, i.e. set
-it to performance to be at high speed after boot up, or, as I currently
-do, use the userspace governor and powernowd. All this is without your
-patch (Did not try it yet, my ibook lacks internet) on linus' 2.6.11.
+You need to separate your "application" into kernel and userspace parts.
+Hooking up interrupt handlers would be done by a device driver. 
+Depending on what your device is, there might already be a Linux device 
+driver for it.
 
-Bye,
+> Furthermore, this application uses an OS
+> API layer in order to make it independant of the OS used. For
+> exemple we encapsulate all the OS calls in this layer ; as that we
+> theoretically only have to change this file to use another OS.
 
-Joerg
+Nice theory but it's unlikely to cope with the paradigm shift of moving 
+from vxworks to Linux. You'll need to change your application to use 
+Unix system calls to access the device rather than making direct BSP 
+calls that it does today.
 
+> To
+> finish, we use POSIX pthreads to get an equivalent of vxWorks tasks.
 
---2oS5YaxWCcQjTEyO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+The pthread code should be straightforward to port into a Linux 
+userspace application. However, if it touches the device (messes with 
+irqs etc) then bigger changes might be needed. I've seen some vxworks 
+code that combines device driver and application functions in one big 
+blob. Linux enforces separation.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
+> Giving that, here are my questions:
+> 
+> - is it possible to write a driver in this "file" (OS API Layer) or
+>   wherever I want?
 
-iD8DBQFCNusxjY4+4PdzvOARAlUQAJ4rlTgDKfxWyFZf0TH+WskvJzQOxgCeN2tF
-XBlPq2yVnsBqT0DrLwiCpBg=
-=f5HG
------END PGP SIGNATURE-----
+I don't really understand the question. Linux device drivers live in the 
+kernel. They may be statically linked in the kernel or they may be 
+dynamically loaded on-demand by the kernel. Your userspace pthread 
+application would be another separately linked application. You can't 
+call kernel C functions directly from your application like you can call 
+BSP or device driver functions in RTOS applications.
 
---2oS5YaxWCcQjTEyO--
+> - do I need to use kernel modules even if I need to register my
+>   driver only one time?
+
+Kernel modules are just shared libraries that are linked in at runtime 
+by the kernel. It doesn't matter whether you implement a Linux driver as 
+a kernel module or not. Actually, Linux device drivers can often be 
+built statically or as kernel modules, selectable at kernel compile time.
+
+> - is it possible for my application to register itself a driver or
+>   is it only a "kernel job"?
+
+If you mean can your application load a driver into the kernel then the 
+answer is yes. But it's often automatic. It might happen, for example, 
+when your application opens a device file of your driver.
+
+If you mean can your application be a device driver for the kernel then 
+the answer is no.
+
+> - I have to map other vxWorks routines as "intEnable", "intDisable"
+>   which respectively enable/disable specified interrupt bit : may I
+>   use the linux equivalent "enable_irq" and "disqble_irq" and that
+>   wherever and whenever I want? (same question for the
+>   "request_irq" routine)
+
+This is kernel code. I suggest you try to study how Linux device drivers 
+work. Some books are available on the subject. Google.
+
+Hope I helped.
+
+/james
