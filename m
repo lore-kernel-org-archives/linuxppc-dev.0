@@ -1,30 +1,29 @@
-Date: Mon, 13 Sep 1999 13:44:42 -0700 (MST)
-From: Tom Rini <trini@kernel.crashing.org>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: hfs resource forks in Linux
-In-Reply-To: <37DD5EE7.51F3F340@wanadoo.fr>
-Message-ID: <Pine.LNX.4.10.9909131343100.8601-100000@opus.bloom.county>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Dave_Lee@3com.com
+To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <882567EB.0072C8DD.00@hqoutbound.ops.3com.com>
+Date: Mon, 13 Sep 1999 13:54:00 -0700
+Subject: Linux PPC contractor wanted
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 13 Sep 1999, Martin Costabel wrote:
 
-> It is still a mystery for me why this package is not included in the
-> LinuxPPC-dev-rel, nor on the LinuxPPC CD. I think this is a basic
-> necessity for anyone using LinuxPPC on a Pmac. Fortunately, RedHat
-> continues to develop it in its rawhide/powertools collection.
 
-The dev rel was a straight port of RH6.  Very basic PMac tools were added
-(since you can cp/mv kernels to/from hfs w/o extra utils, it wasn't
-needed/included).  Why R5 didn't have it, I dunno, perhaps Q3 has it.
+Hello,
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+I'm looking for a Linux PPC contractor (October to February timeframe) to port
+Linux to a custom PPC platform.  Kernel and PPC assembly expertise required and
+prior porting experience strongly desirable.  Preferrably in the silicon valley
+area but if you have significant porting experience with LinuxPPC, other
+options/arrangements will be considered.
+
+If you are interested, please send me a resume at dave_lee@3com.com or contact
+me at 408-326-2837.
+
+Thanks,
+Dave
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
