@@ -1,104 +1,67 @@
-Date: Thu, 10 Aug 2000 00:46:14 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Takashi Oe <toe@unlserve.unl.edu>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Gabriel Paubert <paubert@iram.es>, <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: rtc again...
-In-Reply-To: <Pine.LNX.3.96LJ1.1b7.1000809101853.866E-100000@ofey.earthlink.net>
-Message-ID: <Pine.HPX.4.10.10008100027430.22126-100000@gra-ux1.iram.es>
+Date: Thu, 10 Aug 2000 00:48:02 +0200
+Message-Id: <20000809224802.27760@192.168.1.10>
+In-Reply-To: <Pine.HPX.4.10.10008092142330.22126-100000@gra-ux1.iram.es>
+References: <Pine.HPX.4.10.10008092142330.22126-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 9 Aug 2000, Takashi Oe wrote:
-
+>I strongly suspect that we might want a single rtc access function in
+>ppc_md and add a first parameter telling what we want it to do, the second
+>being a pointer to a tv_sec, and perhaps more parameters.
 >
-> On Wed, 9 Aug 2000, Benjamin Herrenschmidt wrote:
+>[.../...]
 >
-> > >Personally, I think UTC <-> local time conversion should be handled in
-> > >userland.  Both hwclock and clock can handle both local time and UTC just
-> > >fine.
-> >
-> > If we do that this way, we can't have proper in-kernel NTP update of the
-> > RTC without a hack that let it only "correct" for less than 1 hour.
->
-> Hmm, I don't really understand this NTP update problem.  Does NTP even
-> work when the system time is off by more than 1 hour?
+>This last function could also be performed by returning the timebase in
+>the READ_TIME function as an extra parameter. The best solution is the one
+>which gives the minimal permanent kernel size, __init code size is
+>irrelevant.
 
-Oh yes, it will simply call settimeofday if the error is large or
-adjtimex if it's small enough to drift smoothly in a reasonable time.
-The question is, will it update the RTC correctly ?
+Ok.
 
-It depends on many things, my PC clock was off by 20 minutes and it did
-not update the RTC (limit is about 15 minutes since there are half hours
-time zones). I had to use hwclock --systohc --utc to set it up once I had
-ntp running and locked on a server, now te kernel automatically takes care
-of it.
+>What use does it have if no daemon will change the timezone anyway ?
 
-> > It used to be only in xpram. Recent MacOS also have a prefs file, I have
-> > to check what happens when this file is out of sync with the xpram.
->
-> Ok, at least on Mac OS 8.6, it looks okay.  At each boot, Mac OS honors
-> the timezone setting in xpram over its configuration files, and it always
-> assumes that RTC is in localtime as previously noted.  Now, the OS doesn't
-> update its configuration files like for Location Manager, so users will
-> have to deal with it, and that's okay.
+Well, when travelling with a PowerBook, you tend to regulary change the
+timezone, and you like the kernel to remember what it was ;) Paul added
+the write back of the sys_tz, so I beleive he has some userland tool to
+set it too, Paul ?
+With this current code, any write to our pmac-specific /dev/rtc will
+cause ppc_md.set_rtc_time to update both the RTC and the xpram sys_tz.
 
-Confused, but I've hardly ever even seen a Mac.
+So either we make a userland tool for that, or eventually add such a
+feature to pmud along with other PowerBook-specific tasks, accessing /
+dev/nvram directly, or we find a way to make sure updates to sys_tz are
+written back to nvram. I was not specifically thinking about results of a
+DST change. We could eventually add this code along with other nvram
+write code (for flash based nvram) in the restart/shutdown routines if we
+don't want to do it from every ppc_md.set
 
-> How does kernel know when to update the tz so that it can save the info to
-> xpram?  Since do_settimeofday() is not necessarily called when tz is
-> changed, we'd have to save the tz to xpram every time do_settimeofday() is
-> called even when tz is not at all changed.  Or is the xpram update only
-> done when *set_rtc() is called?  How do you know when to set DST flag on
-> xpram?
->
-> Isn't it better to have a little userland app do the xpram manipulation?
+>How does MacOS handle DST changes (on the fly or only at reboot) ?
 
-Is it actually even necessary to manipulate it. Once the kernel clock is
-in UTC, everything is userland under Unix. If MacOS detects that DST has
-changed after a reboot, let it handle this, as long as it allows to find
-UTC from RTC and xpram everything is fine.
+On the fly.
 
->
-> > It may be a "cultural" difference due to my years of MacOS background,
-> > but rather than having userland set the timezone, I'd personally rather
-> > see userland read the kernel timezone coming from xpram, and set the
-> > appropriate userland env. vars depending on this timezone (especially
-> > useful for portables). Well, that's my 2 cents, of course, nobody will
-> > agree wit me ;)
->
-> /dev/rtc aside, kernel only communicates through UTC, and timezone
-> manipulation is best done in userland especially for portables.  When you
-> go from one timezone to another, it requires some sort of userland
-> intervention to get clock right anyway.
+>You never (well hardldy ever) pass localtime to userland in Unix and
+>that's a big big big plus, each process/user can set TZ as it wishes. IOW
+>the value of sys_tz is at best a system wide default but is not imposed to
+>anybody. Here at the telescope on all Linux machines, /etc/localtime is
+>set as UTC, but then I set TZ=Europe/Madrid in my .profile to avoid too
+>much confusion with my PC which has localtime set to Europe/Madrid.  And
+>right now I am running a shell with TZ set to Pacific/Tahiti to believe
+>that I'm on holiday ;-)
 
-Indeed...
+Ok, I understand that. That's indeed a nice feature. Changing the
+"global" timezone is specifically useful for portables. You can consider
+it as the machine's physical location instead of a kind of "global" timezone.
 
-> Let's say /dev/rtc gives raw machine value and since Mac OS requires it to
-> be localtime for P'Mac let me assume /dev/rtc gives localtime which is
-> consistent with xpram timezone info.  As long as RTC and xpram timezone
-> info is consistent (it does'nt have to be the correct timezone where the
-> machine happens to be at the time), kernel can always figure out what UTC
-> is at very early boot time.  If /dev/rtc time and kernel UTC derived
-> localtime (via /etc/localtime) do not agree, we know something has
-> happened and we can decide or ask users to set xpram timezone info (via
+>Done and booted (although I will probably orphan the changeset).
 
-Why ?  On a portable it may simply mean that you are away and set
-/etc/localtime to your new zone or anything else, but I'd rather keep
-the filesystem timestamps on my FAT/hfs partitions to the local
-timestamps of my default location. As long as I don't boot MacOS while I'm
-away there is perhaps no reason to change the xpram offset...
+Heh ;)
 
-> /dev/nvram or whatever) or change /etc/localtime link or whatever at boot
-> time or user specified time.  And, if /dev/rtc time and kernel UTC derived
-> localtime do agree, all is well and we have nothing to do.  Either way,
-> there is nothing for kernel to decide.  See?
-
-No policy in the kernel in indeed a good guideline.
-
-	Gabriel.
-
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
