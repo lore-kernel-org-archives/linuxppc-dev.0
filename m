@@ -1,28 +1,38 @@
-Message-ID: <39646B2D.8204F576@amulet.co.jp>
-Date: Thu, 06 Jul 2000 20:19:09 +0900
-From: Hollis Blanchard <hollis@amulet.co.jp>
-MIME-Version: 1.0
-To: Iain Sandoe <iain@sandoe.co.uk>
-CC: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Iain Sandoe <iain@sandoe.co.uk>, <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: pdisk & G4
+Date: Thu, 6 Jul 2000 14:36:42 +0200
+Message-Id: <20000706123642.22511@mailhost.mipsys.com>
+In-Reply-To: <200007061057.LAA27826@hyperion.valhalla.net>
 References: <200007061057.LAA27826@hyperion.valhalla.net>
-Content-Type: text/plain; charset=iso-2022-jp
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Iain Sandoe wrote:
+>pdisk 0.7a4 (MacOS version) does not appear to run successfully on
+>G4/sawtooth (that is, it runs without crashing but reports no devices -
+>every ATA device shows as 'not ready').
 >
-> pdisk 0.7a4 (MacOS version) does not appear to run successfully on
-> G4/sawtooth (that is, it runs without crashing but reports no devices -
-> every ATA device shows as 'not ready').
+>This is the latest version on LinuxPPC 2000 and a quick check of the Apple
+>Developer site did not reveal a newer version.  It's an Apple program.
+>
+>Does someone have the sources - or is there an alternative (OK - I will use
+>the new Apple Disk Setup  which gets me most of the way - but pdisk is jolly
+>useful for checking that everything is OK).
 
-I'm pretty sure Mac OS pdisk has been broken for quite some time now,
-although possibly only with IDE devices. I've hardly ever used it though
-so I'm not sure.
+The MacOS version of pdisk is bogus. The recommended practice is to:
 
-The author is on this list so I expect he'll know...
+ - Use Drive Setup to create the MacOS partitions, leave empty space for
+Linux partitions
+ - Boot the Linux installer
+ - Use pdisk from the linux installer to create the Linux partitions
+ - Reboot the installer (may not be needed in all cases, but I prefer
+this way)
+ - Complete install
 
--Hollis
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
