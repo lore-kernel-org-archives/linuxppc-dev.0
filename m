@@ -1,38 +1,40 @@
-Date: Fri, 27 Jul 2001 11:07:59 -0700 (PDT)
-From: Paul White <pwhite@networkrobots.com>
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Quick Question on ioremap_base
-Message-ID: <Pine.LNX.4.21.0107271105110.4817-100000@stimpy.networkrobots.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Freddy Lugo <wilfredo_lugo@hp.com>
+Reply-To: wilfredo_lugo@hp.com
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: How programs generate software interrupts?
+Date: Fri, 27 Jul 2001 14:33:24 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <01072714332404.00961@oubao.prd.hp.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-All,
+	Hi All,
 
-I have a quick question regarding setting the
-ioremap_base and ioremap_bot in arch/ppc/mm/init.c
+	Some time ago I posted a question about not getting any program output to
+the serial port when the kernel reach user space.  After a lot of troubleshooting I am still
+unable to get any program output to the serial port.
 
-How do you determine this value?  I am setting it
-to an invalid value, because my vmalloc()'s are
-failing after the first one when booting up.
+	I am using a 16C550 serial port, I checked the UART's  configuration one
+by one and everything is ok.  My serial port driver has a IRQ assigned to it and when
+a key is pressed on the keyboard console everything work as expected.  (Interrupts are
+generated and the data is read from the UART register and printed to the console).
+But I am unable to see any output from the program(s).  I tried different programs
+(sash, yes, printf) and nothing.
 
->From the code, I see that:
+	Right now I don't know what else to check.  How a program is supposed
+to send output messages to the serial port?  AFAIK the program should generate an interrupt,
+who is then handled by the scheduler, and then passed to the do_softirq routine who then is
+supposed to call the driver bottom half to schedule the event on the task queue.  Am I correct?
+If I am, that is not happening.
 
-Default is set to 0xf8000000, and then,
-the following platforms do this:
+Any hints?
 
-Prep:    0xf0000000
-Chrp:    default
-Pmac:    0xfe000000
-apus:    default
-gemini:  default
-8260:    0xe0000000
+thanks in advance,
 
-Can someone explain how to "decide" this value?
-
-Paul W.
+Freddy
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
