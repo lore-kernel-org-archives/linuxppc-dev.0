@@ -1,49 +1,31 @@
-Message-Id: <v03110700b4cc8fce0321@[209.183.136.12]>
-In-Reply-To: <200002130440.XAA25134@mal-ach.watson.ibm.com>
-References: Message from Kevin Hendricks <khendricks@ivey.uwo.ca>    of
- "Sat, 12 Feb 2000 23:21:41 EST."
- <00021223332100.19021@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sun, 13 Feb 2000 11:51:20 -0500
-To: David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Subject: Re: Kernel Gurus Help! Possible kernel bug in conversion of
- jiffees in nanosleep.
+From: Paul Mackerras <paulus@linuxcare.com>
+To: toa@pop.agri.ch
+Subject: Re: 2.3.43 failed
+Date: Mon, 14 Feb 2000 10:24:36 +1100
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.linuxppc.org
+References: <38A6A0C4.12F41E57@pop.agri.ch>
+MIME-Version: 1.0
+Message-Id: <00021410253000.14021@argo.linuxcare.com.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Sun, 13 Feb 2000, Andreas Tobler wrote:
 
->	Maybe submit the question to the glibc-alpha mailinglist as well?
->
->David
+> Updated to 2.3.44 this morning.
+> Compiles but doesn't boot, hangs on the message booting.....
+> PM7200, booting via BootX ext & app (BootX V: 1.2b1)
 
-I submitted two bug reports about this via the glibc bug database.
+:-(
 
-The second report just adds info about the first.
+It works OK on my 7600.  I'll see if I can get over to ANU and try it on a
+7200 there.
 
-The bug reports are 1597 and 1598.
-
-I have previously fixed pthread_cond_timedwait in glibc 2.1.3 to actually
-work recently but a final "cleanup" recently committed patch rewrote things
-so that it no longer worked.
-
-The funny thing is that their technique *should* work if the remtime value
-from nanosleep would actually decrease and not increase.
-
-So I think the whole thing is actually a kernel bug but I am not sure.
-
-I know nothing about jiffees and their conversion to and from time values
-and I am not sure how jiffees could ever grow (lost jiffees added back?).
-
-If anyone who knows something about jiffees and conversions could look at
-nanosleep I would greatly appreciate it.
-
-Thanks,
-
-Kevin
-
+--
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
