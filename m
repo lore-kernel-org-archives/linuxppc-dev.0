@@ -1,27 +1,86 @@
-Subject: Re: rsync'ed sources out of date?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christian Kujau <evil@g-house.de>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <409274FC.8040309@g-house.de>
-References: <40925BBF.1010708@g-house.de>
-	 <hh65bh4hgz.fsf@alsvidh.mathematik.uni-muenchen.de>
-	 <409274FC.8040309@g-house.de>
-Content-Type: text/plain
-Message-Id: <1083369645.20474.197.camel@gaston>
+Date: Sat, 1 May 2004 20:26:59 +0200
+From: Olaf Hering <olh@suse.de>
+To: linuxppc-dev@lists.linuxppc.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Greg KH <greg@kroah.com>
+Subject: [PATCH] simple class for adb
+Message-ID: <20040501182659.GB18859@suse.de>
 Mime-Version: 1.0
-Date: Sat, 01 May 2004 10:00:45 +1000
+Content-Type: text/plain; charset=utf-8
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> despite my assumption that something "rsync'ed" would be more current, i
-> shall go now with the things from kernel.org...ok.
+This adds /sys/class/adb/, removes unused devfs lines and updates a
+comment to match reality.
 
-Kernel.org for releases, or linux-2.5 rsync or Linus bk for upstream
-snapshots. The idea is that people should now use the upstream tree
-directly, not mine.
 
-Ben.
+diff -p -purN linux-2.6.6-rc3/drivers/macintosh/adb.c linux-2.6.6-rc3.adb/drivers/macintosh/adb.c
+--- linux-2.6.6-rc3/drivers/macintosh/adb.c	2004-04-04 05:38:26.000000000 +0200
++++ linux-2.6.6-rc3.adb/drivers/macintosh/adb.c	2004-05-01 19:58:08.000000000 +0200
+@@ -10,7 +10,7 @@
+  *
+  * To do:
+  *
+- * - /proc/adb to list the devices and infos
++ * - /sys/bus/adb to list the devices and infos
+  * - more /dev/adb to allow userland to receive the
+  *   flow of auto-polling datas from a given device.
+  * - move bus probe to a kernel thread
+@@ -23,7 +23,6 @@
+ #include <linux/slab.h>
+ #include <linux/module.h>
+ #include <linux/fs.h>
+-#include <linux/devfs_fs_kernel.h>
+ #include <linux/mm.h>
+ #include <linux/sched.h>
+ #include <linux/smp_lock.h>
+@@ -36,6 +35,7 @@
+ #include <linux/delay.h>
+ #include <linux/spinlock.h>
+ #include <linux/completion.h>
++#include <linux/device.h>
+ #include <asm/uaccess.h>
+ #include <asm/semaphore.h>
+ #ifdef CONFIG_PPC
+@@ -75,6 +75,8 @@ static struct adb_driver *adb_driver_lis
+ 	NULL
+ };
 
++static struct class_simple *adb_dev_class;
++
+ struct adb_driver *adb_controller;
+ struct notifier_block *adb_client_list = NULL;
+ static int adb_got_sleep;
+@@ -883,6 +889,7 @@ out:
+ }
+
+ static struct file_operations adb_fops = {
++	.owner		= THIS_MODULE,
+ 	.llseek		= no_llseek,
+ 	.read		= adb_read,
+ 	.write		= adb_write,
+@@ -893,9 +900,13 @@ static struct file_operations adb_fops =
+ static void
+ adbdev_init(void)
+ {
+-	if (register_chrdev(ADB_MAJOR, "adb", &adb_fops))
++	if (register_chrdev(ADB_MAJOR, "adb", &adb_fops)) {
+ 		printk(KERN_ERR "adb: unable to get major %d\n", ADB_MAJOR);
+-	else
+-		devfs_mk_cdev(MKDEV(ADB_MAJOR, 0),
+-				S_IFCHR | S_IRUSR | S_IWUSR, "adb");
++		return;
++	}
++	adb_dev_class = class_simple_create(THIS_MODULE, "adb");
++	if (IS_ERR(adb_dev_class)) {
++		return;
++	}
++	class_simple_device_add(adb_dev_class, MKDEV(ADB_MAJOR, 0), NULL, "adb");
+ }
+--
+USB is for mice, FireWire is for men!
+
+sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
