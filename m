@@ -1,29 +1,24 @@
-Date: Tue, 8 Jun 2004 16:15:23 +0200
-From: Marc Leeman <marc.leeman@barco.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: eepro100 load
-Message-ID: <20040608141523.GB9955@smtp.barco.com>
-Reply-To: Marc Leeman <marc.leeman@barco.com>
-References: <20040608070108.GO18676@smtp.barco.com>
+Subject: Status of 2.6 8560 support.
+From: David Woodhouse <dwmw2@infradead.org>
+To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Content-Type: text/plain
+Message-Id: <1086707023.15845.67.camel@hades.cambridge.redhat.com>
 Mime-Version: 1.0
-In-Reply-To: <20040608070108.GO18676@smtp.barco.com>
+Date: Tue, 08 Jun 2004 16:03:43 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---ghzN8eJ9Qlbqn3iT
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
+I need to support the WindRiver PowerQUICC III MPC8560 board in 2.6. I
+see a handful of #ifdef CONFIG_BOOKE in 2.6 but it's not actually
+possible to set it, and parts which are in 2.4 (like motobooke_mmu.c)
+are still missing.
 
-> 70-80 Mbps with a 350 MHz should be able to handle this without this
-> much load (seems to be > 60% in kernel mode for the moment for 56
-> Mbps).
+Where's the rest of the 8560 support for 2.6? What needs to be done to
+it to get it merged? You can consider me to have been volunteered ;)
 
-The same goes for the e100 driver from Intel (haven't looked at the
-non-default settings very much though); perhaps slightly worse as the
-eepro100 driver, though the e100 driver seems to be able to limit limit
-the resulting errors (overflow) to one source, while the eepro100 driver
-distributes the errors over the different network sources, making them
-all corrupt.
+--
+dwmw2
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
