@@ -1,40 +1,49 @@
-Subject: Re: Large TLBs on 40x
-From: Josh Boyer <jwboyer@charter.net>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <285BFD4E-E638-11D8-852B-003065F9B7DC@embeddededge.com>
-References: <20040804093937.B12758@home.com>
-	 <285BFD4E-E638-11D8-852B-003065F9B7DC@embeddededge.com>
+Message-ID: <20040810055826.96344.qmail@web15604.mail.cnb.yahoo.com>
+Date: Tue, 10 Aug 2004 13:58:26 +0800 (CST)
+From: Song Sam <samlinuxppc@yahoo.com.cn>
+Subject: Re: 2.4 versus 2.6 patches
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <20040809132828.GC5733@logos.cnet>
+MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <1092104488.2974.2.camel@c68.115.86.108.roc.mn.charter.com>
-Mime-Version: 1.0
-Date: Mon, 09 Aug 2004 21:21:28 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 2004-08-04 at 12:03, Dan Malek wrote:
-> On Aug 4, 2004, at 12:39 PM, Matt Porter wrote:
->
-> > We eagerly await your patch. ;)
->
->
-> HAHAHAHA!   Fortunately, long ago IBM asked me to return
-> all of the development boards I had that belonged to them........
-> and I had some cool ones, too :-)
+Marcelo Tosatti <marcelo.tosatti@cyclades.com> wrote£º
+> I think what David means is that v2.6 is the new platform where all
+> development effort is being done. Most of its core code, in general,
+> is much cleaner than v2.4.
 
-(Sorry for the delay)...
+Thanks for your insight on 2.6 nice characters.
 
-I have some boards I could test such a patch on.  Or is it a case of
-"this isn't trivial to do"?  In either case, if someone could give me
-some pointers, I'll try and figure it out myself.
+> I disagree with him when he says "v2.4 is dead" (I coudlnt otherwise
+> :)), because its still maintained and will be for years. And its still
+> in use by a lot of folks.
 
-And if not, I guess I'll still figure it out myself, but it'll take a
-lot longer :).
+Yeah,I am so happy to see v2.4 is still supported
+officially.2.4.27 was released a couple of days ago.So
+mother tree is alive but ppc child tree was dead.
+I wonder if I have a patch vs 2.4 branch on ppc,could
+I send to Marcelo Tosatti directly?
 
-thx,
-josh
+> But his point is that new development efforts should be based on the
+> new, shiny, improved v2.6 kernel, since that is where all development
+> is focused at. And as time passes, v2.4 will get more and more
+> obsolete.
 
+I am looking forward to seeing the day coming. :-)
+
+> Unfortunately for 8xx users, as noted by other people on this thread,
+> v2.6 is not yet 100% (wish it was, I'm myself trying to get our boards
+> to boot v2.6).
+
+Could you make it? I once booted v2.6 on RPXlite DW
+via ramdisk root file system but failed via NFS.
+
+Best regards,
+
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
