@@ -1,53 +1,43 @@
-Date: Fri, 27 Aug 1999 15:02:22 -0400 (EDT)
-From: Hank De Gregorio <hcd1@acpub.duke.edu>
+Mime-Version: 1.0
+Message-Id: <v04210105b3eca263e30c@[209.239.164.156]>
+In-Reply-To: <l03130307b3ec7ec8030d@[192.168.10.2]>
+References: <l03130307b3ec7ec8030d@[192.168.10.2]>
+Date: Fri, 27 Aug 1999 13:18:55 -0700
 To: linuxppc-dev@lists.linuxppc.org
-cc: linuxppc-user@lists.linuxppc.org
-Subject: SCSI host detected, but not the drive
-Message-ID: <Pine.SOL.3.91.990827144757.13651A@godzilla6.acpub.duke.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Peter Chang <weasel@cs.stanford.edu>
+Subject: Re: Xfree86 support for Voodoo 3 acceleration
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-when i boot my initrd kernel, the scsi host is detected, but the actual 
-drive is not identified (see first set of errors below).  consequently, in 
-the redhat installer, i get the second set of errors below.
+> >After looking at www.xfree86.org and the source for Xfree-3.3.4,
+> >it seems that support for the Voodoo 3 card's 2-d acceleration
+> >is already in Xfree86!  But, (and I'm just guessing here, I do a lot
+> >of programming but none of it is system or GUI programming)
+> >this support appears to run only on x86 systems currently.  There doesn't
+> >appear to be any asm code or anything, though, so shouldn't it be
+> >possible to port this to the linuxppc side of things?
 
-can anyone help me?  my system is an mvme2604 333MHz, with a red rock 
-card with seagate scsi disk and a 761 IO transition module.
+At 11:45 -0600 08.27.1999, Stephen Edie wrote:
+>Is the full source code to the driver available?  Or is it written using
+>the Glide libraries?
 
-hank
+glide is 3d only, and would probably use some sort of ioctl to talk 
+to this driver to get board mappings etc. At least, this is how we 
+did it on mac/w32 platforms.
 
-ncr53c8xx: at PCI bus 0, device 12, function 0
-ncr53c8xx: 53c825a detected
-ncr53c825a-0: rev=0x13, base=0x1042000, io_port=0x11000, irq=19
-ncr53c825a-0: ID 7, Fast-10, Parity Checking
-ncr53c825a-0: on-chip RAM at 0x1040000
-ncr53c825a-0: restart (scsi reset).
-ncr53c825a-0: Downloading SCSI SCRIPTS.
-scsi0 : ncr53c8xx - revision 3.1h
-scsi : 1 host.
-scsi : detected total.
-eth0: DC21140 at 0x11100 (PCI bus 0, device 14), h/w address 
-08:00:3e:28:53:a2,
-      and requires IRQ18 (provided by PCI BIOS).
+Anyway, the 2d core is basically separate from 3d so this driver 
+should probably 'just work'. Does anyone know if it uses the full 2d 
+core, or the open spec that 3dfx was going to release?
 
+\p
 
-		 ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´ Setup Swap ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-                 ³                                            ³
-                 ³ You don't have any hard drives available!  ³
-                 ³ You probably forgot to configure a SCSI    ³
-                 ³ controller.                                ³
-                 ³                                            ³
-                 ³                                            ³
-                 ³                                            ³
-                 ³                 ÚÄÄÄÄ¿                     ³
-                 ³                 ³ Ok ³                     ³
-                 ³                 ÀÄÄÄÄÙ                     ³
-                 ³                                            ³
-                 ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ  
-
+---
+We all enter this world in the same way:
+naked; screaming; soaked in blood.
+But if you live your life right, that kind of
+thing doesn't have to stop there. -- Dana Gould
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
