@@ -1,53 +1,95 @@
-Subject: RE: I2C RTC with MPC8xx?
-Date: Wed, 29 Jan 2003 09:14:58 -0800
-Message-ID: <AFA2797FA126FD46B8CD281F2809844E0197DB@taurus.primary.local>
-From: "Keith Outwater" <Keith_Outwater@microvision.com>
-To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Leonardo Pereira Santos <lsantos@pd3.com.br>
+To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+Subject: Re: Can software discover MPC8xx variant?
+Date: Wed, 29 Jan 2003 15:15:28 -0200
+References: <D73A25AA6E54D511AD74009027B1110F3C05EC@ORION>
+In-Reply-To: <D73A25AA6E54D511AD74009027B1110F3C05EC@ORION>
+Cc: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Message-Id: <200301291515.28980.lsantos@pd3.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Stephen -
 
-I am successfully using a DS1337 RTC with PPCBoot/U-Boot and a
-linux-2.4.4-10-06 kernel from the Denx FTP site. I haven't gotten around
-to submitting it, but let me know if you want the patch.
+Ok, but in this case the hardware itself wouldn't know waht revision or
+whatever it is. And they already have to change the processor, so you have to
+change the hardware anyway, mount or not a few resistors shouldn't be hard.
 
-Keith
-
-Keith Outwater
-Sr. Staff Engineer
-Microvision, Inc.
-19910 N. Creek Parkway
-Bothell, WA 98011
-
-
+On Wednesday 29 January 2003 15:02, you wrote:
+> Or you could set it in some type of data structure in your bootloader.  No
+> hardware change this way.
+>
 > -----Original Message-----
-> From: Steven Scholz [mailto:steven.scholz@imc-berlin.de]
-> Sent: Wednesday, January 29, 2003 4:38 AM
-> To: Linuxppc-Embedded
-> Subject: I2C RTC with MPC8xx?
->
->
->
-> Hi there,
->
-> what do I have to do to use an I2C RTC (like Dallas DS1337)
-> within LinuxPPC?
->
-> I know there're drivers for PPCBoot / U-Boot.
->
-> But how could I access them from Linux?
->
-> drivers/char/rtc_8xx.c is not suitable.
->
-> Thanks,
->
-> Steven
+> From: Leonardo Pereira Santos [mailto:lsantos@pd3.com.br]
+> Sent: Wednesday, January 29, 2003 11:30 AM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Subject: Re: Can software discover MPC8xx variant?
 >
 >
 >
 >
+> As the 8xx family is supported by the kernel, I assume that what you want
+> is to know if the 8xx processor running supports some feature? If this is
+> the case, I can tell you how to do it the way I'd.
+> You can define some ioport with pull-up and pool-down resistors and in the
+> manufacturing process specifiy if this board is for product A, then you
+> should use MPC850DSL and you will mount some of the pull-ups and
+> pull-downs. If the board is for product B, then you should mount MPC850SAR
+> and mount differently the pull-ups and downs. By reading the value on the
+> selected pins, you might de able to know what board this is. This scheme
+> can also be used to know what hardware revision your board have.
+>
+> On Wednesday 29 January 2003 12:13, Marius Groeger wrote:
+> > On Wed, 29 Jan 2003, Alex Zeffertt wrote:
+> > > Can anybody tell me if there is a way to identify which processor from
+> > > the MPC8xx family software is running on.  I hoped I could use the IMMR
+> > > special purpose register.  However, this only tells you the silicon
+> > > revision, which can have the same value even if the processors are
+> > > different!
+> > >
+> > > Does the processor type (e.g. 862, 857T, 857DSL) reside anywhere in the
+> > > processor?
+> >
+> > U-Boot/PPCboots cpu/mpc8xx/cpu.c contains a lot of generic type
+> > detection code, but even there the assumes that the basic type is
+> > known at compile time.
+> >
+> > Regards,
+> > Marius
+>
+> ---------------------------------------------------------------------------
+>
+> >-- Marius Groeger           SYSGO Real-Time Solutions AG
+> > mgroeger@sysgo.de Software Engineering     Embedded and Real-Time
+> > Software www.sysgo.de Voice: +49-6136-9948-0   Am Pfaffenstein 14
+> > www.osek.de FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany
+> > www.elinos.com
+>
+> - --
+>
+> Leonardo Pereira Santos
+> Engenheiro de Projetos
+> PD3 Tecnologia
+> av. Pará 330/202
+> (51) 3337 1237
+>
+> Today Fortune tells us:
+> Are you scared of speed? If so, try Windows NT.
+>
+>
+- --
+
+Leonardo Pereira Santos
+Engenheiro de Projetos
+PD3 Tecnologia
+av. Pará 330/202
+(51) 3337 1237
+
+Today Fortune tells us:
+Is knowledge knowable?  If not, how do we know that?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
