@@ -1,35 +1,27 @@
-Date: Thu, 10 Jun 1999 13:13:51 -0500 (CDT)
-From: Joseph Palani Garcia <jpgarcia@execpc.com>
+From: Michael Engel <engel@math.uni-siegen.de>
+Message-Id: <199906101825.UAA13256@fourier.numerik.math.uni-siegen.de>
+Subject: New ppcbug version for Atlas ?
 To: linuxppc-dev@lists.linuxppc.org
-Subject: EM86 port for LinuxPPC?
-Message-ID: <Pine.GSO.3.95.990610130308.9290A-100000@earth>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 10 Jun 1999 20:25:41 +0200 (MET DST)
+Content-Type: text
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Some may have noticed the EM86 x86 "emulator" for alpha/linux to run
-x86/linux binaries.  I recently added the define to my kernel compile and
-it compiled the binary support (the em86 program gets help from the
-kernel, so theres a kernel define in the alpha kernel config).  Anyway,
-I downloaded all the source from digital's site, and tried compiling it.
-It all compiled fine except for one thing, the thing i am doubious about.
-a source file that is only about 25 lines of assembly.  What i think it
-does is reroute the syscalls to the friend in the kernel.  It seems to me
-that because of this, it may be bound to the alpha architecure.  Is there
-a way to port this to ppc?  or is there just too many dissimilarities
-between alpha and ppc archs?  ( i haven't tried doing it yet because i
-don't know if its worth the time in learning alpha and ppc assm/arch just
-to get x86/linux bins to run... or im just lazy)
 
-Thanks.
+Hi,
 
---
+I recently got a Motorola Atlas board (604/100)  with ppcbug version 1.5. 
+This board doesn't recognize a CirrusLogic 5436-based PCI VGA board in 
+ppcbug (it works fine with AIX after installing the correct drivers).
 
-Joseph Garcia
-Madison, WI
-jpgarcia@execpc.com
+I am sure the 5436 has worked in an Atlas board about a year ago but
+I'm not quite sure which ppcbug version that board had (I _think_ it
+was 1.7). Does anyone know where I can obtain a more recent version of
+the firmware ?
+
+Best regards,
+	Michael Engel	(engel@unix-ag.org)
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
