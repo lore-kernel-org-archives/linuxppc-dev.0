@@ -1,46 +1,32 @@
-Message-ID: <3B862F69.38E9F20C@raleigh.ibm.com>
-Date: Fri, 24 Aug 2001 06:41:45 -0400
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+From: "Elan Feingold" <elan@nxnetworks.com>
+To: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: CONFIG_SERIAL_CONSOLE question
+Date: Fri, 24 Aug 2001 12:27:01 -0500
+Message-ID: <NDBBLJKOJGKDOFBHNPGEKEIHCEAA.elan@nxnetworks.com>
 MIME-Version: 1.0
-To: Dan Malek <dan@mvista.com>
-Cc: "Marti, Felix" <fmarti@desanasystems.com>,
-	"'Troy Benjegerdes'" <hozer@drgw.net>,
-	Linix PPC Emmbedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: using the little endian bit 4xx mmu
-References: <1DF71FB881F4D311A6B700C04FA06A1AC437B4@orca.desanasystems.com> <3B85D758.572A0AD8@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
+I'm using Linux 2.4.4-2001-07-23, targetting a custom 860T board with FEC
+based on BSEIP board.  It comes up fine, but when it goes to mount the NFS
+root and start init, I invariably get a:
 
-Because its there, and its been hacked in here and the people here have
-found it VERY useful and convienent.  4xx specific or not, the people
-found it extremely convienent.
+"Oops: kernel access of bad area, sig: 11"
 
+Another message
+(http://lists.linuxppc.org/linuxppc-embedded/200103/msg00025.html I read led
+me to believe that this was caused by the CONFIG_SERIAL_CONSOLE.  When I
+turn it off (which is hard, because config.in wants it on!) I simply get no
+output and I can't really tell what's happening.
 
-Chip
+Any idea?
 
-Dan Malek wrote:
->
-> "Marti, Felix" wrote:
-> >
-> > I hacked it in a few hours:
-> > in arch/ppc/kernel/head_4xx.S
->
-> Ugh....we have discussed this in the past.  What is the advantage
-> of using this feature?  All of the existing drivers and I/O macros
-> are designed to handle mixing of endian modes depending upon the
-> processor and I/O device.  All this does is complicate a standard
-> set of programming interfaces that everyone expects to work as they
-> have in the past.
->
-> The ability to set a feature flag in the PTE and transfer that to
-> the TLB isn't a solution to anything.  You are going to have to
-> rewrite all of the standard functions, macros, and device drivers
-> to utilize this feature, and we haven't seen any benefit to doing this.
->
->         -- Dan
+Best regards,
+
+-elan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
