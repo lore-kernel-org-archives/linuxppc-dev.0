@@ -1,50 +1,46 @@
-Date: Wed, 27 Dec 2000 19:15:35 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+Message-Id: <20001228062746.Postino-011464@smtp01.highway.ne.jp>
+Date: Thu, 28 Dec 2000 06:27:46 +0900
 To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Need testers with MESH SCSI
-In-Reply-To: <19341120115827.19132@192.168.1.2>
-Message-ID: <Pine.LNX.4.05.10012271914190.27676-100000@callisto.of.borg>
+CC: <linuxppc-dev@lists.linuxppc.org>
+From: Kaoru Fukui <k_fukui@highway.ne.jp>
+Subject: Re: 2.4.0test13 + Dual G4
+In-Reply-To: <19341121032716.6201@192.168.1.2>
+References: <20001227041316.Postino-032677@smtp01.highway.ne.jp>
+ <19341121032716.6201@192.168.1.2>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 26 Dec 2000, Benjamin Herrenschmidt wrote:
-> >Note that there can be other problems with the mesh as well: I remember
-> I once
-> >had some early 2.3.x kernels that could not init the mesh when cold-booted,
-> >only when warm-booted. So I had to boot an older kernel first each time I had
-> >powered down my box :-)
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Kaoru Fukui <k_fukui@highway.ne.jp>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4.0test13 + Dual G4
+Date: Wed, 27 Dec 2000 10:55:32 +0100
+
+> >Yesterday linux_2_5`s source was broken for SMP.
+> >SingleCPU kernel was very well.
+> >
+> >Now I'm puting kernel-2.4.0-test13pre3ac4 from linux_2_3.
 >
-> There were issues with powering up the MESH on some powerbooks that were
-> fixed some time ago, but maybe your issue is unrelated.
+> Be careful not to mismatch linux_2_3 and linuxppc_2_3. These are 2
+> different trees on fsmlabs.com. (linux_2_3 is linus tree while
+> linuxppc_2_3 is the PPC tree). It's possible that Paul's latest SMP fixes
+> did not yet make it into _2_5.
+>
+> Ben.
 
-Yes, since I don't have a Powerbook, but a LongTrail.
+Thanks Ben.
 
-> Looking at Darwin's MESH driver, they have a whole bunch of workarounds
-> for known issues (either with common device protocol errors, or MESH
-> internal races).
+I'm struggling with bk tree 5000 linuxppc_2_3.
 
-I still see the
+The source was able to run as singleCPU.
+it's good working mono cpu.
+The compilation is no problem,
+ I set SMP flag ,then the compilation have done,
+but the kernel say one cpu.
 
-    mesh: halt_dma: data_ptr=-256 (nb=20736, ms=c06ff278)
-
-(i.e. the DMA ptr shows it did 256 bytes too much), but I never noticed any
-file corruption during the 3.5 years I've been using this machine. Let's call
-it a harmless hardware bug.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Kaoru
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
