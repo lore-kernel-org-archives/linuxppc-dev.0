@@ -1,43 +1,73 @@
-Message-ID: <39255738.272281F4@motorola.com>
-Date: Fri, 19 May 2000 10:01:12 -0500
-From: "Richard Hendricks" <richard.hendricks@motorola.com>
+Message-ID: <392562CE.A71A4F49@embeddededge.com>
+Date: Fri, 19 May 2000 11:50:38 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org"  <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: How to get rom code to go on FADS?
-References: <391B220F.9838E70F@charter.net> <391C3273.4BBF0884@motorola.com> <391C3945.9E0A439F@charter.net> <391C5416.15ADA181@motorola.com> <391D5E99.D14A02F2@charter.net> <39201DD2.2135361E@motorola.com> <39202D2C.385DD3B@charter.net> <3920AA9F.2DCA0B2E@charter.net> <3920ED16.A2D26629@snom.de> <3921B844.572E3C63@charter.net> <3922046E.D77E156@charter.net> <3922EE48.1E41DA1B@motorola.com> <3923618A.F4D70742@charter.net> <39241726.1CC6B342@motorola.com> <392521B2.5ACFBD8F@charter.net>
+To: Ralph Blach <rcblach@raleigh.ibm.com>
+CC: Daris A Nevil <dnevil@snmc.com>,
+        Graham Stoney <greyham@research.canon.com.au>,
+        Daniel Wu <Daniel.Wu@alcatel.com.au>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Porting LinuxPPC
+References: <20000519051051.236093C972@elph.research.canon.com.au> <39253A48.24B90117@snmc.com> <39253D0B.F9AF86EE@raleigh.ibm.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Dan A. Dickey" wrote:
->
-> > Um, that's documented so I take no blame for it. :)
-> > See page 20-41.  If you have debug mode enabled, and
-> > are not currently IN debug mode (ie, MPC8bug is connected,
-> > but you are running your code), then a write to the
-> > DP registers is ignored.
->
-> Page 20-41 of what?  There's nothing like that in my
-> 850 users manual, and the mpc8bug users manual doesn't
-> come close to having 20 chapters.
->
-Oooooh, you're one of those Netcomm customers. :)  I currently
-support the MPC823/MPC823e.  They're very similar chips. Our
-manual is slightly different from the Netcomm manual.  The
-chapter in question is the Development Capabilities chapter.
-I don't have an MPC850 manual handy.  Besides, ours is much
-better. :)
+Ralph Blach wrote:
 
-BTW, the final version of the MPC823/MPC823e manual is now
-availible on our website.  A printed version should be availible
-at the LDC in a few weeks.  The Powers That Be are making us change
-the cover from the spiffy one we have to a black Digital DNA one.
-Feh.
+> I disagree.  I beleive that the Kernel load simply must be above
+> 0x80000000.
 
---
-MPC823 Applications Engineering Development
-Get help from other MPC823 customers on the
-comp.sys.powerpc.tech newsgroup!
+OK, time for another memory map lesson........
+
+Virtual addresses from 0 to 0x7fffffff are for user context.  Above
+this are the kernel virtual addresses.  The PowerPC processors have
+more than 32-bits of addressing, but I won't go into that since it
+is not important for this discussion.
+
+During the early kernel initialization, the kernel virtual memory
+allocator is not operational.  Prior to this KVM initialization, we
+choose to map virtual to physical addresses 1:1.  That is, the kernel
+virtual address exactly matches the physical address on the bus.  These
+mappings are typically done in arch/ppc/kernel/head.S, or
+arch/ppc/mm/init.c.  Only absolutely necessary mappings should be
+done at this time, for example board control registers or a serial
+uart.  Normal device driver initialization should map resources
+later when necessary.
+
+Although platform dependent, and certainly the case for embedded 8xx,
+traditionally memory is mapped at physical address zero, and I/O
+devices above phsical address 0x80000000.  The lowest and highest
+(above 0xf0000000) I/O addresses are traditionally used for devices
+or registers we need to map during kernel initialization and prior
+to KVM operation.  For this reason, and since it followed prior PowerPC
+platform examples, I chose to map the embedded 8xx kernel to the
+0xc0000000 virtual address.  This way, we can enable the MMU to map the
+kernel for proper operation, and still map a few windows before the
+KVM is operational.
+
+On some systems, you could possibly run the kernel at the 0x80000000
+or any other virtual address.  It just depends upon mapping that must
+be done prior to KVM operational.  You can never map devices or
+kernel spaces that overlap with the user virtual space.  This is why
+default IMMR mapping used by most BDM tools won't work.  They put
+the IMMR at something like 0x10000000 or 0x02000000 for example.  You
+simply can't map these addresses early in the kernel, and continue
+proper system operation.
+
+The embedded 8xx/82xx kernel is mature enough that all you should need
+to do is map the IMMR someplace at or above 0xf0000000 and it should
+boot far enough to get serial console messages and KGDB connected on
+any platform.  There are lots of other subtle memory management design
+features that you simply don't need to worry about.  If you are changing
+functions related to MMU initialization, you are likely breaking things
+that are known to work and are heading down a path of disaster and
+frustration.  Your changes should be to make the flexibility of the
+processor fit Linux, not force arbitrary and non-workable memory
+mappings into Linux.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
