@@ -1,26 +1,27 @@
-Date: Wed, 8 Nov 2000 19:37:09 +0100 (MET)
-From: Tobias Otto-Adamczak <tobias.otto-adamczak@e-technik.tu-chemnitz.de>
-To: clark@esteem.com
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: SPI driver?
-In-Reply-To: <5.0.0.25.1.20001108090609.00a4ead0@pop.esteem.com>
-Message-ID: <Pine.LNX.4.21.0011081931320.13081-100000@pandora.hrz.tu-chemnitz.de>
+From: "Nicolas-Peter Pohland" <pohland@snom.de>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Timebase and decrementer stop after CPU gets warmer
+Date: Wed, 8 Nov 2000 20:31:34 +0100
+Message-ID: <HEEJLLLEHBIOHDGILMPNGEAKCAAA.pohland@snom.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I was wondering if anbody has a working SPI driver yet.
+I am using custom board with 855Ts version D3. The 50Mhz version runs fine
+but the 66 Mhz version hangs or start to hang in the delay loop after a
+while. This happens immediately, if the CPU is warm. Obviously the timer is
+not decrementing.
+The TBSCR[TBE] bit is being set (yes the key register is used BEFORE the
+value is being written.) 860TD3s do not have this problem either (66 Mhz
+version).
 
-I have no ready-to-use driver but a few functions (init, transfer,
-disable) that I use successfully with my MBX.
+Any ideas ? Do you think it is a PLL supply voltage problem or a CPU
+"feature" ?
 
-> I also noticed it relied on CPM_IIC micro code patch,
-
-My code works with or witout the patch; MBX uses SCC1 for Ethernet.
-
-Ciao - Tobias
-
+Thanx in advance for any helpful remarks,
+Nicolas
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
