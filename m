@@ -1,36 +1,27 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Ricardo Scop <scop@digitel.com.br>
-To: "?????? ??" <kgchang@msn.com>
-Subject: Re: Where can I find driver for mpc8250 or mpc8266 ?
-Date: Tue, 20 May 2003 20:41:58 -0300
+Date: Tue, 20 May 2003 23:34:24 -0500 (CDT)
+From: "Milton D. Miller II" <miltonm@realtime.net>
+Message-Id: <200305210434.h4L4YOM0063233@sullivan.realtime.net>
+To: robin.gilks@tait.co.nz
+Subject: Re:  Semi hosting with BDI2000 BDM ? 
 Cc: linuxppc-embedded@lists.linuxppc.org
-References: <BAY4-F12EtdBaYU7wk8000197dc@hotmail.com>
-In-Reply-To: <BAY4-F12EtdBaYU7wk8000197dc@hotmail.com>
-MIME-Version: 1.0
-Message-Id: <200305202041.58983.scop@digitel.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, Tony
+If you are looking for a driver to take printf and send it to either
+a memory buffer or some other channel to the host, then you might
+consider starting with drivers/char/hvc_console.c ... It is a full
+linux console driver that gets input and output via polling call
+with timer callbacks for normal tty traffic.   The driver calls
+two functions (one read, one write), write sinks 0 or upto 16
+characters, and read returns 0-16 characters.
 
-For which peripheral do you want the driver: FCC or SCC?
+I have been using this driver hooked up to a large linear buffer for
+write and "if a location is non-zero send 1 byte" for read for a
+system where I have alternate access to the memory.  To read the
+console just dump the memory, to write I have a script to put one
+character and then wait 1/HZ seconds, then write the location again.
 
--Scop.
-
-On Tuesday 20 May 2003 10:24, ?????? ?? wrote:
-> Hi,
-> I'm working on linux project of hdlc driver(mpc8266).
-> I can't find it on website or linux forum.
-> So Anyone let me know that.
->
->
-> Thanks
->
-> Tony kim
->
->
-
+milton
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
