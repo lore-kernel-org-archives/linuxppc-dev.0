@@ -1,57 +1,59 @@
-Message-Id: <4.3.2.7.0.20000727145521.00ae8410@10.0.0.2>
-Date: Thu, 27 Jul 2000 15:01:02 -0400
-To: linuxppc-embedded@lists.linuxppc.org
-From: Mike Coy <coym@embeddedplanet.com>
-Subject: 2.3 kernels
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-Id: <200007272021.WAA31472@denx.local.net>
+To: Mike Coy <coym@embeddedplanet.com>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 2.3 kernels 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 27 Jul 2000 15:01:02 EDT."
+             <4.3.2.7.0.20000727145521.00ae8410@10.0.0.2>
+Date: Thu, 27 Jul 2000 22:21:49 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm trying to get a 2.3 kernel working on an RPX-LITE board.  After a bunch
-of guesswork, I got it to compile.  A good number of hte things I disabled
-can probably be re-enabled now, but that isn't the problem.  It now
-compiles OK, but when I download it to the board and run it, I get no
-output whatsoever.
+Hi Mike,
 
-Has anyone successfully ran a 2.3 kernel on one of these boards?
+in message <4.3.2.7.0.20000727145521.00ae8410@10.0.0.2> you wrote:
+>
+> I'm trying to get a 2.3 kernel working on an RPX-LITE board.  After a bunch
+> of guesswork, I got it to compile.  A good number of hte things I disabled
+> can probably be re-enabled now, but that isn't the problem.  It now
+> compiles OK, but when I download it to the board and run it, I get no
+> output whatsoever.
 
-Thanks,
-Mike
+Do you have any indication  how  far  it  comes?  Do  you  have  kgdb
+working, or a good BDM debugger (i. e. one with MMU support)?
 
-btw, the steps I took to get it to compile (from a stock 2.3.99pre9 kernel
-from kernel.org) are:
+> Has anyone successfully ran a 2.3 kernel on one of these boards?
 
-edit the Makefile
-         set ARCH to ppc
-         set CROSS-COMPILE to powerpc-linux-
-         comment out all lines referring to macintosh.a (odd linking problems)
+It depends on what you mean with 2.3; it's just two days that I  have
+2.4.0-test5  running  stable  on  TQM8xxL boards. This is the _first_
+kernel after 2.3.18 that ever ran for me on a MPC8xx. And  even  this
+is  only  when  you  fix cache problems in string.S (either by simply
+replacing the file with the version from 2.2.13, or by applying Dan's
+patch).
 
-in hte menuconfig,
-         select 8xx-processors
-         select rpx-lite
-         turn off mouse support (i had some odd problem with adbmouse...)
-         turn off special partition support (some odd problem with mac
-partition)
-         turn off ide support
-         turn off ppp support
-         turn off support for all ethernet devices (but leave ethernet on
-if you want)
-         turn off qspan-pci
-         turn off magic sysreq key
-         turn off appletalk
-         turn off scsi
-         turn off framebuffers
-         turn off nvram support
-         turn off usb support
-         turn off virtual terminal support.
-         turn on xmon debugging (or it complains for lack of debugger?)
+Sorry, I don't have any RPX boards here to test, but  I  have  tested
+three  systems  (2  x 850 and a 860), two of them under > 24 h stress
+tests (with things like compiling the linux kernel  on  the  target),
+and I had not a single problem since.
 
-after the make fails,
-         add a symlink
-                 arch/ppc/mbxboot/vmlinux.lds -> ../vmlinux.lds
-         and rebuild (just the make zImage part)
+In  case  you're  interested  -  I've  put  my  patches  against  the
+2.4.0-test5  BitKeeper  sources on our FTP server (the "COMMON" patch
+includes all I neded to change for TQM8xxL  support  to  the  current
+kernel;  the "TQM" patch is probably of little interest since this is
+just needed when you use the old TQ monitor instead of PPCBOOT):
 
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/patches/COMMON-2.4.0-test5.patch.gz
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/patches/TQM-2.4.0-test5.patch.gz
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Real programmers don't comment their code. It was hard to  write,  it
+should be hard to understand.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
