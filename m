@@ -1,33 +1,43 @@
-Date: Wed, 15 May 2002 08:52:00 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "David M?ller (ELSOFT AG)" <d.mueller@elsoft.ch>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3CE28613.8090206@embeddededge.com>
+Date: Wed, 15 May 2002 12:00:19 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: OTAVIO ISAMU SUGENO <otavio.sugeno@siemens.com.br>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] Several patches agains linuxppc_devel-2.4.19-pre8
-Message-ID: <20020515155200.GN721@opus.bloom.county>
-References: <3CE2481B.5070108@elsoft.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3CE2481B.5070108@elsoft.ch>
+Subject: Re: How to configure 2 ethernet devices
+References: <B7AC573479F05C438F232539B961A168094FE9@CUR1006V.br002.siemens.net.br>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, May 15, 2002 at 01:35:55PM +0200, "David M?ller (ELSOFT AG)" wrote:
+OTAVIO ISAMU SUGENO wrote:
 
-> The attached patch fixes the following issues:
+> ......but when
+> configuring the devices using bootp/rarpd in message IP-Config only
+> appears:
 
-Looks good, except:
-Don't #ifdef externs, if they aren't used it's OK.
-Since this code only has to work in recent'ish kernels (in reality only
-'current' kernels) don't bother with the
-#ifdef MODULE_LICENSE
-...
-#endif
+The purpose of IP-Config is to provide a minimal network configuration
+as to allow a network booting feature.  It will not completely initialize
+a network environment suitable for little more than the NFS connection itself.
 
-Just use it.
+> IP-Config: Got RARP answer form 10.0.0.10, my address is 10.0.0.100
+>
+> I guess this is to the eth0 interface.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+The IP-Config sends requests on all configured interfaces and accepts the
+first one that replies.
+
+> What do I need to configure in the HardHat Linux to receive a second ip
+> address to the eth1?
+
+You need to run the real user-land network configuration scripts and utilities
+to properly configure a network on any system.  It should also be done even
+when you are using IP-Config and network booting.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
