@@ -1,32 +1,28 @@
-Message-ID: <3AE859E4.8CF5063A@mvista.com>
-Date: Thu, 26 Apr 2001 13:24:52 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: John Traill <john.traill@motorola.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 8260 SCC as Console
-References: <3AE82655.DADBB0B2@motorola.com>
-Content-Type: text/plain; charset=us-ascii
+Date: Thu, 26 Apr 2001 15:16:22 -0400
+From: thewalthamgroup@netscape.net (Mark Phillips)
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: interrupting gdbserver
+Mime-Version: 1.0
+Message-ID: <213D16B5.5C0CB2FB.C7F6CBA8@netscape.net>
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-John Traill wrote:
->
-> Does anyone have a patch ( Or is working on one ) to use an SCC as a console ?
+Hi all,
 
-Yes.  The linuxppc_2_5 kernel has all of the right pieces.  I have
-since made some changes that allow this to be selected as a configuration
-option, and the patches are in the pipeline back to the FSM Labs trees.
+I have a workaround for a problem I've been having with gdbserver, which I thought might be of general interest.
 
-When using the SCC Console, the driver doesn't support SMC serial
-ports due to some configuration conflicts I haven't yet resolved.
-So far, I haven't seen hardware that uses an SCC console and SMC serial
-ports, which places fixing this rather low on my list.
+I have not been able to get gdbserver to successfully interrupt a running program, although I believe it is supposed to be able to do that.  As a result, if you set a breakpoint in the wrong location (or your program gets stuck somewhere you didn't expect), you lose control of it.
 
-What board are you working on?  I have a Linux port for the ADS8260.....
+However, there is a workaround, assuming you have a console on your remote target.  Just do a "kill -SIGSTOP <pid>", where <pid> is the process-id of the Application (not the gdbserver that spawned it!).  This wakes up the whole chain, and you're back in control.
 
+I hope this technique is of use to someone, although I gather most of you don't find it necessary (and the rest probably find it obvious).
 
-	-- Dan
+Sincerely,
+Mark Phillips
+
+--
+Please reply to markphillips@alum.mit.edu
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
