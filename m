@@ -1,51 +1,41 @@
-Date: Thu, 11 Feb 1999 10:07:26 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: linuxppc-dev@lists.linuxppc.org, cort@cs.nmt.edu
-Subject: Re: Interrupt routing in prep_pci.c
-In-Reply-To: <XFMail.990210203209.jeremy@goop.org>
-Message-ID: <Pine.HPP.3.96.990211100221.5352B-100000@gra-ux1.iram.es>
+Date: Thu, 11 Feb 1999 08:49:45 -0500 (EST)
+From: Tom Vier <nester@erols.com>
+Reply-To: Tom Vier <thomassr@erols.com>
+To: Andre Tomt <atomt@online.no>
+cc: BenH <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: NuBus PowerMacs and PDM video
+In-Reply-To: <1293426338-2530478@tomt.net>
+Message-ID: <Pine.LNX.4.05.9902110845510.730-100000@localhost.erols.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Thu, 11 Feb 1999, Andre Tomt wrote:
 
+> I have a Apple Power Macintosh 6100/60 [0] that's in tip-top shape. I'll be 
+> happy to act as a beta tester for the NUBUS-port of LinuxPPC. I'm doing 
+> frequent backups so if the drive corrupts, I won't loose anything important,
+>  I hope ;)
 
-On Wed, 10 Feb 1999, Jeremy Fitzhardinge wrote:
+i can also help. i have a 7100/80.
 
-> 
-> Hi Cort/all,
-> 
-> I'm trying to work out what kernel/prep_pci.c is doing with interrupt routing. 
-> I'm looking at the stuff in the standard 2.2 kernel, so perhaps there's a better
-> place for me to look.
-> 
-> Firstly, in route_pci_interrupts it does an inb(0x800) to get something to
-> determine the interrupt architecture of the board.  What is this value, and
-> where does it come from?
+> it has 256Kb L2 cache and a 4.5GB IBM UWSCSI-3 HD (on the built-in bus). 
+> currently running Mac OS 8.5.1 and MkLinux DR3 gen#06.
 
-It's a value which give sthe board type on rather old IBM/Motorola boards.
+hehe. my 7100 has a 4gig uw seagate cuda. this box has such a nice hd,
+but a 5mhz narrow scsi bus.
 
-> Rather than having hard-coded tables, can't the interrupt routing be determined
-> from either firmware or the interrupt controller itself?  The comment at the
-> top of the file is that this will go away soon.  What are you planning to
-> replace it?
+> [0] the casing says 6100/60, but diagnostics-sw says it's a 66.
 
-Indeed, that's what I do from residual data on PreP machines and it seems
-to work on several kinds of boards. You'll find it embedded somewhere
-in the patch file at:
+what's the gestalt? that'll tell you. if it's 75 it's 60mhz, if it's
+100 then it's 66mhz.
 
-	ftp://vcorr1.iram.es/pub/linux-2.2/mvm2600.generic-patch-2.2.1
-
-> Background: I'm porting LinuxPPC to a Yellowknife-like board running Open
-> Firmware.  It works well except that the drivers can't find their interrupts.
-
-Note that this patch includes a new bootloader for PreP machines, I'd like
-to extend it to support OF too but don't have te time right now.
-
-	Gabriel.
+--
+Tom Vier - 0x82B007A8
+thomassr@erols.com       | goto the Zero Page at:
+Tortured Souls Software  | http://www.erols.com/thomassr/zero/
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
