@@ -1,25 +1,22 @@
-From: "Navin Boppuri" <nboppuri@myiagent.com>
-To: "Kirk Haderlie" <khaderlie@vividimage.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: FADS 823
-Date: Fri, 16 Jun 2000 11:56:38 +0100
-Message-ID: <NEBBLLEGJMLHPJEFEOKPMECACAAA.nboppuri@myiagent.com>
+Message-ID: <20000616120045.10871.qmail@web5205.mail.yahoo.com>
+Date: Fri, 16 Jun 2000 05:00:45 -0700 (PDT)
+From: Julie Chang <julie_chang_2001@yahoo.com>
+Subject: PCMCIA HDD
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <319E391E2049D311843500609457383D07FC57@exchange.vividimage.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have the 8xxrom boot code compiled and ready for the fads 823 board. I
-installed the ADI card in my host machine and installed the mpc8bug software
-from motorola as per the instructions. But when I try running the mpc8bug,
-it gives me an error 'Failed to initialize application error(0xc0000005)'. I
-dont know what the problem is. I rechecked the installation instructions
-again and again but it doesnt see to work. When I tried running winmsd  and
-looked at the properties for the adi board, I did not see any input
-addresses assigned? The jumper setting are configured to use 0x100 . Can
-someone help?
+Hi all,
+
+I am new to this mail list. Would anyone please
+advice, which PCMCIA HDD can run with MVista Kernel (
+I am using MPC823 RPX lite)? What's the maximum data
+rate? Any answer would be appreciated.
+
+Thank in advances
+Julie
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
