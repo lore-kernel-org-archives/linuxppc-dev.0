@@ -1,48 +1,33 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
+Date: Fri, 20 Oct 2000 11:18:43 +0300 (EET DST)
+From: Topi Kanerva <tkanerva@ees2.oulu.fi>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ADB-Mouse
+In-Reply-To: <Pine.OSF.4.02.10010190958400.3355-100000@ax1305.physik.uni-marburg.de>
+Message-ID: <Pine.GSO.4.21.0010191518150.27486-100000@stekt6>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14831.41519.899373.33270@argo.linuxcare.com.au>
-Date: Fri, 20 Oct 2000 12:38:55 +1100 (EST)
-To: Scott Hankin <shankin@rational.com>
-Cc: phandel@cise.ufl.edu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.4.0-test10 boot failure on Powerbook G3
-In-Reply-To: <p04320400b61508915079@[172.21.170.210]>
-References: <Pine.LNX.4.21.0010191246070.6734-100000@like.mine.nu>
-	<p04320400b61508915079@[172.21.170.210]>
-Reply-To: paulus@linuxcare.com.au
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Scott Hankin writes:
+On Thu, 19 Oct 2000, Henning Loeser wrote:
 
-> It turned out that the pc was in do_install_cmap, and lr was in
-> atyfb_set_var.  The latter calls the former near the end of the
-> routine (check out drivers/video/atyfb.c:2940) but as to why it's
-> bombing, I have no clue.
+>[snip]
+>input0: Macintosh mouse button emulation
+>[snip]
 
-Looking at the code for that routine:
+as a side note, I suppose you people know how the mouse button emulation
+works. I couldn't make it work at any rate on my Pismo PowerBook...
+I'm using benh's 2.2.17pre20 kernel, and the new input layer is configured
+in the .config so according to my studies (in the mackeyb.c) the emulation
+should work as it is, when you just put a '1' in the
+/proc/sys/dev/mac_hid/mouse_button_emulation file... I experimented with
+different keycodes but found out that none of them would make any
+difference to the gpm.
 
-static void do_install_cmap(int con, struct fb_info *fb)
-{
-    struct fb_info_aty *info = (struct fb_info_aty*)info;
+guys, how exactly do you make it to work?
 
-that first statement doesn't make sense, change it to:
+-topi
 
-    struct fb_info_aty *info = (struct fb_info_aty*) fb;
-
-and that should fix it.
-
-BTW, I now have copies of my rsync trees at penguinppc.org, which will
-hopefully have more bandwidth available than ppc.samba.org did.  The
-tree at penguinppc.org::linux-pmac-devel has this bug fixed.
-
-Paul.
-
---
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
