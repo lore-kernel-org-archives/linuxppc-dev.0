@@ -1,38 +1,29 @@
-Message-ID: <20010815171102.62077.qmail@web20008.mail.yahoo.com>
-Date: Wed, 15 Aug 2001 10:11:02 -0700 (PDT)
-From: Raghava Raju <vraghava_raju@yahoo.com>
-Subject: panic...
-To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <3B7AE763.610E4001@mvista.com>
+Date: Wed, 15 Aug 2001 17:19:31 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Cc: linuxppc-commit@source.mvista.com,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: page_to_phys and page_to_bus missing from asm-ppc/io.h
+References: <200108152040.PAA21390@lists.linuxppc.org>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Franz Sirl wrote:
 
-      1)I have to access the contents of program
-counter and stack pointer in panic() function. Above
-values should be describing the location where panic
-happened.
+> Could please one of the memory managers look after it?
 
-      2)Similarly I have  to access registers values
-after entering "die" function in
-arch/ARCH/kernel/traps.c . Here pt_regs being passed
-to this function does't seems to be containing all the
-registers.Registers which are missing ex: special
-purpose registers etc..
+OK, I checked them in as my best guess :-).  I'm not able to
+test them.  Let me know what happens.
 
-       3) Is it that in "2)" fields defined in pt_regs
-are enough to describe the state of process
-completely. Hence no purpose of accessing the remainig
-registers.
+Oh, yeah, it's in 2_4_devel.
 
-	Any advice and pointers would be helpful.
+Thanks.
 
 
-      Thankyou.
-      Raj.
-
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
