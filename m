@@ -1,81 +1,30 @@
-Message-ID: <20030723011834.30711.qmail@web11005.mail.yahoo.com>
-Date: Tue, 22 Jul 2003 18:18:34 -0700 (PDT)
-From: Xupei Liang <tliang@yahoo.com>
-Subject: Re: "alloc_area_pte: page already exists"
-To: Matt Porter <mporter@kernel.crashing.org>
-Cc: Matt Porter <mporter@kernel.crashing.org>,
-	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20030721201037.A16523@home.com>
+Subject: re: pmc network card problem
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
+Date: Wed, 23 Jul 2003 11:28:09 +0800
+Message-ID: <7A7A7A38134E244784EDAC428C538AE92A580D@mail.ndsc.com.cn>
+From: =?gb2312?B?09rmug==?= <yujing@ndsc.com.cn>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, Matt,
+Hi!
+I got it.
+There does something wrong with "pciauto_bus_scan". I delete it from
+"lopec_find_bridges", then everything is ok!
+But I still can't understand why this happened?
+Could you help me?
 
-Thank you.
-
-I am not using any io_block_map() call in the code.
-However, there are might be other similar causes.
-I am still working on it.
-
-If you have more ideas, please let me know.
-
-Regards,
-
-Terry L.
-
-
---- Matt Porter <mporter@kernel.crashing.org> wrote:
->
-> On Mon, Jul 21, 2003 at 07:01:49PM -0700, Xupei
-> Liang wrote:
-> >
-> > Matt,
-> >
-> > It is a custom board with 256MB of memory.
->
-> Ahh, ok.  So, what you've done is misconfigured a
-> mapping in
-> your custom board port.  It's reporting that you
-> already have
-> a pte allocated in the vmalloc area which must be
-> untouched
-> so the VM can allocate memory at runtime.
->
-> Usually, this is the result of an errant
-> io_block_map entry
-> which overlaps the vmalloc area.  Examine the
-> VMALLOC_START
-> macro to see how the start of vmalloc space is
-> calculated.
-> In your case, (256MB of RAM) the start of vmalloc
-> space will
-> be at 0xd1000000 assuming a standard PAGE_OFFSET of
-> 0xc0000000.
-> If you've mapped something near that virtual address
-> or somewhere
-> close above that address then you need to move it.
-> How much
-> vmalloc space you need to reserve depends solely on
-> your specific
-> application.
->
-> In most cases, it's smarter to never use
-> io_block_map and to
-> let ioremap() create mappings dynamically so this
-> sort of thing
-> doesn't happen. Most modern in-kernel ports try to
-> not use
-> io_block_map if at all possible.
->
-> Regards,
-> --
-> Matt Porter
-> mporter@kernel.crashing.org
->
->
-
+----- Original Message -----
+  I'm porting mvista linux2.1 on my motorola lopec mpc7410 board with a
+zynx zx212 dual-port ethernet card on it.The problem is that the kernel
+can't start up with the ethernet card on,while without it everything
+is perfect.Since zx212 is compatible with 21143,I build the kernel
+with the "tulip" option on.It should be no problem,but it happened.
+It halts after "now booting the kernel". Zx212 is a PMC network card
+with Intel 21143 and Intel PCI Bridge 21152. Through the bdi2000,
+it seems that there are something wrong with "setup_arch",and maybe
+"pciauto_bus_scan".But I'm not sure. Maybe you can help me.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
