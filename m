@@ -1,29 +1,35 @@
-Message-ID: <BE1C564723B3D21191FD0000F840E39801D81566@rfcmx2.rfc.comm.harris.com>
-From: "Brown, David (dbrown03)" <DBrown03@harris.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Where to send patch files?
-Date: Wed, 7 Jun 2000 12:19:23 -0400 
+Message-ID: <393E80D7.9918BBE1@embeddededge.com>
+Date: Wed, 07 Jun 2000 13:05:27 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Grant Carter <gcarter@eng.uct.ac.za>
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: SMC2
+References: <393E4156.E7E8153A@eng.uct.ac.za>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have linux-2.2.13 working on a Harris modem platform.
-I started with the hardhat version, but added flash drivers from Wolfgang
-Denk.
-I extended the flash drivers to support JEDEC identification, Intel
-write/erase commands, and multiple kinds of flash per board.
-Also, of course, I added support for the modem platform I was using.
+Grant Carter wrote:
 
-The question:  Where should I send the 19K patch file?
-Minimally I'll send it to Dan Malek, someone at Montavista, and Wolfgang
-Denk.
-Should I send it to others as well, or maybe just send it to this list?
---
-Dave Brown <dbrown03@harris.com>
-Principal Engineer, Software
-Harris Corporation, RFCD
+> When I look at my manuals, I see no reference made to the bits 20 and 21
+> in pbpar, pbdir or pbodr. How does setting those bits enable the SMC2
+> pins? Those are located in Port A (PA8 and PA9)
+>
+> I guess my point is why are the Port B registers being modified for SMC2
+> pins which are found in Port A?
+
+Oh oh......are you using an 823 or 850?  Sorry about this, you will
+have to change the code.  Someday, I have to finish up a better UART
+driver.  You are the first person I know that is trying to use this
+as a UART.  SMC2 is the first thing to disappear when using the parts
+for other data communication protocols or interfaces, so custom
+software tends to assign these for other purposes.  I seldom see anything
+but SMC1 used for a UART, so making the driver better hasn't been
+high on the list......
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
