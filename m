@@ -1,51 +1,56 @@
-Message-ID: <3879F9E6.EF018D4E@mvista.com>
-Date: Mon, 10 Jan 2000 09:25:26 -0600
-From: Jim Lewis <jlewis@mvista.com>
+Date: Mon, 10 Jan 2000 17:52:59 +0200 (EET)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Olaf Hering <olh@suse.de>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [patch] MacAlly 2-buttons mouse support for 2.2.14
+In-Reply-To: <20000110154946.D7197@suse.de>
+Message-ID: <Pine.LNX.4.21.0001101729470.25529-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
-To: LiuTao <tliu@ict.ac.cn>
-CC: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>,
-        "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: problem with gunzip()
-References: <38799BA3.269E8869@ict.ac.cn>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Mon, 10 Jan 2000, Olaf Hering wrote:
 
-I have had a problem such as yours that was caused by corruption in the
-compressed s-record image once it was on the target. I had thought that
-Gunzip would catch this, but it did not. How is your image being
-transmitted to the target? Is it over a serial link? In my case, the
-S-record loader was not checking checksums and occasionally, a serial
-transmission error went undetected. Gunzip did not complain, but the
-uncompressed image would end up being skewed by a few bytes.
-Hope this helps.
+> 
+> On Mon, Jan 10, Kostas Gewrgiou wrote:
+> 
+> > > Right mouse button is CMND , middle mouse button is CTRL.
+> > > Would be nice to get some feedback. 
+> 
+> >   Hmm how are you going to get double clicks with this ? 
+> > Also keep in mind that many window managers/programs use
+> > ctrl|meta|alt-mousebutton.
+> > 
+> > I still feel that at least for X it should (and can) be 
+> > handled from inside X and not from the kernel. We still
+> > need something for the console though.
+> 
+> It work also on the console. I guess there is no easy way for
+> ALT+double_click.
+> 
+> Or do you miss something? It is for the copy&paste function, I will
+> check what I can do to solve the problem with Xterm. You can not change
+> the size of the font.
+> If someone really need a application that depends on "complex mouse
+> clicks" ;-) then go and by a more button mouse.
 
+  I mean that you can map keyboard keys to mouse clicks under X *without* any
+kernel changes. Take a look at http://people.a2000.nl/omoerbe/ for a better
+description.  
 
-LiuTao wrote:
+> 
+> BTW, where can I get a more button ADB mouse?
+> 
+  Can't help there, at least in Greece its much easier (and cheaper) to find/buy
+a usb pci card :(.
+> 
+> Gruss Olaf
+> 
+> 
 
-> Hi
->
-> When I ported linux to a board with MPC860, 16M RAM and 2M Flash,
-> I met a problem.
-> After the program gunzip()(misc.c) the vmlinux image to address 0x0,
-> the contents from 0x0 to IMAGE_SIZE should be as same as that in
-> linux/vmlinux, right? I found that they are not same. Only from 0x0
-> to about 0xb500, they are same.
-> I don't think gunzip() has any problem.
-> Do you have any suggestions?
-> Thanks!
->
-> LiuTao
-
---
-Jim Lewis
-Sr. Field Applications Engineer
-MontaVista Software, Inc.
-(817)261-9088 http://www.mvista.com
+ Kostas Gewrgiou
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
