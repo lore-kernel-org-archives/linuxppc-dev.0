@@ -1,47 +1,33 @@
-Date: Tue, 29 Jan 2002 09:52:57 -0500 (EST)
-From: Christopher Murtagh <christopher.murtagh@mcgill.ca>
-To: <linuxppc-dev@lists.linuxppc.org>
-Cc: Christopher Murtagh <christopher.murtagh@mcgill.ca>,
+To: Christopher Murtagh <christopher.murtagh@mcgill.ca>
+Cc: <linuxppc-dev@lists.linuxppc.org>,
 	<yellowdog-devel@lists.yellowdoglinux.com>
 Subject: Re: Support for new Dual G4 1 Gig machines?
-In-Reply-To: <20020129123955.29280@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.33.0201290949451.12240-100000@blues.wcg.mcgill.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <Pine.LNX.4.33.0201290949451.12240-100000@blues.wcg.mcgill.ca>
+From: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
+Date: 29 Jan 2002 16:01:08 +0100
+In-Reply-To: Christopher Murtagh's message of Tue, 29 Jan 2002 09:52:57 -0500 (EST)
+Message-ID: <8xn0yxyzez.fsf@s61.informatik.uni-bremen.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 29 Jan 2002 benh@kernel.crashing.org wrote:
->I recently spotted a problem with >512Mb (CONFIG_HIGHMEM or not) & SMP
->that is fixed in the current bk _2_4 (2.4.18pre7). I also sent a fix to
->Marcelo that should hopefully be in the next 2.4.18preX release.
+Apparently the GHz Macs use a new CPU variant, the MPC7455. It differs
+very slightly from the earlier CPUs in that it has
 
- Cool, thanks Ben! I'll give it a try soon.
+ - a feature to lock parts of the L1 data cache (can probably be ignored)
 
->You should also use sungem preferably to the old gmac driver.
+ - some extra SPRGs (can probably be ignored)
 
- Do you suspect that this is what is causing my crashes when the box is
-exposed to moderately high network volume?
+ - 4 additional DBATs and 4 additional IBATs. I am not sure if those
+   require initialization at early startup to not interfere with later
+   operation.
 
- Thanks again.
+The real difference is in fabrication; it is the first SOI part.
 
-Cheers,
+Some official info here (beware of line wrap):
 
-Chris
+http://e-www.motorola.com/webapp/sps/site/prod_summary.jsp?code=MPC7455&nodeId=03M943030450467M986
 
-
---
-
-Christopher Murtagh
-Webmaster / Sysadmin
-Web Communications Group
-McGill University
-Montreal, Quebec
-Canada
-
-Tel.: (514) 398-3122
-Fax:  (514) 398-2017
-
+  Holger
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
