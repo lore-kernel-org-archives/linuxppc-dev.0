@@ -1,71 +1,73 @@
-To: "Brian Padalino" <bpadalino@perigee.com>
+From: ghannon@cspi.com
+To: "li" <slowforce@21cn.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: DENX ELDK Kernel 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 15 Jul 2003 09:06:11 EDT."
-             <DGEEIPOFGGPOACEFBGGCOEGKCAAA.bpadalino@perigee.com>
-Date: Tue, 15 Jul 2003 15:21:43 +0200
-Message-Id: <20030715132148.2497EC6D82@atlas.denx.de>
+Message-ID: <85256D64.00487C65.00@pine.cspi.com>
+Date: Tue, 15 Jul 2003 09:31:04 -0400
+Subject: Re: program update
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Deasr Brian,
+Li,
+     I think you mean to say that you would like to keep the application in
+flash,
+in some sort of filesystem where it can be replaced easily.  If that is the
+case, see the
+MTD maps, and the JFFS2 filesystem.   If you create a partition map and
+leave
+room in flash for a partition to hold your application, then you format the
+flash partition
+once (or not at all?)  and create the filesystem on it.  From then on you
+can set up a
+mount point and just copy the new updated program to that area, and run it
+like any
+command.    It also automatically compresses data as you copy it in, which
+is nice.
 
-in message <DGEEIPOFGGPOACEFBGGCOEGKCAAA.bpadalino@perigee.com> you wrote:
->
-> I am just getting into some embedded linux systems and thought I would
-> go with the DENX ELDK since it seemed like the best package out there.
-> Unfortunately, one of the requirements of the project is that kernel
-> upgradability should be easy.
->
-> I understand that DENX ELDK is always being worked on, and I have
-> seen that Wolfgang Denk is amazingly active in this community, so I
-> guess my question is -- can I use the linux-ppc kernel patches for the
-> latest 2.4 kernels instead of DENX's? Should this requirement of the
-> kernel needing to be easily upgradable to any kernel reevaluated?
+     Having a ramdisk to contain your application means you would be using
+up more ram which might be needed to run the program, and the program would
+be gone
+when power is cycled.    I don't think that's what you want is it?
 
-Short answer: yes, you can. There is no problem.
+     If you are building your kernel from the linuxppc_2_4_devel tree, see
+drivers/mtd/maps/
+arctic-mtd.c.   This is a good example of an easy partitioning scheme that
+leaves room
+for kernel, romfs and a flash filesystem.
 
-The development tools and the kernel are more or less independend  of
-each other (*).
+     See also the JFFS HOWTO for more details.  I'm not sure how up-to-date
+this is.
+ http://ftp.linux.org.uk/pub/people/dwmw2/mtd/cvs/mtd/mtd-jffs-HOWTO.txt
 
-For you that means: you don't have to use the  Linux  kernel  version
-that  comes  included with the ELDK, but you can use any other kernel
-tree instead.
+Good Luck,
+Gary
 
-> BTW, the platform is very simple and will just be a PPC440GP with a
-> gigabit ethernet controller.
 
-Actually, the kernel included with the current release  of  the  ELDK
-(kernel  version  2.4.4)  is  pretty old and _not_ suitable for a 4xx
-processor at all - for such a  CPU  you  should  use  the  "official"
-linuxppc_2_4_devel tree instead (**).
 
-(*)  There may be problems if the kernel headers  have  changed  thus
-     causing  incompatibility  with  those  headers used to build the
-     standard libraries included with the ELDK. But such incompatible
-     changes happen only very infrequently, and we are not  aware  of
-     any  such problems with combinations of the current ELDK and the
-     "official" Linux source trees.
 
-(**) You can also use the copy of the linuxppc_2_4_devel tree on  our
-     CVS  server  (at the moment this is kernel version 2.4.20) which
-     will be the base for our next release of the ELDK.
 
-> Any information or insight is very much appreciated.
 
-Hope this helps.
+"li" <slowforce@21cn.com> on 07/13/2003 11:53:29 PM
 
-Best regards,
+To:   linuxppc-embedded@lists.linuxppc.org
+cc:    (bcc: Gary Hannon/CSP)
+Subject:  program update
 
-Wolfgang Denk
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The existence of god implies a violation of causality.
+
+
+
+Hello all,
+In our system(based on MPC850 and ppc linux), i need to update the
+application program frequently. ppcboot, kernel image and
+filesystem(ramdisk) are all programmed into Flash memory. i want to make
+another ramdisk  for application program, but how?
+Any resourece about it?
+Thanks in advance!
+Best Regards!
+Li
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
