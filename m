@@ -1,40 +1,31 @@
-Message-ID: <3A65E975.C1D4D917@mvista.com>
-Date: Wed, 17 Jan 2001 13:50:29 -0500
+Message-ID: <3A65EA68.F75481A2@mvista.com>
+Date: Wed, 17 Jan 2001 13:54:32 -0500
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Jay Monkman <jmonkman@adventnetworks.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 8260 Development tools
-References: <CD5CA14300A9D54A8D13D58CD3C87B420BF014@advcorp-exc01.advent.com>
+To: Borlizzi Giacomo <giacomo.borlizzi@tei.ericsson.se>
+CC: "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: KERNELBASE and MMU
+References: <3A648564.671DDDD5@tei.ericsson.se> <3A64C847.D2414D1D@mvista.com> <3A65E51B.50FC28EC@tei.ericsson.se>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jay Monkman wrote:
+Borlizzi Giacomo wrote:
+>
+> Does you say that linux code is not PIC? (position indipendent code)
 
-> Is there a better eval board than EST's SBC8260?
+No it is not.  You can move it around a little if you _really_
+understand the details.  For any PowerPC processor there is no
+reason to change the location regardless of the system implementation.
 
-Check out Cogent Computer systems (www.cogcomp.com).
+> Why such constraint on physical memory area? It don't make some
+> limitation on portability of code?
 
-> I may end up with an EST VisionICE II debugger. Has anyone used it
->         with GDB? Or use the software that comes with it for debugging?
+No portability problem.  This code runs on more processors and
+boards more easily than anything else in the world.
 
-You won't  be happy with it for Linux.
-
->         Would Abatron's BDI-2000 be better?
-
-Absolutely.  It is Linux-aware and works very well.
-
-> Is 2MB FLASH and 8 MB RAM still the recommended minimum?
-
-Probably.  If you can find that little memory any more.  Most
-82xx have at least 16 MB RAM, typical is 64 MB.
-
-> Are there any gotcha's I should watch out for?
-
-Lots, I suppose, depending upon your experience with either
-8260 or Linux.
 
 	-- Dan
 
