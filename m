@@ -1,31 +1,52 @@
-Message-Id: <199902090234.TAA26936@mx0-smtp.goodnet.com>
-Date: Mon, 08 Feb 1999 19:34:56 -0700
-Subject: L2CR
-From: "Kyle Nesbit" <kyle.nesbit@asu.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Mon, 8 Feb 1999 21:01:27 -0600 (CST)
+From: Takashi Oe <toe@unlinfo.unl.edu>
+To: Beecher Greenman <rbg6038@ritvax.isc.rit.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: A different Window Maker problem
+In-Reply-To: <01J7H7PIJZ9EA3CISC@ritvax.isc.rit.edu>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.990208203524.5997A-100000@selq119.unl.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi,
 
-I am currently looking for some more info on how to get my L2 backside cache
-running.  I am using a powerlogix card.
+On Sun, 7 Feb 1999, Beecher Greenman wrote:
 
-I have used the powerlogix/Ben patch posted in the mailing list during Dec.
-The kernel compiled without and error.  When I try to pass the l2cr kernel
-argument I get nothing.  my /proc/sys/kernel/l2cr is 00000000: disabled,
-etc...
+> 
+> Recently I tried to install XFree86 on my R4 system. I downloaded the 
+> 3.3.3.1 binaries from ftp.xfree86.org, and everything installed fine. 
+> However, now Window Maker refuses to start. WHen it tries, it complains 
+> about an error in the shared libs...
+> 
+> wmaker:error in loading share libraries
+> : undefined symbol _Xsetlocale
 
-Another thing that is strange is in /proc/cpuinfo the clock rate of my chip
-is off by over 100 MHZ.
+This is because X libs from ftp.xfree86.org are compiled without
+-DX_LOCALE.
 
-I would greatly appreciate if someone could point me to more info on the
-subject.
+> 
+> No indication of what library to use or anything. A recompile did not 
+> appear to solve the problem. Other windowmanagers compile and run fine. I 
 
-Thanx,
-Kyle
+You might have a mixture of things in your system.  All of your X apps 
+which use X's locale will refuse to run since the locale support is not
+compiled in.  If you want to continue using the binaries from the xfree86
+site, make sure there is no -DX_LOCALE or something similar when you
+compile Window Maker or any other X apps that may need X's locale.
+
+It would be nice if glibc-1.99 based X libs available at ftp.xfree86.org
+are compiled with -DX_LOCALE for compatibility since most glibc-1.99 based
+X apps available for ppc platform are compiled with -DX_LOCALE.
+
+For glibc-2.1 based libs or X apps, however, -DX_LOCALE is no more.  We
+have got the semi-working locale support from glibc now.
+
+
+Takashi Oe
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
