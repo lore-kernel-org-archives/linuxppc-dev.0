@@ -1,49 +1,34 @@
-Subject: Re: linux + serial console
-From: Guillaume =?ISO-8859-1?Q?Laur=E8s?= <guillaume.laures@noos.fr>
-To: Jure Menart <jure@kom.org>
-Cc: linuxppc dev <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20011009203308.B28132@hannanges.teden-mladih.com>
-References: <20011009203308.B28132@hannanges.teden-mladih.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 09 Oct 2001 21:58:03 -0400
-Message-Id: <1002679084.773.5.camel@pmg4>
+Date: Wed, 10 Oct 2001 12:24:15 -0600
+From: Val Henson <val@nmt.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Cc: Paul Mackerras <paulus@samba.org>
+Subject: Re: SBS Palomar II/IV/V port
+Message-ID: <20011010122415.A22918@boardwalk>
+References: <0110092125.AA22665@ivan.Harhan.ORG>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0110092125.AA22665@ivan.Harhan.ORG>; from msokolov@ivan.Harhan.ORG on Tue, Oct 09, 2001 at 02:25:03PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-le mar 09-10-2001 at 14:33 Jure Menart a écrit :
->
-> Hello,
-> I'm trying to have Linux box (custom made board, IBM 405gp), which would
-> 'work' only through serial console (ttyS0).
-> I try many things but I just couldn't keep my 'console' on ttyS0.
-> I change everything in main.c to open only /dev/ttyS0, not the usual
-> /dev/console. I made /dev/std[io,out,err] links which pointed to /dev/ttyS0
-> (although it isn't important I think), but my console 'dissapears' anyway.
-> Did I forget something... or better - what did I forget?
+On Tue, Oct 09, 2001 at 02:25:03PM -0700, Michael Sokolov wrote:
 
+> Some other bi_rec fixes may be needed (initrd ones are broken I think).
 
-I run "root=/dev/hda14 console=ttyS0,38400 console=tty0" as a boot
-comand line.
-Both console declaration enable output of startup messages on the serial
-port as well as on the console, you may only use "console=ttyS0,9600" or
-so.
+Indeed!  This is on my list of stuff to do - straighten out once and
+for all how BI_INITRD works and then rewrite the Gemini boot process
+to use it.  It seemed like we had two interpretations:
 
-Interesting too, if you happen to have getty installed (getty_ps rpm)
-you can set in your /etc/inittab:
-s1:2345:respawn:/sbin/getty ttyS0 DT38400
-so that you can login on the serial port with a utility like cu or
-minicom.
+1. The BI_INITRD boot record contains the start address and the size
+   of the initrd.
 
-Adding :
-ttyS0
-in /etc/securetty helps also, to log in as root directly
+2. The BI_INITRD boot record contains the entire initrd itself (as a
+   really large boot record).
 
-Enjoy,
+I have no preference either way, I just want someone to tell me which
+way we're going to do it. :)
 
---
-GoM
-
+-VAL
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
