@@ -1,25 +1,28 @@
-Message-ID: <39FDA26D.DFA156B@mvista.com>
-Date: Mon, 30 Oct 2000 11:31:41 -0500
-From: Dan Malek <dan@mvista.com>
+Message-ID: <005e01c042b3$cf071160$74dee783@lboro.ac.uk>
+From: "Peter Uttley" <P.Uttley-97@student.lboro.ac.uk>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Using BDM4GDB on a custom board.
+Date: Mon, 30 Oct 2000 20:55:28 -0000
 MIME-Version: 1.0
-To: Kyle Harris <kharris@nexus-tech.net>
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: mpc823 framebuffer
-References: <39FD9E39.EA31DA10@nexus-tech.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kyle Harris wrote:
+Hi,
 
-> I searched thru the archives and found some references to a fb device
-> for the mpc823. Does anyone know the current status?
+Hope one of you guys can offer me some advice.
 
-It's packaged with the MontaVista CDK 1.2 in the Linux Planet LSP.
-http://www.mvista.com.
+I'm currently trying to get BDM4GDB running on a custom board with a MPC850
+and being quite new to all this would just like a quick pointer into which
+parts of mpcbdm I need to configure.
 
+Any advance would be highly appreciated.
 
-	-- Dan
+Thanks,
+
+Pete.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
