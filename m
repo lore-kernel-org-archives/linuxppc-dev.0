@@ -1,36 +1,31 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?Michel=20D=E4nzer?= <michdaen@iiic.ethz.ch>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: TiBook trackpad in benh's kernel?
-Date: Wed, 18 Apr 2001 11:25:29 +0200
-Message-Id: <20010418092529.13888@mailhost.mipsys.com>
-In-Reply-To: <3ADCBD74.31D5B342@iiic.ethz.ch>
-References: <3ADCBD74.31D5B342@iiic.ethz.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <a05010404b703232d1b66@[192.168.240.10]>
+Date: Wed, 18 Apr 2001 13:04:19 +0200
+To: linuxppc-dev@lists.linuxppc.org
+From: Alain RICHARD <alain.richard@equation.fr>
+Subject: benh 2.4.4-pre3, Titanium and AirPort
+Content-Type: text/plain; charset="iso-8859-1" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> Plus, I am able to run XF4 in 32 bpp, even with cmode:8 set.
->>
->> Go figure...
->
->What did you expect? :)
+I am currently using Benjamin Herrenschmidt 2.4.4-pre3 kernel on my
+Titanium. The only problem I am currently experiencing is that the
+kernel PCMCIA i82365.c driver do not recognized the PCI cardbus
+adaptator.
 
-Yeah, that one is really weird ;)
+Is there any solution (patch) to get it recognized ?
 
-I noticed that lately, Apple changed Darwin trackpad code so that instead of
-reading the 8 bytes of the config register, changing them, and writing them
-back, it always write hard coded default values (doesn't read).
+Also as the current airport driver is now based on the orinoco_cs
+(and hermes) driver that depends on PCMCIA support, I am unable to
+get airport working. Is there any solution to get it working without
+PCMCIA ?
 
-So I guess there might be a problem when reading the ADB datas from the
-trackpad (timing issue) and rewriting those bogus datas cause the trackpad
-to die.
-
-I'll do some more experiments asap.
-
-Ben.
-
+--
+-------------------------------------------------------
+Alain RICHARD <mailto:alain.richard@equation.fr>
+EQUATION SA <http://www.equation.fr/>
+Tel : +33 477 79 48 00	 Fax : +33 477 79 48 01
+Applications client/serveur, ingénierie réseau et Linux
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
