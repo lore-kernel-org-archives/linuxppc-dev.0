@@ -1,48 +1,54 @@
-Message-ID: <3BE95FD3.9E14B266@folkwang-hochschule.de>
-Date: Wed, 07 Nov 2001 17:22:43 +0100
-From: =?iso-8859-1?Q?J=F6rn?= Nettingsmeier <nettings@folkwang-hochschule.de>
-MIME-Version: 1.0
-To: Giuliano Pochini <pochini@denise.shiny.it>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Derrik Pates <dpates@dsdk12.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: recording audio?
-References: <Pine.LNX.4.33.0110300920370.4960-100000@andromeda.dsdk12.net> <20011030172927.8256@smtp.adsl.oleane.com> <3BE8358D.BFE0C2D2@denise.shiny.it>
-Content-Type: text/plain; charset=iso-8859-1
+From: hollis@austin.ibm.com
+Date: Wed, 7 Nov 2001 11:06:30 -0600
+To: Gabriel Paubert <paubert@iram.es>
+Cc: linuxppc-dev@lists.linuxppc.org, davidm@amberdata.demon.co.uk,
+	Sven.Dickert@planb.de
+Subject: Re: RFC: i8259.c cleanup
+Message-ID: <20011107110630.G9471@austin.ibm.com>
+References: <20011106171559.D9471@austin.ibm.com> <Pine.LNX.4.33.0111071013050.19315-100000@gra-lx1.iram.es>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.33.0111071013050.19315-100000@gra-lx1.iram.es>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Giuliano Pochini wrote:
+On Wed, Nov 07, 2001 at 10:38:27AM +0100, Gabriel Paubert wrote:
 >
-> Benjamin Herrenschmidt wrote:
-> >
-> > >> hmm, I wasn't even aware that there was an ALSA driver for powermac
-> > >> sound hardware.  I'll have to check that out...
-> > >
-> > >Last I checked, ALSA did not support any of the AWACS family chips in
-> > >PowerMac/PowerBook systems at all. There was a comment in a Todo log in
-> > >the source that mentioned they intended to do such a driver at some point,
-> > >but I don't know that one was ever written.
-> >
-> > SuSE people did, they have drivers for awacs, burgundy, tumbler and daca.
+> The question is why the polling code did not work, subtle timing problems
+> or is the code plain wrong ? I suspect that some 8259 accesses were not
+> serialized well enough.
+
+I laid out what I saw in
+http://lists.linuxppc.org/linuxppc-workstation/200109/msg00030.html . I could
+be wrong, but our code doesn't seem to match the datasheet very well.
+
+I think fixing what we have is the least intrusive, but I tried and failed, so
+it was nice to write code that actually worked. :) I guess the PCI intack
+stuff is too varied to be useful though...
+
+Would you say poking the 8259 directly is more "right" than using 0xbffffff0
+(or equivalent)?
+
+> > The patch also cleans up some whitespace (parts of i8259.c were apparently
+> > copied and pasted from one xterm to another), adds a few comments, and adds
+> > resource_request's for both 8259's.
 >
-> >From ALSA history:
->
-> 2001-05-14 The driver 0.5.11 was released. Changes: IA64 arch support,
-> ALi 5451 driver added, AWACS driver added (for PPC), AC'97, PCM OSS
->                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> Good, but you should add resource request for the edge/level control
+> register while you are at it (0x4d0/4d1). And you should not require
+> 32 bytes for the 8259. On my boards, the super I/O control port is
+> 0x2e-ox2f.
 
-pbook awacs support used to be broken in the cvs of a couple of
-weeks ago and would not compile.
-that may have been corrected by now, but i haven't checked for a
-while.
+That's what I forgot... that code requests directly from ioport_resource,
+which is what gets us into trouble on vgacon. We should use request_region
+instead of request_resource. Unfortunately vgacon is initialized before the
+VMM, and since request_region calls kmalloc we die very early. :/ I didn't
+check to see if that's a problem here.
 
+The problem with using request_resource(&ioport_resource) in vgacon is that
+our PHB's initialize later, try to reserve their own IO regions (eg
+0x0->0xffffffff), and fail because vgacon already took 0x3c0 or so.
 
---
-Jörn Nettingsmeier
-home://Kurfürstenstr.49.45138.Essen.Germany
-phone://+49.201.491621
-http://spunk.dnsalias.org
-http://www.linuxdj.com/audio/lad/
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
