@@ -1,28 +1,36 @@
-Date: Mon, 24 Feb 2003 11:50:48 -0700
-From: Matt Porter <porter@cox.net>
+Message-ID: <3E5A6D3F.9030101@mvista.com>
+Date: Mon, 24 Feb 2003 11:06:39 -0800
+From: Todd Poynor <tpoynor@mvista.com>
+MIME-Version: 1.0
 To: brian.auld@adic.com
-Cc: ebs@ebshome.net, linuxppc-embedded@lists.linuxppc.org
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Kernel Preemption patch
-Message-ID: <20030224115048.A6732@home.com>
-References: <995FF289C9D69747A09E42992644595405B23684@penguin.adic.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <995FF289C9D69747A09E42992644595405B23684@penguin.adic.com>; from brian.auld@adic.com on Mon, Feb 24, 2003 at 07:38:04AM -0800
+References: <5.1.0.14.2.20030224095828.03022e38@mail.ebshome.net>
+In-Reply-To: <5.1.0.14.2.20030224095828.03022e38@mail.ebshome.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Feb 24, 2003 at 07:38:04AM -0800, brian.auld@adic.com wrote:
-> Question: The MVL 2.1 tree ... where is this? This is not at bkbits, is it?
-> Do I require a MV subscription to use it?
+At 07:56 AM 2/24/2003, brian.auld@adic.com wrote:
 
-You can always get it from a MontaVista Linux Preview Kit for your
-system.  http://www.mvista.com/previewkit/index.html
+> However, I noticed that your 'preempt_enable' at the bottom of the
+> exerp has
+> been changed from 'preempt_enable' as in the RML patch, to
+> 'preempt_enable_no_reshed'. What's the reason for this inconsistency?
 
-Regards,
+The preempt_enable_no_reshed avoids a kernel stack overflow seen in
+certain cases of heavy preemption, where each nested call to reschedule
+on preemption is interrupted and again requests a preemption.  The
+proper place to check for another preemption is at the top-level
+interrupt/exception handler, so that we iterate and not recurse.
+
+Oops, MontaVista needs to contribute this bug fix back to RML's public
+patch, I'll put it on my list.
+
+
 --
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+Todd
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
