@@ -1,28 +1,34 @@
-Message-ID: <39B2ED3D.FED1410@charter.net>
-Date: Sun, 03 Sep 2000 19:30:53 -0500
-From: "Dan A. Dickey" <ddickey@charter.net>
+Subject: Re: cpm_enet_down and MAC address change.
+To: dnevil@snmc.com (Daris A Nevil)
+Date: Mon, 4 Sep 2000 12:03:45 +1100 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <39AFAD3C.C849E398@snmc.com> from "Daris A Nevil" at Sep 01, 2000 08:21:00 AM
 MIME-Version: 1.0
-To: Nathan Hurst <njh@hawthorn.csse.monash.edu.au>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: DC290 linux support(note: I don't mean linux connectivity :)
-References: <Pine.LNX.4.10.10009041007280.16113-100000@hawthorn.csse.monash.edu.au>
 Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000904010345.E061E251@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Nathan Hurst wrote:
-> Hi guys,
->   I'm wondering if anyone has tried booting linux on a Digita series
-> camera?  I've looking at the firmware(you can download the ROM off the
-> kodak site) and the chipset, and it almost seems doable.
->
->   I doubt there would be much point in running linux, but hey, it would a
-> fun hack.
+Daris A Nevil writes:
+> I have been promising myself that I would re-work the ethernet driver ...
 
-It seems like a really silly thing to do.
-But I happen to have one of these cameras myself.
-What processor does it have in it?  Does gcc support it?
-	-Dan
+If you do, I think it would be good to integrate similar changes to those I
+made to the FEC driver, in the patch at:
+    http://members.xoom.com/greyhams/linux/patches/2.2/fecdmaskb.patch
+
+In particular, DMA directly into the skbuf avoids a copy, and received
+packets that get dropped should only be counted in rx_dropped -- not counted
+again in rx_packets.  Also, it's good to avoid reading the buffer descriptor
+status bits multiple times, especially since they're uncached.
+
+Regards,
+Graham
+--
+Graham Stoney
+Principal Hardware/Software Engineer
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
