@@ -1,43 +1,47 @@
-Date: Mon, 13 Aug 2001 08:15:21 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: James F Dougherty <jfd@GigabitNetworks.COM>
-Cc: dmj+@andrew.cmu.edu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: PCI IDE Adapter for PPC/Linux
-Message-ID: <20010813081521.B9133@cpe-24-221-152-185.az.sprintbbd.net>
-References: <200108130720.AAA03800@krakatoa.gigabitnetworks.com>
+Date: Mon, 13 Aug 2001 08:35:53 -0700
+From: Larry McVoy <lm@bitmover.com>
+To: Gavin Hemphill <hemphill@drea.dnd.ca>
+Cc: Larry McVoy <lm@bitmover.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: PPC bk repos reorg
+Message-ID: <20010813083553.B4702@work.bitmover.com>
+References: <15218.2656.8980.846399@cargo.ozlabs.ibm.com> <20010808211410.J7728@work.bitmover.com> <15218.4778.270562.782105@cargo.ozlabs.ibm.com> <20010808213806.C13789@work.bitmover.com> <15218.7077.297813.862317@cargo.ozlabs.ibm.com> <20010809192852.L13789@work.bitmover.com> <20010810080751.B31136@cpe-24-221-152-185.az.sprintbbd.net> <20010810081659.A13789@work.bitmover.com> <3B77D988.6A9D6C60@drea.dnd.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200108130720.AAA03800@krakatoa.gigabitnetworks.com>
+In-Reply-To: <3B77D988.6A9D6C60@drea.dnd.ca>; from hemphill@drea.dnd.ca on Mon, Aug 13, 2001 at 10:43:36AM -0300
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Aug 13, 2001 at 12:20:28AM -0700, James F Dougherty wrote:
+For now use the old port numbers those should still work while I go poke
+at this.
+
+On Mon, Aug 13, 2001 at 10:43:36AM -0300, Gavin Hemphill wrote:
+> Larry I just tried out the anonymous access using the new syntax and found that (of course) it won't work through our firewall.  I'd had a hole punched in the firewall to allow pull's etc. but it's
+> tied to port numbers.  Do you have any suggestions on how to handle this with the reorganized parents.
+> 	G++
 >
-> (LOL) .... I have the Promise Ultra-66..... since it's
-> not working, this is what prompted me to look for an
-> alternative ..
->
-> I have ported MontaVista HHL (Linux 2.4.2) to
-> a custom processor board, and have been
-> trying to run fdisk to setup a mountable root
-> drive.
-
-Have you tried the card in another PPC?  Are you seeing any other
-PCI related issues on your custom board?
-
-> mousse-(17):[11:31pm]: [/>devfsd /dev
-> Started device management daemon for /dev
-> mousse-(18):[11:31pm]: [/>fdisk /dev/hda
-> modprobe: Can't locate module /dev/hda
-> modprobe: Can't locate module /dev/hda
-
-That's odd.  Do you have /dev/ide/host0/bus0/target0/lun0/anything?
-I _think_ you shouldn't see a modprobe error if the ide-disk driver is
-installed already, I think.  But I'm not sure.
+> Larry McVoy wrote:
+> >
+> > I'd like to keep the .com for commercial hosting in case anyone wants
+> > to give us huge piles of money (yeah, right, but you never know).
+> > But I could use
+> >
+> >         bk://ppc@ppc.bkbits.net/linux_2_2 instead of
+> >         bk://ppc@ppc.bkserver.net/linux_2_2
+> >
+> > It's a whole 2 letters shorter.  If I can ever get bk.net/bk.com that's
+> > the obvious thing but the chances of that are right up there with me
+> > winning the lottery.  If anyone stumbles across a really short, approrpiate
+> > domain, let me know.  The nicest thing sourceforge ever did for me is
+> > to get sf.net :-)
+> >
+> > Anyway, all of the above addresses currently point at the same place.
+> > If you all say "bkbits" then I'll reserve bkbits.net for the hosting
+> > service.  I'm a big fan of less is more and that's the shortest I could
+> > find.
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+---
+Larry McVoy            	 lm at bitmover.com           http://www.bitmover.com/lm
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
