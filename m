@@ -1,49 +1,34 @@
-Date: Tue, 23 May 2000 19:48:29 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Date: Tue, 23 May 2000 20:09:41 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
 To: Sergio Brandano <sb@dcs.qmw.ac.uk>
-cc: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org,
+cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org,
         stephan@jvc.nl
-Subject: Debian pmud package available 
-In-Reply-To: <200005221545.QAA23486@copper.dcs.qmw.ac.uk>
-Message-ID: <Pine.LNX.4.10.10005231934210.4083-100000@opal.biophys.uni-duesseldorf.de>
+Subject: Re: Debian pmud package available 
+In-Reply-To: <200005231758.SAA19464@copper.dcs.qmw.ac.uk>
+Message-ID: <Pine.LNX.4.10.10005232000150.28612-100000@zirkon.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 22 May 2000, Sergio Brandano wrote:
+>  Thank's a lot for making this package. Did you manage to contact
+>  Stephan? What about the apmd patch?
 
-> >Speaking of which: can someone point me to the URL for the 0.6 pmud
-> >source? If no one else is interested, I'd package it for Debian.
->
->  Just visit my page:
->  http://www.dcs.qmw.ac.uk/~sb/PowerBook.html
->
->  Look under the "Power Management" section. You will find the
->  intructions for a Debian installation and relative init file (written
->  by me). Please contact Stephan Leemburg (stephan@jvc.nl) for it all.
+Just what I needed to get half way up to speed with Debian packaging again
+:-)
 
-OK, the Debian package plus diff/changes/dsc stuff is up for testing on
-ftp.biophys.uni-duesseldorf.de:/pub/linux/powerpc - it's not a final
-version yet, I need to figure out how to have the Debian postinst
-automatically create the /etc/rc*.d symlinks. If someone wants to play
-with it, go ahead.
+I've not had an answer from Stephan but I didn't give him any heads-up
+either. The apmd patch seems to be included, it's enabled by the -a option
+to pmud as far as I could see. The fifo (/etc/power/apm) is created
+during installation, so all it should take is adding the -a to the
+PMUD_FLAGS definition in /etc/default/power. I need to document this :-)
 
-With 2.2.15pre9 kernel headers, I had to use the following patch to make
-pmud-0.6 compile on LinuxPPC:
+>  On testing, I'm out of business for a while, as the baby is being
+>  visited by the doctor (faulty display).
 
---- pmud-0.6/pmu.h.org	Mon May 22 18:26:31 2000
-+++ pmud-0.6/pmu.h	Mon May 22 18:27:08 2000
-@@ -19,8 +19,3 @@
-
- #define PMU_SMART_BATT		0x6f	/* report smart battery state */
- #define PMU_GET_VERSION		0xea	/* get pmu firmware version # */
--
--/* Kind of PMU (model) */
--enum {
--	PMU_KEYLARGO_BASED=3,	/* iBook */
--};
+Speedy recovery for the baby ...
 
 	Michael
 
