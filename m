@@ -1,37 +1,48 @@
-Message-ID: <3E64EA95.7050405@paulidav.org>
-Date: Tue, 04 Mar 2003 10:04:05 -0800
-From: Vladimir Gurevich <vag@paulidav.org>
-MIME-Version: 1.0
-To: Omanakuttan <omanakuttan@tataelxsi.co.in>
+Date: Tue, 4 Mar 2003 11:28:04 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: problem in ppc-linux-gcc cross compiler.
-References: <3E64DC21.4060802@tataelxsi.co.in>
-In-Reply-To: <3E64DC21.4060802@tataelxsi.co.in>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: SCC3 UART for MPC850
+Message-ID: <20030304182804.GA16123@ip68-0-152-218.tc.ph.cox.net>
+References: <20030303234618.GA12721@ip68-0-152-218.tc.ph.cox.net> <20030304000335.13A00C6E0C@atlas.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030304000335.13A00C6E0C@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+On Tue, Mar 04, 2003 at 01:03:30AM +0100, Wolfgang Denk wrote:
+>
+> In message <20030303234618.GA12721@ip68-0-152-218.tc.ph.cox.net> you wrote:
+> >
+> > > Sorry, this is one of our patches that never  was  accepted  for  the
+> > > official source trees (also including hardware flow control).
+> >
+> > ... because you never split things out into logical chunks which make
+> > life easier on people trying to understand what changed and why.  Our
+> > last merge went well I thought, and I'm up for another round if you are.
+>
+> It would be too much trouble to separate the  hardware  flow  control
+> stuff  from the other port configuration options. I feel it should be
+> sufficient to have a set of changes local to one single source file.
 
-You should change the line
->              warning, __FILE__, __LINE__, __FUNCTION__, ##msg) ;\
-to
->              warning, __FILE__, __LINE__, __FUNCTION__ , ##msg) ;\
+If you're referring to the very configurable SCC portion, as far as I
+know, no one, including yourself has made a verion which satisifes all
+of the people all of the time, which is why Dan hasn't approved any of
+the patches to do that.  But maybe the 2.5 config language will
+allow someone to write it in a manner which lets everyone do what they
+want..
 
-This space (after __FUNCTION__) will do the trick.
+But, it's been a while, so if it's not too much trouble, can you send it
+out again?
 
-You can read more about it in gcc info file (C Extensions/Macro Varargs),
-where the issue is thoroughly explained:
+> You say it is not sufficent. OK. You are the maintainer, I ain't.
 
-       This is a special feature of the GNU C preprocessor: `##' before a
-       rest argument that is empty discards the preceding sequence of
-       non-whitespace characters from the macro definition.  (If another
-       macro argument precedes, none of it is discarded.)
+Dan Malek is really, I just try and help him when I can. :)
 
-
-Hope, this helps.
-Vladimir
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
