@@ -1,102 +1,106 @@
-From: Gabriel Paubert <paubert@iram.es>
-Date: Fri, 16 Jan 2004 20:54:06 +0100
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linas@austin.ibm.com, valvoline <valvoline@vrlteam.org>,
+Message-ID: <4008471A.5070903@mvista.com>
+Date: Fri, 16 Jan 2004 13:18:34 -0700
+From: Randy Vinson <rvinson@mvista.com>
+MIME-Version: 1.0
+To: Jeff Angielski <jeff@theptrgroup.com>,
 	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Broadcom BCM94306
-Message-ID: <20040116195406.GA25566@iram.es>
-References: <20040114161107.GM2658@adapter.n0skillz.org> <20040114181350.B40506@forte.austin.ibm.com> <70D6BF86-473D-11D8-A8C3-000A95A4DC02@kernel.crashing.org> <20040115115023.GA12001@iram.es> <C404D01A-475A-11D8-A8C3-000A95A4DC02@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <C404D01A-475A-11D8-A8C3-000A95A4DC02@kernel.crashing.org>
+Subject: Re: ppc826x BAD interrupts
+References: <1074268973.4323.13.camel@localhost.localdomain> <20040116163545.GA8577@synergymicro.com>
+In-Reply-To: <20040116163545.GA8577@synergymicro.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 15, 2004 at 02:00:16PM +0100, Segher Boessenkool wrote:
->
-> >>Also note that the 970 does not support wrong^H^H^H^H^Hlittle-endian
-> >>mode
-> >>at all.
-> >
-> >BTW, where did you find this? IBM's sites have no real documentation on
-> >the 970, or I was too dumb to find them.
->
-> I work for IBM.  I did not realize this information wasn't
-> publicly available -- if it isn't, and it's not just you.
+Jeff,
+   Like Rob, I've seen the same behavior, especially if the interrupting
+device is located behind a PCI to PCI bridge. However, I think the true
+cause is actually propagation delays though the bridge(s). I've seen a
+recommendation that interrupt service routines should always perform a
+read as the last transaction with the device to ensure that the
+interrupt clearing write has been flushed though the bridge and has
+reached the device. I think this comes from the PCI spec or the PCI
+bridge spec, but I'm not certain. Most of the interrupt service routines
+that I've seen have some sort of loop that reads interrupt status
+register from the device, services the events indicated and the loops
+around to check for additional events that have ocurred during the
+interrupt service routine. This approach satifies the recommendation,
+because the read that shows no outstanding events will flush the bridge(s).
 
-The fact is that the documentation for the 970 is by far the
-poorest from all the processors on IBM's website. I believed
-IBM would release more information about these processors. Or
-doesn't IBM really want to sell them?
+   The addition of a "sync" instruction in the interrupt controller
+routine is simply adding a delay. This was noted in the post referenced
+by Muhammad Sarwar
+(http://www.geocrawler.com/archives/3/8358/2002/11/100/10173445/).
 
-Anyway, since you seem to have ties inside IBM ;-), you might
-know why they do not even give a list of differences of the
-970 implementation. I know from another source that the 970 does
-not have BATs, but supports large pages with a size of 16MB.
+  I took a look at the interrupt service routine (fcc_enet_interrupt in
+arch/ppc/8260_io/fcc_enet.c) and it does not perform a read-back before
+exiting. It would would be interesting to add a readback operation in
+the interrupt routine and see if that also fixes the problem. If it
+works, I think it would be better than adding a sync delay to every
+interrupt.
 
+   A temporary hack would be something like:
+
+	.
+	.
+	.
+	/* Get the interrupt events that caused us to be here.
+         */
+         int_events = cep->fccp->fcc_fcce;
+         cep->fccp->fcc_fcce = int_events;
+	{
+		ushort temp;
+		temp = cep->fccp->fcc_fcce;
+	}
+         must_restart = 0;
+	.
+	.
+	.
+
+
+			Randy Vinson
+			MontaVist Software
+
+
+Rob Baxter wrote:
+
+> Hi Jeff,
 >
-> >It's more complex than this, because it is pseudo little endian,
-> >munging
-> >low address bits.
+> Yes, I have seen this on a PowerPC platform.  And what I have noticed is
+> that faster (i.e., internal core frequency) the processor the more
+> likelihood of this happening.  However, it is highly dependent upon the
+> platform (e.g., interrupting devices, interrupt controller).
 >
-> It's not, afaics.
-
-It's the case for all 603/604/7xx/7xxx processors.
-
+> A good example is an interrupt request from a PCI bus device.  Many device
+> driver interrupt handlers will clear the source of the interrupt by either
+> reading or writing some register within the device, perform some necessary
+> actions, and return from the handler.  The PCI device is slow to negate its
+> interrupt request and the interrupt controller sees the interrupt request
+> from the device again.  With the platforms that I'm associated with I've
+> seen this happen more frequently (i.e., BAD interrupts) as processor
+> internal core frequencies increase, especially with the 7457.
 >
-> > The memory seen as an array of bytes is not invariant
-> >through this transformation for most processors. For example the
-> >character
-> >chain "abcdefgh" copied from a kernel buffer through a read call will
-> >look as "hgfedcba" from a little endian application.
+> --
+> Rob Baxter
 >
-> Representation depends on access size.
-
-Indeed, but I said array of bytes, implying byte size accesses even
-if it was not clear. However, I forgot to mention that it should be
-an 8 byte array on a 8 byte boundary. This is the rule for all the
-processors I have mentioned before.
-
 >
-> > Bridges have a
-> >"LE" bit to also mung addresses during DMA and PIO transfers.
 >
-> Well yeah, PCI swizzling is awful and complicates the hell out
-> of everything.
-
-Well, if the processors switched to little endian with byte
-invariant addressing, there would be no need for mode switching
-control bits in the bridges, and it would be almost easy to
-support a mixture of BE and LE applications (note that I said
-"almost", but the only practical interest is for emulators).
-
 >
-> >But this makes it almost impossible to support a mixture of little and
-> >bug endian applications. Indeed the ROM BIOS x86 emulator I wrote a
-> >few years ago runs in big-endian mode and uses {l,st}[hw]brx
-> >instructions
-> >to emulate x86 crapitecture.
->
-> That's how to normally access PCI as well, yeah.
->
-> >P.S.: there is nothing wrong with calling little-endian wrong or
-> >perverted or fucked-up ;-)
->
-> I don't know if I trust you here -- you wrote "bug endian" just a few
-> lines up ;-)
 
-Damned laptop keyboards! U and I keys are just too close from each
-other;-) Apart from this, if you look up some archives, you'll certainly
-find that I think, live and breathe big-endianly ;-) (bit 0 is the most
-significant bit, period)
+Muhammad Sarwar wrote:
+ > This problem was discussed on mailing list before also and you can
+ > eliminate this problem by inserting a sync instruction at a certain
+ > place in the 8260 interrupt handling code. See, for example,
+ > http://www.geocrawler.com/archives/3/8358/2002/11/100/10173445/
+ >
+ > Add a __asm__ volatile("sync"); at the end of the m8260_mask_and_ack
+ > function in arch/ppc/kernel/ppc8260_pic.c to fix it.
+ >
+ >
+ > Regards,
+ >
+ > Muhammad Sarwar
+ > Mangrove Systems Inc.
 
-Now the fact that the 970 does not support backwards-endian is a very
-good thing. From time to time (although it has been less frequent
-recently) somebody suggest on the list that Linux/PPC switches to the
-dark side of the endianness. The fact that some processors don't support
-it will be a killer argument.
-
-	Gabriel
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
