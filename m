@@ -1,33 +1,37 @@
-Date: Mon, 28 Aug 2000 23:33:45 +0200 (MET DST)
-From: Roman Zippel <zippel@fh-brandenburg.de>
-To: Dan Malek <dan@netx4.com>
-cc: Ronald Wahl <rwa@peppercon.de>, Benjamin Herrenschmidt <bh40@calva.net>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: allocating uncachable memory
-In-Reply-To: <39AACCE2.791689A@embeddededge.com>
-Message-ID: <Pine.GSO.4.10.10008282325310.16966-100000@zeus.fh-brandenburg.de>
+Message-ID: <01C01144.112416C0.jween@gte.net>
+From: "Jon Erik Ween, MD" <jween@gte.net>
+Reply-To: "jween@gte.net" <jween@gte.net>
+To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Subject: XF86-4.0.1 on Lombard
+Date: Mon, 28 Aug 2000 22:49:16 -0700
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hi!
 
-> Well......there are many devices that perform DMA and must know the
-> physical address that is often stored in some kind of device descriptor.
-> I have written drivers that convert back and forth to get this
-> information.  You would have to keep the address mappings in the
-> driver somehow.
+I'm trying to get XF86-4.0.1 to work on my Lombard Powerbook running
+2.2.15pre3. RPMs install OK, I've installed the expanded xkb and updated
+the XF86Config file sample as posted by njolly on X for PPC. Starting X I
+get a parse error for the first Section "Module" stating that " is not a
+key word. Replacing with ' or deleting begs a quoted-string-required error.
+Anybody know why this is? Trying to upgrade or even rebuild the kernel is a
+real pain in the batuski since the kernel source from the LinuxPPC folks
+seems to be a bug-ridden swamp. Suggestions?
 
-Hmm, I only know one driver, where such stuff is needed, but due to lack
-of such hardware I never had to deal with this myself.
-Anyway, actually in the new page structure there are two fields that are
-AFAIK only used by the page cache - mapping and index. With that you can
-do a very fast physical to virtual (uncached) translation. (Ok, I take
-back that it's impossible :) )
+I would be forever grateful!
 
-bye, Roman
+Jon
+
+Jon Erik Ween, MD
+Assistant Professor
+Cognitive and Cerebrovascular Neurology
+Director, Stroke Program
+Loma Linda University School of Medicine
+Neurology Dept.
+Loma Linda, CA 92354
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
