@@ -1,48 +1,103 @@
-Message-ID: <3839CF18.5D600DE@mvista.com>
-Date: Mon, 22 Nov 1999 15:17:44 -0800
-From: Christian Zankel <chris@mvista.com>
+Message-Id: <199911222346.AAA00248@piglet.grunz.lu>
+Date: Tue, 23 Nov 1999 00:46:58 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Error accessing PCI config space
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-To: Cort Dougan <cort@fsmlabs.com>
-CC: linuxppc-dev@lists.linuxppc.org, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: bootloader & head.S weirdness & restructuring
-References: <19991122120429.031138@mailhost.mipsys.com> <19991122143732.B12973@hq.fsmlabs.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hi all,
 
-It seems to me that on almost every machine linuxppc is running on
-depends on having a bootloader to load the kernel. Would it be possible
-to redesign all bootloaders to load the kernel to position 0, initialize
-the OF path where necessary and jump to the kernel with the MMU switched
-off? Then we could possibly remove all the conditional code (#if ...
-#else .. #endif) in head.S mm/init.c, etc.
+For some time now, I've had problems with the PlanB video grabber
+hardware in my G3-upgraded 7600. I've narrowed the problems down to
+errors accessing planb's PCI config space.
 
-Right now, it is painfull to add a new machine that doesn't follow the
-full PReP,CHRP specification, i.e. has no OF nor Residual Data
-structures, etc.
+In fact, I see the same errors accessing any of the two devices behind
+the chaos host bridge, namely control and planb.
 
-I started to restructure the arch/ppc tree. However, I would like to
-hear about your thoughts and recommendation. The goals I want to
-achieve, are:
+The error is that whenever I read from config space, I get the value of
+the previous read, however long ago that read occured. See this:
 
-1. The bootloader gets a more active part, i.e. does some
-pre-initiaization, esp. to get rid of the 'bl prom_init' and the variaty
-of copying the kernel back and forth.
-2. It should be possible to setup the kernel so that the same kernel
-runs on all those machine that it is setup for. Of course, the more
-machines you add the more overhead you get.
-3. Each machine/architecture should get its own directory (pmac, prep,
-chrp, apus, geminit, etc.)
-4. To add a new machine, only a new directory has to be added and only a
-few files have to be changed (mainly: Config.in and Makefile).
-5. The _machine-ID is seperated into to fields, Vendor and Board.
+[mlan@piglet ~]$ lspci -vvx
+01:0d.0 Ethernet controller: Apple Computer Inc. PlanB Video-In (rev 14)
+        Control: I/O+ Mem+ BusMaster- SpecCycle+ MemWINV- VGASnoop+ ParErr+ Stepping- SERR- FastB2B-
+        Status: Cap- 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Interrupt: pin ? routed to IRQ 28
+        BIST is running
+        Region 0: Memory at <ignored> (32-bit, prefetchable)
+        Region 1: Memory at <ignored> (32-bit, non-prefetchable)
+00: 00 00 00 f1 6b 10 04 00 14 00 00 02 01 00 00 ff
+10: 08 20 00 00 00 00 00 f1 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
+Vendor & device ID are from the bus scan at bootup; the other values
+are read directly from config space by lspci. If you shift this by 4
+bytes to the left, all values will make sense.
 
+I can reproduce the same with setpci:
 
-Thanks,
-Christian
+[root@piglet ~]# setpci -v -s 01:0d.0 BASE_ADDRESS_0
+01:0d.0:10 = f4000000
+[root@piglet ~]# setpci -v -s 01:0d.0 BASE_ADDRESS_0
+01:0d.0:10 = f4000000
+[root@piglet ~]# setpci -v -s 01:0d.0 DEVICE_ID     
+01:0d.0:02 = f400
+[root@piglet ~]# setpci -v -s 01:0d.0 BASE_ADDRESS_0
+01:0d.0:10 = 0004106b
+
+I've read BASE_ADDRESS_0 a few times; then the read of DEVICE_ID returns
+the corresponding 16 bits out of the BASE_ADDRESS_0 register, and a
+following read of BASE_ADDRESS_0 returns the value of the long
+previously read to determine DEVICE_ID....
+
+This leads me to beleive something is wrong with the
+pmac_pcibios_read_xx() calls when used on the chaos bridge.
+
+I've thought about the CPU reordering memory accesses; however, I've
+been unable to change this behaviour with either eieio() or sync().
+
+I've also thought about the fact that according to Apples doc, PCI
+writes are always posted writes on PowerMac systems. So, the out_le32()
+of the config space address might not have completed when reading the
+register data.
+
+However, inserting an in_le32(bp->cfg_addr) after the write, to insure
+the write completed before reading the resulting data, didn't really
+solve the problem: I'm then reading all sorts of garbage from config
+space.
+
+An other clue might be that on bootup, when the PCI initialization is
+done and the level2 cache is not yet turned on, the config space scan
+returns different values:
+
+  Planb: Dumping config space
+  00: 14 10 04 00 6b 00 00 02 14 00 00 ff 01 20 00 00
+  10: 08 00 00 f1 00 00 00 00 00 00 00 00 00 00 00 00
+  20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+Here it's less clear what the relationship between read value and real
+value is.
+
+Anybody have any clues to what's happening? By the way, I can reproduce
+the errors with the original 604 CPU; and as it used to work OK some
+time ago, I'll go and compile old kernels now.....
+
+Thanks for any help....
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
