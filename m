@@ -1,55 +1,61 @@
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <14798.43366.937709.900651@esb.bbn.com>
-Date: Sun, 24 Sep 2000 21:24:54 -0400
-From: R Shapiro <rshapiro@bbn.com>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display!
-In-Reply-To: <39CE8B90.1B318DD2@student.ethz.ch>
-References: <Pine.LNX.4.10.10009231028030.26749-100000@apollo.kulian.net>
-	<14798.23332.833379.615321@esb.bbn.com>
-	<39CE8B90.1B318DD2@student.ethz.ch>
-Reply-To: rshapiro@bbn.com
+Date: Sun, 24 Sep 2000 20:00:05 -0600
+From: Cort Dougan <cort@fsmlabs.com>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+Cc: linuxppc-dev@lists.linuxppc.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+        Paul Mackerras <paulus@linuxcare.com.au>
+Subject: Re: PCI rework & CHRP question
+Message-ID: <20000924200005.E20496@hq.fsmlabs.com>
+References: <19340818162914.6020@192.168.1.10>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <19340818162914.6020@192.168.1.10>; from Benjamin Herrenschmidt on Sun, Sep 24, 2000 at 12:57:30AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Dänzer writes:
- > What bug with screenblanking?
+} I'm working on a rework of our arch/pci.c (to properly handle multiple
+} host bridges, and various other cleanups).
+}
+} In the chrp_pci.c code, I found this code:
+}
+}         if ( !strncmp("MOT",
+}                       get_property(find_path_device("/"), "model", NULL),3) )
+}         {
+}                 pci_dram_offset = 0;
+}                 isa_mem_base = 0xf7000000;
+}                 isa_io_base = 0xfe000000;
+}                 set_config_access_method(grackle);
+}         }
+}
+} However, I found no way in the Grackle documentation to have isa_mem_base
+} at 0xf7000000. AFAIK, it's at 0xfd000000
 
-Using the fbdev driver with xf 4.0.1, the default screenblanker kills
-the server as soon as the blanker is activated.  This can easily be
-replicated via 'xset s activate' or by letting the screenblanker
-activate itself by timing out. The ati driver and the r128 driver
-don't have this problem, only fbdev.
+I think I did this for the Cobra.  You can kill off the cobra.  I have two
+here that I don't boot anymore for testing and I don't think many people in
+the world have them.  Those that do have them aren't likely to care much
+about Linux.
 
-I've seen this on all three platforms where I've tested 4.0.1, either
-using Franz Sirl's rpms or using the version I built with sources
-rsync'd yesterday.
+} Also, the grackle access method expect a PCI bridge structure configured
+} with the ioremap'ed config space registers, which is not the case on
+} chrp. (They are defined only in pmac_pci.c).
+}
+} I'm fixing those along with my changes. I suppose Grackle on CHRP uses
+} memory map B ?
 
-Martin Costabel reported this back in July on the users list so I
-assumed it was a known but low-priority bug (it's easily gotten around
-via 'xset s noblank').
+Actually, it seemed to use a memory map something entirely unlike A or B.
 
+} Note (tell me if it's a problem), that I'm removing the various
+} xxx_setup_pci_ptrs(). Each host bridge has a pci_controler structure (the
 
+Good!  Thanks, those bastards have needed to die for a while.
 
+I still do want to be able to mix-and-match PCI controllers and not have
+any board<->chipset association except in the direction board->chipset but
+not chipset implies board.   This helps people with custom hardware get
+their boards going and helps us with new ports.
 
- > > I can't test xinerama on this platform because the three screen don't
- > > all run at same depth (two use depth 15/16, one uses depth 8).
- >
- > What about just testing it with the two heads who run at 16 bpp, or run all
- > heads in depth 8?
-
-I won't have access to the machine for a few days: the multi screen X
-will be used off and on for demos all week :) But I'll test this as
-soon as I can fiddle with the config file again.
-
-What's the right syntax for starting in this mode?  startx -- +xinerama ?
-
-
-
---
-rshapiro@bbn.com
+} old bridge_data) that contains also the function pointers to the access
+} methods. Archs now call whatever xxx_find_bridges from their
+} xxx_setup_arch() function and all host-bridge dependent setup is done there.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
