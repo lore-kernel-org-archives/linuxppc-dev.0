@@ -1,36 +1,51 @@
-Message-ID: <3938C6EC.40FFE599@student.ethz.ch>
-Date: Sat, 03 Jun 2000 10:50:52 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+To: Michel Lanners <mlan@cpu.lu>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [patch] VRAM detection in controlfb
+Date: Sat, 3 Jun 2000 11:16:01 +0200
+Content-Type: text/plain
+References: <200005312243.AAA00661@piglet.grunz.lu>
+In-Reply-To: <200005312243.AAA00661@piglet.grunz.lu>
 MIME-Version: 1.0
-To: "David L. Thompson" <dthompsn@vizsolutions.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: XFree86-4.0 Status?
-References: <200006030459.XAA19940@lists.linuxppc.org> <p04320405b55e4e6caf0a@[192.168.1.1]>
-Content-Type: text/plain; charset=iso-8859-1
+Message-Id: <00060311160100.00693@enzo.bigblue.local>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"David L. Thompson" wrote:
+Am Thu, 01 Jun 2000 schrieb Michel Lanners:
+
+> > Hi list,
 >
-> I was wondering if anybody could comment on the status of
-> XFree86-4.0. I tried installing this on a PowerBook G3/250 and have
-> had no luck. I've seen just a few posts in regards to "support isn't
-> there yet" so I was wondering if anybody could comment.
+> I've finally gotten bored by control's VRAM detection code that is only
+> semi-functional (either 7x00 or 8x00 VRAM is incorrectly detected).
+> Until somebody comes up with a failsafe method to detect VRAM, I've
+> added a command line option to control the amount of VRAM used:
+>
+> - either kernel command line (compiled-in):
+>
+> 	video=controlfb:vram:3
+>
+> - or insmod option (no idea whether controlfb works as module):
+>
+> 	insmod controlfb vram=3
+>
+> Possible values are:
+>
+> 	0 = autodetect (default)
+> 	1 = 2MB bank1
+> 	2 = 2MB bank2
+> 	3 = 4MB (most useful; 4MB doesn't always get detected right)
+>
+> Larger values get cropped to bits 0 & 1.
+>
+> If I hear no opposition, I'll send this off to Alan; it might make it
+> into 2.4.0-final.
 
-I suppose that's Mach64 hardware, so you have to use the fbdev driver _and_ a
-patched kernel to correct broken OF PCI memory mappings.
+Hi,
 
-Ask Michael Schmitz :)
+if you don't mind, would you try to replace the "dcbi" assembler instructions
+in the detection code with "dcbf" instructions? It seems Dan inherited my bug
+I had in the platinumfb driver...
 
-
-Michel
-
-
---
-I believe the technical term is "Oops!"
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
+Franz.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
