@@ -1,13 +1,23 @@
-Return-Path: <runet@innovsys.com>
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id AAFD12BDA0
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 26 Oct 2004 03:32:26 +1000 (EST)
+Received: from [212.227.126.155] (helo=mrelayng.kundenserver.de)
+	by moutng.kundenserver.de with esmtp (Exim 3.35 #1)
+	id 1CM83V-0000e5-00
+	for linuxppc-embedded@ozlabs.org; Mon, 25 Oct 2004 18:50:49 +0200
+Received: from [217.80.229.80] (helo=[192.168.1.10])
+	by mrelayng.kundenserver.de with asmtp (Exim 3.35 #1)
+	id 1CM83V-0005Kf-00
+	for linuxppc-embedded@ozlabs.org; Mon, 25 Oct 2004 18:50:49 +0200
+Message-ID: <417D2EED.50205@anagramm.de>
+Date: Mon, 25 Oct 2004 18:50:53 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Date: Mon, 25 Oct 2004 12:17:04 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DB99@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <Linuxppc-embedded@ozlabs.org>
-Cc: 
-Subject: [PATCH] RE: CPM2 Bug
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: MPC8540 experience
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,127 +28,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Did some more research.
+Hello, dear list members!
 
-Res6 should be 94 bytes long.
+This is my first mail here, so hopefully, everything works fine...
 
-However... It does work @ 92 bytes because the compiler alligns the next
-struct (pci_cpm2_t) on a int boundary anyways (no packing specified fo
-the structs)
+We at Anagramm GmbH, located in Germany/Munich, are planning to setup
+an embedded system for our new image grabbing/camera platform
+utilizing the Freescale MPC8540 (PowerQUICC III) processor.
 
-I tested it with a module that pronted out the address of the PCI struct
-that follows the sit_cpm2_t struct.
+I am planning to use tested hardware components for the first
+prototyping setup to concentrate on getting things going without
+worrying about broken HW. The goal is to get a portable
+solution with fast interfaces for about 10..50+ MBytes/s throughput.
+(Local Bus Bulk Data/IO or RapidIO or GPIO to Gigabit Ethernet)
 
-Imap =3D 0xF0000000
-With res6[92]
-im-pci is @  0xf0010430
+Additionally we want to add up an interface for a small TFT Panel.
+I think about putting a Silicon Motion (SMI) Graphics controller (SM712 
+or SM501) on the PCI bus. I am already in contact with SMI about HW/SW 
+support from them.
 
-With res6[94]
-im-pci is @  0xf0010430
+I think about porting some old xfree drivers from SMI to a current
+2.4 or 2.6 kernel or writing a framebuffer device driver for the 
+graphics. Is there anybody with a similar setup and/or some similar 
+tasks to get Linux with X11 to work on targets like this?
+Later on we want to port our image processing environment and
+a Qt-GUI to the platform for some products.
 
-So we're saved by the compiler.
+Best greets,
 
-Here's the patch
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
 
-Signed-off by Rune Torgersen <runet@innovsys.com>
-
---- linux-2.5/include/asm-ppc/immap_cpm2.h      2004-10-21
-10:00:14.607712610 -0500
-+++ linux-innsys-2.6.9/include/asm-ppc/immap_cpm2.h     2004-10-25
-12:09:58.000000000 -0500
-@@ -133,7 +133,7 @@ typedef struct      sys_int_timers {
-        u8      res5[2];
-        u32     sit_pitc;
-        u32     sit_pitr;
--       u8      res6[92];
-+       u8      res6[94];
-        u8      res7[390];
- } sit_cpm2_t;
-
-
-> -----Original Message-----
-> From: Rune Torgersen
-> Sent: Friday, October 22, 2004 10:56
-> I do use PCI in u-boot, and it works (on an 8266, not 8xx)
-> > > Rune Torgersen wrote:
-> > >=20
-> > >> I think I found a bug in immap_cmp2.h
-> > >>
-> > >> (in structue sit_cpm2_t)
-> > >>
-> > >> I know that res7 was changed to make room for the PCI
-> > structure But
-> > >> res6 is 2 bytes shorter in the new one.
-> > >>
-> > >> I compared to the same structure in u-boot (that got the
-> > PCI change
-> > >> at about the same time) and it has it at 94 bytes long also.
-> > >>
-> > >>
-> > >> Old structure:
-> > >>  /* System Integration Timers.
-> > >>  */
-> > >> typedef struct sys_int_timers {
-> > >>     char    res1[32];
-> > >>     ushort    sit_tmcntsc;
-> > >>     char    res2[2];
-> > >>     uint    sit_tmcnt;
-> > >>     char    res3[4];
-> > >>     uint    sit_tmcntal;
-> > >>     char    res4[16];
-> > >>     ushort    sit_piscr;
-> > >>     char    res5[2];
-> > >>     uint    sit_pitc;
-> > >>     uint    sit_pitr;
-> > >>     char    res6[94];
-> > >>     char    res7[2390];
-> > >> } sit8260_t;
-> > >>
-> > >> New structue:
-> > >> typedef struct sys_int_timers {
-> > >>     u8    res1[32];
-> > >>     u16    sit_tmcntsc;
-> > >>     u8    res2[2];
-> > >>     u32    sit_tmcnt;
-> > >>     u8    res3[4];
-> > >>     u32    sit_tmcntal;
-> > >>     u8    res4[16];
-> > >>     u16    sit_piscr;
-> > >>     u8    res5[2];
-> > >>     u32    sit_pitc;
-> > >>     u32    sit_pitr;
-> > >>     u8    res6[92];
-> > >>     u8    res7[390];
-> > >> } sit_cpm2_t;
-> > >>
-> > >> Rune Torgersen
-> > >> System Developer
-> > >> Innovative Systems LLC
-> > >> 1000 Innovative Drive
-> > >> Mitchell, SD 57301
-> > >> Ph: 605-995-6120
-> > >> www.innovsys.com _______________________________________________
-> > >> Linuxppc-embedded mailing list Linuxppc-embedded@ozlabs.org
-> > >> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> > >>
-> > >>
-> > >=20
-> > > _______________________________________________
-> > > Linuxppc-embedded mailing list
-> > > Linuxppc-embedded@ozlabs.org
-> > > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> > >=20
-> > >=20
-> >=20
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >=20
-> >=20
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->=20
->=20
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
