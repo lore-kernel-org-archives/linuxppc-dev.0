@@ -1,44 +1,31 @@
-Date: Fri, 10 Mar 2000 10:55:09 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Patrick Lerda <Lerda@microprocess.com>
-cc: David Monro <davidm@amberdata.demon.co.uk>,
-        Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
-Subject: RE: IBM 850 - Open Firmware or not? and more on the ide byteswapg
- ame...
-In-Reply-To: <902CA06399F5D311AAAC00500422FC63094031@iis000.microdata.fr>
-Message-ID: <Pine.HPX.4.10.10003101024360.22162-100000@gra-ux1.iram.es>
+Message-ID: <38C8EAF5.BC64259A@mpifr-bonn.mpg.de>
+Date: Fri, 10 Mar 2000 13:30:45 +0100
+From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
+Subject: CardBus Bridge IRQ Problem
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi all!
 
+I am currently trying to get the CardBus Brigde in a Lombard PowerBook (TI
+PCI1211) to work, but I have an evil problem with the interrupt line.  I started
+with Ryuichi Oikawa's patch (see the web site
+http://www.rr.iij4u.or.jp/~roikawa/others.html) and added the code for the
+TI1211.  I am at the point where an IRQ (from a FireWire2Go CardBus card) is
+recognised and serviced, but it seems as if at some point somewhere in the chain
+the INTA line is not deasserted, because the interrupt service routine is
+entered again and again, thus freezing the whole system.  Strange to say, all
+"interrupt pending" bits both in the FireWire card and in the bridge are CLEARED
+after the first call to the ISR (as it should be, of course).
 
-On Thu, 9 Mar 2000, Patrick Lerda wrote:
+Maybe one of the hardware gurus has an idea of what goes wrong here?  Is it
+possible to get a dump of the TI1211's PCI register set from MacOS?
 
-> I think porting Linux PPC to little endian could be a great idea. Now, all
-> systems
-> use PCI, and little endian is the native mode of this bus. Trying
-> to get all PCI hardware well supported on Linux i386 working on a PowerPC
-> box
-> is an headache, and a lot of drivers and programs don't work proberly for
-> only one
-> reason: endianess... Using PowerPC in big endian mode is only understandable
-> in closed
-> computers like iMac.
-
-I happen to strongly disagree (and I don't think at all that it's a
-headache, it's fairly easy), but if you want to start a ppcel port, go
-ahead. I just won't use it.
-
-Endianness is just the tip of the iceberg and is mostly transparent thanks
-to the bridges preserving byte addresses for all transfers. There are at
-least 2 other pure BE ports of Linux, m68k and sparc (split into sparc and
-sparc64), the SPARC having PCI buses (some 68k might have PCI buses as
-well). The MIPS port is bi-endian AFAICT...
-
-	Gabriel.
+Thanks for any help, Albrecht.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
