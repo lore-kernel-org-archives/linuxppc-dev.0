@@ -1,23 +1,24 @@
-From: Jim Thompson <jim@SmallWorks.COM>
+Message-ID: <3B81736D.7398B9B0@mvista.com>
+Date: Mon, 20 Aug 2001 16:30:37 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
+To: Jim Thompson <jim@SmallWorks.COM>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 8245 built-in serial ports
+References: <15233.29427.916592.303283@zaphod.smallworks.com>
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <15233.29427.916592.303283@zaphod.smallworks.com>
-Date: Mon, 20 Aug 2001 15:28:35 -0500
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: 8245 built-in serial ports
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Does anyone have the DUART that is built-in to the 8245 working yet?
+Jim Thompson wrote:
+>
+> Does anyone have the DUART that is built-in to the 8245 working yet?
 
-Note that this/these are different than the ones on the Sandpoint
-board.
+I don't....If I could find someone to create a cable I'd take a
+stab at it......
 
-Jim
 
---
-C++ is like jamming a helicopter inside a Miata and expecting some
-sort of improvement.       -- Drew Olbrich
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
