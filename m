@@ -1,32 +1,39 @@
-Message-ID: <3BEADFEF.4000307@embeddededge.com>
-Date: Thu, 08 Nov 2001 14:41:35 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Ricardo Scop <scop@vanet.com.br>
-Cc: linuxppc-embedded@lists.linuxppc.org, lehder@lists.linuxppc.org,
-	mercio@lists.linuxppc.org
+Date: Thu, 8 Nov 2001 13:43:32 -0700
+From: Val Henson <val@nmt.edu>
+To: Ricardo Scop <scop@digitel.com.br>
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Linuxppc and MPC8255 routing performance
-References: <9729.011107@vanet.com.br>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-ID: <20011108134332.D32561@boardwalk>
+References: <9729.011107@vanet.com.br> <3BEADFEF.4000307@embeddededge.com> <01110818021400.00999@scop.digitel.com.br>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <01110818021400.00999@scop.digitel.com.br>; from scop@digitel.com.br on Thu, Nov 08, 2001 at 06:02:14PM +0300
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ricardo Scop wrote:
+On Thu, Nov 08, 2001 at 06:02:14PM +0300, Ricardo Scop wrote:
+>
+> >  Using FTP as a benchmark isn't usually the best choice.  You
+> > should be running carefully controlled network benchmark applications.
+>
+> Err.. any suggestions, on those?
+>
+> Thank you, so far!
 
+Netperf is most common:
 
-> Does that sound ok, compared to other 8260 systems?
+http://www.netperf.org/
 
-No, not even close.  Something must be wrong with your memory
-interface or system.  The data cache enabled should be significantly
-faster, and on an 8260 you can run all three fast ethernets at full
-speed.  Using FTP as a benchmark isn't usually the best choice.  You
-should be running carefully controlled network benchmark applications.
+I prefer netpipe:
 
-Thanks.
+http://www.scl.ameslab.gov/netpipe/
 
+Either will do the job.  Write yourself some scripts to do the tests
+and also to graph the results automatically.  Just looking at the
+numbers as they scroll by won't give you much information on
+performance improvement.
 
-	-- Dan
-
+-VAL
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
