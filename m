@@ -1,43 +1,45 @@
-From: Brian Waite <waite@skycomputers.com>
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: RFC: gt64260 descriptor struct
-Date: Thu, 27 Feb 2003 10:31:27 -0500
+Message-ID: <3E5E354D.605@stinkfoot.org>
+Date: Thu, 27 Feb 2003 10:57:01 -0500
+From: Ethan Weinstein <lists@stinkfoot.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200302271031.27317.waite@skycomputers.com>
+To: Rudy Klinksiek <klink@arlut.utexas.edu>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: "Illegal instruction" traps on smp clients - 2.4.19
+References: <Pine.SOL.4.05.10302270842190.3567-100000@mamba.arlut.utexas.edu>
+In-Reply-To: <Pine.SOL.4.05.10302270842190.3567-100000@mamba.arlut.utexas.edu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I know this was very briefly discussed in the past but I am in need of doing
-this right so lets start up the discussion again.
 
-The gt64260 code relies on many defines and/or fw values when it should not.
-For example the MPSC and eth both pull from a define or bi_struct for certain
-information. We all agree this is not good. In house I now have 2 new
-drivers, i2c and timer 4, that also would like some of this info.
+Rudy Klinksiek wrote:
 
-What we need is a global structure for gt code that will describe the features
-of the gt and export that to drivers that need it. What I see right now for
-required elements are:
+| 	Smp and UP kernels work fine on the "server".
+|
+| 	Has anyone else seen this type of problem or something similar?
+|
 
-typdef struct gt64260_features {
-	unsigned long mem_size;
-	unsigned long bus_speed /* in Hz */
-	unsigned char eth1addr[6];
-	unsigned char eth2addr[6];
-	unsigned char eth3addr[6];
-	unsigned long baudrate;
-} gt64260_features_t;
+I have. I run a dual G4(7400), also with CONFIG_HIMEM and got plenty of
+random SIGILL's, SIGABRT's and deamons crashing upon startup until I
+started using Ben's bk tree.  I've been using 2.4.20-ben(x) for quite
+some time now without this problem.
+
+|         This appears to me to be an smp problem.
+
+| 	And then, what can I do about it?  I'm willing to try things
+| 	as my time permits.  I have looked at 2.5.60 memory.c/mmap.c
+| 	and related functions, and trying to port the new methods
+| 	back to 2.4.19 seems to be a rather daunting task.
+|
+|         Comments, suggestions?
+|
+Try rsyncing ben's bk tree and using it, it cleared up this issue for me.
+
+rsync -avz --delete rsync.penguinppc.org::linux-2.4-benh
 
 
-I really would like to hear from other gt developers and anyone else about
-this being a good or bad idea. I am not sure we even need all of these
-elements in the struct, ie gt64260_base, but I was looking for places we
-conditionally look at the bd_t. Any thoughts?
+- -Ethan Weinstein
 
-Thanks
-Brian
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
