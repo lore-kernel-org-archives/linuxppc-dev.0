@@ -1,49 +1,76 @@
+Message-ID: <3CBC9E93.F2F38B42@xilinx.com>
+Date: Tue, 16 Apr 2002 14:58:43 -0700
+From: "Peter Ryser" <Peter.Ryser@xilinx.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Virtex II Pro/405GP
-From: James Campbell <jcampbell@omnigon.com>
-To: Peter Ryser <Peter.Ryser@xilinx.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3CBC7F1B.FF597841@xilinx.com>
 References: <1018722334.3710.3.camel@skoll.omnigon.com>
-	<3CBC7F1B.FF597841@xilinx.com>
-Content-Type: text/plain
-Date: 16 Apr 2002 13:49:01 -0700
-Message-Id: <1018990141.2034.12.camel@skoll.omnigon.com>
-Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2002-04-16 at 12:44, Peter Ryser wrote:
-> James,
->
-> I do have some experience with this chip :-)
+Bob,
 
-Ah, good.  At least I'm not stumbling in the dark here.
 
-> Internally, we tested the latest Linux development kernel and found that it
-> works just fine on our FPGA (2VP7FF672, one CPU, eight 3.125 Gbit IOs).
+> 1) What sort of boot-loader did you use?
 
-Great.  We are using the 2VP7's as well, with two National DP83865 GigE
-phys on the gbit IOs.  We have just recieved our kit with the Xilinx ISE
-software to start playing with it, and are hoping to get our boards back
-from the manufacturer next week.
+So far we did not use a boot-loader. We boot the system in one of the following
+ways:
+- for development by using an external debugger. In our case this is GDB. We
+know that other external debuggers that support the PPC405 work, too (see
+below).
+- for production
+    - we include a minimal boot stub in the FPGA bitstream. This initial boot
+stub then boots the rest of the system
+    - we load the program into flash
+    - we use System ACE. System ACE is a companion chip that reads both
+bitstream and program from a CompactFlash or MicroDrive, configures the FPGA,
+loads the program into memory and boots the system. System ACE acts then as an
+interface to the file system on the CompactFlash/MicroDrive.
+    - we are working on PPCBoot
 
-I was just curious if you had to use any esoteric patches on the (v2.5
-I'm assuming) kernel?  Also, did you have to worry about using a full
-featured boot loader like ppcboot?  Any pointers would be helpful.
 
-Cheers,
+> 2) Will the GDB debugger work with the Multilinx cable or 3rd party
+> emulators like the Abatron BDI-2000.
 
-James Campbell
+GDB currently works with the Parallel-3 and Parallel-4 cable. Multilinx is not
+supported and will never be (performance). Additional external debuggers may be
+added as backends for GDB.
 
---
-James Campbell          -|-   Embedded Systems Engineer
-jcampbell@omnigon.com   -|-     Omnigon International
-pgp:  DA57 E174 4769 1B9D D0DF 73E6 D639 D867 A576 A5AE
-work: +1.760.804.8884 x 332       cell: +1.760.803.8476
---
-I bestride this world like a Colossus.  A very small
-Colussus.  Without a torch.  Made of meat.
+3rd party debuggers that we know to be working are (not an exclusive list)
+- VisionProbe-II from Wind River
+- VisionICE from Wind River
+- Abatron BDI-2000
+
+
+
+> 3) Is Xilinx going to make the work of porting Linux to the platform
+> available to the general community?
+
+Yes.
+
+>  Maybe you could put the source on
+> your web site or sell a Linux version of the developer's kit.
+
+Watch out for announcements.
+
+> 4) Will Xilinx be making a reference platform or evaluation board
+> available?
+
+Yes, this work is in progress but is not yet publicly announced. You can expect
+an evaluation board to be available in Q3.
+
+> As you can see I am eager to get as much info as possible on this.  I
+> have a project that I am currently working on that this would be perfect
+> for.  Any info you can point me to would be helpfull.
+
+We are willing to give as much info as we can. But, since some of this has not
+been announced yet I cannot go into all the details. Please also consider
+getting into contact with your closest Xilinx representative or FAE to get more
+information and to tell them about your projects.
+
+- Peter
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
