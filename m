@@ -1,31 +1,35 @@
-Date: Sun, 18 Jul 1999 22:53:43 -0400 (EDT)
-From: Tom Rini <trini@disparity.net>
-To: Paul.Mackerras@cs.anu.edu.au
-cc: stp9@cornell.edu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: USB on "Bronze" PowerBook?
-In-Reply-To: <199907190236.MAA01193@tango.anu.edu.au>
-Message-ID: <Pine.BSF.3.96.990718225201.50420H-100000@silver.teardrop.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 19 Jul 1999 16:22:53 +1000
+Message-Id: <199907190622.QAA03535@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: gargus@cs.ualberta.ca
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <99070500554905.22100@24.65.216.209.ab.wave.home.com> (message
+	from Joshua Gargus on Mon, 5 Jul 1999 00:44:58 -0600)
+Subject: Re: DMA sound compatability with OSS API
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <99070500554905.22100@24.65.216.209.ab.wave.home.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 19 Jul 1999, Paul Mackerras wrote:
+Joshua Gargus <gargus@cs.ualberta.ca> wrote:
 
-> Stephen Travis Pope <stp9@cornell.edu> wrote:
-> > Are all Mac USB stacks made for the older interface chips? 
+> I'm trying to compile an application (the virtual machine for Squeak 
+> Smalltalk) that requires several ioctl() calls defined in 'soundcard.h', 
+> including 'SNDCTL_DSP_GETCAPS' and 'SNDCTL_DSP_GETOSPACE'.
+> These are not defined in 'drivers/sounds/dmasound.c', although the 
+> comment at the top of the file declares it to be 'OSS compatable'.
 > 
-> Not deliberately. :-)
+> I don't know too much about this stuff at all.  Is there some reason that
+> the Macintosh sound hardware cannot support these calls, or have they
+> just not been implemented yet?  Is adding support for these calls in the
+> works, or is it an itch I'll have to scratch for myself?
 
-The new PBs have a different OHCI chip (not an OPTi, name escapes me right
-now). which neither inkays or the current stack seem to have much/any luck
-with.
+Basically they just haven't been implemented yet.  I don't know if
+anyone is actively working on doing them at present.  They shouldn't
+be too hard to implement.
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
