@@ -1,35 +1,23 @@
-Message-Id: <4.2.2.20040513093702.05b0bc40@bhawley.mailhost.luminex.com>
-Date: Thu, 13 May 2004 09:39:03 -0700
-To: linuxppc-embedded@lists.linuxppc.org
-From: Brian Hawley <bhawley@luminex.com>
-Subject: baud rate question
-In-Reply-To: <20040513161638.C3444C108D@atlas.denx.de>
-References: <Your message of "Thu, 13 May 2004 13:07:25 +0200." <20040513110725.GU4043@smtp.barco.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <EFB813091B18D511BD3600508B644F820A617EC8@tx14exm06.ftw.mot.com>
+From: Zajac Adam-AAZ004 <Adam.Zajac@motorola.com>
+To: "'Brian Hawley'" <bhawley@luminex.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: baud rate question
+Date: Thu, 13 May 2004 16:08:12 -0500
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Forgive the obvious newbie question, but we've tried everything, reviewed
-the readme's, etc.
+If you're using U-Boot as your Linux bootloader then probably the only thing
+you need to do is to pass your desired baud rate through the bootargs as
+follows:
+console=ttyS0,<baud_rate>
 
-We are using the linux-2.5-ocp tree from bk.
-
-We are using u-boot 1.0.0.
-
-We set u-boot to 38400 in the config.  linux wants to be 9600 by
-default.  So, we realize
-that we can't see the kernel boot up.
-
-We've tried changing u-boot back to 9600, but haven't been able to.
-
-Is there a way to tell linux to come up at a different baud rate?  We've
-tried the earlyserialpk option, and the console options...but no luck.
-
-Thanks for any assistance.
-
--- Brian
-
+Here's my sample bootargs setting for 115200 baud rate:
+bootargs=root=/dev/nfs nfsroot=198.185.4.28:/home/visitor/exports/target
+ip=198.185.4.88:198.185.4.28:198.185.4.1:255.255.255.0:mytarget:eth2:off
+console=ttyS0,115200
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
