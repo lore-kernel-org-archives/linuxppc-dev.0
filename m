@@ -1,33 +1,37 @@
-Message-ID: <39058023.39877695@relog.ch>
-Date: Tue, 25 Apr 2000 13:23:15 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
+Message-ID: <39058B20.7D29A470@mondonet.net>
+Date: Tue, 25 Apr 2000 14:10:08 +0200
+From: Mario Scarpa <m.scarpa@mondonet.net>
 MIME-Version: 1.0
-To: "W. Taylor Holliday" <wtholliday@ucdavis.edu>
+To: Bernhard Reiter <bernhard@intevation.de>
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: XFree 4.0 dual monitor on AGP G4
-References: <200004240616.XAA02709@pop3.ucdavis.edu>
-Content-Type: text/plain; charset=iso-8859-1
+Subject: Re: Lombard hard freeze
+References: <20000424161311.23404.qmail@web1705.mail.yahoo.com> <20000424191708.C16557@cheops.usf.Uni-Osnabrueck.DE>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"W. Taylor Holliday" wrote:
+Bernhard Reiter wrote:
+>
+> On Mon, Apr 24, 2000 at 09:13:11AM -0700, Gabriel Ricard wrote:
+> > I've had some similar problems, sometimes it bombs
+> > compiling the kernel, sometimes it locks up for no
+> > apparent reason while it's running the screen saver
+> > and hasn't been in use for a while. I haven't a clue
+> > what is going on...
+>
+> Sound like exactly like the symtoms of my problem.
+>         Bernhard
 
-> Has anyone tried tried to use XFree86 4.0 w/a dual monitor (dual head)
-> configuration on an AGP G4? If so, what kernel are u using? Any
-> not-so-obvious configuration details? I did a build of 4.0 and got it
-> working on my main AGP card (it auto-detects both cards) but it crashes the
-> kernel (2.2.15pre3, comes w/LinuxPPC 2K) when I modify the configuration to
-> use both monitors. The kernel also crashes when I try to run it on the
-> secondary card only.
+Same here. I would say that it all started when I bought
+my USB mouse and started using the USB bus: before I was
+using the trackpad and do not remember about similar locks.
+Just a hint.
 
-Let me guess, you're using the fbdev driver for the secondary card? It needs
-the BusID of the gfx chip to be specified in the Device Section or the server
-will hang the machine.
+--
+Mario Scarpa
 
-
-Michel
-
+Mondonet NOC
+Phone: +39 06 52.47.37.02
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
