@@ -1,34 +1,41 @@
-Date: Sun, 3 Oct 1999 00:03:24 -0400 (EDT)
-From: Elliot Lee <sopwith@redhat.com>
-To: Eric Dorland <dorland@lords.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: esound for PPC
-In-Reply-To: <19991002234842.A786@HSE-MTL-ppp4503.qc.sympatico.ca>
-Message-ID: <Pine.LNX.4.10.9910030000240.18294-100000@lacrosse.corp.redhat.com>
+From: hollis@andrew.cmu.edu
+Message-ID: <37F78356.5D7C54DF@andrew.cmu.edu>
+Date: Sun, 03 Oct 1999 12:24:54 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: trouble with open()
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2 Oct 1999, Eric Dorland wrote:
+Ok, maybe I'm just being really stupid, but the following code isn't
+working for me.
 
-> With some of the talk changing some of sound driver code, is anyone
-> working on esound for the PPC. It seems some progress has been made
-> with 0.2.12, which manages to play some wav files on my machine
-> (G3/266 DT), but plays garbage for others. Has anyone else seen this
-> problem, or have gotten esound working properly?
+I'm trying to open /dev/dsp. The file descriptor returned by open is 0,
+which is supposed to be stdin, right? Anyways, a subsequent call to
+ioctl doesn't like fd 0 either.
 
-Could you check if there is a correlation between the bit depth of the
-sound file and the playing-of-garbage-noises? This problem sounds like an
-audiofile bug.
+[dev->path = "/dev/dsp"]
 
-Also, if people would please try out GNOME 1.0.50 this weekend and find
-any PPC-specific problems ASAP, it'd be much appreciated.
--- Elliot					http://developer.gnome.org/
-The first thing a programmer needs to admit is that any program is by far
-more complex than his own mind. Thats why he partitions it into neat
-pieces and avoids complexity.
+    printf("attmpting to open %s\n", dev->path);
+    if (dev->dev_fd = open(dev->path, O_RDWR) < 0) {
+        perror(dev->path);
+        fprintf(stderr, "Couldn't open audio device %s!\n", dev->path);
+        return -1;
+    }
+    printf("dev_fd = %i\n", dev->dev_fd);
 
+When I run this code, my output is:
+attempting to open /dev/dsp
+dev_fd = 0
+
+The permissions are set fine, and I get the same problem with
+/dev/audio.
+
+What am I doing wrong? I ask because I'm a little frustrated at this
+point.
+
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
