@@ -1,32 +1,28 @@
-Message-ID: <3BD6DCDB.D3F2C0F9@mvista.com>
-Date: Wed, 24 Oct 2001 08:23:07 -0700
-From: Armin Kuster <akuster@mvista.com>
 MIME-Version: 1.0
-To: David =?iso-8859-1?Q?M=FCller?= (ELSOFT AG) <d.mueller@elsoft.ch>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Registering RTC access methods in platform_init()
-References: <3BD68B50.8090904@elsoft.ch>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: microcodepatch
+Date: Wed, 24 Oct 2001 18:50:20 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E3145934F@kolkrabbi.flaga.is>
+From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
+To: "Linux Embedded ppc (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"David Müller (ELSOFT AG)" wrote:
->
-> Hello
->
->
-> I suppose the preferred way to solve this is to replace this whole init
-> code by a call to a board specific init routine?
->
-> Dave
->
+Hi,
 
-Yes.. its seems to be the way they are moving, I ended up doing it for
-the walnut a few months back.
+Are there any known issues regarding the I2C patch and the ethernet
+driver?
 
-before you know it there will be no ppc4xx_setup.c
+If I disable the microcode patch everything works fine, except the I2C
+stuff.
 
--- armin
+I am using the linuxppc_2_4_devel tree ported to our custom board with
+ehternet on SCC2.
+
+Regards,
+
+K.D.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
