@@ -1,42 +1,70 @@
-From: Paul Mackerras <paulus@samba.org>
+Message-ID: <20021217124416.13690.qmail@web20108.mail.yahoo.com>
+Date: Tue, 17 Dec 2002 04:44:16 -0800 (PST)
+From: Owen Green <owenjinggreen@yahoo.com>
+Subject: memory management bug??
+To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <IGEFJKJNHJDCBKALBJLLEECEFIAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15870.63843.171445.243166@argo.ozlabs.ibm.com>
-Date: Tue, 17 Dec 2002 21:16:03 +1100
-To: "Georg Klug" <gklug@giga-stream.de>
-Cc: "Tom Rini" <trini@kernel.crashing.org>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: AW: Possible problem in asm/bitops.h
-In-Reply-To: <FFECLICFNBJAHONLGAKMAEFOCHAA.gklug@giga-stream.de>
-References: <20021212152851.GE19456@opus.bloom.county>
-	<FFECLICFNBJAHONLGAKMAEFOCHAA.gklug@giga-stream.de>
+Content-Type: multipart/mixed; boundary="0-1140501742-1040129056=:13619"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Georg Klug writes:
+--0-1140501742-1040129056=:13619
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> Oops, I thought, that the directories /usr/include/linux as well as
-> /usr/include/asm should come directly from the kernel (either as a copy
+Hi all,
 
-That is how it used to be done, but that way of doing things has been
-deprecated for a long time now.  /usr/include/{linux,asm} are part of
-glibc these days.
+I was making some tests in my linux box and I just
+realized that when the system goes to a "low memory
+state" kswapd gets almost all the cpu, I've got this
+from top (see attached file). But the worst I guess is
+that I can't see to where my memory has gone, top
+output and /proc/meminfo seems to be "hidding" some
+...
+I'm using kernel 2.4.4 from Denx, is there memory leak
+in this kernel version? How can I reduce kswapd cpu
+usage?
 
-> or symbolically linked). In that case those include files should always
-> be prepared to be included in a userland application. Am I right with this?
->
-> I also thought, that the asm-ppc/bitops.h should provide the same
-> functionality as its pendant in asm-i386/ which lets userland applications
-> use some static inline functions like set_bit() clear_bit() and change_bit().
-> I actually don't know whether those functions are needed outside the kernel,
-> so I cannot tell whether it is correct or not. But IMO it should be done
-> the same way on all plattforms. Would you agree?
+Thanks in advance,
 
-The policy is the same on all architectures: userland programs should
-not include kernel headers.  The architectures differ in the extent to
-which this is enforced, that's all.
+Owen.
 
-Paul.
+--0-1140501742-1040129056=:13619
+Content-Type: text/plain; name="memory_problems_output.txt"
+Content-Description: memory_problems_output.txt
+Content-Disposition: inline; filename="memory_problems_output.txt"
+
+ 12:34am  up 34 min,  0 users,  load average: 1.37, 1.33, 0.89
+9 processes: 7 sleeping, 2 running, 0 zombie, 0 stopped
+CPU states:   7.2% user,  92.8% system,   0.0% nice,   0.0% idle
+Mem:     14712K total,    13696K used,     1016K free,     6144K buffers
+Swap:        0K total,        0K used,        0K free,     4812K cached
+
+  PID USER     PRI  NI  SIZE  RSS SHARE STAT %CPU %MEM   TIME COMMAND
+    3 root      16   0     0    0     0 RW   78.4  0.0  12:20 kswapd
+  150 root      18   0   420  428   120 R    18.9  2.8   0:19 top
+    5 root       9   0     0    0     0 SW    2.9  0.0   0:28 bdflush
+    1 root       8   0   144  144     0 S     0.0  0.9   0:26 init
+    2 root       9   0     0    0     0 SW    0.0  0.0   0:00 keventd
+    4 root       9   0     0    0     0 SW    0.0  0.0   0:00 kreclaimd
+    6 root       9   0     0    0     0 SW    0.0  0.0   0:01 kupdated
+   21 root       9   0   212  212     0 S     0.0  1.4   0:11 sh
+  106 root       9   0   224  224     0 S     0.0  1.5   0:00 xinetd
+
+# ps
+  PID  Uid     Stat Command
+    1 root     S    init
+    2 root     S    [keventd]
+    3 root     R    [kswapd]
+    4 root     S    [kreclaimd]
+    5 root     S    [bdflush]
+    6 root     S    [kupdated]
+   21 root     S    -sh
+  106 root     S    xinetd
+  151 root     R    ps
+#
+--0-1140501742-1040129056=:13619--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
