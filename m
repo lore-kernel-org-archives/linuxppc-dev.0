@@ -1,41 +1,47 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <paulus@samba.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>,
-	<linuxppc-commit@source.mvista.com>
-Subject: Re: Page aging, _PAGE_ACESSED, & R/C bits
-Date: Sun, 7 Oct 2001 17:45:04 +0200
-Message-Id: <20011007154504.25319@smtp.wanadoo.fr>
-In-Reply-To: <20011007153401.16899@smtp.wanadoo.fr>
-References: <20011007153401.16899@smtp.wanadoo.fr>
+Message-Id: <20011008010144.Postino-018893@smtp01.highway.ne.jp>
+Date: Mon, 8 Oct 2001 01:01:44 +0900
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Cc: linuxppc-dev@lists.linuxppc.org
+From: Kaoru Fukui <k_fukui@highway.ne.jp>
+Subject: Re: still no luck with Radeon or Adaptec SCSI controller in 2.4.X
+In-Reply-To: <v03110700b7e62a185e87@[64.230.141.44]>
+References: <v03110700b7e6165a1f85@[64.230.145.122]>
+ <v03110700b7e6165a1f85@[64.230.145.122]>
+ <20011008000445.Postino-003420@smtp01.highway.ne.jp>
+ <v03110700b7e62a185e87@[64.230.141.44]>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> - I also looked at the ptep_test_and_clear_dirty() case. It appear
->that we rely on flush_tlb_page() beeing called just after it. That
->works, but that also mean that we'll re-fault on the page as soon
->as it's re-used. If implementing ptep_test_and_clear_dirty() the
->same way as for the referenced bit (that is walking the hash),
->we can avoid the flush and the fault (*), but that also mean we will
->walk the hash table on each call, while the current code will walk
->it (for flushing) only when the dirty bit was actually set.
->I can't decide which one is the best here.
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: Kaoru Fukui <k_fukui@highway.ne.jp>
+Subject: Re: still no luck with Radeon or Adaptec SCSI controller in 2.4.X
+Date: Sun, 7 Oct 2001 11:53:06 -0400
+
+> Hi,
 >
->(*) That would also require some subtle change to the interaction
->between the generic code of the arch, as in this case, we should
->avoid the next flush_tlb_page(). An easy hack would be to have a
->per-cpu flag telling us to ignore the next call to flush_tlb_page
->and set it whenever we return 1 from ptep_test_and_clear_dirty.
->Hackish but would work.
+> >I doen't have Radeon but Adaptec scsi works WELL on Ben's-2.4.10.
+>
+> >SCSI subsystem driver Revision: 1.00
+> >scsi0 : Adaptec AIC7XXX EISA/VLB/PCI SCSI HBA DRIVER, Rev 6.2.1
+> >        <Adaptec 2940B Ultra2 SCSI adapter>
+> >        aic7890/91: Ultra2 Wide Channel A, SCSI Id=7, 32/255 SCBs
+>
+>
+>
+> You have a differnt scsi adapter than I do.
 
-Well, the whole issue of the dirty bit is more complex than that,
-as we would have to change page_dirty() accessor as well. It's
-probably not worth the trouble. My comment about page accessed
-is still valid however.
+Ok,
 
-Ben.
+Latest Rev 6.2.3 or some old version are avairable from
+
+http://people.freebsd.org/~gibbs/linux
+
+Look the site.
+
+Kaoru
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
