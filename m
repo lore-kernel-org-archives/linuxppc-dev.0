@@ -1,35 +1,45 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-To: Dan Burcaw <dburcaw@terrasoftsolutions.com>
-Subject: Re: aty128fb and EDID
-Date: Mon, 10 Feb 2003 13:59:36 -0500
-Cc: Magnus Damm <damm@opensource.se>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	linuxppc-dev@lists.linuxppc.org
-References: <200302091940.10202.kevin.hendricks@sympatico.ca> <200302100816.36075.kevin.hendricks@sympatico.ca> <1044902485.32265.14.camel@skyfox>
-In-Reply-To: <1044902485.32265.14.camel@skyfox>
-MIME-Version: 1.0
-Message-Id: <200302101359.36443.kevin.hendricks@sympatico.ca>
+From: Cort Dougan <cort@fsmlabs.com>
+Date: Mon, 10 Feb 2003 12:16:00 -0700
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [PATCH] vs. latest linuxppc_2_4_devel fixes walnut build
+Message-ID: <20030210191600.GA11296@host109.fsmlabs.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+This fixes 'make znetboot' for the walnut and ebony.  There are many files
+in arch/ppc/boot/images/ and the * in the cp command didn't work.
 
-Well that explains that!  ;-)
+It also gets rid of extra whitespace on line 245 that some versions of make
+don't like.
 
-Thanks,
+diff -Nru a/arch/ppc/boot/simple/Makefile b/arch/ppc/boot/simple/Makefile
+--- a/arch/ppc/boot/simple/Makefile	Mon Feb 10 12:14:52 2003
++++ b/arch/ppc/boot/simple/Makefile	Mon Feb 10 12:14:52 2003
+@@ -64,9 +64,13 @@
+ # The rest will be unset.
+ ifeq ($(CONFIG_EBONY),y)
+ ZIMAGE				:= zImage-EBONY
++ZNETBOOT			:= zImage.treeboot
+ ZIMAGEINITRD			:= zImage.initrd-EBONY
+ TFTPIMAGE			:= /tftpboot/zImage.ebony
+ endif
++ifeq ($(CONFIG_WALNUT),y)
++ZNETBOOT			:= zImage.treeboot
++endif
+ ifeq ($(CONFIG_MCPN765)$(CONFIG_MVME5100)$(CONFIG_PRPMC750)$(CONFIG_PRPMC800)$(CONFIG_LOPEC)$(CONFIG_PPLUS),y)
+ ZIMAGE				:= zImage-PPLUS
+ ZIMAGEINITRD			:= zImage.initrd-PPLUS
+@@ -241,7 +245,7 @@
 
-Kevin
-
-> > I found the code to decode the full block from a variety of source
-> > (X11 had some of it).  The problem is the "established timings" block
-> > was empty in my EDID block (or I made a big mistake someplace).
->
-> iirc, LCD's don't have "established timings".
->
-> > My primary concern was just getting my DFP to work at all at the time.
+ zImage-PAL4: zvmlinux
+ 	cp zvmlinux ../images/zImage.pal4
+-
++
+ zImage.initrd-PAL4: zvmlinux.initrd
+ 	cp zvmlinux.initrd ../images/zImage.initrd.pal4
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
