@@ -1,114 +1,63 @@
-Message-ID: <3D831BF6.EA2412E1@koffie.nl>
-Date: Sat, 14 Sep 2002 13:22:29 +0200
+Message-ID: <3D831D5A.BF11BC0D@koffie.nl>
+Date: Sat, 14 Sep 2002 13:28:26 +0200
 From: Segher Boessenkool <segher@koffie.nl>
 MIME-Version: 1.0
-To: David Engebretsen <engebret@vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: RFC: Performance Monitor Counters device
-References: <3D80F2F7.3FB3AE4B@koffie.nl> <3D8264FF.999DD217@vnet.ibm.com>
+References: <3D810AF2.2034238C@koffie.nl> <20020912102550.11578@192.168.4.1>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-David Engebretsen wrote:
-> In ppc64, we have implemented a generic interface via a syscall (which is akin
-> to what IA64 has done).
-
-I'd rather not introduce a syscall for this -- but maybe it'll prove to
-be beneficial to do so.
-
-> Though this syscall interface, a user level program can
-> confure the counters to collect pretty much any desired data.  The kernel puts
-> the data in the PMCs, collects a trace of SIAR & SDAR values,
-
-No SDAR on any ppc32 machine I'm aware of :(  (Maybe some old 6xx has it, though).
-Btw., the 750 manual and binutils use the name SIA instead of SIAR.  Sigh.
-
-> maintians a
-> cumulative count in 64b data structures, etc.  The traces are nice as they
-
-The 64-bit idea is very very nice :)  That'll allow a program to just set
-the counters at the start of eexecution, and only read them again when it's
-finished.  Can't get much simpler ;)
-
-> include data from the entire kernel, inlcluding area where runing hard
-> disabled.  I think most of this is in our trees (see perfmon.[ch], although
-> there are some recent additions I am still cleaning up which should be ready in
-> a week or so.
-
-I don't want to have the profiling buffers in kernel space, as they can very well
-be bigger than physical memory...  On the other hand, it might be needed for
-performance (or to avoid races) if doing very fine-grained profiling.  I think
-I'll just sneak out of this by not allowing so fine-grained stuff ;)
-
-> The present code only allows the kernel to be profiled and for a mode which
-> collects slices of data by rotating through the counters during a run
-> (collecting CPI, cache miss rates, branch mispredicts, etc).  We have not yet
-> added any user space collection, other than a quick proof of concept hack.
-
-I'm doing user space profiling first; with that done, adding kernel profiling
-will be pretty much trivial (just setting a few different bits.  Oh, and user
-space will have to find out the text segment addresses to profile in a different
-way, obviously).
-
+Benjamin Herrenschmidt wrote:
 >
-> > 1) What's the best interface for this kind of thing?  A char
-> >    device?  With ioctl()'s?  a sysctl?  something in /proc?
-> >    I'm not interested in ease of implementation (I'll have to
-> >    hack some on gprof too, for this -- so I'm not afraid of
-> >    the kernel ;) ), but in what's philosophically/technically/
-> >    procatically the best interface.
+> >Benjamin Herrenschmidt wrote:
+> >> Hrm... you should check the various CPU erratas, I think
+> >> the perf. counter exception suffers from the same bugs
+> >> the thermal exceptions has regarding clashing with DEC
+> >> and thus losing exception context information on some
+> >> G4s. If this is the case, that would basically prevent
+> >> using it.
+> >
+> >Ooh, that sounds bad!  Thanks for the hint.
 >
-> The interface question is one I have been concerned with too.  We chose a
-> syscall as it was quickest to implement & is efficient.  A driver with ioctls or
-> /proc are also good candidates for discussion.
-
-I think I'll do a sysctl interface first.  It would be great if ppc32, ppc64, ia64
-etc. can use the same interface, but this might very well not be practical.
-Sharing some infrastructure will probably be perfectly well possible, though.
-For now, I'll just get it working first...
-
+> Yah, and we have to thank MOL for helping us find out
+> what was going on with the TAU exception easily ;)
 >
-> > 4) Security: I want to generate most of the settings in userland,
-> >    for maximum ease of use and ease of implementation; but that
-> >    brings up some security issues.  Only allowing root to
-> >    profile code isn't ideal, either.  So:
-> >    a) Don't automagically load the module; if root loads it, let's
-> >       hope he knows what he's doing;
-> >    b) Have the pmc device be accessible only to a 'trusted' group;
-> >    c) A setuid driver program to start profiling;
-> >    d) Something much more clever?
+> The way MOL plays with the DEC made the clash happen
+> more often, and since it then happened within MOL emulation
+> context, the MOL kernel module could figure out something
+> wrong happened, kill the emulator, and stay alive while
+> printing nice debug informations ;)
+> If that happened during normal kernel operations, I suspect
+> we would have just died hard.
 >
-> What we have implemented to date does raise security issues as by exposing this
-> hardware to a user it will allow them to severely affect the system.  Only idea
-> we have had thus far is assume root knows what they are doing :)
 
-On ppc32, userland can *always* read all pmc's.  You might consider that a
-security risk already (consider timing attacks on some crypto algo, for
-example).
-The worse issue imho is that it's pretty easy to lock up/severely slow down
-a machine by setting some idiotic values to the exception stuff.
+Okay, here's the data I found on that errata:
 
->
-> Anton had mentioned in a followup about integration into oprofile or other
-> tools.  This would be nice to consider as well.
+It does not exist on 7450 etc.
+It exists on 7410 before version 1.3 .
+I have no data on 7400.
+It does not exist on 750 etc.
 
-I'm generating a gmon.out :)
-gprof will need some changes to properly cope, though.  And maybe the gmon
-format will need a revision to have it store the names of the shared libraries
-profiled...  I think the ia64 people already discussed something like this?
+[As my only G4 is a 7410 version 1.3, I won't be affected by this.  Hurray.]
 
-> Presently the data generated by
-> our tools is in one of two very simple formats: one is just a kernel profile
-> (just like the standard kernel profiler), the other is a trace containing pairs
-> of SIAR and SDAR registers.
+The problem itself: if two of thermal assist, decrementer, performance
+monitor interrupts happen within 1 cycle of each other, evil things
+happen with SRR0 and SRR1, so that the return address becomes
+unrecoverable.
 
-How do you use that second trace?  Just curious, I'm always happy to learn some
-new techniques ;)
+Suggested solution:
 
+We can forget about thermal assist, as the TAU on all 74xx is broken
+and unsupported.  (Says those same errata sheets).
+If necessary, it's possible to disable the decrementer interrupt and have
+the performance monitor perform its function.
 
-Cheers,
+But I won't run into this, so I'm happy for now :)
+
 
 Segher
 
