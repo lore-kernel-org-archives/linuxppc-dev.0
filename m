@@ -1,50 +1,44 @@
-Date: Fri, 25 Jan 2002 10:22:08 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: hollis@austin.ibm.com,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-	sdi@remote.org
+Date: Fri, 25 Jan 2002 10:28:12 +0100 (CET)
+From: Gabriel Paubert <paubert@iram.es>
+To: <hollis@austin.ibm.com>
+Cc: Michel Lanners <mlan@cpu.lu>, <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: RFC: vesafb
-In-Reply-To: <20020124180313.GB1839@cpe-24-221-152-185.az.sprintbbd.net>
-Message-ID: <Pine.GSO.4.21.0201251020020.15996-100000@vervain.sonytel.be>
+In-Reply-To: <20020124221736.GZ510@austin.ibm.com>
+Message-ID: <Pine.LNX.4.33.0201251022430.9804-100000@gra-lx1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 24 Jan 2002, Tom Rini wrote:
-> On Wed, Jan 23, 2002 at 01:20:10PM -0600, hollis@austin.ibm.com wrote:
-> > The attached patch allows vesafb to work on PPC. vesafb does surprisingly
-> > little with the BIOS (which I thought was the whole point of VESA). With some
-> > ifdef's I'm able to use it as sort of a VGA offb -- the firmware initializes
-> > the card, and the driver just uses it and never mucks with it.
+On Thu, 24 Jan 2002 hollis@austin.ibm.com wrote:
+
 >
-> This looks good to me.  My only comment is you should probably use
-> CONFIG_MTRR around the mtrr bits instead of __i386__ (which is what
+> On Thu, Jan 24, 2002 at 05:42:46AM +0100, Michel Lanners wrote:
+> > On  23 Jan, this message from hollis@austin.ibm.com echoed through cyberspace:
+> > > The attached patch allows vesafb to work on PPC. vesafb does surprisingly
+> > > little with the BIOS (which I thought was the whole point of VESA). With
+> > > some ifdef's I'm able to use it as sort of a VGA offb -- the firmware
+> > > initializes the card, and the driver just uses it and never mucks with it.
+> >
+> > Wouldn't this be a good start to use generic PC-type grafic cards on PPC
+> > machines in general? Or do you lack initialization if nobody (neither
+> > firmware nor OS) can talk to the card 'natively'?
+>
+> Yes, we would lack initialization on Power Mac (for example). PReP firmware
+> does proper setup for a very limited range of chips, which is why this is
+> useful at all.
 
-Indeed.
+I remind you that I am using since 3 years or so an x86 emulator which
+should allow to initialize any board with has an x86 ROM BIOS, provided
+the host bridge can be configured to generate VGA memory accesses
+(0xa0000-0xbffff), so I think most MACs are out. It is in my bootloader
+but I have no time to work on it right now, some people have expressed
+interest in including it in the official source tree but I don't believe
+it will happen soon.
 
-> other drivers do).  Geert, since you're still overall fb maintainer
-
-What's in a name...
-
-> (yes?) would you be willing to sign off on these changes to be sent to
-> Marcelo for 2.4.19-pre1?
-
-Just send them to Marcelo, CC me, and say it's OK for me to include them.
-Or better, ask Gerd Knorr to send them in (please CC me)?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Regards,
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
