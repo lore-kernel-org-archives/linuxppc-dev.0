@@ -1,22 +1,22 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx012.isp.belgacom.be (outmx012.isp.belgacom.be
-	[195.238.3.70]) by ozlabs.org (Postfix) with ESMTP id 8155B2BF1F
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jan 2005 09:18:52 +1100 (EST)
-Received: from outmx012.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx012.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id j01MIdqT023233
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 Jan 2005 23:18:41 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <41D721E1.8000007@246tNt.com>
-Date: Sat, 01 Jan 2005 23:19:13 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Benny Liu <benny@cellvision.com.cn>
-References: <008c01c4f005$bc1e94c0$1100a8c0@BENNY>
-In-Reply-To: <008c01c4f005$bc1e94c0$1100a8c0@BENNY>
-Content-Type: text/plain; charset=GB2312
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: isochronous mode of USB audio device on MPC5200
+Return-Path: <sheutlin@gmx.de>
+Received: from mail.gmx.net (pop.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id D8DD92BDB5
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jan 2005 10:56:35 +1100 (EST)
+From: Sebastian Heutling <sheutlin@gmx.de>
+To: Sven Luther <sven.luther@wanadoo.fr>
+In-Reply-To: <20041231222808.GB8078@pegasos>
+References: <200412261435.13562.marc.dietrich@ap.physik.uni-giessen.de>
+	<41CF77A9.9040405@gmx.net> <20041231095557.GA16480@pegasos>
+	<1104505249.6794.5.camel@weizen.left.earth>
+	<20041231222808.GB8078@pegasos>
+Content-Type: text/plain; charset=ISO-8859-15
+Date: Sun, 02 Jan 2005 00:56:29 +0100
+Message-Id: <1104623790.10369.14.camel@weizen.left.earth>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org,
+	Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
+Subject: Re: [FYI] linux 2.6 still not working with PReP (ppc32)
+Reply-To: sheutlin@gmx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,64 +26,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Benny
+On Fri, 2004-12-31 at 23:28 +0100, Sven Luther wrote:
+> On Fri, Dec 31, 2004 at 04:00:49PM +0100, Sebastian Heutling wrote:
+> > On Fri, 2004-12-31 at 10:55 +0100, Sven Luther wrote:
+> > > On Mon, Dec 27, 2004 at 03:47:05AM +0100, Christian wrote:
+> > > > Marc Dietrich schrieb:
+> > > > >Hi all,
+> > > > >
+> > > > >I read this thread about booting a PowerStack with newer kernels. 
+> > > > >Motivated by this, I tried to compile a 2.6.10 kernel on my machine (with 
+> > > > >sym53c825a onboard). Sadly, the scsi controller always timeouts during 
+> > > > >initialisation. I 
+> > > 
+> > > I also have some strange issues with network support using the standard debian
+> > > 2.6.8 kernel. ifconfig upping the decchip ethernet on the powerstack freezes
+> > > the kernel, and i hear reports of problems on IBM PReP hardware too with not
+> > > working ethernet, altough there is no freeze.
+> > > 
+> > > Any idea on this ? 
+> > 
+> > Does it contain the IRQ patch? Where does it boot from SCSI or net? What
+> > PCI-Devices are installed?
+> 
+> Probably not, just the standard debian kernel, i donÃ't remember any irq
+> patches, but there where a bunch of patches from leighbb. it is done
+
+The patch is the one that is included in 2.6.10 which is mentioned above
+and this thread already has somewhere in the beginning. I attached it
+below.
+I haven't had the time yet to test the 2.6.10 kernel. Maybe there is
+another problem now ...
 
 
-What version of the kernel ?
+> netbooting, and the only pci device installed is the cirruss logic graphic
+> card.
+
+If you use the standard debian kernel - ok, it doesn't work because of
+wrong IRQs on the PowerstackII (Utah).
 
 
-In the last 2.4 I built ( quite a while ago ... ) there was a flaw
-in the handling of the hwPSW field in the OHCI driver when on big-endian
-platform. Since this field is only used fot Isochronous the problem
-didn't show up before.
-
-The fields were assume by the kernel to be in this order
-
-hwPSW[0]
-hwPSW[1]
-hwPSW[2]
-hwPSW[3]
-...
-
-But in fact since the figure in ohci spec shows this array not as an
-array of 16bits fields but as an array of 32bits integer, each containing
-two hwPSW[] in little endian order, they ended up implemented in the order
-
-hwPSW[1]
-hwPSW[0]
-hwPSW[3]
-hwPSW[2]
-...
-
-(fscked up isn't it ? ;)
+BTW: The onboard Winbond IDE chip works as well although no connector is
+provided. You only need a little bit of soldering and adjusting the IRQ
+of Slot 1 from 0 to 4. :-)
 
 
-And that was not taken into account ...
+Sebastian Heutling
 
-
-I notified W.Denk about the problem a while ago, don't know if any
-action has been taken.
-
-
-
-
-Sylvain Munaut
-
-
-Benny Liu wrote:
-
-> Hi, everyone, happy new year!
-> Did anyone try usb audio device or other isochronous mode usb devices
-> on Icecube board(Motorola MPC5200)?
-> I tried, but it reports the following message:
-> /"host/usb-ohci.c: OHCI Unrecoverable Error, controller usb-0 disabled"/
-> After this message, the host controller is disabled.
-> Thanks a lot.
->
->------------------------------------------------------------------------
->
->_______________________________________________
->Linuxppc-dev mailing list
->Linuxppc-dev@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+-- 
+diff -puN
+arch/ppc/platforms/prep_pci.c~ppc32-fix-motorola-prep-powerstackii-utah-pci-irq-map arch/ppc/platforms/prep_pci.c
+---
+25/arch/ppc/platforms/prep_pci.c~ppc32-fix-motorola-prep-powerstackii-utah-pci-irq-map      2004-12-07 01:01:16.000000000 -0800
++++ 25-akpm/arch/ppc/platforms/prep_pci.c       2004-12-07
+01:01:16.000000000 -0800
+@@ -49,10 +49,10 @@ static char Utah_pci_IRQ_map[23] __prepd
+         0,   /* Slot 1  - unused */
+         5,   /* Slot 2  - SCSI - NCR825A  */
+         0,   /* Slot 3  - unused */
+-        1,   /* Slot 4  - Ethernet - DEC2114x */
++        3,   /* Slot 4  - Ethernet - DEC2114x */
+         0,   /* Slot 5  - unused */
+-        3,   /* Slot 6  - PCI Card slot #1 */
+-        4,   /* Slot 7  - PCI Card slot #2 */
++        2,   /* Slot 6  - PCI Card slot #1 */
++        3,   /* Slot 7  - PCI Card slot #2 */
+         5,   /* Slot 8  - PCI Card slot #3 */
+         5,   /* Slot 9  - PCI Bridge */
+              /* added here in case we ever support PCI bridges */
