@@ -1,37 +1,45 @@
-Date: Fri, 29 Jun 2001 01:21:25 -0400 (EDT)
-From: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
-To: Dan Malek <dan@mvista.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: (allocating non-cachable memory) (or More on the i82596)
-In-Reply-To: <3B3C30CD.34B20F02@mvista.com>
-Message-ID: <Pine.LNX.3.95.1010629011928.2623B-100000@november.bhjjh.erols.com>
+Message-ID: <0c8201c1005d$39b5aa50$3877b5d3@dolbae>
+From: "SangTae Ha" <stha@postech.edu>
+To: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <000701c1001f$7d475ea0$9696143e@jocke>
+Subject: Re: mpc860 with dual ethernets
+Date: Fri, 29 Jun 2001 14:34:52 +0900
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 29 Jun 2001, Dan Malek wrote:
+What kind of board are you using? The enet.c and fec.c are enough to handle all possible SCC configurations.
+Do you want to SCC1 and SCC2 or SCC1 and FEC(Fast Ethernet Controller)? It's not difficult to use all SCCs as you intended. I have some patches which can be a good reference to do it. Plase contact to me personally.
+
+Redgards,
+
+SangTae Ha
+
+
+
+
+----- Original Message -----
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Friday, June 29, 2001 7:12 AM
+Subject: mpc860 with dual ethernets
+
 
 >
-> jtm@smoothsmoothie.com wrote:
+> Hi all
 >
-> > .... The buffer memory will get filled
-> > via DMA, and therefore must not be cached.
+> I need 2 Ethernet network i/f's(SCC1 and SCC2). Looking into
+> enet.c is seems that this driver can only support one Ethernet SCC
+> at a time. Is there a version of enet.c that can support both
+> SCC1 and SCC2 simultaneously?
 >
-> Huh????  The 8260 is cache coherent, you don't need to do that.
+>     Joakim
 >
-> For processors that are not cache coherent (4xx and 8xx), there
-> are standard 'consistent_alloc()' functions available.
 >
-
-Are those functions in the code for the 6xx proceesors? I have a 603e with
-a broken memory controller- it does everything (or so I am assured) except
-support atomic functions (ie, no memory coherency). If they are not in the
-codo, are they at least portable to the 6xx?
-
-Thanks,
---Gus
-
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
