@@ -1,53 +1,33 @@
-Message-ID: <3A7F9312.7E539127@pop.agri.ch>
-Date: Tue, 06 Feb 2001 07:00:56 +0100
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+Message-Id: <200102060654.HAA00731@piglet.grunz.lu>
+Date: Tue, 6 Feb 2001 07:54:34 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: long delays in drivers.
+To: iain@sandoe.co.uk
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20010204031946.58FDD2F04E@apollo.valhalla.net>
 MIME-Version: 1.0
-To: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Correct CPU/bus frequency on a wallstreet.
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello all,
+On   4 Feb, this message from Iain Sandoe echoed through cyberspace:
+> if I need to implement a long delay (say 1 second) in the initialisation of
+> a driver... what is the best mechanism to use to ensure that resources are
+> not wasted?
 
-maybe be a bit OT but I hope to get an answer here.
+Use a waitqueue. Relativly easy to implement....I can dig out an example
+at work, if you need it. Just let me know.
 
-Since a few months I'm really happy! I got an increase of the CPU and
-the bus clock for free. I own a Wallstreet I from summer 98 with G3
-250MHz CPU and 83 MHz bus clock. As said, the Apple profiler and the OF
-tells me since a few months I have a 300MHz CPU and a 100MHz bus clock,
-great, but I can't believe! I can't remember when it changed.
+Michel
 
-The different Cache utilities and the Metronome app all tell me the
-expected CPU and bus clock.
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-Yesterday I wanted to see what's going on with my L2 cache on the linux
-side. So I saw that I have there 300MHz too, a look into the code showed
-me that these values are taken from the OF, right? But the so called
-Bogo value 'seems' to be correct, twice the cpu clock.
-Also, who sets the L2 cache? Is it BootX and or G3/G4 Cache porfiler? On
-the Mac side I run a value of 0xB5080000, on the linux side it is: L2CR
-overriden (0xb5000000), backside cache is enabled
-
-So what I'm wondering about how and who changed my cpu/bus values in OF?
-I didn't play wit OF, and I'm quite sure that I reset the whole machine
-quite a lot during the past months. And how becomes that e.g. a
-Powerlogix Cache profiler can tell me the expected values. And even the
-temp of the cpu (I read that there are some attempts regarding temp in
-bk_2_5, right?)
-
-Is it the right way to rely on OF for these values?
-This topic is not life critical, sure.
-
-Any insight???
-
-Thanks for response
-
-
-Cheers
-
-Andreas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
