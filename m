@@ -1,43 +1,37 @@
-Date: Tue, 29 Jan 2002 00:26:41 -0600
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Kaoru Fukui <k_fukui@highway.ne.jp>
-Cc: trini@kernel.crashing.org, linuxppc-dev@lists.linuxppc.org,
-	Momchil Velikov <velco@fadata.bg>, geert@linux-m68k.org
-Subject: Re: Broken asm/div64.h macro
-Message-ID: <20020129002640.M14339@altus.drgw.net>
-References: <20020129003720.GA25973@opus.bloom.county> <200201290508.OAA07699@mail.highway.ne.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200201290508.OAA07699@mail.highway.ne.jp>; from k_fukui@highway.ne.jp on Tue, Jan 29, 2002 at 02:05:28PM +0900
+From: benh@kernel.crashing.org
+To: Christopher Murtagh <christopher.murtagh@mcgill.ca>
+Cc: <yellowdog-devel@lists.yellowdoglinux.com>,
+	Eric Leblond <eric@regit.org>, <linuxppc-dev@lists.linuxppc.org>,
+	"Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Subject: Re: Support for new Dual G4 1 Gig machines?
+Date: Tue, 29 Jan 2002 13:39:55 +0100
+Message-Id: <20020129123955.29280@mailhost.mipsys.com>
+In-Reply-To: <Pine.LNX.4.33.0201281521410.9879-100000@blues.wcg.mcgill.ca>
+References: <Pine.LNX.4.33.0201281521410.9879-100000@blues.wcg.mcgill.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >> So you copy the code from the libgcc sources, cfr. arch/m68k/lib/.
-> >
-> > Or optimize that, yes.  But linking directly is a no-no. :)
+> .../...
 >
-> Yes,it's should has the source in the kernel.
+> All of the above machines are running 2.4.18pre1 running Apache 1.3.20,
+>PHP 4.1.1, Postgres 7.1.3, htdig 3.1.16. Both the 500 and the 800 have 1GB
+>of RAM, but the 450 only has 512, so perhaps it is a high-memory with
+>networking problem?
 >
-> However,the other archies(arm,cris,sh) use libgcc.a with static
-> link.
-> Those makefiles have
-> LIBGCC  := $(shell $(CC) $(CFLAGS) --print-libgcc-file-name)
->
-> If it's static link, it is same result isn't it?
+> So, SMP on the PPC platform has some work needed I'm afraid. I'd be happy
+>to help in any testing if someone wants me to, as I'd love to actually use
+>that other CPU on my dual 800. :-)
 
+I recently spotted a problem with >512Mb (CONFIG_HIGHMEM or not) & SMP that
+is fixed in the current bk _2_4 (2.4.18pre7). I also sent a fix to Marcelo
+that should hopefully be in the next 2.4.18preX release.
 
-libgcc is a no-no.. it's big, and also encourages users to do silly
-things like long long divides and multiples in kernel fast-paths.
+You should also use sungem preferably to the old gmac driver.
 
-I posted a patch to linux-kernel (subject was 64 bit divides, or
-something), regarding a cleanup for the whole asm/div64.h macro mess.
+Ben.
 
---
-Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
------"If this message isn't misspelled, I didn't write it" -- Me -----
-"Why do musicians compose symphonies and poets write poems? They do it
-because life wouldn't have any meaning for them if they didn't. That's
-why I draw cartoons. It's my life." -- Charles Schulz
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
