@@ -1,43 +1,54 @@
-Date: Sat, 19 Jun 1999 22:49:05 +0200 (CEST)
-From: Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>
-Reply-To: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Bob Doyle <doyle@primenet.com>
-cc: Nye Liu <nyet@nbase.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Motorola MPC8240 Sandpoint embedded linux
-In-Reply-To: <376C01F3.666112C3@primenet.com>
-Message-ID: <Pine.LNX.4.10.9906192248130.327-100000@cassiopeia.home>
+Date: Sat, 19 Jun 1999 23:37:05 -0500 (CDT)
+From: Kevin Heflin <kheflin@shreve.net>
+To: linuxppc-dev@lists.linuxppc.org
+cc: linuxppc-dev-digest@lists.linuxppc.org
+Subject: Ethernet troubles and R5
+In-Reply-To: <199906190459.XAA32534@lists.linuxppc.org>
+Message-ID: <Pine.LNX.4.10.9906192326580.2461-100000@mercury.shreve.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 19 Jun 1999, Bob Doyle wrote:
-> > Verify that the current serial drivers work with the Sandpoint's NS
-> > PC87308.
-> 
-> The code in dink has code to initialize the two serial ports.
-> 
-> If you want to get the floppy, mouse, keyboard, parallel ports, etcs
-> going you've got to configure the '87308 for that.  It looks like all
-> you have to do is provide the base addresses for the peripherals
-> to the '87308.
-> 
-> I couldn't find docs on National's website for the '87308 but I was
-> able to get the floppy going by just reading the dink code.  Anybody
-> know where to get docs?
+Sorry to post to this list, because I'm certainly not a developer. But was
+hoping to get some suggestions on the following trouble.
 
-I have the doc in PDF format. Let me know if you want a copy by email. I don't
-have the CD with the doc at hand, but I can send it tomorrow.
+I've just recently installed the new R5 release from the shipped CD
+version. My internet connection is via an ISDN router. All I've ever had
+to do with LinuxppcR4 was plug in basic network info like IP address,
+Gateway address, subnet mask and DNS numbers. My file transfers for ftp
+and http always seemed faster when compared to the MacOS.
 
-Greetings,
+However, since installing R5, it does not matter from where I ftp or view
+web pages from, my transfers never get above 1.5 kB/s
+I have another macintosh on my same network, running macos. I can try
+downloading files from any of the same locations, and I can get anywhere
+from 10 kB/s to 15 kB/s 
+I'm certain this is not an isolated incident or the ftp sites I'm hitting
+are slow. I just never see transfers above 1.45 kB/s
 
-						Geert
+Things like telneting to other machines on the net.. seem very responsive,
+and if I try pinging other locations they are the same as I've usually
+seen. It's just sustained transfers never get above the magic number of
+1.5 kB/s
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+I've tried posting this question to the linuxppc users list, but got no
+response. I'm wondering if this has anything to do with the fact that I'm
+running a UMAXS900 with whatever ethernet card it has, instead of the
+standard Apple hardware and ethernet?
+
+I didn't know if there were any other kernels I can try? Any suggestions
+would be appreciated.
+
+Kevin
+
+
+--------------------------------------------------------------------
+Kevin Heflin          | ShreveNet, Inc.      | Ph:318.222.2638 x103
+VP/Mac Tech           | 333 Texas St #175    | FAX:318.221.6612
+kheflin@shreve.net    | Shreveport, LA 71101 | http://www.shreve.net
+--------------------------------------------------------------------
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
