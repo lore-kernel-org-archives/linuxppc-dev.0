@@ -1,33 +1,27 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Brad Midgley <brad@turbolinux.com>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: yaboot lockups (IBM travelstar)
-Date: Tue, 30 May 2000 18:52:33 +0200
-Message-Id: <20000530165233.23353@mailhost.mipsys.com>
-In-Reply-To: <Pine.LNX.4.20.0005300927020.16755-100000@mail.turbolinux.com>
-References: <Pine.LNX.4.20.0005300927020.16755-100000@mail.turbolinux.com>
+Message-ID: <39341732.7CC7DC9@wanadoo.fr>
+Date: Tue, 30 May 2000 21:32:02 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: abz@videotron.ca
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Equivalent of lists.linuxppc.org for PC
+References: <3933B153.4BFCDCD2@videotron.ca>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, May 30, 2000, Brad Midgley <brad@turbolinux.com> wrote:
-
->I just put a 12gig IBM drive in my bronze powerbook. Now, if I try to
->coldboot using yaboot, the kernel locks up just after it prints out that
->it discovered the ide controllers. I don't think this was happening with
->the old 4gig drive.
+Alain Birtz wrote:
 >
->I have to use bootx if I'm booting the machine cold. yaboot works for warm
->boots.
->
->Using paul's rsync 2.2.15, yaboot 0.6.
+> What is the Linux programmer list for PC ?
 
-That's a known problem with the Lombard and has nothing to do with your
-disk. Basically, what happens is that on a cold boot, something is
-screwed up in the ATI chip initialisation, and that cause the console
-accel to hang as soon as it tries to scroll the screen. The problem
-doesn't happen on warm boot after MacOS had a chance to load at least once.
+On http://www.mail-archive.com/lists.html, you find more than 100 Linux
+related lists. There is one called "linux-programming", but it might not
+be what you want, it is mostly in Indonesian :-) If you want to read
+300+ messages a day, you might want to subscribe to
+linux-kernel@vger.rutgers.edu.
 
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
