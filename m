@@ -1,36 +1,46 @@
-Date: Tue, 8 Dec 1998 14:02:37 -0500 (EST)
-From: satadru pramanik <satadru@umich.edu>
-To: linuxppc-list@lists.linuxppc.org
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: scsi kernel panics
-Message-ID: <Pine.SOL.4.05.9812081356410.25934-100000@asteroids.rs.itd.umich.edu>
+Message-ID: <366D8CF9.55DF77F9@jlc.net>
+Date: Tue, 08 Dec 1998 15:32:57 -0500
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+CC: Troy Benjegerdes <hozer@drgw.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: PReP RTC vs Decrementer accuracy...
+References: <Pine.LNX.3.96.981207215711.7923A-100000@persephone.cs.nmt.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I recently sent a message to this list regarding kernel panics when doing
-disk intensive tasks with either the external scsi bus, or th one through
-an Adaptec 2940UW card.  External disks are recognized, but when doing
-things like tar zfxv file.tar.gz, the kernel panics.  Anything over
-400kb/sec access it seems.  After a reboot following kernel panic, the
-kernel often panics again while fscking the external disk.  I have gotten
-responses from others confirming what seems to be a very serious bug.  Can
-anybody suggest workarounds/ code fixes/ ways to nail down the error any
-further?  I don't see how the 2.1 kernels can be declared 2.2 until
-something of this serious of a magnitude is fixed.  
+Cort Dougan wrote:
 
-My system configuration includes a 2.1.130 kernel, on a 7600/132 with 80
-MB of ram, and a 126 MB swap disk.
+> Right, the rtc is probably more accurate over a long period of time...
 
-thanks.
+Nope, not even close.  If you convert rtc drift specifications and
+processor oscillator drift specifications to a common reference (like
+PPM) you will see processor oscillators are significantly better
+than any rtc.  Of course, running PLLs with high multipliers, like
+32kHz up to 50 Mhz will cause wide variations, but over a long
+period of time they will they will be more accurate time keepers.
 
-----
-satadru pramanik www.umich.edu/~satadru
-Do, or do not.  There is no try.
--Yoda
----
+
+> .......  The drift should be corrected by
+> a time daemon.
+
+Yes, but sometimes they are the cause of the problem, so
+check that too.
+
+If the PPC decrementer does not appear to be keeping time correctly,
+first ask how often the system is restarted.  Since the time is
+initially set from the rtc, if that is out of whack (and many are)
+and you reboot frequently, the system time will drift from a
+wall clock in a hurry.   The decrementer should keep time
+very accurately from system start up to shut down.  If it
+isn't we have some fixing to do.  I believe the design to
+be correct, but the implementation may be a little flawed.
+
+
+    -- Dan
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
