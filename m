@@ -1,19 +1,27 @@
-Return-Path: <mukundjb@esntechnologies.co.in>
-Received: from ns2.astrainfonets.net (unknown [202.125.86.130])
-	by ozlabs.org (Postfix) with ESMTP id C4F2A2BDEB
+Return-Path: <Renaud.Barbier@GE.COM>
+Received: from ext-nj2gw-6.online-age.net (ext-nj2gw-6.online-age.net
+	[64.14.56.42])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 67BF12BF45
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 Nov 2004 23:37:37 +1100 (EST)
-Received: from mail.esn.co.in ([202.125.80.34])
-	by ns2.astrainfonets.net (8.12.8p1/8.12.8) with ESMTP id iABCW0tm002330
-	for <linuxppc-embedded@ozlabs.org>; Thu, 11 Nov 2004 12:32:02 GMT
+	Thu, 11 Nov 2004 23:40:50 +1100 (EST)
+Received: from int-nj2gw-4.online-age.net (int-nj2gw-4 [3.159.236.68])
+	by ext-nj2gw-6.online-age.net (8.12.11/8.12.11/990426-RLH) with ESMTP
+	id iABBo9Ka015821
+	for <linuxppc-embedded@ozlabs.org>; Thu, 11 Nov 2004 06:50:09 -0500
+Received: from cinmlef05.e2k.ad.ge.com (localhost [127.0.0.1])
+	by int-nj2gw-4.online-age.net (8.12.9/8.12.8/990426-RLH) with ESMTP id
+	iABBqFVX015357 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 11 Nov 2004 06:52:16 -0500 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Date: Thu, 11 Nov 2004 18:10:46 +0530
-Message-ID: <4EE0CBA31942E547B99B3D4BFAB348111ECE24@mail.esn.co.in>
-From: "Mukund JB." <mukundjb@esntechnologies.co.in>
+	charset="iso-8859-1"
+Date: Thu, 11 Nov 2004 05:53:06 -0600
+Message-ID: <45ABD2373C33C4459D42B40EC4F346F20426886D@FTWMLVEM03.e2k.ad.ge.com>
+From: "Barbier, Renaud (GE Infrastructure)" <Renaud.Barbier@GE.COM>
 To: <linuxppc-embedded@ozlabs.org>
-Subject: Problem Executing thread.
+Subject: linux 2.4.26 on 440GX 512MB of RAM
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,60 +33,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hai all,
-I have a query regarding the threads in Linux.
-I wrote an application using the pthreads where in I was to read & write
-asynchronously. The read  &* write functions are as follows :
+I am booting linux from, Uboot on a custom 440GX board.
 
-void * read( void * X)
-{
-	int a =3D0;
-	while(a< 1000)
-	{
-		printf("IN read thread %d\n",a);
-		a++;
-	}
-	pthread_exit(0);
-}
+U-boot is able to access the 512MB of RAM I have on this board.
+Unless I add the option mem=3D256M to the linux boot line,=20
+linux is not able to fully boot.
 
-void * read( void * X)
-{
-	int b =3D0;
-	while(b< 1000)
-	{
-		printf("IN write thread %d\n",b);
-		b++;
-	}
-	pthread_exit(0);
-}
+I know it calls MMU_init (head_44x.S) but does not seem to jump to =
+start_kernel after that.
 
-The Output I get is just a series of 1000 read thread printf statements
-and a series of 1000 write thread printf statements. Its like as
-follows:-
-
-IN read thread 0
-IN read thread 1
-IN read thread 2
-IN read thread 3
-.......
-.......
-.......
-IN read thread 1000
-IN write thread 0
-IN write thread 1
-IN write thread 2
-IN write thread 3
-.......
-.......
-.......
-IN write thread 1000
-
-Why is this happening?=20
-Why are my threads getting executed one after the other rather than
-simultaneously.
-
-
-Thanks for the help in advance.
-
-Regards,
-Mukund jampala
+Is there something I am missing here?=20
