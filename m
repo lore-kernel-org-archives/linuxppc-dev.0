@@ -1,62 +1,59 @@
-Date: Sun, 27 Jun 2004 20:58:50 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: loading the kernel and root FS separately from flash?
-Message-ID: <20040628035850.GA30977@gate.ebshome.net>
-References: <Pine.LNX.4.60.0406271836300.10210@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.60.0406271836300.10210@localhost.localdomain>
+Message-ID: <40DFB360.3090801@opersys.com>
+Date: Mon, 28 Jun 2004 01:57:52 -0400
+From: Karim Yaghmour <karim@opersys.com>
+Reply-To: karim@opersys.com
+MIME-Version: 1.0
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: brk() problem in glibc 2.3.2 on TQM860
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sun, Jun 27, 2004 at 06:46:20PM -0400, Robert P. J. Day wrote:
->
->   what is (hopefully) a simple question, before i invest the time to
-> see whether it works.
->
->   currently, i have a modified rpxlite board, with two flash chips,
-> each 8M -- one "system" flash, one "user" flash.  the system flash has
-> the boot loader (embedded planet's planet core), and the loadable
-> kernel+rootfs image.  this bootable image is only 2.5M in size, so
-> there's lots of leftover space in that system flash chip.
->
->   with this configuration, it's obviously not possible to update files
-> or directories in the bootable image individually -- it's just one big
-> zImage.inited image.
->
->   but is it feasible to redefine the layout of that flash chip and
-> take, say, 4M of it and create a JFFS2 filesystem, then put the root
-> filesystem in there uncompressed?  (assuming, of course, that the
-> rootfs fits in 4M.)  theoretically, then, i could have system flash
-> with the bootloader (only a couple hundred K), the bootable kernel (at
-> most 2M in our case), then 4M of JFFS2.  that would give me the
-> freedom to update the basic root filesystem if i had to.  we could
-> boot the kernel as we're doing now, and i'm assuming it wouldn't be
-> difficult to have the kernel know to copy the JFFS2-based root
-> filesystem into RAM, mount it, and take it from there.
->
->   the current flash layouts are defined in the file
-> drivers/mtd/maps/rpxlite.c, and we've set it up so that the other 8M
-> "user" flash is associated with /dev/mtdblock/0.  my thought was to
-> just define half of system flash as JFFS2, at which point it would be
-> accessible as /dev/mtdblock/1 (depending on the definition order, of
-> course).
->
->   is this possible?  anyone done it this way, and can tell me what
-> pitfalls i have to watch for?  thanks.
+I've been having problems with brk() calls (like ones made by malloc() to the
+kernel) when using glibc 2.3.2 on a TQM860 (16MB RAM, 8MB of flash.) Take the
+following snippet of code for example:
+	for (i = 1, val = 10; i < 10; val = val * 10, i++) {
+		printf("Allocating %lu \n", val);
+		x = (void*) malloc(val);
+		memset(x, '\0', val);
+	}
 
-Yes, this is possible and actually quite trivial.
+This always succeeds in allocating 100,000 bytes, but it's always freezing when
+trying to allocate 10^6. The kernel isn't dead. In fact I can start this in the
+background, but the fact of the matter is that it's never coming back from that
+10^6 malloc.
 
-Partition your flash the way you want, e.g. reserve part of the flash chip for
-root fs, place filesystem into it and mount corresponding mtdblock device during
-boot, e.g. use something like "root=/dev/mtdblock1" if you have several
-fs compiled into your kernel you can use additional command line parameter
-"rootfstype=<your_root_fs>" to prevent kernel trying all registered fs while
-mounting root.
+This wouldn't be so anoying if it weren't reflecting in the execution of some
+key applications ... like insmod.
 
-Eugene.
+There are two patches that were applied to this glibc, both from Dan Kegel
+(neither of which should really make any difference):
+- without-fp
+- sscanf
+
+Here's the configuration line for glibc 2.3.2:
+$ CC=powerpc-linux-gcc CFLAGS="-O2 -D_SOFT_FLOAT -mcpu=860" \
+ > ../glibc-2.3.2/configure --host=$TARGET --build=i686-linux \
+ > --prefix="/usr" --enable-add-ons \
+ > --with-headers=${TARGET_PREFIX}/include --without-fp
+
+Also using:
+- binutils 2.14
+- gcc 3.3.2
+- Linux 2.4.25 (vanilla; non-vanilla or other versions make no difference.)
+
+The same code works fine an IceCube, granted with a different glibc config line.
+
+If anyone's seen this before and has a fix, please let me know.
+
+Thanks,
+
+Karim
+--
+Author, Speaker, Developer, Consultant
+Pushing Embedded and Real-Time Linux Systems Beyond the Limits
+http://www.opersys.com || karim@opersys.com || 1-866-677-4546
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
