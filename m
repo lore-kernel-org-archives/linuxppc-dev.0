@@ -1,46 +1,29 @@
-Date: Sat, 14 Sep 2002 21:54:24 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
-Subject: [ANN] yaboot 1.3.7-pre1 PLEASE TEST
-Message-ID: <20020915055423.GV714@plato.local.lan>
+From: samuel@ibrium.se
+Date: Sun, 15 Sep 2002 14:50:01 +0200
+To: Segher Boessenkool <segher@koffie.nl>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: RFC: Performance Monitor Counters device
+Message-ID: <20020915145001.B1937@ibrium.se>
+References: <3D810AF2.2034238C@koffie.nl> <20020912102550.11578@192.168.4.1> <3D831D5A.BF11BC0D@koffie.nl>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3D831D5A.BF11BC0D@koffie.nl>; from segher@koffie.nl on Sat, Sep 14, 2002 at 01:28:26PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-yes, yaboot is still maintained ;-)
+On Sat, Sep 14, 2002 at 01:28:26PM +0200, Segher Boessenkool wrote:
+> Okay, here's the data I found on that errata:
+>
+> It does not exist on 7450 etc.
+> It exists on 7410 before version 1.3 .
+> I have no data on 7400.
+> It does not exist on 750 etc.
 
-Please test this prerelease version of yaboot and report any problems.
+Actually, I have experienced this bug on one of my 750-based machines
+(possibly, only one of the revs were affected). If I were you, I would be
+extremely careful using the TAU/performance interrupt.
 
-If you have been waiting to report some yaboot bug NOW is the time,
-doing so right after 1.3.7 goes final will result in severe annoyance
-(and will just mean you have to wait much longer to get your bug
-fixed).
-
-yaboot 1.3.7 will be purely a maintenence/bugfix release.  The 1.x codebase
-is in maintenence mode, no new features or major changes will be done,
-instead all development effort is going into the unstable 1.99
-development branch, which will eventually lead to a 2.0 release of
-yaboot (a 100% rewrite).
-
-current changes since 1.3.6:
-
-pre1:
-	- Add German translation of yaboot-howto.
-	- Small updates to yaboot-howto.
-	- No longer tell people to send bugs to benh in yabootconfig(8).
-	- Fix file search so IBM CHRP will work if there is more than
-	  one type 0x83 partition.
-	- Fix possible reiserfs symlink resolution failure.
-	- Fix corner case /etc/fstab parsing failure. (Debian bug#156742).
-	- Small build system modifcations (mostly to accomidate the use of
-	  the arch revision control system.
-
-1.3.7-pre1 is available at the usual place:
-http://penguinppc.org/projects/yaboot/testing/1.3.7-pre/
-
---
-Ethan Benson
-http://www.alaska.net/~erbenson/
+/Samuel
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
