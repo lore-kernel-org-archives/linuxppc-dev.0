@@ -1,35 +1,41 @@
-Subject: Re: multiple separate pci bridges ...
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Rob Baxter <robb@synergymicro.com>
-Cc: Sven Luther <sven.luther@wanadoo.fr>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040105005234.GA25978@synergy>
-References: <20040101181145.GA27294@iliana> <20040102151830.GA31261@synergy>
-	 <1073087816.10542.16.camel@gaston> <20040103002733.GA2112@synergy>
-	 <1073092343.10538.21.camel@gaston>  <20040105005234.GA25978@synergy>
-Content-Type: text/plain
-Message-Id: <1073268821.761.26.camel@gaston>
-Mime-Version: 1.0
-Date: Mon, 05 Jan 2004 13:13:41 +1100
+Message-ID: <20040105044949.24645.qmail@kunk.qbjnet.com>
+Subject: patch: missing ifdef for CONFIG_ADB_PMU in pmac_nvram.c for 2.4.23-ben1
+To: linuxppc-dev@lists.linuxppc.org
+Date: Sun, 4 Jan 2004 22:49:49 -0600 (CST)
+From: Bob Brose <bob@kunk.qbjnet.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> The problem I saw with the dual PCI buses is that the second Discovery PCI
-> bridge was assigned a bus number of 01 (i.e., first_busno), or 02 if a PtP
-> bridge was located off of the first PCI bus of the Discovery, prior to the
-> scan.  The Discovery does not respond to PCI configuration cycles when the
-> bus number is not zero--the reason for bus fixup routine.
+To get 2.4.23-ben1 to compile on a pmac 7200 without CONFIG_ADB_PMU
+being set, I needed to apply the simple patch below. The machine doesn't
+have a lot of memory so I'm trying to eliminate all unused code.
 
-Sure, you need to issue a type-0 config cycle on a host bridge for devices
-that are on the same segment... it's possible that in your case, a type
-0 and and type 1 are the same format with bus 0 for the first, in which
-case, just do that (no need to "fixup" the bus number, it's really not
-related to bus numbers, but to the type of config cycles issued to the
-PCI bus)
+Bob
 
-Ben.
+
+--- linux-2.4.23-ben1/arch/ppc/platforms/pmac_nvram.c.orig	2004-01-04 20:47:16.000000000 -0600
++++ linux-2.4.23-ben1/arch/ppc/platforms/pmac_nvram.c	2004-01-04 21:20:52.000000000 -0600
+@@ -526,11 +526,15 @@
+ 		nvram_data = ioremap(dp->addrs[1].address, dp->addrs[1].size);
+ 		ppc_md.nvram_read_val	= indirect_nvram_read_byte;
+ 		ppc_md.nvram_write_val	= indirect_nvram_write_byte;
+-	} else if (nvram_naddrs == 0 && sys_ctrler == SYS_CTRLER_PMU) {
++	}
++#ifdef CONFIG_ADB_PMU
++  	else if (nvram_naddrs == 0 && sys_ctrler == SYS_CTRLER_PMU) {
+ 		nvram_naddrs = -1;
+ 		ppc_md.nvram_read_val	= pmu_nvram_read_byte;
+ 		ppc_md.nvram_write_val	= pmu_nvram_write_byte;
+-	} else {
++	}
++#endif
++   	else {
+ 		printk(KERN_ERR "Don't know how to access NVRAM with %d addresses\n",
+ 		       nvram_naddrs);
+ 	}
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
