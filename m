@@ -1,111 +1,119 @@
-To: "Richard Jones" <rjones@nexus-tech.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Mounting Compact Flash card under Linux on ppc823 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 12 Sep 2002 18:48:42 EDT."
-             <PEEPKCHHHBJOFJKGMMLHOEEDCAAA.rjones@nexus-tech.net>
-Date: Fri, 13 Sep 2002 01:22:04 +0200
-Message-Id: <20020912232210.128B8FA8D@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <000b01c25ab5$559edc10$7301a8c0@zhongqx>
+From: "zhongqx" <zhongqx@guoguang.com.cn>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Kernel panic: No init found.  Try passing init= option to kernel
+Date: Fri, 13 Sep 2002 07:37:18 +0800
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <PEEPKCHHHBJOFJKGMMLHOEEDCAAA.rjones@nexus-tech.net> you wrote:
->
-> I am using the Linux kernel from www.denx.de that has the version 2.4.4
-> (2002-08-09) with all the support for the 8xx pcmcia/direct etc... code.
-> When Linux boots (using NFS remote filesystem) it comes up and prints the
-> following:
->
-> <misc deleted>
-> ...
-> Kernel command line: root=/dev/nfs rw nfsroot=192.168.0.120:/ppcroot
-> nfsaddrs=19
-> 2.168.0.20:192.168.0.120 init=/bin/bash idebus=25
-> ide_setup: idebus=25PCMCIA slot B: phys mem e0000000...ec000000 (size
-> 0c000000)
-> Card ID: SST 48CF032 55LD017-A2 FW17-4C
->  Fixed Disk Card
->  IDE interface
->  [silicon] [unique] [single] [sleep] [standby] [idle] [low power]
-> ...
-> <more stuff deleted>
-> ...
+Hello,
+    I want to use ramdisk instead of NFS for my linux on FADS860T which has 2M flash and 8M ram.I want to use eldk pakages to make ramdisk. but when i use it to boot linux ,it print the following message:
 
-This "more stuff deleted" would have been the interesting  part;  the
-kernel   will  tell  you  something  about  the  partition  table  it
-recognizes, or at least the device. So if you are  sure  your  device
-contains  a  valid partition table with at least one valid partition,
-you should have seen something like:
-
-	...
-	hda: probing with STATUS(0x50) instead of ALTSTATUS(0x41)
-	hda: CF 128MB, ATA DISK drive
-	ide0 at 0xc7000320-0xc7000327,0xc3000106 on irq 13
-	hda: 250368 sectors (128 MB) w/16KiB Cache, CHS=978/8/32
-	Partition check:
-	 hda: hda1
-
-> and finally gives me a shell prompt.  In the above, the Kernel seems to
-> recognize the card as being an SST-based flash card.  All seems okay but the
-> IDE device does not appear in the /proc/devices listing.  Also, I can't
-> mount a filesystem (probably because the IDE doesn't seem to have installed
-> completely).  The card I am using has a DOS filesystem on it with a few
-> files that I added.  My /etc/fstab has the following entry:
->
-> /dev/hda1       /mnt/flash      msdos   noauto,owner    0 0
->
-> Using make menuconfig, I set the following:
-> under IDE, ATA and ATAPI Block Devices:
->    <*> Enhanced IDE/MFM/RLL disk/cdrom/tape/floppy support
->    [*]   MPC8xx IDE support
->    (8xx_PCCARD) Type of MPC8xx IDE interface
-> under File systems:
->    <*>  DOS FAT fs support
->    <*>    MSDOS fs support
->    <*>      UMSDOS: Unix-like file system on top of standard MSDOS fs
->    <*>    VFAT (Windows-95) fs support
->
-> Questions:
-> - should the device really be hda1 ?
-
-Yes, most probably.
-
-> - is there something more that I forgot in my board config header file for
-> setting up pcmcia?
-
-No, I don't think so.
-
-My guess is that you forgot to enable any partition table support  in
-your Linux kernel. Make sure your config file contains:
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 512 bind 512)
+enter ic_enable!
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+RAMDISK: Compressed image found at block 0
+Freeing initrd memory: 735k freed
+EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 56k init
+Kernel panic: No init found.  Try passing init= option to kernel.
 
 
-	CONFIG_IDE=y
-	CONFIG_BLK_DEV_IDE=y
-	CONFIG_BLK_DEV_IDEDISK=y
-	CONFIG_IDEDISK_MULTI_MODE=y
-	CONFIG_BLK_DEV_MPC8xx_IDE=y
-	CONFIG_BLK_DEV_IDE_MODES=y
-and
-	CONFIG_PARTITION_ADVANCED=y
-	CONFIG_MAC_PARTITION=y
-	CONFIG_MSDOS_PARTITION=y
-	CONFIG_NLS=y
-	CONFIG_NLS_DEFAULT="y"
-	CONFIG_NLS_ISO8859_1=y
-	CONFIG_NLS_ISO8859_15=y
+I am sure that /bin/sh exist.why linux can not execute it successfully? but when I use the simple-ramdisk.PPCBoot which i download frow file://ftp.denx.de:/pub/LinuxPPC/usr/src,it run well like following:
 
-See  also  our   documentation   at   http://www.denx.de/re/DPLG.html
-especially  section  "7.  Advanced Topics" (7.3.2. PC Card Support in
-Linux).
 
-Wolfgang Denk
+=>bootm 400000 500000
+## Booting image at 00400000 ...
+   Image Name:   linux-2.4.18
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    525046 Bytes = 512 kB = 0 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Loading RAMDisk Image at 00500000 ...
+   Image Name:   myramdisk
+   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+   Data Size:    572675 Bytes = 559 kB = 0 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Loading Ramdisk to 006cf000, end 0075ad03 ... OK
+Linux version 2.4.18 (root@localhost.localdomain) (gcc version 2.95.3 20010111 (
+prerelease/franzo/20010111)) #2 Wed Sep 11 15:10:46 CST 2002
+On node 0 totalpages: 2048
+zone(0): 2048 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/ram
+Decrementer Frequency = 180000000/60
+Calibrating delay loop... 47.82 BogoMIPS
+Memory: 6132k available (948k kernel code, 348k data, 56k init, 0k highmem)
+Dentry-cache hash table entries: 1024 (order: 1, 8192 bytes)
+Inode-cache hash table entries: 512 (order: 0, 4096 bytes)
+Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 2048 (order: 1, 8192 bytes)
+POSIX conformance testing by UNIFIX
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd
+devfs: v1.10 (20020120) Richard Gooch (rgooch@atnf.csiro.au)
+devfs: boot_options: 0x0
+CPM UART driver version 0.03
+ttyS00 at 0x0280 is a SMC
+block: 64 slots per queue, batch=16
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+eth0: CPM ENET Version 0.2 on SCC1, 00:d0:93:00:12:34
+eth1: FEC ENET Version 0.2, FEC irq 3, MII irq 4, addr 00:d0:93:80:12:34
+loop: loaded (max 8 devices)
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 512 bind 512)
+enter ic_enable!
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+RAMDISK: Compressed image found at block 0
+Freeing initrd memory: 559k freed
+EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 56k init
+bash# ls
+bin         dev         etc         lib         linuxrc     lost+found
+bash# cd bin
+bash# ls
+date  ls    sh
+bash# date
+Thu Jan  1 02:47:51 UTC 1970
+bash# ls
+date  ls    sh
+bash# cd lib
+init: lib: No such file or directory
+bash# cd ..
+bash# ls
+bin         dev         etc         lib         linuxrc     lost+found
+bash# cd lib
+bash# ls
+ld.so.1              libcrypt.so.1        libtermcap.so.2.0.8
+libc-1.99.so         libproc.so.1.2.6
+libc.so.6            libtermcap.so.2
+bash# cd ..
+bash# ls
+bin         dev         etc         lib         linuxrc     lost+found
+bash#
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The following statement is not true.  The previous statement is true.
+
+
+    Why Simple-ramdisk.PPCBoot is ok but My ramdisk.image is not ok,i cant find the diffrent from this two, ths sh program need libray all exist,why linux cant excute successfully?
+    Can someone give me help ? thank you in advanced!
+    Hope to get your help!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
