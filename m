@@ -1,46 +1,32 @@
-Message-ID: <E1836A7F3557D311A14000805F9F36FC01518835@usdfo011.usac.danfoss.net>
-From: "Pergola, Michael" <MichaelPergola@Danfoss.com>
-To: "'Dan Malek'" <dan@embeddededge.com>, bart@ardistech.com
+Message-ID: <3C67EB09.5010700@embeddededge.com>
+Date: Mon, 11 Feb 2002 11:02:17 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: bart@ardistech.com
 Cc: Alex Zeffertt <ajz@cambridgebroadband.com>,
 	Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>,
 	dmalek@jlc.net
-Subject: RE: MPC823: i2c-algo-8xx read interrupt?
-Date: Mon, 11 Feb 2002 16:49:36 +0100
-MIME-Version: 1.0
-Content-Type: text/plain
+Subject: Re: MPC823: i2c-algo-8xx read interrupt?
+References: <3C63EC39.ACEECA08@ardistech.com> <3C640532.5000708@embeddededge.com> <3C640C11.4080407@cambridgebroadband.com> <3C6776CC.634AB65D@ardistech.com> <3C67E38C.2020304@embeddededge.com> <3C67E711.2108C6DD@ardistech.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-	>> The way I interpret the data sheet (I assume the 823 and 860 are
-similar) is that I get the TX
-	>> interrupt when the I2C address is sent plus the two character
-times. The rest of the TX buffer
-	>> is just a place holder and will not be sent.
+bart@ardistech.com wrote:
 
-	>Not correct.  The data isn't sent on the data lines, but the CPM
-decrements the
-	>counter and uses it to time the receive transfer.  The I2C thinks
-it is sending
-	>something, but the bits just fall off the sand into a bucket.  It
-is used to generate
-	>the timing of the clock and count how many receive bytes you wish
-to acquire.
 
-According to the MPC823e User's Manual:
+> You're right, but spending XX$ on a fast PPC chip and after that let it run
+> busy loops to time the I2C control makes me feel bad :)
 
-"The I2C receiver and transmitter are double-buffered, which corresponds to
-an effective
-FIFO size of 2 characters. The MPC823e I2C bit 0 (MSB) is shifted out
-first." pg. 16-456
+So, you think interrupt and management overhead of the software to send a
+couple of bytes on a 100k serial interface is free?  The chip designers are
+often upset when you don't use every feature, but you need to apply some
+real systems engineering methods and analyze how all of these little things
+help (or hurt) your application.
 
-I interpret this to account for the additional two character clock times
-you'll need to do.
 
-Just my $.02,
-     Michael Pergola
-     Software Engineer
-     Baltimore, MD  21236     (410) 931-6778 x4259
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
