@@ -1,38 +1,30 @@
-From: Paul Mackerras <paulus@samba.org>
+Message-ID: <002801c2e1ee$cb9634c0$7300a8c0@avantwave.com>
+From: "Ivan Cheng" <ivancheng@avantwave.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: mpc8241/8245 floating point unit
+Date: Tue, 4 Mar 2003 09:38:44 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15971.61695.795360.163200@argo.ozlabs.ibm.com>
-Date: Tue, 4 Mar 2003 11:19:11 +1100
-To: Dan Malek <dan@embeddededge.com>
-Cc: joakim.tjernlund@lumentis.se,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Improved copy_page() function, about 30% speed up for mpc860!
-In-Reply-To: <3E63C905.5000306@embeddededge.com>
-References: <IGEFJKJNHJDCBKALBJLLOEKGFKAA.joakim.tjernlund@lumentis.se>
-	<3E63C905.5000306@embeddededge.com>
+Content-Type: text/plain;
+	charset="utf-8"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek writes:
+Hi,
 
-> And don't forget....many applications aren't heavily 'copy-centric' and it
-> may be beneficial to not blow away the caches in those cases.  That is, if
+    We are evaluating the mpc8241/8245 on the floating point unit.  For they
+are based on the 603e core, there is a hardware floating point support.  And
+we are going to cross-compile the kernel and apps in intel platform.  I am
+very interested to know
 
-Using dcbz on the destination won't blow away the caches any more than
-doing the copy without dcbz would anyway.
+- whether the FPU is supported in the linux distribution in both user/kernel
+mode.
+- If so, how should I compile for the applicaiton/driver with gcc?
+- , and in which version of gcc does it support?
 
-The thing you have to be careful of when using dcbz, particularly when
-you are dbcz'ing one or more cache lines ahead, is that you only dcbz
-cache lines that are completely contained within the destination area.
-That introduces extra complexity and makes the code bigger, so you
-have to be careful that you don't make small copies slower.
+Thanks very much for any comments.
 
-I did some measurements once and found that almost all of the copies
-in the kernel (memcpy and copy_tofrom_user) were either relatively
-small, i.e. less than 256 bytes, or were page-sized and page-aligned.
-In the optimized copy routines I did in the ppc64 kernel.
+Ivan Cheng
 
-Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
