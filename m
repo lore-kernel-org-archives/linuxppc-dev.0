@@ -1,50 +1,65 @@
-Message-ID: <38B6596F.2AF01EF9@pop.agri.ch>
-Date: Fri, 25 Feb 2000 11:29:03 +0100
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+Date: Fri, 25 Feb 2000 14:28:45 +0200 (EET)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Kevin Hendricks <khendricks@ivey.uwo.ca>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on ppc
+ with r128
+In-Reply-To: <00022417315801.00485@localhost.localdomain>
+Message-ID: <Pine.LNX.4.21.0002251405420.779-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
-To: Albrecht Dreﬂ <ad@mpifr-bonn.mpg.de>
-CC: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PCMCIA on PowerBook G3
-References: <38B64309.80D4D15B@mpifr-bonn.mpg.de> <38B646F6.DFB8D167@pop.agri.ch> <38B64AAC.98522C83@mpifr-bonn.mpg.de>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Albrecht Dreﬂ wrote:
+On Thu, 24 Feb 2000, Kevin Hendricks wrote:
+
+> Hi,
 >
-> Andreas Tobler wrote:
-> > As you've sent in an earlier message you're aware of the CardBus patch.
+> I have been looking at my mouse problems in XF 3.9.18 and put some debug
+> statements into Xserver/hw/xfree86/input/mouse/mouse.c to look at the raw
+> characters being read from /dev/usbmouse.
 >
-> I know...  But in this case, I would like to use the PCMCIA package with a
-> Adaptec 1480 scsi card (just a test, because we need scsi for tapes, and the new
-> PowerBooks don't have the built-in MESH any more).  Afaik, there is only a
-> driver which needs all the pcmcia stuff to run.
+> They seemed to pretty much be garabage and out of sync.  Sometimes the head of
+> the character buffer showed mouse button events and sometimes other buffer
+> positions showed the events.   Also, the mouse.c driver tries to read 4
+> characters from the usb mouse while the Xpmac mouse driver I wrote only reads 3
+> bytes at a time.
+>
+> So the IMPS/2 protocol is just getting garbage to process into buttons, and dx,
+> dy, dz.
+>
+> Is this a known problem?
+>
+  There were some changes recently in the mouse module in xfree, some PS/2
+mice were broken for a while but that has been fixed before 3.9.18, I don't
+a usb mouse at my mac so i can't help there but IMPS/2 works fine in my x86
+machine.
 
-What do mean exactly 'only one driver'?
+> I looked back to xf3.9.17 and it defaulted to my legacy mouse driver but xf
+> 3.9.18 won't seem to do that  (the mouse module is forcibly loaded by XFree86
+> Xserver whether you want it to or not).
+>
+  I am not sure but i think that 3.9.17 was using the same code as well,
+probably one of the changes in mouse.c broke something. Is it IMPS/2 the
+right protocol for the ppc usb mice btw ? If our usb code uses 3 bytes
+then its not using the IntelliMouse protocol (which is 4 bytes as i can
+see in the code).
 
-The Adaptec 1480 is a CARDBUS not a PCMCIA card. It is 32 bit. When you
-apply the patch from Ryuichi Oikawa then the PCI probing should give the
-information further to the cb_enabler I think.
-I had the same behaviour when NOT applying this patch. Then I got also
-this messages:
+> Any ideas here would be greatly appreciated?
 
-cardmgr[284]: unsupported card in socket 0
-kernel: cs: cb_alloc(bus 1): vendor 0xffff, device 0xffff
-kernel: cs: no valid ROM images found!
+  Can you try with the other PS/2 protocols and if you still can't get
+the mouse working try with older mouse code from 3.9.17 that will help
+tracking down the problem.
 
-When you look into config from /etc/pcmcia you'll see the device:
-device "apa1480_cb"
-  class "scsi" module "cb_enabler", "apa1480_cb"
+> Has anyone been able to get a usb mouse working with xf 3.9.18?
+>
+> Thanks,
+>
+> Kevin
+>
 
-Here the driver is integrated after the cb_enabler which is responsible
-for correct notifying the CardBus Card.
+  Kostas Gewrgiou
 
-I don't have experiences with scsi, but as soon as the PCI probing
-works, the cardmgr should be able to tell you at least what card you
-inserted.
-
-Andreas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
