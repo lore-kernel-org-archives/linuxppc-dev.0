@@ -1,93 +1,112 @@
-Message-Id: <4.3.2.20010906081809.00c566c0@falcon.si.com>
-Date: Thu, 06 Sep 2001 08:31:08 -0400
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: FLASH RamDisk and kernel init options for disk
-In-Reply-To: <200109060842.BAA12475@krakatoa.gigabitnetworks.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"; format=flowed
+Date: Thu, 6 Sep 2001 07:03:58 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Brian Waite <bwaite@cspi.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MVME5100 and bugboot fails
+Message-ID: <20010906070358.A9316@cx258813-a.chnd1.az.home.com>
+References: <85256ABF.00549667.00@pine.cspi.com> <200109061544.LAA11977@orchid.cspi.com> <20010906085639.F21172@cpe-24-221-152-185.az.sprintbbd.net>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="GvXjxJ+pjyke8COw"
+In-Reply-To: <20010906085639.F21172@cpe-24-221-152-185.az.sprintbbd.net>; from trini@kernel.crashing.org on Thu, Sep 06, 2001 at 08:56:39AM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 01:42 AM 9/6/01 -0700, James F Dougherty wrote:
+--GvXjxJ+pjyke8COw
+Content-Type: text/plain; charset=us-ascii
 
->Hi,
+On Thu, Sep 06, 2001 at 08:56:39AM -0700, Tom Rini wrote:
+>
+> On Thu, Sep 06, 2001 at 11:36:39AM -0400, Brian Waite wrote:
+>
+> > I tried that and I was unable to relocate just the initrd. Right now, I just
+> > tested to see:
+> > if  ((zImage_start >= 0xf0000000) || (zImage_start <= 0x00800000))
+> >
+> > That seems to work for now, but I'll take a peek at the gemeni and see how
+> > they do it.
+>
+> Er, after re-reading, it's wrong too.  I'll send you a patch
+> privately, if you can test it.
 
-[snip]
+This location checking logic is all a hack...I've already stared at this
+a while to make it work for someone.  I recommend we _always_ relocate
+both zImage and initrd (if present).
 
->Also, is there some way to pass a kernel argument which
->does an fsck on a disk before it mounts it every time?
->I'm pretty sure this doesn't exist ..
+See the attached patch to misc-simple.c (this is versus 2.4.2ish, but
+should apply cleanly) which gets the initrd relocated properly...it's
+tested with bugboot.
 
-That is already part of /etc/fstab.  Set fs_passno to a non-zero value.
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
-(copied from man fstab)
-        The  sixth field, (fs_passno), is used by the fsck(8) pro­
-        gram to determine the order in which filesystem checks are
-        done at reboot time.  The root filesystem should be speci­
-        fied with a fs_passno of 1, and other  filesystems  should
-        have a fs_passno of 2.  Filesystems within a drive will be
-        checked sequentially, but filesystems on different  drives
-        will  be  checked  at the same time to utilize parallelism
-        available in the hardware.  If the sixth field is not pre­
-        sent  or  zero,  a value of zero is returned and fsck will
-        assume that the filesystem does not need to be checked.
+--GvXjxJ+pjyke8COw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="bugboot_initrd.patch"
 
-I assume that is not what you wanted.  You want to force fsck to check
-file systems that were properly unmounted on shutdown.
+--- linux-2.4.2_hhl20/arch/ppc/boot/common/misc-simple.c.orig	Wed Sep  5 14:31:27 2001
++++ linux-2.4.2_hhl20/arch/ppc/boot/common/misc-simple.c	Wed Sep  5 14:51:49 2001
+@@ -97,39 +97,27 @@
+ 		initrd_start = 0;
+ 	initrd_end = INITRD_SIZE + initrd_start;
 
-(copied from man shutdown)
-        The -F flag means `force  fsck'.   This  only  creates  an
-        advisory file /forcefsck which can be tested by the system
-        when it comes up again.  The boot rc file can test if this
-        file  is present, and decide to run fsck(1) with a special
-        `force' flag so that even properly  unmounted  filesystems
-        get  checked.   After that, the boot process should remove
-        /forcefsck.
+-	/*
+-	 * Find a place to stick the zimage and initrd and
+-	 * relocate them if we have to. -- Cort
+-	 */
++	/* relocate zimage */
+ 	avail_ram = (char *)PAGE_ALIGN((unsigned long)_end);
+ 	puts("zimage at:     "); puthex((unsigned long)zimage_start);
+ 	puts(" "); puthex((unsigned long)(zimage_size+zimage_start)); puts("\n");
+-	if ( (unsigned long)zimage_start <= 0x00800000 )
+-	{
+-		memcpy( (void *)avail_ram, (void *)zimage_start, zimage_size );
+-		zimage_start = (char *)avail_ram;
+-		puts("relocated to:  "); puthex((unsigned long)zimage_start);
+-		puts(" ");
+-		puthex((unsigned long)zimage_size+(unsigned long)zimage_start);
+-		puts("\n");
++	memcpy( (void *)avail_ram, (void *)zimage_start, zimage_size );
++	zimage_start = (char *)avail_ram;
++	puts("relocated to:  "); puthex((unsigned long)zimage_start);
++	puts(" ");
++	puthex((unsigned long)zimage_size+(unsigned long)zimage_start);
++	puts("\n");
 
-This would imply that if you do "touch /forcefsck" on shutdown, your
-system would do what you want.
+-		/* relocate initrd */
+-		if ( initrd_start )
+-		{
+-			puts("initrd at:     "); puthex(initrd_start);
+-			puts(" "); puthex(initrd_end); puts("\n");
+-			avail_ram = (char *)PAGE_ALIGN(
+-				(unsigned long)zimage_size+(unsigned long)zimage_start);
+-			memcpy ((void *)avail_ram, (void *)initrd_start, INITRD_SIZE );
+-			initrd_start = (unsigned long)avail_ram;
+-			initrd_end = initrd_start + INITRD_SIZE;
+-			puts("relocated to:  "); puthex(initrd_start);
+-			puts(" "); puthex(initrd_end); puts("\n");
+-		}
+-	} else if ( initrd_start ) {
+-		puts("initrd at:     "); puthex(initrd_start);
+-		puts(" "); puthex(initrd_end); puts("\n");
+-	}
++	/* relocate initrd */
++	puts("initrd at:     "); puthex(initrd_start);
++	puts(" "); puthex(initrd_end); puts("\n");
++	avail_ram = (char *)PAGE_ALIGN(
++			(unsigned long)zimage_size+(unsigned long)zimage_start);
++	memcpy ((void *)avail_ram, (void *)initrd_start, INITRD_SIZE );
++	initrd_start = (unsigned long)avail_ram;
++	initrd_end = initrd_start + INITRD_SIZE;
++	puts("relocated to:  "); puthex(initrd_start);
++	puts(" "); puthex(initrd_end); puts("\n");
 
-(copied from man fsck)
-        fsck-options
-               Any options which are not understood  by  fsck,  or
-               which follow the -- option are treated as file sys­
-               tem-specific options to be passed to the file  sys­
-               tem-specific checker.
+ 	avail_ram = (char *)0x00400000;
+ 	end_avail = (char *)0x00800000;
 
-(copied from man e2fsck)
-        -f     Force checking even if the file system seems clean.
-
-(copied from /etc/rc.sysinit in a RedHat system, YMMV)
-
-if [ -f /fsckoptions ]; then
-         fsckoptions=`cat /fsckoptions`
-     else
-         fsckoptions=
-fi
-
-if [ -f /forcefsck ]; then
-         fsckoptions="-f $fsckoptions"
-fi
-
-if [ "$BOOTUP" != "serial" ]; then
-         fsckoptions="-C $fsckoptions"
-else
-         fsckoptions="-V $fsckoptions"
-fi
-
-OK, we're on a roll now.  You can create /fsckoptions to specify "-f"
-(and possibly other parameters) to do what you want.  Otherwise create
-/forcefsck (this should work on most if not all distributions) to force
-the fsck.
-
-gvb
-
-******************** Lawyer gibberish: ********************
-This e-mail and any files transmitted with it are confidential is the
-property of Smiths Aerospace. This footnote also confirms that this
-e-mail message has been scanned for the presence of known computer viruses.
-
+--GvXjxJ+pjyke8COw--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
