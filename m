@@ -1,31 +1,20 @@
-Message-Id: <sb7bbbbe.017@mail.scires.com>
-Date: Thu, 16 Aug 2001 12:25:04 -0400
-From: "Doug Hubbard" <dhubbard@scires.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: BDM and gdb
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-7
+Message-ID: <01139FC052A0D411900B00508B9535FC02A9CA76@ZCH07EXM04.corp.mot.com>
+From: Liu HongXun-a16975 <a16975@motorola.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Is there a PCI based 802.11b device driver for ppc linux?
+Date: Fri, 17 Aug 2001 11:11:28 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am using the Macraigor Systems RAVEN bdm dongle and attempting, initially to just look at the processor registers.  I am using the test code and make file supplied by Macraigor.
+Hi, all,
+Our customized ppc based board only has PCI interface. I wonder if there is a PCI based 802.11b device driver for ppc linux?
+I looked through the ppc linux, and found some PCMCIA based 802.11b device driver, but no PCI based ones.
+thanks
+rolf
 
-First, (complaint) the connector on the bdm cable appears to have been installed backwards.  Someone noticed because they shaved the key of the connector.  When plugged correctly (pin 1 to pin 1) I get jtag/bdm errors, when plugged in backwards I get no download errors.
-
-Once downloaded the program will not execute and when I poke around the processor registers they all show an address AND a value of 0x5015010.
-
-I have tried this on 2 MBX boards and our custom board which uses the same MPC860 processor.
-
-TIA.
-
-¯ Doug
-
-Doug Hubbard
-Software Engineer
-Scientific Research Corporation
-2300 Windy Ridge Parkway
-Suite 400, South
-Atlanta, GA 30339
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
