@@ -1,50 +1,36 @@
-Subject: Re: Preemptive Kernel and MPC8xx ???
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: Marius Groeger <mgroeger@sysgo.com>,
-	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <3FC4C1DD.3020209@imc-berlin.de>
-References: <3FC0A1D3.70706@imc-berlin.de>
-	 <B82FB2A3-1E4E-11D8-A8D4-003065E2BB06@aimsys.nl>
-	 <Pine.LNX.4.56.0311241732200.2581@mag.devdep.sysgo.de>
-	 <3FC4C1DD.3020209@imc-berlin.de>
-Content-Type: text/plain
-Message-Id: <1069863786.1263.6.camel@linpc003.aimsys.nl>
-Mime-Version: 1.0
-Date: Wed, 26 Nov 2003 17:23:06 +0100
+Message-ID: <3FC4D4B5.2030901@elitedvb.net>
+Date: Wed, 26 Nov 2003 17:28:37 +0100
+From: Felix Domke <tmbinc@elitedvb.net>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 405 Critical Interrupts
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 2003-11-26 at 16:08, Steven Scholz wrote:
-> Marius Groeger wrote:
->
-> > AFAIK, you can pretty much drop the low-latency patch in favor of
-> > using the lock-breaking patch. It is also available from Robert Love
-> > at the cited home page.
->
-> Rob Love wrote me:
->
->  >>Is it correct that your lock-break does basicly the same as Andrew Morton's
->  >>low-latency patches? Where is the big difference?
->  >
->  > Yes, basically the same thing.  Lock-break is a version of low-latency
->  > that is "optimized" for use with the preemptive kernel.
->  >
->  > You might as well just use low-latency, as Andrew is keeping that more
->  > up to date.
->
-> And that's what I noticed when looking and the download pages...
->
-> That leaves three options:
->
->  > 	(a) Use only preempt-kernel
->  > 	(b) Use only low-latency
->  > 	(c) Use preempt-kernel + low-latency
->
-> Right?
+Hi,
 
-Yes, I use (c)
+i need to have a low-latency interrupt on a 405-based chip with linux 2.4.
+
+Did anybody yet worked on this?
+
+I thought about routing the CriticalInterrupt pretty much the same way
+as the HardwareInterrupt, but with disabling MSR_CE. MSR_CE would be
+enabled then even in (normal) interrupts, we probably have to add a
+__crit_cli and __save_and_crit_cli as someone already suggested.
+
+Does CRIT_EXCEPTION work? Is do_IRQ reentrant? Should i use the same
+interrupt processing as a normal hardware interrupt, with the exception
+that only "critical"-flagged interrupts are processed?
+
+Any suggestions?
+
+The background: the IBM-STB045xx's capture port, which we use for
+IR-decoding, doesn't have any buffering, so when a time-consuming
+interrupt is processed (PIO network, maybe PIO ide), we miss IR cycles.
+
+Felix
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
