@@ -1,62 +1,63 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Ani Joshi <ajoshi@shell.unixbox.com>
-Subject: flat panel stays black - help
-Date: Fri, 9 Nov 2001 17:16:15 -0500
-Cc: Daniel Berlin <dan@cgsoftware.com>,
-	linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Message-Id: <20011109221339.IAGA25459.tomts20-srv.bellnexxia.net@there>
+Date: Sat, 10 Nov 2001 01:45:27 -0500
+From: Joseph Manojlovich <manojlov@cse.psu.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Various RS/6k 43p 150 Issues
+Message-ID: <20011110014527.B28196@cardassian.cse.psu.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hey all. I've been spending this week tracking down a real head smasher
+of a bug in the open framebuffer code. My card, the ever-annoying
+gxt2000p, only works through framebuffer. Now, the kernel Suse 7.1
+ships with works for the console -- it's a stock 2.4.2 kernel patched
+up to almost linuxppc (at that time). I've been trying the newer
+kernels, in an attempt to get X working, but it seems that anything
+above 2.4.6 breaks the framebuffer code for me.
 
-Okay I am now officially crazy.  I have decoded the EDID and hardcoded the
-radeon driver to use the proper timings and even fixed the code that
-assigns timing for LCD/DFP (it should not use left-right margins taken
-from the mode unless the mode is correct, it should use the info taken
-from rinfo which should always be the same for this FP monitor since all
-resolution changes are just done with stretching of horiz or vertical (i.e
-the timing never changes).
+The problem: the offb_init_fb call, in drivers/video/offb.c, was
+prematurely returning instead of initializing. The first 2 lines of
+real code in the function:
 
-I have turned on RTRACE and checked all of these things and all is fine
-but still my FP stays dark (OF does not properly intialize it).
+if (!request_mem_region(res_start, res_size, "offb"))
+        return;
 
-I read up all I could and compared it to the latest radeon drivers in XF86
-HEAD.
+request_mem_region starting with newer kernels returns 0 for me. A
+quick hack, removing the if statement surrounding the
+request_mem_region call, fixed the code for my card.
 
-I can not find anything wrong.  Then I looked in the older XF410 radeon
-driver and noticed one little register that we never manipulate:
+Tracking down the problem deeper, it turns out that in __request_region
+(inside kernel/resource.c) the framebuffer device is never not
+IORESOURCE_BUSY. So, I guess in my case the framebuffer is conflicting
+with itself??
 
-FP_PANEL_CNTL should have bits 0 and 1 turned on when the FLAT panel is
-being used (power up the panel).
+I'm not exactly sure how to fix this yet, aside from the quick hack,
+which does work. I'd offer a real patch, but I'm pretty new to this
+deep level kernel work and admittedly clueless. But I'm open to any
+suggestions.
 
-RADEON_FP_DIGON  (1 << 0)
-RADEON_FP_BLON (1 << 1)
+Also, is the pci code totally broken? 2.4.2 worked fine for my system.
+Now, I get lots of
 
-The older radeon code was present to actually turn this on (i.e. load and
-save these registers along with all of the other FP registers).
+"PCI: Cannot allocate resource region 0 of device 00:0d.0"
 
-For some reason we are choosing to never play with this register (I guess
-assuming OF will turn the monitor on properly?).
+and
 
-Why was this removed from the radeon_driver.c code?  The fp_panel_cntl
-register is actually defined in radeon.h in the kernel code but neither
-FP_DIGON nor FP_BLON are defined or used.
+"PCI: Failed to allocate resource 0(c00000-bfffff) for 00:0b.1"
 
-Given the code that does the similar thing for the LCD (with a delay loop)
-does anyone know the right way to use this register?
+and then none of my PCI devices work. Needless to say, this makes the
+system unbootable, as the SCSI card is never initialized and the root
+filesystem is never mounted. 2.4.2 worked however.
 
-Does anyone have any ideas here?  I am at a complete loss if this is not
-the problem.
+Any ideas? I've gotten all of these problems in 2.4.6 and above, and
+with the linuxppc branches hosted on source.mvista.com.
 
-Thanks,
-
-Kevin
-
+--
+Joe Manojlovich
+manojlov@cse.psu.edu
+"And a thermostat on a home furnace... is that supposed to go to
+ 5000 degrees, do you think?"
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
