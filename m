@@ -1,37 +1,43 @@
-Message-ID: <3BA8CD96.75D27252@mvista.com>
-Date: Wed, 19 Sep 2001 09:53:42 -0700
-From: Brian Eliot <beliot@mvista.com>
+Message-ID: <3BA8DF9E.FD235CF6@mvista.com>
+Date: Wed, 19 Sep 2001 14:10:38 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Kevin Fry <kevin@carts.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Init acting strange
-References: <001e01c140ac$88e8b830$fb5a01d9@crtc.corp.mot.com> <3BA7FE96.CA24D4EE@carts.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Stefan Roese <stefan.roese@esd-electronics.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
+	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
+Subject: Re: CPCI-405 port (PPC405GP)
+References: <20010918115722.A5967@cpe-24-221-152-185.az.sprintbbd.net> <EFEAIMDCOOOHIEPHDNFJCEKKDCAA.stefan.roese@esd-electronics.com> <20010919071751.B8132@cpe-24-221-152-185.az.sprintbbd.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I've been trying to get init working for a while now but I can't getting
-> logging in to work correctly, and I'm out of ideas, maybe someone can help
->
-> I'm using HHL 2.0 and the ramdisk is made from the target app rpms. I'm using
-> the default passwd file. Do shadow passwords or anything like that need to be
-> compiled in the kernel for the hhl2.0 login stuff to work??
->
-> here's what I'm seeing:
->
->   MontaVista Software's Hard Hat Linux 2.0
->
->   (none) login: root
->
->   MontaVista Software's Hard Hat Linux 2.0
->   ...
+Tom Rini wrote:
 
-A read-only root filesystem (or filesystem read-only to write attempts by root)
-will cause this symptom.
---
-Brian Eliot	MontaVista Software, Inc.	E-mail:	beliot@mvista.com
-		1237 E. Arques Avenue		Voice:	+1 408 992 4712
-		Sunnyvale, CA  94085-4701	Fax:	+1 408 328 9204
+> Sounds like a good idea.  Also, doing inline ... __init is rather silly.
+> How's the idea sound Dan?
+
+The idea is OK, but I would prefer a different implementation.  You
+are trying to do basically the same thing as all of the boards that
+use versions of OpenPIC, EPIC, etc.  Rather than have a fixed size
+array, and fill most of it with zero, a generic solution should be
+able to work with variable sized arrays......just pass the size
+somehow. The sizeof() works pretty well for this :-).  The boards
+initialize the array to whatever they need, and don't have to worry
+about others.
+
+> Well, do you forsee the need to put in board-specific defines?
+
+This isn't the right way.  If you notice the way the ports work,
+everything 4xx (or 8xx, or 6xx, or whatever), include the single
+header file, in this case ppc4xx.h.  This include file will select
+the proper board specific file.  The board specific file, contains,
+well, the stuff specific to a board.
+
+Thanks.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
