@@ -1,44 +1,82 @@
-To: m madhuker <mythri_madhuker@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: problem with compiling ppcboot 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 29 Jul 2004 05:19:49 PDT."
-             <20040729121949.23526.qmail@web13603.mail.yahoo.com>
-Date: Thu, 29 Jul 2004 19:09:16 +0200
-Message-Id: <20040729170921.BDA6CC109F@atlas.denx.de>
+Message-ID: <410933A0.8090008@mvista.com>
+Date: Thu, 29 Jul 2004 10:28:00 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: Dieu Morales <dieumorales@yahoo.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+	Michael Morales <michael.morales@lmco.com>,
+	David Woodhouse <dwmw2@infradead.org>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Brian Waite <waite@skycomputers.com>
+Subject: Re: GT64260_eth (Ethernet) Driver
+References: <20040729031902.69389.qmail@web60408.mail.yahoo.com>
+In-Reply-To: <20040729031902.69389.qmail@web60408.mail.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20040729121949.23526.qmail@web13603.mail.yahoo.com> you wrote:
+Dieu Morales wrote:
+
+>All,
+>I have had some success with making the gt64260_eth.c
+>driver from the 2.4.26 dev tree work with the 2.6.7
+>kernel.  I am able to see the ARP request and response
+>messages via a network analyzer. However, the response
+>messages appear not to generate an interrupt and I
+>eventually timeout when mounting an NFS file system.
+>My hardware maps a multi purpose pin from the
+>Discovery 64260 to a cascaded pair of i8259's for all
+>Ethernet and serial interrupts.  It is mapped to IRQ
+>15 using INT E which is initialized by my ppcboot
+>bootloader using the pciWriteConfigRegByte function.
+>Also, I receive interrupts fine for the keyboard and
+>mouse, so I feel all is OK with the i8259 driver
+>etc... I do not have a 64260 dev manual so I am
+>unclear if there is any special software
+>initialization needed for my configuration that must
+>take place in gt64260_eth.c or ev64260_setup.c or if I
+>am simply overlook something .   A few areas of
+>interest were:
 >
->          Im working with MPC8245 EncorePP1 board..
-> in this when compile ppcboot with make command..
+>In gt64260_eth.c
+>
+>/*
+> * enable relevant interrupts on GT
+>*/
+>gt_write(GT64260_ENET_E0IMR + gap, 0xb0ff010d);
+>
+>In ev64260_setup.c.
+>
+>/* Set MPSC Multiplex RMII */
+>/* NOTE: ethernet driver modifies bit 0 and 1 */
+>gt_write(GT64260_MPP_SERIAL_PORTS_MULTIPLEX,
+>0x00001102);
+>
+>Any insight is always appreciated.
+>
+>
 
-This is your first error. PPCboot is a dead project. Development  was
-discontinued nearly two years ago. Please use U-Boot instead.
+You have some very bizarre hardware.  Did your hardware guys *really*
+put a pair of 8259's between the intr cltr on the hostbridge and the
+processor???
 
-> it is showing errors as follows...
-...
-> ppc-elf-gcc -D__ASSEMBLY__ -g  -Os
-...
-> ppc-elf-gcc: installation problem, cannot exec `cpp0':
+Anyway, I perused the manual just in case but I don't see any way that
+you can route enet/mpsc/sdma interrupts out MPP/GPP pins.  I could be wrong.
 
-You are obviously using a home-grown toolchain which has at least  an
-installation  problem.  Either  fix  your toolchain, or use a working
-one.
+So, if you can actually convince the 64260 to route enet/mpsc/sdma intr
+out that pin, you'll have to request the proper irq in your driver.
+ From your description, it sounds like 15.  And, yes, you will have to
+configure things in the 64260 to set up the routing and edge/level
+sensitivity.
 
-Best regards,
+You will need a manual.  There's almost no hope without out one.  That
+probably means signing an NDA with Marvell.
 
-Wolfgang Denk
+Let me know if you get it to work.  I'll be impressed, not to mention
+surprised...
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-It is undignified for a woman to play servant to a man who is not
-hers.
-	-- Spock, "Amok Time", stardate 3372.7
+Mark
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
