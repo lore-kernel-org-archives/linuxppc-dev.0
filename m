@@ -1,46 +1,22 @@
-Message-ID: <20030131133012.58930.qmail@web13502.mail.yahoo.com>
-Date: Fri, 31 Jan 2003 05:30:12 -0800 (PST)
-From: Wang Jacky <jackyw_tw@yahoo.com>
-Subject: Re: kgdb and mpc8xx
-To: Ibon Gotxi Garcia <igotxi@jazzfree.com>,
-	Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <1044017517.711.54.camel@muse>
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: <gopi@india.tejasnetworks.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: mpc 8260 performance..
+Date: Fri, 31 Jan 2003 05:39:40 -0800
+Message-ID: <NCBBIINEHIPFGJPLBEIFKEKDEBAA.acurtis@onz.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <Pine.LNX.4.21.0301310840010.19268-100000@localhost.localdomain>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Ibon,
+>   We are planning to use 8260 for our embedded system.  One of the
+>   job is to do routing of around 40 interfaces, with each interface
+>   at about 500Kbps duplex.
 
-I tried before for kgdb + ppc_8xx-gdb + DDD with
-MontaVista/ Hardhat.
-
-just enable the kgdb in menuconfig/kernel hacking.
-
-ppc_8xx-gdb remote /dev/ttyS0
-
-best regards,
-
-Jacky
---- Ibon Gotxi Garcia <igotxi@jazzfree.com> wrote:
->
-> Hi:
->
-> Does kgdb work with mpc8xx using linus' kernel?
->
-> if true
-> 	should i customize anything in the kernel?
-> else
-> 	does it work with montavista's kernel?
->
-> thanks.
->
-> --
-> Ibon Gotxi Garcia <igotxi@jazzfree.com>
->
->
->
-
+What kind of interfaces? What kind of routing?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
