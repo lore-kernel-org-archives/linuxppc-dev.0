@@ -1,32 +1,40 @@
-From: Remco Treffkorn <remco@rvt.com>
-Reply-To: remco@rvt.com
-To: Tom Rini <trini@kernel.crashing.org>
-Subject: Re: Symbol versioning problem
-Date: Tue, 16 Jul 2002 16:21:37 -0700
-Cc: stefan.eletzhofer@eletztrick.de, linuxppc-dev@lists.linuxppc.org
-References: <200207101429.39539.remco@rvt.com> <200207161121.50509.remco@rvt.com> <20020716191248.GI20027@opus.bloom.county>
-In-Reply-To: <20020716191248.GI20027@opus.bloom.county>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200207161621.38242.remco@rvt.com>
+Date: Wed, 17 Jul 2002 13:42:22 -0500
+From: Troy Benjegerdes <hozer@drgw.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: SMP + raid1 + squid spinlock deadlock?
+Message-ID: <20020717134222.L9288@altus.drgw.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tuesday 16 July 2002 12:12, Tom Rini wrote:
-...
-> Well, have you tried backing up your .config, running 'make distclean',
-> moving your config back (and re running your favorite config program)
-> and trying again?
+Okay, my old MTX (dual 604ev) has been locking up about once every two
+weeks or so, so I recompiled to day with #define SPINLOCK_DEBUG, and about
+20 minutes later got the following:
 
-I did 'clean', not 'distclean', but your suggestion just sounded right.
-The re-build after the distclean did not have the problem. Apparently some
-crud stays around through 'make clean'. Maybe a corrupt .ver file...
+_spin_lock(d7e753f8) CPU#0 NIP c01a31c8 holder: cpu 1 pc C01A099C
 
-Good catch, Tom.
+According to the system.map, the functions are:
 
-Cheers,
-Remco
+c019ff44 t evdev_read
+c01a3150 t end_sync_write
+
+
+I have also seen a previous crashes in 'add_timer' several times where I
+got dropped to xmon.
+
+Squid somehow seems to be triggering these things, as I have seen squid as
+the process running when it has dropped to xmon.
+
+Have we got a race condition somewhere here? Is anyone else running squid
+and/or raid1 on an SMP PPC box?
+
+--
+Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
+-----"If this message isn't misspelled, I didn't write it" -- Me -----
+"Why do musicians compose symphonies and poets write poems? They do it
+because life wouldn't have any meaning for them if they didn't. That's
+why I draw cartoons. It's my life." -- Charles Schulz
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
