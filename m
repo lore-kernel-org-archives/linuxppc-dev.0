@@ -1,50 +1,34 @@
-Date: Tue, 24 Aug 1999 22:16:32 -0400 (EDT)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-Reply-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Michael_Joy@diitech.com, gthomas@cygnus.co.uk, jahluwal@cs.ucr.edu
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: IBM 850 LinuxPPC installation?
-In-Reply-To: <862567D7.00824CC0.00@eagles.designsol.com>
-Message-ID: <Pine.LNX.3.96L.990824214016.3087N-100000@unix47.andrew.cmu.edu>
+Message-ID: <37C35F10.6159B81C@usa.net>
+Date: Tue, 24 Aug 1999 23:12:17 -0400
+From: David Riley <happyoscar42@usa.net>
+Reply-To: happyoscar42@usa.net
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: BootX enhancement request
+References: <19990824105607.023574@mail.mipsys.com>
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-More on Linux on the IBM Power Series 850:
+Benjamin Herrenschmidt wrote:
 
-I've gotten a kernel compiled (and it boots!) with ethernet ("Lance") support.
-It also has IDE disk and cdrom support (which makes installing to a hard disk
-much easier). Unfortunately, I've run into a problem - the kernel hangs on
-Partition check:
-  hda:
+> On Mon, Aug 23, 1999, Robert Shaw <robert.shaw@motorola.com> wrote:
+>
+> >Ok, that's reasonable. Any thoughts Ben?
+>
+> I could add a front-end to the various video=xxxx options, and eventually
+> I can try to find out which option to give the kernel based on queries to
+> the video driver, but this is not trivial. I'll look into this as soon as
+> I find some time to play with BootX.
 
-If I specify "hda=none" on the kernel cmdline, it hangs on hdb. If I specify
-"hda=none hdb=none" it goes all the way to "Insert ram disk floppy #1" before
-the screen flashes black and it's hung again.
+Some of the drivers don't do video=xxxx.  I know controlfb doesn't.  Is there
+a _good_ reason for this, or does controlfb just not like me?
 
-Does anyone know what the IDE controller is on these machines? There are a few
-nonstandard controllers that need to be explicitly specified on the command
-line.
 
-Here's the IDE info I get before it hangs:
-hda: DPEA-31080, ATA DISK drive
-hda: IRQ probe failed (0)
-hdb: DSAA-3720, ATA DISK drive
-hdb: IRQ probe failed (0)
-hdc: IRQ probe failed (0)
-hdc: IRQ probe failed (0)
-hdc: no response (status = 0xd1), resetting drive
-hdc: no response (status =0x80)
-ide0 at 0x1f0-0x1f7,0x3f6 on irq 13
-hda: DPEA-31080, 1033MB w/448kb Cache, CHS=2100/16/63
-hdb: DSAA-3720, 696MB w/96kb Cache, CHS=1416/16/63
-
-This machine has two hard drives (1GB and 700MB) on bus 0 and a CD-ROM drive
-as a master on bus 1.
-
--Hollis
+--
+--"Your mouse has been moved.  Windows 95 must be restarted for change to take
+effect."
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
