@@ -1,39 +1,72 @@
-Message-ID: <39D1D193.C6EE4181@serialsystem.com.sg>
-Date: Wed, 27 Sep 2000 17:53:07 +0700
-From: Jari <jari.nguyen@serialsystem.com.sg>
-Reply-To: jari.nguyen@serialsystem.com.sg
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: NFS problem
-References: <21F9768AF088D211BF1C0008C71E5786013C9BEC@ap-bang-m02.india.tek.com>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <20000927121938.2547.qmail@dag.newtech.fi>
+To: <linuxppc-embedded@lists.linuxppc.org>
+cc: dag@newtech.fi
+Subject: Crosscompiler broken ?
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Mime-Version: 1.0
+Date: Wed, 27 Sep 2000 15:19:38 +0300
+From: Dag Nygren <dag@newtech.fi>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
-I'm a newcomer. Help me, pls.
+Hi again,
 
-Now I want to strip down the size of the library glibc 2.1.3 to make it only
-support my application.
-Is there anyone teach me about the glibc or where I can have the information
-about it.
+tracing down a severe probem I am seeing when
+porting Linux to a PPC-board.
 
-I've visited Graham Stoney's webpage  at ncbi, and  mmporter's webpage.
-I've just built glibc 2.1.3 and I think that I must look into the source code
-of it.
-But can you tell me the general information about the lib such as what is the
-structure of the lib?
-what does libc-2.1.3.so support?
-what does the other lib support? .. etc..
-what is the relationship between them?
-is there any web size or any document written about how to reduce the size of
-the glibc?
+The  compilation of the kernel is done with a crosscompiler
+on an Intel x86 system and strange things are happening:
 
-I'm sorry if my question is too simple, because I've just worked with linux for
-2 months.
-thank in advance.
-Jari
+This is the part of the code from fs/dcache.c:
+
+==================== Code =============
+    do {
+        unsigned long tmp;
+
+        nr_hash = (1UL << order) * PAGE_SIZE /
+            sizeof(struct list_head);
+        d_hash_mask = (nr_hash - 1);
+
+        tmp = nr_hash;
+        d_hash_shift = 0;
+        while ((tmp >>= 1UL) != 0UL)
+            d_hash_shift++;
+
+        dentry_hashtable = (struct list_head *)
+            __get_free_pages(GFP_ATOMIC, order);
+printk("dentry_hashtable(0.5)(addr = 0x%lx) = 0x%lx\n", &dentry_hashtable,
+dentry_hashtable);   /* DEB
+UG */
+    } while (dentry_hashtable == NULL && --order >= 0);
+printk("dentry_hashtable(0.7)(addr = 0x%lx) = 0x%lx\n", &dentry_hashtable,
+dentry_hashtable);   /* DEB
+UG */
+
+==================== Code  end =============
+
+here is the output:
+
+__get_free_pages(): page = 0xC024A000, page_address = 0xC0240000
+&dentry_hashtable = 0xc01cf0d4, stack = 0xc018af68
+__get_free_pages(): page = 0xC0274000, page_address = 0xC0CC0000
+dentry_hashtable(0.5)(addr = 0xc01cf0d4) = 0xc0cc0000
+dentry_hashtable(0.7)(addr = 0xc01cf0d4) = 0x5
+
+
+The last line is really strange, who the %&¤&%¤/ is messing around
+with the contents of dentry_hashtable ?
+
+Compiler bug ?
+
+
+--
+Dag Nygren                               email: dag@newtech.fi
+Oy NewTech Ab                            phone: +358 9 8024910
+Trasktorpet 3                              fax: +358 9 8024916
+02360 ESBO                                 GSM: 0400-426312
+FINLAND
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
