@@ -1,18 +1,19 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
-	by ozlabs.org (Postfix) with ESMTP id 8685E2BF2B
+Return-Path: <akpm@osdl.org>
+Received: from mail.osdl.org (fw.osdl.org [65.172.181.6])
+	by ozlabs.org (Postfix) with ESMTP id 5892E2BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Nov 2004 16:48:13 +1100 (EST)
-In-Reply-To: <20041108213428.16dfb1f7.akpm@osdl.org>
+	Tue,  9 Nov 2004 16:55:05 +1100 (EST)
+Date: Mon, 8 Nov 2004 21:54:47 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+Message-Id: <20041108215447.553707bf.akpm@osdl.org>
+In-Reply-To: <EA4FB805-3212-11D9-AC65-000393DBC2E8@freescale.com>
 References: <20041108213428.16dfb1f7.akpm@osdl.org>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <EA4FB805-3212-11D9-AC65-000393DBC2E8@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 8 Nov 2004 23:48:00 -0600
-To: "Andrew Morton" <akpm@osdl.org>
+	<EA4FB805-3212-11D9-AC65-000393DBC2E8@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org,
-	Kumar Gala <galak@somerset.sps.mot.com>
+	galak@somerset.sps.mot.com
 Subject: Re: [PATCH][PPC32] Added MPC8555/8541 security block infrastructure
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,29 +25,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Uugh, sorry.  The previous version of pine I was using did not do this.=20=
-
-  I will look at trying to change its settings.  Thanks for reformatting=20=
-
-the patch.  Can you explain further what you mean by 'space-stuffing'
-
-thanks
-
-- kumar
-
-On Nov 8, 2004, at 11:34 PM, Andrew Morton wrote:
-
-> Kumar Gala <galak@somerset.sps.mot.com> wrote:
->  >
->  > This patch adds OCP, interrupt, and memory offset details for the=20=
-
-> security
-> >=A0 block on MPC8555/8541 to support drivers.
+Kumar Gala <kumar.gala@freescale.com> wrote:
 >
-> Your email client did space-stuffing on the message, so the patch gets=20=
+> Can you explain further what you mean by 'space-stuffing'
 
-> 100%
->  rejects.=A0 I fixed it up by hand and applied the patch locally, =
-thanks.
->
-> I think there's a way of telling Pine to stop doing this.
+Some madness cooked up by people who think they know better than you.  See
+RFC2646.
