@@ -1,73 +1,76 @@
-Message-ID: <3D99F21B.5090408@mrsl.com>
-Date: Tue, 01 Oct 2002 15:06:03 -0400
-From: Tim Moloney <moloney@mrsl.com>
+Date: Tue, 1 Oct 2002 21:50:00 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Current rsync doesn't compile
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Cc: Eugene Surovegin <ebs@innocent.com>, geert@linux-m68k.org
-Subject: Re: Location for Linux kernel module support files
-References: <5.1.0.14.2.20021001100707.02dbfb50@mail.attbi.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: MULTIPART/mixed; BOUNDARY="134458388-1804289383-1033501808=:509"
+Message-Id: <E17wT1z-00008E-00@piglet.grunz.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tim Moloney wrote:
+--134458388-1804289383-1033501808=:509
+Content-Type: TEXT/plain; charset=us-ascii
 
-> The file the device driver needs is an FPGA program file that
-> - is data that I don't want compiled into the driver wasting space
-> - will initially be specified when the driver is loaded via rc script
-> - that can be reloaded by a program to customize it for a particular
->   application
->
-> I know that this isn't a a typical situation and I have only seen one
-> other device driver like this.  It is a 1553 driver that creates a
-> /usr/lib/<module_name> directory for its configuration file.  Is there
-> a better location?
+Hi Ben,
 
-Eugene Surovegin wrote:
+Your current rsync tree doesn't compile due to this error with the IRDA
+suppport:
 
-> For similar situation (I also need to load FPGA on our custom board) I just
-> coded
-> a simple "char" device (e.g. /dev/fpga).
-> User mode program or simple script writes into this device and
-> the driver sends this data to the PLD chip.
->
-> For debugging I use something like
->     # cp fpga.bin /dev/fpga
->
-> With this design driver itself doesn't have any knowledge about particular
-> location of
-> the FPGA program.
+make[3]: Entering directory `/usr/src/2.4/linux-2.4.benh/drivers/net/irda'
+gcc -D__KERNEL__ -I/usr/src/2.4/linux-2.4.benh/include -Wall -Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common -fomit-frame-pointer -I/usr/src/2.4/linux-2.4.benh/arch/ppc -fsigned-char -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring -DMODULE  -nostdinc -iwithprefix include -DKBUILD_BASENAME=irtty  -c -o irtty.o irtty.c
+irtty.c: In function `irtty_set_dtr_rts':
+irtty.c:761: `TIOCM_MODEM_BITS' undeclared (first use in this function)
+irtty.c:761: (Each undeclared identifier is reported only once
+irtty.c:761: for each function it appears in.)
+make[3]: *** [irtty.o] Error 1
+make[3]: Leaving directory `/usr/src/2.4/linux-2.4.benh/drivers/net/irda'
+make[2]: *** [_modsubdir_irda] Error 2
+make[2]: Leaving directory `/usr/src/2.4/linux-2.4.benh/drivers/net'
+make[1]: *** [_modsubdir_net] Error 2
+make[1]: Leaving directory `/usr/src/2.4/linux-2.4.benh/drivers'
+make: *** [_mod_drivers] Error 2
 
-Geert Uytterhoeven wrote:
+Searching around a bit it seems TIOCM_MODEM_BITS is not yet defined for
+all arches; it is in your tree only for parisc (where this originated
+from). The original patch from them seems to have included some other
+arches, but that was not applied.
 
- > So your kernel driver should create a /proc entry where the rc script
- > can write the FPGA program file to after insmod.
- >
- > If the FPGA program file is to be reloaded by the application, it can
- > just write the new data to the same /proc entry.
+So, please apply something like the attached to make the kernel compile.
+This is functionally equivalent to what existed before the half-applied
+patch by the parisc people introduced  TIOCM_MODEM_BITS (see
+http://lists.parisc-linux.org/pipermail/parisc-linux-cvs/2002-August/031396.html).
 
-I do something like this now but neither of these answer *where* to put
-the file that is being copied to the /proc entry.
+Thanks, and cheers
 
-I want to distribute a standard FPGA program file with the module and
-have it loaded at system boot time.  I can create an rc script to copy
-this file to the /proc entry.  I can package the module, rc script, and
-FPGA file in an RPM.  I just need to determine a reasonable location for
-the FPGA file (since I know where to put the module and rc script).
+Michel
 
-The custom FPGA files can be distributed with their respective
-applications and can be packaged in RPMs.
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-Perhaps there is no good answer to this.  I thought that this situation
-happened enough that people had found a reasonable location for support
-files.
+--134458388-1804289383-1033501808=:509
+Content-Type: TEXT/plain; name=patch
+Content-Disposition: attachment; filename=patch
 
---
-Tim Moloney
-ManTech Real-time Systems Laboratory
-2015 Cattlemen Road                             \     /
-Sarasota, FL  34232                     .________\(O)/________.
-(941) 377-6775 x208                        '  '  O(.)O  '  '
+--- /usr/src/sources/2.4/linux-2.4.benh/include/asm-ppc/termios.h	Fri Jan  1 00:45:37 1904
++++ include/asm-ppc/termios.h	Tue Oct  1 21:34:31 2002
+@@ -174,6 +174,9 @@
+ #define TIOCM_OUT2	0x4000
+ #define TIOCM_LOOP	0x8000
+
++/* IRDA support */
++#define TIOCM_MODEM_BITS	TIOCM_OUT2
++
+ /* ioctl (fd, TIOCSERGETLSR, &result) where result may be as below */
+ #define TIOCSER_TEMT    0x01	/* Transmitter physically empty */
+
+
+--134458388-1804289383-1033501808=:509--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
