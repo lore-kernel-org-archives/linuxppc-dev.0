@@ -1,76 +1,54 @@
-Message-ID: <38D1EDE5.E0FDF042@csem.ch>
-Date: Fri, 17 Mar 2000 09:33:41 +0100
-From: Amre El-Hoiydi <amre.el-hoiydi@csem.ch>
+Date: Fri, 17 Mar 2000 13:18:08 +0100 (CET)
+From: Geir Frode Raanes <geirfrs@invalid.ed.ntnu.no>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: What is the catch with IDMA on MPC860?
+Message-ID: <Pine.BSF.4.10.10003171104010.10581-100000@invalid.ed.ntnu.no>
 MIME-Version: 1.0
-To: Eisenzopf Thomas <thomas.eisenzopf@siemens.at>
-CC: "'linuxppc-embedded@lists.linuxppc.org'"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: problems with PPC860/ADS
- board/8xxrom-0.3.0/mpc8xx-2.2.13/patches(from Raphael Bossek)
-References: <D53137D1F3DDD211A3750800060DA31301702339@viee122a.erd.siemens.at>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
 
-I successfully applied the patches
-http://master.debian.org/~bossekr/powerpc/patch-2.2.13-mpc8xx.diff.gz
-http://master.debian.org/~bossekr/powerpc/patch-2.2.13-mpc8xx-damm.diff.gz
-to the kernel
-linux-2.2.13.tgz from www.ch.kernel.org/pub/linux/kernel/v2.2/
-using the following procedure:
+I must admit - I love DMA. A DMA a day keeps the
+software away. But I repeatedly hear - both inhouse
+and on this list that the MPC860 IDMA implementation
+leaves somewhat to be wanted. Problem is, I can not
+figure out what. MPC860 IDMA looks OK.
 
-cd linux-2.2.13; patch -p1 [--dry-run] < patch-2.2.13-mpc8xx.diff.gz
-cd linux-2.2.13; patch -p1 < patch-2.2.13-mpc8xx.diff.gz
+According to the documentation, the SDMA/IDMA (DSP-)
+controller will perform a normal arbitration on the
+internal U-bus and, when granted access, perform a
+fast back-to-back transfer. In the IDMA case the
+transfer will continue until exhaustion of the
+(possibely chained) Buffer Descriptor (list.)
+The SDMA will OTOH perform an alternating bus
+cycle-steal transfer.
 
-cd linux-2.2.13; patch -p1 [--dry-run] < patch-2.2.13-mpc8xx-damm.diff
-cd linux-2.2.13; patch -p1  < patch-2.2.13-mpc8xx-damm.diff
--modify the main Makefile: ARCH := ppc, CROSS_COMPILE = powerpc-linux-
--make config, make dep, make zImage
-
-I could not run it on my FADS board because I have only 4 MBytes memory. I am
-using this kernel on a custom board with 16 MBytes memory. I had to do a few
-modifications for that.
-
-Is there ? Where is the "low-memory patch" that make the kernel 2.2.13 runable
-with only 4
-Mbytes memory ?
-
-Regs,
-
-Amre
+Dual address modes will even interface between
+different bus sizes on source and target by grouping
+data in the internal buffer memory, thus utilizing
+the widest bus width possible on both read and write.
 
 
+Revision C or later of the '860 will even perform
+a single-address _burst_ transfer on IDMA channel 1.
+This I would love to do from our in-house designed
+frame grabber to main memory. Then I could avoid
+disabling all interrupts while bursting. Meaning
+I could still catch run-away situations on a
+time-out basis. Today things simply lock up...
 
-Eisenzopf Thomas wrote:
->
-> Hello!
->
-> I´m trying to get embedded Linux running on an ADS board with a PowerPC 860.
->
-> For the beginning I used the informations from Raphael Bossek´s WWW-page
-> http://www.s4l.de/powerpc.html.
->
-> My main problem at this time is, that the patches (from Magnus Damm and
-> Raphael Bossek) from this internet page do not seem to fit to
-> mpc8xx-2.2.13.tgz; the dates of the files differ, and the patch program
-> delivers errors (e.g. Hunk #1 FAILED at 459....). But without these patches
-> I cannot build the system.
->
-> Does anyone have some advice for me? Is there somewhere a complete archive
-> of the needed files (including the patches)? Where can I get additional
-> information?
->
-> Thank you in advance,
-> Thomas.
->
+Sooo, what is really the problem with IDMA?
 
---
-C       Amre El-Hoiydi, R&D Engineer,  amre.el-hoiydi@csem.ch
-S       System Engineering, Real-Time Software and Networking
-E       CSEM, Neuchatel, Switzerland   -   http://www.csem.ch
-M       Phone: +41(032)720 5188     -   Fax: +41(032)720 5720
+---
+
+  ******************************************************
+  Never ever underestimate the power of human stupidity.
+  -Robert Anson Heinlein
+
+		GeirFRS@invalid.and.so.forth
+  ******************************************************
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
