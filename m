@@ -1,30 +1,35 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Marc Dietrich <Marc.Dietrich@hrz.uni-giessen.de>,
-        <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: asm statement in include/asm not ansi conform
-Date: Fri, 1 Sep 2000 13:03:26 +0200
-Message-Id: <20000901110326.11355@mailhost.mipsys.com>
-In-Reply-To: <Pine.A41.4.21.0009011115240.32258-100000@c2.hrz.uni-giessen.de>
-References: <Pine.A41.4.21.0009011115240.32258-100000@c2.hrz.uni-giessen.de>
+Message-ID: <39AF8F1B.D9F547EC@pop.agri.ch>
+Date: Fri, 01 Sep 2000 13:12:47 +0200
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: "Timothy A. Seufert" <tas@mindspring.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Platform configuration (was: Re: CONFIG_PPC != Mac)
+References: <v04220803b5d51a99c774@[10.0.0.42]> <20000901110221.5823@mailhost.mipsys.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Benjamin Herrenschmidt wrote:
 >
->I fear this won't help much in my case (with b&w G3). Anyway there's still
->a lot to do. DRI is very unstable and it seems that some functions are
->missing.
+> >
+> >1. Resource conflicts are reported for the CMD646 IDE controller and
+> >an Adaptec 2940UW card
+[snip]
+> >4. Probably due to the resource conflict problem, the aic7xxx driver
+> >doesn't recognize the 2940.  This is a showstopper for me because my
+> >
+> >root partition's on a drive connected to the 2940.
 >
->Thanks for your great work
+> I'll see what I can do.
 
-Yes, it may help. AFAIK, the R128 also supports a "PCI GART" and I do
-intend to make sure my driver can handle those too (since supporting a
-PCI GART involves pretty much the same thing as supporting the Uni-N AGP
-GART).
+For me the same happens, the root is sitting on the drive connected to
+the 2940UW.
+The patch from Geert which you posted to ppclinux.sourceforge.net would
+solve this conflict. At least I could boot with it on my 7200.
 
-Ben.
-
+Andreas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
