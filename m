@@ -1,34 +1,45 @@
-Message-Id: <199902171250.HAA00182@darkstar.prodigy.com>
-From: davidsen@prodigy.com (Bill Davidsen)
-Date: Wed, 17 Feb 1999 07:50:25 -0500
-In-Reply-To: <Pine.LNX.4.04.9902162012560.432-100000@narn.local.drgw.net> from hozer@drgw.net
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [ppc-dev] Re: Restructuring Efforts
+Message-ID: <XFMail.990217133431.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+In-Reply-To: <36CA7AC0.F2F7596D@pop.agri.ch>
+Date: Wed, 17 Feb 1999 13:34:31 -0000 (GMT)
+From: Gary Thomas <gdt@linuxppc.org>
+To: Andreas Tobler <toa@pop.agri.ch>
+Subject: RE: back to gcc under pre-R5
+Cc: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Troy Benjegerdes <hozer@drgw.net> noted:
 
-> ifdefs are evil ;) 
-> OTOH, I don't know if I like a ton of 'if _machine' from a readability
-> standpoint. I would like something similiar to the Alpha's and Corey
-> Minyards rework with a structure for various machines with any code that
-> would have been inside an #ifdef , switch(_machine) if _machine. 
+On 17-Feb-99 Andreas Tobler wrote:
+> 
+> Hello,
+> 
+> is it possible to get back to gcc under pre-R5? If so. where can I get the (S)RPMS?
+> 
+> And how much do it affect when I build the libstdc++ with fno-vtable-thunks?
+> Do I have to rebuild the whole system, since the new glibc needs vtables?
+> It's only because egcs has bug which is for my subject killing.
+> 
 
-Well, you can preserve readability if you are willing to put the
-machine types in an enum and make use of "pointer to function
-returning" arrays. So instead of doing something like init_mem() you
-would use (*init_mem[_machine])() instead.
+There are no current RPMs for GCC to my knowledge.  The last ones I made nearly
+two years ago and gave up on shortly thereafter because EGCS was much superior.
 
-Another trick is to have a set if defines which you provide for each
-machine type, and then call. Either of these provide easy extensibility
-without ifdefs.
+What bug in EGCS is so terrible that you are considering this move?
+Which version of EGCS have you tried?
 
--- 
-   -bill davidsen (davidsen@prodigy.com)
-"The secret to procrastination is to put things off until the
- last possible moment - but no longer"  -me
+There will be EGCS-1.1.2 in the very near future which has many PowerPC problems
+fixed, perhaps you can wait.
+
+------------------------------------------------------------------------
+Gary Thomas                              |
+email: gdt@linuxppc.org                  | "Fine wine is a necessity of
+   ... opinions expressed here are mine  |        life for me"
+       and no one else would claim them! |
+                                         |      Thomas Jefferson
+------------------------------------------------------------------------
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
