@@ -1,68 +1,42 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <000701c258eb$9092e4e0$0700a8c0@pc005>
-Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-To: "Wolfgang Denk" <wd@denx.de>
-Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-References: <20020909193701.AABCDFA8B@denx.denx.de>
-Subject: Re: 8260 MCC Interrupt priority 
-Date: Tue, 10 Sep 2002 19:00:27 +0200
+Message-ID: <3D7E25F4.4CC00BF8@mvista.com>
+Date: Tue, 10 Sep 2002 13:03:48 -0400
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Adrian Cox <adrian@humboldt.co.uk>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Caching in the MPC107
+References: <1031581408.30396.81.camel@newt>
+		<20020910145843.GB797@opus.bloom.county> <1031672735.2686.58.camel@newt>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Many thanks for your suggestion, I have checked the references You gave me
-and I believe that RTAI would be a good solution to solve our problem.
-Actually I'm working with a quite old version of HardHat package (CDK 1.2
-with 2.4.0-test2 kernel) with some minor patches in order to have the
-ethernet 100% functionality, do You think we can easily port the RTAI on
-this version or shall we migrate to HardHat 2.0?
+Adrian Cox wrote:
 
-Gianfranco
+> I think the problem was only visible because the pcnet32 device polls a
+> descriptor small enough to get cached in the MPC107, and no other PCI
+> master is active to read this cache. I don't currently have access to a
+> Sandpoint X3 to test this out on.
+>
+> The problem seems to be a logical consequence of the documented and
+> correct behaviour of the MPC107 and the 7450 family: a PCI read causes
+> the MPC107 to cache the line, and the 7450 to mark the line shared. As
+> _PAGE_COHERENT is not set, the 7450 does not produce an address only
+> transaction when it writes to the line and changes it back from shared
+> to modified. The physical evidence was using the scope to see a PCI read
+> go into the MPC107, and the MPC107 respond without any cycles on the 60x
+> bus.
 
------ Original Message -----
-From: "Wolfgang Denk" <wd@denx.de>
-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-Sent: Monday, September 09, 2002 9:36 PM
-Subject: Re: 8260 MCC Interrupt priority
+Adrian,
 
+I think I understand what you're saying.  The biggest question that comes to
+my mind, though, is whether this is a problem on many of the other
+hostbridges?  Most of the newer bridges will buffer a cacheline or two.  Is
+this a wider issue than just the 107?
 
-> Dear Gianfranco,
->
-> in message <020c01c25820$89c23880$0700a8c0@pc005> you wrote:
-> >
-> > I'm currently working on a custom board derived from EST8260. We are
-trying
-> > to implement a device driver of MCC to control the interface with a
-> > synchrounous PCM.
-> > I have noted that when there is an interrupt on SCC1 (or FCCx) the
-latency
-> > time of MCC interrupt increase. Now I'm really concerned about the
-> > possibility to loose some frame due to an heavy use of such interfaces.
->
-> If losing a frame is _that_ critical to you yoy should consider using
-> RTAI.
->
-> > Do anybody knows if there is the possibility to avoid such behaviour
-(maybe
-> > allowing an interrupt casting with the MCC ISR)?
->
-> With RTAI you can register the MCC as a real-time interrupt which has
-> higher priority than all Linux stuff, guaranteed.
->
-> See http://www.rtai.org/ , and feel free to contact me when you  need
-> help.
->
-> Wolfgang Denk
->
-> --
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-> The software required `Windows 95 or better', so I installed Linux.
+Mark
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
