@@ -1,93 +1,57 @@
-Subject: Better board support (was Re: [PATCH] Adding support for LXT971/2 PHYs)
-To: dan@netx4.com (Dan Malek)
-Date: Fri, 5 May 2000 15:19:36 +1000 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org (LinuxPPC Embedded Mailing List)
-In-Reply-To: <39123B16.945B1E6E@embeddededge.com> from "Dan Malek" at May 04, 2000 11:08:06 PM
+Message-ID: <BE1C564723B3D21191FD0000F840E39801D81505@rfcmx2.rfc.comm.harris.com>
+From: "Brown, David (dbrown03)" <DBrown03@harris.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: interference between scc serial and ethernet: more information
+Date: Fri, 5 May 2000 10:17:25 -0400 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000505051936.BA2B23C971@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi again,
+The target is a custom board similar to the EST8XX configuration, with an
+860 and an LXT908 PHY.  I ultimately need to run PPP on SCC3.  When ethernet
+receives data, it messes up SCC3's configuration somehow.  I briefly tested
+with SCC2 and saw the same thing, but I have concentrated on SCC3.
 
-Dan Malek writes:
-> There is lots of stuff that comes straight to me for merging into
-> sources.......
+It's a 50MHz MPC860, identified by 8xxrom as XPC860xxZPnnC1 and actually
+stamped as XPC860ENCZP50C1.  Running at 50MHz.
 
-I know it's beyond your control; My plea was for other developers reading this
-to cc the mailing list when they send you patches, so we all know what's going
-on.
+Three nodes on the ethernet: the target, the Abatron BDI2000, and the
+development host.
 
-> > .......... My ideal solution to the problem of supporting multiple board
-> > types is to move the magic numbers like the PHY interrupt pin and the
-> > PxPAR/PxDIR/etc values into each board-specific header file,
->
-> I understand your point, but the other side of the argument is when you
-> don't keep things like this together, people don't realize how many
-> examples of how to do it exist.  They also don't realize how their
-> change may affect someone else.
+Case 1) Linux boots with default parameters, no IP address.  I use SCC3
+serial, no problem.  Then, on the development host, I ping a non-existent
+address (causing an ARP request broadcast).  After that, the SCC3 serial is
+not working.  Sometimes, when I write to SCC3, garbled characters come out
+(like it's the wrong baud rate).  Other times, nothing comes out at all.
 
-Not sure I'm with you here, but I think we need to have a simple single
-solution to multiple board support, and to use it universally. If we replace
-all the board-specific #ifdefs with feature-specific ones defined in the board
-specific header files, everything related to a specific board is all kept
-together. I don't think I'm proposing anything new here, just a more complete
-use of the current scheme where each board type has its own header defining
-the features present on that board. This is also the approach 8xxROM/PPCBOOT
-uses, and it would be nice to keep them all consistent.
+Case 2) Linux boots with IP address parameters.  I use SCC3 serial, no
+problem.  Then, on the target, I ping a non-existent address.  Serial still
+works fine.  I get "neighbour table overflow" messages.
 
-Another example under the scheme would be to replace most of the usages of
-"#ifdef CONFIG_RPXCLASSIC" in fec.c with "#ifdef PHY_QS6612", and put
-"#define PHY_QS6612" in rpxclassic.h. At present, anyone adding a board which
-uses the QS6612 has to edit fec.c, even though it already supports their PHY.
+Case 3) In enet.c, in cpm_enet_rx(), I commented out code so that all
+received frames get tossed.  Again, SCC3 serial stops working when the
+development host pings an unknown address.
 
-> > We took this approach with our new custom board, and haven't had to add a
-> > single #ifdef CONFIG_ourboardname outside the one which chooses our
-> > board-specific header in mpc8xx.h.
->
-> I do that with lots of custom boards.  Most are simple derivative of
-> what is already there.  In fact, some have even choose the same I/O
-> pins for Ethernet (there aren't many options, and most have been used :-),
-> so we don't even need to add anything but another conditional on an
-> #ifdef.
+I tried activating kgdb to debug this, but kgdb stops working as soon as the
+init shell starts.  It seems to be a fight over which process gets the input
+data.  I'm looking at it with BDM, but that's quite slow since I have to
+translate memory references.
 
-I'd much prefer the conditionals to test for board features rather than
-specific boards. That way you _don't_ have to add another conditional on an
-#ifdef every time you add a new board with existing features. In cases like
-register names and bit definitions, we can even avoid the conditionals
-altogether by using definitions like:
+I see four potential possibilities.
+a) A bug in the enet or serial driver.  Not likely, since others report that
+Ethernet and SCC serial ports work simultaneously for them.
+b) A hardware problem on my board.  My co-worker says that's unlikely, since
+his low-level test software exercises Ethernet RX and uses SCC3 as the
+console.
+c) A blatant configuration error in my setup of Linux.  Not likely, since
+Ethernet and Serial each work independently.
+d) My board violates some assumptions made by Linux and/or the drivers.
+That seems to me to be the most probable, but I can't think of what it might
+be.
 
-/* Ethernet : PHY controls - connected to port X
- *
- * Field        Value   Explanation
- * -----        -----   -----------
- * PHYPAUSE[x]      0   We don't support pause
- * PHYPWRDWN[x]     0   We don't support power down
- * PHYSLEEP[x]      0   We don't support sleep
- */
-#define PHY_PAUSE               ((ushort) 0x0800)
-#define PHY_PWRDWN              ((ushort) 0x0200)
-#define PHY_SLEEP               ((ushort) 0x0040)
-
-#define PHY_PAUSE_PORT          im_ioport.iop_pXdat
-#define PHY_PWRDWN_PORT         im_ioport.iop_pXdat
-#define PHY_SLEEP_PORT          im_ioport.iop_pXdat
-
-> It's just not as easy as getting a patch and checking it in.
-
-I appreciate your efforts co-ordinating all this. One of the reasons for
-posting a patch is to stimulate discussion, and I'm interested in comments
-from other people too.
-
-Thanks,
-Graham
---
-Graham Stoney
-Principal Hardware/Software Engineer
-Canon Information Systems Research Australia
-Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
+Please feel free to throw out random ideas as to what I should look for.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
