@@ -1,40 +1,59 @@
-Message-ID: <3FB5741C.703@jonmasters.org>
-Date: Sat, 15 Nov 2003 00:32:28 +0000
-From: Jon Masters <jonathan@jonmasters.org>
+Message-ID: <1069059216.3fb88c900b316@pop-mail.india.tejasnetworks.com>
+Date: Mon, 17 Nov 2003 14:23:36 +0530
+From: Anil Giri <anil@india.tejasnetworks.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: SDRAM mirroring problem
 MIME-Version: 1.0
-To: Dan Kegel <dank@kegel.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 4xx ports
-References: <3FB4D07C.4010909@jonmasters.org> <20031114082854.A23689@home.com> <3FB50DDC.3090309@kegel.com>
-In-Reply-To: <3FB50DDC.3090309@kegel.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Resending this as i didn;t get any response.....
 
-Dan Kegel wrote:
+----- Forwarded message from Anil Giri <anil@india.tejasnetworks.com> -----
 
-| Hey, if Jon wants to help merge stuff from linuxppc-2.4 upstream,
-| don't discourage him! :-)
+Hi,
+  My board uses SAMSUNG K4S511632M SDRAM in 8M * 16 bit * 4 banks configuration
+(13 rows & 10 columns).Two such chips are used to get 128 MB and uses CS1 for
+chip select.My board uses MPC852T processor.
 
-Give me my marching orders and I will find some time to help -
-basically I take my work home with me anyway so...
+MPC to SDRAM configuration is as follows:
+======================
+A29 :A0
+A28 :A1
+A27 :A2
+A26 :A3
+A25 :A4
+A24 :A5
+A23 :A6
+A22 :A7
+A21 :A8
+A20 :A9
+GPL_A0 : A10
+A18 :A11
+A17 :A12
 
-| But it's true, some of the stuff Jon's interested might still be
-| stuck in linuxppc_2_4_devel, and need merging into linuxppc-2.4
-| (hope I got those names right), and maybe he should do that first.
+A6 :BA0
+A5 :BA1
+GPL_A3 :CAS
+GPL_A2 :RAS
+GPL_A5 :WE
+=====================
+My problem is that when i write some word in first RAM chip is mirrored
+in the other RAM chip.And Effectivly i m able to use only 64 MB of RAM.
+What could be the problem???
+Following SDRAM settings are used
 
-So assume I know the Linux ppc stuff but might not know which bits are
-in which tree as I tend to be using the stock kernel.
+IMMR:0xff000000
+OR1: 0xf8000e00
+BR1: 0x00000081
+MSTAT:0x00000400
+MAMR: 0x80a06114
+MAR: 0x88
+MCR:0x80002105
 
-The patches I have produced on work time will surface once they are
-finished and a system begins to ship but I can work on the other
-linuxppc stuff without any problems so am in a "youthfull
-optimism" kind of way wanting to help.
-
-Jon.
-
+Thanks in advance...
+-Anil
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
