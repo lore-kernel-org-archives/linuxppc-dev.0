@@ -1,56 +1,56 @@
-Message-ID: <398950D9.2373EC50@gmx.de>
-Date: Thu, 03 Aug 2000 13:00:41 +0200
-From: Matthias Pfisterer <Matthias.Pfisterer@gmx.de>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Gabriel Paubert <paubert@iram.es>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: rtc again...
+Date: Thu, 3 Aug 2000 13:14:22 +0200
+Message-Id: <20000803111422.1301@mailhost.mipsys.com>
+In-Reply-To: <Pine.HPX.4.10.10008031133480.9070-100000@gra-ux1.iram.es>
+References: <Pine.HPX.4.10.10008031133480.9070-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: alsa-devel@alsa-project.org
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [alsa-devel] Re: ALSA sequencer + Timidity on GNU/Linux PPC
-References: <200008030930.KAA12700@hyperion.valhalla.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Iain Sandoe wrote:
 >
-> On  Thu, Aug 3, 2000, Matthias Pfisterer wrote:
-> > I tried the above combination (plus pmidi). It generally works; timing
-> > seems to be correct. However, the sound of most (all?) notes is very
-> > distorted. Is there any way to debug this? Timidity in standalone-mode
-> > works ok---some timing problems if doing real-time playback, but perfect
-> > in doing batch-processing (rendering to a wav file).
-> > I'm using alsa-drivers 0.5.8b, Timidity 2.10.0a3 and a patched dmasound
-> > driver (that's the OSS driver for Macs, sorry, no ALSA driver for it
-> > yet).
->
-> Which kernel (2.2.17pxx or 2.4.0?)
+>Actually given the problems with RTC being UTC or local time, the offset
+>might perhaps better be setup as a kernel parameter so that th system
+>start up in a known good state. It seems that it is in RAM for Macs, but
+>what about other machines (I have no problems since all my machines are
+>UTC and I simply refuse to use an OS which requires anything else) ?
 
-2.2.17pre10-ben2 + your dmasound patch + my hacks. I wanted to clean up
-by using Ben H. newest version, but found no rsync URL for the 2.2.17xxx
-tree, only for 2.4.x. Anybody can send it me?
+Most "sane" RTCs are in UTC. On PReP and CHRP, this is not a problem,
+they use, I think, legacy RTC hardware and so you just need to set it up
+correctly in UTC.
 
-> (a) What frag sizes & number of frags are you using for the driver?
+On Macs, it's slightly different. MacOS expects the RTC to be in local
+time and stores the timezone and DSL state in PRAM. I recently added
+fixup code in pmac_time.c for reading that value and correctly setting
+the kernel timezone at boot from it. Paul improved on my code by adding
+the ability to save modified timezone back to PRAM. I think there's still
+an issue with DST. There's a field for storing it in the kernel tz
+structure, but I'm not sure it's fully defined or used. I beleive this
+could be easily fixed by looking at what hwclock does, and eventually
+fixing it.
 
-I started Timidity like this:
-% timidity -c /etc/timidity.cfg -iA -B2,8
+Note that all this affects only powermacs, and the /dev/rtc driver we are
+talking about here is the pmac-only one in drivers/macintosh.
 
->
-> (b) I think we may have an issue with the order in which SNDCTL_XXX IOCTLs
-> are sent to the dmasound driver.  This is being investigated (today) as it
-> came to light last night...
->
-> It is possible that the distortion is simply that the mode that Timidity
-> *thinks* it has set is different for what is *actually* set in the driver.
->
-> Once the kernel (OSS) driver is "sorted" I will (if no-one else
-> volunteers/does it in the meantime) try to get an ALSA one going ASAP.
->
-> BTW I will try and replicate the effect if you mail me the configs/URLs
-> (off-list).  Last time I tried Timidity I didn't get any action :-( but I
-> had very little time to experiment.
+>Note that I have removed the #if 0 to prevent RTC update from Bemjamin,
+>the code was completely bogus to start with: you should only update the
+>RTC when STA_UNSYNC is clear, not when it is set. If you are using NTP,
+>you don't need anything else: set CONFIG_PPC_RTC off, NTP does RTC updates
+>through adjtimex and this should simply work right out of the box with
+>this patch, at least it does for me and the clock is very stable.
 
-Will do this in the  afternoon/evening. I'm in hurry now.
+Did you remove the #if 0 or did you remove the code that is #if 0'ed ?
+That code seem to originate from other archs and was causing a lot of
+trouble when enabling the pmac_rtc_set_time() since it was writing bogus
+times to the RTC during boot (at that time, I didn't yet added the code
+to read the timezone from the PRAM).
+Also, I didn't see why the kernel would keep updating the RTC hardware,
+the sounded bogus to me and a userland matter, not a kernel matter (but
+maybe I missed something). So I #if'ed it out. Removing it completely
+sounds fine.
 
-Matthias
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
