@@ -1,44 +1,42 @@
-Subject: Re: ppc LE questions (seeking help hand info pointers)
-To: trini@kernel.crashing.org (Tom Rini)
-Date: Thu, 20 Sep 2001 10:10:01 -0700 (PDT)
-Cc: geert@linux-m68k.org (Geert Uytterhoeven),
-	mbs@mc.com (Mark Salisbury),
-	linuxppc-dev@lists.linuxppc.org (Linux/PPC Development)
-In-Reply-To: <20010920091221.H13721@cpe-24-221-152-185.az.sprintbbd.net> from "Tom Rini" at Sep 20, 2001 09:12:21 AM
+Message-ID: <3BAA3533.9010108@mc.com>
+Date: Thu, 20 Sep 2001 14:28:03 -0400
+From: Mark Salisbury <mbs@mc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20010920171002.37DCA2B54A@marcus.pants.nu>
-From: flar@pants.nu (Brad Boyer)
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ppc LE questions (seeking help hand info pointers)
+References: <3BAA0E6F.5050503@mc.com> <20010920085825.F13721@cpe-24-221-152-185.az.sprintbbd.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Tom Rini wrote:
-> On Thu, Sep 20, 2001 at 06:07:48PM +0200, Geert Uytterhoeven wrote:
-> > On Thu, 20 Sep 2001, Tom Rini wrote:
-> > > On Thu, Sep 20, 2001 at 11:42:39AM -0400, Mark Salisbury wrote:
-> > > > question 4. assuming I was willing to deliver a clean, complete LE
-> > > > enabling patch (including devices that are relevant to me), as a compile
-> > > > time config option and maintain that patch, what would be the primary
-> > > > obstacle to inclusion in the main line.
-> > >
-> > > The objection to being an arch that attempts to support both LE and BE.
-> >
-> > Note that we already have a precedent: mips and mipsel, both in arch/mips/.
+
+> On Thu, Sep 20, 2001 at 11:42:39AM -0400, Mark Salisbury wrote:
+>>question 1.  are there already existing patch sets (rejected from
+>>mainline inclusion) available for use as a starting point?
 >
-> And SH too, iirc.  I know it can be done.  But do we want to do it is the
-> question.
+> There was a bit of work, just for the kernel.  Nothing on the toolchain
+> side.
 
-At least in the case of SH, there's a good reason. There's an external pin
-that controls the native endianness of the processor, and most setups just
-have it forcibly pulled high or low. I suspect the MIPS is the same reason,
-since it's used in similar situations. We don't have that excuse with ppc.
-Someone would have to come up with an excuse along the lines of "existing
-hardware won't work unless we do this" like it would have been for SH.
-(I had to work with the SH4e as used by Sega in the Dreamcast...)
+could you point me to the author/code?
+toolchain is not a problem, I have gcc sparc/ppc_le crosscompiler etc...
 
-	Brad Boyer
-	flar@allandria.com
+
+--
+/*------------------------------------------------**
+**   Mark Salisbury | Mercury Computer Systems    **
+**   mbs@mc.com     | System OS - Kernel Team     **
+**------------------------------------------------**
+**  Thanks to all who sponsored me for the        **
+**  Multiple Sclerosis Great Mass Getaway!!       **
+**  Robert, Michele and I raised $10,000 and the  **
+**  raised over $1,000,000 ride as a whole.  The  **
+**  ride was great, and we didn't get rained on!  **
+**  Thanks again to all of you who made this      **
+**  possible!!                                    **
+**------------------------------------------------*/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
