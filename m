@@ -1,27 +1,29 @@
-Message-ID: <20040312090521.92822.qmail@web12602.mail.yahoo.com>
-Date: Fri, 12 Mar 2004 01:05:21 -0800 (PST)
-From: Deepu Paulose Thachil <dpthachil@yahoo.com>
-Subject: "linux.cmm" batch file of Trace32 for MCP750
+Subject: 2.6 kernel on Sandpoint
+From: Adrian Cox <adrian@humboldt.co.uk>
 To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
+Message-Id: <1079084120.691.16.camel@newt>
+Mime-Version: 1.0
+Date: Fri, 12 Mar 2004 09:35:21 +0000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Has anybody run the linuxppc_2_5 tree on a Sandpoint recently?
 
-I am trying to port the linux kernel into a custom
-board which is very similar to the IBM Spruce board
-(PowerPc 750, CPC700 etc). The hadware debugger tool
-that i am using is  Lauterbauch Trace32. Trace32 needs
-a batch file called "linux.cmm" for loading the image.
-Does anyone have the "linux.cmm" file for a MPC750
-processor. Please send it if u have...
+I've got a Sandpoint X2. I've ported linuxppc_2_4_devel to run on it,
+and the patch is extremely small. My attempt to do the same thing with
+linuxppc_2_5 has run into a problem:
 
-Thanks in advance..
+Once init opens the console device, the serial driver unmasks irq 4. At
+this point irq 4 is permanently asserted, even though the interrupt
+register in the UART claims that there is no interrupt.
 
-DP
+This should be the same on both X2 and X3 Sandpoints, leaving me curious
+as to whether the X3 works with the current tree.
+
+- Adrian Cox
+http://www.humboldt.co.uk/
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
