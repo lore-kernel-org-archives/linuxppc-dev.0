@@ -1,66 +1,67 @@
-Date: Mon, 3 Mar 2003 17:34:30 +0100
-Mime-Version: 1.0 (Apple Message framework v482)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Subject: PrPMC800 NON-MONARCH Patch 
-From: Anders Blomdell <anders.blomdell@control.lth.se>
-To: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Message-Id: <01BBDD6E-4D96-11D7-BD61-0003931C2BFA@control.lth.se>
+Message-ID: <3E6384F6.9090701@mvista.com>
+Date: Mon, 03 Mar 2003 10:38:14 -0600
+From: Mark Hatle <fray@mvista.com>
+MIME-Version: 1.0
+To: Stephan Linke <Stephan.Linke@epygi.de>
+Cc: Bret Indrelee <Bret.Indrelee@qlogic.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: "printk" does not print
+References: <FCEAKDJJAPHPLJFINDAJCEEBCOAA.Stephan.Linke@epygi.de>
+In-Reply-To: <FCEAKDJJAPHPLJFINDAJCEEBCOAA.Stephan.Linke@epygi.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Finally I have a working PrPMC800 Linux for NON-MONARCH operations. The
-attached patch is what is needed.
+Stephan Linke wrote:
+> Hi,
+>
+> if your startup skript changes the console log level in /proc/sys/kernel/printk maybe not all messages are displayed on console. But
+> you can still look into /var/log/messages.
 
-The content of the patch falls in three categories:
+...assuming you have klogd/syslogd installed and running...
 
-   1. PrPMC800 specific stuff (in files prpmc*, harrier*)
-   2. Discontigous memory support (various files) and a gross hack in
-      numa.c
-   3. Making all network and PCI memory DMA-able, I did the changes at
-      this low level since I found numerous places where GFP_DMA should
-      be added to get things working, and on most systems all (or much)
-      of the memory is DMA-able, thus nobody has experienced any problems
-      before (arch/ppc/kernel/pci-dma.c, net/core/skbuff.c)
+--Mark
 
-
-IMHO, supporting systems where DMA-able memory is small and not starting in
-low memory is harder than it needs to be (and wastes memory, since memory
-zones needs to be 2MB aligned). I think it would be easier to describe
-memory layout with something like:
-
-   typedef struct {
-     void *start;
-     unsigned long size;
-     gfp_type kind;
-   } memory_layout_t;
-
-   memory_layout_t the_memory_layout = {
-     { 0,         0x4000000, GFP_NORMAL },
-     { 0x4000000, 0x100000,  GFP_DMA },
-     ...
-
-than it is to describe it as a number of memory nodes, each consisting of
-GFP_NORMAL, GFP_DMA and GFP_HIGHMEM memory, and their associated holes to
-make everything align to 2 MB (1 << PAGE_SHIFT << (MAX_ORDER -1))
-
-Patch is available as:
-   http://www.control.lth.se/~andersb/prpmc800/2003-03-03.patch
-
-and something somewhat like ChangeLog entries is available as:
-   http://www.control.lth.se/~andersb/prpmc800/patch_2003-03-03_description.
-txt
-
-Regards
-
-Anders Blomdell
-
-------------------------------------------------------------------------------
-  Anders Blomdell
-  Department of Automatic Control        Email: anders.blomdell@control.lth.
-se
-  Lund Institute of Technology           Phone: +46 46 222 4625
-  Box 118, S-221 00 Lund, Sweden         Fax:   +46 46 138118
+> Regards, Stephan
+>
+>
+>>-----Original Message-----
+>>From: owner-linuxppc-embedded@lists.linuxppc.org
+>>[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Bret
+>>Indrelee
+>>Sent: Montag, 3. Marz 2003 15:46
+>>To: Ing.Gianfranco Morandi
+>>Cc: LinuxPPC
+>>Subject: Re: "printk" does not print
+>>
+>>
+>>
+>>On Mon, 3 Mar 2003, Ing.Gianfranco Morandi wrote:
+>>
+>>>Hi to all,
+>>>
+>>>I'm trying to trace the execution path of a custom ISDN driver, and I have
+>>>used some printk() instructions to give some messages out.
+>>>
+>>>Now, everything is going well, but when I try to open the ttyI0 device (or
+>>>ttyIx it is the same) the printk() that I have placed into the file
+>>>isdn_tty.c does not print any messages. I am sure that such procedure has
+>>>been executed because I have placed a breakpoint on the "isdn_tty_open()"
+>>>and the program stopped.
+>>>
+>>>Anybody has an idea what happens?
+>>
+>>You probably neglected to set a KERN_ level.
+>>
+>>See if they are in your dmesg or messages file, you might be sending them
+>>to syslog but not the screen.
+>>
+>>-Bret
+>>
+>>--
+>>Bret Indrelee                 QLogic Corporation
+>>Bret.Indrelee@qlogic.com      6321 Bury Drive, St 13, Eden Prairie, MN 55346
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
