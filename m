@@ -1,32 +1,56 @@
-Date: Mon, 29 Oct 2001 09:57:04 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>,
-	akuster@mvista.com
-Subject: Re: linuxppc_2_4_devel on walnut
-Message-ID: <20011029095704.A8198@cpe-24-221-152-185.az.sprintbbd.net>
-References: <3BDD855B.8D3FC72F@inn.ericsson.se>
-Mime-Version: 1.0
+Message-ID: <3BDD92DF.F9714CE0@mvista.com>
+Date: Mon, 29 Oct 2001 09:33:19 -0800
+From: Armin Kuster <akuster@mvista.com>
+MIME-Version: 1.0
+To: lokes@naradnetworks.com
+Cc: Dan Malek <dan@mvista.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Compressing S-REC ?!?!
+References: <NEBBIIHKKKOGHDOKEPOMIEDGCEAA.lokes@naradnetworks.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BDD855B.8D3FC72F@inn.ericsson.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Oct 29, 2001 at 05:35:39PM +0100, Kenneth Johansson wrote:
+Srinivas Loke wrote:
+>
+> Dan:
+>
+> We are trying to use the new prototype board from Embedded Planet
+> (EP405) and I can't seem to install the HardHat Linux on it. Ofcourse
+> I have the 1.x version of Linux and I just downloaded the HardHat 2.x
+> JourneyMan but I can't seem to have any luck with this new board.
+> Any clues?
+> --
+> Srini Loke
+>
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Dan
+> Malek
+> Sent: Monday, October 29, 2001 9:48 AM
+> To: Sarnath Kannan
+> Cc: linuxppc-embedded@lists.linuxppc.org
+> Subject: Re: Compressing S-REC ?!?!
+>
+> Sarnath Kannan wrote:
+>
+> > Hi All,
+> >  I have the "zsrec" program that accompanies
+>
+> That program converts a zImage file into S-records.
+> It was originally written for the Embedded Planet
+> boards, and I guess has found some uses beyond that.
+>
+>         -- Dan
+>
 
-> 1. The default configuration don't compile
 
-Can you post a log?
+Use the  bits are in linuxppc_2_4_devel. MVista does not have an hhl 2.0
+version out but the tools work.
 
-> 2. The ethernet driver gets confused. It reports 10mb and half duplex when it
-> really is 100Mb full duplex. And it reports 100Mb full duplex when only 10Mb
-> half duplex exist.
+Select B in "Enter (B)inary or (S)record input mode <B> " when
+downloading a kernel.
 
-Which PHY?
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+-- armin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
