@@ -1,26 +1,35 @@
-Date: Fri, 19 Oct 2001 14:28:59 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Paul Mackerras <paulus@samba.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: arch/ppc/kernel clutter
-In-Reply-To: <15312.6740.808012.183783@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.33.0110191426580.27649-100000@opal.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: paulus@samba.org
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: boot methods 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 19 Oct 2001 22:05:11 +1000."
+             <15312.5879.511865.946406@cargo.ozlabs.ibm.com>
+Date: Fri, 19 Oct 2001 15:28:45 +0200
+Message-Id: <20011019132850.CA20710CCC@denx.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I feel that arch/ppc/kernel in the linuxppc_2_4_devel tree is getting
-> more than a bit cluttered.  I propose that we make a new
-> arch/ppc/platforms directory and move the platform-specific files into
-> there - i.e. all of *_setup.c, *_pic.c, *_pci.c, and maybe some
+In message <15312.5879.511865.946406@cargo.ozlabs.ibm.com> you wrote:
+>
+> Other platform maintainers can use a wrapper or not as they choose.
+> For consistency and simplicity it would be nice if there was a
+> standard register assignment on entry, for example having the physical
+> address of the bi_recs in r3, but that is not essential.
+>
+> We should all agree on a comment set of bi_rec tags and the format for
+> each type of entry.  And I like Ben's suggestion of keeping the bi_recs
+> around.
 
-I was wondering how you guys could live with that situation anyway. Why
-not have arch/ppc/powermac/, arch/ppc/prep/, arch/ppc/chrp/ and more of
-the same?
+Both is fine for me...
 
-	Michael
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+A failure will not appear until a unit has passed final inspection.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
