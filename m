@@ -1,20 +1,18 @@
-Return-Path: <akpm@osdl.org>
-Received: from smtp.osdl.org (fire.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 5FA8267A71
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Mar 2005 10:40:29 +1100 (EST)
-Date: Thu, 3 Mar 2005 15:40:13 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Mikael Pettersson <mikpe@user.it.uu.se>
-Message-Id: <20050303154013.4790be3b.akpm@osdl.org>
-In-Reply-To: <16935.14471.919379.826792@alkaid.it.uu.se>
-References: <16935.14471.919379.826792@alkaid.it.uu.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: geert@linux-m68k.org, linux-m68k@vger.kernel.org, paulus@samba.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH][2.6.11] gcc4 fix for <asm-m68k/setup.h>
+Return-Path: <ken@kenmoffat.uklinux.net>
+Received: from ppgpenguin.kenmoffat.uklinux.net
+	(spc2-brig1-3-0-cust232.asfd.broadband.ntl.com [82.1.142.232])
+	by ozlabs.org (Postfix) with ESMTP id D2B2A67A46
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Mar 2005 12:23:04 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by ppgpenguin.kenmoffat.uklinux.net (Postfix) with ESMTP id F008D146DF
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Mar 2005 01:01:40 +0000 (GMT)
+Date: Fri, 4 Mar 2005 01:01:40 +0000 (GMT)
+From: Ken Moffat <ken@kenmoffat.uklinux.net>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <Pine.LNX.4.58.0503040042380.20574@ppg_penguin.kenmoffat.uklinux.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Subject: Is emu10k1 broken in ppc ?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mikael Pettersson <mikpe@user.it.uu.se> wrote:
->
-> gcc4 generates compile errors when it sees declarations
-> of arrays of incomplete element types. <asm-m68k/setup.h>
-> has one such declaration, which unfortunately breaks ppc32
-> since <asm-ppc/setup.h> #includes <asm-m68k/setup.h>.
-> 
-> The fix in this case is to simply move the array declaration
-> to after the corresponding element type declaration.
-> 
-> Signed-off-by: Mikael Pettersson <mikpe@csd.uu.se>
+ First noticed this earlier this week, trying to upgrade my iBook from
+2.6.8 to 2.6.11-rc5, using a debian config.  At that point, it didn't
+seem important to me.  Bit me again tonight when I tried to get my
+AmigaOne up to 2.6.10 from 2.6.9 using my existing config.  The case
+labels are SNDRV_EMU10K1_CODE_POKE and SNDRV_EMU10K1_CODE_PEEK, neither
+the header nor the code changed between 2.6.9 and 2.6.10.
 
-Thanks, I'll merge that up.
+sound/pci/emu10k1/emufx.c: In function `snd_emu10k1_fx8010_ioctl':
+sound/pci/emu10k1/emufx.c:2055: error: case label does not reduce to an int=
+eger constant
+sound/pci/emu10k1/emufx.c:2068: error: case label does not reduce to an int=
+eger constant
+make[3]: *** [sound/pci/emu10k1/emufx.o] Error 1
+make[2]: *** [sound/pci/emu10k1] Error 2
+make[1]: *** [sound/pci] Error 2
+make: *** [sound] Error 2
 
-> diff -rupN linux-2.6.11/include/asm-m68k/setup.h linux-2.6.11.gcc4-fixes-v2/include/asm-m68k/setup.h
-> --- linux-2.6.11/include/asm-m68k/setup.h	2004-12-25 12:16:22.000000000 +0100
-> +++ linux-2.6.11.gcc4-fixes-v2/include/asm-m68k/setup.h	2005-03-02 19:36:26.000000000 +0100
-> @@ -362,12 +362,13 @@ extern int m68k_is040or060;
->  #ifndef __ASSEMBLY__
->  extern int m68k_num_memory;		/* # of memory blocks found (and used) */
->  extern int m68k_realnum_memory;		/* real # of memory blocks found */
-> -extern struct mem_info m68k_memory[NUM_MEMINFO];/* memory description */
->  
->  struct mem_info {
->  	unsigned long addr;		/* physical address of memory chunk */
->  	unsigned long size;		/* length of memory chunk (in bytes) */
->  };
-> +
-> +extern struct mem_info m68k_memory[NUM_MEMINFO];/* memory description */
->  #endif
->  
->  #endif /* __KERNEL__ */
+Any clues, please ?  Definitions from emu10k1.h are
+
+#define SNDRV_EMU10K1_IOCTL_CODE_POKE=09_IOW ('H', 0x11, emu10k1_fx8010_cod=
+e_t)
+#define SNDRV_EMU10K1_IOCTL_CODE_PEEK=09_IOWR('H', 0x12, emu10k1_fx8010_cod=
+e_t)
+
+Ken
+--=20
+ das eine Mal als Trag=F6die, das andere Mal als Farce
