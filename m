@@ -1,23 +1,38 @@
-In-Reply-To: <Pine.HPX.4.10.10001211502220.18916-100000@gra-ux1.iram.es>
-Date: Fri, 21 Jan 2000 16:29:56 +0100
-To: Gabriel Paubert <paubert@iram.es>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: Fwd: Re: still no accelerated X ($#!$*)
-Message-Id: <20000121162956.007813@mailhost.mipsys.com>
+Message-Id: <4.2.2.20000121163453.03db3200@mail.munich.netsurf.de>
+Date: Fri, 21 Jan 2000 16:37:14 +0100
+To: Albrecht Dreﬂ <ad@mpifr-bonn.mpg.de>
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Subject: Re: gcc 2.95/PPC bug
+Cc: LinuxPPC Users <linuxppc-user@lists.linuxppc.org>,
+        LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <388804D3.DF16EE2F@mpifr-bonn.mpg.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="iso-8859-1"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jan 21, 2000, Gabriel Paubert <paubert@iram.es> wrote:
+At 08:03 21.01.00 , Albrecht Dreﬂ wrote:
 
->Bridges also may reorder writes and burst them, eieio can be used to
->prevent this. That's not only the processor effect...
+>When trying to find the cause for crashes of LAME, I think I found a
+>bug in the gcc.  The code below (which is actually a simpilified excerpt
+>from LAME) will NOT pass the parameter `buggy' correctly to the
+>subroutine.  Changing the number/type/sorting of the parameters will,
+>however, produce a working code in some cases.  Some facts about the
+>system:
+>
+>   Machines: PowerMac 7300 (604e), LinuxPPC 2.2.11
+>             PB "Lombard" (G3), LinuxPPC 2.2.12
+>   gcc:      versions 2.95 and 2.95.1
+>   options:  gcc -O0 -Wall gcc-2.95-ppc-bug.c -o gcc-2.95-ppc-bug
+>
+>Is this a known (and hopefully already fixed ;-) bug, or should it go
+>directly to gcc-bugs@gcc.gnu.org?
 
-My understanding of the PCI spec is that bridges are not allowed to
-re-order. They an combine for burst but they are forbidden to do any
-reordering.
+I believe this is fixed in my current gcc-2.95.2 RPM-set available on
+<ftp://devel.linuxppc.org/users/fsirl/>.
+
+Franz.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
