@@ -1,35 +1,30 @@
-Message-ID: <40B4AB27.5020202@fh-landshut.de>
-Date: Wed, 26 May 2004 16:35:19 +0200
-From: Oliver Korpilla <okorpil@fh-landshut.de>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: ioremap() question
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <40B4880B.1000801@intracom.gr>
+References: <40B4880B.1000801@intracom.gr>
+Mime-Version: 1.0 (Apple Message framework v613)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <82FB0468-AF2A-11D8-89B7-003065F9B7DC@embeddededge.com>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Kumar Gala <kumar.gala@motorola.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: 8xx-2.6 | Prolog
+Date: Wed, 26 May 2004 11:36:52 -0400
+To: Pantelis Antoniou <panto@intracom.gr>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
-
-I start with a CPU physical address somwhere within the PCI bridge space: 0x85000000
-Then I use ioremap_nocache on it to obtain a (range of) virtual address(es):
-0xC302D000
-And then I use virt_to_bus() to obtain an address to hand over to the PCI device:
-0x0302D000
+On May 26, 2004, at 8:05 AM, Pantelis Antoniou wrote:
 
 
-While I do see this conforms to the implementation of virt_to_bus(), I cannot
-decide whether this makes sense.
+> The patches that follow are against the linuxppc-2.5 tree and
+> are tested to work on my NETTA board.
 
-Is ioremap() fixed, so it always returns the same virtual addresses for the same
-given physical ones?
+Thanks.  I'll work on them this evening, get it running on my 8xx
+boards and check them in.
 
-Or does it return "what's available" in virtual address space (so the above bus
-address would be somehow bogus I guess)?
 
-Would a function like phys_to_bus() give me the same result?
+	-- Dan
 
-Thanks in advance,
-Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
