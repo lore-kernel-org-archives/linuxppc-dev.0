@@ -1,22 +1,27 @@
-Message-ID: <1352.81.137.83.225.1086684625.squirrel@www.solinno.co.uk>
-Date: Tue, 8 Jun 2004 09:50:25 +0100 (BST)
-Subject: Definitive list of people to send ppc32 patches to
-From: "Leigh Brown" <leigh@solinno.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16581.34710.660230.111005@cargo.ozlabs.ibm.com>
+Date: Tue, 8 Jun 2004 19:32:06 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Leigh Brown" <leigh@solinno.co.uk>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Definitive list of people to send ppc32 patches to
+In-Reply-To: <1352.81.137.83.225.1086684625.squirrel@www.solinno.co.uk>
+References: <1352.81.137.83.225.1086684625.squirrel@www.solinno.co.uk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Leigh Brown writes:
 
-Please can someone tell me who to send ppc32 patches to when I finally
-want to submit one (I normally like to do an [RFC] on this list first)?
+> Please can someone tell me who to send ppc32 patches to when I finally
+> want to submit one (I normally like to do an [RFC] on this list first)?
 
-Thanks,
+Me, plus Ben Herrenschmidt if it touches mac stuff, Tom Rini generally
+for boot and 6xx/7xx/7xxx embedded stuff, and Dan Malek for 8xx stuff
+or Matt Porter for 4xx.
 
-Leigh.
-
+Regards,
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
