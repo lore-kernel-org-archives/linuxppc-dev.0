@@ -1,63 +1,62 @@
-Message-ID: <XFMail.990224095316.gdt@linuxppc.org>
-Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-In-Reply-To: <99022322220600.00836@ns1102.munich.netsurf.de>
-Date: Wed, 24 Feb 1999 09:53:16 -0000 (GMT)
-From: Gary Thomas <gdt@linuxppc.org>
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: egcs-1.1.1-1c bug (was Re: major ksyms problem)
-Cc: linuxppc-dev@lists.linuxppc.org
-Cc: linuxppc-dev@lists.linuxppc.org,
-        mklinux-development-system@public.lists.apple.com,
-        Franz Sirl <Franz.Sirl@munich.netsurf.de>, Tom Vier <nester@erols.com>,
-        Tom Vier <thomassr@erols.com>
+Date: Wed, 24 Feb 1999 11:42:17 +0100
+To: linuxppc-dev@lists.linuxppc.org, Paul Mackerras <paulus@cs.anu.edu.au>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Fwd: Re: Help! Installer will not boot on my G3
+Message-Id: <19990224114217.006994@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+A user sent me this, it may be interesting to whoever is maintaining
+dmasound.c :
 
-On 23-Feb-99 Franz Sirl wrote:
-> 
-> Am Tue, 23 Feb 1999 schrieb Tom Vier:
->>On Tue, 23 Feb 1999, Franz Sirl wrote:
->>
->>> At 15:36 22.02.99 , Tom Vier wrote:
->>> >
->>> >it's an egcs bug. i think it's not aligning instructions properly, cuz
->>> >i believe the 601 is more strict about alignment. is anyone having
->>> >problems using bsd_comp.o, ppp_deflate.o, and hfs.o on a non-601
->>> >machine built under pre-R5 (egcs-1.1.1-1c)?
->>> 
->>> What makes you think that it is an egcs bug? I have no problems on 601
->>> (7200/75) with any of the modules you listed. Are you sure you have the
->>> latest modutils (2.1.121 or later) installed?
->>
->>it is an egcs bug. egcs-1.1.1-1c failss to build working bsd_comp.o,
->>ppp_deflate.o, and hfs.o; egcs-1.0-2e.ppc.rpm builds it perfectly. i'm
->>getting a newer build of egcs right now, to see if it's fixed.
-> 
-> What is the problem with these modules? Give a better description on what you
-> mean with "working"? They work perfectly for me with a self-compiled 2.2.1
-> kernel, and I compiled working modules with multiple kernel versions since the
-> egcs-1.1 alpha phase.
-> If your only problem is the "unhandled relocation type", install a newer
-> modutils package (>=2.1.121), that will fix it.
+
+On Tue, Feb 23, 1999, Jonah Petri <petrij@bc.edu> wrote:
+
+---------------- Begin Forwarded Message ----------------
+> I'm interested to know what happens when you remove the DVD card. I
+> beleive the G3 is an original (gray) one, isn't it ? Will sound work
+> under MacOS ?
 > 
 
-Sadly he can't use that modutils package as it's only for 2.1.xx and 2.2.xx
-kernels.
+This is indeed a "beige box" G3, with the Apple BTO DVD/AV card. Sound
+works just fine in MacOS, both internal speaker and sound out.  
 
-Tom,  Can you try the 2.2.xx kernels and see if they work for you?  This would
-be a much better way to spend your time rather than looking after a quite old
-kernel.
+The DVD decoder is on the "personality card" along with the AWACS chip, and
+the various TV analog/digial converters.  I yanked that out of the box and
+when I put everything together again, to my suprise, linux started up just
+fine!  After sucessfully installing linuxppc 4, I did a dmesg, and there is
+no sign of anything involving AWACS in the startup messages.  
 
-------------------------------------------------------------------------
-Gary Thomas                              |
-email: gdt@linuxppc.org                  | "Fine wine is a necessity of
-   ... opinions expressed here are mine  |        life for me"
-       and no one else would claim them! |
-                                         |      Thomas Jefferson
-------------------------------------------------------------------------
+Now, I decided to look around and see what I could find about possible
+reasons for this apparent incompatibility between my personality card and
+the linux DMAsound driver (or whatever was crashing).  After poking about
+in the mailing lists I discovered some complaints about sound support being
+forced to 8 bit.  But when I opened my monitors and sound control panel I
+found this:
+
+My computer does not support anything but 16 bit/44.1 kHz sound in and out.
+My documentation which came with the computer confirms this.
+
+If the kernel tries to force the AWACS chip to anything else, this may be
+the cause of the crash.
+
+Does this help?  I can try out any other kernels you give me, and I could
+even yank my card again and patch my existing kernel source and recompile
+(although this is a bit of a pain!).
+
+Jonah
+petrij@bc.edu
+
+
+----------------- End Forwarded Message -----------------
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
 
 
 
