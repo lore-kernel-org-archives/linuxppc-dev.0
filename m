@@ -1,30 +1,33 @@
-Date: Tue, 27 Jul 2004 10:47:07 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Giuliano Pochini <pochini@shiny.it>, Olaf Hering <olh@suse.de>
+Mime-Version: 1.0 (Apple Message framework v618)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <5ADF885A-E00F-11D8-B9F8-000393DBC2E8@freescale.com>
 Cc: LinuxPPC-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Can't compile 2.6.7 with gcc 3.4.1
-Message-ID: <20040727174707.GB10891@smtp.west.cox.net>
-References: <20040726223832.3edafe0a.pochini@shiny.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040726223832.3edafe0a.pochini@shiny.it>
+From: Kumar Gala <kumar.gala@freescale.com>
+Subject: namespace issues with asm-ppc/regs.h
+Date: Tue, 27 Jul 2004 15:55:56 -0500
+To: Paul Mackerras <paulus@samba.org>,
+	Matt Porter <mporter@kernel.crashing.org>,
+	Tom Rini <trini@kernel.crashing.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jul 26, 2004 at 10:38:32PM +0200, Giuliano Pochini wrote:
+All,
 
->
-> Is this a known problem ?  I can't compile the kernel 2.6.7 with gcc 3.4.1:
+Viro recently submitted some patches to 2.6 which removed some names
+space conflicts that existed between asm-ppc/regs.h (also
+asm-ppc64/regs.h) and various drivers.  I'm proposing we remove all non
+SPRN_ scoped references for SPRs.  I'm willing to cleanup the ppc32
+side for this change, however I would appreciated someone willing to do
+the same for PPC64.
 
-You're trying to use gcc-3.4 and binutils-2.14, which is a bad
-combination.
+Let me know if we want to go down this path or if there is some other
+brilliant idea for resolving the namespace issue.
 
-Olaf, did you ever get a chance to try the last patch I had with your
-matrix of toolchain versions?
+I'm also envious of Viro's ability to get C++ style comments into the
+linux kernel :)
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+- kumar
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
