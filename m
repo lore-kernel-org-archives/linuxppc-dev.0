@@ -1,48 +1,91 @@
-Date: Fri, 26 Jan 2001 13:39:41 -0500
-From: Josh Huber <huber@alum.wpi.edu>
-To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Graphics corruption with XF
-Message-ID: <20010126133941.A7973@missioncriticallinux.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <FFD40DB4943CD411876500508BAD0279014543B5@sj5-ex2.brocade.com>
+From: Amit Chaudhary <amitc@brocade.com>
+To: Daniel Eisenbud <eisenbud@cs.swarthmore.edu>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: RE: mesh SCSI bus locks hard on 7500 when burning a CD-R in dao m
+	ode
+Date: Fri, 26 Jan 2001 11:48:40 -0800
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I threw an old Mac64 (VGA compatible controller: ATI Technologies Inc
-3D Rage I/II 215GT) into my dual g4 box.  after running X -configure,
-I get a semi-working XF86config file.  After tweaking it further, I
-still have some problems:
+Hi Daniel,
 
-X reports that it could only find 1 MB of video memory, when I'm
-pretty sure it's got 4 MB.  This of course severly limits my
-depth/resolution, and when paired with the rage 128 I'm currently
-using it's a little lacking.. :)
+Though i cannot help you with your exact problem, some pointers.
+1. The log should be typicall in /var/log/messages as long  as you have syslogd and klogd running.
+2. For information on sysrq, check Documentation/sysrq.txt in the linux kernel sources. You will have to rebuilt your kernel to enable SysRq.
 
-The real problem is that there seem to be some issues with the ati
-driver with respect to this card.  The problem definately seem to be
-endian related and affect both graphics and text.
+Amit
 
-Text is corrupted such that the characters are a mirror image of each
-other (swapped on the y-axis).  Graphics are fuzzy, and the cursor is
-definately corrupted.
 
-Has anyone had any luck with a combination like this?
+-----Original Message-----
+From: Daniel Eisenbud [mailto:eisenbud@cs.swarthmore.edu]
+Sent: Thursday, January 25, 2001 1:50 PM
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Fwd: mesh SCSI bus locks hard on 7500 when burning a CD-R in
+dao mode
 
-FYI:
-XFree86 Version 4.0.2 / X Window System
-(protocol Version 11, revision 0, vendor release 6400)
 
-(II) ATI: ATI driver (version 6.2.3) for chipsets: ati
 
-[huber@dualg4:~]-$> uname -a
-Linux dualg4 2.4.1-pre10 #1 SMP Fri Jan 26 11:44:30 EST 2001 ppc
-unknown
+I asked this in linuxppc-user bothj yesterday and months ago, and have
+not received any replies, which made me wonder if this list would be a
+better place to ask.  I haven't done any significant kernel hacking, but
+know C well and am more than happy to try to debug and see if I can fix
+this, but I'm not sure where to start.  I guess the first thing to do
+should be to boot from a disk on the other SCSI bus and see what errors
+I get from mesh, since right now everything just freezes hard without
+any visible diagnostics.  Or is there a way, even with a totally frozen
+SCSI bus (containing the swap partition among other things, though I can
+of course swapoff before testing this) to tell anything useful about the
+state of the machine once SCSI is frozen.  I have vaguely heard of, but
+don't know the details of this "magic sysrq" thing.  Would that be
+useful?
+
+Please excuse my cluelessness -- any advice that people have is much
+appreciated!
+
+The text of my original message with the details of the problem is
+below.
 
 Thanks,
+Daniel Eisenbud
+
+----- Forwarded message from Daniel Eisenbud <eisenbud@cs.swarthmore.edu> -----
+
+Date: Wed, 24 Jan 2001 22:28:54 -0500
+From: Daniel Eisenbud <eisenbud@cs.swarthmore.edu>
+To: linuxppc-user@lists.linuxppc.org
+Subject: mesh SCSI bus locks hard on 7500 when burning a CD-R in dao mode
+
+
+I have a Powermac 7500 (with a G3 accelerator.)  I have replaced the
+internal CD-ROM with a Yamaha CD-RW drive.  This sits on the mesh SCSI
+bus.  I have the mesh driver configured to run at 5 megabytes/second
+(since I get massive SCSI problems all over the place if I set it to
+10.)  Under a variety of kernels, from 2.2.15 or so to 2.4.0 from Paul
+Mackeras's tree, my SCSI setup is generally stable and I can burn CD-R
+disks just fine in track-at-once mode.  However, if I try to burn a disk
+in disk-at-once mode, either with cdrdao or cdrecord, the SCSI bus
+appears to silently lock up hard, bringing down my whole machine.
+Nothing is logged at all, as far as I can tell.  Has anyone had this
+problem before?  Does anyone know of a solution?  If not, how would I go
+about debugging this further?
+
+Thanks in advance,
+Daniel Eisenbud
 
 --
-Josh Huber
-1024D/6B21489A 61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
+Daniel E. Eisenbud
+eisenbud@cs.swarthmore.edu
+
+
+
+
+----- End forwarded message -----
+
+--
+Daniel E. Eisenbud
+eisenbud@cs.swarthmore.edu
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
