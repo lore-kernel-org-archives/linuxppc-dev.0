@@ -1,19 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
-	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id 54D5667A2C
+Return-Path: <galak@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id F179167A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Jan 2005 22:27:26 +1100 (EST)
-To: "s.deepak" <s.deepak@gdatech.co.in>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 21 Jan 2005 11:44:03 +0530."
-	<015801c4ff80$68185b60$4000a8c0@DeepakS>
-Date: Fri, 21 Jan 2005 12:26:37 +0100
-Sender: wd@denx.de
-Message-Id: <20050121112642.9D8C7C108D@atlas.denx.de>
+	Sat, 22 Jan 2005 03:47:52 +1100 (EST)
+Date: Fri, 21 Jan 2005 10:47:39 -0600 (CST)
+From: Kumar Gala <galak@freescale.com>
+To: akpm@osdl.org
+Message-ID: <Pine.LNX.4.61.0501211044060.20917@blarg.somerset.sps.mot.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: USB Host Controller driver for ISP1362 
+Subject: ppc32: allow usage of gen550 on platforms that do not define
+ SERIAL_PORT_DFNS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,28 +22,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <015801c4ff80$68185b60$4000a8c0@DeepakS> you wrote:
-> 
-> Anyone had worked on porting non PCI ISP 1362 host controller drivers to
-> PPC processor?
+Allows a platform to initialize serial_state completely from gen550_init 
+and no longer requires it to define SERIAL_PORT_DFNS.
 
-Why don't you just search the last 3 or 4 days of the mailing list
-archive? See for example
-http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/001074.html
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-> Please provide me with some suggestions on this.
-
-Read the netiquette? Read the mailing list archives  before  posting?
-Don't post HTML to mailing lists?
-
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Remember, Information is not knowledge;  Knowledge  is  not  Wisdom;
-Wisdom is not truth; Truth is not beauty; Beauty is not love; Love is
-not music; Music is the best."                          - Frank Zappa
+---
+diff -Nru a/arch/ppc/syslib/gen550_dbg.c b/arch/ppc/syslib/gen550_dbg.c
+--- a/arch/ppc/syslib/gen550_dbg.c	2005-01-21 10:43:30 -06:00
++++ b/arch/ppc/syslib/gen550_dbg.c	2005-01-21 10:43:30 -06:00
+@@ -29,6 +29,11 @@
+ 
+ #define SERIAL_BAUD	9600
+ 
++/* SERIAL_PORT_DFNS is defined in <asm/serial.h> */
++#ifndef SERIAL_PORT_DFNS
++#define SERIAL_PORT_DFNS
++#endif
++
+ static struct serial_state rs_table[RS_TABLE_SIZE] = {
+ 	SERIAL_PORT_DFNS	/* defined in <asm/serial.h> */
+ };
+@@ -154,6 +159,7 @@
+ 	rs_table[i].port = serial_req->iobase;
+ 	rs_table[i].iomem_base = serial_req->membase;
+ 	rs_table[i].iomem_reg_shift = serial_req->regshift;
++	rs_table[i].baud_base = serial_req->uartclk ? serial_req->uartclk / 16 : BASE_BAUD;
+ }
+ 
+ #ifdef CONFIG_SERIAL_TEXT_DEBUG
