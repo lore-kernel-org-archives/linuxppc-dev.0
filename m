@@ -1,47 +1,21 @@
-To: Dan Malek <dan@embeddededge.com>
-Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
-	"Kerl,     John" <John.Kerl@Avnet.com>,
-	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MPC8xx, FEC and DP83847 !? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 21 Mar 2002 14:34:03 EST."
-             <3C9A35AB.9080701@embeddededge.com>
-Date: Thu, 21 Mar 2002 20:57:25 +0100
-Message-Id: <20020321195730.04767109F3@denx.denx.de>
+From: Jeremy Rosen <Jeremy.Rosen@au.thalesgroup.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Message-Id: <sc9b235b.074@gw_tms_syd2.pty.tms.thomson-csf.com>
+Date: Fri, 22 Mar 2002 12:27:52 +1100
+Subject: m8xx power management
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3C9A35AB.9080701@embeddededge.com> Dan Malek wrote:
->
-> >> The Motorola reference boards use port D for MII, but we
-> >> used PCMCIA/port A pins instead.
->
-> If someone is doing this, please send me some patches for the
-> driver when you get it working.  All of the 857s I have seen
-> are still using Port D for the FEC.  I guess I could make the
-> changes if someone else can test them.
+hello
 
-Just grab our latest source tarball, and look  at  the  configuration
-for the ICU862 board.
+before I start working on it... did anybody try to implement the m8xx
+power management under linux ??
 
-> > I supposed you're using PORT D for something else!?
->
-> The intention is to also be able to use Port D for the ATM UTOPIA
-> so you can have 10/100 and ATM on the same part.  This is really
-> the purpose of the 857, although I have yet to see anyone use it
-> that way :-).
+thx
 
-Well, the ICU862 is such a board, based on a MPC862.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Things that try to look like things often do look  more  like  things
-than things. Well-known fact.       - Terry Pratchett, _Wyrd Sisters_
+Jeremy
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
