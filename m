@@ -1,42 +1,28 @@
-To: Bruno Li <libruno@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: What to change on u-boot if we want to remove SPD EEPROM? 
+To: "Stephan Linke" <Stephan.Linke@epygi.de>
+Cc: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: running 8xx without UART 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 11 Jun 2003 18:47:45 PDT."
-             <20030612014745.47244.qmail@web41509.mail.yahoo.com>
-Date: Thu, 12 Jun 2003 12:03:20 +0200
-Message-Id: <20030612100325.B3B5FC5FD7@atlas.denx.de>
+In-reply-to: Your message of "Thu, 12 Jun 2003 09:34:08 +0200."
+             <FCEAKDJJAPHPLJFINDAJAEHGDCAA.Stephan.Linke@epygi.de>
+Date: Thu, 12 Jun 2003 12:04:59 +0200
+Message-Id: <20030612100504.22A9FC5FD7@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20030612014745.47244.qmail@web41509.mail.yahoo.com> you wrote:
+In message <FCEAKDJJAPHPLJFINDAJAEHGDCAA.Stephan.Linke@epygi.de> you wrote:
 >
-> We want to remove SPD EEPROM on ppc440gp to lower the
-> expense. The plan is to change u-boot code to use a
-> memory buffer (filled with the content of SPD EEPROM).
-> Is this possible?
+> is it possible to make a 8xx kernel without setting up one of the serial interfaces for UART mode? It seames to me like it is only
 
-Yes, it is. Actually only  very  few  systems  use  memory  with  SPD
-EEPROMs.
+Yes, this is possible.
 
-> I removed the SPD EEPROM on my ppc440gp board, and
-> changed u-boot code to use a memory buffer whenever
-> the code need to access SPD EEPROM, however, I found
+> possible to choose between the CPM interfaces.
+> We are experiencing problems with SCC3 running ethernet and SMC1 as console interface on a 852.
 
-You should implement a proper initialization function for your memory
-instead.
-
-> What extra initialization should I do when SPD EEPROM
-> is missing from the system?
-
-This depends on your hardware (type of memory etc.).
-
-
-Please note that such questions ore of topic here. You will  probably
-receive more / better response on the u-boot-users mailing list.
+I think it would be better to solve this problem instead of just  not
+using SMC1 and leaving an unresolved bug in the kernel...
 
 
 Best regards,
@@ -46,7 +32,7 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Drun'? 'm not drun'! You woudn' dare call m' drun' if I was sober!
-                                     - Terry Pratchett, _Men at Arms_
+Immortality consists largely of boredom.
+	-- Zefrem Cochrane, "Metamorphosis", stardate 3219.8
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
