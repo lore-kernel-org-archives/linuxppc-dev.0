@@ -1,30 +1,24 @@
-From: t.shantha.laxmi@exgate.tek.com
-Message-ID: <21F9768AF088D211BF1C0008C71E5786C60998@ap-bang-m02.india.tek.com>
+Date: Wed, 22 Mar 2000 10:43:12 -0500 (EST)
+From: Claude Robitaille <crobitaille@videotron.ca>
+Subject: Residual data
+In-reply-to: <38964A23.3CAFFD88@zeta.org.au>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Kernel Loading
-Date: Wed, 22 Mar 2000 04:29:24 -0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-id: <Pine.LNX.4.10.10003221041370.525-100000@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+hi,
 
-I needed to load a linux 2.3.18 version for PowerPC
 
-on a proprietary board. It has about 16 MB of SDRAM, 8 MB of
+anyone knows where to find a complete reference for the "residual data
+standard"?
 
-Flash EEPROM and 1MB of NVRAM.
+Thanks
 
-Could someone give me or point to a site where I could get
-
-some info on how to load the kernel ?
-
-Thanks in advance,
-
-- Shantha
+Claude
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
