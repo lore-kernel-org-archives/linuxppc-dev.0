@@ -1,119 +1,68 @@
-Message-Id: <199901171016.FAA19021@smtp-gw.vma.verio.net>
-Date: Sun, 17 Jan 1999 05:16:24 -0500 (EST)
-From: baccala@freesoft.org
-Subject: RS/6000 860 portable - display problem fixed
-To: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: MULTIPART/mixed; BOUNDARY="17433089-1804289383-916568212=:583"
+In-Reply-To: <l03130300b2c736ad27de@[141.213.6.249]>
+Date: Sun, 17 Jan 1999 13:57:11 +0100
+To: linuxppc-dev@lists.linuxppc.org, mukesh agrawal <agrawal@ais.org>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: PowerBook battery test
+Message-Id: <19990117135711.016083@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---17433089-1804289383-916568212=:583
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+On Sun, Jan 17, 1999, mukesh agrawal <agrawal@ais.org> wrote:
 
-Hi -
+>here's what i get on my Powerbook 2400. The battery monitor CSM
+indicates that
+>	1. battery is fully charged (8 bars)
+>	2. power in plugged in
+>	3. battery is not charging
+>
+>Having fun with your batteries !
+>
+>Global battery status: 0x01, power: 0x5b
+> [charger connected]
+>1 batteries :
+><1> 12.399994V
+>     exp: 0s, min: -1s, max: -1s, timeUntilCharge: -1s
+>     info - fl:0xa0, warn_level:0, resrv:0, bat_level:255
+>       [battery installed]
+>       [charger connected]
+>
+>
+>Now calling PMU...
+>
+>0x68 (1) : r:3,s:03 -> 01 5b 35 00 00 00 00 00 00 00 00 00 00 00 00
+>0x6b (1) : r:3,s:08 -> e5 00 b6 35 1a 61 00 00 00 00 00 00 00 00 00
+>0x6f (1) : r:3,s:04 -> 05 53 52 00 00 00 00 00 00 00 00 00 00 00 00
+>Trying to interpret 0x6f command:
+> 00 [battery present]
+> 01 [charger connected]
+> 01 [battery charging]
 
-OK, I had a bit of a "breakthrough" with this code, and while it still
-doesn't do everything I want (the "BIG_SCREEN" mode doesn't display
-externally on my VGA display, only on the LCD), it's a far sight better
-than 24 hours ago.  Basically, I took out everything that changed the
-VGA controller's clock settings, reasoning that they were already set
-correctly by the boot ROM, and ended up with a display I can finally
-read.
+It looks like the PMU reacts quite differently on the 2400, we'll
+probably have to setup different code for 2400/3400/3500 and new G3 "Series". 
 
-Patch is attached, relative to arch/ppc/boot.  What's the chain of
-command for ppc?  Should I commit this code to vger.rutgers.edu in the
-expectation that it'll find it way into Linus' tree?
+The 6f command seems to be returning something different. I get 10 bytes
+of response, you get only 4 and the flags interpretation looks wrong.
+(Could you try removing the battery and/or the charger and see what
+happens with those flags).
+
+So we definitely need a way to make the difference between those
+different kinds of PowerBooks. (There are some issues with the backlight
+too). I was thinking about using the presence of o-hare to recognize and
+older model, this is a little bit "hackish" but should work.
+
+I have added backlight control commands to /dev/pmu, I'll add some
+battery status commands too, but I would like to make them independant of
+the kind of machine.
+
 -- 
-					-bwb
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-					Brent Baccala
-					baccala@freesoft.org
 
--------------------------------------------------------------------------
-To receive periodic news about what's happening at freesoft.org, send
-email to "announce@freesoft.org", with "SUBSCRIBE" as the message, i.e:
-		echo SUBSCRIBE | mail announce@freesoft.org
--------------------------------------------------------------------------
 
---17433089-1804289383-916568212=:583
-Content-Type: TEXT/plain; CHARSET=US-ASCII
-Content-Description: patch
-
-*** vreset.c    1998/06/10 07:21:33     1.6
---- vreset.c    1999/01/17 10:07:12
-***************
-*** 613,620 ****
-  unlockS3(void)
-  {
-          int s3_device_id;
-!       outw(0x3d4, 0x3848);
-!       outw(0x3d4, 0x39a5);
-        outb(0x3d4, 0x2d);
-        s3_device_id = inb(0x3d5) << 8;
-        outb(0x3d4, 0x2e);
---- 613,620 ----
-  unlockS3(void)
-  {
-          int s3_device_id;
-!       outw(0x3d4, 0x3848);            /* Unlock registers CR2D - CR3F */
-!       outw(0x3d4, 0x39a5);            /* Unlock registers CR40 - CRFF */
-        outb(0x3d4, 0x2d);
-        s3_device_id = inb(0x3d5) << 8;
-        outb(0x3d4, 0x2e);
-***************
-*** 667,686 ****
-                outb(0x3D4, 0x32);
-                outb(0x3D5, inb(0x3D5)&~0x10);
-        } else {
-!                 outw(0x3c4, 0x0806);            /* IBM Portable 860 */
-!                 outw(0x3c4, 0x1041);
-!                 outw(0x3c4, 0x1128);
-!                 outw(0x3d4, 0x4000);
-!                 outw(0x3d4, 0x3100);
-!                 outw(0x3d4, 0x3a05);
-!                 outw(0x3d4, 0x6688);
-!                 outw(0x3d4, 0x5800);            /* disable linear addressing */
-!                 outw(0x3d4, 0x4500);            /* disable H/W cursor */
-!                 outw(0x3c4, 0x5410);            /* enable auto-centering */
-                  outw(0x3c4, 0x561f);
-!                 outw(0x3c4, 0x1b80);            /* lock DCLK selection */
-!                 outw(0x3d4, 0x3900);            /* lock S3 registers */
-!                 outw(0x3d4, 0x3800);
-        } /* endif */
-  }
-  
---- 667,694 ----
-                outb(0x3D4, 0x32);
-                outb(0x3D5, inb(0x3D5)&~0x10);
-        } else {
-!                 /* S3 86CM65 Aurora 64V+    (s3_device_id 0x8812)
-!                  *
-!                  * Dual display LCD/CRT chip used in IBM RS/6000 portable 860s
-!                  */
-!                 outw(0x3c4, 0x0806);  /* SR8 - unlock registers SR9 - SR6F */
-!                 outw(0x3d4, 0x3100);  /* CR31 - normal mode */
-!                 outw(0x3d4, 0x3a05);  /* CR3A - 2 refresh cycles/horz line */
-!                 outw(0x3d4, 0x6688);  /* CR66 - PCI bus disconnect enable */
-!                 outw(0x3d4, 0x5800);  /* CR58 - disable linear addressing */
-!                 outw(0x3d4, 0x4500);  /* CR45 - disable H/W cursor */
-! #ifdef SMALL_SCREEN
-!                 outw(0x3c4, 0x5410);  /* SR54/56 - enable centering */
-                  outw(0x3c4, 0x561f);
-! #else
-!                 outw(0x3c4, 0x541f);  /* SR54-57 - enable expansion */
-!                 outw(0x3c4, 0x551f);
-!                 outw(0x3c4, 0x561f);
-!                 outw(0x3c4, 0x577f);
-! #endif
-!                 outw(0x3d4, 0x3900);  /* CR39 - lock registers CR40 - CRFF */
-!                 outw(0x3d4, 0x3800);  /* CR38 - lock registers CR2D - CR3F */
-!                 outw(0x3c4, 0x0800);  /* SR8 - lock registers SR9 - SR6F */
-        } /* endif */
-  }
-
---17433089-1804289383-916568212=:583--
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
