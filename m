@@ -1,12 +1,13 @@
-Message-ID: <3BAA61C0.70C2559C@mvista.com>
-Date: Thu, 20 Sep 2001 17:38:08 -0400
+Message-ID: <3BAA62EE.2006422D@mvista.com>
+Date: Thu, 20 Sep 2001 17:43:10 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
 To: Tom Rini <trini@kernel.crashing.org>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
+Cc: Stefan Roese <stefan.roese@esd-electronics.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
 	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
 Subject: Re: CPCI-405 port (PPC405GP)
-References: <20010918115722.A5967@cpe-24-221-152-185.az.sprintbbd.net> <EFEAIMDCOOOHIEPHDNFJCEKKDCAA.stefan.roese@esd-electronics.com> <20010919071751.B8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA8DF9E.FD235CF6@mvista.com> <20010919155742.D8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA9241B.4322817A@mvista.com> <20010919163101.E8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA96CA2.20EC30C8@mvista.com> <20010920075537.A13721@cpe-24-221-152-185.az.sprintbbd.net> <3BAA0C91.42E0910D@mvista.com> <20010920085109.E13721@cpe-24-221-152-185.az.sprintbbd.net>
+References: <EFEAIMDCOOOHIEPHDNFJEEMCDCAA.stefan.roese@esd-electronics.com> <3BAA093A.10E96272@mvista.com> <20010920084607.D13721@cpe-24-221-152-185.az.sprintbbd.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
@@ -14,13 +15,26 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 Tom Rini wrote:
 
-> heh.  You're assuming that I get to see docs on these boards.
+> .... In some parts of the PPC world, we can't/don't for various
+> reasons (technical and/or ingrained).
 
-Oh yeah, I forgot the :-) when I wrote that line.....
+I can't think of any that don't......Help me remember :-).
 
-> Okay.  Now, do you want to get this done in 2.4 first or 2.5 first? :)
+> ....  For example, I don't see a problem
+> with something which takes a vmlinux.gz and boots it.
 
-It seems 2.4 is still a development kernel............:-).
+First of all, someone has to uncompress it.  Then someone has
+to handle any initrd loading.  Then someone has to handle command line
+and other parameter passing.  Then.....
+
+> ....  But we should define what we're going to do before we do
+> it so that yaboot/ppcboot and apus can figure out how much re-working
+> they'll need and whatnot..
+
+Well, I trusted Ben to provide some of this information.  Mind you,
+it was only a few lines on IRC, but it started with moving all of
+the cputable initialization stuff into the bootloaders......and went
+downhill from there :-).
 
 
 	-- Dan
