@@ -1,30 +1,32 @@
-Message-ID: <61891BA043DED21180920090273F173829B0D0@argentina.telogy.com>
-From: Naushit Sakarvadia <nsakarvadia@telogy.com>
-To: "'LinuxPPC Developpers'" <linuxppc-dev@lists.linuxppc.org>
-Subject: Cross Compilaton
-Date: Fri, 23 Jul 1999 12:02:53 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Fri, 23 Jul 1999 18:18:31 +0200
+To: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: sl82c105.c cleanup
+Message-Id: <19990723181831.020978@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+Hi !
 
-I have compiled Linux Kernel on X86 Platform but new to Cross compilition
-stuff.
+I'm working on an ARM-based board using the 553 winbond chipset. I'm
+using some netwinder-specific patches to the file sl82c105.c that I'm
+fixing for correct handling of both channels. Those patches add a tune
+function for pio mode > 0.
 
-When I tried to compile with my normal  egcs compiler distributed with Red
-Hat 6.1 
-it doesnt recognise  -mcpu=860 option.
+I've seen some ppc and MBX specific code there too, so if you are
+actually working on this file or have patches for this, please tell me so
+we can sync. I'd like also to know what's the purpose of the current code.
 
-Can somebody show me a way?
 
-Thanks
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-Regards,
-Naushit
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
