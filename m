@@ -1,28 +1,48 @@
+Date: Sun, 9 Jan 2000 14:29:00 +0100
+From: Olaf Hering <olh@suse.de>
+To: Martin Costabel <costabel@wanadoo.fr>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: write into OF tree like nvsetenv
+Message-ID: <20000109142900.A17353@suse.de>
+Reply-To: linuxppc-dev@lists.linuxppc.org
+References: <20000108171526.B8126@suse.de> <v04220818b49df84590b1@[192.168.0.1]> <38785B2C.7807E8FD@wanadoo.fr>
 Mime-Version: 1.0
-Message-Id: <v0422080eb49dc8d7fe01@[206.163.71.146]>
-In-Reply-To: <20000108102900.C18715@linuxcare.com>
-References: <v03130302b49d06179767@[209.123.117.14]>
- <20000108102900.C18715@linuxcare.com>
-Date: Sat, 8 Jan 2000 21:25:28 -0800
-To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-From: Joel Klecker <jk@espy.org>
-Subject: Re: PPC Boards?
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <38785B2C.7807E8FD@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 10:29 -0800 2000-01-08, David N. Welton wrote:
->It sounds like you really want one of those POP boxes that have yet to
->actually be produced:-(
->
->For a bit of info: http://www.popcomputers.com/
+On Sun, Jan 09, Martin Costabel wrote:
 
-Also see: http://www.siliconfruit.com/ (dual G4, 6 PCI slots, AGP;
-hopefully shipping Q2 2000)
+> 
+> I am somewhat surprised that nobody mentions the "Christmas Present"
+> boot script by BenH
+> (http://lists.linuxppc.org/listarcs/linuxppc-dev/199912/msg00191.html).
+> I installed this on several iMac DVs, and it works great. Now you don't
+> have to fiddle with OF any more, and if you put a timeout into
+> yaboot.conf, booting into Linux is completely automatic.
+
+Yes, this script is just great.
+
+> You only have to enter OF once, type
+> setenv boot-device hd:10,yabootloader.script
+
+I want exactly this automatic. This works fine on the current IDE Macs,
+but with a B&W Scsi Mac a "typical" User has lost.
+The path on my Mac is something like
+
+/pci/pci-bridge/ADPT,2940U2B/@6:7,blah
+
+Too complex.
+
+
+Gruss Olaf
+
 -- 
-Joel Klecker (aka Espy)                    Debian GNU/Linux Developer
-<URL:mailto:jk@espy.org>                 <URL:mailto:espy@debian.org>
-<URL:http://web.espy.org/>               <URL:http://www.debian.org/>
+ $ man 1 current_release
+
+BUGS
+       Users never read manuals...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
