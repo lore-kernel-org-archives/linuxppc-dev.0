@@ -1,41 +1,47 @@
-Date: Mon, 3 Jun 2002 12:43:44 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: Dan Malek <dan@embeddededge.com>,
-	Tom Rini <trini@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: Do we need tlbsx at finish_tlb_load?
-Message-ID: <20020603024344.GA6765@zax>
-References: <20020530080434.GY16537@zax>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020530080434.GY16537@zax>
+Message-ID: <3CFB06F3.6060704@pacbell.net>
+Date: Sun, 02 Jun 2002 23:04:35 -0700
+From: Armin <akuster@pacbell.net>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: pt_regs.dbcr0/1
+References: <15608.22230.504008.818858@argo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, May 30, 2002 at 06:04:34PM +1000, David Gibson wrote:
-> A question to Dan and Tom in particular:
+Paul Mackerras wrote:
+> Is anyone prepared to speak up for the dbcr0 and dbcr1 fields that
+> someone added to struct pt_regs for 4xx in the 2_4_devel tree?
 >
-> At the moment on 4xx, just after finish_tlb_load, which is called by
-> both the TLB miss handlers, we do a tlbsx to see if an entry for this
-> virtual address already exists.
+> If not, they are going.  If so, we can discuss it.
 >
-> Since this code is only called from the TLB miss handler, I can't see
-> how there could ever be a valid TLB entry present at this point.
-> There is a comment claiming that this path can be hit under some
-> circumstances, but it doesn't make sense to me.
+> Better still, does anyone have a clearly thought-out vision of how the
+> debug facilities on 4xx should be managed?
 >
-> Is there any situation where we can reach this point with a valid TLB
-> entry existing for the faulting address?
+> I would much prefer to see these fields put in the thread_struct
+> rather than pt_regs.  I am reluctant to change pt_regs without a good
+> reason since it is visible to userspace and is therefore part of the
+> kernel API.  If the intention is to make the debug facilities
+> available to userspace then the thread_struct is a good place to put
+> fields relating to the debug facilities.
+>
+> Paul.
+>
+>
+>
+>
+>
 
-Ok, not seeing any replies here.  If no-one speaks up for this tlbsx
-in the next couple of days, I'll remove it from 2_4_devel.
+Oh man its been a while... hmmm IIRC I thought we used pt_regs for kgdb.
+  IIRC we already use the thread_struct for gdb.  There are two people
+who did the bulk of the debugger work, if they don't pipe up , I will do
+my best.
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
+I'll get back to you.
+
+armin
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
