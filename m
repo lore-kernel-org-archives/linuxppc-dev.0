@@ -1,33 +1,25 @@
-Return-Path: <markc@mail.com>
-Received: from relay02.roc.ny.frontiernet.net (relay02.roc.ny.frontiernet.net
-	[66.133.131.35]) by ozlabs.org (Postfix) with ESMTP id 637DF2BD6A
+Return-Path: <jonmasters@gmail.com>
+Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.207])
+	by ozlabs.org (Postfix) with ESMTP id 134142BD6A
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  4 Oct 2004 22:07:44 +1000 (EST)
-Received: from filter02.roc.ny.frontiernet.net
-	(filter02.roc.ny.frontiernet.net [66.133.131.177])
-	by relay02.roc.ny.frontiernet.net (Postfix) with ESMTP id 393721014D
+	Mon,  4 Oct 2004 22:45:31 +1000 (EST)
+Received: by mproxy.gmail.com with SMTP id 76so4778913rnk
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  4 Oct 2004 12:07:35 +0000 (UTC)
-Received: from relay02.roc.ny.frontiernet.net ([66.133.131.35])
-	by filter02.roc.ny.frontiernet.net (filter02.roc.ny.frontiernet.net
-	[66.133.131.177]) (amavisd-new, port 10024)
-	with LMTP id 31011-76-36 for <linuxppc-embedded@ozlabs.org>;
-	Mon, 4 Oct 2004 12:07:35 +0000 (UTC)
-Received: from chuck2 (170-215-150-221.br1.rmn.wv.frontiernet.net
-	[170.215.150.221])
-	by relay02.roc.ny.frontiernet.net (Postfix) with ESMTP id F096D101DD
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  4 Oct 2004 12:07:31 +0000 (UTC)
-Message-ID: <000b01c4aa0b$018aeae0$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: <linuxppc-embedded@ozlabs.org>
-References: <35fb2e59040930165327f2dd59@mail.gmail.com>	<87127382-1357-11D9-8EFC-000393DBC2E8@freescale.com><20041001220648.GJ21896@smtp.west.cox.net>
+	Mon, 04 Oct 2004 05:45:29 -0700 (PDT)
+Message-ID: <35fb2e5904100405451423c391@mail.gmail.com>
+Date: Mon, 4 Oct 2004 13:45:28 +0100
+From: Jon Masters <jonmasters@gmail.com>
+To: Pantelis Antoniou <panto@intracom.gr>
+In-Reply-To: <4160E898.9080905@intracom.gr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+References: <35fb2e59040930165327f2dd59@mail.gmail.com>
+	<87127382-1357-11D9-8EFC-000393DBC2E8@freescale.com>
+	<20041001220648.GJ21896@smtp.west.cox.net>
 	<4160E898.9080905@intracom.gr>
-Date: Mon, 4 Oct 2004 08:09:27 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: bi_recs
+Reply-To: jonathan@jonmasters.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,22 +30,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Mon, 04 Oct 2004 09:07:20 +0300, Pantelis Antoniou <panto@intracom.gr> wrote:
 
-> 
+> Allow me, to cut in and plug my own thing.
+
+Yeah cool. btw, I looked at the ppc64 stuff (having eventually
+realised I need to be using the bk tree for everything ppc64 rather
+than 2.6.8.1) and I see what benh is getting at now - so I am figuring
+out the best way to proceed on that front. None of my boards support
+2.6 yet so I either fix that this week or get up and running with 2.4
+first. Anyway, I'm working on it in my spare time.
+
+> If you follow the u-boot-users list, you'll know that some time
+> ago there was a similar discussion.
+
+I don't, but I will sign up to the list at some point. Currently I use
+my own firmware as I was too lazy to go figure out the ins and outs of
+uboot :-).
+
 > I just create an argv of all the environment variables of the firmware
 > and I pass the psysical address of that NULL terminated argv array
 > to the kernel command line like so... "u-boot-env=0x0f000f00".
-> 
 
-This would be a variation of the "human readable ASCII format"
-technique, right?  I had once ventured to offer my opinion that this
-would be a technique that could work for all architectures, which is
-a big plus, IMO.   My mistake was suggesting XML, which I think
-was [mis]understood by some as requiring a lot more than a few
-extra "</" type characters.  I'm offering my opinion not as an expert
-but as someone who not too long ago tried to puzzle through the
-bootloader/kernel interface and found it unnecessarily obscure.  I
-think an ASCIIZ string array of some sort would be immediately
-obvious and thus highly maintainable by all.
+I think that's an approach which works up to a point. It's nice to
+have a hierachy of devices like with OF because then we can infer
+things like order of devices on a bus that need to be shutdown for a
+suspend. This can be done as a flat list but I the reason ben put me
+off my original idea of going with tagged records is that OF is
+clearly the better approach.
 
-Mark Chambers
+> I have working patches for u-boot, the kernel parser, a kernel /proc
+> interface for accessing them and also some patches for busybox
+
+That's great. So seriously worth looking at then.
+
+> I know this is the Nth time this discussion is taking place bu IMO
+
+So we probably need to decide. I think Mark's XML idea also works, but
+I don't see anything wrong with a flattened OF type tree either since
+it's ASCII strings also, just layed out in a slightly more involved
+fashion than having a long list of parameters.
+
+I'm going to get this OF thing sorted anyway because it's worth having
+that option - but I'm indifferent towards what is ultimately decided
+(as long as something is agreed upon). If we went with a solution such
+as yours then I would prefer Mark's idea of a structured set of data.
+This way I can say which PCI bridge device X lives behind in a nicer
+fashion.
+
+Blah.
+
+Jon.
