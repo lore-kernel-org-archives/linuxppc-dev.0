@@ -1,26 +1,32 @@
-Message-ID: <38351400.3032B6FB@arcormail.de>
-Date: Fri, 19 Nov 1999 10:10:29 +0100
-From: Michael Fenske <michael.fenske@arcormail.de>
-Reply-To: michael.fenske@arcormail.de
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Kernel debugging??
-References: <19991118193016.014231@mailhost.mipsys.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <19991118211946.B7562@bassano.linuxcare.com>
+Date: Fri, 19 Nov 1999 11:02:45 +0100
+To: "David N. Welton" <davidw@linuxcare.com>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: 2.3.28 patch...
+Message-Id: <19991119110245.022691@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+On Thu, Nov 18, 1999, David N. Welton <davidw@linuxcare.com> wrote:
 
-> I had the same problem today. Just remove the "z" option, it will eat
-> more bandidth but it works. I beleive it's time to update my rsync or zlib...
+>> this patch is basically a sync up from Paul's tree for those trying to get
+>> 2.3.28 from linus booting.
+>
+>My rs6k still doesn't like it.  Hangs somewhere after prom_print, like
+>it always does:-/
 
-Thanks, rsync works without the "z" option. And FYI, I updated rsync to
-version 2.3.2 (from linuxcare.com.au) after the first time the problem
-occurs, but that doesn't help. Maybe an update of zlib could help ?!
+As I just wrote you privately, you _can_ use prom_print() and
+xmon_printf() when booting from Open Firmware but only if you have the
+appropriate patch. You can find the code for that in the prom.c patch
+inside the ibook patches on my page.
 
-Michael
+Also make sure to fix xmon so that it initialises correctly for on-screen
+display (it does this by default on PowerBooks only for now). If you
+don't use xmon, then manually call map_bootx_text() just after the MMU
+init, or manually map the fb with a BAT inside MMU init.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
