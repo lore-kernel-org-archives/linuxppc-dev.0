@@ -1,52 +1,75 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3BDE6539.E177A5BC@disca.upv.es>
-Date: Tue, 30 Oct 2001 09:30:49 +0100
-From: David de =?iso-8859-1?Q?Andr=E9s=20Mart=EDnez?= <ddandres@disca.upv.es>
+Message-ID: <6B546A602AD2D211BFF00008C7A42889041D6C95@hrtades2.atea.be>
+From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: gdb problems / BDM PPCBoot 
+Date: Tue, 30 Oct 2001 09:59:50 +0100
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: CAN device driver for TQM8xxL 
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Just for the record: it works better with the compiler that MontaVista
+includes in their 2.0 CDK; no -ggdb needed.
+
+Fred
+
+-----Original Message-----
+From: Goddeeris Frederic
+Sent: vrijdag 12 oktober 2001 16:25
+To: 'Wolfgang Denk'
+Subject: RE: gdb problems / BDM PPCBoot
+
+
+Thanks!
+
+-----Original Message-----
+From: Wolfgang Denk [mailto:wd@denx.de]
+Sent: vrijdag 12 oktober 2001 12:53
+To: Goddeeris Frederic
+Subject: Re: gdb problems / BDM PPCBoot
+
+
+Dear Frederic,
+
+in message <6B546A602AD2D211BFF00008C7A42889041D6C75@hrtades2.atea.be> you
+wrote:
 >
->I would like to offer you a simple CAN device driver for
->TQM8xxL Minimodules which I wrote some weeks ago.
->
->And here you can find the files (CAN.TGZ and CAN_DEMO.TGZ):
->ftp://dev.linuxppc.org/incoming
->
->Mit freundlichen Grüßen
->(With kind regards)
->   Gunther Brau
+> I also need the -ggdb to debug applications remotely. The MontaVista FAQ
+> mentions that this is needed due to a problem in the compiler shipped with
+> CDK 1.2; I suppose it is no longer needed for the recent compilers they
+> provide.
 
-I am trying to write a driver for CAN for the TQM823L and It would make
-my work easier to have an operational version to start with.
+Well, upgrade to HHL-2.0.2, then...
 
-I can not find the files in any mirror.
-Did anyone downloaded the files that are metion above?
-If so, can you send them to me?
+> I am sorry to ask a question that was discussed many times, but to be
+honest
+> I did not find a lot a threads when I search for "ddd", "gdb, "BDM" or
+> "Abatron". Where do I look?
 
-I have tried to contact Gunther Brau but his email address is not
-working.
+I'm sorry - I know that the search functions for the mailing list are
+pretty useless, but I cannot help it. Please  complain  to  the  list
+maintainer.
 
-Thanks.
-David de Andrés.
+> I have read your mail where you mention:
+...
+That's exaclty what I do
+
+> Forgive me my cluelessness, but the very early code is, _init_board, the
+> code is still running from flash, right, so just starting with
+> "powerpc-linux-gdb ppcboot" should work?
+
+Yes, that's what it does for me on all boards.
+
+Hope this helps,
+
+Wolfgang Denk
 
 --
-----------------------------------------------------------------------
-| David de Andrés Martínez   | Fault Tolerant Systems research Group |
-|                            |                                       |
-| Computer Science Engineer  | Email: ddandres@disca.upv.es          |
-| Doctorate Student          | Phone: +34 96 387.75.74 Ext 75774     |
-|                            | Fax: +34 96 387.75.79                 |
--------Address--------------------------------------------------------
-|                 DISCA-EUI                                          |
-|                 Universidad Politécnica de Valencia                |
-|                 Campus de Vera #14                                 |
-|                 Valencia E-46021                                   |
-|                 Spain                                              |
-----------------------------------------------------------------------
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Always borrow money from a pessimist; they don't expect  to  be  paid
+back.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
