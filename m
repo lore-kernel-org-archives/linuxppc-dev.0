@@ -1,21 +1,17 @@
-Return-Path: <jjboor@aimsys.nl>
-Received: from linserv001.aimsys.nl (a80-127-156-242.adsl.xs4all.nl
-	[80.127.156.242])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 730BC2BDA1
+Return-Path: <peri@aqua.aspd.pwr.wroc.pl>
+Received: from aqua.aspd.pwr.wroc.pl (aqua.aspd.pwr.wroc.pl [156.17.17.24])
+	by ozlabs.org (Postfix) with ESMTP id B33462BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Sep 2004 18:50:43 +1000 (EST)
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-To: alebas@televes.com
-In-Reply-To: <1096380738.415971420df80@webmail.televes.com:443>
-References: <1096380738.415971420df80@webmail.televes.com:443>
-Content-Type: text/plain
-Message-Id: <1096446806.32438.5.camel@linpc003.aimsys.nl>
-Mime-Version: 1.0
-Date: Wed, 29 Sep 2004 10:33:27 +0200
+	Wed, 29 Sep 2004 21:20:20 +1000 (EST)
+Date: Wed, 29 Sep 2004 13:20:17 +0200 (CEST)
+From: Piotr Perak <peri@aqua.aspd.pwr.wroc.pl>
+To: Matt Porter <mporter@kernel.crashing.org>
+In-Reply-To: <20040928094327.B1532@home.com>
+Message-ID: <Pine.LNX.4.21.0409291256250.3154-100000@aqua.aspd.pwr.wroc.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Full duplex, MDIO and both Ethernet in MPC8272ADS
+Subject: Re: 2.6.x on 405CR
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,32 +22,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On di, 2004-09-28 at 16:12, alebas@televes.com wrote:
-> Hi to all,
-> 
-> As long as I have seen (tested and surfed in the code), current
-> linuxppc_2.4.26_devel support for MPC8272ADS board is limited to one PHY,
-> without MII management support and the interface is always configured as Half
-> Duplex. Unfourtunately, this is little useful for me, as long as i am trying to
-> set up a bridge between both interfaces.
-> 
-> I have been also testing the Linux Reference Design, from Arabella SW, which, as
-> long as I have seen, has support for both PHYs, MII management and Full Duplex.
-> 
-> So, is there any plan to merge any of Arabella's changes into the ppc tree? Or
-> is there anyone currently working on that ethernet stuff for current 2.4.26
-> tree? Is  it planned to provide a patch soon?
 
-I use the fcc enet driver and a dual port phy using the fcc driver's mii
-implementation on a 8270, but on a propietary board design.
 
-Jaap-Jan
+On Tue, 28 Sep 2004, Matt Porter wrote:
 
+> > > then you're an interesting spot.  Can you trace it down to the exact
+> > > failure in __alloc_bootmem_core?
+> > I already did it. Can you please read
+> > http://ozlabs.org/pipermail/linuxppc-dev/2004-September/000104.html? I
+> > described there what weird things are happening in __alloc_bootmem_core.
 > 
-> Best regards,
-> 
-> Alex.
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> I see. Can you move the reset instruction to isolate the offending
+> instruction? 
+>  
+> BTW, it's not clear how you are guaranteeing that the processor has
+> bit 2 or 3 asserted before the dbcr0 load. If you preloaded r12 out of
+> the scope of the code fragments shown, it's clear that r12 is getting
+> clobbered in the subf instruction of the 2.6.8.1 fragment.
+
+My mistake. I thought I was putting immediate value 12 in DBCR0 using
+asm("mtspr 0x3f2, 12") in C code, but it's putting the value hold in the
+r12 register. I shoul read the manual correctly. So untill now we just had
+luck if our processor reset!?
+
+Look what I trie now.
+
+static void * __init
+    147 __alloc_bootmem_core(struct bootmem_data *bdata, unsigned long
+size,
+    148                 unsigned long align, unsigned long goal)
+    149 {
+    150         unsigned long offset, remaining_size, areasize, preferred;
+    151         unsigned long i, start = 0, incr;
+    152         unsigned long eidx = bdata->node_low_pfn -
+(bdata->node_boot_start >> PAGE_SHIFT);
+    153         void *ret;
+    154
+    155         if(!size) {
+    156                 printk("__alloc_bootmem_core(): zero-sized
+request\n");
+    157                 BUG();
+    158         }
+    159         BUG_ON(align & (align-1));
+    160
+    161         asm ("li 17, 12");		// <-- immediate value of 12 to r17 -
+bit 2:3 set
+    162         asm ("mtspr 0x3f2, 17");	// < write to DBCR0 what is in
+DOESN'T reset!!!
+r17
+    163         asm ("mtspr 0x3f2, 12");	// resets, but I don't know what
+is value of r12
+ 
+asm code is:
+23c:   3a 20 00 0c     li      r17,12
+240:   7e 32 fb a6     mtdbcr0 r17
+244:   7d 92 fb a6     mtdbcr0 r12
+
+It is said in manual, that setting bits 2:3 in DBCR0 resets the
+processor. In my code it doesn't. :)
+
+> Is this a hobby project or a "for profit" project? If it's for profit,
+> then consider investing in a JTAG emulator (like BDI2000)...it'll pay
+> for itself many times over.
+
+I'm a trainee in some firm. They use 2.4.23 now in their boxes. Porting
+2.6.8.1 to their board is my project. I was told that they have some
+hardware debbuger, but it doesn't work with virtual memory.
+
+Piotr Perak
