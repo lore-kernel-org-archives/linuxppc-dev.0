@@ -1,40 +1,38 @@
-Date: 4 Jul 2002 17:08:33 -0000
-Message-ID: <20020704170833.14825.qmail@webmail14.rediffmail.com>
+Message-ID: <3D252776.60ACBA64@procsys.com>
+Date: Fri, 05 Jul 2002 10:28:31 +0530
+From: Jis Joy <jisjoy@procsys.com>
 MIME-Version: 1.0
-From: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
-Reply-To: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
-To: "Wolfgang Denk" <wd@denx.de>
-Cc: "Ppc Embedded" <linuxppc-embedded@lists.linuxppc.org>,
-	"Allen Curtis" <acurtis@onz.com>
-Subject: bash prompt
-Content-type: text/plain;
-	format=flowed
+To: Ppc Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Booting Linux on Custom PowerPC 405GP board
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-         My  kernel serial driver for 8260 is able to give bash
-prompt but its not able to read anything from serial console,bash
-prompt is not at all responding
+Hi Friends,
 
-when i traced what i am seeing is
+I am new to Linux, I need help from you friends.
 
-  when i attach the interrupts its gettting hanged all 8 leds are
-glowing ,if temporarily if i  remove the interrupt handler there
-is no problem of all 8 leds problem ,coming to bash prompt but not
-responding
+We got a custom PowerPC 405GP board, we want to boot Linux on that.
 
-transmit_chars is happeneing proper but no receive_chars
+Board limitations are:
+1. There is no network interface, only serial port. The kernel image has
 
-is this the problem i am confused ,
-let me know whre i am wrong
-thanks in advance
-somshekar
+to be  downloaded through the serial port. (network interface will be
+added
+to this card in future.)
+2. The monitor code is also custom one, its no a Walnut ROM monitor.
 
+I found out that the boot loader files are in
+/src/linux/arch/ppc/boot/tree directory (Am I  correct ??).
+What are the changes I have to make to boot linux.
 
-_________________________________________________________
-There is always a better job for you at Monsterindia.com.
-Go now http://monsterindia.rediff.com/jobs
+Will it start booting, if I download the
+/src/linux/arch/ppc/boot/image/vmlinux to the 0x00000000 location and
+jump to that location ?? (the image is compiled for 405GP processor).
+
+Thanks in advance,
+Jis.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
