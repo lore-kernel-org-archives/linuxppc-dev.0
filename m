@@ -1,25 +1,22 @@
-Return-Path: <ivica@asist-traffic.com>
-Received: from mta1.siol.net (pegasus.siol.net [193.189.160.40])
-	by ozlabs.org (Postfix) with ESMTP id E8B3B2BF0B
+Return-Path: <lagrange@fr.oleane.com>
+Received: from relay01s.ntr.oleane.net (relay01s.ntr.oleane.net [194.2.8.82])
+	by ozlabs.org (Postfix) with ESMTP id 615042BDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Nov 2004 06:26:10 +1100 (EST)
-Received: from edge1.siol.net ([10.10.10.210]) by mta1.siol.net with ESMTP
-	id <20041125152439.BLYD25958.mta1.siol.net@edge1.siol.net>
-	for <linuxppc-embedded@ozlabs.org>; Thu, 25 Nov 2004 16:24:39 +0100
-Received: from linux.asist ([193.95.241.43]) by edge1.siol.net with ESMTP
-	id <20041125152439.XDNG21750.edge1.siol.net@linux.asist>
-	for <linuxppc-embedded@ozlabs.org>; Thu, 25 Nov 2004 16:24:39 +0100
-Received: from [192.168.254.58] (unknown [192.168.254.58])
-	by linux.asist (Postfix) with ESMTP id D6748644A9
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Nov 2004 16:24:32 +0100 (CET)
-Message-ID: <41A5F930.3080104@asist-traffic.com>
-Date: Thu, 25 Nov 2004 16:24:32 +0100
-From: ivica@asist-traffic.com
+	Fri, 26 Nov 2004 07:51:58 +1100 (EST)
+Received: from smtp1.clb.oleane.net (smtp1.clb.oleane.net [213.56.31.17])
+	by relay01s.ntr.oleane.net with ESMTP id iAPA9ogx012097
+	for <linuxppc-embedded@ozlabs.org>; Thu, 25 Nov 2004 11:10:08 +0100
+Received: from GEG2400 ([62.160.30.216]) (authenticated)
+	by smtp1.clb.oleane.net with ESMTP id iAP9ujvo005094
+	for <linuxppc-embedded@ozlabs.org>; Thu, 25 Nov 2004 10:56:47 +0100
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Thu, 25 Nov 2004 10:59:28 +0100
+Message-ID: <000001c4d2d5$758dc9b0$5201a8c0@GEG2400>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: multipart/mixed; boundary="------------090305070305020609070400"
-Subject: MPC5200 toolchain test
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Questions about PCI resources in Linux 2.4.25 for MPC8260
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,86 +27,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------090305070305020609070400
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Greeting!
+Hi,
 
-I have a MPC5200 based custom board with preloaded u-boot.
-My job is to create some sort of development environment, build
-linux kernel and userland environment and in the end test the hardware
-before larger series are built.
-So far I managed to create GNU toolchain for it with crostool from
-Dan Kegel. Everything was built without any problems. Of course,
-I wanted to test this toolchain so I wanted to compile a simple
-hello_world program load it into the memory of my MPC5200 board
-and run it. So far I've failed. I admit. I don't know how to compile
-a program to run without the OS. But I have some clues. I think it
-needs to be linked properly so all the things OS does for you are inserted
-into the binary image that is supposed to get executed. I need some detail
-understanding on this.
+I ported a MPC8260 custom LSP from Linux 2.4.18 to Linux 2.4.25 and
+I discovered something strange in the last kernel.
 
-Anyhow I want to do this before I compile kernel. Since I'm talking
-about the kernel let me ask you what kernel you suggest for MPC5200?
-The latest 2.6.10-rc or the one Sylvain Munaut is maintaining?
+In the file arch/ppc/kernel/setup.c, the function "setup_arch" runs this new
+code :
 
-Next ... I would like to create a development environment that is totally
-"closed" from my system and I want all the crosstools in it. This way
-I could ensure none of my native tools are conflicting with cross 
-development.
-I keep hearing about jails and sanboxes but I don't know what they mean.
-Ok maybe I really need to google it out here but I'm beat. I'm googling
-three days already. :D
-Any tips on creating these kind of environments would be greatly 
-appreciated.
+    code_resource.start   = virt_to_bus((void *)PAGE_OFFSET);
+    code_resource.end    = virt_to_bus(&_etext)-1;
+    data_resource.start   = virt_to_bus(&_etext);
+    data_resource.end    = virt_to_bus(&_edata)-1;
+    request_resource(&iomem_resource, &code_resource);
+    request_resource(&iomem_resource, &data_resource);
 
-I will attach scripts which I used to create toolchain. I hope I did it 
-correctly.
+This code seems to reserve PCI resources for the kernel code and data.
 
-My sources of documentation are google, IRC and these two books:
-Building Embedded Linux, Karim Yaghmour
-Programming Embeded Systems, Michael Barr
+Has anybody an idea why these resources are added and needed ?
+To detect future PCI conflicts ? To preserve from external PCI accesses ?
 
-TIA,
-Ivica
+If the board sdram is not mapped on PCI at 0x00000000, these resources
+generate problems when scanning pci bus and discovering sdram space
+in own pci bridge header space.
 
---------------090305070305020609070400
-Content-Type: text/plain;
- name="demo-ppc603e.sh"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="demo-ppc603e.sh"
+Is there a new rule to set sdram board to 0x00000000 instead of 0x80000000
+while enumerating PCI.
 
-#!/bin/sh
-set -ex
-TARBALLS_DIR=$HOME/tmp/downloads
-RESULT_TOP=/opt/MPC5200-crosstools
-export TARBALLS_DIR RESULT_TOP
-GCC_LANGUAGES="c,c++"
-export GCC_LANGUAGES
-
-# Really, you should do the mkdir before running this,
-# and chown /opt/crosstool to yourself so you don't need to run as root.
-mkdir -p $RESULT_TOP
-
-# Build the toolchain.  Takes a couple hours and a couple gigabytes.
-#eval `cat powerpc-604.dat gcc-3.4.0-glibc-2.3.2.dat` sh all.sh --builduserland --notest
- eval `cat powerpc-603e.dat gcc-3.4.1-glibc-2.3.3.dat`  sh all.sh --notest
-#eval `cat powerpc-604.dat gcc-3.4.1-glibc-20040827.dat` sh all.sh --notest
-
-echo Done.
-
---------------090305070305020609070400
-Content-Type: text/plain;
- name="powerpc-603e.dat"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="powerpc-603e.dat"
-
-TARGET=powerpc-603e-linux-gnu
-TARGET_CFLAGS="-O -mcpu=603e"
-GCC_EXTRA_CONFIG="--with-cpu=603e --enable-cxx-flags=-mcpu=603e"
-
---------------090305070305020609070400--
+Thanks for your ideas.
+ Laurent
