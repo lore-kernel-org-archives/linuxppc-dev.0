@@ -1,39 +1,43 @@
-From: bob@kunk.jriver.com
-Message-ID: <20010316173403.8304.qmail@kunk.jriver.com>
-Subject: Re: Multiple PCI buses in 2.4?
-To: mlan@cpu.lu
-Date: Fri, 16 Mar 2001 11:34:03 -0600 (CST)
-Cc: bob@kunk.jriver.com, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <200103152158.WAA00851@piglet.grunz.lu> from "Michel Lanners" at Mar 15, 2001 10:58:05 PM
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <15027.39447.636455.251242@ipa.ne.mediaone.net>
+Date: Sat, 17 Mar 2001 12:08:39 -0500
+From: R Shapiro <reshapiro@mediaone.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: scsi cd-r problem in linuxcare kernel 2.4.3-pre3
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-User Michel Lanners says:
+I have a G4 single processor 450 with the usual builtin ide cd/dvd
+drive and an external scsi cd-r connected to an Adaptec card (AIC7XXX
+driver).  For awhile now I've been running kernels with ide-cd
+disabled and ide->scsi emulation enabled, so I can treat the internal
+cd drive as a scsi device (cdda2wav requires this).  This worked fine
+through 2.4.2 but stopped working properly in 2.4.3-pre3.
 
-> Multiple PCI busses should work just fine, with one exception: the
-> chaos-based second bus in the 7x00/8x00 machines.
+In particular, if I run a 2.4.3-pre3 kernel configured in this way,
+I'm unable to write a cd from an iso image file.  But if I enable
+ide-cd and disable ide->scsi emulation, in other words if I treat the
+internal drive as ide rather than scsi, I have no problem writing an
+image file to cd-r.  Note that I'm not trying to copy a cd, I'm just
+dumping a mkisofs image file sitting on /dev/hda.  I'm not accessing
+the internal cd at all for this operation.
 
-Ahh ok I get it now.
+I'm sure scsi changed in some way between 2.4.2 and 2.4.3-pre3, since
+the device mapping is different.  Up through 2.4.2, the internal cd
+drive would be mapped to /dev/scd0 if the external cd-r was off at
+boot time, and to /dev/scd1 if the cd-r was on at boot time (the cd-r
+would be /dev/scd0 in the second case).  In 2.4.3-pre3, the internal
+drive is always /dev/scd0 and the external cd-r drive is /dev/scd1 if
+it's on at boot time.
 
-> Now this is my fault, so to speak ;-) I've modified planb to use the PCI
-> device structure, but since that isn't available in the current 2.4
-> kernels, you're out of luck.
->
-> However, I'm working right now on patches tha fix the detection of the
-> chaos bus and its devices; so that this problem should be solved soon.
+Is this a newly introduced kernel bug, related to whatever has changed
+in scsi support, or is it something wrong with my local config? I'd
+like to switch the internal drive back to scsi if I can.
 
-The patches work great so far! I haven't had a chance to try the video
-input with a real signal yet, I lent out my camera, but it puts out
-nice black screen with xawtv and the dmesgs are all reassuring.
 
-Thanks,
-Bob
 --
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+reshapiro@mediaone.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
