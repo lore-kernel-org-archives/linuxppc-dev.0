@@ -1,33 +1,42 @@
-Date: Tue, 28 Aug 2001 19:10:46 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: linuxppc-commit@source.mvista.com,
+Message-ID: <3B8C7D0E.D88A0689@mvista.com>
+Date: Wed, 29 Aug 2001 01:26:38 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-commit@source.mvista.com,
 	linuxppc-dev@lists.linuxppc.org
 Subject: Re: Remove some stuff from arch/ppc/boot/Makefile... (2_4_devel)
-Message-ID: <20010828191046.F15262@cpe-24-221-152-185.az.sprintbbd.net>
 References: <20010828184504.E15262@cpe-24-221-152-185.az.sprintbbd.net>
-Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010828184504.E15262@cpe-24-221-152-185.az.sprintbbd.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Aug 28, 2001 at 06:45:04PM -0700, Tom Rini wrote:
+Tom Rini wrote:
+>
+> Okay.  Since I've already posted a patch vs 2_4_devel to kill the 'mbx' dir,
 
-> 1) Some minor makefile magic $(var:foo=bar)
+I just pushed an update that pulls "treeboot" into the 'mbx' directory.
+I had a conflict with your latest update, I had to manually resolve it
+so I hope I chose the right '<<<<<<' code :-).
 
-Which now that I think about it can die anyhow.  The filter magic we do
-later on should work fine still, so it can just be
-ifeq ($(CONFIG_ALL_PPC),y)
-subdir-y := chrp prep pmac.
+Anyway, you can take that directory and merge it.  I'll look at the
+results when I get back from racing on Monday.
 
-> 2) subdir-m kludge to get a .depend file.
+I created a 'mktree' program along the lines of mkprep, mkchrp, etc.
+We can get rid of that 1000 lines of Perl or whatever that crap was
+that I couldn't understand.  The 'mktree' program only works properly
+on big endian hosts (but who would use anything else? :-).  I looked
+at some of the 'cross' modifications done by Porter to the other
+programs,
+and I guess I'll get around to that when I return.
 
-Which kills this I think.  I knew I shoulda thought about this a bit more.
-Thanks for letting me fill your inboxes a bit more. :)
+We should also be able to include the Spruce build in this as well,
+since it is a treeboot image.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Thanks.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
