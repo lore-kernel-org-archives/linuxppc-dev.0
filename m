@@ -1,56 +1,29 @@
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: "Dick Read (SkyLynx)" <dread@skylynx.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: quad uart driver for 852T
+Date: Mon, 8 Dec 2003 14:29:44 -0800
+Message-ID: <NGBBKDOAELJBKFGCBALKCEMLCEAA.dread@skylynx.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Subject: RE: 8270 performance
-Date: Mon, 8 Dec 2003 16:11:30 -0500
-Message-ID: <AB5AF73EAF23304EA1B932174137CED7030447@m5tmail.m5t.com>
-From: "Jean-Denis Boyer" <jdboyer@m5t.com>
-To: "Ricardo Scop" <scop@digitel.com.br>,
-	"Jaap-Jan Boor" <jjboor@aimsys.nl>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ricardo,
-Jaap-Jan,
+Hello.  I am new to Embedded Linux and wish to find a driver or code for a
+quad uart chip that I can use with the Analogue & Micro Adder II (MPC852T)
+reference board.  I have never done a Linux driver before but am willing to
+take the plunge here if I have to.  I see that someone as worked with a
+16C554 on this mailing list and might have it working by now.  Besides the
+suggestions for the UART code, what is the etiquette for asking people about
+their work?  I have often heard Linux has tons of drivers but how do you
+find the ones you need?
 
-> > I would expect the bogomips number
-> > to be somewhere near the core clock
-> > (like 8xx).
->
-> Well, I think the numbers are pretty fair, assuming that the
-> bogomips number
-> reflect a certain amount of external memory accesses at 66
-> MHz external bus
-> clock.
+Thank you.
+Dick Read
+Skylynx Communications
+206-780-5754
 
-It has more to do with pipelining!
-Hopefully, there ain't any memory access during calibration...
-(except, of course, when the instruction cache is disabled!)
-
-I didn't look at the documentation, but the execution of a branch probably occurs later in the pipeline of a 8260 than for the 860. It probably looses one more cycle. The calibration relies on the execution speed of function __delay (arch/ppc/kernel/misc.S), which loops on a branch instruction 'bdnz'.
-
-Fortunately, the number of bogomips will increase linearly with the core clock.
-(These are approximations)
-
-For 8260:
- 200MHz => 66M bdnz per second => 133BogoMips
- 266    => 88M                 => 176
- 400    => 133M                => 266
-
-For 860:
- 50MHz => 25M bdnz per second => 50BogoMips
-
-
-Regards,
---------------------------------------------
- Jean-Denis Boyer, Eng.
- M5T Centre d'Excellence en Télécoms Inc.
- 4283 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-3972 x241
---------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
