@@ -1,33 +1,52 @@
-Date: Mon, 29 Oct 2001 19:08:41 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Mark Pilon <mpilon@midrivers.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: trying to build latest devel <cramfs>
-Message-ID: <20011029190841.G9925@cpe-24-221-152-185.az.sprintbbd.net>
-References: <3BDDA382.1172104F@midrivers.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BDDA382.1172104F@midrivers.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3BDE6539.E177A5BC@disca.upv.es>
+Date: Tue, 30 Oct 2001 09:30:49 +0100
+From: David de =?iso-8859-1?Q?Andr=E9s=20Mart=EDnez?= <ddandres@disca.upv.es>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: CAN device driver for TQM8xxL 
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Oct 29, 2001 at 11:44:18AM -0700, Mark Pilon wrote:
-
-> trying to build for walnut, w/ cramfs enabled under
-> filesystems, compressed rom-based filesystem
 >
-> I get:
-> uncompress.c:21: linux/zlib_fs.h: No such file or directory
+>I would like to offer you a simple CAN device driver for
+>TQM8xxL Minimodules which I wrote some weeks ago.
 >
-> any idea where this went or if there's a Plan for future
-> support of this ?
+>And here you can find the files (CAN.TGZ and CAN_DEMO.TGZ):
+>ftp://dev.linuxppc.org/incoming
+>
+>Mit freundlichen Grüßen
+>(With kind regards)
+>   Gunther Brau
 
-Quite possibly because the inflate stuff under cramfs just got moved.
-Post this on linux-kernel or try 2.4.14-pre4 (soon to be pre5).
+I am trying to write a driver for CAN for the TQM823L and It would make
+my work easier to have an operational version to start with.
+
+I can not find the files in any mirror.
+Did anyone downloaded the files that are metion above?
+If so, can you send them to me?
+
+I have tried to contact Gunther Brau but his email address is not
+working.
+
+Thanks.
+David de Andrés.
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+----------------------------------------------------------------------
+| David de Andrés Martínez   | Fault Tolerant Systems research Group |
+|                            |                                       |
+| Computer Science Engineer  | Email: ddandres@disca.upv.es          |
+| Doctorate Student          | Phone: +34 96 387.75.74 Ext 75774     |
+|                            | Fax: +34 96 387.75.79                 |
+-------Address--------------------------------------------------------
+|                 DISCA-EUI                                          |
+|                 Universidad Politécnica de Valencia                |
+|                 Campus de Vera #14                                 |
+|                 Valencia E-46021                                   |
+|                 Spain                                              |
+----------------------------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
