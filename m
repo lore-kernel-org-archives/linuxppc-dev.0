@@ -1,37 +1,43 @@
-Date: Thu, 19 Aug 1999 14:10:32 -0400 (EDT)
-From: Hank De Gregorio <hcd1@acpub.duke.edu>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: New SCSI problem on MVME 2604 system
-In-Reply-To: <Pine.LNX.4.10.9908191001590.8446-100000@mercator.cs.kuleuven.ac.be>
-Message-ID: <Pine.SOL.3.91.990819140715.25767A-100000@godzilla6.acpub.duke.edu>
+Date: Thu, 19 Aug 1999 14:12:33 -0700 (MST)
+From: Matt Porter <mmporter@home.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: string.h conflicting types warnings
+Message-ID: <Pine.LNX.3.96.990819141202.8759P-100000@liberty.chnd1.az.home.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I attached a terminator to the SCSI and it fixed my last parity error 
-problem.  However, now I get the following problem:  
+Hi,
+                     
+I'm working on a standalone driver and have been running into these
+warnings lately.  Whilst compiling Mac-on-Linux I also got these
+warnings as well.  Searching around I only found some netbsd folks
+gettings these same warnings.  Anyone have an idea where this comes from? 
+                     
+Thanks - Matt
+                     
+------------
+                    
+cc -DLINUX -D__KERNEL__ -DMODULE -Wall -O2 -I/usr/include  -I.  -c
+stack_linux.c -o stack_linux.o
+In file included from /usr/include/linux/signal.h:64,
+                 from /usr/include/linux/sched.h:23,
+                 from cnet_linux.h:52,
+                 from globals.h:200,
+                 from stack_linux.c:39:
+/usr/include/linux/string.h:31: warning: conflicting types for built-in
+function `memset'
+/usr/include/linux/string.h:32: warning: conflicting types for built-in
+function `memcpy'
+/usr/include/linux/string.h:35: warning: conflicting types for built-in
+function `memcmp'
 
-RAM disk driver initialized:  16 RAM disks of 4096K size
-ncr53c8xx: at PCI bus 0, device 12, function 0
-ncr53c8xx: 53c825a detected
-ncr53c825a-0: rev=0x13, base=0x1042000, io_port=0x11000, irq=19
-ncr53c825a-0: ID 7, Fast-10, Parity Checking
-ncr53c825a-0: on-chip RAM at 0x1040000
-ncr53c825a-0: suspicious SCSI data while resetting the BUS.
-ncr53c825a-0: dp1,d15-8,dp0,d7-0,rst,req,ack,bsy,sel,atn,msg,c/d,i/o = 
-0x309, expecting 0x100
-ncr53c825a-0: FATAL ERROR: CHECK SCSI BUS - CABLES, TERMINATION, DEVICE 
-POWER etc.!
-ncr53c825a-0: detaching...
-scsi : 0 hosts.
-scsi : detected total.
-
-Any more help?  Thanks in advance,
-
-Hank
+--
+Matt Porter
+mmporter@home.com
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
