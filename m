@@ -1,12 +1,24 @@
-Date: Thu, 8 May 2003 22:04:03 +0300 (IDT)
-From: Eitan Rabin <rabin@mellanox.co.il>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC860 and I2C
-Message-ID: <506C3D7B14CDD411A52C00025558DED603018B6A-100000@mtlex01.yok.mtl.com>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0840@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Eitan Rabin'" <rabin@mellanox.co.il>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: MPC860 and I2C
+Date: Thu, 8 May 2003 15:18:59 -0400 
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Are you sure you need to use the relocation patch?
+
+-----Original Message-----
+From: Eitan Rabin [mailto:rabin@mellanox.co.il]
+Sent: Thursday, May 08, 2003 3:04 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: MPC860 and I2C
+
 
 
 Hi All,
