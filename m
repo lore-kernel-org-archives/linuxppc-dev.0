@@ -1,45 +1,53 @@
-Date: Mon, 1 Jul 2002 08:27:27 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: linuxppc-dev@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: [PATCH/RFC] Change how we pick which _kd_mksound to use.
-Message-ID: <20020701152727.GC20920@opus.bloom.county>
+Date: Tue, 2 Jul 2002 13:36:42 +0200
+From: "Marco d'Itri" <md@Linux.IT>
+To: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
+Subject: IPv6 ND on PPC hardware
+Message-ID: <20020702113642.GA2654@wonderland.linux.it>
+Reply-To: linuxppc-dev@lists.linuxppc.org,
+	debian-powerpc@lists.debian.org, md@Linux.IT
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The following changes how we pick a _kd_mksound.  The problem is that on
-some machines, such as IBM405, the default _kd_mksound breaks horribly
-due to the inb/outb's attempting to fiddle with timers which don't
-exist.  This changes the test which selects either an empty _kd_mksound
-or the one in question from __powerpc__ to CONFIG_PPC64 (since from what I
-understand, __powerpc__ is defined on ppc64) || (CONFIG_PPC32 &&
-CONFIG_6xx).  The CONFIG_6xx test is because these boards are the ones
-which tend to have a SuperIO chip, or something else with the timers at
-0x61, 0xB6, etc.
+I do not understand why ND is not working. Is my configuration wrong or
+I have exposed a kernel bug?
+When I try to ping another host on the LAN it usually works the first
+time, and then stops working because the other host does not reply to
+ND requests. Everything works again if I switch the remote interface
+in promiscuous mode.
 
-The other option would be to define an empty no_kd_mksound or so on
-4xx/8xx and then conditionally set kd_mksound to that, but I would
-prefer this since we're already doing some preprocessor checks anyhow.
+erode:/# ip -6 ad
+1: lo: <LOOPBACK,UP> mtu 16436 qdisc noqueue
+    inet6 ::1/128 scope host
+2: eth0: <BROADCAST,MULTICAST,UP> mtu 1500 qdisc pfifo_fast qlen 100
+    inet6 3ffe:1001:210:16::3/64 scope global
+    inet6 3ffe:8271:a040:16::3/64 scope global
+    inet6 3ffe:8171:10:16::3/64 scope global
+    inet6 fe80::204:acff:fe97:7130/10 scope link
+erode:/# ip -6 ro
+3ffe:1001:210:16::/64 dev eth0  proto kernel  metric 256  mtu 1500 advmss 1440
+3ffe:8171:10:16::/64 dev eth0  proto kernel  metric 256  mtu 1500 advmss 1440
+3ffe:8271:a040:16::/64 dev eth0  proto kernel  metric 256  mtu 1500 advmss 1440
+2000::/3 via 3ffe:1001:210:16::1 dev eth0  metric 1024  mtu 1500 advmss 1440
+fe80::/10 dev eth0  proto kernel  metric 256  mtu 1500 advmss 1440
+ff00::/8 dev eth0  proto kernel  metric 256  mtu 1500 advmss 1440
+unreachable default dev lo  metric -1  error -101
+erode:/# uname -a
+Linux erode 2.4.19-rc1 #1 Sat Jun 29 15:05:41 CEST 2002 ppc unknown
+
+The other host has a similar configuration.
+
+Seen from a third host (i386, which appears to work) on the same LAN:
+
+16:23:22.818468 erode.bofh.it > ff02::1:ff00:1: icmp6: neighbor sol: who has attila.bofh.it(src lladdr: 0:4:ac:97:71:30) (len 32, hlim 255)
+16:23:23.814589 erode.bofh.it > ff02::1:ff00:1: icmp6: neighbor sol: who has attila.bofh.it(src lladdr: 0:4:ac:97:71:30) (len 32, hlim 255)
+16:23:24.814834 erode.bofh.it > ff02::1:ff00:1: icmp6: neighbor sol: who has attila.bofh.it(src lladdr: 0:4:ac:97:71:30) (len 32, hlim 255)
+16:23:25.844675 erode.bofh.it > ff02::1:ff00:1: icmp6: neighbor sol: who has attila.bofh.it(src lladdr: 0:4:ac:97:71:30) (len 32, hlim 255)
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
-
-===== drivers/char/vt.c 1.9 vs edited =====
---- 1.9/drivers/char/vt.c	Tue Feb  5 00:55:25 2002
-+++ edited/drivers/char/vt.c	Mon Jul  1 08:05:43 2002
-@@ -90,7 +90,8 @@
-  * comments - KDMKTONE doesn't put the process to sleep.
-  */
-
--#if defined(__i386__) || defined(__alpha__) || defined(__powerpc__) \
-+#if defined(__i386__) || defined(__alpha__) || defined(CONFIG_PPC64) \
-+    || (defined(CONFIG_PPC32) && defined(CONFIG_6xx)) \
-     || (defined(__mips__) && defined(CONFIG_ISA)) \
-     || (defined(__arm__) && defined(CONFIG_HOST_FOOTBRIDGE)) \
-     || defined(__x86_64__)
+ciao,
+Marco
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
