@@ -1,50 +1,50 @@
-Date: Sun, 6 Aug 2000 08:26:40 -0500 (CDT)
+Date: Sun, 6 Aug 2000 08:46:39 -0500 (CDT)
 From: Takashi Oe <toe@unlserve.unl.edu>
-To: Iain Sandoe <iain@sandoe.co.uk>
-cc: Henry Worth <haworth@ncal.verio.com>, linuxppc-dev@lists.linuxppc.org,
-        Matthias Pfisterer <Matthias.Pfisterer@gmx.de>
-Subject: Re: CDDA playback on Pismo (and other newer models)
-In-Reply-To: <200008060938.KAA25433@hyperion.valhalla.net>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.1000806081100.1409D-100000@ofey.earthlink.net>
+To: Olaf Hering <olh@suse.de>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: a GCC question
+In-Reply-To: <20000806150611.A4180@suse.de>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.1000806083118.1409E-100000@ofey.earthlink.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Sun, 6 Aug 2000, Olaf Hering wrote:
 
-On Sun, 6 Aug 2000, Iain Sandoe wrote:
+> Can you send me a diff against the current Benh kernel?
 
-> OK - there's a lot of this in apps that came from x86 - they assume that the
-> output is LE.
+You mean his 2.2.x tree?  Or does he have 2.4.x tree somewhere?  I'm only
+working with 2.4.x.
 
-Is this really true?  What I have experienced over the years is quite the
-opposite.  It is true that apps developed on x86 usually set the Linux
-driver to accept AFMT_S16_LE; however, they often supply BE data on ppc
-and LE data on x86.  For this reason, many apps from x86 camp just work if
-AFMT_S16_LE in their codes were changed to AFMT_S16_NE.
-
+> I just inserted these (useless) printk() to a non called function and
+> now it works so far for me.
 >
-> If you use my back-port - I "fixed" (kludged) the default dsp settings to
-> 44.1k, 16 bit , stereo LE -- to be compatible with x86 progs that don't
-> bother to set things up :-(
-
-For those apps, AFMT_S16_BE as a default is more appropriate for the
-reason above IMHO.
-
-[...]
-> > A quick test forcing the
-> > AFMT_*_[LB]E
-> > value to either value for the IOCTL doesn't make a difference.
+> find_pci_device_OFnode(unsigned char bus, unsigned char dev_fn)
+> {
+> /*      char blubber[60] = ""; */
+>         struct device_node* np;
+>         unsigned int *reg;
+>         int l;
+> /*      printk("I am just a dummy ...\n");  */
+>         for (np = allnodes; np != 0; np = np->allnext) {
+>                 int in_macio = 0;
+>                 struct device_node* parent = np->parent;
+>                 while(parent) {
+>                         char *pname = (char *)get_property(parent, "name", &l);
+>         printk("I am just another dummy ...\n");
+>         printk("I am just another dummy ...\n");
+>                         if (pname && strcmp(pname, "mac-io") == 0) {
+>                                 in_macio = 1;
+>                                 break;
+>                         }
 >
-> The awacs, screamer and burgundy chips *all* have an endian-swap capability
-> AFAICT.  So, providing you tell the driver what you are supplying - it will
-> work OK:
+> Bit ugly.
 
-AWACS on NuBus PowerMacs doesn't support the byte swapping even though it
-has the same revision number (2) as AWACS found on early PCI PowerMacs
-which do support the byte swapping.
+I bet you get the same effect (working kernel) by placing the printk()s
+elsewhere.  I know something strange (to me) is going on, but I haven't
+found anything wrong in objdump of prom.o.
 
 
 Takashi Oe
