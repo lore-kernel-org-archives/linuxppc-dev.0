@@ -1,102 +1,81 @@
-Message-ID: <004d01bf6867$6b15bc50$69f001dc@sjzhu.sps.mot.com>
-From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
-To: "Alan Mimms" <alan@packetengines.com>, "Dan Malek" <dan@netx4.com>
-Cc: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Help about MPC823 Video and Cache
-Date: Thu, 27 Jan 2000 09:39:44 +0800
+Message-ID: <388FB1FD.A75F048A@huawei.com.cn>
+Date: Thu, 27 Jan 2000 10:48:29 +0800
+From: dony <dony.he@huawei.com.cn>
 MIME-Version: 1.0
-Content-Type: text/plain;	charset="gb2312"
+To: Jesper Skov <jskov@cygnus.co.uk>,
+        Brendan John Simon <brendan@dgs.monash.edu.au>,
+        linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
+Subject: How to gdbserver...
+References: <3889220B.2BD1CB63@huawei.com.cn> <otu2k6tn9h.fsf@thinktwice.zoftcorp.dk>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Alan,
-
-Thanks,
-More important, in my program, I througth following code to disable the
-cache
-for the display buffer memory:
-============================================================================
- for (i=0,mem_addr=__va(video_fb_base);i<num_video_pages;i++) {
-                pte = va_to_pte(&init_task, mem_addr);
-                pte_val(*pte) |= _PAGE_NO_CACHE;
-                flush_tlb_page(current->mm->mmap, mem_addr);
-  mem_addr += PAGE_SIZE;
- }
-============================================================================
-Is it right?
-
-Through the debug tool (EST visionProbe), if I just disable the I-Cache,
-TV display almost OK, and disable the D-Cache and I-Cache both, it's
-very well, but if I modify from write-through to write-back,
-effection is not notable.
-
-BRs,
-Shuangjun
 
 
------Original Message-----
-From: Alan Mimms <alan@packetengines.com>
-To: Shuangjun Zhu (r44089) <r44089@email.sps.mot.com>; Dan Malek
-<dan@netx4.com>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Date: Thursday, January 27, 2000 9:26 AM
-Subject: Re: Help about MPC823 Video and Cache
+Jesper Skov wrote:
 
-
->Forgot this: One more possibility is to make the frame buffer region of
-address
->space cacheable but write-thru rather than copy-back.
+> >>>>> "dony" == dony  <dony.he@huawei.com.cn> writes:
 >
->a
+> dony> Hello,
 >
->On Wed, 26 Jan 2000, Alan Mimms wrote: > We experimented at Apple with
->cacheable frame buffers and this is what we saw. >
->> I believe this is caused by the cache being on for the region of memory
-used
->> for the frame buffer.  You'll see little 16 byte chunks of memory
-sparkling as
->> the cache finally dumps out dirty cache lines into the real frame buffer.
->>
->> You can fix this by mapping the area of the frame buffer with cache
-disabled,
->> or you can add code to some periodic timer handler to do a DCBF on the
-region
->> of the frame buffer each time the timer ticks (this is not cheap,
-however).
->>
->> a
->>
->> On
->> Wed, 26 Jan 2000, Shuangjun Zhu wrote: > Hello, everyone
->> >
->> > I'm using kernel version 2.2.13 on my MPC823 FADS board
->> > to display on TV. I have a problem:
->> >
->> > After the system boot up, the text on the TV flicker fiercely out,
->> > if I disable the I-Cache throught the EST visionProbe tool,
->> > TV will not flicker out again.
->> > Of course, if I disable the cache when the system boot up,
->> > TV display OK.
->> > So there is some relation between the cache and the video, I guess.
->> >
->> >
->> > Do you have any suggestion?
->> > Thanks in advacned!
->> >
->> > BRs,
->> > Shuangjun
->> --
->> Alan Mimms     Packet Engines, Inc.     Spokane, Washington [99214-0497]
->>   USA, Earth, Sol, Milky Way, The Local Group, Virgo Supercluster, U0
->> Despite the cost of living, have you noticed how popular it remains?
->>   -- Steven Wright?
->--
->Alan Mimms     Packet Engines, Inc.     Spokane, Washington [99214-0497]
->  USA, Earth, Sol, Milky Way, The Local Group, Virgo Supercluster, U0
->Despite the cost of living, have you noticed how popular it remains?
->  -- Steven Wright?
+> dony>        Now I want to use gdbserver to debug my test app.
+> dony> Running "gdbserver :6666 ./mytest" on the target (Powerpc 860)
+> dony> show a message: Process ./mytest created :pid=8 But I don't know
+> dony> how to run gdb on the host (X86). The README doesn't seem to
+> dony> explain clearly . It says first running "gdb mytest" on the host
+> dony> and then "target remote mytarget:6666".  But I don't understand
+> dony> something about "gdb mytest" . At this time should I run a x86
+> dony> "gdb" or something like "powerpc-linux-gdb"? And the "mytest"?
 >
+> mytest is the same executable you run on the target. gdb you run on
+> the host would be powerpc-linux-gdb (i.e., cross-debugger), thus:
+>
+> target:> gdbserver :6666 ./mytest
+>
+> host:> powerpc-linux-gdb mytest
+> [...]
+> (gdb) target remote mytarget:6666
+
+Hi, Jesper:
+      Following the above steps, now my host can connect with target.
+Because I can see the following messages from host and target
+respectively:
+
+[target]  IP=10.11.27.244
+ ./gdbserver :6666 ./mytest
+Process ./mytest created; pid=19
+Remote debugging using :6666
+
+[host] which is a x86 box
+powerpc-linux-gdb --baud 9600 mytest
+(gdb)target remote 10.11.27.244:6666
+Remote debugging using 10.11.27.244:6666
+0x30016a7c in ??()
+(gdb)
+
+Has the host and the target been connected via network yet?
+If so, I type "run" after (gdb) at host side, then
+(gdb)run
+The program being debugged has been started already
+Start it from the begging?(y or n) y
+Starting program: /mytest/mytest
+Don't know how to run. Try "help target".
+
+I don't know why the program is running at this time.
+type "list" can show my source code.
+type "b main" can set breakpoint .
+(gdb) b main
+Breakpoint 1 at 0x10000328:file mytest.c, line 4.
+(gdb) s
+Cannot find bounds of current function
+
+I don't know why I cannot run the program at host side. Am I missing
+something?
+I am pretty new with "GDB" debug.
+Can some gurus give me some advices?
+Thanks very much.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
