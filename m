@@ -1,22 +1,19 @@
-Return-Path: <chris@alcor.co.uk>
-Received: from mizar.alcor-electronics.co.uk (alcor.demon.co.uk [62.49.62.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BBCC62BDF2
+Return-Path: <wd@denx.de>
+Received: from mailout11.sul.t-online.com (mailout11.sul.t-online.com
+	[194.25.134.85]) by ozlabs.org (Postfix) with ESMTP id 4BB8D2BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 13 Nov 2004 22:54:44 +1100 (EST)
-Received: from alcor1 ([192.168.1.1])
-	by mizar.alcor-electronics.co.uk with esmtp (Exim 4.30)
-	id 1CSwUB-0002GZ-4l
-	for linuxppc-embedded@ozlabs.org; Sat, 13 Nov 2004 11:54:31 +0000
-From: "Chris Down" <chris@alcor.co.uk>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Sat, 13 Nov 2004 11:54:31 -0000
-Message-ID: <000d01c4c977$8951b0e0$0101a8c0@alcor1>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Problem bringing up Linux on Custom MPC852 Board
+	Sun, 14 Nov 2004 07:28:51 +1100 (EST)
+To: "Chris Down" <chris@alcor.co.uk>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 13 Nov 2004 11:54:31 GMT."
+	<000d01c4c977$8951b0e0$0101a8c0@alcor1>
+Date: Sat, 13 Nov 2004 20:27:57 +0100
+Sender: wd@denx.de
+Message-Id: <20041113192802.C6DFEC1430@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Problem bringing up Linux on Custom MPC852 Board 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,53 +24,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Oops typo in the original subject line :-)
+In message <000d01c4c977$8951b0e0$0101a8c0@alcor1> you wrote:
+> 
+> I have ported u-boot, modified Linux to add a new board config and added the
+> board specific definitions in arch/ppc/platforms. 
+...
+> When I boot Linux I get the following:-
+...
+> At this point it stops executing in arch_kernel_thread.
 
-I am trying to bring up Linux (latest linuxppc-2.4 tree) on a custom =
-MPC852
-Board. The board has 8MByte SDRAM and 8MByte Flash.=20
-I have ported u-boot, modified Linux to add a new board config and added =
-the
-board specific definitions in arch/ppc/platforms.=20
-U-Boot and Linux were built using the ppc_8xx compiler from ELDK 3.0.
+I bet some beer that this is actually a FAQ - see
+http://www.denx.de/twiki/bin/view/DULG/LinuxCrashesRandomly
 
-When I boot Linux I get the following:-
+This phenomenon is typical for a novice's port of U-Boot.
 
-## Booting image at 00100000 ...
-   Image Name:   Linux-2.4.28-pre3-cdd1
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    664920 Bytes =3D 649.3 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-Linux version 2.4.28-pre3-cdd1 (chris@alioth) (gcc version 3.2.2 =
-20030217 (Yello
-w Dog Linux 3.0 3.2.2-2a_1)) #3 Fri Nov 12 09:46:59 GMT 2004 On node 0
-totalpages: 2048
-zone(0): 2048 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line:
-Decrementer Frequency =3D 187500000/60
-Calibrating delay loop... 49.76 BogoMIPS
-Memory: 6508k available (1176k kernel code, 344k data, 56k init, 0k =
-highmem)=20
-Dentry cache hash table entries: 1024 (order: 1, 8192 bytes)=20
-Inode cache hash table entries: 512 (order: 0, 4096 bytes)=20
-Mount cache hash table entries: 512 (order: 0, 4096 bytes)=20
-Buffer cache hash table entries: 1024 (order: 0, 4096 bytes)=20
-Page-cache hash table entries: 2048 (order: 1, 8192 bytes) POSIX =
-conformance
-testing by UNIFIX
+Best regards,
 
-At this point it stops executing in arch_kernel_thread.
+Wolfgang Denk
 
-As I am new to this I could do with some pointers as to what to do next. =
-Any
-help would be gratefully appreciated.
-
-
-Regards
-
-Chris Down
+-- 
+See us @ Embedded/Electronica Munich, Nov 09 - 12, Hall A.6 Booth 513
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"There are things that are so serious that you can  only  joke  about
+them"                                                    - Heisenberg
