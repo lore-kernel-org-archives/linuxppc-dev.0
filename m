@@ -1,49 +1,30 @@
-Message-ID: <3D78B748.FDB8449A@opensource.se>
-Date: Fri, 06 Sep 2002 16:10:16 +0200
-From: Magnus Damm <damm@opensource.se>
-MIME-Version: 1.0
-To: Matthew Locke <mlocke@mvista.com>
-Cc: Fanny Wakizaka <fanny.wakizaka@cyclades.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PCMCIA cards for MPC8xx?
-References: <005d01c254fc$220722e0$5fa1ba40@optiplex> <3D77D72D.1020505@mvista.com>
+Date: Fri, 6 Sep 2002 07:28:27 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Lauri Ojantakanen <lauri.ojantakanen@solidtech.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Booting sandpoint from ide disk
+Message-ID: <20020906142827.GS761@opus.bloom.county>
+References: <200209051316.19309.lauri.ojantakanen@solidtech.com> <3D777C99.97AF4D14@mvista.com> <200209061102.58480.lauri.ojantakanen@solidtech.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200209061102.58480.lauri.ojantakanen@solidtech.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've used 16550 serial ports with the m8xx_pcmcia driver.
-It did not work right out of the box then (2.2), I think
-some structure was shared between 8xx_io/uart.c and
-the generic 16550 serial.c. And I think serial.c poked
-around in some unmapped io-space.
+On Fri, Sep 06, 2002 at 11:02:58AM +0300, Lauri Ojantakanen wrote:
 
-If you get a list of working cards, maybe they could
-be put in the embedded powerpc howto?
+> Instant need for booting from ide disk seem to have gone away :( Dink32 does
+> not start anymore at all. When I restart the machine nothing comes through
+> the serial cable (settings are correct). I have not touched to any board
+> switches. Red leds on the altimus board are as follows:
 
-/ Magnus
+Were you trying to put the kernel in flash or something?  If you've got
+access to HW debuggers (like the Abatron BDI) look at what's at
+0xFF00_0000, it should start off with a bunch of nop's.
 
-
-Matthew Locke wrote:
->
-> Fanny Wakizaka wrote:
->
-> >Hi,
-> >We are developing a custom hw based on the MPC855 with support to PCMCIA. We
-> >are using MontaVista linux kernel 2.4.17.
-> >Could you give me some suggestions of PC Cards that worked with MPC8xx? I'm
-> >looking for ethernet cards, modem cards and wireless cards.
-> >Thanks in advance,
-> >Fanny
-> >
-> I have used: cisco 340/350 and lucent wlan cards, 3com 3c589 lan cards,
-> and modems cards do not work.  The problem with modem cards had
-> something to do with a dependancy on serial.c (8xx uses
-> arch/ppc/8xx_io/uart.c).  I don't remember the exact problem now.
->
-> >
-> >
-> >
->
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
