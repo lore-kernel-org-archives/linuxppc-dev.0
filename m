@@ -1,61 +1,53 @@
-Message-Id: <200004122245.AAA08151@denx.local.net>
+Subject: Why is search_exception_table disabled for modules on PPC?
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problems with Ethernet on PowerBook Wallstreet G3 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 13 Apr 2000 00:18:35 +0200."
-Date: Thu, 13 Apr 2000 00:45:59 +0200
+Date: Thu, 13 Apr 2000 11:09:37 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000413010937.A91D73C998@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Even more observations:
+Hello again,
 
-=> Corruption happens in "chunks" that look like network packets:
+A few days ago on the linuxppc-dev mailing list, I asked:
+> Can anyone tell me why arch/ppc/mm/extable.c:search_exception_table only
+> searches the kernel exception table on PowerPC in 2.2.14?  Why isn't the
+> per-module table search enabled like on every other architecture?
 
-	-> cmp -l 0 2
-      1 6572503  57 315
-      2 6572505 310  22
-      3 6572507 315 165
-      4 6572509  22 141
-	...
-    699 6573909 240 135
-    700 6573911 324 104
-    701 6573913 135 226
-    702 6573915 104 141	<= 1412 Bytes bad, followed by good data, until:
-    703 11721589 240 226
-    704 11721591  16 251
-    705 11721593 226 261
-    706 11721595 251 115
-	...
-   1404 11722997 173  43
-   1405 11722999 301  61
-   1406 11723001  43 201
-   1407 11723003  61  55 <= 1414 Bytes bad, followed by good data, until:
-   1408 39669229 166 277
-   1409 39669231  70 330
-   1410 39669233 277  33
-   1411 39669235 330  23
-	...
-   2195 40193571 254 373
-   2196 40193573 155 242
-   2197 40193575 373   2
-   2198 40193577 242 321
-   2199 40193579   2  22 <=
-   2200 43640893   0 267
-   2201 43640969 221 156
-   2202 43640971 141  70
-   2203 43640973 156 202
-	...
+Well looks like everyone's asleep. Anyway, it looks wrong to me. I believe it
+means that modules which attempt their own user space accesses without using
+the uaccess stuff can cause a kernel panic. I think the following fix
+should be applied to the 2.2 and 2.3 branches:
 
-Wolfgang Denk
+As an aside, is there a better address I should mail kernel patches to in
+order to ensure that they make it into the BitKeeper repository?
 
+
+Index: arch/ppc/mm/extable.c
+===================================================================
+retrieving revision 1.1.1.1
+diff -u -r1.1.1.1 extable.c
+--- arch/ppc/mm/extable.c	1999/12/30 05:56:30	1.1.1.1
++++ arch/ppc/mm/extable.c	2000/04/10 09:40:12
+@@ -36,7 +36,7 @@
+ {
+ 	unsigned long ret;
+
+-#if 1 /*ndef CONFIG_MODULES*/
++#ifndef CONFIG_MODULES
+ 	/* There is only the kernel to search.  */
+ 	ret = search_one_table(__start___ex_table, __stop___ex_table-1, addr);
+ 	if (ret) return ret;
+
+
+Thanks,
+Graham
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The most difficult thing in the world is to know how to  do  a  thing
-and to watch someone else doing it wrong, without commenting.
-                                                        -- T.H. White
+Graham Stoney
+Principal Hardware/Software Engineer
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
