@@ -1,29 +1,28 @@
-Date: Wed, 19 May 1999 18:19:21 -0400 (EDT)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Tom Rini <tmrini@ntplx.net>
-cc: Andreas Bogk <andreas@andreas.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.3.3 compile error on ppc
-In-Reply-To: <Pine.LNX.4.05.9905191522510.8961-100000@pc.wackyland.com>
-Message-ID: <Pine.LNX.3.96L.990519181350.4847C-100000@unix47.andrew.cmu.edu>
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+To: Corey Minyard <minyard@acm.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: LinuxPPC and egcs developer releases
+Date: Thu, 20 May 1999 01:06:47 +0200
+Content-Type: text/plain
+References: <m2d7zwrfxz.fsf@wf-rch.cirr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <99052001120800.00981@ns1102.munich.netsurf.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 19 May 1999, Tom Rini wrote:
->
-> The official kernel releases are only ever checked on x86.  So sometimes
-> they'll be broken (not usually on a stable tree).
+Am Wed, 19 May 1999 schrieb Corey Minyard:
+>Is anyone tracking the egcs developer releases on LinuxPPC?  I'm
+>trying to build the newest developer release (19990517) and I have
+>tried to build earlier ones, but they all get a SEGV compiling
+>SYSCALLS.c with the stage1 compiler.  This is on linux 2.1.127 with
+>the egcs-1.02 prerelease compiler.
 
-I'm beginning to think we need a status page like at
-http://cvs-mirror.mozilla.org/webtools/tinderbox/showbuilds.cgi?tree=SeaMonkey&hours=12
+You need binutils >=2.9.1.0.23 or current cvs binutils to be able to build
+gcc-2.95 on ppc-linux. Probably the easiest way is to build the DRR1/preR5
+SRPM binutils-2.9.1.0.990418-1c.src.rpm available on ftp.linuxppc.org on your
+system.
 
-You know, where you see the Intel person check something in and then all the
-other platform builds start going red?
-
--Hollis
-
+Franz.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
