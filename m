@@ -1,45 +1,43 @@
-To: Jin Cheng <jcheng@redswitch.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: can not open crt1.o using ELDK 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 07 Oct 2002 21:19:49 PDT."
-             <3DA25CE5.EA79616B@redswitch.com>
-Date: Tue, 08 Oct 2002 07:34:26 +0200
-Message-Id: <20021008053431.2C56DFA9C@denx.denx.de>
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "David Gibson" <david@gibson.dropbear.id.au>,
+	"Matt Porter" <porter@cox.net>
+Cc: "Andrew May" <acmay@acmay.homeip.net>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: very minor 405GP and 405GPr PCI difference
+Date: Mon, 7 Oct 2002 23:19:31 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFOEPEDMAA.acurtis@onz.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <20021008041419.GF32555@zax>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3DA25CE5.EA79616B@redswitch.com> you wrote:
+> As Matt says, this would fall out naturally from a better control
+> structure.  Howeever, I tend to think that leaving things like this to
+> the bootloader/firmware is a bad idea:
 >
-> When I use the ELDK to compile one file, I got the following message saying can
-> not
-> find crt1.o. Can someone help me on that? I don't have problem compiling one
-> other file.
-...
-> hyperion: 224 % make
-> ppc-linux-gcc -D__KERNEL__ -DMODULE -I/u/jcheng/ppclinux/include -Wall
-> -Wstrict-prototypes -Wno-trigraphs -O -g -DDEBUG -fno-strict-aliasing
-> -fno-common -fomit-frame-pointer -I/u/jcheng/ppclinux/arch/ppc -fsigned-char
-> -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring -Wa,-m405
-> -nostdinc -I/opt/eldk/usr/lib/gcc-lib/ppc-linux/2.95.3/include vayu_main.c
-> dbgprint.h:35: warning: `debug' defined but not used
-> /opt/eldk/usr/ppc-linux/bin/ld: cannot open crt1.o: No such file or directory
-> collect2: ld returned 1 exit status
+> The kernel has to know how PCI addresses are mapped anyway, so this
+> becomes yet another point at which the kernel and firmware are bound
+> together.  Why should the kernel have code to deal with umpteen
+> different cases of how PCI might have been set up, or not set up by
+> the firmware/bootloader, when it can just take control of the host
+> bridge and reprogram it how it wants?  Once the debugging cruft comes
+> out, it should only be a couple of hundred bytes of code.
 
-Please check your compiler options.  If  you're  compiling  a  kernel
-module, you should not try linking it as normal binary.
+I believe that there are many cases where the kernel code is much too
+aggressive with configuration. Personally I believe that all BIOS code
+should totally initialize the processor state so you always have a known
+starting point. (whether you boot Linux or not) Many times I have had to
+track down where the kernel thinks it "knows" the proper configuration and
+unravels the work done by the BIOS. I am not sure how to solve this problem
+but I believe the kernel should attempt to detect and use a configuration
+before reconfiguring any hardware. I have implemented this technique in our
+UART and Ethernet configuration stuff on the 8260 with good success.
 
-Best regards,
+Only a suggestion...
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Wisdom is one of the few things that looks bigger the further away it
-is.                               - Terry Pratchett, _Witches Abroad_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
