@@ -1,51 +1,72 @@
-Mime-Version: 1.0
-Message-Id: <v04210100b429450856b2@[206.173.238.95]>
-In-Reply-To: 
- <Pine.LNX.4.10.9910112307420.26305-100000@sleepchamber.apt5.msoe.edu>
-References: 
- <Pine.LNX.4.10.9910112307420.26305-100000@sleepchamber.apt5.msoe.edu>
-Date: Tue, 12 Oct 1999 13:13:41 -0700
-To: ian reinhart geiser <geiseri@msoe.edu>, linuxppc-dev@lists.linuxppc.org,
-        linuxppc-user@lists.linuxppc.org
-From: Randall R Schulz <rrschulz@cris.com>
-Subject: Re: Argo UML and LinuxPPC
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-ID: <3803A2E6.BF215F25@schweiz.ch>
+Date: Tue, 12 Oct 1999 23:06:46 +0200
+From: Andreas Tobler <a.tobler@schweiz.ch>
+Reply-To: a.tobler@schweiz.ch
+MIME-Version: 1.0
+To: michael.fenske@arcormail.de
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Problem with glibc-2.1.3-0a.src.rpm ?
+References: <3803A7BC.4175E431@arcormail.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ian,
-
-Well, I've gone through the installation and configuration exercise 
-for ArgoUML, version 0.70. Fortunately, I had the same problem as 
-you. Fortunately? Yes, since had I not, I wouldn't have searched for 
-the solution...
-
-If you're experiencing the same problem as I had, the symptom being a 
-complaint about not being able to load ...MetalLookAndFeel.class, 
-then the problem is that your display is in a color mode not 
-supported by the current Java and / or XF86 server and / or display 
-driver. In my case, the driver is Anthony Tong's ATI Rage Pro driver 
-("video=aty128fb") in 32 bit-per-pixel mode. Setting the display to 8 
-bits allowed ArgoUML to start up fine (even though it made a lot of 
-other things ugly--it also made everything faster, of course).
-
-Search the LinuxPPC-User archives for specifics of the problem and 
-solutions or workarounds. The following statement appears on 
-<http://khendricks.ivey.uwo.ca/linuxppc/jdk/main.html>, where the 
-LinuxPPC JDKs are made available:
-
-* The current XF68_FBDev Xserver is inconsistent when specifying 
-bits-per-pixel, color depth, and color masks. This causes a problem 
-running JDK 1.2.X with jfc (swing) classes. A fix is available in the 
-form of a source code patch for XF68_FBDev and/or a precompiled 
-XF68_FBDev replacement (which needs a revised XF86Config file to 
-correctly specify color depths. See the following archive to get the 
-required downloads.
 
 
-I hope this helps.
+Michael Fenske wrote:
+> 
+> Hi,
+> 
+> can anyone explain me the following output ?
+> 
+> + ../configure --prefix=/usr --enable-add-ons=yes --without-cvs ppc-redhat-linux
+> creating cache ./config.cache
+> checking host system type... powerpc-redhat-linux-gnu
+> checking sysdep dirs... sysdeps/powerpc/elf crypt/sysdeps/unix
+> linuxthreads/sysdeps/unix/sysv/linux linuxthreads/sysdeps/pthread
+> linuxthreads/sysdeps/unix/sysv
+> linuxthreads/sysdeps/unix linuxthreads/sysdeps/powerpc
+> sysdeps/unix/sysv/linux/powerpc sysdeps/unix/sysv/linux sysdeps/gnu
+> sysdeps/unix/common sysdeps/unix/mman sysdeps/unix/inet
+> sysdeps/unix/sysv sysdeps/unix sysdeps/posix sysdeps/powerpc
+> sysdeps/wordsize-32 sysdeps/ieee754 sysdeps/libm-ieee754
+> sysdeps/generic/elf sysdeps/generic
+> checking for a BSD compatible install... /usr/bin/install -c
+> checking whether ln -s works... yes
+> checking build system type... powerpc-redhat-linux-gnu
+> checking for gcc... egcs
+> checking version of egcs... v. ?.??, bad
+> checking for make... make
+> checking version of make... 3.77, ok
+> checking for msgfmt... msgfmt
+> checking version of msgfmt... 0.10.35, ok
+> checking for makeinfo... makeinfo
+> checking version of makeinfo... 3.12, ok
+> configure: error:
+> *** Some critical program is missing or too old.
+> *** Check the INSTALL file for required versions.
+> Bad exit status from /var/tmp/rpm-tmp.55764 (%build)
+> 
+> I get this if I do a 'rpm --rebuild glibc-2.1.3-0a.src.rpm'
+> 
+> What I don't understand is that the configure-script insists that I have
+> egcs installed, but I definitely have gcc-2.95.1 installed.
+> 
+> Michael
+Do you get the same when you do in ./SPEC rpm -ba glibc.spec?
 
-RandyS
+
+I had no problem in doing so with gcc-2.95.1.
+
+Good night
+
+Andreas
+-- 
+| Andreas Tobler				
+| CH-8004 Zuerich 							
+| E-Mail: toa@pop.agri.ch     	| a.tobler@schweiz.ch
+-----------------------------------------------------------
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
