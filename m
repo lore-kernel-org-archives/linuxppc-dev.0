@@ -1,19 +1,18 @@
+Message-ID: <3F5DFFBA.3000309@kegel.com>
+Date: Tue, 09 Sep 2003 09:28:42 -0700
+From: Dan Kegel <dank@kegel.com>
+MIME-Version: 1.0
 To: t.vanremortel@ha.be
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Cross compilation question 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 09 Sep 2003 09:44:54 +0200."
-             <1063093493.12979.4.camel@toni>
-Date: Tue, 09 Sep 2003 18:18:42 +0200
-Message-Id: <20030909161847.7D088C59E4@atlas.denx.de>
+Subject: Re: Cross compilation question
+References: <1063093493.12979.4.camel@toni>
+In-Reply-To: <1063093493.12979.4.camel@toni>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <1063093493.12979.4.camel@toni> you wrote:
->
+Toni Van Remortel wrote:
 > Hi all,
 >
 > I've installed ELDK as compiler-set, and it is successfully used to
@@ -31,28 +30,15 @@ In message <1063093493.12979.4.camel@toni> you wrote:
 >
 > As far as I know, is libstdc++.so in /opt/eldk/ppc_4xx/usr/lib, which is
 > added as -L.
->
-> Anyone who know the solution (which will probably be easy).
 
-First, your list of "-L" options makes little sense to me.  There  is
-no need to add /opt/eldk/ppc_4xx/lib or -L/opt/eldk/ppc_4xx/usr/lib.
+Do you have a libstdc++.a?  You'd need that to satisfy the -static.
+- Dan
 
-Second: did you try what happens when you omit the "-static" argument?
-
-
-If you really must link with "-static", try something like this:
-
-GCCLIBDIR=/opt/eldk/ppc_4xx/usr/lib/gcc-lib/ppc-linux/2.95.4
-${CROSS_COMPILE}g++ -static -L${GCCLIBDIR} ...
-
-Best regards,
-
-Wolfgang Denk
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-No journaling file system can recover your data if the disk dies.
-                                 - Steve Rago in <D4Cw1p.L9E@plc.com>
+Dan Kegel
+http://www.kegel.com
+http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
