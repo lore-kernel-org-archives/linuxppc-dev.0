@@ -1,28 +1,38 @@
-From: jtm@smoothsmoothie.com
-Date: Tue, 26 Jun 2001 16:08:44 -0500
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: (allocating non-cachable memory) (or More on the i82596)
-Message-ID: <20010626160844.A20988@shamus.smoothsmoothie.com>
+Message-Id: <5.0.2.1.0.20010627091411.00a56b90@pop.gmx.de>
+Date: Wed, 27 Jun 2001 09:17:12 +0800
+To: Matthew Locke <mlocke@mvista.com>
+From: Michael Habermann <MHabermann@gmx.de>
+Subject: Re: Segmentation fault while dynamic linking
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <3B38C289.7050008@mvista.com>
+References: <5.0.2.1.0.20010626172652.00a69210@pop.gmx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.3.95.1010626060441.32475C-100000@november.bhjjh.erols.com>
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am looking for a solution to a similar problem. I am writing a
-driver for an FCC on the 8260 in transparent mode, and need
-to allocate buffer memory. The buffer memory will get filled
-via DMA, and therefore must not be cached. Will the following work
-correctly?
+At 10:12 AM 6/26/2001 -0700, Matthew Locke wrote:
+>>My configuration: Kernel 2.4.4, glibc 2.2.2, bash 2.05, FADS, MPC855T
+>
+>who's toolchain are you using?  glibc 2.2.x has a cacheline size bug for
+>the smaller cacheline ppc processors.  Our toolchain has a fix for it.
+>grab our HHL 2.0 Journeyman edition and give it a try. http://www.mvista.com
 
-	vaddr = kmalloc(BUF_SIZE, GFP_DMA);
-	paddr = __pa(vaddr);
+binutils 2.11.2
+gcc 2.95.3
+glibc 2.2.2
 
-Thanks.
---
-Jay Monkman	    The truth knocks on the door and you say "Go away, I'm
-monkman@jump.net    looking for the truth," and so it goes away. Puzzling.
-		     - from _Zen_and_the_Art_of_Motorcycle_Maintenance_
+Everything unpatched and downloaded from ftp.gnu.org.
+
+I've read in the mailing list, that the glibc needs to be patched. But I've
+found that the most changes are already made at glibc2.2.2, so I assumed it
+should work.
+
+The kernel is 2.4.4 from ftp.denx.de, patched by a patch posted from Dave
+Ellis.
+
+Ok, I try the mvista glibc.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
