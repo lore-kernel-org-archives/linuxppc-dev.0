@@ -1,34 +1,55 @@
-To: "Kevin P. Dankwardt" <k@kcomputing.com>
+To: David Jander <david.jander@protonic.nl>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: remote access via shell 
+Subject: Re: MPX8xx: MMC over SPI.... 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 09 Mar 2004 08:20:37 CST."
-             <KCEOLLHGFJIAFNAMGACHEEPJDFAA.k@kcomputing.com>
-Date: Tue, 09 Mar 2004 16:14:37 +0100
-Message-Id: <20040309151442.1E311C0655@atlas.denx.de>
+In-reply-to: Your message of "Tue, 09 Mar 2004 14:18:22 +0100."
+             <200403091418.22891.david.jander@protonic.nl>
+Date: Tue, 09 Mar 2004 16:25:10 +0100
+Message-Id: <20040309152515.A912DC0655@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <KCEOLLHGFJIAFNAMGACHEEPJDFAA.k@kcomputing.com> you wrote:
+Dear David,
+
+in message <200403091418.22891.david.jander@protonic.nl> you wrote:
 >
-> I have a ppc 5100 that is currently running Linux. I also have downloaded
-> and looked at the ELDK. Neither appear to have a telnet nor a ssh daemon.
+> I know that Wolfgang Denk is going to flame me right away for this, but I'll
+> do it anyway :-)
 
-You didn't look very carefully. telnetd is included with the ELDK as
-/usr/sbin/in.telnetd; this is part of the
-telnet-server-ppc_???-0.17-23_1 RPM.
+I'm sorry if I caused the impression I would flame people  for  using
+SPI.  This  was  definitely  not my intention. But I think it is only
+fair to share some experience, and warn you not  to  run  into  well-
+known problems.
 
-> What daemon for remote access is recommended? Are there small versions
+> I am going to write a SPI driver and on top of that a MMC driver for linux for
+> the MPC852T, unless there is something already out there.
+> Anyone tried this before and has some sources to share? Or pointers to
+> sources?
 
-Secure Shell of course - if you can afford the size.
+The SPI driver is there, but I don't recommend to use it for any type
+of data transfers that require any  significant  bandwidth.  Motorola
+writes:
 
-> especially appropriate for embedded use? Versions that have Make files
-> conducive to cross-compilation for PPC?
+        The SPI was not designed to be a high-bandwidth channel. It
+        can run very quickly for bursts of up to 16-bits. But the
+        peripheral has no FIFO and low priority in the MPC860 and
+        thus you cannot burst lots of data quickly through the
+        interface.
+        ...
+        Note that the SPI is of lower priority internally than the
+        SCCs, thus, the SPI will be the first device to be "starved".
+        Since it has no FIFO, it is especially sensitive to underruns.
+        The best way to prevent this is to use a buffer size of 1
+        "character" (of size programmed in the mode register).
+        ...
 
-;-)
+Also, you should be aware that the SPI  protocol  is  implemented  as
+microcode  running  on the CPM, so any high-speed data transfers will
+suck up CPM performance.
+
 
 Best regards,
 
@@ -37,9 +58,7 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The evolution of the human race will not be accomplished in  the  ten
-thousand  years  of  tame  animals,  but in the million years of wild
-animals, because man is and will always be a wild animal.
-                                              - Charles Galton Darwin
+"...and the fully armed nuclear warheads, are, of  course,  merely  a
+courtesy detail."
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
