@@ -1,173 +1,162 @@
-Message-ID: <37E20384.BD066E8C@switchboard.ericsson.se>
-Date: Fri, 17 Sep 1999 11:01:56 +0200
-From: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
-MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
-        Dan Malek <dmalek@jlc.net>
-Subject: Cleanup thought.
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <199909171347.PAA25269@denx.local.net>
+To: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Cleanup thought. 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 17 Sep 1999 11:01:56 +0200."
+             <37E20384.BD066E8C@switchboard.ericsson.se>
+Date: Fri, 17 Sep 1999 15:47:14 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+In message <37E20384.BD066E8C@switchboard.ericsson.se> Magnus Damm
+wrote:
+> 
+> I would like to take up the question about configuration again.
 
-I would like to take up the question about configuration again.
+Thanks!
 
-I believe that the situation is the same for a lot of people 
-out here: Get Linux working on some kind of new 8xx hardware.
+> I believe that the situation is the same for a lot of people 
+> out here: Get Linux working on some kind of new 8xx hardware.
+> 
+> Today we need to modify and add #ifdefs to different files.
 
-Today we need to modify and add #ifdefs to different files.
+Right, and it is always  pretty  cumbersome,  because  the  necessary
+consfiguration is distributed over a lot of unrelated files.
 
-I like the idea of some kind of central board specific file.
+> I like the idea of some kind of central board specific file.
 
-I'm relly happy the day I just add my board_name.h to mpc8xx.h
-and everything works...or something else.
+Or (maybe better) a group of "BSP" (Board Support Package) files.
 
-I suggested the following code to Dan Malek a while ago, and he didn't 
-like the idea with a lot of inline code in one .h file, right Dan? 
+> I suggested the following code to Dan Malek a while ago, and he didn't 
+> like the idea with a lot of inline code in one .h file, right Dan? 
+> 
+> Anyone else out there with another idea how to solve this problem?
 
-Anyone else out there with another idea how to solve this problem?
+To be honest: I don't like this code much either.
 
-Or is it a problem..?
+Ok, let's talk about the Motorola MPC8xx family only  (first  because
+this is the one I know best, second because that seems to be the most
+popular);  maybe someone with better knowledge of other architectures
+can help generalizing some ideas:
 
-Cheers /
+Let's assume we follow the way some commercial RTOS vendors have gone
+and create `BSP's for the different  Linux  configurations:  The  BSP
+name would be one option to select in the `make config' process.
 
-Magnus
+* Boot loader:
 
-Code from my ads.h - board specific file for my ADS board.
+  The current version of  arch/ppc/mbxboot/head.S  is  aready  pretty
+  hard  to  read,  and I found it pretty difficult to add two or more
+  new boards. It was simpler for me to use it as a starting point  to
+  write my own specialized version.
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/* Macros and values needed by the ethernet driver - enet.c                  */
+  I   suggest   to   rename   `head.S'   into    `head_mbx.S',    use
+  `head_<BSP-Name>.S'  for  all  systems that are not very similar to
+  the ones already supported by `head_mbx.S'. The Makefile would then
+  select the right version.
 
-#include <linux/types.h>
-#include <asm/residual.h>
-#include <asm/8xx_immap.h>
+* Hardware initialization: there are probably two parts for this: one
+  part during very early system initalization,  before  the  MMU  has
+  been turned on, and another one, when the MMU is on.
 
-#define PA_ENET_RXD	((ushort)0x0001)
-#define PA_ENET_TXD	((ushort)0x0002)
+  Things that would  be  done  in  the  first  group:  disabling  the
+  watchdog, initializing other peripherals on the board (for instance
+  any slave 68360's :-), ...
 
-#define PA_ENET_TCLK	((ushort)0x0100)
-#define PA_ENET_RCLK	((ushort)0x0200)
-#define PB_ENET_TENA	((ushort)0x00001000)
+  Things  for  the  second  part  of  initialization:  DEC/TB/RTC/PIT
+  initialization,  port configuration, mapping of BSP specific memory
+  regions (FLASH, SRAM, ...), ...
 
-#define PC_ENET_CLSN	((ushort)0x0010)
-#define PC_ENET_RENA	((ushort)0x0020)
+* Device drivers: we should have a clean way to  configure  how  many
+  serial  ports  we have, which port they are on, and what parameters
+  to use. Same for Ethernet and  other  drivers.  The  real  code  to
+  enable  or  disable  ports  should  be  separated  from the generic
+  source, since this is different from BSP to BSP: here  you  have  a
+  Board Control Register, there it's just a special port bin, etc.
 
-#define SICR_ENET_MASK	((uint)0x000000ff)
-#define SICR_ENET_CLKRT	((uint)0x0000002c) // T=CLK1, R=CLK2
+  For instance, I thing there could be functions used like this:
 
-#define PC_ENET_ETHLOOP ((ushort)0x0800)
-#define PC_ENET_TPFLDL  ((ushort)0x0400)
-#define PC_ENET_TPSQEL  ((ushort)0x0200)
+  bsp_eth_init (DEV_SCC2, CPM_CLK1, CPM_CLK3); /* port, Rx clock, Tx clock */
+  bsp_eanble_receiver (DEV_SMC1);
+  bsp_disable_transmit (DEV_SCC1);
+  etc.
 
-/* tell the ethernet driver we want to use SCC1 */
+  Basicly this means introducing "logical device names" for the  CPM,
+  and  using  these as parameters for generalized functions. The code
+  of these functions would be a bit bigger, but a lot can be done  by
+  just  shifting  the  corresponding  bits  into the right positions,
+  using the "device" number as a shift offset.
 
-extern __inline__ int enet_get_scc(unsigned int enet_nr)
-{
-        switch(enet_nr) {
-	case 0: return 1;  /* allow only one ethernet, use SCC1 */
-	default: return 0;
-	}
-}
+* General: wherever we identify parts of the code that depend on  the
+  hardware  configuration, we should move this code into a BSP layer.
+  Thus we would have generic code (that calls BSP functions), and BSP
+  code that needs to be adapted for new hardware.
 
-/* configure ethernet pins, clocks and the ethernet address */
+* Driver configuration: I don't like the idea  of  modifying  generic
+  source  files  just  to  add  or  remove  a  serial  port  from the
+  configuration. We could define some generic parameter structures to
+  be used by the drivers, that just need to be filled out.
 
-extern __inline__ void enet_configure(unsigned int enet_nr, 
-				      immap_t	*immap, unsigned char *eap)
-{							
-	bd_t		*bd = (bd_t *)res;
-	int i;
+  Example 1 - serial port configuration:
 
-	/* Configure port A pins for Txd and Rxd.			
-	*/								
-	immap->im_ioport.iop_papar |= (PA_ENET_RXD | PA_ENET_TXD);	
-	immap->im_ioport.iop_padir &= ~(PA_ENET_RXD | PA_ENET_TXD);	
-	immap->im_ioport.iop_paodr &= ~PA_ENET_TXD;			
-									
-	/* Configure port C pins to enable CLSN and RENA.		
-	*/								
-	immap->im_ioport.iop_pcpar &= ~(PC_ENET_CLSN | PC_ENET_RENA);	
-	immap->im_ioport.iop_pcdir &= ~(PC_ENET_CLSN | PC_ENET_RENA);	
-	immap->im_ioport.iop_pcso |= (PC_ENET_CLSN | PC_ENET_RENA);	
-									
-	/* Configure port A for TCLK and RCLK.				
-	*/								
-	immap->im_ioport.iop_papar |= (PA_ENET_TCLK | PA_ENET_RCLK);	
-	immap->im_ioport.iop_padir &= ~(PA_ENET_TCLK | PA_ENET_RCLK);	
-									
-        /* Port C is used to control the PHY, 68160.			
-	*/		
-        immap->im_ioport.iop_pcdir |=					
-	  (PC_ENET_ETHLOOP | PC_ENET_TPFLDL | PC_ENET_TPSQEL);		
-									
-        immap->im_ioport.iop_pcdat |= PC_ENET_TPFLDL;			
-        immap->im_ioport.iop_pcdat &= ~(PC_ENET_ETHLOOP | PC_ENET_TPSQEL);
+  	typedef struct tty_info_s {
+		int	device;
+		int	clock;
+		int	speed;
+		... more parameters if needed (for instance line mode
+		settings, erase character, ...)
+	} tty_info_t;
 
-	/* Configure Serial Interface clock routing.
-	 * First, clear all SCC bits to zero, then set the ones we want.
-	 */
-	immap->im_cpm.cp_sicr &= ~SICR_ENET_MASK;
-	immap->im_cpm.cp_sicr |= SICR_ENET_CLKRT;
+  Then all that's needed to configure serial ports on SMC2  and  SCC1
+  would be:
 
-	/* Set ethernet address 
-	 */
-	for (i=0; i<6; i++)			
-		eap[i] = bd->bi_enetaddr[i];
-	
-}
+  tty_info_t tty_configuration[] = {
+  	{ DEV_SMC2, CPM_BRG2, B115200); },
+	{ DEV_SCC1, CPM_BRG1, B9600);	},
+  };
 
-/* enable the ethernet transmitter */
+  Example 2: same for Ethernet; here we would problably configure the
+  device, the Rx and Tx clock sources, and maybe the number  of  BD's
+  used for this port:
 
-extern __inline__ void  enet_tena(unsigned int enet_nr, immap_t *immap)
-{
-	immap->im_cpm.cp_pbpar |= PB_ENET_TENA;	
-	immap->im_cpm.cp_pbdir |= PB_ENET_TENA;	
-						
-        *((uint *)BCSR1) &= ~BCSR1_ETHEN;       
-}
+  eth_info_t eth_configuration[] = {
+  	{ DEV_SCC2, CPM_CLK1, CPM_CLK3, 32, 32 },
+  };
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Should there be a SMC at /dev/ttyS<uart_nr> ? */
+  I guess you  got  what  I  mean:  just  extract  the  configuration
+  information  from  the generic source files and create a set of BSP
+  specific configuration files.
+  
+  Two more ideas:
+  
+  If needed, these config structs could contain pointers  to  special
+  functions   initialize,   enable,   disable,   and  shut  down  the
+  corresponding ports (in case it's too difficult to come up  with  a
+  generic port pin initializaton).
 
-extern __inline__ int uart_get_smc(unsigned int uart_nr)
-{
-        switch(uart_nr) {
-	case 0: return 1;  /* the first serial port is at SMC1 */
-	case 2: return 2;
-	default: return 0;
-	}
-}
-
-/* Or should it be a SCC ? */
-
-extern __inline__ int uart_get_scc(unsigned int uart_nr)
-{
-        switch(uart_nr) {
-	case 1: return 3;
-	default: return 0;
-	}
-
-//        return 0;          /* we don't want any SCCs at all */
-}
-
-/* And what clock should it use ? */
-/* Get clock source: 0 -> 3 = BRG1 -> BRG4, 4 -> 7 = CLK1 -> CLK4 */
-
-extern __inline__ int uart_get_clksrc(unsigned int uart_nr)
-{
-	return uart_nr + 1;
-}
+  I have a board in mind with one MPC860 and 3 additional MC68360 (in
+  slave mode to add more I/O channels).  This  needs  some  generali-
+  zation for the header files, but I have done this befor for another
+  RTOS  and maybe I would like to do this for Linux. too. And I guess
+  it won't take very long before we have the first boards  with  more
+  than  one  82xx.  So maybe we could/should add another parameter to
+  these initializatin struct specifying which CPU this port is on?
 
 
 
-extern __inline__ int uart_console_get_smc(void)
-{
-        return 1;          /* console at SMC1 */
-}
+Ok, this was just a rough  draft  without  much  thinking  about  the
+details - any comments?
 
+Wolfgang
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+panic: can't find /
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
