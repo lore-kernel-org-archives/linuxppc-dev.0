@@ -1,27 +1,38 @@
-From: jlhagen@collins.rockwell.com
-Subject: RTLinux and mvme26xx cards? :)
+From: "Jon Erick Ween" <jween@som.llu.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Date: Wed, 8 Nov 2000 16:42:13 -0600
-Message-ID: <OF774F72D8.4D5354AC-ON86256991.007B9E46@collins.rockwell.com>
-MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Subject: 2.2.18pre18 kernel panic on Lombard
+Date: Wed, 8 Nov 2000 15:18:47 -0800
+Message-ID: <773744E7737.AAA39B0@som.llu.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+Hi,
 
-what is the possibility of using FSMLabs RTLinux on mvme26xx boards? IIRC
-RTLinux supports uniprocessor powerpc in the V3 beta series, correct me if
-I'm wrong. Using Gabriel's patches I have been able to bring up 2.2.12
-series kernels on our mvme2604 boards. I'm having problems on with the
-2.4-test series kernels and Gabriel's patches, issue with NFS, but I'm
-starting to wonder about using RTLinux on these boards.
+I'm trying to get my usb ports to work on my Lombard. I have 2.2.8pre17
+running OK but without USB or 3-button emulation working (in console or X).
+rsynced and compiled 2.2.18pre18 without problems but wind up in a kernel
+panic after loading the adb mouse handler and pty configuration (see
+below). Is this a problem with the new input layer (I don't seem to have
+/dev/input/) or a problem with the Lombard's usb ports?
 
-Any thoughts, been there tried that, been there done that, or just info
-would be appreciated.
+Thanks for any replies.
 
-Thanks, John
+Jon
+
+snip
+...
+
+ADB MOUSE @ 3 handler set to 4 (trackpad)
+pty:256 unix98 ptys configured {Normal boot up to this point}
+machine check in kernel mode (regs at c025fe00)
+Caused by (from srr1): unknown values in srr1
+NIP: C016C2B0 XER: 20000000 LR: C016c238 regs: c025fe00 TRAP: 0200
+MSR: 00009030 [EE, IR, DR, ME]
+TASK=c025e000[1] 'swapper' mm->pgd c0146000 last syscall: 120
+...
+
+etc.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
