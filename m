@@ -1,57 +1,38 @@
-Message-ID: <40168C3E.7010903@g-house.de>
-Date: Tue, 27 Jan 2004 17:05:18 +0100
-From: Christian Kujau <evil@g-house.de>
+To: Christian Kujau <evil@g-house.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: linuxppc trees / BK help
+References: <40168C3E.7010903@g-house.de>
+From: Andreas Schwab <schwab@suse.de>
+Date: Tue, 27 Jan 2004 17:23:46 +0100
+In-Reply-To: <40168C3E.7010903@g-house.de> (Christian Kujau's message of
+ "Tue, 27 Jan 2004 17:05:18 +0100")
+Message-ID: <jewu7d2wdp.fsf@sykes.suse.de>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: linuxppc trees / BK help
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Christian Kujau <evil@g-house.de> writes:
 
-hello,
+> after passing the consistency check, a sourcetree shows up  but
+> filenames are different from normal:
+>
+> evil@sheep:/data/MP3/scratch/kernel$ ls linuxppc-2.5-benh-BK/
+> BitKeeper  Documentation  SCCS  arch  crypto  drivers  fs  include  init
+> ~ ipc  kernel  lib  mm  net  scripts  security  sound  usr
+> evil@sheep:/data/MP3/scratch/kernel$
+>
+> - --> there are no files in the directory, only dirs.
 
-after reading the recent threads about the different ppc trees (and much
-BK stuff i still have to learn) i am still wondering if there are CVS
-trees from say 2.4.24-benh or linuxppc-2.5-benh available.
+$ bk -r get
 
-there is a BK2CVS gateway, but my cloning always results only in
-"strange trees". as seen on http://penguinppc.org/dev/kernel.shtml i do
+Andreas.
 
-bk clone bk://source.mvista.com/linuxppc-2.5-benh linuxppc-2.5-benh-BK
-
-after passing the consistency check, a sourcetree shows up  but
-filenames are different from normal:
-
-evil@sheep:/data/MP3/scratch/kernel$ ls linuxppc-2.5-benh-BK/
-BitKeeper  Documentation  SCCS  arch  crypto  drivers  fs  include  init
-~ ipc  kernel  lib  mm  net  scripts  security  sound  usr
-evil@sheep:/data/MP3/scratch/kernel$
-
-- --> there are no files in the directory, only dirs.
-
-evil@sheep:/data/MP3/scratch/kernel$ ls -w10 linuxppc-2.5-benh-BK/kernel/
-SCCS
-power
-evil@sheep:/data/MP3/scratch/kernel$
-
-yes, there are files somewhere too, e.g.
-
-linuxppc-2.5-benh-BK/sound/pci/cs46xx/SCCS/s.dsp_spos.h
-
-is there, but it is some kind of changelog or so. as you can imagine,
-compiling fails :-(
-
-someone there to enlighten me what´s going on here?
-
-Thank you,
-Christian.
-- --
-BOFH excuse #259:
-
-Someone's tie is caught in the printer, and if anything else gets
-printed, he'll be in it too.
-
+--
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux AG, Maxfeldstraße 5, 90409 Nürnberg, Germany
+Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
