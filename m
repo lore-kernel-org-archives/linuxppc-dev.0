@@ -1,36 +1,38 @@
-Date: Tue, 24 Aug 1999 11:02:29 +0200
-To: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <v04003a04b3e7e12ecd82@[216.81.20.86]>
+Date: Tue, 24 Aug 1999 11:06:02 +0200
+To: Tony Mantler <eek@escape.ca>, linuxppc-dev@lists.linuxppc.org
 From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: BootX enhancement request
-Message-Id: <19990824110229.025988@mail.mipsys.com>
+Subject: Re: Performa 5200
+Message-Id: <19990824110602.000653@mail.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Aug 24, 1999, Paul Mackerras <paulus@cs.anu.edu.au> wrote:
+On Tue, Aug 24, 1999, Tony Mantler <eek@escape.ca> wrote:
 
-
->Yep.  There are two problems at the moment, which I should get off my
->butt and fix. :-)
+>I recently obtained for myself up a Performa 5200, and I've been playing
+>with trying to hack linux into shape on it. (I'm usually a Mac68k guy)
 >
->The first is that the current machines use a different structure for
->nvram, based on the CHRP spec, which means that just using a fixed
->offset in nvram doesn't work.  In fact it seems like macos adds a OF
->property with a really strange encoding to store arbitrary bits of
->information for the device drivers for arbitrary devices.
+>I compiled a kernel from a stock 2.2.10 tree that I have laying around
+>(from ftp.kernel.org, most every config option turned off, booting with
+>BootX) and, after sprinkling around a bit of debug code, found that it
+>makes it past the prom.c code where it draws the "Welcome to linux
+>[blahblah] booting...", but doesn't make it to start_kernel after that.
 >
->The second is that macos is now using mode numbers > 20.  I haven't
->worked out the correspondence yet.
+>I'm not particularily fluent in PPC ASM, so head.S makes fairly opaque
+>reading for me. I'm wondering if someone might have some pointers to where
+>this would likely be dying, so I have good a place to start?
 
-MacOS no longer relies on the nvram setting. Video drivers are free to
-put whatever they want in their own device tree node, and usually store
-an nvram value for the mode there, but this is proprietary and depends on
-the driver. MacOS itself now stores the various infos in a preferences
-file. The old "Monitors" control panel still updates the old pram
-location with a mode value but the meaning is not guaranteed (can be
-driver specific).
+is this a NuBus class machine or a PCI based one ? If it's a NuBus one,
+then you are out of luck, or if you have time to spend, you can begin
+porting linux/ppc to those beasts. (Basically, RAM is not contiguous and
+you cannot rely in the kernel beeing loaded at physical 0, since the
+frame buffer may be hard coded at physical 1Mb). Look at the various
+parameters BootX pass for a NuBus machine (using the latest 2.1.12 kernel
+from vger or Paul's rsync, you should have the latest bootx.h).
+
 
 -- 
            Perso. e-mail: <mailto:bh40@calva.net>
