@@ -1,64 +1,39 @@
-Message-ID: <39BFAAB3.E6993D3@mvista.com>
-Date: Wed, 13 Sep 2000 12:26:27 -0400
+Message-ID: <39BFACA1.1C6F7CAF@mvista.com>
+Date: Wed, 13 Sep 2000 12:34:41 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Tobias Otto-Adamczak <Tobias.Otto-Adamczak@e-technik.tu-chemnitz.de>
-CC: Julia Elbert <jelbert@enerdyne.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: no scc_hdlc struct in commproc.h
-References: <Pine.LNX.4.21.0009131118150.24289-100000@odoaker.hrz.tu-chemnitz.de>
+To: Gong Zhuo <gongzhuo@163.net>
+CC: Linux PPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Any docments analyzing linuxppc kernel and it's policy?
+References: <014301c01d7f$a1592540$4607a8c0@LocalHost>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tobias Otto-Adamczak wrote:
+Gong Zhuo wrote:
 
-> /*********   SCC parameter RAM for HDLC mode   *********/
+>   I am reading the source code of linuxppc mm.
 
-Just a couple of minor comments......
+Okay.......
 
-> typedef struct scc_hdlc {
+> ....  It seems that the process
+> uses the logical address 0 - 0x7fffffff, and the kernel uses the logical
+> address 0xc0000000 -- (0xc0000000 + maxium memory). The rest logical address
+> will not be used by anyone. Am I right?
 
->         ushort  scc_rbase;      // Rx Buffer descriptor base address
->         ushort  scc_tbase;      // Tx Buffer descriptor base address
->         u_char  scc_rfcr;       // Rx function code
->         u_char  scc_tfcr;       // Tx function code
->         ushort  scc_mrblr;      // Max receive buffer length
->         uint    scc_rstate;     // internal
->         uint    scc_idp;        // internal
->         ushort  scc_rbptr;      // internal
->         ushort  scc_ibc;        // internal
->         uint    scc_rxtmp;      // internal
->         uint    scc_tstate;     // internal
->         uint    scc_tdp;        // internal
->         ushort  scc_tbptr;      // internal
->         ushort  scc_tbc;        // internal
->         uint    scc_txtmp;      // internal
->         uint    scc_rcrc;       // internal
->         uint    scc_tcrc;       // internal
+You got the user process part right.....The kernel will map anything
+over 0x80000000 in a variety of useful and interesting ways.  The system
+memory is usually mapped to 0xc0000000, the remainder of the space is
+used for mapping I/O devices, other pages of memory with different
+attributes (uncached for example).  This is processor/board dependent,
+so there are many different mappings for this space, although we do
+try to keep them somewhat consistent.
 
-This first part of the object is defined by 'scc_param', so the
-convention would have been:
+>   Is there any document analyzing the linuxppc kernel and how does the
+> kernel arrange all the logical space ?
 
-typedef struct scc_hdlc {
-	sccp_t	scc_hdlc;
-
-Followed by:
->         // here begins HDLC specific part
->         uint    scc_res1;       // reserved
-
-The documentation describes the CPM devices in this way, and it is
-a little more clear what is common to the SCC, and what is unique
-to the HDLC feature.
-
-....since we aren't writing C++, I also dislike the '//' comment......
-
-I would have made these two changes if it was sent as a patch to
-me for inclusion in the source code.....
-
-In fact, I will keep this and include it in the future....Do you have
-any code you want to submit along with it?
-
+I don't know.  I do know this could change daily.....
 
 
 	-- Dan
