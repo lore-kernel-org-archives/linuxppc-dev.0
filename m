@@ -1,60 +1,56 @@
-Message-ID: <239A78AC110CD711A1A500D0B7828CD80C247CA7@zhk08exm01.sps.mot.com>
-From: Ho Jeffrey-r26191 <r26191@freescale.com>
-To: "'Andrew Dennison'" <andrew.dennison@motec.com.au>,
-	"'Andrey Volkov'" <avolkov@varma-el.com>,
-	"'Sylvain Munaut'" <tnt@246tnt.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Re[2]: mpc5200 and ddr
-Date: Thu, 26 Aug 2004 11:28:47 +0800
-MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <Pine.LNX.4.61.0408251615540.9890@chef.linux-wlan.com>
+References: <Pine.LNX.4.61.0408251615540.9890@chef.linux-wlan.com>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1268A0DE-F710-11D8-89B4-003065F9B7DC@embeddededge.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: m8xx hang in reboot
+Date: Wed, 25 Aug 2004 23:29:00 -0400
+To: "Mark S. Mathews" <mark@linux-wlan.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Have you check AN2582 which is DDR design for MPC85xx. Even thought the part used is different, most of the general DDR design rules can be find  in this docu.
+On Aug 25, 2004, at 4:22 PM, Mark S. Mathews wrote:
 
-Regards,
-Jeffrey Ho
+> I've got an mpc850 based setup running 2.4.27 that, under certain
+> circumstances, hangs in the the m8xx_restart() function (instead of
+> rebooting) when I issue the usermode reboot cmd.
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org [mailto:owner-linuxppc-embedded@lists.linuxppc.org] On Behalf Of Andrew Dennison
-Sent: Thursday, August 26, 2004 8:56 AM
-To: 'Andrey Volkov'; 'Sylvain Munaut'
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Re[2]: mpc5200 and ddr
+Hmmmm......
+
+> I've traced all through the path and confirmed that yes, it is hanging
+> in
+> this function.  ;-)
+
+Does it get as far at the printk that indicates the checkstop failed?
+
+> I'm still looking over the databook and what this code does.  Just
+> figured
+> I'd ask around and see if anyone else has seen this behavior.
+
+It's supposed to enable a "checkstop" reset, such that on a bad
+bus cycle that times out the processor will be reset.  Then, it
+forces a bad bus cycle.  Since it works in most cases, I suspect
+the problem is outside of the processor.
+
+This type of reset will cause the processor reset, but it will
+not reset the rest of the hardware on the board.  It seems there is
+something external on the board that must be in a state that
+prevents the bus from operating properly.  The processor
+resets, but can't fetch code properly.
+
+This reset function is generic to all 8xx processors, in that it
+will reset the processor.  Done properly, a system design will
+have some external control register that can be written to
+reset the entire board, just like a power up or pressing a
+reset switch.  Without such complete system reset, this
+is the best we can do, but it certainly is not the same as
+a full reset.
 
 
-
-> Andrey Volkov wrote:
->
-> Hello Sylvain,
->
-> Wednesday, August 25, 2004, 8:35:25 PM, you wrote:
->
-> > Hi,
->
-> > Sorry I don't have informations, but I'm interested too ;)
->
-> > I guess you just "connect" them, but I wonder about
-> terminations ? ( or
-> > maybe keeping short trace is ok ? ).
->
->
-> Certainly - termination, time diagrams, restrictions (especially
-> capacitors length and likewise) etc. As I wrote before datasheet very
-> foggy and miserly, but may be David or somebody from freescale
-> enlighten me, if so, then I send info to ml.
->
-
-Hello Andrey, Sylvain,
-
-Micron have a tech note (TN4606) on DDR termination for point-to-point systems. Have a look at this if you are working on a design with DDR chips on the PCB. It appears that series termination is sufficient with short
-(<50mm) track lengths. However DDR timing requires some careful attention to layout (impedence control and track length matching) so all the information I have found on DDR is always qualified by "simulate your design".
-
-My local Freescale FAE was able to supply some additional information so maybe you can ask yours?
-
-Andrew
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
