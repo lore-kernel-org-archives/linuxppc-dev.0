@@ -1,26 +1,39 @@
-Subject: Re: 2.6.x on MPC82xx
-From: David Woodhouse <dwmw2@infradead.org>
-To: Dan Malek <dan@embeddededge.com>
-Cc: jeff@theptrgroup.com, linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <A64364E3-D14D-11D8-B95B-003065F9B7DC@embeddededge.com>
-References: <4890.69.17.104.254.1089335444.squirrel@mail.theptrgroup.com>
-	 <A64364E3-D14D-11D8-B95B-003065F9B7DC@embeddededge.com>
-Content-Type: text/plain
-Message-Id: <1089378396.28614.1385.camel@hades.cambridge.redhat.com>
-Mime-Version: 1.0
-Date: Fri, 09 Jul 2004 14:06:36 +0100
+Date: Fri, 9 Jul 2004 09:36:51 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: error: "lsmod: QM_MODULES: Function not implemented"
+Message-ID: <Pine.LNX.4.60.0407090929570.25268@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 2004-07-08 at 22:14 -0400, Dan Malek wrote:
-> That's a good place to be.  linux-2.5 should work and I think the
-> kernel.org kernels should work, too.
+   (i've asked about this on the busybox list as well, so profuse
+apologies to those who see it twice.)
 
-The kernel.org kernels work fine for me.
+   Scenario:
+ 	850DE-based board
+ 	ELDK 3.0
+ 	latest bk pull of linuxppc-2.5
+ 	today's snapshot of BB (20040709)
 
---
-dwmw2
+# lsmod
+lsmod: QM_MODULES: Function not implemented
 
+   i've configured BB explicitly to support 2.6 modules, and the kernel
+also has module support.  historically, when one got this error, the
+response was, "hey, you have to upgrade to rusty's latest
+'module-init-tools' package, that'll fix it."  but that's clearly not
+an option when using BB.  someone on the BB list posted a reference to
+a patch that seemed to only fix modprobe, which doesn't help here.
+
+   note that i'm not trying to actually load a module (i don't even
+*have* any 2.6-compatible modules to play with yet), but it would be
+nice to just get lsmod to work and tell me i have no modules loaded
+yet.  thoughts?  i'm currently following the logic flow through BB's
+libbb/module_syscalls.c code.
+
+rday
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
