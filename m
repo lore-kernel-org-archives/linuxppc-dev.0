@@ -1,29 +1,31 @@
-Message-ID: <3B74AADC.C2CE7B89@mvista.com>
-Date: Fri, 10 Aug 2001 23:47:40 -0400
+Message-ID: <3B74AB68.DEA5B56E@mvista.com>
+Date: Fri, 10 Aug 2001 23:50:00 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Peter Desnoyers <pdesnoyers@chinook.com>
-Cc: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>,
-	Daris A Nevil <dnevil@snmc.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Non-cacheable memory
-References: <Pine.LNX.4.33.0108091838380.11077-100000@localhost.localdomain> <3B72E40D.3080600@chinook.com>
+To: Elan Feingold <elan@nxnetworks.com>
+Cc: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MPC8255 vs MPC8260?
+References: <NDBBLJKOJGKDOFBHNPGEKEGMCEAA.elan@nxnetworks.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Peter Desnoyers wrote:
+Elan Feingold wrote:
 
-> ..... It returns a virtual address plus a DMA
-> address in an arg ptr - throw away the DMA address, as that's
-> PCI-specific, and run the virtual address through virt_to_phys().
+> We're going to be using an MPC8255 processor, and I know there are a few
+> differences between that CPU and the 8260 (e.g. less clock speed, less SCCs,
+> etc.).
 
-Ummm...damn, that's a tricky one.  On 8xx, the intention is to use
-the DMA address for stuffing into the CPM.  The virt_to_* functions
-are on their way out (on all platforms), and everyone should use the
-DMA address returned by the consistent_alloc function.  I guess if you
-have a 8xx/PCI that doesn't map PCI masters to system memory at zero,
-you are kind of hosed at the moment........
+I haven't noticed any differences that would affect Linux.
+
+> Has anyone run Linux/PPC on an 8255?
+
+no reports.
+
+> What needed to change from the standard 8260 port?
+
+Just don't configure the devices that don't exist.
 
 
 	-- Dan
