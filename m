@@ -1,44 +1,50 @@
-Message-ID: <003801be435b$600ad480$1b415c9b@s307-17.msoe.edu>
-From: "ian reinhart geiser" <geiseri@msoe.edu>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: scsi hangs [drow@cs.cmu.edu: Re: CD-writers] (fwd)
-Date: Mon, 18 Jan 1999 21:25:34 -0600
+Date: Tue, 19 Jan 1999 02:18:17 -0500 (EST)
+From: Scott Venier <scottven@umich.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: problem with 8500
+Message-ID: <Pine.SUN.4.05.9901190159490.10492-100000@toastman.us.itd.umich.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+I've got an 8500/120.  I've had linuxppc on it for a long time (2.0.25 is
+the kernel that came with it).  I recently got another harddrive, so I
+though I'd install pre-R5 on it.  Here's where I ran into the problems.  I
+posted them on linuxppc-user, but didn't get any response.
 
------Original Message-----
-From: Brad Midgley <brad@pht.com>
-To: Daniel Jacobowitz <drow@false.org>
-Cc: Paul.Mackerras@cs.anu.edu.au <Paul.Mackerras@cs.anu.edu.au>;
-linuxppc-dev@lists.linuxppc.org <linuxppc-dev@lists.linuxppc.org>
-Date: Monday, January 18, 1999 5:40 PM
-Subject: Re: scsi hangs [drow@cs.cmu.edu: Re: CD-writers] (fwd)
+The problem comes when mounting the newly created filesystems.  The mount
+fails when done from the installer or with mount on tty2.  tty4 shows me
+what the problem is...  My root partition is supposed to be sdb2
+(major/minor 8,18).  The error message on tty4 is (sorry, I can't paste
+the exact one) VFS: couldn't find ext2 fs on device 08:12.  I check the
+device file and it is correctly set to 8,18.  I've created new device
+files at 8,18.  Nothing seems to help.  It always tries 08:12.
 
+This happens with 2.2.0pre2, 2.1.121, 2.1.131 (all booted from BootX)  I
+tried to boot the 2.0.25 kernel that my old install uses, but BootX just
+freezes on that kernel.  The old install still works fine.  It's on sdc.
+The old install has the same problem with trying to mount the new drive.
 
-    ---SNIP---
->Now lets discussw why a buffer underrun may occur:
->
->1) Disabled disconnect/reconnect on the SCSI bus
->
-    okay...
-    how do we deal with this?
-    i can burn under MacOS but as i played with it more
-    and more i found that under Linux that the SCSI bus
-    was timeing out.
+sda is on the internal scsi chain, id 0 (mac os)
+sdb is on the internal scsi chain, id 4
+sdc is on the external scsi chain, id 1
 
-    i am running 2.1.35 with the memory patched....
+This one has me quite stumpped.  I can't come up with any reason why it
+tries a different minor number then the one on the device file.
 
-    is there a patch rev that fixes the disconnect/reconnect?
+Thanks
 
-    thanks for the help, i can feel that we are getting closer.
-    at least people have confirmed what i have found.
+Scott
 
-    -ian reinhart geiser
+=====================================================================
+Scott Venier               *ResComp Senior Network Support Technician
+scottven@umich.edu                        *Consultant for Ingematics,
+scott@compu-aid.com                     a division of Compu-Aid, Inc.
+---------------------------------------------------------------------
+I'm not as dorky as I used to be,
+                             only because now it's cool to be a geek.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
