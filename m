@@ -1,37 +1,48 @@
-To: fred@sc23.sc.mcel.mot.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MSR__EE flag cause problem 
+Message-Id: <200212071104.FAA32694@lists.linuxppc.org>
+To: "Pagnotta, Chris" <chris.pagnotta@viasat.com>
+Subject: Re: NFS root woes: No init found 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 07 Dec 2002 17:21:20 +0800."
-             <003701c29dd2$01ddeed0$940879c8@sc.mcel.mot.com>
-Date: Sat, 07 Dec 2002 11:46:18 +0100
-Message-Id: <20021207104623.AC895C614B@atlas.denx.de>
+In-reply-to: Your message of "Fri, 06 Dec 2002 17:36:27 PST."
+             <0509218DDAD7D6118055006008F6D5F6A1E39A@postal.viasat.com>
+Date: Sat, 07 Dec 2002 12:02:07 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Fred,
-
-in message <003701c29dd2$01ddeed0$940879c8@sc.mcel.mot.com> you wrote:
+In message <0509218DDAD7D6118055006008F6D5F6A1E39A@postal.viasat.com> you wrote:
 >
-> I am porting PPCBoot-1.1.5 to a PPC852 board. When PPCboot executes this
-> statement
+> I am having a problem with NFS mounting the root filesystem. It seems that
+> init
+> is not being executed. However, the problem may be with rootpath not being
+> set.
+> Should that parameter be set from the kernel command nfsroot=?
 
-This is probably not a wise decision. PPCBoot  1.1.5  is  very,  very
-old.  I  strongly  recommend  to  use  a  more current version - more
-precisely, don't use any version of PPCBoot at all for current  work.
-The  PPCBoot  development  has been stopped. The project is continued
-under the new name "U-Boot" (Universal Boot Loader) and now  supports
-PowerPC, ARM, and x86 (and probably soon MIPS).
+What are you talking about?
 
-> I am a newbie for 8xx. What should I do?
+> Kernel command line: root=/dev/nfs nfsroot=/tftpboot/powerpc-rootfs
+> ip=172.25.59
+> .11:172.25.59.15::255.255.0.0:vib::off
 
-Start with the following actions:
+Your rootpath _is_ set here: you're using "/tftpboot/powerpc-rootfs"
+as root directory.
 
-Subscribe to the u-boot-users mailing list.
-Use a current version of the source code.
+...
+> Looking up port of RPC 100003/2 on 172.25.59.15
+> Looking up port of RPC 100005/1 on 172.25.59.15
+> VFS: Mounted root (nfs filesystem).
+
+And the root filesystem was found and mounted.
+
+> Mounted devfs on /dev
+> Freeing unused kernel memory: 212k init
+> Kernel panic: No init found.  Try passing init= option to kernel.
+
+Are you sure you NEED devfs here? For now I recommend to disable this
+option, as it adds just additional complexity. To anlyze what's going
+on with your  NFS  root  filesystem,  run  a  network  sniffer  (like
+ethereal) and check wich accesses work, and which are failing.
 
 Best regards,
 
@@ -40,6 +51,6 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Free markets select for winning solutions."        - Eric S. Raymond
+Imagination is more important than knowledge.      -- Albert Einstein
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
