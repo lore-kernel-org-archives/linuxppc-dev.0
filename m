@@ -1,60 +1,60 @@
-Date: Sun, 9 Feb 2003 21:13:39 +0100
-From: Peter Vandenabeele <peter.vandenabeele@mind.be>
-To: "Kerl, John" <John.Kerl@Avnet.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Low memory on Virtex-II Pro
-Message-ID: <20030209211339.F25620@mind.be>
-Reply-To: Peter Vandenabeele <peter.vandenabeele@mind.be>
-References: <C08678384BE7D311B4D70004ACA37105111946A2@amer22.avnet.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <C08678384BE7D311B4D70004ACA37105111946A2@amer22.avnet.com>; from John.Kerl@Avnet.com on Fri, Feb 07, 2003 at 02:56:30PM -0700
+Message-ID: <3E46BF7E.3080408@embeddededge.com>
+Date: Sun, 09 Feb 2003 15:52:14 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: joakim.tjernlund@lumentis.se
+Cc: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH] 8xx_io/uart.c
+References: <IGEFJKJNHJDCBKALBJLLCEBAFKAA.joakim.tjernlund@lumentis.se>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Feb 07, 2003 at 02:56:30PM -0700, Kerl, John wrote:
->
-> Hello all,
->
-> There have been some recent posts about Linux & Virtex-II Pro
-> (FPGA with PPC405 hard core). & apparently people have it working
+Joakim Tjernlund wrote:
 
-Yes.
+> Early printk's will call it too.
 
-> One question before I start, though:
->
-> Of course the kernel starts at *virtual* address 0xc0000000, regardless
-> of the processor.  But my understanding is that certain processors have
-> zero-based *physical* addresses for RAM, and some don't -- x86 of course
-> being an example of the former, and ARM being an example of the latter.
-> I believe that PPC is an example of the former.  Certainly our MPC857T
-> board, and all the other boards of which I'm aware, have RAM starting at
-> physical address 0x00000000.
->
-> Now, on our custom Virtex-II Pro board, with Xilinx EDK setup, there's a
-> bit (the MSB) in the physical address that specifies whether a memory
-> region is on the LMB bus or OPB bus.  We get to pick *which* bit, but
-> there must be *a* bit set for the SDRAM.  The upshot is that our SDRAM
-> starts at physical address 0xb0000000.  It can't be placed at address 0.
-> And block RAM could be made low, but I can't see having megabytes of
-> block RAM.
->
-> So, I think I have to have the kernel at non-zero physical address
-> with PPC405.
->
-> Can anyone advise on success or failure of doing so?
+They shouldn't.  All printk's prior to serial device initialization
+are queued in the log buffer.  After the serial device is initialized,
+the debug console is configured and only at that time will the printk
+information flow through the driver.  Anything queued up to that point
+is blasted out the driver.  There are lots of console drivers that
+will fail if Linux chooses to change this behavior.
 
-What is your SDRAM controller ?
+> Now, why do you do the same thing just a few lines up if it wasn't needed?
 
-When we used the Xilinx SDRAM controller IP (softcore), it was easy
-to remap the SDRAM physical base address to 0x00000000 in the .mhs
-file (in the Xilinx EDK). We found this to be much less work than trying
-to force the Linux kernel to boot from another address than 0x00000000.
+It is needed there.  These same functions support xmon and kgdb.  In order
+to do that the serial port is used in three different phases.  One, as it
+was configured by the boot rom/loader, two, by an early serial initialization
+before general memory management and buffering is available, and finally
+after the driver has been completely initialized.  None of this is needed
+to simply support the Linux console.  This has all been discussed too many
+times before....
 
-Coreconnect PLB bus is what you want to use for off-chip memory
-(OPB is low-speed peripherals).
+> How about checking your own facts and provide an accurate analysis before
+> bitching at me for trying to help out?
 
-Peter
+All I asked is you somehow show it is broken, and that something has
+been fixed before we start patching things.  If there is really something
+wrong with it, I would like to know what that is and how it is triggered.
+
+> I tested my how much I had increase them until I didn't lose any chars.
+> I don't think this has anything to do with HW flow control. The
+> smc runs out of BD's when trying to echo back the chars.
+
+Then, someone upstream isn't watching return values from these functions
+when the driver indicates there isn't space to output the characters.
+It isn't the responsibility of the serial driver to provide sufficient
+queueing for an arbitrary output request.  The depth of the fifo on the 8xx
+is much deeper than most silicon uarts, and if that isn't enough I suspect
+something outside of this driver is amiss (or interfaces have changed and
+this driver wasn't updated).
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
