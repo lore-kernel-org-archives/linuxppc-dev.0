@@ -1,50 +1,27 @@
-Date: Tue, 17 Sep 2002 20:04:54 -0700
-From: Dennis Khoo <dkhoo@atmxdsl.com>
-Subject: modprobe:can't locate module block-major-3 problem
-To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <011c01c25ec0$2a0d4640$7ec7c7c7@dkhoo>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+Date: Tue, 17 Sep 2002 22:34:15 -0700
+From: Matt Porter <porter@cox.net>
+To: sanjay k k <fren00@rediffmail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ppc_405-gdb + Segmentation fault (core dumped)
+Message-ID: <20020917223415.B21513@home.com>
+References: <20020918013137.15713.qmail@webmail6.rediffmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020918013137.15713.qmail@webmail6.rediffmail.com>; from fren00@rediffmail.com on Wed, Sep 18, 2002 at 01:31:37AM -0000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Please bear with me since I'm a total newbie.  I received a TQM850L starter
-kit a couple of days ago.  I was able to replace the monitor with PPCBOOT
-and also got it to boot pMulti(kernel + ramdisk image) built from SELF with
-thttpd added in.  After a few tweaks here and there, most
-utilites(ping,thttpd,telnet,etc) are working great.
+On Wed, Sep 18, 2002 at 01:31:37AM -0000, sanjay k k wrote:
+> When i do the 5th step , my gdb dies , it says :
+> Reading Symbols from vmlinux.... Segmentation fault (core
 
-But on bootup, I noticed that modprobe is complaining that it "Can't open
-dependencies file /lib/modules/2.4.4/modules.dep".  After I copied the empty
-file lib/modules/2.4.4/modules.dep from ELDK/ppc_8xx into the ramdisk and
-built pMulti,  modprobe complains that it cannot locate module
-block-major-3.  Here's a snippent of the bootup:
-.....
-TCP: Hash tables configured (established 4096 bind 4096)
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-VFS: Mounted root (ext2 filesystem).
-init started: BusyBox v0.60.2 (2002.09.14-00:34+0000) multi-call
-modprobe: modprobe: Can't locate module block-major-3
-modprobe: modprobe: Can't locate module block-major-3
-modprobe: modprobe: Can't locate module block-major-3
-modprobe: modprobe: Can't locate module block-major-3
-modprobe: modprobe: Can't locate module block-major-3
-mount: Mounting /dev/hda1 on /mnt failed: No such device
-.........
+You need to upgrade to a newer version of gdb...5.1 will work.
 
-I did a "modprobe -c" after bootup and saw that block-major-3 is an alias of
-ide-probe-mod.  Does this mean that I need to get ide-probe-mod.o into the
-ramdisk?  I tried copying ide-probe-mod.o into /lib/modules/ide but modprobe
-still complains about block-major-3 on bootup.  Keying "modprobe
-ide-probe-mod.o" after bootup outputs "Can't locate ide-probe-mod.o".  Even
-though I'm not using an IDE drive, I'm curious as to why modprobe would
-complain...
-
-
-Thanks a million,
-dennis
-dkhoo@atmxdsl.com
-
+Regards,
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
