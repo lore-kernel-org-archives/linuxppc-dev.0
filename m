@@ -1,35 +1,192 @@
-Message-ID: <3846E038.E9D990BF@netx4.com>
-Date: Thu, 02 Dec 1999 16:10:16 -0500
-From: Dan Malek <dan@netx4.com>
+Message-ID: <3846F366.DF873B01@alerton.com>
+Date: Thu, 02 Dec 1999 14:32:06 -0800
+From: Bill Roman <roman@alerton.com>
 MIME-Version: 1.0
-To: "Mark S. Mathews" <mark@absoval.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: RPXLite 823 PCMCIA troubles
-References: <Pine.LNX.3.96.991202153547.27124H-100000@tristar.cc.absoval.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Kernel Math Emulation again
+References: <A914533BF4B9D2118D980008C7894C0A014D54DC@dueis01nok> <007e01bf3b1a$53a56540$6401a8c0@everyone>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark S. Mathews wrote:
+Neil Blackwood wrote:
+> 
+> There is some kernel maths emulation stuff in 2.3.18.
+> You will need to copy it over to which ever version you are using. It works.
+> Look for directories math-emu.
+> You will need to change config files and make files as well. Its fairly
+> easy. Even I managed it.
 
+Thanks, Neil!  I had been very optimistic when I found this code in 2.3.18, and
+was disappointed when it turned out it wouldn't compile in that context.
+Without your hint, I don't think I would have guessed that transplanting it
+into a 2.2 kernel would have worked.
 
-> Ok, the wlan PCMCIA card is working....but only after an ugly hack.
+To save everyone else a few hours of grepping and tweaking, here are
+instructions and a patch file to add math emulation to the 2.2.13 kernel
+sources from linuxppc.cs.nmt.edu.
 
-That would imply there is some kind of bus timing problem.
-Let's go off-line and talk about this.  It is a tedious job
-to attach a logic analyzer and look at this stuff, but from
-my past I have seen some pretty weird external bus cycles
-associated with TLB faults and it is the only way to see
-what is really happening.
+1.  Obtain mpc8xx-2.2.13.tgz and linux-2.3.18.tgz from
+ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/.  Untar them into two
+separate source trees.  (Note: all that's needed from 2.3.18 is the
+math emulator; does anyone know whether that's available separately,
+or could someone split it out and put it on the FTP site?)
 
-There are other interesting things we could do here, like
-pin static TLB entries......
+2.  Copy the arch/ppc/mathemu directory from the 2.3.18 tree to the
+2.2.13 tree.
 
-By the way, excellent work!  No more pleading ignorance as in
-past messages :-).
+3.  Apply the patch (below).  Note that I am building for an MBX, so that's
+what .config gets patched for.
 
+4.  make symlinks config dep clean zImage.
 
-	-- Dan
+The following is the patch.
+----------------------------------------------------------------------------
+diff -ur linux-mpc8xx-2.2.13/.config linux/.config
+--- linux-mpc8xx-2.2.13/.config	Fri Oct 22 16:08:42 1999
++++ linux/.config	Wed Dec  1 17:10:01 1999
+@@ -10,9 +10,9 @@
+ # CONFIG_PPC64 is not set
+ CONFIG_8xx=y
+ # CONFIG_MPC821 is not set
+-CONFIG_MPC823=y
++# CONFIG_MPC823 is not set
+ # CONFIG_MPC850 is not set
+-# CONFIG_MPC860 is not set
++CONFIG_MPC860=y
+ # CONFIG_MPC860T is not set
+ CONFIG_SERIAL_CONSOLE=y
+ # CONFIG_PMAC is not set
+@@ -20,12 +20,13 @@
+ # CONFIG_CHRP is not set
+ # CONFIG_ALL_PPC is not set
+ # CONFIG_APUS is not set
+-# CONFIG_MBX is not set
++CONFIG_MBX=y
+ # CONFIG_RPXLITE is not set
+ # CONFIG_RPXCLASSIC is not set
+-CONFIG_BSEIP=y
++# CONFIG_BSEIP is not set
+ # CONFIG_SMP is not set
+ CONFIG_MACH_SPECIFIC=y
++CONFIG_MATH_EMULATION=y
+ 
+ #
+ # General setup
+@@ -297,8 +298,7 @@
+ # MPC8xx CPM Options
+ #
+ CONFIG_SCC_ENET=y
+-# CONFIG_SCC1_ENET is not set
+-CONFIG_SCC2_ENET=y
++CONFIG_SCC1_ENET=y
+ # CONFIG_FEC_ENET is not set
+ # CONFIG_CPM_IIC is not set
+ # CONFIG_UCODE_PATCH is not set
+diff -ur linux-mpc8xx-2.2.13/arch/ppc/Makefile linux/arch/ppc/Makefile
+--- linux-mpc8xx-2.2.13/arch/ppc/Makefile	Wed Oct 20 15:33:30 1999
++++ linux/arch/ppc/Makefile	Wed Dec  1 16:16:45 1999
+@@ -41,6 +41,12 @@
+ ARCHIVES := arch/ppc/kernel/kernel.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o $(ARCHIVES)
+ CORE_FILES := arch/ppc/kernel/kernel.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o $(CORE_FILES)
+ 
++ifdef CONFIG_MATH_EMULATION
++SUBDIRS += arch/ppc/math-emu
++ARCHIVES += arch/ppc/math-emu/math-emu.o
++CORE_FILES += arch/ppc/math-emu/math-emu.o
++endif
++
+ ifdef CONFIG_XMON
+ SUBDIRS += arch/ppc/xmon
+ CORE_FILES += arch/ppc/xmon/x.o
+diff -ur linux-mpc8xx-2.2.13/arch/ppc/config.in linux/arch/ppc/config.in
+--- linux-mpc8xx-2.2.13/arch/ppc/config.in	Fri Oct 22 14:56:10 1999
++++ linux/arch/ppc/config.in	Wed Dec  1 16:29:14 1999
+@@ -37,6 +37,15 @@
+ if [ "$CONFIG_ALL_PPC" != "y" ];then
+   define_bool CONFIG_MACH_SPECIFIC y
+ fi
++
++if [ "$CONFIG_8xx" = "y" ]; then
++  bool 'Math emulation' CONFIG_MATH_EMULATION
++else
++  if [ "$CONFIG_PPC64" != "y" ];then
++    define_bool CONFIG_6xx y
++  fi
++fi
++
+ endmenu
+ 
+ mainmenu_option next_comment
+diff -ur linux-mpc8xx-2.2.13/arch/ppc/kernel/Makefile linux/arch/ppc/kernel/Makefile
+--- linux-mpc8xx-2.2.13/arch/ppc/kernel/Makefile	Fri Oct 22 15:21:39 1999
++++ linux/arch/ppc/kernel/Makefile	Thu Dec  2 10:34:19 1999
+@@ -30,7 +30,7 @@
+ endif
+ 
+ ifeq ($(CONFIG_8xx),y)
+-O_OBJS += m8xx_setup.o softemu8xx.o ppc8xx_pic.o
++O_OBJS += m8xx_setup.o  ppc8xx_pic.o
+ ifdef CONFIG_PCI
+ O_OBJS += qspan_pci.o
+ endif
+diff -ur linux-mpc8xx-2.2.13/arch/ppc/kernel/traps.c linux/arch/ppc/kernel/traps.c
+--- linux-mpc8xx-2.2.13/arch/ppc/kernel/traps.c	Fri Oct 22 14:04:09 1999
++++ linux/arch/ppc/kernel/traps.c	Thu Dec  2 10:32:22 1999
+@@ -230,12 +230,12 @@
+ SoftwareEmulation(struct pt_regs *regs)
+ {
+ 	int	errcode;
+-	extern int	Soft_emulate_8xx (struct pt_regs *regs);
++	extern int	do_mathemu(struct pt_regs *regs);
+ 	extern void print_8xx_pte(struct mm_struct *, unsigned long);	
+ 
+ 	if (user_mode(regs))
+ 	{
+-		if ((errcode = Soft_emulate_8xx(regs))) {
++		if ((errcode = do_mathemu(regs))) {
+ printk("Software Emulation %s/%d NIP: %lx *NIP: 0x%x code: %x",
+        current->comm,current->pid,
+        regs->nip, *((uint *)regs->nip), errcode);
+diff -ur linux-mpc8xx-2.2.13/include/asm-ppc/processor.h linux/include/asm-ppc/processor.h
+--- linux-mpc8xx-2.2.13/include/asm-ppc/processor.h	Fri Oct 22 16:10:02 1999
++++ linux/include/asm-ppc/processor.h	Wed Dec  1 16:56:20 1999
+@@ -57,8 +57,33 @@
+ #define HID0_BTCD	(1<<1)		/* Branch target cache disable */
+ 
+ /* fpscr settings */
+-#define FPSCR_FX        (1<<31)
+-#define FPSCR_FEX       (1<<30)
++#define FPSCR_FX        0x80000000      /* FPU exception summary */
++#define FPSCR_FEX       0x40000000      /* FPU enabled exception summary */
++#define FPSCR_VX        0x20000000      /* Invalid operation summary */
++#define FPSCR_OX        0x10000000      /* Overflow exception summary */
++#define FPSCR_UX        0x08000000      /* Underflow exception summary */
++#define FPSCR_ZX        0x04000000      /* Zero-devide exception summary */
++#define FPSCR_XX        0x02000000      /* Inexact exception summary */
++#define FPSCR_VXSNAN    0x01000000      /* Invalid op for SNaN */
++#define FPSCR_VXISI     0x00800000      /* Invalid op for Inv - Inv */
++#define FPSCR_VXIDI     0x00400000      /* Invalid op for Inv / Inv */
++#define FPSCR_VXZDZ     0x00200000      /* Invalid op for Zero / Zero */
++#define FPSCR_VXIMZ     0x00100000      /* Invalid op for Inv * Zero */
++#define FPSCR_VXVC      0x00080000      /* Invalid op for Compare */
++#define FPSCR_FR        0x00040000      /* Fraction rounded */
++#define FPSCR_FI        0x00020000      /* Fraction inexact */
++#define FPSCR_FPRF      0x0001f000      /* FPU Result Flags */
++#define FPSCR_FPCC      0x0000f000      /* FPU Condition Codes */
++#define FPSCR_VXSOFT    0x00000400      /* Invalid op for software request */
++#define FPSCR_VXSQRT    0x00000200      /* Invalid op for square root */
++#define FPSCR_VXCVI     0x00000100      /* Invalid op for integer convert */
++#define FPSCR_VE        0x00000080      /* Invalid op exception enable */
++#define FPSCR_OE        0x00000040      /* IEEE overflow exception enable */
++#define FPSCR_UE        0x00000020      /* IEEE underflow exception enable */
++#define FPSCR_ZE        0x00000010      /* IEEE zero divide exception enable */
++#define FPSCR_XE        0x00000008      /* FP inexact exception enable */
++#define FPSCR_NI        0x00000004      /* FPU non IEEE-Mode */
++#define FPSCR_RN        0x00000003      /* FPU rounding control */
+ 
+ #define _MACH_prep     1
+ #define _MACH_Pmac     2  /* pmac or pmac clone (non-chrp) */
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
