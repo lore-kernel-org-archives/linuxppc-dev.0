@@ -1,49 +1,31 @@
-Date: Mon, 21 Dec 1998 23:03:14 -0700 (MST)
+Date: Mon, 21 Dec 1998 23:11:56 -0700 (MST)
 From: john s jacobs anderson <jacobs@azstarnet.com>
-To: Tom Harrington <tph@rmi.net>
-cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: TurboMouse fix
+To: linuxppc-user@lists.linuxppc.org
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: FD_SET/FD_ZERO, vi clone compiling
 In-Reply-To: <m0zsJFT-001C3VC@shell.rmi.net>
-Message-ID: <Pine.LNX.3.96.981221225654.1012A-100000@lazarus>
+Message-ID: <Pine.LNX.3.96.981221230748.1012B-100000@lazarus>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I've updated Mark Abene's "mousehack" fix for the Kensington Turbo Mouse
-> to work with newer kernels.  The source code is below.
+Forgive the FAQ, but it's not in the FAQ-O-Matic, and I know I've seen it
+answered on this list before (that email is saved on the Mac side, and I'm
+running a monster Perl script, so I can't reboot right at the moment).
 
-<snip>
+I keep getting errors that refer to undefined references to __FD_SET and
+__FD_ZERO when I'm compiling stuff. How do I fix this?
 
-> This has only been tested on a G3 desktop, running 2.1.125, with a
-> version 5.0 TurboMouse.  I'd appreciate feedback on how it works
-> (or fails to work) with other setups.
+On a different note, has anyone successfully compiled the late-ish
+versions of any of the vi clones (vim, elvis, vile) under LinuxPPC? That's
+where I'm getting those errors...
 
-system: 7500 chasis with 166 MHz 604 card, 2.1.127 kernel. Kensington
-TurboMouse 4.0 (the 2 button kind), window maker 0.20.3
-
-(do you need to know anything else? sorry, I'm still a wet behind the
-ears...)
-
-exported mail to ~, trimmed file in pico, then `cc mousehack.c`.
-
-gives :
-/tmp/cca082751.o: In function `sethandler':
-/tmp/cca082751.o(.text+0x148): undefined reference to `ADB-WRITEREG'
-(same error repeated at (.text+0x1dc) in function `moveadb'
-                        (.text+0x26c) in function `initreg2'
-                        (.text+0x364) in function `setreg2'
-collect2: ld returned 1 exit status
-
-ack! what now? I'm drooling at the thought of a functional 2 button mouse,
-and if it only ends up working with v5.0 TurboMice, Santa might have to
-make a late delivery...
-
+Thanks,
 john.
 jacobs@treefort.org
-www.treefort.org/~jacobs/       <--- LinuxPPC notes'n'stuff... 
-
+www.treefort.org/~jacobs   <-- LinuxPPC stuff...
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
