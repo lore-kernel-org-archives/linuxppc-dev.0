@@ -1,49 +1,52 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
+Message-Id: <200009140546.HAA00808@piglet.grunz.lu>
+Date: Thu, 14 Sep 2000 07:46:45 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: per-fb mmap for platinumfb and valkyriefb in 2.4 (and 2.2)
+To: costabel@wanadoo.fr
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <39BFFEA5.FE89C6EC@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14784.22458.21233.588776@argo.linuxcare.com.au>
-Date: Thu, 14 Sep 2000 15:44:42 +1100 (EST)
-To: mlan@cpu.lu
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: zeroing pages in the idle task?
-In-Reply-To: <200009131951.VAA00816@piglet.grunz.lu>
-References: <200009122018.WAA00786@piglet.grunz.lu>
-	<200009131951.VAA00816@piglet.grunz.lu>
-Reply-To: paulus@linuxcare.com.au
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Lanners writes:
-
-> > - if not, would it be a good idea to enable it by default?
+On  14 Sep, this message from Martin Costabel echoed through cyberspace:
+>> Anyway, here it is for both 2.2 and 2.4. Note that to compile on 2.2,
+>> you need my controlfb patch implementing mmap as well, since without it,
+>> this one won't compile (get it on sourceforge).
 >
-> What do you think, Paul, Cort?
+> Tried it for valkyriefb: Doesn't work. It works in console mode, where
+> it actually feels like it is scrolling fast, but starting X gives an
+> immediate system freeze. I tried it twice, but now I'll go to bed.
 
-As I recall, it was necessary to disable the cache in the idle task so
-that the idle task's clearing of pages didn't trash the cache for
-other tasks.  This introduces its own set of complexities, for example
-you have to make sure the cache is reenabled on all exception entries
-and also before you call schedule in the idle task.  You also have to
-make sure that you don't get any inconsistencies in the cache, which
-means you would have to flush the cache for the page before starting
-to clear it with the cache disabled.
+Sh....
 
-It would be cleaner to have the page mapped with a non-cacheable
-mapping while the idle task is clearing it but you still have to be
-careful about cache inconsistencies, particularly if the page is
-mapped twice and one mapping is cacheable and the other isn't.
+>> Have fun!
+>
+> Not much fun in hard rebooting and watching 15 minutes of fsck.
 
-I'm not sure that the current code still addresses all those issues
-correctly and completely.  Unused things tend to be subject to
-bitrot. :-)
+Sorry about that.... hope you slept well nevertheless ;-)
 
-Paul.
+Can you have a look and see what might be wrong? Ill do the same,
+hopefully tonight, but no guarantee...
 
---
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+A quick look shows that valkyrie has a single memory region, with the
+framebuffer, the registers and the colormap all within the same region.
+That might blow up the logic within valkyrie_mmap() to defferentiate between
+framebuffer and mmio.
+
+Thanks
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
