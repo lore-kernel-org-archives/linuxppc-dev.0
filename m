@@ -1,61 +1,35 @@
-Date: Sun, 21 Jan 2001 18:30:31 +0100
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: mprotect broken on ppc
-Message-ID: <20010121183031.A25128@suse.de>
-References: <20010120221908.A20689@suse.de> <20010120222630.B20689@suse.de>
+Date: Sun, 21 Jan 2001 14:28:23 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Steven Hanley <sjh@wibble.net>
+Cc: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [patch] missing exported symbols
+Message-ID: <20010121142823.B6223@opus.bloom.county>
+References: <20010121144057.A27643@wibble.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010120222630.B20689@suse.de>; from olh@suse.de on Sat, Jan 20, 2001 at 10:26:30PM +0100
+In-Reply-To: <20010121144057.A27643@wibble.net>; from sjh@svana.org on Sun, Jan 21, 2001 at 02:40:57PM +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Jan 20, Olaf Hering wrote:
+On Sun, Jan 21, 2001 at 02:40:57PM +1100, Steven Hanley wrote:
 
->
-> On Sat, Jan 20, Olaf Hering wrote:
->
-> >
-> > Hi,
-> >
-> > there seems to be a bug in mprotect which was introduced in
-> > test9->test10.
-> >
-> > The result is an invalid pointer from the getpwuid(3) function, this
-> > function is used in rpm to check owner and group permissions.
->
-> forgot some facts:
->
-> the build host runs always a glibc2.13 system with 2.2 headers. The
-> build chroot runs a glibc2.2 system with 2.4.0ac2 headers.
-> And it fails when a kernel 2.4.0-test10 or later is running, every other
-> kernel works fine.
+> The first one I am pretty sure belongs in this file as i have noticed a few
+> other archs have to export it here.
 
-I put some debug in mm/mprotect.c:
-...
-asmlinkage long sys_mprotect(unsigned long start, size_t len, unsigned
-long prot)
-{
-        unsigned long nstart, end, tmp;
-        struct vm_area_struct * vma, * next;
-        int error = -EINVAL;
+Err, what needs this symbol tho?  And are you sure this is actually needed?
+I'm about to re-do my modtest config vs 2.4.1pre9, but as of ~2.4.0 release
+or an early 2.4.1 the bk tree was fine wrt modules now..  And, as of 2.4.1pre9
+only sh exports flush_dcache_page, and sparc64 exports __flush_dcache_page,
+so are you sure this is needed?
 
-        if (start & ~PAGE_MASK) {
-                printk("sys_mprotect start \n");
-                return -EINVAL;
-        }
-...
+> The gmac one i am unsure if this is the best place to put the export, but it
+> works so I put it here.
 
-it fails here.
-Jan 21 18:28:06 mandarine kernel: sys_mprotect start
-
-Gruss Olaf
+This has been fixed in the 2_4 bk for atleast a week, and 2_5 for much longer.
 
 --
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
