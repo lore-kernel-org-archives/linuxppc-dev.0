@@ -1,40 +1,73 @@
-From: "Matthew Locke" <mlocke@jps.net>
-To: "Graham Stoney" <greyham@research.canon.com.au>,
-        "Pavel Roskin" <pavel_roskin@geocities.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Download timeout problems on Embedded Planet CLLF (was Patch for zsrec.c)
-Date: Mon, 31 Jan 2000 17:13:28 -0800
-Message-ID: <NDBBJCEBJMJJJBIMCFBEOEJJCAAA.mlocke@jps.net>
+From: Alan Mimms <alan@packetengines.com>
+To: Brendan.Simon@ctam.com.au, Brendan John Simon <Brendan.Simon@ctam.com.au>
+Subject: Re: mpc8xx-2.2.13 kernel hangs during boot.
+Date: Mon, 31 Jan 2000 17:49:16 -0800
+Content-Type: text/plain
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+References: <200002010035.BAA26304@denx.local.net> <0001311713560A.00776@alan.corp.packetengines.com> <3896D868.BE2A5C@ctam.com.au>
+In-Reply-To: <3896D868.BE2A5C@ctam.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20000201005642.914451B3E8@elph.research.canon.com.au>
+Message-Id: <0001311752470B.00776@alan.corp.packetengines.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+On Tue, 01 Feb 2000, Brendan John Simon wrote:
+> Alan Mimms wrote:
+>
+> > Brendan,
+> >
+> > We use a serial connection to debug our applications with GDB all the time
+> > using stubs that are part of our "OS".  It certainly is possible.  We put the
+> > devices on the end of a 24 port Livingston Portmaster terminal server and then
+> > setup the ports as raw data ports to which we connect with GDB running on our
+> > main build/debug box.  That way the user can debug something in another room or
+> > across the planet very easily through the network.
+>
+> Cool.  A little overkill never hurt anybody :)
+> I'll assume one build/debug box connected directly to the target via a serial cable
+> or ethernet for now.
+
+I see what you mean, but I still think it's a necessity.  It's not overkill if
+it means I don't have to wander across the hall every 5 minutes to dink with the
+platform or sit in a room full of LOUD fans to work and debug.
+
+>
+> > I debugged my initial port of the linux kernel to our platform using just this
+> > kind of interface.  You have to commandeer the serial hardware away from the
+> > driver - I simply didn't tell the kernel there was a device there and
+> > configured it "manually" from the GDB nub initialization function which I
+> > called early in main.c.  This works fine for KERNEL debugging.
+>
+> When you say configured manually what exactly do you mean.
+> Is this in the kernel itself ?
+> When you say main.c do you mean init/main.c in the linux kernel source tree ?
+> Has this got anything to do with the kgdb option in the "make config" process ?
+> Can ethernet be used to debug the kernel or is a serial port the only or best way to
+> go ?
+
+I DO mean init/main.c.  I mean "manually" in the sense that the low level
+driver I used in my gdb nub has an "init" call made from init/main.c to
+setup the UART registers properly (baud rate, etc.).  The nub UART driver simply
+polls the UART and does simple one byte read/write operations to it.  The nub
+has the necessary (simple) hex/unhex conversion routines for the GDB serial
+protocol.  Doesn't use anything else so you can theoretically debug the
+kernel's version of printf with breakpoints and everything without screwing up
+the debugger by debugging code it depends upon.
 
 
-> Are other people also having problems with download timeouts on
-> Embedded Planet
-> boards? (or even if you're not, I'd love to hear what you're
-> doing different).
-
-I assume you mean using tftp.  If so ...
-I have had the download timeout problems.  It is not related (directly) to
-the EP boards.  It is more of a tftp issue.  If there is alot of network
-traffic, tftp might not receive its packets in time.  If you have a large
-file with alot of network traffic, it defintely will timeout.  I worked
-around these issues by isolating the EP and host from the other network
-traffic and/or splitting the srec file into smaller parts.
-
-PS: we are working on a ELF binary dnload capabiltiy, watch EPs website next
-month.  That will speed up the dnload.
-
-
-Matthew Locke
-Senior Software Engineer
-Embedded Planet
-
+> > For application debugging, you probably want to live in user space.  You COULD
+> > use gdbserver, I think, although I have no experience or knowledge of this.
+>
+> I'm pretty sure gdbserver is the way to go for debugging applications.  A TCP
+> connection is a nice way to debug this.
+>
+> Thanks,
+> Brendan Simon.
+--
+Alan Mimms     Packet Engines, Inc.     Spokane, Washington [99214-0497]
+  USA, Earth, Sol, Milky Way, The Local Group, Virgo Supercluster, U0
+Despite the cost of living, have you noticed how popular it remains?
+  -- Steven Wright?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
