@@ -1,24 +1,57 @@
-From: greggiraud@netcourrier.com
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: use bdi2000
-Date: Wed,  9 Jul 2003 11:55:15 CEST
-Mime-Version: 1.0
-Message-Id: <mnet1.1057744515.25733.greggiraud@netcourrier.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Dean Matsen <deanmatsen@earthlink.net>
+Cc: Stephan Linke <Stephan.Linke@epygi.de>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: parallel I/O ports & opend darin pins on MPC8xx 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 09 Jul 2003 12:25:00 PDT."
+             <3F0C6C0C.8040306@earthlink.net>
+Date: Wed, 09 Jul 2003 21:57:14 +0200
+Message-Id: <20030709195719.9BBF5C6D82@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-I have some problem with the use of the bdi 2000 to debug linux kernel with DDD. In fact, I am connecting to the bdi2000 (target remote ....). And then, if I do step by step. But When I click  on "step", DDD print: " error accessing memory access". And then, when I click again on "step" it steps. Is it normal???
+In message <3F0C6C0C.8040306@earthlink.net> you wrote:
+>
+> >Solution? What is so difficult about latching your output value in  a
+> >variable?
+> >
+> What he's saying is that OTHER drivers read the input and then write
+> that value to the output.
 
-Moreover I want to see the values in  the structure skbuff in netif_rx. So I make a break point here, and then click on "continue". (As before I have to click twice because of the DDD message " error accessing memory access".)
-It stops well on the begining of the function netif_rx, but I can't what there are in the values of the skbuff, I only see MAC=0,..., everything is NULL or 0!
+I did understand this.
 
-Can someone has ever use the bdiGdb well?
+> In his driver, he can latch the output through a variable, but that
+> won't affect what other
 
-gregory
-greggiraud@netcourrier.com
+Obviously all drivers that may modify bits in this I/O port will have
+to share the variable used to latch the value.
 
+Yes, this may include modifying existing code in the UART or Ethernet
+or other drivers.
+
+> Unless there is kernel support to alias the data in a memory variable
+> (and it doesn't sound like
+> there is), then this is going to continue to be a problem.  Might I
+
+Don't make it unnecessary complicated. You don't need "kernel support
+to alias the data in a  memory  variable".  This  is  really  not  so
+difficult to implement yourself when you need it.
+
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The so-called "desktop metaphor" of today's workstations  is  instead
+an  "airplane-seat"  metaphor.  Anyone who has shuffled a lap full of
+papers while seated between two portly passengers will recognize  the
+difference -- one can see only a very few things at once.
+                                                   - Fred Brooks, Jr.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
