@@ -1,5 +1,5 @@
-Date: Thu, 12 Aug 1999 10:13:28 +1000
-Message-Id: <199908120013.KAA25039@tango.anu.edu.au>
+Date: Thu, 12 Aug 1999 10:17:34 +1000
+Message-Id: <199908120017.KAA25043@tango.anu.edu.au>
 From: Paul Mackerras <paulus@cs.anu.edu.au>
 To: rth@cygnus.com
 CC: Jes.Sorensen@cern.ch, Geert.Uytterhoeven@cs.kuleuven.ac.be,
@@ -16,21 +16,16 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 Richard Henderson <rth@cygnus.com> wrote:
 
-> There are a great many cards that do memory mapped i/o that don't care
-> about the ordering and write combining of the data setup, only that the
-> data setup all be done before receiving the "go code".  In these drivers,
-> we need only one wmb insn, not one between each and every writel.
-> 
-> This benefit is marked enough that there is zero chance you can convince
+> Definitely.  Alpha's wmb and mb are very similar to ppc's sync and eieio.
 
-I'm curious to see the numbers.  What sort of driver do you see this
-much of an effect in?
+Sync and eieio are different in that for sync, the cpu actually stops
+and waits for all memory accesses to complete, whereas for eieio the
+cpu doesn't have to stop and wait for anything.  Do alpha's mb and wmb
+work the same way?
 
-For most things, the CPU spends an absolutely insignificant fraction
-of its time doing accesses to I/O device registers.  The only
-exceptions I can think of would be 3D graphics cards (and possibly
-also gigabit ethernet cards, although they should be doing most stuff
-by DMA).
+My position is that if you can provide the ordering at essentially
+zero cost, then it is an advantage to have it since more drivers will
+work that way.
 
 Paul.
 
