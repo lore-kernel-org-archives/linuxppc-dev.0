@@ -1,36 +1,50 @@
-Message-ID: <39CEF070.1A60BE5B@wanadoo.fr>
-Date: Mon, 25 Sep 2000 08:28:00 +0200
+Message-ID: <39CEF3FC.A6DB84C6@wanadoo.fr>
+Date: Mon, 25 Sep 2000 08:43:08 +0200
 From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Linux keycodes and left cursor on Pismo
-References: <Pine.SOL.4.10.10009221556010.17778-100000@ncal.verio.com> <39CE9B1F.84530732@student.ethz.ch>
+To: rshapiro@bbn.com
+CC: Michel Dänzer <daenzerm@student.ethz.ch>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display!
+References: <Pine.LNX.4.10.10009231028030.26749-100000@apollo.kulian.net>
+		<14798.23332.833379.615321@esb.bbn.com>
+		<39CE8B90.1B318DD2@student.ethz.ch> <14798.43366.937709.900651@esb.bbn.com>
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Dänzer wrote:
+R Shapiro wrote:
 >
-> Henry Worth wrote:
+> Michel Dänzer writes:
+>  > What bug with screenblanking?
 >
-> > >After switching to Linux keycodes (and Debian's i386 us keymap), the left
-> > >cursor key doesn't generate a keycode anymore. Interestingly, it works in
-> > >X with Xkb, but not without.
-> > >
-> > >Anyone else sees this?
-> >
-> > Check the dev and user archives, I think this has been discussed a
-> > few times since the new input layer backport went in.
+> Using the fbdev driver with xf 4.0.1, the default screenblanker kills
+> the server as soon as the blanker is activated.  This can easily be
+> replicated via 'xset s activate' or by letting the screenblanker
+> activate itself by timing out. The ati driver and the r128 driver
+> don't have this problem, only fbdev.
 >
-> I've searched the archives now with no luck.
+> I've seen this on all three platforms where I've tested 4.0.1, either
+> using Franz Sirl's rpms or using the version I built with sources
+> rsync'd yesterday.
+>
+> Martin Costabel reported this back in July on the users list so I
+> assumed it was a known but low-priority bug (it's easily gotten around
+> via 'xset s noblank').
 
-I haven't seen this discussed, but I'll try a wild guess: What's
-suspicious is that the linux keycode for KEY_LEFT is 105=0x69, the same
-as the old mac keycode for SYSRQ_KEY. You could easily verify this by
-pressing LEFT plus s or t or something and see whether it does some
-emergency sync or whatever. Just a guess.
+I had this at the beginning after switching to Franz' RPMs, but it went
+away soon, I don't remember why, maybe with Franz' 0.36a instead of
+0.30c. Now screen blanking is OK, except that it blanks selectively,
+i.e. parts of the screen with active widgets, clocks or ads or whatever,
+remain visible. This has also been observed before by someone else (or
+maybe it's a feature?).
+
+The most annoying bug for me is that sometimes keys repeat (almost)
+indefinitely. Most frequently mouse clicks on scroll arrows that scroll
+all the way to the end of the file, but I had it also with the delete
+(backwards) key that instead of only 2 characters erased 90% of the
+whole text. This bug is random, but its probability is variable:
+sometimes it happens practically always and sometimes almost never.
 
 --
 Martin
