@@ -1,33 +1,39 @@
-Date: Mon, 19 Aug 2002 20:01:40 +0200
-From: Harald Welte <laforge@gnumonks.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: linuxppc-2.5 rsync tree broken
-Message-ID: <20020819200140.A9590@sunbeam.de.gnumonks.org>
-Mime-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: sleep on Pismo, Ben's tree
+References: <4v7kiw5t6m.fsf@pc203b.fzu.cz>
+	<20020813063318.17261@smtp.wanadoo.fr>
+From: Jiri Masik <masik@pc203b.fzu.cz>
+Date: 20 Aug 2002 11:03:59 +0200
+In-Reply-To: <20020813063318.17261@smtp.wanadoo.fr>
+Message-ID: <4v3ct9dhq8.fsf@pc203b.fzu.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-The current (at least yesterday and today) linuxppc-2.5 tree at
-source.mvista.com is broken.
+> >'ve upgraded to
+> >Linux version 2.4.19-ben0 (root@pbuk) (gcc version 2.95.4 20011002
+> >(Debian prerelease)) #12 Wed Aug 7 14:27:13 CEST 2002
+> >and since then my powerbook can't be waken up after sleep. It happened
+> >three times -  the LCD is off so no error messages on console nor xmon
+> >prompt can be seen. Log files are empty after reboot.
+> >Any idea what's wrong?
+> >cheers
+> >        Jiri
+>
+> What is the latest tree that worked ?
+>
+> Ben.
 
-It is totally missing the directories sound/core and drivers/usb/core.
+Hi Ben,
 
-This renders even 'make oldconfig' into a non-working state, since
-the Config.in files in the respective directories cannot be found.
+I can confirm 2.4.19-rc3-ben0 (Jul 29) and earlier kernels are working
+fine.
 
-Fixing the tree would be appreciated quite a lot.
-
-Thanks.
-
---
-Live long and prosper
-- Harald Welte / laforge@gnumonks.org               http://www.gnumonks.org/
-============================================================================
-GCS/E/IT d- s-: a-- C+++ UL++++$ P+++ L++++$ E--- W- N++ o? K- w--- O- M+=
-=20
-V-- PS++ PE-- Y++ PGP++ t+ 5-- !X !R tv-- b+++ !DI !D G+ e* h--- r++ y+(*)
+Jiri
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
