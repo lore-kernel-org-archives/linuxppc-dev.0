@@ -1,35 +1,47 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Tue, 04 Jul 2000 16:55:31 +0100 (CED)
-Subject: Mvista Kernel on FADS 860
+Message-ID: <39625545.370FE91F@ne.mediaone.net>
+Date: Tue, 04 Jul 2000 17:21:09 -0400
+From: mark phillips <msss@ne.mediaone.net>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Cc: kernel@linux01.hasler.ascom.ch
-Message-id: <0FX600H7JHGOO3@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_S2v5gmNut8xxRR7YGbRCVQ)"
+Subject: Problems with HardHat/NFS root filesystems
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---Boundary_(ID_S2v5gmNut8xxRR7YGbRCVQ)
-Content-type: TEXT/PLAIN
-Content-Transfer-Encoding: 7BIT
+Hi all, great list!
 
-Hi
+I've been working with HardHat Linux on an Embedded Planet CLLF board
+(mpc860T processor).  Initial progress was great, but I've run into a
+dead end.
+I have been able to run the mbxroot.min filesystem (both on NFS and as
+an initrd).  However, I am unable to run either mbxroot.full or the
+HardHat "target" filesystem
+(Both obviously under NFS due to their size).  I am convinced that my
+problem has something to do with the shared libraries (But I've been
+wrong before!).
 
-I'd like to run the mvista Kernel 2.2.13 on my FADS 860 Board.
-Unfortunately, in the kernel configuraion I can't set the
-'Machine Type' to 'FADS' anymore. I could do that however
-on the kernel I downloaded from Bossek.
+In addition, I've noticed that if I run ldconfig on the mbxroot.min
+filesystem, it no longer boots.  Removing etc/ld.so.cache fixes the
+problem.  I believe both the mbxroot-full filesystem and the HardHat
+"target" filesystem are untouched from their original versions.
 
-Does someone know how to enable the FADS support?
+My host is an i386/RedHat 6.2 Can I run this ldconfig on a ppc
+filesystem, or do I need a cross-platform version? (command line:
+/sbin/ldconfig -r <target_dir> )
 
-Do I simply have to add Bossek's patches to the Mvista kernel?
+Basically, the symptoms are that the kernel can't find an init.  I ran
+tcpdump while booting, and everything looked pretty normal; lots of NFS
+queries (but not much or no actual data transfer).  Interestingly the
+trace ends with a bunch of queries to
+/opt/hardhat/devkit/ppc/8xx/target/opt.
 
-If yes, could someone incorporate these changes into the official
-kernel tree?
+I would greatly appreciate it if anyone has any solution to this
+problem, or even if someone could propose a debugging strategy for me?
+I've tried both the HardHat CDK 1.0 and the newer Journeyman (CDK 1.1),
+both with the same results.
+Thanks in advance,
+Mark Phillips
 
-/Ruedi
-
---Boundary_(ID_S2v5gmNut8xxRR7YGbRCVQ)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
