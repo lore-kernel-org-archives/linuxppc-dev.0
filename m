@@ -1,63 +1,60 @@
-Message-ID: <3A82C466.5DB031B6@tei.ericsson.se>
-Date: Thu, 08 Feb 2001 17:08:07 +0100
-From: Borlizzi Giacomo <giacomo.borlizzi@tei.ericsson.se>
+Message-ID: <3A82EECF.EF4D5A8@opensource.se>
+Date: Thu, 08 Feb 2001 20:09:03 +0100
+From: Magnus Damm <damm@opensource.se>
 MIME-Version: 1.0
-To: Dan Malek <dan@mvista.com>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: get_pgd_slow() function
-References: <3A811BA3.C2793FA3@tei.ericsson.se> <3A81B333.D638A423@mvista.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: bk-linuxppc_2_4 mpc8xx compile fix
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm using an 860 processor running at 80MHz.
-The problem that I have is that the shell don't start.
+Hi all,
 
-During the debugging phase made on the 2.2.13
-the code executed the function exec_mmap(). Inside on it was
-executed the macro SET_PAGE_DIR and after this execution the code
-was crashed.
-Investigating on that I discovered that code was crash immediately when
-the
-MTWB register was changed.
-.....
-That because MMU interrupt routine was accessing to some bad memory area.
+I recently tried to compile a fresh bitkeeper linuxppc_2_4 tree for
+mpc8xx:
 
-Investigating on reasons for that I have made the Hypothesis that MMU
-table was not well initialized, from this I made some changes on the
-get_pgd_slow function.
+arch/ppc/kernel/kernel.o: In function `SoftwareEmulation':
+arch/ppc/kernel/kernel.o(.text+0xa04): undefined reference to
+`Soft_emulate_8xx'
+arch/ppc/kernel/kernel.o(.text+0xa04): relocation truncated to fit:
+R_PPC_REL24 Soft_emulate_8xx
+make: *** [vmlinux] Error 1
 
-Some day ago during the porting on linux-2.4.1 the same problem happens
-so now it is time to resolve and understand why it happen
+The relevant .config line:
 
-I like your hypothesis on cache, I have the cache configured with
-COPYBACK
-disabled so:
+# CONFIG_MATH_EMULATION is not set
 
-# CONFIG_8xx_COPYBACK is not set
+I will probably not get the nobelprize for the fix,
+but is works for me... =)
 
-and I'll try to change it....
+Cheers /
 
-But many doubt remaining....
+Magnus
 
-Ciao,
-/Giacomo
 
-Dan Malek wrote:
 
-> Borlizzi Giacomo wrote:
->
-> > but I've modified with:
->
-> What made you think you need to do this?
-> Something isn't right.  The 'memcpy' you added just copies zero values
-> from the init pgd into the new pgd, which the 'memset' already did
-> for you.  Either the 'memset' you are using isn't correct, or the
-> act of copying that much data flushed cache lines.  What kind of
-> processor do you have?
->
->         -- Dan
-
+diff -urN linux-2.4.1/arch/ppc/kernel/Makefile
+linux-2.4.1-cllf_ok/arch/ppc/kern
+el/Makefile
+--- linux-2.4.1/arch/ppc/kernel/Makefile        Tue Jan 23 00:41:15 2001
++++ linux-2.4.1-cllf_ok/arch/ppc/kernel/Makefile        Wed Feb  7
+11:32:08 2001
+@@ -56,7 +56,13 @@
+ else
+ obj-$(CONFIG_PPC)              += hashtable.o
+ endif
+-obj-$(CONFIG_MATH_EMULATION)   += softemu8xx.o
++
++ifeq ($(CONFIG_8xx),y)
++ifneq ($(CONFIG_MATH_EMULATION),y)
++obj-$(CONFIG_8xx)              += softemu8xx.o
++endif
++endif
++
+ obj-$(CONFIG_MBX)              += i8259.o
+ obj-$(CONFIG_APUS)             += apus_setup.o
+ obj-$(CONFIG_ALL_PPC)          += pmac_pic.o pmac_setup.o pmac_time.o
+prom.o \
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
