@@ -1,32 +1,45 @@
-From: miles.lane@comcast.net
-Message-Id: <200308071600.LAA12220@lists.linuxppc.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.6.0-test2 -- The Uninorth Agpgart driver code contains no author info.
-Date: Thu, 07 Aug 2003 16:00:00 +0000
+Date: Thu, 7 Aug 2003 23:27:37 +0000
+From: Giuliano Pochini <pochini@shiny.it>
+To: LinuxPPC-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: 2.4.22p10 compile error
+Message-Id: <20030807232737.20df47f2.pochini@shiny.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ah, I see.  I was searching for an e-mail address.
-This new approach maps the name to a value in the MAINTAINERS file, right?
-I am guessing this helps reduce the number of stale e-mail addresses
-that are embedded in the code.  Will we eventually overhaul the whole
-codebase to use this method?
+The stable linuxppc_2_4 tree at mvista doesn't compile. make dep fails
+very soon:
 
-All the best,
 
-     Miles
+make _sfdep_chrp _sfdep_pmac _sfdep_prep _FASTDEP_ALL_SUB_DIRS="chrp pmac prep"
+make[4]: Entering directory `/opt/KernelSrc/l/arch/ppc/boot/prep'
+make -C chrp fastdep
+make: Entering an unknown directory
+make: *** chrp: No such file or directory.  Stop.
+make: Leaving an unknown directory
+make[4]: *** [_sfdep_chrp] Error 2
+make[4]: Leaving directory `/opt/KernelSrc/l/arch/ppc/boot/prep'
+make[3]: *** [fastdep] Error 2
+make[3]: Leaving directory `/opt/KernelSrc/l/arch/ppc/boot/prep'
+make[2]: *** [_sfdep_prep] Error 2
+make[2]: Leaving directory `/opt/KernelSrc/l/arch/ppc/boot'
+make[1]: *** [fastdep] Error 2
+make[1]: Leaving directory `/opt/KernelSrc/l/arch/ppc/boot'
+make: *** [archdep] Error 2
+[root@Jay l]#
 
-> On Thu, 2003-08-07 at 06:44, Miles Lane wrote:
-> > This makes it rather difficult to know who to contact to request
-> > that the Uninorth support get put into Marcelo's 2.4 tree.
-> >
-> > Oh, and there is also no GPL header in those files.
->
-> Look at the end of file:
->
-> MODULE_AUTHOR("Ben Herrenschmidt & Paul Mackerras");
-> MODULE_LICENSE("GPL");
+
+I also tested the official 2.4.22p10 at kernel.org and it works fine, but the
+ethernet.
+I have a dual G4mdd, gcc 2.95.4 (YDL2.3).
+I would like to try linux 2.6. Do I need to upgrade libc and other stuff ?
+
+
+--
+Bye.
+   Giuliano.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
