@@ -1,43 +1,34 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Debugging Network Performance
-Date: Wed, 5 Jun 2002 06:35:57 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFOECJDIAA.acurtis@onz.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <F1BED55F35F4D3118C0F00E0295CFF4DFFA05C@mail.mediatrix.com>
+To: "vandana mehtani" <vandana_mehtani123@rediffmail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: problem when compiling gcc for pwerpc 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "05 Jun 2002 11:21:13 -0000."
+             <20020605112113.25323.qmail@webmail3.rediffmail.com>
+Date: Wed, 05 Jun 2002 16:41:11 +0200
+Message-Id: <20020605144116.C3A1E102F2@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> With my 200MHz 8260 based board, using kernel 2.4.19-pre7,
-> I fetch a large file (~50Mb) with ftp, and send it to /dev/null
->   get large_file /dev/null
-> and I obtain the following performance:
->   50216878 bytes received in 5.52 seconds (9090508 bytes/s)
+In message <20020605112113.25323.qmail@webmail3.rediffmail.com> you wrote:
+>
+> ya i can do this ..
+> but the error if can be solved wld be nice...
 
-I will check smaller files. I know that there is a nice burst of activity
-when the transfer starts. Can you try 100MB+ transfer and see if you still
-get the same performance. Perhaps I should try 2.4.19pre7. If I get better
-results it sure helps to narrow the search for likely suspects. I will also
-try piping to /dev/null.
+It's a waste of time even to look at it.
 
-> If the performance drops in 100Mbps full duplex, the problem might be
-> one of configuration between your BCM switch and the external switch.
-> Are both ends of the link (between your BCM switch and external switch)
-> set to auto-negotiation?
+The 2.96 version of GCC is  broken.  It  has  never  been  officially
+released, and it cannot be used for any kernel-related work.
 
-The switch is a LinkSys 5 port 10/100 switch. (no configuration options that
-I am aware of) All ports on the BCM should be in auto-negotiate mode. In a
-previous version I printed the negotiation status of each port and it showed
-100, full-duplex.
+Forget it.
 
-Thanks for the pointers. Based on the emails that I have received, I am not
-the only one with this problem. Hopefully we can reproduce your results and
-provide some feedback to the group.
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Hacking's just another word for nothing left to kludge.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
