@@ -1,100 +1,30 @@
-Message-ID: <3CEB62F0.2080302@thales-bm.com>
-Date: Wed, 22 May 2002 11:20:48 +0200
-From: Julien Eyries <julien.eyries@thales-bm.com>
+Message-ID: <3CEB6DFB.90507@intracom.gr>
+Date: Wed, 22 May 2002 13:07:55 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-To: Dean McBride <dmcbride@sgss.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Un-killable process???
-References: <5.1.0.14.0.20020521144711.0312fc28@sgss.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: SMC relocation upatch problem on 850
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have had the same problem when writing a driver for my custom hardware
-; It's a well known problem, I found it explained in "Linux Device
-Drivers" by Rubini & Corbet. (i have the french version , it's in chapter 5)
-your driver should use the function "interruptible_sleep_on()" instead
-of "sleep_on()" to block the process .
-if you use "sleep_on()", your process will not receive any signal while
-blocked and then could become "un-killable" .
+Hello
 
-bye.
+I'm trying to use the SMC/IIC/SPI relocation patch from motorola
+on a MPC850SR to relocate the SMC1.
+I have also modified the uart driver to make it work.
 
+Up to now I have failed miserably, and I'm curious
+if someone has ever managed to use this patch.
 
-Julien
+If so any pointers/snippets of code would be appreciated.
 
+Thanks in advance.
 
-Dean McBride wrote:
-
->
-> Hello,
->
-> I have a process I can't kill (kill -9) without rebooting the system.  I've
-> attempted
-> attaching strace, gdb, etc. to the process, but each of those task just
-> hang.  I
-> can however kill those task (strace, gdb).  I've looked through the
-> /proc/<pid>
-> area, but don't really know what I'm looking for or at!  The task seems
-> to be
-> somehow stuck on some resource, but I don't know which one or how to find
-> out.  I'm running with Linux 2.4.10-pre10 on a 4 processor Power PC with
-> 512Mbytes of memory.  The process is reading data from a PMC card.
->
-> Any ideas or suggestions?  I've include some more information below!
->
-> Thanks
-> Dean
->
-> Here's the output from the ps command:
->    74 root     root     R /opt/ds/src/lm1/bin/lm1_read -s 4 -m 255 -f 4000
-> -a -r -u 2 -g 1
->
->
-> Heres the /proc/74/status file
->
-> sh-2.03# more /proc/74/status
-> Name:   lm1_read
-> State:  R (running)
-> Pid:    74
-> PPid:   62
-> TracerPid:      0
-> Uid:    0       0       0       0
-> Gid:    0       0       0       0
-> FDSize: 256
-> Groups: 0
-> VmSize:     2580 kB
-> VmLck:      2580 kB
-> VmRSS:      2580 kB
-> VmData:     1128 kB
-> VmStk:        16 kB
-> VmExe:        20 kB
-> VmLib:      1188 kB
-> SigPnd: 0000000000044102
-> SigBlk: 0000000000000000
-> SigIgn: 8000000000000000
-> SigCgt: 0000000000004002
-> CapInh: 0000000000000000
-> CapPrm: 00000000fffffeff
-> CapEff: 00000000fffffeff
->
-> /proc/74/statm file
->
-> sh-2.03# more /proc/74/statm
-> 645 645 317 17 0 628 328
->
->
->
-
-
---
-Julien Eyries
-R&D engineer
-Thales Broadcast & Multimedia (ex-thomcast)
-email: julien.eyries@thales-bm.com
-fax: 33(0) 1 34 90 31 10
-tel: 33(0) 1 34 90 31 01
+Pantelis Antoniou
+System Programmer
+Intracom S.A. Greece
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
