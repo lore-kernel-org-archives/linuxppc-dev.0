@@ -1,25 +1,24 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-Id: <5.0.2.1.0.20010330132041.00a65958@pop.ylez.com>
-Date: Fri, 30 Mar 2001 13:21:55 +0800
+Message-ID: <20010330062136.3295.qmail@sina.com>
+From: simitel0299 <simitel0299@sina.com>
 To: linuxppc-embedded@lists.linuxppc.org
-From: Leonard Ye <leonard_ye@ylez.com>
-Subject: kernel support of MPC8XX series
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: Where get the Linux Init Source for 8xx
+Date: Fri, 30 Mar 2001 14:21:36 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Hello, all:
+    Would you like to provide me with the source codes of LinuxPPC initialization for MPC8xx, just from the CPU PWRUP Reset to the OS and finally to the Application ? If available, the corresponding documents will be OK!
+    Thank you for your help!
+    Best Regards!
+                                  Wtao
+                     2001/3/30
 
-Just want to ask a very simple question. How is the kernel support on
-MPC8XX series, especially on the MPC855 and MPC860? I will be very happy if
-kernel 2.4 can be used and PCMCIA is support as well.
+______________________________________
 
-Thanks for your time.
-
-Regards,
-Leonard Ye
-
+===================================================================
+新浪免费电子邮箱 (http://mail.sina.com.cn)
+网里寻她千百度!没有"聊友速配",怎能"成双成对"? (http://newchat.sina.com.cn)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
