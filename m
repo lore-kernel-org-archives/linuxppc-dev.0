@@ -1,44 +1,66 @@
-Date: Fri, 4 Aug 2000 07:19:54 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Ronald Wahl <rwa@peppercon.de>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: iounmap
-Message-ID: <20000804071954.C892@beef.az.mvista.com>
-References: <20000803155911.A6226@cx258813-a.chnd1.az.home.com> <Pine.LNX.4.21.0008041003040.653-100000@goliath.issistance.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.21.0008041003040.653-100000@goliath.issistance.de>; from rwa@peppercon.de on Fri, Aug 04, 2000 at 10:06:26AM +0200
+Message-ID: <398ADB57.9ABEDC6F@student.ethz.ch>
+Date: Fri, 04 Aug 2000 17:03:51 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
+MIME-Version: 1.0
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+CC: SteffenH@hyperion-software.de, Iain Sandoe <iain@sandoe.co.uk>,
+        takashi oe <toe@unlserve.unl.edu>, dri-devel@lists.sourceforge.net,
+        linuxppc-dev@lists.linuxppc.org,
+        Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Kind of success! (r128 on PPC (Re: LinuxPPC X Server))
+References: <Pine.LNX.4.21.0008031541210.6020-100000@idd-01.imbc.gr>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Aug 04, 2000 at 10:06:26AM +0200, Ronald Wahl wrote:
-> On Thu, 3 Aug 2000, Matt Porter wrote:
->
-> > On Thu, Aug 03, 2000 at 02:44:12PM +0200, Geert Uytterhoeven wrote:
-> > >
-> > > On Thu, 3 Aug 2000, Ronald Wahl wrote:
-> > > > I'm currently writing a device driver for an pci controller and have to
-> > > > map very large amounts of pci memory and i/o ranges via ioremap. The
-> > > > problem is that there is no iounmap and ioremap returns NULL after some
-> > > > insmod/rmmod cycles. When gets this implemented?
-> > >
-> > > When someone steals some spare time and writes the code.
-> >
-> > Done.  The hot swap PCI kernel patches from MCG have iounmap implemented.
-> > Very useful when ripping a PCI peripheral out of its slot. :)
-> >
-> > See them at http://www.mcg.mot.com/linux under HA Linux/Downloads.
->
-> Call me blind, but I havn't seen an implementation of iounmap in these
-> patches.
+[For the linuxppc-dev people: this is about the DRI CVS trunk]
 
-Whoops, sorry.  When I was at MCG I know another engineer did an iounmap
-implementation for HA support.  I thought it was in those patches... :-/
+Kostas Gewrgiou wrote:
+
+> > GL clients even seem to attempt direct rendering now, however I get one of
+> > two different errors every time:
+> >
+> > Error: Rage 128 timed out... exiting
+> >
+> > Error: Could not submit packet... exiting
+>
+>   From what i see the problem is probably in the R128_READ/WRITE macros in
+> r128_drv.h you need byteswapping functions there (and memory barriers as
+> usual).
+
+That did it, thanks! I changed those macros to use the same inline functions
+which are used for MMIO_{IN,OUT} on PPC, and here we go!
+
+
+The remaining problems are:
+
+16 bit doesn't work neither with fbdev (colors completely off - does aty128fb
+still use 15 bit in fact?) nor without (at least the grey tones are right
+there - wrong endianness?)
+
+At 32 bit, it flickers badly on my Pismo, probably because it only has 8 megs
+of VRAM. (These messages appear in the log:
+(EE) r128(0): Unable to reserve depth buffer
+(EE) r128(0): Unable to reserve texture space in frame buffer
+) Curious how it works out for people with more...
+
+
+About performance: It's much better than software rendering (at least for big
+windows) of course, however not too fast with lots of polygons. AGP GART would
+definitely be a good thing I guess (Ben: hint, hint :)
+
+
+Still, big kudos to the DRI team for a great work!
+
+Michel
+
 
 --
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Sometimes you have to stride boldly up to life,
+ look it straight in the eye, and say "huh?"
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
