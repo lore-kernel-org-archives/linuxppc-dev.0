@@ -1,38 +1,45 @@
-Message-ID: <20020429054356.39692.qmail@web8102.in.yahoo.com>
-Date: Mon, 29 Apr 2002 06:43:56 +0100 (BST)
-From: =?iso-8859-1?q?somshekar=20kadam?= <som_kadam@yahoo.co.in>
-Subject: inflate problem
-To: linuxppc-embedded@lists.linuxppc.org
+Date: Mon, 29 Apr 2002 08:57:37 +0200 (CEST)
+From: Marius Groeger <mag@sysgo.de>
+To: andrew may <acmay@acmay.homeip.net>
+Cc: Nye Liu <nyet@zumanetworks.com>, John Tyner <jtyner@cs.ucr.edu>,
+	<linuxppc-embedded@lists.linuxppc.org>,
+	<ppcboot-users@lists.sourceforge.net>
+Subject: MTD Partitioning (Was: [PATCH][RFC] PPCBoot Environment Kernel
+ Module)
+In-Reply-To: <20020425144813.E22212@ecam.san.rr.com>
+Message-ID: <Pine.LNX.4.40.0204290852220.689-100000@mag.devdep.sysgo.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi ,
+On Thu, 25 Apr 2002, andrew may wrote:
 
- I am using 8260 processor,montavitsa sources,
-i am using limon to download kernel on the board,
-when decompressing after certain number of bytes
-its not inflateing properly
+> > > Well one thing that we plan (John and I work together) ontop of
+> > > this is to use some env vars for the partition table for flash.
+> >
+> > Ummm... "use some env vars for the partition table for flash".
+>
+> see linux/drivers/mtd/redboot.c and any of the mtd/maps/*.c that
+> call add_mtd_partitions() as for the partitions I am talking about.
 
-i saw vmlinux when uncompressed is same upto cetain
-bytes ,
-when jump from head.S to prom_init is not happening
+Good news for you guys here: we just checked in a new module on
+infradead.org implementing just that. It's drivers/mtd/cmdline.c and
+allows you to specify the entire partition table via a kernel command
+line option. Thus, on ppcboot/armboot, you just set the bootargs
+variable and be done with it.
 
-what i did was i placed directly vmlinux into memory
-and gave control to it  it jumping to prom_init,its
-not stack problem ,please give any hint or where i am
-going wrong
-please even reply to mail id and even ppc mailing list
+I'd be interested in any feedback on this.
 
-as currently due to some problem i am not added i
-mailing list
-thanks in advance
+Regards
+Marius
 
+-----------------------------------------------------------------------------
+Marius Groeger           SYSGO Real-Time Solutions GmbH     mgroeger@sysgo.de
+Software Engineering     Embedded and Real-Time Software    www.sysgo.de
+Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
+FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
 
-________________________________________________________________________
-For live cricket scores download  Yahoo! Score Tracker
- at: http://in.sports.yahoo.com/cricket/tracker.html
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
