@@ -1,36 +1,36 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Fri, 28 Mar 2003 09:35:48 +0100
-From: Toni Van Remortel <t.vanremortel@ha.be>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: IBM PPC 405GP kernel compile problem
-Message-Id: <20030328093548.0597f71f.t.vanremortel@ha.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Toni Van Remortel <t.vanremortel@ha.be>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: IBM PPC 405GP kernel compile problem 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 28 Mar 2003 09:35:48 +0100."
+             <20030328093548.0597f71f.t.vanremortel@ha.be>
+Date: Fri, 28 Mar 2003 11:03:12 +0100
+Message-Id: <20030328100317.E789BC6E0D@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+In message <20030328093548.0597f71f.t.vanremortel@ha.be> you wrote:
+>
+> I'm using the cross-compiler from denx.de for PPC_4xx, and I patched a 2.4.15 kernel with the appropriate PPC-patch.
 
-I'm using the cross-compiler from denx.de for PPC_4xx, and I patched a 2.4.15 kernel with the appropriate PPC-patch.
-Now when I compile zImage, I get this error:
+Where did you get this 2.4.15 kernel from?
 
-make[1]: Entering directory `/opt/linux_ppc/arch/ppc/kernel'
-ppc-linux-gcc -D__ASSEMBLY__ -D__KERNEL__ -I/opt/linux_ppc/include   -c -o head_
-4xx.o head_4xx.S
-head_4xx.S: Assembler messages:
-head_4xx.S:111: Error: Unrecognized opcode: `tlbwe'
-head_4xx.S:112: Error: Unrecognized opcode: `tlbwe'
-head_4xx.S:420: Error: Unrecognized opcode: `rfci'
-make[1]: *** [head_4xx.o] Error 1
-make[1]: Leaving directory `/opt/linux_ppc/arch/ppc/kernel'
+For 4xx you should use the linuxppc_2_4_devel tree. Using this  tree,
+we  have  no  problems  to  compile  and run Linux on a couple of 4xx
+systems using the ELDK.
 
-I've found a 'solution' to this problem on this list, which tells me to use -Wa,-m405 as flag instead of -mcpu=403, but that doesn't change a thing.
 
-So I wonder: doesn anybody know why this goes wrong? I don't think the compiler is wrong (comming from ELDK, downloaded on 18 march 2003), nor the kernel. Any ideas?
+Best regards,
 
-Thank you in advance,
+Wolfgang Denk
 
-Toni Van Remortel.
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Don't put off for tomorrow what you can  do  today,  because  if  you
+enjoy it today you can do it again tomorrow.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
