@@ -1,42 +1,40 @@
-Subject: Re: /proc/sys/kernel/l2cr and the 750FX
-From: "Guy M. Streeter" <streeter@redhat.com>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20031114170930.GG13003@ip68-0-152-218.tc.ph.cox.net>
-References: <1068824641.18764.7.camel@jarjar.hsv.redhat.com>
-	 <20031114162745.GE13003@ip68-0-152-218.tc.ph.cox.net>
-	 <20031114170930.GG13003@ip68-0-152-218.tc.ph.cox.net>
-Content-Type: text/plain
-Message-Id: <1068830545.18764.9.camel@jarjar.hsv.redhat.com>
-Mime-Version: 1.0
-Date: 14 Nov 2003 11:22:26 -0600
+Message-ID: <3FB5741C.703@jonmasters.org>
+Date: Sat, 15 Nov 2003 00:32:28 +0000
+From: Jon Masters <jonathan@jonmasters.org>
+MIME-Version: 1.0
+To: Dan Kegel <dank@kegel.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 4xx ports
+References: <3FB4D07C.4010909@jonmasters.org> <20031114082854.A23689@home.com> <3FB50DDC.3090309@kegel.com>
+In-Reply-To: <3FB50DDC.3090309@kegel.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 2003-11-14 at 11:09, Tom Rini wrote:
-> On Fri, Nov 14, 2003 at 09:27:45AM -0700, Tom Rini wrote:
-> >
-> > On Fri, Nov 14, 2003 at 09:44:01AM -0600, Guy M. Streeter wrote:
-> >
-> > >   In September I posted a version of this patch, which corrects the
-> > > formatted display of the L2CR register for 750FX processors.
-> > > Tom Rini suggested that it should use a cpu feature flag instead of the
-> > > processors version register, and also that the change might already have
-> > > been made in later kernel source.
-> > >   I have check all the 2.4.23+ and 2.6.0 source trees, and I don't see
-> > > any fix for this. I have changed the patch to use a feature flag instead
-> > > of checking the PVR. I would like to see this change considered for
-> > > inclusion.
-> >
-> > I've checked this into my 2.4.24-pre tree.
->
-> .. with a change to turn CPU_FTR_DUAL_PLL_750FX into CPU_FTR_750FX,
-> since that is applied to all revs of the 750FX.
 
-Cool. I had thought about doing that, and then my mind wandered off. :)
+Dan Kegel wrote:
 
---Guy
+| Hey, if Jon wants to help merge stuff from linuxppc-2.4 upstream,
+| don't discourage him! :-)
+
+Give me my marching orders and I will find some time to help -
+basically I take my work home with me anyway so...
+
+| But it's true, some of the stuff Jon's interested might still be
+| stuck in linuxppc_2_4_devel, and need merging into linuxppc-2.4
+| (hope I got those names right), and maybe he should do that first.
+
+So assume I know the Linux ppc stuff but might not know which bits are
+in which tree as I tend to be using the stock kernel.
+
+The patches I have produced on work time will surface once they are
+finished and a system begins to ship but I can work on the other
+linuxppc stuff without any problems so am in a "youthfull
+optimism" kind of way wanting to help.
+
+Jon.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
