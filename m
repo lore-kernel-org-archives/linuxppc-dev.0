@@ -1,46 +1,70 @@
-Message-ID: <3AB65FCD.44826199@mvista.com>
-Date: Mon, 19 Mar 2001 14:36:45 -0500
-From: Dan Malek <dan@mvista.com>
+Message-Id: <4.3.2.20010321074303.00be5a70@falcon.si.com>
+Date: Wed, 21 Mar 2001 07:48:57 -0500
+To: "shalini  jain" <shalijain@rediffmail.com>,
+	"linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+From: Jerry Van Baren <vanbaren_gerald@si.com>
+Subject: Re: What do you all say of the file size ???
+In-Reply-To: <20010321024258.19911.qmail@mailweb30.rediffmail.com>
 MIME-Version: 1.0
-To: Ralph Blach <rcblach@raleigh.ibm.com>
-Cc: Ralph Blach <rblach@intrex.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: es1371.o sound module on a IBM 405 walnut platform
-References: <3AB4E3BA.AF71AFE6@intrex.net> <3AB52248.D2411FF2@mvista.com> <3AB65B72.F77A0760@raleigh.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ralph Blach wrote:
+man fstat
 
-> Well it does.  And I recomend a new kernel interface, and Dan, I KNOW
-> YOU WILL not like THE VERY IDEA,
-> by here it is.
+               struct stat
+               {
+                   dev_t         st_dev;      /* device */
+                   ino_t         st_ino;      /* inode */
+                   mode_t        st_mode;     /* protection */
+                   nlink_t       st_nlink;    /* number of hard links */
+                   uid_t         st_uid;      /* user ID of owner */
+                   gid_t         st_gid;      /* group ID of owner */
+                   dev_t         st_rdev;     /* device type (if inode
+device) */
+                   off_t         st_size;     /* total size, in bytes */
+                   unsigned long st_blksize;  /* blocksize for
+filesystem I/O */
+                   unsigned long st_blocks;   /* number of blocks
+allocated */
+                   time_t        st_atime;    /* time of last access */
+                   time_t        st_mtime;    /* time of last
+modification */
+                   time_t        st_ctime;    /* time of last change */
+               };
 
-You are right, I won't :-).  Here is why.  First of all, all Linux
-ports understand how to manage the little-endian PCI interface.  We
-don't want help from hardware swapping bytes in the lanes because it
-just complicates software with special case functions and actually
-introduces more overhead instead of removing it like the design you
-thought would work.  Second, I have worked with hardware like this
-in the past, and have painfully learned you simply can't arbitrarily
-swap the bytes in the lanes.  If you have data structures you are
-trying to share, the data has to be swapped based upon the size of
-the object.  The hardware has no clue what you are trying to access
-and will screw it up.  Just believe me, I've been there.
+In particular, element st_size.
 
-> copy_from_user and copy_to_use would then do the bit to little endian
-> conversions.
+There is no EOF character stored in the file, that went out of style
+with CP/M.  Although DOS/WinXX still support EOF characters, that
+doesn't change the validity of my assertion.
 
-Nope, the sound drivers already know how to do this if necessary.
+If you are trying to find the file size of a raw disk partition that
+has been formatted ext2 without using the linux file system resources
+(i.e. fstat()), that is a pretty significant undertaking and you will
+just have read and understand the ext2 sources.  You are not likely to
+get much help or sympathy from this list.
 
-> By the same token, an interface to allocate noncached memory would be
-> spiffy.
-
-That's already been done for the 8xx and 4xx ports in the kernel
-trees.
+gvb
 
 
-	-- Dan
+At 02:42 AM 3/21/01 +0000, shalini  jain wrote:
+
+>hello list,
+>
+>can someone suggest the way to find the file size in ext2fs ?(provided
+>the no. of blocks are known)
+>
+>is there any EOF char in ext2fs files ? if yes. what is it ? is there
+>any other way of knowing the file size than to count up to EOF ???
+>
+>
+>if possible, please reply in a bit detail.
+>thanx,
+>Shalini
+>
+>
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
