@@ -1,39 +1,32 @@
-Message-ID: <41EA756DBC9FD0118CFC0020AFDB5C5A188D97@tcint1ntsrv>
-From: Zehetbauer Thomas <TZ@link.topcall.co.at>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: booting HardHat on IBM 405GP
-Date: Wed, 28 Mar 2001 13:17:30 +0200
+Message-ID: <3AC23B01.A9162C3B@matrox.com>
+Date: Wed, 28 Mar 2001 14:26:57 -0500
+From: =?iso-8859-1?Q?S=E9bastien=20C=F4t=E9?= <scote1@matrox.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Stability of MontaVista's 2.4.0-test2-1.2.2-1
+References: <H00002af04b2e173@MHS>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am not certain but I have tried to enable MSR_DR and was still able to
-print to the serial console.
+Hi,
 
-Tom
+Did anyone have stability problem with MontaVista's kernel
+2.4.0=test2-1.2.2-1 ???  I'm running  it on a board similar to Sandpoint
+with a 7400 processor and sometimes it crashes because "current->mm ==
+NULL" (from do_page_fault).
 
-> -----Original Message-----
-> From: Stefano Coluccini [mailto:s.coluccini@caen.it]
-> Sent: Wednesday, March 28, 2001 10:05 AM
-> To: Zehetbauer Thomas
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: RE: booting HardHat on IBM 405GP
->
->
->
-> > It seems that execution stops when calling rfi in
-> > arch/ppc/kernel/head_4xx.S. I have put the sample code provided to
-> > output a single character on the serial port immediately
-> before the rfi
-> > call and after the after the start_here label. Only the
-> first is beeing
-> > executed. Any ideas?
->
-> Are you sure that the code that print a char on the serial
-> port works also
-> with MMU enabled ?
->
+I'm not using any initrd but a shell (ash) instead.  This seems to
+happen when I run a lot of programs in my script.  I also seems to be
+related to a synchronisation problem since it gets a lot more stable
+when I add "printk"s in the functions switch_mm and activate_mm.
+
+This could also be related to the fact that I'm running in little-endian
+but since it only crashes once in a while, I would doubt it!  So I'm a
+bit suspicious about this test kernel, did anybody else have problems
+with it??
+
+Sébas..
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
