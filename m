@@ -1,12 +1,52 @@
-Message-ID: <20030218130534.84915.qmail@web20710.mail.yahoo.com>
-Date: Tue, 18 Feb 2003 05:05:34 -0800 (PST)
-From: linuxuser <rlinuxuser@yahoo.com>
-Subject: Booting the kernel
-To: linuxppc-embedded@lists.linuxppc.org
+From: Philip.Lougher@Zarlink.Com
+Subject: Re: Booting the kernel
+To: linuxuser <rlinuxuser@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OFDABBE86D.F36B2041-ON80256CD1.0049E83C@zarlink.com>
+Date: Tue, 18 Feb 2003 13:31:06 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+>On hyperterminal I could see the message "Now booting
+>the kernel..."
+>
+>and the target is getting hanged due to panic
+>condition.When debugged it is found that console
+>driver is not getting initialized. To overcome this in
+>init/main.c file , I called the console_init
+>subroutine before printk(linux_banner). still the same
+>problem persists..
+
+Initialising the console before the Linux kernel does it, is generally not
+a good idea.  The Linux kernel initialises it when it does, because things
+are not sufficiently setup to do it before hand.
+
+If you send a dump of the kernel output and the kernel panic, you should
+get more help.  Without any output it's pure guess work.
+
+Regards
+
+Phillip Lougher
+
+
+
+
+                      linuxuser
+                      <rlinuxuser@yahoo.com>                 To:       linuxppc-embedded@lists.linuxppc.org
+                      Sent by:                               cc:
+                      owner-linuxppc-embedded@lists.l        Subject:  Booting the kernel
+                      inuxppc.org
+
+
+                      18-Feb-2003 01:05 PM
+
+
+
+
+
 
 
 Hi
