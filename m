@@ -1,30 +1,24 @@
-Date: Sat, 11 Sep 1999 11:01:00 +0200
-To: linuxppc-dev@lists.linuxppc.org
-CC: linuxppc-user@lists.linuxppc.org, erbenson@alaska.net
+In-Reply-To: <19990910161322.A1674@them.org>
+Date: Sat, 11 Sep 1999 11:23:23 +0200
+To: Daniel Jacobowitz <drow@false.org>, linuxppc-dev@lists.linuxppc.org
 From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: quik 2.0 fix
-Message-Id: <19990911110100.027102@smtp.calvacom.fr>
+Subject: Re: controlfb.c bug in VRAM bank2 check if bank1
+Message-Id: <19990911112323.032168@smtp.calvacom.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-It took me a while to figure out why my printf's were displaying crazy
-results until I found out the glibc2.1 dev_t is a long long ! So this fix
-will make quik correctly recognize the partition number:
+>I have a bunch of information on this lying around, and most of my
+>other kernel problems seem to be resolved now.  I'm in the process of
+>upgrading to current vger; if it succeeds, I'll try to merge all
+>pending controlfb stuff tomorrow.
 
---- quik.c.old	Sat Sep 11 10:52:54 1999
-+++ quik.c	Sat Sep 11 10:52:01 1999
-@@ -521,7 +521,7 @@
- 	bootdev[7] += UNIT(st1.st_dev);
-     strcpy(spart, bootdev);
-     if (PART(st1.st_dev) != 0)
--	sprintf(spart+8, "%d", PART(st1.st_dev));
-+	sprintf(spart+8, "%d", (int)PART(st1.st_dev));
- 
-     if (verbose)
- 	printf("Second-stage loader is on %s\n", spart);
+I also have a pair of crazy 8500 who have 2Mb of VRAM but in bank2 (they
+don't work if the VRAM is moved to bank1, even under MacOS). The current
+controlfb appears to work well. Send me your merge results, I'll test on
+one of those weird machines Monday.
 
 
 -- 
