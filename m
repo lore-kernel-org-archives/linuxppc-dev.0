@@ -1,81 +1,27 @@
-Message-ID: <3E55078B.4040208@mvista.com>
-Date: Thu, 20 Feb 2003 09:51:23 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-Cc: Brian Waite <waite@skycomputers.com>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Gary Thomas <gary@mlbassoc.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Disable cache on 74xx
-References: <Pine.GSO.4.21.0302201507510.27212-100000@vervain.sonytel.be> <3E54F2EF.2080601@embeddededge.com> <200302201047.02490.waite@skycomputers.com> <3E54FECB.5090604@embeddededge.com>
-In-Reply-To: <3E54FECB.5090604@embeddededge.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Thu, 20 Feb 2003 17:32:52 +0000
+From: Magnus Damm <damm@opensource.se>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: CONFIG_HIGHMEM
+Message-Id: <20030220173252.43c77198.damm@opensource.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Brian,
+Hi,
 
-I know you are aware of this but I *always* experience cache coherency
-problems with the GT64260A when Sysclk/Tclk are anything above 100MHz
-and I believe that your board is clocked over that.  Try a 100MHz
-crystal and see if the problem goes away.
+I recently bought more memory to my G4 Cube.
+The gentoo kernel ppc-sources-2.4.20-r2 gives
+me various oopses when I enable CONFIG_HIGHMEM.
 
-Mark
---
-Dan Malek wrote:
+What kernel tree should I try? linuxppc_2_4?
 
->
-> Brian Waite wrote:
->
-> > .... The memory controller (gt64260) seems to be
->
->> doing something very wrong and it is thought to be a cache coherency
->> issue.
->
->
-> The problem is cache coherency is central to the operation of processor
-> bus.  One possibility, especially in the example you described, is the gt
-> is generating incorrect cache coherency control cycles on the bus.
-> Disabling
-> the processor cache isn't going to affect this.
->
->> So to prove this, I was asked to try running without any sort of cache.
->
->
-> Make sure you disable it in the memory controller as well.
->
->> Hopefully between Gary's information and yours, Dan I can convince
->> people
->> that it is futile.
->
->
-> Linux is a very poor diagnostic tool.  When I run Linux and discover this
-> type of problem, I reduce it down into a non-Linux diagnostic that can
-> generate the same type of bus cycles.  That way you can just flash it
-> into
-> rom and let some hardware engineer run it over and over without having to
-> boot up something as complex as Linux and sorting through millions of
-> bus cycles for the failure mode.  With these types of problems you have
-> to determine exactly what causes the failure.  Since the processor hangs
-> so completely it should be easy to see the condition of the failure.  If
-> it is a memory controller timing problem, you should see exactly what
-> failed and it should be clear how to program the controller to correct
-> it.
->
-> Of course, like Ben said, check the errata.
->
-> Good Luck.
->
->
->     -- Dan
->
->
->
->
->
+What do people run on their stable machines
+with more than 768Mbyte memory?
 
+thanks.
+
+/ magnus
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
