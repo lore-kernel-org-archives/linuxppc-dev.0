@@ -1,21 +1,27 @@
-Date: 17 Mar 2001 20:51:40 -0000
-Message-ID: <20010317205140.31029.qmail@mailweb20.rediffmail.com>
+Message-ID: <3AB4E3BA.AF71AFE6@intrex.net>
+Date: Sun, 18 Mar 2001 11:35:06 -0500
+From: Ralph Blach <rblach@intrex.net>
 MIME-Version: 1.0
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: File size!!!
-From: "shalini  jain" <shalijain@rediffmail.com>
-Content-type: text/plain
+To: linuxppc-dev@lists.linuxppc.org
+Subject: es1371.o sound module on a IBM 405 walnut platform
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hello list,
+I am trying to get an es1371. sound module working on an IBM405 walunt
+developement kit.  8 bit sound works ok
+but 16 bit sound sounds like noise.  Will this driver have to be made
+endian aware?
 
-can someone suggest the way to find the file size in ext2fs ? actually, want to find the file size in bytes,i.e, the true file size and not in terms of the blocks allocated to the file.
+Thanks in advance
 
-is there any EOF char in ext2fs files ? if yes. what is it ? is there any other way of knowing the file size than to count  up to EOF ???
 
-thanx,
-Shalini
+
+--
+Ralph "Chip" Blach
+KF4WBK
+Chapel Hill, North Carolina
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
