@@ -1,60 +1,49 @@
-To: Stefan Nickl <Stefan.Nickl@kontron.com>
+Subject: Re: Lite5200 PCI not working
+From: Stefan Nickl <Stefan.Nickl@kontron.com>
+To: Wolfgang Denk <wd@denx.de>
 Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Lite5200 PCI not working 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 08 Jul 2004 13:57:17 +0200."
-             <1089287836.6000.46.camel@lucy.pep-kaufbeuren.de>
-Date: Thu, 08 Jul 2004 14:12:55 +0200
-Message-Id: <20040708121300.75EA7C109F@atlas.denx.de>
+In-Reply-To: <20040708124140.E18E4C109F@atlas.denx.de>
+References: <20040708124140.E18E4C109F@atlas.denx.de>
+Content-Type: text/plain
+Message-Id: <1089293675.6002.100.camel@lucy.pep-kaufbeuren.de>
+Mime-Version: 1.0
+Date: Thu, 08 Jul 2004 15:34:35 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Stefan,
-
-in message <1089287836.6000.46.camel@lucy.pep-kaufbeuren.de> you wrote:
+On Thu, 2004-07-08 at 14:41, Wolfgang Denk wrote:
+> In message <1089289959.5996.66.camel@lucy.pep-kaufbeuren.de> you wrote:
+> >
+> > For the kernel, I use what's in your CVS:
+> > linuxppc_2_4_devel/drivers/video/mb86290
+> >
+> > mb86290fb.c is at rev. 1.2
 >
-> I now found out why my picture looked so dim...
-> My trusty old CRT was finally broken. ARG!
+> Should be fine.
+>
+> > The hardware and kernel are different, I'm using our homegrown
+> > EB8540 module on a EBC1 carrier board (in shops soon ;), which
+> > has a standard PCI slot to fit the Coral-P card.
+>
+> Is this a 3.3V or a 5V PCI slot? I think there  is  some  3.3V  power
+> supply jumper on the Coral-P card - you may want to check this.
 
-:-(
+The carrier is configured for 3.3V.
 
-> Ok, but the picture from the console (penguin, messages ...)
-> is still very blue-ish; however X is perfectly ok with
-> the accelerated driver, so with the above said by you,
-> it this what I have to expect?
+J52 is closed
+JP150 is 2-3
 
-No, colors should be fine on the console, too. Are you sure  you  are
-using  the  latest  kernel  drivers?  Note that there are both kernel
-modifications plus the X11 driver.
+The output muxer is bypassed (+PDN EN) since there is no -12V.
+The voltage at JP150 2-3 is 3.265V.
 
-> I understand that console messages on the VGA are not
-> important for an embedded system when the apps (can)
-> work correctly.
 
-They are important in may cases, and they should be OK. At least this
-is working fine here.
-
-There is a Linux kernel image on our FTP server which you could  give
-a try:
-
-ftp://adm:PASSWORD@www.denx.de/ftp/pub/fujitsu/Coral-P/uImage-LITE5200
-
-> Btw: "fbset -depth 24" and bootargs+="video=mb86290:1024x768-24@70"
->      apparently have no effect at all...
-
-Ummm.. I will check this...
-
-Best regards,
-
-Wolfgang Denk
+Btw, I've just heard that Fujitsu seems to have cancelled the
+low-cost successor of the Coral-P, the Lime. Bad news for us here :(
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-If A equals success, then the formula is A = X + Y + Z. X is work.  Y
-is play. Z is keep your mouth shut.                 - Albert Einstein
+Stefan Nickl
+Kontron Modular Computers
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
