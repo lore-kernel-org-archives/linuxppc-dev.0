@@ -1,38 +1,27 @@
-Message-Id: <200310060645.BAA09508@lists.linuxppc.org>
-Content-Type: text/plain;
-  charset="iso-8859-15"
-From: "J.Murali" <j.murali@gdatech.co.in>
-Reply-To: j.murali@gdatech.co.in
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: cfi probe for two different flash devices
-Date: Mon, 6 Oct 2003 12:20:53 +0600
+Message-ID: <011201c38bdc$bdf96510$2803050a@JackyLam>
+From: "Jacky Lam" <jackylam@astri.org>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Walnut boot problem solved
+Date: Mon, 6 Oct 2003 15:37:48 +0800
 MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="big5"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi all,
+Dear all,
 
-i am working on a custom board(Redwood6) using IBM ppc 405. I am using
-the Montavista's kernel 2.4.17. We have one AMD flash of 4 MB and one
-Intel flash of 16 MB on our board. There are 4 mtd partitions are in AMD
-and Intel flash is used as storage space of 5 mtd partition.
+    I have figured out why my kernel hanged while booting on Walnut
+platform. It is because the structure of board_info is different between
+u-boot-0.4.8 and linuxppc-2.4-devel. After syncing the structure, I can boot
+up to where the kernel tries to mount the filesystem. Attached is a patch
+for the fix.
 
-AMD partitions
------------------
-1. Bootparams
-2. Bootldr
-3. kernel
-4. Filesystem1
+    Thanks for all help and suggestions.
 
-Intel partition
---------------
-5. Filesystem2
+Best regards,
+Jacky Lam
 
-In the CFI probe, the kernel detects only one flash either AMD or INTEL
-(Which address we specify as window address). What i have to to do for
-cfi to detect both flash devices.
-
-Any suggestions are appreciated
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
