@@ -1,43 +1,28 @@
-Date: Wed, 31 Jan 2001 08:10:45 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-cc: Daniel Eisenbud <eisenbud@cs.swarthmore.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: mesh SCSI bus locks hard on 7500 when burning a CD-R in dao mode
-In-Reply-To: <Pine.LNX.4.10.10101302239070.27612-100000@zirkon.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.LNX.4.05.10101310808540.30092-100000@callisto.of.borg>
+Message-ID: <3A77C768.B681C224@st.com>
+Date: Wed, 31 Jan 2001 09:06:00 +0100
+From: Jean QUINSAT <jean.quinsat@st.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: GNU on Mac OS X
+References: <H00000b900468c9f@MHS>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 30 Jan 2001, Michael Schmitz wrote:
-> > So the only points in common seem to be that the DVD drives are running
-> > on mac hardware and that the drivers are written by Paul Mackerras.  :-)
-> > I don't at all mean to impugn Paul's coding ability, which is obviously
-> > excellent, but the fact that he wrote both the drivers may mean that
-> > they share lots of code and possibly share the same bug.
->
-> If so, the bug should have propagated to the m68k 53c9x driver. Wouldn't
-> be the 53c9x first weirdness - I never got it to accept a DAT drive (old
-> DDS-1, possibly Apple) without blowing up.
+Hello,
 
-FYI, my DDS-1 worked with my MESH. Not perfectly, sometimes it gave a warning
-(lost arbitration, IIRC), which aborted the current reading/writing.
+Does somebody ear about the port of GNU soft on DARWIN ?
 
-Moving the DD-1 to the Sym53c875 solved the problem.
-
-Gr{oetje,eeting}s,
-
-						Geert
+Thanks
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+    Jean Quinsat            STMicroelectronics
+____________________________________________________
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+ STMicroelectronics    / Phone : +33 4 76 92 65 39
+ 850 rue Jean Monnet   / Fax   : +33 4 76 92 64 44
+ BP 16 - 38921 Crolles / ST    : 042 6539
+ FRANCE                / mail  : jean.quinsat@st.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
