@@ -1,34 +1,36 @@
-Date: Tue, 13 Nov 2001 08:57:23 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Ole Andreas Torvmark <ole.torvmark@radionor.no>
+Message-ID: <3BF147CA.1080500@embeddededge.com>
+Date: Tue, 13 Nov 2001 11:18:18 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Sarnath Kannan <sparc64@rediffmail.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Compiling linux-2.4.devel on a sandpoint
-Message-ID: <20011113085723.D16723@cpe-24-221-152-185.az.sprintbbd.net>
-References: <MHEAIGEFFBAFIOMKCIGCEEKACAAA.ole.torvmark@radionor.no>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <MHEAIGEFFBAFIOMKCIGCEEKACAAA.ole.torvmark@radionor.no>
+Subject: Re: IDE in Mode 1 (Sandpoint) how ?
+References: <20011113081739.29856.qmail@mailweb25.rediffmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Nov 13, 2001 at 04:28:53PM +0100, Ole Andreas Torvmark wrote:
+Sarnath Kannan wrote:
 
-[snip]
->  arch/ppc/platforms/platform.o: In function `lookup_partitions':
 
-Did you turn on CONFIG_NVRAM?  CONFIG_NVRAM is a powermac-only driver as
-it stands under CONFIG_PPC.
+>   This means that all ISA interrupts are not
+>   being routed properly. One more, I haven't
+>   initialized the WinBond, coz reset values seem
+>   meaninful. Could that be the reason for
+>   this ?
 
-[snip]
->  fs/fs.o: In function `cpuinfo_open':
->  fs/fs.o(.text+0x2453a): undefined reference to `cpuinfo_op'
->  fs/fs.o(.text+0x2453e): undefined reference to `cpuinfo_op'
+Between the boot rom and Linux, the Winbond part is initialized
+properly.  If you haven't removed any code, it should be fine.
 
-Sandpoint needs to be updated to the new cpuinfo stuff.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+> Is there any other switch, other than the S3,S4,S5,S6
+> I need to worry about.
+
+I forgot, is this an X2 or X3 (or X3b) version of the Sandpoint?
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
