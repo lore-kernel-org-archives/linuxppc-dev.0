@@ -1,50 +1,51 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: "Mark A. Greer" <mgreer@mvista.com>,
-	"Curtis, Allen" <Allen.Curtis@Thales-IFS.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: 64260/PCI accesses cached by CPU?
-Date: Fri, 16 May 2003 21:06:53 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFGEPBEFAA.acurtis@onz.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <3EC57172.9060504@mvista.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: 17 May 2003 13:18:24 +0800
+Message-ID: <20030517131824.39906.qmail@eyou.com>
+From: "rick.liu" <dovi@eyou.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Reply-To: "rick.liu" <dovi@eyou.com>
+Subject: kermit:How  to  disable the flow control signals?
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> If PCI I/O or MEM space was being cached, your PCI drivers wouldn't work
-> at all...or at least not for very long.
+Hi,
+    I installed c-kermit209 in my linux,and copy the dot.kermrc
+in the u-boot0.3.0 to ~/.kermrc,then connect the kermit to my direct
+-serral port:
 
-Only as long as it takes to kick things out of cache. When you are running
-md5sum operations of the whole disk drive, this doesn't take very long.
-(what was done to generate lots of SCSI I/O) I am sure there are other ways
-I could force cache reuse/flushing.
+bash>wermit -c
+Connecting to /dev/ttyS0, speed 115200
+ Escape character: Ctrl-\ (ASCII 28, FS): enabled
+Type the escape character followed by C to get back,
+or followed by ? to see other options.
+----------------------------------------------------
+(and then ctrl_\ s)
+Device: /dev/ttyS0
+Speed 115200
+ Terminal echo: remote
+ Terminal bytesize: 8
+ Command bytesize: 8
+ Parity: none
+ Autodownload: on
+ Session log: (none)
+ Carrier Detect      (CD):  On
+ Dataset Ready       (DSR): On
+ Clear To Send       (CTS): On
+ Ring Indicator      (RI):  Off
+ Data Terminal Ready (DTR): On
+ Request To Send     (RTS): On
 
-> I also mentioned that the
-> GT64260 is very slow when cache coherency is enabled.
+here is the question:
+1.why the flow control signals are still "on"?
+2.if I have a 3-wired smc1/serial port,how to configure
+  to turn off RTS/CTS etc.?
 
-Cache coherency is not enabled. It is only enabled if snooping is enabled on
-both PCI buses. This isn't the condition with the last Artesyn LSP.
+Best regards
+Thanks !!
 
-> I don't know what your problem is but I think your "PCI
-> I/O and/or MEM being cached" theory is wrong.  My $0.02.
-
-Well, an interesting test would be to run the MPT driver in I/O mode instead
-of Memory mode. (the default) There are other interesting things to look at
-in the LSP. For instance, the virtual address for the PCI I/O space for each
-PCI bus is stored in the "hose" structure. However io.h, uses a constant,
-_IO_BASE, for all its in/out() instructions. Each PCI bus I/O space is
-ioremap() separately so a single constant offset probably will not work.
-
-> Also, PCI mem space is mapped by the driver.  That's why you don't see
-> it mapped by any of the gt64260-specific code.
-
-The MPT driver which uses Memory mapped PCI space works fine. The Ethernet
-drivers that use I/O space are not so good.
-
-Hopefully I will have more information next week.
+Rick
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
