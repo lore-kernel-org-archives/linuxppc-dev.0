@@ -1,49 +1,39 @@
-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Ramdisk trivial question 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 24 Nov 2003 11:25:02 +0100."
-             <005601c3b275$39446fd0$0700a8c0@pc005>
-Date: Mon, 24 Nov 2003 12:49:36 +0100
-Message-Id: <20031124114941.6ADAFC5F5F@atlas.denx.de>
+Date: Mon, 24 Nov 2003 17:35:20 +0100 (CET)
+From: Marius Groeger <mgroeger@sysgo.com>
+To: Jaap-Jan Boor <jjboor@aimsys.nl>
+Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
+	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Preemptive Kernel and MPC8xx ???
+In-Reply-To: <B82FB2A3-1E4E-11D8-A8D4-003065E2BB06@aimsys.nl>
+Message-ID: <Pine.LNX.4.56.0311241732200.2581@mag.devdep.sysgo.de>
+References: <3FC0A1D3.70706@imc-berlin.de> <B82FB2A3-1E4E-11D8-A8D4-003065E2BB06@aimsys.nl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Gianfranco,
+On Mon, 24 Nov 2003, Jaap-Jan Boor wrote:
 
-in message <005601c3b275$39446fd0$0700a8c0@pc005> you wrote:
->
-> The question is: The ELDK 2.01 package (which is currently being used in our
-> system) is too large to be fitted into a ramdisk, while the minimum
-> filesystem does not allow to be used in our midrange application. Does
+> Yes I do on 2.4.20 and 2.4.22 from kernel.org. So far all seems
+> to work but didn't do any measurements on it.
+> (I both use the preempt and low-latency patches)
 
-What do you mean with "the minimum filesystem does not  allow  to  be
-used" ?
+AFAIK, you can pretty much drop the low-latency patch in favor of
+using the lock-breaking patch. It is also available from Robert Love
+at the cited home page.
 
-> anybody have or can indicate where can we find an almost complete filesystem
-> scheme (for instance based on the ELDK packages)?
-
-The ELDK contains the SELF package  (SELF  =  Simple  Embedded  Linux
-Framework)  which  is  intended  as  a  building  stone  for your own
-application images. Instructions how to add files and/or  change  the
-size  of  the  filesystem and how to generate different image formats
-(ramdisk, cramfs, JFFS2) can be fund in the DULG. See especially
-
-http://www.denx.de/twiki/bin/view/DULG/HowToIncreaseSizeOfRamdisk
-http://www.denx.de/twiki/bin/view/DULG/HowToAddFiles
-
-Best regards,
-
-Wolfgang Denk
+Marius
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-...when fits of creativity run strong, more than  one  programmer  or
-writer  has  been  known to abandon the desktop for the more spacious
-floor.                                             - Fred Brooks, Jr.
+Marius Groeger <mgroeger@sysgo.de>
+Project Manager
+
+SYSGO Real-Time Solutions AG | Embedded and Real-Time Software
+Am Pfaffenstein 14
+55270 Klein-Winternheim, Germany
+
+Voice: +49-6136-9948-0 | FAX: +49-6136-9948-10
+www.sysgo.de | www.elinos.com | www.osek.de
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
