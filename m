@@ -1,48 +1,67 @@
-Date: Thu, 1 Apr 2004 10:35:55 +0200 (MEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: John Whitney <jwhitney-linuxppc@sands-edge.com>
-Cc: Wolfgang Denk <wd@denx.de>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Proposed Kconfig update patch for help text 
-In-Reply-To: <812363C6-8371-11D8-9FF0-000A95A07384@sands-edge.com>
-Message-ID: <Pine.GSO.4.58.0404011035190.12755@waterleaf.sonytel.be>
-References: <20040331230620.ACC3BC10A4@atlas.denx.de>
- <812363C6-8371-11D8-9FF0-000A95A07384@sands-edge.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 1 Apr 2004 14:33:40 +0200
+From: Marc Leeman <marc.leeman@barco.com>
+To: Jeff Angielski <jeff@theptrgroup.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PCI Memory mapping
+Message-ID: <20040401123340.GA6085@smtp.barco.com>
+Reply-To: Marc Leeman <marc.leeman@barco.com>
+References: <1080086640.23208.164.camel@gaston> <20040324122652.GA22171@smtp.barco.com> <20040324142524.GA22701@smtp.barco.com> <20040324110814.E50148@forte.austin.ibm.com> <20040325154845.GF3696@smtp.barco.com> <20040325103414.C64292@forte.austin.ibm.com> <20040325104529.D64292@forte.austin.ibm.com> <20040326080012.GA7238@smtp.barco.com> <1080676178.7581.30.camel@localhost.localdomain> <20040331155625.GB28919@smtp.barco.com>
+Mime-Version: 1.0
+In-Reply-To: <20040331155625.GB28919@smtp.barco.com>
+Content-Type: text/plain; charset=iso-8859-15
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 31 Mar 2004, John Whitney wrote:
-> We can put in "8xx", but I didn't think that the listed processors was
-> supposed to be an exhaustive list (just some examples).   Shall we just
-> prune them down to "8xx", "4xx", etc.?
+> I'll masking PICR2 with this tomorrow...
 
-While you're at it, perhaps s/7400/74xx/ for consistency, too?
+I have obtained some results by setting some 8245 registers at bootup.
 
-> On Mar 31, 2004, at 6:06 PM, Wolfgang Denk wrote:
-> > In message <B755A2F6-8364-11D8-9FF0-000A95A07384@sands-edge.com> you wrote:
-> >>
-> >> A couple of trivial changes for the processor choice help text to
-> >> make it a bit clearer.
-> > ...
-> >>        types (601, 603, 604, 740, 750, 7400), the Motorola embedded
-> >> -     versions (821, 823, 850, 855, 860, 8260), the IBM embedded
-> >> versions
-> >> +     versions (821, 823, 850, 855, 860, 82xx), the IBM embedded
-> >
-> > How about types like 857, 862, the 866 family, the 885 family, ... ?
+I tested the following:
 
-Gr{oetje,eeting}s,
+. enabling NO_SNOOP_EN (27 in PICR2): nfs does not boot anymore
+. increasing the snoop and address wait cycles to 5 (default ppc bootup),
+no real change.
+. disable speculative reads  (2 in PICR1): doesn't boot nfs anymore
+(via eepro100?)
 
-						Geert
+No real success, until I came accross the PCMBCR register which defines
+the number of PCI to Local Memory Read and Write Buffers. When I set
+both to 1 ( & 0xF0), the data copy back is no longer needed to assure
+data consistency between the PPC and DSP (default is 4 32 byte buffers).
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+include/mpc824x.h:
+#define PCMBCR          0x800000e1  /* PCI/Memory Buffer Configuration
+Register */
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+cpu/mpc824x/cpu_init.c:
+CONFIG_READ_BYTE(PCMBCR,val);
+CONFIG_WRITE_BYTE(PCMBCR,(val | 0xF0));
+
+Double checking this by setting both on 4 again (during cpu_init of
+ppcboot) resulted in severe MPEG data corruption. These results at least
+seems to point in the direction you suggested.
+
+This is the only way I seem to be able to assure data consistency (the
+kernel copy back is no longer required), but the documentation also
+suggests that (obviously) this degrades performance and is mainly used
+for debugging.0
+
+Still, when reading the explanations that could case this behaviour
+(copy back buffer and filling the PCMRBs) , they point to cache
+operations, which, I thought, were disabled in the linux kernel for
+these particular PCI mapped buffers.
+
+By adding __asm__ __volatile__("eieio"); in user and kernel space,
+which lets the CCU buffers to be flushed, no change is observed (sect.
+5.4.3.1; CCU Responses to the Processor Transactions).
+
+It looks to me as if I should disable the bus snooping, but as mentioned
+before, initialising this in ppc boot inhibits the NFS boot process.
+
+Can this be disabled at runtime (possibly with re-enabling it) and if
+so, is this a good practice to do so?
+
+  marc.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
