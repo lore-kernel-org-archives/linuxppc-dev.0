@@ -1,46 +1,28 @@
-To: "sun-zj" <sun-zj@tdk-tech.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: eth0 memory sqeeze 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 01 Feb 2004 15:17:15 +0800."
-             <20040201072141.70E12430AB@denx.de>
-Date: Sun, 01 Feb 2004 10:30:38 +0100
-Message-Id: <20040201093043.CB4F6C108D@atlas.denx.de>
+Message-ID: <401D9405.5050606@iti.fi>
+Date: Mon, 02 Feb 2004 02:04:21 +0200
+From: Kate Alhola <kate@iti.fi>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: New platform/icecobe.c
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20040201072141.70E12430AB@denx.de> you wrote:
->
-> I am using the Linux On MPC860T as your instructions. Now I want to do a
-> performance test
-> of PPC with linux. Our board is FADS and MPC860T.
-> I use the kernel from denx website(2.4.4). the test
-> program is iperf.
-> When I use the iperf on PPC+linux as server, I start the iperf on PC as
-> client. I choose the options -n 300M -P 120 which mean I want to open 120
-> threads each one open a TCP connection and each preparing to send 300MB
-> data. On PPC+linux I get the  following output.
-> "eth0: Memory squeeze,dropping packet"
-> "__alloc_pages: 0-order allocation failed (gfp=0x20/0)
-> I guess that the data to be processed exceeds the capabilities of PPC+linux.
+I just noticed that after cvs sync the tree does no longer compile with
+framebuffer CONFIG_VT enabled and complains few undefined
+symbols. I added following lines to arch/ppc/platform/icecobe.c
 
-No, it does not exceed the capabilities of Linux or PowerPC, but that
-of your specific system.
+#ifdef CONFIG_VT
+extern void mpc5xxx_setkeycode();
+extern void mpc5xxx_getkeycode();
+extern void mpc5xxx_translate();
+extern void mpc5xxx_unexpected_up();
+extern void mpc5xxx_kbd_init_hw();
+#endif
 
-> I wonder whether this could be solved by Linux ???
 
-Add more memory to your system.
+Kate
 
-Best regards,
-
-Wolfgang Denk
-
---
-See us @ Embedded World, Nuremberg, Feb 17 - 19,  Hall 12.0 Booth 440
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Bus error -- driver executed.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
