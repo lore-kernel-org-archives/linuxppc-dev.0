@@ -1,78 +1,36 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>,
 	<yellowdog-devel@lists.yellowdoglinux.com>,
-	<linuxppc-dev@lists.linuxppc.org>,
-	"Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+	<linuxppc-dev@lists.linuxppc.org>
 Subject: Re: some questions on new dual 1Gig G4's support?
-Date: Sat, 2 Feb 2002 15:21:48 -0500
-References: <20020202144614.WRFZ11118.tomts10-srv.bellnexxia.net@there> <20020202201115.17827@smtp.wanadoo.fr>
-In-Reply-To: <20020202201115.17827@smtp.wanadoo.fr>
+Date: Sun, 3 Feb 2002 13:04:26 +0100
+Message-Id: <20020203120426.22252@smtp.wanadoo.fr>
+In-Reply-To: <20020202201734.KLTB18463.tomts7-srv.bellnexxia.net@there>
+References: <20020202201734.KLTB18463.tomts7-srv.bellnexxia.net@there>
 MIME-Version: 1.0
-Message-Id: <20020202201734.KLTB18463.tomts7-srv.bellnexxia.net@there>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Ben,
-
-Thanks!  I see you have hit the big time!  The /. inerview article was
-great!  Now I can say I actually know someone famous!  ;-)
-
-One last question:
-
-The 7455 errata basically says to disable the L2 hardware prefetch engine
-(MSSCR0[L2PFE] = 0 when disabling the L1 data cache.
-
-It goes on to say that the L1 data cache may be disabled during cache
-flushing on some systems or be disabled upon startup.
-
-Do we disable L1 cache's during cache flushing?  If so were should I be
-looking for this code to get the workaround in place?
-
-Thanks,
-
-Kevin
-
-On February 2, 2002 03:11, Benjamin Herrenschmidt wrote:
-> >1. are the cpu specific things I might have to play with all in the
-> > files I found that reference 7450 or are there other files I need to
-> > play with
-> >
-> >2. I read the errata for the 7455 and it was quite short.  Are errata
-> >cumulative  in some way?  Are these just the new errata since the 7450?
-> >(i.e. do I need to grab and worry about the 7450 errata too?).  Or has
-> > the errata listed in the 7450 been dealt with by changes in the 7455
-> > and this is all I need to know hardware errata-wise.
-> >
-> >3. Are there any other references I should be reading that describe
-> >differences in the 7450 and the 7455 that are important for getting a
-> >kernel up on my new machine?
+>Thanks!  I see you have hit the big time!  The /. inerview article was
+>great!  Now I can say I actually know someone famous!  ;-)
 >
-> Out of my mind, there are 3 places you want to look at:
+>One last question:
 >
-> cputable.c : add an entry & declare a specific setup_cpu function
-> for the 7455
+>The 7455 errata basically says to disable the L2 hardware prefetch engine
+>(MSSCR0[L2PFE] = 0 when disabling the L1 data cache.
 >
-> head.S : add the setup_cpu for the 7455, possibly copying the one
-> of the 7450. Then go figure if the L3 is also incompatible with
-> NAP mode or not. If it is not, you can strip the code that clears
-> the "can DOZE" feature. Note that ideally, we should change that
-> code to be 2 different feature bits, one for can DOZE, and one for
-> can NAP (as the 7450/55 can only NAP, not DOZE).
-> You can change that easily, basically define the new bit for NAP
-> in cputable.h, set it for all CPUs (except 7450 rev 2.0) in
-> cputable, and remove DOZE capability from 7450/55. Once done,
-> tweak the code in arch/ppc/kernel/idle.c so that it does power
-> save if either of these bits is set, but also make sure it does
-> not try to NAP if powersave_nap isn't set (as some host bridges
-> can't handle it, it will be set properly by pmac_feature).
-> If your CPU can't DOZE but can NAP, but powersave_nap is false,
-> do nothing.
+>It goes on to say that the L1 data cache may be disabled during cache
+>flushing on some systems or be disabled upon startup.
 >
-> pmac_feature.c : add an entry in the machine table for your machine
-> based on OF "model" property.
->
+>Do we disable L1 cache's during cache flushing?  If so were should I be
+>looking for this code to get the workaround in place?
+
+I don't think we disable L1 except when changing L2CR value or when
+going to sleep.
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
