@@ -1,24 +1,28 @@
-Return-Path: <jonathan@jonmasters.org>
-Received: from mailhub-node1.mailbox.net.uk (mailhub-node1.mailbox.net.uk
-	[195.82.125.30]) by ozlabs.org (Postfix) with ESMTP id 672022BDB6
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 757022BDB3
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Oct 2004 10:13:24 +1000 (EST)
-Message-ID: <4165DB83.8080001@jonmasters.org>
-Date: Fri, 08 Oct 2004 01:12:51 +0100
-From: Jon Masters <jonathan@jonmasters.org>
-MIME-Version: 1.0
-To: Tony Lee <tony.p.lee@gmail.com>
-References: <000001c4aace$245a5060$6500a8c0@PortatileLG>	
-	<35fb2e5904100508157a393ee2@mail.gmail.com>	
-	<4162C649.6060900@ru.mvista.com>	
-	<35fb2e590410051507367017a@mail.gmail.com>	
-	<41641222.6080405@ru.mvista.com>
-	<470b63970410071534422f6617@mail.gmail.com>
-In-Reply-To: <470b63970410071534422f6617@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Andrei Konovalov <akonovalov@ru.mvista.com>, linuxppc-embedded@ozlabs.org,
-	Luca Giuliani <l.giuliani@tiscali.it>
-Subject: Re: Linux on Memec Virtex II Pro V4P7 Rev. 3
+	Fri,  8 Oct 2004 12:19:51 +1000 (EST)
+In-Reply-To: <20041007224220.GV14773@smtp.west.cox.net>
+References: <1096517265.27208.18.camel@localhost.localdomain>
+	<20041007154029.GE14773@smtp.west.cox.net>
+	<Pine.LNX.4.60.0410071158320.5191@dell.enoriver.com>
+	<20041007173023.GK14773@smtp.west.cox.net>
+	<Pine.LNX.4.60.0410071354340.6526@dell.enoriver.com>
+	<20041007184840.GN14773@smtp.west.cox.net>
+	<0927BD6D-18A9-11D9-9049-003065F9B7DC@embeddededge.com>
+	<Pine.LNX.4.60.0410071817420.8278@dell.enoriver.com>
+	<20041007224220.GV14773@smtp.west.cox.net>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <CF1BBAC1-18D0-11D9-9049-003065F9B7DC@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Thu, 7 Oct 2004 22:21:49 -0400
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] remove obsolete arch/ppc/8xx_io/uart.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,50 +33,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
 
-Tony Lee wrote:
+On Oct 7, 2004, at 6:42 PM, Tom Rini wrote:
 
-| I have to use the non-interrupt mode in sysace.
+> Oh, that.  console=ttyCPM1 is the answer if both SMC1 and SMC2 are
+> UARTs.
 
-If necessary I will modify the quick patch I posted to use a CONFIG
-option but several of us are seeing problems with interrupts - I will
-change it to be the most useful for everyone, I suppose that means
-making it an option.
+Yeah, that's normally the way it's done.
 
-| Jon,  what kind of performance you got from the sysace?
+> Anticipating Dan screaming about this,
 
-Crap. That's a technical term. The chip IMO has some fundamental issues
-which really need to get resolved in a rev - it takes on the order of
-several minutes to commit writes with a sync however we rarely have to
-write to the flash and usually only store small parameter files.
+What kind of a person do you think I am?  I don't scream about
+anything.  I just point out facts and if others choose to ignore it
+I'll just remind everyone later.
 
-| When I copy 18 MB of ace file into sysace with Linux, the
-| sync command took minutes to complete for me.
+The original CPM uart drivers had lots of hard coded things
+because the 'console=' option wasn't available at the time it
+was developed.  It just was never updated when the command
+line options appeared because the old config options were around.
+It's also required information to the boards that use the 'simple'
+zImage boot loader because there usually isn't any way for it
+to know what to use as the console port.
 
-Where this affects you and I is likely in writes to update the hardware
-image with a new one that you have sent to the customer as a "firmware
-upgrade" to be installed. It takes ages for me too - but this is a rare
-enough thing that we can live with it for the moment.
+The console= option is fine, it's used on many embedded boards,
+including 8xx and 82xx when U-boot is used.  Just remember,
+removing these console selection options from config will break
+some things.  Be prepared to fix it, not just ignore it.
 
-| Sysace ISR should not be the issue, since there is no seeks
-| and all the IO is dirven from the kernel.
+I'm most concerned with the Alternate SMC pin configurations, although
+the new IO support functions that Kumar and I are looking at will
+correct that.  Until those are done, you have to ensure there is
+some way to 8xx parts with the small pin counts and the SMC pins
+moved to work properly.
 
-The polled approach is worse IMO although I agree that there is very
-little overhead in the actual ISR. Where the author went wrong (well
-perhaps not wrong per se but didn't provide enough protection) was in
-the unlikely case that the hardware is braindead and generates
-interrupts that you didn't ask it to - the xsysace driver should also
-catch interrupts when we're QUEUE_EMPTY and should not try to manipulate
-an empty request queue.
 
-Jon.
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.2 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
-
-iD8DBQFBZduDeTyyexZHHxERArI0AJ9zd7sRSnO6dZBYw/G3NpuqjNqe7wCgixC0
-/eRaHY5fhfUVW7TAFRtCrQM=
-=3n0G
------END PGP SIGNATURE-----
+	-- Dan
