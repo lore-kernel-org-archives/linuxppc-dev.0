@@ -1,27 +1,22 @@
-Message-Id: <3.0.3.32.20020822180528.006f3a64@hollabaugh.com>
-Date: Thu, 22 Aug 2002 18:05:28 -0600
-To: linuxppc-embedded@lists.linuxppc.org
-From: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>
-Subject: Re: cygwin and embedded linux 
-In-Reply-To: <20020822065609.6DE7610E00@denx.denx.de>
-References: <Your message of "Thu, 22 Aug 2002 11:15:20 +1000."             <000501c24979$6348a190$37d34c93@neca.nec.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "Ppc Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: 8260 Memory Management
+Date: Thu, 22 Aug 2002 21:44:20 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFCEBHDLAA.acurtis@onz.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-To summarize:
- Speed
- Windows version compatibility
- NFS issues
+Since the 8260 is based on a PPC 603e core, is there any reason why the
+memory management should differ from the other Mac implementations? The real
+difference is the CPM and the embedded peripheral support.
 
-all good reasons to not develop using cygwin. Anything else?
-
-Personally, I do all my embedded development on a Debian machine. I'm just want a specific answer to the inevitable customer question, "Why can't I just use cygwin for development?"
-
-Thanks,
-Craig
+Would it be reasonable to make the 8260 memory management consistent with
+the rest of the 6xx processors?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
