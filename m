@@ -1,34 +1,42 @@
-Message-ID: <20000804063951.986.qmail@www0c.netaddress.usa.net>
-Date: 4 Aug 00 01:39:51 CDT
-From: jeramy b smith <ultrapenguin@netscape.net>
-To: Rick Cook <rcook@hex.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: PCI Ethernet for second network
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
+Reply-To: Thomas Graichen <graichen@innominate.de>
+Subject: Re: shifts on 64bit ints
+Date: 4 Aug 2000 07:16:55 GMT
+Message-ID: <news2mail-8mdql7$4g0$1@mate.bln.innominate.de>
+References: <Pine.LNX.3.96LJ1.1b7.1000803193713.650E-100000@ofey.earthlink.net> <Pine.LNX.3.96LJ1.1b7.1000803194918.650F-100000@ofey.earthlink.net>
+Reply-To: thomas.graichen@innominate.de
+To: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Rick Cook <rcook@hex.net> wrote:
->
-> Hi all,
->
-> I have a Power Macintosh 7300/200 that I want to make my IP Masquerade
-router
-> between my home network and my soon to be installed Cable Modem. Do you
-have
-> any suggestions for which PCI Ethernet card is best supported by LinuxPPC?
->
+Takashi Oe <toe@unlserve.unl.edu> wrote:
 
-http://linuxppc.org/usr/hardware/pci/#net
+> On Thu, 3 Aug 2000, Takashi Oe wrote:
 
-I run a machine with 2 3com 905 cards of different revisions. In fac, the
-machine is linuxppc.org. I got these cards for free. :)
+>> On Fri, 4 Aug 2000, Franz Sirl wrote:
+>>
+>> > Oh no!! It's even worse! The kernel implementation of ashldi3, ashrdi3 and
+>> > lshrdi3 seems broken, see this code in arch/ppc/kernel/misc.S:
+>>
+>> The brokenness of those implementations has been noted by Gabriel a long
+>> time ago, and I believe he even sent a fix to this list once.  For some
+>> unknown reasons, it has largely been ignored.  I think I can dig out his
+>> patch if I try hard though.
 
-I have a weird friend on irc who swears by el cheapo RealTek chip cards (ne2k
-compatibles).
+> Ok, found it:
 
--Jeramy
+> http://lists.linuxppc.org/listarcs/linuxppc-dev/199904/msg00189.html
 
+nks - i'll try (think and hope :-) that this fixes the problems with
+xfs ... will mail the result here later
+
+t
+
+--
+thomas.graichen@innominate.de
+Technical Director                                       innominate AG
+Clustering & Security                                networking people
+tel: +49.30.308806-13  fax: -77                   http://innominate.de
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
