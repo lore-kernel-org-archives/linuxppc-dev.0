@@ -1,58 +1,40 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: Current PPC 2.4 kernel trees?
-Date: Thu, 26 Aug 2004 08:45:04 +0200
-Message-ID: <80908CC5B2C9DB47AAF8C77892FCB44315F88C@lion.vector.com.pl>
-From: "Andriy Korud" <a.korud@vector.com.pl>
-To: "Matt Porter" <mporter@kernel.crashing.org>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+Date: Thu, 26 Aug 2004 09:02:01 +0200
+From: Marc Leeman <marc.leeman@barco.com>
+To: Peter Vandenabeele <peter.vandenabeele@mind.be>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: How to port ppc-linux to new custom boards? (virtexII)
+Message-ID: <20040826070201.GR15035@smtp.barco.com>
+Reply-To: Marc Leeman <marc.leeman@barco.com>
+References: <Pine.LNX.4.61.0408250912540.1872@mag.sysgo.com> <OF545365DC.C126C7D8-ON85256EFB.004B2B8D-85256EFB.004C42EB@nanometrics.ca> <20040825143025.GJ23113@mind.be>
+Mime-Version: 1.0
+In-Reply-To: <20040825143025.GJ23113@mind.be>
+Content-Type: text/plain; charset=iso-8859-15
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks.
-Concerning PPChameleon - it's 405EP based.
-I prepared a patch against stock 2.6.7 with support for board itself, GPIO and onboard flash chips (still no support for RTC)
-Patch is available here
-http://hamlet.integra.com.ua/ppchameleon-2.6.7.patch.gz
+> cost, but no additional revenue ? For a big customer, that is paying
+> hefty yearly fees, it is obvious to do this investment, but for a
+> small customer ...
 
-regards,
+Two motivations play here with the fixed fee:
+1. We already got the money, so why should we bother?
+2. We should at least bother enough or make it appear so, so we can
+motivate our fees for next year.
 
---
+Oh, what a tangled web we weave...
 
-Andriy
+> Seems very logical. Those who pay extra for extra work, will get extra
+> work delivered. Those who rely on the 1-year support for a fixed fee
+> will get what remains. IMHO this is best resolved with just charging
+> hourly: you pay for what you actually got ...
 
+Then you are in a consultancy like scenario. Let's just hope you wont
+pay full charges for 3 engineers: 1 experienced and 2 trainees; as some
+big IT consultancy firms tend to do... :)
 
-
------Original Message-----
-From: Matt Porter [mailto:mporter@kernel.crashing.org]
-Sent: Wed 25.08.2004 20:02
-To: Andriy Korud
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Current PPC 2.4 kernel trees?
-
-On Wed, Aug 25, 2004 at 11:29:56AM +0200, Andriy Korud wrote:
->
-> Hi,
-> can anybody explain which 2.4 kernel trees (especially for PPC) are actual and how are they related with kernel.org's kernel? (I know about Denx's one, any other available, i.e. MontaVista's?).
-
-http://penguinppc.org/dev/kernel.shtml has a list of 2.4 trees.
-
-linuxppc-2.4 is a direct child of linux-2.4 that has additional
-functionality not in that kernel.org tree. It has the latest
-4xx and 85xx.
-
-linuxppc_2_4_devel is a previous 2.4 devel tree that still has some
-good and bad things in it that might be desired on some platforms.
-8xx and 82xx might be better here, IIRC.
-
-> I'm currently running 2.6 from kernel.org (PPChameleon board), but for some reason need to downgrade.
-
-I've heard of this board..isn't it 4xx? Do you have patches for this
-against 2.6? It isn't in 2.6 now.
-
--Matt
-
+Both have their disadvantages, but if you can trust the company in the
+2nd option, I would tend to agree that this might offer you better value
+for your money.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
