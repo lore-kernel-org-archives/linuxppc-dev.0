@@ -1,18 +1,24 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id A4A8267A33
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 01E1D67A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Apr 2005 11:40:11 +1000 (EST)
-In-Reply-To: <4252B50C.2080700@xiphos.ca>
-References: <4252B50C.2080700@xiphos.ca>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <bab21adad4b23b380b8a207187e6bb84@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 5 Apr 2005 20:40:07 -0500
-To: "Joshua Lamorie" <jpl@xiphos.ca>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Recommendations: Small Embedded PPC chip with FPU
+	Wed,  6 Apr 2005 11:46:17 +1000 (EST)
+Date: Tue, 5 Apr 2005 17:26:04 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Dan Malek <dan@embeddededge.com>
+Message-ID: <20050405202604.GA9291@logos.cnet>
+References: <20050404191718.GA30281@logos.cnet>
+	<ba633c3356ff1ec71f53d4a0998132ff@embeddededge.com>
+	<20050405114109.GA888@logos.cnet>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050405114109.GA888@logos.cnet>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: 8xx v2.6 TLB problems and suggested workaround
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,57 +29,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-While, I'm not sure about the industrial temp & package sizes, the 824x=20=
+On Tue, Apr 05, 2005 at 08:41:09AM -0300, Marcelo Tosatti wrote:
+> On Tue, Apr 05, 2005 at 11:58:17AM -0400, Dan Malek wrote:
+> > 
+> > On Apr 4, 2005, at 3:17 PM, Marcelo Tosatti wrote:
+> > 
+> > >Problem is that the "dcbst" instruction will, _sometimes_ (the 
+> > >failure/success rate is about 1/4
+> > >with my test application) fault as a _write_ operation on the data.
+> > 
+> > Oh, geeze .... It's all coming back to me now ....
+> > 
+> > The 8xx cache operations don't always operate as defined in the PEM.
+> > There are likely to be some archive discussions within the Freescale
+> > knowledge data base that describe the different behaviors I've seen
+> > with the chip variants and revisions.  I can't find any of those e-mail
+> > discussions, so I'll try to recall from memory.
+> > 
+> > The PEM cache instructions are all implemented in a microcode that
+> > uses the 8xx unique cache control SPRs.  Depending upon the state
+> > of the cache and MMU, it seems in some cases the EA translation is
+> > subject to a "normal" protection match instead of a load operation 
+> > match.
+> > 
+> > The behavior of these operations isn't consistent across all of the 8xx
+> > processor revisions, especially with early silicon if people are still
+> > using those.  During conversations with Freescale engineers, it seems
+> > the only guaranteed operation was to use the 8xx unique SPRs, but
+> > I think I only did that in 8xx specific functions.
+> 
+> How sweet.  :)
+> 
+> > We have way too much code in the TLB exception handlers already,
+> > so let's just try a tlbia of the EA in the update_mmu_cache, with an 
+> > #ifdef
+> > for the 8xx.  
+> 
+> Are you sure this is the best solution ? 
+> 
+> Problem is that update_mmu_cache() is called from other context's where
+> the tlb invalidate is not necessary (because it has already been invalidated).
+> 
+> For example all ptep_set_access_flags() (which does the tlb invalidate) -> 
+> update_mmu_cache() sequences.
+> 
+> Moreover jumping directly from DataTLBMiss to the page fault handler
+> shortcuts the process: there is no need to jump back to execution if we
+> know in advance that DataTLBError exception is going to happen. 
+> 
+> But hey, you are the boss. Even with the above facts you prefer 
+> to leave the DataTLBMiss untouched? 
+> 
+> About size: I think it is the smaller expection handler present.
 
-line from Freescale might be what you are looking for.  Possibly, the=20
-newer 834x line.
+Well, you know what you're talking about. Whatever you prefer.
 
-- kumar
-
-On Apr 5, 2005, at 10:55 AM, Joshua Lamorie wrote:
-
-> Gidday there,
->
-> I am looking for a new PowerPC for some controls applications and I =
-was
-> wondering if anyone on this list might make some recommendations.=A0 I
-> will be fabricating the board, so I'm just interested in the CPU.=A0
-> Currently I'm doing everything on a Virtex-II Pro (PPC 405).
->
-> I'm considering the MPC5200, but I would love to have something in a
->  smaller package.
->
-> Requirements:
-> =A0=A0=A0 - Linux support
->  =A0=A0=A0 - PowerPC w >=3D 16k D,I Cache
->  =A0=A0=A0 - FPU
->  =A0=A0=A0 - Onboard memory controller (SDRAM or DDR)
->  =A0=A0=A0 - >=3D 300 MHz
->  =A0=A0=A0 - Industrial temperature (-40 to +85)
->  =A0=A0=A0 - package size < 27mmx27mm
->  =A0=A0=A0 - everything else is icing
->
-> Any suggestions welcome.
->
-> I'm sorry if this is somewhat off topic.
->
-> Joshua
->
-> --=20
->
->  Xiphos Technologies
->  (514) 848-9640 x227
->  (514) 848-9644 fax
->
-> www.xiplink.com
-> _______________________________________________
-> The information transmitted is intended only for the
->  person or entity to which it is addressed and may contain
->  confidential and/or privileged material.=A0 If you have
->  received this in error, please contact the sender and delete
->  this communication and any copy immediately. Thank you.
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
->  Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Can we just ask someone to send the _tlbie patch around #ifdef CONFIG_M8XX?  
