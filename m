@@ -1,30 +1,48 @@
-Date: Thu, 26 Jul 2001 20:53:19 -0400
-From: Armando Di Cianno <diciaa@rpi.edu>
 To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: aty128fb.c missing from rync'd benh sources...
-Message-ID: <20010726205319.G19851@garmonbozia.productivitynet.com>
-References: <20010726200759.A19851@garmonbozia.productivitynet.com> <20010726200901.C8790@localhost.localdomain> <20010726204459.E19851@garmonbozia.productivitynet.com> <20010726173615.W27780@work.bitmover.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-In-Reply-To: <20010726173615.W27780@work.bitmover.com>; from lm@bitmover.com on Thu, Jul 26, 2001 at 20:36:15 -0400
+References: <20010726200759.A19851@garmonbozia.productivitynet.com>
+	<20010726200901.C8790@localhost.localdomain>
+From: Daniel Berlin <dan@cgsoftware.com>
+Date: Thu, 26 Jul 2001 21:08:32 -0400
+In-Reply-To: <20010726200901.C8790@localhost.localdomain> (Ethan Blanton's message of "Thu, 26 Jul 2001 20:09:01 -0400")
+Message-ID: <87elr3xjov.fsf@cgsoftware.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 2001.07.26 20:36 Larry McVoy wrote:
+Ethan Blanton <eblanton@cs.ohiou.edu> writes:
+
+> Armando Di Cianno spake unto us the following wisdom:
+>> I did an rsync to penguinppc.org::linux-2.4-benh at approx 7/26/01 8 PM
+>> EST.
 >
-> Have you tried the BK trees?
+> I just rsync'd (8:07PM EST) and it's there.
 
-I'm actually about to do so.
+No, he's right, you are wrong.
+You just aren't using the --delete flag, so it never deleted the file.
 
-Instead of downloading _both_ the devel and the regular 2_4 trees, is one
-"better" than the other?  The only trouble spots I can imagine for support
-is PMU sleep, internal airport, and (my new friend) aty128fb.  Any
-suggestions?
+>
+>> 'make vmlinux' fails in the video directory complaing it is not able to
+>> find aty128fb.o.  I checked in drivers/video and there is no aty128fb.c
+>> file anymore; I re-rsynced to make sure it wasn't my incompetence.
+>>
+>> Since the benh kernel tends to be my 'favorite', I'd like to get my TiBook
+>> re-rsynced whenever possible.  Is there any reason this file was removed,
+>> or was it a mistake?
+>
+> Ethan
+>
+> --
+> If I've told you once, I've told you once
+> And once is all that you needed.
+> 		-- The Refreshments, "Carefree"
 
-Thanks for all the help; I'll try not to clutter the dev list anymore. ;-)
-
-__armando di cianno
-diciaa@rpi.edu
+--
+"I was in the grocery store.  I saw a sign that said "pet
+supplies."  So I did.  Then I went outside and saw a sign that
+said "compact cars"...
+"-Steven Wright
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
