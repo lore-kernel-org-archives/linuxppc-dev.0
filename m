@@ -1,10 +1,10 @@
-Message-ID: <000901c0d8fe$78abed40$8021690a@huawei.com>
-From: "machael thailer" <dony.he@huawei.com>
-To: "Dan Malek" <dan@mvista.com>
+Message-ID: <001401c0d901$6b166b80$3a10530c@default>
+From: "Navin Boppuri" <navin.boppuri@worldnet.att.net>
+To: "Sacha J. Bernstein" <sachab@wciatl.com>
 Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <001d01c0d5c8$27ae8c60$8021690a@huawei.com> <3AF6F323.7944F695@mvista.com>
-Subject: Re: Uncompress Ok, but cannot run linux kernel...
-Date: Thu, 10 May 2001 11:08:21 +0800
+References: <686970000.986832826@sacha>
+Subject: Re: Embedded PPC Root FIlesystem
+Date: Wed, 9 May 2001 20:29:26 -0700
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -12,38 +12,40 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> machael thailer wrote:
-> > ..... But I met
-> > some urgent problems ...
-> >     I modified the bootloader codes according to arch/ppc/mbxboot/head.S
+It's not really that bad. You do not need a PPC based desktop. Cross
+compilers from the MVista people lets you build stuff on an x86 machine for
+your MPC. For your file system, you can look at BootDisk HOWTO where they
+talk about building a root file system from scratch.
+http://www.linuxdoc.org/HOWTO/Bootdisk-HOWTO/
+Also, you learn how to reduce the file system size to fit into your embedded
+environment.
+I would also suggest you read the PowerPC Embedded HOWTO by Graham Stoney.
+http://penguinppc.org/usr/embedded/howto/PowerPC-Embedded-HOWTO.html
+
+Hope this helps.
+
+Navin Boppuri
+
 >
-> For starters, you shouldn't be using this "boot loader" for a 750.....
-> How did you configure a kernel to get there in the first place?
-> A 750 should be a CHRP (or PReP, if you have to.....), which will
-> direct you to a working "chrpboot" boot loader.
-
-If I use  "chrpboot " bootloader, I have to provide many functions in my
-boot codes according to CHRP specifications:
-
-1  "prom"(promptr) functions which can provide with "/chosen" ,"claim" and
-"getprop" services etc in arch/ppc/chrpboot/start.c and in
-arch/ppc/kernel/prom.c .
-2  device-trees for my custom board.
-
-Are these functions all necessary for booting the linux kernel?
-
-
-And do I have to  modify arch/ppc/mm/init.c=>MMU_init() and
-arch/ppc/kernel/setup.c=>identify_machines() to suit my cases?
-I notice that in identify_machines(), there are many types initializations
-functions such as pmac_init(),prep_init(),chrp_init(),apus_init(),
-oak_init(),m8xx_init(),m8260_init(). Do I have to provide my own ***_init()
-functions?
-
-
-Thank you  very much.
-
-machael
+> I'm currently trying to build a complete (with gcc and all other toosl
+> you'd expect to find on a full desktop install, but not X11) root
+> filesystem for an embedded device (with hard drive).  Is there already one
+> out there, or does anyone have any suggestions on how to do it?  I have no
+> desktop PPC machines, only x86.  I'm currently using one of the boot
+images
+> from hard hat linux, but it doesn't have a compiler and some other things
+I
+> wanted.  This is all on a MPC857T processor.  I've done embedded linux on
+> x86 machines before, and I'm now finding that it's more difficult than I
+> would have thought when I don't have a desktop depelopment machine if the
+> same archetecture...
+>
+> Thank You
+>
+> Sacha
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
