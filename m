@@ -1,82 +1,41 @@
-Message-ID: <3974F963.81CF77E9@mvista.com>
-Date: Tue, 18 Jul 2000 17:42:11 -0700
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
-MIME-Version: 1.0
-To: matthias.fuchs@esd-electronics.com
-CC: frowand@mvista.com, linuxppc-embedded@lists.linuxppc.org
-Subject: [Re: making kernel for ppc405gp from montavista sources]
-References: <3974ED19.FCD99008@mvista.com>
-Content-Type: text/plain; charset=iso-8859-1
+From: clark@esteem.com
+Message-Id: <1.5.4.32.20000719011945.006845c0@pop.esteem.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 18 Jul 2000 18:19:45 -0700
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Do I shoot myself in the foot first or HEAD.S?
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Matthias Fuchs wrote:
->
->
-> Subject: making kernel for ppc405gp from montavista sources
-> Date: Sat, 05 Aug 2000 18:01:56 +0200
-> From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-> Organization: esd gmbh
-> To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
->
-> Hello,
->
-> I downloaded the linux_tar.gz file from montavista and unpacked it ! I
-> copied the .config file from the same location to the kernel tree's
-> root. Before I did a "make mrproper".
->
-> When I run a "make dep" I got an error ! Well, I could start to check
-> out if there is an error in the tree, but I think that there is a
-> general mistake I made !
->
-> Does anybody know where the error comes from ? Here is the output of my
-> "make dep":
->
-> ----------------------
-> mfuchs@pc-matthias:~/mvista_405_linux_new/linux > make dep
-> make -C arch/ppc/boot fastdep
-> make[1]: Entering directory
+        Hey,
 
-< stuff deleted >
+        Any tips for a new guy? I just about ready to start trying to port
+linux to our custom MPC850 board.
 
-> make[2]: *** No rule to make target
-> `/home/mfuchs/mvista_405_linux_new/linux/include/linux/autoconf.h',
-> needed
+        This is where I stand right now. I have at my disposal a MBX860
+which I have managed to get linuxPPC to boot on. I have a copy of Hard Hat
+Linux Journeyman Edition. I also have an EST VisionICE in circuit emulator.
 
-< stuff deleted >
+        Now for the questions.
 
->
-> thanks for advise
-> Matthias
->
-> --
-> -------------------------------------------------
-> \ Matthias Fuchs                                 \
->  \ esd electronic system design Gmbh              \
->   \ Vahrenwalder Straße 205                        \
->    \ D-30165 Hannover                               \
->     \ email: matthias.fuchs@esd-electronics.com      \
->      \ phone: +49-511-37298-0                         \
->       \ fax:   +49-511-37298-68                        \
->        --------------------------------------------------
->
+1. Is there a FAQ or Doc on porting the kernel to a new design? (please mail
+or direct me to it)
 
-Matthias,
+2. Does anyone know if Hard Hat has any problems with Mandrake 7.0 linux?
 
-You need to get the .config file from the MontaVista ftp site, then do a
+3. What do I need to do in the ROM before jumping to HEAD.S other than
+programming the ram timmings in the UPM( I assume HEAD.S is where everything
+starts )?
 
-  make oldconfig
-  make dep
-  then make your kernel
-
-Let me know if that doesn't work for you.
+4. Has any one managed to get an EST VisionICE in circuit emulator to work
+with linuxPPc? If so How? Would I be better off using the GNU Debuger?
 
 
--Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+Many many thanks if you can answer any of these questions for me.
+
+        Conn Clark
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
