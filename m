@@ -1,31 +1,35 @@
-Message-ID: <39A6AE48.57526AE5@mvista.com>
-Date: Fri, 25 Aug 2000 17:35:04 +0000
-From: Scott Anderson <sanders@mvista.com>
+Message-ID: <39A6B196.CDF1228@mvista.com>
+Date: Fri, 25 Aug 2000 10:49:10 -0700
+From: Matthew Locke <mlocke@mvista.com>
 MIME-Version: 1.0
-To: "Whitney, John" <johnw@aiinet.com>
-CC: "'greyham@research.canon.com.au'" <greyham@research.canon.com.au>,
-        kd@flaga.is, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ext2fs or ramdisk problems......
-References: <7283DE19D141D111AD0E00A0C95B195502C5F605@mail2.aiinet.com>
+To: Dan Winkler <dantwinkler@yahoo.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: RPX Lite programming
+References: <20000825025003.23151.qmail@web512.mail.yahoo.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Whitney, John" wrote:
+Dan Winkler wrote:
 >
-> I have had odd results using ext2 on the ramdisk (in my case, a 16MB
-> ramdisk).  Using the 2.2.13, ramdisks I created using ext2 would boot
-> up just fine on the system, but after use the filesystem would declare
-> that it was out of space, even though "df" showed several megabytes
-> free on that filesystem.
+> Newbie alert!!!  I've just started developing on the
+> RPX lite board from embedded-planet.  I am currently
+> trying to write some i2c code that just reads the
+> temperature registers from the temperature sensor and
+> thermal monitor (TCN75).  I was wondering where
+> someone like myself could find some example code to
+> get me started.  I found the i2c driver from the
 
-My guess is that you ran out of inodes.  Examine the output of dumpe2fs
-and see if it gives you any clues.
+there is already a i2c driver for the 8xx in the kernel.  It only has
+read capabilities, but it works fine (at least for reading the eeprom).
+There are several drivers for the 8xx in the kernel that you can use for
+examples.  Also EP wrote a different i2c driver with write.  the EP i2c
+driver has not made it to our ftp site yet, so ask EP tech support for
+it.
 
-    Scott Anderson
-    scott_anderson@mvista.com	MontaVista Software Inc.
-    (408)328-9214		490 Potrero Ave.
-    http://www.mvista.com	Sunnyvale, CA  94086
+Matthew Locke
+Montavista Software
+http://www.mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
