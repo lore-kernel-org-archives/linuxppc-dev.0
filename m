@@ -1,40 +1,49 @@
-MIME-Version: 1.0
+Message-ID: <XFMail.20030717093210.pochini@shiny.it>
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <16150.4659.856525.824351@cargo.ozlabs.ibm.com>
-Date: Thu, 17 Jul 2003 13:04:19 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Peter Dennett" <pdennett@padsoft.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: IBM PPC750L vs Motorola MPC7410
-In-Reply-To: <0b8e01c34ba7$41fb8490$8202a8c0@pit>
-References: <0b8e01c34ba7$41fb8490$8202a8c0@pit>
+MIME-Version: 1.0
+In-Reply-To: <20030716110711.GG7926@plato.local.lan>
+Date: Thu, 17 Jul 2003 09:32:10 +0200 (CEST)
+From: Giuliano Pochini <pochini@shiny.it>
+To: Ethan Benson <erbenson@alaska.net>
+Subject: Re: G4 mdd help request
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Peter Dennett writes:
+On 16-Jul-2003 Ethan Benson wrote:
+>> >> I bought a dual G4-MDD and I installed my SCSI disk I used on
+>> >> my G3. Is there an osx command to get the openfirmware path of
+>> >> the yaboot partition on that disc ?  I tried to boot
+>> >> /pci@f2000000/ADPT,29160@12/@4:9,ofboot.b but it doesn't work.
+>> >> Macosx mounts the HFS partitions on the old disc, but it doesn't
+>> >> show any of them on the startup disk utility (does it need to be
+>> >> blessed again ?).
+>> >
+>> > the yaboot bootstrap partition should be type Apple_Bootstrap and thus
+>> > never mounted by any macos, if this is the case there is no need to
+>> > rebless it since macos never tampered with it.
+>>
+>> IIRC it's Apple_Bootstrap, but first of all I must know the correct
+>> ofpath... I also tried to boot the YDL2.3 cd without success :(
+>
+> just walk the device tree in OF.
 
-> Is there someone on this list that can be so kind as to give
-> me a technical summary of the differences between the
-> PPC750L (G3) and Motorola MPC7410 (G4) so far as
-> LINUX operation.
+Of course I did, but I was unsure because dev / ls shows a leaf "/disk".
+Yesterday night I managed to get from osx the of path, and it's about
+the same I wrote above. I mounted the boot partition in /xyz, then I
+wrote in a root shell:
 
-The biggest difference is that the 7410 has Altivec and the 750
-doesn't.  Altivec is an extension to the instruction set that adds 32
-128-bit registers plus a set of SIMD-style operations on those
-registers.
+bless -folder9 /xyz -verbose -setOF
 
-Beyond that there will be differences in the special-purpose registers
-(SPRs) accessible in kernel mode.  I don't think there would be
-enormous difference but there would be some.
+*obviously* it didn't work, but It printed the of path on the screen,
+which I hope it's the right one. Any attempt to boot from of results in
+a "can't OPEN: pci/......". Damn! Does it boot from anything different
+than the osx dvd and its ide disc ??
 
-The kernel should detect which CPU you have and do the right thing
-automatically.  Neither chip has an on-chip memory controller or
-serial port; both have on-chip L1 I and D cache and on-chip L2 cache
-controller and tag RAM (if I recall correctly).  So I don't know why
-the kernel would hang when booting the G3.
 
-Paul.
+
+Bye.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
