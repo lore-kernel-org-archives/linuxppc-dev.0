@@ -1,38 +1,28 @@
-To: mapr0003@stud.uni-sb.de
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ct65550_??
-In-Reply-To: Your message of "Tue, 14 Sep 1999 17:15:47 +0200 (CST)"
-	<199909141515.RAA04316@sbustd.stud.uni-sb.de>
-References: <199909141515.RAA04316@sbustd.stud.uni-sb.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <19990919041501V.roikawa@rr.iij4u.or.jp>
-Date: Sun, 19 Sep 1999 04:15:01 +0900
-From: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
+Date: Sat, 18 Sep 1999 12:39:17 -0700 (PDT)
+From: Brian C Burke <bcburke@socrates.berkeley.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: libstdc++-2.10.0-0 issues
+Message-ID: <Pine.LNX.4.10.9909181205440.694-100000@bigcat.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-From: Mario Premke <mapr0003@stud.uni-sb.de>
-Subject: ct65550_??
- 
-> Hi,
-> there was discussion about a xserver for ct65550 a while ago.
-> Are there already any binaries for x86 ??
-> Sorry for being off topic
-> -Mario
->           
-> Any will be appreciated ....
+In attempting to install libstdc++-2.10.0-0c.ppc.rpm from the
+KDE-1.1.2 rpms packaged by Franz Sirl I encounter this error:
 
-I also put XF68_FBDev version with code source while ago, but anyone
-hasn't tried yet.
+	error: failed dependencies:
+        	libstdc++ = 2.9.0 is needed by egcs-c++-1.1.2-12c
 
-ftp://ppc.linux.or.jp/pub/users/oikawa/Xserver/hw/xfree68/XF68_FBDev-19990801-glibc2.1.gz
+I have a R5 system set up with all the development software.  I can
+compile working kernels, etc. and I do not want to break it.  Is it safe
+to force an install of libstdc++-2.10.0-0, or do I need to update my
+development packages.  If so what versions of egcs, gcc, etc are
+compatible with libstdc++-2.10.0-0c.
 
+Thank you,
+Brian
 
-Regards,
-
-Ryuichi Oikawa
-roikawa@rr.iij4u.or.jp
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
