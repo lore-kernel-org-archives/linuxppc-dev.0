@@ -1,43 +1,40 @@
-Date: Thu, 6 Jul 2000 01:57:38 +1200
+Date: Thu, 6 Jul 2000 02:03:42 +1200
 From: Gwyn Judd <b.judd@xtra.co.nz>
 To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: seemingly random lock-up with kernel 2.2.17p7
-Message-ID: <20000706015738.A986@thislove.dyndns.org>
-References: <20000706013650.A2546@thislove.dyndns.org> <39633BE2.58BC56D1@relog.ch>
+Message-ID: <20000706020342.B986@thislove.dyndns.org>
+References: <20000706013650.A2546@thislove.dyndns.org> <Pine.SGI.4.21.0007050845550.10655-100000@rainbow.uchicago.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <39633BE2.58BC56D1@relog.ch>; from daenzer@relog.ch on Wed, Jul 05, 2000 at 03:45:06PM +0200
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.SGI.4.21.0007050845550.10655-100000@rainbow.uchicago.edu>; from me@johngrimes.com on Wed, Jul 05, 2000 at 08:51:09AM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jul 05, 2000 at 03:45:06PM +0200, Michel Dänzer wrote:
-> Gwyn Judd wrote:
-> >
-> > This has me puzzled. I'm not sure if it is a kernel panic or just X
-> > freezing since it never leaves anything in the logs.
->
-> Pinging from a remote machine can tell for sure as well as the Magic Sysrq
-> keys.
+On Wed, Jul 05, 2000 at 08:51:09AM -0500, me@johngrimes.com wrote:
+> Gwyn,
+> 	Might be related or might not but I have recently started having
+> troubles too with random locks.
+> 	Now I am running 2.2.15 (but this started happening soon after the
+> upgrade)
+> 	Now my error is not directly with the kernel though.  If I am in
+> the console it has never happened but only if I am in X.  In fact its X
+> that crashes but as no keys work it doesn't matter.  Now I always have
+> xmms open when I crash but it also might be a screensaver problem as it
+> always happens when the screensaver is one (which is the majority of the
+> time though).
+> 	Does this sound similar?
+> 	Do you have an ati rage 128gl card by chance?
+> 	John
 
-I (alas) have no remote machine. WHat are the magic sysrq keys on a Mac?
-
-> It has also happened to me when the machine was idle. But I've been playing
-> MP3s extensively without any lockups for some time now.
->
->
-> > Also I am using BootX.
->
-> Me yaboot (BootX doesn't work on my Pismo).
->
-> What machine do you have?
-
-PowerMac 266. I am looking into the newer bootloaders. Do you have any
-idea what the advantages/disadvantages are?
+This all sounds quite familiar. The lockups have happened with both xmms
+and mpg123. I have no idea if it is a full system lock or just X since I
+have no remote machine to ping it with, all I am able to do is force
+reboot. It happened also with 2.2.15 I think as well as 2.2.16
 
 --
 Gwyn Judd (b.judd@xtra.co.nz)
-Must be a different Larry Wall.  There are at least 137 of us in the U.S.
-             -- Larry Wall in <199809300035.RAA12495@wall.org>
+With all the fancy scientists in the world, why can't they just once
+build a nuclear balm?
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
