@@ -1,24 +1,38 @@
-Date: Fri, 12 Feb 1999 17:55:31 -0700 (MST)
-From: Cort Dougan <cort@persephone.cs.nmt.edu>
-To: Matt Porter <mmporter@home.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: platform specs (was: PReP spec)
-In-Reply-To: <Pine.LNX.3.96.990212165724.2030D-100000@liberty.chnd1.az.home.com>
-Message-ID: <Pine.LNX.3.96.990212175439.19379A-100000@persephone.cs.nmt.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 13 Feb 1999 02:12:14 +0100
+To: linuxppc-user@lists.linuxppc.org, linux-pmac@samba.anu.edu.au,
+        linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Message-Id: <19990213021214.030720@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-That's not chrp, though.  That's just a chrp memmap.  The kernel doesn't
-yet deal with a chrp memmap and no-OF.  I'd rather stick with prep memmaps
-with those boards - it's simple.
+I've posted the long awaited trackpad tool at:
 
-}And from the looks of things, all new Motorola boards/systems.  Already,
-}VxWorks BSPs for Moto. boards are easily configured to a CHRP mem map.
-}Only the firmware defaults to PReP and it is getting dated with its poor
-}PCI mapping.
+<ftp://ftp.linuxppc.org/development/users/benh/trackpad_tool.tar.gz>
+
+the syntax is
+
+    trackpad notap|tap|drag|lock
+
+where:
+
+    notap       disable tapping
+    tap         enable tapping only
+    drag        enable tapping+dragging
+    lock        enable drag lock
+
+Note that on my machine, drag and drag lock behave the same, but this is
+also true with MacOS.
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
