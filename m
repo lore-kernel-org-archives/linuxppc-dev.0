@@ -1,28 +1,39 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-To: Eli Brin <elib@rokonet.co.il>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: openssl
-References: <75DF04AC5ED4D511A9810090273CB41661519B@ROKONET-E>
-From: Roland Dreier <roland@topspin.com>
-Date: 12 Mar 2003 08:55:40 -0800
-In-Reply-To: <75DF04AC5ED4D511A9810090273CB41661519B@ROKONET-E>
-Message-ID: <52r89cwmlv.fsf@topspin.com>
+Message-ID: <20030312181132.1087.qmail@web41211.mail.yahoo.com>
+Date: Wed, 12 Mar 2003 10:11:32 -0800 (PST)
+From: Prakash kanthi <pkanthi@yahoo.com>
+Subject: User mode accesses cause a SIGSEGV 
+To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20030218014641.49645.qmail@web41201.mail.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-    Eli> We don't have the /dev/random and /dev/urandom. How do we
-    Eli> create them - mknod?
+Hi Folk,
 
-Yes,
+I have a problem with user mode processes on my PPC405
+based board with 16MB SDRAM. I am using busybox based
+'init'. When linux boots, init tries to swapn 'sh'.
+Shell starts ok but after that, any 'application'
+started under 'sh' bails out with error
+"User mode accesses cause a SIGSEGV for <some
+address>"
 
-  mknod /dev/random  c 1 8
-  mknod /dev/urandom c 1 9
+The address it bails out is always same and generally
+is a huge value (ex: 0x92612077).
 
-is all you need to do.
+I am suspecting that there might be something wrong
+with user mode PTEs. I am not sure when PTEs are
+created how they are privileged.
 
- - Roland
+Any help is appreciated.
+
+Thanks,
+Prakash
+
+
+Yahoo! Web Hosting - establish your business online
+http://webhosting.yahoo.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
