@@ -1,42 +1,53 @@
-Date: Tue, 14 Mar 2000 10:56:46 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: "Mark S. Mathews" <mark@absoval.com>
-cc: linuxppc-embedded@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Byte swapped inw/outw again....
-In-Reply-To: <Pine.LNX.3.96.1000313131056.12701A-100000@tristar.cc.absoval.com>
-Message-ID: <Pine.HPX.4.10.10003141052080.14941-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 14 Mar 2000 11:03:14 +0100
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+        linux-fbdev@vuser.vu.union.edu, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: [linux-fbdev] [PATCH 2.3.x] fbdev reversion
+Message-Id: <20000314110314.016060@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 13 Mar 2000, Mark S. Mathews wrote:
+On Tue, Mar 14, 2000, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+wrote:
 
+>... which they can easily find out by combining /proc/bus/pci with
+>fix.{smem,mmio}_{start,len}.
 >
-> Hi Folks,
->
-> Another driver port with inw/outw issues again.  I've looked through the
-> linuxppc-dev archive and I'm not quite seeing the answer to my question
-> (below).
->
-> I'm porting a driver for a WLAN card whose interface is all 16-bit
-> registers.  Sometimes the reads/writes are strictly a 16-bit integer
-> quantity where the byte swapping in inw/outw wouldn't be too much of a
-> problem.  Other times we're reading/writing buffer contents from/to the
-> card 2-bytes at a time (swapping in this case is exceptionally bad).
+>Since XFree86 4.0 already has resource handling, it should be a piece of cake
+>to remove all devices corresponding to any fix.{smem,mmio}_{start,len} from
+>their list.
 
+Well, while we are at it, we could also work on fixing the PCI problems:
+Instead of relying on XFree knowing the host bridge and deducing the
+iobase, I beleive we should export from the kernel either one iobase per
+PCI device (there can be different busses with different iobases, that's
+the case on the new macs and they have the same bus number), or we can
+have /proc/bus/pci export "fixed'up" IO addresses (already including the
+iobase).
 
-Use in/out for 16 nit register accesses and insw/outsw for the buffer
-acceses. This is provided you have a very recent kernel in which ins/outs
-do not byte swap (until now they were wrongly swapping the bytes). As
-you see, the issue is being addressed...
+I can code those fixes, but I'm not sure what solution has most chances
+of beeing accepted (especially changing /poc/bus/pci semantics). The
+problem is that exporting an IO address alone (without the iobase) has
+really no meaning on arch that don't have a x86-like separate IO space at
+the CPU level.
 
-With older kernels you might want to access the buffer with
-insw_ns/outsw_ns (no swapping needed), but this is PPC specific.
+Back to the subject of fbdev vs. XFree, it would be easy to add an
+optional ioctl returning the PCI bus:dev:fn from the fbdev (would be
+PCI-specific however). Eventually, it could be a generic ioctl that returns
 
-Hope this helps...
+  - A constant indicating the bus type
+  - A string containing a bus-specific identification
 
-	Gabriel.
+I beleive it's cleaner that relying on resource removal, and may be
+useful for other things too (like board-specific userland setup tools
+that would want to issue some config space accesses to the card, etc...).
+
+Note that I'd love to see this mecanism of a bus-type/id-string extended
+to all devices in the kernel (using /proc/ instead of ioctls) since it
+would help solving our problem of configuring OF boot path too. But
+that's another story...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
