@@ -1,40 +1,47 @@
-Date: Wed, 14 Jul 2004 13:43:14 +0200 (CEST)
-From: Marius Groeger <mgroeger@sysgo.com>
-To: Arun Prasad Velu <arun@ossi.co.in>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Cross compiling for VxWorks/PowerPC Target from a Linux/x86
- Machine
-In-Reply-To: <NIBBKGBHPKFDFAOHCGBLAECMCAAA.arun@ossi.co.in>
-Message-ID: <Pine.LNX.4.56.0407141341590.2709@mag.sysgo.com>
-References: <NIBBKGBHPKFDFAOHCGBLAECMCAAA.arun@ossi.co.in>
+From: Michele.Pallaro@alcatel.it
+Message-ID: <40F5394E.BC602878@alcatel.it>
+Date: Wed, 14 Jul 2004 15:46:55 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Need help: User application can write to kernel space.
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 13 Jul 2004, Arun Prasad Velu wrote:
+This is my first linux kernel porting.
+Target baord : custom MPC8270
+Mem: 512Mb
+Kernel 2.4.20 (montavista 3.1)
 
-> Hello,
->
-> I'd like to know how feasible is it to cross compile for a VxWorks/PowerPC
-> Target from a Linux/x86 Machine?
-> If there was any attempt earlier, I'd like to know about it (basically to
-> get the source compiled for VxWorks/PowerPC from Linux/x86 machine).
-> Any pointer on how to go about it would also be appreciated.
+The kernel and applications run without problems on my target , but an
+user application can write to the kernel space if the address is between
+stext (0xC0000000 virtual kernel start) and 0xC0141144 (_etext section
+on my target of course).
+To simplify and isolate the problem, I remove my drivers and I build a
+minimal kernel (console on SMC1 and eth0-2 FCC1/3) plus a small ram
+filesystem (busybox + telnetd and ftpd). I also build a test appl that
+write to 0xC0001000 (InstructionTLBMiss like for an wrong pointer one of
+my application did).
+When I run it, the kernel insted to stop it and generate a segmentation
+fault and core, it crash with oops.
+I connect my emulator and I set a condictional write break at
+0xc0001000, and when the appl write to 0xc0001000, it realy do it.
+Stopping the appl when it tries to write and make a step the core goes
+in to exception entry and tries to find the data TLBMiss, but the
+problem (I think) it finds it and with the write access.
+Watching in the MMU configuration, I see that the function mapin_ram
+called at the startup (MMU_init) the addresses from stext to etext are
+mapped with the flags _PAGE_USER. So I suppose that why the userland can
+access and write to that address. I like to understand why it's done.
 
-This is a bit dated, but may still hold some interesting bits for you:
+I solve the problem removing this flag setting on the mapin_ram(). It
+wroks, but I'm new on linuxppc world, and I like to understand if the
+solution I find it,  it's wrong or not.
 
-  http://www.xs4all.nl/~borkhuis/vxworks/vxw_pt1.html
+Your help will be very appreciate.
 
-Regards,
-Marius
-
---
-Marius Groeger <mgroeger@sysgo.com>           Project Manager
-SYSGO AG                      Embedded and Real-Time Software
-Voice: +49 6136 9948 0                  FAX: +49 6136 9948 10
-www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
+    Michele
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
