@@ -1,49 +1,42 @@
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: watchdog in lite5200
+Date: Wed, 16 Jun 2004 16:36:41 +0200
+References: <20040615183624.B0BDAC13D3@atlas.denx.de>
+In-Reply-To: <20040615183624.B0BDAC13D3@atlas.denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: Hardware interrupts routines
-Date: Wed, 16 Jun 2004 15:28:21 +0100
-Message-ID: <85E6ED5B5EC32F439702305CC417E12D9E2A80@email.3il.fr>
-From: =?Windows-1252?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
-To: <linuxppc-embedded@lists.linuxppc.org>
+  charset="iso-8859-1"
+Message-Id: <200406161636.44541.g.jaeger@sysgo.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi everybody !
-As you guess I need some help... Indeed I'm a newbie in Linux embedded development and I have to work on a linux ppc based board project.
-In fact, I have to adapt an existing VxWorks application to a linux montavista hardhat application.
-My problem is the following : I need to find a linux equivalent routine of the intConnect() VxWorks routine. You can see the man page of taht function below :
+Hi Wolfgang,
 
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-NAME
+I checked out the driver and I'm wondering about the licence. From
+what I can see in the header, it's NON-GPL - simply a mistake?
 
-intConnect( ) - connect a C routine to a hardware interrupt
-SYNOPSIS
+Ciao,
+  Gerhard Jaeger
 
-STATUS intConnect
-    (
-    VOIDFUNCPTR * vector,   /* interrupt vector to attach to */
-    VOIDFUNCPTR   routine,  /* routine to be called */
-    int           parameter /* parameter to be passed to routine */
-    )
+On Tuesday 15 June 2004 20:36, Wolfgang Denk wrote:
+> In message <40CF0671.4040002@ztec.com.br> you wrote:
+> > i am tring to use the watchdog in a lite5200
+> > In menuconfig , i find the watchdog in char devices
+> > but none of the cotrolers is for internal watchdog of mpc5200
+> > In 5xxx/IO dont appear to show a driver for internal watchdog either.
+> >
+> > So i have to develop the driver for watchdog in mpc5200 ?
+>
+> No. Check out the recent version from our CVS  tree.  It  contains  a
+> powerful  watchdog driver. For a documentation of the API, please see
+> Documentation/man4/wdt_mpc8xx.4
+>
+> Best regards,
+>
+> Wolfgang Denk
 
-DESCRIPTION
-
-This routine connects a specified C routine to a specified interrupt vector. The address of routine is generally stored at vector so that routine is called with parameter when the interrupt occurs. The routine is invoked in supervisor mode at interrupt level. A proper C environment is established, the necessary registers saved, and the stack set up.
-
-The routine can be any normal C code, except that it must not invoke certain operating system functions that may block or perform I/O operations.
-
-This routine generally simply calls intHandlerCreate( ) and intVecSet( ). The address of the handler returned by intHandlerCreate( ) is what actually goes in the interrupt vector.
-
-This routine takes an interrupt vector as a parameter, which is the byte offset into the vector table. Macros are provided to convert between interrupt vectors and interrupt numbers, see intArchLib.
-
-<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-The only hardware interrupts routine I found through my investigations is the request_irq(...). But the problem is that request_irq do not allow me to pass an argument to the handler... So is there a routine that allows it or is there a way to adapt the request_irq() to my case.
-I thougt to declare a global variable to store my param but I use multitasking. So bad way...
-
-
-Thanks a lot for helping the newbie that I am...
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
