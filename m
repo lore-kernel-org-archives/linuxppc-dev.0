@@ -1,15 +1,24 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15601.mail.cnb.yahoo.com (web15601.mail.cnb.yahoo.com
-	[202.165.102.55]) by ozlabs.org (Postfix) with SMTP id CA0172BDA2
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Sep 2004 12:57:26 +1000 (EST)
-Message-ID: <20040925025711.39609.qmail@web15601.mail.cnb.yahoo.com>
-Date: Sat, 25 Sep 2004 10:57:11 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <20040924164909.489AC2BDA2@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Subject: Re: New mailing list specifically for embedded PowerPC
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AA2762BDA2
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Sep 2004 12:59:58 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tom Rini <trini@kernel.crashing.org>
+In-Reply-To: <20040924164146.GG2107@smtp.west.cox.net>
+References: <20040923164655.0472a8b9.sfr@ozlabs.org>
+	<20040923233035.GH27238@smtp.west.cox.net>
+	<36b714c80409231731257ca5d0@mail.gmail.com>
+	<29D00F8B-0DC8-11D9-A0FB-000A95A0560C@penguinppc.org>
+	<DA7E9084-0DED-11D9-A74B-003065F9B7DC@embeddededge.com>
+	<20040924164146.GG2107@smtp.west.cox.net>
+Content-Type: text/plain
+Message-Id: <1096081145.475.12.camel@gaston>
+Mime-Version: 1.0
+Date: Sat, 25 Sep 2004 12:59:06 +1000
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: New mailing list specifically for embedded PowerPC development
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,61 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+I specifically asked for the split.
 
-So glad to see some VIPs talking about maillist NEW or
-OLD. IMHO, time-saving, convenience and message
-security come first. 
+The reason is that my bandwidth with mailing lists is small enough that
+I need a way to quickly spot a patch that will be of interest to the
+core kernel (like the recent Machine Check changes, for example) from
+the 128654th guy asking why his FCP/OCP/Whatever embedded ethernet doesn't
+get a proper MAC address with zeeBoot rev 187.387b4...
 
-Digest mode isn't good for heavy traffic maillist.
-Heavy mostly means important and urgent. Digest mode
-will delay message commucation. This is a big 
-problem, especially for kernel development. In
-addition, it would kill a folk more time to write a
-reply. This would make some VIPs unwilling to reply or
-write less to save time. Some poor souls, like me,
-would suffer from this mode. This situation would be
-worse for separate maillist all in digest mode. I
-noticed Piotr Perak switched his thread from embedded
-to dev for not getting timely reply. Both VIPs and
-poor souls suffer from unconvenience and waste time.
-Not to mention digest mode isn't good for interesting
-message backup. I don't personally against separate
-maillist if separate maillist were all in email way.
-But if dev and embedded list all in digest mode, I
-would say this is really not a good idea. So if
-technical problem to implement email way for ppc list,
-pls one list in degist mode. If not, pls back to email
-way in several lists as before.
+There is simply too much noise on the embedded lists, if the lists are
+merged, I'll simply not be able to follow the new list and will probably
+miss important/interesting stuffs.
 
-Another maillist issue is message backup security. For
-the older maillist maintaining experience, half a
-month no message at all(8.29-9.14) and archives become
-a concern for most folks. This is really deviant. To
-avoid such a result late, I suggest to find another
-public home for message backup or temporary official
-site, like lkml did. One example was build as follows:
-http://groups.yahoo.com/group/linuxppc-dev/
-http://groups.yahoo.com/group/linuxppc-embedded/
+To reply to Matt, "then where do pmac-specific discussions belong?", well,
+how much pmac specific messages have you seen on linuxppc-dev in the past
+few (monthes/years) ?
 
-Feeling? Interface is lovely :-)
+It's really a matter of signal/noise ratio.
 
-If this could an accept way, I would let the founder
-giving up the group for us to a repository.
-
-Hope all my concern be redundant at all. 
-
-
-=====
-Best regards,
-
-Sam
-
-_________________________________________________________
-Do You Yahoo!?
-150ÕÚ«˙MP3∑ËøÒÀ—£¨¥¯ƒ˙¥≥»Î“Ù¿÷µÓÃ√
-http://music.yisou.com/
-√¿≈Æ√˜–«”¶”–æ°”–£¨À—±È√¿Õº°¢—ﬁÕº∫Õø·Õº
-http://image.yisou.com
-1GæÕ «1000’◊£¨—≈ª¢µÁ” ◊‘÷˙¿©»›£°
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+Ben.
