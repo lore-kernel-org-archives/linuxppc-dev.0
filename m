@@ -1,28 +1,59 @@
-From: tachyon@postech.edu
-Date: Tue, 25 Apr 2000 05:40:46 +0900
-Message-Id: <200004242040.FAA14509@wm3.postech.ac.kr>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Which modifications to be applied?
-Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="-MOQ200004252E3d5578gcF7903C054046"
+Message-ID: <819E3E914E0AD11194DE00805F0D100B0138B83C@fbi.infocom.dk>
+From: Kim Jørgensen <KIJ@infocom.dk>
+To: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: Problems with serial ports
+Date: Tue, 25 Apr 2000 09:39:59 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This message is in MIME format.
+Hi.
 
----MOQ200004252E3d5578gcF7903C054046
-Content-Type: text/plain;
-            charset: "euc-kr"
-Content-Transfer-Encoding: base64
+I got a custom MPC823 board with 3 serial ports (smc1, smc2 and scc2), and a
+2.2.13 kernel form mvista.
 
-SGVsbG8gQWxsLg0KDQpJIGhhdmUgYSBjb3VwbGUgb2YgY29tcGlsYXRpb24gcHJvYmxlbXMuDQoNCldoZW4gSSBkbyAibWFrZSB2bWxpbnV4IiBmb2xsb3dpbmcgZXJyb3IgbWVzc2FnZSBjb21lcw0KDQpJJ3ZlIHNlYXJjaGVkIG1haWxpbmcgbGlzdCBhcmNoaXZlIGFuZCBmaW5kIHR3byBzb2x1dGlvbnMuDQoNCkZpcnN0IGlzIG9uIGJvdHRvbSBvZiBiZWxvdyBtZXNzYWdlLg0KDQotPiBodHRwOi8vbGlzdHMubGludXhwcGMub3JnL2xpc3RhcmNzL2xpbnV4cHBjLWVtYmVkZGVkLzIwMDAwNC9tc2cwMDAzMC5odG1sDQotLS0tLS0tLS0tLS0tLS0tLS0tDQouLi4NCkFoIHllcywgd2hlbiB1c2luZyBzZXJpYWwgb3IgSURFIGNhcmRzIHRoZSBpbnRlcnJ1cHQgaGFuZGxlciBpcw0KcmVxdWVzdGVkIGJ5IGRyaXZlcnMvY2hhci9zZXJpYWwuYyBhbmQgZHJpdmVycy9ibG9jay9pZGUtcHJvYmUuYw0KcmVzcGVjdGl2ZWx5LCBub3QgYnkgdGhlIFBDTUNJQSBtb2R1bGVzLg0KDQpZb3UgY2FuIGVpdGhlciBjaGFuZ2UgaW5jbHVkZS9hc20tcHBjL2lkZS5oIHRvIHVzZSByZXF1ZXN0Xzh4eGlycSgpLA0Kb3IgeW91IGNhbiBkbyBsaWtlIHdlJ3ZlIGRvbmU7IGNoYW5nZSBhcmNoL3BwYy9rZXJuZWwvcHBjOHh4X3BpYy5jDQpzbyB0aGF0IHJlcXVlc3RfaXJxKCkgbG9va3MgbGlrZSB0aGlzOg0KDQppbnQgcmVxdWVzdF9pcnEodW5zaWduZWQgaW50IGlycSwgdm9pZCAoKmhhbmRsZXIpKGludCwgdm9pZCAqLCBzd!
- HJ!
-1Y3QgcHRfcmVncyAqKSwNCgl1bnNpZ25lZCBsb25nIGlycWZsYWdzLCBjb25zdCBjaGFyICogZGV2bmFtZSwgdm9pZCAqZGV2X2lkKQ0Kew0KI2lmZGVmIENPTkZJR19NQlgNCiAgICAgICAgaXJxICs9IGk4MjU5X3BpYy5pcnFfb2Zmc2V0Ow0KI2VuZGlmDQoJcmV0dXJuIChyZXF1ZXN0Xzh4eGlycShpcnEsIGhhbmRsZXIsIGlycWZsYWdzLCBkZXZuYW1lLCBkZXZfaWQpKTsNCn0NCi4uLg0KDQoNCkFuZCBTZWNvbmQgaXMgDQoNCi0+IGh0dHA6Ly9saXN0cy5saW51eHBwYy5vcmcvbGlzdGFyY3MvbGludXhwcGMtZW1iZWRkZWQvMjAwMDAzL21zZzAwMTE5Lmh0bWwNCi0tLS0tLS0tLS0tLS0NCi4uLg0KSGVyZSdzIGEgcGF0Y2ggSSBiZWxpZXZlIHNob3VsZCBmaXggdGhlc2UgcHJvYmxlbXMuICBMZXQgbWUga25vdyBpZiB5b3UNCmhhdmUgYW55IHByb2JsZW1zIHdpdGggaXQuICBUaGlzIGlzIGJhc2VkIG9uIHRoZSBIYXJkIEhhdCBMaW51eCBrZXJuZWwNCndlIHNoaXAsIHNvIHRoZXJlIG1heSBiZSBzb21lIGRpZmZlcmVuY2VzIGZyb20gdGhlIHRyZWUgeW91IGhhdmUgKGhvcGUNCm5vdCkuDQoNCi0tLSBsaW51eC5vbGQvYXJjaC9wcGMva2VybmVsL3BwYzh4eF9waWMuYwlUdWUgTWFyIDIxIDAyOjAzOjA2IDIwMDANCisrKyBsaW51eC9hcmNoL3BwYy9rZXJuZWwvcHBjOHh4X3BpYy5jCVR1ZSBNYXIgMjEgMTc6NDI6NTggMjAwMA0KQEAgLTE0OCw0ICsxNDgsMTUgQEANCiAJaXJxICs9IGk4MjU5X3Bp!
- Yy!
-5pcnFfb2Zmc2V0Ow0KIAlyZXR1cm4gKHJlcXVlc3RfOHh4aXJxKGlycSwgaGFuZGxlciwgaXJxZmxhZ3MsIGRldm5hbWUsIGRldl9pZCkpOw0KIH0NCi0jZW5kaWYNCisjZWxzZSAvKiBDT05GSUdfTUJYICovDQoraW50IHJlcXVlc3RfaXJxKA0KKwl1bnNpZ25lZCBpbnQgaXJxLA0KKwl2b2lkICgqaGFuZGxlcikoaW50LCB2b2lkICosIHN0cnVjdCBwdF9yZWdzICopLA0KKwl1bnNpZ25lZCBsb25nIGlycWZsYWdzLA0KKwljb25zdCBjaGFyICogZGV2bmFtZSwNCisJdm9pZCAqZGV2X2lkDQorKQ0KK3sNCisJcmV0dXJuIC1FSU5WQUw7DQorfQ0KLi4uDQoNCg0KV2hpY2ggb25lIGlzIGNvcnJlY3Qgb3IgYmV0dGVyID8NCg0KDQpOZXh0IHF1ZXN0aW9uIGlzIGFib3V0IGVsaW1pbmF0aW9uIG9mIG1hY2ludG9zaCByZWxhdGVkIHN5bWJvbHMuDQoNClNhbWUgdHlwZSBvZiBxdWVzdGlvbnMuDQoNCkRvIEkgaGF2ZSB0byByZXBsYWNlICJpZm5kZWYgQ09ORklHX01CWCIgdG8gImlmbmRlZiBDT05GSUdfOHh4IiBvciAiaWZkZWYgQ09ORklHX01BQyIgZnJvbSBsaW51eC9kcml2ZXJzL21hY2ludG9zaC9NYWtlZmlsZSA/DQoNCkluIG15IG9wcGluaW9uLCBsYXRlciBpcyBiZXR0ZXIgb25lLg0KDQoNCg0KQXJlIHRoZXJlIGFueSBjb29yZGluYXRpb24gd29ya3MgZm9yIHBhdGNoZXM/DQoNClRoYW5rcyBpbiBhZHZhbmNlLg0KDQpIYXZlIGEgbmljZSBkYXkuDQo=
+Linux runs fine on the board using smc1 as console, but I can't receive or
+transmit anything on smc2 and scc2.
 
----MOQ200004252E3d5578gcF7903C054046--
+I am using the program miniterm to setup and test these ports; I have used
+this program on my RH i686 machine without any problems.
+
+I have used scc2 as console too, without any problem. But I still can't use
+smc1 and smc2. I look like an initialisation problem to me. Can anyone help
+with this?
+
+
+Btw. There is a problem in m8xx_cpm_setbrg in commproc.c. I can't set any
+serial port to run any lower than 1200 baud. This is caused by
+BRG_UART_CLK/rate (clock divider) getting larger than 4096, which is the
+maximum (at least on a mpc823).
+I solved the problem like this:
+
+#define BRG_INT_CLK		(((bd_t *)res)->bi_intfreq * 1000000)
+#define BRG_UART_CLK		(BRG_INT_CLK/16)
+#define BRG_UART_CLK_DIV16	(BRG_UART_CLK/16)
+
+void
+m8xx_cpm_setbrg(uint brg, uint rate)
+{
+	volatile uint	*bp;
+
+	/* This is good enough to get SMCs running.....
+	*/
+	bp = (uint *)&cpmp->cp_brgc1;
+	bp += brg;
+	if((BRG_UART_CLK / rate) < 4096)
+	    *bp = ((BRG_UART_CLK / rate) << 1) | CPM_BRG_EN;
+	else
+	    *bp = ((BRG_UART_CLK_DIV16 / rate) << 1) | CPM_BRG_EN |
+CPM_BRG_DIV16;
+}
+
+Kim Jorgensen
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
