@@ -1,39 +1,60 @@
-Message-ID: <3B670458.77D4CB22@mvista.com>
-Date: Tue, 31 Jul 2001 15:17:44 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: "Pergola, Michael" <MichaelPergola@Danfoss.com>
+Message-ID: <A109131318C4D1119AC20060088DECE35732E9@mail.adaptivemicro.com>
+From: Cindy Peters <cinpet@adaptivemicro.com>
+To: "'Dan Malek'" <dan@mvista.com>
 Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: SCC character recognition/DMA
-References: <E1836A7F3557D311A14000805F9F36FCD4E3DE@usdfo011.usac.danfoss.net>
-Content-Type: text/plain; charset=us-ascii
+Subject: RE: New Linux PowerPC development
+Date: Tue, 31 Jul 2001 16:39:17 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Pergola, Michael" wrote:
-
->         The 823e that comes with the Embedded Planet Dev Box
->         has 3 SCCs but one is dedicated to USB while another is
->         used for Ethernet.
-
-Not exactly.  The USB controller is a USB controller.  It is
-mapped into the address space of one SCC, and may use some of that
-peripheral hardware, but it is not configurable as a SCC.
-Since you have the 823e, yes SCC3 can be used.
-
-> .... I guess my real question is, rather then
->         re-invent the code, is there an implementation of the
->         character recognition out there in GPL land?
-
-I believe all the "character recognition" does is either map characters
-or terminate buffer operations.  If the device is still used as a uart,
-just modify the driver to initialize the characters you want (as it
-stores defaults right now).  You can be a little more fancy and add an
-ioctl() if you want.  If you want a custom driver that isn't a uart,
-then you have to write a new driver.
+-----Original Message-----
+From: Dan Malek [mailto:dan@mvista.com]
+Sent: Tuesday, July 24, 2001 12:27 PM
+To: Cindy Peters
+Cc: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Re: New Linux PowerPC development
 
 
-	-- Dan
+Dan Malek wrote:
+
+>Cindy Peters wrote:
+
+>> The MPC823, however, does not have an IDE or PCI interface for a hard
+disk.
+
+>Sure it does.  Just use the PCMCIA.
+
+>> We feel we would have to design an interface into an FPGA.
+
+>This is also a solution many people use.  Lots less expensive and
+>less complex than a PCI adapter.
+
+We have just recently been instructed by management to stay with the MPC823
+in order to re-use the previous software and hardware development as much as
+possible. We are looking at using some VHDL IP provided by Open Cores (this
+is very new) for the IDE interface. Are you familiar with this?
+
+The VHDL code uses a processor independent interface called a wishbone
+interface. I don't know much about it yet. I don't know if this is something
+standard or just developed for Open Cores. Do you (or anyone else) know of
+any driver software that may be available for this interface?
+
+>	-- Dan
+
+Also, I am trying to determine the approximate time it takes the 823 to
+access memory (i.e. external EDO DRAM). Does anyone know?
+
+I have downloaded the lmbench software to determine some benchmarking
+information. I am not sure how to build it for the PPC. I have a cross
+compiler development environment setup in a subdirectory. Can someone help
+me with this?
+
+Thanks.
+Cindy
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
