@@ -1,28 +1,49 @@
-Message-ID: <3AA8CDBE.F0EA84C0@iiic.ethz.ch>
-Date: Fri, 09 Mar 2001 13:34:06 +0100
-From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-MIME-Version: 1.0
-To: Henry Worth <haworth@ncal.verio.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Pismo Aty128fb problem in 2.4.3-pre*?
-References: <3AA41B77.73470672@ncal.verio.com> <3AA5113F.A0B78521@ncal.verio.com> <3AA621D3.755358F7@iiic.ethz.ch> <3AA8480F.F5E09C8E@ncal.verio.com>
-Content-Type: text/plain; charset=iso-8859-1
+Date: Fri, 09 Mar 2001 18:15:03 +0000
+Subject: provision of "driver" type facilities from user-space
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="utf-8"
+Message-Id: <20010309181506.CB5212F00E@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Henry Worth wrote:
+hi list,
 
-> Is there any hope that the ATI 128 DRI stuff is going to get reenabled soon?
+I want to put a layer in between user-space and a driver (dmasound).
 
-Yes, the branch of the DRI CVS dedicated to adding PCI GART support (which is
-needed for us since we don't have AGP GART support yet) is basically done and
-its merge into the trunk is imminent. Unfortunately, it doesn't work right
-now, but there is a freeze tag which might work.
+The reason is - that I want to provide facilities (transparently) to
+applications and these facilities cannot be (sensibly) placed in the driver
+[e.g. rate conversion and so on].
 
+In this case to make dmasound look like it can do "anything" and help
+support (easily) apps that don't really bother to check for h/w capabilities
+properly.
 
---
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
+It isn't really the best solution to bloat each and every app with code to
+do the job - some form of sharing seems to be the right way.
+
+so solution 1:
+
+provide a pseudo-oss interface via a library:
+
+psuedo_oss_open(), pseudo_oss_read() .... etc. etc.
+
+so app source is amended and then linked with a lib providing the
+appropriate stuff in user-space...
+
+not, probably, going to be popular...
+
+solution 2:
+
+??? is there a way of doing this without the apps being amended but _still_
+making sure that code that belongs in user-space resides and is executed
+there?
+
+preferably allowing apps to think they are just talking to /dev/dsp
+
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
