@@ -1,52 +1,55 @@
-Message-Id: <v03010d05b2d23dd9198b@[209.96.179.28]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 25 Jan 1999 10:32:00 -0500
-To: linuxppc-dev@lists.linuxppc.org
-From: "Kevin B. Hendricks" <kbhend@dogwood.tyler.wm.edu>
-Subject: Re: Help from Kernel Gurus needed!!!
+Date: Mon, 25 Jan 1999 09:47:34 -0600 (CST)
+From: "David A. Gatwood" <marsmail@globegate.utm.edu>
+To: Ken Roberts <ken.r@worldnet.att.net>
+cc: Tom Harrington <tph@rmi.net>,
+        Robin Colgrove <robin@louis.bidmc.harvard.edu>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Linux and Mac together (Was: Re: mac-on-linux project status)
+In-Reply-To: <Pine.LNX.3.96.990124230812.434A-100000@dancer.at.home>
+Message-ID: <Pine.LNX.3.96.990125094415.17040D-100000@globegate.utm.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Sun, 24 Jan 1999, Ken Roberts wrote:
 
-Nothing like answering your own question.  I never saw my post make it back
-to me, but if anyone runs into the same problem here is my solution.  I
-figured this out from looking at the stack inside a signal handler with gdb
-so I may be wrong but this seems to work:
+> >> Maybe I am just not understanding this but if both MkLinux and OS X run on 
+> >> top of the Mach microkernel, could they both be running simultaneously? If 
+> >
+> >In principle, yes,  Mach is capable of running multiple server operating 
+> >systems at the same time.  I have no idea what's involved in making this
+> >happen, but supposedly one of the advantges of a microkernel-based Linux
+> 
+> this was explained to the mklinux list quite some time back.  i believe
+> this will not work because mklinux and osx use different versions of the
+> mach kernel. 
+> 
+> from what i remember, mklinux uses a more recent kernel than the
+> official apple stuff.  the interfaces are different enough so that the
+> two worlds are incompatible. 
 
->From inside a signal handler, to check on old signal masks or register
-contents right before the signal was delivered:
-
-
-#include <asm/sigcontext.h>
-
-    /* get the value of r1 (the stack pointer) */
-    long * p;
-    struct sigcontext_struct * scp;
-    __asm__ ( "addi %0,1,0" : "=r" (p) : /* no inputs */ );
-    /* follow it back up the chain */
-    p = *p;
-    /* from here the sigcontext struct is 64 bytes away */
-    p = p + 16;
-    scp = (struct sigcontext_struct *)p;
-
-I hope this helps.  If it looks wrong to anyone out there please let me
-know ASAP.
-
-Thanks,
-
-Kevin
+MkLinux uses a more modern Mach than OS X server, yes.  It uses a very
+similar kernel to what OS X final is expected to use, though.  I like to
+think there are always possibilities.  I won't be certain whether there's
+any porting potential or not until OS X is released, though.
 
 
-----------------------------------------------------------
-Kevin B. Hendricks
-Associate Professor, Operations & Information Technology
-School of Business, College of William & Mary
-Williamsburg, VA 23187, kbhend@dogwood.tyler.wm.edu
-http://business.tyler.wm.edu
+Later,
+David
 
+David A. Gatwood                         Visit globegate's internet
+dgatwood@globegate.utm.edu                  talker, Deep Space 36
+http://globegate.utm.edu                telnet globegate.utm.edu:9624
+
+-----BEGIN GEEK CODE BLOCK-----
+Version 3.1
+GCS/CC/FA/H/L/MC/M/MU/PA/TW d-@ s:>- a-- C++ ++>$ UBLAS*++ ++>$
+P+?>$ L++ +>$ !E--- W++ +>$ N++(++ +)>++ +$ !o? K-? !w--- !O
+M++>$ !V-- PS+>$ !PE- Y+>$ PGP+>$ t++ +>$ 5+>++ ++$ !X- !R tv+>$
+b++>$ !DI !D- G++(++ +)>$ e>++ ++ h--! r--- !y-
+------END GEEK CODE BLOCK------
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
