@@ -1,20 +1,29 @@
-Message-Id: <200007111505.QAA10603@hyperion.valhalla.net>
-Date: Tue, 11 Jul 2000 16:06:02 +0100
-Subject: 2.4.0-test3 tree
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-ID: <396B3984.587964A7@pop.agri.ch>
+Date: Tue, 11 Jul 2000 17:13:08 +0200
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
+MIME-Version: 1.0
+To: Iain Sandoe <iain@sandoe.co.uk>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.0-test3 tree
+References: <200007111505.QAA10603@hyperion.valhalla.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The bk rsync 2.4.0-test3 tree is not compiling (timer.c)
-rsynced 16:00 BST [15:00 UTC/GMT]
+Iain Sandoe wrote:
+>
+> The bk rsync 2.4.0-test3 tree is not compiling (timer.c)
+> rsynced 16:00 BST [15:00 UTC/GMT]
 
-Is it better to figure out how to use bitkeeper - or is the rsync updated
-more frequently than once a day now?
+kernel/timer.c line 580: if (p->nice > DEF_NICE) (ok)
+arch/ppc/kernel/idle.c line 51: current->nice = 0; (not sure)
 
-Iain.
+Runs here on a wallstreet.
+
+
+Andreas
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
