@@ -1,27 +1,31 @@
-Message-ID: <3F8BF8AD.8070603@dgt-lab.com.pl>
-Date: Tue, 14 Oct 2003 15:22:53 +0200
-From: Wojciech Kromer <krom@dgt-lab.com.pl>
+Message-ID: <3F8C3F5A.8010700@mvista.com>
+Date: Tue, 14 Oct 2003 11:24:26 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: another (?) uart.c problem
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Yuxiao Xi <xiyuxiao@harbournetworks.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: question about KGDB for sandpoint with MPC8240
+References: <200310141321.IAA20337@lists.linuxppc.org>
+In-Reply-To: <200310141321.IAA20337@lists.linuxppc.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-i have latest uart.c for 8xx from cvs, and there is probelem with
-changing speed
-i'm using only SMC1 (console /dev/tts/0) and SCC2 (/dev/tts/1)
+Yuxiao Xi wrote:
 
-when i'm changing speed for /dev/tts/1 nothing hapens, changing on
-/dev/tts/0 applies to both of them
+>Hi,
+>    Where can I find a KGDB patch to support kernel debugging MontaVista
+>2.1 for sandpoint with MPC8240? I selected "CONFIG_KGDB" when do "make
+>xconfig",but KGDB seemed not to work. I stole file gen550_kgdb.c and
+>gen550_dbg.c from linux-2.6.0, but KGDB seemed not to work yet.
+>
+>
+KGDB was not supported on the sandpoint in mvl2.1.  You can wait for
+mvl3.1 or you can patch in the code that in the latest linuxppc (2.4)
+public trees.
 
-
-
---
-* * * * * * * * * * * *
-* per pedes ad astra! *
-* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
+Mark
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
