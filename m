@@ -1,48 +1,39 @@
-In-Reply-To: <Pine.LNX.3.96L.991129022729.5302C-100000@unix47.andrew.cmu.edu>
-Date: Mon, 29 Nov 1999 10:45:24 +0100
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>,
-        linuxppc-user@lists.linuxppc.org
+Date: Mon, 29 Nov 1999 10:01:23 -0500
+Subject: Re: A.Joshi: What is the status of Voodoo3 drivers?
+From: "Justin McKillican" <linuxppc@home.com>
+To: Dan Bethe <dan_bethe@yahoo.com>, Ani Joshi <ajoshi@shell.unixbox.com>,
+        Michael Greer <mgreer@sirius.com>
 CC: linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: BootX-1.2b2 problem?
-Message-Id: <19991129104524.002317@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <19991129145834.DJGU6014.mail.rdc3.on.home.com@[24.112.218.109]>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Nov 29, 1999, Hollis R Blanchard <hollis+@andrew.cmu.edu> wrote:
 
->MHz-specific? :) I don't think so, but certainly not all bugs may not show up
->on all machines...
+>> 
+>>  unfortunately not :(   we were supposed to recieve
+>> a voodoo3 from
+>> MacTell but they went out of business, do you or
+>> anyone else know of a
+>> place that sells Mac PCI voodoo3's?  i'd imagine the
+>> "mac" version is
+>> different then the pc one, with an of driver
+>> orsomething...
 >
->I think this problem manifests before the kernel starts going, though I don't
->know because I haven't seen it firsthand. At any rate, this isn't the only
->problem I've heard of with 1.2b2 (want to reduce your BogoMips by a factor of
->ten?), so I'd be wary of it. (Again, "not all bugs...".)
+>  I know that a gentlemen on this list is the author of
+> a small real-mode x86 emulator designed for emulating
+> x86 BIOS code found on PCI cards, so that they can run
+> on LinuxPPC.
+>  I'm not sure if that's applicable to this situation!
+> It's called "EM86".  Try the following search:
 
-The problem with BootX 1.2b2 is the new IDE reset code (for fixing the
-MacOS 9 driver issue). Some ATAPI devices (CDROMs/DVDs) will hang the
-machine during this reset. (ATAPI devices do not accept an ATA reset).
+You can use any PCI Voodoo3 card on a mac with the voodoo3 drivers from
+3dfx.com itself.  you just need to flash the bios/ROM on the v3 card first
+tho.
 
-I tried asking MacOS to reset the bus but this apparently doesn't work. I
-can use the IDE reset HW wires but I only know how to access them on some
-machines ("heathrow" based machines). So that's really a tricky issue...
-I'm trying to find a way to detect which devices are ATA and which are
-ATAPI and trigger the reset only for ATA. The problem is that the ATA
-device is likely not to be responding to identify command (because of the
-driver problem we are trying to work around).
 
-The BogoMIPS/Slow kernel problem is beyond my understanding for now and
-until I can reproduce it on one of my machines here (basically a
-wallstreet, an iBook and a 8500). I really so no reason why BootX would
-cause this and I'm thinking about a possible side effect of something in
-MacOS triggered by BootX, but frankly, it's weird. It's still possible
-that something gets wrong with the VIA which is used for calibration, can
-someone with this problem try reverting the calibration code not to use
-the VIA ?
-(I think It's in arch/ppc/kernel/pmac_time.c or pmac_support.c)
-
+justin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
