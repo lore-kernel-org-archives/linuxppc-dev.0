@@ -1,41 +1,44 @@
-Date: Thu, 6 May 1999 13:51:13 -0500 (CDT)
-From: "David A. Gatwood" <marsmail@globegate.utm.edu>
-To: "Jens Ch. Restemeier" <jenschrr@post.uni-bielefeld.de>
-cc: John L Grantham <jgrantha@hannover.sgh-net.de>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Partitions > 2GB?
-In-Reply-To: <3731824C.3600@post.uni-bielefeld.de>
-Message-ID: <Pine.LNX.3.96.990506134907.9670B-100000@globegate.utm.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <199905061917.MAA10016@soda.CSUA.Berkeley.EDU>
+To: Brad Boyer <flar@cegt201.bradley.edu>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: USB under LinuxPPC 
+In-Reply-To: Your message of "Wed, 05 May 1999 22:29:23 CDT."
+             <199905060329.WAA28970@cegt201.bradley.edu>
+Date: Thu, 06 May 1999 12:17:39 -0700
+From: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 6 May 1999, Jens Ch. Restemeier wrote:
 
-> 
-> Hi !
-> 
-> > It at least _used_ to be so that the various PPC Linuxen couldn't handle
-> > partitions larger than 2 GB. Is that still the case as of LinuxPPC R4 and
-> > newer?
-> 
-> I don't know where rumors like that come from... I'm running LinuxPPC on
-> a 5 GB partition of a 10 GB IBM harddisk...
+ 
+> Do you always use BootX?  I've never even tried it...
 
-Not just a rumor.  It was true at one time for LinuxPPC.  I _think_ it's
-still the case under MkLinux, so keeping partitions under 2 gigs is a good
-idea if you're planning on using both OSes.
+I normally start Linux using BootX from within MacOS. For some reason
+this seems to work better than using OF to boot. My guess is that the
+nPower init or the MacOS init sets up the SMP card correctly.
 
+The downside to this is that you need a MacOS partition. The upside
+for me is that I finally found something to do with my old 250 MB hard
+drive.
+ 
+> Thanks.  If you have any modules, could you include them too?  I'd
+> appreciate it.
 
-Later,
-David
+Try to download on of the images from the URL:
 
-David A. Gatwood                         Visit globegate's internet
-dgatwood@globegate.utm.edu                  talker, Deep Space 36
-http://globegate.utm.edu                telnet globegate.utm.edu:9624
+http://www.CSUA.Berkeley.EDU/~ranga/downloads/linuxPPC/kernels/
 
+All of the images are the same. You should plain vmlinux, a gzip'ed
+version and a sit.hqx version. As a warning, I will probably get rid
+of the vmlinux image sometime next week since it is so large.
+
+I don't have any modules, *almost* everything is compiled into the
+kernel.
+
+HTH,
+
+----ranga <ranga@soda.berkeley.edu>
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
