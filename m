@@ -1,44 +1,52 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-        <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Going from 2.2.12 to 2.2.17pre10
-Date: Wed, 12 Jul 2000 15:31:07 +0200
-Message-Id: <20000712133107.23409@mailhost.mipsys.com>
-In-Reply-To: <Pine.LNX.4.10.10007112110350.1244-100000@cassiopeia.home>
-References: <Pine.LNX.4.10.10007112110350.1244-100000@cassiopeia.home>
+Date: Wed, 12 Jul 2000 15:43:32 +0200 (MET DST)
+From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
+To: Iain Sandoe <iain@sandoe.co.uk>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: general module gottcha...
+In-Reply-To: <200007121306.OAA00655@hyperion.valhalla.net>
+Message-ID: <Pine.SOL.3.95.1000712153838.21439J-100000@juliet>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Well, some (control/platinum/valkyrie) will keep on using OF probing since
->they're used on PowerMac only. But their initialization routine will no
-longer
->be called by offb.
+On Wed, 12 Jul 2000, Iain Sandoe wrote:
+
 >
->Prepare to see an (untested, as usual :-) patch for this RSN...
+> Wed, Jul 12, 2000, Derek Homeier wrote:
 
-BTW. I didn't look in details yet what's wrong, but I noticed that with
-the current bk 2.4test3:
+> > Ay, that may be the rub! I think I've still seen 'dmasound.o' when I did
+> > a lsmod. I did not change conf.modules, that's for sure.
+> > I have no idea, though, where I might have got the old dmasound.o from,
+> > because I made a 'mrproper' before the last compiles.
+>
+> This is because (as things stand) modules_install does *not* remove un-built
+> modules - just overwrites rebuilt ones with the new versions...
+>
+> This is probably the only sensible behaviour (gurus?)...
+>
+> I am (usually) paranoid and do a:
+>  rm -rf /lib/modules/kernel-version-i'm-working-on
+>
+> before doing modules_install :-)
+>
+I was quite aware of that, and recreated the modules dir several times,
+also because I built three versions in a series and moved the corresponding
+modules to a different place. I may have missed something there, though.
 
- - video=ofonly doesn't work. We need to find some kludge to get this one
-back, as it's useful on some setup with broken video (and can be the only
-way to get the machine up)
+> > I can imagine that
+> > would have messed up everything a bit, though I'm wondering how the
+> > module got loaded with the wrong kernel version at all...
+>
+> Hmmm.. it's probably a little too tolerant - I have module versioning
+> switched on in all my compiles and that is quite successful at whining when
+> you've forgotten to delete/update something.
+>
+Good idea! Where do you enable that?
 
- - aty128fb doesn't intialize console_fb_info (the Xpmac compat stuff).
-This is easily fixed by copy&pasting code from another driver, I'll have
-a fix for this in bk tonight
-
- - More annoying: I couldn't get XF4 to work on the Pismo with this
-kernel. I tried with or without aty128fb in the kernel, I tried XF4 with
-the plain fbdevhw driver, with the r128 driver without fbdev, and with
-the r128 driver on top of fbdev, and all I could get is a hung XFree on a
-black screen (I found no way to get the screen back with a console, but
-the machine still answer to telnet).
-The exact same XF4 binary works nicely on 2.2
-
-Ben.
+Cheers,
+							Derek
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
