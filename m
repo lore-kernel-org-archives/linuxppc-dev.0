@@ -1,54 +1,75 @@
-From: "Jeffrey D. Kowing" <jeffrey.d.kowing1@jsc.nasa.gov>
+Date: Wed, 6 Feb 2002 10:39:41 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Matthias Grimm <joker@cymes.de>
+Cc: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Why is the Powerbook Fn-Key handled differently?
+In-Reply-To: <3C5ED0F9.5060908@cymes.de>
+Message-ID: <Pine.LNX.4.33.0202061003001.9154-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15456.32984.74998.373361@igor.jsc.nasa.gov>
-Date: Tue, 5 Feb 2002 19:03:20 -0600
-To: "David A. Gatwood" <dgatwood@gatwood.net>
-Cc: murali nagarajan <muralin@gdatech.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problem with ping/telnet
-In-Reply-To: <Pine.LNX.3.96.1020205163126.16943I-100000@gatwood.net>
-References: <028801c1aea2$610d96a0$0900a8c0@Domain.invalid>
-	<Pine.LNX.3.96.1020205163126.16943I-100000@gatwood.net>
-Reply-To: jeffrey.d.kowing1@jsc.nasa.gov
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-David A. Gatwood writes:
- >
- > On Tue, 5 Feb 2002, murali nagarajan wrote:
- >
- > > With your info, I am able to do a telnet from my board to the host, only if
- > > I specify the port number. What surprises me is that the presence of both
- > > /etc/services (entry to telnet is available with a port number) and the
- > > /etc/protocols files. For some reason, may be the boot process is unable to
- > > read these information.  But when I want to do a telnet to my board from my
- > > host iMAc, I am unable to do. I get an error message "connection refused".
- >
- > This sounds vaguely familiar like I've run into it before, but I can't
- > remember where.
- >
- > The boot process doesn't read /etc/services.  That's read on-the-fly by
- > the telnet program itself with calls to either getservbyname or
- > getservent, which are standard C library calls, and should always work if
- > the service is listed and the files (and directory) are readable by the
- > user that telnet is being run as.
+> The old driver map the scancode for the Fn-Key to a different value and
+> passes it to the Kernel keyboard driver. The new HID filters the Fn-Key
+> completely out, as the attached code fragments below show.
+>
+> Is there any reason to cut out the Fn-Key in the new input driver?
+> Nevertheless the Fn-Key is hard wired with the special keys and the
+> number block, it would helpful to have an additional qualifier key on
+> this small keyboard.
 
-It sounds like you might be missing some of the glibc resolver
-libraries that allow programs to access the various databases (i.e.,
-things like /etc/services and /etc/protocols.)  In particular, I think
-you might be missing the /lib/libnss_files.so.  There is a discussion
-of this somewhere in the glibc info pages as I recall.  Also, your
-/etc/nsswitch.conf file is important for determining which source of
-information takes precedence (for instance, in the case of name
-resolution, do you use /ect/hosts first or a domain name server
-first).
+AFAIR with the Fn key pressed, those keys that do have a Fn key mapping
+will generate separate key codes anyway (leaving the key in would generate
+a 'modifier' key event followed by a different keycode so you wouldn't see
+fn-u but fn followed by kp-4). The rest of the modifier keys behaves
+different (the keycode of a key pressed together with ctrl won't change).
+That will be the reason why the HID code drops the fn key event. In order
+to leave it in as additional modifier you'd need to add another translation
+table (identity, as far as the keypad codes are concerned). Other than
+that, I can see no reason to drop that key event.
 
-Regards.
+BTW the old driver never shows up the Fn key events either. That 'special
+value' seems to be dropped by handle_scancode now. The comment there
+indicates the original keycode (assuming it goes through) would confuse
+the mouse button emulation. Here's why:
 
---
-Jeff Kowing
-jeffrey.d.kowing1@jsc.nasa.gov
+  /*
+    The X server for MkLinux DR2.1 uses the following unused keycodes to
+    read the mouse:
+
+    0x7e  This indicates that the next two keycodes should be interpreted
+          as mouse information.  The first following byte's high bit
+          represents the state of the left button.  The lower seven bits
+          represent the x-axis acceleration.  The lower seven bits of the
+          second byte represent y-axis acceleration.
+
+    0x3f  The x server interprets this keycode as a middle button
+          release.
+
+    0xbf  The x server interprets this keycode as a middle button
+          depress.
+
+    0x40  The x server interprets this keycode as a right button
+          release.
+
+    0xc0  The x server interprets this keycode as a right button
+          depress.
+
+    NOTES: There should be a better way of handling mice in the X server.
+    The MOUSE_ESCAPE code (0x7e) should be followed by three bytes instead
+    of two.  The three mouse buttons should then, in the X server, be read
+    as the high-bits of all three bytes.  The x and y motions can still be
+    in the first two bytes.  Maybe I'll do this...
+  */
+
+IOW, the ancient Xpmac mouse data input hack (rerouting mouse data to the
+keyboard input stream, yuck). Do we need to support this any further?? If
+not, the remapping in the old driver can go, as can the 'if (kbd->kbdmode
+== VC_RAW)' section of mouse_input.
+
+	Michael
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
