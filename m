@@ -1,35 +1,74 @@
-Message-ID: <3AF856AE.80D0C230@mvista.com>
-Date: Tue, 08 May 2001 16:27:26 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: David Blythe <blythe@routefree.com>
+From: clark@esteem.com
+Message-Id: <5.0.0.25.1.20010508130110.0207deb0@pop.esteem.com>
+Date: Tue, 08 May 2001 13:28:40 -0700
+To: Arturo Nunez <artnpp@cs.ucf.edu>
+Subject: Re: Wireless Advice
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: dcache BUG()
-References: <Pine.HPX.4.10.10105072359470.22253-100000@gra-ux1.iram.es> <3AF72CA8.52163E55@mvista.com> <03a001c0d74e$60022c70$4b00000a@foolio1> <3AF73161.26986237@mvista.com> <040a01c0d754$1bf6d5c0$4b00000a@foolio1> <3AF740C0.F65FBCB8@mvista.com> <047301c0d75c$2da00a00$4b00000a@foolio1> <3AF747C4.9C2D74A5@mvista.com> <3AF8348F.FEBF22DE@routefree.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200105081540.LAA10976@iris.cs.ucf.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Blythe wrote:
+At 11:40 AM 5/8/01 -0400, you wrote:
 
-> ....  However, we
-> can only make it happen on our 405GP walnut board(s) and not our
-> prototype 405GP board(s) (they both have rev D processors).
+>Hello:
+>         I have the following board:
+>
+>         RPX CLLF
+>         Cpu:XPC860TZ
+>
+>         From Embbeded Planet.
+>
+>         Now, I need to do some research in Wireless, I was thinking to
+> use one of these cards:
+>
+>         -       Cisco Aironet 340 Series Card  or
+>         -       Linksys WPC11
+>
+>         Any advice of which one use ??
+>
+>         Best Regards
+>
+>         Arturo Nunez
+>
 
-Oh, great :-).....Are there any obvious differences, like clock
-speed, memory type or configuration, etc.?
+I asume you want to do 802.11 or 802.11b.
 
-If someone gets a chance, would you give the FSM labs linuxppc_2_5
-sources a whirl before they disappear?  I don't expect it to be
-perfect, but it would sure be nice debugging something else for
-a change :-).
+         I recomend you use a pcmcia card based on the prism 2 chipset. You
+can get the driver for the prism 2 cards at http://www.linux-wlan.com .
+They also have a list of cards they have tested with the driver. They also
+sell an access point development kit. the development kit includes a RPX
+lite board.
 
-I modified the Ethernet driver cache stuff at least.....
+         Our company will be selling an access point and pcmcia cards soon
+(as soon as we get the software finished ;-) ). Our access point will
+operated at the legal power limit of 1 watt. The pcmcia cards we will be
+selling put out about 100 milliwatts and we know they work with linux. If
+your willing to wait check our site out http://www.esteem.com .
 
-Thanks.
+
+Good luck
+
+Conn Clark
 
 
-	-- Dan
+
+*****************************************************************
+   If you live at home long enough, your parrents will move out.
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
+
+(509) 735 - 9092 EXT. 15
+
+Stock Ticker Symbol				ELST
+
+"clark@esteem.com" Copyright 2000 all rights reserved. May not be sold or
+used for advertisements.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
