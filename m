@@ -1,42 +1,49 @@
-Date: Wed, 12 Nov 2003 09:00:48 +0100
-From: Olaf Hering <olh@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: common config fails to open /dev/console
-Message-ID: <20031112080048.GA6165@suse.de>
-References: <20031111211016.GA9623@suse.de> <1068602414.13217.25.camel@gaston>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1068602414.13217.25.camel@gaston>
+Date: Wed, 12 Nov 2003 10:30:38 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Wolfgang Denk <wd@denx.de>
+Cc: Dale Farnsworth <dale@farnsworth.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+	Tom Rini <trini@kernel.crashing.org>
+Subject: Re: MPC5200 Patches 
+In-Reply-To: <20031112003502.BBA4CC5F59@atlas.denx.de>
+Message-ID: <Pine.GSO.4.21.0311121029220.885-100000@waterleaf.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- On Wed, Nov 12, Benjamin Herrenschmidt wrote:
-
-> On Wed, 2003-11-12 at 08:10, Olaf Hering wrote:
-> > I got this oops with the attached config. it dies in init_dev() because
-> > driver->ttys contains NULL.
-> >
-> > sys_open -> filp_open -> dentry_open -> chrdev_open -> tty_open -> init_dev
-> >
-> > maybe pmac_zilog doesnt play well together with the 8250, or it doesnt
-> > initalize everything correctly.
+On Wed, 12 Nov 2003, Wolfgang Denk wrote:
+> * Some files/directories have been renamed into 5xxx, others in
+>   m5xxx. The same applies to the CONFIG_ options: Maybe we can make
+>   this a bit more consistent?
 >
-> Sure, pmac_zilog doesn't play well with 8250, but shouldn't cause such
-> a crash. What machine is it btw ? Can you send me a fix for pmac_feature
-> not detecting the model properly ?
+>   Given the fact that we use CONFIG_6xx, CONFIG_40x, CONFIG_44x,
+>   CONFIG_8xx, ... we should probably use CONFIG_5xxx instead of
+>   CONFIG_M5XXX ?
+>
+>   We have drivers/i2c/i2c-algo-8xx.c, so maybe we should have
+>   i2c-algo-5xxx.c instead of i2c-algo-m5xxx.c ?
+>
+>   There is include/linux/i2c-algo-8xx.h - how about i2c-algo-5xxx.h
+>   instead of i2c-algo-m5xxx.h ?
+>
+>   We have include/asm-ppc/mpc8xx.h and mpc8260.h and ibm4xx.h - maybe
+>   we should use mpc5xxx.h instead of m5xxx.h ?
 
-I think the bug is that the detection is still in progress, see
-http://bugme.osdl.org/show_bug.cgi?id=1529
+What's done in include/asm-ppc/ isn't that important for the outside (non-PPC)
+world, but i2c-algo-5xxx.c may be a too generic name...
 
-Its a 7200/90. 'compatible' contains
-AAPL,7300
-MacRISC
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-USB is for mice, FireWire is for men!
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-sUse lINUX ag, nÜRNBERG
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
