@@ -1,81 +1,86 @@
+From: "T Michael Turney" <tmike@recipes4linux.com>
+To: "Andrew Williams" <awilliam@nortelnetworks.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: FEC support for 8260 in kernel 2.4.25
+Date: Tue, 27 Apr 2004 19:22:59 -0700
+Message-ID: <GEEKLLHMFHLAJOBEEELHEEEKCJAA.tmike@recipes4linux.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Subject: RE: ppc405ep GPIO register mmap'ing invalid argument
-Date: Tue, 27 Apr 2004 16:23:04 -0700
-Message-ID: <C7FFFEA58B43D311920D0004ACE5333F132B016F@amer25.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "Kerl, John" <John.Kerl@Avnet.com>,
-	"Charles Frey" <charlesf@wciatl.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <E380A44D523BD5118EAE0002A52CE5C40B87C883@zcard0k8.ca.nortel.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Oop, I meant:
+Thanks for all the inputs I received on the original query.
 
-So you want to map a page (probably 4K) at 0xef600000,
-then read/write the returned offset, + 0x700.
+Update: All FCC ports are functional at 100 Mbps, but not
+at 10 Mbps.
 
------Original Message-----
-From: Kerl, John
-Sent: Tuesday, April 27, 2004 4:22 PM
-To: Kerl, John; 'Charles Frey'; 'linuxppc-embedded@lists.linuxppc.org'
-Subject: RE: ppc405ep GPIO register mmap'ing invalid argument
+I had made some changes to the do/while loop in fec_enet_init,
+investigating this problem.  When I backed those changes out
+and removed the 10Mbps traffic, the 3 FCCs started to play.
 
+Not sure why the 10 Mbps traffic is causing problems,
+the LEDs seem to indicate the PHY (BCM5221) is correctly
+auto-negotiating.
+Cheers,
+T.mike
 
-Also the offset must be a multiple of getpagesize().
-So you want to map a page (probably 4K) at 0xef600700,
-then read/write the returned offset, + 0x700.
-
------Original Message-----
-From: Kerl, John
-Sent: Tuesday, April 27, 2004 4:20 PM
-To: 'Charles Frey'; linuxppc-embedded@lists.linuxppc.org
-Subject: RE: ppc405ep GPIO register mmap'ing invalid argument
-
-
-Check the manpage:  length must be a multiple of getpagesize().
-Which your 4 evidently is not.
-
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]
-Sent: Tuesday, April 27, 2004 3:57 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: ppc405ep GPIO register mmap'ing invalid argument
-
-
-
-Hey,
- I'm trying to read and write from the GPIO_OR register on an ibm 405ep
-(0xEF600700), and just as I've seen on this list and other places on the
-net, I do this:
-
-   if ((m_fp = open("/dev/mem", O_RDWR)) < 0)
-   {
-      printf("Can't open /dev/mem\n");
-      return(-1);
-   }
-
-   offset = 0xef600700 / getpagesize();
-   data = mmap(0, 4, PROT_READ | PROT_WRITE, MAP_SHARED, m_fp, offset);
-
-And it always fails with "Invalid Argument".  The mmap man page seems to
-suggest you have to pass the address as a multiple of the pagesize, so that
-why I do that.  But I've also tried passing 0xEF600700 straight in, and
-I've tried setting length to a getpagesize() as well (as opposed to 4) to
-see if I was asking for too little, but still is fails the same way.  At
-first I thought this just wasn't a valid operation, but I've seen so many
-examples now that I don't believe that's it.  Can anybody point me in the
-right direction?
-
-As a somewhat related question, I can "cat /dev/mem > test.bin" and it
-comes out to be something like 67 megs, and this board has 64 megs of RAM.
-I'm confused as to why the entire 4 GB memory space doesn't come out?
-
-Thanks!
--Charles
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Andrew
+> Williams
+> Sent: Monday, April 26, 2004 11:49 AM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Subject: RE: FEC support for 8260 in kernel 2.4.25
+>
+>
+>
+> -- Fourth Attempt.. hoping to have disabled HTML output in Outlook --
+>
+> Not just the GPIO pins, be sure to note the different
+> clock sources. (Which in the code is clearly labeled as
+> "This is board specific", but then goes on to declare
+> constant values in the common fcc_enet.c file).
+>
+>   This bothered me enough that I changed the fcc_enet
+> files from:
+>
+> #define PC_F1RXCLK      ((uint)0x00000800)
+> #define PC_F1TXCLK      ((uint)0x00000400)
+> #define CMX1_CLK_ROUTE  ((uint)0x3e000000)
+>
+> to
+>
+> #ifndef PC_F1RXCLK
+> #define PC_F1RXCLK      ((uint)0x00000800)
+> #endif
+> #ifndef PC_F1TXCLK
+> #define PC_F1TXCLK      ((uint)0x00000400)
+> #endif
+> #ifndef CMX1_CLK_ROUTE
+> #define CMX1_CLK_ROUTE  ((uint)0x3e000000)
+> #endif
+>
+>  (repeat for all 3 interfaces)
+>
+> I know it looks a bit kludgy, but you can now declare board
+> specific values in your platform/<platform>.h file, and have these
+> override the current default hard coded values. Furthermore this
+> change won't break any existing platforms. :o)
+>
+> One other potential 'gotcha' is if you have different FPSMR values
+> depending on the interface. The current code (2.4.22) limits you to
+> a single value that applies to all three interfaces. I worked around
+> this one, by adding a field to 'fcc_info' for the fpsmr. Then in the
+> declaration of 'fcc_ports' I once again used conditional
+> compiles to allow FPSMR values in the platforms file to override
+> the default FCC_PSMR_ENCRC value.
+>
+>
+> Andrew
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
