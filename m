@@ -1,44 +1,32 @@
-To: "Cameron, Steve" <Steve.Cameron@hp.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Can I run linux without a file system? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 21 Jun 2002 16:13:01 CDT."
-             <45B36A38D959B44CB032DA427A6E10640167CFE3@cceexc18.americas.cpqcorp.net>
-Date: Fri, 21 Jun 2002 23:23:54 +0200
-Message-Id: <20020621212359.BCA0D1030A@denx.denx.de>
+To: "Kerl, John" <John.Kerl@Avnet.com>
+Cc: "'Jerry Van Baren'" <vanbaren_gerald@si.com>,
+	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>,
+	"'laitingwai@yahoo.com'" <laitingwai@yahoo.com>
+Subject: Re: Can I run linux without a file system?
+References: <C08678384BE7D311B4D70004ACA371050B76351E@amer22.avnet.com>
+From: Roland Dreier <roland@topspin.com>
+Date: 21 Jun 2002 14:26:10 -0700
+In-Reply-To: <C08678384BE7D311B4D70004ACA371050B76351E@amer22.avnet.com>
+Message-ID: <52znxoe32l.fsf@topspin.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <45B36A38D959B44CB032DA427A6E10640167CFE3@cceexc18.americas.cpqcorp.net> you wrote:
->
-> Hmm, my minimal rootfs is (so far) 7 Mb, (as reported by du -s).
-> Or, is this 4Mb you cite compressed?  I wonder because my
-> libc.so is over 5 Mb. (which I got from DENX eldk-1.0)
+>>>>> "John" == John Kerl <Kerl> writes:
 
-Have a look at the SELF Makefile... you should run
+    John> * I could bulk-copy (cp -R) from $xroot to the filesystem
+    John> image, *but* you can't cp around the files in /dev.  The
+    John> script below is hackish in that I list out all the
+    John> subdirectories in $xroot except /dev and copy them, then
+    John> populate /dev using the mkdevs script (included after
+    John> mkramdisk).  (It would be more elegant to use find with grep
+    John> -v /dev.)
 
-$(CROSS_PREFIX)strip --remove-section=.note --remove-section=.comment *.so
+cp -a works like cp -R except it will copy /dev and symlinks properly.
 
-on all libraries on the trarget filesystem.
-
-> Any hints or links to into on crunching down the
-> individual libraries would be helpful.
-
-And for really limited cases there is ulibc, the  library  optimizer,
-etc.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Ill-chosen abstraction is particularly evident in the design  of  the
-ADA  runtime  system.  The  interface to the ADA runtime system is so
-opaque that it is impossible to model  or  predict  its  performance,
-making it effectively useless for real-time systems.
-- Marc D.  Donner and David H. Jameson.
+Best,
+  Roland
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
