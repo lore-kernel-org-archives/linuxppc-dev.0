@@ -1,185 +1,49 @@
-Message-ID: <005201c3c224$135c4090$5100a8c0@davey033ce6193>
-From: "DaveyWu" <daveywu@transengines.com>
-To: "Stefan Roese" <stefan.roese@esd-electronics.com>,
-	"'Linuxppc-Embedded'" <linuxppc-embedded@lists.linuxppc.org>,
-	<benh@kernel.crashing.org>, <akuster@mvista.com>
-References: <004601c3c09e$8cfea410$0212000a@PCSTEFAN>
-Subject: Re: PPC4xx enet driver problem (version 2.0)
-Date: Sun, 14 Dec 2003 17:24:26 +0800
+From: Paul Miller <pmiller9@users.sourceforge.net>
+To: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Peripherals  Memory Mapping
+Date: Sun, 14 Dec 2003 09:28:22 -0600
+References: <Pine.GHP.4.58.0311271703390.25225@stud3.tuwien.ac.at> <1070266735.328.5.camel@linpc003.aimsys.nl> <3FCB3969.9010707@catapult.com>
+In-Reply-To: <3FCB3969.9010707@catapult.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+  charset="iso-8859-1"
+Message-Id: <200312140928.23106.pmiller9@users.sourceforge.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Stefan,
-
-Thanks for your reply. My bootloader is OpenBios. I think the problem is not caused by the wrong MAC addresses, because when I boot the 2.4.18 kernel the MAC address of eth1 is same 00:00:00:00:00:00 but both EMACs work well.
-
-Our engineers is continuing to work with the problem. I would like to share any achievements about the problem with you.
-
-Best regards,
-Davey Wu
-
-
-
------ Original Message -----
-From: "Stefan Roese" <stefan.roese@esd-electronics.com>
-To: "'DaveyWu'" <daveywu@transengines.com>; "'Linuxppc-Embedded'" <linuxppc-embedded@lists.linuxppc.org>; <benh@kernel.crashing.org>; <akuster@mvista.com>
-Sent: Friday, December 12, 2003 6:56 PM
-Subject: RE: PPC4xx enet driver problem (version 2.0)
-
-
-> Davey!
+On Monday 01 December 2003 6:51 am, Kevin A. Sapp wrote:
+> Hello,
 >
-> No, we didn't solve this problem so far. Eugene did some tests on an
-> ppc440 board and had no problems with the multiple enet devices. So it
-> seems to be 405ep related! I still have to send some debug output to
-> Eugene (hopefully today)!
+> Maybe this is a simple question, but I have searched the code
+> and played around with no luck.  This is for an 8260 FADS
+> board, later to be used on custom H/W.
 >
-> By the way: Did you notice that your MAC-address of the 2nd ethernet
-> channel (eth1) is 00:00:00:00:00:00? This is wrong and probably a
-> problem in passing MAC-addresses from your bootloader to linux. What
-> bootloader are you using? U-Boot/OpenBios?
+> How and where do I add peripherals memory to the memory
+> map?   I have tried adding it in the ads_map_io function but
+> when I try to access the 82xx internal memory space there to
+> add the memory to the base and option registers it dies.
+> io_block_mapping is called successfully for the internal
+> space, but appears to be inaccessable at this time.
 >
-> Best regards,
-> Stefan.
->
-> > -----Original Message-----
-> > From: DaveyWu [mailto:daveywu@transengines.com]
-> > Sent: Friday, December 12, 2003 3:40 AM
-> > To: Stefan Roese; Linuxppc-Embedded;
-> > benh@kernel.crashing.org; akuster@mvista.com
-> > Subject: Re: PPC4xx enet driver problem (version 2.0)
-> >
-> >
-> > Hi Stefan,
-> >     I have suffered the same problem when I am trying swtich
-> > to 2.4.22 from 2.4.18 on IBM405ep board. Following is the
-> > output on my board:
-> >
-> > # ifconfig eth0 down
-> > # ifconfig eth1 down
-> > # ifconfig eth0 192.168.1.1
-> > eth0: adjust to link, speed: 100, duplex: 1, opened: 1
-> > eth0: Speed: 100, Full duplex.
-> > # ping 192.168.1.123
-> > PING 192.168.1.123 (192.168.1.123): 56 data bytes
-> > 64 bytes from 192.168.1.123: icmp_seq=0 ttl=128 time=5.2 ms
-> > 64 bytes from 192.168.1.123: icmp_seq=1 ttl=128 time=2.8 ms
-> > 64 bytes from 192.168.1.123: icmp_seq=2 ttl=128 time=2.7 ms
-> > 64 bytes from 192.168.1.123: icmp_seq=3 ttl=128 time=2.6 ms
-> > 64 bytes from 192.168.1.123: icmp_seq=4 ttl=128 time=2.7 ms
-> > 64 bytes from 192.168.1.123: icmp_seq=5 ttl=128 time=2.7 ms
-> >
-> > --- 192.168.1.123 ping statistics ---
-> > 6 packets transmitted, 6 packets received, 0% packet loss
-> > round-trip min/avg/max = 2.6/3.1/5.2 ms # ifconfig eth1 192.168.2.1
-> > eth1: adjust to link, speed: 100, duplex: 1, opened: 1
-> > eth1: Speed: 100, Full duplex.
-> > SIOCSIFFLAGS: Device or resource busy
-> > # ifconfig
-> > eth0      Link encap:Ethernet  HWaddr 00:04:AC:E3:15:5E
-> >           inet addr:192.168.1.1  Bcast:192.168.1.255
-> > Mask:255.255.255.0
-> >           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-> >           RX packets:104 errors:0 dropped:0 overruns:0 frame:0
-> >           TX packets:7 errors:0 dropped:0 overruns:0 carrier:0
-> >           collisions:0 txqueuelen:100
-> >           RX bytes:10027 (9.7 kiB)  TX bytes:630 (630.0 iB)
-> >           Interrupt:15
-> >
-> > lo        Link encap:Local Loopback
-> >           inet addr:127.0.0.1  Mask:255.0.0.0
-> >           UP LOOPBACK RUNNING  MTU:16436  Metric:1
-> >           RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-> >           TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-> >           collisions:0 txqueuelen:0
-> >           RX bytes:0 (0.0 iB)  TX bytes:0 (0.0 iB)
-> >
-> > # ping 192.168.1.123
-> > PING 192.168.1.123 (192.168.1.123): 56 data bytes
-> >
-> > --- 192.168.1.123 ping statistics ---
-> > 25 packets transmitted, 0 packets received, 100% packet loss
-> > # ifconfig -a
-> > eth0      Link encap:Ethernet  HWaddr 00:04:AC:E3:15:5E
-> >           inet addr:192.168.1.1  Bcast:192.168.1.255
-> > Mask:255.255.255.0
-> >           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-> >           RX packets:104 errors:0 dropped:0 overruns:0 frame:0
-> >           TX packets:15 errors:0 dropped:0 overruns:0 carrier:0
-> >           collisions:0 txqueuelen:100
-> >           RX bytes:10027 (9.7 kiB)  TX bytes:966 (966.0 iB)
-> >           Interrupt:15
-> >
-> > eth1      Link encap:Ethernet  HWaddr 00:00:00:00:00:00
-> >           inet addr:192.168.2.1  Bcast:192.168.2.255
-> > Mask:255.255.255.0
-> >           BROADCAST MULTICAST  MTU:1500  Metric:1
-> >           RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-> >           TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-> >           collisions:0 txqueuelen:100
-> >           RX bytes:0 (0.0 iB)  TX bytes:0 (0.0 iB)
-> >           Interrupt:17
-> >
-> > lo        Link encap:Local Loopback
-> >           inet addr:127.0.0.1  Mask:255.0.0.0
-> >           UP LOOPBACK RUNNING  MTU:16436  Metric:1
-> >           RX packets:25 errors:0 dropped:0 overruns:0 frame:0
-> >           TX packets:25 errors:0 dropped:0 overruns:0 carrier:0
-> >           collisions:0 txqueuelen:0
-> >           RX bytes:2800 (2.7 kiB)  TX bytes:2800 (2.7 kiB)
-> >
-> > #
-> > Have you already solved the problem?
-> >
-> > ----- Original Message -----
-> > From: "Stefan Roese" <stefan.roese@esd-electronics.com>
-> > To: "Linuxppc-Embedded"
-> > <linuxppc-embedded@lists.linuxppc.org>;
-> > <benh@kernel.crashing.org>; <akuster@mvista.com>
-> > Sent: Wednesday, December 03, 2003 7:29 PM
-> > Subject: PPC4xx enet driver problem (version 2.0)
-> >
-> >
-> > >
-> > > Hello!
-> > >
-> > > We are trying to switch to the 2.4.23 linuxppc_2_4_devel
-> > kernel (from
-> > > 2.4.21) and experience a problem with the "new" ethernet driver for
-> > > the ibm ppc4xx (version 2.0 from Benjamin Herrenschmidt). On our
-> > > boards with only one active enet interface we have no problems. But
-> > > our PPC405EP boards with 2 active enet devices, the traffic stops
-> > > completely upon initializing the 2nd devices (emac_reset_configure).
-> > >
-> > > Has anybody experienced similar problems? Has anybody seen
-> > this driver
-> > > working properly with more than one ppc4xx enet devices (especially
-> > > ppc405ep)?
-> > >
-> > > With the previous driver (from linuxppc_2_4_devel 2.4.21
-> > maintained by
-> > > mvista) we had no problems with 2 enet interfaces on the
-> > ppc405ep so
-> > > far!
-> > >
-> > > By the way: What is the future of the ppc4xx enet driver. I
-> > found that
-> > > the 2.5 kernel  has a newer mvista driver included
-> > (modifications for
-> > > 440gx, etc.). Is the driver from 2.4.23 a dead end?
-> > >
-> > > Thanks and best regards,
-> > > Stefan.
-> > >
-> > >
-> > >
-> > >
-> >
->
->
+> Is there a function that adds memory ranges to both the Linux
+> map and the processor map (Base and Option registers) ?
+
+I recently jumped into the embedded linux world and I've been playing
+around with a 405EP from Intrinsyc.  In order to get I/O access to
+the peripheral bus, you need to ioremap_nocache() the peripheral
+memory in a kernel module, then mmap() it in user space.  For the DCR
+registers (e.g., the embedded memory controller (EBC) registers),
+you'll need to modify these in kernel space by calling mtdcr() and
+mfdcr().
+
+I've been able to communicate with external hardware via peripheral I/
+O.  I noticed that memory addresses should lie on a 16 or 32-bit
+boundary, otherwise the write pulse occurs too late for single
+writes.
+
+Hope this helps,
+-Paul
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
