@@ -1,46 +1,26 @@
-Message-ID: <20021007112640.38961.qmail@web8005.mail.in.yahoo.com>
-Date: Mon, 7 Oct 2002 04:26:40 -0700 (PDT)
-From: rekha gvv <rekhagvvc@yahoo.co.in>
-Subject: boot linux on fads mpc860
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <0B0A39652BB0D411BCCF00508B9512EC08AEB42C@tx14exm05.ftw.mot.com>
+From: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
 To: linuxppc-embedded@lists.linuxppc.org
+Subject: ELDK iso image
+Date: Mon, 7 Oct 2002 09:37:30 -0500 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="ISO-8859-2"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
-I am new to this mailing list.
-I am trying to boot linux from Fads MPC860 powerpc
-board I have compiled the linux kernelversion
-linux-2.4.4-2002-03-21 .Also i have put the PPcboot
-1.1.6 into the board.now i dont know how to download
-this linux kernel into this board.Should i do any
-sttings with ppcboot .please do let me know
-i am using the tftpboot command but then
-wheni tell go 100000 it tells
+Mr. Denk,
 
-## starting application at 0x00100000
+Would you please provide the ELDK iso image (instead of directory tree)
+on your web address: www.denx.de or ftp.leo.org ?
 
-thenit hangs ..
-i have tried to download the vmlinux file also
-converted that to binary format and also tried but it
-gives the same problem
-one more thing is when i used the BOOTM command
-it used to give
+Basically there are a lot of problems for me (perhaps others) to burn the
+image on linux box.
 
-##Booting application at 0x00100000
-Bad magic number
+Thanks,
 
-I dont understand what to do.so kindly please help
-Regards
-Rekha
-rekhagvvc@yahoo.co.in
-
-
-
-
-Faith Hill - Exclusive Performances, Videos & More
-http://faith.yahoo.com
+Bo
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
