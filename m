@@ -1,47 +1,41 @@
-Subject: Error in loading shared libraries: invalid ELF header 
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF31327F98.5BC0D876-ON85256B05.004B0D9F@pok.ibm.com>
-From: "Alda Sanomiya" <sanomiya@us.ibm.com>
-Date: Thu, 15 Nov 2001 08:42:29 -0500
-MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Date: Thu, 15 Nov 2001 08:42:01 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Shie Erlich <shie_e@elbit.co.il>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: a general bootloader question
+Message-ID: <20011115084201.A31998@cpe-24-221-152-185.az.sprintbbd.net>
+References: <937610FE9B70D511B3E700508B8B65770E53B1@MAIL1>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <937610FE9B70D511B3E700508B8B65770E53B1@MAIL1>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
-I'm using mvista PPC 405  embedded linux  and I'm getting the error
-highlighted in the log bellow.
-Does anybody know where the problem is?
+On Thu, Nov 15, 2001 at 11:51:55AM +0200, Shie Erlich wrote:
 
-TCP: Hash tables configured (established 16384 bind 16384)
-ppc4xx_enet_tx=d1000000
- PPC405 MAL0  open completed
-OPEN MAC 00:b3:02:e6:16:2d
-MAL Chan Start mal_num = 1 chna_type =1 in_chan = 0
-MAL Chan Start mal_num = 1 chna_type =2 in_chan = 0
-RX CHAN stting to 20001030
-DCRN_MAL0RXCASR 190
-eth0: PPC4XX Emac open completed
-OPEN MAC 00:00:00:00:00:00
-MAL Chan Start mal_num = 1 chna_type =1 in_chan = 2
-MAL Chan Start mal_num = 1 chna_type =2 in_chan = 1
-RX CHAN stting to 20001030
-DCRN_MAL0RXCASR 190
-eth1: PPC4XX Emac open completed
-IP-Config: Incomplete network configuration information.
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
-VFS: Mounted root (ext2 filesystem).
-Freeing unused kernel memory: 176k init 4k openfirmware
-init: error in loading shared libraries: libc.so.6: invalid ELF header
-Kernel panic: Attempted to kill init!
-Rebooting in 180 seconds..
+> 1) what is the proper way to get the kernel to boot - do i need a
+> bootloader, if so, what ?
 
+Of some sort, yes.
 
-thanks,
-Alda Sanomiya
-phone: (914) 945-3599  T/L 862-3599
+> 2) what is the bootloader's functionality - except downloading the kernel ?
+> does it modify
+>     memory in any way ? is the kernel dependent on such modifications ?
 
+Well, in the simplest form, (what's in the linuxppc_2_4_devel tree), you
+end up doing some very basic hardware checking/init'ing, decompress the
+kernel and go.  For a 750 + cpc700 system this should be realativly
+easy.  Take a look at how some of the other 7xx/74xx systems work in
+there.
+
+> 3) how can i make a bootloader load the kernel in low memory without
+> changing KERNELBASE etc ?
+
+Erm, I think this is a bit of a red herring...
+
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
