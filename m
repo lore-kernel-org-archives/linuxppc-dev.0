@@ -1,5 +1,5 @@
-Date: 30 Sep 2003 04:08:37 -0000
-Message-ID: <20030930040837.11936.qmail@webmail17.rediffmail.com>
+Date: 30 Sep 2003 06:00:41 -0000
+Message-ID: <20030930060041.18102.qmail@webmail27.rediffmail.com>
 MIME-Version: 1.0
 From: "somshekar chandrashekar kadam" <som_kadam1@rediffmail.com>
 Reply-To: "somshekar chandrashekar kadam" <som_kadam1@rediffmail.com>
@@ -12,14 +12,17 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Alex,
+Hi Alex ,
 
-   so u mean to say i need not enable it in PPCBOOT , yes i want t
-use CF as IDE , correct me i fI am wrong
-Thanks A Lot
-SOmshekar
+    what do get this ATTRIBUTE address , IO address DMA ADDRESS
+with respect to CF , where do i get this info
+i know the MEM_ADDR in my memory map others i dont have any idea ,
+where should i get it from
 
+Thanks In Advance
+SOm
 On Mon, 29 Sep 2003 Graf Alex wrote :
+>
 >do i need to first detect it on my PPCBOOT , or can I make it
 >DETECT directly from LINUX
 > >> it depends on what u want.
@@ -41,6 +44,8 @@ On Mon, 29 Sep 2003 Graf Alex wrote :
 >cheers
 >
 >Alex Graf
+>
+>
 >
 
 
