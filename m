@@ -1,40 +1,38 @@
-Date: Fri, 2 Jun 2000 10:34:32 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Henning Loeser <Henning.Loeser@Physik.Uni-Marburg.DE>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re:mesh in 2.4.0-test1
-In-Reply-To: <Pine.OSF.4.02.10006020942310.32075-100000@ax1305.physik.uni-marburg.de>
-Message-ID: <Pine.LNX.4.05.10006021032040.564-100000@callisto.of.borg>
+Message-ID: <39379C61.E33FF001@pop.agri.ch>
+Date: Fri, 02 Jun 2000 13:37:07 +0200
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: 7200 & bitkeeper/linuxcare devel?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2 Jun 2000, Henning Loeser wrote:
-> > Is there anyone who is succesfully using SCSI devices connected to MESH SCSI
-> > with 2.4.0-test1 (or late 2.3.99-preX, e.g. pre9)?
-> I do, everything is detected fine, I use
-> Linux version 2.4.0-test1-ac4 (root@ma1311) (gcc version 2.95.2 19991024
-> (release/franzo))
+Hi,
+has anyone gotten a bitkeeper 2.4.0test1-ac7 or a linuxcare 2.3.99p9 to
+boot under a 7200?
+I try this with absolutley no luck. The last linuxcare was a 2.3.99p6
+which I got to boot. Unfortunately I missed the updates between p6 and
+p9. Both kernels run under a wallstreet. I use BootX 1.2.2 since I'm not
+able to get quik working :-(.
 
-Hmm... I just tried a kernel without support for my sym53c875, and that didn't
-work either, so it's not a multiple SCSI adapter issue. During SCSI device
-probing, it just waits 30 seconds and doesn't find anything.
+The only thing I see on the screen:
+booting...
+setup_arch: enter
+setup_arch: bootmem
+arch: exit
 
-The weird thing is that the MESH driver didn't change. Let's enable debugging
-and retry...
+I played with bk sccstool to track down the relevant changes, but it
+seems that I have to learn a lot with this bk tool. Also, there are many
+changes from 2.3.99p6 until 2.4.0test1-ac7 so it's really difficult to
+find out.
 
-Gr{oetje,eeting}s,
+Any hints would be great.
 
-						Geert
+Thanks
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Andreas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
