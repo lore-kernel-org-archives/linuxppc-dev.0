@@ -1,37 +1,31 @@
-Date: Wed, 16 Aug 2000 10:54:19 -0400 (EDT)
-From: "Jo-Ellen F. Mathews" <joellen@absoval.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Small Web Server
-In-Reply-To: <Pine.GSO.4.21.0008161454070.5745-100000@stekt6>
-Message-ID: <Pine.LNX.3.96.1000816104900.12216B-100000@tristar.cc.absoval.com>
+Message-ID: <399AAB78.23B3127C@mvista.com>
+Date: Wed, 16 Aug 2000 07:55:52 -0700
+From: Cal Erickson <cal_erickson@mvista.com>
+Reply-To: cal_erickson@mvista.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: ellie@SkyStream.com, linuxppc-embedded@lists.linuxppc.org
+Subject: perl support in MontaVista CDK
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Howdy Folks!
+Ellie,
+The CDK 1.2 has perl support for the ppc contained in it.
+It is available from our ftp site.
+Cal
 
-I'm working on the RPX Lite, and I'm exploring my options for a small web
-server.  I downloaded the "GoAhead" web server, and I'm testing it out on
-my host machine (Intel) first to become familiar with it and to see how
-large the binary is before giving it a try on the RPX.
 
-In the meantime, I'd thought I'd probe the list for suggested web servers
-that others may have tried on embedded boards and where to find such web
-servers.  Any direction to good documentation would also be greatly
-appreciated.
-
-Thanks in advance!
-Jo-Ellen Mathews
-
----------------------------------------------------------
-Jo-Ellen F. Mathews
-
-AbsoluteValue Systems      Web:    http://www.linux-wlan.com
-P.O. Box 941149            e-mail: jo-ellen@linux-wlan.com
-Maitland, FL 32794-1149    Phone:  407.644.8582
-USA                        Fax:    407.539.1294
+--
+===========================================================================
+Cal Erickson                 MontaVista Software Inc.
+Customer Support Engineer    490 Potrero Avenue
+Phone (408) 328-0304         Sunnyvale CA 94085
+Fax   (408) 328-9204         e-mail cal_erickson@mvista.com
+Pager 877-566-2012           support 1-800-759-8888 pin 202-7489
+web http://www.mvista.com    support e-mail: support@mvista.com
+eCode: http://cal@work.com.ecode.com
+===========================================================================
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
