@@ -1,33 +1,25 @@
-Message-ID: <4106DC44.5060701@mvista.com>
-Date: Tue, 27 Jul 2004 15:50:44 -0700
+Message-ID: <4106DF1C.8080502@mvista.com>
+Date: Tue, 27 Jul 2004 16:02:52 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
 To: jdomogala@acmepacket.com
 Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: Looking for GT64260 MPSC serial console driver
-References: <NFBBJCNFKLFMBACPKDKCOEMDEDAA.jdomogala@acmepacket.com>
-In-Reply-To: <NFBBJCNFKLFMBACPKDKCOEMDEDAA.jdomogala@acmepacket.com>
+References: <NFBBJCNFKLFMBACPKDKCOEMDEDAA.jdomogala@acmepacket.com> <4106DC44.5060701@mvista.com>
+In-Reply-To: <4106DC44.5060701@mvista.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jeff Domogala wrote:
+Mark A. Greer wrote:
 
->Hello folks.
->
->I am looking for a MPSC serial console driver for the Marvell GT-64260.  I
->have one from an old 2.4 development tree but it looks like it never made it
->into the linuxppc-2.5 tree.  I would also entertain anyone who could point
->me in the direction of what needs to be done to port a serial console driver
->from a 2.4 kernel to the current 2.6 kernel in the linuxppc-2.5 tree.
->
+> I should add that I am currently having problems with that driver on a
+> 64360 base board.  I hope to have it working "soon".
 
-Mail archives are your friend...
-http://lists.linuxppc.org/linuxppc-embedded/200407/msg00332.html
 
-I should add that I am currently having problems with that driver on a
-64360 base board.  I hope to have it working "soon".
+Scratch that.  I had a bug in my platform code.  The mpsc *port 0* seems
+to work fine on the 64360.
 
 Mark
 
