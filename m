@@ -1,42 +1,28 @@
-Date: Thu, 14 Jan 1999 23:37:22 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Alexander Gustav Deucher <agd5f@unix.mail.virginia.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Porting to Nubus PowerMacs
-In-Reply-To: <199901141524.KAA11190@node7.unix.Virginia.EDU>
-Message-ID: <Pine.HPP.3.96.990114232923.2338Q-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 14 Jan 1999 23:41:27 +0100
+To: linuxppc-dev@lists.linuxppc.org, Paul Mackerras <paulus@cs.anu.edu.au>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Bug in macserial.c
+Message-Id: <19990114234127.002894@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+I found at least one bug in macserial.c : info->timeout is never filled
+(should be from change_speed) and so the timeout used in wait_until_sent
+is just garbage.
+
+I'm fixing other things and looking for other bugs, I'll have a patch for
+macserial.c available soon.
 
 
-On Thu, 14 Jan 1999, Alexander Gustav Deucher wrote:
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-> 
-> While we are on the subject of porting, How hard would it be to
-> get linux ppc to boot on machines with NT firmware?  Does
-> anyone know why this firmware is so problematic? Is there
-> anywhere one could find documentation on it, etc.
 
-This firmware might even try to boot the image in little endian mode,
-handling the setting of the processor is rather simple, but resetting the
-host bridge to big endian operation might be very complex and HW
-dependant. 
 
-Could you try the zImage and the preploader on my ftp site:
-
-	ftp://vcorr1.iram.es/pub/zImage-2.2.0-pre5
-	ftp://vcorr1.iram.es/pub/preploader.tgz
-
-(preploader is an experimental early boot code which will take your
-/usr/src/vmlinux and build a zImage ready to boot from 0x41 partition). It
-could be hacked to spit out a lot of info about what the state of the
-machine is when the loaded image gets control.
-
-	Gabriel.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
