@@ -1,36 +1,52 @@
-Message-Id: <200007071125.MAA02302@hyperion.valhalla.net>
-Date: Fri, 07 Jul 2000 12:22:46 +0100
-Subject: Re: RFC: Changing default partition type for linux/ppc
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
-CC: Benjamin Herrenschmidt <bh40@calva.net>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-ID: <3965CF90.B6457A0D@amulet.co.jp>
+Date: Fri, 07 Jul 2000 21:39:44 +0900
+From: Hollis Blanchard <hollis@amulet.co.jp>
+MIME-Version: 1.0
+To: bh40@calva.net, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Drive Setup
+References: <200007070846.JAA05142@hyperion.valhalla.net> <39659EB2.D4C095A6@amulet.co.jp>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Ok, update on Drive Setup:
 
-> Currently, the default partition type used by Linux/PPC on mac partition
-> maps is Apple_UNIX_SVR2. This is historically the type used by Apple's A/
-> UX for its own partitions. However, I don't like it since it gives no
-> indication on the type of filesystem on the partition, and I see no
-> reason to keep it.
+I partitioned a stock iMac DV with 25GB drive using the "Preferred
+LinuxPPC" scheme (which was surprisingly different from the "Preferred
+MkLinux" and "Standard MkLinux" schemes). The Drive Setup version was
+J1-1.8, which is a Japanese-localized 1.8 (it was on the Mac OS J1-8.6
+CD which came with this iMac DV).
 
-This is a great idea - the Apple_UNIX_SVR2 bit is confusing at first.
+Here's what pdisk told me (YDL installed fine, as will any other
+distribution that handles Apple partition maps):
 
-- apart from the desire to have an 'easy to use' partition tool on the MacOS
-side - for non-kernel-hackers (see Drive Partition thread).
+All partitions were created with type Apple_UNIX_SVR2.
 
-What chance of getting Apple to support this move?
+The names and sizes were as follows (I'm preserving the case):
 
-> So I suggest moving to Linux_ext2, Linux_swap, or maybe simply Linux and
-> Linux_swap (since ext2 is not the only filesystem Linux may put on
-> these). Using a different type for swap would help avoiding confusion.
+(Apple_HFS       3.8G)
 
-What prospect of sharing swap space between MacOS X and linux in dual/multi
-boot machines?
+A/UX Root        4.7G
+Swap             50M
+Usr file system  4.7G
+Opt file system  300M
+Home file system 18.9G
 
-Iain.
+The kernel (2.2.17pre9-ben1, but anything recent should be the same) had
+no difficulty automatically finding the root partition on hda9. From
+earlier experiments I know that the kernel does not just check the
+partition name (so it wasn't fooled in this case either). It's worth
+noting that root was the first Apple_UNIX_SVR2 partition; I know that
+yaboot at least would have been confused by the capital S in "Swap".
+
+It seems to me that while using the default setup may not be a good idea
+(19GB /home??), Drive Setup does work fine for creating Linux
+partitions. Perhaps renaming them to more standard Linux name would be a
+good idea. (I don't have his card with me, but if anyone knows the Apple
+employee who wrote Drive Setup please forward this and/or cc him on this
+discussion.)
+
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
