@@ -1,38 +1,50 @@
-To: "kerler" <kerler@newmail.net>
-Cc: "Kaoru Fukui" <k_fukui@highway.ne.jp>, <gcc@gcc.gnu.org>,
-        <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: how to use macro in assemble language embedded in C?
-References: <20001223145258.Postino-022361@smtp01.highway.ne.jp>
-	<or66kazecj.fsf@guarana.lsd.ic.unicamp.br>
-	<3A4613FB.384BAD24@ife.ee.ethz.ch>
-	<orsnnd3d6f.fsf@guarana.lsd.ic.unicamp.br>
-	<00d001c06edc$f3ec3d20$5ef1d092@chn.agilent.com>
-	<20001226221757.Postino-028251@smtp01.highway.ne.jp>
-	<023e01c06fb5$dfe05a80$5ef1d092@chn.agilent.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Date: 27 Dec 2000 13:50:42 -0200
-In-Reply-To: "kerler"'s message of "Wed, 27 Dec 2000 11:33:41 +0800"
-Message-ID: <orhf3poobx.fsf@guarana.lsd.ic.unicamp.br>
+Date: Wed, 27 Dec 2000 19:15:35 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Need testers with MESH SCSI
+In-Reply-To: <19341120115827.19132@192.168.1.2>
+Message-ID: <Pine.LNX.4.05.10012271914190.27676-100000@callisto.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Dec 27, 2000, "kerler" <kerler@newmail.net> wrote:
+On Tue, 26 Dec 2000, Benjamin Herrenschmidt wrote:
+> >Note that there can be other problems with the mesh as well: I remember
+> I once
+> >had some early 2.3.x kernels that could not init the mesh when cold-booted,
+> >only when warm-booted. So I had to boot an older kernel first each time I had
+> >powered down my box :-)
+>
+> There were issues with powering up the MESH on some powerbooks that were
+> fixed some time ago, but maybe your issue is unrelated.
 
-> so if i want use only one command line to compile temp.c,
-> such as "gcc -c -other-option temp.c", which other-option should I add to
-> make
-> gcc creat a temporal assemble file /tmp/xxxx.S (not /tmp/xxxx.s) ?
+Yes, since I don't have a Powerbook, but a LongTrail.
 
-I don't think there's any option to GCC that would make it run the
-assembly code it outputs through a preprocessor.
+> Looking at Darwin's MESH driver, they have a whole bunch of workarounds
+> for known issues (either with common device protocol errors, or MESH
+> internal races).
+
+I still see the
+
+    mesh: halt_dma: data_ptr=-256 (nb=20736, ms=c06ff278)
+
+(i.e. the DMA ptr shows it did 256 bytes too much), but I never noticed any
+file corruption during the 3.5 years I've been using this machine. Let's call
+it a harmless hardware bug.
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-Alexandre Oliva   Enjoy Guarana', see http://www.ic.unicamp.br/~oliva/
-Red Hat GCC Developer                  aoliva@{cygnus.com, redhat.com}
-CS PhD student at IC-Unicamp        oliva@{lsd.ic.unicamp.br, gnu.org}
-Free Software Evangelist    *Please* write to mailing lists, not to me
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
