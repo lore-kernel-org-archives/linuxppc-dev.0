@@ -1,21 +1,25 @@
-Date: Wed, 27 Mar 02 09:32:47 PST
-From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0203271732.AA04381@ivan.Harhan.ORG>
-To: linuxppc-dev@lists.linuxppc.org
+From: benh@kernel.crashing.org
+To: "Mark A. Greer" <mgreer@mvista.com>,
+	Matt Porter <mporter@mvista.com>, <msokolov@ivan.Harhan.ORG>,
+	<linuxppc-dev@lists.linuxppc.org>
 Subject: Re: EV-64260-BP & GT64260 bi_recs
+Date: Wed, 27 Mar 2002 18:47:55 +0100
+Message-Id: <20020327174755.19056@mailhost.mipsys.com>
+In-Reply-To: <3CA1E22C.C86C0D78@mvista.com>
+References: <3CA1E22C.C86C0D78@mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Mark A. Greer <mgreer@mvista.com> wrote:
+>Forget the last one, here's attempt #3:
 
-> Forget the last one, here's attempt #3:
+Looks fine for me.
 
-I can live with this.
+So everybody agree around this mecanism ?
 
-But why is the MAC address in ASCII? Why not simply put the 6 bytes in there?
-Why the extra burden of parsing the ASCII?
+Ben.
 
-MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
