@@ -1,33 +1,24 @@
-Date: Fri, 9 Jul 1999 10:19:42 -0400 (EDT)
-From: "P. Barrette" <barretp@mcmail.cis.McMaster.CA>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: R5 on 7200 yet?
-In-Reply-To: <199907080424.VAA09099@myxo.ugcs.caltech.edu>
-Message-ID: <Pine.SOL.3.96.990709101423.29395A-100000@mcmail.cis.McMaster.CA>
+Message-ID: <378606DD.46E44252@mitre.org>
+Date: Fri, 09 Jul 1999 10:27:41 -0400
+From: Charles Lepple <clepple@mitre.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: syntax error in include/asm-ppc/page.h
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have r4 with kernel 2.2.2 with vram patches and glibc1.99 patches, and I
-have been apprehensive about upgrading to r5.  But I've heard that r5 uses
-glibc6 as does the intel version RH (?), which makes me think that source
-will compile better with less  changes.  The other thing is that I have a
-blind OF machine, 7200, with no mac volumne.  Will r5 install nicely on
-this machine with the current OF settings?  Any tips or warnings about the
-7200 would be appreciated.
+In the CVS repository (as of this morning; file revision 1.19), there is
+a "while (0)" missing from include/asm-ppc/page.h (line 26; should look
+like line 21)
 
---------
-Paul Barrette
-Ph.D. Candidate Classics (Latin Literature)
-System Administrator
-McMaster University
+This problem only appears to manifest itself when xmon support is
+enabled. It's trivial to fix, but I figured someone with CVS write
+access might want to fix it in the repository.
 
-"Oppositaque ad os manu nescio quid taetrum 
-exsibilavit, quod postea Graecum esse affirmabat."
-                                      --Petronius
-
+--Charles Lepple
+clepple@mitre.org
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
