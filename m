@@ -1,26 +1,86 @@
-Message-ID: <3E00559F.2000808@galileo.co.il>
-Date: Wed, 18 Dec 2002 13:01:51 +0200
-From: Rabeeh Khoury <rabeeh@galileo.co.il>
+Message-ID: <3E006B47.8070906@intracom.gr>
+Date: Wed, 18 Dec 2002 14:34:15 +0200
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: Roland Dreier <roland@topspin.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Discovery II (was Re: Support for Arctic platform (405LP based))
-References: <20021213043628.GI21319@zax.zax>	<20021212215126.V23952@duath.fsmlabs.com>	<20021213151808.GI19456@opus.bloom.county>	<20021215121526.M30941@duath.fsmlabs.com>	<15869.5023.549830.146265@argo.ozlabs.ibm.com>	<20021215174120.E30568@duath.fsmlabs.com>	<20021216150442.GJ6095@opus.bloom.county>	<20021216150839.GK6095@opus.bloom.county> <52smwyorqi.fsf_-_@topspin.com> <3DFDCB00.7060509@mvista.com>
-In-Reply-To: <3DFDCB00.7060509@mvista.com>
+To: Dan Malek <dan@embeddededge.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: kmalloc and startup process
+References: <3DFF1DF4.8010005@intracom.gr> <3DFF5466.3050606@embeddededge.com>
+In-Reply-To: <3DFF5466.3050606@embeddededge.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Rabeeh Khoury from Marvell has done a port to it and put it in the
-> linux-galileo tree.  I have no hardware to test it but Rabeeh says that
-> its been working fine for him for some time.
+Dan Malek wrote:
 
+> Pantelis Antoniou wrote:
+>
+>
+>> At what point in the startup process is it OK to call
+>> kmalloc?
+>
+>
+> Before you start hacking up things that are "broken", you
+> should probably take a moment to understand why they are
+> currently implemented the way they are.
+>
+> The CPM support functions are called _very_ early in the
+> kernel to support such features as KGDB on the serial ports.
+> Currently, the host memory allocator uses bootmem pages
+> because they are only option for allocating memory that early.
 
-I have the DB-64360 (Development board based on MV64360 part) working
-fine with the support for the development board and the gigE ethernet.
-I mainly have tested this with 7455 CPUs. I also tested it with dual 7455
+Yes I'm perfectly aware of that. My solution is to use this
+memory first, and then fallback to using dynamic memory
+later. Since my routines don't impose any memory overhead
+to the allocated space, anyone counting at the old behaviour
+is unaffected.
+
+>
+>
+> There are three host memory allocators that are used to
+> support CPM functions.  One is the 'cpm_hostalloc()' space,
+> which is available early and used for small objects like
+> uart fifos.  Second is the consistent DMA functions which
+> are used in the places like the Ethernet driver.  Third is
+> the kernel kmalloc() function which must be futher managed
+> with the cache coherency functions.  They all have advantages
+> and features that meet various driver requirements.  You may
+> need to use several layers of initialization to make this
+> happen, just like any other Linux driver.  Some must be
+> done at kernel initialization, others can be postponed until
+> later.  When you think driver support functions are "broken"
+> you may want to stop and consider that maybe your driver
+> writing techniques are broken and investigate how these
+> functions are working successfully for others.
+
+What  I'm  dealing here is the requirement to use modules
+for my proprietary hardware. I am perfectly willing to
+contibute whatever changes I make to the kernel to the places
+not dealing with my hardware. But I cannot open source my
+hardware.
+
+>
+>
+> I would strongly suggest that the only thing to "fix" is to
+> add a trivial space manager to some statically configurable
+> number of bootmem pages.  The old UNIX resouce map allocator
+> would be a perfect algorithm to manage this space.
+
+Well, patch follows.
+
+>
+>
+> Thanks.
+>
+>
+>     -- Dan
+>
+>
+>
+Regards
+
+Pantelis
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
