@@ -1,33 +1,33 @@
-Message-ID: <3C6D08DC.9070104@capflow.com>
-Date: Fri, 15 Feb 2002 14:10:52 +0100
-From: Laurent Pinchart <laurent.pinchart@capflow.com>
+Message-ID: <3C6D0D48.413600B6@ardistech.com>
+Date: Fri, 15 Feb 2002 14:29:44 +0100
+From: "bart@ardistech.com" <bart@ardistech.com>
+Reply-To: bart@ardistech.com
 MIME-Version: 1.0
-To: dan@embeddededge.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: SCC or SMC for console ?
-References: <3C6BF3B1.2040906@capflow.com> <3C6BFF02.5070905@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Reply-To: laurent.pinchart@capflow.com
+To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: HZ=1000 network problem?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
->
->> I need 4 serial ports at runtime, and was wondering if I should rather
->> use 2SMC + 2SCC or 4 SCC (or 1SMC + 3SCC).
->
-> Always use SCCs for real work and the SMC for console and other low
-> speed things (like connected to low bit rate TDM).
+Hi,
 
-4 SCC then, and 1 SMC for console. Both SMC1 and SMC2 I/Os are available
-on the design (I only need serial ports + FEC ethernet).
+I'm running HH Journeyman 2.0 linux-2.4.2 on a 66MHz RPX Lite with root
+over nfs. When HZ=100 everything works fine. When HZ=1000 the last prints
+I get are
 
-I'd like to use 2 serial ports for RS232 (should be really
-straightforward), and the other 2 for RS485 (with of course no flow
-control). Is there something I should know ?
+>MTD flash: Found 4 x16 CFI devices at location 0 in 8 bit mode
+> Amd/Fujitsu Extended Query Table v1.2 at 0x0040
+>number of CFI chips: 1
+>NET4: Linux TCP/IP 1.0 for NET4.0
+>IP Protocols: ICMP, UDP, TCP, IGMP
+>IP: routing cache hash table of 512 buckets, 4Kbytes
+>TCP: Hash tables configured (established 4096 bind 4096)
+>IP-Config: Guessing netmask 255.255.0.0
 
-Laurent Pinchart
+Does this sound familiar to anybody?
 
+Regards,
+	Bart
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
