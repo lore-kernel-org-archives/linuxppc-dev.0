@@ -1,29 +1,46 @@
-Message-ID: <3C39B87E.3A2E399B@chinook.com>
-Date: Mon, 07 Jan 2002 10:02:22 -0500
+Message-ID: <3C39BA9E.7D2FAD56@chinook.com>
+Date: Mon, 07 Jan 2002 10:11:26 -0500
 From: Peter Desnoyers <pdesnoyers@chinook.com>
 MIME-Version: 1.0
-To: =?iso-8859-1?Q?K=E1ri=20Dav=ED=F0sson?= <kd@flaga.is>
-Cc: LEROY Christophe <christophe.leroy@c-s.fr>,
-	linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Kernel Oops when receiving a lot of UDP packets while booting
-References: <EADB10BAC266A14A85ECBF8686A73E31459414@kolkrabbi.flaga.is>
+To: Liu HongXun-a16975 <a16975@motorola.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Question on the pcmcia module for ppc
+References: <01139FC052A0D411900B00508B9535FC04957C2E@ZCH07EXM04.corp.mot.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I have verified that I am getting packets over the ethernet
-> before the scc_enet_open() is called, I somehow suspect that
-> this might be causing my random crashes.
+Liu HongXun-a16975 wrote:
+>
+> Hi, Peter and all,
+> Could you give me some more detailed hints?
 
-You just kludge it by looking at your 'opened' flag and dropping the
-packet in scc_enet_rx if it's false.  If it stops the crashes, you'll be
-OK until you find a version of the driver that doesn't have this
-problem.
+I'll repeat what I said, more slowly and clearly :-)
 
-The version of the driver I use does all the hardware initialization in
-scc_enet_init, and then all that scc_enet_open does is call
-netif_start_queue.
+   I don't think that inb() and outb() are working to your PCMCIA
+   card, since it appears that the software does not like the
+   return value from what is probably the first inb() read from
+   the card's I/O space.
+
+That means that the code for inb() (_IOBASE and all that) doesn't match
+the way you're initializing your PCMCIA registers.
+
+> As to the IO space, I defined
+>
+> #define  _IO_BASE              0x80000000
+> #define  _IO_BASE_SIZE   0x1000
+> in the header file for my board.
+> And I use ioremap() in function  arch/ppc/mm/init.c/MMU_init().
+> ioremap( _IO_BASE, _IO_BASE_SIZE);
+> Is that OK for PCMCIA IO base access?
+
+You'll have to tell me.  Or else you'll have to provide some information
+on how you're initializing the PCMCIA registers.
+
+One very relevant question here - do you have PCI on your board?
+Mapping all this stuff properly is a bit harder if you do, but still
+doable.
 
 --
 .....................................................................
