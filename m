@@ -1,51 +1,109 @@
-Date: Wed, 7 Apr 2004 17:18:53 +0200
-From: Kiko Piris <linuxppc@pirispons.net>
+Date: Wed, 7 Apr 2004 15:17:19 -0400
 To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: 2.6.5/iBook G3: Oops on resume from sleep
-Message-ID: <20040407151853.GA10891@mortadelo.pirispons.net>
-References: <20040405215318.GA2822@mortadelo.pirispons.net> <20040405231321.GA1293@palantir8> <20040406073741.GA4008@fpirisp.portsdebalears.com> <20040406120158.GA7444@palantir8> <20040406124325.GA17046@fpirisp.portsdebalears.com> <20040406221848.GA1641@palantir8>
+Message-ID: <20040407191719.GA4852@csclub.uwaterloo.ca>
+References: <20040405215318.GA2822@mortadelo.pirispons.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040406221848.GA1641@palantir8>
+In-Reply-To: <20040405215318.GA2822@mortadelo.pirispons.net>
+From: muffin@csclub.uwaterloo.ca (Aaron Lunansky)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 06/04/2004 at 23:18, Martin Habets wrote:
+I'm having similar issues with an ibook G3 (600MHz) - only my system
+seems to fail to sleep, and this is regardless of modules (I have
+sound/airport/ethernet compiled as modules). By fails to sleep, I mean I
+get a blank screen and it does not respond to any input. I'm not sure
+where it is when it dies though - what's the best way to figure this
+out? (how can I make SysRq work on an ibook (which has no SysRq key)).
 
-> Well, I'm out of clues then. Must be something else affecting
+I get this with every 2.6.* kernel I've tried, including 2.6.5. I
+previously had sleep working on my ibook with a 2.6 kernel, but I've
+since replaced the (dead) hard drive. I can get my ibook to sleep with
+a 2.4.24 kernel.
 
-No worries. As BenH pointed, I filed a bug at alsa-project bugtracking
-page (no response yet).
+Thanks,
+Aaron
 
-> Probably not relevant, but does the input source in alsa mixer work
-> okay for you?
-
-What do you mean? If I can record sound with the mic? Yes I can.
-
-In fact I had never used the mic that comes with the iBook before, I
-just apt-get installed audacity and recorded something. OK, no problem.
-
-The funny thing is that with alsa, playback is horrible (too low and
-*very* poor quality). I just have both dmasound_pmac and alsa compiled
-as modules[*] and I load those modules when I want to listen to some
-audio file (sound is not a crucial issue for me).
-
-[*] My system is set up so that oss's dmasound_pmac tries to get loaded
-on boot. Then I've "hacked" a bit the modprobe.d configuration file for
-alsa modules as you can see in [1]. When I want to disable alsa I just
-put that #alsa.off# comment and, with that configuration, I can use oss
-and disable alsa on-the-fly.
-
-It's quite handy when, like now, alsa causes system hangs on waking up
-from sleep; just disable it and be happy (as I said before, sound is not
-a vital issue for me on my laptop).
-
-[1] http://www.pirispons.net/bulma/llista/iBook/modprobe.d/kiko
-
-Kind regards.
-
---
-Kiko
+On Mon, Apr 05, 2004 at 11:53:18PM +0200, Kiko Piris wrote:
+>
+> Hi,
+>
+> Yesterday I compiled vanilla 2.6.5 (plus laptop-mode patch).
+>
+> Today I noticed an oops when resuming from sleep.
+>
+> Here's what I get on the screen console:
+>
+> ---8<---
+> adb: starting probe task...
+> adb devices: [2]: 2 c4 [3]: 3 1 [7] 1f
+> ADB keyboard at 2, handler 1
+> ADB mouse at 3, handler set to 4 (trackpad)
+> adb: finished probe task...
+> tumbler: i2c is not initialized
+> Oops: kernel access of bad area, sig: 11 [#1]
+> NIP: DA378C3C LR: DA468E0C SP: D4F13D70 REGS: d4f13cc0 TRAP: 0301    Not tainted
+> MSR: 0000b032 EE: 1 PR: 0 FP: 1 ME: 1 IR/DR: 11
+> DAR: 00000006, DSISR: 40000000
+> TASK = d74920c0[1233] 'pmud' Last syscall: 54
+> GPR00: DA468E0C D4F13D70 D74920C0 00000000 00000040 00000000 00000000 00000040
+> GPR08: 00000002 FFFFFFFF D74920C0 00000000 2DE985CF
+> Call trace:
+>  [da468e0c] snapper_set_capture_source+0x28/0x38 [snd_powermac]
+>  [da46936c] tumbler_resume+0xa0/0x138 [snd_powermac]
+>  [da466318] snd_pmac_resume+0xf4/0xf8 [snd_powermac]
+>  [da466364] snd_pmac_sleep_notify+0x48/0x54 [snd_powermac]
+>  [c030788c] 0xc030788c
+>  [c0307fe0] 0xc0307fe0
+>  [c03084c4] 0xc03084c4
+>  [c0308d2c] 0xc0308d2c
+>  [c0067c04] sys_ioctl+0xdc/0x2f4
+>  [c0007600] ret_from_syscall+0x0/0x44
+> eth0: Link is up at 100 Mbps, full-duplex.
+> eth0: Pause is disabled
+> --->8---
+>
+> And the system is completely hung (I've copied it by hand, so I could
+> have made a mistake typing).
+>
+> I've noticed that if I put the iBook to sleep having unloaded alsa, it
+> resumes ok. Having alsa loaded, I can reproduce it 100% of the times.
+>
+>
+> Some info about my system:
+>
+> * Debian Sid up2date.
+>
+> * Kernel config, if needed, is uploaded at
+> http://www.pirispons.net/bulma/llista/iBook/
+>
+> $ cat /proc/version
+> Linux version 2.6.5 (root@sacarino) (gcc version 3.3.3 (Debian 20040401)) #1 Sun Apr 4 14:23:10 CEST 2004
+>
+> $ cat /proc/cpuinfo
+> processor       : 0
+> cpu             : 750FX
+> temperature     : 47 C (uncalibrated)
+> clock           : 400MHz
+> revision        : 2.3 (pvr 7000 0203)
+> bogomips        : 793.71
+> machine         : PowerBook4,3
+> motherboard     : PowerBook4,3 MacRISC2 MacRISC Power Macintosh
+> detected as     : 257 (iBook 2 rev. 2)
+> pmac flags      : 0000000b
+> L2 cache        : 512K unified
+> memory          : 384MB
+> pmac-generation : NewWorld
+>
+>
+> Please, let me know if I can provide any additional information.
+>
+> Many thanks in advance
+>
+> --
+> Kiko
+>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
