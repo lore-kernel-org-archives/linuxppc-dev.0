@@ -1,54 +1,42 @@
-Message-Id: <4.3.2.7.2.20000728182142.0396d1d0@mail.lauterbach.com>
-Date: Fri, 28 Jul 2000 18:22:25 +0200
-To: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: Fwd: problems with linuxthreads under your latest glibc
-  15C   rpms
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <v03110702b5a7508b3a75@[129.100.29.243]>
-References: <4.3.2.7.2.20000728154143.03925220@mail.lauterbach.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <3981BB7A.23043170@lightning.ch>
+Date: Fri, 28 Jul 2000 18:57:30 +0200
+From: Daniel Marmier <daniel.marmier@lightning.ch>
+Reply-To: daniel.marmier@lightning.ch
+MIME-Version: 1.0
+To: Dan Malek <dan@netx4.com>
+CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Altivec on 2.4.xx?
+References: <3980DEAF.ACFB0C43@embeddededge.com> <39813520.673CF3E0@lightning.ch> <39819D52.DAC049B4@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-And rev 15d is uploaded now to devel.
+Dan Malek wrote:
+> This is a PowerPC architecture definition. It isn't unique to the MPC8xx,
+> as I am obviously using a 7400 with Altivec here.
 
-Franz.
+The exception I was talking about is _implementation specific_, which makes
+it MPC8xx unique. I do not use Altivec, but I am afraid there could be
+problems even without it. I could not find out whether the Data TLB Miss
+exception sets the DSISR, but DataStoreTLBMiss can branch to DataAccess,
+wich passes the DSISR to do_page_fault. Phew, hope I was clearer :-)
+Anyway, I will look at this exception with care before telling more.
 
-At 17:01 28.07.00, Hendricks, Kevin wrote:
->Thanks Franz!
->
->Kevin
->
->
-> >Hi,
-> >
-> >this is a heads-up notice for distribution maintainers using the
-> >glibc-2-1-branch. It seems the branch contains a threads bug introduced
-> with:
-> >
-> >2000-03-16  Ulrich Drepper  <drepper@redhat.com>
-> >
-> >         * mutex.c (__pthread_mutex_lock): Always initialize __m_owner.
-> >         (__pthread_mutex_trylock): Likewise.
-> >         (__pthread_mutex_unlock): Always clear __m_owner.
-> >
-> >Check the appended message for details. I've added the patch to my source
-> >tree, maybe someone finds time to check it in into the branch (yes, I know
-> >that the branch is more or less dead :-) ).
-> >
-> >Thanks,
-> >Franz.
-> >
->
->--
->Kevin B. Hendricks, Associate Professor of Operations and Information
->Technology
->Richard Ivey School of Business, University of Western Ontario
->London, Ontario  N6A-3K7  CANADA
->khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+> Having the common page fault handler is a good thing, we just have
+> to make sure we extract the information properly from the appropriate
+> register.
 
+Of course it is a good thing. I was just suggesting a way of retrieving
+this information properly from do_page_fault.
+
+> I thought there was more (than none :-) development happening with
+> Altivec on PowerPC Linux.  Maybe tiny test applications will work,
+> but my MPEG-2 decoder won't.
+
+Sorry, only 8xx here :-(
+
+
+				Daniel Marmier
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
