@@ -1,39 +1,28 @@
-To: Gary Byers <gb@gse.com>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: floating-point under ppc/linux
-References: <Pine.GSO.4.21.0110291939370.13591-100000@gse.com>
-From: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-Date: 30 Oct 2001 15:50:29 +0100
-In-Reply-To: Gary Byers's message of Tue, 30 Oct 2001 02:42:52 -0800 (PST)
-Message-ID: <8xn129dvwq.fsf@s62.informatik.uni-bremen.de>
+Message-ID: <XFMail.20011030172047.pochini@shiny.it>
+Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+In-Reply-To: <1004447087.20679.2102.camel@pismo>
+Date: Tue, 30 Oct 2001 17:20:47 +0100 (CET)
+From: Giuliano Pochini <pochini@shiny.it>
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+Subject: Re: recording audio?
+Cc: linuxppc-dev@lists.linuxppc.org, Josh Huber <huber@alum.wpi.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gary Byers <gb@gse.com> writes:
+>> I've found very little information in the archives about this...is
+>> anyone recording audio?
 
-[...]
-> Note that some PPC implementations (e.g., the 750) consider any
-> combination of the FE0/FE1 bits other than 00 to imply precise mode;
-> it seems like "precise" and "disabled" are the only modes that can be
-> portably supported.  I don't what considerations led the 750's
-> designers to make this change and don't know whether it's a trend or
-> an isolated case.
->
-I'd hazard a guess that imprecise floating point exceptions will be
-slowly phased out of modern Out-Of-Order RISCs.
+Recording doesn't work on pmac AFAIK. Newer macs don't even
+have an audio-in connector #:(6
 
-In the 750 (and the whole family line from 603 to 7450), there would be
-no speed gain from allowing FP exceptions to be signalled imprecisely.
-Precise exceptions are basically "free" once you have a queue which enables
-you to complete instructions in program order, because you can also do
-checking for exceptions in program order.
+> dmasound doesn't support recording AFAIK, but ALSA might.
 
-(Well, there would be a small gain with imprecise FP exceptions because
-you wouldn't need to track them in the queue. But in practice you run out
-of other resources before you run out of completion queue entries.)
+Uh?  Alsa works on ppc ?  Perhaps it's time to buy an RME :))
 
-  Holger
+
+Bye.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
