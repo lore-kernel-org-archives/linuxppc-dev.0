@@ -1,9 +1,8 @@
-Date: Mon, 20 Dec 1999 14:29:59 -0500 (EST)
-From: James Simmons <jsimmons@edgeglobal.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PowerPC kernel bug. (fwd)
-Message-ID: <Pine.LNX.4.20.9912201428210.7400-100000@imperial.edgeglobal.com>
+Date: Tue, 21 Dec 1999 10:55:47 -0800 (PST)
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: mozilla M11-3a
+Message-ID: <Pine.LNX.4.10.9912210859340.6233-100000@shell.unixbox.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -11,30 +10,16 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-Geert I know you work with the PowerPC people. I don't belong to the list
-so it might not go threw. So could you post it as well.
-
-Subject: PowerPC kernel bug.
-Date:    Mon, 13 Dec 1999 22:03:26 -0500 (EST)
-From:    James Simmons <jsimmons@edgeglobal.com>
-To:      GLX mailing list <glx-dev@lists.openprojects.net>, FrameBuffer List
-<linux-fbdev@vuser.vu.union.edu>, Linux Kernel Mailing List
-<linux-kernel@vger.rutgers.edu>
+	before I work ona  m12 rpm i'd like to know how this one fares
+with people, lemme know how it goes.  thanks  (btw, this is basically m12,
+just a few hours shy)
 
 
-This message is toward the Fbdev/kernel group to fix this bug but I wanted
-to let the GLX group what caused the memset problem on PowerPC. On a
-PowerPC when you mmap the framebuffer and use memset on the mmapped
-image you get a SIGBUS. Thanks Marcus for finding out what was causing the
-problem.
+devel.linuxppc.org/users/ajoshi/RPMS/mozilla-M11-3a.ppc.rpm
+devel.linuxppc.org/users/ajoshi/RPMS/mozilla-devel-M11-3a.ppc.rpm
 
->I noticed today that it's actually a bug in the PPC-kernel. The
->specification for the dcbz (data cache block zero) instruction
->states that for uncached memory the exception handler should clear
->the memory, but on Linux it just causes a SIGBUS to be sent to the
->app...
------------
-==============
+
+ani
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
