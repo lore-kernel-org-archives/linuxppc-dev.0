@@ -1,35 +1,29 @@
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Paul Mackerras" <paulus@samba.org>
-Cc: <akpm@osdl.org>, "Tom Rini" <trini@kernel.crashing.org>,
-	"Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: [PATCH] MachineCheck exception broken for MPC 8xx CPU's
-Date: Tue, 25 May 2004 12:26:45 +0200
-Message-ID: <JPEALJAFNGDDLOPNDIEEIEMLCIAA.joakim.tjernlund@lumentis.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <16563.7471.661845.182333@cargo.ozlabs.ibm.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <20040524161520.GQ6763@smtp.west.cox.net>
+References: <DCEAAC0833DD314AB0B58112AD99B93B06DAE3@ismail.innsys.innovsys.com> <20040524161520.GQ6763@smtp.west.cox.net>
+Mime-Version: 1.0 (Apple Message framework v613)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <B1156562-AE3A-11D8-B485-003065F9B7DC@embeddededge.com>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Rune Torgersen <runet@innovsys.com>, Wolfgang Denk <wd@denx.de>
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: 8260 CPM DP ram free function
+Date: Tue, 25 May 2004 07:00:10 -0400
+To: Tom Rini <trini@kernel.crashing.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Joakim Tjernlund writes:
->
-> > The Machine Check exception handler is broken on MPC 8xx CPU's
-> > This patch should fix it.
-> > Tom Rini asked me to send it to you.
->
-> Hmmm, this doesn't look like it will apply.  The patch looks to be
-> against linuxppc-2.5, not Andrew's/Linus' tree.
+On May 24, 2004, at 12:15 PM, Tom Rini wrote:
 
-OOPS, I did not think. You are correct, this is against current linuxppc-2.5.
 
->
-> In fact I don't think there is a great deal of point in applying this
-> patch until we update arch/ppc/kernel/head_8xx.S with all the other
-> changes we have in the linuxppc-2.5 tree.
+> Dan?
 
-Can you apply this to linuxppc-2.5 then?
+Check it in!
+
+Thanks.
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
