@@ -1,61 +1,26 @@
-Message-ID: <20030305183324.96783.qmail@web40908.mail.yahoo.com>
-Date: Wed, 5 Mar 2003 10:33:24 -0800 (PST)
-From: Brian Kuschak <bkuschak@yahoo.com>
-Subject: RE: Network performance loss when migrating to 2.4.18 on Walnut 4 05GP
-To: jperri@viadux.com
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3E6647A0.3050300@embeddededge.com>
+Date: Wed, 05 Mar 2003 13:53:20 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: mpc8241/8245 floating point unit
+References: <5.1.0.14.2.20030305131034.02661008@falcon.si.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->> I applied a patch (from Andrea A. I think?) that
->> backed out the ksoftirq addition.
->
-> Do you have any more specifics concerning the patch
-> to remove ksoftirqd? I browsed all of Andrea's
-> 2.4/2.5 patches on kernel.org and found a few
-> relating to ksoftirqd, but none that removed it
-> entirely. A google search didn't turn up anything
-> either.  Could the patch have come from someone
-> other than Andrea?
+Jerry Van Baren wrote:
 
-You're right.  Andrea and Ingo Molnar both posted
-numerous ksoftirq-related patches.  I think the one I
-was referring to is here, by Ingo:
-http://people.redhat.com/mingo/irqrate-patches/irqrate-2.4.17-A1
+> It has always had a FPU.  For a while, Mot was not advertising it because
+> they had not verified that it worked properly,
 
->> With other tricks I was able to hit 35K+ pps...
->
-> If you're willing to share, I'd like to hear about
-> these other "tricks" :-)
->
+The story is much more interesting than that :-)  You need to find
+someone at Motorola that is willing to tell it.
 
-If you do some profiling, you'll notice that the
-interrupts from the ethernet interfaces constitute a
-large amount of CPU time.  A common technique to
-reduce this is interrupt mitigation.  If you keep
-track of the rx/tx packet rate and reduce or limit the
-interrupt rate when it exceeds a threshold, you can
-improve performance significantly.  There are several
-techniques you can use.  I chose an interrupt-based
-polling mode.  The ethernet driver switches to polling
-mode when packet rate is high and back to interrupt
-mode when packet rate drops.  (The PPC FIT timer (at
-1500Hz) makes a good polling interrupt).
 
-By adjusting the length of your DMA rings you can also
-put a hard limit on the number of packets/sec that the
-system will process.  This will help you to limit or
-avoid packet-flood D.O.S. attacks.
-
-Combine the ksoftirq backout, the ethernet interrupt
-mitigation, and enable CONFIG_FASTROUTE (and implement
-fastroute for the 405 ethernet driver), and you will
-forward 50K+ packets/sec on a 200Mhz 405GP.
-
--Brian
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
