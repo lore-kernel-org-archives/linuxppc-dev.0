@@ -1,28 +1,35 @@
-Message-ID: <39B37B7C.71D37D8C@agelectronics.co.uk>
-Date: Mon, 04 Sep 2000 11:37:48 +0100
-From: Adrian Cox <apc@agelectronics.co.uk>
+Message-ID: <004301c01712$24e03ee0$0a00010a@paoloweb>
+From: "Paolo Scaffardi" <arsenio@tin.it>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: HARDHAT 1.2 -> libc_nonshared.a not found by LD!
+Date: Tue, 5 Sep 2000 10:20:22 +0200
 MIME-Version: 1.0
-To: Bob Doyle <doyle@primenet.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux on Motorola Sandpoint/PPMC7400
-References: <20000828225504.B23679@hectic.net> <39AAF258.B43B901@mvista.com> <20000829201347.A30190@hectic.net> <39AC2AB9.D47ADE73@mvista.com> <20000828225504.B23679@hectic.net> <39AAF258.B43B901@mvista.com> <20000829201347.A30190@hectic.net> <39AC0BF9.38DB6A9A@mvista.com> <20000830215856.B5340@hectic.net> <39B1D6CF.351969B4@primenet.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Bob Doyle wrote:
+I installed HardHat 1.2 on my i386 Linux box to cross-compiling for my
+mpc823 fads board on the previous working hardhat version (Journeyman). I
+had many projects and packages configured to cross-compile. I tried to
+rebuild them with the new toolkit but i experienced one big problem that i
+cannot resolve by myself.
 
-> If someone was interested in making a more useful bootloader
-> for linux/sandpoint I'd look into cleaning it up (removing
-> the proprietary stuff) and releasing the code.
+While trying to configure and compile GGI, i got this error from the linker
+(/opt/hardhat/devkit/ppc/8xx/powerpc-hardhat-linux/bin/ld):
 
-I've got code that boots a kernel image over ethernet, but I've been
-experimenting mostly on a different platform to the Sandpoint. I'm
-planning a release around October, when I should have the time. The
-architecture of mine is quite modular, so it should be easy to insert
-things like the floppy and vga drivers, using my code as glue.
+cannot find /lib/libc_nonshared.a
 
-- Adrian Cox
+It seems that the linker looks for it in the host /lib instead of target
+/lib (under /opt/hardhat/devkit/8xx/powerpc-hardhat-linux/lib).
+
+How can resolve this?
+
+I spent one day to indagate on this... :-((
+
+Bye,
+Paolo
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
