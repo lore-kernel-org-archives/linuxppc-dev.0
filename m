@@ -1,54 +1,42 @@
-Date: Tue, 26 Sep 2000 12:13:52 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-cc: R Shapiro <reshapiro@mediaone.net>,
-        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Michel Dänzer <daenzerm@student.ethz.ch>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.0/1 with rage II/rage pro -- should the ati driver work?
-In-Reply-To: <Pine.LNX.4.10.10009251934340.5676-100000@zirkon.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.LNX.4.10.10009261213320.373-100000@cassiopeia.home>
+Date: Tue, 26 Sep 2000 12:18:51 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Paul Mackerras <paulus@linuxcare.com.au>
+cc: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: zeroing pages in the idle task?
+In-Reply-To: <14782.63625.633424.277661@argo.linuxcare.com.au>
+Message-ID: <Pine.HPX.4.10.10009261215350.24143-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 25 Sep 2000, Michael Schmitz wrote:
-> > On Sun, 24 Sep 2000, Michael Schmitz wrote:
-> > > >  > 	/* hack */
-> > > >  > 	pScrn->videoRam = 2048;
-> > > >  > [...]
-> > > >  > The hack to unconditionally set pScrn->videoRam to 2M should be removed,
-> > > >
-> > > >
-> > > > The rsync of atimach64ppc.c I got earlier today doesn't have this
-> > > > unconditonal assignment hack anymore.  The hardwired vram setting
-> > >
-> > > It was too obvious to go undetected for long :-). Now if the kernel
-> > > framebuffer driver (atyfb, and don't check the 'no video driver' option
-> > > when using BootX) reportds the correct vram size the X server should see
-> > > the correct size as well.
-> >
-> > However, I see a problem. Atyfb reports the video RAM size minus the cursor
-> > area. If you divide that number of bytes by 1024 to get pScrn->videoRam, you
-> > end up with 1 MB too few :-(
+On Wed, 13 Sep 2000, Paul Mackerras wrote:
+
 >
-> Rather 1k too few if you mean the truncation error - or is the cursor area
-> really 1 MB?
+> Michel Lanners writes:
+>
+> > clock           : 195MHz
+> >                   ^^^^^^
+> > (by the way, this is wrong. Anybody with a fix?)
+>
+> I'm pretty sure that this is the number that OF is telling us, so if
+> it's wrong, blame OF.  You don't have a G3 upgrade card in an older
+> machine perhaps?
+>
+> Since the only use of this number is for oohs and aahs, there's not a
+> lot of motivation to try and work out if OF is wrong and work out the
+> correct number.
 
-You're right. I was thinking MB instead of kB...
+It's not only OF, on my MVME machines with PPCBUG, I get 190 Mhz instead
+of 200. This value could be computed from the decrementer frequency and
+the clock multiplier (can be obtained from HID1 on some processors and
+has to be guessed on others). The 601 will require a different method, but
+can still be estimated quite precisely I believe.
 
-Gr{oetje,eeting}s,
+Now, is is truly worth the effort ?
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Gabriel (slowly reducing my email backlog after 2 weeks away)...
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
