@@ -1,32 +1,37 @@
-Message-ID: <409A015D.80205@fh-landshut.de>
-Date: Thu, 06 May 2004 11:11:57 +0200
-From: Oliver Korpilla <okorpil@fh-landshut.de>
+Message-ID: <003501c43360$1b3e20f0$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: <bhawley@luminex.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Next steps
+Date: Thu, 6 May 2004 07:48:50 -0400
 MIME-Version: 1.0
-To: u-boot-users <u-boot-users@lists.sourceforge.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Using MotLoad as flash bootloader???
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+Bob,
 
-The MVME5500 directly supports booting a Linux kernel from the net and
-from disk. A ROM/RAM/flash boot option seems to be missing.
+I would definitely recommend NFS.  As Bob White pointed out, you can get a
+directory structure all set up from eldk.  The thing about NFS is you have a
+PC with visual tools and all to mess with the same files that your embedded
+system is accessing.  Plus of course you have much more file space.  And if
+you're new to Linux it's a whole lot easier to get up to speed on the PC.
 
-Does anybody know, how to use the Motload to boot a kernel from flash
-(maybe with the ELF-loader, or by putting a kernel in a correct place).
+dhcp & bootp are really different things from NFS, although I think you have
+to enable them in the [embedded] kernel for nfsboot to work.  But you
+probably want to set your board up with a fixed IP and compressed kernel (or
+tftp it in) from u-boot, just feeding a command line to the kernel that
+tells it the root is nfs something.  No sense adding more complexity than
+you need!
 
-I already tried loading the kernel (PPLUS image) into memory and
-executing it directly (with offsets 0 and 100 from its load address) and
-putting the BUGBOOT image into the start of both flash banks (reserved
-as kernel space anyway by the supplied MTD partition mapping).
+When it comes to stand-alone booting of an embedded system you can also
+consider jffs2 or cramfs instead of initrd.  (I can tell you more if you're
+interested).
 
-It would be really nice to know if somebody has solved this problem, or
-if somebody could give some useful hints!
+Mark Chambers
+WV Computronics
 
-Thanks in advance,
-Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
