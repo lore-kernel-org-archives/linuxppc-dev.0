@@ -1,36 +1,52 @@
-Date: Thu, 28 Sep 2000 20:23:55 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: R Shapiro <rshapiro@bbn.com>
+Date: Thu, 28 Sep 2000 19:55:41 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <bh40@calva.net>
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: beige g3 rage II xf4.0.1 and miBoot
-In-Reply-To: <14803.24024.683420.911271@esb.bbn.com>
-Message-ID: <Pine.LNX.4.21.0009282015220.15193-100000@idd-01.imbc.gr>
+Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display!
+In-Reply-To: <19340822140413.1794@192.168.1.10>
+Message-ID: <Pine.LNX.4.10.10009281947100.3421-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 28 Sep 2000, R Shapiro wrote:
-
+> >Instead of walking the whole device tree, I hope to get away with just
+> >picking a free area (assuming pci_dev->base_address[i] == 0 means free)
+> >instead. But I won't get to it before the weekend. If BenH implements a
+> >cleaner way, the better.
 >
-> Just to add one more data point (as if another were needed :).  I
-> tried switching from BootX to miBoot on the rev. a beige g3 minitower.
-> It boots fine but then can't run xf 4.0.1 at all, even with the fbdev
-> driver and a single Screen/Device pair.  The symptom is the same as
-> using ati drivers in a BootX boot: no errors in the log, no core file,
-> just an endlessly ringing bell and a hosed linux that I have to
-> three-finger reboot (I can't get to a console and or connect via ssh
-> to shut it down cleanly).
+> Well, since this concerns only one machine, in a given configuration, I
+> beleive it's safe to just hard-code a new mappping we know won't conflict.
 
-  Probably a missmatch between the fbdev device and BusID, xfree
-disables the device used by fbdev with bad results.
+It at least concerns Wallstreet and Lombard (Pismo has a r128?). Hardcode
+and double check it's free, that be it then.
 
- Kostas
+> How does OF sets up the mapping of the ATI on the Lombard ? Maybe we can
+> just stuff that in some fixup routine for the wallstreet...
 
-PS> Any ideas why writing to a disabled pci device in ppc crashes
-the machine but not the x86 ones ? Is this something that can be fixed
-in the kernel or an arch thing ?
+Broken (VRAM included both LE and BE aperture, and MMIO overlaps the end
+of the LE aperture (where MMIO actually shows up even without the
+separate mapping. I know nothing about decoding priorities though).
+
+atyfb (and, by extension, the fbdev driver _and_ the ati driver with
+UseFBDev) use the MMIO alias at the end of the BE aperture (which is why
+we reserve that four k segment to prevent it from being used for
+framebuffer).
+
+Sketch:
+
+V -- free --- | VRAM LE ........... (MMIO) | VRAM BE ........... (MMIO) |
+
+M                                 |  MMIO  |
+
+V = PCI BAR 0 for VRAM, M = PCI BAR 2 for MMIO (not in the OF device
+tree) IIRC. BAR 1 is the IO mapping.
+
+Can't give you the exact addresses off the cuff, but I've described it
+here before a week or two after the 4.01 release.
+
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
