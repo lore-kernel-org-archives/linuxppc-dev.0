@@ -1,50 +1,25 @@
-Date: Wed, 9 Oct 2002 11:58:28 +1000
+Date: Wed, 9 Oct 2002 12:10:31 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Andrew May <acmay@acmay.homeip.net>
+To: Allen Curtis <acurtis@onz.com>
 Cc: Matt Porter <porter@cox.net>,
+	Andrew May <acmay@acmay.homeip.net>,
 	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: very minor 405GP and 405GPr PCI difference
-Message-ID: <20021009015828.GO32555@zax>
-References: <20020930040143.GF10265@zax> <20021001052121.GV10265@zax> <3D995EC0.2000500@elsoft.ch> <20021002014219.GF1848@zax> <3D9AA452.5070004@elsoft.ch> <20021003011233.GC1102@zax> <20021006052314.GG27824@acmay.homeip.net> <20021006183120.A17129@home.com> <20021008041419.GF32555@zax> <20021008052136.GA26470@acmay.homeip.net>
+Message-ID: <20021009021031.GP32555@zax>
+References: <20021008041419.GF32555@zax> <NCBBIINEHIPFGJPLBEIFOEPEDMAA.acurtis@onz.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20021008052136.GA26470@acmay.homeip.net>
+In-Reply-To: <NCBBIINEHIPFGJPLBEIFOEPEDMAA.acurtis@onz.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Oct 07, 2002 at 10:21:36PM -0700, Andrew May wrote:
+On Mon, Oct 07, 2002 at 11:19:31PM -0700, Allen Curtis wrote:
 >
-> On Tue, Oct 08, 2002 at 02:14:19PM +1000, David Gibson wrote:
-> >
-> > On Sun, Oct 06, 2002 at 06:31:20PM -0700, Matt Porter wrote:
-> > >
-> > > On Sat, Oct 05, 2002 at 10:23:14PM -0700, Andrew May wrote:
-> > > >
-> > > > It would be nice to have the option to let the boot loader set the
-> > > > mapping. I have been happy with getting things done in PPCBoot and
-> > > > ripping out the PCI scanning in the kernel.
-> > >
-> > > Yes, that's the ideal situation and going to what David and I would
-> > > like to see makes that yet another simple fallout feature.
-> > >
-> > > Your custom port using a good implementation of PPCBoot simply
-> > > would not call the pci macro init library nor would it use pci_auto.
-> >
 > > As Matt says, this would fall out naturally from a better control
 > > structure.  Howeever, I tend to think that leaving things like this to
 > > the bootloader/firmware is a bad idea:
->
-> A full featured bootloader like PPCboot will need to setup the PCI bus
-> to work with PCI devices, so it is not like it is always an extra burden
-> on the bootloader or useless work.
-
-That's all very well if you've got PPCboot, but lots of boards have
-firmware which is, lets face it, shite.  The kernel has to be able to
-deal with this case.  And since it has to deal with it for the case of
-crappy firmware, is there any point turning it off for the case of
-decent firmware?
-
+> >
 > > The kernel has to know how PCI addresses are mapped anyway, so this
 > > becomes yet another point at which the kernel and firmware are bound
 > > together.  Why should the kernel have code to deal with umpteen
@@ -53,32 +28,39 @@ decent firmware?
 > > bridge and reprogram it how it wants?  Once the debugging cruft comes
 > > out, it should only be a couple of hundred bytes of code.
 >
-> I wouldn't want to see the kernel deal with all the possible mapping
-> configurations. Right now with everything getting remapped a couple
-> of times it makes it hard to follow what the final mapping will be.
-> Then we also have the core Linux PCI code that will try to fixup things
-> again, if it thinks it is needed. PPCBoot knows how the kernel wants
-> things setup so there should be no need to fix it up.
+> I believe that there are many cases where the kernel code is much too
+> aggressive with configuration. Personally I believe that all BIOS code
+> should totally initialize the processor state so you always have a known
+> starting point. (whether you boot Linux or not) Many times I have had to
+> track down where the kernel thinks it "knows" the proper configuration and
+> unravels the work done by the BIOS. I am not sure how to solve this problem
+> but I believe the kernel should attempt to detect and use a configuration
+> before reconfiguring any hardware. I have implemented this technique in our
+> UART and Ethernet configuration stuff on the 8260 with good success.
 
-Agreed, with decent firmware there's no need.  But is there any point
-turning the code off, since we have to have it anyway to support less
-decent firmware.  This also means that the PCI setup for the kernel is
-in one place - if for some reason we want to change the default
-mapping, only the kernel need by altered, not PPCboot as well.
+This is a nice idea in principle, but IMO it is flawed in practice.
+The unfortunate truth is that firmwares are all too frequently broken
+in one or more ways (this is not only true for embedded - think APM or
+ACPI, or the many buggy OF implementations).  So we need code to
+handle (at least some) cases where the firmware setup is incomplete,
+or the firmware provides incorrect information.  Worse, in many cases
+a new revision of the firmware will remove some bugs but add some new
+ones - which mean workarounds tailored to doing a minimum fixup for a
+particular BIOS are very fragile.
 
-> So I just want you to keep in mind the PCI bus fixup can be a config
-> option that can be built out if desired. It really shouldn't be tied
-> to the board itself, since it is also common to load in PPCboot into
-> Walnut boards.
+Given that, how much is really to be gained by carefully tailoring a
+kernel to the brokenness or lack thereof of a particular platform's
+firmware - as opposed to just always handling the setup ourselves,
+putting the device into a known state.
 
-That's easy - in fact the patch I posted before allows this (it won't
-do anything if CONFIG_BIOS_FIXUP is not defined).
-
-> Then there is always the case of hot-plugs, and the kernel will always
-> have to do that mapping there.
-
-Another reason that there is little to be gained by dropping fixup
-support on platforms that don't need it.
+Incidentally the case of a UART is quite different from PCI: you can
+use a UART without knowing how it is configured, that way you can
+leave the selection of baud rate (for example) up to firmware
+configuration and just use its setup - i.e. in this case there is a
+tangible benefit from leaving the work up to the firmware.  In the
+case of PCI we have to know what the windows are in order to use the
+device, so we must know precisely how the firmware has set the bridge
+up, in which case why don't we just set it up that way ourselves.
 
 --
 David Gibson			| For every complex problem there is a
