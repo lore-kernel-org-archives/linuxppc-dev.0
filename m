@@ -1,11 +1,13 @@
-Message-Id: <5.1.0.14.2.20020613192014.026b1ad0@pop.prodigy.net>
-Date: Thu, 13 Jun 2002 19:21:37 -0700
-To: Dan Malek <dan@embeddededge.com>
+Message-Id: <5.1.0.14.2.20020613192425.02e05368@pop.prodigy.net>
+Date: Thu, 13 Jun 2002 19:29:38 -0700
+To: Paul Mackerras <paulus@samba.org>
 From: Eugene Surovegin <ebs@innocent.com>
 Subject: Re: [PATCH] pci_alloc_consistent in an interrupt context
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3D0951C8.6030400@embeddededge.com>
-References: <5.1.0.14.2.20020613122317.02e34480@mail.zultys.com>
+Cc: Dan Malek <dan@embeddededge.com>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <15625.11286.524300.137708@argo.ozlabs.ibm.com>
+References: <5.1.0.14.2.20020613151628.02e439e8@pop.prodigy.net>
+ <5.1.0.14.2.20020613122317.02e34480@mail.zultys.com>
  <20020613205824.GX13541@opus.bloom.county>
  <5.1.0.14.2.20020613151628.02e439e8@pop.prodigy.net>
 Mime-Version: 1.0
@@ -14,21 +16,22 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
-
-At 07:15 PM 6/13/2002, Dan Malek wrote:
->Eugene Surovegin wrote:
+At 04:34 PM 6/13/2002, Paul Mackerras wrote:
+>Maybe the best answer is to change get_vm_area to use
 >
->>This is gfp for _memory_ itself and may contain GFP_DMA for example. I
->>didn't want to allocate
->>struct vm_area from DMA pool in that case.
+>         (in_interrupt()? GFP_ATOMIC: GFP_KERNEL)
 >
->Well, you are using it for DMA, aren't you? :-)
+>instead of GFP_KERNEL in the kmalloc call, and eliminate the need to
+>add the extra parameter.  I'll run that past davem and see what he
+>thinks.
 
-Yeah, I use _memory_ for DMA, but I don't want waste DMA pool for struct
-vm_struct itself.
+Well, your solution is much better :).
 
-Eugene
+Do I understand correctly, we have to modify _all_ vmlist_lock locking to
+use _irqsave counterparts?
+Not just in get_vm_area, right?
+
+Eugene.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
