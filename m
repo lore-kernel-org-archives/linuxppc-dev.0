@@ -1,29 +1,54 @@
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: sleep on Pismo, Ben's tree
-References: <4vy9b1b3os.fsf@pc203b.fzu.cz> <20020821100656.17600@192.168.4.1>
-From: Jiri Masik <masik@pc203b.fzu.cz>
-Date: 05 Sep 2002 10:55:52 +0200
-Message-ID: <4vn0qwolwn.fsf@pc203b.fzu.cz>
+Message-ID: <3D77EE69.8F0A942A@koffie.nl>
+Date: Fri, 06 Sep 2002 01:39:38 +0200
+From: Segher Boessenkool <segher@koffie.nl>
 MIME-Version: 1.0
+To: mlan@cpu.lu
+Cc: benh@kernel.crashing.org, jason@openinformatics.com,
+	eblanton@cs.ohiou.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Shift keycodes on the iBook
+References: <E17mpjY-0000DD-00@piglet.grunz.lu>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-
-> >Yes it is. I can hear some hard disk activity after opening the lid
-> >but that's all, the LCD remains dark and no beep occurs.
+Michel Lanners wrote:
 >
-> Ok, I'm about to get back my old Pismo, I'll see what's up
+> On   3 Sep, this message from Benjamin Herrenschmidt echoed through cyberspace:
+> >>> The interesting thing is that was what was believed for years about
+> >>> the locking capslock key as well...
+> >>
+> >>Ah, but that depends on the specific model of keyboard. At least some of
+> >>Apple's ADB keyboards _do_ indead have a mechanical capslock.
+> >>
+> >>I don't know for USB keyboards, but obviously the PowerBook keyboards
+> >>have a regular (non-locking) key as capslock. Whether the lock is done
+> >>in the ADB driver or in the keyboard controller, I don't know...
+> >
+> > Actually, the lock itself isn't, but the keycode sent by the PMU behave
+> > like a HW lock (and the LED is driven that way too).
+> >
+> > In both cases, there may be ways to instruct the PMU to behave differently
+> > but I don't know about them.
 >
-> Ben.
+> Anybody up for sucking the PMU firmware out of the little beast and
+> reverse-engineering it? Might be a fun project :-))
 
-Hi Ben,
+There's a little program for doing the "sucking" part of this available on
+my page at penguinppc.org;  Apple was nice enough to include some commands
+in the CPU<->PMU interface language for reading any part of the PMU memory.
 
-I rsynced yesterday and it works again. Thanks!
-cheers
-        Jiri
+The PMU is a Mitsubishi MCU; afaik, it's a M30624FGMGP, which is a member of the
+M16C/62 family.  Mitsubishi's documentation pages have been much improved
+lately; you can actually find the pdf's you need now :)
+
+Reverse engineering something as big as this is quite a bit of work, though;
+especially if you don't know which of the 88 i/o lines on the chip are
+connected where ;)
+
+
+Cheers,
+
+Segher
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
