@@ -1,21 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4EEF52BDB5
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Oct 2004 09:33:05 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: John Steele Scott <toojays@toojays.net>
-In-Reply-To: <200410050737.59754.toojays@toojays.net>
-References: <20041004112105.GA5637@bogon.ms20.nix>
-	<1096897172.23141.87.camel@gaston>
-	<200410050737.59754.toojays@toojays.net>
-Content-Type: text/plain
-Message-Id: <1096932475.9516.119.camel@gaston>
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao11.cox.net (fed1rmmtao11.cox.net [68.230.241.28])
+	by ozlabs.org (Postfix) with ESMTP id 20A1F2BDB4
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Oct 2004 09:55:10 +1000 (EST)
+Date: Mon, 4 Oct 2004 16:55:08 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: akpm@osdl.org
+Message-ID: <20041004165508.E13777@home.com>
 Mime-Version: 1.0
-Date: Tue, 05 Oct 2004 09:27:56 +1000
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [agx@sigxcpu.org: [PATCH]: swsusp on linux-2.6.9-rc3]
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH][PPC32] Fix several warnings
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +19,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2004-10-05 at 08:07, John Steele Scott wrote:
-> On Mon, 4 Oct 2004 11:09 pm, Benjamin Herrenschmidt wrote:
-> > I have more of that in a tree here that I need to rediff... paulus also
-> > got real sleep working on his M10 based 15" albook by spying the MacOS
-> > driver using that ndrver hack I wrote a while ago, hopefully, we'll get
-> > that in shape & merged soon.
-> 
-> Presumably this same technique could be used to figure out sleep for the M9 in 
-> the iBook G4s? I've been hanging out for that feature for some time.
+Fixes some annoying warnings due to unitialized variables.
+Please apply.
 
-Yes, I have some traces from the driver on this one already. I'll compare
-them to what we got on the M10 and see if I can produce something useful,
-but I'll need volunteers to test :)
+Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
 
-Ben.
+===== arch/ppc/kernel/signal.c 1.37 vs edited =====
+--- 1.37/arch/ppc/kernel/signal.c	2004-08-25 10:13:41 -07:00
++++ edited/arch/ppc/kernel/signal.c	2004-10-04 16:38:12 -07:00
+@@ -270,7 +270,7 @@
+ static int
+ restore_user_regs(struct pt_regs *regs, struct mcontext __user *sr, int sig)
+ {
+-	unsigned long save_r2;
++	unsigned long save_r2 = 0;
+ #if defined(CONFIG_ALTIVEC) || defined(CONFIG_SPE)
+ 	unsigned long msr;
+ #endif
+===== arch/ppc/mm/44x_mmu.c 1.4 vs edited =====
+--- 1.4/arch/ppc/mm/44x_mmu.c	2004-08-07 11:05:38 -07:00
++++ edited/arch/ppc/mm/44x_mmu.c	2004-10-04 16:38:13 -07:00
+@@ -72,7 +72,7 @@
+ static void __init
+ ppc44x_pin_tlb(int slot, unsigned int virt, unsigned int phys)
+ {
+-	unsigned long attrib;
++	unsigned long attrib = 0;
+ 
+ 	__asm__ __volatile__("\
+ 	clrrwi	%2,%2,10\n\
+===== arch/ppc/syslib/ppc4xx_pic.c 1.11 vs edited =====
+--- 1.11/arch/ppc/syslib/ppc4xx_pic.c	2004-07-01 22:23:47 -07:00
++++ edited/arch/ppc/syslib/ppc4xx_pic.c	2004-10-04 07:14:09 -07:00
+@@ -256,7 +256,7 @@
+ ppc4xx_uic_end(unsigned int irq)
+ {
+ 	int bit, word;
+-	unsigned int tr_bits;
++	unsigned int tr_bits = 0;
+ 
+ 	bit = irq & 0x1f;
+ 	word = irq >> 5;
+===== arch/ppc/syslib/todc_time.c 1.9 vs edited =====
+--- 1.9/arch/ppc/syslib/todc_time.c	2004-03-02 11:54:26 -07:00
++++ edited/arch/ppc/syslib/todc_time.c	2004-10-04 16:38:14 -07:00
+@@ -277,9 +277,9 @@
+ ulong
+ todc_get_rtc_time(void)
+ {
+-	uint	year, mon, day, hour, min, sec;
++	uint	year = 0, mon = 0, day = 0, hour = 0, min = 0, sec = 0;
+ 	uint	limit, i;
+-	u_char	save_control, uip;
++	u_char	save_control, uip = 0;
+ 
+ 	spin_lock(&rtc_lock);
+ 	save_control = todc_read_val(todc_info->control_a);
+@@ -361,7 +361,7 @@
+ todc_set_rtc_time(unsigned long nowtime)
+ {
+ 	struct rtc_time	tm;
+-	u_char		save_control, save_freq_select;
++	u_char		save_control, save_freq_select = 0;
+ 
+ 	spin_lock(&rtc_lock);
+ 	to_tm(nowtime, &tm);
+@@ -416,7 +416,7 @@
+  */
+ static unsigned char __init todc_read_timereg(int addr)
+ {
+-	unsigned char save_control, val;
++	unsigned char save_control = 0, val;
+ 
+ 	switch (todc_info->rtc_type) {
+ 		case TODC_TYPE_DS1557:
