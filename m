@@ -1,15 +1,26 @@
-Message-ID: <3FB26B87.4060300@primagraphics.co.uk>
-Date: Wed, 12 Nov 2003 17:19:03 +0000
-From: Mark Powell <medp@primagraphics.co.uk>
-MIME-Version: 1.0
-To: llandre <r&d@wawnet.biz>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0B0E@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Mark Powell'" <medp@primagraphics.co.uk>,
+	llandre <r&d@wawnet.biz>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Silicon Motion VGA controllers and PPC architecture
-References: <5.1.1.6.0.20031112173538.01bd2e78@dns.struinfo.it>
-In-Reply-To: <5.1.1.6.0.20031112173538.01bd2e78@dns.struinfo.it>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: RE: Silicon Motion VGA controllers and PPC architecture
+Date: Wed, 12 Nov 2003 12:21:18 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+I've had success with a sensoray card connected to a 405.
+
+-----Original Message-----
+From: Mark Powell [mailto:medp@primagraphics.co.uk]
+Sent: Wednesday, November 12, 2003 12:19 PM
+To: llandre
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Silicon Motion VGA controllers and PPC architecture
+
 
 
 llandre wrote:
