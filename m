@@ -1,26 +1,41 @@
-Message-ID: <3CDC03C1.DB7A0E49@mvista.com>
-Date: Fri, 10 May 2002 13:30:41 -0400
-From: "Mark A. Greer" <mgreer@mvista.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>,
+	Anton Blanchard <anton@samba.org>
+Cc: <yellowdog-devel@lists.terrasoftsolutions.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re:[PATCH]: Bug in ppc32 ld.so
+Date: Fri, 10 May 2002 20:06:47 +0200
+Message-Id: <20020510180647.19812@smtp.wanadoo.fr>
+In-Reply-To: <200205101305.43423.kevin.hendricks@sympatico.ca>
+References: <200205101305.43423.kevin.hendricks@sympatico.ca>
 MIME-Version: 1.0
-To: mod+linuxppc-dev@MissionCriticalLinux.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: "broken" GT64260 ethernet driver
-References: <200205100459.XAA27925@lists.linuxppc.org>  <3CDBFFC9.205DB0A5@synergymicro.com> <200205101724.g4AHOaAD023769@odonnell.lowell.mclinux.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-mod+linuxppc-dev@MissionCriticalLinux.com wrote:
-
-> > there have been a lot of "this driver is broken" comments
-> > on the thread.  I agree it's ugly, but it seems to work.
-> > Can someone elaborate on exactly what is "broken"
+>Hi Anton,
 >
-> Last I knew, the situation was pretty much as you've described
-> it: no profound problems (last I knew) and lots of griping.
+>I saw:
+>
+>http://sources.redhat.com/ml/libc-alpha/2002-05/msg00052.html
+>
+>Thanks for posting that patch.  Have you by any chance alerted or sent
+>similar mail to YDL dev lists, Debian dev lists, SuSE dev lists, and
+>dev@linuxppc.
+>
+>This would be a nasty bug to track down and those distributions may want to
+>know about this and get an udpated glibc-2.2.5 packages posted on their
+>sites for those brave users who are using later 2.4 kernels?
+>
+>BTW, any idea when this change by Paul was introduced into the 2.4 kernel
+>series (specifically which 2.4.XX kernel?).
 
-Ditto.
+I submited a debian bug report with Anton message, Olaf (suse) is on
+the linuxppc64 list and had the patch, YDL folks have or will have it
+rsn (thanks to IRC magic ;)
+
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
