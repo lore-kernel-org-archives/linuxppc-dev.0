@@ -1,32 +1,31 @@
-Message-ID: <36F13D59.24C27EBE@jlc.net>
-Date: Thu, 18 Mar 1999 12:52:26 -0500
-From: Dan Malek <dmalek@jlc.net>
+Date: Thu, 18 Mar 1999 17:55:15 -0500 (EST)
+From: Tom Rini <tmrini@ntplx.net>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: SCSI crashes with vger
+In-Reply-To: <19990318183101.012814@mail.mipsys.com>
+Message-ID: <Pine.LNX.4.05.9903181753000.8817-100000@p05-10.hartford.dialin.ntplx.com>
 MIME-Version: 1.0
-To: Paul.Mackerras@cs.anu.edu.au
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Mac Audio
-References: <36EFDDD8.44C8F5EB@jlc.net> <199903181050.VAA22904@tango.anu.edu.au>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+On Thu, 18 Mar 1999, Benjamin Herrenschmidt wrote:
 
-> The following patch is the diff between dmasound.c in vger/samba and....
+> Both latest vger (2.2.4) and latest paul's kenrel (2.2.2) crash in the
+> NCR53C8XX driverm in ncr_wakeup_done, just after having probed SCSI
+> controllers (the NCR and MESH) and before (or when) probing devices.
 
-Thanks.
+Erg <paranoid worry>. In 2.2.2 there was a "scsi fix" which seems to have
+fixed the problem that some people (myself, Dan J) had when trying to do
+things like burn a CD on the ext chain or use both chains at once.  Now
+it's working well enough for me to do a silly thing like a raid0 /usr :)
+Hope this isn't related.. </paranoid worry>
 
-
-> ..........  If someone wants
-> to pick it up and hack it into shape, that would be great.
-
-This serves as a notice I will be working on it :-).  If anyone else wants
-to join the fun, let me know.
-
-
-    -- Dan
-
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
