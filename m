@@ -1,46 +1,59 @@
-Message-ID: <3E982570.6040207@mvista.com>
-Date: Sat, 12 Apr 2003 09:40:48 -0500
-From: Mark Hatle <fray@mvista.com>
+From: Arun Dharankar <ADharankar@attbi.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Questions regarding serial console on MPC8260ADS under Linux
+Date: Sat, 12 Apr 2003 19:26:36 -0400
 MIME-Version: 1.0
-To: Anand Franklin J <franklin@innomedia.soft.net>
-Cc: Craig Hollabaugh <craig@hollabaugh.com>,
-	LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Kernel panic: No init found!!!!
-References: <3E96E4B6.582DA2F9@innomedia.soft.net> <1050076574.463.2.camel@gibson> <3E97AA29.E44CBAD8@innomedia.soft.net>
-In-Reply-To: <3E97AA29.E44CBAD8@innomedia.soft.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200304121926.37104.ADharankar@ATTBI.Com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You also need to ensure that all libraries required by /sbin/init are also
-provided.  Use the "ldd" (or objdump -p /sbin/init | grep NEEDED) to get a list
-of all libraries required to be on your ram disk.  (In addition to the libraries
-make sure you have ld.so.. that is the dynamic loader.)
+Hello...
 
---Mark
+1. After making sure that the stty/termio settings on the console port
+    have "brkint", I tried sending a break (kermit, minicom and reverse
+    telnet on BDI). The break does not seem to generate SIGINT.
 
-Anand Franklin J wrote:
-> hi Craig
-> I do have the /sbin/init file in my harddisk. what i performed is manally i
-> partitioned the harddisk into 3 , runned mkfs.ext2 then tune2fs on the
-> /dev/hda1 partition. copied all utilties from ppc directory(target) like
-> etc,bin,sbin... into /dev/hda1. configured the kernel to mount from harddisk.
-> still i don't know what is the problem.
-> thanking you.
-> franklin.
-> Craig Hollabaugh wrote:
->
->
->>On Fri, 2003-04-11 at 09:52, Anand Franklin J wrote:
->>
->>>hello All,
->>>    I as using the Redwood 6 IBM PPC board. The Kernel gives the panic
->>>when it boots (Kernel panic: No init found). can anybody say what is the
->>>way to get rid off it.
->>>thanking you,
->>
->>Do you have a /sbin/init file?
+    What could I be missing, or doing wrong? Or is my understanding
+    incorrect of the brkint termio flag?
+
+
+2. I would like to use the SAK/sysrq on the serial console. One thing
+    seems to be missing is ASYNC_SAK flag in the ser_info_t->flags.
+    So, I added it in the 8260_io/uart.c:startup(...). Also, made sure
+    that /proc/sys/kernel/sysrq has "1" in it. With this much, I tried sending
+    a break on the console followed by "t" (and other SAK feature keys).
+    No luck.
+
+    Could this be related to (1) above? What about the missing flag
+    ASYNC_SAK in the ser_info_t info struct?
+
+
+3. During Linux kernel bootup, ppc_md.progress(...) is called in a number
+    of places. This is before the serial console is initialized. On the
+    8260 configuration, the ppc_md.progress(...) is NULL. Has this been
+    been fixed by anyone for the 8260 configuration?
+
+    On the board I use, PPCBoot is the bootloader/monitor. So, I copied
+    over the serial_putc()/serial_puts() routines to uart.c (ofcourse, the
+    modified to use the same DPRAM settings/addresses as used by
+    PPCBoot.
+
+    With BDI, I can see that this ppc_md.progress()-->serial_puts()-->
+    serial_putc() is called. But,
+     volatile cbd_t tbdf = (cbd_t *)&im->im_dprambase[up->smc_tbase];
+    Seems to cause an exception in machine_init() the first time it is
+    called.  Also, up does point to 0xf0000040 (in IMAP/IMMR).
+
+    My guess is that this is do with the address translations which are
+    not setup at this instance during startup. I am not sure how to fix
+    this - if this is the case.  How do I get this to work?
+
+
+Best regards,
+-Arun.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
