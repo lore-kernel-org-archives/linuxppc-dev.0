@@ -1,50 +1,58 @@
-To: Daris A Nevil <dnevil@snmc.com>
-Cc: ?????? <engineersong@hanmail.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: SCC3 console problem on MPC860 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 30 Mar 2001 08:57:07 MDT."
-             <3AC49EC3.978D9A4A@snmc.com>
-Date: Fri, 30 Mar 2001 17:37:46 +0200
-Message-Id: <20010330153751.EE41228827@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20010330155106.63365.qmail@web9904.mail.yahoo.com>
+Date: Fri, 30 Mar 2001 07:51:06 -0800 (PST)
+From: Freddy Lugo <wilflugo@yahoo.com>
+Subject: No ROM monitor - debugging problem
+To: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3AC49EC3.978D9A4A@snmc.com> you wrote:
->
-> I had problems trying to get the uart.c driver to do what you wanted as
-> well.  I don't think it was really meant to support both SCC and SMC at
-> the same time.  I ended up splitting the driver into two different
+     Hi all,
 
-I cannot verify this problem.
+     I want to port Linux to a target prototype board.
+ The target system runs on a PPC 755 processor on a
+custom os.  I want to port Linux to perform some
+benchmark and to convince the management to support
+the decision.  There is no ROM monitor on the target.
+Right now we use SingleStep 7.5 debugger and download
+the code from a HP probe into RAM and start running it
+with the debugger at the and specific address.
+     I heard that this debugger doesn't support MMU
+and we are waiting for a bdi2000 we already ordered.
+I just wanted to do something before the bdi2000
+arrives.  I checked on the list and some time ago,
+someone said that the 755 is not supported on ppcboot,
+that is still true??.
+     I compiled the kernel and downloaded using the
+SingleStep.  It started running on
+arch/ppc/boot/head.S but when it goes to
+decompress_kernel the debugger doesn't know what to
+do.  I also checked on the list and some debuggers
+doesn't support linux sections organization and in
+some cases the kernel image is not downloaded.  So I
+think this was the problem.
+     I also compiled the gdb debugger to trying to
+simlate the kernel (I don't know if this could be done
+with the kernel), but when the is supervisor level
+instruction is executed gdb brings me a "priviledge
+level exception".  Apprently gdb works with default
+user mode.
+    So the question is, is there any way I could start
+debugging the kernel to start my porting before the
+bdi2000 arrives?? If there is, There is any
+documentation I could use about what things I should
+worry about?? (I read the
+http://penguinppc.org/usr/embedded/howto/PowerPC-Embedded-HOWTO.html
+and it is not very useful without a ROM monitor).  Any
+help?
 
-> drivers, making one work just for the SCC, and the other only for the
-> SMC.  This works quite well.
 
-This is really not needed.
+Thanks in advance,
 
-We have tested the normal uart driver in a setup running on 5  serial
-ports  (2  x  SMC, 3 x SCC, with Ethernet of the 4th SCC). No serious
-load tests so  far,  but  basic  I/O  functions  worked  without  any
-problems.
+Freddy
 
-> The code is in the QSLinux release, which you can download from
-> ftp:://qslinux.org.  When you untar the kernel you can find the two
-> drivers in the directory snmc/qslinux/kernel/drivers/char.
-
-Ummm... AFAIK QSLinux is based on a 2.2.5  kernel?  That's  _awfully_
-old.  I  can  imagine  that there were lots of problems with the uart
-driver at this time. And other bugs as well.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"How is this place run - is it an anarchy?"
-"No, I wouldn't say so; it is not that well organised..."
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
