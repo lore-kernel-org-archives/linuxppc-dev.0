@@ -1,31 +1,44 @@
-Date: Thu, 12 Aug 1999 17:11:49 +1000
-Message-Id: <199908120711.RAA30446@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: rth@cygnus.com
-CC: dje@watson.ibm.com, Jes.Sorensen@cern.ch,
-        Geert.Uytterhoeven@cs.kuleuven.ac.be, linuxppc-dev@lists.linuxppc.org,
-        linux-fbdev@vuser.vu.union.edu, rth@cygnus.com
-In-reply-to: <19990811225231.B14713@cygnus.com> (message from Richard
-	Henderson on Wed, 11 Aug 1999 22:52:31 -0700)
-Subject: Re: [linux-fbdev] Re: readl() and friends and eieio on PPC
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <rth@cygnus.com> <9908120516.AA43198@marc.watson.ibm.com> <19990811225231.B14713@cygnus.com>
+Message-ID: <XFMail.990812092025.heinz@bintec.de>
+Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+In-Reply-To: <61891BA043DED21180920090273F173829B113@argentina.telogy.com>
+Date: Thu, 12 Aug 1999 09:20:25 +0200 (CEST)
+From: Heinz Blaettner <heinz@bintec.de>
+To: Naushit Sakarvadia <nsakarvadia@telogy.com>
+Subject: RE: Assembly
+Cc: LinuxPPC Developpers <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Richard Henderson <rth@cygnus.com> wrote:
 
-> I prefer high-performance drivers. 
+On 11-Aug-99 Naushit Sakarvadia wrote:
+> 
+> Hello,
+> 
+> I am trying to learn assembly language of Powerpc.
+> 
+> Anybody can suggest good point to start?
+> 
+> I tried to read User Manual of MPC860 and InstrucionManual but
+> it doesnt talk about architecture of PPC,meas how many register it has...
+> how many flags..etc...
+> 
+> I need something like programmer's guide ,which is not I couldnt find on
+> Motarola website.
+> 
+Have a look at Motorola page:
 
-Sure, so do I.  But when I can get safety as well, for the cost of one
-extra cpu cycle per device access, which can probably be overlapped
-with the device access anyway, I think it's a good deal.
+        www.mot-sps.com/home/lit_ord.html
 
-On alpha, does wmb() stop a subsequent load from being moved ahead of
-a previous store?  Or do you have to use mb() to get that effect?
+        order following doc's:
+        MCPFPE/AD
+        MPCPFE32B/AD
+        MPCPRG/D
+        MPCPRGREF/D
 
-Paul.
+bye
+        heinz
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
