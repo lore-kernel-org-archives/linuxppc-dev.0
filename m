@@ -1,31 +1,44 @@
-Date: Wed, 10 Feb 1999 02:47:50 -0500 (EST)
-From: Elliot Lee <sopwith@redhat.com>
-To: Amos <quoll@nutopia.org>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: libglib? where is it?
-In-Reply-To: <199902100324.VAA14271@lists.linuxppc.org>
-Message-ID: <Pine.LNX.4.04.9902100247270.10263-100000@lacrosse.redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <36C144A0.A11501B1@schweiz.ch>
+Date: Wed, 10 Feb 1999 09:34:40 +0100
+From: Andreas Tobler <a.tobler@schweiz.ch>
+Mime-Version: 1.0
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
+        egcs@egcs.cygnus.com
+Subject: building egcs under LinuxPPC pre-R5
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 9 Feb 1999, Amos wrote:
+Hello,
 
-> I'm trying to install the gnome rpms I found @ 
-> <ftp://linuxppc.cs.nmt.edu/pub/linuxppc/gnome/ppc/> Every many of the
-> packages say they require a libglib package, but I can't find it anywhere!?
-> I'm running R5 RawHide 1.something (I'm in MacOS right now...). Did I miss a
-> package when I installed R5 originally (I'm sure I did, but what one?)
+since the beginning of February I try to build egcs snapshot 19990131
+and now 19990208. The succcess is small. I got the 19990131 snapshot to
+build and install, but when I compile c++ code with some include
+restrictions it seems that it overrides it which causes an error. The
+egcs I used before and now again, was 2.91.60 I think, for LinuxPPC
+folks egcs-1.1.1.1c. With this compiler I haven't had this error.
+My question, is there something specific when building an egcs on
+LinuxPPC that I have to take care of? It's not necessary for me to take
+a snapshot, but I need to build an egcs & libstdc++ with the option
+-fno-vtable-thunks.
 
-You should be able to get glib from the same place you got gtk+...?
+my config: 	LinuxPPC pre-R5 with glibc-2.0.108
+		Kernel 2.2.0 self built
+		running compiler egcs-1.1.1.1c
+How I did egcs:	./configure --enable-shared --enable-threads
+--prefix=/usr/local/egcs
+		make LANGUAGES="c c++"
+		make LANGUAGES="c c++" install
+Any hints?
+Thanks
 
--- Elliot
-"In film you will find four basic story lines. Man versus man, man
- versus nature, nature versus nature, and dog versus vampire."
-    - Steven Spielberg
-
+Andreas
+-- 
+| Andreas Tobler				
+| CH-8004 Zuerich 							
+| E-Mail: andreas.tobler@alcatel.ch	| a.tobler@schweiz.ch
+-----------------------------------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
