@@ -1,59 +1,86 @@
-Date: Mon, 20 Sep 1999 21:18:03 -0400 (EDT)
-From: Claude Robitaille <crobitaille@videotron.ca>
-Subject: Re: Compiling 2.3.18
-In-reply-to: <37E5B2EA.9C266862@netx4.com>
-To: Dan Malek <dan@netx4.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-id: <Pine.LNX.4.10.9909202105240.836-100000@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <19990921124008.23835.rocketmail@web601.yahoomail.com>
+Date: Tue, 21 Sep 1999 14:40:08 +0200 (CEST)
+From: sébastien tadéoni <sebastien_tadeoni@yahoo.fr>
+Subject: Re: Cross compilation for MPC860
+To: linux ppc embedded <linuxppc-embedded@lists.linuxppc.org>,
+        Graham Stoney <greyham@research.canon.com.au>,
+        Scott Wood <scott@broadlink.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 
+Hi Graham, Hi Scott;
 
-On Mon, 20 Sep 1999, Dan Malek wrote:
+Thanks for your help for cross compiling.
 
-> 
-> > I downloaded 2.3.18 from edge.kernelnotes.org and I am able to compile
-> > (after fixing one of the Config.in file).
-> 
-> This looks like a mirror, so it is likely up to date.  What
-> was the problem with Config.in?
+> Any particular reason for using old versions        
+> of binutils & egcs?
 
-it was with the drivers/char/Config.in. Thew problem was a missing ] in
-an if statement, unfortunately, I do not remember which line ... :-( Next
-time, I'll take notes. Unless I send the file to you so you could do
-a diff.
+> My suggestion is that if you're just starting out,  
+ > now is the best time to make sure you're using the 
+ > latest gcc (2.95.1) and binutils. You have to make
+a > tiny mod to the gcc specs file if you use binutils
+  > 2.9.1, because the name of the linker emulation
+has  > changed since the last binutils release. I'm   
+     > currently using the binutils-990809 snapshot.
+Haven't > actually run any code it produces yet
+though.
 
-> 
-> > Could it be a problem with Dave's tar (as for fadsrom.tar)?
-> 
-> I don't understand why some people have problems with this file.
-> I continually download and extract it just fine on any of my
-> Linux machines.  What are you using?
-> 
-I had the same problem with fasdron.tar.gz (or tgz...), At that
-time, I had tried both RH6.0 on a Pentium and R5 on a PowerMac
-(but I guess the tools are from the same sources anyway). This time
-it was on the PowerMac. But, anyway, I avoided the problem by
-having drivers/Makfile not to compile the drivers/sound directory
-if CONFIG_SOUND is not set. I added an ifdef statement.
+I have pgcc-2.91.66 (egcs-1.1.2 release) and I founded
+a gcc-2.95 tar file but I have problem with the
+./configure command (system can't find any sources in
+. or ..).
+I see you work on a pentium station and I would have
+known how you have configured your machine.
+Where can I find the last binutils and gcc release and
+how install them (is there specifics command other
+than --target=powerpc-linux and --with-newlib)?
+Which modif must I make in the spec files?
 
-> 
-> I usually put something there as a convenience for people that
-> can't get CVS access through a fire wall.  It represents my
-> source tree, which is known to build, just before I make CVS commits.
-> 
-> 
+Graham Stoney wrote:
+...
+> *** drivers/macintosh/Makefile.dist     Tue Aug 10 >
+16:07:44 1999
+> --- drivers/macintosh/Makefile  Tue Aug 10 16:25:03
+> 1999
+> ***************
+> *** 15,21 ****
+>   L_TARGET := macintosh.a
+>   M_OBJS   :=
+>   
+> ! ifndef CONFIG_MBX
+>  L_OBJS   := via-cuda.o macio-adb.o via-pmu.o >
+mediabay.o
+>  LX_OBJS  := adb.o
+>  endif
+> --- 15,21 ----
+>  L_TARGET := macintosh.a
+>  M_OBJS   :=
+  
+> ! ifdef CONFIG_PMAC
+>  L_OBJS   := via-cuda.o macio-adb.o via-pmu.o >
+mediabay.o
+>  LX_OBJS  := adb.o
+>  endif
 
-if I understand well, right after your local source tree, CVS is the most
-up to date. I never used it and I am not behind a firewall, where are the
-instructions on how to use it, i.e. do you have an URL?
+and Scott Wood wrote:
 
+> Note that the 2.2.5-embedded kernel compiles in ADB 
+> support whether you configured for it or not
+(correct > me if I'm wrong, but that has been my
+experience so
+> far), so I commented out L_OBJS and LX_OBJS in >
+drivers/macintosh/Makefile and it builds without ADB.
 
-Claude
+I don't realy understand which role play this makefile
+and what is ADB?
+
+Thanks in advance for your help.
+Good Day
+Sébastien
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
