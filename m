@@ -1,45 +1,30 @@
-Message-ID: <399A5D88.1535C44C@relog.ch>
-Date: Wed, 16 Aug 2000 11:23:20 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Henry Worth <haworth@ncal.verio.com>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Darwin updates
+Date: Wed, 16 Aug 2000 14:41:12 +0200
+Message-Id: <20000816124112.4310@smtp.calvacom.fr>
+In-Reply-To: <3994B357.E3FE9014@ncal.verio.com>
+References: <3994B357.E3FE9014@ncal.verio.com>
 MIME-Version: 1.0
-To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-CC: MkLinux Setup List <mklinux-setup@public.lists.apple.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Xlib Question
-References: <Pine.LNX.3.96.1000815163648.21337B-100000@deepspace.mklinux.org>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"David A. Gatwood" wrote:
+>I tried syncing up my copy of the Darwin xnu project today.
+>The server was down for a while, but now that it is up there
+>are new updates. A real quick look shows Pismo sleep is enabled
+>in the core99 drivers (they still haven't sanitized out the
+>use of the word "Pismo"). I also noticed some updates to the
+>PMU ADB, network and USB drivers, and the HFS code.  There
+>is no sign of explict support for the cube or dual G4's in
+>the Core99 drivers (though the uniNorth network drivers
+>have had some gigabit code for a while).
 
-> When I'm running a multithreaded app with heavy signal load,
+I've seen some XNU updates last week, but AFAIK, the sleep code was still
+far from beeing complete. I'll re-check asap.
 
-...like Netscape? :)
+Ben.
 
-> xlib messages stop being delivered from xlib to the program, resulting in
-> XNextEvent stalling.  Most of the time, if you click somewhere in that
-> window, those events all get delivered at once, sometimes twenty or thirty
-> at a time.
-
-I've noticed that Netscape often stalls up/downloads to/from the roaming
-access server. When I click into the window, it continues. Is that the problem
-you are seeing as well?
-
-It happens to me on both powerpc and i386, with both 2.2 and 2.4 kernels, and
-I use 3.3.x X libraries.
-
-This makes me suspect the 4.0.1 server (I don't remember it happening with
-4.0), are you using that as well?
-
-
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
