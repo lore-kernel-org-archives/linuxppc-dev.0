@@ -1,31 +1,30 @@
-Message-ID: <39C8D1CE.1847B996@mpifr-bonn.mpg.de>
-Date: Wed, 20 Sep 2000 17:03:42 +0200
-From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
-MIME-Version: 1.0
-To: "D.J. Osguthorpe" <djosg@mgu.bath.ac.uk>
-CC: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: CPU Temperature Patch
-References: <10009201242.AA11420@mgu.bath.ac.uk> or <11420.10009201242@mgu.bath.ac.uk>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200009201537.QAA05334@hyperion.valhalla.net>
+Date: Wed, 20 Sep 2000 16:38:12 +0100
+Subject: 2.4.0-t8 (dumb question & two crashes)
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"D.J. Osguthorpe" wrote:
-> Here are two patches that appear to fix the cpu_temp function in setup.c.
-> They have been applied to a number of Ben Herrenschmidt kernels on a 500 MHz
-> Pismo powerbook and print reasonable values when you cat /proc/cpuinfo.
+OK...
 
-The patch seems to work on my Lombard/333, too... Really great!
+I don't seem to be able to get modprobe to work on 2.4.0-t8 unless I move
+the modules from where the build puts them into their old positions.
+According to rpmfind I have the latest modutils... where am I going wrong?
 
-> +       /* this set for 500 MHz Pismo - how do we get access to clock?? */
+====
 
-There is, in the same file, around line 319 code to read the clock speed from
-the device tree. However, is it really necessary to include the clock speed at
-this point? What is the drawback if we just assume 500 MHz (or even the max
-value) for every G3 based machine?
+It crashes (not got output from xmon yet) on my 9600 on reboot [don't know
+where]
 
-Albrecht.
+crashes on G3/beige on reboot (ditto on xmon output) but this time I'm
+fairly sure it only crashes when it has an unknown USB device on the bus (an
+epson styluscan 2500) - seems OK if the printer is switched off.
+
+Iain.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
