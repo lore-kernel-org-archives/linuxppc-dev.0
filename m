@@ -1,18 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <SRS0+610955aeb5ed8db29aac+455+infradead.org+dwmw2@canuck.srs.infradead.org>
+Received: from canuck.infradead.org (canuck.infradead.org [205.233.218.70])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E13192BDB5
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Nov 2004 18:12:16 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Armando Di Cianno <fafhrd@gentoo.org>
-In-Reply-To: <2101489e3424befc4c73bd04bbebaa25@nephiliah>
-References: <2101489e3424befc4c73bd04bbebaa25@nephiliah>
+	by ozlabs.org (Postfix) with ESMTP id 5C8BB2BDB5
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Nov 2004 06:35:07 +1100 (EST)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sean Neakums <sneakums@zork.net>
+In-Reply-To: <6ubrdsjiq1.fsf@zork.zork.net>
+References: <6ubrdsjiq1.fsf@zork.zork.net>
 Content-Type: text/plain
-Date: Sun, 21 Nov 2004 18:11:31 +1100
-Message-Id: <1101021091.27157.65.camel@gaston>
+Date: Sun, 21 Nov 2004 19:34:44 +0000
+Message-Id: <1101065685.9988.49.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 Subject: Re: TEST: Sleep suppport for iBook G4 & Aluminium PowerBooks (ATI
 	based)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,19 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2004-11-20 at 22:00 -0500, Armando Di Cianno wrote:
-
-> Using 'NoAccel' in xorg.conf seems to hide the symptoms of the bug, or 
-> remove the bug.
+On Sat, 2004-11-20 at 21:47 +0000, Sean Neakums wrote:
+> > http://gate.crashing.org/~benh/albook-ibookg4-sleep-2.diff
 > 
-> However, without that option, with this patch, the problem seems "less 
-> bad", if that's even possible.  It takes longer for the root window to 
-> get "ridiculously speckled."  Not sure if that info helps at all. :-)
-> 
-> Not sure if I mentioned that, the first patch (the one sent a couple 
-> weeks ago) did not seem to have this problem.
+> I tried this on my 15" AlBook (one of the new 1.5GHz ones), applied to
+> Debian's 2.6.9.  It suspended and resumed fine (and quickly!), but
+> after resume I noticed that images (in Mozilla and the root window)
+> would become corrupted if obscured and made visible again, e.g. by
+> switching tabs, or by moving between a full and an empty workspace.
 
-Yes, you did mention it, which is weird. I'll have to spend some time
-comparing the 2 versions and see if I can spot something.
+I've seen similar behaviour in firefox on a 17" AlBook with Fedora Core
+3. I can't remember if it was with Ben's first or second patch. Neither
+can I reproduce it now with the second version.
 
-Ben
+-- 
+dwmw2
