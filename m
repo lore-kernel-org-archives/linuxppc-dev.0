@@ -1,27 +1,36 @@
-Message-ID: <3829D6E9.B6BEECFA@interlink.com.ar>
-Date: Wed, 10 Nov 1999 17:34:51 -0300
-From: Nicolás Ojeda Bär 
-	<lojedaortiz@interlink.com.ar>
-Reply-To: lojedaortiz@interlink.com.ar
+Date: Wed, 10 Nov 1999 12:58:36 -0800 (PST)
+From: Bill Brooks <wbrooks@lug.ee.calpoly.edu>
+To: Nicolás Ojeda Bär <lojedaortiz@interlink.com.ar>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Need Help on kernel modules
+In-Reply-To: <3829D6E9.B6BEECFA@interlink.com.ar>
+Message-ID: <Pine.LNX.4.10.9911101254440.16962-100000@lug.calpoly.edu>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Need Help on kernel modules
-References: <199911040559.XAA31789@lists.linuxppc.org>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I just have a quick question:
+On Wed, 10 Nov 1999, [iso-8859-1] Nicolás Ojeda [iso-8859-1] Bär wrote:
 
-Where can I find info for programming kernel modules ?
-I know plenty of C/C++, but what i am looking for is module programming
-especific issues...
+> 
+> I just have a quick question:
+> 
+> Where can I find info for programming kernel modules ?
+> I know plenty of C/C++, but what i am looking for is module programming
+> especific issues...
 
-any help would be appreciated,
+Get and read this book:
 
-thanks a lot,
+Linux Device Drivers
+by Alessandro Rubini, Andy Oram (Editor) 
+Paperback - 448 pages (February 24, 1998) 
+O'Reilly & Associates
+ISBN: 1565922921
 
-Nicolás
+I know this will help. 
+
+Bill
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
