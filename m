@@ -1,39 +1,31 @@
-Message-ID: <20040519131316.49507.qmail@web15203.mail.bjs.yahoo.com>
-Date: Wed, 19 May 2004 21:13:16 +0800 (CST)
-From: Song Sam <samlinuxppc@yahoo.com.cn>
+In-Reply-To: <OFE905D2F1.566CE02A-ON85256E99.0046D4AF-85256E99.00478089@LocalDomain>
 Subject: Re: getting linux console on a frame buffer.
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-	David Ho <DavidHo@nanometrics.ca>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <Pine.GSO.4.58.0405191047150.23702@waterleaf.sonytel.be>
+To: David Ho <DavidHo@nanometrics.ca>
+Cc: geert@sonycom.com, Geert Uytterhoeven <geert@linux-m68k.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <OFB18B1B47.575DB256-ON85256E99.00488B08-85256E99.0048EE6F@nanometrics.ca>
+From: David Ho <DavidHo@nanometrics.ca>
+Date: Wed, 19 May 2004 09:16:36 -0400
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> I tried your suggestion, but I noticed tty's are not initialized in
+> my kernel startup log.  I'll looking into how I can start it.
+> Otherwise, I lost the console (it does not appear on either tty0(fb)
+> or ttyS0 (serial).
 
-> > The problem may be that I don't have a linux console running on the
-> > frame buffer device. Would anyone know how to get the linux console
-> > on the frame buffer but still receives input from a serial port (I
-> > don't have a keyboard attached to the board. I have been doing most
-> > things from the serial console and remotely).
->
-> Append `console=tty0 console=ttyS0' to the kernel command line, and
-> kernel messages will appear on both tty0 (fb) and ttyS0 (serial),
-> while console input will be taken from the last one (ttyS0).
+Okay Geert, Virtual terminal support is enabled in the kernel.
+but when I tried echo hello > /dev/tty0, it is not connected to a device
+driver?
+Do you know what else is missing?
 
-But this isn't a solution to have a LINUX console on
-the frame buffer with serial port input.It DID output
-some boot message to LCD but the work console is still
-ttyS0.And you can type a command like "echo a >
-/dev/tty0" to make the 'a' to LCD.Without such
-command,however,the input result still is displayed on
-serial console.Am I right?
+David
 
-Best regards,
+# echo hello > /dev/tty0
+/dev/tty0: cannot create (No such device)
 
-Sam
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
