@@ -1,42 +1,58 @@
-Date: Tue, 29 Feb 2000 20:21:25 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: paulus@linuxcare.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: PPC should not use -fno-builtin (was Re: 2.3.47 imac build?)
-In-Reply-To: <20000229192430.018647@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.10.10002292018001.5514-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <38BC225D.69570BE3@chpc.utah.edu>
+Date: Tue, 29 Feb 2000 12:47:41 -0700
+From: Lou Langholtz <ldl@chpc.utah.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Brad Parker <brad@parker.boston.ma.us>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: problem building 2.3.47: no macintosh.a file
+References: <200002291608.LAA16958@p2.parker.boston.ma.us>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >The way it fails booting is a bit entertaining: using BootX 1.1.3, it will
-> >show a little more than half a page of messages (arch_exit or similar in
-> >the last), then starts drawing funny color fringes on the screen until I
-> >reset. Using BootX 1.2b3, it locks up after the first six or so lines of
-> >text (before getting to the early console output). 2.3.29 worked fine. Any
-> >ideas?
+Brad Parker wrote:
+
+> I've gotten 2.3.47 from kernel.org to build, doing pretty much what
+> Lou did (below).  To get rid of the link errors you need to edit
+> arch/ppc/kernel/ppc_ksyms.c and comment out the line with "strspn" in
+> it.
 >
-> I think I know what's going on:
+> It boots on my imac.  I don't have a lot of milage yet, but usb works :-)
+> fyi - I plan to switch to an rsync from Paul's tree...
 >
->  - make sure setting the display BAT in arch/ppc/mm/init.c (MMU_Init) is
-> commented out, this is a hack and need some alignement tricks to work in
-> all cases. It should already be in #if 0/#endif
+> -brad
+>
+> >. . . Argh! I've gotten now to the point that 2.3.47 builds all the way then
+> the linker
+> >barfs with two "multiple definition of" errors.  . . .
+> >kernel/kernel.o(.kstrtab+0x1f44): multiple definition of `__kstrtab_strspn'
+> >arch/ppc/kernel/kernel.o(.kstrtab+0x4a4): first defined here
+> >kernel/kernel.o(__ksymtab+0x9e0): multiple definition of `__ksymtab_strspn'
+> >arch/ppc/kernel/kernel.o(__ksymtab+0x178): first defined here
+> >make: *** [vmlinux] Error 1
+> >
+> >Can anyone help me with these definition errors? . . .
 
-Check.
+That was it!!! I'm so excited! I'm running kernel.org's 2.3.47 now on my PowerMac
+7500 and haven't encountered a bug yet. Network I/O through my PPP connection even
+feels a little snappier now. With any luck -- as people have indicated -- I won't
+have anymore PPP freeze ups either.
 
->  - in arch/ppc/kernel/pmac_setup.c, comment out the content of the
-> function pmac_progress. (Or change pmac_init() so that it sets
-> ppc_md.progress to NULL, and set it to pmac_progress only pmac_setup_arch()).
+Rambling BTW (for the linuxppc-dev archives mostly):
 
-Tried both. I get the arch: exit if I set ppc_md.progress in pmac_setup
-arch. Shortly after this output, the color fringe fun starts again.
-
-I'll strip my .config to the bare minimum to narrow this down. Thanks for
-getting me this far :-)
-
-	Michael
+I did encounter some trouble  with getting PPP to install properly. First
+I reliazed I had to update my pppd (etc) which fortunately I had sources for
+already on my system. Then I found I had to set CONFIG_PPP_ASYNC=m in my .config
+and run "make modules; make modules_install" to make the kernel happy. Trying to
+build it within the kernel (instead of as a module), didn't seem to want to let
+PPP work. modprobe kept complaining in my syslog file that it couldn't locate
+module "tty-ldisc-3" which the PPP source dist says should be aliased if it's
+built as a module to the ppp_async module (in the /etc/modules.conf file). So
+after building and installing ppp_async as a module and updating the modules conf
+file PPP was able to work. Is this a bug in "make xconfig" where it should limit
+the choices to either "m" or "n"? Or maybe something I did wrong? I guess so long
+as my system can still reboot I won't loose any more sleep over it :-)
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
