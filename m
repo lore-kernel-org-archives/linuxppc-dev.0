@@ -1,38 +1,36 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Stephan Linke" <Stephan.Linke@epygi.de>, <bart@ardistech.com>
-Cc: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: 8xx i2c refers to unspecified chip errata
-Date: Fri, 11 Oct 2002 14:46:12 +0200
-Message-ID: <IGEFJKJNHJDCBKALBJLLIEAPFHAA.joakim.tjernlund@lumentis.se>
+Message-ID: <3DA6CA28.4F84FDFB@ardistech.com>
+Date: Fri, 11 Oct 2002 14:55:04 +0200
+From: "bart@ardistech.com" <bart@ardistech.com>
+Reply-To: bart@ardistech.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <FCEAKDJJAPHPLJFINDAJMENOCJAA.Stephan.Linke@epygi.de>
+To: joakim.tjernlund@lumentis.se
+Cc: Stephan Linke <Stephan.Linke@epygi.de>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 8xx i2c refers to unspecified chip errata
+References: <IGEFJKJNHJDCBKALBJLLEEAPFHAA.joakim.tjernlund@lumentis.se>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
->
-> Hi Bart and Joakim,
->
-> Well. No, I'm not shure. But I see what you mean Bart. :) I'll see what
-> happens now.
->
-> And I have a question to Joakim. In your code you wrote (cpm_iic_init):
->
-> 	i2c->i2c_i2mod = 0x80; /* Filter clock */
->
-> I think this is not what you intended. I didn't find that bit (bit 0) in my
-> 862 manual. But there's the FLT flag (bit 4) that matches your comment. So I
-> think It should be:
->
-> 	i2c->i2c_i2mod = 0x08; /* Filter clock */
+Hi,
 
-You are right
+> Look in cpm_iic_read() for:
+> /* flush will invalidate too. */
+> flush_dcache_range((unsigned long)buf, (unsigned long)(buf+count));
+>
+> You can't just do invalidate_dcache_range() since it will invalidate more than your buffer
+>
+In my case it did invalidate the stack :(
 
-  Jocke
+> if it's not cache line aligned. Therefore you must flush to memory first and then invalidate.
+> But you don't need an explicit invalidate_dcache_range() since flush_dcache_range() will flush to
+> memory AND invalidate.
+>
+Better would be to have a special DMA region for this. Or as Dan suggest forget the
+whole CPM IIC and do it by software.
 
+Cheers,
+	Bart
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
