@@ -1,40 +1,37 @@
-From: "Ron Bianco" <ronb@junction.net>
-To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: MontaVista->sandpoint_setup.c:  changing IRQs
-Date: Thu, 27 Jul 2000 13:24:15 -0700
-Message-ID: <000401bff808$a2501f90$4d012ac7@warp-speed>
+Message-ID: <004e01bff836$bde9c5c0$4607a8c0@LocalHost>
+From: "Gong Zhuo" <gongzhuo@163.net>
+To: <cyprien.laplace@fnac.net>
+Cc: "Linux PPC Mailing List" <linuxppc-embedded@lists.linuxppc.org>
+References: <20000727205624.4408F11724@www.multimania.com>
+Subject: Re: UniverseII driver
+Date: Fri, 28 Jul 2000 09:54:18 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The sandpoint code sets up the EPIC to cascade to the 8259.
+----- Original Message -----
+From: Cyprien LAPLACE <cyprien.laplace@fnac.net>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Friday, July 28, 2000 6:56 AM
+Subject: UniverseII driver
 
-I've changed it to try to use the openpic for all irqs.  And changed the sandpoint_map[]
-in sandpoint_pci.c to agree with my hardware.
-And all other sandpoint specific irq stuff, including #if 0'ing  out all code related to
-the 8259 in the sandpoint files.
 
-FYI, I've tried to create 2 replacement files for sandpoint_setup.c and sandpoint_pci.c
-with different names but changing the Makefile where the related object files are
-referenced is not sufficient to have the new files included in the build.  I don't
-understand all the components that control a build well enough yet to make successful
-changes to the process.  I wish there was some detailed explaination somewhere.
+>
+> hello,
+>
+>
+> i would know if someone has a Universe II driver..
+>
+> for a MVME2600 borad (PPC603ev)
+>
+> thanx
+>
 
-I'm still uncertain that I've done all the right things.
-
-In sandpoint_init_IRQ():
-
-- I'm uncertain about:   irq_desc[i].ctl = &open_pic   where i is less than 16.    Should
-I include 0 to 15 for this?
-
-- Since there is no setup for the 8259 now in 'my' modified code, is there someplace
-amongst all the openpic init stuff where I need to explicitly provide EPIC register setup
-for all interrupts to direct mode?
-
-Thanks, Ron
+ URL ftp://vlab1.iram.es/pub/linux-vme/  There is a very good vme driver
+here.  I have used it and it works well
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
