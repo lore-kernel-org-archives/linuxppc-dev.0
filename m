@@ -1,33 +1,29 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-	<paulus@linuxcare.com.au>
-Subject: Re: sym53c875 in 2.4.2
-Date: Wed, 7 Mar 2001 16:27:13 +0100
-Message-Id: <20010307152713.29411@mailhost.mipsys.com>
-In-Reply-To: <Pine.LNX.4.05.10103071330410.773-100000@callisto.of.borg>
-References: <Pine.LNX.4.05.10103071330410.773-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Giuliano Pochini <pochini@shiny.it>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ABI ? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 07 Mar 2001 09:52:45 +0100."
+             <XFMail.010307095245.pochini@shiny.it>
+Date: Wed, 07 Mar 2001 18:17:11 +0100
+Message-Id: <20010307171716.026ED281D9@denx.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> Are there any conflicting assignements ? Could you check if the new
->> phys_to_bus() function returns proper values (finds the bus on which
->> the Sym chip resides) ?
+In message <XFMail.010307095245.pochini@shiny.it> you wrote:
 >
->My hose resources were not set up, so phys_to_bus() returned NULL.
-Wouldn't it
->be better to return pa in that case, or at least print an error to the
->console?
+> Where can I get ABI specifications for linux-ppc ?
 
-Right, I'll look into this. Could you, on your side, figure out why they
-weren't
-setup properly ? The hose resource code is new (Paulus), I didn't yet dive in
-it's gory details and it works fine on pmacs.
+See FAQ 2.5 at
+http://www.penguinppc.org/usr/embedded/howto/PowerPC-Embedded-HOWTO-2.html#ss2.5
 
-Ben.
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Due to lack of disk space, this fortune database has been discontinued.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
