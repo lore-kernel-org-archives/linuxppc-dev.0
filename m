@@ -1,43 +1,58 @@
-Message-ID: <001701c0c41b$f1f4fea0$6f0fa8c0@DWaves.com>
-From: "Ami Levi" <AmiL@kswaves.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: kernel MMU initialization problems when extemding physical memory form 8M to 16M
-Date: Fri, 13 Apr 2001 15:16:11 +0200
+Message-ID: <3AD717A1.57872288@mvista.com>
+Date: Fri, 13 Apr 2001 11:13:37 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="windows-1255"
+To: Masahide Tomita <tomita@itl.nyc.co.jp>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Which rootfilesystem should I use on booting MBX860?
+References: <a04320401b6fc63ce0068@[192.168.10.144]>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+Masahide Tomita wrote:
 
-We are running Linux 2.2.13 on our custom embedded MPC850 platform.
-We are using ppcboot 0.4.1
+> Building the kernel and booting it on MBX was successful, but I'm so
+> confused about usage of initrd and so on.
 
-With 8M configuration everything runs OK. No problems
+I still believe the easiest thing to do is build up a small NFS
+root file system for testing.  When it has what you want, just
+copy it to a ramdisk.
 
-When we extend the SDRAM from 8M to 16M the kernel crashes with 'machine
-check'
-exception that caused by 'turn_on_mmu' routine inside head.S file.
->From ppcboot we can see all memory area, available to read & write.
+> I'm using ramdisk.image from MontaVista,
 
-Do I need to change any additional registers besides OR's & BR's ?
-We have also changed the refresh rate to meet the increased memory
-configuration.
-
-Any suggestions ?
+I don't believe there is a ramdisk image provided in any MontaVista
+kit, so I don't know where this came from.  There certainly isn't
+anything provided for an 8xx.
 
 
-=============================
-Ami Levi
-amil@kswaves.com
-Embedded platform engineer
-K.S.Waves Ltd.
-Main Phone: 972 3 6081648
-Direct Phone: 972 3 6081671
-Fax: 972 3 6081656
-=============================
+> Options, which I can think of now, are:
 
+At least you have options and can make trade offs :-).
+
+> ...... I also don't know how to recompile tools to
+> run them without libraries.
+
+If you are using the complete set of tools, libraries and applications
+from Hard Hat Linux, you don't need to recompile anything.
+
+>   2. mount command doesn't work.
+
+Yes, it does.  Use the one for the 8xx and use the proper libraries.
+
+> And Ether is not up. Command ifconfig doesn't work either.
+
+Huh?  Yes, it does.  There is a problem in the driver that it
+doesn't shut down properly, but you can always bring it up and
+reconfigure it.
+
+One of the advantages of using everything from Hard Hat Linux is
+the tools, libraries, and applications are all built and tested
+to work together for a specific target.  Don't be mixing, matching,
+and copying stuff around or you will just end up with a mess.  Install
+what you need from the RPMs.
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
