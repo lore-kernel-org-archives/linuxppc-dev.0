@@ -1,42 +1,51 @@
-In-Reply-To: <8A34C28B-8426-11D8-9FF0-000A95A07384@sands-edge.com>
-References: <20040331230620.ACC3BC10A4@atlas.denx.de> <812363C6-8371-11D8-9FF0-000A95A07384@sands-edge.com> <Pine.GSO.4.58.0404011035190.12755@waterleaf.sonytel.be> <8A34C28B-8426-11D8-9FF0-000A95A07384@sands-edge.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="US-ASCII"
-Message-ID: <000001c41cb1$2595f430$d100000a@sbs2003.local>
-Cc: "Geert Uytterhoeven" <geert@linux-m68k.org>,
-	"Linux/PPC Development" <linuxppc-dev@lists.linuxppc.org>,
-	"Wolfgang Denk" <wd@denx.de>
-From: "Kumar Gala" <kumar.gala@motorola.com>
-Subject: Re: Proposed Kconfig update patch for help text 
-Date: Wed, 7 Apr 2004 16:01:03 +0100
-To: <Administrator@popmail.space.net>
-Sender: <owner-linuxppc-dev@lists.linuxppc.org>
+Date: Wed, 7 Apr 2004 17:18:53 +0200
+From: Kiko Piris <linuxppc@pirispons.net>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.6.5/iBook G3: Oops on resume from sleep
+Message-ID: <20040407151853.GA10891@mortadelo.pirispons.net>
+References: <20040405215318.GA2822@mortadelo.pirispons.net> <20040405231321.GA1293@palantir8> <20040406073741.GA4008@fpirisp.portsdebalears.com> <20040406120158.GA7444@palantir8> <20040406124325.GA17046@fpirisp.portsdebalears.com> <20040406221848.GA1641@palantir8>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040406221848.GA1641@palantir8>
+Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm trying to figure how how I would fit the e500 core and 85xx into
-your descriptions.
+On 06/04/2004 at 23:18, Martin Habets wrote:
 
-- kumar
+> Well, I'm out of clues then. Must be something else affecting
 
-On Apr 1, 2004, at 3:50 PM, John Whitney wrote:
+No worries. As BenH pointed, I filed a bug at alsa-project bugtracking
+page (no response yet).
 
-> Here's the latest Kconfig help-text patch for your consideration.  I
-> considered enumerating each chip supported, but that will be a
-> maintenance headache, and I'm not even sure I could list them all.  I'm
-> fairly sure that the 8250 is supported, but it isn't listed in
-> arch/ppc/kernel/cputable.c, so I'm guessing its PVR is covered by the
-> 8260 entry.  I don't want to figure out which ones are supported but
-> not explicitly covered, so I went with the "##xx" method.
->
-> Let me know what you think...
->
-> John
->
->
-> <Kconfig.patch>
+> Probably not relevant, but does the input source in alsa mixer work
+> okay for you?
 
+What do you mean? If I can record sound with the mic? Yes I can.
+
+In fact I had never used the mic that comes with the iBook before, I
+just apt-get installed audacity and recorded something. OK, no problem.
+
+The funny thing is that with alsa, playback is horrible (too low and
+*very* poor quality). I just have both dmasound_pmac and alsa compiled
+as modules[*] and I load those modules when I want to listen to some
+audio file (sound is not a crucial issue for me).
+
+[*] My system is set up so that oss's dmasound_pmac tries to get loaded
+on boot. Then I've "hacked" a bit the modprobe.d configuration file for
+alsa modules as you can see in [1]. When I want to disable alsa I just
+put that #alsa.off# comment and, with that configuration, I can use oss
+and disable alsa on-the-fly.
+
+It's quite handy when, like now, alsa causes system hangs on waking up
+from sleep; just disable it and be happy (as I said before, sound is not
+a vital issue for me on my laptop).
+
+[1] http://www.pirispons.net/bulma/llista/iBook/modprobe.d/kiko
+
+Kind regards.
+
+--
+Kiko
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
