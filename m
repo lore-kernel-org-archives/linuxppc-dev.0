@@ -1,17 +1,21 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15610.mail.cnb.yahoo.com (web15610.mail.cnb.yahoo.com
-	[202.165.102.64]) by ozlabs.org (Postfix) with SMTP id 94ED82BDEB
+Return-Path: <cml3227@eircom.net>
+Received: from stanley (unknown [193.120.93.98])
+	by ozlabs.org (Postfix) with ESMTP id D07652BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 Nov 2004 19:14:29 +1100 (EST)
-Message-ID: <20041116081425.5264.qmail@web15610.mail.cnb.yahoo.com>
-Date: Tue, 16 Nov 2004 16:14:25 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: Dan Malek <dan@embeddededge.com>
-In-Reply-To: <34E4EF1E-3776-11D9-A70B-003065F9B7DC@embeddededge.com>
+	Tue, 16 Nov 2004 20:09:17 +1100 (EST)
+Received: from [192.168.1.160] (helo=eircom.net)
+	by stanley with esmtp (Exim 4.30) id 1CTz3W-0002Gs-27
+	for linuxppc-embedded@ozlabs.org; Tue, 16 Nov 2004 08:51:18 +0000
+Message-ID: <4199BF85.9030600@eircom.net>
+Date: Tue, 16 Nov 2004 08:51:17 +0000
+From: Conor McLoughlin <cml3227@eircom.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Any possibility of common mini test kernel for 8xx/82xx/85xx?
+To: linuxppc-embedded@ozlabs.org
+References: <OFF3BFC73F.53C5A7DE-ONC1256F4D.00564648-C1256F4D.0058DF9F@axxessit.no>
+	<11C15E9E-3765-11D9-A70B-003065F9B7DC@embeddededge.com>
+In-Reply-To: <11C15E9E-3765-11D9-A70B-003065F9B7DC@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: MPC82xx -- DPRAM1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,31 +26,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dan Malek <dan@embeddededge.com> wrote：
-> On Nov 15, 2004, at 8:55 PM, Sam Song wrote:
+Dan Malek wrote:
 > 
-> > Could you pls offer the cute one to us?
+> On Nov 15, 2004, at 11:10 AM, morten.banzon@axxessit.no wrote:
 > 
-> I think it's a great exercise for the reader :-)
-> Just pick an 8xx distribution and make a small
-> ramdisk that boots to a shell prompt.  I'm not
-> a busybox fan, but if you want that you could do
-> that one, too.  The 8xx distribution will run on
-> any PowerPC core.
+>> I am using 2.6.9 for a mpc8280 project, and am having trouble using 
+>> dpram1
+>> from offset zero, which I need for a mcc hdlc driver.
+> 
+> 
+> Why does it have to start at zero?
 
-Thank you so much, Dan. Now I have a clear clue to get
-this cute one. :-)
+Because the MCC uses a fixed area of dpram.
+MCC1 uses dpram starting at 0.
+MCC2 uses dpram starting at 0x2000.
 
-=====
-Best regards,
-
-Sam
-
-_________________________________________________________
-Do You Yahoo!?
-150万曲MP3疯狂搜，带您闯入音乐殿堂
-http://music.yisou.com/
-美女明星应有尽有，搜遍美图、艳图和酷图
-http://image.yisou.com
-1G就是1000兆，雅虎电邮自助扩容！
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+---Conor
