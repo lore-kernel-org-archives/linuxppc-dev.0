@@ -1,50 +1,43 @@
-Date: Fri, 10 Aug 2001 16:13:35 -0500
-From: Hollis Blanchard <hollis@austin.ibm.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: VGA console endian bug
-Message-ID: <20010810161335.A29271@austin.ibm.com>
-References: <20010809115233.D23147@austin.ibm.com> <Pine.LNX.4.05.10108101040060.2083-100000@callisto.of.borg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.05.10108101040060.2083-100000@callisto.of.borg>; from geert@linux-m68k.org on Fri, Aug 10, 2001 at 10:41:39AM +0200
+Date: Fri, 10 Aug 2001 14:47:14 -0700
+Subject: 1 GigaByte memory problem on BriQ (memory limits?)
+From: Karsten Jeppesen <kj-list@jeppesens.com>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <B799A471.A093%kj-list@jeppesens.com>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Aug 10, 2001 at 10:41:39AM +0200, Geert Uytterhoeven wrote:
->
-> On Thu, 9 Aug 2001, Hollis Blanchard wrote:
-> > These two patches came from Daniel Berlin on July 9. They completely resolve
-> > the VGA console backwards-endian problem for me on PPC. If they have Geert's
-> > seal of approval ;) can they be committed?
-> >
-> > -Hollis
-> >
-> > --- linuxppc_2_4_devel/include/asm-ppc/vga.h.old	Thu Aug  9 11:49:23 2001
-> > +++ linuxppc_2_4_devel/include/asm-ppc/vga.h	Thu Aug  9 11:49:42 2001
-> > @@ -37,6 +37,9 @@
-> >
-> >  #define VT_BUF_HAVE_MEMCPYW
-> >  #define scr_memcpyw	memcpy
-> > +#define VT_BUF_HAVE_MEMCPYF
-> > +#define scr_memcpyw_to memcpy
-> > +#define scr_memcpyw_from memcpy
-> >
-> >  #endif /* !CONFIG_VGA_CONSOLE && !CONFIG_MDA_CONSOLE */
->
-> The first I cannot approve: if scr_{write,read}w() swap bytes, how can it work
-> if scr_memcpyw_{to,from}() don't swap bytes?
+Any comments on this here is greatly appreciated:
 
-I have no idea. Perhaps those functions weren't used, and that's why it
-appeared to work. I have not tried with only the second patch; perhaps that
-will be enough...
+I am having trouble with Linux accepting 1G memory.
+512M works fine, but at 1G Linux gets all the way through the initialization
+until the partition check.
 
-> And where's the 3rd patch? I once posted a patch to fix a similar bug in
-> drivers/char/console.c.
+At this point Linux (checking hda) reports:
+Unable to handle kernel NULL pointer at virtual address 000)
 
-I can't find it in the linuxppc-dev archives. :(
+And then the registerdump.
 
--Hollis
+Before I send all the other debug output I would like to know if anybody
+knows of any memory limits in Linux?
+I don't see any compile switches (which is good).
+Currently running 2.2.19 kernel.org kernel added support for the BriQ. I am
+not done porting the 2.4.x kernel yet - sorry for that.
+
+
+
+Sincerely,
+
+Dr. Karsten Jeppesen
+VP of Technology
+Total Impact
+<kj@totalimpact.com>
+----------------------------------------------------------------------
+There's so much plastic in this culture that vinyl leopard skin is
+becoming an endangered synthetic.
+----------------------------------------------------------------------
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
