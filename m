@@ -1,45 +1,83 @@
-Date: Mon, 31 Mar 2003 15:05:30 +0200
-From: Toni Van Remortel <t.vanremortel@ha.be>
-To: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-Cc: ebs@ebshome.net, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: EP405 linker error.
-Message-Id: <20030331150530.1e2f02b6.t.vanremortel@ha.be>
-In-Reply-To: <1049114664.31297.208.camel@spawn>
-References: <20030331111051.74af0790.t.vanremortel@ha.be>
-	<5.1.0.14.2.20030331011506.02cd4d78@mail.ebshome.net>
-	<20030331113552.58ceec69.t.vanremortel@ha.be>
-	<1049114664.31297.208.camel@spawn>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <75DF04AC5ED4D511A9810090273CB416615314@ROKONET-E>
+From: Eli Brin <elib@rokonet.co.il>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: openssl
+Date: Mon, 31 Mar 2003 16:00:07 +0200
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 31 Mar 2003 14:44:24 +0200
-Kenneth Johansson <kenneth.johansson@etx.ericsson.se> wrote:
+Hello,
 
->
-> On Mon, 2003-03-31 at 11:35, Toni Van Remortel wrote:
-> >
-> > I didn't know that there was an ATI RADEON on this EP405 ;-) How come that it seeks for that? Wrong .config?
-> >
->
-> The check is done in runtime not when you compile and you can have the
-> card  on any system with a pci bus.
->
-> For now just remove the line and everything will be OK since you did not
-> have the card.
+Just for the record:
 
-I commented out line 693 in drivers/pci/quirks.c and now it compiles. Thanks for the info.
+We are working successfully with openssl 0.9.7a (ssl_v2, ssl_v3, tls_v1) on
+the ELDK and Embedix running on TQM860L and FADS860T.
 
---
-Toni Van Remortel - Scientific Researcher
-D-science lab (Hogeschool Antwerpen)
-Phone: +32 (0) 3 205 61 72
-Fax  : +32 (0) 3 205 61 95
+The older versions 0.9.6b-xx had problems and worked partly with ssl-v2
+only.
 
-Current project:
-LinEmb: RealTime and Embedded Linux
-(http://linemb.d-sciencelab.com)
+The performance it not so great...but I think it can be improved with RTAI
+(we use HZ=1000).
+
+Thanks Coray (Lineo) for the help.
+
+Best Regards,
+Eli Brin
+
+
+
+
+
+
+-----Original Message-----
+From: Eli Brin [mailto:elib@rokonet.co.il]
+Sent: Wednesday, March 12, 2003 6:12 PM
+To: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: openssl
+
+
+
+Hello,
+
+We are working with ELDK 2.0.2, target - TQM860L
+
+We are trying to work with openssl, and we have the following problems:
+
+1.  Trying to create a certificate using the CA script gives us the
+following error:
+>sh-2.05$ ./CA -newca
+>CA certificate filename (or enter to create)
+
+>Making CA certificate ...
+>Using configuration from /usr/share/ssl/openssl.cnf
+>unable to load 'random state'
+>This means that the random number generator has not been seeded with
+>much random data. Generating a 1024 bit RSA private key
+>403:error:24064064:random number generator:SSLEAY_RAND_BYTES:PRNG not
+seeded:md_
+>rand.c:492:You need to read the OpenSSL FAQ,
+http://www.openssl.org/support/faq.
+
+We don't have the /dev/random and /dev/urandom. How do we create them -
+mknod?
+
+
+2.  Using pem files created on a Redhat Linux machine gives us an error on
+the function: ssl_ctx_use_certificate_chain_file.
+
+Should we create the pem files on our target or those created with Redhat
+are OK?
+
+
+Our application works OK with openssl on RH8.0 and RH7.3.
+
+Has anyone worked successfully with openssl on  ppc_8xx?
+
+Thank you,
+Eli Brin
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
