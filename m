@@ -1,57 +1,44 @@
-Message-Id: <200008082046.WAA04603@piglet.grunz.lu>
-Date: Tue, 8 Aug 2000 22:46:19 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: quik/kernel interaction
-To: hispeed@phlo.net
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <398E11CA.A95426B8@phlo.net>
+Message-ID: <39907B00.45AE35FF@student.ethz.ch>
+Date: Tue, 08 Aug 2000 23:26:25 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: How to get up-to-speed on the 3D / DRI in Rage 128
+References: <39902BE4.44DE97C1@ivey.uwo.ca> <39902E69.67F50604@relog.ch>
+	 <3990310E.6C3EF59B@ivey.uwo.ca> <39903341.6195EF62@relog.ch>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Bill,
+Michel Dänzer wrote:
 
-On   6 Aug, this message from Bill Jackson echoed through cyberspace:
-> i have tried to upgrade my kernel from 2.2.15 to 2.2.17(test 5 and benh)
-> or 2.4.0.  I am able to get the kernels to compile, but they won't
-> boot.  I have modified my quik.conf file and reran quik.  with any of
-> the new kernels I have made (I also made the existing 2.2.15 kernel), i
-> get the quik boot screen and select the kernel I wish to boot and the
-> screen goes to the "copying OF device tree....done", then says
-> 'booting', but then it locks up.  i never get the actual  kernel to
-> load....at one point, i was getting a returning from prom_init message,
-> but I no longer get that message.  I also at one point got messages
-> "Initializing Fake screen" and "Failed to get address", followed by a
-> "returning from prom_init" message...but the kernel never actually
-> loads...
+> > Where or how do I go about getting the DRI CVS trunk?  Is this a project
+> > on sourceforge?  Is there anonymous cvs access?
+>
+> The great news is that I've just been added to the DRI project at
+> sourceforge (http://dri.sourceforge.net). I'll start a PPC branch which you
+> should be able to just checkout and build and it should work (and which will
+> eventually be integrated into the trunk of course :).
 
-Occasionally, I had the same problem, but it was relatively random. It
-could happen on one kernel, I would recompile it, and the problem would
-be gone. Or I switched the box off for some time, retried, and now it
-worked...
+Unfortunately, it takes some time for my write access to the repository to
+take effect (until some cron job at sourceforge adds me to group dri ;) .
 
-I would rather conclude on some strange phenomenon rather than a
-straight bug somewhere. Possibly recent kernels, due to some code
-changes like differences in execution time, reveal the problem more
-often....
+I've put a diff of the modifications I made up here for the impatient:
 
-Unfortunately, I don't have a solution neither.... Note that I'm running
-aome old version of quik that I had to modifiy to get it to boot my G3
-processor upgrade card. There was a problem with the way the BAT regs
-were set... No idea whether the fix Paulus sent me actually made its way
-into the latest quik release.
+http://n.ethz.ch/student/daenzerm/download/XFree86/dri.diff.bz2
+
+
+Checking out the DRI CVS trunk and applying this patch should enable you to do
+'make World; make install' and use DRI. YMMV :)
+
 
 Michel
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
 
+--
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
