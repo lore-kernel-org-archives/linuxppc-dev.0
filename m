@@ -1,54 +1,32 @@
-Message-ID: <38D87FC0.548D1E61@email.sps.mot.com>
-Date: Wed, 22 Mar 2000 09:09:36 +0100
-From: "Stephan Ruettiger (r0337c)" <r0337c@email.sps.mot.com>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-CC: Don Holmgren <djholm@fnal.gov>,
-        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: root nfs boot problems
-References: <200003211928.UAA20238@denx.local.net>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <38D88437.23494@mta2>
+Date: Wed, 22 Mar 2000 16:28:39 +0800 (CST)
+From: "zzh" <david-1z@263.net>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: About rs232 on motorola mpc8260 ads board
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The tcpdump during the boot sequence shows me the error. I see at the
-host the packets during tftp download of the zImage file. As the NFS
-client try to connect i see nothing. So i changed the default setting
-for ethernet from SCC2 to SCC1 (as described in the manual for the board
-:-) and it
-works.
+Hello,everyone.
+I'm trying to make the SCC1 drived rs232 port of a motorola
+mpc8260 ads board work.The manual says it can direct connect
+to pc com port.But it seems the output from this board is not
+rs232 voltage.i.e -3 to -12 for logical one,3 to 12 for logical
+zero,nor is it TTL,it seems that it use 0 for logical 1,5.0v for
+logical 0,so it is rather annoying. I have to invert the output
+from 8260 ads,then use a TTL->232 converter to connect with PC,
+it works when i send char from 8260,but cannot work in the
+other direction.
+In addition,for a while,it output 232 signal,but i cannot
+reproduce it!!
+Does anyone has experience with this board?
+Thanks for your advice.
+                    davidzhang
+                    3/22/2000
 
-Wolfgang Denk wrote:
->
-> In message <Pine.SGI.3.95.1000321111628.2421C-100000@hppc.fnal.gov> you wrote:
-> >
-> > I don't believe the "neighbour table overflow" errors are the problem.  I
-> > get them frequently but otherwise have success.
->
-> I have never seen such errors when the ethernet  inrface  is  working
-> correclty.
->
-> > It looks like a problem on your nfs server.  The "unable to get nfsd port
-> > number from server" and "unable to get mountd port number from server"
-> > messages indicate that at minimum, the portmapper is not running on your
-> > server.  Perhaps mountd and/or nfsd are also not running.
->
-> Well, IMHO it's more likely that no packets were  ever  sent  to  the
-> ethernet  at  all.  This  type  of problemppens for instance when the
-> Transmit Enable signal is not asserted.
->
-> It might be useful to check with a sniffer if the box is transmitting
-> at all...
-
-Thanks,
-
-     Stephan Ruettiger
-
-------------------------
-Stephan Ruettiger
-Motorola Munich
-r0337c@email.sps.mot.com
-------------------------
+_____________________________________________
+首都在线--中国人的网上家园 http://www.263.net
+@263.net中国最大的在线邮局 http://freemail.263.net
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
