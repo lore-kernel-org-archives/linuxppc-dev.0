@@ -1,24 +1,18 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx003.isp.belgacom.be (outmx003.isp.belgacom.be
-	[195.238.2.100]) by ozlabs.org (Postfix) with ESMTP id E3CBD2BF1F
+Return-Path: <Alexander.Povolotsky@marconi.com>
+Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
+	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id 130BD2BF14
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  2 Jan 2005 09:38:51 +1100 (EST)
-Received: from outmx003.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx003.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id j01MclA8012693
-	for <linuxppc-embedded@ozlabs.org>; Sat, 1 Jan 2005 23:38:47 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <41D7269E.1070906@246tNt.com>
-Date: Sat, 01 Jan 2005 23:39:26 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
+	Sun,  2 Jan 2005 16:58:41 +1100 (EST)
+Message-ID: <313680C9A886D511A06000204840E1CF0A64743E@whq-msgusr-02.pit.comms.marconi.com>
+From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
+To: "'wd@denx.de'" <wd@denx.de>,
+	"'Jeff Angielski'" <jangiels@speakeasy.net>
+Date: Sun, 2 Jan 2005 00:58:18 -0500 
 MIME-Version: 1.0
-To: Mark Chambers <markc@mail.com>
-References: <200412301246.48870.david.jander@protonic.nl>	<C6D7331E-5A77-11D9-AECD-003065F9B7DC@embeddededge.com>
-	<061001c4eeaf$0b5e1860$0301a8c0@chuck2>
-In-Reply-To: <061001c4eeaf$0b5e1860$0301a8c0@chuck2>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200 PCI byte-swapping
+Subject: RE: inflate returned FFFFFFFD - what does this error exactly mean ? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,28 +23,104 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mark Chambers wrote:
+>Try storing the compressed image at  a  higher  address
+>(like 0x400000 or so).
 
->I've just realized that the 5200 does byte-lane swapping
->on all PCI accesses.  That is, if you write a 32 bit word
->0x12345678, 0x12 will go out on byte 0, 0x34 on byte 1,
->etc.  Unfortunately, my target, a T.I. DM642, does not
->do this, so I've got a big/little endian mismatch.  A couple
->of questions if anybody knows:
->
->- Do all MPC8xxx processors do this - byte swap on
->all PCI accesses, not just configuration space?
->
->- Is there an elegant (simple) way to re-swap the bytes?
->It's not a big problem really, but if there were a way to 
->set LE mode on a particular page or something like that
->it might be worth it.
->
->  
->
-I'm not sure of what you mean but look at the mapping
-aroung pdf page 337 of the user manual. It's not configurable
-as far as I can see.
+Originally I had relocation address be 0x00400000;
+I also tried 0x00500000 and finally 0x00600000 (shown below)
+- all 3 cases give the same error.
 
 
-    Sylvain
+loaded at:     00180000 00268160
+relocated to:  00600000 006E8160
+board data at: 006E6124 006E6140
+relocated to:  0060509C 006050B8
+zimage at:     0060587D 006E5F82
+avail ram:     006E9000 02000000
+
+Linux/PPC load: console=ttyCPM0 panic=3 root=/dev/ram
+Uncompressing Linux...
+in gzip
+after zalloc
+after zlib_inflateInit2
+after zlib_inflate
+inflate returned FFFFFFFD
+exit
+-----Original Message-----
+From: wd@denx.de [mailto:wd@denx.de]
+Sent: Thursday, December 30, 2004 6:09 PM
+To: Povolotsky, Alexander
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: inflate returned FFFFFFFD - what does this error exactly
+mean ? 
+
+
+Hi Alex,
+
+in message
+<313680C9A886D511A06000204840E1CF0A647439@whq-msgusr-02.pit.comms.marconi.co
+m> you wrote:
+> 
+> After few days of wondering through debugging (and with 
+> great help) I fixed (by inserting watch dog resets into 
+> beginning of while loops in zlib functions) my first problem > - strange
+reboot failures during decompression of
+
+You know why I recommended U-Boot :-)
+
+> Now I am getting "controlled" failure (during the same 
+> decompression as described above):
+> 
+> I_BAD
+> return Z_DATA_ERROR
+> after zlib_inflate
+> inflate returned FFFFFFFD
+> exit
+> 
+> what does this error exactly mean ?
+
+Most probably it means that the areas where the compressed  image  is stored
+and   to  where  you  copy  the  uncompressed  code  to  are over-lapping.
+Try storing the compressed image at  a  higher  address
+(like 0x400000 or so).
+
+Best regards,
+
+Wolfgang Denk
+-----Original Message-----
+From: Nigel Cunningham [mailto:Nigel.Cunningham@cyclades.com]
+Sent: Thursday, December 30, 2004 5:45 PM
+To: Povolotsky, Alexander
+Cc: linuxppc-embedded@ozlabs.org; linuxppc-embedded-bounces@ozlabs.org
+Subject: Re: inflate returned FFFFFFFD - what does this error exactly mean ?
+
+Hi.
+
+linuxppc-embedded-bounces@ozlabs.org wrote on 31/12/2004 09:27:53:
+
+> Hi,
+>
+> After few days of wondering through debugging (and with
+> great help) I fixed (by inserting watch dog resets into 
+> beginning of  while loops in zlib functions) my first 
+> problem -strange reboot failures during decompression of
+> the kernel image by the bootloader.
+> However my luck expired beyond this fix so far ... ;-).
+> Now I am getting "controlled" failure (during the same 
+> decompression as described above):
+>
+> I_BAD
+> return Z_DATA_ERROR
+> after zlib_inflate
+> inflate returned FFFFFFFD
+> exit
+>
+> what does this error exactly mean ?
+
+Going from include/linux/zlib.h, it is a data error: your compressed stream
+has somehow been corrupted?
+
+Regards,
+
+Nigel
+-- 
