@@ -1,73 +1,30 @@
-Message-ID: <791B3205DB661A42B4BFE5464A7D1D02010E4659@chzugexch01.abatos.com>
-From: Graf Alex <alex.graf@siemens.com>
+Subject: support for PrPMC600 / MPC8240
+From: Hubert Figuiere <hub-linux-ppc@trantor.staff.proxad.net>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: AW: isp1161 usb driver for mpc 8xx
-Date: Mon, 8 Sep 2003 09:45:40 +0200 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
+Message-Id: <1063026299.10791.76.camel@trantor.staff.proxad.net>
+Mime-Version: 1.0
+Date: Mon, 08 Sep 2003 15:05:00 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Chris
-
-Wolfgang Denk is developing a driver for the isp 1362 for Siemens. I suggest
-you, to use this one! It's the next generation of 1161. USB 2.0, OTG, ...
-In the newest kernel (linux-2.4_devel) a beta version is allready in.
-
-Cheers
-
-Alex
-
-
------Ursprüngliche Nachricht-----
-Von: Chris Simmonds [mailto:chris@2net.co.uk]
-Gesendet: Freitag, 5. September 2003 21:47
-An: linuxppc-embedded@lists.linuxppc.org
-Betreff: isp1161 usb driver for mpc 8xx
-
-
-
 Hi,
 
-Has anyone got a driver for the Philips isp 1161 usb hcd chip. There is
-an x86 version by Roman Weissgaerber from a couple of years ago and I
-have seen references to a port to 8xx. Ring a bell?
+I was wondering if there was any support for the Motorola PrPMC600 CPU
+board, based on a MPC8240.
 
-Best regards,
-Chris.
+I find a few PrPMC board like 750 and 800 in the make config but not
+this one. I also looked in the archive and found no clue. Any help ? I
+would just like to avoid duplicating porting work.
 
+Thanks.
+
+Hub
 --
-Chris Simmonds                        2net Limited
-chris@2net.co.uk                      http://www.2net.co.uk/
-Tel:   +44 (0)1962 869003             Fax:   +44 (0)870 056 7556
-"If it's not connected, it's not effective"(tm)
-
-
-
------Ursprüngliche Nachricht-----
-Von: Chris Simmonds [mailto:chris@2net.co.uk]
-Gesendet: Freitag, 5. September 2003 21:47
-An: linuxppc-embedded@lists.linuxppc.org
-Betreff: isp1161 usb driver for mpc 8xx
-
-
-
-Hi,
-
-Has anyone got a driver for the Philips isp 1161 usb hcd chip. There is
-an x86 version by Roman Weissgaerber from a couple of years ago and I
-have seen references to a port to 8xx. Ring a bell?
-
-Best regards,
-Chris.
-
---
-Chris Simmonds                        2net Limited
-chris@2net.co.uk                      http://www.2net.co.uk/
-Tel:   +44 (0)1962 869003             Fax:   +44 (0)870 056 7556
-"If it's not connected, it's not effective"(tm)
+"<erno> hm. I've lost a machine.. literally _lost_. it responds to ping,
+it works completely, I just can't figure out where in my apartment it
+is." --  http://www.bash.org/?5273
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
