@@ -1,37 +1,35 @@
-Message-ID: <38EE7EDE.612EB99F@denise.shiny.it>
-Date: Fri, 07 Apr 2000 20:35:42 -0400
-From: Giuliano Pochini <pochini@denise.shiny.it>
-MIME-Version: 1.0
-To: DeRobertis <derobert@erols.com>, linuxppc-dev@lists.linuxppc.org
+Message-Id: <l03130302b5145fe8d18f@[209.122.247.115]>
+In-Reply-To: <38EE7EDE.612EB99F@denise.shiny.it>
+References: <l03130302b4fd80d3a908@[216.164.130.191]>
+ <l03130304b50c8e1b783f@[216.164.131.253]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 8 Apr 2000 00:05:56 -0400
+To: Giuliano Pochini <pochini@denise.shiny.it>
+From: "DeRobertis" <derobert@erols.com>
 Subject: Re: stty crtscts < /dev/ttyS1
-References: <l03130302b4fd80d3a908@[216.164.130.191]> <l03130304b50c8e1b783f@[216.164.131.253]>
-Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >> Hardware flow control is broken. The command in the subject line (stty
-> >> crtscts < /dev/ttyS1) freezes linux 2.2.14. Any idea why?
-> >
-> >Try this syntax: "stty -F /dev/ttyS1 crtscts". There's a comment in the
-> >info doc for stty that letting the shell open the device may block in
-> >certain situations.
->
-> Does not help -- still freezes.
->
-> By freezes I mean that the kernel dies. It no longer responds to
-> keypresses. It no longer runs processes. All that I can do is hit reset.
+At 8:35 PM -0400 on 4/7/00, Giuliano Pochini wrote:
 
-What is connected to the serial port ?  When I enable RTS/CTS on ttyS1
-and there is my Epson 740 attached, the whole system freezed. I don't
-know why this happen exactly. It seems that the printer changes continuosly
-with very high frequency  the state of CTS, which cause the serial driver
-to loop indefinitely. When I detach the cable, Linux awakes. It also happens
-with BeOS, but not under MacOS.
-RTS/CTS works fine when I connect the serial port to the modem or to
-another computer.
+>What is connected to the serial port ?  When I enable RTS/CTS on ttyS1
+>and there is my Epson 740 attached, the whole system freezed.
 
-Bye.
+Same thing attached.
+
+>I don't
+>know why this happen exactly. It seems that the printer changes continuosly
+>with very high frequency  the state of CTS, which cause the serial driver
+>to loop indefinitely.
+
+Ouch! Broken hardware... how can I document this is happening, so that
+I can demand an answer from Epson?
+
+Or maybe I should just hack the serial driver to ignore this. And WTF
+is the serial driver doing looking at CTS on a port with no data?!
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
