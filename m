@@ -1,13 +1,29 @@
-From: "=?EUC-KR?B?wLHA58O2?=" <goodyjc@hanmail.net>
-Reply-To: "=?EUC-KR?B?wLHA58O2?=" <goodyjc@hanmail.net>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Question about the dcache of ppcboot??
-Date: Thu, 21 Feb 2002 14:33:25 +0900 (KST)
-Message-Id: <20020221143325.HM.B0000000003B0PX@www12.hanmail.net>
+Message-ID: <6B546A602AD2D211BFF00008C7A4288905843FEB@hrtades2.atea.be>
+From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
+To: "'??? '" <goodyjc@hanmail.net>,
+	"'linuxppc-embedded@lists.linuxppc.org '" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Question about the dcache of ppcboot??
+Date: Thu, 21 Feb 2002 08:31:14 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=euc-kr
+Content-Type: text/plain;
+	charset="euc-kr"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Hi,
+
+I think I have seen discussions on the ppcboot-users mailing list
+mentioning that it is normal that ppcboot crashes when you switch dcache on
+(icache should work)
+
+Fred
+
+-----Original Message-----
+From: ???
+To: linuxppc-embedded@lists.linuxppc.org
+Sent: 2/21/02 6:33 AM
+Subject: Question about the dcache of ppcboot??
 
 
 Hello.
@@ -26,9 +42,11 @@ my board:
                 2MByte Boot-flash on CS0
                 SDRAM on CS2
 
-==============================================================================
-우리 인터넷, Daum http://www.daum.net
-- Daum회원을 위한 인터넷쇼핑 + 파워 공동구매 ☞ http://hmm.daum.net/shop_0202
-- 100% 맞춤 광고! Daum검색 키워드샵 ☞ http://hmm.daum.net/keyword_top_0202
+========================================================================
+======
+?? ???, Daum http://www.daum.net
+- Daum??? ?? ????? + ?? ???? ? http://hmm.daum.net/shop_0202
+- 100% ?? ??! Daum?? ???? ? http://hmm.daum.net/keyword_top_0202
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
