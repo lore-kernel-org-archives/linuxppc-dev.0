@@ -1,51 +1,69 @@
-Date: Thu, 6 Sep 2001 11:06:07 +1000
+Date: Thu, 6 Sep 2001 11:19:50 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 4xx - a question and a patch
-Message-ID: <20010906110607.C20279@zax>
-References: <20010830175217.H858@zax> <3B95307D.1BE64A98@mvista.com> <20010905110451.A599@zax> <3B95A796.248A0E99@mvista.com> <20010905144125.H6636@zax> <3B9645EB.DC7F3A6C@mvista.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Subject: xmon support for Walnut
+Message-ID: <20010906111950.D20279@zax>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3B9645EB.DC7F3A6C@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Sep 05, 2001 at 11:34:03AM -0400, Dan Malek wrote:
->
-> David Gibson wrote:
->
-> > But when it hits zero we'll also get another timer interrupt and will
-> > shortly be updating it with a corrected value.  Why does it matter
-> > that the value is reloaded?
->
-> I don't understand the reason for this discussion.  Is something
-> not working correctly?  If so, make it work better and send me a
-> patch.
+The following patch allows xmon to run on Walnut machines.
 
-Well, there's nothing actually broken, but allowing the set_dec() in
-timer_interrupt() to affect the PIT should keep the timer interrupts
-from drifting too far from the time base, and hence slightly reduce
-the jitter in jiffies.  But, no, I don't actually have any timings or
-data to confirm that that is the case.  I've been running this way in
-my kernel for a month or so, so it certainly doesn't break anything
-badly.  I'm trying to find out if my understanding of the situation is
-actually correct.
+diff -urN ../linuxppc_2_4_devel/arch/ppc/xmon/start.c linux-bungo/arch/ppc/xmon/start.c
+--- ../linuxppc_2_4_devel/arch/ppc/xmon/start.c	Wed Sep  5 13:58:54 2001
++++ linux-bungo/arch/ppc/xmon/start.c	Wed Sep  5 14:52:38 2001
+@@ -151,6 +151,11 @@
+ 	sccd = (volatile unsigned char *) 0xffeffb08;
+ 	TXRDY = 0x20;
+ 	RXRDY = 1;
++#elif defined(CONFIG_405GP)
++	sccc = (volatile unsigned char *)0xef600305;
++	sccd = (volatile unsigned char *)0xef600300;
++	TXRDY = 0x20;
++	RXRDY = 1;
+ #endif /* platform */
+ }
 
-And the patch:
+diff -urN ../linuxppc_2_4_devel/arch/ppc/xmon/xmon.c linux-bungo/arch/ppc/xmon/xmon.c
+--- ../linuxppc_2_4_devel/arch/ppc/xmon/xmon.c	Tue Aug 28 15:06:37 2001
++++ linux-bungo/arch/ppc/xmon/xmon.c	Fri Aug 31 15:23:57 2001
+@@ -1,5 +1,5 @@
+ /*
+- * BK Id: %F% %I% %G% %U% %#%
++ * BK Id: SCCS/s.xmon.c 1.17 08/19/01 19:15:49 benh
+  */
+ /*
+  * Routines providing a simple monitor for use on the PowerMac.
+@@ -910,6 +910,16 @@
+ }
+ #endif
 
-diff -urN ../linuxppc_2_4_devel/include/asm-ppc/time.h linux-bungo/include/asm-ppc/time.h
---- ../linuxppc_2_4_devel/include/asm-ppc/time.h	Wed Aug 29 10:41:56 2001
-+++ linux-bungo/include/asm-ppc/time.h	Thu Sep  6 11:01:04 2001
-@@ -46,7 +46,7 @@
- static __inline__ void set_dec(unsigned int val)
- {
- #if defined(CONFIG_4xx)
--	return;		/* Have to let it auto-reload */
-+	mtspr(SPRN_PIT, val);
- #elif defined(CONFIG_8xx_CPU6)
- 	set_dec_cpu6(val);
- #else
++#ifndef CONFIG_PPC_STD_MMU
++
++static void
++dump_hash_table()
++{
++	printf("Non-standard MMU.  Can't print has table.\n");
++}
++
++#else /* CONFIG_PPC_STD_MMU */
++
+ #ifndef CONFIG_PPC64BRIDGE
+ static void
+ dump_hash_table_seg(unsigned seg, unsigned start, unsigned end)
+@@ -1056,6 +1066,8 @@
+ 		seg_start = seg_end + 0x1000;
+ 	}
+ }
++
++#endif /* CONFIG_PPC_STD_MMU */
+
+ int
+ mread(unsigned adrs, void *buf, int size)
+
 
 --
 David Gibson			| For every complex problem there is a
