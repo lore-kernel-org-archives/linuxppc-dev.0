@@ -1,39 +1,43 @@
-Mime-Version: 1.0
-Message-Id: <p05101401b895b9cbee49@[10.0.0.42]>
-In-Reply-To: <453D45A8-2339-11D6-B84B-0003938E434C@ivey.uwo.ca>
-References: <453D45A8-2339-11D6-B84B-0003938E434C@ivey.uwo.ca>
-Date: Sun, 17 Feb 2002 12:16:16 -0800
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-	linuxppc-dev@lists.linuxppc.org,
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
+To: linuxppc-dev@lists.linuxppc.org,
 	yellowdog-devel@lists.yellowdoglinux.com
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: question on best way to install other ide drives?
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Subject: question: "disabling IRQ 54 defensively?"
+Date: Sun, 17 Feb 2002 15:38:16 -0500
+References: <453D45A8-2339-11D6-B84B-0003938E434C@ivey.uwo.ca> <p05101401b895b9cbee49@[10.0.0.42]>
+In-Reply-To: <p05101401b895b9cbee49@[10.0.0.42]>
+MIME-Version: 1.0
+Message-Id: <20020217203742.VCID12383.tomts9-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 6:59 PM -0500 2/16/02, Kevin B. Hendricks wrote:
->Hi,
->
->My dual 1 Gig machine has room to easily mount a second (slave) ide
->drive.  I also have an Sonnet ATA-100 pci card and another IDE drive.
->
->I would like to add both.  The Sonnet card can support up to 4 IDE
->drives.
->
->Would it be better (performancewize) to:
->
->A.  Hook both drives up the the ATA-100 pci card using two ribbon cables
->with both being masters?
+Hi,
 
-(A).  IDE does not do a terribly good job of sharing bus bandwidth
-between two active devices, so the ideal case for performance is one
-IDE bus per device.
+I just finished installing the ATA-100 card with two master IDE drives
+(each on its own ribbon cable).
 
-That said, you'll never be impacted if your workload never attempts
-to exercise both the slave and master at the same time.
---
-Tim Seufert
+Now when I boot I see 7 to 10 lines that all say:
+
+"disabling IRQ 54 defensively"
+
+Later on I see the following:
+
+ide0 "blah" on irq 19
+ide1 "blah" on irq 20
+ide2 0x440-0x447, 0x432 on irq 54
+ide3 0x420-0x427, 0x412 on irq 54
+
+Should I be worried here?  What does the disabling IRQ 54 defensively mean?
+
+Is it wrong to have two ide devices with the ssame irq?  Are they just
+sharing it?
+
+Any info would be greatly appreciated.
+
+Thanks,
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
