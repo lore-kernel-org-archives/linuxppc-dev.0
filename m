@@ -1,36 +1,46 @@
-Date: Fri, 30 Mar 2001 11:16:41 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Kaoru Fukui <k_fukui@highway.ne.jp>
-Cc: Tom Gall <gall@rochcivictheatre.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Success kernel-243pre8-SMP(patch)(Re: spin_lock problem in recent
- k ernel
-In-Reply-To: <20010330062000.Postino-000633@smtp01.highway.ne.jp>
-Message-ID: <Pine.LNX.4.05.10103301046350.2139-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 30 Mar 2001 14:40:41 +0200
+From: Olaf Hering <olh@suse.de>
+To: Tom Gall <gall@rochcivictheatre.org>
+Cc: Tony Mantler <nicoya@apia.dhs.org>,
+	Kaoru Fukui <k_fukui@highway.ne.jp>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Success kernel-243pre8-SMP(patch)(Re: spin_lock problem inrecent kernel
+Message-ID: <20010330144041.A23536@suse.de>
+References: <20010329021803.Postino-029218@smtp01.highway.ne.jp> <3AC2352D.384B57CA@rochcivictheatre.org> <20010329222953.Postino-006016@smtp01.highway.ne.jp> <3AC33CA7.E5DF4C03@vnet.ibm.com> <20010330062000.Postino-000633@smtp01.highway.ne.jp> <v04003a21b6e9a03a5dae@[24.70.162.12]> <3AC3F85F.88D020BE@rochcivictheatre.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3AC3F85F.88D020BE@rochcivictheatre.org>; from gall@rochcivictheatre.org on Thu, Mar 29, 2001 at 09:07:11PM -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 30 Mar 2001, Kaoru Fukui wrote:
-> +#ifndef CONFIG_SMP
->  	spin_lock(&init_mm.page_table_lock);
-> +#endif
+On Thu, Mar 29, Tom Gall wrote:
 
-AFAIK spin_lock() is void when not compiling for SMP, so this is equal to just
-removing the call.
+>
+> Tony Mantler wrote:
+>
+> > That's #if*n*def, not #ifdef. :)
+> >
+> > And speaking of #ifndef, why are these spinlocks here in the first place
+> > and/or why do they now need to be removed? Just suddenly removing locks
+> > because of a new deadlock condition gets my spidey senses tingling.
+>
+> It all stinks to high heaven, that's for sure. Removing the
+> page_table_lock from being locked in ioremap, saves us from stopping
+> cold during the first ioremap (at least on Power3). And as far as the
+> second, I'm in complete agreement...  warning warning danger will
+> robinson!
 
-Gr{oetje,eeting}s,
+That patch solved the boot problem on my 43p 260. Last progress output
+was MMU:exit.
+It boots and runs fine now.
 
-						Geert
+
+Gruss Olaf
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+ $ man clone
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
