@@ -1,41 +1,37 @@
-From: clark@esteem.com
-Message-Id: <1.5.4.32.20000907212620.006a60c8@pop.esteem.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 07 Sep 2000 14:26:20 -0700
-To: Pravin Pathak <pkpathak@dnrc.bell-labs.com>
-Subject: Re: Embedded Distrubution Choice
+Subject: Re: io write not working
+To: darin_smith@adc.com (Darin Smith)
+Date: Fri, 8 Sep 2000 10:52:50 +1100 (EST)
 Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <39B7F7A7.1B36ACBD@adc.com> from "Darin Smith" at Sep 07, 2000 03:16:39 PM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000907235251.14EC412C@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 01:55 PM 9/7/00 -0400, you wrote:
->
->We are in a process of buying embedded Linux ?
->Can some one guide me on which distrubutions are good/bad !
->We had a look at BlueCat recently.
->
->Regards
->Pravin
->
+Darin Smith writes:
+> Maybe somebody out there sees something obvious that I'm doing / not
+> doing?
 
+Did you remember to invalidate the D-cache before trying to access the data
+via the CPU?  It sounds like your CPU isn't cache snooping (8xx don't, for
+example) the PCI master writes from your device.  I assume your PCI device is
+writing directly to a pre-allocated skbuff, which you then pass up to
+netif_rx.  The fill pattern may just be is sitting around in the cache, which
+explains the symptoms you're seeing.
 
-        I would suggest Hardhat but thats all I've worked with. Watch out
-for ones like Lineo that include some of their code that they charge
-royalties on (If you don't mind royalties go ahead and ignore this warning).
-We haven't had to buy anything in code for the linux kernel. In fact we
-received our Hardhat Journeyman Edition free in a magazine. So far we have
-been quite happy.
+The other possibility is that your hardware isn't asserting the byte lane
+enables on the PCI bus, but my first guess would be a missing call to
+invalidate_dcache_range.
 
-        Red Hat has come out with their own embedded devkit, Last time I
-checked they wanted about $200 for it. But I haven't played with it, or
-talked to anyone who has. I've been dying to recomend it to somebody so I
-could find out what its like. ;-)
-
-        Good Luck,
-
-        Conn Clark
-
+Regards,
+Graham
+--
+Graham Stoney
+Principal Hardware/Software Engineer
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
