@@ -1,17 +1,34 @@
-Message-Id: <200211260040.SAA17594@lists.linuxppc.org>
-From: "=?GB2312?Q?=D3=DA=E6=BA?=" <yuj@mail.ndsc.com.cn>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: zynx zx212 dual-port ethernet card
-Mime-Version: 1.0
-Content-Type: text/plain
-Date: Tue, 26 Nov 2002 8:43:25 +0800
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Tue, 26 Nov 2002 09:44:19 +0800
+From: caixupeng <edmoon@huawei.com>
+Subject: ppcboot, ebony , change baudrate function has bug.
+To: linuxppc-embedded@lists.linuxppc.org
+Message-id: <001d01c294ed$569cecc0$92690b0a@DBKQW41X>
+MIME-version: 1.0
+Content-type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi!
-  I'm porting hardhat linux v2.1 on my motorola lopec mpc7410 board with a zynx zx212 dual-port ethernet card on it.The problem is that the kernel can't start up with the ethernet card on,while without it everything is perfect.Since zx212 is compatible with 21143,I build the kernel with the "tulip" option on.It should be no problem,but it happened.Can anybody tell me the reason?
-　　　　　　　　yuj@mail.ndsc.com.cn
-　　　　　　　　　　2002-11-14
+when you set a new baudrate,
+
+=> setenv  baudrate 38400
+## Switch baudrate to 38400 bps and press ENTER ...
+
+
+it will hang .
+
+I find a way  to avoid it.
+first, clear the baudrate with "setenv baudrate=xxxx"----it's wrong ,
+
+but it can clear it.
+
+and then "setenv baudrate 38400"
+"saveenv"
+reset and change the hyperterminal baudrate, it's run , and ok.
+
+because it doesn't invoke the baudrate changing function.
+
+                    edmoon
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
