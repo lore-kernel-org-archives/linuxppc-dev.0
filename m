@@ -1,49 +1,30 @@
-Date: Sun, 28 Apr 2002 21:59:49 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@gatwood.net>
-To: Aurel Wisse <aurel_wisse@yahoo.com>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	yddev <yellowdog-devel@lists.terrasoftsolutions.com>
-Subject: Re: Sungem with iMac Rev-B
-In-Reply-To: <20020429004945.83544.qmail@web14804.mail.yahoo.com>
-Message-ID: <Pine.LNX.3.96.1020428214410.11407D-100000@gatwood.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+Message-Id: <sccd40ff.057@mail.frequentis.com>
+Date: Mon, 29 Apr 2002 12:47:27 +0200
+From: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Queue task Problem
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 28 Apr 2002, Aurel Wisse wrote:
+Hallo!
 
-> I am trying to modify the bmac to force the PHY to
-> abandon autonegotiation and to use 10Mb/s and half
-> duplex. "Reverse engineering" the bmac code leads
-> nowhere. The bmac_init_phy doesn't give a lot of info,
-> except a couple of undocumented constants written via
-> bmac_mif_write, and the mif_write writes to the MIFCSR
-> register which is undocumented in the bmac.h file.
->
-> This is terribly frustrating as Apple is obviously
-> able to do it with their Duplex tool hack. Hence, it
-> *can* be done. Why can't they just send us their
-> sourcecode for the Duplex tool? Does anybody have a
-> direct line to Apple?
+I wrote a device driver which handles the SCC in UART mode of a MPC860T
+for a simple protocol. The protocol start with a byte, the other side
+send a ack, then the packet will be sent. At last an ack will be send
+from the receiver. My problem is, that sometimes the bottom half part of
+my software won't be executed.
+For example I send the start character, the other side answer with an
+ack, but nothing else happens, I got an timeout, and there I compare
+counters for hardware interrupt and bottom half part of software, and
+they are different.  With an terminal program I see, tht that is my
+fault (the ack would be sent). Does anyone knows this phenomenon? On
+transmission side I also have sometimes this problem.
 
-Looked at the Darwin sources lately?  BMacEnet::miiInitializePHY appears
-to describe the "normal" setup in a way that should make it pretty obvious
-how to set it up in non-normal ways -- or perhaps not -- I've never dealt
-with the chip, personally -- but it's a good starting point, anyway.
-
-
-Later,
-David
-
----------------------------------------------------------------------
-David A. Gatwood                                dgatwood@gatwood.net
-Developer Docs Writer                             dgatwood@apple.com
-Apple Computer                                  dgatwood@mklinux.org
-
-                    Check out my weekly web comic:
-                     http://www.techmagazine.org
-
+Thanks in advanced
+Gerhard
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
