@@ -1,36 +1,26 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <36127.200.163.11.85.1087915987.squirrel@popmail3.pop.com.br>
-In-Reply-To: <20040614153728.13AD1C13D3@atlas.denx.de>
-References: Your message of "Mon, 14 Jun 2004 07:47:33 PDT."           
-    <005801c4521e$86e0ea40$26c8a8c0@GMAN>
-    <20040614153728.13AD1C13D3@atlas.denx.de>
-Date: Tue, 22 Jun 2004 11:53:07 -0300 (BRT)
-Subject: Re: Lite5200 from RS232 to RS485
-From: "Sauro Salomoni" <saurosalomoni@pop.com.br>
-To: linuxppc-embedded@lists.linuxppc.org
+Subject: Lite5200 USB with Vbus=1.7V
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Tue, 22 Jun 2004 17:41:34 +0200
+Message-ID: <42A622EB18325843894BB8E1040E3DF5022759@sinaexchf>
+From: =?iso-8859-1?Q?I=F1igo_Lopez_Barranco?= <ilopez@albatros-sl.es>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi.
+Hi again.
+I been trying to use a Kingston USB stick with the Lite5200, but it's not seen from linux nor from u-boot, though it works without problems on any linux PC.
 
-I'm having quite a problem getting into the serial...
+The USB diode (D85 on schematics) is off, and I've found that Vbus in the USB connector, coming from pins 6 and 8 of the MIC2025 (U27) is only ~1.7V. Could anyone compare this value with a Lite5200 working USB?
 
-Searching through local files, I could see that, although using 2 or 3 chained
-functions to get/set the serial status, it is (in fact) done with a readb/writeb
-statement (or inb/outb). Is that correct?
+The voltage input (pin 7) of the MIC2025 chip (U27) is 5V, and the enable (pin 1 connected to USB1_PORTPWR_S in the MPC5200) has 3.3V. The pin 2 FLG output is 3.1V and is active low, so it's telling the MPC5200 that there is no overcurrent, right?
 
-So, in order to make a very small driver, that just access the serial port and
-doesn't use other features (we need a very "clean" one here..), wich headers should
-I include? Is <asm/io.h> just enough?
-I tried to use as few headers as possible, but then I get the problem that the
-readb/writeb functions are not defined...
-Could anyone give me a helping hand?
+The only strange thing is that in Motorola's schematics says that pins 3 and 5 of the Micrel 2025 are Not Connected and 4 is GND, and Micrel's 2025 datasheet says that 3 is GND and 4 and 5 NC.
+Then, in the Lite5200 GND pin 3 is connected to GND through an 1k resistor, instead of directly as I suppose they pretended in the schematic, and 4 NC pin is conected directly to GND. I'm not sure if this might be the cause of the problen, but placing an oscilloscope probe between pin 3 and GND shows a 2V periodic signal with ton=4us and toff=10us approx. Is this a known problem or my board has something broken? (don't think I can connect anything upside down this time).
+Thank you.
 
-Thanks.
-
-Sauro Salomoni
+Iñigo
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
