@@ -1,32 +1,35 @@
-Message-ID: <009501c37dba$0f462470$c50aa8c0@ksshin>
-From: =?ks_c_5601-1987?B?vcWw5rz2?= <ksshin@essetel.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: PCI DMA in GT64260
-Date: Thu, 18 Sep 2003 16:54:15 +0900
+Message-ID: <3F697A17.3090909@imc-berlin.de>
+Date: Thu, 18 Sep 2003 11:25:43 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Problems w/  CONFIG_BLK_DEV_MPC8xx_IDE
+References: <3F656CFC.1050706@imc-berlin.de> <3F65A2FD.3010904@imc-berlin.de> <1063627208.14615.21.camel@trantor.staff.proxad.net> <3F65B091.1020802@imc-berlin.de> <20030915151648.GD29517@ip68-0-152-218.tc.ph.cox.net> <3F66CCFD.3040301@imc-berlin.de> <20030917150845.GB14509@ip68-0-152-218.tc.ph.cox.net>
+In-Reply-To: <20030917150845.GB14509@ip68-0-152-218.tc.ph.cox.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear all.
+Tom,
 
-I have a board that consisted of mpc7410+gt64260+pci_device,
-and I have already success to read/write the pci_device.
-After init the pci_device, I command to the pci_device
-that read data from main memory(sdram),
-but, the pci_device does not operate and return only fail...
+>>>>So which is the BK tree to use:
+>>>>linuxppc_2_4_devel or linuxppc-2.4 ???
+>
+> Aside from possible changes to match upstream subsystem rewrites (such
+> as IDE) there hasn't been any changes in linuxppc-2.4 specific to 8xx
+> that didn't happen in 2_4_devel.
+>
+>>http://www.penguinppc.org/dev/kernel.shtml calls linuxppc_2_4_devel the
+>>"old PPC development tree" !?
+>
+> That's correct.  It's becoming more of a pain to maintain or own set of
+> trees to track 2.4 when Marcelo uses BK as well.
 
-I think that this is the DMA Problem...
-so I want to know that how to set the register of gt64260 to do
-DMA operation.
+I suppose we need both trees. Otherwise you would have got rid of one. Right? :o)
 
-I already set PCI SCS[0] Size Reg, PCI SCS[0] Base Addr Remap Reg,
-and PCI Base Address Enable Reg. what I omitted? or ...
+Steven
 
-please help me...
-
-Thanks everybody.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
