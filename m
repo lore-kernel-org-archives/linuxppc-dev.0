@@ -1,37 +1,68 @@
-Date: Wed, 7 Nov 01 13:13:11 PST
-From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0111072113.AA06255@ivan.Harhan.ORG>
-To: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 7 Nov 2001 22:17:05 +0100 (CET)
+From: Gabriel Paubert <paubert@iram.es>
+To: <hollis@austin.ibm.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>,
+	<davidm@amberdata.demon.co.uk>, <Sven.Dickert@planb.de>
 Subject: Re: RFC: i8259.c cleanup
-Cc: Sven.Dickert@planb.de, davidm@amberdata.demon.co.uk,
-	hollis@austin.ibm.com, paubert@iram.es
+In-Reply-To: <20011107110630.G9471@austin.ibm.com>
+Message-ID: <Pine.LNX.4.33.0111072015560.17428-100000@gra-lx1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert <paubert@iram.es> wrote:
+On Wed, 7 Nov 2001 hollis@austin.ibm.com wrote:
 
-> The address is not always 0xbffffff0, it is bridge dependent. However this
-> address is normally found in OF device tree, in residual data and as a
-> last resort could be made host bridge dependent. It has to be ioremapped
-> anyway...
+> I laid out what I saw in
+> http://lists.linuxppc.org/linuxppc-workstation/200109/msg00030.html . I could
+> be wrong, but our code doesn't seem to match the datasheet very well.
 
-OF device tree, residual data, etc. all assume PREP/CHRP/PMAC mentality. There
-are also other PPC boards supported in the tree. Those embody all machine
-knowledge in the board port. They already have to have full knowledge of every
-chip on the board, including the host bridge.
+Have you ever see code matching the datasheet, or a chip matching the
+datasheet for that matter ? :-)
 
-> I actually wonder
-> whether it would be better to split it in two cases:
+Oh, and I don't think that there is any integrated 8259 in a chipset which
+completely follows the implementation of the discrete part.
+
 >
-> - 8259 is the only interrupt controller in the system
+> I think fixing what we have is the least intrusive, but I tried and failed, so
+> it was nice to write code that actually worked. :) I guess the PCI intack
+> stuff is too varied to be useful though...
 >
-> - 8259 is cascaded interrupt controller on an openpic
+> Would you say poking the 8259 directly is more "right" than using 0xbffffff0
+> (or equivalent)?
 
-These are not the only possibilities. Adirondack, for example, has the PC-style
-8259 pair cascaded to the Adirondack interrupt controller (completely original
-design), which drives the INT# lines to the two CPUs.
+Certainly not. Most ISA bridges (which are the part which contains the
+dual 8259 Pathetic Interrupt Controller), are tested in an x86
+environment, which generate PCI interrupt acknowledge cycles. So hitting
+hardware bugs is much less likely than with polling.
 
-MS
+> > Good, but you should add resource request for the edge/level control
+> > register while you are at it (0x4d0/4d1). And you should not require
+> > 32 bytes for the 8259. On my boards, the super I/O control port is
+> > 0x2e-ox2f.
+>
+> That's what I forgot... that code requests directly from ioport_resource,
+> which is what gets us into trouble on vgacon. We should use request_region
+> instead of request_resource. Unfortunately vgacon is initialized before the
+> VMM, and since request_region calls kmalloc we die very early. :/ I didn't
+> check to see if that's a problem here.
+>
+> The problem with using request_resource(&ioport_resource) in vgacon is that
+> our PHB's initialize later, try to reserve their own IO regions (eg
+> 0x0->0xffffffff), and fail because vgacon already took 0x3c0 or so.
+
+I'd say that the problem is that the PHB is initialized too late while it
+should be one of the first things to be initialized.
+
+I know that there are interactions with debugging/early console. I did
+something like this for my MVME boards, switching the host bridge from
+PreP to CHRP mappings. There is a transient period in which any kind of
+debugging is impossible: you don't have any I/O accessible. But in any
+case this kind of remapping is much better done early, actually before
+giving control to the kernel in my bootloader...
+
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
