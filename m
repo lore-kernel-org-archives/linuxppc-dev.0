@@ -1,59 +1,54 @@
-Date: Wed, 19 Dec 2001 21:23:37 +0100
-From: BURJAN Gabor <burjang@elte.hu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: kernel panic at boot [3c59x]
-Message-ID: <20011219202337.GA30003@csoma.elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Wed, 19 Dec 2001 20:07:13 -0500 (EST)
+From: Christopher Murtagh <christopher.murtagh@mcgill.ca>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: 7450 erratta fixed?
+Message-ID: <Pine.LNX.4.33.0112191951110.9296-100000@blues.wcg.mcgill.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+ Hi BenH et al,
 
-I hope this will be the appropriate forum for this.
+ Just to report back, that I've been hammering away at my dual 800 running
+2.4.17-rc2. And, so far it is taking a beating and still kicking. At the
+moment my machine is rebuilding XFree86-4, Mesa, tetex, emacs, another 2.4
+kernel while vi is doing a regex search/replace on a 300MB apache log
+file and ftping a 1.9 GB gzipped file back and forth to another machine
+next to it.
 
-Perhaps you've read this on linux-kernel list too.  I have a problem
-with booting 2.4.17-rc1 on a RS/6000 (43P-140), when Vortex support is
-compiled into the kernel.  Andrew Morton helped me in debugging the
-problem.
+  8:02pm  up  1:08,  7 users,  load average: 10.34, 9.53, 7.80
+82 processes: 68 sleeping, 12 running, 2 zombie, 0 stopped
+CPU0 states: 66.1% user, 33.4% system,  0.0% nice,  0.0% idle
+CPU1 states: 75.1% user, 24.3% system,  0.0% nice,  0.0% idle
+Mem:  1026464K av, 1020568K used,    5896K free,   0K shrd,   34728K buff
+Swap:  262136K av,     484K used,  261652K free              793024K cached
 
-He suspects that the problem is around the `EL3WINDOW(0);' statement in
-the 3c59x driver.  He wrote this:
 
-"My guess would be that something has gone wrong with the PPC emulation
-of `outw' to this PCI device's IO space."
+ So far, this is *much* better than what I had in the past. Whom ever did
+these fixes I owe you a big thanks. You guys are amazing!
 
-I recompiled the kernel with the modifications suggested by him:
+ I'll let you know if/when this machine crashes.
 
---- 3c59x.c     Sat Nov 24 02:06:05 2001
-+++ 3c59x.c.changed     Wed Dec 19 21:09:31 2001
-@@ -1111,7 +1111,9 @@
-        vp->force_fd = vp->full_duplex;
-        vp->options = option;
-        /* Read the station address from the EEPROM. */
-+       printk("(1) ioaddr=%lx\n", ioaddr);
-        EL3WINDOW(0);
-+       printk("(2) ioaddr=%lx\n", ioaddr);
-        {
-                int base;
+ Thanks again.
 
-The first printk showed the right ioaddress which belonged to the device
-(shown by `lspci -v').  The second printk was not executed because the
-kernel paniced before it.  He wrote it's definitely a platform issue.
-Any suggestions are welcome.
+Cheers,
 
-Related URLs:
+Chris
 
-oops message run through ksymoops:
-        http://www.csoma.elte.hu/~burjang/oops.2.4.17-rc1.2001-12-17.ksymoops
-full objdump of the related driver:
-        http://www.csoma.elte.hu/~burjang/objdump-2001-12-18.out
-thread on the LKML:
-        http://www.uwsg.iu.edu/hypermail/linux/kernel/0112.2/0191.html
 
-Thanks,
+--
 
-	buga
+Christopher Murtagh
+Webmaster / Sysadmin
+Web Communications Group
+McGill University
+Montreal, Quebec
+Canada
+
+Tel.: (514) 398-3122
+Fax:  (514) 398-2017
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
