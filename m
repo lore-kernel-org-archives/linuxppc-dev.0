@@ -1,47 +1,58 @@
-Date: Tue, 2 Feb 1999 09:41:19 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Bryan Christianson <bryanc@ihug.co.nz>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: I/O Port Conflicts with PCI devices?
-In-Reply-To: <l03130300b2dbb10d21bc@[172.16.10.14]>
-Message-ID: <Pine.HPP.3.96.990202093717.16636I-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <3.0.6.32.19990202101943.007e4d30@hsins.uia.ac.be>
+Date: Tue, 02 Feb 1999 10:19:43 +0100
+To: Gabriel Paubert <paubert@iram.es>
+From: David De Ridder <david.de.ridder@bitsmart.com>
+Subject: Re: LinuxPPC on MVME 2306 board
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.HPP.3.96.990201140400.16636D-100000@gra-ux1.iram.es>
+References: <3.0.6.32.19990201104813.00804be0@hsins.uia.ac.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+At 14:13 1-2-99 +0100, Gabriel Paubert wrote:
 
+>> As I understand from some messages in this list, several people have
+>> been able to run LinuxPPC on such boards.
+>
+>At least simliar ones, I don't remember exactly what the 230x has. But as
+>long as it has a DEC21x4x Ethernet, there should not be any problem...
 
-On Tue, 2 Feb 1999, Bryan Christianson wrote:
+ It has a DEC21140 Ethernet controller (with RJ-45 plug) and a serial
+ interface (PC16550 UART).
 
-> The following listing of /proc/pci shows that I have 2 devices reporting an
-> I/O port of 0x400. Is this possible or am I not seeing the whole truth
-> here? When I try to access the port (with inl() or outl()), the machine
-> panics. I published this panic on the list last week and had no response.
-> 
-> I notice that GPR00 contains the address of the port plus my offset
-> (0x043c), offset by 0xFE000000, which from my reading of the kernel source
-> is the remapping done for PCI devices during initialisation.
-> 
-> I have tried kernels 2.1.130, 2.2.0 and 2.2.1, all with the same result. If
-> there are any PCI gurus out there who can help, I would dearly love to get
-> this to work.
-> 
-> PCI devices found:
->   Bus  0, device   0, function  0:
->     Host bridge: Motorola MPC106 Grackle (rev 64).
->       Fast devsel.  Fast back-to-back capable.  Master Capable.  No bursts.
+>> 2) Since we don't have a spare developer PPC machine, is it possible
+>>    to crosscompile the LinuxPPC kernel from the standard Linux sources
+>>    on an Intel based machine ? I tried it and had problems with an
+>>    unfound 'semaphore.h' file.
+>> 
+>
+>Yes, you'll need a rather recent egcs version. 
 
-I'd rather have the output of lspci -vx, this allows to check more details
-like enabled or disabled I/O and memory space response. If you don't have
-lspci, the following should be sufficient: 
+ The egcs on that machine came with a Slackware 3.6 (Octobre 1998?). It
+ should be recent. And how will a new egcs prevent the unfound-include-file-
+ problem from happening ?
 
-	od -tx1 -Ax /proc/bus/pci/00/0e.0
-	od -tx1 -Ax /proc/bus/pci/00/12.0
-	
+>I have put an untested zImage on my ftp server (I want to test it soon):
+>
+>ftp://vcorr1.iram.es/pub/linux-2.2/zImage.nfsroot-2.2.0
 
-	Gabriel
+ Thank you. BTW, is is possible to use 'rdev' on a cross-compiled
+ kernel image ? I mean : can I set the root device for a LinuxPPC with
+ a PC's rdev ?
+ 
+ Thanks,
+
++-----------------------------------------------------------------+
+  David 'Septimus' De Ridder       <david.de.ridder@bitsmart.com> 
+
+"If sharks were man-hunters, surfing would never have been invented."
+ - ITV 'Shark Attack' Special
+
++-----------------------------------------------------------------+
+  
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
