@@ -1,28 +1,31 @@
-Date: Fri, 4 May 2001 22:50:11 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Sven LUTHER <luther@dpt-info.u-strasbg.fr>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	<linuxppc-dev@lists.linuxppc.org>, <debian-powerpc@lists.debian.org>
-Subject: Re: Success! (was Re: External Monitor under Pismo)
-In-Reply-To: <Pine.LNX.4.05.10105041612120.2886-100000@callisto.of.borg>
-Message-ID: <Pine.LNX.4.30.0105042247590.3732-100000@opal.biophys.uni-duesseldorf.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Hankin <shankin@rational.com>,
+	Linux PPC Developers <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4.5-pre1 hangs on Wallstreet
+Date: Sat, 5 May 2001 02:05:56 +0200
+Message-Id: <20010505000556.26820@mailhost.mipsys.com>
+In-Reply-To: <200105032145.QAA05255@lists.linuxppc.org>
+References: <200105032145.QAA05255@lists.linuxppc.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > So i suppose the you will need to use a trick similar to the matrox one to get
-> > dual headed accelerated X to work.
+>> I built the latest bk tree this morning after rsyncing, and on boot, I
+>> only get the initial black screen, then it stops.  No dump, no monitor,
+>> no nothing.  Where do I go from here?
 >
-> Yep. The same is true for atyfb (yes, I should add mirrorring/dualhead support
-> for the Mobility in my Vaio :-).
+>An update:  it hangs after printing out the "MMU: exit" message.  On my
+>2.4.4 kernel, it goes on to tell me "xmon uses screen and keyboard" on
+>the next line, but on 2.4.5-pre1, it just stops.
 
-Please do - I tried Ben's mirror utility on the Lombard but no success.
-And I still have no aty docs to look up the details in.
+BootX/miBoot booting was broken lately.
 
-	Michael
+I added a workaround to my rsync tree, I'll try to come up with a
+better solution for bk this week-end.
+
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
