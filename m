@@ -1,34 +1,47 @@
-Date: Tue, 24 Jul 2001 13:18:16 -0500
-From: "Joseph P. Garcia" <jpgarcia@execpc.com>
-To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: userspace button controls
-Message-Id: <20010724131816.1e68c781.jpgarcia@execpc.com>
-In-Reply-To: <Pine.LNX.4.10.10107241929170.17961-100000@zirkon.biophys.uni-duesseldorf.de>
-References: <20010724112100.6e00124c.jpgarcia@execpc.com>
-	<Pine.LNX.4.10.10107241929170.17961-100000@zirkon.biophys.uni-duesseldorf.de>
+Date: Wed, 25 Jul 2001 09:39:02 -0400
+From: Ethan Blanton <eblanton@cs.ohiou.edu>
+To: linuxppc-dev@lists.linuxppc.org, netdev@oss.sgi.com
+Subject: airport reset on iBook2
+Message-ID: <20010725093902.E2864@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="11Y7aswkeuHtSBEs"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 24 Jul 2001 19:40:13 +0200 (CEST)
-Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de> wrote:
-> :-) While this is a Good Thing, introducing it somewhere along 2.4 will
-> cause trouble. But I see I won't convince anyone here. I'll forward bug
-> reports related to such breakage here.
+--11Y7aswkeuHtSBEs
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Understandable.  But I'd rather not munge up devel with that sort of thing.  I'm on the user list anyway.  Just need to make sure some binary rpms exist to accomodate.
+Hey,
+I don't know if this is a known problem (I haven't seen it mentioned)
+or not, but I'm getting the following error from my Airport card
+reasonably often:
 
-> I don't doubt it can be taken care of in future pmud releases. That just
-> won't help J. Random User who just wants to try that cool new kernel with
-> userspace gizmo button support. Users Don't Read Documentation.
+Jul 25 09:27:50 localhost kernel: NETDEV WATCHDOG: eth1: transmit timed out
+Jul 25 09:27:50 localhost kernel: eth1: Tx timeout! Resetting card.
 
-We can't save users from themselves.  One of the reasons to support gun control.
+It carries with it the undesirable consequence that sometimes all
+network traffic stalls for anywhere from 1-10 (subjectively) seconds.
+This is probably happening on the order of every 3-5 hours, but when
+it happens it often happens several times in the span of a few minutes.
 
---
-Joseph P. Garcia
-http://www.execpc.com/~jpgarcia
+I am sending this to linuxppc-dev and netdev, as I don't know whether
+this is airport-specific, or orinoco/hermes related.
+Ethan
+
+--=20
+If I've told you once, I've told you once
+And once is all that you needed.
+		-- The Refreshments, "Carefree"
+
+--11Y7aswkeuHtSBEs
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+
+--11Y7aswkeuHtSBEs--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
