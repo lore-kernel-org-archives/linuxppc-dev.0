@@ -1,35 +1,45 @@
-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: ELDK 3.0 download 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 23 Jun 2004 13:32:53 +0200."
-             <000601c45915$d4a70f40$0300a8c0@pc005>
-Date: Wed, 23 Jun 2004 14:09:03 +0200
-Message-Id: <20040623120908.64A7FC13D3@atlas.denx.de>
+Message-ID: <51DB8827D393D411BB69003048003F46FDCE68@TVESNTR>
+From: Bastos Fernandez Alexandre <ALEBAS@televes.com>
+To: "'Ing.Gianfranco Morandi'" <gianfranco.morandi@euro-studio.it>,
+	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: ELDK 3.0 download
+Date: Wed, 23 Jun 2004 14:18:16 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <000601c45915$d4a70f40$0300a8c0@pc005> you wrote:
+I had the same problem, and the same error, too. But this is not a
+permission
+problem (i think explorer reports the wrong answer)
+
+It is down almost all the day. Yesterday, it was down all the day, but
+finally
+I arrived to enter and download de "iso" late in the afternoon.
+
+Wait.
+
+Alex Bastos
+
+> -----Mensaje original-----
+> De:	Ing.Gianfranco Morandi [SMTP:gianfranco.morandi@euro-studio.it]
+> Enviado el:	miércoles, 23 de junio de 2004 13:33
+> Para:	LinuxPPC
+> Asunto:	ELDK 3.0 download
+>
 >
 > I'm trying to down load the ISO image of ELDK 3.0 for ARM platform from
 > ftp://ftp.leo.org/pub/eldk/3.0/ppc-linux-x86/iso/ but it answers that I do
 > not have the required authorization.
-
-LEO seems to have problems today with their FTP server. Sorry.
-
-[Anybody who wants to host a mirror?]
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The amount of time between slipping on the peel and  landing  on  the
-pavement is precisely 1 bananosecond.
+>
+> Anybody have seen that before?
+>
+> Thank You in advance
+>
+> Gianfranco
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
