@@ -1,52 +1,43 @@
-Message-ID: <3676D810.FEEEE6EE@zg.tel.hr>
-Date: Tue, 15 Dec 1998 22:43:47 +0100
-From: Stanko Juzbasic <stanko.juzbasic@zg.tel.hr>
-Reply-To: stanko.juzbasic@zg.tel.hr
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Digidesign AM-III audio card driver etc...
-References: <365BFF9C.16BAF90F@zg.tel.hr> <19981215114246.A4972@bleck.ksu.ksu.edu> <3676D6FE.23F60188@zg.tel.hr>
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Date: Tue, 15 Dec 1998 15:48:20 -0600
+From: Ted Whalen <tew@nwu.edu>
+To: David Ray <daver@idiom.com>
+Cc: linux-pmac@samba.anu.edu.au, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Complete fix for PB 2400 16-bit video problem
+Message-ID: <19981215154820.A2281@wish.psych.nwu.edu>
+Reply-To: tew@nwu.edu
+References: <v02140b08b299f56c55fd@[209.157.72.95]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <v02140b08b299f56c55fd@[209.157.72.95]>; from David Ray on Sun, Dec 13, 1998 at 03:03:02PM -0800
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+David Ray wrote:
+> The new XF68_FBDev just released from the xfree86 site still fails in
+> 16 bit mode. This is not a color balance problem, but something more
+> serious. It looks like only half the screen is trying to be
+> initialized while the bottom half still shows a "compressed" display
+> of the console. After about a second, X fails and exits.
 
+I had this problem too, and I realized that it was due to the
+hard-coded video ram setting in chipsfb.c -- it assumes 468k of vram,
+when in fact most machines have more.  To get around this, use the
+following diff.
 
-Stanko Juzbasic wrote:
+diff -r1.16 chipsfb.c
+553c553
+< 	p->fix.smem_len = 800 * 600;
+---
+> 	p->fix.smem_len = 1024 * 1024; /* 800 * 600 */
 
-> Unfortunately, I'm neither in position nor in charge to make such donations
+However, even with this fix -- which provides the 1mb of vram I so
+richly deserve, the colors are screwy.
 
-> myself, nor the only one I have had been donated to me. I am also without
-> any information on the code input of this card (probably it is proprietary).
-> However there are MacOS, Windows and IRIX drivers available  for free
-> download at digidesign's ftp site. What I am after is trying to find out is
-> there an objective interest within the LINUX_PPC community toward developing
-> the system for purpose of music education. Then the action of contacting the
-> manufacturer, and negotiating sponsorship would make sense. I also need to
-> know if anyone else had done this before.
->
-> Stanko
->
-> Zach Metzinger wrote:
->
-> > On Wed, Nov 25, 1998 at 02:01:20PM +0100, Stanko Juzbasic wrote:
-> > >
-> > > To whom it may concern...
-> > >
-> > > Has anybody thought of writing a driver for a high-guality sound card
-> > > such as Digidesign AudioMedia III
-> > > PCI sound card. I hope somebody is aware of the valuable public domain
-> > > research software in the field of computer music that has been written
-> > > in the academic comunity during past 20 years.
-> >
-> > I'm sure that if you donate a card to one of the sound developer guys and
-> > it has non-proprietary documentation about the hardware available,
-> > someone would be glad to code it. :)
-> >
-> > --- Zach
-> >  [down with ATI]
-
+tew
+-- 
+             Is "Princess" your real name?
+                Ted Whalen - tew@nwu.edu
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
