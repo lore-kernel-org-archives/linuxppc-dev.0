@@ -1,56 +1,34 @@
-From: "James Brown" <jbrown@qmm.com.au>
-To: <mlan@cpu.lu>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: RE: planb in BK tree..
-Date: Wed, 24 Jan 2001 14:49:50 +0800
-Message-ID: <000001c085d1$da042e20$a100a8c0@james>
+From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
+To: Ani Joshi <ajoshi@shell.unixbox.com>
+Date: Wed, 24 Jan 2001 20:44:49 MET-1
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <200101231925.UAA00899@piglet.grunz.lu>
+Content-type: text/plain; charset=US-ASCII
+Subject: Re: [linux-fbdev] Matrox and XFree86 4.0.2 update
+CC: debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org,
+        linux-fbdev@vuser.vu.union.edu
+Message-ID: <1383CA701391@vcnet.vc.cvut.cz>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Hi there,
->
->Sorry for replying late, but I'm still wading through a 400-message
->backlog...
+On 24 Jan 01 at 11:11, Ani Joshi wrote:
 
-Yes, I know the feeling well :)
+> I recently ran into an issue with the matroxfb driver and XFree86 4.0.2's
+> matrox driver.  Sometime in the past someone decided to use BE
+> register access in matroxfb for BE machines, while this is probably The
+> Right Way, it produces problems in X.  I can use BE register access
+> macro's in X but it was causing problems with the engine, perhaps some DMA
+> issue although the dma BE bits are on.
 
->> Any chance of getting the planb driver in the current 2_4 bitkeeper tree
->> patched with the 2.4 fix for it? :)
->I'll get back to work on PlanB somewhere in late February, hopefully.
->Feel free to post a working diff, if you have one. Where did you get the
->original patches from?
+Using big-endian on PPC was required by PPC users for compatibility with
+existing XF[86][68]_FBDev servers. Are you sure that there are no problems
+otherwise, and that it works correctly on all PReP/CHRP/???? architectures?
 
-Basically I manually applied the
-http://www.cpu.lu/~mlan/ftp/planb-2.4.0-t6-patch patch against the current
-BK tree at the time. That seemed to fix the issues I was having with 2.4.0
-crashing on boot (couldn't find the PlanB device, but was giving me the
-previous, cryptic, error message).
-
-I can probably whip up a diff later, but that'd involve me finding some
-spare time of my own *grin*.
-
-> I spent most of last night manually patching the thing (for some reason a
-> few chunks failed, and I had nothing else to do) - After applying that my
-> whole setup works great, except for a few things I think are caused by
-> package version messups.
-
-What version messups would that be?
-
-Turned out to be a few endian issues with other drivers (consolefb doesn't
-like having VGA Console turned on).
-
->Michel
->-------------------------------------------------------------------------
->Michel Lanners                 |  " Read Philosophy.  Study Art.
->23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
->L-1710 Luxembourg              |
->email   mlan@cpu.lu            |
->http://www.cpu.lu/~mlan        |                     Learn Always. "
+And I think that matroxfb should return current driver's endianess to
+userspace... Do we have some spare bits in fb_fix_info?
+                                            Thanks,
+                                                Petr Vandrovec
+                                                vandrove@vc.cvut.cz
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
