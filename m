@@ -1,43 +1,30 @@
-From: Paul Mackerras <paulus@samba.org>
+Date: Sun, 2 Dec 2001 08:58:50 -0700 (MST)
+From: Derrik Pates <dpates@dsdk12.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.17-pre[12]-ben0 trees hang on unsuspend
+In-Reply-To: <20011202095108.3294@smtp.wanadoo.fr>
+Message-ID: <Pine.LNX.4.40.0112020854520.27544-100000@andromeda.dsdk12.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15369.65261.546405.15780@argo.ozlabs.ibm.com>
-Date: Sun, 2 Dec 2001 21:14:05 +1100 (EST)
-To: Martin Costabel <costabel@wanadoo.fr>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
-Subject: Re: [PATCH] Minor changes to control/imstt/platinum/valkyrie/atyfb
-In-Reply-To: <3C08CFF0.18A1FBC7@wanadoo.fr>
-References: <20011127143058.R13091@cpe-24-221-152-185.az.sprintbbd.net>
-	<3C08CFF0.18A1FBC7@wanadoo.fr>
-Reply-To: paulus@samba.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Martin Costabel writes:
+On Sun, 2 Dec 2001, Benjamin Herrenschmidt wrote:
 
-> For the valkyriefb driver on my Pmac 6400, I can confirm from a first
-> short test that it still works. This is with your patch applied to
-> today's 2.4.17-pre1-ben0 kernel.
+> Could be one of my sleep.S changes, let me check...
 
-Do you still have macos on the 6400?  If so can you confirm whether,
-if you set the screen resolution and colour depth in macos, that the
-value you have set in macos is the default that linux will use?
+I diff'd 2.4.16-ben0's sleep.S and 2.4.17-pre2-ben0's sleep.S, then
+commented out the added stuff for register save/restore on 74x0 PPCs. That
+seems to have corrected the problem - the system now wakes up correctly
+from sleep, exactly as before. Any idea what's happening there? It looks
+like that stuff shouldn't even be getting called for non-74x0 PPC
+processors (/proc/cpuinfo IDs this system's CPU as a 750CX), so one of the
+processor-type checks apparently isn't working quite right.
 
-The nvram locations that the video drivers look in for the default
-resolution and depth, 0x140f and 0x1410, were locations that I found
-empirically on a 7500 with a control display, and IIRC they also
-seemed to work with the platinum and probably the valkyrie as well.
-But from about when Apple started to use the ATI chips it seems that
-macos changed the way it stored the way it stores the defaults, and
-certainly now it is driver-dependent.
+Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
+dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
 
-Therefore unless someone can reverse-engineer how the macos ATI driver
-stores its defaults, I don't think there is any point having the nvram
-stuff in the atyfb driver, and it probably isn't doing any good in the
-matrox or imstt drivers either.
-
-Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
