@@ -1,18 +1,27 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id BBCEE67A8E
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5A33E67A8A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Mar 2005 08:36:28 +1100 (EST)
-In-Reply-To: <000601c52e9e$3b9de080$870da8c0@anaveen>
-References: <000601c52e9e$3b9de080$870da8c0@anaveen>
+	Wed, 23 Mar 2005 08:55:15 +1100 (EST)
+In-Reply-To: <20050322130426.GE2498@logos.cnet>
+References: <EA78B62757AF1E4799828249310AC4CA071D281F@stca206a.bus.sc.rolm.com>
+	<28F2CE72-0BF0-11D9-97DC-003065F9B7DC@embeddededge.com>
+	<20050210150437.GA19134@logos.cnet>
+	<c5f8c158f9254cbb0a8e085cf0fda8de@embeddededge.com>
+	<20050210170658.GA20153@logos.cnet>
+	<20050210170859.GB20153@logos.cnet> <423F4071.1000001@mrv.com>
+	<20050322130426.GE2498@logos.cnet>
 Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <f99fdf9a800fa3c250cc7171b7d36c85@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 22 Mar 2005 15:36:27 -0600
-To: "Naveen Kumar Atmakuri" <anaveen@mistralsoftware.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Need help.
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f4f476b5e54e9f005dd28082bd5f16fe@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Tue, 22 Mar 2005 15:57:08 -0500
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: "Smith, Craig" <craig.d.smith@siemens.com>, paulus@samba.org,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Linux 2.6.x on 8xx status
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,27 +32,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-While I can specify a place for you to get precompiled binaries for=20
-MPC7448, I can suggest grabbing crosstool from:
-    http://www.kegel.com/crosstool/
 
-There is a 7450 config which will work for MPC7448.
+On Mar 22, 2005, at 8:04 AM, Marcelo Tosatti wrote:
 
-- kumar
+> I'm quite puzzled. Why v2.6 calls the "tlbie" instruction 100-or-so
+> less times than v2.4 ?
+
+Oh my ...  I'm more worried about the high number of TLB misses
+in 2.6 compared to 2.4.  That's really bad.  How did you instrument
+the tlbie measurement?  It could be that 2.4 used lots more 'tlbia'
+which were replaced by tlbie in 2.6.
+
+Thanks.
 
 
-On Mar 21, 2005, at 11:15 PM, Naveen Kumar Atmakuri wrote:
-
-> Hi everybody,
-> =A0
-> Could any one suggest the toolchain and kernel versions that are=20
-> compatible with the MPC7448 processor ( It's a motorola processor=20
-> based on power PC architecture ). Is there any site from where we can=20=
-
-> download the precompiled binaries for the same processor.
-> =A0
-> With Regards& Thanks,
-> A.Naveen Kumar,
-> Design Engineer,
-> Mistral Software Pvt Ltd.
-> <ATT92461.txt>=
+	-- Dan
