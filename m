@@ -1,29 +1,53 @@
-Date: Fri, 19 Feb 1999 23:48:01 -0500 (EST)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Scott Trimmer <strimmer@rift.foo.net>
-cc: linuxppc-dev@lists.linuxppc.org
+Date: Fri, 19 Feb 1999 20:54:54 -0800 (PST)
+From: Scott Trimmer <strimmer@rift.foo.net>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Compiling Kernel 2.2.1 on a G3
 In-Reply-To: <Pine.LNX.3.96.990219201949.20971B-100000@rift.foo.net>
-Message-ID: <Pine.LNX.3.96L.990219234636.31229A-100000@unix47.andrew.cmu.edu>
+Message-ID: <Pine.LNX.3.96.990219205402.21016A-100000@rift.foo.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+OK, whatever settings I just tried worked, but all of my text is huge.
+vmode either is not working, or I'm not using it right.  Again any help
+would be appreciated.  Thanks.
+	-Scott
+=;)
+
 On Fri, 19 Feb 1999, Scott Trimmer wrote:
-> 
+
 > I have tried for weeks to get ANY kernel compiled, and I can get the
 > kernel to compile.  But when I copy it into my System Folder on the mac,
 > and boot every piece of text on the consoles is colored boxed with colored
 > circles in the center of them.  Why is this, and what can I do?  The
 > penguin in the upper right corner shows correctly, as well as the first
 > message saying that kernel 2.2.1 is booting.
-
-You need to disable "VGA font support" or something like that in the kernel
-config. One would hope that 'make pmac_config' sets that value properly...
-
--Hollis
+> 
+> System Specs: 
+> Original G3 266 MiniTower w/ a ATI Rage II/DVD+
+> Apple 720 Monitor
+> 6MB video mem
+> 
+> Steps I took to compile:
+> make menuconfig  (set settings)
+> make dep
+> make clean
+> make zImage
+> make modules
+> make modules-install
+> ftp'd the vmlinux file to another machine, booted MacOS ftp'd it back to
+> my computer in binary mode.  Installed in system folder, and ran bootx.  
+> 
+> Typing blind and starting X works (funny vmode but it works).  What can I
+> do?  I want to get this working.
+> 	-Scott
+> P.S. Thanks for all your help in advance.  
+> 
+> 
+> 
+> 
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
