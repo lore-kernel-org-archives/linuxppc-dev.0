@@ -1,43 +1,33 @@
-Message-ID: <004e01c1eff0$50f70500$1a11efcb@industrialDiv.hanasys.co.kr>
-Reply-To: "Sangmoon Kim" <dogoil@etinsys.com>
-From: "Sangmoon Kim" <dogoil@etinsys.com>
-To: =?ks_c_5601-1987?B?wPzH/b+1?= <hychon@corebell.co.kr>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <001201c1efdd$301e7d80$3200a8c0@genetelhychon>
-Subject: Re: looking for source files for MPC8xx --- help me~~~
-Date: Tue, 30 Apr 2002 11:39:56 +0900
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3CCE1653.7050709@embeddededge.com>
+Date: Mon, 29 Apr 2002 23:58:11 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: leeyang <leeyang77@hotmail.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [trini@kernel.crashing.org: [PATCH] Allow openpic_init to set
+ all combos of polarity and sense]
+References: <20020430003434.GA21482@opus.bloom.county> <OE120wZDyDG742l3ew100002f33@hotmail.com> <20020430033341.GB21482@opus.bloom.county>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Tom Rini wrote:
 
-> 1. Could you tell me how to find the sources ??
->
-> and I read a following message in mailling web site ( http://lists.linuxppc.org/linuxppc-embedded/200003/msg00077.html )
-> I go to the http://www.mvista.com site , but I can't anyting source
->
->
-Montavista's Hardhat Linux is not available on internet any more. If you're gonna make a ramdisk or nfs root for linux root file system. I think Wolfgang denk's CDK and SELF is a good starting point. You can find them at...
-ftp://ftp.denx.de/pub/LinuxPPC/usr/src/
+> Note, Sandpoint is probably currently broken in linuxppc_2_4_devel since
+> I believe it relied on overloading NumInitSenses .....
 
-> 2. and I found some source for bash-xxx.tar.gz ..etc  from gnu.org
-> when I complile the sources using powerpc-linux compiler  ( gcc-2.95 , glibc-2.2.3 )
-> it's giving error  that
->
-> checking  whetehr setvbuf argument are reserved... configure: error cannot run test program while cross compiling
->
->
-> I was compiled following option
-> #./configure --host=poweprc-linux --build=i386-linux
->
-> what's problem?? I'm not understanding.....
->
-I encountered the same error before. I don't think bash support cross compiling.
-Good Luck
-- Sangmoon Kim -
+I thought Paulus finally took this hack and implemented it in a way
+that made him happy. :-)  Was I mistaken?  Several of us checked this
+in over and over, it really shouldn't be removed unless there is
+something better.
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
