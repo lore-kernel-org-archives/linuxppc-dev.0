@@ -1,49 +1,38 @@
-Message-ID: <002e01c29d74$628b03c0$0300a8c0@jockeXP>
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Dan Malek" <dan@embeddededge.com>
+From: Paul Mackerras <paulus@au1.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15857.15826.513311.884408@argo.ozlabs.ibm.com>
+Date: Sat, 7 Dec 2002 11:16:18 +1100
+To: <joakim.tjernlund@lumentis.se>
 Cc: "Matt Porter" <porter@cox.net>,
 	"Pantelis Antoniou" <panto@intracom.gr>,
 	<linuxppc-embedded@lists.linuxppc.org>
-References: <IGEFJKJNHJDCBKALBJLLOEJHFIAA.joakim.tjernlund@lumentis.se> <3DF1018C.7080508@embeddededge.com>
-Subject: Re: Regarding consistent_alloc
-Date: Fri, 6 Dec 2002 23:11:11 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: RE: Regarding consistent_alloc
+In-Reply-To: <IGEFJKJNHJDCBKALBJLLCEJGFIAA.joakim.tjernlund@lumentis.se>
+References: <20021206085909.B17918@home.com>
+	<IGEFJKJNHJDCBKALBJLLCEJGFIAA.joakim.tjernlund@lumentis.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
-> Joakim Tjernlund wrote:
->
-> > Yes and no, someone changed the m8xx_cpm_hostalloc() implementation and now
-> > it does not behave as it used to. Earlier both __pa(adr) and __va(__pa(adr))
-> > worked on addresses returned by m8xx_cpm_hostalloc().
->
-> I changed it a while back so single large pages could be used to map the
-> kernel space.  Just use iopa() on the virtual address to get the physical
-> address.  I don't understand the current condition of commproc.c today, but
-> I'm not the only one that updates it anymore.  The bk comments are quite
-> useless since all they indicate is some obscure patch was applied.
->
-> > I think in it's current form it's useless and should either be changed back to what
-> > it was or die.
->
-> It seems quite useful to the drivers that currently use it.........It's
-> only purpose is to provide small non-cached objects like uart fifos and control
-> areas.  Don't try to use it for things not intended.
+Joakim Tjernlund writes:
 
-Exacly, I was using it as a small fifo for my SPI driver(not really mine, I found it on the net).
-Since  __pa() and __va() doesn't work anymore, it should be documented becauase I think
-most people expect __pa() and __va() to work on kernel memory and it did work in 2.4.2.
+> m8xx_cpm_hostalloc() does not keep the DMA handle and __pa() does not work
+> on addresses returned by m8xx_cpm_hostalloc(). I just found that out the
+> hard way when upgrading from MV 2.4.2 to linuxppc_2_4_devel 2.4.20. My SPI driver
+> hung as soon you tried to read something.
 
-Anyway, I have fixed my driver now so this is not a problem for me anymore.
+Then m8xx_cpm_hostalloc should be changed so it returns the DMA
+address along with the virtual address (of the uncached mapping).
 
- Jocke
+An alternative which will work, at least at present, is to use iopa()
+on the virtual address.  However, that assumes that DMA bus addresses
+are identical to CPU physical addresses.  That is true at the moment
+on all embedded PPC platforms that I know of currently, but there is
+no guarantee that it will always be true.  That is why I think it is
+better to make a practice of saving the DMA address that you get back
+from consistent_alloc and using that.
 
-PS.
-   Dan, are you still working/testing my 8xx_io/enet.c patch?
-
+Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
