@@ -1,46 +1,73 @@
-Date: Sun, 12 Aug 2001 14:57:27 +1000
-From: Steven Hanley <sjh@svana.org>
-To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: serial cable problem (for of output)
-Message-ID: <20010812145727.A2927@shiva.marian>
-Reply-To: Steven Hanley <sjh@wibble.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Sun, 12 Aug 2001 10:47:41 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: Derrik Pates <demon@devrandom.net>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Fix for PPC audio devices that can't reendianize samples
+In-Reply-To: <20010811232652.D17E62F06D@apollo.valhalla.net>
+Message-ID: <Pine.LNX.4.05.10108121044370.15315-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-All
+On Sun, 12 Aug 2001, Iain Sandoe wrote:
+> On Sat, Aug 11, 2001,  Geert Uytterhoeven wrote:
+> > On Fri, 10 Aug 2001, Iain Sandoe wrote:
+> >> > The attached patch adds code to drivers/sound/dmasound/trans_16.c to
+> >> > byteswap little-endian audio samples for hardware that needs it (like the
+> >> > DACA audio chip in the iBook and iBook FireWire), and also marks the DACA
+> >> > in the iBook FireWire as being unable to handle little-endian audio
+> >> > samples (in dmasound_awacs.c).
+> >>
+> >> we've been round this loop ;-)))
+> >>
+> >> the reason that the byte-swap code was taken out of trans_16.c is that it
+> >> will never be allowed into the kernel.
+> >
+> > And we'll have to remove the current byteswap code in the kernel (there still
+> > is some).
+>
+> Well, actually, I'd like to lose all the translation stuff (rate conversion,
+> format conversion etc.).  This belongs in User-Land and is preventing me
+> from implementing mmio (which would be useful for the more serious
+> applications).
 
-Okay I am trying to use my serial cable hookup to the modem port on an
-oldworld for the first time now.
+Sorry, that's what I meant: all translation code.
 
-I have a mac modem to 25 pin serial cable, linked to a null modem (though I
-hhave tried without the null modem also) connector, then I have tried plugging
-it into the back of a pc, the back of my pismo (with a keyspan usb to serial
-cable) and to a serial mouse.
+> My main problems atm are:
+>
+> (a) working out what to do about mksound() - this is messy as it is and
+> needs fixing in order to deal with DACA & Tumbler (it fiddles with the H/W
+> which makes it chip-specific at present)...
 
-None of these seem to do anything, and I also cant type or see anything when
-booting amachine and tryying to get into OF.
+Yes, mksound() messes with the sound hardware on most m68k boxes too.
 
-What am I doing wrong?
+Perhaps we should make it more generic, and move it to dmasound?
+The disadvantage is that you can't get system beep anymore without dmasound.
 
-Running minicom with 38400 8N1 on the mac and the pc or pismo, I cant type at
-either end or see anything. When i have the mouse plugged in and cat
-/dev/ttyS0 or minicom running I also see nothing.
+> (b) wondering if losing all that stuff is going to be acceptable to the m68k
+> ports (or whether we will end up having a PPC-specific driver).
 
-As mentioned  I have tried all this both with and without the null modem
-connected in the middle.
+If the removal of the translation stuff is imposed from upstream (Linus/Alan),
+we must comply. Once user space is fixed, it should work everywhere. So m68k
+will benefit from the work done on PPC (once in a time it was vice versa :-)
 
-        See You
-            Steve
+> (c) not having any time ... (but that's an old problem) ...
+
+Idem ditto.
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-sjh@wibble.net http://wibble.net/~sjh
-Look Up In The Sky
-    Is it a bird?   No
-        Is it a plane    No
-            Is it a small blue banana?
-Yes
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
