@@ -1,32 +1,25 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Linux Frame Buffer Device
- Development <linux-fbdev@vuser.vu.union.edu>,
-        Linux/PPC Development
- <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [linux-fbdev] Re: Video driver bug
-Date: Sat, 14 Oct 2000 19:18:54 +0200
-Message-Id: <19340908105038.32516@192.168.1.10>
-In-Reply-To: <Pine.LNX.4.10.10010132313270.381-100000@cassiopeia.home>
-References: <Pine.LNX.4.10.10010132313270.381-100000@cassiopeia.home>
+Message-ID: <39E8C5A6.C438749A@gnu.org>
+Date: Sun, 15 Oct 2000 07:44:22 +1100
+From: Andrew Clausen <clausen@gnu.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+CC: bug-parted@gnu.org
+Subject: Please test GNU Parted's Mac support
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Here are my fixes for aty128fb, atyfb, platinumfb, and tdfxfb.
->
->Igafb is not affected since it sets disp during initialization only.
->
->Can someone please test these patches so I can send them to Linus? I'm unable
->to test any of them (besides a simple compile test). Thanks!
+Hi ppc people,
 
-While we are at it, I beleive we should also change atyfb.c so that
-currcon is no longer a global. My understanding is that can break multihead.
+There's a new version of Parted to test (it doesn't segfault now!)
 
-Any objection ?
+	ftp.gnu.org/gnu/parted/devel/parted-1.4.0-pre2.tar.gz
 
-Ben.
+So, please test it out on your spare disk, and also check if the docs
+look right.
+
+Thanks :-)
+Andrew Clausen
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
