@@ -1,42 +1,43 @@
-Date: Tue, 8 Aug 2000 19:55:09 -0500 (CDT)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: rtc again...
-In-Reply-To: <20000808174157.21374@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.1000808194747.24030A-100000@ofey.earthlink.net>
+Message-ID: <3990AF84.9E5FBD5A@denise.shiny.it>
+Date: Tue, 08 Aug 2000 21:10:28 -0400
+From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: How to get up-to-speed on the 3D / DRI in Rage 128
+References: <39902BE4.44DE97C1@ivey.uwo.ca> <39902E69.67F50604@relog.ch>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 8 Aug 2000, Benjamin Herrenschmidt wrote:
+> > I have the xf 401 src tar archives and I can get a hold of ani's cvs of the
+> > xfree86 tree.
+>
+> I haven't used Ani's patches, and I seem to be the only one running DRI
+> successfully so far. Maybe better try without them first.
+>
+> > What other patches/fixes do I need to get going?
+> >
+> > - aty128fb.c patches for panning?
+>
+> Not needed, you can use the full screen.
+>
+> > - DRI patches?
+>
+> Yep. What I'm running is the DRI CVS trunk (which is basically X 4.0.1 and
+> some DRI changes) and a patch that I've posted to dri-devel. If you can't get
+> it from there, I can send it to you privately or put it up for HTTP download.
+>
+> (Jack Howarth should have it as well)
+>
+> > - etc
+>
+> That's all I can think of ATM.
 
->  - The second one is that ppc_md.get/set_rtc_time are passed (or return)
-> a time value independently of the timezone. That mean that they either do
-> no conversion and so it's the responsibility of the caller to "know" if
-> the RTC is in local time or UTC, or they do the conversion and so return
-> (and get passed) an UTC time. That's what I decided to do, so on
-> PowerMac, they do the adjustement from UTC to localtime and the opposite
-> inside those functions. Paul recently added code to also save the
-> timezone to the xpram. There's a small semantic problem with this code,
-> since it takes the time to set to the RTC as a parameter but uses the
-> global sys_tz. It should either use no parameter (and use only xtime/
-> sys_tz), or be passed both parameters. In this case, we can probably move
-> the init code that reads the initial time zone to the pmac_get_rtc_time() too.
+Please let me understand... I d/l the latest X + DRI patches and I compile
+them. If all goes right I get a working X, but how can I use the 3D
+acceleration ?  Do I need a patched version of Mesa too, or what ?
 
-Personally, I think UTC <-> local time conversion should be handled in
-userland.  Both hwclock and clock can handle both local time and UTC just
-fine.
-
-Does Mac OS handle different timezone information in xpram well?  Timezone
-information is saved in xpram but it's also saved in some of config files.
-So, it appears to me that Mac OS will get confused or ignore or delete the
-timezone setting in xpram if it doesn't agree with the config file.
-
-
-Takashi Oe
-
+Bye.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
