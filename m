@@ -1,69 +1,46 @@
-Message-Id: <199903041808.TAA18295@mitra.phys.uit.no>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Removing speaker hiss on PB G3
-From: Alvin Brattli <Alvin.Brattli@phys.uit.no>
-Date: Thu, 04 Mar 1999 19:08:10 +0100
+Message-ID: <82867A41A066D111B80D00A0C90815E93FB419@WATSON>
+From: Will Wood <wwood@borealiscorp.com>
+To: "'kbhend@business.wm.edu'" <kbhend@business.wm.edu>, gdt@linuxppc.org,
+        sbb@gnu.org, linuxppc-dev@lists.linuxppc.org, egcs@egcs.cygnus.com
+Subject: RE: Problem with egcs and denormalized constants?
+Date: Thu, 4 Mar 1999 10:43:22 -0800 
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+My LinuxPPC configuration is currently down but here's some results from
+HP and Solaris.  All are
+running EGCS-1.1.1
 
-With the current 2.2.1 kernel, there is a lot of hiss in the speakers
-and headphones on the PowerBook G3.  The hiss starts immediately when
-booting, and does not disappear until a beep has been sounding.  When I
-was implementing my patch for the volume and mute buttons for the PB G3,
-I added some code in the function dmasound_init() in
-drivers/sound/dmasound.c to stop the beep immediately after the sound
-chips have been initialized.  I first tried using PMacSilence() and
-sound_silence(), but these do not do the trick.  Not knowing enough
-about the underlying hardware (and not having any documentation on it,
-beside the kernel code), I conjured up this code.
-What it does, is simply to issue a short beep of length one tick
-and with zero volume immediately after initializing the sound hardware,
-and then restoring the volume, effectively stopping the hiss.
+HPUX 10.20 EGCS 1.1.1 HP 9816
 
-This patch is ugly, but it works (at least for my PowerBook).  What
-really should be done, I think, is to change PMacSilence() so it does a
-better job of making sure the sound hardware is making no sound.
-However, without understanding the inner workings of the sound hardware,
-I cannot do this.  Can anyone give me any hints on what I need to do?
+flmin(0) is  1.4023984275674e-37
+flmin(1) is  1.4023983434895e-38
+flmin(2) is  1.4023984836193e-39
+flmin(3) is  1.4023914771270e-40
+flmin(4) is  1.4024195030963e-41
+flmin(5) is  1.4026997627891e-42
+flmin(6) is  1.4012984643248e-43
+flmin(7) is  1.4012984643248e-44
+flmin(8) is  1.4012984643248e-45
+But flmin(7)/10.0F is  1.4012984643248e-45
 
+UltraSparc II/256 Solaris 2.6 EGCS-1.1.1
 
---- drivers/sound/dmasound.c.orig	Mon Mar  1 19:21:46 1999
-+++ drivers/sound/dmasound.c	Thu Mar  4 18:51:27 1999
-@@ -4840,6 +4840,7 @@
- 	int has_sound = 0;
- #ifdef CONFIG_PPC
- 	struct device_node *np;
-+	int beep_volume_tmp;
- #endif
- 
- #if defined(__mc68000__) || defined(CONFIG_APUS)
-@@ -4974,6 +4975,14 @@
- #ifdef MODULE
- 	irq_installed = 1;
- #endif
-+
-+#ifdef CONFIG_PPC
-+	/* Remove hiss from PowerBook speakers */
-+	beep_volume_tmp = beep_volume;
-+	beep_volume = 0;
-+	awacs_mksound(750, 1);
-+	beep_volume = beep_volume_tmp;
-+#endif /* CONFIG_PPC */
- 
- 	printk(KERN_INFO "DMA sound driver installed, using %d buffers of %dk.\n",
- 	       numBufs, bufSize);
+flmin(0) is  1.4023984275674e-37
+flmin(1) is  1.4023983434895e-38
+flmin(2) is  1.4023984836193e-39
+flmin(3) is  1.4023914771270e-40
+flmin(4) is  1.4024195030963e-41
+flmin(5) is  1.4026997627891e-42
+flmin(6) is  1.4012984643248e-43
+flmin(7) is  1.4012984643248e-44
+flmin(8) is  1.4012984643248e-45
+But flmin(7)/10.0F is  1.4012984643248e-45
 
-
-
-
-
-aLViN
--- 
-:r .signature
-
-[[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
-[[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
-[[ reply is of general interest. To unsubscribe from linuxppc-dev, send ]]
-[[ the message 'unsubscribe' to linuxppc-dev-request@lists.linuxppc.org ]]
+[[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
+[[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
+[[ reply is of general interest. Please check http://lists.linuxppc.org/ ]]
+[[ and http://www.linuxppc.org/ for useful information before posting.   ]]
