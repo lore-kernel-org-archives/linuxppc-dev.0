@@ -1,43 +1,31 @@
-Message-ID: <005101c4233c$abf8b670$6f01a8c0@xiphos.ca>
-From: "Joshua Lamorie" <jpl@xiphos.ca>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Cascaded interrupt controllers
-Date: Thu, 15 Apr 2004 18:54:56 -0400
+Message-ID: <407F8312.3070702@euronet.nl>
+Date: Fri, 16 Apr 2004 08:54:10 +0200
+From: Jos Beck <jos_beck@euronet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Dan Malek <dan@embeddededge.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: FCC Ethernet MDIO interface
+References: <4ABDB84E30B89F4E9C942C186F0B9EF605BBC6@4rf-nz-mail.local.4rf.com> <407DEC4A.3080305@embeddededge.com>
+In-Reply-To: <407DEC4A.3080305@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Gidday there,
+Dear Dan,
 
-I have a board containing a Virtex-II Pro and a few other FPGAs.  I have an
-OPB between the Virtex-II Pro and a Virtex-II which contains a UART,
-Interrupt controller and other peripherals.
+We are trying to use U-boot for a new MPC8250 circuit.
+When looking at cpu/mpc8260/ether_fcc.c I cannot find any reference to
+the control of the MDC and MDIO lines of the MII interface to the PHY.
 
-I currently have linux booting just fine, and a single UART talking nicely
-to the primary interrupt controller on the Virtex-II OPB.  I'm trying to
-modify the xilinx_pic.c code in arch/ppc/kernel as well as elements of
-arch/ppc/platforms/xilinx_ml300.[ch] and several files within
-arch/ppc/platforms/xilinx_ocp.
+Where can I find the code that controls MDIO? (e.g. to defive which CPM
+pins are used)
+Is the MDIO interface used/supported anyhow in u-boot or the kernel?
 
-I've been using ppc4xx_pic as an example, but I can't figure out where to
-register, or initialize the interrupt that goes from the second INTC to the
-first.  When it's running all I see in /proc/interrupts is the interrupt for
-the serial port.
 
-I'm afraid I'm a little new to this level of the linux kernel, and
-definitely new to powerpc architecture.
+Best Regards,
 
-Can anyone give me any pointers to good examples of setting things up?  It
-doesn't appear that anything uses irq_action which seems to be how things
-are done for a intel Pee Cee.
+Jos Beck
 
-I'll post whichever elements of code would be most useful.
-
-Thanks
-
-Joshua
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
