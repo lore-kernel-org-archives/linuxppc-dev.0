@@ -1,12 +1,11 @@
-Message-ID: <001801c11b22$557edce0$5b9e8aa3@cello>
-From: "kenji mac" <kenji114@mac.com>
+Message-ID: <008201c11b28$75bfcb30$5b9e8aa3@cello>
+From: "kenji core" <kenji@core.ecl.net>
 To: <linuxppc-dev@lists.linuxppc.org>
-References: <3B688167.9010906@hadess.net>
-Subject: POS 2.4G card
-Date: Thu, 2 Aug 2001 16:11:21 +0900
+Subject: POS 2.4G card on linuxppc
+Date: Thu, 2 Aug 2001 16:55:12 +0900
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="iso-2022-jp"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
