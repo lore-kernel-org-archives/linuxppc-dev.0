@@ -1,44 +1,45 @@
-Message-Id: <200012080807.eB887Mm02137@denx.local.net>
+From: Leonardo M Teixeira <leonardo@lst.cpdtt.cefetpr.br>
 To: Subodh Nijsure <SNijsure@SkyStream.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Psos bootrom booting Linux-ppc is that possible, done? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 07 Dec 2000 17:25:36 PST."
-             <B25E2E5A003CD311B61E00902778AF2A0148B603@server1.skystream.com>
-Date: Fri, 08 Dec 2000 09:07:22 +0100
+Subject: Re: Psos bootrom booting Linux-ppc is that possible, done?
+Date: Fri, 8 Dec 2000 10:42:25 -0200
+Content-Type: text/plain
+References: <B25E2E5A003CD311B61E00902778AF2A0148B603@server1.skystream.com>
+In-Reply-To: <B25E2E5A003CD311B61E00902778AF2A0148B603@server1.skystream.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Message-Id: <00120810463700.00696@proteus>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <B25E2E5A003CD311B61E00902778AF2A0148B603@server1.skystream.com>
-Subodh Nijsure wrote:
+Hi Subodh,
+
+I have same problm (FADS & MPC860) and PPCBOOT works fine.. but I'm can not,
+yet, make LINUX work on it.
+
+Maybe we can change some informations..
+
+Bests regards
+
+Leonardo
+
+On Thu, 07 Dec 2000, Subodh Nijsure wrote:
+> Hello,
 >
 > I got a MPC860 FADS board for which I just now got a PSOS based
 > bootrom.
 >
 > Has anybody been successful in booting Linux from a pSOS bootrom?
-
-Never tried, never will.
-
-The FADS860 is one of the boards wich are supported  by  PPCBoot.  If
-you're  looking for a powerful and convenient way to run Linux on you
-board you should give it a try.
-
-The PPCBoot project page is at http://ppcboot.sourceforge.net/  where
-you  can  also find the CVS server with the latest source versions, a
-user's mailing list is at <ppcboot-users@lists.sourceforge.net> , and
-if you're looking for tarballs you can find them in
-ftp://ftp.denx.de/pub/ppcboot/
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Am I your nanny? The kernel is there to support  user  programs,  but
-it's a _resource_ handler, not a baby feeder.     - Linus Torvalds in
-      <Pine.LNX.3.91.960425074845.22041C-100000@linux.cs.Helsinki.FI>
+>
+> Any pointers will be much appriciated
+> [ I have done the usual web searches to see if there is already something
+> about
+> this on the web..]
+>
+> Thanks!
+>
+> /Subodh
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
