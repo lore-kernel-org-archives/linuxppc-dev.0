@@ -1,56 +1,64 @@
-Message-ID: <394DE11A.6196C0BC@student.ethz.ch>
-Date: Mon, 19 Jun 2000 11:00:10 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+Message-ID: <394DE1CA.509F24DC@amulet.co.jp>
+Date: Mon, 19 Jun 2000 18:03:06 +0900
+From: Hollis Blanchard <hollis@amulet.co.jp>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 3D accel on PPC
-References: <394DD484.6036B7DA@student.ethz.ch> <19040101091231.12085@mailhost.mipsys.com>
-Content-Type: text/plain; charset=iso-8859-1
+To: Michel Ddnzer <daenzerm@student.ethz.ch>
+CC: arcane@verinet.com, yellowdog-general@lists.yellowdoglinux.com,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Need for Cross Platform Updates Distribution
+References: <Pine.LNX.4.10.10006190106010.30352-100000@bamboo.verinet.com> <394DD78F.AD49931@amulet.co.jp> <394DDB66.62A97110@student.ethz.ch>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
->
-> On Mon, Jun 19, 2000, Michel Dänzer <daenzerm@student.ethz.ch> wrote:
->
+Michel D wrote
+> Hollis Blanchard wrote:
 > >
-> >XF 4.0.1 will include DRI support for Rage128. However, it needs agpgart to
-> >work, so no luck on PPC yet :(
+> > I look at that as trying to install an OS/2 binary onto a Windows box
+> > (and then complaining that it doesn't work).
 >
-> Their implementation is not able to work at all without an AGP GART ?
-> That's brain-dead !
+> Huh??? We are speaking about the same binaries for the same OS, but packaged
+> in an incompatible manner.
 
-Hmm... looking at recent changes in the DRI ati-4-0-1 branch, I spotted the
-following:
+Yes, and from two completely different companies.
 
-- Added minimal PCI support (PIO only with no VBs)
-  - Autodetect PCI cards -- selets CCE PIO mode and disables VBs
-  - Kernel module will now build without AGP support (for PCI cards only)
+Of course you usually *can* get a foreign rpm to install, it's just that
+it's not unusual for it not to work with your system (or may break other
+things in your system). Since neither company is testing their software
+packages for compatibility with the other, this is not unexpected.
 
-Is this good news? If yes, let's hope it'll be in 4.0.1 ...
+> > > Also, what's this about suse using /opt for kde and gnome? sn't
+> > > /opt in the filesystem standard for commercial software only?
+> >
+> > It all depends on what "standard" you're using.
+>
+> Check out FHS (http://www.pathname.com/fhs/), which is an affiliated project
+> of The Free Standards Group.
 
+Ah, there it is. linuxbase.org needs to be a little better about
+organizing their website it seems...
 
-> what about all the 3D PCI cards out there ? And all the machines that simply
-> don't have a working AGP ? AGP should be an optimisation, not a requirement!
+Getting back to /opt, it seems "The use of /opt for add-on software is a
+well-established practice in the UNIX community." "Distributions may
+install software in /opt, ..." blah blah blah.
 
-Of course, but we are living in an x86 centric world *sigh*
+It should be noted that this is just one standard, and on top of that a
+standard only has strength if enough folks adhere to it. (Of course I
+don't know of any others for Linux, and I think most distributions have
+said they "will" adhere to it, whatever that means...)
 
+> > I should also note that Debian packages also don't work well with other
+> > distributions.
+>
+> But at least there aren't incompatible flavours of debs - you find a deb
+> somewhere, you install it, it works.
 
-> I have all the details (I think) to implement support for the Uni-N GART
-> in the new Core99 macs, I'll give this a try one of these days.
+Debian is of course a single organization (and honestly I don't know
+anything about Corel or Storm or any compatibility issues there - isn't
+Corel using an old glibc?). If only RedHat used RPM, you can bet any rpm
+you could find would work.
 
-Cool! What about the DRM module, any idea if it works?
-
-
-Michel
-
-
---
-Pauli's exclusive, Heisenberg's uncertain, and Schroedinger just waves.
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
