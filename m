@@ -1,49 +1,33 @@
-Date: Thu, 18 Jan 2001 23:21:32 -0600
-Subject: Re: [PATCH] 2.4.1p4 : dmasound ed21- Pismo byte-swap
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Iain Sandoe <iain@sandoe.co.uk>, <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <B68D269A.586E%toe@unlserve.unl.edu>
-In-Reply-To: <20010119040949.10F902F045@apollo.valhalla.net>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Fri, 19 Jan 2001 00:03:10 -0600
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Alois Fertl <alois_fertl@talknet.de>
+Cc: LinuxppcDev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: ncr810 problem on powerstack
+Message-ID: <20010119000309.A17347@altus.drgw.net>
+References: <3A64B297.8B23FDC0@talknet.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3A64B297.8B23FDC0@talknet.de>; from alois_fertl@talknet.de on Tue, Jan 16, 2001 at 09:44:07PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 1/18/01 10:11 PM, Iain Sandoe wrote:
-
-> - but if you do a quick check back over this list you will find that quite a
-> few 'popular' (including major ones like xmms + its plug-ins, arts, ecasound
-> etc.) one have  been mentioned. (even sox produces LE raw output by default
-> - yuck!).
-
-Hmm, odd.  I've used all mentioned here except "arts" which I have never
-used on a nubus mac here.  The nubus version of awacs doesn't have h/w byte
-swapping.  So, I believe those apps worked at one point or fixes exist
-already.
-
+On Tue, Jan 16, 2001 at 09:44:07PM +0100, Alois Fertl wrote:
+> I tried the recent 2.4.1-pre1 kernel on a powerstack but the ncr810 based
+> SCSI code does not work. The driver complains about CACHE INCORRECTLY CONFIGURED.
 >
-> Yes, the broken ones could/should all be fixed* (some have BTW) - any
-> volunteers?   (I could *very* easily make the driver support hardware-only
-> formats).
->
->> I don't there are so many linux audio apps to begin with.
->
-> sadly, true - but there are more apps that _use_ audio - like kde - which
-> _is_ (I am told) broken for pismo (I don't have one) without LE data support
-> and, of course, games.
+> Anybody knows what this comes from. Attached if the full boot log of the system.
 
-You know, some apps are so broken that they do the byte swapping themselves
-so as to feed LE data, in which case the CPU will be doing double byte
-swapping on PISMO and possibly others.  No thanks.
+Arrrgh, the same thing happens on my powerstack.
+I'd track this down, but
 
-> I guess sometimes it's nice to "keep end users happy" tho' :-)
-
-True, but we had no audio app working (without a patch or two) some years
-ago, and I believe we are making progress.
+a) I don't have time
+b) the machine is my mail server and runs the linuxppc_2_2 tree happily.
 
 
-Takashi Oe
+--
+--------------------------------------------------------------------------
+Troy Benjegerdes                'da hozer'                hozer@drgw.net
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
