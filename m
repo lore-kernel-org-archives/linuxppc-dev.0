@@ -1,8 +1,8 @@
-From: "Ron Bianco" <ronb@junction.net>
-To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Using SCSI driver sym53c8xx.c - no nvram - no symbios BIOS
-Date: Tue, 1 Aug 2000 11:48:42 -0700
-Message-ID: <000301bffbe9$1d708b90$4d012ac7@warp-speed>
+From: "Navin Boppuri" <nboppuri@myiagent.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: zImage.initrd problems
+Date: Tue, 1 Aug 2000 21:22:12 -0500
+Message-ID: <NEBBLLEGJMLHPJEFEOKPEEILCAAA.nboppuri@myiagent.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -10,22 +10,23 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Referring to my previous email:
+Hello everyone,
 
-Oops, I found the #define options in:  sym53c8xx_defs.h !
-I also found a few config pins that were not set properly and probably explain the
-problems I was having.
+I am running a FADS board with an 823 processor. I have been successful in
+booting the kernel and mounting an NFS file system. I have also been
+successful in burning the kernel into the flash and boot. I am now trying to
+burn the zImage.initrd (kernel and file system) into the flash and make it
+work. I am able to burn the flash with the zImage.initrd but when I try
+copying the same into ram, it breaks after loading 510000 something bytes.
+This happens even after changing the ram start location from 0x200000 to
+0x100000. I just want to be able to copy the whole image into ram and jump
+start to the start. It works fine only for the kernel but fails with a file
+system.
 
-Still would like to know if anyone else is using the driver tho'.
+Any suggestions?
 
-Also, should I set the 53c895 to little endian mode?  It is set this way at the moment and
-the chip is detected and config data read OK.
-
-So, with the PPC in big endian and the SCSI chip in little endian, and the kernel compiled
-accordingly, I should be able to access files on a disk that were written by an intel box,
-properly, right?
-
-Ron
+Thank you,
+Navin
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
