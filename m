@@ -1,35 +1,39 @@
-Date: Tue, 2 Jul 2002 16:54:51 -0400
+Date: Wed, 3 Jul 2002 11:31:08 -0400
 From: Noah Meyerhans <noahm@debian.org>
-To: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org,
-	md@linux.it
+To: md@linux.it, linuxppc-dev@lists.linuxppc.org,
+	debian-powerpc@lists.debian.org
+Cc: Noah Meyerhans <noahm@debian.org>
 Subject: Re: IPv6 ND on PPC hardware
-Message-ID: <20020702165451.F7563@morgul.net>
-References: <20020702113642.GA2654@wonderland.linux.it>
+Message-ID: <20020703113108.H7563@morgul.net>
+References: <20020702113642.GA2654@wonderland.linux.it> <20020702165451.F7563@morgul.net> <20020703003931.GC7981@wonderland.linux.it>
 Mime-Version: 1.0
-In-Reply-To: <20020702113642.GA2654@wonderland.linux.it>; from md@Linux.IT on Tue, Jul 02, 2002 at 01:36:42PM +0200
+In-Reply-To: <20020703003931.GC7981@wonderland.linux.it>; from md@Linux.IT on Wed, Jul 03, 2002 at 02:39:31AM +0200
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jul 02, 2002 at 01:36:42PM +0200, Marco d'Itri wrote:
-> I do not understand why ND is not working. Is my configuration wrong or
-> I have exposed a kernel bug?
+On Wed, Jul 03, 2002 at 02:39:31AM +0200, Marco d'Itri wrote:
+> Yes, allmulti fixes it. Where else should I look?
 
-It is likely a problem with broken multicast support.
+Well, I definitely think you've found a card with broken multicast
+support.
 
-> When I try to ping another host on the LAN it usually works the first
-> time, and then stops working because the other host does not reply to
-> ND requests. Everything works again if I switch the remote interface
-> in promiscuous mode.
+> 00:0c.0 Ethernet controller: Advanced Micro Devices [AMD] 79c970 [PCnet LANCE] (rev 26)
 
-This sounds even more likely to be broken multicast support.  Do you see
-the proper behavior if you enable allmulti on your interface, rather
-than promiscuous mode?
+You should probably contact the author of the driver and see if they
+have anything to say about it.  Many drivers don't implement multicast
+correctly because the author doesn't use it and therefore can't test it.
 
-A driver bug could be what's causing multicast not to work.  That's
-probably most likely, though there also could be a problem with
-hardware.
+> I do not think this is a hardware problem because the same thing happens
+> on two twin machines (a couple of IBM B50).
+
+What I meant by "hardware problem" is not a problem with your specific
+card, but a problem with the chipset itself not doing the right thing.
+Multicast support must be present and working in the hardware in order
+for it to work in software.  I don't know how common this type of
+problem is, and I don't know if there's a way to get around it in
+software.
 
 noah
 
