@@ -1,53 +1,46 @@
-Message-ID: <39906957.804A06FD@embeddededge.com>
-Date: Tue, 08 Aug 2000 16:11:03 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <BE1C564723B3D21191FD0000F840E39801D815F8@rfcmx2.rfc.comm.harris.com>
+From: "Brown, David (dbrown03)" <DBrown03@harris.com>
+To: "'Dan Malek'" <dan@netx4.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Serial Port Baud Rate
+Date: Tue, 8 Aug 2000 17:37:08 -0400 
 MIME-Version: 1.0
-To: Graham Stoney <greyham@research.canon.com.au>
-CC: LinuxPPC Embedded Mailing List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: FEC question about setting SIEL register
-References: <20000808055121.7716D220@elph.research.canon.com.au>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Graham Stoney wrote:
+Baud rates 300, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200 worked
+for me, with simple tests.  I have used 9600, 57600, and 115200 far more
+than the others.  I did not test any other rates.
 
+The lower Baud rates lose characters when the device is closed before it has
+been emptied, but that's a known condition which is usually not a problem
+for embedded work.
+-- Dave Brown
 
-> ....  The culprit was that I hadn't
-> configured the PHY MII link interrupt (which is on external IRQ5 on our board)
-> as edge triggerred in the SIU Interrupt Edge/Level (SIEL) register.
-
-Yeah....There are about a bazillion different pin multiplexing
-combinations on these parts.  You really should have a very methodical
-procedure to verify all of them, usually as part of the design process
-before hardware CAD.
-
-
-> Setting the SIEL is trivial enough, but where abouts is the right place to
-> do it: in the fec.c driver, or in the 8xxrom/boot loader?
-
-Normally I do all of this in a boot rom.  The I/O pin configuration
-necessary to make even minimal forward progress must be done very early,
-so I just do all of it there in one place.
-
-> ......  The FADS code in
-> fec.c doesn't set the SIEL,
-
-Nope.  It never did.
-
-> .... and it doesn't seem to be set in the FADS code in
-> 8xxrom/fadsrom either, so I would conclude that it probably suffers the same
-> problem.
-
-It should be, but I screwed that up the first time.  The next logical
-place (and where it used to exist), was in m8xx_setup.c in the
-function m8xx_init_IRQ().  Since I don't have a FADS board any longer
-for testing, and everyone else was connecting this interrupt to a
-port C pin, the code just disappeared as part of the new interrupt
-management.
-
-
-	-- Dan
+> -----Original Message-----
+> From: Dan Malek [mailto:dan@netx4.com]
+>
+> "Brown, David (dbrown03)" wrote:
+>
+> > ....  The modified version runs very well at 115200 Baud,
+> > with no framing errors.
+>
+> Thanks.  What about other baud rates?
+>
+> > .....  I also included a few lines which should in theory
+> > allow very low baud rates, although I have had no reason to
+> test this.
+>
+> But.....I thought you provided this to me before :-)?  I already added
+> that to source updates.
+>
+>
+>
+> 	-- Dan
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
