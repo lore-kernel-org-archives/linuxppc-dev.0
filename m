@@ -1,11 +1,11 @@
-Return-Path: <jaka@activetools.si>
-From: Jaka =?iso-8859-2?Q?Mo=E8nik?= <jaka@activetools.si>
-To: Embedded PPC Linux Mailing List <Linuxppc-embedded@ozlabs.org>
-Content-Type: text/plain
-Date: Thu, 03 Mar 2005 10:31:22 +0100
-Message-Id: <1109842283.29455.9.camel@x.at.lan>
-Mime-Version: 1.0
-Subject: BCM5421 PHY on TSEC on MPC8560
+Return-Path: <tath76@yahoo.com>
+Message-ID: <20050303101910.74163.qmail@web51406.mail.yahoo.com>
+Date: Thu, 3 Mar 2005 02:19:10 -0800 (PST)
+From: T T <tath76@yahoo.com>
+To: Linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-2015323129-1109845150=:73576"
+Subject: port linux to xc2vp4
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -16,37 +16,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hello!
+--0-2015323129-1109845150=:73576
+Content-Type: text/plain; charset=us-ascii
 
-I am currently attempting to boot linux (kernel 2.6.11) on an
-MPC8560-based board: I have successfully fixed U-Boot to work and am now
-attempting to get the kernel up - I have managed to get as far as I can
-without mounting the root fs, adding a few fixes on the way. I attempt
-to mount root fs via NFS and this is where I've been stuck for a few
-days (I used 2.6.10 before, I just ported my board-specific changes over
-to 2.6.11, hence the "few days").
+Hi all,
+ 
+Can any show me step by step to port linux kernel to the custom board.  this board has xc2vp4 (xilinx fpga) that contains a powerpc 405, and I have used EDK software from Xilinx to add spi controller, uartlite, and sdram controller, no ethernet on this board.  Do I need to build the toolchain for powerpc; if it need the toolchains, then where to get it.  Beside I don't know how to configure the linux kernel (for example I download linux-2.4.18.tar.gz) then do "make menuconfigure" some of selection like "MTD" I don't know if I need to select it as a yet or not because on my custom board I have serial flash from ST M32P80.
 
-I have a BroadCom BCM5421 PHY attached to MPC8560 TSEC. I have added
-support for its aux status register and its initialization (via another
-phy_info entry) to gianfar_phy.c and configured the kernel with Gianfar
-driver without NAPI support. It seems that the link is established OK
-(at least the switch that the board is connected to suggests so) and the
-gfar_transmit() gets called, signalling that the buffers are being sent.
-however, no packets seem to be thrown on the wire (nothing ever gets to
-the other side).
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
+--0-2015323129-1109845150=:73576
+Content-Type: text/html; charset=us-ascii
 
-Ethernet works perfectly in U-Boot. I have also compared the code and it
-seems - apart from the architectural differences between U-Boot and
-Linux kernel - that U-Boot does roughly the same thing as the kernel
-does.
-
-If anyone has any idea or hint whatsoever about what I could look into,
-I'd appreciate it very much. Thanks!
-
-regards,
-        jaKa
-
--- 
-
-w3: http://fish.homeunix.org/people/jaka
-email: jaka@activetools.si
+<DIV>Hi all,</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>Can any show me step by step to port linux kernel to the custom board.&nbsp; this board has xc2vp4 (xilinx fpga) that contains a powerpc 405, and I have used EDK software from Xilinx to add spi controller, uartlite, and sdram controller, no ethernet on this board.&nbsp; Do I need to build the toolchain for powerpc; if it need the toolchains, then where to get it.&nbsp; Beside I don't know how to configure the linux kernel (for example I download linux-2.4.18.tar.gz) then do "make menuconfigure"&nbsp;some of selection like "MTD" I don't know if I need to select it as a yet or not because on my custom board I have serial flash from ST M32P80.</DIV><p>__________________________________________________<br>Do You Yahoo!?<br>Tired of spam?  Yahoo! Mail has the best spam protection around <br>http://mail.yahoo.com 
+--0-2015323129-1109845150=:73576--
