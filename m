@@ -1,36 +1,38 @@
-To: Dan Malek <dan@embeddededge.com>
-Cc: paulus@samba.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: include/asm-ppc/platforms/ 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 27 Dec 2001 09:59:59 EST."
-             <3C2B376F.9070508@embeddededge.com>
-Date: Wed, 28 Nov 2001 00:44:41 +0100
-Message-Id: <20011127234446.79B93F9BA@denx.denx.de>
+To: "linuxppc" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: libXrender bug crashes OpenOffice
+References: <87u1vfkfgt.fsf_-_@openinformatics.com>
+	<1006902937.5468.25.camel@pismo>
+From: jason@openinformatics.com (Jason E. Stewart)
+Date: 27 Nov 2001 16:47:09 -0700
+In-Reply-To: <1006902937.5468.25.camel@pismo>
+Message-ID: <87g06zkc8y.fsf@openinformatics.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <3C2B376F.9070508@embeddededge.com> you wrote:
+"Michel Dänzer" <michdaen@iiic.ethz.ch> writes:
+
+> On Tue, 2001-11-27 at 23:37, Jason E. Stewart wrote:
 >
-> That's a pretty good idea, and I have another one.  Name the
-> directory include/asm-ppc/ppc-platforms or something, then
-> have a symbolic link
-> 	include/asm/platform -> include/asm-ppc/ppc-platforms/<board-file>
+> > While running Kevin Hendrix's build of OpenOffice I kept getting
+> > Abort's for no reason. We've finally limited down to the Xrender
+> > lib. When it's not on my system, OpenOffice runs fine, with it I get
+> > crashes.
+> >
+> > Kevin found a bug in the library and fixed it and OpenOffice runs fine
+> > on his system with libXrender installed. I downloaded the latest xlibs
+> > source from sid and checked, but his patch hasn't yet been
+> > included.
+> >
+> > Will it be included soon?
+>
+> Err... and what does that have to do with Linux/PPC development? ;)
 
-Isn't that redundand?
+Perhaps I was mistaken, but I thought that the bug only existed on
+PPC. Is this too X-specific and should be posted elsewhere?
 
-IMHO "include/asm/platform -> include/asm-ppc/platforms/<board-file>"
-would do just fine - I don't expect anyone to create a
-include/asm-ppc/i386-platforms/ directory?
-
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-People with narrow minds usually have broad tongues.
+jas.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
