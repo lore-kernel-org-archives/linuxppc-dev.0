@@ -1,37 +1,31 @@
-Date: Wed, 27 Jun 2001 10:17:13 -0400 (EDT)
-From: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
-To: Ralph Blach <rcblach@raleigh.ibm.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Proper way to flush caches
-In-Reply-To: <3B3A2B1E.AACC170D@raleigh.ibm.com>
-Message-ID: <Pine.LNX.3.95.1010627101605.13379B-100000@november.bhjjh.erols.com>
+Message-ID: <3B3A0E58.7E41C368@mvista.com>
+Date: Wed, 27 Jun 2001 09:48:24 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Neil Wilson <NWILSON@Airspan.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Sandpoint 3 + MPC7450 + HHL2
+References: <E69FF45ADA3BD511A25900047623CC4F12AA74@JUPITER>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-It's for a 603e.
+Neil Wilson wrote:
 
-Thanks,
---Gus
+> Hi,
+>
+> I managed to get the JourneyMan 2 82XX booting up on my Sandpoint3 MPC7450 -
+> after adding a enable for the TimeBase - however when a ramdisk is mounted
+> up I get very slow serial response, like several seconds to print a string,
+> does anyone have some ideas of what I could look at to resolve this, I have
+> an Abatron bdi etc but a lot of this is new to me so any help would be very
+> welcome. Thanks.
 
-On Wed, 27 Jun 2001, Ralph Blach wrote:
+I'll virtually guarantee you that its an interrupt-related problem.  Either the
+routing is wrong or the IRQ isn't enabled or...
 
-> Justin,
->
-> For what processor are asking this for?
->
-> Thanks
->
-> Chip
->
-> "Justin (Gus) Hurwitz" wrote:
-> >
-> > Sorry for the doltish question, but what's the proper way to flush the
-> > entire data cache? (preferably a c call)
-> >
-> > Also, is there a way to allocate a block of non-cacheable memory?
+Mark
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
