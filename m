@@ -1,52 +1,32 @@
-To: David Updegraff <dave@cray.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: mem= flag behaviour 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 11 Jun 2002 11:15:46 CDT."
-             <3D062232.3010003@cray.com>
-Date: Tue, 11 Jun 2002 18:34:52 +0200
-Message-Id: <20020611163457.DD91C102F8@denx.denx.de>
+Content-Type: text/plain;
+  charset="us-ascii"
+From: Shie Erlich <shie_e@elbit.co.il>
+Reply-To: shie_e@elbit.co.il
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: no virtual terminals problem
+Date: Tue, 11 Jun 2002 17:35:21 +0000
+MIME-Version: 1.0
+Message-Id: <200206111735.21959.shie_e@elbit.co.il>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear David,
+hi people,
+we're using hardhat with kernel 2.4.2. our system has a serial
+port, through which we're using the serial console.
+also, we have a PMC adapter on board, and we're trying to
+use it with a VGA card. we took a PCI VGA card (ATI RAGEpro),
+and attached it to the board, through a PCI2PMC adapter.
+/proc/pci identifies the card, and also the framebuffer device
+seems to recognize it, but all we get on screen is some green trash.
 
-in message <3D062232.3010003@cray.com> you wrote:
->
-> I'm trying to keep a small trace buffer over re-boots
-> of linux from ppcboot, so give a mem=31M flag to linux
-> kernel.  Yet by the time linux is up, it has overwritten
-> that memory anyway..   PPCBOOT is properly leaving it
-> be (with PRAM feature) and correct arg. goes to kernel..
+Also we don't have any tty - only /dev/tty exists and /dev/vc/0 (using devfs).
 
-Let me guess... you boot with a ramdisk image?
+what do we need to do in order to get the missing ttys or vc/*, so we'll
+be able to start XFree ?
 
-> After 'reboot' from linux, the memory contents of
-> the last meg are still valid (in ppcboot) but by the time linux
-> is back up, the region has been trashed.  Why?
 
-If you use a ramdisk image, you should read the documentation for the
-"initrd_high" environment variable in
-http://www.denx.de/doc/TQM8xxL/ppcboot.html#PPCBOOT-VARIABLES
-(or in the PPCBoot README).
+Shie Erlich
 
-> Help, please.  How to prevent linux from talking to
-> that memory region during bootup?
-
-Linux does not use the memory beyond what you tell it with "mem=".
-
-Hope this helps...
-
-[BTW: your CD is in the mail.]
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Machines take me by surprise with great frequency.      - Alan Turing
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
