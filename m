@@ -1,39 +1,29 @@
-To: Gerhard Jaeger <g.jaeger@sysgo.com>
-Cc: =?iso-8859-1?q?I=F1igo=20Lopez=20Barranco?= <ilopez@albatros-sl.es>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Lite5200 PCI not working 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 21 Jun 2004 12:26:24 +0200."
-             <200406211226.24580.g.jaeger@sysgo.com>
-Date: Mon, 21 Jun 2004 12:53:01 +0200
-Message-Id: <20040621105306.6DBC2C13D3@atlas.denx.de>
+Message-ID: <20040621110015.65109.qmail@web13606.mail.yahoo.com>
+Date: Mon, 21 Jun 2004 04:00:15 -0700 (PDT)
+From: m madhuker <mythri_madhuker@yahoo.com>
+Subject: All about  Denx
+To: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200406211226.24580.g.jaeger@sysgo.com> you wrote:
->
-> And of course it should be inserted correctly - sorry if this is too
-> obvious!
+Hello all,
+        Iam working on MPC8245.and iam new to it.
+now iam using timesys GPL-Linux for the board.
+and for this there is no support. and timesys RTlinux
+has support but its not free..
 
-This is not too obvious, as the card will easily fit in the  opposite
-orientation, too (poor design of the board, IMHO).
+I listened that Denx is free RTOS and good...
+So i want use Denx RTOS for my board.
 
-> One card, that is known to work in this slot is the Intel eepro100 NIC.
+i want suggetion from u people that how is it???
+whether it is providing BSP's and good support???
 
-Or the Coral-P graphics card :-)
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Proboscis: The rudimentary organ of an elephant which serves  him  in
-place of the knife-and-fork that Evolution has as yet denied him. For
-purposes of humor it is popularly called a trunk.    - Ambrose Bierce
+So if anybody worked on Denx please give suggestion
+...
+                                         Regards
+                                         Madhukar
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
