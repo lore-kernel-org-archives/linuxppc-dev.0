@@ -1,38 +1,23 @@
-From: SWStraus@aol.com
-Message-ID: <3d996143.24d3d79c@aol.com>
-Date: Sat, 31 Jul 1999 00:37:48 EDT
-Subject: Re: solution for the Macally two button mouse
-To: linuxppc@home.com
-CC: linuxppc-dev@lists.linuxppc.org, p.a.padilla@larc.nasa.gov
+Message-ID: <37A28F69.94F9A7D0@generation.net>
+Date: Sat, 31 Jul 1999 01:53:45 -0400
+From: Simon Piette <spiette@generation.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: CD-ROM players keeps an empty CD drive busy.
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Try adding: 
+Did anybody notice that with most cdplayers (kscd, gtcd, wmcdplay, etc),
+an empty CD drive generate a lot of kernel messages in syslog and dmesg?
+In fact, after a few minutes, forget about fetching info with dmesg:
+it's full of "sr0: CDROM not ready.  Make sure there is a disc in the
+drive." It generate those messages about 5/10 times a second!! xplaycd
+doesn't do that. Is the problem coming from each apps, or from the
+kernel?
 
-xmodmap -e "pointer = 1 3 2" 
-
-into your rc.local right under the mousemode statement.  It worked for me :o)
---
-Steve
-
-
-You Wrote:
-> 
-> Just discovered the handler for the Macally two button mouse. It is 66.
->
-> In my rc.local I put "mousemode 3 66" command and now I can get the right
-> button to respond.
-
-
-Is there any away to make the second mouse button act as the other mouse
-button (right now, it's the 'paste' button).
-
-I've tried setting it up in WindowMaker WMPrefs.app, but it only seems to
-take affect to the WM desktop, and NONE of the apps/icons.
-
+Simon
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
