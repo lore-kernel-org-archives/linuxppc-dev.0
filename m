@@ -1,50 +1,23 @@
-Date: Tue, 1 Jan 2002 23:31:19 -0500 (EST)
-From: Christopher Murtagh <christopher.murtagh@mcgill.ca>
-To: <yellowdog-general@lists.yellowdoglinux.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: NFS not working...
-In-Reply-To: <B85753E4.FE81%wizards@wizdev.net>
-Message-ID: <Pine.LNX.4.33.0201012328350.755-100000@blues.wcg.mcgill.ca>
+Date: Tue, 1 Jan 2002 21:50:13 -0700 (MST)
+From: Derrik Pates <dpates@dsdk12.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: GMAC vs. SunGEM driver with 2.4.17?
+Message-ID: <Pine.LNX.4.40.0201012147150.6346-100000@andromeda.dsdk12.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 1 Jan 2002, Mark Jaffe wrote:
->now NFS does not work. I can mount the new machine from the old, but it
->complains the file system is read-only (even though the /etc/exports
->file contains the single line: /oldsys wizdev.net (rw,no_root_squash)
+Ben? Anyone? I know the GMAC driver is supposed to eventually be phased
+out in favor of the SunGEM driver for iBooks and G4s with the GMAC
+ethernet controller, but for the time being, which is the better choice?
+For the system I'm using (a FireWire iBook), super-high performance isn't
+an issue really - since the PHY is only capable of 100Mbps anyway - but I
+figured I'd better find out.
 
- 1st thing to try: take the space out between wizdev.net and (rw, so that
-your first line should read:
-
-/oldsys wizdev.net(rw,no_root_squash)
-
- I read on linuxdoc that nfs is really picky about that.
-
- 2nd thing, make sure that when you compiled your kernel, you compiled
-with v3 server and client support. v3 is supposed to be much more
-efficient.
-
- FWIW, I have a dual800 running 2.4.18pre1 serving NFS to a dual 450
-running 2.4.17pre2 without any problems.
-
-Cheers,
-
-Chris
-
---
-
-Christopher Murtagh
-Webmaster / Sysadmin
-Web Communications Group
-McGill University
-Montreal, Quebec
-Canada
-
-Tel.: (514) 398-3122
-Fax:  (514) 398-2017
+Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
+dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
