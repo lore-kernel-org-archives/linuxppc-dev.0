@@ -1,59 +1,53 @@
-Date: Mon, 12 Jul 1999 16:24:36 -0400 (EDT)
-From: Peter Handel <phandel@cise.ufl.edu>
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: HELP - I'm going mad: mp3,audio/adb conflict
-Message-ID: <Pine.GSO.4.05.9907121622120.1273-100000@eclipse.cise.ufl.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <378AD5F3.7B2CC246@duettech.com>
+Date: Tue, 13 Jul 1999 11:30:19 +0530
+From: Rajendra Prasad <prasadr@duettech.com>
+Mime-Version: 1.0
+To: linux-ppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: 860T - Fast Ethernet
+Content-Type: multipart/mixed;
+ boundary="------------AE1B361B785E9151C7A59CE6"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Does anyone have an idea where I could start hunting for a fix for
-this?  I've never really fiddled with the kernel before; too bad I
-can't sick gdb on it :)  What's driving me nuts is that precompiled
-kernels work perfectly [read problem description below].
+This is a multi-part message in MIME format.
+--------------AE1B361B785E9151C7A59CE6
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
+Hi,
 
-Thanks,
-Peter
+Does someone work on FADS860T running linux on it?
 
-On Sun, Jun 27, 1999 at 11:46:49PM -0400, Tom Rini wrote:
+What is the network throughput performance you have 
+got on Fast Ethernet at raw and TCP/Ip stack level.
 
-> > 1) Say I'm playing an mp3 with either xmms or mpg123.  If I move a
-> > window around w/the mouse, the music will stop completely!  I have to
-> > quit xmms/mpg123 and restart it for it to work again.  This only
-> > happens with kernels I compile myself.  I have even tried compiling
-> > 2.2.10 and 2.3.6 with all default values, but still the same problem.
-> > (Had same problem under r4!)  The only constant here is egcs 2.91.66,
-> > which I built under r4 and which came prebuilt in r5.  This has been
-> > extremely frustrating, as I'd like to start playing with the kernel
-> > code myself.
+regards
+Rajendra
+--------------AE1B361B785E9151C7A59CE6
+Content-Type: text/x-vcard; charset=us-ascii;
+ name="prasadr.vcf"
+Content-Description: Card for Rajendra Prasad
+Content-Disposition: attachment;
+ filename="prasadr.vcf"
+Content-Transfer-Encoding: 7bit
 
-> This sounds very wierd.  And you're doing nothing different other then
-> using a different kernel for sound to work/not work properly?
+begin:vcard 
+n:Prasad;Rajendra
+tel;home:91-118-535666
+tel;work:91-118-567001
+x-mozilla-html:FALSE
+url:www.duettech.com
+org:Duet Technologies Ltd.;Telecom
+adr:;;#B1,  SDF, NEPZ;NOIDA;U.P.;201305;INDIA
+version:2.1
+email;internet:prasadr@duettech.com
+title:Project Leader
+x-mozilla-cpt:;-14352
+fn:Rajendra Prasad
+end:vcard
 
-This has been a long-standing problem for me with all kernels starting at
-2.1.12x and continuing to present. It was *never* a problem with 2.1.24,
-but there were apparently some changes in the sound driver post-2.1.24
-(e.g., you used AFMT_S16_BE in 2.1.24, and little-endian or "NE" in
-later kernels). Incidentally, I made the 2.1.24->2.1.121 jump, so I
-don't know at what version it may have been a problem. It appears with
-all apps that use the sound device that I have tried -- amp, mpg123,
-timidity and xaudio.  The load average on the machine doesn't seem to
-matter -- it seems to be solely related to mouse movements, and appears
-with both XF68_FBDev and Xpmac.
-
-It is not related to the compiler version, as I have had the problem
-with various versions of egcs.
-
--- 
-Check out the comp.sys.mac.advocacy FAQ
-http://www.pobox.com/~ericb/csmafaq/ 
-
-muahahahahahahaha!!!snap!snap!!snap!!photoshop!!
-  -- Ho You Kong
-
+--------------AE1B361B785E9151C7A59CE6--
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
