@@ -1,42 +1,34 @@
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Tue, 4 Mar 2003 16:35:15 -0700
-To: Dan Malek <dan@embeddededge.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Patch boot/common/relocate.S to start kernel at 0x000c
-Message-ID: <20030304233515.GC4683@rover.farnsworth.org>
-References: <20030304191644.GA4524@rover.farnsworth.org> <3E64FD53.3030107@embeddededge.com> <20030304201302.GA4683@rover.farnsworth.org> <3E650AAF.7060804@embeddededge.com> <20030304230849.GB4683@rover.farnsworth.org> <3E6534FA.9070503@embeddededge.com>
+Date: Tue, 4 Mar 2003 16:35:58 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Daniel Jacobowitz <drow@false.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Improved copy_page() function, about 30% speed up for mpc860!
+Message-ID: <20030304233558.GA17093@ip68-0-152-218.tc.ph.cox.net>
+References: <3E64DB91.4050508@embeddededge.com> <IGEFJKJNHJDCBKALBJLLEEMPFKAA.joakim.tjernlund@lumentis.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3E6534FA.9070503@embeddededge.com>
+In-Reply-To: <IGEFJKJNHJDCBKALBJLLEEMPFKAA.joakim.tjernlund@lumentis.se>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Mar 04, 2003 at 11:21:30PM +0000, Dan Malek wrote:
-> Dale Farnsworth wrote:
+On Tue, Mar 04, 2003 at 11:01:59PM +0100, Joakim Tjernlund wrote:
+
+> Maybe user space also can be fixed with instruction decoding
+> as Daniel said even if it's ugly. Then you would not have to worry about
+> apps/libs using dcbz, at least it would work but perhaps the performance sucks
 >
-> >-	nop	/* used by __secondary_hold on prep (mtx) and chrp smp */
-> >-	nop	/* used by __secondary_hold on prep (mtx) and chrp smp */
-> >+	/*
-> >+	 * The first two words are used by __secondary_hold on SMP systems.
-> >+	 * The second word may be overwritten before the first cpu runs
-> >+	 * here, so we branch around it.
-> >+	 */
-> >+	b	__start
-> >+	nop
-> > 	nop
->
-> I thought of this, but the comment on the first nop bothered me.
-> Was it just a cut/paste without updating the comment, or could the nop
-> and location zero be used by MP systems just like the one at location 0x04?
+> Tom, can you shed some light on this? The BK log lists you as the one
+> who committed this change.
 
-In __secondary_hold, location 0x4 is written by secondary cpus, and
-location 0x0 is read, so I guess the comment is accurate, that both
-locations are "used".  Cpu 0 writes location 0 to tell the secondary
-cpus they can continue.
+Which change in particular are you talking about?  But I think as Dan
+has said, it's best to just accept this and move along. :)  It's known
+to be horribly broken in some cases, but not admited to by Motorola, and
+distinguishing between 8xx's at runtime is not trivial.
 
-I know the above code works for my dual-7455 system.
-
-Thanks,
--Dale
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
