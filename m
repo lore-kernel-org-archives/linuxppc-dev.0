@@ -1,29 +1,39 @@
-Message-ID: <0F48024310E5D6118D200002B3A440DB08B079E4@zil01exm08.mcil.comm.mot.com>
-From: Meriin Michael-BMM063 <BMM063@motorola.com>
-To: "Linuxppc-Dev (E-mail)" <linuxppc-dev@lists.linuxppc.org>
-Subject: Using SMC patch on MPC852T
-Date: Tue, 11 May 2004 16:27:50 +0300
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="windows-1255"
+In-Reply-To: <16544.16999.648530.393071@cargo.ozlabs.ibm.com>
+References: <c7nb0l$5e3$1@sea.gmane.org> <16544.4592.978105.177882@cargo.ozlabs.ibm.com> <3B3163BD-A2F0-11D8-95B9-003065F9B7DC@embeddededge.com> <16544.16999.648530.393071@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v613)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <517E783F-A362-11D8-942E-003065F9B7DC@embeddededge.com>
+Cc: Amit Shah <amitshah@gmx.net>, linuxppc-dev@lists.linuxppc.org
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: IBM 750GX SMP on Marvell Discovery II or III?
+Date: Tue, 11 May 2004 11:46:07 -0400
+To: Paul Mackerras <paulus@samba.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi All,
+On May 10, 2004, at 11:03 PM, Paul Mackerras wrote:
 
-I am trying to apply a SMC patch (exit0.1 MPC8XX SMC(UART) and I2C/SPI MICROCODE PACKAGE).
-MPC852T does not have SCC1&2, but SMC1 is overlapped with SCC3.
-In our implementation we need both portsSMC1 (console) and SCC3 (Ethernet).
-The first thing I tried was to eliminate places in enet.c code which are using SMC1 area, but SCC3 was not transmitting.
-Now I've applied patch as it described in the manual (using micropatch.c). After enabling Tx and Rx in SMC1, it starts transmitting by it self.
-Any ideas?
-Does somebody use SCC3 & SMC1 together without patch?
+> ......According to page
+> 2-63 of the MPC750 users manual: "Of the broadcast cache operations,
+> the MPC750 snoops only dcbz, regardless of the HID0[ABE] setting."
+
+But, read the following sentence.  "Any bus activity caused by other
+cache instructions results directly from performing the operation on
+the MPC750 cache."  A dcbz has to be broadcast, others do not because
+their operations appear just as standard load/store ops.
+
+The only thing we should have to do in software is the icbi, which is
+no big deal to broadcast.
+
+My experience has been that MPC750s work in a SMP environment
+on a 60x bus.  Maybe I was just lucky?  The way I read the manual,
+they should work with a proper memory controller.
+
+Thanks.
 
 
-
-Best Regards,
-     Michael Meriin
+	-- Dan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
