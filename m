@@ -1,39 +1,36 @@
-Message-ID: <3F3AFD72.9030206@mvista.com>
-Date: Wed, 13 Aug 2003 22:09:38 -0500
-From: Mark Hatle <fray@mvista.com>
+Message-ID: <3F3B3448.4020101@aimsys.nl>
+Date: Thu, 14 Aug 2003 09:03:36 +0200
+From: Jaap-Jan Boor <jjboor@aimsys.nl>
 MIME-Version: 1.0
-To: "Mike G." <gohas@actinium.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel panic: No init found.?? Try passing init= option to	kernel
-References: <1060827870.1060.20.camel@localhost.localdomain>	 <3F3AF502.2030300@mvista.com> <1060829232.1060.24.camel@localhost.localdomain>
-In-Reply-To: <1060829232.1060.24.camel@localhost.localdomain>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: jffs2, kupdated and wdog to
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Find your favorite embedded distro.. if it doesn't contain it, you'll
-have to build one.
+Hi,
 
-The debian project is the home of ash for Linux..
-(ftp.debian.org/debian/pool/main/a/ash   if I remember right)
+I use a kernel timer (add_timer) to strobe proprietary wdog implemented
+in hw. I notice that once in a while when the kupdated task gets busy,
+my kernel timer is not called for a long time (400 - 500 ms) because
+of jffs2 administration (e.g. jffs2_free_inode_cache).
 
---Mark
+I still use the Denx 2.4.4 eldk 1.0 kernel. Does somebody know of
+a more recent jffs2 that calls schedule() more often or is this
+behaviour changed in kernels with the preemptible patch?
 
-Mike G. wrote:
-> Hi Mark,
->
-> Thanks ... hmmm.. where can I get this ash.static.. is there a version
-> that runs on ppclinux?
->
->
->
->>The way I usually debug this is to install ash.static on the system, set
->>my kernel command line to have init=/bin/ash.static..  boot up and then
->>attempt to run the "real" init manually so I can get the descriptive
->>error messages.
->
->
+(is there a better way to strobe watchdogs then using a kernel timer?)
+
+thanks,
+
+Jaap-Jan
+
+--
+J.G.J. Boor			  Anton Philipsweg 1
+Software Engineer		  1223 KZ Hilversum
+AimSys bv              		  tel. +31 35 689 1941
+Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
