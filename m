@@ -1,49 +1,43 @@
-Content-Type: text/plain;
-  charset="us-ascii"
-From: Trevor Woerner <ppc339@vtnet.ca>
-Reply-To: ppc339@vtnet.ca
-To: linuxppc-dev@lists.linuxppc.org
-Subject: lost interrupt
-Date: Mon, 26 May 2003 23:41:59 -0400
+Message-ID: <3ED4998F.8010108@embeddededge.com>
+Date: Wed, 28 May 2003 07:12:15 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Message-Id: <200305262341.59883.ppc339@vtnet.ca>
+To: Wolfgang Denk <wd@denx.de>
+Cc: Seb James <s.james@magtech.co.uk>, rtai@rtai.org,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: timebase interrupts on an mpc8xx
+References: <20030527200329.D7EEFC6162@atlas.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm getting the dreaded "lost interrupt" whenever the kernel tries to
-access my onboard CF card. I put an 'IDE_DEBUG' at the start of
-'ide_intr()' so I could watch to see if/how many times my interrupt
-occurs or gets called. As an example, after I run 'cardmgr' I'll get
-7 'lost interrupt' messages. After the last one, I'll get 7
-'IDE_DEBUG' messages indicating that there were 7 interrupts queued
-and waiting on the correct interrupt line.
+Wolfgang Denk wrote:
 
-So if 7 interrupts are sitting there waiting on the correct line, why
-can't they get into the kernel so it can know the CF card is ready,
-instead of having to wait for each IDE operation to timeout? From
-googling around the usual cause of 'lost interrupt' is setting the irq
-incorrectly, but the fact that all 7 get delivered (eventually) to the
-ide's 'ide_intr()' would seem to indicate that at least that part is
-configured correctly, no?
+> I disagree. I think Wolfgang Grandegger  is  right;
 
-[relevant info]
-kernel: 2.4.20-rc1
-interrupt: external #6 (known as 31 internally), shared
-cpu: PPC405gp
+Sorry, I didn't see any other replies to this message.
 
-in 'ide-cs.c' i call 'ide_setup_ports()' to configure the device and I
-define an 'ack_intr()' in order to acknowledge and turn off the
-shared interrupt. The interrupt is shared, but not with other IDE
-hwif's. I'm not using DMA, chipset is 'ide_generic'. This is not a
-PCI device.
+> ...  it's  caused  by
+> reading  sivec without a pending interrupt.
 
-How do 'ide_ack_intr()' and 'hwif->intrproc()' differ? I've only setup
-'ide_ack_intr()', it appears to return a 1 if it determines the
-shared interrupt source was the IDE, or 0 if it wasn't. I also use
-this place to put the code to reset (or turn off) the interrupt. What
-would 'intrproc()' do?
+What?  That had been updated a long time ago, is it missing again?
 
-	Trevor
+> BTW: it seems the interrupt handling code becomes worse. I guess  you
+> don't  care  about  this  any  more?
+
+I care alot.  There have been changes I have totally disagreed with,
+but they were checked in anyway.  Not much I can do about it but hope
+I get time to fix it in the future.
+
+> ... At least it was working when you
+> did... Now the 2_4_devel code is  crap.
+
+I agree, but it wasn't my choice.  People that don't even use the code
+seemed to this was the way to go..........
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
