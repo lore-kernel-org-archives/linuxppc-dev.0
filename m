@@ -1,65 +1,43 @@
-Date: Thu, 1 Apr 2004 12:11:31 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-Cc: Kumar Gala <kumar.gala@motorola.com>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-	Sylvain Munaut <tnt@246tNt.com>
-Subject: Re: Proposed Kconfig update patch for help text)
-Message-ID: <20040401191131.GG26876@smtp.west.cox.net>
-References: <20040401171956.GD26876@smtp.west.cox.net> <20040401185656.871ECC10A4@atlas.denx.de>
+Date: Thu, 1 Apr 2004 11:17:15 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: John Whitney <jwhitney-linuxppc@sands-edge.com>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Matt Porter <mporter@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Problems with dma_alloc_coherent()
+Message-ID: <20040401191715.GC3786@gate.ebshome.net>
+References: <9EB527A2-83F5-11D8-9FF0-000A95A07384@sands-edge.com> <20040401100546.A27472@home.com> <4317F0F4-8405-11D8-9FF0-000A95A07384@sands-edge.com> <20040401181926.GA3630@gate.ebshome.net> <406C658E.10500@embeddededge.com> <20040401185956.GB3786@gate.ebshome.net> <2C2F00BD-8410-11D8-9FF0-000A95A07384@sands-edge.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040401185656.871ECC10A4@atlas.denx.de>
+In-Reply-To: <2C2F00BD-8410-11D8-9FF0-000A95A07384@sands-edge.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Apr 01, 2004 at 08:56:51PM +0200, Wolfgang Denk wrote:
-> In message <20040401171956.GD26876@smtp.west.cox.net> you wrote:
+On Thu, Apr 01, 2004 at 02:10:00PM -0500, John Whitney wrote:
+> >I think we should use "device" parameter passed to DMA API for such
+> >stuff, it
+> >already has a member "struct bus_type* bus".
 > >
-> > > So far, it's all we have, right? Or do you have anything significant-
-> > > ly better?
-> >
-> > As I said, someone is working on the second option I described, but I
-> > don't know how far they have gotten.
 >
-> Is this a secret or what? Why don't you give names?  Why  doesn't  he
-> show up on this list?
+> This effectively makes the DMA API a superset of the PCI DMA API (the
+> DMA API would recognize a PCI device, and handle it accordingly)?
 
-Because I'm not omniscient?  Looking back in the linuxppc-embedded
-archives, and recalling his nickname from IRC, it appears to be Sylvain
-Munaut <tnt@246tNt.com>, whom you've even answered 5200 questions for.
-Sylvain, have you made much progress on 52xx support in 2.6?
+Yes, I think it's a goal.
 
-> > 2.6 support, without the Motorola code.  If there's a specific person at
-> > Motorola who'd be interested in what the Linux community has to say
-> > about the DMA code, no one has told me who.
->
-> You are not working on this, or are you?
+> It
+> sounds like a good solution to me, although I'd like to see the
+> "device" structure get that DMA offset I mentioned, so the DMA API
+> wouldn't have to have a special case for each new bus-type added (PLB,
+> PCI, OCP, CPM, whatever), as it does now for PCI vs. non-PCI.  (That
+> assumes bus offset is the only difference that needs to be handled...)
 
-<hat="MontaVista Employee">I personally am not, but I know engineers
-who are or have in the recent past, worked on 5xxx && Linux in MV</hat>
-<hat="Community Person">Since I do try and get changes people make into
-kernel.org, Yes</hat>
+I think we should add such info to a structure which describes the _bus_, not
+_device_.
+I'm not "new-device-model" guru, so I cannot comment _how_ this can be
+implemented though :)
 
-> > > Also, isn't this kind of wasted effort as the target is still moving?
-> >
-> > What target?  The Motorola code?  The 5xxx hw line?  If you're talking
->
-> The Motorola code, and to some extend the hardware.
+Eugene.
 
-As I've stated before, in reference to other vendor-provided HAL code,
-if the vendor is willing to work to address community concerns about the
-vendor code (which includes subscribing to linuxppc-dev and -embedded so
-they can field questions / comments / concerns about it), that works for
-me.  But I had been under the impression that Motorola did not
-particularly care to fix the concerns that had been raised.  If this
-impression is incorrect, then I'd like to see someone step up, who has
-authority to address said concerns (such as to paraphrase Dan Malek, why
-do we need this?).
-
---
-Tom Rini
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
