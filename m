@@ -1,39 +1,27 @@
-Message-ID: <3888F3DC.2B506EDC@mondonet.net>
-Date: Fri, 21 Jan 2000 16:03:40 -0800
-From: Mario Scarpa <m.scarpa@mondonet.net>
-MIME-Version: 1.0
-To: PPC-DEV <linuxppc-dev@lists.linuxppc.org>
-Subject: Kernel Q
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200001220016.TAA19532@mal-ach.watson.ibm.com>
+To: Robert Neugebauer <rneugeba@undergrad.math.uwaterloo.ca>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: RS6000 to G4 assembly changes
+In-Reply-To: Message from Robert Neugebauer <rneugeba@undergrad.math.uwaterloo.ca>
+   of "Fri, 21 Jan 2000 17:53:50 EST." <Pine.SOL.3.96.1000121174930.10776A-100000@bacon.math.uwaterloo.ca>
+Date: Fri, 21 Jan 2000 19:16:43 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi there,
+	Others probably can answer configuring GCC for Linux/PPC better
+than I, but it is looking for something like "powerpc-unknown-linux-gnu"
+as the target.
 
-I tried to have a clear idea about this but I still can't
-manage to find a definitive answer (maybe because there's
-no A at all)...
+	rs6000 is NOT another ppc based architecture.
 
-When are we going to get the kernel source and have it compile
-out of the box without wandering around patches, broken
-dependencies and other glue ?
-Every time I try to compile the kernel on my Lombard PB I
-end up with something that - in the best case - bootstraps
-but lacks always something (X working only at 16bpp, the
-sound card or the modem not seen and so on...) and often
-just panics at IDE recognition...
-I mean, I don't want to get my ultranew PCI microwave owen
-recognized: I just would like to compile this fucking multicast
-support into a working kernel :-(
+	If you are trying to build a linuxppc compiler hosted on x86
+Linux, then you need to build a cross-compiler.  Please read the cross-gcc
+FAQ to learn how to do this:
 
-Just an esortation and a big thank to all of you working
-to have this dream come true ;-)
+http://www.objsw.com/CrossGCC/
 
---
-Mario Scarpa
-
-Mondonet NOC
-Phone: +39 06 52.47.37.02
+David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
