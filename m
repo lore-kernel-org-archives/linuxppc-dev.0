@@ -1,35 +1,33 @@
-Message-Id: <199906281343.JAA01363@goog.larc.nasa.gov>
-To: linuxppc-dev@lists.linuxppc.org
-From: "Peter A. Padilla" <p.a.padilla@larc.nasa.gov>
-Subject: solution for the Macally two button mouse
-Reply-To: "Peter A. Padilla" <p.a.padilla@larc.nasa.gov>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Mon, 28 Jun 1999 09:43:53 -0300
+Message-Id: <v04205501b39d320ee274@[206.173.236.183]>
+Date: Mon, 28 Jun 1999 07:11:08 -0700
+To: linuxppc-dev@lists.linuxppc.org
+From: Randall R Schulz <rrschulz@cris.com>
+Subject: The Kernel Known as vmlinux.blueg3
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hello,
 
-Just discovered the handler for the Macally two button mouse. It is 66.
+I have a question and an observation on the kernel "vmlinux.blueg3" 
+distributed with R5/1999:
 
-In my rc.local I put "mousemode 3 66" command and now I can get the right 
-button to respond.
+Q: What sources and configuration options are necessary to build this kernel?
 
+O: Although the GZIP'ed files vmlinux.blueg3 and vmlinux.blueg3v2 
+have different sizes on the servers that carry them, once unzipped 
+they checksum identically. Presumably the different size of the 
+GZIP'ed form reflects different compression setting. Oddly, I read 
+one report of someone who claimed one of them work better or 
+differently than the other. Presumably that was due to some other 
+issue.
 
-------------------------------------- 
-Peter A. Padilla,  Ph.D., P.E.
-NASA - Langley Research Center 
-Flight Dynamics and Control Division 
-Crew Vehicle Integration Branch 
-B1268A, Rm 1174
-M/S 152 
-Hampton, VA 23681 
-Phone: 757-864-6187 
-Fax: 757-864-7793 
-email: p.a.padilla@larc.nasa.gov
+Thanks.
 
-
+Randy Schulz
+Mountain View, CA
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
