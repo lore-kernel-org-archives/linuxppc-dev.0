@@ -1,33 +1,33 @@
-Date: Tue, 17 Oct 2000 01:50:54 +0300
-From: Topi Kanerva <tkanerva@ees2.oulu.fi>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: IrDA on PowerBooks
-Message-ID: <20001017015054.A16003@ee.oulu.fi>
-Mime-Version: 1.0
+From: jimix@pobox.com (Jimi X)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <14827.34607.795659.155820@kitch0.watson.ibm.com>
+Date: Mon, 16 Oct 2000 18:54:39 -0400 (EDT)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Boot Rom Version and os-chooser
+Reply-To: jimix@watson.ibm.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hello. I'm addressing you of this problem of mine because someone out
-there might already know the answer so I don't have to dig through all
-those kernel sources. I'm trying to get my Ericsson R380s phone to
-talk to my Pismo PowerBook. For some reason it plainly does not
-work. I cannot be configuring wrong all that IrDA protocol stuff, so
-there must be something fundamentally wrong. I suppose IrCOMM only
-supports SIRs emulating the 16550A serial chip, and from the kernel
-log one can notice that the PowerBook seems to utilize Z8530 chips
-which I suppose is a different thing altogether.  Can I just snatch
-some Z8530 code from other driver sources, e.g. the stuff for the old
-TurboChannel DECstations which used this chip for their keyboard
-etc. i/o?  I'm just running quite short on time, since this is really
-needed for the CEO of our company, since I persuaded him to get a
-PowerBook to run Linux on... sheesh.
+I updated with Apples PowerBook Firmware Update 2.7 on my pismo as
+apple suggested to fix some firewire kinks I had.
 
-Now, anyone who has succesfully got any IrDA devices to work with the
-PowerBook IrDA port? any suggestions?
+Apple System Profiler says:
+  ROM revision:			$t7D.45F6
+  Boot ROM verion:		$0003.27f2
+  Mac OS ROM file version:	3.8
 
--topi
+
+Now my os-chooser forth script does not work.
+I tried adding the obvious "PowerBook3,2" to the <COMPATIBLE>
+
+Should I have tried upping the major number?
+
+-Jimi X
+
+BTW: I can boot linux fine (no surprise), I just have to go into OF to
+     boot OS9 (pain pain pain).
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
