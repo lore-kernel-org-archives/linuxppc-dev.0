@@ -1,56 +1,39 @@
-Message-ID: <D96E2AFA0DF3D211B139009027454948037362FB@helios.gnv.tcc.thomson-csf.com>
-From: Christophe.LINDHEIMER@fr.thalesgroup.com
-To: callebaut@mailandnews.com, linuxppc-embedded@lists.linuxppc.org
-Subject: RE: RE :how to do:root filesystem on flash?
-Date: Thu, 12 Jun 2003 12:31:41 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Pantelis Antoniou <panto@intracom.gr>
+Cc: Stephan Linke <Stephan.Linke@epygi.de>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: running 8xx without UART 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 12 Jun 2003 13:19:22 +0300."
+             <3EE853AA.9020106@intracom.gr>
+Date: Thu, 12 Jun 2003 12:37:46 +0200
+Message-Id: <20030612103751.F280FC5FD7@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi.
+In message <3EE853AA.9020106@intracom.gr> you wrote:
+>
+> In a new board we have the same problem, and I'll have to make the patch
+> again. Since we need a serial port we used a max3100 spi to serial converter
+> and I have a driver for that ready (but not yet as a console).
 
-I am just working on the same issue ( with romfs ).
+See drivers/char/max3111_serial.[ch] in our kernel tree :-)
 
-Using devfs I must set root equals "/dev/mtdblock/0" and not
-"/dev/mtdblock0"...
+> When I get around to add support for this chip in u-boot I'll also send the
+> patches for the kernel.
 
-Regards.
+TIA!
 
-Chris
+Best regards,
 
+Wolfgang Denk
 
-
------Message d'origine-----
-De: Callebaut Benoit [mailto:callebaut@mailandnews.com]
-Date: jeudi 12 juin 2003 11:33
-À: linuxppc-embedded mailing list
-Objet: RE :how to do:root filesystem on flash?
-
-
-
-I,
-1 : Create a cramfs filesystem with the right endianess from your nfs
-filesystem using mkcramfs.
-Burn it into the flash( at the start of the flash).
-
-2 : In your kernel config set the "root=" option to : "/dev/mtdblock0"
-Enable Flash MTDBlock support and the right options like CFI,...
-Set up the start of the flash and its length
-Enable Cramfs in filesystem
-Disable NFS as root filesystem.
-
-Rebuild your kernel and flash it.
-Reboot the board en enjoy.
-
-PS : This question was already a 100 times answered. Search in the mailing
-list before asking such a question.
-Or maybe a better idea : One may build a FAQ or a list of Howtos on such
-common questions.
-
-Benoit Callebaut
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The C-shell doesn't parse. It adhoculates.
+    - Casper.Dik@Holland.Sun.COM in <3ol96k$b2j@engnews2.Eng.Sun.COM>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
