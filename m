@@ -1,25 +1,39 @@
-Date: Mon, 2 Feb 2004 17:21:56 +0100
-From: Jean-Jacques Levy <Jean-Jacques.Levy@inria.fr>
-Message-Id: <200402021621.RAA01281@macaron.inria.fr>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: m3mirror + 2.4.24
+Date: Mon, 2 Feb 2004 17:58:14 +0100 (CET)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Jean-Jacques Levy <jean-jacques.levy@inria.fr>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	<schmitz@opal.biophys.uni-duesseldorf.de>
+Subject: Re: m3mirror + 2.4.24
+In-Reply-To: <200402021608.RAA0000011663@beaune.inria.fr>
+Message-ID: <Pine.LNX.4.44.0402021755320.5301-100000@zirkon.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I just upgraded from 2.4.20-pre7-ben0 to 2.4.24-ben1 on my Titanium
-7410, 500MHz. Everything goes smoothly, except following:
+> > >    m3mirror crt:1 lcd:1
+> > >
+> > > which no longer works properly. The command runs silently with no
+> >
+> > The kernel ioctls for m3mirror might have changed; recompile m3mirror
+> > against new kernel headers?
+>
+> That's what I did. For instance,
+>
+>   strace m3mirror crt:1 lcd:1
+>
+> shows
+>
+>   ioctl(3, 0x40044001, 0x7ffff98c)
+>
+> I don't know it that's fine.
 
-   m3mirror crt:1 lcd:1
+Me neither; I'd have to work out what the _IOW macro expands to in that
+case. What kernel headers version do you have installed (f.i. Debian ships
+2.5.999 which won't match your 2.4.24 kernel too well)?
 
-which no longer works properly. The command runs silently with no
-error messages and no effect. However m3mirror crt:0 clear the
-external video. In /usr/src/linux/.config, I do have
+	Michael
 
-   CONFIG_PMAC_PBOOK=y
-
-What's was wrong in my installation?
-
-Best to all, -JJ-
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
