@@ -1,34 +1,35 @@
-Date: Fri, 16 Jul 1999 08:50:17 -0500 (CDT)
-From: Dave Weis <djweis@plconline.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: motorola ppc reference design
-Message-ID: <Pine.LNX.4.10.9907160849020.29981-100000@catbert.desm.plconline.com>
+Date: Fri, 16 Jul 1999 07:47:22 -0700 (MST)
+From: Matt Porter <mmporter@home.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+cc: puetzk6715@uni.edu, Justin Vallon <vallon@mindspring.COM>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: altivec
+In-Reply-To: <Pine.LNX.4.10.9907160829200.3382-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <Pine.LNX.3.96.990716074551.21902A-100000@liberty.chnd1.az.home.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Fri, 16 Jul 1999, Geert Uytterhoeven wrote:
 
-there is some pretty cool hardware info at 
+> On Thu, 15 Jul 1999, Matt Porter wrote:
+> > Motorola or IBM will be happy to sell you a "non-apple non-MacOS PPC"
+> > machine for Linux, it's just nobody wants to pay the price. :)  A startup
+> > with a very low overhead could probably provide a reasonably priced mobo
+> > with an MPC107 and MPC750@400+mhz.  They would want to then sell them to a
+> 
+> Are the specs for the MPC107 public now?
 
-http://www.mot.com/SPS/PowerPC/wincept/indexnav.html
+No, not that I can find on the Mot SPS site.  The MPC8240's PHB is
+supposedly an MPC107 core so you can take a look at the user's manual for
+that device if you're interested.
 
-the html is pretty borken so you have to scroll way down, but it's a
-embedded/terminal version of a ppc machine that you can build for $110US
-in 10K quantities. might be interesting for someone.
-
-dave
-
-
--- 
-David Weis                | 10520 New York Ave, Des Moines, IA 50322
-djweis@plconline.com      | Voice 515-278-0133 Ext 231
-
-When they took the Fourth Amendment, I was quiet because I didn't deal drugs.
-When they took the Sixth Amendment, I was quiet because I was innocent.
-When they took the Second Amendment, I was quiet because I didn't own a gun.
-Now they've taken the First Amendment and I can't say anything.
+--
+Matt Porter
+mmporter@home.com
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
