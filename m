@@ -1,42 +1,26 @@
-From: "Andrew Dennison" <andrew.dennison@motec.com.au>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: JTAG debuggers for Motorola 8xx/82xx/85xx 
-Date: Mon, 21 Jun 2004 10:21:13 +1000
-Message-ID: <000d01c45725$a929c570$ee00a8c0@CAT>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <000b01c45534$8542bba0$0301a8c0@chuck2>
+Date: Mon, 21 Jun 2004 08:58:25 +0200
+From: Marc Leeman <marc.leeman@barco.com>
+To: jmartin <jmartin@prodys.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: mpc8xx idma
+Message-ID: <20040621065825.GO10248@smtp.barco.com>
+Reply-To: Marc Leeman <marc.leeman@barco.com>
+References: <006f01c45533$21e7d0f0$2700000a@jmartin>
+Mime-Version: 1.0
+In-Reply-To: <006f01c45533$21e7d0f0$2700000a@jmartin>
+Content-Type: text/plain; charset=iso-8859-15
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark Chambers wrote:
-> Andrew,
->
-> I went down this same path!  No, the 5200 JTAG is quite
-> different from 8xx
-> and a little different from 8xxx so no version of the Wiggler
-> will work,
-> although Macraigor says they are planning to support 5200 soon.
->
-> When I was evaluating the 5200Lite I used the Motorola boot to load
-> zImage.elf, and that let me play with linux.
->
+> i think problem is fec sdma and idma working simultaneously. Exists
+> any problem if sdma and idma are working together?
 
-Hi Mark,
-Yeah - I used the Motorola boot loader to install u-boot to boot low on my
-5200lite.
+Could you be a tad more precise, which DSP and what revision? Since I
+know Prodys is working with TI DSPs, you might want to look into the
+silicon bug lists. With certain TI DSP, you will not be able to use DMA
+initiated by the PPC.
 
-However I've almost finished our custom HW design so need proper tools to
-bring up the new board. I'm doing both the hardware and software so I make
-my own recommendations - after consulting with others so I don't re-invent
-the wheel...
-
-Hadn't realised there was a mix of BDM and JTAG on PPC processors - the
-5200 is the first PPC I've played with.
-
-Andrew
-
+Been there done that ;)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
