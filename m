@@ -1,56 +1,52 @@
-Date: Mon, 03 Dec 2001 10:00:00 -0700
-From: Okehee Goh <ogoh@asu.edu>
-Subject: Debugging message through FDC37C672-COM of MBX860??
-In-reply-to: <3C06705B.15147A92@mvista.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <CPEELCODKANPCLBCAGOFCEKPCAAA.ogoh@asu.edu>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-ID: <3C0BAFF8.5060309@embeddededge.com>
+Date: Mon, 03 Dec 2001 12:01:44 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Shie Erlich <shie_e@elbit.co.il>
+Cc: "Linuxppc-Embedded mailing list (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 64 bit memory access - again ...
+References: <937610FE9B70D511B3E700508B8B65770E53CA@MAIL1>
+Content-Type: text/plain; charset=windows-1255; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
-I'm so sorry about this question.
-
-I want to print out debug messages to console monitor from the
-application loaded at MBX860 through EPPC-Bug. I was supposed to use
-EPPC-Bug's system call for this purpose. But it wasn't possible because my
-application overlap
-all exception codes and stack. And then I tried to use SMC1 or SMC2's UART
-for this purpose. But it's not working.
-
-The port status is the following.
-------------------
-EPPC-Bug>pf
-Current Port Assignments:  (LUN: Device-Name Port-Name)
-
-00: FDC37C672-COM     COM1              (Console)
-
-01: MPC8XX-SMC        SMC2
-
-02: MEMORY            CHNL0
-
-------------------------
-
-According to MBX manual, SMC1 is used as console port.
-
-If it's true, COM1 is using SMC1?
-
-So, I thought I must use SMC'1 UART to print out to a console. Is it
-correct?
-
-I tested the application using SMC1' s UART
-
- by applying a SMC's UART application note provided by Motorola's
-website(MPC860COD17).
-
-But It doesn't seem to work. I can't see anything from a console after
-executing this test application.
+Shie Erlich wrote:
 
 
+> i also know that floating point in the kernel is a big NO, but if no other
+> choice is found, i'll have to do it. my questions are:
 
-Thank you any help.
+If possible, I would mmap() the device from user space and perform
+the access there.
+
+> a) what is the recommended way of doing a 64bit access in the linux kernel ?
+
+I would first try to do it with a cache line burst access.  Put it in
+copyback mode, zero the line, write the line, flush the line, invalidate
+the line.
+
+> b) if the fpu is the way to go, what do i need to do so that the kernel does
+> not
+>     trap my floating point access ?
+
+You can't trap and emulate, that defeats the purpose.  The biggest challenge
+when using floating point in the kernel is context switching the FPU.
+I would probably force the kernel to always context switch the FPU (as
+it does on SMP) so you would always have a clean context to use in
+the kernel.  I would then disable interrupts (to avoid other FPU context
+problems), enable the FPU, perform the access, ensure the context is
+reloaded for the switched-in thread, disable the FPU, enable interrupts.
+
+Any system performance gains you thought you may have by using 64-bit
+I/O are likely to be significantly reduced by the amount of software
+overhead needed to manage this.
+
+Depending upon what you are using for a bridge/memory controller you
+may have a DMA controller that could perform this access as well.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
