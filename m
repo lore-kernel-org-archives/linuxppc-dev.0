@@ -1,34 +1,55 @@
-Date: Mon, 9 Aug 2004 17:54:44 +0200
-From: Harald Welte <laforge@gnumonks.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Harald Welte <laforge@gnumonks.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] md raid autodetection on mac partitions
-Message-ID: <20040809155444.GA25045@obroa-skai.de.gnumonks.org>
-References: <20040806075918.GA11638@sunbeam2> <20040807110404.GA1854@lst.de>
+Subject: [PATCH]: Fixes CONFIG_CONFIG_CPM2_UART bug in tty_io.c
+From: Jeff Angielski <jangiels@speakeasy.net>
+To: LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
+Content-Type: multipart/mixed; boundary="=-bRS9oMriilfIoKojgI1r"
+Message-Id: <1092088985.4368.8.camel@localhost.localdomain>
 Mime-Version: 1.0
-In-Reply-To: <20040807110404.GA1854@lst.de>
-Content-Type: text/plain; charset=us-ascii
+Date: 09 Aug 2004 18:03:05 -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Aug 07, 2004 at 01:04:04PM +0200, Christoph Hellwig wrote:
+--=-bRS9oMriilfIoKojgI1r
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-> No.   raid autodetection is deprectaed, we don't want it for more
-> partiton types.
+Here is a very small patch to fix a configuration bug in
+drivers/char/tty_io.c where the CPM2 UART would not work for non-8xx
+targets.
 
-Oh well.  I guess I'm the only user who likes to boot his machine
-without building some initrd - especially since this never works out of
-the box with any vendor-supplied tools on any distribution I've tried
-so far.
+Cheers,
+Jeff Angielski
 
-If autodetection is deprecated, will we at least see some kernel boot
-option, where one could specify which partitions to use?
 
---
-- Harald Welte <laforge@gnumonks.org>               http://www.gnumonks.org/
-============================================================================
-Programming is like sex: One mistake and you have to support it your lifetime
+
+--=-bRS9oMriilfIoKojgI1r
+Content-Disposition: attachment; filename=cpm2uart.patch
+Content-Type: text/plain; name=cpm2uart.patch; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+===== drivers/char/tty_io.c 1.33 vs edited =====
+--- 1.33/drivers/char/tty_io.c	Tue Aug  3 16:53:10 2004
++++ edited/drivers/char/tty_io.c	Mon Aug  9 14:17:34 2004
+@@ -2250,7 +2250,7 @@
+ 	au1x00_serial_console_init();
+ #endif
+ #ifdef CONFIG_SERIAL_CONSOLE
+-#if defined(CONFIG_8xx) || defined(CONFIG_CONFIG_CPM2_UART)
++#if defined(CONFIG_8xx) || defined(CONFIG_CPM2_UART)
+ 	console_8xx_init();
+ #elif defined(CONFIG_MAC_SERIAL) && defined(CONFIG_SERIAL)
+ 	if (_machine == _MACH_Pmac)
+@@ -2439,7 +2439,7 @@
+ #ifdef CONFIG_SPECIALIX
+ 	specialix_init();
+ #endif
+-#if (defined(CONFIG_8xx) || (defined(CONFIG_CPM2) && defined(CONFIG_CONFIG_CPM2_UART)))
++#if (defined(CONFIG_8xx) || (defined(CONFIG_CPM2) && defined(CONFIG_CPM2_UART)))
+ 	rs_8xx_init();
+ #endif /* CONFIG_8xx */
+ 	pty_init();
+
+--=-bRS9oMriilfIoKojgI1r--
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
