@@ -1,39 +1,28 @@
-Date: Sun, 30 Jul 2000 09:01:11 -0500 (CDT)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Iain Sandoe <iain@sandoe.co.uk>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Stealth port problems
-In-Reply-To: <200007301300.OAA07050@hyperion.valhalla.net>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.1000730083557.1508G-100000@ofey.inetnebr.com>
+Message-ID: <3984378C.E10CE694@denise.shiny.it>
+Date: Sun, 30 Jul 2000 10:11:24 -0400
+From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Stealth port problems
+References: <39811B2C.4D34DDD@denise.shiny.it> <20000728083426.19235@mailhost.mipsys.com> <398426BC.67FCDC6E@denise.shiny.it>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 30 Jul 2000, Iain Sandoe wrote:
-
-> > Ok, this is a news to me.  I'm certain that SCC on oldworld pmacs is
-> > 85C30.  When did the change to 85230 occur?  If I remember correctly,
-> > some DMA setup codes in macserial.c need to know about it if it's dealing
-> > with 85230 rather than 85C30.
+Giuliano Pochini wrote:
 >
-> OK - I don't know for certain - but the code refers to an "ESCC" which is
-> the name of the 85230 - the 8530 should just be called "SCC".
+> > >Hi!  I have troubles with my stealth port on a G3-blue. When it runs at
+> > 115200
+> > >ifconfig
+> > >shows a lot of overruns. At 57600 it works fine, but it's slow :-((
 
-It's not 8530.  I got an impression from Zilog's manual that ESCC refers
-to both 85230 and 85C30 loosely.  Actually, on some pages, the term was
-used to refer to functionalities only available on 85230, and, on other
-pages, it was used to describe something 8530 doesn't support but both
-85C30 and 85230 do.  AMD's usage of the term ESCC is yet slightly
-different, IIRC.
+The problem is definitely X.  I made a lot of tests: with dma and non-dma
+serial driver, X accelerated, non accelerated, X bare.bone (started with
+xinit). The problem is X. When X is running the serial ports looses packets
+:-((
+Am I the only one who is having this problem ???  Why does X cause overruns ??
 
-Anyway, Apple's documentation uses the term ESCC and 85C30
-interchangeably, and I think the driver's usage of the term "ESCC" comes
-from there.
-
-
-Takashi Oe
-
+Bye.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
