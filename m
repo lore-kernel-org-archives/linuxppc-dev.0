@@ -1,37 +1,49 @@
-From: Brad Boyer <flar@pants.nu>
-Message-Id: <200002242101.QAA01570@marcus.pants.nu>
-Subject: Re: PowerMac G4 and pcmcia flash cards
-To: pogtal@erols.com (Nelson Abramson)
-Date: Thu, 24 Feb 2000 13:01:59 -0800 (PST)
-Cc: dan_bethe@yahoo.com (Dan Bethe), linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <38B47631.6FE88852@erols.com> from "Nelson Abramson" at Feb 23, 2000 07:07:13 PM
+Message-ID: <F14842317963D111817100805F0DFE4D4FFFAC@server1.controlnet.com>
+From: Mark Knecht <mknecht@controlnet.com>
+To: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: RE: [Linux1394-devel] Re: FireWire + Apple PB G3: some success
+Date: Thu, 24 Feb 2000 13:37:58 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Nelson Abramson wrote:
-> >         Do you know what the feasability is of Linux support of Apple's
-> > Airport bases and Airport cards?
->
-> I imagine fairly possible...I would guess that with the release of mosX and the
-> bsd device drivers for the airport, porting them to *nix would be pretty easy
-> (hopefully)....
+<snip..>
 
-Well, since Lucent released Linux drivers for the WaveLan cards, I suspect it
-is much simpler than waiting for Apple to write drivers for Darwin.  Apple
-made an OEM deal with Lucent, so Airport cards have all the same guts as the
-original Lucent cards.  In fact, if you rip apart an Airport base station, you
-will find a genuine Lucent card in a PCMCIA slot.  There was a web site with
-pictures of all the parts from a base station.
+>This may not be visible to something like 'top' because the cache flush it
+>is a hardware process in the processor and it is possible that the front
+>side bus gets bogged down with cache flush traffic.
 
-	Brad Boyer
-	flar@pants.nu
+Hum, the RAM/cache bus is way much faster than the PCI and in the case of
+writes with invalidate, the destination datas is just killed from the CPU
+cache, not actually flushed, so this should not cause a significant
+performance impact.
 
-P.S.: The wavelan drivers can be found at http://www.wavelan.com/support/software/
-but they claim that they only work with x86 laptops.  The source is there, so it
-should be possible to fix for ppc.
+<end snip..>
+
+Actually this is exactly the purpose of the MWI invalidate command in PCI.
+With this feature turned off, which is the TI default, anytime the PCI bus
+presents the chipset with a cacheable address the cache lines are written
+back into memory before the chipset lets the OHCI DMA controller write data
+to memory, so it can impact performance, sometimes quite a lot.
+
+However, if the feature is turned on, then the chipset tells the processor
+to simply invalidate the cache line internally because the PCI controller is
+going to take responsibility for writing the complete cache line in memory.
+There would be no purpose to flushing the cache line and then writing over
+it in memory, and bus bandwidth is saved.
+
+The bus in question here isn't necessarily the cache bus, but is the
+front-side bus on the processor hooking to the chipset. On systems with
+shallow posting PCI FIFOs this can be a pretty big impact if you are talking
+about transfers of 100's of bytes. On newer chipsets with deeper
+write-posting FIFOs it may not be a big deal.
+
+None of this makes any difference if the buffers in memory are not
+cacheable. How are buffers allocated in Linux? Are they cacheable? (I'm a
+hardware guy and wouldn't know that part of the C-code if it walked up and
+said hi!)
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
