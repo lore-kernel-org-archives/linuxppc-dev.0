@@ -1,24 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3387C67A8A
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jan 2005 10:26:55 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1106146083.26551.526.camel@hades.cambridge.redhat.com>
-References: <1106120622.10851.42.camel@baythorne.infradead.org>
-	<BD84893E-6A28-11D9-AC28-000393DBC2E8@freescale.com>
-	<1106146083.26551.526.camel@hades.cambridge.redhat.com>
-Content-Type: text/plain
-Date: Thu, 20 Jan 2005 10:25:29 +1100
-Message-Id: <1106177129.5327.43.camel@gaston>
-Mime-Version: 1.0
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linus Torvalds <torvalds@osdl.org>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] raid6: altivec support
+Return-Path: <schwab@suse.de>
+Received: from Cantor.suse.de (mail-ex.suse.de [195.135.220.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "mail.suse.de",
+	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6841167A7C
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jan 2005 11:43:15 +1100 (EST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <1106011958.4533.25.camel@gaston> <je7jmaurl0.fsf@sykes.suse.de>
+	<1106100264.4534.135.camel@gaston> <jemzv584yw.fsf@sykes.suse.de>
+	<1106175427.5326.21.camel@gaston>
+From: Andreas Schwab <schwab@suse.de>
+Date: Thu, 20 Jan 2005 01:43:07 +0100
+In-Reply-To: <1106175427.5326.21.camel@gaston> (Benjamin Herrenschmidt's
+	message of "Thu, 20 Jan 2005 09:57:07 +1100")
+Message-ID: <jehdld7wx0.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH] ppc32: pmac sleep support update
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,21 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-01-19 at 14:48 +0000, David Woodhouse wrote:
-> On Wed, 2005-01-19 at 08:45 -0600, Kumar Gala wrote:
-> > We did talk about looking at using some work Ben did in ppc64 with OF 
-> > in ppc32.  John Masters was looking into this, but I havent heard much
-> > from him on it lately.
-> > 
-> > The firmware interface on the ppc32 embedded side is some what broken 
-> > in my mind.
-> 
-> The binary structure which changes every few weeks and which is shared
-> between the bootloader and the kernel? Yeah, "somewhat broken" is one
-> way of putting it :)
-> 
-> The ARM kernel does it a lot better with tag,value pairs.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-And ppc64 adds a flattened device-tree format, even better imho :)
+> Even when building xmon into the kernel ?
 
-Ben.
+Doh!  I didn't think of that.  This is what I get from xmon:
+
+    <2>kernel BUG in unlock_page at mm/filemap.c:430!
+    vector: 700 at pc = c003f098, lr = c0041654
+    msr = 29032, sp = e71b1c80 [e71b1bd0]
+    current = e7bbec70, pid = 2915, comm = syslogd
+
+c0041654 = generic_file_buffered_write
+
+Last kernel messages:
+
+    radeonfb: switching to D0 state...
+    HID1, after: 70000044
+    cpufreq: resume failed to assert current frequency is what timing core thinks it is.
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
