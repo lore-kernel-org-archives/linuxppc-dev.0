@@ -1,25 +1,41 @@
-Message-Id: <200311162331.hAGNVjT29698@makai.watson.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Kumar Gala <kumar.gala@motorola.com>, Olaf Hering <olh@suse.de>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	Alan Modra <amodra@bigpond.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16312.6414.636754.888007@cargo.ozlabs.ibm.com>
+Date: Mon, 17 Nov 2003 11:40:46 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: David Edelsohn <dje@watson.ibm.com>
+Cc: benh@kernel.crashing.org, Olaf Hering <olh@suse.de>,
+	Alan Modra <amodra@bigpond.net.au>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: kernel oops due to unaligned access with lswi 
-In-Reply-To: Message from Benjamin Herrenschmidt <benh@kernel.crashing.org>
-   of "Mon, 17 Nov 2003 10:12:38 +1100." <1069024357.4760.14.camel@gaston>
-References: <20031115210449.GA10105@suse.de> <20031115222430.GA13820@suse.de> <200311152230.hAFMUwT32990@makai.watson.ibm.com> <20031115224342.GA16897@suse.de> <200311152259.hAFMxGT27464@makai.watson.ibm.com> <1068977831.681.8.camel@gaston> <3C0F7C71-185D-11D8-976A-000393DBC2E8@motorola.com>  <1069024357.4760.14.camel@gaston> 
-Date: Sun, 16 Nov 2003 18:31:45 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+In-Reply-To: <200311162304.hAGN4CT32140@makai.watson.ibm.com>
+References: <20031115210449.GA10105@suse.de>
+	<20031115222430.GA13820@suse.de>
+	<200311152230.hAFMUwT32990@makai.watson.ibm.com>
+	<20031115224342.GA16897@suse.de>
+	<200311152259.hAFMxGT27464@makai.watson.ibm.com>
+	<1068977831.681.8.camel@gaston>
+	<200311162304.hAGN4CT32140@makai.watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Benjamin Herrenschmidt writes:
+David Edelsohn writes:
 
-Ben> We surely don't want them on G5 at least as they are microcoded
+> 	The information that you received about lwsi are overly
+> simplistic.  The instructions are neither overly good nor overly bad --
+> they should not be used for everything, but neither should they be avoided
+> at all cost.  They are particularly good for producing compact code and
+> preserving the instruction cache.  Remember, programming, including
+> assembly language programming, is an art.
 
-	Again, one cannot approach this as black or white.  What about
-optimizing for size?
+In the experiments that I did comparing different memcpy loops, I
+didn't find any combination of alignment, size of copy and processor
+implementation where using string loads/stores was as fast as than
+ordinary loads and stores.  So I am inclined to think that the only
+advantage of the string load/store instructions is in saving a little
+bit of icache.
 
-david
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
