@@ -1,50 +1,52 @@
-From: linas@austin.ibm.com
-Date: Wed, 22 Oct 2003 10:41:46 -0500
-To: Seb James <seb@peak.uklinux.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Using in_8 and out_8 without module optimization
-Message-ID: <20031022104146.A23472@forte.austin.ibm.com>
-References: <1066742722.18957.36.camel@circle.hypercube>
-Mime-Version: 1.0
+Message-ID: <20031024171504.23157.qmail@web40805.mail.yahoo.com>
+Date: Fri, 24 Oct 2003 10:15:04 -0700 (PDT)
+From: sakthivel kariappan <sakvel_k@yahoo.com>
+Subject: Porting VxWorks to Apple Mac PowerPC G4
+To: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1066742722.18957.36.camel@circle.hypercube>; from seb@peak.uklinux.net on Tue, Oct 21, 2003 at 02:25:24PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Oct 21, 2003 at 02:25:24PM +0100, Seb James wrote:
->
-> I need to run the module without optimization as I really need a section
-> of the code to run exactly as I've coded it, but when I compile without
+ Hi All,
+ I'm trying to understand the complexities involved
+ in porting vxworks to PowerPc G4. I already have the
+ port for MPC740 based board. I'm sure some of you
+ might have done the linux porting. That's why posting
+ to this mail-group.
 
-re-write that section in assembly.
+ The question is related to open firmware, CHRP and
+ run time drivers. As per my understanding, it
+requires
+ understanding the device tree to obtain CPU, PCI  bus
+ and peripherals and how it is connected. As a side
+ note, PowerPC G4 Xserve cluster node uses two custom
+ made ICs (U2-bridge and memory controller and
+KeyLargo
+ IO controller and disk)
 
-Note that even if the compiler doesn't reorder insn's or memory load/store's,
-the CPU might still excecute out-of-order, and/or the memory controller
-(if any) might store/load out of order.  If you need guarenteed order
-of execution, you need to use memory/io barriers, e.g. eieio, sync;
-if you are seeing cacheing of i/o loads/stores, you are probably not
-using 'volatile' (or not using it correctly).
+ Now, how do I know about clock (and timers),
+interrupt
+ structure and registers etc to configure the
+ devices.  Also, OF says, it should provide basic run
+ time drivers. Now, How do I invoke the drivers that
+ comes with boot ROM? and performing VxWorks
+ intialization. Or should I have to write drivers?
 
-On Tue, Oct 21, 2003 at 04:03:33PM +0200, Holger Bettag wrote:
->
-> On Tue, 21 Oct 2003, Wolfgang Grandegger wrote:
->
-> > To ensure that the asm-code is executed in sequence with your
-> > C-code use:
-> >
-> >   -fno-schedule-insns -fno-schedule-insns2
-> >
-> Some other optimizations might still rearrange code, so consider
-> -fno-strength-reduce and -fno-move-all-moveables and possibly a few other
-> switches. Just compile with -S and see if the assembly code looks right.
+ I don't see any documentation at apple developers
+site
+ and in the internet that helps much.
 
-If a device driver breaks because of compiler optimizations, the answer
-is to fix the device driver, not to disable optimization.  I'm guessing
-that the driver isn't using eieio in all the right places. (and/or volatile).
+ Any documentation available will be helpful (I read
+ through apple  technocal notes 1167, 2000, 1061,
+ 1062,  2001, 2004, 2023 and 1167).
+ But, I don't seem to find enough information.
 
+ Appreciate any information.
 
---linas
+ Thanks,
+ Sak
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
