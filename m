@@ -1,5 +1,5 @@
-Message-Id: <4.3.2.20010309071330.00bd6b60@falcon.si.com>
-Date: Fri, 09 Mar 2001 07:21:30 -0500
+Message-Id: <4.3.2.20010309072224.00c05100@falcon.si.com>
+Date: Fri, 09 Mar 2001 07:23:26 -0500
 To: linuxppc-embedded@lists.linuxppc.org
 From: Jerry Van Baren <vanbaren_gerald@si.com>
 Subject: Re: How to get COFF-format code
@@ -10,19 +10,18 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-objcopy should be able to do this (it does everything else!), just
-specify that the output format be coff (ecoff?).  I have not actually
-done this, so I'll leave it as an exercise to determine the proper set
-of flags.
+Hey, look at that.  Tornado-2 (gcc-based) cross compiler supports a
+flavor of coff:
 
-objdump -i      # list known target formats
-objcopy -h      # help: last line shows supported target formats
-
-If *coff* is listed, you are in luck.  If not, it will be some more
-work (I'm sure that was an understatement :-).
-
-My reference linux system is x86 and doesn't support coff.  Your
-mileage may vary.
+C:\tmp>objdumpppc -i
+BFD header file version cygnus-2.6
+elf32-powerpc
+  (header big endian, data big endian)
+   powerpc:common
+aixcoff-rs6000
+  (header big endian, data big endian)
+   powerpc:common
+   rs6000:6000
 
 gvb
 
