@@ -1,30 +1,23 @@
-Message-ID: <00b201bffe42$7dd12b60$1a0210ac@r2d2>
-From: "Todd C. Larsen" <tlarsen@openbits.net>
-To: "LinuxPPC Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: LinuxPPC running on an EST SBC740 board?
-Date: Fri, 4 Aug 2000 11:33:31 -0700
+From: "Kwansuk Kim" <kskim@neowave.co.kr>
+To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Compiling apache for Linux PPC
+Date: Sat, 5 Aug 2000 09:45:23 +0900
+Message-ID: <NEBBKFENMLEDKDHMEHPJEEBPCBAA.kskim@neowave.co.kr>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="Windows-1252"
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Has anyone attempted to boot Linux on an SBC740 (or SBC603, SBC750)
-development board from EST?  So far, it looks like one of the best
-candidates for an evaluation board for the MPC740, since Motorola
-no longer sells the Yellowknife X4.  I was just wondering if anyone
-else on the list had experiences with this board.
+I'm trying to implement embedded linux router.
 
-The only EST boards I see mentioned in the mailing list archives
-are the SBC8240 and SBC8260 boards.  I'm still waiting for technical
-documentation from EST on this board, but does anyone on this list
-know what PCI bridge chip it uses?
+So I tried to cross-compile apache on x86 linux machine.
 
-Thanks.
-______________________________________________________________________
-   Todd Larsen                                 realtime4aim  [AIM]
-   tlarsen@openbits.net
+I changed the compiler name from 'gcc' to 'powerpc-linux-gcc'
 
+But when I ran make there was an error. Of course compile with gcc, it works well.
+
+Is there any options? It seems there is no use of configure option '--tartget=powerpc-linux'
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
