@@ -1,35 +1,38 @@
-From: Brad Boyer <flar@cegt201.bradley.edu>
-Message-Id: <199901191033.EAA19277@cegt201.bradley.edu>
-Subject: Re: 15 partitions max prob revisited
-To: kjacob@wantree.com.au (Keith Jacob)
-Date: Tue, 19 Jan 1999 04:33:38 -0600 (CST)
-Cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <199901190430.MAA01225@mule.wantree.com.au> from "Keith Jacob" at Jan 19, 99 03:00:04 pm
+Date: Tue, 19 Jan 1999 13:35:13 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Paul.Mackerras@cs.anu.edu.au
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: MCLK=100 breaks PowerBook
+In-Reply-To: <199901190047.LAA01101@tango.anu.edu.au>
+Message-ID: <Pine.LNX.4.03.9901191335040.12688-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> So the question is: can I add more devices (e.g. sdb16, sdb17, ...), or 
-> do I need to "reclaim" some HFS partitions if I want more ext2 ones? BTW, 
-> it was the installer that choked on the extra partitions I had created, 
-> so I would need to know how to fix that as well (if possible).
+On Tue, 19 Jan 1999, Paul Mackerras wrote:
+> Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
+> > On Mon, 18 Jan 1999, Cort Dougan wrote:
+> > > 0x0000 0x1fe2 0x0000 0x3fc3
+> > 
+> > Hmm, this would indicate mclk (GUI engine clock) runs at 8 MHz, and xclk
+> > (memory clock) runs at 16 MHz... very slow machine :-)
 > 
-> I'm sure this is not a Powermac/Linux prob, per se, but perhaps others 
-> have had this problem and found a neat fix for it (although HFS+ is not a 
-> solution for me until the Mac HFS+ disk tools improve).
+> 0x1fe2 == 8162, 0x3fc3 == 16323, so mclk = 81.62 MHz surely, not
+> 8MHz??
 
-No, this is a Linux problem.  You cannot have more than 15 partitions
-on a drive because there are not device numbers allocated for anything
-higher than partition number 15.  So even if you create a partion 16,
-there is no way to access it under Linux.  This is the way that the
-device numbers were allocated.  As far as I know, there isn't a
-reasonable way to change this either.  Sorry I have to be the bearer
-of bad news, but that's the way things currently stand.
+Oops, you're right.
 
-       Brad Boyer
-       flar@cegt201.bradley.edu
+Greetings,
+
+						Geert
+
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
