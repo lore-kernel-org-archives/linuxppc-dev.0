@@ -1,33 +1,53 @@
-Message-ID: <37D9E3CA.C7651EE7@loomer.com>
-Date: Fri, 10 Sep 1999 22:08:26 -0700
+Message-ID: <37D9E4FB.2ED188A6@loomer.com>
+Date: Fri, 10 Sep 1999 22:13:35 -0700
 From: Hugh Caley <hcaley@loomer.com>
 MIME-Version: 1.0
-To: Paul.Mackerras@cs.anu.edu.au
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problems with Samba 2.2 tree
-References: <37D8A113.E95181A5@loomer.com> <199909110331.NAA12380@tango.anu.edu.au>
+To: khendricks@ivey.uwo.ca
+CC: linuxppc-dev@lists.linuxppc.org, Franz.Sirl@munich.netsurf.de
+Subject: Re: More with Mozilla and glibc
+References: <37D9C729.6BED554E@loomer.com> <99091023185500.02403@localhost.localdomain>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-That fixed it Paul.  Thanks.
+Wow.  Well, I'm still thinking that my Mozilla problem is glibc related, even if
+the gdb output is bogus  ; ).  I know that Mozilla isn't even alpha yet, but other
+people have better luck than I do, and they are using older libraries than I am.
+I just don't want do deal with downgrading glibc just to test that (although I
+have tried downgrading gcc, but I got the same problems).
+
+Thanks for the info!
 
 Hugh
 
-Paul Mackerras wrote:
+Kevin Hendricks wrote:
 
-> Hugh Caley <hcaley@loomer.com> wrote:
+> Hi,
 >
-> > FYI, Paul, I have been rsyncing the stable tree on my Lombard laptop, and I
-> > haven't been able to boot the kernels built with it since sometime after 9/3
-> > or so.
+> I get this same error trying to debug the native threads version of the jdk.  I
+> don't think the problem is in glibc at all.
 >
-> Try again now.  In fixing a bug that affected generic configs, I
-> inadvertently introduced a bug that stopped pmac-only kernels from
-> booting (if booted by BootX).
+> The problem is in 4.17 versions of gdb under glibc 2.1.  In fact gdb can't
+> handle the realtime signals yet and so it stops when it receives one.
+> Therefore the error message in no way indicates the actual seg-fault or bug you
+> are trying to find and fix.
 >
-> Paul.
+> I think gdb simply has no maintainer yet (Kevin Buettner will be keeping it
+> up, if he hasn't started already) and no one has updated it to reflect all of
+> the new realtime signals now available in glibc 2.1.  The error message you get
+> just prevents me from using gdb 4.17 when debugging any native threads
+> (libpthread code).    Once the new thread signals numbers are included, you
+> should be able to use the handle nostop command in gdb to prevent the
+> libpthread signals from disrupting your debugging.
+>
+> The only workaround I know of is to rebuild linuxthreads (part of glibc) and
+> manually turn off the use of the new realtime signals and instead use the old
+> SIGUSR1 and SIGUSR2 signals for libpthreads until gdb gets fixed.
+>
+> I hope this helps.
+>
+> Kevin
 
 --
 Hugh Caley, Unix Administrator
