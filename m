@@ -1,39 +1,33 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: <cl.en@gmx.net>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: AirPort?
-Date: Sat, 1 Jul 2000 11:30:54 +0200
-Message-Id: <20000701093054.26086@192.168.1.10>
-In-Reply-To: <20000630172404.C4526@olis.north.de>
-References: <20000630172404.C4526@olis.north.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <200007011839.UAA29375@denx.local.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: (Manually) relocate PPC code?
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+Date: Sat, 01 Jul 2000 20:39:14 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jun 30, 2000, Claus <cl.en@gmx.net> wrote:
+Hi,
 
-> >: with iBooks/G4's? Because, see, I have one of each of those, and it'd be
-> >: nice to be able to use the wireless networking under Linux, not just
-MacOS
-> >: X and MacOS 9. I know there is a driver for the PCMCIA WaveLan card that
-> >: the AirPort is based on....
->
-><http://www.roelle.com/wvlanPPC/index.html>
+I need to write some C code on PPC which must stay relocatable, resp.
+I must relocate it myself (all of code and data etc.). I'm using GNU
+tools.
 
-Unfortunately, this will probably not work out of the box.
+This is for a standalone application, _NOT_ running under Linux.
 
-The wvlan_cs driver expects a PCMCIA card (and uses the PCMCIA card
-services to detect and get the card's config) but the Apple Airport card
-is not really one, it's plugged on an Apple custom IO bus which is not
-handled by the pcmcia tools at all.
+Where can I find documentation about things like the format of the
+GOT etc., or ideally existing _simple_ (read: small) example code?
 
-There is also need to tweak some undocumented IO bits here or there to
-get it working.
+All hints, pointers, ideas appreciated - TIA!
 
-I'm working on a port of the wvlan_cs driver to the Airport card, I'll
-post more news when it's done.
+Wolfgang
 
-Ben.
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Little known fact about Middle Earth:   The Hobbits had a very sophi-
+sticated computer network!   It was a Tolkien Ring...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
