@@ -1,78 +1,118 @@
-Date: Wed, 25 Sep 2002 08:12:13 -0700
-From: curt brune <curt@acm.org>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: initrd, ramdisk problems
-Message-ID: <20020925151213.GA19241@lenin.net>
-References: <20020922032631.GA30804@lenin.net>
+Date: Wed, 25 Sep 2002 14:49:26 -0400
+From: Patrick Mahoney <pmahoney@8d.com>
+To: ppcboot-users@lists.sourceforge.net,
+	linuxppc-embedded@lists.linuxppc.org
+Cc: yooth@ipone.co.kr
+Subject: ppcboot on rpxlite_dw mpc850
+Message-ID: <20020925184926.GA4089@segfault.usine.8d.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020922032631.GA30804@lenin.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I managed to get this working -- what I did differently was:
+Hello lists,
 
- * changed kernel version from 2.4.18 to 2.4.4 (from the ELDK cvs
-   repository)
+Apologies for the crosspost. I believe both lists are concerned.
 
-And that was it.  It now works.  The ramdisk decompresses without
-errors and the systems boots fine.  Happy day.
+Regarding my problem, i searched the archives and did not find any
+relevant information. Yet, i am new to this project, so there might be
+some elementary stuff i am not aware of...
 
-I noticed that the directory layout for the kernel changed somewhat
-from 2.4.4 to 2.4.18 --  In 2.4.4 I put ramdisk.image.gz in
-linux/arch/ppc/mbxboot, while in 2.4.18 the ramdisk goes in
-linux/arch/ppc/boot/images .  Plus in 2.4.18 there are a lot of
-directories in linux/arch/ppc/boot compared to 2.4.4 .
+I have an RPXlite_dw board from EmbeddedPlanet with the MPC850 chip. I
+use SourceGate II ver 4 from Avocet Systems for debugging. I am trying
+to boot ppcboot on it.
 
-As a history lesson, why did this change ?
+For ppcboot compilation, i did:
 
-Another question: When booting the two different kernels (2.4.18 and
-2.4.4-eldk) I noticed that the initial message about where the images
-are loaded and relocated reported different addresses and sizes.  Is
-that expected?
+$ make RPXlite_config
+$ make
 
-Cheers,
-Curt
+I installed the binary file into flash. Using the debugger, i can see
+that the first instructions are located at address 0x100, as they
+should be.
 
-On Sat, Sep 21, 2002 at 08:26:31PM -0700, curt brune wrote:
-> Hi,
->
-> I'm booting linux 2.4.18 on an embedded planet RPX_LITE-DW (823e) with
-> a RAM disk, however I am getting a "crc" error while decompressing the
-> RAM disk.  Snipped from the boot log are these two lines:
->
-> >> RAMDISK: Compressed image found at block 0
-> >> crc errorFreeing initrd memory: 1670k freed
->
-> I built the kernel image using "gmake zImage.initrd" .  This picked up
-> my gzipped ramdisk image OK.
->
-> [editor: I know, I know.  I should be using ppcboot.]
->
-> The ramdisk is 8192 bytes uncompressed.  Compressed it is 1.7MB.
->
-> The target kernel is configured for 8192 byte ramdisks also.  This is
-> stumping me.
->
-> In the boot log I also noticed something funny.  My board only has
-> 16MB total on it and the kernel is configured for 8MB ramdisk.  In the
-> boot log it says it is initializing 16 ramdisks of 8MB each ....
->
-> >> Kernel command line: root=/dev/ram ramdisk=8192
-> >> Memory: 13104k available (916k kernel code, 348k data, 52k init, 0k
-> >> highmem)
-> >> ...
-> >> RAMDISK driver initialized: 16 RAM disks of 8192K size 1024 blocksize
->
-> Looking in rd.c I see 16 is a #define constant.  Is this a problem?
->
-> Cheers,
-> Curt
->
->
->
->
->
+When i boot the board, no output is performed on the serial
+port. The first few instructions appear as follows (as viewed by the
+debugger) with the corresponding code snippet pasted at the end.
+
+0x100 LIS	r3,-0x5E0
+0x104 MTSPR	IMMR,r3
+0x108 LI	r21,0x1
+0x10C B		0x118
+0x110 LI	r21,0x2
+0x114 B		0x118
+0x118 LI	r3,0x1002
+0x11C MTMSR	r3
+
+Using the debugger and doing a step by step execution, it seems that
+these instructions generate breakpoint exceptions, change the memory
+map in some way, and jump somewhere in the code. It finally ends by
+executing the 'FFFF' instruction (in flash?) which generates a
+float-instruction exception. I apologize for this somewhat unclear
+description, but it seems that the execution is different from time to
+time.
+
+Now, here are my interrogations...
+
+- Has anyone booted ppcboot with this exact board?
+
+- Where does the LI instruction come from? It doesn't appear in the
+Motorola's 32 bit ppc ref books. Could the problem be at the
+cross-compiling level?
+
+- Here's a notice written by Yoo. Jonghoon in the
+.../board/RPXlite/flash.c file:
+
+/*
+ * Yoo. Jonghoon, IPone, yooth@ipone.co.kr
+ * PPCboot port on RPXlite board
+ *
+ * Some of flash control words are modified. (from 2x16bit device
+ * to 4x8bit device)
+ * RPXLite board I tested has only 4 AM29LV800BB devices. Other devices
+ * are not tested.
+ *
+ * (?) Does an RPXLite board which
+ *      does not use AM29LV800 flash memory exist ?
+ *      I don't know...
+ */
+
+Can I rightfully conclude that ppcboot has yet to be ported to this
+precise board? If so, what are the modifications that would be to be
+done? Any useful links?
+
+Best regards,
+
+
+Patrick Mahoney
+
+
+.../cpu/mpc8xx/start.S:
+================================================
+        .globl  _start
+_start:
+        lis     r3, CFG_IMMR@h          /* position IMMR */
+        mtspr   638, r3
+        li      r21, BOOTFLAG_COLD      /* Normal Power-On: Boot from FLASH   */
+        b       boot_cold
+
+        . = EXC_OFF_SYS_RESET + 0x10
+
+        .globl  _start_warm
+_start_warm:
+        li      r21, BOOTFLAG_WARM      /* Software reboot                      */
+        b       boot_warm
+
+boot_cold:
+boot_warm:
+
+        /* Initialize machine status; enable machine check interrupt            */
+        /*----------------------------------------------------------------------*/
+        li      r3, MSR_KERNEL          /* Set ME, RI flags */
+        mtmsr   r3
+
+================================================
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
