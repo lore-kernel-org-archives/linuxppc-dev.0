@@ -1,55 +1,50 @@
-Date: Mon, 10 Nov 2003 09:46:24 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: John Whitney <john.whitney@timesys.com>
-Cc: "Mailing List: linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Bad code path in DoSyscall
-Message-ID: <20031110094624.A29465@home.com>
-References: <BBD51F48.2329%john.whitney@timesys.com>
+From: linas@austin.ibm.com
+Date: Mon, 10 Nov 2003 12:50:44 -0600
+To: Christian <evil@g-house.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ppc32 lockups with 2.6
+Message-ID: <20031110125044.A22030@forte.austin.ibm.com>
+References: <3FA5698A.9000905@g-house.de> <3FAABE62.4090804@g-house.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <BBD51F48.2329%john.whitney@timesys.com>; from john.whitney@timesys.com on Mon, Nov 10, 2003 at 10:56:08AM -0500
+In-Reply-To: <3FAABE62.4090804@g-house.de>; from evil@g-house.de on Thu, Nov 06, 2003 at 10:34:26PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Nov 10, 2003 at 10:56:08AM -0500, John Whitney wrote:
+On Thu, Nov 06, 2003 at 10:34:26PM +0100, Christian wrote:
 >
-> There seems to be a bad code path in the assembly routine DoSyscall()
-> (arch/ppc/kernel/entry.S).  In the case of an invalid syscall being made (in
-> my case, from user space), DoSyscall is called and eventually branches to
-> label 66.  Note that before the branch, r12 is set to zero.
-
-<snip>
-
->     /* disable interrupts so current_thread_info()->flags can't change */
-> 30: LOAD_MSR_KERNEL(r10,MSR_KERNEL) /* doesn't include MSR_EE */
->     SYNC
->     MTMSRD(r10)
->     lwz r9,TI_FLAGS(r12)
+> as nobody seems to answer,
 >
-> Which immediately causes a bad page fault kernel oops.  I haven't come up
-> with a patch yet, but will try to when I get the time unless someone with
-> more knowledge in this area wants to do it.  Just wanted to let the list
-> know about the problem.
+> yes, i know, if the problem does not occur to other people, it's not
+> worth fixing it. and PReP machines seem to be some kind of "exotic"
+> (read: outdated) anyways. but i don't have the skills fixing it :-(
+>
+> so, if at least someone could point me to something i might have
+> forgotten to look at, or how to get an oops message out of this here.
+> would be nice if it turns out to be a user-error only.
 
-Thanks, here's a patch to grab the thread info when you go down the
-no syscall path. This should cure the problem.
+I'd suggest getting the KDB kernel patches, and then poking around to
+see what the system was doing when it locked up.  What were the stack traces?
+does it always lock up in the same routine?  What line of code was it
+executiing when it did that?
 
-It's against linuxppc-2.5.  I think that's what you meant since this
-bug isn't in 2.4.
+--linas
 
--Matt
 
-===== arch/ppc/kernel/entry.S 1.40 vs edited =====
---- 1.40/arch/ppc/kernel/entry.S        Sat Sep 27 03:58:48 2003
-+++ edited/arch/ppc/kernel/entry.S      Mon Nov 10 09:36:55 2003
-@@ -234,6 +234,7 @@
-        RFI
-
- 66:    li      r3,ENOSYS
-+       rlwinm  r12,r1,0,0,18   /* current_thread_info() */
-        b       22b
-
-        .globl  ret_from_fork
+>
+> i also filed a bug in bugzilla:
+> http://bugzilla.kernel.org/show_bug.cgi?id=1494
+>
+> Thanks for reading,
+> Christian.
+>
+> --
+> BOFH excuse #128:
+>
+> Power Company having EMP problems with their reactor
+>
+>
+>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
