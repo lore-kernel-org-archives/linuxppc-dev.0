@@ -1,41 +1,38 @@
-From: vunnam.rao@wipro.com
+Message-ID: <20040707071319.93766.qmail@web15201.mail.bjs.yahoo.com>
+Date: Wed, 7 Jul 2004 15:13:19 +0800 (CST)
+From: Song Sam <samlinuxppc@yahoo.com.cn>
+Subject: Re: make menuconfig error in latest "bk pull"
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <Pine.LNX.4.60.0407061615230.21433@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: QMC
-Date: Wed, 7 Jul 2004 12:33:20 +0530
-Message-ID: <D3C8905000DE1C42BC5378A14C7FD15F01234597@hyd-lax-msg.wipro.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Gurus,
+"Robert P. J. Day" <rpjday@mindspring.com> wrote£º
 
-We have developed a QMC driver for MPC860P and the TX is working fine.
-We are getting interrupts for Tx, But, the RX we are not yet all getting
-any interrupt.
+> i'm probably way behind the curve here, but:
+>
+> $ make ARCH=ppc menuconfig
+> scripts/kconfig/mconf arch/ppc/Kconfig
+> drivers/net/Kconfig:201: can't open file
+> "drivers/net/ibm_ocp/Kconfig"
+> make[1]: *** [menuconfig] Error 1
+> make: *** [menuconfig] Error 2
 
-I am using the functionality for providing GCI(2 bits/D-channel, and a
-total of 8 such channels) support through SCC3 port of the MPC860P. The
-configuration of TSA Ram, and QMC Global/Specific parameters have been
-correctly done. Though I receive TX interrupts, I am not able to receive
-any RX Interrupts. This is strange because I can even see incoming
-physical data on the Rx port through a Logic Analyzer.
-
-I do not get any data in the receive buffers at all. The QMC
-initialization has been done in line with the example code provided from
-Motorola at:
-https://e-www.motorola.com/webapp/Download?colCode=MPC860COD05&prodCode=
-MPC860&nodeId=03C1TR046708718657&appType=license&location=psp
-
-I tried with loopback, but to no success.
-The basic doubt here is do we need any microcode for QMC on MPC860P.
-
-Thanks in advance!!!
+I met this same problem,too.You could try mask
+drivers/net/Kconfig:201.Then it could be OK.I guess it
+was Matt Porter updated old ibm_ocp but neglected to
+fix related Makefile.Also if you use "make
+mrproper",there is still one Makefile error left.You
+could try remove or mask the line of ibm_ocp of
+driver/net/Makefile.There was no driver/net/ibm_ocp
+directory in the lastest repository.
 
 Best regards,
 
-Kondala
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
