@@ -1,49 +1,34 @@
-Message-ID: <38EE0267.FB881499@embeddededge.com>
-Date: Fri, 07 Apr 2000 11:44:39 -0400
-From: Dan Malek <dan@netx4.com>
+Subject: Unpacking the mvista kernel RPMs
+To: pavel_roskin@geocities.com (Pavel Roskin)
+Date: Mon, 10 Apr 2000 13:14:55 +1000 (EST)
+Cc: jason_wohlgemuth@gilbarco.com (Wohlgemuth Jason),
+        linuxppc-embedded@lists.linuxppc.org ('linuxppc-embedded@lists.linuxppc.org')
+In-Reply-To: <Pine.LNX.4.21.0004071011570.19406-100000@sunapee.transcept.com> from "Pavel Roskin" at Apr 07, 2000 11:20:52 AM
 MIME-Version: 1.0
-To: Pavel Roskin <pavel_roskin@geocities.com>
-CC: "Wohlgemuth, Jason" <jason_wohlgemuth@gilbarco.com>,
-        "'linuxppc-embedded@lists.linuxppc.org'"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Software Emulation Exception...
-References: <Pine.LNX.4.21.0004071011570.19406-100000@sunapee.transcept.com>
 Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000410031456.0B51D3C960@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > "Software Emulation %s/%d NIP: %lx *NIP: 0x%x code: %x"
+Pavel Roskin writes:
+> By the way, I found a newer kernel (March, 23) in
+> ftp://ftp.mvista.com/pub/CDK/updates/1.0/ppc_8xx/SRPMS/
 
-So, decode the address/instruction and see if it makes sense.
+How does one go about unpacking one of these RPMs?
 
-> The problem has gone after upgrading to the Montavista kernel (from their
-> CDK 1.0)
+I tried ftp'ing the rpm and going:
+% rpm -i hhl-kernel-2.2.13-7.src.rpm
+% rpm -bp /usr/src/redhat/SPECS/hhl-kernel-2.2.13.spec
+...
+cp: configs/%{_hhl_kernel_configs}: No such file or directory
+Bad exit status from /var/tmp/rpm-tmp.689 (%prep)
 
-Since I know something about both of your custom board designs, I
-can say that the software is unlikely to be the trouble, although it
-could affect the problem.  This exception is typical of custom designs
-that haven't properly designed the external device interfaces to the
-8xx bus.  I strongly suspect one of the external devices isn't working
-correctly, and when the processor is executing code from DRAM it gets
-some trash from the bus instead of the proper instruction.  After
-something like this occurs, dump the memory at this address and check
-to make sure what the processor claims to have executed is really there.
+Can anyone please help me get the hang of RPM?  I'm sure it's _supposed_ to
+make my life easier, but...
 
-
-> However, I have no idea what caused the problem and whether it has been
-> fixed.
-
-If you haven't attached a logic analyzer, tripped the error, and verified
-the bus timing you will never know what caused it.  Things like this
-don't fix themselves :-).
-
-These problems are sensitive to the instruction stream (the instruction
-pointer, the instruction itself, and access to the device).  Moving the
-code around may appear to "fix" the problem, but it is still there
-waiting to happen once the product is shipping......
-
-
-	-- Dan
+Thanks,
+Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
