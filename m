@@ -1,32 +1,37 @@
-Date: Mon, 31 Jul 2000 14:03:57 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Giuliano Pochini <pochini@shiny.it>
-cc: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Stealth port problems
-In-Reply-To: <XFMail.000731091240.pochini@shiny.it>
-Message-ID: <Pine.LNX.4.10.10007311403180.442-100000@cassiopeia.home>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Takashi Oe <toe@unlserve.unl.edu>,
+        linuxppc-dev
+ <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: LinuxPPC X Server
+Date: Mon, 31 Jul 2000 16:07:48 +0200
+Message-Id: <20000731140748.1481@mailhost.mipsys.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 31 Jul 2000, Giuliano Pochini wrote:
-> On the Amiga I used to rtx stuff at 230K with no problems. It has 1 byte
-> buffer...
+>> >> - A likely timeframe for first 3D Drivers
+>> >>   to be released, which optimally should
+>> >>   not be more than 3 months from now
+>>
+>> >Again, what is not working for you?  What have you tried to get them
+>> >working for you and how did it fair?
+>>
+>> I cannot try getting something to work what does not exist. And appearently
+>> there are no GLX- or DRI-Drivers for ATI Rage (or any other hardware) yet.
+>> I am talking about Hardware Accelerated Mesa3D here...
+>
+>Ok, you should say so (3D support for older video cards like ATI Rage) in
+>your previous message then.  As you may know, DRI drivers already exist
+>for mga, r128, tdfx, i810 in source form.
+>
 
-Under AmigaOS or under Linux/{m68k,PPC}? :-)
+I'm working on a /dev/agpgart implementation for new machines. But DRI
+should be already port-able using the PCI GART provided by most ATI
+chipsets. Any volunteer ?
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
