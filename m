@@ -1,46 +1,49 @@
-Message-ID: <004901c0cbf8$d5919630$9e648a89@cern.ch>
-From: "Shoudong Xu" <Shoudong.Xu@cern.ch>
-To: "Stefan Balcerczak" <Stefan.Balcerczak@marconi.com>
-Cc: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-References: <80256A37.0047D8AE.00@marconicomms.com>
-Subject: Re: Antwort: Re: unable to mount root fs on 01:00
-Date: Mon, 23 Apr 2001 15:25:15 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+From: jtm@smoothsmoothie.com
+Date: Mon, 23 Apr 2001 11:03:02 -0500
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 8260 and RTLinux
+Message-ID: <20010423110302.C21223@shamus.smoothsmoothie.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Stefan,
+I tried sending this to the RTL mailing list, but there appears to
+be a pretty long delay in posting, so I thought I'd ask here, too.
 
-Change the kernel you used ,try linuxppc_2_5
+Does RTLinux run on the MPC8260? I thought it should, but can't get
+it to work.
 
-http://www.fsmlabs.com/linuxppcbk.html
+I've tried a couple different kernel versions, but no luck. I tried 2.4.0
+from kernel.org, but it wouldn't compile at all. I can run a 2.4.1 without
+the RTLinux modules. If I apply the patch, to 2.4.1, I get several failures,
+and it looks like the powerpc changes are already in the kernel. I can still
+build the kernel, however.
 
-Regards,
+With 2.4.1, when I try to build the modules I get this error:
+	rtlinux-3.0/include/rtlinux_signal.h:67: `NR_IRQS' undeclared here (not in a function)
 
-Shoudong Xu
+If I define NR_IRQS to be 256, it compiles OK.
+
+So I can boot the kernel, and when I do a 'insmod rtl.o', I get:
+	RTLinux Extensions Loaded (http://www.fsmlabs.com/)
+	Kernel panic: request IRQ
+
+I've also tried a bitkeeper kernel with no better luck.
+
+I saw in an old mailing list posting that XMON or KGDB needs to be
+enabled on the powerpc to get RTLinux to work, but the kernel won't
+build with either enabled.
+
+So am I doing something wrong, or does RTLinux not work on the 8260?
+
+Thanks.
 
 
------ Original Message -----
-From: "Stefan Balcerczak" <Stefan.Balcerczak@marconi.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Cc: <Brian.Dominy@radisys.com>
-Sent: Monday, April 23, 2001 3:07 PM
-Subject: Antwort: Re: unable to mount root fs on 01:00
-
-
->
-> Brian,
->
-> I included the loopback, but the error is the same :-(
->
-> Regards,
-> Stefan
->
->
->
->
+--
+Jay Monkman	    The truth knocks on the door and you say "Go away, I'm
+monkman@jump.net    looking for the truth," and so it goes away. Puzzling.
+		     - from _Zen_and_the_Art_of_Motorcycle_Maintenance_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
