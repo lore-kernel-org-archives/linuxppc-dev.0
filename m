@@ -1,34 +1,36 @@
-Date: Sun, 30 Jul 2000 07:39:03 -0500 (CDT)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Iain Sandoe <iain@sandoe.co.uk>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Stealth port problems
-In-Reply-To: <200007301031.LAA32665@hyperion.valhalla.net>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.1000730073120.1508F-100000@ofey.inetnebr.com>
+Message-ID: <3984265B.631EB6C4@student.ethz.ch>
+Date: Sun, 30 Jul 2000 14:58:03 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Giuliano Pochini <pochini@denise.shiny.it>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: XF4, speed and keyboard problems
+References: <39835F2B.36C12CC9@denise.shiny.it>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 30 Jul 2000, Iain Sandoe wrote:
+Giuliano Pochini wrote:
+>
+> Hi! I finally installed XF4. It seems faster for most of operations (windows
+> movement is smothes, xscreensever runs fater, etc), but all visualization
+> plugins for Alsaplayer and xmms are 30% slower according to CPU usage
+> (print_a_bitmap_on_the_screen() is slower ??).
 
-[...]
-> The RX buffer in an 85230 (which is actually the chip - IIRC - an enhanced
-> 8530) is 8 characters deep
+CPU usage of the plugins or the server? You have to sum up both to get the
+actual CPU usage with both versions of X.
 
-Ok, this is a news to me.  I'm certain that SCC on oldworld pmacs is
-85C30.  When did the change to 85230 occur?  If I remember correctly,
-some DMA setup codes in macserial.c need to know about it if it's dealing
-with 85230 rather than 85C30.
-
->                            - so any more that about 700 us IRQ block will
-> cause a drop out at 115200 continuous...
-
-With DMA, this is a non-issue as far as serial driver is concerned.
+Can you please provide numbers?
 
 
-Takashi Oe
+Michel
 
+
+--
+Elevator out of order. Try the ones across the street.
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
