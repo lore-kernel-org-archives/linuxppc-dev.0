@@ -1,32 +1,20 @@
-Message-Id: <9901129161.AA916142427@smtplink.dscc.dk>
-Date: Tue, 12 Jan 99 12:59:35 +0100
-From: "RTHEANDE"<rtheande@dscc.dk>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: PHY driver for 860T
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <369B4640.E6DBBC86@siemens.at>
+Date: Tue, 12 Jan 1999 13:55:28 +0100
+From: Helmut Buchsbaum <helmut.buchsbaum@siemens.at>
+MIME-Version: 1.0
+To: RTHEANDE <rtheande@dscc.dk>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PHY driver for 860T
+References: <9901129161.AA916142427@smtplink.dscc.dk>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Concerning information about Motorola's FADS boards, take a look at
+http://www.mot.com/SPS/RISC/netcomm/docs/pubs/index.html#ppc_group.
 
-     Hi there,
-     
-     I'm building a board with an MPC860T that's supposed to run LinuxPPC. 
-     I read somewhere on this list that a board with the MPC860T exists 
-     (the MBX board?). This board should have a 100baseTX PHY chip from 
-     Level One. If the above information is correct, could someone please 
-     take a look and tell me which chip they use.
-     
-     And something else: it doesn't look like Motorola has any diagrams on 
-     the web. Does diagrams come with the boards? Are they available 
-     anywhere else?
-     
-     TIA,
-     
-     Robin.
-
-
+-- Helmut
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
