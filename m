@@ -1,49 +1,31 @@
-Message-ID: <3F0BAD39.9060708@earthlink.net>
-Date: Tue, 08 Jul 2003 22:50:49 -0700
+Message-ID: <3F0BAE62.50408@earthlink.net>
+Date: Tue, 08 Jul 2003 22:55:46 -0700
 From: Dean Matsen <deanm@earthlink.net>
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-Cc: Eugene Surovegin <ebs@ebshome.net>,
-	Dean Matsen <deanmatsen@earthlink.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Ethernet PHY chip discovery not working on 855T with  971/972
- chips
-References: <3F0B7B28.7040902@earthlink.net> <5.1.0.14.2.20030708195315.038110e8@mail.ebshome.net> <3F0BA671.1050900@embeddededge.com>
-In-Reply-To: <3F0BA671.1050900@embeddededge.com>
+To: Dmytro Bablinyuk <dmytro.bablinyuk@tait.co.nz>
+Cc: linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Problem with starting up 2.4.21 kernel
+References: <3F0B9F69.1030801@tait.co.nz>
+In-Reply-To: <3F0B9F69.1030801@tait.co.nz>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+Dmytro Bablinyuk wrote:
 
 >
-> Eugene Surovegin wrote:
+> sramsize = 0x00000000
+> immr_base = 0x02200000
+> bootflags = 0x00000001
 >
->> It usually means that your hw lacks pull-up on MII MDIO line.
->
->
-> Yep, and even when PHYs indicate they have internal pull-ups, either
-> they don't or they aren't sufficient.
->
->
-> -- Dan
->
->
->
->
-Yes, I see we have no pullup on that line. We do dedicated HVAC
-applications, so we
-don't need to do this search. Our dedicated software wouldn't talk to
-the chip
-at the wrong address.
+Just a sanity check, but that immr_base sounds pretty low to me... we
+always use 0xFxxx0000.
+This is not necessarily wrong, but make sure this is what you want. In
+fact, I think I read
+in a comment somewhere that in some cases it MUST match the value of
+your boot loader.
 
-Don't you think the fix from my original message should still be
-considered for
-integration into the kernel? It will improve the odds that the kernel can
-auto-detect someone's hardware....
-
-Thanks
 Dean
 
 
