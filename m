@@ -1,42 +1,33 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <001801c25ed6$1c389e00$7301a8c0@zhongqx>
-From: "zhongqx" <zhongqx@guoguang.com.cn>
-To: "Dave Ellis" <DGE@sixnetio.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <00512BA4F9D3D311912A009027E9B8F407E489@NT>
-Subject: Re: Why FEC and SCC1 can not work at the same time?
-Date: Wed, 18 Sep 2002 13:42:00 +0800
-MIME-Version: 1.0
-Content-Type: text/plain
+To: "sanjay k k" <fren00@rediffmail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ppc_405-gdb + Segmentation fault (core dumped) 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "18 Sep 2002 01:31:37 -0000."
+             <20020918013137.15713.qmail@webmail6.rediffmail.com>
+Date: Wed, 18 Sep 2002 08:59:07 +0200
+Message-Id: <20020918065912.45817FA8D@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sir,
-   thank you very much,
-   what you said is very right,fix ppcboot just like you said,and the proplem disappear!
-   thank you again!
------ Original Message -----
-From: "Dave Ellis" <DGE@sixnetio.com>
-To: "'zhongqx'" <zhongqx@guoguang.com.cn>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Wednesday, September 18, 2002 4:20 AM
-Subject: RE: Why FEC and SCC1 can not work at the same time?
-
-> On Tuesday, September 17, 2002 zhongqx wrote:
-> > Now I meet a new problem! it is very strange!
-> > I want to use FEC(100M) and SCC1(10M) interface,but they can
-> > not work together.
-> >      When I use ppcboot with CONFIG_SCC1_ENET defined , boot
-> > linux ,then SCC1 is ok,when I ping FEC (I config it ip
-> > address is 192.168.2.221) it displayed messaged "time out".
-> >      When I use ppcboot with CONFIG_FEC_ENET  defined,  boot
-> > linux ,then FEC is ok, when I
-> > ping SCC( I config it ip address is 192.168.1.198) it
-> > displayed messaged also "time out".
+In message <20020918013137.15713.qmail@webmail6.rediffmail.com> you wrote:
 >
-> For FADS PPCBoot sets up both BCSR1 and BCSR4 in cpu/mpc8xx/scc.c.
-> In Linux 2.4.18 only BCSR1 is configured in arch/ppc/8xx_io/enet.c
-> Maybe configuring BCSR4 in enet.c would help.
+> I was trying to debug the kernel with the help of BDI, but
+> couldn't do so as gdb is dying itself.
+> I am using monta vista cross-compiled gdb. Here what i do to debug
+> the kernel.
+
+You need a newer version of GDB. The one included in  our  ELDK  will
+work. See http://www.denx.de/re/ELDK.html
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Life is a garment we continuously alter, but which  never  seems  to
+fit."                                                  - David McCord
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
