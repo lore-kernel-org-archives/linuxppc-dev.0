@@ -1,44 +1,44 @@
-Date: Thu, 29 Jun 2000 03:56:09 -0400 (EDT)
-From: Jamie Guinan <guinan@bluebutton.com>
-Reply-To: guinan@bluebutton.com
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MBX IDE
-In-Reply-To: <Pine.LNX.4.21.0006280808460.16924-100000@gemini.home.net>
-Message-ID: <Pine.LNX.4.21.0006290329430.23317-100000@gemini.home.net>
+Message-ID: <395B0CA7.3B3AC0E5@netx4.com>
+Date: Thu, 29 Jun 2000 04:45:27 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: guinan@bluebutton.com
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MBX IDE
+References: <Pine.LNX.4.21.0006290329430.23317-100000@gemini.home.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 28 Jun 2000, Jamie Guinan wrote:
->
-> There was a thread back in November about getting IDE going on
-> an MBX,
->
-> http://lists.linuxppc.org/listarcs/linuxppc-embedded/199911/msg00054.html
->
-> Did anyone make any progress on this? ...
-<snip>
+Jamie Guinan wrote:
 
-Well, many hours and printk's later,
+> m8xx_setup.c doesn't seem to want both IDE and PCMCIA ATA devices
+> to exist at the same time, though.  Not sure what to do about that,
 
-  hda: 251350AT Maxtor 2.5" Disk Drive (C) 199, 1287MB w/58kB Cache,
-  CHS=2616/16/63
 
-I haven't tried formatting it yet, but I managed to write some
-raw data on /dev/hda from a Linux program, then read it back in
-EPPCBug.  Looks funny, every other 2bytes are 00's, but perhaps
-that's expected for doing a blind write() on /dev/hda.
+It's an interrupt routing issue.  In fact, all of the support
+for SouthBridge/8259 controller parts on an 8xx is an interrupt
+routing issue.  Mapping the internal interrupts from something
+like the PCMCIA into the same space as the PCI/ISA has never
+worked in the 8xx port.  You basically get to configure an
+"8xx PC" or an "8xx embedded".  Cort and I are constantly working
+on some better interrupt mapping scheme, some of it "sticks" in
+the kernel sources.  The entire Linux kernel is either "PC" or
+not.
 
-m8xx_setup.c doesn't seem to want both IDE and PCMCIA ATA devices
-to exist at the same time, though.  Not sure what to do about that,
-but first I have to study interrupts and PCI/ISA busses some
-more (I'm a bit rusty on that subject matter).  If I can hack
-them to both work at the same time for my own purposes, I'll
-be happy.
+I don't know of any production boards that support PCI with ISA
+on an 8xx.  You can program the UPM to provide ISA bus timing,
+or for a few pennies put a programmable device on the 8xx bus
+if you want an IDE device.
 
--Jamie
+> .....  If I can hack
+> them to both work at the same time for my own purposes, I'll
+> be happy.
 
+You can.....It just won't run on anything else when you are done.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
