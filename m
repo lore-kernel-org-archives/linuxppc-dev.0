@@ -1,67 +1,30 @@
-Date: Sat, 29 Jul 2000 11:11:11 -0500 (CDT)
-From: Ramprasad Rao <ramp@oddjob.uchicago.edu>
-To: Iain Sandoe <iain@sandoe.co.uk>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.4.0-test5 build options.
-In-Reply-To: <200007291341.OAA18843@hyperion.valhalla.net>
-Message-ID: <Pine.GSU.4.05.10007291105240.10071-100000@oddjob.uchicago.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 29 Jul 2000 09:38:17 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dan Malek <dan@netx4.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: CONFIG_PPC != Mac
+Message-ID: <20000729093817.C4552@opus.bloom.county>
+References: <39821DD7.ED0DA0A2@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <39821DD7.ED0DA0A2@embeddededge.com>; from dan@netx4.com on Fri, Jul 28, 2000 at 07:57:11PM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Iain -
+On Fri, Jul 28, 2000 at 07:57:11PM -0400, Dan Malek wrote:
 
-I got 2.4.0-test5 from btkeeper to build on my USB only iMac. I did keep
-all the ADB options as well. The relevant portions from my .config is
-attached below. I just kept all the defaults from 'make common_config'.
+> So, the 2.4.0 PowerPC tree is now Mac workstation only?  Please,
+> we can't make the assumption that CONFIG_PPC is a Macintosh.  It
+> breaks all PowerPC embedded systems (or anything that isn't a recent
+> Mac with USB).  There is a CONFIG_MAC, isn't that enough to do the same
+> thing?
 
-- Ram
+Well, where are the specific breakages?  (CONFIG_MAC is used for 68k only
+right now, IIRC.)
 
-CONFIG_ADB=y
-CONFIG_ADB_CUDA=y
-CONFIG_ADB_MACIO=y
-CONFIG_ADB_PMU=y
-CONFIG_ADB_KEYBOARD=y
-CONFIG_ADBMOUSE=y
-
-#
-# Mice
-#
-CONFIG_BUSMOUSE=y
-CONFIG_ADBMOUSE=y
-CONFIG_MOUSE=y
-CONFIG_PSMOUSE=y
-
-#
-# USB support
-#
-CONFIG_USB=y
-CONFIG_USB_OHCI=y
-CONFIG_USB_HID=y
-CONFIG_INPUT_KEYBDEV=y
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-
-
-On Sat, 29 Jul 2000, Iain Sandoe wrote:
-
->
-> can anyone tell me the legal combination of ADB/USB/Input layer options that
-> will work under 2.4.0-t5?
->
-> After several aborted builds (either failed to compile or link) at half an
-> hour a go... I'm getting a bit frustrated,
->
-> I'm trying to do: ADB+USB (G3 mt)  ADB+USB (G3 Lombard) ADB only (9600).
->
-> So, I guess, whatever will bring ADB+USB ought to do it.
->
-> Iain.
->
->
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
