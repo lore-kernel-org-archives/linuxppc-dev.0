@@ -1,39 +1,43 @@
-Subject: Re: MPC850SAR with SPI support
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: li <slowforce@21cn.com>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <GW969369996858.28984@webmail4.inner-21cn.com>
-References: <GW969369996858.28984@webmail4.inner-21cn.com>
-Content-Type: text/plain
-Message-Id: <1056962361.2827.4879.camel@zambia.cambridgebroadband.com>
-Mime-Version: 1.0
-Date: 30 Jun 2003 09:39:21 +0100
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: ppcboot 8260 LXT971A
+Date: Mon, 30 Jun 2003 10:46:57 +0200
+Message-ID: <30C145E544071F4FB8B627789F7910BD32BE35@csy-exchange1.giat.intra>
+From: "ARIBAUD Albert" <A.ARIBAUD@giat-industries.fr>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Li,
-
-Why are you combining an SPI driver with an ATM driver?  Shouldn't you
-create two separate drivers instead?
-
-Alex
-
-On Sun, 2003-06-29 at 17:31, li wrote:
-> Hi all,
-> I am implementing SPI interface with MPC850SAR and linux kernel 2.4.18.
-> The following is what i have done:
-> 1. set the SPI related registers
-> 2. allocate the dpram and memory for SPI buffer
->    descriptor and RX/TX buffer.
-> 3. enable all possible interrupts for SPI
-> After writing  to SPI interface, i can get transmit interrupt from cpm, since SPI performs write and read simultaneously, the BD_SC for READ will be set with not EMPTY, but in fact it is not. And what i get in the SPI dev is not correct.
-> ps: i select the I2C and SPI UCODE PATCH when making menuconfig.
-> Any comment please go ahead!
-> regards!
-> Li
+> Hi,
+> I installed a ppcboot and a linux 2.4 on a MPC8260ADS card.
 >
+> Now, I am working on a custom card such as an MPC8260ADS
+> card. The difference between those two cards is the ethernet:
+> my custom card has two ethernet port, and uses two LXT971A.
 >
+> So, I compile a ppcboot for 8260ads. PPCBOOT can't download a
+> kernel with tftp. Is someone has a source code to support the LXT971?
+>
+> I compile a new kernel, which support LXT971A. PPCBOOT can
+> run it from memory. But the kernel doesn't have network.
+>
+> please can someone help me?
 
+Hi,
+
+My own experience was with a TQM855L-like setup, using an LX971A, so it's an 8xx, not an 82xx context.
+
+However : I had no problem with PPCBoot (and U-Boot now), but at first the kernel would not work with Ethernet. I traced that down to the MPC8XX CPM Options : once the "use MDIO for PHY configuration" option was UNSET (but "Support LXT971 PHY" was SET, of course), everything worked OK.
+
+My problem had something to do with MII state change interrupts not being detected properly, so the Ethernet driver was not told when the line went up after autonegociation, and thus never sent any packet.
+
+Maybe with your 8260 you hit the same kind of problems?
+
+HTH,
+
+Albert.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
