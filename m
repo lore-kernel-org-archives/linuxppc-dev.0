@@ -1,46 +1,49 @@
-Date: Wed, 13 Sep 2000 22:21:21 -0600
-From: Cort Dougan <cort@fsmlabs.com>
-To: Michel Lanners <mlan@cpu.lu>
-Cc: paulus@linuxcare.com.au, linuxppc-dev@lists.linuxppc.org
-Subject: Re: zeroing pages in the idle task?
-Message-ID: <20000913222121.K4546@hq.fsmlabs.com>
-References: <200009122018.WAA00786@piglet.grunz.lu> <200009131951.VAA00816@piglet.grunz.lu>
-Mime-Version: 1.0
+From: Paul Mackerras <paulus@linuxcare.com.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200009131951.VAA00816@piglet.grunz.lu>; from Michel Lanners on Wed, Sep 13, 2000 at 09:51:25PM +0200
+Message-ID: <14784.22458.21233.588776@argo.linuxcare.com.au>
+Date: Thu, 14 Sep 2000 15:44:42 +1100 (EST)
+To: mlan@cpu.lu
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: zeroing pages in the idle task?
+In-Reply-To: <200009131951.VAA00816@piglet.grunz.lu>
+References: <200009122018.WAA00786@piglet.grunz.lu>
+	<200009131951.VAA00816@piglet.grunz.lu>
+Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I missed a lot of this thread, this is the first message I picked up on.
+Michel Lanners writes:
 
-} To come back to my original question...
+> > - if not, would it be a good idea to enable it by default?
+>
+> What do you think, Paul, Cort?
 
-It's a dead loss on SMP, but it can be just run on UP machines.  The main
-problem was I didn't have enough time to finish it and didn't want to leave
-something running in the idle task that I hadn't finished studying the
-effect of.
+As I recall, it was necessary to disable the cache in the idle task so
+that the idle task's clearing of pages didn't trash the cache for
+other tasks.  This introduces its own set of complexities, for example
+you have to make sure the cache is reenabled on all exception entries
+and also before you call schedule in the idle task.  You also have to
+make sure that you don't get any inconsistencies in the cache, which
+means you would have to flush the cache for the page before starting
+to clear it with the cache disabled.
 
-I really wanted to push it up to the freelist since I don't think it's a
-PPC-only optimization.  I never bothered trying to push it since at that
-point the tree was moving to the stable point and wasn't going to be
-changing that radically soon.
+It would be cleaner to have the page mapped with a non-cacheable
+mapping while the idle task is clearing it but you still have to be
+careful about cache inconsistencies, particularly if the page is
+mapped twice and one mapping is cacheable and the other isn't.
 
-} > - is there any problem with using this feature?
-}
-} I didn't have any, but that's only my box then....
+I'm not sure that the current code still addresses all those issues
+correctly and completely.  Unused things tend to be subject to
+bitrot. :-)
 
-Not without a lot of study and testing.  I haven't touched the code in a
-long time...
+Paul.
 
-} What do you think, Paul, Cort?
-
-It's not a matter of turning it on - it's a matter of making it work again
-and testing it.
-
-} Maybe enabling it by default would be a good choice? It can always be
-} disabled...
-}
-} I'll post a patch on sourceforge.
+--
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
