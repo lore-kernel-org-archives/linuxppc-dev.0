@@ -1,16 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 38DDC67A46
+Return-Path: <edjubenville@adelphia.net>
+Received: from mta11.adelphia.net (mta11.adelphia.net [68.168.78.205])
+	by ozlabs.org (Postfix) with ESMTP id D6FDC67A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Mar 2005 03:58:44 +1000 (EST)
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <46a39a3ece66c48a2679e5b6dc3c24b0@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Wed, 30 Mar 2005 11:58:41 -0600
-To: Matt Porter <mporter@kernel.crashing.org>
-Cc: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
-Subject: 36-bit phys & 64-bit pte support
+	Thu, 31 Mar 2005 06:57:26 +1000 (EST)
+Received: from EJ1 ([69.166.195.214]) by mta11.adelphia.net
+	(InterMail vM.6.01.04.01 201-2131-118-101-20041129) with SMTP
+	id <20050330205724.JCFI5402.mta11.adelphia.net@EJ1>
+	for <linuxppc-embedded@ozlabs.org>; Wed, 30 Mar 2005 15:57:24 -0500
+From: "Edward Jubenville" <edjubenville@adelphia.net>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Wed, 30 Mar 2005 12:57:23 -0800
+Message-ID: <GPECLCIGPLHEOMGPMCPAOEOJCMAA.edjubenville@adelphia.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: USB support on Lite5200
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,23 +25,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Matt,
+I'm using a FreeScale Lite5200 development board with an MPC5200.  I used
+ELDK 1.3 and DAS U-Boot to get a working kernel, booted, etc., but I later
+found that the configuration I chose (icecube_5200_defconfig) didn't have
+USB support enabled.
 
-It looks like you introduced two config options at one point, however 
-they dont seem to be used consitently today.  I wanted to clarify the 
-meaning that I'm going to try and go forward with:
+My first USB goal is hook up a SanDisk cruzer 256 MB memory stick.  Which
+configuration options need to change?  Is there a HOWTO or example
+configuration file somewhere?
 
-CONFIG_PTE_64BIT - we have a 64-bit PTE
-CONFIG_PHYS_64BIT - we have larger than 32-bit physical addresses
+Eventually, I would like to support at least one kind of USB keyboard.
+Where can I find guidance for that configuration.
 
-Its feasible to have support for CONFIG_PTE_64BIT while only supporting 
-32-bit phys.  The intent would be if you needed more flags than you 
-could handle in the 12 LSBs of the pte.
+If there's a better place to post these questions, please advise.
 
-CONFIG_PHYS_64BIT will only effect things like ioremap, phys_addr_t, 
-etc.
-
-Do you agree with this interpretation?
-
-- kumar 
-  
+Thanks in advance,
+Ed
