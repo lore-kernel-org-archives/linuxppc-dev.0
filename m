@@ -1,34 +1,25 @@
-Date: Thu, 23 Mar 2000 13:11:38 +0100 (MET)
-From: "Ingvar Hagelund; UiO" <ingvar@unik.no>
-To: Jeff Carr <jcarr@mail.linuxppc.org>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: LinuxPPC-2000: Bug in the RH installer
-In-Reply-To: <Pine.LNX.4.10.10001211706220.29354-100000@mail.linuxppc.org>
-Message-ID: <Pine.GSO.4.10.10003231305220.9897-100000@odin.unik.no>
+Message-ID: <38DA1D54.94F0F2F3@worldnet.fr>
+Date: Thu, 23 Mar 2000 14:34:13 +0100
+From: Franck Chionna <blokos@worldnet.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+CC: Linux/PCC Development Mailing List <linuxppc-dev@lists.linuxppc.org>
+Subject: communicate with peripherics ?
+References: <l03130302b4fd80d3a908@[216.164.130.191]> <38D8EF56.17970FBC@astro.wisc.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The CD-ROM images spread to the LinuxPPC mirrors over the world are in hfs
-format. The Red Hat installer tries to mount the CD-ROM as an 9660 image.
-This won't of course work, and causes problems, for example for RS/6000
-owners like myself.
+hi,
 
-A simple solution would be to change the RH installer so that it mounts
-with "-t auto" instead of "-t iso9660". Then it will detect the CD-ROM
-properly, both for iso9660 and hfs CD-ROMs.
+i have connected on printer serial port of my 9600 Power mac
+an electronic payment terminal. So i'd like to communicate with it to
+develop an application to automate this peripherals ...
+with what way could i communicate with it ??
 
-Regards
-Ingvar
+Thansk
 
-------------------------------------------------------------------------
-Ingvar Hagelund             Phone: (+47) 22740512
-E-mail: ingvar@unik.no      WWW: http://www.ifi.uio.no/~ingvarha
-Adress: Ringshusveien 10,   N-1176  OSLO, NORWAY
-Experience GNU/Linux!
--------------------------------------------------------------------------
+Franck Chionna
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
