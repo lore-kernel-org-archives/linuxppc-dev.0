@@ -1,59 +1,48 @@
-Message-ID: <3A70EAB7.C46E3CD3@mvista.com>
-Date: Thu, 25 Jan 2001 19:10:47 -0800
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
+From: Kwanksuk Kim <kskim@neowave.co.kr>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Remote multi-thread debugging is valid?
+Date: Fri, 26 Jan 2001 16:21:42 +0900
+Content-Type: text/plain
+References: <200101260218.SAA28758@xoommail.com>
+In-Reply-To: <200101260218.SAA28758@xoommail.com>
 MIME-Version: 1.0
-To: Hua Ji <hji@netscreen.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: About TLB mapping
-References: <A33AEFDC2EC0D411851900D0B73EBEF7063E87@NAPA>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <01012616315400.20862@kskim.neowave.co.kr>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hua Ji wrote:
->
-> Hi, folks,
->
-> Advice needed.
->
-> I am writting my TLB mapping for 405GP 128M physical memory.
-> When I try to assemble my codes. I got some error called:
-> "Unrecognized opcode: tlbwe".
+Hi, everyone,
 
-Why are you doing this?  Is something wrong with the existing
-implementation?
+I'd like to debug multi-thread program on my custon board (MPC860) with remote
+debugger.
 
+I'm using cross gdb, gdbserver, and kernel from monta vista, (gdb 4.17, linux
+2.2.13)
 
-> I am confused and am asking for help. Thanks in advance.
->
-> Or do I missed some options for my make file? My working environment is:
-> *  powerpc-eabi-gcc and corresponding as....
-> *  I tried to use -mcpu=405 to let as know that I am expecting 405cpu:-)
+I test test code on my host PC, it works well. But I doesn't work on target
 
-I don't know of any compiler that has -mcpu=405 (yet).  Use -mcpu=403.
+Just after the new thread being created, gdb displays these message,
 
 
-> #-------------
-> #Error Message I got from compiler and assember
-> #------------------------------------------
->  : Error: Unrecognized opcode: `tlbwe'
->  : Error: Unrecognized opcode: `tlbwe'
->
-> #-------------
-> #My codes sample
-> #-----------------------------------------------------
->  li      %r0,0                 #TLB Entry 0
->  tlbwe  %r4,%r0,1
->  tlbwe  %r3,%r0,0
-> #-----------------------------------------------------
+17          if (pthread_create(&tid, NULL, sayHello, NULL) )
+(gdb) s
 
-Thanks,
+Program received signal SIGPWR, Power fail/restart.
+0xfee0724 in ?? ()
+(gdb)
 
-Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+And the gdb doesn't show thread info, like this
+
+
+(gdb) info thread
+warning: RMT ERROR : failed to get remote thread list
+
+(gdb)
+
+Is it impossible to debug multi-thread with remote-debugging?
+
+I'm looking forward to your helps, thanks.
+
+Have a nice weekend!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
