@@ -1,30 +1,18 @@
-Date: Thu, 18 Feb 1999 10:03:43 -0700 (MST)
-From: Cort Dougan <cort@persephone.cs.nmt.edu>
-To: Jesper Skov <jskov@cygnus.co.uk>
-cc: Gabriel Paubert <paubert@iram.es>,
-        Christian Zankel <zankel@tarantel.rz.fh-muenchen.de>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Restructuring Efforts
-In-Reply-To: <oovhh0w16z.fsf@lassi.cygnus.co.uk>
-Message-ID: <Pine.LNX.3.96.990218100142.6024A-100000@persephone.cs.nmt.edu>
+Message-ID: <A969F78C865BD1119B230000F8B8459603166F9D@zrchb181.us.nortel.com>
+From: "Greg Stovall" <gstovall@nortelnetworks.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: IBM providing Linux for RS6000
+Date: Thu, 18 Feb 1999 14:26:10 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I was just trying this out with tlbia: Use real tlbias in the kernel even
-on chips that don't do tlbia.  When on a chip that doesn't have the tlbia
-instruction take the trap and fix the code up in the trap handler (put in
-a bl soft_tlbia instead of a tlbia).  We could do something like this per
-architecture.  When doing an arch specific function trap, take the trap
-and fix it up.  The problem with that is keeping track of the myriad of
-functions we need to keep track of.
+Will the fact that IBM is going to be providing it's own version going to
+have any effects on the linuxppc development efforts?  
 
-}It may be the case that none of the Amiga drivers use the same IO
-}macros as other drivers use. As I remember it, there are two set of
-}macros. But it's a long time since I looked at that, I could be wrong.
-
+If so, will it be positive or negative?
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
