@@ -1,46 +1,35 @@
-Subject: Workaround for Macraigor OCD Commander download problem
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Fri, 14 Jan 2000 11:16:13 +1100 (EST)
+Subject: Re: Embedded planet 860T CLLF HELP!
+To: dan@netx4.com (Dan Malek)
+Date: Fri, 14 Jan 2000 11:23:44 +1100 (EST)
+Cc: alanm@unforgettable.com (Alan Mimms), linuxppc-embedded@lists.linuxppc.org,
+        dclear@uswest.net
+In-Reply-To: <386BDEF1.8421A130@netx4.com> from "Dan Malek" at Dec 30, 1999 05:38:41 PM
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000114001613.DB5031B150@elph.research.canon.com.au>
+Message-Id: <20000114002344.7BB481B178@elph.research.canon.com.au>
 From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In case anyone else is thinking of using a Macraigor BDM/OCD device to download
-code to their target hardware, the following advice might save you a couple of
-hours of hair-pulling. Using the 1999 version of OCD Commander with a Raven,
-I found that the s-records read from my input file were being silently
-truncated after 20 bytes. Since GNU objcopy generates 21 bytes s-records, my
-download was being corrupted.
+Dan Malek writes:
+> You could also _ask_ before starting, as I have a ready to
+> go set of sources for the CLLF on my file server.  You can
+> use anonymous FTP to mail.netx4.com and pick up cllf-2.2.13.tgz.
 
-Macraigor tell me that they're working on the problem, in response to my
-report. Meanwhile, here's a patch to binutils to work around the problem:
+Excellent! I can confirm that this kernel appears to have fixed the crashing
+problems I was having on one of our CLLF boards.
 
-*** bfd/srec.c.dist     Thu Dec  2 18:10:20 1999
---- bfd/srec.c  Thu Dec  2 18:10:30 1999
-***************
-*** 171,177 ****
-  /* The maximum number of bytes on a line is FF */
-  #define MAXCHUNK 0xff
-  /* The number of bytes we fit onto a line on output */
-! #define CHUNK 21
-  
-  /* When writing an S-record file, the S-records can not be output as
-     they are seen.  This structure is used to hold them in memory.  */
---- 171,177 ----
-  /* The maximum number of bytes on a line is FF */
-  #define MAXCHUNK 0xff
-  /* The number of bytes we fit onto a line on output */
-! #define CHUNK 20
-  
-  /* When writing an S-record file, the S-records can not be output as
-     they are seen.  This structure is used to hold them in memory.  */
+> FYI, I _really_ have the FEC driver screwed up for the CLLF, so
+> don't bother trying to use it.  I made lots of changes yesterday,
+> it still isn't perfect, and I am travelling for the next ten
+> days or so.  I will finish it when I return, and may have the
+> opportunity to work on it during my travel.
 
-Regards,
+Are the FEC changes purely related to the different PHY, or is there more to
+it than that?
+
+Thanks!
 Graham
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
