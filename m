@@ -1,44 +1,51 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3E92A9E8.7060101@imc-berlin.de>
-Date: Tue, 08 Apr 2003 12:52:24 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
-To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: I2C RTC causes boot delay...
-References: <3E92A455.5040709@imc-berlin.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Tue, 08 Apr 2003 14:01:31 +0200
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: RE: I2C RTC causes boot delay...
+In-reply-to: <3E92A9E8.7060101@imc-berlin.de>
+To: Steven Scholz <steven.scholz@imc-berlin.de>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLAENCFLAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I wrote,
-
-> I have an I2C RTC connected to my MPC855T to substitute the internal one.
+> I wrote,
 >
-> I noticed that between
+> > I have an I2C RTC connected to my MPC855T to substitute the internal one.
+> >
+> > I noticed that between
+> >
+> >    Verifying Checksum ... OK
+> >    Uncompressing Kernel Image ... OK
+> >
+> > and the next lines printed while booting "nothing" happens for THREE
+> > seconds.
+> >
+> > I reckon that is has something to do with not having an external 32kHz
+> > clock on the MPC. But I can't find the place in the sources!
 >
->    Verifying Checksum ... OK
->    Uncompressing Kernel Image ... OK
+> I migth have found it:
 >
-> and the next lines printed while booting "nothing" happens for THREE
-> seconds.
+> Is it ok and enough to set
 >
-> I reckon that is has something to do with not having an external 32kHz
-> clock on the MPC. But I can't find the place in the sources!
+>          ppc_md.set_rtc_time             = NULL;
+>          ppc_md.get_rtc_time             = NULL;
+>
+> in platform_init()? And then later - when I2C is initialized - set it
+> to the appropriate I2C RTC functions?
 
-I migth have found it:
+Yes, that's it. If your kernel ever hangs after printing out
+"calibrating delay loop ...", try adding a set_tb(0,0) somewhere in m8xx_setup.c,
+to see if it fixes it.
 
-Is it ok and enough to set
+You may also want to add an "I2C reset sequence" in your firmware/kernel
+if your I2C clock gets stuck and don't respond(can happen if reset/power down while
+reading the RTC). Look in u-boot for details.
 
-         ppc_md.set_rtc_time             = NULL;
-         ppc_md.get_rtc_time             = NULL;
-
-in platform_init()? And then later - when I2C is initialized - set it
-to the appropriate I2C RTC functions?
-
-Thanks,
-
-Steven
+    Jocke
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
