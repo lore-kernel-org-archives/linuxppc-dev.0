@@ -1,27 +1,42 @@
-Message-Id: <200003141133.LAA09460@hyperion.valhalla.net>
-Date: Tue, 14 Mar 2000 11:28:49 +0000
-Subject: 2.3.51 Trashes RTC on Beige G3 Mini-tower
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+        Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+        Linux/PPC for APUS <linux-apus@sunsite.auc.dk>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: dmasound split
+References: <Pine.LNX.4.10.10003141114390.12359-100000@opal.biophys.uni-duesseldorf.de>
+From: Jes Sorensen <Jes.Sorensen@cern.ch>
+Date: 14 Mar 2000 12:37:45 +0100
+In-Reply-To: Michael Schmitz's message of "Tue, 14 Mar 2000 11:17:29 +0100 (CET)"
+Message-ID: <d31z5dwzna.fsf@lxplus006.cern.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+>>>>> "Michael" == Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de> writes:
 
-at boot time {with options vmode=atyfb, vmode:16,code:32 single }
-the usual "rtc time is" ... prints the correct date...
-then we get "setting time to ... some time in Feb 1932...
-from then on the RTC is wrong although using 'date' to set the correct time
-behaves as expected on the running system.
-Is this a library problem? (I'm using 2.3.51 with a system installed from
-linuxPPC Q3 - but I've also updated to glibc-2.1.3 - j).
+>> Yep. Time to ship Andreas' TT to SuSE...
 
-also the caps-lock is set on (although this may have no relevance - and
-works perfectly OK afterwards).
+Michael> Looks like it. I never really understood what Jes wanted to
+Michael> change about the serial layer, and I don't have much time for
+Michael> that recently.
 
-Iain.
+The whole design was wrong. The old m68kserial implementation was
+running as a master layer controlling the low level devices. Instead
+it should be a library of routines the drivers can choose to use if
+they want to. The master approach puts too many restrictions onto the
+individual drivers.
+
+Linus rejected this approach more than two years ago, and it is never
+going into the official tree. I have been telling everybody this for
+just as long, but most people seem tohave just gotten tired of it and
+started ignoring the message.
+
+Jes
+
+PS: Sorry about random missing characters, the latency from Australia
+o Switzerland makes typing emails somewhat interesting.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
