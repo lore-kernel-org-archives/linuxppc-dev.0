@@ -1,30 +1,29 @@
-Message-ID: <3DEBEB39.6040701@mvista.com>
-Date: Mon, 02 Dec 2002 17:22:33 -0600
-From: Mark Hatle <fray@mvista.com>
+Message-ID: <3DEC7281.80202@maxxio.at>
+Date: Tue, 03 Dec 2002 09:59:45 +0100
+From: Reinhard Schwillinsky <rsw@maxxio.at>
 MIME-Version: 1.0
-To: Liu Fred-a18596 <fred.liu@motorola.com>
+To: Pantelis Antoniou <panto@intracom.gr>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: can newlib be a shared library on ppc platform?
-References: <89DEFCC5DB33D411A27F00508BCF8A820A16F93F@ZCH07EXM05.corp.mot.com>
+Subject: Re: [linuxppc-embedded:] Re: QMC driver for 860?
+References: <IGEFJKJNHJDCBKALBJLLEEHBFIAA.joakim.tjernlund@lumentis.se> <3DEB7A88.1030205@intracom.gr>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Liu Fred-a18596 wrote:
-> Hi,
+Pantelis Antoniou wrote:
+> [...]
+> P.S. Is there anyone in the list interested in this?
+> Should I clean it up, and submit it?
 >
-> I need a small libc in our embedded system, so I compiled newlib.
-> But it seems that newlib only support static library on ppc platform.
-> Is it true?
+Yes! I am interested in this!
+rg Reinhard
 
-I believe newlib is barely a C library, (it was the last time I looked at it)
-
-I would suggest you investigate uclibc and see if that will do what you need.
-(There is a version of uclibc that will do shared libs, but I do not know how
-advanced the dynamic loader is on PPC.)
-
---Mark
+--
+----------------------------------------------------
+Reinhard Schwillinsky        Tel.: ++43/1/205 255/210
+Maxxio technologies GmbH     Fax.: ++43/1/205 255/900
+Prinz Eugen Strasse 8        A-1040 Vienna/Austria
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
