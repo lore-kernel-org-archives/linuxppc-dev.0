@@ -1,11 +1,12 @@
-Date: Mon, 27 Mar 2000 12:35:31 +0200 (MET DST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Date: Mon, 27 Mar 2000 12:38:57 +0200 (MET DST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-cc: Gabriel Paubert <paubert@iram.es>, Benjamin Herrenschmidt <bh40@calva.net>,
+cc: Michel Dänzer <michdaen@iiic.ethz.ch>, Gabriel Paubert <paubert@iram.es>,
+        Benjamin Herrenschmidt <bh40@calva.net>,
         linuxppc-dev@lists.linuxppc.org
 Subject: Re: LongTrail PCI resource assignment
-In-Reply-To: <Pine.LNX.4.10.10003271159060.31775-100000@opal.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.GSO.4.10.10003271230470.11532-100000@dandelion.sonytel.be>
+In-Reply-To: <Pine.LNX.4.10.10003271147390.31775-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.GSO.4.10.10003271235360.11532-100000@dandelion.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -15,49 +16,49 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 On Mon, 27 Mar 2000, Michael Schmitz wrote:
 > > > Applying Geerts patch (minus the PCIBIOS_MIN_MEM patch) plus the following
 > > > one solves my PCI address conflict for the Mach64 by reallocating the MMIO
-> >
-> > So it works without changing PCIBIOS_MIN_MEM? I'm wondering what address is
-> > assigned to the secondary aperture? Can you please send me the output of
-> > `lspci -vv'? Thx!
->
-> 00:11.0 VGA compatible controller: ATI Technologies Inc: Unknown device
-> 4c49 (rev dc)
-> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR- FastB2B-
-> 	Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-> 	Latency: 8 min, 32 set, cache line size 08
-> 	Interrupt: pin A routed to IRQ 24
-> 	Region 0: Memory at 81000000 (32-bit, non-prefetchable)
-> 	Region 1: I/O ports at <unassigned>
-> 	Region 2: Memory at 00010000 (32-bit, non-prefetchable)
-                            ^^^^^^^^
-Tadaaa, that's why you need to change PCIBIOS_MIN_MEM. I don't think this is a
-valid address for PCI memory for your box. To me, it looks like PCIBIOS_MIN_MEM
-must be 0x80000000 for your machine, but one of the PowerMac gurus can tell for
-sure.
-
 > > > aperture, and allows XFree86 4.0 to run on my Lombard.
 > >
-> > Guess I have to try 4.0 as well...
+> > Great news! So how does it compare to 3.3.x for you?
 >
-> Does this mean you didn't compile it already? :-)
+> It feels a lot slower (15/16 bpp as fast as 32 before), 16 bpp have messed
+> up color (green too bright, maybe 565 is wrong after all), 32 bpp fails to
+> start (no screen found, weight 000 inconsistent with depth 32).
 
-Indeed. For now, I intend to go with Jack's RPMs...
+16 bpp (depth 15) is 555 on the Mach64. Feel free to add support for 565 (depth
+16).
 
-> I noticed after reading linux-m68k - how did that thread move there?
+> I need to figure out what the pixel format for 16 and 32 bpp really is.
+> Currently the X server refuses to start up if the RGB weights don't add up
+> to the screen depth, and depth 32 isn't supported at all. 24 bpp works but
+> it's really slower than 32 bpp before. Plus the X server refuses to
+> cooperate with xscreensaver and consistently kicks me out after 10
+> minutes.
 
-That's my fault: I really should make the aliases for the Linux/m68k list and
-for my personal email less similar. Or perhaps I should switch to a
-GUI-based mail client, where I can just click click click click on adresses :-)
-Nah, that would lower my productivity.
+32 bpp (depth 24) is 888.
+
+> Even with not loading the more arcane extensions the X server weighs in at
+> 21 MB (I recall 17 or so before), that might explain the slowdown a bit.
+
+Does it use shadowfb? And extra copy of the screen image would explain some of
+the memory requirements.
+
+BTW, you don't want to know about the resource consumption of Xsun on the
+Ultra-10 at work.
+
+> Need to work on the accelerated Mach64 driver perhaps.
+
+YES! ;-)
 
 Gr{oetje,eeting}s,
 
 						Geert
 
 --
-Geert Uytterhoeven ------------- Sony Software Development Center Europe (SDCE)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
-Voice +32-2-7248638 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
