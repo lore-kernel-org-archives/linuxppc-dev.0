@@ -1,24 +1,30 @@
-Message-ID: <3C07D9D7.F3A50508@seranoa.com>
-Date: Fri, 30 Nov 2001 14:11:19 -0500
-From: Andrew Dixon <andrew.dixon@seranoa.com>
+Message-ID: <3C07E073.9020208@embeddededge.com>
+Date: Fri, 30 Nov 2001 14:39:31 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: EST SBC8260
-Content-Type: text/plain; charset=us-ascii
+To: Armin Kuster <akuster@mvista.com>
+Cc: ppclist <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 4xx & Abatron
+References: <3C07EB05.8C598E53@mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
+Armin Kuster wrote:
 
-I'm starting a project to get Linux up on the EST sbc8260 boards that we
-have in our lab.  I was just wondering if I should try a PPC specific
-kernel like the one that benh maintains or if a stock linux kernel would
-do the trick.
+> Has anyone tried using the Abatron w/ the latest ppc kernel on 4xx?
+>  I am not sure I there is a kernel issue or if my h/w is acting up.
 
-Any suggestions, tips, hints, etc. . . would be greatly appreciated.
+We screwed up Abatron by moving bits around in the kernel PTE, so
+you have to be patient with them and find a version of the 4xx BDI2000
+firmware that matches your kernel.  The latest kernels and latest
+firmware do work.
 
-Thanks,
-Andy
+Sorry about that.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
