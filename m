@@ -1,31 +1,46 @@
-Message-ID: <3E076D09.8020807@embeddededge.com>
-Date: Mon, 23 Dec 2002 15:07:37 -0500
+Message-ID: <3E076EEF.9070808@embeddededge.com>
+Date: Mon, 23 Dec 2002 15:15:43 -0500
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Pantelis Antoniou <panto@intracom.gr>,
-	Paul Mackerras <paulus@samba.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: New style dpalloc/hostalloc routines (diff).
-References: <3E006C94.2090503@intracom.gr> <15874.23846.177956.192840@argo.ozlabs.ibm.com> <3E02E984.8090904@intracom.gr> <20021223164928.GF15397@opus.bloom.county>
+To: Omanakuttan <omanakuttan@tataelxsi.co.in>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	kernelnewbies <kernelnewbies@nl.linux.org>
+Subject: Re: doubt in arch/ppc/8260_io/uart.c
+References: <3E05AC49.7080604@tataelxsi.co.in>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Omanakuttan wrote:
 
-> Also, Dan Malek, any comments on all of this?
+> Hi,
+> in kernel 2.4.17, arch/ppc/8260/uart.c contains the following lines in
+> rs_8xx_stop()
+> {
+> ....
+> sccp->scc_sccm &= ~UART_SCCM_TX;
+> ....
+> }
 
-I've had some life distractions for the past couple of weeks.
-I'll have some time to look at this over the next few days.
+The start/stop functions enable/disable interrupts.  Clearing the TX bit
+in the interrupt mask causes that interrupt to be disabled.
 
-When are we going to stop using 2.4 as our development tree?
-Things like this should first be developed and proven in the 2.5
-tree then moved into 2.4 after we agree it's necessary.
 
-Thanks.
+> UART_SCCM_TX is defined to 0x00000020
+> i.e, only the TX bit is 1
+>
+> Now the manual (MPC8260UM.pdf) states that clearing a bit is 1 for both
+> SCCE and SCCM. Following it, what I understand is the above C statement
+> clears all the bits of ccp->scc_sccm except TX bit.
 
+No, the C statement above leaves all bits set (that were set) except
+the TX bit.
+
+> Then how does it stop the SCC/SCM?
+
+It doesn't stop the SCC, it only stops the interrupt from being delivered
+to the driver.
 
 	-- Dan
 
