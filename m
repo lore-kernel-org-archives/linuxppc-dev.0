@@ -1,53 +1,31 @@
-Message-ID: <E380A44D523BD5118EAE0002A52CE5C40B87C883@zcard0k8.ca.nortel.com>
+Message-ID: <E380A44D523BD5118EAE0002A52CE5C40B87C888@zcard0k8.ca.nortel.com>
 From: "Andrew Williams" <awilliam@nortelnetworks.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: FEC support for 8260 in kernel 2.4.25
-Date: Mon, 26 Apr 2004 14:48:59 -0400
+Subject: FW: Code Clean-Up
+Date: Mon, 26 Apr 2004 14:50:24 -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
--- Fourth Attempt.. hoping to have disabled HTML output in Outlook --
+Re-send due to outlook HTML formatting issues...
 
-Not just the GPIO pins, be sure to note the different
-clock sources. (Which in the code is clearly labeled as
-"This is board specific", but then goes on to declare
-constant values in the common fcc_enet.c file).
 
-  This bothered me enough that I changed the fcc_enet
-files from:
+-----Original Message-----
+Sent: April 26, 2004 10:52 AM
+To: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Code Clean-Up
 
-#define PC_F1RXCLK      ((uint)0x00000800)
-#define PC_F1TXCLK      ((uint)0x00000400)
-#define CMX1_CLK_ROUTE  ((uint)0x3e000000)
 
-to
+What's the current view/policy on code cleanup?
+Eg. immap_8260.h vs 8xx_immap.h
 
-#ifndef PC_F1RXCLK
-#define PC_F1RXCLK      ((uint)0x00000800)
-#endif
-#ifndef PC_F1TXCLK
-#define PC_F1TXCLK      ((uint)0x00000400)
-#endif
-#ifndef CMX1_CLK_ROUTE
-#define CMX1_CLK_ROUTE  ((uint)0x3e000000)
-#endif
+  Furthermore each unit that accesses the immap, has to conditionaly select
+the target platform header file.
 
- (repeat for all 3 interfaces)
+I'm proposing a single immap.h file, that conditionaly selects either
+immap_8260.h, or 8xx_immap.h (possibly renamed to immap_8xx.h).
 
-I know it looks a bit kludgy, but you can now declare board
-specific values in your platform/<platform>.h file, and have these
-override the current default hard coded values. Furthermore this
-change won't break any existing platforms. :o)
-
-One other potential 'gotcha' is if you have different FPSMR values
-depending on the interface. The current code (2.4.22) limits you to
-a single value that applies to all three interfaces. I worked around
-this one, by adding a field to 'fcc_info' for the fpsmr. Then in the
-declaration of 'fcc_ports' I once again used conditional
-compiles to allow FPSMR values in the platforms file to override
-the default FCC_PSMR_ENCRC value.
-
+  Do people want to see this type of restructure/patch?
 
 Andrew
 
