@@ -1,49 +1,35 @@
-Message-Id: <199908100538.HAA00316@piglet.cpu.lu>
-Date: Tue, 10 Aug 1999 07:38:38 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Trying a Promise Ultra/66 on powerpc
-To: Paul.Mackerras@cs.anu.edu.au
-cc: paulus@cs.anu.edu.au, drow@false.org, mj@ucw.cz,
-        linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <199908100010.KAA19153@tango.anu.edu.au>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Date: Tue, 10 Aug 1999 16:06:17 +1000
+Message-Id: <199908100606.QAA23344@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: pberge@stny.rr.com
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <37AFA3A3.370B25CB@stny.rr.com> (message from Patrick Berge on
+	Mon, 09 Aug 1999 23:59:31 -0400)
+Subject: Re: mace:transmit timeout - resetting
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <37AFA3A3.370B25CB@stny.rr.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  10 Aug, this message from Paul Mackerras echoed through cyberspace:
-> Michel Lanners <mlan@cpu.lu> wrote:
-> 
->> I'd vote for making I/O ports a memory addresss like any other, and
->> making sure drivers get this address right. See my other post for
->> details..
-> 
-> The problem is, there are PCI device drivers which assume you can get
-> an address in I/O space from a PCI device (either directly from the
-> config-space base address registers or from the pci_dev struct) and
-> then just do inb and outb on that port address.  That's why inb/outb
-> add _IO_BASE to the port number.
-> 
-> One way might be to adjust the base addresses in all the pci_dev
-> structs and then make sure all drivers use the address from the
-> pci_dev struct rather than reading config space themselves.
+Patrick Berge <pberge@stny.rr.com> wrote:
 
-Exactly what I meant. I feel drivers shouldn't read addresses directly
-from config space, but rather from the pci_dev struct, so that any
-necessary pcibios_fixup() can be made. By the way, the same is true for
-interrupts....
+>  I have am receiving "mace:transmit timeout - resetting" sporadically.
 
-Michel
+But do you see any problems with the network apart from the message?
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+The reason for the message is that there are some bugs in the mace
+chip which cause it to lock up very occasionally.  When the driver
+detects this condition, it prints this message and tries to reset the
+chip.  If your network keeps working, then it means that the driver
+successfully got the mace chip going again.
 
+> Any ideas about my problem and/or the meaning of the HZ would be
+> helpful.
+
+HZ is the number of timer interrupts per second.
+
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
