@@ -1,95 +1,32 @@
-Message-ID: <3844BAAC.FBF7996B@eecs.lehigh.edu>
-Date: Wed, 01 Dec 1999 01:05:32 -0500
+Message-ID: <3844BB7E.F1A9DD4E@eecs.lehigh.edu>
+Date: Wed, 01 Dec 1999 01:09:02 -0500
 From: Jason Kim <jwk2@eecs.lehigh.edu>
 MIME-Version: 1.0
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: update for ssh 2.0.13
-Content-Type: multipart/mixed; boundary="------------D3501D02EF5C47891D22A142"
+To: "gcc-patches@gcc.gnu.org" <gcc-patches@gcc.gnu.org>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: corrections to my va-ppc.h patches
+Content-Type: multipart/mixed; boundary="------------F63246F6E1ABAB74C04AFBC2"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 This is a multi-part message in MIME format.
---------------D3501D02EF5C47891D22A142
+--------------F63246F6E1ABAB74C04AFBC2
 Content-Type: text/plain; charset=iso-2022-kr
 Content-Transfer-Encoding: 7bit
 
-Although with my suggested fixes for gcc, the fix for ssh-2.0.13
-isn't strictly necessary, but might as well as give it out anyway.
+Please pardon this intrusion, but I accidentally posted 
+buggy patches for va-ppc.h for gcc version egcs-2.91.66 19990314 (egcs-1.1.2
+release. linuxPPC 1999 Q3)  as well as gcc-2.95.2 in one of my previous
+postings.
 
+Regardless of whether you gcc folks decide to accept my patches or not,
+here are the corrected versions (now tested)
 
-its really *tiny*
-
-Also included are my (CORRECTED) fixes to va-ppc.h for both the default gcc in
-linuxppc (gcc version egcs-2.91.66 19990314 (egcs-1.1.2 release))
-as well as gcc-2.95.2 which seems to work well with binutils-2.9.5.0.21
-(successfully compiled with 2.95.2, installed and ran ssh-2.0.13)
-
-Until the gcc folks get their heads out of the sand about fixing the vararg
-stuff
-in PPC (which may be never, seeing how these go ); here they are.
-
-Short of it is, the apparent rationale for not fixing the strange varargs
-was that the PowerPC SYSVR4 ABI docs has an example of a va_list which is
-implemented as an array of 1 element. Curiously, this design also makes
-following  the ANSI C draft on va_list difficult. the C standard says that one
-can pass pointers to va_list to functions, but by following the ABI, this makes
-correct coding of va_list ptr passing (and dereferencing) really annoying and
-fragile.
-
-check my previous post.
-
-My next message will also be crossposted to gcc-patches, and will have the same
-va-ppc.h patches as here.
-
-I hope somebody finds all this useful.
-otherwise, sorry for the wasted bandwidth (and for my previous buggy patches
-too) ;/
+sorry for the confusion.
 
 -jason
---------------D3501D02EF5C47891D22A142
-Content-Type: text/plain; charset=iso-2022-kr; name="patch.ssh-2.0.13"
-Content-Disposition: inline; filename="patch.ssh-2.0.13"
-Content-Transfer-Encoding: 7bit
-
-*** ssh-2.0.13/lib/sshutil/sshencode.c	1999/11/30 20:26:38	1.1
---- ssh-2.0.13/lib/sshutil/sshencode.c	1999/11/30 20:38:31
-*************** size_t ssh_decode_array_va(const unsigne
-*** 512,518 ****
-            decoder = va_arg(ap, SshDecoder);
-  
-            /* Try decoding. */
-!           start_of_ap = ap;
-            size = (*decoder)(buf + offset, len - offset, &ap);
-            if (size == 0)
-              goto fail;
---- 512,518 ----
-            decoder = va_arg(ap, SshDecoder);
-  
-            /* Try decoding. */
-!           __va_copy(start_of_ap, ap);
-            size = (*decoder)(buf + offset, len - offset, &ap);
-            if (size == 0)
-              goto fail;
-*************** size_t ssh_decode_array_va(const unsigne
-*** 524,530 ****
-              decoders = ssh_xrealloc(decoders,
-                                      (num_decoders + 1) * sizeof(*decoders));
-            decoders[num_decoders].decoder = decoder;
-!           decoders[num_decoders].ap = start_of_ap;
-            num_decoders++;
-  
-            /* Move over parsed data. */
---- 524,530 ----
-              decoders = ssh_xrealloc(decoders,
-                                      (num_decoders + 1) * sizeof(*decoders));
-            decoders[num_decoders].decoder = decoder;
-!           __va_copy(decoders[num_decoders].ap, start_of_ap);
-            num_decoders++;
-  
-            /* Move over parsed data. */
-
---------------D3501D02EF5C47891D22A142
+--------------F63246F6E1ABAB74C04AFBC2
 Content-Type: text/plain; charset=iso-2022-kr; name="va-ppc.h.patch.gcc-2.95.2"
 Content-Disposition: inline; filename="va-ppc.h.patch.gcc-2.95.2"
 Content-Transfer-Encoding: 7bit
@@ -309,7 +246,7 @@ Content-Transfer-Encoding: 7bit
   #endif /* __VA_PPC_H__ */
   #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
 
---------------D3501D02EF5C47891D22A142
+--------------F63246F6E1ABAB74C04AFBC2
 Content-Type: text/plain; charset=iso-2022-kr; name="va-ppc.h.patch.linuxppc1999.q3"
 Content-Disposition: inline; filename="va-ppc.h.patch.linuxppc1999.q3"
 Content-Transfer-Encoding: 7bit
@@ -495,7 +432,7 @@ Content-Transfer-Encoding: 7bit
   #endif /* __VA_PPC_H__ */
   #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
 
---------------D3501D02EF5C47891D22A142--
+--------------F63246F6E1ABAB74C04AFBC2--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
