@@ -1,24 +1,18 @@
-Return-Path: <cfriesen@nortel.com>
-Message-ID: <4208DC74.4000107@nortel.com>
-Date: Tue, 08 Feb 2005 09:36:20 -0600
-From: Chris Friesen <cfriesen@nortel.com>
-MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-References: <41FECA18.50609@nortelnetworks.com>
-	<1107243398.4208.47.camel@laptopd505.fenrus.org>
-	<41FFA21C.8060203@nortelnetworks.com>
-	<1107273017.4208.132.camel@laptopd505.fenrus.org>
-	<20050204203050.GA5889@dmt.cnet> <4203D793.1040604@nortel.com>
-	<1107595148.30302.5.camel@gaston> <42077EE0.2060505@nortel.com>
-	<1107812101.7734.42.camel@gaston>
-	<bc4f2e60770528d4934b5a2e69285002@embeddededge.com>
-In-Reply-To: <bc4f2e60770528d4934b5a2e69285002@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
-Subject: Re: question on symbol exports
+Return-Path: <davem@davemloft.net>
+Received: from cheetah.davemloft.net
+	(adsl-63-197-226-105.dsl.snfc21.pacbell.net [63.197.226.105])
+	by ozlabs.org (Postfix) with ESMTP id 51DB467AAD
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Feb 2005 11:41:05 +1100 (EST)
+Date: Tue, 8 Feb 2005 16:40:42 -0800
+From: "David S. Miller" <davem@davemloft.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-Id: <20050208164042.6dd6fcb0.davem@davemloft.net>
+In-Reply-To: <1106028614.4533.69.camel@gaston>
+References: <1106028614.4533.69.camel@gaston>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com
+Subject: Re: [PATCH] sungem update
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,20 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dan Malek wrote:
-> 
-> On Feb 7, 2005, at 4:35 PM, Benjamin Herrenschmidt wrote:
-> 
->> Interesting... more than no swap, you must also make sure you have no
->> r/w mmap'ed file (which are technically equivalent to swap).
-> 
-> 
-> Yeah, I kinda had a similar thought.  Just because you aren't
-> swapping doesn't mean the VM subsystem isn't looking at dirty bits,
-> too.  It could potentially steal a page that it thinks can be replaced
-> from either a zero-fill or reading again from persistent storage.
+On Tue, 18 Jan 2005 17:10:14 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-In our existing case, the app also mlock()s the pages in question.  This 
-should get around these two possible sources of inaccuracy.
+> This patch updates the sungem driver. I reworked all of the PM stuff, making it
+> less prone to races, probably simpler to read as well, and I no longer shut the
+> PHY down when the interface is down so that things like laptop-net no longer
+> die (the gain in power consumption was minimal, not worth the pain). I also
+> implemented basic WOL support.
+> 
+> There is still something I'm not totally happy with in the locking
+> (explained in the comment at the beginning), basically too much locking and a
+> couple of places with delays in locks. I will try to improve these later on.
+> 
+> If you are happy with this, please forward to Linus/Andrew asap
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Chris
+Sorry for taking so long to review this :-/
+
+This looks fine, except for one thing.  The WOL_* registers don't exist
+in the Sun variants of the GEM chip, so it's not safe to try and program
+them on all chips blindly like these changes do.  Perhaps some bit test
+like:
+
+	if (pdev->vendor != PCI_VENDOR_ID_SUN)
+		gp->flags |= GEM_HAS_WOL;
+
+Then protect all the WOL_* register programming with this new
+GEM_HAS_WOL flag.
