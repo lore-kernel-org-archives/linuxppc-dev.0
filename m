@@ -1,47 +1,47 @@
-Message-ID: <3AFABDFC.B70C0775@mvista.com>
-Date: Thu, 10 May 2001 12:12:44 -0400
+Message-ID: <3AFAC0BD.2C822E4E@mvista.com>
+Date: Thu, 10 May 2001 12:24:29 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Lee <kdlee@sei.co.kr>
+To: Murray Jensen <Murray.Jensen@cmst.csiro.au>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: hda: lost interrupt
-References: <001901c0d8ed$43a4daa0$16b260d2@sei.co.kr>
+Subject: Re: linuxppc_2_5 source tree (and others)
+References: <21780.989483882@msa.cmst.csiro.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Lee wrote:
->
->     I have the custom mpc860 board ported with linux version 2.2.13.
-> My custom board looks like a Motorola MBX board because it has a ATA-type
-> IDE disk drive interfaced through QSPAN PCI-Bridge and W83C553F.
+Murray Jensen wrote:
 
-There have been lots of changes to the IDE and interrupt controller
-software since 2.2.13.  It barely worked correctly back then, and
-is certainly broken now because the PCMCIA and compact Flash devices
-are much more popular IDE peripherals than a real disk connected
-through PC-style bridges.
+> ......Could someone in the
+> know please post a quick update what this means, and perhaps what the
+> future holds wrt 2.4/2.5 linuxppc (embedded)?
 
-> Currently, I am trying to upgrade our linux kernel using linux version 2.4.0.
-> But I am having trouble with a problem regarding to the IDE disk drive.
+Tom Rini has done lots of this work, so I'll rely on him to respond.
+He is trying to finish up some finals at school, so it may take a day
+or so.
 
-...and if you get it to work it will likely break everything else.
-We also rely heavily on the MBX boot rom to initialize the bridges,
-so when it works there it still isn't likely to work on other boards
-that may even use the same parts connected in exactly the same way.
+> I guess I should actually ask about what I want :-) The linuxppc_2_5 tree
+> had a "drivers/i2c/i2c-algo-8xx.c" file which has disappeared from 2_4_devel.
 
-There are some modifications in the 2.2.13 (and subsequent) kernels
-for generic IDE changes that are necessary to make this work at all.
-These changes were never accepted upstream, so you are going to have
-a unique kernel that isn't likely to have this support in general.
+Right.  Tom is working with the real authors of the I2C software so
+we get approval to just check this in all of the way to the main
+kernel tree.  I was able to drop it into the _2_5 tree because I
+didn't have to ask.  If you still have the _2_5 tree around, just
+make a patch to 2.4_devel and keep on going.  It should show up for
+real pretty soon.  I have also modified this for the 8260, and I
+am going to have to look for it and get that checked in, too :-).
+I still think bit-banging software for I2C is faster and more
+efficient than using the CPM......at least for single master mode.
 
-All of the people I know that are actually using disk drives on MPC8xx
-systems have simply created a small, inexpensive piece of logic right
-on the 8xx bus or buffered directly to the PCMCIA interface.  The
-QSpan plus PCI/ISA parts just to get an IDE interface is not cost
-effective in real products.  In these configurations, the standard
-IDE or PCMCIA software "just works."
+> And while I am at it, I have searched the archives for info about IDMA
+> and it appears that it is a do it yourself job
+
+Well, yes...Implicitly, all CPM devices use IDMA, so just copy one
+of those and gut it for your own use.  All an IDMA driver would do is
+set up buffer descriptors.  All of the device control and buffer
+management is unique to the device, so I still can't grok a "generic"
+IDMA driver.
 
 
 	-- Dan
