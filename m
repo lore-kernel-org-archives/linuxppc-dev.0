@@ -1,31 +1,30 @@
-Date: Tue, 22 Oct 2002 16:07:47 +0200 (MET DST)
-From: GRAVE Xavier <grave@ipno.in2p3.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-Id: <200210221503.RAA21965@ipnmail.in2p3.fr>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Xavier Grave <grave@ipno.in2p3.fr>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
 Subject: Re: just compiled a 2.4.19 kernel with smp support...
-In-Reply-To: <20021022154142.28843@192.168.4.1>
-Message-ID: <Pine.OSF.3.91.1021022160554.3474A-100000@ipnosl.in2p3.fr>
+Date: Tue, 22 Oct 2002 17:00:23 +0200
+Cc: <linuxppc-dev@lists.linuxppc.org>
+References: <Pine.OSF.3.91.1021022160554.3474A-100000@ipnosl.in2p3.fr> <20021022163130.5160@192.168.4.1>
+In-Reply-To: <20021022163130.5160@192.168.4.1>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 22 Oct 2002, Benjamin Herrenschmidt wrote:
+> >But I don't know how to make xfree86 to use radeonfb.
 
-> >It's seems to be a RADEON 9000.
-> >No succes with the actual xfree version :-(
+> Use "fbdev" as the driver in xfree, that will cause X to
+> run unaccelerated on top of radeonfb, so it will at least
+> be able to set mode & colors properly.
 >
-> Yah, though XFree CVS should work, and Michel Danzer debs
-> might too, but that has to be tested with him.
-I'll try them in a few minutes...
-> What about radeonfb ? (The kernel framebuffer device). Does
-> it work with my kernel ?
+> I think support for the 9000 have been added to XFree CVS
+> recently, though that may not yet be in the DRI one (and
+> so Michel snapshots). The XFree CVS is beeing merged
+> again into the DRI one now, so this should be fixed soon.
 
-It is in the kernel, but how do you now it work ?
-
-I have the two penguin at start.
-But I don't know how to make xfree86 to use radeonfb.
+where can I find the .deb files from Michel, please ?
 
 xavier
 
