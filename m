@@ -1,56 +1,54 @@
-Subject: Re: consistent_alloc() revisited
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF0BBC5FBD.B92030DF-ON85256BF8.005917E9@raleigh.ibm.com >
-From: "Ralph Blach" <rcblach@us.ibm.com>
-Date: Tue, 16 Jul 2002 12:14:44 -0400
+Message-ID: <3D345816.EF88C2D3@esteem.com>
+Date: Tue, 16 Jul 2002 10:29:58 -0700
+From: Conn Clark <clark@esteem.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+To: Jim Lin <jimmlin@solomon.com.tw>
+Cc: May Ling List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Poor 8xx SCC Ethernet mode performence..
+References: <NFBBLLKCILMGHKJGDFGHEEMACCAA.jimmlin@solomon.com.tw>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan and Matt
-
-I agree with you 100%
-
-Chip
-
-
----------------------- Forwarded by Ralph Blach/Raleigh/IBM on 07/16/2002
-12:13 PM ---------------------------
-
-Matt Porter <porter@cox.net>@lists.linuxppc.org on 07/16/2002 11:27:26 AM
-
-Sent by:    owner-linuxppc-embedded@lists.linuxppc.org
-
-
-To:    Dan Malek <dan@embeddededge.com>
-cc:    David Gibson <david@gibson.dropbear.id.au>,
-       linuxppc-embedded@lists.linuxppc.org
-Subject:    Re: consistent_alloc() revisited
-
-
-
-
-On Tue, Jul 16, 2002 at 10:09:03AM -0400, Dan Malek wrote:
+Jim Lin wrote:
 >
-> David Gibson wrote:
-> > - if (in_interrupt())
-> > -       BUG();
-> > + BUG_ON(in_interrupt());
+> Hi .
 >
-> We should be able to call these functions from interrupt, let's push
-> the remainder of the changes though get_free_pages() to make this happen.
+> I  was testing SCC ethernet performance at our 850 custom board and found somting interesting.
+>
+> 1. Tested FTP  Transfer about 20MB file with 10T hub  I got  about 250 k bps (someting poor ..)
+> 2. and I found the hhl20 arch/ppc/8xx_io/enet.c source code NOT enable full duplex ..
+>      and I had  pmsr  added SCC_PMSR_FDE | SCC_PMSR_LPB .. and compiling , tested FTP Transfer again.
+>      I got about 200 Kbps!
+>
+> I do not understand what is happen? Has anyone experience this?
+>
 
-Yes, not just "should", but "must".  They must be callable from an
-interrupt since many generic drivers follow the rules as they have
-been laid down and allocate from an interrupt context.
+I know for a fact that the 850 can do 10Mbits .  Check and see what the download
+rate is from your ftp host using a different computer. Your 850 board should be
+about the same speed.
 
-Regards,
+If your 850 board isn't try looking at the Tx and Rx ethernet data lines with an
+oscilliscope. If the activity on the lines seems to corespond to the with the
+datarate you have a software problem. If the activity is signifigantly greater
+you probably have a analog problem. Double check the turns ratio on your magnet
+and make sure it is what your phy needs.
+
+Good luck
+
+	Conn
+
 --
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+
+*****************************************************************
+  If you live at home long enough, your parents will move out.
+ (Warning they may try to sell their house out from under you.)
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
