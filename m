@@ -1,29 +1,22 @@
-Mime-Version: 1.0
-Message-Id: <p04330101b7fdfc5cee7f@[63.220.231.138]>
-In-Reply-To: 
- <20011025100904.D29107@cpe-24-221-152-185.az.sprintbbd.net>
-References: <p04330100b7f7f805ef9a@[24.163.33.28]>
- <20011025.233136.74750056.tkoba@ike-dyn.ritsumei.ac.jp>
- <20011025083032.A29107@cpe-24-221-152-185.az.sprintbbd.net>
- <200110251653.f9PGrRd19727@pacific.somerset.sps.mot.com>
- <20011025100904.D29107@cpe-24-221-152-185.az.sprintbbd.net>
-Date: Thu, 25 Oct 2001 13:30:56 -0400
+Date: Thu, 25 Oct 2001 23:43:51 +0200
+From: Stefan Pfetzing <dreamind@dreamind.de>
 To: linuxppc-dev@lists.linuxppc.org
-From: Stefan Jeglinski <jeglin@4pi.com>
-Subject: Re: 2.4.13-pre5 crash when mounting proc
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Subject: Nubus
+Message-ID: <20011025234351.A11283@server>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Well now I feel stupid...  This should be fixed now.
+Hi,
+
+is there any newer kernel than 2.4.5 that works with a Nubus based Powermac
+7100 ? Does Benh's tree work on this machine ?
 
 
-Well, thanks to kobayashi (I think?) for pointing it out. I will
-apply the fix locally and see if it now allows me to mount proc at
-boot.
+bye
 
-
-Stefan Jeglinski
+dreamind
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
