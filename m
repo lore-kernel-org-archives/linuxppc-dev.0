@@ -1,42 +1,39 @@
-Date: Wed, 14 Mar 2001 21:28:48 +0000
-Subject: dmasound binaries 2.4.3p3 (up to patch 6)
-From: "Iain Sandoe" <iain@sandoe.co.uk>
+Message-ID: <3AAFF094.6137F71A@matrox.com>
+Date: Wed, 14 Mar 2001 17:28:36 -0500
+From: =?iso-8859-1?Q?S=E9bastien=20C=F4t=E9?= <scote1@matrox.com>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Cc: danboid@yahoo.co.uk
-Mime-version: 1.0
-Content-type: text/plain; charset="utf-8"
-Message-Id: <20010314212844.D97F8DBA5B@atlas.valhalla.net>
+Subject: why XOR ext2_set_bit?
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi,
 
-for a few who requested it I've posted my build of 2.4.3p3 kernel:
+I just had a problem writing to a file on a ext2 filesystem with my port
+of kernel 2.4 on powerpc (G4) running in little-endian.  When the
+function ext2_set_bit was called by ext2_new_block, it returned
+something so I got the warning :
 
-ftp://ftp.penguinppc.org/users/iain/kernel/2_4_x/2.4.3p3-dmasound/vml-2.4.3p
-3-s6
+"ext2_new_block bit already set for block 161"
 
-modules (dmasound_pmac up to patch 6):
-ftp://ftp.penguinppc.org/users/iain/kernel/2_4_x/2.4.3p3-dmasound/mod-2.4.3p
-3-s6.tgz
+and I was stuck in an infinite loop.  I found the definition for the
+function in include/asm-ppc/bitops.h as follow:
 
-and System.map:
+#define ext2_set_bit(nr, addr)		test_and_set_bit((nr) ^ 0x18, addr)
 
-ftp://ftp.penguinppc.org/users/iain/kernel/2_4_x/2.4.3p3-dmasound/sym-2.4.3p
-3-s6.bz2
+Now my question:  Why is "nr" XORed with 0x18 ???  I tried to do this
+function on paper and with this XOR, they were always trying to change
+the wrong bit.  Now, since nobody's been reporting this problem before,
+I guess this XOR is ok but I'd really like to understand it's utility to
+correct things on my side (for now, I just removed it and everything
+appears to be fine).
 
-alongside the actual patches.
+Could someone give me an explanation?
 
-For those waiting for patch 7 (which fixes a few bugs for xine, and Power
-Computing machines + puts back most of the ed21 stuff)... it's going to be a
-few more days (some of the fixes are more difficult than I thought...).
+Thanks,
 
-The kernel includes USB, new input layer, pmac IDE & the sym scsi - but not
-the a7xxx driver (which wouldn't build for me)... there are no warranties
-that it will boot your machine (but it does happily on mine ;-))
-
-ciao,
-Iain.
+Sébastien Côté
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
