@@ -1,10 +1,10 @@
-Message-ID: <39E766CF.74B9C039@emc.com>
-Date: Fri, 13 Oct 2000 15:47:27 -0400
+Message-ID: <39E76B67.31DEC7C9@emc.com>
+Date: Fri, 13 Oct 2000 16:07:03 -0400
 From: Zhaobin Zhu <zzhu@emc.com>
 MIME-Version: 1.0
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: <kernel-image-name>
-References: <007201c0339d$5b235c60$0a00010a@airvent.it>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: NFS boot hangs
+References: <007201c0339d$5b235c60$0a00010a@airvent.it> <39E766CF.74B9C039@emc.com>
 Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
@@ -12,27 +12,17 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 Hi,
 
-I am setting up host (Redhat 6.2 i386) for sp7400 boot over NFS.
+I finally got Hardhat linux boot on NFS.
 
-I do this following instructions on manual for Hardhat CDK 1.2
+I can play a while under sh-2.03# prompt, something like
+ls; vi; ./hello, etc.
 
-When configuring TFTP, to create a symbolic link to boot file
-in /tftpboot,
+Suddenly my RH62 host and sp7400 target hang.
+I can ping both of them.
 
-ln -s /opt/hardhat/devkit/ppc/82xx/target/boot/<kernel-image-name>
-<kernel-image-name>
-
-What should I give to <kernel-image-name> ?
-
-When I do "make zImage", I got two binaries, vmlinux and zvmlinux. I also
-create a S-record file.
-Which of the 3 files do I use as <kernel-image-name> ?
-
-BTW, what is the role of tftp in kernel boot on NFS ?
-I don't see any tftp message when kernel is booting ?
+Anybody has such an experience before ? Any clue what problem it is ?
 
 Thanks,
-
 --
  Zhaobin Zhu
  zzhu@emc.com
