@@ -1,63 +1,66 @@
-Message-Id: <200011211708.eALH8h821293@denx.local.net>
-To: "qiuqingjun" <qiuqingjun@263.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Ppcboot-users] How to add gcc parameters of application program in embedded system? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 21 Nov 2000 08:55:11 +0800."
-             <001f01c05355$b4e05460$254a63ca@qqj>
-Date: Tue, 21 Nov 2000 18:08:43 +0100
+Message-ID: <3A1AD5AD.F07B6804@sympatico.ca>
+Date: Tue, 21 Nov 2000 15:06:05 -0500
+From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
+Reply-To: khendricks@ivey.uwo.ca
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Linker Experts Desperately Needed!
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <001f01c05355$b4e05460$254a63ca@qqj> you wrote:
->
-> Thank Wolfgang Denk , I am not using PPCBOOT , my rom loader get from
-> a friend in Motorola, the program can run on PPC823-FADS Board, I
-> want to change the program for my custom board.
+Hi,
 
-Please, then let's take this discussion out of  the  PPCBoot  mailing
-list. A much better place for this sort of questions is
-linuxppc-dev@lists.linuxppc.org
+I am trying to help the port of openoffice to ppc linux.  The build continues
+for a long time then fails after testing a recently built shared library:
 
-> you said ," build a new ramdisk image from scratch which then at
-> least has a consistent set of shared libraries. " , How to build
-> ramdisk image ? How to choose shared libraires to ramdisk image,which
-> files should add in it? I find the file libc.so.6 about 4MB, so large
-> that I cannot add it into ramdisk image.
+Checking DLL ../unxlngppc.pro/lib/libsba609lp.so ...: ERROR:
+/usr/local/jdk/openoffice-609/solver/609/unxlngppc.pro/lib/libsvl609lp.so:
+R_PPC_REL24 relocation out of range
 
-Well, all these are basic steps of building Embedded  Linux  systems.
-There  is  lots  of information about this in many mailing lists, for
-instance the excellent "Linux for PowerPC Embedded  Systems  HOWTO  /
-FAQ", see http://members.nbci.com/greyhams/linux/PowerPC-Embedded-HOWTO.html
 
-> Additional , If I still cannot reach correct result, I would like to
-> change my mind. I have to download PPCBOOT and rebuild my cross
-> environment . Would you mind recommending some web site for build
-> cross environment ? Which version of PPCBOOT is reliable? and Which
-> web site contains linux for embedded system source code which doest
-> not need more patches?
+The "Checking DLL" is actually a small c program which tries to dlopen the
+library using RTLD_NOW.  The dlopen fails and the call to dlerror creates the
+R_PPC_REL24 error message.
 
-There are too many companies offering Embedded Linux solutions; check
-for instance MontaVista (Hard Hat  Linux)  or  Lynuxworks  (Blue  Cat
-Linux)  or  RedHat (Embedded Toolkit). I am sorry, I am not in a good
-position to make recommendations here, since I'm obviously biased (we
-too sell a Cross Development Kit on CD-ROM).
+I manually checked the link paths, the LD_LIBRARY_PATH, etc and all are well.
+No other library has failed in this way.  The code is all c++ code.  All of the
+object files linked into this library were build with g++ -fPIC.
 
-I cannot answer where to find kernel sources that don't need  patches
--  for  the  supported  systems, proably all systems come with kernel
-versions that run out of the  box.  But  they  do  support  different
-hardware  -  so you have to find one which supports something that is
-as close as possible to the hardware you have.
+In an attempt to figure out what the problem symbol is, I tried modifying the
+checkdll file to dlopen the library using RTLD_LAZY so that none of the function
+relocations would happen and then I would use dlsym to look up each and every
+unresolved symbol until I found the culprit.  Unfortunately dlopen with
+RTLD_LAZY failed to open the library with the exact same error message, which
+means that a non-function related symbol was the culprit.
 
-Wolfgang Denk
+I then used the LD_DEBUG=bindings trick when running my check program to get a
+complete list of the bindings as they are made.  And I used readelf to dump a
+list of all symbols of "OBJECT" type that were "UND" in the library to compare
+against the bindings.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-If I have seen further it is by standing on the shoulders of  giants.
-              - Isaac Newton, Letter to Robert Hooke, 5 February 1676
+I then checked each and every symbol reported by readelf as being OBJECT and UND
+against the log file showing the bindings.  This shortened my list to 144
+possible culprits with no bindings made before the error terminated the binding
+process, but each and ever one of those could be properly found in the libraries
+linked into this one.
+
+I am now stumped.
+
+How do I find what is causing the R_PPC_REL24 error that prevents dlopen with
+RTLD_LAZY from working?
+
+If it matters I am using the following tools:
+
+gcc-2.95.3-2f,
+binutils 2.10.0.33
+glibc-2.1.3-5a
+
+Any help or ideas of how to attack this problem would be greatly appreciated.
+
+Thanks,
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
