@@ -1,30 +1,28 @@
-Message-ID: <3EA82D12.4010707@ecubics.com>
-Date: Thu, 24 Apr 2003 12:29:38 -0600
-From: emanuel stiebler <emu@ecubics.com>
+Message-ID: <3EA82FBF.6080001@embeddededge.com>
+Date: Thu, 24 Apr 2003 14:41:03 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: Kent Borg <kentborg@borg.org>,
+	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: boot/simple in ROM?
-References: <20030424123313.A8490@borg.org> <3EA81B3F.9080709@embeddededge.com>
+References: <20030424123313.A8490@borg.org> <3EA81B3F.9080709@embeddededge.com> <20030424133222.B8490@borg.org> <3EA823A1.7030905@mvista.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
- >
- > The old PPCBoot, and probably the new U-boot, kind of perform
- > some of these functions.  The reason I'm not a fan of doing this
- > is if we make a change to the Linux calling sequence (which happens
- > rarely) you also have to update the boot rom to match.  Not a good
- > thing, IMHO.
+Mark A. Greer wrote:
 
-That's a very small price to pay for all the luxury of having a smarter
-boot-monitor.
+> You're a little sparse on info here but try lopping off the first 64KB
+> of your zImage (or jump 0x10000 into the zImage that you have).
 
-And, how many times was the linux calling sequence changed in the last
-two years ?
+Oh yeah...good point.  It's just a reflex for me to check this, so
+I seldom think of it anymore.  I think some board builds automatically
+chop this in the makefile with a 'dd' command (or, they used to) :-)
 
-cheers
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
