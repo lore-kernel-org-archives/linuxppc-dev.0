@@ -1,66 +1,92 @@
-Date: Tue, 12 Sep 2000 11:09:33 -0400 (EDT)
-From: mberglund <matt@realestatesafari.com>
-To: Graham Stoney <greyham@research.canon.com.au>
-Cc: Michel Dänzer <daenzerm@student.ethz.ch>, Todd Lipcon <tlipcon@mercea.net>,
-        "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Roles for distributions
-In-Reply-To: <20000912042454.D7D1F208@elph.research.canon.com.au>
-Message-ID: <Pine.LNX.4.21.0009121053310.832-100000@europa.rcinfo.net>
+Message-ID: <39BE4E5E.FA7437EE@mvista.com>
+Date: Tue, 12 Sep 2000 11:40:14 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org,
+        greyham@research.canon.com.au
+Subject: Re: Getting patches in (was: Re: Roles for distributions)
+References: <200009120614.IAA00922@piglet.grunz.lu> <20000912085918.23901@192.168.1.10>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 12 Sep 2000, Graham Stoney wrote:
+Benjamin Herrenschmidt wrote:
 
->
-> Michel =?iso-8859-1?Q?D=E4nzer?= writes:
-> > I think it's better to pick something which doesn't work and you would like it
-> > to, then start digging into it instead of looking for 'the right one which
-> > needs help the most' where you aren't in it with your heart and soul. :)
->
-> This is good advice, but it's only half the problem -- and it's the relatively
-> easy half at that.  I found that kernel profiling for ppc in v2.2 didn't work
-> for me (didn't work at all in fact), so I fixed it and published the patch all
-> over the place, including at:
->     http://members.nbci.com/greyhams/linux/patches/2.2/profile.patch
->
-> However, the intractible part is getting my fix into the official sources.
-> I'm not working for a distribution; maybe it would be easier if I was.
-> I'm just a user who doesn't want to have to keep reapplying my patches every
-> time I get a new release, and would like to fix stuff properly so the next
-> guy who comes along has an easier time than I did.  It's not at all clear how
-> to get fixes in even once you've dug up the solution.
+> That problem is not specific to the PPC port, how many times patches are
+> sent to Linus without an answer, but without anything happening neither.
 
-You guys are discussing some of the issues our group (of two) would like
-to rectify. This is an on-going problem, and I think part of it has to do
-with the fact that there is not a "non-commercial" distribution going. We
-have been working on a system which offers a bunch of admin functionality
-that the commercial guys will probably never do, because it will take
-revenue away from them. These guys are not going to implement any idea
-that might cause them a little damage, even if the idea is good. At
-apachecon in orlando last year a SUSE rep said that the kind of update we
-were suggesting would cause cd sales to go down, so there was "no way" it
-would ever get implemented. To easy to do updates over the web.
+This is sometimes the problem we even have with patches.  Although I will
+put them in, they don't make it into the Linus tree.  Other times,
+Linus will pick up part of a patch because it is generically a
+good thing, and then we have to re-work what is left in the PPC port.
 
-If we can get this thing off the ground it will serve as a central place
-for many of the patches and system ideas that people would like to see in
-some of the other distros, but without the problem of sending a little
-patch to Linus or Alan, here and there. We can get our acts together as a
-group, and the submit more complete, better tested stuff, and this is only
-in the kernel. Imagine how nice it would be to keep the userland software
-in sync with the system changes. some of the distro's do a good job of it,
-but why can't a group of individuals do it like FreeBSD does?
+> The latest batch of PPC patches sent by Paul, AFAIK, didn't appear in
+> Linus test8 (was it rejected ? I don't know)
 
-It just seems to me that a group of people who actually care about the
-system can write a better system than most of the paid professionals out
-there (not to knock the paid professionals).
+I had breakfast with Cort this morning.  One of the major issues on
+the table is creating a stable 2.4 release.  There are lots of patches
+sitting in limbo right now, and unless they can be proven to fix a
+specific stability bug, they may not make into the first real 2.4.
 
-Just a thought,
-Matt
-matt@fxp.org
 
+> That's one of the reasons why we have this sourceforge site now. Pleast
+> post your patches there. They may or may not get merged, but at least
+> they will be available in a central position and won't be forgotten.
+
+Many of us have been talking about a single point for posting patches.
+There are several challenges to updating the sources, aside from adapting
+them to the Linus tree.  I get lots of patches from people.  Some I
+can deal with directly and some require the knowledge of others.  Among
+the list of people Ben mentioned, we sometimes have to work together.
+One of the greatest challenges of the PowerPC port is the different
+processors and different board types.  This is unlike any other port.
+When someone sends me a patch for the MPC823, I have to test this with
+other MPC8xx processors as well as desktop/notebook PowerPC systems.
+This is very tedious, and although it may look obvious to the originator
+of the patch that it won't affect anything else, I have broken the tree
+enough times to know I had better check everything.  It seems patches
+come from several people for a common feature area, because of dicussions
+on the mailing lists.  When we get these, they have to be merged and
+sorted out.  Maintaining the source trees (of any kind) is a very time
+consuming processes, and while it may have taken only a day or less to
+make the code update work on one particular platform of interest, it
+will take me days to merge it with all of the other patches, resync
+against the  source trees, test on a variety of platforms and ensure the
+update went smoothly.  There is nothing worse than making a 2AM update,
+to return later in the morning faced with an inbox full of bitch
+messages :-).
+
+Hopefully, posting patches in a common place will allow people to see
+what others have done, and some of this merging/testing can be done
+earlier in the cycle.  This would be a great help.  Also, updates that
+are generally useful to lots of people have a higher priority and are
+more likely to find their way quickly into the source trees.  Something
+that is unique to an individual, requires lots of code changes, or
+adversely affects others will find it very slow.  Smaller, more frequent
+patches are good :-).
+
+
+> Well, a bit less actively for now, I want things to stabilize a bit and
+> get merged with Linus before feeding the tree with new patches (and I
+> have my own patches waiting too).
+
+There are lots of patches waiting.  Cort and I discussed some solutions
+to having both a stable tree and a single place to apply patches for
+further testing.  He is going to discuss some BK features with Larry
+(not new ones, just if certain combinations of existing ones) that will
+help us do this.
+
+> ..... Don't worry if you don't see anything
+> happening on the sourceforge site for the upcoming days, that doesn't
+> mean it's dead.
+
+Or anywhere else....as I said there are lots of patches pending, waiting
+for the stable 2.4 to happen and 2.5 to open up.
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
