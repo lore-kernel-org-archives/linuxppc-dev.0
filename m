@@ -1,72 +1,53 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: What is the version RTLinux and its corresponding version of Linux can support 8260?
-Date: Sat, 31 Mar 2001 11:43:30 -0000
-Message-ID: <EADB10BAC266A14A85ECBF8686A73E310A9129@kolkrabbi.flaga.is>
-From: =?Windows-1252?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
-To: "machael" <dony.he@huawei.com.cn>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <l03130300b6ec56671fa7@[24.218.240.205]>
+In-Reply-To: 
+ <Pine.A41.3.96LJ1.1b7.1010328152002.32200D-100000@unlserve.unl.edu>
+References: <20010328070644.8D1F9DB9D3@atlas.valhalla.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 31 Mar 2001 23:01:44 -0500
+To: <linuxppc-dev@lists.linuxppc.org>
+From: "Michael R. Zucca" <mrz5149@acm.org>
+Subject: Re: Sound stoppage
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I do not know enough of 8260, nor RT-linux, but you seem to
-be using the kernel from kernel.org. Even though it is the
-official kernel for most people (read Intel people). There are
-some deviations from the kernel that ppc
-people use. Try to download the kernel from fsmlabs.com.
-I believe that the fsmlabs kernels stay in sync with the the
-offical kernel from kernel.org while not all changes from the
-ppc folks makes it into the official kernel.
+First, I've recently discovered that the problem isn't limited to sound.
+I've also noticed that my Adaptec SCSI card has bouts of timeouts.
+Something I wasn't aware of before.
 
-I believe that they (fsmlabs) are also the people makeing
-rt-linux so you might have much better luck there.
+Ok, so I had a sec this weekend and I wanted to quickly see if the PCI
+timing hack that Ben described worked. Now, perhaps I wrote it wrong, but I
+noticed that I still get the sound stoppage as well as disk burps. Nothing
+seems to have improved :-(
 
-Hope this helps,
+I'm hacking on a 2.2 snapshot at the moment (yes, yes, I'll get 2.4 as soon
+as I can!) :-)
 
-K.D.
+Here's a snippet I added to the end of init_bandit() in pmac_pci.c:
 
+#define BANDIT_POWERCENTER_HACK_ADDR	0x58
+#define BANDIT_POWERCENTER_HACK_DATA	0x12
 
------Original Message-----
-From:	machael
-Sent:	Fri 3/2/2001 2:22 AM
-To:	linuxppc-embedded@lists.linuxppc.org; rtl@rtlinux.org
-Cc:
-Subject:	What is the version RTLinux and its corresponding
-version of Linux can support 8260?
+#if 1
+	/* PowerCenter PCI timing hack */
+	out_le32(bp->cfg_addr, (1UL << BANDIT_DEVNUM) +
+BANDIT_POWERCENTER_HACK_ADDR);
+	udelay(2);
+	out_8(bp->cfg_data, BANDIT_POWERCENTER_HACK_DATA) ;
+	printk(KERN_INFO "PowerCenter PCI timing hack enabled.\n") ;
+#endif
 
-
-Hello,
-
-     I want to use RTLinux for my 8260-based custom board and meet some
-difficulties.  I have asked  rtl@rtlinux.org , but no one seems to be
-able
-to help me. So I  put my messages here.
-I am very sorry if this may disturb you.
-    Now I can run linux-2.4.1  linux-2.4.2 and linux-2.4.3-pre4 on my
-8260-based custom board  and neither of these versions can work
-successfully
-with RTLinux-3.0(because I have tried them). Does RTLinux-3.0 support
-8260
-CPU now? If so, What is the version of RTLinux and where can I download
-it?
-And its corresponding LINUX version  and where can I download it?
-
-Someone said rtlinux3.0v2.4.2 can work with linux-2.4.2 and it supports
-8260. So I try to use rtllinux3.0v2.4.2  from
-ftp.fsmlabs.com/pub/v3/linux-v242 ,and linuxkernel2.4.2 from
-www.kernel.org,
-but when I compile rtlinux-3.0 (for ppc kernel),  it reports no "__cli"
-and
-"__cli_end"  etc...
+Any thoughts?
 
 
-Anyone who has some experience can help me?
-
-Thank you very much.
-
-machael
 
 
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+____________________________________________________________________
+ Michael Zucca - mrz5149@acm.org - http://www.mdc.net/~mrz5149/
+ "I will choose a path that's clear. I will choose Freewill. "
+  --Rush, Freewill
+____________________________________________________________________
+
+
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
