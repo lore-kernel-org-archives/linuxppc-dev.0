@@ -1,40 +1,29 @@
-Date: Wed, 26 Apr 2000 00:30:26 -0700
-From: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
-Subject: Re: Dual head on a Powerbook
-To: FASSINO Jean-Philippe <jeanphilippe.fassino@rd.francetelecom.fr>
-Cc: LinuxPPC <linuxppc-dev@lists.linuxppc.org>
-Message-id: <39069B12.52B2B005@dana.ucc.nau.edu>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-References: <3906199F.1D7F995@dana.ucc.nau.edu>
- <390690B1.1194EC88@rd.francetelecom.fr>
+Subject: Re: problems with compiling glibc
+To: rolfl@sc.mcel.mot.com (Rolf Liu)
+Date: Wed, 26 Apr 2000 17:30:33 +1000 (EST)
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <001001bfb1b3$de9fa510$e50102c8@d-pengl-229.sc.mcel.mot.com> from "Rolf Liu" at Apr 29, 2000 03:21:07 AM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000426073033.3427A1B172@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-FASSINO Jean-Philippe wrote:
+Rolf Liu writes:
+> /home/lhx/powerpc-linux/bin/ld: unrecognised emulation mode: elf32ppclinux
+> Supported emulations: elf32ppc
+...
+> I wonder if elf32ppclinux is  different from elf32ppc ?
 
-> Tim Wojtulewicz wrote:
->
-> > I'm trying to connect a projector to the monitor port on the back of my
-> > powerbook, so I can do a presentation with it.  Anyone have any
-> > information on dual headed support on powerbooks?  Pismo, LinuxPPC2000,
-> > 2.2.15pre19
->
-> I'm doing this using Xpmac and booting with BootX.
-> First configure external display to be primary in MacOS (be
-> careful with depth color !).
-> Next, start Linux which display on external monitor.
-> This method work only with Xpmac and not with FBDev (3.3.x).
+They are the same. The latest official GNU gcc and binutils releases are
+currently out of step in this regard. You can fix it either by:
+1. upgrading to a more recent Linux binutils release, or
+2. upgrading to a more recent official binutils snapshot, or
+3. editing your gcc specs file to use elf32ppc instead of efl32ppclinux
 
-I tried this just now and it didn't work.  In MacOS, I have the monitor set
-to 1024x768 at thousands of colors.  Both monitors display the same image.
-When I boot back to Linux, something flashes on the external monitor.  It
-says something about OF, but it disappears to fast for me to read it fully.
-Then the image disappears, and nothing else appears on the external monitor.
-I am using the latest (rev 9) Xpmac.
-
-Tim
-
+Regards,
+Graham
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
