@@ -1,50 +1,43 @@
-Date: Tue, 12 Sep 2000 19:04:32 -0400
+Date: Tue, 12 Sep 2000 19:13:42 -0400
 From: Daniel Jacobowitz <dmj+@andrew.cmu.edu>
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Roles for distributions
-Message-ID: <20000912190432.A7192@drow.them.org>
-References: <Pine.LNX.4.10.10009122208210.3754-100000@opal.biophys.uni-duesseldorf.de> <Pine.LNX.4.21.0009121715110.832-100000@europa.rcinfo.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Getting patches in (was: Re: Roles for distributions)
+Message-ID: <20000912191342.A7444@drow.them.org>
+References: <200009120614.IAA00922@piglet.grunz.lu> <39BDD1E2.F0DC9B1D@mandrakesoft.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.21.0009121715110.832-100000@europa.rcinfo.net>; from matt@realestatesafari.com on Tue, Sep 12, 2000 at 05:36:31PM -0400
+In-Reply-To: <39BDD1E2.F0DC9B1D@mandrakesoft.com>; from jgarzik@mandrakesoft.com on Tue, Sep 12, 2000 at 02:49:06AM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-[CC list trimmed - that was silly]
-
-<asbestos suit.  Again.>
-
-On Tue, Sep 12, 2000 at 05:36:31PM -0400, mberglund wrote:
-> Yes. I conceed that debian is a non-profit organization. I would argue
-> that there is a great many things about them that are 'commercial-like'. I
-> have always wondered why one of the Linux distro's has not taken a look at
-> the BSD method of system updates. Each one, (I have asked four, with SUSE
-> being the most blatant) has said no. I am forced to believe that this is
-> amoney issue. I will also conceed that I have NOT asked Debian, but I am
-> not sure I like thier gpl-centric way of doing things.
+On Tue, Sep 12, 2000 at 02:49:06AM -0400, Jeff Garzik wrote:
 >
-> Don't misunderstand, I do respect (and even believe in) the gpl, for
-> ceratin situations. But I will not limit myself to only this type of
-> software.
+> Michel Lanners wrote:
+> > I agree that this seems to be a major problem of the PPC Linux port at
+> > this time. It is not clear at all how the flow of patches from user
+> > contribution, to PPC kernel tree, to Linus' tree is happening... and
+> > unfortunately, too often, it just isn't happening.
+>
+> Cort posted the following on linux-kernel, this past Thursday.   (Cort
+> quoted with ">", Till Straumann quoted with "}")
+>
+> > } Can somebody please tell me, who is currently maintaining
+> > } arch/ppc?
+> > }
+> > } The link
+> > }
+> > } http://www.ppc.kernel.org/
+> > }
+> > } in the MAINTAINERS file is dead.
+> > }
+> > } Regards, Till
+> >
+> > It's unmaintained right now.  The www.ppc.kernel.org site is gone.
+> > Take a look at www.fsmlabs.com/linuxppcbk.html for the PPC tree.
 
-I don't understand you.  Debian does not have a GPL-centric way of
-doing things - we have a definition of free software, which includes
-BSD licences as much as it includes the GPL!
-
-And what do you mean by "the BSD method of system updates"?  The "I
-feel like rebuilding it all myself" method?  This has been argued to
-death, and if you really do want to do it with Debian it is not
-terribly difficult to do, but I fail to see it as a good idea.
-
-> It also seems like the lost art of making an OS the SAME from platform to
-> platform is just that, LOST. This is another lofty goal in the project.
-
-The only ways in which Linux differs from platform to platform support
-additional features or unavoidable differences - you aren't proposing
-anything like a common endianness, or a common integer size, I hope?
-As convenient as they may be, you cripple multiple architectures for
-the sake of a few.
+Is someone planning to step up and take over, then, officially?  Or is
+Cort going to be back?
 
 Dan
 
