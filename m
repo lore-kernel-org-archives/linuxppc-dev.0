@@ -1,47 +1,35 @@
-Message-ID: <3A6CDA97.A9C3FFE2@mvista.com>
-Date: Mon, 22 Jan 2001 17:12:55 -0800
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
+Message-ID: <3A6CDC43.A18641DC@mvista.com>
+Date: Mon, 22 Jan 2001 20:20:03 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Dan Malek <dan@mvista.com>
+To: frowand@mvista.com
 CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: context overflow
-References: <3A68F7A0.693639F1@mvista.com>
+References: <3A68F7A0.693639F1@mvista.com> <3A6CDA97.A9C3FFE2@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek wrote:
->
-> I just heard about the bug Tom Gall fixed in "context_overflow"
-> by testing for current->mm == NULL.
->
-> I believe the proper solution is to use 'current->active_mm'
-> instead of 'current->mm' (and you never get a null pointer).
+Frank Rowand wrote:
 
-OK, I've stayed on the side-lines, waiting till I had time to actually
-read through the current linuxppc_2_5 source so I would understand
-the way things are today.  So as I'm going through the messages, from
-the beginning, I'm already confused.  The only "context_overflow" I
-find is mmu_context_overflow() in arch/ppc/mm/init.c.  You obviously
-aren't talking about the 8xx version of this function.  The other
-version of the function contains:
 
-        for_each_task(tsk) {
-                if (tsk->mm)
-                        tsk->mm->context = NO_CONTEXT;
-        }
+> ....The only "context_overflow" I
+> find is mmu_context_overflow() in arch/ppc/mm/init.c.  You obviously
+> aren't talking about the 8xx version of this function.
 
-This is the code we are talking about, correct?  The reason I'm
-confused is that I was being literal in my reading of "current->mm"
-as opposed to "tsk->mm".
+That's the one.  As part of the 4xx merge I made the 8xx work as
+well, so there is now only this one function for all PowerPC ports.
 
-Thanks,
+> This is the code we are talking about, correct?  The reason I'm
+> confused is that I was being literal in my reading of "current->mm"
+> as opposed to "tsk->mm".
 
-Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+The code you posted looks pretty old.  This function has more guts
+to it now, including a 'set_context' of 'current->mm', the source
+of the bug we are discussing.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
