@@ -1,43 +1,64 @@
-To: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Boot Loader 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 22 Dec 2003 06:59:47 EST."
-             <3FE6DCB3.109@catapult.com>
-Date: Mon, 22 Dec 2003 14:08:53 +0100
-Message-Id: <20031222130859.09C20C5F5F@atlas.denx.de>
+Subject: RE: Free ppc linux configuation tool?
+From: Jeff Angielski <jeff@theptrgroup.com>
+To: "listmember@orkun.us" <listmember@orkun.us>
+Cc: "Kerl, John" <John.Kerl@Avnet.com>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <29449.216.110.51.8.1071877375.squirrel@www.orkun.us>
+References: <C7FFFEA58B43D311920D0004ACE5333F10E4F46C@amer25.avnet.com>
+	 <29449.216.110.51.8.1071877375.squirrel@www.orkun.us>
+Content-Type: text/plain
+Message-Id: <1072105831.4163.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 22 Dec 2003 10:10:31 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Kevin,
+Did you look at the Makefile to make sure the ARCH is set correctly?
 
-in message <3FE6DCB3.109@catapult.com> you wrote:
+Jeff Angielski
+The PTR Group
+
+On Fri, 2003-12-19 at 18:42, listmember@orkun.us wrote:
+> Well, I am trying to use the sources for kernel 2.4.23 downloaded at:
 >
-> For my end target I have to boot across a shared memory
-> interface by placing the executable into RAM.  This is
-> part of a multi processor system where the Linux board
-> is a cPCI slave.  The Linux board will not have a flash
-> or a network connection.  I is held in reset by the master
-> until the s/w is loaded and then released.  This is an 8275
+> http://www.ppckernel.org/download/source/src-linuxppc_2_4.tar.bz2
+>
+> When I do make menuconfig or make xconfig I did not get an PowerPC choice.
+> What am I doing wrong. I was in the process of creating the .config file
+> manually but that is a rather time consuming and error prone process. I
+> would like to configure most if not all settings by a tools if possile.
+>
+> > Erm, make menuconfig at the base of your kernel tree?
+> > Or were you looking for something else?  E.g. Embedix
+> > (now out of business, I think) had a Windows-style
+> > wizard interface, which as I recall was merely shellac
+> > on make xconfig.
+> >
+> > -----Original Message-----
+> > From: listmember@orkun.us [mailto:listmember@orkun.us]
+> > Sent: Friday, December 19, 2003 1:19 PM
+> > To: linuxppc-embedded@lists.linuxppc.org
+> > Subject: Free ppc linux configuation tool?
+> >
+> >
+> >
+> > Sorry for duplicate posting, I forgot to specify a subject first time...
+> >
+> > I am creating a linux .config file for an embedded PowerPC 405gp board.
+> >
+> > Is there a menu driven free tool (console or X11 based) to assist me?
+> >
+> > I read somewhere about Montavista Hardhat Linux Configuration Tool but I
+> > am not sure if it is available free.
+> >
+> > Regards,
+> > Tolunay
+> >
+> >
+> >
+>
+>
 
-This has been done before. See for example the  "PN62"  configuration
-in U-Boot.
-
-> Any suggestions on how to do this ?
-
-Use U-Boot...
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-It all seemed, he thought, to be rather a lot of  trouble  to  go  to
-just sharpen a razor blade.  - Terry Pratchett, _The Light Fantastic_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
