@@ -1,45 +1,41 @@
-Date: Wed, 20 Jan 1999 13:53:18 -0800 (PST)
-From: Ranjit Deshpande <ranjitd@sco.COM>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PCI-PCI bridges
-In-Reply-To: <Pine.LNX.4.03.9901202208430.28223-100000@mercator.cs.kuleuven.ac.be>
-Message-ID: <Pine.SCO.3.96.990120135000.13973C-100000@mammoth.sco.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.HPP.3.96.990119224947.19824A-100000@falstaff.ucs.indiana.edu>
+Date: Wed, 20 Jan 1999 23:20:32 +0100
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: 3-button mouse
+Message-Id: <19990120232032.031426@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Tue, Jan 19, 1999, Brent H Mundy <bmundy@indiana.edu> wrote:
 
-Cool. de4x5 works great. Thanks Geert.
+>I have looked on the F-o-M for a supplier of 3-button mice.  All I could
+>find were entries for installing/trouble shooting.  Can anyone suggest a
+>3-button mouse (ADB).  I am looking to spend ~$30.  All I can find is
+>either 2-button mice, expensive 3-button mice, or 3-button USB mice.
+>Suggestions?  
 
-But I still need some answers about the PCI-PCI bridges issue. Was support
-omitted by design ?
+Let's be off-topic too ;-)
 
-While my changes work on my Starmax is that the generic solution ?
+I'm looking for a place where I could order one or two 3 button mice. My
+problem is that I want mice that currently cause trouble with Linux (in
+order to fix them of course ;-). I'm looking for a MacX compatible one,
+and eventually one of those that needs mousehack to work but I don't know
+where to find them since those people don't usually put the kind of
+protocol used by their mice on the web page...
 
-Ranjit
+So if someone could give me a set (model,place_to_buy,protocol_used) I
+would be grateful !
 
-On Wed, 20 Jan 1999, Geert Uytterhoeven wrote:
 
-> On Wed, 20 Jan 1999, Ranjit Deshpande wrote:
-> > 3. Why is the tulip code not reading the EEROM ? I'm using the standard
-> >    drivers/net/tulip.c. Does it require any PMAC specific changes ?
-> 
-> Does it help if you use the de4x5 driver instead of tulip? On my 21041, tulip
-> doesn't work, de4x5 does. On Intel both drivers work with the same board.
-> 
-> Greetings,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-> Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-> Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-> 
-> 
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
