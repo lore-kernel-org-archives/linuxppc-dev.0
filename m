@@ -1,36 +1,41 @@
-Message-ID: <20010328053251.30486.qmail@web13605.mail.yahoo.com>
-Date: Tue, 27 Mar 2001 21:32:51 -0800 (PST)
-From: Jones Madhuri <madhuri_jones@yahoo.com>
-Subject: What does instruction LA mean?
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3AC1825E.E61C485A@mvista.com>
+Date: Wed, 28 Mar 2001 01:19:10 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
+To: Jones Madhuri <madhuri_jones@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: What does instruction LA mean?
+References: <20010328053251.30486.qmail@web13605.mail.yahoo.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Jones Madhuri wrote:
 
-I am novice in Power PC assembly code and I am trying
-compile in following code (written by someone else)
-into head_8xx.S.
+> I am novice in Power PC assembly code and I am trying
+> compile in following code (written by someone else)
+> into head_8xx.S.
 
-This function has instruction like
+Novice or otherwise, you shouldn't be placing any code in
+head_8xx.S.  It's a guarantee you won't get Linux to boot.
 
-mfspr r3, IC_CST
-LA r4, IC_CST_LEN
 
-However the hardhat assembler doesn't understand the
-mnemonic LA, is LA same as add immediate instruction?
-addi r4, r4, IC_CST_LEN
+> mfspr r3, IC_CST
+> LA r4, IC_CST_LEN
+>
+> However the hardhat assembler doesn't understand the
+> mnemonic LA,
 
-Please help!!
+Because there is no such instruction.  It looks like a
+macro that will result in the two instruction pair:
+	lis	r4, IC_CST_LEN@h
+	ori	r4, r4, IC_CST_LEN@l
 
-Thanks.
+You shouldn't be messing around with those cache
+management registers......
 
-M.J.
 
-Get email at your own domain with Yahoo! Mail.
-http://personal.mail.yahoo.com/?.refer=text
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
