@@ -1,87 +1,63 @@
-From: deepesh@india.tejasnetworks.com
-Date: Tue, 22 Jul 2003 21:22:03 +0530 (IST)
-To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: deepesh@india.tejasnetworks.com
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: RE: EP8260 
-In-Reply-To: <D73A25AA6E54D511AD74009027B1110F3C0957@ORION>
-Message-ID: <Pine.LNX.4.21.0307222121140.3445-100000@deepesh.india.tejasnetworks.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
+Subject: Re: EP8260 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 22 Jul 2003 19:32:34 +0700."
+             <1058882554.3f1d43faafee2@pop-mail.india.tejasnetworks.com>
+Date: Tue, 22 Jul 2003 17:52:23 +0200
+Message-Id: <20030722155228.DF415C6D82@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+In message <1058882554.3f1d43faafee2@pop-mail.india.tejasnetworks.com> you wrote:
+>
+>   I loaded my EP8260 board with UBOOT. This was working fine. Then I loaded a
 
-  I checked the first sector, and I see the Hard Reset Configuration
-Word. I think there is some other problem.
+First I would like to point out (like many times before) that  U-Boot
+related  questions  are  off-topic  on  a  linuxppc-dev mailing list.
+Please post such questions to the u-boot-users list.
 
-Deepesh
+> binary into RAM using tftp. Then tried copying the stuff to flash. When I could
+> not copy things into flash directly, I erased a few sectors randomly and then
+> copied the binary to flash. Then when I reset the board, it did not come up.
 
-On Tue, 22 Jul 2003, Steven Blakeslee wrote:
+One of my teachers used to say that some people only  learn  when  it
+hurts really bad.
 
-> Was one of the sectors you erased the first sector? If so that is your
-> problem, the hard reset word is located in the beginning of the first
-> sector. To fix this you need to do the following.
->
-> 1. There is a resistor that is removed from the board at location RO2.
-> This resistor sets the default hard reset word. You have to put a 0ohm
-> resistor at this location, a solder glob will also work.
-> 2. Download the Planet Core FLASH burner and execute it. Give the
-> command hrw to reburn the hard reset word. If the processor is 233MHz
-> or higher give the command hrw h.
-> 3. Remove the 0ohm resistor(or solder glob) at RO2.
->
-> -----Original Message-----
-> From: deepesh@india.tejasnetworks.com
-> Sent: Tuesday, July 22, 2003 3:33 AM
-> Subject: EP8260
->
->   I loaded my EP8260 board with UBOOT. This was working fine. Then I
-> loaded a binary into RAM using tftp. Then tried copying the stuff to
-> flash. When I could not copy things into flash directly, I erased a
-> few sectors randomly and then copied the binary to flash. Then when I
-> reset the board, it did not come up.
->
-> I put back the u-boot into the flash using BDI2000. But now I am
-> getting weird characters on the screen. I have looked at the minicom
-> settings-- It is 115200 and 8N1. These were the settings with which
-> I was working before also. What I am not able to understand is the
-> reason for the weird characters.
->
-> I am attaching the weird character file. The last line seems to be the
-> U-BOOT prompt. I tried changing the TERMINAL SETTINGS to ANSI from
-> VT100, but it did not help.
-> ------------------------------------------------------------------------
-> ?åêáó`*m,ïïô`0nsnp`hSõì rr`r0ps`m@qrzs2zrvi
->
-> ??fxrv0`?åóåô`?ôáôõóz@?øôåòîáì`?ïæôl ?øôåòîáì`Èáòä
->
-> ??fxrvp fìïãë`fïîæéçõòáôéïî
-> `m`,õómôïmfïòå`?õìô`snuøl`-f?`?éö rl`v0ø`,õó`?òåñ``sp-xu`l fïòå ?òåñ qppm3pp
-> `m`äæâòç`q,`ãïòåãîæ`0øqål`âõóäæ`rl`ãðíäæ`ql`ðììäæ`ql`ðììíæ`r
-> `m`öãïYïõô``qyxppp0ppl`óããYãìë```tyupppppl`âòçYãìë```1rswup0p
-> `m`ãðõYãìë` rsqpppppp,`ãðíYãìë`@`yyp0ppppL`âõóYãìë```vvp0pppp
->
-> f?*z`` ??fxrvp`h?åö`q4l`?áóë`?n0h?i`r<ru?)`áô`2sq`?Èú
-> ,ïáòäz ?íâåääåä`?ìáîåô`??x2vpl`?åöéóéïî`p.p
-> ?2fz`` òåáäù
-> ????z `vt`?,
-> ????^:`qv ?,
-> jjj`-áòîéîç`m`âáä`f?fl`õóéîç`äåæáõìô`åîöéòïîíåîô
->
-> ?îz` ``óåòéáì
-> ?õôz ``óåòéáì
-> ?òòz ``óåòéáì
-> ?Åôz```?ffs`??^?????
-> ,??,*?zòåÁäù
-> }~`
-> --------------------------------------------------------------------------
+I hope you understand that you should have  investigates  _why_  yuou
+could  not  copy your image to flash. Thi is supposed to work, and if
+it fails it usually means that you made  something  wrong.  Analyzing
+the  error  and  understanding _what_ you did wrong is very important
+for you to avoid the same error in the future.
+
+Well, and "erasing a few sectors randomly" is such a bad idea that  I
+better keep my mouth shut.
+
+
+> I put back the u-boot into the flash using BDI2000. But now I am getting weird
+> characters on the screen. I have looked at the minicom settings-- It is 115200
+> and 8N1. These were the settings with which I was working before also. What I am
+> not able to understand is the reason for the weird characters.
+
+Probably you overwrote more than you think.
+
+Restart from scratch: erase the _whole_  flash  memory,  and  install
+_only_ U-Boot. Then power-cycle the board. Then check again.
+
+
+And never ever erase "random sectors" again.
+
+Best regards,
+
+Wolfgang Denk
 
 --
-
-D.Deepesh
-R&D Engineer,
-Tejas Networks
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"When anyone says `theoretically,' they really mean `not really.'"
+- David Parnas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
