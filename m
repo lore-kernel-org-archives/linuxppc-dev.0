@@ -1,27 +1,20 @@
-Return-Path: <Alexander.Povolotsky@marconi.com>
-Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
-	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id F20412BF07
+Return-Path: <avolkov@varma-el.com>
+Received: from amanaus.varma-el.com (unknown [195.144.244.147])
+	by ozlabs.org (Postfix) with ESMTP id 461422BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Dec 2004 04:24:13 +1100 (EST)
-Received: from mailman.pit.comms.marconi.com (mailman.pit.comms.marconi.com
-	[169.144.2.12])
-	by mailgate.pit.comms.marconi.com (8.12.10+Sun/8.12.10) with ESMTP id
-	iBNHO3Xm004456 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Dec 2004 12:24:03 -0500 (EST)
-Received: from uspitsmsgrtr01.pit.comms.marconi.com
-	(uspitsmsgrtr01.pit.comms.marconi.com [169.144.2.221])
-	by mailman.pit.comms.marconi.com (8.9.3/8.9.3) with ESMTP id MAA07419
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Dec 2004 12:24:02 -0500 (EST)
-Message-ID: <313680C9A886D511A06000204840E1CF0A6473F8@whq-msgusr-02.pit.comms.marconi.com>
-From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Thu, 23 Dec 2004 12:24:00 -0500
+	Fri, 24 Dec 2004 05:30:33 +1100 (EST)
+Date: Thu, 23 Dec 2004 21:04:33 +0300
+From: Andrey Volkov <avolkov@varma-el.com>
+Message-ID: <581835436.20041223210433@varma-el.com>
+To: Clemens Koller <clemens.koller@anagramm.de>
+In-Reply-To: <41B97BC7.3000200@anagramm.de>
+References: <20041210015932.A3B692BDA0@ozlabs.org>
+	<200412100845.14486.g.jaeger@sysgo.com> <41B97BC7.3000200@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: 2.6.10-rc3 for 8xx  booting "load_kernel(...)" function problem v
-	s configuring and initializing serial console ?
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: video card for Lite5200
+Reply-To: Andrey Volkov <avolkov@varma-el.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,91 +25,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hello Clemens,
 
-with
+Friday, December 10, 2004, 1:34:47 PM, you wrote:
 
-CONFIG_CMDLINE_BOOL=y
-CONFIG_CMDLINE="console=ttyCPM0 panic=3 root=/dev/ram"
-...
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_SERIAL_NONSTANDARD=y
-# CONFIG_COMPUTONE is not set
-# CONFIG_ROCKETPORT is not set
-# CONFIG_CYCLADES is not set
-# CONFIG_DIGIEPCA is not set
-# CONFIG_DIGI is not set
-# CONFIG_MOXA_INTELLIO is not set
-# CONFIG_MOXA_SMARTIO is not set
-# CONFIG_SYNCLINKMP is not set
-# CONFIG_N_HDLC is not set
-# CONFIG_RISCOM8 is not set
-# CONFIG_SPECIALIX is not set
-# CONFIG_SX is not set
-# CONFIG_RIO is not set
-# CONFIG_STALDRV is not set
+> Yes, the Fujitsu Coral P should work also.
+> I use a Silicon Motion Inc. SM501 Voyager GX PCI Demo Board right now
+> which is supposed to work with all the embedded systems. You can get
+> that board for about EUR 495.- in Germany.
+> I am currently working on the framebuffer drivers for the Voyager on
+> PPC. Things seem to make good progress, here (there is an image on 
+> screen :-). There is also an Epson or Asilient solution for embedded
+> systems, maybe you can check that also. YMMV
 
-#
-# Serial drivers
-#
-# CONFIG_SERIAL_8250 is not set
+Could you send me your kernel .config file for SM501?
+I try use it too, but kernel (2.6.10-rc2) always restarting,
+I think I forget, as usually, something somewhere :(.
 
-#
-# Non-8250 serial port support
-#
-CONFIG_SERIAL_CORE=y
-CONFIG_SERIAL_CORE_CONSOLE=y
-CONFIG_SERIAL_CPM=y
-CONFIG_SERIAL_CPM_CONSOLE=y
-CONFIG_SERIAL_CPM_SCC1=y
-CONFIG_SERIAL_CPM_SCC2=y
-# CONFIG_SERIAL_CPM_SCC3 is not set
-# CONFIG_SERIAL_CPM_SCC4 is not set
-# CONFIG_SERIAL_CPM_SMC1 is not set
-# CONFIG_SERIAL_CPM_SMC2 is not set
-CONFIG_UNIX98_PTYS=y
-CONFIG_LEGACY_PTYS=y
-CONFIG_LEGACY_PTY_COUNT=256in my .config file,
+And, Clemens, how about PCI bug of MPC5200 and SM501 (PCI clock to
+Signal Valid Delay)? Are you doing something with demo board? Or it
+working ok from box?
 
- still somehow in 2.6.10-rc3 (for 8xx) the "load_kernel(...)" function in
-the 
- ./arch/ppc/boot/simple/misc-embedded.c is not getting called during the
- boot ? (I think ...) ... or serial is not getting initialiazed correctly
-within this function 
- when "serial_init(...)" function is called within it ?...
-
- (no JTAG emulator debugging is available to me on this board ...)
- 
- **********On Linux 2.4.26 I used to see during the boot:*********
- 
- (M)odify any of this or (C)ontinue? [M] C
- Updating parameter storage. This may take a while...
- Done writing in Storage Area
- Starting Application from bank 1
- Done
- 
- ********(then from load_kernel() I would see)********** 
- loaded at:     00180000 0035622C
- board data at: 0035313C 0035317C
- relocated to:  001852CC 0018530C
- zimage at:     001857F9 00226057
- initrd at:     00227000 00352ADF
- avail ram:     00357000 02000000
- 
- Linux/PPC load: panic=3 root=/dev/ram
- Uncompressing Linux...done.
- initrd moved:  00400000 0052BADF
- Now booting the kernel
- Running from bank 1
- Selecting default root device 1f04
- Linux version 2.4.26 (apovolot@localhost.localdomain) (gcc version 3.4.1)
-#2
- Fri  Dec 10 13:37:12 EST 2004
- .....
- 
- On 2.6.10-rc3 nothing "happens" (and then it is just getting reexecuted)
-after I see:     Done
- 
- Any ideas ?
+-- 
+Best regards,
+ Andrey Volkov
