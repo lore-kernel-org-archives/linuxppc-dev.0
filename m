@@ -1,108 +1,98 @@
-From: Tomas Carmen <tomas@tcc.com.pe>
-To: linuxppc-embedded@lists.linuxppc.org
-cc: arsenio@tin.it
-Subject: help with Patches for FADS8xx and suggestions
-Message-ID: <Pine.LNX.4.10.10008221155330.6840-100000@maestro.tcc.com>
+Subject: Re: PATCH: 2.2 series FEC driver performance improvements
+To: stephane.laroche@colubris.com (Stiphane Laroche)
+Date: Wed, 23 Aug 2000 10:57:00 +1000 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org (LinuxPPC Embedded Mailing List)
+In-Reply-To: <39A2BC18.2589D75E@colubris.com> from "Stiphane Laroche" at Aug 22, 2000 01:44:57 PM
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Date: Tue, 22 Aug 2000 13:21:05 -0500
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000823005700.B7369F@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi list:
-I get the kernel mpc8xx-2.2.13.tgz from ftp://linuxppc.cs.nmt.edu
-and the patches from Damm y Bossek, I'm working on i586 redHat 6.1 and my
-own crosscompiler, for the patches I'm getting:
-  ls -l /usr/src/
-  lrwxrwxrwx             5 Aug 21 19:29 embedded_2.2.13_org-> linux
-  drwxr-xr-x          2048 Oct 22  1999 linux
-  lrwxrwxrwx             5 Aug 21 18:34 mpc8xx-2.2.13 -> linux
-
-  # gzip -cd patch-2_2_13-mpc8xx-damm_diff.gz | patch -p0
-  patching file `embedded_2.2.13_org/arch/ppc/8xx_io/commproc.h'
-  Hunk #1 FAILED at 457.
-  1 out of 1 hunk FAILED -- saving rejects to
-  embedded_2.2.13_org/arch/ppc/8xx_io/commproc.h.rej
-  patching file `embedded_2.2.13_org/arch/ppc/8xx_io/enet.c'
-  Hunk #1 FAILED at 981.
-  Hunk #2 FAILED at 1022.
-  2 out of 2 hunks FAILED -- saving rejects to
-  embedded_2.2.13_org/arch/ppc/8xx_io/enet.c.rej
-  patching file `embedded_2.2.13_org/arch/ppc/8xx_io/uart.c'
-  Hunk #1 FAILED at 2417.
-  1 out of 1 hunk FAILED -- saving rejects to
-  embedded_2.2.13_org/arch/ppc/8xx_io/uart.c.rej
-  patching file `embedded_2.2.13_org/arch/ppc/config.in'
-  Hunk #1 FAILED at 31.
-  1 out of 1 hunk FAILED -- saving rejects to
-  embedded_2.2.13_org/arch/ppc/config.in.rej
-  patching file `embedded_2.2.13_org/arch/ppc/kernel/irq.c'
-  Hunk #1 FAILED at 54.
-  1 out of 1 hunk FAILED -- saving rejects to
-  embedded_2.2.13_org/arch/ppc/kernel/irq.c.rej
-  patching file `embedded_2.2.13_org/arch/ppc/kernel/ppc8xx_pic.c'
-  Hunk #1 FAILED at 137.
-.....
+A partly satisfied customer writes:
+> I've installed your patch, as I liked very much the changes you made.
+>
+> I cannot get it to link though:
+> arch/ppc/8xx_io/8xx_io.a: In function `fec_enet_rx':
+> arch/ppc/8xx_io/8xx_io.a(.text+0x3198): undefined reference to
+> `invalidate_dcache_range'
 ...
-..
-  Hunk #1 FAILED at 100.
-  1 out of 1 hunk FAILED -- saving rejects to
-  embedded_2.2.13_org/arch/ppc/mbxboot/m8xx_tty.c.rej
-  patching file `embedded_2.2.13_org/arch/ppc/mm/init.c'
-  Hunk #1 FAILED at 51.
-  Hunk #2 FAILED at 74.
-  Hunk #3 FAILED at 1104.
-  3 out of 3 hunks FAILED -- saving rejects to
-  embedded_2.2.13_org/arch/ppc/mm/init.c.rej
-  patching file `embedded_2.2.13_org/include/asm-ppc/ads.h'
-  patching file `embedded_2.2.13_org/include/asm-ppc/fads.h'
-  Hunk #1 FAILED at 1.
-  Hunk #2 FAILED at 73.
-  2 out of 2 hunks FAILED -- saving rejects to
-  embedded_2.2.13_org/include/asm-ppc/fads.h.rej
-  patching file `embedded_2.2.13_org/include/asm-ppc/mpc8xx.h'
-  Hunk #1 FAILED at 12.
-  Hunk #2 FAILED at 58.
-  2 out of 2 hunks FAILED -- saving rejects to
-  embedded_2.2.13_org/include/asm-ppc/mpc8xx.h.rej
-  patching file `embedded_2.2.13_org/include/asm-ppc/processor.h'
-  Hunk #1 FAILED at 70.
-  1 out of 1 hunk FAILED -- saving rejects to
-  embedded_2.2.13_org/include/asm-ppc/processor.h.rej
+> My kernel is based on a hardhat kernel (2.2.13-7).   Any ideas why I don't have
+> that function?
+
+Hmmm.  Sounds like it's missing from your kernel; it's not used by many other
+drivers.  Applying the patch below should add it for you.
+
+> Are you planning to make the same kind of improvements in the 10Mbit driver
+> (enet.c)?
+
+Our project only has a FEC-based interface, so probably not.  Most of the
+changes are in fec_enet_rx, and cpm_enet_rx looks almost identical.  It
+shouldn't be hard to apply the equivalent changes to enet.c by hand.
+
+Regards,
+Graham
 
 
-Its the same for Bossek patches
+Index: arch/ppc/kernel/head.S
+===================================================================
+RCS file: /u/archive/epc/sw/linux/arch/ppc/kernel/head.S,v
+diff -u -r1.1.1.2 -r1.1.1.3
+--- arch/ppc/kernel/head.S	2000/01/04 03:38:24	1.1.1.2
++++ arch/ppc/kernel/head.S	2000/03/10 01:11:12	1.1.1.3
+@@ -2450,6 +2578,29 @@
+        bdnz    1b
+        sync                            /* wait for dcbst's to get to ram */
+        blr
++
++/*
++ * Like above, but invalidate the D-cache.  This is used by the 8xx
++ * to invalidate the cache so the PPC core doesn't get stale data
++ * from the CPM (no cache snooping here :-).
++ *
++ * invalidate_dcache_range(unsigned long start, unsigned long stop)
++ */
++_GLOBAL(invalidate_dcache_range)
++       li      r5,CACHE_LINE_SIZE-1
++       andc    r3,r3,r5
++       subf    r4,r3,r4
++       add     r4,r4,r5
++       srwi.   r4,r4,LG_CACHE_LINE_SIZE
++       beqlr
++       mtctr   r4
++
++1:     dcbi    0,r3
++       addi    r3,r3,CACHE_LINE_SIZE
++       bdnz    1b
++       sync                            /* wait for dcbst's to get to ram */
++       blr
++
 
-  # gzip -cd patch-2_2_13-mpc8xx-bossek_diff | patch -p0
-  patching file `mpc8xx-2.2.13/arch/ppc/8xx_io/commproc.h'
-  Hunk #1 FAILED at 459.
-  Hunk #2 FAILED at 479.
-  2 out of 2 hunks FAILED -- saving rejects to
-  mpc8xx-2.2.13/arch/ppc/8xx_io/commproc.h.rej
-  patching file `mpc8xx-2.2.13/arch/ppc/8xx_io/enet.c'
-  Hunk #1 FAILED at 124.
-  Hunk #2 FAILED at 996.
-  2 out of 2 hunks FAILED -- saving rejects to
-  mpc8xx-2.2.13/arch/ppc/8xx_io/enet.c.rej
+ /*
+  * Flush a particular page from the DATA cache
 
-What am I missing?
 
-I'm needing this for MPC 860 and then 823.
-I want use:
- SCC1 for ethernet
- SMC1 for RS232 (UART)
- SMC2 for RS232 (UART)
- and PCMCIA
+Index: include/asm-ppc/cache.h
+===================================================================
+RCS file: /u/archive/epc/sw/linux/include/asm-ppc/cache.h,v
+retrieving revision 1.2
+diff -u -r1.2 cache.h
+--- include/asm-ppc/cache.h	2000/01/04 05:32:03	1.2
++++ include/asm-ppc/cache.h	2000/08/18 05:42:36
+@@ -21,6 +21,7 @@
 
-Do you have any suggestions for .config? Are there other patches?
+ #if defined(__KERNEL__) && !defined(__ASSEMBLY__)
+ extern void flush_dcache_range(unsigned long start, unsigned long stop);
++extern void invalidate_dcache_range(unsigned long start, unsigned long stop);
 
-Thanks for your help.
-
----------------
-Tomas Carmen R.
-TCC S.A.
-+511-4428842
-Lima - Peru
+ static inline unsigned long unlock_dcache(void)
+ {
+--
+Graham Stoney
+Principal Hardware/Software Engineer
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
