@@ -1,39 +1,49 @@
-Message-ID: <E62DBC698514D511A1AC0003470C1314EE2B88@EXCHANGE>
-From: Keith Outwater <Keith_Outwater@mvis.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Problems building ppc cross compiler under RH7.2 x86 - SOLVED
-Date: Thu, 15 Nov 2001 08:42:59 -0800
+Date: Thu, 15 Nov 2001 19:06:23 +0100
+From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
+Subject: Re: linuxppc_2_4_devel on walnut
+To: Armin Kuster <akuster@mvista.com>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Message-id: <3BF4041F.A732B099@inn.ericsson.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+References: <3BDD855B.8D3FC72F@inn.ericsson.se>
+ <3BE971BC.34591FF1@inn.ericsson.se> <3BEBF4E5.B60BD9E3@inn.ericsson.se>
+ <3BF2A361.5FBB0246@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greetings all -
+Armin Kuster wrote:
+>
+> Kenneth Johansson wrote:
+> >
+> > But the ethernet reporting of the line is wrong. This is a problem with the
+> > printout only as the function is right. The 100Mb full duplex is reported to
+> > be 10Mb half and vise verse.
+> >
+>
+> Kenneth;
+>
+> I finally got arround to looking into this and the problem is the
+> status.
+> We use the status to program the emac to the same speed as the PHY.
+>
+> I have attach a patch the should correct this.
 
-My thanks to Kevin Williams and Evandro Borracini for their suggestions on
-fixing my cross compiler build problem.
+I saw that this was also in the devel tree so I updated my copy and yes the
+printout is now right.
 
-The problem was solved by doing two things:
-1. Edit the file <path where you put glibc>/lib/libc.so  as follows:
+But "time dd if=/dev/zero of=testing bs=1024k count=100" on a nfs mouted fs
+used to be 18s and is now 21s, a 16% slowdown not that I care much but still
+quite a large difference.
 
-from:
-GROUP ( /lib/libc.so.6.1 /lib/libc_nonshared.a )
-to:
-GROUP ( <path where you put glibc>/lib/libc.so.6.1 <path where you put
-glibc>/lib/libc_nonshared.a ) (Evandro)
+And I have not tired this on my 10Mb port yet as I still have only one active
+but as soon as they work again I test on 10Mb.
 
-That fixed the c cross compiler build.
-
-
-2. Apply a patch tp gcc from http://gcc.gnu.org/install/glibc-2.2.patch
-(Kevin)
-That fixed the c++ cross compiler build.
-
-
-I will forward this information to the maintainer of the cross compiler
-mini-howto.
-
-
-Thanks!
-Keith
+--
+Kenneth Johansson
+Ericsson Business Innovation AB   Tel: +46 8 404 71 83
+Viderögatan 3                     Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@inn.ericsson.se
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
