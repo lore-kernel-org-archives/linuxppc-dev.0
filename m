@@ -1,77 +1,167 @@
-Message-ID: <19990120144929.E3026@maxime.u-strasbg.fr>
-Date: Wed, 20 Jan 1999 14:49:29 +0100
-From: Sven LUTHER <luther@maxime.u-strasbg.fr>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
-        luther@dpt-info.u-strasbg.fr
-Cc: Michel Daenzer <michdaen@iiic.ethz.ch>, nardinoc@CS.UniBO.IT,
-        Linux/APUS <linux-apus@sunsite.auc.dk>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>
-Subject: Re: [pm2fb] update 990110 - first public release ;)
-Reply-To: luther@dpt-info.u-strasbg.fr
-References: <19990120135435.L2459@maxime.u-strasbg.fr> <Pine.LNX.4.03.9901201435570.21387-100000@mercator.cs.kuleuven.ac.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.03.9901201435570.21387-100000@mercator.cs.kuleuven.ac.be>; from Geert Uytterhoeven on Wed, Jan 20, 1999 at 02:37:20PM +0100
+From: Loic Prylli <Loic.Prylli@ens-lyon.fr>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="iNoB6GMT/N"
+Date: Wed, 20 Jan 1999 14:56:59 +0100 (MET)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
+In-Reply-To: <36A4D4CE.9D957BA0@jlc.net>
+References: <XFMail.990119132838.gdt@linuxppc.org>
+	<36A4D4CE.9D957BA0@jlc.net>
+Message-ID: <13989.56114.388702.567051@porto>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jan 20, 1999 at 02:37:20PM +0100, Geert Uytterhoeven wrote:
-> On Wed, 20 Jan 1999, Sven LUTHER wrote:
-> > > > > Yes. The X server must not do video mode initialization, but call the frame
-> > > > > buffer device instead.
-> > > > 
-> > > > what then is the stuff you initialize in the mach64 accel init stuff ?
-> > > 
-> > > Like you say, that's _accel_ _engine_ init stuff, not _graphics_ _engine_ init
-> > > stuff. The graphics engine takes care of the video mode (programmed in the
-> > > fbdev in the kernel), while the X server has to program the accel engine.
-> > 
-> > in the case of the permedia 2, the engine is only one long pipeline, so the graphic and
-> > accel engine are the same ?
-> 
-> Are you sure about that?
 
-I think yes, all units are in one pipeline, the same for 2D and 3D, and only this units are documented in
-the TI docs, but then i guess by graphic engine you mean the one responsible for 
-sending data to the monitor ? it is the last unit of the pipeline.
+--iNoB6GMT/N
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-anyway, Ilario told me that he initialized everything nicely in the fbdev, that is, he 
-switch off every unused part of the pipeline. 
 
-i will have to switch on the part i will need ( altough for X accel, i guess it is only
-the copy stuff that is really important, and they are already used in the fbdev driver
-for console acceleration, so ...). or do i have to switch on this stuff only when doing the 
-actual moves ?
+Michael Meissner writes:
+ > 
+ > I see you added changes to set the initial cmd config.  Is there any way we can
+ > add a configure line when building the kernel, so I can build a kernel with
+ > different data (ie, my disk is /dev/sda2 and not /dev/sdb2, etc.).  That way it
+ > has a better chance of working if rebooted in the middle of the night due to
+ > power failure.
+ > 
 
-> 
-> > but better would be to take another approach to my questions, ...
-> > 
-> > when are the init and renint function called ?
-> > 
-> > i guess init is the first time the Xserver is launched, and reinit is each time 
-> > you return from some console switch ?
-> 
-> Right.
-> 
-> > should we save the previous state and reset it on exiting X or something like that ?
-> > Or will the fbdev driver automatically reinitialize the pm2 when you switch back to console mode ?
-> 
-> The X server may restore the video mode by calling the FBIOPUT_VSCREENINFO
-> ioctl with the `var' it got on startup.
-> 
+Some time ago, I made a small addition to Gabriel preploader, including
+ a simple "prepctl" program, that permit to modify the
+command-line stored in the zImage.
 
-but there is no accel specific stuff that get launched on exiting X, isnt'it, there is only the the init
-function that get called when you go to X. I could, for starting, have a empty such function,
-that is i just copy the info from the fbdev info structs to the glint_info structs, like
-you do at the begining of the mach64 init functions ?
+In my case, it is much more useful than getting the command-line
+through residual data or NVRAM, because I can modify the command-line
+parameters for the next reboot without needing access to the console
+(you win a lot of time if you have 16 machines, moreover they are in a
+closed room for which it is tedious to get the key:-). Of course this
+is not an advantage anymore if there is some tools to modify NVRAM or
+residual data after Linux is booted.
 
-I will try to work on this this week end, and hope that i don't get the same problems as last time ...
+Anyway below is the patch, to modify the command-line of a zImage,
+simply run "prepctl <zImage> <command line parameters>..." or "prepctl
+/dev/sda1 ..." if it is installed on a disk partition.
 
-Friendly,
 
-Sven LUTHER
+--iNoB6GMT/N
+Content-Type: application/octet-stream
+Content-Disposition: attachment;
+	filename="preploader.diff"
+Content-Transfer-Encoding: base64
+
+SW5kZXg6IHByZXBsb2FkZXIvTWFrZWZpbGUKZGlmZiAtYyBwcmVwbG9hZGVyL01ha2VmaWxl
+OjEuMS4xLjMgcHJlcGxvYWRlci9NYWtlZmlsZToxLjIKKioqIHByZXBsb2FkZXIvTWFrZWZp
+bGU6MS4xLjEuMwlXZWQgSmFuIDIwIDA5OjQ1OjQwIDE5OTkKLS0tIHByZXBsb2FkZXIvTWFr
+ZWZpbGUJV2VkIEphbiAyMCAxNDoyNjozOSAxOTk5CioqKioqKioqKioqKioqKgoqKiogNTks
+NjggKioqKgogIAogICNPQkpFQ1RTICs9IHZyZXNldC5vIGtiZC5vCiAgCiEgekltYWdlOiAk
+KE9CSkVDVFMpICQoSU1BR0VTKSAkKFNJWkVTKSBwcGNib290LmxkcwogIAlsZCAtbyB6SW1h
+Z2UgJChPQkpFQ1RTKSAtYiBiaW5hcnkgJChJTUFHRVMpIC1UIHBwY2Jvb3QubGRzIFwKICAJ
+LS1kZWZzeW0gX3ZtbGludXhfc2l6ZT1gY3V0IC1mIDEgPC52bWxpbnV4LnNpemVgIC1NYXAg
+ekltYWdlLm1hcAogIAogICMgVGhlIDIgb2JqY29weSBhcmUgcXVpdGUgdWdseSwgYnV0IGZv
+ciBub3cgaXQgd2FzIHRoZSBzaW1wbGVzdCBzb2x1dGlvbgogICMgc2luY2UgdGhlIGZsYWdz
+IHRvIGV4cGFuZCB0aGUgYnNzIGRvIG5vdCB3b3JrIG9uIGEgYmluYXJ5IG91dHB1dCBmb3Jt
+YXQuCiAgIyBJdCB3b3VsZCBiZSBiZXR0ZXIgdG8ga25vdyB3aGVyZSB0aGUgYnNzIGlzIGFu
+ZCBjbGVhciBpdCBpbiB0aGUgYm9vdGxvYWRlciwKLS0tIDU5LDcyIC0tLS0KICAKICAjT0JK
+RUNUUyArPSB2cmVzZXQubyBrYmQubwogIAohIHpJbWFnZTogJChPQkpFQ1RTKSAkKElNQUdF
+UykgJChTSVpFUykgcHBjYm9vdC5sZHMgcHJlcGN0bAogIAlsZCAtbyB6SW1hZ2UgJChPQkpF
+Q1RTKSAtYiBiaW5hcnkgJChJTUFHRVMpIC1UIHBwY2Jvb3QubGRzIFwKICAJLS1kZWZzeW0g
+X3ZtbGludXhfc2l6ZT1gY3V0IC1mIDEgPC52bWxpbnV4LnNpemVgIC1NYXAgekltYWdlLm1h
+cAogIAorIHByZXBjdGw6IHByZXBjdGwuYworIAkkKENDKSAtTyAtbyAkQCAkPAorIAorIAog
+ICMgVGhlIDIgb2JqY29weSBhcmUgcXVpdGUgdWdseSwgYnV0IGZvciBub3cgaXQgd2FzIHRo
+ZSBzaW1wbGVzdCBzb2x1dGlvbgogICMgc2luY2UgdGhlIGZsYWdzIHRvIGV4cGFuZCB0aGUg
+YnNzIGRvIG5vdCB3b3JrIG9uIGEgYmluYXJ5IG91dHB1dCBmb3JtYXQuCiAgIyBJdCB3b3Vs
+ZCBiZSBiZXR0ZXIgdG8ga25vdyB3aGVyZSB0aGUgYnNzIGlzIGFuZCBjbGVhciBpdCBpbiB0
+aGUgYm9vdGxvYWRlciwKSW5kZXg6IHByZXBsb2FkZXIvYm9vdGRhdGEuaApkaWZmIC1jIC9k
+ZXYvbnVsbCBwcmVwbG9hZGVyL2Jvb3RkYXRhLmg6MS4xCioqKiAvZGV2L251bGwJV2VkIEph
+biAyMCAxNDo1NDozOSAxOTk5Ci0tLSBwcmVwbG9hZGVyL2Jvb3RkYXRhLmgJV2VkIEphbiAy
+MCAxNDoyNzoyNyAxOTk5CioqKioqKioqKioqKioqKgoqKiogMCAqKioqCi0tLSAxLDMgLS0t
+LQorICNkZWZpbmUgTUFHSUMxX0NNRExJTkUgMHhlMDhlZDlmNworICNkZWZpbmUgTUFHSUMy
+X0NNRExJTkUgMHgzYzBiOGM4OAorIApJbmRleDogcHJlcGxvYWRlci9ib290bGRyLmgKZGlm
+ZiAtYyBwcmVwbG9hZGVyL2Jvb3RsZHIuaDoxLjEuMS4zIHByZXBsb2FkZXIvYm9vdGxkci5o
+OjEuMgoqKiogcHJlcGxvYWRlci9ib290bGRyLmg6MS4xLjEuMwlXZWQgSmFuIDIwIDA5OjQ1
+OjE5IDE5OTkKLS0tIHByZXBsb2FkZXIvYm9vdGxkci5oCVdlZCBKYW4gMjAgMTQ6MjY6NDEg
+MTk5OQoqKioqKioqKioqKioqKioKKioqIDczLDc4ICoqKioKLS0tIDczLDgxIC0tLS0KICAg
+KiBmdW5jdGlvbnMgd2hvIGhhdmUgdG8gYWNjZXNzIHRoZSAuZ290MiBzZWN0aW9ucyAodGhp
+cyBpbmNyZWFzZXMgdGhlIAogICAqIHNpemUgb2YgdGhlIHByb2xvZ3VlIGluIGV2ZXJ5IGZ1
+bmN0aW9uKS4KICAgKi8KKyAKKyAjaW5jbHVkZSAiYm9vdGRhdGEuaCIKKyAKICB0eXBlZGVm
+IHN0cnVjdCBfYm9vdF9kYXRhIHsKICAJUkVTSURVQUwgKnJlc2lkdWFsOwogIAl2b2lkICps
+b2FkX2FkZHJlc3M7CioqKioqKioqKioqKioqKgoqKiogOTUsMTAxICoqKioKICAJY29uc3Qg
+c3RydWN0IGNvbnNvbGVfaW8gKmNvbnNvbGVfZnVuY3Rpb25zOwogIAlvcGFxdWUgKiBjb25z
+b2xlX3ByaXZhdGU7CiAgCXVfbG9uZyB0aWNrc19wZXJfbXM7CiEgCWNoYXIgY21kX2xpbmVb
+MjU2XTsKICB9IGJvb3RfZGF0YTsKICAKICByZWdpc3RlciBib290X2RhdGEgKmJkIF9fYXNt
+X18oInIxMyIpOwotLS0gOTgsMTA2IC0tLS0KICAJY29uc3Qgc3RydWN0IGNvbnNvbGVfaW8g
+KmNvbnNvbGVfZnVuY3Rpb25zOwogIAlvcGFxdWUgKiBjb25zb2xlX3ByaXZhdGU7CiAgCXVf
+bG9uZyB0aWNrc19wZXJfbXM7CiEgICB1bnNpZ25lZCBsb25nIG1hZ2ljMTsKISAgIGNoYXIg
+Y21kX2xpbmVbMjU2XTsKISAgIHVuc2lnbmVkIGxvbmcgbWFnaWMyOwogIH0gYm9vdF9kYXRh
+OwogIAogIHJlZ2lzdGVyIGJvb3RfZGF0YSAqYmQgX19hc21fXygicjEzIik7CkluZGV4OiBw
+cmVwbG9hZGVyL21pc2MuYwpkaWZmIC1jIHByZXBsb2FkZXIvbWlzYy5jOjEuMS4xLjMgcHJl
+cGxvYWRlci9taXNjLmM6MS4yCioqKiBwcmVwbG9hZGVyL21pc2MuYzoxLjEuMS4zCVdlZCBK
+YW4gMjAgMDk6NDU6MzMgMTk5OQotLS0gcHJlcGxvYWRlci9taXNjLmMJV2VkIEphbiAyMCAx
+NDoyNjo0MyAxOTk5CioqKioqKioqKioqKioqKgoqKiogNDgsNTQgKioqKgogIAkJICAmdmFj
+dXVtX2NvbnNvbGVfZnVuY3Rpb25zLAogIAkJICAmY29uc29sZV9wcml2YXRlLAogIAkJICAx
+MDAwMDAwLAkvKiBEZWNyZW1lbnRlciB0aWNrcyBwZXIgbXMgKHRydWUgZm9yIDYwMSkgKi8K
+ISAJCSAgImNvbnNvbGU9dHR5UzAiCQogIAkJIH07CiAgCiAgdm9pZCBleGl0KCkKLS0tIDQ4
+LDU0IC0tLS0KICAJCSAgJnZhY3V1bV9jb25zb2xlX2Z1bmN0aW9ucywKICAJCSAgJmNvbnNv
+bGVfcHJpdmF0ZSwKICAJCSAgMTAwMDAwMCwJLyogRGVjcmVtZW50ZXIgdGlja3MgcGVyIG1z
+ICh0cnVlIGZvciA2MDEpICovCiEgICAgICAgICAgICAgICAgICAgTUFHSUMxX0NNRExJTkUs
+ICJjb25zb2xlPXR0eVMwIiAsTUFHSUMyX0NNRExJTkUKICAJCSB9OwogIAogIHZvaWQgZXhp
+dCgpCioqKioqKioqKioqKioqKgoqKiogNzAsNzUgKioqKgotLS0gNzAsODggLS0tLQogIAly
+ZXR1cm4gZHN0OwogIH0KICAKKyBpbnQgc3RyY21wKGNvbnN0IGNoYXIgKnAxLGNvbnN0IGNo
+YXIgKnAyKSB7CisgICBpbnQgdnMxLHZzMjsKKyAgIGNvbnN0IHVuc2lnbmVkIGNoYXIgKnMx
+ID0gcDE7CisgICBjb25zdCB1bnNpZ25lZCBjaGFyICpzMiA9IHAyOworICAgZG8geworICAg
+ICB2czEgPSAqczErKzsKKyAgICAgdnMyID0gKnMyKys7CisgICAgIGlmICh2czEgIT0gdnMy
+KQorICAgICAgIHJldHVybiB2czEgLSB2czI7CisgICB9IHdoaWxlICh2czEgJiYgdnMyKTsK
+KyAgIHJldHVybiAwOworIH0KKyAKICB2b2lkIGhhbmcoY29uc3QgY2hhciAqcywgdV9sb25n
+IHgsIGN0eHQgKnApIHsKICAJdV9sb25nICpyMTsKICAjaWZkZWYgREVCVUcKKioqKioqKioq
+KioqKioqCioqKiAyOTEsMjk3ICoqKioKICAJCX0gZWxzZSB7CiAgCQkJc2VsZWN0X2NvbnNv
+bGUoJnZnYV9jb25zb2xlX3NldHVwKTsKICAJCQkvKiBSZW1vdmUgdGhlIGtlcm5lbCBzZXJp
+YWwgY29uc29sZSBwYXJhbWV0ZXIgKi8KISAJCQliZC0+Y21kX2xpbmVbMF09J1wwJzsKICAJ
+CX0KICAJfSBlbHNlIGlmICghZXJyKSB7CiAgCQlzZWxlY3RfY29uc29sZSgmc2VyaWFsX2Nv
+bnNvbGVfc2V0dXApOwotLS0gMzA0LDMxMSAtLS0tCiAgCQl9IGVsc2UgewogIAkJCXNlbGVj
+dF9jb25zb2xlKCZ2Z2FfY29uc29sZV9zZXR1cCk7CiAgCQkJLyogUmVtb3ZlIHRoZSBrZXJu
+ZWwgc2VyaWFsIGNvbnNvbGUgcGFyYW1ldGVyICovCiEgICAgICAgICAgICAgICAgICAgICAg
+ICAgaWYgKHN0cmNtcChiZC0+Y21kX2xpbmUsImNvbnNvbGU9dHR5UzAiKSA9PSAwKQohICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgYmQtPmNtZF9saW5lWzBdPSdcMCc7CiAgCQl9CiAg
+CX0gZWxzZSBpZiAoIWVycikgewogIAkJc2VsZWN0X2NvbnNvbGUoJnNlcmlhbF9jb25zb2xl
+X3NldHVwKTsKSW5kZXg6IHByZXBsb2FkZXIvcHJlcGN0bC5jCmRpZmYgLWMgL2Rldi9udWxs
+IHByZXBsb2FkZXIvcHJlcGN0bC5jOjEuMQoqKiogL2Rldi9udWxsCVdlZCBKYW4gMjAgMTQ6
+NTQ6NDAgMTk5OQotLS0gcHJlcGxvYWRlci9wcmVwY3RsLmMJV2VkIEphbiAyMCAxNDoyNzoz
+MCAxOTk5CioqKioqKioqKioqKioqKgoqKiogMCAqKioqCi0tLSAxLDY0IC0tLS0KKyAjaW5j
+bHVkZSA8c3RkaW8uaD4KKyAjaW5jbHVkZSA8c3RkbGliLmg+CisgI2luY2x1ZGUgPHN0cmlu
+Zy5oPgorIAorICNpbmNsdWRlICJib290ZGF0YS5oIgorIAorICNkZWZpbmUgTkJJTlQgNDA5
+NgorICNkZWZpbmUgQ01ETEVOR1RIICgyNTYvc2l6ZW9mKGludCkpCisgCisgaW50IG1haW4o
+aW50IGFyZ2MsY2hhciphcmd2W10pCisgeworICAgY2hhciBidWZbMjU2XTsKKyAgIHN0YXRp
+YyB1bnNpZ25lZCBpbnQgZGF0YVtOQklOVCoyXTsKKyAgIEZJTEUgKmY7CisgICBsb25nIHBv
+czsKKyAKKyAgIGlmIChhcmdjIDwgMikgeworICAgICBmcHJpbnRmKHN0ZGVyciwidXNhZ2U6
+cHJlcGN0bCA8ekltYWdlLWZpbGU+IFtuZXcgY29tbWFuZCBsaW5lXVxuIik7CisgICAgIGV4
+aXQoMSk7CisgICB9CisgICBmID0gZm9wZW4oYXJndlsxXSxhcmdjID4gMiA/ICJyKyI6ICJy
+Iik7CisgICBpZiAoIWYpIHsKKyAgICAgZnByaW50ZihzdGRlcnIsImNhbm5vdCBvcGVuIGZp
+bGUgJXNcbiIsYXJndlsxXSk7CisgICAgIHBlcnJvcigiZXJyZXVyOiIpOworICAgICBleGl0
+KDEpOworICAgfQorICAgCisgICB3aGlsZSAoMSkgeyAKKyAgICAgaW50IGk7CisgICAgIHBv
+cyA9IGZ0ZWxsKGYpOworICAgICBpZiAoZnJlYWQoZGF0YSxzaXplb2YoZGF0YVswXSksTkJJ
+TlQsZikgPD0gMCkKKyAgICAgICBicmVhazsKKyAgICAgZm9yIChpPTA7aTxOQklOVDtpKysp
+IHsKKyAgICAgICBpZiAoZGF0YVtpXSA9PSBNQUdJQzFfQ01ETElORSkgeworICAgICAgICAg
+aWYgKGkrMStDTURMRU5HVEggPCBOQklOVCB8fCBmcmVhZChkYXRhK05CSU5ULHNpemVvZihk
+YXRhWzBdKSxOQklOVCxmKSA+PSBpKzErQ01ETEVOR1RILU5CSU5UKSB7CisgICAgICAgICAg
+IGNoYXIgKnAgPSAoY2hhciopKGRhdGEraSsxKTsKKyAgICAgICAgICAgaW50IGo7CisgICAg
+ICAgICAgIGlmIChkYXRhW2krMStDTURMRU5HVEhdICE9IE1BR0lDMl9DTURMSU5FKSB7Cisg
+ICAgICAgICAgICAgZnByaW50ZihzdGRlcnIsIkVSUk9SOmZvdW5kIG1hZ2ljMSBidXQgbm8g
+bWFnaWMyXG4iKTsKKyAgICAgICAgICAgICBleGl0KDEpOworICAgICAgICAgICB9CisgICAg
+ICAgICAgIHByaW50ZigiY3VycmVudCBjbWRsaW5lPSVzXG4iLHApOworICAgICAgICAgICBp
+ZiAoYXJnYyA8PSAyKQorICAgICAgICAgICAgIHJldHVybiAwOworICAgICAgICAgICBwWzBd
+ID0gMDsKKyAgICAgICAgICAgZm9yIChqPTI7ajxhcmdjO2orKykgeworICAgICAgICAgICAg
+IHN0cmNhdChwLGFyZ3Zbal0pOworICAgICAgICAgICAgIHN0cmNhdChwLCIgIik7CisgICAg
+ICAgICAgIH0KKyAgICAgICAgICAgcHJpbnRmKCJ3cml0aW5nIG5ldyBjbWRsaW5lPSVzXG4i
+LHApOworICAgICAgICAgICBmZmx1c2goZik7CisgICAgICAgICAgIGZzZWVrKGYscG9zLFNF
+RUtfU0VUKTsKKyAgICAgICAgICAgaWYgKGZ3cml0ZShkYXRhLHNpemVvZihkYXRhWzBdKSxp
+KzErQ01ETEVOR1RILGYpICE9IGkrMStDTURMRU5HVEgpIHsKKyAgICAgICAgICAgICBwZXJy
+b3IoIndyaXRpbmcgbmV3IGNtZCBsaW5lXG4iKTsKKyAgICAgICAgICAgICBleGl0KDEpOwor
+ICAgICAgICAgICB9CisgICAgICAgICAgIHJldHVybiAwOworICAgICAgICAgfQorICAgICAg
+IH0KKyAgICAgfQorICAgfQorICAgZnByaW50ZihzdGRlcnIsIm1hZ2ljMSBudW1iZXIgbm90
+IGZvdW5kIGluIGltYWdlXG4iKTsKKyAgIHJldHVybiAwOworIH0K
+
+--iNoB6GMT/N--
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
