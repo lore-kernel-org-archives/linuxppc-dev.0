@@ -1,49 +1,37 @@
-Message-Id: <200002172015.VAA13366@denx.local.net>
-To: Karl P lsson <KPA@infocom.dk>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-        Frank Przybylski <Frank.Przybylski@vas-gmbh.de>
-Subject: Re: Recommend a debugger
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 17 Feb 2000 10:45:09 +0100."
-             <819E3E914E0AD11194DE00805F0D100B01088335@fbi.infocom.dk>
-Date: Thu, 17 Feb 2000 21:15:51 +0100
+Message-ID: <38AE67BC.87B8DB89@huawei.com.cn>
+Date: Sat, 19 Feb 2000 17:51:56 +0800
+From: dony <dony.he@huawei.com.cn>
+MIME-Version: 1.0
+CC: LinuxPPC Embedded Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Subject: How to build cross-compile environment under unix-similar cygwin on
+ Win98 ?
+References: <20000217005917.4338F1B580@elph.research.canon.com.au> <004701bf78e6$d2ab0de0$0201a8c0@home> <38AC17C6.9AA056B4@netx4.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Karl,
+Hi:
+   Now I want to build a cross-compile enviroment under unix-similar cygwin on
+win98.
+    By following some suggestions , Now I have installed Full.exe and
+Insight-19991101*.tar.gz. I find that the development tools such as gcc, ld,
+as, etc... is for X86.
+And the insight (also GUI gdb) is also for X86(right ?).
+     Now I have to build a cross-compile environment for Powerpc on win98. Is
+it possible?
+I think I can do the similar things as I have done on Linux by using the
+following packages:
+     binutils-*.tar.gz
+     gcc-core-*.tar.gz
+     gcc-*.tar.gz
+     glibc-*.tar.gz
+     glibc-crypt-*.tar.gz
+     glibc-linuxthreads-*.tar.gz    ==>this file may be changed to other files.
 
-in message <819E3E914E0AD11194DE00805F0D100B01088335@fbi.infocom.dk> you write:
->
-> What are people using for debugging code on the target, using the MPC823
-> debug port?. What are the options and which debugger can you recommend?
+Any suggestions?
+Thank you very much.
+dony
 
-What do you want to debug?
-
-Application code? Then you should  do  fine  with  gdbserver  on  the
-target and GDB / DDD on the host.
-
-Kernel code? Are you looking for a BDM based debugger?  There  is  no
-perfect solution available right now. There are some pretty good, but
-expensive  professional  solutions  that  run  on the Linux host (for
-instance, by Lauterbach and ETS), but they do not include any special
-support for the Linux target - especially, they do  not  support  the
-MMU  (so you will not be able to do kernel source code debugging once
-the MMU is on, which is pretty early).
-
-There are some cheaper solutions (MacCraigor) with similar problems.
-
-Several people built their own debugger interfaces. The  latest  I've
-seen  is  by  Frank  Przybylski  <Frank.Przybylski@vas-gmbh.de>,  see
-http://www.vas-gmbh.de/software/mpcbdm/
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"A little knowledge is a dangerous thing."                - Doug Gwyn
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
