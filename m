@@ -1,45 +1,52 @@
-From: mikep@ugcs.caltech.edu (Michael Pruett)
-Message-Id: <199907080424.VAA09099@myxo.ugcs.caltech.edu>
-Subject: Bugs I've encountered in Linux/PPC R5.
+Message-Id: <m112AYH-0000WZC@tri-yann.crf.canon.fr>
+Date: Thu, 8 Jul 1999 11:33:09 +0200 (CEST)
+From: "VALETTE Eric" <valette@crf.canon.fr>
 To: linuxppc-dev@lists.linuxppc.org
-Date: Wed, 7 Jul 1999 21:24:45 -0700 (PDT)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: ppc/kernel/prep_pci.c is badly designed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I was really enthused to install LinuxPPC on my Power Mac 8500.  My
-enthusiasm has been since slightly diminished by a host of problems I
-encountered with the system, but I'd like to help make LinuxPPC as
-robust as possible.
 
-1) The first thing I encountered was that the X installer froze while
-formatting and mounting my hard drive since it was connected to the
-internal MESH controller.  I got MESH timeouts and SCSI bus resets
-forever until I rebooted the machine.  I solved this problem by
-connecting my internal SCSI chain to the slow SCSI bus.
+Months ago I posted a mail on the mailling list saying
+that PREP machines code was badly lacking some board identification
+routine and also support for Raven. As a result, allthough
+I had code for MCP750 that runs perfectly for months (thanks again
+Gabriel) I wasn't able to submit anything better than horrible kludges...
 
-Is this MESH timeout problem caused by poor termination or some other
-kind of hardware failure, or is the driver broken?  Many people are
-running into this problem.  If it's a software problem, is someone
-working on a fix?  If it's a hardware problem, would it be possible to
-say something about it on the web site or in the online installation
-guide?
+Since then things have positively evolved as the RAVEN is now supported
+and there is a table that enables to identify PREP boards.
+However the handling of the identification only serves
+for interupt routing and cannot be used for anything else 
+afterward (except if you want to use Motherboard_map_name!!!)
 
-2) One very minor problem I ran into was that upon logging into Gnome,
-I saw files with names like "??!?" in my home directory.  One was
-created every time I logged in.  This is just an inconvenience.  Is
-this a known bug?
+Why the hell a kind of machine ID is not recorded so that it can
+be used latter to add machine specific code? Thanks to motorola
+the MCP750 has two major incompatible revision regarding ISA interrupt 
+routing EDGE/LEVEL settings and the actual code does not boot on recent
+MCP750 board and I cannot add cleanly the necessary code...
 
-3) Finally after rebooting a few times, I ran into a problem with the
-initialization scripts running fsck on my root partition which was
-already mounted read/write.  This situation caused fsck to report an
-error and I was given the option of "repairing" my disk or shutting
-down.  This seems like it should be a very simple thing to fix.  I
-won't bother if someone's already fixed it though.
+So here is a proposal :
 
-Michael
+   1) PREP Machine identification  should only record a PREP_machine_ID
+   (the code may be moved in prep_setup BTW),
+   2) PREP_machine_ID could then be used in prep_pci.c to find
+   the correct IRQ routing procedure (and not a simple table
+   as it is today (empty for MCP750 although quite of bit
+   of VIA 82596 programming must be done !!!)
+
+What do you think of that?
+
+
+-- 
+   __                 
+  /  `                   	Eric Valette
+ /--   __  o _.          	Canon CRF - Communication Dept
+(___, / (_(_(__         	Rue de la touche lambert
+				35517 Cesson-Sevigne  Cedex
+				FRANCE
+Tel: +33 (0)2 99 87 68 91	Fax: +33 (0)2 99 84 11 30
+E-mail: valette@crf.canon.fr	http://www.crf.canon.fr
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
