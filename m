@@ -1,42 +1,67 @@
-Date: Fri, 13 Aug 1999 11:33:51 -0700
-From: Richard Henderson <rth@cygnus.com>
-To: Paul.Mackerras@cs.anu.edu.au
-Cc: Jes.Sorensen@cern.ch, Geert.Uytterhoeven@cs.kuleuven.ac.be,
-        linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu,
-        Richard Henderson <rth@cygnus.com>
-Subject: Re: [linux-fbdev] Re: readl() and friends and eieio on PPC
-Message-ID: <19990813113351.A1810@cygnus.com>
-References: <199908100100.LAA28784@tango.anu.edu.au> <d34si8xfwi.fsf@lxp03.cern.ch> <199908110023.KAA23996@tango.anu.edu.au> <d34si6kcge.fsf@lxp03.cern.ch> <19990811003805.A11890@cygnus.com> <199908120017.KAA25043@tango.anu.edu.au> <19990811214049.A14692@cygnus.com> <199908120500.PAA30022@tango.anu.edu.au> <19990811224344.A14713@cygnus.com> <199908120707.RAA30438@tango.anu.edu.au>
-Mime-Version: 1.0
+Message-ID: <37B46883.9EAFF03@cable.a2000.nl>
+Date: Fri, 13 Aug 1999 20:48:36 +0200
+From: Otto Moerbeek <otto@cable.a2000.nl>
+Reply-To: otto@cable.a2000.nl
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Design issues Keyspan serial PCI driver
+References: <199908130501.AAA18955@lists.linuxppc.org>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199908120707.RAA30438@tango.anu.edu.au>; from Paul Mackerras on Thu, Aug 12, 1999 at 05:07:02PM +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Aug 12, 1999 at 05:07:02PM +1000, Paul Mackerras wrote:
-> What numbers do you get on alpha if you point it at a framebuffer,
-> just for interest?
+Hi to you all,
 
-With some additional numbers for mb vs wmb --
+after some struggling I now have a very first working version of the
+Keyspan SX
+serial card driver, but I do not think the code I wrote is ready for
+publishing. To make a neat driver I have some design issues I want to
+share with you. Hopefully this will help me making the right decisions
+for the real driver.
 
-Memory:
-none       15    11    11    11    11
-1 wmb      10    10    10    10    10
-1 mb      140   129    62    59    59
-8 wmb     171   157   101   101   101
-8 mb      346   270   270   267   267
+The Keyspan SX cards use a PLX9050 as PCI bridge to connect to an
+ST16C654 UART. I found some patches for char/serial.c that support the
+UART directly. So this part of the problem was solved easily.
 
-Millenium2 fb:
-none     2599    11    11    11    11
-1 wmb      10    10    10    10    10
-1 mb      220   130   139   139   139
-8 wmb     192   178   192   192   192
-8 mb      538   423   423   423   423
+But Keyspan choose to map the UART to PCI memory space using the 9050,
+not PCI I/O space. Furthermore, for some unknown reason, the registers
+of the UART are separated 0x80 apart. Since char/serial.c uses I/O
+instructions to access the UART, I had to hack the driver to use readb()
+and friends. I am also multiplying the offset to compensate for the
+strange offsets.
 
+I would really like to use the char/serial.c driver and keep it
+compatible with existing cards, because I do not want to write a
+complete driver myself for a UART that is supported by standard code.
+But then I have to decide runtime to use inb() and outb() or readb() and
+writeb(), since the driver also may be used for other cards that use I/O
+based access. Do you think that this would cause too much overhead in
+the interrupt handlers? It means that every I/O access will be slowed
+down by some extra memory references and a test.
 
+Another point is that the serial structs use an int as the type for the
+port field. Since cannot change the struct in include/linux/serial.h to
+use u8 * as a type for compatibility reasons, I have to find some way to
+use the port as an offset added to some memory mapped base pointer of
+type u8 *, instead of using port as an absolute (I/O or mem) address.
+Just using the int port as a memory address value is dangerous, since it
+ won't work on 64 bits architectures. Do you think this is the way to
+go: keeping compatibility with applications that expect port to be an
+int, while still be able to do memory mapped PCI access?
 
-r~
+The good news of course is, if I can resolve the above issues, I have a
+driver that can access both I/O based and memory based PCI cards. The
+start of proper PCI serial card support in the standard serial driver?
+
+You can find some more background info on my home page, <http://people.a2000.nl/omoerbe/>
+
+Sorry for the long winding story, but I really would like some feedback,
+
+Otto
+-- 
+Otto Moerbeek
+otto@cable.a2000.nl
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
