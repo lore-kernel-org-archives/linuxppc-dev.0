@@ -1,32 +1,37 @@
-Date: 25 Sep 2002 14:13:51 -0000
-Message-ID: <20020925141351.31835.qmail@webmail25.rediffmail.com>
+Date: 25 Sep 2002 14:23:11 -0000
+Message-ID: <20020925142311.18806.qmail@mailFA12.rediffmail.com>
 MIME-Version: 1.0
-From: "Rajendra Prasad Mishra" <r_p_m@rediffmail.com>
-Reply-To: "Rajendra Prasad Mishra" <r_p_m@rediffmail.com>
+From: "atul srivastava" <atulsrivastava9@rediffmail.com>
+Reply-To: "atul srivastava" <atulsrivastava9@rediffmail.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: IDE disk size
+Subject: higher uart baud rate corrupts image..
 Content-type: text/plain;
 	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all !
-     I am working on a board with a ibm 405GP processor and a
-winbond W83C553 ide controller. I have been able to sucessfully
-detect the disk and set irqs. The problem is that the ide driver
-is not detecting the size of the disk properly it's showing 8.4 GB
-instead of 20GB . Apart from that i am able to do all operations
-on the disk i.e create a file system / write files to it etc. but
-i am able ot use only 8.4 GB of the total disk space !
-    Does anyone has any idea about why this is happening ? do i
-have to do give some special  things if i want the ide driver to
-work on powerpc ?
+A quick question..
 
-p.s : please cc me as i am not subscribed to the list
+i have been to use succesfully bootloader kernel and ramdisk , but
+only on certain serial port speed .
 
-regards,
-raj
+I am facing a data corruption in dowloading kernel+ramdisk image
+at higher serial port speed.
+
+if i set my baud speed to 19200 it WORKS FINE.
+
+otherwise at higher serial port speed  the execve of /bin/sh just
+hangs and .
+
+also this problem is related to cpu frequency when i make that
+lower or higher the behaviour changed unpredicatabley.
+
+somebody pointed for skew problem woth sdram at higher cpu
+frequency.
+
+any body has more here to add...
+
 __________________________________________________________
 
 
