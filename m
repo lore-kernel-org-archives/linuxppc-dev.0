@@ -1,41 +1,33 @@
-Date: Wed, 16 Oct 2002 09:22:08 -0400
-From: Patrick Mahoney <pmahoney@8d.com>
-To: Cameron Rich <CameronR@nulec.com.au>
-Cc: "'Conn Clark'" <clark@esteem.com>,
-	Patrick Mahoney <pmahoney@8d.com>,
-	May Ling List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: mpc8xx - power save modes - PIT
-Message-ID: <20021016132208.GA16734@segfault.usine.8d.com>
-References: <1072F1A27E99D3119747005004B9A380016F9573@MAIL>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1072F1A27E99D3119747005004B9A380016F9573@MAIL>
+From: "Dominique Letty" <dletty@interfaceconcept.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Problem with MPC8260 buffer descriptor
+Date: Wed, 16 Oct 2002 16:56:18 +0200
+Message-ID: <00c101c27524$3492bee0$3501a8c0@none>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I've tried Conn's code, but I'm experiencing problems with PLPRCR[CSCR] as
-> being 1 all the time after a rfi. I am also occasionally seeing MSR_POW set
-> to 1 after the rfi return.
+I wrote an hdlc driver for a MPC860 SCC device under Linux 2.2.x Kernel and
+it works without
+any problem.
 
-Well the 2.4 Linux kernel does not support runtime modifications to
-the clock rate. So what's the point of playing with CSCR?
+Now I try to port this driver under Linux 2.4.17 Kernel for a MPC8260. I
+have allocated
+Buffer Descriptors in DPRAM and Data Buffers in SDRAM. When I try to send a
+buffer, I fill
+a data buffer and the first BD registers, I think, with the correct values.
+It doesn't work
+anytimes. When the buffer is transmited, the sending data are correct. The
+problem seems to
+come from the CPM which can't access to the BD modifications in the DPRAM.
 
->
-> I can work around this problem by setting PLPRCR[CSCR] = 0 and MSR_POW = 0
-> after the rfi and this eventually works. But is this the solution? I'm also
-> noticing no great decrease in power consumption even though I've only got a
-> couple of (sleeping) processes. And it seems that there is (mostly) no time
-> between entering Doze Low mode and the rfi which confirms the unsatisfactory
-> power consumption figures.
+Does anyone have already meet these problems?
 
-I notice no decrease at all!  :(
+Thanks
+Dominique
 
-I set both crqen and prqen in the bootloader. The idled routine gets
-entered and executed repeatedly, but no decrease in current
-consumption can be observed.
-
-
-Pat Mahoney
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
