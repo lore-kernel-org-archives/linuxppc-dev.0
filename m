@@ -1,18 +1,19 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
-	by ozlabs.org (Postfix) with ESMTP id A117067A6B
+Return-Path: <g.jaeger@sysgo.com>
+Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
+	by ozlabs.org (Postfix) with ESMTP id BF8EE67A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Mar 2005 03:12:30 +1100 (EST)
-Date: Thu, 10 Mar 2005 09:12:28 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Gerhard Jaeger <g.jaeger@sysgo.com>, linuxppc-embedded@ozlabs.org
-Message-ID: <20050310091227.B27661@cox.net>
+	Fri, 11 Mar 2005 03:22:39 +1100 (EST)
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
+To: Eugene Surovegin <ebs@ebshome.net>
+Date: Thu, 10 Mar 2005 17:22:33 +0100
 References: <200503101106.53345.g.jaeger@sysgo.com>
 	<20050310160356.GD19275@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050310160356.GD19275@gate.ebshome.net>;
-	from ebs@ebshome.net on Thu, Mar 10, 2005 at 08:03:56AM -0800
+In-Reply-To: <20050310160356.GD19275@gate.ebshome.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200503101722.33597.g.jaeger@sysgo.com>
+Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: PPC 440GX with NS DP83865 phy
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,7 +25,7 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 10, 2005 at 08:03:56AM -0800, Eugene Surovegin wrote:
+On Thursday 10 March 2005 17:03, Eugene Surovegin wrote:
 > On Thu, Mar 10, 2005 at 11:06:53AM +0100, Gerhard Jaeger wrote:
 > > the patch has been posted in October last year (wow, thought it was in
 > > december or so):
@@ -41,9 +42,7 @@ On Thu, Mar 10, 2005 at 08:03:56AM -0800, Eugene Surovegin wrote:
 > 
 > OK, from quick look it seems that this is infamous problem with PHYs 
 > which don't generate Rx clock if there is no link.
-
-Ok, good, I was just looking an wondering if it was the same issue. 
-
+> 
 > Current driver works sometimes probably just by luck.
 > 
 > Gerhard, there is an experimental NAPI driver for 4xx at 
@@ -53,10 +52,18 @@ Ok, good, I was just looking an wondering if it was the same issue.
 > future. It'd be great if you could find some time and try this new 
 > driver on your board. Enable "PHY Rx clock workaround" in driver 
 > config.
+> 
+> Feel free to contact me directly if you have any problems with this 
+> driver (e.g. applying patch to an older kernel version, etc).
+> 
+Eugene, I will give it a try ASAP. As we are using a heavily patched 2.4 
+kernel on the customers board, where came up, it might took some time 
+for making it work - but I'll keep you informed.
 
-In the meantime, I'll see how this work-around works on some platforms
-I have here.
+Thanx
+Gerhard
 
-Gerhard: what's the list of 4xx systems (and phys) you have tested
-this against? I assume this patch is used on all 4xx platforms you
-support in your distro?
+-- 
+Gerhard Jaeger <gjaeger@sysgo.com>            
+SYSGO AG                      Embedded and Real-Time Software
+www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de 
