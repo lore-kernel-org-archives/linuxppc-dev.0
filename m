@@ -1,27 +1,33 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Date: Fri, 2 Jul 2004 16:29:42 +0200 (CEST)
-From: Giuliano Pochini <pochini@denise.shiny.it>
-To: linuxppc <linuxppc@4bridgeworks.com>
-Cc: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Kernel versions
-In-Reply-To: <C18BA5DDB58DD511BD0700C0DF0DD450294191@NTSERVER4>
-Message-ID: <Pine.LNX.4.58.0407021623360.22661@denise.shiny.it>
-References: <C18BA5DDB58DD511BD0700C0DF0DD450294191@NTSERVER4>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Giuliano Pochini <pochini@denise.shiny.it>
+Cc: linuxppc <linuxppc@4bridgeworks.com>,
+	Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Kernel versions 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 02 Jul 2004 16:29:42 +0200."
+             <Pine.LNX.4.58.0407021623360.22661@denise.shiny.it>
+Date: Fri, 02 Jul 2004 16:54:28 +0200
+Message-Id: <20040702145433.5BA0EC109F@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2 Jul 2004, linuxppc wrote:
+In message <Pine.LNX.4.58.0407021623360.22661@denise.shiny.it> you wrote:
+>
+> The official 2.6.7 kernel works just fine on ppc machines.
 
-> Is there a linuxppc-2.6 kernel tree or are they still using the
-> linuxppc-2.5 tree?
+Please define "ppc machines". It doesn't work on most of the  systems
+we have in the lab (like MPC8xx or MPC5200 etc.)
 
-The official 2.6.7 kernel works just fine on ppc machines.
+Best regards,
 
+Wolfgang Denk
 
 --
-Giuliano.
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+It is easier to write an incorrect program than understand a  correct
+one.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
