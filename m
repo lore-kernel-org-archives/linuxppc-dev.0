@@ -1,16 +1,16 @@
 Return-Path: <galak@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id CE49567A6E
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id E031067A71
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Feb 2005 06:05:41 +1100 (EST)
-Date: Thu, 24 Feb 2005 13:05:24 -0600 (CST)
+	Fri, 25 Feb 2005 06:19:15 +1100 (EST)
+Date: Thu, 24 Feb 2005 13:19:07 -0600 (CST)
 From: Kumar Gala <galak@freescale.com>
 To: akpm@osdl.org
-Message-ID: <Pine.LNX.4.61.0502241302310.13438@blarg.somerset.sps.mot.com>
+Message-ID: <Pine.LNX.4.61.0502241314470.13477@blarg.somerset.sps.mot.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] ppc32: fix whitespace for 85xx CDS common platform
+Subject: [PATCH] [FINAL] ppc32: fix whitespace for 85xx CDS common platform
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,17 +23,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Andrew,
 
-Here is the cleaned up version of the whitespace patch.  Apply this 
-first for post 2.6.11.
+I clearly need a vacation, thankful I'm headed to las vegas today for one.  
+Seeing as I sent the wrong version of the patch in the last email, please 
+ignore it.  This one is correct, and hopefully the final time I will send 
+this.
 
+Here is the cleaned up version of the whitespace patch.  Apply this first 
+for post 2.6.11.
+ 
 Fix whitespace in arch/ppc/platforms/85xx/mpc85xx_cds_common.c
 
 Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
 ---
 diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
---- a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c	2005-02-22 13:35:18 -06:00
-+++ b/arch/ppc/platforms/85xx/mpc85xx_cds_common.c	2005-02-22 13:35:18 -06:00
+--- a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c	2005-02-24 10:45:45 -06:00
++++ b/arch/ppc/platforms/85xx/mpc85xx_cds_common.c	2005-02-24 10:45:45 -06:00
 @@ -73,60 +73,60 @@
  /* Internal interrupts are all Level Sensitive, and Positive Polarity */
  
@@ -145,7 +150,7 @@ diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85
  #endif
  };
  
-@@ -134,32 +134,32 @@
+@@ -134,31 +134,31 @@
  int
  mpc85xx_cds_show_cpuinfo(struct seq_file *m)
  {
@@ -168,7 +173,6 @@ diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85
 +	pvid = mfspr(PVR);
 +	svid = mfspr(SVR);
  
- 	seq_printf(m, "chip\t\t: %s\n", cur_ppc_sys_spec->ppc_sys_name);
 -        seq_printf(m, "Vendor\t\t: Freescale Semiconductor\n");
 +	seq_printf(m, "Vendor\t\t: Freescale Semiconductor\n");
  	seq_printf(m, "Machine\t\t: CDS (%x)\n", cadmus[CM_VER]);
@@ -195,7 +199,7 @@ diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85
  }
  
  #ifdef CONFIG_CPM2
-@@ -186,21 +186,21 @@
+@@ -185,21 +185,21 @@
  	int i;
  #endif
  
@@ -232,7 +236,7 @@ diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85
  
  #ifdef CONFIG_CPM2
  	/* disable all CPM interupts */
-@@ -220,7 +220,7 @@
+@@ -219,7 +219,7 @@
  	setup_irq(MPC85xx_IRQ_CPM, &cpm2_irqaction);
  #endif
  
@@ -241,7 +245,7 @@ diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85
  }
  
  #ifdef CONFIG_PCI
-@@ -279,8 +279,8 @@
+@@ -278,8 +278,8 @@
  	}
  }
  
@@ -252,7 +256,7 @@ diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85
  
  extern int mpc85xx_pci1_last_busno;
  
-@@ -290,7 +290,7 @@
+@@ -289,7 +289,7 @@
  	if (bus == 0 && PCI_SLOT(devfn) == 0)
  		return PCIBIOS_DEVICE_NOT_FOUND;
  #ifdef CONFIG_85xx_PCI2
@@ -261,7 +265,7 @@ diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85
  		if (bus == (mpc85xx_pci1_last_busno + 1) && PCI_SLOT(devfn) == 0)
  			return PCIBIOS_DEVICE_NOT_FOUND;
  #endif
-@@ -312,14 +312,14 @@
+@@ -311,14 +311,14 @@
  static void __init
  mpc85xx_cds_setup_arch(void)
  {
@@ -281,7 +285,7 @@ diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85
  
  #ifdef CONFIG_CPM2
  	cpm2_reset();
-@@ -329,17 +329,17 @@
+@@ -328,17 +328,17 @@
  	cds_pci_slot = ((cadmus[CM_CSR] >> 6) & 0x3) + 1;
  	printk("CDS Version = %x in PCI slot %d\n", cadmus[CM_VER], cds_pci_slot);
  
@@ -305,7 +309,7 @@ diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85
  #endif
  
  #ifdef CONFIG_SERIAL_TEXT_DEBUG
-@@ -367,14 +367,14 @@
+@@ -366,14 +366,14 @@
  
  
  #ifdef CONFIG_BLK_DEV_INITRD
@@ -325,7 +329,7 @@ diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85
  #endif
  }
  
-@@ -383,18 +383,18 @@
+@@ -382,18 +382,18 @@
  platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
                unsigned long r6, unsigned long r7)
  {
@@ -354,7 +358,7 @@ diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85
  #ifdef CONFIG_SERIAL_TEXT_DEBUG
  	{
  		bd_t *binfo = (bd_t *) __res;
-@@ -402,7 +402,7 @@
+@@ -401,7 +401,7 @@
  
  		/* Use the last TLB entry to map CCSRBAR to allow access to DUART regs */
  		settlbcam(NUM_TLBCAMS - 1, binfo->bi_immr_base,
@@ -363,7 +367,7 @@ diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85
  
  		memset(&p, 0, sizeof (p));
  		p.iotype = SERIAL_IO_MEM;
-@@ -421,49 +421,49 @@
+@@ -420,49 +420,49 @@
  #endif
  
  #if defined(CONFIG_BLK_DEV_INITRD)
