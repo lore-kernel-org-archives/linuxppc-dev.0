@@ -1,16 +1,19 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (unknown [24.220.19.6])
-	by ozlabs.org (Postfix) with ESMTP id A9ACA2BD3C
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2004 02:05:09 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 15 Sep 2004 11:05:05 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DB69@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Tom Rini" <trini@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH]8260 FCC Full Duplex
+Return-Path: <afleming@freescale.com>
+Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
+	by ozlabs.org (Postfix) with ESMTP id D86D22BD6A
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2004 04:24:49 +1000 (EST)
+Received: from il06exr04.mot.com (il06exr04.mot.com [129.188.137.134])
+	by motgate8.mot.com (Motorola/Motgate8) with ESMTP id i8FIPuF7001374
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Sep 2004 11:25:56 -0700 (MST)
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <82589812-0744-11D9-AA47-000393C30512@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Date: Wed, 15 Sep 2004 13:24:41 -0500
+To: "<linuxppc-dev@ozlabs.org> <linuxppc-dev@ozlabs.org>"
+	<linuxppc-dev@ozlabs.org>
+Cc: "Kumar K. Gala" <kumar.gala@motorola.com>
+Subject: [RFC] 85xx Spurious Interrupt Bug
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,46 +23,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Tom Rini [mailto:trini@kernel.crashing.org]=20
-> Sent: Tuesday, September 14, 2004 18:14
-> To: Rune Torgersen
-> Subject: Re: 8260 FCC Ethernet problem
-> If you haven't seen it yet:=20
-> http://ozlabs.org/mailman/listinfo/linuxppc-> dev
-Yep, found it yesterday...
-=20
-> Also, can=20
-> you please read the Developer's Certificate=20
-> of Origin 1.0 (found in Documentation/SubmittingPatches) and=20
-> please add a Signed-off-by line?  Thanks.
+About a month ago, OPENPIC_VEC_SPURIOUS got changed to 239, causing a 
+bogus value to be put in the PIC for the 85xx, because 85xx reserves 64 
+interrupts instead of 16.  So, instead, I'm suggesting we set 
+OPENPIC_VEC_SPURIOUS to 255, and use that value, rather than adding an 
+offset to it, so it's always 255 for all PowerPC parts.
 
-Sure=20
+I've tested this on an MPC8560 ADS board.
 
-=3D=3D=3D=3D=3D arch/ppc/8260_io/fcc_enet.c 1.20 vs edited =
-=3D=3D=3D=3D=3D
---- 1.20/arch/ppc/8260_io/fcc_enet.c    2004-07-06 16:44:29 -05:00
-+++ edited/arch/ppc/8260_io/fcc_enet.c  2004-09-10 14:44:05 -05:00
-@@ -2013,9 +2013,9 @@
-        fccp =3D fcp->fccp;
+Andy Fleming
+PowerPC Software Enablement
+Freescale Semiconductor, Inc
 
-        if (duplex)
--               fccp->fcc_fpsmr |=3D FCC_PSMR_FDE;
-+               fccp->fcc_fpsmr |=3D FCC_PSMR_FDE | FCC_PSMR_LPB;
-        else
--               fccp->fcc_fpsmr &=3D ~FCC_PSMR_FDE;
-+               fccp->fcc_fpsmr &=3D ~(FCC_PSMR_FDE | FCC_PSMR_LPB);
+# This is a BitKeeper generated patch for the following project:
+# Project Name: Linux kernel tree
+# This patch format is intended for GNU patch command version 2.5 or 
+higher.
+# This patch includes the following deltas:
+#                  ChangeSet    1.1913  -> 1.1914
+#       include/asm-ppc/open_pic.h      1.18    -> 1.19
+#       arch/ppc/syslib/open_pic.c      1.36    -> 1.37
+#
+# The following is the BitKeeper ChangeSet Log
+# --------------------------------------------
+# 04/09/15      afleming@nerfherder.somerset.sps.mot.com        1.1914
+# The Spurious interrupt assignment for OpenPIC was the constant,
+# OPENPIC_VEC_SPURIOUS plus the offset passed in.  Due to bugs in some
+# OpenPICs, the end value needed to be 255 on those systems.  However,
+# the constant was then chosen to be 239, because offset on most
+# systems is 16.  The 85xx has an offset of 64, however, and so this
+# assignment caused lock-ups during boot.  The proposed solution is to
+# declare OPENPIC_VEC_SPURIOUS to be 255, and use that value directly,
+# instead of adding the offset to it.
+# --------------------------------------------
+#
+diff -Nru a/arch/ppc/syslib/open_pic.c b/arch/ppc/syslib/open_pic.c
+--- a/arch/ppc/syslib/open_pic.c        Wed Sep 15 13:11:02 2004
++++ b/arch/ppc/syslib/open_pic.c        Wed Sep 15 13:11:02 2004
+@@ -412,7 +412,7 @@
 
-        /* Enable transmit/receive */
-        fccp->fcc_gfmr |=3D FCC_GFMR_ENR | FCC_GFMR_ENT;
+         /* Initialize the spurious interrupt */
+         if (ppc_md.progress) ppc_md.progress("openpic: spurious",0x3bd);
+-       openpic_set_spurious(OPENPIC_VEC_SPURIOUS+offset);
++       openpic_set_spurious(OPENPIC_VEC_SPURIOUS);
+         openpic_disable_8259_pass_through();
+  #ifdef CONFIG_EPIC_SERIAL_MODE
+         openpic_eicr_set_clk(7);        /* Slowest value until we know 
+better */
+@@ -865,7 +865,7 @@
+                         irq = cirq;
+                         openpic_eoi();
+                 }
+-        } else if (irq == OPENPIC_VEC_SPURIOUS + open_pic_irq_offset)
++        } else if (irq == OPENPIC_VEC_SPURIOUS)
+                 irq = -1;
+         return irq;
+  }
+@@ -988,9 +988,9 @@
 
+         /* OpenPIC sometimes seem to need some time to be fully back 
+up... */
+         do {
+-               
+openpic_set_spurious(OPENPIC_VEC_SPURIOUS+open_pic_irq_offset);
++               openpic_set_spurious(OPENPIC_VEC_SPURIOUS);
+         } while(openpic_readfield(&OpenPIC->Global.Spurious_Vector, 
+OPENPIC_VECT
+OR_MASK)
+-                       != (OPENPIC_VEC_SPURIOUS + 
+open_pic_irq_offset));
++                       != OPENPIC_VEC_SPURIOUS);
 
-Signed-off-by: Rune Torgersen <runet@innovsys.com>
+         openpic_disable_8259_pass_through();
 
-Rune Torgersen
-System Developer
-Innovative Systems LLC
-1000 Innovative Drive
-Mitchell, SD 57301
-Ph: 605-995-6120
-www.innovsys.com
+diff -Nru a/include/asm-ppc/open_pic.h b/include/asm-ppc/open_pic.h
+--- a/include/asm-ppc/open_pic.h        Wed Sep 15 13:11:02 2004
++++ b/include/asm-ppc/open_pic.h        Wed Sep 15 13:11:02 2004
+@@ -23,7 +23,7 @@
+
+  #define OPENPIC_VEC_TIMER      110     /* and up */
+  #define OPENPIC_VEC_IPI                118     /* and up */
+-#define OPENPIC_VEC_SPURIOUS   239
++#define OPENPIC_VEC_SPURIOUS   255
+
+  /* OpenPIC IRQ controller structure */
+  extern struct hw_interrupt_type open_pic;
