@@ -1,55 +1,46 @@
-Message-Id: <v04003a01b6115952b7fe@[24.70.162.14]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 16 Oct 2000 20:57:51 -0500
-To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-From: Tony Mantler <nicoya@apia.dhs.org>
-Subject: linux-pmac-stable SMP issues
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Allowing signal handlers to modify SE and BE
+Reply-To: minyard@acm.org
+From: Corey Minyard <minyard@acm.org>
+Date: 16 Oct 2000 21:58:04 -0500
+Message-ID: <m2lmvoqimb.fsf@c469597-a.grlnd1.tx.home.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I just picked up a 9600/200mp, and the first thing I did with it (well,
-maybe the second or third thing) was install Debian to play with linux SMP
-stuff (and later play with some IDE PCI cards).
+I noticed the following in signal.c:
 
-Debian apparently ships with a UP kernel, so I rsynced with
-linux-pmac-stable and compiled an SMP kernel.
-
-The first thing I noticed is that some EXPORT_SYMBOLs are missing, namely:
-global_irq_holder, global_irq_lock, global_irq_count, global_bh_count,
-global_bh_lock, kernel_flag and synchronize_bh. These missing symbols
-prevent modules like lockd and appletalk from loading. Adding these in
-makes everything happy-happy.
-
-The second thing I noticed is that "Processor 1 is stuck.". I seem to
-recall this issue has been brought up once or twice before, but a look
-through the mailing list archives didn't reveal any clues.
-
-I vaguely recall the issue might be related to the booter used, I'm using
-BootX 1.2.2 (from MacOS 9.0.4). Is there a different booter I should be
-using to acheive full SMP functionality - hopefully one that allows easy
-dual-booting?
-
-merida:~$ uname -a
-Linux merida 2.2.17 #1 SMP Sat Oct 14 14:34:02 CDT 2000 ppc unknown
-merida:~$ gcc -v
-Reading specs from /usr/lib/gcc-lib/powerpc-linux/2.95.2/specs
-gcc version 2.95.2 20000220 (Debian GNU/Linux)
+/*
+ * These are the flags in the MSR that the user is allowed to change
+ * by modifying the saved value of the MSR on the stack.  SE and BE
+ * should not be in this list since gdb may want to change these.  I.e,
+ * you should be able to step out of a signal handler to see what
+ * instruction executes next after the signal handler completes.
+ * Alternately, if you stepped into a signal handler, you should be
+ * able to continue 'til the next breakpoint from within the signal
+ * handler, even if the handler returns.
+ */
+#define MSR_USERCHANGE	(MSR_FE0 | MSR_FE1)
 
 
-Other than that, things work rather well, though 5 MB/s powermac scsi is
-anything but spectacular (10MB/s made lots of stuff segfault) - leaves the
-system feeling a tad sluggish compared to, say, my SGI Indigo2, but I
-suppose that's not really a fair comparison to begin with. :)
+Is this really the case?  I noticed in the x86 version that setting
+the equivalent of the SE bit is allowed, how does the x86 get away
+with this while the PPC can't?  Also, gdb does not use the BE bit at
+all (This is branch-trace enable, not breakpoint enable), so allowing
+it would not hurt anything.  And gdb doesn't directly use the SE bit,
+it uses it through ptrace, so it should be safe to allow the signal
+handler to modify it since ptrace would override that.  If the signal
+handler didn't modify the bits, it won't hurt anything.  If it
+modifies these bits it will not be debugabble, sure, but there are
+many ways to make your program not debuggable.
 
+Why am I asking?  Because I'm working on two different programs that
+need to be able to set these bits from a signal handler.  I would
+rather have this as a standard part of the kernel than have to patch
+it every release.
 
-Cheers - Tony 'Nicoya' Mantler :)
+Thanks,
 
-
---
-Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
-Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
-
+Corey
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
