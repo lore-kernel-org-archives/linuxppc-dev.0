@@ -1,18 +1,21 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
-	by ozlabs.org (Postfix) with ESMTP id 5C4792BF12
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id A77B42BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Jan 2005 04:48:40 +1100 (EST)
-Date: Wed, 5 Jan 2005 10:48:38 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: alebas@televes.com, Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20050105174838.GF4213@smtp.west.cox.net>
-References: <1102585377.41b81e218d6df@webmail.televes.com:443>
+	Thu,  6 Jan 2005 04:56:48 +1100 (EST)
+Date: Wed, 5 Jan 2005 09:56:46 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: J?n Benediktsson <jonb@marel.is>
+Message-ID: <20050105175646.GC14485@gate.ebshome.net>
+References: <OFE3F13085.168CF615-ON00256F80.003C6775-00256F80.004A9C3D@marel.is>
+	<OF9A6BA55A.0E01CA7E-ON00256F80.0051303B-00256F80.0051795E@marel.is>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1102585377.41b81e218d6df@webmail.televes.com:443>
+In-Reply-To: <OF9A6BA55A.0E01CA7E-ON00256F80.0051303B-00256F80.0051795E@marel.is>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Kernel 2.6.10 running on mpc8272ads
+Subject: Re: MPC5200 - problem with CF card
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,21 +26,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 09, 2004 at 10:42:57AM +0100, alebas@televes.com wrote:
+On Wed, Jan 05, 2005 at 02:49:42PM +0000, J?n Benediktsson wrote:
+> > I am working with a custom MPC5200 board which uses the built-in 
+> > ATA/IDE controller for a compact flash card. 
+> > The Linux kernel is Denx linux_2_4_devel. 
 
-> Hi to all,
-> 
-> Finally I got my mpc8272ads board running the 2.6.20-rc1 kernel.
-> The trick was:
-> 
-> First, I had to comment out the BCSR modification for second UART
-> in m82xx_board_init function (arch/ppc/platforms/pq2ads.c). As
-> suggested by Dan Malek, MMU is still off at this point.
+[snip]
 
-Indeed.  While I had a PQ2FADS for a bit, I had to do that as well.
-Kumar, what/why is that needed exactly?  Did I screw up in re-working
-the 82xx init stuff and it needs to happen a bit later in boot?
+> > mpc5xxx_ide: Setting up IDE interface ide0... 
+> > Probing IDE interface ide0... 
+> > hda: SanDisk SDCFBI-1024, ATA DISK drive 
+> > hdb: probing with STATUS(0x00) instead of ALTSTATUS(0x7f) 
+> > ide0: unexpected interrupt, status=0x00, count=1 
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+I had similar problem with some CF cards (while other like in your 
+case worked fine).
+
+Try disabling probing of the slave ide0 interface (hdb). I'm not 
+familiar with MPC5xxx, but most likely you can modify mpc5xxx_ide or 
+whatever code sets up access to your CF card.
+
+Find where an instance of ide_hwif_t is initialized for ide0 and add 
+something like:
+
+	/* Don't probe second drive */
+        hwif->drives[1].noprobe = 1;
+
+--
+Eugene
