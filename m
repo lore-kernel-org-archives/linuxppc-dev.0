@@ -1,38 +1,38 @@
-Message-ID: <368B51A0.71D4@post.uni-bielefeld.de>
-Date: Thu, 31 Dec 1998 11:27:46 +0100
-From: "Jens Ch. Restemeier" <jenschrr@post.uni-bielefeld.de>
-Reply-To: jenschrr@post.uni-bielefeld.de
+Date: Thu, 31 Dec 1998 12:24:12 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: temporary freeze with Debian init
+Message-ID: <Pine.LNX.4.03.9812311219300.21390-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Blender stuff...
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi !
 
-I just received this from Ton Roosendaal:
+In the early stage of the boot process, init seems to freeze for 15-20 seconds.
+First it freezes, a few seconds later it dumps
 
-------------------Blender News 30.12.1998--------------------------
+    NET3: Unix domain sockets 0.16 for Linux NET3.038.
 
-- Blender for Sun Solaris
-The first (beta) version is available at the download section of
-the Blender site. This release is Mesa only. A native Sun OpenGL 
-version is under development.
-Many thanks to Jason Herring who kindly donated a Sun SparcStation.
+Freeze for some more seconds, and continue. This even happens when I boot in
+emergency mode (-b), after entering the root password.
 
-- Linux Alpha Blender...
-Porting Blender to Alpha is almost finished. Currently testing is
-in progress. Expect a release within a few weeks.
-I want to thank Kiernan Holland for the machine and Richard Hartensveld
-for assembling and installing.
+I'm using Debian. Kernel version is irrelevant, and it didn't happen with my
+old red Hat setup.
 
-...SNIP...
+Anyone with a clue?
 
-No Linux PPC Blender, yet ...
+Greetings,
 
-Jens
+			    Geert (who likes fast boot ups, since rebooting
+				   development machines is an important aspect
+				   of life)
+
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
