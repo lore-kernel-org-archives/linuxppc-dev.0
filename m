@@ -1,8 +1,8 @@
-Message-ID: <001401bffcf8$1a391220$e573a7ca@saigonnet.vn>
-From: "Phuc Le" <lmphuc@yahoo.com>
-To: "Embedded Linux" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Installing PCMCIA hard disk on DVK MPC823
-Date: Thu, 3 Aug 2000 10:06:44 +0700
+Message-ID: <000b01bffd59$e0c22600$0301a8c0@w9801>
+From: "Dan" <dung_nguyen@smartstors.com>
+To: "Linux PPC Mailing List" <linuxppc-embedded@lists.linuxppc.org>
+Subject: processes management
+Date: Thu, 3 Aug 2000 21:48:23 +0700
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -10,48 +10,35 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi There,
+Hi Friends,
 
-My name's Phuc Le. I am new on this field. I just installed
-PCMCIA HDD on the the DVK MPC823 but it failed. Following
-is step by step of the installing.
+I am Dan Nguyen, I just work with Linux PCC.
+Could you help me (if I am wrong, please show me
+the right address mailling list, thanks!
 
-1. Install the embedded linux and cross-platform development
-kit from Montavista in the pc-linux
-2. Install the pcmcia package in there
-3. Install the kernel patch supporting pcmcia
-4. Install the pcmcia patch
-5. Modify something belong to the document attached along with
-the pcmcia package
-6. Build and install the embedded kernel and also the pcmcia
-7. Boot the DVK via tftp
-8. Load pcmcia modules such as 'pcmcia_core.o', 'm8xx_pcmcia.o'
-and 'ds.o'
-9. Run the cardmgr
+ - How to check memory safe when running application?
+- I want find the program look like check_mem, that I can
+check usaged memory before and after running an application.
+I feel /proc/infomem can not say me my application has leak
+mem. I used mpr, but I want to know other tools.
+- When does dynamic loaded library was removed from memory?
+- Can we remove dynamic library on demand?
+- How to check a specified dynamic lib stay on memory or not?
+- I make a big program with many functions, it not fit on small
+memory (my Embedded Linux only have 4 MB RAM and no swap),
+I intend design it as follows:
+ + main program will manage all function: main_app
+ + Write each function as shared library (ex: f1.so, f2.so, ... fn.so)
+ + If main program need that function, then it will loaded into memory.
 
-At this point everything really seemed to be OK.
+ Now I don't know which way to best:
+ 1. link main_app and f1.so, f2.so, ... fn.so
+ OR
+ 2. call explicit function in main_app.c, only using -ldl
 
-10. Flug the pcmcia hard disk
+ Thanks for your concerning.
 
-The result was the cardmgr detects the flugged pcmcia device to be
-ATA/IDE and it tried to load the 'ide_cs.o' module. But it failed. The error
-message were displayed as below:
-
-... ide_cs.o: unresolved symbol 'ide_register'
-... ide_cs.o: unresolved symbol 'ide_unregister'
-
-I tried to rebuilt the kernel with turn-on some IDE features in the
-configuration phase and recompile the pcmcia based on the new kernel.
-
-The result was still failed with the kernel to be panic status.
-
-Have someone done this task? please tell me how to fix that.
-
-Thanks in advances,
-LMP
-----------------------------------------------------------------
-Phuc My LE
-lmphuc@saigonnet.vn
+Dan Nguyen
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
