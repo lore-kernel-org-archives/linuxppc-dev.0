@@ -1,42 +1,105 @@
-Message-ID: <39B910DB.182D6E64@student.ethz.ch>
-Date: Fri, 08 Sep 2000 18:16:27 +0200
+Message-ID: <39B9194C.D917F3BC@student.ethz.ch>
+Date: Fri, 08 Sep 2000 18:52:28 +0200
 From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.linuxppc.org,
-        linux-apus-devel@lists.sourceforge.net
-Subject: Re: newer xfree86 4.0.1 patches
-References: <20000906213248.A3749@suse.de>
-	 <5.0.0.19.2.20000907164805.01f19660@mail.munich.netsurf.de>
-	 <39B7AFC7.19AF37A1@student.ethz.ch> <00090723415902.31531@enzo.bigblue.local> <5.0.0.19.2.20000908155531.020f1200@mail.munich.netsurf.de>
+To: debian-powerpc@lists.debian.org
+CC: linuxppc-dev@lists.linuxppc.org,
+        Steffen Haeuser <SteffenH@hyperion-software.de>
+Subject: [ANN] Updated Rage128 (Pro) DRI test binaries
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Franz Sirl wrote:
-
-> > > > > - what's the keycode situation in XF3/4 for Apus?
-> > > >
-> > > > AFAIK it isn't very clean with either, the best bet is still to
-> > > > disable Xkb.
-> > >
-> > > On PPC we can switch the keycodes between ADB and Linux with a sysctl.
-> > > Linux keycodes are ~95% compatible with AT keycodes, so XKB will work.
-> >
-> >That would be great IMHO.
->
-> And easy to do. See below.
-
-Thanks for the detailed description. Unfortunately, I'm currently very busy
-with exams, work, DRI, APUS, ..., but if I can get some time I'll look into
-it. Or better, I encourage the other APUS developers to do so.
-
-BTW you mentioned that somebody apparently already worked on the Amiga part of
-the linuxconsole code - do you know who did it?
+Grab them at http://n.ethz.ch/student/daenzerm/download/DRI/ .
 
 
-Michel
+Here's the updated DRI.readme you find there:
+
+
+Direct Rendering Infrastructure for Rage128 (Pro) on PowerPC
+------------------------------------------------------------
+
+
+These are test binaries. If you have installed XFree86 4.0.2 or later,
+chances are it already supports DRI. Please check before trying these
+tarballs.
+
+You can find general information about the DRI at http://dri.sourceforge.net .
+
+
+For flexibility, I have split things up in three tarballs:
+
+- dri-main
+
+  This contains the X server binary, the common modules, the libraries and
+  an example XF86Config (etc/X11/XF86Config.dri). Just untar into / and
+  start the server like this:
+
+    /usr/XF86-DRI/bin/X :1 -xf86config /etc/X11/XF86Config.dri
+
+  The :1 is only needed if you already have an X server running on display
+  :0 .
+
+  You may have to set the environment variable LD_LIBRARY_PATH to
+  /usr/XF86-DRI/lib for GL apps to use the correct libraries.
+
+
+- dri-r128
+
+  This contains the Rage128 (Pro) specific modules for the X server and
+  libGL. You have to untar this into / as well for things to work.
+
+  I have split these from the main tarball to allow for frequent updates
+  without having to download too much.
+
+
+- drm-source
+
+  This contains the source for the Direct Rendering Manager kernel module.
+
+  The following assumes you are running kernel version <ver>:
+
+  Untar anywhere, cd drm-source, make, cp r128.o /lib/modules/<ver>/misc/ ,
+  as of Linux 2.4.0-test7 to /lib/modules/<ver>/kernel/drivers/char/drm/ .
+  If your kernel source isn't in /usr/src/linux{,-<ver>}, you have to set
+  TREE to where the kernel headers are, e.g.
+  make TREE=/usr/src/linux-pmac-benh/include .
+
+
+
+History
+-------
+
+
+- 20000908 (XFree86 4.0.1b):
+
+The lighting problems (moebius showed them badly e.g.) are fixed, thanks to
+the upgrade to Mesa 3.4 .
+
+A few other things have improved, but there are still wrong colors sometimes.
+
+
+- 20000814 (XFree86 4.0.1):
+
+It Works(TM) :)
+
+There are color problems here and there, I'm working on that.
+
+Performance isn't too exciting without AGP GART, however before you give up
+frustrated, try something which uses (preferrably lots of) textures. :)
+
+The kernel modules sometimes can't be loaded successfully upon the first
+server start. Just exit and restart. Or load it manually before starting the
+server to be on the safe side.
+
+
+
+Please report any bugs but also success to me!
+
+Have fun and be happy,
+
+Michel Dänzer <daenzerm@student.ethz.ch>
 
 
 --
