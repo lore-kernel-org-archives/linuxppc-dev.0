@@ -1,17 +1,16 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id DC51F67A72
+Return-Path: <sbajaj@tsi-telsys.com>
+Received: from exchange.tsi-telsys.com (unknown [205.230.130.11])
+	by ozlabs.org (Postfix) with ESMTP id 9E60167A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Apr 2005 04:53:38 +1000 (EST)
+	Wed,  6 Apr 2005 07:20:24 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Date: Tue, 5 Apr 2005 13:53:36 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B85933A@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Dan Malek" <dan@embeddededge.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: RE: FCC Ethernet startup crash
+	charset="iso-8859-1"
+Date: Tue, 5 Apr 2005 17:20:22 -0400
+Message-ID: <0007F077BB3476449151699150E8FEA20592AE@exchange.tsi-telsys.com>
+From: "Sanjay Bajaj" <sbajaj@tsi-telsys.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: PCI Arbiter on PPC440GX?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,22 +21,7 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> From: Dan Malek [mailto:dan@embeddededge.com]=20
-> On Apr 5, 2005, at 12:41 PM, Rune Torgersen wrote:
->=20
-> > Without calling fcc_restart in the start, I get lots of=20
-> "eth0: tx queue
-> > full!." messages.
->=20
-> Do you tftp boot your kernel using the boot rom?  Does the
-> boot rom disable the Ethernet before calling the kernel?
+How do I enable/disable PCI Arbiter on PPC440GX?
 
-Yes, I tftp the kernel, using U-Boot (1.1.2 CVS Head as of 11-20-04).
-Haven't looked at the code, but I think it disablesd the FCC Ethernets
-(Have seen discussions about htat on u-boot mailing list before)
-
-The patch Stefan Nickl gave to me works perfectly, and all it does is
-basically move the fcc_restart.
-The kernel was still calling fcc_restart twiche per FCC at startup (one
-time on init_fcc_startup, and then again in fcc_open), now it just calls
-it twice in fcc_open. Seems to work.
+Thanks in advance.
+Sanjay
