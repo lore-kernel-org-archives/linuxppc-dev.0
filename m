@@ -1,60 +1,40 @@
-Message-ID: <E69FF45ADA3BD511A25900047623CC4F12AA76@JUPITER>
-From: Neil Wilson <NWILSON@Airspan.com>
-To: "'Mark A. Greer'" <mgreer@mvista.com>,
-	Neil Wilson <NWILSON@Airspan.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Sandpoint 3 + MPC7450 + HHL2
-Date: Thu, 28 Jun 2001 07:51:14 +0100
+Date: Thu, 28 Jun 2001 04:52:53 -0400 (EDT)
+From: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
+To: jtm@smoothsmoothie.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: (allocating non-cachable memory) (or More on the i82596)
+In-Reply-To: <20010626160844.A20988@shamus.smoothsmoothie.com>
+Message-ID: <Pine.LNX.3.95.1010628045135.5112D-100000@november.bhjjh.erols.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Got it working now....
+Did yo ever get a reply to this? That sounds like just what I want to do
+(well, it sounds just like what our vxworks code does to do what I want to
+do, which I guess is good enough).
 
-Not sure if these fixes are just Sandpoint3 or MPC7450 or the combination,
-but...
+TIA,
+--Gus
 
-1) The openpic_init call in sandpoint_init_IRQ needs the offset argument to
-get the SIO int setup.
+On Tue, 26 Jun 2001 jtm@smoothsmoothie.com wrote:
 
-2) I also needed to add a enable of the TBEN in HID0 (bit 0x04000000) just
-to get the kernel to think about booting at all - I put this in the
-decompress_kernel function.
-
-Do these sort of changes need pushing into the source tree ?, and if so
-would anyone care to explain how a newcommer does this, thanks.
-
-Neil
-
-> -----Original Message-----
-> From:	Mark A. Greer [SMTP:mgreer@mvista.com]
-> Sent:	Wednesday, June 27, 2001 5:48 PM
-> To:	Neil Wilson
-> Cc:	'linuxppc-embedded@lists.linuxppc.org'
-> Subject:	Re: Sandpoint 3 + MPC7450 + HHL2
 >
-> Neil Wilson wrote:
+> I am looking for a solution to a similar problem. I am writing a
+> driver for an FCC on the 8260 in transparent mode, and need
+> to allocate buffer memory. The buffer memory will get filled
+> via DMA, and therefore must not be cached. Will the following work
+> correctly?
 >
-> > Hi,
-> >
-> > I managed to get the JourneyMan 2 82XX booting up on my Sandpoint3
-> MPC7450 -
-> > after adding a enable for the TimeBase - however when a ramdisk is
-> mounted
-> > up I get very slow serial response, like several seconds to print a
-> string,
-> > does anyone have some ideas of what I could look at to resolve this, I
-> have
-> > an Abatron bdi etc but a lot of this is new to me so any help would be
-> very
-> > welcome. Thanks.
+> 	vaddr = kmalloc(BUF_SIZE, GFP_DMA);
+> 	paddr = __pa(vaddr);
 >
-> I'll virtually guarantee you that its an interrupt-related problem.
-> Either the
-> routing is wrong or the IRQ isn't enabled or...
->
-> Mark
+> Thanks.
+> --
+> Jay Monkman	    The truth knocks on the door and you say "Go away, I'm
+> monkman@jump.net    looking for the truth," and so it goes away. Puzzling.
+> 		     - from _Zen_and_the_Art_of_Motorcycle_Maintenance_
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
