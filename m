@@ -1,62 +1,46 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <006801c3b571$408bc6e0$c314a8c0@cm>
-From: "Sampath Kumar" <sampath@spartanlabs.com>
-To: "Juergen Oberhofer" <e9826367@student.tuwien.ac.at>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <Pine.GHP.4.58.0311271703390.25225@stud3.tuwien.ac.at>
-Subject: Re: mpc / linux kernel - user space
-Date: Fri, 28 Nov 2003 11:04:09 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: zjzhou@newrocktech.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: How to change /proc to the writable directory 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 28 Nov 2003 12:30:43 +0800."
+             <000001c3b568$639e70a0$b702a8c0@newrock2>
+Date: Fri, 28 Nov 2003 09:12:50 +0100
+Message-Id: <20031128081255.B9AADC5F5F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+In message <000001c3b568$639e70a0$b702a8c0@newrock2> you wrote:
+>
+> when I boot kernel and mount file system( cramfs and JFFS), for default, the dir /proc is not writable that located in cramfs. Now, I want to change it to be writable. which places/functions should I modify?
 
-Write an ioctl method in your module. And provide provision in ioctl to take
-a function pointer & store it.
-Whenever there is an timer interrupt, check for this pointer, if not NULL ,
-then you can call the function. When your application comes up, makesure u
-pass the command to ioctl of your module with the function pointer as arg.
+/proc it it's own pseudo-filesystem. You don;t include this  in  your
+filesystem image, but rather mount it.
 
-Hope this help !
+> In cramfs I have these dirs:
+> /bin
+> /root
+> /boot
+> /sbin
+> /usr
+> /mnt
+> /dev/ --> /mnt/rwfs/dev
+> /proc --> /mnt/rwfs/proc
 
-Regards
-Sampath
------ Original Message -----
-From: Juergen Oberhofer <e9826367@student.tuwien.ac.at>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Thursday, November 27, 2003 9:37 PM
-Subject: mpc / linux kernel - user space
+Make /proc a plain directroy,  and  as  part  of  your  init  scripts
+execute something like "/bin/mount -t proc proc /proc"
 
 
->
-> Hi,
->
-> I have a module and an application program in user space:
->
-> The Module performs the following task: at init it initializes the cpm
-> timer register of the mpc823,
-> such that an interrupt is generated every x microseconds. Thus, I
-> installed an interrupt handling function f that handles the timer
-> interrupts.
->
-> My problem is that the module / the interrupt handling function should
-> execute a procedure defined in the application program. How can I pass a
-> pointer (which points to that function) from the appl.program to the
-> module, such that the handler can execute this function every x
-> milliseconds? I thought to create a procedure in the module that accepts
-> a function pointer as argument. But how can I achieve, that this module
-> procedure is visible to the application program? Does somebody have a
-> suggestion or know another way to do it?
->
-> Regards,
-> Juergen
->
->
->
+Best regards,
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The IQ of the group is the lowest IQ of a member of the group divided
+by the number of people in the group.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
