@@ -1,64 +1,40 @@
-To: "Etienne van der Linde" <evdl@ananzi.co.za>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel oops, sig: 7 at last init / modules 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 10 Mar 2004 19:33:44 +0200."
-             <web-18194238@mail01.ananzi.co.za>
-Date: Wed, 10 Mar 2004 18:55:04 +0100
-Message-Id: <20040310175509.77D5FC0655@atlas.denx.de>
+Subject: MPC8560ADS issues
+From: Jason McMullan <jason.mcmullan@timesys.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Message-Id: <1078945499.3748.4.camel@veena.timesys>
+Mime-Version: 1.0
+Date: Wed, 10 Mar 2004 14:04:59 -0500
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Etienne,
+I'm trying to work with FCCs on my PowerQuick III with a
+MPC8560 Rev 1, and I'm having quite a difficult time attempting
+to get the FCC ethernet ports to work.
 
-in message <web-18194238@mail01.ananzi.co.za> you wrote:
->
-> We are using an MPC8260 on a custom board with 16MB RAM,
-> 16MB FLASH, DS1558W RTC, LAN83C183 PHY etc. I use Denx's
-> U-Boot 0.4.0 for the boot loader, and then their PPC82xx
-> embedded linux from their ELDK.
+The GigE (TSEC) ports work just fine, but the FCC ports don't seem
+to TX or RX anything. No IRQs from the FCC, but I get IRQs from the
+PHYs
 
-You should use a more recent version of both the U-Boot  sources  and
-especially the Linux kernel.
+Switch settings:
 
-> For me it seems that the problem comes from executing a
-> module on the file system (either on NFS or Ramdisk).
+SW4:  1-4 ON, 5-8 OFF
+SW10: 1 ON, 2-6 OFF, 7-8 ON
+SW13: 1 OFF, 2-3 ON
 
-Normally no modules are used at all.
+J23,J22: MII(std)
+J27,J31: MII
 
-> Caused by (from SRR1=49030): Transfer error ack signal
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Check this!
+  I have also verified that both of the FCC PHY's on the MII bus
+are visible (at PHY IDs 2 and 3).
 
-> Call backtrace:
-> C00401C8 C0033434 C0003B7C 00000000 0FF1A05C 0FF4FBF8
-> 0FF4EA04
-> 0FF4F858 0FF4C4C8 0FF85B60 0FF85998 10015108 0FEE67B8
-> 0FECFF74
+  Has anyone had any success with the MPC8560ADS and FCCs? In either
+Linux or u-boot?
 
-Decode the backtrace (see ftp://ftp.denx.de/pub/tools/backtrace)
-
-> Furthermore, if I cross-compile my own simple program (that
-> opens devices etc) I am able to run it flawlessly for a
-> long time by passing an init=/tmp/myprogram argument to the
-> kernel - no oops generated there...?
-
-To me it seems that you should check your memory  map.  For  example,
-where  is  the  IMMR  mapped? Did you make sure to put it at a "high"
-address?
-
-
-Best regards,
-
-Wolfgang Denk
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Time is a drug. Too much of it kills you.
-                                      - Terry Pratchett, _Small Gods_
+Jason McMullan <jason.mcmullan@timesys.com>
+TimeSys Corporation
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
