@@ -1,39 +1,87 @@
-Date: Wed, 15 Jan 2003 09:25:12 +0530
-From: Chirag Kantharia <kantharia@hathway.com>
-To: "Gallant, John" <jgallant@vanteon.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Assistance with using /dev/fb0 and No X windows
-Message-ID: <20030115092512.A809@toxic>
-Reply-To: Chirag Kantharia <kantharia@hathway.com>
-References: <4926614F7A31D411820F00D0B74FF7E0013D1A21@RDC03>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4926614F7A31D411820F00D0B74FF7E0013D1A21@RDC03>; from jgallant@vanteon.com on Tue, Jan 14, 2003 at 05:17:22PM -0500
+Message-ID: <014101c2bc70$dc57b610$9900010a@aztec.local>
+From: "Frederic Soulier" <soulier@aztec-radiomedia.com>
+To: "Prakash kanthi" <pkanthi@yahoo.com>
+Cc: "PPC-Linux list (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+References: <20030114184236.43688.qmail@web41211.mail.yahoo.com>
+Subject: Re: ramdisk mount problem
+Date: Wed, 15 Jan 2003 09:33:43 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Jan 14, 2003 at 05:17:22PM -0500, Gallant, John wrote:
-| 2) Does anyone know of a driver for the LynxEM chip that is not from the
-| XFree86 code base?
+Prakash,
 
-There is lynxfb.c in the linuxppc_2_4_devel tree
-(http://www.penguinppc.org/dev/kernel.shtml). You can use that as the
-starting point. It's a WIP.
+   It seems that your kernel didn't get any information about where is your
+init ramdisk.
+  Which boot loader do you use ? On which board ?
 
-| I am planning to "strategically advance to the rear" and go back to the
-| PPCBoot code where I was able to get a few bands of color when the LOGO was
-| supposed to be drawn on the screen.  If I can get that to work I am hoping
-| that I can form a better understanding of the LynxEM chip to either create a
-| limited driver or hack up the vga16fb.c file some more before I work on a
-| limited driver.
+  In the kernel sources, I guess your initrd_start is set to NULL, so you
+have to verify in the platform_init() function (usually found in
+arch/ppc/platforms/<your board>_setup.c) that you are really handling
+parameters from the boot loader. This is done something like that :
 
-A working fbset just proves that you are able to talk to the framebuffer
-support in the kernel. It doesn't indicate that your framebuffer is
-actually able to talk to your hardware.
+void __init
+platform_init(unsigned long r3, unsigned long r4, unsigned long r5, unsigned
+long r6, unsigned long r7)
+{
+[...]
+ if (r4) {
+  initrd_start = r4 + KERNELBASE;
+  initrd_end = r5 + KERNELBASE;
+ }
+[...]
 
---
-Chirag Kantharia, symonds.net/~chyrag/
+Hope this could help,
+
+Frederic Soulier
+
+----- Original Message -----
+From: "Prakash kanthi" <pkanthi@yahoo.com>
+To: "Wolfgang Denk" <wd@denx.de>
+Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Sent: Tuesday, January 14, 2003 7:42 PM
+Subject: ramdisk mount problem
+
+
+>
+> Hi Folks,
+>
+> I am trying to use 2MB ramdisk image from denx as my
+> linux filesystem. Linux kernel fails to mount the
+> 'ext2' type file system from initrd. I pin pointed the
+> problem.
+>
+> Looks like the problem is in 'do_mounts.c ->
+> mount_block_root' function where a call is made to
+> sys_mount as follows:
+>
+> 'int err = sys_mount(name, "/root", p, flags,
+> root_mount_data);'
+>
+> In my case name="/dev/root", p="ext2", flags=32768 and
+> root_mount_data=<NULL>.
+>
+> The result of this call is EINVAL, i.e. invalid
+> argument. Can anyone help me out find which one of the
+> arguements could be invalid? If 'root_mount_data' is
+> the culprit, why is it null? I see that it's value is
+> set in one of the __setup functions. When are these
+> functions supposed be executed? I know that all
+> __initcalls are executed from dO_initcalls.
+>
+> This failure causes Kernel Panic, complaing about
+> "Unable to mount root fs at 01:00".
+>
+>
+> Thanks,
+> Prakash
+>
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
