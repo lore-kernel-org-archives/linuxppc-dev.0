@@ -1,69 +1,51 @@
-Date: Thu, 8 Nov 2001 01:22:47 +0000 (GMT)
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-To: Mark Pilon <mpilon@midrivers.com>
-Cc: list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 405GP interrupts tip and looking for a little console help
-In-Reply-To: <3BE9BD14.FD9D9DA8@midrivers.com>
-Message-ID: <Pine.LNX.4.21.0111080103110.2930-100000@lougher.demon.co.uk>
+Message-ID: <3BEA8A5D.50A75CE7@midrivers.com>
+Date: Thu, 08 Nov 2001 06:36:29 -0700
+From: Mark Pilon <mpilon@midrivers.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 405 -- a little console help, part 2
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 7 Nov 2001, Mark Pilon wrote:
+I've got a little more info -- /bin/sash doesn't produce any
+output and just sits there, echoing charachters typed.  I'll try poking
+around w/ gdb/abatron but am not sure how to find the exec'd shell.
 
->
-> Hi,
->
-> AND I'd appreciate a little help on getting my console to
-> talk w/ me -- I boot, mount a remote target filesystem w/ nfs,
-> and get console messages right up to:
->
-> NET4: Unix domain sockets 1.0/SMP for Linux
-> NET4.0.
-> Looking up port of RPC 100003/2 on
-> 192.168.200.4
-> Looking up port of RPC 100005/1 on
-> 192.168.200.4
-> VFS: Mounted root (nfs
-> filesystem).
-> Freeing unused kernel memory: 56k
-> init
-> echo
-> *
-> ^^^^^^----- I typed this last line and it echo'd,
-> I passed in a command init=/sbin/sash, but don't get its prompt,
->
-> I debugged it to the point of seeing the exec of /bin/sash,
-> and would appreciate any views as to what I've forgotten here.
->
+if I spawn ash w/ init=/bin/ash:
+...
+Looking up port of RPC 100003/2 on 192.168.200.4
+Looking up port of RPC 100005/1 on 192.168.200.4
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 56k init
+executing init = /bin/ash
+sh: can't access tty; job control turned off
+#
 
-I had this problem a while ago on a Redwood-4 board using an early
-revision of the processor (STB3400 a variant of the 405GC).  Like
-you I tried sash and debugged it up to the point of seeing the exec, then
-nothing else would happen.
+--  but at least I get a prompt and it seems to work.
 
-In my case, the exec was going ahead, but because of a processor
-hardware bug, the process was being killed before any output was
-produced.  Hence the apparent console output problem.
+I'm not sure what the message "can't access tty; job control turned off"
+means -- I'll have to get the source for ash and debug it.
 
-I finally identified that exec'ing and console output was working by
-writing a very small init process (< 2K text/data) that did nothing
-but print a string by calling the write system call directly in assembler.
-This was small enough that it executed without causing the hardware bug.
+I would have thought that spawning init=/bin/sash would have been the
+easiest.
 
-Upgrading to a later revision of the processor cured the problem.
+the target filesystem is pieces of mvista's hhl2.0 target
+for ppc405.
 
-This may be nothing to do with your problem, but it may be worth a try.
+Since I'm nfs mounting it, I'm going to just mount the whole
+thing and see if what I need turns up;  it'd be nice to know
+for those wanting to run a more spare system.
 
-Phillip
+Mark
+--
+Mark Pilon
 
------
-Phillip Lougher
+Minolta-QMS
+P.O. Box 37
+Fallon, MT.  59326-0037
 
-Zarlink Semiconductor,
-Portskewitt, Wales, UK.
-
+1-406-853-0433
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
