@@ -1,41 +1,36 @@
-Message-ID: <000201c1c02b$a1abc480$65d71e97@ezio>
-From: "RSR - Dominioni Piero" <pdominioni@rsr.it>
-To: "Dan Malek" <dan@embeddededge.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <20020215135417.62312.qmail@web14003.mail.yahoo.com> <3C6D6145.5070503@embeddededge.com>
-Subject: Re: Litle LCD on MBX860
-Date: Thu, 28 Feb 2002 08:40:27 +0100
+Date: Thu, 28 Feb 2002 09:01:37 +0100 (CET)
+From: Christian Pellegrin <chri@infis.univ.trieste.it>
+To: Owen Green <owenjinggreen@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: gdbserver ppc8xx
+In-Reply-To: <20020227214749.38142.qmail@web20110.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.44.0202280900550.24241-100000@sole.infis.univ.trieste.it>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all.
- I wanted to connect a LCD to a MPC823-based board and to use
-microwindows too .
+On Wed, 27 Feb 2002, Owen Green wrote:
 
-Dan Malek answered:
-> You aren't going to connect an LCD to the MBX860 and see anything.
-> There isn't any LCD controller on the 860.  You need an 823 or
-> some external graphics controller.
+>
+> Hi all,
+>
+> could anyone tell me where can I find a gdbserver that
+> works with mpc8xx processor? Where can I find sources
+> that compiles for 8xx?
+>
+> I have already tried with mvista HHL2.0 Journeyman
+> edition but I got something like:
+> #gdbserver :7777 /bin/test
+> Process /bin/test created; pid = 48
+> getprotobyname:Sucess.
+> Exiting
+> #
+> What could be wrong? Any tip will be very appreciate.
+>
 
-Correct.
-But what happens when the externel controller is provided?
-Is there a LinuxPPC driver for it?
-Does the LCD device become such as a character device
-(or something like that) that needs a suitable node in /dev
-with its own driver to be registered?
-
-I tryed to configure Wolfgang's 2.4.4-2001-11-24 kernel for
-TQM860L and while (obviously) there is no LCD driver for
-860, the framebuffer is still there...
-Does it mean that anyway it is possible to use a LCD with MPC860?
-Thank you for any answer!
-Bye
-
-Piero
+just copy /etc/protocols from whatever distro you like. Bye!
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
