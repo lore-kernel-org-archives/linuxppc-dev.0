@@ -1,68 +1,62 @@
-Date: Mon, 30 Oct 2000 23:10:25 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: __{pmac,prep,chrp,apus,openfirmware}func()
-Message-ID: <Pine.LNX.4.10.10010302304320.413-100000@cassiopeia.home>
+Message-Id: <200010310649.HAA00860@piglet.grunz.lu>
+Date: Tue, 31 Oct 2000 07:49:32 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: 2.2.18pre17 again
+To: paulus@linuxcare.com.au
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <14839.53124.753011.489351@argo.linuxcare.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Since __initfunc() was removed in 2.3.16, we should remove the PPC-specific
-variants as well.
+Hi Paul.
 
-At least arch/ppc/ and drivers/macintosh/ don't contain files that use any of
-these definitions anymore.
+On  26 Oct, this message from Paul Mackerras echoed through cyberspace:
+> I have updated my rsync trees with some more changes to my current
+> 2.2.18pre17 source
 
---- linux-2.4.0-test10-pre7/include/asm-ppc/init.h.orig	Mon Oct 30 22:52:59 2000
-+++ linux-2.4.0-test10-pre7/include/asm-ppc/init.h	Mon Oct 30 23:04:21 2000
-@@ -5,33 +5,18 @@
+There are a few patches on sourceforge that you might consider for the
+2.2.18 kernel release:
 
- #define __pmac __attribute__ ((__section__ (".text.pmac")))
- #define __pmacdata __attribute__ ((__section__ (".data.pmac")))
--#define __pmacfunc(__argpmac) \
--	__argpmac __pmac; \
--	__argpmac
--
-+
- #define __prep __attribute__ ((__section__ (".text.prep")))
- #define __prepdata __attribute__ ((__section__ (".data.prep")))
--#define __prepfunc(__argprep) \
--	__argprep __prep; \
--	__argprep
+- per-fb mmap for controlfb: this one has worked well for everybody who
+tested it, and gives a decent speed increase:
 
- #define __chrp __attribute__ ((__section__ (".text.chrp")))
- #define __chrpdata __attribute__ ((__section__ (".data.chrp")))
--#define __chrpfunc(__argchrp) \
--	__argchrp __chrp; \
--	__argchrp
+https://sourceforge.net/patch/?func=detailpatch&patch_id=101236&group_id=8234
 
- #define __apus __attribute__ ((__section__ (".text.apus")))
- #define __apusdata __attribute__ ((__section__ (".data.apus")))
--#define __apusfunc(__argapus) \
--	__argapus __apus; \
--	__argapus
+- better processor configuration in head.S. This is basicallz a copz of
+  what is already done in 2.4:
 
- /* this is actually just common chrp/pmac code, not OF code -- Cort */
- #define __openfirmware __attribute__ ((__section__ (".text.openfirmware")))
- #define __openfirmwaredata __attribute__ ((__section__ (".data.openfirmware")))
--#define __openfirmwarefunc(__argopenfirmware) \
--	__argopenfirmware __openfirmware; \
--	__argopenfirmware
--
-+
- #endif /* _PPC_INIT_H */
+https://sourceforge.net/patch/?func=detailpatch&patch_id=101403&group_id=8234
 
-Gr{oetje,eeting}s,
+- macserial proc additions and cleanups:
 
-						Geert
+https://sourceforge.net/patch/?func=detailpatch&patch_id=101410&group_id=8234
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+- ICTC support in the sysctl interface:
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+https://sourceforge.net/patch/?func=detailpatch&patch_id=101484&group_id=8234
+
+- kernel compilation independant of the /usr/src/linux path (however,
+  this patches the top-level Makefile as well...):
+
+https://sourceforge.net/patch/?func=detailpatch&patch_id=101549&group_id=8234
+
+I have one or two other things (not of any particular importance); if I
+get around to making a patch in the next days, I'll send them along.
+
+Cheers
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
