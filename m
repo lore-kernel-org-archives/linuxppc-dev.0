@@ -1,41 +1,29 @@
-Subject: Re: multiple separate pci bridges ...
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Sven Luther <sven.luther@wanadoo.fr>,
+Message-ID: <400B3449.5080100@embeddededge.com>
+Date: Sun, 18 Jan 2004 20:35:05 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <1074469340.4547.71.camel@gaston>
-References: <20040118144412.GA6897@iliana> <1074503490.4547.52.camel@gaston>
-	 <1074468194.9699.209.camel@thor.asgaard.local>
-	 <1074469340.4547.71.camel@gaston>
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <1074470602.9704.235.camel@thor.asgaard.local>
-Mime-Version: 1.0
-Date: Mon, 19 Jan 2004 01:03:22 +0100
+Subject: Re: OF properties access ?
+References: <20040113114625.GA9294@iliana> <1074131387.818.43.camel@gaston> <20040115074439.GB14039@iliana> <1074310140.8360.27.camel@gaston> <20040118120722.GA4603@iliana> <1074468096.795.27.camel@gaston> <20040118143225.GA6717@iliana>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2004-01-19 at 00:42, Benjamin Herrenschmidt wrote:
-> >
-> > Only the 3D drivers use the IRQ, it's not involved when moving around
-> > windows. Or do you mean a badly configured IRQ causing a flood or
-> > something?
->
-> Oh, you don't use the IRQ for throttling the ring ?
+Sven Luther wrote:
 
-No, that's only rarely needed anyway, if ever (a while ago, I discovered
-that the DRM code to detect a full ring had been broken for a while, but
-it didn't seem to cause any problems :).
+> Ok. (altough i think this is a subject of philosophical debate :)
 
-> Only for VBL ?
+It was debated for the Linux kernel ages ago.
 
-That, frame throttling (to prevent too many frames getting queued) and
-waiting for rendering to finish.
+Read Documentation/CodingStyle and please follow it.
+
+Thanks.
 
 
---
-Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
-Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
+	-- Dan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
