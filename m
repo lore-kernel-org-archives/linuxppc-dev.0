@@ -1,22 +1,21 @@
-Mime-Version: 1.0
-Message-Id: <v04220801b58f50178265@[192.168.0.2]>
-Date: Mon, 10 Jul 2000 03:08:49 -0700
+Message-Id: <200007101156.MAA26609@hyperion.valhalla.net>
+Date: Mon, 10 Jul 2000 12:56:24 +0100
+Subject: 2.4.0-test3
+From: "Iain Sandoe" <iain@sandoe.co.uk>
 To: linuxppc-dev@lists.linuxppc.org
-From: "Michael A. Peters" <moonglue@141.com>
-Subject: yaBoot and Standard Tree
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Are there patches to the standard 2.2 tree (2.2.16 specifically) that
-would allow those standard kernels to work with yaBoot?
+Hi,
 
+Does anyone know of a source of 2.4.0-test3 that will build for PPC?
 
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-Michael A. Peters--		http://24.5.29.77/Linux_Pages/
-				http://www.omnilinux.com/
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+I grabbed the bitkeeper 2_3 rsync last night - but it doesn't build...  and
+linux-pmac-devel is currently at test1-ac21...
 
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
