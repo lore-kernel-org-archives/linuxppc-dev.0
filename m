@@ -1,18 +1,17 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C261F67A89
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 1DF8167A72
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Mar 2005 10:14:08 +1100 (EST)
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B8592EA@ismail.innsys.innovsys.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B8592EA@ismail.innsys.innovsys.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <1a5fcb31206258ffb8b8f7cd28f054b1@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 8 Mar 2005 17:13:57 -0600
-To: "Rune Torgersen" <runet@innovsys.com>
+	Wed,  9 Mar 2005 10:20:40 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Tue, 8 Mar 2005 17:20:38 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8592EB@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Kumar Gala" <kumar.gala@freescale.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Lots of memory on 826x
+Subject: RE: Lots of memory on 826x
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,69 +22,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hmm, I think there is an expectation that virt->phys is a simple=20
-translation (ie, subtract KERNELBASE) for lowmem.  lowmem most parts=20
-tops out at 768M.  So changing VMALLOC_START would break that.
+=20
 
-Is there an issue with moving the IMMR virt address up higher?
+> -----Original Message-----
+> From: Kumar Gala [mailto:kumar.gala@freescale.com]=20
+> Sent: Tuesday, March 08, 2005 17:14
+> To: Rune Torgersen
+> Cc: linuxppc-embedded@ozlabs.org; Matt Porter
+> Subject: Re: Lots of memory on 826x
+>=20
+> Hmm, I think there is an expectation that virt->phys is a simple=20
+> translation (ie, subtract KERNELBASE) for lowmem.  lowmem most parts=20
+> tops out at 768M.  So changing VMALLOC_START would break that.
 
-- kumar
+Yep noticed..... (tried changing it...)
 
-On Mar 8, 2005, at 3:16 PM, Rune Torgersen wrote:
+>=20
+> Is there an issue with moving the IMMR virt address up higher?
+Not really. Will have to redo a whole lot of address maps for some
+external devices, but not too bad...
 
-> What about moving the VMALLOC_START and VMALLOC_END #defines to
->  something else (like start at 0x80000000 and end at 0xc0000000), or=20=
+I did change the kernel start address, and that seems to work better,
+except that things is still broken when CONFIG_HIGHMEM is set
+When that option is set, it maps the highmem to 0xFE000000, which is in
+the IO area mapped for IMMR and other memory mapped devices.
+(0xF0000000-0xFFFFFFFF)
 
-> will
->  that break some assumptions in the kernel about the position of the
->  vmalloc area?
->
-> > -----Original Message-----
->  > From: Matt Porter [mailto:mporter@kernel.crashing.org]
-> > Sent: Tuesday, March 08, 2005 14:33
->  > To: Rune Torgersen
->  > Cc: Kumar Gala; linuxppc-embedded@ozlabs.org
-> > Subject: Re: Lots of memory on 826x
->  >
-> > On Tue, Mar 08, 2005 at 12:37:33PM -0600, Rune Torgersen wrote:
->  > > Ok... Got a little closer....
->  > >
-> > > I have PCI (outbound) mapped in the area 0x80000000-0x8fffffff
->  > > (prefetch/non-prefetch and IO)
->  > > IMMR of cource is at 0xf0000000
->  > >
-> > > So I map the IO as following:
->  > > =A0=A0=A0 /* Map IMMR region to a 256MB BAT */
->  > > =A0=A0=A0 addr =3D (cpm2_immr !=3D NULL) ? (uint)cpm2_immr : =
-CPM_MAP_ADDR;
-> > > =A0=A0=A0 io_block_mapping(addr, addr, 0x10000000, _PAGE_IO);
->  > >
-> > > =A0=A0=A0 io_block_mapping(0x80000000, 0x80000000, 0x10000000, =
-_PAGE_IO);
->  > >
-> > > Now I can almost boot....:
-> > > It craches when trying to read from harddisk
->  > > (only happens with more than 512MB)
->  >
-> > That's expected if you are going to 768MB. You have kernel lowmem
-> > being mapped at 0xc0000000+<size_of_system_memory>. With 768MB that
->  > takes you all the way to where you have the IMMR mapped 1:1 I
->  > guess. This leaves no room for vmalloc space.=A0 With 768MB of ram
->  > the kernel will calculate VMALLOC_START at 0xf1000000 which is a
->  > problem.
->  >
-> > A few options are:
->  >
-> > * Move the IMMR much higher to allow vmalloc space
->  > * Modify maximum low memory to limit to 512MB using the advanced
->  >=A0=A0 options menu
->  > * Modify KERNELBASE to something like 0xa0000000 using the advanced
->  >=A0=A0 options menu
->  >
-> > All of these methods will provide addition vmalloc space.
-> >
-> > Don't forget to turn on HIGHMEM to use everything above MAX_LOW_MEM.
-> >
-> > -Matt
->  >
-> >
+This can be changed by CONFIG_HIGHMEM_START. Any good ideas on where to
+move it to?
+
+(Maybe change IMMR/IO to 0xF8000000 and up, and set HIGHMEM_START to
+0xF0000000?)
