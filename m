@@ -1,37 +1,40 @@
-Message-ID: <3E401AC9.9090703@embeddededge.com>
-Date: Tue, 04 Feb 2003 14:55:53 -0500
-From: Dan Malek <dan@embeddededge.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: was: FEC on MPC860T & race condition
-References: <3E395B40.9090506@imc-berlin.de> <3E39898E.5060804@embeddededge.com> <3E3A3EE9.7000608@imc-berlin.de> <20030203210959.GA7857@ip68-0-152-218.tc.ph.cox.net> <3E3F7C29.8030807@imc-berlin.de> <20030204160401.GA30936@ip68-0-152-218.tc.ph.cox.net> <3E3FE6D0.1010600@imc-berlin.de> <20030204193224.GB3522@ip68-0-152-218.tc.ph.cox.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Creating RAM disks as a non root user.
+Date: Tue, 4 Feb 2003 16:24:03 -0500
+Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093BBB@mail1.mediatrix.com>
+From: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
+To: "Rod Boyce" <rod_boyce@stratexnet.com>
+Cc: "LinuxPPC-Embedded" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Here is the recipe we use to mount ramdisk images without being a root user.
 
-> I believe this is wrong, in that trying to udelay() here is a bad idea.
+First, there must be an entry (one per user) in /etc/fstab, like the following:
 
-I agree.  All of the MII communcation is interrupt driven.  This is easy
-and the way everything should work on the 8xx.  The link interrupt is
-more challenging because the interrupt from that depends upon the phy
-type and the board design.  The link interrupts are either real interrupts
-or managed with a timed thread.
+ /home/jdboyer/initrd_lnk /home/jdboyer/mnt auto noauto,loop,user,rw 0 0
 
-If you need to wait before installing the link interrupt (which I still
-don't understand why), this should be done as part of the phy discovery
-interrupt.  For example, add an indirect function pointer and if it isn't
-NULL, call it at that time to do anything that must wait until the phy
-is discovered and initialized.
+where 'initrd_lnk' is a soft-link to the file to mount through the loop device,
+and 'mnt' is the mount point. These informations can NOT be modified by the user.
 
-Thanks.
+Note that the option 'user' in fstab allows any user to mount/unmount this specific entry.
 
+Then, we can mount a ramdisk image that is located anywhere,
+by first modifying the soft link, and then mounting 'mnt'.
+You can either create new ramdisk images, or mount already existing ones (very useful!).
 
-	-- Dan
-
+Regards,
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., Technical Leader
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
