@@ -1,34 +1,37 @@
-Date: Fri, 14 Sep 2001 10:22:19 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Xavier Grave <grave@ipno.in2p3.fr>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: mvme5100 memory model ?
-Message-ID: <20010914102219.B3783@beef.az.mvista.com>
-References: <20010913162250.C5558@ipnpcu5.in2p3.fr> <20010913051235.A7990@cx258813-a.chnd1.az.home.com> <20010913175703.C6152@ipnpcu5.in2p3.fr>
-Mime-Version: 1.0
+Message-ID: <3BA24BB9.3039BD7C@mvista.com>
+Date: Fri, 14 Sep 2001 14:26:01 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
+Cc: "'ashish anand'" <ashisha@india.infogain.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: "Kernel logical address"  vs "Physical"
+References: <6B546A602AD2D211BFF00008C7A42889041D6BE4@hrtades2.atea.be>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010913175703.C6152@ipnpcu5.in2p3.fr>; from grave@ipno.in2p3.fr on Thu, Sep 13, 2001 at 05:57:03PM +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-[Move to linuxppc-embedded]
-
-On Thu, Sep 13, 2001 at 05:57:03PM +0200, Xavier Grave wrote:
+Goddeeris Frederic wrote:
 >
-> > > "chrp-like".  CFGA and CFGD are not at chrp compliant locations
-> > due to limitations of the hawk smc.  As far as PCI I/O and Mem
-> > space, it is the same.
->
-> One more question so : why the Hawk chip doesn't appear in the /proc/iomem
+> So the key is that by address is above ioremap_base. That I initially got
+> away with not using ioremap is a coincidence? Right?
 
-/proc/iomem displays a a list of iomem_resource resources.  I'm think
-that although it is being used, the MPIC mem base address is never
-claimed so it doesn't show up.  Feel free to fix it.
+No, it's not a coincidence.  I've written sufficiently about virtual
+space mapping on the embedded processors in the past and if you just
+search the mailing list archives you will find all of the answers.
 
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+The short answer.....on some processors, like the 8xx, there is a
+common address space used by many device drivers and functions
+unique to this processor.  The granularity of mapping required is
+very small, resulting in many overlapped maps if you constantly use
+ioremap() in all of these cases.  For this processor, a common area
+is ioremap()'ed by the memory management early in the kernel initialization
+for all of these uses.  The side effect of mapping this early is you
+get a 1:1 virtual to physical mapping because the kernel VM is not
+yet fully initialized.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
