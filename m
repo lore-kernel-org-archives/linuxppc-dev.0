@@ -1,36 +1,25 @@
-Message-ID: <407DEC4A.3080305@embeddededge.com>
-Date: Wed, 14 Apr 2004 21:58:34 -0400
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <407E34A5.501@imc-berlin.de>
+Date: Thu, 15 Apr 2004 09:07:17 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-To: Richard Laing <Richard.Laing@4rf.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Slow down with recent linux kernel
-References: <4ABDB84E30B89F4E9C942C186F0B9EF605BBC6@4rf-nz-mail.local.4rf.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+To: Scott Stickeler <scott@guy-smiley.com>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MPC8xx and wireless HERMES-II () ???
+References: <40769D14.3030801@imc-berlin.de> <1081529851.4076d5fbd94a7@www.guy-smiley.com>
+In-Reply-To: <1081529851.4076d5fbd94a7@www.guy-smiley.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Richard Laing wrote:
+Scott Stickeler wrote:
 
-> ....Startup time for our application form power on to running is increased
- > by between 30% and 50%.
+> I'd be very interested in what you find out. I am working on a project where I
+> want to do the exact same thing. I'll stay tuned :).
 
-How does your application start up?  Initrd? Jffs2? Network?
-What are you actually measuring?
+After fixing some minor bugs the HERMES-II is working with my MPC8xx.
+I still have some minor problems though.
 
-Use some standard, focused, benchmarks and collect some quantitative data.
-Then, we can discuss something.
-
-> ....this uses consistent_alloc which doesn't appear to return a
- > real physical address
-
-Sure it does....dma_addr_t.
-
-Thanks.
-
-
-	-- Dan
-
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
