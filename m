@@ -1,75 +1,33 @@
-Date: Thu, 8 Jul 1999 14:58:13 -0600 (MDT)
-From: Dan Burcaw <dburcaw@terraplex.com>
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-cc: "Charles A. Jolley" <charles.jolley@zeratec.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: QuickTime Streaming Server for Linux.. on x86
-In-Reply-To: <Pine.LNX.3.96L.990708160307.5641B-100000@unix47.andrew.cmu.edu>
-Message-ID: <Pine.LNX.3.96.990708145504.17464B-100000@newhope.terraplex.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <9907082101.AA30380@marc.watson.ibm.com>
+To: Nicholas Coult <coult@ima.umn.edu>
+Cc: David DeHaven <daved@trestle.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: HINT for LinuxPPC 
+In-Reply-To: Message from Nicholas Coult <coult@ima.umn.edu>
+   of "Thu, 08 Jul 1999 10:51:20 CDT." <Pine.LNX.4.10.9907081049550.6723-100000@pc19.ima.umn.edu>
+Date: Thu, 08 Jul 1999 17:01:52 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 8 Jul 1999, Hollis R Blanchard wrote:
+>>>>> Nicholas Coult writes:
 
-> 
-> On Thu, 8 Jul 1999, Charles A. Jolley wrote:
-> > > 
-> > > Also, lots and lots of "warning: multi-character character constant" coming
-> > > from lines like
-> > >
-> > > static const FourCharCode kFractionLostPacketsSig = 'frac';
-> > >
-> > > Should those single ticks be quotes?
-> > >
-> > > -Hollis
-> > 
-> > The MacOS makes extensive use of 4-character constants (32-bit values) to
-> > identify file and creator types, and also the types of resources in the
-> > resource fork of a file.  The single quote method is a standard way of
-> > indicating these constants and all MacOS compilers will take it without
-> > complaint.  I encountered this same problem when porting some Mac stuff to
-> > Linux some time ago.  I seem to recall that the compiler complained but
-> > produced the right results anyway.  My Linux systems are down right now so I
-> > can't check to make sure and I've since updated all my old code to work
-> > around it.
-> 
-> I remember that much from the very little Mac OS programming I've done... but
-> I was just wondering how the compiler was handling it. I mean, if I were a
-> compiler and I was just translating chars in 's to ascii values, I'd probably
-> get confused. If it's no problem, then why is it a warning?
-> 
-> > Changing the single ticks to quotes will most definitely introduce errors,
-> > though, because that will cause the compiler to produce a 32-bit pointer to
-> > a NULL terminated string "frac", rather than a 32-bit value equal to the
-> > four characters 'frac'.  This can be particularly deadly in code where types
-> > are explicitly cast because it is still a 32-bit value either way.
-> 
-> Just hoping for a quick fix... =)
-> 
-> Also, was the two-line patch mentioned before for LinuxPPC? Whose is it and
-> where is it? The darwin-streaming Apple mailing list is exceptionally dead,
-> and I haven't seen any mention of LinuxPPC anything on there.
+Nicholas> Yes, I ran the Hint benchmark on my LinuxPPC machine.  My hint benchmark
+Nicholas> page compares the results to a PII/300 running Linux:
 
-Yes it was. Was just worked on yesterday.. 
+Nicholas> http://www.ima.umn.edu/~coult/hint.html
 
+	egcs-1.1.2 does not actually know about the PPC750, so -mcpu=750
+did not actually help.  gcc-2.95 knows about PPC750 scheduling, makes
+better use of indexed addressing, and utilizes the CTR register for loops
+which should improve performance.  Other PowerPC improvement are coming
+down the pike as soon as they can be cleaned up and added to GCC.
 
-> 
-> -Hollis
-> 
+	Also, once the new p2 backend contributed to GCC by Cygnus is
+installed and stable, that should provide a better test of PII
+performance. 
 
-> 
-
-
-Dan
-
-Terra Soft Solutions, Inc.
- email: dburcaw@yellowdoglinux.com
- website: http://www.yellowdoglinux.com/
-
-
+David
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
