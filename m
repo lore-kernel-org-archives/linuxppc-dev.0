@@ -1,31 +1,48 @@
-Date: Wed, 17 Oct 2001 10:08:32 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Steven Vacca <svacca@valcom.com>
+Message-Id: <5.1.0.14.0.20011018123155.026b01c0@pop.gmx.de>
+Date: Thu, 18 Oct 2001 12:39:36 +0800
+To: Joe Green <jgreen@mvista.com>, Wolfgang Denk <wd@denx.de>
+From: Michael Habermann <MHabermann@gmx.de>
+Subject: Re: Reducing glibc with mklibs.sh
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: initrd offset in zImage getting mis-aligned?
-Message-ID: <20011017100832.A32556@cpe-24-221-152-185.az.sprintbbd.net>
-References: <01C156FF.63187140.svacca@valcom.com>
+In-Reply-To: <01101709304900.12705@minotaur.mvista.com>
+References: <20011017123040.23ED310889@denx.denx.de>
+ <20011017123040.23ED310889@denx.denx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <01C156FF.63187140.svacca@valcom.com>
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Oct 17, 2001 at 11:32:21AM -0400, Steven Vacca wrote:
+At 09:28 AM 10/17/2001 -0700, Joe Green wrote:
+> > The MV Library Optimizer at
+> > http://sourceforge.net/projects/libraryopt/ it's under GPL.
+>
+>Yes, but it's not well documented yet...I need to improve that and add
+>a mailing list.
 
-> I am porting a version of Redhat's embedded linux kernel to
-> a new custom designed bd with the mpc860.  I am using a
-> local RAM disk on this new bd.
+libopt looks great, but I don't know how to handle it.
+After setting the toolprefix manually, I call the software in this way:
+         ./powerpc-linux-libopt -d /ppcroot.smalllib /ppcroot
 
-Erm, you might want to look at the bits in the linuxppc_2_4 or
-linuxppc_2_4_devel tree (http://penguinppc.org/dev/kernel.shtml).  Prior
-to a few days ago, we did some slightl mis-calculations on where to put
-our image and/or ramdisk (they were off by 12bytes or so).  I'm not sure
-if this is your problem tho..
+/ppcroot/ contains my RAMDisk. The program executes up to the end of main
+without error messages, but /ppcroot.smallib/ is empty after execution.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Is it possible, that the script runs only with HardHat Linux?
+It seems that when DynamicLibrary.generate(...) is called, self.optimizer
+is always None.
+The optimizers are read from an optinfo file, which I don't have. Where to
+get one?
+
+I have also no idea, what libindex is good for.
+
+
+> > /usr/local/powerpc-linux/bin/ld: /tmp/,mklibs.21079/lib-so: undefined
+> > versioned symbol name sys_siglist@@GLIBC_2.1
+>
+>This looks like a problem with COPY relocation types, which was seen and
+>fixed for the LOT.
+
+Any hint how to fix it?
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
