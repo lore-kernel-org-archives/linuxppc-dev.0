@@ -1,43 +1,58 @@
-Message-ID: <007c01c4320f$6fd477b0$6f01a8c0@xiphos.ca>
-From: "Joshua Lamorie" <jpl@xiphos.ca>
-To: "Richard Danter" <richard.danter@ntlworld.com>,
-	"linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-References: <4097DAEA.5@ntlworld.com>
-Subject: Re: Simple module, but won't build
-Date: Tue, 4 May 2004 15:38:53 -0400
+Message-ID: <4097F32F.6090504@ntlworld.com>
+Date: Tue, 04 May 2004 20:46:55 +0100
+From: Richard Danter <richard.danter@ntlworld.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Wolfgang Denk <wd@denx.de>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Simple module, but won't build
+References: <20040504191010.98E50C109F@atlas.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> /opt/eldk3.0/ppc_82xx/usr/include/asm/io.h:235: `CONFIG_KERNEL_START'
+Hi Wolfgang,
 
-> /opt/eldk3.0/ppc_82xx/usr/include/asm/uaccess.h:37: `CONFIG_TASK_SIZE'
+Wolfgang Denk wrote:
+>
+> Seems you are missing to include some necessary header  files  and/or
+> to provide the necessary compiler options.
 
-These are defined when you are building your kernel.  Before building any
-modules,
-you need to configure the kernel.
+I am taking a driver I wrote for a 2.4.2 kernel, built with 2.95.x
+compiler and trying to port it to 82xx from 8xx and use the new ELDK.
 
-Assuming you use 'make menuconfig'.
+Since it is so simple, it just writes to a mem mapped I/O port to set
+some LED's on/off, I assumed it would be pretty simple. But alas, that
+was probably a bad assumption on my part.
 
-    Under 'Code Maturity Level Options' select 'Prompt for advanced kernel
-configuration options'.
+The main module includes the following:
 
-Then, under General Setup set
+   linux/module.h
+   linux/fs.h
+   asm/io.h
+   asm/uaccess.h
 
-    Set Custom Kernel Base Address
-    Set Custom user task size
+in that order.
 
-My assumption is that the defaults (0xc0000000 and 0x80000000) are just
-dandy.
+I have grep'ed for CONFIG_KERNEL_START and CONFIG_TASK_SIZE and the only
+place I can find them defined is in the kernel source .config (and
+default config files for each board). Not in any of the header files.
 
-Joshua
+Maybe I am sposed to #define them myself - I tried that and it worked -
+but would like a more automagic solution if there is one!
 
-p.s. This type of question is easy to answer by using lxr.linux.no and
-searching for freetext or identifier.  No kernel programming should be
-performed without this close at hand.
+Command line options are:
+
+   -D__KERNEL__ -DMODULE -Wall -fno-builtins -O -c
+
+
+>
+> It's difficult to guess what  exactly  is  missing  given  so  little
+> information.
+
+Sorry, yes.
+
+Rich
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
