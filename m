@@ -1,42 +1,27 @@
-Message-ID: <3F37B7BB.1040206@mvista.com>
-Date: Mon, 11 Aug 2003 10:35:23 -0500
-From: Mark Hatle <fray@mvista.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16184.17299.359649.663018@cargo.ozlabs.ibm.com>
+Date: Tue, 12 Aug 2003 11:32:03 +1000
+From: Paul Mackerras <paulus@samba.org>
 To: Rabeeh Khoury <rabeeh@il.marvell.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: dcbst instruction
-References: <3F37B4F1.2040702@il.marvell.com>
 In-Reply-To: <3F37B4F1.2040702@il.marvell.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+References: <3F37B4F1.2040702@il.marvell.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Rabeeh Khoury wrote:
->
-> Hi All,
->
+Rabeeh Khoury writes:
+
 > I have a question about the PowerPC cache line clean dcbst instruction.
 > Is this instruction used at all in Linux ?
-> If used, where ? kernel ? libc ? special builds of user space
-> applications ?
+> If used, where ? kernel ? libc ? special builds of user space applications ?
 
-It is used in glibc.  I have not seen off the shelf applications using
-it, but I wouldn't be surprised if highly optimized apps did attempt to
-use it.
+It's used in the kernel and in every program that uses shared
+libraries.  I would expect that applications such as Java JIT
+compilers would use it too.
 
-As for the kernel, I would assume it's being used.. but a simple grep
-should tell you if it is.
-
---Mark
-
-> Thanks,
-> Rabeeh
->
->
->
->
->
-
+Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
