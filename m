@@ -1,90 +1,61 @@
-Date: Wed, 28 Apr 1999 13:11:19 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Christian Bauer <Christian.Bauer@uni-mainz.de>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Endianess problems in linuxppc kernel
-In-Reply-To: <199904280958.LAA24884@student.physik.uni-mainz.de>
-Message-ID: <Pine.LNX.4.10.9904281305310.12292-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 28 Apr 1999 08:07:00 -0400
+From: "Paul J. Schinder" <schinder@pobox.com>
+To: Satadru Pramanik <satadru@umich.edu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Rel 5 ssh?
+Message-ID: <19990428080649.A5927@pobox.com>
+References: <Pine.LNX.4.10.9904280104180.19702-100000@beer.pub.umich.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.10.9904280104180.19702-100000@beer.pub.umich.edu>; from Satadru Pramanik on Wed, Apr 28, 1999 at 01:05:57AM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 28 Apr 1999, Christian Bauer wrote:
-> kernel 2.2.6 from ftp.kernel.org, egcs-1.1.2 used to compile the kernel.
-> Linux is booted with BootX 1.0.6. No extra kernel arguments given.
-> X11 server is XF68_FBDev (atyfb).
+On Wed, Apr 28, 1999 at 01:05:57AM -0400, Satadru Pramanik wrote:
+} 
+} I've tried to rebuild the ssh-1.2.6 src.rpm under glibc2.1, and I get
+} these errors:
+} gcc -pipe -c -I.  -I./gmp-2.0.2-ssh-2 -DHAVE_CONFIG_H
+} -DHOST_KEY_FILE=\"/etc/ssh/ssh_host_key\"
+} -DHOST_CONFIG_FILE=\"/etc/ssh/ssh_config\"
+} -DSERVER_CONFIG_FILE=\"/etc/ssh/sshd_config\"
+} -DSSH_PROGRAM=\"/usr/bin/ssh1\" -DETCDIR=\"/etc/ssh\"
+} -DPIDDIR=\"/var/run\" -DSSH_BINDIR=\"/usr/bin\"
+} -DTIS_MAP_FILE=\"/etc/ssh/sshd_tis.map\" -O2 -fsigned-char
+} -I/usr/X11R6/include login.c
+} login.c: In function `record_login':
+} login.c:437: structure has no member named `ut_syslen'
+} login.c:441: structure has no member named `e_termination'
+} login.c:442: structure has no member named `e_exit'
+} login.c:454: `WTMPX_FILE' undeclared (first use in this function)
+} login.c:454: (Each undeclared identifier is reported only once
+} login.c:454: for each function it appears in.)
+} make: *** [login.o] Error 1
+} Bad exit status from /var/tmp/rpm-tmp.85594 (%build)
 
->   Bus  0, device  16, function  0:
->     Unknown class: Apple Unknown device (rev 1).
->       Vendor id=106b. Device id=7.
->       Medium devsel.  Master Capable.  Latency=32.  
->       Non-prefetchable 32 bit memory at 0xf3000000 [0xf3000000].
+There's a patched RPM for 1.2.26 at Yellow Dog
+<ftp://ftp.yellowdoglinux.com/>.  I don't remember the exact location;
+you'll have to hunt around.  It works.
 
-Do you know which Apple chip is this, so it can be added to the pciutils
-database?
+} 
+} 
+} Any thoughts?  Does anybody know how to fix this?  The sshd from this
+} install can't allocate ptys either.
+} 
+} --=
+} satadru pramanik `satadru@umich.edu' www.umich.edu/~satadru
+} Online Editor, The Michigan Daily
+} Yugoslavia declares 'peace' in Kosovo; NATO Airstrikes
+} continue
+} -CNN Interactive, 04/08/99
+} =--
+} 
+} 
 
-> When the MacOS is set to 8 or 32 bit color depth:
-> 
->  - console (8 bit): works fine
->  - X11 in 8 bit: works fine
->  - X11 in 16 bit: colors are right, but everything not drawn by the
->    blitter (mainly icons and some text) looks like every two pixels
->    are swapped (i.e. the byte order looks like it's "3412" when it should
->    be "1234")
->  - X11 in 32 bit: pixel order is right, but colors are wrong. Red and green
->    are swapped, blue is missing. Here, it looks like we have a byte order of
->    "4321". As in 16 bit, things drawn by the blitter are not affected.
-> 
-> When the MacOS is set to 16 bit color depth:
-> 
->  - console (8 bit): colors are right, but the font is garbled. Every two
->    neighbouring pixels are swapped (as in the 16 bit mode described above)
->  - X11 in 8 bit: the same "pixel swap" problems as in the console (again,
->    only with things drawn by the CPU). Moving the mouse pointer or moving
->    windows leaves "droppings" on the screen.
->  - X11 in 16 bit: pixel order is right, but colors are psychedelic. Looks
->    like a byte order of "2143".
->  - X11 in 32 bit: pixel order is right, colors are wrong. Red and blue are
->    swapped, green is missing. Byte order seems to be "3412". Moving the
->    mouse pointer or windows leaves "droppings" as in 8 bit mode.
-> 
-> Most interesting for me is that the behavour depends on what color depth
-> was displayed in MacOS before booting Linux. Clearly, Linux is not
-> initializing something neccessary.
-
-You are using atyfb? What kind of ATI Mach64 chip do you have?
-
-I'd say the wrong values are written to MEM_CNTL. But atyfb always writes the
-same values to MEM_CNTL, i.e. it doesn't depend on what MacOS did before?!?
-
-> 3. Sound output
-> ---------------
-> 
-> Playing a module with "mikmod" results in rhythmic noise (16 bit) or silence
-> (8 bit). When I change every instance of
-> 
->   out_le32(&awacs->byteswap, sound.hard.format != AFMT_S16_BE);
-> 
-> to
-> 
->   out_le32(&awacs->byteswap, sound.hard.format == AFMT_S16_BE);
-> 
-> in "drivers/sound/dmasound.c", both 8 and 16 bit output work fine.
-
-Most module players are not endianness clean. I remember I had to patch mikmod
-to make it work on the Amiga, too.
-
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-
+-- 
+Paul Schinder
+schinder@pobox.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
