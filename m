@@ -1,35 +1,93 @@
-Message-Id: <m117a3x-0000WZC@tri-yann.crf.canon.fr>
-Date: Fri, 23 Jul 1999 09:48:13 +0200 (CEST)
-From: "VALETTE Eric" <valette@crf.canon.fr>
-To: Paul.Mackerras@cs.anu.edu.au
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <199907230241.MAA25100@tango.anu.edu.au> (message from Paul
-	Mackerras on Fri, 23 Jul 1999 12:41:51 +1000)
-Subject: Re: Is the vger 2.2 kernel branch dead
-References: <Pine.LNX.4.10.9907221012590.18625-100000@mercator.cs.kuleuven.ac.be> <m117EQ0-0000WZC@tri-yann.crf.canon.fr> <199907230241.MAA25100@tango.anu.edu.au>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: More commercial interest in Linux PPC
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="----- =_aaaaaaaaaa0"
+Date: Fri, 23 Jul 1999 09:01:46 +0100
+Message-ID: <15687.932716906@MessagingDirect.com>
+From: Chris Ridd <Chris.Ridd@MessagingDirect.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Paul" == Paul Mackerras <paulus@cs.anu.edu.au> writes:
+------- =_aaaaaaaaaa0
+Content-type: text/plain; charset="us-ascii"
+Content-ID: <15684.932716905.1@MessagingDirect.com>
 
-Paul> VALETTE Eric <valette@crf.canon.fr> wrote:
->> So why did I get no single comment on patches I submitted?
->> The Prep IDE handling is broken...
+I don't know if anyone's interested in this announcement, but I guess 
+it al least shows people don't just assume Linux == Intel.
 
-Paul> The trouble is that "PReP" is such an ill-defined idea.  I was
-Paul> interested to see your patch, but I assume that some other PReP
-Paul> machines need it the way it is without your patch.
+Chris
 
-Without the patch you can still install and run linux
-from PPCBUG using the Network BOot command (NBO) and using
-local IDE disks but you fail to use the "pboot;a" booting 
-directly from hard disk (or at power on)...
+------- =_aaaaaaaaaa0
+Content-type: message/rfc822
 
-AND more annoying, of course you must reinstall your disk
-if you formatted it using the non correct ide byte swap handling
+Return-Path: <acrobat@blueworld.com>
+Delivery-Date: Thu, 22 Jul 1999 23:12:00 +0100
+Received: from rembrandt.esys.ca by woozle.isode.com (local) with ESMTP;
+          Thu, 22 Jul 1999 23:11:57 +0100
+Received: from mail.blueworld.com by rembrandt.esys.ca (remote) with ESMTP;
+          Thu, 22 Jul 1999 16:11:55 -0700
+Received: from lists.blueworld.com (lists.blueworld.com [209.19.18.130])
+          by mail.blueworld.com (8.9.3/8.9.3) with SMTP id PAA05852;
+          Thu, 22 Jul 1999 15:03:07 -0700
+Received: from digapp.com by lists.blueworld.com with SMTP;
+          Thu, 22 Jul 1999 15:03:03 -0700
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+X-Sender: mgavin_list@smtp.digapp.com
+Message-Id: <v04020a05b3bd44bc4a3f@[38.164.135.200]>
+In-Reply-To: <19990722194235.52244.qmail@hotmail.com>
+Date: Thu, 22 Jul 1999 18:02:23 -0400
+To: Acrobat Talk <acrobat@blueworld.com>
+From: Mark Gavin <mgavin_list@digapp.com>
+Subject: PDF Server based applications on Linux
+Reply-To: Acrobat Talk <acrobat@blueworld.com>
+Sender: acrobat <acrobat@blueworld.com>
+Precedence: Bulk
+List-Software: LetterRip Pro 3.0.4 by Fog City Software, Inc.
+List-Subscribe: <mailto:acrobat-on@blueworld.com>
+List-Digest: <mailto:acrobat-digest@blueworld.com>
+List-Unsubscribe: <mailto:acrobat-off@blueworld.com>
+List-Administrator: <mailto:listmaster@blueworld.com>
+List-Archives: <http://listsearch.blueworld.com/acrobattalksearch.lasso>
+List-Guidelines: <http://www.blueworld.com/blueworld/lists/acrobat.html>
 
--- eric
+
+We are in the process of porting our existing server based applications
+(FDFMerge, StampPDF Batch and AppendPDF) to Linux.  We intend to support
+Red Hat Linux 6.0 running on Intel Pentium processors.
+
+We are debating whether to support other processors running Linux.  For
+example:
+
+	Dec Alpha	Compaq
+	Sun Sparc	Sun Microsystems
+	Cobalt MIPS	Cobalt Networks
+	PowerPC		IBM or Apple
+
+We would appreciate feedback from people who are currently running Linux or
+who expect to be running Linux in the near future.
+
+This question is not really relevant to the list and I would appreciate any
+feedback be sent to me directly at mailto:mgavin@digapp.com.
+
+Thank you.
+
+
+Mark Gavin
+Vice President, Software Development
+Digital Applications, Inc.
+215 East Providence Road
+Aldan, PA 19018-4129
+(610) 284-4006
+http://www.digapp.com
+
+
+-----------------------------------------------------------------------
+To Unsubscribe: <mailto:acrobat-off@blueworld.com>
+Archives : <http://listsearch.blueworld.com/acrobattalksearch.lasso>
+
+------- =_aaaaaaaaaa0--
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
