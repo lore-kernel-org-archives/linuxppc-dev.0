@@ -1,27 +1,37 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: mschmid@ascona.de
-Subject: Is CONFIG_8xx the right setting for MPC8240
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF6B040367.6AA70D4B-ONC1256A48.003D8A75@ascona.de>
-Date: Thu, 10 May 2001 12:23:09 +0100
+From: zjuzhou@163.net
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-Id: <3AFA9951.23079@bjapp3>
+Date: Thu, 10 May 2001 21:36:17 +0800 (CST)
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: About LCD driver?
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hello,
+	My lcd device is via MPC850 parport(because my lcd display screen is small).I write my own driver for it.Here is my do.
 
-i try to get linux running on a board with a MPC8240 CPU (own board
-design).
-In the file mm/init.c there is comment that the 8xx CPUs has no BATs, but
-the MPC8240 has BATs and i want to use them.
-Is it wrong to select CONFIG_8xx for a MPC8240 CPU ?
-I know that the sandpoint board or one of them also uses a MPC8240 but i
-don't know if CONFIG_8xx is used for that sandpoint board.
+	in .config file,I add
+	CONFIG_PLCD=y
 
-Regards
-Mathias
+
+	in drivers/char/Makefile,I add
+	ifeq(($CONFIG_PLCD),y)
+		L_OBJS+=plcd.o
+	endif
+
+
+	in driver/char/mem.c,I add
+	#ifdef CONFIG_PLCD
+		plcd_init();	/*in my plcd.c file*/
+	#endif
+
+	At last,i add a new file plcd.c in drivers/char/ .I make zImage again.
+I fount plcd.o in drivers/char/.
+	In my driver plcd_init ,I use printk output some information,
+When kernel is run,no information was seen.Writing driver like me is right?
+I thank i should see device in /proc/devices,but i could not.I have fill the
+each elemnet of struct file_operations.There is noting in boot log,and nothing in /proc/devices.What can i do?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
