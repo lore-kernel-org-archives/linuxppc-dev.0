@@ -1,73 +1,43 @@
-From: ghannon@cspi.com
-To: "li" <slowforce@21cn.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <85256D64.00487C65.00@pine.cspi.com>
-Date: Tue, 15 Jul 2003 09:31:04 -0400
-Subject: Re: program update
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: Jeff Kowing <jeffrey.d.kowing@nasa.gov>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16148.1141.101138.214108@igor.jsc.nasa.gov>
+Date: Tue, 15 Jul 2003 08:41:09 -0500
+To: "Brian Padalino" <bpadalino@perigee.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: DENX ELDK Kernel
+In-Reply-To: <DGEEIPOFGGPOACEFBGGCOEGKCAAA.bpadalino@perigee.com>
+References: <DGEEIPOFGGPOACEFBGGCOEGKCAAA.bpadalino@perigee.com>
+Reply-To: jeffrey.d.kowing@nasa.gov
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Li,
-     I think you mean to say that you would like to keep the application in
-flash,
-in some sort of filesystem where it can be replaced easily.  If that is the
-case, see the
-MTD maps, and the JFFS2 filesystem.   If you create a partition map and
-leave
-room in flash for a partition to hold your application, then you format the
-flash partition
-once (or not at all?)  and create the filesystem on it.  From then on you
-can set up a
-mount point and just copy the new updated program to that area, and run it
-like any
-command.    It also automatically compresses data as you copy it in, which
-is nice.
+Brian Padalino writes:
+ > I understand that DENX ELDK is always being worked on, and I have seen that
+ > Wolfgang Denk is amazingly active in this community, so I guess my question
 
-     Having a ramdisk to contain your application means you would be using
-up more ram which might be needed to run the program, and the program would
-be gone
-when power is cycled.    I don't think that's what you want is it?
+He's a mythological figure!  I think he is really secretly several
+people working as one incredible unit of productivity.
 
-     If you are building your kernel from the linuxppc_2_4_devel tree, see
-drivers/mtd/maps/
-arctic-mtd.c.   This is a good example of an easy partitioning scheme that
-leaves room
-for kernel, romfs and a flash filesystem.
+ > is -- can I use the linux-ppc kernel patches for the latest 2.4 kernels
+ > instead of DENX's?  Should this requirement of the kernel needing to be
+ > easily upgradable to any kernel reevaluated?
 
-     See also the JFFS HOWTO for more details.  I'm not sure how up-to-date
-this is.
- http://ftp.linux.org.uk/pub/people/dwmw2/mtd/cvs/mtd/mtd-jffs-HOWTO.txt
+Others are more qualified to answer this than me, but, heck, that
+never stopped me before!  Basically, the answer is yes - at least I
+have been using the ELDK with a linux-2.4.20 kernel (from kernel.org).
+The key point to remember is that you should always compile user
+applications against the Linux include files that glibc (and all the
+rest of the target ELDK apps) are built against - Do NOT compile your
+user applications against the newer Linux kernel.
 
-Good Luck,
-Gary
+Regards,
+Jeff
 
-
-
-
-
-
-"li" <slowforce@21cn.com> on 07/13/2003 11:53:29 PM
-
-To:   linuxppc-embedded@lists.linuxppc.org
-cc:    (bcc: Gary Hannon/CSP)
-Subject:  program update
-
-
-
-
-
-Hello all,
-In our system(based on MPC850 and ppc linux), i need to update the
-application program frequently. ppcboot, kernel image and
-filesystem(ramdisk) are all programmed into Flash memory. i want to make
-another ramdisk  for application program, but how?
-Any resourece about it?
-Thanks in advance!
-Best Regards!
-Li
-
+--
+Jeff Kowing <jeffrey.d.kowing@nasa.gov>
+All opinions expressed are my own and not of my employer.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
