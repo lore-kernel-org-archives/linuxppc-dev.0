@@ -1,34 +1,33 @@
-Message-ID: <3BF911C2.C31FC6C9@mvista.com>
-Date: Mon, 19 Nov 2001 08:05:54 -0600
-From: Mark Hatle <fray@mvista.com>
-MIME-Version: 1.0
-To: Sarnath Kannan <sparc64@rediffmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Howto build ppc_82xx-gcc from GNU sources ?
-References: <20011119105421.1470.qmail@mailweb29.rediffmail.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <5.1.0.14.0.20011120081828.03bcedb0@pop.gmx.de>
+Date: Tue, 20 Nov 2001 08:31:28 +0800
+To: linuxppc-embedded@lists.linuxppc.org
+From: Michael Habermann <MHabermann@gmx.de>
+Subject: Re: About floating point exception!
+In-Reply-To: <20011119091232.84575.qmail@web15004.mail.bjs.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Look at the spec file for configuration options.  The 82xx is setup by
-default to optimize for the 603(EC) processor.  (Which is the core of
-the 82xx processor.)
+At 05:12 PM 11/19/2001 +0800, =?gb2312?q?Dross=20Zhou?= wrote:
+>  Here is dump message:
+>  Oops: Kernel Mode Software FPU Emulation, sig: 8
+>  NIP: 00001FFC XER: 00000000 LR: 00000590 SP:
+>  C05DDBC0
 
---Mark
+The floating point exception is to emulate floating point machine
+instructions on processors without floating-point unit. Each time the
+processors tries to execute a instruction it doesn't know, this exception
+is thrown to let the operating system do a software emulation.
 
-Sarnath Kannan wrote:
->
-> Hi All,
->  Whats the diff between "ppc_82xx-gcc" and the
-> onee GNU provides for PPC compilation ?
-> Can we build a 82xx compiler from the GCC sources ?
-> Why exactly we need a seperate 82xx compiler ?
-> Why not a ppC compiler ?
->
-> Thanx for any help
->
-> Sarnath
->
+In your case, this means that this unknown instruction has been found at
+the instruction pointer (NIP) 00001FFC. If it is really a floating-point
+instruction and the FP-emulation is enabled in the kernel, you don't get an
+error message. So at 0x1ffc must be an completely unknown intruction. This
+is often caused by accessing invalid memory.
+
+Probably you have a problem with your device driver or with the signal handler.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
