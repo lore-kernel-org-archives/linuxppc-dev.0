@@ -1,94 +1,65 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3BD0616A.B5FE43C0@midrivers.com>
-Date: Fri, 19 Oct 2001 11:22:50 -0600
-From: Mark Pilon <mpilon@midrivers.com>
-MIME-Version: 1.0
+From: ckrobins@rockwellcollins.com
+Subject: SCSI Host Adapter configuration question
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: debugging ppc4xx VM, part 2
-Content-Type: text/plain; charset=us-ascii
+Date: Fri, 19 Oct 2001 14:02:42 -0500
+Message-ID: <OFC683C7DD.17A98E05-ON86256AEA.00647739@collins.rockwell.com>
+MIME-Version: 1.0
+Content-type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I left out some of the things I've done:
+Can a SYM53C825a SCSI host adapter be configured to talk to a wide SCSI
+disk drive using a narrow SCSI interconnect.
 
-I'm at the point of trying to bring a linux kernel (mvista
-2.4.2 for ppc4xx) and am running into
-a problem with debugging virtual memory:
+I have a Motorola MVME-3604 processor card with the MVME-712M transition
+      module attached.    The primary SCSI host
+adapter chip for the '3604 is a SYM53C825A and its SCSI interface is routed
+      to the '712 module as a narrow SCSI bus
+terminating with a 50-pin Centronics connector.
 
-per the BDI2000 user manual 'embedded linux MMU support` I've added
-the entries to our bdi config file:
+I am trying to add an external SCSI disk to this system as a second
+      filesystem - the card boots from a ramdisk.
 
-[INIT]
-.
-.
-.
-; zero out the page table base
-WM32    0x000000f0  0x00000000
+I have tried 3 different external SCSI disks with this and 2 of the 3 fail
+      because of a SCSI parity error.
 
-[TARGET]
-.
-.
-.
-MMU         XLAT        ; enable mmu translation, page table base @ 0xf0
-PTBASE      0x000000f0
+The 2 disks that generate SCSI parity errors are a Seagate ST32550W and a
+      Seagate ST318405LW
+The disk that doesn't generate SCSI parity errors is a Seagate ST34371N
 
-I've patched the kernel to spin in a simple loop, waiting on a var
-to be set != 0 before continuing ... it's a way to get the kernel
-uncompressed and started, but without proceeding.  this func is
-called before doing the 'rfi' to get to the first thread.
+After checking these on Seagate's website, I find that the disk that works
+      has a narrow SCSI interface (the N suffix) and
+the two that don't are wide SCSI interfaces.
 
-I connect w/ gdb (hhl gdb 5.0) and set a breakpoint in start_kernel()
--- clear the above loop var, continue, and the breakpoint is hit.
+I have checked the cabling and terminations carefully and have, where it
+      was possible, used the same cables and
+terminations in both the working and non-working setups.
 
-however, if I step or next, gdb never comes back; if I break out
-and 'where' it looks like I've taken a fault ...
+My SCSI driver is the sym53c8xx ver 1.3g and the linux distribution is
+      2.2.12 modified with Gabriel Paubert's patches for
+the MVME2604 (the 3604's predecessor)
 
-I think I've set everything up for mmu support in the bdi --
-there was 1 statement in the user's manual to:
-'If not automatically done by the kernel, setup the page table pointers
-for the BDI.' -- I don't know from this what to check or what to do.
+This paragraph is speculation on my part - if it doesn't work this way
+      please don't be afraid to set me straight.  -  I believe
+that the autoconfiguration being done at boot is assuming that if my disk
+      has a wide SCSI interface and my host
+adapter can support a wide SCSI bus, then it should configure for wide
+      SCSI.    Problem is, the interconnection is only
+8 bit, not 16, and I can imagine that a parity error is easy to get if you
+      can only read half of the bus.     The narrow SCSI
+disk would cause the host adapter to configure for narrow SCSI and
+      therefore the parity test would pass.
 
-a complete debug session:
-(gdb) 1     <connect-to-target macro>
-gdb_spin () at serial.c:5857
-5857                 i++ ) {
-(gdb) set gdb_spin_exit = 1
-(gdb) p $pc
-$1 = 0xc009b158
-(gdb) b start_kernel
-Breakpoint 1 at 0xc012f660: file init/main.c, line 534.
-(gdb) c
-Continuing.
+Here's the question:
 
-Breakpoint 1, start_kernel () at init/main.c:534
-534             printk(linux_banner);
-(gdb) n
-< I hit ctrl/C here>
-Program received signal SIGSTOP, Stopped (signal).
-panic (fmt=0x0) at panic.c:100
-100             for(;;) {
-(gdb) where
-#0  panic (fmt=0x0) at panic.c:100
-#1  0xc0016694 in do_exit (code=0xb) at exit.c:438
-#2  0xc0002bb4 in _exception (signr=0xc00f16bc, regs=0x0) at traps.c:86
-#3  0xc000ccc0 in bad_page_fault (regs=0xc011ef30, address=0x0, sig=0xb)
-    at fault.c:235
-#4  0xc000cb94 in do_page_fault (regs=0xc011ef30, address=0xc011ef30,
-    error_code=0x1030) at fault.c:186
-#5  0xc0002980 in ret_from_except () at init/main.c:801
-#6  0xc000d7ac in ioremap (addr=0x9030, size=0x0) at ioremap.c:148
-#7  0xc0002334 in start_here ()
-(gdb)
+Can I change the driver's parameters to force it to configure a narrow SCSI
+      bus regardless of the disk's interface type?
 
+Thanks for your help
 
---
-Mark Pilon
+Regards,
+Craig Robinson  (ckrobins@rockwellcollins.com)
 
-Minolta-QMS
-P.O. Box 37
-Fallon, MT.  59326-0037
-
-1-406-853-0433
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
