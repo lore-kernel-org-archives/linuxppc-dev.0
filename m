@@ -1,27 +1,26 @@
-Message-Id: <1068474750.1252280932@as03.coolgoose.com>
-From: "Nikhil Bhargava" <nikhilbhargav_nsit@coolgoose.com>
+Message-ID: <3FAFABF0.6040000@2net.co.uk>
+Date: Mon, 10 Nov 2003 15:17:04 +0000
+From: Chris Simmonds <chris@2net.co.uk>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Cc: nikhil@cdotp.ernet.in
-Subject: information about a a board
-Date: Mon, 10 Nov 2003 06:32:30 -0800
+Subject: USB for mpc8270/80
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hello friends,
+Hi,
 
-I am a new member of the forum.
+Has anyone got a USB driver for the SCC on the mpc8270/8280? Anyone
+interested in having one if one doesn't exist already?
 
-I am looking for a board having POWERPC QUICC-II series mpc 8266 as
-target with PCI interface besides other standard features. The board
-should have arunning boot loader on it so that i could port any linux
-real time variant on it and test my protocol stack. Paralleling my
-group is developing its own custom board.
+Chris.
 
-Thank for your time and concern.
+--
+Chris Simmonds                        2net Limited
+chris@2net.co.uk                      http://www.2net.co.uk/
+Tel:   +44 (0)1962 869003             Fax:   +44 (0)870 056 7556
+"If it's not connected, it's not effective"(tm)
 
-cheers,
-
-nikhil bhargava
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
