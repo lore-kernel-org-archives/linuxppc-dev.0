@@ -1,48 +1,30 @@
-Date: Wed, 17 Apr 2002 20:53:54 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: ATI 7000 and dual-monitor X? (was Re: 9600 maturity?)
-To: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.BSF.4.44.0204170001540.61655-100000@shell.unixbox.com>
+From: benh@kernel.crashing.org
+To: Matthias Grimm <joker@cymes.de>
+Cc: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: muteing speakers if headphones were plugged in?
+Date: Wed, 17 Apr 2002 19:56:26 +0100
+Message-Id: <20020417185626.18987@mailhost.mipsys.com>
+In-Reply-To: <3CBD9361.4060203@cymes.de>
+References: <3CBD9361.4060203@cymes.de>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
-Message-Id: <E16xuZ5-00006V-00@piglet.grunz.lu>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> On Wed, 17 Apr 2002, Michel Lanners wrote:
 >
->> Can somebody please teach XFree to leave those VGA ports alone on PPC?
->> Are they of _any_ use on any PPC machine?
->
-> Yes, they are of use on Macs (I assume you meant pmacs instead of PPC,
-> cause LOTS of ppc's use vga).  How else would u program a VGA card on a
-> mac without use of the VGA ports?  The solution is for XFree86 to bang the
-> proper IO space when there are multiple busses, this is being worked on.
->
->
-> ani
+>Is someone working on that issue to implement it for the other chipsets?
 
-> Any PPC \not \in PowerMac?
->
-> Gr{oetje,eeting}s,
->
-> 						Geert
+I think the Alsa driver can work on other chipsets. I don't know if
+someone is working on it for dmasound, I don't think so.
 
-Hrmpff... Should have switched on brain before hitting 'reply'. Putting
-hand in mouth and shutting up :-[
+On these (awacs, burgundy), I think you don't have to register a second
+interrupt, the main chip interrupt will be called when the jack state
+changes, you can probably act from there. A good source of info is the
+darwin source code which contains source code for all of Apple sound
+drivers.
 
-Cheers
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
