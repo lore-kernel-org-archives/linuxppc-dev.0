@@ -1,8 +1,8 @@
-Message-Id: <200203290120.JAA19713@isdn.iscas.ac.cn>
-Date: Fri, 29 Mar 2002 9:27:12 +0800
+Message-Id: <200203290132.JAA19802@isdn.iscas.ac.cn>
+Date: Fri, 29 Mar 2002 9:38:19 +0800
 From: weiwu <weiwu@isdn.iscas.ac.cn>
 To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: linuxppc-embedded@lists.linuxppc.org
+Subject: UPM works for 16MB PC SDRAM but fails for 32MB memory
 Mime-Version: 1.0
 Content-Type: text/plain;
       charset="GB2312"
