@@ -1,45 +1,32 @@
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: ibm_ocp_enet.c - PHY implementation requirements?
+Date: Tue, 7 May 2002 07:16:17 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFEEJODGAA.acurtis@onz.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Subject: RE: Powerbook
-Date: Sun, 5 May 2002 14:16:59 -0000
-Message-ID: <EADB10BAC266A14A85ECBF8686A73E31937F1E@kolkrabbi.flaga.is>
-From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
-To: "Paul Mackerras" <paulus@samba.org>,
-	"Joern Nettingsmeier" <nettings@folkwang-hochschule.de>
-Cc: <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> -----Original Message-----
-> From: Paul Mackerras [mailto:paulus@samba.org]
-> Sent: 3. maí 2002 22:56
-> To: Joern Nettingsmeier
-> Cc: Kári Davíðsson; linuxppc-dev@lists.linuxppc.org
-> Subject: Re: Powerbook
->
->
-> Joern Nettingsmeier writes:
->
-> > <asbestos mode="full body protection">
-> > if you're in for quick compilation, get an intel machine.
-> > </asbestos>
->
-> No, if you're in for quick compilation, compile a kernel for i386
-> rather than a kernel for ppc, for some reason gcc is quicker at
-> producing x86 output than ppc output, i.e. the x86 compilation
-> involves less computation.
+We have an 405GP design, very similar to the Walnut LSP. One of the major
+differences is that we have a BroadCom 9-port switch instead of a dedicated
+PHY for Ethernet. Supporting the switch is much easier than a dedicated PHY
+because you can always assume:  100Mb, Full-Duplex and you do not have to
+handle disconnect and mode change interrupts. The problem is that the OCP
+Ethernet implementation has become much more complex and it is not obvious
+what must be supported when adding a new interface and what could be a stub.
+(and its expected result)
 
-It has something to do with RISC versus CISC architectures, i.e. RISC
-offloads much of scheduling (?) to the compiler....
-My old trusted Alpha had the same "problem" when I was using it for
-development.
-It is also very visible if you use cross compiler on an PIII to generate
-ppc code (like I am doing now). The same code compiles significantly
-slower
-if cross compiled rather than natively compiled for the PIII.
+Another issue is that the switch supports both the MII and SPI interfaces.
+These are mutually exclusive, determined by first access to the device. Our
+design requires the use of the SPI interface. All currently supported PHY
+are MII, which is expected. Do you forsee any problems using SPI within
+ibm_ocp_phy.c?
 
-K.D.
+TIA
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
