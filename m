@@ -1,32 +1,39 @@
-Message-ID: <39E73C23.650F6BE2@student.ethz.ch>
-Date: Fri, 13 Oct 2000 18:45:23 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: bk_2_3: USB mouse weirdness
-Content-Type: text/plain; charset=iso-8859-1
+Date: Fri, 13 Oct 2000 13:16:35 -0400
+From: Josh Huber <huber@mclx.com>
+To: Michel D?nzer <daenzerm@student.ethz.ch>
+Cc: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: dual head r128
+Message-ID: <20001013131623.E3387@missioncriticallinux.com>
+References: <20001011141722.A1437@missioncriticallinux.com> <39E4B4D0.FA62D929@student.ethz.ch> <20001011145249.B1437@missioncriticallinux.com> <39E4BAD4.E78B4E3B@student.ethz.ch> <20001011152633.A1614@missioncriticallinux.com> <39E4EE41.9E708472@student.ethz.ch>
+Mime-Version: 1.0
+In-Reply-To: <39E4EE41.9E708472@student.ethz.ch>; from daenzerm@student.ethz.ch on Thu, Oct 12, 2000 at 12:48:33AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I finally upgraded my Pismo to 128M RAM, and it really rocks with bitkeeper's
-2.4.0-test10-pre1 :)
+On Thu, Oct 12, 2000 at 12:48:33AM +0200, Michel D?nzer wrote:
+> > I'll also upgrade to 2.4 to see if that makes a difference.
+> >
+> > btw, dmesg shows that the fbcon system only detected one card -- the
+> > AGP one.
+>
+> That should work better with a 2.4 kernel. Anyway, have you used two
+> video=aty128fb: ?
 
+I tried this, and also tried the 2.4 kernel, with no luck.  2.4 spit
+out some messages about pci assignments, but other than that, no other
+framebuffer devices were configured, and X didn't function as
+expected.
 
-However, there is one oddity: When I quit my GNOME session, the USB mouse
-doesn't work anymore. The same if I switch from X to console. Un- and
-replugging the mouse resurrects it. The trackpad works fine all the time, also
-via the input layer.
+But, someone mentioned later in this thread, there might be a problem
+with using a PC video card on ppc because of #ifdef __powerpc__'s in
+ani patches?
 
-
-Not tragic, but annoying.
-
-
-Michel
-
+Thanks for the help,
 
 --
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
+Josh
+| huber@mclx.com |
+1024D/6B21489A 61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
