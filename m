@@ -1,32 +1,46 @@
-Date: Tue, 9 Mar 1999 10:05:40 -0500 (EST)
-From: Tom Rini <tmrini@ntplx.net>
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-cc: "G. [iso-8859-1] Laurs" <laures@hp1.esiea.fr>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: No-IDE kernel compile link errors
-In-Reply-To: <Pine.LNX.3.96L.990309092723.1664A-100000@unix47.andrew.cmu.edu>
-Message-ID: <Pine.SUN.4.02.9903091000001.15788-100000@sea.ntplx.net>
+Date: Tue, 9 Mar 1999 11:19:35 -0500 (EST)
+From: "P. Barrette" <barretp@mcmail.cis.McMaster.CA>
+To: LinuxPPC-Dev@associate.com
+cc: linuxppc-dev@lists.linuxppc.org, root@associate.com
+Subject: Re: Sounds & screen on 7200/90 w/kernel 2.2.2
+In-Reply-To: <19990309024322.15026.qmail@associate.com>
+Message-ID: <Pine.SOL.3.96.990309111851.12061A-100000@mcmail.cis.McMaster.CA>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 9 Mar 1999, Hollis R Blanchard wrote:
+the only message regarding "platinum" I have is fb0: platinum frame buffer
+device.
 
- However, since I really don't want anything to do with IDE in my
-kernel, I'll
-> hope this gets taken care of - or do the NMT patches mentioned fix it? FWIW, I
-> got my sources from NMT (the 3/7 vger snapshot).
+--------
+Paul Barrette
+Ph.D. Candidate Classics (Latin Literature)
+System Administrator
+McMaster University
 
-The NMT snapshots are just what's in vger.  This patch is not.  Goto the
-patch/pmac-ide-module or ide-module dir, grab that and try again.  I
-think this is the same thing I ran into when I was running the iMac w/
-nfsroot and had ide modularized for fun.
+On 8 Mar 1999 LinuxPPC-Dev@associate.com wrote:
 
---
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+> 
+> Hi,
+> 
+> I just booted Linux kernel 2.2.2 on a 7200/90 and it's looking fairly good
+> except for two problems.  First, I have a line across most of the screen
+> about 2/3 down.  It's 1-2 pixels high.  This was in the (once-blue) boot screen
+> as well as in the Xpmac display - it never goes away.
+> 
+> In dmesg, I see: platinum_set_var: Not activating.
+> 
+> Secondly, some of the sounds I have are very scratchy now.  Volume seems to
+> be messed up.  I was hoping KDE 1.1pre sounds would work under this kernel,
+> but no luck.  I'm using the RPMS someone made for R4.
+> 
+> Thanks much,
+> 
+> glen_stewart@associate.com
+> 
+> 
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
