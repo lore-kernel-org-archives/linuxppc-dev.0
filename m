@@ -1,36 +1,76 @@
-Message-ID: <38899196.9B46B7F4@denise.shiny.it>
-Date: Sat, 22 Jan 2000 12:16:38 +0100
-From: Giuliano Pochini <pochini@denise.shiny.it>
-MIME-Version: 1.0
+Date: Sat, 22 Jan 2000 13:21:30 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
 To: Robert Neugebauer <rneugeba@undergrad.math.uwaterloo.ca>
-CC: linuxppc-dev@lists.linuxppc.org
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: RS6000 to G4 assembly changes
-References: <Pine.SOL.3.96.1000121133401.17001B-100000@bacon.math.uwaterloo.ca>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.SOL.3.96.1000122013827.17059B-100000@fitch.math.uwaterloo.ca>
+Message-ID: <Pine.HPX.4.10.10001221230260.18916-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-> I am trying to compile a compiler used by my university for my linuxppc
-> machine. The compiler supports various architecture including rs6000 and i
-> 386 linux.
 
-gcc ?
+On Sat, 22 Jan 2000, Robert Neugebauer wrote:
 
-> By my limited understanding, rs6000 assembler is very similar to powerpc
-> assembler
+>
+> I am not trying to build a cross compiler, I am not trying to build GCC.
+> My course at university uses its own compiler called uC++ (Micro C++).
+>
+> The compiler thus far only has the following targets that work:
+>         dmake sun-sparc-sunos
+>         dmake sun-sparc-svr4
+>         dmake sun-m68k-sunos
+>         dmake dec-ultrix-mips
+>         dmake dec-alpha
+>         dmake sgi-mips-r4000
+>         dmake sgi-mips-r3000
+>         dmake ibm-rs6000
+>         dmake hp-hppa
+>         dmake pc-i386-linux
+>         dmake gizmo
+>
+> By my knowledge rs6000 is a RISC based architecture, thus I tried to build
+> uC++ using the target ibm-rs6000. This resulted in an unrecognized opcode
+> movl during compilation.
 
-RS6000 computers use PowerPC processors. I don't know if Power processors
-(64 bit version of ppc) are supported.
+Then your compiler is seriously buggy since there is no such instruction
+in the RS6000 or PPC assembly. There significant differences between
+the architectures (for application level code) are:
 
+a) multiply and divides are different (not even the same opcode for most
+of them), the RS6000 has an MQ register for remainders and widening
+multiplies. The PPC does not have this register.
 
-> Anyway, in attempting to compile
-> this, gcc complains about an unrecognized opcode movl.
+b) all the extended shifts in the RS6000 which use the MQ register do not
+exist in the PPC architecture, so you have to synthesize multiword shifts
+(how to do this is documented in an appendix of the programmer's
+environment manual, see below).
 
-"movl" is an x86 opcode. ppc have l* and st*.
+c) a few other oddball RS6000 instructions do not exist in the PPC:
+lscbx (that one was indeed very odd), doz, dozi, abs, nabs, rlmi, maskir,
+maskg, and I certainly forget a few more...
 
-Bye.
+d) the PPC has a full complement of single precision floating point
+operations, the RS6000 does not
+
+For a C compiler, a) is very important, b) affects only compilers which
+support 64 bit operations, c) the only critical instruction is abs which
+can be replaced with a simple sequence and d) can safely be ignored by
+performing all FP operations in double precision.
+
+For more information you can download the programming environments
+manuals from IBM or Motorola website:
+
+http://www.chips.ibm.com/techlib/products/powerpc/manuals/
+http://www.motorola.com/SPS/PowerPC/teksupport/teklibrary/index.html
+
+and if you are interested in improving your compiler, you might find the
+compiler writer's guide (link on IBM's website) interesting.
+
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
