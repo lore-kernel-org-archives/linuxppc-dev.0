@@ -1,34 +1,62 @@
-Date: Mon, 12 Apr 1999 14:41:31 -0400 (EDT)
-From: Alexander Derbes <acd@po.cwru.edu>
+Date: Mon, 12 Apr 1999 15:49:20 -0500
+Message-Id: <199904122049.PAA27518@kuttanna.ibmoto.com>
+From: Edward Swarthout <swarthou@ibmoto.com>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Crashing My PowerbookG3-Series when writing to the serial port
-In-Reply-To: <199904120448.OAA20256@tango.anu.edu.au>
-Message-ID: <Pine.LNX.4.04.9904121430510.15400-100000@discordia.student.cwru.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-reply-to: message from Paul Mackerras on Mon, 12 Apr 1999 14:48:17 +1000
+Subject: Re: PPC Kernel Gurus Help?
+References: 
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-I think I have found a bug, However, I am not sure how to go about
-isolating it.  
+>  Date: Mon, 12 Apr 1999 14:48:17 +1000
+>  From: Paul Mackerras <paulus@cs.anu.edu.au>
+>
+>  > >...                Also there examples only use isync and not sync but
+>  > >point out that for SMP, you should use sync.  They also only use sync
+>  > >before and after the routines and not in the middle.
+>  > >
+>  > >So are the isync and syncs needed?
+>
+>  I don't understand why an isync should be needed.  I believe a sync is
+>  only needed if you want a constraint on the order in which other CPUs
+>  will see the atomic operation compared to other memory references (I'm
+>  not dogmatic about that, I could be wrong, but that's my current
+>  understanding.)
+>
+>  Paul.
 
-I have written a little piece of C code which opens the serial port,
-configures it to 8bits No Parity and 2 Stop bits at 9600 Baud, and then
-write a few bytes and closes the serial port.  The code is being used to
-send packets to an external device.
+I believe this discussion comes from the example in appendix E.4 "Lock
+Acquisition and Release".  I think the example could use a better
+wording to motivate the need for the isync.  It simply makes the
+statement: "The processor must not access the shared resource until it
+sets the lock".  A better wording: "IF the lock must prevent the
+processor from accessing the shared resource until the successful lock
+is acquired, a barrier needs to be created between the stwcx and the
+access".
 
-The code will sometimes hang the powerbook.  It seems that hangs occur
-only directly after I have started apache.  The serial program is called
-as a CGI by apache so that packets can be written to the device via the
-web.
+The lock code looks like:
 
-Because the machine is totally hung when the problem shows up I do not
-know how to go about debugging it.  Any ideas?
+  lock: call test_and_set until lock acquired (lwarx/stwcx loop)
+        isync
+        access_shared_location
 
--acd
+Without the isync, nothing prevents the access_shared_location to
+happen before the lwarx/stwcx loop returns.  To prevent the access, a
+dependency between the stwcx and the access must be created.  Three
+ways (with the isync option being the best):
 
+1. isync - instruction-stream is blocked until successful stwcx
+2. sync  - memory access is blocked until successful stwcx
+3. operand dependency - delay loading register containing shared address
+           until lock is acquired.
+
+Only one option needs to be picked.
+
+-Ed Swarthout
+Somerset Design Center
+Motorola 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
