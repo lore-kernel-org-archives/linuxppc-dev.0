@@ -1,150 +1,191 @@
-Subject: Re: userspace testing an ati fb driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: random <eger-temp_addy-1071049257.71afe9@theboonies.us>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <Pine.LNX.4.50L0.0312030435240.3077-100000@rosencrantz.pok.ibm.com>
-References: 
-	 <Pine.LNX.4.50L0.0312030435240.3077-100000@rosencrantz.pok.ibm.com>
-Content-Type: multipart/mixed; boundary="=-bqIrYqwt3hkdlGVO1fsy"
-Message-Id: <1070496406.3672.19.camel@gaston>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Wed, 3 Dec 2003 17:35:53 -0700
+To: Wolfgang Denk <wd@denx.de>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: MPC5200 Patches
+Message-ID: <20031204003552.GA27528@zenos.farnsworth.org>
+References: <20031203182803.GA10936@zenos.farnsworth.org> <20031203185310.19A48C5F5F@atlas.denx.de>
 Mime-Version: 1.0
-Date: Thu, 04 Dec 2003 11:06:46 +1100
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20031203185310.19A48C5F5F@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---=-bqIrYqwt3hkdlGVO1fsy
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+On Wed, Dec 03, 2003 at 07:53:05PM +0100, Wolfgang Denk wrote:
+> Can you please resend the patch as unified (or context)  diff?
 
-On Wed, 2003-12-03 at 20:44, random wrote:
-> On my Powerbook, /proc/iomem lists 0xb0000000-0xb000ffff as the location
-> of the programming registers for my ATI Radeon R250 Lf.
->
-> This seems to be the same spot XFree86 finds in its log:
-> (II) RADEON(0): MMIO registers at 0xb0000000
->
-> I've been trying to mimic the XFree86 fb accel code to make a Linux 2.6 fb
-> port, but i've had little luck. To try to pare down the new code, I've
-> written a userspace program which will open "/dev/mem" and then mmap in
-> this file starting at '0xb0000000' going for 0x10000 bytes.  Poking at the
-> "registers" there seems to have no effect; reading from these "registers"
-> (for example, to verify the engine idling) indicates that I'm perhaps
-> reading from the wrong place in memory, i.e. the engine never indicates
-> that it's idle.  Any ideas?
+Oops.
 
-That should work, make sure you are using proper memory barriers for
-your IO accesses though (eieio instructions)
+Thanks,
+-Dale
 
-Enclosed is an example of a little program I use to dump the radeon
-registers
+===== arch/ppc/5xxx_io/bestcomm/Makefile 1.1 vs edited =====
+--- 1.1/arch/ppc/5xxx_io/bestcomm/Makefile	Wed Nov 26 07:41:36 2003
++++ edited/arch/ppc/5xxx_io/bestcomm/Makefile	Tue Dec  2 12:17:32 2003
+@@ -7,7 +7,7 @@
+ #
+ # Note 2! The CFLAGS definition is now in the main makefile...
 
-Ben.
+-EXTRA_CFLAGS = -I$(TOPDIR)/arch/$(ARCH)/5xxx_io/include -I$(TOPDIR)/arch/$(ARCH)/5xxx_io/capi -I$(TOPDIR)/arch/$(ARCH)/5xxx_io/capi/task_api -I$(TOPDIR)/arch/$(ARCH)/5xxx_io/code_dma/image_rtos1
++EXTRA_CFLAGS = -I$(TOPDIR)/arch/$(ARCH)/5xxx_io/bestcomm/include -I$(TOPDIR)/arch/$(ARCH)/5xxx_io/bestcomm/capi -I$(TOPDIR)/arch/$(ARCH)/5xxx_io/bestcomm/capi/task_api -I$(TOPDIR)/arch/$(ARCH)/5xxx_io/bestcomm/code_dma/image_rtos1
 
+ O_TARGET := bestcomm.o
 
+===== arch/ppc/boot/simple/Makefile 1.12 vs edited =====
+--- 1.12/arch/ppc/boot/simple/Makefile	Wed Nov 26 07:41:35 2003
++++ edited/arch/ppc/boot/simple/Makefile	Wed Dec  3 08:44:36 2003
+@@ -135,8 +135,8 @@
+ obj-$(CONFIG_8xx)		+= m8xx_tty.o
+ obj-$(CONFIG_8260)		+= m8260_tty.o
+ obj-$(CONFIG_SERIAL)		+= ../common/ns16550.o
+-obj-$(CONFIG_GLACIER)		:= mpc7xxx_tty.o
+-obj-$(CONFIG_ICECUBE)		:= mpc5xxx_tty.o
++obj-$(CONFIG_GLACIER)		+= mpc5xxx_tty.o
++obj-$(CONFIG_ICECUBE)		+= mpc5xxx_tty.o
+ endif
 
---=-bqIrYqwt3hkdlGVO1fsy
-Content-Disposition: attachment; filename=radeondump.c
-Content-Type: text/x-c; name=radeondump.c; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+ LIBS				:= ../lib/zlib.a
+===== arch/ppc/configs/icecube_defconfig 1.1 vs edited =====
+--- 1.1/arch/ppc/configs/icecube_defconfig	Wed Nov 26 07:41:41 2003
++++ edited/arch/ppc/configs/icecube_defconfig	Wed Dec  3 11:24:30 2003
+@@ -33,8 +33,8 @@
+ # CONFIG_ALL_PPC is not set
+ # CONFIG_APUS is not set
+ # CONFIG_SPRUCE is not set
+-CONFIG_GLACIER=y
+-# CONFIG_ICECUBE is not set
++# CONFIG_GLACIER is not set
++CONFIG_ICECUBE=y
+ # CONFIG_LOPEC is not set
+ # CONFIG_PPLUS is not set
+ # CONFIG_PAL4 is not set
+@@ -48,9 +48,11 @@
+ CONFIG_MPC5200=y
+ CONFIG_PPC_5xxx_PSC_CONSOLE_BAUD=115200
+ # CONFIG_UBOOT is not set
+-CONFIG_PPC_5xxx_PSC_CONSOLE_PORT=2
+-CONFIG_PPC_5xxx_PROCFREQ=231000000
++CONFIG_PPC_5xxx_PSC_CONSOLE_PORT=0
++CONFIG_PPC_5xxx_PROCFREQ=396000000
+ CONFIG_PPC_5xxx_IPBFREQ=66000000
++CONFIG_PPC_5xxx_FLASH_ADDR=ff800000
++CONFIG_PPC_5xxx_FLASH_SIZE=800000
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <byteswap.h>
+ #
+ # General setup
+@@ -92,7 +94,73 @@
+ #
+ # Memory Technology Devices (MTD)
+ #
+-# CONFIG_MTD is not set
++CONFIG_MTD=y
++# CONFIG_MTD_DEBUG is not set
++CONFIG_MTD_PARTITIONS=y
++# CONFIG_MTD_CONCAT is not set
++# CONFIG_MTD_REDBOOT_PARTS is not set
++# CONFIG_MTD_CMDLINE_PARTS is not set
++
++#
++# User Modules And Translation Layers
++#
++CONFIG_MTD_CHAR=y
++CONFIG_MTD_BLOCK=y
++# CONFIG_FTL is not set
++# CONFIG_NFTL is not set
++
++#
++# RAM/ROM/Flash chip drivers
++#
++CONFIG_MTD_CFI=y
++# CONFIG_MTD_JEDECPROBE is not set
++CONFIG_MTD_GEN_PROBE=y
++# CONFIG_MTD_CFI_ADV_OPTIONS is not set
++# CONFIG_MTD_CFI_INTELEXT is not set
++CONFIG_MTD_CFI_AMDSTD=y
++# CONFIG_MTD_CFI_STAA is not set
++# CONFIG_MTD_RAM is not set
++# CONFIG_MTD_ROM is not set
++# CONFIG_MTD_ABSENT is not set
++# CONFIG_MTD_OBSOLETE_CHIPS is not set
++# CONFIG_MTD_AMDSTD is not set
++# CONFIG_MTD_SHARP is not set
++# CONFIG_MTD_JEDEC is not set
++
++#
++# Mapping drivers for chip access
++#
++# CONFIG_MTD_PHYSMAP is not set
++# CONFIG_MTD_TQM8XXL is not set
++# CONFIG_MTD_RPXLITE is not set
++# CONFIG_MTD_MBX860 is not set
++# CONFIG_MTD_DBOX2 is not set
++# CONFIG_MTD_CFI_FLAGADM is not set
++# CONFIG_MTD_REDWOOD is not set
++CONFIG_MTD_ICECUBE=y
++# CONFIG_MTD_PCI is not set
++# CONFIG_MTD_PCMCIA is not set
++
++#
++# Self-contained MTD device drivers
++#
++# CONFIG_MTD_PMC551 is not set
++# CONFIG_MTD_SLRAM is not set
++# CONFIG_MTD_MTDRAM is not set
++# CONFIG_MTD_BLKMTD is not set
++
++#
++# Disk-On-Chip Device Drivers
++#
++# CONFIG_MTD_DOC1000 is not set
++# CONFIG_MTD_DOC2000 is not set
++# CONFIG_MTD_DOC2001 is not set
++# CONFIG_MTD_DOCPROBE is not set
++
++#
++# NAND Flash Device Drivers
++#
++# CONFIG_MTD_NAND is not set
 
-void * mmio;
+ #
+ # Plug and Play configuration
+@@ -526,9 +594,9 @@
+ # MPC5xxx I/O Options
+ #
+ CONFIG_PPC_5xxx_FEC=y
+-# CONFIG_USE_MDIO is not set
++CONFIG_USE_MDIO=y
+ # CONFIG_FEC_GENERIC_PHY is not set
+-# CONFIG_FEC_LXT971 is not set
++CONFIG_FEC_LXT971=y
+ CONFIG_PPC_5xxx_PSC=y
+ CONFIG_PPC_5xxx_PSC_CONSOLE=y
+ CONFIG_SERIAL_CONSOLE=y
+@@ -556,7 +624,7 @@
+ #
+ # Library routines
+ #
+-# CONFIG_CRC32 is not set
++CONFIG_CRC32=y
+ CONFIG_ZLIB_INFLATE=y
+ CONFIG_ZLIB_DEFLATE=y
 
-//#define RADEON_RBASE	0xe3000000
-//#define RADEON_RBASE	0xb0000000
-#define RADEON_RBASE	0x90000000
-//#define RADEON_RBASE	0x90080000
+@@ -572,4 +640,5 @@
+ # CONFIG_XMON is not set
+ CONFIG_BDI_SWITCH=y
+ # CONFIG_MORE_COMPILE_OPTIONS is not set
++# CONFIG_SERIAL_TEXT_DEBUG is not set
+ CONFIG_LOG_BUF_SHIFT=0
+===== arch/ppc/platforms/icecube.h 1.1 vs edited =====
+--- 1.1/arch/ppc/platforms/icecube.h	Wed Nov 26 07:41:42 2003
++++ edited/arch/ppc/platforms/icecube.h	Tue Dec  2 15:22:51 2003
+@@ -58,7 +58,7 @@
+ 	.baud_base = MPC5xxx_INIT_BAUD_BASE,		\
+ 	.irq = MPC5xxx_PSC##num##_IRQ,			\
+ 	.flags = ASYNC_BOOT_AUTOCONF|ASYNC_SKIP_TEST, 	\
+-	.iomem_base = (void *)MPC5xxx_PSC##num##,	\
++	.iomem_base = (void *)MPC5xxx_PSC##num,		\
+ 	.io_type = SERIAL_IO_MEM,			\
+ },
 
-static  unsigned char regr8(volatile void *base, const unsigned long offset=
-)
-{
-        unsigned char val;=20
-        __asm__ __volatile__(
-                        "lbzx %0,%1,%2\n\t"
-                        "eieio"
-                        : "=3Dr" (val)
-                        : "b" (base), "r" (offset),
-                        "m" (*((volatile unsigned char *)base+offset)));
-        return(val);
-}
-
-
-static  void regw8(volatile void *base, const unsigned long offset,
-			const unsigned char val)
-{
-	__asm__ __volatile__ ("stbx %1,%2,%3\n\t"
-				"eieio"
-                        : "=3Dm" (*((volatile unsigned char *)base+offset))
-                        : "r" (val), "b" (base), "r" (offset));
-}
-
-
-static  unsigned int regr(volatile void *base, const unsigned long offset)
-{
-	unsigned int val;
-
-	__asm__ __volatile__ ("lwbrx %0,%1,%2\n\t"
-				"eieio"
-				: "=3Dr" (val)
-				: "b" (base), "r"(offset),
-				"m" (*((volatile unsigned char *)base+offset)));
-	return val;
-}
-
-static  void regw(volatile void *base, const unsigned long offset,
-				const unsigned int val)
-{
-	__asm__ __volatile__ ("stwbrx %1,%2,%3\n\t"
-				"eieio"
-				: "=3Dm" (*((volatile unsigned char *)base+offset))
-				: "r"(val), "b"(base), "r"(offset));
-}
-
-static  unsigned int pllr(volatile void *base, const unsigned long index)
-{
-	unsigned int val;
-
-	regw8(base, 0x8, index & 0x3f);
-	return regr(base, 0xc);
-}
-
-
-unsigned long regs[0x800];
-unsigned long pllregs[0x40];
-
-int main() {
-	int fd, i;
-=09
-	fd =3D open("/dev/mem", O_RDWR);
-
-	mmio =3D (void *)mmap(0, 0x80000, PROT_READ|PROT_WRITE,
-			MAP_SHARED, fd, RADEON_RBASE);
-
-	for (i=3D0; i<0x800; i++)
-		regs[i] =3D regr(mmio, i*4);
-	for (i=3D0; i<0x40; i++)
-		pllregs[i] =3D pllr(mmio, i);
-
-	printf("Radeon MMIO registers:\n");
-	for (i=3D0; i<0x800; i++) {
-		if (regs[i] !=3D 0)
-			printf("%04x : %08x\n", i*4, regs[i]);
-	}
-	printf("\nRadeon PLL registers:\n");
-	for (i=3D0; i<0x40; i++) {
-		if (pllregs[i] !=3D 0)
-			printf("  %02x : %08x\n", i, pllregs[i]);
-	}
-	printf("\n");
-}
-
---=-bqIrYqwt3hkdlGVO1fsy--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
