@@ -1,45 +1,74 @@
-Message-Id: <v03110700b52c8481fb7e@[209.183.131.177]>
+Date: Wed, 26 Apr 2000 14:15:12 +0200
+From: Bernhard Reiter <bernhard@intevation.de>
+To: Andreas Tobler <toa@pop.agri.ch>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Serial driver problem (modem Lombard)
+Message-ID: <20000426141512.I2544@cheops.usf.Uni-Osnabrueck.DE>
+References: <20000422123747.B8503@cheops.usf.Uni-Osnabrueck.DE> <3901D09B.4B25722F@pop.agri.ch> <20000424125228.A15804@cheops.usf.Uni-Osnabrueck.DE> <39043F06.CDED1B99@pop.agri.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Wed, 26 Apr 2000 07:41:41 -0400
-To: <ambrosini@lightning.ch>
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Subject: Re: patch: POSIX.1b signals for ppc
-Cc: cort@fsmlabs.com, paulus@linuxcare.com, linuxppc-dev@lists.linuxppc.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="+Z7/5fzWRHDJ0o7Q"
+In-Reply-To: <39043F06.CDED1B99@pop.agri.ch>; from toa@pop.agri.ch on Mon, Apr 24, 2000 at 02:33:13PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Giovanna,
+--+Z7/5fzWRHDJ0o7Q
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 
-Thankyou!
-I found your POSIX.1b signals patch for ppc that adds in sys_rt_sigreturn
-and allows for signal handlers to get all 3 parameters (signo,siginfo, and
-uc).
+On Mon, Apr 24, 2000 at 02:33:13PM +0200, Andreas Tobler wrote:
+> Bernhard Reiter wrote:
+> > =20
+> > > Now I can report a clean, more or less, well ppp operation.
+> > As I wrote, it always works on the first try.
+> > It sometimes fials on the second and following tries with 2.2.15pre19.
+> > It always works with the 2.2.15pre3 which does not have ir support build
+> > in.
+>=20
+> I'm not sure, is it possible to disable IR in the kernel build? worth a t=
+ry.
 
-This patch is very important for the proper functioning of both green and
-native threads of the JDK 1.3 that Blackdown is currently working on. (try
-debugging code that uses SA_SIGINFO and ucontext as one of the
-parameters...it will compile on powerpc with glibc 2.1.3 but the other
-parameters passed to the signal handlers are just garbage which makes
-debugging fun!).
+Probably.
 
-Do you know its status?
+> > If wvdialconf scans the ir port ttyS1 on 2.2.15pre19, die machine bombs.
+> have you tried with something other than wvdial? (which I don't know), I
+> use netcfg.
 
-Does it work on other ppc platforms outside of the ppc850?
+Wvdialconf scans all devices and tries to detect a modem.
+For that reason it writes normal modem commands to the device.
+So when scanning the ir port in my case, it should not detect a=20
+modem, because there is none.=20
 
-Was it ever incorporated in part or whole into either Paul or Cort's
-kernels (stable or development)?
+I just like to report the bug that the machine bombs with the
+2.2.15pre19 kernel when wvdial writes the nonsense to the IR port. =20
+A machine should never bomb.
 
-If not, what if anything needs to be done to get the functionality of the
-patch added into the ppc linux kernels?
+My ppp runs fine with the configured modemport, apart from a couple
+of occasion where I could only use it once.
 
-If more work needs to be done to get this in the ppc kernels, please let me
-know and I will try to help.
+I guess the next step of debuggin would be to try to use the IR for
+something useful.
+	Bernhard
+	=20
 
-Thanks,
+--=20
+Professional Service around Free Software                (intevation.net) =
+=20
+The FreeGIS Project				            (freegis.org)
+Association for a Free Informational Infrastructure            (ffii.org)
 
-Kevin
+--+Z7/5fzWRHDJ0o7Q
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.0.1 (SunOS)
+Comment: For info see http://www.gnupg.org
+
+iEYEARECAAYFAjkG3c4ACgkQh9ag3dpKERYt6QCghPnwof+F7ID0vOYJLzv0nu4M
+IsUAn1C/6rXo9bQ/O8CK9VSINbhFAT3x
+=co3s
+-----END PGP SIGNATURE-----
+
+--+Z7/5fzWRHDJ0o7Q--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
