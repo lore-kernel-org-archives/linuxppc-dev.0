@@ -1,23 +1,28 @@
-Message-ID: <20020503102432.4790.qmail@web12307.mail.yahoo.com>
-Date: Fri, 3 May 2002 03:24:32 -0700 (PDT)
-From: Miao Qingjun <qjmiao@yahoo.com>
-Subject: Why can't MSR[FP] bit be set on MPC8260ADS?
-To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Powerbook
+Date: Fri, 3 May 2002 12:04:14 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E31937F1C@kolkrabbi.flaga.is>
+From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
+To: <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi,
 
-On my MPC8260ADS board, kernel is looping between
-head.S: FPUUnavailable() and head.S: load_up_fpu().
-This is caused by MSR[FP] bit can't be set by
-"mtmsr r5" instruction.
-But MPC8260 user manual says it can do floating point
-load/store.
+This is way off topic but I have been unable to find this on the web so
+I ask the people who are most likely to have done this kind of
+"benchmark".
 
-Can anybody help me?
+I am on the search for a notbook that I will use partly to do coding
+under Linux.
+
+How long is a kernel recompile on a Powerbook G4 (550Mhz/667Mhz)?
+
+Thanks and sorry for the noise...
+
+K.D.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
