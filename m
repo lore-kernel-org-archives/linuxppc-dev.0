@@ -1,44 +1,33 @@
-Date: Mon, 17 Sep 2001 18:11:56 +0200
-From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
-Subject: Re: Board names for 4xx
-To: Dan Malek <dan@mvista.com>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-embedded@lists.linuxppc.org,
-	David Gibson <david@gibson.dropbear.id.au>
-Message-id: <3BA620CC.3ACD0547@inn.ericsson.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-References: <20010914144403.G3851@zax>
- <20010914072847.R21906@cpe-24-221-152-185.az.sprintbbd.net>
- <20010917122828.J3851@zax>
- <20010916211605.D14279@cpe-24-221-152-185.az.sprintbbd.net>
- <3BA61D1A.3A79E5B9@mvista.com>
+Message-ID: <3BA62583.55E48A97@mvista.com>
+Date: Mon, 17 Sep 2001 12:32:03 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Erratum 51 bugfix?
+References: <20010917152316.O3851@zax>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+David Gibson wrote:
 >
-> Tom Rini wrote:
->
-> > I do wish someone else would speak up tho.  Does anyone out there have an
-> > opinion?
->
-> If the information from /proc is just used for pretty print out of
-> information, I really don't care.  If there are applications that read
-> this for some internal configuration and flexibility, we better have a
-> standard format.
->
->         -- Dan
+> According to the ppc405gp errata, the workaround for erratum 51 is
+> incorrect.
 
-Debian uses /proc/cpuinfo to find out what utility to use for the RTC
-(clock,hwclock). This could be fixed if the code from clock was integrated in
-hwclock. hwclock tries every method it knows until one works.
+Got it, thanks.  I actually went to read the 4xx errata this time instead
+of just blindly accepting the patch as I did last time.  There are some
+other nasty things we should consider fixing.  The worst is #67, and now
+they have told us about #77 so we can fix up the ATOMIC_SYNC_FIX....
 
---
-Kenneth Johansson
-Ericsson Business Innovation AB   Tel: +46 8 404 71 83
-Viderögatan 3                     Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@inn.ericsson.se
+Of all the errata, #77 is the only one we have seen with Linux.  I guess
+you could force #51 to occur, but whether you call ITLBmiss or DTLBmiss
+probably doesn't matter because they end up at the same place.  We are
+somewhat lucky with #67 because I don't think we have mapping situations
+where this can occur.  Although, some days I read it and think otherwise.....
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
