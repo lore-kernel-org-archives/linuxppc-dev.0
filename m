@@ -1,42 +1,55 @@
-Date: Wed, 9 Jan 2002 11:25:08 -0500
-From: Kent Borg <kentborg@borg.org>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Boot ROM Responsibilities (and GDB)?
-Message-ID: <20020109112508.B4902@borg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <3C3C7E23.4030309@embeddededge.com>
+Date: Wed, 09 Jan 2002 12:30:11 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Kent Borg <kentborg@borg.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Boot ROM Responsibilities (and GDB)?
+References: <20020109112508.B4902@borg.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Is there any documentation on what a 405 boot ROM is supposed to do
-before jumping to the PPC kernel?
-
-We finally found what was messing with our use of GDB.  DBSR was
-(sometimes) coming up with some unfortunate bits set, our boot ROM
-didn't know to clear them and the code that actually uses the CPU's
-debug hardware didn't bother to put that hardware in an appropriate
-state.
-
-Coming from an old fashioned perspective where boot ROMs are little
-and only sufficient to get the next higher level of program running,
-it seems strange to make them have to know anything about details of
-assorted hardware other than to disable optional things and make very
-basic things (like RAM access) work.
-
-Because we have a custom boot ROM (lifted from a previous non-Linux
-use of the same board--that's part of the beauty of having boot ROMs
-be simple, they are then quite universal and can be written quite
-early in the project before you even know what the project is) what
-else are we missing?
-
-What are a PPC boot ROM's responsibilities?  (I.E., what do we add to
-our version of head.S.)
+Kent Borg wrote:
 
 
-Thanks,
+> it seems strange to make them have to know anything about details of
+> assorted hardware other than to disable optional things and make very
+> basic things (like RAM access) work.
 
--kb, the Kent who is trying to keep his head in two different arch
-trees at once without too much confusion.
+Yes, and often these "optional things" are forgotten.
+In the case of the 4xx, the MMU should be disabled, and the caches must
+be coherent.  That is, if you copied the kernel into memory, you have to
+ensure the caches are properly flushed and invalidated.  Many systems in
+the past had simply disabled the caches, but more recently are discovering
+the need for fast booting, so the are used.
+
+The optional things often forgotten are to disable Ethernet controllers
+or other I/O devices used to load the software.  These cause lots of
+problems because of unexpected interrupts or DMA that can corrupt loaded
+images.
+
+It also helps to pass some system information to the piggyback loader that is
+easily parsed into records the kernel needs.  Things like processor speeds,
+memory size, MAC addresses, etc. are useful when you have them handy in the
+boot rom.
+
+Debug control registers need to be in a proper state before calling the
+piggyback loader.  There has been some problems on some boards in the
+past where this didn't get done.  The piggyback loader (and the kernel if
+not configured for kgdb) don't mess with any of this so you can debug the
+entire start up phases with a background (JTAG) debugger.  Modification of
+debug control by the piggyback or kernel software would not allow this
+debug to happen.
+
+If you can properly get the piggyback loader running by placing the MMU and
+caches in the proper state, everything else can be set up from there.
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
