@@ -1,44 +1,50 @@
-Date: Tue, 28 Aug 2001 14:37:50 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Henning Brinkmann <Henning.Brinkmann@offis.de>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Pismo: How to check if the lid is closed.
-In-Reply-To: <20010828095504.A1357@merope.informatik.uni-oldenburg.de>
-Message-ID: <Pine.LNX.4.33.0108281353190.17831-100000@opal.biophys.uni-duesseldorf.de>
+Date: Tue, 28 Aug 2001 07:19:43 -0700 (PDT)
+From: "Jeffrey W. Baker" <jwbaker@acm.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: <mlan@cpu.lu>, <linuxppc-dev@lists.linuxppc.org>,
+	<debian-powerpc@lists.debian.org>
+Subject: Re: Call for help: altivec-enabled vlc
+In-Reply-To: <15243.36729.335303.936811@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.33.0108280718010.217-100000@desktop>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I found out from pmud's source code how to send it to sleep but I
-> did not understand how to check if the lid is closed. I also had no
-> luck searching for documentation about how to do it.
+On Tue, 28 Aug 2001, Paul Mackerras wrote:
 
-I think the lid state is encoded in the pmu data packets that pmud polls
-for every second.
+> Michel Lanners writes:
+>
+> > However, there's something wrong with the IDCT code; the output is
+> > essentially garbage. Makes for some interesting visual effects, but
+> > that's about it....
+>
+> Here is my altivec-enabled IDCT, in assembler.  It does everything
+> internally in floating point so there is no need for scaling.  It
+> exports two procedures:
+>
+> void idct_block_copy_altivec(int16_t *dct_block, uint8_t *dest, int stride);
+> void idct_block_add_altivec(int16_t *dct_block, uint8_t *dest, int stride);
+>
+> stride is the offset between successive rows of dest.  It does an IDCT
+> of the 8x8 block of 16-bit integers at *dct_block, and either puts the
+> result in an 8x8 block at *dest or adds it to the block at *dest.
+> dct_block has to be 16-byte aligned.  And no, it hasn't been
+> _deliberately_ obfuscated. :)
+>
+> I use this in mpeg2dec (actually a hacked version that I use to play
+> videos off my tivo) and Anton Blanchard hacked this into xine.  I also
+> have altivec-enabled motion compensation routines for libmpeg2.
+>
+> Hope this is useful...
 
-In poll_pmu():
+Wow Paul, thanks!  I adapted Apple's AltiVec IDCT from their tech library,
+but anything I write using the C extensions is going to suck since
+Motorola's GCC/binutils hack is useless.  I never could get it to work (or
+even compile).  I'll try your version straight away!
 
-	if (pmu_op(PMU_GET_COVER, 0, 0, &switches, 1, "switch req") < 0)
-		return;
-
- 	if ((switches & 1) != 0)
-	{
-	 	syslog(LOG_INFO, "lid closed: request sleep");
-	 	chloralhydrate = 1;     /* lid is closed, go to sleep */
-	}
-
-So basically you need to send the PMU a specific request for information
-(PMU_GET_COVER) and test bit 1 of the response byte.
-
-> Does anyone have link to some documentation concerning that issue?
-
-:-) This is Apple. The Darwin source might be your best bet. Or the pmud
-source above, if you don't care about the meaning of the other bytes in
-the PMU_GET_COVER response.
-
-	Michael
+-jwb
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
