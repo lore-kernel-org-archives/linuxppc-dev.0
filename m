@@ -1,38 +1,48 @@
-Date: Fri, 23 May 2003 15:28:36 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: "David M?ller (ELSOFT AG)" <d.mueller@elsoft.ch>
+To: Jim Rowe <rowejames@acmsystems.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ERR51 / ERR77 on IBM405GPr
-Message-ID: <20030523152836.B17219@home.com>
-References: <3ECDF370.7020808@elsoft.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3ECDF370.7020808@elsoft.ch>; from d.mueller@elsoft.ch on Fri, May 23, 2003 at 12:09:52PM +0200
+Subject: Re: MPC8250 + PCMCIA + airo_cs card + IO Port mapping proble 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "23 May 2003 15:14:34 PDT."
+             <1053728074.29793.30.camel@kneedragger>
+Date: Sat, 24 May 2003 00:44:33 +0200
+Message-Id: <20030523224438.9E1B7C6162@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, May 23, 2003 at 12:09:52PM +0200, "David M?ller (ELSOFT AG)" wrote:
+In message <1053728074.29793.30.camel@kneedragger> you wrote:
 >
-> Hello
->
-> According to the errata sheet, the IBM405GPr doesn't suffer from the
-> ERR51 / CPU_190 and ERR77 / CPU_210 bugs as the IBM405GP does.
->
-> But the workarounds are still enabled in "arch/ppc/config.in".
->
-> Shouldn't there be something like this:
->
->   if [ "$CONFIG_405GPR" = "y" ]; then
->     define_bool CONFIG_IBM405_ERR51 n
->     define_bool CONFIG_IBM405_ERR77 n
->   fi
+> If anyone has a 16-bit pcmcia card working with a Cardbus to PCI bridge
+> it would be very helpful if I could see your /proc/ioports and
+> /proc/iomem with the card working. It would be even better if you are
+> using an MPC82xx chip with an integrated PCI controller.
 
-I just committed something like this to 2_4_devel and will be moved to
-the other trees as well.
+This is on  a  MPC8250  system  (ATC  board  in  U-Boot  and  in  our
+linuxppc_2_4_devel  tree).  There  is  a  compact  flash  card  on it
+attached to an Intel 82365 and PC Card controller.
+
+bash-2.05# cat /proc/ioports
+bash-2.05# cat /proc/iomem
+00000000-ffffffff : <BAD>
+  80000000-80000fff : PCI device 104c:ac56 (Texas Instruments)
+    80000000-80000fff : i82365
+  81000000-81000fff : card services
+
+As you can see, we use the standard PCMCIA Card Services package.
+
+Hope this helps.
+
+
+Best regards,
+
+Wolfgang Denk
 
 --
-Matt Porter
-mporter@kernel.crashing.org
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+A direct quote from the Boss: "We passed over a lot of good people to
+get the ones we hired."
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
