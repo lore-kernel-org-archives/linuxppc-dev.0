@@ -1,38 +1,38 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Thu, 7 Feb 2002 19:24:02 -0600 (CST)
-From: Viktor Lapinskii <lapinski@pacific.ece.utexas.edu>
-Reply-To: lapinski@ece.utexas.edu
+Date: Thu, 7 Feb 2002 19:17:41 -0800
+From: andrew may <acmay@acmay.homeip.net>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: kernel debugging in MontaVista Journeyman 2.0
-Message-ID: <Pine.A41.4.44.0202071800550.13790-100000@pacific.ece.utexas.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Armin <akuster@pacbell.net>
+Subject: PPC405gp enet Soft Reset
+Message-ID: <20020207191741.A26185@ecam.san.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+I seem to be having a problem with the soft reset of EMAC
+mode register when I have no ethernet connection to by phy.
 
-We have Motorola Sandpoint with PPMC8240 and MontaVista Journeyman 2.0.
-Budget constraints do not allow us to have a full version of MontaVista
-Linux and I am trying to find some ways to do kernel debugging with the
-Journeyman version of linux-2.4.2_hhl20.
+After this code in init_ppc405_enet(void) the SRST bit does
+not clear until after I stick in a cable.
 
-We need to perform some measurements on a network card driver.  Ideally,
-it would be great to obtain executuion traces (on the machine instruction
-level) of different components of that driver (eventaully with timestamps)
-and also (probably indirectly) measure DMA exchanges between the network
-card and RAM.  Setting breakpoints is also desirable.
+		/* Reset the EMAC */
+		emacp->em0mr0 = EMAC_M0_SRST;
+		eieio();
+		for (delay = 0; delay < 1000; delay++) ;
+		emacp->em0mr0 = emacp->em0mr0 & ~EMAC_M0_SRST;
+		eieio();
+                printk( KERN_INFO "em0mr0 %08x", emacp->em0mr0 );
 
-Journeyman apparently does not have KGDB support and I would highly
-appreciate your advice on how such measurements / trace construction can
-be done (besides using occiloscope or printouts and pencil).  It's the
-first time I am trying to get deep into the kernel so any of your
-suggestions/references would be very helpful.
 
-Thank you,
+This causes problems in find_phy, since phy_reg never gets set to
+a value and read_mdio fails.
 
-Viktor
+I have a Rev E chip, but since I always booted over the net with the
+Walnut board I don't think I even tried to boot without an ethernet
+connection.
 
+Just checking to see if anyone else has noticed what their 405gp does
+when it doesn't have a connection during the linux boot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
