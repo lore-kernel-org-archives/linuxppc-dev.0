@@ -1,27 +1,53 @@
+Cc: Kwansuk Kim <kskim@neowave.co.kr>,
+        LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <396DD286.EF20C9F5@lucent.com>
+Date: Thu, 13 Jul 2000 08:30:31 -0600
+From: Steven Tarr <tarr@lucent.com>
 MIME-Version: 1.0
-Message-Id: <396D8712.26614@mta5>
-Date: Thu, 13 Jul 2000 17:08:34 +0800 (CST)
-From: "zzh" <david-1z@263.net>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Local sdram in 8260 board
+To: "Dan A. Dickey" <ddickey@charter.net>
+Subject: Re: network toolsl don't still work...
+References: <NEBBKFENMLEDKDHMEHPJKEPECAAA.kskim@neowave.co.kr> <396D3C79.2332C112@charter.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Mr. Dickey ---
 
-      Hi,I try to make 60x sdram and the local sdram a continuous
-20M ram area to accommodate a 8M ramdisk in the motorola 8260 ads board.When it load the initrd,it will get machine check exception
-at address 0x1000004 which is in the local sdram.When i disable the
-cache ,it will work. Does local sdram noncacheble?How should i
-fix it?
+Please have an ice cream cone on me!  I thank you.
 
-davidzhang
-7/13/2000
+cheers --
+tarr
+
+NOTE  - libnss_files.so-2.1.3 and its various links need to be included in the
+libraries....
+
+NOTE2 -  So, I have to add a library of >240K   so that I can get a simple network
+(ping)
+                       application to function! The original function
+getprotobyname() was 10 lines of C code.
 
 
-_____________________________________________
-一路上有你，苦一点也愿意！
---为你喜爱与支持的263首都在线（http://www.263.net）投一票！
-我要投票！（http://fsurvey.cnnic.net.cn/survey/index.html）
+
+
+"Dan A. Dickey" wrote:
+
+> Kwansuk Kim wrote:
+> >
+> > Thanks for you cooperation.
+> >
+> > When I make soft link from /lib to /opt/.../lib, bash can read the library files.
+> >
+> > But ping program doesn't work yet.
+>
+> Check /etc/nsswitch.conf
+>         -Dan
+>
+
+--
+Steve Tarr
+tarr@lucent.com
+303-538-4056
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
