@@ -1,31 +1,42 @@
-Date: Wed, 26 Dec 2001 09:24:16 -0700
-From: Tom Rini <trini@mvista.com>
-To: frowand@mvista.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: patch - KGDB read and write of IO registers
-Message-ID: <20011226162416.GB15460@Bill-The-Cat.bloom.county>
-References: <3C23BC8B.83D8F4DB@mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3C23BC8B.83D8F4DB@mvista.com>
+Message-Id: <p04330100b8504e9e9393@[66.57.250.32]>
+In-Reply-To: <20011216233853.23752@smtp.wanadoo.fr>
+References: <p04330101b842de27485b@[24.163.44.170]>
+ <20011216233853.23752@smtp.wanadoo.fr>
+Date: Wed, 26 Dec 2001 23:13:01 -0500
+To: <linuxppc-dev@lists.linuxppc.org>
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: Re: ethtool failure with tulip 21143
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Dec 21, 2001 at 02:49:47PM -0800, Frank Rowand wrote:
+>  >>Try defining CACHE_ALIGN to CAL_32LONG, and DESC_ALIGN to u32 dummy[4]
+>>>(as in the commented out example).
+>>
+>>I will look at the de4x5 code again and try this. It's all vaguely
+>  >familiar to me... Thanks much!
 
-> The patch allows IO device registers to be accessed by KGDB via word
-> (or halfword) loads and stores for word (or halfword) sized objects
-> when naturally aligned.  The previous behaviour was to always do
-> byte load and stores which can result in side effects when accessing
-> an IO device register.
->
-> A second fix in the patch is to pass the correct address to
-> flush_icache_range() when writing to memory in hex2mem().
+Yes, it has painfully all come back to me now. I originally switched
+to the tulip driver because the de4x5 driver did not function with
+the Farallon 10/100 PCI NIC, and I have now reconfirmed this. There
+are no error messages when loading the module, but there is some
+problem I can't diagnose. The switch lights indicating "it's alive"
+never come on, and the network is not ever reachable. With the tulip
+driver I can at least get that.
 
-Looks good, applied.
+I remember further contacting the de4x5 maintainer about this, and
+his response with apologies was that the driver is no longer being
+maintained.
 
---
-Tom
+I remember even further contacting Donald Becker about somehow
+inserting this cache alignment fix into the tulip driver. No
+response. So, any thoughts on how to proceed? I have no idea how to
+get the fix into tulip to test...
+
+
+Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
