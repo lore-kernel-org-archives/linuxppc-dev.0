@@ -1,47 +1,47 @@
-Message-ID: <3AA72F37.FCF088B@serialsystem.com.sg>
-Date: Thu, 08 Mar 2001 15:05:27 +0800
-From: Jari Nguyen Trung Thanh <jari.nguyen@serialsystem.com.sg>
-Reply-To: jari.nguyen@serialsystem.com.sg
+Message-ID: <3AA78B20.83FFA1B0@raleigh.ibm.com>
+Date: Thu, 08 Mar 2001 08:37:36 -0500
+From: Ralph Blach <rcblach@raleigh.ibm.com>
 MIME-Version: 1.0
-To: kingseft@samsung.co.kr
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [Question] rc.sysinit .. auto start scripts??
-References: <H00002af04a94e43@MHS>
-Content-Type: text/plain; charset=us-ascii
+To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Going to sleep atomically
+Content-Type: multipart/mixed;
+ boundary="------------57CF454B1F4A9FB492876AFC"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You can look the file: /etc/inittab
+This is a multi-part message in MIME format.
+--------------57CF454B1F4A9FB492876AFC
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-This will have a line:
-si::sysinit:/etc/rc.sysinit
+In a device driver, What is the best way to go to sleep atomically?
 
-/bin/init will look at /etc/inittab  and call this for you
+Thanks
 
-Hope this help,
-Jari
+Chip
+--------------57CF454B1F4A9FB492876AFC
+Content-Type: text/x-vcard; charset=us-ascii;
+ name="rcblach.vcf"
+Content-Description: Card for Ralph Blach
+Content-Disposition: attachment;
+ filename="rcblach.vcf"
+Content-Transfer-Encoding: 7bit
 
-kingseft@samsung.co.kr wrote:
+begin:vcard
+n:Blach;Ralph
+tel;work:919-543-1207
+x-mozilla-html:TRUE
+url:www.ibm.com
+org:IBM MicroElectronics
+adr:;;3039 Cornwallis		;RTP;NC;27709;USA
+version:2.1
+email;internet:rcblach@raleigh.ibm.com
+x-mozilla-cpt:;15936
+fn:Ralph Blach
+end:vcard
 
->  Hi, all developers...
->
->  Thanks for your kind answers for my previous ramdisk problem..
->  I made my own ramdisk and it workd fine... Really Thanks for helps..!!
->
->  I have one question about /etc/rc.sysinit !!
->
->  I think rc.sysinit runs automatically on system booting.. Is that right??
->  but, when I booted my target, of course I got linux shell prompt.
->  but /proc directory doesn't mount and didn't work ping, telnet, ifconfig...etc.
->
->  After I tried /etc/rc.sysinit , every thing worked fine..
->
->  Is it not possible to run etc.sysinit automatically on my linux booting??
->  I don't want to type /etc/rc.sysinit on command shell prompt line when target boots..
->
->  any comments will help me.. thanks.....
->
+--------------57CF454B1F4A9FB492876AFC--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
