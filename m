@@ -1,59 +1,44 @@
-From: =?iso-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Use of several CFI flash chips physically mapped in memory 
-Date: Thu, 4 Dec 2003 11:12:24 +0100
-Message-ID: <000001c3ba4f$214be2f0$5201a8c0@GEG2400>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20031203181613.75859C5F5F@atlas.denx.de>
+Date: Thu, 4 Dec 2003 02:19:01 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Wojciech Kromer <krom@dgt-lab.com.pl>
+Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: memory problem with fec on 8250
+Message-ID: <20031204101901.GB1050@gate.ebshome.net>
+References: <3FCD956B.8030604@gazeta.pl> <3FCEF441.2030808@dgt-lab.com.pl> <20031204091536.GA1050@gate.ebshome.net> <3FCF0252.7070202@dgt-lab.com.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3FCF0252.7070202@dgt-lab.com.pl>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+On Thu, Dec 04, 2003 at 10:45:54AM +0100, Wojciech Kromer wrote:
+> >
+> >>>i have some problems with using fec device on my custom 8250 board
+> >>>while sending a lot of data (at least 300MB) through this device causes
+> >>>lack of memory
+> >>>sending same amount of data through loopback works fine
+> >>>
 
-I work on a custom 8250 board with a 2.4.18 Linux kernel.
-This board provides two AMD CFI flash devices.
+[snip]
 
-Nowaday I only use the first chip which I map in the physical memory.
-I create several partitions with RW or RO accesses and I use
-CRAMFS and/or JFFS2 images. This works fine.
+> ==== at begining =========================================
+> skbuff_head_cache    131    192    160    8    8    1
+> size-2048              5    178   2048    3   89    1
+>
+> ===after some time (ftp put ~75MB) ================================
+>
+> skbuff_head_cache  16857  16872    160  703  703    1
+> size-2048          16749  16798   2048 8382 8399    1
 
-Now I would want to use the following functionalities :
+It looks like skb leaks in the driver. Probably in TX path.
 
-1) I want to protect the first partition of the first device
-that contains a firmware which does not belong to the Linux system.
-Can I mislead Linux and provide the first sector address after
-the firware as the start address of the device. I don't know
-how the gen_probe process will react. So as Linux does not know
-the firware space and it can't erase the firmware sectors.
+Could you send me by private e-mail source code for ethernet driver in
+question or provide a URL.
 
-2) I want to use the two devices as a virtual one with many
-partitions splitted at will. The two chips are physically mapped in
-sequence. In my kernel, I have the following variables
-CONFIG_ELINOS_NR_MTD_DEVICES "Maximum number of MTD devices" and
-CONFIG_MTD_CONCAT MTD "Concatenating support". But they seem to be unused.
+I'm not a 8250 guy, but I'll try to look at it :)
 
-3) I want to use two 16 bits access chips physically mounted in parallel
-to make a virtual 32 bits access chip. Do solutions exist for this case ?
-
-4) Finally, what about flash fast programming issues ?
-Nowaday it is very slow to erase or program many sectors with
-the character access driver.
-In my kernel, I have the following message
-if (cfi->fast_prog) {
-    /* In cfi_amdstd_write() we frob the protection stuff
-       without paying any attention to the state machine.
-       This upsets in-progress erases. So we turn this flag
-       off for now till the code gets fixed. */
-    printk(KERN_NOTICE "cfi_cmdset_0002: Disabling fast programming due to c
-ode brokenness.\n");
-    cfi->fast_prog = 0;
-}
-
-Thanks
-Special thanks to Gary Thomas for his reply about File system boot strategy.
+Eugene.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
