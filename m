@@ -1,51 +1,37 @@
-Message-ID: <E8F83D6D2A6AD3118E0300902786A20502371419@NTEX>
-From: "David Marqvar (DAM)" <DAM@tt.dk>
-To: "Embedded Linux PPC List (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Cc: "Laurits Lassen Petersen (LLP)" <LLP@tt.dk>
-Subject: target=powerpc-linux, powerpc-eabi, powerpc-elf
-Date: Wed, 13 Feb 2002 15:12:35 +0100
+From: "Stefan Roese" <stefan.roese@esd-electronics.com>
+To: "=?iso-8859-1?Q?David_M=FCller_=28ELSOFT_AG=29?=" <d.mueller@elsoft.ch>,
+	"andrew may" <acmay@acmay.homeip.net>
+Cc: "Armin" <akuster@pacbell.net>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 405 MII-PHY communication problem (was: Re: PPC405gp enet Soft Reset)
+Date: Wed, 13 Feb 2002 16:15:50 +0100
+Message-ID: <EFEAIMDCOOOHIEPHDNFJOENHDKAA.stefan.roese@esd-electronics.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
+In-Reply-To: <3C6A25BC.7010704@elsoft.ch>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-What is the difference between the 3 (?) types og targets for powerpc?
-ELF = Extended Linker Format
-EABI = Embedded Application Binary Interface
-Linux = ?
+David,
 
-Is it 3 different layouts for the binary file?
+just to let you know:
 
+We have PPC405GP Rev D & Rev E running @ 198 MHz with Intel LXT971LE @
+address 0, and seem to have none of your described problem:
 
-The machine-type in GCC is stated as:
-i386-redhat-linux
-powerpc-elf
-powerpc-unknown-linux
-powerpc-unknown-linux-gnu
+=> mii info
+PHY 0x00: OUI = 0x04DE, Model = 0x0E, Rev = 0x01, 100baseT, FDX
+read err 3
+a2: read: EMAC_STACR=0xffffc023, i=3
+read err 3
+a2: read: EMAC_STACR=0xffffc043, i=3
+read err 3
 
-What does these parts define (*-*-* = processor-binaryformat-system, or?) ?
+etc...
 
+Stefan Roese
 
-Which target will you suggest using when working with a MPC823 using PPCBoot
-?
-
-
-We want to build our own kernel for the MPC823 - can we use Newlib for that?
-- from the documentation to Newlib it seems as if there is missing some
-hardware-specific parts in newlib which is needed by Linux...?
-We will only be running normal/simple apps with the kernel and don't need
-some "almost-never-user" functions from the libary.
-
-If we can use newlib (hope so since it is smaller) - should we compile the
-cross-gcc with the option --with-newlib ?
-
-
-Maybe stupid questions (hope not)....
-Thanks in avance!
-
-Regards,
-David Marqvar
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
