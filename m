@@ -1,71 +1,43 @@
-Message-ID: <6BAD6986DF8FD211AB8300A0C931D855050F05@MAIL>
-From: Brad Douglas <Brad@NERUO.com>
-To: "'Geert Uytterhoeven'" <geert@linux-m68k.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: RE: [linux-fbdev] Re: macmodes/modedb
-Date: Thu, 18 May 2000 12:54:19 -0400
+Date: Thu, 18 May 2000 16:06:01 -0400 (EDT)
+From: Worth <haworth@ncal.verio.com>
+To: Sergio Brandano <sb@dcs.qmw.ac.uk>
+cc: "Timothy A. Seufert" <tas@mindspring.com>, luther@dpt-info.u-strasbg.fr,
+        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        Albrecht Dreﬂ <ad@mpifr-bonn.mpg.de>,
+        Tim Wojtulewicz <Tim.Wojtulewicz@nau.edu>,
+        linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
+Subject: Re: Pismo status 
+In-Reply-To: <200005180812.JAA03379@copper.dcs.qmw.ac.uk>
+Message-ID: <Pine.SOL.4.10.10005181519400.15607-100000@ncal.verio.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> -----Original Message-----
-> From: Geert Uytterhoeven [mailto:geert@linux-m68k.org]
+On Thu, 18 May 2000, Sergio Brandano wrote:
+
 >
-> > What I can think of off hand is adding fb_mac_monitor_sense to fb_ops
-(which
-> > already looks like a less than optimal idea) or possibly depreciating
-it.
+>  There is one standard feature of automobiles that has not yet been
+>  implemented for computers, namely if you switch off the computer the
+>  cooling system should stay on until needed.
+
+Actually it's old hat on mainframes, though that is mainly due to
+numerous extremely hot chips with relatively small heat sinks in a
+constrained plenum or manifold that depends upon high coolant flow.
+And, on liquid cooled systems, to avoiding condensation problems.
+
 >
-> That's not a very good idea, since it's Mac only.
-> From the other side, DDC is something similar, so a generic call in fb_ops
-may
-> be the good solution?
+>  (On my 101, I often hear the fan going on just when I need to shut
+>  down. The fact is that when I want to shut down, I do not want to
+>  wait for the fan, and I also put the screen down...
 
-This may be a possibility.  Unfortunately, I'm not familiar with the inner
-workings of DDC.  If anyone has docs on how this works, I'll take a stab at
-adding support to fbdev.
+No need to wait for the fan, it's not the only cooling source, or
+even the primary. The semiconductor junctions are already as hot as they
+are going to get and are not producing any more heat. The surface of the
+heat sink may have an upward transient at shutdown due to the loss of
+airflow, but it's still cooler than those junctions or the bulk of the
+heat sink.
 
-> > Another option is to not try and do everything in fb_find_mode().
->
-> You cannot do everything in fb_find_mode() since monitor sense is
-> a per-monitor issue, not global.
-
-As of now, all drivers have a 1:1 relationship with a monitor.  Even the
-Matrox G400 driver insmods a second driver for the 2nd head.  Should we
-expect this to change?  I do not believe fbdev is capable of initializing
-two video cards from a single driver, but I could be wrong -- I have no
-ability to test.
-
-> One possible thing (in each fbdev driver :-(
->
->     default_mode = NULL;
-> #ifdef CONFIG_PPC_ALL
->     sense = ...;
->     default_mode = mac_map_monitor_sense(sense);
-> #endif
->     ... = fb_find_mode(..., default_mode, ...);
-
-I believe this would be acceptable, but we'll have to change
-mac_map_monitor_sense() to return fb_videomode instead of VMODE.
-fb_find_mode() will be unhappy to get an int when it's expecting
-fb_videomode. ;)
-
-> Or: should it be considered as a real mode_option (if mode_option == NULL)
-> instead of a default mode?
-
-Looking at things now, I think the default_mode is the way to go.  "Pushing"
-mode_options may make things a little more confusing (well, I guess it's
-nothing a little documentation won't clear up).  I still like the fallback
-to NVRAM values if there are no boot options or if the boot options fail.
-
-It looks like we have a couple ways to do this.  Suggestions?
-
-Brad Douglas
-brad@neruo.com
-http://www.linux-fbdev.org
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
