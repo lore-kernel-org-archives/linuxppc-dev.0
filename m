@@ -1,33 +1,36 @@
-Message-ID: <3B871315.1CA43487@mvista.com>
-Date: Fri, 24 Aug 2001 22:53:09 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: status of linuxppc_2_4_devel for ppc405gp
-References: <3B85E0D2.21BC306E@mvista.com> <20010824102831.14636@smtp.adsl.oleane.com>
+From: acmay@acmay.homeip.net
+Date: Sat, 25 Aug 2001 00:35:47 -0700
+To: Dan Malek <dan@mvista.com>
+Cc: andrew may <acmay@acmay.homeip.net>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: get_cycles/get_tbl on 405
+Message-ID: <20010825003547.J1165@sink.san.rr.com>
+References: <20010823185911.A3291@ecam.san.rr.com> <3B870EDE.711669EB@mvista.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3B870EDE.711669EB@mvista.com>; from dan@mvista.com on Fri, Aug 24, 2001 at 10:35:10PM -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+On Fri, Aug 24, 2001 at 10:35:10PM -0400, Dan Malek wrote:
+> andrew may wrote:
+> >
+> > I wanted to do some quick time measurements of some things on a driver
+> > running of the 405GP and I eneded up using get_tbl(). It seems like
+> > get_cycles....
+>
+> Hmmm....these look like they should work exactly the same.....
+> It would help me if you could disassemble a little code snippet
+> around the place you use these so we could have a look.
 
-> We should even be able to not flush all the cache here but only
-> the possible "synonyms" as we know the real address.
+They did. I just confused myself with too many kernel versions.
+The 2.4.2 mvista kernel didn't have the same header file, but by
+just sticking the newer header in there with the one other header
+it pulls in along with it, it worked fine.
 
-Right.  We can do some of this due to the recent MM rework by Paulus.
-I know the complete flush will work, and once we get the kernel
-running again we can fine tune the synonym search.  We have to be
-careful about some of these complex functions to do these operations,
-they could very well run mode code and do more hard to the cache
-that just flushing it and getting on with life :-).
+The __ftr_fixup doesn't seem to be used much in any of the other
+arch's.
 
-> It still doesn't work :(
-
-Hang on, we'll get it.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
