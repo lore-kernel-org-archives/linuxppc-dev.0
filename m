@@ -1,55 +1,37 @@
-Message-ID: <38E88948.DE0DB79B@sgi.com>
-Date: Mon, 03 Apr 2000 07:06:32 -0500
-From: Steven Hein <ssh@sgi.com>
+Message-ID: <38E8A5C1.349EE908@adtran.com>
+Date: Mon, 03 Apr 2000 09:08:01 -0500
+From: Ron Flory <ron.flory@adtran.com>
 MIME-Version: 1.0
-To: dan@netx4.com
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppc.kernel.org problems
+To: "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Basic questions about PPC embedded developement under Linux
+References: <38E7EFD4.F77B945B@ict.ac.cn>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
+hi-
 
-(My apologies if I'm not reading this right......)
+ I've just joined this mailing list, and have a few basic questions
+about PPC embedded developement under Linux.
 
-I just updated from BitKeeper this morning, and I'm still seeing
-problems.....
+ My application is not to run Linux on the ppc, but to use x86 Linux as
+a cross-developement platform, thus allowing me to get away from
+expensive, and substandard wondoze-based environments.
 
-- in arch/ppc/8xx_io/uart.c the version says 0.02, where the version
-  in the HardHat tree is 0.03
+ I've set up cross-compilers, etc before, so that doesn't scare me too
+much.  In my last job (after a some work) I was able to dump NT, and do
+all my VxWorks developement under Linux.  It made life bearable.
 
-- the arch/ppc/8xx_io/fec.c still won't compile for me; it is trying to
-  reference the field 'tbusy' in struct net_device, and there is no
-  'tbusy' field in net_device (looks like this still coresponds to the
-  older 'struct device', which did have a 'tbusy' field.....)
+ My primary concern is how to use GDB (or better yet, DDD) with a PPC
+board via the DBM port.  Is there a Linux tool that permits initial
+program download, register access, and debugging via the Moto standard
+PPC BDM port ?
 
-Thanks,
-Steve
+ If so, I'll push very hard to ensure Linux is the developement platform
+for our next project-
 
-
-Dan Malek wrote:
->
-> I am working on the 2.3.xx kernel right now.  There have been lots of
-> generic changes that need integration for 8xx.  Keep looking at the
-> tree over the next few days, it should come together.
->
-> > I have BitKeeper access and I grabbed the latest Linux/PPC kernel tree,
-> > but it doesn't have updated FEC or UART drivers in arch/ppc/8xx_io,
->
-> That should have all been there last week......
->
->
->         -- Dan
-
-
---
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Steve Hein (ssh@sgi.com)              Engineering Diagnostics/Software
-Silicon Graphics, Inc.
-1050 Lowater Road                     Phone: (715) 726-8410
-Chippewa Falls, WI 54729              Fax:   (715) 726-6715
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ron flory
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
