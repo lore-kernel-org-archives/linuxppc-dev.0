@@ -1,48 +1,52 @@
-To: "XOL" <xol@mail.ru>
+From: linas@austin.ibm.com
+Date: Mon, 19 May 2003 10:21:16 -0500
+To: Mark Rakes <mrakes@vivato.net>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Re[2]: How to change Bus speed for MPC8xx CPU 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 18 May 2003 14:35:27 +0400."
-             <E19HLVn-000N0u-00.xol-mail-ru@f20.mail.ru>
-Date: Sun, 18 May 2003 12:43:00 +0200
-Message-Id: <20030518104305.DE7E8C6162@atlas.denx.de>
+Subject: Re: e1000 patch for linuxppc_2_4_devel
+Message-ID: <20030519102116.A33266@forte.austin.ibm.com>
+References: <3048EFC8-87FB-11D7-B0B0-000393DB7C12@vivato.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3048EFC8-87FB-11D7-B0B0-000393DB7C12@vivato.net>; from mrakes@vivato.net on Fri, May 16, 2003 at 05:04:54PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <E19HLVn-000N0u-00.xol-mail-ru@f20.mail.ru> you wrote:
+Hi,
+
+
+On Fri, May 16, 2003 at 05:04:54PM -0700, Mark Rakes wrote:
 >
-> As far as I understand there is a bootloader provided by board
-> manufacturer this is something like BIOS in desktop pc.
-> And there should be part of the kernel running before
-> the kernel starts. So which one of them do the job with
-> clocks? Or probably both of them.
+> this patch fixes e1000 vlan hardware acceleration on ppc.
+>
+> vlan tags weren't swapped.
 
-Normally the clocks are set in the bootloader only.
+Maybe I hav e junky fonts in my mailreader, but, no matter how
+hard I squint, the only thing I can see in this patch is a
+change in indentation.  Whazzup?
 
-Linux does not change these parameters.
+--linas
 
-> And there the kernel loader sources are located under
-> /usr/src/linux tree. I would like to put my patch inside and paly
-> with it.
-
-You wrote:
-
-> My board is runnig from external clock of 10M and boot monitor
-> has parameter called mulitplier which is equal to 10.
-
-So it seems there is  no  patch  needed  at  all.  Just  change  this
-"multiplier" parameter.
-
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-No one can guarantee the actions of another.
-	-- Spock, "Day of the Dove", stardate unknown
+> thanks!
+> -Mark Rakes
+>
+>
+> diff -Nru a/drivers/net/e1000/e1000_main.c
+> b/drivers/net/e1000/e1000_main.c
+> --- a/drivers/net/e1000/e1000_main.c	Fri May 16 17:00:24 2003
+> +++ b/drivers/net/e1000/e1000_main.c	Fri May 16 17:00:24 2003
+> @@ -2062,7 +2062,8 @@
+>   		skb->protocol = eth_type_trans(skb, netdev);
+>   		if(adapter->vlgrp && (rx_desc->status & E1000_RXD_STAT_VP)) {
+>   			vlan_hwaccel_rx(skb, adapter->vlgrp,
+> -				le16_to_cpu(rx_desc->special & E1000_RXD_SPC_VLAN_MASK));
+> +				le16_to_cpu(rx_desc->special &
+> +					    E1000_RXD_SPC_VLAN_MASK));
+>   		} else {
+>   			netif_rx(skb);
+>   		}
+>
+>
+>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
