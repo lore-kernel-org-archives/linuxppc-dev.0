@@ -1,37 +1,31 @@
-To: Freddy Lugo <wilflugo@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Uncompress Ok, but cannot run linux kernel... 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 08 May 2001 06:50:03 PDT."
-             <20010508135003.34130.qmail@web9906.mail.yahoo.com>
-Date: Tue, 08 May 2001 17:21:52 +0200
-Message-Id: <20010508152157.613E32814D@denx.denx.de>
+From: Arturo Nunez <artnpp@cs.ucf.edu>
+Message-Id: <200105081540.LAA10976@iris.cs.ucf.edu>
+Subject: Wireless Advice
+To: linuxppc-embedded@lists.linuxppc.org (linuxppc-embedded)
+Date: Tue, 8 May 2001 11:40:36 -0400 (EDT)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20010508135003.34130.qmail@web9906.mail.yahoo.com> you wrote:
->
-> I am dealing with same problem.  After the rfi (on
-> turn_on_mmu) instruction an signal is generated and
-> the progam counter is lost.  When performing an rfi
-...
-> the exception is executed.  gdb only said it recevies
-> a SIGSTOP signal.  I will be working with that today.
+Hello:
+	I have the following board:
 
-What exectly are you trying to do?
+	RPX CLLF
+	Cpu:XPC860TZ
 
-Single-stepping over an RFI instruction? I  don't  think  you'll  get
-this working.
+	From Embbeded Planet.
 
-Wolfgang Denk
+	Now, I need to do some research in Wireless, I was thinking to use one of these cards:
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Gods don't like people not doing much work. People  who  aren't  busy
-all the time might start to _think_.  - Terry Pratchett, _Small Gods_
+	-	Cisco Aironet 340 Series Card  or
+	-	Linksys WPC11
+
+	Any advice of which one use ??
+
+	Best Regards
+
+	Arturo Nunez
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
