@@ -1,14 +1,25 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <019501c3b9c5$b339a060$0400a8c0@eurostudio.local>
-From: "AlessandroPPC" <aleppcrossi@libero.it>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: ram root filesystem
-Date: Wed, 3 Dec 2003 18:48:44 +0100
+Message-ID: <D73A25AA6E54D511AD74009027B1110F5BAFA4@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'AlessandroPPC'" <aleppcrossi@libero.it>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: ram root filesystem
+Date: Wed, 3 Dec 2003 12:52:58 -0500 
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Try the ram disk at
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/images/ppc_82xx/
+
+-----Original Message-----
+From: AlessandroPPC [mailto:aleppcrossi@libero.it]
+Sent: Wednesday, December 03, 2003 12:49 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ram root filesystem
+
 
 
 Hi to all,
