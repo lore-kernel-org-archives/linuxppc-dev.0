@@ -1,37 +1,44 @@
-Date: Thu, 24 Jan 2002 05:42:46 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: RFC: vesafb
+Date: Thu, 24 Jan 2002 09:52:02 +0100 (MET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: hollis@austin.ibm.com
-Cc: linuxppc-dev@lists.linuxppc.org, sdi@remote.org
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+	sdi@remote.org,
+	Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Subject: Re: RFC: vesafb
 In-Reply-To: <20020123192010.GP510@austin.ibm.com>
+Message-ID: <Pine.GSO.4.21.0201240948070.19665-100000@vervain.sonytel.be>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
-Message-Id: <E16Tbiw-00008o-00@piglet.grunz.lu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  23 Jan, this message from hollis@austin.ibm.com echoed through cyberspace:
+On Wed, 23 Jan 2002 hollis@austin.ibm.com wrote:
 > The attached patch allows vesafb to work on PPC. vesafb does surprisingly
+
+Nice!
+
 > little with the BIOS (which I thought was the whole point of VESA). With some
 > ifdef's I'm able to use it as sort of a VGA offb -- the firmware initializes
 > the card, and the driver just uses it and never mucks with it.
 
-Wouldn't this be a good start to use generic PC-type grafic cards on PPC
-machines in general? Or do you lack initialization if nobody (neither
-firmware nor OS) can talk to the card 'natively'?
+Well, vesafb assumes the VESA BIOS initialized the card to some linear graphics
+mode _before_ the real kernel code was started. Once the kernel is started, no
+VESA calls are made, and the video mode is fixed.
 
-Cheers
+So in theory (and you proved the practical side on PReP) it can be used on any
+platform that initializes a more-or-less VGA card to a linear graphics mode.
 
-Michel
+Gr{oetje,eeting}s,
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
