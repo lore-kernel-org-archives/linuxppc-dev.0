@@ -1,37 +1,30 @@
+Message-ID: <3E8E31AD.3050302@mvista.com>
+Date: Fri, 04 Apr 2003 19:30:21 -0600
+From: Mark Hatle <fray@mvista.com>
+MIME-Version: 1.0
 To: Darin.Johnson@nokia.com
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: glibc vs. newlib 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 04 Apr 2003 15:08:26 -0800."
-             <F0B628F30F48064289D8CCC1EE21B7A80C4869@mvebe001.americas.nokia.com>
-Date: Sat, 05 Apr 2003 01:38:24 +0200
-Message-Id: <20030404233829.466A8C587C@atlas.denx.de>
+Subject: Re: glibc vs. newlib
+References: <F0B628F30F48064289D8CCC1EE21B7A80C4869@mvebe001.americas.nokia.com>
+In-Reply-To: <F0B628F30F48064289D8CCC1EE21B7A80C4869@mvebe001.americas.nokia.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <F0B628F30F48064289D8CCC1EE21B7A80C4869@mvebe001.americas.nokia.com> you wrote:
+Darin.Johnson@nokia.com wrote:
+> What are the experiences and tradeoffs of using newlib vs. glibc?  I'm targetting 16M board (maybe some 8M), no swap space, and I'm concerned that adding glibc will suck much of this up.  At the same time we'd also like to be able to use off-the-shelf components like dhcpd or telnetd, and are not sure if newlib would give us too many headaches there.
 >
-> What are the experiences and tradeoffs of using newlib vs. glibc?  I'm targetting 16M board (maybe some 8M), no swap space, and I'm concerned that adding glibc will suck much of this up.  At the same time we'd also like to be able to use off-the-shelf c
-> omponents like dhcpd or telnetd, and are not sure if newlib would give us too many headaches there.
+> Darin Johnson
 
-newlib is probably not sufficient for any practical purposes.
+I strongly recommend you stay away from newlib.
 
-OTOH 16 MB of RAM are sufficient to even run GCC on  the  target,  so
-woth  a  bit of careful tuning a LOT can be done using plain glibc. I
-recommend to start with glibc; if you;re running out of space try  to
-optimize it, and only when this fails start looking for alternatives.
+My recommendation is to use glibc "optimized"  (there are numerous programs that
+will re-link glibc based on particular requirements you may have.)
 
-Best regards,
+Or if you need a more "generic solution" look into uclibc.
 
-Wolfgang Denk
+--Mark
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The only person who always got his work done by Friday
-                                                 was Robinson Crusoe.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
