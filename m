@@ -1,78 +1,76 @@
-From: Paul Mackerras <paulus@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15542.55726.605404.888541@argo.ozlabs.ibm.com>
-Date: Fri, 12 Apr 2002 22:57:18 +1000 (EST)
-To: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Fri, 12 Apr 02 12:02:19 PDT
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0204121902.AA01888@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: CONFIG_GENERIC_PPC32
-In-Reply-To: <0204110308.AA27139@ivan.Harhan.ORG>
-References: <0204110308.AA27139@ivan.Harhan.ORG>
-Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Sokolov writes:
+Paul Mackerras <paulus@samba.org> wrote:
 
-> > A laudable goal.  I like the idea of having each platform selected
-> > with a bool rather than just having a single choice of platform.
+> > So how about pushing it into 2_4_devel?
 >
-> So how about pushing it into 2_4_devel?
+> When I'm happy with the implementation, sure.
 
-When I'm happy with the implementation, sure.
+OK, so let's review that's left to be done in order to get there: eliminate the
+per-machine lines from setup.c and replace them with ELF section magic, settle
+the bi_recs issue, and serial stuff. Did I miss anything else?
 
-> > However, there are some aspects of the way you have done your
-> > CONFIG_GENERIC_PPC32 that I don't like.
->
-> So can you promise that if I change those to the way you said you'll accept my
-> patch into 2_4_devel? Without that there is no incentive for me to do any more
-> work.
+Now the extra bi_recs I've added in 2_4_alt are currently only used by my
+GT-64260 stuff, which I see will take its own mortal battle, and just the
+CONFIG_GENERIC_PPC32 framework without the GT-64260 stuff can do without them.
+So perhaps we could get CONFIG_GENERIC_PPC32 into 2_4_devel just like this,
+I'll do the ELF section magic and address the serial concerns below, but
+without touching bi_recs at all for now?
 
-How can I promise to accept code that I haven't yet seen?  I can (and
-do) promise to take a good look at it and seriously consider it,
-though.
+> I think there are two tenable positions: the first is to have very
+> simple bi_recs, i.e. basically what we have at the moment, that convey
+> a small number of global pieces of information about the system.
 
-> > Instead I think that both the names of the pieces of information, and
-> > the values of things like the device type, should be represented as
-> > strings.  Using strings just gives us orders of magnitude more
-> > flexibility and extensibility, and is much more suitable for the sort
-> > of decentralized and distributed development that we do.
->
-> But this is not how bi_recs work. Do you want to break compatibility with the
-> existing bi_recs, to add a whole new boot info mechanism independent of
-> bi_recs, or what? And if I am to implement it, I need to be given some kind of
-> spec as to what to implement.
+This is what I prefer.
 
-I think there are two tenable positions: the first is to have very
-simple bi_recs, i.e. basically what we have at the moment, that convey
-a small number of global pieces of information about the system.  If
-we really need to convey information about individual devices then I
-think we want something approaching the OF device tree, which is a
-flexible and extensible structure that conveys arbitrary information
-about the devices and their relationships very well.  So the second
-position is to encode information about devices as a set of
-properties, each of which has a string name and a value which is an
-array of bytes.  In this case we would probably have one bi_rec per
-device.  Ideally we would also have parent/child/sibling pointers for
-each device as well.
+> If
+> we really need to convey information about individual devices then I
+> think we want something approaching the OF device tree, which is a
+> flexible and extensible structure that conveys arbitrary information
+> about the devices and their relationships very well.
 
-> On all machines I've supported so far one of the system serial ports that are
-> supported in this manner is the system console and the serial driver therefore
-> has to be compiled in anyway. I don't see a problem with making a requirement
-> that the serial driver be compiled in for CONFIG_GENERIC_PPC32. After all, we
-> are not dealing with a PeeCee where the serial ports are an auxiliary feature,
-> we are dealing with real computers where the system serial ports are central
-> system resources like on a VAX.
+Well, since you like OF and you are the Linux/PPC dictator, I think the path of
+least resistance to getting HEC machines supported by Linux/PPC would be for me
+to construct a real OF device tree and pass it to Linux. Now it would be a lot
+easier for me to just pass you a static tree rather than pass you a "PROM"
+pointer in R5 for you to call to construct it. Would you accept a patch that
+allows the entire OF device tree to be passed to the kernel in a single bi_rec?
+I'm not going to rip out the prom_init code, I'll just make it skip over that
+if the device tree has been passed in a bi_rec, effectively giving the user two
+ways to get the OF device tree. Would that be acceptable for 2_4_devel?
 
-Except on a powermac, as Ben has pointed out in another message.
+And where can I find a spec for the OF device tree and a few examples?
 
-One solution to the problem of the serial driver as a module is to
-have the serial.o module have an empty rs_table (so it assumes no
-ports when it loads), and then have a ppc_serial module which does
-whatever magic is needed to find out about the serial ports on the
-system and calls register_serial for each one.
+> One solution to the problem of the serial driver as a module is to
+> have the serial.o module have an empty rs_table (so it assumes no
+> ports when it loads),
 
-Paul.
+This is exactly what will happen in 2_4_alt if you build the serial driver as a
+module for CONFIG_GENERIC_PPC32.
+
+> and then have a ppc_serial module which does
+> whatever magic is needed to find out about the serial ports on the
+> system and calls register_serial for each one.
+
+How about making it prepchrp_serial instead? I would say that only a few
+systems would want that and it shouldn't be imposed on the rest of the PPC
+world. PMacs wouldn't need anything in rs_table at all, as they have no
+built-in NS16550 serial ports, the ISA serial port definitions currently given
+by <asm/serial.h> for CONFIG_ALL_PPC are for PReP and CHRP. And for all the
+systems I'm working with the point is moot as the serial driver must be
+compiled in for the console. So I think having the serial driver as a module
+and having it access hard-wired serial ports would be a very rare need, perhaps
+only for PRePs and CHRPs with video consoles. Therefore I would suggest having
+such a special module only for those rare cases where it's needed, and letting
+the rest not worry about supporting it.
+
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
