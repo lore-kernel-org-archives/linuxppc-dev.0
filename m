@@ -1,19 +1,37 @@
-To: "Muhammad Sarwar" <msarwar@mangrovesystems.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: AgileDB and Abatron BDI 2000 ICE 
+Date: Fri, 11 Jul 2003 10:58:03 -0400
+Message-ID: <8529B5552D4EAA4DAEDF49650C64B2B436E4ED@TARPON.mangrovesystems.com>
+From: "Muhammad Sarwar" <msarwar@mangrovesystems.com>
+To: "Wolfgang Denk" <wd@denx.de>
 Cc: "Steven Rothweiler" <Stevenr@raritan.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: AgileDB and Abatron BDI 2000 ICE 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 11 Jul 2003 10:31:56 EDT."
-             <8529B5552D4EAA4DAEDF49650C64B2B437128C@TARPON.mangrovesystems.com>
-Date: Fri, 11 Jul 2003 16:48:29 +0200
-Message-Id: <20030711144834.C3B46C6D82@atlas.denx.de>
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <8529B5552D4EAA4DAEDF49650C64B2B437128C@TARPON.mangrovesystems.com> Muhammad Sarwar wrote:
+You may be rite, Agile may not be for those who have been using GDB for
+some time...and know how to add "some custom-defined buttons" in
+DDD....;-)
+
+
+Regards,
+
+Muhammad Sarwar
+Mangrove Systems Inc.
+
+-----Original Message-----
+From: Wolfgang Denk [mailto:wd@denx.de]
+Sent: Friday, July 11, 2003 10:48 AM
+To: Muhammad Sarwar
+Cc: Steven Rothweiler; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: AgileDB and Abatron BDI 2000 ICE
+
+In message
+<8529B5552D4EAA4DAEDF49650C64B2B437128C@TARPON.mangrovesystems.com>
+Muhammad Sarwar wrote:
 >
 > Main advantage of Agile is that it integrates Abatron's commands and
 > GDB debugging services.
