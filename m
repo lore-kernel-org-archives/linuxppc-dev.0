@@ -1,40 +1,52 @@
-Date: Mon, 1 Dec 2003 23:47:08 +0100
-Subject: Re: 2.6 PReP issues, still freezing
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v553)
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Christian Kujau <evil@g-house.de>, linuxppc-dev@lists.linuxppc.org
+Message-ID: <3FCBCC0A.5060107@g-house.de>
+Date: Tue, 02 Dec 2003 00:17:30 +0100
+From: Christian Kujau <evil@g-house.de>
+MIME-Version: 1.0
 To: Remco Post <r.post@sara.nl>
-From: Remco Post <r.post@sara.nl>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.6 PReP issues, still freezing
+References: <3318B418-244D-11D8-A10A-000393911DE2@sara.nl>
 In-Reply-To: <3318B418-244D-11D8-A10A-000393911DE2@sara.nl>
-Message-Id: <4B2C81BD-2450-11D8-A10A-000393911DE2@sara.nl>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Monday, Dec 1, 2003, at 23:24 Europe/Amsterdam, Remco Post wrote:
+Remco Post wrote:
 > flops:~# ping 172.16.5.1
 > PING 172.16.5.1 (172.16.5.1): 56 data bytes
 >
+> --- 172.16.5.1 ping statistics ---
+> 2 packets transmitted, 0 packets received, 100% packet loss
+> flops:~# eth0: link down
+> eth0: timeout expired stopping DMA
+> kernel BUG in de_set_media at drivers/net/tulip/de2104x.c:926!
+
+so you really have a de2104x card. and your problems differ from mine,
+as i never got any Oopses.
+
+did you try Jeff Garzik's fixes for this driver?
+
+http://marc.theaimsgroup.com/?l=linux-kernel&m=106950312306991&w=2
+
+they were for some -test9-bk tree, but neither the -test10 nor the
+-test11 ChangeLog says something about the fixes, so i think they are
+still pending.
+
+> CONFIG_PPC_CHRP=y
+> CONFIG_PPC_PMAC=y
+> CONFIG_PPC_PREP=y
+> CONFIG_PPC_OF=y
+
+how many archs do you want to boot at once? :-)
 
 
-ow, btw, I lied, my mobo is a blackhawk (powerstack) with a 127MHz PPC
-604, it used to be a node in an experimental parsytec parallel system
-running aix 3 (yikes)
-
+Thanks,
+Christian.
 --
-Met vriendelijke groeten,
+BOFH excuse #233:
 
-Remco Post
-
-SARA - Reken- en Netwerkdiensten                      http://www.sara.nl
-High Performance Computing  Tel. +31 20 592 8008    Fax. +31 20 668 3167
-
-"I really didn't foresee the Internet. But then, neither did the
-computer
-industry. Not that that tells us very much of course - the computer
-industry
-didn't even foresee that the century was going to end." -- Douglas Adams
+TCP/IP UDP alarm threshold is set too low.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
