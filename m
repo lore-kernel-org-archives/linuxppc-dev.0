@@ -1,19 +1,22 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao09.cox.net (fed1rmmtao09.cox.net [68.230.241.30])
-	by ozlabs.org (Postfix) with ESMTP id A0DAF67A86
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 01:18:11 +1100 (EST)
-Date: Thu, 24 Feb 2005 07:18:09 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: James Chapman <jchapman@katalix.com>
-Message-ID: <20050224141809.GP345@smtp.west.cox.net>
-References: <421CEC19.2010703@katalix.com>
-	<20050223222534.GM345@smtp.west.cox.net>
-	<421D97FE.4080100@katalix.com>
-Mime-Version: 1.0
+Return-Path: <mikpe@user.it.uu.se>
+Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "aun.it.uu.se",
+	Issuer "Uppsala University CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4F14267A6D
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 02:09:05 +1100 (EST)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <421D97FE.4080100@katalix.com>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: PATCH: add ppc PVR register values for 7447A and 7457 CPUs
+Message-ID: <16925.60927.49095.758660@alkaid.it.uu.se>
+Date: Thu, 24 Feb 2005 16:08:47 +0100
+From: Mikael Pettersson <mikpe@csd.uu.se>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1109210688.15027.2.camel@gaston>
+References: <16924.59237.581247.498382@alkaid.it.uu.se>
+	<1109210688.15027.2.camel@gaston>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: ppc32 weirdness with gcc-4.0 in 2.6.11-rc4
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,30 +26,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 24, 2005 at 09:01:50AM +0000, James Chapman wrote:
-> Tom Rini wrote:
-> 
-> >On Wed, Feb 23, 2005 at 08:48:25PM +0000, James Chapman wrote:
-> >
-> >>Signed-off-by: James Chapman <jchapman@katalix.com>
-> >>
-> >>Trivial patch to add 7447A and 7457 CPU defs.
-> >
-> >
-> >Why?  Most of the PVR definitions here can be removed (*muttering about
-> >85xx ones being added).
-> >
-> 
-> I'm in the process of submitting a patch for a new board (Radstone
-> PPC7D). Since other boards test CPU type using definitions in this file,
-> I was trying to be consistent.
-> 
-> If the community don't think those definitions are useful, I'll just
-> move the ones I need into my board support stuff.
+Benjamin Herrenschmidt writes:
+ > > -Memory: 255872k available (1788k kernel code, 976k data, 144k init, 0k highmem)
+ > > +Memory: 255872k available (1776k kernel code, 0k data, 144k init, 0k highmem)
+ > 
+ > That is weird... (0k data)
+ > 
+ > > AGP special page: 0xcffff000
+ > >  Calibrating delay loop... 830.66 BogoMIPS (lpj=4153344)
+ > >  Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+ > > @@ -132,13 +132,7 @@
+ > >  VFS: Mounted root (ext3 filesystem) readonly.
+ > >  Freeing unused kernel memory: 144k init 4k chrp 8k prep
+ > >  usb 3-2: new full speed USB device using ohci_hcd and address 2
+ > > -hub 3-2:1.0: USB hub found
+ > > -hub 3-2:1.0: 3 ports detected
+ > > -usb 3-2.1: new low speed USB device using ohci_hcd and address 3
+ > > -input: USB HID v1.10 Mouse [Logitech Apple Optical USB Mouse] on usb-0001:10:1b.0-2.1
+ > > -usb 3-2.3: new full speed USB device using ohci_hcd and address 4
+ > > -input: USB HID v1.10 Keyboard [Mitsumi Electric Apple Extended USB Keyboard] on usb-0001:10:1b.0-2.3
+ > > -input: USB HID v1.10 Device [Mitsumi Electric Apple Extended USB Keyboard] on usb-0001:10:1b.0-2.3
+ > > +usb 3-2: can't connect bus-powered hub to this port
+ > >  EXT3 FS on hda5, internal journal
+ > >  Adding 1048568k swap on /dev/hda3.  Priority:-1 extents:1
+ > >  SCSI subsystem initialized
+ > > 
+ > > Note: "Memory: ... 0k data ..." !? Surely that can't be correct.
+ > 
+ > Not sure what's up, but it's probably something beeing miscompiled. Can
+ > you check if the udelay/medlay loops are correct ?
 
-Is there something you can't get from cur_cpu_spec[0] ?  That's why all
-of the PVR definitions _should_ be unneeded now.
+Both __delay and a few test functions using udelay/mdelay look Ok.
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+_However_, the 0k data message is due to a gcc-4.0 bug, and below
+you'll find a test program which illustrates it.
+
+/Mikael
+
+/* gcc4bug.c
+ * Written by Mikael Pettersson <mikpe@csd.uu.se>, 2005-02-24.
+ *
+ * This program is abstracted from arch/ppc/mm/init.c in
+ * the 2.6.11-rc4 Linux kernel sources.
+ *
+ * With gcc-3.4.3, gcc-3.3.5, or gcc-3.2.3, mem_init()
+ * correctly returns 245.
+ *
+ * With gcc-4.0.0 20050220, mem_init() erroneously returns 0.
+ * The error occurs with -O1, and -O2.
+ * Compiling at -O0, or -O3 or higher, hides the error.
+ *
+ * All gcc versions were configured for powerpc-unknown-linux-gnu.
+ */
+#include <stdio.h>
+
+#define PAGE_SIZE 4096
+unsigned long PAGE_OFFSET;
+unsigned long high_memory;
+unsigned long etext;
+unsigned long init_begin;
+unsigned long init_end;
+unsigned long klimit;
+
+int mem_init(void)
+{
+	unsigned long addr;
+	int codepages = 0;
+	int datapages = 0;
+	int initpages = 0;
+
+	for (addr = PAGE_OFFSET; addr < high_memory; addr += PAGE_SIZE) {
+		if (addr < etext)
+			codepages++;
+		else if (addr >= init_begin && addr < init_end)
+			initpages++;
+		else if (addr < klimit)
+			datapages++;
+	}
+	printf("datapages == %d, initpages == %d, codepages == %d\n", datapages, initpages, codepages);
+	return datapages;
+}
+
+int main(void)
+{
+    int datapages;
+
+    PAGE_OFFSET	= 0xc0000000;
+    etext	= 0xc01bb958;
+    init_begin	= 0xc0264000;
+    init_end	= 0xc0288000;
+    klimit	= 0xc02d4378;
+    high_memory	= 0xd0000000;
+    datapages = mem_init();
+    if (datapages != 245) {
+	fprintf(stderr, "gcc bug! mem_init() returned %d\n", datapages);
+	return 1;
+    } else
+	return 0;
+}
