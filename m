@@ -1,37 +1,35 @@
-To: David de =?iso-8859-1?Q?Andr=E9s=20Mart=EDnez?= <ddandres@disca.upv.es>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: LinuxPPC for MPC555? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 13 Jan 2002 13:18:08 +0100."
-             <3C417B00.A0DCAE7@disca.upv.es>
-Date: Mon, 14 Jan 2002 13:33:50 +0100
-Message-Id: <20020114123355.B211B10B6C@denx.denx.de>
+Message-ID: <007401c19cff$40b805c0$8e00010a@aztec.local>
+From: "Frederic Soulier" <soulier@aztec-radiomedia.com>
+To: =?iso-8859-1?Q?David_de_Andr=E9s_Mart=EDnez?= <ddandres@disca.upv.es>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <3C417B00.A0DCAE7@disca.upv.es>
+Subject: Re: LinuxPPC for MPC555?
+Date: Mon, 14 Jan 2002 14:27:45 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3C417B00.A0DCAE7@disca.upv.es> you wrote:
->
+The Motorola MPC-555 is MMU-less. Classical Linux ports do not support this
+kind of microcontrollers.
+If your OS requirements are about Linux facilities, you may consider the
+uCLinux project : http://www.uclinux.{org, com} but I have never heard about
+a successful uCLinux MPC-555 port.
+If your requirements are less restrictive and simply about an open source
+OS, you may consider other projects like RTEMS (http://www.rtems.com) or
+eCos (http://sources.redhat.com/ecos). I know some guys had sucessfuly used
+them with MPC-555 so you have to browse these projects development
+mailing-lists.
+
 > I know it's a bit strange, but we are looking for a LinuxPPC port for
 > the Motorola MPC555.
 >
 > Does anyone know where can we find this port, or if it can be easily
 > done?
 
-The MPC555 has no MMU, so LinuxPPC cannot be ported to it.
+Frederic
 
-You might check out uClinux which  works  on  MMU-less  systems,  but
-AFAIK there has been only some talk of a uClinux port for the MPC555,
-but  I  haven't  seen  any  indication  that anybody actually started
-working on it.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A supercomputer is a machine that runs an endless loop in 2 seconds.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
