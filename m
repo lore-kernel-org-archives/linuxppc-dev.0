@@ -1,50 +1,37 @@
-Message-Id: <200008162354.BAA31708@denx.local.net>
-To: Pravin Pathak <pkpathak@dnrc.bell-labs.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: What is embedded linux ? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 16 Aug 2000 18:03:57 EDT."
-             <399B0FCD.A6E0A6BE@dnrc.bell-labs.com>
-Date: Thu, 17 Aug 2000 01:54:45 +0200
+Subject: Re: What is embedded linux ?
+To: pkpathak@dnrc.bell-labs.com (Pravin Pathak)
+Date: Thu, 17 Aug 2000 10:29:20 +1000 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org (linuxppc-embedded@lists.linuxppc.org)
+In-Reply-To: <399B0FCD.A6E0A6BE@dnrc.bell-labs.com> from "Pravin Pathak" at Aug 16, 2000 06:03:57 PM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000817002920.F3DA4132@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Pravin,
-
-in message <399B0FCD.A6E0A6BE@dnrc.bell-labs.com> you wrote:
->
+Pravin Pathak writes:
 > I have a silly question. How does embedded linux works without disk
-> support ?
+> support ?   I mean from where it loads shell and other application task
+> images without any file system support?
 
-There are many ways: loading over ethernet, from flash, ...
+It's not a silly question really.  The answer is that they're loaded from a
+filesystem as normal, but the filesystem resides on some non-disk media.  Of
+course it depends on your application; some embedded systems have a disk, but
+many don't. For more info, see the section in the HOWTO at:
+    http://members.xoom.com/greyhams/linux/PowerPC-Embedded-HOWTO-12.html
 
-> I mean from where it loads shell and other application task images
-> without any file system
+> For VxWOrks/pSOS have a single object file.
 
-What makes you think there is no filesystem support?
+And the academics used to criticise the Linux kernel for being monolithic! :-).
 
-> support ? For VxWOrks/pSOS have a single object file. How about Embedded
-> Linux ?
-> I am confused on this matter. Or it always need some kind of file
-> support like NFS to boot ?
-
-Usually you will always want to have some filesystem support. Unix is
-pretty much build around the idea  of  mounting  some  type  of  root
-device  -  so  you  will  usually  always find a root directory, most
-probably also a /dev/ directory in it, etc.
-
-There are many ways  to  build  such  a  system.  a  NFS  based  root
-filesystem  is one; another is uising a ramdisk image which is loaded
-with the kernel from some boot device (flash, network, ...).
-
-Wolfgang Denk
-
+Regards,
+Graham
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Given a choice between two theories, take the one which is funnier.
+Graham Stoney
+Principal Hardware/Software Engineer
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
