@@ -1,49 +1,39 @@
-Message-ID: <392BAB64.DBF54B54@execpc.com>
-Date: Wed, 24 May 2000 05:13:56 -0500
-From: Joseph Garcia <jpgarcia@execpc.com>
-MIME-Version: 1.0
-To: Sergio Brandano <sb@dcs.qmw.ac.uk>
-CC: Stephan Leemburg <stephan@jvc.nl>,
+Message-Id: <200005240959.KAA18934@copper.dcs.qmw.ac.uk>
+To: Joseph Garcia <jpgarcia@execpc.com>
+cc: Stephan Leemburg <stephan@jvc.nl>,
         Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-        linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
-Subject: Re: PMUD vs APM
-References: <B5514D3F.E6B3%stephan@jvc.nl>  <392B854B.F9AC566E@execpc.com> <200005240959.KAA18934@copper.dcs.qmw.ac.uk>
-Content-Type: text/plain; charset=iso-2022-jp
+        Sergio Brandano <sb@dcs.qmw.ac.uk>, linuxppc-dev@lists.linuxppc.org,
+        debian-powerpc@lists.debian.org, sb@dcs.qmw.ac.uk
+Subject: Re: PMUD vs APM 
+In-Reply-To: Message from Joseph Garcia <jpgarcia@execpc.com>
+   of "Wed, 24 May 2000 02:31:23 EST." <392B854B.F9AC566E@execpc.com>
+References: <B5514D3F.E6B3%stephan@jvc.nl>  <392B854B.F9AC566E@execpc.com> 
+Date: Wed, 24 May 2000 11:00:43 +0000
+From: Sergio Brandano <sb@dcs.qmw.ac.uk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sergio Brandano wrote:
-> > Its almost as good as Batmon, but smaller.
->
->  I find gkrellm way better than Batmon. Why do you say ``almost''?
->  Why is Batmon still better than gkrellm-pmud? (it results to me that
->  the underlying code was written by Paul...)
+ Hi Joseph,
 
-testing, and a few features.  as a battery monitor, gkrellm-pmu has the needed
-features.  Ohare-based systems seem to have a temperature sensor on the battery
-though.  One of those testing things.  I only have access to my PDQ/300. :(
+> I also found this kind of annoying.  And as far as I can tell, APM
+> doesn't show everything.  This is why I wrote a plugin for GKrellM
+> that, using PMUD, displays battery status in a window.
 
->  It would be a good thing, however, to have a unified monitoring
->  system despite the hardware. I mean Intels are based on apm, PPCs are
->  based on pmu, but do applications need to know it?
+ You are right. I have dropped my interest on apmd since I discovered
+ gkrellm-pmud. And I have been advertising it on (my) PB page too, as
+ you probably know.
 
-My 0.02 on the matter is that we don't really need to bow down to APM, just
-support it.  There may be a few programs out there that do stuff with APM that
-we dont need to reinvent.  example that may or may not exist, an dialog box that
-pops up warning low battery.  But since PMU has the ability to list additional
-information (current, 2 batteries), why not use it?  I prefer knowing more than
-just batt/ac and charge.  But others might not care. In the end, I suppose its
-better to support APM than not to.
+> Its almost as good as Batmon, but smaller.
 
-I plan on updating my plugin later today.  RPMs and locales.. oooh.
+ I find gkrellm way better than Batmon. Why do you say ``almost''?
+ Why is Batmon still better than gkrellm-pmud? (it results to me that
+ the underlying code was written by Paul...)
 
---
-Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
-CS Undergraduate                      Student Employee - Systems Programmer
-University of Wisconsin - Madison                            UW Lidar Group
+ It would be a good thing, however, to have a unified monitoring
+ system despite the hardware. I mean Intels are based on apm, PPCs are
+ based on pmu, but do applications need to know it?
 
-"Did you ever notice how the Chinese Abacus, with 2 '5' beads and 5 '1'
-beads, is perfect for hexidecimal math?"
+ Sergio
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
