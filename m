@@ -1,34 +1,56 @@
-Message-ID: <3FAFE8C5.9060105@2net.co.uk>
-Date: Mon, 10 Nov 2003 19:36:37 +0000
-From: Chris Simmonds <chris@2net.co.uk>
+Message-ID: <1068545269.3fb0b4f5c72e5@pop-mail.india.tejasnetworks.com>
+Date: Tue, 11 Nov 2003 15:37:49 +0530
+From: Anil Giri <anil@india.tejasnetworks.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: anil@india.tejasnetworks.com
+Subject: SDRAM mirroring problem
 MIME-Version: 1.0
-To: Jaap-Jan Boor <jjboor@aimsys.nl>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: USB for mpc8270/80
-References: <3FAFABF0.6040000@2net.co.uk> <1068479677.5423.4.camel@linpc003.aimsys.nl>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
+  My board uses SAMSUNG K4S511632M SDRAM in 8M * 16 bit * 4 banks configuration
+(13 rows & 10 columns).Two such chips are used to get 128 MB and uses CS1 for
+chip select.My board uses MPC852T processor.
 
-Have you made a start? I am just about to dive in to the same code. If
-you have anything more than the basic 8xx_io/usb.c I would be very
-interested.
+MPC to SDRAM configuration is as follows:
+======================
+A29 :A0
+A28 :A1
+A27 :A2
+A26 :A3
+A25 :A4
+A24 :A5
+A23 :A6
+A22 :A7
+A21 :A8
+A20 :A9
+GPL_A0 : A10
+A18 :A11
+A17 :A12
 
-Bye for now,
-Chris.
+A6 :BA0
+A5 :BA1
+GPL_A3 :CAS
+GPL_A2 :RAS
+GPL_A5 :WE
+=====================
+My problem is that when i write some word in first RAM chip is mirrored
+in the other RAM chip.And Effectivly i m able to use only 64 MB of RAM.
+What could be the problem???
+Following SDRAM settings are used
 
-Jaap-Jan Boor wrote:
+IMMR:0xff000000
+OR1: 0xf8000e00
+BR1: 0x00000081
+MSTAT:0x00000400
+MAMR: 0x80a06114
+MAR: 0x88
+MCR:0x80002105
 
->Hi,
->
->I need this too and am looking at the 850/823 USB host driver
->which should work on the 8270 as well.
->
->Jaap-Jan
->
-
+Thanks in advance...
+-Anil
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
