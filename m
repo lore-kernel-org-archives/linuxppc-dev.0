@@ -1,36 +1,38 @@
-Message-ID: <004501c09fa4$df5fe2f0$2501000a@sid>
-From: "Sid" <sid@siddhartha.8m.com>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: MPC860 - minicom
-Date: Mon, 26 Feb 2001 11:33:18 +0800
+Date: Sun, 25 Feb 2001 23:52:35 -0600 (CST)
+From: Ramprasad Rao <ramp@oddjob.uchicago.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: XFree86 4.0.xx + Display corruption + ati + mach64  
+Message-ID: <Pine.GSO.4.10.10102252338330.13356-100000@oddjob.uchicago.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi,
 
-I have an MBX860 board.
+I'm using the XF4.0.99 rpms and get a very strange problem on my
+display. There are small underscore characters that scroll across my
+display from top to bottom approximately 1/2 inch from the left edge of
+screen. This corruption mainly occurs at color depths of 15/16 and above
+and for resolutions of 1280x1024. No problems at 1024x768 or below.
+I get the same corruptions even with XFree86-3.3.6-20.
 
-After powering up the board, lights DS1 and DS2 light up.
+Kernel: 2.4.0-test11
+Video (from dmesg):
+atyfb: 3D RAGE PRO (PQFP, PCI) [0x4750 rev 0x7c] 6M SGRAM, 14.31818 MHz XTAL, 23
+0 MHz PLL, 100 Mhz MCLK
+Console: switching to colour frame buffer device 128x48
+fb0: ATY Mach64 frame buffer device on PCI
+MacOS display is /pci/ATY,RagePro_C
 
-When I connect the board to the serial port of my host via COM/SMC1, minicom
-shows a target online, but I do not get a debug prompt on minicom. And there
-seems to be no activity at all on the board.
+The monitor is a 19" Viewsonic PF 790.
 
-Is this a common problem? What steps should I take for troubleshooting?
+It is quite possible that this is not a PPC specific problem but I was
+wondering if anyone on this list has had this problem.
 
-Thank you for your time.
-
-regards,
-Sid
---
-sid@siddhartha.8m.com
-
-Q: "Don't fret, Riker.  My good fortune is your good fortune."
---"Deja Q", Stardate 43539.1
+Thanks in advance for your help,
+Ram
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
