@@ -1,38 +1,51 @@
-Date: Wed, 14 Nov 2001 11:24:21 +0100
-From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
-Subject: Re: ppc 405 floating point math emulation
-To: Steven Mueller <diffusor@ugcs.caltech.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Message-id: <3BF24655.F41E57EB@inn.ericsson.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-References: <20011113155956.B7553@spew.ugcs.caltech.edu>
+Date: Wed, 14 Nov 2001 08:15:59 -0500 (EST)
+From: John & Trudy Phillips <johntrudy@adelphia.net>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Yenta IRQ's - none 
+Message-ID: <Pine.LNX.4.33.0111140739260.2769-100000@johntrudy.phillips.private>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Steven Mueller wrote:
->
-> Hello,
->
-> I'm interested in building a kernel with math emulation enabled for an
-> embedded IBM ppc 405.  (It'd be nice to allow customers to run ppc
-> apps on our cards without having to recompile them with soft float
-> support.)
+I am trying to get a Lucent/Orinoco wireless lan card working
+on a new ( 550 MegaHz ) Titanium Powerbook.  I believe the
+handling of IRQ's through the yenta_socket driver is broken.
 
-Yes it's nice. I'am running a full debian testing installation over nfsroot
-on my cards.
+Here is what I have observed/done to this point:
 
-> If anyone has already developed a solution for this, would you please
-> consider posting the patch?  Thank you!
+Kernel: linuxppc-2.4.14-benh
 
-Just remove the printing or uppgrade to the devel tree it could use some more
-testing.
+Yenta: clams irq 58
 
---
-Kenneth Johansson
-Ericsson Business Innovation AB   Tel: +46 8 404 71 83
-Viderögatan 3                     Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@inn.ericsson.se
+Cardmgr: version 3.1.22
+	Starts with no errors
+
+        If the card is present at the start of pcmcia, cardmgr
+        identitifies the Lucent card as Lucent Tecnolodgies WaveLAN IEEE.
+
+        Cardmgr does not recognize any pcmcia card if it is inserted
+        after the pcmcia startup.
+
+wvlan_cs: version 1.0.6
+	Registers the card as netdevice eth1
+
+iwconfig: reports the correct setup including the MAC address of the
+	remote access point. So the receiver portion of the card
+	appears to be correctly activated.
+
+ifconfig: Complains that it can not set netmask 255.255.255.0 but
+	does it anyway.
+
+Once net work access is attempted, the wvlan_cs module reports
+      eth1 Tx timed out Resetting card.
+
+Through the entire process "cat /proc/interrupts" reports 0
+interrupts on irq 58.  Has anyone seen interrupts handled on the
+new Ti power book, or is this a known problem?
+
+John M Phillips
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
