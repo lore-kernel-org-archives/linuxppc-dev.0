@@ -1,84 +1,20 @@
-Date: Thu, 12 Aug 2004 14:38:03 -0500
-From: "Cordes, Aaron M" <aaron.m.cordes@lmco.com>
-Subject: RE: Linux 2.4.27-pre6-bk hangs on MPC8540 board
+Message-ID: <20040812220308.61746.qmail@web53701.mail.yahoo.com>
+Date: Thu, 12 Aug 2004 15:03:08 -0700 (PDT)
+From: Junita Ajith <junita_ppc@yahoo.com>
+Subject: UBoot to boot from RAM
 To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <EE7CAF713952AC4A970DD7CD8B4C12A042DCAC@emss09m06.us.lmco.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I should mention that our SDRAM is connected to the 8540's DDR
-controller, not LocalBus.
+Hi,
 
-Aaron
-
------Original Message-----
-From: Cordes, Aaron M
-Sent: Thursday, August 12, 2004 2:34 PM
-To: 'wd@denx.de'
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Linux 2.4.27-pre6-bk hangs on MPC8540 board
-
-
-Is there a way in Linux or the 8540 to prevent burst accesses, in order
-to test whether they are the problem?  I scanned the processor's
-reference manual, but I didn't see anything that would let me do this.
-
-Thanks
-Aaron
-
-Aaron Cordes
-
------Original Message-----
-From: wd@denx.de [mailto:wd@denx.de]
-Sent: Thursday, August 12, 2004 9:08 AM
-To: Cordes, Aaron M
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux 2.4.27-pre6-bk hangs on MPC8540 board
-
-
-In message
-<EE7CAF713952AC4A970DD7CD8B4C12A042DCA7@emss09m06.us.lmco.com> you
-wrote:
->
-> We are bringing up an 8540-based board, and are getting hangs at
-> random spots when booting Linux.  Sometimes the hangs occur while the
-> kernel is initializing, sometimes the boot gets far enough where I can
-
-> log in and run a couple of programs.  Eventually the board locks up
-> with no oopses or panics.  If I connect to the board with a debugger,
-> the processor is usually stopped in the Data miss exception handler,
-> and there is usually memory corruption in the kernel code.
-
-That's it: memory problems.
-
-> I ran memory tests using both Edink and U-boot and they all passed, so
-> I'm reluctant to blame hardware for the memory corruption.  Has anyone
-
-> seen similar behavior, or have any suggestions of things I might try?
-
-All those memory tests only can test simple read and write  accesses;
-they  all  fail to access burst mode accesses, which will happen when
-Linux starts runing, and which are failing.
-
-Your SDRAM initialization is bad, and  the  system  crashes  when  it
-tries to fetch instructions from RAM. Note that simple read and write
-accesses may still work, it's the burst mode that is failing.
-
-It is NOT sufficient to program the memory controller  of  your  CPU;
-each  SDRAM  chip  also  requires  a specific initialization sequence
-which you must adhere  to  to  the  letter  -  check  with  the  chip
-manufacturer's manual.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de If
-this is a service economy, why is the service so bad?
+   I am trying to have a different version of UBoot
+with some utilities added to it . So I'm trying to
+figure out a way to check if that upgraded version of
+UBoot works fine , without copying it to the default
+location where my original UBoot resides in the flash
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
