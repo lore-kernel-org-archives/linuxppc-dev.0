@@ -1,42 +1,47 @@
-Date: Thu, 1 Mar 2001 08:17:48 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Stefano Coluccini <s.coluccini@caen.it>
-Cc: Matt Porter <mporter@mvista.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: MVME5100 was RE:Bogus interrupt + little Makefile bug
-Message-ID: <20010301081747.A30954@beef.az.mvista.com>
-References: <20010228171203.A29030@beef.az.mvista.com> <NDBBIFIMCKPOADMAJOKMKEJBCPAA.s.coluccini@caen.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <NDBBIFIMCKPOADMAJOKMKEJBCPAA.s.coluccini@caen.it>; from s.coluccini@caen.it on Thu, Mar 01, 2001 at 10:55:33AM +0100
+From: nunninger@web.de
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Thu, 1 Mar 2001 16:27:38 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Subject: including debugging symbols in assembler files
+Reply-To: nunninger@web.de
+Message-ID: <3A9E787A.21141.ACAA65C@localhost>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-[Followups trimmed to only the embedded list]
+Hello,
 
-On Thu, Mar 01, 2001 at 10:55:33AM +0100, Stefano Coluccini wrote:
-> > Ok, I finally got time today to powerup the 5100 that's been laying
-> > around here.  I just pushed the port to the linuxppc_2_5 tree.
-> > Hopefully this saves some effort for others.
->
-> Very great work !!!
->
-> I have found a little bug in arch/ppc/boot/pp3/Makefile:
-> the rule to make zImage.initrd miss the -pbp option in the mkprep
-> invocation.
+Once more I got a question to ask.
 
-Ah, thanks.  A typo from the great bootloader reorganization, it seems.
+I've installed BDM4GDB recently. It seems to work just fine.
+I can do all the things one expect from a debugger like
+reading/wrinting memory, setting registers, loading linux and start
+linux.
+However there seems to be a problem with the debugging
+information which is included in the binary file. For example I can
+not set a breakpoint inside an assembler file like
+b	start
+When I'm trying to do so I get a error message stating there is no
+symbol information. Also when I type "list" right at the beginning of
+the binary file I can not see the assembler code but instead main.c
+is displayed. Also when typing "list files" I see all kind of *.h and
+*.c files but no assembler files.
 
-> I've seen that in the make menuconfig, selecting the MVME5100, does not
-> display the possibility to specify the default kernel command line. Don't
-> you think this is an useful option ?
+When compiling I'm using the flag -g in the CFLAGS in the top level
+Makefile as well as in /mbxboot. I'm not sure wheter this includes
+debugging information in assembler files as well. So I added also -
+Wa,--gstabs in the Makefile of /mbxboot to ask the assembler
+explicitly to include debugging information. Like this there is
+included some more information. However gdb seems not to
+understant it. For instance the filename which should be head.S is
+some kind of random (?) name like "ccwHvFaT.S". Also I saw the
+error message unknown debugging information in GDB.
 
-Oversight.  I just turned it on for a bunch of boards.
+Please could someone point me out how I sould include debugging
+information such that I can work properly with GDB and BDM4GDB.
 
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Thanks a lot
+	Stefan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
