@@ -1,46 +1,48 @@
-In-Reply-To: <19991123121629.A16956@hq.fsmlabs.com>
-Date: Tue, 23 Nov 1999 20:35:57 +0100
-To: linuxppc-dev@lists.linuxppc.org, geert@linux-m68k.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: bootloader & head.S weirdness (patch)
-Message-Id: <19991123203557.015084@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <383AF067.2B8EB961@iname.com>
+Date: Tue, 23 Nov 1999 19:52:07 +0000
+From: Jim Chapman <jim.chapman@iname.com>
+MIME-Version: 1.0
+To: LiuTao <tliu@ict.ac.cn>
+CC: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>,
+        "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: need suggestions
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Nov 23, 1999, Cort Dougan <cort@fsmlabs.com> wrote:
+Re: using a vxworks bootrom to load zImage
 
->Do you keep the list around after the initialization?  We do something
->similar with the prep residual data but after we grab what we want we free
->the RAM. 
+I am using a standard vxworks bootrom to load a zImage, but I had to
+make a few modifications to the zImage startup code to make it work. For
+us, it is useful to share the same target hardware between vxworks and
+linux developers, without having to reblow the flash bootrom each time
+we switch. And by building BOOTP into the vxworks bootrom, we simply
+change the BOOTP server entry to have the target boot vxWorks or zImage
+without changing the bootrom. However, once we're rid of vxworks
+altogether, then a linux-centric bootrom would be a much better
+solution.
 
-As I just wrote to Cort, we already have something for that on PPC, it's
-the device tree. Having a tagged data structure _and_ a device tree looks
-to me like having twice the same things (humm .. almost).
+It turns out that the vxworks bootrom ELF support doesn't handle named
+ELF sections (it's yet another undocumented feature of Wind River code
+-- it silently ignores sections that aren't ".text" or ".data"...), and
+since the compressed vmlinux image is objcopy'd into a special "image"
+section by arch/ppc/mbxboot/Makefile, I had to find a way to put the
+image section inside the text segment so that the image data would be
+copied by the vxworks bootrom. There may be a clever way to do that
+using ld scripts, but I ended up converting the image data to assembly,
+and used a couple of public symbols at the start/end of the data so that
+(a modified) decompress_kernel() could find the image. The
+binary-to-assembly convertor is a simple perl script which does almost
+the same thing as vxWorks' binToAsm tool.
 
-If we remove all the prom_init stuff from the kernel, we can simplify
-kernel entry by always entering the kernel with a known MMU state (let's
-say OFF) and with one parameter: the offset from _start to the device
-tree image.
+The initrd stuff would need similar treatment, but since I don't use
+initrd, I haven't implemented it.
 
-Non-OF machines can easily build a very simple tree with the various
-residual datas from the bootloader and Mac/CHRP machines can have the
-kernel image appended to a bootloader that fills the device tree from OF
-and adds whatever supplementary stuffs we need (initrd, cmd_line, ...) to
-the tree in a given node.
+If you want more details (and the binToAsm perl script) let me know.
 
-There are two things not yet clear to me with this scheme:
+-Jim
 
- - We'll need to have RTAS instanciated at a fixed address choosen by the
-bootloader. I don't think it's a problem if the bootloader puts it as
-high as possible in memory, but it would have been better to have the
-kernel have control on it. But we can live with this limitation
-
- - on SMP machines, the other CPUs must be started by OF code. That means
-that the bootloader must also start them in an idle loop. I beleive the
-code for the idle loop can be in the device tree too with all the infos
-required by the kernel to take over.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
