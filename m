@@ -1,86 +1,83 @@
-Date: Tue, 30 Apr 2002 13:21:47 -0700 (PDT)
-From: John Tyner <jtyner@cs.ucr.edu>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: [patch] map flash from bi-recs
-Message-ID: <Pine.LNX.4.30.0204301318540.3469-101000@hill.cs.ucr.edu>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="394922409-354102991-1020198107=:3469"
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: problems with smbfs on 2.4.18 kernel (ppc)
+From: Bastien Nocera <hadess@hadess.net>
+To: Urban Widmark <urban@teststation.com>
+Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <Pine.LNX.4.33.0203050945100.21791-100000@cola.teststation.com>
+References: <Pine.LNX.4.33.0203050945100.21791-100000@cola.teststation.com>
+Date: 01 May 2002 16:49:08 +0100
+Message-Id: <1020268150.25255.195.camel@dozo>
+Mime-Version: 1.0
+Content-Type: text/plain
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+Hello,
 
---394922409-354102991-1020198107=:3469
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+I'm quite ashamed of the time it took me to gather the info, been
+busy...
 
-Attached is a patch that implements a map driver for flash devices. The
-flash info is found from bi-recs (the bd_t board info struct right now).
+On Tue, 2002-03-05 at 09:12, Urban Widmark wrote:
+>
+> On 5 Mar 2002, Bastien Nocera wrote:
+>
+> > On Sun, 2002-03-03 at 17:28, Urban Widmark wrote:
+> > >
+> > > Has smbfs worked for you with previous versions? A patch was added late to
+> > > 2.4.18 and it has caused a lot of crashes for people. I don't think it is
+> > > related, but since you mention 2.4.18 ...
+> >
+> > I never tried the previous versions of it.
+>
+> Maybe you should.
+>
+> > $ cat /proc/mounts  | grep smb
+> > //kara/Backup1 /mnt/backup smbfs rw,file_mode=0755,dir_mode=0755 0 0
+> >
+> > It seems to be mounted. dmesg says:
+> > smbfs: Unrecognized mount option noexec
+>
+> Does it make any difference if you mount it like:
+> mount -t smbfs -o username=...,password=... //kara/Backup1 /mnt/backup
+>
+> (should stop the "Unrecognized mount option" error)
 
-It should apply cleanly against the current linuxppc_2_4_devel tree.
+It did, the error doesn't appear anymore
 
---394922409-354102991-1020198107=:3469
-Content-Type: APPLICATION/octet-stream; name="bi_recs_map.patch.gz"
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.30.0204301321470.3469@hill.cs.ucr.edu>
-Content-Description: 
-Content-Disposition: attachment; filename="bi_recs_map.patch.gz"
+> > > The entry in mtab is written by smbmnt and one way to get this would be if
+> > > the mount fails, but after smbmnt has written and then for some reason it
+> > > fails to cleanup.
+> >
+> > smb definetaly works, as I can browse it with the smb gnome-vfs module,
+> > as well as smbclient. I'm failing to see why the /mnt/backup directory
+> > just "disappears from there".
+>
+> It can disappear if the request for attributes on that directory fails.
+> Try getting a network trace with ethereal and see what the response to the
+> QUERY_PATH_INFORMATION request is.
 
-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
---394922409-354102991-1020198107=:3469--
+I'm seeing this in ethereal:
+from laptop to SMB server: Transaction2 Request QUERY_PATH_INFORMATION,
+Path: \
+from SMB server back to laptop: Transaction2 Response
+QUERY_PATH_INFORMATION, Error: Directory not found
 
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+However, smbclient seems to find it:
+
+smbclient //kara/backup1 -U hadess
+added interface ip=192.168.1.2 bcast=192.168.1.255 nmask=255.255.255.0
+Password:
+Domain=[IDORU] OS=[Unix] Server=[Samba 2.2.2]
+smb: \> ls
+  mp3s                                D        0  Wed Apr  3 06:38:08
+2002
+
+I'm running out of things to test...
+
+Cheers
+
+--
+/Bastien Nocera
+http://hadess.net
+
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
