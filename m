@@ -1,57 +1,44 @@
-Date: Fri, 29 Sep 2000 17:11:37 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Benjamin Herrenschmidt <bh40@calva.net>, Michel Lanners <mlan@cpu.lu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-Message-ID: <20000929171137.A31137@cx258813-a.chnd1.az.home.com>
-References: <19340823125112.7591@mailhost.mipsys.com> <Pine.LNX.4.10.10009291319510.383-100000@cassiopeia.home>
-Mime-Version: 1.0
+From: Paul Mackerras <paulus@linuxcare.com.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.10.10009291319510.383-100000@cassiopeia.home>; from geert@linux-m68k.org on Fri, Sep 29, 2000 at 01:37:45PM +0200
+Message-ID: <14805.17492.766815.388301@argo.linuxcare.com.au>
+Date: Sat, 30 Sep 2000 12:39:32 +1100 (EST)
+To: frowand@mvista.com
+Cc: Dan Malek <dan@mvista.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
+In-Reply-To: <39D4E85F.926CFD5B@mvista.com>
+References: <19340822040932.8760@mailhost.mipsys.com>
+	<Pine.LNX.4.10.10009281150130.3468-100000@cassiopeia.home>
+	<14803.57550.118150.759977@argo.linuxcare.com.au>
+	<39D41AA2.C586D738@mvista.com>
+	<14804.7238.688771.238444@argo.linuxcare.com.au>
+	<39D4E85F.926CFD5B@mvista.com>
+Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Sep 29, 2000 at 01:37:45PM +0200, Geert Uytterhoeven wrote:
->
-> On Thu, 28 Sep 2000, Benjamin Herrenschmidt wrote:
-> > >> I'm not sure it would help. It would probably allow a kind of "mapping on
-> > >> demand" of the IO region on memory mapped IOs platforms, but unless we
-> > >> add another parameter to ioportremap telling it the pci_dev (or at least
-> > >> the bus number), we can't "guess" on which IO bus the device is and which
-> > >> physical base we must use.
-> > >
-> > >But we can find out the IO bus by looking in which region the physical
-> > address
-> > >is located, right? Or do we have the same region on different IO busses?
-> > >That would be really weird! Different IO busses should decode different
-> > >regions.
-> >
-> > That mean that you intend to feed a physical address to ioportremap and
-> > not an IO address ? Hrm... that mean we need to have the physical address
-> > in the device IO resources instead of the content of the IO BAR. Well,
-> > how should this work for legacy devices, then ? By assuming addresses
-> > below 64k are legacy IO (hard coded) addresses ? I don't like it too much.
->
-> No, I meant I/O addresses. Each PCI bus should decode different I/O addresses,
-> just like it decodes different memory addresses.
->
-> Say the first bus decodes I/O 0x0000-0x0fff, the second one decodes
-> 0x1000-0x1fff, and so on. If the different busses have different physical
-> addresses, you have to use the region decoding from my previous mail. Hence
-> ioportremap() would move the burden (and overhead) of the region decoding from
-> inb() and friends to one single place: ioportremap().
+Frank Rowand writes:
 
-No, each PCI host bridge segment contains an independent address space
-and may well have addresses that are identical numerically to addresses
-on other host bridge segments (I hate that "host" terminology).  The
-host bridges are what map these to sane unique values on the processor
-bus.
+> Paul Mackerras wrote:
+[snip]
+> > Because we'll make it the same value for all ports.  Anybody got any
+> > objections to 0xff000000?
+
+> Yes.  It is equivalently mapped on the PPC 405 at 0xe8000000.
+
+But that's a physical address, not necessarily a virtual address,
+right?  I was talking about virtual address 0xff000000.  Any
+particular reason why you have to have virtual == physical?  (If there
+is, my response will probably be "fix it". :-)
+
+Paul.
 
 --
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
