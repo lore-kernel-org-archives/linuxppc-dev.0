@@ -1,41 +1,25 @@
-Mime-Version: 1.0
-Message-Id: <p04320418b5b9f21900aa@[192.168.1.1]>
-In-Reply-To: <200008110500.AAA07294@lists.linuxppc.org>
-References: <200008110500.AAA07294@lists.linuxppc.org>
-Date: Fri, 11 Aug 2000 12:12:15 -0600
-To: linuxppc-dev@lists.linuxppc.org
-From: "David L. Thompson" <dthompsn@cs.umt.edu>
-Subject: char is not signed char
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-Id: <200008111826.OAA24884@mal-ach.watson.ibm.com>
+To: "David L. Thompson" <dthompsn@cs.umt.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: char is not signed char 
+In-Reply-To: Message from "David L. Thompson" <dthompsn@cs.umt.edu>
+   of "Fri, 11 Aug 2000 12:12:15 MDT." <p04320418b5b9f21900aa@[192.168.1.1]>
+Date: Fri, 11 Aug 2000 14:26:41 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Has anybody else noticed that char is not signed char but unsigend
-char? If I write the following:
+>>>>> "David L Thompson" writes:
 
-#include <stdio.h>
+David> Has anybody else noticed that char is not signed char but unsigend
+David> char? If I write the following:
 
-int main() {
+	Yes, this is up to the implementation to decide.  For PowerPC,
+unsigned char is more efficient and may even be defined by the ABI.  You
+can invoke GCC with -fsigned-char if you require the other behavior.
 
-	char a = -3;
-	if(a > 0)
-		printf("Ooops!\n");
-	return 0;
-}
-
-and run it, I get Oooops!
-
-Currently I have installed fsirl's 2.95.3 version of gcc.
-
-
-Thanks,
 David
---
-.............................................................................
-David L. Thompson                          The University of Montana
-mailto:dthompsn@cs.umt.edu                 Computer Science Department
-http://www.cs.umt.edu/u/dthompsn           Missoula, MT  59812
-                                            Work Phone : (406)257-8530
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
