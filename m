@@ -3,26 +3,32 @@ From: Toni Van Remortel <t.vanremortel@ha.be>
 Reply-To: t.vanremortel@ha.be
 To: "Guy M. Streeter" <streeter@redhat.com>
 Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <1066313452.1033.1.camel@jarjar.hsv.redhat.com>
+In-Reply-To: <1066314292.735.32.camel@toni>
 References: <1066306828.735.29.camel@toni>
 	 <1066313452.1033.1.camel@jarjar.hsv.redhat.com>
+	 <1066314292.735.32.camel@toni>
 Content-Type: text/plain
-Message-Id: <1066314292.735.32.camel@toni>
+Message-Id: <1066315402.735.34.camel@toni>
 Mime-Version: 1.0
-Date: Thu, 16 Oct 2003 16:24:53 +0200
+Date: Thu, 16 Oct 2003 16:43:24 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-[unresolved symbol __extendsfdf2]
+Op do 16-10-2003, om 16:24 schreef Toni Van Remortel:
+> [unresolved symbol __extendsfdf2]
+>
+> Op do 16-10-2003, om 16:10 schreef Guy M. Streeter:
+> > You're trying to do floating-point math. The kernel doesn't do
+> > floating-point.
+>
+> Hmm. Is there a work-around? Because the control interface (written with
+> FLTK) does use floating points and works.
 
-Op do 16-10-2003, om 16:10 schreef Guy M. Streeter:
-> You're trying to do floating-point math. The kernel doesn't do
-> floating-point.
+Silly me. The FLTK app is statically compiled.
+Just found a kernel miss-config indeed.
 
-Hmm. Is there a work-around? Because the control interface (written with
-FLTK) does use floating points and works.
-
+tnx for the reaction.
 --
                            Toni Van Remortel
               Wetenschappelijk Medewerker - D-science lab
