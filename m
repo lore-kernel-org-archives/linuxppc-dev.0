@@ -1,46 +1,35 @@
-Message-ID: <75DF04AC5ED4D511A9810090273CB416615615@user4.sw.co.il>
-From: Eli Brin <elib@rokonet.co.il>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Does ELDK include SELF?
-Date: Tue, 20 May 2003 14:53:25 +0200
-MIME-Version: 1.0
-Content-Type: text/plain
+To: Dave Strout <dstrout@linuxfoundary.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ssh on ppc 405gp? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "20 May 2003 08:44:09 EDT."
+             <1053434650.21004.7.camel@dstrout.nsw.enterasys.com>
+Date: Tue, 20 May 2003 15:23:17 +0200
+Message-Id: <20030520132322.D67E0C6162@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+In message <1053434650.21004.7.camel@dstrout.nsw.enterasys.com> you wrote:
+>
+> Thanks for the lead.  I've actually tried that, and I get:
+> Disconnecting: Corrupted check bytes on input.
 
-The SELF that comes with ELDK only installs the ramdisk images.
+Are you absolutely sure that your network interface (and the rest  of
+the  system, like RAM) is working correctly? This looks somewhat like
+data corruption...
 
-I suggest to download the SELF package from Denx ftp, and update the
-configuration file to the current packages and libraries versions.  Then you
-need to download some packages (note the correct versions), and run the
-build script.
+Best regards,
 
-Read the mail from Wolfgang Grandegger from the 13 feb 2003 (search the list
-archive with SELF keyword) for updated files and instructions.
+Wolfgang Denk
 
-Regards,
-Eli Brin
-
------Original Message-----
-From: mpclinux [mailto:mpclinux@sina.com]
-Sent: Tuesday, May 20, 2003 3:24 AM
-Subject: Does ELDK include SELF?
-
-     I am a greenhand of LinuxPPC. Recently, I have installed ELDK2.0.2 on
-my RedHat8.0 PC, and I want to build a Ramdisk with SELF, then I downloaded
-the SELF*.tar.gz from Wolfgang's ftpsite, but all of them only contains
-PATCHes, I turned to ELDK2.0.2 and found that there are two RPMs they are:
-SELF-ppc_8xx-xxx.ppc.rpm busybox-ppc_8xx-xxx.yyy.ppc.rpm
-
-I think they will contain all source codes of SELF.
-
-    I typed ./install -d /opt/ELDK202 ppc_8xx to install ELDK, but I can not
-find other SELF-related files except for two pRamdisk files in
-opt/eldk202/images.
-    I wonder what's is wrong with my ELDK installation? If no, how can I
-build pMulti/pImage/pRamdisk with SELF?
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Einstein argued that there must be simplified explanations of nature,
+because God is not capricious or arbitrary. No  such  faith  comforts
+the software engineer.                             - Fred Brooks, Jr.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
