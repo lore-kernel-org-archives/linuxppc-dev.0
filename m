@@ -1,43 +1,33 @@
-Date: Mon, 08 Jan 2001 14:48:33 +0000
-Subject: Re: status of ppc support in official 2.4.0 or Alan's 2.4.0-ac1
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Derek Homeier <supas100@astrophysik.uni-kiel.de>,
+Date: Mon, 8 Jan 2001 07:55:44 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: michdaen@iiic.ethz.ch
+Cc: Tony Mantler <nicoya@apia.dhs.org>,
+        Linux/m68k <linux-m68k@lists.linux-m68k.org>,
         linuxppc-dev@lists.linuxppc.org
-Cc: Tony Mantler <nicoya@apia.dhs.org>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010108154728.27D541BFDC@atlas.valhalla.net>
+Subject: Re: [PATCH] drivers/macintosh/Config.in
+Message-ID: <20010108075544.E19404@opus.bloom.county>
+References: <20010106171733.M556@opus.bloom.county> <v04003a08b67ddaff44fe@[24.70.162.12]> <20010107173805.B19404@opus.bloom.county> <3A598EB5.638622B6@relog.ch>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3A598EB5.638622B6@relog.ch>; from daenzer@relog.ch on Mon, Jan 08, 2001 at 10:56:05AM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Derek,
+On Mon, Jan 08, 2001 at 10:56:05AM +0100, Michel D?nzer wrote:
+> Tom Rini wrote:
+>
+> > I also (may) move things like MOL into that file.
+>
+> We're still hoping to get MOL working on APUS anytime soon, and according to
+> the web page it should work on PReP and CHRP boxen.
 
-Mon, Jan 8, 2001, Derek Homeier wrote:
+Well, there's no distinction between PReP, CHRP and Pmac, config wise.  It would
+be in if [ "$CONFIG_6xx" = "y" ]; then ... fi probably (I need to ask one of
+the IBM folks if it would work on POWER3).
 
-[...] re 2.4.0 tree at ppc.samba,org (I think ;-).
-
-> I have some problems with dmasound and ppp modules, though. After some
-> fiddling with modules.conf I was able to get the mixer (from gkrellm)
-> to work and sound from internal and external speakers by aliasing
-> char-major-13 to dmasound_awacs, but there are occasional messages about
-> several sound-slot-[01] and sound-services-[01]-[013](?) modules
-> missing. The mixer tends to hang and has to be killed then. While
-> mpg123 did work, xmms always crashes with a Bus error on startup.
-
-Hmm.  I built ppc.samba.org::linux-pmac-devel the other day (in response to
-another query) and the dmasound module appeared to be fine.
-
-Those messages relate to OSS (or even ALSA support, don't know without
-checking) - and don't originate from the dmasound code.  Possibly there are
-still facilities (like the DSP_GETCAPS type) that are not completely
-implemented (or still not implemented at all).  I'll look when I get back to
-it - or someone else can ;-).
-
-For now, I suggest that (unless you desperately need it), - you disable the
-OSS stuff in your .config.
-
-ciao,
-Iain.
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
