@@ -1,117 +1,84 @@
-Date: Mon, 17 Jan 2000 16:02:51 -0600
-From: Grant Erickson <grant@lcse.umn.edu>
-To: Niklaus Giger <n.giger@netstal.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Help Sought for 403GCX-startup
-In-Reply-To: <s8835efe.002@netstal.com>
-Message-ID: <Pine.SGI.4.10.10001171543350.277235-100000@brule.borg.umn.edu>
+From: Alan Mimms <alan@packetengines.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: WARNING OFF TOPIC SLIGHTLY: 8xx MMU w/8MB pages
+Date: Mon, 17 Jan 2000 14:59:35 -0800
+Content-Type: text/plain
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <00011715164502.03037@alan.corp.packetengines.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 17 Jan 2000, Niklaus Giger wrote:
-> I successfully managed to create vmlinux for the oak-IBM 403
-> Evaluation Board.
+Hello all,
 
-Excellent! Based on the latest 2.3.39 code or the 2.3.39 plus my patches?
+If you are only interested in Linux on 8xx PPC, please ignore this message.  I
+am having a problem building up MMU tables for 8MB pages on a NON-Linux system
+running on an 850.  I hope someone on this list can help (PLEASE!).
 
-> As our OAK-board does not work anymore (it is over 4 years old and out
-> of service) I tried to load the vmlinux using my vxworks boot-rom. I
-> got a memory access while trying to access 0xc0000008.
+The system works fine but is "slow".  I look into this and find that my DTLB
+miss exception handler is running a LOT (50k exceptions/sec!).  Seems the TLB
+is never matching.  I have the MMU set up for all mappings to be 8MB pages to
+map 32MB of RAM and a few I/O devices.  There are slightly more than 8 PTEs
+that are in use in the system so I can't statically load up the TLB and get on
+with life - I have to handle the DTLB misses.  But I don't use the 8xx
+documentation's specified page table structure since I have a very flat
+logical==physical mapping.  I'm simply using the MMU to flag cacheable vs
+noncacheable spaces, really.
 
-The kernel shouldn't ever access 0xc0000008 during normal operation. The
-entry point from the boot loader (did try to boot vmlinux.img in
-arch/ppc/treeboot or vmlinux directly?) is at 0x00000000. Shortly
-thereafter, the MMU is enabled and code should start executing from
-0xc0002100 (or in that approximate range).
+The MD_CTR is set to 0.  I don't have TWAM or PPCS on.  This is a wide-open no
+protection kind of system, so I can get away with very little actual MMU bells
+and whistles.
 
-> Therefore I tried to change in linux/arch/ppc/Makefile the 
-> KERNELLOAD =0xc0000000
-> to
-> KERNELLOAD =0x10000
-> as all my 4 MB RAM (known at boottime) is located at address 0.
-> After make clean vmlinux I was able to load vmlinux.
+I tried using the MD_CAM and MD_RAMn registers to debug this.  These seem to
+read back the values I have stored via the MD_RPN, MD_TWC and MD_RPN register
+EXCEPT that when I read back I get a value for the MD_CAM.PS field of 110
+rather than the 111 which is the documented 8MB page size value.  The doc even
+says that values other than those listed (000, 001, 011, 111) are "reserved". 
+The value I am setting in the MD_TWC.PS field (which is oddly a two bit
+encoding for page size) is 11, which is documented as the 8MB page size value.
 
-You don't ever want to change KERNELLOAD or KERNELBASE, otherwise the
-virtual memory and MMU code will all break.
+The TLB entries are all being written with ASID of zero, which is the value in
+CASID so these can't be the reason for the mismatch.
 
-> It load, but it does not start up. A hardware debugging session using
-> the JTAG-based SDS-debugger showed, that it crashed after very few
-> instruction at 0x10074
-> 
-> SDS-debugger deassembles:
-> 00010000: or r31,r3,r3
-> 00010004: or r30,r4,r4
-> 00010008: or r29,r5,r5
-> 0001000C: or r28,r6,r6
-> 00010010: or r27,r7,r7
-> 00010014: addi r24,r0,0
-> 00010018: addis r3,r0,0xC0000000@HI
-> 0001001C: addis r3,r3,0x00000000@HI
-> 00010020: addis r4,r3,0x40000000@HI
-> 00010024: mfspr r7,PID
-> 00010028: addi r0,r0,0
-> 0001002C: mtspr PID,r0
-> 00010030: rlwinm r4,r4,0,0,21
-> 00010034: ori r4,r4,0x304
-> 00010038: rlwinm r3,r3,0,0,21
-> 0001003C: ori r3,r3,0x3C0
-> 00010040: illegal
-> 00010044: illegal
-> 00010048: isync
-> 0001004C: mtspr PID,r7
-> 00010050: addis r4,r0,0xC0000000@HI
-> 00010054: addis r0,r4,0x40000000@HI
-> 00010058: mtspr EVPR,r0
-> 0001005C: mfmsr r0
-> 00010060: ori r0,r0,0x30
-> 00010064: mtspr SRR1,r0
-> 00010068: addis r0,r0,0x00010000@HI
-> 0001006C: ori r0,r0,0x21C8
-> 00010070: mtspr SRR0,r0
-> 00010074: rfi
+Here's a sample of what I am doing:
 
-The above code is from head_4xx.S and is the entry point from the boot
-loader. It basically sets up a TLB page mapping that is used when the
-kernel puts the processor into virtual mode after the 'rfi' you cited gets
-executed.
+M$reg md_ctr=700
+!!! look at TLB entry #7
 
-> After the rfi at 0x10074. PC is at 0x121C8 (000121BC  is abort:)
+M$reg md_epn=00200 md_twc=0d md_rpn=009f5
+!!! write entry with
+!!!  MD_EPN: EPN=0 EV=1 ASID=0
+!!!  MD_TWC: APG=0 G=0 PS=11 (8MB) V=1
+!!!  MD_RPN: RPN=0 PP={supvR/W, PowerPC, Change, all subpages valid},
+!!!          SPS=0 (wrong?) SH=1 CI=0 V=1
 
-The lower address of 0x21C8 is the assembly tag 'start_here' found in
-head_4xx.S (see above when I talked about 0xc0002100). This is where the
-real work to jump to the Linux kernel starts and it all is done in virtual
-mode.
+M$reg md_ctr=700
+!!! Reset to look at TLB entry #7
 
-> It seems to me that my MMU is not yet correctly setup?
+$cam
+  reg md_ctr=00000700
+  reg md_dbcam=00000fd0
+  reg md_dbram0=00000de0
+  reg md_dbram1=00007fff
 
-I don't suspect that's the problem. At the very least, you should be able
-to successfully execute the kernel up through 'identify_machine'
-in the vicinity of virtual address 0xc00f8810. After that, there's some
-setup code that relies on information passed in from the Oak evaluation
-board (see main.c in arch/ppc/treeboot).
+!!! This shows I am looking at entry #7,
+!!! and the MD_CAM: EPN=0 SPVF=1111 PS=110 (!) SH=1 ASID=0
+!!! (MD_CAM is called MD_DBCAM for some reason on the HP debugging box I use).
 
-> Could you please be so kind to describe your patchs (against 2.3.39)
-> and post them on your home page?
+Note that the above MD_CAM shows a PS of 110 which is RESERVED according to the
+MPC850 documentation.
 
-Most of my changes are summarized in the "Recent Changes" subheading on
-that web page. Recently, most changes have been focused around the
-Ethernet controller.
+What am I doing wrong?  Is there more info one would need to be able to answer
+this question?
 
-> I would also appreciate any hints how to disable the 16650-SCC (our
-> hardware does not have one) and how to uses the internal 403 (I have
-> the knowledge to program it).
+PLEASE HELP.
 
-There's currently no code in the 4xx-based port which uses or assumes the
-16650 serial controller found on the Oak board, so you shouldn't need to
-change a thing. As for the internal 403 serial port, I haven't yet coded
-in support for that yet. It's on the "to-do" list.
-
-Regards,
-
-Grant Erickson
-
+Thanks very much.
+a
+ -- 
+Alan Mimms     Packet Engines, Inc.     Spokane, Washington [99214-0497]
+  USA, Earth, Sol, Milky Way, The Local Group, Virgo Supercluster, U0
+Despite the cost of living, have you noticed how popular it remains?
+  -- Steven Wright?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
