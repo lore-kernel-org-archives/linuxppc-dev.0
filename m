@@ -1,45 +1,25 @@
-Message-ID: <3BF040CD.560358DB@iiic.ethz.ch>
-Date: Mon, 12 Nov 2001 22:36:13 +0100
-From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+Message-ID: <3BF0439C.121D5318@mvista.com>
+Date: Mon, 12 Nov 2001 14:48:12 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: Scaling registers on r128
-References: <3BEF952D.9000306@humboldt.co.uk>
-Content-Type: text/plain; charset=iso-8859-1
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Marvell/Galileo EV-64260-BP/GT-64260
+References: <3BEB5297.C7D13987@mvista.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Adrian Cox wrote:
->
-> This patch to aty128fb is experimental, and intended for the brave.
->
-> The attached patch turns on the panel scaling registers of the R128.
-> I've run this on my iBook2, and I've been able to display 640x480 and
-> 800x600 modes on the panel successfully.
->
-> The panel sizes are currently hardwired on the iBook. This code will
-> benefit greatly from a reliable means to find the panel size.
->
-> This has revealed problems in the X server: if the XF86Config-4
-> specifies 800x600 and the current console is in 1024x768, the display
-> is broken.
+"Mark A. Greer" wrote:
 
-Does switching resolutions in X fix it again?
+> The GT-64260A comes up fine too, if
+> you use the integrated enet ctlr (which, of course I didn't push the
+> driver for), but there is still something wrong with PCI devices
+> (probably a PCI abitration problem).
 
-> This looks like a generic problem in fbdevhw based Xservers, as
-> I saw something similar on 69030.
+The PCI bus now works for the ev64260A.
 
-Yes, I suspect some fbdevHW functions return information about the
-current console mode instead of the one the X server wants to set up.
-I'm not sure how to fix, you seem to be working a lot with that code
-recently so I expect you to find a way. :)
+Mark
 
-
---
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
