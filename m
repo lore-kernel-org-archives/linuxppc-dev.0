@@ -1,36 +1,66 @@
-From: "Sanjay Kumar" <skumar@giga-stream.de>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Registering ATM devices.
-Date: Fri, 13 Jun 2003 08:39:23 +0200
+From: "Stephan Linke" <Stephan.Linke@epygi.de>
+To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: running 8xx without UART 
+Date: Fri, 13 Jun 2003 08:52:00 +0200
+Message-ID: <FCEAKDJJAPHPLJFINDAJIEIBDCAA.Stephan.Linke@epygi.de>
 MIME-Version: 1.0
-Message-ID: <FKEJLMJFECLAHOKCGJFPMEOACAAA.skumar@giga-stream.de>
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <FCEAKDJJAPHPLJFINDAJCEHLDCAA.Stephan.Linke@epygi.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear all,
+Hi,
 
-I have MPC8266 having connected two UTOPIA II interface on FCC1 and FCC2.
-UTOPIA II interface connected to FCC1 has 16 PHY devices connected to it
-and UTOPIA II interface connected to FCC2 has 2 PHY devices connected to
-it.
-                    while registering the atm devices via
-atm_device_register() function should I register two atm devices, one for
-each UTOPIA II interface conncetd to FCC1 and FCC2 or 18 atm devices for
-each PHY devices connected on both UTOPIA II interface.Total number of PHY
-devices on both UTOPIA II interface is 18.
+there appeares to be a microcode patch for MPC862 that allowes relocating SMC, SPI and I2C Parameter RAM. This should help getting
+SMC1 running while SCC3 is doing Ethernet.
 
-Any suggestion will be helpfull to me.
+Thanks, Stephan
 
-with regards,
-sanjay
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Stephan
+> Linke
+> Sent: Donnerstag, 12. Juni 2003 13:43
+> To: wd@denx.de
+> Cc: Linuxppc-Embedded
+> Subject: RE: running 8xx without UART
+>
+>
+>
+> Hi,
+>
+> > -----Original Message-----
+> > From: wd@denx.de [mailto:wd@denx.de]
+> > Sent: Donnerstag, 12. Juni 2003 13:22
+> > To: Stephan Linke
+> > Subject: Re: running 8xx without UART
+> >
+> >
+> > In message <FCEAKDJJAPHPLJFINDAJMEHJDCAA.Stephan.Linke@epygi.de> you wrote:
+> > > Sorry, I accidentialy replied to the wrong mail...
+> >
+> > Kein Problem :-)
+> >
+> > > this problem is actualy no kernel bug. It is a limitation of the 862 family that you can't use SMC1 while you use
+> SCC3 as ATM or
+> > > ethernet. It's not so well documented. Thant's why we run into that trap. The special problem on 852 is that there are
+> > ony 2 SCC's
+> > > and 1 SMC. :-)
+> > ...
+> > > > > We are experiencing problems with SCC3 running ethernet and SMC1 as console interface on a 852.
+> >
+> > SCC3 = Ethernet or SCC3 = ATM?
+> >
+> >
+> We are using SCC3 as ethernet (Actualy there is no ATM on MPC852. But I guess that doesn't make a difference). :-)
+>
+> Stephan
+>
+>
+>
+>
 
- ==============================================================
- Sanjay Kumar                        skumar@giga-stream.de
- GIGA-STREAM UMTS Technologies GmbH  Tel: +49 (07243) 94976-119
- Im Ermlisgrund 8                    Fax: +49 (07243) 94976-100
- 76337 Waldbronn
- ==============================================================
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
