@@ -1,35 +1,56 @@
-Date: Fri, 14 May 1999 09:52:07 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC-DR-1.0: Some questions
-In-Reply-To: <373C287A.A8E2F814@wanadoo.fr>
-Message-ID: <Pine.SUN.4.02.9905140951280.28007-100000@sea.ntplx.net>
+Date: Fri, 14 May 1999 08:35:54 -0700 (MST)
+From: Matt Porter <mmporter@home.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Patch for Motorola MTX,MVME,MCP systems
+Message-ID: <Pine.LNX.3.96.990514083226.3742A-100000@liberty.chnd1.az.home.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 14 May 1999, Martin Costabel wrote:
+After comparing versus a local version of the kernel, I found the
+interrupt handling stuff got mangled on the way to the official release.
+This patch fixes MPIC support (causes kernel hang on boot) in 2.2.8,
+2.2.9, 2.3.0.  Also has the sys_mmap build fix in it.
 
-> Tom Rini wrote:
-> > 
-> > On Fri, 14 May 1999, Martin Costabel wrote:
-> 
-> > > 2. The following rpms were there in previous versions of pre-R5. 
-> [...] 
-> > > hfsutils
-> > 
-> > Either Jeff added that one, or it was a very old rpm.
-> 
-> RedHat keeps it in the powertools directory. It's not so old:
-
-Ah, powertools.  Sometime. :) 1st things 1st, we need a break.
+diff -urd linux.orig/arch/ppc/kernel/prep_pci.c linux/arch/ppc/kernel/prep_pci.c
+--- linux.orig/arch/ppc/kernel/prep_pci.c	Tue May 11 08:24:32 1999
++++ linux/arch/ppc/kernel/prep_pci.c	Thu May 13 15:41:53 1999
+@@ -38,6 +38,8 @@
+ /* Used for Motorola to store system config register */
+ static unsigned long	*ProcInfo;
+ 
++extern void chrp_do_IRQ(struct pt_regs *,int , int);
++
+ /* Tables for known hardware */   
+ 
+ /* Motorola PowerStackII - Utah */
+@@ -730,6 +732,8 @@
+ 
+ 	OpenPIC_InitSenses = mvme2600_openpic_initsenses;
+ 	OpenPIC_NumInitSenses = sizeof(mvme2600_openpic_initsenses);
++
++	ppc_md.do_IRQ = chrp_do_IRQ;
+ 
+ 	/* If raven is present on Motorola store the system config register
+ 	 * for later use.
+diff -urd linux.orig/arch/ppc/kernel/syscalls.c linux/arch/ppc/kernel/syscalls.c
+--- linux.orig/arch/ppc/kernel/syscalls.c	Sat May  8 11:14:01 1999
++++ linux/arch/ppc/kernel/syscalls.c	Thu May 13 15:42:06 1999
+@@ -33,6 +33,7 @@
+ #include <linux/sys.h>
+ #include <linux/ipc.h>
+ #include <linux/utsname.h>
++#include <linux/file.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/ipc.h>
 
 --
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+Matt Porter
+mmporter@home.com
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
