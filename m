@@ -1,54 +1,25 @@
-To: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: driver support ? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 18 Oct 2002 11:15:08 CDT."
-             <0B0A39652BB0D411BCCF00508B9512EC08AEB515@tx14exm05.ftw.mot.com>
-Date: Fri, 18 Oct 2002 18:28:09 +0200
-Message-Id: <20021018162814.5AE3B10143@denx.denx.de>
+Message-ID: <00b401c276cc$64f85f00$0700a8c0@pc005>
+Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Subject: MacRaigor Wiggler
+Date: Fri, 18 Oct 2002 19:32:55 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <0B0A39652BB0D411BCCF00508B9512EC08AEB515@tx14exm05.ftw.mot.com> you wrote:
->
-> I wish to port the linux to another custom board with 7410 + mpc107 with
-> TI's 752 uart chip and national semi's dp83815 integrated mac and phy.
->
-> 1. Does anyone know if these uart driver and ethernet driver exist in
-> current
-> release of Monta Vista preview 2.1 or ELDK ?
+I'm running with Linux on the EST8260 board and I would like to connect the
+Wiggler to the JTAG port of board.
 
-Please note that the ELDK is primarily an Embedded Linux  Development
-Kit; it ships with a 2.4.4 kernel, which is very reliable and running
-really  well, but for new projects you should probalby base your work
-on the linuxppc_2_4_devel kernel instead.
+Does anybody have suggestions on how I should configure the gdb to debug a
+device driver?
 
-Neither the 752 nor the DP83815 will run out  of  the  box  with  our
-2.4.4 kernel.
+many thanks
 
-> 2. Where should I look at if I have to modify the uart driver ? I guess this
-> uart
-> should be easily ported.
+Gianfranco
 
-Umm... I don't understand the  question?  You  should  look  at  your
-driver's source code, of course ;-)
-
-> Right now after I downloaded the built linux image, I could not see anything
-> on serial port.
-
-Attach your BDI2000, and start GDB.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The only way to get rid of a temptation is to yield to it.
-                                                        - Oscar Wilde
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
