@@ -1,13 +1,13 @@
 Return-Path: <runet@innovsys.com>
 Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 3288867A6D
+	by ozlabs.org (Postfix) with ESMTP id 388C167A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Apr 2005 02:27:05 +1000 (EST)
+	Wed,  6 Apr 2005 02:41:18 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Date: Tue, 5 Apr 2005 11:27:04 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B859337@ismail.innsys.innovsys.com>
+Date: Tue, 5 Apr 2005 11:41:10 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B859338@ismail.innsys.innovsys.com>
 From: "Rune Torgersen" <runet@innovsys.com>
 To: "Stefan Nickl" <Stefan.Nickl@kontron.com>
 Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
@@ -22,16 +22,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Ahhh....
-I see what happened....
-Basically only the last part of that patch has been applied to the 2.6
-kernels..
+Thanks....
 
-fcc_restart gets called both in init_fcc_startup *and* fcc_open.
-=20
-I'll try to remove the fcc_restart in init_fcc_startup, and see what
-happens.
+That whole patch works beautifully.
+Had to apply the whole thing (so fcc_restart gets called in the start,
+and end of fcc_open) for it to work.
 
+Without calling fcc_restart in the start, I get lots of "eth0: tx queue
+full!." messages.
 
 > -----Original Message-----
 > From: Stefan Nickl [mailto:Stefan.Nickl@kontron.com]=20
