@@ -1,50 +1,71 @@
-Message-ID: 
-    <DF2B720CF774D21189EE00805FA7FA220517834D@nmrusdunsx3.nielsenmedia.com>
-From: "Wells, Charles" <Charles.Wells@nielsenmedia.com>
+Message-Id: <5.1.0.14.2.20030121154657.0281d210@falcon.si.com>
+Date: Tue, 21 Jan 2003 16:07:43 -0500
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Problem with data cache on MPC823E
-Date: Tue, 21 Jan 2003 15:40:14 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+Subject: Re: Need IDE for embedded Linux project
+In-Reply-To: <00002654.C22236@adic.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jan,
+My pick: #4
 
-The following question assumes that your DRAM is physically organized as
-32-bits wide and connected to CS1.
+Don't cross compile under Windows, you are setting yourself up for immense
+frustration and zero help.  On the email lists and newsgroups, I've heard
+people ask several times whether it is possible to cross compile the linux
+kernel under CygWin and a few said they actually were going to do it -- but
+I have not heard any success stories.
 
-Do you have the PS field of BR1 set to 00 (32-bit mode) or is it set to 01
-(8-bit mode)? If it's set to 8-bit mode, a burst access becomes 16 bus
-cycles, which looks a lot like 4 bursts.
+As craig@hollabaugh.com said, use Samba -- your developers, who are
+familiar with Windows and Windows based editors, will be a lot less
+resistant to the move.
 
-Regards,
-Charlie
+Check out VNC http://www.uk.research.att.com/vnc/ -- it is an open software
+"PCanywhere" type program that works very well under linux and quite well
+under Windows.  Exceed (X windows on Microsoft Windows) is a nice program
+but pretty expensive.
 
------Original Message-----
-From: Jan Damborsky [mailto:Jan.Damborsky@devcom.cz]
-Sent: Tuesday, January 21, 2003 11:28 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Problem with data cache on MPC823E
+The scheme is to have the files reside on the linux box.  Each developer
+can use the tools of his choice to edit the files (Windows via Samba or
+native linux).  Each developer would have a VNC connection or a simple
+telnet session (warning: Windows telnet really sucks) to do his builds
+using make.
+
+gvb
 
 
+At 12:10 PM 1/21/2003 -0500, brian.auld@adic.com wrote:
 
-Hello people,
+>Hello all,
 
-we have developed our board with MPC823E, FLASH memory
-DRAM memory for embedded Linux porting, but we have problem
-with data cache. From time to time when CPU wants load data from DRAM
-to data cache, it makes four burst-reads instead of one for loading one
-cache line.
-After this, all four words in cache line are loaded with the same first
-"critical word".
-We don't know, why CPU repeats this burst-read four times. May be it is
-because we have floating BI (burst inhibit) CPU singnal.
-We have set BIH bit in UPMA to zero.
-When setting this BIH bit to one (burst inhibit), all works well.
-Does anybody have any help ?
-                                                     Jan Damborsky
+[snip]
+
+>As a first step I am trying to determine what IDE makes sense given our
+>Department's infrastructure ... which is all windows (barf). I am aware of
+>the following options:
+>
+>Option 1: All Native Linux.
+>Option 2: Native windows cross development environment.
+>Option 3: Vmware (linux guest on windows) with a Linux based IDE.
+>Option 4: Linux development server <--> PC-X server software
+>           (hummingbird) on windows development hosts.
+
+[snip]
+
+>Thanks,
+>
+>Brian Auld
+>Firmware Engineer
+>
+>Brian Auld
+>Embedded Software Engineer
+>ADIC
+>10 Brown Rd. Ithaca, NY 14850
+>(607) 241-4845
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
