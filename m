@@ -1,37 +1,32 @@
-Date: Thu, 26 Aug 1999 10:55:22 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: linuxppc-dev@lists.linuxppc.org, Paul.Mackerras@cs.anu.edu.au
-Subject: Re: vger-2.3.15 on pmac
-In-Reply-To: <37C4FD7C.BBEC0F1@wanadoo.fr>
-Message-ID: <Pine.LNX.4.10.9908261054470.29782-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <v04003a02b3ea789770f8@[216.81.21.14]>
+Date: Thu, 26 Aug 1999 10:57:11 +0200
+To: Tony Mantler <eek@escape.ca>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Performa 5200
+Message-Id: <19990826105711.010933@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 26 Aug 1999, Martin Costabel wrote:
-> Thanks to the efforts of Paul M. and Cort, the 2.3.15 kernel from
-> cvs.on.openprojects is now compiling on a Pmac (first time after 2.3.6,
-> 2 months ago).
-> 
-> I propose 2 patches: The first one is an obvious correction in the
-> valkyriefb driver, and the second one allows to configure support for
-> Apple partition maps without going to the section of exotic partitions.
-> It is obvious, too.
+On Thu, Aug 26, 1999, Tony Mantler <eek@escape.ca> wrote:
 
-I just checked in the first one (+ a similar fix to chipsfb) at vger, and sent
-a patch to Linus.
+>I know the 5200 uses the Capella chip, but I haven't been able to find any
+>documentation whatsoever about the PPC upgrade cards.
+>
+>I would be surprised if Apple did bother to make 2 different 68k <-> PPC
+>bridge chips, as in both cases they perform the exact same function. But
+>then, Apple does do that sort of thing.
 
-Greetings,
+I think those PPC upgrade card were actually made by Daystar (but maybe
+using Apple chips. In those old days, Apple and Daystar used to work very
+closely).
 
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
