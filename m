@@ -1,65 +1,47 @@
-Date: Tue, 8 Aug 2000 14:35:19 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Josh Huber <huber@mclx.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Dri-devel] Re: Kind of success! (r128 on PPC (Re: LinuxPPC X
- Server))
-In-Reply-To: <20000807093124.B248@mclx.com>
-Message-ID: <Pine.LNX.4.10.10008081433260.442-100000@cassiopeia.home>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 8 Aug 2000 09:13:11 -0400
+From: Josh Huber <huber@mclx.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [Dri-devel] Re: Kind of success! (r128 on PPC (Re: LinuxPPC X Server))
+Message-ID: <20000808091311.B248@mclx.com>
+References: <20000807093124.B248@mclx.com> <Pine.LNX.4.10.10008081433260.442-100000@cassiopeia.home>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-md5;
+	protocol="application/pgp-signature"; boundary="KFztAG8eRSV9hGtP"
+In-Reply-To: <Pine.LNX.4.10.10008081433260.442-100000@cassiopeia.home>; from geert@linux-m68k.org on Tue, Aug 08, 2000 at 02:35:19PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 7 Aug 2000, Josh Huber wrote:
-> On Mon, Aug 07, 2000 at 09:08:01AM +0200, Michel D?nzer wrote:
-> > Benjamin Herrenschmidt wrote:
-> > > The Pismo allows that by scaling the LCD, but I don't think code for that
-> > > is implemented in the XFree r128 driver (I didn't check lately).
-> >
-> > No it doesn't work, neither with aty128fb. Would that be hard to implement?
->
-> If it's anything like the mach 64, it shouldn't be hard to implement
-> at all.  you just have to program 3 registers.
->
-> Speaking of this, I'm having trouble with the stretching setup for my
-> wallstreet.  It works fine in console mode, but something in the X
-> server is messing with the chip setup in a way to screw up the
-> rendering.  After playing with it I was able to get proper output:
->
-> console settings:
->     mclk = 99.844107 MHz
->     vclk = 44.702930 MHz
->     dsp_loop_latency = 10
->     dsp_precision = 5
->     dsp_xclks_per_row = 1143 => 17.859375
->     dsp_on = 69 => 34.500000
->     dsp_off = 1113 => 556.500000
->
-> X (xf4.0.1) settings:
->     mclk = 99.844107 MHz
->     vclk = 44.702930 MHz
->     dsp_loop_latency = 10
->     dsp_precision = 4
->     dsp_xclks_per_row = 1143 => 8.929688
->     dsp_on = 103 => 25.750000
->     dsp_off = 1119 => 279.750000
+--KFztAG8eRSV9hGtP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Is this XF4.0.1 in `fbdev' mode? If yes, it's a bug in the X server. Setting
-the DSP registers is part of the video mode initialization and thus is the
-sole responsability of the frame buffer device, when running in `fbdev' mode.
+On Tue, Aug 08, 2000 at 02:35:19PM +0200, Geert Uytterhoeven wrote:
+>=20
+> Is this XF4.0.1 in `fbdev' mode? If yes, it's a bug in the X server. Sett=
+ing
+> the DSP registers is part of the video mode initialization and thus is the
+> sole responsability of the frame buffer device, when running in `fbdev' m=
+ode.
 
-Gr{oetje,eeting}s,
+Yes.  The server shows the SAME behavior using the fbdev driver and
+the ati driver.  Also, as a note, the 3.3.6 XF68FB_Dev server with ati
+accel also does the same thing!   So there's some code that's getting
+used by all three that is wrong?
 
-						Geert
+I'm a little confused as to where the problem lies...
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+--=20
+Josh
+6B21489A | GnuPG ID/Fingerprint | huber@mclx.com |
+61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+--KFztAG8eRSV9hGtP
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
+
+--KFztAG8eRSV9hGtP--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
