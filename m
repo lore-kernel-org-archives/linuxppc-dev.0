@@ -1,33 +1,23 @@
-Message-ID: <3BCB7685.4060208@ixiacom.com>
-Date: Mon, 15 Oct 2001 16:51:33 -0700
-From: Bryan Rittmeyer <bryan@ixiacom.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: status of PPC405<->mainstream kernel merge?
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <sbcc391b.064@tms-pty.com>
+Date: Tue, 16 Oct 2001 13:41:17 +1100
+From: "Jeremy Rosen" <Rosen.Jeremy@tms-pty.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Memory requirements
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi guys,
+Hello everybody, I am trying to put a Linux on a FADS860T board, and I
+have no idea of the quantity of memory I will need....
 
-I'm wondering what the status is of the 405GP/405CR support in the
-"mainstream"  Linux kernels. Is it ready for production use? If not,
-what's the newest-but-stable PPC405 kernel availible right now?
+could anyone give me an idea of minimal and reasonable memory
+requirement for these kind of boards...
 
-We've been using linux-2.4.2-mvista_04-12-01 off of Montavista's FTP
-site, and have hit some serious problems regarding its VM behavior
-under OOM. I want to upgrade to something newer to take advantage
-of all the upstream bug fixes, and also to be able to debug/develop
-against (more) current kernels....
+Thx everybody
 
-Regards,
-
-Bryan
-
---
-Bryan Rittmeyer
-mailto:bryan@ixiacom.com
-
+Jeremy
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
