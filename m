@@ -1,28 +1,39 @@
-In-Reply-To: <1074890984.2840.25.camel@otta.rchland.ibm.com>
-References: <20040123111725.GB23537@iliana> <1074883450.2842.9.camel@otta.rchland.ibm.com> <20040123185433.GB5125@iliana> <1074890984.2840.25.camel@otta.rchland.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v609)
-Message-Id: <897BA5DA-4FD4-11D8-99B7-000A95A4DC02@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	Sven Luther <sven.luther@wanadoo.fr>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: chrp mmu and booting.
-Date: Mon, 26 Jan 2004 08:52:06 +0100
-To: Peter Bergner <bergner@vnet.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Jan Damborsky <jan.damborsky@devcom.cz>
+Cc: Steven Blakeslee <BlakesleeS@embeddedplanet.com>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: MPC823E SMC/I2C/SPI micropatch 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 26 Jan 2004 08:23:52 +0100."
+             <4014C088.1020208@devcom.cz>
+Date: Mon, 26 Jan 2004 09:00:55 +0100
+Message-Id: <20040126080100.26782C108D@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Yes, you can boot any 32-bit ELF binary from OF.  Yaboot and the zImage
-> wrapper for the 64-bit kernel are both 32-bit ELF binaries, so you can
-> boot either of these.  Note that you cannot boot a plain PPC64 vmlinux,
-> as the OF ELF loader doesn't support 64-bit ELF binaries.
+In message <4014C088.1020208@devcom.cz> you wrote:
+>
+> I have found out that CPM micropatch
+> available in linux-2.4 from Wolfgang Denk
+> site (the kernel we use successfuly on our
+> custom boards at present) is applicable as well.
 
-This is OF implementation dependent -- for example, the Apple one will
-load 64-bit ELF just fine (iirc).
+You have to select the _correct_ uCode patch.
+
+There is one patch for the MPC850, and another one for all other  8xx
+processors. And there is the USB SOF potch for the MPC823.
 
 
-Segher
+Best regards,
 
+Wolfgang Denk
+
+--
+See us @ Embedded World, Nuremberg, Feb 17 - 19,  Hall 12.0 Booth 440
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Another dream that failed.  There's nothing sadder.
+	-- Kirk, "This side of Paradise", stardate 3417.3
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
