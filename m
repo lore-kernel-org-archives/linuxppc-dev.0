@@ -1,21 +1,12 @@
-Return-Path: <srinivas.surabhi@wipro.com>
-Received: from wip-ectls-mx1.wipro.com (wip-ectls-mx1.wipro.com
-	[203.101.113.37])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wip-ectls-mx1.wipro.com",
-	Issuer "VeriSign Trust Network" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id AB67067A46
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 23:42:42 +1100 (EST)
+Return-Path: <nlv11891@natlab.research.philips.com>
+Message-ID: <002001c52aef$d29dbb70$9c9c9182@ddns.htc.nl.philips.com>
+From: "S. van Beek" <nlv11891@natlab.research.philips.com>
+To: <Linuxppc-embedded@ozlabs.org>
+Date: Thu, 17 Mar 2005 13:49:56 +0100
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Thu, 17 Mar 2005 18:17:24 +0530
-Message-ID: <EF9B29C78F41FA488927FCBC7750AF0E011DA97B@hyd-mdp-msg.wipro.com>
-From: <srinivas.surabhi@wipro.com>
-To: <hans.schillstrom@pwav.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: FW: LED driver
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_001D_01C52AF8.3453CB90"
+Subject: Problems with MontaVista Linux on a Memec Virtex-II pro ff672 board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,111 +17,88 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-Thanks a lot for your help. But in my sources I could not find=0D
-immap_cpm2.h file. There is immap_8260.h file, I don't know it is
-similar to that of immap_cpum2.h.=0D
+------=_NextPart_000_001D_01C52AF8.3453CB90
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Can you send the immap_cpum2.h file please?
+Hello there,
 
-I am working on kernel 2.4.20=0D
+This is our first post on this list, hi all!
+We're two Dutch students working with a Virtex-II pro ff672 board from =
+Memec with the Communications 2 module. We've compiled a simple kernel =
+wich comes with MontaVista Linux 3.1 (2.4.20) with ethernet and a serial =
+port. It mounts its root filesystem over NFS and everything seems to =
+work nicely. The next step we wanted to make was adding support for the =
+Flash on the com board. We added the IP to the hardware and loaded the =
+new bitstream in the FPGA. Next thing, we enabled support for MTD =
+devices in the kernel. After that, the kernel did not seem to boot =
+anymore. It stopped at the message 'Now booting the kernel'. So we read =
+some documentation about debugging. We recompiled this kernel with the =
+-g -ggdb options and removed the -O (optimalization) flag. Then we did =
+not even see the ppc boot loader messages anymore when trying to boot. =
+So we tried to compile the first kernel (with only serial and ethernet =
+support) -wich worked fine before- with debugging and it gave us the =
+same result.. no output at all.=20
+Can anyone give us some hints on what we can try more to find out what =
+is going wrong?=20
 
--Thanks once again..
-SS
+Regards,
+Sander van Beek
+Daniel van Os
+------=_NextPart_000_001D_01C52AF8.3453CB90
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
------Original Message-----
-From: Hans Schillstrom [mailto:hans.schillstrom@pwav.com]=0D
-Sent: Thursday, March 17, 2005 3:17 PM
-To: Srinivas Surabhi (WT01 - TELECOM SOLUTIONS)
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: FW: LED driver
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2800.1491" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>Hello there,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>This is our first post on this list, hi =
 
-Hi,
-I have made a driver for our mpc8270 board=0D
-It is based upon Denx led_driver and made for 2.6 kernel
-(See atached file)
+all!</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>We're two Dutch students working with a =
+Virtex-II=20
+pro ff672 board from Memec with the Communications 2 module. We've =
+compiled a=20
+simple kernel wich comes with MontaVista Linux&nbsp;3.1 (2.4.20) with =
+ethernet=20
+and a serial port. It mounts its root filesystem over NFS and everything =
+seems=20
+to work nicely. The next step we wanted to make was adding&nbsp;support =
+for the=20
+Flash&nbsp;on the com board. We added the IP to the hardware and loaded =
+the new=20
+bitstream in the FPGA. Next thing, we enabled support for MTD devices in =
+the=20
+kernel. After that, the kernel did not seem to boot anymore. It stopped =
+at the=20
+message 'Now booting the kernel'. So we read some documentation about =
+debugging.=20
+We recompiled this kernel with the -g -ggdb options and removed the -O=20
+(optimalization) flag. Then we did not even see the ppc boot loader =
+messages=20
+anymore when trying to boot. So we tried to compile the first kernel =
+(with only=20
+serial and ethernet support) -wich worked fine before-&nbsp;with =
+debugging and=20
+it gave us the same result.. no output at all. </FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>Can anyone give us some hints on what =
+we can try=20
+more to find out what is going wrong? </FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Regards,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>Sander van Beek</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>Daniel van =
+Os</FONT></DIV></BODY></HTML>
 
-To control the leds you have to perfom some ioctl's
-first create your devices=0D
-mknod led0 c 151 0 ...
-
-Example howto use it:
-
-void led_off( int file )
-{
-  if (ioctl(file,STATUSLED_SET,0) < 0)
-    perror("led off: ");
-}
-void led_blink( int file )
-{
-  if (ioctl(file,STATUSLED_SET,1) < 0)
-    perror("led blink: ");
-}
-void led_on( int file )
-{
-  if (ioctl(file,STATUSLED_SET,2) < 0)
-    perror("led on: ");
-}
-void led_per( int file, int period )
-{
-  if (ioctl(file,STATUSLED_PERIOD,period) < 0)
-    perror("led on: ");
-}
-
-...
-
-int led0 =3D open("/dev/led0",O_RDWR)
-...
-  led_blink(led0);	/* turn on green LED */
-..
-/Hans
-
-
-On Thu, 2005-03-17 at 06:15, srinivas.surabhi@wipro.com wrote:
->=0D
-> -----Original Message-----
-> From: Srinivas Surabhi (WT01 - TELECOM SOLUTIONS)
-> Sent: Thursday, March 17, 2005 7:53 AM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: LED driver
->=0D
-> Hi,
->=0D
-> I am working on the MPC8270 board having connected GPIO 3 lines
-> connected to 3 LEDs. So can any one help me in finding out the best
-> solution of controlling the LEDs from MVlinux (kernel and user space)
-or
-> any pointers who has done it before.
->=0D
-> Thanks & Rgds
-> SS
->=0D
->=0D
->=0D
->=0D
-> Confidentiality Notice
->=0D
-> The information contained in this electronic message and any
-attachments to this message are intended
-> for the exclusive use of the addressee(s) and may contain confidential
-or privileged information. If
-> you are not the intended recipient, please notify the sender at Wipro
-or Mailadmin@wipro.com immediately
-> and destroy all copies of this message and any attachments.
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->=0D
-
-
-
-Confidentiality Notice=0D
-
-The information contained in this electronic message and any attachments to=
- this message are intended
-for the exclusive use of the addressee(s) and may contain confidential or=
- privileged information. If
-you are not the intended recipient, please notify the sender at Wipro or=
- Mailadmin@wipro.com immediately
-and destroy all copies of this message and any attachments.
+------=_NextPart_000_001D_01C52AF8.3453CB90--
