@@ -1,37 +1,38 @@
-Message-Id: <v04003a00b67d11e70825@[24.70.162.12]>
-In-Reply-To: <20010106104247.A1400@opus.bloom.county>
-References: <20010106055922.Y29805@plato.local.lan>; from
- erbenson@alaska.net on Sat, Jan 06, 2001 at 05:59:22AM -0900
- <200101051455.f05Et0v06700@ashley.ivey.uwo.ca>
- <20010105083740.B14321@opus.bloom.county>
- <20010105154015.R29805@plato.local.lan> <3A572925.4A791E05@iiic.ethz.ch>
- <20010106055922.Y29805@plato.local.lan>
+Date: Sat, 6 Jan 2001 17:14:07 -0500
+From: drscholl <drscholl@users.sourceforge.net>
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: "Clayton,Keith - Programmer" <Clayton@ltcc.cc.ca.us>,
+        "'alex@cosmo.allay.net'" <alex@cosmo.allay.net>,
+        linuxppc-dev@lists.linuxppc.org, drscholl@users.sourceforge.net
+Subject: Re: Endianness and comparing IP's
+Message-ID: <20010106171407.A68753@frostedflakes.neglected.net>
+References: <20010106012137.8A8651BFBA@atlas.valhalla.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 6 Jan 2001 12:22:19 -0600
-To: Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@lists.linuxppc.org
-From: Tony Mantler <nicoya@apia.dhs.org>
-Subject: Re: status of ppc support in official 2.4.0 or Alan's 2.4.0-ac1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010106012137.8A8651BFBA@atlas.valhalla.net>; from iain@sandoe.co.uk on Sat, Jan 06, 2001 at 12:22:33AM +0000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 11:42 AM -0600 1/6/2001, Tom Rini wrote:
-[...]
->In short, what I think we'll need soon is what 2.4.0 needs now.  People other
->than the usual gang of testers to try it out and find bugs.
+On Sat, Jan 06, 2001 at 12:22:33AM +0000, Iain Sandoe wrote:
+> more to the point is that there are a set of macros/functions designed for
+> this purpose (try man htons)... which avoids thinking to hard about
+> transferring between endian-ness of machines.
+>
+> I'm not sure why the BSWAP32 is being used instead of one of the network
+> macros... maybe a red-herring but...
 
-For the record, where is an rsync/tgz for the current 'needs testing' tree?
-I haven't had a bootable kernel on my 9600/200mp since 2.4.0-test11
-linux-pmac-devel rsync.
+Unfortunately Napster, Inc. chose to use little-endian format IP addresses
+in the protocol, so the traditional htonl() macros aren't useful in
+this case.  What gets stored in the context for the connection is the
+little-endian version so that each time the ip address is sent as part
+of the protocol, there is no need for bit manipulation.  The particular check
+that Alex set has the IP address in network byte order (from the
+gethostbyname() call), so its *required* that the bits be swapped to check
+against what is stored in the context.
 
-
-Cheers - Tony 'Nicoya' Mantler :)
-
-
---
-Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
-Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
-
+All of the ints in question are unsigned, so there isn't an issue of
+conversion (I beleive gcc -W -Wall -pedantic would have warned if you
+tried to do a comparison of different types, anyway).
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
