@@ -1,46 +1,46 @@
-Date: Mon, 25 Oct 1999 14:52:11 -0400 (EDT)
-From: "Mark S. Mathews" <mark@absoval.com>
-To: Dan Malek <dan@netx4.com>
-cc: Dan Malek <dan@penguin.netx4.com>,
-        "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MPC8xx updates to 2.2.13
-In-Reply-To: <3814641B.5A628170@netx4.com>
-Message-ID: <Pine.LNX.3.96.991025145044.18069D-100000@tristar.cc.absoval.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 25 Oct 1999 18:25:26 -0400 (EDT)
+From: Claude Robitaille <crobitaille@videotron.ca>
+Subject: Still not booting
+To: linuxppc-embedded@lists.linuxppc.org
+Message-id: <Pine.LNX.4.10.9910251825040.434-100000@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 25 Oct 1999, Dan Malek wrote:
 
-> Mark S. Mathews wrote:
-> > 
-> > Hey Dan,
-> > 
-> > We just got done getting the 2.2.13 running on the RPX-lite.  We had to
-> > add CONFIG_ENET_SCC2 to its config to make it work.  Thanks for the
-> > update!
-> 
-> You are welcome....but didn't 'make config' ask you which SCC
-> to use for the Ethernet?  You really shouldn't edit .config by
-> hand, as there are other files updated during the 'make config'
-> procedure.
+Hi,
 
-You are so right.  When we config'd it originally, we used the defaults
-from your existing config.  If you select SCC1, then it (rightly) doesn't
-ask you about SCC2.  Our bad.
+I am still not able to boot my 8xx board via NFS. Actually, I do not
+think is it NFS related anymore. I put a lot of printk and was able
+to narrow down to the clear_user function.
 
-Thanks for the note.
+This is happening while trying to load /sbin/init. init/main.c calls
+execve which eventually leads to load_elf_intepr to padzero to
+clear_user and __clear_user. (There is other functions inbetween, I
+just skipped them end the list here). __clear_user is an assembly
+routine which clears a memory block. The arguments are the same as
+clear_user, i.e. an address pointer and a length.
 
--Mark
+I do not get any more printk outputs after the processor enters
+__clear_user. I modified clear_user to do the actual clearing of the
+memory in C (easier to work with). Right now, I find that the first
+access to the memory to clear it ends up in hanging the system. The
+address is 3004ddcc which obviously seems to be a logical or virtual
+address. If I am not wrong, /sbin/init is the first user land process,
+so trying to start it is the first time the kernel is playing with
+user land memory space. I do not think this is an hardware unmapped
+physical location since I think the bus monitor would eventually kick
+in and result into a machine check. Am I right?
 
-Mark S. Mathews
+Is there s way to easilly convert the virtual address to physical?
 
-AbsoluteValue Software     Web:    http://www.absoval.com
-P.O. Box 941149            e-mail: mark@absoval.com
-Maitland, FL 32794-1149    Phone:  407.644.8582
-USA                        Fax:    407.539.1294
+Any other idea on how to keep analysing the problem?
+
+Thanks
+
+Claude
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
