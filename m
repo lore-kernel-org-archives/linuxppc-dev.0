@@ -1,45 +1,55 @@
-From: David Jander <david.jander@protonic.nl>
-To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: IBM405
-Date: Mon, 23 Jun 2003 16:31:31 +0200
-References: <f71eqyflvndrtko.230620031257@gda-server>
-In-Reply-To: <f71eqyflvndrtko.230620031257@gda-server>
+Message-ID: <002c01c3399b$51924380$7400a8c0@CCH>
+From: "Christian Charreyre - CIO" <christian.charreyre@cioinfoindus.fr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Problem with 8250 in promiscuous mode : Ethernet received frames losts
+Date: Mon, 23 Jun 2003 17:22:53 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200306231631.31579.david.jander@protonic.nl>
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Monday 23 June 2003 09:37, Rakesh jagota wrote:
-> Hi all,
->
-> We have ported linuc on IBM 405 ppc based board. we have a small query.
-> How can we directly run the application after switching-on the board
-> (without typing "root" at login prompt.
+I'm working with a custom board based on 8250 PPC.
+It's using the fcc_enet.c driver on Linux 2.4.18 from Elinos distribution
+(version 0.3 of the driver).
 
-There are several ways/things you can try:
+I face the following problem :
 
-1.- Start your application from one of the init scripts (search in
-/etc/rc.d/... for the right spot)
-2.- Replace /sbin/init with your application (dangerous, you'll have to know
-what you are doing, and your application needs to start up all other things,
-just like init.)
-3.- Edit /etc/inittab to change the order in which things are started. For
-example if you wanted to start your application in every runlevel, put
-something like this into /etc/inittab:
-my:12345:respawn:/bin/myapplication
-This will keep your application always running, and restart it if it quits.
-4.- replace /sbin/login with your app ;-)
+When sending 802.3 frames from a PowerMac, and receiving them on my custom
+board in promiscuous mode, about 10% of the frames are lost.
 
-There are probably many more options, but I hope this helps for a start.
+Does anyone know if the driver has bugs when working in promiscuous mode,
+that could explain such a phenomen ?
 
-Sincerely,
+Is this version of the driver the up to date version (looking in sources
+from RedHat Linux 9 for PPC, it seems that the driver version is only 0.2) ?
+
+Thanks for help or hints.
+
+
+Christian Charreyre
 
 --
-David Jander
-Protonic Holland.
+
+
+CIO Informatique Industrielle
+
+11 Avenue Marigny
+13014 Marseille
+
+Tél : 04 95 05 19 41
+Fax : 04 95 05 19 42
+
+
+1 rue de la Presse - BP 710
+42950 St Etienne Cedex 9
+
+Tél : 04 77 93 34 32
+Fax : 04 77 79 75 55
+
+mailto:christian.charreyre@cioinfoindus.fr
+http://www.cioinfoindus.fr
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
