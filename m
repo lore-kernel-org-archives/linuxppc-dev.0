@@ -3,62 +3,32 @@ From: Toni Van Remortel <t.vanremortel@ha.be>
 Reply-To: t.vanremortel@ha.be
 To: Wolfgang Denk <wd@denx.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20031117155350.D76B7C5F59@atlas.denx.de>
+In-Reply-To: <1069145908.1006.2.camel@toni>
 References: <20031117155350.D76B7C5F59@atlas.denx.de>
+	 <1069145908.1006.2.camel@toni>
 Content-Type: text/plain
-Message-Id: <1069145908.1006.2.camel@toni>
+Message-Id: <1069148317.1006.8.camel@toni>
 Mime-Version: 1.0
-Date: Tue, 18 Nov 2003 09:58:29 +0100
+Date: Tue, 18 Nov 2003 10:38:38 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Op ma 17-11-2003, om 16:53 schreef Wolfgang Denk:
-> Dear Toni,
->
-> in message <1069081757.25853.5.camel@toni> you wrote:
+> > > PS: don't mind the warning about libstdc++-libc6.2-2.so.3, it's in place
+> > > on the embedded system.
 > >
-> > But when I allow the functions that use fstream (for saving and loading
-> > small files over NFS), I get the following error:
-> >
-> > Linking test...
-> > /opt/eldk/usr/ppc-linux/bin/ld: warning: libstdc++-libc6.2-2.so.3,
-> > needed by /opt/PPC_X/usr/X11R6/lib/libGLU.so, not found (try using
-> > -rpath or -rpath-link)
-> ...
-> > and more than a dozen of these errors. It's a linking problem, that's
-> > what I know. But I don't know how to get to the problem-core. Can I
->
-> Why not? The error message is pretty plain english:
->
-> Your  link  step  included   the   /opt/PPC_X/usr/X11R6/lib/libGLU.so
-> library,    which    in    turn    tried    to   link   against   the
-> libstdc++-libc6.2-2.so.3 library, which was not found by the linker.
+> > You must be joking. Of course you have to mind this.  It's  the  root
+> > cause  of your problems. And other problems are lurking to hit you as
+> > libstdc++-libc6.2-2.so.3 is most probably incompatible to  the  ELDK,
+> > too.
 
-Strange. It did found it before. Should check that further then.
-Although the resulting binary runs fine on the EP405.
+I apologize for this stupid question: the symlink to the lib was wrong
+inside the /opt/eldk/ppc_4xx/lib directory.
 
-> > solve this by a quick hack? Or is it hopeless to start messing with
-> > fstream on PPC?
->
-> I don't know where  you  got  the  /opt/PPC_X/usr/X11R6/lib/libGLU.so
-> library  from.
+Anyhow, thanks for pointing me to the correct location of the problem, I
+was seeking inside the FLTK map.
 
-Compiled from source, linked against ELDK. Works perfectly.
-
-> > PS: don't mind the warning about libstdc++-libc6.2-2.so.3, it's in place
-> > on the embedded system.
->
-> You must be joking. Of course you have to mind this.  It's  the  root
-> cause  of your problems. And other problems are lurking to hit you as
-> libstdc++-libc6.2-2.so.3 is most probably incompatible to  the  ELDK,
-> too.
-
-Hmm. Still find it strange. It compiles, it runs, and it only complains
-at compile time. Very odd, but I'll try to remove the first warning and
-see what happens.
-
-Thanks for your help.
+Regards,
 --
                            Toni Van Remortel
               Wetenschappelijk Medewerker - D-science lab
