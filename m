@@ -1,50 +1,38 @@
-Date: Sat, 3 Nov 2001 08:15:53 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
+To: Tom Rini <trini@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>,
 	linuxppc-dev@lists.linuxppc.org
-Subject: Re: boot methods
-Message-ID: <20011103081553.C29932@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011102185547.B29932@cpe-24-221-152-185.az.sprintbbd.net> <20011103094543.10BDA10CDB@denx.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011103094543.10BDA10CDB@denx.denx.de>
+Subject: Re: boot methods 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 03 Nov 2001 08:15:53 MST."
+             <20011103081553.C29932@cpe-24-221-152-185.az.sprintbbd.net>
+Date: Sat, 03 Nov 2001 19:36:21 +0100
+Message-Id: <20011103183626.E9E2D10CDB@denx.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Nov 03, 2001 at 10:45:37AM +0100, Wolfgang Denk wrote:
-> In message <20011102185547.B29932@cpe-24-221-152-185.az.sprintbbd.net> you wrote:
-> >
-> > Vendor                Extension               How
-> > IBM Spruce            .spruce                 ???
-> > Force PowerCore       .pcore                  PowerBoot (Force firmware)
-> > Force PowerPMC 250    .pcore                  PowerBoot
-> > M.E.N. F1             .menf1                  ??? (Probably custom fw).
-> > Motorola LoPEC        .pplus/.bugboot[1]      PPCBUG
-> > Motorola MCPN765      same                    same
-> > Motorola MVME5100     same                    same
-> > Motorola PrPMC750     same                    same
-> > Motorola PrPMC750     same                    same
-> > Motorola Sandpoint    .sandpoint              DINK32
-[snip]
-
-[1]: .bugboot is for images in flash.
-
-> > Why is the how important?  With the exception of firmware-deficiencies,
-> > the current wrapper doesn't really care what it came from.  And they
+In message <20011103081553.C29932@cpe-24-221-152-185.az.sprintbbd.net> you wrote:
 >
-> ...or there is no wrapper at all.
+> changes.  And I don't think the PPCBoot wrapper needs to be all that big
+> either.  I do need to sit down and verify this, but a PPCBoot wrapper
+> could be as minimal as taking a current bd_t structure and converting it
+> to bi_recs.  No duplicated serial, et al.
 
-But that's going to be much of an option.  I think we want to enforce
-some wrapper, so that things like PPCBoot aren't effected by internal
-changes.  And I don't think the PPCBoot wrapper needs to be all that big
-either.  I do need to sit down and verify this, but a PPCBoot wrapper
-could be as minimal as taking a current bd_t structure and converting it
-to bi_recs.  No duplicated serial, et al.
+I think we'll implement it the other way round: as soon  a  there  is
+any  definition  of  the  intended interface we will make PPCBoot use
+bi_recs directly, and provide an (optional) bd_t interface for compa-
+tibility with old systems.
+
+[We already have to support two interfaces right now: one with clocks
+in MHz, the other in Hz. It's not exactly nice, but it works.]
+
+Wolfgang Denk
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+There is nothing in this world constant but inconstancy.      - Swift
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
