@@ -1,36 +1,44 @@
-Message-Id: <199905301326.IAA26669@lists.linuxppc.org>
-Date: Sun, 30 May 1999 15:26:07 +0200 (CEST)
-From: laures@esiea.fr
-Subject: Pcmcia-cs
+From: Konstantinos Margaritis <kmargar@cc.uoa.gr>
 To: linuxppc-dev@lists.linuxppc.org
+Subject: g200 hw 3d on powerpc
+Date: Mon, 31 May 1999 03:51:52 +0300
+Content-Type: text/plain
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=iso-8859-1
+Message-Id: <99053103585003.30874@proton>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+-----BEGIN PGP SIGNED MESSAGE-----
 
-I just wanted to know if someone was working on this.
+   Hi,
+   If anyone noticed, the g200-dev project is proceeding along very nicely
+(http://lists.openprojects.net/mailman/listinfo/g200-dev), and it's about
+writing a hw OpenGL driver for the Matrox G200 card. Now I don't really
+care about having a video card that will only work on linux (I think it
+does already on powerpc, using matroxfb) and both mac-on-linux and
+shapeshifter could make a mac card unnecessary even.
+   I talked to some g200-dev developers and the opinions were divided. In
+particular, one thinks that fbdev+g200-glx will work, another one does not.
+   The point is if a user-mode 3d driver, could access the raw hardware
+thru a fb device. I understand that the framebuffer gets mmap'd but what
+about the registers?
+   Anyway, I hope you will see it's an important issue here. If this
+just works on one system, chances are that there will be more willing to
+buy the g200 (and even g400 which is also open-specs).
 
-I just compiled the 3.0.9 version with a vger 2.2.10 kernel, and when I
-insert a card the machine (WallStreet) hangs (cursor blinking at top
-left of the screen).
+- --
+Konstantinos Margaritis
+-----BEGIN PGP SIGNATURE-----
+Version: 2.6.3ia
+Charset: noconv
 
-Otherwise if I put it in at startup time, the kernel dumps a little more
-insteresting feedback (kernel access to bad area, pc=...)
-
-The compilation went fine (and given the number of built-in equipment in
-Apple laptops) I guess that this problem simply has not been
-enlightened. Am I true ?
-
-I'd like to use a 10/100 card from MacSense Tech. BTW, they told me that
-teir engineers where "playing" with linux to figure out how difficult
-support for this OS would be.
-
--- 
-Guillaume Laurès - student @ ESIEA (www.esiea.fr)
-
+iQCVAwUBN1HeyvalfJok8qABAQGA5gP/dyDiQxixRc8ntxx/MPgHU7MR6sl78aVq
+EgXrfpsYb5p4kjCLPPcUpGIbU4ry+I/ManoebODIeQIBhgmilo8npp39l+sgNfrW
++l6hXjKWSTHU+4Pym42VtodxbDBpvRb6NpHPNfbvi9USLL9jOzjrUPJdz54nBfYt
+NMc+zCrbmNQ=
+=kLLB
+-----END PGP SIGNATURE-----
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
