@@ -1,43 +1,58 @@
-Date: Tue, 8 Oct 2002 11:20:36 -0700
-From: Matt Porter <porter@cox.net>
-To: Andrew May <acmay@acmay.homeip.net>
-Cc: Matt Porter <porter@cox.net>,
-	linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3DA3347B.1000004@mvista.com>
+Date: Tue, 08 Oct 2002 12:39:39 -0700
+From: Todd Poynor <tpoynor@mvista.com>
+MIME-Version: 1.0
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: very minor 405GP and 405GPr PCI difference
-Message-ID: <20021008112036.A22215@home.com>
-References: <3D995EC0.2000500@elsoft.ch> <20021002014219.GF1848@zax> <3D9AA452.5070004@elsoft.ch> <20021003011233.GC1102@zax> <20021006052314.GG27824@acmay.homeip.net> <20021006183120.A17129@home.com> <20021008041419.GF32555@zax> <20021008052136.GA26470@acmay.homeip.net> <20021008075609.A21266@home.com> <20021008173156.GA21980@acmay.homeip.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20021008173156.GA21980@acmay.homeip.net>; from acmay@acmay.homeip.net on Tue, Oct 08, 2002 at 10:31:56AM -0700
+References: <20021002014219.GF1848@zax> <NCBBIINEHIPFGJPLBEIFEEMFDMAA.acurtis@onz.com> <20021002053422.GL1848@zax> <20021002100312.A2240@home.com> <20021003011044.GB1102@zax> <20021003081439.C4643@home.com> <20021004024832.GG1933@zax> <3D9DDEE9.5070909@mvista.com> <20021008041758.GG32555@zax>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Oct 08, 2002 at 10:31:56AM -0700, Andrew May wrote:
-> > On Mon, Oct 07, 2002 at 10:21:36PM -0700, Andrew May wrote:
-> >
-> > I think we are all more or less in agreement.  Let me review a couple
-> > scenarios so we all recall why we have a few different methodologies.
-> > Here are the basic systems:
->
-> ....
->
-> > We can (and already do) support all three methodologies.  The
-> > important thing is to keep supporting them and make it easy
-> > to handle case #3 on 4xx stuff.
->
-> Yes, I think we agree on this, but I am not sure it is that
-> easy to currently handle case #1 on a 4xx system. Not too hard,
-> but I did have to pull out some code to get things to work.
+David Gibson wrote:
 
-Absolutely.  It'll get fixed as one of the pieces of this 4xx
-reorg that Paul mentioned.  Specifically, this will be possible
-once the flow-through is no longer through the common file.
+>>Rainier (NP4GS3) PMM1 is setup specially in the existing code, is this
+>>no longer needed?
+>
+>
+> Well, I don't know if it's necessary - it's not there, because I
+> didn't notice the difference in the Rainier code before.  Now that I
+> do look at it, I'm confused: it appears to be setting up both PMM0 and
+> PMM1 to map from the same PLB addresses, but the manual specifically
+> prohibits overlapping PMM ranges.
 
-Regards,
+And the code used for MontaVista's products has diverged somehow; it has
+an empty bios_fixup but code in a different place that does something
+different:
+
+	/* plb address 0x8000 0000 will be set to pci address 0x8000 0000 which
+	   corresponds to PCI 9030 Dev 0x10 BAR4 */
+	out_le32((void*)PMM1LA,0x80000000);
+	out_le32((void*)PMM1MA,0xFFFE0001);    /* PLB range is 128KB */
+	out_le32((void*)PMM1PCILA,0x80000000);
+	out_le32((void*)PMM1PCIHA,0x00000000);
+
+I'll try to figure out the story on this, but everything NP4GS3-related
+seems to be murky...  NP4GS3 will probably need a custom bios_fixup that
+does the above (among other things), can worry about that platform later.
+
+>>This code is fragile and tends to break on certain platforms in ways
+>>that can't be explained by the available documentation.  I can help test
+>>the unified version on Walnut/Sycamore/Ash if needed.
+>
+>
+> Do you mean the existing code, or my proposed patch (or both).  That
+> would be great if you could test the code on those machines -  I don't
+> have a Sycamore or Ash, and I'd have to drag the Walnut out again to
+> test on it.
+
+Yes, I can test your proposed code on those machines.
+
+
 --
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+Todd
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
