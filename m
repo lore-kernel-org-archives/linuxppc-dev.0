@@ -1,70 +1,119 @@
-Date: Wed, 14 Apr 1999 10:54:33 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: satadru pramanik <satadru@umich.edu>
-cc: Niels Roest <N.P.Roest@ITS.TUDelft.NL>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: ggi and frame buffer
-In-Reply-To: <Pine.LNX.4.10.9904131507570.9430-100000@beer.pub.umich.edu>
-Message-ID: <Pine.LNX.4.10.9904141023400.14384-100000@idd-01.imbc.gr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 14 Apr 1999 11:00:13 +0200
+From: massin@col.bsf.alcatel.fr (Raphael Massin)
+Message-Id: <199904140900.LAA14141@csp230.clb>
+To: r44089@email.sps.mot.com
+Subject: Re: Help about Kernel Image
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-
-I just grabbed the source rpms and build them, 
-works fine under X (XFree86-3.3.3.1-29b) dga seems to have some problems though
-console works fine also (some times resolution change gives invalide scan 
-ranges)
-
-All this under R4 (most rpms are upgraded to near R5 versions)
-
-  Kostas Gewrgiou
-
-
-
-On Tue, 13 Apr 1999, satadru pramanik wrote:
-
 > 
-> I'm specifically looking to see if anybody has it working under the
-> console.
-> 
-> On Tue, 13 Apr 1999, Niels Roest wrote:
-> 
-> On Mon, 12 Apr 1999, satadru pramanik wrote:
-> 
-> > 
-> > Since linuxppc defaults to using a FB-device, ggi should work, right?  So
-> > I compiled the latest snapshit, and when I tried to run a demo, ie
-> > "cube3d" I got this:
-> > cube3d: error in loading shared libraries: /usr/local/lib/libgg.so.0:
-> > R_PPC_REL2
-> > 4 relocation out of range
-> > 
-> > Any clues to what this is?  Has anybody gotten libgii and libggi to work
-> > successfully on LinuxPPC, especially pre-rel5?
-> > 
-> > 
-> I did compile it on pre-rel5, the one with libc-2.0.108, and kernel 2.2.1,
-> on an 7600 (that's with a control chip if that matters)
-> It was a while ago, I rm-ed the sources, but I tried
-> it on linux-heretic (I compiled both xheretic and ggiheretic)
-> and it still works ok. Note: this is not on console, but in X.
-> I didn't try it in console. so ggi on X works.
-> Niels
-> 
-> 
-> 
-> ----
-> satadru pramanik `satadru@umich.edu'
-> "Put your hand on a hot stove for a minute, and it seems like an hour. Sit
-> with a pretty girl for an hour, and it seems like a minute. THAT'S
-> relativity." 
-> -Albert Einstein
-> ---
-> 
+> Hello, everyone
+>   I'm building a kernel for Motorola's FADS860 board.
+> My code base is embedded-2_2p7.tar.gz. When I debug the code,
+> I find some problems.
+> In arch/ppc/boot/head.S, line 144, author using following code
+> to clear the BSS segment:
+> =======================================
+> /* Clear all of BSS */
+> lis r3,edata@h
+> ori r3,r3,edata@l
+> lis r4,end@h
+> ori r4,r4,end@l
+> subi r3,r3,4
+> subi r4,r4,4
+> li r0,0
+> 50: stwu r0,4(r3)
+> cmp 0,r3,r4
+> bne 50b
+> =======================================
+> But in my binary code of zImage, the kernel image is between "edata" and
+> "end"
+> following is symbols list:
+> ***************************************
+> 0010420c A _etext       = 0x104648
+> 00105320 A _edata       = 0x105320
+> 00106008 B zimage_start = 0x106000
+> 0010600c B orig_y
+> 00106010 B zimage_size
+> 00106014 B cols
+> 00106018 B end_avail
+> 0010601c B lines
+> 00111bc0 A _end         = 0x111bc0
+> ***************************************
+> So, I have two questions:
+> 1. the address of kerenl image is same as some variables, such as
+>    orig_y, cols and so on.
+> 2. clear the BSS segment, crash the kernel image befrom decompressing it.
 > 
 
+Hello,
+
+In arch/ppc/boot/Makefile, objcopy is called to add the vmlinux.gz as a section
+'image' in zvmlinux. I also had the problem that the beginning of this section
+was cleared because it overlapped with the .bss section for the zimage.
+
+I have modified the lines in the Makefile to
+1) remove the .bss section
+2) padd the .data section until after the end of the .bss section
+3) add the vmlinux.gz as the 'image' section
+
+here is the normal Makefile :
+
+--------------------------------------------------------------------------------
+zvmlinux: $(OBJECTS) ../coffboot/vmlinux.gz
+#
+# build the boot loader image and then compute the offset into it
+# for the kernel image
+#
+	$(LD) $(ZLINKFLAGS) -o zvmlinux.tmp $(OBJECTS)
+	$(OBJCOPY) $(OBJCOPY_ARGS) -R .comment --add-section=image=../coffboot/vmlinux.gz \
+		zvmlinux.tmp $@
+#
+# then with the offset rebuild the bootloader so we know where the kernel is
+#
+	$(CC) $(CFLAGS) -DINITRD_OFFSET=0 -DINITRD_SIZE=0 \
+		-DZIMAGE_OFFSET=`sh offset $(OBJDUMP) zvmlinux image` \
+		-DZIMAGE_SIZE=`sh size $(OBJDUMP) zvmlinux image` -DKERNELBASE=$(KERNELBASE) \
+		-c -o misc.o misc.c
+	$(LD) $(ZLINKFLAGS) -o zvmlinux.tmp $(OBJECTS)
+	$(OBJCOPY) $(OBJCOPY_ARGS) -R .comment --add-section=image=../coffboot/vmlinux.gz \
+		zvmlinux.tmp $@
+	rm zvmlinux.tmp
+--------------------------------------------------------------------------------
+
+and my modifications:
+
+--------------------------------------------------------------------------------
+zvmlinux: $(OBJECTS) $(FIRMPATH)vmlinux.gz
+#
+# build the boot loader image and then compute the offset into it
+# for the kernel image
+#
+	$(LD) $(ZLINKFLAGS) -o $(FIRMPATH)zvmlinux.tmp $(OBJECTS)
+	$(OBJCOPY) $(OBJCOPY_ARGS) -R .comment --pad-to=0x614000 --remove-section=.bss --add-section=image=$(FIRMPATH)vmlinux.gz $(FIRMPATH)zvmlinux.tmp $(FIRMPATH)$@
+#
+# then with the offset rebuild the bootloader so we know where the kernel is
+#
+	$(CC) $(CFLAGS) -DINITRD_OFFSET=0 -DINITRD_SIZE=0 \
+		-DZIMAGE_OFFSET=`sh offset $(FIRMPATH)zvmlinux image` \
+		-DZIMAGE_SIZE=`sh size $(FIRMPATH)zvmlinux image` -DKERNELBASE=$(KERNELBASE) \
+		-c -o misc.o misc.c
+	$(LD) $(ZLINKFLAGS) -o zvmlinux.tmp $(OBJECTS)
+	$(OBJCOPY) $(OBJCOPY_ARGS)  -R .comment --pad-to=0x614000 --remove-section=.bss --add-section=image=$(FIRMPATH)vmlinux.gz $(FIRMPATH)zvmlinux.tmp $(FIRMPATH)$@
+	rm $(FIRMPATH)zvmlinux.tmp
+--------------------------------------------------------------------------------
+
+I use FIRMPATH to generate the files elsewhere.
+
+With that modifications, it is OK. What i would like to know is how
+does it work without ? Indeed i know several persons on this mailing list
+succeeded in booting their Linux without it.
+
+I hope that helps.
+
+	Raphael
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
