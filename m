@@ -1,13 +1,12 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: <yellowdog-devel@lists.yellowdoglinux.com>,
-	Ani Joshi <ajoshi@shell.unixbox.com>,
 	"Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
 Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: new G4 dual 1 gig is here - how to install?
-Date: Sat, 16 Feb 2002 20:24:47 +0100
-Message-Id: <20020216192447.9676@smtp.wanadoo.fr>
-In-Reply-To: <20020216043145.GJVX19277.tomts22-srv.bellnexxia.net@there>
-References: <20020216043145.GJVX19277.tomts22-srv.bellnexxia.net@there>
+Subject: Re: SMP kernel configuration question?
+Date: Sat, 16 Feb 2002 20:26:10 +0100
+Message-Id: <20020216192611.18399@smtp.wanadoo.fr>
+In-Reply-To: <20020216144452.TKAF7187.tomts21-srv.bellnexxia.net@there>
+References: <20020216144452.TKAF7187.tomts21-srv.bellnexxia.net@there>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -15,30 +14,23 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 >
->BTW I just finished building XF4.2.0 in under 45 min from scratch with
->just one CPU on my new box and fired it up and it works just fine out of
->the box.
+>Hi,
 >
->We really need to write a USB daemon to allow the "Brightness" button to
->work on the DFP monitors from Apple.
-
-There are at least 2 nice daemons beeing worked on that currently
-only handle recent laptop keys but those will be improved over time.
-We also need a better API that what the kernel currently provides for
-the brightness, especially when dealing with X as it is not safe to
-let the kernel tap the card registers the way it does currently while
-X is doing the same below.
-
->The only way I could seem to reduce the brightness was to use the Gamma
->0.50 setting in the XF86Config-4 file to reduce the gamma
+>I have never configured a kernel for SMP before.
 >
->Ani/Ben I will try to send you whatever patches are needed for radeonfb.c
->for the 7500 (once I clean up my hacks) so that you can see what I had to
->do.
+>I turned on the obvious CONFIG_SMP=y in the .config but was prompted if I
+>would like to distribute interrupts (IRQs) across all CPUs.
 >
->Now on to SMP kernel testing!
+>What is the recommended setting for:
+>
+>CONFIG_IRQ_ALL_CPUS
+>
+>Any guidance here would be greatly appreciated.
 
-I'm still working on proper L3 support, I'll push when it's ready.
+Leave it to N. ideally, you should enable it, but I have experienced
+lockups when this feature is enabled, I haven't yet figured out what's
+going on (could be related to the lockup some users are experiencing
+with SMP + HIGHMEM on some dual 800, let me know if you see the same).
 
 Ben.
 
