@@ -1,40 +1,34 @@
-Date: Mon, 17 Dec 2001 09:58:01 -0800
-Message-Id: <200112171758.JAA29076@cedar.he.net>
-From: "Mark Clayton" <mark@brown-pelican.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: linux-atm-general@lists.sourceforge.net
-Reply-To: mark@brown-pelican.com
-Subject: RE: ATM driver for 8260 (linux 2.4.x)
+Message-ID: <3C1E34F5.561EF3B8@mvista.com>
+Date: Mon, 17 Dec 2001 10:09:57 -0800
+From: Armin Kuster <akuster@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+To: "Young-Han, Kim" <yhkim@da-san.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] for ppc405_enet.h, ppc405_phy.c
+References: <094c01c1852b$04d9b8f0$337ceccb@dasan.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+"Young-Han, Kim" wrote:
+>
+> Dear Reader and Armin Kuster!
+>
+>   I'm using the linuxppc_2_4_devel(2.4.17pre8).
+>
+>   I found the serious problem of MDIO write(mk_mii_write).
+>   And, I was append the PHY relate functionality
+> for Broadcom BCM5221.
+>   I'll attach the these patch!
+>
+> Best Regards
+> Young-Han, Kim
+>
+> 1.
 
-Will this 860SAR driver do multi-phy?
+thanks,
 
-Thanks,
-Mark
-
->
->
->Hello None (!)
->
->I have written a driver for the 860
->(http://mpc860sar.sourceforge.net).  This supports linux 2.4.4.
->If you fail to find something written specifically for the 8260 you
-may
->want to try porting this.
->
->Alex
->
->
-
---
-Mark Clayton
-S/V Brown Pelican
-http://www.brown-pelican.com
+armin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
