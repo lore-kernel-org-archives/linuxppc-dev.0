@@ -1,54 +1,61 @@
-Message-ID: <38455EFD.1E37B102@packetengines.com>
-Date: Wed, 01 Dec 1999 09:46:38 -0800
-From: Alan Mimms <alan@packetengines.com>
+Message-ID: <3845CAC4.6C2ED79@263.net>
+Date: Thu, 02 Dec 1999 09:26:28 +0800
+From: Wang Yong <wung_y@263.net>
+Reply-To: wung_y@263.net
 MIME-Version: 1.0
-To: Dan Malek <dan@netx4.com>
-CC: "Mark S. Mathews" <mark@absoval.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: RPXLite 823 PCMCIA troubles
-References: <Pine.LNX.3.96.991130222350.23593A-100000@tristar.cc.absoval.com> <3844A2E1.64157F00@packetengines.com> <38455921.52C11DB2@netx4.com>
+To: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
+Cc: linuxppc embedded mail list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: ask for help
+References: <38451447.BFB42D44@263.net> <384532AA.E0EB8B8E@switchboard.ericsson.se>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sorry to have implied that it is OK to code as if it won't happen on 8xx processors.
-I have personally been bitten by 8xx code written by others with lots of missing
-EIEIOs.  I would NEVER recommend any coding practice that left off the proper guarded
-characteristic on pages or left out the necessary EIEIOs between necessarily
-sequential operations and the necessary cache flushing and SYNCs before DMAs.
+>    You read it out to register r3.
+> 
+>    r3 = 0xefbeadde - not the same 32bit value as on the x86!
 
-Upon rereading what I had written, it does appear I was suggesting this type of coding
-is optional, which IT MOST POINTEDLY IS NOT.
+yes, that is the problem.
 
-Thanks for amplifying, Dan.
+i do my work follow these steps:
 
-a
+  1. make a loopback minix on i386 linux box and dd it to a image
+  2. burn the image to flash
+  3. when linux startup, uncompress the image to the buffer of a
+     ramdisk
+  4. use this ramdisk as root file system and mount it as root.
 
-Dan Malek wrote:
+when mount root, the super block should be read first. the super
+block in the image made in i386 looked like this:
 
-> Alan Mimms wrote:
->
-> > This issue probably is nearly moot on the nearly non-superscalar (dumb as a rock)
-> > 8xx processors, but is MUCH more important (i.e., VITAL) on the 82xx processors
-> > with the 603ish core and on all "real" PowerPC processors.
->
-> In defense of the 8xx, it isn't as dumb as some people believe.
-> It is a PPC core that performs a number of performance enhancements,
-> including branch folding and speculative loads.  Not to the extent
-> of a superscalar (and the 603 isn't a shining star compared to
-> other PPCs, either), but they still happen and you have to be
-> careful of them just like any other PPC.
->
-> Designing a system using a "it doesn't happen as often" requirement
-> is a very poor engineering practice.
->
->         -- Dan
+00000400h: 02 a0 07 d0 00 01 00 01 00 19 00 00 1c 00 10 08
+00000410h: 13 8f 00 01 00 00 00 00 00 00 00 00 00 00 00 00
+           ^^^^^ the magic number of minix
 
---
-Alan Mimms     Packet Engines, Inc.     Spokane, Washington [99214-0497]
-  USA, Earth, Sol, Milky Way, The Local Group, Virgo Supercluster, U0
-Despite the cost of living, have you noticed how popular it remains?
-  -- Steven Wright?
+the code in minix_read_super() (fs/minix/inode.c) is like below:
 
+	struct minix_super_block *ms;
+	if (!(bh = bread(dev,1,BLOCK_SIZE)))
+		goto out_bad_sb;
+
+	ms = (struct minix_super_block *) bh->b_data;
+        /* 
+           now ms points to the start of superblock
+           that is 0x00000400+baseaddress
+         */
+	s->s_magic = ms->s_magic;
+s->s_magic is 0x8f13 but not 0x138f due to the endian problem. so
+the magic number is wrong and the root fs mount fail.
+
+if i make a minix fs image in a big endian machine, the image 
+should be looked like this:
+
+00000410h:  8f 13 00 01 00 00 00 00 00 00 00 00 00 00 00 00
+
+is this correct? if yes, there is no problem any more.
+
+
+Wang
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
