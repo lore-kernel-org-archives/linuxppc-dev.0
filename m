@@ -1,50 +1,65 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: <linuxppc-dev@lists.linuxppc.org>,
-        Geert Uytterhoeven
- <geert@linux-m68k.org>,
-        Paul Mackerras <paulus@linuxcare.com.au>, <cort@hq.fsmlabs.com>
-Subject: PCI rework & CHRP question
-Date: Sun, 24 Sep 2000 00:57:30 +0200
-Message-Id: <19340818162914.6020@192.168.1.10>
+Message-ID: <39CD3AA3.366F8634@student.ethz.ch>
+Date: Sun, 24 Sep 2000 01:20:03 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: R Shapiro <reshapiro@mediaone.net>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.0/1 with rage II/rage pro -- should the ati driver work?
+References: <14796.42915.582391.766766@ipa.ne.mediaone.net>
+	 <39CCC5AB.C1C2E8B2@student.ethz.ch> <14796.52485.753924.552345@ipa.ne.mediaone.net>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm working on a rework of our arch/pci.c (to properly handle multiple
-host bridges, and various other cleanups).
+R Shapiro wrote:
+>
+> Michel Dänzer writes:
+>  > > Specifics: with the ati driver selected, xf throws away my mode def,
+>  > > since it thinks (incorrectly) that there isn't enough vram,
+>  >
+>  > Does it probe the correct amount of VRAM? Do you use Option "UseFBDev" ?
+>
+> The xf probe says 2MB, but in fact I have 4MB.  The dmesg line says:
+>
+> atyfb: 3D RAGE PRO (PQFP, PCI) [0x4750 rev 0x7c] 4M SGRAM, 14.31818
+> MHz XTAL, 230 MHz PLL, 75 Mhz MCLK
 
-In the chrp_pci.c code, I found this code:
+Which looks good. I am confident that the xfree86-pmac rsync driver will probe
+that correctly using fbdev.
 
-        if ( !strncmp("MOT",
-                      get_property(find_path_device("/"), "model", NULL),3) )
-        {
-                pci_dram_offset = 0;
-                isa_mem_base = 0xf7000000;
-                isa_io_base = 0xfe000000;
-                set_config_access_method(grackle);
-        }
 
-However, I found no way in the Grackle documentation to have isa_mem_base
-at 0xf7000000. AFAIK, it's at 0xfd000000
+> I tried both UseFBDev on and off.  It didn't seem to make any
+> difference.  Btw, which is correct setting if I'm not using the fbdev
+> driver?
 
-Also, the grackle access method expect a PCI bridge structure configured
-with the ioremap'ed config space registers, which is not the case on
-chrp. (They are defined only in pmac_pci.c).
+I don't think any version of the ati driver will work without "UseFBDev" on
+PPC yet, and you need atyfb for that.
 
-I'm fixing those along with my changes. I suppose Grackle on CHRP uses
-memory map B ?
 
-Note (tell me if it's a problem), that I'm removing the various
-xxx_setup_pci_ptrs(). Each host bridge has a pci_controler structure (the
-old bridge_data) that contains also the function pointers to the access
-methods. Archs now call whatever xxx_find_bridges from their
-xxx_setup_arch() function and all host-bridge dependent setup is done there.
+>  > > and then quits since it can't find any valid modes. In both cases I'm
+>  > > running 4.0.1 from Franz Sirl's linuxppc page.
+>  >
+>  > While we're at it, can you please send me the URL of those?
+>
+>  ftp://devel.linuxppc.org/users/fsirl/xf4/RPMS/
 
-I will push those changes in the new linuxppc_2_5 bk tree as soon as I'm
-happy with them.
+Thanks, I've forwarded this to the apus-user list.
 
-Ben.
+
+> Speaking of configs, I have a Device entry and a Screen entry for each
+> physical display but they're all sharing the same Monitor entry (all
+> three physical monitors are identical).   It that likely to work?
+
+Don't know, if it doesn't work, just duplicate the Sections and give them
+different Identifiers.
+
+
+Michel
+
+
+--
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
