@@ -1,17 +1,33 @@
-To: "Kerl, John" <John.Kerl@Avnet.com>
+Message-ID: <C08678384BE7D311B4D70004ACA371050B763521@amer22.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "'Roland Dreier'" <roland@topspin.com>,
+	"Kerl, John" <John.Kerl@Avnet.com>
 Cc: "'Jerry Van Baren'" <vanbaren_gerald@si.com>,
 	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>,
 	"'laitingwai@yahoo.com'" <laitingwai@yahoo.com>
-Subject: Re: Can I run linux without a file system?
-References: <C08678384BE7D311B4D70004ACA371050B76351E@amer22.avnet.com>
-From: Roland Dreier <roland@topspin.com>
-Date: 21 Jun 2002 14:26:10 -0700
-In-Reply-To: <C08678384BE7D311B4D70004ACA371050B76351E@amer22.avnet.com>
-Message-ID: <52znxoe32l.fsf@topspin.com>
+Subject: RE: Can I run linux without a file system?
+Date: Fri, 21 Jun 2002 14:27:11 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+cp -a --- well, you learn something every day.
+Guess I can go home now. :)
+
+Thx.
+
+
+-----Original Message-----
+From: Roland Dreier [mailto:roland@topspin.com]
+Sent: Friday, June 21, 2002 2:26 PM
+To: Kerl, John
+Cc: 'Jerry Van Baren'; 'linuxppc-embedded@lists.linuxppc.org';
+'laitingwai@yahoo.com'
+Subject: Re: Can I run linux without a file system?
+Importance: High
 
 
 >>>>> "John" == John Kerl <Kerl> writes:
