@@ -1,32 +1,35 @@
-From: "Stefano Coluccini" <s.coluccini@caen.it>
-To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: MVME5100: kernel hangs in dcache_init
-Date: Fri, 16 Feb 2001 12:45:49 +0100
-Message-ID: <NDBBIFIMCKPOADMAJOKMOENPCOAA.s.coluccini@caen.it>
+Message-ID: <3A8D40BB.F031465D@opensource.se>
+Date: Fri, 16 Feb 2001 16:01:15 +0100
+From: Magnus Damm <damm@opensource.se>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Bruno R. Barreyra" <bruno.r.barreyra@intel.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Runtime libs
+References: <3A8C6C98.6E5C3889@intel.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi everyone,
 
-  I'm trying to run Debian linux 2.2.18 on a MVME5100 board. I've done some
-change:
- - changed addresses of UART registers in arch/ppc/boot/ns16550.h
- - changed BAT settings in arch/ppc/mm/init.c to map IO region 0xf0000000 to
-0xffffffff
-and some other things.
-Now the kernel hangs in the dcache_init routine in init/main.c and it seems
-to me that the problem is related to memory management, but I'm not sure.
-If I comment out the the routine calls from dcache_init to check_bugs(), the
-kernel go on a little showing me some infos about PCI devices.
+> Now I'm looking for a runtime lib. I've tried compiling both stock
+> glibc-2.2.1
+> and dietlibc, and failed miserably. What is the favored runtime lib now
+> for
+> a 823 target?
 
-Anyone of you can help me ?
+I've used glibc-2.1.3 with some patches for my mpc8xx projects.
+You will need a patch for the cacheline size, (search this list)
+and a patch to fix a typo affecting little-endian in C-ctype.c.
 
-Thanks in advance.
-Stefano.
+I cross-compile it on a x86-box and it works like a dream. =)
 
+A good thing to do is to download tarballs+diffs/SRPMS from
+debian/redhat
+and check out their patches.
+
+Hope this helps /
+
+Magnus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
