@@ -1,70 +1,47 @@
-Message-ID: <9ef20ef3040729085367595416@mail.gmail.com>
-Date: Thu, 29 Jul 2004 12:53:50 -0300
-From: Gustavo Barbieri <barbieri@gmail.com>
-To: Sven Luther <sven.luther@wanadoo.fr>
-Subject: Re: rs/6000 e30 + 240 (doral) support
-Cc: debian-kernel@lists.debian.org, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20040729151813.GB13987@pegasos>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-References: <9ef20ef304071613494a0f0af9@mail.gmail.com> <20040717014441.GA13447@pegasos> <20040729135130.GE19197@lst.de> <9ef20ef3040729070439f6d8c1@mail.gmail.com> <20040729141631.GA20149@lst.de> <9ef20ef304072907243f820e04@mail.gmail.com> <20040729151813.GB13987@pegasos>
+Message-ID: <41091EAD.8010302@acm.org>
+Date: Thu, 29 Jul 2004 10:58:37 -0500
+From: Corey Minyard <minyard@acm.org>
+MIME-Version: 1.0
+To: Kumar Gala <kumar.gala@freescale.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Patch for debug setcontext
+References: <41090F9A.8000901@mvista.com>
+In-Reply-To: <41090F9A.8000901@mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 29 Jul 2004 17:18:13 +0200, Sven Luther <sven.luther@wanadoo.fr> wrote:
-> On Thu, Jul 29, 2004 at 11:24:35AM -0300, Gustavo Barbieri wrote:
-> > On Thu, 29 Jul 2004 16:16:31 +0200, Christoph Hellwig <hch@lst.de> wrote:
-> > > On Thu, Jul 29, 2004 at 11:04:48AM -0300, Gustavo Barbieri wrote:
-> > > > > Most doesn't look too bad to me, but it's a lot of patches.  I vaguely
-> > > > > remember they were discussed on linuxppc-dev, so we should check the
-> > > > > comments over there.
-> > > >
-> > > > A lot of patches? Well, there is a lot of "code"... it's not really
-> > > > code, but just structure definitions... actually the patche touches
-> > > > the real code at few points, one it's just a null pointer checking,
-> > > > other are added cases to the switch statement so it can handle those
-> > > > boards, so I really can't a problem there.
-> > > >
-> > > > I already sent an email to linuxppc-dev in the past, but no replies:
-> > > >
-> > > > http://lists.linuxppc.org/linuxppc-dev/200407/msg00085.html
-> > >
-> > > Ah sorry, I confused it with Len's big IBM prep patchkit.  Except for a
-> > > tiny style issue this patch is fine with me.
-> >
-> > What style issue?
-> >
-> >
-> > > Any upstream comments as I'd hate to carry along a patch like that in
-> > > the Debian patchkit while we'd probably want it in Sarge.
-> > >
-> > > Gustavo, if we apply this patch you'll have to sign up for d-i testing
-> > > on prep, though ;-)
-> >
-> > Ok, I test... actually I'm using sarge on that machine.
-> >
-> > But I need to test it soon, as this machine may go away in few weeks.
+I misspoke a little.  Consider the following code in entry.S:
+
+ #ifdef CONFIG_4xx
+    /* Check whether this process has its own DBCR0 value */
+    lwz    r0,PTRACE(r2)
+    andi.    r0,r0,PT_PTRACED
+    bnel-    load_4xx_dbcr0
+ #endif
+
+Do we need to add the book E define to this, too?
+
+-Corey
+
+Corey Minyard wrote:
+
 >
-> Well, since sarge d-i will probably be released before you lose that machine,
-> it should be no problem. We first need to rebuild a kernel though.
+> Kumar Gala wrote:
 >
-> Christoph, do this and other patches warrant a kernel-source 2.6.7-4 upload,
-> or is it better to keep it in the powerpc patches for now ?
+> > I'm guessing, this should really be #if defined(CONFIG_4xx) ||
+> > defined(CONFIG_BOOKE)
+> > There are a number of similar cases later in this code as well.
+>
+> That may be the case, but it is very confusing in entry.S.  The dbcr0
+> register seems to only be defined on 4xx processor, not on book E.
+> Look, for instance, at load_4xx_dbcr0:, it is only defined if 4xx is
+> enabled, not if book E is enabled.
+>
+> -Corey
+>
+>
 
-
-What about using Leigh's patch?
-
-http://lists.linuxppc.org/linuxppc-dev/200406/msg00080.html
-
---
-Gustavo Sverzut Barbieri
----------------------------------------
-Computer Engineer 2001 - UNICAMP
-GPSL - Grupo Pro Software Livre
-Cell..: +55 (19) 9165 8010
-Jabber: gsbarbieri@jabber.org
-  ICQ#: 17249123
-   GPG: 0xB640E1A2 @ wwwkeys.pgp.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
