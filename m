@@ -1,47 +1,76 @@
-Date: Sat, 21 Sep 2002 20:26:31 -0700
-From: curt brune <curt@acm.org>
+Date: 23 Sep 2002 18:42:21 -0000
+Message-ID: <20020923184221.24338.qmail@webmail22.rediffmail.com>
+MIME-Version: 1.0
+From: "Rajendra Prasad Mishra" <r_p_m@rediffmail.com>
+Reply-To: "Rajendra Prasad Mishra" <r_p_m@rediffmail.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: initrd, ramdisk problems
-Message-ID: <20020922032631.GA30804@lenin.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: IDE interrupts on Winbond W83C553 !
+Content-type: text/plain;
+	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi all !
+     I am working on linux driver for a winbond W83C553 isa
+bridge/ide controller. The winbond chip is on a ibm 405gp based
+board. I am not able to get the ide interrupts. I configured the
+base address registers of the ide controller and i am able to
+access the status/control registers. But when i tried to configure
+the interrupt i found that the 8259 PCI will also have to be
+programmed ....so i disabled the LEGIRQ mode in the IDE
+control/status register... then initialised the i8259 .
+But i am not getting any interrupts ! here is the output of the
+bootup sequence :
 
-I'm booting linux 2.4.18 on an embedded planet RPX_LITE-DW (823e) with
-a RAM disk, however I am getting a "crc" error while decompressing the
-RAM disk.  Snipped from the boot log are these two lines:
 
->> RAMDISK: Compressed image found at block 0
->> crc errorFreeing initrd memory: 1670k freed
 
-I built the kernel image using "gmake zImage.initrd" .  This picked up
-my gzipped ramdisk image OK.
+******************************************************
+Uniform Multi-Platform E-IDE driver Revision: 6.31
+ide: Assuming 33MHz system bus speed for PIO modes; override with
+idebus=xx
+W82C105: IDE controller on PCI bus 00 dev 49
+W82C105: chipset revision 5
+W82C105: 100% native mode on irq 46
+     ide0: BM-DMA at 0xffd0-0xffd7, BIOS settings: hda:pio,
+hdb:pio
+SL82C105 command word: 5
+IDE control/status register: 00ff0091
+     ide1: BM-DMA at 0xffd8-0xffdf, BIOS settings: hdc:pio,
+hdd:pio
+SL82C105 command word: 5
+IDE control/status register: 00ff0091
+hdb: ST340810A, ATA DISK drive
+ide0 at 0xfff8-0xffff,0xfff6 on irq 46
+hdb: 16514064 sectors (8455 MB) w/2048KiB Cache, CHS=16383/16/63
+Partition check:
+  /dev/ide/host0/bus0/target1/lun0:hdb: lost interrupt
+hdb: lost interrupt
+hdb: lost interrupt
+hdb: set_multmode: status=0x51 { DriveReady SeekComplete Error }
+hdb: set_multmode: error=0x04 { DriveStatusError }
+hdb: lost interrupt
+hdb: lost interrupt
+hdb: lost interrupt
+  unknown partition table
+*************************************************
 
-[editor: I know, I know.  I should be using ppcboot.]
+ide has been assigned interrupt 46 i.e 32 ( UIC interrupts ) + 2
+serial port interrupts + 14th ide interrupt !
 
-The ramdisk is 8192 bytes uncompressed.  Compressed it is 1.7MB.
+the 8259 PIC is connected to the IRQ0 ( external interrupt) , i
+have put a printk  in do_IRQ() just to insure that i am not
+missing anything ! but still there is no interrupt on IRQ0 !
 
-The target kernel is configured for 8192 byte ramdisks also.  This is
-stumping me.
+if anyone has any idea/solution .... i would be deeply thankfull
+!
 
-In the boot log I also noticed something funny.  My board only has
-16MB total on it and the kernel is configured for 8MB ramdisk.  In the
-boot log it says it is initializing 16 ramdisks of 8MB each ....
+PS: Please cc me as i am not subscribed to the list !
 
->> Kernel command line: root=/dev/ram ramdisk=8192
->> Memory: 13104k available (916k kernel code, 348k data, 52k init, 0k
->> highmem)
->> ...
->> RAMDISK driver initialized: 16 RAM disks of 8192K size 1024 blocksize
+thanks,
+raj
 
-Looking in rd.c I see 16 is a #define constant.  Is this a problem?
-
-Cheers,
-Curt
+__________________________________________________________
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
