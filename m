@@ -1,21 +1,21 @@
 Return-Path: <andrew.dennison@motec.com.au>
-Received: from mail.netspace.net.au (whirlwind.netspace.net.au [203.10.110.76])
-	by ozlabs.org (Postfix) with ESMTP id 655892BE83
+Received: from mail.netspace.net.au (cumulus.netspace.net.au [203.10.110.72])
+	by ozlabs.org (Postfix) with ESMTP id 5A0102BF16
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Dec 2004 11:45:10 +1100 (EST)
+	Tue, 14 Dec 2004 12:25:27 +1100 (EST)
 Received: from motec.com.au (dsl-210-15-234-78.VIC.netspace.net.au
 	[210.15.234.78])
-	by mail.netspace.net.au (Postfix) with SMTP id 9992E12B970
+	by mail.netspace.net.au (Postfix) with SMTP id CB5A671929
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Dec 2004 11:45:09 +1100 (EST)
+	Tue, 14 Dec 2004 12:25:18 +1100 (EST)
 From: "Andrew Dennison" <andrew.dennison@motec.com.au>
-To: "'Zeitler, Nathan'" <nzeitler@osii.com>
-Date: Tue, 14 Dec 2004 11:45:11 +1100
-Message-ID: <002f01c4e176$2ab60920$4000a8c0@CAT>
+To: <wd@denx.de>
+Date: Tue, 14 Dec 2004 12:25:20 +1100
+Message-ID: <003001c4e17b$c6d45e10$4000a8c0@CAT>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-In-Reply-To: <01C22B6B78D52B46BE3C38FB525617EF909AC8@osimail.osii.com>
+In-Reply-To: <20041214003301.2CC13C1430@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: RE: Lite5200 and PCI1520 
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -28,88 +28,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tuesday, 14 December 2004 11:06 AM, Zeitler, Nathan wrote:
+On Tuesday, 14 December 2004 11:33 AM, wd@denx.de wrote:
 
-> Hello Andrew,
+> Dear Andrew,
 >=20
+> in message <002a01c4e16e$34451010$4000a8c0@CAT> you wrote:
+>>=20
+>> I posted a question on cardbus with the 5200 a few weeks ago but got
+>> no reply. I think the reason is that cardbus / pcmcia support may
+>> not have been considered when the 5200 PCI memory map was laid out,
+>> but I would love to be contradicted!
 >=20
-> This would certainly help explain some of the pain in getting it to
-> work.  :-/=20
+> I think I can confirm that this was not considered, but I'm not  sure
+> that this is an issue here.
 
-I understand your pain :)
+Hi Wolfgang,
 
-> I'm using the 2.4.25 kernel from Denx also.  The version I have is a
-> couple months old (trying to keep from changing too many
-> things at once!
+It's a problem for PCMCIA, but probably not for cardbus. The PCMCIA =
+16bit
+I/O space can't be mapped above 0x1000 in the PCI address space. The CPU
+physical address doesn't matter.
 
-I'm actually using the "RTAI validated" version, but tried top of tree =
-and
-it doesn't help - no changes to the relevant parts.
+The PCMCIA memory space can be mapped to any 16MiB boundary so this =
+isn't
+a problem
 
-> It sounds like we're working towards the same end!  I would like to
-> assist in some way if possible. =20
+>=20
+>> I also have a few outstanding issues that I haven't resolved yet,
+>> hence I haven't posted a full patch, but I can now load and
+>> configure a wireless ethernet card. Loading cardbus drivers
+>> currently fails when accessing PCI configuration space on the
+>> cardbus bus, and I haven't sorted this out yet.=20
+>=20
+> I'd like to see your patch (even if preliminary).
 
-Cool - no point us both doing the same stuff. I've actually taken a =
-break
-from this for the last week but you've given me renewed enthusiasm:)
+I'll work on bundling it up in the next day or two. There are lots of
+changes, including partial support for IRQ0 being a valid interrupt...
+sigh. The setup of the BAT for MBAR also doesn't seem correct to me, but
+I'm now using io_block_mapping() in my platform support.
 
-> I am willing to believe that
-> remapping the PCI bus is a possible approach, although I'd like to
-> hear the opinion of others as well.  Where in UBOOT did you change
-> the PCI bus mappings?
+Another problem I noticed is pcibios trashing the 5200 bridge setup. =
+I've
+hacked around this for now. Not a problem for PCMCIA but would have =
+broken
+bus mastering for cardbus / PCI.
 
-//Relevant section of u-boot/include/configs/VPC.h
+While looking at PCI I noticed that the icecube platform (which I =
+copied:)
+compiles in pci_auto and indirect_pci but they aren't used. Is this work
+in progress or a "cut-n-paste" error?
 
-/*
- * Physical                 PCI                      Resource
- * 0x00000000 - 0x3fffffff  0x80000000 - 0xBfffffff  SDRAM
- * 0x40000000 - 0x4fffffff  0x40000000 - 0x4fffffff  PCI Memory
- * 0x50000000 - 0x50ffffff  0x00000000 - 0x00ffffff  PCI IO Space
- */
+> Unfortunately I don't have any hardware yet with  a  working  cardbus
+> interface. But this might change soon...
 
-#define CONFIG_SDRAM_PHYS	CFG_SDRAM_BASE
-#define CONFIG_SDRAM_BUS	0x80000000
-#define CONFIG_SDRAM_SIZE	(1024 * 1024 * 1024)
-
-#define CONFIG_PCI_MEM_PHYS	0x40000000
-#define CONFIG_PCI_MEM_BUS	0x40000000
-#define CONFIG_PCI_MEM_SIZE	0x10000000
-
-#define CONFIG_PCI_IO_PHYS	0x50000000
-#define CONFIG_PCI_IO_BUS	0x00000000
-#define CONFIG_PCI_IO_SIZE	0x01000000
-
-// This section does the actual pcmcia setup, and is kinda OT for this
-list...
-// but included for completeness
-
-#define CONFIG_I82365
-
-#define CFG_PCMCIA_MEM_ADDR	0x40400000 /* after last cardbus base
-							* window assigend
-by
-							* pci_auto, but
-can be anywhere in PCI_MEM range*/
-#define CFG_PCMCIA_MEM_SIZE	0x1000
-
-#define CONFIG_IDE_8xx_PCCARD	1	/* Use IDE with PC Card Adapter */
-#define CFG_IDE_MAXBUS		1	/* max. 1 IDE bus		*/
-#define CFG_IDE_MAXDEVICE	1	/* max. 1 drive per IDE bus	*/
-
-#define CFG_ATA_IDE0_OFFSET	0
-
-#define CFG_ATA_BASE_ADDR	CONFIG_PCI_IO_PHYS
-
-/* Offset for data I/O			*/
-#define CFG_ATA_DATA_OFFSET	0x100 /* don't change - hard coded in
-i82365 */
-
-/* Offset for normal register accesses	*/
-#define CFG_ATA_REG_OFFSET	0x100 /* don't change - hard coded in
-i82365 */
-
-/* Offset for alternate registers	*/
-#define CFG_ATA_ALT_OFFSET	0x108 /* don't change - hard coded in
-i82365 */
-
-#define CONFIG_PCMCIA_SLOT_A	/* there can be only one... */
+Good to hear:)
