@@ -1,38 +1,38 @@
-Date: Mon, 26 Apr 1999 09:42:42 -0400 (EDT)
-From: Kevin Hendrickson <hndrcksn@net178019.hcv.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <v04020a03b34a30bcec3e@[18.248.0.159]>
+Date: Mon, 26 Apr 1999 11:08:27 -0400
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Pty problem in RawHide
-Message-ID: <Pine.LNX.3.96.990426091814.16776A-100000@net178019.hcv.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Dana Spiegel <danas@mit.edu>
+Subject: B&W G3 booting, but no X
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I can't telnet into my SuperMac S900, newly installed with RawHide 1.3.4
-from ftp.linuxppc.org on Friday April 23rd. At first all connections where
-simply refused (telnet, finger, etc), but I traced this down to inetd.conf
-having ALL services commented out by default (why?) Anyway now I get
-"telnetd: All network ports in use"! Even when telneting to 127.0.0.1 from
-the console. Also attempts to run xterm fail with "xterm: no available
-ptys"! 
- 
-Am I missing another configuration file somewhere? I've checked /dev and
-there are plenty of ptyXYs in there. I've built my own telnetd from the
-src.rpm and it seems that openpty() always returns -1. Anyone else having
-this problem? I really don't want to start hacking glibc to see what is
-going on. 
+So I have my new B&W G3 400 booting with linuxppc using the yellowdog
+kernel. The install went flawlessly, and I can boot into linux using bootX
+1.0.1.
 
-Until this week, I had been using an earlier RawHide from ftp.linuxppc.org
-and telnetting was a non-issue (as it should be :-)) 
+here's the problem: I got the iMac XF68 framebuffer X server, but I can't
+get it to work properly. I tried the default XF86Config, but it complains
+there are no usable X modes. I also tried the imac XF86Config, which of
+course only has resolutions up to 1024x768. It said it couldn't find any
+usable resolutions either.
 
-Kevin Hendrickson
+I run my monitor at 1600x1200@75Hz in 24bit color (nice video card). Can I
+get X to work properly? I'd like to keep this resolution (but would be
+willing to run in 16bit color if necessary).
 
-*--------+---------+---------+---------+---------+---------+---------+-*
-Kevin Hendrickson          "On the internet, no one knows you're a dog."
-hndrcksn@net178019.hcv.com   "Why, oh why, didn't I take the BLUE pill?"   
-hndrcksn@braincraft.com   _DreaD_    http://net178019.hcv.com/~hndrcksn/ 
+Also, what about compiling XFree86 SVGA server to support the ATI chipset
+natively? Can this be done?
 
+thanks,
+
+                                 Dana Spiegel
+
+                                 Massachusetts Institute of Technology
+                                 danas@mit.edu
+                                 617/225-6404
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
