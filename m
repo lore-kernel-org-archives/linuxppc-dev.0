@@ -1,36 +1,28 @@
-To: Seb James <seb@peak.uklinux.net>
-Cc: u-boot-users@lists.sourceforge.net,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [U-Boot-Users] soft_i2c and ds1307 with tqm823l 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 30 Jun 2003 15:08:00 BST."
-             <3F004440.6000301@peak.uklinux.net>
-Date: Mon, 30 Jun 2003 16:18:02 +0200
-Message-Id: <20030630141807.9C593C592A@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: greggiraud@netcourrier.com
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ppcboot 8260 LXT971A
+Date: Mon, 30 Jun 2003 10:12:10 CEST
+Mime-Version: 1.0
+Message-Id: <mnet1.1056960730.12133.greggiraud@netcourrier.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Seb,
+Hi,
+I installed a ppcboot and a linux 2.4 on a MPC8260ADS card.
 
-in message <3F004440.6000301@peak.uklinux.net> you wrote:
->
-> command line; a useful utility. If linux is to read the time from the
-> realtime clock it must have a realtime clock driver of its own; there's
-> no way that u-boot can pass the time to linux at boot time? (Of course,
+Now, I am working on a custom card such as an MPC8260ADS card. The difference between those two cards is the ethernet: my custom card has two ethernet port, and uses two LXT971A.
 
-Correct.
+So, I compile a ppcboot for 8260ads. PPCBOOT can't download a kernel with tftp. Is someone has a source code to support the LXT971?
 
+I compile a new kernel, which support LXT971A. PPCBOOT can run it from memory. But the kernel doesn't have network.
 
-Best regards,
+please can someone help me?
 
-Wolfgang Denk
+grego
+greggiraud@netcourrier.com
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Old programmers never die, they just become managers.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
