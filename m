@@ -1,38 +1,54 @@
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Cort Dougan <cort@persephone.cs.nmt.edu>,
-        Christian Zankel <zankel@tarantel.rz.fh-muenchen.de>,
+In-Reply-To: <Pine.LNX.3.96.990217172825.19695C-100000@globegate.utm.edu>
+Date: Thu, 18 Feb 1999 12:25:39 +0100
+To: "David A. Gatwood" <marsmail@globegate.utm.edu>,
         linuxppc-dev@lists.linuxppc.org
-Subject: Re: Restructuring Efforts
-References: <Pine.HPP.3.96.990217131308.26713D-100000@gra-ux1.iram.es>
-From: Jesper Skov <jskov@cygnus.co.uk>
-Date: 18 Feb 1999 08:44:36 +0000
-In-Reply-To: Gabriel Paubert's message of "Wed, 17 Feb 1999 13:19:31 +0100 (MET)"
-Message-ID: <oovhh0w16z.fsf@lassi.cygnus.co.uk>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: [ppc-dev] Re: Restructuring Efforts
+Message-Id: <19990218122539.026672@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Gabriel" == Gabriel Paubert <paubert@iram.es> writes:
-Gabriel> I had the impression that the APUS I/O accesses had to use
-Gabriel> non byte swapped instruction, so that merging the APUS with
-Gabriel> the other would be hard. Is there something I missed ?
+On Wed, Feb 17, 1999, David A. Gatwood <marsmail@globegate.utm.edu> wrote:
 
-True, APUS doesn't require byte swapping. But I don't see how this
-makes it hard to integrate APUS.
+>Sounds a lot like a bunch of things in BSD-like kernels, where, in
+>MkLinux, for instance, interrupt_heathrow.c, interrupt_pdm.c, etc. each
+>have a static structure with pointers to their externally visible
+>functions, and the main function checks the hardware type and assigns a
+>global pointer to point to the static structure for the particular set of
+>routines.  Is that what you mean?
 
-Gabriel> I don't want the kernel to execute conditional code or to
-Gabriel> call a subroutine for every I/O access, this is bloat and/or
-Gabriel> inefficiency for the sake of it.
+Almost ;-)
+
+This scheme still requires one more pointer dereferencing: one to get to
+the global holding the structure pointer, one to get the structure, one
+to get the function.
+
+I was thinking about filling a static structure with function pointers
+instead (but the "modules" can still export a pointer to a structure, the
+kernel will just copy the pointers in the structure instead of just
+storing a pointer to the structure).
+This way, we have one less indirection.
+If the structure can be stored at a fixed address in kernel virtual space
+(hummm....) then access to the function pointers can be really fast.
+
+Of course, this is really a matter of details, but since those will be
+used in a lot of performance sensitive execution path (interrupts, mm,
+...), such optimisation can make a difference by avoiding unnecessary
+cache misses.
+
+Maybe we could wrap the calls to the functions themselves in macros so
+that we can later change the way the mecanism is implemented.
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
-This is a valid concern. I don't know if it's possible to do anything
-about this. 
 
-It may be the case that none of the Amiga drivers use the same IO
-macros as other drivers use. As I remember it, there are two set of
-macros. But it's a long time since I looked at that, I could be wrong.
 
-Jesper
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
