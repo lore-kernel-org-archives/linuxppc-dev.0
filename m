@@ -1,62 +1,50 @@
-Message-ID: <399BD14B.1EB38043@dgt-lab.com.pl>
-Date: Thu, 17 Aug 2000 13:49:31 +0200
-From: Wojciech Kromer <krom@dgt-lab.com.pl>
+From: Joe Green <jgreen@mvista.com>
+To: greyham@research.canon.com.au (Graham Stoney)
+Subject: Re: Journeyman configure/build options for gcc & glibc?
+Date: Thu, 17 Aug 2000 08:02:59 -0700
+Content-Type: text/plain
+Cc: linuxppc-embedded@lists.linuxppc.org (LinuxPPC Embedded Mailing List)
+References: <20000817031630.9089F238@elph.research.canon.com.au>
+In-Reply-To: <20000817031630.9089F238@elph.research.canon.com.au>
 MIME-Version: 1.0
-To: Dan Malek <dan@netx4.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: too few RAM?
-References: <00Jun4.144038est.115228@border.alcanet.com.au>
-			 <393BBE5D.49B17E9C@embeddededge.com> <00Jun6.135659est.115272@border.alcanet.com.au> <39929A9C.C17E22D7@dgt-lab.com.pl> <3992C0ED.E66C42FF@embeddededge.com>
-Content-Type: text/plain; charset=iso-8859-2
+Message-Id: <00081708261200.01481@minotaur.mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+On Wed, 16 Aug 2000, Graham Stoney wrote:
+> I tried upgrading my root filesystem from Journeyman
+> to 1.2, and now binaries built with my compiler work correctly with the HHL1.2
+> libraries.  I never saw any varargs problems between my gcc-2.95.2 and
+> glibc-2.1.3 once the other 8xx fixes were applied (the same ones that are
+> now in the 1.2 SRPMs), so perhaps whatever got "fixed" in Journeyman was a bad
+> mod that got backed out again for 1.2.
 >
-> Wojciech Kromer wrote:
-> >
-> > i'm trying to run  mpc8xx-2.2.13 (with all patches I found)
-> >  - with 8xxrom (0.3.0)
-> >  - on MPC8XXFADS
-> >     .MPC823e
-> >     .4MB RAM
-> >     .2MB FLASH
->
-> Yes, sorry, this is too little RAM.  A long time ago in a land
-> far, far away (before initrd support), you could boot in less than 8
-> Mbytes.  Not any more.
->
->         -- Dan
->
+> Anyway, I'm happy.
 
+OK, I'm glad to hear that.
 
-now i have 8MB RAM,but my kernel still hangs trying to run any
-application
+>  My only gripe about the otherwise excellent Hard Hat kit
+> is the ugly symlink from /opt/hardhat/devkit/ppc/8xx/powerpc-linux -> /
+> which is necessary on the _target_.
 
-my kernel is: 'Using ELF interpreter /lib/ld.so.1'
+Yes, we agree.  We actually have already fixed this, but it missed the
+cutoff for the CDs; it was easy to fix, but was unfortunately overlooked
+until too late.  It will be one of the first updates we post.
 
-i was trying to compile ld.so, but there are erros:
-lddstub.S:19: #error Only know how to support i386, m68k and sparc
-architectures
-lddstub.S:36: #error Only know how to support i386, m68k and sparc
-architectures
+> (Well, actually I'm not thrilled with the gcc/cccp.c relocation hack either;
+>  this sounds like a job for configure --prefix to me, but aside from that I'm
+>  happy :-)
 
-ld.so... versions from net dosent semm to work
-(i was trying to use one from HHL, and from mbxroot.min.tgz file)
+We have customers who want the installation location configurable at
+install time.  gcc seems to be the only package that has a problem with
+this.  I think we're working on a better solution for the next release.
 
-Q1: where can i get FULL BINARY versions of:
- -8xxrom (or something like this)
- -kernel starting from nfs
- -root file system (to put it on nfs server)
-form my board
+> Keep up the good work!
 
-
-Q2: are there any source packages for ALL what i need to re-compile
-
-
+Thanks
 --
-* * * * * * * * * * * * *
-* per pedes ad astra !  *
-* * * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
+Joe Green <jgreen@mvista.com>
+MontaVista Software, Inc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
