@@ -1,16 +1,21 @@
-Return-Path: <jdl@freescale.com>
-From: Jon Loeliger <jdl@freescale.com>
-To: Jerome Glisse <j.glisse@free.fr>
-In-Reply-To: <41D00564.6010507@free.fr>
-References: <41CEC6B0.5020106@free.fr> <1104137527.5615.20.camel@gaston>
-	<41D00564.6010507@free.fr>
-Content-Type: text/plain
-Message-Id: <1104778599.14049.64.camel@cashmere.sps.mot.com>
-Mime-Version: 1.0
-Date: Mon, 03 Jan 2005 12:56:39 -0600
-Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: PATCH uninorth3 (G5) agp support
+Return-Path: <vroopcha@mcw.edu>
+Received: from post.its.mcw.edu (post.its.mcw.edu [141.106.32.10])
+	by ozlabs.org (Postfix) with ESMTP id 071AC2BF07
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Jan 2005 06:10:08 +1100 (EST)
+Message-ID: <50096.65.25.181.105.1104767270.squirrel@webmail.mcw.edu>
+In-Reply-To: <855e88d005010306435e08c827@mail.gmail.com>
+References: <20050101150055.GA15400@pegasos>
+	<855e88d0050103060766b09bd0@mail.gmail.com>
+	<20050103143015.GB9197@pegasos> <200501031530.54487.pguyot@cvf.fr>
+	<855e88d005010306435e08c827@mail.gmail.com>
+Date: Mon, 3 Jan 2005 09:47:50 -0600 (CST)
+From: "vinai" <vroopcha@mcw.edu>
+To: debian-powerpc@lists.debian.org
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: 43p-140 install issues
+Reply-To: vroopcha@mcw.edu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,26 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2004-12-27 at 06:51, Jerome Glisse wrote:
+>>>> An IBM 7043. It's a 43p-140 labeled as a 604e 332 Mhz.
+>>
+>> I suppose you meen 233 Mhz ?
+>
+> I know 332 MHz doesn't sound right ... but I'm sure that's what it
+> says on the IBM nameplate on the front. I'll verify this tonight
 
->  /* My understanding of UniNorth AGP as of UniNorth rev 1.0x,
->   * revision 1.5 (x4 AGP) may need further changes.
-> diff -Naur linux/include/linux/pci_ids.h linux-new/include/linux/pci_ids.h
-> --- linux/include/linux/pci_ids.h	2004-12-26 14:40:05.000000000 +0100
-> +++ linux-new/include/linux/pci_ids.h	2004-12-27 13:40:50.121003792 +0100
-> @@ -842,6 +842,7 @@
->  #define PCI_DEVICE_ID_APPLE_UNI_N_GMAC2	0x0032
+According to this page:
 
->  #define PCI_DEVIEC_ID_APPLE_UNI_N_ATA	0x0033
+    http://www.sinca.biz/IBM/rs6000_43p_140.html
 
->  #define PCI_DEVICE_ID_APPLE_UNI_N_AGP2	0x0034
-> +#define PCI_DEVICE_ID_APPLE_U3_AGP	0x0059
->  #define PCI_DEVICE_ID_APPLE_IPID_ATA100	0x003b
->  #define PCI_DEVICE_ID_APPLE_KEYLARGO_I	0x003e
->  #define PCI_DEVICE_ID_APPLE_K2_ATA100	0x0043
+the 7043-140 does come in 2 flavours, a 233 and 332 MHz model.  I've
+been looking into getting my own 150 to play with :)
 
-So, did 0x0033's symbol need to be spelled consistently too?
-NB: PCI_DEVIEC_
-
-Thanks,
-jdl
+cheers
+vinai
