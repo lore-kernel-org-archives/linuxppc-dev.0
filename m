@@ -1,22 +1,17 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id BD59C2BF2E
+Return-Path: <mukundjb@esntechnologies.co.in>
+Received: from ns2.astrainfonets.net (unknown [202.125.86.130])
+	by ozlabs.org (Postfix) with ESMTP id 0B2D42BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Nov 2004 20:12:27 +1100 (EST)
-Date: Tue, 9 Nov 2004 10:12:01 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@sonycom.com
-To: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <EA4FB805-3212-11D9-AC65-000393DBC2E8@freescale.com>
-Message-ID: <Pine.GSO.4.61.0411091011220.25943@waterleaf.sonytel.be>
-References: <20041108213428.16dfb1f7.akpm@osdl.org>
-	<EA4FB805-3212-11D9-AC65-000393DBC2E8@freescale.com>
+	Wed, 10 Nov 2004 00:03:37 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@osdl.org>, Kumar Gala <galak@somerset.sps.mot.com>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][PPC32] Added MPC8555/8541 security block infrastructure
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Tue, 9 Nov 2004 18:35:49 +0530
+Message-ID: <4EE0CBA31942E547B99B3D4BFAB348111ECD1E@mail.esn.co.in>
+From: "Mukund JB." <mukundjb@esntechnologies.co.in>
+To: "Geert Uytterhoeven" <geert@linux-m68k.org>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Is there Linux distribution for Power PC 440EP processor?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,22 +22,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 8 Nov 2004, Kumar Gala wrote:
-> Uugh, sorry.  The previous version of pine I was using did not do this.  I
-> will look at trying to change its settings.  Thanks for reformatting the
-> patch.  Can you explain further what you mean by 'space-stuffing'
 
-IIRC, you have to enable quell-flowed-text.
+Hello Geert,
 
-Always read the release notes after upgrading pine ;-)
+Is there is a Linux distribution available for Power PC 440EP processor?
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Regards,
+Mukund jampala
