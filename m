@@ -1,31 +1,29 @@
-Date: Wed, 25 Aug 2004 10:40:59 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Oliver King-Smith <oliver.king-smith@nuvation.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Problem trying to address custom hardware
-Message-ID: <20040825104059.B9986@home.com>
-References: <FC3C0DD86B79DF4FA423AF0379A547610155436D@mailguy2.nuvation.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <FC3C0DD86B79DF4FA423AF0379A547610155436D@mailguy2.nuvation.com>; from oliver.king-smith@nuvation.com on Tue, Aug 24, 2004 at 04:10:15PM -0700
+Message-ID: <412CCF6F.6040800@eircom.net>
+Date: Wed, 25 Aug 2004 18:42:07 +0100
+From: Conor McLoughlin <cml3227@eircom.net>
+MIME-Version: 1.0
+To: Conor McLoughlin <cml3227@eircom.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Anyone with MPC82xx PCI on kernel 2.6?
+References: <4124E315.9090009@eircom.net> <412CC13A.2050009@eircom.net>
+In-Reply-To: <412CC13A.2050009@eircom.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-[your mailer is really bad and should be fixed, this required heavy editing]
+Conor McLoughlin wrote:
+> Now I try to access the devices on bus 1. I can read the configuration
+> space no problem, but get bus error if I read the pci memory space.
+> Checking everything obvious, I see that the the command register of
+> the pci-pci bridge does not have the memory or I/O space bits set.
+> Setting these bits eliminates the bus error.
 
-On Tue, Aug 24, 2004 at 04:10:15PM -0700, Oliver King-Smith wrote:
-> memfd = open("/dev/mem", O_RDWR);
-> if (memfd){
->  pCPLD = (CPLD_REGISTERS *) mmap(0,
->  CPLD_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE,
->  memfd, CPLD_OFFSET);
+I have now discovered that the same bits were not set for the devices
+on bus 1. I am now reading reasonable values from the device :-)
 
-Others addressed your core problem, but you should know that this
-mmap request won't produce the desired result. You need MAP_SHARED
-since MAP_PRIVATE will result in a COW when you attempt to modify
-your register.
+I still need to know where these bits should be setup.
 
--Matt
+Conor
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
