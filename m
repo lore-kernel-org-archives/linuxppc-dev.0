@@ -1,40 +1,67 @@
-To: jmouro@iol.pt
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PCMCIA polling!?! 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 12 Jun 2003 10:15:57 BST."
-             <5f23aa5f1089.5f10895f23aa@iol.pt>
-Date: Thu, 12 Jun 2003 12:09:17 +0200
-Message-Id: <20030612100922.26927C5FD7@atlas.denx.de>
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
+From: Pantelis Antoniou <panto@intracom.gr>
+To: Wolfgang Denk <wd@denx.de>
+Cc: Stephan Linke <Stephan.Linke@epygi.de>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3EE853AA.9020106@intracom.gr>
+Date: Thu, 12 Jun 2003 13:19:22 +0300
+MIME-Version: 1.0
+Subject: Re: running 8xx without UART
+References: <20030612100504.22A9FC5FD7@atlas.denx.de>
+In-Reply-To: <20030612100504.22A9FC5FD7@atlas.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <5f23aa5f1089.5f10895f23aa@iol.pt> you wrote:
+Wolfgang Denk wrote:
+
+>In message <FCEAKDJJAPHPLJFINDAJAEHGDCAA.Stephan.Linke@epygi.de> you wrote:
 >
-> in fact the system I'm working in,
-> uses the PCMCIA input ports as general purpose input ports.
+>
+>>is it possible to make a 8xx kernel without setting up one of the serial interfaces for UART mode? It seames to me like it is only
+>>
+>>
+>
+>Yes, this is possible.
+>
+>
+>
+>>possible to choose between the CPM interfaces.
+>>We are experiencing problems with SCC3 running ethernet and SMC1 as console interface on a 852.
+>>
+>>
+>
+>I think it would be better to solve this problem instead of just  not
+>using SMC1 and leaving an unresolved bug in the kernel...
+>
+>
+>Best regards,
+>
+>Wolfgang Denk
+>
+>--
+>Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+>Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+>Immortality consists largely of boredom.
+>	-- Zefrem Cochrane, "Metamorphosis", stardate 3219.8
+>
+>
+>
+>
+>
+I just pop up here to say that I have done this for a previous board
+with a 850
+and instead we used a netconsole.
 
-I see.
+In a new board we have the same problem, and I'll have to make the patch
+again. Since we need a serial port we used a max3100 spi to serial converter
+and I have a driver for that ready (but not yet as a console).
 
-> Can the system use edge detection and interrupt capability (on those 2 li
-> nes - IPA6 IPA7) or shall it perform a polling.
+When I get around to add support for this chip in u-boot I'll also send the
+patches for the kernel.
 
-I already answered this question:
+Regards
 
-> > CBBVD1/2  (Battery  Voltage  Detect 1 and 2). Interrupts can be abled
-> > individualy for each of the 4 pins in  the  PCMCIA  Interface  Enable
-> > Register.
+Pantelis
 
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The one who says it cannot be done should never interrupt the one who
-is doing it.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
