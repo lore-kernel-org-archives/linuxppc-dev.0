@@ -1,128 +1,81 @@
-Message-ID: <3B5586AB.7000604@hadess.net>
-Date: Wed, 18 Jul 2001 13:52:59 +0100
-From: Bastien Nocera <hadess@hadess.net>
-MIME-Version: 1.0
-To: Iain Sandoe <iain@sandoe.co.uk>
-Cc: "Joseph P. Garcia" <jpgarcia@execpc.com>,
-	benh@kernel.crashing.org, linuxppc-dev@lists.linuxppc.org
+Date: Wed, 18 Jul 2001 14:34:12 +0100
 Subject: Re: 2.4 - buttons, temperature, ictc
-References: <20010718111339.6EF762EFBD@apollo.valhalla.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: "Joseph P. Garcia" <jpgarcia@execpc.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010718134722.A47432EFC5@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-
-Iain Sandoe wrote:
-
-> On Tue, Jul 17, 2001, Joseph P. Garcia wrote:
+On  Wed, Jul 18, 2001, Joseph P. Garcia wrote:
+> On Wed, 18 Jul 2001 12:11:42 +0100
+> "Iain Sandoe" <iain@sandoe.co.uk> wrote:
+>> How does the action end up getting routed to the sound driver?
 >
->>On Tue, 17 Jul 2001 16:40:24 +0200 (CEST)
->>Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de> wrote:
->>
->>>Why pmud? For backlight I kind of see how you'd get that notion. But
->>>volume?
->>>
+> In the current set up, [...]
+> code that should/will not make the trip into a public kernel.  but i'd have
+> double check to make sure..
 
+well, I understood that from the original patch (and the objection I had was
+just as you say)... I don't fancy trying to maintain that cross-linkage in
+dmasound.
 
-Why would pmud make sense for the backlight ? because changing the
-backlight settings saves power ? ..Right.
-
-With Ben's latest changes (the /proc/pmu/* for example), pmud should
-only be a daemon waiting for events, ie:
-- sleep event: execute a bunch of shell commands (the pwrctl script
-should really be split into foo.d directories)
-- backlight keypress event: change the backlight
-- volume keypress event would be a bad idea to implement inside pmud
-because that's the kind of thing you want visual feedback for, and there
-are a lot of different sound implementations that this could be built on
-top of. (aRts/alsa/oss)
-- eject keypress event: eject the damn CD !
-
->>...
->>
->>>handle all this. That way, users could even customize the thing to get
->>>particular functions mapped to keys :-)
->>>
->>I agree.  At least at the moment, there are measures to have volume
->>controls in the new input layer.  Else, why would there be macros in
->>input.h for them.  Assuming that this is generally preferred direction, it
->>would require a shell- or X-based handler.  I'm sure that if keycodes are
->>set up properly, you could have Sawfish or Enlightenment capture the key
->>stroke and use it like macos with the volume bar appear at the bottom (if
->>you want that sort of thing).  In console, it would be different.  But
->>taken as stated, this starts to put bloat wherever it goes.  Having a
->>window manager call aumix isn't very linux like, but I'd argue that its the
->>kind of result you would get in a nice integrated environment like kde or
->>gnome would like to attain.  if the user doesn't realize its part of the
->>wm, and the code is clean, it should be tolerable.
->>
-
-
-Better yet for handling the volume would be to get all these keys
-recognized by the Linux kernel (these keys don't produce any recognized
-keycode on my iMac's Apple Pro kbd), and then by XFree86 so that anybody
-can start adding shortcuts for their preferred window manager/desktop
-for these keys (that do also exist on x86, btw)
-
-
-> How does the action end up getting routed to the sound driver?
+>> I'd definitely favour a daemon that didn't imply dependence on a particular
+> [...]
+>> so that coverage would come as part of a standard install?
 >
-> We have some limitations owing to the OSS API:
->
-> (a) you can't open /dev/dsp more than once *well, you shouldn't be able to -
-> and I think I've fixed that - at least in Ben's tree*
->
-> (b) linking /dev/mixerXX with a particular piece of h/w can be quite tricky
-> (it might have to be a user selection - which mixer is controlled by the
-> keys).
->
-> (c) the OSS implementation *might* soon be sitting on top of an ALSA driver
-> talking to a non-onboard sound card (e.g. a pcmcia card) [although this is
-> not likely in the immediate future on PPC ... it is quite likely soon on x86
-> laptops]
+> I'm not familiar with what kind of apis already exist, but your suggestion
+> to make something like esound sounds good.
 
+Apart from Bastien's comment in another follow-up..
 
-A pcmcia sound card ?! didn't know that existed. Maybe USB speakers
-would be a better example (like on the Cube).
+> Given that these daemons try to
+> allow for such things that we can provide in hardware (iirc), like multiple
+> opens of /dev/dsp.  So would this be like taking most of the kernel's sound
+> interface (like mixer too?) and bringing it into a userspace daemon?
 
+as I understand it, yes... although I tend to concentrate on the raw driver
+and haven't done much with esound/arts...
 
-> (d) AFAICT there is no OSS "increment/decrement" volume function/ioctl().
-> You'd have to read the vol and then re-write it with an increment.  OSS
-> specifically says "you can't rely on the return value from the write vol.
-> ioctl()".
->
-> ----
->
-> I'd definitely favour a daemon that didn't imply dependence on a particular
-> shell/window manager/gui-toolkit  (although I don't really think you are
-> suggesting that) ... there are endless toolkit debates on linux-audio-dev.
->
-> I've been toying with the idea of a PMac-specific GUI mixer for a while -
-> the PMac hardware doesn't map well onto OSS.
->
-> - that is, we have several capabilities (and growing with tumbler etc.) that
-> cannot be reached from the normal OSS interface.
+>  You mention ALSA a bit.
+> Would this be a better fit than OSS, or are we better making our own?
 
+I doubt (seriously) that another audio API would stand *any* chance of
+making it into official linux ... it's still debatable whether ALSA will...
 
-Can you explain ? OSS is indeed not very good for our mixers, maybe your
-ideas could be integrated into ALSA before it reaches 1.0 or gets
-included in the kernel.
+> but then again, I always lean a bit too much toward the
+> generic all-purpose APIs created by Mr./Ms. Someone Else whenever userspace
+> is involved.
 
+ALSA is *much* cleaner - in principle - all the bloat is taken out of the
+kernel drivers into user-land.   However, it's much more complex to set up
+at the moment - IMHO probably hasn't really reached 'end user' status yet.
 
-> Perhaps (at least the sound part) it could be integrated with eSound & aRts
-> so that coverage would come as part of a standard install?
+There are starter PPC drivers - based on dmasound.  However, much is still
+to be done and ASLA hasn't reached 1.0 yet.  (This is why I'm still working
+on adding other Apple chip-sets into dmasound).
 
+> And so with this, how much would stay kernel side?  is this a new api'ed
+> kernel driver, or a userspace driver/daemon using a semi-generic ioctl
+> interface for ppc sound hardware that also listens to other devices for
+> control?  Can this be achieved in a kernel thread?  or would that still be
+> considered kernel-bloat?  not to sure on userspace scheduling reliability.
 
-esound is _dead_. On PPC, it's a piece of junk, and Gnome 2.0 will use
-aRts through a C interface.
+Well pre-ALSA (which is where we are at) ... the role of user-space
+abstraction of the OSS devices is handled by aRts et. al.  So I guess taking
+a look at how you might feed stuff to that is a start.
 
-Cheers
+Otherwise, you could take the Apple HIG ethic of letting the user select
+things... it works quite well (if you don't have a religious problem with
+how they do things ;-)))
 
---
-/Bastien Nocera
-http://hadess.net
+> (i talk alot when im trying to help)
 
+s'ok - better to get a solution that will be acceptable from the start.
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
