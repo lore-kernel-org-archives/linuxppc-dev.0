@@ -1,59 +1,82 @@
-Message-ID: <37CD8C4B.43C595EE@broadlink.com>
-Date: Wed, 01 Sep 1999 13:27:55 -0700
-From: Scott Wood <scott@broadlink.com>
+Message-ID: <37CD8E2C.60E670CF@airways.com>
+Date: Wed, 01 Sep 1999 13:35:56 -0700
+From: "D. Lance Robinson" <lancer@airways.com>
+Reply-To: lancer@airways.com
 MIME-Version: 1.0
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: GLIBC wont compile for MPC860
-References: <19990831003953.707A564E@elph.research.canon.com.au>
+To: Geert Uytterhoeven <geert@sonycom.com>
+CC: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Sym53c8xx in 2.3.now
+References: <Pine.GSO.4.10.9909011709520.5612-100000@oleander.sonytel.be>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Graham Stoney wrote:
+Geert,
+
+You should post your message on the linux-scsi list server. Gerard, who
+wrote the driver listens in on that list.
+
+  send to linux-scsi@vger.rutgers.edu
+
+<>< Lance.
+
+
+
+Geert Uytterhoeven wrote:
 > 
-> Scott Wood writes:
-> > The MPC8xx have no floating point, so it should be compiled with -msoft-float,
-> > (I think)...  ./configure --without-fp  will do it.
+> Anybody who has the sym53c8xx or ncr53c8xx driver working with the latest 2.3.x kernels?
 > 
-> Is this implied when gcc has been configured --with-cpu=860?
-
-I don't think so...  I put -msoft-float into the sysdeps/powerpc/Makefile and I see
-it twice below, so I would imagine that if you use both flags then -msoft-float
-will be used.
-
-I am using YellowDog Linux now and instead of an 'internal compiler error',
-I get:
-
-make[1]: Entering directory `/usr/src/redhat/SOURCES/glibc-2.1.1/math'
-gcc ../sysdeps/powerpc/s_isnan.c -c -Wall -Winline -Wstrict-prototypes -Wwrite-strings -mcpu=860 -msoft-float   -fpic
--msoft-float   -Wno-uninitialized -Wno-write-strings  -I../include -I.  -I.. -I../libio  -I../sysdeps/powerpc/elf
--I../sysdeps/unix/sysv/linux/powerpc -I../sysdeps/unix/sysv/linux -I../sysdeps/gnu -I../sysdeps/unix/common -I../sysdeps/unix/mman
--I../sysdeps/unix/inet -I../sysdeps/unix/sysv -I../sysdeps/unix -I../sysdeps/posix -I../sysdeps/powerpc -I../sysdeps/wordsize-32
--I../sysdeps/ieee754 -I../sysdeps/libm-ieee754 -I../sysdeps/generic/elf -I../sysdeps/generic    -include
-../include/libc-symbols.h  -DPIC   -D__NO_MATH_INLINES -D__LIBC_INTERNAL_MATH_INLINES -DNO_LONG_DOUBLE -D_Mlong_double_=double -o
-s_isnan.os
-../sysdeps/powerpc/s_isnan.c: In function `__isnan':
-../sysdeps/powerpc/s_isnan.c:32: fixed or forbidden register 32 (0) was spilled for class FLOAT_REGS.
-This may be due to a compiler bug or to impossible asm
-statements or clauses.
-make[1]: *** [s_isnan.os] Error 1
-
-I haven't even got a PowerPC 750 native build to work yet (even
-though I ran configure with the --disable-time and --disable-db2 options).  Any
-idea how I can exclude db2 (and other unnecessary things like locale and nis) 
-support so I can get a (c)lean build?  
-
-I have been able to run many static binaries compiled for the 750 with
---msoft-float on the MPC850 just fine, although snmpd and dhcpd segfault.  The
-glibc should work as well if it doesn't do hardware floating point, but it doesn't
-seem to compile without it.
-
--Scott
-
+> I get:
 > 
-> Thanks,
-> Graham
+> | sym53c8xx: at PCI bus 0, device 6, function 0
+> | sym53c8xx: setting PCI_COMMAND_IO PCI_COMMAND_MEMORY...
+> | sym53c8xx: setting PCI_COMMAND_MASTER PCI_COMMAND_PARITY...(fix-up)
+> | sym53c8xx: 53c875 detected
+> | sym53c875-0: rev=0x04, base=0xc3000000, io_port=0x1400, irq=31
+> | sym53c875-0: NCR clock is 40218KHz, 40218KHz
+> | sym53c875-0: ID 7, Fast-20, Parity Checking
+> | sym53c875-0: on-chip RAM at 0xc3001000
+> | sym53c875-0: restart (scsi reset).
+> | sym53c875-0: Downloading SCSI SCRIPTS.
+> | ncr53c8xx: at PCI bus 0, device 6, function 0
+> | ncr53c8xx: IO region 0x1400 to 0x147f is in use
+> | mesh: assuming 50MHz clock frequency
+> | scsi0 : sym53c8xx - version 1.3c
+> | scsi1 : MESH
+> | scsi : 2 hosts.
+> | scsi : aborting command due to timeout : pid 0, scsi0, channel 0, id 0, lun 0 Test Unit Ready 00 00 00 00 00
+> | sym53c8xx_abort: pid=0 serial_number=1 serial_number_at_timeout=1
+> 
+> And then the system hangs in a wait loop...
+> 
+> My devices (from 2.3.6 dmesg):
+> 
+> |   Vendor: QUANTUM   Model: VIKING II 4.5WLS  Rev: 3506
+> |   Type:   Direct-Access                      ANSI SCSI revision: 02
+> | Detected scsi disk sda at scsi0, channel 0, id 0, lun 0
+> |   Vendor: PLEXTOR   Model: CD-ROM PX-12TS    Rev: 1.02
+> |   Type:   CD-ROM                             ANSI SCSI revision: 02
+> |   Vendor: HP        Model: HP35480A          Rev: T503
+> |   Type:   Sequential-Access                  ANSI SCSI revision: 02
+> | sym53c875-0-<0,0>: tagged command queue depth set to 8
+> |   Vendor: QUANTUM   Model: FIREBALL_TM3200S  Rev: 300X
+> |   Type:   Direct-Access                      ANSI SCSI revision: 02
+> | Detected scsi disk sdb at scsi1, channel 0, id 5, lun 0
+> | scsi : detected 2 SCSI disks total.
+> | sym53c875-0-<0,*>: FAST-20 WIDE SCSI 40.0 MB/s (50 ns, offset 16)
+> | SCSI device sda: hdwr sector= 512 bytes. Sectors= 8910423 [4350 MB] [4.4 GB]
+> | SCSI device sdb: hdwr sector= 512 bytes. Sectors= 6281856 [3067 MB] [3.1 GB]
+> 
+> Disabling sym53c8xx and using ncr53c8xx instead doesn't fix the problem.
+> 
+> Greetings,
+> 
+>                                                 Geert
+> 
+> --
+> Geert Uytterhoeven                   Geert.Uytterhoeven@sonycom.com
+> Sony Suprastructure Center Europe (SUPC-E) --- Brussels --- Belgium
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
