@@ -1,37 +1,32 @@
-Date: Wed, 24 Mar 2004 09:59:56 +0100
-Message-ID: <4057CCD40004167A@mssbzhh-int.msg.bluewin.ch>
-In-Reply-To: <20040323183122.GA6724@gate.ebshome.net>
-From: "Wolfgang Grandegger" <wolfgang.grandegger@bluewin.ch>
-Subject: IBM 440GX performance (was Re: IBM 440GX, Ocotea...)
-To: "Eugene Surovegin" <ebs@ebshome.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <20040324122406.96970.qmail@web15214.mail.bjs.yahoo.com>
+Date: Wed, 24 Mar 2004 20:24:06 +0800 (CST)
+From: =?gb2312?q?song=20sam?= <samsongshzu@yahoo.com.cn>
+Subject: USB problem on 2.4.20
+To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <4057CCD40004167A@mssbzhh-int.msg.bluewin.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->-- Original Message --
->Date: Tue, 23 Mar 2004 10:31:22 -0800
->From: Eugene Surovegin <ebs@ebshome.net>
->To: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
->Cc: linuxppc-embedded@lists.linuxppc.org
->Subject: Re: IBM 440GX, Ocotea...
-[...deletions...]
->> Could
->> anybody make some comments on the stability? We currently
->> use the "linuxppc_2_4_devel" tree for these processors
->> with little problems.
->
->I'm using linuxppc-2.4 as of 2.4.21 in production for 440GP,
->440GX, 405GPr, 405EP based hardware.
+Hi,
 
-BTW, do you or somebody else have some performance figures
-(LMbench?) for the GX compared to the other processor.
+When trying to make USB HOST mode kernel on 2.4.20
+from MVL PRO 3.1 for RPXlite DW board,I found that USB
+keyboard didn't work but it did work on 2.4.18 from
+MVL PRO 3.0.Does anyone have success experience in
+similar case?Also,the reseaon why I try to make USB
+work on 2.4.20 is that I noticed the newer kernle tree
+with the same configuration could get smaller and
+faster kernel.Is this ture for most
+case?Anyway,smaller and faster is attractive to all of
+us.
 
-Thanks.
+Any comment and advice is welcome.
 
-Wolfgang.
+Thanks in advance!
 
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
