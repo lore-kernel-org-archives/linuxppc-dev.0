@@ -1,46 +1,27 @@
-Message-ID: <018c01c2c812$d70f35e0$81093c09@MDW600X>
-From: "Michael Washburn" <mwashburn@citlink.net>
-To: <nitesh_ppc@lycos.com>, <linuxppc-embedded@lists.linuxppc.org>
-References: <JENEEIGJCHOHEBAA@mailcity.com>
-Subject: Re: Howto install bootloader using jtag?
-Date: Wed, 29 Jan 2003 22:51:15 -0500
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "James Don" <JDon@spacebridge.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Cross Compile Build Question
+Date: Wed, 29 Jan 2003 20:54:56 -0800
+Message-ID: <NCBBIINEHIPFGJPLBEIFKEIOEBAA.acurtis@onz.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
+In-reply-to: <DB0585C9F6F9D411BE8F00D0B7896A4CC06124@SNCMAIL>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Depending on what JTAG debugger you're using, there should be a way to
-download and execute the S-Rec file (usually a .mot file). The bootloader
-file provided by Emdedded Planet is actually an executable that contains the
-boot loader image. You should be able to download and execute it in one
-simple step.
+Let me dig up my notes. I spent an hour with someone before we got this to
+work. You needed to comment out some stuff.
 
-Mike Washburn
------ Original Message -----
-From: "Nitesh Goyal" <nitesh_ppc@lycos.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Wednesday, January 29, 2003 9:45 PM
-Subject: Howto install bootloader using jtag?
-
-
+> I am trying to build GCC with the below 3 scripts build-gccBootStrap.sh,
+> build-glibc.sh, and build-gccWithGlibc.sh ... I keep having
+> problems once I
+> get to the part where gcc is build gthr-threads.h ...
 >
-> Hi,
-> I'm using a IBM PPC 405GP board(from embeddedplanet) I accidently
-> deleted the bootloader.
->
-> I have the bootloader srecord image on my host, but I do not know how to
-> burn it on board using JTAG ?
->
-> Is there a utility available that I can use on host to download the
-> bootloader image to tbe board ?
->
-> Thanks,
-> NItesh
->
->
->
+> I can build glibc and bootstrapped compiler with newlib just fine ...
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
