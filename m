@@ -1,38 +1,33 @@
-Date: Thu, 12 Aug 1999 15:03:33 +1000
-Message-Id: <199908120503.PAA30042@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: iweiny@kdat.csc.calpoly.edu
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <199908120447.VAA18371@kdat.csc.calpoly.edu>
-	(iweiny@kdat.csc.calpoly.edu)
-Subject: Re: newbee q's? and 2.2 kernels
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <199908120447.VAA18371@kdat.csc.calpoly.edu>
+Message-Id: <9908120516.AA43198@marc.watson.ibm.com>
+To: Richard Henderson <rth@cygnus.com>
+Cc: Paul.Mackerras@cs.anu.edu.au, Jes.Sorensen@cern.ch,
+        Geert.Uytterhoeven@cs.kuleuven.ac.be, linuxppc-dev@lists.linuxppc.org,
+        linux-fbdev@vuser.vu.union.edu
+Subject: Re: [linux-fbdev] Re: readl() and friends and eieio on PPC 
+In-Reply-To: Message from Richard Henderson <rth@cygnus.com>
+   of "Wed, 11 Aug 1999 21:40:49 PDT." <19990811214049.A14692@cygnus.com>
+Date: Thu, 12 Aug 1999 01:16:14 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ira K. Weiny <iweiny@kdat.csc.calpoly.edu> wrote:
+>>>>> Richard Henderson writes:
 
-> I have been trying to install pauls 2.2.10.  I would eventually like to
-> compile my own kernel and modules.  Specifically I am going to try and
-> fix the pppd from crashing...  Of course if I can...  ;-)
+>> My position is that if you can provide the ordering at essentially
+>> zero cost, then it is an advantage to have it since more drivers will
+>> work that way.
 
-What's the problem with pppd?  It works fine for me, but maybe that's
-just because I'm the ppp maintainer :-).
+Richard> But it isn't zero cost.  It's not high cost, but that's not the same thing.
 
-> What does the System.map and module-info files do in the /boot
+	Is your assumption that you want to provide the infrastructure to
+write high-performance device drivers or to write device drivers that
+don't require as much expertise and knowledge to produce correct results?
+There are conflicting goals in this design providing different benefits to
+Linux. 
 
-ps uses /boot/System.map, and complains if it is for a different
-version from the currently running kernel.
+David
 
-> directory?  And where can I get some information on kernels and modules?  As
-> with most computer stuff the books I have found are outdated for the 2.2
-> kernel.
-
-Have a look in the Documentation directory in the kernel sources.
-
-Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
