@@ -1,41 +1,33 @@
+Message-ID: <3AFADC76.B79662E0@mvista.com>
+Date: Thu, 10 May 2001 18:22:46 +0000
+From: Scott Anderson <scott_anderson@mvista.com>
+MIME-Version: 1.0
 To: joakim.tjernlund@lumentis.se
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: gdb problems 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 10 May 2001 19:19:07 +0200."
-             <IGEFJKJNHJDCBKALBJLLGEDNENAA.joakim.tjernlund@lumentis.se>
-Date: Thu, 10 May 2001 19:40:53 +0200
-Message-Id: <20010510174058.CF2942814D@denx.denx.de>
+Subject: Re: gdb problems
+References: <IGEFJKJNHJDCBKALBJLLGEDNENAA.joakim.tjernlund@lumentis.se>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <IGEFJKJNHJDCBKALBJLLGEDNENAA.joakim.tjernlund@lumentis.se> you wrote:
+Joakim Tjernlund wrote:
+>
+> Hi
 >
 > I am trying to debug ppclinux 2.4 and ppcboot on RPX CLLF board
 > connected to an Abatron emulator.
-
-Did you invalidate the M_TWB in the BDI config file ("WSPR  796  0"),
-and did you enable address translation ("MMU XLAT") ?
-
+>
 > When I print variables in gdb I get an <error type> message
-
-And what was the EXACT error message?
-
 > instead of the variable value. Breakpoints and stack trace etc. works
 > fine. I have enabled -g switch to gcc.
 
-Which version of GDB are you using, and which firmware version of the
-BDI2000? (b20ppcgd.108 has been out for some time).
+In order to get gdb to understand structs, etc. I compile with -ggdb
+instead of -g.  Works quite well.  I'm spoiled now.
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The typical page layout program is nothing more  than  an  electronic
-light table for cutting and pasting documents.
+    Scott Anderson
+    scott_anderson@mvista.com   MontaVista Software Inc.
+    (408)328-9214               1237 East Arques Ave.
+    http://www.mvista.com       Sunnyvale, CA  94085
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
