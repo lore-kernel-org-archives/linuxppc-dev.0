@@ -1,56 +1,43 @@
-Date: Sat, 12 Apr 2003 15:05:25 -0700
-From: Ira Weiny <iweiny@acm.org>
-Subject: Re: Machine Check question
-In-reply-to: <16021.61655.348425.683335@nanango.paulus.ozlabs.org>
-To: linuxppc <linuxppc-dev@lists.linuxppc.org>
-Message-id: <20030412150525.248091e5.iweiny@acm.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=US-ASCII
-References: <20030410013241.3ae349e5.iweiny@acm.org>
- <16021.61655.348425.683335@nanango.paulus.ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16026.33208.382857.751115@gargle.gargle.HOWL>
+Date: Mon, 14 Apr 2003 11:39:04 +0200
+From: mikpe@csd.uu.se
+To: paulus@samba.org
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.x swim3 performance problem on PM4400 identified
+In-Reply-To: <16005.35950.570218.844672@nanango.paulus.ozlabs.org>
+References: <16004.27866.270601.561756@gargle.gargle.HOWL>
+	<16005.35950.570218.844672@nanango.paulus.ozlabs.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 11 Apr 2003 08:31:51 +1000 (EST)
-Paul Mackerras <paulus@samba.org> wrote:
+Paul Mackerras writes:
+ > Mikael Pettersson writes:
+ >
+ > > With 2.4 kernels, writes to floppy are about a factor of 10 slower
+ > > on my PowerMac 4400 than they are with 2.2 kernels.
+ > >
+ > > The cause for this is a poll-loop in swim3.c which doesn't exist
+ > > in the 2.2 version. The patch below reverts that change, and
+ > > restores floppy write performance to 2.2 levels. I've built many
+ > > boot floppies with this modified driver w/o any problems.
+ >
+ > This finally prodded me to look at the mach driver.  I've hacked the
+ > linux swim3 driver to do things in a more similar fashion to what the
+ > mach driver does.  It now seems to not get stuck on the dreaded 04
+ > error and generally seems a lot more robust.  Try this patch and let
+ > me know how it goes.
 
-> Ira Weiny writes:
->
-> > I have put some more effort into my Microdrive (PCMCIA IDE) problem.
->
-> What sort of machine do you have?  There is a known problem on tibooks
-> where the IDE subsystem ends up trying to use powermac-IDE functions
-> on PCMCIA IDE drives.
->
-> Paul.
+I finally got around to testing your updates to swim3.c. I haven't
+observed any problems with it, and it solved my slow-writes problem.
+Great work -- thanks.
 
-Yes this is a TiBook.  500Mhz about 2 years old...
+There are two compile warnings on unused variables 'swim3_buf' and
+'max_wait_inactive' that your update introduces. Did you intend
+to use them or what?
 
-[root@batwing2 iweiny]# cat /proc/cpuinfo
-cpu		: 7410, altivec supported
-temperature 	: 10-12 C (uncalibrated)
-clock		: 500MHz
-revision	: 17.3 (pvr 800c 1103)
-bogomips	: 996.14
-machine		: PowerBook3,2
-motherboard	: PowerBook3,2 MacRISC2 MacRISC Power Macintosh
-detected as	: 71 (PowerBook Titanium)
-pmac flags	: 0000000b
-L2 cache	: 1024K unified
-memory		: 512MB
-pmac-generation	: NewWorld
-[root@batwing2 iweiny]#
-
-
-I assume the problem does not have a solution?  If so I would be most
-interested in trying to figure it out.  Or is there a work around?
-
-This worked on my 2.4.14-pre7-ben0.
-
-Thanks,
-Ira Weiny
-iweiny@acm.org
-
+/Mikael
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
