@@ -1,39 +1,37 @@
-Message-ID: <391144BB.F583410B@mpifr-bonn.mpg.de>
-Date: Thu, 04 May 2000 11:36:59 +0200
-From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
+Date: Thu, 4 May 2000 12:08:21 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Gong Zhuo_sina <gong_zhuo@sina.com.cn>
+cc: linuxppc dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Any compact pci driver for MCP750?
+In-Reply-To: <003f01bfb18d$c32748e0$4607a8c0@LocalHost>
+Message-ID: <Pine.HPX.4.10.10005041203430.234-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-CC: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: FireWire chip on PISMO?
-References: <Pine.LNX.3.96.1000503235136.6574O-100000@deepspace.mklinux.org>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"David A. Gatwood" wrote:
-> It's a standard OHCI chip, probably repackaged in a custom ASIC, but it
-> works with the same drivers as all the other OHCI devices.  You should
-> only need to add an extra ID in your supported device lists for the linux
-> drivers to support it.  If the driver doesn't work out of the box, there's
-> a driver bug in general.  :-)
+On Sat, 29 Apr 2000, Gong Zhuo_sina wrote:
 
-This first "quick hack" to the ohci driver lead to a kernel panic...  Sigh!
-I'll have to try in more depth...
+>
+> Hi:
+>   I am using CPX8216. I want to run linuxppc on the system board MCP750. Is
+> there any device driver which can support DEC21154 (or DEC21554 for MCPN750)
+> so that I can operate the memory on board(MCPN750)  through the compact pci
+> bus?
 
-Thanks anyway, Albrecht.
+For the MCP750, you should have no problems. But to access MCPN750, the
+code is not written and even the infrastructure is not (yet) there. some
+more work to support non transparent PCI<->PCI bridges is necessary.
 
---
-+-----------------------------------------------------------------------------+
-| Dr.-Ing. Albrecht Dre\ss                                     """"           |
-| Max-Planck-Institut f\"ur Radioastronomie   |\       /      /o  o\          |
-| Abteilung f\"ur Infrarot-Interferometrie    |  \    /      |  /   |         |
-| Auf dem H\"ugel 69                          |    \ |        \ ---/          |
-| D-53121 Bonn (Germany)          ------------+------+-------------------     |
-| Phone (+49) 228 525 319                     |    / |                        |
-| Fax   (+49) 228 525 411                     |  /  /                         |
-| Mail  ad@mpifr-bonn.mpg.de                  |/   /                          |
-| http://www.mpifr-bonn.mpg.de/div/iri                                        |
-+-------------- electrical engineers do it with less resistance --------------+
+For various reasons (getting a larger PCI memory space being the first one
+in your case to be able t oaccess several MCPN750 in a single backplane),
+you might be interested in my prepboot loader which reorganizes Raven or
+Hawk bridges in CHRP mode rather than PreP mode
+(ftp:://vlab1.iram.es/linux-2.2/mvme*patch*).
+
+	Regards,
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
