@@ -1,54 +1,46 @@
+Date: Wed, 15 Sep 1999 12:03:29 +0200
+To: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Apple OF patches: Open source
+Message-Id: <19990915120329.005173@mailhost.mipsys.com>
 Mime-Version: 1.0
-Message-Id: <v04210108b4051bfbea54@[192.168.0.1]>
-In-Reply-To: <19990915113905.031280@mailhost.mipsys.com>
-References: <19990915113905.031280@mailhost.mipsys.com>
-Date: Wed, 15 Sep 1999 01:58:02 -0800
-To: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-From: Ethan Benson <erbenson@alaska.net>
-Subject: Re: New booter
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 15/9/99 Benjamin Herrenschmidt wrote:
+Ok, I missed this until today, but it appears that Apple's OF patches
+included in System Disk control panel are actually Open Source (Thanks
+Peter). So that means that we can include them in quik, provided that we
+handle the subtle licence issues with Apple's public sources licence. 
 
-> >From Apple perspective, it's not a kludge since the final MacOS X will
->boot from HFS+ partitions, so it seems logical to have the bootinfo on an
->HFS volume.
+With those patches, we should be able to have clean OF-based boot on all
+OF machines.
 
-well regardless its still a kludge from the linux perspective we 
-don't use HFS..
+The remaining issue is for making bootable install CDs and floppies. My
+current work on miBoot shoud help.
 
-and besides that its my opinion that relying on a specific filesystem 
-to boot your OS is extremely shortsighted, if later on they want to 
-change there filesystem to something better they can't since there 
-bootfile would not be readable on this new fs, they are then chained 
-to HFS+ forever and end up using kludgy crap like hidden HFS 
-filesystems with the boot files. (and besides this not everyone who 
-wants to use OSX wants to use HFS)
+One remaining question is: do we need the CD to be HFS or not. I think I
+read that OF implementation of ISO was too buggy to allow proper loading
+of the bootinfo script and secondary booter. Also, we currently didn't
+manage to get the new OF to load the primary booter from the boot blocs.
 
-IMNSHO the only way to boot an OS is to have your firmware load 
-whatever is on the disk bootblock which contains the OS loader.  no 
-need to bloat the firmware with filesystem code that will inevitably 
-become obsolete and useless, and you are no longer chained to your 
-current filesystem for all eternity... I have to say that intel 
-hardware is far superior to PPC hardware in this respect, booting 
-arbitrary OSes independently on intel hw is a complete non issue...
+Also, for miBoot (since i don't beleive old OFs can boot from CDs unless
+manually hacking into OF), we can move most of the code to the 68k boot
+blocs of the partition and then use Device Manager code to load the rest
+from raw blocs. However, the underlying driver may not mount the
+partition at all unless it's an Apple_HFS.
 
-anyway regardless of what apple is doing linux is a different OS it 
-does not use HFS and as such using a small useless HFS partition just 
-to boot it is a kludge.
+I still have to look more closely at how the bootable CD mecanism is
+done. Unfortunately, I think it's not documented at all... We may be able
+to turn miBoot into a fake driver on the CD and have the MacOS ROM load that.
 
 
 
-Ethan Benson
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-OpenPGP encrypted mail accepted.
-To obtain my PGP key: http://www.alaska.net/~erbenson/pgp/
-Key FingerPrint: 371A 7416 5D39 CF2D 9366  8AF6 0139 54F5 3EBD 0FE6
-RSA Key FingerPrint: DE8B 74D0 79F1 6176  9AF5 120F 47AD 9B0A
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
