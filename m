@@ -1,59 +1,44 @@
-To: rekha gvv <rekhagvvc@yahoo.co.in>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Custom MPC823 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 22 Jul 2003 23:33:07 PDT."
-             <20030723063307.34015.qmail@web8004.mail.in.yahoo.com>
-Date: Wed, 23 Jul 2003 11:03:12 +0200
-Message-Id: <20030723090317.C192EC6D82@atlas.denx.de>
+From: "dong in kang" <dkang@east.isi.edu>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: zImage.initrd: when the compressed RAM file system is decompressed and installed?
+Date: Wed, 23 Jul 2003 11:41:04 -0400
+Message-ID: <002101c35130$d43e2b30$45a97241@Minjoo>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-reply-to: <20030723090317.C192EC6D82@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+ Hello,
 
-in message <20030723063307.34015.qmail@web8004.mail.in.yahoo.com> you wrote:
->
-> I had been working on FADS860T evaluation board.
-> Used PPCBOOT 1.1.6 as the Bootloader
-> Used linux-2.4.4 as the kernel from denx site.
->
-> Right now we have come out with our custom board which
-> houses MPC823 ,SDRAM ,FLASH Video encoder(adv7176)and
-> IDE interfaces.
->
-> So i would like to get some suggestions as to which
-> bootloader and linux kernel i can use so that it will
-> support video drivers,i2c drivers ,ide drivers.
+ I'm using MV Linux 2.1 with Linux kernel version 2.4.17.
+I compiled the kernel with initrd to make zImage.initrd.
+I configured RAM file system is used.
+I loaded the kernel at 0x800000 and run the code.
+Kernel decompression and start_kernel routine works fine (with a little
+problem).
+pciauto_bus_scan() causes problem when I do not use gdb.
+At early_read_config_byte (), machine check exception occurs.
+Howerver, when I use gdb and step through the early_read_config_byte()
+routine, it goes well beyond that.
+When I use gdb and step through "pciauto_bus_scan()", it runs remaining
+routines such as
+init_IRQ(), sched_init(), ..., rest_init() --> idled() --> schedule().
+When it tries to switch to new thread by calling "_switch(old_thread,
+new_thread)", it dies.
+Gdb "step" function doesn't work. And when I stop the process, the PC is in
+0xFFF033CC.
 
-As you probably know the PPCBoot project has been  discuntinued,  and
-all efforts are now put into the U-Boot successor project.
+ I don't know why the kernel cannot go more.
+However, I'm curious that before it dies it doesn't decompress initrd nor
+install the RAM file system.
+Is RAM file system installation done after that?
 
-U-Boot has support for video on MPC823, for I2C, and for IDE.
+ I'll appreciate you help.
 
-Same for our kernel (module linux-2.4 in our CVS server); it includes video drivers for the MPC823, see:
+ Dong-In
 
-	arch/ppc/8xx_io/lcdvideo.h
-	arch/ppc/8xx_io/video823.c
-	arch/ppc/8xx_io/video_ad7176.h
-	arch/ppc/8xx_io/video_ad7177.h
-	arch/ppc/8xx_io/video_ad7179.h
-
-As you can see, the ad7176 encoder used in your project is supported,
-to. And of course there are I2C and IDE drivers in this kernel, too.
-
-
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The goal of science is to build better mousetraps. The goal of nature
-is to build better mice.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
