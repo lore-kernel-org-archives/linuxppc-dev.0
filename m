@@ -1,20 +1,18 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 04E372BF0E
+Return-Path: <Steffen.Rumler@siemens.com>
+Received: from david.siemens.de (david.siemens.de [192.35.17.14])
+	by ozlabs.org (Postfix) with ESMTP id 4B2172BF16
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Jan 2005 19:36:44 +1100 (EST)
-Date: Wed, 12 Jan 2005 00:36:37 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Kumar Gala <galak@somerset.sps.mot.com>
-Message-ID: <20050112083637.GA13794@gate.ebshome.net>
-References: <Pine.LNX.4.61.0501120133080.21665@blarg.somerset.sps.mot.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.61.0501120133080.21665@blarg.somerset.sps.mot.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: RFC: [PATCH] platform device driver model support
+	Wed, 12 Jan 2005 20:07:22 +1100 (EST)
+Received: from mail1.siemens.de (mail1.siemens.de [139.23.33.14])
+	by david.siemens.de (8.12.6/8.12.6) with ESMTP id j0C8cgtr020535
+	for <linuxppc-embedded@ozlabs.org>; Wed, 12 Jan 2005 09:38:42 +0100
+Message-ID: <41E4E1EB.6080903@siemens.com>
+Date: Wed, 12 Jan 2005 09:38:03 +0100
+From: Steffen Rumler <Steffen.Rumler@siemens.com>
+MIME-Version: 1.0
+To: linuxppc <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Kernel boot hangs by parallel flood pings
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,107 +23,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 12, 2005 at 01:43:09AM -0600, Kumar Gala wrote:
-> 
-> Please take a look at the following patch.  It adds driver model support 
-> via platform devices to 85xx.  This is originally based on patches from 
-> Jason M. 
-> 
-> The idea behind the code is that for a give family: 4xx, 8xx, 82xx, 83xx, 
-> 85xx, 86xx we will have structure defns for the following:
-> 
-> enum ppc_soc_devices 
-> in asm-ppc/<family.h>:
->   list of all unique devices in the family
-> 
-> struct platform_device soc_platform_devices[]
-> in arch/ppc/platforms/<family>/<family>_devices.c:
->   describes all platform devices that exist in the family
-> 
-> struct soc_spec soc_specs[]
-> in arch/ppc/platforms/<family>/<family>_soc.c:
->   describes each unique chip in the family and what devices it has
+I'm using a 2.4.20 kernel (PPC).
 
-Well, there is a problem right here at least for 4xx. 
-Current OCP implementation is much more flexible IMHO.
-
-For 4xx is not uncommon when you have the same "logical" device at the 
-different places with different "properties" (e.h. different channel, 
-etc).
-
-Your case (85xx) looks simpler - all you need is a list of devices 
-which particular SoC supports, without significant differences in 
-"properties". This will not work that easy for 4xx.
-
-In fact, I don't see any gain (at least for 4xx) in all these changes. 
-It makes 4xx much more tangled IMHO, because we'll still need all 
-those ibm405gp.c, ibm405ep.c, ibm440gp.c etc.
-
-Please note, using platform_device is orthogonal to the way we 
-describe each SoC (this is what I don't quite like in your patch), and 
-I don't have any strong objections to using platform_device instead of 
-OCP or feature_call or whatever for communication with device drivers.
-
-> Plus the following functions:
-> 
-> identify_soc_by_id() -- determine soc by an int id
-> identify_soc_by_name() -- determin soc by name (useful in some 82xx cases)
-> ppc_soc_get_pdata() -- get platform_data pointer so board code can modify
-> ppc_soc_update_paddr() -- update iomem resources with a given paddr
-
-IMHO, ppc_soc_update_paddr - is a very confusing name, in fact, from 
-first read I though it _changes_ paddr to the new value, not _adds_ it 
-:)
-
-Probably this function should be made 85xx specific as I cannot come 
-up with any use for it in 4xx (we don't have anything similar to 
-CCSRBAR ;).
+When I run multiple 'ping -f' directed to my board
+during the kernel boots, sometimes it hangs with
+the following messages:
 
 
-[snip]
-
-> +
-> +struct platform_device soc_platform_devices[] = {
-> +	[MPC85xx_TSEC1] = {
-> +		.name = "fsl-gianfar",
-> +		.id	= 1,
-> +		.dev.platform_data = &mpc85xx_tsec1_pdata,
-> +		.num_resources	 = 4,
-> +		.resource = (struct resource[]) {
-> +			{
-> +				.start	= MPC85xx_ENET1_OFFSET,
-> +				.end	= MPC85xx_ENET1_OFFSET +
-> +						MPC85xx_ENET1_SIZE - 1,
-> +				.flags	= IORESOURCE_MEM,
-> +			},
-> +			{
-> +				.name	= "tx",
-> +				.start	= MPC85xx_IRQ_TSEC1_TX,
-> +				.end	= MPC85xx_IRQ_TSEC1_TX,
-> +				.flags	= IORESOURCE_IRQ,
-> +			},
-> +			{
-> +				.name	= "rx",
-> +				.start	= MPC85xx_IRQ_TSEC1_RX,
-> +				.end	= MPC85xx_IRQ_TSEC1_RX,
-> +				.flags	= IORESOURCE_IRQ,
-> +			},
-> +			{
-> +				.name	= "error",
-> +				.start	= MPC85xx_IRQ_TSEC1_ERROR,
-> +				.end	= MPC85xx_IRQ_TSEC1_ERROR,
-> +				.flags	= IORESOURCE_IRQ,
-> +			},
-[snip]
+   Memory BAT mapping: BAT2=64Mb, BAT3=32Mb, residual: 84Mb
+   Linux version 2.4.20-rthal5 (ru@styx) (gcc version 2.95.3 20010111 (prerelease/franzo/20010111))
+   #9 Tue Jan 11 17:09:22 CET 2005
+   On node 0 totalpages: 29859
+   zone(0): 29859 pages.
+   zone(1): 0 pages.
+   zone(2): 0 pages.
+   Kernel command line: bootdev=aps0 ip=218.1.36.70:218.1.36.47:218.1.36.254:255.255.255.0::eth0:off
+   panic=1 mem=119436k
+   Calibrating delay loop... 194.15 BogoMIPS
+   ...
+   NET4: Linux TCP/IP 1.0 for NET4.0
+   IP Protocols: ICMP, UDP, TCP
+   IP: routing cache ha
+                 ^^^^^^^
+                   the kernel boot hangs here
 
 
-I already wrote about this but repeat again :(. 
+I have checked this with the BDI2000 and found that the
+kernel loops anywhere inside ip_route_input().
 
-Why put all these defines (e.g. for memory regions) into header when 
-the only user is this particular file. It doesn't help readability and 
-only obfuscates sources (and 4xx is a very good example of such mess 
-:)
+I think this is because the ethernet driver (fcc_enet.c)
+enables the hardware too already inside it's init routine (fec_enet_init()).
+
+In this way, frames may be received and forwarded to the upper
+layers with netif_rx(), before the TCP/IP was initialized.
+
+I suggest to delay the lines
+
+   /* Enable transmit/receive */
+   fccp->fcc_gfmr |= FCC_GFMR_ENR | FCC_GFMR_ENT;
+
+to the open entry point (fcc_enet_open()), which is
+triggered by 'ifconfig up' in the following way:
 
 
---
-Eugene
+   if(!((fccp->fcc_gfmr) & FCC_GFMR_ENR))
+      fccp->fcc_gfmr |= (FCC_GFMR_ENR | FCC_GFMR_ENT);
+
+By the way, fcc_enet_close() does _NOT_ stop the hardware.
+Hopefully, this is not a real problem.
+
+
+Steffen
+
+-- 
+
+
+--------------------------------------------------------------
+
+Steffen Rumler
+ICN CP D NT SW 3
+Siemens AG
+Hofmannstr. 51                 Email: Steffen.Rumler@siemens.com
+D-81359 Munich                 Phone: +49 89 722-44061
+Germany                        Fax  : +49 89 722-36703
+
+--------------------------------------------------------------
