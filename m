@@ -1,69 +1,36 @@
-Message-ID: <3909F5E0.E4725B71@ccrl.mot.com>
-Date: Fri, 28 Apr 2000 15:34:40 -0500
-From: Steve Rossi <srossi@ccrl.mot.com>
+Message-Id: <00Apr29.070611adt.7306@dragon.appliedmicro.ns.ca>
+From: Frank Smith <smith@amirix.com>
 MIME-Version: 1.0
-To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: sym53c8xx SCSI on 8xx?
+To: zhangbingchen <shenhuizhang@263.net>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: how to extend the initrd to a customed size ?
+References: <001801bfb31a$8b816d60$54c809c0@zbc>
 Content-Type: text/plain; charset=us-ascii
+Date: Sat, 29 Apr 2000 07:06:09 -0300
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Has anyone every used the sym53c8xx driver in an 8xx system? I seem
-to be having several problems - if anyone can offer any insight perhaps
-I won't have to re-invent the wheel - though I'm guessing I'll have a
-good chunk of work to do anyway.
+If you strip libc.so.6 it gets much smaller; my specific version went from
+4115403 to 1032312 bytes.
 
-The first problem seems to be with the way the driver assumes that the
-PCI chipset offers access to the (L2 I'm guessing) cache. My take on
-this
-is that the driver stores "SCRIPTS" in main memory which the controller
-directly accesses and executes. The only problem is that the scripts are
-actually
-cached so when the SCSI controller reads the main memory (through
-the PCI bridge - in my case QSPAN II) it doesn't see the data that it
-should.
-I tested this by adding a flush_dcache_range to the driver before the
-SCSI chip accessed that memory - after doing so it read the right data.
-So is it true that in a desktop system the PCI chipset would normally be
+-Frank.
 
-smart enought to know what is cached and to fetch data from the cache if
 
-appropriate? Do I have to remove this assumption from the driver for
-8xx?
-
-My second problem is with endianness. The PCI bridge is doing byte
-reversing, so in the driver I've made sure that I/O functions are not
-byte
-reversed. That works fine - registers on the SCSI chip get the correct
-values - except when the value that a register is getting is an address
--
-for instance into main memory. It appears that, for instance the dsp
-register
-on the sym53c8xx controllers is stored big endian though the rest of the
-chip
-is little endian. So although the driver uses the same I/O macros for
-acceses
-to the controllers registers - regardless of whether it a regular data
-register
-or a register containing an address into PPC memory - it appears to me
-that
-it should be doing something different for these two cases. If anyone is
-
-familiar with this chip (particulary the 53c895A) and can offer insight
-into this
-I would appreciate it.
-
-Thanks!
-Steve
-
---
--------------------------------------------------------
-Steven K. Rossi                     srossi@ccrl.mot.com
-Staff Engineer
-Multimedia Communications Research Laboratory
-Motorola Labs
--------------------------------------------------------
-
+zhangbingchen wrote:
+>
+> Hello!
+>   I have a board of Custom 860 with 16M RAM memory,which is running the specific linux kernel
+>   mpc8xx-2.1.3 obtained from bossek.now,I desire to enlarge the size of initrd from 4M to 6M to
+>  enable the initrd to contain the gigantic libc.so.6 with the size of morethan 4M;to do so,i have modified
+>  the line rd_size=6144 in .../drivers/block/rd.c file and the ramdisk.image has also been modified correspondly by now.
+>  But,to my puzzled,the console just displays the panic message:No init found and then reboots while running.
+>   I am sure there is no wrong with my ramdisk.image since it can be mountted correctly with
+>  6M size.
+>  That is all and I 'd be very thankful with your help or suggestion.
+>
+>    regards
+>    john , zhang
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
