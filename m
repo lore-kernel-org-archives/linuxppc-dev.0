@@ -1,32 +1,29 @@
-Message-ID: <399C3CD7.51CCB044@embeddededge.com>
-Date: Thu, 17 Aug 2000 15:28:23 -0400
-From: Dan Malek <dan@embeddededge.com>
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+Date: Thu, 17 Aug 2000 15:46:45 -0400 (EDT)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: Joseph Garcia <jpgarcia@execpc.com>
+cc: Vladimir Simonov <sv@asplinux.ru>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: nvsetenv on NW (was Can't find nvtool?)
+In-Reply-To: <399C396E.C72DFCA4@execpc.com>
+Message-ID: <Pine.LNX.3.96L.1000817154441.1998A-100000@unix47.andrew.cmu.edu>
 MIME-Version: 1.0
-To: Graham Stoney <greyham@research.canon.com.au>
-CC: dan@netx4.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Help with string.S
-References: <399A4220.23A3B0F5@research.canon.com.au>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Graham Stoney wrote:
+On Thu, 17 Aug 2000, Joseph Garcia wrote:
+>
+> Basically, I'm saying that nvsetenv could/should be modified to recognize which
+> kind of system its on, and act accordingly.  If nobody wants to do it, I suppose
+> I could.
 
-> .....  I've been doing some 2.2.13
-> kernel profiling on the 860, and __copy_tofrom_user is coming up as a
-> hotspot.
+It's already been done by Klaus Halfmann. I put together an rpm with the
+updated code, but since there haven't been any dist revs since then the new
+nvsetenv hasn't made it into most people's boxes yet.
 
-In what kind of test?
+-Hollis
 
-> I tried dropping in the new improved version from
-> linux-2.4.0-test7-pre4, and none of the 8xx mods are in there: it'l only
-> work for 32 byte cache lines.
-
-Hmmm....I check it into the FSM BK tree a long time ago.
-
-
-
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
