@@ -1,48 +1,62 @@
-Date: Fri, 7 Mar 2003 11:30:29 +0100 (CET)
-From: Samuel Ortiz <samuel.ortiz@smartdata.ch>
-To: =?X-UNKNOWN?Q?Callebaut=2C_Beno=EEt?= <benoit.callebaut@barco.com>,
-	<aman@mistralsoftware.com>
-Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Time
-In-Reply-To: <81A66F72DCACD511B0600002A551BFCB4E9D60@kuumex05.barco.com>
-Message-ID: <Pine.LNX.4.44.0303071129230.11829-100000@jourdain>
+Message-ID: <3B785392832ED71192AE00D0B7B0D75B1BFA67@aimail.aiinet.com>
+From: "Dayton, Dean" <deand@aiinet.com>
+To: "'Jean-Denis Boyer'" <jdboyer@mediatrix.com>,
+	Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Problem of concurrency in arch/ppc/8260_io/uart.c
+Date: Fri, 7 Mar 2003 07:52:53 -0500 
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In userland, calling "time your_app" helps too.
+Yes, I have seen this problem when I have a lot of printks from interrupt
+context on my 8255 board using an SCC as the console. It's been on my list
+for awhile but I haven't done anything about it yet. I think the easy
+approach would be to disable interrupts when manipulating the buffer
+descriptors (in fact, there are comments in the driver that make me suspect
+this used to be the done). But there would be a performance hit for this.
+Anyone got a more elegant suggestion?
 
-Cheers,
-Samuel
+Dean Dayton
 
-
-On Fri, 7 Mar 2003, [iso-8859-1] "Callebaut, Benoît" wrote:
-
->
-> In user mode, you can use top. Otherwise in the program, get_time_of_day or
-> in kernel get_jiffies must work
->
 > -----Original Message-----
-> From: Aman [mailto:aman@mistralsoftware.com]
-> Sent: Friday, March 07, 2003 11:05 AM
-> To: linuxppc embedded
-> Subject: Time
+> From: Jean-Denis Boyer [mailto:jdboyer@mediatrix.com]
+> Sent: Thursday, March 06, 2003 4:39 PM
+> To: Linux PPC embedded
+> Subject: Problem of concurrency in arch/ppc/8260_io/uart.c
 >
 >
 >
-> Hi
+> I have a problem of concurrency on my 8250 based custom
+> board. I'm using kernel 2.4.19, and the output on the serial
+> port goes crappy.
 >
-> Can anybody suggest the best way to calculate the time taken by an
-> application, running on PPC 440.
+> It seems to appear when printk is called from interrupt
+> context, while a user mode process is writing to stdout.
 >
-> Thanking you in advance
-> regards
-> Aman
+> I wrote a user mode program + a kernel module to reproduce
+> the problem. The kernel module starts a timer that calls
+> printk (34 chars) each 100ms. The user mode program performs
+> a while(1) printf(...); That combination almost immediatly
+> mess the serial driver, that begins to output characters in
+> an unpredictable order, until we reboot. It never crashes,
+> however, but it is annoying.
 >
+> Has anyone encoutered that problem?
+> or has any suggestion before I go further?
+> or wish to have the test program to give it a try?
 >
+> Thanks,
+> --------------------------------------------
+>  Jean-Denis Boyer, B.Eng., Technical Leader
+>  Mediatrix Telecom Inc.
+>  4229 Garlock Street
+>  Sherbrooke (Québec)
+>  J1L 2C8  CANADA
+>  (819)829-8749 x241
+> --------------------------------------------
 >
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
