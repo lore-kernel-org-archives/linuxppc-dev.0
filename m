@@ -1,69 +1,38 @@
-Message-ID: <20000516171830.4786.qmail@web1704.mail.yahoo.com>
-Date: Tue, 16 May 2000 10:18:30 -0700 (PDT)
-From: Gabriel Ricard <g_ricard@yahoo.com>
-Subject: Re: Lombard hard freeze (update: mem>64MB)
-To: Bernhard Reiter <bernhard@intevation.de>, linuxppc-dev@lists.linuxppc.org
+Message-ID: <392185D6.FF1EEA13@visuelle-maschinen.de>
+Date: Tue, 16 May 2000 19:31:02 +0200
+From: Thomas Hvhenleitner <th@visuelle-maschinen.de>
 MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: FrameBuffer List <linux-fbdev@vuser.vu.union.edu>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [linux-fbdev] ctfb for CT65554/CT69000 version 0.2 availiable
+References: <Pine.LNX.4.05.10005161649300.15758-100000@callisto.of.borg>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I should note that I removed my 128MB SODIMM and still
-had problems with freezes. I am going to call the
-company I bought my PB from and ask them whether or
-not my 128MB SODIMM is low profile or high profile
-only, maybe I can figure out whether or not I've got a
-bad 64MB SODIMM in the low profile slot.
-
---- Bernhard Reiter <bernhard@intevation.de> wrote:
-> On Tue, May 16, 2000 at 05:01:08PM +0200, Mario
-> Scarpa wrote:
-> > Bernhard Reiter wrote:
-> > > Mario Scarpa            hard freeze as
-> described?  64 MB + other problems
+Geert Uytterhoeven wrote:
+
 >
-> > I was out for a while, now I'm back.
-> > My config is like the following:
-> > Lombard 400MHz with 64MB (from Apple) running
-> 2.2.15pre20 on Debian 2.2.
-> >
-> > I'm experiencing (seldom) freezes with this config
-> when I have
-> > some heavy network activity and, even more seldom,
-> when the
-> > system boots up and initialize the serial driver.
-> > My problems started when I compiled the USB driver
-> into the kernel
-> > (or, at least, began to be visible).
-> >
-> > No problem during any compilation (and I do quite
-> a lot of this)...
->
-> Well with 64MB I never had freeses to far.
->
-> Chris told me that he has a 333Mhz lombard.
-> I have the 400 Mhz model, maybe this makes a
-> difference which is
-> more problematic when the clock speed it higher.
->
-> Jeramy, what speed does your lombard run on?
-> 	Bernhard
-> --
-> Professional Service around Free Software
->     (intevation.net)
-> The FreeGIS Project				            (freegis.org)
-> Association for a Free Informational Infrastructure
->           (ffii.org)
+> Does it also support the CT65550? If yes, perhaps it could be merged with
+> chipsfb.c?
 >
 
-> ATTACHMENT part 2 application/pgp-signature
+The CT65550, CT65554, CT65555, CT69000 are very similar chips.
+I have only access to CT65554 and CT69000 based hw.
 
+Actually I started with the chipsfb.c but there is nearly all different
+now because
+I needed to support different video modes and also tv out.
+
+Everybody should feel free to extend and modify the code or use parts of
+it in different drivers.
 
+Actually it is a good idea to merge chipsfb and ctfb. If someone could
+test on CT65550 or CT65555 based hw I could support testing on CT65554
+and CT69000.
 
-=====
-Gabriel Ricard
-g_ricard@yahoo.com
-
+Thomas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
