@@ -1,30 +1,28 @@
-Date: 19 Nov 2002 00:01:43 -0000
-Message-ID: <20021119000143.24950.qmail@webmail8.rediffmail.com>
+Message-ID: <000501c28f63$18d742d0$1200a8c0@hardware03>
+From: "cheng" <chete@21cn.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: what's wrong about the  psim 
+Date: Tue, 19 Nov 2002 08:31:53 +0800
 MIME-Version: 1.0
-From: "sanjay k k" <fren00@rediffmail.com>
-Reply-To: "sanjay k k" <fren00@rediffmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: ioctl call for  i2c driver +PPC440 returns "No such Process"
-Content-type: text/plain;
-	format=flowed
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi ,
-I am writing some i2c based program in user space to read SEEPROM
-using ioctl interface. When i tried to tun it says "No such
-process". I tried to debug the i2c-algo-ibm-ocp.c code. I found
-that analyze_status returns Incomplete transfer. It seems to me
-that data transfer on i2c bus has to be slowed down.
-For eaxample after putting the slave address on i2c bus and before
-putting the data bytes , i need to provide some delay around
-100micro sec.
-Does any body has idea , how to put theses delays on I2c bus????
+Hi! All
+  After  I had downloaded the ppcboot sourcecode and made it. Then I run it in the psim but it print the errors.
 
-Any help will be greatly appreciated!
+Administrator@HARDWARE-03 /cygdrive/d/cygwin/usr/soft/ppcboot-2.0.0
+$ powerpc-elf-run -m 603e ppcboot
+cpu 1, cia 0xfff00000: program interrupt - illegal instruction
+ppcboot: Caught signal -1 at address 0xfff00000
 
-Thankx
-Sanjay
+Administrator@HARDWARE-03 /cygdrive/d/cygwin/usr/soft/ppcboot-2.0.0
+$ powerpc-elf-run -m 603e -e chirp  ppcboot
+/memory@0: failed to allocate 98304 bytes at 0xfff00000
+my board is base on MPC8245 ,so it is a 603e core.
+what¡¯s wrong ?pls help me .
+Best wishes,
+chete
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
