@@ -1,67 +1,48 @@
-Date: Mon, 29 May 2000 14:16:49 +0200 (MET DST)
-From: Henning Loeser <Henning.Loeser@Physik.Uni-Marburg.DE>
-To: Michel Lanners <mlan@cpu.lu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ide_dmaproc - YaBoot
-In-Reply-To: <200005281535.RAA03544@piglet.grunz.lu>
-Message-ID: <Pine.OSF.4.02.10005291409200.26038-100000@ax1305.physik.uni-marburg.de>
+Message-ID: <3932D946.2E0955C3@pop.agri.ch>
+Date: Mon, 29 May 2000 22:55:35 +0200
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: mlan@cpu.lu
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Serial console in 2.3.99?
+References: <200005271046.MAA00581@piglet.grunz.lu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-ok I applied your 2.3.99-pre9 patches to 2.4.0.test1-ac4 sources and at
-least the drive is recognized again. dmesg reads:
-ide: Assuming 33MHz system bus speed for PIO modes; override with
-idebus=xx
-AEC6260R: IDE controller on PCI bus 00 dev 68
-AEC6260R: chipset revision 1
-AEC6260R: not 100% native mode: will probe irqs later
-AEC6260R: ROM enabled at 0x80810000
-AEC6260: reg49h=0x00 ATA-66 Cable Port0
-    ide0: BM-DMA at 0xf2000800-0xf2000807, BIOS settings: hda:pio, hdb:pio
-AEC6260: reg49h=0x00 ATA-66 Cable Port1
-    ide1: BM-DMA at 0xf2000808-0xf200080f, BIOS settings: hdc:pio, hdd:pio
-hda: IBM-DJNA-352030, ATA DISK drive
-ide0 at 0xf2000840-0xf2000847,0x000 on irq 23
-hda: 39876480 sectors (20417 MB) w/1966KiB Cache, CHS=39560/16/63,
-UDMA(66)
+Michel Lanners wrote:
+>
+> Hi all,
+>
+> I don't seem to get the serial console working in Paul's 2.3.99-pre9. I
+> have tried all kernel command lines, but no dice.... I had it working in
+> 2.2.15, but that same command line does not work for 2.3.99. The cabling
+> is ok; I can cat files out the serial ports and get them on the other
+> side. But not a single character of kernel log shows up...
+>
+> Anybody know what's happening? Any patches around? I absolutely need the
+> console to debug strange crashes, with nothing in the syslog...
 
-but I'm back at the lost interrupt :-(
+Well, not that helpful but here are my experiences:
+Today rsynced 2.3.99p9 from linuxcare->
 
-Partition check:
- hda:hda: lost interrupt
-hda: lost interrupt
-ide_dmaproc: chipset supported ide_dma_lostirq func only: 13
-hda: lost interrupt
-ide_dmaproc: chipset supported ide_dma_lostirq func only: 13
-hda: lost interrupt
- hda1ide_dmaproc: chipset supported ide_dma_lostirq func only: 13
-hda: lost interrupt
- hda2 hda3ide_dmaproc: chipset supported ide_dma_lostirq func only: 13
-hda: lost interrupt
- hda4 hda5ide_dmaproc: chipset supported ide_dma_lostirq func only: 13
-hda: lost interrupt
- hda6 hda7ide_dmaproc: chipset supported ide_dma_lostirq func only: 13
-hda: lost interrupt
- hda8 hda9
+vector: 700 at pc = c000673c, lr = c00051f8, msr = 81030, sp = c01f2ee0 [c01f2e30]
+current = c01f1000, pid = 0, comm = swapper
+mon> x
 
-I was wondering after Ben's commend if OF sets the bummaster correct for
-the card. Or if I should do something like:
-      pci_read_config_word( pdev, PCI_COMMAND, &cmd );
-      cmd |= (PCI_COMMAND_MEMORY | PCI_COMMAND_IO);
-      pci_write_config_word( pdev, PCI_COMMAND, cmd );
+This is on a pm7200, the same with bitkeeper. So the line must be working(physical).
 
-How do I verify the busmaster operation is set up cerrectly ?
+Tomorrow I try to get a bk tree with the changes visible, but 300MB in size.....
+No, not today via 56k modem....
 
-Henning
+A 2.3.99p6 DID work under 7200. I suppose digging in the diffs is now
+THE task, for me, if it boots, then I/we have to find out about the
+console stuff.
+In other words, I'm also interested in getting this to work.
 
---------------------------------------------------------------------------
-Henning Loeser					      Fachbereich Physik
-email: henning.loeser@physik.uni-marburg.de	      AG Oberflaechen
-						      Philipps-Uni Marburg
-
+regards
+Andreas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
