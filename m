@@ -1,22 +1,19 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BDBB42BDB5
+Return-Path: <wd@denx.de>
+Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
+	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id 417F72BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Nov 2004 04:37:47 +1100 (EST)
-In-Reply-To: <419CCC85.8080003@mrv.com>
-References: <419CBB67.1070301@mrv.com>
-	<20041118160946.GD12054@smtp.west.cox.net>
-	<419CCC85.8080003@mrv.com>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <EB8B78DA-3988-11D9-8F98-003065F9B7DC@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Thu, 18 Nov 2004 12:40:21 -0500
-To: Guillaume Autran <gautran@mrv.com>
+	Fri, 19 Nov 2004 04:39:34 +1100 (EST)
+To: morten.banzon@axxessit.no
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 18 Nov 2004 11:49:59 +0100."
+	<OFD0B78DE0.9222EE0F-ONC1256F50.003811B2-C1256F50.003B80FF@axxessit.no>
+Date: Thu, 18 Nov 2004 18:38:57 +0100
+Sender: wd@denx.de
+Message-Id: <20041118173902.86E09C1430@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: kernel 2.6.10-rc2 - Embedded MPC8xx - processor option gone !?
+Subject: Re: MPC82xx -- DPRAM1 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,13 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <OFD0B78DE0.9222EE0F-ONC1256F50.003811B2-C1256F50.003B80FF@axxessit.no> you wrote:
+> 
+> I do not understand all the intricacies of what happens regarding hardware 
+> configuration during the eraly stages of booting linux, but I conclude 
+> that when making a uImage one have to modify u-boot and the kernel if one 
+> want to relocate the usage of dpram1 by the cpm uart driver. This might 
+> have been obvious to most of you, but I was lost on this issue.
 
-On Nov 18, 2004, at 11:23 AM, Guillaume Autran wrote:
+There is no need to modify U-Boot nor  the  kernel.  Each  driver  is
+supposed to perform all required initialization steps itself. It must
+not  make  any assumptions about it's previous state except that it's
+"harmless", i. e. interrupts are disabled etc.  when  the  driver  is
+starting.
 
->  Is anyone working on a fix already ?
+> A mystery is why Dan Malek said it was a "very bad idea" to relocate the 
+> smc buffer descriptors to anohter part of dpram1.
+> Maybe I will understand that one day too.
 
-In my spare time, which I have little of right now.
-I know the symptom, as Tom mentioned, but not the cause.
+Read the code.
 
+Best regards,
 
-	-- Dan
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Vulcans believe peace should not depend on force.
+	-- Amanda, "Journey to Babel", stardate 3842.3
