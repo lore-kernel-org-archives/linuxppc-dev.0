@@ -1,32 +1,46 @@
-Date: Thu, 6 Sep 2001 08:23:38 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Brian Waite <bwaite@cspi.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MVME5100 and bugboot fails
-Message-ID: <20010906082338.E21172@cpe-24-221-152-185.az.sprintbbd.net>
-References: <200109061503.LAA11727@orchid.cspi.com>
-Mime-Version: 1.0
+Message-ID: <3B979787.8DC8E86@laposte.net>
+Date: Thu, 06 Sep 2001 17:34:31 +0200
+From: ibm405gp <ibm405.linux@laposte.net>
+MIME-Version: 1.0
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: ppp for Walnut 405GP
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200109061503.LAA11727@orchid.cspi.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Sep 06, 2001 at 10:55:46AM -0400, Brian Waite wrote:
+Hi,
 
-> I am playing with the MVME5100 and I am having a bit of trouble with booting
-> using bugboot and an initrd. I get a message at bootup saying initrd > 16 MB
-> and then as it is booting it gets an oops in mem_init.
-[snip]
-> My question is is the failure due to the bootloader not relocating the initrd
-> or is it that ClearPageReserved() is being called when the initrd is in
-> FLASH? Any ideas?
+I successfully compiled ppp-2.4.0 for my walnut board.
+But each time, i start "pppd", i have the following messages :
 
-Right now, we only see if we need to relocate the initrd if we need to relocate
-the kernel.  I'll go and fix this (I think gemini has the right idea).
+[root@maquette405GP /]# pppd call dialout
+mapped database of hash_size 128 map_size=8192
+bad magic 0x00000000 in free list
+tdb_allocate failed for size 17
+tdb_store failed: Success
+bad magic 0x00000000 in free list
+tdb_allocate failed for size 33
+tdb_store failed: Success
+bad magic 0x00000000 in free list
+tdb_allocate failed for size 23
+tdb_store key failed: Success
+bad magic 0x00000000 in free list
+tdb_allocate failed for size 51
+tdb_store failed: Success
+bad magic 0x00000000 in free list
+tdb_allocate failed for size 17
+tdb_store key failed: Success
+bad magic 0x00000000 in free list
+tdb_allocate failed for size 63
+tdb_store failed: Success
+Dialling
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+I can dial-out with no problem, but i cant dial-in on my Walnut board.
+I suppose it's due to the previous messages.
+Does anyone met this pb ? (I'm running linux_2.4.2-mvista_010412 kernel)
+Thanks
+
+Phil
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
