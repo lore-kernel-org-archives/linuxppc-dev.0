@@ -1,26 +1,56 @@
-Message-ID: <002101c3e9d3$39f05990$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Fw: 2.6.0 Kernel
-Date: Mon, 2 Feb 2004 16:26:28 -0500
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20040202213949.30276.qmail@web40408.mail.yahoo.com>
+Date: Mon, 2 Feb 2004 13:39:49 -0800 (PST)
+From: Todd <to_dd@yahoo.com>
+Subject: ppcboot boot-up question
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have been using the 2.4.xx kernels successfully.  I recently downloaded
-2.6.0 to begin playing with it.  All compiles happily until I get to UART.c.
-The compilation fails with many errors, for instance:
+I'm using PPCBoot 2.0.0
+I have my PPC 750 setup to delay for 5sec then boot
+from the DiskOnChip.  This works properly, as long as
+I have an active serial connection to the board.
+However, I've noticed that if there is not an active
+serial connection to the board, the autoboot function
+will not work.  If I reset the board, with no serial
+connection, then start minicom after 10 seconds I
+always find the following:
 
-uart.c:2920 request for member 'tx_bd_base' in something that is not a
-structure or union
+=> AT S7=45 S0=0 L1 V1 X4 &c1 E1 Q0
+syntax error
+=>
 
-I suspect I'm missing something obvious that has changed in the include file
-structure, but I haven't done anything beyond 'make menuconfig'
+Does anyone know what I am doing wrong??
 
-Any ideas?
+These are my environmental variables:
+
+baudrate=9600
+preboot=
+clocks_in_mhz=1
+hostname=spyder
+ethaddr=00:c0:e5:10:0:99
+serverip=10.1.1.107
+gatewayip=10.1.1.1
+ipaddr=10.1.1.28
+netmask=255.255.255.0
+nfs_bootfile=gesppc2
+doc_bootfile=no_nfs_pImage
+bootdelay=5
+rootpath=/opt/timesys/linux/4.0/gesppc2/rfs
+bootcmd=docboot 6000000 0
+bootargs=root=/dev/nftla1 rw
+ip=10.1.1.28::10.1.1.1:255.255.255.0:spyder:eth0:off
+autostart=yes
+autoload=yes
+stdin=serial
+stdout=serial
+stderr=serial
+
+Environment size: 438/4092 bytes
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
