@@ -1,40 +1,36 @@
-Date: Tue, 8 Apr 2003 18:36:30 +0200 (CEST)
-From: Marius Groeger <mag@sysgo.de>
-To: Mark Hatle <fray@mvista.com>
-Cc: Erik Christiansen <erik@dd.nec.com.au>, Darin.Johnson@nokia.com,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: glibc vs. newlib
-In-Reply-To: <3E911523.5050607@mvista.com>
-Message-ID: <Pine.LNX.4.52.0304081831450.3191@mag.devdep.sysgo.de>
-References: <F0B628F30F48064289D8CCC1EE21B7A80C4869@mvebe001.americas.nokia.com>
- <3E8E31AD.3050302@mvista.com> <20030407014717.GA742@dd.nec.com.au>
- <3E911523.5050607@mvista.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 08 Apr 2003 18:42:30 +0200
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: RE: mpc8xx DCBZ (&friends) hw bug. Tests, analysis + conclusions.
+In-reply-to: <3E92F80C.1020409@slac.stanford.edu>
+To: Till Straumann <strauman@slac.stanford.edu>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Tom Rini <trini@kernel.crashing.org>,
+	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLCENJFLAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 7 Apr 2003, Mark Hatle wrote:
+> Joakim Tjernlund wrote:
+>
+> Why not tag MD_EPN with an unused CASID?
 
-> looks promising.  For a more traditional linux system, glibc is
-> truely the only way to do it.  (With special tools you can
-> dramatically reduce the size of glibc, but not as far as most people
-> would like.)
+That won't work, will it? Your test report said that the CASID
+bits were set/reset by dcbi and dcbz? Did I missunderstand something?
 
-This kind of size reduction (aka. "optimisation") sounds sort of scary
-to me. Glibc is a big and complicated beast (look, for instance, at
-the rather loose ties by which the libnss-stuff is held together). You
-seem to have some experience here. Can you seriously recommend this
-for _production_ software?
+Also, the tagging procedure will require more than 2 instructions, I think.
 
-Regards,
-Marius
+I tried to use the VALID bit in MD_EPN, but that does not work.
 
------------------------------------------------------------------------------
-Marius Groeger           SYSGO Real-Time Solutions AG       mgroeger@sysgo.de
-Software Engineering     Embedded and Real-Time Software    www.sysgo.de
-Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
-FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
+One thing I noticed is that I can remove M_CASID and M_EVALID copy in the DTLB Error
+handler without any visible problems. Why are they needed?
+
+ Jocke
+>
+> -- Till
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
