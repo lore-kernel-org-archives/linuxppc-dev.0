@@ -1,44 +1,34 @@
-From: Subodh Nijsure <subodh@best.com>
-Message-Id: <200103290653.WAA01744@shell9.ba.best.com>
-Subject: DPRAM parameters for 860P
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Thu, 29 Mar 2001 13:54:43 +0530 (IST)
+From: "Srinivas Rao.M" <msrao@vxl.co.in>
 To: linuxppc-embedded@lists.linuxppc.org
-Date: Wed, 28 Mar 2001 22:53:59 -0800 (PST)
+Subject: how to get the size of a code section.
+Message-ID: <Pine.SCO.3.91.1010329135156.28750D-100000@vayudoot>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hello to all,
 
-Currently the 2.4.2 code assumes that DPRAM is always 4KB has anybody
-put together m8xx_cpm_dpalloc() that takes advantage of larger DPRAM on 860P?
 
-->From arch/ppc/kernel/8xx_io/commproc.c
+ I want to know how do you know the size of a section. suppose if i
+declare a section ".code_in_cache" , is there any C instruction or
+Assembly instruction to know the size of this section. ??
 
-/* The dual ported RAM is multi-functional.  Some areas can be (and are
- * being) used for microcode.  There is an area that can only be used
- * as data ram for buffer descriptors, which is all we use right now.
- * Currently the first 512 and last 256 bytes are used for microcode.
- */
-#define CPM_DATAONLY_BASE   ((uint)0x0800)
-/*#define CPM_DATAONLY_SIZE ((uint)0x0700)*/
-
-/* Above definition assumes we have 4KB DPRAM but 860P has 8KB, so
- * we experiment.  My RCCR , RMDS says DATA size of 0x3400 is safe
- */
-
-#define CPM_DATAONLY_SIZE   ((uint)0x3400)
-#define CPM_DP_NOSPACE      ((uint)0x7fffffff)
+thanks in advance,
+Srini...
 
 
 
-I have been running my system  with above configuration for couple of days
-without any problems. Are there any side effects I should be aware of?
+--
 
-2. Anybody knows if  there a driver currently that uses the 8xx IDMA
-to transfer data from a peripheral to CPU and back?
+We are responsible for what we are, and whatever we wish ourselves to be, we
+have the power to make ourselves. If what we are now has been the result of
+our own past actions, it certainly follows that whatever we wish to be in
+future can be produced by our present actions; so we have to know how to act.
+-Swami Vivekananda
 
-/Subodh Nijsure
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
