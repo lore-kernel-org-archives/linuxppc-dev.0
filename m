@@ -1,34 +1,34 @@
-Date: Mon, 1 Mar 1999 09:57:47 +1100
-Message-Id: <199902282257.JAA01459@tango.anu.edu.au>
+Date: Mon, 1 Mar 1999 10:18:36 +1100
+Message-Id: <199902282318.KAA01501@tango.anu.edu.au>
 From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: mlan@cpu.lu
+To: costabel@wanadoo.fr
 CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <199902282049.VAA06261@piglet.cpu.lu> (message from Michel
-	Lanners on Sun, 28 Feb 1999 21:49:19 +0100 (CET))
+In-reply-to: <36D6E58B.947AFE39@wanadoo.fr> (message from Martin Costabel on
+	Fri, 26 Feb 1999 19:18:51 +0100)
 Subject: Re: 2.2.2 compilation errors
 Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <199902282049.VAA06261@piglet.cpu.lu>
+References: <XFMail.990226173323.gdt@linuxppc.org> <36D6E58B.947AFE39@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Lanners <mlan@cpu.lu> wrote:
+Martin Costabel <costabel@wanadoo.fr> wrote:
 
-> I get errors in drivers/scsi/scsi_error.c like this:
-> 
-> scsi_error.c: In function `scsi_error_handler':
-> scsi_error.c:1975: structure has no member named `owner'
-> 
-> The structure it complains about is struct semaphore, as defined in
-> include/asm/semaphore.h
-> 
-> Now, for PPC, we have a different (simpler) definition of struct
-> semaphore, lacking some of the members that i386 has. Obviously, these
-> members are referenced in drivers/scsi/scsi_error.c.
+> I am of course sorry about this, but I have an excuse. What I wrote
+> comes directly from the source. I quote:
+[snip]
+> /*
+>  * SMP- and interrupt-safe semaphores..
+>  *
+>  * (C) Copyright 1996 Linus Torvalds
+>  * Adapted for PowerPC by Gary Thomas and Paul Mackerras
+>  */
 
-Linus put in the owner and owner_depth fields in struct semaphore
-late in the 2.1 series, and then took them out again for 2.2.2.  You
-must have an old copy of scsi_error.c.
+Since semaphore-helper.h consists of material taken from the old
+semaphore.h, I just took the copyright notice from semaphore.h and put
+it on the top of semaphore-helper.h.  I don't know whether there are
+actually any lines of code written by Gary in semaphore-helper.h, but
+I don't think that matters particularly.
 
 Paul.
 
