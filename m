@@ -1,30 +1,38 @@
-Message-ID: <3B7AA722.14577224@mvista.com>
-Date: Wed, 15 Aug 2001 12:45:22 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <20010815171135.24478.qmail@web20005.mail.yahoo.com>
+Date: Wed, 15 Aug 2001 10:11:35 -0700 (PDT)
+From: Raghava Raju <vraghava_raju@yahoo.com>
+Subject: panic...
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: Cindy Peters <cinpet@adaptivemicro.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PCMCIA/IDE transfer rates
-References: <41EDEC3C1B88D51186EB00A0C9CFADF702FA44@AMWMAIL>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Cindy Peters wrote:
->
-> Does anyone know approximately what the transfer rates (peak and
-> sustainable)  would be for a PCMCIA/IDE hard disk on an MPC823?
+Hi,
 
-Ummm...slow :-).
+      1)I have to access the contents of program
+counter and stack pointer in panic() function. Above
+values should be describing the location where panic
+happened.
 
-It's all programmed I/O, so it depends upon the PCMCIA timing and
-the capability of the disk.  People I have talked to that use this
-configuration were never concerned about the speed, but rather needed
-the additional storage space.  It certainly isn't workstation/server
-performance :-).
+      2)Similarly I have  to access registers values
+after entering "die" function in
+arch/ARCH/kernel/traps.c . Here pt_regs being passed
+to this function does't seems to be containing all the
+registers.Registers which are missing ex: special
+purpose registers etc..
+
+       3) Is it that in "2)" fields defined in pt_regs
+are enough to describe the state of process
+completely. Hence no purpose of accessing the remainig
+registers.
+
+	Any advice and pointers would be helpful.
 
 
-	-- Dan
+      Thankyou.
+      Raj.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
