@@ -1,37 +1,38 @@
-From: "Stefan Roese" <stefan.roese@esd-electronics.com>
-To: "=?iso-8859-1?Q?David_M=FCller_=28ELSOFT_AG=29?=" <d.mueller@elsoft.ch>,
-	"andrew may" <acmay@acmay.homeip.net>
-Cc: "Armin" <akuster@pacbell.net>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 405 MII-PHY communication problem (was: Re: PPC405gp enet Soft Reset)
-Date: Wed, 13 Feb 2002 16:15:50 +0100
-Message-ID: <EFEAIMDCOOOHIEPHDNFJOENHDKAA.stefan.roese@esd-electronics.com>
+Message-ID: <E1836A7F3557D311A14000805F9F36FC01518848@usdfo011.usac.danfoss.net>
+From: "Pergola, Michael" <MichaelPergola@Danfoss.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: parse error before `i2c_rpx_exit'
+Date: Wed, 13 Feb 2002 17:15:56 +0100
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <3C6A25BC.7010704@elsoft.ch>
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David,
+All,
 
-just to let you know:
+I am using HHL 1.2 Linux Kernel version 2.2.14 on an Embedded
+Planet MPC823e platform. When attempting to integrate my PPC
+kernel with I2C-2.6.2 I get the following error:
+  i2c-rpx.c:123: parse error before `i2c_rpx_exit'
+  i2c-rpx.c:124: warning: return-type defaults to `int'
+  i2c-rpx.c: In function `i2c_rpx_exit':
+  i2c-rpx.c:126: warning: control reaches end of non-void function
 
-We have PPC405GP Rev D & Rev E running @ 198 MHz with Intel LXT971LE @
-address 0, and seem to have none of your described problem:
+The offending lines of code in i2c-rpx.c are:
+  void __exit i2c_rpx_exit(void)
+  {
+        i2c_8xx_del_bus(&rpx_ops);
+  }
 
-=> mii info
-PHY 0x00: OUI = 0x04DE, Model = 0x0E, Rev = 0x01, 100baseT, FDX
-read err 3
-a2: read: EMAC_STACR=0xffffc023, i=3
-read err 3
-a2: read: EMAC_STACR=0xffffc043, i=3
-read err 3
+What could be causing this error? Everything looks OK to me.
 
-etc...
-
-Stefan Roese
+Regards,
+     Michael Pergola
+     Software Engineer
+     Danfoss Air-Conditioning & Refrigeration Division
+     7941 Corporate Blvd.
+     Baltimore, MD  21236     (410) 931-6778 x4259
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
