@@ -1,26 +1,23 @@
 From: Cort Dougan <cort@fsmlabs.com>
-Date: Thu, 2 May 2002 10:12:57 -0600
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
-	Robert E Brose II <bob@kunk.jriver.com>,
+Date: Thu, 2 May 2002 10:14:32 -0600
+To: Robert E Brose II <bob@kunk.jriver.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
 	linuxppc-dev@lists.linuxppc.org
 Subject: Re: Dual G3's in Umax S900?
-Message-ID: <20020502101257.C26017@host110.fsmlabs.com>
-References: <8x1ycu1yp4.fsf@olof.informatik.uni-bremen.de> <20020502131439.13109@smtp.adsl.oleane.com>
+Message-ID: <20020502101432.D26017@host110.fsmlabs.com>
+References: <20020502131439.13109@smtp.adsl.oleane.com> <20020502153458.10004.qmail@kunk.jriver.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020502131439.13109@smtp.adsl.oleane.com>; from benh@kernel.crashing.org on Thu, May 02, 2002 at 03:14:39PM +0200
+In-Reply-To: <20020502153458.10004.qmail@kunk.jriver.com>; from bob@kunk.jriver.com on Thu, May 02, 2002 at 10:34:58AM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Those are definitely not SMP chips.  The lack of the tlbie broadcast is a
-killer.  I did some work with a dual 750 and implemented the software
-broadcast in software (the code is still in the kernel - but unused) and it
-was a nightmare of inefficiency.  In most benchmarks it turned out to be a
-net negative to use the second processor.
+You're good to go with the 604's.  They're sane PPC's.  The 750's were the
+only ones that got involved with the no-SMP whackiness.
 
-Please... please, make the world a safer place for us on the verge of
-insanity OS people and don't do a SMP 750!
+} I assume then that the 604e has what's needed because IBM has RS6ks with
+} multiples of these??
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
