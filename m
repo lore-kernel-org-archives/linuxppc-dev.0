@@ -1,38 +1,50 @@
-From: "Chris Backas" <cbackas@rcn.com>
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Date: Thu, 13 Jul 2000 09:03:10 -0400 (EDT)
-Reply-To: "Chris Backas" <cbackas@bigfoot.com>
-In-Reply-To: <20000713085324.18396@mailhost.mipsys.com>
+Message-ID: <396DCBCB.A4A574C8@erols.com>
+Date: Thu, 13 Jul 2000 10:01:47 -0400
+From: Nelson Abramson <pogtal@erols.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: Re: iBook woes
-Message-Id: <E13CjFi-0007hP-00@smtp01.mrf.mail.rcn.net>
+To: Taylor Holliday <wtholliday@ucdavis.edu>
+CC: Linux PPC Developer List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Xfree 4.0.1 dual head attempt
+References: <396D1C7B.AA6864F5@ucdavis.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 13 Jul 2000 10:53:24 +0200, Benjamin Herrenschmidt wrote:
+Taylor Holliday wrote:
 
+> Hi all
 >
->>what does cat /dev/sndstat say ?
->>you should also find some lines in dmesg with "DMA sound" stuff in them...
->>
->>I'd be interested to know what soundchip you have (AWACS version or is it a
->>Burgundy) etc.  which you can either find from those entries or from the
->>MacOS side...
+> Attached is the latest XFree86.0.log as well as the XF86Config from my
+> recent build (yesterday) of 4.0.1 with the drivers rsync'ed from
+> penguinppc.org. Hey, at least it doesn't crash the machine (AGP G4, 2
+> r128) :-). Any suggestions on what to do or where to start debugging?
 >
->The iBook don't have an AWACS derivative. It's a different chip. The
->basic DBDMA operations are the same, but all the controls go thru an i2c
->bus. There's a driver for it in Darwin but not yet in Linux (but someone
->is working on it).
+> <snip>
+> (==) Implicit Core Pointer: Buttons: 3
+> (II) Keyboard "Implicit Core Keyboard" handled by legacy driver
+> (II) XINPUT: Adding extended input device "Implicit Core Pointer" (type: MOUSE)
+> Couldn't load XKB keymap, falling back to pre-XKB keymap
 >
->Ben.
+> Fatal server error:
+> Caught signal 11.  Server aborting
+>
+> <snip>
+>
+>   ------------------------------------------------------------------------
+> Section "ServerLayout"
+>         Identifier     "DualHead"
+>         Screen         "Screen0"
+>         Screen         "Screen1" RightOf "Screen0"
+> #       InputDevice    "Mouse0" "CorePointer"
+> #       InputDevice    "Keyboard0" "CoreKeyboard"
+> EndSection
 
-So I take it this means sound won't be working for awhile =)
+<snip>
 
-Any ideas on the video problems I described then?  I find that more important anyway.
+This may be a stupid question, but why have you commented out your input devices?
 
-Chris Backas
+--Nelson Abramson
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
