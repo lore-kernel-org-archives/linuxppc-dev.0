@@ -1,52 +1,47 @@
-Message-Id: <l03130300b4afbdf43e5f@[24.218.140.90]>
-In-Reply-To: <3889ABF5.CB8BD5AA@erols.com>
-References: <l03130300b4aef8bd7dd2@[24.218.140.90]>
+Date: Sat, 22 Jan 2000 14:54:52 -0600
+From: anthony tong <atong@uiuc.edu>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+Cc: khendricks@ivey.uwo.ca, linuxppc-dev@lists.linuxppc.org,
+        linux-fbdev@vuser.vu.union.edu
+Subject: Re: [linux-fbdev] Re: Fwd: Re: still no accelerated X ($#!$*)
+Message-ID: <20000122145451.A26894@rogue.genunix.net>
+References: <00012021232600.07340@localhost.localdomain> <20000121151511.029555@mailhost.mipsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 22 Jan 2000 15:11:38 -0500
-To: Nelson Abramson <pogtal@erols.com>
-From: "Michael R. Zucca" <mrz5149@acm.org>
-Subject: Re: Stock 2.2.14 won't boot
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20000121151511.029555@mailhost.mipsys.com>; from bh40@calva.net on Fri, Jan 21, 2000 at 03:15:11PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 8:09 AM -0500 1/22/00, Nelson Abramson wrote:
->"Michael R. Zucca" wrote:
+Benjamin Herrenschmidt (Fri, Jan 21, 2000 at 03:15:11PM +0100):
+> On Thu, Jan 20, 2000, Kevin Hendricks <khendricks@ivey.uwo.ca> wrote:
+> >Okay, I went and looked at the latest aty128fb.c code and it does not use
+> >eieio
+> >anywhere.  I looked at ealier verions of this file and it at one time had
+> >eieio
+> >but they have since been removed.
+> >
+> >I also looked and the endian conversion routines do not use the output
+> >contraint approach you took but do include the memory clobber on the writes.
 >
->> I've compiled a stock (ftp.us.kernel.org) 2.2.14 with different stuff in
->> and out. While it seems to compile just fine I can't seem to get it to boot.
->>
+> I just looked at atyfb.c and aty128fb.c in my source tree (atyfb is
+> 2.2.14 one and aty128fb is the latest backport done by atong) and neither
+> uses eieio nor mb(), wmb(), ...
 >
->Do you get any make errors?
+> This looks bogus to me. I've spotted a few cases where those calls should
+> be in.
+>
+> We can either put the eieio back in the access functions (less optimal,
+> but we can also fix the constraints to get rid of the memory clobber as
+> discussed previously), or we can fill the code with carefuly placed mb()
+> and wmb() but this requires more knowledge of the chipset than I actually
+> have.
+>
+> I'll put back eieio() in the access macros for my kernels until a
+> definitive answer pops up on this issue.
 
-No errors during make, otherwise I wouldn't have a kernel to boot :-)
-
->What fails during boot..?
-
-BootX switches to the black screen where it informs me of the kernel
-version and a few address offsets (like video address, etc.) All of this is
-normal. It just hangs there and doesn't progress.
-
->What are you
->configuring into the kernel that is causing it to fail...?
-
-Nothing especially spectacular. 604, PowerMac, ati framebuffer, bootX
-console support, pmac serial support, pmac floppy support, vga console,
-mace ethernet, adaptec PCI scsi support, internal SCSI support (53C support
-not the other kind), DMA sound for awacs, some file systems, PPP, etc.
-
-I'm not compiling in anything I haven't in past versions.
-
-I am booting off of a drive attached to the PCI scsi card but that
-shouldn't matter as this works fine from older kernels.
-
-____________________________________________________________________
- Michael Zucca - mrz5149@acm.org - http://www.mdc.net/~mrz5149/
- "I will choose a path that's clear. I will choose Freewill. "
-  --Rush, Freewill
-____________________________________________________________________
+I must have missed when these were taken out; does anyone know the reason
+why it was done?
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
