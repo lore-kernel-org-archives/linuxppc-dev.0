@@ -1,38 +1,36 @@
-To: Sylvain Munaut <tnt@246tNt.com>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: mpc5xxx support (Was: Re: Proposed Kconfig update patch for help text) 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 02 Apr 2004 01:35:58 +0200."
-             <406CA75E.2070508@246tNt.com>
-Date: Fri, 02 Apr 2004 18:56:41 +0200
-Message-Id: <20040402165646.DF4F1C10B8@atlas.denx.de>
+From: linas@austin.ibm.com
+Date: Fri, 2 Apr 2004 11:02:39 -0600
+To: "Christopher R. Johnson" <cjohnson@gcctech.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: General question about caching
+Message-ID: <20040402110239.A58706@forte.austin.ibm.com>
+References: <406D92CF.8040302@gcctech.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <406D92CF.8040302@gcctech.com>; from cjohnson@gcctech.com on Fri, Apr 02, 2004 at 11:20:31AM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <406CA75E.2070508@246tNt.com> Sylvain Munaut wrote:
+On Fri, Apr 02, 2004 at 11:20:31AM -0500, Christopher R. Johnson wrote:
 >
-> I'm planning on just ignoring the Motorola code since there apparently
-> are problem with it ( I though that the motorola update was planned for
-> mid-feb but ... ) , I was just gonna implement something very simple
-> that just does what it need for the linux drivers to work cleanly and
-> properly.
+> I have a tight footprint, and no swapping (in fact no disks).  I notice
+> that /proc/meminfo reports:
+...
 
-Let's rather co-operate with Motorola on this instead working against
-them. At least give them a chance.
+> I only have rom and ram-based file systems, so I believe that disk
+> caching could and maybe should be reduced to use less space.  Can I
 
-I guess they will show up here soon...
+Why?  What's wrong with the way it is?  Is it impacting performance?
+Thrashing?  I can see a vague argument that its (nearly) pointless
+to cache buffers from ramdisk ... but it would take some work to flesh
+out this argument.
 
+That said, you can play with parameters in /proc/sys/vm although
+none of those directly affect the buffer cache size.  Indirectly,
+setting the flush times to zero might shrink the effective buffer
+cache, though... maybe. And it might hurt performance, maybe ...
 
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The greatest threat towards future is indifference.
+--linas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
