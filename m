@@ -1,32 +1,19 @@
-Return-Path: <markc@mail.com>
-Received: from relay03.roc.ny.frontiernet.net (relay03.roc.ny.frontiernet.net
-	[66.133.131.36]) by ozlabs.org (Postfix) with ESMTP id 4C1932BEA0
+Return-Path: <wd@denx.de>
+Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
+	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id DE1642BEA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  6 Nov 2004 02:07:26 +1100 (EST)
-Received: from filter01.roc.ny.frontiernet.net
-	(filter01.roc.ny.frontiernet.net [66.133.131.176])
-	by relay03.roc.ny.frontiernet.net (Postfix) with ESMTP id A6B82192128
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 Nov 2004 15:07:21 +0000 (UTC)
-Received: from relay03.roc.ny.frontiernet.net ([66.133.131.36])
-	by filter01.roc.ny.frontiernet.net (filter01.roc.ny.frontiernet.net
-	[66.133.131.176]) (amavisd-new, port 10024)
-	with LMTP id 15793-02-12 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 5 Nov 2004 15:07:21 +0000 (UTC)
-Received: from chuck2 (170-215-154-178.br1.rmn.wv.frontiernet.net
-	[170.215.154.178])
-	by relay03.roc.ny.frontiernet.net (Postfix) with ESMTP id 7D95119292C
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 Nov 2004 15:07:00 +0000 (UTC)
-Message-ID: <005a01c4c349$7949b8c0$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: <linuxppc-embedded@ozlabs.org>
-References: <065ACD8E84315E4394C835E398C8D5EB9E97EB@COSSMGMBX02.email.corp.tld>
-Date: Fri, 5 Nov 2004 10:09:18 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Re: Handling power failure - MPC5200
+	Sat,  6 Nov 2004 02:34:26 +1100 (EST)
+To: "=?iso-8859-1?Q?J=F3n_Benediktsson?=" <jonb@marel.is>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 05 Nov 2004 14:13:51 GMT."
+	<OF5D3B44B5.3530BFCD-ON00256F43.0035B584-00256F43.004E2C6C@marel.is>
+Date: Fri, 05 Nov 2004 15:32:18 +0100
+Sender: wd@denx.de
+Message-Id: <20041105143223.52CDFC1430@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Handling power failure - MPC5200 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,30 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> > > Capacitors on the supply provide me with some
-> milliseconds to repond
-> to
-> > > power failure, which I would
-> > > like to use to do as much cleanup as possible before power is
-> > > totally gone.  In particular, I am concerned
-> >
+In message <OF5D3B44B5.3530BFCD-ON00256F43.0035B584-00256F43.004E2C6C@marel.is> you wrote:
+>
+> > Use the standard methods: use the CF card read-only  (many  CF  cards
+> > can  be  damaged  [beyond  repair]  when  you power off while a write
+> > operation is in progress).
+> 
+> Is this an acknowledged fact by CF manufacturers or based on experiece ?
 
->What I've seen is marketing bullet points saying the cards can survive a
-power loss event with no loss of data, but when I read the >detailed CF
-specification, the disclaimer was that power had to be held up for X mSec (I
-forgot what X was, 2mSec or 10mSec most >likely) after the last write
-operation.  The marketing bullet point was exactly that: marketing.  The
-real requirement levied on the user
->(you) was that you had to have X mSec power hold up after the last write
-operation (i.e. a X mSec power fail warning with no write >operations after
-the PF warning).  The hold-up requirement gave the CF internals enough time
-to complete a flash write cycle.
+You mean acknowledged officially in writing on letterhead paper?  No.
+Inofficially: yes.
 
-One simple use for the power fail interrupt would be to just turn off
-interrupts and loop until power fail.
-This would insure that a write or erase operation completed fully.
-P.S. Don't forget to cover the situation where power comes back rather than
-going all the way down!
+Also many people have confirmed this behaviour, at least on the cheap
+"standard" (versus "industrial grade") CF cards.
 
-Mark Chambers
-wvcomputronics.com
+I recommend to specifically ask your CF card vendor / distributor for
+a confirmation and guarantee (in writing) that it is safe to turn off
+power while writing to the device. Guess what you will get?
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+See us @ Embedded/Electronica Munich, Nov 09 - 12, Hall A.6 Booth 513
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"The whole world is about three drinks behind."     - Humphrey Bogart
