@@ -1,46 +1,33 @@
-Message-ID: <3DD15CFE.9060602@mvista.com>
-Date: Tue, 12 Nov 2002 13:56:46 -0600
-From: Mark Hatle <fray@mvista.com>
-MIME-Version: 1.0
-To: joakim.tjernlund@lumentis.se
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>,
-	alan@lxorguk.ukuu.org.uk
-Subject: Re: ppc_8xx-gcc 2.95.3 Monta Vista does not do ANY loop unrolling
-References: <IGEFJKJNHJDCBKALBJLLAEPBFHAA.joakim.tjernlund@lumentis.se>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: Accessing nvram rom the linux users space
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+To: moleschi@rmsweldingsystems.com
+Cc: "Wright, David" <dwright@infiniswitch.com>,
+	Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <3DD15BF9.6050500@rmsweldingsystems.com>
+References: 
+	<3D296C067098F149B11A8F4FC37C05462F21DD@EXVS1.ops.infiniswitch.com>
+	<3DD15BF9.6050500@rmsweldingsystems.com>
+Content-Type: text/plain
+Date: 12 Nov 2002 21:21:43 +0100
+Message-Id: <1037132504.15662.42.camel@spawn>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- From one of our compiler guys in relationship to your original question:
-
- > Later Alan Cox pointed out that my changes makes x86 run slower and it turns
- > out that on x86 and a fairly new gcc will automatically unroll loops 'where
- > appropriate'
-
-Fairly new: 3.3-pre only.
-
-Now I wonder:
- > Is this a gcc 2.95.3, PPC or Monta Vista limitation?
-
-2.95.3.
-
- > Which compiler will do unrolling 'where appropriate' for 8xx PPC and
- > Where can I get a precompiled version?
-
-Nowhere, nor is using it for your kernels necessarily a good idea if
-you don't have compiler experience.
-
-> I know Dan is handling the enet stuff, but since you both work
-
-Dan no longer works for MontaVista.  (And has not for some time now.)
-
-> for MV(don't you?) I figured you might know, being an insider and all :-)
+On Tue, 2002-11-12 at 20:52, Mike Moleschi wrote:
 >
-> Maybe your tweak stuff could make use of forced unrolling?
->
->  Jocke
+> I guess it has to be a disk in that I would like to have a file
+> system on it and move files around on it -- basically I want to
+> be able to treat it like a disk from a command line perspective.
+
+Good luck finding any filesystem that works on 32kB.
+
+--
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 404 71 83
+Borgafjordsgatan 9                Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
