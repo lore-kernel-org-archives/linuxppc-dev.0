@@ -1,56 +1,109 @@
-Message-ID: <20000208233709.17120.qmail@web1001.mail.yahoo.com>
-Date: Tue, 8 Feb 2000 15:37:09 -0800 (PST)
-From: Dan Bethe <dan_bethe@yahoo.com>
-Subject: the state of the linuxppc-dev community
-To: dan_bethe@yahoo.com
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <38A0AE0D.2EB99353@zeta.org.au>
+Date: Wed, 09 Feb 2000 11:00:13 +1100
+From: Peter Allworth <linsol@zeta.org.au>
 MIME-Version: 1.0
+To: Jesper Skov <jskov@redhat.com>
+CC: duncanp@research.canon.com.au, linuxppc-embedded@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Low memory problems in 8xx Linux
+References: <20000201235813.4F5611B51A@elph.research.canon.com.au> <38977960.40E014A1@zeta.org.au> <ot1z6of1ws.fsf@thinktwice.zoftcorp.dk>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Jesper Skov wrote:
+>
+> >>>>> "Peter" == Peter Allworth <linsol@zeta.org.au> writes:
 
-> So what exactly is the problem? The 2.2.12 source? The .config? The fact
-> that LinuxPPC developers appear to break the GPL by not dropping a fresh
-> source tarball along each kernel binary?
+<snip>
 
-	I happen to know the problem shared by Gabe, me, and anyone else primarily
-concerned with the stability, robustness, and ease of use of the whole LinuxPPC
-distribution and community authority.
-	The problem is that LinuxPPC.org has a development environment that is
-splintered, unstable, undocumented, obscure, nonintuitive, and basically
-impenetrable even to people who are fully dedicated to it such as Gabe and
-myself.  It is run almost exclusively on tribal knowledge that is only in the
-heads of the people who are writing the ppc-specific core of the OS.  There are
-no procedures and no interface.  And there is very little respect toward people
-like me and Gabe who have the time, dedication, and skills to clean it all up.
-	First, obviously, we have to map out how everything currently is, before we
-could even suggest anything better.  But because 90% of the responses we get
-are either dead silence or asinine arguments like yours, we are slowly getting
-nowhere.  The remaining 10% are the responses of a mob cheering us on just for
-having pointed out the silly state of the maintenance of LinuxPPC.
-	We have definately produced deeds rather than just words.  Gabe is a primary
-maintainer of Stampede Linux (www.stampede.org), and is working on porting
-Stampede to PPC; and I've accepted jhaas's request to be the primary maintainer
-of LinuxPPC security and of LinuxPPC Powerbook support.  We both use LinuxPPC
-on Powerbook for 99% of our daily work.
-	We are capable of contributing to organizing the random mess that is the
-LinuxPPC dev community, and tremendously boosting the quality of the product by
-making the community accessible to a lot more people.  There are dozens more
-likeminded individuals in the linuxppc-user community, who just haven't yet
-addressed the root of the issue -- the developers and the distribution
-maintainers who are simply incredibly brilliant but disorganized.  I get
-private emails from end users, cheering on anyone who makes an organizing move.
-	BUT until I hear from the Head Honchos -- jcarr, jhaas, and at least some of
-linuxppc's main kickass developers -- I'm not going to fork from linuxppc.org
-just to have an organized environment.  We're professionals.  This is an
-extremely high quality product who deserves better documentation than random
-bulk mailing list searches, and better distribution than a hundred random files
-in random ftp sites all over the world.
+> Peter> If you need the MMU patches straight-away, I've put them on
+>
+> Peter> http://www.zeta.org.au/~linsol
+>
+> Peter> They only work against cllf-2.2.13 for now. Marcus Sundberg has
+> Peter> sent me a revised patch which should work for other 2.2 kernels
+> Peter> (caveat emptor).  I'll try to add that asap.
+>
+> Peter and Duncan,
+>
+> The 2.2.13 patch you posted was slightly (but critically) wrong, if
+> I'm not mistaken. The value updated in memory was not reloaded into
+> r21 which is where the code below this snipped expects to find the
+> value.
+>
+> This patch should do the trick. At least my kernel seems to work.
 
-=====
-"Don't expect your own messiah; this neverworld which you desire is
-only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
+Jesper,
+
+Which kernel are you using and which patch file?
+(Please double-check the readme.txt file.)
+
+My http://www.zeta.org.au/~linsol directory contains two versions of the
+patch to head.S. If you are using cllf-2.2.13 which includes the use of
+r21 as you've described, then use "head.S-patch".
+
+Marcus Sundberg provided the other file "head.S.non-cllf" which is
+for older kernels that used r20 for the pte and didn't do the update
+of the GUARDED bit. (I need to change the names in the diff headers
+to make this clearer.)
+
+You are wise to be cautious, however.
+Neither Marcus (as far as I know) nor I have tested "head.S-non-cllf".
+(Also, having just taken a second look at the file, I notice it doesn't
+include all of the changes so I'd regard it as informational only.)
+
+As for optimising away the _PAGE_PRESENT test, I haven't thought through
+whether that can be done or not. It's a couple of weeks since I made the
+change and the whole think is definitely a quick-and-dirty fix
+(no pun intended). What I was trying to avoid was making a reference
+to a second level page table through an invalid entry in the first level
+table. You've prompted me to take another look at this code!
+
+Cheers,
+
+PeterA.
+
+> --- head.S.orig Sat Oct 23 00:18:03 1999
+> +++ head.S      Tue Feb  8 10:34:02 2000
+> @@ -1024,6 +1024,18 @@
+>         ori     r21, r21, 1     /* Set valid bit in physical L2 page */
+>         mtspr   MD_TWC, r21     /* Load pte table base address */
+>         mfspr   r21, MD_TWC     /* ....and get the pte address */
+> +       lwz     r20, 0(r21)                     /* Get the pte */
+> +       andi.   r20, r20, _PAGE_PRESENT         /* Set cr0 if it's invalid */
+> +       beq     4f                              /* Skip update if invalid */
+> +       mfspr   r20, DSISR                      /* Check for store op */
+> +       andis.  r20, r20, 0x0200                /* If set, indicates store */
+> +       lwz     r20, 0(r21)                     /* Get the pte again */
+> +       beq     3f
+> +       ori     r20, r20, _PAGE_DIRTY|_PAGE_HWWRITE /* Set the dirty flags */
+> +3:
+> +       ori     r20, r20, _PAGE_ACCESSED        /* Set the accessed flag */
+> +       stw     r20, 0(r21)                     /* Update the pte */
+> +4:
+>         lwz     r21, 0(r21)     /* Get the pte */
+>
+>         /* Set four subpage valid bits (24, 25, 26, and 27).
+>
+> An alternative and slighly faster implementation might be to skip the
+> _PAGE_PRESENT check. Any reason something like this wouldn't work?
+>
+>         ori     r21, r21, 1     /* Set valid bit in physical L2 page */
+>         mtspr   MD_TWC, r21     /* Load pte table base address */
+>         mfspr   r21, MD_TWC     /* ....and get the pte address */
+>         mfspr   r20, DSISR                      /* Check for store op */
+>         andis.  r20, r20, 0x0200                /* If set, indicates store */
+>         lwz     r20, 0(r21)                     /* Get the pte again */
+>         beq     3f
+>         ori     r20, r20, _PAGE_DIRTY|_PAGE_HWWRITE /* Set the dirty flags */
+> 3:
+>         ori     r20, r20, _PAGE_ACCESSED        /* Set the accessed flag */
+>         stw     r20, 0(r21)                     /* Update the pte */
+>         mr      r21, r20        /* Get the pte */
+>
+> Cheers,
+> Jesper
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
