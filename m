@@ -1,21 +1,23 @@
-From: "Beena" <beena@gdatech.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: IBM PPC750 + Discovery II 64340
-Date: Wed, 18 Feb 2004 12:10:47 -0800
-Message-ID: <FFELLIHDBBOAPGLCBDIPKEKNCDAA.beena@gdatech.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-15"
-In-Reply-To: <200402181218.GAA27718@lists.linuxppc.org>
+Message-Id: <4034377A.000003.00996@RAMANAYV>
+Date: Thu, 19 Feb 2004 09:41:38 +0530
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+From: "RamanaYV" <venkataramana_y@mic.co.in>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: PPCBOOT in customised MPC860T board
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We need to port linux on a IBM PPC750 + Discovery II 64340 based board.
-Could you please suggest a stable kernel version for this?
+I was working in MPC860T customised board and trying to port linux  through
+PPCBOOT.
 
-Thanks,
-Beena
+can you give me breif guidence to boot PPCBOOT in my board and to port
+linux-2.4.19 based kernel.
 
+Thank you,
+Ramana
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
