@@ -1,38 +1,24 @@
-Message-ID: <3825AFBB.C0C30D4@schweiz.ch>
-Date: Sun, 07 Nov 1999 17:58:47 +0100
-From: Andreas Tobler <a.tobler@schweiz.ch>
-Reply-To: a.tobler@schweiz.ch
-MIME-Version: 1.0
-To: Wolfgang Haeuptli <whaeuptli@bluewin.ch>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: scanner not recognized (interrupt in idle phase?)
-References: <99110714573501.00535@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii
+Date: Sun, 7 Nov 1999 11:17:33 -0800
+Message-Id: <199911071917.LAA23859@www.geocrawler.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: BW G3 and 2.3.25
+From: "Eric Benard" <archiver@db.geocrawler.com>
+Reply-To: "Eric Benard" <ebenard@ifrance.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi all,
 
+I got the 2.3.25 kenrel source from www.kernel.org. I patched it with Ani Joshi's patch.
+Everything compiled successfully with the same settings than the 2.2.13 kernel but the kernel didn't want to load.
+I m staying on a black screen with le loading kernel ... message.
 
-Wolfgang Haeuptli wrote:
-> 
-> Hello,
-> 
-> on startup, I see this message (mesh: interrupt in idle phase?) while the system
-> checks the scsi bus. This is on a kernel 2.2.9 with sg-driver included, on a
-> performa 6400 with a UMAX Astra 1200S scanner (which works on the MacOS
-> side, b.t.w.).
-> 
-> Any scsi-crack around that could give me a pointer how to solve the problem?
-> (Do I need another low-level driver for my scsi-chip ... which would be what??)
-> 
+Is there someone here who succeded in getting this kernel booting on a B&W G3.
 
-Have you tried a stock kernel 2.2.13 from ftp.xy.kernel.org (xy for your
-prefered domain ,ch ,de, uk...)
-I have no scanner but I noticed the following page which refers to a
-'new' sg driver. This driver should be in since 2.2.6. www.torque.net/sg.
-Maybe this is a hint...
+Thank you very much
 
-Andreas
+Eric
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
