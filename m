@@ -1,69 +1,74 @@
-Date: Fri, 18 Jun 2004 10:17:07 +0100
-From: Martin Habets <errandir_news@mph.eclipse.co.uk>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] Make install target work
-Message-ID: <20040618091707.GA15958@palantir8>
-References: <20040616181652.GA7240@palantir8> <20040616190548.GD24479@smtp.west.cox.net> <20040617113822.GB9175@palantir8> <20040617150358.GI24479@smtp.west.cox.net>
+Date: Fri, 18 Jun 2004 12:20:44 +0200
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: Alan Cox <alan@www.pagan.org.uk>, Nicolas DET <nd@bplan-gmbh.de>,
+	linux-usb-devel@lists.sourceforge.net,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: [linux-usb-devel] [Patch] for UHCI driver (from kernel 2.6.6).
+Message-ID: <20040618102044.GA32161@pegasos>
+References: <40CDC05B.9020708@bplan-gmbh.de> <1087241757.5996.3.camel@localhost.localdomain> <20040617173454.GA5971@pegasos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040617150358.GI24479@smtp.west.cox.net>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20040617173454.GA5971@pegasos>
+From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jun 17, 2004 at 08:03:58AM -0700, Tom Rini wrote:
->
-> On Thu, Jun 17, 2004 at 12:38:22PM +0100, Martin Habets wrote:
->
-> > On Wed, Jun 16, 2004 at 12:05:48PM -0700, Tom Rini wrote:
-> > >
-> > > On Wed, Jun 16, 2004 at 07:16:52PM +0100, Martin Habets wrote:
-> > >
-> > > > This patch makes the install target work. After all, it is already
-> > > > mentioned in the 'make help' output.
-> > > > The only question is, should it install zImage by default? I always
-> > > > install vmlinux, so I used that.
-> > >
-> > > Given the number of different ways we have to deal with (this really
-> > > only handles pmac) I'd much rather just have boot/install.sh run either
-> > > the distribution or user-provided script.
+On Thu, Jun 17, 2004 at 07:34:54PM +0200, Sven Luther wrote:
+> On Mon, Jun 14, 2004 at 08:38:52PM +0100, Alan Cox wrote:
+> > On Llu, 2004-06-14 at 16:12, Nicolas DET wrote:
+> > > Also, we replace spin_lock_irqxxx/spin_unlock_irq by spin_lock/unlock
+> > > (for SMP/PREEMPT kernel) + stop/start_interrupt.
 > >
-> > Ehh.. that's exactly what install.sh tries to do! Only if both of these
-> > do not exist will the bottom part of the code be executed.
+> > This requires a lot of care to do right. Remember that on PC systems
+> > interrupts can be substantially posted. A "stop_interrupt" may prevent
+> > IRQ issue but if an IRQ is already on the PC APIC bus it will kill you
+> > later on because the IRQ delivery and PCI bus access on the PC class
+> > machines are totally asynchronous
 >
-> Right.  And it's the bits at the bottom that I don't like.
+> And what about the other part of the patch ? The one about the
+> alignement of the buffer descriptors ? Does it seem sound, should we
+> ward it with ppc specific stuff ? Is it fit to be included in the main
+> kernel ?
 
-Ok, so you'd like to fail if neither nethod is avaiable (right?). I have no
-problem with that, but realize that it causes some inconsistent behaviour
-compared to other architectures.
-Can you explain why or what you don't like, please?
+Mmm, it seems that inversing the remove_list and the list also makes the
+problem go away, or at least be less important, in :
 
-> > The distribution provided scripts want an image to install. I agree
-> > that it is impossible to supply the right image for all systems.
-> > But maybe it is possible to echance this patch for some systems,
-> > providing a different image based on config settings?
->
-> Possibly.  But I'm not convinced that the complexity will buy us
-> anything over the distribution script (which should cover all of the
-> pmac cases, if not, bug your distribution :)) and the user provided
-> hook.
+struct uhci_td {
+        /* Hardware fields */
+        __u32 link;
+        __u32 status;
+        __u32 token;
+        __u32 buffer;
 
-Yes, covering all cases in the kernel would be overkill, but I did not
-suggest that. Pushing all this to the distribution script is not right
-either. That's not much more than a fancy copy script, and keeping it in
-sync with kernel code (directory and filenames) would be impossible.
-Besides, this kind of logic belongs in the kernel, if anywhere.
+        /* Software fields */
+        dma_addr_t dma_handle;
 
-But there is an intermediate solution, which should satisfy all users:
-a makefile variable can be overruled by users, e.g.
-	make BOOTIMAGE=arch/ppc/boot/images/zImage.prep install
-This can be used with a distribution script or a user provided one.
-If the distribution scripts ever become smart enough, which I seriously
-doubt, the override is no longer needed.
-What do you think of this approach?
+        struct usb_device *dev;
+        struct urb *urb;
 
---
-Martin
+        struct list_head list;          /* P: urb->lock */
+        struct list_head remove_list;   /* P: uhci->td_remove_list_lock */
+
+        int frame;                      /* for iso: what frame? */
+        struct list_head fl_list;       /* P: uhci->frame_list_lock */
+} __attribute__((aligned(16)));
+
+Could it be possible that the warning in :
+
+/*
+ * The documentation says "4 words for hardware, 4 words for software".
+ *
+ * That's silly, the hardware doesn't care. The hardware only cares that
+ * the hardware words are 16-byte aligned, and we can have any amount of
+ * sw space after the TD entry as far as I can tell.
+
+be still important, at least on G4 powerpc ? remove_list is the 5th
+software word here. Strange, because supposedly it works on x86 and
+other uhci using arches, and it works on the G3, but not on the G4.
+
+Friendly,
+
+Sven Luther
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
