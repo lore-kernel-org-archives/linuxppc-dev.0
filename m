@@ -1,28 +1,45 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Stable BK for 405GP Walnut?
-Date: Tue, 21 May 2002 21:35:23 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFAEGJDHAA.acurtis@onz.com>
+From: "Stefan Roese" <stefan.roese@esd-electronics.com>
+To: "Khai Trinh" <kqtrinh@yahoo.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: CPCI405 
+Date: Wed, 22 May 2002 09:29:09 +0200
+Message-ID: <EFEAIMDCOOOHIEPHDNFJCEMCDPAA.stefan.roese@esd-electronics.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
+In-Reply-To: <20020521235431.26AA11196D@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I retrieved the latest linuxppc_2_4 source code with the intentions of
-building a Walnut kernel. We are looking to build the next shippable kernel
-ASAP so we thought it would be best to use the "stable" version.
-Unfortunately when I tried to configure and compile we encountered several
-surprises:
+> > I am looking for the CPCI405 port software to use as
+> > baseline for our PCI board design. Can anybody here
+> > point me to the right location where it can be
+> > downloaded?
+>
+> If you mean the cPCI405 board by esd (electronic system design), then
+> the normal linuxppc_2_4_devel tree is what you're  looking  for;  for
+> the  firmware,  the  board  has  regular  and  maintained  support in
+> PPCBoot, too.
 
-1. All the 405GP stuff is missing from the non-development tree. (PCI, DMA,
-all the OCP support such as Ethernet)
-2. Compile errors in ppc4xx_pic.c, invalid relocation type messages. (This
-is something that I can solve with a little time.)
+Right (thanks Wolfgang).
 
-What should I use to build a Walnut kernel?
+What exactly do you mean with "port software"?
+
+Are you designing a 405gp or a 440gp pci board?
+
+Best regards,
+Stefan Roese
+
+*******************************************
+esd gmbh
+Vahrenwalder Str. 207
+D-30165 Hannover
+Phone: +49-511-37298-0
+Fax:   +49-511-37298-68
+email: stefan.roese@esd-electronics.com
+www:   http://www.esd-electronics.de
+*******************************************
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
