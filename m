@@ -1,20 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <schwab@suse.de>
+Received: from Cantor.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "mail.suse.de",
+	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 883B767A78
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jan 2005 08:49:16 +1100 (EST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <1106011958.4533.25.camel@gaston> <je7jmaurl0.fsf@sykes.suse.de>
+	<1106100264.4534.135.camel@gaston>
+From: Andreas Schwab <schwab@suse.de>
+Date: Wed, 19 Jan 2005 22:49:11 +0100
+In-Reply-To: <1106100264.4534.135.camel@gaston> (Benjamin Herrenschmidt's
+	message of "Wed, 19 Jan 2005 13:04:24 +1100")
+Message-ID: <jemzv584yw.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16878.11077.556326.769738@cargo.ozlabs.ibm.com>
-Date: Wed, 19 Jan 2005 20:41:25 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1106120622.10851.42.camel@baythorne.infradead.org>
-References: <200501082324.j08NOIva030415@hera.kernel.org>
-	<20050109151353.GA9508@suse.de>
-	<1105956993.26551.327.camel@hades.cambridge.redhat.com>
-	<1106107876.4534.163.camel@gaston>
-	<1106120622.10851.42.camel@baythorne.infradead.org>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linus Torvalds <torvalds@osdl.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] raid6: altivec support
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH] ppc32: pmac sleep support update
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Woodhouse writes:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> Yeah.... I'm increasingly tempted to merge ppc32/ppc64 into one arch
-> like mips/parisc/s390. Or would that get vetoed on the basis that we
-> don't have all that horrid non-OF platform support in ppc64 yet, and
-> we're still kidding ourselves that all those embedded vendors will
-> either not notice ppc64 or will use OF?
+>> With all your patches applied I'm getting an oops during wakeup inside
+>> pci_bus_read_config_word on my iBook/G3.  Call trace: pci_set_master,
+>> pci_device_resume, resume_device, dpm_resume, device_resume,
+>> pmac_wakeup_devices, pmu_ioctl, sys_ioctl.
+>
+> It would be useful to get some more infos, what is the actual oops text
+> (what error), and if you could add some printk's to figure out what is
+> the culprit PCI device, that would be useful as well...
 
-I'm going to insist that every new ppc64 platform supplies a device
-tree.  They don't have to have OF but they do need to have the booter
-or wrapper supply a flattened device tree (which is just a few kB of
-binary data as far as the booter/wrapper is concerned).  It doesn't
-have to include all the 
+I was unable to reproduce the exact oops I got yesterday.  Now I'm getting
+a heap of oopses scrolling by, ending with a panic due to killing
+interrupt handler, without any way to capture them.
 
-As for merging ppc32 and ppc64, I think it would end up an awful ifdef
-mess, but if you can see a clean way to do it, send me a patch. :)
+Andreas.
 
-Paul.
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
