@@ -1,48 +1,47 @@
-Message-ID: <369F393C.56F964FF@ibm.net>
-Date: Fri, 15 Jan 1999 07:49:00 -0500
-From: Frederick Heitkamp <fheitka@ibm.net>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: anyone used kgdb lately?
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.05.9901150212250.26871-100000@netspace.org>
+Date: Fri, 15 Jan 1999 14:02:45 +0100
+To: linuxppc-dev@lists.linuxppc.org, Ty Hedrick <thedrick@netspace.org>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Powerbase IDE: DMA & ohare-ata
+Message-Id: <19990115140245.026852@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've been trying to set up my APUS and my PC so I can run a kgdb kernel
-on
-APUS to possibly figure out (or at least gather enough  information so
-someone else can help) why my A4000T SCSI locks up randomly when using
-APUS.  Note I've checked and rechecked termination and hardware issues
-and
-am assuming that that's not the problem (for better or worse).  I've
-built gdb-4.17
-with target powerpc-linux and installed it on my PC.  I've connected a
-null modem
-cable between the PC and the Amiga and tested it using kermit.  I used a
-non-stripped
-powerpc kernel as input to gdb and started up the stripped version on
-the Amiga.
-I put the command line option debug=/dev/ttyS0 in the boothack script
-and tried
-to start the kernel.  Here's where things go sour.   The stripped kernel
-doesn't start
-at all.  By reading the docs in  arch/m68k/kernel/kgdb it seems to say
-that the kernel
-should work normally if the above debug option is removed.  I  tried
-removing the
-debug=/dev/ttyS0  option from the command line and still the kernel does
-not  boot.
-My question is,  has anyone used the kgdb option on APUS or any PPC
-lately
-and does it work?  I've compiled several kernels (using the same source)
+On Fri, Jan 15, 1999, Ty Hedrick <thedrick@netspace.org> wrote:
 
-without kgdb support and they have worked fine.  I assume The kgdb
-code tries to initize the serial port first thing.  Is that a good place
-to start
-troubleshooting?
+>After looking at DMA I decided to enable the ohare register mentioned
+>earlier, stuffing the new value in also resulted in a working system, and
+>approximately doubled the IDE transfer rate as measured by hdparm - to a
+>whopping 3.7 MB/s.
+>
+>Is there any way to be kind to all the Powerbase owners out there and
+>enable DMA by default without breaking any other systems?  Also, the mod
+>to ohare and heathrow does seem to help lots of platforms.
 
-Fred
+The test kernel I have on my web site will soon have code for both ohare
+and heathrow. I've added an option do disable the speed boost in case of
+troubles (a command line option, currently implemented as a "hack"
+because I didn't want to touch non-arch files). I'll add the fix for
+not-checking the DMA interrupts, they are not used anyway.
+
+I'll release this version with diffs as soon as I have finished some
+other little things in progress, probably during the week-end.
+
+If the speed-boost proves to be harmless to everyone, I'll leave it in
+and probably submit it 'as-is'. If it doesn't, I'll either change the
+command-line arg to optionally enable it 
+instead of optionally disable it, or add some drive-specific parameters
+or some kind of "exception list".
+
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
 
 
 
