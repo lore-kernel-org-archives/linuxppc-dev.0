@@ -1,23 +1,23 @@
-Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC060E1@SNCMAIL>
-From: James Don <JDon@spacebridge.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: My Memory map ... how do i pick the virtual address (Aside from i
-	mmr and sdram)
-Date: Tue, 21 Jan 2003 18:58:26 -0500
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20030122000548.26943.qmail@web41210.mail.yahoo.com>
+Date: Tue, 21 Jan 2003 16:05:48 -0800 (PST)
+From: Prakash kanthi <pkanthi@yahoo.com>
+Subject: busybox source
+To: "PPC-Linux list (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <20030116083034.26873.qmail@web41206.mail.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi Folks,
 
-I am just looking at adding my other mem mapped devices to Linux for my
-custom MPC860 board ...
+Does anyone know where i can download the source for
+busybox used in denx ramdisk-image?
 
-I know RAM has to be at 0xc0000000 and immr at 0xff000000 ... is there any
-rule of thumb for anything else?
+thanks,
+Prakash
 
-Jim
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
