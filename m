@@ -1,34 +1,62 @@
-Message-ID: <3C1902F0.9040807@embeddededge.com>
-Date: Thu, 13 Dec 2001 14:35:12 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Steve Rossi <srossi@labs.mot.com>
-Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: high priority interrupts disabled - problem found
-References: <3C112297.6DE37608@labs.mot.com> <3C114C63.3050102@embeddededge.com> <3C14F91F.F382ABE3@labs.mot.com> <3C177748.1A1342C2@labs.mot.com> <3C17E3B4.9E73B22E@labs.mot.com> <3C18336D.7030706@embeddededge.com> <3C18C309.9D234D7F@labs.mot.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: jtm@smoothsmoothie.com
+Date: Thu, 13 Dec 2001 14:25:47 -0600
+To: Andrew Dixon <andrew.dixon@seranoa.com>
+Cc: ppclist <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: root=/dev/nfs on sbc8260
+Message-ID: <20011213202547.GA24294@shamus.smoothsmoothie.com>
+References: <3C17E07F.7144B7BF@seranoa.com> <3C18445A.80505@embeddededge.com> <3C18CC34.5CF24CDA@seranoa.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3C18CC34.5CF24CDA@seranoa.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steve Rossi wrote:
+On Thu, Dec 13, 2001 at 10:41:40AM -0500, Andrew Dixon wrote:
+>
+> Here is something very strange.  In PPCBoot I set the ethernet address
+> to 00:a0:1e:90:15:55.
+>
+> ....
+>
+> Now, as I watch Linux try to come up I see the following:
+>
+> ....
+>
+> Has anyone else seen this before?
+
+In the ethernet driver for the FCC, it changes the MAC address based on
+the FCC number.h
+
+In a standard 2.4.4 kernel, arch/ppc/8260_io/fcc_enet.c is the
+following code (around line 1315):
+       /* Set Ethernet station address.
+         *
+         * This is supplied in the board information structure, so we
+         * copy that into the controller.
+         * So, far we have only been given one Ethernet address. We make
+         * it unique by setting a few bits in the upper byte of the
+         * non-static part of the address.
+         */
+        eap = (unsigned char *)&(ep->fen_paddrh);
+        for (i=5; i>=0; i--) {
+                if (i == 3) {
+                        dev->dev_addr[i] = bd->bi_enetaddr[i];
+                        dev->dev_addr[i] |= (1 << (7 - fip->fc_fccnum));
+                        *eap++ = dev->dev_addr[i];
+                }
+                else {
+                        *eap++ = dev->dev_addr[i] = bd->bi_enetaddr[i];
+                }
+        }
 
 
-> Thanks for your followup Dan. I've got a rather straightforward "dumb" approach
-> to fixing this problem - see the patch below.
+You can here see that the ethernet port's MAC address is dependent on
+the fcc number.
 
-Looks pretty good.  My last concern is the way we overload the semantics of
-the functions depending upon a driver requesting the service and the interrupt
-controller using these functions.  For example, a driver will request to
-enable or disable one particular interrupt, while the interrupt handling functions
-will need to honor the priority, as you have added.  Allowing a driver request
-to affect the priority mask may not be appropriate.
-
-Thanks for the effort understanding the problem and finding a solution that
-works for you.  It appears to be "more right" than it was :-).
-
-
-	-- Dan
-
+--
+Jay Monkman	    The truth knocks on the door and you say "Go away, I'm
+monkman@jump.net    looking for the truth," and so it goes away. Puzzling.
+		     - from _Zen_and_the_Art_of_Motorcycle_Maintenance_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
