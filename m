@@ -1,18 +1,22 @@
-Message-Id: <199910061815.OAA09180@smtp3.andrew.cmu.edu>
-Date: Wed, 06 Oct 1999 14:15:26 -0400
-Subject: Lombard patches - which tree?
-From: "Hollis" <hollis@andrew.cmu.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-ID: <37FB96D5.C9014707@tiac.net>
+Date: Wed, 06 Oct 1999 14:37:55 -0400
+From: Patrick Callahan <pac1@tiac.net>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org,
+        yellowdog-general@lists.yellowdoglinux.com
+Subject: Who develops and supports the XF68_FBDev X server?
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm looking to compile a Lombard kernel which has patches for both ethernet
-and USB (it does need a USB patch, right?). Have the patches made their way
-into Paul's rsync, or anywhere for that matter?
+In  http://www.xfree.org/FAQ/#SectionF
 
--Hollis
+"If you are running a recent 2.1.x version of Linux, you can also use
+the vesafb driver and the XF68_FBDev server. These are not supported by
+XFree86, so don't ask us about any problems you may have using them. "
+
+Who does support XF68_FBDev server?
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
