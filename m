@@ -1,35 +1,38 @@
-To: "Patrick Pelgrims" <patrick.pelgrims@pandora.be>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: GCC and Linux for Motorola's MPC8540ADS 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 20 Apr 2004 20:47:29 +0200."
-             <000201c42707$ee9764d0$0500a8c0@amdwin2000>
-Date: Tue, 20 Apr 2004 23:40:44 +0200
-Message-Id: <20040420214050.041E4C109F@atlas.denx.de>
+Subject: Re: help with asm code?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Chris Friesen <cfriesen@nortelnetworks.com>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <4085483B.1090604@nortelnetworks.com>
+References: <4085483B.1090604@nortelnetworks.com>
+Content-Type: text/plain
+Message-Id: <1082506664.2077.9.camel@gaston>
+Mime-Version: 1.0
+Date: Wed, 21 Apr 2004 10:17:45 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <000201c42707$ee9764d0$0500a8c0@amdwin2000> you wrote:
+> I then have some code that wants to load up one of these values and use
+> it as an offset into another struct.  Coming into the following stretch
+> of code, r6 contains the entry number within hrt_ak_offsets, and r4
+> contains the base address of the other struct.
 >
-> Who can help me with building the GCC for Motorola's MPC8540ADS ?
 >
-> Is there someone who have already a booting and stable Linux system?
+> 	lis	r5,hrt_ak_offsets@ha
+> 	addi	r5,r5,hrt_ak_offsets@l
+> 	lbzx	r6,r6,r5
+> 	add	r10,r4,r6
+>
+>
+> I'm having a small problem, in that when I run this code it hangs my
+> kernel.  Any ideas what's wrong?  The values in r6 and r5 seem to match
+> what I expect, but when I do the lbzx it dies.
 
-Wait a little bit until ELDK 3.1 is out; it will solve this problem.
+I don't know for sure, maybe you MMU context is wrong at the time ?
+(Assuming a 32 bits kernel, a 64 bits kernel need more instructions
+to load the address)
 
-Best regards,
+How do you know it dies there and not elsewhere ?
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-You young'uns. That was *long* before AltaVista,  DejaNews,  or  even
-(gasp) the *Web*! In fact, we typed that thread on steam-powered card
-punchers, and shipped it around via Pony Express.
-            -- Randal Schwartz in <8cwww1cd0d.fsf@gadget.cscaper.com>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
