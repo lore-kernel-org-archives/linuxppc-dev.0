@@ -1,39 +1,36 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-Id: <5.1.0.14.2.20030112121009.02d9da10@pop.prodigy.net>
-Date: Sun, 12 Jan 2003 12:15:11 -0800
-To: Der Herr Hofrat <der.herr@mail.hofr.at>
-From: Eugene Surovegin <ebs@innocent.com>
-Subject: Re: RAMDISK IMAGES(2): ash has no job control ??? ... can't
-  access tt y; job control turned off
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <200301121924.h0CJOr726067@hofr.at>
-References: <DB0585C9F6F9D411BE8F00D0B7896A4CC06037@SNCMAIL>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+To: James Don <JDon@spacebridge.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: RAMDISK IMAGES: why no ethernet in my image ... but denx ok 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 12 Jan 2003 13:08:17 EST."
+             <DB0585C9F6F9D411BE8F00D0B7896A4CC06033@SNCMAIL>
+Date: Sun, 12 Jan 2003 21:18:28 +0100
+Message-Id: <20030112201833.74C8BC608E@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 11:24 AM 1/12/2003, you wrote:
-> > I am looking at a ramdisk image ... I am curious if anyone could give me a
-> > tip as to why when my bash starts I have no "job contol" (ctrl-z etc)
-> ... se
-> > below ...
-> >
-> > BusyBox v0.60.5 (2003.01.09-00:51+0000) Built-in shell (ash)
+In message <DB0585C9F6F9D411BE8F00D0B7896A4CC06033@SNCMAIL> you wrote:
 >
->busybox builtin shell has no job control by default - for ash you have to
->enable it at compile time.
+> I just managed to create my first ram-disk image. Which seems to work more
+> or less ... however my Ethernet doesn't seem to get configured with my ram
+> disk image (see out put below) ...
 
-If ash has been built _without_ job control support it will _never_
-complain about it,
-especially it will never print out that "job control turned off".
-
-If you look at the source code of ash in busybox, you'll see that this
-particular message means that shell cannot access controlling tty.
+This does NOT depend on the ramdisk image. It  is  either  a  problem
+with  your  kernel  configuration (CONFIG_IP_PNP not set), and/or the
+kernel boot arguments you pass to it.
 
 
-  Eugene Surovegin <mailto:ebs@innocent.com>
+Best regards,
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+       There is enough for the need of everyone in this world,
+       but not for the greed of everyone.     - Mahatma Gandhi
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
