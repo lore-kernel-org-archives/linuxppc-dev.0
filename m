@@ -1,37 +1,57 @@
-Message-ID: <3A625423.E0F6C9AC@vacuumgenesis.com>
-Date: Sun, 14 Jan 2001 17:36:35 -0800
-From: Timothy Ritchey <tritchey@vacuumgenesis.com>
+Message-ID: <3A6283A7.C4327446@primenet.com>
+Date: Sun, 14 Jan 2001 21:59:19 -0700
+From: Bob Doyle <doyle@primenet.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: kswapd Oops
+Subject: GCC PPC Inline Assembly Help
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am running the the linuxppc_2_4 snapshot from 01/13/01, booting using
-ppcboot on a custom 860T-based board with 64 MB of dram. I am getting
-periodic Oops like:
+I have an embedded platform (MPC8240) that requires flash memory
+be programmed 64-bits at a time.  I believe that a floating-point
+store is the only way to generate this 64-bit write.  I also
+understand that floating-point usage is prohibited in the kernel
+because the floating-point context is not saved.
 
- Oops: kernel access of bad area, sig: 11
-NIP: C002C044 XER: 00000140 LR: C002C024 SP: C3FA3F10 REGS: c3fa3e60
-TRAP: 0300
-[snip][snip][snip]
-Call backtrace:
-C015A354 C002C298 C0004E8C
+I'm attempting to create a out64() function that will save 'fr0',
+do a 64-bit write using 'fr0', and restore 'fr0'.  See below:
 
-I can still access the shell though.
+inline void out64(uint64 *addr, uint32 hi, uint32 lo) {
+  uint64 fr0save;
+  volatile uint32 mem[2];
+  mem[0] = hi;
+  mem[1] = lo;
+  asm volatile (
+    "stfd%U0%X0 0,%0\n\t"
+    "lfd%U3%X3 0,%3\n\t"
+    "stfd%U1%X1 0,%1\n\t"
+    "lfd%U2%X2 0,%2\n\t"
+    "sync"
+    : "=m" (fr0save), "=m" (*addr)
+    : "m" (fr0save), "m" (mem[0]), "m" (mem[1])
+    : "memory", "fr0");
+}
 
-the call backtrace indicates this is occuring during kswapd. I am trying
-to isolate the problem to figure out what needs fixing. Is this a
-potential MMU problem, or could it be a problem with the swap setup. I
-am not sure what needs to be done with regards to an initrd-based system
-with respect to swap. It doesn't seem to me that it should even BE
-swapping since there is no disk... :/
+How close am I?  I've looked at the asm and it looks OK but I've
+been bitten before by code with wrong constrants that worked most
+of the time...  I also found out by accident that the 'volatile'
+seems to make the code better.
 
-Any advice would be appreciated.
+I noticed a 'z' constraint ("`FPMEM' stack memory for FPR-GPR
+transfers") in the gcc info pages but have no clue how to use it.
+Any pointers?
 
-Cheers,
-tim
+I also noticed that 32-bit shifts (concatinating 2 32-bit values to
+one 64-bit 'unsigned long long' seems to generate rather poor code.
+(That's why the code above has 2 32-bit values).  Am I doing
+something wrong?
+
+I'm using gcc 2.95.2
+
+Thanks for any help.
+
+Bob
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
