@@ -1,35 +1,43 @@
-Subject: Re: Video For Linux on ppc32 in kernel 2.6
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Colin Leroy <colin@colino.net>
-Cc: Olaf Hering <olh@suse.de>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <0d5001c3eb09$0d02dbb0$3cc8a8c0@epro.dom>
-References: <20040204101249.GA25776@suse.de>
-	 <0d5001c3eb09$0d02dbb0$3cc8a8c0@epro.dom>
-Content-Type: text/plain
-Message-Id: <1075892614.4021.0.camel@gaston>
+Date: Wed, 4 Feb 2004 13:09:20 +0100
+To: linuxppc-dev@lists.linuxppc.org
+Cc: Linux/PPC Commit Mailing List <linuxppc-commit@source.mvista.com>
+Subject: Re: Incoming to linuxppc-2.5-benh
+Message-ID: <20040204120920.GA6212@iliana>
+References: <E1AoIYp-0006NW-00@source.mvista.com>
 Mime-Version: 1.0
-Date: Wed, 04 Feb 2004 22:04:39 +1100
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <E1AoIYp-0006NW-00@source.mvista.com>
+From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2004-02-04 at 21:24, Colin Leroy wrote:
-> Hi,
+On Wed, Feb 04, 2004 at 01:39:03AM -0700, Linux/PPC Kernel Mirrors wrote:
+> ChangeSet@1.1346, 2004-02-04 18:34:43+11:00, benh@kernel.crashing.org
+>   merge
 >
-> > CONFIG_VIDEO_DEV triggers CONFIG_VIDEO_BUF. If compiled as module,
-> > video-buf.c wants clear_user_page(). This is a define on most archs
-> > (maps to clear_page()), on ppc32 it is an unexported function. This
-> > leads to unresolved symbols.
+> ChangeSet@1.1345, 2004-02-04 18:24:45+11:00, benh@kernel.crashing.org
+>   PCI "devspec" entries
 >
+> ChangeSet@1.1344, 2004-02-04 17:58:37+11:00, benh@kernel.crashing.org
+>   Workaround for Mac cards with DVI and ADC output when the only
+>   monitor is plugged on DVI. We assume the firmware has set up the
+>   second TMDS output properly, but we also must make sure we do
+>   no set an odd PLL divider, that isn't supported on the second
+>   output.
 >
-> It's been fixed in BenH's tree since a few weeks.
-> (
-> http://ppc.bkbits.net:8080/linuxppc-2.5-benh/diffs/arch/ppc/kernel/ppc_ksyms.c@1.72 )
+> ChangeSet@1.497.3185.199, 2004-02-03 19:36:36-08:00, torvalds@home.osdl.org
+>   Linux 2.6.2 aka "Feisty Dunnart"
+>
+>   See http://www.cse.unsw.edu.au/~gernot/persona/hobbies/dunnart.html
+>   for more information about Dunnarts, in case you've never heard of
+>   them before. Courtesy of Gernot Heiser.
+>   TAG: v2.6.2
 
-Yup, hopefully, if I don't forget, I'll get that in 2.6.3
+Please don't forget to add a merge tag.
 
-Ben.
+Friendly,
 
+Sven Luther
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
