@@ -1,29 +1,38 @@
-Subject: Re: the door is closing for 2.4
-From: Hubert Figuiere <hub-linux-ppc@trantor.staff.proxad.net>
-To: Tom Rini <trini@kernel.crashing.org>
+Message-ID: <3FD75312.7070701@embeddededge.com>
+Date: Wed, 10 Dec 2003 12:08:34 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20031210165509.GF23731@stop.crashing.org>
-References: <16334.33020.624995.521330@cargo.ozlabs.ibm.com>
-	 <1071070737.29574.38.camel@trantor.staff.proxad.net>
-	 <20031210165509.GF23731@stop.crashing.org>
-Content-Type: text/plain; charset=iso-8859-15
-Message-Id: <1071075468.29569.43.camel@trantor.staff.proxad.net>
-Mime-Version: 1.0
-Date: Wed, 10 Dec 2003 17:57:48 +0100
+Subject: Re: 405 TLB miss reduction
+References: <3FBD5348000912F8@mssbzhh-int.msg.bluewin.ch>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On mer, 2003-12-10 at 17:55, Tom Rini wrote:
+Wolfgang Grandegger wrote:
 
-> > PrPMC 750 support would be nice to be merged in.
->
-> Would you be able to test this, if I put up a tree?
+> ....We
+> can regain a few percent by using the kernel option CONFIG_PIN_TLB
+> but we are thinking about further kernel modifications to reduce
+> TLB misses. What comes into my mind is:
 
-Sure I would.
+If you have a large application I doubt any kernel modification
+will gain much.  It's the application causing the huge amounts
+of tlb misses, you probably need to evaluate changes that will
+reduce that.
 
-Hub
---
-Hubert Figuière - Freebox SA. - +33 1 73 50 2 563
+It's always easy to pick on the kernel and make some changes
+becaue it is a very static and well behaved application.  It
+seems your biggest performance increase would come from the
+analysis of the application and some redesign to improve its
+use of system resources.
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
