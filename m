@@ -1,47 +1,54 @@
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Pantelis Antoniou" <panto@intracom.gr>,
-	"Tom Rini" <trini@kernel.crashing.org>
-Cc: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>,
-	"Dan Malek" <dan@embeddededge.com>, "Wolfgang Denk" <wd@denx.de>,
-	<sanjeevr@myw.ltindia.com>
-Subject: RE: [PATCH] Driver for FECs on motorola DUET (87x/88x)
-Date: Fri, 14 May 2004 16:22:34 +0200
-Message-ID: <JPEALJAFNGDDLOPNDIEEKEHFCIAA.joakim.tjernlund@lumentis.se>
+In-Reply-To: <OFDCF8FB00.DE8D6095-ON85256E94.004352D9-85256E94.00445CD8@nanometrics.ca>
+Subject: Re: mpc8xx linux maintenance
+To: David Ho <DavidHo@nanometrics.ca>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <OFB9E33748.A397083B-ON85256E94.004FB37A-85256E94.004FF18D@nanometrics.ca>
+From: David Ho <DavidHo@nanometrics.ca>
+Date: Fri, 14 May 2004 10:33:11 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <40A4C04A.8060508@intracom.gr>
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Hi there,
->
-> After our little talk in IRC I've ported the driver to 2.6
-> and have gotten as far as the loading of init (which promptly crashes).
->
-> I think I am very near to making it work...
->
-> I have a BDI2000 and I'm not afraid to use it, but I don't know
-> what to look for?
->
-> Any mm hackers over there have any idea?
+Please don't mind correcting me on what I said here.  I would love to hear
+some feedback from the community, and possibly the folks at Motorola,
+Timesys, Montavista.
 
-To start with, I think you should fix the Machine Check
-exception in head_8xx.S to get proper error reporting.
-I think it should be:
-	. = 0x200
-MachineCheck:
- 	EXCEPTION_PROLOG
- 	mfspr	r4,DAR
- 	stw	r4,_DAR(r11)
- 	mfspr	r5,DSISR
- 	stw	r5,_DSISR(r11)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_EE(0x200, MachineCheckException)
+Regards,
 
-Does init crash or just hang?
-If it hangs, it may be a TLB problem.
+David Ho
+Nanometrics, Inc
+
+
+>
+> Hi all,
+>
+> Just wondering, do we have a person from Motorola or a well known
+embedded
+> linux company that actively ensures the operation of the Linux kernel on
+> mpc8xx, 2.6 in particular?
+>
+> I noticed that is a lot of work being done by Montavista on the IBM
+PowerPC
+> chips and Timesys is working heavily on the Motorola 82xx for the 2.6
+> kernel.  But not that much noise is made from these companies in regard
+to
+> the mpc8xx.  Should this be a concern?
+>
+> Wolfgeng mentioned in his interview with Linux Device (
+> http://linuxdevices.com/articles/AT2240586951.html) that 2.6 may be slow,
+> but if there are so many 2.6 features that are beneficial to embedded
+> development (http://www.linuxjournal.com/article.php?sid=7477), why is
+> mpc8xx , as I see it, being somewhat left behind.
+>
+> Regards,
+>
+> David Ho
+> Nanometrics, Inc
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
