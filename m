@@ -1,99 +1,39 @@
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: <linux-fbdev-devel@lists.sourceforge.net>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: gpm selection vs VGA console & fbcon
-References: <20010709150924.21124@smtp.adsl.oleane.com>
-From: Daniel Berlin <dan@cgsoftware.com>
-Date: Mon, 09 Jul 2001 11:15:56 -0400
-In-Reply-To: <20010709150924.21124@smtp.adsl.oleane.com> (Benjamin Herrenschmidt's message of "Mon, 9 Jul 2001 17:09:24 +0200")
-Message-ID: <87zoaep1zn.fsf@cgsoftware.com>
-MIME-Version: 1.0
+Date: Mon, 9 Jul 2001 08:17:00 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Jeff Rugen <jprugen@earthlink.net>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: RTC and SCSI for PowerStack/2.4.6 Kernel
+Message-ID: <20010709081700.I825@opus.bloom.county>
+References: <Pine.LNX.4.05.10107091706100.15110-100000@callisto.of.borg>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.05.10107091706100.15110-100000@callisto.of.borg>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-
-> There's an endian bug that have been around for some time causing
-> text & attributes to be flipped when doing selections with gpm
-> in console mode with VGA console enabled & running on an fbdev.
+On Mon, Jul 09, 2001 at 05:08:50PM +0200, Geert Uytterhoeven wrote:
+> On Mon, 9 Jul 2001, Tom Rini wrote:
+> > On Mon, Jul 09, 2001 at 07:38:58AM -0700, Jeff Rugen wrote:
+> > > I've booted 2.4.6 successfully 4 times so far -- 2 times it crashed with
+> > > SCSI timeouts, and 2 times it hung for unknown reasons (with no oops output
+> > > or anything).  The second time it might have been framebuffer or network
+> > > related (I'd installed clgenfb, changed video modes, and then did 'dir' in
+> > > an ftp session to a site with a long directory listing twice -- the second
+> > > time it hung).
+> >
+> > Did you do any fixes/cleanups to clgenfb?  I took a stab and trying to
+> > re-do your PReP fixes in it a while back, but I don't think it ever got
+> > into the main tree.
 >
-> I didn't follow that closely, but since it's popping up again for
-> users I beleive a fix was never merged in the main tree. Is there
-> such a patch available or it's still on the list of "things to
-> look into one day"  ?
+> There's still an off-by-one error in the PCI probing.
 
-I have a patch still that fixes it, and i keep inserting it into my
-tree.
-
-3 liner to include/asm-ppc/vga.h
-4 liner to drivers/video/fbcon.c
-(this is really two seperate patches, I wasn't about to set up two
-trees simply to get 20 lines worth of diff. :P)
-
-*** vga.h	Wed Jul  4 10:58:40 2001
---- /root/linux/include/asm-ppc/vga.h	Thu Jun 28 14:22:02 2001
-*************** extern inline u16 scr_readw(volatile con
-*** 37,42 ****
---- 37,45 ----
-
-  #define VT_BUF_HAVE_MEMCPYW
-  #define scr_memcpyw	memcpy
-+ #define VT_BUF_HAVE_MEMCPYF
-+ #define scr_memcpyw_to memcpy
-+ #define scr_memcpyw_from memcpy
-
-  #endif /* !CONFIG_VGA_CONSOLE && !CONFIG_MDA_CONSOLE */
-
-*** fbcon.c	Tue Jul  3 17:58:41 2001
---- /root/linux/drivers/video/fbcon.c	Wed Jun 27 14:52:59 2001
-*************** static void fbcon_invert_region(struct v
-*** 1954,1966 ****
-  	if (!conp->vc_can_do_color)
-  	    *p++ ^= 0x0800;
-  	else if (conp->vc_hi_font_mask == 0x100) {
-! 	    u16 a = *p;
-  	    a = ((a) & 0x11ff) | (((a) & 0xe000) >> 4) | (((a) & 0x0e00) << 4);
-! 	    *p++ = a;
-  	} else {
-! 	    u16 a = *p;
-  	    a = ((a) & 0x88ff) | (((a) & 0x7000) >> 4) | (((a) & 0x0700) << 4);
-! 	    *p++ = a;
-  	}
-  	if (p == (u16 *)softback_end)
-  	    p = (u16 *)softback_buf;
---- 1954,1966 ----
-  	if (!conp->vc_can_do_color)
-  	    *p++ ^= 0x0800;
-  	else if (conp->vc_hi_font_mask == 0x100) {
-! 	    u16 a = scr_readw(p);
-  	    a = ((a) & 0x11ff) | (((a) & 0xe000) >> 4) | (((a) & 0x0e00) << 4);
-! 	    scr_writew(a, p++);
-  	} else {
-! 	    u16 a = scr_readw(p);
-  	    a = ((a) & 0x88ff) | (((a) & 0x7000) >> 4) | (((a) & 0x0700) << 4);
-! 	    scr_writew(a, p++);
-  	}
-  	if (p == (u16 *)softback_end)
-  	    p = (u16 *)softback_buf;
-
-
-> ;)
->
-> Ben.
->
->
+Yeap. :)  Dan Malek found that one a while ago too, but I keep forgetting I've
+got it sitting around.  Will this patch be going towards Linus anytime soon?
 
 --
-"Last night, I walked up to this beautiful woman in a bar and
-asked her, "Do you live around here often?"  She said, "You're
-wearing two different colored socks."  I said, "Yes, but to me
-they're the same because I go by thickness."  Then she asked,
-"How do you feel?"  and I said, "Well, you know when you're
-sitting on a chair and you lean back so you're just on two legs
-then you lean too far and you almost fall over but at the last
-second you catch yourself?  I feel like that all the time."
-"-Steven Wright
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
