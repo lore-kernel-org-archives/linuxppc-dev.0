@@ -1,8 +1,9 @@
-Date: Wed, 29 Mar 2000 18:47:18 +0200
+In-Reply-To: <20000329155834.A30559@suse.de>
+Date: Wed, 29 Mar 2000 18:50:16 +0200
 To: linuxppc-dev@lists.linuxppc.org
 From: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: LinuxPPC and Pismo Powerbook
-Message-Id: <20000329184718.027924@mailhost.mipsys.com>
+Message-Id: <20000329185016.026926@mailhost.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -11,20 +12,30 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 On Wed, Mar 29, 2000, Olaf Hering <olh@suse.de> wrote:
 
->I had never problems with my faked system folder, I move it around, to
->CDs, to netatalk servers and where ever I want. This can be a "feature"
->of OS9 that it doesn't remove the information, I don't know.
+>I have the Finder from MiBoot.smi, I changed the type/creator to
+>FNDR/MACS. The System is the same from MiBoot, unchanged. There is a
+>faked RomFile = yaboot and its .conf. Thats all.
 >
->What makes this blessing so special??
+>You have to move the Finder file out of that folder and move it back
+>onto the closed folder icon and it is bootable. All you have to do now
+>is to open the control panel Startup volume and you are done.
+>
+>I don't see the problem. What we really need is an app that creates the
+>os-chooser file, what we need is the partition number and the path to a
+>bootable SCSI device. I could do that from the Linux side via a bootable
+>CD, but it would be nice to do it with a Mac application.
 
-The "blessing" is a combination of two things:
+The good news is that I have the algorithm for writing to NVRAM on new
+machines. That means that I'll be able to make a version of nvsetenv (or
+nvtool) that works on all supported macs, probably this week-end.
 
- - The directory ID of the "blessed" folder is written somewhere in the
-disk catalog (I think in the MDB, I don't remember for sure)
+There's still the problem of figuring out the correct OF path however.
+Note that in my latest trees (and in bk 2.3.x), I've changed ide-pmac.c
+to set it's own interface type so that /proc returns "mac-io" instead of
+generic IDE. This should help differenciate the mac-io built-in IDE and
+the CMD646 on B&W G3.
 
- - Valid boot blocs are written to bloc 0 and 1 of the volume
+Ben.
 
-OF may still be able to boot if the bootblocs are not present (but miBoot
-can't).
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
