@@ -1,46 +1,40 @@
-Message-Id: <200106262038.WAA00789@piglet.grunz.lu>
-Date: Tue, 26 Jun 2001 22:38:03 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Crash on BenH's latest rsync (2.4.6-pre3)
-To: trini@kernel.crashing.org
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20010626121003.D31231@opus.bloom.county>
+Message-ID: <3B38F2D9.1D0C349A@mvista.com>
+Date: Tue, 26 Jun 2001 13:38:50 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+To: "Tim M. Sanders" <tsanders@xyterra.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: linking RAM disk with kernel image for ROM
+References: <3B38EE7B.2D4268A6@xyterra.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Generic [terse] instructions (assuming makefiles, etc. are correct):
 
-On  26 Jun, this message from Tom Rini echoed through cyberspace:
-> On Mon, Jun 25, 2001 at 10:29:13PM +0200, Michel Lanners wrote:
+Call the ramdisk image ramdisk.image.gz and put it in arch/ppc/boot/images
+then run "make zImage.initrd"
+
+You should end up with something like
+arch/ppc/boot/images/zImage.initrd.xxx
+
+Mark
+--
+
+"Tim M. Sanders" wrote:
+
+> Where can I find a document that describes how to include a RAM disk
+> image (initrd ?) in the linux kernel image?
 >
->> Anyone seen this? Anyone want me to look further into debugging this?
+> I want to put the entire image in flash, boot from flash and use a RAM
+> disk for the root file system.
 >
-> Not this one in particular, but I'm tracking 2 different oopses w/
-> the tree on a new iBook right now.  2.4.5-pre3 is rock solid too :)
-
-;-)
-
-> How did you get that oops?  There seems to be a problem w/ inserting
-> power to a sleeping 'book.  Or at least w/ this one.
-
-I was only booting the book; doing nothing particular. It wasn't stable
-enough be to be up long enough to go to sleep....
-
-Ben suggested trying without the USB OHCI driver, but no dice; same
-crash.
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+> I know how to create a RAM disk image.  I just don't know where to put
+> it in the linux tree so it is linked into the final linux image.  Also I
+> am assuming there needs to be some commands on the linux boot prompt.
+> What is required to use a RAM disk image as the root file system.
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
