@@ -1,46 +1,49 @@
-Message-ID: <3E5CE518.7030001@devcom.cz>
-Date: Wed, 26 Feb 2003 17:02:32 +0100
+Message-ID: <3E5CE524.5020802@devcom.cz>
+Date: Wed, 26 Feb 2003 17:02:44 +0100
 From: Jan Damborsky <jan.damborsky@devcom.cz>
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: X windows for Linux PPC embedded
-References: <301A812E6528D511A8F70008C71E578601D3401F@AP-BANG-M02>
+Subject: Re: Unstable MPC8245 board
+References: <20030225164619.B2761@saturn.billgatliff.com> <20030225230333.GA20099@mail.cryptoapps.com> <20030225193437.A3753@saturn.billgatliff.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-g.ramakrishna@exgate.tek.com wrote:
+William A. Gatliff wrote:
 
- >>I would like to ask, if there is some project
- >>for porting X windows system to Embedded
- >>PPC Linux. I use board with MPC823E with
- >>VGA TFT display+touch screen, 32MB RWM,
- >>4MB FLASH, Ethernet, serial RS232,....
- >>I would like to use it as remote graphic terminal
- >>communicating via Ethernet by means of X protocol.
- >>Does somebody know how to make it work ?
- >>
- >>
+ >What's a C construct that would virtually guarantee a burst read or
+ >write?
  >
  >
- >There is nothing much to port.  Few months back I had cross-compiled TinyX
- >successfully for a MPC860 board on x86 platform.
- >Except the proprietary touch screen interface(we added this ourself),
- >everything else worked fine on the target framebuffer device.  But I
-haven't
- >tried the complete X.
- >I hope this information is useful for you.
- >
- > regards,
- >Ramakrishna, G
- >
- >
- >
-Thank you for your information. We have 32M of DRAM, 16M of FLASH on board.
-Do you think it is sufficient for make tinyX working?
-
-                 HANYS
+I use MPC8xx and I had some problem with RWM bursting a two month ago.
+PPC core uses bursting in several situations, not always.
+For example, with I-cache and D-cache disabled, there are no bursts when
+reading
+instructiontions or reading or writting data from or to RWM, there are
+only single beat
+read or write cycles occuring on bus.
+When enabled I-cache or D-cache in write-through mode, there are only
+burst reads used,
+no burst writes. In order to force PPC core to use burst-write cycles,
+it is necessary to enable
+D-cache working in copyback mode.
+So when I want to test burst reads and burst writes:
+[1] I enable D-cache in copyback mode (not so trivial as enable only
+I-cache working)
+[2] allocate a large array of longs (for example ten times more then
+size of D-cache is)
+[3] writting pseudo random data to this array.
+[4] Verifying written data.
+What happens:
+When writting data, these are stored in D-cache until there is no free
+place in D-cache.
+Then when writting more data, older data from D-cache are stored in RWM
+by means
+of burst writes in order to make free place for newer data.
+When verifiyng, data are read to cache from RWM by means of burst reads.
+It is only a little example I used.
+                                                                      HANYS
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
