@@ -1,41 +1,28 @@
-Message-ID: <39551A4B.2D488E6@claudio.ch>
-Date: Sat, 24 Jun 2000 22:30:03 +0200
-From: Claudio Nieder <private@claudio.ch>
+Message-ID: <395527BA.3E61D7BC@wanadoo.fr>
+Date: Sat, 24 Jun 2000 23:27:22 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Kernel >=2.2.16 on Lombard
+To: mlan@cpu.lu
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Accessing IO space via resources
+References: <200006240632.IAA00722@piglet.grunz.lu>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Michel Lanners wrote:
 
-I'm not able to use either linuxBenh or linuxStable, which I
-rsynced some hours ago from linuxcare, on my Lombard. I use
-the .config as supplied (just calling make oldconfig before
-make dep etc.). My last kernel I built was 2.2.15pre19 from
-one of the above sources, and it works well.
+> After investigating this, it turns out that early in the boot process,
+> before the mm system is up, ioremap returns virt == phys for
+> addresses >= ioremap_base. ioremap_base got changed from 0xf8000000 to
+> 0xf0000000 in recent kernels. Anybody kow why this got changed?
 
-linuxBenh, which identifies itself as version 2.2.16, will stop
-early during boot with the message:
+Browsing bk diffs (BTW, it's rather the other way round), this looks
+very much like a typo. Paulus, on 06/09/2000, cleaning up too
+thoroughly?
 
-  pmac nvram is core99: 0
-  Don't know how to access NVRAM with 0 addresses.
-
-linuxStable, which identifies itself as version 2.2.17pre3 will stop
-even earlier, after the line
-
-  booting...
-
-was printed. If anybody was succesful in using one of the above
-kernels on the Lombard I'd appreciate, if you could send me your
-.config.
-
-		Thank you
-				claudio
 --
-Claudio Nieder, Kanalweg 1, CH-8610 Uster, Tel +41 79 357 6743
-mailto:private@claudio.ch  http://www.claudio.ch  icq:42315212
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
