@@ -2,17 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DDD2767A5D
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2005 12:34:29 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 5002C67A62
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2005 12:39:36 +1100 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Andrew Morton <akpm@osdl.org>
 Content-Type: text/plain
-Date: Tue, 18 Jan 2005 12:34:11 +1100
-Message-Id: <1106012051.4499.28.camel@gaston>
+Date: Tue, 18 Jan 2005 12:39:18 +1100
+Message-Id: <1106012359.4533.35.camel@gaston>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Linus Torvalds <torvalds@osdl.org>
-Subject: [PATCH] ppc32: update cpu state save/restore
+Subject: [PATCH] Add try_acquire_console_sem
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,64 +24,55 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hi !
 
-This patch updates the ppc32 cpu state save/restore code to deal with the Motorola/Freescale
-MPC7447A, used, among others, on recent Apple laptops.
+The new PowerMac sleep code provides an arch hook that can be used by video drivers
+on laptops to bring back the screen very early, pretty much before anything else.
+This basically turns reports of the style "my laptop doesn't wakeup" to "I get this
+or this oops/error/panic on wakeup", making fixing the PM related bugs possible on
+a whole range of them.
+
+However, the fbdev wakeup code triggers WARN_ON's in the VT subsystem if called
+without the console semaphore when redrawing the screen (I added those warnings a
+couple of kernel versions ago), and we can't call acquire_console_sem() since we
+are so early in the wakeup process that we are considered as in_atomic() (we hold
+irqs off too).
+
+This patch addds a try_acquire_console_sem() function that can be used by those
+video drivers that implement this early wakeup hook. If the acquire fails (which
+should never happen in practice), wakeup is delayed to the normal PCI callback
+which does a blocking acquire_console_sem().
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Index: linux-work/arch/ppc/kernel/cpu_setup_6xx.S
+Index: linux-work/include/linux/console.h
 ===================================================================
---- linux-work.orig/arch/ppc/kernel/cpu_setup_6xx.S	2004-11-22 11:49:17.000000000 +1100
-+++ linux-work/arch/ppc/kernel/cpu_setup_6xx.S	2005-01-17 13:49:16.268678952 +1100
-@@ -292,13 +292,15 @@
- 	cmplwi	cr2,r3,0x800c	/* 7410 */
- 	cmplwi	cr3,r3,0x8001	/* 7455 */
- 	cmplwi	cr4,r3,0x8002	/* 7457 */
--	cmplwi	cr5,r3,0x7000	/* 750FX */
-+	cmplwi	cr5,r3,0x8003	/* 7447A */
-+	cmplwi	cr6,r3,0x7000	/* 750FX */
- 	/* cr1 is 7400 || 7410 */
- 	cror	4*cr1+eq,4*cr1+eq,4*cr2+eq
- 	/* cr0 is 74xx */
- 	cror	4*cr0+eq,4*cr0+eq,4*cr3+eq
- 	cror	4*cr0+eq,4*cr0+eq,4*cr4+eq
- 	cror	4*cr0+eq,4*cr0+eq,4*cr1+eq
-+	cror	4*cr0+eq,4*cr0+eq,4*cr5+eq
- 	bne	1f
- 	/* Backup 74xx specific regs */
- 	mfspr	r4,SPRN_MSSCR0
-@@ -316,7 +318,7 @@
- 	mfspr	r4,SPRN_LDSTDB
- 	stw	r4,CS_LDSTDB(r5)
- 1:
--	bne	cr5,1f
-+	bne	cr6,1f
- 	/* Backup 750FX specific registers */
- 	mfspr	r4,SPRN_HID1
- 	stw	r4,CS_HID1(r5)
-@@ -359,13 +361,15 @@
- 	cmplwi	cr2,r3,0x800c	/* 7410 */
- 	cmplwi	cr3,r3,0x8001	/* 7455 */
- 	cmplwi	cr4,r3,0x8002	/* 7457 */
--	cmplwi	cr5,r3,0x7000	/* 750FX */
-+	cmplwi	cr5,r3,0x8003	/* 7447A */
-+	cmplwi	cr6,r3,0x7000	/* 750FX */
- 	/* cr1 is 7400 || 7410 */
- 	cror	4*cr1+eq,4*cr1+eq,4*cr2+eq
- 	/* cr0 is 74xx */
- 	cror	4*cr0+eq,4*cr0+eq,4*cr3+eq
- 	cror	4*cr0+eq,4*cr0+eq,4*cr4+eq
- 	cror	4*cr0+eq,4*cr0+eq,4*cr1+eq
-+	cror	4*cr0+eq,4*cr0+eq,4*cr5+eq
- 	bne	2f
- 	/* Restore 74xx specific regs */
- 	lwz	r4,CS_MSSCR0(r5)
-@@ -404,7 +408,7 @@
- 	mtspr	SPRN_LDSTDB,r4
- 	isync
- 	sync
--2:	bne	cr5,1f
-+2:	bne	cr6,1f
- 	/* Restore 750FX specific registers
- 	 * that is restore HID2 on rev 2.x and PLL config & switch
- 	 * to PLL 0 on all
+--- linux-work.orig/include/linux/console.h	2004-11-22 11:50:54.000000000 +1100
++++ linux-work/include/linux/console.h	2005-01-17 13:49:21.006958624 +1100
+@@ -105,6 +105,7 @@
+ extern int unregister_console(struct console *);
+ extern struct console *console_drivers;
+ extern void acquire_console_sem(void);
++extern int try_acquire_console_sem(void);
+ extern void release_console_sem(void);
+ extern void console_conditional_schedule(void);
+ extern void console_unblank(void);
+Index: linux-work/kernel/printk.c
+===================================================================
+--- linux-work.orig/kernel/printk.c	2005-01-14 08:17:22.000000000 +1100
++++ linux-work/kernel/printk.c	2005-01-17 13:49:21.008958320 +1100
+@@ -611,6 +611,16 @@
+ }
+ EXPORT_SYMBOL(acquire_console_sem);
+ 
++int try_acquire_console_sem(void)
++{
++	if (down_trylock(&console_sem))
++		return -1;
++	console_locked = 1;
++	console_may_schedule = 0;
++	return 0;
++}
++EXPORT_SYMBOL(try_acquire_console_sem);
++
+ int is_console_locked(void)
+ {
+ 	return console_locked;
