@@ -1,27 +1,25 @@
-Subject: artic or artic II
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF27CFD59D.0D385D2F-ON87256C92.004E5FB8@us.ibm.com>
-From: John F Davis <johndavi@us.ibm.com>
-Date: Tue, 17 Dec 2002 09:18:36 -0500
+From: "Donald MacArthur" <dmacarth@ufl.edu>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: SCC and SMC to RS232 for MPC850
+Date: Tue, 17 Dec 2002 09:24:29 -0500
+Message-ID: <NDBBIHDFKLJKGJJGMFJOIEJPCGAA.dmacarth@ufl.edu>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello
+When enabling the SCC and SMC ports for RS232 on a MPC850, do you simply
+need to connect the RX/TX/GND lines
+to a RS232 line driver and enable the ports for UART in the kernel?
 
-Which system are you folks using for development - artic or artic II?
+Is there a alternative/simple method for configuring an MPC850 to have four
+RS232 serial ports?
 
-Also, the artic II says to connect a serial port to get terminal access.  I
-do this before
-I boot the box and I don't get anything on the minicom session.  I am using
-the db-9 serial connector on the base unit.  My null modem cable works
-with a different embedded system so I don't think its the cable or the
-setup.  Do you have
-to hold down a button while booting or something?
-
-JD
+Thank You
+Donald MacArthur
+dmacarth@ufl.edu
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
