@@ -1,27 +1,68 @@
-Date: Tue, 12 Sep 2000 12:47:03 -0500 (CDT)
-From: ian reinhart geiser <geiseri@msoe.edu>
+Message-Id: <200009122018.WAA00786@piglet.grunz.lu>
+Date: Tue, 12 Sep 2000 22:18:48 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: zeroing pages in the idle task?
 To: linuxppc-dev@lists.linuxppc.org
-cc: linuxppc-users@lists.linuxppc.org
-Subject: MOL on the Pimiso PB ROCKS... sorta.
-Message-ID: <Pine.OSF.3.96.1000912124529.6222A-100000@torres.msoe.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Well i just got MOL on my Powerbook,  It runs pretty well
-fast in all BUT for some reason i cannot get my mouse to
-work.
+Hi all,
 
-i have it set to /dev/adbmouse and adb as the protocal.
+I've come across a 'forgotten' feature of the PPC kernels: namely
+zeroing pages 'in advance' in the idle task.
 
-i am also running the new 2.2.17 kernel from pauls.
+It's a feature Cort implemented some time ago, but which is disabled by
+default. I've tried to enable it:
 
-has anyone else seen this?
+[root@piglet ~]# echo 1 > /proc/sys/kernel/zero-paged
 
-thanks
-	-ian reinhart geiser
+and it seems to work OK:
+
+(this is after system boot, no apps started yet except 3 xterms)
+
+[mlan@piglet ~]$ cat /proc/cpuinfo
+processor       : 0
+cpu             : 750
+temperature     : 0 C
+clock           : 195MHz
+                  ^^^^^^
+(by the way, this is wrong. Anybody with a fix?)
+
+revision        : 2.2
+bogomips        : 575.08
+zero pages      : total 264 (1056Kb) current: 96 (384Kb) hits: 168/255 (65%)
+machine         : Power Macintosh
+motherboard     : AAPL,7500 MacRISC
+memory          : 112MB
+pmac-generation : OldWorld
+
+So, a few questions:
+
+- is there any problem with using this feature?
+
+- if not, would it be a good idea to enable it by default?
+
+- or, would it be better to add it to rc.sysinit, leaving it to each
+  distribution whether to enable it or not?
+
+I've not benchmarked anything (how would one do that?); but it seems to
+me it's a no-cost optimisation. Even if there's little advantage, since
+it's for free...
+
+Comments?
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
