@@ -1,33 +1,43 @@
-In-Reply-To: <9902151757.AA75924@marc.watson.ibm.com>
-Date: Mon, 15 Feb 1999 19:20:22 +0100
-To: David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: bootstrap stuffs
-Message-Id: <19990215192022.006915@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Mon, 15 Feb 1999 13:33:14 -0500
+From: Mayan Moudgill <mayan@watson.ibm.com>
+Message-Id: <9902151833.AA34022@mayan.watson.ibm.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Porting to PPC750 embedded board; what should I do now?
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Feb 15, 1999, David Edelsohn <dje@watson.ibm.com> wrote:
 
->	As Gabriel correctly explained, a "sync" instruction may be
->necessary before interrupts are enabled if some off-chip operation, like
->modifying an interrupt controller on the bus, was performed.  That is
->because of the bus operations which need to complete before interrupts can
->be enabled, not because of the enabling itself.
+I am porting Linux (pre-) 2.2 to a PPC750 embedded board. The board has
+(currently) a 750, 2 16450-compatible UARTs, and 16MB of memory
+I have got Linux ported to the point where it can use initrd to
+do something useful.
 
-Yep, I knew this case, the sync after switching them OFF was just a
-paranoid move on my part. Thanks for the tips.
+I am cross-compiling from an AIX power-pc box using egcs-1.1.1.
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+I am wondering how to proceed. I have access to a x86-based Linux
+system, and may be able to get access to a PPC box running Linux.
 
+What I think I should do next is build a ramdisk with the
+appropriate pieces of software on it, and then compile a kernel
+with that as the initrd.
 
+Questions:
+	- on which platform should I build the ramdisk?
+		(in particular, since the endiannes of a PPC 
+		is different from an x86, can I do it on an x86)
+	- what should I put on the ramdisk?
+		(which executables are the minimum neccessary?;
+		remember I only have 16M total)
+	- should I use the executables from the linux-ppc RPMs, or
+		should I build from scratch? If so, what is
+		the best path.
 
+Thanks!
 
+Mayan Moudgill
+mayan@watson.ibm.com
+914 945 4348
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
