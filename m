@@ -1,40 +1,24 @@
-Message-ID: <39883B9B.3D9E0C83@embeddededge.com>
-Date: Wed, 02 Aug 2000 11:17:47 -0400
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: CONFIG_PPC != Mac
-References: <Pine.LNX.4.10.10007311828010.442-100000@cassiopeia.home>
-Content-Type: text/plain; charset=us-ascii
+Date: Wed, 2 Aug 2000 09:07:50 -0700 (PDT)
+From: howarth@bromo.med.uc.edu (Jack Howarth)
+Message-Id: <200008021607.JAA13404@bromo.med.uc.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: LinuxPPC X Server
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
->
-> On Mon, 31 Jul 2000, Franz Sirl wrote:
-> > BTW, how about CONFIG_PPC_DESKTOP and CONFIG_PPC_EMBEDDED in addition to
-> > CONFIG_PPC?
->
-> And what makes the difference between a `desktop' and an `embedded' PPC here?
-
-
-I hope we don't do this, as I don't think that is a very good
-distinction either.  I prefer some of the other suggestions, where
-we simply have mix-n-match configuration options.  Select a board
-and processor type and go from there.
-
-I have had the opportunity lately to use some of the other Linux
-processor architecture configurations.  The Linux PowerPC configuration
-really isn't too bad, and I would prefer just a small evolution.  If
-you want to see some bad configuration and hard to use environments,
-go visit some of the other emerging architectures.......
-
-I think even some of the "source restructuring" that has been discussed
-could also be mitigated with a more logical set of configuration options.
-
-
-	-- Dan
+Kostas,
+    So what will we end up when we build 4.0.1 using those patches you
+provided today? Will we gain any dri acceleration on the r128 driver?
+Or will we still need to apply additional patches for that. I am
+still a tad confused about exactly how dependent the DRI code is in
+4.0.1 on AGPgart. I am assuming if you set the AGPgart flag to NO
+in host.def then DRI will be built without any code requiring AGPgart
+to be available. Or am I misunderstanding the situation. I think
+I will try building the dri modules tonight and see what happens in
+the Mesa gears demo since that benchmarks framerate. Do you know what
+additional lines have to be added into XF86Config to enable the DRI
+modules? Thanks in advance.
+                  Jack
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
