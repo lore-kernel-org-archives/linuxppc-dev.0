@@ -1,46 +1,53 @@
-Message-ID: <3816BEA7.23AF7175@agelectronics.co.uk>
-Date: Wed, 27 Oct 1999 09:58:15 +0100
-From: Adrian Cox <apc@agelectronics.co.uk>
+Date: Wed, 27 Oct 1999 11:24:13 +0200 (CEST)
+From: Gerd Knorr <kraxel@goldbach.in-berlin.de>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Missing USB keys
+In-Reply-To: <38165935.A73FB5BF@wanadoo.fr>
+Message-ID: <Pine.LNX.4.10.9910271114510.1021-100000@macintoy.masq.in-berlin.de>
 MIME-Version: 1.0
-To: Kumar Gala <kumar@chaos.ph.utexas.edu>
-CC: Jim Terman <terman@ddi.com>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: question about altivec registers
-References: <Pine.LNX.4.10.9910261733160.10102-100000@chaos.ph.utexas.edu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kumar Gala wrote:
+On Wed, 27 Oct 1999, Martin Costabel wrote:
 
-> The AltiVec registers have to be saved and restore explicitly, if you look
-> at /arch/ppc/kernel/head.S and look for load_up_fp you will see how the
-> floating point unit is handled on exceptions.  Essential what is done is
-> there are some checks done, and a pointer is kept to the last
-> process using the FP unit (last_task_used_fp) which then if needed the FP
-> regs are saved in to that processes context and the FPs for the incoming
-> are restored.
+> [ ... ]
 
-Linux on PowerPC should end up doing a classic lazy save/restore for the
-vector context, as it already does for the floating point registers. On
-SMP systems this simple approach isn't possible, but a quick
-approximation is to detect the first time a process uses Altivec, and
-marking it to always save and restore vector context from then on.
+> 6. So where is the problem? The problem, of course, is that the two
+> keymaps in drivers/usb/maps/ which are used to produce the translation
+> table, are goddamn^H^H^H^H^H^H^Hstandard US keymaps. Therefore some of
+> the keys of European Apple Extended keyboards are missing (maybe just
+> one or two?). The right solution is therefore to add the missing keys in
+> both keymaps, which is what I did, see the patch below. Another (not so
+> universal) solution would be to replace both US keymaps by equivalent
+> French ones. Or German ones, of course, but I suspect this would produce
+> an identical usb_kbd_map translation table.
 
-I'd recommend that compiler writers use the vrsave register to mark
-which vector registers they use, as a precaution against future kernels
-which may look at this. Note that the G4 is extremely fast at linear
-sequences of cacheable stores (store miss merging), and it is probably
-cheaper for the kernel to ignore vrsave and avoid branches in the save
-and restore sequence.  Of course, it is correct to simply set every bit
-in vrsave at the start of your application, and never change it again.
-It may be non-optimal on future systems, but it should remain correct.
+Up to that point I've traced it too.
 
-As for the cache thrashing effect, remember that 512 bytes going in and
-out of the L2 cache is not very expensive, and that there is probably 1
-or 2MB of L2 fitted.
+> --- drivers/usb/maps/mac.map    1999/06/09 08:20:17     1.1
+> +++ drivers/usb/maps/mac.map    1999/10/26 17:34:41
+> +keycode 0x0a = at numbersign
 
-- Adrian Cox, AG Electronics
+How can I figure out the correct adb keycodes?  Hav'nt such a keyboard...
+
+> --- drivers/usb/maps/usb.map    1999/04/28 11:52:38     1.1
+> +++ drivers/usb/maps/usb.map    1999/10/26 17:34:42
+> @@ -88,7 +88,7 @@
+>  keycode  49 = backslash        bar             
+                 ^^^^^^^^^^^^^^^^^^^^
+> -keycode 50 =
+> +keycode  50 = backslash        bar
+                 ^^^^^^^^^^^^^^^^^^^^
+
+Does'nt look like a good idea...
+
+  Gerd
+
+-- 
+<script>alert("WARNING: You have JavaScript enabled.");</script>
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
