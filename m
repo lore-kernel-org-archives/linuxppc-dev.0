@@ -1,45 +1,44 @@
-To: Josh Huber <huber@alum.wpi.edu>
-Cc: Tom Rini <trini@kernel.crashing.org>, Dan Malek <dan@mvista.com>,
-	Stefan Roese <stefan.roese@esd-electronics.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
-	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
+To: macdonldc@netscape.net (Craig MacDonald)
+Cc: linuxppc-embedded@lists.linuxppc.org
 From: Wolfgang Denk <wd@denx.de>
-Subject: Re: CPCI-405 port (PPC405GP) 
+Subject: Re: PPCBoot and IMMR remapping for linux 2.4 on sbc8260 
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 20 Sep 2001 12:32:08 EDT."
-             <87k7ytygaf.fsf@mclinux.com>
-Date: Sun, 23 Sep 2001 20:00:07 +0200
-Message-Id: <20010923180012.755801009E@denx.denx.de>
+In-reply-to: Your message of "Thu, 20 Sep 2001 17:29:19 EDT."
+             <4E48AD2F.671BD424.031B03A1@netscape.net>
+Date: Sun, 23 Sep 2001 20:00:12 +0200
+Message-Id: <20010923180017.8F0751009E@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <87k7ytygaf.fsf@mclinux.com> Josh Huber wrote:
-> Tom Rini <trini@kernel.crashing.org> writes:
+Dear Craig,
+
+in message <4E48AD2F.671BD424.031B03A1@netscape.net> you wrote:
 >
-> > But the bi_recs in 2.5 won't look like 2.4.current.
->
-> bummer...can it not be changed in a compatible manner?
+> The immr_base value in PPCBoot on my sbc8260 is
+> 0x0f000000. I have been reading here that the
+> best value for linux is 0xf0000000.
 
-Where can I get more information what it will look like in  2.5?  I'd
-like to be able to have PPCBoot prepared for this change, and ideally
-in  a way that provides a soft migration from current kernel versions
-to the new stuff.
+THis is your own bug, then. The default configuration of PPCBoot  for
+the SBC8260 uses this definition in "include/config_sbc8260.h":
 
-Keep in mind that PPCBoot is in use for 50+ boards from  many  diffe-
-rent hardware manufacturers. And the number is growing every week.
+        #define CFG_IMMR 0xf0000000
 
+> I don't have easy access to flash my PPCBoot
+> to a new immr_base value, but I want to run
 
-Or is there even a discussion of this stuff where one  can  at  least
-inject  ideas  or point out thinks that might cause problems - BEFORE
-everything is cast in stone?
+Where exactly is the problem? It is a trivial job to use any  running
+version   of  PPCBoot  to  upgrade  to  a  new  version  (just  using
+"tftp", "protect off", "erase" and "cp.b" commands).
+
 
 Wolfgang Denk
 
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Time is an illusion perpetrated by the manufacturers of space.
+While most peoples' opinions change, the conviction of their correct-
+ness never does.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
