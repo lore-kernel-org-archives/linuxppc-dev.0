@@ -1,34 +1,41 @@
-Date: Mon, 24 May 1999 15:28:16 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: laures@esiea.fr
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Initio miles tests :-(
-In-Reply-To: <199905241534.KAA24850@lists.linuxppc.org>
-Message-ID: <Pine.LNX.4.05.9905241526320.650-100000@pc.wackyland.com>
+Message-ID: <3749CC04.146B318D@eos.ncsu.edu>
+Date: Mon, 24 May 1999 18:00:36 -0400
+From: Scott Sams <sbsams@eos.ncsu.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: AWACS Bug
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 24 May 1999 laures@esiea.fr wrote:
+Paul Mackerras <paulus@cs.anu.edu.au> wrote:
 
-> Each time the ext2 partition is completely screwed, I must reformat to
-> continue tests, the hfs is screwed once over 2.
-> I think I will go on with a ramdisk !
+> What's happening is I think the same as what happens on the iMac: when
+> you run the BootX app to boot linux, and it asks macos to shut down,
+> macos shuts down the awacs, in such a fashion that the only thing that
+> will start it up again is a hard reset. :-( 
 
-Can you do all the stress testing if you don't pdisk the drive?  Also can
-you go:
-pdisk /dev/blank-inito-disk
-... create partitions ...
-stress testing
-?
+I believe the same thing has happened on my box, although a hardware
+reset has yet to fix the problem! :-<
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Sound does not come out of either the internal speaker, or the line out
+jack. Playing a .wav or a CD produces no sound. MacOS will not play any
+sounds too. I have tried everything from hard resets to power cycling to
+zapping the PRAM 3 times, and nothing has brought my sound back. Do any
+of you hardware gurus out there know if it is possible to manually reset
+the AWACS chip? Does this mean I fried my AWACS chip? How could I
+replace it if necessary? Please help.
 
+Thanks,
 
+Scott Sams
+
+-- 
+ ____ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~      Scott Sams         
+(____  _  _-|-|-                    sbsams@eos.ncsu.edu      
+_____)(__(_)| |        http://www.catt.ncsu.edu/~sbsams
+~~~~~~~~~~~~~~~~
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
