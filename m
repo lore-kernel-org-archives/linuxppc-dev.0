@@ -1,40 +1,40 @@
-Message-ID: <19990913092728.D313@albireo.ucw.cz>
-Date: Mon, 13 Sep 1999 09:27:28 +0200
-From: Martin Mares <mj@ucw.cz>
-To: mlan@cpu.lu, Paul.Mackerras@cs.anu.edu.au
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: More on Various PMac PCI patches
-References: <199909122137.XAA00332@piglet.cpu.lu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199909122137.XAA00332@piglet.cpu.lu>; from Michel Lanners on Sun, Sep 12, 1999 at 11:37:43PM +0200
+Date: Mon, 13 Sep 1999 09:29:01 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: "Joshua M. Thompson" <funaho@jurai.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.3.18 and CONFIG_ADB_MOUSE
+In-Reply-To: <37DC9FFF.5C5A18F7@wanadoo.fr>
+Message-ID: <Pine.LNX.4.10.9909130926130.14721-100000@mercator.cs.kuleuven.ac.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Mon, 13 Sep 1999, Martin Costabel wrote:
+> Another small nit to pick: The adbmouse driver is offered as a module,
+> but it doesn't compile when CONFIG_ADB_MOUSE=m is selected. The reason
+> is this new
+> __setup("adb_buttons=", adb_mouse_setup);
+> line which is a fallout from the implosion of init/main.c.
+> In <linux/init.h>, __setup is only defined #ifndef MODULE. I don't know
 
-> Here is another round of PCI patches for the PowerMacs, against 2.2.12
-> official.
-> 
-> It includes all my previous patches, cleaned up a bit, with the special
-> cases upon region enabling removed for VGA and IDE, and with special
-> care for PlanB. That's since with OF's assignments, PlanB collides with
-> the memory held by control.
-> 
-> I haven't had time to investigate the potential PCMCIA problems nor
-> find an appropriate solution, so this PCI stuff might need to change
-> further. I just wanted to get it out the door, since more and more
-> people seem to be bothered by the lack of fixup code for the PCI bus.
-> 
-> Enjoy, and report any and all problems to me!
+You have to use the mnoduleparams stuff. Look at de4x5.c for an example.
 
-   It looks OK to me, but of course I'm no PPC expert...
- 
-				Have a nice fortnight
--- 
-Martin `MJ' Mares   <mj@ucw.cz>   http://atrey.karlin.mff.cuni.cz/~mj/
-Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
-"This message transmited on 100% recycled electrons."
+> how other drivers handle this problem; in vger-2.3.18, the popular
+> "atyfb=" kernel argument seems to have disappeared completely, for
+> instance.
+
+There never was an `atyfb=' option. Use `video=atyfb:' instead.
+
+Greetings,
+
+						Geert
+
+--
+Geert Uytterhoeven ----------------- SONY Suprastructure Center Europe (SUPC-E)
+Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
+Phone +32-2-7248608 Fax +32-2-7242686 ---------------- B-1130 Brussels, Belgium
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
