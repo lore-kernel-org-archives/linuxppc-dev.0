@@ -1,288 +1,208 @@
-Message-ID: <40F57D15.8030700@pi.be>
-Date: Wed, 14 Jul 2004 20:36:05 +0200
+Message-ID: <40F57E20.4050004@pi.be>
+Date: Wed, 14 Jul 2004 20:40:32 +0200
 From: Stef Simoens <stef.simoens@pi.be>
 MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: [PATCH] align.c
+Subject: [PATCH] 601 MQ handling
 Content-Type: multipart/mixed;
- boundary="------------040002030702030205010906"
+ boundary="------------060301020506080806060506"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 This is a multi-part message in MIME format.
---------------040002030702030205010906
+--------------060301020506080806060506
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 
-This is an (updated) diff to arch/ppc/kernel/align.c of the 2.6.8-rc1
-kernel.
+This is an (updated) patch for saving and restoring the MQ register on
+old 601 CPU's for the 2.6.8-rc1 kernel.
 
-The patch adds support for the handling of alignment exceptions of
-multiple (lmw/stmw) and string (lswi/lswx/stswi/stswx) instructions.
+The patch adds a configuration option to compile the neccesairy
+instructions in the kernel or not. Compiled in, the instructions will
+only be executed on a 601.
 
 Stef
 
---------------040002030702030205010906
+--------------060301020506080806060506
 Content-Type: text/plain;
- name="linux-2.6.8-rc1-align.patch"
+ name="linux-2.6.8-rc1-mq.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="linux-2.6.8-rc1-align.patch"
+ filename="linux-2.6.8-rc1-mq.patch"
 
-diff -ur linux-2.6.8-rc1/arch/ppc/kernel/align.c linux-2.6.8-rc1-mq/arch/ppc/kernel/align.c
---- linux-2.6.8-rc1/arch/ppc/kernel/align.c	2004-07-12 17:46:42.525695737 +0200
-+++ linux-2.6.8-rc1-mq/arch/ppc/kernel/align.c	2004-07-12 20:25:24.390989048 +0200
-@@ -17,8 +17,8 @@
- #include <asm/cache.h>
+diff -ur linux-2.6.8-rc1/arch/ppc/Kconfig linux-2.6.8-rc1-mq/arch/ppc/Kconfig
+--- linux-2.6.8-rc1/arch/ppc/Kconfig	2004-07-12 17:46:41.801627097 +0200
++++ linux-2.6.8-rc1-mq/arch/ppc/Kconfig	2004-07-12 20:34:03.845393066 +0200
+@@ -225,6 +225,18 @@
 
- struct aligninfo {
--	unsigned char len;
--	unsigned char flags;
-+	unsigned int len;
-+	unsigned int flags;
- };
+ 	  If in doubt, say Y here.
 
- #if defined(CONFIG_4xx) || defined(CONFIG_POWER4) || defined(CONFIG_BOOKE)
-@@ -30,14 +30,16 @@
-
- #define INVALID	{ 0, 0 }
-
--#define LD	1	/* load */
--#define ST	2	/* store */
--#define	SE	4	/* sign-extend value */
--#define F	8	/* to/from fp regs */
--#define U	0x10	/* update index register */
--#define M	0x20	/* multiple load/store */
--#define S	0x40	/* single-precision fp, or byte-swap value */
--#define HARD	0x80	/* string, stwcx. */
-+#define LD	0x001	/* load */
-+#define ST	0x002	/* store */
-+#define	SE	0x004	/* sign-extend value */
-+#define F	0x008	/* to/from fp regs */
-+#define U	0x010	/* update index register */
-+#define M	0x020	/* multiple load/store */
-+#define S	0x040	/* single-precision fp, or byte-swap value */
-+#define STR_OP	0x080	/* string, length stored in instruction */
-+#define STR_XER	0x100	/* string, length stored in XER[25-31] */
-+#define HARD	0x200	/* too hard: stwcx. */
-
- #define DCBZ	0x5f	/* 8xx/82xx dcbz faults when cache not enabled */
-
-@@ -88,10 +90,10 @@
- 	INVALID,		/* 01 0 0101: lwax */
- 	INVALID,		/* 01 0 0110 */
- 	INVALID,		/* 01 0 0111 */
--	{ 0, LD+HARD },		/* 01 0 1000: lswx */
--	{ 0, LD+HARD },		/* 01 0 1001: lswi */
--	{ 0, ST+HARD },		/* 01 0 1010: stswx */
--	{ 0, ST+HARD },		/* 01 0 1011: stswi */
-+	{ 4, LD+STR_XER },	/* 01 0 1000: lswx */
-+	{ 4, LD+STR_OP },	/* 01 0 1001: lswi */
-+	{ 4, ST+STR_XER },	/* 01 0 1010: stswx */
-+	{ 4, ST+STR_OP },	/* 01 0 1011: stswi */
- 	INVALID,		/* 01 0 1100 */
- 	INVALID,		/* 01 0 1101 */
- 	INVALID,		/* 01 0 1110 */
-@@ -183,11 +185,11 @@
- int
- fix_alignment(struct pt_regs *regs)
- {
--	int instr, nb, flags;
-+	int instr, nb, mb, mr, flags;
- #if defined(CONFIG_4xx) || defined(CONFIG_POWER4) || defined(CONFIG_BOOKE)
- 	int opcode, f1, f2, f3;
- #endif
--	int i, t;
-+	int i, j, t;
- 	int reg, areg;
- 	unsigned char __user *addr;
- 	union {
-@@ -195,7 +197,7 @@
- 		float f;
- 		double d;
- 		unsigned char v[8];
--	} data;
-+	} data[32];
-
- 	CHECK_FULL_REGS(regs);
-
-@@ -256,9 +259,34 @@
-
- 	addr = (unsigned char __user *)regs->dar;
-
-+	/* Get mb (total number of bytes to load)
-+	   and mr (number of registers needed) if we're dealing with strings */
-+	if (flags & M) {
-+		mr = 32 - reg;
-+		mb = nb * mr; /* nb = bytes per register */
-+	} else if (flags & STR_OP) {
-+		instr = *((unsigned int *)regs->nip);
-+		mb = (instr >> 11) & 0x1f;
-+		if (mb == 0)
-+			mb = 32; /* mb = 32 if bits are 0 */
-+		mr = mb / 4;
-+		if ((mb % 4) > 0)
-+			mr++;
-+	} else if (flags & STR_XER) {
-+		mb = regs->xer & 0x7f;
-+		/* This shouldn't be 128 if XER[25-31] is 0,
-+		   in that case it's actually a no-op */
-+		mr = mb / 4;
-+		if ((mb % 4) > 0)
-+			mr++;
-+	} else {
-+		mb = nb;
-+		mr = 1;
-+	}
++config PPC601_MQ
++	bool "Enable MQ register on PPC601 CPU"
++	depends on 6xx && (PPC_PREP || PPC_PMAC)
++	help
++	  The PPC601 (the first PowerPC chip) has a special MQ register.
++	  This option enables kernel support for saving and restoring the MQ
++	  register.
 +
- 	/* Verify the address of the operand */
- 	if (user_mode(regs)) {
--		if (verify_area((flags & ST? VERIFY_WRITE: VERIFY_READ), addr, nb))
-+		if (verify_area((flags & ST? VERIFY_WRITE: VERIFY_READ), addr, mb))
- 			return -EFAULT;	/* bad address */
- 	}
++	  This option is only useful if you have a 601 processor and does
++	  not have any affect on other processors (it does, however, add
++	  code to the kernel). Say Y here if you have a 601 chip.
++
+ source arch/ppc/platforms/4xx/Kconfig
+ source arch/ppc/platforms/85xx/Kconfig
 
-@@ -268,57 +296,69 @@
- 			giveup_fpu(current);
- 		preempt_enable();
- 	}
--	if (flags & M)
--		return 0;		/* too hard for now */
+diff -ur linux-2.6.8-rc1/arch/ppc/kernel/cputable.c linux-2.6.8-rc1-mq/arch/ppc/kernel/cputable.c
+--- linux-2.6.8-rc1/arch/ppc/kernel/cputable.c	2004-07-12 17:46:42.632411087 +0200
++++ linux-2.6.8-rc1-mq/arch/ppc/kernel/cputable.c	2004-07-12 20:22:37.631447272 +0200
+@@ -67,7 +67,7 @@
+     { 	/* 601 */
+ 	0xffff0000, 0x00010000, "601",
+ 	CPU_FTR_COMMON |
+-	CPU_FTR_601 | CPU_FTR_HPTE_TABLE,
++	CPU_FTR_601 | CPU_FTR_HPTE_TABLE | CPU_FTR_MQ,
+ 	COMMON_PPC | PPC_FEATURE_601_INSTR | PPC_FEATURE_UNIFIED_CACHE,
+ 	32, 32,
+ 	__setup_cpu_601
+diff -ur linux-2.6.8-rc1/arch/ppc/kernel/entry.S linux-2.6.8-rc1-mq/arch/ppc/kernel/entry.S
+--- linux-2.6.8-rc1/arch/ppc/kernel/entry.S	2004-07-12 17:46:42.728155700 +0200
++++ linux-2.6.8-rc1-mq/arch/ppc/kernel/entry.S	2004-07-12 20:22:37.898734896 +0200
+@@ -104,6 +104,12 @@
+ 	mfspr	r2,XER
+ 	stw	r12,_CTR(r11)
+ 	stw	r2,_XER(r11)
++#ifdef CONFIG_PPC601_MQ
++BEGIN_FTR_SECTION
++	mfspr	r2,SPRN_MQ
++	stw	r2,_MQ(r11)
++END_FTR_SECTION_IFSET(CPU_FTR_MQ)
++#endif /* CONFIG_PPC601_MQ */
+ 	mfspr	r12,SPRG3
+ 	addi	r2,r12,-THREAD
+ 	tovirt(r2,r2)			/* set r2 to current */
+@@ -252,6 +258,12 @@
+ 	lwz	r5,_CCR(r1)
+ 	mtlr	r4
+ 	mtcr	r5
++#ifdef CONFIG_PPC601_MQ
++BEGIN_FTR_SECTION
++	lwz	r7,_MQ(r1)
++	mtspr	SPRN_MQ,r7
++END_FTR_SECTION_IFSET(CPU_FTR_MQ)
++#endif /* CONFIG_PPC601_MQ */
+ 	lwz	r7,_NIP(r1)
+ 	lwz	r8,_MSR(r1)
+ 	FIX_SRR1(r8, r0)
+@@ -523,6 +535,12 @@
+ 1:	stw	r11,_MSR(r1)
+ 	mfcr	r10
+ 	stw	r10,_CCR(r1)
++#ifdef CONFIG_PPC601_MQ
++BEGIN_FTR_SECTION
++	mfspr	r10,SPRN_MQ
++	stw	r10,_MQ(r1)
++END_FTR_SECTION_IFSET(CPU_FTR_MQ)
++#endif /* CONFIG_PPC601_MQ */
+ 	stw	r1,KSP(r3)	/* Set old stack pointer */
 
- 	/* If we read the operand, copy it in */
- 	if (flags & LD) {
--		if (nb == 2) {
--			data.v[0] = data.v[1] = 0;
--			if (__get_user(data.v[2], addr)
--			    || __get_user(data.v[3], addr+1))
--				return -EFAULT;
--		} else {
--			for (i = 0; i < nb; ++i)
--				if (__get_user(data.v[i], addr+i))
-+		for (j = 0; j < mr; ++j) {
-+			if (nb == 2) {
-+				data[j].v[0] = data[j].v[1] = 0;
-+				if (__get_user(data[j].v[2], addr)
-+				    || __get_user(data[j].v[3], addr+1))
- 					return -EFAULT;
-+			} else {
-+				for (i = 0; i < nb; ++i) {
-+					if ((j*4)+i < mb) {
-+						if (__get_user(data[j].v[i], addr+(j*4)+i))
-+							return -EFAULT;
-+					} else {
-+						data[j].v[i] = 0;
-+					}
-+				}
-+			}
+ #ifdef CONFIG_SMP
+@@ -555,6 +573,12 @@
+
+ 	lwz	r0,_CCR(r1)
+ 	mtcrf	0xFF,r0
++#ifdef CONFIG_PPC601_MQ
++BEGIN_FTR_SECTION
++	lwz	r0,_MQ(r1)
++	mtspr	SPRN_MQ,r0
++END_FTR_SECTION_IFSET(CPU_FTR_MQ)
++#endif /* CONFIG_PPC601_MQ */
+ 	/* r3-r12 are destroyed -- Cort */
+ 	REST_NVGPRS(r1)
+
+@@ -663,6 +687,12 @@
+ 	lwz	r11,_LINK(r1)
+ 	mtcrf	0xFF,r10
+ 	mtlr	r11
++#ifdef CONFIG_PPC601_MQ
++BEGIN_FTR_SECTION
++	lwz	r10,_MQ(r1)
++	mtspr	SPRN_MQ,r10
++END_FTR_SECTION_IFSET(CPU_FTR_MQ)
++#endif /* CONFIG_PPC601_MQ */
+
+ 	/*
+ 	 * Once we put values in SRR0 and SRR1, we are in a state
+diff -ur linux-2.6.8-rc1/arch/ppc/kernel/ppc-stub.c linux-2.6.8-rc1-mq/arch/ppc/kernel/ppc-stub.c
+--- linux-2.6.8-rc1/arch/ppc/kernel/ppc-stub.c	2004-07-12 17:46:43.310602098 +0200
++++ linux-2.6.8-rc1-mq/arch/ppc/kernel/ppc-stub.c	2004-07-12 20:22:38.165025177 +0200
+@@ -685,13 +685,14 @@
+ 				ptr[i] = '0';
+ 			}
+ 			ptr += 32*8*2;
+-			/* pc, msr, cr, lr, ctr, xer, (mq is unused) */
++			/* pc, msr, cr, lr, ctr, xer, mq (only on 601) */
+ 			ptr = mem2hex((char *)&regs->nip, ptr, 4);
+ 			ptr = mem2hex((char *)&regs->msr, ptr, 4);
+ 			ptr = mem2hex((char *)&regs->ccr, ptr, 4);
+ 			ptr = mem2hex((char *)&regs->link, ptr, 4);
+ 			ptr = mem2hex((char *)&regs->ctr, ptr, 4);
+ 			ptr = mem2hex((char *)&regs->xer, ptr, 4);
++			ptr = mem2hex((char *)&regs->mq, ptr, 4);
  		}
- 	}
+ 			break;
 
--	switch (flags & ~U) {
-+	/* We already did the main work for the multiple register cases
-+	   (M, STR_OP and STR_XER), so they get filtered out. As the only
-+	   possible combinations with multiples are with LD and ST, there
-+	   is only a loop there. data[0] is used when there is only one
-+	   register involved. */
-+	switch (flags & ~(U|M|STR_OP|STR_XER)) {
- 	case LD+SE:
--		if (data.v[2] >= 0x80)
--			data.v[0] = data.v[1] = -1;
-+		if (data[0].v[2] >= 0x80)
-+			data[0].v[0] = data[0].v[1] = -1;
- 		/* fall through */
- 	case LD:
--		regs->gpr[reg] = data.l;
-+		for (i = 0; i < mr; ++i)
-+			regs->gpr[reg+i] = data[i].l;
- 		break;
- 	case LD+S:
- 		if (nb == 2) {
--			SWAP(data.v[2], data.v[3]);
-+			SWAP(data[0].v[2], data[0].v[3]);
- 		} else {
--			SWAP(data.v[0], data.v[3]);
--			SWAP(data.v[1], data.v[2]);
-+			SWAP(data[0].v[0], data[0].v[3]);
-+			SWAP(data[0].v[1], data[0].v[2]);
+@@ -711,13 +712,14 @@
+ 			/*ptr = hex2mem(ptr, ??, 32 * 8);*/
+ 			ptr += 32*8*2;
+
+-			/* pc, msr, cr, lr, ctr, xer, (mq is unused) */
++			/* pc, msr, cr, lr, ctr, xer, mq (only on 601) */
+ 			ptr = hex2mem(ptr, (char *)&regs->nip, 4);
+ 			ptr = hex2mem(ptr, (char *)&regs->msr, 4);
+ 			ptr = hex2mem(ptr, (char *)&regs->ccr, 4);
+ 			ptr = hex2mem(ptr, (char *)&regs->link, 4);
+ 			ptr = hex2mem(ptr, (char *)&regs->ctr, 4);
+ 			ptr = hex2mem(ptr, (char *)&regs->xer, 4);
++			ptr = hex2mem(ptr, (char *)&regs->mq, 4);
+
+ 			strcpy(remcomOutBuffer,"OK");
  		}
--		regs->gpr[reg] = data.l;
-+		regs->gpr[reg] = data[0].l;
- 		break;
- 	case ST:
--		data.l = regs->gpr[reg];
-+		for (i = 0; i < mr; ++i)
-+			data[i].l = regs->gpr[reg+i];
- 		break;
- 	case ST+S:
--		data.l = regs->gpr[reg];
-+		data[0].l = regs->gpr[reg];
- 		if (nb == 2) {
--			SWAP(data.v[2], data.v[3]);
-+			SWAP(data[0].v[2], data[0].v[3]);
- 		} else {
--			SWAP(data.v[0], data.v[3]);
--			SWAP(data.v[1], data.v[2]);
-+			SWAP(data[0].v[0], data[0].v[3]);
-+			SWAP(data[0].v[1], data[0].v[2]);
- 		}
- 		break;
- 	case LD+F:
--		current->thread.fpr[reg] = data.d;
-+		current->thread.fpr[reg] = data[0].d;
- 		break;
- 	case ST+F:
--		data.d = current->thread.fpr[reg];
-+		data[0].d = current->thread.fpr[reg];
- 		break;
- 	/* these require some floating point conversions... */
- 	/* we'd like to use the assignment, but we have to compile
-@@ -327,15 +367,15 @@
- 	case LD+F+S:
- 		preempt_disable();
- 		enable_kernel_fp();
--		cvt_fd(&data.f, &current->thread.fpr[reg], &current->thread.fpscr);
--		/* current->thread.fpr[reg] = data.f; */
-+		cvt_fd(&data[0].f, &current->thread.fpr[reg], &current->thread.fpscr);
-+		/* current->thread.fpr[reg] = data[0].f; */
- 		preempt_enable();
- 		break;
- 	case ST+F+S:
- 		preempt_disable();
- 		enable_kernel_fp();
--		cvt_df(&current->thread.fpr[reg], &data.f, &current->thread.fpscr);
--		/* data.f = current->thread.fpr[reg]; */
-+		cvt_df(&current->thread.fpr[reg], &data[0].f, &current->thread.fpscr);
-+		/* data[0].f = current->thread.fpr[reg]; */
- 		preempt_enable();
- 		break;
- 	default:
-@@ -344,14 +384,16 @@
- 	}
+diff -ur linux-2.6.8-rc1/include/asm-ppc/cputable.h linux-2.6.8-rc1-mq/include/asm-ppc/cputable.h
+--- linux-2.6.8-rc1/include/asm-ppc/cputable.h	2004-06-16 07:19:22.000000000 +0200
++++ linux-2.6.8-rc1-mq/include/asm-ppc/cputable.h	2004-07-12 20:22:38.241820502 +0200
+@@ -76,6 +76,7 @@
+ #define CPU_FTR_NO_DPM			0x00008000
+ #define CPU_FTR_HAS_HIGH_BATS		0x00010000
+ #define CPU_FTR_NEED_COHERENT           0x00020000
++#define CPU_FTR_MQ			0x00040000
 
- 	if (flags & ST) {
--		if (nb == 2) {
--			if (__put_user(data.v[2], addr)
--			    || __put_user(data.v[3], addr+1))
--				return -EFAULT;
--		} else {
--			for (i = 0; i < nb; ++i)
--				if (__put_user(data.v[i], addr+i))
-+		for (j = 0; j < mr; ++j) {
-+			if (nb == 2) {
-+				if (__put_user(data[j].v[2], addr)
-+				    || __put_user(data[j].v[3], addr+1))
- 					return -EFAULT;
-+			} else {
-+				for (i = 0; (i < nb) && (((j*4)+i) < mb); ++i)
-+					if (__put_user(data[j].v[i], addr+(j*4)+i))
-+						return -EFAULT;
-+			}
- 		}
- 	}
+ #ifdef __ASSEMBLY__
 
+diff -ur linux-2.6.8-rc1/include/asm-ppc/ptrace.h linux-2.6.8-rc1-mq/include/asm-ppc/ptrace.h
+--- linux-2.6.8-rc1/include/asm-ppc/ptrace.h	2004-07-12 17:49:59.282833840 +0200
++++ linux-2.6.8-rc1-mq/include/asm-ppc/ptrace.h	2004-07-12 20:22:38.346541399 +0200
+@@ -27,7 +27,7 @@
+ 	unsigned long link;
+ 	unsigned long xer;
+ 	unsigned long ccr;
+-	unsigned long mq;		/* 601 only (not used at present) */
++	unsigned long mq;		/* 601 only */
+ 					/* Used on APUS to hold IPL value. */
+ 	unsigned long trap;		/* Reason for being here */
+ 	/* N.B. for critical exceptions on 4xx, the dar and dsisr
+diff -ur linux-2.6.8-rc1/include/asm-ppc/reg.h linux-2.6.8-rc1-mq/include/asm-ppc/reg.h
+--- linux-2.6.8-rc1/include/asm-ppc/reg.h	2004-07-12 17:49:59.325719433 +0200
++++ linux-2.6.8-rc1-mq/include/asm-ppc/reg.h	2004-07-12 20:22:38.528057621 +0200
+@@ -320,6 +320,7 @@
+ #define SPRN_USIA	0x3AB	/* User Sampled Instruction Address Register */
+ #define SPRN_VRSAVE	0x100	/* Vector Register Save Register */
+ #define SPRN_XER	0x001	/* Fixed Point Exception Register */
++#define SPRN_MQ		0x000	/* MQ Register */
 
---------------040002030702030205010906--
+ /* Bit definitions for MMCR0 and PMC1 / PMC2. */
+ #define MMCR0_PMC1_CYCLES	(1 << 7)
+
+--------------060301020506080806060506--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
