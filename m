@@ -1,40 +1,36 @@
-To: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
-Cc: acurtis@onz.com, Flavio Pereira <fpereira@azisa.com>,
-	linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 8260 configuration 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 02 Oct 2002 09:54:34 CDT."
-             <0B0A39652BB0D411BCCF00508B9512EC08AEB3FE@tx14exm05.ftw.mot.com>
-Date: Wed, 02 Oct 2002 17:07:06 +0200
-Message-Id: <20021002150711.6DC63FA99@denx.denx.de>
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "Wolfgang Denk" <wd@denx.de>
+Cc: "Flavio Pereira" <fpereira@azisa.com>,
+	"Yu Bo-BOYU1" <Bo.Yu@motorola.com>,
+	"linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: 8260 configuration 
+Date: Wed, 2 Oct 2002 08:07:58 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFEEMMDMAA.acurtis@onz.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <20021002144757.8BCDFFA99@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <0B0A39652BB0D411BCCF00508B9512EC08AEB3FE@tx14exm05.ftw.mot.com> you wrote:
-> Is 0x0 the real physical address or logical address ? As far as
+> > > One "start" address that is not fixed is the initial load
+> > > address. Where the
+> > > kernel is put in RAM with decompressing etc. You should have to
+> > > worry about
+> > > this if you are using one of the available boot loaders.
+> >
+> > Sorry, should NOT have to worry about that address...
+>
+> Wrong, you SHOULD worry about this address. Load the kernel to a  low
+> enough  address  (say  at  0x10000)  and  the uncompressing code will
+> probably overwrite the kernel image.
 
-It's the  real physical address.
+The point is if you are using one of the available boot loaders, it normally
+takes care of loading and decompressing the kernel. If you have the urge to
+experiment with the load address, then you are right. Normally this is
+out-of-sight, out-of-mind.
 
-> Since vxWorks (5.4) has no virtual memory support and the exception
-> base address is mapped to 0x0 already, starting linux kernel at 0x0
-> would mean there is no exception handling capability at least at
-> the very beginning.
-
-Why not? When you copy the Linux  kernel  image  to  low  memory  you
-include the Linux trap handlers, of course.
-
-Not that they would do you any good in the very early boot stage,
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-It's hard to make a program foolproof because fools are so ingenious.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
