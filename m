@@ -1,56 +1,47 @@
-Message-Id: <200212071104.FAA32694@lists.linuxppc.org>
-To: "Pagnotta, Chris" <chris.pagnotta@viasat.com>
-Subject: Re: NFS root woes: No init found 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 06 Dec 2002 17:36:27 PST."
-             <0509218DDAD7D6118055006008F6D5F6A1E39A@postal.viasat.com>
-Date: Sat, 07 Dec 2002 12:02:07 +0100
+Message-ID: <003c01c29def$9b3d5df0$0300a8c0@jockeXP>
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: "Paul Mackerras" <paulus@au1.ibm.com>
+Cc: "Matt Porter" <porter@cox.net>,
+	"Pantelis Antoniou" <panto@intracom.gr>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <20021206085909.B17918@home.com><IGEFJKJNHJDCBKALBJLLCEJGFIAA.joakim.tjernlund@lumentis.se> <15857.15826.513311.884408@argo.ozlabs.ibm.com>
+Subject: Re: Regarding consistent_alloc
+Date: Sat, 7 Dec 2002 13:53:14 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <0509218DDAD7D6118055006008F6D5F6A1E39A@postal.viasat.com> you wrote:
+> Joakim Tjernlund writes:
 >
-> I am having a problem with NFS mounting the root filesystem. It seems that
-> init
-> is not being executed. However, the problem may be with rootpath not being
-> set.
-> Should that parameter be set from the kernel command nfsroot=?
+> > m8xx_cpm_hostalloc() does not keep the DMA handle and __pa() does not work
+> > on addresses returned by m8xx_cpm_hostalloc(). I just found that out the
+> > hard way when upgrading from MV 2.4.2 to linuxppc_2_4_devel 2.4.20. My SPI driver
+> > hung as soon you tried to read something.
+>
+> Then m8xx_cpm_hostalloc should be changed so it returns the DMA
+> address along with the virtual address (of the uncached mapping).
+>
+> An alternative which will work, at least at present, is to use iopa()
+> on the virtual address.  However, that assumes that DMA bus addresses
+> are identical to CPU physical addresses.  That is true at the moment
+> on all embedded PPC platforms that I know of currently, but there is
+> no guarantee that it will always be true.  That is why I think it is
+> better to make a practice of saving the DMA address that you get back
+> from consistent_alloc and using that.
 
-What are you talking about?
+Is consistent_alloc really needed? All uses I have seen in the kernel for the 8xx CPU can be solved with
+a kmalloc(or a static char buffer) and a invalidate_dcache_range call(flush_dcache_range if the buffer isn't cache line aligned).
+This usally eliminates a memcpy() from uncached memory. See the 8xx_io/enet.c patch I sent to
+this list a few weeks ago. One guy converted that patch to the 8260 FEC and had a 20% increase in performace
+for big packets in his router.
 
-> Kernel command line: root=/dev/nfs nfsroot=/tftpboot/powerpc-rootfs
-> ip=172.25.59
-> .11:172.25.59.15::255.255.0.0:vib::off
+    Jocke
 
-Your rootpath _is_ set here: you're using "/tftpboot/powerpc-rootfs"
-as root directory.
-
-...
-> Looking up port of RPC 100003/2 on 172.25.59.15
-> Looking up port of RPC 100005/1 on 172.25.59.15
-> VFS: Mounted root (nfs filesystem).
-
-And the root filesystem was found and mounted.
-
-> Mounted devfs on /dev
-> Freeing unused kernel memory: 212k init
-> Kernel panic: No init found.  Try passing init= option to kernel.
-
-Are you sure you NEED devfs here? For now I recommend to disable this
-option, as it adds just additional complexity. To anlyze what's going
-on with your  NFS  root  filesystem,  run  a  network  sniffer  (like
-ethereal) and check wich accesses work, and which are failing.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Imagination is more important than knowledge.      -- Albert Einstein
+PS.
+     I still think the 'sync' instruction in invalidate_dcache_range is unneed. I have been running my system
+     without it for a few weeks now and it still works as it should.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
