@@ -1,43 +1,50 @@
-Date: Sun, 23 Sep 2001 13:50:47 -0700
+Date: Sun, 23 Sep 2001 13:54:41 -0700
 From: Tom Rini <trini@kernel.crashing.org>
 To: Wolfgang Denk <wd@denx.de>
-Cc: Josh Huber <huber@alum.wpi.edu>, Dan Malek <dan@mvista.com>,
-	Stefan Roese <stefan.roese@esd-electronics.com>,
+Cc: Dan Malek <dan@mvista.com>,
 	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
 	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
 Subject: Re: CPCI-405 port (PPC405GP)
-Message-ID: <20010923135047.B1878@cpe-24-221-152-185.az.sprintbbd.net>
-References: <87k7ytygaf.fsf@mclinux.com> <20010923180012.755801009E@denx.denx.de>
+Message-ID: <20010923135441.C1878@cpe-24-221-152-185.az.sprintbbd.net>
+References: <3BAA0C91.42E0910D@mvista.com> <20010923180123.979C61009E@denx.denx.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010923180012.755801009E@denx.denx.de>
+In-Reply-To: <20010923180123.979C61009E@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sun, Sep 23, 2001 at 08:00:07PM +0200, Wolfgang Denk wrote:
-> In message <87k7ytygaf.fsf@mclinux.com> Josh Huber wrote:
-> > Tom Rini <trini@kernel.crashing.org> writes:
-> >
-> > > But the bi_recs in 2.5 won't look like 2.4.current.
-> >
-> > bummer...can it not be changed in a compatible manner?
+On Sun, Sep 23, 2001 at 08:01:18PM +0200, Wolfgang Denk wrote:
+> In message <3BAA0C91.42E0910D@mvista.com> you wrote:
 >
-> Where can I get more information what it will look like in  2.5?  I'd
-> like to be able to have PPCBoot prepared for this change, and ideally
-> in  a way that provides a soft migration from current kernel versions
-> to the new stuff.
+> > the purposes of the bootloader is to isolate these changes into the
+> > bootloader.
+>
+> As long as you don't create incompatible  _interfaces_  there  is  no
+> problem.
 
-Search the -dev archives for '2.5 birecs' or '2.5 bi recs'.  It was also
-on the (old) -commit list before that.
+Well, 2.5/2.6 _will_ be incompatible with 2.4.  But it should also be
+possible for bootloaders to work for both.
 
-> Or is there even a discussion of this stuff where one  can  at  least
-> inject  ideas  or point out thinks that might cause problems - BEFORE
-> everything is cast in stone?
+> > The bootloader is a critical part to initializing the environment for
+> > the kernel.  With all of the MMU futzing around we do trying to get
+> > Linux running, Ben and I have discussed yet another better bootloader
+> > method to move some of this around between the bootloader and the
+> > kernel start up.  There are also initrd and command line things done
+> > by the bootloader (among other board specific initialization).  It's
+> > more than whether or not we all use bi_recs.
+>
+> Please keep in mind that PPCBoot exists, and is used on MANY  boards.
+> Even  when you don't use it yourself, I ask you not to break compati-
+> bility without GOOD reason. Also, I'd appreciate a little  discussion
+> with  the PPCBoot folks before such changes happen. You know where to
+> find us.
 
-Well, it's already been 'agreeded' to look somewhat like the current
-bi_recs (<asm/bootinfo.h>).  Different location and more of.  And
-other changes that haven't been fleshed out..
+Well, this was on linuxppc-dev at least once.  Possibly twice.  And at
+least once more before we actually do this.  2.5 will be incompatible
+since everyone whose spoken before has agreeded that the current methods
+aren't 100%.  If you wanna make a case for moving everyone to the way
+PPCBoot talks to the kernel, please do.
 
 --
 Tom Rini (TR1265)
