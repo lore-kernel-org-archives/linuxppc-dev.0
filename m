@@ -1,19 +1,16 @@
-Return-Path: <Alexander.Povolotsky@marconi.com>
-Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
-	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id D9A5D67A98
+Return-Path: <galak@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id E686B67A66
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Jan 2005 06:14:56 +1100 (EST)
-Message-ID: <313680C9A886D511A06000204840E1CF0A647502@whq-msgusr-02.pit.comms.marconi.com>
-From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-To: "'John W. Linville'" <linville@tuxdriver.com>
-Date: Tue, 18 Jan 2005 14:08:19 -0500
+	Wed, 19 Jan 2005 06:52:04 +1100 (EST)
+Date: Tue, 18 Jan 2005 09:34:50 -0600 (CST)
+From: Kumar Gala <galak@freescale.com>
+To: torvalds@osdl.org, akpm@osdl.org
+Message-ID: <Pine.LNX.4.61.0501180925070.11311@blarg.somerset.sps.mot.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
-Cc: 'Steven Blakeslee' <BlakesleeS@embeddedplanet.com>,
-	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Subject: RE: Linux 2.6.10-rc3  8xx: debugging (over-writing)  content of b
-	d_in fo structure  in the kernel booting code
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Subject: [PATCH 0/4] ppc32: platform_device conversion from OCP
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,59 +21,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-My board is using:
+Linus,
 
-        bd->bi_intfreq = 50000000;
-        bd->bi_busfreq = 50000000;
+I would like to try to get these patches into 2.6.11.  They add 
+infrastructure for all ppc sub-archs to use platform_devices instead of 
+OCP.  Additionally, I've converted the 85xx sub-arch and gianfar enet 
+driver (used by 85xx) over to using platform_device and the new 
+infrastructure.
 
-While RPX-Lite is using
+The sooner these get in the easier it will be to convert the other 
+sub-archs and drivers to platform_device and remove OCP.
 
-        bd->bi_intfreq = 48000000;
-        bd->bi_busfreq = 48000000; 
-
-Is this what makes RPX-Lite work and my (MPC 880) not ?
-
------Original Message-----
-From: Povolotsky, Alexander 
-Sent: Tuesday, January 18, 2005 1:53 PM
-To: 'John W. Linville'
-Cc: 'Mark Chambers'; 'linuxppc-embedded@ozlabs.org'; 'Tom Rini'; 'Steven
-Blakeslee'
-Subject: RE: Linux 2.6-10.rc3 8xx: debugging (over-writing) content of b
-d_in fo structure in the kernel booting code
-
-
-The "one, I am using" from my previous e-mail relates to 2.6.10-rc3
-My processor is MPC880.
------Original Message-----
-From: Povolotsky, Alexander 
-Sent: Tuesday, January 18, 2005 1:19 PM
-To: 'John W. Linville'
-Cc: 'Mark Chambers'; 'linuxppc-embedded@ozlabs.org'; 'Tom Rini'; 'Steven
-Blakeslee'
-Subject: RE: Linux 2.6.10-rc3 8xx: debugging (over-writing) content of b
-d_in fo structure in the kernel booting code
-
->Aren't there still generic problems w/ 8xx and 2.6.x?
-
-Allegedly - yes (with memory initialization) but ...
-both Tom Rini and Steve Blakeslee were able to boot their 
-RPXLite Variant of 8xx on 2.6.10-rc3 (the one I am using)
-
------Original Message-----
-From: John W. Linville [mailto:linville@tuxdriver.com]
-Sent: Tuesday, January 18, 2005 1:11 PM
-To: Povolotsky, Alexander
-Cc: 'Mark Chambers'; 'linuxppc-embedded@ozlabs.org'
-Subject: Re: Linux 2.6.10-rc3 8xx: debugging (over-writing) content of b
-d_in fo structure in the kernel booting code
-
-
-On Tue, Jan 18, 2005 at 10:45:53AM -0500, Povolotsky, Alexander wrote:
-
-> Forgot to mention - this board boots (and works) well with Linux 2.4.26 
-
-Aren't there still generic problems w/ 8xx and 2.6.x?
--- 
-John W. Linville
-linville@tuxdriver.com
+- kumar
