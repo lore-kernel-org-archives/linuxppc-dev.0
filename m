@@ -1,42 +1,28 @@
-Message-ID: <17B78BDF120BD411B70100500422FC63079F8D@IIS000>
-From: Patrick Lerda <Lerda@microprocess.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: MMU problems on Linux 8xx. (reliability...)
-Date: Wed, 14 Jun 2000 11:10:42 +0200
+From: "Navin Boppuri" <nboppuri@myiagent.com>
+To: "Kirk Haderlie" <khaderlie@vividimage.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: FADS 823
+Date: Wed, 14 Jun 2000 11:27:20 +0100
+Message-ID: <NEBBLLEGJMLHPJEFEOKPCEBNCAAA.nboppuri@myiagent.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <319E391E2049D311843500609457383D07FC57@exchange.vividimage.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've a PPC823 board working with a recent linux kernel based on monta vista.
-When I try complex operation like compiling a kernel on this board, the
-kernel
-crash after a while. An illegal instruction is generated, linux see
-an opcode: *NIP=0, the illegal instruction occur in a glibc-2.1.3 page.
-The glibc page is not see properly... This problem seems to occur
-only on complex operation, and make this system not reliable.
+Hello Kirk,
 
-I also have a PPC750 board working with the same kernel with proper
-configuration,
-the only differences in code is the MMU part. Linux work properly and
-reliably
-on this board with the PPC860 software.
+Can u list the configurations needed to compile the linux kernel to work on
+mpc fads board. I have a few questions to ask.
 
-if you have see a similar behaviour on you boards, or with differents
-processor.
-I know that the PPC823 is not 100% compatible with the PPC860, there is
-some differences on TLB available etc... And linux seems to be hard coded
-for 32 TLB...
+1) What do I change the ARCH variable to in the linux kernel Make file?
+2) Is there a PPP loadable module along with the mpc linux kernel which I
+could compile? Or do I have to do it seperately?
+3) Do I need to compile the linux kernel before compiling the 8xxrom-0.3.0?
 
-If you know how the MMU is handle on linux 8xx, and if you see a similar
-behavior
-let me know...
-
-
-
-Patrick LERDA
-
+Thank you.
+Navin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
