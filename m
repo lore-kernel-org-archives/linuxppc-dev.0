@@ -1,54 +1,38 @@
-Message-ID: <3DB6A051.7A526641@corelatus.com>
-Date: Wed, 23 Oct 2002 15:12:49 +0200
-From: Thomas Lange <thomas@corelatus.com>
+Message-ID: <3DB6A403.2050705@mvista.com>
+Date: Wed, 23 Oct 2002 08:28:35 -0500
+From: Mark Hatle <fray@mvista.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: 8xx enet collision counter
-Content-Type: text/plain; charset=us-ascii
+To: Vishwanath <vishwanath@mistralsoftware.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Monta Vista Linux Supporting Floating Point operations
+References: <002501c27a66$fcc4bd40$faffa8c0@VISHWANATH>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Collisions in 8xx scc ethernet are not reported
-correctly IMHO.
+Vishwanath wrote:
+> Hi All,
+>
+> I am working on 440GP using Monta Vista Linux 2.1. I need floating point
+> operation support (for eg. function sqrt() for calculating square root of
+> given float variable) on Linux. I didn't find math emualtion on the Linux.
+> Can anyone tell me how can I get floating point support ?
 
->From enet.c :
-		/* Deferred means some collisions occurred during transmit,
-		 * but we eventually sent the packet OK.
-		 */
-		if (bdp->cbd_sc & BD_ENET_TX_DEF)
-			cep->stats.collisions++;
+Floating point support in MontaVista Linux is handled by the compiler and _NOT_
+the kernel.  In architecting our system we have weighed the tradeoffs between
+soft-floating point, or hard-floating point using kernel exceptions.
+Soft-floating point was found to be superior so we use it on all platforms
+without a hardware FPU.
 
->From Table 28-8 in 860 UM:
-------
-6 DEF Defer indication. The frame was deferred before being sent
-successfully,
-that is, the transmitter had to wait for carrier sense before sending
-because the line was busy.
-This is not a collision indication; collisions are indicated in RC.
-------
-10-13 RC Retry count. Indicates the number of retries required before
-the frame was sent successfully. If RC = 0, the frame was sent correctly
-the first time. If RC = 15 and RET_LIM = 15 in the parameter RAM, 15
-retries were required. Because the counter saturates at 15, if RC = 15
-and RET_LIM > 15, then 15 or more retries were required. The controller
-writes this field after it successfully sends the buffer.
-------
+One thing to note, because of this the ABI is slightly different then the
+binaries you would download off of a random community website.  You need to use
+our compiler (or a community compiler configured appropriatly) to build
+soft-float.  (On a non-MontaVista compiler, you usually need to pass
+-msoft-float on the command line to gcc.)
 
 
-The correct way to do it would be to use the RC value,
-something like this:
+--Mark
 
-		/* Check retry counter, i.e. collision counter */
-		if (bdp->cbd_sc & BD_ENET_TX_RCMASK){
-		  /* Note that counter cannot go higher than 15 */
-		  cep->stats.collisions+=(bdp->cbd_sc & BD_ENET_TX_RCMASK)>>2;
-		}
-
-I have tried this and it looks much better. That is, when
-tranceiver led signals collision, the collision counter actually
-moves ;-)
-
-/Thomas
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
