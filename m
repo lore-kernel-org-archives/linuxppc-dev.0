@@ -1,30 +1,54 @@
-Message-ID: <3A6752BE.EC7BEAD2@mvista.com>
-Date: Thu, 18 Jan 2001 15:31:58 -0500
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3A676DC6.FD21D5D8@matrox.com>
+Date: Thu, 18 Jan 2001 17:27:18 -0500
+From: Sébastien Côté <scote1@matrox.com>
 MIME-Version: 1.0
-To: Gregory Allen <gallen@arlut.utexas.edu>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Ethernet controller
-References: <200101181805.MAA88737@ns5.arlut.utexas.edu>
-Content-Type: text/plain; charset=us-ascii
+To: LinuxPPC-embedded list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: initrd problems
+References: <3A671191.A0254C18@matrox.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Gregory Allen wrote:
+I finally figured out a small part of the problem...  My initrd_start
+was overwritten (to 0) by the function start_kernel in init/main.c :
 
-> I prefer to avoid the BGA package of the i82559, but the RTL8139 driver support is listed as having "limited PowerPC testing". I am also curious about their relative performance.
+#ifdef CONFIG_BLK_DEV_INITRD
+	if (initrd_start && !initrd_below_start_ok &&
+			initrd_start < min_low_pfn << PAGE_SHIFT) {
+		printk(KERN_CRIT "initrd overwritten (0x%08lx < 0x%08lx) - "
+		    "disabling it.\n",initrd_start,min_low_pfn << PAGE_SHIFT);
+		initrd_start = 0;
+	}
+#endif
+
+I don't really understand this function... Why would my initrd be
+overwritten?!?  Anyways, I commented it out to see what would happen.
+This time, it opened the root device (in function mount_root()) but
+didn't go very far:
+
+	sb = get_super(ROOT_DEV);
+	if (sb) {
+		fs_type = sb->s_type;
+		goto mount_it;
+	}
+	...
+	panic("VFS: Unable to mount root fs on %s", kdevname(ROOT_DEV));
 
 
-All I have ever used in my 8240/Sandpoint is the RTL8139 PCI card.
-I made a couple of minor changes for byte swapping problems and sent
-it to the author a long time ago.
+sb is NULL.  Damn..  What now?  Is it possible that my initrd has been
+erased like the kernel told me?  What else could it be?
 
-I can't speak to the performance, as I didn't really do any performance
-testing, but it seemed OK.  It's a PCI master device in what has become
-a generic Ethernet world, so it should work as well as anything else.
+I was also wondering if I loaded the kernel correctly.  I put my
+zImage+initrd (zvmlinux.initrd) at address 0 of ram.  Since I compiled
+the kernel with debug symbols, it takes a few Megs... Could it be too
+large for it's own good?  Maybe somebody knows about the answer to that
+one!
+
+By the way, I forgot to mention it in the first email but I'm using
+linux-2.4.0-test2.
 
 
-	-- Dan
+Sébastien Côté
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
