@@ -1,101 +1,94 @@
 Content-Type: text/plain;
   charset="iso-8859-1"
 From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Magnus Damm <damm@opensource.se>,
+	Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: aty128fb and EDID
-Date: Mon, 10 Feb 2003 07:36:09 -0500
-Cc: Magnus Damm <damm@opensource.se>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-References: <Pine.GSO.4.21.0302101034180.25020-100000@vervain.sonytel.be>
-In-Reply-To: <Pine.GSO.4.21.0302101034180.25020-100000@vervain.sonytel.be>
+Date: Mon, 10 Feb 2003 08:16:36 -0500
+Cc: linuxppc-dev@lists.linuxppc.org
+References: <200302091940.10202.kevin.hendricks@sympatico.ca> <Pine.GSO.4.21.0302101034180.25020-100000@vervain.sonytel.be> <20030210111453.52322aba.damm@opensource.se>
+In-Reply-To: <20030210111453.52322aba.damm@opensource.se>
 MIME-Version: 1.0
-Message-Id: <200302100736.09901.kevin.hendricks@sympatico.ca>
+Message-Id: <200302100816.36075.kevin.hendricks@sympatico.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi,
 
-When I contribuited it originally, I did not know that I should have made
-it generic.
+I found the code to decode the full block from a variety of source (X11 had
+some of it).  The problem is the "established timings" block was empty in
+my EDID block (or I made a big mistake someplace).
 
-It is simply one small routine, it could be duplicated easily as a first
-step.
+My primary concern was just getting my DFP to work at all at the time.
+
+I will dig up what I have about timings and post it if anyone wants it.
 
 Kevin
 
-On February 10, 2003 04:35, Geert Uytterhoeven wrote:
-> On Sun, 9 Feb 2003, Kevin B. Hendricks wrote:
-> > Steal the code from the radeon dirver in the kernel.  It finds and
-> > parses the EDID block in OF for ppc linux systems for LCD.
+On February 10, 2003 05:14, Magnus Damm wrote:
+> > > Steal the code from the radeon dirver in the kernel.  It finds and
+> > > parses the EDID block in OF for ppc linux systems for LCD.
 >
-> I guess you actually meant:
-> | Move the code out of the radeon driver and make it sufficiently
-> | generic so it can be used by the aty128 and other drivers?
-> |
-> > It works fine with my 17 in lcd display.
-> >
-> > Kevin
-> >
-> > On February 9, 2003 06:26, Magnus Damm wrote:
-> > > Hi,
-> > >
-> > > I recently bought a Cube G4 and got a 17" Apple Studio Display (CRT,
-> > > ADC) with it. However, that combination seems hard to use out of the
-> > > box if you want to use something else than the open firmware
-> > > framebuffer.
-> > >
-> > > The thing is that the monitor only supports two modes:
-> > > 1600x1200 64Hz
-> > > 1280x1024 75Hz
-> > >
-> > > This gives me no picture at all when I try to use the aty128 driver.
-> > >
-> > > However, when I hardcode this video mode as default things work out
-> > > ok: /* default modedb mode */
-> > > /* 1600x1200, 64Hz, Non-Interlaced */
-> > > static struct fb_videomode defaultmode __initdata = {
-> > >         refresh:        64,
-> > >         xres:           1600,
-> > >         yres:           1200,
-> > >         pixclock:       5952,
-> > >         left_margin:    304,
-> > >         right_margin:   24,
-> > >         upper_margin:   38,
-> > >         lower_margin:   1,
-> > >         hsync_len:      184,
-> > >         vsync_len:      3,
-> > >         sync:           3,
-> > >         vmode:          FB_VMODE_NONINTERLACED
-> > > };
-> > >
-> > > The information above was built from my EDID file.
-> > >
-> > > To create some kind of generic solution I need to add EDID support
-> > > to the aty128 driver, or even better - a generic framebuffer layer.
-> > >
-> > > My question to you is:
-> > > All probing that is done by checking if "machine_is_compatible()",
-> > > could that all be replaced by EDID code?
-> > >
-> > > If you could send me your EDID files with together with information
-> > > about your machine and monitor I would be really happy. Then I could
-> > > parse them and see if they contain enough information. If you don't
-> > > find any EDID file then I would be glad to know that too.
-> > >
-> > > These machines are extra interesting:
-> > > * PowerMac2,1 first r128 iMacs
-> > > * PowerMac2,2 summer 2000 iMacs
-> > > * PowerMac4,1 january 2001 iMacs "flower power"
-> > > * iBook SE
-> > > * PowerBook Firewire (Pismo), iBook Dual USB
-> > > * PowerBook Titanium
-> > >
-> > > I find my EDID file in /proc/device-tree/pci/ATY,Rage128Pd@10/EDID
+> Yes, thanks. That's the short-term solution.
+> The problem is that the radeon driver only parses the "detail timings".
+> I want to support all timings including "established timings" and
+> "detailed timings".
+> And then it gets more complex...
 >
-> Gr{oetje,eeting}s,
+> > I guess you actually meant:
+> > | Move the code out of the radeon driver and make it sufficiently
+> > | generic so it can be used by the aty128 and other drivers?
 >
-> 						Geert
+> Yes. Here's my grand plan:
+>
+> 1. Rearrange modes from modedb.c/macmodes.c into separate files for:
+>    * Standard VGA modes
+>    * Tweaked VGA modes (modex)
+>    * VESA modes
+>    * Archtecture-specific modes
+>    (* A mode calculator)
+>    This includes adding add/remove functions to be able to insmod/rmmod
+>    modules runtime.
+>
+> 2. Add EDID parsing code.
+>    The code should be able to list "established timings" and "standard
+> timings". Modes should be built from "detail timings".
+>    Getting the EDID structure could be done in several ways:
+>    * Through Open Firmware (mac and maybe others)
+>    * Through the BIOS
+>    * Via I2C bitbanging (requires special support by the fb-driver)
+>
+> 3. Add code that gets information from the EDID parser and looks through
+> the modes available and then creates a list of supported modes.
+>
+> 4. Add architecture-specific code that looks up the model and then
+> returns a list of supported modes. This should be used if the machine
+> doesn't have EDID information. (See aty128db.c and
+> machine_is_compatible()).
+>
+> 5. Add code that takes the modes from 3 or 4 above and throws it at the
+> fb-driver that looks them through and marks the supported modes with
+> what colour- depths that are supported.
+>
+> 6. Add a "mode" variable for each framebuffer.
+>    This should make it possible to switch between the following states:
+>    * Safe - only modes that are listed by the monitor are accepted.
+>    * Standard - old standard modes that might work
+>    * Expert - funky timings that might blow your monitor
+>    The "Safe" mode is default.
+>    I don't know yet how the "mode"-variable should be controlled. /proc?
+>
+> 7. Add support to(/from) vga=ask. The user should be able to switch
+> between the modes listed in 6 above.
+>
+> And then we have VDIF... Feedback is very welcome.
+>
+> / magnus
+>
+> BTW: I found some EDID data here:
+> http://www.google.com/search?hl=sv&ie=UTF-8&oe=UTF-8&q=EDID+site%3Aftp.p
+>enguinppc.org&lr=
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
