@@ -1,54 +1,41 @@
-Date: Sat, 20 May 2000 00:29:47 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: Debian-PowerPC <debian-powerpc@lists.debian.org>,
-        Linux/PPC-devel <linuxppc-dev@lists.linuxppc.org>
-Subject: Paul's 2.2.15 does not boot a 7200
-Message-ID: <20000520002947.A6452@plato.local.lan>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="17pEHd4RhPHOinZp"
+Message-Id: <200005200850.JAA28869@copper.dcs.qmw.ac.uk>
+To: Worth <haworth@ncal.verio.com>
+cc: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org,
+        sb@dcs.qmw.ac.uk
+Subject: Re: Pismo status 
+In-Reply-To: Message from Worth <haworth@ncal.verio.com>
+   of "Fri, 19 May 2000 15:42:34 -0400." <Pine.SOL.4.10.10005191236120.4329-100000@ncal.verio.com>
+References: <Pine.SOL.4.10.10005191236120.4329-100000@ncal.verio.com> 
+Date: Sat, 20 May 2000 09:51:31 +0000
+From: Sergio Brandano <sb@dcs.qmw.ac.uk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---17pEHd4RhPHOinZp
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+ I do not know why I am wasting time with this issue. Anyway, I have a
+ very different experience on cooling both cars and computers. All the
+ cars I happen to see do run the fan after shutdown (I can clearly
+ hear the quiet after shutdown, then the sound of the fan after a few
+ seconds). This is probably due to a different design for countries
+ with a warm weather, as you report otherwise. Concerning computers,
+ and Linux, it is running this OS that the situation improved, as far
+ as Intel processors are concerned. I can say that the cpus, before
+ the advent of the caged P-II, where so cold that I could safaly touch
+ them. This was, again, using Linux. Using MS-Windows, instead, I
+ could *not* do the similar thing for sure. And I have been using
+ Intel processors for a long, long time. I have a very different
+ experience with PPC. I purchased my first one last summer, and it is
+ damn hot. How is that Linux does not help here? How is that PPC is
+ claimed to be cooler than Intel? The bla-bla takes a different shape
+ when you touch with the finger eh? I also experienced that GNOME's
+ screen saver pumps up the CPU to 100% when it is active. If the
+ PowerBook is cool before triggering the screen saver, it gets boiling
+ hot (with fan spinning) after 30mins. Why is that? I would expect it
+ to shut the display off and similar things, rather than deliberately
+ trying to fry my baby. Anyway, I am done with this topic.
 
-Hi,
+ Good luck you all.
 
-I have rsynced paul's stable kernel tree to 2.2.15 proper (no pre),
-this kernel works quite well with a G3 via yaboot, but will not boot a
-7200 (via quik).  I have tried my own custom config as well as Paul's
-config included in the rsync tree.  quik loads the kernel successfully
-and prints `Copying Device tree' just like it does for 2.2.14 but the
-monitor just stays black and nothing else happens, it never boots any
-further.=20
-
-the quik used is the current debian quik sources, patched by Dan
-Jacobowitz to support powermacs. (there is no macos on this machine so
-bootx is not an option, nor testable)
-
-has anyone else had problems with 2.2.15 on 7200s?=20
-
-the system runs Debian potato, and runs paul's 2.2.14.=20
-
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
-
---17pEHd4RhPHOinZp
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.0.1 (GNU/Linux)
-Comment: For info see http://www.gnupg.org
-
-iEYEARECAAYFAjkmTPsACgkQJKx7GixEevymzACfR9ewxmca7iQ8LjfY58b2umTB
-dEwAn33KOHJjT5SdaL3DZopxJ/FOwPQg
-=72fp
------END PGP SIGNATURE-----
-
---17pEHd4RhPHOinZp--
+ Sergio
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
