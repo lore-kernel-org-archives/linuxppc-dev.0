@@ -1,42 +1,52 @@
-Message-ID: <20020215093200.57106.qmail@web9707.mail.yahoo.com>
-Date: Fri, 15 Feb 2002 01:32:00 -0800 (PST)
-From: None Atall <linux_meis@yahoo.com>
-Subject: Re: Raven Cop 8260 Utility 
-To: Greg Griffes <ggg@ieee.org>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <006401c1b5c1$b9265fe0$6401a8c0@attbi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Setting i2c_i2brg 
+Date: Fri, 15 Feb 2002 10:24:02 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E31459473@kolkrabbi.flaga.is>
+From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
+To: "Pergola, Michael" <MichaelPergola@Danfoss.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Well, all seem posible. But the idea is, that BlueCat
-provides a monitor that works with VADS. (ADS Revision
-Pilot). We do everything by the book but nothing does
-happen. Shoulden't it work? Well I'll check the
-schematics, to see if this WP_ is really there. We'll
-see..
-                             Thanks
-                               D.Meidanis
+This is covered in chapter 16.13 of the reference manual for the
+mpc823e,
+especially in 16.13.7 "Programming the I2C Controller"
+Check 16.13.7.5 where they discuss the I2BRG register.
 
---- Greg Griffes <ggg@ieee.org> wrote:
-> Some flash parts have a WP* pin that "protects" the
-> flash boot sectors only.  Often, designers will wire
-> that input to a discrete
-> that can be controlled by software.
+I believe you can run it at any speed upto 115kb/s (you might even get
+higher
+but then it is device specific)
 
+Hope this helps,
 
-=====
--------------------------------------------------
-  Dhmhtrios Meidanis
--Degree in Mathematics, University of the Aegean.
--Master in Computer Architecture and Digital
- Systems, University of Crete.
-  Greece.
--------------------------------------------------
+K.D.
 
-Got something to say? Say it better with Yahoo! Video Mail
-http://mail.yahoo.com
+> -----Original Message-----
+> From: Pergola, Michael [mailto:MichaelPergola@Danfoss.com]
+> Sent: 14. febrúar 2002 20:38
+> To: linuxppc-embedded@lists.linuxppc.org
+> Subject: Setting i2c_i2brg
+>
+>
+>
+> All,
+> I am using an Embedded Planet MPC823e platform attempting to get I2C
+> operational. How do you relate setting the SCL clock speed with the
+> following variable i2c->i2c_i2brg ? It is currently set to 7
+> but I can find
+> no documentation showing what speed this runs the I2C I/F or what the
+> choices for the bus would be.
+>
+> Regards,
+>      Michael Pergola
+>      Software Engineer
+>      Baltimore, MD  21236     (410) 931-6778 x4259
+>
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
