@@ -1,31 +1,29 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3B81E2D8.D79D1765@allot.com>
-Date: Tue, 21 Aug 2001 07:26:00 +0300
-From: Felix Radensky <felix@allot.com>
-MIME-Version: 1.0
-To: Linix PPC Emmbedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Debugging modules and rt tasks
+Message-ID: <20010821065240.1853.qmail@dag.newtech.fi>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Cc: dag@newtech.fi
+Subject: PPC embedded plans ?
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Date: Tue, 21 Aug 2001 09:52:40 +0300
+From: Dag Nygren <dag@newtech.fi>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-I have some questions concerning BDI2000.
+I have a working 2.4.2 port for a board for SBS-or (VG4) here
+and wanted to migrate this port to 2.4.9.
 
-1. Can I debug kernel modules or RTL tasks using BDI2000 for 405GP
-processesor.
+Checking out the sources I think I  can notice that there is a strong
+push towards some kind of "one file" machine definition.
 
-2. Can I debug RT tasks running on 405GP core (no peripherals) using
-BDI2000.
-     More specifically, can BDI2000 be used to debug linux
-kernel/modules running on
-     IBM NP4GS3 network processor.
+Is this right ?
+And what would be the best 2.4.9 to start out with ?
+Any written policy on the setup of the machine dependant stuff ?
+Any way of getting my board defs into the official (?) PPC source tree ?
 
-Thanks for your help.
-
-Felix.
+BRGDS
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
