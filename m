@@ -1,93 +1,77 @@
-Message-Id: <5.1.0.14.2.20011203165059.01c83e20@falcon.si.com>
-Date: Mon, 03 Dec 2001 17:11:50 -0500
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: programming ppcboot onto an sbc8260 with a vision ice
-In-Reply-To: <3C0BE2DA.53C39E1B@seranoa.com>
-References: <3C0BD4F1.DB6591F3@seranoa.com>
- <3C0BDBB4.68EB3E72@chinook.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-Id: <sc0c9d3f.050@gw_tms_syd2.pty.tms.thomson-csf.com>
+Date: Tue, 04 Dec 2001 09:53:57 +1100
+From: "Jeremy Rosen" <Jeremy.Rosen@au.thalesgroup.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: [PATCH]    mutiple uart with devfs
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="=_C598F89F.34553A59"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Your PPCBoot image is linked at 0x40000000 and your convert defaults are
-converting from 0xfe000000..0xfe020000 (this is where EST puts the boot
-memory unless you've changed the HRCW to ORG it at 0x00000000 -- glossing
-over quite a few details here).  Anyway, there ain't no data in that range,
-which is exactly what the error message is telling you.
+This is a MIME message. If you are reading this text, you may want to
+consider changing to a mail reader or gateway that understands how to
+properly handle MIME multipart messages.
 
-The EST convert utility doesn't allow you to relocate the code, only to set
-the lower and upper boundaries of the conversion.  You can use an elf tool
-(objcopy) to re-org the code or change your link mechanism to re-org your
-code.  You can also leave it at 0x40000000 and change your visionICE setup
-to map the ROM into that memory area (hmm, isn't that the secondary
-flash?  Maybe you just need to program it and switch your CS0/CS6 jumper).
+--=_C598F89F.34553A59
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 
-By the way, PPCBoot will load a new HRCW which will ORG the boot memory at
-0x00000000 (first instruction at 0x100) instead of 0xFFF00000 (first
-instruction at 0xFFF00100).  There are benefits and drawbacks to either
-start up location and PPCBoot can be configured to boot high as well as low.
+I had weird messages from devfs when the UART driver was trying to
+install itself. Devfs was trying to register a ttyS entry wich already
+existed.
 
-gvb
+After comparing with serial.c, I think that I understood what was
+going. the attached patch should correct this problem
 
 
-At 03:38 PM 12/3/2001 -0500, Andrew Dixon wrote:
+bye
 
->Peter Desnoyers wrote:
-> >
-> > You need to take the ELF file, ppcboot, and convert it into a .bin file
-> > using the vision ICE convert utility.
-> >
-> > The file format referred to as "BIN" in the visionICE documentation
-> > isn't a real binary image - it has a special header.
-> >
->
->OK.  When I try that it tells me:
->
->Conversion Failed: no data was extracted from the selected address
->range.
->
->Where the address ranges are:
->/var/opt/visionXD/bin/convert  -w ppcboot -b
->convert v7.8A Copyright (c) 1996-2001 Wind River HSI
->convert ELF file ppcboot to BDX file ppcboot.bdx
->Extracting image from 'ppcboot'
->Writing binary download image to 'ppcboot.bdx'
->Maximum packet size: 0x100
->Lower address: 0x0
->Upper address: 0xffffffff
->Execution address: 0x40000000
->Image written
->Processing time: 0.011 seconds
->
->Lower Image Address: 0xfe000000
->Upper Image Address: 0xfe020000
->
->
->I also tried:
->
->/var/opt/visionXD/bin/convert  -w ppcboot -b
->convert v7.8A Copyright (c) 1996-2001 Wind River HSI
->convert ELF file ppcboot to BDX file ppcboot.bdx
->Extracting image from 'ppcboot'
->Writing binary download image to 'ppcboot.bdx'
->Maximum packet size: 0x100
->Lower address: 0x0
->Upper address: 0xffffffff
->Execution address: 0x40000000
->Image written
->Processing time: 0.011 seconds
->
->which gives me a file "ppcboot.bdx".  VisionXD still complains that it's
->not a flat binary though.
->
->Any thoughts?
->
->Thanks,
->Andy
->
+Jeremy
 
+P.S : sorry if the diff is not perfect, this is my first patch...
+
+--=_C598F89F.34553A59
+Content-Type: text/plain
+Content-Disposition: attachment; filename="uart_devfs.diff"
+
+--- uart.bak	Tue Dec  4 09:50:54 2001
++++ uart.c	Tue Dec  4 10:06:43 2001
+@@ -40,6 +40,7 @@
+ #include <linux/slab.h>
+ #include <linux/init.h>
+ #include <linux/delay.h>
++#include <linux/version.h>
+ #include <asm/uaccess.h>
+ #include <asm/8xx_immap.h>
+ #include <asm/mpc8xx.h>
+@@ -2529,7 +2530,11 @@
+ 	__clear_user(&serial_driver,sizeof(struct tty_driver));
+ 	serial_driver.magic = TTY_DRIVER_MAGIC;
+ 	serial_driver.driver_name = "serial";
+-	serial_driver.name = "ttyS";
++#if (LINUX_VERSION_CODE > 0x2032D && defined(CONFIG_DEVFS_FS))
++        serial_driver.name = "tts/%d";
++#else
++        serial_driver.name = "ttyS";
++#endif
+ 	serial_driver.major = TTY_MAJOR;
+ 	serial_driver.minor_start = 64;
+ 	serial_driver.num = NR_PORTS;
+@@ -2567,7 +2572,11 @@
+ 	 * major number and the subtype code.
+ 	 */
+ 	callout_driver = serial_driver;
+-	callout_driver.name = "cua";
++#if (LINUX_VERSION_CODE > 0x2032D && defined(CONFIG_DEVFS_FS))
++        callout_driver.name = "cua/%d";
++#else
++        callout_driver.name = "cua";
++#endif
+ 	callout_driver.major = TTYAUX_MAJOR;
+ 	callout_driver.subtype = SERIAL_TYPE_CALLOUT;
+ 	callout_driver.read_proc = 0;
+
+--=_C598F89F.34553A59--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
