@@ -1,33 +1,37 @@
-Date: Fri, 21 May 1999 21:35:21 -0500 (CDT)
-From: "David A. Gatwood" <marsmail@globegate.utm.edu>
 To: Samuel Rydh <samuel@ibrium.se>
-cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
 Subject: Re: Mac-on-Linux
-In-Reply-To: <19990522020440.49547@ibrium.se>
-Message-ID: <Pine.LNX.3.96.990521213127.19285C-100000@globegate.utm.edu>
+References: <19990519235050.60265@ibrium.se> <Pine.LNX.3.96.990519210752.5706A-100000@EdMcMan.Dyn.Ez-Ip.Net> <19990520192459.17170@ibrium.se> <19990520171823.A409@jasons.dyn.kpn.cx> <87zp2ysaku.fsf@hades.nocrew.net> <19990521203719.44590@ibrium.se> <87so8qp44p.fsf@hades.nocrew.net> <19990522020440.49547@ibrium.se>
+Content-Type: text/plain; charset=US-ASCII
+From: Stefan Berndtsson <stefan@nocrew.org>
+Date: 22 May 1999 09:15:27 +0200
+In-Reply-To: Samuel Rydh's message of "Sat, 22 May 1999 02:04:40 +0200"
+Message-ID: <87n1yxo9rk.fsf@hades.nocrew.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Samuel Rydh <samuel@ibrium.se> writes:
 
-Quick question: what is the nature of the kernel support for mac-on-linux? 
-Some folks in the MkLinux camp have been discussing writing equivalent
-2.0.xx kernel code that works through mach.  I know that it will likely
-need to be able to map the ROMs into user space.  I also suspect that
-handling code (which could be very messy, but we'll cross that bridge when
-we get to it) and possibly the memory management code.  Beyond that, what
-other hurdles are there?
+> No. There is a hardware independent video driver which uses
+> the framebuffer device. Does singlestepping (Meta-S) work? 
+> Also, remeber to specify 'processor: 4' in the molrc file.
+> 
+> Btw. I've uploaded a new release of Mac-on-Linux (with
+> binaries) which works properly on G3 machines. It is possible 
+> that the G3 fix also solves the 603 problem.
 
+I've compiled the new one, and patched the kernel as well
+with the newest patches for that.
 
-Later,
-David
+The result is identical to me. Meta-S gives the same hanging 'mm',
+as Meta-G does, which seems to be resolvable only by a Ctrl-C,
+which then exists the program.
 
-David A. Gatwood                         Visit globegate's internet
-dgatwood@globegate.utm.edu                  talker, Deep Space 36
-http://globegate.utm.edu                telnet globegate.utm.edu:9624
+I am specifying '4' as processor too..
 
+/Stefan
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
