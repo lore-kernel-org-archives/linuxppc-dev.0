@@ -1,61 +1,40 @@
-Date: Wed, 7 Apr 1999 13:40:30 +0200 (MET DST)
-From: David De Ridder <s970707@uia.ua.ac.be>
-Reply-To: David De Ridder <david.de.ridder@bitsmart.com>
-To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
-Subject: MVME2306 progress
-Message-ID: <Pine.SO4.4.05.9904071129260.15656-100000@hsins.uia.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 7 Apr 1999 15:46:57 +0200
+To: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Keyboard and keymaps
+Message-Id: <19990407154657.012380@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi everybody !
+While I'm working on ADB, I would like to also fix the problem of
+linux-pmac lacking international keymaps for all Apple keyboards.
 
-I am pleased to be able to say that our MVME2306 finally runs 
-full Linux - sort of ;-)
+Basically, I plan to build some kind of conversion tool that takes Apple
+KCHRs and build the appropriate linux keymaps.
 
-FTR, the main problem after installing the pre-R5 were the several
-'chkconfig --add' commands in the install scripts. I fixed this by
-booting with ``init=/bin/bash'' and then doing all the chkconfigs
-manually from the bash prompt. After this, Linux boots almost
-perfectly smooth. There are still some small problems, though, but
-they seem more RedHat-related to me :
+Could someone point me to the appropriate documentation or how-to's about
+linux keybaord handling, I must admit I'm a little bit lost. If I
+undestand things correctly, keymaps are somewhat "compiled" and then
+copied inside the kernel by the userland tools from the kbd package. Is
+there some specific documentation about this or should I just spend more
+time reading the source ? Are the tables in mac_keyb.c the ones that are
+replaced by userland, or is there a 2-tables indirection ?
 
-* rpm works fine on the NFS host (a Linux/i386 PC), but not on the
-  board itself. I suspect it has to do with the path settings.
-  On the PC, I use ``--root /export'' for the correct path. On the
-  board however, I get always this message :
-  
-  ``failed to open //var/lib/rpm/packages.rpm''
+How does linux handle dead keys and things like that ?
 
-  Note the double-slash. Using ``--root /'' on the board did not work.
+And finally, I think there's a different mecanism for X. I would
+appreciate if someone could point me to the correct documentations for
+all this or give me a quick explanation on the "big picture", I can then
+figure out the details from the source.
 
-* Syslogd does not run. It exits because it says it cannot create a
-  /dev/log device (which is a FIFO, I believe). Now, running the
-  dev package does not help, although it contains a /dev/log file.
 
-* I have all the network-scripts in /etc/sysconfig/network-scripts,
-  but there is no /etc/sysconfig/networking. In fact, the only file
-  in /etc/sysconfig is ``network-scripts''. Is this normal ?
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-If anyone could solve this minor glitches, I'd appreciate their help.
-
-Kind regards,
-
-+-----------------------------------------------------------------+
-|   David 'Septimus' De Ridder   | "Never underestimate the       |  
-|                                |  power of the soul unleashed." |
-| <david.de.ridder@bitsmart.com> |   - 'Essence Flare', M:TG      |
-+-----------------------------------------------------------------+
-
---
-"I am cold on a bed of ice,
- but like seasons I know it will pass.
- It will always return again though.
- A summer of love is a momentary and transient thing.
- Winter will always return again."
- - Anne Clark
 
 
 
