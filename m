@@ -1,53 +1,52 @@
-Date: Thu, 20 Nov 2003 21:51:37 +0100 (CET)
-From: Mich Lanners <mlan@cpu.lu>
-Reply-To: Mich Lanners <mlan@cpu.lu>
-Subject: Fix for BAT mapping calculation
-To: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
- BOUNDARY="134458388-1804289383-1069361497=:1062"
-Message-Id: <E1AMvm6-0000Ia-00@piglet.grunz.lu>
+Subject: [Fwd: PATCH: comment change against linuxppc-2.5 BK tree
+	arch/ppc/platforms/4xx/ibm405lp.h (fwd)]
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Content-Type: text/plain
+Message-Id: <1069372559.703.38.camel@gaston>
+Mime-Version: 1.0
+Date: Fri, 21 Nov 2003 10:55:59 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---134458388-1804289383-1069361497=:1062
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+-----Forwarded Message-----
+From: "Verberk, Bep" <verberk@nortelnetworks.com>
+Subject: PATCH: comment change against linuxppc-2.5 BK tree arch/ppc/platforms/4xx/ibm405lp.h (fwd)
+Date: Tue, 18 Nov 2003 16:39:20 -0500
 
-Hi,
+Gents,
+this is a trivial change.
+I wouldn't have bothered but its my first ever kernel change and
+I wanted to pipe-clean my understanding of the process.
 
-The attached patch fixes a cosmetic problem with displaying the
-RAM-to-BAT mapping on kernel start.
+Not sure if diff-ing it
+against the latest BK snapshot is OK.  Let me know I can re-do it.
+I've just started going through the 405 code so I may have
+more input later and I'd like to make sure I'm submitting it properly.
 
-Please apply to 2.4 kernels (don't know whether 2.6 has the same bug).
+Now I'll go try to find a real bug :)
 
-Cheers
+Cheers,
+Bep
 
-Michel
+diff -urN linuxppc-2.5/arch/ppc/platforms/4xx/ibm405lp.h
+linux/arch/ppc/platforms/4xx/ibm405lp.h
+--- linuxppc-2.5/arch/ppc/platforms/4xx/ibm405lp.h      2003-11-18
+16:08:11.000000000 -0500
++++ linux/arch/ppc/platforms/4xx/ibm405lp.h     2003-11-18
+16:19:10.000000000 -0500
+@@ -199,7 +199,7 @@
+ #define DCRN_EBC0_B7AP  0x17   /* Peripheral Bank 7 Access Parameters */
+ #define DCRN_EBC0_BEAR  0x20   /* Periperal Bus Error Address Register */
+ #define DCRN_EBC0_BESR0 0x21   /* Peripheral Bus Error Status Register 0 */
+-#define DCRN_EBC0_BESR1 0x22   /* Peripheral Bus Error Status Register 0 */
++#define DCRN_EBC0_BESR1 0x22   /* Peripheral Bus Error Status Register 1 */
+ #define DCRN_EBC0_CFG   0x23   /* External Peripheral Control Register */
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
---134458388-1804289383-1069361497=:1062
-Content-Type: TEXT/PLAIN; NAME="pgtable.c.diff"
-Content-Disposition: ATTACHMENT; FILENAME="pgtable.c.diff"
+ #define EBC0_BANKS           8
 
---- arch/ppc/mm/pgtable.c.orig	Thu Nov 20 21:42:39 2003
-+++ arch/ppc/mm/pgtable.c	Thu Nov 20 21:43:00 2003
-@@ -238,7 +238,7 @@
-
- 	printk(KERN_INFO "Memory BAT mapping: BAT2=%ldMb, BAT3=%ldMb,"
- 			" residual: %ldMb\n", __bat2 >> 20, __bat3 >> 20,
--			(total_memory - (__bat2 - __bat3)) >> 20);
-+			(total_memory - (__bat2 + __bat3)) >> 20);
-
- 	/* On SMP, we limit the lowmem to the area mapped with BATs.
- 	 * We also assume nobody will do SMP with 601s
-
---134458388-1804289383-1069361497=:1062--
+--
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
