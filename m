@@ -1,61 +1,50 @@
-Date: Wed, 10 Mar 1999 15:20:46 -0500 (EST)
-From: Tom Rini <tmrini@ntplx.net>
-To: Martin Costabel <costabel@wanadoo.fr>
+Message-Id: <199903102111.WAA00669@piglet.cpu.lu>
+Date: Wed, 10 Mar 1999 22:11:38 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Sound drops
+To: hub@point-barre.fr
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: What a day for linuxppc!
-In-Reply-To: <36E62FDC.88FAB16B@wanadoo.fr>
-Message-ID: <Pine.LNX.4.05.9903101517560.21662-100000@pc.wackyland.com>
+In-Reply-To: <19990310152621.H896@giordino.point-barre.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 10 Mar 1999, Martin Costabel wrote:
+On  10 Mar, this message from Hubert Figuiere echoed through cyberspace:
+> I don't like to work in silence, so I usually play back a 
+> bunch of mp3 with xaudio under Linux PPC from my PowerBook.
+> 
+> The problem is that I get a lot of sound drops like if the machine
+> were "mono-tasking". I have never had this with PC hardware under Linux.
+> 
+> It appears that those drops occurs when doing intensive graphics like
+> a Netscape redrawing or a huge text scroll within an xterm. This happens
+> with Xpmac or XFB_Dev.
+>
+> My question is: Is it a known bug of the sound drivers or is it a 
+> hardware limitation ?
 
-> 1) The 2.2.3 kernel from Linus. Unfortunately it doesn't compile on PPC,
-> because Paul's semaphore patches didn't make it. The semaphore patches
-> for Alpha are there, though, and they are not older, so why is this so?
+IIRC, there was such a question on /. recently. You might ant to look
+over there.
 
-Paul didn't send them on.  Linus doesn't go and pick up patches..
+I would rather attribute this symptom to a problem in X, where the X
+server is allowed to monopolize much of the machine for redrawing. The
+fact the our current X servers (all those I tried, even Xpmac_mga
+accelerated for my Matrox) eat _huge_ amounts of CPU for all blitting
+operations like scrolling etc.
 
-> 2) The new R5 beta1. 
+There seems to be work to do on the X side of things....
 
-Ah shit.  What timing...  Just as we start a build w/ rpm 2.9x, feh.
+Michel
 
-> Unfortunately, instead of a working installer, the
-> old crap from 3 months ago is included. I know there have been more
-> recent installers on mirror.linuxppc.org. Why aren't they there? The
-
-Well, the current installer works for FTP/HTTP installs, but I forget
-weather disk/cdrom works ATM.
-
-> PLEASE PUT A WORKING INSTALLER ON THE NET! I am shouting because I am
-> tired of seeing (and answering) all the old questions yet again.
-
-Soon enough, hopefully...
-
-> Another problem is that the RPMS don't show up on the mirrors. On
-> sunsite.doc.ic.ac.uk (which is my favorite mirror, because it is
-> nfs-mountable), for example, only the symbolic links were copied; the
-> rpms themselves are still the old ones and it doesn't look as if they
-> will be arriving.
-
-linuxppc.slackers.cx has a current mirror of the build box.  Might not be
-NFS able, but it's current. :)
-
-> 3) egcs-1.1.2-prerelease3, soon to become egcs-1.1.2-release. At least
-> this one is good news: It bootstraps out of the box. This hasn't been
-> possible for a long time. Well, it still fails most of the tests in the
-> testsuite, so some polishing by Gary Thomas might be necessary, but it
-> is good to see that.
-
-1.1.2 pre 3 seems to be working rather well.  Don't forget to thank Franz
-Sirl. :)
-
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
