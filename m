@@ -1,48 +1,36 @@
-Date: Wed, 16 Dec 1998 08:52:21 -0700 (MST)
-From: Jeff Rugen <jrugen@primenet.com>
-Reply-To: Jeff Rugen <jrugen@primenet.com>
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: clgenfb
-Message-ID: <Pine.BSI.3.96.981216084200.11954A-100000@usr08.primenet.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 16 Dec 1998 11:53:39 -0600
+From: Joshua Rosenau <jrosenau@midway.uchicago.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Restructure of arch/ppc/kernel and include/asm-ppc
+Message-ID: <19981216115339.S1037@midway.uchicago.edu>
+References: <Pine.LNX.4.02.9812131538310.871-100000@cassiopeia.home> <19981214105418.022383@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <19981214105418.022383@mail.mipsys.com>; from Benjamin Herrenschmidt on Mon, Dec 14, 1998 at 10:54:18AM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+So on Mon, Dec 14, 1998 at 10:54:18AM +0100, Benjamin Herrenschmidt was all like,
 
-Well, I'm starting to get some success.  Thanks Geert, for all your help so
-far.  This morning I was finally able to boot and get a login prompt with
-the clgenfb framebuffer compiled into the kernel (and no VGA console at
-all).  I now need to go back through and get rid of debug printks I've
-sprinkled everywhere and get the colors to work with the logo (the penguin
-had blue feet) and some other cleanup.  Most importantly, I figure it would
-be a good idea to match my coding style with the rest of the modified file.
+>
+>On Sun, Dec 13, 1998, Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>
+>wrote:
+>
+>This could be a good idea since it would fix a big outstanding issue: The
+>inability of MacOS VM to lock contiguously enough space for the kernel
+>and ramdisk in lots of cases (the -622 error most people with virtual
+>memory ON are experiencing). If the booter was itself a nini-kernel that
+>takes care of further loading of the real kernel and ramdisk, this issue
+>would probably disappear.
 
-I have a couple questions now.
-1) clgenfb.c has some code that will only work on the APUS (and/or m68k?) --
-it expects a zorro2 board and uses the kernel_map() function -- and my
-modifications assume the Motorola PowerStack memory layout, since I don't
-know a way to find the video memory otherwise.  Because of this, I have some
-#ifdef/#ifndef blocks.  Should I use CONFIG_PREP or CONFIG_APUS or something
-else for these blocks?  (I'd prefer to use the same #ifdef everywhere).
-Currently I'm using #ifdef/#ifndef CONFIG_PREP around the specified parts.
+Would this also make it possible for linuxppc to support machines without
+OF?  Currently MkLinux does a similar maneuver and I wonder if this
+minikernel could replace the Mach Kernel and just catch whatever data
+gets sent from the MkLinux Booter about video settings etc.  Dunno how
+linuxppc loads really, so this may be silly.  
 
-2) When I have something working that I'm comfortable with, what should I do
-next?  I assume it would be good to have someone else using the clgenfb
-driver use my version on APUS/wherever, and also get someone else on the
-PowerStack?)  Any volunteers for this?  Is there a better way than others to
-provide diffs?  (I'm going off the vger tree, so not sure what I should make
-a diff against -- the main modifications are clgenfb.c, prep_setup.c, and a
-couple Config.in files (so you can select the clgenfb driver on prep).
-
-----------------------------------------------------------------------------
-Jeff Rugen                      jrugen@primenet.com
-
-...Had this been an actual emergency, we would have fled in terror, and you 
-would not have been informed.
-
-
+Josh
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
