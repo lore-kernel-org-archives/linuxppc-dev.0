@@ -1,34 +1,28 @@
-In-Reply-To: <v01520d00b3986728553d@[207.142.166.39]>
-Date: Fri, 25 Jun 1999 13:45:15 +0200
-To: "Jonathan Levi, M.D." <drjlevi@netonecom.net>,
-        linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: PowerBook sleep, first try
-Message-Id: <19990625134515.022432@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Fri, 25 Jun 1999 14:10:46 +0200 (CEST)
+From: Christian Bauer <cbauer@student.physik.uni-mainz.de>
+To: Andrew Chadwick <andyc@durge.org>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Possible ne2k-pci bug on ppc
+In-Reply-To: <19990625113053.A5487@fof2.durge.org>
+Message-ID: <Pine.LNX.3.96.990625140823.17730B-100000@student.physik.uni-mainz.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jun 24, 1999, Jonathan Levi, M.D. <drjlevi@netonecom.net> wrote:
+Hi!
 
->>I've uploaded a first-try implementation of sleep on PowerBook G3 Series..
->>I would really appreciate if some people could review it...
->
->Should PB1400- and 5300-users try it too, or just G3-users?
+On Fri, 25 Jun 1999, Andrew Chadwick wrote:
+> Does anyone know the status of the ne2k-pci drivers on linux/ppc?
 
-It's for linuxppc and is only useful to G3 Series users since those
-machines have a different sleep mecanism.
+It has some endianess problems. I posted a patch to this list a while
+ago. It can be found on
 
-Note: Please don't answer to all the recipients of the original message.
+http://lists.linuxppc.org/listarcs/linuxppc-dev/199904/msg00248.html
 
--- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
+Bye,
+Christian
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
