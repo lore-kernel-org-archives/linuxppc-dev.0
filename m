@@ -1,75 +1,60 @@
-Message-ID: <40BF05E4.9030604@intracom.gr>
-Date: Thu, 03 Jun 2004 14:05:08 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+From: rdiz@alumni.deec.uc.pt
+Message-ID: <3063.62.48.238.11.1086266990.squirrel@alumni.deec.uc.pt>
+In-Reply-To: <1086265044.5978.35.camel@lucy.pep-kaufbeuren.de>
+References: <3971.62.48.238.11.1086260430.squirrel@alumni.deec.uc.pt>
+    <1086265044.5978.35.camel@lucy.pep-kaufbeuren.de>
+Date: Thu, 3 Jun 2004 13:49:50 +0100 (WEST)
+Subject: Re: Compiling the kernel using a Bitkeeper tree
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-Cc: Matt Porter <porter@cox.net>,
-	Tom Rini <trini@kernel.crashing.org>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: new dma API questions
-References: <40BEEA15.3070505@intracom.gr> <9A23BE48-B54C-11D8-853B-003065F9B7DC@embeddededge.com>
-In-Reply-To: <9A23BE48-B54C-11D8-853B-003065F9B7DC@embeddededge.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+Thanks for the tips and the links, I got it compiling under a minute after
+I read your reply, and it also answered some of my doubts.
 
->
-> On Jun 3, 2004, at 5:06 AM, Pantelis Antoniou wrote:
->
->
->> 1. dma_map_single finally calls virt_to_bus, which is simplified
->>   to:
->>      return (unsigned long)address - KERNELBASE + PCI_DRAM_OFFSET;
+Helpful indeed :)
+
+Best Regards,
+Ricardo Diz
+
+
+> On Thu, 2004-06-03 at 13:00, rdiz@alumni.deec.uc.pt wrote:
+>> Hi,
 >>
->>   PCI_DRAM_OFFSET is defined to be pci_dram_offset.
->>   Typically it is set be 0 for most arches without pci.
+>> I'm using bitkeeper for the first time, and I find myself unable to
+>> compile
+>> a kernel from the linuxppc-2.5-benh tree I "cloned".
+>>
+>> It might be a naive question, but don't get how one can compile it. I
+>> don't even find a Makefile in my root rep directory, and I haven't chose
+>> the compilations options yet... Using a gziped kernel all I had to do
+>> was
+>> something like "make ARCH=ppc CROSS_COMPILE=powerpc-linux- menuconfig".
 >
+> When you clone a tree, it's not checked out. Think of a bk tree like
+> a cvs repository interleaved with yor working directory. All you have
+> now is the repository, but no checked-out working copy.
 >
-> It's typically set to zero for all architectures.
+> I suggest to read http://www.bitkeeper.com/Documentation.FAQS.Linux.html
 >
->>   How could we overide it with a constant 0 so that we avoid the
->>   memory access?
+> Some hints:
+> - You can configure your bk tree in "checkout-get mode"
+> - To see/edit individual files, use "bk get"/"bk edit"
+>   It's just like with "cvs co"/"cvs edit", but both is mandantory
+> - make and patch know how to check out files automagically
+> - run "bk helptool"
+> - see linux/Documentation/BK-usage
+> - see http://www.bitkeeper.com/cvs2bk.html
 >
->
-> What memory access?
->
-Oops, correct :)
-
->> 2. How soon in the init sequence could we call dma_alloc_consistent?
->
->
-> Not soon enough.
->
->>   For example when setting up a serial console on 8xx I need memory
->>   for the fifos, and I have to revert in using m8xx_hostalloc which
->>   IMO should be already dead.
->
->
-> As you pointed out, that is going to have to stay for a while.  The
-> CPM and peripherals must do DMA long before the generic
-> supporting functions are ready.
->
->>   If we could arrange for consistent_alloc to be able to operate with
->>   a fixed memory area until the memory initialization is complete
->>   it would make my life much easier and we could finally kill
->>   m8xx_hostalloc & friends.
->
->
-> I don't think it is worth the complication.
->
-Let me work on it a bit...
-
->
->     -- Dan
+> --
+> Stefan Nickl
+> Kontron Modular Computers
 >
 >
 >
-Regards
-
-Pantelis
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
