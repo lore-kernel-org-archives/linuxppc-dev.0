@@ -1,40 +1,61 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: "Matt Porter" <porter@cox.net>,
-	"Laurent Mohin" <laurent.mohin@acterna.com>
-Cc: "Stefan Roese" <stefan.roese@esd-electronics.com>,
-	"Michael Meriin" <Michael@KSWaves.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: How to change endian attribute for a memory region
-Date: Tue, 15 Oct 2002 07:35:40 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFKEHGDNAA.acurtis@onz.com>
+Subject: Re: How to change endian attribute for a memory region
+To: Matt Porter <porter@cox.net>
+Cc: Stefan Roese <stefan.roese@esd-electronics.com>,
+	Michael Meriin <Michael@KSWaves.com>,
+	linuxppc-embedded@lists.linuxppc.org
+From: "Laurent Mohin" <laurent.mohin@acterna.com>
+Date: Tue, 15 Oct 2002 16:57:56 +0200
+Message-ID: <OFA8D7B9E2.58F185A5-ONC1256C53.0051DE49@eni.wago.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20021015071546.A14041@home.com>
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > By the way, I really studied the chip and if I want to be able to manage
-> > both 8 bpp and 16 bpp mode, I need to be able to change the endianness
-> > attribute of the memory region.
+Matt,
+
+In fact, after registering my frame buffer driver, my video memory is
+accessed directly by the X server.
+So I can't control the instruction (writew or other) it will use.
+
+Thanks,
+
+Laurent
+
+
+
+
+Matt Porter <porter@cox.net> on 15/10/2002 16:15:46
+
+To:    Laurent Mohin/SE/Wavetek@Global
+cc:    Stefan Roese <stefan.roese@esd-electronics.com>, Michael Meriin
+       <Michael@KSWaves.com>, linuxppc-embedded@lists.linuxppc.org
+Subject:    Re: How to change endian attribute for a memory region
+
+
+
+
+On Tue, Oct 15, 2002 at 01:07:19PM +0200, Laurent Mohin wrote:
 >
-> Why wouldn't you access video memory via a sthbrx instruction (writew)?
+> Stefan,
+>
+> I'm the initiator of the question.
+> I use the Epson chip in big endian mode. The problem is that in 16 bpp
+> mode, the RGB mapping into video memory is fixed by the chip and
+described
+> in little endian format.
+>
+> By the way, I really studied the chip and if I want to be able to manage
+> both 8 bpp and 16 bpp mode, I need to be able to change the endianness
+> attribute of the memory region.
 
-Right!
-writew() - assumes that you are talking to a peripheral and all peripherals
-must be little endian , thank you PCI.
+Why wouldn't you access video memory via a sthbrx instruction (writew)?
 
-__raw_writew() - accesses the memory in the native format which is
-big-endian in your case.
-
-
-To answer your other question:
-You can not set an attribute on a memory region within the memory controller
-to force the hardware to handle this for you on a region by region basis.
-The chip's endianness may be configurable. This is an exercise let to the
-programmer.  :(
+Regards,
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
