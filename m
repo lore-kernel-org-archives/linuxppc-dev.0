@@ -1,39 +1,43 @@
-Date: Mon, 21 Jun 1999 20:37:08 -0600 (MDT)
-From: Brad Midgley <brad@pht.com>
-Reply-To: Brad Midgley <brad@pht.com>
-To: Paul.Mackerras@cs.anu.edu.au
-cc: linuxppc-users@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: precompiled 2.2.10 kernel available
-In-Reply-To: <199906180718.RAA11040@tango.anu.edu.au>
-Message-ID: <Pine.LNX.3.95.990621201542.23566A-100000@pacific.pht.com>
+Date: Mon, 21 Jun 1999 22:48:12 -0400 (EDT)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: Troy Benjegerdes <hozer@drgw.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: dl-load.c (ld.so) bug??
+In-Reply-To: <Pine.LNX.4.04.9906212045480.27642-100000@narn.local.drgw.net>
+Message-ID: <Pine.LNX.3.96L.990621222014.5237C-100000@unix47.andrew.cmu.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-did the protocol of /dev/usbmouse have to change? :( now it appears as a
-ps2 mouse not a busmouse. x can't understand it either way but i'm able to
-use my usb mouse in x by having gpm use it as a ps2 mouse and export it,
-as in
+> No. Electric Fence is designed to catch programming errors, such as
+> attempting to access memory which was not 'malloc'ed. I have traced this
+> down extensively a couple of months ago, and found that it does indeed
+> appear to overrun what it malloced.
 
-gpm -t ps2 -R
+I have two even simpler test cases for you:
 
-and then have X use gpm
+int main(void){
+    char *ptr=NULL;
+    free(ptr);
+}
 
-Section "Pointer"
- Protocol "mousesystems"
- Device "/dev/gpmdata"
-EndSection
+and
 
-is there an easier way?
+int main(void){
+    char *ptr = (char *)malloc(100);
+}        
 
-> *NOTE:* This kernel includes Linus' USB stack, which (in my version)
+Both of these work fine (or at least *appear* to work fine) without Electric
+Fence.
 
-Brad
-brad@pht.com | http://www.pht.com/~brad/
+> In normal operation, if I am correct, the ld.so code is just silently
+> overwriting some other data. 
 
+If this were the case, wouldn't you expect ridiculous levels of instability?
 
+-Hollis
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
