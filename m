@@ -1,29 +1,27 @@
-Date: Thu, 7 Nov 2002 11:37:40 -0700
+Date: Thu, 7 Nov 2002 12:14:35 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Paul Mackerras <paulus@samba.org>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: screen_info in 2.4.20-rc1
-Message-ID: <20021107183739.GA6164@opus.bloom.county>
-References: <Pine.GSO.4.21.0211071816370.3669-100000@vervain.sonytel.be>
+To: Anders Blomdell <anders.blomdell@control.lth.se>,
+	linuxppc-dev@lists.linuxppc.org,
+	Hollis Blanchard <hollis@austin.ibm.com>
+Subject: [CFT] CONFIG_ALL_PPC and post-PReP (MVME2600, etc) systems
+Message-ID: <20021107191435.GD6164@opus.bloom.county>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.GSO.4.21.0211071816370.3669-100000@vervain.sonytel.be>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Nov 07, 2002 at 06:21:09PM +0100, Geert Uytterhoeven wrote:
-
-> In 2.4.20-rc1, the declaration and export of screen_info[] depends on
-> CONFIG_VGA_CONSOLE. However, it's also needed by vga16fb, which can be modular
-> as well.
-
-This is fixed in _devel (along with vesafb) and in 2.5.  It was just
-over looked for 2.4.20 I suppose.  It's a low impact change, so I doubt
-Paul would object to trying to get Marcelo to take it.
-
-Paul?
+Hey all.  I've just commited code to the linuxppc-2.5, linuxppc_2_4 and
+linuxppc_2_4_devel trees which should fix the problem seen when a
+CONFIG_ALL_PPC kernel is booted on a machine which is identified as
+'prep' but lacks an MPC10x.  I've tested my PowerStack, and it still
+works, but I'm unsure as to:
+a) Does this fix the problem seen on MVME2600?  I would assume so.
+b) The broken HW which caused us to go from polling to int-ack, what
+host bridge was this exactly?  We currently use the MPC10x-specific
+address on MPC105/MPC106/MPC107 (completeness), and based on the
+original comment I assume that it was MPC10x HW.  Can someone confirm?
+Thanks.
 
 --
 Tom Rini (TR1265)
