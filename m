@@ -1,28 +1,28 @@
-Date: Tue, 23 Nov 1999 10:45:33 -0700
+Date: Tue, 23 Nov 1999 10:46:26 -0700
 From: Cort Dougan <cort@fsmlabs.com>
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>,
-        Christian Zankel <chris@mvista.com>, linuxppc-dev@lists.linuxppc.org,
+To: David Edelsohn <dje@watson.ibm.com>
+Cc: Christian Zankel <chris@mvista.com>, linuxppc-dev@lists.linuxppc.org,
         linuxppc-embedded@lists.linuxppc.org
 Subject: Re: bootloader & head.S weirdness & restructuring
-Message-ID: <19991123104533.C16540@hq.fsmlabs.com>
-References: <kfypux15ewm.fsf@kieraypc07.p.y.ki.era.ericsson.se> <Pine.HPX.4.10.9911231758050.5120-100000@gra-ux1.iram.es>
+Message-ID: <19991123104626.D16540@hq.fsmlabs.com>
+References: <cort@fsmlabs.com> <9911231617.AA25176@marc.watson.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.HPX.4.10.9911231758050.5120-100000@gra-ux1.iram.es>; from Gabriel Paubert on Tue, Nov 23, 1999 at 06:01:57PM +0100
+In-Reply-To: <9911231617.AA25176@marc.watson.ibm.com>; from David Edelsohn on Tue, Nov 23, 1999 at 11:17:57AM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-That's more of a task for the end users, not the kernel.  Configuring the
-system and building a ramdisk isn't really part of the build I don't think.
+That's what we do, in fact.  The problem is not stomping on the OF vectors
+stored at physical 0 on chrp (on pmac they're at the high vector table not
+the low one) so we load above that, do our prom calls then relocate to phys 0.
 
-} Yes, but often they have at least 8Mb of RAM (which was the minimal spec
-} for PreP). In this case a few more kB in the bootloader to make it more
-} generic do not hurt as long as you can make the run time kernel as small
-} as possible. Why not dynamically link the kernel to remove useless code,
-} for example have a kernel plus modules and link them selectively at boot
-} time depending on the network or SCSI chip, we are a far way from this
-} but it should be possible.
+} 	Why not have the kernel define, or at least reserve space for, the
+} interrupt vectors?  If one specifies the correct padding and/or alignment,
+} the interrupt vector code will appear at the correct offsets when the
+} kernel is loaded at 0.  The kernel can start at 0, not its entry point or
+} normal code.
+} 
+} David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
