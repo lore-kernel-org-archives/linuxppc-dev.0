@@ -1,38 +1,46 @@
-Message-ID: <20010125092351.13410.qmail@dag.newtech.fi>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Advice on good disk bootloader
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Thu, 25 Jan 2001 11:23:51 +0200
-From: Dag Nygren <dag@newtech.fi>
+Message-ID: <3A701C2C.60008@galileo.co.il>
+Date: Thu, 25 Jan 2001 14:29:32 +0200
+From: Rabeeh Khoury <rabeeh@galileo.co.il>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Max bus
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi All,
 
-I have ported Linux to a PPC VME board here and
-am using PMON as the startup monitor.
-So far I have booted through TFTP with goo success
-but now I would need to start the system from disk.
+I'm trying MAX Bus protocol on Galileo evaluation board and I'm getting
+the following errors -
 
-The monitor can load a raw disksegment, starting
-from a certain address with a certain length as an ELF-file
-and run it.
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 176k init
+floating point used in kernel (task=c022e000, pc=944)
+floating point used in kernel (task=c022e000, pc=c01e1c60)
+floating point used in kernel (task=c022e000, pc=944)
+floating point used in kernel (task=c022e000, pc=c01e1c60)
+floating point used in kernel (task=c022e000, pc=944)
+floating point used in kernel (task=c022e000, pc=c01e1c60)
+floating point used in kernel (task=c022e000, pc=944)
+floating point used in kernel (task=c022e000, pc=c01e1c60)
+floating point used in kernel (task=c022e000, pc=944)
+floating point used in kernel (task=c022e000, pc=c01e1c60)
+floating point used in kernel (task=c022e000, pc=944)
+floating point used in kernel (task=c022e000, pc=c01e1c60)
+floating point used in kernel (task=c01a0ff0, pc=944)
+NIP: 00000F28 XER: 00000000 LR: C000638C REGS: c01a2eb0 TRAP: 0400
+floating point used in kernel (task=c01a0ff0, pc=944)
 
-Is there good advice on which diskformat to use (fdisk ?)
-and on a good first stage bootloader that then would
-understand the ext2fs ?
 
-BRGDS
+After these errors the kernel hangs !
+
+Does Linux support MAX Bus ?
+Should I add new flags to the compiler ?
 
 
---
-Dag Nygren                               email: dag@newtech.fi
-Oy NewTech Ab                            phone: +358 9 8024910
-Trasktorpet 3                              fax: +358 9 8024916
-02360 ESBO                                 GSM: 0400-426312
-FINLAND
+Regards,
+Rabeeh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
