@@ -1,21 +1,24 @@
-Message-ID: <3B3EAE4F.A0B24A4D@mvista.com>
-Date: Sun, 01 Jul 2001 00:59:59 -0400
+Message-ID: <3B3EAF46.AF5B0B90@mvista.com>
+Date: Sun, 01 Jul 2001 01:04:06 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: SangTae Ha <stha@postech.edu>
+To: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: mpc860 with dual ethernets
-References: <000701c1001f$7d475ea0$9696143e@jocke> <3B3C3E29.F3092A80@mvista.com> <0d4f01c10079$12cb22f0$3877b5d3@dolbae>
+Subject: Re: (allocating non-cachable memory) (or More on the i82596)
+References: <Pine.LNX.3.95.1010629025613.5292B-100000@november.bhjjh.erols.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-SangTae Ha wrote:
->
-> You support SCC1 and SCC2 only inside the enet.c file?
+"Justin (Gus) Hurwitz" wrote:
 
-Yes, it is a single driver for multiple devices.
+> Dan, Wwhere are the consistent_alloc functions?
+
+They are supposed to be in arch/ppc/mm/ioremap.c, but there has been
+lots of work done there recently.  I haven't worked in the tree
+recently,
+so I'll take a look.
 
 
 	-- Dan
