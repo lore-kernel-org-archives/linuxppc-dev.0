@@ -1,37 +1,33 @@
-Message-ID: <20040726022943.71278.qmail@web15206.mail.bjs.yahoo.com>
-Date: Mon, 26 Jul 2004 10:29:43 +0800 (CST)
+Message-ID: <20040726025057.68338.qmail@web15204.mail.bjs.yahoo.com>
+Date: Mon, 26 Jul 2004 10:50:57 +0800 (CST)
 From: Song Sam <samlinuxppc@yahoo.com.cn>
-Subject: Re: Could 2_4_devel support RPXlite DW LCD panel?
-To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: 2.4 versus 2.6 patches
+To: David Woodhouse <dwmw2@infradead.org>,
+	"Robert P. J. Day" <rpjday@mindspring.com>
 Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <22313616.1090788110569.JavaMail.root@wamui02.slb.atl.earthlink.net>
+In-Reply-To: <1090682408.4195.3.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---- "Robert P. J. Day" <rpjday@mindspring.com> wrote:
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-> > I want to port 2_4_devel on RPXlite DW with framebuffer support and
-> > tried linuxppc_2_4_devel in linuxppc official BK tree and DENX tree
-> > repectively but failed.Could anyone try it before?> > Worked?
+> On Fri, 2004-07-23 at 10:57 -0400, Robert P. J. Day wrote:
+> > for most of the folks on this list, i suspect they'd be more
+> > interested in patches to a 2.6- style Kconfig file,not a 2.4-style
+> > config.in file, correct?
 >
-> is it just the FB selection that's causing problems? and what do you
-> mean by "failed"? you'll have to be more specific. does the system
-> fail to boot? does it boot but the FB doesn't work? etc, etc.
+> Yes. The 2.4 kernel is dead.
 
-Sorry,I neglected some points here.Firstly,I could
-make the 2_4_devel work on RPXlite DW board with
-rpxlite_defconfig.Then when I added FB configuration
-to build these two kernel tree,both could boot right
-with "console=ttyS0,9600" but hanged after kernel
-uncompressed with "console=tty0".There were no display
-on LCD panel.Yeah,2.4.18 kernel can work right on
-RPXlite DW board with FB and USB HOST mode
-support.Also the LCD panel is NL6448BC20-08.
+But 2.4 kernel is still a pet for 8xx,at least.I guess
+many embedded Linux development lean to 2.4 kernel for
+the moment.For Linux kernel hackers,2.4 kernel was
+dead but it is alive for most embedded
+developers.Right? :-)
 
-Thanks.
+Best regards,
 
 Sam
 
