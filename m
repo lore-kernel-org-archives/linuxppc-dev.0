@@ -1,63 +1,49 @@
-Message-ID: <XFMail.010409095620.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <3AD16EB0.738E278E@iiic.ethz.ch>
+Date: Mon, 09 Apr 2001 10:11:28 +0200
+From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
 MIME-Version: 1.0
-In-Reply-To: <20010408145245.304002F00D@apollo.valhalla.net>
-Date: Mon, 09 Apr 2001 09:56:20 +0200 (CEST)
-From: Giuliano Pochini <pochini@shiny.it>
-To: Iain Sandoe <iain@sandoe.co.uk>
-Subject: Re: Sound skips
-Cc: linuxppc-dev@lists.linuxppc.org
+To: Guillaume Laures <guillaume.laures@noos.fr>
+Cc: linuxppc <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: XFree86-4.0.99.2
+References: <15056.36750.453557.759357@ipa.ne.mediaone.net>
+		<3AD0AABE.1020605@vacuumgenesis.com>
+		<15056.55761.845494.317224@ipa.ne.mediaone.net> <986767730.17213.0.camel@pmg4.gom.net>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Note: this is a completely *different* problem from the PowerComputing
-> "DEAD" dbdma one...
+Guillaume Laures wrote:
 
-Yes, the subject of the message is different too :))
+> #0  0xfe0bea8 in kill () at soinit.c:64
+> #1  0xfe0bd24 in raise () at ../sysdeps/posix/raise.c:27
+> #2  0xfe0d3d4 in abort () at ../sysdeps/generic/abort.c:139
+> #3  0x10025bbc in ddxGiveUp ()
+> #4  0x10025cb0 in AbortDDX ()
+> #5  0x100a9ae0 in GiveUp ()
+> #6  0x100ab5d8 in FatalError ()
+> #7  0x1003c6ec in xf86SigHandler ()
+> #8  <signal handler called>
+> #9  0x1030aa04 in ?? ()
+> #10 0x0 in ?? ()
 
-> This problem exist for _all_ PPC Linux users - and _did_ exist for all x86
-> users (without) applying Andrew Morton's LL patches.
+[...]
 
-I didn't noticed the problem on my father's x86, but I'm not
-sure. I'll try ASAP.
+> I tried looking for soinit.c in the i128 files but this didn't give any
+> result, and I cannot find it trhough the whole source; any idea on where
+> to head on ???
 
-> Perhaps I'll ask Andrew about libtool (it may still give hassles on x86).
+I suppose #0-#2 are from glibc and not interesting.
 
-libtool is a bash script.
-
-> If you look at my latest patches they log overruns (reported as xrun in
-> /dev/sndstat output).
->
-> I get *lots* on all my systems (without LL patches) even when lightly
-> loaded.
-
-sndstat ? I didn't looked at that.
-
->
->>> >(if it doesn't involve libtool).
->>>
->>> hmmm.  Have you got any idea what libtool does that is different ?
->>> (does strace work at the moment?)
->>
->> The only unusual thing strace shows is thai it calls rt_sigprocmask()
->> hundred times. rt_sigprocmask() stops irqs for a very short time. A
->> prog that calls it 1M time shows this is not what I'm looking for.
->> I searched in all /arch/ppc for something interesting... nothing. I
->> definitely need a tool to measure how much time the various
->> spinlock_irq's are hold.
->
-> Well, I did something for 2.2.x - maybe I'll try and re-do this soon for
-> 2.4.x.
-
-I'll try to write a replacement for spin_*lock_irq* to make use of
-time base facility to measure times. The problem is I don't know
-how to store and export the data so all the kernel can see it. I have
-to write a nice /proc interface too. It could take a lot of time...
+The interesting parts are #9 and #10, which are probably in loadable modules
+so gdb can't handle them correctly. You could build a static server (#define
+DoLoadableServer NO in xc/config/cf/host.def) and try with that.
 
 
-Bye.
-    Giuliano Pochini ->)|(<- Shiny Network {AS6665} ->)|(<-
+PS: Has anyone tried porting the module aware gdb?
 
+--
+Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
+CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
