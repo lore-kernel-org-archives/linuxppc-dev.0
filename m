@@ -1,68 +1,38 @@
-Message-ID: <382B39C8.EF61D039@kerbango.com>
-Date: Thu, 11 Nov 1999 13:48:56 -0800
-From: Jim Reekes <reekes@kerbango.com>
-Reply-To: reekes@kerbango.com
+Message-ID: <382B4396.57669F9B@ctam.com.au>
+Date: Fri, 12 Nov 1999 09:30:47 +1100
+From: Brendan Simon <bsimon@ctam.com.au>
+Reply-To: bsimon@ctam.com.au
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-CC: nick@kerbango.com
-Subject: does soft-float work?
+To: linux-embedded <linux-embedded@waste.org>,
+        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: LinuxEmbedded: minimal network system packages.
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've copied a few lines of code that work as I would expect, expect with
-I add the -soft-float option or -mcpu=823. I'm building with a YellowDog
-release on a G3 PowerMac, where I removed EGCS and installed GCC
-2.95.1-1e. I also have glibc 2.1.1-6h. But, I've also built this with a
-clean install of YellowDog on a different PowerMac which included
-egcs-2.91.66. There I get incorrect but different results. I've also put
-the executable onto our 823 board, and it also gives different yet
-incorrect results.
+I've just managed to get LinuxPPC (embedded-2.2.5 kernel) to boot on my
+custom MPC860 board using the initrd boot method.  I haven't got the
+nfs-root working yet but I imagine this shouldn't present too many
+problems.
 
-So I'm stumped. Does this float emulation package work? Here's what I do
-know.
+I want to be able to run FTP (client only), HTTP server, SNMP agent and
+TELNET server.
+What packages do I need to compile (cross-compile) to get these working
+?
 
-* printf with a float always fails.
+Things I think I need are :
+* init
+* mount (do I NEED this ?)
+* ifconfig (do I NEED this ?)
+* inet
+* ftp, http, snmp and telnet software.
 
-* gdb shows that "i" and "f" are always correct.
+Any pointers to documentation about getting a minimal embedded networked
+system up and running.
 
-* the assignment of "d" from "i" is correct
+Thanks,
+Brendan Simon.
 
-* the result of pow() returns 9.1981921218154364e-232
-
-* here's the console output
-
-float number (should be 4.000000): -0.000000
-int cast of float (should be 4): 4
-float number (should be 16.000000): 0.000000
-int cast of double (should be 16): 0
-
-
-
-  gcc -g -lm -msoft-float mathtest.c
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#include <stdio.h>
-#include <math.h>
-
-main(int ac, char **av)
-{
-  float   f;
-  double  d;
-  int     i;
-
-  i = 2;
-	
-  f = (float)i;
-  f *= f;
-  printf("float number (should be 4.000000): %f\n", f);
-  printf("int cast of float (should be 4): %d\n", (int)f);
-
-  d = (double)i;
-  d = pow(d, f);
-  printf("float number (should be 16.000000): %f\n", d);
-  printf("int cast of double (should be 16): %d\n", (int)d);
-}
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
