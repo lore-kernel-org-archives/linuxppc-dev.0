@@ -1,21 +1,17 @@
-Return-Path: <olh@suse.de>
-Received: from Cantor.suse.de (mail.suse.de [195.135.220.2])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "mail.suse.de",
-	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 2494067A2C
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Feb 2005 23:57:33 +1100 (EST)
-Date: Thu, 3 Feb 2005 13:57:25 +0100
-From: Olaf Hering <olh@suse.de>
+Return-Path: <cfriesen@nortel.com>
+Received: from zcars04e.nortelnetworks.com (zcars04e.nortelnetworks.com
+	[47.129.242.56]) by ozlabs.org (Postfix) with ESMTP id D69B967A2C
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Feb 2005 02:03:07 +1100 (EST)
+Message-ID: <42023D23.6020406@nortel.com>
+Date: Thu, 03 Feb 2005 09:02:59 -0600
+From: Chris Friesen <cfriesen@nortel.com>
+MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20050203125725.GA20087@suse.de>
-References: <1106011958.4533.25.camel@gaston>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1106011958.4533.25.camel@gaston>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] ppc32: pmac sleep support update
+References: <42011E77.6040906@nortel.com> <1107407613.2363.9.camel@gaston>
+In-Reply-To: <1107407613.2363.9.camel@gaston>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: new binutils breaks "tlbie" instruction in kernel?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Tue, Jan 18, Benjamin Herrenschmidt wrote:
-
-> Hi !
+Benjamin Herrenschmidt wrote:
+> On Wed, 2005-02-02 at 12:39 -0600, Chris Friesen wrote:
 > 
-> This patch updates the PowerMac sleep support. The ability to sleep is now broken
-> into 2 different flags, one, "may sleep" is set for all motherboards that we know
-> how to put to sleep and wakeup. It gets turned into "can sleep" upon a call from
-> the video driver indicating the ability to wakeup the video card. This doesn't
-> deal with head-less machines, but this can be improved later. It also adds better
-> cache flush code, which improves stability with cpufreq as well as sleep.
-> 
-> This patch actually breaks sleep support until the video drivers for the affected
-> machines have been updated. This will come as separate patches.
+>>The "tlbie" instruction has a bit which may be set to indicate regular 
+>>or large page size.  This used to be set via an optional second parameter.
+>>
+>>Apparently some time between binutils versions 2.15.91.0.2 and 
+>>2.15.92.0.2 a change went in to make this second parameter mandatory, 
+>>which breaks the kernel ppc code.
 
-Is that supposed to work? 2.6.11-rc2-bk10 sleeps ok on a pismo, but -rc3
-just does nothing when closing the lid.
+> Wasn't it fixed ?
+
+Not sure what "it" you mean.  The current kernel code does not have the 
+third parm.  I'm not sure about the latest binutils, but 2.15.92.0.2 is 
+what a vendor wants to build on.
+
+Chris
