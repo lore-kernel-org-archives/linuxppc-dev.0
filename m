@@ -1,26 +1,23 @@
-Date: Wed, 15 Jan 2003 11:09:06 -0500
-From: Daniel Jacobowitz <drow@false.org>
-To: Ppc Developers <linuxppc-dev@lists.linuxppc.org>
+To: <acurtis@onz.com>
+Cc: "Ppc Developers" <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: irc.openprojects.net?
-Message-ID: <20030115160906.GA17181@nevyn.them.org>
 References: <NCBBIINEHIPFGJPLBEIFOEOJEAAA.acurtis@onz.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Momchil Velikov <velco@fadata.bg>
 In-Reply-To: <NCBBIINEHIPFGJPLBEIFOEOJEAAA.acurtis@onz.com>
+Date: 15 Jan 2003 18:09:53 +0200
+Message-ID: <87smvucs32.fsf@fadata.bg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jan 15, 2003 at 07:56:49AM -0800, Allen Curtis wrote:
->
-> Does anyone know what happened to this IRC site? This URL does not resolve.
-> Has #mklinux moved to a new server? I checked on irc.oftc.net but it looked
-> pretty dead.
+>>>>> "Allen" == Allen Curtis <acurtis@onz.com> writes:
 
-They decided to change their name again.  Try irc.freenode.net.
+    Allen> Does anyone know what happened to this IRC site? This URL
+    Allen> does not resolve.  Has #mklinux moved to a new server? I
+    Allen> checked on irc.oftc.net but it looked pretty dead.
 
---
-Daniel Jacobowitz
-MontaVista Software                         Debian GNU/Linux Developer
+irc.freenode.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
