@@ -1,16 +1,17 @@
-Return-Path: <likun@isantai.com>
-Received: from ns.isantai.com (unknown [211.95.163.86])
-	by ozlabs.org (Postfix) with ESMTP id 23FCF67A6D
+Return-Path: <galak@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 27C2D67A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Mar 2005 11:40:08 +1000 (EST)
-To: linuxppc-embedded@ozlabs.org
+	Wed, 30 Mar 2005 14:19:46 +1000 (EST)
+Date: Tue, 29 Mar 2005 22:19:17 -0600 (CST)
+From: Kumar Gala <galak@freescale.com>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <Pine.LNX.4.61.0503292217290.17481@blarg.somerset.sps.mot.com>
 MIME-Version: 1.0
-Message-ID: <OFD27DE2D9.FB92CA04-ON48256FD4.0007B768-48256FD4.000913D0@isantai.com>
-From: likun@isantai.com
-Date: Wed, 30 Mar 2005 09:43:13 +0800
-Content-Type: multipart/alternative;
-	boundary="=_alternative 000913C748256FD4_="
-Subject: How does the Montavisa previewkit?
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: CPM2 PIC cleanup irq_to_siubit array (updated)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,36 +22,82 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 000913C748256FD4_=
-Content-Type: text/plain; charset="us-ascii"
+Andrew,
 
-  Hi everbody:
-          i downloaded a Montavisa previewkit-mvl3.0.0_db1500-encrypt.img 
-yesterday ,it's a free kit.i want to use it as my hard hat linux .i work 
-on muti channels MPEG4 video process ,need OS strong real time,i kown the 
-vxworks being very good,but it's very expencive.so i had to use Embed 
-linux on mips-au1500 cpu.what i want to know is how does the real time of 
-Montavisa previewkit 
-,anybody know?
-          for example, i want to  deal with 16-24 channel MPEG4 codec 
-using MPEG4 ASIC chip .enviroment is Red hat 7.2 kenel 2.4.20.
-can  the Montavisa  response real time?
-             thank all
-                     jordon 
+(Updated this patch to include a comment at Dan Malek's request.)
 
+Cleaned up irq_to_siubit array so we no longer need to do 1 << (31-bit), 
+just 1 << bit.
 
---=_alternative 000913C748256FD4_=
-Content-Type: text/html; charset="us-ascii"
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
+---
 
-<br><font size=2 face="sans-serif">&nbsp; </font><font size=2><tt>Hi everbody:</tt></font><font size=2 face="sans-serif"><br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;i downloaded a Montavisa previewkit-mvl3.0.0_db1500-encrypt.img yesterday ,it's a free kit.i want to use it as my hard hat linux .i work on muti channels MPEG4 video process ,need OS strong real time,i kown the vxworks being very good,but it's very expencive.so i had to use Embed linux on mips-au1500 cpu.what i want to know is how does the real time of Montavisa previewkit </font>
-<br><font size=2 face="sans-serif">,anybody know?</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; for example, i want to &nbsp;deal with 16-24 channel MPEG4 codec using MPEG4 ASIC chip .enviroment is Red hat 7.2 kenel 2.4.20.</font>
-<br><font size=2 face="sans-serif">can &nbsp;the Montavisa &nbsp;response real time?</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;thank all</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;jordon </font>
-<br>
-<br>
---=_alternative 000913C748256FD4_=--
+diff -Nru a/arch/ppc/syslib/cpm2_pic.c b/arch/ppc/syslib/cpm2_pic.c
+--- a/arch/ppc/syslib/cpm2_pic.c	2005-03-29 22:15:24 -06:00
++++ b/arch/ppc/syslib/cpm2_pic.c	2005-03-29 22:15:24 -06:00
+@@ -32,15 +32,17 @@
+ 	0, 0, 0, 0, 0, 0, 0, 0
+ };
+ 
++/* bit numbers do not match the docs, these are precomputed so the bit for
++ * a given irq is (1 << irq_to_siubit[irq]) */
+ static	u_char	irq_to_siubit[] = {
+-	31, 16, 17, 18, 19, 20, 21, 22,
+-	23, 24, 25, 26, 27, 28, 29, 30,
+-	29, 30, 16, 17, 18, 19, 20, 21,
+-	22, 23, 24, 25, 26, 27, 28, 31,
+-	 0,  1,  2,  3,  4,  5,  6,  7,
+-	 8,  9, 10, 11, 12, 13, 14, 15,
+-	15, 14, 13, 12, 11, 10,  9,  8,
+-	 7,  6,  5,  4,  3,  2,  1,  0
++	 0, 15, 14, 13, 12, 11, 10,  9, 
++	 8,  7,  6,  5,  4,  3,  2,  1, 
++	 2,  1, 15, 14, 13, 12, 11, 10, 
++	 9,  8,  7,  6,  5,  4,  3,  0, 
++	31, 30, 29, 28, 27, 26, 25, 24, 
++	23, 22, 21, 20, 19, 18, 17, 16, 
++	16, 17, 18, 19, 20, 21, 22, 23, 
++	24, 25, 26, 27, 28, 29, 30, 31, 
+ };
+ 
+ static void cpm2_mask_irq(unsigned int irq_nr)
+@@ -54,7 +56,7 @@
+ 	word = irq_to_siureg[irq_nr];
+ 
+ 	simr = &(cpm2_immr->im_intctl.ic_simrh);
+-	ppc_cached_irq_mask[word] &= ~(1 << (31 - bit));
++	ppc_cached_irq_mask[word] &= ~(1 << bit);
+ 	simr[word] = ppc_cached_irq_mask[word];
+ }
+ 
+@@ -69,7 +71,7 @@
+ 	word = irq_to_siureg[irq_nr];
+ 
+ 	simr = &(cpm2_immr->im_intctl.ic_simrh);
+-	ppc_cached_irq_mask[word] |= (1 << (31 - bit));
++	ppc_cached_irq_mask[word] |= 1 << bit;
+ 	simr[word] = ppc_cached_irq_mask[word];
+ }
+ 
+@@ -85,9 +87,9 @@
+ 
+ 	simr = &(cpm2_immr->im_intctl.ic_simrh);
+ 	sipnr = &(cpm2_immr->im_intctl.ic_sipnrh);
+-	ppc_cached_irq_mask[word] &= ~(1 << (31 - bit));
++	ppc_cached_irq_mask[word] &= ~(1 << bit);
+ 	simr[word] = ppc_cached_irq_mask[word];
+-	sipnr[word] = 1 << (31 - bit);
++	sipnr[word] = 1 << bit;
+ }
+ 
+ static void cpm2_end_irq(unsigned int irq_nr)
+@@ -103,7 +105,7 @@
+ 		word = irq_to_siureg[irq_nr];
+ 
+ 		simr = &(cpm2_immr->im_intctl.ic_simrh);
+-		ppc_cached_irq_mask[word] |= (1 << (31 - bit));
++		ppc_cached_irq_mask[word] |= 1 << bit;
+ 		simr[word] = ppc_cached_irq_mask[word];
+ 	}
+ }
