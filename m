@@ -1,67 +1,44 @@
-To: "Kerl, John" <John.Kerl@Avnet.com>
-Cc: =?utf-8?B?R2FyY2lhIErDqXLDqW1pZQ==?= <GARCIAJ@3il.fr>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Compiling assembler file with ppc_405-gcc 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 11 Jun 2004 09:55:29 PDT."
-             <E8E581FE5C58614B85A22AF2A495C64909E410@uschd00mx11usr.AVNET.COM>
-Date: Fri, 11 Jun 2004 19:47:38 +0200
-Message-Id: <20040611174743.7C817C109F@atlas.denx.de>
+Subject: 440GX tlb problem?
+From: Travis Sawyer <tsawyer+linuxppc@sandburst.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain
+Message-Id: <1086979205.29360.5.camel@pavement.sandburst.com>
+Mime-Version: 1.0
+Date: Fri, 11 Jun 2004 14:40:05 -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <E8E581FE5C58614B85A22AF2A495C64909E410@uschd00mx11usr.AVNET.COM> you wrote:
->
-> No Wolfgang, read it again: he is running ppc_4xx-gcc.  It's in a
-> variable named $(AS), but he is running the C compiler.  It is
+Greetings:
 
-You're right. Sorry.
+I'm attempting to bring up a new board (our custom hw) and am blowing an
+Instruction TLB error in head_440.S where the original TLB for SDRAM
+(u-boot and initial kernel space) is invalidated after we've switched to
+0xc000_0000.
 
-> reasonable to expect #include and #define statements to work --
-> after all, the Linux build does this all the time!  As does the
-> u-boot build:
->
-> $ cd /opt/gx/u-boot
-> $ make
-> ...
-> ppc_4xx-gcc -Wa,-gstabs -D__ASSEMBLY__ -g  -Os   -fPIC -ffixed-r14 -meabi
-> -D__KERNEL__ -DTEXT_BASE=0xFFF80000 -I/opt/gx/u-boot/include -fno-builtin
-> -ffreestanding -nostdinc -isystem /opt/eldk/usr/lib/gcc-lib/ppc-linux/2.95.4/include
-> -pipe  -DCONFIG_PPC -D__powerpc__ -DCONFIG_4xx -ffixed-r2 -ffixed-r29 -mstring
-> -Wa,-m405 -mcpu=405 -msoft-float -DCONFIG_440=1 -c -o init.o
-> /opt/gx/u-boot/board/avnet_440gx_eval/init.S
-
-Mind the file name - <name>.S --> upper case letter 'S'
-
-> > > ppcsiafn.o:
-> > >       $(AS) $(CFLAGS_AS) -c
-> > $(SRC_PATH)/startup/init/ppcsiafn.s -o ppcsiafn.o
-
-And here: <name>.s --> lower case letter 's'.
+the instructions:
+3:/*	iccci   r0,r0    rcblach 12/19/02 clear all caches again on 1/17/03
+I took out these changes
+	dccci   r0,r0    again clear all caches */
+	cmpwi	r23,62
+	beq	4f
+	li	r6,0
+	tlbwe   r6,r23,PPC440_TLB_PAGEID
+	sync
 
 
->From the GNU manual:
+The exception hits when the sync is executed.
 
-	`FILE.s'
-	     Assembler code.
+I hope this hasn't been discussed ad nauseum in the archives... I
+couldn't seem to find it.
 
-	`FILE.S'
-	     Assembler code which must be preprocessed.
+Kernel is 2.4.21
 
+Any ideas?
 
+TIA
 
-Best regards,
+Travis
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Nobody trips over mountains. It is the small pebble that  causes  you
-to  stumble.  Pass all the pebbles in your path and you will find you
-have crossed the mountain.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
