@@ -1,30 +1,44 @@
-Date: Tue, 28 May 2002 11:39:27 -0700
+Date: Tue, 28 May 2002 11:43:32 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Murray Jensen <Murray.Jensen@csiro.au>
+To: Rajappa Iyer <rsi@panix.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] enhancements to MPC8260 serial driver ...
-Message-ID: <20020528183927.GJ1295@opus.bloom.county>
-References: <17963.1022564256@msa.cmst.csiro.au>
+Subject: Re: P2P bridge (DEC 21154) initialization on MCP750
+Message-ID: <20020528184332.GK1295@opus.bloom.county>
+References: <200205250114.g4P1ELi08721@panix1.panix.com> <20020524200953.A21781@home.com> <200205272214.g4RMEOP02787@panix3.panix.com> <20020527164626.A1740@home.com> <200205281835.g4SIZKf09966@panix3.panix.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17963.1022564256@msa.cmst.csiro.au>
+In-Reply-To: <200205281835.g4SIZKf09966@panix3.panix.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, May 28, 2002 at 03:37:36PM +1000, Murray Jensen wrote:
+On Tue, May 28, 2002 at 02:35:20PM -0400, Rajappa Iyer wrote:
+>
+> Matt Porter <porter@cox.net> writes:
+>
+> > On Mon, May 27, 2002 at 06:14:24PM -0400, Rajappa Iyer wrote:
+>
+> > > Thanks.  This did improve the situation somewhat in that the P2P
+> > > bridge is now initialized properly, but the devices beyond it are
+> > > still not probed.   Incidentally, I had to work with 2.5.x, since the
+> > > 2.4 devel kernel was, for some reason, unbearably slow.
+>
+> > You're the first person to try one of these boards on 2.5 that I've
+> > heard of.  Can you explain what you mean by "unbearably slow" on
+> > _devel?  Please enable DEBUG in arch/ppc/kernel/pci.c and
+> > drivers/pci/pci.c and repost those kernel messages.
+>
+> Sure, here it is.
+>
+> What I mean by unbearably slow is that once init starts running, the
+> system just slows down to a complete crawl.  It takes about 2 minutes
+> for the login prompt to appear.  To run lspci -v took about 10 minutes
+> (I'm not exaggerating.)
 
-> - configure any, or all, SMC and SCC ports to be serial ports; the only
->   wiring setup that allows this is for SCC[1-4]<=>BRG[1-4] and SMC[1-2]
->   <=>BRG[7-8]
-> - support serial console and/or kgdb port on any, or none, SMC or SCC port
-> - permanent mapping of S[MC]Cn<=>ttySn i.e. ttyS0 is always SMC1, ttyS1 is
->   always SMC2, ttyS2 is always SCC1, and so on.
-> - most i/o pin configurations covered by simple config options i.e. SCC2
->   and SCC3 have "primary" or "secondary" i/o pin configurations
-> - supports using an external clock source for any BRG, instead of BRGCLK
+Oh, yes.  The OpenPIC_InitSenses needs to be updated.  Look at
+arch/ppc/platforms/lopec_setup.c
 
-Can you split this up into 5 logical patches?  Thanks.
+Patches appreciated.
 
 --
 Tom Rini (TR1265)
