@@ -1,112 +1,80 @@
-To: Ruedi.Hofer@ascom.ch
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PCMCIA support for 860
-References: <0FSL00IBF9IGAS@pmdf-it.hasler.ascom.ch>
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 06 Apr 2000 14:23:41 +0200
-In-Reply-To: Ruedi.Hofer@ascom.ch's message of "Thu, 06 Apr 2000 11:39:11 +0100 (CED)"
-Message-ID: <kfysnwzto36.fsf@kieraypc01.p.y.ki.era.ericsson.se>
+Message-ID: <BE1C564723B3D21191FD0000F840E39801D81499@rfcmx2.rfc.comm.harris.com>
+From: "Brown, David (dbrown03)" <DBrown03@harris.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: Interfaces supported on PPC860?
+Date: Thu, 6 Apr 2000 12:04:28 -0400 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ruedi.Hofer@ascom.ch writes:
+I am planning on running Linux on an existing custom 860-based board, and on
+a second board which is still being designed.  The application will include
+TCP/IP over Ethernet and PPP interfaces.
 
-> Hi
->
-> Kernel boot problem:
-> Obviousely the kernel was too large. When reduce its size and put some
-> extensions into modules, it starts up fine.
->
-> But there are 2 other problems:
->
-> Ethernet Card:
->
-> - When I insert a Xircom Ethernet card, it is detected and the modules are loaded.
-> But somehow it affects the NFS connection in such a bad way, that it looses connection
-> to the server. Everything gets very slow. When I plug the pc card out, NFS works fine again.
+Can someone please give me feedback on how difficult this will be?
+Specifically, are all of the interfaces I require currently supported in the
+kernel?
+Or will I have to tweak the kernel code?
+Or will I have to write some new drivers?
+What could I change on the new board to work better with Linux?
+Do the serial drivers support RTS/CTS flow control?
 
-Try changing the PCMCIA configuration files so that it doesn't
-bring the interface up automaticly.
-
-> >sh-2.03# cardmgr[30]: initializing socket 0
-> >cardmgr[30]: socket 0: Xircom CE3-10/100 Fast Ethernet
-> >cardmgr[30]: executing: 'insmod /lib/modules/2.2.13/pcmcia/xirc2ps_cs.o'
-> >xirc2ps_cs.c 1.31 1998/12/09 19:32:55 (dd9jn+kvh)
-> >eth1: Xircom: port 0x300, irq 9, hwaddr 00:80:C7:86:E4:DF
-> >cardmgr[30]: executing: './network start eth1'
-> >sh-2.03# eth1: media 10BaseT, silicon revision 7
-> >sh-2.03# cardmgr[30]: + SIOCADDRT: File exists
-> >sh-2.03# lsmod
-> >nfs: server 10.1.20.2 not responding, still trying
-> >nfs: task 1574 can't get a request slot
->
-> I guess that too many interrupts knock the system out.
-
-We have had even more problems with xirc2ps_cs.c, for some reason our
-cards generate interrupts before the interface is brought up. This
-diff will prevent that from causing problems:
-
-diff -u -r1.1.1.3 xirc2ps_cs.c
---- clients/xirc2ps_cs.c	2000/03/13 14:33:04	1.1.1.3
-+++ clients/xirc2ps_cs.c	2000/04/04 14:36:00
-@@ -1397,9 +1397,16 @@
- 				  * is this something to worry about?
- 				  * -- on a laptop?
- 				  */
-+    static int badints = 0;
-
--    if (!netif_device_present(dev))
--	return;
-+    if (!netif_device_present(dev)) {
-+	if (badints < 5) {
-+	    badints++;
-+	    return;
-+	}
-+    } else {
-+	badints = 0;
-+    }
-
-     ioaddr = dev->base_addr;
-     if (lp->mohawk) { /* must disable the interrupt */
+If I should be reading some existing document or web-page instead of asking
+the list, please kindly redirect me.  I have looked at the mpx8xx-2.2.13.tgz
+code from ppc.kernel.org (I think that's where I got it from), and I have
+successfully built and loaded it on a BSE ipEngine.  I haven't looked at the
+2.3.x series code yet.
 
 
-> ATA Flash card:
->
-> - Even worse with the flash card: The system crashes!
->
-> >sh-2.03# cardmgr[42]: initializing socket 0
-> >cardmgr[42]: socket 0: ATA/IDE Fixed Disk
-> >cardmgr[42]: executing: 'insmod /lib/modules/2.2.13/pcmcia/ide_cs.o'
-> >hda: SunDisk SDP3B-40, ATA DISK drive
-> >Kernel panic: request_irq
-> >Rebooting in 180 seconds..
->
-> - Is the request_irq related to the loaded module or to the IDE stuff in the kernel?
->   ('Configure IDE for ATA on PCMCIA' is switched off!)
-> - Is it right that every occurence of request_irq has to replaced with request_8xxirq?
+Interfaces of the existing board:
 
-Ah yes, when using serial or IDE cards the interrupt handler is
-requested by drivers/char/serial.c and drivers/block/ide-probe.c
-respectively, not by the PCMCIA modules.
+Flash: 1MB(AMD) + 8MB(Intel)
 
-You can either change include/asm-ppc/ide.h to use request_8xxirq(),
-or you can do like we've done; change arch/ppc/kernel/ppc8xx_pic.c
-so that request_irq() looks like this:
+SCC1:	Ethernet (external PHY), using RXD, TXD, RTS, CTS, CD, and RCLKI
+	(ethernet chip supplies 20MHz clock on RCLKI)
 
-int request_irq(unsigned int irq, void (*handler)(int, void *, struct pt_regs *),
-	unsigned long irqflags, const char * devname, void *dev_id)
-{
-#ifdef CONFIG_MBX
-        irq += i8259_pic.irq_offset;
-#endif
-	return (request_8xxirq(irq, handler, irqflags, devname, dev_id));
-}
+SCC3:	Async serial: RXD, TXD
 
-//Marcus
+SCC4:	Ethernet loopback and enable (using RXD and TXD lines)
+
+SMC1:	Async serial: RXD, TXD
+
+SMC2:	Async serial: RXC, TXD
+
+PortC: general purpose I/O, for a user-space driver of a simple LCD display
+and keyboard.
+
+
+
+Interfaces of the new board:
+
+Flash: 1MB(AMD) + 8MB(Intel)
+
+SCC1:	Ethernet (external PHY), using RXD, TXD, RTS, CTS, CD, and RCLKI
+
+SCC2: Async serial: RXD, TXD (and flow control if possible)
+
+SCC3:	Async serial: RXD, TXD (and flow control if possible)
+
+SCC4:	Async serial: RXD, TXD (and flow control if possible)
+
+SMC1:	Async serial: RXD, TXD
+
+SMC2:	Async serial: RXC, TXD
+
+PortA: Ethernet loopback and enable control signals
+
+SPI:	Communication with another processor.
+	Does the Linux kernel use this at all today?
+	If not, I'd probably try to expose it to user space.
+
+PCMCIA: no use for it now, but looking to the future
+
 --
-Signature under construction, please come back later.
+Dave Brown <dbrown03@harris.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
