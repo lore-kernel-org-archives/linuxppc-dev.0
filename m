@@ -1,27 +1,24 @@
-Date: Thu, 12 Oct 2000 21:40:26 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Albrecht Dress <adress@mpifr-bonn.mpg.de>
-cc: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.2.17pre20-ben3 + pmud-0.7-1: still kernel panic upon wakeup
-In-Reply-To: <Pine.SOL.4.21.0010122102460.20095-100000@mpifr-bonn.mpg.de>
-Message-ID: <Pine.LNX.4.10.10010122118330.27988-100000@opal.biophys.uni-duesseldorf.de>
+Date: Thu, 12 Oct 2000 22:08:09 +0200 (MET DST)
+From: Roman Zippel <zippel@fh-brandenburg.de>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: pmac_power_off is gone in 2.2.17
+In-Reply-To: <20001012175322.A5273@suse.de>
+Message-ID: <Pine.GSO.4.10.10010122007360.3519-100000@zeus.fh-brandenburg.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
-> I upgraded the pmud package to the latest version (pmud-0.7-1), but
-> unfortunately I still get a kernel panic when I try to wake up my Lombard
-> again (see message dump below). Does anyone have an idea what goes wrong
-> here? Or does anybody have a working pmud/2.2.17pre20-ben3 combination?
+Hi,
 
-Was the CDROM mounted when you put the machine to sleep? I don't see this
-with either 2.2.17pre20-ben1 nor with 2.2.18pre14-ben1 (one of which may
-be patched in ide-pmac.c from the CDROM sleep debugging sessions).
+> the pmac_power_off() call in pmac_halt() disappeared in 2.2.17.
+> Is there any special reason for that? I affects proably only B&W
+> machines, /sbin/halt doesnt work anymore.
 
-	Michael
+Did you try "halt -p"?
+
+bye, Roman
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
