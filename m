@@ -1,6 +1,6 @@
-Message-ID: <3E8C52DD.8050107@embeddededge.com>
-Date: Thu, 03 Apr 2003 10:27:25 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <3E8C562B.5090709@paulidav.org>
+Date: Thu, 03 Apr 2003 07:41:31 -0800
+From: Vladimir Gurevich <vag@paulidav.org>
 MIME-Version: 1.0
 To: Donald White <dbwhite@asu.edu>
 Cc: linux-embedded <linuxppc-embedded@lists.linuxppc.org>
@@ -11,33 +11,30 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Donald White wrote:
+Hello Donald,
 
-> Is this the right approach for me to take?  Does Linux support
-> designating memory
-> regions for writethrough caching?  If it does, should I use it rather
-> than doing
-> what I am doing?
+Is it one of Hifn chips by any chance? If yes, then I can
+tell you that their drivers do not know about cache flushes
+and invalidates at all, which presents a real challenge on
+PowerPC.
 
-Writethough policies to I/O devices seems kind of weird.  If there
-is a performance advantage because you are treating the device like
-memory and using it to store buffers you will soon read again (unchanged),
-you are likely to see even higher performance if you allocate system
-memory in copyback mode for this purpose and just copy the data to
-the I/O device when necessary.
+Writeback cache usually won't work. You have to manually
+flush it before sending a message to the board and invalidate
+it after you receive the encrypted (decrypted) message back.
+If you do the transformation "in-place" then you can use
+flush-and-invalidate before seding the message. Using uncached
+memory is another option, but if you want to do further
+processing without copying data to a cached buffer, you
+performance will likely suffer.
 
-I suspect writethrough was used to avoid cache flushing operations,
-but uncached would likely result in better system performance because
-you aren't blowing away cache lines useful to other software in
-the system.
+In general you keep data buffers in cached memory and
+do manual flushes/invalidates when needed, but keep
+buffer descriptors and other similar structures (as
+well as chip's registers and chip's private memory)
+in uncached space.
 
-Linux does not support writethrough attributes through any memory
-management functions, it only selects between cached and uncached
-policies.  On 8xx, you can globally select all cached memory to be
-writethrough (usually for debugging), and *all* ioremap() areas are uncached.
-
-
-	-- Dan
+Best regards,
+Vladimir
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
