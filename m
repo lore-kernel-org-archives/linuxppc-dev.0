@@ -1,55 +1,31 @@
-To: Marco Schramel <Schramel.Linux@go.bartec.de>
-Cc: "PPC_LINUX" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: insmod trouble 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 25 May 2004 11:05:11 +0200."
-             <200405251105.11689.Schramel.Linux@go.bartec.de>
-Date: Tue, 25 May 2004 11:55:49 +0200
-Message-Id: <20040525095554.A5EC4C109F@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16563.7471.661845.182333@cargo.ozlabs.ibm.com>
+Date: Tue, 25 May 2004 20:17:19 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+Cc: <akpm@osdl.org>, "Tom Rini" <trini@kernel.crashing.org>,
+	"Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH] MachineCheck exception broken for MPC 8xx CPU's
+In-Reply-To: <JPEALJAFNGDDLOPNDIEEMEMICIAA.joakim.tjernlund@lumentis.se>
+References: <JPEALJAFNGDDLOPNDIEEMEMICIAA.joakim.tjernlund@lumentis.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200405251105.11689.Schramel.Linux@go.bartec.de> you wrote:
->
-> My MPC8270 system works with 2.4.26 (toolchain ELDK), for development i use NFS (opt/eldk/ppc_82xx as rootfs). Now i write  a device driver and have some trouble.
-> I ve searched the whole list, but i didn't found some helpfully comments.
->
-> --------------------------------------------------
-> bash-2.05b# insmod demodriver.o
-> demodriver.o: unresolved symbol module_unregister_chrdev
-> demodriver.o: unresolved symbol register_chrdev
-> demodriver.o: unresolved symbol led_init
-> demodriver.o: unresolved symbol printf
-> demodriver.o: unresolved symbol printk
-> ------------------------------------------------
->
-> What is the reason for this messages ??
+Joakim Tjernlund writes:
 
-The reason is bugs in your driver code.
+> The Machine Check exception handler is broken on MPC 8xx CPU's
+> This patch should fix it.
+> Tom Rini asked me to send it to you.
 
-module_unregister_chrdev - there is no such function in the Linux kernel.
-	Do you mean unregister_chrdev() or devfs_unregister_chrdev()?
+Hmmm, this doesn't look like it will apply.  The patch looks to be
+against linuxppc-2.5, not Andrew's/Linus' tree.
 
-led_init - there is no such exported kernel  symbol.  Which  function
-        are you trying to call? Is this something in your own driver?
+In fact I don't think there is a great deal of point in applying this
+patch until we update arch/ppc/kernel/head_8xx.S with all the other
+changes we have in the linuxppc-2.5 tree.
 
-printk - there is no such function in the Linux kernel. Did you  mean
-        printk() instead?
-
-register_chrdev, printk - I can only speculate.  These  are  exported
-        kernel  symbols.  probably you compile the driver with bad or
-        incomplete compiler options?
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Horses just naturally have mohawk haircuts.
+Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
