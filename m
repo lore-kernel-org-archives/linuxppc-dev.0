@@ -1,45 +1,42 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <20030411143637.31541.qmail@web41807.mail.yahoo.com>
-Date: Fri, 11 Apr 2003 07:36:37 -0700 (PDT)
-From: Cedric Aubert <cedric_aubert@yahoo.fr>
-Reply-To: cedric_aubert@yahoo.fr
-Subject: Denx 2.4-devel tree and Love's Preempt Patch
-To: LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Fri, 11 Apr 2003 16:38:31 +0200
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: RE: kernel/timer.c
+In-reply-to: <3E96C07B.4060809@dgt-lab.com.pl>
+To: Wojciech Kromer <krom@dgt-lab.com.pl>,
+	"Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLEEPEFLAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-2
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+> Anyone knows why tehere is a line:
+>
+> expire = timespec_to_jiffies(&t) + (t.tv_sec || t.tv_nsec);
+>
+> in kernel/timer.c sys_nanosleep
+> It adds additional time tick to expire. If anyone uses small HZ value
+> (eg 100 which is default for arch-ppc) this causes aditional 10ms delay
+> when calling nanosleep.
 
-Does the Denx 2.4-devel tree have the robert love's
-patch for preemption and
-Low Latency ?
+Yes, after a quick scan it looks like a bug to me. Anyone else?
 
-If not, does anyone have some kwnoledge about
-integrate it ?
+>
+>
+> For me ( found by Andrzej Kass)
+>  it should be:
+>
+> expire = timespec_to_jiffies(&t) + !(t.tv_sec || t.tv_nsec);
+>    //^^add extra tick if there is
+>   // nothing in tv_sec and nothing in tv_nsec
 
-If any one of some documentation about Preemption
-and/or Low Latency patch,
-could
-he give it to me ?
+hmm, why not just:
+   expire = timespec_to_jiffies(&t);
+if tv_sec and tv_sec are zero, do you need to sleep at all?
 
-Thanks
-
----
-AUBERT Cedric
-SDEL Controle Commande
-Service R&D
-rue Nungesser & Coli
-44860 St Aignan de Grand Lieu
-
-Tel : +33 (0)2 40 84 50 00
-Poste : 5109
-Fax : +33 (0)2 40 84 51 10
-
-E-mail : cedric_aubert@yahoo.fr
-Web : http://www.controle-commande.sdel.fr
+    Jocke
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
