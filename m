@@ -1,30 +1,17 @@
-Return-Path: <joern@wohnheim.fh-wedel.de>
-Received: from moskovskaya.fh-wedel.de (mail.fh-wedel.de [213.39.232.198])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 21BF767A67
+Return-Path: <Alexander.Povolotsky@marconi.com>
+Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
+	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id 244F367A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Jan 2005 04:17:27 +1100 (EST)
-Date: Mon, 17 Jan 2005 18:17:16 +0100
-From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
-To: Andy Fleming <afleming@freescale.com>
-Message-ID: <20050117171715.GA21744@wohnheim.fh-wedel.de>
-References: <FC6D9B81-5514-11D9-8D51-000393C30512@freescale.com>
-	<A3A281FF-5525-11D9-80ED-000393C30512@freescale.com>
-	<20050106070245.GA6539@gate.ebshome.net>
-	<61A37C72-659C-11D9-8D70-000393C30512@freescale.com>
-	<20050113212152.GA16041@gate.ebshome.net>
-	<20050113215808.GA15124@wohnheim.fh-wedel.de>
-	<20050114010016.GA16635@gate.ebshome.net>
-	<20050114145518.GA21418@wohnheim.fh-wedel.de>
-	<4D217F72-666F-11D9-8D70-000393C30512@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <4D217F72-666F-11D9-8D70-000393C30512@freescale.com>
-Cc: Netdev <netdev@oss.sgi.com>,
-	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [RFC] Patch to Abstract Ethernet PHY support (using driver
-	model)
+	Tue, 18 Jan 2005 22:46:18 +1100 (EST)
+Message-ID: <313680C9A886D511A06000204840E1CF0A6474FB@whq-msgusr-02.pit.comms.marconi.com>
+From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
+To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Date: Tue, 18 Jan 2005 06:45:14 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ISO-8859-1"
+Subject: Linux 2.6-10.rc3  8xx: debugging (over-writing)  content of bd_in
+	fo structure  in the kernel booting code
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,60 +22,91 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 14 January 2005 15:00:20 -0600, Andy Fleming wrote:
-> >
-> >Wrt. the proposed PHY lib, I agree.  Didn't even bother to look at the
-> >code, it's mere size said enough.
+I am now suspecting that the content of my bd_info structure is set or is
+handled incorrectly,
+thus causing incorrect behavior of the serial driver upon kernel booting
+(only 3 characters are printed correctly and the rest is the garbage - as I
+reported before), 
+so I am trying (for debugging purposes) to over-write the values, passed
+from bd_info
+during the kernel booting, by the hard-coded "correct" values.
 
-Ok, this time I did bother to look at the code...
+So far I tried forcing baud, bits, parity, flow directly in in
+cpm_uart_console_setup()
+( drivers/serial/cpm_uart/cpm_uar t_core.c ) - see below - it didn't help
+...
 
-> Hmm... Before I spend too much time revising based on previous comments 
-> ebs made, is there a general consensus that the code is much too large? 
->  I know there's a lot in there, but the goal is to simplify PHY 
-> management for all ethernet drivers, new and old, and thus reduce code 
-> size, overall.  Is this code heading in the right direction?  Does it 
-> do too much?  Too little?
+Where in the kernel booting code the clock speed is handled (it also comes
+from the bd_info)
+ - so I could try to force set clock speed there ?
 
- drivers/net/Kconfig          |   33 +-
- drivers/net/Makefile         |    3 
- drivers/net/phy/Kconfig      |   45 +++
- drivers/net/phy/Makefile     |    9 
- drivers/net/phy/cicada.c     |  165 +++++++++++
- drivers/net/phy/davicom.c    |  277 +++++++++++++++++++
- drivers/net/phy/lxt.c        |  237 +++++++++++++++++
- drivers/net/phy/marvell.c    |  173 ++++++++++++
- drivers/net/phy/mdio_bus.c   |  173 ++++++++++++
- drivers/net/phy/phy.c        |  512 ++++++++++++++++++++++++++++++++++++
- drivers/net/phy/phy_device.c |  598 +++++++++++++++++++++++++++++++++++++++++++
- drivers/net/phy/qsemi.c      |  183 +++++++++++++
- include/linux/phy.h          |  355 +++++++++++++++++++++++++
- 13 files changed, 2743 insertions(+), 20 deletions(-)
+Thanks,
+Alex
+****************************************************************
+static int __init cpm_uart_console_setup(struct console *co, char *options)
+{
+        struct uart_port *port;
+        struct uart_cpm_port *pinfo;
+        int baud = 38400;
+        int bits = 8;
+        int parity = 'n';
+        int flow = 'n';
+        int ret;
 
-Imo, the general idea to combine phy code makes sense - to a degree.
-Advantage is less code copied over most existing drivers.  But few
-people have more than one driver compiled in (or loaded, in case of
-modules) at a time, so that bloat is source code only.  The big danger
-here is that real compiled kernels will actually grow.
+        port =
+            (struct uart_port
+*)&cpm_uart_ports[cpm_uart_port_map[co->index]];
+        pinfo = (struct uart_cpm_port *)port;
 
-As an example, drivers that don't bother with suspend/resume should
-have a slightly smaller binary, compared to generic code that supports
-it.  There are valid reasons why people might want such a device, so
-no size fits 'em all.
+        pinfo->flags |= FLAG_CONSOLE;
 
-If you manage to convert existing drivers to your new proposed model,
-you can show some numbers.  Is the compiled kernel smaller or bigger
-after your changes.  About the same?
+        if (options) {
+                uart_parse_options(options, &baud, &parity, &bits, &flow);
+        } else {
+                bd_t *bd = (bd_t *) __res;
 
-If there is significant growth, I'm pretty unexcited about the idea.
-If it shrinks, you're a genius and sure, the patch should go in.  With
-roughly the same binary size, you can point to code size and show how
-that has decreased.
+                if (bd->bi_baudrate)
+                        baud = bd->bi_baudrate;
+                else
+                        baud = 9600;
+        }
+        baud = 38400;
+<<===========================================
+        parity = 'n';
+<<===========================================
+        flow = 'n';
+<<===========================================
+        bits = 8;
+<<===========================================
+        /*
+         * Setup any port IO, connect any baud rate generators,
+         * etc.  This is expected to be handled by board
+         * dependant code
+         */
+        if (pinfo->set_lineif)
+                pinfo->set_lineif(pinfo);
 
-Right now, all I see is more code and I get this feeling that binary
-size will grow as well.  So please try to prove me wrong.
+        if (IS_SMC(pinfo)) {
+                pinfo->smcp->smc_smcm &= ~(SMCM_RX | SMCM_TX);
+                pinfo->smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
+        } else {
+                pinfo->sccp->scc_sccm &= ~(UART_SCCM_TX | UART_SCCM_RX);
+                pinfo->sccp->scc_gsmrl &= ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+        }
 
-Jörn
+        ret = cpm_uart_allocbuf(pinfo, 1);
 
--- 
-Time? What's that? Time is only worth what you do with it.
--- Theo de Raadt
+        if (ret)
+                return ret;
+
+        cpm_uart_initbd(pinfo);
+
+        if (IS_SMC(pinfo))
+                cpm_uart_init_smc(pinfo);
+        else
+                cpm_uart_init_scc(pinfo);
+
+        uart_set_options(port, co, baud, parity, bits, flow);
+
+        return 0;
+}
