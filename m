@@ -1,44 +1,38 @@
-Date: Fri, 25 Aug 2000 09:12:06 +0200 (CEST)
-From: Ronald Wahl <rwa@peppercon.de>
-To: Dan Malek <dan@embeddededge.com>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: allocating uncachable memory
-In-Reply-To: <Pine.LNX.4.21.0008240918310.625-100000@goliath.issistance.de>
-Message-ID: <Pine.LNX.4.21.0008250907160.1624-100000@goliath.issistance.de>
+Date: Fri, 25 Aug 2000 12:52:50 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: sprenger <sprenger@in.tum.de>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: RE: xf4 and lombard
+In-Reply-To: <39A5E3F7.1030409@in.tum.de>
+Message-ID: <Pine.LNX.4.10.10008251249380.6415-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 24 Aug 2000, Ronald Wahl wrote:
+> using a 2.2.17pre15 worked fine, but with a 2.4-test6 kernel the
+> x-server crashed often especially under heavy load - like compiling
+> mozilla-m17 !? but even on the console the build would stop three times
+> with error 132, just had to restart the build - strange .
+> i just upgraded to 2.4-test7, and the x-server seems to be stable now
+> (compiling a new mozilla while using the old one - really a heavy load
+> ...). but now i have some garbage (several blue dots) on my screen,
+> especially on the "gkrellm"-window.
+> any idea ?
 
->
-> On Wed, 23 Aug 2000, Dan Malek wrote:
->
-> > Benjamin Herrenschmidt wrote:
-> >
-> > > ... Most PPC machines out there (all PCI PPC machines) are,
-> > > AFAIK, cache coherents. PPC NuBus powermacs are not.
-> >
-> >
-> > The MPC8xx and IBM 4xx systems can have PCI options but are not
-> > cache coherent.  PCI masters are still challenging (if you can actually
-> > get them to work :-).
->
-> It's an MPC860 together with an PLX 9054 PCI Controller. The effect is
-> that most of the data is correct but sometimes the MPC860 seems to get
-> wrong data. Looks like more than a race condition than a cache side
-> effect, but I'm not sure.
+No, I don't do 2.4 (too much work to do in 2.2 yet).
 
-After some further tests I found out that it is the data cache of the
-MPC860. If I switch the data cache off in head.S all goes well. So my
-question again: How can I get an alias mapping (with _PAGE_NO_CACHE |
-_PAGE_GUARDED) of some already mapped pages.
-...or can I mark pages as non-cacheable w/o alias mapping?
+> by the way, do you know the standard key-combination to emulate the
+> second and third mouse button ? with the 2.4-test6 they used to be
+> "fn-ctrl" and "fn-alt". but when i upgraded to 2.4-test7 i could not
+> find them anymore.
 
-thx,
-ron
+Use showkey or xev. My emulation keys are F11 and F12, (108,111) in 2.2,
+and as I said above, I don't bother too much with 2.4 as long as Linus
+keeps doing these break-all-archs-except-i386 things to the code.
+
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
