@@ -1,35 +1,58 @@
-Message-ID: <3C99A4C5.FE7BC02A@imc-berlin.de>
-Date: Thu, 21 Mar 2002 10:15:49 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3C99BBA3.8090703@thales-bm.com>
+Date: Thu, 21 Mar 2002 11:53:23 +0100
+From: Julien Eyries <julien.eyries@thales-bm.com>
 MIME-Version: 1.0
-To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC8xx and O_DIRECT ???
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: MBX boot loader on a MPC8260 custom board 
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+hi all ,
 
-has anyone successfully used the O_DIRECT option for file writing (on
-MPC8xx IDE)?
+we have here a custom MPC8260 board (4 Mo flash, 32 Mo SDRAM,200 Mhz
+MPC8260) and we want to use the HardHat linux from Montavista.
+we are also using BDI-2000 probe (from ABATRON) .
 
-I pulled the latest linux version from bitkeeper. When I start the file
-benchmark "bonnie" (http://www.garloff.de/kurt/linux/bonnie/) using the
--o_direct option, I'll get:
+the kernel we have build is based on the ADS8260 board which is quite
+similar to our board.
 
-root@idif1:~# bonnie -d /mnt -s 20 -o_direct
-Bonnie 1.3: File '/mnt/Bonnie.95', size: 20971520, volumes: 1
-Using O_DIRECT for block based I/O
-Writing intelligently...       done:   4127 kB/s  73.8 %CPU
-Bonnie: drastic I/O error (/mnt/Bonnie.95.0): Not a directory
+the boot-loader we use is the "mbx" boot loader which come with the
+Linux kernel tree.
 
-During the "Writing intelligently" I can see this file!?
+the problem i have is :
+- we load the file "zvmlinux.mbx" using the BDI2000 probe
+- we take control over the MPC8260 with "ppc_82xx-gdb zvmlinux.mbx" and
+"target remote xx.xx.xx.xx:2001"
+- we do some "stepi" and the code runs, entering function
+"decompress_kernel", then "serial_init" .
+- at some point in this function "serial_init" , the PC (program
+counter) begins to count downwards !!! for exemple ( 0x400000 ...
+0x3ffffc ... 0x3fff8 ...  )
 
-So, is -O_DIRECT actually working on MPC8xx?
+another point is: when debugging C source code (in emacs + gdb),
+we can see that the programms jumps from one point to another (some
+times backward) , not following the logical flow of the C source code
+.Is that normal ????
 
-Thanks a million,
+what could be the reason of such behaviour ???
+does someone here have an idea for our problem ?????
 
-Steven
+
+any help is welcome,
+greetings,
+
+
+
+--
+Julien Eyries
+R&D engineer
+Thales Broadcast & Multimedia (ex-thomcast)
+email: julien.eyries@thales-bm.com
+fax: 33(0) 1 34 90 31 10
+tel: 33(0) 1 34 90 31 01
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
