@@ -1,51 +1,37 @@
-From: john.khan@liquidation.com
-To: <john.khan@liquidation.com>, <linuxppc-dev@lists.linuxppc.org>
-Subject: RE: Updated PPC Ambassador Tux
-Date: Wed, 20 Feb 2002 10:18:48 -0500
-Message-ID: <NGBBKEOKAMAPDDCNPGFEEEAJCBAA.john.khan@liquidation.com>
+From: Eric.Oosterhof@radisys.com
+Subject: Re: I2C module problem on 8260
+To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <OF56E55080.7594F958-ON88256B66.006A2E6C@radisys.com>
+Date: Wed, 20 Feb 2002 11:26:40 -0800
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <NGBBKEOKAMAPDDCNPGFEMEAICBAA.john.khan@liquidation.com>
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Here is all three together http://gfxgeek.com/ppclogo.html Feel free to use
-them at will but let me know, as I would love to know if either of them is
-used :)
+On Wed, 13 Feb 2002 17:43:57 +1100, Murray Jensen <
+Murray.Jensen@cmst.csiro.au> writes:
+>Well, I have an i2c driver for the CPM which supports both 8xx and 8260
+>(and potentially anything else that has a CPM) in the same source
+(although
+>I still haven't got around to testing the 8xx code). I avoid the issue
+raised
+>here by using kmalloc(). The code works fine as a loadable module, and it
+>only allocates the dual port ram once, the first time the module is
+loaded.
+>Of course, it is called drivers/i2c/i2c{-algo,}cpm.c.
 
------Original Message-----
-From: owner-linuxppc-dev@lists.linuxppc.org
-[mailto:owner-linuxppc-dev@lists.linuxppc.org]On Behalf Of
-john.khan@liquidation.com
-Sent: Wednesday, February 20, 2002 10:09 AM
-To: john.khan@liquidation.com; linuxppc-dev@lists.linuxppc.org
-Subject: RE: Updated PPC Ambassador Tux
+Yes, thanks for the responses.  That was my solution too, and it is now
+working.  Next up, how to get it to respond as a slave.  My hardware has 4
+8260's, and they communicate via I2C.  I want one CPU to be the I2C master
+and the other 3 to be slaves.  Potentially, I could make them all masters,
+but that might require SW mods to support the multi-master environment.  Is
+anyone aware of either solution?
 
-
-
-Or the no hat version http://gfxgeek.com/linuxppcnohat.gif
-
------Original Message-----
-From: owner-linuxppc-dev@lists.linuxppc.org
-[mailto:owner-linuxppc-dev@lists.linuxppc.org]On Behalf Of
-john.khan@liquidation.com
-Sent: Wednesday, February 20, 2002 10:04 AM
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Updated PPC Ambassador Tux
-
-
-
-http://gfxgeek.com/linuxppc.gif
-Added the top hat and monocal for a more regal look. Linux on PPC makes a
-truly classy system you know...
-
-John Khan
-----------------------
-Liquidation.com
-202.467.6868 x305
-http://www.liquidation.com
+Eric.Oosterhof@RadiSys.com 503-615-1283
+5445 NE Dawson Creek Drive
+Hillsboro, Oregon, 97124
+USA
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
