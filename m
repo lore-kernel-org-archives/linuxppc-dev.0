@@ -1,4 +1,4 @@
-Message-ID: <381f2fd9382470a6@villosa.wanadoo.fr> (added by villosa.wanadoo.fr)
+Message-ID: <381f30fc381fe1d9@antholoma.wanadoo.fr> (added by antholoma.wanadoo.fr)
 Date: Tue, 02 Nov 1999 19:32:19 +0100
 Subject: Newworld OF boot
 From: "Florent" <flobo@iname.com>
