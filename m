@@ -1,46 +1,45 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: It does! (was: Re: Does a Cinema Display work under Linux?)
-References: <Pine.LNX.3.96.1000503111322.24757M-100000@deepspace.mklinux.org>
-	<8x4s8a1h9m.fsf@s61.informatik.uni-bremen.de>
-From: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-Date: 09 May 2000 17:00:06 +0200
-In-Reply-To: Holger Bettag's message of 07 May 2000 18:01:25 +0200
-Message-ID: <8xk8h3py4p.fsf_-_@s61.informatik.uni-bremen.de>
+Message-ID: <39183E38.C5A8102D@mit.edu>
+Date: Tue, 09 May 2000 12:35:04 -0400
+From: Adam C Powell IV <hazelsct@mit.edu>
+MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Jeff Garzik <jgarzik@mandrakesoft.com>, linux-fbdev@vuser.vu.union.edu,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [linux-fbdev] Re: PATCH 2.3.99.7.5: update for clgenfb fbdev driver
+References: <Pine.LNX.4.10.10005051335010.428-100000@cassiopeia.home>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Holger Bettag <hobold@Informatik.Uni-Bremen.DE> writes:
+Geert Uytterhoeven wrote:
 
-[Following up on myself]
-
-> My G4 and the Cinema Display finally arrived. Needless to say, nothing works
-> as of yet. :-)
+> On Fri, 5 May 2000, Jeff Garzik wrote:
+> > updates my cirrus logic fbdev driver with a few cleanups, fix 0xA0000
+> > bug (note to alan), module and PCI cleanups, ...
 >
-[very detailed list of my stupid mistakes deleted]
+> Since clgen_of_init() is exactly the same as clgenfb_init(), and since clgenfb
+> uses PCI resource management, can't we simply get rid of the OF specific stuff
+> in clgenfb?
+>
+> Can someone please test this by disabling Offb (CONFIG_FB_OF=n) and seeing
+> whether everything still works fine? Thanks!
 
-After looking at the various install scripts, I finally understood the
-installation process good enough to avoid all the stupid mistakes I made
-earlier. Installation went painless then.
+I'd be glad to.  I tried doing this with pre6, and it failed; I attached the oops
+to a previous message to fbdev, the hang seemed to be in init_vgachip.  (Also, the
+board was mis-identified as having 32 MB RAM, it has just 4 MB.)  This is on a
+StarMax 3000/160 (=pmac 4400) with a MacPicasso 540.  I don't see any changes to
+init_vgachip in pre7-8; is there reason to believe this will work?
 
-Two simple lines with "novideo" in yaboot.conf are enough to make the Cinema
-Display work 'good enough' during installation and for a running system. This
-was simpler than I expected. (The CinDis runs in its native resolution with
-8 bits color depth, unaccelerated.)
+Unfortunately, I seem to have lost the original message with the patch, and it
+doesn't seem to be in the archive at linux-fbdev.org or linuxppc.org (was it sent
+to either list?).  Did the patch make it into pre7-8?  (The clgenfb version there
+is 1.9.5; the vga16fb patch posted last Friday seems to have made it in.)  If not,
+could someone please resend it to me?
 
+Thanks,
 
-I have looked at the development kits available on ATI's web site. None of
-them is directly related to driver programming. I can try to register with ATI,
-but I don't have a 'big name' company to back me up, so I think my chances
-aren't very high.
+-Adam P.
 
-I have been thinking that maybe there might be other options, like becoming a
-betatester for one of the parties that already have ATI's blessing. I'd
-honor the necessary NDAs, and I'd do some programming to improve the support
-for digitally connected displays.
-
-Is anyone interested?
-
-  Holger
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
