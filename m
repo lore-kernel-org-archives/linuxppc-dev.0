@@ -1,132 +1,76 @@
-Message-ID: <004601c13710$d26abee0$2000a8c0@private>
-From: =?ks_c_5601-1987?B?wLG1v7yu?= <manulsan@daintelecom.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Can't run init... MPC8240 
-Date: Fri, 7 Sep 2001 05:16:32 +0900
+Message-ID: <9DCCE20055ACD311BBE200104B08D834012749B1@EXCHWENZ01>
+From: Rod Boyce <rod_boyce@DMCWave.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: sorry!Another question about flash!
+Date: Fri, 7 Sep 2001 08:16:45 +1200 
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear
+I don't suppose you have though of writing your own flash driver for your
+custom hardware and I did this the other day there is nothing to it.  I now
+have Intel Strata flash working in Linux 2.2.14 kernel using block mode
+writes very fast if it helps I could send it to you but the block write bit
+is for our custom hardware so it may not work for you.
 
-I am working MPC8240 custom board with Sandpoint8240 BSP
-from MVista CDK 2.0 .   I think that I made something wrong.
-I tried to make run "init" ( init is located /bin/init,  sbin is symbolic link to bin),
-but didn't run it so I printed error code  with printk function.  Error code is 2
-Error code 2 says that file does not exist. I can't find debugging point.
-Small advice gonna be big hands to me.
+Rod
 
-
-Following is What I did and partial souece and console output using printk
-
-[ Work Sequence ]
-
-1. Made ramdisk.image.gz and copy it to "/opt/hardhat/devkit/lsp/motorola-sandpoint/linux-
-   2.4.2_hhl20/arch/ppc/boot/images"
-2. compiled with command " make zImage.initrd"
-3. Change to directory   "/opt/hardhat/devkit/lsp/motorola-sandpoint/linux- 2.4.2_hhl20/arch/ppc/boot/images"
-4. Make it to srec format
-    zsrec -s 900000 zImage.initrd.sandpoint  > image.hex
-5. At vision prob I converted it to bdx file
-    I got image.bdx
-6. I downloaded "image.bdx" using vision prob
-7. go 900000
+	-----Original Message-----
+	From:	Kári Davíesson [mailto:kd@flaga.is]
+	Sent:	Thursday, 6 September 2001 22:25
+	To:	weiwu; linuxppc-embedded@lists.linuxppc.org
+	Subject:	RE: sorry!Another question about flash!
 
 
+	> -----Original Message-----
+	> From: weiwu [mailto:weiwu@isdn.iscas.ac.cn]
+	> Sent: 6. september 2001 10:18
+	> To: linuxppc-embedded@lists.linuxppc.org
+	> Subject: sorry!Another question about flash!
+	>
+	>
+	>
+	> >  A character device driver is included with our sources,
+	> see for instance
+	>
+>ftp://ftp.denx.de/pub/LinuxPPC/usr/src/linux-2.4.4-2001-07-23.tar.bz2
+	> >
+	> >The standard solution is to use MTD, which is part of recent
+	> kernels, too.
+	>
+	> 1.who have block device driver of flash?  And can I share with
+you?
+	>  (Intel 28F320J5(4MBytes, 8bit) flash memory)
+
+	Check the mtd code. It allready supports 28F320 (16 bit 4Mb).
+
+	>
+	> 2.The "ftl or mtd" is only for PCMCIA?
+
+	No. Check the mtd code. It can work with PCMCIA and ftl but they are
+not
+	necessary.
+
+	> Can we use it in the general flash board ?such as ppc mother
+board!
+
+	I am using the mtd for 28F320 for a homegrown board, no pcmcia, no
+ftl.
+	Check the FLAGADM configuration in mtd.
+
+	K.D.
+
+	>
+	>
+	> I need help!Thank you very much!
+	>
+	>
 
 
-=====================  source code  =====================
-
-static int init(void * unused)
-{
-        lock_kernel();
-        do_basic_setup();
-
-        /*
-         * Ok, we have completed the initial bootup, and
-         * we're essentially up and running. Get rid of the
-         * initmem segments and start the user-mode stuff..
-         */
-        free_initmem();
-        unlock_kernel();
-#if 0
-
-        if (open("/dev/console", O_RDWR, 0) < 0)
-                printk("Warning: unable to open an initial console.\n");
-
-        (void) dup(0);
-        (void) dup(0);
-#endif
-        /*
-         * We try each of these until one succeeds.
-         *
-         * The Bourne shell can be used instead of init if we are
-         * trying to recover a really broken machine.
-         */
-
-        if (execute_command)
-                execve(execute_command,argv_init,envp_init);
-
-if (execute_command)
-printk("Suchen nach %s ", execute_command);    execve(execute_command,argv_init,envp_init);
-printk("%d\n", errno);
-
-printk(" /sbin/init ==> "); execve("/sbin/init",argv_init,envp_init);
-printk("  %d\n", (errno));
-
-printk(" /init ==> "); execve("/init",argv_init,envp_init);
-printk("%d\n", (errno));
-
-printk(" /etc/init  ==> "); execve("/etc/init",argv_init,envp_init);
-printk("%d\n", (errno));
-
-printk(" /bin/init  ==> "); execve("/bin/init",argv_init,envp_init);
-printk("%d\n", (errno));
-
-printk(" /bin/sh ==> "); execve("/bin/sh",argv_init,envp_init);
-printk("%d\n", (errno));
-
-panic("No init found. Try passing init= option to kernel.");
-}
-
-
-=======[  Printk output ]===================================
-
-.
-.   ( omitted )
-.
-.
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society NET3.039
-Starting kswapd v1.8
-block: queued sectors max/low 40885kB/13628kB, 128 slots per queue
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-RAMDISK: Compressed image found at block 0
-Freeing initrd memory: 4194301k freed
-loop: loaded (max 8 devices)
-Serial driver version 5.02 (2000-08-09) with MANY_PORTS SHARE_IRQ SERIAL_PCI ena
-bled
-ttyS00 at 0x1e08080 (irq = 4) is a ST16650
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP
-IP: routing cache hash table of 512 buckets, 4Kbytes
-TCP: Hash tables configured (established 4096 bind 4096)
-IP-Config: No network devices available.
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-VFS: Mounted root (ext2 filesystem).
-Freeing unused kernel memory: 72k init 4k openfirmware...
-Suchen nach /init 2
- /sbin/init ==>   2
- /init ==> 2
- /etc/init  ==> 2
- /bin/init  ==> 2
- /bin/sh ==> 2
-Kernel panic: No init found. Try passing init= option to kernel.
-Rebooting in 180 seconds..
-=========================================================
-
+	** Sent via the linuxppc-embedded mail list. See
+http://lists.linuxppc.org/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
