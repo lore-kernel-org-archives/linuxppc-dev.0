@@ -1,42 +1,32 @@
-Date: Wed, 15 Mar 2000 15:46:50 -0800 (PST)
-From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-To: Tom Rini <trini@kernel.crashing.org>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Linux/m68k <linux-m68k@lists.linux-m68k.org>,
-        Linux/PPC for APUS <linux-apus@sunsite.auc.dk>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: dmasound split
-In-Reply-To: <20000315113909.D352@opus.bloom.county>
-Message-ID: <Pine.LNX.3.96.1000315154608.19480C-100000@deepspace.mklinux.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200003160147.RAA04377@soda.csua.Berkeley.edu>
+To: "Peter M. Jansson" <petej@clickvision.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: SIGALRM can't be delivered after longjmp from handler?
+In-Reply-To: Your message of "Wed, 15 Mar 2000 13:41:29 EST."
+             <38CFD959.52E9F85@clickvision.com>
+Date: Wed, 15 Mar 2000 17:47:22 -0800
+From: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 15 Mar 2000, Tom Rini wrote:
 
->
-> On Tue, Mar 14, 2000 at 09:14:23AM +0100, Geert Uytterhoeven wrote:
->
-> > On Tue, 7 Mar 2000, Geert Uytterhoeven wrote:
-> > > On Tue, 7 Mar 2000, Geert Uytterhoeven wrote:
-> > > > This is my first test release for splitting the DMA sound driver in different
-> > > > parts:
-> > >
-> > > And here's a first patch:
-> >
-> > No comments whether it works on PowerMac and Atari?
->
-> Ah, right.  I tried it out on a 9600 and it worked, and seemingly better than
-> before (no loud hiss when insmod'ed).  Only sugjestion I would make is to
-> follow the trend of drivers/XXX/bigdriver/xxx.c instead of dmasound_*.c
+For other signals like SEGV and BUS and INTR, I had to re-enable the
+signal by calling signal() after longjmp as specified in the signal(2)
+manpage for Linux:
 
-I noticed that the loud hiss was gone in kernels/modules built a couple of
-weeks ago, too, for whatever that's worth.
+"Unlike on BSD systems, signals under Linux are reset to their default
+behavior when raised.  However, if you include <bsd/signal.h> instead
+of <signal.h> then signal is redefined as __bsd_signal and signal has
+the BSD semantics.  Both versions of signal are library routines built
+on top of sigaction(2)."
 
+I changed your example program to restore the signal handler routine
+once the signal is raised and it worked as you described. I did not
+try using <bsd/signal.h>. You may wish to try that. I prefer just
+restoring the signal handler, since this avoid #ifdefs for different
+platorms.
 
-David
-
+----ranga <ranga@soda.berkeley.edu>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
