@@ -1,43 +1,40 @@
-Message-Id: <200101040850.f048oN918835@denx.local.net>
-To: "Rolf Liu" <rolfl@sc.mcel.mot.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: separate kernel as code segment and data segment for linux ppc ? 
-From: Wolfgang Denk <wd@denx.de>
+Message-Id: <200101040956.JAA16492@hyperion.valhalla.net>
+Date: Thu, 04 Jan 2001 09:56:34 +0000
+Subject: Re: problems when recompiling dmasound modules
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: "Michel Ddnzer" <michdaen@iiic.ethz.ch>, linuxppc-dev@lists.linuxppc.org
 Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 04 Jan 2001 09:45:55 +0800."
-             <017b01c075f0$15265b50$bf0102c8@sc.mcel.mot.com>
-Date: Thu, 04 Jan 2001 09:50:23 +0100
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <017b01c075f0$15265b50$bf0102c8@sc.mcel.mot.com> you wrote:
->
-> As all know, the kernel is resided in flash rom, then upon power-on, kernel
-> is copied to RAM.
-> I wonder if I can just put data segment to ram and leave code segment to
-> FLASH, just as uClinux
-> has done. such method will save some ram space, which makes sense on
-> embedded solutions.
 
-Does it really make sense? Flash is  more  expensive  than  RAM,  and
-sometimes slower (especially if you have just a 8 or 16 bit wide boot
-device). For all systems I've seen so far it was more efficient to be
-able  to  store  a  compressed  image  in  flash, to reduce the flash
-footprint on the expense of some RAM.
+> Whenever I rebuild my linux-pmac-devel tree when the kernel version changed I
+> get bitten by this:
+> The sound modules don't get rebuilt so their version doesn't match the kernel
+> version and they can't be insmoded.
+> I can investigate to find a solution myself but I figured it should be easier
+> for Geert or one of the other dmasound hackers to fix it.
 
-This has been discussed several times before on  this  mailing  list;
-you might want to search the archives for all the other arguments pro
-and contra.
+I just did (after an absence of nearly six months ;-) :
 
-Wolfgang Denk
+rsync ppc.samba.og::linux-pmac-devel - which picked up 2.4.0-t13-p3
+make mrproper
+make menuconfig (selected, amongst other things, sound card support built
+in, pmac sound as module)
+make dep vmlinux modules modules_install
+  - I saw it compile the damsound_core, dmasound_awacs
+copied the kernel to my MacOS partition...
+rebooted
+modprobe dmasound_awacs
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Man is the best computer we can put aboard a spacecraft ...  and  the
-only one that can be mass produced with unskilled labor.
-                                                  - Wernher von Braun
+and viola!
+it seemed to work as before...
+
+(so maybe that wasn't what you were saying at all ;-)
+
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
