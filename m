@@ -1,74 +1,49 @@
-Message-ID: <3D80F2F7.3FB3AE4B@koffie.nl>
-Date: Thu, 12 Sep 2002 22:03:02 +0200
-From: Segher Boessenkool <segher@koffie.nl>
+Message-ID: <3D810824.9020004@mvista.com>
+Date: Thu, 12 Sep 2002 14:33:24 -0700
+From: Todd Poynor <tpoynor@mvista.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: RFC: Performance Monitor Counters device
-Content-Type: text/plain; charset=us-ascii
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: consistent_free re-revisited
+References: <3D7FB97B.9060301@mvista.com> <20020912032640.GA32156@zax>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi people,
+David Gibson wrote:
 
-I'm currently implementing a Linux driver to use the PowerPC
-performance monitor counters (PMC's).  I thought I'd ask here
-about some design/implementation issues, before I do a lot
-of stupid/timewasting things ;)
+>>Furthermore, consistent_alloc does not fill out vm_struct fields for the
+>>VM area that map it to the struct pages, so consistent_free can't use
+>>those to derive the physical pages.  And neither can vfree(), which is
+>>what consistent_free() calls to do its work.  And so consistent_free()
+>>does not free the physical pages allocated by consistent_alloc()...
+>
+> Erm... vfree() walks the page tables to find the pages to free, which
+> should work fine.
 
-The goal of this driver is threefold:
+Been curious about this... vfree() walks the page tables to find PTE
+entries to unmap (modifying the PTE entry).  But its code to call
+__free_page() on the physical pages for the area (the deallocate_pages
+condition in __vunmap()) is not being executed (because area->nr_pages
+== 0), and it seems likely this is needed.
 
-1) provide an easy interface for programs to be able to monitor
-   themselves -> need to change your programs code, very
-   fine-grained profiling.
-2) provide a little more capable interface to use with something
-   like gmon.
-3) and you can do all that on the kernel, too.
+After modifying consistent_alloc() to fill out the area->pages array and
+set area->nr_pages, __vunmap() will then call __free_page() on those
+pages.  Whereupon:
 
-For 1), the program-to-be-monitored just needs to be able to
-select a set of PMC's, and read the counters.  Pretty easy.
+   vaddr = consistent_alloc(gfp, size, &physaddr);
+   consistent_free(vaddr);
+   vaddr = consistent_alloc(gfp, size, &physaddr);
 
-For 2), you need the same as for 1), plus have the kernel
-generate a signal on every Nth occurence of some event.  The
-PowerPC generates an exception for that, so this is not all
-that hard either.  Maybe the kernel can communicate which PMC
-set off the signal; if not, it's trivial for the userland to
-figure that out from the current counters.
-
-For 3), it's just the same as above, except the niggly details
-I left out (that are needed there, too): you need to select
-whether the counters count event in supervisor and/or in
-problem state, and/or only on marked tasks.
-
-
-Now the questions ;)
-
-1) What's the best interface for this kind of thing?  A char
-   device?  With ioctl()'s?  a sysctl?  something in /proc?
-   I'm not interested in ease of implementation (I'll have to
-   hack some on gprof too, for this -- so I'm not afraid of
-   the kernel ;) ), but in what's philosophically/technically/
-   procatically the best interface.
-2) Do we want to be able to profile several tasks (independently
-   from each other) at once?  This will require some bookkeeping
-   and task switch overhead, and is probably not necessary in
-   practice; also, it will degrade the quality of the results some.
-3) [I'm ashamed I have to ask this...]  Is there a good tutorial
-   to kernel locks somewhere?
-4) Security: I want to generate most of the settings in userland,
-   for maximum ease of use and ease of implementation; but that
-   brings up some security issues.  Only allowing root to
-   profile code isn't ideal, either.  So:
-   a) Don't automagically load the module; if root loads it, let's
-      hope he knows what he's doing;
-   b) Have the pmc device be accessible only to a 'trusted' group;
-   c) A setuid driver program to start profiling;
-   d) Something much more clever?
+then allocates the same physaddr both times, which is not currently the
+case.  There is also an overall difference in memory usage in the
+neighborhood of the allocated buffer size between the 2 schemes (per
+free(1) at a shell prompt), but I wouldn't swear to it...
 
 
-Thanks to anyone who read this far,
-
-Segher
+--
+Todd
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
