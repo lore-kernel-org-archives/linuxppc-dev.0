@@ -1,27 +1,20 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
-	by ozlabs.org (Postfix) with ESMTP id 929F92BDB3
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 815A02BDB4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  9 Oct 2004 00:22:03 +1000 (EST)
-Date: Fri, 8 Oct 2004 07:22:00 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20041008142200.GX14773@smtp.west.cox.net>
-References: <1096517265.27208.18.camel@localhost.localdomain>
-	<20041007154029.GE14773@smtp.west.cox.net>
-	<Pine.LNX.4.60.0410071158320.5191@dell.enoriver.com>
-	<20041007173023.GK14773@smtp.west.cox.net>
-	<Pine.LNX.4.60.0410071354340.6526@dell.enoriver.com>
-	<20041007184840.GN14773@smtp.west.cox.net>
-	<0927BD6D-18A9-11D9-9049-003065F9B7DC@embeddededge.com>
-	<Pine.LNX.4.60.0410071817420.8278@dell.enoriver.com>
-	<20041007224220.GV14773@smtp.west.cox.net>
-	<CF1BBAC1-18D0-11D9-9049-003065F9B7DC@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CF1BBAC1-18D0-11D9-9049-003065F9B7DC@embeddededge.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] remove obsolete arch/ppc/8xx_io/uart.c
+	Sat,  9 Oct 2004 01:29:13 +1000 (EST)
+In-Reply-To: <Pine.LNX.4.60.0410080704170.6219@dell.enoriver.com>
+References: <Pine.LNX.4.60.0410080704170.6219@dell.enoriver.com>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <11BB7E60-193F-11D9-9299-003065F9B7DC@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Fri, 8 Oct 2004 11:31:05 -0400
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: cleaning up the Kconfig menu structure -- the bigger picture
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,23 +25,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 07, 2004 at 10:21:49PM -0400, Dan Malek wrote:
-> 
-> On Oct 7, 2004, at 6:42 PM, Tom Rini wrote:
-> 
-> >Oh, that.  console=ttyCPM1 is the answer if both SMC1 and SMC2 are
-> >UARTs.
-> 
-> Yeah, that's normally the way it's done.
-> 
-> >Anticipating Dan screaming about this,
-> 
-> What kind of a person do you think I am?  I don't scream about
-> anything.  I just point out facts and if others choose to ignore it
-> I'll just remind everyone later.
 
-I'm sorry Dan, I misjudged things.
+On Oct 8, 2004, at 7:16 AM, Robert P. J. Day wrote:
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+> now, is this the right place for configuring CPM SCC/SMC serial port 
+> support?  sure, some people might say.  after all, it's serial port 
+> stuff, it should be under "Serial drivers".  makes perfect sense, 
+> right?
+
+Not exactly.  At one point we decided to keep the CPM and other 
+8xx/82xx/85xx
+unique configuration options in a separate set of menus under 
+arch/ppc/cpm*
+as appropriate.  There may (usually will) be drivers and support unique 
+to these
+processors that will always simply continue to live there.  We decided 
+to not
+scatter the configuration options about, placing the sharable drivers 
+in the
+standard places, but the configuration local.  One reason for this is 
+some of
+these drivers may be shared by several Freescale processors, as they are
+starting to use these peripheral blocks in more varied processors.  The 
+basic
+drivers are the same, but configuration options and support functions 
+may
+be different.  These support and configuration options should be 
+collected
+in a processor type specific place, and set configuration options the 
+shared
+drivers will use as necessary.
+
+Once again I'll add the observation that people using these processors
+have to know how the boards are configured and to select the proper
+options.  There is lots of variation among the configurations and I'd 
+rather
+not build complex configuration menus that try to keep users from
+hurting themselves.  The default configuration files are there for a 
+reason,
+let's use them to assist people (and keep them up to date).
+
+If you are making changes to configuration options, it would be nice if
+you would also at least regenerate all default configuration files 
+affected
+by this (as I do).  At least make an honest attempt at getting it 
+correct.
+
+Thanks.
+
+	-- Dan
