@@ -1,30 +1,26 @@
-In-Reply-To: <FD52892BD296D71183B400065BFCB69009982F2E@il02exm12>
-References: <FD52892BD296D71183B400065BFCB69009982F2E@il02exm12>
+In-Reply-To: <16544.4592.978105.177882@cargo.ozlabs.ibm.com>
+References: <c7nb0l$5e3$1@sea.gmane.org> <16544.4592.978105.177882@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0 (Apple Message framework v613)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <305CEC2C-A2F0-11D8-93F3-000A95A4DC02@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Motorola MCP820 Board - 7410 / Harrier ASIC based - System Weirdn ess
-Date: Tue, 11 May 2004 04:09:09 +0200
-To: Hawkins Jeffrey-CJH016 <Jeffrey.F.Hawkins@motorola.com>
+Message-Id: <3B3163BD-A2F0-11D8-95B9-003065F9B7DC@embeddededge.com>
+Cc: Amit Shah <amitshah@gmx.net>, linuxppc-dev@lists.linuxppc.org
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: IBM 750GX SMP on Marvell Discovery II or III?
+Date: Mon, 10 May 2004 22:09:27 -0400
+To: Paul Mackerras <paulus@samba.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I am evaluating a Motorola Computer Group MCP820 Board.  It is 7410
-> Based, running at 500 Mhz, 256MB RAM, 2MB L2 Cache.  Testing using
-> 2.4.18 and 2.4.20 Kernels utilizing LMBENCH.  I am seeing some strange
-> behavior with the Local Communications Latency Tests.  Comparing to a
-> similarly configured 750 based System, the UDP and TCP operations have
-> a latency that is 2+ times worse than the lesser performing System
-> (MCP750 @ 366 Mhz).
+On May 10, 2004, at 7:36 PM, Paul Mackerras wrote:
 
-Did you use the same kernel on both systems?  If not, check if both
-are either UP or SMP...
+> SMP is not supported for 750 processors.
+
+You mean for IBM 750 processors :-)
+The MPC75x processors support this.
 
 
-Segher
+	-- Dan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
