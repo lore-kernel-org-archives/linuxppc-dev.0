@@ -1,25 +1,25 @@
-Date: Wed, 17 May 2000 11:53:01 -0400
-From: Josh Huber <huberj@wpi.edu>
-To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: quik booting on a wallstreet
-Message-ID: <20000517115301.A332@mclinux.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200005171514.QAA00462@copper.dcs.qmw.ac.uk>
+To: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
+cc: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org,
+        sb@dcs.qmw.ac.uk
+Subject: Re: Pismo status 
+In-Reply-To: Message from Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
+   of "Wed, 17 May 2000 08:04:41 MST." <Pine.SOL.3.95.1000517080150.18633B-100000@dana.ucc.nau.edu>
+References: <Pine.SOL.3.95.1000517080150.18633B-100000@dana.ucc.nau.edu> 
+Date: Wed, 17 May 2000 16:15:40 +0000
+From: Sergio Brandano <sb@dcs.qmw.ac.uk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Does anyone have quik working on a wallstreet?  I've put the OF patches
-thanks to Apple's SystemDisk app in, and I used to have this working (this
-is really annoying :)...but can't seem to get it going again.
+> What should happen is that the OS should realize that the processor
+> is getting too warm, and turn on the fan before that limit is
+> reached.
 
-Any help would be greatly appriciated...
+ ... relying on the OS for cooling the CPU?
+ What is the advantage of doing it?
+ What happened to good-old control theory?
 
-I tried using:
-boot-device ide0/disk@0,0 ide0/disk@0:0 ide0/disk@0:11 ide0/disk@0,11
-
-My root partition is 11, which has the kernel as well, in /boot/vmlinux.
-
-Josh
+ Sergio
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
