@@ -1,38 +1,38 @@
-Date: Tue, 24 Jul 2001 17:36:55 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: "Joseph P. Garcia" <jpgarcia@execpc.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: userspace button controls
-In-Reply-To: <20010724015531.516c9985.jpgarcia@execpc.com>
-Message-ID: <Pine.LNX.4.33.0107241730190.1912-100000@opal.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <l03130301b7834a2e6ea3@[192.168.1.100]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 24 Jul 2001 11:58:38 -0400
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+From: "Michael R. Zucca" <mrz5149@acm.org>
+Subject: Sound stoppage on PowerCenter 132
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 24 Jul 2001, Joseph P. Garcia wrote:
+Ok, it's been a long time since I last posted. I've been busy :-)
 
-> attached is a tar.gz of a few files I've created as a solution to powerbook buttons.
->
-> - buttons.patch: brings all 5 adb-buttons to userspace via NIL's
-> events via the keyboard.  New keys added to input.h.  With proper
-> support, the user could see these keypresses, and use them.  This also
-> does not use the pmac_backlight.c file, in exchange for a new
-> framebuffer ioctl, existant in chipsfb, atyfb, and aty128fb.  The only
-> interdependancy is between chipsfb/atyfb and via-pmu for backlight
-> control for lombard and earlier.  The pmu's backlight ioctl was
-> removed.  So sound controls are in the mixer (unchanged), backlight
-> controls are in the fb rather than pmu, and the adbbuttons are simple
+I rsync'd the benh-2.4 tree from 7/24 and compiled it. I checked the awacs
+driver and it seems to contain the code which handles the DMA DEAD
+condition.
 
-You're talking about PMU_IOC_SET/GET_BACKLIGHT? Thanks for breaking pmud
-:-) Please make that a config option, or get Stephan Leemburg to change
-pmud before this leaks into kernels built for the unsuspecting user.
+The problem still seems to be the same. If I play an mp3 using mpg123, the
+song plays fine. However, if I introduce enough PCI traffic (like, say,
+opening up Netscape in X for my ATI PCI video card), the song stops dead
+(no sound) but the mpg123 seems to stick around, presumably waiting on the
+device.
 
-Please don't get me wrong: I'm all for changing this long term, I'd just
-rather not see a repeat of the inputdev compatibility fiasco ...
+The code "seems" more robust under X but that could just be my imagination. :-)
 
-	Michael
+BTW, I have a PowerCenter 132 with a 750 upgrade in it, if that makes any
+difference.
+
+Thanks.
+
+____________________________________________________________________
+ Michael Zucca - mrz5149@acm.org - http://www.mdc.net/~mrz5149/
+ "I will choose a path that's clear. I will choose Freewill. "
+  --Rush, Freewill
+____________________________________________________________________
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
