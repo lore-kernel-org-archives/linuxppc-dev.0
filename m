@@ -1,95 +1,58 @@
-From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
-Reply-To: Thomas Graichen <graichen@innominate.de>
-Subject: SGI XFS on ppc
-Date: 31 Jul 2000 06:17:45 GMT
-Message-ID: <news2mail-8m35m9$3nu$4@mate.bln.innominate.de>
-Reply-To: thomas.graichen@innominate.de
-To: linuxppc-dev@lists.linuxppc.org
+From: Keith Owens <kaos@melbourne.sgi.com>
+To: Thomas Graichen <graichen@innominate.de>, thomas.graichen@innominate.de
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: SGI XFS on ppc 
+In-reply-to: Your message of "31 Jul 2000 06:12:29 GMT."
+             <news2mail-8m35cd$3nu$2@mate.bln.innominate.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Mon, 31 Jul 2000 16:34:17 +1000
+Message-ID: <15081.965025257@ocs3.ocs-net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-[looks like this mail didn't make it into this list (if i am wrong
-sorry for the resend) - please add linux-xfs@oss.sgi.com to the
-cc list if useful]
+On 31 Jul 2000 06:12:29 GMT,
+Thomas Graichen <news-innominate.list.sgi.xfs@innominate.de> wrote:
+>Keith Owens <kaos@ocs.com.au> wrote:
+>> More specific please.  kallsyms has no ifdefs.  It should only be
+>> included if you select kdb but kdb has not been ported to ppc.  I
+>> maintain modutils, kallsyms and kdb.
+>
+>just have a look at the diff at
+>
+>  http://innominate.org/~graichen/projects/xfs-ppc/
 
-i was a bit curious about how hard/easy it would be to get xfs working
-on non intel machines - and this is what i found out about it so far ...
+I can see the problem but need some ppc help in fixing it.  Part of the
+kallsyms patch updates arch/xxx/vmlinux.lds on every arch.  I did not
+patch arch/ppc/vmlinux.lds because it did not have any entries for
+section __ksymtab.  kallsyms is module related and the absence of
+__ksymtab in arch/ppc/vmlinux.lds made me think that ppc does not use
+modules.
 
-first the results till now:
+Does ppc support modules?  I know that modutils has an obj-ppc.c file
+but I don't think I have ever seen any ppc bug reports for modutils.
+If ppc does use modutils then we need lines like this in
+arch/ppc/vmlinux.lds.
 
-[root@aqua /root]# uname -a
-Linux aqua 2.4.0-test1 #11 Mon Jul 31 01:02:00 CEST 2000 ppc unknown
-[root@aqua /root]# cat /proc/filesystems
-nodev	shm
-nodev	pipefs
-nodev	proc
-	ext2
-	msdos
-	vfat
-	iso9660
-	hfs
-nodev	autofs
-	xfs
-nodev	nfs
-nodev	devpts
-[root@aqua /root]#
+  __start___ksymtab = .;        /* Kernel symbol table */
+  __ksymtab : { *(__ksymtab) }
+  __stop___ksymtab = .;
 
-so - i got the kernel compiled with xfs support - it even runs
-stable but it hangs on the try to mount and xfs filesystem :-(
+  __start___kallsyms = .;       /* All kernel symbols */
+  __kallsyms : { *(__kallsyms) }
+  __stop___kallsyms = .;
 
-ok - now some more details about my tries to get it at least built
-and some questions ...
+The first section is standard for any arch that supports modules but is
+not in pppc for some reason.  The second section is part of kallsyms.
+Most of the kallsyms code needs to be wrapped in #ifdef but
+arch/xxx/vmlinux.lds, include/modules.h and kernel/module.c do not,
+they are global to provide a standard userspace ABI, independent of
+kernel options.
 
-* tried to compile it brute force and looked at the errors
-* the typo in arch/ppc/kernel/misc.c was easily fixed
-* first thing in the pagebuf code was that at the ppc the local_bh_count
-  seems to be defined in softirq.h instead of hardirq.h at the x86 - i
-  just added softirq.h to page_buf.c (i think the ppc-dev people
-  should have a look at how to fix this in a clean way)
-* kernel now compiled fine but did not link due to unclear ifdefs
-  for the kallsyms stuff (this should be propagated back to
-  whom ever is maintaining the kallsyms stuff)
-* kernel still did not link due to missing kernel support for
-  some integer functions in the kernel (udivdi3 etc.)
-* looks like sgi added support for this to arch/i386/lib via the
-  file divdi3.c - so i did for arch/ppc/lib by copying the divdi3.c
-  over from the i386 dir and replacing the asm's with the ppc
-  asm's from gcc-2.95.2's longlong.h (question to the ppc-dev
-  people: is that done correctly or does there some code for
-  udiv_qrnnd or sdiv_qrnnd (would result in a simpler udiv_qrnnd
-  than the one used) exist ? - for more details look at the
-  gcc/longlong.h file)
-* kernel linked now!
-* building the tools is a problem due to too deep dependencies of
-  them currently to the system headers - but sgi people are
-  working on it to make them compilable without a lot of problems
-  (right ?)
-* kernel boots! and runs stable so far
-* how to test the xfs filesystem without the tools? - i just made
-  a small 32mb xfs filesystem on an x86 and dd'ed to a file which
-  you can easily dd onto any partition and mount it as xfs fs there
-  (verified to work on x86)
-* trying to mount the dd'ed filesystem just hangs the machine - no
-  output so far (xfs is compiled with debug and vnode tracing and
-  syslog will give *.* to the console) ...
+If ppc does not support modules then forget the above update.  However
+the code in kernel/module.c that refers to kallsyms entries should not
+be compiled when CONFIG_MODULES=n is set, why is it being compiled?
 
-so - what next? - for me to go to bed now (it's half past two over
-now :-) but i hope i have delivered enough info for others to jump
-onto it and get this thing going - i am happy to test new and other
-things if someone from the two camps (sgi or ppc-dev) have an idea
-but so far i am at the end of my knowledge here :-(
-
-all the diffs, configs, logs etc. i used for my tests can be found at
-
-  http://innominate.org/~graichen/projects/xfs-ppc/
-
-t
-
---
-thomas.graichen@innominate.de
-technical director                                       innominate AG
-clustering & security                                networking people
-fon: +49.30.308806-13 fax: -77 web: http://innominate.de pgp: /pgp/tgr
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
