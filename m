@@ -1,48 +1,53 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Sat, 6 Oct 2001 18:37:24 -0700 (PDT)
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Cc: <yellowdog-devel@lists.yellowdoglinux.com>,
+	<linuxppc-dev@lists.linuxppc.org>
 Subject: Re: ATI Radeon 32MB PCI, Apple 17 Flat panel on B+W G3
-Date: Sat, 6 Oct 2001 21:28:23 -0400
-References: <20011006174121.LSLQ12483.tomts13-srv.bellnexxia.net@there> <20011006181958.6089@smtp.wanadoo.fr>
-In-Reply-To: <20011006181958.6089@smtp.wanadoo.fr>
-Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20011006122650.NJWF27994.tomts14-srv.bellnexxia.net@there>
+Message-ID: <Pine.BSF.4.32.0110061833480.59459-100000@shell.unixbox.com>
 MIME-Version: 1.0
-Message-Id: <20011007012607.RSBA10438.tomts12-srv.bellnexxia.net@there>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Ben,
+Hi Kevin,
 
-Total failure.
+Ben's kernel tree has a relatively recent version of radeonfb, I will
+send out an updated newer version in a couple days.  As for X, you can
+build 4.1.0 and apply the patch I have in my dir on ftp.linuxppc.org
+(users/ajoshi/radeon) or you can build X cvs which has my fixes applied.
+DRI support is still in progress.
 
-It seems my setup and all 2.4.X kernels seem to hate each other.
+Flat panel support in radeonfb will be nice, I will try and send you some
+code over for that as I do not have a flat panel display.
 
-After a few minutes using Dan Burcaw's 2.4.8 or your 2.4.6 (I want to keep
-the potential to use my firewire cdrom rw), I get tons of the following
-messages:
 
-aic7xxx_abort returns 8194
+ani
 
-(I have an extra Apple external scsi card to drive my scsi devices which
-have the linux side of things).
 
-and my bash prompt goes away and I am basically hosed.
+On Sat, 6 Oct 2001, Kevin B. Hendricks wrote:
 
-This does not happen with the 2.2.19 kernel I have been using.
+>
+> Hi,
+>
+> I just bought an ATI Radeon 32M PCI video card (with dvi output) so that I
+> could connect up a new Apple 17" flat panel display to my old B+W G3.
+>
+> (dual video cards)
+>
+> Any chance these are supported under PPC Linux?
+>
+> What kernels and XFree86 versions support ATI Radeon 32Meg PCI cards?
+>
+> What about Apple flat panel displays?
+>
+> Thanks,
+>
+> Kevin
+>
+>
 
-As for the ATI Radeon, it is assigned /dev/fb1 but never lights up.
-It is recognized but according to dmesg but no luck actually using it.
-
-Of course, the kernel itself barfs as above.
-
-I have reverted to my old monitor and my old 2.2.19 kernel.
-
-Any hints on how to attack this would be greatly appreciated!
-
-Thanks,
-
-Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
