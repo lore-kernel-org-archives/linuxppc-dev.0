@@ -1,67 +1,33 @@
-Message-Id: <4.3.2.7.0.20000627170916.00acd3c0@10.0.0.2>
-Date: Tue, 27 Jun 2000 17:10:10 -0400
-To: Lucinda Schafer <lucsch@adaptivemicro.com>,
-        linuxppc-embedded@lists.linuxppc.org
-From: Mike Coy <coym@embeddedplanet.com>
-Subject: RE: PCMCIA ATA flash support
-In-Reply-To: <A109131318C4D1119AC20060088DECE30B9826@amwmail.adaptivemic
- ro.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <39593677.B05270D8@asiapacificm01.nt.com>
+Date: Wed, 28 Jun 2000 09:19:19 +1000
+From: "Thomas Poole" <poole@nortelnetworks.com>
+MIME-Version: 1.0
+To: Tom Roberts <tjroberts@lucent.com>
+CC: Dan Malek <dan@netx4.com>,
+        "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Query: kernel version for MPC750/MPC7400
+References: <7283DE19D141D111AD0E00A0C95B195502C5F5F2@mail2.aiinet.com> <3957DEFF.9064056E@netx4.com> <3958B37C.1F280F3F@lucent.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yep, it has an __init for me too.   Interesting.
+Tom Roberts wrote:
 
-Good eyes!
-mike
+> Dan Malek wrote:
+> > You shouldn't be using 2.2.15 with 8xx.  I am not going to discuss
+> > the history right now, but the only reliable verion of 2.2.xx Linux
+> > is the 2.2.13 version on the MontaVista Web site (www.mvista.com).
+>
+> How about on an embedded MPC750 or MPC7400?
 
-At 04:59 PM 6/27/00, Lucinda Schafer wrote:
->I noticed an __init in front of m8xx_ide_init_hwif_ports.
+Debian works out-of-the-box for the MPC750. I didn't do the install so I'm not
+sure what kernel it's using.
+
 >
->According to init.h:
->
->/* These macros are used to mark some functions or
->  * initialized data (doesn't apply to uninitialized data)
->  * as `initialization' functions. The kernel can take this
->  * as hint that the function is used only during the initialization
->  * phase and free up used memory resources after
->  *
->  * Usage:
->
->If you are calling ide_register() after bootup, could this be a problem
->(note: I am using 2.2.13 with no patches for the PCMCIA so this may not be
->true in your case)?
->
->However, if your function is missing, this could be your problem.
->
->Maybe one of the more experienced "listees" could give a better answer.
->
->
->Lucinda Schafer
->Staff Software Engineer
->Adaptive Micro-Ware, Inc.
->
->
->
->-----Original Message-----
->From: Mike Coy [mailto:coym@embeddedplanet.com]
->Sent: Tuesday, June 27, 2000 2:58 PM
->To: Lucinda Schafer; linuxppc-embedded@lists.linuxppc.org
->Subject: RE: PCMCIA ATA flash support
->
->
->
->NIP is c00def58 (m8xx_ide_init_hwif_ports)
->LR is c0002da4 (inside ide_init_hwif_ports)
->
->I gather that LR is the place you were called from and NIP is the next
->instruction, in which case both of these seem to be correct.
->
->mike
->
->
+> Tom Roberts     tjroberts@lucent.com
+
+Lucnet? I'm not sure I should have told you that. :)
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
