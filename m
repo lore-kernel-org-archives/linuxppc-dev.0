@@ -1,53 +1,38 @@
-Date: Sun, 6 Aug 2000 08:46:39 -0500 (CDT)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Olaf Hering <olh@suse.de>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: a GCC question
-In-Reply-To: <20000806150611.A4180@suse.de>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.1000806083118.1409E-100000@ofey.earthlink.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200008061359.OAA14167@hyperion.valhalla.net>
+Date: Sun, 06 Aug 2000 14:59:26 +0100
+Subject: sound testers...
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 6 Aug 2000, Olaf Hering wrote:
+Hi to all those that have been dmasound driver-testing.
 
-> Can you send me a diff against the current Benh kernel?
+There have been a couple of cases where apparent problems with the dmasound
+driver have turned out to be application-related.
 
-You mean his 2.2.x tree?  Or does he have 2.4.x tree somewhere?  I'm only
-working with 2.4.x.
+Here is a very simple test prog. (must have been done a million times
+before) and some test data in different sound formats (ditto).
 
-> I just inserted these (useless) printk() to a non called function and
-> now it works so far for me.
->
-> find_pci_device_OFnode(unsigned char bus, unsigned char dev_fn)
-> {
-> /*      char blubber[60] = ""; */
->         struct device_node* np;
->         unsigned int *reg;
->         int l;
-> /*      printk("I am just a dummy ...\n");  */
->         for (np = allnodes; np != 0; np = np->allnext) {
->                 int in_macio = 0;
->                 struct device_node* parent = np->parent;
->                 while(parent) {
->                         char *pname = (char *)get_property(parent, "name", &l);
->         printk("I am just another dummy ...\n");
->         printk("I am just another dummy ...\n");
->                         if (pname && strcmp(pname, "mac-io") == 0) {
->                                 in_macio = 1;
->                                 break;
->                         }
->
-> Bit ugly.
+http://www.drfruitcake.com/linux/stest.html
 
-I bet you get the same effect (working kernel) by placing the printk()s
-elsewhere.  I know something strange (to me) is going on, but I haven't
-found anything wrong in objdump of prom.o.
+All these work fine on my system - and I can see no behaviour problems with
+the driver using them.
+
+If anyone can uncover one that doesn't work with a particular machine
+configuration this will help us refine the init code to get over such
+things.  If you find a non-working case - I would like to know the machine,
+and as much of the content of mac-io:davbus & sound from the device tree as
+poss.
 
 
-Takashi Oe
+
+
+thanks
+Iain.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
