@@ -1,47 +1,70 @@
-Date: Tue, 26 Oct 1999 18:03:54 -0400
-From: Tom Vier <thomassr@erols.com>
-To: Rob Barris <rbarris@quicksilver.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: question about altivec registers
-Message-ID: <19991026180354.A6577@zero>
-References: <199910252231.PAA08775@sade.ddi.com> <Pine.LNX.4.10.9910251916060.5902-100000@modemcable220.93-200-24.mtl.mc.vi deotron.net> <v03010d0cb43a9d52cd3e@[192.168.1.16]>
+Message-Id: <v03010d13b43bd5fd445b@[192.168.1.16]>
+In-Reply-To: <Pine.LNX.4.05.9910262020350.665-100000@callisto.of.borg>
+References: <v03010d0cb43a9d52cd3e@[192.168.1.16]>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <v03010d0cb43a9d52cd3e@[192.168.1.16]>
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 26 Oct 1999 15:13:22 -0700
+To: linuxppc-dev@lists.linuxppc.org
+From: Rob Barris <rbarris@quicksilver.com>
+Subject: Re: question about altivec registers
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Oct 25, 1999 at 04:53:52PM -0700, Rob Barris wrote:
+>On Mon, 25 Oct 1999, Rob Barris wrote:
+>> >The flag is to actually tell the kernel that your application is using
+>> >the Altivec registers, so that it can save time by not saving and
+>> >restoring them when the interrupted or swapped application is not using
+>> >them. It is supposed to be dynamic so only routines actually using Altivec
+>> >should set (and clear) it. I am not sure of the details so look into the
+>> >manual for the hardware support. I think the kernel should enforce the
+>> >use of this flag since moving the full Altivec register set is time
+>> >consuming (16 bytes X 32 registers = 1/2 KB).
+>>
+>>    I worked this out once, the extra 512 bytes of register context,
+>> multiplied by (say) a thousand context switches per second only add up to
+>> about a MB of memory traffic per second - a fraction of a percent of the
+>> available memory bandwidth in a G4 machine.  Most of that will sit in cache
+>> anyway depending on the working set size of the processes involved.
+>
+>Moving around blocks of 512 bytes quickly thrashes the L1 cache, unless the
+>loads/stores are done using cache-bypassing instructions (cfr. MOVE16 on
+>'040).
+>Don't know whether PPC has these (still no PPC guru :-(
 
->    I worked this out once, the extra 512 bytes of register context,
-> multiplied by (say) a thousand context switches per second only add up to
-> about a MB of memory traffic per second - a fraction of a percent of the
-> available memory bandwidth in a G4 machine.  Most of that will sit in cac=
-he
-> anyway depending on the working set size of the processes involved.
 
-couldn't you just do lazy context saves? ie, disable the vector ops by 
-default; when a proc tries to use a vector op catch the exception, mark the
-proc as vector using and enable vectors. when a context switch occurs,
-mark the proc as vector enable, disable vectors, continue (and re-enable
-when you switch the proc's context back in). it's a little more complicated
-when more than one proc wants vectors. in that case, before you re-enable
-vectors, check to see if the vector regs need their context switched.
+   Well, doing anything useful will cause traffic in and out of L1. That's
+just a fact of life.  "Thrash" is a strong word, considering we're talking
+about 512 bytes of data, that's 512/32768 == 1/64 of the typical PPC 750
+data cache.
 
-or maybe that complexity isn't worth bandwidth/latency it saves.
-does linux/ppc do lazy FPU context saves this way?
+   Further, the PPC register state was already large (at least 384 bytes
+for all 32 int and 32 fp regs) - no one seemed to be noticing context
+switch time as a problem before, this further supports my assertion. 2.5
+times "tiny" is still "tiny".
 
-if you don't do lazy vector saves, i would think it would raise context
-switch times a sizable amount. there's four times as much data in those
-128bit regs as there are in the 32bit GPRs.
+   Now, copying a 16K or 32K block from point A to point B will indeed
+cause a complete cache replacement.  But that's not what's going on here.
+In fact, for a few processes being switched between rapidly, it may well be
+the case that those register state blocks may park in the L1 or L2 and not
+go back out to main memory at all.   But my estimate was based on a worst
+case again, and assuming that anything leaving L1 has to go to RAM and not
+the L2.
 
--- 
-Tom Vier - 0x27371A1C
-thomassr@erols.com
-http://users.erols.com/thomassr/zero/
+   The point I was trying to make is that even in a hypothetical worst case
+scenario, the added traffic is modest and possibly below the threshold of
+noticeability.
 
-DSA Key fingerprint:
-42D4 82D6 6DF5 77EC 1251  30D2 D9E7 E858 2737 1A2C
+   Moving things in and out of L1 is not bad in itself. The net impact is
+what matters, that's what my calculation was trying to show.  If for
+example, memory was infinitely fast, traffic to and from L1 would have no
+impact.  OK so that's not true, the question then becomes "so how much time
+does in fact get spent servicing that traffic, given real memory speeds".
+At a hypothetical switch rate of 1KHz (extremely high) the overhead is
+still quite small.
+
+--
+Rob Barris       Quicksilver Software Inc.      rbarris@quicksilver.com
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
