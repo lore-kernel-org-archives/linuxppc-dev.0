@@ -1,82 +1,41 @@
-Message-ID: <37CD8E2C.60E670CF@airways.com>
-Date: Wed, 01 Sep 1999 13:35:56 -0700
-From: "D. Lance Robinson" <lancer@airways.com>
-Reply-To: lancer@airways.com
-MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@sonycom.com>
-CC: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Sym53c8xx in 2.3.now
-References: <Pine.GSO.4.10.9909011709520.5612-100000@oleander.sonytel.be>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <9909012147.AA27400@marc.watson.ibm.com>
+To: Scott Wood <scott@broadlink.com>
+Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: GLIBC wont compile for MPC860 
+In-Reply-To: Message from Scott Wood <scott@broadlink.com>
+   of "Wed, 01 Sep 1999 13:27:55 PDT." <37CD8C4B.43C595EE@broadlink.com>
+Date: Wed, 01 Sep 1999 17:47:00 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert,
+>>>>> Scott Wood writes:
 
-You should post your message on the linux-scsi list server. Gerard, who
-wrote the driver listens in on that list.
+Scott> Graham Stoney wrote:
+>> 
+>> Scott Wood writes:
+>> > The MPC8xx have no floating point, so it should be compiled with -msoft-float,
+>> > (I think)...  ./configure --without-fp  will do it.
+>> 
+>> Is this implied when gcc has been configured --with-cpu=860?
 
-  send to linux-scsi@vger.rutgers.edu
+Scott> I don't think so...  I put -msoft-float into the sysdeps/powerpc/Makefile and I see
+Scott> it twice below, so I would imagine that if you use both flags then -msoft-float
+Scott> will be used.
 
-<>< Lance.
+	Unfortunately, the people who wrote PowerPC support for glibc did
+not create a sysdeps/powerpc/fpu directory containing FP-specific code.
+There currently is no way to disable FP code in glibc-2.1, but I believe
+that the maintainers were suppose to fix this for glibc-2.2; I do not know
+about the status.  People who have been working on Linux for embedded
+processors have been building glibc somehow, but I do not know the details.
 
-
-
-Geert Uytterhoeven wrote:
-> 
-> Anybody who has the sym53c8xx or ncr53c8xx driver working with the latest 2.3.x kernels?
-> 
-> I get:
-> 
-> | sym53c8xx: at PCI bus 0, device 6, function 0
-> | sym53c8xx: setting PCI_COMMAND_IO PCI_COMMAND_MEMORY...
-> | sym53c8xx: setting PCI_COMMAND_MASTER PCI_COMMAND_PARITY...(fix-up)
-> | sym53c8xx: 53c875 detected
-> | sym53c875-0: rev=0x04, base=0xc3000000, io_port=0x1400, irq=31
-> | sym53c875-0: NCR clock is 40218KHz, 40218KHz
-> | sym53c875-0: ID 7, Fast-20, Parity Checking
-> | sym53c875-0: on-chip RAM at 0xc3001000
-> | sym53c875-0: restart (scsi reset).
-> | sym53c875-0: Downloading SCSI SCRIPTS.
-> | ncr53c8xx: at PCI bus 0, device 6, function 0
-> | ncr53c8xx: IO region 0x1400 to 0x147f is in use
-> | mesh: assuming 50MHz clock frequency
-> | scsi0 : sym53c8xx - version 1.3c
-> | scsi1 : MESH
-> | scsi : 2 hosts.
-> | scsi : aborting command due to timeout : pid 0, scsi0, channel 0, id 0, lun 0 Test Unit Ready 00 00 00 00 00
-> | sym53c8xx_abort: pid=0 serial_number=1 serial_number_at_timeout=1
-> 
-> And then the system hangs in a wait loop...
-> 
-> My devices (from 2.3.6 dmesg):
-> 
-> |   Vendor: QUANTUM   Model: VIKING II 4.5WLS  Rev: 3506
-> |   Type:   Direct-Access                      ANSI SCSI revision: 02
-> | Detected scsi disk sda at scsi0, channel 0, id 0, lun 0
-> |   Vendor: PLEXTOR   Model: CD-ROM PX-12TS    Rev: 1.02
-> |   Type:   CD-ROM                             ANSI SCSI revision: 02
-> |   Vendor: HP        Model: HP35480A          Rev: T503
-> |   Type:   Sequential-Access                  ANSI SCSI revision: 02
-> | sym53c875-0-<0,0>: tagged command queue depth set to 8
-> |   Vendor: QUANTUM   Model: FIREBALL_TM3200S  Rev: 300X
-> |   Type:   Direct-Access                      ANSI SCSI revision: 02
-> | Detected scsi disk sdb at scsi1, channel 0, id 5, lun 0
-> | scsi : detected 2 SCSI disks total.
-> | sym53c875-0-<0,*>: FAST-20 WIDE SCSI 40.0 MB/s (50 ns, offset 16)
-> | SCSI device sda: hdwr sector= 512 bytes. Sectors= 8910423 [4350 MB] [4.4 GB]
-> | SCSI device sdb: hdwr sector= 512 bytes. Sectors= 6281856 [3067 MB] [3.1 GB]
-> 
-> Disabling sym53c8xx and using ncr53c8xx instead doesn't fix the problem.
-> 
-> Greetings,
-> 
->                                                 Geert
-> 
-> --
-> Geert Uytterhoeven                   Geert.Uytterhoeven@sonycom.com
-> Sony Suprastructure Center Europe (SUPC-E) --- Brussels --- Belgium
+David
+===============================================================================
+David Edelsohn                                      T.J. Watson Research Center
+dje@watson.ibm.com                                  P.O. Box 218
++1 914 945 4364 (TL 862)                            Yorktown Heights, NY 10598
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
