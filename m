@@ -1,48 +1,42 @@
-Message-ID: <3814672F.598B1CBD@netx4.com>
-Date: Mon, 25 Oct 1999 10:20:31 -0400
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-CC: Dan Malek <dan@penguin.netx4.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Console on SMC2 (was: Re: MPC823 Serial ports)
-References: <38107697.9A2576F7@eng.uct.ac.za> <3810A961.FF50C5F8@netx4.com> <kfypuy4sz1p.fsf_-_@kieraypc01.p.y.ki.era.ericsson.se> <38133CB5.61A6433B@netx4.com> <kfyr9ijr1aj.fsf@kieraypc01.p.y.ki.era.ericsson.se>
-Content-Type: text/plain; charset=us-ascii
+To: wung_y@263.net
+Cc: linuxppc embedded mail list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: TiVo Kernel for 403GCX Update (was Re: Support for IBM CPUs?)
+References: <Pine.SGI.4.10.9910222012050.46619-100000@brule.lcse.umn.edu> <3812E624.BF756DFF@263.net>
+From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+Date: 25 Oct 1999 16:33:17 +0200
+In-Reply-To: Wang Yong's message of "Sun, 24 Oct 1999 18:57:40 +0800"
+Message-ID: <kfyn1t7qzma.fsf@kieraypc01.p.y.ki.era.ericsson.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Marcus Sundberg wrote:
+Wang Yong <wung_y@263.net> writes:
 
+> Hi,
+>   It appears you compiled this kernel with GCC, so i am wondering if
+> GCC could work correctly with some architecture specified instructions
+> of
+> PPC embedded controller? Do you know if GCC could compile the kernel
+> written
+> for 401D2, another embedded controller from IBM?
 
-> It would be nice if we had "Board default" as an option for
-> the boot console (or as an alternative - make Config.in set
-> the correct default device when you change boards).
+>From a quick look at the source GCC and binutils seems to know about
+401 CPUs, so there shouldn't be any problem compiling/assembling code
+for this CPU.
 
-Yeah, I know, but as I have said before, I have more than a
-dozen different boards in my office, all somewhat different.
-The configuration files get increasingly complex with all of these
-different possibilities.  Having separate default configurations
-where the only difference is the console port is kind of
-overkill.  Right now, you have to know where the console port
-is connected, and simply select it.  I am trying to find a simple
-configuration that will work with all boards, rather than track
-lots of different ones.
+> this is very important for
+> us because we're starting to port linux to this platform(RedWood3) but
+> we still don't know which compiler should be ok.
 
+If GCC hadn't supported this particular PowerPC CPU it would probably
+have been easier to add support for it to GCC and binutils than to
+port Linux to a non-GCC compiler...
 
-> I hope you will include an option to completely disable serial
-> ports on SCCs without changing uart.c too?
-
-I can easily add that.
-
-
-> Well, not on any correct system running 2.1.71 or later. ;)
-
-If you say so.  I didn't make any 8xx changes until later
-releases, and the standard distribution had a symbolic link,
-so I just kept that......
-
-
-
-	-- Dan
+//Marcus
+-- 
+-------------------------------+------------------------------------
+        Marcus Sundberg        | http://www.stacken.kth.se/~mackan/
+ Royal Institute of Technology |       Phone: +46 707 295404
+       Stockholm, Sweden       |   E-Mail: mackan@stacken.kth.se
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
