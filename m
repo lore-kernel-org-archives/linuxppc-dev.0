@@ -1,28 +1,36 @@
-Message-ID: <383327A9.DD48441F@currantbun.com>
-Date: Wed, 17 Nov 1999 22:09:47 +0000
-From: "Jens Ch. Restemeier" <jrestemeier@currantbun.com>
-Reply-To: jrestemeier@currantbun.com
+Message-ID: <38333EDA.D5DA1F47@wanadoo.fr>
+Date: Thu, 18 Nov 1999 00:48:42 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-To: Takashi Oe <toe@unlserve.unl.edu>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PMac Reverse engineering
-References: <Pine.LNX.3.96LJ1.1b7.991114155349.27558C-100000@ofey.inetnebr.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Dev-Linux <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Kernel debugging??
+References: <Pine.LNX.4.05.9911172207200.25661-100000@callisto.of.borg>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Geert Uytterhoeven wrote:
+> 
 
-> I'd recommend contacting the Apple Linux guy (Kevyn, was it?) first.  xmon
+> > Just for information: Paul M's 2.3.27 rsync kernel compiles and runs
+> > just fine on this Pmac 6400. The machine swaps like crazy and is
+> > therefore rather slow, but I am not sure if this is the kernel's fault.
 
-Can you find exactly who to write to ? I tried to contact one apple guy
-who posted here once, to confirm my findings about the
-brightness/contrast controls for the 5500 (It has a built-in monitor,
-and these controls are software-driven), but didn't get a reply. ****,
-it shouldn't be that difficult to give out complete documentation for
-obsolete hardware... :-(
+The swapping is now being blamed on BootX.
+ 
+> Are you sure about the version? I just checked out this tree, and it's 2.3.22,
+> according to the Makefile. Perhaps I made a mistake? This is the first time I
+> used rsync (`rsync -auvz samba.anu.edu.au::linux-pmac-devel .').
 
-Jens
+>From BenH's page or some of his messages I learned the new address
+linuxcare.com.au. There it's 2.3.27(*). Seems Paul left ANU for good.
+
+(*) Correction. I ran rsync while typing this letter. It's 2.3.28 now. I
+am curious to see how this will run. 
+
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
