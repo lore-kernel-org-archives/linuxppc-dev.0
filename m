@@ -1,51 +1,42 @@
-Date: Mon, 1 Mar 1999 16:56:43 +0100 (MET)
-From: "David.DeRidder" <s970707@uia.ua.ac.be>
-Reply-To: loopback <david.de.ridder@bitsmart.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Kernel boot arguments over network
-Message-ID: <Pine.SO4.4.05.9903011559500.22676-100000@hsins.uia.ac.be>
+From: frank.pierce@hedb.uib.no
+Message-ID: <XFMail.990301121846.frank.pierce@hedb.uib.no>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <199902282049.VAA06261@piglet.cpu.lu>
+Date: Mon, 01 Mar 1999 12:18:46 -0500 (EST)
+Reply-To: frank.pierce@hedb.uib.no
+To: linuxppc-dev@lists.linuxppc.org
+Subject: PowerCenterPro + L2 cache
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi. I'm having some problems with the PowerCenterPro210 and L2 cache. When I do
+a cat < /proc/cpuinfo
+the L2 cache does not show up even tough it has 1MB on it.
 
-Hi,
+If any1 out there is running linuxppc on this machine could you check if the
+cache shows up in your /proc/cpuinfo ?
 
-in my continueing efforts to get our MVME2306 board running, I ran
-across another problem. All Linux (mini-)HOWTOs talk about passing
-boot arguments (like 'root=/dev/nfs') to the kernel. Some also
-mention the case where one is booting a diskless station (such as
-an MVME230x board). However, no document describes *how* to pass these
-arguments over the network to the kernel.
+I need to know if I have a hardware problem. The problem is the same if I run
+R4 or R5.
 
-I'm starting to doubt whether this is possible. I want the BOOTP/TFTP
-server to have the initial boot arguments for each of its clients, and
-pass them when a client (i.c. an MVME2306 board) boots over the
-network. Other than the file name, BOOTP doesn't seem capable to me
-to passing anything as long as a command line - but I may be wrong.
+I'm booting via bootx but I don't think that's the problem.
 
-I am aware of the fact that both 'NBO' and 'NIOT' allow setting some
-"Argument File Name". Is this supposed to be an ASCII file with the
-arguments in them ? The PPC-Bug documentation is rather vague about
-this matter. (In my TFTP logs, nothing seems to indicate that the
-board is trying to load this 'Argument File'.)
+Compared with the 3400c the PowerCenter is really unstable. The power book has
+not crashed ones and can compile a kernel without 1 segmentation fault. The
+powercenter gives me at least 10 before it crashes completely.
 
-All help and suggestions are welcomed,
+----------------------------------
+E-Mail: frank@cmc.uib.no
+Phone(Private):55234679
+Phone(Work):55589279
+Mob.: 93289455
+Date: 01-Mar-99
+Time: 12:03:09
 
-+-----------------------------------------------------------------+
-|   David 'Septimus' De Ridder   | "Never underestimate the       |  
-|                                |  power of the soul unleashed." |
-| <david.de.ridder@bitsmart.com> |   - 'Essence Flare', M:TG      |
-+-----------------------------------------------------------------+
-
---
-"- Do you think this show constitutes cruelty to animals ?
- - Not unless their watching it !"
-   - 'The Muppet Show' 
-
-
+This message was sent by XFMail
+----------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
