@@ -1,29 +1,78 @@
-Message-ID: <3CF7B8FE.22B1EB4@mvista.com>
-Date: Fri, 31 May 2002 13:55:10 -0400
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Sergiy Kovtun <skovtun@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Date: Fri, 31 May 2002 11:13:49 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: Jim Thompson <jim@musenki.com>,
+	Sergiy Kovtun <skovtun@yahoo.com>,
+	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: 64Mbytes on Sandpoint-X3B
-References: <20020531060244.15732.qmail@web11204.mail.yahoo.com>
+Message-ID: <20020531181349.GX32412@opus.bloom.county>
+References: <20020531060244.15732.qmail@web11204.mail.yahoo.com> <20020531145120.GI32412@opus.bloom.county> <15607.36947.107412.219533@gargle.gargle.HOWL> <20020531151130.GN32412@opus.bloom.county> <15607.38056.877088.211807@gargle.gargle.HOWL> <20020531152615.GO32412@opus.bloom.county> <3CF7B768.D2C20A4B@mvista.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3CF7B768.D2C20A4B@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sergiy Kovtun wrote:
+On Fri, May 31, 2002 at 01:48:24PM -0400, Mark A. Greer wrote:
+> Tom Rini wrote:
+>
+> > On Fri, May 31, 2002 at 10:20:08AM -0500, Jim Thompson wrote:
+> > >
+> > > Tom Rini writes:
+> > > > On Fri, May 31, 2002 at 10:01:39AM -0500, Jim Thompson wrote:
+> > > > >
+> > > > > Tom Rini writes:
+> > > > > >
+> > > > > > On Thu, May 30, 2002 at 11:02:44PM -0700, Sergiy Kovtun wrote:
+> > >
+> > > > > My question is how have_of got set:
+> > > > >
+> > > > > arch/ppc/mm/init.c:
+> > > > >         if (!have_of)
+> > > > >                 FREESEC(openfirmware);
+> > > >
+> > > > On !CONFIG_ALL_PPC, we have:
+> > > > #define have_of 0
+> > > > In include/asm-ppc/processor.h, or so.  And the compiler happily
+> > > > optimizes things in/out with this.
+> > >
+> > > I should have been more explicit.
+> > >
+> > > in include/asm-ppc/processor.h, I'd found:
+> > >
+> > > #define have_of (_machine == _MACH_chrp || _machine == _MACH_Pmac)
+> >
+> > Thanks for the memory jog :)
+> >
+> > Up near the top, we have:
+> > #ifdef CONFIG_ALL_PPC
+> > ...
+> > int _machine;
+> > ...
+> > #else
+> > #define _machine 0
+> > #endif
+> >
+> > So have_of becomes: (0 == 0x4 || 0 == 0x2)
+> >
+> > > A sandpoint (esp with Dink) is neither CHRP or PMAC, so the call to
+> > > FREESEC(openfirmware) shouldn't have occurred.
+> >
+> > It's !have_of, so we really did want to free the __openfirmware stuff.
+>
+> I dunno guys, I think the compiler usually optimizes that all away and you
+> should never see "openfirmware".  I don't recall ever seeing it print out.  I
+> think something fishy is going on...
 
-> Hello All,
-> I try to connect all my 64 Meg memoty on
-> Sandpoint-X3B,
-> but received a crash( with 32M all OK).
-> Source:
-> SP-X3B + Altimus MPC7410
-> HHL 2.0
-> Any ideas??
+Er, first, it becomes:
+if (1)
+So we always 'do it'.  However, all of the __openfirmware code is now
+almost never compiled in on !CONFIG_ALL_PPC, so we never see it being
+free'd.
 
-IIRC, official hhl 2.0 didn't support the X3 but there was a patch that came
-out at the same time that provided that support.  Are you using that patch?
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
