@@ -1,43 +1,79 @@
-Message-ID: <4081CBB0.7090800@jonmasters.org>
-Date: Sun, 18 Apr 2004 01:28:32 +0100
-From: Jon Masters <jonathan@jonmasters.org>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <000f01c42562$d3713150$a81e1aac@liuming>
+From: "liuming" <lm_mailbox@sohu.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Cc: "liuming" <lm_mailbox@163.com>
+Subject: Need help booting linux on my 8265 board
+Date: Mon, 19 Apr 2004 00:33:02 +0800
 MIME-Version: 1.0
-To: Stephen Williams <612dlag102@sneakemail.com>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: System ACE MPU interface to CF card
-References: <407470ED.3030607@buckeye.ece.drexel.edu> <6058-40021@sneakemail.com> <407ADCFE.8080302@buckeye.ece.drexel.edu> <25757-52278@sneakemail.com> <407EDCF7.2020009@buckeye.ece.drexel.edu> <6334-88322@sneakemail.com>
-In-Reply-To: <6334-88322@sneakemail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Hi,
+  I have problem booting linux on my 8265 board. Both u-boot and ppcboot
+run well, but when I boot the linux kernel, the board be dead. At this
+time the registers look like to be some default values(use powertap
+pro). I try u-boot1.1, ppcboot1.1.5; linux kernel 2.4.4 2.4.18 2.4.20.
 
-Stephen Williams wrote:
+(1)about compile kernel
+vim Makefile,        arch=ppc CROSS_COMPILE=ppc_82xx-
+vim arch/ppc/platforms/ads826x.h,      IMAP_ADDR=0x04700000 BCSR=0x04500000
 
-| I have noticed that if the disk does not have a .ace file on
-| it, and a Xilinx chip to program, the driver fails to get any
-| partition info from the disk and it all fails from there. So
-| I suspect the driver still to some degree relies on the state
-| of the chip after a successful Xilinx load. If you are trying
-| to use the chip without an FPGA attached, you may be running
-| into that.
+then make mrproper/ make ads826x_config/ make oldconfig/ make dep/ make
+pImage (bd info struct is quite same between uboot and linux)
 
-I am having problems with xilinx_sysace at my end. This is on a
-non-ML300 which is not running at anything like the same clock as the
-rest of you at this moment in time (for various hardware development
-reasons unrelated to the Linux side). I have a classic case of debugging
-printk code altering the rate of execution and making things work.
+Is there anything I had ignored?
 
-Otherwise we get hard lockups and corrupted CURRENT data which has all
-the hallmarks of a failure to re-aquire io_request_lock somewhere.
+(2)let's see!(I add some "printf" to display values,
+"console=ttyS0,9600" is added)
+=> bootm ffa00000 ffc00000
+## Booting image at ffa00000 ...
+   Image Name:   Linux-2.4.20-pre7ncsd1
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    634729 Bytes = 619 kB = 0 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Current stack ends at 0x03F7FC48 => set upper limit to 0x00800000
+## cmdline at 0x007FFF00 ... 0x007FFF23
+memstart    = 0x00000000
+memsize     = 0x04000000
+flashstart  = 0xFF800000
+flashsize   = 0x00800000
+flashoffset = 0x00000000
+sramstart   = 0x00000000
+sramsize    = 0x00000000
+immr_base   = 0x04700000
+bootflags   = 0x00000001
+vco         = 266.666 MHz
+sccfreq     = 66.666 MHz
+brgfreq     = 16.666 MHz
+intfreq     = 166.666 MHz
+cpmfreq     = 133.333 MHz
+busfreq     = 33.333 MHz
+ethaddr     = 00:10:EC:00:30:8C
+IP addr     = 8.6.0.1
+baudrate    =   9600 bps
+## Loading RAMDisk Image at ffc00000 ...
+   Image Name:   Simple Ramdisk-Image
+   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+   Data Size:    567988 Bytes = 554 kB = 0 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## initrd at 0xFFC00040 ... 0xFFC8AAF3 (len=567988=0x8AAB4)
+   Loading Ramdisk to 03ef4000, end 03f7eab4 ... OK
+## Transferring control to Linux (at address 00000000) ...
 
-Obviously I will fix this problem soon but if anyone has already caught
-this nasty and fixed it then do drop me a line. The driver will need
-plenty of cleanup for kernel 2.6. Even then the HAL approach clearly
-needs to be replaced also (but I will send an update on that later).
+then the board is dead and the LED(FCC link) coruscate . (I have
+modified clock calculations for this board so SCC can output message.
+it's the reason?) any ideas? thanks a lot!
 
-Jon.
-
+--
+liu
+lm_mailbox@sohu.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
