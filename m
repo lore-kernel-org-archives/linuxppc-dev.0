@@ -1,33 +1,34 @@
-Message-ID: <3A01882C.9C16CC60@mpifr-bonn.mpg.de>
-Date: Thu, 02 Nov 2000 16:28:44 +0100
-From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
-MIME-Version: 1.0
-To: cl.en@gmx.net
-CC: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: <cl.en@gmx.net>, <linuxppc-dev@lists.linuxppc.org>,
+        Michael Schmitz
+ <schmitz@opal.biophys.uni-duesseldorf.de>
 Subject: Re: Lombard Sleep Crash (Was: 2.2.18pre17 again)
-References: <14839.53124.753011.489351@argo.linuxcare.com.au> <39F96E14.C06AB6FB@mpifr-bonn.mpg.de> <20001027163923.A13804@suse.de> <3A015F72.2576BB01@mpifr-bonn.mpg.de> <20001102160728.B371@olis.north.de>
-Content-Type: text/plain; charset=us-ascii
+Date: Thu, 2 Nov 2000 16:35:37 +0100
+Message-Id: <19340927090721.10201@192.168.1.2>
+In-Reply-To: <20001102160728.B371@olis.north.de>
+References: <20001102160728.B371@olis.north.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Claus wrote:
-> if you panic'ed with the CD module inserted, would you try to snooze without it?
+> >:
+> >: I attach the kernel .config and the relevant part from /var/log/
+>messages, and as
+> >: always, any help is _really_ welcome!
+>
+>if you panic'ed with the CD module inserted, would you try to snooze
+>without it?
+>
+>or try this one:
 
-Got it. Without the cd drive module inserted, it does not panic. Apparently, it
-is enough that there is a CD drive at all, because there was no CD inserted or
-mounted. IMHO, this is a serious kernel bug. Anyone out there to fix this?
+Well, the kernel sleep code is supposed to take care of that, but
+apparently, that code is also causing the panic...
 
-BTW, in an other approach, I rsync'ed Paul's linux-pmac-stable, but with this
-one the pmud does not start at all as it can not open /dev/adb...
+Michael, any clue ?
 
-> or try this one:
-[c code snipped]
+Ben.
 
-Again, I _really_ think this should go into the kernel...
-
-Thanks a lot, Albrecht.
-
---
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
