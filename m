@@ -1,44 +1,34 @@
-Date: Thu, 11 Apr 2002 17:49:44 +0200 (MEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: CONFIG_GENERIC_PPC32
-In-Reply-To: <0204111540.AA28629@ivan.Harhan.ORG>
-Message-ID: <Pine.GSO.4.21.0204111748320.27554-100000@vervain.sonytel.be>
+Message-ID: <3CB5B0E9.16F06226@mvista.com>
+Date: Thu, 11 Apr 2002 11:51:05 -0400
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: CONFIG_GENERIC_PPC32
+References: <0204111616.AA28753@ivan.Harhan.ORG>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 11 Apr 2002, Michael Sokolov wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > Let's do it first in 2.5, we can backport it once we are satisfied
->
-> Bleah. 2.5 == never to me. It doesn't help me with my goal of getting support
-> for my boards in 2.4. I work on stable kernels and not development ones because
-> I'm not a Linux developer, I'm just a HW engineer trying to make Linux
-> (existing stable one) support my boards at least as well as it does those from
-> my competitors (IBM, Sun, etc).
->
-> I guess I'll just have to convince Debian to make a package from
-> linuxppc_2_4_alt to support HEC PPCStar machines and show all these exchanges
-> as evidence that the PPC MAINTAINERS are not intent on allowing new machine
-> support into 2.4 any time soon.
+Michael Sokolov wrote:
 
-Please note that most probably Marcelo won't accept new machine support into
-2.4.x neither, unless it's a backport of 2.5.x and it has proven to be stable.
+> but not StarMON. I remember problems of that sort on K2. Also in your current
+> EV-64260 port the wrapper assumes that the GT registers are at 0x14000000,
+> while StarMON puts them at the much more reasonable 0xF1000000. But I did
+> indeed boot your EV-64260 zImage from StarMON, I just wrote a tiny program that
+> remaps the GT registers back to 0x14000000 and jumps to 0x800000 where zImage
+> lives. (I also had to comment out a few things in the Linux code proper in your
+> wonderful EV-64260 port that prevented it from running on my board, but that's
+> beside the point here.)
 
-Gr{oetje,eeting}s,
+Yes, it assumes the registers are at 0x14000000 because that's where DINK leaves
+them.  It was made clear from the start that the arch/ppc/boot code for the
+ev64260 was built for boards running DINK.
 
-						Geert
+When we see what Benh has for bi_recs, we can start making this more general.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Mark
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
