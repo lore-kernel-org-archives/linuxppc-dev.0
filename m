@@ -1,45 +1,55 @@
-Message-ID: <3D648252.4010807@dslextreme.com>
-Date: Wed, 21 Aug 2002 23:18:58 -0700
-From: akuster <akuster@dslextreme.com>
-Reply-To: akuster@dslextreme.com
+Date: 22 Aug 2002 06:29:54 -0000
+Message-ID: <20020822062954.18098.qmail@webmail8.rediffmail.com>
 MIME-Version: 1.0
-To: Todd Poynor <tpoynor@mvista.com>
-Cc: jim <jduey@ccc-dcs.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Question about ppc4xx_dma.h
-References: <20020820203619.A456239211@server.weathercom.com> <3D62CE63.1030606@dslextreme.com> <3D63EC67.4000302@dslextreme.com> <3D641186.2020800@mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: "Narendra  " <narengh@rediffmail.com>
+Reply-To: "Narendra  " <narengh@rediffmail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Embedded Planet 
+Content-type: text/plain;
+	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Todd Poynor wrote:
->
-> Noticed that the order of clearing the old transfer mode bits and
-> setting the p_dma_ch->mode bits is reversed in the new patch, not sure
-> if this causes problems:
->
-> +       tmp_cntl |= (p_dma_ch->mode | DMA_CH_ENABLE);
-> +
-> +       switch (dmanr) {
-> +       case 0:
-> +               control = mfdcr(DCRN_DMACR0);
-> +               control |= tmp_cntl;
-> +               control &= ~(DMA_TM_MASK | DMA_TD);     /* clear all
-> mode bits */
->
-> This seems to set and then clear the p_dma_ch->mode bits in control
-> prior to writing to the DMACR, a problem?
->
->
-> --
-> Todd
->
+Hi All,
 
-Todd,
+I have my WLAN driver running on Embedded Planet board with
+HardHat Linux.
 
-yeap, looks like it.
+But when i send a ping of size more than 1000 bytes, there is
+crash everytime after successful req/reply of about 250packets.
 
-armin
+Here is the oops message i got,
+
+Machine check in kernel mode.
+Caused by (from SRR1=9032): Unknown values in msr
+Oops: machine check, sig: 7
+NIP: C56784CC XER: C000197F LR: C567849C SP: C0129E20 REGS:
+c0129d70 TRAP: 0200
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c0128010[0] 'swapper' Last syscall: 120
+last math 00000000 last altivec 00000000
+GPR00: 00000498 C0129E20 C0128010 00000000 8000001C 000002C1
+00000000 C3CA8800
+GPR08: 80000036 00000100 00000498 00003637 35F33F93 1001B8DC
+FF76FFDF BFBBFE7F
+GPR16: FFFFFDFF BFFFFFFF FFEFFFFF FFFFFEFF 00001032 00129EF0
+00000000 00000036
+GPR24: 00000018 00000000 000005D8 C3F87604 C3CA8C98 C3F87400
+8000001C 0000001C
+Call backtrace:
+C567849C C5676A78 C5674D94 C0003904 C0003A30 C0002810 C0003F84
+C0003F98 C01367C0 C00021E4
+Kernel panic: Aiee, killing interrupt handler
+
+In interrupt handler - not syncing
+Rebooting in 180 seconds..
+
+any idea why there is a crash?.
+
+thanks in advance for all inputs,
+
+Naren
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
