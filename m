@@ -1,6 +1,6 @@
 From: mlocke@jps.net
-Message-ID: <3A37B380.DFAAA77@jps.net>
-Date: Wed, 13 Dec 2000 09:36:00 -0800
+Message-ID: <3A37B3D5.70D6E406@jps.net>
+Date: Wed, 13 Dec 2000 09:37:25 -0800
 Reply-To: mlocke@mvista.com
 MIME-Version: 1.0
 To: Nguyen Xuan Hoang <jerry.nguyen@serialsystem.com.sg>
@@ -12,11 +12,11 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You probably have the old RPX bootloader.  It sets the Bus Montior timeout
-which causes machine checks for every IO operation.  Contact EP tech support
-and request PlanetCore, the new bootloader.
-Nguyen Xuan Hoang wrote:
+forgot one thing.  Once you have the new bootloader, you will need to
+disable the BMT in the SYPCR register.
 
+Nguyen Xuan Hoang wrote:
+>
 > Hi,
 >
 > I am trying to run Wireless Lan PCMCIA on RPXLite board,  but the system
@@ -28,6 +28,5 @@ Nguyen Xuan Hoang wrote:
 > Thank in advance
 > Jerry
 >
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
