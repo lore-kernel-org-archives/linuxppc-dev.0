@@ -1,37 +1,111 @@
-Date: Mon, 18 Mar 2002 14:56:04 -0800
-From: andrew may <acmay@acmay.homeip.net>
-To: Armin <akuster@pacbell.net>
-Cc: andrew may <acmay@acmay.homeip.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] another for ibm_ocp_enet gzip'd
-Message-ID: <20020318145604.B6687@ecam.san.rr.com>
-References: <20020315114137.A26609@ecam.san.rr.com> <20020315200558.GG691@opus.bloom.county> <20020315142542.A27043@ecam.san.rr.com> <20020315223140.GA1643@opus.bloom.county> <20020318142507.A6687@ecam.san.rr.com> <3C95FF7C.7050300@pacbell.net>
-Mime-Version: 1.0
+To: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Kernel Module; globals badly initialized, help needed.
+References: <6B546A602AD2D211BFF00008C7A428890584401D@hrtades2.atea.be>
+From: Bruno Vetel <bruno.vetel@wanadoo.fr>
+Date: 19 Mar 2002 01:22:44 +0100
+In-Reply-To: <6B546A602AD2D211BFF00008C7A428890584401D@hrtades2.atea.be>
+Message-ID: <84r8mhe78r.fsf@pommard-eth0.art2.com4.ws>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3C95FF7C.7050300@pacbell.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Mar 18, 2002 at 02:53:48PM +0000, Armin wrote:
-> andrew may wrote:
->
-> > +#Do we want CONFIG_IBM_OCP_MAL_CNT ?
->
-> No
+Hi
 
-Well then you get to update the makefile when
-we start having more MALs around.
+We had a problem similar to yours with an HHL 1.0. An update of insmod et rmmod from busybox
+solved our problem
 
-> > +ibm_ocp_mal.c: mal.sh
-> > +	$(SH) ./mal.sh 2 >ibm_ocp_mal.c
-> > +
-> >
+        Bruno
+
+Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be> writes:
+
+> (This messages was already posted on the linuxppc-dev list, put posting it
+> to this list failed...)
+>
+> Hi,
+>
+> I am having lots of problems with global variables that are badly
+> initialized in a kernel
+> module. I wrote some very simple code showing the problem. The compiler
+> I use is gcc 2.95.3
+> (the one that comes with HHL2.0).
+>
+> Is this a compiler problem -do I need to use some special options?- or
+> could it
+> be a problem with insmod, the kernel, ...?
+>
+> I had this problem before with DECLARE_WAIT_QUEUE_HEAD where the
+> pointers inside the structure where badly initialized. The only
+> sollution was to reinitialize the fields at runtime. I posted this issue
+> and somebody reported he had seen the same issue.
+>
+> Who can help we with this?
+>
+> Thanks!
+> Frederic
 >
 >
-> And this get applied on top of your first patch?
+> #include <linux/module.h>
+> #include <linux/kernel.h>
+> #include <linux/init.h>
+>
+>
+> #if defined(CONFIG_SMP)
+> #define __SMP__
+> #endif
+>
+> #if defined(CONFIG_MODVERSIONS)
+> #define MODVERSIONS
+> #include <linux/modversions.h>
+> #endif
+>
+> char MyMemSpace[2*0x100];
+> char *MemPointers[2] = {&(MyMemSpace[0]), &(MyMemSpace[0x100])};
+>
+> typedef struct
+> {
+> 	char *szName;
+> 	char *szName2;
+> } MyStruct_t;
+>
+> MyStruct_t MyStruct[] = {{"A", "A2"}, {"B", "B2"}};
+>
+> int init_module(void)
+> {
+> 	printk("TestDriver 3 Loaded\n");
+>
+> 	printk("MyMemSpace: 0x%lx 0x%lx \n",  (long)&(MyMemSpace[0]),
+> (long)&(MyMemSpace[0x100]));
+> 	printk("MemPointers: 0x%lx 0x%lx \n", (long)(MemPointers[0]),
+> (long)(MemPointers[1]));
+>
+> 	printk("First Char is MyStruct[0].szName %c\n",
+> MyStruct[0].szName[0]);
+>
+>
+> 	return -1;
+> }
+>
+> void cleanup_module(void)
+> {
+> 	return;
+> }
+>
+>
+>
+>
+> This is what I get:
+>
+> MyMemSpace: 0xc304a1ec 0xc304a2ec
+> MemPointers: 0xc304a1ec 0xc304a3ec
+> First Char is MyStruct[0].szName e
+>
+>
+>
+>
 
-Yes, how else would get mal.sh. There was the first
-patch, and a second patch that fixed up mal.sh.
+--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
