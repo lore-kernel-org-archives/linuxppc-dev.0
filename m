@@ -1,62 +1,40 @@
-Date: Thu, 15 Nov 2001 13:44:17 -0500
-Subject: Re: DFP support for kernel radeonfb.c added
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v475)
+Message-ID: <3BF410F7.9060903@amberdata.demon.co.uk>
+Date: Thu, 15 Nov 2001 19:01:11 +0000
+From: David Monro <davidm@amberdata.demon.co.uk>
+MIME-Version: 1.0
+To: Robert E Brose II <bob@kunk.jriver.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-To: ghannon@cspi.com
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-In-Reply-To: <85256B05.006454A7.00@pine.cspi.com>
-Message-Id: <C5D0882F-D9F8-11D5-B99F-0030654D6A26@ivey.uwo.ca>
+Subject: Re: E15 Carolina Frame Buffer Driver for 2.4
+References: <20011113155734.28247.qmail@kunk.jriver.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Robert E Brose II wrote:
 
-We have the same setup.  You must have the card installed and the
-monitor plugged when your reboot into linux otherwise OF will not be
-able to query the card and monitor and create the file.
-
-Then go to /proc/device-tree/pci/ and start looking for an ATY,RADEONp
-directory.
-
-Mine was behind a pci bridge so my path looks like the following:
-
-/proc/device-tree/pci/pci-bridge/ATY,RADEONp@4/
-
-In this directory is a file called DFP,EDID and one called LCD,EDID
-
-If either of those exist for you (or something similar with a EDID in
-the name) you should be good to go.
-
-If that file exists and is called any of the following:
-LCD,EDID  or DFP,EDID, or EDID1, or EDID  then my version of the driver
-should work for you with the added kernel parameters:
-
-video=radeon:of_edid,dfp
-
-If it is called something else, please let me know so that I can add it
-to the list.
-
-Hope this helps.
-
-Kevin
-
-ps. I am starting work to fix the XF86 CVS radeon_driver.c code to work
-as well.
-I'll let you know when I have something working.
-
-
-
-> How do I get OF to produce the EDID file?
-> I don't have a Radeon directory under /proc/device-tree.
+> I have gotten the 2.2 framebuffer driver for the E15 (internal)
+> display adapter in the IBM 7248-133 43p (carolina Prep MB) to
+> work (on my machine anyway) in 2.4. This provides a way to
+> run X with the 2.4 kernels on this hardware.
 >
 
 
-> I'm also trying to get info on patching XFree86 4.1.0 which came with
-> the
-> distribution, with Ani Joshi's patch,
-> but I'll do that on the Yellow Dog list.
+Thanks Robert - I was planning to do this work in the next few days, but
+it seems you've saved me the work :-)
+
+
+[..]
+> It would be interesting to hear if it works on other variations
+> of the 7248.
+>
+
+I'll be trying it on my 6070 in the next day or so. Should work fine given its the same motherboard.
+
+
+Cheers,
+
+	David
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
