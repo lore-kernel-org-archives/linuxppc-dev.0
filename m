@@ -1,25 +1,24 @@
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Dan Malek" <dan@embeddededge.com>,
-	"Pantelis Antoniou" <panto@intracom.gr>
-Cc: "Tom Rini" <trini@kernel.crashing.org>,
-	"Kumar Gala" <kumar.gala@motorola.com>,
-	"Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: 8xx-2.6 | Prolog
-Date: Thu, 27 May 2004 18:39:21 +0200
-Message-ID: <JPEALJAFNGDDLOPNDIEEKEOPCIAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-In-reply-to: <B89F9AE2-AFF4-11D8-89B7-003065F9B7DC@embeddededge.com>
+	charset="Windows-1252"
+Subject: 405EP PCI performance
+Date: Thu, 27 May 2004 18:46:36 +0200
+Message-ID: <80908CC5B2C9DB47AAF8C77892FCB44315F79D@lion.vector.com.pl>
+From: "Andriy Korud" <a.korud@vector.com.pl>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> In patch 4, get rid of that #if 0 around the machine check exception.
-> If the code works, just check it in.
+Hi,
+I've noticed that any PCI Ethernet card in 405EP Evaluation board has limited tx rate to 66Mbit/s. If there are more cards - I still have 66Mbit/s for all cards.
+Rx rate is OK - 100Mbit.
+This doesn't look like CPU problem because the same CPU easily transmit 100Mbit via OCP Ethernet.
 
-The machine check part has already been checked in by Paul.
+Any ideas which could cause such problem?
 
-   Jocke
+thanks in advance,
+
+Andriy Korud.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
