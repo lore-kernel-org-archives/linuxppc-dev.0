@@ -1,75 +1,87 @@
-Message-ID: <3BF57B4F.7B0ABCC@inn.ericsson.se>
-Date: Fri, 16 Nov 2001 21:47:11 +0100
-From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
+Message-ID: <3BF5A01D.4040502@embeddededge.com>
+Date: Fri, 16 Nov 2001 18:24:13 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-Cc: Armin Kuster <akuster@mvista.com>,
-	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: linuxppc_2_4_devel on walnut
-References: <3BDD855B.8D3FC72F@inn.ericsson.se> <3BE971BC.34591FF1@inn.ericsson.se> <3BEBF4E5.B60BD9E3@inn.ericsson.se> <3BF2A361.5FBB0246@mvista.com> <3BF4041F.A732B099@inn.ericsson.se> <3BF4A2D4.5080302@embeddededge.com>
-Content-Type: text/plain; charset=iso-8859-1
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Matt Porter <mporter@mvista.com>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: Organisation of 4xx initialization code
+References: <20011116164625.K673@zax> <20011116045737.A24130@cx258813-a.chnd1.az.home.com> <20011116085121.D5410@cpe-24-221-152-185.az.sprintbbd.net> <20011116094210.B3473@beef.az.mvista.com> <20011116101323.B9242@cpe-24-221-152-185.az.sprintbbd.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
->
-> Kenneth Johansson wrote:
->
-> > But "time dd if=/dev/zero of=testing bs=1024k count=100" on a nfs mouted fs
-> > used to be 18s and is now 21s, a 16% slowdown not that I care much but still
-> > quite a large difference.
->
-> What versions of kernels/drivers are you comparing?  Do you do this
-> back-to-back with the same NFS server, or have you introduced more
-> variables into your testing?  This is why specially prepared network
-> performance testers are better suited for discussion.
+I'm not arguing for/against anything here, just providing some information.
 
-This was to the same nfs server on a live network. I did the test only two
-times on the first kernel version that was checke out a few hours before the
-mail was posted last friday.
+Tom Rini wrote:
 
-This was not done to benchmark anything but a way for me to verify what speed
-the networks was using 10/100 Mb was at the time reported wrong by the
-driver.
 
-The reason I run it twice was that I thougt 5,5MB/s was not so great but the
-second run had the same number. Then I upgraded the tree to a version that
-had Armin Kusters changes and just for fun run the test again.
+> That and all of the 8240 'boards' are 7xx/74xx boards which can take a
+> processor 'card' of some sort, yes?
 
-If I test only tcp/ip over the network I now get this..
-----
-walnut:/tmp# time dd if=/dev/zero  bs=1024k count=100 | nc -q0 <server> 9
-100+0 records in
-100+0 records out
 
-real    0m14.838s
-user    0m0.370s
-sys     0m14.380s
----
-6,7Mb/s
+The 8240/45 60x/7xx/74xx are basically similar, as they are standard
+PowerPC processor cores with standard PCI bridges.  The 7540 and later
+could throw a big curve if someone decided to use the 36-bit addressing
+and we wanted to implement a software TLB manager instead of HPTE.
 
-If I do the same from a intel 400MHz kernel 2.2.20 I get
----
-[innkeon@spawn innkeon]$time dd if=/dev/zero  bs=1024k count=100 | nc -q0
-<server> 9
-100+0 records in
-100+0 records out
+> Not getting too off course, but what's the difference in 8240 vs 8245
+> (not much, yes?) vs 8260 (different I/O, yes?).
 
-real    0m12.838s
-user    0m0.110s
-sys     0m1.890s
----
-7,8 MB/s
+The 8260/55 and 8xx are very different because they can be very functional
+without a PCI bridge or standard peripherals.  Adding a standard PCI
+bridge signficantly confuses and complicates the software configuration.
+Their flexibility is very challenging to support and configure in the
+software.  In some cases, the Linux software has driven hardware designs
+so people can utilize existing software, but for maximum performance and
+special applications you can get quite creative with the hardware design
+and have to nearly write the kernel support for these processors from
+scratch.  The 8xx and 8260/55 are the true embedded processors with a
+powerful (in the case of 8260 :-) core and lots of highly optimized
+peripherals surrounding them in a single package.  You aren't ever going
+to guess right at what may be useful to someone tomorrow :-).
 
-hmm funny the difference is also 16%
+> I think right now, 4xx is done in a different way intentionally.
 
-(nc is the netcat program.)
+I'm not so sure :-).  I think it started off badly, is getting better,
+and from these discussions we have clearly learned how to better
+structure the software.  From the variety of 4xx projects I have worked
+on, I'm still making the kinds of changes to better utilize and structure
+existing software.  I feel like I'm doing the same thing I did years ago
+with the 8xx, only back then no one cared what I was doing (because it
+was some embedded stuff that didn't seem to interest anyone :-).
 
---
-Kenneth Johansson
-Ericsson Business Innovation AB   Tel: +46 8 404 71 83
-Viderögatan 3                     Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@inn.ericsson.se
+> ..... There's common
+> ground, with hooks for board-specific stuff.
+
+I could argue the 7xx stuff is this way as well.  Every board should probably
+have a platform_init() that calls the processor architecture unique functions.
+I am a little confused that there doesn't seem to be as many platform_init()
+calls as there are boards we support (just 'grep for it' in the kernel
+directory).  So, there is probably work to do for all boards we support.
+
+It seems we should call some early architecture generic init functions (if
+necessary), then platform init, then more general architecture functions
+if necessary.
+
+> ....  This could probably use
+> more cleanup & slight changes, but I don't think it's time to scrap the
+> idea.
+
+We don't have any cohesive idea.  The 8xx and 8260 are clearly different
+because a "board" is really a collection of their embedded peripherals.
+The 6xx/7xx/74xx is at the other end with very dynamic configurations
+based upon PCI peripherals.  The 4xx is unfortunately stuck in the middle
+and each side wants it their way :-).
+
+I guess when the dust settles I'll just merge changes again :-).
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
