@@ -1,27 +1,45 @@
-From: linas@austin.ibm.com
-Date: Thu, 10 Jul 2003 12:17:33 -0500
-To: maurie <maurie@risc.sps.mot.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Linuxppc 8245 lost interrupt
-Message-ID: <20030710121733.B41788@forte.austin.ibm.com>
-References: <000101c346ee$46545ac0$9b7c520a@sps.mot.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <000101c346ee$46545ac0$9b7c520a@sps.mot.com>; from maurie@risc.sps.mot.com on Thu, Jul 10, 2003 at 09:19:28AM -0500
+Message-ID: <3F0DC18F.10106@earthlink.net>
+Date: Thu, 10 Jul 2003 12:42:07 -0700
+From: Dean Matsen <deanmatsen@earthlink.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Err in config script in 2.4.22-pre4 re: LXT970 and LXT971 chips
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jul 10, 2003 at 09:19:28AM -0500, maurie wrote:
->
-> 	I am using kernel 2.4.21-rc1.
+I originally posted this on ppclinux-embedded, but webmaster as
+MontaVista suggested
+I post it here instead:
 
-Please try another one of the kernels.  There were several ide-related
-ppc64 bugs; I am currently confused about which ones got fixed when
-(or if they are fixed yet).  I breifly saw the lost-irq bug, but it
-went away for me, not sure why.
+I noticed that in the file arch/ppc/8xx_io/Config.in in
+the 2.4.22-pre4 (devel) kernel
 
---linas
+CONFIG_FEC_LXT970 is listed twice, whereas I think
+the second instance should be for the 971/972.
+
+Originally was:
+
+bool 'Support AMD79C874 PHY' CONFIG_FEC_AM79C874
+bool 'Support LXT970 PHY' CONFIG_FEC_LXT970
+bool 'Support QS6612 PHY' CONFIG_FEC_QS6612
+bool 'Support LXT970 PHY' CONFIG_FEC_LXT970
+bool 'Support DP83843 PHY' CONFIG_FEC_DP83843
+
+I changed my version to say:
+
+bool 'Support AMD79C874 PHY' CONFIG_FEC_AM79C874
+bool 'Support LXT970 PHY' CONFIG_FEC_LXT970
+bool 'Support QS6612 PHY' CONFIG_FEC_QS6612
+bool 'Support LXT971/972 PHY' CONFIG_FEC_LXT971
+bool 'Support DP83843 PHY' CONFIG_FEC_DP83843
+
+Otherwise, you can't use a 971/972 chip.  This is obviously
+just a cut-and-paste error.
+
+Thanks
+Dean
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
