@@ -1,31 +1,26 @@
-Date: Mon, 4 Sep 2000 12:39:11 +1100 (EST)
-From: Nathan Hurst <njh@hawthorn.csse.monash.edu.au>
-To: "Dan A. Dickey" <ddickey@charter.net>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: DC290 linux support(note: I don't mean linux connectivity :)
-In-Reply-To: <39B2ED3D.FED1410@charter.net>
-Message-ID: <Pine.LNX.4.10.10009041237190.16113-100000@hawthorn.csse.monash.edu.au>
+Subject: Re: Where is the embedded-ppc ftp site ???
+To: brendan.simon@ctam.com.au
+Date: Mon, 4 Sep 2000 12:49:57 +1100 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org (LinuxPPC Embedded Mailing List)
+In-Reply-To: <39B2EBD9.2DD2FF23@ctam.com.au> from "Brendan J Simon" at Sep 04, 2000 10:24:57 AM
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000904014957.0B075208@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sun, 3 Sep 2000, Dan A. Dickey wrote:
+Brendan J Simon writes:
+> The other embedded boards (BSEIP, RPX, etc) were maintained elsewhere.  I'm
+> not even sure if they were available via CVS but they were via tar.gz files on
+> ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded
 
-> >   I doubt there would be much point in running linux, but hey, it would a
-> > fun hack.
->
-> It seems like a really silly thing to do.
+All this stuff has been superceeded by the Montavista 1.2 CDK, which you can
+get via ftp from ftp.mvista.com.  If you want the bleeding edge stuff, see:
+    http://www.fsmlabs.com/linuxppcbk.html
 
-I agree, but hey...
-
-> But I happen to have one of these cameras myself.
-> What processor does it have in it?  Does gcc support it?
-
-http://digita.mame.net/develop.htm
-
-njh
-
+Regards,
+Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
