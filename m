@@ -1,44 +1,24 @@
-Date: Tue, 29 Jan 2002 17:05:48 -0700
-From: Val Henson <val@nmt.edu>
-To: David Ashley <dash@xdr.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Date: Tue, 29 Jan 2002 19:22:53 -0800
+From: David Ashley <dash@xdr.com>
+Message-Id: <200201300322.g0U3Mr400172@dave.home>
+To: Josh_Horvath-AJH051@email.mot.com
 Subject: Re: BUG: udp socket, getsockopt + setsockopt
-Message-ID: <20020129170548.J2050@boardwalk>
-References: <200201291649.g0TGn2x09346@xdr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200201291649.g0TGn2x09346@xdr.com>; from dash@xdr.com on Tue, Jan 29, 2002 at 08:49:02AM -0800
+Cc: linuxppc-embedded@lists.linuxppc.org
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-When you set SO_RCVBUF with setsockopt, the kernel allocates twice the
-memory you set.  This has something to do with BSD compatibility and
-storing internal kernel structures in the memory allocated for the
-recv buf.  Try getsockopt after you setsockopt.
+That's not getting set anywhere, the socket code is really small, just
+like a textbook example. The man page says that is read only...
 
-This is ostensibly a feature, not a bug.  Search the linux-kernel
-archives for "so_rcvbuf" and "David Miller".  Hint: you probably won't
-convince Dave to change his mind.
+-Dave
 
--VAL
-
-On Tue, Jan 29, 2002 at 08:49:02AM -0800, David Ashley wrote:
+>This is just a guess, but is SO_RCVLOWAT getting set somewhere?  The receive
+>call will block until it gets the number of bytes set with this option.  I
+>think it defaults to 1, so it should normally return when any data is
+>available on the socket.  But if it has been bumped up to a big number, it
+>might account for the behavior you're seeing.
 >
-> I've found a very strange bug in linux ppc 2.4.17, I think. I'm pulling
-> udp packets off the LAN and reading them in a user space program. They come
-> in sets of about 60k bytes all together, then pause for a while. I only can
-> read the first 48k successfully, then they get lost.
->
-> If I have a setsockopt call on the socket, setting SO_RCVBUF to 65535,
-> then I don't lose any data. But if I do a getsockopt beforehand on
-> SO_RCVBUF, it reports 65535. Without the setsockopt I get the packet loss,
-> with it I don't lose any. It is strange because the value doesn't appear
-> to be changing.
->
-> What can be causing this mysterious behaviour?
->
-> -Dave
->
+>-Josh
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
