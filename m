@@ -1,42 +1,60 @@
-From: Paul Mackerras <paulus@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15367.29270.548171.448033@argo.ozlabs.ibm.com>
-Date: Fri, 30 Nov 2001 22:49:42 +1100 (EST)
+Subject: Re: include/asm-ppc/platforms/
 To: linuxppc-dev@lists.linuxppc.org
-Subject: platform_serial.h
-Reply-To: paulus@samba.org
+Message-ID: <OF04BCE99E.8AF57CF2-ON85256B14.00425D94@raleigh.ibm.com >
+From: "Ralph Blach" <rcblach@us.ibm.com>
+Date: Fri, 30 Nov 2001 08:30:27 -0500
+MIME-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Currently include/asm-ppc/serial.h has definitions for the 4 standard
-PC serial ports plus other oddball ISA multiport serial adaptors:
-fourport, accent, boca and hub6.
+Guys,
 
-Has anyone *ever* used any of these ISA multiport adaptors on a PPC
-system?  I wouldn't be at all surprised if the answer was no.
+I think we are missing the boat, on the include/asm-ppc/platforms.
 
-I would like to move those extra oddball things out to
-include/asm-ppc/isa-serial.h.  Then I think <asm/serial.h> should
-include <platform_serial.h>, and if that doesn't define
-STD_SERIAL_PORT_DEFNS, define that to be the 4 standard PC serial
-ports.
+This does not take into account the embedded world at all.
+The correct form of the file should be asm-ppc/core/chip/revsion/board
 
-It boils down to the question of what default serial ports we think a
-platform should get if it doesn't provide a platform_serial.h file:
+This is because the IBM Core Connect and the Motorola OCEAN internal
+interconnect systems.
 
-- none,
-- the four standard PC ports, or
-- the four standard PC ports plus the oddball ones?
+These allow for a 405/book E/Mot processor cores to be customized around a
+large set of
+customized on chip perphials.  It will make the availabily of a large
+number different
+customized chips with different on chip perphials available.
 
-If we go for the second option and a platform wants the oddball ones,
-it can #include <asm/isa-serial.h> in its platform_serial.h file.
+Thats my justification for core/chip
 
-Note that none of this will affect PCI multiport serial cards at all.
+Now for revsion/intersections   This is a little more difficult.
+Book E is now a reality.  The Mot E500 and the IBM 440 have been announced
+and are book E processors.
+A reality of book E not discussed in the forum here is the expansion op
+codes.
 
-Comments?
+This means that different book E processors will have different expansion
+op codes.
+The Mot book E has an isel instruction and the IBM book 440  has deterine
+leftmost zero byte in a string.
+(See
 
-Paul.
+http://www-3.ibm.com/chips/techlib/techlib.nsf/products/PowerPC_440GP_Embedded_Processor
+Read Writing High performance Assembly functions for the PowerPC 440 Core
+and
+http://e-www.motorola.com/news_center/press_releases/PR010612C.html
+
+for info on these)
+
+This is my justification for Revision, because different Chip Revision will
+Have differnet Expansion
+instruction sets.  The following statements have HUGE implecation on
+Libraries, because the loader will have to load correct library
+according to Chip Revision.
+
+Life is going to be very interesting.
+
+Chip
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
