@@ -1,63 +1,26 @@
-Message-ID: <0E97488D670BD411B8BD00C0F03BDF64AD6593@SPEEDCOM3>
-From: Philip Decker <pdecker@wavewireless.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: Liu HongXun-a16975 <a16975@motorola.com>,
-	"'Matthew Locke'" <mlocke@mvista.com>,
-	Tom Rini <trini@kernel.crashing.org>
-Subject: RE: Is there a PCI based 802.11b device driver for ppc linux?
-Date: Fri, 17 Aug 2001 17:53:39 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <5.1.0.14.0.20010817155747.00aa6c60@spudcentral.com>
+Date: Fri, 17 Aug 2001 16:01:57 -0600
+To: Cindy Peters <cinpet@adaptivemicro.com>,
+	"'Jim Duey'" <jduey@ccc-dcs.com>
+From: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>
+Subject: Re: Logging into embedded 8xx device from Windows with Samba
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <41EDEC3C1B88D51186EB00A0C9CFADF702FA50@AMWMAIL>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-If Liu plans to use a mini-PCI 802.11b radio, and that radio is based on
-Prism 2.5, and it uses the ISL3874 MAC/BBP (which interfaces directly to the
-PCI Bus), then there is no Linux driver yet (that I'm aware of).
-
-On the other hand, if his mini PCI radio is Prism II, or Prism 2.5 but using
-the ISL3873 MAC/BBP, then that radio contains a PCI to PCMCIA bridge and the
-existing Linux drivers will work.
-
-I don't know about Linux drivers for Agere/Lucent Orinoco/WaveLAN mini-PCI
-radio.
-
-If Liu's question had nothing to do with mini-PCI radios then, in the
-immortal words of E. Litella, "Never mind".
+At 03:32 PM 8/17/2001 -0500, Cindy Peters wrote:
+>I am not using encrypted passwords. I have the Windows PC setup correctly
+>for plain text passwords. I have two to other Linux x86 PCs setup with samba
+>and they work fine.
+>
+>I have run out of things that I know to try. What am I missing?
 
 
-PJD
-
-> -----Original Message-----
-> From: Matthew Locke [mailto:mlocke@mvista.com]
-> Sent: Friday, 17 August, 2001 4:45 PM
-> To: Tom Rini
-> Cc: Liu HongXun-a16975; linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: Is there a PCI based 802.11b device driver for ppc linux?
->
->
->
-> Tom Rini wrote:
->
-> > On Fri, Aug 17, 2001 at 11:11:28AM +0800, Liu HongXun-a16975 wrote:
-> >
-> >> Hi, all,
-> >> Our customized ppc based board only has PCI interface. I
-> wonder if there is a PCI based 802.11b device driver for ppc linux?
-> >
-> >
-> > Well, it depends on the chipset.  And is it a PCI one or a
-> pcmcia one in a
-> > pcmcia pci card.  I think some of the prism II and whatnot
-> based cards work.
-> > Take a look in drivers/net/wireless.
-> >
->
-> Both the prism II and Cisco PCI cards have device drivers.
->
->
+Does "not using encrypted passwords" mean that you don't need a /etc/samba/smbpasswd file?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
