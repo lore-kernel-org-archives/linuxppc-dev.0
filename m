@@ -1,29 +1,26 @@
-Message-ID: <39DB8BB4.A1DB8B50@mvista.com>
-Date: Wed, 04 Oct 2000 15:57:40 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <0D9416AE7F95D411A8710008C7332F3F0E0A@GUILDFORD4_NT>
+From: Daniel Furse <daniel.furse@iptest.com>
+To: "Linux Embedded List (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Embedded planet CLLF boards
+Date: Thu, 5 Oct 2000 09:47:05 +0100 
 MIME-Version: 1.0
-To: ajay.kunnath@exgate.tek.com
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: IIC write
-References: <21F9768AF088D211BF1C0008C71E5786013C9E07@ap-bang-m02.india.tek.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-ajay.kunnath@exgate.tek.com wrote:
+Hi all,
 
-> As per the manual, I need to mention the device address as the first byte to
-> be transmitted i.e. first byte in tbdf->cbd_bufadr . If so, where do I
-> mention
-> the actual buffer which contains the data that needs to be written to the
-> EEPROM ?
+I am currently assessing the options for a real-time embedded linux
+controller, based on a PowerPC 860T chip.
 
-In the same buffer following the device byte, or in a following BD
-when the buffer containing the device byte does not have the last (L)
-indicator in the BD control/status.
+Initially, we purchased a FADS860T boards, but we had little success
+with this target. Can anyone recommend an 860T-based board, which has
+both a fast ethernet and a PCMCIA interface? So far, the board that gets
+closest to this spec is the embedded planet CLLF board. However, this is
+a production-ready board, and we are looking to design our own product
+once we have proven the technology can do the task.
 
-
-	-- Dan
+Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
