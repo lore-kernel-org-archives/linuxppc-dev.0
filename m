@@ -1,39 +1,31 @@
-Message-ID: <3EE0AEFC.8EA62FB0@opersys.com>
-Date: Fri, 06 Jun 2003 11:10:52 -0400
-From: Karim Yaghmour <karim@opersys.com>
-Reply-To: karim@opersys.com
+Message-ID: <3EE0C9CC.1581ECC5@dualg4.com>
+Date: Fri, 06 Jun 2003 10:05:17 -0700
+From: Jim Potter <jpotter@dualg4.com>
+Reply-To: jpotter@dualg4.com
 MIME-Version: 1.0
-To: Lokesh Kumar <lokesh.kumar@wrx-us.com>
-Cc: brian.auld@adic.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: x86(host) --> ppc(tgt) cross-tool-chain
-References: <3439AB3A99ECD5409F3A52ACF814744D158D22@norcom2.norcom.net>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: IDE Partition check overwrites vectors
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Lokesh Kumar wrote:
-> I built the toolchain on x86 host for PPC, and I used
->
-> GCC-2.95.3
-> GLIBC-2.2.3
-> Binutils-2.11.92
->
-> I did not use Karim's book. I went with "Embedded Linux Interfacing ...."
-> book.
+I'm implementing the IDE driver on my embedded system, and I've got a
+strange problem -- when it performs the Partition check, it overwrites
+the vector area (when in read_cache_page()).  Obviously, some caching
+variable hasn't been setup, so it's writing to addr zero;  I'm not a mm
+person, anyone have any suggestions on this?  Many thanks.
 
-:)
-
-I have to ask: Did this toolchain actually work for you on the target?
-I mean, did you try using glibc-2.2.3 on the PPC target? From I've
-seen, gcc 2.95.3 with glibc 2.2.3 will successfully generate a glibc,
-but the resulting glibc will core dump on the target.
-
-Karim
+The system is Linux version 2.4.21-rc6, pulled from linuxppc_2_4_devel
+several days ago, with a custom platform entry adapted from ev64260.c.
 
 --
-Author, Speaker, Developer, Consultant
-Pushing Embedded and Real-Time Linux Systems Beyond the Limits
-http://www.opersys.com || karim@opersys.com || 514-812-4145
+Sincerely,
+
+Jim Potter
+45th Parallel Processing, Inc.
+
+  Volunteer Firefighting: Bustin' ours, Savin' yours.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
