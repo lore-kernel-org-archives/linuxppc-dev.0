@@ -1,27 +1,25 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Lars Brinkhoff <lars@nocrew.org>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Bogus interrupt -1
-Date: Fri, 20 Apr 2001 19:13:27 +0200
-Message-Id: <20010420171327.26883@mailhost.mipsys.com>
-In-Reply-To: <85itjzilbx.fsf@junk.nocrew.org>
-References: <85itjzilbx.fsf@junk.nocrew.org>
+Date: Fri, 20 Apr 2001 15:29:32 -0400 (EDT)
+From: Conrad H Ziesler <cziesler@umich.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: ibook sleep, NMI edge vs level trigger. 
+Message-ID: <Pine.SOL.4.10.10104201522100.26944-100000@galaxian.gpcc.itd.umich.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->At first, the first six or so messages appeared, but everything seemed
->fine.  Later, the last messages appeared, and it seemed like one of
->the two processors in my 2001 Dual G4 had wedged.  According to "top",
->there was always at least 50% idle time.
+i dunno if this is news to anyone, but apparently
+(the source comment says "copied from OS9 code")
+the NMI is masked and switched from edge to level triggered before
+sleeping and unmasked and returned to edge triggered after wake.
 
-Did you enable distribution of IRQs to all CPUs ?
+is the low level sleep handler doing this correctly ?
 
-I don't think it's completely safe yet.
+refer to:
+xnu-4-2/iokit/Drivers/platform/drvAppleNMI/AppleNMI.cpp
 
-Ben.
+--conrad
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
