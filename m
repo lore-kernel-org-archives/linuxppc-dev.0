@@ -1,25 +1,38 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MPC8250 + PCMCIA + airo_cs card + IO Port mapping proble
-From: Jim Rowe <rowejames@acmsystems.com>
-To: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <1053662461.16860.17.camel@kneedragger>
-References: <5.1.0.14.2.20030522143346.04b7e260@falcon.si.com>
-	 <1053662461.16860.17.camel@kneedragger>
-Message-Id: <1053728074.29793.30.camel@kneedragger>
+Date: Fri, 23 May 2003 15:28:36 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: "David M?ller (ELSOFT AG)" <d.mueller@elsoft.ch>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ERR51 / ERR77 on IBM405GPr
+Message-ID: <20030523152836.B17219@home.com>
+References: <3ECDF370.7020808@elsoft.ch>
 Mime-Version: 1.0
-Date: 23 May 2003 15:14:34 -0700
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3ECDF370.7020808@elsoft.ch>; from d.mueller@elsoft.ch on Fri, May 23, 2003 at 12:09:52PM +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-If anyone has a 16-bit pcmcia card working with a Cardbus to PCI bridge
-it would be very helpful if I could see your /proc/ioports and
-/proc/iomem with the card working. It would be even better if you are
-using an MPC82xx chip with an integrated PCI controller.
+On Fri, May 23, 2003 at 12:09:52PM +0200, "David M?ller (ELSOFT AG)" wrote:
+>
+> Hello
+>
+> According to the errata sheet, the IBM405GPr doesn't suffer from the
+> ERR51 / CPU_190 and ERR77 / CPU_210 bugs as the IBM405GP does.
+>
+> But the workarounds are still enabled in "arch/ppc/config.in".
+>
+> Shouldn't there be something like this:
+>
+>   if [ "$CONFIG_405GPR" = "y" ]; then
+>     define_bool CONFIG_IBM405_ERR51 n
+>     define_bool CONFIG_IBM405_ERR77 n
+>   fi
 
-Thanks,
--- Jim
+I just committed something like this to 2_4_devel and will be moved to
+the other trees as well.
 
+--
+Matt Porter
+mporter@kernel.crashing.org
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
