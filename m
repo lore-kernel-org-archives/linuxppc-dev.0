@@ -1,45 +1,36 @@
-From: Peter Bergner <bergner@brule.borg.umn.edu>
-Date: Mon, 15 Oct 2001 08:50:31 -0500
-To: Paul Mackerras <paulus@samba.org>
+Message-ID: <3BCAF4D2.D41EE8C4@mvista.com>
+Date: Mon, 15 Oct 2001 10:38:10 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: paulus@samba.org
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: boot methods
-Message-ID: <20011015085031.A327185@brule.borg.umn.edu>
-References: <15302.40082.869098.88039@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
+Subject: Re: interesting line in process.c
+References: <15304.11248.720092.645241@cargo.ozlabs.ibm.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15302.40082.869098.88039@cargo.ozlabs.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-: Powermac:
-: 	vmlinux loaded with BootX
-: 	vmlinux loaded with quik
-: 	vmlinux loaded with yaboot
-: 	vmlinux.coff loaded via OF netboot
-: 	vmlinux.elf-pmac loaded via OF (disk or net boot)
-:
-: RS/6000 CHRP:
-: 	vmlinux loaded with yaboot
-: 	zImage.chrp-rs6k loaded via OF netboot
-:
-: RS/6000 43p-140:
-: 	zImage.prep loaded via OF (floppy or hard disk)
-:
-: Can others contribute entries to this list please?
+Paul Mackerras wrote:
+>
+> I'm intrigued by this line, line 276 in arch/ppc/kernel/process.c in
+> linuxppc_2_4_devel:
 
-Recent addition to yaboot allows:
+I try to move this to other fault handlers where there is some 4xx
+specific stuff already defined, but it keeps moving around and finding
+its way back here.
 
-	zImage loaded with yaboot
+> Which brings up another question that I have been meaning to ask: what
+> is the rationale for adding the dbcr0/1 fields to the ptrace struct
+> for 4xx?
+
+I dunno.  They have also been moving around during the 4xx port.
+I just put them where the folks that send the patches have them.
+I'll take a look at this since gdb is currently broken on 4xx.
+They have to be context switched, and maybe someone though gdb should
+have access to them.....
 
 
-Peter
-
---
-Peter Bergner
-SLIC Optimizing Translator Development / Linux PPC64 Kernel Development
-IBM Rochester, MN
-bergner@vnet.ibm.com
-
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
