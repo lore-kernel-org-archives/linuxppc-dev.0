@@ -1,12 +1,12 @@
 Return-Path: <kumar.gala@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v619.2)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <58ddcf3f9fe35315256e2fa3d7361081@freescale.com>
+Message-Id: <402824c4830f426df0afdb3515b6df61@freescale.com>
 From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 4 Mar 2005 18:20:17 -0600
-To: ppcembed Mailing List <linuxppc-embedded@ozlabs.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: gcc-3.3.3 from YDL4 problems?
+Date: Fri, 4 Mar 2005 18:24:37 -0600
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: ppcembed Mailing List <linuxppc-embedded@ozlabs.org>
+Subject: RFC: SPR namespace issue
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,8 +16,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Has anyone else had any issues with building kernels (2.6.11) with 
-gcc-3.3.3 from YDL4.  Ran into a problem today were a 2.6.11 build for 
-MPC8540 ADS breaks with gcc-3.3.3 but works ok with a 3.4.3.
+A while ago Al Viro made some changes to the SPR defines to remove some 
+name space conflicts.  I wanted to see if anyone had any issue with 
+removing the short hand versions of the defines in the various reg*.h 
+headers.  This means all SPR references will be SPRN_<FOO> going 
+forward.
+
+If you do speak now.
 
 - kumar
