@@ -1,42 +1,36 @@
-Subject: Re: [PATCH] 2.6 timebase synchronization
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Samuel Rydh <samuel@ibrium.se>
+Date: Sat, 9 Aug 2003 13:48:02 +0200
+From: Samuel Rydh <samuel@ibrium.se>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev@lists.linuxppc.org,
 	Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20030809011305.GA12030@ibrium.se>
-References: <20030808001523.GA9274@ibrium.se>
-	 <20030809011305.GA12030@ibrium.se>
-Content-Type: text/plain
-Message-Id: <1060419490.653.18.camel@gaston>
+Subject: Re: [PATCH] 2.6 timebase synchronization
+Message-ID: <20030809114802.GA1654@ibrium.se>
+References: <20030808001523.GA9274@ibrium.se> <20030809011305.GA12030@ibrium.se> <1060419490.653.18.camel@gaston>
 Mime-Version: 1.0
-Date: 09 Aug 2003 10:58:11 +0200
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1060419490.653.18.camel@gaston>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2003-08-09 at 03:13, Samuel Rydh wrote:
-> On Fri, Aug 08, 2003 at 02:15:23AM +0200, Samuel Rydh wrote:
-> >
-> > Hi,
-> >
-> > Here is a patch that provides improved generic SMP timebase
-> > synchronization for 2.6.
-> >
+On Sat, Aug 09, 2003 at 10:58:11AM +0200, Benjamin Herrenschmidt wrote:
+> I'm on vacation now, I can't test it until I'm back, but that
+> looks quite good overall (except maybe the MacOS-like constant
+> naming for kXXXX :)
 >
-> Attached is an improved version of the patch.
+> However, does it work with more than 2 CPUs ?
 
-I'm on vacation now, I can't test it until I'm back, but that
-looks quite good overall (except maybe the MacOS-like constant
-naming for kXXXX :)
+Yes, it does. The code simply passes the timestamp from CPU0
+to the one currently beeing booted (the CPU0 timebase is
+not affected).
 
-However, does it work with more than 2 CPUs ? It seem to be rather
-dual CPU centric from my understanding of the ack mecanism... The TB sync
-code is also used on 4 CPU daystar machines and possibly some other chrp
-with more than 2 CPUs.
+> It seem to be rather
+> dual CPU centric from my understanding of the ack mecanism...
 
-Paul, any comment ?
+Only a pair of CPUs are synchronized simultaneously, yes. But there
+is absolutely no need to synchronize more than two at the same.
+Besides, CPU2 is not started until CPU1 has booted...
 
-Ben.
-
+/Samuel
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
