@@ -1,34 +1,84 @@
-Date: Thu, 6 Jul 2000 07:57:13 -0700 (PDT)
-From: Matt Brubeck <mbrubeck@hmc.edu>
-To: Iain Sandoe <iain@sandoe.co.uk>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Multi-boot advice.
-In-Reply-To: <200007052323.AAA07099@hyperion.valhalla.net>
-Message-ID: <Pine.GSO.4.21.0007060751390.17224-100000@turing.cs.hmc.edu>
+Date: Thu, 6 Jul 2000 13:01:20 -0400 (EDT)
+From: "Peter R. Wood" <pwood@gordon.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: GAIM compile error
+Message-ID: <Pine.LNX.4.21.0007061254230.8579-100000@dyn-133-196.gordon.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 6 Jul 2000, Iain Sandoe wrote:
+Hello,
 
-> I think I read that I must put the Linux boot partition before the
-> MacOS - X one?
+I've contacted the authors of GAIM regarding this problem, but they don't
+seem to have a clue about it so I thought I'd submit it here. I'm trying
+to compile GAIM, the AOL instant messenger clone, from its CVS source.  I
+get this error during the compile:
 
-If you are using yaboot with an OF-bootable partition (e.g. you are using
-ybin to set up a bootstrap partition), then placing that partition before
-MacOS will allow you to boot Linux by default without changing any open
-firmware settings.
+make[2]: Entering directory `/usr/src/gaim/src'
+/bin/sh ../libtool --mode=link gcc  -g -O2 -I/usr/local/include
+-I/opt/include -I../ -I../libfaim -I../libfaim/faim
+-I/usr/lib/glib/include -D_REENTRANT -I/usr/X11R6/include
+-DLOCALEDIR=\"/usr/local/share/locale\"  -o gaim  about.o aim.o away.o
+browser.o buddy.o buddy_chat.o conversation.o dialogs.o
+gaimrc.o gnome_applet_mgr.o gtkhtml.o html.o idle.o network.o oscar.o
+plugins.o prefs.o proxy.o rvous.o server.o sound.o toc.o util.o ticker.o
+gtkticker.o -L../libfaim -lfaim -pthread -L/usr/lib -lesd -laudiofile -lm
+-L/usr/lib -L/usr/X11R6/lib -lgtk -lgdk -rdynamic -lgmodule -lgthread
+-lglib -lpthread -ldl -lXi -lXext -lX11 -lm
+gcc -g -O2 -I/usr/local/include -I/opt/include -I../ -I../libfaim
+-I../libfaim/faim -I/usr/lib/glib/include -D_REENTRANT
+-I/usr/X11R6/include -DLOCALEDIR=\"/usr/local/share/locale\" -o gaim
+about.o aim.o away.o browser.o buddy.o buddy_chat.o conversation.o
+dialogs.o gaimrc.o gnome_applet_mgr.o gtkhtml.o html.o idle.o network.o
+oscar.o plugins.o prefs.o proxy.o rvous.o server.o sound.o
+toc.o util.o ticker.o gtkticker.o -L../libfaim -lfaim -pthread -L/usr/lib
+-lesd -laudiofile -lm -L/usr/lib -L/usr/X11R6/lib -lgtk -lgdk -rdynamic
+-lgmodule -lgthread -lglib -lpthread -ldl -lXi -lXext -lX11 -lm
+oscar.o: In function `gaim_parse_incoming_im':
+/usr/src/gaim/src/oscar.c:537: undefined reference to
+`__va_arg_type_violation'
+/usr/src/gaim/src/oscar.c:537: relocation truncated to fit: R_PPC_REL24
+__va_arg_type_violation
+oscar.o: In function `gaim_parse_user_info':
+/usr/src/gaim/src/oscar.c:627: undefined reference to
+`__va_arg_type_violation'
+/usr/src/gaim/src/oscar.c:627: relocation truncated to fit: R_PPC_REL24
+__va_arg_type_violation
+oscar.o: In function `gaim_parse_motd':
+/usr/src/gaim/src/oscar.c:658: undefined reference to
+`__va_arg_type_violation'
+/usr/src/gaim/src/oscar.c:658: relocation truncated to fit: R_PPC_REL24
+__va_arg_type_violation
+oscar.o: In function `gaim_chatnav_info':
+/usr/src/gaim/src/oscar.c:677: undefined reference to
+`__va_arg_type_violation'
+/usr/src/gaim/src/oscar.c:677: relocation truncated to fit: R_PPC_REL24
+__va_arg_type_violation
+collect2: ld returned 1 exit status
+make[2]: *** [gaim] Error 1
+make[2]: Leaving directory `/usr/src/gaim/src'
 
-Other than that, partition order shouldn't matter.
+This is at the last step as it's about to link the object files in to the
+gaim binary. If you're not familiar with the gaim source you can browse
+the CVS repository at:
 
-Speaking of yaboot, I have a question. Can yaboot boot MacOS, or can I
-make it exit back to OF without rebooting?
+http://cvs.sourceforge.net/cgi-bin/cvsweb.cgi/gaim/src/?cvsroot=gaim
 
-I'd like to just have my machine always load yaboot, and then use the
-yaboot prompt to choose my OS. But once I'm in yaboot, Linux seems to be
-my only option. Is this true? If so, can it be changed?
+Note that's the src directory under the main distribution.
+
+If you have any clues, please Cc: me since I read this in digest mode.
+
+Thanks,
+
+Peter
+
+--
+Peter R. Wood		pwood@gordon.edu
+Computer Science	http://www.cs.gordon.edu/~pwood/
+Gordon College		http://www.gordon.edu/
+Wenham, MA		http://www.boston.com/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
