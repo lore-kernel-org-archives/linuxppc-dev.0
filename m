@@ -1,18 +1,19 @@
-Return-Path: <cfriesen@nortel.com>
-Received: from zcars04e.nortelnetworks.com (zcars04e.nortelnetworks.com
-	[47.129.242.56]) by ozlabs.org (Postfix) with ESMTP id 51DB767A2F
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2005 09:32:58 +1000 (EST)
-Received: from zcard303.ca.nortel.com (zcard303.ca.nortel.com [47.129.242.59])
-	by zcars04e.nortelnetworks.com (Switch-2.2.6/Switch-2.2.0) with
-	ESMTP id j34NWsf12197
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Apr 2005 19:32:54 -0400 (EDT)
-Message-ID: <4251CEA4.6070604@nortel.com>
-Date: Mon, 04 Apr 2005 17:32:52 -0600
-From: Chris Friesen <cfriesen@nortel.com>
+Return-Path: <evilninja@gmx.net>
+Received: from mail.gmx.net (pop.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 627C667A6B
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2005 10:03:08 +1000 (EST)
+Message-ID: <4251D5BA.5080905@gmx.net>
+Date: Tue, 05 Apr 2005 02:03:06 +0200
+From: Christian <evilninja@gmx.net>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: somewhat OT -- trying to build code on the fly then run it
+References: <20050328232355.GA1982@pegasos>	<20050331142813.GH25923@smtp.west.cox.net>
+	<20050331184549.GA28069@pegasos>
+In-Reply-To: <20050331184549.GA28069@pegasos>
+Content-Type: text/plain; charset=UTF-8
+Cc: Tom Rini <trini@kernel.crashing.org>
+Subject: Re: PREP sym53c8xx sym53c8xx brokeness due to
+ 2.6.9-rc1-bk1	introduced residual data patch ...
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,89 +23,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-I'm writing a testcase to test some code we wrote to allow userspace to 
-flush the whole dcache and invalidate the whole icache.  This requires 
-me to write self-modifying code.  For the first stage I'm just trying to 
-build a routine (that just increments r3 and returns) on the heap and 
-then call it.
+Sven Luther wrote:
+>>># This is a BitKeeper generated diff -Nru style patch.
+>>>#
+>>># ChangeSet
+>>>#   2004/08/16 10:35:18-07:00 trini@kernel.crashing.org
+>>>#   ppc32: On PReP, use residual data for PCI dev -> IRQ, and use it.
+>
+> I got through all the changesets one by one, and it is most definitively this
+> one. i unapply it and it works, i apply it and it breaks.
 
-Everything seems to be fine right up until I jump to the code that I've 
-written, then I get a segfault.  The debugger shows my registers and 
-data values are as expected, and the page of memory has xwr permissions.
+i can confirm this one.
 
-Can anyone tell me what I'm missing?  I'm sure its something simple.
+the changesets are listed here:
+http://linux.bkbits.net:8080/linux-2.6/patch@1.1803.125.6
 
-Thanks,
+...and because i had some troubles getting a GNU diff-style patch with
+/usr/bin/bk, i made one against 2.6.11.6:
 
-Chris.
+http://nerdbynature.de/bits/hal/2.6.11.6/1.1803.125.6.diff
+
+more info and dmesg under:
+
+http://nerdbynature.de/bits/hal/2.6.11.6/
+
+to summarize: i don't know exactly which changes, but *some* changes had
+to be made to arch/ppc/platforms/prep_pci.c to get the network card
+working [1] again (network code kept locking up the machine). after this
+issue was resolved, i too noticed the scsi errors [2] others were
+complaing about.
+
+thanks to all involved,
+Christian.
 
 
-PS.  Here's my current test code.
+[1] http://ozlabs.org/pipermail/linuxppc-dev/2004-December/017954.html
+[2] http://nerdbynature.de/bits/hal/2.6.11-rc5/dmesg
+- --
+BOFH excuse #307:
 
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdio.h>
-#include <sys/mman.h>
+emissions from GSM-phones
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
 
-/* these next two lines are the hex equivalents of the instructions:
-  * addi r3,r3,1
-  * blr
-  */
-unsigned int incr_code[] = {
-	0x38630001,
-	0x4e800020
-};
-
-int dotest(unsigned long *addr)
-{
-         int i=0;
-         asm volatile (" \n\
-                 mr 3,%1 \n\
-                 bla %2  \n\
-                 mr %0,3 \n"
-                 : "=r" (i)
-                 : "r" (i), "r" (addr));
-         return i;
-}
-
-void alter_opcode(unsigned long *addr, unsigned long opcode)
-{
-	unsigned long offset = 0;
-	
-	asm volatile(
-                 "stw    %1,0(%0)  \n\t"
-                 "dcbf   %0,%2     \n\t"
-                 "sync             \n\t"
-                 "icbi   %0,%2     \n\t"
-                 "sync             \n\t"
-                 "isync            \n\t"
-                     :: "r" (addr), "r" (opcode), "r" (offset));
-}
-
-int main()
-{
-	unsigned long *addr;
-	void *p = mmap(0, 4096, PROT_EXEC|PROT_WRITE|PROT_READ,
-		MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
-	if (p == MAP_FAILED) {
-		perror("mmap");
-		goto error;
-	}
-	
-	addr = (unsigned long *)p;
-	
-	alter_opcode(addr, incr_code[0]);
-	alter_opcode(addr+1, incr_code[1]);
-	
-	printf("%d\n", dotest(addr));
-	return 0;
-	
-error:
-	return -1;
-}
+iD8DBQFCUdW5C/PVm5+NVoYRAnBFAKDWoLrgNglNCIuVNLMZcJXccp7K6QCfSyIp
+i4H8VpqUw3e7WiyqpsqYs54=
+=WD3X
+-----END PGP SIGNATURE-----
