@@ -1,22 +1,21 @@
-Return-Path: <penberg@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.207])
-	by ozlabs.org (Postfix) with ESMTP id D956767A46
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Feb 2005 19:24:32 +1100 (EST)
-Received: by wproxy.gmail.com with SMTP id 68so372357wra
-	for <linuxppc-dev@ozlabs.org>; Fri, 04 Feb 2005 00:24:29 -0800 (PST)
-Message-ID: <84144f0205020400172d89eddf@mail.gmail.com>
-Date: Fri, 4 Feb 2005 10:17:48 +0200
-From: Pekka Enberg <penberg@gmail.com>
-To: Olof Johansson <olof@austin.ibm.com>
-In-Reply-To: <20050204072254.GA17565@austin.ibm.com>
+Return-Path: <SRS0+ab34517418a75e23403a+530+infradead.org+dwmw2@baythorne.srs.infradead.org>
+Received: from baythorne.infradead.org (baythorne.infradead.org
+	[81.187.226.107])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1816C67A6B
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Feb 2005 21:11:43 +1100 (EST)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Chris Friesen <cfriesen@nortel.com>
+In-Reply-To: <42023D23.6020406@nortel.com>
+References: <42011E77.6040906@nortel.com> <1107407613.2363.9.camel@gaston>
+	<42023D23.6020406@nortel.com>
+Content-Type: text/plain
+Date: Fri, 04 Feb 2005 10:11:30 +0000
+Message-Id: <1107511891.18239.48.camel@baythorne.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-References: <20050204072254.GA17565@austin.ibm.com>
-Cc: akpm@osdl.org, trini@kernel.crashing.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, penberg@cs.helsinki.fi,
-	paulus@samba.org, hpa@zytor.com, linuxppc64-dev@ozlabs.org
-Subject: Re: [PATCH] PPC/PPC64: Introduce CPU_HAS_FEATURE() macro
-Reply-To: Pekka Enberg <penberg@gmail.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: new binutils breaks "tlbie" instruction in kernel?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, 2005-02-03 at 09:02 -0600, Chris Friesen wrote:
+> > Wasn't it fixed ?
+> 
+> Not sure what "it" you mean.  The current kernel code does not have the 
+> third parm.  I'm not sure about the latest binutils, but 2.15.92.0.2 is 
+> what a vendor wants to build on.
 
-On Fri, 4 Feb 2005 01:22:54 -0600, Olof Johansson <olof@austin.ibm.com> wrote:
-> +#define CPU_HAS_FEATURE(x)     (cur_cpu_spec->cpu_features & CPU_FTR_##x)
-> +
+Binutils was changed in early September last year to require the extra
+argument. We objected, and it was fixed again about a month later to
+_not_ require the argument. If you're using 2.15.92.0.2, then apply this
+patch to it:
 
-Please drop the CPU_FTR_##x macro magic as it makes grepping more
-complicated. If the enum names are too long, just do s/CPU_FTR_/CPU_/g
-or something similar. Also, could you please make this a static inline
-function?
+2004-10-09  Alan Modra  <amodra@bigpond.net.au>
 
-                                  Pekka
+	* ppc-opc.c: Revert 2004-09-09 change.
+
+--- opcodes/ppc-opc.c	7 Oct 2004 15:34:08 -0000	1.76
++++ opcodes/ppc-opc.c	9 Oct 2004 01:21:03 -0000	1.77
+@@ -300,7 +300,7 @@ const struct powerpc_operand powerpc_ope
+ 
+   /* The L field in a D or X form instruction.  */
+ #define L FXM4 + 1
+-  { 1, 21, 0, 0, 0 },
++  { 1, 21, 0, 0, PPC_OPERAND_OPTIONAL },
+ 
+   /* The LEV field in a POWER SC form instruction.  */
+ #define LEV L + 1
+
+
+-- 
+dwmw2
