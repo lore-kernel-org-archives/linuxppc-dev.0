@@ -1,37 +1,51 @@
 From: okorpil@fh-landshut.de
-Date: Thu, 1 Apr 2004 10:45:18 +0200 (CEST)
+Date: Thu, 1 Apr 2004 12:55:47 +0200 (CEST)
 Reply-To: okorpil@fh-landshut.de
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Serial Console / Booting Linux with the PPCbug on MVME2100?
-In-Reply-To: <20040331170924.GL13819@smtp.west.cox.net>
-Message-ID: <Pine.LNX.4.58.0404011040170.702@ppcproject1>
-References: <Pine.LNX.4.58.0403311359540.21912@ppcproject1>
- <20040331170924.GL13819@smtp.west.cox.net>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Serial Console / Booting Linux with the PPCbug on MVME2100?
+Message-ID: <Pine.LNX.4.58.0404011242110.11973@ppcproject1>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-BTW, I just tested modifying the images with mkbugboot, both with the
-vmlinux.gz and zImage.prep - will not boot image off the network. Will not
-boot image with RB; V (load from ROM/RAM verbose) if loaded at $10000
-address either (both bugboot images).
+To complete the information about what I tried to make it work:
 
-This always leads to Alignment errors, while trying to boot the
-zImage.prep off the net directly does not lead to errors but to a system
-hang.
+Network PReP-Boot Mode Enable [Y/N] = Y
 
-I've seen evidence on the list, that the netboot stuff works - most people
-seem to have problems transplanting a working configuration into Flash,
-but not with netbooting, therefore leading to little useful advice on this
-in the list. :(
+is in NVRAM.
 
-Hope my config from the previous post is more useful.
+The board is a MVME2100 with a MPC8240 microcontroller (both from
+Motorola). I want to use a serial console only (no PMC VGA card). I may
+use either netboot or from RAM/Flash (with NFS after) for booting, but I
+have no harddisk.
+
+I've built kernels for CHRP/PREP and for Sandpoint.
+
+I've built kernels for PPLUS, LOPEC and PRMPC750, and tried their bugboot
+images.
+
+I've tried a mkbugboot modified zImage.prep and vmlinux.gz (for PREP).
+
+I do not get beyond the "Residual Data Located at xxx" step, then it seems
+to hang (with the PREP image). All others images produce Alignment or
+other errors. Several others seem to have gone beyond the step with a
+similar config, so I wonder.
+
+I attached my .config to another post to the same Subject.
+
+Some people seem to have built for a similar configuration with
+CONFIG_PREP, but this seems to have already vanished from the list of
+configuration macros (and from grepping the kernel source).
+
+I seem to have problems building a kernel for a 8260 config - is this
+broken?
+
+I've nearly completely run out of ideas and hope someone of you people
+knows something about this.
 
 Thanks in advance,
-Oliver
-
+Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
