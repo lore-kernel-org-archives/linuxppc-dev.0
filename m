@@ -1,58 +1,56 @@
-Message-ID: <392E81B4.1C03F89@agelectronics.co.uk>
-Date: Fri, 26 May 2000 14:52:52 +0100
-From: Adrian Cox <apc@agelectronics.co.uk>
+Message-ID: <392E92E3.62847D28@ccrl.mot.com>
+Date: Fri, 26 May 2000 10:06:11 -0500
+From: Steve Rossi <srossi@ccrl.mot.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Floating Point problems with Linux on the EST SBC8260
-References: <Pine.BSF.4.21.0005261410410.16108-100000@invalid.ed.ntnu.no>
+To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: root fs on hdd
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Geir Frode Raanes wrote:
-> Yes, one can always use the "-mlongcall" flag to GCC.
-> Or boot the kernel with only 32 MBytes in sysLib.c, load
-> the application (defaults to top of memory, while the kernel
-> sits in low memory) and then "memAddToPool(sysMemTop(),0x2000000)"
-> This is a FAQ issue. I have not verified the existence of the
-> problem myself.
-> [...]
-I've just performed a test, and what happens is that VxWorks dynamic
-loading now starts in low memory rather than high memory. You may still
-need to specify longcall in development, but as deployed applications
-don't use dynamic loading, the problem has pretty well gone away.
+Hi All,
 
-> Actually, I have obviousely a blind-spot in my understanding
-> of how API calls work on Linux. User space is 4 GBytes linear.
-> At the bottom is the enviroment tables copied prom the parent
-> process. If I remember correctly, then the stack is at the
-> lowest addresses above this, then comes the ELF text segment,
-> then BSS, then data and the rest goes into the memory heap.
+well after stepping away from it for a while then coming back to it I've
+managed to track down the problems with my filesystems getting
+corrupted. Now I've got stable hard disk i/o and so I'm trying to mount
+the root file system from the disk. I get the feeling I'm missing
+something incredibly obvious ... perhaps someone can help point it out
+to me.
+I've copied the the /bin, /dev, /etc, /lib, /libexec, /sbin, and /share
+directories from the monta vista sdk to the root direectory of my ext2
+partition (/dev/sda2) using "cp -a" while the root partition was
+NFS mounted. What I copied is basically the filesystem that I mount over
+NFS and it works fine. I've also created empty /proc and /tmp
+directories on sda2. I've modifed etc/fstab on sda2 so that /dev/sda2 is
+mounted as the root filesystem. I've also changed my bootline to read
+root=/dev/sda2 rw
 
-The user space on PowerPC is only 3GB at the moment. This means that
-only 1GB of RAM is supported, as all RAM must be mapped into the
-remaining address space (0xc0000000 to 0xffffffff). This image of all
-physical RAM is only accessible in supervisor mode. We'll soon need
-somebody to come up with a trick comparable to the way large memory x86
-systems work, so that we can have 2GB PPC systems.
+OK, so the kernel boots, it mounts the root partition on /dev/sda2, init
+runs, but init complains:
 
-(In a perfect world, a follow up message would tell me that I've not
-been paying attention, and this has already happened.)
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 52k init
+init: error in loading shared libraries: libc.so.6: cannot open shared
+object file: No such file or directory
 
-> API calls results in violation exceptions which the OS will
-> service. But to provoce an violation exception the user
-> application must be able to address supervisor owned space
-> in the first place. Meaning that some part of of the User
-> space must be shared with the kernel and that this space
-> must contain the API functions entrypoints. Correct?
+Then it just stops. I've verified that the lib directory on /dev/sda2
+contains libc.so.6 as a link to libc-2.1.2.so
 
->From a brief examination of head.S, system calls work by an application
-performing the sc instruction, which starts execution from physical
-address 0xc00 in supervisor mode. Once address translation is turned
-back on the kernel sees kernel address space starting at virtual address
-0xc0000000, and user space starting at virtual address 0x0.
+So what am I missing? Where is init looking for libc.so.6 and why can't
+it find it? Is there something stupid about the way I just copied the
+root filesystem from the NFS mounted root to the disk?
 
-- Adrian Cox, AG Electronics
+Thanks,
+Steve
+
+--
+-------------------------------------------------------
+Steven K. Rossi                     srossi@ccrl.mot.com
+Staff Engineer
+Multimedia Communications Research Laboratory
+Motorola Labs
+-------------------------------------------------------
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
