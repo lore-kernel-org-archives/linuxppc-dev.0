@@ -1,128 +1,55 @@
-Message-ID: <3C0676EE.BAE43398@mvista.com>
-Date: Thu, 29 Nov 2001 09:57:02 -0800
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
+Date: Thu, 29 Nov 2001 19:20:03 +0100 (CET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>,
+	Dan Malek <dan@embeddededge.com>, <paulus@samba.org>
+Subject: Re: 7450 bugs & fixes
+In-Reply-To: <20011129150047.11980@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.4.33.0111291907570.3233-100000@gra-lx1.iram.es>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Cc: Adrian Cox <adrian@humboldt.co.uk>, paulus@samba.org
-Subject: Re: include/asm-ppc/platforms/
-References: <15363.31192.101536.919771@gargle.gargle.HOWL>	<3C2B376F.9070508@embeddededge.com>	<15364.32906.728532.676746@gargle.gargle.HOWL>	<3C04A483.6070206@humboldt.co.uk> <15365.22636.100149.747039@gargle.gargle.HOWL> <3C055B2E.9020801@humboldt.co.uk>
-Content-Type: multipart/mixed;
- boundary="------------F15193F279862E69CC6C0769"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------F15193F279862E69CC6C0769
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+On Thu, 29 Nov 2001, Benjamin Herrenschmidt wrote:
 
-Adrian Cox wrote:
 >
-> Paul Mackerras wrote:
+> After reading the 7450 errata book, I'm now trying to figure out
+> what need to be done for our kernel to work properly on these.
+> I'd appreciate any input from other people here as some of the
+> errata exact consequences aren't that clear to me.
 >
-> > Perfectly reasonable - I wish all the platforms used early_serial_setup.
-> > Would you mind posting your code that does the early_serial_setup calls?
+> I've figured out so far that we need to handle 7450's as far as
+> rev 2.0 included. Apple seem to be the company who used the earliest
+> ones in released products and according to the infos I got from them,
+> they used rev 2.0 on uniprocessor desktop machines only, and rev. 2.1
+> on SMP machines & laptops. They also seem to have developed a HW
+> workaround for errata #38 making safe the use of the HW hashtable
+> loopkups on rev. 2.1 CPUs. (at least according to an Apple engineer
+> I contacted on the Darwin mailing list).
 >
-> Mangled by Mozilla below. This is a 7400 board with a memory mapped
-> uart. It is important to zero out the entries for serial ports that
-> aren't present, otherwise the serial driver will attempt to use the
-> traditional locations.
+> Here are the errata I think we are concerned about. I didn't list
+> errata for things I beleive we don't use so far, like L3 flush assist,
+> but those may have impacts I didn't foresee.
 >
-> static void __init
-> tpe3_setup_arch(void)
-> {
->         struct serial_struct req;
->
->         ...
->
->         memset(&req, 0, sizeof (req));
->         req.line = 0;
->         req.io_type = SERIAL_IO_MEM;
->         req.iomem_base = (void *) (tpe3_uart_base + 0x10);
->         req.baud_base = 6144000 / 16;
->         req.irq = 3;
->         req.flags = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
->         early_serial_setup(&req);
->         memset(&req, 0, sizeof (req));
->         req.line = 1;
->         early_serial_setup(&req);
->         req.line = 2;
->         early_serial_setup(&req);
->         req.line = 3;
->         early_serial_setup(&req);
->
->         ...
-> }
+>  - errata 15: mismatched lwarx/stwcx. pairs can cause loss of
+>    atomicity. That errata basically says we mustn't issue an
+>    stwcx. if we didn't have a previous lwarx. That mean our
+>    instance of stwcx. in the return from exception path should
+>    be added an lwarx. Any other candidate spotted ?
 
+The return from exception path does not have to be modified. The only
+purpose of this stwcx. is to clear the reservation to ensure that an
+atomic operation interrupted bwteen lwarx and stwcx. will never succeed.
 
-And a more generic approach (that can pull the port definitions from
-a header file) is attached...
+Besides that, note that the errata is SMP only (of if you do atomic
+operations on DMA descriptors for example) and the error is that CR0 does
+not properly reflect the success of the write operation. But cr0 is a
+"don't care" after the stwcx. in the exception return path.
 
+	Regards,
+	Gabriel.
 
--Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
---------------F15193F279862E69CC6C0769
-Content-Type: text/plain; charset=us-ascii;
- name="example"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="example"
-
-Date: Wed, 27 Jun 2001 17:55:06 -0700
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
-Subject: Paulus, Trini: here's how to dynamically register serial port
-
-You guys were discussing how to get rid of all the #ifdef ... includes for
-the serial ports, and wondering how to dynamically register ports.  The
-interface the serial driver provides for this is early_serial_setup().
-Here's an example of using it (this example uses the SERIAL_PORT_DFNS from
-ppc4xx_serial.h just because it was already defined there):
-
-
-        {
-#include <linux/serialP.h>
-
-                int k;
-                struct serial_struct req;
-                struct serial_state tmp_rs_table[RS_TABLE_SIZE] = {
-                        SERIAL_PORT_DFNS   /* Defined in ppc4xx_serial.h */
-                };
-
-                for (k = 0; k < RS_TABLE_SIZE; k++) {
-                        if (tmp_rs_table[k].iomem_base != 0) {
-
-        req.baud_base       = tmp_rs_table[k].baud_base;
-        req.port            = tmp_rs_table[k].port;
-        req.port_high       = 0;
-        req.irq             = tmp_rs_table[k].irq;
-        req.flags           = tmp_rs_table[k].flags;
-        req.close_delay     = tmp_rs_table[k].close_delay;
-        req.io_type         = tmp_rs_table[k].io_type;
-        req.hub6            = tmp_rs_table[k].hub6;
-        req.iomem_base      = ioremap((int)tmp_rs_table[k].iomem_base, PAGE_SIZE);
-        req.iomem_reg_shift = tmp_rs_table[k].iomem_reg_shift;
-        req.type            = tmp_rs_table[k].type;
-        req.xmit_fifo_size  = tmp_rs_table[k].xmit_fifo_size;
-        req.custom_divisor  = tmp_rs_table[k].custom_divisor;
-        req.closing_wait    = tmp_rs_table[k].closing_wait;
-
-                                early_serial_setup(&req);
-                        }
-                }
-        }
-
-
--Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
-
-
---------------F15193F279862E69CC6C0769--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
