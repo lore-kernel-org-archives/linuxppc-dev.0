@@ -1,36 +1,67 @@
-Message-ID: <4063E4B4.1070101@embeddededge.com>
-Date: Fri, 26 Mar 2004 03:07:16 -0500
-From: Dan Malek <dan@embeddededge.com>
+Date: Fri, 26 Mar 2004 09:16:47 +0100 (CET)
+From: Jaap-Jan Boor <jjboor@aimsys.nl>
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: O(1) scheduler for PPC?
+In-Reply-To: <Pine.LNX.4.44.0403260858030.25458-100000@linpc003.aimsys.nl>
+Message-ID: <Pine.LNX.4.44.0403260914350.7016-100000@linpc003.aimsys.nl>
 MIME-Version: 1.0
-To: lourens@mecalc.co.za
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel Mode Software Emulation NIP: 00001FFC - cache coherency
- problem on m8xx processors
-References: <002401c41303$4dae8890$8702a8c0@lcgnotebook>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-LC Geldenhuys wrote:
+On Fri, 26 Mar 2004, Jaap-Jan Boor wrote:
 
-> This sounds distinctly familiar to the CPU13 Errata.
+>
+> On Thu, 25 Mar 2004, Steven Scholz wrote:
+>
+> >
+> > Hi there,
+> >
+> > is the backport of Ingo Molnar's O(1) scheduler in the official linux-2.4.2x
+> > tree and is it available for the PPC?
+>
+> an up-to-date patch together with the preemptible kernel and low-latency
+> patches for 2.4.25 are available here:
+>
+> http://www.plumlocosoft.com/kernel
+>
 
-Not exactly.  This isn't the first instruction of the exception
-handler.  It's the first instruction of the general handler
-that all of them call after excuting about 30 instructions of
-context saving.
+note that, after applying the 'base' patch you need to add the
+CONFIG_LOLAT option to arch/ppc/config.in and apply thew following
+change in include/asm-ppc/bitopts.h
 
-There are, however, several Errata associated with the setting
-of the ICTRL[IST_SER] and page boundary instruction execution.
-
-Thanks for pointing out ensuring the ICTRL is set for normal,
-"no show" operation.  It's worth checking that, too.  The
-default reset is not what you want here, the boot rom should
-set this register to something for normal operation.
+285c285
+< static inline int _sched_find_first_bit(unsigned long *b)
+---
+> static inline int sched_find_first_bit(unsigned long *b)
 
 
-	-- Dan
+Jaap-Jan
+
+> >
+> > Thanks,
+> >
+> > Steven
+> >
+> >
+> >
+>
+> --
+> J.G.J. Boor			  Anton Philipsweg 1
+> Software Engineer		  1223 KZ Hilversum
+> AimSys bv              		  tel. +31 35 689 1941
+> Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
+>
+>
+>
+
+--
+J.G.J. Boor			  Anton Philipsweg 1
+Software Engineer		  1223 KZ Hilversum
+AimSys bv              		  tel. +31 35 689 1941
+Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
