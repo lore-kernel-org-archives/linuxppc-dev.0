@@ -1,64 +1,41 @@
-Date: Fri, 11 Aug 2000 13:04:12 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Paul Mackerras <paulus@linuxcare.com.au>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: rtc again... 
-In-Reply-To: <14735.25805.953473.825729@argo.linuxcare.com.au>
-Message-ID: <Pine.HPX.4.10.10008081055160.20140-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <p04320418b5b9f21900aa@[192.168.1.1]>
+In-Reply-To: <200008110500.AAA07294@lists.linuxppc.org>
+References: <200008110500.AAA07294@lists.linuxppc.org>
+Date: Fri, 11 Aug 2000 12:12:15 -0600
+To: linuxppc-dev@lists.linuxppc.org
+From: "David L. Thompson" <dthompsn@cs.umt.edu>
+Subject: char is not signed char
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 8 Aug 2000, Paul Mackerras wrote:
+Has anybody else noticed that char is not signed char but unsigend
+char? If I write the following:
 
-> Gabriel Paubert writes:
->
-> > Hard reset also clears the timebase on all the processors I know, so the
-> > time bases should be synchronized unless the firmware plays with them
-> > (assuming the HRESET pins are wired together).
->
-> Certainly on my 7600 with a 2-cpu powersurge board, with the code that
-> is currently in the devel kernel to use the tb register, you don't get
-> the same time on both cpus.
+#include <stdio.h>
 
-Yes, we need a way to check that the timebase are in sync and to sync
-them if they are not. That's basically the same problem in any case.
-The problem is to do it in a way that works on all machines...
+int main() {
 
-However current code is so broken that, if you had a jiffy counter per
-processor, you would see them drifting away.
+	char a = -3;
+	if(a > 0)
+		printf("Ooops!\n");
+	return 0;
+}
 
-> I haven't had a chance to look at your patch in detail yet, hopefully
-> soon.  At a quick glance it seemed to be touching a lot of stuff so it
-> will take more than a quick glance. :-)
+and run it, I get Oooops!
+
+Currently I have installed fsirl's 2.95.3 version of gcc.
 
 
-It does not toch so much when you look carefully at it, only timekeeping
-but it's basically an all or nothing (and some global variable name
-changes to be sure that I catch all the occurences which add somewhat to
-the patch size).
-
-However,
-
-I have still found bugs in my code (but it seems to be slowly converging).
-I'm also considering switching to BitKeeper tree, and sending these
-patches in smaller and more digestible chunks:
-
-- improved timing stability (fixed interrupt rate)
-
-- 601 support and faster gettimeofday (no divide anymore)
-
-- preliminary SMP support (gettimeofday still would have jiffy
-resolution on SMP)
-
-The problem is that these parts are somewhat hard to disentangle.  I'm
-also already running 2.4.0-test6 from kernel.org which was not yet merged
-in the BK tree a few hours ago and that includes a few things that I need.
-
-	Regards,
-	Gabriel
-
+Thanks,
+David
+--
+.............................................................................
+David L. Thompson                          The University of Montana
+mailto:dthompsn@cs.umt.edu                 Computer Science Department
+http://www.cs.umt.edu/u/dthompsn           Missoula, MT  59812
+                                            Work Phone : (406)257-8530
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
