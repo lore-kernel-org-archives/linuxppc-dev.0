@@ -1,49 +1,66 @@
-Date: Wed, 29 Mar 2000 15:47:26 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Paul Mackerras <paulus@linuxcare.com>
-cc: Linux/PPC Developer list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: adb_buttons kernel argument
-In-Reply-To: <00032911415300.05568@argo.linuxcare.com.au>
-Message-ID: <Pine.LNX.4.10.10003291432360.15402-100000@opal.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 29 Mar 2000 15:58:34 +0200
+From: Olaf Hering <olh@suse.de>
+To: Ethan Benson <erbenson@alaska.net>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: LinuxPPC and Pismo Powerbook
+Message-ID: <20000329155834.A30559@suse.de>
+Reply-To: linuxppc-dev@lists.linuxppc.org
+References: <Pine.GSO.4.05.10003281041030.24048-100000@grad> <38E1AAC1.A8999A9B@ncal.verio.com> <20000329043355.A27338@plato.localdomain.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20000329043355.A27338@plato.localdomain.local>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I have just realized that with 2.3.xx (since 2.3.18) the format of the
-> arguments for the adb_buttons=xxx kernel command-line argument has
-> changed.  With 2.2 you can say adb_buttons=1 to emulate buttons 2 and 3
-> with the right control and option keys, or you can say adb_buttons=xx,yy
-> to use keycodes xx and yy to emulate buttons 2 and 3.  With 2.3 you now
-> have to say adb_buttons=1,xx,yy.
+On Wed, Mar 29, Ethan Benson wrote:
 
-That explains my problems with adb_buttons in 2.3.48 - though I had looked
-for a different cause. By accident the values for yy was xx + 8 on my
-machine, and the xev output for button x was xx + 8 as well ...
+> On Tue, Mar 28, 2000 at 11:03:29PM -0800, Henry Worth wrote:
+>
+> > > * STEPS :
+> > > 1.  partitioned the HD into three partititions: MacOS, Linux, Swap
+> >
+> > I'd strongly recommend a small HFS boot partition (~32MB).
+>
+> 32MB??  lord no, 800K is more then enough for yaboot.
 
-> I propose to change 2.3 back to the 2.2 behaviour since that is what is
-> documented.  Does anybody have any problem with that?
+What about different kernel images? 32 MB is a good value.
+And it is more secure, even for older Macs with BootX.
+I don't trust the hfs.o
 
-Please change it back. Or make it look like
+> this partition should also be given a partition type of
+> Apple_Bootstrap to prevent Macos from mounting, and subsquently
+> screwing it up.  (it removes the `blessing' from anything that might
+> not be a valid macos system folder)
 
-static int __init adb_mouse_setup(char *str)
-{
-        int ints[4]={-1,-1,-1,-1};
+There is nothing on that partition that can be screwed up and the user
+can change the yaboot.conf and the os-chooser file from the MacOS side.
 
-        str = get_options(str, ARRAY_SIZE(ints), ints);
- 	if ( ints[0] > 0
-             && (adb_emulate_buttons = (ints[1] >=0)||(ints[2] >=0)) ) {
-		if (ints[1] > 1)
-	                adb_button2_keycode = ints[1];
-	        if (ints[0] >= 2 && ints[2] >= 0)
-                        adb_button3_keycode = ints[2];
-        }
-        return 1;
-}
+I had never problems with my faked system folder, I move it around, to
+CDs, to netatalk servers and where ever I want. This can be a "feature"
+of OS9 that it doesn't remove the information, I don't know.
 
-	Michael
+What makes this blessing so special??
 
-P.S.: Did you ever receive my 2.3.48 adb.c patch?
+I have the Finder from MiBoot.smi, I changed the type/creator to
+FNDR/MACS. The System is the same from MiBoot, unchanged. There is a
+faked RomFile = yaboot and its .conf. Thats all.
+
+You have to move the Finder file out of that folder and move it back
+onto the closed folder icon and it is bootable. All you have to do now
+is to open the control panel Startup volume and you are done.
+
+I don't see the problem. What we really need is an app that creates the
+os-chooser file, what we need is the partition number and the path to a
+bootable SCSI device. I could do that from the Linux side via a bootable
+CD, but it would be nice to do it with a Mac application.
+
+Gruss Olaf
+
+--
+ $ man 1 current_release
+
+BUGS
+       Users never read manuals...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
