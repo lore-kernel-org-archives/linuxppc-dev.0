@@ -1,32 +1,31 @@
-Message-ID: <3CB58902.D307BDF1@imc-berlin.de>
-Date: Thu, 11 Apr 2002 15:00:50 +0200
+Message-ID: <3CB58986.1F9EF650@imc-berlin.de>
+Date: Thu, 11 Apr 2002 15:03:02 +0200
 From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-To: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
+To: =?iso-8859-1?Q?K=E1ri=20Dav=ED=F0sson?= <kd@flaga.is>
 Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: sporadic kernel panic during boot (MPC8xx, FEC)
-References: <3CB53640.9B0DD9B4@imc-berlin.de> <3CB53ACE.4070603@bluewin.ch>
-Content-Type: text/plain; charset=us-ascii
+References: <EADB10BAC266A14A85ECBF8686A73E31937EED@kolkrabbi.flaga.is>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang,
+Kári,
 
-> AFAIK, this relase tag applies ony to Linus's part of the tree.
-> The PPC part is somehow undefined and might be quite old.
-> I usually search "bk changes" for "v2.4.18" and then take a
-> change-set shortly afterwards e.g.:
->
->   bk export -r1.900 <path>
+> I have had this "random crashes" for linux 2.4.18-pre1 from
+> linuxppc-2_4_devel for some time now...
+> ...
+> I got 2.4.19-pre6 last weekend from the rsync source at mvista, merged
+> and compiled. Since
+> then I had the board in my "reboot loop" and rebooted some 6000 times.
+> Not one single crash...
 
-Hmm. Yeah. Damn. You're right - of course.
-I forgot about this.
+Thanks. I just pulled cs-1.900.
+It seems to work fine and solved at least one other problem for me! :o)
 
-Thanks a million!
+Thanks a lot,
 
 Steven
-
-BTW cs-1.900 seems not to have this kernal panic problem.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
