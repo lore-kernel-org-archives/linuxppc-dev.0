@@ -1,27 +1,39 @@
-Date: Thu, 14 Oct 1999 00:28:48 -0700 (PDT)
-From: Bill Brooks <wbrooks@lug.ee.calpoly.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: [TANGENT] GNU as [was: Re: PowerPC function returning long long]
-In-Reply-To: <3805582E.2D32F329@primenet.com>
-Message-ID: <Pine.LNX.4.10.9910140005290.23846-100000@lug.calpoly.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <38062B18.A959825E@mondonet.net>
+Date: Thu, 14 Oct 1999 13:06:16 +0200
+To: Mario Scarpa <m.scarpa@mondonet.net>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: serial on lombard
+Message-Id: <19991014130616.001878@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 14 Oct 1999, Bob Doyle wrote:
-> I've found several tutorials on x86 GNU inline asm but none on the
-> PowerPC.
+On Thu, Oct 14, 1999, Mario Scarpa <m.scarpa@mondonet.net> wrote:
 
-As an aside, does GNU as actually work on the PPC? The GNU manuals for the
-assembler at:
+>there's something I cannot get rid of. When I try to
+>use minicom to dial with the internal modem of my
+>lombard 400MHz I get a "/dev/ttyS0 no such file or dir"
+>error; when I try to use setserial or stty on the same
+>device everything works ok. I'm using debian potato.
+>Attached there 's the 'strace minicom' output: hope this helps.
 
-www.gnu.org/manual/gas-2.9.1/html_chapter/as_toc.html
+This exact same problem happens on my wallstreet. I'm not yet 100% sure,
+but I think this is because minicom sets up some kind of timeout on the
+open call via an alarm signal which fails since the powerbook internal
+modem will block the opening process for about 2.5 second in the open
+call. We added this tempo since the modem is only powered up when the
+port is opened, and it needs approximately this time before beeing able
+to answer commands. This used to cause most connection scripts
+(especially default PPP scripts) to fail.
 
-make no mention of this arch. 
+Fixing minicom is in my todolist, I'll try to give it a look next we.
 
-Bill
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
