@@ -1,37 +1,29 @@
-In-Reply-To: <199903102251.JAA08378@tango.anu.edu.au>
-Date: Thu, 11 Mar 1999 12:53:29 +0100
-To: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
+Date: Thu, 11 Mar 1999 14:16:56 +0100
+To: linuxppc-dev@lists.linuxppc.org
 From: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: ADB Reset
-Message-Id: <19990311125329.016856@mail.mipsys.com>
+Message-Id: <19990311141656.017582@mail.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Mar 11, 1999, Paul Mackerras <paulus@cs.anu.edu.au> wrote:
+On Thu, Mar 11, 1999, Hubert Figuiere <hub@point-barre.fr> wrote:
 
->If we have two devices with the same default ID, they may get assigned
->different IDs after re-probing.  Any ideas how to cope with that?
->
->On my 3400, after a snooze, sometimes the adb bus has been reset and
->sometimes it hasn't.  I haven't been able to discern any pattern,
->e.g. it doesn't seem to depend on how long the machine is asleep for.
->I believe that the power to the adb bus is supposed to stay on during
->sleep, so I don't see why it's getting reset.
+>This is really ugly. Why the hell is mouse related code in the keyboard
+>driver ? I may understand that since it is ADB they are related, but
+>I find this not really clean.
+>I'll look at this...
 
-I plan to re-do the entire bus reset, probing and intialisation after the
-sleep. Actually, anyone (and so ADB device handlers) will be able to
-register a notification proc with the ADB core. Messages will be sent to
-devices before and after a bus reset, at initialisation time, and
-eventually in other circumstances.
-Sleep will cause a reset (but with an additional parameter indicating
-that it's coming from a sleep, so that the device knows that the power on
-the bus may be turned off. This may be useful for some devices).
+Historical reasons, I beleive. Anyway, I'm working on an overall rework
+of the adb code (I finally have a little more time this week and for one
+or two more weeks) that will allow ADB controller drivers and device
+drivers to be in modules, and everything to be in different locations.
 
-Under MacOS, the bus is reset after sleep and devices are notified via a
-low-memory hook just before and after the bus reset.
+There is one advantage of having the mouse and kbd code mixed the way
+they are currently which is to handle the mouse simulation via the kdb
+without exporting all sorts of globals.
 
 
 -- 
