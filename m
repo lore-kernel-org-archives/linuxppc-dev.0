@@ -1,39 +1,28 @@
-Subject: RE: PowerSpan PCI / sym2 SCSI
-From: Hollis Blanchard <hollis@austin.ibm.com>
-To: Ppc Developers <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <NCBBIINEHIPFGJPLBEIFEEBPDLAA.acurtis@onz.com>
-References: <NCBBIINEHIPFGJPLBEIFEEBPDLAA.acurtis@onz.com>
-Content-Type: text/plain
-Date: 23 Aug 2002 11:19:55 -0500
-Message-Id: <1030119595.6599.112.camel@granite.austin.ibm.com>
-Mime-Version: 1.0
+Message-ID: <6DF87017DA95D611AC6000606730DE9B0BD70F@BLREXSR>
+From: Sanjeev Manral <sanjeevm@sanyo.co.in>
+To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Subject: pcmcia memory resource
+Date: Sat, 24 Aug 2002 20:57:39 +0530
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2002-08-23 at 10:08, Allen Curtis wrote:
-> > I didn't notice you were still having problems with version 1 of the
-> > driver; I thought you had resolved that. IME that almost always means
-> > your PCI config is not correct.
->
-> I have used a peek/poke utility to access the SYM53C8xx via PCI memory and
-> I/O. Both seem to be working fine. Obviously since the sym_2 driver works in
-> at least one configuration, the translation from the PCI bus back to CPU
-> memory is also correct.
+hi all,
 
-Well, I would start by finding the error ("CACHE TEST FAILED: DMA error
-(dstat=0x81)."), see under what conditions it occurs, and work backwards
-from there.
+I'm trying to port PCMCIA card services to linux-ppc(IBM Powerpc 405).
+I've to give memory and  port IO resource in /etc/pcmcia/config.opts
 
-It may really be that "normal IO" uses inb/outb. Do other drivers that
-use ioremap/readb/writeb work on your system?
+Port I/O i ve given from pcmcia gpio resister's value.
+I donot know what value to assign for memory resources. I've tried many
+combinations, nothing is working.
 
-> Still feels like an endian issue to me.
+If somebody knows where to find these memory address please let me know.
 
-I'm not sure it is an endian problem because as I mentioned I've used
-the sym2 driver on PPC without problems.
-
--Hollis
+Thanks
+Sanjeev
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
