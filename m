@@ -1,9 +1,9 @@
-Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4DFFA0B8@mail.mediatrix.com>
-From: Jean-Denis Boyer <jdboyer@mediatrix.com>
-To: "'Walser, Martin'" <mwalser@harris.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: no link changed interrupt
-Date: Sat, 6 Jul 2002 11:40:23 -0400 
+Message-ID: <00fd01c2268c$f4b6e8e0$0600a8c0@pc005>
+Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: MCC drivers for MPC8260
+Date: Mon, 8 Jul 2002 16:37:15 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,28 +11,17 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Martin,
+Hi to everybody,
 
-> Is there another way to get a link change without a hardware
-> interrupt?
+We are trying to write the MCC device driver for MPC8260. Our platform is
+M.V. CDK 1.2 with kernel 2.4.0-test2.
 
-Take a look at the following threads of discussion.
+Anybody has some example (or working) code and/or some reference URL where
+we can find some help.
 
-Titled: MPC8xx, FEC and DP83847 !?
-http://lists.linuxppc.org/linuxppc-embedded/200203/threads4.html#00171
+Many thanks
 
-Titled: Patch for linux/arch/ppc/8xx_io/fec.c
-http://lists.linuxppc.org/linuxppc-embedded/200203/threads5.html#00200
+Gianfranco Morandi
 
-Regards,
-
---------------------------------------------
- Jean-Denis Boyer, B.Eng., System Architect
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
