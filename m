@@ -1,25 +1,23 @@
-Return-Path: <jwboyer@jdub.homelinux.org>
-Received: from jdub.homelinux.org (67-41-71-119.roch.qwest.net [67.41.71.119])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1322667A7C
+Return-Path: <dale@farnsworth.org>
+Received: from xyzzy.farnsworth.org (unknown [65.200.49.142])
+	by ozlabs.org (Postfix) with SMTP id A5C1767A85
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 Mar 2005 08:11:44 +1100 (EST)
-From: Josh Boyer <jwboyer@jdub.homelinux.org>
-To: Takeharu KATO <takeharu1219@ybb.ne.jp>
-In-Reply-To: <422B56CD.9020708@ybb.ne.jp>
-References: <4226FF62.30007@jp.fujitsu.com>
-	<c56d8feba0d803d74d77ab20f54287e9@freescale.com>
-	<42272B69.8000303@ybb.ne.jp>	<20050303101146.A8869@cox.net>
-	<42282C83.9040707@jp.fujitsu.com>
-	<1109982868.1479.22.camel@jdub.homelinux.org>
-	<422969B9.6040303@ybb.ne.jp> <422B56CD.9020708@ybb.ne.jp>
-Content-Type: text/plain
-Date: Sun, 06 Mar 2005 15:11:36 -0600
-Message-Id: <1110143496.28218.2.camel@jdub.homelinux.org>
+	Mon,  7 Mar 2005 12:01:03 +1100 (EST)
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Sun, 6 Mar 2005 18:00:58 -0700
+To: Sven Luther <sven.luther@wanadoo.fr>
+Message-ID: <20050307010058.GB22642@xyzzy>
+References: <20050224082508.GA30005@pegasos> <421DF2B8.6040007@mvista.com>
+	<20050224160411.GA11197@pegasos> <20050224172420.GA6932@xyzzy>
+	<20050305192752.GA28491@pegasos>
+	<20050305203254.GB30151@pegasos> <20050305225128.GC16904@xyzzy>
+	<20050306070248.GA6673@pegasos> <20050306102924.GA32386@xyzzy>
+	<20050306191034.GA10975@pegasos>
 Mime-Version: 1.0
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] WDT Driver for Book-E [2/2] Device driver part.
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050306191034.GA10975@pegasos>
+Cc: Nicolas DET <det.nicolas@free.fr>, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH][PPC32] mv64x60 updates
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,46 +28,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2005-03-07 at 04:15 +0900, Takeharu KATO wrote:
-> Hi, Josh:
+On Sun, Mar 06, 2005 at 08:10:34PM +0100, Sven Luther wrote:
+> On Sun, Mar 06, 2005 at 03:29:24AM -0700, Dale Farnsworth wrote:
+> > MV64360 is in arch/ppc/Kconfig, and is currently defined for KATANA and
+> > CHESTNUT.  If I understand correctly, it should be defined for any
+> > board using the MV64360.  I don't think we want the PPC_CHRP dependency.
 > 
-> Takeharu KATO wrote:
-> >>
-> > To tell the truth, this matter has been examined, but I forgot this.
-> > Thank you for making it recall(^^
-> > 
-> I performed minor fixes which you pointed out.
-> But I leaves WDT_WP[0123] on purpose.
-> The interpretation of this value is different between PPC4xx and e500.
-> To unite them, I leaves this.
-
-Ok, that makes sense.
-
+> Ah, i guess that was the missing bit. Basically i need to set MV64360 for my
+> board, but since it is a generic PPC_CHRP, how is that supposed to work ? 
 > 
-> >>
-> >> In include/linux/device.h there are dev_printk and dev_dbg macros that
-> >> do pretty much the same thing.  Could you use those instead?
-> >>
-> > I did not know such thing.
-> > I'll try to use them.
-> > 
-> On second thought, I found that it is not so good idea.
-> If I change this according to what you said, it is not
-> easy to find which driver outputs messages when we can
-> use multiple WDT in a system.
-> 
-> Macros in include/linux/device.h will use name member in miscdevice 
-> struct as driver's name, and this is commonly named as "watchdog".
-> 
+> Could you send me maybe a list of files which need merging yet, compared to
+> 2.6.11 ? I guess it just doesn't work because i am missing pieces.
 
-Ok, that's fine too.  No complaints here.
+I would be guessing, since I've focused on the ethernet driver.  Mark
+Greer <mgreer@mvista.com> has done the core mv64[34]60 core support.
+Nicholas is working with regarding Pegasos II support.
 
-> FYI, I show the difference with the patch submitted last time.
-> 
-> 
-> Regards,I'll test this driver today, just in case, before I post the 
-> revised edition of this driver.
+> The pegasos has the mv64360 registers mapped at 0xf1000000, and the ports
+> (only port1 is wired though) mapped at interrupt 9, shared with other devices.
+> I guess that would be the only real difference with the other currently
+> supported hardware, right ? 
 
-Thanks!  Looks good.
+Nicholas implied that the PCI IRQs are different as well.
 
-josh
+-Dale
