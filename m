@@ -1,47 +1,58 @@
-To: hjzgq@sohu.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Change FEC and SCC1 sequence,But SCC1 not work? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 11 Jun 2004 14:22:18 +0800."
-             <116411.1086934938680.JavaMail.postfix@mx27.mail.sohu.com>
-Date: Fri, 11 Jun 2004 18:02:29 +0200
-Message-Id: <20040611160234.6A75BC109F@atlas.denx.de>
+Message-ID: <29963-82182@sneakemail.com>
+Date: Fri, 11 Jun 2004 09:07:13 -0700
+From: "Stephen Williams" <612dlag102@sneakemail.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Head of linuxppc-2.4 broekn by davem patch
+References: <1086934906.4820.2.camel@lucy.pep-kaufbeuren.de>
+In-Reply-To: <1086934906.4820.2.camel@lucy.pep-kaufbeuren.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <116411.1086934938680.JavaMail.postfix@mx27.mail.sohu.com> you wrote:
->
->        My bootargs is "setenv bootargs root=/dev/ram ip=10.32.5.17:10.32.5.15::255.255.0.0:bug
-> :::off"
->        Today,I found fec device down when linux kernel running ,but I can see "eth1(fec ethernet)"  status with "ifconfig" command,I checked linux kernel and found fec device down when kernel running.
->
->        After debugging,I found linux kernel close the device when  running "ip_auto_config()" function  in "net/ipv4/ipconfig.c",then, I deleted "ic_open_devs()" funtions, AND EVERYING
-> WORKS WELL!
+Stefan Nickl Stefan.Nickl-at-kontron.com |PPC Linux Embedded| wrote:
+> I already sent this patch to the list and to "davem" who
+> commited the faulty version, but nobody seems to care...
 
-But you are removing perfectly valid code. Don't do this!!
+Here is the exact same patch, packaged slightly differently
+and re-sent, just in case it got lost in someone's inbox.
+It is also possible that davem is thinking in terms of
+changing the sk_buff definition t match this file. Either
+way, something must be done.
 
-Just read the  documentation  (especially  Documentation/nfsroot.txt)
-and pass the CORRECT boot arguments, which in case or several network
-interfaces  MUST  specify  which  interface  to  configure, i. e. the
-minimum information is then
+# This is a BitKeeper generated diff -Nru style patch.
+#
+# ChangeSet
+#   2004/06/11 09:00:55-07:00 steve@wing.XXXXXXXXXX
+#   The sk_rcvbuf member does not exist in struct sk_buff
+#   as declared in linux-2.4 skbuff.h.
+#
+# net/ipv4/tcp_input.c
+#   2004/06/11 09:00:53-07:00 steve@wing.XXXXXXXXXX +2 -2
+#   The sk_rcvbuf member does not exist in struct sk_buff
+#   as declared in linux-2.4 skbuff.h.
+#
+diff -Nru a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
+--- a/net/ipv4/tcp_input.c      2004-06-11 09:01:35 -07:00
++++ b/net/ipv4/tcp_input.c      2004-06-11 09:01:35 -07:00
+@@ -476,8 +476,8 @@
+                                   16 + sizeof(struct sk_buff));
+                         space *= rcvmem;
+                         space = min(space, sysctl_tcp_rmem[2]);
+-                       if (space > sk->sk_rcvbuf)
+-                               sk->sk_rcvbuf = space;
++                       if (space > sk->rcvbuf)
++                               sk->rcvbuf = space;
+                 }
+         }
 
-	... ip=10.32.5.17:10.32.5.15::255.255.0.0:bug:eth0:off
-
-[Note that your "ip=" string has one colon too many, too.]
-
-Best regards,
-
-Wolfgang Denk
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Software suppliers are trying to make their  software  packages  more
-``user-friendly''.  .  .  .  Their best approach, so far, has been to
-take all the old brochures, and stamp the words, ``user-friendly'' on
-the cover.                                               - Bill Gates
+Steve Williams                "The woods are lovely, dark and deep.
+steve at XXXXXXXXXX           But I have promises to keep,
+http://www.XXXXXXXXXX         and lines to code before I sleep,
+http://www.picturel.com       And lines to code before I sleep."
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
