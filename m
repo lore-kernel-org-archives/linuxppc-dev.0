@@ -1,30 +1,43 @@
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
-Message-Id: <v04204e02b35e49f978d1@[192.168.5.22]>
-In-Reply-To: <37387B1D.544ABDE9@d.umn.edu>
-References: Message from Joel Klecker <jk@espy.org>    of "Tue, 11 May	
- 1999 01:36:38 PDT." <v04204e08b35d9989574a@[206.163.71.146]>
- <v03010d00b35e1bc270f4@[209.96.179.8]> <37387B1D.544ABDE9@d.umn.edu>
-Date: Tue, 11 May 1999 15:00:45 -0600
+Date: Tue, 11 May 1999 16:54:35 -0500 (CDT)
+From: Derek Moeller <moeller@networksplus.net>
 To: linuxppc-dev@lists.linuxppc.org
-From: Roger Ivie <rivie@teraglobal.com>
-Subject: Re: Anyone playing with Darwin 0.2 binary yet?
+Subject: Re: USB Development
+In-Reply-To: <3738793B.416467E2@deneba.com>
+Message-ID: <Pine.LNX.3.96.990511165021.904D-100000@ns1.networksplus.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->I think that it only works with G3 or newer machines.
+On Tue, 11 May 1999, michael cardenas wrote:
 
-I've had it running on a 9600, but this machine _does_ have a G3 upgrade.
-Interestingly, MacOS X Server refuses to install on this machine.
+> But, I am a programmer, and I'm very interested in helping develop
+> linux.
+> 
+> My question is, where can I get the kernel source to get started and
+> what compiler do I use? Is there a kernel build faq? I recently
+> purchased the 4.1 cd, but I already had 4.1 installed.
 
--- 
-Roger Ivie
-TeraGlobal Communications Corporation
-1770 North Research Park Way
-North Logan, UT 84341
-Phone: (435)787-0555
-Fax: (435)787-0516
+	Go to w3.one.net/~johnb for a lot of information on iMac linux. It
+also has instructions for compiling a newer kernel with USB support, and
+the UUSBD has been updated several times since the 2.2.1 kernel that you
+are probably using. I think you can also find links to the development
+homepage for the UUSBD project. Finally, there is a new USB driver project
+for the kernel that will merge with the UUSBD code base in the future (at
+least, I'm betting on it). I'm running the 2.2.6 kernel on the iMac right
+now from the instructions on the iMac linux page.
+	Good luck!
+
+--
+
++--------------------------------------+
+ Derek Moeller moeller@networksplus.net 
+     Linux for PowerPC User, Student    
+   http://www.networksplus.net/moeller	 
+    "aut inveniam viam aut faciam"	 
++--------------------------------------+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
