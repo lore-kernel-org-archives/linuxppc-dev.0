@@ -1,16 +1,22 @@
-Return-Path: <galak@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 8B95667A76
+Return-Path: <shawnxjin@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.195])
+	by ozlabs.org (Postfix) with ESMTP id EEF1E67A6E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Feb 2005 15:59:26 +1100 (EST)
-Date: Tue, 22 Feb 2005 22:59:17 -0600 (CST)
-From: Kumar Gala <galak@freescale.com>
-To: akpm@osdl.org
-Message-ID: <Pine.LNX.4.61.0502222257230.7799@blarg.somerset.sps.mot.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
-Subject: [PPC32][update] Report chip version in /proc/cpuinfo for 85xx boards
+	Wed, 23 Feb 2005 19:02:19 +1100 (EST)
+Received: by rproxy.gmail.com with SMTP id 40so29715rnz
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 23 Feb 2005 00:02:05 -0800 (PST)
+Message-ID: <c3d0340b050223000217714e92@mail.gmail.com>
+Date: Wed, 23 Feb 2005 00:02:04 -0800
+From: Shawn Jin <shawnxjin@gmail.com>
+To: ppcembed <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <20050223042234.GA31255@gate.ebshome.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+References: <c3d0340b050222190712ee7dff@mail.gmail.com>
+	<20050223042234.GA31255@gate.ebshome.net>
+Subject: Re: Ethernet doesn't work in linux for PPC440GP?
+Reply-To: Shawn Jin <shawnxjin@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,43 +27,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Andrew,
+> > zmii0: input 0 in SMII mode
+> > eth0: IBM emac, MAC 00:04:ac:e3:1b:bb
+> > eth0: Found Generic MII PHY (0x08)
+> > zmii0: input 1 in RMII mode
+> > eth1: IBM emac, MAC FF:FF:FF:FF:FF:FF
+> > eth1: Found Generic MII PHY (0x09)
+> 
+> I already told you that this is wrong, why are you asking again?
+> Please, if you asking questions, spend some time reading answers
+> given to you, before asking again.
 
-Here here is an updated version of the previous patch which fixes a 
-build problem.  It is for post 2.6.11.
+Well, don't be mad at me first. The question may bring out another
+round of arguments whether it's a bug related to uboot or linux EMAC
+driver. Wolfgang makes it very clear that this is a bug in linux
+ethernet driver. And I agree with him. This argument happened before
+and I just forgot what specific ethernet driver was in the argument.
 
-Report the chip version in /proc/cpuinfo on 85xx ADS and CDS platforms.
+> Ebony uses RMII, so SMII is obviously wrong. Most probably your
+> firmware doesn't set correct mode and autodetection in the EMAC driver
+> fails.
 
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+So the EMAC driver does expect a boot loader (the firmware you
+mentioned here) to set something for it. Then I think I need to fix it
+in this driver instead of in uboot.
 
----
-
---- a/arch/ppc/platforms/85xx/mpc85xx_ads_common.c	2005-02-22 22:55:17 -06:00
-+++ b/arch/ppc/platforms/85xx/mpc85xx_ads_common.c	2005-02-22 22:55:17 -06:00
-@@ -43,6 +43,7 @@
- #include <asm/mpc85xx.h>
- #include <asm/irq.h>
- #include <asm/immap_85xx.h>
-+#include <asm/ppc_sys.h>
- 
- #include <mm/mmu_decl.h>
- 
-@@ -128,6 +129,7 @@
- 	pvid = mfspr(PVR);
- 	svid = mfspr(SVR);
- 
-+	seq_printf(m, "chip\t\t: %s\n", cur_ppc_sys_spec->ppc_sys_name);
- 	seq_printf(m, "Vendor\t\t: Freescale Semiconductor\n");
- 
- 	switch (svid & 0xffff0000) {
-diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
---- a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c	2005-02-22 13:22:09 -06:00
-+++ b/arch/ppc/platforms/85xx/mpc85xx_cds_common.c	2005-02-22 13:22:09 -06:00
-@@ -145,6 +145,7 @@
-         pvid = mfspr(PVR);
-         svid = mfspr(SVR);
- 
-+	seq_printf(m, "chip\t\t: %s\n", cur_ppc_sys_spec->ppc_sys_name);
-         seq_printf(m, "Vendor\t\t: Freescale Semiconductor\n");
- 	seq_printf(m, "Machine\t\t: CDS (%x)\n", cadmus[CM_VER]);
- 	seq_printf(m, "clock\t\t: %dMHz\n", freq / 1000000);
+-Shawn.
