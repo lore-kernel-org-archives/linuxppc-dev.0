@@ -1,60 +1,36 @@
-Date: Sat, 22 Jan 2000 01:45:00 -0500 (EST)
-From: Robert Neugebauer <rneugeba@undergrad.math.uwaterloo.ca>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: RS6000 to G4 assembly changes
-In-Reply-To: <200001220016.TAA19532@mal-ach.watson.ibm.com>
-Message-ID: <Pine.SOL.3.96.1000122013827.17059B-100000@fitch.math.uwaterloo.ca>
+Message-ID: <38899196.9B46B7F4@denise.shiny.it>
+Date: Sat, 22 Jan 2000 12:16:38 +0100
+From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Robert Neugebauer <rneugeba@undergrad.math.uwaterloo.ca>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: RS6000 to G4 assembly changes
+References: <Pine.SOL.3.96.1000121133401.17001B-100000@bacon.math.uwaterloo.ca>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I am not trying to build a cross compiler, I am not trying to build GCC.
-My course at university uses its own compiler called uC++ (Micro C++).
 
-The compiler thus far only has the following targets that work:
-        dmake sun-sparc-sunos
-        dmake sun-sparc-svr4
-        dmake sun-m68k-sunos
-        dmake dec-ultrix-mips
-        dmake dec-alpha
-        dmake sgi-mips-r4000
-        dmake sgi-mips-r3000
-        dmake ibm-rs6000
-        dmake hp-hppa
-        dmake pc-i386-linux
-        dmake gizmo
+> I am trying to compile a compiler used by my university for my linuxppc
+> machine. The compiler supports various architecture including rs6000 and i
+> 386 linux.
 
-By my knowledge rs6000 is a RISC based architecture, thus I tried to build
-uC++ using the target ibm-rs6000. This resulted in an unrecognized opcode
-movl during compilation.
+gcc ?
 
-If someone knows what the similar instruction on my G4 is, and any other
-problems I might/will encounter, I would appreciate it.
+> By my limited understanding, rs6000 assembler is very similar to powerpc
+> assembler
 
-Thank You
-
-Bob Neugebauer
+RS6000 computers use PowerPC processors. I don't know if Power processors
+(64 bit version of ppc) are supported.
 
 
-On Fri, 21 Jan 2000, David Edelsohn wrote:
+> Anyway, in attempting to compile
+> this, gcc complains about an unrecognized opcode movl.
 
->
-> 	Others probably can answer configuring GCC for Linux/PPC better
-> than I, but it is looking for something like "powerpc-unknown-linux-gnu"
-> as the target.
->
-> 	rs6000 is NOT another ppc based architecture.
->
-> 	If you are trying to build a linuxppc compiler hosted on x86
-> Linux, then you need to build a cross-compiler.  Please read the cross-gcc
-> FAQ to learn how to do this:
->
-> http://www.objsw.com/CrossGCC/
->
-> David
->
+"movl" is an x86 opcode. ppc have l* and st*.
+
+Bye.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
