@@ -1,59 +1,36 @@
-Message-Id: <200007142149.WAA03525@hyperion.valhalla.net>
-Date: Fri, 14 Jul 2000 22:48:13 +0100
-Subject: Re: [linux-audio-dev] [ANN] First latency test results for
-	 linuxPPC  [2.2.17pre10-ben2]
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Roger Larsson <roger.larsson@norran.net>
-CC: linux-audio-dev@ginette.musique.umontreal.ca,
-        linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+From: "Chris Backas" <cbackas@rcn.com>
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Date: Fri, 14 Jul 2000 18:28:40 -0400 (EDT)
+Reply-To: "Chris Backas" <cbackas@bigfoot.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: iBook woes: Update
+Message-Id: <E13DEYW-0000Ee-00@smtp01.mrf.mail.rcn.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  Fri, Jul 14, 2000, Roger Larsson wrote:
-> Iain Sandoe wrote:
->> I've posted the results of Benno's latency tests applied to 2.2.17pre10-ben2
->> on LinuxPPC.
-[...]
->> No big surprises - although the PPC /proc fs seems to be a little slower
->> than the x86 one...
->>
->> Working on 2.4.0-test4 & thence to Andrew's patches on LinuxPPC...
-[...]
-> The green ticks on X11 test are interesting - something with a higher
-> prio than
-> the SCHED_FIFO max takes the processor away from it and runs for more
-> than 1 ms.
->
-> The only thing that can do that is interrupt routines / back handlers...
-> (try to find this one)
+Hello all,
 
-Yeah, I've got a concern there... I have Jun Sun's IRQ latency test code
-ported.  I'll re-do the patch and try it again.
+Well, I've gotten pretty much everything working nicely on my iBook now.
 
-I have a feeling that the first time through (with the IRQ code) I may have
-made a mistake in the value of the freq of the VEA Timebase counter.
+The video problem I was having is solved in later kernels.  The kernel that comes with YellowDog won't boot successfully unless I set video to none in my yaboot.conf file
+- it hard locks.  As of the 2.2.17 series, this is no longer true.  Now you *have* to set the mode to 10 and the color depth to 32 (well, I don't think the color depth HAS to be 32,
+but why not go for it? =) )
 
-If this is true then the IRQ times for the PPC are truly awful on
-occasions..
+With 2.2.17pre10-ben1, this makes XFree work well, but the full screen text consoles are messed up - they bleed weird colors and don't update correctly.  However, after
+updating to the very very latest yaBoot (0.7) and kernel (2.2.17pre10-ben2) , both I believe were released today (7/14/2000) all my video trouble has vanished.  The full
+screen consoles work fine again, and XFree is centered on screen, at 24bit color, and 800x600.
 
-I.E. I had the freq as 300 MHz - but I think it is actually approx 18MHz.
+The 2.2.17 kernels have also fixed networking problems - previously my network performance was sporadic, it would transfer a few hundred K very quickly, then 'play
+dead' for upwards of 20 seconds, and it would also transfer files with CRC errors on occasion.  None of this is true in the 2.2.17 series =)  My OpenFirmware Boot Menu
+recognizes the Linux partition now too, so I can boot between MacOS, MacOSX and Linux by just holding the option key!
 
-If that is the case then there is/are something/some things that are holding
-IRQs off for up to.... > 9 or so ***ms***  Yikes.
+So, I guess my only remaining iBook wishes are sound, and an Accelerated XServer.  But, I'm happy for now.  The Airport driver was a nice bonus as well ;)
 
-I'll check this out tomorrow... but locating them might be hard because most
-of the longer times are recorded in 'softira.c' & 'irq.c' - which doesn't
-narrow things down much.
+I've gotta give a special thanks to Ben H. here, for yaBoot, the AirPort driver, and his 'special' kernel patches that seem to make all the difference.  Great job!
 
-Expect a re-do of the IRQ patch tomorrow - and a request to try it out :-)
+Chris Backas
 
-> Disk read looks nice - others looks ...
-
-ummm /proc was the one that looked worst to me...
-
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
