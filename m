@@ -1,84 +1,65 @@
-Message-ID: <37432B57.A586055C@wanadoo.fr>
-Date: Wed, 19 May 1999 23:21:27 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
-Reply-To: costabel@wanadoo.fr
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+To: linuxppc-dev@lists.linuxppc.org,
+        "Thomas C. Allison" <allison@dirac.nist.gov>,
+        linuxppc-user@lists.linuxppc.org
+Subject: Re: possible egcs c compiler bug
+Date: Wed, 19 May 1999 23:26:37 +0200
+Content-Type: text/plain
+References: <199905192019.QAA00884@dirac.nist.gov>
 MIME-Version: 1.0
-To: Andreas Bogk <andreas@andreas.org>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.3.3 compile error on ppc
-References: <Pine.LNX.3.96L.990519131538.1355C-100000@unix47.andrew.cmu.edu> <m31zgd0w4t.fsf@soma.andreas.org>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <99051923331400.00882@ns1102.munich.netsurf.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The real culprit in this story is the following broken (or incomplete)
-patch that got into the kernel.org kernel version 2.2.8. Fortunately it
-did not make its way into the vger tree. (This is from patch-2.2.8):
+Am Wed, 19 May 1999 schrieb Thomas C. Allison:
+>I have found what *appears* to be a bug in the C compiler.  I have experienced
+>this bug in R4 (regardless of the compiler/library installed) as well as in
+>the latest (i.e. all the latest packages through 5/15/1999) pre-R5
+>installation.  I include a short program below which illustrates the problem
+>I am having.  The code compiles without error on my i386 machine
+>running RHL 5.2.  The version of EGCS on the PC is 1.0.3 versus 1.1.2 on my
+>PowerMac, so I don't know if this is a PPC problem or an EGCS problem.
+>Any input is greatly appreciated.
+>
+>The code is as follows:
+>
+>test.c:
+>
+>     #include <stdio.h>
+>     #include <stdarg.h>
+>
+>     static int myFunction(va_list inList)
+>     {
+>        va_list newList;
+>        newList = inList;
+>     }
+>
+>When I try to compile the code
+>
+>     % gcc -c test.c
+>
+>I get the following error message
+>
+>     test.c: In function `myFunction':
+>     test.c:7: incompatible types in assignment
+>
+>Any ideas?
 
-diff -u --recursive --new-file v2.2.7/linux/arch/ppc/kernel/syscalls.c
-linux/arch/ppc/kernel/syscalls.c
---- v2.2.7/linux/arch/ppc/kernel/syscalls.c	Mon Oct  5 13:13:36 1998
-+++ linux/arch/ppc/kernel/syscalls.c	Sat May  8 11:14:01 1999
-@@ -205,12 +205,15 @@
- 
- 	lock_kernel();
- 	if (!(flags & MAP_ANONYMOUS)) {
--		if (fd >= NR_OPEN || !(file = current->files->fd[fd]))
-+		file = fget(fd);
-+		if (!file)
- 			goto out;
- 	}
- 	
- 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
- 	ret = do_mmap(file, addr, len, prot, flags, offset);
-+	if (file)
-+		fput(file);
- out:
- 	unlock_kernel();
- 	return ret;
+That is simply unportable code. va_list maybe of any underlying type, and is in
+this case an array. If you want portable code, use:
 
---
-Martin
+     static int myFunction(va_list inList)
+     {
+        va_list newList;
+        __va_copy(newList, inList);
+     }
 
-Andreas Bogk wrote:
-> 
-> Hollis R Blanchard <hollis+@andrew.cmu.edu> writes:
-> 
-> > be broken for us for a little. Were you having problems with 2.2.x?
-> 
-> There is a problem with 2.2.9, and here's the patch:
-> 
-> diff -r -u linux-2.2.9/arch/ppc/kernel/syscalls.c linux/arch/ppc/kernel/syscalls.c
-> --- linux-2.2.9/arch/ppc/kernel/syscalls.c      Sat May  8 20:14:01 1999
-> +++ linux/arch/ppc/kernel/syscalls.c    Wed May 19 18:36:23 1999
-> @@ -30,6 +30,7 @@
->  #include <linux/shm.h>
->  #include <linux/stat.h>
->  #include <linux/mman.h>
-> +#include <linux/file.h>
->  #include <linux/sys.h>
->  #include <linux/ipc.h>
->  #include <linux/utsname.h>
-> 
-> I wonder why such trivial problems creep into so-called stable
-> releases of the Linux kernel again and again. Does nobody care that on
-> i386, you just go to ftp.kernel.org and download the latest version
-> and it just works, whereas on PowerPC you have to find out:
-> 
-> - what CVS is
-> - what vger is
-> - what CVS tags are
-> - which tag the one is which gives you a stable version ?
-> 
-> I don't care that the development kernel breaks on PPC. But that the
-> official stable kernel breaks is a huge problem.
+If you use varargs extensively in your application, I strongly recommend you to
+use egcs-*1.1.2-12c or later on DRR1/preR5, which fixes some annoying bugs
+in the ppc-linux varargs handling.
 
-It seems that version-2.2.8 suffered from quite a lot of broken patches,
-not only for the ppc architecture. 
-
---
-Martin
+Franz.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
