@@ -1,80 +1,132 @@
-Message-ID: <000c01c20513$5bf29fe0$7301a8c0@zhongqx>
-From: "zhongqx" <zhongqx@guoguang.com.cn>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: problem for booting linux
-Date: Mon, 27 May 2002 08:13:40 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+Date: Mon, 27 May 2002 14:03:30 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Armin Kuster <akuster@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Another OCP enet patch
+Message-ID: <20020527040330.GH16537@zax>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sir,
-    I use GDB to debug my linux 2.4.4 kernel,I find when the program run to Setup_arch(),like the flowing:
-when go to the line number 752,it turn to the program /arch/ppc/mm/mem_pieces.c and invoke the function of
-mem_pieces_find(unsigned int size, unsigned int align) and then it repeated in this function and not to continue.
-it seems like find some memory!did you have this problem ?can you give me some advise? MY FADS board have 8M DRAM
-and 2M Flash,does it be enough for version of 2.4.4-2002-03-21? Sorry for bother you again!
+Armin, please consider the patch below.  It removes your recently
+added ocp-dma.h and instead makes the ocp enet driver uses the DMA
+direction constants from pci.h.
 
-void __init setup_arch(char **cmdline_p)
-{
- extern int panic_timeout;
- extern char _etext[], _edata[];
- extern char *klimit;
- extern void do_init_bootmem(void);
+I realise that logically the OCP enet driver, and the
+consistent_sync() has nothing to do with PCI.  However using the pci.h
+constants seems a better approach than defining new constants with the
+same values, when the switch in consistent_sync() explicitly checks
+against the PCI constants.
 
- /* so udelay does something sensible, assume <= 1000 bogomips */
- loops_per_jiffy = 500000000 / HZ;
+In the longer term consistent_sync() itself should be changed not to
+reference the PCI constants - in fact the PCI constants should
+probably be moved and renamed since they have no inherent connection
+with PCI at all.
 
-#ifdef CONFIG_ALL_PPC
- feature_init();
-#endif
-#ifdef CONFIG_XMON
- xmon_map_scc();
- if (strstr(cmd_line, "xmon"))
-  xmon(0);
-#endif /* CONFIG_XMON */
- if ( ppc_md.progress ) ppc_md.progress("setup_arch: enter", 0x3eab);
+Oh, I also change the consistent_sync() in the Tx routine to be
+PCI_DMA_TODEVICE rather than BIDIRECTIONAL, since there is no need to
+invalidate the cache here, a writeback is all that's necessary.
 
-#if defined(CONFIG_KGDB)
- kgdb_map_scc();
- set_debug_traps();
- breakpoint();
-#endif
+diff -urN /home/dgibson/kernel/linuxppc_2_4_devel/drivers/net/ibm_ocp/ibm_ocp_enet.c linux-grinch/drivers/net/ibm_ocp/ibm_ocp_enet.c
+--- /home/dgibson/kernel/linuxppc_2_4_devel/drivers/net/ibm_ocp/ibm_ocp_enet.c	Fri May 24 11:19:23 2002
++++ linux-grinch/drivers/net/ibm_ocp/ibm_ocp_enet.c	Mon May 27 13:57:27 2002
+@@ -165,6 +165,7 @@
+ #include <linux/delay.h>
+ #include <linux/init.h>
+ #include <linux/types.h>
++#include <linux/pci.h>
 
- /*
-  * Set cache line size based on type of cpu as a default.
-  * Systems with OF can look in the properties on the cpu node(s)
-  * for a possibly more accurate value.
-  */
- dcache_bsize = icache_bsize = 32; /* most common value */
- switch (_get_PVR() >> 16) {
- case 1:  /* 601, with unified cache */
-  ucache_bsize = 32;
-  break;
- /* XXX need definitions in here for 8xx etc. */
- case 0x40:
- case 0x41:
- case 0x35: /* 64-bit POWER3, POWER3+, POWER4 */
-  dcache_bsize = icache_bsize = 128;
-  break;
- }
+ #include <asm/processor.h>	/* Processor type for cache alignment. */
+ #include <asm/bitops.h>
+@@ -172,7 +173,6 @@
+ #include <asm/dma.h>
+ #include <asm/irq.h>
+ #include <asm/ocp.h>
+-#include <asm/ocp-dma.h>
 
- /* reboot on panic */
- panic_timeout = 180;
+ #include <linux/netdevice.h>
+ #include <linux/etherdevice.h>
+@@ -476,7 +476,7 @@
+ 	 * interrupt.
+ 	 */
+ 	fep->tx_skb[fep->tx_slot] = skb;
+-	consistent_sync((void *) skb->data, skb->len, DMA_BIDIRECTIONAL);
++	consistent_sync((void *) skb->data, skb->len, PCI_DMA_TODEVICE);
 
- init_mm.start_code = PAGE_OFFSET;
- init_mm.end_code = (unsigned long) _etext;
- init_mm.end_data = (unsigned long) _edata;
- init_mm.brk = (unsigned long) klimit;
+ 	ctrl = EMAC_TX_CTRL_DFLT;
+ 	if ((NUM_TX_BUFF - 1) == fep->tx_slot)
+@@ -974,8 +974,8 @@
+ 				skb_reserve(fep->rx_skb[i], skb_res);
 
- /* Save unparsed command line copy for /proc/cmdline */
-752: strcpy(saved_command_line, cmd_line);
- *cmdline_p = cmd_line;
+ 			consistent_sync((void *) fep->rx_skb[i]->
+-					    data, DESC_RX_BUF_SIZE,
+-					    DMA_BIDIRECTIONAL);
++					data, DESC_RX_BUF_SIZE,
++					PCI_DMA_BIDIRECTIONAL);
+ 			ptr = (char *) virt_to_phys(fep->rx_skb[i]->data);
+ 		}
+ 		fep->rx_desc[i].ctrl = MAL_RX_CTRL_EMPTY | MAL_RX_CTRL_INTR |	/*could be smarter about this to avoid ints at high loads */
+diff -urN /home/dgibson/kernel/linuxppc_2_4_devel/include/asm-ppc/ocp-dma.h linux-grinch/include/asm-ppc/ocp-dma.h
+--- /home/dgibson/kernel/linuxppc_2_4_devel/include/asm-ppc/ocp-dma.h	Tue May 21 10:27:14 2002
++++ linux-grinch/include/asm-ppc/ocp-dma.h	Thu Jan 01 10:00:00 1970
+@@ -1,49 +0,0 @@
+-/*
+- * ocp-dma.h
+- *
+- *
+- * 	Current Maintainer
+- *      Armin Kuster akuster@pacbell.net
+- *      May, 2002
+- *
+- *
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- *  under  the terms of  the GNU General  Public License as published by the
+- *  Free Software Foundation;  either version 2 of the  License, or (at your
+- *  option) any later version.
+- *
+- *  THIS  SOFTWARE  IS PROVIDED   ``AS  IS'' AND   ANY  EXPRESS OR   IMPLIED
+- *  WARRANTIES,   INCLUDING, BUT NOT  LIMITED  TO, THE IMPLIED WARRANTIES OF
+- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
+- *  NO  EVENT  SHALL   THE AUTHOR  BE    LIABLE FOR ANY   DIRECT,  INDIRECT,
+- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *  NOT LIMITED   TO, PROCUREMENT OF  SUBSTITUTE GOODS  OR SERVICES; LOSS OF
+- *  USE, DATA,  OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+- *  ANY THEORY OF LIABILITY, WHETHER IN  CONTRACT, STRICT LIABILITY, OR TORT
+- *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+- *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- *
+- *  You should have received a copy of the  GNU General Public License along
+- *  with this program; if not, write  to the Free Software Foundation, Inc.,
+- *  675 Mass Ave, Cambridge, MA 02139, USA.
+- *
+- *	Version 1.0 (05/16/02) - A. Kuster
+- *	Initial version	 -
+- *
+- */
+-
+-#ifdef __KERNEL__
+-#ifndef __OCP_DMA_H__
+-#define __OCP_DMA_H__
+-
+-
+-/* This defines the direction arg to the DMA mapping routines. */
+-#define DMA_BIDIRECTIONAL	0
+-#define DMA_TODEVICE		1
+-#define DMA_FROMDEVICE		2
+-#define DMA_NONE		3
+-
+-#endif				/* __OCP_DMA_H__ */
+-#endif				/* __KERNEL__ */
+-
 
-    ...
-
-}
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
