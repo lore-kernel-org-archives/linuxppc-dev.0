@@ -1,30 +1,23 @@
-Message-ID: <819E3E914E0AD11194DE00805F0D100B010882D5@fbi.infocom.dk>
-From: Karl Pálsson <KPA@infocom.dk>
-To: "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: Linuxppc and the 821 processor
-Date: Tue, 1 Feb 2000 09:03:55 +0100
+Date: Tue, 1 Feb 2000 09:52:09 +0100 (MET)
+From: Raphael Bossek <raphael.bossek@gmx.de>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: PCMCIA-IDE for mpc8xx-linux-2.2.13
+Message-ID: <11497.949395129@www14.gmx.net>
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Hi,
 
-We are designing a CPU board based on the 821 processor. Has someone had any
-experience running LinuxPPC on the 821?
-Are there any known problems? Any advice?
+i really need this patch and if someone done it allready (it does not have
+to be perfect) so please let me know !!!
 
+cu Raphael Bossek - http://www.s4l.de/powerpc.html
 
-
-Best regards,
-Karl Palsson, B.Sc.E.E.
-Infocom Defence Systems A/S
-Ellegaardsvej 25
-6400 Soenderborg
-Tel: +45-73 12 30 00
+--
+Sent through Global Message Exchange - http://www.gmx.net
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
