@@ -1,61 +1,44 @@
-Message-Id: <200008222110.XAA00741@piglet.grunz.lu>
-Date: Tue, 22 Aug 2000 23:10:41 +0200 (CEST)
+Message-Id: <200008222115.XAA00745@piglet.grunz.lu>
+Date: Tue, 22 Aug 2000 23:15:29 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
 Subject: Re: Control fb problem on 8500
 To: daenzerm@student.ethz.ch
 cc: geert@linux-m68k.org, linuxppc-dev@lists.linuxppc.org, dmj+@andrew.cmu.edu
-In-Reply-To: <39A23ADB.25E233F@relog.ch>
+In-Reply-To: <39A25283.1A7B0E3C@relog.ch>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
-
 On  22 Aug, this message from Michel Dänzer echoed through cyberspace:
->> > > I suppose
->> > >
->> > >     if (fix.line_length)
->> > >         pScrn->displayWidth = fix.line_length*8/var.bits_per_pixel;
->> > >     else
->> > >         pScrn->displayWidth = var.xres_virtual;
->> > >
->> > > should work fine, except on hardware were
->> > > fix.line_length*8/var.bits_per_pixel might not be integer (e.g. if
->> > > 1280x1024x24 mode requires a line_length of 4096).
->> >
->> > I've thought of this as well. The problem is that the mode hasn't been
->> > initialized when displayWidth is set and used.
+> Geert Uytterhoeven wrote:
+>> I never read any XFree86 4.0 code.
 >>
->> So the X server initializes the internal screen structures before it even
->> knows that it can use them later?
+>> I know ShadowFB is faster for machines without hardware acceleration. But is
+>> it also faster with hardware acceleration?
 >
-> Yes. This really seems to be a rather serious design flaw - the driver is
-> assumed to know at any time whether it can cope with what the user wants and
-> how.
+> ShadowFB and hardware acceleration are mutually exclusive (except for hardware
+> cursor and other things I am forgetting). With ShadowFB, the framebuffer is in
+> main RAM and only the updated parts are copied to video RAM.
 >
-> Anyway, what do you think about the patch I posted? Michel, can you please try
-> it?
+> However, as the fbdev driver has no acceleration, this doesn't matter, and
+> ShadowFB is a win in most cases. And for the other drivers which use fbdevhw,
+> the assumption 'displayWidth == virtualX' holds, so they work correctly
+> without ShadowFB.
 
-I'll try to get some time next weekend to do so. I need to get new X
-sources (4.0.1), and I need to do that at work rather than via my ISDN
-dial-up ;-)
+Hm, speaking of hardware cursor. Since this all started on exactly that
+issue.... supposing someone actually finds out how control's hardware
+cursor works, and supposing someone would actually take the time to
+implement this, wouldn't we need to provide a XFree driver as well? I
+guess plain fbdevhw doesn't support hw cursor...
 
-> I don't think having to use ShadowFB with the fbdev driver is too bad
-> because it should generally enhance performance :)
+In that event, would it be possible to address the above-mentioned flaw
+in XFree in that particular driver, or is the problem more geneic (i.e.
+littered throughout the source tree)?
 
-I guess control is the exception. I found out it isn't worth the memory
-impact. I once ran a complete x11perf run comparing with and without
-shadowfb, and with shadowfb was overall slower. Some operations were
-faster, though, but not in general.
-
-I suppose this is because main memory isn't faster on my box than access
-to the VRAM. Both are accessed via a 50 MHz bus, and are of the same
-basic type (plain old DRAM, that is).
-
-I'll let you know....
+Cheers
 
 Michel
 
