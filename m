@@ -1,204 +1,81 @@
-Subject: 405GP Networking issue
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF81D7CF16.F89A8DA5-ON87256CDB.00561B6D@us.ibm.com>
-From: Mark Wisner <markwiz@us.ibm.com>
-Date: Fri, 28 Feb 2003 10:41:29 -0500
+Subject: 8250 IDMA TX Problems
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Fri, 28 Feb 2003 08:17:11 -0800
+Message-ID: <BD92DBD34D62AC4FA034933E33E53F7E172453@grog>
+From: "Penn, John" <jpenn@magisnetworks.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kishinami,
-You are correct, the 405GP's EMAC will discard any bad packets or packets
-that do not meet it's address match mechanism. There is one exception. If
-the packet received gets a good address match and the packet is large but
-has an FCS error, it may pass the bad packet to the MAL. The MAL will
-create an EOB interrupt and the RX_EOB routine should then look at the
-descriptors status bits to see that it is a bad packet.  This is determined
-by the RX threshold value. Once the EMAC starts to send a packet to the MAL
-it will continue to send it, even though it fails the FCS check at the end
-of the packet. Once it starts a packet it runs to completion. SW then needs
-to detect the bad packet by the status bits.
+Hi,
 
-The real question is, why are you receiving what the EMAC thinks are bad
-packets?
+After searching the archives I still have a few basic questions.
+I am using an 8250 Hip 4 Rev A.  Linux kernel 2.4.19 with a few patches.
 
-If you can isolate the board on a hub with only the ping traffic in
-question it will make things easier to debug. Most of the time when this
-type of thing happens, you have noise between the PHY and the EMAC on the
-MII bus. Here is the way I shoot these types of things.
-1) Put the EMAC in promiscous mode, enable the reception of every bad
-packet it can. You do this by setting the RMR reg. Look at the open routine
-for the device. I think the RMR reg is set there.
-2) Go to the RX_EOB routine where it checks the status bits in the
-descriptor. If it detects a bad packet, print the packet out. Look for any
-odd bit patterns. You may have a noisy bit.
+I am trying to get IDMA working to transfer data between the 60x system
+memory and a device on the local bus.  I am using DREQ and nDACK for TX,
+RX will come later.
 
-Remember, if the MII itnerface is so messed up that the preamble does not
-get deteceted correctly the EMAC will not see the packet at all. When I
-have it this type of problem, I pull out the Smartbit tester and embed data
-patterns in the packet that may fake the EMAC to think it has a preamble.
-For example, if I think I am dropping bit 0, I will send in a pattern of
-all 5's in the packet for a while and then a F.  By using different data
-paterns you can determing the problem bit or bits. I have also seen where
-there was to much load on a line so it did not switch as it should.
+When I send a start command for IDMA3 to the CPM my serial port locks
+up.
+I have Initialized all the IDMA registers and loaded up 1 buffer
+descriptor
+with the LAST and WRAP bits set.
 
-You should send your problem to PPCSUPP@us.ibm.com, IBM support. Send them
-a shapshot of what you captured on the MII interface. Also, a scope capture
-showing the RX_DV( I think that is the name of the MII signal that marks
-the beginning of a RX packet)  line and a data line so they can see how
-they switch together. If the ctl line is late or the data line is early,
-you can get some weird results.
+Using a BDI 2000 debugger I can access the 60x bus and it seems to be
+working.
+The error registers of the CPM also don't show any info.
 
-Mark K. Wisner
-Advisory Software Engineer
-IBM Microelectronics
-3039 Cornwallis Rd
-RTP, NC 27709
-Tel. 919-254-7191
-Fax 919-543-7575
----------------------- Forwarded by Mark Wisner/Raleigh/IBM on 02/28/2003
-10:36 AM ---------------------------
+The nDACK signal never asserts either and data does not seem to be
+written into
+the DPM transfer buffer.  I checked DREQ and it is asserting though I am
+usually
+locked up before this event.
 
-Mark Wisner
-02/28/2003 09:10 AM
+Some info:
+   RCCR = 		DR3M - DREQ 3 is level sensitive
+			DR3QP - DREQ has lowest priority
+					than the comm. controllers
 
-To:    kishinami@cs.fujitsu.com.jp
-cc:
-From:  Mark Wisner/Raleigh/IBM@IBMUS
-Subject:    405GP Networking issue
+   DCM = 		FB - Dual address mode
+   			DMA_WRAP - size of IDMA 3
+					transfer buffer = 2048 bytes
+			SINC - source addr increment
+			ERM - External Request Mode
+					CP responds to DREQ
+			S/D - Read from memory, write to peripheral
 
 
-Kishinami,
-You are correct, the 405GP's EMAC will discard any bad packets or packets
-that do not meet it's address match mechanism. There is one exception. If
-the packet received gets a good address match and the packet is large but
-has an FCS error, it may pass the bad packet to the MAL. The MAL will
-create an EOB interrupt and the RX_EOB routine should then look at the
-descriptors status bits to see that it is a bad packet.  This is determined
-by the RX threshold value. Once the EMAC starts to send a packet to the MAL
-it will continue to send it, even though it fails the FCS check at the end
-of the packet. Once it starts a packet it runs to completion. SW then needs
-to detect the bad packet by the status bits.
+1.	Has anyone used IDMA on an 8250?  The 8250 and the 8260 are
+supposedly
+	the same die so this functionality should be there, so I was
+told.
 
-The real question is, why are you receiving what the EMAC thinks are bad
-packets?
+2.	Has anyone managed to get IDMA working between 60x memory and a
+	peripheral on the Local Bus using DPM for :
+	a. BDs ?
+	b. IDMAx Parameter Ram ?
 
-If you can isolate the board on a hub with only the ping traffic in
-question it will make things easier to debug. Most of the time when this
-type of thing happens, you have noise between the PHY and the EMAC on the
-MII bus. Here is the way I shoot these types of things.
-1) Put the EMAC in promiscous mode, enable the reception of every bad
-packet it can. You do this by setting the RMR reg. Look at the open routine
-for the device. I think the RMR reg is set there.
-2) Go to the RX_EOB routine where it checks the status bits in the
-descriptor. If it detects a bad packet, print the packet out. Look for any
-odd bit patterns. You may have a noisy bit.
+3.	Should I switch to local bus ram for BDs?
 
-Remember, if the MII itnerface is so messed up that the preamble does not
-get deteceted correctly the EMAC will not see the packet at all. When I
-have it this type of problem, I pull out the Smartbit tester and embed data
-patterns in the packet that may fake the EMAC to think it has a preamble.
-For example, if I think I am dropping bit 0, I will send in a pattern of
-all 5's in the packet for a while and then a F.  By using different data
-paterns you can determing the problem bit or bits. I have also seen where
-there was to much load on a line so it did not switch as it should.
+4.	Should I use local bus ram for the data buffers?
 
-You should send your problem to PPCSUPP@us.ibm.com, IBM support. Send them
-a shapshot of what you captured on the MII interface. Also, a scope capture
-showing the RX_DV( I think that is the name of the MII signal that marks
-the beginning of a RX packet)  line and a data line so they can see how
-they switch together. If the ctl line is late or the data line is early,
-you can get some weird results.
+5.	For a write transaction I am using the following values :
+	SS_MAX = 2048-32;
+	STS = 2048-32;
+	DTS = 4;			// The peripheral port is 32
+bits.
 
-Mark K. Wisner
-Advisory Software Engineer
-IBM Microelectronics
-3039 Cornwallis Rd
-RTP, NC 27709
-Tel. 919-254-7191
-Fax 919-543-7575
----------------------- Forwarded by Mark Wisner/Raleigh/IBM on 02/28/2003
-08:34 AM ---------------------------
+	2048 is the largest packet I will ever transfer.
 
-Ralph Blach
-02/28/2003 08:22 AM
-
-To:    Mark Wisner/Raleigh/IBM@IBMUS
-cc:
-From:  Ralph Blach/Raleigh/IBM@IBMUS
-Subject:    405GP Networking issue
+	Do these values look ok?
 
 
+Thanks for the help,
 
----------------------- Forwarded by Ralph Blach/Raleigh/IBM on 02/28/2003
-08:22 AM ---------------------------
-
-KISHINAMI Masaya <kishinami@cs.fujitsu.co.jp>@lists.linuxppc.org on
-02/28/2003 07:27:56 AM
-
-Sent by:    owner-linuxppc-embedded@lists.linuxppc.org
-
-
-To:    linuxppc-embedded@lists.linuxppc.org
-cc:
-Subject:    405GP Networking issue
-
-
-
-
-Dear all, it's first time to post.
-
-We are debugging a custom board designed based on the 405GP
-(200MHz) and have a problem not being sent ECHO REPLY ping
-packet from custom board to our PC via repeater hub on the
-heavy traffic under 10Mbps and half duplex condition.
-We used the latest version of ibm_ocp LAN device driver at
-that time from kernel 2.4.21-pre3 and ported it to work on
-the kernel 2.4.18 because it costs many time to boot our
-custom board on the latest one. The board works fine unless
-not be such a case.
-
-Following are the our simplest duplication process and the
-results.
-
-1. Connect the repeater hub to backbone LAN.
-2. Connect custom board, test PC to ping and other PCs to the
-   repeater hub to the full. This case, 10 or more PCs are
-   connected to repeater hub and each PC works normally by
-   using network.
-3. Increase the traffic by using ftp command. The ftp data was
-   never addressed to the custom board.
-4. Ping from our PC to custom board at one time.
-5. The 60% pings were lost such condition.
-6. We investigated the ping lost case.
-   - LAN protocol analyzer captured the ECHO REQUEST which was
-     address to custom board. It shows ECHO REQUEST was issued
-     from our PC to LAN cable.
-   - Logic analyzer captured the same ping packet which was
-     already been captured by LAN analyzer between PHY(Intel
-     LXT971A) and EMAC. It shows ECHO REQUEST was reached just
-     before the EMAC.
-   - The LAN device driver's receive buffer did not receive the
-     ECHO REQUEST by using printk command. We suspected that the
-     ECHO REQUEST was not issued to the MAL(Memory Access Layer),
-     therefore ECHO REQUEST was not translated to the receive
-     buffer.
-
-At the same time, many 4 byte short packet(0x000000f0) which was
-not addressed to custom board was received to the LAN device driver's
-receive buffer with error status. According to 405GP manual, EMAC
-discards the packet which is not of its own.
-
-Have anyone experienced a problem like this?
-Any help would be appreciated.
-
-Regards, Kishinami.
-
------
-KISHINAMI Masaya
-Fujitsu Limited (Japan)
-
+John Penn
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
