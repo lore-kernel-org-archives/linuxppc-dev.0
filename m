@@ -1,62 +1,56 @@
-Date: Mon, 25 Mar 2002 09:51:20 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Val Henson <val@nmt.edu>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: EV-64260-BP & GT64260 bi_recs
-In-Reply-To: <20020324164649.32343@smtp.wanadoo.fr>
-Message-ID: <Pine.GSO.4.21.0203250948360.11999-100000@vervain.sonytel.be>
+Message-Id: <200203251001.TAA12917@mail.highway.ne.jp>
+Date: Mon, 25 Mar 2002 18:58:22 +0900 (JST)
+From: Kaoru Fukui <k_fukui@highway.ne.jp>
+Subject: linux-2.5.7 problem
+To: linuxppc-dev@lists.linuxppc.org
+Cc: k_fukui@highway.ne.jp
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 24 Mar 2002, Benjamin Herrenschmidt wrote:
-> Which means that as soon as you want to add more infos, you will have
-> to deal with all the pre-bi_rec problems when you own stuffs have to
-> evolve. (versionning etc...).
->
-> Again, for anything not realted to device drivers infos (things like
-> HW ethernet addresses, PHY IDs, eventually interrupt routing), a whole
-> bunch of bi_rec types will be left free by the kernel for use by your
-> proprietary stuff the way you want, so you can pretty much define
-> whatever you want (or not, it's up to you).
->
-> But, I feel it's more convenient for drivers to use this signle-level
-> BI_DEVICE bi_rec that contains itself bi_recs.
->
-> >I really agree with Dan Malek on this - we shouldn't use bi_recs as a
-> >way to reimplement methods of passing information that already exist,
-> >for example, the __setup() functions.  It should be a way of passing
-> >information that only a bootloader can know, such as the location of a
-> >ramdisk, or the command line that the user typed into the bootloader.
->
-> Which is exactly what I'm proposing. Passing generic informations like
-> CPU core clocks, command line, ramdisk, etc... is done via bi_recs at
-> the toplevel.
->
-> The BI_DEVICE bi_rec's allow to provide other informations that are
-> also only known by the firmware (most of the time), like eth MAC
-> address, PHY wiring, or other kind of wiring informations related
-> to a given rev. of a board, etc... provided that those infos
-> concern a given driver for a specific device. It's also a convenient
-> way to provide interrupt routing informations.
+Hi!
 
-Alternatively, why not create a whole device tree for this? There already
-exists a standard for device trees: IEEE 1275 Open Firmware. Then you need only
-one extra bi_rec tag: BI_OF_TREE.
+I got this problem.
+sched.h of linux-2.5.7 doesn't has p_pptr. but sched.h of linux-2.4 has it.
 
-Gr{oetje,eeting}s,
+Should I use parent instead of p_pptr ?
 
-						Geert
+Kaoru
+-------
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+gcc -D__KERNEL__ -I/usr/src/redhat/BUILD/linux/include -Wall -Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer -fno-strict-aliasing -fno-common -I/usr/src/redhat/BUILD/linux/arch/ppc -fsigned-char -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring   -DKBUILD_BASENAME=signal  -c -o signal.o signal.c
+signal.c: In function `do_signal':
+signal.c:597: structure has no member named `p_pptr'
+signal.c:598: structure has no member named `p_pptr'
+signal.c:637: structure has no member named `p_pptr'
+make[1]: *** [signal.o]  1
+make[1]:   `/usr/src/redhat/BUILD/linux/arch/ppc/kernel'
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+---linux-2.4 sched.h
+	/*
+	 * pointers to (original) parent process, youngest child, younger sibling,
+	 * older sibling, respectively.  (p->father can be replaced with
+	 * p->p_pptr->pid)
+	 */
+	struct task_struct *p_opptr, *p_pptr, *p_cptr, *p_ysptr, *p_osptr;
+	struct list_head thread_group;
+
+
+---linux-2.5.7 sched.h
+	/*
+	 * pointers to (original) parent process, youngest child, younger sibling,
+	 * older sibling, respectively.  (p->father can be replaced with
+	 * p->parent->pid)
+	 */
+	struct task_struct *real_parent; /* real parent process (when being debugged) */
+	struct task_struct *parent;	/* parent process */
+	struct list_head children;	/* list of my children */
+	struct list_head sibling;	/* linkage in my parent's children list */
+	struct list_head thread_group;
+
+	/* PID hash table linkage. */
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
