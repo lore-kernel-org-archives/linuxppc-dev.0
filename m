@@ -1,25 +1,17 @@
-Return-Path: <srivatsan@deccanetworld.com>
-Received: from gatekeeper.deccanetworld.com (mail.deccanetworld.com
-	[203.196.146.50])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 08EB92BDB5
+Return-Path: <gerald.vanbaren@smiths-aerospace.com>
+Received: from imagateway.smiths-aerospace.com (host241-chi.smiths-group.com
+	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 866E42BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Jan 2005 00:37:21 +1100 (EST)
-Received: from gatekeeper.deccanetworld.com (localhost [127.0.0.1])
-	by gatekeeper.deccanetworld.com (8.12.2/8.12.2/SuSE Linux 0.6) with
-	ESMTP id j04DOxhs015533
-	for <linuxppc-embedded@ozlabs.org>; Tue, 4 Jan 2005 18:55:01 +0530
-From: "Srivatsan" <srivatsan@deccanetworld.com>
-To: <wd@denx.de>
-Date: Tue, 4 Jan 2005 19:02:34 +0530
-Message-ID: <000401c4f261$dca2c1e0$1269cb0a@bgcw301>
+	Wed,  5 Jan 2005 01:06:28 +1100 (EST)
+Message-ID: <41DAA2D7.5000408@smiths-aerospace.com>
+Date: Tue, 4 Jan 2005 09:06:15 -0500
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0005_01C4F28F.F65D6EE0"
-In-Reply-To: <20041228174222.79FC7C14EC@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Linux Kernel boot problem 
+To: linuxppc-embedded@ozlabs.org
+References: <000401c4f261$dca2c1e0$1269cb0a@bgcw301>
+In-Reply-To: <000401c4f261$dca2c1e0$1269cb0a@bgcw301>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: Linux Kernel boot problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,327 +22,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Srivatsan wrote (badly quoted):
+> * *
+> *Well, what are the last readable messages you can find in the buffer?*
+> * *
+> *The last readable message which I see in the log buffer is *
+> * *
+> 
+> *00138BD4: 3C 36 3E 4D 65 6D 6F 72  79 20 42 41 54 20 6D 61  |<6>Memory BAT ma|*
+> *00138BE4: 70 70 69 6E 67 3A 20 42  41 54 32 3D 31 36 4D 62  |pping: BAT2=16Mb|*
+> *00138BF4: 2C 20 42 41 54 33 3D 30  4D 62 2C 20 72 65 73 69  |, BAT3=0Mb, resi|*
+> *00138C04: 64 75 61 6C 3A 20 30 4D  62 0A 00 00 00 00 00 00  |dual: 0Mb.......|*
+> 
+> *Any pointers will surely help me with the problem. *
+> 
+> *I have tried with all serial ports, I find that the porting is done 
+> fine. I checked with the MPC860 porting document available on the web. *
+> 
+> *Any pointers will surely help me. Thanks Mr.Wolfgang and everyone for 
+> sparing me time.*
+> 
+> *Best regards,*
+> *C.R.*Srivatsan
 
-------=_NextPart_000_0005_01C4F28F.F65D6EE0
-Content-Type: text/plain;
-Content-Transfer-Encoding: 7bit
+I don't have a clue, but The Source Knows (TSK).  The following is very 
+generic advice...
 
- 
-Well, what are the last readable messages you can find in the buffer?
- 
-The last readable message which I see in the log buffer is 
- 
-00138BD4: 3C 36 3E 4D 65 6D 6F 72  79 20 42 41 54 20 6D 61  |<6>Memory
-BAT ma|
-00138BE4: 70 70 69 6E 67 3A 20 42  41 54 32 3D 31 36 4D 62  |pping:
-BAT2=16Mb|
-00138BF4: 2C 20 42 41 54 33 3D 30  4D 62 2C 20 72 65 73 69  |, BAT3=0Mb,
-resi|
-00138C04: 64 75 61 6C 3A 20 30 4D  62 0A 00 00 00 00 00 00  |dual:
-0Mb.......|
- 
-Any pointers will surely help me with the problem. 
- 
-I have tried with all serial ports, I find that the porting is done
-fine. I checked with the MPC860 porting document available on the web. 
- 
-Any pointers will surely help me. Thanks Mr.Wolfgang and everyone for
-sparing me time.
- 
- 
-Best regards,
-C.R.Srivatsan
- 
+The "<6>" is a progress stamp put out by the kernel start up code.  Find 
+where it is printed and/or where the BAT mapping message is printed and 
+look what the kernel does next.  Somewhere between "<6>" and where "<7>" 
+would be printed if your kernel didn't crash is where the problem lies. 
+  If the crash location isn't obvious, move the "<7>" back in the code 
+until you see it coming out, which will further narrow down the error area.
 
+My totally uneducated guess (TUG) is that you have problems with your 
+BAT configuration.  Compare your memory map to how your BATs are set up 
+by the linux kernel.  Also, verify that EVERY piece of hardware 
+(ESPECIALLY the uart hardware) is mapped properly (probably by a BAT) at 
+this point in time.  My TUG is that you are trying to access a piece of 
+hardware (likely a uart or a blinking LED) that isn't mapped and thus 
+you are getting a memory map fault.  At this point in time, memory map 
+faults are very silent and very deadly.
 
-********************************DISCLAIMER**********************************
-
-This e-mail and any attachment is for authorised use by the intended
-recipient(s) only. It may contain proprietary material, confidential
-information and/or be subject to legal privilege of Deccanet Designs Ltd.
-If you have received this message in error, please notify the originator
-immediately. If you are not the intended recipient, you are notified that
-you are strictly prohibited from retaining, using, copying, altering or
-disclosing the contents of this message.
-
-****************************************************************************
-------=_NextPart_000_0005_01C4F28F.F65D6EE0
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-
-
-<meta name=3DProgId content=3DWord.Document>
-<meta name=3DGenerator content=3D"Microsoft Word 10">
-<meta name=3DOriginator content=3D"Microsoft Word 10">
-<link rel=3DFile-List href=3D"cid:filelist.xml@01C4F28F.F0999A60">
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"PersonName"/>
-<!--[if gte mso 9]><xml>
- <o:OfficeDocumentSettings>
-  <o:DoNotRelyOnCSS/>
- </o:OfficeDocumentSettings>
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <w:WordDocument>
-  <w:View>Normal</w:View>
-  <w:SpellingState>Clean</w:SpellingState>
-  <w:GrammarState>Clean</w:GrammarState>
-  <w:DocumentKind>DocumentEmail</w:DocumentKind>
-  <w:EnvelopeVis/>
-  <w:Compatibility>
-   <w:BreakWrappedTables/>
-   <w:SnapToGridInCell/>
-   <w:WrapTextWithPunct/>
-   <w:UseAsianBreakRules/>
-  </w:Compatibility>
-  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
- </w:WordDocument>
-</xml><![endif]--><!--[if !mso]>
-<style>
-st1\:*{behavior:url(#default#ieooui) }
-</style>
-<![endif]-->
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{mso-style-parent:"";
-	margin:0in;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:10.0pt;
-	font-family:Arial;
-	mso-fareast-font-family:"Times New Roman";
-	font-weight:bold;}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;
-	text-underline:single;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;
-	text-underline:single;}
-p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
-	{margin:0in;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:10.0pt;
-	font-family:"Courier New";
-	mso-fareast-font-family:"Times New Roman";
-	font-weight:bold;}
-span.SpellE
-	{mso-style-name:"";
-	mso-spl-e:yes;}
-span.GramE
-	{mso-style-name:"";
-	mso-gram-e:yes;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 77.95pt 1.0in 77.95pt;
-	mso-header-margin:.5in;
-	mso-footer-margin:.5in;
-	mso-paper-source:0;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 10]>
-<style>
- /* Style Definitions */=20
- table.MsoNormalTable
-	{mso-style-name:"Table Normal";
-	mso-tstyle-rowband-size:0;
-	mso-tstyle-colband-size:0;
-	mso-style-noshow:yes;
-	mso-style-parent:"";
-	mso-padding-alt:0in 5.4pt 0in 5.4pt;
-	mso-para-margin:0in;
-	mso-para-margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:10.0pt;
-	font-family:"Times New Roman";}
-</style>
-<![endif]-->
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple =
-style=3D'tab-interval:.5in'>
-
-<div class=3DSection1>
-
-<p class=3DMsoPlainText><b><font size=3D2 face=3D"Courier New"><span
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>Well, what are the last readable messages you can find in the =
-buffer?<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-color=3Dblack face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;color:black;
-font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
-ont></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-color=3Dblack face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;color:black;
-font-weight:normal;mso-bidi-font-weight:bold'>The last readable message =
-which I
-see in the log buffer is <o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'><o:p>&nbsp;</o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>00138BD4: 3C 36 3E 4D 65 6D 6F 72<span =
-style=3D'mso-spacerun:yes'>&nbsp;
-</span>79 20 42 41 54 20 6D <span class=3DGramE>61<span
-style=3D'mso-spacerun:yes'>&nbsp; </span>|</span>&lt;6&gt;Memory BAT =
-ma|<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>00138BE4: 70 <span class=3DSpellE>70</span> 69 6E 67 3A 20 42<span
-style=3D'mso-spacerun:yes'>&nbsp; </span>41 54 32 3D 31 36 4D <span =
-class=3DGramE>62<span
-style=3D'mso-spacerun:yes'>&nbsp; </span>|</span><span =
-class=3DSpellE>pping</span>:
-BAT2=3D16Mb|<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>00138BF4: 2C 20 42 41 54 33 3D 30<span =
-style=3D'mso-spacerun:yes'>&nbsp;
-</span>4D 62 2C 20 72 65 73 <span class=3DGramE>69<span
-style=3D'mso-spacerun:yes'>&nbsp; </span>|</span>, BAT3=3D0Mb, <span =
-class=3DSpellE>resi</span>|<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>00138C04: 64 75 61 6C 3A 20 30 4D<span =
-style=3D'mso-spacerun:yes'>&nbsp;
-</span>62 0A 00 <span class=3DSpellE>00</span> <span =
-class=3DSpellE>00</span> <span
-class=3DSpellE>00</span> <span class=3DSpellE>00</span> <span =
-class=3DSpellE><span
-class=3DGramE>00</span></span><span class=3DGramE><span
-style=3D'mso-spacerun:yes'>&nbsp; </span>|</span>dual: =
-0Mb.......|<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'><o:p>&nbsp;</o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>Any pointers will surely help me with the problem. =
-<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'><o:p>&nbsp;</o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>I have tried with all serial ports, I find that the porting is =
-done fine.
-I checked with the MPC860 porting document available on the web. =
-<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'><o:p>&nbsp;</o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>Any pointers will surely help me. Thanks Mr.Wolfgang and everyone =
-for
-sparing me time.<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b><font size=3D2 face=3D"Courier New"><span
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b><font size=3D2 face=3D"Courier New"><span
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>Best regards,<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>C.R.</span></font></b><st1:PersonName><span =
-style=3D'font-weight:normal;
- mso-bidi-font-weight:bold'>Srivatsan</span></st1:PersonName><span
-style=3D'font-weight:normal;mso-bidi-font-weight:bold'><o:p></o:p></span>=
-</p>
-
-<p class=3DMsoPlainText><b><font size=3D2 face=3D"Courier New"><span
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></b></p>
-
-</div>
-
-
-<PRE>
-
-********************************DISCLAIMER**********************************
-
-This e-mail and any attachment is for authorised use by the intended
-recipient(s) only. It may contain proprietary material, confidential
-information and/or be subject to legal privilege of Deccanet Designs Ltd.
-If you have received this message in error, please notify the originator
-immediately. If you are not the intended recipient, you are notified that
-you are strictly prohibited from retaining, using, copying, altering or
-disclosing the contents of this message.
-
-****************************************************************************
-</pre>
-</body>
-
-</html>
-
-------=_NextPart_000_0005_01C4F28F.F65D6EE0--
+gvb
+P.S. Sorry for all the bad TLA humor ;-)
