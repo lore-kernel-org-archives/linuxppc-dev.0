@@ -1,47 +1,47 @@
-Message-ID: <38ED585D.1F90EB48@uncc.edu>
-Date: Thu, 06 Apr 2000 23:39:09 -0400
+Message-ID: <38ED748E.A2E7508A@uncc.edu>
+Date: Fri, 07 Apr 2000 01:39:26 -0400
 From: "William H. Schultz" <whschult@uncc.edu>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: More XFree86 v4 problems
-References: <200004060500.AAA03927@lists.linuxppc.org>
+To: linuxppc-dev@lists.linuxppc.org, Brendan.Simon@ctam.com.au
+Subject: Re: linux-powerpc: booting from zip disk ?
+References: <200004070459.XAA07499@lists.linuxppc.org>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello.
+> Date: Fri, 07 Apr 2000 11:19:32 +1000
+> From: Brendan J Simon <Brendan.Simon@ctam.com.au>
+> Subject: linux-powerpc: booting from zip disk ?
+>
+> Does any one know if I can boot linux from a zip disk on a PowerMac G4 ?
+>
+> Ethan Benson mailed me a script to produce a CD image so I can boot from
+> it and install Debian, but unfortunately I don't have access to a CD
+> burner anymore.
+>
+> So can it be done ?
+> Do I need to fool around in Open Firmware ?
+> If so what do I need to do ?
+>
+> Thanks,
+> Brendan Simon.
 
-You are probably all getting tired of hearing the problems that I am
-having with XFree86 v4.
+You sure can.  Format your zip disk to HFS (not HFS+).  Set up under
+Linux that this will be  mounted at /boot.  From this point, you have
+several options.  Most people in your situation would use yaboot.  There
+is also miboot, but I don't know if that will boot a G4.
 
-The problem I am having is that X isn't properly recognizing the
-internal video to my 8500 -- /chaos/control.  I did get my XF86Config
-file set up to work on it (as far as I'm aware) and xinerama works, to
-some extent.  (the problem I was having before with xinerama wound up
-being that miboot assumes ATI hardware and likewise passes video=atyfb
-kernel arguments.)
+Both of those are available at:
 
-symptoms:
+http://www.linuxppc.com/updates/
 
-Screen is rotated about 40% to the left (the left portion wraps around
-to the right).  Despite XF86Config args, it will only do 640x480@60Hz.
-Additionally, it appears that it is running in 16 colors, even though it
-won't do 16 colors in MacOS and my voodoo is running in millions.
+(they are on the right of the screen)
 
-
-Additionally, as enlightenment is xinerama aware, I can get windows to
-pop up on the /chaos/control screen (bad colors), but when I save the
-session with enlightenment as my default wm, my gnome toolbars
-permanently dissapear--unless I delete all of my .gnome* directories.
-
-
-Any help would be greatly appreciated.
 
 
 Hank
 
-ps  I have a qt/OpenGL version of breakout (very simple) I've been
-working on for school.  Anyone interested in playing it?
+ps  I assume you are somewhat familiar with what goes in /boot
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
