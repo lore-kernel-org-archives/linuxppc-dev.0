@@ -1,57 +1,28 @@
-Date: Fri, 16 Aug 2002 11:17:38 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Compile fix for 4xx wih non-cascaded UICs
-Message-ID: <20020816011738.GD8610@zax>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+From: Brian Waite <waite@skycomputers.com>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Embedded Planet 405Gp booting
+Date: Fri, 16 Aug 2002 10:23:18 -0400
+MIME-Version: 1.0
+Message-Id: <200208161023.18576.waite@skycomputers.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom, can you apply this (unless the bk tree has been fixed).  It looks
-like a recent fix for casceded UIC machines broke compile for
-non-cascaded ones (UIC0_UIC1NC is not defined).
+Hi all,
+Sorry if this is stupid question, but I am trying to revive and Embedded
+planet 405 GP board with Linux. Someone else got it booting and has since
+lost the .config.I am trying to re-create this with little work. I am using
+PPCBoot 1.1.4 and have been working with the linuxppc_2_4_devel tree (kernel
+version 2.4.19-rc3. PPCboot is fine, but once it jumps into the kernel I get
+nothing. Looking at the log_buf in memory it looks like it is taking a kernel
+stack overflow exception. Am I just doing sometinhg  stupid? It feels like I
+have a bad option or lack thereof in my .config? I am attaching it just for
+fun. If anyone has a working .config for this board that would be great.
 
-diff -urN /home/dgibson/kernel/linuxppc_2_4_devel/arch/ppc/kernel/ppc4xx_pic.c linux-grinch/arch/ppc/kernel/ppc4xx_pic.c
---- /home/dgibson/kernel/linuxppc_2_4_devel/arch/ppc/kernel/ppc4xx_pic.c	2002-08-16 10:21:17.000000000 +1000
-+++ linux-grinch/arch/ppc/kernel/ppc4xx_pic.c	2002-08-16 10:53:58.000000000 +1000
-@@ -231,12 +231,14 @@
- 		mtdcr(DCRN_UIC_ER(UIC0), ppc_cached_irq_mask[word]);
- 		mtdcr(DCRN_UIC_SR(UIC0), (1 << (31 - bit)));
- 		break;
-+#if NR_UICS > 1
- 	case 1:
- 		mtdcr(DCRN_UIC_ER(UIC1), ppc_cached_irq_mask[word]);
- 		mtdcr(DCRN_UIC_SR(UIC1), (1 << (31 - bit)));
- 		/* ACK cascaded interrupt in UIC0 */
- 		mtdcr(DCRN_UIC_SR(UIC0), (1 << (31 - UIC0_UIC1NC)));
- 		break;
-+#endif
- 	}
- }
+Thanks in advance.
+Brian
 
-@@ -268,11 +270,13 @@
- 		case 0:
- 			mtdcr(DCRN_UIC_SR(UIC0), 1 << (31 - bit));
- 			break;
-+#if NR_UICS > 1
- 		case 1:
- 			mtdcr(DCRN_UIC_SR(UIC1), 1 << (31 - bit));
- 			/* ACK cascaded interrupt in UIC0 */
- 			mtdcr(DCRN_UIC_SR(UIC0), (1 << (31 - UIC0_UIC1NC)));
- 			break;
-+#endif
- 		}
- 	}
-
-
-
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.
-http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
