@@ -1,42 +1,37 @@
-Date: Tue, 17 Jul 2001 16:35:32 +0100
-Subject: sleepable delays from kernel code.
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010717160446.D98BDDBA19@atlas.valhalla.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ethan Blanton <eblanton@cs.ohiou.edu>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Clock drift on an iBook2
+Date: Tue, 17 Jul 2001 18:50:32 +0200
+Message-Id: <20010717165032.5490@smtp.adsl.oleane.com>
+In-Reply-To: <20010717102730.B22214@localhost.localdomain>
+References: <20010717102730.B22214@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+>I have a new iBook2 and I'm having *severe* clock drift problems -- on
+>the order of several seconds gained per minute.  I'd like to get this
+>taken care of, and it seems to be a linux problem as OSX appears to
+>have a stable clock.
+>
+>I'm running BenH's 2.4.7-pre6 right now, but I also saw it on 2.4.6.
+>
+>Is this a known problem?  If not, what can I do to help get this fixed?
+>Ethan
 
-It would be very useful to have a "sleepable" kernel delay function with
-better resolution than 10ms for some of the sound stuff.  10 or 100 us
-resolution would be helpful.
+Are you using MOL or do you experience this with nothing special running ?
 
-This is because power-up/down (and some register accesses) of some of the
-audio devices takes quite some time.
+Do you have the same issue if you disable powersave_nap (/proc/sys/
+kernel/powersave_nap) ?
 
-Also, it seems, that the keywest-i2c device only works in polled mode at the
-moment (?? don't know if this is a real hardware fault or just waiting for a
-fix).
+The TB is calibrated using the VIA, if we don't have a correct VIA frequency
+or if the calibration routine is slightly off, that may also explain the
+problem.
 
-To my mind there are too many u/mdelay() calls in the sound code at the
-moment and I would like to replace as many as possible/appropriate with
-sleeps on a timer.
+Ben.
 
-any ideas how best to improve the resolution?
-
-e.g.
-
-increase HZ (could we stand a higher rate on PPC? - IIUC Alpha uses 1024)
-
-add a front end into arch/ppc/kernel/time.c that exports a high(er)
-resolution timer callback?
-
-any help would be appreciated.
-ciao,
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
