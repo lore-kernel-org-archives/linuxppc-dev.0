@@ -1,31 +1,20 @@
-Message-Id: <199912192122.PAA07133@sun92.texmemsys.com>
-Date: Sun, 19 Dec 1999 15:22:27 -0600 (CST)
-From: Jonathan Brauer <brauer@texmemsys.com>
-Reply-To: Jonathan Brauer <brauer@texmemsys.com>
-Subject: Arp addresses
-To: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Date: Sun, 19 Dec 1999 17:49:53 -0700
+From: Cort Dougan <cort@fsmlabs.com>
+To: Jeff Rugen <jrugen@primenet.com>
+Cc: linuxppc-workstation@lists.linuxppc.org,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Booting 2.2.x from VGER on PReP
+Message-ID: <19991219174953.A20409@hq.fsmlabs.com>
+References: <Pine.BSI.3.96.991219122637.5938A-100000@usr08.primenet.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.BSI.3.96.991219122637.5938A-100000@usr08.primenet.com>; from Jeff Rugen on Sun, Dec 19, 1999 at 12:27:17PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This question might be better posted to the general mailing list, but I though I 
-would try here first.
 
-After completing the *writing* of the custom network driver for our PPC port I 
-seem to have run into a prick wall with the arp workings.  After using ifconfig 
-to configure the eth0 device I attempt to ping the device.  The ethernet seems 
-to pass the packet up and into the arp_rcv function, but in hear, the arphdr 
-arp_hln and arp_pln seem to have not been configured correctly.  Does anyone 
-know where in an rx skbuff in 2.2.13 that the arphdr structure is initialized?
-
-I imagine it might very well be a configuration or missing binary file, but I 
-honestly can not seem to gleem where this occurs in the kernel code.  A grep on 
-arphdr and arp_hln does not seem to reveal this.
-
-Jonathan Brauer
-Texas Memory Systems
-
+Please grab the latest pre-patch for v2.2.14 (last one was pre15).  Let me
+know if you have the same trouble there.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
