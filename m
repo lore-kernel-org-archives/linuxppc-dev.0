@@ -1,50 +1,37 @@
-Date: Thu, 13 Jun 2002 14:03:45 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: Paul Mackerras <paulus@samba.org>
-Subject: get_pteptr()
-Message-ID: <20020613040345.GD4228@zax>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <3D081A1A.70309@embeddededge.com>
+Date: Thu, 13 Jun 2002 00:05:46 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Eugene Surovegin <ebs@innocent.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: consistent_alloc from an interrupt context
+References: <5.1.0.14.2.20020612200144.00ab2398@mail.zultys.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-get_pteptr() is used in exactly three places:
-	- in arch/ppc/8xx_io/commproc.c in the #else side of a #if 1,
-i.e. not really used at all.
-	- in do_page_fault() [arch/ppc/mm/fault.c] for the handling of
-page execute faults on 40x.  It's use here is arguably incorrect if
-large page pmds are introduced, although we won't ever get execute
-faults on large pages, so it doesn't really matter.
-	- in iopa() [arch/ppc/mm/pgtable.c].  The sanest way [*] I can
-see of extending this to support large page pmds, without horrible
-ifdefs can't be done without either extending get_pteptr(), or
-removing it and walking the page tables manually.
+Eugene Surovegin wrote:
 
-I could extend get_pteptr() to handle large page pmds.  Something
-like:
-	- if the address has no valid translation, return 0 and leave
-*ptep unchanged (as now).
-	- if the address is translated by a normal PTE return
-PAGE_MASK and set ptep to point to the PTE
-	- if the address is translated by a large page PMD return a
-mask for the size of the large page and set ptep to point to the PMD.
+> Current PPC implementation of consistent_alloc cannot be called from an
+> interrupt context.
 
-That makes iopa() easy and works for the other callers.
+Hmmmm.....Why did I think this was corrected in the past?  I see all of
+the consistent_alloc users are doing the same thing.  I know we discussed
+this, and the solution was actually quite trivial.  All we have to do is
+pass a GFP_ATOMIC into the kmalloc() (called by get_vm_area()).  IIRC,
+we added a 'gfp' parameter to get_vm_area() (and changed all callers, which
+was just a few), and then passed the 'gfp' into the kmalloc().  I know
+many of us tried it and everything worked sweetly :-)
 
-But given that iopa() is pretty much the only user of this function
-(do_page_fault() should be done slightly differently, I think), there
-doesn't seem a lot of point.  Why not just eliminate get_pteptr() and
-walk the page tables explicitly in iopa().
+I thought the change was readily accepted by the generic code powers, I guess
+no one actually checked it in :-)  You could make the change locally and have
+a good day :-)  All you have to do is add the parameter to get_vm_area(),
+find all of the places it is currently called and add 'GFP_KERNEL' as the
+parameter.  In consistent_alloc(), just pass the 'gfp' variable.
 
-[*] Well, apart from removing iopa() entirely, but that's another
-flamewar^Wdiscussion.
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
