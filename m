@@ -1,28 +1,50 @@
-Message-ID: <20020820120811.72432.qmail@mail.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Reply-To: <priyadk@future.futsoft.com>
+From: "Priyadarshini K" <priyadk@future.futsoft.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Rpxlite Booting
+Date: Tue, 20 Aug 2002 19:37:53 +0530
+Message-Id: <000501c24852$fa3e4be0$1106140a@future.futsoft.com>
 MIME-Version: 1.0
-From: "Pete Smithers" <petesmithers@mail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Tue, 20 Aug 2002 07:08:11 -0500
-Subject: Re: Compile fix for 4xx (linuxppc_2_4_devel)
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> This fixes compile on 4xx machines, which was broken by the recent
-> heartbeat changes.  Please apply.
->
-> [...]
-> --- /home/dgibson/kernel/linuxppc_2_4_devel/arch/ppc/kernel/ppc4xx_setup.c	2002-08-05 10:37:17.000000000 +1000
-> +++ linux-grinch/arch/ppc/kernel/ppc4xx_setup.c	2002-08-19 15:05:01.000000000 +1000
-> @@ -415,7 +415,7 @@
->  #ifdef CONFIG_PPC405_WDT
->  	ppc_md.heartbeat = ppc4xx_wdt_heartbeat;
+Hi
+   I am trying to recompile the Hardhat kernel for Embedded Planet rpxlite
+board and boot the target. But I have problems.
 
-of course this one has to be changes as well
+   I want these details:
 
-Pete
---
+   1) Are there any specific options I need to set/change while compiling
+the Hardhat kernel (with menuconfig or the compiler options)?
+      One of the compiler options is mcpu=860. The Rpxlite board is based on
+MPC823e. Should the mcpu option be changed for it?
+
+   2) What is the bfdformat of the image expected by the rpxlite board?
+Should I build the kernel image in S record format?
+
+   3) If so can I compress the image using gzip? Should the compression be
+done before mkimage or after mkimage?
+
+   Can anyone help me with these?
+
+   Right now, I am doing the following:
+
+   ppc_8xx-objcopy -S -O binary vmlinux vmlinux-raw
+   gzip vf9 vmlinux-raw
+   ./mkimage -n 'Linux RpxLite' -A ppc -O linux -T kernel -C gzip -d
+vmlinux-raw.gz rpxlite-image
+
+   I am able to tftp the rpxlite-image onto the target. But I cannot run the
+image on the target. Is there anything wrong with the options I am using?
+
+   Thanks in advance for any help
+
+   Regards
+   Priya
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
