@@ -1,44 +1,58 @@
-Message-ID: <37EDA5EB.B3BD8313@home.com>
-Date: Sat, 25 Sep 1999 22:49:47 -0600
-From: Neil Jolly <njolly@home.com>
+Message-Id: <199909260638.IAA00291@piglet.cpu.lu>
+Date: Sun, 26 Sep 1999 08:38:05 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Inbound TCP Circuits over PPP Stall; MTUs and Kppp
+To: rrschulz@cris.com
+cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <v04210101b4132312764f@[206.173.234.57]>
 MIME-Version: 1.0
-To: yellowdog-general@lists.yellowdoglinux.com
-CC: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
-        mklinux-setup@public.lists.apple.com
-Subject: Re: XFree86-3.3.5-1.6.0b
-References: <Pine.LNX.4.10.9909251336400.8691-100000@opus.bloom.county>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Hi all,
 
-> Hello again all.
->
-> I've uploaded XFree86-3.3.5-1.6.0b rpms to
-> ftp://devel.linuxppc.org/users/trini/XFree86-3.3.5
-> If you installed 3.3.5-1.6.0a, and use FBDev, you only need to update that
-> particular RPM.  If you use Xpmac, nothing should have changed.  This
+On  25 Sep, this message from Randall R Schulz echoed through cyberspace:
+> In my lonely quest to solve the problem I'm having with the stalling 
+> of inbound (only, it seems) TCP streams over PPP (but not local 
+> loopback, it seems), I'm reaching the grasping at straws stage.
 
-Tom: I installed XFree86-FBDev-3.3.5-1.6.0b only as directed, ran
-Xconfigurator, and configured 8 bit, 16 bit, and 24 bit. I checked XF86Config
-and it was configured for 8 bit, 15 bit, and 24 bit depths. Testing worked
-fine in 8 bit, starting X with startx --  -bpp 16 worked ( wasn't sure if I
-should use 15 or 16), and startx --  -bpp 24 also worked, but was quite
-distorted. Sort of like looking through a kaliedoscope with 4 quadrants -
-kind of reminded me of the 70s ;-). Running Xconfigurator & stting up only a
-16 bit mode, or only a 24 bit mode would cause X to fail with a default 8 bit
-mode not configured (more or less) message. I've gone back to the first rpm
-now, but Ill try anything else you can suggest.
+I've had that same problem repeatedly in the past; I don't see it now
+because I don't use PPP anymore.
+
+What was weired for me is that the problem seemed to depend on file
+content, so the actual data transfered did make a difference.
+
+For instance, I always had problems with the glibc RPM files.
+Downloading them to a different machine at my provider, gzip'ing them
+there, I was able to download them to my box without a problem.
+
+> By using tcpdump, I have discovered what seems to be a relevant fact: 
+> When the stream stalls, the sending side (always the remote) is 
+> resending the same range of bytes (sequence numbers) over and over 
+> again with an inter-packet arrival time that increases gradually 
+> until it reaches about two minutes where it holds until one side or 
+> the other gives up and closes the stream. Each such packet has the 
+> PUSH flag set and elicits an ACK from my system, but for whatever 
+> reason, the remote just keeps sending repetitions of a packet 
+> containing the same range of sequence numbers (with a total of 1448 
+> data bytes each).
+
+Does your box send out the ACK's for the incoming data? In that case,
+either these never reach the remote end, or the ACK packets contain
+some form of error...
 
 
---
-Neil Jolly
-(with Yoda-like voice)
-"Confrontation leads to anger...  Anger leads to fear...  Fear leads
-to using Windows NT in mission-critical combat systems...  And this is
-how the ancients fell...
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
