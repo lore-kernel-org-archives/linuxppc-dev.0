@@ -1,68 +1,54 @@
-Message-ID: <39888816.AEA4C307@mvista.com>
-Date: Wed, 02 Aug 2000 13:44:06 -0700
-From: Matthew Locke <mlocke@mvista.com>
+Date: Wed, 2 Aug 2000 23:33:25 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Gong Zhuo <gongzhuo@163.net>
+cc: Linux PPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: How to using Raven timer interrupt on MVME2600?
+In-Reply-To: <001f01bffc66$d4da4000$4607a8c0@LocalHost>
+Message-ID: <Pine.HPX.4.10.10008022331170.9070-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: lmphuc@yahoo.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: FWD: Installing PCMCIA hard disk on DVK MPC823
-References: <380658298.965240776157.JavaMail.root@web621-wrb.mail.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> My name's Phuc Le. I am new on this field. I just installed
-> PCMCIA HDD on the the DVK MPC823 but it failed.
+On Wed, 2 Aug 2000, Gong Zhuo wrote:
 
-What is the DVK 823? I  haven't heard of that one.
-
-
-> The result was the cardmgr detects the flugged pcmcia device to be
-> ATA/IDE and it tried to load the 'ide_cs.o' module. But it failed. The error
-> message were displayed as below:
 >
-> .... ide_cs.o: unresolved symbol 'ide_register'
-> .... ide_cs.o: unresolved symbol 'ide_unregister'
+> Hi:
+>    I want to using the timer of RAVEN to get cycle interrupt.
+>    I have done sth. like this:
 >
-> I tried to rebuilt the kernel with turn-on some IDE features in the
-> configuration phase and recompile the pcmcia based on the new kernel.
+>    1. 0x1092f107 ==> timer base count 0 (0xfc001110) ( the cycle is 16s and
+> value is 0x07f19210 on pci bus)
+>    2. 0x80000700 ==> timer 0 vector/priority reg.(0xfc001120) ( vector 80,
+> priority 7)
+>    3. 0x01000000 ==> timer 0 destination reg. (0xfc001130) ( interrupt to
+> processor 0)
+>    4. 0x06000000 ==> interrupt task priority reg. (0xfc020080) (task
+> priority is 6)
 >
-> The result was still failed with the kernel to be panic status.
+>    I can see the value of timer 0 current count reg. is changing and the 'T'
+> bit of timer 0 current count reg. changing between 0 and 1.
+>    The 'ACT' bit of timer0 vector/priority reg. is 1 (the whole value is
+> 0x80000740) after interrupt enabled.
 >
+>    In my interrupt processing:
+>    1. read interrupt ack reg.
+>    2. judge the vector to see if it is 0x80 (the timer 0 vector)
+>    3. do the interrupte processing
+>    4. write a value to EOI register
+>
+>    But it seems that the interrupt has never happened. After I read the
+> interrupt ack reg. under PPCbug , the 'ACT' bit of vector/priority reg. will
+> not change. Is that right? Something else I should do?
 
-As usual Dan beat me to a response, but I can give a little more
-detail:-)
+Yes, write 0 to the processor EOI register. I donn't understand why you
+want to do it BTW, but have a look at the OpenPIC code to see how it's
+done (although I don't like the code nor generally the whole PPC interrupt
+mangement which was too messy last time I looked at it).
 
-My next task (probably after LinuxWorld this month) is to figure out all
-the details for making card services work on 8xx and document them.  In
-the mean time, here is what I know:
+	Regards,
+	Gabriel.
 
-The 8xx portion of the kernel has some code that connects the PCMCIA
-controller to the IDE driver (without card services).  this code is
-activated when you select the *_IDE and *_IDEDISK config options.  So it
-probably is conflicting with the ide_cs modules in card services.  I
-think if you pass in the ide=noprobe (check docs for exact args) at the
-boot prompt it might work, maybe.
-
-If you don't need hot swap, I suggest not using card services until I
-have packaged it for HardHat.  Instead use the existing code that
-connects the controller to the IDE driver.  You may need to tune some
-timing parameters to your PCMCIA h/w.  I have a patch that makes it work
-with a SanDisk at  ftp://ftp.mvista.com/pub/Area51/embedded-planet
-To do this:
-
-apply the patch
-Enable the _IDE and _IDEDISK kernel config options
-make dep; make zImage
-insert PCMCIA card
-load and boot linux
-
-
-I will post a message when Card Services is available on Montavista's
-ftp site.
-
-
-Matthew Locke
-Software Engineer
-Montavista Software
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
