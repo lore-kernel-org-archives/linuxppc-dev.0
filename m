@@ -1,32 +1,48 @@
-Message-ID: <38E46AC5.1B8F3153@iiic.ethz.ch>
-Date: Fri, 31 Mar 2000 11:07:17 +0200
-From: Michel Dänzer <michdaen@iiic.ethz.ch>
-MIME-Version: 1.0
-To: Gabriel Ricard <g_ricard@yahoo.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problems with atyfb in recent kernels.
-References: <20000331083145.13309.qmail@web1704.mail.yahoo.com>
-Content-Type: text/plain; charset=iso-8859-1
+Date: Fri, 31 Mar 2000 09:27:07 -0500
+From: Josh Huber <huberj@wpi.edu>
+To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: gcc bug
+Message-ID: <20000331092707.C354@wpi.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Ricard wrote:
->
-> Ever since upgrading to LinuxPPC 2k recently I have been experiencing
-> problems with X windows toolkits. Buttons and other widgets both in whatever
-> toolkit netscape uses, and GTK have "issues" with being drawn incorrectly.
-> The sides of the buttons are drawn in diagonal, and other widgets are having
-> problems with this as well. I have experienced this with both the LinuxPPC
-> Standard kernel off the CD and the most recent linux-pmac-stable source from
-> linuxcare's rsync.
->
-> Was something changed in the atyfb driver recently?
+Interesting gcc bug here...
 
-This is more probably a problem in the X server than in atyfb.
+in both cases this should print 0xDEADBEEF, but in the second case, garbage
+is printed.
 
+main()
+{
+	unsigned long t1 = 32;
+	unsigned long long t2 = 64;
 
-Michel
+	printf("%x\n", 1 ? 0xDEADBEEF : t1);
+	printf("%x\n", 1 ? 0xDEADBEEF : t2);
+}
 
+as expected, the 1 ? ... operation is optimized away, but the compiler seems
+to screw things up ...
+
+working case:
+	li 4,15
+	crxor 6,6,6
+	bl printf
+
+failure case:
+	li 5,0
+	li 6,15
+	crxor 6,6,6
+	bl printf
+
+in the failure case, r4 is not loaded with anything, so this is were the
+garbage probably comes from.
+
+This is a greatly simplified version of an actual piece of code (obviously,
+as the code above is silly :)
+
+Josh
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
