@@ -1,67 +1,44 @@
-Date: Fri, 26 Mar 2004 09:16:47 +0100 (CET)
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: O(1) scheduler for PPC?
-In-Reply-To: <Pine.LNX.4.44.0403260858030.25458-100000@linpc003.aimsys.nl>
-Message-ID: <Pine.LNX.4.44.0403260914350.7016-100000@linpc003.aimsys.nl>
+Message-ID: <4063ED30.2020807@imc-berlin.de>
+Date: Fri, 26 Mar 2004 09:43:28 +0100
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>,
+	kernel@plumlocosoft.com
+Subject: Re: O(1) scheduler for PPC?
+References: <Pine.LNX.4.44.0403260858030.25458-100000@linpc003.aimsys.nl>
+In-Reply-To: <Pine.LNX.4.44.0403260858030.25458-100000@linpc003.aimsys.nl>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 26 Mar 2004, Jaap-Jan Boor wrote:
+Jaap-Jan Boor wrote:
 
->
 > On Thu, 25 Mar 2004, Steven Scholz wrote:
->
-> >
-> > Hi there,
-> >
-> > is the backport of Ingo Molnar's O(1) scheduler in the official linux-2.4.2x
-> > tree and is it available for the PPC?
+>>
+>>is the backport of Ingo Molnar's O(1) scheduler in the official linux-2.4.2x
+>>tree and is it available for the PPC?
 >
 > an up-to-date patch together with the preemptible kernel and low-latency
 > patches for 2.4.25 are available here:
 >
 > http://www.plumlocosoft.com/kernel
->
 
-note that, after applying the 'base' patch you need to add the
-CONFIG_LOLAT option to arch/ppc/config.in and apply thew following
-change in include/asm-ppc/bitopts.h
+Thanks a lot.
 
-285c285
-< static inline int _sched_find_first_bit(unsigned long *b)
----
-> static inline int sched_find_first_bit(unsigned long *b)
+But it looks like the recent "full patch against 2.4.25" found at
 
+http://www.plumlocosoft.com/kernel/patches/2.4/2.4.25/2.4.25-lck1/patch-2.4.25-lck1.bz2
 
-Jaap-Jan
+still got the problems mentioned ages ago in
 
-> >
-> > Thanks,
-> >
-> > Steven
-> >
-> >
-> >
->
-> --
-> J.G.J. Boor			  Anton Philipsweg 1
-> Software Engineer		  1223 KZ Hilversum
-> AimSys bv              		  tel. +31 35 689 1941
-> Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
->
->
->
+http://lists.linuxppc.org/linuxppc-dev/200212/msg00032.html
 
---
-J.G.J. Boor			  Anton Philipsweg 1
-Software Engineer		  1223 KZ Hilversum
-AimSys bv              		  tel. +31 35 689 1941
-Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
+Maybe Eric Hustvedt could merge these trivials into his patch set.
+
+Thanks a million,
+
+Steven
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
