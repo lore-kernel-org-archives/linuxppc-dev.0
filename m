@@ -1,42 +1,43 @@
-Message-ID: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6CFCF@renexch3.rennes.thmulti.com>
-From: Fillod Stephane <stephane.fillod@thomson.net>
-To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: uncached user space mapping with mmap() ???
-Date: Tue, 9 Mar 2004 13:49:00 +0100 
+Subject: Linux 2.4.24 on PQ2FADS
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OFFBAA77BB.483BA1A8-ONC1256E52.00468D91@uk.marconicomms.com>
+From: "Stefano Gaiotto" <Stefano.Gaiotto@marconi.com>
+Date: Tue, 9 Mar 2004 13:53:27 +0100
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
+Content-type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jon Masters wrote:
->> The bigger the mmap, the better, and the "lesser" entries in page table
->> there will be.
->
->That's not true though. I went along with the rest of your mail, but the
->above just does not make sense to me.
+Dear colleagues,
 
-Indeed! I should have written:
-"The bigger the mmap, the better, and the "lesser"  vma entries
-there will be."
+I'm trying to have Linux 2.4.24 working on my evaluation board PQ2FADS-VR
+with ppc8275, but I'm suffering of a lot of instability problems.
+The Boot-loader I use is Uboot-1.0.0 witch initialise correctly the board
+at speed 66,133,199 and correctly fills bd_info struct.
+But when I issue the command "=> bootm 100000" I observe every time a
+different behaviour: sometimes I don't see anything, sometimes the board
+stops in "Calibrating delay loop", sometimes after having written the line:
 
-The idea is:  mmap(N*pagesize()) is better than   N times mmap(pagesize()),
-provided you do need to address all this space.
+Memory: 30936k available (984k kernel code, 344k data, 52k init, 0k
+highmem)
 
->Are you somehow assuming you can have variable page sizes or will
->necessarily be using BATs to map in large regions? If this is the case
->then do bear in mind the fixed 4K page size on most platforms and the
->fact that many architectures like 4xx do not have any BATs anyway.
+Or the line
 
-You're right. To have less entries in the page table, we would need
-variable page sizes, since 4xx does not have BAT. Hence my remark
-in form of question about ability of hugetlb. The answer must
-be in the archive.
+POSIX conformance testing by UNIFIX
 
-Thanks for the correction  :-)
+Only occasionally it reaches the init program (stopping here).
 
-Regards,
-Stephane
+The same behaviour I observed with the images delivered by the Arabella
+distribution!
+
+Do you have any suggestion? MMU? Cache? Hardware?
+
+Thanks in advance for your advice.
+
+With best regards,
+
+Stefano
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
