@@ -1,23 +1,13 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-vd1.iram.es (gra-vd1.iram.es [150.214.224.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E790B67A6D
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Mar 2005 18:32:39 +1000 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Tue, 29 Mar 2005 10:32:11 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20050329083211.GA27952@iram.es>
-References: <ffec644f8c4f3bc32922882631c0da3e@freescale.com>
-	<1112048510.5410.60.camel@gaston>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1112048510.5410.60.camel@gaston>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: ASM formatting rules?
+Return-Path: <gud@eth.net>
+Received: from MTVMIME01.enterprise.veritas.com (bay-bridge.veritas.com
+	[143.127.3.10]) by ozlabs.org (Postfix) with ESMTP id AFFCC67A72
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Mar 2005 22:27:21 +1000 (EST)
+To: greg@kroah.com
+From: Amit Gud <gud@eth.net>
+Date: Tue, 29 Mar 2005 17:52:44 +0530
+Message-ID: <ITPXCHFE1Uo1RZEpFid0000206a@itpxchfe1.enterprise.veritas.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, gud@eth.net
+Subject: [PATCH 4/91] get rid of pci_find_{device,subsys} arch/ppc
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,48 +17,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 29, 2005 at 08:21:50AM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2005-03-28 at 10:44 -0600, Kumar Gala wrote:
-> > Guys,
-> > 
-> > While this is not overly important to me, I was wondering if we had any 
-> > rules related to formatting of assembly files.  We seem to have code 
-> > formatted with and without spaces in the args.
-> > 
-> > I'm assuming something like this (w/o spaces):
-> > 
-> > <TAB>insn<TAB>argD,arg1,arg2
-> > 
-> > is what we want?  Just trying to get a rule documented going forward.
-> 
-> I used to have argD, arg1, arg2 but since everything else was "compact",
-> I now tend to adapt to everything else ;)
+Replace pci_find_{device,subsys} with pci_get_{device,subsys}.
 
-Assembly is not C! I don't like the space after the comma in
-assembly, but can adapt to (almost) any style.
 
-For the record, the biggest file of PPC assembly I wrote 
-(the real mode x86 emulator to initialize graphics board
-through BIOS emulation) is really atypical:
 
-1) it has two tabs before the opcode, because it must  
-accomodate really_long_labels and a single tab is not enough.
+Signed-off-by: Amit Gud <gud@eth.net>
 
-2) only a space between the opcode and the operands, but many 
-registers have fixed uses and have mnemonic names through #defines.
-This helps a lot for readability and maintainability. See 4)
-for the reason.
-
-3) no space after the comma between operands.
-
-4) Sometimes several instructions separated by a semicolon in 
-the same line, but only the first instruction may have a label. 
-That's because at the time I wanted to see as much as possible 
-on a small screen. But this does not mix well with putting
-tabs between instruction and operands, hence 2).
-
-I don't think these rules ar generally applicable to 
-assembly files, these were specific rules which matched
-my needs for this file (5000 lines).
-
-	Gabriel
+---
+diff -upr orig-2.6.12-rc1/arch/ppc/kernel/pci.c work-2.6.12-rc1/arch/ppc/kernel/pci.c
+--- orig-2.6.12-rc1/arch/ppc/kernel/pci.c	2005-03-22 12:53:17.000000000 +0530
++++ work-2.6.12-rc1/arch/ppc/kernel/pci.c	2005-03-24 15:39:21.107111456 +0530
+@@ -503,7 +503,7 @@ pcibios_allocate_resources(int pass)
+ 	u16 command;
+ 	struct resource *r;
+ 
+-	while ((dev = pci_find_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
++	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+ 		pci_read_config_word(dev, PCI_COMMAND, &command);
+ 		for (idx = 0; idx < 6; idx++) {
+ 			r = &dev->resource[idx];
+@@ -519,7 +519,7 @@ pcibios_allocate_resources(int pass)
+ 				alloc_resource(dev, idx);
+ 		}
+ 		if (pass)
+-			continue;
++			goto dev_put;
+ 		r = &dev->resource[PCI_ROM_RESOURCE];
+ 		if (r->flags & PCI_ROM_ADDRESS_ENABLE) {
+ 			/* Turn the ROM off, leave the resource region, but keep it unregistered. */
+@@ -530,6 +530,8 @@ pcibios_allocate_resources(int pass)
+ 			pci_write_config_dword(dev, dev->rom_base_reg,
+ 					       reg & ~PCI_ROM_ADDRESS_ENABLE);
+ 		}
++		dev_put:
++		  pci_dev_put(dev);
+ 	}
+ }
+ 
+@@ -540,12 +542,12 @@ pcibios_assign_resources(void)
+ 	int idx;
+ 	struct resource *r;
+ 
+-	while ((dev = pci_find_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
++	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+ 		int class = dev->class >> 8;
+ 
+ 		/* Don't touch classless devices and host bridges */
+ 		if (!class || class == PCI_CLASS_BRIDGE_HOST)
+-			continue;
++			goto dev_put;
+ 
+ 		for (idx = 0; idx < 6; idx++) {
+ 			r = &dev->resource[idx];
+@@ -571,6 +573,8 @@ pcibios_assign_resources(void)
+ 		if (r->end)
+ 			pci_assign_resource(dev, PCI_ROM_RESOURCE);
+ #endif
++		dev_put:
++		  pci_dev_put(dev);
+ 	}
+ }
+ 
+@@ -866,13 +870,18 @@ pci_device_from_OF_node(struct device_no
+ 	 */
+ 	if (!pci_to_OF_bus_map)
+ 		return 0;
+-	while ((dev = pci_find_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
++	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+ 		if (pci_to_OF_bus_map[dev->bus->number] != *bus)
+-			continue;
++			goto dev_put;
+ 		if (dev->devfn != *devfn)
+-			continue;
++			goto dev_put;
++
+ 		*bus = dev->bus->number;
++		pci_dev_put(dev);
+ 		return 0;
++
++		dev_put:
++		  pci_dev_put(dev);
+ 	}
+ 	return -ENODEV;
+ }
