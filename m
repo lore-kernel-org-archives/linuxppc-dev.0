@@ -1,36 +1,42 @@
-Message-ID: <3F3B3448.4020101@aimsys.nl>
-Date: Thu, 14 Aug 2003 09:03:36 +0200
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-MIME-Version: 1.0
+Message-ID: <791B3205DB661A42B4BFE5464A7D1D02010E461A@chzugexch01.abatos.com>
+From: Graf Alex <alex.graf@siemens.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: jffs2, kupdated and wdog to
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: AW: Serial Console at MPC8xx SCC1?
+Date: Thu, 14 Aug 2003 11:30:53 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Yes this works very well!
+Be sure you have defined CONFIG_SERIAL_CONSOLE_PORT for your uart.c! If you
+use SMC1+2 for uarts, define it as 2!
 
-I use a kernel timer (add_timer) to strobe proprietary wdog implemented
-in hw. I notice that once in a while when the kupdated task gets busy,
-my kernel timer is not called for a long time (400 - 500 ms) because
-of jffs2 administration (e.g. jffs2_free_inode_cache).
+cheers
 
-I still use the Denx 2.4.4 eldk 1.0 kernel. Does somebody know of
-a more recent jffs2 that calls schedule() more often or is this
-behaviour changed in kernels with the preemptible patch?
+alex
 
-(is there a better way to strobe watchdogs then using a kernel timer?)
 
-thanks,
+-----Ursprüngliche Nachricht-----
+Von: Steven Scholz [mailto:steven.scholz@imc-berlin.de]
+Gesendet: Mittwoch, 13. August 2003 17:25
+An: linuxppc-embedded@lists.linuxppc.org
+Betreff: Serial Console at MPC8xx SCC1?
 
-Jaap-Jan
 
---
-J.G.J. Boor			  Anton Philipsweg 1
-Software Engineer		  1223 KZ Hilversum
-AimSys bv              		  tel. +31 35 689 1941
-Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
+
+Hi there,
+
+has anyone successfully used MPC8xx SCC1 as serial console for Linux?
+
+I am using SMC1 and it works well.
+SCC1 is working under U-Boot. But not with linux-2.4.20...
+
+Thanks,
+
+Steven
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
