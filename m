@@ -1,76 +1,118 @@
-Date: Mon, 1 Dec 2003 21:23:58 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Tom Rini <trini@kernel.crashing.org>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: [PATCH] 2.4.23 and LongTrail
-Message-ID: <Pine.GSO.4.21.0312012117210.25040-100000@waterleaf.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 1 Dec 2003 22:05:40 +0100
+Subject: Re: 2.6 PReP issues, still freezing
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v553)
+Cc: Christian Kujau <evil@g-house.de>,
+	linuxppc-dev@lists.linuxppc.org
+To: Tom Rini <trini@kernel.crashing.org>
+From: Remco Post <r.post@sara.nl>
+In-Reply-To: <20031201191617.GF1166@stop.crashing.org>
+Message-Id: <1E5F9DC8-2442-11D8-A10A-000393911DE2@sara.nl>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-New stable kernel, time to try it on my LongTrail ;-)
+On Monday, Dec 1, 2003, at 20:16 Europe/Amsterdam, Tom Rini wrote:
 
-Here are a few fixes:
-  - Kill warning by removing unneeded forward declaration of openpic_reset().
-  - Kill warning by fixing printf()-style format.
-  - Fix detection of bogus ttyS02 (ttyS02 at 0x03e8 (irq = 4) is a 16450).
-    Ack'ed by RMK a while ago, valid for 2.6 as well.
+> On Mon, Dec 01, 2003 at 12:11:19PM +0100, Remco Post wrote:
+>>
+>> On Sun, 30 Nov 2003 14:21:10 +0100
+>> Christian Kujau <evil@g-house.de> wrote:
+>>
+>>>
+>>> hi,
+>>>
+>>> after more days of compiling (at least now i know my ppc has good RAM
+>>> :-) ) and testing serveral kernels, i think now it's not a
+>>> network-related but a ppc-specific problem.
+>>>
+>>> Andrew Morton gave me the hint to just copy drivers/net/tulip/ from
+>>> the
+>>> working 2.5.30 kernel to a recent one. i've done so; i've copied all
+>>> tulip stuff to a fresh 2.6.0-test11 kernel, after booting i was able
+>>> to
+>>> load the module, but a following "ifconfig eth1 192.168.2.1" freezed
+>>> the
+>>> machine -- as every kernel after 2.5.30 i was able to compile.
+>>>
+>>> a fix from Jeff Garzik went to linuxppc-dev (i saw it on lkml too),
+>>> subject was "2.6 PReP fix? (Was: [jgarzik@pobox.com: [PATCH/CFT]
+>>> de2104x
+>>> fixes])". i found out, that i can load 3 different modules for my
+>>> card:
+>>>
+>>> 00:0e.0 Ethernet controller: Digital Equipment Corporation DECchip
+>>> 21140
+>>> [FasterNet] (rev 22)
+>>>          Flags: bus master, medium devsel, latency 0, IRQ 11
+>>>          I/O ports at 1800 [size=128]
+>>>          Memory at c300a000 (32-bit, non-prefetchable) [size=128]
+>>>          Expansion ROM at c1040000 [disabled] [size=256K]
+>>>
+>>>
+>>> /lib/modules/2.6.0-test11/kernel/drivers/net/tulip:
+>>> de2104x.ko  de4x5.ko  tulip.ko
+>>>
+>>> /lib/modules/2.5.30/kernel/drivers/net/tulip:
+>>> de2104x.o  de4x5.o  tulip.o
+>>>
+>>> and every module gave me a freeze with 2.6.0-test11 (oh, i forgot to
+>>> test, if de2104x.o and de4x5.o are working correctly with 2.5.30
+>>> since
+>>> i've used always "tulip")
+>>>
+>>> and so, this makes me think it's a ppc-specific problem. no, i don't
+>>> say
+>>> it's easier now to fix, perhaps it's even harder, because a lot has
+>>> changed in the ppc port too. if we could blame the device-driver, the
+>>> codesize to play with would be a lot smaller...
+>>>
+>>> but since really no other PReP people complain, i think i'll stay
+>>> with
+>>> 2.4. a while. the machine is not that fast and i need a faster one
+>>> anyway...
+>>>
+>>
+>> I stopped complaining a while back (2.5.60 something) since I got
+>> absolutely
+>> no response. I'm one of the lucky (?) few who have a motorola
+>> powerstack
+>> (II) mobo.
+>
+> I suppose part of the problem is that my PowerStack (Series E) doesn't
+> have any problems. :)
+>
 
-Patches are relative to source.mvista.com::linuxppc_2_4 from last weekend.
+I just booted my powermac 8500 to build a new kernel (test11). after
+that's finished, I'll see if I can reproduce the problem...
 
-Thanks for applying!
-
---- linux-ppc-2.4.23/arch/ppc/kernel/open_pic.c.orig	Fri Nov 28 21:05:24 2003
-+++ linux-ppc-2.4.23/arch/ppc/kernel/open_pic.c	Sun Nov 30 12:12:30 2003
-@@ -69,7 +69,6 @@
-  * These functions are not used but the code is kept here
-  * for completeness and future reference.
-  */
--static void openpic_reset(void);
- #ifdef notused
- static void openpic_enable_8259_pass_through(void);
- static u_int openpic_get_priority(void);
---- linux-ppc-2.4.23/arch/ppc/kernel/setup.c.orig	Fri Nov 28 21:04:43 2003
-+++ linux-ppc-2.4.23/arch/ppc/kernel/setup.c	Sun Nov 30 12:13:46 2003
-@@ -157,7 +157,7 @@
- 	lpj = loops_per_jiffy;
- #endif
-
--	seq_printf(m, "processor\t: %lu\n", i);
-+	seq_printf(m, "processor\t: %u\n", i);
- 	seq_printf(m, "cpu\t\t: ");
-
- 	if (cur_cpu_spec[i]->pvr_mask)
---- linux-ppc-2.4.23/include/asm-ppc/pc_serial.h.orig	Fri Nov 28 21:04:24 2003
-+++ linux-ppc-2.4.23/include/asm-ppc/pc_serial.h	Sun Nov 30 11:28:57 2003
-@@ -28,10 +28,10 @@
-
- /* Standard COM flags (except for COM4, because of the 8514 problem) */
- #ifdef CONFIG_SERIAL_DETECT_IRQ
--#define STD_COM_FLAGS (ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST | ASYNC_AUTO_IRQ)
-+#define STD_COM_FLAGS (ASYNC_BOOT_AUTOCONF | ASYNC_AUTO_IRQ)
- #define STD_COM4_FLAGS (ASYNC_BOOT_AUTOCONF | ASYNC_AUTO_IRQ)
- #else
--#define STD_COM_FLAGS (ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST)
-+#define STD_COM_FLAGS ASYNC_BOOT_AUTOCONF
- #define STD_COM4_FLAGS ASYNC_BOOT_AUTOCONF
- #endif
-
-
-Gr{oetje,eeting}s,
-
-						Geert
-
+> What I've just done is put up all of the patches I have pending to try
+> and get into 2.6.0, once Linus either becomes more open to !ia32
+> patches
+> or Andrew Morton takes over.  They're over at:
+> http://stop.crashing.org:16080/~trini/
+>
+> The combination of 011 and 012 should allow for kgdb to work on any
+> PReP
+> box, and this should help people debug problems, if they have the time.
+>
+> --
+> Tom Rini
+> http://gate.crashing.org/~trini/
+>
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Met vriendelijke groeten,
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Remco Post
+
+SARA - Reken- en Netwerkdiensten                      http://www.sara.nl
+High Performance Computing  Tel. +31 20 592 8008    Fax. +31 20 668 3167
+
+"I really didn't foresee the Internet. But then, neither did the
+computer
+industry. Not that that tells us very much of course - the computer
+industry
+didn't even foresee that the century was going to end." -- Douglas Adams
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
