@@ -1,32 +1,22 @@
-In-Reply-To: <36F69C36.9D5373CE@business.wm.edu>
-Date: Tue, 23 Mar 1999 13:27:47 +0100
-To: "Kevin B. Hendricks" <kbhend@business.wm.edu>,
+Date: Tue, 23 Mar 1999 13:32:32 +0100
+To: linuxppc-user@lists.linuxppc.org, linux-pmac@samba.anu.edu.au,
         linuxppc-dev@lists.linuxppc.org
 From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: smbfs and smbmount and Paul's 2.2.1 kernel
-Message-Id: <19990323132747.016080@mail.mipsys.com>
+Subject: BootX 1.0.3b1 released
+Message-Id: <19990323133232.015348@mail.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Mar 22, 1999, Kevin B. Hendricks <kbhend@business.wm.edu> wrote:
+I uploaded BootX 1.0.3b1 on my web page. It should fix a problem with
+Apple's Symbios-based UW board (having this board in the mac could cause
+the kernel to be damaged during boot).
 
->To make smbfs work (I grabbed the src rpm and built it) I need to compile SMB
->_FS into the kernel.  I grabbed Paul's latest kernel source and dot.config
->file
->and noticed there was no support for SMB included in his kernel by default.
->
->Before I go and roll my own, has anyone played with mounting NT filesystems
->using smbmount and smbumount commands?  Is this stable on linuxppc?  Are
-there
->any gotchas I should look out for with this filesystem?
+It seems to work just fine on a desktop G3, PowerBook G3 and 8500, please
+tell me if you experience troubles on other machines.
 
-I use it regulary, compiled as a module, and it seems to work (but
-displays tons of messages in the active console). I had to compile recent
-version of smbmount (from a 2.0 samba package, If I remember correctly),
-the ones bundled with R4 didn't work with the latest kernel smbfs.
 
 -- 
            E-Mail: <mailto:bh40@calva.net>
