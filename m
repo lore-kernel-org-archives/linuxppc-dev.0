@@ -1,57 +1,55 @@
-Message-ID: <20000315094454.921.qmail@web106.yahoomail.com>
-Date: Wed, 15 Mar 2000 01:44:54 -0800 (PST)
-From: Michel Danzer <mdaenzer@yahoo.com>
-Reply-To: michdaen@iiic.ethz.ch
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to workonppcwithr128
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: Alan Hourihane <alanh@fairlite.demon.co.uk>,
-        Kostas Gewrgiou <gewrgiou@imbc.gr>,
-        "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-        linuxppc-dev@lists.linuxppc.org
+Date: Wed, 15 Mar 2000 10:57:15 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+cc: Michel Lanners <mlan@cpu.lu>, mj@ucw.cz, bh40@calva.net,
+        linux-fbdev@vuser.vu.union.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [linux-fbdev] [PATCH 2.3.x] fbdev reversion
+In-Reply-To: <Pine.GSO.4.10.10003150959000.20855-100000@dandelion.sonytel.be>
+Message-ID: <Pine.HPX.4.10.10003151038290.3396-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---- Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de> wrote:
 
-> > > Possibly; I've also seen the X server convert XFree mode lines into
-> > > fbdev timings, thereby overwriting the 565 with 000. Doesn't hurt for
-16
-> > > bits, only for 32 bits.
-> >
-> > Doesn't hurt for probing, but maybe for the ioctl?
+
+On Wed, 15 Mar 2000, Geert Uytterhoeven wrote:
+
 >
-> The ioctl has been disabled long time ago.
+> On Tue, 14 Mar 2000, Michel Lanners wrote:
+> > Flames, comments, cookies, ideas? Beer?
+>
+> #define _IO_BASE       0
+>
+> breaks CHRP and PReP boxes that use plain ISA drivers (inb() and friends).
 
-I meant when you hadn't disabled it. It hung there at the time, right? Now a
-hang in an ioctl is a kernel bug, or am I missing something?
+Indeed, but that's unavoidable. Except that the breakage has to wait for
+2.5 to be acceptable. Given the choice I prefer to break this and properly
+use resources even for drivers which believe that they have to use fixed
+addresses assigned by God, or rather the devil given the mess that the PC
+`architecture' is.
 
+Then all ISA drivers would have to ask with some function (a substitute
+for request_region) for a resource and take te I/O address from the
+resource.start field. This avoids useless code bloat in so many other
+drivers which right now add 3 elements for most I/O accesses: _IO_BASE,
+their own port base address, and a register offset.
 
-> I'll get back to poking around in there as soon as I can figure out how to
-> see the kernel messages (i.e. how to switch back to the text console fast
-> enough, or never let the X server switch to VT 7 in the first place).
+out[wl] instructions are defined as inline assembly modifying volatile
+memory and the compiler has to assume that this could modify any variable,
+among them _IO_BASE, which means that it is reloaded between two succesive
+outs for example and the address for the next out[wl] is recomputed from
+scratch. This is one load + 2 adds at least since we force the address to
+be in a register for st[hw]brx instructions. That's bloat and that's IMHO
+the most important reason for which _IO_BASE should be killed.
 
-A remote machine might be handy...
+This said if anybody knows a trick to avoid this kind of stupid code
+generation from the compiler (I suspect a __builtin_byteswap will have to
+be implemented sooner or later as well with compiler constraints to use
+indexed addressing mode only which is needed anyway for Altivec).
 
+	Gabriel.
 
-> Now I can't get beyond xf86HandleColormaps(). Another ioctl that barfs on
-> me, perhaps.
-
-Well possible, FBIOPUTCMAP in fbdevHWLoadPalette.
-
-I don't understand the code there...
-
-BTW I've just discovered that the fbdev driver sets the weight explicitly to
-{0,0,0}... now I'm (really ;) confused.
-
-
-> I guess it all boils down to PCI messups.
-
-How do you come to this conclusion? Why should it influence ioctls?
-
-
-Michel
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
