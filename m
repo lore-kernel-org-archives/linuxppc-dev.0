@@ -1,28 +1,35 @@
-To: Kedar Madineni <kedar@occamnetworks.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PPMC8260 - bdi2000.cnf 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 25 Jul 2002 16:35:22 PDT."
-             <3D408B3A.F1FA16B@occamnetworks.com>
-Date: Fri, 26 Jul 2002 08:29:55 +0200
-Message-Id: <20020726063000.E551610875@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093B1E@mail1.mediatrix.com>
+From: Jean-Denis Boyer <jdboyer@mediatrix.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: BDI2000 on an 8250
+Date: Fri, 26 Jul 2002 11:07:33 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3D408B3A.F1FA16B@occamnetworks.com> you wrote:
->
-> Here is a bdi2000 config file, that works with PPMC8260.
+Has anybody successfully connected a BDI2000 to a 8250 processor?
 
-Thanks - added to our collection at ftp://ftp.denx.de/pub/BDI2000/
+It works very well on my custom board with an 8260 (HIP3). We prepared an
+identical board with an 8250 (HIP4) (with the required modifications), but I
+have problems executing helper code out of it. It almost always hangs with
+the message "PPC: timeout while waiting for freeze"... sometimes (rarely) it
+works. The software on it (kernel 2.4.19-rc2) works very well. No one could
+help me at Abatron (the issue is still pending), since apparently, nobody
+use that processor yet. The only answer I got is that an 8260A is supported
+(and was tested), and for COP debugging, it is the same thing.
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-God may be subtle, but He isn't plain mean.         - Albert Einstein
+Thanks.
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., System Architect
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
