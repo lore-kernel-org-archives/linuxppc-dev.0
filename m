@@ -1,49 +1,69 @@
-From: Der Herr Hofrat <der.herr@hofr.at>
-Message-Id: <200309040558.h845wW900694@hofr.at>
-Subject: Re: Memory Profiling Tool
-In-Reply-To: <200309021344.IAA18035@lists.linuxppc.org> from "mss59@att.net"
- at "Sep 2, 2003 01:43:55 pm"
-To: mss59@att.net
-Date: Thu, 4 Sep 2003 07:58:32 +0200 (CEST)
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3F56E58C.17B0E035@aimsys.nl>
+Date: Thu, 04 Sep 2003 09:11:08 +0200
+From: Jaap-Jan Boor <jjboor@aimsys.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Jan Dominik Baranski <jdb2@ece.msstate.edu>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Kernel hangs on EP862-1.1 during boot
+References: <3F5664E8.3080502@ece.msstate.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Hi Jan,
+
+What you could do is check of your board data that is passed to the kernel
+is still valid in start_kernel.
+Also, are you sure you have the kernel uart driver properly configured
+(i.e. it works but you don't see anything)
+
+Jaap-Jan
+
+Jan Dominik Baranski wrote:
 >
-> Is there any memory profiling and leak detection tool available which works
-> for both PPC and X86??
+> Hello all,
+> I'm having trouble getting a 2.4.22 kernel to boot on an Embedded Planet
+> EP862-1.1 board (based on an MPC860). I get this:
+> ---
+> Loaded addresses 00400000 through 0049FFFF.
+>  >go
+> [Go 00400000]
+>
+> loaded at:     00400000 004A31F4
+> relocated to:  00180000 002231F4
+> board data at: 00220128 00220144
+> relocated to:  001862E0 001862FC
+> zimage at:     001868A0 0021F3EC
+> avail ram:     00224000 01000000
+>
+> Linux/PPC load: console=ttyS0,9600
+> Uncompressing Linux...done.
+> Now booting the kernel
+>
+> <just hangs here>
+>
+> ---
+> I've searched the archives, but no one seems to have this board/problem
+> combination. I've made sure the watchdog timer is disabled and that the
+> IMMR (0xfa200000) is set correctly. Being pretty new to this, I don't
+> really know where else to look. Maybe something related to m8xx_board_info?
+>
+> The thing is, I've been able to get an old kernel (2.4.7) from Timesys
+> that's configured for an RPX Classic board to boot correctly. I just
+> can't figure out what they may have done that I haven't.
+>
+> Any suggestions??
+>
+> Thanks
+>
+> -Jan
+>
 
-bgcc - bounds checking gcc - its a patch to gcc
-
-the output will look something like this but can be tuned with compile time options:
-
-Bounds Checking GCC v gcc-3.2.2-3.1 Copyright (C) 1995 Richard W.M. Jones
-Bounds Checking comes with ABSOLUTELY NO WARRANTY. For details see file
-`COPYING' that should have come with the source to this program.
-Bounds Checking is free software, and you are welcome to redistribute it
-under certain conditions. See the file `COPYING' for details.
-For more information, set GCC_BOUNDS_OPTS to `-help'
-Bounds library call frequency statistics:
-  Calls to push, pop, param function:        1, 1, 0
-  Calls to add, delete stack:                1, 1
-  Calls to add, delete heap:                 1, 0
-                                             ^^^^
-                                       malloc but no free..
-
-  Calls to check pointer +/- integer:        0
-  Calls to check array references:           0
-  Calls to check pointer differences:        0
-  Calls to check object references:          0
-  Calls to check component references:       0
-  Calls to check truth, falsity of pointers: 0, 0
-  Calls to check <, >, <=, >= of pointers:   0
-  Calls to check ==, != of pointers:         0
-  Calls to check p++, ++p, p--, --p:         0, 0, 0, 0
-  References to unchecked static, stack:     0, 0
-
-hofrat
+--
+J.G.J. Boor			  Anton Philipsweg 1
+Software Engineer		  1223 KZ Hilversum
+AimSys bv              		  tel. +31 35 689 1941
+Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
