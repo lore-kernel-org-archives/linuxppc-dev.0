@@ -1,56 +1,36 @@
-Message-ID: <3E96BC29.1020903@adtran.com>
-Date: Fri, 11 Apr 2003 07:59:21 -0500
-From: Ron Flory <ron.flory@adtran.com>
+Message-ID: <3E96C07B.4060809@dgt-lab.com.pl>
+Date: Fri, 11 Apr 2003 15:17:47 +0200
+From: Wojciech Kromer <krom@dgt-lab.com.pl>
 MIME-Version: 1.0
-To: Steven Scholz <steven.scholz@imc-berlin.de>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: parse error before `{', stray '\' in program
-References: <20030411072503.64755C5877@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: kernel/timer.c
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
-> In message <3E96684D.7000601@imc-berlin.de> you wrote:
->
->>Good you please post the URL to the list if you find one!
->>I am facing this problem from time to time ...
->>
->>Does anyone know if the ppc_8xx-gcc 2.95.4 from DENX ELDK has this
->>patch applied?
->
->
-> No, it has not, and will not.
->
-> I see no sense in a modification that supports violations  of  the  C
-> standard.
+Anyone knows why tehere is a line:
 
-  especially when its so easy to cleanup text files by piping them
-through 'tr':
+expire = timespec_to_jiffies(&t) + (t.tv_sec || t.tv_nsec);
 
-    cat "$src_file" | tr -d \\015 > "$tmp_file"
-    mv -f $tmp_file $src_file
-
-  which removes those funky MsDos carriage returns.
-
-(depending on your shell, you may be able to skip the tmp_file above)
-
-  Just write a small shell-script that iterates through your source
-files, applying this filter.
+in kernel/timer.c sys_nanosleep
+It adds additional time tick to expire. If anyone uses small HZ value
+(eg 100 which is default for arch-ppc) this causes aditional 10ms delay
+when calling nanosleep.
 
 
-  Like you, I also develop on several platforms.  I find it convenient
-to add a new 'fix' target to the makefiles, then run the above filter
-on all source and header files in the project.
+For me ( found by Andrzej Kass)
+ it should be:
 
-   <import file from MsDos/windoze>
-   make fix           # with implied 'make clean'
-   make
+expire = timespec_to_jiffies(&t) + !(t.tv_sec || t.tv_nsec);
+   //^^add extra tick if there is
+  // nothing in tv_sec and nothing in tv_nsec
 
-  works great, on lots and lots of projects...
 
-ron
+--
+* * * * * * * * * * * *
+* per pedes ad astra! *
+* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
