@@ -1,61 +1,116 @@
-Date: Mon, 21 Jan 2002 18:39:21 +0100
-Subject: Re: Kernel 2.4.x video problems
-From: Chris Boot <bootc@mac.com>
-To: <benh@kernel.crashing.org>,
-	LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>,
-	YellowDog Devel <yellowdog-devel@lists.yellowdoglinux.com>
-Message-ID: <B87210D9.C46%bootc@mac.com>
-In-Reply-To: <20020121164058.7246@mailhost.mipsys.com>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+From: David Given <dg@tao-group.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: ATI Rage Pro 128 TR
+Date: Mon, 21 Jan 2002 18:40:44 +0000
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="------------Boundary-00=_W7XA5540W9A0DH89J7KZ"
+Message-Id: <E16SjNP-0003T5-00@rhodium.tao.co.uk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Ben,
+--------------Boundary-00=_W7XA5540W9A0DH89J7KZ
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
->> I've got a few questions pertaining to video in recent kernels (2.4.x, x >=
->> 10) on both an iMac DV SE/500 (Summer 2000, ATI Rage 128 Pro) and a G4 Dual
->> 533 (ATI Radeon).
->>
->> First of all, I can only boot the iMac using the novideo kernel argument.
->> If I attempt to use video=aty128fb with or without any vmode parameters, the
->> screen just remains black.  I can type blindly and reboot, and got a dmesg.
->> Nothing out of the ordinary.  If there are any ways of getting verbose
->> messages from the kernel or the driver itself, I would be rather grateful.
->>
->> Second, the G4/533 works fine with no arguments, but it remains in 640x480,
->> 8-bit color.  As soon as I try to get some accelerated video using the
->> Radeon FB driver, the screen remains blank as in the iMac.  A dmesg this
->> time does in fact yield a message: "radeonfb: could not claim FB region" or
->> something similar (not by the machine at the moment).  Anyone know what's
->> causing this?
->
-> for radeon, can you try with a recent 2.4.18pre4 ? It should work
-> (it does for me actually). You should probably get XFree 4.2.0 to fully
-> benefit from accel though.
 
-Thanks, I'll give it a spin when I get my hands on that G4 again.  The
-problem is that it's a friend's computer and he's away for a few weeks now,
-so it won't be until about three weeks time if even that.
+A while back I posted that I was having problems getting the video to wor=
+k on=20
+our new iMac, a blue CDROM version (how do I work out what it *actually*=20
+is?). It uses a Rage Pro 128 TR video card, that the kernel didn't know a=
+bout.
 
-> I'm not sure what's up with aty128fb, it should work, but you aren't
-> the only one to report a problem. I'll check this out.
+Well, I found a patch for an ancient 2.4 kernel that claimed to supported=
+ it,=20
+hacked it into 2.4.17, cleaned it up etc, and here it is. Attached.
 
-I've got that running in the end.  I had to use
-"video=aty128fb:vmode:16,cmode:32", the modedb way didn't work.  I may even
-have a "noaccel" in there, but I can't remember to be honest.  I can look
-into it further if you wish, I did attach a dmesg with the aty128fb
-debugging enabled to a message I sent to linux-kernel@vger.kernel.org, so
-check the archives there for it.
+There still appear to be some problems, but that may be because I'm not=20
+working it correctly. Most screen modes make the screen go black; I suspe=
+ct=20
+that the monitor's really a fixed-sync. DirectFB programs cause certain=20
+programs, like syslogd, do go into D state --- I haven't worked out why y=
+et.=20
+OTOH, this could be because DirectFB is trying to hardware accelerate the=
+=20
+card. However, leaving the standard screen mode and just changing depth w=
+orks=20
+fine.
 
-Thanks,
+I noticed that somebody else was having problems with iMac video --- perh=
+aps=20
+this will help.
 
---
-Chris Boot
-bootc@mac.com
+On a related note, is there a program that will reset the console back to=
+=20
+text mode if my application crashes and leaves it in graphics mode anywhe=
+re?
 
-"Use the source, Luke." - Obi-Wan Gnuobi
+In related news, my earlier problem about strange SIGFPEs for no apparent=
+=20
+reason may be an artifact of my slighty dodgy userland threading code ---=
+ it=20
+uses sys_sigreturn to change the register set of the process. Because MSR=
+=20
+isn't available from userland, I was just assuming 0; this wouldn't cause=
+ a=20
+problem anyway because the only bits I can change are FE0 and FE1 anyway,=
+ and=20
+my app doesn't use floating point, right? Yeah, right.
 
+Anyone know how I can read the current values of FE0 and FE1 from userlan=
+d?
+
+- --=20
+David Given
+dg@tao-group.com
+
+
+--------------Boundary-00=_W7XA5540W9A0DH89J7KZ
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="patch"
+
+ZGlmZiAtdU5yIGxpbnV4Lm9yaWcvZHJpdmVycy92aWRlby9hdHkxMjhmYi5jIGxpbnV4L2RyaXZl
+cnMvdmlkZW8vYXR5MTI4ZmIuYwotLS0gbGludXgub3JpZy9kcml2ZXJzL3ZpZGVvL2F0eTEyOGZi
+LmMJU3VuIE5vdiAxMSAxODowOTozNyAyMDAxCisrKyBsaW51eC9kcml2ZXJzL3ZpZGVvL2F0eTEy
+OGZiLmMJTW9uIEphbiAyMSAxMTo1NjowNSAyMDAyCkBAIC0xNTQsNiArMTU0LDcgQEAKICAgICB7
+IlJhZ2UxMjggUkwgKEFHUCkiLCBQQ0lfREVWSUNFX0lEX0FUSV9SQUdFMTI4X1JMLCByYWdlXzEy
+OH0sCiAgICAgeyJSYWdlMTI4IFBybyBQRiAoQUdQKSIsIFBDSV9ERVZJQ0VfSURfQVRJX1JBR0Ux
+MjhfUEYsIHJhZ2VfMTI4X3Byb30sCiAgICAgeyJSYWdlMTI4IFBybyBQUiAoUENJKSIsIFBDSV9E
+RVZJQ0VfSURfQVRJX1JBR0UxMjhfUFIsIHJhZ2VfMTI4X3Byb30sCisgICAgeyJSYWdlMTI4IFBy
+byBUUiAoQUdQKSIsIFBDSV9ERVZJQ0VfSURfQVRJX1JBR0UxMjhfVFIsIHJhZ2VfMTI4X3Byb30s
+CiAgICAgeyJSYWdlIE1vYmlsaXR5IE0zIChQQ0kpIiwgUENJX0RFVklDRV9JRF9BVElfUkFHRTEy
+OF9MRSwgcmFnZV9NM30sCiAgICAgeyJSYWdlIE1vYmlsaXR5IE0zIChBR1ApIiwgUENJX0RFVklD
+RV9JRF9BVElfUkFHRTEyOF9MRiwgcmFnZV9NM30sCiAgICAge05VTEwsIDAsIHJhZ2VfMTI4fQpA
+QCAtMTY0NSw2ICsxNjQ2LDcgQEAKICAgICAgICAgICAgIHVuc2lnbmVkIGludCB2bW9kZSA9IHNp
+bXBsZV9zdHJ0b3VsKHRoaXNfb3B0KzYsIE5VTEwsIDApOwogICAgICAgICAgICAgaWYgKHZtb2Rl
+ID4gMCAmJiB2bW9kZSA8PSBWTU9ERV9NQVgpCiAgICAgICAgICAgICAgICAgZGVmYXVsdF92bW9k
+ZSA9IHZtb2RlOworCiAgICAgICAgIH0gZWxzZSBpZiAoIXN0cm5jbXAodGhpc19vcHQsICJjbW9k
+ZToiLCA2KSkgewogICAgICAgICAgICAgdW5zaWduZWQgaW50IGNtb2RlID0gc2ltcGxlX3N0cnRv
+dWwodGhpc19vcHQrNiwgTlVMTCwgMCk7CiAgICAgICAgICAgICBzd2l0Y2ggKGNtb2RlKSB7CkBA
+IC0xNzIzLDYgKzE3MjUsMjggQEAKICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgIGlmIChk
+ZWZhdWx0X3Ztb2RlIDw9IDAgfHwgZGVmYXVsdF92bW9kZSA+IFZNT0RFX01BWCkKICAgICAgICAg
+ICAgICAgICBkZWZhdWx0X3Ztb2RlID0gVk1PREVfMTAyNF83NjhfNjA7CisKKwkgICAgLyogaU1h
+Y3MgbmVlZCB0aGF0IHJlc29sdXRpb24KKwkgICAgICogUG93ZXJNYWMyLDEgZmlyc3QgcjEyOCBp
+TWFjcworCSAgICAgKiBQb3dlck1hYzIsMiBzdW1tZXIgMjAwMCBpTWFjcworCSAgICAgKiBQb3dl
+ck1hYzQsMSBqYW51YXIgMjAwMSBpTWFjcyAiZmxvd2VyIHBvd2VyIgorCSAgICAgKi8KKwkgICAg
+aWYgKG1hY2hpbmVfaXNfY29tcGF0aWJsZSgiUG93ZXJNYWMyLDEiKSB8fAorCQltYWNoaW5lX2lz
+X2NvbXBhdGlibGUoIlBvd2VyTWFjMiwyIikgfHwKKwkJbWFjaGluZV9pc19jb21wYXRpYmxlKCJQ
+b3dlck1hYzQsMSIpKQorCQlkZWZhdWx0X3Ztb2RlID0gVk1PREVfMTAyNF83NjhfNzU7CisKKwkg
+ICAgLyogUG93ZXJCb29rIEZpcmV3aXJlIChQaXNtbykgKi8KKwkgICAgaWYgKG1hY2hpbmVfaXNf
+Y29tcGF0aWJsZSgiUG93ZXJCb29rMywxIikpCisJCWRlZmF1bHRfdm1vZGUgPSBWTU9ERV8xMDI0
+Xzc2OF82MDsKKworCSAgICAvKiBQb3dlckJvb2sgVGl0YW5pdW0gKi8KKwkgICAgaWYgKG1hY2hp
+bmVfaXNfY29tcGF0aWJsZSgiUG93ZXJCb29rMywyIikpCisJCWRlZmF1bHRfdm1vZGUgPSBWTU9E
+RV8xMTUyXzc2OF82MDsKKworCSAgICAvKiBpQm9vayBGaXJld2lyZSAqLworCSAgICBpZiAobWFj
+aGluZV9pc19jb21wYXRpYmxlKCJQb3dlckJvb2syLDIiKSkKKwkJZGVmYXVsdF92bW9kZSA9IFZN
+T0RFXzgwMF82MDBfNjA7CiAKICAgICAgICAgICAgIGlmIChkZWZhdWx0X2Ntb2RlIDwgQ01PREVf
+OCB8fCBkZWZhdWx0X2Ntb2RlID4gQ01PREVfMzIpCiAgICAgICAgICAgICAgICAgZGVmYXVsdF9j
+bW9kZSA9IENNT0RFXzg7Cg==
+
+--------------Boundary-00=_W7XA5540W9A0DH89J7KZ--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
