@@ -1,73 +1,40 @@
-Message-ID: <3C091F3C.7176C145@mvista.com>
-Date: Sat, 01 Dec 2001 10:19:40 -0800
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
+Message-ID: <3C095837.6090302@embeddededge.com>
+Date: Sat, 01 Dec 2001 17:22:47 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-Cc: frowand@mvista.com, paulus@samba.org,
-	Ralph Blach <rcblach@us.ibm.com>, linuxppc-dev@lists.linuxppc.org
+To: frowand@mvista.com
+Cc: paulus@samba.org, Ralph Blach <rcblach@us.ibm.com>,
+	linuxppc-dev@lists.linuxppc.org
 Subject: Re: include/asm-ppc/platforms/
-References: <OF04BCE99E.8AF57CF2-ON85256B14.00425D94@raleigh.ibm.com > <15368.891.368917.13579@argo.ozlabs.ibm.com> <3C0814AC.455D6FEA@mvista.com> <3C084F22.3030505@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii
+References: <OF04BCE99E.8AF57CF2-ON85256B14.00425D94@raleigh.ibm.com > <15368.891.368917.13579@argo.ozlabs.ibm.com> <3C0814AC.455D6FEA@mvista.com> <3C084F22.3030505@embeddededge.com> <3C091F3C.7176C145@mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek wrote:
->
-> Frank Rowand wrote:
->
-> > ....Some concrete
-> > examples of core / chip / board are:
-> >
-> >   403
-> >     403GCX
-> >   405
-> >     405cr
-> >     405gp
-> >       walnut
-> >       cpci405
-> >       ep405
-> >     stb03xxx
-> >       redwood-4
-> >     NPe405H
-> >     NPe405L
->
-> I think the 4xx has always had this backward from other PowerPC platform
-> definiitons.  While we should define processor cores, their peripherals,
-> and boards, the least common denominator is the processor core.  With the execption
-> of few boards (the Sandpoint comes to mind), simply configuring a board
-> type will allow you to know which processor package is used and further
-> the processor core.  If I say "Walnut" configuration, I already know everything
-> else, I don't need to be asked all of the other configuration questions.
-> Our files should also follow this structure.  The Walnut configuration file
-> should include 405GP (which defines peripherals) which should then include
-> the processor core definitions (if necessary).  This way, when a new processor
-> package with a different peripheral configuration is added, all you need to
-> do is ensure the proper lower level core file is included, you don't have
-> to update all of the board configuration files with stuff they don't care about.
->
-> If, in this example, the Walnut had different processor types available, it
-> would make sense within that configuration to ask the processor type, but no
-> one else would (nor should) care.  Again, the file structure would follow,
-> with the Walnut board configuration including the appropriately configured
-> processor package.
->
-> Thanks.
->
->         -- Dan
+Frank Rowand wrote:
 
 
-If I understand correctly, you are talking only about the configuration
-structure, not the header file structure -- so a different topic than
-what this thread has been.  Please correct me if you are also talking
-about header file structure.
 
-arch/ppc/config.in has already been changed to match what you propose.
+> If I understand correctly, you are talking only about the configuration
+> structure, not the header file structure -- so a different topic than
+> what this thread has been.
 
--Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+I'm talking about both.  Yes, I know the configuration has been mostly
+changed, but today the ibm4xx.h file includes ibm405gp.h which then
+includes walnut.h.  This is totally backward.  The ibm4xx.h file should
+include walnut.h, which should include ibm405gp.h, which should include
+a core or peripheral definition file if necessary.
+
+The ibm4xx.h file (and the mpc8xx.h file) should be replaced by an
+appropriate platform.h file which would remove all of the ifdefs we
+currently have in the include lists of the C files and some of the
+problems with multiple definitions these ifdefs are in place to solve.
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
