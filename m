@@ -1,28 +1,40 @@
-Date: Mon, 25 Sep 2000 20:38:08 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-        R Shapiro <reshapiro@mediaone.net>,
-        Michel Dänzer <daenzerm@student.ethz.ch>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.0/1 with rage II/rage pro -- should the ati driver work?
-In-Reply-To: <Pine.LNX.4.21.0009251945050.1113-100000@idd-01.imbc.gr>
-Message-ID: <Pine.LNX.4.10.10009251941450.5808-100000@zirkon.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <14799.40986.872007.608122@esb.bbn.com>
+Date: Mon, 25 Sep 2000 14:57:30 -0400
+From: R Shapiro <rshapiro@bbn.com>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display, xinerama
+In-Reply-To: <39CF8EA9.E444E5EE@student.ethz.ch>
+References: <Pine.LNX.4.10.10009231028030.26749-100000@apollo.kulian.net>
+	<14798.23332.833379.615321@esb.bbn.com>
+	<39CE8B90.1B318DD2@student.ethz.ch>
+	<14799.19089.742041.388095@esb.bbn.com>
+	<39CF8EA9.E444E5EE@student.ethz.ch>
+Reply-To: rshapiro@bbn.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->   Hmm does this mean that mmapping the framebuffer doesn't give you the
-> start of vram but vram+offset ? if yes then we have a big problem here.
+Michel Dänzer writes:
+ > > Btw for those who might want to try this, +xinerama is a server arg so
+ > > the command is  'startx -- +xinerama'.
+ >
+ > There's also an option for XF86Config, read the manpage - the logical place
+ > would be in the Layout Section.
 
-No, atyfb reserved some space at the end of vram (MMIO mirrored there,
-please try to memset (0) that area for kicks. Makes you think you're
-melting your display).
+I searched the XF86Config and XFree86 man pages and found no
+references to xinerama.  Is it somewhere else?  None of the
+ServerLayout settings seem relevant to xinerama as distinguished from
+the standard multi-head mode (multiple X screens).
 
-	Michael
+I'd rather put this option in the XF86Config but I can't find a place
+for it.
+
+
+--
+rshapiro@bbn.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
