@@ -1,43 +1,55 @@
-Date: Mon, 26 Nov 2001 10:35:57 -0500
-Message-Id: <200111261535.fAQFZvd20352@hyper.wm.sps.mot.com>
-From: Peter Barada <pbarada@mail.wm.sps.mot.com>
-To: rudolf.ladyzhenskii@act-aus.net
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-reply-to: <B164B53F5BD6D511888D009027732E1A024972@ntserver.act.domain>
-	(message from Rudolf Ladyzhenskii on Thu, 22 Nov 2001 11:32:58 +1100)
-Subject: Re: request_irq () kills kernel
-References: <B164B53F5BD6D511888D009027732E1A024972@ntserver.act.domain>
+Message-ID: <35C119252057D511BB9F0003476BF8A208E67E@freexc01.smartm.com>
+From: "Prasad, Siva" <Siva.Prasad@smartm.com>
+To: "'Sarnath  Kannan'" <sparc64@rediffmail.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: DINK - the downloader !
+Date: Mon, 26 Nov 2001 08:04:47 -0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->I am writing a driver to support MPC8260 hardware timers.
->The very moment I call request_irq(), kernel dies without a warning (I
->use 2.4.4 kernel).
->
->I was looking through the kernel code and I discovered that other
->drivers use request_8xxirq() instead of request_irq(). Now, those
->things have been defined to be same in /arch/ppc/kernel/irq.c, but
->both appear in System.map. Which one should I use?
->Also, anyone have any ideas why kernel would die?
+Hi Sarnath,
 
-I'm don't know which call to use, but this reminds me of a slightly
-different problem I had bringing up the ppc kernel.  I accidently set
-the frequency to 200 instead of 200Mhz, so the system timer was
-programmed to interrupt one every 200 clocks instead of once every 200
-*million* clocks, and the timer ISR takes longer than 200 clocks to
-execute, so by the time the kernel was done servicing the timer, it
-expired again!  This caused the processor to appear like it stopped
-executing since it spent *all* of its time in the interrupt service
-routine.
+If you had downloaded Journeyman from MontaVista, you might have probably
+got a .pdf file also.
 
-You may want to look at how you are setting up the timers and making
-sure that the interrupt frequency is not so high as to prevent any
-other processing.
+That pdf file contains a chapter on configuring your host. There is a tftp
+configuring part. You might want to use it. I used that initially to get my
+system working for tftp.
 
---
-Peter Barada                                   Peter.Barada@motorola.com
-Wizard                                         781-852-2768 (direct)
-WaveMark Solutions(wholly owned by Motorola)   781-270-0193 (fax)
+Good Luck.
+
+Siva Prasad
+
+
+
+-----Original Message-----
+From: Sarnath Kannan [mailto:sparc64@rediffmail.com]
+Sent: Thursday, November 22, 2001 4:22 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: DINK - the downloader !
+
+
+
+Hi everybody,
+ I am really impatient with the way DINK downloads
+the kernel over the serial line..
+ i just want to get rid of it..
+
+Is it possible to download a "Ethernet boot"
+utility thru which I can download the kernel
+via ethernet card. Any such utilities for the
+sandpoint platform are available.. ?
+ Whats "tftp" and How do I set it up ?
+(no RTFMs please...)
+
+Any suggestion r pointer is most welcome,
+Thank you
+
+Sarnath
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
