@@ -1,35 +1,48 @@
-Date: Sun, 16 May 1999 13:27:28 +0200 (CEST)
-From: =?ISO-8859-1?Q?Kolbj=F8rn_Barmen?= <kolla@nvg.ntnu.no>
-To: KiPyo Ryu <kpryu@sei.co.kr>
+Date: Sun, 16 May 1999 10:49:07 -0400 (EDT)
+From: Tom Rini <tmrini@ntplx.net>
+To: Kevin Hendrickson <hndrcksn@net178019.hcv.com>
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: vger
-In-Reply-To: <37408ECA.5918C324@sei.co.kr>
-Message-ID: <Pine.LNX.4.10.9905161325480.27713-100000@daneel.nvg.ntnu.no>
+Subject: Re: Frame buffer weirdness?
+In-Reply-To: <Pine.LNX.3.96.990515224035.20651B-100000@net178019.hcv.com>
+Message-ID: <Pine.LNX.4.05.9905161048350.651-100000@pc.wackyland.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 18 May 1999, KiPyo Ryu wrote:
+On Sat, 15 May 1999, Kevin Hendrickson wrote:
+
+> On Sat, 15 May 1999, Tom Rini wrote:
+> 
+> > On Sat, 15 May 1999, Kevin Hendrickson wrote:
+> > 
+> > > I have noticed that certain versions of XFree/Gnome from linuxppc-pre-R5
+> > > in the past did not display these problems (some even worked in 16 and 32
+> > > bits,) but I have erased them with each update of ftp.linuxppc.org, so I
+> > > can't go back to them.
+> > 
+> > Did you change kernels as well at the time?
+> 
+> I always used whatever kernel rpms where current on ftp.linuxppc.org in
+> the linuxppc-pre-R5 directories at the time. I'm currently using
+> kernel-pmac-2.2.6-15a.
+
+Do you remember what kernel had "good" video?
 
 > 
-> Hi, all.
+> Kevin Hendrickson
+> *--------+---------+---------+---------+---------+---------+---------+-*
+> Kevin Hendrickson          "On the internet, no one knows you're a dog."
+> hndrcksn@net178019.hcv.com   "Why, oh why, didn't I take the BLUE pill?"   
+> hndrcksn@braincraft.com   _DreaD_    http://net178019.hcv.com/~hndrcksn/ 
 > 
-> What does that word mean 'vger'?
+> 
+> 
 
-Voyager, with missing oya?
-I suspect from "Star Trek, the movie" :)
-
-
-"V-ger seeks creator, why doesnt creator answer?"
-
-
-
- Kolbjørn Barmen |    a3k/o6o/6o4e/AmigaOS/MacOS/LinuxPPC   |    // T e a m
- <kolla@nvg.org> | a12ooCT/o3o/Linux-m68k  a6oo/o3o/AmigaOS | \XX/ A M I G A
- Nettverksgruppa |    "I met the Amiga and fell in love..." | <amiga.nvg.org>
-             »» Norwegian University of Technology and Science ««
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
