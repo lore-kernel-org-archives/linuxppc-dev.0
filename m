@@ -1,33 +1,52 @@
-Message-ID: <36D4F2D5.B5472697@wanadoo.fr>
-Date: Thu, 25 Feb 1999 07:51:01 +0100
+Message-ID: <36D4F941.AF069CBD@wanadoo.fr>
+Date: Thu, 25 Feb 1999 08:18:26 +0100
 From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-To: Mayan Moudgill <mayan@watson.ibm.com>
+To: nsheeley@austin.rr.com
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ramdisks, anyone?
-References: <9902242039.AA29018@mayan.watson.ibm.com>
+Subject: Re: semaphore-helper.h
+References: <013092421221829FE5@mail5.austin.rr.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Mayan Moudgill wrote:
+nsheeley@austin.rr.com wrote:
 > 
-> I am trying to build a small initrd, with a linuxrc that does something.
-> Does somebody have such a ramdisk.image available?
-> Or even some suggestions on what to do?
+> I just checked out the current CVS from
 > 
-> I started off by trying to make bash my /linuxrc. Bash
-> required ld.so.1, which required libc.so.2, etc....
+> :pserver:cvs@cvs.samba.org:/cvsroot
 > 
-> This occupied more the 4MB. At that point the /dev/ram on the
-> machine I was building the ramdisk started giving problems -
-> If I built a bigger /dev/ram, after umount, dd would only
-> read the first 4MB.  is there something magical about 4M for ramdisks?
+> All seems well until I try to do a make:
+> 
+> make[2]: Entering directory `/local/src/CVS_kernel/linux/kernel'
+> gcc -D__KERNEL__ -I/local/src/CVS_kernel/linux/include -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -D__powerpc__ -fsigned-char -msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple -mstring   -fno-omit-frame-pointer -c -o sched.o sched.c
+> sched.c:39: asm/semaphore-helper.h: No such file or directory
 
-Yes. If you want more than 4M, let's say 8M, you have to boot with a
-kernel argument ramdisk_size=8192. If you have kernel sources installed,
-you can read about this in /usr/src/linux/Documentation/ramdisk.txt.
+You don't get the __down_trylock error in ksyms.c? Did they already
+start repairing the 2.2.2 bug?
+
+> 
+> Hmm.. only three arch's asm-includes have semaphore-helper.h
+> (i386, sparc, sparc64), but its not ifdef'ed in any way in
+> sched.c
+> 
+> So my question are:
+> 
+>         a.  Should I expect to be able to CVS checkout and
+>             make a working kernel?  I am wondering about the stability
+>             of the tree -- what's my percent chance that I won't have
+>             to debug anything?
+
+In principle, it should work. But there are always bugs possible. And
+then there are guys with a weird sense of humour, in this case Linus
+Himself. Read
+http://lists.linuxppc.org/listarcs/linuxppc-user/199902/msg01298.html
+
+>         b.  If yes to a., does anyone have a patch for the above problem.
+
+Check out ("cvs update") kernel/ksyms.c -r1.107 and kernel/sched.c
+-r1.124.
 
 --
 Martin
