@@ -1,50 +1,39 @@
-Date: Fri, 2 Jan 2004 19:34:16 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: multiple separate pci bridges ...
-In-Reply-To: <20040102074049.GA2032@iliana>
-Message-ID: <Pine.GSO.4.58.0401021933100.3062@waterleaf.sonytel.be>
-References: <20040101181145.GA27294@iliana> <1073016223.1502.179.camel@gaston>
- <20040102074049.GA2032@iliana>
+From: Roland Riegel <roland.riegel.maillist@gmx.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: iBook G4 LCD backlight misbehaviours
+Date: Sat, 3 Jan 2004 00:15:55 +0100
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200401030014.07254.roland.riegel.maillist@gmx.de>
+Content-Type: text/plain;
+  charset="us-ascii"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2 Jan 2004, Sven Luther wrote:
-> Happy new year to you.
+Hi everybody!
 
-Happy New Year!
+Recently I bought an iBook G4 and installed Linux on it. I am using
+linux-2.4.23-ben1 and have the following problem:
 
-> On Fri, Jan 02, 2004 at 03:03:43PM +1100, Benjamin Herrenschmidt wrote:
-> > On Fri, 2004-01-02 at 05:11, Sven Luther wrote:
-> > > I am currently trying to port linux to the Pegasos 2, which
-> > > uses the Marvell Discovery 2 chip, and has two independent pci
-> > > controllers, of which one is faked as an agp bus. This is with a
-> > > modified 2.4.23 kernel from the linuxppc_2_4 branch.
-> >
-> > Why "faked" ? It's actually fairly sane to have the AGP bus be a
-> > separate PCI host controller... That's how it's done on pmacs.
->
-> There is some extra magic that needs to be done. In particular
-> interrupts need to be disabled before being able to write to the
-> config space of the agp bridge.
+When configured with CONFIG_PMAC_BACKLIGHT=y, on startup the screen switches
+completely off (it took me some time to notice that the kernel does not crash
+but only the screen turns dark and the system keeps booting).
 
-I seem to remember the upper layer already takes care of disabling interrupts?
-Or am I mistaken?
+To get in control of the keys at the top of the keyboard (for adjusting sound,
+the lcd backlight and ejecting the cd drive), I installed pbbuttonsd so I now
+can influence the lcd backlight and tune it up again.
 
-Gr{oetje,eeting}s,
+But the minimum and maximum brightness does not seem correct. The screen
+switches off to early when darkening or lightening the screen. The direction
+(up and down) seems to be inversed. When pressing the up key, brightness goes
+down. I am sure the correct keys are configured in /etc/pbbuttonsd.conf.
 
-						Geert
+Is it possible that someone looks into this? I am not a kernel hacker, but I
+can help with testing and answering any questions you should have.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Thank you!
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Roland
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
