@@ -1,41 +1,35 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: "Justin T. Gibbs" <gibbs@scsiguy.com>
+Message-Id: <200110122006.WAA00806@piglet.grunz.lu>
+Date: Fri, 12 Oct 2001 22:06:56 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
 Subject: Re: no luck with Adaptec SCSI controller in 2.4.X
-Date: Fri, 12 Oct 2001 15:52:07 -0400
-Cc: linuxppc-dev@lists.linuxppc.org,
+To: dgatwood@apple.com
+Cc: gibbs@scsiguy.com, linuxppc-dev@lists.linuxppc.org,
 	yellowdog-devel@lists.yellowdoglinux.com
-References: <200110121858.f9CIwnY14960@aslan.scsiguy.com>
-In-Reply-To: <200110121858.f9CIwnY14960@aslan.scsiguy.com>
+In-Reply-To: <01CBA9F0-BF3F-11D5-A238-003065B90BBC@apple.com>
 MIME-Version: 1.0
-Message-Id: <20011012194947.SUPU19094.tomts9-srv.bellnexxia.net@there>
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Justin,
+On  12 Oct, this message from David A. Gatwood echoed through cyberspace:
+> From what I gather, Quantum's high end drives were pretty
+> decent, but I have a stack of dead Fireballs to prove that their low end
+> drives weren't....  :-|
 
-> >So can you point me to where in your driver code the depth of the
-> > tagged queueing is dynamically determined?  I would like to play
-> > around a bit with the driver code to see if I can tell if the Quantum
-> > Fireball is simply spitting back bogus info or and if so what?
->
-> I can already tell you what is happening.  We send a bunch of commands
-> to the drive expecting it to respond with QUEUE FULL status should we
-> send too many, but the drive instead accepts them for future completion
-> but never actually responds to the commands.  This is why we time out.
+I can add one to your stack, a 1.2 Gig originally from my 7600/132. Took
+the Debian install on my Performa 475 with it when half of the disk
+surface went unreadable.
 
-So there is really nothing anyone can do about it?  I will just need to
-keep the tag depth at 8 for that drive.
+Michel
 
-Earlier you said something about a firmware upgrade for those drives?
-Would a firmware upgrade help solve this issue more cleanly or given that
-it is now working should I just forget about it and leave well enough
-alone.
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-Thanks,
-
-Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
