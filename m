@@ -1,52 +1,31 @@
-Date: Mon, 5 Apr 2004 11:30:52 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Oliver Korpilla <okorpil@fh-landshut.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Patch Preview for MVME2100
-Message-ID: <20040405183052.GU31152@smtp.west.cox.net>
-References: <Pine.LNX.4.33.0404041321400.21042-200000@lux32.if.fh-landshut.de> <20040405172348.GS31152@smtp.west.cox.net> <4071A024.6020005@fh-landshut.de>
+Date: Tue, 6 Apr 2004 08:21:35 +0200
+From: Marc Leeman <marc.leeman@barco.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PCI Memory mapping
+Message-ID: <20040406062135.GD30819@smtp.barco.com>
+Reply-To: Marc Leeman <marc.leeman@barco.com>
+References: <20040324110814.E50148@forte.austin.ibm.com> <20040325154845.GF3696@smtp.barco.com> <20040325103414.C64292@forte.austin.ibm.com> <20040325104529.D64292@forte.austin.ibm.com> <20040326080012.GA7238@smtp.barco.com> <1080676178.7581.30.camel@localhost.localdomain> <20040331155625.GB28919@smtp.barco.com> <20040401123340.GA6085@smtp.barco.com> <20040402140130.GG22365@smtp.barco.com> <1081175362.20952.30.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4071A024.6020005@fh-landshut.de>
+In-Reply-To: <1081175362.20952.30.camel@localhost.localdomain>
+Content-Type: text/plain; charset=iso-8859-15
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Apr 05, 2004 at 08:06:28PM +0200, Oliver Korpilla wrote:
+Hi,
 
-> - The stuff in arch/ppc/boot/mvme2100 can go.
->
-> Figured that out today, too. It won't compile anyway. Thanks.
->
-> >- The open_pic.c change shouldn't be needed either.
->
-> Maybe the CONFIG_EPIC_SERIAL_MODE should be set, shouldn't it? Will add
-> it tomorrow. Should I add that cascade hookup stuff even if there is no
-> cascaded 8259?
+I know I've been flooding the mailing list with this particular little
+topic and thanks to some valuable comments [1], we were able to
+pinpoint our problem fairly quickly.
 
-You don't need to call openpic_hookup_cascade, if there is no cascade.
-You only want to set EPIC_SERIAL_MODE if the controller really is in
-serial mode.
+Partly based on a number of related known silicon bugs, I have drafted
+the following description (and work-around) that explains our data
+corruption.
 
-> >- Your openpic_initsenses table looks wrong, and is probably the cause
-> > of the uart slowness you found.  What you do is only list the IRQs for
-> > which you have something, and use openpic_set_sources calls to skip
-> > over the gaps.  Look at lopec_init_IRQ and ask if you still have
-> > problems.  I hoped to have documented that one well the first time
-> > around. :)
-> >
-> >
-> There is one problem - in the LoPEC manual all interrupts are documented
-> - even if marked unused (I refer to polarity and level/edge). In the
-> MVME2100 information about that interrupts is N/A. So should I leave
-> those to 0 still in the initsenses struct?
+http://scorpius.homelinux.org/~marc/masterwrite/
 
-No.  The '0's are wrong.  You only need to describe, in terms of
-level/edge, documented interrupts.  You then make multiple calls to
-openpic_set_sources(), to skip over the non-existant interrupts.
+[1] There is still one comment which is in the queue to be investigated.
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+ marc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
