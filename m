@@ -1,81 +1,92 @@
-Message-ID: <20030401013109.20978.qmail@sina.com>
-From: ysminnpu <ysminnpu@sina.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: powerpc-elf compiler build errors
-MIME-Version: 1.0
-Date: Tue, 01 Apr 2003 09:31:09 +0800
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Subject: make modules fails
+From: Andy Fleming <afleming@motorola.com>
+To: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain
+Message-Id: <1049237813.990.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 01 Apr 2003 16:56:54 -0600
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+I'm trying to compile 2.4.20-8a with Bryan Rittmeyer's perfmon patch
+applied.  I can compile the kernel (which boots), but I can't "make
+modules".  I get this error:
 
-I want to make a cross toolchain for powerpc-elf target,but encounter some errors. My host is cygwin on windows2000.
+make[3]: Entering directory
+`/home/afleming/linux-2.4.20-8a-perfmon/drivers/addon/cipe'
+gcc -D__KERNEL__ -I/home/afleming/linux-2.4.20-8a-perfmon/include -Wall
+-Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common
+-fomit-frame-pointer -I/home/afleming/linux-2.4.20-8a-perfmon/arch/ppc
+-fsigned-char -msoft-float -pipe -ffixed-r2 -Wno-uninitialized
+-mmultiple -mstring -DMODULE -DMODVERSIONS -include
+/home/afleming/linux-2.4.20-8a-perfmon/include/linux/modversions.h
+-nostdinc -iwithprefix include -DKBUILD_BASENAME=module  -c -o module.o
+module.c
+In file included from
+/home/afleming/linux-2.4.20-8a-perfmon/include/linux/sched.h:24,
+                 from
+/home/afleming/linux-2.4.20-8a-perfmon/include/linux/skbuff.h:19,
+                 from
+/home/afleming/linux-2.4.20-8a-perfmon/include/linux/netdevice.h:147,
+                 from cipe.h:62,
+                 from module.c:15:
+/home/afleming/linux-2.4.20-8a-perfmon/include/linux/tty.h:346: invalid
+suffix on floating constant
+/home/afleming/linux-2.4.20-8a-perfmon/include/linux/tty.h:346: parse
+error before numeric constant
+/home/afleming/linux-2.4.20-8a-perfmon/include/linux/tty.h:346: warning:
+function declaration isn't a prototype
+In file included from
+/home/afleming/linux-2.4.20-8a-perfmon/include/linux/skbuff.h:227,
+                 from
+/home/afleming/linux-2.4.20-8a-perfmon/include/linux/netdevice.h:147,
+                 from cipe.h:62,
+                 from module.c:15:
+/home/afleming/linux-2.4.20-8a-perfmon/include/linux/slab.h:74: warning:
+parameter names (without types) in function declaration
+In file included from
+/home/afleming/linux-2.4.20-8a-perfmon/include/net/sock.h:74,
+                 from cipe.h:69,
+                 from module.c:15:
+/home/afleming/linux-2.4.20-8a-perfmon/include/linux/if_pppox.h:124:
+`unregister_pppox_proto_R_ver_str' declared as function returning a
+function
+/home/afleming/linux-2.4.20-8a-perfmon/include/linux/if_pppox.h:124:
+warning: parameter names (without types) in function declaration
+make[3]: *** [module.o] Error 1
+make[3]: Leaving directory
+`/home/afleming/linux-2.4.20-8a-perfmon/drivers/addon/cipe'
+make[2]: *** [_modsubdir_cipe] Error 2
+make[2]: Leaving directory
+`/home/afleming/linux-2.4.20-8a-perfmon/drivers/addon'
+make[1]: *** [_modsubdir_addon] Error 2
+make[1]: Leaving directory
+`/home/afleming/linux-2.4.20-8a-perfmon/drivers'
+make: *** [_mod_drivers] Error 2
 
-My directory hierarchy:
-/src--binutils
-|--gcc
-|--newlib-1.9.0
-|--build-binutils
-|--build-gcc
-|--build-newlib
-|--install
+While I don't need the modules to test the work I'm doing, I'm wondering
+if this is related to another problem I have.  When I startx, the screen
+starts showing artifacts (a kind of doubling or tripling of the images
+on the screen).  If I try to logout or switch virtual terminals, a wave
+of white passes over the screen, leaving patches of bruise-like colors
+all around the screen.
 
-My steps:
-1. export TARGET=powerpc-elf
-export PREFIX=/src/install
-export PATH=$PREFIX/bin:$PATH
-2.
-cd build-binutils
-$ ../binutils/binutils-2.11.2/configure --target=$TARGET --prefix=$PREFIX
-$ make all install 2>&1 | tee make.log
-$ cd ..
-3.
-cd build-gcc
-../gcc/gcc-2.95.3/configure --target=$TARGET --prefix=$PREFIX \
---with-newlib --without-headers --with-gnu-as \
---with-gnu-ld --disable-shared --enable-languages=c
-make all-gcc install-gcc 2>&1 | tee make.log
-cd ..
-4.
-cd build-newlib
-../newlib-1.9.0/configure --target=$TARGET --prefix=$PREFIX
-make all install 2>&1 | tee make.log
-cd ..
-5.
-cd build-gcc && rm -rf *
-../gcc/gcc-2.95.3/configure --target=$TARGET --prefix=$PREFIX \
---with-gnu-as --with-gnu-ld --enable-languages=c,c++
-make all install 2>&1 | tee make.log
+This is on my PowerBook G4 2002 with the Radeon 7500 and 1280x854
+screen.  I suspect there's something wrong in the built in driver, which
+would point to a configuration issue.  What can I do to fix this?
 
-The result:
-................
-/src/build-gcc/gcc/xgcc -B/src/build-gcc/gcc/ -B/src/install//powerpc-elf/bin/ -c -DHAVE_CONFIG_H -g -O2 -I. -I../../../gcc/gcc-2.95.2/libiberty/../include ../../../gcc/gcc-2.95.2/libiberty/vsprintf.c -o pic/vsprintf.o
-/src/build-gcc/gcc/xgcc -B/src/build-gcc/gcc/ -B/src/install//powerpc-elf/bin/ -c -DHAVE_CONFIG_H -g -O2 -I. -I../../../gcc/gcc-2.95.2/libiberty/../include ../../../gcc/gcc-2.95.2/libiberty/vsprintf.c
-../../../gcc/gcc-2.95.2/libiberty/vsprintf.c: In function `vsprintf':
-../../../gcc/gcc-2.95.2/libiberty/vsprintf.c:47: structure has no member named `_flag'
-../../../gcc/gcc-2.95.2/libiberty/vsprintf.c:47: `_IOWRT' undeclared (first use in this function)
-../../../gcc/gcc-2.95.2/libiberty/vsprintf.c:47: (Each undeclared identifier is reported only once
-../../../gcc/gcc-2.95.2/libiberty/vsprintf.c:47: for each function it appears in.)
-../../../gcc/gcc-2.95.2/libiberty/vsprintf.c:47: `_IOSTRG' undeclared (first use in this function)
-../../../gcc/gcc-2.95.2/libiberty/vsprintf.c:48: structure has no member named `_ptr'
-../../../gcc/gcc-2.95.2/libiberty/vsprintf.c:49: structure has no member named `_cnt'
-make[1]: *** [vsprintf.o] Error 1
-make[1]: Leaving directory `/src/build-gcc/powerpc-elf/libiberty'
-make: *** [all-target-libiberty] Error 2
+So, in summary, my questions are:
 
-I have found some clues to attack the error information at your CrossGCC Faq, which says the following: " When building for powerpc-eabi, the complete gcc build step will fail due to a reported error building libiberty. To finish building gcc, do this after the failure:
-$ make CFLAGS="-O2 -myellowknife" install 2>&1 | tee make2.log
-The problem here is that the powerpc-eabi crosscompiler doesn't come with a "default" build target, the way other versions of gcc do. By selecting ©\myellowknife, we tell gcc to use the yellowknife target's linker scripts during building. This doesn't affect anything in the end, because the step that fails is merely testing that the compiler works¡ª without the ©\m, it won't. "
+1) What causes the odd build errors in "make modules" when I try to
+build.
 
-But when I try the above method, the make says cannot find the "-myelloknife" option. I think the reason maybe it is for powerpc-eabi only.
+2) What is wrong with my kernel config such that the video goes wrong
+when I start X?  I think it happened once when I tried to switch
+terminals without X started.
 
-What's wrong on earth with my steps?
-Any recommendation will be much appreciated!
-thanks in advance!
+TIA,
+Andy Fleming
 
-______________________________________
 
-===================================================================
-
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
