@@ -1,30 +1,33 @@
-Message-ID: <001301bfbaf8$f678c970$69f001dc@sjzhu.sps.mot.com>
-From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Help about the libc-2.1.1 segmentation fault
-Date: Thu, 11 May 2000 11:28:19 +0800
+Message-ID: <391AE635.EE6D623C@netx4.com>
+Date: Thu, 11 May 2000 12:56:21 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: text/plain;	charset="gb2312"
+To: "Dan A. Dickey" <ddickey@charter.net>
+CC: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>,
+        cort@fsmlabs.com
+Subject: Re: NO_RELOAD_HTAB
+References: <391A15CE.41488C9D@charter.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello, everyone
+Dan A. Dickey wrote:
 
-On a MPC823 FADS board, I run the mpc8xx-2.2.13 kernel.
-With the libc-2.1.1.so or libc-2.1.3.so, every application happened
-    "Segmentation fault"
-But if I compile the "hello world" program with  statically
-linked library, or if I use the libc-1.99.so, there is no error.
-Can I upgrade the libc to 2.x.x?
+> So, I was wondering what NO_RELOAD_HTAB is for before I go
+> delving into 860 & 850 mmu differences and the linux code
+> for them.
 
-BTW, I have patched the linux kernel 2.3.33 FPU emulation patch.
+That #define has no effect on the 8xx MMU functions.  The
+8xx MMU is significantly different from the other "bigger"
+processor cores.
 
-So, what's wrong?
+> If anyone else is reading this, can you verify that your
+> linux code runs on both an 860 and 850 with no changes?
 
-Thanks in advanced!
+Yes, it does.  Every day, for years......
 
-BRs,
-Shuangjun
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
