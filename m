@@ -1,15 +1,28 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id A572867A75
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Feb 2005 07:25:48 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 16 Feb 2005 14:13:40 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8592B9@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: RE: sched while atomic
+Return-Path: <olof@austin.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.131])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 777C067A75
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Feb 2005 07:37:07 +1100 (EST)
+Received: from westrelay01.boulder.ibm.com (westrelay01.boulder.ibm.com
+	[9.17.195.10])
+	by e33.co.us.ibm.com (8.12.10/8.12.9) with ESMTP id j1GKaw0D648158
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Feb 2005 15:36:59 -0500
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by westrelay01.boulder.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
+	j1GKawMx141062
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Feb 2005 13:36:58 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11/8.12.11) with ESMTP id
+	j1GKawA3027366
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Feb 2005 13:36:58 -0700
+Date: Wed, 16 Feb 2005 12:14:30 -0600
+To: linuxppc-dev@ozlabs.org
+Message-ID: <20050216181430.GA27031@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: olof@austin.ibm.com (Olof Johansson)
+Subject: iBook G4: first wakeup has black screen
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,65 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-2.6.11rc2 and rc4 gives roughly the same message on an MPC8266
+Hi,
 
-Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
-scheduling while atomic: swapper/0x00000002/0
-Call trace:
- [c0006c30] dump_stack+0x18/0x28
- [c01ba970] schedule+0x670/0x674
- [c0003f20] syscall_exit_work+0x108/0x10c
- [c0244fc4] proc_root_init+0x144/0x150
- [00000000] 0x0
- [c023a5fc] start_kernel+0x138/0x164
- [000035fc] 0x35fc
-NET: Registered protocol family 16
+With 2.6.11-rc4, sleep seems to work pretty well. There's still problems
+with disconnecting USB devices while the machine is asleep, but that's
+nothing new.
 
-Kernel boots normally after this, and everything seems to work
+I've noticed one thing though: The very first time I wake the machine up
+after sleeping the screen is dark (backlight off?). If I put it to sleep
+and wake it up again everything goes back to normal.
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces@ozlabs.org=20
-> [mailto:linuxppc-dev-bounces@ozlabs.org] On Behalf Of=20
-> danny@mailmij.org
-> Sent: Thursday, February 03, 2005 17:15
-> To: linuxppc-dev@ozlabs.org
-> Subject: sched while atomic
->=20
->=20
-> Latest 2.6.11rc* give me this interesting message at boot:
-> Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
-> scheduling while atomic: swapper/0x00000002/0
-> Call trace:
->  [c01c7580] schedule+0x640/0x6bc
->  [c0004698] syscall_exit_work+0x120/0x124
->  [c00a5414] proc_device_tree_init+0x7c/0x98
->  [c02be9b4] proc_root_init+0x14c/0x158
->  [c02a660c] start_kernel+0x178/0x1b0
->  [00003a5c] 0x3a5c
->=20
-> Since it doesn't happen on x86, I first thought it was=20
-> because of the ppc=20
-> specific init of the device_tree, but commenting this out=20
-> just lets it=20
-> happen somewhere else. It seems schedule is called when it=20
-> returns from a=20
-> syscall, which seems normal behaviour to me, but the recent=20
-> preempt_disable() in start_kernel makes the scheduler give=20
-> these warnings.
-> So what's happening?=20
->=20
-> Also, I think this is already know for a while:
-> /lib/modules/2.6.11-rc3/kernel/drivers/video/vga16fb.ko needs unknown=20
-> symbol vgacon_remap_base
->=20
-> regards,
->=20
-> danny
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->=20
->=20
+The machine is an iBook G4 1.2GHz:
+0000:00:10.0 VGA compatible controller: ATI Technologies Inc RV250 5c63
+[Radeon Mobility 9200 M9+] (rev 01)
+
+Has anyone else seen this before?
+
+
+-Olof
