@@ -1,114 +1,40 @@
-Date: Wed, 11 Aug 1999 22:43:44 -0700
+Date: Wed, 11 Aug 1999 22:52:31 -0700
 From: Richard Henderson <rth@cygnus.com>
-To: Paul.Mackerras@cs.anu.edu.au
-Cc: Jes.Sorensen@cern.ch, Geert.Uytterhoeven@cs.kuleuven.ac.be,
-        linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu
+To: David Edelsohn <dje@watson.ibm.com>
+Cc: Paul.Mackerras@cs.anu.edu.au, Jes.Sorensen@cern.ch,
+        Geert.Uytterhoeven@cs.kuleuven.ac.be, linuxppc-dev@lists.linuxppc.org,
+        linux-fbdev@vuser.vu.union.edu, Richard Henderson <rth@cygnus.com>
 Subject: Re: [linux-fbdev] Re: readl() and friends and eieio on PPC
-Message-ID: <19990811224344.A14713@cygnus.com>
-References: <Pine.LNX.4.10.9908091008460.25523-100000@mercator.cs.kuleuven.ac.be> <199908100100.LAA28784@tango.anu.edu.au> <d34si8xfwi.fsf@lxp03.cern.ch> <199908110023.KAA23996@tango.anu.edu.au> <d34si6kcge.fsf@lxp03.cern.ch> <19990811003805.A11890@cygnus.com> <199908120017.KAA25043@tango.anu.edu.au> <19990811214049.A14692@cygnus.com> <199908120500.PAA30022@tango.anu.edu.au>
+Message-ID: <19990811225231.B14713@cygnus.com>
+References: <rth@cygnus.com> <9908120516.AA43198@marc.watson.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=RnlQjJ0d97Da+TV1
-In-Reply-To: <199908120500.PAA30022@tango.anu.edu.au>; from Paul Mackerras on Thu, Aug 12, 1999 at 03:00:46PM +1000
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9908120516.AA43198@marc.watson.ibm.com>; from David Edelsohn on Thu, Aug 12, 1999 at 01:16:14AM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Thu, Aug 12, 1999 at 01:16:14AM -0400, David Edelsohn wrote:
+> 	Is your assumption that you want to provide the infrastructure to
+> write high-performance device drivers or to write device drivers that
+> don't require as much expertise and knowledge to produce correct results?
 
---RnlQjJ0d97Da+TV1
-Content-Type: text/plain; charset=us-ascii
+I prefer high-performance drivers. 
 
-On Thu, Aug 12, 1999 at 03:00:46PM +1000, Paul Mackerras wrote:
-> Show us the numbers?
+There are enough other things (virt_to_bus, ioremap, et al) that are
+non-optional that driver writers must learn about for non-peecee
+driver programming that proper use of mb/wmb doesn't seem that big a
+deal to me.
 
-Attached is a quick userland study wrt main memory.  How much
-more accurate to a real device do I need to get to convice you
-that the test is valid enough?
+I guess I personally can afford to be somewhat idealistic in this,
+because I only use about 4 drivers -- ncr, aic7xxx, tulip, epic100 --
+and the authors of all these drivers have clue.  But the thought of
+coddling to folks that can't be bothered to do things Right gives
+me hives.
 
-As I see it, testing against main memory should be the lower
-bound of the numbers, since it's the quickest to respond.  A
-real device will take longer to respond, so any enforced delays
-(or failures to write-combine) will only exagerate the difference.
-
-Anyway, the results (in cycles) from my 533MHz sx164 are:
-
-10
-10
-10
-10
-10
-223
-94
-94
-94
-94
-
-So the cost of wmb for 8 store+wmb, versus 8 stores with one wmb,
-is over 9:1.
-
-> I don't believe the frame-buffer guys will actually
-> see any measurable improvement in performance from taking out the
-> eieio from readl/writel on PPC.
-
-For grins, will you try the same test on your ppc?
 
 
 r~
-
---RnlQjJ0d97Da+TV1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="z.c"
-
-#include <stdio.h>
-
-main()
-{
-  int i;
-  unsigned s, e;
-  unsigned long mem;
-
-  for (i = 0; i < 5; ++i)
-    {
-      asm("rpcc %0
-	   stq $31,%2
-	   stq $31,%2
-	   stq $31,%2
-	   stq $31,%2
-	   stq $31,%2
-	   stq $31,%2
-	   stq $31,%2
-	   wmb
-	   stq $31,%2
-	   rpcc %1"
-	: "=r"(s), "=r"(e), "=m"(mem));
-      printf("%u\n", e-s);
-    }
-
-  for (i = 0; i < 5; ++i)
-    {
-      asm("rpcc %0
-	   stq $31,%2
-	   wmb
-	   stq $31,%2
-	   wmb
-	   stq $31,%2
-	   wmb
-	   stq $31,%2
-	   wmb
-	   stq $31,%2
-	   wmb
-	   stq $31,%2
-	   wmb
-	   stq $31,%2
-	   wmb
-	   stq $31,%2
-	   wmb
-	   rpcc %1"
-	: "=r"(s), "=r"(e), "=m"(mem));
-      printf("%u\n", e-s);
-    }
-}
-
---RnlQjJ0d97Da+TV1--
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
