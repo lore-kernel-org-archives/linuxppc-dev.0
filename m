@@ -1,38 +1,22 @@
-Message-ID: <39047137.8C4ECB54@embeddededge.com>
-Date: Mon, 24 Apr 2000 12:07:19 -0400
+Message-ID: <390471AE.60EB1394@embeddededge.com>
+Date: Mon, 24 Apr 2000 12:09:18 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Steve Tarr <tarr@lucent.com>
-CC: zzh <david-1z@263.net>, linuxppc-embedded@lists.linuxppc.org
+To: Shuangjun Zhu <r44089@email.sps.mot.com>
+CC: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: memory map
-References: <3903BE73.04522@mta2> <3903C55C.DBC66391@embeddededge.com> <39037636.B3350172@lucent.com>
+References: <006401bfadab$80c796c0$69f001dc@sjzhu.sps.mot.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steve Tarr wrote:
+Shuangjun Zhu wrote:
 
+> Where can I get the code?
 
-> This IMMR  for the MPC8260 is VERY  tricky,
-
-I didn't think so.  The only thing different is that it isn't stored
-in a special register, so you have to know the current IMMR to change
-to a different one. You can read the default setting from the
-config word or boot rom, and then change it if you wish.
-
-You have to get the default word from someplace, and that is either
-the application choice from the boot rom or by asserting RSTCONF and
-using a default when there isn't a boot rom.
-
-I think the implementation is pretty slick, especially when you look
-at the multiprocessor implementation.
-
-Just because Motorola screwed up one of their reference boards (again),
-doesn't mean it can't work well for others.  The purpose of these reference
-boards is to demonstrate the ease of using a processor, and I am just
-amazed they consistently build the most difficult to use and unreliable
-platform to do that.  Fortunately, there are other choices.
+Same place as everything else.  It is currently in the fsmlabs BitKeeper
+tree, and when Cort merges with Linus it will find its way to kernel.org.
 
 
 	-- Dan
