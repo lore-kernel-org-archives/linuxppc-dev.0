@@ -1,68 +1,43 @@
-Date: Mon, 29 Nov 1999 08:12:36 +0100 (MET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Dan Malek <dan@netx4.com>
-cc: Dan Malek <dan@penguin.netx4.com>, Christian Zankel <chris@mvista.com>,
-        cort@fsmlabs.com, linuxppc-dev@lists.linuxppc.org,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: bootloader & head.S weirdness & restructuring
-In-Reply-To: <3841AF8D.48EDE940@netx4.com>
-Message-ID: <Pine.GSO.4.10.9911290804550.859-100000@dandelion.sonytel.be>
+Message-ID: <38423714.D5136535@wanadoo.fr>
+Date: Mon, 29 Nov 1999 09:19:32 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Shaw Terwilliger <sterwill@io.nu>
+CC: paulus@linuxcare.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.3.30-pre3
+References: <19991128154913.A15762@io.nu> <19991129000645.003441@smtp.calvacom.fr> <19991128221713.A17532@io.nu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 28 Nov 1999, Dan Malek wrote:
-> Geert Uytterhoeven wrote:
-> > ...... All unused code will be optimized away
-> > by the compiler.
+Shaw Terwilliger wrote:
 > 
-> Maybe.  I haven't seen much dead code elimination by
-> the compiler.  I guess one of the bazillion compiler switch
-> combinations would do it.  I haven't found a good one yet.
+> BenH wrote:
+> > Yes, please, send me your patches. Paul will be away for a few weeks and
+> > I want to move all my patches (there are more coming ;) to 2.3.x asap.
+> 
+> OK... here they are.  They're against paul's devel tree as of an hour
+> ago.  I'm running a fresh-built kernel from a tree with these applied;
+> everything's working well.
+> 
+> Besides being attached here, the individual patches (and the README) are
+> available at http://www.abisource.com/~sterwill/patches/.
+> 
+> If anyone else is interested in bulding the kernel, just grab the
+> devel tree and do "patch -p0 < all.patch" from /usr/src (assuming
+> the tree is /usr/src/linux).
 
-Gcc does since ages, at least for simple cases. Just compile
-
-    extern void f(int);
-    extern void g(int);
-
-    void h(int x)
-    {
-	if (0)
-	    g(x);
-	else
-	    h(x);
-    }
-
-with gcc. If you compile with at least -O, the only thing left is the call to
-h(). On m68k, we've been using `if (MACH_xxx)' clauses (and also `switch
-(MACH_TYPE)' since ages. Remember, the m68k port was the first port and it
-started with support for multiple machines nearly in the beginning. In those
-times, gcc was not that good yet, but this worked. Take a look at
-include/asm-m68k/setup.h to see how we did it.
-
-> I have seen some pretty bad code over the past 20 years of my
-> career, and this stuff isn't even close to bad.  That doesn't
-> mean I am not going to try to make it better, we just have
-> to do it carefully because any changes in these files affect
-> lots of people (and other files).  Just remember that one of
-> my goals is to build small as possible embedded software that
-> reduces Flash ROM requirements.  Carrying along stuff like
-> keyboard and ADB drivers just to resolve some symbols doesn't
-> help us do this.
-
-Exactly my point. I don't want any ADB stuff compiled in in my kernel neither
-:-)
-
-Gr{oetje,eeting}s,
-
-						Geert
+<???> 
+Are there several different versions of Paul's devel tree? The one I am
+getting is only at version 2.3.29 and has been nicely compiling and
+running for me for a while now. I don't know about chipsfb.c which I am
+not using, but the others of your patches are essentially those that A.
+Joshi has published a long time ago. And they don't apply to my version
+of Paul's devel tree, because they are already built in. 
+</???>
 
 --
-Geert Uytterhoeven ----------------- Sony Suprastructure Center Europe (SUPC-E)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
-Voice +32-2-7248632 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
-
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
