@@ -1,31 +1,26 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Tue, 18 Nov 2003 00:08:43 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
 To: Miku Jha <jha_miku@yahoo.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppc440 and i2c
-Message-ID: <20031118080843.GA28129@gate.ebshome.net>
-References: <20031118071829.43116.qmail@web40301.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20031118071829.43116.qmail@web40301.mail.yahoo.com>
+Subject: Re: ppc440 and i2c 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 17 Nov 2003 23:18:29 PST."
+             <20031118071829.43116.qmail@web40301.mail.yahoo.com>
+Date: Tue, 18 Nov 2003 09:09:02 +0100
+Message-Id: <20031118080907.7438BC5F59@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Nov 17, 2003 at 11:18:29PM -0800, Miku Jha wrote:
+In message <20031118071829.43116.qmail@web40301.mail.yahoo.com> you wrote:
 >
 > I am running ppc440 with linux kernel version 2.4
->
-> If I reboot the ppc440 in middle of a read transaction
-> from a slave say( at the 3rd clock pulse for example)
-> then somehow ppc440 is hung.
->
-> Basically when it comes up it sees that data line
-> held low.
-> How does the powerpc deal with this situation.?
->
-> From the i2c bus trace it looks like in this
+
+Grrrghh...  You  sent  the  same  message   twice   to   the   (dead)
+PPCBoot-Users   list   and   another   time  to  linuxppc-embedded???
+Grrrrghhh!!!! Please fix your posting habits.
+
+> >From the i2c bus trace it looks like in this
 > situation ppc440 keeps issuing the clock pulses
 > until the data line SDL is released by the slave
 > but following that the SCL line is held low
@@ -33,28 +28,23 @@ On Mon, Nov 17, 2003 at 11:18:29PM -0800, Miku Jha wrote:
 >
 > Is this the expected behaviour if the SDL is held
 > low when the ppc440 comes up.
+
+This is an expected and documented problem. See "doc/I2C_Edge_Conditions" in
+the U-Boot / PPCBoot sources.
+
 > Is there anyway I can fix this in the ppcboot code.
->
 
-Your problem sounds strange.
+Yes. You could back-port the fixes that  went  into  U-Boot.  But  it
+probably makes more sense to switch to U-Boot instead.
 
-Are you saying that after 440GP _reset_ IIC line state affects 440 ?
+Best regards,
 
-This is _very_ unlikely. I doubt that 440GP even sample IIC lines (and
-drive clock) until it's asked to do so by software.
+Wolfgang Denk
 
-Could you elaborate a little: what kernel are you using, what
-bootloader (version)?
-
-Maybe it's bootloader's driver problem, not 440 itself.
-
-The other possibility is that you are using bootstrap IIC controller
-(it shares lines with IIC0). Is this intended configuration? If not
-you may want to check pull-down on UART0DCD_N line.
-
-If bootstrap IIC is accidentaly activated you may get problems if you
-have non-compliant/not-properly-reset device on IIC0 bus.
-
-Eugene
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+A meeting is an event at which the minutes are kept and the hours are
+lost.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
