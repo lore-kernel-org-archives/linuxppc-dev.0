@@ -1,34 +1,57 @@
-Date: Tue, 6 Jun 2000 09:42:55 +0100 (BST)
-From: Alan Buxey <almb@mssl.ucl.ac.uk>
-To: daenzerm@student.ethz.ch
-cc: linux-apus-user@lists.sourceforge.net, debian-powerpc@lists.debian.org,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: New experimental X 4.0
-In-Reply-To: <393BEF5D.30EFC6A8@relog.ch>
-Message-ID: <Pine.LNX.4.10.10006060942001.29375-100000@mssllu.mssl.ucl.ac.uk>
+Message-Id: <200006061136.NAA01541@piglet.grunz.lu>
+Date: Tue, 6 Jun 2000 13:36:07 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: 2940UW & 2.4.0-test-ac7 PCI probs
+To: toa@pop.agri.ch
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <393C9EAA.24AF8B28@pop.agri.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hi,
+Hi there,
 
-> The URL and filenames have changed a bit:
+On   6 Jun, this message from Andreas Tobler echoed through cyberspace:
+>> Get either my PCI patches or Geert's patches posted here a few hours
+>> ago. Then enable hotswap (still needed, right, Geert?), and the resource
+>> code should fix any collisions it finds.
 >
-> http://n.ethz.ch/student/daenzerm/download/XFree86/
->
-> This is 4.0b .
+> Fine, I had to take yours, I wasn't able to apply Geerts one. (Too late/
+> too tired ???)
+> I applied the one for 2.3.99p9 to 2.4.0-test1-ac7, success, including
+> your serial console patch and Takashi's mftb patch for 601 CPU's.
+> Below the output. I think now I am in the same situation as other
+> adaptec users on the linux front.
 
-the linux-apus link has to be changed then.
+See below; I've spotted one thing that probably breaks.
 
-> Good news for the Permedia2 people: DGA support is here. It's not tested
-> though...
+> One Q, hotswap == hotswap PCI in 'General Setup'?
 
-oh, I'm SUR that will be tested quite comprehensively over the next few
-weeks - what are the main user-land apps people are complaining about?
+Yes, but it is not needed, I think.
 
-alan
+>   for root[0:ffffffff] min[1000] size[100]
+>   got res[1000:10ff] for resource 0
 
+This must be the conflicting resource, but it gets an equally-wrong new
+address :-(( In fact, the PCI resource code still misses a patch to make
+the correct resources available to the resource allocation code (so that
+IO regions can be taken out of the IO region of the correct PCI bus..)
+
+I'm still working on that part ;-)
+
+So if the SCSI driver actually uses the IO region, it will most
+certainly not work....
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
