@@ -1,34 +1,44 @@
-Message-ID: <3804503F.74B93796@arcormail.de>
-Date: Wed, 13 Oct 1999 10:26:27 +0100
-From: Michael Fenske <michael.fenske@arcormail.de>
-Reply-To: michael.fenske@arcormail.de
+Date: Wed, 13 Oct 1999 11:38:22 +0200 (MET DST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Gerd Knorr <kraxel@goldbach.in-berlin.de>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: How to get latest vger 2.2 sources???
+In-Reply-To: <199910130839.KAA04644@macintoy.masq.in-berlin.de>
+Message-ID: <Pine.GSO.4.10.9910131136470.21530-100000@dandelion.sonytel.be>
 MIME-Version: 1.0
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-CC: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problem with glibc-2.1.3-0a.src.rpm ?
-References: <3803A7BC.4175E431@arcormail.de>
-		 <3803A7BC.4175E431@arcormail.de> <v03110700b4298a016f5d@[209.183.131.16]>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Kevin B. Hendricks" wrote:
+On Wed, 13 Oct 1999, Gerd Knorr wrote:
+> In lists.linuxppc.dev, you wrote:
+> > On Tue, 12 Oct 1999, Claude Robitaille wrote:
+> > > I am the one who just asked how to get linux from on.openprojects.net
+> > > 
+> > > To get 2.2, the answer I got was:
+> > > 
+> > > start downloading 2.3
+> > > then stop it using ctrl-C
+> > > cvs update -dP -rlinux_2_2
+> > 
+> > Doesn't `cvs -z3 checkout -rlinux_2_2 linux' work?
 > 
-> 1. goto /usr/lib/gcc-lib and search downwards and remove all of the old
-> egcs subdirectories hanging around (just leave the latest gcc ones from
-> Franz's gcc-2.95.1
+> Are there patches vanilla-2.[23].x => CVS tree available somewhere ?
 
-I removed them already.
+I don't know. You can always ask me to generate them.
 
-> 
-> 2. add a symbolic link
->    ln -s 2.95.1 gcc-2.95.1
+Unfortunately vger is still at 2.3.18, except for the fbdev stuff, which is at
+the 2.3.{21,22} level :-)
 
-I made this link and tried rebuilding glibc-2.1.3.0a again. But the
-configure script continues to believe I have egcs installed.
+Greetings,
 
-Michael
+						Geert
+
+--
+Geert Uytterhoeven ----------------- Sony Suprastructure Center Europe (SUPC-E)
+Geert.Uytterhoeven@sonycom.com ------------------- Sint Stevens Woluwestraat 55
+Phone +32-2-7248632 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
