@@ -1,28 +1,30 @@
-Date: Fri, 19 Feb 1999 06:05:38 -1000 (HST)
-From: Dean Takemori <dean@uhheph.phys.hawaii.edu>
-Message-Id: <199902191605.GAA17127@uhhepn.phys.hawaii.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Header errors
+Date: Fri, 19 Feb 1999 11:18:00 -0600 (CST)
+From: Gedanken <gedanken@io.com>
+To: "sean o'malley" <somalley@ed.mde.state.mi.us>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: RedHat ppc dist. [was: IBM providing Linux for RS6000]
+In-Reply-To: <v04011703b2f136b6a58c@[192.168.1.3]>
+Message-ID: <Pine.BSF.4.05.9902191115550.19338-100000@schultz-2.io.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-I'm attempting to install GNOME on my system and have run
-into the same problem with two different libraries (ORBit-0.3.98
-and gtk+-1.1.15-2)
+Sorry to be ignorant, but i didnt know redhat HAD a ppc distribution.  is
+that currently available?  will be soon?  will be included on the same x86
+cds i buy at microcenter??  Until seans email, i thought it was only
+available via ftp.
 
-It seems that the library headers #define _XOPEN_SOURCE and/or
-_XOPEN_SOURCE_EXTENDED.  Apparently #defining these leads to
-parse errors when #including arpa/inet.h or sys/ipc_buf.h.
+gedanken
+----
+Heaven and Earth are impartial;
+They see the ten thousand things as straw dogs.
+The wise are impartial;
+They see the people as straw dogs.
 
-Is this a known headers bug?
-
-I'm running a LinuxPPC-R4 distribution with egcs-1.1.1 and
-the samba 2.2.1 kernel on a Powerbook G3 Series.  Linux is
-installed on a hard drive in the left media bay (it runs
-perfectly there with the 2.2.1 kernel)
-
+ICQ:  25437703
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
