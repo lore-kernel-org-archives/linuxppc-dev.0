@@ -1,87 +1,34 @@
-Message-Id: <sc835dac.097@gw_tms_syd2.pty.tms.thomson-csf.com>
-Date: Mon, 04 Mar 2002 11:42:22 +1100
-From: "Jeremy Rosen" <Jeremy.Rosen@au.thalesgroup.com>
-To: <linuxppc-embedded@lists.linuxppc.org>,
-	"Magnus Damm" <damm@opensource.se>
-Subject: Re: Accessing BCSR's
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <001301c1c319$8ce6a8d0$1a11efcb@industrialDiv.hanasys.co.kr>
+Reply-To: "Sangmoon Kim" <dogoil@etinsys.com>
+From: "Sangmoon Kim" <dogoil@etinsys.com>
+To: "Derrik Weeks" <derrikW@iotech.com>,
+	"linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+References: <E0A487F3EEFFD111A3C5004033933F9ABBF6CA@postoffice.iotech.com>
+Subject: Re: execve system call question
+Date: Mon, 4 Mar 2002 10:11:40 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have investigated a little further, and in arch/ppc/mm/init.c, it
-calls ppc_md.setup_io_mapping(), which remaps 1:1 the BCSRs
-(in arch/ppc/kernel/m8xx_map_io), so (if I understand your explanation
-and the code properly) the BCSR should be at the same address in PPCBOOT
-and in the kernel space... so accessing offset ff010000 in /dev/mem or
-/dev/kmem should give me access to it... is that it ? Because if it is,
-I can't make it work...
+Hi Derrik Weeks,
 
-I'll try to access some of the internal maps in the IMMR to see if they
-work...
+I got the bash prompt.
 
-thx anyway
-Jeremy
+> A little research says this is not the case.  As I understand it (with thanks
+> to Wolfgang) Linux reserves memory space below 80000000 for user
+> applications.  In my case I had my IMMR based registers mapped below this
+> value, and the kernel was setting mapping for this space to virtual =
+> physical, which caused my problem.  You may have the same issue with your
+> serial port, it would be worth a try to move it to high memory and see if
+> this resolves your problem.
 
->>> Magnus Damm <damm@opensource.se> 03/04/02 10:57am >>>
-Hi,
+I changed the hardware by some jump wire, so the serial port is now located at 0xff000000.
+I'll try the virtual != physical thing with my original hardware.
 
-If you have memory-mapped io (The (F)ADS8xx BCSR registers is a
-good example) which is mapped to a certain physical address, it
-is very simple to access it if the MMU is turned off.
-
-The Linux kernel runs with the MMU on, and it needs a
-virtual-to-physical
-address mapping to be able to access memory-mapped io.
-
-So, my 2.2-kernel has a file called arch/ppc/mm/init.c.
-
-Inside that file there's a function called "ioremap()" - that is what
-you are looking for.
-
-Make sure that your Linux kernel has a virtual page for your io-area,
-and access the virtual address that is returned by "ioremap()".
-
-If you use "ioremap()" before a certain moment when the Linux kernel
-starts up, you will get a 1:1 mapping between virtual and physical
-addresses.
-(This is true for 2.2 anyhow)
-
-Look how the internal io block is ioremap():ped for a good example how
-it is done.
-
-Cheers /
-
-magnus
-
-Jeremy Rosen wrote:
->
-> Hello everybody,
->
-> I have 860T FADS board, and I am trying to access the (board
-specific)
-> registers BCSRs.
->
-> I have no problem accessing them in PPCBOOT, since they are accessed
-> through CS1, at address FF01xxxx, but I can't access them in linux
-for
-> the moment.
-> My first attempt was by using the /dev/mem device, but it doesn't
-seem
-> to work, the result read are not correct.
-> so I have to question
-> 1) why doesn't it work, I probably don't understand how /dev/mem
-works
-> : does it map only memory and not the address space ? do I have to
-> register the address range or the BCSR in the kernel ?
-> 2) what is the proper way of doing this ? writing a driver ? or
-using
-> /dev/mem properly ?
->
-> thx for your help...
->
-> Jeremy
->
+Thank you for the reply!
+- Sangmoon Kim -
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
