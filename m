@@ -1,40 +1,37 @@
-Date: Wed, 30 Jun 1999 18:11:50 +0200
-To: "Charles A. Jolley" <charles.jolley@zeratec.com>,
-        linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
+Message-Id: <199906301644.LAA32319@www2.tuckeris.com>
+Date: Wed, 30 Jun 1999 11:32:50 -0500
 Subject: Re: LinuxPPC R5 on PowerBook Series 1999
-Message-Id: <19990630181150.008408@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: "Charles A. Jolley" <charles.jolley@zeratec.com>
+To: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jun 30, 1999, Charles A. Jolley <charles.jolley@zeratec.com> wrote:
 
->2.  I thought I might try to get things working, or at least figure out why
->the kernel doesn't boot.  The only issue is I can't get any feedback from
->the kernel on why it dies.  It prints a short message when it first starts
->but then the screen goes dead before I can read it.  Is there another way to
->get that information out?   In fact, since there are no serial ports on this
->machine (just USB...like the iMac), how do I get any feedback from the
->kernel without functioning video? (or an OF interface to help me along,
->which is what I do in my other kernel development...)
+----------
+>From: Benjamin Herrenschmidt <bh40@calva.net>
+>Date: Wed, Jun 30, 1999, 11:11 AM
+>
+>
+> Did you try with the "no video driver" option ?
+>
 
-Did you try with the "no video driver" option ?
+In fact, I tried it with both "no video driver" option checked and
+unchecked.
 
-This may also be a backlight problem, Apple love changing the way the
-backlight is controlled from one model to the other. You can try
-commenting out the backlight control functions in drivers/macintosh/via-pmu.c.
+> This may also be a backlight problem, Apple love changing the way the
+> backlight is controlled from one model to the other. You can try
+> commenting out the backlight control functions in drivers/macintosh/via-pmu.c.
 
+Ah-ha...this would make sense...it is consistent with the behavior I'm
+seeing.  I need to get R5 setup on my other machine here before I can
+recompile the kernel without the backlight functions and try it again so it
+may be a week or so before I can do this...maybe I can try it this
+weekend...
 
--- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
-
+-Charles
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
