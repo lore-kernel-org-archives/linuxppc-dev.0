@@ -1,20 +1,25 @@
-Return-Path: <jason.mcmullan@timesys.com>
-Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id 6A6F767A33
+Return-Path: <gergely.buday@siemens.com>
+Received: from mail-proxy.sysdata.hu (mail-proxy.sysdata.hu [212.24.191.137])
+	by ozlabs.org (Postfix) with ESMTP id 99AFE67A33
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Apr 2005 23:50:18 +1000 (EST)
-From: Jason McMullan <jason.mcmullan@timesys.com>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <1112301225.3337.19.camel@ad.doubleclick.net>
-References: <1112298886.3337.14.camel@ad.doubleclick.net>
-	<1112301225.3337.19.camel@ad.doubleclick.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-/Jg6bAcXKvaK1Jf4S7o/"
-Date: Fri, 01 Apr 2005 08:50:15 -0500
-Message-Id: <1112363416.9748.5.camel@ad.doubleclick.net>
-Mime-Version: 1.0
-Subject: Re: [PATCH 2.6.11.6] CPM2 Timers API
+	Sat,  2 Apr 2005 00:06:49 +1000 (EST)
+Received: from mail-proxy.sysdata.hu (localhost [127.0.0.1])
+	by virus-scan.sysdata.siemens.hu (Postfix) with ESMTP id 13B4D17FF9
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  1 Apr 2005 15:34:38 +0200 (CEST)
+Received: from budg132a.sysdata.siemens.hu (budg132a.sysdata.siemens.hu
+	[149.202.237.197])
+	by mail-proxy.sysdata.hu (Postfix) with ESMTP id F089617FAB
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  1 Apr 2005 15:34:37 +0200 (CEST)
+Message-ID: <F2BED41F1171FF449F88D60191848A84023CB06D@budg132a.sysdata.siemens.hu>
+From: =?iso-8859-1?Q?Buday_Gergely_Istv=E1n?= <gergely.buday@siemens.com>
+To: linuxppc-embedded@ozlabs.org
+Date: Fri, 1 Apr 2005 15:34:37 +0200 
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C536BE.83CAA760"
+Subject: Which kernel to use?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,111 +30,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
---=-/Jg6bAcXKvaK1Jf4S7o/
-Content-Type: multipart/mixed; boundary="=-Ujry4cRiYTH9m7Gw4ZXp"
+------_=_NextPart_001_01C536BE.83CAA760
+Content-Type: text/plain;
+	charset="iso-8859-1"
 
+Hi,
 
---=-Ujry4cRiYTH9m7Gw4ZXp
-Content-Type: text/plain
+I  have a gadget built around a ppc xpc850xxztb processor with 2M flash and
+8M ram. The opsys is Hard Hat, but I'd like to change it to an
+openembedded-based solution. Where can I get sources for a proper kernel
+that works with this system?
+
+- Gergely
+
+------_=_NextPart_001_01C536BE.83CAA760
+Content-Type: text/html;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+5.5.2657.73">
+<TITLE>Which kernel to use?</TITLE>
+</HEAD>
+<BODY>
 
-And here's the test-case kernel module....
+<P><FONT SIZE=3D2>Hi,</FONT>
+</P>
 
+<P><FONT SIZE=3D2>I&nbsp; have a gadget built around a ppc xpc850xxztb =
+processor with 2M flash and 8M ram. The opsys is Hard Hat, but I'd like =
+to change it to an openembedded-based solution. Where can I get sources =
+for a proper kernel that works with this system?</FONT></P>
 
---=20
-Jason McMullan <jason.mcmullan@timesys.com>
-TimeSys Corporation
+<P><FONT SIZE=3D2>- Gergely</FONT>
+</P>
 
-
---=-Ujry4cRiYTH9m7Gw4ZXp
-Content-Disposition: attachment; filename=cpm_timer_test.c
-Content-Transfer-Encoding: base64
-Content-Type: text/x-csrc; name=cpm_timer_test.c; charset=iso-8859-1
-
-LyoNCiAqIENQTSBUaW1lcnMgdGVzdA0KICoNCiAqIENvcHlyaWdodCAyMDA0LCBUaW1lc3lzIENv
-cnAuDQogKiBKYXNvbiBNY011bGxhbiA8amFzb24ubWNtdWxsYW5AdGltZXN5cy5jb20+DQogKi8N
-Cg0KI2luY2x1ZGUgPGxpbnV4L2luaXQuaD4NCiNpbmNsdWRlIDxsaW51eC9tb2R1bGUuaD4NCiNp
-bmNsdWRlIDxsaW51eC9kZWxheS5oPg0KI2luY2x1ZGUgPGxpbnV4L3dhaXQuaD4NCg0KI2luY2x1
-ZGUgPGFzbS9jcG1fdGltZXIuaD4NCg0Kc3RhdGljIGludCBmYWlsZWQgPSAwOw0Kc3RhdGljIHZv
-bGF0aWxlIGludCBvbmNlLCBldmVyeTsNCg0Kc3RhdGljIHdhaXRfcXVldWVfaGVhZF90IHF1ZXVl
-Ow0KDQojZGVmaW5lIEZBSUxFRCh4LCBhcmdzLi4uKSBkbyB7IGZhaWxlZCsrOyBwcmludGsoS0VS
-Tl9JTkZPICJjcG1fdGltZXJfdGVzdDogIiB4ICwgIyMgYXJncyApOyBpZiAodG0gIT0gTlVMTCkg
-eyBjcG1fdGltZXJfc3RvcCh0bSk7IGNwbV90aW1lcl9mcmVlKHRtKTsgfSByZXR1cm4gLUVJTlZB
-TDsgfSB3aGlsZSAoMCkNCg0Kc3RhdGljIHZvaWQgY3BtX3RpbWVyX3Rlc3RfY2FsbGJhY2soY3Bt
-X3RpbWVyX3QgdG0sIHZvaWQgKmRhdGEpDQp7DQoJaWYgKGRhdGEgPT0gJm9uY2UpIHsNCgkJdW5z
-aWduZWQgbG9uZyB2YWwgPSBjcG1fdGltZXJfZ2V0X3RpY2tzKHRtKTsNCgkJcHJpbnRrKEtFUk5f
-SU5GTyAiY3BtX3RpbWVyX3Rlc3Q6IENhbGxlZCBvbmNlIGF0IHRpY2sgJWxkLlxuIiwNCgkJICAg
-ICAgIHZhbCk7DQoJCW9uY2UrKzsNCgkJd21iKCk7DQoJfQ0KDQoJaWYgKGRhdGEgPT0gJmV2ZXJ5
-KSB7DQoJCXVuc2lnbmVkIGxvbmcgdmFsID0gY3BtX3RpbWVyX2dldF90aWNrcyh0bSk7DQoJCXBy
-aW50ayhLRVJOX0lORk8NCgkJICAgICAgICJjcG1fdGltZXJfdGVzdDogQ2FsbGVkIGV2ZXJ5KCVk
-KSwgdGljayAlbGQuXG4iLCBldmVyeSwNCgkJICAgICAgIHZhbCk7DQoJCWV2ZXJ5Kys7DQoJCWlm
-IChldmVyeSA+IDUpDQoJCQljcG1fdGltZXJfY2FsbF9ub25lKHRtKTsNCgkJd21iKCk7DQoJfQ0K
-DQoJd2FrZV91cF9pbnRlcnJ1cHRpYmxlKCZxdWV1ZSk7DQp9DQoNCnN0YXRpYyBpbnQgdGVzdF90
-aW1lcihpbnQgdGltZXJfaWQpDQp7DQoJY3BtX3RpbWVyX3QgdG0gPSBOVUxMOw0KCWludCBlcnI7
-DQoJdW5zaWduZWQgbG9uZyByZXMsIHZhbDsNCg0KCXByaW50ayhLRVJOX0lORk8gImNwbV90aW1l
-cl90ZXN0OiBUZXN0IHRpbWVyIElEIDB4JS4yeFxuIiwgdGltZXJfaWQpOw0KCWVyciA9IGNwbV90
-aW1lcl9hbGxvYyh0aW1lcl9pZCwgJnRtKTsNCglpZiAoZXJyIDwgMCkNCgkJRkFJTEVEKCJDYW4n
-dCBhbGxvY2F0ZSB0aW1lciAweCUuMnhcbiIsIHRpbWVyX2lkKTsNCg0KCXJlcyA9IGNwbV90aW1l
-cl9nZXRfcmVzb2x1dGlvbih0bSk7DQoJcHJpbnRrKEtFUk5fSU5GTyAiY3BtX3RpbWVyX3Rlc3Q6
-IG5hbm9zZWNvbmRzL3RpY2sgPSAlbGRcbiIsIHJlcyk7DQoNCgl2YWwgPSBjcG1fdGltZXJfZ2V0
-X3RpY2tzKHRtKTsNCglwcmludGsoS0VSTl9JTkZPICJjcG1fdGltZXJfdGVzdDogY3VycmVudCB2
-YWx1ZSA9ICVsZFxuIiwgdmFsKTsNCg0KCWNwbV90aW1lcl9zdG9wKHRtKTsNCgljcG1fdGltZXJf
-cmVzZXQodG0pOw0KCXZhbCA9IGNwbV90aW1lcl9nZXRfdGlja3ModG0pOw0KCXByaW50ayhLRVJO
-X0lORk8gImNwbV90aW1lcl90ZXN0OiB2YWx1ZSBhZnRlciBzdG9wL3Jlc2V0PSAlbGRcbiIsIHZh
-bCk7DQoJaWYgKHZhbCAhPSAwKQ0KCQlGQUlMRUQoIlRpbWVyIDB4JS4yeCBkaWRuJ3Qgc3RvcCFc
-biIsIHRpbWVyX2lkKTsNCg0KCWNwbV90aW1lcl9zdGFydCh0bSk7DQoJdWRlbGF5KDUpOw0KCXZh
-bCA9IGNwbV90aW1lcl9nZXRfdGlja3ModG0pOw0KCXVkZWxheSg1KTsNCglyZXMgPSBjcG1fdGlt
-ZXJfZ2V0X3RpY2tzKHRtKTsNCglwcmludGsoS0VSTl9JTkZPICJjcG1fdGltZXJfdGVzdDogdmFs
-dWUgYWZ0ZXIgIDUgdXM9ICVsZFxuIiwgdmFsKTsNCglwcmludGsoS0VSTl9JTkZPICJjcG1fdGlt
-ZXJfdGVzdDogdmFsdWUgYWZ0ZXIgMTAgdXM9ICVsZFxuIiwgcmVzKTsNCglpZiAodmFsID09IDAg
-fHwgcmVzID09IDApDQoJCUZBSUxFRCgiVGltZXIgMHglLjJ4IGRpZG4ndCBpbmNyZW1lbnQhXG4i
-LCB0aW1lcl9pZCk7DQoNCglpbml0X3dhaXRxdWV1ZV9oZWFkKCZxdWV1ZSk7DQoNCglvbmNlID0g
-MDsNCgllcnIgPQ0KCSAgICBjcG1fdGltZXJfY2FsbF9vbmNlKHRtLCA1MDAwMCwgY3BtX3RpbWVy
-X3Rlc3RfY2FsbGJhY2ssDQoJCQkJKHZvaWQgKikmb25jZSk7DQoJaWYgKGVyciA8IDApDQoJCUZB
-SUxFRCgiQ2FuJ3QgY2FsbCBjcG1fdGltZXJfY2FsbF9vbmNlIGZvciAweCUuMnhcbiIsIHRpbWVy
-X2lkKTsNCg0KCXByaW50ayhLRVJOX0lORk8gImNwbV90aW1lcl90ZXN0OiBXYWl0aW5nIGZvciBv
-bmUtc2hvdC4uLlxuIik7DQoJY3BtX3RpbWVyX3N0YXJ0KHRtKTsNCgllcnIgPSB3YWl0X2V2ZW50
-X2ludGVycnVwdGlibGUocXVldWUsIG9uY2UgIT0gMCk7DQoJaWYgKGVyciA8IDApDQoJCUZBSUxF
-RCgiSW50ZXJydXB0ZWQgc2xlZXAgZm9yIDB4JS4yeFxuIiwgdGltZXJfaWQpOw0KDQoJZXZlcnkg
-PSAwOw0KCWVyciA9DQoJICAgIGNwbV90aW1lcl9jYWxsX2V2ZXJ5KHRtLCA1MDAwMCwgY3BtX3Rp
-bWVyX3Rlc3RfY2FsbGJhY2ssDQoJCQkJICh2b2lkICopJmV2ZXJ5KTsNCglpZiAoZXJyIDwgMCkN
-CgkJRkFJTEVEKCJDYW4ndCBjYWxsIGNwbV90aW1lcl9jYWxsX2V2ZXJ5IGZvciAweCUuMnhcbiIs
-DQoJCSAgICAgICB0aW1lcl9pZCk7DQoNCglwcmludGsoS0VSTl9JTkZPICJjcG1fdGltZXJfdGVz
-dDogV2FpdGluZyBmb3IgbXVsdGktc2hvdCB4NS4uLlxuIik7DQoJY3BtX3RpbWVyX3N0YXJ0KHRt
-KTsNCgllcnIgPSB3YWl0X2V2ZW50X2ludGVycnVwdGlibGUocXVldWUsIGV2ZXJ5ID4gNSk7DQoJ
-aWYgKGVyciA8IDApDQoJCUZBSUxFRCgiSW50ZXJydXB0ZWQgc2xlZXAgZm9yIDB4JS4yeFxuIiwg
-dGltZXJfaWQpOw0KCWNwbV90aW1lcl9jYWxsX25vbmUodG0pOw0KCXByaW50ayhLRVJOX0lORk8g
-ImNwbV90aW1lcl90ZXN0OiBDb3VudGVkIHVwIHRvICVkLlxuIiwgZXZlcnkpOw0KDQoJY3BtX3Rp
-bWVyX3N0b3AodG0pOw0KCWNwbV90aW1lcl9mcmVlKHRtKTsNCg0KCXJldHVybiAwOw0KfQ0KDQpz
-dGF0aWMgaW50IGNwbV90aW1lcl90ZXN0X2luaXQodm9pZCkNCnsNCglpbnQgZXJyOw0KDQoJcHJp
-bnRrKEtFUk5fSU5GTyAiQ1BNMiBUaW1lciBUZXN0IE1vZHVsZS5cbiIpOw0KDQojZGVmaW5lIFRF
-U1QoeCkgZG8geyBlcnI9dGVzdF90aW1lcih4KTsgaWYgKGVyciAhPSAwKSBnb3RvIGJhZDsgfSB3
-aGlsZSAoMCkNCg0KCVRFU1QoQ1BNMl9USU1FUjE2XzEpOw0KCVRFU1QoQ1BNMl9USU1FUjE2XzIp
-Ow0KCVRFU1QoQ1BNMl9USU1FUjE2XzMpOw0KCVRFU1QoQ1BNMl9USU1FUjE2XzQpOw0KDQoJVEVT
-VChDUE0yX1RJTUVSMzJfMSk7DQoJVEVTVChDUE0yX1RJTUVSMzJfMik7DQoNCiAgICAgIGJhZDoN
-CglpZiAoZmFpbGVkKSB7DQoJCXByaW50ayhLRVJOX0lORk8gImNwbV90aW1lcl90ZXN0OiBGQUlM
-RUQgJWQgdGVzdHNcbiIsIGZhaWxlZCk7DQoJfSBlbHNlIHsNCgkJcHJpbnRrKEtFUk5fSU5GTyAi
-Y3BtX3RpbWVyX3Rlc3Q6IFBBU1NFRFxuIik7DQoJfQ0KDQoJcmV0dXJuIDA7DQp9DQoNCnN0YXRp
-YyB2b2lkIGNwbV90aW1lcl90ZXN0X2V4aXQodm9pZCkNCnsNCglwcmludGsoS0VSTl9JTkZPICJD
-UE0yIFRpbWVyIFRlc3QgTW9kdWxlIHVubG9hZGVkLlxuIik7DQoJcmV0dXJuOw0KfQ0KDQpNT0RV
-TEVfTElDRU5TRSgiR1BMIik7DQptb2R1bGVfaW5pdChjcG1fdGltZXJfdGVzdF9pbml0KTsNCm1v
-ZHVsZV9leGl0KGNwbV90aW1lcl90ZXN0X2V4aXQpOw0K
-
-
---=-Ujry4cRiYTH9m7Gw4ZXp--
-
---=-/Jg6bAcXKvaK1Jf4S7o/
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQBCTVGX8/0vJ5szK6kRAgZyAJ96B6Cgp4+onB7HXxJ8AJF0U7mhoACglLCt
-E0+rmAlYEhtB3WzgIFIvLAw=
-=Q4Cr
------END PGP SIGNATURE-----
-
---=-/Jg6bAcXKvaK1Jf4S7o/--
+</BODY>
+</HTML>
+------_=_NextPart_001_01C536BE.83CAA760--
