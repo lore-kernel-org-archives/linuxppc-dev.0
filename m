@@ -1,43 +1,45 @@
-Message-ID: <37DF028E.AEE3C4EB@jlc.net>
-Date: Tue, 14 Sep 1999 22:21:02 -0400
-From: Dan Malek <dmalek@jlc.net>
+Message-ID: <37DF0C38.34352830@ctam.com.au>
+Date: Wed, 15 Sep 1999 13:02:17 +1000
+From: Brendan Simon <bsimon@ctam.com.au>
+Reply-To: bsimon@ctam.com.au
 MIME-Version: 1.0
-To: bsimon@ctam.com.au
-CC: <sebastien_tadeoni@yahoo.fr>,
-        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Problem for compiling linux-2.2.5-embedded
-References: <19990914142953.21439.rocketmail@web601.yahoomail.com> <37DEF30C.EFB188F6@ctam.com.au>
+To: Dan Malek <dmalek@jlc.net>
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 8xx updates
+References: <37DF00DD.A0806F12@jlc.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brendan Simon wrote:
+Dan Malek wrote:
 
-> Things you should NOT have included are :
-> - serial support and serial-console support.  I know this sounds wrong but
-> that's the way it is.
+> OK.  I just posted all of the outstanding 8xx updates to the
+> CVS tree.  Read the web page for more info.
 
-
-It's that way because selecting any 8xx automatically configures
-a serial console. You can't get a serial console without selecting
-PC-Style uarts.  You can't select PC-Style uarts on the 8xx because
-they assume they are the only serial ports on a system and that
-is where a console belongs.  This prevents using the 8xx CPM
-serial ports.
-
-We should change this to allow both PC uarts and the CPM uarts
-to co-exist.  The only board I know of that mixes these is the
-MBX, so it is low on my list of things to do.
+:)
 
 
-> PS. I think there is a sample configuration file in embedded-notes.txt or
-> mbx-notes.txt on the ftp site.
+> I will probably make mbx_defconfig a generic m8xx_defconfig that will
+> build on all boards.  You can then selectively add features you
+> know your board supports.  I just haven't found the lowest
+> common denominator yet.
 
-That is pretty out of date.  I need to create a real configuration
-file that is kept with the kernel sources.
+Sounds ok.
 
+The other thing that needs to be done is the help documentation.  I tend to
+use "make xconfig" when configuring my kernel.  This gives me the ability to
+load and store configuration files and then only change the bits I need to
+without going through the entire configuration processes.  The other reason is
+that it has a help button for all the configuration options.  I believe "make
+menuconfig" also has help features.  There are so many options that it is hard
+to remember what all of them do (unless you have read the docs a million
+times).  The 2.2.x and 2.3.x series from kernel mirrors have the help docs but
+none of the embedded archives (embedded-2.2.5 and mpc8xx-2.3.10) seem to have
+them.  I think its just a matter of copying the help files to the
+Documentation directory.
 
-	-- Dan
+Brendan Simon.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
