@@ -1,31 +1,40 @@
-Date: Wed, 2 Apr 2003 21:41:19 -0800 (PST)
-From: vinai <vroopcha@mcw.edu>
-To: Bill Fincke <willy@synergymicro.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: bigphysarea
-In-Reply-To: <3E8B90A8.9935B5B5@synergymicro.com>
-Message-ID: <Pine.LNX.4.43.0304022139020.5527-100000@pascal.biophysics.mcw.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Thu, 3 Apr 2003 13:08:52 -0700
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [TRIVIAL PATCH] linuxppc_2_4_devel: boot/common/misc-simple.c
+Message-ID: <20030403200852.GA3137@rover.farnsworth.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Does this patch even work on the PPC architecture ?  I thought it was an
-x86-only patch ... ??
+Declare decompress_kernel to avoid compiler warnings about type mismatches.
 
-vinai
+Thanks,
+-Dale
 
-On Wed, 2 Apr 2003, Bill Fincke wrote:
+===== arch/ppc/boot/common/misc-simple.c 1.13 vs edited =====
+--- 1.13/arch/ppc/boot/common/misc-simple.c	Thu Mar 27 02:24:15 2003
++++ edited/arch/ppc/boot/common/misc-simple.c	Thu Apr  3 12:57:39 2003
+@@ -78,6 +78,8 @@
+ extern void serial_close(unsigned long com_port);
+ extern void gunzip(void *, int, unsigned char *, int *);
+ extern void serial_fixups(void);
++struct bi_record *decompress_kernel(unsigned long load_addr, int num_words,
++		unsigned long cksum, void *bp);
 
-> Does anyone know if there is a maximum size of the memory region
-> allocated at boot time by the bigphysarea patch?  In particular,
-> under a 2.4.19 kernel, with 1GB of RAM, can 512MB or more be
-> reserved?
->
-> Bill Fincke
-> Synergy Microsystems
-> willy@synergymicro.com
+ /* Allow decompress_kernel to be hooked into.  This is the default. */
+ void * __attribute__ ((weak))
+@@ -88,7 +90,8 @@
+ }
 
+ struct bi_record *
+-decompress_kernel(unsigned long load_addr, int num_words, unsigned long cksum)
++decompress_kernel(unsigned long load_addr, int num_words, unsigned long cksum,
++		void *bp)
+ {
+ #ifdef INTERACTIVE_CONSOLE
+ 	int timer = 0;
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
