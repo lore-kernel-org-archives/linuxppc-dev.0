@@ -1,37 +1,32 @@
-Date: Mon, 16 Sep 2002 15:21:56 -0300
-From: Ricardo Scop <scop@vanet.com.br>
-Reply-To: Ricardo Scop <scop@vanet.com.br>
-Message-ID: <7640.020916@vanet.com.br>
-To: Atm account <linux2@cdotd.ernet.in>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: help needed for porting linux-2.5 to a ppc custom board
-In-reply-To: <Pine.OSF.4.10.10209141216080.2765-100000@moon.cdotd.ernet.in>
-References: <Pine.OSF.4.10.10209141216080.2765-100000@moon.cdotd.ernet.in>
+Date: Mon, 16 Sep 2002 18:38:15 -0400
+From: wahmad <wahmad@snowshore.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: problem with pci_alloc_consistent
+Message-ID: <3D808EAA@webmail.snowshore.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Atm,
+I am using pci_alloc_consistent() for obtaining contiguous memory that is
+cache safe. Here is how I am calling the routine
 
-Saturday, September 14, 2002, 4:34:28 AM, you wrote:
+pci_alloc_consistent(NULL,size,&dummy).
+Note I am throwing away the bus address.
 
+The memory that I get does not seem to be cache safe. My device doesn't see
+the data  untill I add flush_dcache_range(..). It is very undesirable for me
+to add flushes and invalidates. I will appreciate any help in this matter.
 
-Aa> Hello,
-<snip>
-Aa>   There is 4mb flash on the board (for storing vmlinux.gz)
-Aa> No hard disk.
-that ok, although 4mb may prove to tight for userland applications,
-dependeing on  what you wanna do with your board.
+I am using kernel version 2.4.20-pre5 for IBM PPC405GP and using version
+2.95.3 for gcc on an x86 as a cross compiler.
 
-Aa>  Since, there is only 1 uart port, how can we use it for
-Aa> console-login and dumping printk messages?
-This is not a problem. arch/ppc already has support for this.
+I also have CONFIG_NOT_COHERENT_CACHE defined.
 
-Have fun.
+Thanks
 
-Scop.
+Waqar
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
