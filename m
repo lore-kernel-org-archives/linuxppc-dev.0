@@ -1,21 +1,30 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3E980617.1040603@dgt-lab.com.pl>
-Date: Sat, 12 Apr 2003 14:27:03 +0200
-From: Wojciech Kromer <krom@dgt-lab.com.pl>
+Message-ID: <002901c300f2$58776090$020120b0@jockeXP>
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>,
+	"Wojciech Kromer" <krom@dgt-lab.com.pl>,
+	"Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+References: <IGEFJKJNHJDCBKALBJLLEEPEFLAA.joakim.tjernlund@lumentis.se> <3E97BB43.6030409@dgt-lab.com.pl> <000901c300cd$b708f8a0$020120b0@jockeXP> <3E97DD20.6030908@dgt-lab.com.pl> <001901c300df$4a2bb030$020120b0@jockeXP>
+Subject: Re: kernel/timer.c
+Date: Sat, 12 Apr 2003 14:52:11 +0200
 MIME-Version: 1.0
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: ELDK missing ip program ?
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="ISO-8859-2"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-where is /sbin/ip program ? it's needet to iup script
+> > so, anyone knows what linus.t says about adding one jiffie  to every
+> > non-zero expire?
+>
+> I think this is a bug. It should be enough to round up to nearest jiffie.
+> Ask on the linux kernel list.
+>
+>  Jocke
 
---
-* * * * * * * * * * * *
-* per pedes ad astra! *
-* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
+Actually, I take that back. It's not a bug. schedule_timeout(x), x > 0 will wait
+somewere between x-1 and x jiffies. Therefore one must add an extra
+jiffie to make sure that you don't return too early.
 
+     Jocke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
