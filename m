@@ -1,58 +1,62 @@
-Message-Id: <v03110701b4fd85022a6d@[129.100.29.243]>
-In-Reply-To: <v03110700b4fd7d5f5f42@[129.100.29.243]>
-References: <Pine.LNX.4.21.0003212100450.1173-100000@idd-01.imbc.gr>
- <20000321112355.A5368@rogue.genunix.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 21 Mar 2000 15:06:39 -0500
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>, anthony tong <atong@uiuc.edu>
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Subject: Re: Patches to fix aty128fb and xf400 r128 to work with both
- Rage128  and Rage128Pros
-Cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Date: Tue, 21 Mar 2000 14:45:29 -0600 (CST)
+From: Dave Weis <djweis@plconline.com>
+To: Gabriel Paubert <paubert@iram.es>
+cc: David Edelsohn <dje@watson.ibm.com>, Florian Lohoff <flo@rfc822.org>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: PPC/MCA RS/6000 port ? 
+In-Reply-To: <Pine.HPX.4.10.10003211521460.28648-100000@gra-ux1.iram.es>
+Message-ID: <Pine.LNX.4.10.10003211443260.13891-100000@catbert.desm.plconline.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Tue, 21 Mar 2000, Gabriel Paubert wrote:
+> On Tue, 21 Mar 2000, Dave Weis wrote:
+> > On Mon, 20 Mar 2000, Gabriel Paubert wrote:
+> > > However, if the use direct store segments is _unavoidable_, significant
+> > > kernel modifications are required.
+> > I know we've (Gabriel and I) discussed this, but could you elaborate?
+> > Based on what I've read in my docs, I think it is unavoidable. I'm getting
+> > closer to having the boot process figured out. Once I've got some more
+> > questions, I'm going to send my info to the list and see if my data looks
+> > accurate.
+>
+> Right now the segment registers are only changed on task switches.
+> To access devices which are addressed through direct store segments, you
+> have to load one segment register (which occupies 256Mb of virtual address
+> space) when you enter the driver for this device.
 
+The way the drivers/info I've seen do it is to call iomem_att when they
+need access to whatever they are looking for. I had a tarball of aix
+driver source for a few devices but can't seem to find it now. If anyone
+else knows where to find it, please let me know. The docs on this function
+are viewable at
+http://aix43.uwaterloo.ca/aix/doc_link/en_US/a_doc_lib/libs/ktechrf1/iomem_att.htm
 
-Whoops I am off by a factor of 10 in conmstraints 2 and 3 below
+> You might also have to save/restore the segment register on interrupts,
+> and you'd better remove this segment when returning to user space or you
+> may create a huge security hole.
 
->REF >= 625 * M / min(Nx,Nm)   (from 125MHZ <= PLLCLK <= 250MHZ
+True.
 
-Should be REF >= 6250 * M / min(Nx,Nm)
+> The best solution might be to designate one segment as reserved for this
+> purpose (say the last one) and use a save/restore mechanism in each
+> routine which needs to acces this kind of device. You have to make sure
+> that all paths restore it to the state it had on entry, but at least you
+> don't have to muck with the low level system call and interrupt entry and
+> exit code.
 
+I think the aix way would probably work okay, especially since there's a
+minimum number of drivers that would work on the machine anyway.
 
->REF <= 1250 * M / max(Nx,Nm)  (ditto)
+dave
 
-Should be REF <= 12500 * M / max(Nx,Nm).
-
-Using the values from my Rage128Pro
-
-X_MPLL_REF_FB_DIV = 0xe88a3a
-
-so
-Nm = 0xe8 = 232
-Nx = 0x8a = 138
-M = 0x3a = 58
-
-So
-
-REF >= (40 * 58) = 2320  (so this rules out the 14.32 MHZ version)
-
-REF >= 6250 * 58 / min(232,138) = 2626
-
-REF <= 12500 * 58 / max(232,138) = 3125
-
-
-So unfortunately, we still need another constraint to select between the
-29.50 MHZ REF value and the 28.63 MHZ REF value.  They may be so close that
-we won't be able to ever tell them apart.
-
-I will keep looking.
-
-Kevin
+--
+David Weis                | 10520 New York Ave, Des Moines, IA 50322
+djweis@plconline.com      | Voice 515-278-0133 Ext 231
+                          | http://www.perfectionlearning.com/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
