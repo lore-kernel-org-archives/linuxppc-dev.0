@@ -1,37 +1,94 @@
-Date: Wed, 29 May 2002 17:42:22 -0700
-From: Matt Porter <porter@cox.net>
-To: Khai Trinh <kqtrinh@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Where to place the text section of the kernel image
-Message-ID: <20020529174222.A4363@home.com>
-References: <20020529223118.11673.qmail@web11504.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020529223118.11673.qmail@web11504.mail.yahoo.com>; from kqtrinh@yahoo.com on Wed, May 29, 2002 at 03:31:18PM -0700
+Message-ID: <3CF581BE.8020207@embeddededge.com>
+Date: Wed, 29 May 2002 21:34:54 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: LMBench and CONFIG_PIN_TLB
+References: <20020529030838.GZ16537@zax>	<3CF4E842.3070207@embeddededge.com> <15605.24191.948013.249297@argo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, May 29, 2002 at 03:31:18PM -0700, Khai Trinh wrote:
->
-> I am building the ppc kernel image for Ebony. I would
-> like to find out how one goes about deciding where the
-> place the text section of the kernel image in memory?
-> The output of the built had it put @0x800000. I looked
-> in the Makefile but couldn't find where it's
-> specified. More importantly, how do we decide where to
-> put it? The output of the makefile is shown below:
+Paul Mackerras wrote:
 
-If you put the zImage at anything less than 0x800000 then the
-bootloader has to do the extra work of relocating the bootloader
-and image.  The simplest approach is to simply load it at
-0x800000 so it can simply uncompress the vmlinux.gz and
-vector to the kernel.
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+> I suspect we are all confusing two things here: (1) having pinned TLB
+> entries and (2) using large-page TLB entries for the kernel.
+
+I wasn't confusing them :-).  I know that large page sizes are beneficial.
+Someday I hope to finish the code that allows large page sizes in the
+Linux page tables, so we can just load them.
+
+> We could have (2) without pinning any TLB entries but it would take
+> more code in the TLB miss handler to do that.
+
+Only on the 4xx.  I have code for the 8xx that loads them using the
+standard lookup.  Unfortunately, I have found something that isn't quite
+stable with the large page sizes, but I don't know what it is.
+
+
+> ....  It is an interesting
+> question whether the benefit of having the 64th TLB slot available for
+> applications would outweigh the cost of the slightly slower TLB
+> misses.
+
+Removing the entry will increase the TLB miss rate by 1/64 * 100 percent,
+or a little over 1.5%, right?  Any application that is thrashing the TLB
+cache by removing one entry is running on luck anyway, so we can't consider
+those.  When you have applications using lots of CPU in user space (which
+is usually a good thing :-), increased TLB misses will add up.
+
+> .... My feeling is that it would be a close-run thing either way.
+
+So, if you have a product that runs better one way or the other, just
+select the option that suits your needs.  If the 4xx didn't require the
+extra code in the miss handler to fangle the PTE, large pages without
+pinning would clearly be the way to go (that's why it's an easy decision
+on 8xx and I'm using it for testing).
+
+> Were you using any large-page TLB entries at all?
+
+Yes, but the problem was taking the tlb hit to get the first couple of
+pages loaded and hitting the hardware register in time.  It was a hack
+from the first line of code :-)  If you are going to pin a kernel entry,
+you may as well map the whole space.  I don't think it would even work
+if we were loading large pages out of the PTE tables.
+
+> .... Tom Rini mentioned the other day that some 8xx processors
+> only have 8 (I assume he meant 8 data + 8 instruction).
+
+Yes, there are a number of variants now that have everything from 8 to
+64 I believe.  It was just easier to pick out the 860 (which always has
+lots of entries) for testing purposes.
+
+The 8xx also has hardware support for pinning entries that basically
+emulates BATs.  It doesn't require any software changes except for
+the initial programming of the MMU control and loading of the pinned
+entries.
+
+> .... David's suggestion was purely in the context of the 405
+> processor, which has 64.
+
+There is an option to enable it, so just enable it by default.  What
+do you gain by removing the option, except the possibility to prevent
+someone from using it when it may be to their benefit?  It certainly
+isn't a proven modification, as there may be some latent bugs associated
+with dual mapping pages that may be covered by the large page and
+some other mapping (I think this is the problem I see on the 8xx).
+
+> ....  (actually, why is there the "860
+> only" comment in there?)
+
+Because the MMU control registers are slightly different among the 8xx
+processor variants, and I only wrote the code to work with the 860 :-)
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
