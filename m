@@ -1,8 +1,8 @@
-Message-ID: <A33AEFDC2EC0D411851900D0B73EBEF7063E87@NAPA>
-From: Hua Ji <hji@netscreen.com>
+Message-ID: <B25E2E5A003CD311B61E00902778AF2A0204430F@server1.skystream.com>
+From: Brian Kuschak <brian.kuschak@skystream.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: About TLB mapping
-Date: Thu, 25 Jan 2001 16:42:41 -0800
+Subject: 405GP ethernet driver
+Date: Thu, 25 Jan 2001 17:03:29 -0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -10,34 +10,19 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, folks,
+Has anyone been using the 405GP ethernet driver from MontaVista?
 
-Advice needed.
+It looks like it is based on a driver from IBM.  The transmit mechanism is
+different from other linux ethernet drivers that I am familiar with.  Looks
+like they only use a single TX buffer descriptor.  The TX interrupt must be
+serviced before the next packet can be sent, which leads to lower
+performance.  Mine tops out around 60Mbps.
 
-I am writting my TLB mapping for 405GP 128M physical memory.
-When I try to assemble my codes. I got some error called:
-"Unrecognized opcode: tlbwe".
+Has anyone tinkered with this driver to implement a real TX ring buffer?  I
+don't want to duplicate effort if the work is already done.
 
-I am confused and am asking for help. Thanks in advance.
+Thanks,
+Brian Kuschak
 
-Or do I missed some options for my make file? My working environment is:
-*  powerpc-eabi-gcc and corresponding as....
-*  I tried to use -mcpu=405 to let as know that I am expecting 405cpu:-)
-
-
-
-#-------------
-#Error Message I got from compiler and assember
-#------------------------------------------
- : Error: Unrecognized opcode: `tlbwe'
- : Error: Unrecognized opcode: `tlbwe'
-
-#-------------
-#My codes sample
-#-----------------------------------------------------
- li      %r0,0                 #TLB Entry 0
- tlbwe	%r4,%r0,1
- tlbwe	%r3,%r0,0
-#-----------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
