@@ -1,34 +1,34 @@
-Date: Mon, 17 Mar 2003 17:36:21 +0100
-Message-Id: <HBWJGL$83928DADC592905EE536408396161CE6@libero.it>
-Subject: 
-	=?iso-8859-1?Q?Re:__interrupt_handler_registering_in_mpc850sar__:_i_need_help_!?=
+Message-ID: <3E763B4D.8050107@mvista.com>
+Date: Mon, 17 Mar 2003 13:17:01 -0800
+From: Todd Poynor <tpoynor@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-From: "=?iso-8859-1?Q?en=5Fch@libero.it?=" <en_ch@libero.it>
-To: "=?iso-8859-1?Q?linuxppc-embedded?=" <linuxppc-embedded@lists.linuxppc.org>
+To: Felix Domke <tmbinc@elitedvb.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: IDE corruption w/ 48 Bit addressing
+References: <3E74C280.3000608@elitedvb.net>
+In-Reply-To: <3E74C280.3000608@elitedvb.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-i have to realize a char driver to set ATM Utopia for a linux embedded system
-using motorola mpc850sar.
+Felix Domke wrote:
+>
+> Hi,
+>
+> i'm having a PPC-405 based board (IBM STB04500 if anyone cares), and i'm
+> using a Maxtor 6Y200L0, a 200GB harddisk drive.
+>
+> Obviously this uses 48bit addressing, and i'm using linucppc 2.4.21-pre4
+> devel. The same bug occurs with 2.4.20 release.
 
-i Tried this :
-
-if(request_8xx(INTERRUPT_LEVEL,myInterruptHandler,0,DEVICE_NEME,NULL))
-   panic("could not allocate irq!\n");
-cpm_install_handler(CPMVEC_IDMA1,myInterruptHandler,NULL);
-
-is it correct ??? note: INTERRUPT_LEVEL is defined 4 and CPMVEC_IDMA1 is 0x15.
-
-which register must i set (and how) to configure  interrupt in utopia mode ?
-i have seen that siu and cpm register is setted by kernel... i think i have just
-to register the handler.
-Please help me !
+So far as I know the IBM Redwood-5 (STB04xxx) has an ATAPI-5 controller
+onboard, which would not support 48-bit addressing and would support a
+max of 137GB.  But if you're using an ATA/6 controller then nevermind...
 
 
-en_ch
-we r desperate :)
+--
+Todd
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
