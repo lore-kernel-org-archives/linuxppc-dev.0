@@ -1,41 +1,39 @@
-Date: Tue, 15 Aug 2000 10:45:22 -0500
-From: Dave Wolfe <dwolfe@lists.linuxppc.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: drand48() broken?
-Message-ID: <20000815104522.B11780@lists.linuxppc.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200008151554.RAA01015@piglet.grunz.lu>
+Date: Tue, 15 Aug 2000 17:54:47 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: 2.4 ... works
+To: pochini@denise.shiny.it
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <3999AC2A.1057C171@denise.shiny.it>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I finally got around to updating to Perl 5.6.0 over the weekend and
-discovered something odd. I pretty much accepted everything Perl's
-Configure suggested (except where to install) and it passed all the
-self-tests. While I was debugging a new app that uses the Perl rand()
-function, I kept getting the same output every time. I wasn't calling
-srand() since Perl does that for you w/ a derived seed that's not the
-same every time, so that's not it. When I tried the same code on the
-same version of Perl built the same way on an x86 Linux box (RedHat
-6.1), it worked as expected, returning a different value each time it
-ran. The PCC system is a 2.1.125 kernel, gcc is egcs-2.90.25 980302
-(egcs-1.0.2 prerelease), and glibc is 0.961212.
+On  15 Aug, this message from Giuliano Pochini echoed through cyberspace:
+> At boot it complains: "PCI device 01:02.0 non available
+> because of resource collisions" and again for 01:03.0.
+> They are my 2 SCSI controllers... and it doesn't boot.
+> I patches pci.c to ignore the error and now it seems to
+> work fine, but I don't like that hack.
 
-While digging into this weirdness, I noted that the man page for
-drand48(), which Perl selected to use during configuration, is
-deprecated. After rebuilding w/ rand() everything works identically to
-the x86 build.
+What SCSI controllers are those? Anyway, to get this resolved in a clean
+way, you need the PCI resource allocation patches from Geert or me (but
+I don't have updated patrches for 2.4.0-test kernels).
 
-Is my PPC installation just too old and drand48() (actually it's
-probably srand48() that's broken) is fixed now? To see what your Perl
-uses, enter `perl -V:randfunc' (just `perl -V' gives you the version of
-Perl). If it says `drand48', try this:
+In any case, even with resource conflicts, it should boot fine, albeit
+without the SCSI controllers.
 
-    while true;do perl -e 'print int rand(62), " "';done
+Michel
 
-(Hit ^C to stop it) then let's compare versions of the various parts.
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
---
- Dave Wolfe
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
