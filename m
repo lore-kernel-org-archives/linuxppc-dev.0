@@ -1,28 +1,24 @@
-Subject: Re: device memory mapping
-To: dean@aiinet.com (Dayton, Dean)
-Date: Mon, 17 Apr 2000 13:03:17 +1000 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org ('linuxppc-embedded@lists.linuxppc.org')
-In-Reply-To: <7283DE19D141D111AD0E00A0C95B195502D968E1@mail2.aiinet.com> from "Dayton, Dean" at Apr 14, 2000 04:45:39 PM
+Subject: Re: zeroing of bss segments
+To: erammsu@kieraypc01.p.y.ki.era.ericsson.se (Marcus Sundberg)
+Date: Mon, 17 Apr 2000 13:46:29 +1000 (EST)
+Cc: kd@flaga.is, linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <kfy66tkr4kr.fsf@kieraypc01.p.y.ki.era.ericsson.se> from "Marcus Sundberg" at Apr 14, 2000 07:10:44 PM
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000417030317.470D13C95E@elph.research.canon.com.au>
+Message-Id: <20000417034629.BEE611B172@elph.research.canon.com.au>
 From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dayton, Dean writes:
-> PS: Are there any good HOWTO/guides to writing device drivers on a LinuxPPC
-> port?
+Marcus Sundberg writes:
+> No, I was referring to the cache line size patch (including removing
+> memset.S) as your problem sounded like what one can experience
+> without it. No idea then.
 
-Most of it is probably architecture-independent, which is a good goal for new
-drivers anyway, so stuff like the Linux Kernel Module Programming Guide might
-help, at:
-    http://metalab.unc.edu/mdw/LDP/lkmpg/mpg.html
-
-There are also some 8xx-specific driver examples that might be helpful listed
-in the HOWTO at:
-    http://members.xoom.com/greyhams/linux/PowerPC-Embedded-HOWTO-11.html
+I've been tripped up by this too; upgraded my glibc and applied the patches,
+but forgot to nuke memset.S. Is anyone working towards getting a proper fix
+for this into the mainline glibc?
 
 Regards,
 Graham
