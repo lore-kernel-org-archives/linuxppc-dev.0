@@ -1,28 +1,29 @@
-Message-ID: <3D53D947.7040309@galileo.co.il>
-Date: Fri, 09 Aug 2002 18:01:27 +0300
-From: Rabeeh Khoury <rabeeh@galileo.co.il>
 MIME-Version: 1.0
-To: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
-Cc: linux-mtd@lists.infradead.org,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MTD/JFFS2 on Intel 28F160F3
-References: <3D530222.7040303@redswitch.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Tigon3 driver, broadcom 5307, 440GP, working? (solved)
+Date: Fri, 9 Aug 2002 11:21:51 -0500
+Message-ID: <45B36A38D959B44CB032DA427A6E106401281475@cceexc18.americas.cpqcorp.net>
+From: "Cameron, Steve" <Steve.Cameron@hp.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
-> The basic problem is what the physical start address of flash mapping
-> is? While on PPCBoot, I got flash information using command 'flinfo'.
-> The start address is FFE00000. Is this address the one used to configure
-> CFI flash device in physical memeory map? I tried using this address but
->  'physmap' couldn't find flash device.
+I wrote:
+> > I've been playing around with the tigon3 driver and a broadcom
+> > 5307 [5703, I meant] gigabit NIC in my IBM ebony... No luck so far.
+and
+> Ok, I have determined that my problem lies in user-land, not
+> the kernel.
 
-It is not a must that the address mapping in PPCBoot is the same as in
-the kernel.
+Heh.  The reason it couldn't ping it's own IP address?
+I forgot to ifconfig the loopback interface, duh.
 
-What board are you using ?
+	ifconfig lo 127.0.0.1
 
+makes it all work.  (Sometimes the easy ones are the hardest.)
+Thanks,
+-- steve
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
