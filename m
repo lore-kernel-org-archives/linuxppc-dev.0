@@ -1,52 +1,132 @@
-Date: Thu, 6 Sep 2001 13:01:06 -0700
-From: andrew may <acmay@acmay.homeip.net>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: acmay@acmay.homeip.net, Dan Malek <dan@mvista.com>,
-	John Tyner <jtyner@cs.ucr.edu>, linuxppc-commit@source.mvista.com,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: patch for mktree.c on cross compiles
-Message-ID: <20010906130106.L14548@ecam.san.rr.com>
-References: <20010905120613.I14548@ecam.san.rr.com> <3B968E75.A63F26EA@mvista.com> <20010905212050.K18940@cpe-24-221-152-185.az.sprintbbd.net> <20010905223903.D621@sink.san.rr.com> <20010906075542.A21172@cpe-24-221-152-185.az.sprintbbd.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010906075542.A21172@cpe-24-221-152-185.az.sprintbbd.net>
+Message-ID: <004601c13710$d26abee0$2000a8c0@private>
+From: =?ks_c_5601-1987?B?wLG1v7yu?= <manulsan@daintelecom.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Can't run init... MPC8240 
+Date: Fri, 7 Sep 2001 05:16:32 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Sep 06, 2001 at 07:55:42AM -0700, Tom Rini wrote:
-> On Wed, Sep 05, 2001 at 10:39:03PM -0700, acmay@acmay.homeip.net wrote:
-> > On Wed, Sep 05, 2001 at 09:20:50PM -0700, Tom Rini wrote:
-> > > On Wed, Sep 05, 2001 at 04:43:33PM -0400, Dan Malek wrote:
-> > > > andrew may wrote:
-> > > > > I would think everything in arch/ppc/boot/utils should be checked
-> > > > > for endian problems on cross compiles.
-> > > >
-> > > > Are the network-host macros the right things to use?  That's what
-> > > > always comes to mind for me, but I suspect there is a more standard
-> > > > set of macros from 'endian.h' or something........If it's OK with
-> > > > everyone I'll check it in, but it does look kind of weird.
-> > >
-> > > Well, after some quick digging, here's what I found.  If we include
-> > > <asm/byteoder.h>, and deal with some __'s, which are exported outside
-> >
-> > One problem with trying this is that <asm/byteoder.h> will only be for
-> > the target, not the compiling host. I think mktree should stick with
-> > standard userspace include headers and stay away from kernel headers.
->
-> Er.  No, <asm/byteorder.h> _should_ be a userspace header.  At least on
-> Linux..  For BSD (and Linux with _USE_BSD) we can use sys/types.h and get
-> back a __BYTE_ORDER, I _think_...
+Dear
 
-It seems that <asm/byteorder.h> is one of the "shared" headers between glibc
-and the kernel. Hasn't Linus wanted the glibc people to do there own headers
-for ages.
+I am working MPC8240 custom board with Sandpoint8240 BSP
+from MVista CDK 2.0 .   I think that I made something wrong.
+I tried to make run "init" ( init is located /bin/init,  sbin is symbolic link to bin),
+but didn't run it so I printed error code  with printk function.  Error code is 2
+Error code 2 says that file does not exist. I can't find debugging point.
+Small advice gonna be big hands to me.
 
-Either way it seems that htonl gets mapped down __cpu_to_be32() in
-linux/byteorder/generic.h. So that even thought it seems strange to
-use the "network" functions it does seem to be OK.
 
-We can only hope people don't have bad /usr/include/[asm][linux] symlinks.
+Following is What I did and partial souece and console output using printk
+
+[ Work Sequence ]
+
+1. Made ramdisk.image.gz and copy it to "/opt/hardhat/devkit/lsp/motorola-sandpoint/linux-
+   2.4.2_hhl20/arch/ppc/boot/images"
+2. compiled with command " make zImage.initrd"
+3. Change to directory   "/opt/hardhat/devkit/lsp/motorola-sandpoint/linux- 2.4.2_hhl20/arch/ppc/boot/images"
+4. Make it to srec format
+    zsrec -s 900000 zImage.initrd.sandpoint  > image.hex
+5. At vision prob I converted it to bdx file
+    I got image.bdx
+6. I downloaded "image.bdx" using vision prob
+7. go 900000
+
+
+
+
+=====================  source code  =====================
+
+static int init(void * unused)
+{
+        lock_kernel();
+        do_basic_setup();
+
+        /*
+         * Ok, we have completed the initial bootup, and
+         * we're essentially up and running. Get rid of the
+         * initmem segments and start the user-mode stuff..
+         */
+        free_initmem();
+        unlock_kernel();
+#if 0
+
+        if (open("/dev/console", O_RDWR, 0) < 0)
+                printk("Warning: unable to open an initial console.\n");
+
+        (void) dup(0);
+        (void) dup(0);
+#endif
+        /*
+         * We try each of these until one succeeds.
+         *
+         * The Bourne shell can be used instead of init if we are
+         * trying to recover a really broken machine.
+         */
+
+        if (execute_command)
+                execve(execute_command,argv_init,envp_init);
+
+if (execute_command)
+printk("Suchen nach %s ", execute_command);    execve(execute_command,argv_init,envp_init);
+printk("%d\n", errno);
+
+printk(" /sbin/init ==> "); execve("/sbin/init",argv_init,envp_init);
+printk("  %d\n", (errno));
+
+printk(" /init ==> "); execve("/init",argv_init,envp_init);
+printk("%d\n", (errno));
+
+printk(" /etc/init  ==> "); execve("/etc/init",argv_init,envp_init);
+printk("%d\n", (errno));
+
+printk(" /bin/init  ==> "); execve("/bin/init",argv_init,envp_init);
+printk("%d\n", (errno));
+
+printk(" /bin/sh ==> "); execve("/bin/sh",argv_init,envp_init);
+printk("%d\n", (errno));
+
+panic("No init found. Try passing init= option to kernel.");
+}
+
+
+=======[  Printk output ]===================================
+
+.
+.   ( omitted )
+.
+.
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Starting kswapd v1.8
+block: queued sectors max/low 40885kB/13628kB, 128 slots per queue
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+RAMDISK: Compressed image found at block 0
+Freeing initrd memory: 4194301k freed
+loop: loaded (max 8 devices)
+Serial driver version 5.02 (2000-08-09) with MANY_PORTS SHARE_IRQ SERIAL_PCI ena
+bled
+ttyS00 at 0x1e08080 (irq = 4) is a ST16650
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 4096 bind 4096)
+IP-Config: No network devices available.
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 72k init 4k openfirmware...
+Suchen nach /init 2
+ /sbin/init ==>   2
+ /init ==> 2
+ /etc/init  ==> 2
+ /bin/init  ==> 2
+ /bin/sh ==> 2
+Kernel panic: No init found. Try passing init= option to kernel.
+Rebooting in 180 seconds..
+=========================================================
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
