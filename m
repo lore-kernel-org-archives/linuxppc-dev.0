@@ -1,37 +1,37 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: ppcboot compile issues
-Date: Sat, 13 Jan 2001 09:29:45 +0100
-Message-Id: <19341208020129.22479@smtp.wanadoo.fr>
+Message-ID: <3A625423.E0F6C9AC@vacuumgenesis.com>
+Date: Sun, 14 Jan 2001 17:36:35 -0800
+From: Timothy Ritchey <tritchey@vacuumgenesis.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: kswapd Oops
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi !
+I am running the the linuxppc_2_4 snapshot from 01/13/01, booting using
+ppcboot on a custom 860T-based board with 64 MB of dram. I am getting
+periodic Oops like:
 
-I've just ported ppcboot to a custom 860T based board and noticed a few
-issues with it while tracing with GDB via BDM.
+ Oops: kernel access of bad area, sig: 11
+NIP: C002C044 XER: 00000140 LR: C002C024 SP: C3FA3F10 REGS: c3fa3e60
+TRAP: 0300
+[snip][snip][snip]
+Call backtrace:
+C015A354 C002C298 C0004E8C
 
-Basically, it looks like a lot of the IOs to internal registers are
-happily re-ordered by GCC. I didn't yet checked all the various
-combinations, but I'm not sure using volatile actually helped (and it's
-not used everywhere in ppcboot anyway). Also, I noticed eieio is only
-rarely used. I beleive 8xx CPUs don't have the same execution ordering
-issues than 6x/7xx/7xxx CPUs, do they ?
+I can still access the shell though.
 
-For now, I'm compiling ppcboot with -O0, and the result is fine. However,
-to avoid any potential problem, especially with future cores that may
-more agressively re-order execution, shouldn't we wrap all IOs in some
-macros like we do in the 6xx/7xx/7xxx kernel ? (The macro beeing a load/
-store instruction marked volatile with the appripriate constraints, and
-eventually eieio).
+the call backtrace indicates this is occuring during kswapd. I am trying
+to isolate the problem to figure out what needs fixing. Is this a
+potential MMU problem, or could it be a problem with the swap setup. I
+am not sure what needs to be done with regards to an initrd-based system
+with respect to swap. It doesn't seem to me that it should even BE
+swapping since there is no disk... :/
 
-The same is probably true for the 8xx kernel.
+Any advice would be appreciated.
 
-What do you people think ?
-
-Ben.
+Cheers,
+tim
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
