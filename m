@@ -1,44 +1,28 @@
-From: adharankar@attbi.com
+Message-ID: <20020611234337.46834.qmail@web11503.mail.yahoo.com>
+Date: Tue, 11 Jun 2002 16:43:37 -0700 (PDT)
+From: Khai Trinh <kqtrinh@yahoo.com>
+Subject: Ebony bootloader
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Problem: SDRAM configuration and refresh
-Date: Tue, 11 Jun 2002 19:22:51 +0000
-Message-Id: <20020611192251.WCYS2751.rwcrmhc52.attbi.com@rwcrwbc57>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greetings,
+Does the Ebony board port implement a bootloader? What
+does the head_440.S file do in a nutshell?
 
-I am trying to getup a Scout based board with
-64MB SDRAM, and could use any recommendations
-to fix this problem:
+If our custom board has peripheral devices hanging off
+the EBC0, how should I initilize them and where in the
+ebony port code? I browsed the source a little bit and
+see the ebony.c source. I believe this is where you
+add peripheral devices to the kernel. Am I right?
 
-If I set the refresh-enable bit in the PSDMR,
-the chipselect for flash and other devices
-vanishes: consequently, this startup code
-ends up executing junk. At this point if I try
-to look at the flash from the BDI2000, the
-flash cannot be seen.
+What is that ioremap64() anyway? Is this a kernel call
+or a called supported by the firmware?
 
+Thanks,
+--Khai
 
-
-On the other hand, if I initialize the SDRAM
-without setting this refresh-enable bit, ppcboot
-(the code using it) comes up and am able to run
-commands etc. However, the problem now is that
-without the SDRAM refresh we run into memory
-corruption problem (mtest will fail) and a system
-hang.
-
-Its interesting to note that as long as memory
-is accessed frequently (say via mtest), the
-corruption is not see at that address. Also, an
-idle system almost hangs in a very short time,
-whereas an active one with mtest will continue on.
-
-
-
-Best regards,
--Arun.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
