@@ -1,40 +1,48 @@
-In-Reply-To: <38BF4A07.3474B5FB@redhat.com>
-Date: Fri, 3 Mar 2000 11:55:13 +0100
-To: Doug Ledford <dledford@redhat.com>, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <v04220800b4e5212c2027@[10.0.0.42]>
+Date: Fri, 3 Mar 2000 12:09:00 +0100
+To: "Timothy A. Seufert" <tas@mindspring.com>, linuxppc-dev@lists.linuxppc.org
 From: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: Need reports about PCI I/O conflicts
-Message-Id: <20000303115513.005167@mailhost.mipsys.com>
+Message-Id: <20000303120900.024672@mailhost.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Mar 3, 2000, Doug Ledford <dledford@redhat.com> wrote:
+On Fri, Mar 3, 2000, Timothy A. Seufert <tas@mindspring.com> wrote:
 
->The driver wants to see a valid IO region in the config registers or else it
->interprets the card as disabled.  It also wants to see a unique value on each
->card or else it interprets everything but the first instance as duplicates of
->the first and ignores them (certain PCI busses have resulted in devices being
->in the list multiple times, and certain BIOSes use setting the IO space to 0
->to signal a card that is disabled in the BIOS).  The driver already
-knows that
->on PPC it needs to use MMAP I/O registers, so there isn't any hints needed
->from the OF, and those hints only complicate matters further when trying to
->keep the driver uniform across multiple architectures.  If this is going
-to be
->an ongoing problem, then I can make changes to the driver, it just means
->having a few more #ifdef(__powerpc__) type stuff (ick).
+No need for more lspci from you now, or eventually just send me what you
+already sent, but without running Michel Lanners patch this time.
 
-In our case, I beleive we need to change the driver so that it ignores
-the PIO addresses when they have not been assigned and there's a valid
-MMIO address. I'll look at the driver again but I beleive the only place
-where it can be a problem is the code that detects multiple instances of
-the card. We can probably safely disable that code on all PPCs, or
-eventually make it use MMIO when PIO are not available.
+>>It does this by writing 0 in the io space register, but
+>>doesn't disable IO accesses to the card in the PCI config header (or
+>>maybe they get re-enabled by the kernel fixup code).
+>
+>I think the fixup code is re-enabling it if it can:
+>
+>   PCI: setting IRQ 24 on device 01:18.
+>   PCI: Correcting IOaddress 0 on device 01:18, now fe000001.
+>   PCI: Enabling I/O for device 01:18
+>   PCI: setting IRQ 25 on device 01:20.
+>   PCI: Correcting IOaddress 0 on device 01:20, now fe000001.
+>   PCI: Correcting IOaddress 0 on device 01:21, now fe000001.
+>
+>01:18 is the 2940UW, 01:20 and 01:21 the two channels of the 39160.
+>
+>I remember looking at the code which enables I/O for a device, but it
+>wasn't clear to me at that time how it decided whether to enable I/O.
 
-I'll see what I can do on my side but I don't have an Adaptec card to
-test with.
+My understanding for now is that the fixup code thinks the cards are
+assigned IO address 0, not that they are disabled. So it does the fixup
+of the pointer, but doesn't looks for a free io range. Could you check
+if, before entering the fixup code, bit 0 of the IO base register is
+actually 0 or 1 ? (If the register contains really 0x00000000 or
+0x00000001). The first case would mean a disabled and non-assigned BAR,
+the second would mean a valid BAR assigned to address 0.
+
+Also, if you have it, please send me Michel patches as I didn't find them
+on his page.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
