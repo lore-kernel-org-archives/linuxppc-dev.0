@@ -1,23 +1,17 @@
-Return-Path: <jonmasters@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.197])
-	by ozlabs.org (Postfix) with ESMTP id 444472BDF2
+Return-Path: <blofeldus@yahoo.com>
+Received: from web53501.mail.yahoo.com (web53501.mail.yahoo.com
+	[206.190.37.62]) by ozlabs.org (Postfix) with SMTP id A3C132BEA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 28 Nov 2004 05:42:45 +1100 (EST)
-Received: by rproxy.gmail.com with SMTP id f1so452268rne
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 27 Nov 2004 10:42:41 -0800 (PST)
-Message-ID: <35fb2e59041127104280df7ad@mail.gmail.com>
-Date: Sat, 27 Nov 2004 18:42:41 +0000
-From: Jon Masters <jonmasters@gmail.com>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20041126143701.98123C1430@atlas.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-References: <41A709E1.4050608@asist-traffic.com>
-	<20041126143701.98123C1430@atlas.denx.de>
+	Sun, 28 Nov 2004 08:39:46 +1100 (EST)
+Message-ID: <20041127213940.72317.qmail@web53501.mail.yahoo.com>
+Date: Sat, 27 Nov 2004 13:39:40 -0800 (PST)
+From: roger blofeld <blofeldus@yahoo.com>
+To: tnt@246tNt.com
+In-Reply-To: <20041116201654.GA3088@xyzzy>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200 toolchain test
-Reply-To: jonathan@jonmasters.org
+Subject: Re: MPC5200 Cache coherency with BestComm issue
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,10 +22,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 26 Nov 2004 15:36:56 +0100, Wolfgang Denk <wd@denx.de> wrote:
+Sylvain,
+ By experimenting I have found that the BestComm and FEC work without
+the cache flush provided CPU_FTR_MAYBE_CAN_NAP is removed from the
+cputable (nap disables snooping) and that CPU_FTR_NEED_COHERENT is
+added to the cputable (turns on "M" bit in BAT/PTE so that the XLB has
+a chance of seeing a global transaction).
 
-> [I hope you don't call "U-Boot" an OS ;-) ]
+I don't know if that will work for all G2_LE cores, but it seems
+required for the 5200.
+-rb
 
-Just wait until a marketting department gets their hands on it :-).
-
-Jon.
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
