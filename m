@@ -2,19 +2,19 @@ Return-Path: <dan@embeddededge.com>
 Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 180982BDD3
+	by ozlabs.org (Postfix) with ESMTP id 867F42BDB4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  9 Oct 2004 01:32:19 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.60.0410080840520.6091@dell.enoriver.com>
-References: <Pine.LNX.4.60.0410080840520.6091@dell.enoriver.com>
+	Sat,  9 Oct 2004 01:38:57 +1000 (EST)
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B06DB7B@ismail.innsys.innovsys.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B06DB7B@ismail.innsys.innovsys.com>
 Mime-Version: 1.0 (Apple Message framework v619)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <7D7D70F5-193F-11D9-9299-003065F9B7DC@embeddededge.com>
+Message-Id: <435F9A02-1940-11D9-9299-003065F9B7DC@embeddededge.com>
 From: Dan Malek <dan@embeddededge.com>
-Date: Fri, 8 Oct 2004 11:34:06 -0400
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: next pass of cleaning up micropatch.c
+Date: Fri, 8 Oct 2004 11:39:38 -0400
+To: "Rune Torgersen" <runet@innovsys.com>
+Cc: linuxppc-embedded@ozlabs.org, alebas@televes.com
+Subject: Re: Bridge, promiscous mode andCPM2
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,30 +26,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 8, 2004, at 8:44 AM, Robert P. J. Day wrote:
-> + *  Shortcut macros for patching code.
->   */
-> +
-> +#define PATCH2000 \
-> +	dp = (uint *)(commproc->cp_dpmem); \
-> +	for (i=0; i<(sizeof(patch_2000)/4); i++) \
-> +		*dp++ = patch_2000[i];
-> +
-> +#define PATCH2E00 \
-> +	dp = (uint *)&(commproc->cp_dpmem[0x0e00]); \
-> +	for (i=0; i<(sizeof(patch_2e00)/4); i++) \
-> +		*dp++ = patch_2e00[i];
-> +
-> +#define PATCH2F00 \
-> +	dp = (uint *)&(commproc->cp_dpmem[0x0f00]); \
-> +	for (i=0; i<(sizeof(patch_2f00)/4); i++) \
-> +		*dp++ = patch_2f00[i];
+On Oct 8, 2004, at 10:02 AM, Rune Torgersen wrote:
 
-Please get rid of these macros and place the code where it
-belongs.  They add no value and just make it harder to
-read the code and understand what it does.
+> Assuming CPM2 => 82xx or 85xx CPU.
 
-Thanks.
+Yes.
+
+> I have no idea who or why that early return was put in,
+> but it does disable multicast and promiscous mode
+> on the FCC ethernets.
+
+Because I never wrote (or lifted from somewhere else)
+the function to run the CRC generator for creating the
+multicast filters (the CPM1 on 8xx has hardware support
+for this).  I left the function there as a  place holder to get
+promiscuous mode, and someone did finish that function.
+It should be in one of the several kernel source trees......
+If not, I'll try to find the patch and do it again.
 
 
 	-- Dan
