@@ -1,47 +1,40 @@
-Message-ID: <009901c2a1e6$bc1c3370$69fefe0a@hercules>
-From: "Frank Robbins" <Frank.Robbins@Analogue-Micro.com>
-To: "Donald MacArthur" <dmacarth@ufl.edu>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <NDBBIHDFKLJKGJJGMFJOKEJACGAA.dmacarth@ufl.edu>
-Subject: Re: MPC850 Pinout Description?
-Date: Thu, 12 Dec 2002 13:59:47 -0000
+Message-ID: <3DF8A803.47AC339D@midrivers.com>
+Date: Thu, 12 Dec 2002 08:15:15 -0700
+From: Mark Pilon <mpilon@midrivers.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: no segv running under gdbserver, segv without
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The manual?
+Hi,
 
- look at www.mot-sps.com  and then at the network communication processors
+I'm trying to debug our apps running on a 405pm target --
 
-Frank
------ Original Message -----
-From: "Donald MacArthur" <dmacarth@ufl.edu>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Thursday, December 12, 2002 1:57 PM
-Subject: MPC850 Pinout Description?
+when the app is interrupted w/ a ctrl/C it's supposed to
+cleanup and quit gracefully, as it does under X86.
 
+it's seg faulting.
 
->
-> Does anyone know of a concise document which describes the pinouts and
-> functions of the MPC850?
->
-> Thank You
-> Donald MacArthur
-> dmacarth@ufl.edu
->
-> Graduate Fellow
-> Center for Intelligent Machines and Robotics
-> Mechanical Engineering
-> MEB300
-> University of Florida
-> Gainesville, Fla
-> 32611
->
->
->
+when I run it under gdbserver it seems to behave correctly
+and I can't catch the failure.
 
+any suggestions?
+
+Thanks,
+
+Mark
+
+--
+Mark Pilon
+Minolta-QMS
+
+P.O. Box 37
+325 Dawson County Road 227
+Fallon, MT.  59326-0037
+1-406-486-5539 (primary voice line)
+1-406-853-0433 (cell)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
