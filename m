@@ -1,36 +1,79 @@
-Date: Tue, 17 Jul 2001 16:40:24 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.4 - buttons, temperature, ictc
-In-Reply-To: <20010717101901.21603@smtp.adsl.oleane.com>
-Message-ID: <Pine.LNX.4.33.0107171622010.27602-100000@opal.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 17 Jul 2001 11:01:25 -0400
+From: Ethan Blanton <eblanton@cs.ohiou.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [Fwd: Re: 2.4 - buttons, temperature, ictc]
+Message-ID: <20010717110125.D22214@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-md5;
+	protocol="application/pgp-signature"; boundary="E7i4zwmWs5DOuDSH"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >With 2.5 even CONFIG_PMAC_BACKLIGHT in adbhid.c will go away and you _have_
-> >to use the event devices then, so you better start using them _now_. Taking
-> >kernel bloating shortcuts is not the way to go IMHO.
+--E7i4zwmWs5DOuDSH
+Content-Type: multipart/mixed; boundary="gDGSpKKIBgtShtf+"
+Content-Disposition: inline
+
+
+--gDGSpKKIBgtShtf+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Oops, I pulled this off the list by hitting 'r' instead of 'L'.  ;-)
+Ethan
+
+--=20
+If I've told you once, I've told you once
+And once is all that you needed.
+		-- The Refreshments, "Carefree"
+
+--gDGSpKKIBgtShtf+
+Content-Type: message/rfc822
+Content-Disposition: inline
+
+Received: from oucsace.cs.ohiou.edu (oucsace.cs.ohiou.edu [132.235.1.2])
+	by masaka.cs.ohiou.edu (8.9.3+Sun/8.9.3) with ESMTP id KAA01069
+	for <eblanton@masaka.cs.ohiou.edu>; Tue, 17 Jul 2001 10:56:39 -0400 (EDT)
+Received: from zirkon.biophys.uni-duesseldorf.de (IDENT:root@zirkon.biophys.uni-duesseldorf.de [134.99.176.3])
+	by oucsace.cs.ohiou.edu (8.9.3/8.9.3) with ESMTP id KAA24159
+	for <eblanton@cs.ohiou.edu>; Tue, 17 Jul 2001 10:56:37 -0400 (EDT)
+Received: from localhost (schmitz@localhost)
+	by zirkon.biophys.uni-duesseldorf.de (8.9.3/8.9.3) with ESMTP id QAA22932;
+	Tue, 17 Jul 2001 16:56:35 +0200
+Date: Tue, 17 Jul 2001 16:56:33 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Ethan Blanton <eblanton@cs.ohiou.edu>
+cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Subject: Re: 2.4 - buttons, temperature, ictc
+In-Reply-To: <20010717104848.C22214@localhost.localdomain>
+Message-ID: <Pine.LNX.4.10.10107171651070.22917-100000@zirkon.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+
+> > handle all this. That way, users could even customize the thing to get
+> > particular functions mapped to keys :-)
 >
-> Right, all this belongs to userland. I might include part of this
-> patch in 2.4 so we have the feature working now, but for 2.5, I'd
-> rather use the event devices for both backlight and volume, and
-> have pmud handle them.
+> Yeah ...  Like I would *love* to make those function keys be FUNCTION
+> KEYS and press fn if I want to change the backlight/etc ...  I don't
+> know about you guys, but I change desktops with Alt+Fn *way* more
+> often than I turn my backlight brightness up or down...
 
-Why pmud? For backlight I kind of see how you'd get that notion. But
-volume?
+That's not what I meant - I think there's some magic word you tell the
+keyboard controller to make the fn keys default.
 
-I admit to zero knowledge about the event device stuff but if it's
-anything like register_event(fd, handler, event_code) or select instead of
-having a hander registered I'd rather have some sort of event daemon
-handle all this. That way, users could even customize the thing to get
-particular functions mapped to keys :-)
+Would you know the necessary ADB command by any chance, Ben?
 
 	Michael
 
+
+--gDGSpKKIBgtShtf+--
+
+--E7i4zwmWs5DOuDSH
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+
+--E7i4zwmWs5DOuDSH--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
