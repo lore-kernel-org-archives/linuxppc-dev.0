@@ -1,51 +1,31 @@
-Message-ID: <000501bfba40$0dd50200$efc5dba8@sec.samsung.co.kr>
-From: "kim sook young" <icekim@sec.samsung.co.kr>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Error: Unrecognized opcode
-Date: Wed, 10 May 2000 14:24:40 +0900
+Message-ID: <391944A2.1713C1AE@charter.net>
+Date: Wed, 10 May 2000 06:14:42 -0500
+From: "Dan A. Dickey" <ddickey@charter.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+To: Julia Elbert <jelbert@enerdyne.com>
+CC: "'linuxppc-embedded@lists.linuxppc.org'"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Flash File System
+References: <67505026E29DD311A9AA00508B7315F3195577@EXCHANGE>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi,all
+Julia Elbert wrote:
+>
+> Hello,
+> What kind of flash filesystem works with linux pppc? We tried M-Systems
+> DiskOnChip, but they claim not support source for the power pc.
+> What do to? Desperate, please help.
 
-While compiling, Some weird messages occurred.
-I  don't think rorw is available opcode on the ppc environment. do i?
-I don't know why rorw opcodes are generated in assembly code.
-
-----------------------------------------------------------------
-Compiling smbd/oplock.c
-/tmp/ccs9oFVa.s: Assembler messages:
-/tmp/ccs9oFVa.s:190: Error: Unrecognized opcode: `rorw'
-/tmp/ccs9oFVa.s:414: Error: Unrecognized opcode: `rorw'
-/tmp/ccs9oFVa.s:417: Error: Unrecognized opcode: `rorw'
-/tmp/ccs9oFVa.s:1171: Error: Unrecognized opcode: `rorw'
-/tmp/ccs9oFVa.s:2629: Error: Unrecognized opcode: `rorw'
-make: *** [smbd/oplock.o] Error 1
-
----------------------------------------------------------------
-the following is a part of the assembly code.
-
-.L199:
-        lis 9,global_oplock_port@ha
-        la 9,global_oplock_port@l(9)
-        lhz 0,10(1)
-        rorw $8, 0
-        sth 0,0(9)
-        bl setup_kernel_oplock_pipe
-        cmpwi 0,3,0
-        bc 4,2,.L203
-        li 3,0
-        b .L205
-----------------------------------------------------------------
-
-I hope somebody would tip me off to the solution(?)
-
-Thanks
-regards
-
+I do not believe that to be true.
+While support may not be directly available from M-Systems,
+I'm pretty sure there are drivers available for DiskOnChip
+from somewhere on the network.  I stopped following its
+development when I determined that I wasn't going to be
+using it.  Search for a bit on the net, it shouldn't be
+too hard to find.
+	-Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
