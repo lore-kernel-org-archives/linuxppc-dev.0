@@ -1,72 +1,85 @@
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linuxppc_2_5 source tree (and others) 
-In-Reply-To: Message from Cort Dougan <cort@fsmlabs.com>
-   of "Thu, 10 May 2001 21:14:08 CST." <20010510211408.P1595@ftsoj.fsmlabs.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Fri, 11 May 2001 15:43:25 +1000
-Message-ID: <23573.989559805@msa.cmst.csiro.au>
-From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
+Date: Fri, 11 May 2001 12:09:11 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: frowand@mvista.com
+Cc: Brian Kuschak <brian.kuschak@skystream.com>,
+	"'Dan Malek'" <dan@mvista.com>, Eli Chen <eli@routefree.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: dcache BUG()
+In-Reply-To: <3AFAE7A0.AE936C64@mvista.com>
+Message-ID: <Pine.HPX.4.10.10105111148150.29518-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 10 May 2001 21:14:08 -0600, Cort Dougan <cort@fsmlabs.com> writes:
->I'm not sure what the current plan is at BitMover but I believe that's a
->feature of BitKeeper/Pro but not BitKeeper/Open.
+On Thu, 10 May 2001, Frank Rowand wrote:
 
-I don't know the exact situation either - all I can go on is their website,
-which describes two versions of BitKeeper - BK/Pro and BK/Basic. The BK/Basic
-page says it provides everything that BK/Pro does, except for:
+> Gabriel Paubert wrote:
+> >
+> > Why not ? I'd like to find an explanation of a possible failure mode.
+> > All PPC systems have always used a simple store for atomic_set. If it does
+> > not work, there is something seriously wrong, perhaps even a hardware bug.
+> >
+> > This is especially true on a UP system. Whatever value is stored by a stw
+> > should be seen by any following lwarx/stwcx., on SMP you may need an
+> > eieio. But on UP I can't see how it can affect anything.
+>
+> >From the "PowerPC 405GP Embedded Processor User's Manual", in the "Instruction
+> Set" chapter (which describes each instruction), the Programming Note for lwarx
+> says:
+>
+>   lwarx and the stwcx. instruction should be paired in a loop, as shown in the
+>   following example, to create the effect of an atomic operation to a memory
+>   area used as a semaphore between asynchronous processes.  Only lwarx can set
+>   the reservation bit to 1.  stwcx. sets the reservation bit to 0 upon its
+>   completion, whether or not stwcx. sent (RS) to memory.  CR[CR0]EQ must be
+>   examined to determine whether (RS) was sent to memory.
+>
+>     loop: lwarx  # read the semaphore from memory; set reservation
+>     "alter"      # change the semaphore bits in register as required
+>     stwcx.       # attempt to store semaphore; reset reservation
+>     bne loop     # an asynchronous process has intervened; try again
+>
+>   If the asynchronous process in the code example had paired lwarx with a
+>   store other than stwcx., the reservation bit would not have been cleared
+>   in the asynchronous process, and the code example would have overwritten
+>   the semaphore.
+>
+>
+>
+> So if the lwarx occurs,
+>
+> then an interrupt alters the flow of execution,
+> and the interrupt handler uses a stw to implement atomic_set(),
+>
+> then the interrupt handler returns to the original flow of execution,
+>
+> then the stwcx. succeeds, even though the value of the semaphore was
+> altered by the atomic_set().
 
-        - Hierarchical repositories
-        - Ability to resolve rename conflicts in anything other than
-	  the master repository
-        - Rollback
-        - Global multi-site
-        - Event triggers
-        - LOD (line of development) support
+The solution to this is to guarantee that the reservation is always lost
+on return from interrupt. This is exactly what my patch does, but it does
+it just before the rfi, guaranteeing that the reservation is lost in all
+cases, even if you have a down_trylock on another path which could return
+with a stale reservation.
 
-There is also a description of BK/Web, which appears to be a third part.
+> > Did it actually have any effect on Brian's system ?
+>
+> Changing atomic_set() to use lwarx / stwcx. instead of stw had an
+> effect on my 405GP systems here (including the Walnut and also
+> the same custom board that Brian is using).
 
-Based on this, I am assuming that BK/Basic is (or will be) the free version,
-and BK/Pro is (or will be) the commercial version that you must pay for.
-It seems to me that it would be pointless to use BK/Basic only for the Linux
-kernel - all this stuff, and LODs in particular, are too useful.
+Please try the last patch I sent to the list instead and report. It should
+have the same effect and protect against other (actually all AFAICT) cases
+of stale reservations.
 
-I have no problem with them selling software, and I quite like BitKeeper -
-it feels right, like it has the correct approach to software version control
-(at least in the case where there is a large number of distributed developers
-and one single entity being developed consisting of a huge number of files -
-exactly the case with the Linux source).
+I might still have missed some cases, but it won't bloat the atomic_set()
+macros and handle correctly the case of an interrupt that ends with
+a failing down_trylock or spin_trylock just before returning.
 
-However, I would question the use of closed-source, non-free software to
-develop open-source, free software - in effect, it makes the software being
-developed (in this case Linux) closed and non-free - imagine, for example,
-if you had the Linux source, but had to pay for a compiler to build it -
-and not just any C compiler - you had to buy company X's compiler. Now I
-know there are other methods available of getting the source besides BK
-(rsync, ftp of tarballs, etc), but you don't get the version control info,
-which I reckon is getting almost as essential as the compiler these days.
-
->Linux developers
->(possibly all open-source people) are able to get BitKeeper/Pro.
-
-(I assume you mean for free - but obviously binary only; no source code)
-
-This would be welcome - but how does one qualify as a "linux developer" or
-an "open-source person"? If I can register for free with an independent
-organisation and BitMover recognised this then great - but if it is left up
-to BitMover to decide whether I qualify, this seems somewhat less than
-satisfactory.
-
-Sorry for rambling - this is really just an academic argument - the real
-world rolls on... (we may even pay for BitKeeper :-) Cheers!
-								Murray...
---
-Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
-Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
-Internet: Murray.Jensen@cmst.csiro.au  (old address was mjj@mlb.dmt.csiro.au)
+	Regards,
+	Gabriel.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
