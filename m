@@ -1,38 +1,38 @@
-Date: Tue, 15 Dec 1998 22:42:40 -0600 (CST)
+Date: Tue, 15 Dec 1998 22:50:35 -0600 (CST)
 From: Troy Benjegerdes <hozer@drgw.net>
-To: Michel Lanners <mlan@cpu.lu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: matroxfb, anybody?
-In-Reply-To: <199812131040.LAA03780@piglet.cpu.lu>
-Message-ID: <Pine.LNX.4.04.9812152239541.30336-100000@narn.local.drgw.net>
+To: Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>
+cc: Corey Minyard <minyard@acm.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Restructure of arch/ppc/kernel and include/asm-ppc
+In-Reply-To: <Pine.LNX.4.02.9812131538310.871-100000@cassiopeia.home>
+Message-ID: <Pine.LNX.4.04.9812152246120.30336-100000@narn.local.drgw.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 13 Dec 1998, Michel Lanners wrote:
+On Sun, 13 Dec 1998, Geert Uytterhoeven wrote:
 
 > 
-> Hi there,
-> 
-> Anybody successfull in running matroxfb with recent vger kernels?
-> 
-> I've tried using it alongside controlfb as a second framebuffer, but it
-> doesn't initialize. Compiled-in, it only goes through the very first
-> debugging message, and then nothing more;  while as a module insmod
-> aborts (slightly older matroxfb.c (1.6c)) or hangs the system (most
-> recent matroxfb.c (1.8)).
-> 
-> I've also tried to compile-in matroxfb without controlfb, but that
-> failed because offb.c wasn't in (undefined ref to console_getmode et
-> al.). I'm right now trying a recompile with OF support compiled in, but
-> no framebuffer driver. Let's see....
+> On 12 Dec 1998, Corey Minyard wrote:
+> > This is a patch relative to 2.1.131 that significantly restructures
+> > the Linux PPC stuff.  It is the first step in making the code more
+> > modular and separating the machine-specific from the
+> > machine-independant stuff.  This currently works on my MVME2700
+> > board.
 
-I'm running matroxfb on a motorola MTX board (PReP machine) which does not
-have open firmware. As a module, it crashes in ioremap (don't know why).
-the framebuffer X server works. However VGA text mode doesn't work too
-well.
+Great! I started working on something like this, but got sidetracked for
+awhile. I'll verify it works on an MTX board and make the RTC code work
+correctly (it currently doesn't set Motorola PReP boards at all)
+
+> For PPC, we would need different MILO images for the different machine types.
+> The kernel can be ELF on all machine types, since we put an ELF loader in MILO.
+> MILO doesn't need much fancy driver stuff, just SCSI/IDE, floppy, keyboard and
+> a simple console (serial, VGA text, offb). And BootX can become some special
+> variant of MILO :-)
+
+Please please please someone do this? Then I can remove the ugly hack I
+have in matroxfb to remap the PCI registers to something sane.
 
 --------------------------------------------------------------------------
 | Troy Benjegerdes    |    troybenj@iastate.edu    |    hozer@drgw.net   |
