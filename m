@@ -1,20 +1,20 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 9F76967A79
+Return-Path: <srinivas.surabhi@wipro.com>
+Received: from wip-ectls-mx1.wipro.com (wip-ectls-mx1.wipro.com
+	[203.101.113.37])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wip-ectls-mx1.wipro.com",
+	Issuer "VeriSign Trust Network" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id F1C4B67A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Feb 2005 11:59:08 +1100 (EST)
-Date: Thu, 17 Feb 2005 16:59:05 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Stephen Williams <steve@icarus.com>, linuxppc-embedded@ozlabs.org
-Message-ID: <20050218005905.GC10915@gate.ebshome.net>
-References: <42152ADD.8040104@icarus.com>
-	<20050218004327.GB10915@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050218004327.GB10915@gate.ebshome.net>
-Subject: Re: Linux processes, tempfs and programs
+	Fri, 18 Feb 2005 15:19:08 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C51570.F5D64CD5"
+Date: Fri, 18 Feb 2005 09:46:32 +0530
+Message-ID: <EF9B29C78F41FA488927FCBC7750AF0E08DA18@hyd-mdp-msg.wipro.com>
+From: <srinivas.surabhi@wipro.com>
+To: <wd@denx.de>, <linuxppc-embedded@ozlabs.org>
+Subject: Freeing unused kernel memory: 56k init - hang problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,35 +25,104 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 17, 2005 at 04:43:27PM -0800, Eugene Surovegin wrote:
-> On Thu, Feb 17, 2005 at 03:38:05PM -0800, Stephen Williams wrote:
-> > My embedded system is structured such that the main user-mode
-> > processes that are being run are downloaded and executed on demand.
-> > I'm currently downloading the executable to an ext3 system on the
-> > CompactFlash, but there is really no reason to use non-volatile
-> > memory so I'm thinking to download to a tempfs directory and
-> > execute from there.
-> > 
-> > But if I do that, I want to remove the program from the directory
-> > after I start it, so that the file does not take up ram space. Will
-> > that actually work? I'm using exec(2) to execute the program file
-> > wherever it is downloaded. Will a subsequent unlink of the file
-> > have a result, or will the file continue to take up space as
-> > backing store for the executable?
-> 
-> I think unlink will remove the file from directory (so you won't be
-> able to see it with ls), but it will still continue to to take space -  
-> you're right it will be used as backing store, at least for read-only 
-> segments, which can be discarded if memory is tight. Even if you mlock 
-> all executable in memory, I think there will be still at least one 
-> reference to this file, which will prevent freeing tmpfs memory.
+This is a multi-part message in MIME format.
 
-A little correction, according to tmpfs doc, it lives completely in 
-page cache, so I think memory is not wasted for unmodified sections of 
-the loaded file (e.g. a second copy, when file is executed and loaded 
-into user-space, isn't being made).
+------_=_NextPart_001_01C51570.F5D64CD5
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-But as usual, make some measurements first :)
 
---
-Eugene.
+Is there any patch for ppc-8260 for the hang problem after the following=
+ output on the serial console.
+
+"Freeing unused kernel memory: 56k init"
+=0D
+Thanks & Rgds
+SS
+________________________________
+
+=0D
+
+
+Confidentiality Notice=0D
+
+The information contained in this electronic message and any attachments to=
+ this message are intended
+for the exclusive use of the addressee(s) and may contain confidential or=
+ privileged information. If
+you are not the intended recipient, please notify the sender at Wipro or=
+ Mailadmin@wipro.com immediately
+and destroy all copies of this message and any attachments.
+=0D
+
+
+
+
+Confidentiality Notice=0D
+
+The information contained in this electronic message and any attachments to=
+ this message are intended
+for the exclusive use of the addressee(s) and may contain confidential or=
+ privileged information. If
+you are not the intended recipient, please notify the sender at Wipro or=
+ Mailadmin@wipro.com immediately
+and destroy all copies of this message and any attachments.
+------_=_NextPart_001_01C51570.F5D64CD5
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=
+=3Diso-8859-1">
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version=
+ 6.5.7232.39">
+<TITLE>Re: Mounta Vista Linux prompt on serial console </TITLE>
+</HEAD>
+<BODY>
+<DIV id=3DidOWAReplyText58164 dir=3Dltr>
+<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>Is there any=
+ patch for=0D
+ppc-8260 for the hang problem after the following output on the serial=0D
+console.</FONT></DIV></DIV>
+<DIV dir=3Dltr><BR>"Freeing unused kernel memory: 56k init"</DIV>
+<DIV dir=3Dltr>&nbsp;</DIV>
+<DIV dir=3Dltr>Thanks &amp; Rgds</DIV>
+<DIV dir=3Dltr>SS</DIV>
+<DIV dir=3Dltr>
+<HR tabIndex=3D-1>
+</DIV>
+<DIV dir=3Dltr><FONT size=3D2></FONT>&nbsp;</DIV>
+
+</BODY>
+</HTML>
+<table><tr><td bgcolor=3D#ffffff><font color=3D#000000><br>
+<br>
+Confidentiality Notice <br>
+<br>
+The information contained in this electronic message and any attachments to=
+ this message are intended<br>
+for the exclusive use of the addressee(s) and may contain confidential or=
+ privileged information. If<br>
+you are not the intended recipient, please notify the sender at Wipro or=
+ Mailadmin@wipro.com immediately<br>
+and destroy all copies of this message and any attachments.<br>
+</font></td></tr></table>
+<table><tr><td bgcolor=3D#ffffff><font color=3D#000000><br>
+<br>
+Confidentiality Notice <br>
+<br>
+The information contained in this electronic message and any attachments to=
+ this message are intended<br>
+for the exclusive use of the addressee(s) and may contain confidential or=
+ privileged information. If<br>
+you are not the intended recipient, please notify the sender at Wipro or=
+ Mailadmin@wipro.com immediately<br>
+and destroy all copies of this message and any attachments.<br>
+</font></td></tr></table>
+------_=_NextPart_001_01C51570.F5D64CD5--
