@@ -1,44 +1,38 @@
-Message-ID: <3BEC8FA0.5060600@embeddededge.com>
-Date: Fri, 09 Nov 2001 21:23:28 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Ole Andreas Torvmark <ole.torvmark@radionor.no>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problems with DMA transfers on Sandpoint
-References: <MHEAIGEFFBAFIOMKCIGCKEJLCAAA.ole.torvmark@radionor.no>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Sun, 11 Nov 2001 14:28:03 +0100
+From: Jure Menart <jure@kom.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 405 -- a little console help, part 2
+Message-ID: <20011111142803.A1888@hannanges.teden-mladih.com>
+References: <3BEA8A5D.50A75CE7@midrivers.com> <3BEAA8D3.51ADDCC8@mvista.com> <20011109114403.J27549@zax> <3BEBDCC9.62669CF1@midrivers.com> <20011110005349.F3141@zax>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20011110005349.F3141@zax>; from david@gibson.dropbear.id.au on Sat, Nov 10, 2001 at 12:53:49AM +1100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ole Andreas Torvmark wrote:
+Hi,
+On Sat, Nov 10, 2001 at 12:53:49AM +1100, David Gibson wrote:
+> I've checked the fix into the latest linuxppc_2_4_devel.  Failing
+> that, look in do_page_fault() in arch/ppc/mm/fault.c, look for a test
+> against vma->flags & VM_EXEC, and remove it.
+>
+I've got similiar problem, just that Seg faults form Dynamically linked
+programs is just a beginning...
+When I boot from ramdisk all programs work fine... aka mount, ls, bash...
+but when I try to boot from disk (root=/dev/hda2 for example) my init prints
+'Bug in dynamic linker: dynamic-link.h in line 62' (it might be slightly
+changed because I wrote it from head, but error describes same informations).
+So I checked in glibcs what this error is and I found out that assertion was
+caused because of 'bad dynamic tag'.
+If I mount disk from ramdisk and try to execute programs the same happens...
+if they are dynamically compiled the same bug ('bad dynamic tag') happens.
+I use linuxppc_2_4_devel kernel from mvista, daytagged from last wednesday
+(7.11.2001), glibcs from HardHat linux (precompiled for IBM 405 gp).
 
+Has anyone same problems? Could it be another bug in standard libarires?
+Anywhere else in cross-compiler enviroment... binutils maybe?
 
-> I have tried numerous different cards like sound cards,network adapters and
-> even frame grabbers and all the cards that use dma transfers dont work.
-
-Hmmm...I haven't tried that many, but I use a variety of Ethernet cards
-and SCSI without trouble.
-
-> Since this is just one of the cards that fail in the sandpoint board i am
-> wondering if there is something that I haven't done to initialize DMA
-> transfers on the sandpoint or should they just work ?
-
-They are PCI bus masters, and "should just work."  I am having some
-challenges with the 7450 on Sandpoint, but they appears to be pipeline
-related.
-
-> Motorola SPS Sandpoint X3 with Unity X4 PPMC MPC8240 @ 266 MHz
-> IRQ and GNT/REQ mode = 1 (Sandpoint X2 Compability) (I have tested the other
-> modes too)
-
-Ummmm....I've never had much success with X2 compatibility and don't use it.
-You may want to try an X3 configuration.
-
-Thanks.
-
-
-	-- Dan
-
+Regards, Jure
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
