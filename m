@@ -1,92 +1,46 @@
-Message-ID: <007301bfc5f5$1f86a380$69f001dc@sjzhu.sps.mot.com>
-From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
-To: "Magnus Damm" <damm@kieraypc01.p.y.ki.era.ericsson.se>
-Cc: "Dan Malek" <dan@netx4.com>, <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PCMCIA support for 860 -- lost interrupt
-Date: Thu, 25 May 2000 10:58:00 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;	charset="gb2312"
+Message-ID: <20000524201743.A8680@lx.c-side.com>
+Date: Wed, 24 May 2000 20:17:43 -0700
+From: Neil Russell <caret@c-side.com>
+To: Dan Malek <dan@netx4.com>
+Cc: diekema_jon <diekema@bucks.si.com>, all@cideas.com,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Floating Point problems with Linux on the EST SBC8260
+References: <20000524134257.A9100@lx.c-side.com> <m12uikI-001SyaC@bucks> <20000524150506.D9100@lx.c-side.com> <392C5713.1C921311@embeddededge.com> <20000524160640.E9100@lx.c-side.com> <392C8042.EB65AAF6@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <392C8042.EB65AAF6@embeddededge.com>; from Dan Malek on Wed, May 24, 2000 at 09:22:10PM -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
->Damm wrote:
->>
->>
->>Shuangjun Zhu wrote:
->>>
->>1. what board are you trying to use pcmcia with?
->
->
->I'm using a MPC823 FADS board and PCMCIA for ATA/IDE,
->
->>2. check and see that m8xx_pcmcia gets your MHz or Hz value correct.
->>   The MHz/Hz value is used by my driver to calculate the number of
->>   waitstates necessary for all pcmcia accesses. So, if that is bad
->>   much stuff will get wierd.
->
->
->I have set the M8XX_BUSFREQ as following in m8xx_pcmcia.c,
->BTW, my MPC823 runs' frequency is 48MHZ, which pcmcia uses the SLOT_B.
->
->#ifdef CONFIG_BD_IS_MHZ
->#define M8XX_BUSFREQ (48 * 1000000)
->#else
->#define M8XX_BUSFREQ (48)
->#endif
->
->
->>> 1. why "lost interrupt"? irq for IDE is 9, PCMCIA_INTERRUPT=13,
->>>    so, which hardware trigger IRQ 9?
->>
->>Well, you have to figure out that one for yourself.
->>I have no idea. Maybe the MHz/Hz stuff above could help you.
->>Check proc/interrupts...
->>
->>The m8xx_pcmcia driver handles 1 (one) interrupt.
->>That interrupt is the status changed interrupt and it tells
->>us if someone has inserted/removed a card and some other stuff.
->>
->>Then - the pcmcia package will figure out what other interrupt
->>the device driver for the card you've inserted (ide, serial, etc)
->>will use. And then that (ide) code will request that irq and use
->>is as if it was any other interrupt. That is the second interrupt.
->
->
->From the code ide_cs.c in pcmcia package, the m8xx_pcmcia interrupt
->handler will call the ide_event() in ide_cs.c, this function does
->nothing with ide interrupt handler in the kernel.
->
->Here is Dan's ideas
->>See, this is why I changed the function name in the first place.
->>request_irq() assumes a PC-like interrupt structure, which doesn't work
->>on the MPC8xx internal interrupt controller.  You need to add an
->>indirect function call to the 'md' structure that will install the
->>IDE interrupt handler.  When you use the PCMCIA for ATA/IDE, you should
->>call a function that installs the PCMCIA interrupt vector.
->
->In drivers/block/ide-probe.c,
->init_irq() function has installed the IDE interrupt handler of IRQ 9 as
->ide_intr()
->In m8xx_pcmcia.c from the pcmcia package, Damm has installed the PCMCIA
->interrupt
->IRQ 13 as m8xx_interrupt(), so problem is:
->without 8259 controller in FADS board, how the m8xx_interrupt() route the
->interrupt
->event to the ide_intr(). No hardware triger the IRQ 9, no call ide_intr(),
->so the
->kernel think "lost interrupt", I guess.
+We have an FPGA that implements part of the ISA spec, enough to do
+programmed I/O to an IDE device.  The FPGA has its own chip select and uses
+the UPM for timing.  It doesn't work correctly yet because what the 8260
+documentation says and what the 8260 does are different.  When it works,
+it will be slow, but we probably don't care - we are not building a
+file server.
+
+I'm not sure that we care enough to redesign the logic to make it fast,
+but I do care that it doesn't slow everything else down, so at some point
+I plan to look to using some form of DMA; perhaps the SDMA that the CPM
+provides.  It will probably still be slow, but he CPU will no longer be
+held up.
+
+Got any better ideas?  (no PCI, no expensive chips...).
 
 
-Here is the result:
-bash# cat /proc/inter*
-           CPU0
-  5:       2394   8xx SIU       cpm
-  9:          0   8xx SIU       ide0
- 13:          9   8xx SIU       m8xx_pcmcia
- 15:          0   8xx SIU       tbint
-BAD:          0
+Neil.
 
+
+On Wed, May 24, 2000 at 09:22:10PM -0400, Dan Malek wrote:
+> > console = SMC1.  First ported to SBC8260 (EST board), then to custom h/w.
+> > The custom h/w has an IDE interface;  I hope to get the whole linux-1999 Q3
+> > working on it;  that should be interesting.
+>
+> Oh oh.....You opened the flood gates for questions now :-).  How did
+> you connect the IDE?
+
+--
+Neil Russell <caret@c-side.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
