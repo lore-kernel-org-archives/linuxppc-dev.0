@@ -1,56 +1,47 @@
-Message-ID: <376FFF26.A7493FF1@americasm01.nt.com>
-Date: Tue, 22 Jun 1999 17:24:54 -0400
-From: "Jerry Quinn" <jquinn@nortelnetworks.com>
+Date: Wed, 23 Jun 1999 00:44:11 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Brad Midgley <brad@pht.com>
+cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-users@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: precompiled 2.2.10 kernel available
+In-Reply-To: <Pine.LNX.3.95.990622145132.8302A-100000@pacific.pht.com>
+Message-ID: <Pine.LNX.4.10.9906230017340.3553-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
-To: puetzk6715@uni.edu
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ppp compression module aliases?
-References: <Pine.PMDF.3.96.990622120549.539020675E-100000@uni.edu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-puetzk6715@uni.edu wrote:
-> 
-> The easiest way to get all this stuff right is
-> 
-> modprobe -c > /etc/conf.modules
-> 
-> the -c argument causes modprobe to print a complete conf.modules (less any
-> strange stuff specific to your machine), so I just redirect it to the
-> file. The installer should do this, though...
-> 
-> Hmm... or did you mean modprobe left these out of its generated file when
-> you said 'modprobe doesn't know these aliases'. It only (as far as I know)
 
-Yes.  modprobe -c doesn't include ppp-compress aliases, at least my
-version doesn't have them.
+We can use xkb to handle mouse clicks, the mousekeys option already handles
+nouse movement/clicks, it might be a little hard to get used to but it will
+do as a temporary solution. Now that i am thinking of it we can write something
+similar (that will emulate only mouse buttons) and stop worrying about kernel
+support.
 
+Kostas Gewrgiou. 
+ 
+On Tue, 22 Jun 1999, Brad Midgley wrote:
 
 > 
-> On Sun, 20 Jun 1999, Jerry Quinn wrote:
+> if the keyboard and mouse are going to be this way for good, i will patch
+> xconfigurator so it does the right thing.
 > 
-> >
-> > I have a question that I'm not sure is best directed to kernel people or
-> > user-space people as it crosses the line.
-> >
-> > After a bunch of time trying to figure out why the ppp compression
-> > modules weren't getting loaded automatically, I traced it the fact that
-> > the appropriate aliases are not present in /etc/conf.modules.
-> >
-> > In particular, the following aliases are required:
-> >
-> > ppp-compress-21       = bsd-compress
-> > ppp-compress-24 = ppp-deflate
-> > ppp-compress-26 = ppp-deflate
-> >
+> is there a way to get the middle- and right- mouse buttons via the
+> imac keyboard or is that code missing from the linus-usb?
+> 
+> > > did the protocol of /dev/usbmouse have to change? :( now it appears as a
+> > It was Linus' decision.  Argue with him. :-)
+> > Use protocol "IMPS/2" in your XF86Config.
+> > Paul.
+> 
+> Brad
+> brad@pht.com | http://www.pht.com/~brad/
+> 
+> 
 
+> 
 
--- 
-Jerry Quinn                             Tel: (514) 761-8737
-jquinn@nortelnetworks.com               Fax: (514) 761-8505
-Speech Recognition Research
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
