@@ -1,99 +1,45 @@
-Message-Id: <6.0.1.1.0.20040301182742.01f1b320@192.168.2.1>
-Date: Mon, 01 Mar 2004 18:42:41 +0100
-To: Matt Porter <mporter@kernel.crashing.org>
-From: llandre <llandre@wawnet.biz>
-Subject: Re: PCI daughter card with USB on a 405GP
-Cc: Wolfgang Denk <wd@denx.de>,
-	Xavier Miville <xmiville@oerlikon.ca>, v.sudeep@exgate.tek.com,
-	linuxppc-embedded@lists.linuxppc.org,
-	song sam <samsongshzu@yahoo.com.cn>,
-	Andrea Scian <andrea.scian@wawnet.biz>
-In-Reply-To: <20040224085353.A13974@home.com>
-References: <20040223170937.BB7C5C0655@atlas.denx.de>
- <20040224143841.64071.qmail@web15204.mail.bjs.yahoo.com>
- <20040224085353.A13974@home.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Date: Mon, 1 Mar 2004 15:21:10 -0500 (EST)
+From: "Verberk, Bep" <verberk@nortelnetworks.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: [PATCH] trivial-correct debug printk's in walnut.c
+Message-ID: <Pine.LNX.4.44.0403011517020.3111-100000@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->On Tue, Feb 24, 2004 at 10:38:41PM +0800, song sam wrote:
-> >
-> > Hi,
-> >
-> > Wolfgang Denk wrote:
-> > > We tested a Adaptec AUA-200LP USB 2.0 card in some PPC sytems. It
-> > > worked fine when the devices were already connected at power-on or
-> > > at least when booting Linux, while hot-plug would reliably crash the
-> > > kernel. As far as I understand such behaviour is typical of some of
-> > > the alignment/cache bugs in the Linux kernel's USB code.
-> >
-> > I also met this USB problem on LITE_DW board when
-> > using USB keyboard and mouse.Has it solved or not?
->
->I use the following hack locally to work around some of the 2.4 USB
->stack DMA problems.
->
->-Matt
->
->===== arch/ppc/mm/cachemap.c 1.12 vs edited =====
->--- 1.12/arch/ppc/mm/cachemap.c Tue Dec 10 18:09:59 2002
->+++ edited/arch/ppc/mm/cachemap.c       Tue Dec 12 09:43:06 2002
->@@ -152,7 +152,26 @@
->         case PCI_DMA_NONE:
->                 BUG();
->         case PCI_DMA_FROMDEVICE:        /* invalidate only */
->+#if (defined(CONFIG_4xx) && (defined(CONFIG_USB)) ||
->defined(CONFIG_USB_MODULE))
->+               /*
->+                * USB code does DMA off the stack, so when a driver
->+                * uses the stock pci DMA routines, they end up calling
->+                * invalidate_dcache_range().
->+                * The cache invalidate code in the 405 port invalidates
->+                * an entire cache line, regardless of what addresses are
->+                * passed in - it 'rounds out' to the surrounding cache line.
->+                * While other ports will notice if part of the cache line
->+                * is NOT part of the range being invalidated and 'do
->+                * the right thing', the 405 code will invalidate the
->+                * entire line, potentially trashing the stack, causing a
->+                * panic.
->+                * Until all the USB drivers are fixed, we flush the data
->+                * buffer, a much safer operation.
->+                */
->+               flush_dcache_range(start, end);
->+#else
->                 invalidate_dcache_range(start, end);
->+#endif
->                 break;
->         case PCI_DMA_TODEVICE:          /* writeback only */
->                 clean_dcache_range(start, end);
+Patch is against BK linuxppc-2.5. It simply corrects
+some debug printk's.
 
-
-Hi Matt,
-
-we experienced similar problems and, after applying your patch, everything
-works fine (even hot-plug)!
-Well done!
-
-Our configuration is:
-- PPChameleonEVB board (405EP-based)
-- Linux 2.4.20 from Denx's kernel tree
-- CiUSB USB controller by Conceptronic, based on 82C861 (it is
-OHCI-compatible and not UHCI as documentation claims)
-
-We performed some tests with the following devices:
-- Logitech 4-port hub
-- Logitech Scroll USB mouse
-- Manhattan USB keyboard
-
-
-For Wolfgang: are you going to include this patch in your kernel tree?
-
-
-Thanks again for your patch and best regards,
-
-llandre
+--- linuxppc-2.5/arch/ppc/platforms/4xx/walnut.c	2004-03-01 15:10:23.000000000 -0500
++++ linuxppc-2.5-bep/arch/ppc/platforms/4xx/walnut.c	2004-03-01 15:14:29.000000000 -0500
+@@ -146,9 +146,9 @@
+ 	printk("PCI bridge regs before fixup \n");
+ 	for (i = 0; i <= 3; i++) {
+ 		printk(" pmm%dma\t0x%x\n", i, in_le32(&(pcip->pmm[i].ma)));
+-		printk(" pmm%dma\t0x%x\n", i, in_le32(&(pcip->pmm[i].la)));
+-		printk(" pmm%dma\t0x%x\n", i, in_le32(&(pcip->pmm[i].pcila)));
+-		printk(" pmm%dma\t0x%x\n", i, in_le32(&(pcip->pmm[i].pciha)));
++		printk(" pmm%dla\t0x%x\n", i, in_le32(&(pcip->pmm[i].la)));
++		printk(" pmm%dpcila\t0x%x\n", i, in_le32(&(pcip->pmm[i].pcila)));
++		printk(" pmm%dpciha\t0x%x\n", i, in_le32(&(pcip->pmm[i].pciha)));
+ 	}
+ 	printk(" ptm1ms\t0x%x\n", in_le32(&(pcip->ptm1ms)));
+ 	printk(" ptm1la\t0x%x\n", in_le32(&(pcip->ptm1la)));
+@@ -206,9 +206,9 @@
+ 	printk("PCI bridge regs after fixup \n");
+ 	for (i = 0; i <= 3; i++) {
+ 		printk(" pmm%dma\t0x%x\n", i, in_le32(&(pcip->pmm[i].ma)));
+-		printk(" pmm%dma\t0x%x\n", i, in_le32(&(pcip->pmm[i].la)));
+-		printk(" pmm%dma\t0x%x\n", i, in_le32(&(pcip->pmm[i].pcila)));
+-		printk(" pmm%dma\t0x%x\n", i, in_le32(&(pcip->pmm[i].pciha)));
++		printk(" pmm%dla\t0x%x\n", i, in_le32(&(pcip->pmm[i].la)));
++		printk(" pmm%dpcila\t0x%x\n", i, in_le32(&(pcip->pmm[i].pcila)));
++		printk(" pmm%dpciha\t0x%x\n", i, in_le32(&(pcip->pmm[i].pciha)));
+ 	}
+ 	printk(" ptm1ms\t0x%x\n", in_le32(&(pcip->ptm1ms)));
+ 	printk(" ptm1la\t0x%x\n", in_le32(&(pcip->ptm1la)));
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
