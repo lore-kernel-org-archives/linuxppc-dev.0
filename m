@@ -1,13 +1,20 @@
-Return-Path: <runet@innovsys.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Date: Fri, 22 Oct 2004 17:01:54 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DB95@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <Linuxppc-embedded@ozlabs.org>
-Cc: 
-Subject: RE: CPM2 uart early console
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
+	by ozlabs.org (Postfix) with ESMTP id 521B42BC0F
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 23 Oct 2004 08:19:03 +1000 (EST)
+Date: Fri, 22 Oct 2004 15:19:00 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: "Smith, Gene" <gene.smith@siemens.com>
+Message-ID: <20041022151900.E28106@home.com>
+References: <4179628F.1020703@siemens.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4179628F.1020703@siemens.com>;
+	from gene.smith@siemens.com on Fri, Oct 22, 2004 at 03:42:07PM
+	-0400
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Basic 405gp question
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,24 +25,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> From: Tom Rini [mailto:trini@kernel.crashing.org]=20
-> On Thu, Oct 21, 2004 at 04:57:56PM -0500, Rune Torgersen wrote:
-> > BTW..
-> > What are the device node numbers for ttyCPM[0..5] ?
->=20
-> 204 42...45 (devices.txt in linuxppc-2.5, Pantelis ever=20
-> figure out what to do about the device # conflict with the=20
-> i.MX driver so we can push that small bit upstream ?)
+On Fri, Oct 22, 2004 at 03:42:07PM -0400, Smith, Gene wrote:
+> I have a custom 405GPr board containing 64M ram and 4M flash with no PCI 
+> connector, just ethernet and ttyS0/1 to outside world. I am able to load 
+> and run simple ppc code to ram using a Macraigor JTAG debugger via 
+> insight/gdb using gnu tools provided by them.
+> 
+> What would it take to get linux running on this board? Any pointers or 
+> suggestions would be appreciated.
 
-Aparently not that simple.... I looked in the source, and it depends if=20
-an 8250 stype serial port is defined or not...
+Port u-boot using walnut code as an example.
 
-#ifndef CONFIG_SERIAL_8250
-#define SERIAL_CPM_MAJOR	TTY_MAJOR
-#define SERIAL_CPM_MINOR	64
-#else
-#define SERIAL_CPM_MAJOR	204
-#define SERIAL_CPM_MINOR	42
-#endif
+Copy the Linux walnut code to foo_board.[c|h]. Remove what you don't need
+from the files. Modify other things accordingly. Update the
+Kconfigs/Makefiles.
 
-Urgh...
+Unless the hardware is buggy, it should be very straightforward. You
+can even proof of concept things by loading vmlinux from your JTAG
+debugger and setting r3-r7 appropriately...skipping the firmware stage.
+
+-Matt
