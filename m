@@ -1,43 +1,48 @@
-Message-ID: <3905568B.22D4E45F@enib.fr>
-Date: Tue, 25 Apr 2000 10:25:47 +0200
-From: Valéry Raulet <Valery.Raulet@enib.fr>
+To: Pavel Roskin <pavel_roskin@geocities.com>
+Cc: kd@flaga.is, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: zeroing of bss segments
+References: <Pine.LNX.4.21.0004241211280.30844-100000@sunapee.transcept.com>
+From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+Date: 25 Apr 2000 11:03:30 +0200
+In-Reply-To: Pavel Roskin's message of "Mon, 24 Apr 2000 12:17:54 -0400 (EDT)"
+Message-ID: <kfy3doao8m5.fsf@kieraypc01.p.y.ki.era.ericsson.se>
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Boot failed with new 2.3.99 kernel !
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Pavel Roskin <pavel_roskin@geocities.com> writes:
 
-the following part seems sticky for my board.
+> Hello!
+>
+> > I forgot to remove the memset.S file from sysdeps/powerpc....
+>
+> I believe we should rewrite memset.S in a 8xx-safe way rather than remove
+> it. Patches are usually more visible than instructions to remove
+> something.
+>
+> Besides, future versions of Glibc could apply that patch permanently.
+> Portability is a strong argument for GNU developers.
 
->>NIP; c0184da8 <prep_route_pci_interrupts+d0/3d0>   <=====
-Trace; 00000000 Before first symbol
-Trace; c01850dc <prep_pcibios_fixup+34/188>
-Trace; c017fa88 <pcibios_init+44/60>
-Trace; c0195868 <pci_init+14/58>
-Trace; c017e7a8 <do_basic_setup+20/190>
-Trace; c00039fc <init+14/1a8>
-Trace; c0008e30 <kernel_thread+2c/38>
->>NIP; c0184da8 <prep_route_pci_interrupts+d0/3d0>   <=====
+The problem has been to find out the cache line size at runtime, as
+the Mac users probably don't wan't memset() performance halfed.
+Geoff Keating suggested the following simple way to check for cache
+line size:
 
-After having a close look to 'prep_pci.c', it seems that this test
-'*ProcInfo &MOT_PROC2_BIT' in 'prep_route_pci_interrupts(void)' cause
-troubles.
+  and what we want to do is insert something like this in place of the
+  first 'dcbz':
 
-What happens ? Any ideas ?
+        stb	r7,31(r6)
+        dcbz	0,r6
+        lbz	r10,31(r6)
+        cmplw	cr0,r10,r7
+        bne	cr0,(somewhere)
 
+I'll try to get time to look at this after this week.
+
+//Marcus
 --
-Valéry RAULET
-
-Ecole Nationale d'Ingénieurs de Brest
-Parvis Blaise Pascal
-Technopôle Brest-Iroise
-29280 PLOUZANE
-Site Web : http://www.enib.fr/~raulet
-
+Signature under construction, please come back later.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
