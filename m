@@ -1,46 +1,48 @@
-To: Adrian Cox <adrian@humboldt.co.uk>
-Subject: Re: [PATCH] aty128fb.c
-Message-ID: <1005303565.3bebb70d6b4f9@imp3-1.free.fr>
-Date: Fri, 09 Nov 2001 11:59:25 +0100 (MET)
-From: Bastien Nocera <hadess@hadess.net>
-Cc: Bastien Nocera <hadess@hadess.net>,
-	"Jeramy B. Smith" <jeramy@penguinppc.org>,
-	linuxppc-dev@lists.linuxppc.org
-References: <Pine.LNX.4.33.0111090300500.737-100000@penguinppc.org> <1005301549.3bebaf2d1e55f@imp.free.fr> <3BEBB59E.3060202@humboldt.co.uk>
-In-Reply-To: <3BEBB59E.3060202@humboldt.co.uk>
+Date: Fri, 9 Nov 2001 13:18:43 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Cc: <linuxppc-dev@lists.linuxppc.org>,
+	Daniel Berlin <dan@cgsoftware.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Help from Gurus on modes and timing and frame buffers needed!
+In-Reply-To: <20011109014750.QFJJ10804.tomts19-srv.bellnexxia.net@there>
+Message-ID: <Pine.LNX.4.33.0111091307451.1704-100000@serv>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Quoting Adrian Cox <adrian@humboldt.co.uk>:
+Hi,
 
->
-> Bastien Nocera wrote:
->
-> > Quoting "Jeramy B. Smith" <jeramy@penguinppc.org>:
-> >>This removes a block of cruft leftover from the iMac days and sets
-> the
-> >>default resolution for aty128fb on PPCs to 640x480-60 (ensuring even
-> >>the
-> >>cruddiest of monitors will work).
-> > The iBook2 doesn't support 640x480 afaik
->
->
-> That should be dealt with by these lines:
->
-> 	    /* PowerBook Firewire (Pismo), iBook Dual USB */
-> 	    if (machine_is_compatible("PowerBook3,1") ||
-> 	    	machine_is_compatible("PowerBook4,1"))
-> 		default_vmode = VMODE_1024_768_60;
+On Thu, 8 Nov 2001, Kevin B. Hendricks wrote:
 
-Hmm, is that already in the sources ?
-I'm sorry, I only read the patch, and I'm a bit tired as well.
+> PIXEL_CLOCK = 10,800
+> H_ACTIVE = 1280
+> H_BLANK = 408
+> V_ACTIVE = 1024
+> V_BLANK = 42
+> H_SYNC_OFF = 128
+> H_SYNC_WIDTH = 112
+> V_SYNC_OFF = 4
+> V_SYNC_WIDTH = 3
+> [..]
+> But how are the  left_margin, right_margin, upper_margin, and lower_margin
+> determined?
 
-Thanks for pointing me out
+Let's see if I remember them correctly:
 
-/Bastien Nocera
-http://hadess.net
+right/lower = sync_off
+left/upper = blank-sync_off-sync_width
+
+so that
+
+left_margin = 168
+right_margin = 128
+upper_margin = 35
+lower_margin = 4
+
+bye, Roman
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
