@@ -1,39 +1,24 @@
-Message-ID: <3922583A.A23F9A57@wanadoo.fr>
-Date: Wed, 17 May 2000 10:28:42 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+Message-ID: <39226066.BF822A70@mpifr-bonn.mpg.de>
+Date: Wed, 17 May 2000 11:03:34 +0200
+From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
 MIME-Version: 1.0
-To: Miles Lane <miles@speakeasy.org>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Today's rsync of linux-pmac-devel -- Running "more /proc/ppc_htab"
- causes a kernel check.
-References: <3921BF7F.55C52D3C@speakeasy.org>
+To: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
+CC: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
+Subject: Re: Pismo status
+References: <20000516172313.A3581@freeonline.com.au>
+	 <39210AF3.4964C38A@relog.ch> <20000516161545.A10347@lambda.u-strasbg.fr> <p04301801b54757188869@[209.147.134.138]>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Miles Lane wrote:
->
-> Hi,
->
-> I would include more detailed info (like a symbolic stack trace),
-> but I have found no information on how to collect symbolic
-> traces and noone has responded to my request on linuxppc-user
-> about it.
+Tim Wojtulewicz wrote:
+> No it's definitely supposed to have a fan.  It comes on in MacOS.
+> The problem is that the PMU is not fully supported yet, so it doesn't
+> understand that the processor is too hot.  I'm trying to find
+                      ^^^^^^^^^^^^^^^^^^^^
+Does this mean that I can damage the machine if I just run a high-load
+program?!?
 
-I remember several reports about this in the past weeks. Just for the
-record: I never had this problem, neither with the pmac-devel nor with
-the bitkeeper kernels. So this must be machine or option specific.
-
-root[98]#more /proc/ppc_htab
-No Hash Table used
-Non-error misses: 002ce1b8
-Error misses    : 00000000
-root[99]#cat /proc/version
-Linux version 2.3.99-pre9 (root@chezmoi) (gcc version 2.95.3 19991030
-(prerelease/franzo)) #52 Mon May 15 11:55:59 CEST 2000
-
---
-Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
