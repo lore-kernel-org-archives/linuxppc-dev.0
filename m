@@ -1,39 +1,44 @@
-Message-ID: <3A9576FC.6F4B1FAB@mvista.com>
-Date: Thu, 22 Feb 2001 15:30:52 -0500
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Matt Porter <mporter@mvista.com>
-Cc: "tsombakos, mark" <tsombakos_mark@emc.com>,
-	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Booting Sandpoint 8240??
-References: <276737EB1EC5D311AB950090273BEFDD01F4DB3F@elway.lss.emc.com> <20010222083031.A21599@cx258813-a.chnd1.az.home.com>
+From: jtm@smoothsmoothie.com
+Date: Thu, 22 Feb 2001 14:42:53 -0600
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 8260 console problems
+Message-ID: <20010222144252.E21811@shamus.smoothsmoothie.com>
+References: <20010222082318.71ACE281D9@denx.denx.de> <3A9564BC.D8C08CA5@mvista.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3A9564BC.D8C08CA5@mvista.com>; from dan@mvista.com on Thu, Feb 22, 2001 at 02:13:00PM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matt Porter wrote:
+On Thu, Feb 22, 2001 at 02:13:00PM -0500, Dan Malek wrote:
+> ...and you will have to modify arch/ppc/mbxboot/embed_config.c because
+> the 8260 may not expect a boot rom to hand it a bd_info.  I don't
+> remember how I left it......it may just fill in some hard coded values.
 
-> You don't need to do a thing, all is well. :)
+I didn't have to do it. If this is the code you were talking about:
+#if 0
+        /* This is actually provided by my boot rom.  I have it
+         * here for those people that may load the kernel with
+         * a JTAG/COP tool and not the rom monitor.
+         */
+        bd->bi_baudrate = 115200;
+        bd->bi_intfreq = 200;
+        bd->bi_busfreq = 66;
+        bd->bi_cpmfreq = 66;
+        bd->bi_brgfreq = 33;
+        bd->bi_memsize = 16 * 1024 * 1024;
+#endif
 
-Ummmm....I think this should work, but those addresses weren't my
-original intention.  The original "design" was to use 0x00800000
-as the link address, and 0x00900000 as the load address.  The code
-will copy itself down to the 8 Meg location, then uncompress as you
-describe.  I don't know if this is still the case, but the uncompress
-code used to make some assumptions (take some liberties) about using
-the space between the load address and execute address for temporary
-storage.  If you load below the execute address, this address
-arithmetic is screwed up and I'm not sure what would happen.
+It's ifdeffed out, as you can see.
 
-With the 2.4 kernel you have to allow almost 1.5 Mbytes of space
-from the start of RAM for the kernel to do its work, and not write
-over some boot information (command line or initrd info) that the
-initial bootloader may have dropped into magical memory locations.
-Trying to run a bootloader under the 2M boundary is risky, and it
-won't run in under the 1.5 M boundary.
+Once I fixed my problem with the bd_info struct, it worked
+great.
 
 
-	-- Dan
+--
+Jay Monkman	    The truth knocks on the door and you say "Go away, I'm
+monkman@jump.net    looking for the truth," and so it goes away. Puzzling.
+		     - from _Zen_and_the_Art_of_Motorcycle_Maintenance_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
