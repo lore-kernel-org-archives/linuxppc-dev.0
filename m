@@ -1,38 +1,42 @@
-Date: Tue, 14 Mar 2000 09:14:23 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linux/m68k <linux-m68k@lists.linux-m68k.org>,
-        Linux/PPC for APUS <linux-apus@sunsite.auc.dk>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: dmasound split
-In-Reply-To: <Pine.LNX.4.05.10003072247180.484-100000@callisto.of.borg>
-Message-ID: <Pine.LNX.4.05.10003140902060.19873-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <v04220800b4f3a7681988@[10.0.0.42]>
+In-Reply-To: <8x8zzmvi3j.fsf@s63.informatik.uni-bremen.de>
+References: <8x8zzmvi3j.fsf@s63.informatik.uni-bremen.de>
+Date: Tue, 14 Mar 2000 00:35:49 -0800
+To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
+        linuxppc-dev@lists.linuxppc.org
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: Does a Cinema Display work with Linux?
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 7 Mar 2000, Geert Uytterhoeven wrote:
-> On Tue, 7 Mar 2000, Geert Uytterhoeven wrote:
-> > This is my first test release for splitting the DMA sound driver in different
-> > parts:
+At 7:29 PM +0100 3/13/00, Holger Bettag wrote:
+>Hi people,
 >
-> And here's a first patch:
+>I have this crazy idea of wasting all my savings on a G4 PowerMac with a
+>Cinema Display. Can I hope for this setup to work under Linux (or rather X11)?
+>
+>I suspect that Macs bundled with a Cinema Display possibly come with a
+>different graphics card (than other G4 Macs),
 
-No comments whether it works on PowerMac and Atari?
-I'd like to let this go in 2.4.0, since a driver for the Q40 is soon to be
-added.
+Apple is only shipping one type of card right now, regardless of
+display.  It's a Rage 128 Pro AGP board with both a VGA connector and
+a digital flat panel connector on the back.
 
-Gr{oetje,eeting}s,
+>  or that at least the graphics
+>hardware has to be programmed completely differently.
 
-						Geert
+It probably does need to have some different programming, yes.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>Can anybody give me a hint as to what I can expect? (I don't think I'd be
+>qualified to extend Linux or XFree with support for this LCD, so I won't
+>just buy it and worry later.)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+You can probably at least assume that you'll be able to use it
+unaccelerated at its native resolution via offb.
 
+   Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
