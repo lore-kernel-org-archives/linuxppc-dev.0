@@ -1,21 +1,18 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ABE7967AAA
+Return-Path: <awilliam@nortelnetworks.com>
+Received: from zcars04e.nortelnetworks.com (zcars04e.nortelnetworks.com
+	[47.129.242.56]) by ozlabs.org (Postfix) with ESMTP id 14A1E67AAB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Jan 2005 13:40:52 +1100 (EST)
-In-Reply-To: <313680C9A886D511A06000204840E1CF0A6475BC@whq-msgusr-02.pit.comms.marconi.com>
-References: <313680C9A886D511A06000204840E1CF0A6475BC@whq-msgusr-02.pit.comms.marconi.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <ff162fe76dfe4457c54b859b9a3e2e84@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Thu, 27 Jan 2005 18:37:33 -0800
-To: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-Cc: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>,
+	Fri, 28 Jan 2005 13:49:04 +1100 (EST)
+Message-ID: <713043CE8B8E1348AF3C546DBE02C1B4026AE987@zcarhxm2.corp.nortel.com>
+From: "Andrew Williams" <awilliam@nortelnetworks.com>
+To: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>,
+	"'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>,
 	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Subject: Re: console_init() question 
+Date: Thu, 27 Jan 2005 21:32:54 -0500
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C504E1.ABE1FBBD"
+Subject: RE: console_init() question 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,20 +23,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-On Jan 27, 2005, at 6:07 PM, Povolotsky, Alexander wrote:
+------_=_NextPart_001_01C504E1.ABE1FBBD
+Content-Type: text/plain;
+	charset="ISO-8859-1"
 
-> I can not find (so far ) any specific error in values supplied vi 
-> bd_info
-> from the ("custom" modified pSOS bootloader) causing above problem.
 
-Do you boot over a network?  Does your boot loader shut down
-the network controller and interrupts before jumping to the kernel?
+Here's a reference doc, that I found extremely usefull/interesting
+when working on board bring up.
+http://www.tldp.org/LDP/cpg/Custom-Porting-Guide.pdf
 
-Everything looks OK until the CPM and serial port are reconfigured
-by Linux, so something is amiss with that.  Could be many reasons
-such as location of BDs and buffers, some part of the CPM still
-running a peripheral from the boot loader that Linux doesn't know
-about, and so on.
 
-	-- Dan
+Andrew
+
+------_=_NextPart_001_01C504E1.ABE1FBBD
+Content-Type: text/html;
+	charset="ISO-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3DISO-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+5.5.2658.2">
+<TITLE>RE: console_init() question </TITLE>
+</HEAD>
+<BODY>
+<BR>
+
+<P><FONT SIZE=3D2>Here's a reference doc, that I found extremely =
+usefull/interesting</FONT>
+<BR><FONT SIZE=3D2>when working on board bring up.</FONT>
+<BR><FONT SIZE=3D2><A =
+HREF=3D"http://www.tldp.org/LDP/cpg/Custom-Porting-Guide.pdf" =
+TARGET=3D"_blank">http://www.tldp.org/LDP/cpg/Custom-Porting-Guide.pdf</=
+A></FONT>
+</P>
+<BR>
+
+<P><FONT SIZE=3D2>Andrew</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C504E1.ABE1FBBD--
