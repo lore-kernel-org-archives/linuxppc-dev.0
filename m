@@ -1,31 +1,31 @@
-Date: Thu, 27 Jun 2002 10:22:11 +0200 (CEST)
-From: Marius Groeger <mag@sysgo.de>
-To: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <3D1ACE16.130836D0@imc-berlin.de>
+Date: Thu, 27 Jun 2002 10:34:30 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
+MIME-Version: 1.0
+To: Marius Groeger <mag@sysgo.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: SELF and JFFS2????
-In-Reply-To: <3D1AC719.BB9FF019@imc-berlin.de>
-Message-ID: <Pine.LNX.4.40.0206271020330.973-100000@mag.devdep.sysgo.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <Pine.LNX.4.40.0206271020330.973-100000@mag.devdep.sysgo.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 27 Jun 2002, Steven Scholz wrote:
+Marius Groeger wrote:
+>
+> On Thu, 27 Jun 2002, Steven Scholz wrote:
+>
+> > So you're going to delight us with a copy (just to present the idea) of the
+> > build scripts...!? ;-)
+>
+> Build scripts what for - the CDK?
+>
 
-> So you're going to delight us with a copy (just to present the idea) of the
-> build scripts...!? ;-)
+No. The topic here was "creating a flash disk (JFFS2) instead of a initrd"...
 
-Build scripts what for - the CDK?
+I don't know about elinos. I wanted to use DENX ELDK to create a minimal root
+fs. Do you know the ELDK?
 
-Regards,
-Marius
-
------------------------------------------------------------------------------
-Marius Groeger           SYSGO Real-Time Solutions GmbH     mgroeger@sysgo.de
-Software Engineering     Embedded and Real-Time Software    www.sysgo.de
-Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
-FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
-
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
