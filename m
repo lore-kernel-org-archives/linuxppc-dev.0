@@ -1,38 +1,27 @@
-Date: Fri, 19 Feb 1999 15:36:05 +0100
+Date: Fri, 19 Feb 1999 06:05:38 -1000 (HST)
+From: Dean Takemori <dean@uhheph.phys.hawaii.edu>
+Message-Id: <199902191605.GAA17127@uhhepn.phys.hawaii.edu>
 To: linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Serial port test
-Message-Id: <19990219153605.011726@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Header errors
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-If you have an heathrow, paddington or ohare based machine, and
-especially if you have problems (garbage) with the serial port, please
-test the following with xmon or MacsBug:
 
-Test if there is a 1 byte register at (baseaddress + 0x80). baseaddress
-is the base of the escc itself, that is the base of channel B (f3013000
-on heathrow based machines). test also baseaddress+0x60.
+I'm attempting to install GNOME on my system and have run
+into the same problem with two different libraries (ORBit-0.3.98
+and gtk+-1.1.15-2)
 
-On my machines, I have 0x08. If you have problems, try changing your
-value to 0x08 or higher. This is the recovery count value of the ESCC
-(the number of cycles to wait between each access) and it may not be
-correctly initialised by OF. I'm not sure yet, but I think one some
-models, MacOS will reinit  it too late in the boot process for BootX
-Extension.
+It seems that the library headers #define _XOPEN_SOURCE and/or
+_XOPEN_SOURCE_EXTENDED.  Apparently #defining these leads to
+parse errors when #including arpa/inet.h or sys/ipc_buf.h.
 
-Try this from linux booted via OF, BootX Extension and BootX App, tell me
-if you see different values.
+Is this a known headers bug?
 
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
+I'm running a LinuxPPC-R4 distribution with egcs-1.1.1 and
+the samba 2.2.1 kernel on a Powerbook G3 Series.  Linux is
+installed on a hard drive in the left media bay (it runs
+perfectly there with the 2.2.1 kernel)
 
 
 
