@@ -1,12 +1,29 @@
-Message-ID: <A1C99F4731CAD111BA5400A024FC3B0CBE0414@ESBILMA01EDCGE>
-From: "Billalabeitia, Jose Carlos (IndSys, GEPM)" <jc.billalabeitia@indsys.ge.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Formatting JFFS2 Flash
-Date: Wed, 13 Mar 2002 10:50:29 -0500
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Formatting JFFS2 Flash
+Date: Wed, 13 Mar 2002 10:14:04 -0600
+Message-ID: <D3A72C5007329A4F991C0DD87202259F096AA2@sekhmet.ad.newisys.com>
+From: "Navin Boppuri" <navin.boppuri@newisys.com>
+To: "Billalabeitia, Jose Carlos (IndSys, GEPM)" <jc.billalabeitia@indsys.ge.com>,
+	"Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+You should try the linux-mtd mailing lists.
+
+http://lists.infradead.org/mailman/listinfo/linux-mtd/
+
+Navin.
+
+-----Original Message-----
+From: Billalabeitia, Jose Carlos (IndSys, GEPM)
+[mailto:jc.billalabeitia@indsys.ge.com]
+Sent: Wednesday, March 13, 2002 9:50 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Formatting JFFS2 Flash
+
 
 
 Hi:
@@ -24,5 +41,6 @@ in a smarter way?
 
 				Thank you
 					Billa
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
