@@ -1,38 +1,41 @@
-Message-ID: <002501c3906c$91a87570$4a44900a@hydingnb>
-From: "hyding" <nari_dhy@nari-china.com>
-To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Cc: "Kerl, John" <John.Kerl@Avnet.com>
-Subject: debug Montavista on ML300
-Date: Sun, 12 Oct 2003 10:57:22 +0800
+Message-ID: <001d01c39133$20f088a0$2803050a@JackyLam>
+From: "Jacky Lam" <jackylam@astri.org>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Walnut PCI bridge can't be detected
+Date: Mon, 13 Oct 2003 10:38:46 +0800
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="big5"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi,
-    Maybe this is not the right place to ask questions. But i wish
-someone in this list will give me some help. Any hint will be
-appreciable.
+Dear all,
 
-    I am doing some work on ML300. After i generate the configuration
-file(top.bit), i don't know how to download the OS image to DDR SDRAM.
-Can i use the Parallel Cabel IV to download the OS image to DDR SDRAM?
->From some docs, i see the method to combine the configuration .bit file
-and OS image into a .ace file. Put the .ace into the CF card, the FPGA
-will be configured with this .ace after power. But how to make the .ace
-file including the .bit file and OS?
+    Concerning my pervious posts about the problem on receiving interrupt
+from PCI cards. I guess it is the problem of PCI bridge..(at least I think
+it is related). Watching the old post in this list, someone post the boot
+log of Walnut board here long time ago. The boot log contians a line to
+detect PCI bridge just after the line"PCI: Probing PCI hardware". However,
+the current devel tree running on Walnut doesn't have this.
 
-    Thanks!
+    Also, under /proc/bus/pci and /proc/pci, I can't see any information
+about the brdige.
 
----
-ding hou yong
-Nanjing Electrical Automation Institute
-Tel: 86-25-3429900-2425
-GSM: 86-(0)13814021009
-FAX: 86-25-3429900-2425
-Email: nari_dhy@nari-china.com
-Http: www.nari-china.com
----
+    Moreover, I find that there is a minor different on a bit in my ES1371
+card on Walnut from that on PC. On PC, ES1371 seems will capture an "Slave
+interrupt controller" event just after bootup. But on Walnut, the event will
+become "Slave DMA controller".
+
+    I think these all differents are rooted from some miss configuration
+about PCI in u-boot or kernel early  initialization. I am not familiar with
+PCI. Hope someone here knows what is happening and gives me some idea on how
+to fix that.
+
+    Thanks so much.
+
+Best regards,
+Jacky
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
