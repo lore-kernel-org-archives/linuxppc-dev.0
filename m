@@ -1,106 +1,92 @@
-Date: Wed, 9 Feb 2000 10:57:29 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu
-Subject: Re: [linux-fbdev] Retrace
-In-Reply-To: <20000208222916.011600@mailhost.mipsys.com>
-Message-ID: <Pine.HPX.4.10.10002091009440.1866-100000@gra-ux1.iram.es>
+Date: Wed, 9 Feb 2000 12:30:23 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Dan Bethe <dan_bethe@yahoo.com>
+cc: Gabriel Ricard <g_ricard@yahoo.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: the state of the linuxppc-dev community
+In-Reply-To: <20000208233505.29535.qmail@web1003.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.10.10002091152160.11080-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-
-
-On Tue, 8 Feb 2000, Benjamin Herrenschmidt wrote:
-
-> On Tue, Feb 8, 2000, Gabriel Paubert <paubert@iram.es> wrote:
+> > So what exactly is the problem? The 2.2.12 source? The .config? The fact
+> > that LinuxPPC developers appear to break the GPL by not dropping a fresh
+> > source tarball along each kernel binary?
 >
-> >	deviobase = ioport_ptr(dev->resource[0]);
-> >
-> >	data = inl(deviobase+register_offset);
-> >
-> >and for an MMIO mapped area:
-> >
-> >	mmioptr = ioremap(ioremap_ptr(dev->resource[1]));
-> >
-> >	data = readl(mmioptr+register_offset);
->
-> Is it possible to "walk up" the resource tree from dev->resource[0] ? I
-> mean, the ioport_ptr function, to work on those weird Apple bridges, need
-> to go thru a special routine that looks up the device in OF device tree
-> to find out on which sub-bridge it is.
-> In order to do that, it needs the pci dev_fn. Can this be retreived from
-> dev->resource[0] ?
+> 	I happen to know the problem shared by Gabe, me, and anyone else primarily
+> concerned with the stability, robustness, and ease of use of the whole LinuxPPC
+> distribution and community authority.
+> 	The problem is that LinuxPPC.org has a development environment that is
+> splintered, unstable, undocumented, obscure, nonintuitive, and basically
+> impenetrable even to people who are fully dedicated to it such as Gabe and
+> myself.  It is run almost exclusively on tribal knowledge that is only in the
+> heads of the people who are writing the ppc-specific core of the OS.  There are
+> no procedures and no interface.  And there is very little respect toward people
+> like me and Gabe who have the time, dedication, and skills to clean it all up.
 
-Yes, each resource has a parent and the idea is that walk the tree up
-using the NONTRANSPARENT nodes to translate the address until you reach
-the top (parent==0) or something similar.
+With all due respect: if that's what you wanted to direct our attention
+to, you should have said so up front. I'm a bit over sensitzited to people
+that wave the GPL argument in my face (being a Debian developer for m68k,
+and seeing all the tribal infighting there). That's why I jumped all over
+Gabe (your name sounds familiar from c.o.l.powerpc or this list, his
+wasn't. Sorry for assuming this was just some moron posting flame bait.)
 
-> Also, this doesn't solve the userland problem.
+On the issue at hand: when I started working on PPC last year, I also
+noticed that information about patches, kernels, people to talk and send
+patches to was hard to find (I remember posting a complaint to that effect
+to the NG). Having had some contact with Paul on m68k/PPC code sharing
+issues before, I knew where to start asking at least, and sent a few
+patches to Paul and BenH. Listening on this list for a while since gave me
+a better overview on who's doing what, at least where kernel devlopment is
+concerned.
 
- I was thinking of showing the non transparent nodes
-explicitly in the /proc/iomem which would look like:
-(on my MVME2400 boards in CHRP mode)
+I do see the problem that information is splintered over too many web
+pages and FTP servers (I fail to see what this has to do with the GPL). I
+would welcome having a central dsitribution independent site gather what's
+out on the net, I'm too lazy to dig around for bits of information most of
+the time myself. I fail to see how lack of response to your suggestions
+(that I see voiced by you and Gabe for the first time now on this list)
+constitutes lack of respect for you. I imagine keeping up with the project
+at hand may leave little time for developers to think about procedures.
+That doesn't mean nobody cares. It's not a high priority for some.
 
-00000000-001fffff: System RAM
-02000000-3fffffff: Unused
-40000000-fcffffff: PCI memory space
-  fcfbec00-fcfbefff : Digital Equipment Corporation DECchip 21142/43
-  fcfbf000-fcfbffff : Tundra Semiconductor Corp. CA91C042 [Universe]
-  fcfc0000-fcffffff : Motorola Hawk
-fd000000-fdffffff[->00000000-00ffffff]: ISA memory space
-  000a0000-000bffff: Video memory
-fe000000-febfffff[->00000000-00bfffff]: PCI/ISA I/O space
-  00000000-0000001f : dma1
-  00000020-0000003f : pic1
-  00000040-0000005f : timer
-  00000074-00000077 : PreP NVRAM
-  00000080-0000008f : dma page reg
-  000000a0-000000bf : pic2
-  000000c0-000000df : dma2
-  000003f8-000003ff : serial(auto)
-  00010000-00010fff : Tundra Semiconductor Corp. CA91C042 [Universe]
-  00011000-0001107f : Digital Equipment Corporation DECchip 21142/43
-    00011000-0001107f : DC21143 (eth0)
-  00011080-0001108f : Symphony Labs SL82c105
-  00011090-0001109f : Symphony Labs SL82c105
-  000110a0-000110a7 : Symphony Labs SL82c105
-  000110a8-000110af : Symphony Labs SL82c105
-  000110b0-000110b3 : Symphony Labs SL82c105
-  000110b4-000110b7 : Symphony Labs SL82c105
-...
+> 	First, obviously, we have to map out how everything currently is, before we
+> could even suggest anything better.  But because 90% of the responses we get
+> are either dead silence or asinine arguments like yours, we are slowly getting
+> nowhere.  The remaining 10% are the responses of a mob cheering us on just for
+> having pointed out the silly state of the maintenance of LinuxPPC.
 
-which gives at least a relatively easy to parse syntax.  But it might be
-useful to find a way to export it in binary to user space (I hate parsers
-myself, computers work much better in binary, converting from binary to
-human readable is easy but the other way around is always tedious when
-properly done with error checking...)
+The asinine argument was in reply to a post I perceived as asinine. I hope
+you accept that as explanation, and let us move on. The resources I know
+of are the FAQ-o-matic, mailing list and archive, c.o.l.powerpc (and
+maybe deja archive), ftp.dev.linuxppc.org for all sorts of kernel and user
+space updates, rsync servers for stable and development trees, and the
+linuxppc.org web site that links to few of the above in no particularly
+logical fashion.
 
+I could imagine a reworked web site, plus CVS or other access to the
+sources would be a good start. I agree with Tony Mantler on the importance
+of CVS - having run the m68k Mac port almost as one-man-show for a year,
+switching to CVS encouraged at least five more people to start working on
+various parts. Getting the latest sources without waiting for me
+to build a new diff, checking in patches directly and improved
+communication were instrumental in advancing development.
 
-In PreP mode it would rather look like
-00000000-001fffff: System RAM
-02000000-7fffffff: Unused
-80000000-bfffffff[->00000000-3fffffff]: PCI/ISA I/O space
-  00000000-0000001f : dma1
-  00000020-0000003f : pic1
-  00000040-0000005f : timer
-  00000074-00000077 : PreP NVRAM
-  00000080-0000008f : dma page reg
-  000000a0-000000bf : pic2
-  000000c0-000000df : dma2
-  000003f8-000003ff : serial(auto)
-  00010000-00010fff : Tundra Semiconductor Corp. CA91C042 [Universe]
-  00011000-0001107f : Digital Equipment Corporation DECchip 21142/43
-    00011000-0001107f : DC21143 (eth0)
-c0000000-fcffffff[->00000000-3cffffff]: PCI/ISA memory space
-  000a0000-000bffff: Video memory
-  01000000-0103ffff : Motorola Hawk
-  01040000-01040fff : Tundra Semiconductor Corp. CA91C042 [Universe]
-  01041000-010413ff : Digital Equipment Corporation DECchip 21142/43
+> 	We have definately produced deeds rather than just words.  Gabe is a primary
+> maintainer of Stampede Linux (www.stampede.org), and is working on porting
+> Stampede to PPC; and I've accepted jhaas's request to be the primary maintainer
+> of LinuxPPC security and of LinuxPPC Powerbook support.  We both use LinuxPPC
+> on Powerbook for 99% of our daily work.
 
-	Gabriel.
+More power to you. I hope you can get some of your suggestions on
+improving the communication and infrastructure and organizing the
+PPC port adopted here. Please keep in mind that not all of us are
+'professionals' though. I use LinuxPPC (on a Powerbook) for my daily work,
+but I can work on the kernel source only in my spare time, as an amateur.
+
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
