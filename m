@@ -1,20 +1,27 @@
-Message-Id: <200002042204.RAA44619@p2.parker.boston.ma.us>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: anyone build 2.3.42 for ppc?
-Date: Fri, 04 Feb 2000 17:04:57 -0500
-From: Brad Parker <brad@parker.boston.ma.us>
+Message-ID: <389B5036.6FAE9C8F@wanadoo.fr>
+Date: Fri, 04 Feb 2000 23:18:30 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
+To: Brad Parker <brad@parker.boston.ma.us>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: anyone build 2.3.42 for ppc?
+References: <200002042204.RAA44619@p2.parker.boston.ma.us>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Brad Parker wrote:
+>
+> I am trying to build 2.3.42 for ppc and I'm running into problems.
+> (like "dma_addr_t" missing from include/asm-ppc/types.h).
+>
+> Does that patch that just came by fix this or should I assume it just
+> needs fixing?
 
-I am trying to build 2.3.42 for ppc and I'm running into problems.
-(like "dma_addr_t" missing from include/asm-ppc/types.h).
+Works for me. It fixes this and a couple of other things.
 
-Does that patch that just came by fix this or should I assume it just
-needs fixing?
-
--brad
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
