@@ -1,9 +1,8 @@
-Message-ID: <762A181C0D966E459A2EB3B810142C7701514C0E@nmrusdunsx12.nmrlan.net>
-From: "Wells, Charles" <Charles.Wells@nielsenmedia.com>
-To: "'Steven Scholz'" <steven.scholz@imc-berlin.de>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Problems rebuilding the DENX ELDK
-Date: Thu, 24 Jul 2003 08:34:52 -0400
+From: "Brian Padalino" <bpadalino@perigee.com>
+To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: U-Boot and 2.6.0-test1 kernel
+Date: Thu, 24 Jul 2003 08:35:26 -0400
+Message-ID: <DGEEIPOFGGPOACEFBGGCMEJCCAAA.bpadalino@perigee.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,19 +10,17 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steve,
+I just made and flashed U-Boot over the OpenBIOS on my Ebony board, and it
+appears to be working very well.  I was able to do a tftp transfer and I
+like the interface much better than the IBM OpenBIOS -- my only problem is
+that when I download a binary image file made from the 2.6.0-test1 kernel,
+it says something about a Bad Magic number if i do "imi" for "imageinfo".
 
-> I'd love to understand this whole automake/autoconf/rpm stuff?
+Is there another utility I should be using to package this kernel up for
+U-Boot, or am I just not choosing the right file?
 
-You may already know about the following book:
+Thanks,
+Brian
 
-GNU Autoconf, Automake, and Libtool
-Gary V. Vaughan, Ben Elliston, Tom Tromey, Ian Lance Taylor
-ISBN 1578701902
-
-I've found it helpful for the automake/autoconf stuff.
-
-Regards,
-Charlie
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
