@@ -1,35 +1,33 @@
 From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Gabriel Paubert <paubert@iram.es>,
-        linuxppc-dev
- <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Platform configuration (was: Re: CONFIG_PPC != Mac)
-Date: Thu, 31 Aug 2000 18:22:09 +0200
-Message-Id: <20000831162209.31786@mailhost.mipsys.com>
-In-Reply-To: <Pine.HPX.4.10.10008311753590.15978-100000@gra-ux1.iram.es>
-References: <Pine.HPX.4.10.10008311753590.15978-100000@gra-ux1.iram.es>
+To: Marc Dietrich <Marc.Dietrich@hrz.uni-giessen.de>,
+        <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: asm statement in include/asm not ansi conform
+Date: Thu, 31 Aug 2000 18:24:42 +0200
+Message-Id: <20000831162442.2079@mailhost.mipsys.com>
+In-Reply-To: <Pine.A41.4.21.0008311751210.17008-100000@c2.hrz.uni-giessen.de>
+References: <Pine.A41.4.21.0008311751210.17008-100000@c2.hrz.uni-giessen.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->First, kernel compile times are only fairly large after a big update, when
->I do `make dep clean zImage'. Second, the proportion of time spend in the
->specific PPC code (mostly arch/ppc and drivers/macintosh) is rather small.
->Third, building a minimal kernel image for each machine would involve a
->ton (and that's an undrestatement) of kernel options: CONFIG_INTC_8259,
->CONFIG_INTC_POWERMAC, CONFIG_INTC_OPENPIC and others for the interrupt
->controllers, half a dozen or so CONFIG_RTC types, same for CONFIG_NVRAM
->and a few other things I surely forget. The only reasonable solution is to
->aim for the smallest runtime kernel image.
+>after some testing dri works now. On startup X says "dri enabled" and
+>glinfo shows many supported GL functions. But at least when running
+>"gears" for example, I get no accelaration at all. Still 60 frames per
+>second - same as with software rendering. I also have a P-III/500 box with
+>Rage128 (AGP) witch produces 400 frames! Glxinfo says something like "RGB
+>error" and breaks.
 
-Well, an easy first step is to have those per-machine cumulative compile
-options so you can choose pmac only, pmac+chrp, etc...
+There's no support for the AGP bus mastering on PowerMac yet. I've been
+running into trouble implementing that due to differences between what
+the linux /dev/agpgart driver expect an AGP chipset to do, and what
+Apple's UniNorth can actually do.
 
-That's only a few more config stuffs (CONFIG_PPC_PMAC, CONFIG_PPC_PREP,
-etc...), the core code wouldn't need to change. We can even optimize the
-various if (_machine == xxxx) using maros that get resolved to a constant
-when only one machine type is compiled in.
+I plan (this week-end) to look more closely at the r128 DRI code to see
+how it uses the AGP and possibly implement a pmac-specific driver (at
+least for now. Once I have working code, I can try to get the existing /
+dev/agpgart driver redesigned).
 
 Ben.
 
