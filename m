@@ -1,56 +1,42 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Thu, 06 Jul 2000 16:46:59 +0100 (CED)
-Subject: Re: Mvista Kernel on FADS 860
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: kernel@linux01.hasler.ascom.ch
-Message-id: <0FXA0064T6EGQK@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_kUadz9gaYBRPBSj/F1KL6w)"
+Message-Id: <200007061657.SAA21598@denx.local.net>
+To: Tom Roberts <tjroberts@lucent.com>
+cc: Ruedi.Hofer@ascom.ch, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: newlib, uclib 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 06 Jul 2000 09:26:33 CDT."
+             <39649719.6A828478@lucent.com>
+Date: Thu, 06 Jul 2000 18:57:13 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---Boundary_(ID_kUadz9gaYBRPBSj/F1KL6w)
-Content-type: TEXT/PLAIN
-Content-Transfer-Encoding: 7BIT
+In message <39649719.6A828478@lucent.com> Tom Roberts wrote:
+>
+> Ruedi.Hofer@ascom.ch wrote:
+> > In order to build a commercially successful product I have to reduce the footprint of the system.
+> > Having a quick look at the files showed me, that the largest files are the libs (libc.so.6 = 4M) ... as u all know.
+>
+> Initially I also thought I would have to strip down the libraries
+> to reduce their footprint. But then I realized that Linux is a demand-
+> paged system, and only the pages which actually get used will be
+> loaded into memory. In our case only memory is an issue, the disk
+> space required is not important. So making libc include _everything_
 
-Although I know that FADS is a bad choice, some more info concerning this problem:
-(I have no solution yet)
+You have a disk, then.
 
-I'm referring to hardhat 1.1, kernel source 2.2.13.7.
+Ruedi is probably on an embedded system, loading a compressed  initrd
+image from Flash into a ramdisk.
 
-In several files (eg include/asm-ppc/mpc8xx.h) I found lines containing
-#ifdef CONFIG_FADS
-...
-#endif
-Therefore I think I should be able to configure FADS somewhere in the kernel config menu.
-Unfortunately, I am not!
+Both flash and RAM are resources which get tight all too often.
 
-All my trials failed of adding the #define to the file arch/ppc/config.in. Example:
-  choice 'Machine Type' \
-        "PowerMac       CONFIG_PMAC \
-         PReP/MTX       CONFIG_PREP \
-         CHRP           CONFIG_CHRP \
-         PowerMac/PReP/CHRP     CONFIG_ALL_PPC \
-         APUS           CONFIG_APUS \
-         MBX            CONFIG_MBX \
-         RPXL           CONFIG_RPXLITE \
-         RPXC           CONFIG_RPXCLASSIC \
-         EST8xx         CONFIG_EST8xx \
-***         FADS           CONFIG_FADS \
-         BSE-IP         CONFIG_BSEIP" PowerMac
+Wolfgang Denk
 
-
-Any ideas?
-
-/Ruedi
-
-
-
-PS: I even have a problem compiling the newly installed hardhat kernel 2.2.13.7. (Without
-changing anything, just typing make dep && make zImage!)
-I get 'FEC_INTERRUPT'  undeclared in fec.c!
-
---Boundary_(ID_kUadz9gaYBRPBSj/F1KL6w)--
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+How many hardware guys does it take to change a light bulb? "Well the
+diagnostics say it's fine buddy, so it's a software problem."
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
