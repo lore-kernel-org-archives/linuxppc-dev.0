@@ -1,26 +1,35 @@
-In-Reply-To: <20040806124639.3E765C109F@atlas.denx.de>
-References: <20040806124639.3E765C109F@atlas.denx.de>
+In-Reply-To: <Pine.LNX.4.60.0408060912370.7391@localhost.localdomain>
+References: <20040806081151.B77FCC109F@atlas.denx.de> <411369F9.5060506@rossvideo.com> <884A8F94-E7A5-11D8-9B14-003065F9B7DC@embeddededge.com> <Pine.LNX.4.60.0408060912370.7391@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v618)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <C47B18AA-E7AE-11D8-9B14-003065F9B7DC@embeddededge.com>
+Message-Id: <6BE5CAC1-E7AF-11D8-9B14-003065F9B7DC@embeddededge.com>
 Cc: PPC_LINUX <linuxppc-embedded@lists.linuxppc.org>,
 	Ralph Siemsen <rsiemsen@rossvideo.com>
 From: Dan Malek <dan@embeddededge.com>
-Subject: Re: Init hangs 
-Date: Fri, 6 Aug 2004 09:44:41 -0400
-To: Wolfgang Denk <wd@denx.de>
+Subject: Re: Init hangs
+Date: Fri, 6 Aug 2004 09:49:22 -0400
+To: "Robert P. J. Day" <rpjday@mindspring.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Aug 6, 2004, at 8:46 AM, Wolfgang Denk wrote:
+On Aug 6, 2004, at 9:14 AM, Robert P. J. Day wrote:
 
-> Second, he mentioned that he was using the ELDK which takes  care  of
-> using soft-float on processors without a MMU.
+> thanks for that tidbit.
 
-Without an MMU?  Really? :-)  Just kidding.  I'm just glad I'm
-not the only one that types stuff like that once in a while.
-
+Trivia time.  The reason I did that many years ago when first ported
+the 8xx
+was I had only 6xx tools and libraries available.  Even though you don't
+have any floating point in your program, things like initialization,
+set/longjmp,
+signals and so on would assume an FPU was available.  So, I just
+trapped those few FP load/store instructions.  Later on, I did the whole
+math emulation thing.  Of course, today the best solution is a
+development
+kit specific to the 8xx that has applications and libraries already
+properly
+compiled.  Without math emulation enabled, you still get those few
+trivial traps emulated.
 
 	-- Dan
 
