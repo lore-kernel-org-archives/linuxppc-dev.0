@@ -1,39 +1,63 @@
-From: benh@kernel.crashing.org
-To: Christopher Murtagh <christopher.murtagh@mcgill.ca>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: SMP/HIGHMEM/7450 status ?
-Date: Thu, 6 Jun 2002 19:45:30 +0200
-Message-Id: <20020606174530.22442@mailhost.mipsys.com>
-In-Reply-To: <Pine.LNX.4.33.0206061251190.20358-100000@blues.wcg.mcgill.ca>
-References: <Pine.LNX.4.33.0206061251190.20358-100000@blues.wcg.mcgill.ca>
+Message-ID: <20020606192510.58822.qmail@web11106.mail.yahoo.com>
+Date: Thu, 6 Jun 2002 12:25:10 -0700 (PDT)
+From: roger blofeld <blofeldus@yahoo.com>
+Subject: Sungem bug or something else?
+To: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20020406102410.14763@smtp.wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->On Thu, 6 Jun 2002 benh@kernel.crashing.org wrote:
->>Xserve uses 7455 (like newer dual G4s), which doesn't seem to exhibit
->>the problem.
->
-> Damn... does this mean that the 7450 machines are lemons (wouldn't
->surprise me if the answer was a resounding 'yes')?
+I encounter an oops during boot bringing up a sungem
+interface. (smp g4 450/gcc 3.1/glibc 2.2.5) If I defer
+bringing up the network at boot, I can successfully
+start eth0 (sungem) if I start eth1 (tulip) first, so
+it may not be the sungem driver itself. This happens
+on benh 2.4.19-Bpre10, and pre9.
 
-I can't say for sure. It seems we are hitting a CPU bug, but after
-studying the errata and trying all sort of ways to "catch" the dead
-CPU when the lockup happen, I had to give up.
-It seems even tweaking the CPU reset line won't get it back from the
-deadlock situation (I'm tweaking it using the firewire controller
-tapping Apple's KeyLargo ASIC GPIO registers, this works fine when
-the CPU isn't locked up in this state).
+The area which fails (according to ksymoops) is in
+sungem.c <__phy_read+54/a4>
 
-> herrenschmidt.wcg.mcgill.ca
+static u16 __phy_read(struct gem *gp, int reg, int
+phy_addr)
+{
+    u32 cmd;
+    int limit = 10000;
 
-hehe, nice ;) though I wouldn't like having to type that name every
-day to telnet to the box ;)
+    cmd  = (1 << 30);
+    cmd |= (2 << 28);
+    cmd |= (phy_addr << 23) & MIF_FRAME_PHYAD;
+    cmd |= (reg << 18) & MIF_FRAME_REGAD;
+    cmd |= (MIF_FRAME_TAMSB);
+    writel(cmd, gp->regs + MIF_FRAME);
 
-Ben.
+    while (limit--) {
+        cmd = readl(gp->regs + MIF_FRAME); *** here
+***
+        if (cmd & MIF_FRAME_TALSB)
+            break;
+
+        udelay(10);
+    }
+
+    if (!limit)
+        cmd = 0xffff;
+
+    return cmd & MIF_FRAME_DATA;
+}
+
+The actual faulting address is 0xe20d920c (the value
+of gpr0; gpr31 is 0)
+
+0xc00de2a4 <__phy_read+80>:     lwbrx   r31,r0,r0
+0xc00de2a8 <__phy_read+84>:     eieio
+
+
+Any clues where I should look?
+Thanks
+-roger
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
