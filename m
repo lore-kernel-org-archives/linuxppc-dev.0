@@ -1,63 +1,45 @@
-Date: Mon, 3 Jul 2000 11:45:02 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Wolfgang Denk <wd@denx.de>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: (Manually) relocate PPC code?
-In-Reply-To: <200007011839.UAA29375@denx.local.net>
-Message-ID: <Pine.HPX.4.10.10007031122370.5670-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 3 Jul 2000 20:02:55 +1000
+From: Chris Leishman <masklin@debian.org>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [ANN] New kernels, gmac, airport, usb...
+Message-ID: <20000703200255.A7528@freeonline.com.au>
+References: <20000703190820.A7196@freeonline.com.au> <20000703092238.25732@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20000703092238.25732@mailhost.mipsys.com>; from bh40@calva.net on Mon, Jul 03, 2000 at 11:22:38AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 1 Jul 2000, Wolfgang Denk wrote:
-
+On Mon, Jul 03, 2000 at 11:22:38AM +0200, Benjamin Herrenschmidt wrote:
+<snip>
+> >Well, I've been playing with it - and I can't seem to get it running...
+> >so I guess it isn't yet :(
 >
-> Hi,
+> I'm still not completely awake, of course, you will have replaced all
+> occurences of WEB in my mail by WEP ;)
 >
-> I need to write some C code on PPC which must stay relocatable, resp.
-> I must relocate it myself (all of code and data etc.). I'm using GNU
-> tools.
+> The card works fine between two macs and a mac & an airport base station
+> with WEP disabled. According to someone on the mailing list, using the
+> base station WEP requires knowledge about the Apple key distribution
+> mecanism, and we don't have this knowledge.
 
-Do you know about the -mrelocatable gcc and gas option ? Granted that it
-generates slightly larger code, but it helps a lot to solve this kind of
-problems.
+Bugger.  I was hoping to use my airport - but I don't think I'll be allowed to
+turn off security on our corporate wireless net ;)
 
-> This is for a standalone application, _NOT_ running under Linux.
+I wonder if apple would be willing to let this out??  Probably not...
+Does MacOS X support WEP yet?  Perhaps I should have a look through there.
 
-Fine.
+Regards,
 
-> Where can I find documentation about things like the format of the
-> GOT etc., or ideally existing _simple_ (read: small) example code?
+Chris
 
-Well, prepboot does this (with many more things): download a pristine
-2.2.12 and apply the mvme2600 patches that you'll find at
-ftp://vlab1.iram.es/pub/linux-2.2/. You'll then find a medium size example
-in arch/ppc/prepboot. Actually it could be used to load a standalone
-program or be integrated with it (except that you'll have to modify the
-Makefile and the linker script which imports a couple of kernel symbols).
 
-Actually prepboot may even be more complex than what you need since it
-first relocates itself whereever it happens to be loaded by firmware and
-then analyzes the memory map and setup of the machine before moving itself
-and relocating again. The part between both relocations is easy to break
-(there are many things you can't do like accessing the bss since it may
-extend past the end of memory or whatever, and you can't easily use
-pointers since they would not be relocated properly in the second pass),
-but once the final relocation is done, the environment is reasonably
-friendly (don't expect a full libc either but console I/O and a simple
-memory management layer are available).
-
-No interrupts however, this is left as an exercise for the reader. The MMU
-exception handlers can be used as a starting point (especially the only
-part which must be written in assembler for entry and exit).
-
-> All hints, pointers, ideas appreciated - TIA!
-
-Hope this helps....
-
-	Gabriel.
-
+--
+----------------------------------------------------------------------
+            Linux, because I'd like to *get there* today
+----------------------------------------------------------------------
+Reply with subject 'request key' for GPG public key.  KeyID 0xB4E24219
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
