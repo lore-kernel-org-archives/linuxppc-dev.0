@@ -1,28 +1,29 @@
-Date: Sat, 15 May 2004 20:02:38 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] fix MOD_{INC,DEC}_USE_COUNT abuse in ppc 4xx/8xx code
-Message-ID: <20040515180238.GA7465@infradead.org>
-References: <20040507104748.GA10971@lst.de> <20040507153205.GA24627@smtp.west.cox.net>
+Subject: Re: 2.6.6 kernel oops on ifconfig eth0 mtu 1300
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <1084643442.4708.3.camel@localhost>
+References: <1084643442.4708.3.camel@localhost>
+Content-Type: text/plain
+Message-Id: <1084669527.6444.2.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040507153205.GA24627@smtp.west.cox.net>
+Date: Sun, 16 May 2004 11:05:29 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, May 07, 2004 at 08:32:05AM -0700, Tom Rini wrote:
+On Sun, 2004-05-16 at 03:50, Soeren Sonnenburg wrote:
+> Hi.
 >
-> On Fri, May 07, 2004 at 12:47:48PM +0200, Christoph Hellwig wrote:
+> When I have some ethernet connection and then do
+> ifconfig eth0 mtu 1300 I get an immediate kernel panic (kernel 2.6.6)
+> powerbook g4 15" 1ghz.
 >
-> >
-> > not that most of the drivers are in a compiling shape currently, but
-> > I want to get rid of the last callers of those.
->
-> Looks fine to me.
+> (xmon trace (jpeg) on request)
 
-So is someone goging to forward it or should I send it to akpm directly?
+Yes, please, the trace
+
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
