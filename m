@@ -1,43 +1,30 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Thu, 19 Dec 2002 11:17:31 -0700
+Date: Thu, 19 Dec 2002 11:30:35 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Cort Dougan <cort@fsmlabs.com>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Support for Arctic platform (405LP based))
-Message-ID: <20021219181731.GG852@opus.bloom.county>
-References: <20021213043628.GI21319@zax.zax> <20021212215126.V23952@duath.fsmlabs.com> <20021213151808.GI19456@opus.bloom.county> <20021215121526.M30941@duath.fsmlabs.com> <15869.5023.549830.146265@argo.ozlabs.ibm.com> <20021215174120.E30568@duath.fsmlabs.com> <20021216150442.GJ6095@opus.bloom.county> <20021216124931.B9431@duath.fsmlabs.com> <20021216201301.GA2513@opus.bloom.county> <20021219180609.GD1048@host109.name>
+To: Claudia Salzberg <sentinel@jump.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: mapping back to 36 bit physical
+Message-ID: <20021219183034.GH852@opus.bloom.county>
+References: <Pine.LNX.4.33.0212181358270.23138-100000@grandmaster.protagonist.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20021219180609.GD1048@host109.name>
+In-Reply-To: <Pine.LNX.4.33.0212181358270.23138-100000@grandmaster.protagonist.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Dec 19, 2002 at 11:06:09AM -0700, Cort Dougan wrote:
+On Wed, Dec 18, 2002 at 02:07:45PM +0600, Claudia Salzberg wrote:
 
-> } But regardless of all of that, there's nothing related to this being a
-> } 'marcelo' tree or not as you can't pick and choose bk csets without
-> } everything preceeding it.  Ideally we can get to the point of not really
-> } needing a seperate tree like 2.2 is (which could go if someone wants to
-> } sit down and think about the LongTrail-specific changes in there).
->
-> There's a great advantage to it being based on Marcelo's tree.  I can pull
-> in several projects that I need along with the PPC changes I need into my
-> own tree.  I think that would help a lot of people out.
->
-> In fact, it should help merging with Marcelo a great deal.  You can easily
-> pull in main-line changes.
+> Greetings.
+> How does one go about aquiring the 36-bit physical address on a 440XX if
+> you have the corresponding va from an ioremap (when your driver is not
+> the one that did the ioremap so that you don't have the pa saved)? ?I see
+> that ioremap does support 36-bit I/O mapping but _va and _pa only play
+> with unsigned long's. ?So does iopa. ?So do the virt_to_* 's I was able
+> to find. ?Also, does anyone have plans for incorporating memory access
+> hooks above 4GB address space?
 
-I'll conceed the first part since I know there's at least a few external
-projects using BK, and a few that aren't, and so on.
-
-I'm not convinced about merging main-line changes as that only works if
-everyonce consistently uses a seperate tree and merges into that.  Just
-like we don't have Linus pulling directly from linuxppc-2.5, Marcelo
-wouldn't pull from linuxppc-2.4, and right now Paul ends up having to
-pick and move things around (even I've fallen out of the habit of having
-another 'working' tree for more direct movement, bad me).
+Erm.  Have you looked at the code in the linuxppc_2_4_devel tree?  I
+believe all of these issues have already been addressed.
 
 --
 Tom Rini (TR1265)
