@@ -1,17 +1,42 @@
-Message-ID: <8D7C5F56B409554D9D46AC22195807F3061C22@exchwenz01.dmcwave.co.nz>
-From: Rod Boyce <rod_boyce@stratexnet.com>
-To: "'jgdon'" <jgdon@gomba.ca>
-Cc: "'James Don'" <JDon@spacebridge.com>,
+Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC060E2@SNCMAIL>
+From: James Don <JDon@spacebridge.com>
+To: "'Rod Boyce'" <rod_boyce@stratexnet.com>
+Cc: James Don <JDon@spacebridge.com>,
 	linuxppc-embedded@lists.linuxppc.org
 Subject: RE: My Memory map ... how do i pick the virtual address (Aside fr
 	 om i mmr and sdram)
-Date: Wed, 22 Jan 2003 14:04:33 +1300
+Date: Tue, 21 Jan 2003 20:45:58 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
+
+I found my answers ...
+
+I did find this in a post from a guy called Dan Malek (m-vista I think):
+
+"As I have explained before, the IMMR and possibly a few other
+board control registers must have physical addresses above
+0x80000000. This is because the early kernel initialization
+will map these 1:1 virtual to physical. They are needed before
+the kernel VM allocator has been initialized. If they are
+below this address, they clash with the user virtual space,
+so depending upon the loading of programs and libraries, you
+left a big virtual hole into kernel managed hardware."
+
+And I found this great post on how to pick your map ...
+http://lists.linuxppc.org/linuxppc-embedded/200010/msg00153.html
+
+Jim
+
+-----Original Message-----
+From: Rod Boyce [mailto:rod_boyce@stratexnet.com]
+Sent: Tuesday, January 21, 2003 8:05 PM
+To: 'jgdon'
+Cc: 'James Don'; linuxppc-embedded@lists.linuxppc.org
+Subject: RE: My Memory map ... how do i pick the virtual address (Aside fr
+om i mmr and sdram)
 
 I can tell you now the mapping between physical and virtual not as important
 as you make out.  I have Linux running on a board I described to you and
