@@ -1,28 +1,63 @@
-Date: Fri, 30 Jul 2004 09:09:24 -0700
+Date: Fri, 30 Jul 2004 09:55:50 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Jon Masters <jonathan@jonmasters.org>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: OLS Photos
-Message-ID: <20040730160924.GM16468@smtp.west.cox.net>
-References: <4108AA2B.1070200@jonmasters.org>
+To: Adrian Cox <adrian@humboldt.co.uk>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] I2C driver for MPC107/824x/85xx/52xx
+Message-ID: <20040730165550.GO16468@smtp.west.cox.net>
+References: <1091201612.987.25.camel@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4108AA2B.1070200@jonmasters.org>
+In-Reply-To: <1091201612.987.25.camel@localhost>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Jul 29, 2004 at 08:41:31AM +0100, Jon Masters wrote:
+On Fri, Jul 30, 2004 at 04:33:32PM +0100, Adrian Cox wrote:
 
-> Hi there,
+> This is the latest version of my driver for the I2C controller in the
+> MPC107 and related chips.
 >
-> Some photos from OLS 2004 for those who are interested.
+> Since last posting the driver has been tested on MPC5200, where it works
+> only when interrupts are disabled. I have positive results for MPC107
+> and MPC8540. There's also a bug fix in error detection on I2C reads,
+> updated timer handling, and clock initialisation is now done only once.
 >
-> http://photos.jonmasters.org/OLS_2004/
+> I plan to send this version to Greg KH unless I hear objections in the
+> next few days.
 
-I've got a handful too..
+I'll throw in a nit:
 
-http://stop.crashing.org:16080/gallery/OLS2004/
+> diff -Nru a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+[snip]
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License as
+> + * published by the Free Software Foundation; either version 2 of
+> + * the License, or (at your option) any later version.
+...
+
+This can be condensed down to:
+ * <YEAR> (c) <COMPANY>. This file is licensed under
+ * the terms of the GNU General Public License version 2. This program
+ * is licensed "as is" without any warranty of any kind, whether express
+ * or implied.
+
+Or so our lawyers claim.
+
+[snip]
+> +#include <linux/kernel.h>
+[snip]
+> +#ifdef CONFIG_I2C_DEBUG_BUS
+> +#define DPRINTK(args...) printk(KERN_DEBUG __FILE__": " args)
+> +#else
+> +#define DPRINTK(args...)
+> +#endif
+
+<linux/kernel> provides pr_debug (and a few others) that just depend on
+DEBUG, fwiw.
+
+And maybe Lindent the sources? :)
+
+But as I said, merely nits.
 
 --
 Tom Rini
