@@ -1,39 +1,30 @@
-Date: Fri, 13 Oct 2000 13:16:35 -0400
-From: Josh Huber <huber@mclx.com>
-To: Michel D?nzer <daenzerm@student.ethz.ch>
-Cc: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: dual head r128
-Message-ID: <20001013131623.E3387@missioncriticallinux.com>
-References: <20001011141722.A1437@missioncriticallinux.com> <39E4B4D0.FA62D929@student.ethz.ch> <20001011145249.B1437@missioncriticallinux.com> <39E4BAD4.E78B4E3B@student.ethz.ch> <20001011152633.A1614@missioncriticallinux.com> <39E4EE41.9E708472@student.ethz.ch>
-Mime-Version: 1.0
-In-Reply-To: <39E4EE41.9E708472@student.ethz.ch>; from daenzerm@student.ethz.ch on Thu, Oct 12, 2000 at 12:48:33AM +0200
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+        Linux Frame
+ Buffer Device Development <linux-fbdev@vuser.vu.union.edu>,
+        Samuel Rydh
+ <samuel@ibrium.se>
+Subject: Re: [linux-fbdev] Re: Video driver bug
+Date: Fri, 13 Oct 2000 22:43:23 +0200
+Message-Id: <19340907141507.13024@192.168.1.10>
+In-Reply-To: <Pine.LNX.4.10.10010101541220.375-100000@cassiopeia.home>
+References: <Pine.LNX.4.10.10010101541220.375-100000@cassiopeia.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Oct 12, 2000 at 12:48:33AM +0200, Michel D?nzer wrote:
-> > I'll also upgrade to 2.4 to see if that makes a difference.
-> >
-> > btw, dmesg shows that the fbcon system only detected one card -- the
-> > AGP one.
->
-> That should work better with a 2.4 kernel. Anyway, have you used two
-> video=aty128fb: ?
+>That's for 2.5.0. I think the first thing we need to do in 2.5.0 is to remove
+>all `mess with non-visible VCs' support, so /dev/fb* works on the _current_
+>video mode.
 
-I tried this, and also tried the 2.4 kernel, with no luck.  2.4 spit
-out some messages about pci assignments, but other than that, no other
-framebuffer devices were configured, and X didn't function as
-expected.
 
-But, someone mentioned later in this thread, there might be a problem
-with using a PC video card on ppc because of #ifdef __powerpc__'s in
-ani patches?
+Well, my understanding is that MOL needs to be able to "probe" for all
+supported mode. Doing so on a visible console would definitely be hell.
+It does that in order to setup the MacOS-side driver mode list.
 
-Thanks for the help,
-
---
-Josh
-| huber@mclx.com |
-1024D/6B21489A 61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
