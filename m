@@ -1,33 +1,60 @@
-Message-ID: <39DB6EF6.732F7348@mvista.com>
-Date: Wed, 04 Oct 2000 13:55:02 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <33AC9933B36CD311AD1300C0F0030D8421BC75@ORION>
+From: SJ Chang <ChangS@embeddedplanet.com>
+To: "'Kyle Harris'" <kharris@nexus-tech.net>,
+        linuxppc-embedded
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: BrytePort
+Date: Wed, 4 Oct 2000 13:56:48 -0400 
 MIME-Version: 1.0
-To: guinan@bluebutton.com
-CC: Daniel Furse <daniel.furse@iptest.com>,
-        "Linux Embedded List (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MBX860 Linux
-References: <Pine.LNX.4.21.0010041204500.7415-100000@gemini.home.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jamie Guinan wrote:
+Kyle,
 
-> The only problem I had with the MBX was the lack of schematics (maybe
-> someone at Motorola actually has them, but I was not able to locate
-> that person).  If you're considering buying new boards, you might look
-> at the Embedded Planet boards.
+Why don't you use RPX series of boards from Embedded Planet? We already have
+production ready products using 823,850 and 860 and Linux solution (Monta
+Vista Hard Hat CDK). We introduced 8260 based product during ESC West.
 
-Keep in mind that both of these boards, the MBX and Embedded Planet,
-are production-ready boards, not evaluation cards.  Production ready
-boards are always highest quality, have boot roms and easy to use tools,
-and seldom have engineering information available. Most companies will
-work with you to meet your own production costs when the volumes are
-high, including providing the engineering information to build your
-own.  They are not interested in selling one for you to copy :-).
+Please check out www.embeddedplanet.com and products.
+
+Regards,
+
+SJ
+
+Seokjoo "SJ" Chang, PhD
+Developer Relations Manager/Acting H/W Product Manager
+Embedded Planet
+www.embeddedplanet.com
+Phone: (440) 646-0077 ext. 153
+Fax: (440) 461-4329
 
 
-	-- Dan
+
+
+
+
+-----Original Message-----
+From: Kyle Harris [mailto:kharris@nexus-tech.net]
+Sent: Wednesday, October 04, 2000 1:26 PM
+To: linuxppc-embedded
+Subject: BrytePort
+
+
+
+Hi All,
+
+I'm looking to run Linux on the PPC reference design BrytePort (for
+WinCE). Info is at:
+
+http://www.brytelogic.com/bryteport/default.htm
+
+Is anyone familiar with this product? I'm assuming that if it supports
+WinCE, it should also support Linux. Is this a valid assumption?
+
+Thanks for any advice. Kyle.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
