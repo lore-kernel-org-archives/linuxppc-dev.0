@@ -1,46 +1,87 @@
-Message-ID: <20020307070148.89600.qmail@web12803.mail.yahoo.com>
-Date: Wed, 6 Mar 2002 23:01:48 -0800 (PST)
-From: satya kumar <i_satya@yahoo.com>
-Subject: Undefined refence error
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3C8762B3.4000201@bluewin.ch>
+Date: Thu, 07 Mar 2002 13:53:07 +0100
+From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
 MIME-Version: 1.0
+To: Adam Wozniak <awozniak@comdev.cc>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: problems with shared memory
+References: <Pine.LNX.4.33.0203051631130.24566-100000@rangers.comdev.cc>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hai All,
-My First mail to this group.Not a master , only a
-newbie ,so please bear with me.
-I have successfully compiled the binutils, gcc for
-powerpc. Now I went for compiling glibc, which is
-giving some problems, so I left it and proceeded with
-compiling the kernel.
-Now it is giving following error message when I do
-make zImage
-mm/mm.o: In function `__free_pages_ok':
-mm/mm.o(.text+0xdee4): undefined reference to
-`__test_and_change_bit'
-mm/mm.o(.text+0xdee4): relocation truncated to fit:
-R_PPC_REL24 __test_and_change_bit
-mm/mm.o: In function `rmqueue':
-mm/mm.o(.text+0xe0f8): undefined reference to
-`__change_bit'
-mm/mm.o(.text+0xe0f8): relocation truncated to fit:
-R_PPC_REL24 __change_bit
-mm/mm.o(.text+0xe190): undefined reference to
-`__change_bit'
-mm/mm.o(.text+0xe190): relocation truncated to fit:
-R_PPC_REL24 __change_bit
-make: *** [vmlinux] Error 1
+Hi Adam,
+
+David Ashley has reported lately a bug in arch/ppc/mm/ppc_mmu.c (see
+http://lists.linuxppc.org/linuxppc-embedded/200202/msg00307.html),
+which seems to be present in the linuxppc_2_4 tree but not in the
+linuxppc_2_4_devel tree.
+
+Hope it helps,
+
+Wolfgang.
 
 
-Please help me out.I am stuck. I am compiling it for a
-MPC860 board. I have selected the machine type as MBX
-during configuring/compiling kernel( Is it right).
+Adam Wozniak wrote:
 
+>I've got Linux 2.4.16 running on a custom MPC8260 board.
+>
+>when I do the program below in a tight loop
+>i.e.
+>
+>while true
+>do
+>./foo 8675 1024
+>done
+>
+>Things pop after about 20 iterations.  It'll choose a different spot
+>in the kernel to pop depending on what options I've compiled into the
+>kernel.  I believe I've got some memory corruption going on.  When I
+>poke around with a hardware debugger I see values in kernel structures
+>which clearly aren't right.
+>
+>Any known problems with shared memory in the 2.4.16 kernel on the MPC8260?
+>
+>This should be easy enough for someone to try to reproduce.
+>
+>=== begin foo.c
+>#include <stdio.h>
+>#include <sys/types.h>
+>#include <sys/shm.h>
+>
+>int main (int argc, char **argv)
+>{
+>   int j;
+>   char *q;
+>   int p;
+>
+>   p = shmget(atoi(argv[1]),  atoi(argv[2]), IPC_CREAT | 0666);
+>
+>   q = shmat(p, NULL, 0);
+>
+>   printf("at @ %p \n", q);
+>
+>   {
+>      int i;
+>      for (i = 0; i < atoi(argv[2]); i++)
+>      {
+>         q[i]++;
+>      }
+>   }
+>
+>   shmdt(q);
+>}
+>=== end foo.c
+>
+>--
+>Adam Wozniak (KG6GZR)   COM DEV Broadband - Digital and Software Systems
+>awozniak@comdev.cc      805 Aerovista Place, San Luis Obispo, CA 93401
+>                        http://www.comdev.cc
+>                        Voice: (805) 544-1089       Fax: (805) 544-2055
+>
+>
+>
 
-Try FREE Yahoo! Mail - the world's greatest free email!
-http://mail.yahoo.com/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
