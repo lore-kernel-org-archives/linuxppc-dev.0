@@ -1,26 +1,16 @@
-Date: Sat, 24 May 2003 22:12:13 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: akuster@mvista.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: GPL inconsistency in arch/ppc/ocp/xlinx/
-Message-ID: <20030524201213.GA8256@lst.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Sat, 24 May 2003 13:23:10 -0700
+From: Larry McVoy <lm@bitmover.com>
+Message-Id: <200305242023.h4OKNAB19952@work.bitmover.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: BK/glibc 2.1?
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Armin,
+Hey, it's been a long time since we updated the machine on which we build BK
+for Linux/PPC.  We are currently dynamically linking against glibc 2.1.  Is
+that causing anyone any problems?  I don't want to upgrade if I don't have to.
 
-you seem to have added the the directory in the topic to the LinuxPPC
-trees.  Unfortunately they have a license consitency that basically
-makes them illegal to distribute, they claim to be under GPL but have
-the following notice:
-
-*     Xilinx products are not intended for use in life support appliances,
-*     devices, or systems. Use in such applications are expressly prohibited.
-
-Could you please contact Xilinc to clarify the license and/or remove
-those files from the tree?  Thanks.
+Thanks.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
