@@ -1,36 +1,34 @@
-Message-ID: <3761EB33.D629064C@pobox.com>
-Date: Fri, 11 Jun 1999 22:08:07 -0700
-From: "Conrad M. Hirano" <placebo2@pobox.com>
-Reply-To: placebo2@pobox.com
+Message-ID: <3762CACE.7212266C@worldnet.fr>
+Date: Sat, 12 Jun 1999 23:02:10 +0200
+From: blokos <blokos@worldnet.fr>
+Reply-To: blokos@worldnet.fr
 MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: PRAM problem with the latest B&W G3s?
+Subject: i'm a new developer on linux PPC
 Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I just got my hands on a 450 MHz B&W G3 and have run into problems
-trying to install Linux. I'm wondering if Apple made some changes to the
-PRAM which cause an incompatibility with Linux or BootX because of the
-symptoms I see.
+hello,
 
-First, I noticed that Techtool no longer reports the date of manufacture
-or the number of hours the computer has been in use. It just lists "N/A"
-for both. Apparently, Apple has changed the PRAM in some way.
+sorry for my newbie question :
 
-Second, the kernels for both R4, for the B&W G3, and R5, from the
-installer, do not successfully let me get to the respective installers.
-After the system hangs, it will not successfully boot the Mac OS off the
-hard disk or the CD until I reset the PRAM. It begins to load the Mac OS
-and the BootX window appears, but after I dismiss the window, it hangs
-before the extension icons appear at the bottom of the screen. I've also
-tried booting with no extensions, and the system still hangs.
+Well, I'd like to develop a small application on linux that verify
+bankcard via modem and RTC line, not internet.
+it will work with a cgi and postgre SQL.
 
-Booting with the R5 kernel only gets as far as the initial display of
-addresses. No kernel messages appear. The R4 kernel gets farther, but a
-timeout occurs when checking the partitions on hda, causing a kernel
-panic.
+so, I've all bank protocol communication, but i don't know which tools
+must i use to develop this kind of software.
+
+anyone could help me ??
+
+thanks for your support
+
+
+Franck Chionna
+
+
 
 
 
