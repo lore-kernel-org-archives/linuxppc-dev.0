@@ -1,29 +1,59 @@
-Date: Wed, 7 Jan 2004 03:40:52 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 7 Jan 2004 07:54:58 +0100
+To: Tom Rini <trini@kernel.crashing.org>
 Cc: Sven Luther <sven.luther@wanadoo.fr>,
-	Rob Baxter <robb@synergymicro.com>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: multiple separate pci bridges ...
-Message-ID: <20040107024052.GC16761@iliana>
-References: <1073340725.9497.105.camel@gaston> <20040106073955.GF735@iliana> <1073376024.26508.220.camel@gaston> <20040106081143.GA1644@iliana> <Pine.GSO.4.58.0401061533510.5752@waterleaf.sonytel.be> <20040106144545.GA7261@iliana> <20040106153305.GA6251@synergy> <1073425055.784.3.camel@gaston> <20040107023501.GA16761@iliana> <1073442982.784.47.camel@gaston>
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Lee Braiden <jel@ntlworld.com>, debian-powerpc@lists.debian.org,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Would setting the CONFIG_RTC option break the powerpc kernel on your machine ?
+Message-ID: <20040107065458.GA20228@iliana>
+References: <20031217095139.GC2283@iliana> <20031217164740.GR11761@stop.crashing.org> <20031217165608.GA11653@iliana> <20031217170620.GS11761@stop.crashing.org> <20031219114050.GA5650@iliana> <20031219162800.GE29266@stop.crashing.org> <20031222134504.GA5964@iliana> <20031222161042.GB10841@stop.crashing.org> <20031222162601.GA9021@iliana> <20031222163315.GC10841@stop.crashing.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1073442982.784.47.camel@gaston>
+In-Reply-To: <20031222163315.GC10841@stop.crashing.org>
 From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jan 07, 2004 at 01:36:23PM +1100, Benjamin Herrenschmidt wrote:
+On Mon, Dec 22, 2003 at 09:33:15AM -0700, Tom Rini wrote:
 >
-> > Mmm, ok. I still have to pass it the l2cr=0x80000000 boot arg, but maybe
-> > it would be easier to add it to the default boot args or something.
+> On Mon, Dec 22, 2003 at 05:26:01PM +0100, Sven Luther wrote:
 >
-> No, your platform code can initialize it directly, but CC a flame to
-> the firmware folks for not doing it right in the first place
+> > On Mon, Dec 22, 2003 at 09:10:42AM -0700, Tom Rini wrote:
+> > > > Also, the todc code knows about many RTC chips, among them, the MC146818
+> > > > seems to be the one used by the rtc.h stuff, and seems to be a generic
+> > > > legacy RTC chip or something. he one i have, builtin the VIA VT8231
+> > > > southbridge is said to be called VT82887, altough i have no docs of
+> > > > those, but the header files found in 2.6 concord. But i seem to have
+> > > > some additional DATE_ALARM, MONTH_ALARM and CENTURY_FIELD registers not
+> > > > found int the MC146818 header file.
+> > >
+> > > I appologize since I ramble a bit too much.  For 2.4, the best fix is
+> > > (1) above.  For 2.6 however, it should be possible to remove chrp_time.c
+> > > and use todc_time.c instead (it is self-contained, wrt nvram read/write,
+> > > iirc) and do some sub-casing to pick the right RTC chip code to use.
+> > > For example on PReP we still case between the two different chips, and
+> > > just call todc_init (iirc) with a different param.  Or something along
+> > > those lines.
+> >
+> > Ok, i have looked more, and the MC146818 is ok for my box. don't know
+> > about other chrp boxes though.
+> >
+> > There is also the todc code in the 2.4 tree though, so it should also be
+> > possible to do it this way, or would it not ?
+>
+> It would be possible, but it would be more intrusive for a stable
+> series.
 
-Ok, i will, thanks again for your help.
+BTW, i didn't manage to get the generic RTC code working on my pegasos,
+and i am actually a bit pressed for time.
+
+Do you think a workaround, for the debian powerpc packages, would be to
+add a test for the presence of a pmac in the CONFIG_RTC code, and abort
+if one is found ?
+
+If so, what would be the best way to test for a pmac subarch in the
+drivers/char/rtc.c code ?
 
 Friendly,
 
