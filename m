@@ -1,43 +1,38 @@
-Date: Mon, 13 Aug 2001 09:38:33 -0400
-From: Ethan Blanton <eblanton@cs.ohiou.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Clock drift on iBook2
-Message-ID: <20010813093833.B16584@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cvVnyQ+4j833TQvp"
+Message-ID: <3B77D988.6A9D6C60@drea.dnd.ca>
+Date: Mon, 13 Aug 2001 10:43:36 -0300
+From: Gavin Hemphill <hemphill@drea.dnd.ca>
+MIME-Version: 1.0
+To: Larry McVoy <lm@bitmover.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PPC bk repos reorg
+References: <15218.2656.8980.846399@cargo.ozlabs.ibm.com> <20010808211410.J7728@work.bitmover.com> <15218.4778.270562.782105@cargo.ozlabs.ibm.com> <20010808213806.C13789@work.bitmover.com> <15218.7077.297813.862317@cargo.ozlabs.ibm.com> <20010809192852.L13789@work.bitmover.com> <20010810080751.B31136@cpe-24-221-152-185.az.sprintbbd.net> <20010810081659.A13789@work.bitmover.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---cvVnyQ+4j833TQvp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Larry I just tried out the anonymous access using the new syntax and found that (of course) it won't work through our firewall.  I'd had a hole punched in the firewall to allow pull's etc. but it's
+tied to port numbers.  Do you have any suggestions on how to handle this with the reorganized parents.
+	G++
 
-I just realized that I have committed one of the most common open
-source sins...  My problem has been solved and I never reported it!
-
-At any rate, for those who don't remember and may wish to know this, I
-was having significant clock drift problems on an iBook2 (up to
-several seconds/minute).  Ben Herrenschmidt gave me a quick two-line
-patch (comment out the via_calibrate_decr check) which worked...
-Since then a real fix seems to have gone in, and it works beautifully.
-I no longer have to patch my kernel and the clock is stable.
-
-Thanks.  :-)
-Ethan
-
---=20
-If I've told you once, I've told you once
-And once is all that you needed.
-		-- The Refreshments, "Carefree"
-
---cvVnyQ+4j833TQvp
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
-
---cvVnyQ+4j833TQvp--
+Larry McVoy wrote:
+>
+> I'd like to keep the .com for commercial hosting in case anyone wants
+> to give us huge piles of money (yeah, right, but you never know).
+> But I could use
+>
+>         bk://ppc@ppc.bkbits.net/linux_2_2 instead of
+>         bk://ppc@ppc.bkserver.net/linux_2_2
+>
+> It's a whole 2 letters shorter.  If I can ever get bk.net/bk.com that's
+> the obvious thing but the chances of that are right up there with me
+> winning the lottery.  If anyone stumbles across a really short, approrpiate
+> domain, let me know.  The nicest thing sourceforge ever did for me is
+> to get sf.net :-)
+>
+> Anyway, all of the above addresses currently point at the same place.
+> If you all say "bkbits" then I'll reserve bkbits.net for the hosting
+> service.  I'm a big fan of less is more and that's the shortest I could
+> find.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
