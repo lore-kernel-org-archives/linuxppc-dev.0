@@ -1,60 +1,35 @@
-Date: Wed, 13 Sep 2000 14:47:33 +1100
-From: Chris Leishman <masklin@debian.org>
-To: ian reinhart geiser <geiseri@msoe.edu>
-Cc: linuxppc-dev@lists.linuxppc.org, linuxppc-users@lists.linuxppc.org
-Subject: Re: MOL on the Pimiso PB ROCKS... sorta.
-Message-ID: <20000913144733.A4678@freeonline.com.au>
-References: <Pine.OSF.3.96.1000912124529.6222A-100000@torres.msoe.edu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="UugvWAfsgieZRqgk"
-In-Reply-To: <Pine.OSF.3.96.1000912124529.6222A-100000@torres.msoe.edu>; from geiseri@msoe.edu on Tue, Sep 12, 2000 at 12:47:03PM -0500
+From: Paul Mackerras <paulus@linuxcare.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14782.63718.648830.642139@argo.linuxcare.com.au>
+Date: Wed, 13 Sep 2000 14:47:50 +1100 (EST)
+To: Benjamin Herrenschmidt <bh40@calva.net>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Getting patches in (was: Re: Roles for distributions)
+In-Reply-To: <20000912085918.23901@192.168.1.10>
+References: <200009120614.IAA00922@piglet.grunz.lu>
+	<20000912085918.23901@192.168.1.10>
+Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---UugvWAfsgieZRqgk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Benjamin Herrenschmidt writes:
 
-On Tue, Sep 12, 2000 at 12:47:03PM -0500, ian reinhart geiser wrote:
->=20
-> Well i just got MOL on my Powerbook,  It runs pretty well
-> fast in all BUT for some reason i cannot get my mouse to
-> work.
->=20
-> i have it set to /dev/adbmouse and adb as the protocal.
->=20
-> i am also running the new 2.2.17 kernel from pauls.
->=20
-> has anyone else seen this?
->=20
-> thanks
-> 	-ian reinhart geiser
+> The latest batch of PPC patches sent by Paul, AFAIK, didn't appear in
+> Linus test8 (was it rejected ? I don't know)
 
+I sent a couple of patches to Linus plus several patches to the
+maintainers of other parts of the kernel (ide, usb, fb drivers etc.)
+No reply from Linus and the patches didn't go in.  That's pretty
+standard. :-(
 
-I think the new kernels use the new USB layer, which changes the way the adb
-mouse device works.  See BenH's page for info on this.
+Paul.
 
-http://ppclinux.apple.com/~benh/
-
-Regards,
-
-Chris
-
-
---=20
-----------------------------------------------------------------------
-         I don't have a solution but I admire the problem.
-----------------------------------------------------------------------
-Reply with subject 'request key' for GPG public key.  KeyID 0xB4E24219
-
---UugvWAfsgieZRqgk
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
-
---UugvWAfsgieZRqgk--
+--
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
