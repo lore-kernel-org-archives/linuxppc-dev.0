@@ -1,28 +1,30 @@
-Date: Fri, 19 Nov 1999 20:58:19 -0500
-From: Eric Dorland <dorland@lords.com>
+Message-Id: <199911200225.TAA15989@somnet.sandia.gov>
+Subject: Partitioning a Sawtooth?
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Floppy problems
-Message-ID: <19991119205819.A676@HSE-MTL-ppp4368.qc.sympatico.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Fri, 19 Nov 1999 19:25:26 -0700 (MST)
+Cc: svspire@somnet.sandia.gov (Shannon V Spires)
+In-Reply-To: <199911190559.XAA23488@lists.linuxppc.org> from "Linux PPC Developer Digest" at Nov 18, 99 11:59:29 pm
+From: svspire@sandia.gov (Shannon Spires)
+Reply-To: svspire@sandia.gov
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-There seems to be a problem with the SWIM3 controller on my PowerMac G3.
-Whenever I try to do any floppy realted operation (mount, dd, whatever) it
-gives me this error:
+Sorry if this question is basic, but how do you partition a Sawtooth's
+drive?
 
-end_request: I/O error, dev 02:00 (floppy), sector 36
+I'd like to try Benjamin's new kernel
+(http://calvaweb.calvacom.fr/bh40/test.html) on my Sawtooth. However, I
+can't figure out how to partition the drive. Pdisk (0.7a4) can't even see
+the ATA drive. And so far, I haven't found a newer version.
 
-does anyone know what this means or has had similar problems?
+What's the procedure?
 
-I'm running R5 on a a kernel I compiled myself, but not with anything
-outrageous, just a few patches. I've got a G3/266, and I'm running linux off
-a internal scsi drive.
-
-Eric Dorland
-dorland@lords.com
+TIA!
+-- 
+Shannon Spires
+svspire@sandia.gov
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
