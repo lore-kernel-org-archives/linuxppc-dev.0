@@ -1,101 +1,65 @@
-Date: Mon, 30 Jun 2003 13:46:37 +0200
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: Linux, I2C_RDWR, stop conditions
-In-reply-to: <1056971137.2468.12.camel@lilith.aribaud.fr>
-To: Albert ARIBAUD <albert.aribaud@free.fr>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLOEMNFNAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-15
+Message-ID: <3F004440.6000301@peak.uklinux.net>
+Date: Mon, 30 Jun 2003 15:08:00 +0100
+From: Seb James <seb@peak.uklinux.net>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
+Cc: u-boot-users@lists.sourceforge.net,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [U-Boot-Users] soft_i2c and ds1307 with tqm823l
+References: <20030630133530.CC405C592A@atlas.denx.de>
+In-Reply-To: <20030630133530.CC405C592A@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Replying to myself:
+Wolfgang Denk wrote:
+[ snip ]
+
+>>Ok, well I've successfully compiled with CONFIG_HARD_I2C and have
+>>communicated with my clock, so that is good. Next up is transferring the
+>>date in u-boot to linux, but I'm sure that will be documented somewhere.
+>>
+>>
 >
-> Le dim 29/06/2003 à 14:24, Albert ARIBAUD a écrit :
-> >
-> > I am experiencing an annoying I2C problem, using ELDK 2.0.2 and its 2.4
-> > kernel, while trying to read an I2C 24C128 eeprom. Its read sequence is
-> > composed as follows :
-> > - start condition, slave write of two bytes : high then low part of adr.
-> > - start condition, slave read of up to 64 bytes.
-> > - stop condition.
-> > (notice no stop condition in between: this is a double start).
-> >
-> > Using either the r360 adapter or the rpx adapter, I tried a cyclic read
-> > with a while-loop at shell level calling a C program doing the eeprom
-> > read. This works between a couple and several hundred reads, then stops
-> > with te following condition : the data read part fails with a short read
-> > of 1, and from then on i2c transfers find a low SDA.
-> >
-> > This looked like chip errata CPM6.I2C (single-byte buffer after failed
-> > transaction) and CPM7.I2C (I2C receiver locks holding SDA low), however:
-> > - I use an MPC855T mask rev D.4 which claims all I2C errata fixed;
-> > - the previous write shows no sign of having failed (so no CPM6.I2C)
-> > - I have PDIV=00 and FLT=1, so it would rule out CPM7.I2C.
-> >
-> > This not an I2C/SPI relocation case either, since SCC1 is used as an
-> > UART and SCC2 does not exist in the 855T.
-> >
-> > However, I have checked i2c drivers in the following code:
-> > - Linux kernel 2.4.4 provided with ELDK 2.0.2;
-> > - linux-2.4 CVS from Denx;
-> > - i2c package v2.7.0 from lm_sensors.
-> > All versions share the following characteristic in the the I2C_RDWR
-> > ioctl implementation: i2c-algo-8xx simply concatenates i2c reads and
-> > writes (thus ending each individual transfer with a stop condition),
-> > while i2c-algo-pcf and i2c-algo-bit do not send stop conditions until
-> > after the last transfer.
-> >
-> > Am I right in thinking that the correct I2C_RDWD behaviour is that of
-> > pcf and bit-banging, and that the 8xx implementation is wrong in this
-> > respect?
-> >
-> > And would it explain the behaviour I see with the 24C128 eeprom?
-> >
-> > Thanks in advance,
-> >
-> > Albert.
-> I have implemented a more correctly-behaving, albeit badly-styled,
-> solution by heavily patching i2c-algo-8xx.c and i2c-rpx.c. Miracle : the
-> eeprom that I could not write to suddenly works like a charm, and reads
-> seem not to break anymore. Hurray!
->
-> Well, to be honest, I have a small quirk left (wouldn't be fun if it all
-> worked OK, would it?): when doing an i2c read, I sometimes get TXE set
-> in I2CER along with the expected RXB. However, the data was read
-> correctly, as far as I can tell. I'll run a check (zero-fill the receive
-> buffer before starting the I2C exchange.
->
-> Broadly, my solution prepares as many Tx and Rx buffers as required to
-> realize the whole exchange in a single run. This effectively makes the
-> I2C_RDWR ioctl work as expected.
->
-> I expect few people were using I2C_RDWR with double-start sequences,
-> since they would have failed :), but anyone simply interested in i2c on
-> the MPC8xx may have a look at the code and try it; I would like to know
-> if this approach is a good candidate for a patch submission, both to
-> lm_sensors and the linux ppc kernel, so a little regression testing
-> would only be fair. :)
->
-> Note, however, that my solution is currently a bit lavish with
-> allocating Rx and Tx BDs; before considering a patch, I will change it
-> so that it creates Rx/TxBD templates in kmalloc()ed memory, and 'hot
-> swap' them in real time into the 2 Rx and 2 Tx BDs currently allocated
-> in i2c-rpx.c.
->
-> All the best,
+>You don't "transfer" the daye. Linux will pick it  up  itself  (which
+>requires an RTC driver and eventually some modifications).
 >
 
-Hi Albert
+Let me check that I understand: As far as I can see the u-boot realtime
+clock drivers just allow you to set and read the time from the u-boot
+command line; a useful utility. If linux is to read the time from the
+realtime clock it must have a realtime clock driver of its own; there's
+no way that u-boot can pass the time to linux at boot time? (Of course,
+this would be fraught with difficulties, because depending on how fast
+your cpu boots linux, a different amount of time would elapse before
+linux could actually do something with the passed date stamp).
 
-A few months ago I fixed a few bugs in the i2c-algo-8xx.c and submitted these
-to linuxppc_2_4_devel. I too had problems similar to yours. I suggest
-you check if your version matches the one in linuxppc_2_4_devel.
+So, next up for me is to write a linux driver for the ds1307. I was
+actually in the middle of that before getting sidetracked by the u-boot
+rtc code. However, the u-boot code has enabled me to hardware debug my
+realtime clock circuit, so that was very useful.  Has anyone written a
+linux driver for the ds1307 or similar? (I'm cross posting to the
+linuxppc-embedded list to ask this question).
 
- Jocke
+>>As for CONFIG_SOFT_I2C; Attached (really this time) is a diff between
+>>the original u-boot-0.4.0/include/configs/TQM823L.h and the one that I
+>>have altered. The compile of soft_i2c.c fails with the following error
+>>messages:
+>>
+>>
+>
+>That's because you did  not  define  the  required  macros  (see  for
+>example the configuration in lwmon.h).
+>
+>
+Right, so it's not the case that you just #define CONFIG_SOFT_I2C; you
+have to correctly define the macros. I shall do some work on the readme
+and post a diff later on. Thanks for the pointers.
+
+best,
+
+Seb
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
