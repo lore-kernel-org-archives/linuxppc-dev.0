@@ -1,36 +1,44 @@
-Date: Sat, 30 Oct 1999 10:07:36 -0500 (CDT)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: linux-2.2.13pre15 stability w/ head.S patch
-In-Reply-To: <381A6CF9.67FE83E2@wanadoo.fr>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.991030100042.1326A-100000@ofey.inetnebr.com>
+From: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Announcing: USB support for Ryuichi Oikawa's Accelerated Xpmac Xserver for Rage 128
+Date: Sat, 30 Oct 1999 12:50:17 -0400
+Content-Type: text/plain
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <99103012584000.00426@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 30 Oct 1999, Martin Costabel wrote:
+Hi,
 
-[...]
-> Sorry to spoil the fun, but I personally feel that the linux kernel
-> sources for the pmac are in a rather sorry state right now. Both the
-> vger cvs and the samba rsync archives have gone into hibernation, and
-> the kernel.org kernels just don't work. After having spent many hours
+Borrowing heavily from the usb kernel driver, Samuel's mouse support from MOL
+and Sun's X server (which Xpmac is based on), I have added usb mouse support to
+Ryuichi Oikawa's Xpmac Xserver  which is accelerated for Rage 128.
 
-What about samba's linux-pmac-stable tree?  It's not exactly very stable,
-but it compiles and boots just fine on 7600.
+So now you can get fast graphics performance on your G3, while now using your
+usb mouse (an adb mouse will still work).
 
-[...]
-> There are a couple of other such problems (like the init/main.c that
-> doesn't compile with initrd configured, probably some kind of weird
-> Finnish humor), so that it took us hours to get one of these kernels to
+This work is preliminary:
 
-IIRC, initrd support has been broken on all architectures.
+You can download a the patch to add usb to Xpmac along with a new Xpmac binary
+from the following url:
 
+http://khendricks.ivey.uwo.ca/rage128_usb/
 
-Takashi Oe
+To install:
 
+gunzip Xpmac.rage128.usb.gz
+cp Xpmac.rage128.usb /usr/X11R6/bin/
+cd /etc/X11
+rm X
+ln -s ../../usr/X11R6/bin/Xpmac.rage128.usb X
+startx
+
+Any feedback is greatly appreciated.
+
+Thanks,
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
