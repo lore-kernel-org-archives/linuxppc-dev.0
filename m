@@ -1,41 +1,50 @@
-Mime-Version: 1.0
-Message-Id: <p05100301b7d2a21bdfe1@[10.0.0.42]>
-In-Reply-To: <8xu1xvi9sf.fsf@s63.informatik.uni-bremen.de>
-References: <200109211848.f8LImlT19616@saturn.cs.uml.edu>
- <8xu1xvi9sf.fsf@s63.informatik.uni-bremen.de>
-Date: Sat, 22 Sep 2001 13:26:58 -0700
-To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
-	linuxppc-dev@lists.linuxppc.org
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: ppc LE questions (seeking help hand info pointers)
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Date: Sun, 23 Sep 2001 00:21:37 -0400 (EDT)
+From: patrick <tendim@tendim.cjb.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: More problems with Kernel 2.4.10-pre12 and mounting
+Message-ID: <Pine.LNX.4.21.0109230013490.706-100000@cr242184-a.etob1.on.wave.home.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 4:23 PM +0200 9/22/01, Holger Bettag wrote:
->"Albert D. Cahalan" <acahalan@cs.uml.edu> writes:
->
->[...]
->>  Now do an unconditional 64-bit byte swap on the motherboard.
->>  Consider an array of four __u16 values affected by this.
->>  They get converted from big-endian to little-endian, and they
->>  get moved to different addresses. Excellent! All the weirdness
->>  just cancels out, giving perfect little-endian. This works for
->>  8-bit, 16-bit, 32-bit, and 64-bit data. Life is good.
->>
->Does it work for 128 bit data? The 74x0's most promiment feature,
->AltiVec, would expose a strange mixed endianness to programmers
->otherwise.
+To continue with 2.4.10-pre12 problems..
 
-For compatability's sake, when AltiVec quad word loads/stores are
-performed in LE mode, you get a double munge (one munge for each of
-the two doublewords in the quadword) and a swap of the two munged
-doublewords.  Details are in the AltiVec PEM.  So AltiVec has true LE
-ordering of doublewords and munged up contents inside doublewords,
-and an unconditional 64-bit swap on the motherboard will fix the
-munging inside each doubleword.
+(This is a 2.4.9 with the 2.4.10-pre12 patch applied, everything
+downloaded from ftp.kernel.org)
+
+I've currently got two SCSI drives on my system.  /dev/sda is my dedicated
+Linux drive, and /dev/sdb is my shared drive between Linux and
+MacOS.  /dev/sda runs off of an Adaptec 2940UW card and /dev/sdb off of
+the internal MESH of the PowerMac 8500.
+
+If I try to do a
+
+ mount -t hfs /dev/sdb3 /mnt/macos
+ or
+ mount /dev/sdb3 /mnt/macos
+
+I get a message:
+
+mount: /dev/sdb3 has wrong major or minor number
+
+In addtion, if I issue:
+
+pdisk -l /dev/sdb
+
+I get a message:
+
+pdisk: Can't read block 0 from '/dev/sdb'
+
+Any ideas?
+
+(BTW: This is not a hardware problem.  If I reboot with 2.2.18 everything
+works fine).
+
 --
-Tim Seufert
+patrick m pritchard
+disposable hero.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
