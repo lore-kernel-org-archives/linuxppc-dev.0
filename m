@@ -1,26 +1,23 @@
-Date: Wed, 17 Jan 2001 11:51:22 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: David Edelsohn <dje@watson.ibm.com>
+Message-Id: <200101171745.MAA27330@mal-ach.watson.ibm.com>
+To: Gabriel Paubert <paubert@iram.es>
 cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: kernel mapping 
-In-Reply-To: <200101161747.MAA22402@mal-ach.watson.ibm.com>
-Message-ID: <Pine.HPX.4.10.10101171059001.10261-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: Message from Gabriel Paubert <paubert@iram.es>
+   of "Wed, 17 Jan 2001 11:51:22 +0100." <Pine.HPX.4.10.10101171059001.10261-100000@gra-ux1.iram.es>
+Date: Wed, 17 Jan 2001 12:45:00 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 16 Jan 2001, David Edelsohn wrote:
+>>>>> Gabriel Paubert writes:
 
-> 	Note that forthcoming 64-bit PowerPC chips from IBM utilize
-> multiple page sizes and no longer provide BAT registers.  "BAT register
-> management on the bigger processors" is a misnomer.
+Gabriel> How is it implemented ?  Is there any documentation available on the web ?
 
-How is it implemented ?  Is there any documentation available on the web ?
+	See Paul DeMone's write-up at Real World Technologies website and
+the papers from Microprocessor Forum 1999 and 2000, Microprocessor Report
+1999, and discussions in comp.arch on USENET.
 
-	Regards,
-	Gabriel.
-
+David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
