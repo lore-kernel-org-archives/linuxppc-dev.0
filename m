@@ -1,37 +1,29 @@
-Message-ID: <3E0D222A.FE02C4CD@koffie.nl>
-Date: Sat, 28 Dec 2002 05:01:46 +0100
-From: Segher Boessenkool <segher@koffie.nl>
+Reply-To: <jwalden@digitalatlantic.com>
+From: "Jerry Walden" <jwalden@digitalatlantic.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Location of PPC emulator
+Date: Sat, 28 Dec 2002 19:18:13 -0800
+Message-ID: <EGEGIJHKDKJGAJMGIDPNMEHDCDAA.jwalden@digitalatlantic.com>
 MIME-Version: 1.0
-To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Cc: "'Paul Mackerras'" <paulus@samba.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: SV: SV: New invalidate/clean/flush_dcache functions
-References: <000001c2ade5$5baaa020$94b9143e@hempc>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joakim Tjernlund wrote:
->
-> In my typical example I need to invalidate a buffer before I give it to
-> the
-> CPM to be used as a receive buffer. Once given to the CPM there must be
-> no more writes to that buffer memory. When the CPM has received data
-> and written the data into the buffer and hands it over to the CPU
-> (usally via an interrupt) the next read from the CPU must access it from
-> the memory.  Does the above require a sync?
+Greetings:
 
-Probably not, I don't know much about the CPM though (and I assume this
-is a system without any extra cpu's).
+I have a large pile of CDs and files on a harddrive from someone who was
+working
+on a 405GP / Linux project.  It has now fallen into my lap to pick up.
 
-> Does it take some time before a invalidate is completed?
+In the pile of "stuff" is an IBM Walnut 405GP eval kit.  I need to know if
+anyone knows if this kit comes with a ppc emulator that will run under
+windoze?
 
-Depends on your cpu; I don't know the details for your cpu.  Check your
-manuals :)
+Thanks for any help
 
-
-Segher
+Jery
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
