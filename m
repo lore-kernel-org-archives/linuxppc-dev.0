@@ -1,41 +1,32 @@
-Date: Thu, 15 Nov 2001 08:42:01 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Shie Erlich <shie_e@elbit.co.il>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: a general bootloader question
-Message-ID: <20011115084201.A31998@cpe-24-221-152-185.az.sprintbbd.net>
-References: <937610FE9B70D511B3E700508B8B65770E53B1@MAIL1>
-Mime-Version: 1.0
+Message-ID: <3BF3E2D5.932B0E4B@mvista.com>
+Date: Thu, 15 Nov 2001 09:44:21 -0600
+From: Mark Hatle <fray@mvista.com>
+MIME-Version: 1.0
+To: Alda Sanomiya <sanomiya@us.ibm.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Error in loading shared libraries: invalid ELF header
+References: <OF31327F98.5BC0D876-ON85256B05.004B0D9F@pok.ibm.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <937610FE9B70D511B3E700508B8B65770E53B1@MAIL1>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Nov 15, 2001 at 11:51:55AM +0200, Shie Erlich wrote:
+It looks to me that you are attempting to boot off of a hard disk.  One
+of two things (I would guess the first):
 
-> 1) what is the proper way to get the kernel to boot - do i need a
-> bootloader, if so, what ?
+1) Your disk partition is damaged due to an improper reboot
 
-Of some sort, yes.
+2) You have the wrong libc.so.6 (i.e. one for x86)
 
-> 2) what is the bootloader's functionality - except downloading the kernel ?
-> does it modify
->     memory in any way ? is the kernel dependent on such modifications ?
+> EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
+> VFS: Mounted root (ext2 filesystem).
+> Freeing unused kernel memory: 176k init 4k openfirmware
+> init: error in loading shared libraries: libc.so.6: invalid ELF header
+> Kernel panic: Attempted to kill init!
 
-Well, in the simplest form, (what's in the linuxppc_2_4_devel tree), you
-end up doing some very basic hardware checking/init'ing, decompress the
-kernel and go.  For a 750 + cpc700 system this should be realativly
-easy.  Take a look at how some of the other 7xx/74xx systems work in
-there.
+The EXT2-fs warning message above seems to indicate the ext2 partition
+is at the least not clean, at the worst corrupt.
 
-> 3) how can i make a bootloader load the kernel in low memory without
-> changing KERNELBASE etc ?
-
-Erm, I think this is a bit of a red herring...
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+--Mark
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
