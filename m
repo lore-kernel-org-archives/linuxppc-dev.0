@@ -1,93 +1,42 @@
-Message-Id: <m11P42n-0000X2C@tri-yann.crf.canon.fr>
-Date: Thu, 9 Sep 1999 15:15:17 +0200 (CEST)
-From: "VALETTE Eric" <valette@crf.canon.fr>
-To: paubert@iram.es
-CC: Simone.Piccardi@fi.infn.it, linuxppc-dev@lists.linuxppc.org
-In-reply-to: <Pine.HPX.4.10.9909091001450.9440-100000@gra-ux1.iram.es>
-	(message from Gabriel Paubert on Thu, 9 Sep 1999 10:12:07 +0200
-	(METDST))
-Subject: Re: A question about zImage when booting from HD
-References: <Pine.HPX.4.10.9909091001450.9440-100000@gra-ux1.iram.es>
+Date: Thu, 9 Sep 1999 09:25:45 -0500
+From: Shaw Terwilliger <sterwill@io.nu>
+To: Hugh Caley <hcaley@loomer.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Paul's devel branch on Lombard?
+Message-ID: <19990909092545.C4200@io.nu>
+References: <37D74322.B787B9FE@loomer.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <37D74322.B787B9FE@loomer.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Gabriel" == Gabriel Paubert <paubert@iram.es> writes:
+Hugh Caley wrote:
+> I have not had this problem with building Paul's 2.2.12 kernel.  I did not use
+> a config file from a previous version, which sounds like the major difference
+> between us.
 
-Gabriel> On Mon, 6 Sep 1999, Simone Piccardi wrote:
+The problem is not with the 2.2.12 kernel, but with the 2.3.16 branch in
+his "devel" archive.  The "stable" branch is working like a champ for me.
+I'm sorry if I didn't make that very clear in my message (I had just
+spent three minutes writing down all those addresses).  :)
 
-Gabriel> Well, I don't think so. I'm also very surprised since I have a very
-Gabriel> similar setup and I have never seen this command fail (NetBoot is another
-Gabriel> story), the length in /dev/sda3 is correct. 
+> Or:  which version of gcc are you using?  I'm using the gcc from the fsirl
+> directory on dev.linuxppc.org, and the glibc and related files from the same
+> site.
 
-Gabriel> What is your verssion of PPCBug ? 
+If it matters, I'm using GCC from the Debian Potato branch (which I have
+installed).  I believe it's just EGCS 1.1.2 release; but it's building 
+2.2.12 great, 2.3.16 just isn't building.  I guess it's possible there's
+a 2.3 kernel problem with the compiler, although I don't see any problems
+in the builds.
 
-Gabriel> Can you try PBOOT;A and PBOOT;V ? 
-
-Gabriel> 	Regards,
-Gabriel> 	Gabriel.
-
-
-I had a lot of problem on MPC750 to have PBOOT working with the
-same archive than via the NBO command. The reason was a byte swapping
-problem in the IDE low level command.
-
-What is actually at vger does not work on my board. I have to patche the kernel
-with the following patch :
-
-*** ./arch/ppc/kernel/prep_setup.c~	Fri Jun  4 22:30:47 1999
---- ./arch/ppc/kernel/prep_setup.c	Tue Jul  6 17:00:39 1999
-***************
-*** 629,641 ****
-  void
-  prep_ide_insw(ide_ioreg_t port, void *buf, int ns)
-  {
-! 	_insw((unsigned short *)((port)+_IO_BASE), buf, ns);
-  }
-  
-  void
-  prep_ide_outsw(ide_ioreg_t port, void *buf, int ns)
-  {
-! 	_outsw((unsigned short *)((port)+_IO_BASE), buf, ns);
-  }
-  
-  int
---- 629,641 ----
-  void
-  prep_ide_insw(ide_ioreg_t port, void *buf, int ns)
-  {
-! 	ide_insw((unsigned short *)((port)+_IO_BASE), buf, ns);
-  }
-  
-  void
-  prep_ide_outsw(ide_ioreg_t port, void *buf, int ns)
-  {
-! 	ide_outsw((unsigned short *)((port)+_IO_BASE), buf, ns);
-  }
-  
-  int
-***************
-*** 688,693 ****
---- 688,694 ----
-  void
-  prep_ide_fix_driveid(struct hd_driveid *id)
-  {
-+   	ppc_generic_ide_fix_driveid(id);
-  }
-  
-  __initfunc(void
-
-
+Has anyone built kernels (either 2.2 or 2.3) with GCC 2.95?  I'd build a new
+compiler (even just to try) if I could build the newest one.  :P
 
 
 -- 
-   __                 
-  /  `                   	Eric Valette
- /--   __  o _.          	Canon CRF - Communication Dept
-(___, / (_(_(__         	Rue de la touche lambert
-				35517 Cesson-Sevigne  Cedex
-				FRANCE
-Tel: +33 (0)2 99 87 68 91	Fax: +33 (0)2 99 84 11 30
-E-mail: valette@crf.canon.fr	http://www.crf.canon.fr
+Shaw Terwilliger (sterwill@io.nu)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
