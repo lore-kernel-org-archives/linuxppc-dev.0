@@ -1,54 +1,40 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Thu, 09 Dec 1999 11:06:48 +0100 (CET)
-Subject: fadsrom -> mkrombin
-To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <0FMG00K37XFTD5@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_3pAdkIEiiU5H78nvp/QEqw)"
+To: greyham@research.canon.com.au (Graham Stoney)
+Cc: dan@netx4.com (Dan Malek), linuxppc-embedded@lists.linuxppc.org
+Subject: Re: FEC ERROR 41200000 on CLLF-860T
+References: <19991209002442.41D86118CD@elph.research.canon.com.au>
+From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+Date: 09 Dec 1999 12:18:52 +0100
+In-Reply-To: greyham@research.canon.com.au's message of "Thu, 9 Dec 1999 11:24:42 +1100 (EST)"
+Message-ID: <kfyr9gwz7j7.fsf@kieraypc07.p.y.ki.era.ericsson.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+greyham@research.canon.com.au (Graham Stoney) writes:
 
---Boundary_(ID_3pAdkIEiiU5H78nvp/QEqw)
-Content-type: TEXT/PLAIN
-Content-Transfer-Encoding: 7BIT
+> Dan Malek writes:
+> > The drivers are changing to accomodate all of these things.
+> 
+> Sounds great; I'd be interested in testing an update whenever it's doable.
+> 
+> > The SCC Ethernet on a 50 MHz 860 can easily maintain the theoretical network
+> > limits between 8 and 9 Mbit/sec with the TCP/IP stack.
+> 
+> We're using the FEC exclusively, and I'm hoping for a similar story at around
+> 8 Mbytes/sec with the TCP/IP stack.
 
-After some little changes I'm now able to compile fadsrom.
+Well, that you can probably forget. :-(
+Using a program that sends 1500 bytes udp packets as fast as it
+can we get 22-23 Mbit throughput (50MHz 860T).
+On vxworks the same program gives about 27 Mbit throughput, and
+Windriver claims this is a limitation in the hardware...
 
-(I had to define __fswab16, __fswab32 and ffz)
+(Our PII server connected to the same hub gives about 91 Mbit)
 
-
-
-Next problem: mkrombin doesn't work. It fails with an output message of
-
-"something wrong with file fadsrom" in line 63
-
-I compiled mkrombin with debug options and had a look why it fails.
-
-It expects a value of 2 for nscns but it gets:
-
-(gdb) print nscns
-$3 = 512
-(gdb) 
-
-whereas nscns is basically a copy of ehp->e_phnum
-
-(gdb) print *ehp
-$1 = {e_ident = "\177ELF\001\002\001\000\000\000\000\000\000\000\000", 
-e_type = 512, e_machine = 5120, e_version = 16777216, e_entry = 254, 
-e_phoff = 872415232, e_shoff = 3837985280, e_flags = 0, e_ehsize = 13312, 
-e_phentsize = 8192, e_phnum = 512, e_shentsize = 10240, e_shnum = 2560, 
-e_shstrndx = 1792}
-(gdb) 
-
-
-
-Any ideas? Is cross-"mkrombin" a problem? (We develop on Intel)
-
-Ruedi
-
-
---Boundary_(ID_3pAdkIEiiU5H78nvp/QEqw)--
+//Marcus
+-- 
+Signature under construction, please come back later.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
