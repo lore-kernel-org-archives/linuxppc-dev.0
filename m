@@ -1,37 +1,24 @@
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: olefilter in latest Applixware 4.42 just hangs so no Office import
-Date: Sat, 9 Oct 1999 09:45:43 -0400
-Content-Type: text/plain
-MIME-Version: 1.0
-Message-Id: <99100909503100.25085@localhost.localdomain>
+Date: Sat, 09 Oct 1999 10:10:16 -0400 (EDT)
+From: Claude Robitaille <crobitaille@videotron.ca>
+Subject: Calling convention
+In-reply-to: <37E4532D.45BA7203@insu.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-id: <Pine.LNX.4.10.9910091006520.6043-100000@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi,
 
-I just finished installing my upgrade to R5 version of Applixware (4.42).
 
-The only problem is that the new olefilter (the old one was written in java)
-just simply hangs when doing an improt of any Office documents.
+I think Linux/Gcc is using SVR4 calling convention for PPC but
+where can I find an easy to read description?
 
-This was the whole reason I wanted Applix to begin with (and it worked under R4
-for 4.41).
+Thanks
 
-The funny thing is, if I ran "fix" on all of the old R4 applix code and replace
-the jre116 with the latest R5 jre118, everything works as advertised.
+Claude
 
-Has anyone else gotten the latest Applixware olefilter to work?
-
-Does anyone know (which developer) I should forward this report to at Applix to
-get it fixed?
-
-By the way if this matters, this is with 2.2.12, glibc 2.1.2 etc.
-
-Thanks,
-
-Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
