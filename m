@@ -1,24 +1,94 @@
-Date: Tue, 23 Apr 2002 20:01:27 -0700
+Date: Tue, 23 Apr 2002 20:01:51 -0700
 From: andrew may <acmay@acmay.homeip.net>
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: [PATCH] IBM ocp I2C
-Message-ID: <20020423200127.G20394@ecam.san.rr.com>
+To: andrew may <acmay@acmay.homeip.net>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH] IBM ocp I2C
+Message-ID: <20020423200151.H20394@ecam.san.rr.com>
+References: <20020423200127.G20394@ecam.san.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="924gEkU1VlJlwnwX"
+In-Reply-To: <20020423200127.G20394@ecam.san.rr.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Would anyone be heartbroken if "struct i2c_algo_iic_data" went
-away completely?
+--924gEkU1VlJlwnwX
+Content-Type: text/plain; charset=us-ascii
 
-In this patch I dump getown and getclock because they aren't
-used and I am sure there is a better way to do things.
+On Tue, Apr 23, 2002 at 08:01:27PM -0700, andrew may wrote:
+> Would anyone be heartbroken if "struct i2c_algo_iic_data" went
+> away completely?
+>
+> In this patch I dump getown and getclock because they aren't
+> used and I am sure there is a better way to do things.
+>
+> Also calculate the I2C div value from the clock rate. I am
+> not sure if that will work on all 4xx types but it does the
+> right thing for my 405's.
+>
+> I also fixed a few C++ style comments.
+>
+and the patch
 
-Also calculate the I2C div value from the clock rate. I am
-not sure if that will work on all 4xx types but it does the
-right thing for my 405's.
+--924gEkU1VlJlwnwX
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="i2c-clock.patch.gz"
+Content-Transfer-Encoding: base64
 
-I also fixed a few C++ style comments.
+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
+AA==
+
+--924gEkU1VlJlwnwX--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
