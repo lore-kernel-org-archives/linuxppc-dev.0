@@ -1,34 +1,46 @@
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Steven Scholz <steven.scholz@imc-berlin.de>,
-	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: BOOT_TARGET pImage & uImage ??? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 18 Sep 2003 21:38:35 +0200."
-             <20030918193835.GA2320@mars.ravnborg.org>
-Date: Thu, 18 Sep 2003 22:07:35 +0200
-Message-Id: <20030918200740.40C1CC59E4@atlas.denx.de>
+Message-Id: <200309190129.UAA15884@lists.linuxppc.org>
+From: "Yuxiao Xi" <xiyuxiao@harbournetworks.com>
+To: Kumar Gala <kumar.gala@motorola.com>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: question about UART ST16C2552
+Mime-Version: 1.0
+Content-Type: text/plain
+Date: Fri, 19 Sep 2003 09:39:23 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20030918193835.GA2320@mars.ravnborg.org> you wrote:
+Yes,I have an external DUART ST16C2552.
+Kumar,should ST16C2552 be detected as 16550A?
+When and where can I get the patch for the on-chip UART you said?
+Thanks.
+
+> -----Original Message-----
+> From: Kumar Gala [mailto:kumar.gala@motorola.com]
+>Thanks for the correction.  I guess my comments really apply to 8241,
+>8245 and 8540 then.
 >
-> Actually thats the only suitable place, since it will be used by ARM
-> as well (I assume).
+>On Thursday, September 18, 2003, at 11:23 AM, Milliorn Gary-rxcr80 wrote:
+>
+>>  There is no DUART on the MPC8240, if 8240 is what he literally
+>> meant. Some boards, like Unity, used to have an external DUART
+>> for this reason.
+>>
+>> > -----Original Message-----
+>> > From: Kumar Gala [mailto:kumar.gala@motorola.com]
+>> > Sent: Thursday, September 18, 2003 11:01 AM
+>> > Subject: Re: question about UART ST16C2552
+>> >
+>> > For 824x the detection code for the on-chip UART does NOT currently
+>> > detect it as a 16550A.  There is a patch that Tom Rini and I are
+>> > working on getting accepted by the serial maintainers, that should
+>> > fix this.
+>> >
+>> > However, its not clear to me from your email if you also have a
+>> > ST16C2552 in addition to the DUART on the 8240.
 
-Correct. And by MIPS. And some x86, too.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Harrison's Postulate:
-	For every action, there is an equal and opposite criticism.
+¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡Yuxiao Xi
+¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡xiyuxiao@harbournetworks.com
+¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡2003-09-19
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
