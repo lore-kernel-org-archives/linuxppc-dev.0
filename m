@@ -1,58 +1,44 @@
-Reply-To: <jwalden@digitalatlantic.com>
-From: "Jerry Walden" <jwalden@digitalatlantic.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: "Standard" Practice for config of SanDisk compact pci memory for 405gp ppc
-Date: Mon, 23 Dec 2002 17:27:00 -0800
-Message-ID: <EGEGIJHKDKJGAJMGIDPNAEBOCDAA.jwalden@digitalatlantic.com>
+Message-ID: <3E080647.8060407@intracom.gr>
+Date: Tue, 24 Dec 2002 09:01:27 +0200
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Dan Malek <dan@embeddededge.com>
+Subject: Re: New style dpalloc/hostalloc routines (diff).
+References: <3E006C94.2090503@intracom.gr> <15874.23846.177956.192840@argo.ozlabs.ibm.com> <3E02E984.8090904@intracom.gr> <20021223164928.GF15397@opus.bloom.county>
+In-Reply-To: <20021223164928.GF15397@opus.bloom.county>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Our hardware guy is tells me that the SanDisk can be placed
-in one of three modes:
+Tom Rini wrote:
 
-1) PC Card Memory Mode
-2) PC Card I/O Mode
-3) True IDE Mode
+>On Fri, Dec 20, 2002 at 11:57:24AM +0200, Pantelis Antoniou wrote:
+>
+>>Here is the updated patch in diff format as per your suggestions.
+>
+>Looks good.  My only real issue is that this is a big change, so I would
+>rather see either (or both) of the following happen:
+>Make a patch vs 2.5.  This will require additional 8xx work to get
+>things going again.
+>Please hold on this until all of the otherwise stable 8xx work can get
+>out of the linuxppc_2_4_devel tree and into linuxppc_2_4 / Marcelo.
+>
+>Also, Dan Malek, any comments on all of this?
 
-The device is going on a custom ppc 405GPr board.
+Well, I'll try but I haven't messed with 2.5 yet.
+Does it even work at all for 8xx?
+Has anybody in the list worked with it?
 
-He is also asking me how the device will be accessed
+I would very much like the two trees getting merged
+finally, as I'm forced to maintaining my own tree,
+forked off Marcelo.
 
-1) on bytes
-2) on words
-3) or both
+Regards, and Merry Christmas to all
 
-I am not much of a hardware person, so I am not even certain if the
-question I am asking makes sense.
-
-The main goal is to use u-boot to bootstrap and initialize the board,
-and to load the linux kernel/file system from the compact flash.
-
-Does anyone have a reference design for a ppc based SBC with a
-san-disc like part on it that runs Linux?
-
-If not, is there a "standard" configuration the the compact flash
-is placed on the bus?
-
-Kindest Regards,
-
-Jerry
-
-
-
-
--------------------------------------------------------
-This sf.net email is sponsored by:ThinkGeek
-Welcome to geek heaven.
-http://thinkgeek.com/sf
-_______________________________________________
-PPCBoot-users mailing list
-PPCBoot-users@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/ppcboot-users
-
+Pantelis
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
