@@ -1,47 +1,42 @@
-To: "Marco Schramel" <marco.schramel@go.bartec.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PPC Boot for MPC8270 and MPC866 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 04 Aug 2003 13:43:30 +0200."
-             <MFEGIPJEFHIKHGDLDACIGEOFCAAA.marco.schramel@go.bartec.de>
-Date: Mon, 04 Aug 2003 17:15:34 +0200
-Message-Id: <20030804151539.BEF77C602D@atlas.denx.de>
+Message-ID: <3F2E9DB9.5030509@windriver.com>
+Date: Mon, 04 Aug 2003 18:54:01 +0100
+From: Richard Danter <richard.danter@windriver.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 750/107 - PCI or Interrupt problem?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Marco,
+Hi All,
 
-in message <MFEGIPJEFHIKHGDLDACIGEOFCAAA.marco.schramel@go.bartec.de> you wrote:
->
-> are there is a PPC BOOT supporting the new 8270 USB Host feature ? (UBOOT
-> 0.4.0 ?? )
+I have made some progress in porting Linux 2.4.x to a wrPPMC7xx board.
+Yipee!
 
-You are off topic here. Please post U-Boot related questions  to  the
-U-Boot-users mailing list.
+But now I have hit another problem...
 
-So far there is no 8270 USB support.
+It seems the kernel finds the ethernet card plugged into one of the PCI
+slots. All the diagnostics seem to work too. In fact, it even sends out
+a BOOTP request, as I can see it logged on my server.
 
-> Is the new 866 still supported ?
+The problem is it does not seem to be getting the BOOTP reply. It
+eventually times out. But I can see from my server that a reply is being
+sent.
 
-Why should anybody remove the support for a pretty recent CPU?
+At the moment I think the problem is most likely in my <board>_pci.c
+code or <board>_setup.c. I don't get any hardware interrupts (ie setting
+a hardware breakpoint on 0x0500 does not stop the CPU) and I would have
+expected that... or am I way off track here?? I am also unsure if I have
+set up my pci_irq_table or <board>_openpic_initsenses structures correctly.
 
-> Is it difficult to implement new routines for some asics or is it better do
-> wirte some device driver for it ?
+Any suggestions where I should be looking in the code??
 
-Did you have a look at the existing code? There is  a  lot  of  stuff
-ready available, including support for Xilinx and Altera FPGAs.
+Hopefully if this part works then I get an IP address and can mount my
+NFS root filesystem...
 
-Best regards,
+Thanks
+Rich
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Anyone who doesn't believe in miracles is not a realist.
-                                                   - David Ben Gurion
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
