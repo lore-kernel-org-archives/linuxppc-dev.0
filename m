@@ -1,93 +1,63 @@
-Message-Id: <199902172350.AAA17911@www.luebeck.netsurf.de>
-Subject: MKLinux on Performa 6200
-Date: Thu, 18 Feb 99 00:49:32 +0100
-From: marcos otero garcia <marcos.oterogarcia@luebeck.netsurf.de>
-To: <linuxppc-dev@lists.linuxppc.org>, <linuxppc-user@lists.linuxppc.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-Id: <v04103d02b2f124333cb9@[10.1.1.5]>
+Date: Wed, 17 Feb 1999 21:09:04 -0500
+To: linuxppc-dev@lists.linuxppc.org
+From: Brett Dikeman <brett@pdikeman.ne.mediaone.net>
+Subject: ixmicro ix3d card support
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hey,
+I'm having some problems with the latest kernels supporting my ix3d card.
 
-my name is Marcos I´m mailing from Luebeck-Germany.
+According to ixMicro documentation and the big central chip's 
+stamping "Twin Turbo 128-3D", my ixMicro Ultimate Rez card is really 
+just a slightly faster tt128 card with some 3D stuff thrown in for 
+yucks.
 
-I tried to install MK Linux DR3 on a Macintosh Performa 6200. I´ve read in the ReadMe and in the faqomatic of the darmouth university that the Performa 6200 is not supported to run with MKLinux. I´ve asked me if its a problem of the less SCSI HD´s and wrote a mail to covile@apple.com. This Adress I have found in the faqomatic. I gotn´t a reply yet.
+However, the card, if present in the system when the kernel loads, 
+causes -severe- problems.  The last line displayed concerns the 
+discovery+initialization of the floppy controller; then it spits out 
+"machine check in kernel mode" and lots of stuff about the memory 
+manager and "swapper".
+(I have a photograph of the screen I took with a digital camera, so I 
+can copy down the info or just post the JPG on my web server.)
 
-So I tried it my way. I connected an Quantum 1GB xternal SCSI HD, made a swap Partition and one filesystem-partition, copied the extensions, controll panles etc. and restarted my older Performa.
-The Mac comes up and started Linux
+>From all appearances, adding support for the ix3d card seems like it 
+would require very little work since it is so similar to a twin turbo 
+card, but I'm admittedly ignorant as to the finer details(or any 
+details) of graphics card drivers :)
 
-"--- Sorry you need to upgrade your this MKLinux Booter to boot OSF MK Kernel. ---"
+Once I complete an install of linux(had to blow it away months ago, 
+never got around to replacing it) I can boot without the card, and 
+help in testing anything in development for the card by swapping it 
+in and out.
 
-I want to run the Performa as a DialIn webserver/like an intranetsever where friends and customers can Dial dircetly in and get information about me. Maybe it will be posibble to access it from the internet using the Network and Backbone of the local ComputerClub "ON" .
-I tried to configure it on MacOS but the tools are not very functionally and under System 8.5 not fast except using AppleShare IP or Mac OS X Server. But these tools are to expensive for a student - like me, and without one of these I can´t configure an PPP DialIn (to the Performa) connection.
-Many friends got me on Linux. I´ve found MKLinux for Macintosh or PPC based systems.
+What would help considerably is a way to get the kernel to just 
+ignore the ix3d card and use my 8500's builtin video instead.  Some 
+sort of OF trick, maybe?
 
-Now im have spent many time on configurating this server. And I don´t need an AppleTalk Server to print or backup my Data. The only use I have for it to try it for an webserver. I´ve spent many money on a good LinuxBook and bought an xternal SCSICase for the HD because the Performa got no internal SCSI. In the article i´ve read about unsupported IDE-controllers.
-and i want to run a Linux System or another good Server on my older Performa. Currently I´m working on a G3 Yosemite.
+BTW, at the moment, I'm not subbed to the developer list.  I will 
+certainly be doing so in the next few days, but in the meantime, 
+please cc me on any messages regarding this.
 
-My Questions:
-Does the Installatin not run because of the MK Linux Booter v1.4? What about other Booters
-Do I have a chance on running Linux on the Performa 6200?
-What about alternative System?
+Final note: I also have a PCI jackhammer SE card, identical to the 
+one in many Workgroup servers and other apple systems.  Can't beat 
+$150 for UW-SCSI3, and it would be -fantastic- to have my UW drive 
+available.  I sort of assumed that with this card being in so many 
+apple systems, that there would already be drivers for it.  Are there?
 
-I´ve looked in several mailinglist etc. but nothing found
+Thanks all!
 
-Here the Screen as it appears when trying to install Linux
----------------------------------------------------------------------------------------------------------------------------------------
-
-Mach3.0  VERSION(PMK1.1): gilbert <osfmk> Wed Jun 10 17:45:07 PDT 1998; mach_kernel/PRODUKTION (venus.apple.com)
-
-Sorry! You need to upgrade your MKLinux Booter to boot this OSF MK kernel.
-(it can be found in your MacOS Systemfolder: Extensions Folder)
-Mach Microkernel is booting on a Power Macintosh Performa (unsupported) class machine
-mem_size = 64M
-vm_page_bootstrap: 15328 free Pages
-panic: Unsupported class for Interrupt dispatcher
-
-No debugger configured - dumping debug information
-
-version string : Mach3.0  VERSION(PMK1.1): gilbert <osfmk> Wed Jun 10 17:45:07 PDT 1998; mach_kernel/PRODUKTION (venus.apple.com)
-
-backtrace: 0025f31c 00212454 00268874 0026b0e8 0025efc4 00226e04 0025ecec 0025e3d4
-
-please report the above messages to
-bugs@mklinux.apple.com and reboot your machine
-
--------------------------------------------------------------------------------------------------------------------------------------------
-Technical Spec of "my"Performa 6200
-
-PowerPC 603 CPU with 75MHZ
-64 MD SIMM RAM
-running under System 8.5
-using an 4GB internal IDE Seagate with MacOs System HFS-Standard (HDT Driver)
-and an xternal 1GB Quantum 1080 S Empire for Linux (700 for filesystem, 64 MB for swap) and MacOS (250MB partition for System and other LINUXinstaller files)
-
-an Asante Maccon 10BaseT CommSlotI EthernetAdapter
-
-for more information - I think you have a datasheet about all Mac Modells. If not mail me
-------------------------------------------------------------------------------------------------------------------------------------------
-
-Please help me. Now I´m over two days reading books preparing the Hardware, surfing the web for Info.
-I´´ve Spent 350DM (will be about 150 EUR) on HardWare and Books. My girlfriend says that I´m getting silly.
-There must be a way to use this performa as a good Server with Linux.
-Hardware with the same manufacturing date is supported too and Linux runs on cheap PC System´s for less then 1000 DM (maybe 500 EUR).
-
-
-
-If there is no way to run Linux on the Performa 6200 tell me what to do with the machine!
-
-
-Please excuse my bad english. I hope I get an answer. 
-
-Thanks for interest and help...
-
-now I´m exhausted - I will go to bed
-
-
-cu
-
+Brett
+----
+Brett Dikeman
+Network/System Administrator
+Artel Software			617-451-9900x119
+381 Congress Street			617-451-9916(fax)
+Boston, MA 02210			brett@artelsoft.com
+http://www.borisfx.com
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
