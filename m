@@ -1,44 +1,32 @@
-Date: Mon, 8 Jan 2001 08:16:05 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Iain Sandoe <iain@sandoe.co.uk>
-cc: drscholl <drscholl@users.sourceforge.net>,
-        "Clayton,Keith - Programmer" <Clayton@ltcc.cc.ca.us>,
-        "'alex@cosmo.allay.net'" <alex@cosmo.allay.net>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Endianness and comparing IP's
-In-Reply-To: <20010106234445.44216E690@apollo.valhalla.net>
-Message-ID: <Pine.LNX.4.05.10101080815200.27204-100000@callisto.of.borg>
+Message-ID: <3A598EB5.638622B6@relog.ch>
+Date: Mon, 08 Jan 2001 10:56:05 +0100
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: michdaen@iiic.ethz.ch
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tom Rini <trini@kernel.crashing.org>
+CC: Tony Mantler <nicoya@apia.dhs.org>,
+        Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] drivers/macintosh/Config.in
+References: <20010106171733.M556@opus.bloom.county> <v04003a08b67ddaff44fe@[24.70.162.12]> <20010107173805.B19404@opus.bloom.county>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 6 Jan 2001, Iain Sandoe wrote:
-> > /* convert the bytes of a 32-bit integer to little endian */
-> > #define BSWAP32(c)
-> > ((c>>24)&0xff)|((c>>8)&0xff00)|((c<<8)&0xff0000)|(c<<24)
->
->  #define BSWAP32(c) \
-> (((c>>24)&0xff)|((c>>8)&0xff00)|((c<<8)&0xff0000)|(c<<24))
->
->
-> will work as you expect it too... ;-)
->
-> precedence is a funny thing...
+Tom Rini wrote:
 
-Similarly, replace `c' by `(c)'.
+> I also (may) move things like MOL into that file.
 
-Gr{oetje,eeting}s,
+We're still hoping to get MOL working on APUS anytime soon, and according to
+the web page it should work on PReP and CHRP boxen.
 
-						Geert
+
+Michel
+
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and the DRI project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
