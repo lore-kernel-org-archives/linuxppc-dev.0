@@ -1,36 +1,39 @@
-Message-ID: <3A461456.C1F2A8A6@ife.ee.ethz.ch>
-Date: Sun, 24 Dec 2000 16:20:54 +0100
-From: Thomas Sailer <sailer@ife.ee.ethz.ch>
-Reply-To: sailer@ife.ee.ethz.ch
-MIME-Version: 1.0
-To: Kaoru Fukui <k_fukui@highway.ne.jp>
-CC: Alexandre Oliva <aoliva@redhat.com>, gcc@gcc.gnu.org,
-        linuxppc-dev@lists.linuxppc.org
+To: sailer@ife.ee.ethz.ch
+Cc: Kaoru Fukui <k_fukui@highway.ne.jp>, linuxppc-dev@lists.linuxppc.org,
+        gcc@gcc.gnu.org
 Subject: Re: kerne-2.4.0-test13pre3 with gcc-2.97
-References: <20001223145258.Postino-022361@smtp01.highway.ne.jp> Kaoru Fukui's
-	 message of "Sat, 23 Dec 2000 14:52:58 +0900"
-	 <or66kazecj.fsf@guarana.lsd.ic.unicamp.br> <20001224225303.Postino-014755@smtp01.highway.ne.jp>
+References: <20001223145258.Postino-022361@smtp01.highway.ne.jp>
+	<or66kazecj.fsf@guarana.lsd.ic.unicamp.br>
+	<3A4613FB.384BAD24@ife.ee.ethz.ch>
+From: Alexandre Oliva <aoliva@redhat.com>
+Date: 24 Dec 2000 16:08:08 -0200
+In-Reply-To: Thomas Sailer's message of "Sun, 24 Dec 2000 16:19:23 +0100"
+Message-ID: <orsnnd3d6f.fsf@guarana.lsd.ic.unicamp.br>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kaoru Fukui wrote:
->
-> I tried this
->
->  -              unsigned char b[0];
->  +              unsigned char b[];
->
-> It gave me Inetrnal  error: Segmentaion fault .
+On Dec 24, 2000, Thomas Sailer <sailer@ife.ee.ethz.ch> wrote:
 
-Not good.
+> Alexandre Oliva wrote:
 
-> I had success compileing for the kernel with my patch.
+>> This change (and apparently all other changes you've made) are
+>> definitely wrong.  Zero-sized arrays as the last element of a
+>> structure used to be an extension in GCC 2.95.2, that has been adopted
+>> by C99 with a slightly different syntax, that GCC CVS supports: just
+>> remove the `0' from between the braces.
 
-You had success _compiling_ the code, but not _running_ it.
-Use b[1] instead.
+> Which is not backward compatible, unfortunately.
 
-Tom
+Indeed.  I wish we had maintained the old syntax for
+backward-compatibility, even if with a deprecation warning.
+
+--
+Alexandre Oliva   Enjoy Guarana', see http://www.ic.unicamp.br/~oliva/
+Red Hat GCC Developer                  aoliva@{cygnus.com, redhat.com}
+CS PhD student at IC-Unicamp        oliva@{lsd.ic.unicamp.br, gnu.org}
+Free Software Evangelist    *Please* write to mailing lists, not to me
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
