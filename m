@@ -1,46 +1,27 @@
-Message-ID: <3694C7B8.EF70DF9C@mpifr-bonn.mpg.de>
-Date: Thu, 07 Jan 1999 15:42:00 +0100
-From: "Albrecht =?iso-8859-1?Q?Dre=DF?=" <ad@mpifr-bonn.mpg.de>
-MIME-Version: 1.0
-To: bh40@calva.net, LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Bogus interrupts: test fix
-References: <19990107143718.019579@mail.mipsys.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <199901071520.RAA12440@kalahari.s2.org>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [ANN] New test kernel available 
+In-Reply-To: Your message of "Wed, 06 Jan 1999 19:38:13 +0100."
+             <19990106193813.032518@mail.mipsys.com>
+Date: Thu, 07 Jan 1999 17:20:05 +0200
+From: Jarno Paananen <jpaana@s2.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
-> 
-> I've updated the 2.2-pre4 test kernel on my web page, it contains a test
-> fix for the bogus interrupt problem. Please try it and give me feedback.
+Hi,
 
-Really good! The improvement of ide performance is impressive. The slowdown
-effect has gone during ide _reads_ [= almost "normal" response times compared to
-Intel/Linux systems], but is still present during ide _writes_ (I tested it with
-a program which writes or reads 200 MB with simple read/write calls, so I have
-enough time for a login on a 2nd console). BTW, the read transfer speed given by
-hdparm (PB G3/300, IBM DYLA 28100) is 7.08 MB/s.
+> - Sets the correct value in the IDE controller to enable full speed of IDE
+>   transfer on heathrow-based machines.
 
-The bogus interrupts are gone _completely_; still 0 after ~1 hour with a lot of
-io. LST interrupts are == 1 (one) after the same time.
+Nice one-liner ;)
 
-Yours, and THANKS for your work,
+Transfer speed on my G3 PMac reported by hdparm -t went from 0.9Mb/s to
+9.7Mb/s ;)  My P2/450 still is a bit better (13.7Mb/s) but this is what
+it should be. Thanks!
 
-	Albrecht.
-
--- 
-+-----------------------------------------------------------------------------+
-| Dr.-Ing. Albrecht Dre\3                                      ----           |
-| Max-Planck-Institut f"ur Radioastronomie    |\       /      /o  o\          |
-| Technische Abt. Optische Interferometrie    |  \    /      |  /   |         |
-| Auf dem H"ugel 69                           |    \ |        \ ---/          |
-| D-53121 Bonn (Germany)          ------------+------+-------------------     |
-|                                             |    / |                        |
-| Phone (+49) 228 525 319                     |  /  /                         |
-| Fax   (+49) 228 525 411                     |/   /                          |
-| Mail  ad@mpifr-bonn.mpg.de                                                  |
-+-------------- electrical engineers do it with less resistance --------------+
+// Jarno
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
