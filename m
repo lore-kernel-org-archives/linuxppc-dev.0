@@ -1,46 +1,44 @@
-Date: Fri, 8 Mar 2002 09:07:50 +0100
-From: Harald Welte <laforge@gnumonks.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.4.18-ben0 on G4 SMP: do_IRQ waiting for irq lock
-Message-ID: <20020308090750.W6936@sunbeam.de.gnumonks.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: benh@kernel.crashing.org
+To: "Joseph P. Garcia" <jpgarcia@execpc.com>,
+	Matthias Grimm <joker@cymes.de>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: pbbuttons, need some help
+Date: Fri, 8 Mar 2002 13:33:01 +0100
+Message-Id: <20020308123301.27605@mailhost.mipsys.com>
+In-Reply-To: <20020307134140.56d70400.jpgarcia@execpc.com>
+References: <20020307134140.56d70400.jpgarcia@execpc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+>The best way to get battery info now is to use to use /proc/pmu/ in newer
+>(2.4) kernels.  My gkrellm-pmu plugin used to use adb directly, then PMUD,
+>now /proc/pmu/.  I had to poke and prod at Paul Mackerras' Batmon to figure
+>out O'Hare.  But /proc/pmu is transparent to what kind of system its on.
+>Divide and conquer.  Nice that another conduit thats system independant
+>exists.
 
-I've tried to run 2.4.18-ben0 on my G4 SMP (dual 450 MHz) box.
+Note that OHare in /proc/pmu is still known to be flawky as it seems
+not all OHare based pbooks need the same formula. But at least it will
+be fixed one day and I prefer indeed keeping that tricky code in a
+single location. I do have some code to merge one of these days fixing
+calculation for the 2400 for example.
 
-I've tried both, a kernel with all IRQ's routed to CPU0 - and a kernel
-where both CPU's can handle IRQ's.
+>Along those same lines, I have a sugesstion for the gtk client for
+>pbbuttons.  The program should use the X keycodes rather than associate
+>with the daemon that controls the hardware.  This serves two purposes: X
+>handles any client/server mess, and the GUI will be the system independant
+>figurehead it should be (IMO).  Bastien wrote a similar program that uses
+>the keycodes, so it could be used on any system with the keys, even an x86.
+>(hadess.net)
 
-Unfortunately in both kernel images, I don't even get past all init scripts,
-at some (random) point during bootup:
+Well, the daemon will still be needed to get the "special" keys on OHare
+based powerbooks as I think those don't come via ADB.
 
-do_IRQ waiting for irq lock (holder=1)
+>Thanks for working to improve the Linux user expirience. (and anyone else
+>listening for keeping in touch with such ventures :)
 
-occurs.
-
-Any idea what's causing the problem?  I've already tried to boot in
-single user mode - and it's working fine.  Then I've started every single
-init script in /etc/rc2.d (it's debian) by hand - and the problem didn't
-occur.
-
-Am I right assuming that there is a deadlock where one CPU is holding
-the IRQ lock while the other wants to grab it?
-
-And how could this happen on a kernel where all IRQ's are routed to one
-CPU ??
-
-Thanks.
-
---
-Live long and prosper
-- Harald Welte / laforge@gnumonks.org               http://www.gnumonks.org/
-============================================================================
-GCS/E/IT d- s-: a-- C+++ UL++++$ P+++ L++++$ E--- W- N++ o? K- w--- O- M+
-V-- PS++ PE-- Y++ PGP++ t+ 5-- !X !R tv-- b+++ !DI !D G+ e* h--- r++ y+(*)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
