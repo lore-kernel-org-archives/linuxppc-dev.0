@@ -1,95 +1,43 @@
-Message-ID: <36E43D92.BBA3893B@talknet.de>
-Date: Mon, 08 Mar 1999 21:13:54 +0000
-From: Alois Fertl <alois_fertl@TalkNet.de>
+Date: Mon, 8 Mar 1999 16:17:59 -0500 (EST)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: Sean Harding <sharding@oregon.uoregon.edu>
+cc: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: platinumfb problems
+In-Reply-To: <Pine.SGI.4.10.9903081220250.11304-100000@gutenberg.uoregon.edu>
+Message-ID: <Pine.LNX.3.96L.990308160733.20767A-100000@unix48.andrew.cmu.edu>
 MIME-Version: 1.0
-To: Cort Dougan <cort@persephone.cs.nmt.edu>
-CC: LinuxppcDev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Different Relocation Sceme for PREP boot
-References: <Pine.LNX.3.96.990307203424.15583A-100000@persephone.cs.nmt.edu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Cort Dougan wrote:
+On Mon, 8 Mar 1999, Sean Harding wrote:
+
+> On Mon, 8 Mar 1999, Hollis R Blanchard wrote:
 > 
-> Please try the latest one.  The one you have isn't the latest one.  Let me
-> know if you have the same trouble with it.
+> > Using the cmdline "root=/dev/sdb5 video=platinumfb:vmode:17,cmode:8" (from
+> > /proc/cmdline), Linux starts in screwed up palette mode, which would seem to
+> > indicate 16bit color (I'm running X great in 8bit, but trying to use 16bit
+> > makes for an annoying palette).
+> > 
+> > It seems that with platinumfb, 16bit color is wrong in both console and X.
+> > 'vmode 17 8' in console and 'startx -- -depth 8' make the colors sane again.
+> 
+> Are you using XF68fbdev or Xpmac? I'm still using Xpmac, and after some
+> modifications to platinumfb.c, I can run in 16bpp with no problems.
+> 24/32bpp has the right palette in X, but has funny colors in text mode and
+> an annoying line going across the screen...
 
-Got mine on Saturday from cvs.samba.org.
+Xpmac. I haven't heard of any benefit for XF68, only config file nightmares.
+If there was an Xconfigurator (I'm still using R4), I'd at least consider
+it...
 
-Seems we both go for the same goal. This change works nearly like mine
-did.
+Are the changes you made to platinumfb.c general fixes, or specific hacks? I
+heard someone else talking about a funny line, too (LinuxPPC@associate.com, I
+believe).
 
-I'd like to request two changes:
-
-- Please fix the "tstc()" function using the code from the diff. The way
-  it is at the moment, keyboard input to the boot prompt is ignored
-  regardless the setting of CONFIG_SERIAL_CONSOLE.
-
-- On comparing the zimage_start address to the 8MByte boundary you had a
-  typing error.
-
-The other diff is cosmetics.
-
-Is it always necessary to relocate initrd or can it be reduced to the
-case where it is below 8MByte. Do you know of an upper limit in memory
-where it can reside?
-
-These changes did boot on MVME2600 and RiscPC both via floppy and net.
-
-______________________________________________________________________
-
-diff -uN  misc.c.cort misc.c
---- misc.c.cort Mon Mar  8 16:03:28 1999
-+++ misc.c      Mon Mar  8 21:33:39 1999
-@@ -92,9 +92,11 @@
-
- tstc(void)
- {
-+       return (
- #if defined(CONFIG_SERIAL_CONSOLE)
--       return (NS16550_tstc(com_port));
-+               NS16550_tstc(com_port) ||
- #endif /* CONFIG_SERIAL_CONSOLE */
-+               CRT_tstc());
- }
-
- getc(void)
-@@ -303,8 +305,7 @@
-        int timer;
-        extern unsigned long start;
-        char *cp, ch;
--       unsigned long i, motorola_id = 0;
--       char needs_reloc = 0;
-+       unsigned long i;
-        BATU *u;
-        BATL *l;
-
-@@ -379,7 +380,7 @@
-        avail_ram = (char *)PAGE_ALIGN((unsigned long)_end);
-        puts("zimage at:     "); puthex((unsigned long)zimage_start);
-        puts(" "); puthex((unsigned long)(zimage_size+zimage_start)); puts("\n");
--       if ( (unsigned long)zimage_start <= 0x008000000 )
-+       if ( (unsigned long)zimage_start <= 0x00800000 )
-        {
-                memcpy( (void *)avail_ram, (void *)zimage_start, zimage_size );
-                zimage_start = (char *)avail_ram;
-@@ -398,10 +399,10 @@
-                        (unsigned long)zimage_size+(unsigned long)zimage_start);
-                memcpy ((void *)avail_ram, (void *)initrd_start, INITRD_SIZE );
-                initrd_start = (unsigned long)avail_ram;
--               initrd_end = initrd_start + INITRD_SIZE;
--               puts("relocated to:  "); puthex(initrd_start);
--               puts(" "); puthex(initrd_end); puts("\n");
--       }
-+                       initrd_end = initrd_start + INITRD_SIZE;
-+                       puts("relocated to:  "); puthex(initrd_start);
-+                       puts(" "); puthex(initrd_end); puts("\n");
-+               }
-
-        avail_ram = (char *)0x00400000;
-        end_avail = (char *)0x00800000;
+-Hollis
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
