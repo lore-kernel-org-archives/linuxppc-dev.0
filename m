@@ -1,44 +1,46 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: ssh on ppc 405gp?
-From: Dave Strout <dstrout@linuxfoundary.com>
-To: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <C6D44AA99ECEB540A5498F15F92DA07D6886F7@amperion01>
-References: <C6D44AA99ECEB540A5498F15F92DA07D6886F7@amperion01>
+Message-ID: <75DF04AC5ED4D511A9810090273CB416615615@user4.sw.co.il>
+From: Eli Brin <elib@rokonet.co.il>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Does ELDK include SELF?
+Date: Tue, 20 May 2003 14:53:25 +0200
+MIME-Version: 1.0
 Content-Type: text/plain
-Date: 20 May 2003 08:44:09 -0400
-Message-Id: <1053434650.21004.7.camel@dstrout.nsw.enterasys.com>
-Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jeff,
+Hi,
 
-Thanks for the lead.  I've actually tried that, and I get:
-Disconnecting: Corrupted check bytes on input.
+The SELF that comes with ELDK only installs the ramdisk images.
 
-I'll keep playing with it.  If anybody has a generated Makefile for
-openssl / openssh on the 405, I'd love to see it & see what the
-differences are.  I'm thinking it's most likely in my config, given that
-there exists at least one working example...
+I suggest to download the SELF package from Denx ftp, and update the
+configuration file to the current packages and libraries versions.  Then you
+need to download some packages (note the correct versions), and run the
+build script.
 
-thanks,
-dave.
+Read the mail from Wolfgang Grandegger from the 13 feb 2003 (search the list
+archive with SELF keyword) for updated files and instructions.
 
-On Tue, 2003-05-20 at 08:26, Jeff David wrote:
->
-> I have seen this problem before.  It was happening a few months ago, and
-> hasn't happened since!
->
-> We use ssh to get to our ppc405h.  The temporary workaround for this
-> problem was to use a different mac protocol.  I believe the default is
-> 2, so we tried 1, and it worked!  Here's the command:
->
-> ssh -1 192.168.25.35
->
-> Hope this works for you.
->
-> Jeff
+Regards,
+Eli Brin
 
+-----Original Message-----
+From: mpclinux [mailto:mpclinux@sina.com]
+Sent: Tuesday, May 20, 2003 3:24 AM
+Subject: Does ELDK include SELF?
+
+     I am a greenhand of LinuxPPC. Recently, I have installed ELDK2.0.2 on
+my RedHat8.0 PC, and I want to build a Ramdisk with SELF, then I downloaded
+the SELF*.tar.gz from Wolfgang's ftpsite, but all of them only contains
+PATCHes, I turned to ELDK2.0.2 and found that there are two RPMs they are:
+SELF-ppc_8xx-xxx.ppc.rpm busybox-ppc_8xx-xxx.yyy.ppc.rpm
+
+I think they will contain all source codes of SELF.
+
+    I typed ./install -d /opt/ELDK202 ppc_8xx to install ELDK, but I can not
+find other SELF-related files except for two pRamdisk files in
+opt/eldk202/images.
+    I wonder what's is wrong with my ELDK installation? If no, how can I
+build pMulti/pImage/pRamdisk with SELF?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
