@@ -1,42 +1,31 @@
-Date: Thu, 13 Jul 2000 11:23:31 -0700
+Date: Thu, 13 Jul 2000 11:24:07 -0700
 Subject: Re: Xfree 4.0.1 dual head attempt
 From: "W. Taylor Holliday" <wtholliday@ucdavis.edu>
-To: <daenzerm@student.ethz.ch>
+To: Nelson Abramson <pogtal@erols.com>
 CC: Linux PPC Developer List <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <B5935733.2DB%wtholliday@ucdavis.edu>
-In-Reply-To: <396DB817.4C2D82F1@relog.ch>
+Message-ID: <B5935757.2DC%wtholliday@ucdavis.edu>
+In-Reply-To: <396DCBCB.A4A574C8@erols.com>
 Mime-version: 1.0
-Content-type: text/plain; charset="ISO-8859-1"
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> From: Michel Dänzer <daenzer@relog.ch>
-> A gdb backtrace mey be interesting, at least with a static server.
 
-Well, I'm not all that familiar with debugging this low level stuff. When I
-tried running the X server within gdb, the whole system crashed. I suppose I
-need to figure out how to enable debug options and recompile.
-
->> (==) ServerLayout "DualHead"
->> (**) |-->Screen "Screen0" (0)
->> (**) |   |-->Monitor "Monitor0"
->> (**) |   |-->Device "r128"
->> (**) |-->Screen "Screen1" (1)
->> (**) |   |-->Monitor "Monitor0"
->> (**) |   |-->Device "r128.1"
+> This may be a stupid question, but why have you commented out your input
+> devices?
 >
-> You are using the same Monitor for both Screens. Have you tried using
-> different ones? (All in terms of XF86Config ;)
->
->
-> Michel
+> --Nelson Abramson
 >
 
-The XF4 docs say that sharing the monitor def is ok. Still, I will separate
-the defs and try again.
+I'm using implicit input devices - that is basically left over from when I
+was understanding XF 4 config.
+See http://www.xfree86.org/4.0.1/DESIGN2.html. I doubt the segfault has
+anything to do with the implicit devices because they work just fine with a
+single monitor. Nonetheless, I'm going to revert to explicit devices to
+simplify things.
 
-- Taylor
+-Taylor
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
