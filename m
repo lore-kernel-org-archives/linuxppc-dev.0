@@ -1,112 +1,67 @@
-Date: Tue, 21 May 2002 10:33:34 -0700
-From: Matt Porter <porter@cox.net>
-To: caokai <tk19@taikebj.com.cn>
-Cc: linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: how do openpic works with VIA VT82C686B interrupt control?
-Message-ID: <20020521103334.A17649@home.com>
-References: <3CE85B40.BF72BB80@taikebj.com.cn>
+Date: Tue, 21 May 2002 11:00:50 -0700
+From: andrew may <acmay@acmay.homeip.net>
+To: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
+Cc: andrew may <acmay@acmay.homeip.net>,
+	Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>,
+	Armin Kuster <akuster@mvista.com>
+Subject: Re: 405 I2C
+Message-ID: <20020521110050.B20012@ecam.san.rr.com>
+References: <1021995053.7265.22.camel@swb11> <20020521085924.F9190@ecam.san.rr.com> <1021997793.7265.36.camel@swb11>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3CE85B40.BF72BB80@taikebj.com.cn>; from tk19@taikebj.com.cn on Mon, May 20, 2002 at 10:11:12AM +0800
+In-Reply-To: <1021997793.7265.36.camel@swb11>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, May 20, 2002 at 10:11:12AM +0800, caokai wrote:
+On Tue, May 21, 2002 at 06:16:33PM +0200, Kenneth Johansson wrote:
+> On Tue, 2002-05-21 at 17:59, andrew may wrote:
+> > > Also I have a problem when accessing a device that is not present. The
+> > > bus ends up in busy state an no other action can be taken. I solved the
+> > > problem for me here by simply removing the test in iix_xfer but a proper
+> > > solution has to be discussed. I have not tried Andrew's new iic_xfer is
+> > > it going to be merged ??
+> >
+> > Does the scan bus work for you? It should go through and read from all
+> > possible locations and report if a device is there. It works with my
+> > iic_xfer but I don't rember if I tried the old one. It should have the
+> > same effect as "accessing a device that is not present".
 >
-> Hi,all
-> I am porting hhl2.1 sandpoint to a custom 8245 board .
-> This board have VIA VT82C686B pci south bridge to control the serial
-> port. VIA VT82C686B have a 8259 compatible interrupt control.
-> Specifically,the 4 PCI interrupts are routed to EPIC external interrupts
-> 1-4,The PIC INTR line from the VIA southbridge is connected to EPIC
-> externel interrupt 0.
-> Now everything seems ok except the serial interrupt seems broken.The
-> serial port interrupt is controled by VIA VT82C686B interrupt control.
-> How can I start to solve this problem.Do I need to add a VIA VT82C686B
-> driver?
-> I know sandpoint 8245 have a 8259 .but this board we DO NOT have 8259.I
-> should get rid of these 8259  code?
+> No it's not the same the scan work ok. I have not looked into exactly
+> why it works but my test program that reads 1 byte from userspace with
+> i2c_smbus_read_byte_data() dose not. I hoped I did not have to dig thru
+> too much into this as I don't know much about it.
 
-Huh?  This makes absolutely no sense.  You first say the PIC INTR line
-from 686B is hooked to EPIC input 0 (good).  Then you claim you have
-no 8259 on this board.  The PIC INTR line is the INTR from the master
-8259 in the 686B.  What do you mean, "bus this board we DO NOT have
-8259"?
+well i2c...read_byte_data is really a write of 1 byte followed by a read
+of 1 byte. The scan is just a read of 1 byte.
 
-You need to follow the many examples in the kernel (including
-sandpoint) for cascading a  pair of 8259's from an EPIC/OpenPIC.
+So you should be going through the combined xfer function.
 
-See below:
+This is some of the most respulsive cut and paste code I have ever seen.
+They first got the function templates from a bit banging driver. They make
+no sense for this driver since things like doAddress will never provide
+any real status they just load up a register. Then they just copied the
+the data transfer code in both read and send, each with  2 copies to handle
+4 bytes or less than 4 bytes.
 
-> this is my board's output log.I have added some debug information.
+> > Which test in iix_xffer that?
+>
+> Good question I get a bit unsure of what is going on when I read it
+> again but here is the test I removed. Everything works as I want when I
+> remove it.
+>
+> /* When the bus is free, the BCS bits in the EXTSTS register are 0b100
+> */
+> 	if (ret != 0x40){
+> 		return IIC_ERR_LOST_ARB;
+> 	}
 
-<snip>
+When I have tried the lm75 driver with this i2c_xfer I get the IIC0_EXTSTS
+reg with BCS at 0b111. The manual seems to say that a IIC hardware problem has
+occurred. You might try to output what your state is here.
 
-> PCI: Probing PCI hardware
-> 2.retvalue=0x1,idsel=0~~~sandpoint_map_irq *dev=PCI device
-> 1057:0006,idsel= 0x0,
-> pin=0x1,IRQ=0x1 ~~~
-> +++pcibios update irq:1+++
-> 1.retvalue=0x13,idsel=22~~~sandpoint_map_irq *dev=PCI device
-> 1106:0686,idsel= 0x
-> 16,pin=0x1,IRQ=0x13 ~~~
-> +++pcibios update irq:19+++
-> 1.retvalue=0x13,idsel=22~~~sandpoint_map_irq *dev=PCI device
-> 1106:0571,idsel= 0x
-> 16,pin=0x1,IRQ=0x13 ~~~
-> +++pcibios update irq:19+++
-> 1.retvalue=0x14,idsel=22~~~sandpoint_map_irq *dev=PCI device
-> 1106:3038,idsel= 0x
-> 16,pin=0x4,IRQ=0x14 ~~~
-> +++pcibios update irq:20+++
-> 1.retvalue=0x14,idsel=22~~~sandpoint_map_irq *dev=PCI device
-> 1106:3038,idsel= 0x
-> 16,pin=0x4,IRQ=0x14 ~~~
-> +++pcibios update irq:20+++
-> 1.retvalue=0x13,idsel=22~~~sandpoint_map_irq *dev=PCI device
-> 1106:3057,idsel= 0x
-> 16,pin=0x1,IRQ=0x13 ~~~
-> +++pcibios update irq:19+++
-> 1.retvalue=0x15,idsel=22~~~sandpoint_map_irq *dev=PCI device
-> 1106:3058,idsel= 0x
-> 16,pin=0x3,IRQ=0x15 ~~~
-> +++pcibios update irq:21+++
-> 1.retvalue=0x15,idsel=22~~~sandpoint_map_irq *dev=PCI device
-> 1106:3068,idsel= 0x
-> 16,pin=0x3,IRQ=0x15 ~~~
-> +++pcibios update irq:21+++
-> 1.retvalue=0x12,idsel=25~~~sandpoint_map_irq *dev=PCI device
-> 8086:1209,idsel= 0x
-> 19,pin=0x1,IRQ=0x12 ~~~
-> +++pcibios update irq:18+++
-
-<snip>
-
-> PCI: Via IRQ fixup for 00:16.2, from 20 to 4
-> PCI: Via IRQ fixup for 00:16.3, from 20 to 4
-> PCI: Via IRQ fixup for 00:16.5, from 21 to 5
-> PCI: Via IRQ fixup for 00:16.6, from 21 to 5
-
-Function 2 is getting "fixed up" by the generic PCI quirks
-system to IRQ 4.  On the 686B, the intline register does
-non spec compliant things by enabling an internal routing
-based on the value.  You need to write proper 0-0xf values
-into those intline registers to avoid this "fixup"  Fix
-irq map so it doesn't assign bogus values and you won't
-trigger this quirk.
-
-> ttyS00 at 0xfe0003f8 (irq = 4) is a 16550A
-> ttyS01 at 0xfe0002f8 (irq = 3) is a 16550A
-
-Looks good.  Fix all your interrupt routing conflicts and
-serial will start working...it doesn't want to share with
-function 2. ;)
-
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+Are things failing on your second read to a bad address? I would think your
+first one at least gets past this check and fails somewhere else since at
+this point there is really nothing that should have happened on the i2c bus.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
