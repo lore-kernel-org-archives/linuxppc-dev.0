@@ -1,17 +1,16 @@
-Return-Path: <mikpe@user.it.uu.se>
-Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
+Return-Path: <jchapman@katalix.com>
+Received: from ptb-relay03.plus.net (ptb-relay03.plus.net [212.159.14.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "aun.it.uu.se",
-	Issuer "Uppsala University CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C591167A70
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 07:28:30 +1100 (EST)
-From: Mikael Pettersson <mikpe@user.it.uu.se>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 29C7167A2F
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 08:07:15 +1100 (EST)
+Message-ID: <421CEC19.2010703@katalix.com>
+Date: Wed, 23 Feb 2005 20:48:25 +0000
+From: James Chapman <jchapman@katalix.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16924.59237.581247.498382@alkaid.it.uu.se>
-Date: Wed, 23 Feb 2005 21:28:21 +0100
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: ppc32 weirdness with gcc-4.0 in 2.6.11-rc4
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/mixed; boundary="------------000406090706060008090102"
+Subject: PATCH: add ppc PVR register values for 7447A and 7457 CPUs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,52 +20,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-2.6.11-rc4 built with gcc-3.4.3 works fine on my eMac.
-Building with gcc-4.0.0 (20050220) however gives me a kernel
-with dead USB, and thus no keyboard or mouse, but everything
-else seems to be working.
+This is a multi-part message in MIME format.
+--------------000406090706060008090102
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-A diff between dmesg on the two kernels has an interesting nugget:
+Signed-off-by: James Chapman <jchapman@katalix.com>
 
---- dmesg-2.6.11-rc4-gcc343	2005-02-23 20:57:54.000000000 +0100
-+++ dmesg-2.6.11-rc4-gcc400	2005-02-23 21:14:44.000000000 +0100
-@@ -1,5 +1,5 @@
- Total memory = 256MB; using 512kB for hash table (at c0300000)
--Linux version 2.6.11-rc4-gcc343 (mikpe@darwin) (gcc version 3.4.3) #1 Wed Feb 23 20:53:57 CET 2005
-+Linux version 2.6.11-rc4-gcc400 (mikpe@darwin) (gcc version 4.0.0 20050220 (experimental)) #1 Wed Feb 23 21:10:27 CET 2005
- Found UniNorth memory controller & host bridge, revision: 210
- Mapped at 0xfdf00000
- Found a Intrepid mac-io controller, rev: 0, mapped at 0xfde80000
-@@ -26,11 +26,11 @@
- OpenPIC timer frequency is 4.160000 MHz
- PID hash table entries: 2048 (order: 11, 32768 bytes)
- GMT Delta read from XPRAM: 0 minutes, DST: off
--time_init: decrementer frequency = 41.600661 MHz
-+time_init: decrementer frequency = 41.600571 MHz
- Console: colour dummy device 80x25
- Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
- Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
--Memory: 255872k available (1788k kernel code, 976k data, 144k init, 0k highmem)
-+Memory: 255872k available (1776k kernel code, 0k data, 144k init, 0k highmem)
- AGP special page: 0xcffff000
- Calibrating delay loop... 830.66 BogoMIPS (lpj=4153344)
- Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
-@@ -132,13 +132,7 @@
- VFS: Mounted root (ext3 filesystem) readonly.
- Freeing unused kernel memory: 144k init 4k chrp 8k prep
- usb 3-2: new full speed USB device using ohci_hcd and address 2
--hub 3-2:1.0: USB hub found
--hub 3-2:1.0: 3 ports detected
--usb 3-2.1: new low speed USB device using ohci_hcd and address 3
--input: USB HID v1.10 Mouse [Logitech Apple Optical USB Mouse] on usb-0001:10:1b.0-2.1
--usb 3-2.3: new full speed USB device using ohci_hcd and address 4
--input: USB HID v1.10 Keyboard [Mitsumi Electric Apple Extended USB Keyboard] on usb-0001:10:1b.0-2.3
--input: USB HID v1.10 Device [Mitsumi Electric Apple Extended USB Keyboard] on usb-0001:10:1b.0-2.3
-+usb 3-2: can't connect bus-powered hub to this port
- EXT3 FS on hda5, internal journal
- Adding 1048568k swap on /dev/hda3.  Priority:-1 extents:1
- SCSI subsystem initialized
+Trivial patch to add 7447A and 7457 CPU defs.
 
-Note: "Memory: ... 0k data ..." !? Surely that can't be correct.
 
-/Mikael
+
+--------------000406090706060008090102
+Content-Type: text/plain;
+ name="ppc_cpu_regs.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ppc_cpu_regs.patch"
+
+# This is a BitKeeper generated diff -Nru style patch.
+#
+# ChangeSet
+#   2005/02/23 16:17:49+00:00 jchapman@katalix.com 
+#   Add ppc PVR definitions for 7447A and 7457 CPUs.
+# 
+# include/asm-ppc/reg.h
+#   2005/02/23 16:17:40+00:00 jchapman@katalix.com +2 -0
+#   Add ppc PVR definitions for 7447A and 7457 CPUs.
+# 
+diff -Nru a/include/asm-ppc/reg.h b/include/asm-ppc/reg.h
+--- a/include/asm-ppc/reg.h	2005-02-23 16:18:45 +00:00
++++ b/include/asm-ppc/reg.h	2005-02-23 16:18:45 +00:00
+@@ -471,7 +471,9 @@
+ #define PVR_750P	PVR_740P
+ #define PVR_7400	0x000C0000
+ #define PVR_7410	0x800C0000
++#define PVR_7447A	0x80030000
+ #define PVR_7450	0x80000000
++#define PVR_7457	0x80020000
+ #define PVR_8540	0x80200000
+ #define PVR_8560	0x80200000
+ /*
+
+--------------000406090706060008090102--
