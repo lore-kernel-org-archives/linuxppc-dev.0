@@ -1,36 +1,58 @@
-Date: Thu, 12 Aug 1999 19:58:05 +1000
-Message-Id: <199908120958.TAA30553@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: rth@cygnus.com
-CC: Jes.Sorensen@cern.ch, Geert.Uytterhoeven@cs.kuleuven.ac.be,
-        linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu,
-        rth@cygnus.com
-In-reply-to: <19990812003318.A14941@cygnus.com> (message from Richard
-	Henderson on Thu, 12 Aug 1999 00:33:18 -0700)
+Date: Thu, 12 Aug 1999 14:31:25 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Paul.Mackerras@cs.anu.edu.au
+cc: rth@cygnus.com, Jes.Sorensen@cern.ch, linuxppc-dev@lists.linuxppc.org,
+        linux-fbdev@vuser.vu.union.edu
 Subject: Re: [linux-fbdev] Re: readl() and friends and eieio on PPC
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <199908100100.LAA28784@tango.anu.edu.au> <d34si8xfwi.fsf@lxp03.cern.ch> <199908110023.KAA23996@tango.anu.edu.au> <d34si6kcge.fsf@lxp03.cern.ch> <19990811003805.A11890@cygnus.com> <199908120017.KAA25043@tango.anu.edu.au> <19990811214049.A14692@cygnus.com> <199908120500.PAA30022@tango.anu.edu.au> <19990811224344.A14713@cygnus.com> <199908120707.RAA30438@tango.anu.edu.au> <19990812003318.A14941@cygnus.com>
+In-Reply-To: <199908120707.RAA30438@tango.anu.edu.au>
+Message-ID: <Pine.LNX.4.10.9908121428020.14133-100000@mercator.cs.kuleuven.ac.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Richard Henderson <rth@cygnus.com> wrote:
-
-> No, 2 Cycles to L1 cache.  One cycle to execute the store,
-> which merely adds an entry to the store buffer.
-
-Yes, of course, silly me.  Same on PPC.
-
-> > (Ob. nitpicking: if a wmb takes 12 cycles, how come we can do a wmb
-> > and 8 stores in 10 cycles? :-)
+On Thu, 12 Aug 1999, Paul Mackerras wrote:
+> Richard Henderson <rth@cygnus.com> wrote:
+> The results tended to vary quite a lot from run to run, but here's a
+> typical set:
 > 
-> Because it doesn't work like that.  wmb adds a magic token to the
-> store buffer that prevents write combining and other such hw
-> optimizations.  Timing
+> 17 10 9 9 9
+> 24 17 16 16 16
+> 732 731 736 786 727
+> 666 755 840 774 801
+> 
+> So the eieio doesn't look to be nearly as expensive on PPC as wmb is
+> on alpha.  (16 - 9) / 7 = 1 cycle for the eieio, which is going to be
 
-Then why is there such a big performance impact from the wmb's?
+I'm seeing different things (results don't tend to vary a lot):
 
-Paul.
+| [14:27:01]/tmp# ./a.out 0xc2800000
+| 35 29 30 31 28 
+| 261 251 247 248 248 
+| 429 332 358 374 348 
+| 541 532 529 531 529 
+| [14:27:05]/tmp# 
+
+Hence eieio() is quite expensive on memory.
+
+This in on an IBM LongTrail (CHRP), with 604e at 200 MHz, 512 KB L2 cache,
+66 MHz SDRAM bus, and 33 MHz PCI to an ATI RAGE II+.
+
+> insignificant in the context of an access to a device register, which
+> can easily take ~ 50 to 100 cycles.
+
+For ISA (through PCI/ISA bridge). Isn't real PCI faster?
+
+Greetings,
+
+						Geert
+
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
