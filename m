@@ -1,38 +1,43 @@
-Date: Tue, 30 Oct 2001 19:03:04 +0100 (CET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-Cc: Gary Byers <gb@gse.com>, Paul Mackerras <paulus@samba.org>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: floating-point under ppc/linux
-In-Reply-To: <8xn129dvwq.fsf@s62.informatik.uni-bremen.de>
-Message-ID: <Pine.LNX.4.33.0110301900020.10911-100000@gra-lx1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 30 Oct 2001 12:12:21 -0600
+From: Troy Benjegerdes <hozer@drgw.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: current linuxppc_2_4_devel SMP strangeness.. (processes dieing)
+Message-ID: <20011030121221.E13806@altus.drgw.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 30 Oct 2001, Holger Bettag wrote:
+Okay, I pulled 2_4_devel this morning and built and SMP kernel my MTX.. it
+booted up, but some weird things started happening..
 
-> I'd hazard a guess that imprecise floating point exceptions will be
-> slowly phased out of modern Out-Of-Order RISCs.
->
-> In the 750 (and the whole family line from 603 to 7450), there would be
-> no speed gain from allowing FP exceptions to be signalled imprecisely.
-> Precise exceptions are basically "free" once you have a queue which enables
-> you to complete instructions in program order, because you can also do
-> checking for exceptions in program order.
->
-> (Well, there would be a small gain with imprecise FP exceptions because
-> you wouldn't need to track them in the queue. But in practice you run out
-> of other resources before you run out of completion queue entries.)
+First, exportfs died on bootup..
 
-That's also my feeling. However, divide and square roots may prevent
-instruction progress for a long time. Ignoring the case of the precision
-exception, checking early for exceptions on square root is trivial, but
-not for divisions when you are close to the limit on under/overflow.
+Starting internet superserver: inetd.
+Exporting directories for NFS kernel
+daemon.../etc/rc2.d/S20nfs-kernel-server: line 80:   214 Illegal
+instruction     $PREFIX/sbin/exportfs -r
+done.
+Starting NFS kernel daemon: nfsd mountd.
 
-	Gabriel.
 
+Then, when I tried to log in over serial console, the login process
+appeared to die after I entered 'root'.  If I kept trying, I would
+occasional actually get a password prompt.
+
+
+I think there's something going wrong either in the cache flush avoidance
+stuff, or in the generic smp VM.
+
+(I'm going to finally update linuxppc_2_4 for MTX SMP later today, so I'll
+can hopefully find out if it's a generic VM problem or not)
+
+--
+Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
+-----"If this message isn't misspelled, I didn't write it" -- Me -----
+"Why do musicians compose symphonies and poets write poems? They do it
+because life wouldn't have any meaning for them if they didn't. That's
+why I draw cartoons. It's my life." -- Charles Shulz
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
