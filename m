@@ -1,40 +1,41 @@
-Message-ID: <00933BFA237CD2119B3400409543582704A280@MEV01>
-From: Ian Abbott <abbotti@mev.co.uk>
-To: "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: A few bugfixes
-Date: Fri, 3 Nov 2000 10:20:11 -0000 
+Message-ID: <3A02ECF3.1E072842@iigi.net>
+Date: Fri, 03 Nov 2000 11:50:59 -0500
+From: John Jones <john@iigi.net>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: LinuxPPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Subject: How do I get the c++ compiler
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I wrote:
+How do I get the c++ compiler on the nfs drive?  I have an Embedded
+Planet clcc.
 
-> "epicom" wrote:
->
-> >  I have found several bugs in versions 2.4.0-test*, I don't
-> > know if they
-> > exist
-> > in 2.2.* versions, but it is posible.
->
-> The first two (of three) do.
->
-> The first one:
-> > >>  return(((unsigned long)(pte_val(*pte)) & PAGE_MASK) | (address &
-> > ~(PAGE_MASK-1)));
->
-> is logically wrong but I think it is a harmless bug.
+I try to install the: hhl-ppc_8xx-c++-2.95.2-13.ppc.rpm by running the
+command
 
-Actually, please ignore the bit about it being a harmless bug. I'll
-leave that for others to decide. (I don't want to delve into the
-virtual memory implementation to work it out for myself, but I'm still
-wondering why the function appears to be mostly preserving the upper
-bits of the virtual address, rather than the lower bits.)
+rpm -ihv hhl-ppc_8xx-c++-2.95.2-13.ppc.rpm (from my i386 host machine)
+and Iget the error: package hhl-ppc_8xx-c++-2.95.2-13 is for a different
+architecture.
+
+I have already installed the i386 version, but I think that is just for
+my i386 host, right?
+
+Am I supposed to install the ppc.rpm FROM the target machine?  It does
+not seem to
+have the rpm program to do so.
+
+HELP.
+
+Thanks.
+
+-John
+
 
 --
--=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>             )=-
--=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587              )=-
+<Help further Linux by signing the Linux Driver Petition:
+http://www.libranet.com/petition.html>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
