@@ -1,52 +1,30 @@
-Message-ID: <3D04A571.4020309@cray.com>
-Date: Mon, 10 Jun 2002 08:11:13 -0500
-From: David Updegraff <dave@cray.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: MPC850 USB
+Message-ID: <1023715551.3d04a8dfbc9c4@imp.imms.de>
+Date: Mon, 10 Jun 2002 15:25:51 +0200 (MEST)
+From: Christian Schroeder <christian.schroeder@imms.de>
 MIME-Version: 1.0
-To: Stefan Roese <stefan.roese@esd-electronics.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 405GPr
-References: <EFEAIMDCOOOHIEPHDNFJIELDEAAA.stefan.roese@esd-electronics.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Stefan
+Hi all,
 
-We got one in I made some "proof of concept" changes to PPCBOOT/LinuxPPC
-to make it boot ok.. have not played with the extra clocking
-register strap values though; we just plopped it into our
-405GP socket and ran @200 Mhz.  Worked...
+does anybody know, if the mpc850 (Mask rev. A, XPC850xxZTA) works
+as a usb hostcontroller or do I need at least mask rev. B ?
 
-I noticed that the PVR on the unit we got was a bit different:
-ibm specs said
-	0x50910950
-..but I got
-	0x50910951
+Thanks Christian
 
-Is there a doc. somewhere that tells us what the ranges of PVRs
-for this chip can legitimately be?
-
->>>Anyone playing with adding IBM 405GPr to the cputable?
->>
->>Stephan said on the PPCboot list that he will have boards with
->>them soon. He has done patches for PPCBoot so the kernel may not
->>be far off. It will still be a couple of weeks before I get a
->>board with one yet.
->
->
-> Right! As promised PPCBoot will be done next week, and linux will follow (if
-> I am still the first) pretty soon.
->
-> Stefan.
->
->
->
-
-
-
---
-David Updegraff / dave@cray.com / 218.525.1154
-
+Dr.-Ing. Christian Schroeder
+Institut fuer Mikroelektronik- und Mechatronik-Systeme
+Langewiesener Strasse 22
+98693 Ilmenau
+Telefon: +49 3677 678315
+Telefax: +49 3677 678337
+Mobil:   +49 173 5789172
+e-mail:  christian.schroeder@imms.de
+www:     http://www.imms.de/~christi/cs.html
+pgp:     finger christi@finger.imms.de
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
