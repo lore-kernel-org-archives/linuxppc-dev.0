@@ -1,65 +1,81 @@
-Message-Id: <199908231818.NAA26993@lists.linuxppc.org>
-Date: Mon, 23 Aug 1999 14:15:57 -0400 (EDT)
-From: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Reply-To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Subject: Announcing JDK 1.1.8 and JDK 1.2.1 pre-V1 for Linux on PPC
-To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org,
-        yellowdog-general@lists.yellowdoglinux.com
-Content-Type: text
+Date: Mon, 23 Aug 1999 16:16:23 -0400
+From: brad allison <jackal@aol.net>
+To: rshaw@inficad.com
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
+        puetzk@iastate.edu
+Subject: Re: BootX enhancement request
+In-Reply-To: <37C16FFE.84ACEA73@motorola.com>
+Message-ID: <Pine.SGI.4.00.9908231613030.7470-100000@osiris.office.aol.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-ANNOUNCING: 
 
-Sun's JDK 1.2.1 (pre-v1) and JDK 1.1.8 (v1) for Linux on PPC
-------------------------------------------------------------
+On Mon, 23 Aug 1999, Robert Shaw wrote:
 
-   * for glibc 2.1 only (all development work for glibc 1.99, R4 has ceased)
+> Brad,
+> 
+> Once again, you DO NOT NEED TO DO THIS! The B&W G3 now has video support.
+> 
+> If you've downloaded the latest kernel from my web-site, you can specify the
+> video mode you want from the kernel arguments of BootX. Add the following to you
+> kernel arguments:
+> 
+> video=aty128fb:vmode:17,cmode:32
+> 
+> That will give you 1024x768 @ 75Hz, w/32bpp. Piece of cake, no init'ing, no
+> rebooting, no running Xautoconfig.
+> 
 
-   * both green (very stable) and native threads (beta at best)
+I think you missed my point.  Don't get me wrong, that's cool to know.
+But I was thinking more along the lines of a drop down menu to set the
+resolution from BootX rather than cryptic kernel arguements.
 
-   * Metrowerks JIT (Just-in-Time) compiler is available for JDK 1.1.8
+It seems the 2.2.10 kernel will not sync to the video settings at all
+without the kernel arguements.
 
-   * These ports are statically linked with Motif 2.1.
+> The FAQ page at my site (http://www.inficad.com/~rshaw/g3_faq.shtml) 
+> also has the
+> reproduction of the vmode settings that are available. They work, and
+> no running of Xautoconfig is needed.
 
-   * These ports were developed under a special Sun's license agreement with
-     Blackdown via Steve Byrne
+Well i think putting Xautoconfig in the rc.local file is still a good
+idea.
 
-   * passed all non-interactive JCK tests for compiler, runtime-vm, and
-     runtime lang (the remaining tests have not been run yet).
-
-
-The new home website for Java on Linux PPC is:
-
-   http://khendricks.ivey.uwo.ca/linuxppc/jdk/index.html
-
-If your browser hates java use:
- 
-   http://khendricks.ivey.uwo.ca/linuxppc/jdk/main.html
-
-
-***Please be nice to this machine!***  
-
-This is my own desktop workstation that I have to use for work.  
-
-Any Offers for Mirror sites will be gladly accepted!!!!! 
-
-In fact, if anyone has access to a real server and wants to
-host this site, please e-mail me directly.  I NEED YOU!
+-b
 
 
-Have Fun!
-
-Kevin
-
+> 
+> 
+> brad allison wrote:
+> 
+> > I'm not sure how hard/not hard this would be to do, but right now in order
+> > to change resolutions I have to boot into MacOS, set my resolution, launch
+> > BootX, boot into init 3, run Xautoconfig, boot into init 5.
+> >
+> > That's a lot of work to just change the resolution for X.
+> >
+> > It would be nice if you could set the resolution and color from BootX on
+> > boot up.
+> >
+> > If there's a easier way to change pixel depth and resolution from inside X
+> > please let me know....
+> >
+> > -b
+> >
+> > --
+> > AOL SAPI                                        703.265.0908     AIM:jackal242
+> > http://jackal.fudge.org        `I was never more certain of how far away I was
+> > from my goal than when I was standing right beside it.' - Ethan Hawke, Gattaca
+> 
 
 --
-Kevin B. Hendricks
-Associate Professor of Operations and Information Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA   
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+AOL SAPI 		                        703.265.0908     AIM:jackal242
+http://jackal.fudge.org        `I was never more certain of how far away I was
+from my goal than when I was standing right beside it.' - Ethan Hawke, Gattaca
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
