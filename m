@@ -1,56 +1,31 @@
-Message-ID: <50575.193.133.92.239.1011967168.squirrel@lbbrown.homeip.net>
-Date: Fri, 25 Jan 2002 13:59:28 -0000 (GMT)
-Subject: Re: RFC: vesafb
-From: "Leigh Brown" <leigh@solinno.co.uk>
-To: <hollis@austin.ibm.com>
-In-Reply-To: <20020123192010.GP510@austin.ibm.com>
-References: <20020123192010.GP510@austin.ibm.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>, <sdi@remote.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Date: Fri, 25 Jan 2002 08:44:48 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: linuxppc-dev@lists.linuxppc.org
+Cc: Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: arch/ppc/kernel/setup.c::screen_info
+Message-ID: <20020125154448.GB745@cpe-24-221-152-185.az.sprintbbd.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Hollis,
+Hey all.  Currently in the linuxppc_2_4 tree, we conditionally compile
+the screen_info struct on CONFIG_VGA_CONSOLE (and export the symbol
+based on that too).  In linuxppc_2_4_devel, Geert checked in vga16fb
+fixes 2 months ago or so that added tests for CONFIG_FB_VGA16{,_MODULE}.
+And just recently Hollis Blanchard posted a patch to add vesafb to this
+list as well.   So now the question is, shouldn't we just blindly
+allocate this struct and always export the screen_info symbol?  This
+makes the most sense IMHO, since the point of modules is that you can
+add things on later without having to recompile.  But if people are
+concerned about the extra space, perhaps we should do it based on
+CONFIG_FB (I don't believe VGA_CONSOLE actually needs the symbol to be
+exported, since it's a bool).   Comments?
 
-> The attached patch allows vesafb to work on PPC. vesafb does
-> surprisingly little with the BIOS (which I thought was the whole point
-> of VESA). With some ifdef's I'm able to use it as sort of a VGA offb --
-> the firmware initializes the card, and the driver just uses it and
-> never mucks with it.
->
-> This patch allows me to get an 800x600x8 console on the Thinkpad 850,
-> and 640x480x8 on the Carolina machines. More interestingly it allows X
-> to work on the Thinkpad, which currently doesn't work and has never
-> worked in >16 colors. It should also work on the 7020 (Sven?), which
-> uses the Weitek 9100 card and currently is driverless.
->
-> This patch is only for PReP, which is probably the only place it's
-> really useful (since CHRP and PMac have offb), but would be easy enough
-> to add to.
->
-> Comments?
-
-Well, I thought I'd give it a go on my 7043-140.  I think that it
-would help those people with the proprietary IBM graphics cards
-(GXT550P, GXT800P that sort of thing, IIRC), as well as being at least
-as good as the S3Triofb frame buffer driver (which can't switch video
-modes any way).
-
-Unsurprisingly it didn't work.  That is, unsurprisingly because nothing
-ever goes to plan on these boxes :-)
-
-It seems there is no residual data entry for the graphics card.  I
-enabled the code to dump the residual data and it was conspicuous by
-its absence.  In fact, everything else seemed to be there (6 PCI devices
-and 17 ISA devices).
-
-Any ideas?
-
-Cheers,
-
-Leigh.
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
