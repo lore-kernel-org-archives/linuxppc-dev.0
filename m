@@ -1,79 +1,41 @@
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: Tom Rini <trini@kernel.crashing.org>
-Subject: get_irq fix for 8260 platform
+Message-Id: <200201171036.EAA02575@lists.linuxppc.org>
+Date: Thu, 17 Jan 2002 18:37:27 +0800
+From: =?GB2312?Q?=D7=DE=CC=CE?= <stone@pocketix.com>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: mppmc8240:how to turn  PROGMODE mode on?
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Thu, 17 Jan 2002 18:15:52 +1100
-Message-ID: <29887.1011251752@msa.cmst.csiro.au>
-From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
+Content-Type: text/plain;
+      charset="GB2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All, if you have an 8260 and are wondering why the latest revisions of
-the devel kernel hang during boot, then this patch might help you.
+hello:
+   i use sandpoint3 and mppmc8240(unity ). When i use fupdate to write linux kernel into flash.
+  DINK32_KAHLUA >>fu -l 100000 FF700000 100000
+  PPMC Local Flash Programmer
+  Are you sure? y
+  Check flash type: Unknown, Manu. 90, Device 4c
+Make sure the PROGMODE switch is ON
+  ERROR : FLASH error.
 
-Things were changed recently to call the *_get_irq() function repeatedly
-until it indicated there were no more interrupts pending by returning -1.
 
-The appropriate changes were made to ppc8xx_pic.c for the 8xx platform, but
-not to ppc8260_pic.c for the 8260 platform. I simply mirrored the changes.
+   i read the unity_x2.pdf carefully. but i can't find the PROGMODE switch.There are only two
+switch on the process board. One is sw2 ,the other is sw3. The sw2 is
+"system speed setting" .My setting is "01111",(1 means on,right). the sw3 is "user configuration
+setting". My setting is "10010"
+    position  value  mean
+    sw3-1       1     pci bus           ROM location
+    sw3-2       0	  independant       free agent
+	sw3-3		0	  map B(chrp)       memory map
+    sw3-4       1     enable             debug
+    sw3-5       0     disable           local reset
 
-I have no idea whether the end_irq function addition is required, but it
-doesn't appear to do any harm (for me). The important change is to make
-m8260_get_irq() return -1 if the SIVEC register contains zero (which is
-documented - poorly - to be an Error condition - no interrupt pending).
+    Do i ignore something? Could you give me some advice? Thanks for you help.
 
-Cheers!
-								Murray...
 
---- linuxppc_2_4_devel_vanilla/arch/ppc/kernel/ppc8260_pic.c	Thu Dec 13 16:45:43 2001
-+++ linuxppc_2_4_devel_hymod/arch/ppc/kernel/ppc8260_pic.c	Wed Jan 16 15:14:31 2002
-@@ -85,6 +85,21 @@
- 	sipnr[word] = 1 << (31 - bit);
- }
 
-+static void m8260_end_irq(unsigned int irq_nr)
-+{
-+	if (!(irq_desc[irq_nr].status & (IRQ_DISABLED|IRQ_INPROGRESS))) {
-+		int	bit, word;
-+		volatile uint	*simr;
-+
-+		bit = irq_to_siubit[irq_nr];
-+		word = irq_to_siureg[irq_nr];
-+
-+		simr = &(immr->im_intctl.ic_simrh);
-+		ppc_cached_irq_mask[word] |= (1 << (31 - bit));
-+		simr[word] = ppc_cached_irq_mask[word];
-+	}
-+}
-+
- struct hw_interrupt_type ppc8260_pic = {
- 	" 8260 SIU  ",
- 	NULL,
-@@ -92,6 +107,7 @@
- 	m8260_unmask_irq,
- 	m8260_mask_irq,
- 	m8260_mask_and_ack,
-+	m8260_end_irq,
- 	0
- };
-
-@@ -106,6 +122,14 @@
-          * to get the irq number.         */
-         bits = immr->im_intctl.ic_sivec;
-         irq = bits >> 26;
-+
-+	/*
-+	 * When we read the sivec without an interrupt to process, we will
-+	 * get back a vector of 0.  In this case, return -1
-+	 */
-+	if (irq == 0)
-+		return -1;
-+
- #if 0
-         irq += ppc8260_pic.irq_offset;
- #endif
-
+　　　　　　　　　　　　　　stone@pocketix.com
+　　　　　　　　　　　　　　　　　2002-01-17
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
