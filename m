@@ -1,30 +1,38 @@
-Message-ID: <3DD3C747.8B7EE5CD@opensource.se>
-Date: Thu, 14 Nov 2002 16:54:47 +0100
-From: Magnus Damm <damm@opensource.se>
+Message-ID: <3DD3D715.8BA00B56@phx.mcd.mot.com>
+Date: Thu, 14 Nov 2002 10:02:13 -0700
+From: Tom Armistead <Tom_Armistead@phx.mcd.mot.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: bi_record and initrd
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: ???? <yuj@mail.ndsc.com.cn>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: motorola lopec mpc7410
+References: <200211140848.CAA19190@lists.linuxppc.org> <20021114151038.GA14431@opus.bloom.county>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+> On Thu, Nov 14, 2002 at 04:50:34PM +0800, ???? wrote:
+>
+> >  I'm porting mvista linux 2.1 for the motorola lopec mpc7410 board.And I noticed that there are some differences between the board version described by mvista and motorola.Also,the version of PPCBug is different.I'm wondering why?
+>
+> For support for an MontaVista product, please contact your mvista sales
+> rep (or perhaps your manager knows) to find out how to contact support.
+>
+> Having said that, I _believe_ the LoPEC I have running right now has
+> PPC6Bug, so perhaps you should contact Motorola to find out how to
+> upgrade the firmware.
+>
+> --
+> Tom Rini (TR1265)
+> http://gate.crashing.org/~trini/
+>
 
-The 2.4.19 kernel and the current rsync kernel from
-source.mvista.com::linuxppc_2_4 does not work with large initrds.
+PPC5Bug is the firmware for Lopec.  The last released version for Lopec is PPC5Bug 1.4 RM02 but it is unlikely that upgrading the firmware (from 1.3) would have any effect on the described problem.   I don't know much about Linux but my
+guess is that something is misconfigured in your kernel (console IO would be the first thing I'd check...).
 
-The bi_record setup code in linux/arch/ppc/boot/simple/misc-embedded.c
-doesn't care about the initrd size. So, if you are using a initrd that
-crosses a megabyte-boundary you will have your initrd overwritten with
-the bi_record. This results in crc error when unpacking the initrd.
+The PPC6Bug series was for the Hawk based products (MCPN765, MVME5100, PPMC750, etc..).  I don't think any version of PPC6Bug will work at all on Lopec.
 
-The quick fix is to add a offset to the boot-code and to
-arch/ppc/kernel/setup.c.
+Tom Armistead
 
-So, what's the long term solution?
-Passing a pointer to the kernel?
-
-/ magnus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
