@@ -1,35 +1,38 @@
-Date: 5 Sep 2002 13:48:53 -0000
-Message-ID: <20020905134853.32298.qmail@webmail9.rediffmail.com>
-MIME-Version: 1.0
-From: "Narendra  " <narengh@rediffmail.com>
-Reply-To: "Narendra  " <narengh@rediffmail.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <8D7C5F56B409554D9D46AC22195807F3061A1E@exchwenz01.smtp.dmcwave.co.nz>
+From: Rod Boyce <rod_boyce@stratexnet.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Unable to do I/O operations with WLAN card. 
-Content-type: text/plain;
-	format=flowed
+Subject: RE: Booting sandpoint from ide disk
+Date: Fri, 6 Sep 2002 02:57:59 +1200 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
+There is nothing stopping you porting PPCBoot to this CPU.  Once you have
+ported PPCBoot to this CPU you could use PPCBoot...:)
 
-I have Two EP RPX-LITE board.
+Rod
 
-I have my WLAN driver working fine on one EP board.
+PS I'm, sure you could find somebody to pay money to who would do this for
+you...
 
-But I have problems with the other board. INITIALIZE command to
-D-Link card is successful but after that issueing ACCESS command
-is failing if i try to write any record, with Status Register
-having value 0x7b21 and RESP0 having the value 4.
+ -----Original Message-----
+From: 	Lauri Ojantakanen [mailto:lauri.ojantakanen@solidtech.com]
+Sent:	Thursday, September 05, 2002 3:16 AM
+To:	linuxppc-embedded@lists.linuxppc.org
+Subject:	Booting sandpoint from ide disk
 
-Any Idea What could be the problem??
-Is there any problem with the Target Board?..because same card,
-same driver is working fine with other EP board.
 
-I am using HARD HAT Linux 2.0.
+Hi,
 
-Thanks in advance,
-Naren
+does anyone have a good solution for booting sandpoint X3 (cpu 7410, altivec
+supported) from ide hard disk? Dink32 does not seem to support anything like
+that and ppcboot does not seem to support that CPU.
+
+//lauri
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
