@@ -1,98 +1,88 @@
-Date: Wed, 24 Mar 2004 13:26:52 +0100
+Date: Wed, 24 Mar 2004 15:25:24 +0100
 From: Marc Leeman <marc.leeman@barco.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: PCI Memory mapping
-Message-ID: <20040324122652.GA22171@smtp.barco.com>
+Message-ID: <20040324142524.GA22701@smtp.barco.com>
 Reply-To: Marc Leeman <marc.leeman@barco.com>
-References: <20040316114030.GB7133@smtp.barco.com> <1079455175.4184.25.camel@localhost.localdomain> <20040322074833.GY7133@smtp.barco.com> <20040323111736.GJ1446@smtp.barco.com> <1080086640.23208.164.camel@gaston>
+References: <20040316114030.GB7133@smtp.barco.com> <1079455175.4184.25.camel@localhost.localdomain> <20040322074833.GY7133@smtp.barco.com> <20040323111736.GJ1446@smtp.barco.com> <1080086640.23208.164.camel@gaston> <20040324122652.GA22171@smtp.barco.com>
 Mime-Version: 1.0
-In-Reply-To: <1080086640.23208.164.camel@gaston>
+In-Reply-To: <20040324122652.GA22171@smtp.barco.com>
 Content-Type: text/plain; charset=iso-8859-15
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I just added a [1]
-  flush_cache_all();
+This is getting weird, I found a solution to the problem, well kind of.
 
-after copying the buffer from user space, no change.
+Let's introduce the major players in this drama:
 
-The same for
-__asm__ __volatile__("sync\n");
+ /* communication struct between user and kernel space , in driver.h
+  * kernel include */
+ typedef struct SStreamPci {
+         unsigned int pciaddress;
+         unsigned int useraddress;
+         unsigned char stream;
+ }TSStreamPci;
 
-However, more and more things seem to point to either the DSP or 'the
-hardware':
+ /* user space program */
+ /* as long as not all data is transferred */
+ while(userptr < (userbuffer + (TRANSFER_SIZE>>2))){
+   /* currentstream is a struct that is passed to the kernel of
+    * type TSStreamPci */
+   currentstream.useraddress = (unsigned)userptr;
 
-For testing purposes, I allocate a 4k buffer and pass the address of the
-buffer +0x400 to the DSP (the corrupted data always occur in the firsts
-28 words: from word 5 to word 28).
+   /* copy our buffer to the kernel (PCI_TRANSFER_SIZE), 4k */
+   ioctl(dsphandle,PPC2DSP_CONSISTENT_COPY_TO_KERNEL,&currentstream);
 
-In userspace, I fill the 0x400 bytes with 0xFF and only use the last
-0xC00 bytes with 'userful' data. The 4k buffer is passed to kernel space
-where it is mapped on the PCI.
+   /* Interrupt the DSP */
+   WriteToDSP(PacketReady,0x1);
+   ioctl(dsphandle,PPC2DSP_SET_HDCR,&interrupt);
 
-  PPC user
-  +-------+
-  | 0x400 |
-  +-------+
-  |       |
-  | 0xC00 |
-  |       |
-  +-------+
+   /* Wait until the DSP acknowledges transfer */
+   while(ReadFromDSP(PacketReady)){}
 
-     || copy_from_user
-     \/
+   /* Read kernel buffer back */
+   ioctl(dsphandle,PPC2DSP_CONSISTENT_COPY_FROM_KERNEL,&currentstream);
 
-  PPC kern            DSP
-  +-------+
-  | 0x400 |
-  +-------+        +-------+
-  |       |  PCI   |       |
-  | 0xC00 |  ===>  | 0xC00 |
-  |       |        |       |
-  +-------+        +-------+
+   /* increment pointer */
+   userptr += (BLOCK_TRANSFER_SIZE >> 2);
+ }
 
+The strange thing is that this works only and only if I do a transfer
+back from kernel space into the userbuffer AFTER the DSP has
+acknowledged transferring the data. Note that this data is never used
+again. Doing this copy_to_user before DSP acknowledgement still results
+in the afore mentioned data corruption.
 
+The associated ioctls are:
+case PPC2DSP_CONSISTENT_COPY_TO_KERNEL:
+  {
+    TSStreamPci currentstream;
+    if(copy_from_user(&currentstream,(TSStreamPci*) arg,sizeof(TSStreamPci))){
+      return -EFAULT;
+    }
+    if(copy_from_user(driver_data.device[currentstream.stream]->kern_addr,(char*)currentstream.useraddress, PCI_TRANSFER_SIZE)){
+      return -EFAULT;
+    }
+    break;
+  }
+case PPC2DSP_CONSISTENT_COPY_FROM_KERNEL:
+  {
+    TSStreamPci currentstream;
+    if(copy_from_user(&currentstream,(TSStreamPci*) arg, sizeof(TSStreamPci))){
+      return -EFAULT;
+    }
+    if(copy_to_user((char*)currentstream.useraddress,driver_data.device[currentstream.stream]->kern_addr, PCI_TRANSFER_SIZE)){
+      return -EFAULT;
+    }
+    break;
+  }
 
-The DSP only reads the last 3k bytes but still, it gets the corrupted
-data from word 5 to word 32 when no (excessive) delays are used.
+There is about a 10% bandwith reduction (due to PPC utilisation I would
+assume) over the PCI, so I can live with that; but what bothers me is
+not knowing _why_, ... Especially since I want my first module not to
+contain too large beginners mistakes :)
 
-Next to this, consistent_alloc() already uses _PAGE_NO_CACHE to avoid
-caching of the buffer (called by pci_consistent_alloc()) in cachemap.c
-(yes, the 8245 kernel configuration does not enable
-CONFIG_NOT_COHERENT_CACHE normally [2], but I added it but the behaviour
-is still identical).
-
-Filling the user buffer with 0xCA after copy_from_user and re-copying it
-into the kernel buffer (without interrupting the DSP this time) still
-has no effect: the 'corrupted' data is still old data from the last
-PCI transferred data on the DSP side (after a subsequent copy_from_user
-with useful data and DSP interrupt).
-
-However the first PCI transferred buffer is ALWAYS correct.
-
-On the other hand, this DSP-type did read via PCI master read
-operations and a PCI plugin card memory from w32 on an x86 arch (instead
-of our internal PCI bus) a couple of yrs ago I'm told.
-
-[1] hmmmmm, this is helpful code for ppc :)
-
-/*
- * No cache flushing is required when address mappings are
- * changed, because the caches on PowerPCs are physically
- * addressed.  -- paulus
- * Also, when SMP we use the coherency (M) bit of the
- * BATs and PTEs.  -- Cort
- */
-#define flush_cache_all()               do { } while (0)
-
-
-[2]
-6xx/7xx/74xx/8260      CONFIG_6xx
-instead of
-CONFIG_8xx
-
-as Processor Type.
+  marc.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
