@@ -1,40 +1,66 @@
-From: linuxppcdev@qbjnet.com
-Date: 16 Mar 2004 17:47:23 -0600
-Message-ID: <20040316234723.18931.qmail@kunk.qbjnet.com>
+Date: Tue, 16 Mar 2004 23:09:25 -0800
+From: Ira Weiny <iweiny@acm.org>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Can't get 7248 PreP boot disk working in 2.6
+Subject: Random crashes on snooze
+Message-Id: <20040316230925.15bfe069.iweiny@acm.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Running an IDE disk and booting off floppy (cheap dual boot, can use the
-hard drive to boot AIX this way).
+I know I don't contribute much here but I just can't seem to find any clue
+about what is happening.  So I need help.
 
-I've never had trouble making a boot disk for 2.4.x kernels. Using the
-current bitkeeper 2.4 and 2.6 however, the 2.4 works fine and the 2.6
-reads a few sectors and goes to the System Maint disk insert dialog.
-Tried different floppies, etc.
+I just upgraded to Yellow Dog 3.0.  Since doing so I have experienced seemingly
+random crashes when I issue a "snooze" command "/sbin/snooze".
 
-To make these I do a make zImage then dd the resulting
-zImage.prep to a floppy.
+Here are machine specs:
 
-I know there is some odd kernel size limitation which is less than the
-actual size of the floppy but that isn't the problem.
+14:29:54 > rpm -qa | grep pmud
+pmud-0.10-3f
 
-# ls -l  bk*/arch/ppc/boot/images/zImage.prep
--rwxr-xr-x    1 root     nogroup   1210629 Mar 16 11:11 bk24/arch/ppc/boot/images/zImage.prep
--rwxr-xr-x    1 root     nogroup   1028225 Mar 16 16:43 bk26/arch/ppc/boot/images/zImage.prep
+14:30:00 > uname -a
+Linux batwing2 2.4.25-ben1-sleep-debug #15 Tue Mar 16 11:29:56 PST 2004 ppc ppc ppc GNU/Linux
 
-The 2.4 image is actually larger than the 2.6 image (more stuff in modules
-in the 2.6 compile).
+14:31:54 > cat /proc/cpuinfo
+processor       : 0
+cpu             : 7410
+clock           : 500MHz
+revision        : 17.3 (pvr 800c 1103)
+bogomips        : 996.14
+machine         : PowerBook3,2
+motherboard     : PowerBook3,2 MacRISC2 MacRISC Power Macintosh
+board revision  : 00000001
+detected as     : 71 (PowerBook Titanium)
+pmac flags      : 0000000b
+L2 cache        : 1024K unified
+memory          : 512MB
+pmac-generation : NewWorld
 
-# file bk*/arch/ppc/boot/images/zImage.prep
-bk24/arch/ppc/boot/images/zImage.prep: x86 boot sector
-bk26/arch/ppc/boot/images/zImage.prep: x86 boot sector
 
-I have 2.6.4 running on some macs, even a 7200 so I'm curious if
-anyone has clues about this problem?
+I put some debug messages in the sleep code and I think it might have something
+to do with the awacs sound driver.
 
-Bob
+>From /var/log/messages on a bad sleep:
+
+Mar 16 17:49:15 batwing2 kernel: IKW sleep 1 calling c03b5ff4 (c020cae0)
+Mar 16 17:49:15 batwing2 kernel: aty128fb: aty128_sleep_notify when 1 board c1ab1800
+Mar 16 17:49:16 batwing2 kernel: IKW sleep 1 accepted by c03b5ff4 (c020cae0)
+Mar 16 17:49:16 batwing2 kernel: IKW Sync disks
+Mar 16 17:49:16 batwing2 kernel: IKW sleep 2 calling c03868ec (c01d1b6c)
+Dec 31 20:53:02 batwing2 syslogd 1.4.1: restart.
+
+>From System.map
+c01d1b6c t awacs_sleep_notify
+
+But I don't know if there is something missing from the file because of course
+nothing can be written to the disk at this time...  Does anyone have any other
+clues?
+
+
+Thanks,
+Ira
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
