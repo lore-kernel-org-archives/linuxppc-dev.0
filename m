@@ -1,59 +1,30 @@
-Message-ID: <385FA53A.95617562@mvista.com>
-Date: Tue, 21 Dec 1999 10:05:14 -0600
-From: Jim Lewis <jlewis@mvista.com>
+Message-ID: <385FBC9B.E80D568@netx4.com>
+Date: Tue, 21 Dec 1999 12:44:59 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: kd@flaga.is
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: gdbserver
-References: <OFFF644F53.7F60D0CE-ON0025684E.0050176B@flaga.is>
+To: bsimon@ctam.com.au
+CC: linux-embedded <linux-embedded@waste.org>,
+        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: linux-embedded: which shell, termcap or ncurses ?
+References: <385EE46B.1D97C2D2@ctam.com.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-kd@flaga.is wrote:
-
-> Hi,
->
-> I am trying to get gdbserver to run on my mpc823 board. (The precompiled
-> gdbserver is not working for me, it does not seem to get argc and argv
-> correctly into main() and always terminates with "usage info".
->
-> Using the vanilla gdb-4.18 is of no use, since it has not support for ppc.
-> Using the gdbserver source that Dan posted here a few weeks back results in
-> the
-> the following undefined symbols,
-> PTRACE_POKEUSR
-
-I ran into build problems as well. Apparently, ptrace.h must have changed. The
-macros are now called
-PTRACE_POKEUSER
-PTRACE_PEEKUSER
-
-In my build, KERNEL_U_ADDR is defined in xm.h, which is a link:
-xm.h -> ./../config/powerpc/xm-linux.h
-#define KERNEL_U_ADDR 0x0
+Brendan Simon wrote:
 
 
-I built gdbserver in a 4.17 tree from the SRC RPM on the LinuxPPC CD.
-xm-linux.h in 4.18 does not have that definition.
+> ... I now need to get a shell running so I can call shell scripts to
+> setup the IP addresses etc via ifconfig (is there any other way ?).
 
 
->
-> PTRACE_PEEKUSR
-> KERNEL_U_ADDR
-> when compiling low-linux.c
-> If I define these symbols to 6, 3 and 0 respectively, everything compiles
-> fine, but the linker fails with the error,
-> undefined referenve to REGISTER_U_ADDR in function register_addr.
->
-> These are defined (for some of the other targets) in directory gdb/config/.
-> Any idea what is missing?
->
-> K.D.
+Why don't you just use the binaries from a standard distribution?
+I try to use as much of this as I can, and it seems to make the
+job easier for me.
 
---
-Jim Lewis
 
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
