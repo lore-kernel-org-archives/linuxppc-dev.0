@@ -1,42 +1,58 @@
-Subject: Re: Voodoo3 support?
-Date: Thu, 20 Jan 2000 21:17:59 +0100
-From: John L Grantham <jgrantha@hannover.sgh-net.de>
-To: <phandel@cise.ufl.edu>
-cc: <linuxppc-user@lists.linuxppc.org>, <linuxppc-dev@lists.linuxppc.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Message-ID: <12BO1g-1hVpVQC@fmrl03.sul.t-online.de>
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+To: Gabriel Paubert <paubert@iram.es>,
+        Kevin Hendricks <khendricks@ivey.uwo.ca>
+Subject: Re: Fwd: Re: still no accelerated X ($#!$*)
+Date: Thu, 20 Jan 2000 23:34:23 +0100
+Content-Type: text/plain
+Cc: David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
+References: <Pine.HPX.4.10.10001202043560.18916-100000@gra-ux1.iram.es>
+In-Reply-To: <Pine.HPX.4.10.10001202043560.18916-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Message-Id: <00012023473100.01038@enzo.bigblue.local>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 20.1.00 6:03 pm, phandel@cise.ufl.edu at phandel@cise.ufl.edu was
-inspired to say:
-
->On Tue, 11 Jan 2000, John L Grantham wrote:
+Am Don, 20 Jan 2000 schrieb Gabriel Paubert:
+>Hi,
 >
->> I recently got a Voodoo3-compatible card, the MP960 from Vilage Tronics,
->> for my beige G3. Naturally I would like to get accelerated video with
->> this card, but haven't been able to decipher what's going on with
->> development.
+>> In this particular case, the base address can change (but very very rarely
+>> such as writing to one Aperature or Another on the Rage 128 card) and all of
+>> the writes are made to either the card memory mapped io or the frame buffer
+>> itself.
 >
->Check out ftp://idd-01.imbc.gr/pub/voodoo3/
+>Then the memory clobber would force the compiler to reload base_addr
+>between 2 writes to the frame buffer.
+>
+>> Should I not include the : "memory" clobber in this case?  Will it hurt
+>> performance much?
+>
+>I think that it is not necessary: the best thing with a compiler which
+>performs alias analysis might be to tell the truth
+>
+>asm ("stwbrx %1,%2,%3"
+>     : "=m" (*(volatile unsigned *)(base_addr+regindex))
+>     : "r" (regdata), "b" (base_addr), "r" (regindex));
+>
+>Note we don't use %0, and it won't produce any aditional code. You may
+>want to check what the compiler would have generated as addressing mode
+>by appending " # %0" at the end of the code string.
 
-Thanks, I'll give it a try next chance I get--though you might know the
-Voodoo3 card in question literally fell apart (the heat sink fell off--no
-kidding), and I'm fighting with both the reseller and OEM to give me a
-replacement. :-(
+It depends a little bit on the usage of the asm's if the memory (either
+global or local) clobber is needed or not. If you use them for read/writes to HW
+registers needing ordering (which is very likely here since we talk about
+graphics HW), the compiler can only decide on the memory usage defined by the
+clobbers/memory inputs on how to order the inlines (volatile has no effect on
+this).
 
-cya
+Actually the load instructions need a memory input too:
 
-John
+asm volatile ("lwbrx %0,%1,%2" : "=r"(val) : "b"(regindex), "r"(base_addr),
+"m" (*(volatile unsigned *)(base_addr+regindex)));
 
----
+And to insure ordering on processor level you still need the eieio (with a
+memory clobber) as usual.
 
-John Grantham | Freelance Graphic and Web Designer
-              | Dipl.-Designer (FH)
-              | Homepage: http://surf.to/multimedia
-              | MacLinux: http://www.maclinux.de/
-
+Franz.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
