@@ -1,77 +1,54 @@
-Message-Id: <199910260629.IAA20848@denx.local.net>
-To: sorin@nitechinc.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: dev boards comparison 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 25 Oct 1999 09:48:15 EDT."
-             <99102509535300.00577@splash.nitechinc.com>
-Date: Tue, 26 Oct 1999 08:29:46 +0200
+Message-ID: <381706D7.FF1D8477@snom.de>
+Date: Wed, 27 Oct 1999 16:06:15 +0200
+From: Nicolas Pohland <pohland@snom.de>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: MPC8BUG crashes on Windows 95/98/NT
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Sorin,
 
-in message <99102509535300.00577@splash.nitechinc.com> you write:
-> 
-> We're in the process of deciding which board to use for the 
-> developement of our embedded products... we have now a
-> FADS 860 board... but we aren't that much impressed by it.
+Hi,
 
-Which CPU are you looking for?
+I am a PPC newbie, but after checking the FAQ and mailing lists I have 
+found a lot of helpful hints but nothing quite addresses my problem.
 
-> So can anyone please tell me which one is better from the 
-> point of view of developing embedded solutions based on 
-> Linux?
-> We are considering the FADS, along with the MBX boards 
-> from Motorola and the RPX boards from Embedded Planet
-> Any pros and cons for this boards? 
+I am one of the poor sods trying to get a FADS 860T board to work. I
+have 
+used the cross compiler tools to generate an image of the embedded-2.2.5 
+kernel version. 
 
-I had 2 *very* early (F)ADS boards, but then we were  using  some  30
-MBX  boards  for the rest of the projects (not for Linux, but this is
-not really important here)... Guess why.  If  your  only  choice  was
-between FADS and MBX I would use the MBX. Just my $0.02 ...
+I had to guess a lot of flags - does someone have a FADS 860T config
+file ? 
+There seems to be one for everything else ...
 
-> Are there other boards that might be considered?
+I then thought I would just use the MPC8BUG program to program the flash
+with
+the generated image. 
 
-Probably yes. I am using the mini modules by TQ  Systems  in  several
-projects,  see http://www.tqs.de/HTM_Files/TQM8xx_Serie.htm for hard-
-ware desriptions).
+Is this the correct way of doing this ? Or do I need a Linux tool chain
+and
+a soldering iron ?
 
-The TQ starter kit, which functionally is very  similar  to  the  MBX
-board, is intentionally somewhat cheaper.
+I received my ADI board, read and followed the readme procedure and 
+hooked it up to the FADS. But when I try to start the MPC8BUG or
+MPC8BUG95 program,
+it just crashes under all 3 Windows versions. I have also tried
+different IO addresses 
+(0x100, 0x200 and 0x300) and used 2 different PCs (133 and 450 Mhz). 
 
-But IMHO an even more interesting feature is the  separation  of  the
-"mini  module"  (containing  CPU,  RAM,  SRAM and FLASH memory, power
-supply, etc.), from the rest of the framework needed to make a usable
-configuration (mostly connectors). This results in a neat, very small
-module (less than half a credit card!), that can be  used  as-is  for
-your  final application - all you have to design is a (simple, cheap)
-carrier  board  with  what  you  need  for  external  circuitry   and
-connectors  etc.  I  always found it very convenient that development
-and target system are more or less identical, at least from the soft-
-ware point of view.
+The BIOS of the boards does NOT allow me to set the ISA bus frequency.
 
+The MPC8bug version is 1.6.
 
-I ported Linux to those modules (including the latest 2.2.13 kernel),
-and I have sent my patches to Dan Malek; I hope they will show up  in
-one  of  the  next "standard" embedded kernels. I'm going to continue
-supporting these modules, both for new CPU configurations and for new
-options (like FLASH filesystem).
+Did someone experience also have this problem ?
 
-Feel free to contact me if this looks like an interesting  option  to
-you.
+Or have a viable alternative ?
 
-Hope this helps,
+Any help would be greatly appreciated.
 
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Defaults are wonderful, just like fire.
-                  - Larry Wall in <1996Mar6.004121.27890@netlabs.com>
+Nicolas Pohland
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
