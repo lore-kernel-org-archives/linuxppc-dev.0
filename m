@@ -1,26 +1,23 @@
-From: kskim@neowave.co.kr
-Date: Sun, 7 Jan 2001 11:09:14 +0900
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: ppc kernel in 2.4.0 is valid?
-Message-ID: <570_28348_978833354_1@mail.neowave.co.kr>
-Content-type: text/richtext
+Date: Sun, 7 Jan 2001 03:13:14 -0700
+From: Cort Dougan <cort@fsmlabs.com>
+To: diekema_jon <diekema@bucks.si.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Root keys on bk://bitkeeper.fsmlabs.com:5000 have changed
+Message-ID: <20010107031314.G13210@hq.fsmlabs.com>
+References: <m14EwY1-001SzWC@bucks>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <m14EwY1-001SzWC@bucks>; from diekema_jon on Sat, Jan 06, 2001 at 11:50:29AM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I downloaded 2.4.0 kernel yesterday, and copied config file in ppc directory to
-source root. And I modified Makefile (arch :=ppc CROSS-COMPILE := powerpc-linux-
-<nl><nl>
+} It appears that the BitKeeper repository at bk://bitkeeper.fsmlabs.com:5000
+} has changed.  What happened to the previous BK tree?  Was it replaced with the
+} 2.4.0 baseline?
 
-But there was some errors. It seems some bugs...
-<nl><nl>
-
-For example, in ppc directory many functions use 'unsigned long loops_per_sec
-variable which is changed into 'loops_per_jiffy'(may be different but similiar)
-<nl><nl>
-
-I wonder ppc kernel 2.4.0 is valid and needs more hacking.
-<nl> I'm looking forward to your answer, Happy new year!
+Yup.  The 5000 and 5001 trees are completely new.  You need to reclone.
+Sorry about the abrupt change, it mirrors the abrupt and poorly timed
+appearance of 2.4.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
