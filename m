@@ -1,23 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from motgate2.mot.com (motgate2.mot.com [144.189.100.101])
-	by ozlabs.org (Postfix) with ESMTP id D8B972BDF2
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao12.cox.net (fed1rmmtao12.cox.net [68.230.241.27])
+	by ozlabs.org (Postfix) with ESMTP id 9E5542BDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  2 Nov 2004 04:27:34 +1100 (EST)
-Received: from az33exr02.mot.com (az33exr02.mot.com [10.64.251.232])
-	by motgate2.mot.com (8.12.11/Motgate2) with ESMTP id iA1HUexv000128
-	for <linuxppc-embedded@ozlabs.org>; Mon, 1 Nov 2004 10:30:40 -0700 (MST)
-In-Reply-To: <ED6D9FBD-2C27-11D9-801F-000393C30512@freescale.com>
-References: <642F8D42-2A11-11D9-A860-000393C30512@freescale.com>
-	<0329659A-2BC9-11D9-A949-000393DBC2E8@freescale.com>
-	<ED6D9FBD-2C27-11D9-801F-000393C30512@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <4B79D05E-2C2B-11D9-8819-000393DBC2E8@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 1 Nov 2004 11:27:24 -0600
-To: "Fleming Andy-afleming" <afleming@freescale.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: RFC: performance monitor/oprofile support for e500
+	Tue,  2 Nov 2004 06:20:43 +1100 (EST)
+Date: Mon, 1 Nov 2004 12:20:41 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Matt Porter <mporter@kernel.crashing.org>,
+	Kumar Gala <kumar.gala@freescale.com>
+Message-ID: <20041101192040.GK24459@smtp.west.cox.net>
+References: <20041029175158.D13435@home.com> <20041029180814.A15758@home.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20041029180814.A15758@home.com>
+Cc: akpm@osdl.org, takeharu1219@ybb.ne.jp, linux-kernel@vger.kernel.org,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH][PPC32][2/2] 40x and Book E debug: 4xx platform support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,98 +25,473 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Fri, Oct 29, 2004 at 06:08:14PM -0700, Matt Porter wrote:
 
-On Nov 1, 2004, at 11:03 AM, Fleming Andy-afleming wrote:
+> This patch adds support to the 40x and 44x platform code for
+> initializing debug events and using the in-kernel kgdb stub.
+> 
+> Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
 
-> Well, it looks like I messed up the patch, and included some stuff I'm
-> working on for generalizing the PHY interface.=A0 Strange, because I
-> thought I had hand-inspected that patch...=A0 Ah, I see: I copied the
-> wrong patch, which was done against linux-2.6, rather than my internal
-> tree.=A0 Please ignore the patch, since much of that code is obsolete.
->
-> Anyway, I will respond to Kumar's comments, and have attached the
-> CORRECT patch:
->
-> On Oct 31, 2004, at 23:43, Kumar Gala wrote:
->
-> > Andy,
->  >
->  > Some feedback:
->  >
->  > * Any reason to get ride of the 604 code now,w/o replacing it with
-> > something?
->
-> Well, it doesn't really do much, and I was told that no one was using
-> it.=A0 If people want, I can add it back.
->
-> > * Why have you introduce two CPU features (CPU_FTR_CAN_USE_PMON_INTR=20=
+On top of this, I have the following to add these boards, and a few
+other BookE boards to registering with the kgdb_8250 driver.  This has
+been tested on an IBM 440GP Eval board.
 
-> &
-> > CPU_FTR_FSL_BOOKE_PMON) you dont use ?
->
-> Ah, this is for the near future, when I implement support for 74xx
-> processors.=A0 The non-Freescale-Book-E parts use a different perfmon
-> scheme, and I wanted a way to distinguish.=A0 It may not be useful,
-> though, I agree, since I am using CONFIG_FSL_BOOKE to do this.=A0
-> CAN_USE_PMON_INTR is important, though, to detect the errata which
-> could send the processor into never-neverland.=A0 Eventually, some =
-74xx
-> processors will have this bit set, while some will not.
+Signed-off-by: Tom Rini <trini@kernel.crashing.org>
 
-Ok, add this when you add the code, not before then.
+--- linux-2.6.10-rc1.orig/arch/ppc/platforms/4xx/bubinga.c
++++ linux-2.6.10-rc1/arch/ppc/platforms/4xx/bubinga.c
+@@ -4,7 +4,7 @@
+  * Author: SAW (IBM), derived from walnut.c.
+  *         Maintained by MontaVista Software <source@mvista.com>
+  *
+- * 2003 (c) MontaVista Softare Inc.  This file is licensed under the
++ * 2003-2004 (c) MontaVista Softare Inc.  This file is licensed under the
+  * terms of the GNU General Public License version 2. This program is
+  * licensed "as is" without any warranty of any kind, whether express
+  * or implied.
+@@ -101,17 +101,26 @@ bubinga_early_serial_map(void)
+ 	port.flags = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
+ 	port.line = 0;
+ 
+-	if (early_serial_setup(&port) != 0) {
++#ifdef CONFIG_SERIAL_8250
++	if (early_serial_setup(&port) != 0)
+ 		printk("Early serial init of port 0 failed\n");
+-	}
++#endif
++
++#ifdef CONFIG_KGDB_8250
++	kgdb8250_add_port(0, &port);
++#endif
+ 
+ 	port.membase = (void*)ACTING_UART1_IO_BASE;
+ 	port.irq = ACTING_UART1_INT;
+ 	port.line = 1;
+ 
+-	if (early_serial_setup(&port) != 0) {
++#ifdef CONFIG_SERIAL_8250
++	if (early_serial_setup(&port) != 0)
+ 		printk("Early serial init of port 1 failed\n");
+-	}
++#endif
++#ifdef CONFIG_KGDB_8250
++	kgdb8250_add_port(1, &port);
++#endif
+ }
+ 
+ void __init
+@@ -256,8 +265,4 @@ platform_init(unsigned long r3, unsigned
+ 	ppc_md.nvram_read_val = todc_direct_read_val;
+ 	ppc_md.nvram_write_val = todc_direct_write_val;
+ #endif
+-#ifdef CONFIG_KGDB
+-	ppc_md.early_serial_map = bubinga_early_serial_map;
+-#endif
+ }
+-
+--- linux-2.6.10-rc1.orig/arch/ppc/platforms/4xx/ebony.c
++++ linux-2.6.10-rc1/arch/ppc/platforms/4xx/ebony.c
+@@ -36,6 +36,7 @@
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/kgdb.h>
+ 
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+@@ -282,30 +283,38 @@ ebony_early_serial_map(void)
+ 	port.flags = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
+ 	port.line = 0;
+ 
+-	if (early_serial_setup(&port) != 0) {
++#ifdef CONFIG_SERIAL_8250
++	if (early_serial_setup(&port) != 0)
+ 		printk("Early serial init of port 0 failed\n");
+-	}
+-
+-#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
++#endif
++#ifdef CONFIG_SERIAL_TEXT_DEBUG
+ 	/* Configure debug serial access */
+ 	gen550_init(0, &port);
+ #endif
++#ifdef CONFIG_KGDB_8250
++	kgdb8250_add_port(0, &port);
++#endif
++	
+ 
+ 	port.membase = ioremap64(PPC440GP_UART1_ADDR, 8);
+ 	port.irq = 1;
+ 	port.uartclk = clocks.uart1;
+ 	port.line = 1;
+ 
+-	if (early_serial_setup(&port) != 0) {
++#ifdef CONFIG_SERIAL_8250
++	if (early_serial_setup(&port) != 0)
+ 		printk("Early serial init of port 1 failed\n");
+-	}
+-
+-#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
++#endif
++#ifdef CONFIG_SERIAL_TEXT_DEBUG
+ 	/* Configure debug serial access */
+ 	gen550_init(1, &port);
+ #endif
++#ifdef CONFIG_KGDB_8250
++	kgdb8250_add_port(1, &port);
++#endif
+ }
+ 
++
+ static void __init
+ ebony_setup_arch(void)
+ {
+@@ -383,8 +392,4 @@ void __init platform_init(unsigned long 
+ 
+ 	ppc_md.nvram_read_val = todc_direct_read_val;
+ 	ppc_md.nvram_write_val = todc_direct_write_val;
+-#ifdef CONFIG_KGDB
+-	ppc_md.early_serial_map = ebony_early_serial_map;
+-#endif
+ }
+-
+--- linux-2.6.10-rc1.orig/arch/ppc/platforms/4xx/ocotea.c
++++ linux-2.6.10-rc1/arch/ppc/platforms/4xx/ocotea.c
+@@ -260,28 +260,34 @@ ocotea_early_serial_map(void)
+ 	port.flags = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
+ 	port.line = 0;
+ 
+-	if (early_serial_setup(&port) != 0) {
++#ifdef CONFIG_SERIAL_8250
++	if (early_serial_setup(&port) != 0)
+ 		printk("Early serial init of port 0 failed\n");
+-	}
+-
+-#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
++#endif
++#ifdef CONFIG_SERIAL_TEXT_DEBUG
+ 	/* Configure debug serial access */
+ 	gen550_init(0, &port);
+ #endif
++#ifdef CONFIG_KGDB_8250
++	kgdb8250_add_port(0, &port);
++#endif
+ 
+ 	port.membase = ioremap64(PPC440GX_UART1_ADDR, 8);
+ 	port.irq = UART1_INT;
+ 	port.uartclk = clocks.uart1;
+ 	port.line = 1;
+ 
+-	if (early_serial_setup(&port) != 0) {
++#ifdef CONFIG_SERIAL_8250
++	if (early_serial_setup(&port) != 0)
+ 		printk("Early serial init of port 1 failed\n");
+-	}
+-
+-#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
++#endif
++#ifdef CONFIG_SERIAL_TEXT_DEBUG
+ 	/* Configure debug serial access */
+ 	gen550_init(1, &port);
+ #endif
++#ifdef CONFIG_KGDB_8250
++	kgdb8250_add_port(1, &port);
++#endif
+ }
+ 
+ static void __init
+--- linux-2.6.10-rc1.orig/arch/ppc/platforms/4xx/xilinx_ml300.c
++++ linux-2.6.10-rc1/arch/ppc/platforms/4xx/xilinx_ml300.c
+@@ -42,9 +42,6 @@
+  *      ppc4xx_map_io				arch/ppc/syslib/ppc4xx_setup.c
+  *  start_kernel				init/main.c
+  *    setup_arch				arch/ppc/kernel/setup.c
+- * #if defined(CONFIG_KGDB)
+- *      *ppc_md.kgdb_map_scc() == gen550_kgdb_map_scc
+- * #endif
+  *      *ppc_md.setup_arch == ml300_setup_arch	this file
+  *        ppc4xx_setup_arch			arch/ppc/syslib/ppc4xx_setup.c
+  *          ppc4xx_find_bridges			arch/ppc/syslib/ppc405_pci.c
+@@ -83,7 +80,6 @@ ml300_map_io(void)
+ static void __init
+ ml300_early_serial_map(void)
+ {
+-#ifdef CONFIG_SERIAL_8250
+ 	struct serial_state old_ports[] = { SERIAL_PORT_DFNS };
+ 	struct uart_port port;
+ 	int i;
+@@ -99,11 +95,14 @@ ml300_early_serial_map(void)
+ 		port.flags = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
+ 		port.line = i;
+ 
+-		if (early_serial_setup(&port) != 0) {
++#ifdef CONFIG_SERIAL_8250
++		if (early_serial_setup(&port) != 0)
+ 			printk("Early serial init of port %d failed\n", i);
+-		}
++#endif
++#ifdef CONFIG_KGDB_8250
++		kgdb8250_add_port(i, &port)
++#endif
+ 	}
+-#endif /* CONFIG_SERIAL_8250 */
+ }
+ 
+ void __init
+@@ -156,9 +155,4 @@ platform_init(unsigned long r3, unsigned
+ #if defined(XPAR_POWER_0_POWERDOWN_BASEADDR)
+ 	ppc_md.power_off = xilinx_power_off;
+ #endif
+-
+-#ifdef CONFIG_KGDB
+-	ppc_md.early_serial_map = ml300_early_serial_map;
+-#endif
+ }
+-
+--- linux-2.6.10-rc1.orig/arch/ppc/platforms/85xx/sbc8560.c
++++ linux-2.6.10-rc1/arch/ppc/platforms/85xx/sbc8560.c
+@@ -78,8 +78,6 @@ struct ocp_fs_i2c_data mpc85xx_i2c1_def 
+ 	.flags = FS_I2C_SEPARATE_DFSRR,
+ };
+ 
+-
+-#ifdef CONFIG_SERIAL_8250
+ static void __init
+ sbc8560_early_serial_map(void)
+ {
+@@ -95,27 +93,34 @@ sbc8560_early_serial_map(void)
+         uart_req.membase = ioremap(uart_req.mapbase, MPC85xx_UART0_SIZE);
+ 	uart_req.type = PORT_16650;
+ 
+-#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
+-        gen550_init(0, &uart_req);
++#ifdef CONFIG_SERIAL_8250
++	if (early_serial_setup(&serial_req) != 0)
++		printk("Early serial init of port 0 failed\n");
+ #endif
+- 
+-        if (early_serial_setup(&uart_req) != 0)
+-                printk("Early serial init of port 0 failed\n");
+- 
++#ifdef CONFIG_SERIAL_TEXT_DEBUG
++	gen550_init(0, &serial_req);
++#endif
++#ifdef CONFIG_KGDB_8250
++	kgdb8250_add_port(0, &port);
++#endif
++
+         /* Assume early_serial_setup() doesn't modify uart_req */
+ 	uart_req.line = 1;
+         uart_req.mapbase = UARTB_ADDR;
+         uart_req.membase = ioremap(uart_req.mapbase, MPC85xx_UART1_SIZE);
+ 	uart_req.irq = MPC85xx_IRQ_EXT10;
+- 
+-#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
+-        gen550_init(1, &uart_req);
++
++#ifdef CONFIG_SERIAL_8250
++	if (early_serial_setup(&serial_req) != 0)
++		printk("Early serial init of port 1 failed\n");
+ #endif
+- 
+-        if (early_serial_setup(&uart_req) != 0)
+-                printk("Early serial init of port 1 failed\n");
+-}
++#ifdef CONFIG_SERIAL_TEXT_DEBUG
++	gen550_init(1, &serial_req);
+ #endif
++#ifdef CONFIG_KGDB_8250
++	kgdb8250_add_port(1, &port);
++#endif
++}
+ 
+ /* ************************************************************************
+  *
+@@ -144,9 +149,7 @@ sbc8560_setup_arch(void)
+ 	/* setup PCI host bridges */
+ 	mpc85xx_setup_hose();
+ #endif
+-#ifdef CONFIG_SERIAL_8250
+ 	sbc8560_early_serial_map();
+-#endif
+ #ifdef CONFIG_SERIAL_TEXT_DEBUG
+ 	/* Invalidate the entry we stole earlier the serial ports
+ 	 * should be properly mapped */ 
+--- linux-2.6.10-rc1.orig/arch/ppc/platforms/mcpn765.c
++++ linux-2.6.10-rc1/arch/ppc/platforms/mcpn765.c
+@@ -518,9 +518,4 @@ platform_init(unsigned long r3, unsigned
+ #ifdef CONFIG_SERIAL_TEXT_DEBUG
+ 	ppc_md.progress = gen550_progress;
+ #endif
+-#ifdef CONFIG_KGDB
+-	ppc_md.kgdb_map_scc = gen550_kgdb_map_scc;
+-#endif
+-
+-	return;
+ }
+--- linux-2.6.10-rc1.orig/arch/ppc/platforms/pcore.c
++++ linux-2.6.10-rc1/arch/ppc/platforms/pcore.c
+@@ -345,7 +345,4 @@ platform_init(unsigned long r3, unsigned
+ #ifdef CONFIG_SERIAL_TEXT_DEBUG
+ 	ppc_md.progress = gen550_progress;
+ #endif
+-#ifdef CONFIG_KGDB
+-	ppc_md.kgdb_map_scc = gen550_kgdb_map_scc;
+-#endif
+ }
+--- linux-2.6.10-rc1.orig/arch/ppc/platforms/pplus.c
++++ linux-2.6.10-rc1/arch/ppc/platforms/pplus.c
+@@ -907,9 +907,6 @@ platform_init(unsigned long r3, unsigned
+ #ifdef CONFIG_SERIAL_TEXT_DEBUG
+ 	ppc_md.progress = gen550_progress;
+ #endif				/* CONFIG_SERIAL_TEXT_DEBUG */
+-#ifdef CONFIG_KGDB
+-	ppc_md.kgdb_map_scc = gen550_kgdb_map_scc;
+-#endif
+ #ifdef CONFIG_SMP
+ 	ppc_md.smp_ops = &pplus_smp_ops;
+ #endif				/* CONFIG_SMP */
+--- linux-2.6.10-rc1.orig/arch/ppc/platforms/spruce.c
++++ linux-2.6.10-rc1/arch/ppc/platforms/spruce.c
+@@ -181,26 +181,32 @@ spruce_early_serial_map(void)
+ 	serial_req.membase = (u_char *)UART0_IO_BASE;
+ 	serial_req.regshift = 0;
+ 
+-#if defined(CONFIG_KGDB) || defined(CONFIG_SERIAL_TEXT_DEBUG)
+-	gen550_init(0, &serial_req);
+-#endif
+ #ifdef CONFIG_SERIAL_8250
+ 	if (early_serial_setup(&serial_req) != 0)
+ 		printk("Early serial init of port 0 failed\n");
+ #endif
++#ifdef CONFIG_SERIAL_TEXT_DEBUG
++	gen550_init(0, &serial_req);
++#endif
++#ifdef CONFIG_KGDB_8250
++	kgdb8250_add_port(0, &port);
++#endif
+ 
+ 	/* Assume early_serial_setup() doesn't modify serial_req */
+ 	serial_req.line = 1;
+ 	serial_req.irq = UART1_INT;
+ 	serial_req.membase = (u_char *)UART1_IO_BASE;
+ 
+-#if defined(CONFIG_KGDB) || defined(CONFIG_SERIAL_TEXT_DEBUG)
+-	gen550_init(1, &serial_req);
+-#endif
+ #ifdef CONFIG_SERIAL_8250
+ 	if (early_serial_setup(&serial_req) != 0)
+ 		printk("Early serial init of port 1 failed\n");
+ #endif
++#ifdef CONFIG_SERIAL_TEXT_DEBUG
++	gen550_init(1, &serial_req);
++#endif
++#ifdef CONFIG_KGDB_8250
++	kgdb8250_add_port(1, &port);
++#endif
+ }
+ 
+ TODC_ALLOC();
+@@ -319,7 +325,4 @@ platform_init(unsigned long r3, unsigned
+ #ifdef CONFIG_SERIAL_TEXT_DEBUG
+ 	ppc_md.progress = gen550_progress;
+ #endif /* CONFIG_SERIAL_TEXT_DEBUG */
+-#ifdef CONFIG_KGDB
+-	ppc_md.kgdb_map_scc = gen550_kgdb_map_scc;
+-#endif
+ }
+--- linux-2.6.10-rc1.orig/arch/ppc/syslib/gen550.h
++++ linux-2.6.10-rc1/arch/ppc/syslib/gen550.h
+@@ -13,4 +13,3 @@
+ 
+ extern void gen550_progress(char *, unsigned short);
+ extern void gen550_init(int, struct uart_port *);
+-extern void gen550_kgdb_map_scc(void);
+--- linux-2.6.10-rc1.orig/arch/ppc/syslib/ibm44x_common.c
++++ linux-2.6.10-rc1/arch/ppc/syslib/ibm44x_common.c
+@@ -163,9 +163,6 @@ void __init ibm44x_platform_init(void)
+ #ifdef CONFIG_SERIAL_TEXT_DEBUG
+ 	ppc_md.progress = gen550_progress;
+ #endif /* CONFIG_SERIAL_TEXT_DEBUG */
+-#ifdef CONFIG_KGDB
+-	ppc_md.kgdb_map_scc = gen550_kgdb_map_scc;
+-#endif
+ 
+ 	/*
+ 	 * The Abatron BDI JTAG debugger does not tolerate others
+--- linux-2.6.10-rc1.orig/arch/ppc/syslib/ppc85xx_setup.c
++++ linux-2.6.10-rc1/arch/ppc/syslib/ppc85xx_setup.c
+@@ -69,7 +69,6 @@ mpc85xx_calibrate_decr(void)
+ 	mtspr(SPRN_TCR, TCR_DIE);
+ }
+ 
+-#ifdef CONFIG_SERIAL_8250
+ void __init
+ mpc85xx_early_serial_map(void)
+ {
+@@ -88,12 +87,16 @@ mpc85xx_early_serial_map(void)
+ 	serial_req.mapbase = duart_paddr;
+ 	serial_req.regshift = 0;
+ 
+-#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
+-	gen550_init(0, &serial_req);
+-#endif
+-
++#ifdef CONFIG_SERIAL_8250
+ 	if (early_serial_setup(&serial_req) != 0)
+ 		printk("Early serial init of port 0 failed\n");
++#endif
++#ifdef CONFIG_SERIAL_TEXT_DEBUG
++	gen550_init(0, &serial_req);
++#endif
++#ifdef CONFIG_KGDB_8250
++	kgdb8250_add_port(0, &port);
++#endif
+ 
+ 	/* Assume early_serial_setup() doesn't modify serial_req */
+ 	duart_paddr = binfo->bi_immr_base + MPC85xx_UART1_OFFSET;
+@@ -101,14 +104,17 @@ mpc85xx_early_serial_map(void)
+ 	serial_req.mapbase = duart_paddr;
+ 	serial_req.membase = ioremap(duart_paddr, MPC85xx_UART1_SIZE);
+ 
+-#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
+-	gen550_init(1, &serial_req);
+-#endif
+-
++#ifdef CONFIG_SERIAL_8250
+ 	if (early_serial_setup(&serial_req) != 0)
+ 		printk("Early serial init of port 1 failed\n");
+-}
+ #endif
++#ifdef CONFIG_SERIAL_TEXT_DEBUG
++	gen550_init(1, &serial_req);
++#endif
++#ifdef CONFIG_KGDB_8250
++	kgdb8250_add_port(1, &port);
++#endif
++}
+ 
+ void
+ mpc85xx_restart(char *cmd)
+@@ -345,5 +351,3 @@ mpc85xx_setup_hose(void)
+ 	return;
+ }
+ #endif /* CONFIG_PCI */
+-
+-
+--- linux-2.6.10-rc1.orig/include/asm-ppc/machdep.h
++++ linux-2.6.10-rc1/include/asm-ppc/machdep.h
+@@ -56,9 +56,7 @@ struct machdep_calls {
+ 	unsigned long	(*find_end_of_memory)(void);
+ 	void		(*setup_io_mappings)(void);
+ 
+-	void		(*early_serial_map)(void);
+   	void		(*progress)(char *, unsigned short);
+-	void		(*kgdb_map_scc)(void);
+ 
+ 	unsigned char 	(*nvram_read_val)(int addr);
+ 	void		(*nvram_write_val)(int addr, unsigned char val);
 
-> > * In the PerformanceMonitor can't you use regs->nip for the same
-> > purpose of regs->sia?
->
-> Hmmm.... somehow I missed this when I was looking for a way to get the
-> sampled address.=A0 I will change this if no one thinks of a good =
-reason
-> to do otherwise.
->
-> > * Does arch/ppc/kernel/perfmon.c really need all the headers you are
-> > including?
->
-> Probably not.=A0 Does anyone know an easy way to determine which =
-headers
->  are needed?
->
-> > * Does perfmon.c make more sense as perfmon_fsl_booke.c
->
-> Well, I thought about that, but I figured that it was ok to put all of
-> the code into one file, and use #ifdef to distinguish.=A0 I'm willing =
-to
-> divide it into two (one for FSL booke, and one for classic), though.
-
-Unless there is a fair amount of shared code, I would recommend=20
-separating the files. We are not going to have a single kernel image=20
-that supports both book-e and classic PPC so we can make this a=20
-compile/makefile decision instead of #ifdef'd.
-
-> > * op_ppc32_setup, I'd prefer the saving & restoring of the perf_irq
-> > like arch/ppc64/oprofile/common.c does
->
-> Well, does this really make sense?=A0 If one driver grabs the =
-interrupt,
-> and a subsequent driver tries to grab it, do we want the second driver
-> to win, but nicely restore the handler later, or do we want the second
-> driver to fail, and give the user the chance to disable the other
-> driver?=A0 I definitely won't use the method in ppc64, since that =
-isn't
-> thread-safe if more than one driver wants the perfmon interrupt.
-
-Hmm, ok.  I'm not sure what we should do here.  Maybe others have some=20=
-
-comments.
-
-> > * a number of issues related to SMP
->
-> I admit, I haven't carefully worked this out, as there aren't any SMP
-> e500 systems out there.
-
-True, but if you are going share infrastructure with PPC classic, there=20=
-
-are a number of SMP systems there.
-
-[snip]
-
-- kumar=
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
