@@ -1,47 +1,27 @@
-Message-Id: <200011210659.HAA00750@piglet.grunz.lu>
-Date: Tue, 21 Nov 2000 07:59:23 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: controlfb problem (on XFree86-4.0.1 off the penguinppc.org deve
- lopment tree)
-To: jens_tingleff@yahoo.com
-cc: linuxppc-dev@lists.linuxppc.org, ajoshi@unixbox.com
-In-Reply-To: <20001121002310.28257.qmail@web1608.mail.yahoo.com>
+Date: Tue, 21 Nov 2000 10:50:03 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Stefan Jeglinski <jeglin@4pi.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: whacked out 2.2.18preX - last gasp
+In-Reply-To: <p04330100b63f9bce42dd@[192.168.0.1]>
+Message-ID: <Pine.LNX.4.10.10011211049130.22058-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+> The following kernels work fine:
+> linux-pmac-stable (2.2.17)
+> penguinppc.org::linux-pmac-benh (2.2.18pre17)
+>
+> I want 2.2.18 because it appears to have the full USB backport
+> (according to linux-usb.org). Also AFAICT, the "backports" on
 
-On  20 Nov, this message from Jens Tingleff echoed through cyberspace:
-> I had a look through the linuxppc-dev mailing list, and found a few
-> patches to controlfb. I collected a few and made them fit in (from
-> messages in September).
+The PPC source trees always had the 'full USB backport' (nothing else
+would work on PPC) for all I know.
 
-I see those are patches to XFree. I have no problem with controlfb,
-running XFree 4.0.1 from fsirl's R5 RPMs on devel.linuxppc.org, with the
-exception of the screen being displaced to the right (IIRC).
-
-That problem I fixed for me with a patch you can find here:
-
-http://www.cpu.lu/~mlan/linux/dev/xf4.html
-
-> the result is that I get Xwin (yay!), if only in 15bpp (no big problem)
-
-I only tried 1152 x 870 @ 32 bpp; that works perfectly fine for me...
-
-Cheers
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
