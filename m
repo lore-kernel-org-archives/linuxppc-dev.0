@@ -1,38 +1,24 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jean-Jacques Levy <Jean-Jacques.Levy@inria.fr>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: airport + dhcp
-Date: Sun, 2 Dec 2001 21:37:28 +0100
-Message-Id: <20011202203728.19331@smtp.wanadoo.fr>
-In-Reply-To: <200112022021.VAA17589@macaron.inria.fr>
-References: <200112022021.VAA17589@macaron.inria.fr>
+Date: Sun, 2 Dec 2001 14:03:35 -0700 (MST)
+From: Derrik Pates <dpates@dsdk12.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.17-pre[12]-ben0 trees hang on unsuspend
+In-Reply-To: <20331103021714.8497@smtp.wanadoo.fr>
+Message-ID: <Pine.LNX.4.40.0112021403130.30071-100000@andromeda.dsdk12.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->Did anybody meet speed problems when connecting an airport to a dhcp
->cable tv ISP?
->
->The speed is then incredibly slow, inducing timeouts for pop servers
->as soon as there are long messages to transfer.
->
->But the speed is quite normal with a real wire connexion between my
->powerbook and the cable tv modem (ie without the airport), when I use
->the same airport with a fixed IP adress at my office. It seems the
->problem happens only when combining airport and dhcp (under linux or
->macos9/10).
->
->I run 2.4.15-ben0 kernel on a pbg4.
->
->Thanks for help.
+On Thu, 3 Nov 2033, Benjamin Herrenschmidt wrote:
 
-I'm afraid if the problem also happens with MacOS, it's an issue
-with the station firmware. You'd rather report it to apple ;)
+> Some bug in the assembly. I fixed it.
 
-Ben.
+When will the fix show up in the rsync tree?
+
+Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
+dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
