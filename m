@@ -1,45 +1,26 @@
-Message-ID: <313680C9A886D511A06000204840E1CF08F43047@whq-msgusr-02.pit.comms.marconi.com>
-From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-To: "'Dan Kegel'" <dank@kegel.com>,
-	"'trevor_scroggins@hotmail.com'" <trevor_scroggins@hotmail.com>,
-	"'bertrand marquis'" <bertrand_marquis@yahoo.fr>
-Cc: crossgcc <crossgcc@sources.redhat.com>,
-	"'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: missing elf.h (for mk_elfconfig.c)  while  building zImage for PP
-	C on Intel platform (windows XP) using cygwin
-Date: Wed, 21 Jul 2004 07:28:42 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Thu, 22 Jul 2004 12:48:10 +0200
+From: Guido Guenther <agx@sigxcpu.org>
+To: Rob Weir <rweir@ertius.org>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: pmdisk oops(?) on g4 ibook
+Message-ID: <20040722104810.GB11423@bogon.ms20.nix>
+References: <20040701041703.GH27929@ooder.ertius.org> <20040716074152.GC3698@bogon.ms20.nix> <20040716082310.GB4608@ooder.ertius.org> <20040716092003.GE3698@bogon.ms20.nix> <20040716094049.GC4608@ooder.ertius.org>
+Mime-Version: 1.0
+In-Reply-To: <20040716094049.GC4608@ooder.ertius.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Fri, Jul 16, 2004 at 07:40:49PM +1000, Rob Weir wrote:
+> I do a dist-upgrade against sid every few days, but I haven't changed
+> the kernel in weeks. Hm...I'm using your 2.6.7-rc3 pmdisk patch
+> against 2.6.7 itself, maybe I should just update to your 2.6.7 one and
+> 2.6.8-rcX before bothering you further...
 
-I have made changes in linux-2.6/scripts/kconfig/Makefile as advised and it
-did fix menuconfig problem - thank you very much for being kind and patient
-helping - much appreciated !
-
-Now I am facing the next problem: missing elf.h (for mk_elfconfig.c) while
-building zImage for PPC on Intel platform (windows XP) using cygwin.
-
->From where I could pick-up this include file ?
-
-Thanks,
-Alex
-**********************
-apovolot@USPITLAD104868 ~/linux-2.6.7
-$ make zImage
-  SPLIT   include/linux/autoconf.h -> include/config/*
-  HOSTCC  scripts/basic/fixdep
-  HOSTCC  scripts/basic/split-include
-  HOSTCC  scripts/basic/docproc
-  HOSTCC  scripts/conmakehash
-  HOSTCC  scripts/kallsyms
-  CC      scripts/empty.o
-  HOSTCC  scripts/mk_elfconfig
-scripts/mk_elfconfig.c:4:17: elf.h: No such file or directory
-
+Just for completeness: we tracked this down do be CONFIG_PREEMPT
+related. Without that it works fine on 2.6.8-rc2.
+Cheers,
+ -- Guido
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
