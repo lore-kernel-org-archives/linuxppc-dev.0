@@ -1,105 +1,55 @@
-Date: Tue, 2 Dec 2003 13:26:57 +0100 (MET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: [CFP] 2nd EMBEDDED SYSTEMS and OPERATING SYSTEMS track at FOSDEM
- 2004
-Message-ID: <Pine.GSO.4.21.0312021326050.25508-100000@waterleaf.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: insmod ipv6 freezes current linuxppc-2.5 and 2.5-benh
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Harald Welte <laforge@gnumonks.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <20031130155530.GK26749@obroa-skai.de.gnumonks.org>
+References: <20031120201249.GB29432@sunbeam.de.gnumonks.org>
+	 <1069386878.876.49.camel@gaston>
+	 <20031121153314.GC23224@sunbeam.de.gnumonks.org>
+	 <20031130155530.GK26749@obroa-skai.de.gnumonks.org>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <1070380779.5675.16.camel@thor.asgaard.local>
+Mime-Version: 1.0
+Date: Tue, 02 Dec 2003 16:59:39 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Please find below the Call For Papers for the
+On Sun, 2003-11-30 at 16:55, Harald Welte wrote:
+> On Fri, Nov 21, 2003 at 04:32:52PM +0100, Harald Welte wrote:
+> >
+> > On Fri, Nov 21, 2003 at 02:54:38PM +1100, Benjamin Herrenschmidt wrote:
+> >
+> > > Interesting. Same machine here and I use 2.6 everyday :)
+> >
+> > The problem seems to be gcc-related. Debian testing seems to have
+> > installed gcc-3.3.2 (yes, maybe not the best compiler for a kernel
+> > anyway) per default.
+> >
+> > compiling the same kernel with gcc-2.95 results in a working ipv6
+> > module.
+>
+> I did some more testing:
+>
+> Compiles with gcc-3.3.2 and gcc-3.2.3 result in a broken kernel,
+> gcc-3.0.4 and gcc-2.95.4 work fine.
 
-  2nd Embedded Systems and Operating Systems track at FOSDEM
+I've been running Ben's tree built with gcc-3.3 for a while (since
+test7-ish) without problems:
 
-21-22 February 2004, Brussels.
+daenzer@thor|16:55:01> cat /proc/version                               ~
+Linux version 2.6.0-test11-benh (daenzer@thor) (gcc version 3.3.2
+(Debian)) #1 Sat Nov 29 14:07:02 CET 2003
+daenzer@thor|16:55:43> lsmod|grep ip                                   ~
+ipv6                  290072  15
 
-Last year's presentations are at
 
-http://www.embedded-kernel-track.org/2003/
+What version of binutils do you have? Current from testing here.
 
-Abstract deadline is 18 Dec 2004.
-
--------------------------------------------------------------------------------
-
-2nd EMBEDDED SYSTEMS and OPERATING SYSTEMS track at FOSDEM 2004
-===============================================================
-
-21 - 22 February 2004, Brussels
-
-Call for papers
----------------
-
-The 2004 edition of FOSDEM (Free and Open Source Developers' European
-Meeting; http://www.fosdem.org) will take place in Brussels, Belgium
-on 21 and 22 February 2004. For the second time, a track on Embedded
-and Operating Systems will be organized. The first edition was quite
-succesful and attracted up to 100 attendants for certain topics.
-The program and papers of last year are available at
-http://www.embedded-kernel-track.org/2003/
-
-The use of Free Software in the infrastructure of Embedded Systems
-is booming, e.g. by the use of Linux, uClinux, eCos, RedBoot, RTEMS
-and many other Free Software components. Operating System development
-has always been a very important topic in Free Software. As embedded
-and real-time systems typically have special OS requirements, we
-organise this Free Embedded and OS development track at FOSDEM.
-
-This track at FOSDEM provides a remarkable opportunity to present and
-discuss the ongoing work in these areas, and we invite developers to
-present their current projects. Technical topics of the conference
-include but are not limited to :
-
-* OS Development : kernel architecture and implementation
-  (e.g. Linux, BSD, the Hurd, ...)
-
-* Embedded Development : tool chains and project cases
-  (e.g. tool chain projects, packaging for cross
-   compilation, portability, ...)
-
-* Real-time extensions, nanokernels and hardware virtualization software
-  (e.g. RTAI, Adeos, KURT, L4, ...)
-
-* Hard real-time OS's
-  (eCos, RTEMS, ...)
-
-* Embedded Java: open source implementations and the compatibility question
-  (Classpath, Kaffe, Wonka, ..., Mauve, JCK, JCP, ...)
-
-* Open hardware and softcores
-  (e.g opencores.org, OpenRISC, leonSparc, FPGA's, ...)
-
-* GUI's for embedded systems
-  (Gtk, Qt, MicroWindows, ...)
-
-Authors are requested to submit their abstracts online to
-embedded@fosdem.org before 18/12/2004. Notification of receipt
-will be sent within 48 hours. Authors wishing to submit a full
-paper (between 6 and 12 A4 pages), can do so in PS or PDF format.
-
-The Program Committee will evaluate the abstracts and consists of:
-
-* Herman Bruyninckx, Professor at K.U.Leuven, Belgium
-* Geert Uytterhoeven, Sony NSCE, Belgium
-* Karim Yaghmour, Opersys, Canada
-* Marcus Brinkman, University Bochum, Germany
-* Peter 'p2' De Schrijver, Mind, Belgium
-
-Peter Vandenabeele, acts as practical organiser for this track.
-All communication should be addressed to embedded@fosdem.org
-
-Gr{oetje,eeting}s,
-
-						Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
+Software libre enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
