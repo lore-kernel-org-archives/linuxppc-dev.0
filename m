@@ -1,55 +1,39 @@
-Message-Id: <199902091212.NAA23161@kieray1>
-Date: Tue, 9 Feb 1999 13:12:53 +0100 (MET)
-From: Magnus Damm <eramdam@kieray1.p.y.ki.era.ericsson.se>
-Reply-To: Magnus Damm <eramdam@kieray1.p.y.ki.era.ericsson.se>
-Subject: FADS860 nfsroot
-To: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Date: Tue, 9 Feb 1999 13:14:36 +0100
+To: linuxppc-dev@lists.linuxppc.org,
+        mklinux-development-system@public.lists.apple.com
+From: BenH <bh40@calva.net>
+Subject: NuBus PowerMacs and PDM video
+Message-Id: <19990209131436.011982@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Anyone else with embedded 860 linux that has problems with nfsroot?
+Hi !
 
-The zImage.fads-2.1.127 hangs for me right when it's supposed to display 
-"bash#"
+I'm doing some experiments with the MMU (learning it's usage). The goal
+is to add some better bootstrap code to BootX (get rid of the -622 error
+with MacOS VM) and to add support for the rather "special" memory
+mappings of the NuBus PowerMacs.
 
-My MBX-board works just fine with nfsroot connected to the same server.
+However, I have a problem with the video on those machines: If I
+understand things correctly, the framebuffer is set by MacOS to physical
+address 0. This is a problem for us since we need to have some exception
+vectors and other things like that in this location.
 
-I haven't made any deep investigation about the FADS case above yet,
-but I suspect that it is the same problem as I've got with my ADS board. 
+I beleive MkLinux booter moves it elswhere, but I don't know how to do
+that (I don't have infos about the chip and I don't have one of those
+machines to test with).
 
-It booted with initrd and I could even mount nfs with "mount -t nfs".
-But nfsroot didn't work.
+Any clues ?
 
-I've made some printouts to see what happens when "/bin/sh" is loaded,
-and run the new kernel on both the MBX and the ADS board.
-They start doing the same thing but after a while the ADS code goes wild
-and opens some directory and differs completly from the MBX board.
-Then it hangs.
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-I've thought that my crosscompiler 
-(ppc-linux-gnu-gcc -dumpversion gives egcs-2.91.57)
-was a bit buggy, but now when I've downloaded the zImage directly from the
-embedded directory and my board hangs, I don't know what to belive...
 
-It might be my FADS board that sucks? 
-I've got a PILOT motherboard and a PILOT 860Tboard.
 
-On the list the 12-Jan Dan Malek tells us that his FADS board has problems
-using anything else than initrd. 
-
-I'm using a hacked version fadsrom which uses a msdos partitiontable
-instead of OSF to boot the zImage.fads-2.1.127 from a compact flash card.
-
-Anyone with similar problems?
-
-Anyone out there with a ADS-board?
-
-TIA /
-
-Magnus 
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
