@@ -1,46 +1,47 @@
-Date: Mon, 13 Sep 1999 03:23:13 +0100 (BST)
-From: Jules Bean <jmlb2@hermes.cam.ac.uk>
-To: Alex Fishman <fosh@fosh.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Kensington 'orbit' trackball - think's it's a turbomouse 5?
-In-Reply-To: <Pine.LNX.3.96.990911115053.7386A-100000@localhost.localdomain>
-Message-ID: <Pine.SOL.4.10a.9909130317290.17504-100000@orange.csi.cam.ac.uk>
+Message-ID: <37DC6656.2A40D04D@ctam.com.au>
+Date: Mon, 13 Sep 1999 12:49:58 +1000
+From: Brendan Simon <bsimon@ctam.com.au>
+Reply-To: bsimon@ctam.com.au
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: LinuxPPC: porting to new platforms
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 11 Sep 1999, Alex Fishman wrote:
+I've been trying to get linuxppc running on a Motorola ADS board for
+some time now.  It seems that the ADS/FADS boards are quite horrible
+from the mail I've read on this list.  I have now decided to take the
+plunge and port it to a custom MPC860 board.
 
-> 
-> Infact, the mouse really is a turbo mouse 5 in disguise, this is not the
-> problem, the problem is that the two buttons on the mouse are mapped to
-> one and two, you want them mapped to one and three (i.e.  The button on
-> the left is like the first button on a three button, the button on the
-> right is like the third button, and chording is like the second button).
-> TO accomplish this, type:
-> 
-> xmodmap -e "pointer = 1 3 2"
+Are there any documents that will help in the port ?  I need information
+on which files need changing etc and what strategies to adopt.
 
-I have tried this, as I did in fact mention (briefly) - sorry if it wasn't
-clear.
+At the moment, I am playing around with the 2.2.11 kernel sources which
+I got from a kernel mirror.  I notice that the support for BSE and RPX
+boards is not in this source.  Are there some PPC specific kernel
+archives I should be getting instead ?
 
-It does correctly make the right button button 3, but it *doesn't* make
-chording work.  This made me guess that the chording code is at a lower
-level, in the XF86 mouse drivers, and therefore it isn't affected by
-xmodmap.
+I don't think 2.2.11 is the latest in the 2.2 series anymore.  I want to
+make my port official and included in the kernel sources.  What is the
+best way to go about this ?  Is it recommended to use the latest
+experimental kernels (2.3.x) or the latest 2.2 kerenl ?  Is 2.2.11 ok to
+develop with or should I get the latest 2.2 kernel ?
 
-> > 
-> > When I'm in X, the mouse operates fine as a two-button mouse, except that
-> > it is sending buttons 1 and 2, rather than the more useful 1 and 3.
-> > 
-> > I can superficially fix this last using xmodmap pointer, although (AFAIK)
-> > there's no way of doing an 'emulate3buttons' trick at this stage.
+Anyway, I am basing my port on the MBX stuff as it is the only 860 port
+in the 2.2.11 archive I have.  I think the BSE or FADS port would be
+closer to my custom board though.  I basically have copied the mbxboot/
+directory to myboot/ and have altered config.in.  I tried compiling and
+found that it was trying to do the chrp build.  I think I need to add
+support for my_defconfig files.  The mbx_defconconfig files says that it
+is generated automatically by make menuconfig and not to edit it.  How
+do I get make menuconfig to generate my_defconfig etc.  Is there
+anything else I have to do.
 
-<<snip>>
-
-Jules
+Thanks,
+Brendan Simon.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
