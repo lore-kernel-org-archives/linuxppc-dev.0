@@ -1,62 +1,43 @@
-Message-ID: <37665FCD.68C61F58@fi.infn.it>
-Date: Tue, 15 Jun 1999 16:14:37 +0200
-From: Simone Piccardi <Simone.Piccardi@fi.infn.it>
+From: Nathan Sheeley <nsheeley@ibmoto.com>
+Message-Id: <199906151429.JAA27576@shippy.ibmoto.com>
+Subject: pmac SMP support broken?
+To: linuxppc-dev@lists.linuxppc.org
+Date: Tue, 15 Jun 1999 09:29:00 -0500 (CDT)
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: How to boot VME from HD?
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Gabriel,
 
-today I tried to upgrade the system to 2.2.9 using your new patches, but
-I had some problem when I tried to compile the kernel. I downloaded the
-sources and then I applied the mvme2600.generic-patch-2.2.9 and
-mvme2600.vme-patch-2.2.9.
-At the make distclean command I get this error:
-make[1]: Leaving directory `/usr/src/linux-2.2.9/arch/ppc/mbxboot'
-make[1]: Entering directory `/usr/src/linux-2.2.9/arch/ppc/prepboot'
-Makefile:74: .depend: No such file or directory
-make[1]: *** No rule to make target `.depend'.  Stop.
-make[1]: Leaving directory `/usr/src/linux-2.2.9/arch/ppc/prepboot'
-make: *** [archclean] Error 2
-I also copied also mvme2600.config.nfsroot as .config; make oldconfig
-worked, but make dep gave me the same error:
-make[1]: Entering directory `/usr/src/linux-2.2.9/arch/ppc/prepboot'
-Makefile:74: .depend: No such file or directory
-make[1]: *** No rule to make target `.depend'.  Stop.
-make[1]: Leaving directory `
-make: *** [archdep] Error 2
-It seems that I'm missing the .depend file that does not have in the
-/usr/src/linux-2.2.9/arch/ppc/prepboot directory, when I have it in the 
-/usr/src/linux-2.2.6/arch/ppc/prepboot; can I use this last?
+Has anyone tried to build/run a pmac SMP kernel with a recent (2.2.9)
+version of Linux?  
 
-And just another question, more general; to install the system I started
-from the rpm packages that I find in a LinuxPPC mirror site (they were a
-pre-R5), but I had some problem with this "rough" installation: for
-example I had to remove the Unix pty support otherwise I cannot login in
-to the board using telnet. Now it seems impossible to use sockets to
-communicate with other computer (a client program that is working
-perfectly between two PC, o when stasted from the board, cannot connect
-to the server on the board from an external computer). 
+	o I've got a 9500 with 2 604e/200MHz.
+	o A UP kernel works fine.  
+	o Compliling the same kernel with the SMP support box checked results in
+	  a kernel that doesn't boot on UP(a G3) or SMP(the 9500) machines. 
+	o I also replaced the dual card with a single 133 MHz CPU, which also fails 
+    to boot the SMP kernel.
 
-So there is a standard distribution to use for these board? or a
-standard procedure to have a clean installation? And there is somewhere
-an iso image for such a distribution (I would like to put everyting on a
-CDrom)?
+Can I expect a SMP kernel to boot on a UP?  I thought so, although it might
+be slower than a UP kernel on a UP.
 
-Bye (and thanks for the suggestion about the boot!) 
+The symptoms are that it gets to the point of "opening the display", which
+activates the display (all white, I assume painted that way by OF), prints 
+"copying OF device tree...done" and stops.  
 
--- 
-Simone Piccardi
-Microsoft is NOT the answer. Microsoft is the Question.
-The answer is: "NO!"
--- 
-Simone Piccardi
-Microsoft is NOT the answer. Microsoft is the Question.
-The answer is: "NO!"
+Also, I was poking around in arch/ppc/kernel/head.S and I noticed this:
+
+  oris  r18,r8,0x20000000@h
+  oris  r21,r11,(KERNELBASE+0x20000000)@h
+  mtspr DBAT2L,r18    /* N.B. 6xx (not 601) have valid */
+  mtspr DBAT2U,r21    /* bit in upper BAT register */
+  mtspr IBAT2L,r28
+               ^^^^^^^^^^^^^^^^Wouldn't r18 make more sense here?
+  mtspr IBAT2U,r21    
+
+Nathan Sheeley
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
