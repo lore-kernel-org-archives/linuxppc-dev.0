@@ -1,30 +1,28 @@
-In-Reply-To: <Pine.HPX.4.10.10003101341450.22162-100000@gra-ux1.iram.es>
-Date: Fri, 10 Mar 2000 14:14:34 +0100
-To: Gabriel Paubert <paubert@iram.es>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on pp cwith r128
-Message-Id: <20000310141434.019878@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Fri, 10 Mar 2000 16:03:57 +0100 (MET)
+From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.2.15pre11 on PB Lombard
+In-Reply-To: <Pine.SOL.3.95.1000309182200.26688A-100000@juliet>
+Message-ID: <Pine.SOL.3.95.1000310155822.28663B-100000@juliet>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Mar 10, 2000, Gabriel Paubert <paubert@iram.es> wrote:
+On Thu, 9 Mar 2000, Derek Homeier wrote:
 
->What do you mean with x100 ? Is it a series of PMAC models ? sync and
->eieio perform an address-only bus broadcast that should be terminated by
->the host bridge but never to the PCI bus so they can't crash HW. Is the
->host bridge/memory controller really that buggy ?
+>
+> I also noticed that power consumption during sleep had dramatically increased
+> with the previous 2.2.15pre kernels; I'm currently checking out if that problem
+> persists.
+>
+Seems as it is still there, the battery is discharged by approx. 40% during
+24 hours of sleep w/ 2.2.15pre11, while it used to be ~10%. I think it was
+even more (>60%) with 2.2.15pre3-7. Has anyone else seen this?
+The sound module was unloaded and the CD drive empty.
 
-Those machines are also known as the NuBus PowerMacs. The adress only
-cycle is broadcast on their bus and makes some of Apple's AV cards crash.
-
->And isync is not irrelevant on any processor since a) it flushes the
->instruction queue and b) it ensures that the effect of all previous
->instructions on machine state is taken into account before the next
->instruction executes (that's important if you change context by changing
->segment registers or modify some MSR bits).
+							Derek
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
