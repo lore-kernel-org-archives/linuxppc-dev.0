@@ -1,50 +1,45 @@
-Message-ID: <393CF541.4E4D88B7@pop.agri.ch>
-Date: Tue, 06 Jun 2000 14:57:37 +0200
-From: Andreas Tobler <toa@pop.agri.ch>
+Message-ID: <393D0D62.8D0979E2@relog.ch>
+Date: Tue, 06 Jun 2000 16:40:34 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-To: mlan@cpu.lu
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2940UW & 2.4.0-test-ac7 PCI probs
-References: <200006061136.NAA01541@piglet.grunz.lu>
-Content-Type: text/plain; charset=us-ascii
+To: Sinan Gürkan <sgurkan@superonline.com>
+CC: linux-apus-user@lists.sourceforge.net, linux-powerpc@lists.debian.org,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: New experimental X 4.0 not working
+References: <yam8192.1708.1987516072@mail.superonline.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+[I'm forwarding this to the MLs so everyone knows]
 
-Michel Lanners wrote:
-> >   for root[0:ffffffff] min[1000] size[100]
-> >   got res[1000:10ff] for resource 0
+Sinan Gürkan wrote:
+
+> I installed XFree4.0b...but it doesn`t work...
+> after startx command it loads a bit and it freezes the whole system.
+> You have to reboot and filesystem is corrupted..(I ran fsck 3 times :) )
+
+Do you use update/bdflush/whatever? I get lotsa lockups when hacking kernels
+and X servers, but I've never had to run fsck more than twice (once
+automatically and once manually).
+
+
+> I am sending you the XFree86 log
 >
-> This must be the conflicting resource, but it gets an equally-wrong new
-> address :-(( In fact, the PCI resource code still misses a patch to make
-> the correct resources available to the resource allocation code (so that
-> IO regions can be taken out of the IO region of the correct PCI bus..)
->
-> I'm still working on that part ;-)
+> XFree86 Version 4.0a / X Window System
+                  ^^^^
+You are using the 4.0a loader with 4.0b modules. Use the 4.0b loader.
 
-Thanks!
 
->
-> So if the SCSI driver actually uses the IO region, it will most
-> certainly not work....
+Michel
 
-How do I find that out?
 
-Below it says I/O ports unassigned and it works. (2399p9)
-
-00:0e.0 SCSI storage controller: Adaptec AIC-7881U
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-ParErr-
-Stepping- SERR- FastB2B-
-        Status: Cap- 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-        Latency: 8 min, 8 max, 32 set, cache line size 08
-        Interrupt: pin A routed to IRQ 24
-        Region 0: I/O ports at <unassigned>
-        Region 1: Memory at 80801000 (32-bit, non-prefetchable)
-
-Andreas
+--
+Failure is not an option. It comes bundled with your Microsoft product.
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
