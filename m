@@ -1,40 +1,31 @@
-Message-ID: <37D0F88E70D96C428C19EEB865701A38ED70F0@buda902a.siemens.hu>
-From: =?ISO-8859-1?Q?M=E9sz=E1ros_Lajos?= <ludwigm@siemens.hu>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Transfer error ack signal
-Date: Mon, 17 Jun 2002 14:13:14 +0200
+Message-ID: <3D0DEC91.367D9BDB@lvl7.com>
+Date: Mon, 17 Jun 2002 10:05:05 -0400
+From: "John W. Linville" <linville@lvl7.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: board specific defines in commproc.h !?!?
+References: <3D0DA9C2.D78C43E5@imc-berlin.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All!
+Steven Scholz wrote:
+>
+> Hi there,
+>
+> I think we should move the board specific defines such as
+>
+> /***  RPXCLASSIC  *****************************************************/
 
-After starting 2.4.18 kernel on MPC8260ADS (from PpcBoot) with "initrd"
-(inside only static compiled /bin/bash as init and few entry in /dev :
-ttyS's cua's and console) there is machine check:
+I, for one, think that's a great idea.  It is always a PITA to track
+down those nits when doing support for a new board or moving board
+support from one kernel to the next...
 
- .....
-Freeing unused kernel memory: 56k init
-tty_io.c: process 1 (swapper) used obsolete /dev/ttyS2 - update software to
-use /dev/ttyS2
-Machine check in kernel mode.
-Caused by (from SRR1=49030): Transfer error ack signal
-Oops: machine check, sig: 7
-NIP: C0022634 XER: 00000000 LR: C00894AC SP: C0F6FC80 REGS: c0f6fbd0 TRAP:
-0200    Not tainted
-MSR: 00049030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c0f6e000[1] 'bash' Last syscall: 13
- .....
-
-The LR: C00894AC shows it happens in "rd_blkdev_pagecache_IO" while
-accessing ramdisk, which is positively operating (seeing that BASH was
-loaded from there).
-
-Have any hint?
-
-	Ludwig
+John
+--
+John W. Linville
+LVL7 Systems, Inc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
