@@ -1,35 +1,45 @@
-To: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Queue task Problem 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 29 Apr 2002 12:47:27 +0200."
-             <sccd40ff.057@mail.frequentis.com>
-Date: Mon, 29 Apr 2002 12:58:21 +0200
-Message-Id: <20020429105826.33CB4FF66@denx.denx.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Aurel Wisse <aurel_wisse@yahoo.com>,
+	<linuxppc-dev@lists.linuxppc.org>,
+	yddev <yellowdog-devel@lists.terrasoftsolutions.com>
+Subject: Re: Sungem with iMac Rev-B
+Date: Mon, 29 Apr 2002 15:26:37 +0200
+Message-Id: <20020429132638.29518@smtp.adsl.oleane.com>
+In-Reply-To: <20020429004945.83544.qmail@web14804.mail.yahoo.com>
+References: <20020429004945.83544.qmail@web14804.mail.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <sccd40ff.057@mail.frequentis.com> you wrote:
+>Crossposted yellowdog-devel/linuxppc-devel, sorry but
+>this is last ditch...
 >
-> I wrote a device driver which handles the SCC in UART mode of a MPC860T
-> for a simple protocol. The protocol start with a byte, the other side
-> send a ack, then the packet will be sent. At last an ack will be send
-> from the receiver. My problem is, that sometimes the bottom half part of
-> my software won't be executed.
+>I have read several comments about the sungem driver
+>being preferred to the bmac(+) driver.
+>
+>Going through the sourcecode of the sungem, I am not
+>sure however that it will work with older hardware
+>like the iMac Rev-B's Uni-North and the LXT970.
 
-Ummm... is there  any  good  reason  (except  maybe  for  a  training
-exercise to write a new driver for that instead of using the existing
-(and working) SCC UART driver?
+No, you mismatched bmac and gmac. The sungem driver obsoletes
+the gmac one, not the bmac one.
 
-Wolfgang Denk
+The bmac driver currently don't have PHY control. This could
+eventually be added, since I beleive we actually know how to
+tap the PHY registers when available. Though this need some
+work and I have no hardware to test on, so I'd rather see
+someone who has do the job ;)
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Doubt is a pain too lonely to know that faith is his twin brother.
-- Kahlil Gibran
+What we need is to add some proper PHY polling infrastructure
+to the bmac driver (shouldn't be a big issue), then find out
+the list of known PHYs used on Macs (I beleive the darwin source
+code would be helpful here) and see how each of them can be
+configured. If they aren't too crappy, the register setting for
+enabling 10/100, half/full and autoneg are standard.
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
