@@ -1,38 +1,57 @@
-Message-Id: <200210191746.g9JHk9k09037@p2.parker.boston.ma.us>
-To: Wolfgang Denk <wd@denx.de>
-Cc: Rod Boyce <rod_boyce@stratexnet.com>,
-	"'Ing.Gianfranco Morandi'" <gianfranco.morandi@euro-studio.it>,
-	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MacRaigor Wiggler 
-In-Reply-To: Message from Wolfgang Denk <wd@denx.de>
-   of "Fri, 18 Oct 2002 20:04:23 +0200." <20021018180428.1BBF410143@denx.denx.de>
-Date: Sat, 19 Oct 2002 13:46:09 -0400
-From: Brad Parker <brad@parker.boston.ma.us>
+Subject: Re: Problems with 2_4_devel & MVME2600 serial interrupts
+From: Anders Blomdell <anders.blomdell@control.lth.se>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Hollis Blanchard <hollis@austin.ibm.com>,
+	linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <20021018200355.GD6941@opus.bloom.county>
+References: <1034954142.8169.91.camel@granite.austin.ibm.com>
+	<E9EEC3C2-E2B0-11D6-8132-0003931C2BFA@control.lth.se>
+	<20021018200355.GD6941@opus.bloom.county>
+Content-Type: text/plain
+Date: 19 Oct 2002 20:35:52 +0200
+Message-Id: <1035052555.1506.10.camel@maj.hemma>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+> On Fri, Oct 18, 2002 at 05:47:32PM +0200, Anders Blomdell wrote:
+> >
+> > >Seems to me that either:
+> > >a) the pci_intack value is incorrect for your board, in which case you
+> > >should correct it
+> > Shure is, question is if it really should be caught from the pci_intack
+> > register, as far as I can understand from the MVME2600 doc's, the 8259
+> > interrupt generates a MPIC-IRQ0, but one has to poll the 8259 to find out
+> > what device it was that generated the interrupt.
 >
->In message <8D7C5F56B409554D9D46AC22195807F3061AED@exchwenz01.dmcwave.co.nz> y
->ou wrote:
->>
->> Through away your Wiggler and get a BDI2000.  They don't support the MMU,
->> they are slow and only work under windows.
+> Are you running this as CONFIG_ALL_PPC?  IIRC, under 2_4_devel, this
+> board should work as CONFIG_PPLUS.  Or it will need minor fixups, which
+> I have described previously on the lists (and possibly to you as well)
+> for the OpenPIC table.
+CONFIG_ALL_PPC, yes.
 >
->This is not exactly correct.  IIRC  the  BDM4GDB  project  has  added
->support to drive the wiggler, too, including MMU support.
+> > >b) your board's int-ack feature is broken and you'll need to poll
+> >
+> > Perhaps an extra field in the 'mot_info' (arch/ppc/platforms/prep_pci.c) is
+> > called for? This line in prep_init_IRQ (arch/ppc/platforms/prep_setup.c):
+> >
+> >   i8259_init(0xbffffff0); /* PCI interrupt ack address for MPC105 and 106
+> > */
+> >
+> > does not look like a general solution.
+>
+> Well, it's a correct solution for the PReP like PReP machines.  Where in
+> the continium does the MVME2600 fall exactly?
+> MPC105/MPC106/Raven/Hawk/Falcon ?  I _think_ this is an example of why
+> it would really be nice to kill PPLUS support from PReP.  But I know
+> that will upset some people, so I'm not advocating that for 2.4, and it
+> looks like we might have to do something similar to the MPC10x test in
+> the PReP bootwrapper code in 2.5 (and maybe 2.4? I'm not at home, so I
+> can't easily check).
+It's a Raven equipped card, and as far as I can find, the 8259
+interrupts acks are not accessible from any other adress. I'll look
+further into this on monday...
 
-Also, I think it should be said that for $150, the wiggler is a great
-bargain and very useful for doing initial bringup.  It's certainly
-capable of programming the dram (UTM) and getting initial boot rom
-code going, even if you have to use a Windows machine to do it.
-
->But the BDI2000 is clearly the superior tool.
-
-True (and I love the bdi2000), but it's 16x the cost, so each tool has
-a place...
-
--brad
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
