@@ -1,31 +1,37 @@
-Message-ID: <3BEF0066.88ACB438@mvista.com>
-Date: Sun, 11 Nov 2001 14:49:10 -0800
-From: Scott Anderson <scott_anderson@mvista.com>
+Message-ID: <3BEF1034.EBBE37BC@india.infogain.com>
+Date: Mon, 12 Nov 2001 05:26:36 +0530
+From: ashish anand <ashisha@india.infogain.com>
 MIME-Version: 1.0
-To: Mark Pilon <mpilon@midrivers.com>
-Cc: linuxppc-embedded@lists.linuxppc.org, jure@kom.org
-Subject: Re: crash in atexit()
-References: <3BEE9D33.F32035C3@midrivers.com>
+To: Sarnath Kannan <sparc64@rediffmail.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: "OpenPIC versus EPIC" in MPC8240 !
+References: <20011107141124.12482.qmail@mailweb22.rediffmail.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark Pilon wrote:
-> I'm SEGV'ing in atexit(), because of an apparently hard-coded
-> null pointer dereference: [ the call to atexit() is made by
-> __libc_start_main so I think I'm close to running ...]
+Sarnath Kannan wrote:
 
-This may be totally irrelevant, but I thought I would mention it just in
-case it is useful.  At one point, I had to chase down a bug due to the
-zero-page getting written to.  That bug was in early 405 kernels and was
-due to a documentation defect in the 405GP documentation for the ZPR
-register.  You might want to take a look and make sure that your
-zero-page is still all zeroes.
+sorry for jumping in between as i was out on long leave.
+there is absoluetely no relation of bogus interrupts
+with "openpic_init" is populating reserved memory areas of EPIC.
 
-    Scott Anderson
-    scott_anderson@mvista.com   MontaVista Software Inc.
-    (408)328-9214               1237 East Arques Ave.
-    http://www.mvista.com       Sunnyvale, CA  94085
+even i agree "openpic_init" is populating reserved memory areas of EPIC may
+need a second thought.
+you should refrain from saying so firmly without tech. support for that.
+
+Best Regards
+Ashish
+
+>   Its not a "HACK" dan. Its a bug. Just verify
+> the register layout of OpenPIC and EPIC. You
+> will find that "openpic_init" is populating
+> reserved memory areas of EPIC. No wonder, we get
+> bogus interrupts. You can verify this in the code.
+>   Moreover Had the code really wanted seperation
+> of vector spaces of OpenPIC and EPIC, it should have
+> called "openpic_init" with
+> "offset value = "NUM_8259_INTERRUPTS"
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
