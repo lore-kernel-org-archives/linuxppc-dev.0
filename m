@@ -1,30 +1,46 @@
-Date: Thu, 24 Jan 2002 09:43:59 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "David M?ller (ELSOFT AG)" <d.mueller@elsoft.ch>
+Date: Thu, 24 Jan 2002 17:54:29 +0000
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: paulus@samba.org
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problem to retrieve old LinuxPPC version
-Message-ID: <20020124164359.GA1839@cpe-24-221-152-185.az.sprintbbd.net>
-References: <3C50349F.5070509@elsoft.ch>
+Subject: Re: OpenPIC_NumInitSenses
+Message-Id: <20020124175429.32e84f7c.adrian@humboldt.co.uk>
+In-Reply-To: <15439.64102.68217.293733@argo.ozlabs.ibm.com>
+References: <15439.64102.68217.293733@argo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3C50349F.5070509@elsoft.ch>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 24, 2002 at 05:21:51PM +0100, David M?ller (ELSOFT AG) wrote:
+On Thu, 24 Jan 2002 23:13:26 +1100 (EST)
+Paul Mackerras <paulus@samba.org> wrote:
 
-> If i try to go back to an old LinuxPPC kernel version
-> (with bk export -rv2.4.10 /somewhere), i get a kernel tree, but some
-> files seem to be missing (drivers/net/ppc405_enet.c for example),
-> although i'm almost 100% sure this file was part of the
-> linux-2.4.10_devel tree.
+> Who was it that wanted this horrible hack in open_pic.c?
 
--rv2.x.x will get you kernel.org, as of 2.x.x.  You need to find the
-changeset # of the merge of 2.x.x into the _devel tree.
+I've been using it to deal with the DMA interrupts on the MPC107.
+
+> 	/* Needed because of the way we overload EPIC on a standard
+> 	 * Open PIC structure.
+> 	 */
+> 	if (OpenPIC_NumInitSenses > NumSources)
+> 		NumSources = OpenPIC_NumInitSenses;
+> [...]
+
+> 	openpic_set_sources(0, 16, NULL);
+> 	openpic_set_sources(16, 16, ioremap(isr_base, 16 * 32));
+>
+> (Actually maybe I should let openpic_set_sources do the ioremap.)
+>
+> Comments?
+
+Looks like a lot less of a hack than the current system. I'll have to
+renumber the DMA interrupts, but that's trivial work. I'm happy with
+doing the ioremap in my own platform code, and it provides flexibility
+for boards which have already mapped their openpic registers with
+io_block_mapping().
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Adrian Cox
+http://www.humboldt.co.uk/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
