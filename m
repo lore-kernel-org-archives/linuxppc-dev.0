@@ -1,51 +1,52 @@
-Message-ID: <3965CF90.B6457A0D@amulet.co.jp>
-Date: Fri, 07 Jul 2000 21:39:44 +0900
+Message-ID: <3965D1D8.C7B9F28E@amulet.co.jp>
+Date: Fri, 07 Jul 2000 21:49:28 +0900
 From: Hollis Blanchard <hollis@amulet.co.jp>
 MIME-Version: 1.0
-To: bh40@calva.net, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Drive Setup
-References: <200007070846.JAA05142@hyperion.valhalla.net> <39659EB2.D4C095A6@amulet.co.jp>
+To: Iain Sandoe <iain@sandoe.co.uk>
+CC: linuxppc-dev@lists.linuxppc.org, Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: RFC: Changing default partition type for linux/ppc
+References: <200007071125.MAA02302@hyperion.valhalla.net>
 Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ok, update on Drive Setup:
+Iain Sandoe wrote:
+>
+> > Currently, the default partition type used by Linux/PPC on mac partition
+> > maps is Apple_UNIX_SVR2. This is historically the type used by Apple's A/
+> > UX for its own partitions. However, I don't like it since it gives no
+> > indication on the type of filesystem on the partition, and I see no
+> > reason to keep it.
 
-I partitioned a stock iMac DV with 25GB drive using the "Preferred
-LinuxPPC" scheme (which was surprisingly different from the "Preferred
-MkLinux" and "Standard MkLinux" schemes). The Drive Setup version was
-J1-1.8, which is a Japanese-localized 1.8 (it was on the Mac OS J1-8.6
-CD which came with this iMac DV).
+[snip]
 
-Here's what pdisk told me (YDL installed fine, as will any other
-distribution that handles Apple partition maps):
+> What chance of getting Apple to support this move?
 
-All partitions were created with type Apple_UNIX_SVR2.
+I would estimate the odds are somewhere between slim and none. Feel free
+to email leadership@apple.com.
 
-The names and sizes were as follows (I'm preserving the case):
+Of course I think we all know it's not that important either. Drive
+Setup's Linux support came a few years late, and still is lacking a bit.
+With Apple's new interest in Unix it's possible they might care (but
+also possible that they'd have no interest in interoperating with
+inferior Unices ;). Of course, I imagine they're pretty busy with their
+own Unix - not much time to worry about working with other people's.
 
-(Apple_HFS       3.8G)
+> > So I suggest moving to Linux_ext2, Linux_swap, or maybe simply Linux and
+> > Linux_swap (since ext2 is not the only filesystem Linux may put on
+> > these). Using a different type for swap would help avoiding confusion.
 
-A/UX Root        4.7G
-Swap             50M
-Usr file system  4.7G
-Opt file system  300M
-Home file system 18.9G
+I think "Linux" and "Linux_swap" would be a good idea, especially since
+some ext2 alternatives seem to be getting closer.
 
-The kernel (2.2.17pre9-ben1, but anything recent should be the same) had
-no difficulty automatically finding the root partition on hda9. From
-earlier experiments I know that the kernel does not just check the
-partition name (so it wasn't fooled in this case either). It's worth
-noting that root was the first Apple_UNIX_SVR2 partition; I know that
-yaboot at least would have been confused by the capital S in "Swap".
+> What prospect of sharing swap space between MacOS X and linux in dual/multi
+> boot machines?
 
-It seems to me that while using the default setup may not be a good idea
-(19GB /home??), Drive Setup does work fine for creating Linux
-partitions. Perhaps renaming them to more standard Linux name would be a
-good idea. (I don't have his card with me, but if anyone knows the Apple
-employee who wrote Drive Setup please forward this and/or cc him on this
-discussion.)
+I don't know the details, but I know that you must run mkswap on a new
+swap partition. Since I don't imagine any particular effort has been put
+in to keeping Linux and BSD mkswap's compatible, I doubt it would be
+possible.
 
 -Hollis
 
