@@ -1,35 +1,33 @@
-From: deepesh@india.tejasnetworks.com
-Message-ID: <1057227367.3f0402676dddd@pop-mail.india.tejasnetworks.com>
-Date: Thu, Thu 03 Jul 2003 03:46:07 PM IST, Jul 2003 15:46:07 +0530
-To: wd@denx.de
+Date: Thu, 3 Jul 2003 10:32:40 -0600 (MDT)
+From: daRonin <daronin@digimerc.com>
+To: Jim Baughman <jbaughmn@arlut.utexas.edu>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: EP8260
+Subject: Re: 17" Apple laptops supported?
+In-Reply-To: <3F039495.4010207@arlut.utexas.edu>
+Message-ID: <Pine.LNX.4.56.0307031028570.1608@daronin.digimerc.com>
+References: <3F039495.4010207@arlut.utexas.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Wed, 2 Jul 2003, Jim Baughman wrote:
 
-  I am having an EP8260 Board. The board comes with a PlanetCore BootLoader
-and a diagnostics. I want to boot kernel using this bootloader. TimeSys
-people claim to have released a kernel binary for EP8260. I am not able to
-boot this kernel. What is clear is that the board info structure is passed
-correctly from the planetcore boot loader to the kernel arch/ppc/boot/.
-This is because I found that the decompress_kernel function is working. I
-dumped the first few bytes of memory, starting at 0(zero). They are exactly
-same as the "dissembled vmlinux".
+>
+> Are Apple's 17" laptops supported in current 2.4 or 2.5 kernels?  If so,
+> are there any iso's available for installation?
 
-   But there is a problem in entering from the arch/ppc/boot code to
-arch/ppc/kernel code. The board goes for a reset.
+  It's not a question of kernel. 2.4.20 runs fine on the hardware. However
+you are rather restricted because of closed chipset. First you have Nvidia
+video card in it. The basic support for it is there in the kernel and
+Xfree, however you can forget about DRI and even about having 24bit
+colors.
 
-Kindly help.
+  And then you have Airport Extreme, which is a closed chipset as well,
+and doesn't work in Linux at all.
 
-Please  give me a reference to a kernel which would come up with this
-bootloader(PlanetCore)
+  daRonin
 
-Thank you,
-Deepesh
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
