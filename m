@@ -1,33 +1,21 @@
-Date: Tue, 17 Apr 2001 22:04:55 -0700 (PDT)
-From: Paul White <pwhite@networkrobots.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Possible bug in serial.c?
-Message-ID: <Pine.LNX.4.21.0104172202200.15007-100000@stimpy.networkrobots.com>
+From: zjuzhou@163.net
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <3ADD2B1B.09829@bjapp1>
+Date: Wed, 18 Apr 2001 13:50:19 +0800 (CST)
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: How can i begin ?
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This isn't just for PowerPC, however I thought I'd post it on here since I'm a member
-of the list, and figured maybe someone here could fix it and get it rolled into the
-main source tree at some point.  That is, if its actually a bug.
+Hello all
+	My target borad is using MPC850DE and i use Hard Hat linux & CDK 1.2.
+Because this borad is customed by others.My hardhat linux is for RPXlite  borad(using MPC850 also).I must porting it to my borad, and i don't know how to begin
+?
+	i can't access linuxppc.org web(because firewall), although this question must have been asked before.
+	Thanks.
 
-In the function early_serial_setup() in drivers/char/serial.c, It sets 'i' to
-req->line.  This 'i' value is used as an index into the rs_table[] array.  At the
-top of the funnction, it has:
-
-	if (i >= NR_IRQS)
-		return(-ENOENT);
-
-Since 'i' is an index into the rs_table[], shouldn't this be:
-
-	if (i >= NR_PORTS)
-		return(-ENOENT);
-
-This would just seem more appropriate..  Is this a typo/bug?
-
--Paul
+Dross.Chou
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
