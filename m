@@ -1,28 +1,20 @@
-Message-ID: <3BABA566.365ACF68@mvista.com>
-Date: Fri, 21 Sep 2001 16:39:02 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <35C119252057D511BB9F0003476BF8A208E5B3@freexc01.smartm.com>
+From: "Prasad, Siva" <Siva.Prasad@smartm.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Prep Chrp Gemini...
+Date: Fri, 21 Sep 2001 13:49:12 -0700
 MIME-Version: 1.0
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: IDMA on MPC855/860 ?
-References: <3BAB0FFB.4CA071CB@imc-berlin.de>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steven Scholz wrote:
+Hi,
 
-> Can anyone point me to some driver code already in the recent linuxppc
-> that are using the MPC's IDMA, please?
+I know this is a basic question...
+What is it all about Prep, Chrp, Gemini etc.
 
-All of the MPC8xx unique drivers use DMA....it's the only way
-to transfer data through the CPM.  Just take one of the drivers,
-like uart.c or enet.c, and remove everything except the buffer
-descriptor management.  Then just add the few lines of code to
-initialize the IDMA channel and you are done.
-
-
-	-- Dan
+-- Siva
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
