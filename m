@@ -1,42 +1,44 @@
-Date: Fri, 11 Apr 2003 16:38:31 +0200
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: kernel/timer.c
-In-reply-to: <3E96C07B.4060809@dgt-lab.com.pl>
-To: Wojciech Kromer <krom@dgt-lab.com.pl>,
-	"Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLEEPEFLAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-2
+Date: Fri, 11 Apr 2003 08:24:21 -0700
+From: Matt Porter <porter@cox.net>
+To: Cedric Aubert <cedric_aubert@yahoo.fr>
+Cc: LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Denx 2.4-devel tree and Love's Preempt Patch
+Message-ID: <20030411082421.A30011@home.com>
+References: <20030411143637.31541.qmail@web41807.mail.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030411143637.31541.qmail@web41807.mail.yahoo.com>; from cedric_aubert@yahoo.fr on Fri, Apr 11, 2003 at 07:36:37AM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Anyone knows why tehere is a line:
+On Fri, Apr 11, 2003 at 07:36:37AM -0700, Cedric Aubert wrote:
 >
-> expire = timespec_to_jiffies(&t) + (t.tv_sec || t.tv_nsec);
+> Hi,
 >
-> in kernel/timer.c sys_nanosleep
-> It adds additional time tick to expire. If anyone uses small HZ value
-> (eg 100 which is default for arch-ppc) this causes aditional 10ms delay
-> when calling nanosleep.
+> Does the Denx 2.4-devel tree have the robert love's
+> patch for preemption and
+> Low Latency ?
 
-Yes, after a quick scan it looks like a bug to me. Anyone else?
+Wolfgang will answer this any second now. :)
 
->
->
-> For me ( found by Andrzej Kass)
->  it should be:
->
-> expire = timespec_to_jiffies(&t) + !(t.tv_sec || t.tv_nsec);
->    //^^add extra tick if there is
->   // nothing in tv_sec and nothing in tv_nsec
+> If not, does anyone have some kwnoledge about
+> integrate it ?
 
-hmm, why not just:
-   expire = timespec_to_jiffies(&t);
-if tv_sec and tv_sec are zero, do you need to sleep at all?
+Eugene provided a preempt+more patch against linuxppc_2_4_devel.
+It's at ftp://source.mvista.com/pub/linuxppc/
 
-    Jocke
+> If any one of some documentation about Preemption
+> and/or Low Latency patch,
+> could
+> he give it to me ?
 
+You could follow links from rml's page, http://www.tech9.net/rml/linux/
+
+Regards,
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
