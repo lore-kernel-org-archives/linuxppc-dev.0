@@ -1,33 +1,37 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3A9315B8.16C9BF1@intel.com>
-Date: Tue, 20 Feb 2001 17:11:20 -0800
-From: "Bruno R. Barreyra" <bruno.r.barreyra@intel.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: init on a FADS823
-Content-Type: text/plain; charset=us-ascii
+To: "Bruno R. Barreyra" <bruno.r.barreyra@intel.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: init on a FADS823 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 20 Feb 2001 17:11:20 PST."
+             <3A9315B8.16C9BF1@intel.com>
+Date: Wed, 21 Feb 2001 09:04:04 +0100
+Message-Id: <20010221080409.6FD12281D9@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm trying to get a init program to work on my FADS823.
+In message <3A9315B8.16C9BF1@intel.com> you wrote:
+>
+> I'm trying to get a init program to work on my FADS823.
+>
+> Running bash as the init process works fine. However, if I try the
+...
+> trying to compile simpleinit from util-linux, since I need a really
+> simple solution, but it won't
 
-Running bash as the init process works fine. However, if I try the
-sysvinit from Montavista, it
-just asks me for a runlevel and then says there are no processes left on
-that runlevel. I'm
-trying to compile simpleinit from util-linux, since I need a really
-simple solution, but it won't
-work either. It says "init: stat of path failed". Any ideas?
+If you need an "init" process and a  simple  solution  as  well,  why
+don't  you use the "init" that's included with busybox? Because, when
+you run "init", you will want to have some other tools  as  well,  so
+busybox is probably useful in other ways, too.
 
-On a separate note, I also need to get smbmount working, but
-cross-compiling the samba
-package seems impossible. Has anybody done it?
+Wolfgang Denk
 
 --
-[]'s Bruno Renato Barreyra
-bruno.r.barreyra@ufl.edu
-barreyra@ufl.edu
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The universe does not have laws - it has habits, and  habits  can  be
+broken.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
