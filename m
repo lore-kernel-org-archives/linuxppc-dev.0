@@ -1,32 +1,19 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Mon, 02 Oct 2000 16:35:16 +0100 (CED)
-Subject: Kernel 2.4.0 test8
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: kernel@linux01.hasler.ascom.ch
-Message-id: <0G1T00K3H4JFGI@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_iGko0+LfGtf7g3pOKc5WLw)"
+Message-ID: <39D8F043.BE8D511D@dnrc.bell-labs.com>
+Date: Mon, 02 Oct 2000 16:29:55 -0400
+From: Pravin Pathak <pkpathak@dnrc.bell-labs.com>
+MIME-Version: 1.0
+To: "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: adding n/w device
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---Boundary_(ID_iGko0+LfGtf7g3pOKc5WLw)
-Content-type: TEXT/PLAIN
-Content-Transfer-Encoding: 7BIT
-
 Hi
+It is general Linux question. Is it possible to add n/w device in a
+running Linux system ?
+Pravin
 
-Where can I get the kernel source for 2.4.0-test8 without using the
-bitkeeper tool? (I have no access through our firewall!)
-
-It seems as if on http://www.fsmlabs.com/linuxppcbk.html -> ftp
-were only legacy 2.2 and 2.3 kernels...
-
-Is the 2.4.0-test8 kernel from http://www.kernel.org as up to date as
-the one is from fsmlabs?
-
-\Ruedi
-
---Boundary_(ID_iGko0+LfGtf7g3pOKc5WLw)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
