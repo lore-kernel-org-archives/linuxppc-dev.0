@@ -1,49 +1,48 @@
-Message-ID: <005e01be2251$f0d3a490$61246ccf@timnt.desm.uswest.net>
-Reply-To: "Tim Perdue, The Des Moines City.net" <tim@dmcity.net>
-From: "Tim Perdue, The Des Moines City.net" <tim@dmcity.net>
-To: <php3@lists.php.net>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Compilation Problems - PHP / APACHE
-Date: Mon, 7 Dec 1998 20:24:53 -0600
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <199812071128.GAA01786@smtp2.mindspring.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Mon, 7 Dec 1998 21:51:00 -0500
+To: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
+From: "Paul J. Schinder" <schinder@pobox.com>
+Subject: Re: EGCS 1.1.1 FYI
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I still have not solved my compilation problems with PHP 3.0.5 / Apache
-1.3.3
+On Sun, 06 Dec 1998 02:06:46 -0600, jeramy  wrote:
+>
+>
+>Cygnus released 1.1.1 on Dec. 1 with the following PPC specific
+>improvements.
+>
+>Fixed PPC/RS6000 LEGITIMIZE_ADDRESS macro and bug in conversion from
+>unsigned ints to double precision floats. 
+>Fixed handling of long longs for varargs/stdarg functions on the ppc. 
+>Fixed code generation problems with gpr<->fpr copies for 64bit ppc. 
+>Makes sure target libraries build with -fPIC for PPC targets.
+>
+>Good to see this much platform specific progress in a x.x.1 release. :)
 
-Apache compiles fine by itself, but if you try to compile it with support
-for PHP, I get these errors. I'm seriously stuck on this one - for over a
-day now.
+So are Gary Thomas' patches still necessary? I downloaded his src rpm and
+applied the patches that would apply to 1.1.1. As I recall, one said it
+was aIready there, and a couple applied with offsets. I didn't use the rpm
+itself because after bootstrapping the compiler and running make check the
+Fortran compiler failed most of its tests, and I need a working Fortran
+compiler. (And I nearly gave up on the rpm before stumbling across the
+gperf patch in the contrib directory.) The make check on 1.1.1 failed
+fewer tests than any egcs build I've done. I'm not that interested in
+building kernels, but I do need working Fortran. I'm using 2.1.127 and
+glibc-1.99 on a Performa 6400.
 
-Any takers?
 
-This is what I get when I MAKE apache, after having made and installed PHP
-(successfully).
 
-util.c: In function `ap_find_token':
-util.c:1015: `test_char_table' undeclared (first use this function)
-util.c:1015: (Each undeclared identifier is reported only once
-util.c:1015: for each function it appears in.)
-util.c:1015: `T_HTTP_TOKEN_STOP' undeclared (first use this function)
-util.c: In function `ap_escape_shell_cmd':
-util.c:1074: `test_char_table' undeclared (first use this function)
-util.c:1074: `T_ESCAPE_SHELL_CMD' undeclared (first use this function)
-util.c: In function `ap_escape_path_segment':
-util.c:1198: `test_char_table' undeclared (first use this function)
-util.c:1198: `T_ESCAPE_PATH_SEGMENT' undeclared (first use this function)
-util.c: In function `ap_os_escape_path':
-util.c:1227: `test_char_table' undeclared (first use this function)
-util.c:1227: `T_OS_ESCAPE_PATH' undeclared (first use this function)
-make[3]: *** [util.o] Error 1
-make[2]: *** [subdirs] Error 1
-make[2]: Leaving directory `/tmp/apache_1.3.3/src'
-make[1]: *** [build-std] Error 2
-make[1]: Leaving directory `/tmp/apache_1.3.3'
-make: *** [build] Error 2
 
+
+
+
+-------
+Paul J. Schinder
+schinder@pobox.com
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
