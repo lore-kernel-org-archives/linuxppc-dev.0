@@ -1,43 +1,35 @@
-Subject: Re: DOC2000 unstable problem!!!
-From: David Woodhouse <dwmw2@infradead.org>
-To: leo <leo_guo@jisung.cn>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <200404201305.IAA27777@lists.linuxppc.org>
-References: <200404201305.IAA27777@lists.linuxppc.org>
-Content-Type: text/plain
-Message-Id: <1083252749.31783.35.camel@hades.cambridge.redhat.com>
+From: ghannon@cspi.com
+To: tvdbroek@tsc.leica.nl
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <85256E85.005DF90C.00@pine.cspi.com>
+Date: Thu, 29 Apr 2004 13:15:21 -0400
+Subject: Re: ttyS1 on an MVME5100
 Mime-Version: 1.0
-Date: Thu, 29 Apr 2004 16:36:24 +0100
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2004-04-20 at 21:03 +0800, leo wrote:
-> Hi all,
-> I am porting linux to my MPC852 board, and linux now can runs ok, but it
-> seems that the DOC2000 is unstable! My system config as follows:
->
-> MCU: MPC852T 80M
-> SDRAM: 32MB
-> FLASH: 2MB
-> DOC2000: 32MB
->
-> I make a EXT2 file system on DOC2000, but sometimes, turn off the
-> board's power when linux is running, and then turn on the power, the
-> linux can't mount the root filesystem!
->
-> Could you give me some advices? And I want know between the NAND flash
-> and DOC, which is the better selection?
+> does somebody ever uses the second serial channel on a Motorola MVME5100?
 
-The DiskOnChip _is_ NAND flash. It's just typically used with its own
-'translation layer' which pretends to be a block device.
+Do you mean the second channel on-board, or one of the serial ports that
+are available using the IPMC-761?
+I set console=ttyS1, and the result was similar to what you saw, the
+board locked up.  I don't recall if I let it reboot (ie was it a panic or
+a lock-up.)
+I also tried just echoing some text to ttyS1 and it locked up as well.
 
-If you're willing to put a small amount of effort into completing the
-bad-block-table support in the new DiskOnChip driver which uses the
-generic NAND code, you can use JFFS2 on it.
+> I'm using Linux version 2.4.7-timesys-3.1.246 from Timesys. Since this is
+a
+> free download there is no support from them.
 
---
-dwmw2
+I also tried using the ports available on the IPMC and got no where.
+They don't seem to be recognized, unless I left out some kernel option.
+I'm using the 2.4.23 kernel from the linuxppc_2_4_devel tree.
+
+Please let me know if you find a solution to this.
+
+G. Hannon
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
