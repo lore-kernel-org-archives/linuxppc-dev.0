@@ -1,28 +1,48 @@
-To: LinuxPPC Developpers <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Assembly
-References: <XFMail.990812092025.heinz@bintec.de> <37B2C0A5.55A07C87@usa.net>
-From: Andreas Bogk <andreas@andreas.org>
-Date: 12 Aug 1999 15:22:37 +0000
-In-Reply-To: David Riley's message of "Thu, 12 Aug 1999 08:40:06 -0400"
-Message-ID: <m3aerx81mq.fsf@soma.andreas.org>
+Message-Id: <199908121730.TAA03489@piglet.cpu.lu>
+Date: Thu, 12 Aug 1999 19:30:24 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Trying a Promise Ultra/66 on powerpc
+To: Geert.Uytterhoeven@cs.kuleuven.ac.be
+cc: Paul.Mackerras@cs.anu.edu.au, drow@false.org, mj@ucw.cz,
+        linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.10.9908101455510.32043-100000@mercator.cs.kuleuven.ac.be>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-David Riley <happyoscar42@usa.net> writes:
+On  10 Aug, this message from Geert Uytterhoeven echoed through cyberspace:
+>> One way might be to adjust the base addresses in all the pci_dev
+>> structs and then make sure all drivers use the address from the
+>> pci_dev struct rather than reading config space themselves.
+> 
+> Which will make our /proc/ioports look funny.
 
-> Does anyone know if 64-bit powerPC's ever came out (e.g. the 620)?  I noticed
+[mlan@piglet ~]$ cat /proc/ioports
+f2000480-f2000487 : ide2
+f2000488-f200048f : ide3
+f2000490-f20004bf : PDC20262
 
-As far as I know, IBM sold some 64-bit RS/6000 machines with
-them. They are of course grossly expensive.
+I don't see why this would be funny.... except if you're used to the
+PeeCee definition of IO ports being below 64 k ;-))
 
-Andreas
+In any case, I still find it much better to adjust pci_dev, than to
+play with offsets in inb()/outb().
 
--- 
-"We show that all proposed quantum bit commitment schemes are insecure because
-the sender, Alice, can almost always cheat successfully by using an
-Einstein-Podolsky-Rosen type of attack and delaying her measurement until she
-opens her commitment." ( http://xxx.lanl.gov/abs/quant-ph/9603004 )
+But most important, adjusting struct pci_dev is the only way I see to
+support IO space on more than one host bridge.
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
