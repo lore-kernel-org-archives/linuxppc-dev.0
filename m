@@ -1,68 +1,48 @@
-Message-ID: <3DFF2956.6020903@intracom.gr>
-Date: Tue, 17 Dec 2002 15:40:38 +0200
-From: Pantelis Antoniou <panto@intracom.gr>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <81A66F72DCACD511B0600002A551BFCB4E9CEC@kuumex05.barco.com>
+From: =?iso-8859-1?Q?=22Callebaut=2C_Beno=EEt=22?= <benoit.callebaut@barco.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: IRQ config problem on MPC8245
+Date: Tue, 17 Dec 2002 15:08:02 +0100
 MIME-Version: 1.0
-To: joakim.tjernlund@lumentis.se
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: kmalloc and startup process
-References: <IGEFJKJNHJDCBKALBJLLKEODFIAA.joakim.tjernlund@lumentis.se>
-In-Reply-To: <IGEFJKJNHJDCBKALBJLLKEODFIAA.joakim.tjernlund@lumentis.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joakim Tjernlund wrote:
-
->Don't know when it's safe to call kmalloc, but maybe you
->should avoid kmalloc?  Is it possible to use
->kmalloc when the microcode(8xx_io/micropatch.c) is loaded?
+> Hello,
+ I   have on a custom board a little problem with the IRQ configuration.
+> Our board is a custom board derived from a sandpoint board X3B with a
+> MPC8245 without any peripheral (no extern bridge, no IRQ controller,...)
+> except 2 MAC/PHY 82449 from Intel and run Montavista Linux 2.1 based on a
+> 2.4.18 Kernel
+> The Interrupt lines from the MAC/PHY are directly connected to the
+> interrupts inputs pins of the EPIC on the MPC8245.
+> The EPIC is well configured (IVPR0,IVPR1, PCTPR,GCR,...)
+> The Linux distribution is also modified to take this in account.
+> The interrupts are generated on the EPIC (seen with an osilloscope and a
+> register dump ).
+> The interrupt handler is never called. There is no jump the address
+> 0X00000500 (external interrupt exception vector )
+> We ask ourselves what is the problem. We have seen that the value of the
+> MSR[EE] bit change sometimesand that the value of MSR[IP] is well on null.
 >
->   Jocke
->
-I fixed the problem via another way.
+I know that such an question must be asked to Montavista support but such a
+thing is beyond the standard support of Montavista (ie free after buying
+their product)
 
-At startup I use a statically allocated area, or
-the bootmem allocated page.
-
-The kmalloc is used only when a request for memory
-cannot be satisfied by this memory.
-
-I will probably post the patch for the hostmem today,
-followed tommorow by the patch for the dpmem.
-
-Stay tuned.
-
->>
->>Hi
->>
->>I'm hacking now the 8xx hostalloc and dpalloc stuff,
->>and I have a a question.
->>
->>At what point in the startup process is it OK to call
->>kmalloc?
->>
->>I don't think it is safe at the setup_arch point.
->>
->>Is this correct?
->>
->>Thanks
->>
->>--
->>Pantelis Antoniou
->>INTRACOM S.A. Greece
->>
->>
->>
->>
->>
->
->
-
-
---
-Pantelis Antoniou
-INTRACOM S.A. Greece
-
+- - - - - - - DISCLAIMER - - - - - - - -
+Unless indicated otherwise, the information contained in this message is
+privileged and confidential, and is intended only for the use of the
+addressee(s) named above and others who have been specifically authorized to
+receive it. If you are not the intended recipient, you are hereby notified
+that any dissemination, distribution or copying of this message and/or
+attachments is strictly prohibited. The company accepts no liability for any
+damage caused by any virus transmitted by this email. Furthermore, the
+company does not warrant a proper and complete transmission of this
+information, nor does it accept liability for any delays. If you have
+received this message in error, please contact the sender and delete the
+message. Thank you.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
