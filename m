@@ -1,28 +1,27 @@
-Message-ID: <38C7DC0B.7567BB9D@email.sps.mot.com>
-Date: Thu, 09 Mar 2000 11:14:51 -0600
-From: "Richard Hendricks" <ra6353@email.sps.mot.com>
-MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org"  <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: USB driver for MPC850/823
-References: <38C7D1A7.92DC9BFE@netx4.com>
+From: Raphael Bossek <raphael.bossek@solutions4linux.de>
+Date: Thu, 9 Mar 2000 20:43:50 +0100
+To: Graham Stoney <greyham@research.canon.com.au>
+Cc: LinuxPPC Embedded Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Linux PowerPC-Embedded HOWTO
+Message-ID: <20000309204350.A7409@raphael.bossek.home>
+References: <20000306094259.D74832EB20@elph.research.canon.com.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20000306094259.D74832EB20@elph.research.canon.com.au>; from greyham@research.canon.com.au on Mon, Mar 06, 2000 at 08:42:59PM +1100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yep.  I don't do ATM, but the majority of IDMA related questions
-can be traced to misalignment issues.  Come to think of it, I
-can count the number of DSP function related questions one hand.
+hi Graham,
+>
+> I've written a brief HOWTO with info from the last few months from this
+> mailing list, and I'd be very interested in any feedback anyone could offer.
+will made it avilable on my homepage :) do you have a tex or ps document versions too so we
+could made it avilable ?!  -*- great work -*-
 
-Dan Malek wrote:
->
-> Richard Hendricks wrote:
->
-> > The most famous case of this is the IDMA buffer descriptors.
->
-> I don't know about those, but DSP and ATM have 32 and 64 byte alignment
-> for various structures.
->
->         -- Dan
+--
+Raphael Bossek <raphael.bossek@solutions4linux.de> [ICQ #40047651]
+PGP fingerprint: DF 6F 2C 76 46 1E B4 1C  5B A5 2E 1B FC E0 D3 F6
+PGP public key: http://www.solutions4linux.de/private/pgpkey.asc
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
