@@ -1,26 +1,22 @@
-Date: Sat, 11 Sep 1999 13:31:08 +1000
-Message-Id: <199909110331.NAA12380@tango.anu.edu.au>
+Date: Sat, 11 Sep 1999 13:37:45 +1000
+Message-Id: <199909110337.NAA12425@tango.anu.edu.au>
 From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: hcaley@loomer.com
+To: costabel@wanadoo.fr
 CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <37D8A113.E95181A5@loomer.com> (message from Hugh Caley on Thu,
-	09 Sep 1999 23:11:32 -0700)
-Subject: Re: Problems with Samba 2.2 tree
+In-reply-to: <37D98144.97257D77@wanadoo.fr> (message from Martin Costabel on
+	Sat, 11 Sep 1999 00:08:04 +0200)
+Subject: Re: 2.3.18 and CONFIG_ADB_MOUSE
 Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <37D8A113.E95181A5@loomer.com>
+References: <Pine.LNX.4.10.9909101143540.23282-100000@mercator.cs.kuleuven.ac.be> <37D944A8.78051BB@wanadoo.fr> <37D98144.97257D77@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hugh Caley <hcaley@loomer.com> wrote:
+Martin Costabel <costabel@wanadoo.fr> wrote:
 
-> FYI, Paul, I have been rsyncing the stable tree on my Lombard laptop, and I
-> haven't been able to boot the kernels built with it since sometime after 9/3
-> or so.
+> if [ "$CONFIG_ADB" = "y" ; then
 
-Try again now.  In fixing a bug that affected generic configs, I
-inadvertently introduced a bug that stopped pmac-only kernels from
-booting (if booted by BootX).
+Simple syntax error, somehow I missed a ] before the ;.
 
 Paul.
 
