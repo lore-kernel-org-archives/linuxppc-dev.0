@@ -1,21 +1,37 @@
-From: Amit.Lubovsky@infineon.com
-Message-ID: <AD2F581BD7340A4C908AF1AFB066EA3B0E48DD@ntah901e.savan.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: pci mbx860
-Date: Wed, 5 Nov 2003 09:07:38 +0100 
+Message-ID: <3FA8C69D.8040408@mixed-mode.de>
+Date: Wed, 05 Nov 2003 10:45:01 +0100
+From: Tamas Bara <tba@mixed-mode.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="windows-1255"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: PCI on TQM8265
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
-I have to implement pci on MBX860 since the current code is broken
-(I use 2.4.20 kernel from denx),
-Could anybody point me to a sample implementation of pci
-as a starting and reference point ?
-Amit.
+
+I have a TQM8265 kit with Linux 2.4.4 on it and an
+Intel Gigabit Ethernet controller connected to the
+PCI bus.
+
+The controller is working, but it does freeze Linux
+on high network load.
+
+I have found out that in the 60x Bus Transfer Error
+Status and Control Register 1 (TESCR1), the PCI
+Machine Check bit is always set.
+
+The description in the user manual is very short:
+
+Set when a core machine check is asserted from the
+PCI bridge.
+
+I would like to know what causes this bit to be set.
+
+Thanks
+
+- tamas
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
