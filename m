@@ -1,36 +1,38 @@
-Message-Id: <200009132025.WAA00853@piglet.grunz.lu>
-Date: Wed, 13 Sep 2000 22:25:15 +0200 (CEST)
+Message-Id: <200009132037.WAA00873@piglet.grunz.lu>
+Date: Wed, 13 Sep 2000 22:36:58 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: Re: success 2.4.0-test8 with latest bk
-To: bh40@calva.net
-cc: costabel@wanadoo.fr, paulus@linuxcare.com, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20000913124700.2558@mailhost.mipsys.com>
+Subject: per-fb mmap for platinumfb and valkyriefb in 2.4
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
 Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  13 Sep, this message from Benjamin Herrenschmidt echoed through cyberspace:
->>Update: After a recompilation with today's updates, the latest bk kernel
->>boots again for me.
->
-> That's not the first time I notice this strange behaviour. I meant, this
-> happened to me randomly with various bk kernels for monthes. The problem
-> usually disappeared by itself after either recompiling the entire kernel,
-> or changing a few unrelated lines of code and then reompiling. That's
-> weird, I really don't know what can be causing that.
+Hi all,
 
-Same for me, except that for a few weeks now I'm basically stuck in a
-non-booting mood. One out of roughly 20 tries boots indeed; all the
-other stop in various places in init/main.c. Not even going into xmon...
+Below is the per-fb mmap implementation I already posted here for
+controlfb, but this time for the other two powermacfb drivers:
+valkyriefb and platinumfb.
 
-Since it doesn't seem to be a reproducible crash in one specific place,
-its rather hard to isolate the problem. I feel like chasing ghosts...
-Anybody got Ghostbusters' phone?
+Patch is against Paul's rsync tree at 2.4.0-test7, but since I don't
+expect much change in this area it should apply equally well to anything
+more recent ;-)
+
+Since I don't have any of these hardware devices, it's untested. If you
+do test, expect a 2-to-4-times performance boost on scrolling:
+
+[mlan@piglet ~]$ x11perf -scroll500
+
+I get around 35/sec on controlfb at 1152x870@32bpp with XF4.0; around
+9/sec without the optimized caching in the mmap().
+
+Have fun!
 
 Michel
+
+PS Will appear on sourceforge soon.....
 
 -------------------------------------------------------------------------
 Michel Lanners                 |  " Read Philosophy.  Study Art.
