@@ -1,23 +1,23 @@
-Date: Wed, 27 Jun 2001 15:10:53 -0400
-From: thewalthamgroup@netscape.net (Mark Phillips)
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Embedded Planet and TFTP
-Mime-Version: 1.0
-Message-ID: <4950C22A.0DCA4503.C7F6CBA8@netscape.net>
-Content-Type: text/plain; charset="us-ascii"
+Message-ID: <3B3A5A16.6010005@ccc-dcs.com>
+Date: Wed, 27 Jun 2001 17:11:34 -0500
+From: Jim Duey <jduey@ccc-dcs.com>
+MIME-Version: 1.0
+To: linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: SMB client and RPM
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, all.
-I recently got the following response from Embedded Planet's tech support
-about tftp and Redhat 7.x servers, and thought it might be of general use.
-I would credit the source, but it came from "techsuppport", unsigned.
+Has anyone tried to run smbclient on Walnut board?  Any problems or
+things I should watch out for?
 
-> I was also having problems with 7.1.  It turned out
-> that the Redhat install changed the /etc/services file to include a tftp
-> 69/tcp and a tftp 69/udp.  I rem'd out the tcp line and it worked.
+Also, I've downloaded the Sampa PPC rpm, but I can't get it installed on
+the walnut board because I don't have a PPC version of rpm.  How can I
+get one and get it installed?
 
-Mark Phillips.
+Thanks,
+Jim
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
