@@ -1,63 +1,46 @@
-Message-Id: <200001281007.LAA30470@denx.local.net>
-To: "Linux PPC Embedded" <linuxppc-embedded@lists.linuxppc.org>,
-        "Linux PPC Dev" <linuxppc-dev@lists.linuxppc.org>,
-        greyham@research.canon.com.au (Graham Stoney)
-Subject: Re: [ANNOUNCE] Update: MPC8xx Cross Development Tools
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 14 Jan 2000 00:34:01 +0100."
-Date: Fri, 28 Jan 2000 11:07:49 +0100
+In-Reply-To: <3891008C.A83C47B4@mvista.com>
+Date: Fri, 28 Jan 2000 11:21:26 +0100
+To: Jun Sun <jsun@mvista.com>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: the ppc_n_lost_interrupts thing...
+Message-Id: <20000128112126.007819@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Thu, Jan 27, 2000, Jun Sun <jsun@mvista.com> wrote:
 
-I've put an update for my scripts to build the PPC Cross Development
-Kit for the MPC8xx CPUs on
+>I am a newbie to PowerPC-linux.  Hopefully this question is
+>not too dumb.
 
-	ftp://ftp.denx.de/pub/LinuxPPC/usr/src/CDK.tar.gz
+Definitely not ;) Here's my understanding:
 
-The most significant change is taht the support for kernel modules is
-now included by default.
+>From this, I can infer that ppc_n_lost_interrupts is used to
+>"fake" a new interrupt at the end of an interrupt handling.
 
-The other modifications are mostly cosmetic; I did some  clean-up  so
-that "ENVIRONMENT" is now really the only file you need to modify for
-re-building  the  toos  for  a  different  directory  layout  or with
-different versions of the included tools.
+That's it.
 
-I also added some documentation:
+>However,
+>what I don't understand is - how could this possibly detect an
+>interrupt that happens while the CPU is blocking external
+>interrupt?
+>In this case, ppc_n_lost_interrupts won't be incremented and when
+>the external interrupt is re-enabled, we won't be able to get
+>into interrupt mode.
 
-	ftp://ftp.denx.de/pub/LinuxPPC/usr/src/README
+The interrupt will be lost only when it's masked in the controller while
+beeing issued by the device. It's a PIC bug.
 
-This file is a copy of the README included with the CD I make for the
-TQM8xxL modules; for re-building the cross tools see section 5.
+So, we need to check it out only when unmasking the interrupt -in the
+controller-. That's what we do in pmac-pic.c. If interrupts are masked on
+the CPU but not on the controller, they are not lost. If they are masked
+in both, it's not a problem neither, at least until someone tries to
+umask one in the controller.
 
+Note that our implementation if restore_flags() will check
+lost_interrupts since the unmask call can be done while MSR_EE is 0.
 
-Not included in this tarball are the original source packages that  I
-used;  to  make  sure  everybody has the same starting point here the
-list of URL where I got the sources from:
-
-ftp://ftp.valinux.com/pub/support/hjl/binutils/binutils-2.9.5.0.22.tar.bz2
-ftp://ftp.sunet.se/pub/gnu/egcs/releases/gcc-2.95.2/gcc-core-2.95.2.tar.bz2
-ftp://ftp.sunet.se/pub/gnu/egcs/releases/gcc-2.95.2/gcc-2.95.2.tar.bz2
-ftp://ftp.sunet.se/pub/gnu/glibc/glibc-2.1.2.tar.gz
-ftp://ftp.gwdg.de/pub/linux/glibc/2.1.2/glibc-crypt-2.1.2.tar.gz
-ftp://ftp.sunet.se/pub/gnu/glibc/glibc-linuxthreads-2.1.2.tar.gz
-ftp://linuxppc.cs.nmt.edu/pub/mirror/PPC/embedded/mpc8xx-2.2.13.tgz
-	(renamed to linux-2.2.13.tar.gz)
-
-ALL type of feedback is welcome,  especially  all  contributions  for
-improvement.
-
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-SW engineering is a race between programmers trying  to  make  better
-idiot-proof programs and the universe producing greater idiots.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
