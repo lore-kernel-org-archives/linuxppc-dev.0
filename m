@@ -1,42 +1,34 @@
-Message-ID: <39F9D22B.23BDE8E9@mvista.com>
-Date: Fri, 27 Oct 2000 12:06:19 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-Reply-To: mgreer@mvista.com
-MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Early PCI auto-configuration
-References: <Pine.LNX.4.10.10010271921050.390-100000@cassiopeia.home>
+Date: Sat, 28 Oct 2000 02:14:01 +0200
+From: Olaf Hering <olh@suse.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.2.18pre17 again
+Message-ID: <20001028021401.A18180@suse.de>
+References: <14839.53124.753011.489351@argo.linuxcare.com.au> <20001027210249.A15477@suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20001027210249.A15477@suse.de>; from olh@suse.de on Fri, Oct 27, 2000 at 09:02:49PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
+On Fri, Oct 27, Olaf Hering wrote:
 
-> <cut>
->
-> > cards, the pcibios_assign_resources() function will assign bases
-> > addresses to unassigned devices. This is done by the call to
-> > pcibios_assign_resources(), and works if your bus resources & ranges have
-> > been setup properly.
->
-> Yep. If you set up the bus resources correctly, that code will assign all
-> unassigned resources automatically (and reassign conflicting resources) from
-> the ranges specified by the bus resources.
->
-> BTW, before I did this on PPC, I played with PCI resource assignment on a MIPS
-> board, where the firmware didn't do any PCI assignments (except for Ethernet,
-> to boot images using TFTP), which is exactly what you want. For reference, that
-> code is in arch/mips/ddb5074/pci.c.
+> A B50 doesnt boot at all, it hangs after "Booting...", could be some asm
+> stuff.
 
-Geert, Ben, Matt,
+I tried some 18pre versions, but I didn't find the real trigger.
+When I boot our 2.2.16 kernel and then the 2.2.18pre11 the machine comes
+back. Rebooting again in that 2.2.18pre11 and it hangs. Same with a
+pre10. The plain pre17 doesnt boot at all.
 
-Thanks for the feedback.  I've looked through much of the code you guys pointed
-out and it does look like it will do what I want.  I'll hook it up and see how it
-goes.
 
-Mark
 
+Gruss Olaf
+
+--
+ $ man clone
+
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
