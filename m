@@ -1,41 +1,29 @@
-Message-Id: <200101290141.RAA21010@mail.turbolinux.com>
-Date: Mon, 29 Jan 2001 01:49:14 -0000
+Date: Mon, 29 Jan 2001 10:29:56 +0000
+Subject: correct use of lock_kernel() - help!  please
+From: "Iain Sandoe" <iain@sandoe.co.uk>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: pmud monitoring temperature (Re: powerbook doubles)
-From: Brad Midgley <brad@turbolinux.com>
-Cc: djosg@mgu.bath.ac.uk
-Reply-To: brad@turbolinux.com
+Mime-version: 1.0
+Content-type: text/plain; charset="utf-8"
+Message-Id: <20010129102946.9388A2EFC9@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hi,
+Hi,
 
-> > yes, it can.
-> > Someone posted a patch some time last year to get the info into the /proc
-> > entry.  If that no longer applies it shouldn't be too difficult to update
-> > it.
+In the driver I am working on (dmasound) someone has placed lock/unlock
+_kernel() pairs around whole functions.
 
-i reworked this patch to work with the current bk tree (argh. i just complained to iain that diffs
-against a moving target were gross)
+This means that (e.g.) if we release the sound device with a lot of
+un-played samples at a low-ish sample rate...
 
-http://redcloud.uccs.edu/~bcmidgle/linux/
+AFACIT we could hold the kernel locked for *several seconds*
 
-btw, it looks like troy wants the _{gs}et_THRM{123} macros changed to use some different macros,
-but i'm not familiar with that stuff so i just reenabled the old macros.
+What do I really need to protect with lock/unlock pairs?
 
-> until we have proper heat control in the kernel, maybe pmud should monitor the temperature and
-put
-> the machine to sleep if it runs too hot.
+or am I missing something (it wouldn't be the first time ..) ;-?
 
-i'm looking into this part.
-
-btw, what is a dangerous temperature? with the bays empty and a housefan running nearby (ie
-relatively cool) it is reporting 42c.
-
---
-Brad
-brad@turbolinux.com      http://www.turbolinux.com/~brad/
-
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
