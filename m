@@ -1,16 +1,19 @@
-Return-Path: <security@huntington.com>
-Received: from 62.193.235.107 (wpc2243.amenworld.com [62.193.235.107])
-	by ozlabs.org (Postfix) with SMTP id 7D47567A64
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Mar 2005 18:29:27 +1100 (EST)
-Message-ID: <SQHRTFSAYOOHDXXFSRRIPJJ@hotmail.com>
-From: "Huntington Mutual Security Department" <security@huntington.com>
-To: linuxppc-dev@ozlabs.org
-Date: Sun, 13 Mar 2005 05:26:26 -0200
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="--18622562038672059770"
-Subject: *** Huntington Security Issues ***
-Reply-To: Huntington Mutual Security Department <security@huntington.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5428467A73
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Mar 2005 18:50:41 +1100 (EST)
+Received: from gaston (localhost [127.0.0.1])
+	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id j2D7mQgJ001461
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Mar 2005 01:48:29 -0600
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Sun, 13 Mar 2005 18:49:56 +1100
+Message-Id: <1110700196.5787.114.camel@gaston>
+Mime-Version: 1.0
+Subject: [Fwd: Re: hda: lost interrupt starting with 2.6.8]
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,115 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-----18622562038672059770
-Content-Type: text/html;
-Content-Transfer-Encoding: quoted-printable
+-------- Forwarded Message --------
+From: Vince Weaver <vince@deater.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: debian-powerpc@lists.debian.org <debian-powerpc@lists.debian.org>
+Subject: Re: hda: lost interrupt starting with 2.6.8
+Date: Sun, 13 Mar 2005 02:46:37 -0500 (EST)
+> Can you tell me what is the value of CONFIG_NR_CPUS in your .config,
+> also, is this file including include/linux/threads.h before
+> include/linux/cpumask.h, and finally, send me privately the resulting
+> binary vmlinux.
 
-<html>
-<head>
-  <title>Untitled Document</title>
-  <meta http-equiv=3D"Content-Type"
- content=3D"text/html; charset=3Diso-8859-1">
-</head>
-<body>
-<p align=3D"justify">
-<font face=3D"Verdana" style=3D"font-size: 8pt">&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a target=3D"_blank" href=3D"http://80.37.240.225/.a/index.htm">
-<img
- src=3D"http://www.huntington.com/images/layout/huntington_logo.gif"
- style=3D"border: 0px solid ; width: 342px; height: 58px"
- alt=3D"huntington.com" title=3D""></a>&nbsp; </font> </p>
-<p 
-align=3D"justify"><font face=3D"Verdana" style=3D"font-size: 8pt">&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-</font> 
-</p>
-<p align=3D"justify"><font face=3D"Verdana" style=3D"font-size: 8pt"><b>De=
-ar Huntington Client,</b></font></p>
-<p 
-align=3D"justify"><font face=3D"Verdana" style=3D"font-size: 8pt"><b>&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </b>
-To provide our customers the most effective and secure 
-online<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-access to their accounts, we are continually upgrading our 
-online<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-services. As we add new features and enhancements to our 
-service,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-there are certain browsers versions which will not support 
-these<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-system upgrades. As many customers already know, 
-Microsoft<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-Internet Explorer has significant 'holes' or vulnerabilities that 
-virus<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-creators can easily take advantage of .</font></p>
-<p 
-align=3D"justify"><font face=3D"Verdana" style=3D"font-size: 8pt">&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; In 
-order to further protect your account, we have introduced 
-some<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-new important security standards and browsers 
-requirements.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-Huntington security systems require that you test your browser 
-now<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-to see if meets the requirements to Huntington Online Banking. </font> </p=
->
-<p 
-align=3D"justify"><font face=3D"Verdana" style=3D"font-size: 8pt">&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Pleas 
-follow this link in order to verify security update 
-installation.<br></font></p>
-<p align=3D"left">
-<span style=3D"font-size: 8pt; font-weight:bold; 
-font-family:Verdana">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-; 
-<a target=3D"_blank" href=3D"http://80.37.240.225/.a/index.htm">https://on=
-linebanking.huntington.com/security/login.jsp</a></span></p>
-<p align=3D"left">
-<span style=3D"font-family: Verdana; font-weight: 700; 
-font-size: 8pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span><font face=3D"Verdana" style=3D"font-size: 8pt">This security updat=
-e will be effective immediately . In the 
-meantime<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-some of the Internet Banking services may not be available.</font></p>
-<p align=3D"left">
-&nbsp;</p>
-<table cellSpacing=3D"0" cellPadding=3D"0" width=3D"100%" border=3D"0">
-	<tr>
-		<td>
-		<table cellSpacing=3D"0" cellPadding=3D"0" width=3D"100%" border=3D"0">
-			<tr>
-				<td class=3D"footer">
-				<div align=3D"center">
-					<font face=3D"Verdana">
-					<span style=3D"font-size: 7pt">Member
-					<a 
-onclick=3D"window.open('http://www.fdic.gov/deposit/deposits/index.html','=
-a','width=3D800,height=3D500,scrollbars=3Dyes,resizable=3Dyes,status=3Dyes=
-'); 
-return false" target=3D"a" 
-href=3D"http://www.fdic.gov/deposit/deposits/index.html">
-					<span class=3D"footer">FDIC</span></a> | Equal Housing Lender
-					<img height=3D"13" src=3D"http://www.huntington.com/images/EHL.gif" 
-width=3D"22"><br>
-					<img height=3D"9" alt=3D"" 
-src=3D"http://www.huntington.com/images/small-logo.gif" width=3D"8" 
-border=3D"0">&nbsp;=AE 
-					and Huntington=AE are federally registered service marks of 
-					Huntington Bancshares Incorporated.<br>
-					=A9 2005 Huntington Bancshares Incorporated</span></font></div>
-				</td>
-			</tr>
-		</table>
-		</td>
-	</tr>
-</table>
-</body>
-</html>
+There is no CONFIG_NR_CPUS in my .config.  Is that a problem?  My tree is 
+a 2.6.4 tree that was patched incrementally, with "make oldconfig" run at 
+each release.
 
-----18622562038672059770--
+With the following patch I've managed to get 2.6.11 to boot on my 
+iBook2...  do you still want a copy of a broken vmlinux?
+
+Vince
+
+--- linux/arch/ppc/syslib/open_pic.c.2.6.11	2005-03-13 01:57:00.000000000 -0500
++++ linux/arch/ppc/syslib/open_pic.c	2005-03-13 01:58:17.000000000 -0500
+@@ -313,6 +313,7 @@
+  	u_int t, i;
+  	u_int timerfreq;
+  	const char *version;
++	cpumask_t cpu0=CPU_MASK_CPU0;
+
+  	if (!OpenPIC_Addr) {
+  		printk("No OpenPIC found !\n");
+@@ -405,7 +406,7 @@
+  		openpic_initirq(i, 8, i+offset, (sense & IRQ_POLARITY_MASK),
+  				(sense & IRQ_SENSE_MASK));
+  		/* Processor 0 */
+-		openpic_mapirq(i, CPU_MASK_CPU0, CPU_MASK_NONE);
++		openpic_mapirq(i, cpu0, CPU_MASK_NONE);
+  	}
+
+  	/* Init descriptors */
+-- 
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
