@@ -1,25 +1,16 @@
-Return-Path: <gergely.buday@siemens.com>
-Received: from mail-proxy.sysdata.hu (mail-proxy.sysdata.hu [212.24.191.137])
-	by ozlabs.org (Postfix) with ESMTP id 99AFE67A33
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 7E31E67A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Apr 2005 00:06:49 +1000 (EST)
-Received: from mail-proxy.sysdata.hu (localhost [127.0.0.1])
-	by virus-scan.sysdata.siemens.hu (Postfix) with ESMTP id 13B4D17FF9
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Apr 2005 15:34:38 +0200 (CEST)
-Received: from budg132a.sysdata.siemens.hu (budg132a.sysdata.siemens.hu
-	[149.202.237.197])
-	by mail-proxy.sysdata.hu (Postfix) with ESMTP id F089617FAB
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Apr 2005 15:34:37 +0200 (CEST)
-Message-ID: <F2BED41F1171FF449F88D60191848A84023CB06D@budg132a.sysdata.siemens.hu>
-From: =?iso-8859-1?Q?Buday_Gergely_Istv=E1n?= <gergely.buday@siemens.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Fri, 1 Apr 2005 15:34:37 +0200 
+	Sat,  2 Apr 2005 00:56:40 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C536BE.83CAA760"
-Subject: Which kernel to use?
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Fri, 1 Apr 2005 08:56:36 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B85932D@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Manisha Jagadhane" <manisha.vj@gmail.com>, <linuxppc-embedded@ozlabs.org>
+Subject: RE: custom board MPC8266
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,49 +21,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
+I remebereed the wrong file.=20
+Take a look in arch/ppc/8260_io/uart.c
 
-------_=_NextPart_001_01C536BE.83CAA760
-Content-Type: text/plain;
-	charset="iso-8859-1"
-
-Hi,
-
-I  have a gadget built around a ppc xpc850xxztb processor with 2M flash and
-8M ram. The opsys is Hard Hat, but I'd like to change it to an
-openembedded-based solution. Where can I get sources for a proper kernel
-that works with this system?
-
-- Gergely
-
-------_=_NextPart_001_01C536BE.83CAA760
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-5.5.2657.73">
-<TITLE>Which kernel to use?</TITLE>
-</HEAD>
-<BODY>
-
-<P><FONT SIZE=3D2>Hi,</FONT>
-</P>
-
-<P><FONT SIZE=3D2>I&nbsp; have a gadget built around a ppc xpc850xxztb =
-processor with 2M flash and 8M ram. The opsys is Hard Hat, but I'd like =
-to change it to an openembedded-based solution. Where can I get sources =
-for a proper kernel that works with this system?</FONT></P>
-
-<P><FONT SIZE=3D2>- Gergely</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C536BE.83CAA760--
+> -----Original Message-----
+> From: Manisha Jagadhane [mailto:manisha.vj@gmail.com]=20
+> Sent: Friday, April 01, 2005 00:01
+> To: Rune Torgersen; linuxppc-embedded@ozlabs.org
+> Subject: Re: custom board MPC8266
+>=20
+> Thanks for the reply.=20
+> I have seen the file arch/ppc/8260_io/commproc.c, but there is nowhere
+> given where to configure the SMC1/SMC2/SCC1/SCC2 as serial console. In
+> the .config file, whether we have to set CONFIG_SCC_CONSOLE=3Dy option
+> and in this .config file, is it required to do any configuration to
+> set SMC1 as serial console?
+>=20
+> Please clarify.
+>=20
+> Thanking you in advance.
+>=20
+> Regards,
+> Manisha
+>=20
+>=20
+> On Mar 30, 2005 7:57 PM, Rune Torgersen <runet@innovsys.com> wrote:
+> > If I remember correctly: You have to edit the
+> > arch/ppc/82xx_io/commproc.c file (I think) to set up which=20
+> serial port
+> > is used for console port.
+> >=20
+> > > -----Original Message-----
+> > > From: linuxppc-embedded-bounces@ozlabs.org
+> > > [mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of
+> > > Manisha Jagadhane
+> > > Sent: Wednesday, March 30, 2005 05:32
+> > > To: linuxppc-embedded@ozlabs.org
+> > > Subject: custom board MPC8266
+> > >
+> > > Hi,
+> > >
+> > > I am using custom board based on MPC8266 processor. I have
+> > > successfully ported U-Boot 1.1.1 on it. I have used SMC1 as serial
+> > > port in the board. Does the 2.4.24 kernel version for ppc supports
+> > > SMC1 as serial console? Which configuration I have to give in the
+> > > .config file to configure SMC1 as serial console? Which board's
+> > > defconfig file  shall I take as a reference and which=20
+> kernel version
+> > > shall I use?
+> > >
+> > > Please help me in this regard.
+> > >
+> > > Thanking you in advance.
+> > >
+> > > Regards,
+> > >
+> > > Manisha.
+> > > _______________________________________________
+> > > Linuxppc-embedded mailing list
+> > > Linuxppc-embedded@ozlabs.org
+> > > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> > >
+> > >
+> >
+>=20
+>=20
