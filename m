@@ -1,23 +1,26 @@
-In-Reply-To: <38C580BE.26157A00@claudio.ch>
-Date: Wed, 8 Mar 2000 10:56:51 +0100
-To: Claudio Nieder <private@claudio.ch>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: 2.2.15pre11 on PB Lombard
-Message-Id: <20000308105651.015313@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Wed, 8 Mar 2000 11:10:57 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: enneper@gmx.net
+cc: Robert Shaw <rshawppc@netscape.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Booting 2.3.48 (devel) kernel problems?
+In-Reply-To: <20000308082541.A782@gmx.li>
+Message-ID: <Pine.LNX.4.10.10003080937390.10214-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Mar 7, 2000, Claudio Nieder <private@claudio.ch> wrote:
+>  Robert Shaw }  I have a PowerBook G3 (1997) that I'm trying to get the latest devel kernel
+>  Robert Shaw }  compiled and booting on (2.3.48). However, no matter what I try, it always
+>  Robert Shaw }  hangs at the "booting..." screen.
+> probably CONFIG_DEVFS_FS = y ????
+> first try /usr/scr/linux/Documentation/filesystems/devfs/README
 
->hda: Enabling MultiWord DMA 2
->hdc: Enabling MultiWord DMA 2
->ide1: unexpected interrupt, status=0x00, count=1
+That, plus a few patches related to BootX text console output happening
+before the framebuffer is mapped. I'll dig out a patch if necessary.
 
-Hum... I should make sure not to enable interrupts when setting the disk
-features... I'll fix that asap.
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
