@@ -1,41 +1,41 @@
-Message-Id: <200111041734.SAA01123@piglet.grunz.lu>
-Date: Sun, 4 Nov 2001 18:34:36 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Open Firmware debugging through Ethernet
-To: js@debian.org
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.33.0111031156300.792-100000@auryn.jones.dk>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Cc: <linuxppc-dev@lists.linuxppc.org>, <tahoward@ntrnet.net>
+Subject: Re: Kernel cannot allocate resource region
+Date: Sun, 4 Nov 2001 21:16:40 +0100
+Message-Id: <20011104201640.24983@smtp.wanadoo.fr>
+In-Reply-To: 
+ <Pine.LNX.4.33.0111041506400.11898-100000@opal.biophys.uni-duesseldorf.de>
+References: 
+ <Pine.LNX.4.33.0111041506400.11898-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   3 Nov, this message from Jonas Smedegaard echoed through cyberspace:
-> I stumbled across this today, that might be useful to kernel hackers:
+>That may be a timing difference hitting in some driver - in the m68k ADB
+>code, I had been using a local (stack) adb_request struct for some
+>asyncronous ADB request. Most of the time the async operation would
+>complete while that variable was still valid (the calling routine hadn't
+>returned yet). Someetimes it would only complete later ;-(
 >
-> Open Firmware debugging through Ethernet fram another machine.
->
-> http://developer.apple.com/technotes/tn/tn2023.html
+>The current ADB code should be free from such gross errors, but maybe
+>something else doesn't cope with async probing of devices? ADB probing
+>happens asynchronously these days (but then, BenH won't have used
+>non-static variables for that). And I'd expect the kernel to throw a
+>panic() for data or illegal instruction errors. Maybe some deadlock - what
+>other task is active during ADB probe?
 
-Rather, look at this one:
+Well, it' s possible that I left or added such bugs ;)
 
-http://developer.apple.com/technotes/tn/tn2004.html
+If you are using my rsync tree (or since recently the bk _devel tree),
+there's an "adb_sync" option you can add to your kernel command line
+to force ADB probe to be synchronous.
 
-It's this technote that explains how to start the telnet server on the
-target machine.
+Tell me if that helps.
 
-Cheers
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
