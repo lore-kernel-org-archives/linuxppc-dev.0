@@ -1,38 +1,30 @@
-From: linuxppc_em@sina.com
-Message-ID: <001501bfaa04$6b5cd3e0$8e21fea9@p2kasvr>
-Reply-To: <linuxppc_em@sina.com>
-To: "kim sook young" <icekim@sec.samsung.co.kr>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <001901bfa9a9$2a7c0040$efc5dba8@sec.samsung.co.kr>
-Subject: Re: Error: Building glibc
-Date: Wed, 19 Apr 2000 21:36:04 +0800
+Message-ID: <38FDBB60.34DE949@sympatico.ca>
+Date: Wed, 19 Apr 2000 09:57:52 -0400
+From: Stephane Laroche <stephane.laroche@sympatico.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: char type is unsigned with PPC gcc?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
------ Original Message -----
-From: "kim sook young" <icekim@sec.samsung.co.kr>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Wednesday, April 19, 2000 10:44 AM
-Subject: Error: Building glibc
+I just finished debugging the ASH shell, which wasn't running properly
+on my 860, and found out that it assumes (correctly if you ask me) that
+the type 'char' is signed.
 
+GCC 2.95.2 is configured to have chars unsigned by default on the
+PowerPC platforms.  The x86 GCC configures char to be signed... (looking
+at gcc/config/rs6000/rs6000.h for the ppc)
 
->
-> Hi, all
-> While building glibc, I got an error like the following
-.. cut
-> to build glibc. ( Actually  in order to install Binutils, Gcc and LibC, I followed the instructions only
+Anyone knows why the PowerPC is different in this regard?
 
->except for  building linux/ppc kernel )
-    ^^^^^ maybe here is,   you neendn't build kernel, but you must config it,
-to build  glibc,  require some head files in kernel S/T,  especially some types defines. ;)
+Surely I'm not the first one to come across this problem.  Should I fix
+ASH or should I reconfigured gcc to default to signed char?  I think the
+latter is a better idea since, if I remember correctly, ANSI C says that
+char should be signed.
 
-john zhan.
-b.r.
-hacking time.
+-Stephane
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
