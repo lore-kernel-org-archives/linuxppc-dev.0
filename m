@@ -1,40 +1,34 @@
-Date: Wed, 31 Mar 1999 08:24:01 -0600 (CST)
-From: puetzk6715@uni.edu
-Subject: Re: [LinuxPPC] cross compiler, compiling
-In-reply-to: <B0001827320@icamail.ica.net>
-To: Trevor Woerner <twoerner@ica.net>
-Cc: David Edelsohn <dje@watson.ibm.COM>,
-        Users LinuxPPC <linuxppc-user@lists.linuxppc.org>,
-        Developer LinuxPPC <linuxppc-dev@lists.linuxppc.org>,
-        Fred Fish <fnf@cygnus.COM>
-Message-id: <Pine.PMDF.3.96.990331082245.539203673C-100000@uni.edu>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 31 Mar 1999 08:49:14 -0600 (CST)
+From: nathan ingersoll <ningerso@d.umn.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Yesterday vger and ioremap (fwd)
+Message-ID: <Pine.SO4.4.02.9903310848450.26194-100000@ub.d.umn.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Yes - if you're building to LInuxPPC R4, you need to use Gary's SRPMS to
-build the cross-compiler, to get fixes for some glibc-1.99 oddity's.
+---------- Forwarded message ----------
+On Tue, Mar 30, 1999, Nathan Ingersoll <ningerso@d.umn.edu> wrote:
 
-At leat, I htink this is still needed.
+>I've noticed the ethernet part too. I've been working with the writer of the
+>epic100 driver to get it working for PPC, but I haven't been able to test his
+>changes since upgrading. I get a total lock up whenever I try to bring up the
+>interface. It's not IP because I've been able to connect using PPP.
 
-On Sun, 28 Mar 1999, Trevor Woerner wrote:
+Cort just fixed the ioremap problem, I'll try again a kernel later today
+or tomorrow, in the meantime, you may want to post the above message to
+the dev mailing lists too so that other people know that it's not an
+isolated problem (but I beleive we are not alone with that bug ;-)
 
-> please don't hesitate to mention if i forgot anything else.
-> 
-> best regards,
->    trevor woerner
-> 
-> ------------------------------------------------------------
-> 
-> ...Senior, for his first selection, will play "A Cup Of
->    Coffee, A Sandwich, And You" from the opera: Aida
-> 
->                              --- Groucho Marx
->                                  The Cocoanuts, 1929
-> 
-> 
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
