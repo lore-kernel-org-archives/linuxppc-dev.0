@@ -1,31 +1,40 @@
 From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Michel Dänzer <daenzerm@student.ethz.ch>,
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
         <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 3D accel on PPC
-Date: Fri, 1 Jan 1904 10:12:31 +0100
-Message-Id: <19040101091231.12085@mailhost.mipsys.com>
-In-Reply-To: <394DD484.6036B7DA@student.ethz.ch>
-References: <394DD484.6036B7DA@student.ethz.ch>
+Subject: Re: mesh in 2.4.0-test1
+Date: Thu, 31 Dec 1903 23:50:06 +0100
+Message-Id: <19031231225006.29288@192.168.1.10>
+In-Reply-To: <Pine.LNX.4.05.10006041259560.514-100000@callisto.of.borg>
+References: <Pine.LNX.4.05.10006041259560.514-100000@callisto.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jun 19, 2000, Michel Dänzer <daenzerm@student.ethz.ch> wrote:
+On Sun, Jun 4, 2000, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
+>After 3 days of hacking, I found it. The new Core99 interrupt tree code
+>doesn't
+>take into account that on CHRP boxes with both ISA and OpenPIC, the interrupt
+>numbers have to be fixed up. Below is the patch that made it work for me.
 >
->XF 4.0.1 will include DRI support for Rage128. However, it needs agpgart to
->work, so no luck on PPC yet :(
+>Before I check it in into bitkeeper: should I replace the test
+>
+>    _machine == _MACH_chrp
+>
+>by
+>
+>    !strncmp(model, "IBM,LongTrail", 13)
+>
+>or are there other CHRP models bitten by this as well?
 
-Their implementation is not able to work at all without an AGP GART ?
-That's brain-dead ! what about all the 3D PCI cards out there ? And all
-the machines that simply don't have a working AGP ? AGP should be an
-optimisation, not a requirement !
-
-I have all the details (I think) to implement support for the Uni-N GART
-in the new Core99 macs, I'll give this a try one of these days. But that
-would be plain stupid not to support "classical" operations via PCI.
+After reading the code more closely, it appear that I spoke to quickly:
+_machine is initialized before finish_device_tree() in all cases. I
+beleive this problem will happen with all CHRPs since all of them have an
+ISA legacy controller. So I'll keep the test
+as it is, and I'll merge the fix into bk today for both 2.2 and 2.4 along
+with some other prom.c changes I have here.
 
 Ben.
 
