@@ -1,27 +1,41 @@
-Date: Fri, 21 Sep 2001 09:22:00 +0200 (MEST)
+Date: Fri, 21 Sep 2001 09:24:13 +0200 (MEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "Timothy A. Seufert" <tas@mindspring.com>
-Cc: Mark Salisbury <mbs@mc.com>,
+To: Dan Malek <dan@mvista.com>
+Cc: "Timothy A. Seufert" <tas@mindspring.com>,
+	Mark Salisbury <mbs@mc.com>,
 	Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
 	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: ppc LE questions (seeking help hand info pointers)
-In-Reply-To: <p05100304b7d00bd21d35@[10.0.0.42]>
-Message-ID: <Pine.GSO.4.21.0109210920440.3006-100000@mullein.sonytel.be>
+In-Reply-To: <3BAAB9E7.16F9ED2D@mvista.com>
+Message-ID: <Pine.GSO.4.21.0109210922040.3006-100000@mullein.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 20 Sep 2001, Timothy A. Seufert wrote:
-> At 4:19 PM -0400 9/20/01, Mark Salisbury wrote:
-> >Holger Bettag wrote:
-> (Specifically: in order to support PPC-LE, all the hardware drivers
-> needed for your platform will need to be rewritten to be aware of
-> munging.  The alternative is to make the kernel run in regular BE
+On Thu, 20 Sep 2001, Dan Malek wrote:
+> "Timothy A. Seufert" wrote:
+> > Finally, Book E has been mentioned.
+>
+> Too bad.....
+>
+> > ... a TLB entry bit (bit 'E' for endian) which marks a page as
+> > little endian.
+>
+> This has been discussed in the past and suffers from the same
+> problem as trying to byte swap in a bridge.  Although you can use
+> any load/store in this space, unless you are performing the access
+> on the natural size of the object it won't have the proper effect.
+> Since you must require that knowledge, it is just as easy to choose
+> the proper byte swapping variant of the instruction.
 
-But PCI drivers already use readl() and friends, so the differences can be
-hidden there? => no driver changes.
+Anyone who knows how this differs from the similar bit on UltraSPARC?
+
+> I guess I better go looking for those m68k projects now :-).
+
+Good! We can use some help to keep the old platforms alive... AFAIK the
+working platform support decreased to Amiga, Q40, Sun3[x], and Mac in 2.4.x...
 
 Gr{oetje,eeting}s,
 
