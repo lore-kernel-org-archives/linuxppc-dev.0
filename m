@@ -1,31 +1,28 @@
-Date: Sat, 10 Apr 1999 22:57:36 +1000 (EST)
-From: Nathan Hurst <njh@drongo.anu.edu.au>
-To: "L. S." <lxcom@operamail.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: RE: Uhh...Where Is The Source?
-In-Reply-To: <199904100854.DAA08011@lists.linuxppc.org>
-Message-ID: <Pine.LNX.3.95.990410225625.14193A-100000@drongo.anu.edu.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: LinuxPPC-Dev@associate.com
+Date: 10 Apr 1999 14:53:03 -0000
+Message-ID: <19990410145303.1090.qmail@associate.com>
+To: linuxppc-dev@lists.linuxppc.org
+cc: root@associate.com
+Subject: Lock-up while building mod_perl
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 10 Apr 1999, L. S. wrote:
+Hi,
 
-> Thanks, All.
-> 
-> I now understand why I can't find the source files. Since the
-> rpm-related man pages seemed misleading to me (--rebuild), and while
-> waiting for more responses, I've been viewing uncompressed ".tar.gz"
-> files on the Mac side. Therefore, and I haven't tried the various hints
-> and directions yet. I'll boot over. 
+Yesterday while trying to build/compile the mod_perl RPM from
+ftp://rawhide.redhat.com/SRPMS/SRPMS/mod_perl-1.18-5.src.rpm
+I experienced a total lock-up/freeze/crash.  It's been a LONG while
+since anything like that happened, so I thought I'd pass the new on here.
+I have a suspicion that this may be connected to the glibc-p release,
+which I recently upgraded to - this glibc also caused MySQL to stop working,
+even when compiled against the new glibc.
 
-I was got by this too, use --recompile - it'll build and RPM in BUILD and
-place it into RPMS.  Very cute!
+Has anyone else seen this kind of problem (compiling mod_perl)?
 
-njh
+I'm running on a 7200/90 updated with all the latest R4 stuff.
 
+glen_stewart@associate.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
