@@ -1,41 +1,33 @@
-Message-ID: <3A243FA7.4EA8C037@mvista.com>
-Date: Tue, 28 Nov 2000 18:28:39 -0500
-From: Dan Malek <dan@mvista.com>
+Message-ID: <005201c059b0$2cdef7e0$ef0fa8c0@hoangmobile>
+From: "Nguyen Xuan Hoang" <jerry.nguyen@serialsystem.com.sg>
+To: <support@mvista.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <DKEFKEENEHPHKNLLKHCGGEEICDAA.support@mvista.com>
+Subject: PCMCIA Card Service
+Date: Tue, 28 Nov 2000 18:57:56 -0800
 MIME-Version: 1.0
-To: Brian Ford <ford@vss.fsi.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: EST SBC8260 and Canary CTX-1170
-References: <Pine.GSO.4.21.0011281625590.493-100000@eos>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brian Ford wrote:
+Hi,
 
-> Ok.  Do you know if there is anonymous bk access to the linuxppc_2_5
-> tree?  If so, on what port?
+I'm trying to get the PCMCIA CardService  running on an mpc823 board
+(RPX Lite). I pick up the code from Jo-Ellen Mathews of AbsoluteValue
+Systems,and I can do something like remap memory, read data from IO
+port...But end up with IRQ probe fail (I start with PCMCIA Flash Card).  I
+did an investigating and find out the reason, that is PCMCIA card service
+already occupy the PCMCIA interrupt and I can not use request_8xxirq to
+register another handler .
 
-I think so, 5005 comes to mind.  Search the linuxppc-dev archives
-for some references.
+I am thinking that I may have to rewrite request_8xxirq and pcmcia interrupt
+handler to solve this case. Is there any better solution? Have any one have
+done it? I am very appreciated for any help.
 
-> As an off topic side note, wouldn't it make sense for there to be a common
-> MII library for all linux network drivers to share?  Is this not possible,
-> or has no one volunteered yet?
+Thank in advances
+Hoang
 
-I don't ever remember such a discussion.  If it made sense, you would
-see it in the generic network drivers, but it's not there.  Logically,
-it makes sense, but you will notice the implementations are quite
-different because of the hardware.  Even the 860 and 8260 are different.
-The 860 has an interrupt driven piece of hardware, while the 8260 is
-single threaded software bit shifting.  The support functions are quite
-different because of this (which is why I am not using any of the 860
-functions in the 8260 driver).  If you have time, take a look at it.
-Just remember simplicity wins....I'm sure you can force some kind of
-"common functions" if that is your goal, but if it's a complicated
-spaghetti mess that only you understand it doesn't help :-).
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
