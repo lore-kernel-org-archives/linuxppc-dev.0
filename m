@@ -1,24 +1,32 @@
-Message-Id: <5.1.0.14.0.20020530091533.0233eda0@pop.gmx.de>
-Date: Thu, 30 May 2002 09:17:29 +0200
-To: "zhongqx" <zhongqx@guoguang.com.cn>,
-	<linuxppc-embedded@lists.linuxppc.org>
-From: Michael Habermann <MHabermann@gmx.de>
-Subject: Re: Dram is not good on FADS860T board!
-Cc: "MirekP" <ntr_stukacz@poczta.onet.pl>
-In-Reply-To: <001d01c20795$86b62240$7301a8c0@zhongqx>
+Date: Thu, 30 May 2002 18:04:34 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Do we need tlbsx at finish_tlb_load?
+Message-ID: <20020530080434.GY16537@zax>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 12:50 PM 5/30/2002 +0800, zhongqx wrote:
->     Recently I want to run linux on FADS860T board,but i find thd DRAM of
-> board can not work normally.
+A question to Dan and Tom in particular:
 
-How much DRAM do you have? 16 MB DRAM collides with the SDRAM, so it works
-only if SDRAM is disabled. 8 MB works on my system. 32MB, I've never
-tested, but it should also work.
+At the moment on 4xx, just after finish_tlb_load, which is called by
+both the TLB miss handlers, we do a tlbsx to see if an entry for this
+virtual address already exists.
 
+Since this code is only called from the TLB miss handler, I can't see
+how there could ever be a valid TLB entry present at this point.
+There is a comment claiming that this path can be hit under some
+circumstances, but it doesn't make sense to me.
+
+Is there any situation where we can reach this point with a valid TLB
+entry existing for the faulting address?
+
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
