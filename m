@@ -1,60 +1,53 @@
-Message-Id: <5.1.0.14.2.20030905220237.00b084b8@mail.ebshome.net>
-Date: Fri, 05 Sep 2003 23:07:14 -0700
-To: linuxppc-embedded@lists.linuxppc.org
-From: Eugene Surovegin <ebs@ebshome.net>
-Subject: Copy prefetch optimizations and non-coherent caches
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16217.57099.255798.871698@cargo.ozlabs.ibm.com>
+Date: Sat, 6 Sep 2003 23:20:11 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Eugene Surovegin <ebs@ebshome.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Copy prefetch optimizations and non-coherent caches
+In-Reply-To: <5.1.0.14.2.20030905220237.00b084b8@mail.ebshome.net>
+References: <5.1.0.14.2.20030905220237.00b084b8@mail.ebshome.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all!
+Eugene Surovegin writes:
 
-There are read prefetch optimization in several PPC specific functions
-responsible for copying memory (copy_page, __copy_tofrom_user). Current
-implementations will try to prefetch up to 4 (MAX_COPY_PREFETCH) cache
-lines _after_ the end of the source buffer.
+> There are read prefetch optimization in several PPC specific functions
+> responsible for copying memory (copy_page, __copy_tofrom_user). Current
+> implementations will try to prefetch up to 4 (MAX_COPY_PREFETCH) cache
+> lines _after_ the end of the source buffer.
+>
+> Unfortunately, it's not a good idea on non-coherent cache CPUs. This
+> prefetching may establish cache lines for memory ranges that require
+> exactly the opposite (e.g. DMA read buffer).
 
-Unfortunately, it's not a good idea on non-coherent cache CPUs. This
-prefetching may establish cache lines for memory ranges that require
-exactly the opposite (e.g. DMA read buffer).
+You are right.
 
-Here is one example of the incorrect behavior (from the real life :()
+> I think we should disable prefetch if CONFIG_NONCOHERENT_CACHE is defined.
+> Other more complex solutions are possible, e.g. we can still prefetch our
+> own buffer but don't touch anything outside (I'll try to do some
+> performance testing to determine whether it's worth the effort :).
 
-Let's consider two adjacent pages in RAM. First page contains some data and
-the second one is used as target for DMA read. Please, note that these two
-pages are completely unrelated to each other.
+The measurements I did on a ppc64 kernel indicated that most
+copy_tofrom_user calls were either for relatively small buffers
+(i.e. less than 256 bytes) or were page-sized and page-aligned.
+Therefore I did two routines, one optimized for small copies that
+didn't use any prefetching or dcbz's, and one optimized for page-sized
+copies.
 
-Before initiating "read" we invalidate cache lines for addresses in the
-second page range (e.g. with consistent_sync_page(...., PCI_DMA_FROMDEVICE)).
+We could do something similar on ppc32 - we could do the small copy
+case with no prefetching (or maybe we could just prefetch on the first
+cache line), plus a page-copy case that does prefetching.  If you know
+you are doing exactly one page, it shouldn't be hard to set up the
+prefetching so you don't prefetch past the end of the source buffer.
+In fact it should be possible to code up a relatively simple optimized
+copy loop that avoids prefetching outside the source region if we just
+assume that the source and destination addresses are
+cacheline-aligned, and the size is a multiple of the cacheline size
+and is at least 8 (say) cache lines.
 
-Then somewhere else in the kernel we initiate copying from the _first_
-page, e.g. to the user space with __copy_tofrom_user. During copying, this
-function calls dcbt to prefetch up to 4 cache lines of the source data.
-
-This will also result in prefetching 4 cache lines _after_ the end of the
-source buffer, e.g. _first_ 4 cache lines of the _second_ page. If DMA read
-hasn't started filling this memory, we'll may get old data instead of real
-DMA read.
-
-I think we should disable prefetch if CONFIG_NONCOHERENT_CACHE is defined.
-Other more complex solutions are possible, e.g. we can still prefetch our
-own buffer but don't touch anything outside (I'll try to do some
-performance testing to determine whether it's worth the effort :).
-
-Patch against linuxppc-2.4: http://kernel.ebshome.net/read_prefetch-2.4.diff
-
-Patch against linuxppc-2.5 (not tested, but compiles):
-http://kernel.ebshome.net/read_prefetch-2.6.diff
-
-Comments, suggestions...
-
-Eugene.
-
-P.S. I suspect that "speculative" dcache fetch past the end of the memory
-on 440 is really copy_page() prefetching source data. I'm guilty :), it was
-my interpretation of the strange machine check we saw a year ago ...
-
+Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
