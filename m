@@ -1,29 +1,68 @@
-Date: Tue, 17 Jun 2003 16:06:29 +1200
-From: Robin Gilks <robin.gilks@tait.co.nz>
-Subject: lowlat & preeempt
-To: linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
-Message-id: <3EEE93C5.4090302@tait.co.nz>
+Date: Mon, 16 Jun 2003 21:50:19 -0700
+From: Peter Ryser <Peter.Ryser@xilinx.com>
+Subject: Re: GPL inconsistency in arch/ppc/ocp/xlinx/
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Christoph Hellwig <hch@lst.de>,
+	Peter Ryser <Peter.Ryser@xilinx.com>, akuster@mvista.com,
+	linuxppc-embedded@lists.linuxppc.org,
+	Scott Anderson <sanders@mvista.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Rafael Aguirre-Sacasa <Rafael.Aguirre-Sacasa@xilinx.com>
+Message-id: <3EEE9E0B.87DE9E6F@xilinx.com>
 MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; format=flowed
+Content-type: text/plain; charset=us-ascii
+References: <20030524201213.GA8256@lst.de> <20030612203205.GA23017@lst.de>
+ <20030612205523.GI828@ip68-0-152-218.tc.ph.cox.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greetings
+I'm working with our legal departement on straightening the licensing issues
+out. Our intention is to distribute the source code under GPL. Most likely, we
+will remove
 
-With the recent release of 2.4.21 I see many patches have been swept up
-and incorporated. No sign of the low latency & preemption patches though
-(not really suprising in a stable series) but does anyone have a set of
-patches for this new tree for ppc only?
+*     Xilinx products are not intended for use in life support
+*     appliances, devices, or systems. Use in such applications are
+*     expressly prohibited.
 
-Many thanks.
+without replacement.
 
---
-Robin Gilks
-Senior Design Engineer              Phone: (+64)(3) 357 1569
-Tait Electronics                          Fax  :  (+64)(3) 359 4632
-PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
-New Zealand
+- Peter
+
+
+Tom Rini wrote:
+
+> On Thu, Jun 12, 2003 at 10:32:05PM +0200, Christoph Hellwig wrote:
+> >
+> > On Sat, May 24, 2003 at 10:12:13PM +0200, Christoph Hellwig wrote:
+> > >
+> > > you seem to have added the the directory in the topic to the
+> > > LinuxPPC trees. Unfortunately they have a license consitency that
+> > > basically makes them illegal to distribute, they claim to be under
+> > > GPL but have the following notice:
+> > >
+> > > *     Xilinx products are not intended for use in life support
+> > > *     appliances, devices, or systems. Use in such applications are
+> > > *     expressly prohibited.
+> > >
+> > > Could you please contact Xilinc to clarify the license and/or remove
+> > > those files from the tree? Thanks.
+> >
+> > As there hasn't been any answer yet I think these files should be
+> > remove to ensure the linuxppc tree is legally distributable.
+>
+> I think you should ask someone responsible first.  And on the correct
+> mailing list as well.  Armin is not responsible for this code, Scott
+> Anderson is.  Armin just put it into the linuxppc-2.5 tree.  Second,
+> Peter Ryser (who handles the Xilinx side of things) is on the
+> linuxppc-embedded list, where most of the 4xx people are.  Finally,
+> Peter knows about this, and last I knew was talking to their legal
+> department.  Peter, any news on this?
+>
+> --
+> Tom Rini
+> http://gate.crashing.org/~trini/
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
