@@ -1,55 +1,48 @@
-From: linas@austin.ibm.com
-Date: Fri, 2 Apr 2004 16:17:06 -0600
-To: "Christopher R. Johnson" <cjohnson@gcctech.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: General question about caching
-Message-ID: <20040402161706.B58706@forte.austin.ibm.com>
-References: <406D92CF.8040302@gcctech.com> <20040402110239.A58706@forte.austin.ibm.com> <406DBE90.1060603@gcctech.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <406DBE90.1060603@gcctech.com>; from cjohnson@gcctech.com on Fri, Apr 02, 2004 at 02:27:12PM -0500
+From: tom_gall@mac.com
+Date: Fri, 2 Apr 2004 16:41:04 -0600
+Subject: Re: How did the 2.6 kernel headers get so screwed up?
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v553)
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+To: John Whitney <jwhitney-linuxppc@sands-edge.com>
+In-Reply-To: <3AB702B8-84D1-11D8-9FF0-000A95A07384@sands-edge.com>
+Message-Id: <D3494712-84F6-11D8-8FE5-0003939E069A@mac.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Apr 02, 2004 at 02:27:12PM -0500, Christopher R. Johnson wrote:
+I've seen the same. Just trying building mac-fdisk against the 2.6
+kernel headers. Absolutely an uphill battle.
+
+Even glibc wasn't building (ppc64) for a bit there against some
+versions of the 2.6 kernel headers.
+
+Fun fun fun. NOT!
+
+Regards,
+
+Tom
+
+On Friday, April 2, 2004, at 12:11 PM, John Whitney wrote:
 >
-> Ok, I'll give it a shot.
+> The title says it all.
 >
-> 1. Isn't it taking up memory?  If not then what does "Cached: 11924kB"
-> mean in meminfo?  With my embedded application, I desperately need every
-> byte I can get; 11924k is HUGE in my little 32MB environment.
+> I have a program I wrote to interface with the i2c bus. It includes
+> <linux/i2c.h> in order to get the I2C_SLAVE ioctl value, necessary to
+> set the slave address.
+>
+> In 2.4 this works beautifully. Now, in 2.6, I get boatloads of errors:
+> redefinitions, admonishments not to use kernel headers from user
+> programs, missing constants, you name it.
+>
+> And this has happened to me in more than one standard unix application
+> (strace, syslogd, etc.).
+<snip>
 
-Its only using space that no one else is using.  If you malloc more
-space for yourself, the cache will shrink; but for the most part the
-kernel will try to use all of the memory it can.  No harm in that, it
-usually helps.
-
-> 2. Not sure why its vague that avoiding needless caching in ram of stuff
-> that's already in ram is silly.  Perhaps the performance hit is minimal,
-> but its still silly.  At the very least won't there be some needless
-> data copying?
-
-Yes, there's probably some needless copying, although I haven't really
-read through the linux kernel ramdisk implementation, so I don't really
-know. They might have gotten smart.  But things like buffer heads
-contain all sorts of flags and locks and linked lists and
-what-not in there, so you can't just poof-and-make it go away.
-
-> Which cache is used for file contents?  That would be the one I don't need.
-
-Not sure what you mean.  The buffer cache?
-
-Maybe you're thinking about the /proc/slabinfo?  It hold the various
-allocated and free blocks of various sizes, it speeds up allocation.
-
-Different filesystems organize thier data in different ways; e.g. reiserfs
-packs file tails into one block.  There's no trivial way to figure out
-what data is where in a file system, which is why the the "users" usually
-go through buffers.  You can layer block devices onto files in
-arbitrary file systems on block devices ad infinitum; there's no trivial
-untangling of this stuff.
-
---linas
+Tom Gall
+gentoo-ppc64 lead -- God started with stage 1, shouldn't you?
+tgall aatt gentoo.org
+tgall aatt uberh4x0r.org
+tom_gall aatt mac.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
