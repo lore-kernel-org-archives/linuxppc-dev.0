@@ -1,54 +1,52 @@
-Message-ID: <021801c0a016$749636a0$2501000a@sid>
-From: "Sid" <sid@innvo.com>
-To: "Karl-Heinz Krempels" <charlie@pool.informatik.rwth-aachen.de>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-References: <Pine.SOL.4.10.10102261324080.29120-100000@jennifer.informatik.rwth-aachen.de>
-Subject: Re: MBX860 - minicom
-Date: Tue, 27 Feb 2001 01:06:21 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <200102261835.NAA26566@mal-ach.watson.ibm.com>
+To: "kerler" <kerler@mailandnews.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: dynamic modification exception handler 
+In-Reply-To: Message from "kerler" <kerler@mailandnews.com>
+   of "Mon, 26 Feb 2001 19:06:27 +0800." <017201c09fe4$52a1cff0$5ef1d092@chn.agilent.com>
+Date: Mon, 26 Feb 2001 13:35:25 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Hi,
->
-> please check your cables. I think its a handshaking problem.
->
-> \Charlie.
+	The suggested sequence for 604 and 604-derived processors is:
 
-Hi,
+     dcbst (or dcbf)          ;# flush data block to memory
+     sync                     ;# ensure flush made it to memory
+     icbi                     ;# invalidate block from icache
+     sync                     ;# wait for icbi to be globally performed
+     isync                    ;# refetch instructions
 
-I discovered the reason. My 3.3 V input pin was only receiving 1.8V and all
-the lights were not turning on.
+	The dcbst must be performed before the icbi, because otherwise the
+processor instruction prefetch mechanism could refetch the (stale) block
+from memory before the dcbst/dcbf has actually been written back to
+memory.  The sync between them is required for the same reason, because
+icbi could be performed locally before the dcbst has sent the block to
+memory.
 
-This is because I couldn't find a standard power supply for this board and I
-had to make a make-shift one and apparently the load on the 3.3V pin is so
-high that my power supply can't handle it.
+	The dcbst/sync/icbi sequence can be batched up to amortize the
+cost of the sync operations, but it should be written so all the dcbst's
+are performed, then a sync, then all the icbi's:
 
-Could anyone using this board tell me what kind of power supply they are
-using on this board? Maybe even the expected load resistance at normal
-operation, so that I have a rough gauge of the Input current required to
-drive it at 3.3V.
+     mr        r5, r3
+     mtctr     blocks
+$1:
+     dcbst     r0, r5
+     addi      r5, r5, 32
+     bdnz      $1
+     sync
+     mr        r5, r3
+     mtctr     blocks
+$2:
+     icbi      r0, r5
+     addi      r5, r5, 32
+     bdnz      $2
 
-Do power pcs have a different lkind of power supply than the i386 machines?
-As in the Voltage/Current specs.
+     sync
+     isync
 
-Thank you once again.
 
-regards,
-Sid
---
-sid@siddhartha.8m.com
-
-Kirk: "Oh, by the way, thank you for this."
-Spock: "I know of your fondness for antiques."
-Kirk: "'It was the best of times, it was the worst of times.'  Message,
-Spock?"
-Spock: "None that I'm conscious of.  Except of course, happy birthday.
-  Surely, the best of times."
---"STII:TWOK", Stardate 8130.3
-
+David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
