@@ -1,16 +1,30 @@
-Message-ID: <3C82B86B.ED7E89C1@opensource.se>
-Date: Mon, 04 Mar 2002 00:57:31 +0100
-From: Magnus Damm <damm@opensource.se>
-MIME-Version: 1.0
-To: Jeremy Rosen <Jeremy.Rosen@au.thalesgroup.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-Id: <sc835dac.097@gw_tms_syd2.pty.tms.thomson-csf.com>
+Date: Mon, 04 Mar 2002 11:42:22 +1100
+From: "Jeremy Rosen" <Jeremy.Rosen@au.thalesgroup.com>
+To: <linuxppc-embedded@lists.linuxppc.org>,
+	"Magnus Damm" <damm@opensource.se>
 Subject: Re: Accessing BCSR's
-References: <sc834d4c.007@gw_tms_syd2.pty.tms.thomson-csf.com>
-Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+I have investigated a little further, and in arch/ppc/mm/init.c, it
+calls ppc_md.setup_io_mapping(), which remaps 1:1 the BCSRs
+(in arch/ppc/kernel/m8xx_map_io), so (if I understand your explanation
+and the code properly) the BCSR should be at the same address in PPCBOOT
+and in the kernel space... so accessing offset ff010000 in /dev/mem or
+/dev/kmem should give me access to it... is that it ? Because if it is,
+I can't make it work...
+
+I'll try to access some of the internal maps in the IMMR to see if they
+work...
+
+thx anyway
+Jeremy
+
+>>> Magnus Damm <damm@opensource.se> 03/04/02 10:57am >>>
 Hi,
 
 If you have memory-mapped io (The (F)ADS8xx BCSR registers is a
@@ -45,19 +59,24 @@ Jeremy Rosen wrote:
 >
 > Hello everybody,
 >
-> I have 860T FADS board, and I am trying to access the (board specific)
+> I have 860T FADS board, and I am trying to access the (board
+specific)
 > registers BCSRs.
 >
 > I have no problem accessing them in PPCBOOT, since they are accessed
-> through CS1, at address FF01xxxx, but I can't access them in linux for
+> through CS1, at address FF01xxxx, but I can't access them in linux
+for
 > the moment.
-> My first attempt was by using the /dev/mem device, but it doesn't seem
+> My first attempt was by using the /dev/mem device, but it doesn't
+seem
 > to work, the result read are not correct.
 > so I have to question
-> 1) why doesn't it work, I probably don't understand how /dev/mem works
+> 1) why doesn't it work, I probably don't understand how /dev/mem
+works
 > : does it map only memory and not the address space ? do I have to
 > register the address range or the BCSR in the kernel ?
-> 2) what is the proper way of doing this ? writing a driver ? or using
+> 2) what is the proper way of doing this ? writing a driver ? or
+using
 > /dev/mem properly ?
 >
 > thx for your help...
