@@ -1,47 +1,53 @@
-Date: Fri, 28 Jan 2000 10:47:10 +0100
-From: Christophe Lizzi <lizzi@csti.fr>
-Message-Id: <200001280947.KAA09960@devl58>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: PREP memory layout and PCI transactions
-Cc: plaurent@csti.fr
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Michel Lanners <mlan@mcp.cpu.lu>
+Message-Id: <200001281552.QAA02394@mcp.cpu.lu>
+Subject: Re: PREP memory layout and PCI transactions
+To: lizzi@csti.fr
+Date: Fri, 28 Jan 2000 16:52:20 MET
+Cc: linuxppc-dev@lists.linuxppc.org
+Reply-To: mlan@cpu.lu
+In-Reply-To: <200001280947.KAA09960@devl58>; from "Christophe Lizzi" at Jan 28, 100 10:47 am
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hello there,
 
-Hi,
+> The driver requests the device to fill some memory locations in kernel
+> space via DMA. This works just fine when such memory locations come
+> from pages allocated by get_free_page() or kmalloc().
+>
+> However, this fails when these locations come from the *static* data
+> of the module, or from pages allocated by vmalloc().
 
-I'm currently porting a third-party RAID driver from ix86 to LinuxPPC.
-The target is an MTX board with 32 Mbytes of RAM, running a 2.2.10 kernel.
+This is expected behaviour, since the way the MM code allocates memory is
+different between kmalloc()'ed and vmalloc()'ed memory.
 
-The driver requests the device to fill some memory locations in kernel
-space via DMA. This works just fine when such memory locations come
-from pages allocated by get_free_page() or kmalloc().
+kmalloc() returns a memory object consiting of a number of consecutive pages
+of RAM, adressed through the existing memory translation from (all RAM) to
+(kernel virtual memory). The full physical RAM is mapped starting at 0xc0000000,
+and kmalloc will return an address within that range.
 
-However, this fails when these locations come from the *static* data
-of the module, or from pages allocated by vmalloc().
+However, vmalloc() returns a memory object consisting of pages that are only
+consecutive in kernel virtual address space, but which is composed of individual
+pages retreived through get_free_pages(). Therefore, these pages are not
+necessarily consecutive in physical RAM, and the full object is mapped by
+a new translation to virtual addresses _above_ physical RAM. As a result,
+the simple offset calculation between kernel virtual address and physical
+address doesn't work here.
 
-Specifically, the pages returned by get_free_page() or kmalloc() are located
-around kernel virtual addresses C1xxxxxx (bus addresses 81xxxxxx), while the
-static data in question and the pages returned by vmalloc() are located
-behind virtual addresses C4xxxxxx (bus addresses 84xxxxxx).
+> Specifically, the pages returned by get_free_page() or kmalloc() are located
+> around kernel virtual addresses C1xxxxxx (bus addresses 81xxxxxx), while the
+> static data in question and the pages returned by vmalloc() are located
+> behind virtual addresses C4xxxxxx (bus addresses 84xxxxxx).
 
-The PCI analyser sees on the PCI bus a memory write transaction initiated
-by the device to such an 84xxxxxx address in memory. We can observe that this
-transaction is never completed because the DEVSEL signal on the bus is not
-asserted during the correct 5 clock time interval. The transaction is then
-terminated as with a master-abort termination, meaning that this address
-is not known by the memory controler as an address that can be accessed
-from the PCI bus.
+But bus address 0x84xxxxxx doesn't correspond to any existing RAM.
 
-Is this a feature, a known restriction, or a bug? Maybe a register
-describing the accessible address range from the bus is not correctly
-initialised into the Falcon chip?
+For DMA, you need to use kmalloc(), or assemble your buffer the dirty way
+through successive calls to get_free_pages() and other wizardry.
 
-Thanks for your attention and time,
+Michel
 
---Christophe
+____________________________________________________________________
+.sig home alone
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
