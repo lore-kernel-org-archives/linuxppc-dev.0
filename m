@@ -1,17 +1,22 @@
-Return-Path: <rpjday@mindspring.com>
-Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
-	by ozlabs.org (Postfix) with ESMTP id C827A67A2F
+Return-Path: <jason.mcmullan@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id B94A567A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 04:00:19 +1100 (EST)
-Received: from [10.1.1.102] (10.1.2.1) by mailhost.rdmcorp.com (Worldmail
-	1.3.167) for linuxppc-embedded@ozlabs.org; 16 Mar 2005 11:34:59 -0500
-Date: Wed, 16 Mar 2005 11:33:39 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Message-ID: <Pine.LNX.4.61.0503161125560.5095@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Subject: looking for a model for building CRAMFS(?)-based system
+	Thu, 17 Mar 2005 04:26:29 +1100 (EST)
+From: Jason McMullan <jason.mcmullan@timesys.com>
+To: Wade Farnsworth <wfarnsworth@mvista.com>
+In-Reply-To: <1110989349.24673.99.camel@rhino.az.mvista.com>
+References: <1110907039.24673.12.camel@rhino.az.mvista.com>
+	<1110937421.28218.27.camel@jdub.homelinux.org>
+	<1110989349.24673.99.camel@rhino.az.mvista.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-XuiamZsKsKoHs6Zq38TK"
+Date: Wed, 16 Mar 2005 12:26:25 -0500
+Message-Id: <1110993985.2987.2.camel@ad.doubleclick.net>
+Mime-Version: 1.0
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 1/3] PPC440EP SoC and Bamboo board support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,32 +28,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-  i'm hoping someone has an example of the following that they're
-willing to share.
+--=-XuiamZsKsKoHs6Zq38TK
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-  currently, the system i've built for our 850 board incorporates
 
-	- boot loader (sadly, not u-boot, but i'm working on it)
-	- standard zImage.initrd.bin kernel+initrd image
-	... mountable JFFS2 filesystem with persistent stuff ...
+Do you need a 'special' toolchain to work around Errata 42 (isync before
+blrl) for user-space, or are the kernel-land fixes sufficient?
 
-  obviously, with this layout, it's kind of a nuisance to update
-anything individually in the initrd portion of the system, so i'd like
-to at least experiment with a layout that has separate
+--=20
+Jason McMullan <jason.mcmullan@timesys.com>
+TimeSys Corporation
 
-	- boot loader (ideally, u-boot)
-	- kernel image
-	- updateable (normally mounted read-only?) root filesystem
-	... rest of stuff the same ...
 
-  i'm going to start over at DENX with their docs since that seems to
-be the canonical place to get the scoop on this but, in the meantime,
-if anyone has built something like this and is willing to share, say,
-their makefile so i can see how it goes together, i'd be thrilled.
+--=-XuiamZsKsKoHs6Zq38TK
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-  if your example happens to *require* u-boot, well, perhaps so much
-the better since that will give me the incentive to switch. :-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
 
-  thanks.
+iD8DBQBCOGxB8/0vJ5szK6kRAnIwAJ9nQYtD75fUW06eMitooXJ0xUsinACgrpmG
+3scoAqTKhaAkQ5kchuiyVYY=
+=BobH
+-----END PGP SIGNATURE-----
 
-rday
+--=-XuiamZsKsKoHs6Zq38TK--
