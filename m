@@ -1,59 +1,49 @@
-Date: Thu, 6 Jan 2000 10:50:05 -0700
-From: Matt Porter <mmporter@home.com>
-To: Eric Valette <valette@crf.canon.fr>
-Cc: mporter@mcg.mot.com, Cort Dougan <cort@fsmlabs.com>,
-        Alois Fertl <alois_fertl@talknet.de>,
-        LinuxppcDev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Changes for IDE on PREP Hardware
-Message-ID: <20000106105005.C27148@cx258813-a.chnd1.az.home.com>
-References: <38710186.B7930E52@talknet.de> <20000104222421.A31468@hq.fsmlabs.com> <20000105164119.C20193@cx258813-a.chnd1.az.home.com> <u8d7rfl7kb.fsf@tri-yann.crf.canon.fr> <20000106101041.A27148@cx258813-a.chnd1.az.home.com> <3874CE29.C4E19A44@crf.canon.fr>
+In-Reply-To: <Pine.SOL.4.10.10001061137170.262-100000@sunflower.bio.indiana.edu>
+Date: Thu, 6 Jan 2000 19:16:00 +0100
+To: Naoki Takebayashi <ntakebay@bio.indiana.edu>,
+        linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Does 2.2.14 Break SMP for PPC?
+Message-Id: <20000106191600.011735@mailhost.mipsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3874CE29.C4E19A44@crf.canon.fr>; from valette@crf.canon.fr on Thu, Jan 06, 2000 at 06:17:29PM +0100
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 06, 2000 at 06:17:29PM +0100, Eric Valette wrote:
-> 
-> Matt Porter wrote:
-> 
-> > > Just to tell you that :
-> > >
-> > >         1) I applied the 2.2.14pre4 prepide-patch on a clean
-> > >         linux 2.2.14 tree. Effectively the ppc part is in and
-> > >         not the ide-pci.c, ide-probe.c, and sl82c105.c
-> > >         2) BUT : after applying the missing part of the patches
-> > >         the behavior is absolutely identical!!!
-> > >
-> > > hdc : lost interrupt...
-> > >
-> > > any other hints?
-> > 
-> > Since you have the old defective MCP750, you can either return it or apply
-> > the 99% workaround of reprogramming the level/edge triggering on the VIA as
-> > you've done before.  The patch does work on all MCG IDE capable hardware
-> > except the revs of the MCP750 that should no longer be used by customers.
-> 
-> No. That is not so simple : I have also a REV D board that behaves
-> exactly
-> the same way. If you want I can send you my .config file and the binary.
-> Also remember that I managed to have the same linux 2.2.10 image 
-> to run on both platforms...
+On Thu, Jan 6, 2000, Naoki Takebayashi <ntakebay@bio.indiana.edu> wrote:
 
-Please send both and cc: mporter@mcg.mot.com
+>From patch-2.2.14:
+>
+>@@ -245,13 +233,16 @@
+>        bl      prom_init
+>        .globl  __secondary_start
+> __secondary_start:
+>-/*
+>- * Use the first pair of BAT registers to map the 1st 16MB
+>+/* Switch MMU off, clear BATs and flush TLB */
+>+       bl      mmu_off
+>+       bl      clear_bats
+>+       bl      flush_tlbs
+>+
+>+/* Use the first pair of BAT registers to map the 1st 16MB
+>  * of RAM to KERNELBASE.  From this point on we can't safely
+>  * call OF any more.
+>  */
+>        lis     r11,KERNELBASE@h
+>
+>Well, I don't know PPC assembly, but I commented out the three "bl ... "
+>lines.  Then the 2nd CPU stack message went away and SMP was enabled.
+>However it it really unstable, though.  So the problem with 2.2.14 SMP
+>seems to be around here.  Probably someone who knows PPC assembly can
+>help here...
 
-The test platform was a Rev. D MCP750 with multiple IDE drives on hdc/hdd
-and a SanDisk in the onboard CF socket (hda).
+I'm the one responsible for those few lines of code, I'm a bit annoyed
+that it broke SMP since I don't have an SMP card to play with.
 
-I'll set this up again on a Rev. D to see if I can recreate it here. I can
-only suspect a .config file at this point.  Especially since this patch
-is already in the Debian/PPC disty and I've installed whole systems to
-IDE drives with no problems. :-/
- 
---
-Matt Porter
-mmporter@home.com
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+Cort, Paul, any clue about what's wrong ? I'm wondering if it's related
+to the physical address returned by OF and used in mmu_off which might be
+wrong for the second CPU...
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
