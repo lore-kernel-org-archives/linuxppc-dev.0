@@ -1,97 +1,66 @@
-Date: Wed, 8 Aug 2001 05:39:55 -0700
-From: Matt Porter <mporter@mvista.com>
-To: John F Davis <johndavi@us.ibm.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MVista: CDK 1.2 2.2.14 for SBS-K2 (750) Module Support
-Message-ID: <20010808053955.A22983@cx258813-a.chnd1.az.home.com>
-References: <OF205CEC3C.F52A4B97-ON85256AA2.0049AD5B@raleigh.ibm.com>
-Mime-Version: 1.0
+Message-ID: <3B71369C.A19FA1A2@seranoa.com>
+Date: Wed, 08 Aug 2001 08:54:52 -0400
+From: Andrew Dixon <andrew.dixon@seranoa.com>
+MIME-Version: 1.0
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Strange bootpd behavior (server side)
+References: <3B703ADA.9ADAFBAD@carts.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OF205CEC3C.F52A4B97-ON85256AA2.0049AD5B@raleigh.ibm.com>; from johndavi@us.ibm.com on Wed, Aug 08, 2001 at 09:10:22AM -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Aug 08, 2001 at 09:10:22AM -0400, John F Davis wrote:
+Check out the NAG:
+	http://www.linuxdoc.org/LDP/nag2/index.html
+and there are probably a bunch of mail lists for Red Hat Network
+Administration.  I can't recommend one because I use Debian.  (If you
+want to upgrade your server from Dead Rat to Debian though
+debian-user@lists.debian.org is a great list ;)
+
+later,
+Andy
+
+
+Kevin Fry wrote:
 >
-> Hello
+> I'm having a small problem with our redhat 6.2 bootp server and maybe
+> yous guys can shed some light on it for me.   The problem is that
+> whenever our DSL internet connection is down(which is too much.. I wish
+> cable was available!), the bootpd stops responding to requests.. I can
+> see the requests with tcpdump, but no replys. and when the internet is
+> up sometimes is takes a little bit for the bootpd to respond to
+> requests.
+>     I think it's doing DNS resolution and if it can't find a DNS server
+> when the net's down, it just stops working. Does linux automatically do
+> name resolution on every address it gets? If so can i turn this off?
+>     Our network is behind a DSL modem/router (Flowpoint 2200) acting as
+> gateway(192.168.254.254), and we have 3 switches after that.
+>     A lot of the time the router is finicky with linux even when
+> everything is working.. I know this is a bit off topic, but ANY
+> suggestions are very welcome.
 >
-> We are trying to build a kernel with loadable modules support using a stock
-> mvista CDK 1.2 toolset.  The
-> error is that many symbols are not resolved correctly.  If I build without
-> module
-> support the kernel builds fine.
-
-Yep.
-
-> For what its worth, we noticed that pci_io_base (one of the undefined
-> symbols) was defined in the powermac tree.
+> Here's my routing table..
 >
-> Lastly, does Mvista release different releases or patches for the same
-> kernel?  ie., We build 2.2.14 kernels
-> with module support on other machines here in the lab.  However, building
-> this kernel on a newly installed machine fails.
-
-There was a bug in the released MV 2.2.14 K2 port.  I sent the following
-patch to customers at the time (the actual LSP was never updated).  The
-hhl-2.0 LSP (2.4.2-based) doesn't have this problem.
-
--Matt
-
-===== arch/ppc/kernel/ppc_ksyms.c 1.2 vs edited =====
---- 1.2/linux/arch/ppc/kernel/ppc_ksyms.c	Fri Jun 16 17:50:57 2000
-+++ edited/arch/ppc/kernel/ppc_ksyms.c	Fri Aug 18 10:54:06 2000
-@@ -80,10 +80,10 @@
- EXPORT_SYMBOL(ISA_DMA_THRESHOLD);
- EXPORT_SYMBOL(DMA_MODE_READ);
- EXPORT_SYMBOL(DMA_MODE_WRITE);
--#ifndef CONFIG_8xx
-+#ifndef CONFIG_PPC_EMBEDDED
- EXPORT_SYMBOL(_prep_type);
- EXPORT_SYMBOL(ucSystemType);
--#endif /* CONFIG_8xx */
-+#endif /* CONFIG_PPC_EMBEDDED */
-
- EXPORT_SYMBOL(atomic_add);
- EXPORT_SYMBOL(atomic_sub);
-@@ -188,21 +188,21 @@
- EXPORT_SYMBOL(_machine);
- EXPORT_SYMBOL(ppc_md);
-
--#ifndef CONFIG_8xx
-+#ifndef CONFIG_PPC_EMBEDDED
- EXPORT_SYMBOL(adb_request);
- EXPORT_SYMBOL(adb_register);
- EXPORT_SYMBOL(cuda_request);
- EXPORT_SYMBOL(cuda_poll);
- EXPORT_SYMBOL(pmu_request);
- EXPORT_SYMBOL(pmu_poll);
--#endif /* CONFIG_8xx */
-+#endif /* CONFIG_PPC_EMBEDDED */
- #ifdef CONFIG_PMAC_PBOOK
- EXPORT_SYMBOL(pmu_register_sleep_notifier);
- EXPORT_SYMBOL(pmu_unregister_sleep_notifier);
- EXPORT_SYMBOL(pmu_enable_irled);
- #endif CONFIG_PMAC_PBOOK
- EXPORT_SYMBOL(abort);
--#ifndef CONFIG_8xx
-+#ifndef CONFIG_PPC_EMBEDDED
- EXPORT_SYMBOL(find_devices);
- EXPORT_SYMBOL(find_type_devices);
- EXPORT_SYMBOL(find_compatible_devices);
-@@ -216,7 +216,7 @@
- EXPORT_SYMBOL(feature_set);
- EXPORT_SYMBOL(feature_clear);
- EXPORT_SYMBOL(feature_test);
--#endif /* CONFIG_8xx */
-+#endif /* CONFIG_PPC_EMBEDDED */
- #ifdef CONFIG_SCSI
- EXPORT_SYMBOL(note_scsi_host);
- #endif
+> Kernel IP routing table
+> Destination     Gateway         Genmask         Flags Metric Ref    Use
+> Iface
+> 192.168.254.13 *                   255.255.255.255 UH    0      0
+> 0 eth0
+> 192.168.254.0   *                   255.255.255.0   U     0
+> 0        0 eth0
+> 127.0.0.0       *                       255.0.0.0       U     0
+> 0        0 lo
+> default    192.168.254.254    0.0.0.0         UG    0      0        0
+> eth0
+>
+> Thanks!
+> Kevin Fry
+>
 
 --
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Andrew Dixon
+Software Engineer
+Seranoa Networks
+978.897.3434 x231
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
