@@ -1,42 +1,67 @@
-Message-ID: <20021023130637.80868.qmail@web9502.mail.yahoo.com>
-Date: Wed, 23 Oct 2002 06:06:37 -0700 (PDT)
-From: Pete McCormick <pete261@yahoo.com>
-Subject: Re: 8260 CPM commands, need better resource ctrl?
-To: Dan Malek <dan@embeddededge.com>,
-	Hans Feldt <Hans.Feldt@uab.ericsson.se>
+Subject: Re: very minor 405GP and 405GPr PCI difference
+To: David Gibson <david@gibson.dropbear.id.au>
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3DB58D93.50008@embeddededge.com>
+Message-ID: <OF2774A711.2E120BD4-ON87256C5B.0047F3BA@boulder.ibm.com>
+From: "Ralph Blach" <rcblach@us.ibm.com>
+Date: Wed, 23 Oct 2002 09:10:12 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
+The MontVista Linux disables disable PMM1, which is correct.  It then
+writes a 0 PMM0 enable bit,
+which on the 405gp is OK because the enable bit is hardwired to a 1.  ON
+the 405gpr, the bit is writeable and
+this then disables PMM0.  The correct action is to write a 1 to the PMM0
+enable bit on both the 405 and the 405gpr
+and the problem is solved.
 
-> different contexts in which drivers send these commands.  It
-> doesn't make sense for a driver to continue without waiting for
-> the command to complete, so there isn't any need to wait for this
-> prior to sending a command.
 
-I think that a driver should not wait forever for a CPM command to complete, as
-this could possibly halt the entire kernel.  Granted, if this happens then the
-state of the system is flaky at best, but it might still be possible to
-function, maybe even enough to debug the real problem.
+Chip
 
-Since the CPM is a shared resource between different drivers, I don't think it
-is such a bad idea to have some software help in sharing it, as opposed to just
-hoping everyone behaves properly.
+David Gibson <david@gibson.dropbear.id.au>@lists.linuxppc.org on 10/23/2002
+12:08:50 AM
 
-Actually, on a complicated CPU such as the 8260, there are many common
-resources that are shared that might be better protected in software, e.g. io
-port pins, internal dpram, baud rate generators, timers, mutually exclusive
-features, etc.
+Sent by:    owner-linuxppc-embedded@lists.linuxppc.org
 
-Along the same lines, what is the current vision of future linux support for
-the 8260?
 
-Pete
+To:    Todd Poynor <tpoynor@mvista.com>
+cc:    linuxppc-embedded@lists.linuxppc.org
+Subject:    Re: very minor 405GP and 405GPr PCI difference
+
+
+
+
+On Tue, Oct 22, 2002 at 02:55:47PM -0700, Todd Poynor wrote:
+>
+> David Gibson wrote (regarding Rainier PMM1 bios_fixup in MVL):
+>
+> >Well, it may be in a different place, but it looks like it has the
+> >same problem.  It is still establishing a PCI window at PLB address
+> >0x80000000, which is the same address used for the PMM0 window - or is
+> >that also different in the MV kernel?
+> >
+> >I'd be trying to work out what that mapping's actually for, first.  I
+> >still can't see how it can possibly work - if there are overlapping
+> >PMM windows, what actually happens to accesses in that (PLB) range?
+>
+> Yes, it looks like MVL only sets up the one window using PMM1... we've
+> started an effort to have the Rainier-knowedgeable folks get the code
+> sync'ed up with the community and this should happen soon.
+
+Hang on, so just to clarify - MVL sets up PMM1 with the code you
+posted, but doesn't set up PMM0 anywhere?  From my reading of that
+code, it sets up a window at the same address as the "standard"
+(Walnut) mapping, except that it is only 128kB instead of 1GB.  Is
+there a reason that Rainier must have such a small window?
+
+--
+David Gibson                  | For every complex problem there is a
+david@gibson.dropbear.id.au   | solution which is simple, neat and
+    | wrong.
+http://www.ozlabs.org/people/dgibson
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
