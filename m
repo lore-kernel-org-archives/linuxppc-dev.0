@@ -1,12 +1,13 @@
 Return-Path: <olof@austin.ibm.com>
-Date: Sat, 5 Feb 2005 12:46:47 -0600
+Date: Sat, 5 Feb 2005 21:26:45 -0600
 To: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
 	linux-kernel@vger.kernel.org
-Message-ID: <20050205184647.GA17417@austin.ibm.com>
+Message-ID: <20050206032645.GA18845@austin.ibm.com>
 References: <20050204072254.GA17565@austin.ibm.com>
+	<20050205184647.GA17417@austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050204072254.GA17565@austin.ibm.com>
+In-Reply-To: <20050205184647.GA17417@austin.ibm.com>
 From: olof@austin.ibm.com (Olof Johansson)
 Cc: akpm@osdl.org, trini@kernel.crashing.org, paulus@samba.org, hpa@zytor.com
 Subject: Re: [PATCH] PPC/PPC64: Abstract cpu_feature checks.
@@ -19,11 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Doh, forgot to do a final refpatch after fixing build error. I blame it
+on lack of morning coffee. Here's a proper version:
+
+
+
+ 
 Abstract most manual mask checks of cpu_features with cpu_has_feature()
-
-
+ 
+ 
 Signed-off-by: Olof Johansson <olof@austin.ibm.com>
-
 
 ---
 
@@ -63,12 +69,12 @@ Signed-off-by: Olof Johansson <olof@austin.ibm.com>
 
 diff -puN include/asm-ppc64/cputable.h~cpu-has-feature include/asm-ppc64/cputable.h
 --- linux-2.5/include/asm-ppc64/cputable.h~cpu-has-feature	2005-02-05 11:11:03.478617416 -0600
-+++ linux-2.5-olof/include/asm-ppc64/cputable.h	2005-02-05 11:22:32.309899144 -0600
++++ linux-2.5-olof/include/asm-ppc64/cputable.h	2005-02-05 21:14:05.873057376 -0600
 @@ -66,6 +66,11 @@ struct cpu_spec {
  extern struct cpu_spec		cpu_specs[];
  extern struct cpu_spec		*cur_cpu_spec;
  
-+static inline unsigned long cpu_has_feature(feature)
++static inline unsigned long cpu_has_feature(unsigned long feature)
 +{
 +	return cur_cpu_spec->cpu_features & feature;
 +}
@@ -546,12 +552,12 @@ diff -puN drivers/macintosh/via-pmu.c~cpu-has-feature drivers/macintosh/via-pmu.
  
 diff -puN include/asm-ppc/cputable.h~cpu-has-feature include/asm-ppc/cputable.h
 --- linux-2.5/include/asm-ppc/cputable.h~cpu-has-feature	2005-02-05 11:11:03.919550384 -0600
-+++ linux-2.5-olof/include/asm-ppc/cputable.h	2005-02-05 11:22:58.928852448 -0600
++++ linux-2.5-olof/include/asm-ppc/cputable.h	2005-02-05 21:14:25.443082280 -0600
 @@ -61,6 +61,11 @@ struct cpu_spec {
  extern struct cpu_spec		cpu_specs[];
  extern struct cpu_spec		*cur_cpu_spec[];
  
-+static inline unsigned int cpu_has_feature(feature)
++static inline unsigned int cpu_has_feature(unsigned int feature)
 +{
 +	return cur_cpu_spec[0]->cpu_features & feature;
 +}
