@@ -1,52 +1,34 @@
-Message-ID: <3A5B159E.E8B95DC7@raleigh.ibm.com>
-Date: Tue, 09 Jan 2001 08:43:58 -0500
-From: Ralph Blach <rcblach@raleigh.ibm.com>
-MIME-Version: 1.0
-To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: es1371 on the 405gp and Monta Vista Kernel
-Content-Type: multipart/mixed;
- boundary="------------56AC23CCEECC57527AEAB076"
+Date: Tue, 9 Jan 2001 08:24:28 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dan Malek <dan@mvista.com>
+Cc: "Zheng, Haifei" <haifei.zheng@intel.com>,
+        "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: menuconfig for PPC860T
+Message-ID: <20010109082428.D26544@opus.bloom.county>
+References: <5D2136DF3DD5D311AE89009027C67FB001D8F265@fmsmsx96.fm.intel.com> <3A5A5F1C.DBD4425@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3A5A5F1C.DBD4425@mvista.com>; from dan@mvista.com on Mon, Jan 08, 2001 at 07:45:16PM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------56AC23CCEECC57527AEAB076
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+On Mon, Jan 08, 2001 at 07:45:16PM -0500, Dan Malek wrote:
 
-I am trying to port the es1371 device driver to the MontaVista kernel on
-the IBM 405gp.
-The driver, with no modicifiction, seems to play voice in slow motion.
-Does anybody have any ideas.
+> > We downloaded kernel version 2.4.0 from kernel.org.
+>
+> That site is not properly updated with PowerPC patches.  We are
+> actively working on that problem.  For now, please visit
+> 	http://www.fsmlabs.com/linuxppcbk.html
+>
+> to get access to the latest 2.4 PowerPC Linux sources.
 
-Does anybody have any ideas?
+Also, if you are building this on a pentium, don't forget to do something
+like make ARCH=ppc menuconfig.  The 8xx targets are known to build, and
+should be working.  If you have to fix any problems, please send patches.
 
-Chip
-IBM MicroElectronics
-Raleigh, NC
---------------56AC23CCEECC57527AEAB076
-Content-Type: text/x-vcard; charset=us-ascii;
- name="rcblach.vcf"
-Content-Description: Card for Ralph Blach
-Content-Disposition: attachment;
- filename="rcblach.vcf"
-Content-Transfer-Encoding: 7bit
-
-begin:vcard
-n:Blach;Ralph
-tel;work:919-543-1207
-x-mozilla-html:TRUE
-url:www.ibm.com
-org:IBM MicroElectronics
-adr:;;3039 Cornwallis		;RTP;NC;27709;USA
-version:2.1
-email;internet:rcblach@raleigh.ibm.com
-x-mozilla-cpt:;15936
-fn:Ralph Blach
-end:vcard
-
---------------56AC23CCEECC57527AEAB076--
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
