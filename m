@@ -1,33 +1,24 @@
-To: James Don <JDon@spacebridge.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: How is eth0 config? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 15 Jan 2003 08:41:40 EST."
-             <DB0585C9F6F9D411BE8F00D0B7896A4CC06082@SNCMAIL>
-Date: Wed, 15 Jan 2003 15:16:44 +0100
-Message-Id: <20030115141649.76676C608E@atlas.denx.de>
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "Pantelis Antoniou" <panto@intracom.gr>,
+	<linuxppc-embedded@lists.linuxppc.org>,
+	"Tom Rini" <trini@kernel.crashing.org>,
+	"Dan Malek" <dan@embeddededge.com>
+Subject: RE: 2.5 and request_8xxirq
+Date: Wed, 15 Jan 2003 06:43:11 -0800
+Message-ID: <NCBBIINEHIPFGJPLBEIFOEOGEAAA.acurtis@onz.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <3E253735.8040300@intracom.gr>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <DB0585C9F6F9D411BE8F00D0B7896A4CC06082@SNCMAIL> you wrote:
->
-> Could some one explain to me how CONFIG_IP_PNP is used to configure eth0 and
-> lo briefly? Ie what config files are used and when ? just basics would be
-> perfect (even a URL)...
+Just use request_irq() instead....
 
-See Documentation/nfsroot.txt in your linux kernel source driectory.
+> I'm in the process of porting my board based on a MPC850
+> from 2.4 to 2.5 and it appears that request_8xxirq is gone.
 
-
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Immortality consists largely of boredom.
-	-- Zefrem Cochrane, "Metamorphosis", stardate 3219.8
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
