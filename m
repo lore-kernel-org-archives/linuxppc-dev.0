@@ -1,38 +1,24 @@
-Message-Id: <200403230445.i2N4j7kZ030569@ms.usish.com>
-From: "Jack Liu" <Jack_liu@usish.com>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: OpenPIC problem:OpenPIC not work at 0xFC000000 on MPC8245 platform
-Mime-Version: 1.0
-Content-Type: text/plain
-Date: Tue, 23 Mar 2004 12:44:12 +0800
+From: =?iso-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: PowerPC 85xx (e500) GNU cross-compiler
+Date: Tue, 23 Mar 2004 09:34:11 +0100
+Message-ID: <000c01c410b1$a17f8040$5201a8c0@GEG2400>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi,all
-  I encounted a problem when I assign EUMB to 0xFC000000 not
-0xFDF00000. When EUMB at 0xFDF00000, it OpenPIC works ok. However
-when I change it to 0xFC000000, EPIC seems not work. I am not sure
-this is related to MAPB options. Because the following comments in
-ppc/kernel/mpc10x_common.c:
+Hi,
 
-/*
-	 * Want processor accesses of 0xFDxxxxxx to be mapped
-	 * to PCI memory space at 0x00000000.  Do not want
-	 * host bridge to respond to PCI memory accesses of
-	 * 0xFDxxxxxx.  Do not want host bridge to respond
-	 * to PCI memory addresses 0xFD000000-0xFDFFFFFF;
-	 * want processor accesses from 0x000A0000-0x000BFFFF
-	 * to be forwarded to system memory.
-	 *
-	 * Only valid if not in agent mode and using MAP B.
-	 */
-  What does "Want processor accesses of 0xFDxxxxxx to be mapped to PCI
-memory space at 0x00000000." mean? Does this 0xFDxxxxxx have anything to
-do with EUMB?
+Does anyone know where I can find a GNU cross_compiler hosted on Windows
+(with Cygwin) to target a PowerPC 85xx (core e500 or BookE) ?
+I think that GCC3.3 and binutils 2.1.4 are needed.
 
-  Can anybody give me your vaulable advice?
-Best regards
-Jack Liu
+Any idea ?
+Thanks
+Gérard Guével
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
