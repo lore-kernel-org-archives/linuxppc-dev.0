@@ -1,55 +1,48 @@
-Date: Wed, 4 Sep 2002 16:43:06 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Brian Kuschak <bkuschak@yahoo.com>
-Cc: Allen Curtis <acurtis@onz.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: bitkeeper changesets
-Message-ID: <20020904234306.GN761@opus.bloom.county>
-References: <20020904141511.GK761@opus.bloom.county> <20020904172646.94693.qmail@web40202.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020904172646.94693.qmail@web40202.mail.yahoo.com>
+Message-ID: <3D76BD7D.8060102@embeddededge.com>
+Date: Wed, 04 Sep 2002 22:12:13 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: joakim.tjernlund@lumentis.se
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: WRITE_THRU  on 8xx missing
+References: <IGEFJKJNHJDCBKALBJLLMEDAFGAA.joakim.tjernlund@lumentis.se>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Sep 04, 2002 at 10:26:46AM -0700, Brian Kuschak wrote:
+Joakim Tjernlund wrote:
 
->
-> --- Tom Rini <trini@kernel.crashing.org> wrote:
-> > Revision numbers are not constant.  BK keys are.
-> > 'bk help key2rev'.
-> >
->
-> So I assume this is the correct way of getting a
-> unique, unchanging revision key corresponding to a
-> particular ChangeSet:
->
->    bk changes -r1.1091.1.23 -nd:KEY:
->    or
->    bk prs -r1.1091.1.23 -nd:KEY:
->
->    ======== ChangeSet 1.1091.1.23 ========
->    paulus@samba.org|ChangeSet|20020803062658|55132
->
-> This changeset removes the -rc5 from EXTRAVERSION in
-> the top-level Makefile.  But I can't I convert this
-> key back to the revision number:
->
-> echo "paulus@samba.org|ChangeSet|20020803062658|55132"
-> |bk key2rev Makefile
->
-> Can't find
-> paulus@samba.org|ChangeSet|20020803062658|55132 in
-> SCCS/s.Makefile
+> I just noticed that _PAGE_WRITETHRU is defined in the linuxppc_2_4 tree but not in
+> the linuxppc_2_4_devel tree, which is the one I am using :-(. Has this "function" been removed ,
+> never to return or is the devel tree in a flux now for mpc8xx?
 
-You want to do:
-echo "paulus@samba.org|ChangeSet|20020803062658|55132" | bk key2rev ChangeSet
+I don't know what we will do.  We always seems to be running out of control bits
+in the PTE, so this is the first one to go if we need one for something else.
+The writethrough mode is also a pain to support dynamically because it requires
+special code in the tlb miss exception to load/clear bits in the PMD/L1 descriptor.
+Adding this code nearly doubles the size of the exception handler, when you want
+minimal instructions, for a feature (almost) no one uses.  At best, the writethrough
+mode may return when I finish the large pages someday, and will be a special case
+that covers a modulo 4M space on a 4M boundary (which I don't yet know how we
+would allocate).
 
-It confused me the first time too. :)
+For burst flash, I suggest you read the archives for a discussion where you
+double map the cache into a copyback mode space read and an uncached space
+for write.  You will then invalidate during a write operation.  This would
+maximize performance and require no VM or cache management changes.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+
+>>I want to use this mapping to do burst reads but single writes for a flash device.
+
+Are you sure writethough mode will do this?  I don't think it will as I believe
+any cache enabled mode will burst.  To prevent burst you have to run with
+caches disabled or have it inhibited in the memory controller.  Check it out.
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
