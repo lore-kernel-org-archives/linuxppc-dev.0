@@ -1,45 +1,32 @@
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: "Mark A. Greer" <mgreer@mvista.com>,
-	linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: EV-64260-BP & GT64260 bi_recs 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 19 Mar 2002 17:05:00 MST."
-             <20020320000500.GV3762@opus.bloom.county>
-Date: Wed, 20 Mar 2002 01:28:12 +0100
-Message-Id: <20020320002817.6B2F3109F3@denx.denx.de>
+Date: Tue, 19 Mar 02 16:43:34 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0203200043.AA08228@ivan.Harhan.ORG>
+To: mgreer@mvista.com
+Subject: Re: EV-64260-BP & GT64260 bi_recs
+Cc: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <20020320000500.GV3762@opus.bloom.county> you wrote:
->
-> > > need to change the driver to handle multiple enets, yes?
-> >
-> > Only some, like the 8xx. Other  configurations  run  just  fine  with
-> > several ethernet interfaces.
->
-> Well yes, but the ones which run fine with several ethernet interfaces
-> are a) generic drivers (tulip, eepro, et al) and b) just work right now
-> with multiple devices, and I'm not sure why they'd want to care about
-> bi_recs.
+Mark A. Greer <mgreer@mvista.com> wrote:
 
-Take the 8260 for an example - it is not a generic driver, and  there
-is no existing solution to pass more than one MAC address.
+> I like what Michael has done but want to add more and change the
+> BI_GT64260_ETH_CFG to a more generic BI_ETH_CFG.
 
-> Me.  But it's gotta be made to work sometime.  And as a bonus, Linus is
-> away for 2 weeks so things probably won't get worse than they are right
-> now for about 2 weeks. :)
+I disagree. I don't see how a generic BI_ETH_CFG is possible. See how I've
+implemented BI_GT64260_ETH_CFG in arch/ppc/kernel/setup.c:parse_bootinfo: it
+injects the information from this record directly into the gt64260_eth driver,
+which is where this information is needed.
 
-This is not the way I want to work.
+Next when someone wants to do the same for, say, 8260 Ethernet, they'll have to
+add BI_8260_ETH_CFG or whatever. I don't see any other way: what if I built a
+board with an 8260 CPU and a GT-64260 attached to the 60x bus coming out of the
+8260 (such a board was in the works at SBS before I left) and both 8260 and GT
+Ethernets are used? What will parse_bootinfo() do with a BI_ETH_CFG then? Is it
+going to inject the MAC address into the 8260 Ethernet driver, into the GT
+Ethernet driver, or where? How do you make sure that each Ethernet interface
+gets the MAC address that belongs to it?
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The human mind  ordinarily  operates  at  only  ten  percent  of  its
-capacity. The rest is overhead for the operating system.
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
