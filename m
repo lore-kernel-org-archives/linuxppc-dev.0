@@ -1,38 +1,49 @@
-Mime-Version: 1.0
-Message-Id: <v04220800b56236d3e80e@[10.0.0.42]>
-In-Reply-To: <Pine.LNX.4.05.10006051614100.5397-100000@callisto.of.borg>
-References: <Pine.LNX.4.05.10006051614100.5397-100000@callisto.of.borg>
-Date: Mon, 5 Jun 2000 22:15:55 -0700
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Michel Lanners <mlan@mcp.cpu.lu>
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: [patch] VRAM detection in controlfb
-Cc: Tony Mantler <nicoya@apia.dhs.org>, mlan@cpu.lu, drow@false.org,
-        linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Date: Tue, 6 Jun 2000 08:37:49 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michel Lanners <mlan@cpu.lu>
+cc: toa@pop.agri.ch, linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2940UW & 2.4.0-test-ac7 PCI probs
+In-Reply-To: <200006052039.WAA01344@piglet.grunz.lu>
+Message-ID: <Pine.LNX.4.05.10006060837130.5880-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 4:15 PM +0200 6/5/00, Geert Uytterhoeven wrote:
->On Mon, 5 Jun 2000, Michel Lanners wrote:
->>  So I guess the optimum would be to mark the VRAM cacheable, but in
->>a way that
->>  writes don't go into the cache. Would that be write-through?
+On Mon, 5 Jun 2000, Michel Lanners wrote:
+> Hi Andreas,
+> On   5 Jun, this message from Andreas Tobler echoed through cyberspace:
+> > I try to get the 2.4.0-test1-ac7 to boot on my 7200. It fails. I have a
+> > 2940UW where all my disks are connected to. A 2.3.99p9 from linuxcare
+> > boots, but the ac7 from bk fails with the following message:
+> >
+> > Total memory = 80MB; using 512kB for hash table (at c0300000)
+> > Linux version 2.4.0-test1-ac7 (root@pm7200) (gcc version 2.95.3 19991030
+> > (prerelease/franzo)) #4 Mon Jun 5 17:14:33 CEST 2000
+> > PCI bus 0 controlled by bandit at f2000000
+> > [snip]
+> > PCI: Device 00:0e.0 not available because of resource collisions
+> > [snip]
 >
->That's indeed write-through. Note that writes will still be cached in such a
->way that a consecutive read from the same location will return the cached
->value.  But writes will immediately be sent to the host bridge.
+> Get either my PCI patches or Geert's patches posted here a few hours
 
-Unfortunately a side effect of write-through mode is that it prevents
-burst writes.  Memory must be cacheable in copy-back mode for
-existing PowerPC CPUs to perform burst writes.
+Note that my patches need some changes to make them work on PowerMac.
 
-Many Intel CPUs implement write combining for precisely this region.
-In a memory region marked as OK for write combining, the CPU is free
-to wait and collect data from several writes to perform a burst write
-rather than performing a write immediately.
+> ago. Then enable hotswap (still needed, right, Geert?), and the resource
+> code should fix any collisions it finds.
 
-   Tim Seufert
+I don't think you need hotswap to fix collisions.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
