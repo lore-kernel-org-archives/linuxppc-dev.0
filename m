@@ -1,43 +1,45 @@
-Date: Wed, 17 Sep 2003 12:11:31 +1200
-From: Robin Gilks <robin.gilks@tait.co.nz>
-Subject: Re: kernel config & nfs (maybe!!)
-In-reply-to: <3F6778D0.1010700@tait.co.nz>
-To: linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
-Message-id: <3F67A6B3.7010405@tait.co.nz>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; format=flowed
-References: <3F6778D0.1010700@tait.co.nz>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+MIME-Version: 1.0
+Content-Type: text/plain
+Subject: uart problem
+Date: Wed, 17 Sep 2003 09:47:37 +0800
+Message-ID: <9733CD15FD6A2C418132CE83BCDB16F60155CE25@hzmail1.cn.utstar.com>
+From: "He Xudong" <xdhe@utstar.com>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Never mind!!
+hi,all:
 
-Turned out to be the /dev directory in the host copy of the root fs
-didn't have all the special files in it that it should have had so I was
-unable to execute the init task once the root nfs mount was done.
+	I'm using the eldk linux-2.4.4 kernel.
+	I use the 2 SMC and 3 SCC (SCC2,SCC3,SCC4) in 8260_io/uart.c.
+change the rs_table,io configuration,and the brg.
+mknod ttyS0 c 4 64
+mknod ttyS1 c 4 65
+mknod ttyS2 c 4 66
+mknod ttyS3 c 4 67
+mknod ttyS4 c 4 68
 
-Robin Gilks wrote:
->
-> Greetings
->
-> I might be missing something here with nfsroot, kernel config & the
-> kernel command line but...
->
-> When one does a "make oldconfig", is there a way to stop it asserting
-> the lockd config if nfs is enabled? Its driving me nuts trying to do an
-> automated build of a kernel that doesn't require a local rpc server to
-> do the locking and since I want to boot with a nfsroot filesystem, I
-> can't see how to get the -o nolock across the kernel command line.
->
+and I use the SMC1 to console.
+when I
+echo test >/dev/ttyS0,
+it echoed.
 
+when I
+echo test >/dev/ttyS2,
+the "test" show on the terminal that i connected to the serial.
+but when I
+cat /dev/ttyS2,and send some chars from the terminal,nothing happened.
+the /proc/interrupts recorded the recieve interrupt,and my printk also
+say that.but the recieve_chars found empty bd.
 
---
-Robin Gilks
-Senior Design Engineer          Phone: (+64)(3) 357 1569
-Tait Electronics                Fax  :  (+64)(3) 359 4632
-PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
-New Zealand
+I have use the oscillograph to see if the signal have reach the 8260,
+it is.and so does my SMC2.(the SCC4 even have no interrupt).whould you
+please give me some advice about it,thx a lot.
 
+Best regards
+
+xdhe
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
