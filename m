@@ -1,69 +1,45 @@
-Message-Id: <6.0.0.22.0.20031223142940.01e57ae0@192.168.2.1>
-Date: Tue, 23 Dec 2003 14:36:45 +0100
-To: "yhxing" <xyuhua_telecom@hotmail.com>
-From: llandre <r&d@wawnet.biz>
-Subject: Re: How to control RTS signal ?
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <Sea1-DAV34kO1dJFUuS0000e1ba@hotmail.com>
-References: <Sea1-DAV34kO1dJFUuS0000e1ba@hotmail.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: "Ashwin Bihari" <raz0redge@hotmail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Embedded initrd with static programs
+Date: Tue, 23 Dec 2003 10:04:57 -0500
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: text/plain; format=flowed
+Message-ID: <BAY9-F37onNzN9rvBmW0007186b@hotmail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
->Hi,
->
->    Now we are using a mpc823 embedded system, and there is some trouble.
->We need to use SCC3 UART to control RS485 tranceiver. TXD3 is connected
->to RS485 tranceiver's D pin, RXD3 is connected to RS485 tranceiver's R
->pin, and RTS3 is connected to RS485 tranceiver's RE# and DE pin. Then
->when transmitting data, we hope RTS3 signal can keep low to enble D.
->When receiving data, we hope RTS3 signal can keep high to enble R.
->    So my question is, how can I program to control RTS3 signal in ppclinux.
+Greetings,
 
-Hi,
+I'm trying to create a initial ramdisk that will get loaded to perform the
+following actions.
 
-the simplest solution I found so far is to control the RTS signal in the
-application, like this:
+With a new (empty) hard drive, create the partitions according to the scheme
+chosen, format the partitions as EXT3, get a tarball containing the root
+file system, uncompress this tarball and then reboot.
 
-                 int mcs = TIOCM_RTS;
-                 /* clear RTS */
-                 ioctl(fd, TIOCMBIC, &mcs);
-                 ...
+Since I need to create the partitions non-interactively, I've found "sfdisk"
+from the util-linux package to do this job for me. For the formatting of the
+partitions as EXT3, I'm using "mke2fs" from the e2fsprogs package. The
+problem is that programs contained with these two packages are all
+dynamically linked.
 
-                 /* Before starting a transmission, we must set the RTS
-signal */
-                 ioctl(fd, TIOCMBIS, &mcs);
+I found the source for e2fsprogs, but I don't see a setting to be able to
+compile the programs statically.
 
+I'm using Busybox compiled statically to provide the basic Unix command set.
 
-                 /* Now we can safely transmit the message with the usual
-write system call */
-                 write(fd, buf, strlen(buf));
+So basically I need the other two programs also statically compiled, does
+anyone of any idea on how I would go about this??
 
-                 /* Before switching back to receiving mode, we must
-ascertain the trasmission is actually completed by reading the Line Status
-Register */
-                 do {
-                         ioctl (fd, TIOCSERGETLSR, &lsr);
-                 } while (!(lsr & TIOCSER_TEMT));
+Regards.
 
-                 /* clear RTS */
-                 ioctl(fd, TIOCMBIC, &mcs);
+~Ashwin
 
-Otherwise you can modify the serial driver in order to manage the direction
-pin internally inside it. Even if this technique is discouraged by kernel
-maintainers, there are several examples available (I think the CRIS
-architecture serial driver implements this solution).
-
-
-
-
-
-Hope this helps,
-
-llandre
+_________________________________________________________________
+Enjoy the holiday season with great tips from MSN.
+http://special.msn.com/network/happyholidays.armx
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
