@@ -1,47 +1,43 @@
-Message-ID: <3C838533.6050603@pacbell.net>
-Date: Mon, 04 Mar 2002 14:31:15 +0000
-From: Armin <akuster@pacbell.net>
-MIME-Version: 1.0
-To: andrew may <acmay@acmay.homeip.net>
-Cc: John Tyner <jtyner@cs.ucr.edu>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] ocp enet
-References: <Pine.LNX.4.30.0202271525500.15001-200000@hill.cs.ucr.edu> <3C7D0AB9.5070801@pacbell.net> <20020304131703.A15551@ecam.san.rr.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Mon, 4 Mar 2002 08:05:29 -0800
+From: David Ashley <dash@xdr.com>
+Message-Id: <200203041605.g24G5Ts15070@xdr.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: mmap wrapping around to 0 revisited
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-andrew may wrote:
-> On Wed, Feb 27, 2002 at 04:35:05PM +0000, Armin wrote:
->
->>Thanks,
->>
->>I want to try in on a few boards I have before it goes in.
->>
->>--armin
->>
->
-> Have you gotten a chance to try it yet? The testing I have
-> done has not shown any problems and I have been able to test
-> just about all of the cases. Boards with/without the correct
-> pull-ups. Remove the correct phy-id from the table. Booting
-> without a link.
->
-> Here is another patch that for the driver. It removes some
-> cut and paste code from the rx interupts and breaks the work
-> into rx_clean and rx_fill functions. rx_fill is also called from
-> open.
->
+2.4.2-hhl had a problem with mmap right at the end of memory not working
+because in a function do_mmap there was a check if
+offset + PAGE_ALIGN(len) < offset
+then fail.
 
+I fixed it in that version by changing the comparison to
+offset + PAGE_ALIGN(len)-1 < offset
 
-Yes I have.
+The problem was offset + PAGE_ALIGN(len) ended up being zero due to wrapping
+of the 32 bit value.
 
-I added history info and sent it to Tom to check in.
+2.4.17 and probably lots of other kernels have the same mmap problem but
+for a different reason. The new policy in the mmap is to not deal with the
+byte offset but instead deal with the page offset, so the byte offset is
+shifted right by usually 12 bits. This works fine on x86. On ppc the problem
+is the offset is an off_t type, which isn't unsigned. So shifting it right
+12 bits maintains the sign bit.
 
-I will look into this patch and will try it after Tom gets done.
+The fix is in
+arch/ppc/kernel/syscalls.c
+in the sys_mmap function, change this line:
+	err = do_mmap2(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
+to
+	err = do_mmap2(addr, len, prot, flags, fd, (unsigned long)offset >> PAGE_SHIFT);
 
-armin
+Possibly it would be better to have the argument as an unsigned long instead
+of an off_t.
 
+In our box there is a flashrom that goes right to the end of memory. We could
+never mmap that last page properly to flash it.
+
+-Dave
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
