@@ -1,22 +1,15 @@
-Return-Path: <chris@alcor.co.uk>
-Received: from mizar.alcor-electronics.co.uk (alcor.demon.co.uk [62.49.62.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CB2922BDEB
+Return-Path: <alebas@televes.com>
+Received: from tvesnat.televes.com (unknown [212.163.42.137])
+	by ozlabs.org (Postfix) with ESMTP id D619A2BDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Nov 2004 22:17:26 +1100 (EST)
-Received: from alcor1 ([192.168.1.1])
-	by mizar.alcor-electronics.co.uk with esmtp (Exim 4.30)
-	id 1CSZAa-00018e-BK
-	for linuxppc-embedded@ozlabs.org; Fri, 12 Nov 2004 11:00:44 +0000
-From: "Chris Down" <chris@alcor.co.uk>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Fri, 12 Nov 2004 11:00:44 -0000
-Message-ID: <004201c4c8a6$db904cd0$0101a8c0@alcor1>
+	Sat, 13 Nov 2004 00:06:16 +1100 (EST)
+Message-ID: <1100264953.4194b5f9eab0f@webmail.televes.com:443>
+Date: Fri, 12 Nov 2004 14:09:13 +0100
+From: alebas@televes.com
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: Problem bringing up Linux on Custom MPC522 Board
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [patch] Solves syslib/m8260_setup.c ROOT_DEV problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,50 +20,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I am trying to bring up Linux (latest linuxppc-2.4 tree) on a custom =
-MPC852
-Board. The board has 8MByte SDRAM and 8MByte Flash.=20
-I have ported u-boot, modified Linux to add a new board config and added =
-the
-board specific definitions in arch/ppc/platforms.=20
-U-Boot and Linux were built using the ppc_8xx compiler from ELDK 3.0.
+Hi,
 
-When I boot Linux I get the following:-
+This patch applies against head versions of both linuxppc-2.5 in ppc.bkbits.net
+and linux-2.5 in linux.bkbits.net
 
-## Booting image at 00100000 ...
-   Image Name:   Linux-2.4.28-pre3-cdd1
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    664920 Bytes =3D 649.3 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-Linux version 2.4.28-pre3-cdd1 (chris@alioth) (gcc version 3.2.2 =
-20030217 (Yello
-w Dog Linux 3.0 3.2.2-2a_1)) #3 Fri Nov 12 09:46:59 GMT 2004
-On node 0 totalpages: 2048
-zone(0): 2048 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line:
-Decrementer Frequency =3D 187500000/60
-Calibrating delay loop... 49.76 BogoMIPS
-Memory: 6508k available (1176k kernel code, 344k data, 56k init, 0k =
-highmem)
-Dentry cache hash table entries: 1024 (order: 1, 8192 bytes)
-Inode cache hash table entries: 512 (order: 0, 4096 bytes)
-Mount cache hash table entries: 512 (order: 0, 4096 bytes)
-Buffer cache hash table entries: 1024 (order: 0, 4096 bytes)
-Page-cache hash table entries: 2048 (order: 1, 8192 bytes)
-POSIX conformance testing by UNIFIX
+I don't now if this has been corrected in some other tree.
 
-At this point it stops executing in arch_kernel_thread.
+The patch corrects the following error during compilation
 
-As I am new to this I could do with some pointers as to what to do next. =
-Any
-help would be gratefully appreciated.
+  LD      arch/ppc/lib/built-in.o
+  CC      arch/ppc/syslib/m8260_setup.o
+arch/ppc/syslib/m8260_setup.c: In function `m8260_setup_arch':
+arch/ppc/syslib/m8260_setup.c:56: `ROOT_DEV' undeclared (first use in this
+function)
+arch/ppc/syslib/m8260_setup.c:56: (Each undeclared identifier is reported only
+once
+arch/ppc/syslib/m8260_setup.c:56: for each function it appears in.)
+arch/ppc/syslib/m8260_setup.c:56: `Root_RAM0' undeclared (first use in this
+function)
+arch/ppc/syslib/m8260_setup.c: In function `m8260_show_cpuinfo':
+arch/ppc/syslib/m8260_setup.c:149: warning: unsigned int format, long unsigned
+int arg (arg 5)
+arch/ppc/syslib/m8260_setup.c:149: warning: int format, long unsigned int arg
+(arg 6)
+arch/ppc/syslib/m8260_setup.c:149: warning: unsigned int format, long unsigned
+int arg (arg 7)
+arch/ppc/syslib/m8260_setup.c:149: warning: unsigned int format, long unsigned
+int arg (arg 8)
+arch/ppc/syslib/m8260_setup.c:149: warning: unsigned int format, long unsigned
+int arg (arg 9)
+make[1]: *** [arch/ppc/syslib/m8260_setup.o] Error 1
+make: *** [arch/ppc/syslib] Error 2
+
+Here, arch was ppc and configuration was ads8272_defconfig.
+
+Best regards,
+
+Alex
 
 
-Regards
-
-Chris Down
+--- arch/ppc/syslib/m8260_setup.c.orig  2004-11-12 11:55:32.000000000 +0100
++++ arch/ppc/syslib/m8260_setup.c       2004-11-12 13:55:00.000000000 +0100
+@@ -16,6 +16,9 @@
+ #include <linux/slab.h>
+ #include <linux/init.h>
+ #include <linux/initrd.h>
++#ifdef CONFIG_BLK_DEV_INITRD
++#include <linux/root_dev.h>
++#endif
+ #include <linux/seq_file.h>
+ #include <linux/irq.h>
