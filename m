@@ -1,35 +1,31 @@
-To: David Jander <david.jander@protonic.nl>
-Cc: linuxppc-embedded@lists.linuxppc.org
+To: danieltaylor@acm.org
+Cc: David Jander <david.jander@protonic.nl>,
+	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: BDI2000 Jtag interface questions... 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 14 Oct 2003 10:57:00 +0200."
-             <200310141057.00186.david.jander@protonic.nl>
-Date: Tue, 14 Oct 2003 11:23:24 +0200
-Message-Id: <20031014092329.B7951C59E4@atlas.denx.de>
+In-reply-to: Your message of "Tue, 14 Oct 2003 03:56:16 PDT."
+             <3F8BD650.5020901@comcast.net>
+Date: Tue, 14 Oct 2003 13:34:47 +0200
+Message-Id: <20031014113452.F18B0C59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear David,
+In message <3F8BD650.5020901@comcast.net> you wrote:
+> He may have meant doing JTAG boundary scans.  I would think
+> that if you can program flash/eproms, that there is enough
+> control to do a scan.  It depends on whether the BDI allows
+> address/data level control in some sort of scripting language.
 
-in message <200310141057.00186.david.jander@protonic.nl> you wrote:
->
-> I have heared that the BDI2000 is a must-have debugger for Embedded-PPC
-> development (we are developing a MPC852T based board).
-> Questions:
-> What can you do with the BDI2000 as a Jtag interface for the MPC852T?
+No. On MPC8xx you see a BDM interface. Essentially this is a  way  to
+communicate  with  the CPU, i. e. to insert instructions into the CPU
+core, have them executed, and get data back.  This  way  you  can  of
+course  read  and  write  memory, too, or execute a flash programming
+algorithm.
 
-MPC8xx processors use a BDM interface. The BDI2000 attaches  to  this
-BDM port.
-
-> Is it possible (i.e. is there software) to use the BDI2000 as a Jtag interface
-> for that processor to also do hardware testing?
-
-This depends on what you mean by "hardware testing".  Of  course  you
-can  use  the  BDM interface - for example - to download and run some
-test programs to test your hardware. But BDM is all you get.
+You cannot do anything like a boundary scan over BDM.
 
 Best regards,
 
@@ -38,7 +34,6 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-We are drowning in information but starved for knowledge.
-                                         -- John Naisbitt, Megatrends
+Der Dativ ist dem Genitiv sein Tod.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
