@@ -1,47 +1,39 @@
-Subject: Re: linuxppc-2.5 (rsync mvista) -- drivers/input/evdev.c:243:
-	error: invalid lvalue in asm statement
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>
-Cc: Paul Mackerras <paulus@samba.org>,
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16174.17030.820826.915675@cargo.ozlabs.ibm.com>
+Date: Mon, 4 Aug 2003 21:24:54 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>,
 	Miles Lane <miles.lane@comcast.net>, linuxppc-dev@lists.linuxppc.org,
 	Vojtech Pavlik <vojtech@suse.cz>
-In-Reply-To: <5.2.1.1.2.20030804104557.01f0fe00@mail.lauterbach.com>
+Subject: Re: linuxppc-2.5 (rsync mvista) -- drivers/input/evdev.c:243:
+	error: invalid lvalue in asm statement
+In-Reply-To: <1059990141.3232.1.camel@gaston>
 References: <16172.61621.985947.378822@cargo.ozlabs.ibm.com>
-	 <200308021823.30382.miles.lane@comcast.net>
-	 <16172.61621.985947.378822@cargo.ozlabs.ibm.com>
-	 <5.2.1.1.2.20030804104557.01f0fe00@mail.lauterbach.com>
-Content-Type: text/plain
-Message-Id: <1059990141.3232.1.camel@gaston>
-Mime-Version: 1.0
-Date: 04 Aug 2003 11:42:21 +0200
+	<200308021823.30382.miles.lane@comcast.net>
+	<5.2.1.1.2.20030804104557.01f0fe00@mail.lauterbach.com>
+	<1059990141.3232.1.camel@gaston>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2003-08-04 at 10:49, Franz Sirl wrote:
-> >
-> >No Paul, it's not your fault, if you look closely at evdev, that code
-> >can't really work properly anyway.
->
-> Well, his patch to get_user exposed it, but the bug is really in the very
-> questionable use of the gcc extension to accept ?: expressions as lvalue,
-> see <http://gcc.gnu.org/bugzilla/show_bug.cgi?id=11564>
->
-> >I talked to Vojtech at OLS and he'll be fixing that to always pass
-> >either an u32 or an int to userspace.
->
-> I've sent him a patch too as a result of the above GCC PR.
+Benjamin Herrenschmidt writes:
 
-It's still totally wrong to access userland with a variable sized
-data since my understanding is that userland doesn't know what size
-the kernel will use for access here, thus it works for little endian
-but not big endian (well... afaik).
+> It's still totally wrong to access userland with a variable sized
+> data since my understanding is that userland doesn't know what size
+> the kernel will use for access here, thus it works for little endian
+> but not big endian (well... afaik).
 
-Vojtech and I agreed that this should be changed into uniform use
-of a single sized type (u32 or int) that gets only converted in
-the kernel.
+The userland data isn't variable-sized; it's an int, and it is
+accessed as an int because the pointer given to get_user is int *.
+The problem is (as Franz pointed out) the use of (a? b: c) as an
+lvalue.
 
-Ben.
+Incidentally there is a bug in the INPUT_KEYCODE macro: the second
+(dev->keycodesize == 1) should be == 2 instead (the condition for the
+u16 case).
 
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
