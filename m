@@ -1,32 +1,43 @@
-From: Paul Mackerras <paulus@samba.org>
+Message-ID: <3EADE723.4070003@pp.iij4u.or.jp>
+Date: Tue, 29 Apr 2003 11:44:51 +0900
+From: Yuji Nishimura <yujin@pp.iij4u.or.jp>
 MIME-Version: 1.0
+To: Steven Rothweiler <Stevenr@raritan.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Where to find zsrec.c ?
+References: <159C486347C8D3119B1D005004A4694001F6D557@olive.raritan.com>
+In-Reply-To: <159C486347C8D3119B1D005004A4694001F6D557@olive.raritan.com>
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <16045.52678.862078.705908@argo.ozlabs.ibm.com>
-Date: Tue, 29 Apr 2003 10:56:38 +1000
-To: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-Cc: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: BK Id header removals causes patch to fail!
-In-Reply-To: <001301c30dd8$f5f691e0$020120b0@jockeXP>
-References: <IGEFJKJNHJDCBKALBJLLMEFBFMAA.joakim.tjernlund@lumentis.se>
-	<IGEFJKJNHJDCBKALBJLLCEFDFMAA.joakim.tjernlund@lumentis.se>
-	<16045.43640.243207.193539@nanango.paulus.ozlabs.org>
-	<001301c30dd8$f5f691e0$020120b0@jockeXP>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joakim Tjernlund writes:
+zsrec source package include in montavista preview kit
+(previewkit-mvl2.1.0-encrypt.img).
+you can download it from montavista.
+http://www.mvista.com/previewkit/index.html
 
-> hmm, the tree I am patching is a CVS tree. I can't get these in %F%
-> form with CVS.
+Best Regards,
+Yuji Nishimura - Tokyo, Japan
 
-True.  Well, the best I can suggest is to write a script that runs sed
-on all the files to change the BK Id lines back to the %F% form.
+Steven Rothweiler wrote:
 
-This sort of problem in patching is the primary reason why I removed
-the BK Id lines.  They caused far more patch rejects than they were
-worth (particularly now that Marcelo uses BK).
+>Hi,
+>
+>I don't have MontaVista software, yet nevertheless,
+>I have a need for zsrec.c because I'm trying to
+>port Linux to a Motorola Sandpoint III board.
+>
+>Can anyone point me to where I can download it?
+>
+>Thanks.
+>--
+>Steve
+>
+>
+>
+>
+>
 
-Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
