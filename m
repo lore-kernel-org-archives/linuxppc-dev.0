@@ -1,51 +1,61 @@
-To: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
-Subject: Re: IrDA-patched binaries
-References: <Pine.LNX.4.33.0111012312360.888-100000@auryn.jones.dk>
-	<87y9lc6h13.fsf@openinformatics.com> <3BEF9DA6.14AF8E49@iiic.ethz.ch>
-From: jason@openinformatics.com (Jason E. Stewart)
-Date: 12 Nov 2001 09:39:01 -0700
-In-Reply-To: <3BEF9DA6.14AF8E49@iiic.ethz.ch>
-Message-ID: <87vggg2bbu.fsf@openinformatics.com>
+Message-ID: <3BF012CA.287A76A@mvista.com>
+Date: Mon, 12 Nov 2001 10:19:54 -0800
+From: Jun Sun <jsun@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>,
+	Linux/MIPS Development <linux-mips@oss.sgi.com>,
+	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [RFC] generic MIPS RTC driver
+References: <Pine.GSO.4.21.0111121410230.11251-100000@mullein.sonytel.be>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Michel Dänzer" <michdaen@iiic.ethz.ch> writes:
-
-> "Jason E. Stewart" wrote:
-> >
-> > "Jonas Smedegaard" <dr@jones.dk> writes:
-> >
-> > > I have made available kernel and irda-packages with the irda-hacks
-> > > added to make .
-> >
-> > I was totally thrilled to see this. Because of reiserfs, I need to
-> > compile my own kernel, so I grabbed the patches a couple of weeks
-> > ago. I just had time to look at them and it seems that parameters.h
-> > has changed a *lot* since this patch was made.
-> >
-> > >From BenH's latest kernel:
-> >
-> > typedef union {
-> >         char   *c;
-> >         __u32   i;
-> >         __u32 *ip;
-> > } irda_pv_t;
+Geert Uytterhoeven wrote:
 >
-> Yup, 2.4.15-pre2 has my better fix. :)
+> On Mon, 12 Nov 2001, Maciej W. Rozycki wrote:
+> > On Sun, 11 Nov 2001, Geert Uytterhoeven wrote:
+> > > > In other words, with such a driver, once you implemented rtc_get_time()
+> > > > and rtc_set_time(), which is required by the kernel anyway, you will
+> > > > automatically get a free /dev/rtc/ driver.
+> > > >
+> > > > This is the idea behind the generic MIPS rtc driver.  See the patch below.
+> > >
+> > > Oh no, don't tell me we now have (at least) _three_ of these floating around
+> > > :-)
+> > >
+> > >   - On m68k, we have drivers/char/genrtc.c (not yet merged, check out CVS, see
+> > >     http://linux-m68k-cvs.apia.dhs.org/).
+> > >   - On PPC, we have drivers/macintosh/rtc.c.
+> > >   - On MIPS, we now have your drivers/char/mips_rtc.c.
+> >
+> >  Agreed, what's wrong with drivers/char/rtc.c?  It even works for the
+>
+> It's for MC146818 RTCs only.
+>
+> > DECstation which maps its RTC in an unusual (but nice) way -- it's just a
+> > matter of initializing rtc_ops appropriately.  See arch/mips/dec/rtc-dec.c
+> > for an example.
+> >
+> >  Unless you use a non-MC146818 RTC, which you need to write a separate
+> > driver for anyway.
+>
+> Yep, so that's why both m68k and PPC have common routines to read/write the
+> RTC, with a /dev/rtc-compatible abstraction on top of it.
+>
 
-sorry Michel, I don't understand. Is the irda_pv_t listed above your
-fix? Or will your fix being showing up in BenH's kernel soon, or???
+Geert, what is the abstraction they used?
 
-> Now we're working on fixing macserial such that the 'cat /dev/ttyS1
-> trick' isn't needed anymore...
+The /dev/rtc interface is highly influenced by MC146818 chip, which not all
+RTC devices are alike.  The only fundamental thing in the driver is really the
+read and write time.
 
-Hmmm.. Sorry, must have missed that one. What is the trick, and why is
-it needed?
+If their abstraction is reasonable, perhaps they can all converge to a better,
+more generic rtc interface.
 
-Thanks,
-jas.
+Jun
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
