@@ -1,69 +1,56 @@
-Date: Sat, 20 May 2000 22:52:31 -0700 (PDT)
+Date: Sat, 20 May 2000 23:10:56 -0700 (PDT)
 From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-To: Sergio Brandano <sb@dcs.qmw.ac.uk>
-cc: Worth <haworth@ncal.verio.com>, linuxppc-dev@lists.linuxppc.org,
-        debian-powerpc@lists.debian.org
-Subject: Re: Pismo status 
-In-Reply-To: <200005200850.JAA28869@copper.dcs.qmw.ac.uk>
-Message-ID: <Pine.LNX.3.96.1000520223754.11206C-100000@deepspace.mklinux.org>
+To: Sven LUTHER <luther@dpt-info.u-strasbg.fr>
+cc: Sergio Brandano <sb@dcs.qmw.ac.uk>,
+        "Timothy A. Seufert" <tas@mindspring.com>,
+        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        Albrecht Dreﬂ <ad@mpifr-bonn.mpg.de>,
+        Tim Wojtulewicz <Tim.Wojtulewicz@nau.edu>,
+        linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
+Subject: Re: Pismo status
+In-Reply-To: <20000520182302.A3924@lambda.u-strasbg.fr>
+Message-ID: <Pine.LNX.3.96.1000520230652.11206G-100000@deepspace.mklinux.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 20 May 2000, Sergio Brandano wrote:
+On Sat, 20 May 2000, Sven LUTHER wrote:
 
->  I do not know why I am wasting time with this issue. Anyway, I have a
->  very different experience on cooling both cars and computers. All the
->  cars I happen to see do run the fan after shutdown (I can clearly
->  hear the quiet after shutdown, then the sound of the fan after a few
->  seconds). This is probably due to a different design for countries
->  with a warm weather, as you report otherwise. Concerning computers,
->  and Linux, it is running this OS that the situation improved, as far
->  as Intel processors are concerned. I can say that the cpus, before
->  the advent of the caged P-II, where so cold that I could safaly touch
->  them. This was, again, using Linux. Using MS-Windows, instead, I
->  could *not* do the similar thing for sure. And I have been using
->  Intel processors for a long, long time. I have a very different
->  experience with PPC. I purchased my first one last summer, and it is
->  damn hot. How is that Linux does not help here? How is that PPC is
->  claimed to be cooler than Intel?
+> >  Ok Sven. You are convinced about your idea, but I am still skeptical.
+> >  In order to persuade me, I need a proof. Please perform this simple
+> >  experiment, then report the result. The experiment is as follows.
+> >  Have a nice and long trip with your car, then come back home, and
+> >  switch the engine off ensuring that the cooling fan is not spinning.
+> >  Let us know if your car starts again the next day.
 
-Don't compare Apples and Oranges.  You're comparing a Pentium II to a G3.
-A PII is somewhere near a PPC 604 in terms of speed.  If you touch a 604
-heat sink, in my experience, it's luke warm even after running for several
-hundred days continuously under linux.  Been there, done that.
-
-For a fair comparison to the G3, you need to consider at least a Pentium
-III (at about half again faster clock speed ;-).
-
-> I also experienced that GNOME's
->  screen saver pumps up the CPU to 100% when it is active. If the
->  PowerBook is cool before triggering the screen saver, it gets boiling
->  hot (with fan spinning) after 30mins.
-
-Oh, this is a PowerBook.  The machine gets hot for a lot of reasons, not
-just the CPU.  Video chips generate lots of heat, as does your hard drive,
-as do the power regulation circuits on the various boards.  In fact, I'd
-expect the cpu to be one of the cooler devices, normally.  ;-)
+Um, there's a big difference there.  Your car is mechanical.  Computers
+are not, other than the hard drive.  And excess heat probably does
+contribute to stiction in hard drives, but that's about it.  When you stop
+your car, oil drains out of the engine.  If the engine is still in an
+expanded state from the heat, you're in deep you-know-what.  ;-)
 
 
->  Why is that? I would expect it
->  to shut the display off and similar things, rather than deliberately
->  trying to fry my baby. Anyway, I am done with this topic.
+> >  for a long time, then shutdown. Keep doing it every day, for a week
+> >  or so. Let us know it your jewel works fine at the end of it.
+>
+> Ok, no problem it is your hardware, you do as you think is best, but
+> still, there were talks about powerbook case cooling without fan, so
+> this could be not so big a problem, unless you are using your laptop at
+> noon in the sahara.
 
-When the fan kicks on, you're still nowhere near a dangerous operating
-temperature....  The fan usually kicks on when there's insufficient heat
-dissipation from the bottom of the case (e.g. sitting on a bed, couch,
-etc.).  I've never had a fan kick on if the machine was on a hard surface,
-and that's with the LapBurner (err... I mean WallStreet ;-).
-
-You can always turn off the gnome screensaver and just use xset to turn on
-screen blanking, though.  :-)
+Yeah.  The powerbook case cools both through heat rising through gaps in
+the keyboard and through the entire thing being basically one huge heat
+sink.  :-)
 
 
-Later,
+> That said, i don't believe apple (as well as all the other laptop builders)
+> would release a laptop that would fry itself
+
+No, but they can fry eggs, or at least the wallstreets could.  :-)
+
+
 David
 
 ---------------------------------------------------------------------
