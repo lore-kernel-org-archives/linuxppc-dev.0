@@ -1,15 +1,21 @@
-Message-ID: <41EDEC3C1B88D51186EB00A0C9CFADF70E57CE@AMWMAIL>
-From: Lucinda Schafer <lucsch@adaptivemicro.com>
-To: "'zjuzhou@yahoo.com.cn'" <zjuzhou@yahoo.com.cn>,
-	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Cc: Cindy Peters <cinpet@adaptivemicro.com>
-Subject: NIP at 1FFC
-Date: Tue, 20 Nov 2001 07:53:32 -0500
+Message-ID: <41EDEC3C1B88D51186EB00A0C9CFADF702FB0D@AMWMAIL>
+From: Cindy Peters <cinpet@adaptivemicro.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: FW: NIP at 1FFC
+Date: Tue, 20 Nov 2001 08:16:08 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+-----Original Message-----
+From: Lucinda Schafer
+Sent: Tuesday, November 20, 2001 7:54 AM
+To: 'zjuzhou@yahoo.com.cn'; 'linuxppc-embedded@lists.linuxppc.org'
+Cc: Cindy Peters
+Subject: NIP at 1FFC
 
 
 We have dealt with a similar kernel panic with the NIP always being at
