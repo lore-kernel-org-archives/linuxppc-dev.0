@@ -1,65 +1,75 @@
-Subject: Re: SystemACE, but I'm not a V2Pro
-From: Jeff Angielski <jeff@theptrgroup.com>
-To: Stephen Williams <612dlag102@sneakemail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <10183-36126@sneakemail.com>
-References: <10183-36126@sneakemail.com>
-Content-Type: text/plain
-Message-Id: <1079968679.20420.13.camel@localhost.localdomain>
+Date: Mon, 22 Mar 2004 18:47:26 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Kumar Gala <kumar.gala@motorola.com>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Matt Porter <mporter@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC] "indirect" DCR access (40x, BookE)
+Message-ID: <20040323024726.GA2939@gate.ebshome.net>
+References: <20040312014800.GA25455@gate.ebshome.net> <405124A3.3040002@embeddededge.com> <20040312030502.GA25644@gate.ebshome.net> <24019-11838@sneakemail.com> <20040312045451.GA25876@gate.ebshome.net> <1921A482-7431-11D8-AFB6-000393DBC2E8@motorola.com> <1079668852.909.88.camel@gaston>
 Mime-Version: 1.0
-Date: 22 Mar 2004 10:17:59 -0500
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1079668852.909.88.camel@gaston>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Stephen,
+On Fri, Mar 19, 2004 at 03:00:53PM +1100, Benjamin Herrenschmidt wrote:
+> I much prefer Eugene's idea.
 
-Here is the simple change that what worked for me:
+During discussion with Ben on IRC he suggested that having two
+different DCR access wasn't a good idea and better if we use GCC
+__builtin_constant_p extension to decide what version to call.
 
-static void
-xsysace_restart(char *cmd)
-{
-        XSysAce_ResetCfg(&SysAce);
+New patch version can be found http://kernel.ebshome.net/dcr-2.6-2.diff
 
-        /* also call the machdep restart */
-        if( old_restart )
-                old_restart(cmd);
+Here is only _new_ part for review:
 
-        /* Wait for reset. */
-        for (;;) ;
-}
+===== include/asm-ppc/reg_booke.h 1.5 vs edited =====
+--- 1.5/include/asm-ppc/reg_booke.h     Fri Feb 13 07:24:55 2004
++++ edited/include/asm-ppc/reg_booke.h  Mon Mar 22 17:44:02 2004
+@@ -10,20 +10,33 @@
+ #define __ASM_PPC_REG_BOOKE_H__
 
+ #ifndef __ASSEMBLY__
++#include <linux/compiler.h>
++
+ /* Device Control Registers */
++void __mtdcr(int reg, unsigned int val);
++unsigned int __mfdcr(int reg);
+ #define mfdcr(rn) mfdcr_or_dflt(rn, 0)
+ #define mfdcr_or_dflt(rn,default_rval)                                 \
+        ({unsigned int rval;                                            \
+-       if (rn == 0)                                                    \
++       if (unlikely(rn == 0))                                          \
+                rval = default_rval;                                    \
+        else                                                            \
+-               asm volatile("mfdcr %0," __stringify(rn) : "=r" (rval)); \
++               if (__builtin_constant_p(rn))                           \
++                       asm volatile("mfdcr %0," __stringify(rn)        \
++                                     : "=r" (rval));                   \
++               else                                                    \
++                       rval = __mfdcr(rn);                             \
+        rval;})
 
-Jeff
+ #define mtdcr(rn, v)                                                   \
+ do {                                                                   \
+-       if (rn != 0)                                                    \
+-               asm volatile("mtdcr " __stringify(rn) ",%0" : : "r" (v)); \
++       if (likely(rn != 0)){                                           \
++               if (__builtin_constant_p(rn))                           \
++                       asm volatile("mtdcr " __stringify(rn) ",%0"     \
++                                     : : "r" (v));                     \
++               else                                                    \
++                       __mtdcr(rn, v);                                 \
++       }                                                               \
+ } while (0)
 
+ /* R/W of indirect DCRs make use of standard naming conventions for DCRs */
 
-On Sun, 2004-03-21 at 21:00, Stephen Williams wrote:
-> I'm successfully using the existing System ACE adapter driver
-> to mount my compact flash devices, and that's great. But I'm
-> getting some baggage I don't want. Specifically, in adapter.c
-> the xsysace_init function replaces the ppc_md.restart function
-> with xsysace_restart, which breaks reboot on my PPC405GPr based
-> board.
->
-> The brute force method is for me to #ifdef out that bit of
-> code with something like "#ifndef CONFIG_JSE" (my board is
-> a JSE board) but that seems klunky.
->
-> It seems to me there may be others who have SystemACE boards
-> without V2Pro chips. Would it be safe and reasonable for me
-> to use the CONFIG_VIRTEX_II_PRO config define to ifdef that
-> bit of code *in*?
->
-> (I'm asking because I'd like to integrate my board support
-> into the main tree someday, so I want a generally clean patch.)
->
-> --
-> Steve Williams                "The woods are lovely, dark and deep.
-> steve at XXXXXXXXXX           But I have promises to keep,
-> http://www.XXXXXXXXXX         and lines to code before I sleep,
-> http://www.picturel.com       And lines to code before I sleep."
->
->
+Thanks,
 
+Eugene
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
