@@ -1,50 +1,36 @@
-Message-ID: <17B78BDF120BD411B70100500422FC63079FA7@IIS000>
-From: Patrick Lerda <Lerda@microprocess.com>
-To: "'Tom Roberts'" <tjroberts@lucent.com>, Dan Malek <dan@netx4.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Query: kernel version for MPC750/MPC7400
-Date: Tue, 27 Jun 2000 16:22:46 +0200
+Message-ID: <3958BBF1.20E543AB@aiinet.com>
+Date: Tue, 27 Jun 2000 10:36:33 -0400
+From: Matt Gessner <mattg@aiinet.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 8260, FCC and local bus
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Classic linux kernel like 2.2.16 works well and reliably on PPC 7xx
-processors.
-The Monta Vista kernel is only tested on 8xx processor, and the 7xx support
-is probably broken.
+Hello list,
 
-Patrick LERDA
+Has anyone done anything with mapping local bus memory
+so that it can be used for FCC BD's and buffers?
 
-> -----Message d'origine-----
-> De:	Tom Roberts [SMTP:tjroberts@lucent.com]
-> Date:	mardi 27 juin 2000 16:00
-> À:	Dan Malek
-> Cc:	'linuxppc-embedded@lists.linuxppc.org'
-> Objet:	Query: kernel version for MPC750/MPC7400
->
->
-> Dan Malek wrote:
-> > You shouldn't be using 2.2.15 with 8xx.  I am not going to discuss
-> > the history right now, but the only reliable verion of 2.2.xx Linux
-> > is the 2.2.13 version on the MontaVista Web site (www.mvista.com).
->
-> How about on an embedded MPC750 or MPC7400? Before joining this
-> list I discovered Kernel version 2.2.15 on Yellowdog and have been
-> using that. I have made a dozen or so small mods to the kernel to
-> get it to run on our boards, and have seen no problems, so far....
-> There are zillions of references to CONFIG_8xx throughout the source.
->
-> 	These boards are essentially embedded supercomputers;
-> 	the only devices they have are the drivers I wrote, which
-> 	use memory buffers to/from the host PCI as a 'serial'
-> 	console and a network interface.
->
->
-> Tom Roberts	tjroberts@lucent.com
->
+I **thought** I had it right, but my driver eventually
+causes the machine to hang (EST SBC8260).
+
+I had ioremap'd it, and put va's and pa's where each belonged
+(va's for the kernel's tracking stuff and pa's for the CPM stuff).
+
+Alas, to no avail.
+
+Has anyone had any success with this, and if so, would you be
+willing to share?
+
+TIA,
+
+--
+Matt Gessner, mattg@aiinet.com--NOSPAM
+Senior Software Engineer, R&D
+Applied Innovation, Inc.
+614-798-2000
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
