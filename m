@@ -1,22 +1,27 @@
-Message-Id: <200401041555.JAA03904@lists.linuxppc.org>
-Content-Type: text/plain;
-  charset="iso-8859-2"
-From: Samo Pogacnik <samo.pogacnik@s5.net>
+Message-Id: <200401050235.UAA05095@lists.linuxppc.org>
+Date: Mon, 5 Jan 2004 10:33:20 +0800
+From: "sun-zj" <sun-zj@tdk-tech.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: memory problem with fec on 8250
-Date: Sun, 4 Jan 2004 16:55:31 +0100
+Reply-To: "sun-zj" <sun-zj@tdk-tech.com>
+Subject: cant't stop program
+Content-Type: text/plain
 MIME-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+Hi,All:
+After the denk's instruction, I can run the
+linuxppc-2.4.23 on PPC8xx without too much difficulty. But when running some
+programming , I want to terminate it like I do on PC by press Ctrl+C.
+It doesn't work at all :(. It can work under the U-boot environment. I
+wonder whether this is the
+problem of Linux os Or Kermit?
 
-Is it possible that there is something wrong in the way how the:
-"netif_wake_queue(dev)" gets called from the interrupt handler in the
-"fcc_enet.c"?
-I can confirm this problem for 2.4.18 as well as 2.6.0 kernels on mpc82xx.
+Thanks your instructions and help
 
-bye, Samo
+Best Regards.
+
+Zonjun Sun.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
