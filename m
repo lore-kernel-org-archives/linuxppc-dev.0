@@ -1,27 +1,25 @@
-Return-Path: <tony.p.lee@gmail.com>
-Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.198])
-	by ozlabs.org (Postfix) with ESMTP id 3C4E92BDAB
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
+	by ozlabs.org (Postfix) with ESMTP id 9CC272BDAB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Oct 2004 08:40:51 +1000 (EST)
-Received: by mproxy.gmail.com with SMTP id 76so5226964rnk
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 07 Oct 2004 15:40:43 -0700 (PDT)
-Message-ID: <470b63970410071534422f6617@mail.gmail.com>
-Date: Thu, 7 Oct 2004 15:34:00 -0700
-From: Tony Lee <tony.p.lee@gmail.com>
-To: Andrei Konovalov <akonovalov@ru.mvista.com>
-In-Reply-To: <41641222.6080405@ru.mvista.com>
+	Fri,  8 Oct 2004 08:42:22 +1000 (EST)
+Date: Thu, 7 Oct 2004 15:42:20 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Message-ID: <20041007224220.GV14773@smtp.west.cox.net>
+References: <1096517265.27208.18.camel@localhost.localdomain>
+	<20041007154029.GE14773@smtp.west.cox.net>
+	<Pine.LNX.4.60.0410071158320.5191@dell.enoriver.com>
+	<20041007173023.GK14773@smtp.west.cox.net>
+	<Pine.LNX.4.60.0410071354340.6526@dell.enoriver.com>
+	<20041007184840.GN14773@smtp.west.cox.net>
+	<0927BD6D-18A9-11D9-9049-003065F9B7DC@embeddededge.com>
+	<Pine.LNX.4.60.0410071817420.8278@dell.enoriver.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-References: <000001c4aace$245a5060$6500a8c0@PortatileLG>
-	<35fb2e5904100508157a393ee2@mail.gmail.com>
-	<4162C649.6060900@ru.mvista.com>
-	<35fb2e590410051507367017a@mail.gmail.com>
-	<41641222.6080405@ru.mvista.com>
-Cc: jonathan@jonmasters.org, linuxppc-embedded@ozlabs.org,
-	Luca Giuliani <l.giuliani@tiscali.it>
-Subject: Re: Linux on Memec Virtex II Pro V4P7 Rev. 3
-Reply-To: Tony Lee <tony.p.lee@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.60.0410071817420.8278@dell.enoriver.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] remove obsolete arch/ppc/8xx_io/uart.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,46 +30,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 06 Oct 2004 19:41:22 +0400, Andrei Konovalov
-<akonovalov@ru.mvista.com> wrote:
-> Jon Masters wrote:
-> > On Tue, 05 Oct 2004 20:05:29 +0400, Andrei Konovalov
-> > <akonovalov@ru.mvista.com> wrote:
-> >
-> >
-> > While we're on this subject I will ask - do you also need something
-> > like the nointr mods I pointed out in order to use sysace for writing
-> > on that board? The hardware generates more interrupts than anything
-> > documented suggests that it should and your driver dies horribly (or
-> > is completely unreliable) unless I modify it as I mentioned. It's
-> > probably a sysaceism.
-> 
-> Not too much to say about sysace at the moment.
-> We do not use xsysace in our Memec 2VP7 design (this is a chip select
-> issue with P160 flash and xsysace sitting on the same bus - we do
-> not have HW engineer to do an IP to control the chip select inputs;
-> by default both are tied to ground - always selected).
-> With ML300 we've never seen this problem. I was just asked to try
-> to enhance the xsysace driver performance - will use this opportunity
-> to have a deeper look at the driver's internals.
-> 
+On Thu, Oct 07, 2004 at 06:27:51PM -0400, Robert P. J. Day wrote:
 
-I have to use the non-interrupt mode in sysace.  I thought there were some
-HW issue in our HW board (no ML 300).   Good to know other have the 
-same problem.   We don't have ML300, otherwise, I will run the 
-kernel with printk in the sysace driver to see that system ISR behavior
-on write.  The problem I had was: I can not turn off the ISR when write
-to the system (nor when send ID drive command).
+> at least, that's what it looks like.  but there's no equivalent 
+> selection to pick *exactly* where you want your console in that 
+> submenu.  i wasn't suggesting that all the above *features* had to be 
+> expunged -- just that those specific variables were related to the old 
+> UART way of doing things and had to be dealt with, one way or the 
+> other.
 
- 
-Jon,  what kind of performance you got from the sysace?
+Oh, that.  console=ttyCPM1 is the answer if both SMC1 and SMC2 are
+UARTs.
 
-When I copy 18 MB of ace file into sysace with Linux, the 
-sync command took minutes to complete for me.
-
-Sysace ISR should not be the issue, since there is no seeks
-and all the IO is dirven from the kernel.
-
+Anticipating Dan screaming about this, I'll point to the SH boards where
+the first UART is wired up to odd connectors, and they don't do the "Is
+console on uart1 ?" thing.
 
 -- 
--Tony
+Tom Rini
+http://gate.crashing.org/~trini/
