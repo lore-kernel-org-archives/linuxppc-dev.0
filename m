@@ -1,45 +1,35 @@
 From: Benjamin Herrenschmidt <bh40@calva.net>
-To: "Joseph P. Garcia" <jpgarcia@execpc.com>,
-        <linuxppc-dev@lists.linuxppc.org>
+To: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>, <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Lombard Sleep Crash (Was: 2.2.18pre17 again)
-Date: Thu, 2 Nov 2000 19:06:36 +0100
-Message-Id: <19340927113820.10453@192.168.1.2>
-In-Reply-To: <3A01A2FA.8E8E4A0B@execpc.com>
-References: <3A01A2FA.8E8E4A0B@execpc.com>
+Date: Thu, 2 Nov 2000 19:09:40 +0100
+Message-Id: <19340927114124.27454@192.168.1.2>
+In-Reply-To: <3A01882C.9C16CC60@mpifr-bonn.mpg.de>
+References: <3A01882C.9C16CC60@mpifr-bonn.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> Well, the kernel sleep code is supposed to take care of that, but
->> apparently, that code is also causing the panic...
+>Claus wrote:
+>> if you panic'ed with the CD module inserted, would you try to snooze
+>without it?
 >
->any possibility that the VFS layer causing more serious problems here?
->Comments
->before cdrom.c:media_changed() seem to hint at a potential race
-condition, and
->if the pmac-ide sleep code tries doing the VFS-sync itself, it might
-aggrivate
->matters.  Should/Is VFS being kicked automagically by the cdrom code, or
-might
->we need some syncing or buffering code in ide-pmac.c to prevent a panic?
+>Got it. Without the cd drive module inserted, it does not panic.
+>Apparently, it
+>is enough that there is a CD drive at all, because there was no CD
+inserted or
+>mounted. IMHO, this is a serious kernel bug. Anyone out there to fix this?
+>
+>BTW, in an other approach, I rsync'ed Paul's linux-pmac-stable, but with this
+>one the pmud does not start at all as it can not open /dev/adb...
 
-The sleep code in via-pmu.c does a sync, and the sleep code ide-pmac.c
-locks the IDE request queue preventing any other request from coming in
-until it's unlocked on wakeup. I did this part. Michael did the VFS
-stuffs, I must admit I didn't look at the VFS layer in depth myself.
+Can you lookup the panic PC, LR and backtrace in your System.map ? Also,
+if you could try to figure out what's up with /dev/adb... I suggest
+enabling the CONFIG_ALL_PPC (Prep/chrp/pmac). I beleive the problem could
+be there. I'll give it a look as soon as I find some time with my linux box.
 
->Could also be that the wakebay app/hack runs on the drive after DMA was
->re-enabled.  I assume there is no problem with the media change acting on a
->non-mediabay disk, which it appears to me it would be doing.
-
-Well, the devices beeing powered down, it can't harm to send them a media
-change.
-
->BTW, pmud 0.7.1 uses wakebay by default.  my PDQ doesnt have the panic
-problem
->either.
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
