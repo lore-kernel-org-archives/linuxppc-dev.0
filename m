@@ -1,120 +1,37 @@
-Date: Wed, 26 Mar 2003 17:25:27 -0800
-From: Till Straumann <strauman@SLAC.Stanford.EDU>
-Subject: Re: mpc8xx DCBZ (&friends) hw bug. Tests, analysis + conclusions.
-To: Dan Malek <dan@embeddededge.com>, joakim.tjernlund@lumentis.se
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-Message-id: <3E825307.8000404@slac.stanford.edu>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=us-ascii
-References: <IGEFJKJNHJDCBKALBJLLGEHAFLAA.joakim.tjernlund@lumentis.se>
- <3E810DA7.1060605@slac.stanford.edu> <3E81C4B3.2080006@embeddededge.com>
- <3E81ED56.7050105@slac.stanford.edu> <3E81FA3A.9010306@embeddededge.com>
+Message-ID: <3E82C15F.7020201@dgt-lab.com.pl>
+Date: Thu, 27 Mar 2003 10:16:15 +0100
+From: Wojciech Kromer <krom@dgt-lab.com.pl>
+MIME-Version: 1.0
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: mpc8250 pci registers
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-My earlier message was not completely
-correct. The TLBError exception raised
-by any of the cache instructions
-(dcbf, dcbst, dcbi, dcbz) does actually
-leave the EPN bits in MD_EPN unmodified,
-clears the reserved bits and sets CASID.
+anyone has expirience with 8250 PCI interface
+i'm trying to read something from pci i/o space, but mpc8250 always
+generates 'memory_read' operation on pci bus (i expect io_read to read
+registers on my piix device)
 
-Here are the (corrected) results of some tests I ran
-on my mpc860t (XPC860TZP50B5 / 3J21M).
+here are my pci registers settings:
 
-I use mpc8bug on a FADS board to load motorola's
-'init860.S' example. The example was slightly
-modified to include (1-4 use differend EAs, of
-course).
+GPCR=00000000
+PCIGCR=01000000 PCIMSK0=c0000000        PCIBR0=80000001
+PCIMSK1=c0000000        PCIBR1=80000001 ACR=03
+ALRH=30126745
+PICMR0=00800fa0 PITAR0=00000000 PIBAR0=00000b00
+PICMR1=f0ff0fc0 PITAR1=00000000 PIBAR1=00000800
+POCMR0=f0ff0fc0 POTAR0=00000000 POBAR0=00000b00
+POCMR1=f0ff0fa0 POTAR1=00000000 POBAR1=00000800
 
-   1) a 1:1 TLB to DRAM, R/W access (already present
-      in the vanilla code)
+anyone knows what's wrong?
 
-   2) a TLB to map DRAM r/w, caching inhibited
 
-   3) a TLB to map DRAM r/o (behavior is the same
-      if for a 'real RO' mapping and for a RW
-      mapping with the 'CHANGE' bit cleared).
-
-   4) a TLB to map DRAM r/w but with the VALID
-      bit clear.
-
-   5) a 'main' routine which executes the
-      instructions under test through one
-      of the aforementioned TLB mappings.
-
-Here's what I found (I generally load bogus
-values into MD_EPN/DAR prior to executing any
-of the cache instructions under test)
-
-A) All of dcbf, dcbi, dcbst, dcbz (dcbt and dcbtst
-     should not and do not) raise a TLBMiss exception
-     with MD_EPN set correctly but failing to set DAR
-     (i.e. DAR is left unmodified) when trying to
-     access an address not in any of the TLBs.
-
-B) All of dcbf, dcbi, dcbst, dcbz raise a TLBError
-     exception when accessing mapping 4) [as they should].
-
-     Unlike regular loads/stores (non-cache instructions),
-     NEITHER DAR not MD_EPN are set, however. DAR is left
-     unmodified MD_EPN has the CASID and reserved bits set/reset
-     but leaves the EPN bits unmodified.
-
-C) dcbi and dcbz behave like B) when accessing
-     through 3) [RO mapping]. Note that dcbf and
-     dcbst are treated like 'loads' and hence do
-     not raise a TLBError due to protection violation
-     (in accordance with the docs).
-
-D) dcbz through a cache inhibited mapping (2)) does
-     not generate an alignment exception but
-     transparently clears the memory (either is allowed
-     according to the PPC specs).
-
-Note: dcbt/dcbtst were included in all of the
-tests but they never raise an exception which is
-the correct behavior.
-
-CONCLUSION:
-
-   - the only correct workaround for TLBError
-     is the one I suggested earlier: TLBError
-     handler has to inspect the faulting opcode
-     and fixup DAR and MD_EPN based on the GPR
-     values if the faulting instruction is any
-     of dcbf, dcbi, dcbst or dcbz.
-     Performance of this solution could be
-     improved (eliminate opcode-check in the
-     vast majority of the cases) by storing
-     a 'tag' value in DAR.
-
-   - the aforementioned workaround also could handle
-     TLBMiss - although performance is more of an issue
-     there.
-     Alternatives are
-        a) Jocke's workaround: copy MD_EPN -> DAR
-           (disadvantage: DAR truncated to page
-           boundary).
-        b) like a) but do this only if the faulting
-           instruction is any dcbxx (disadvantage:
-           performance loss).
-        c) merge significant bits of MD_EPN into
-           DAR. Thus, only cache instructions suffer
-           from an incorrect page offset in DAR.
-           At the same time, it's cheap.
-
-Based on the analysis, I'd suggest to implement
-the 'fixup' workaround for TLBError and alternative
-c) for TLBMiss
-
--- Till
-
-PS. due to unclear re-distribution terms of init860.S,
-I refrain from appending it to this message. Send me
-email for details about the test software.
+--
+* * * * * * * * * * * *
+* per pedes ad astra! *
+* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
