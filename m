@@ -1,52 +1,29 @@
-Message-ID: <38A1F7A6.F7DD8ED4@zeta.org.au>
-Date: Thu, 10 Feb 2000 10:26:30 +1100
-From: Peter Allworth <linsol@zeta.org.au>
+From: unit@panix.com
+Date: Wed, 9 Feb 2000 22:23:33 -0500 (EST)
+To: "Daniel E. White" <igor@clark.net>
+cc: NTR <ntr@mindmachine.com>, linuxppc-user@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org,
+        yellowdog-devel@lists.yellowdoglinux.com,
+        yellowdog-general@lists.yellowdoglinux.com
+Subject: Re: linuxppc or yellowdog linux or MachTen
+In-Reply-To: <v04210107b4c77e127618@[128.183.8.59]>
+Message-ID: <Pine.SUN.4.21.0002092220150.26612-100000@panix.com>
 MIME-Version: 1.0
-To: Jesper Skov <jskov@redhat.com>
-CC: duncanp@research.canon.com.au, linuxppc-embedded@lists.linuxppc.org,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Low memory problems in 8xx Linux
-References: <20000201235813.4F5611B51A@elph.research.canon.com.au>
-		<38977960.40E014A1@zeta.org.au>
-		<ot1z6of1ws.fsf@thinktwice.zoftcorp.dk>
-		<38A0AE0D.2EB99353@zeta.org.au> <14497.10437.498606.647038@thinktwice.zoftcorp.dk>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Jesper Skov wrote:
+On Wed, 9 Feb 2000, Daniel E. White wrote:
 
-<snip>
+> Whatever happened to SheepShaver ?  Their website has not been updated
+>since October 1999
 
-> I read the patch and think I understand what's going on, but I don't
-> see where the GUARDED bits comes in. Maybe I'm missing some subtlety
-> from other patches (cllf?) and should not use the code at all. I'd
-> better back it out.
->
-> Jesper
->
+Mol runs very nicely no ppc now (besides being GPL) see:
 
-Apologies for being vague. I have a head-cold and my brain seems to be
-on vacation. :(
+http://www.ibrium.se/linux/mac_on_linux.html
 
-The guarded flag doesn't appear in the patch but in
+cal-s
 
-cllf-2.2.13/arch/ppc/kernel/head.S
-(from Dan's distribution for the Classic Lite Low Fat board)
-
-near where the head.S-patch is applied.
-
-Somewhere in the DataStoreTLBMiss routine, I think, you'll see the comment:
-
-/* Insert the Guarded flag into the TWC from the Linux PTE.
-<snip>
-*/
-
-This is one of the areas where cllf-2.2.13 differs from mpc8xx-2.2.13.
-
-HTH,
-
-PeterA.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
