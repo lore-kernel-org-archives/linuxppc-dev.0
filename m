@@ -1,61 +1,68 @@
-To: Christopher E Cordahi <chris@nanometrics.ca>
+Subject: patch for cpu/mpc8xx/cpu.c:get_tbclk
+To: Wolfgang Denk <wd@denx.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Random EMT crashes 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 27 May 2004 13:13:06 EDT."
-             <OF831E5D0B.E0575821-ON85256EA1.005CAC65-85256EA1.005E95B8@nanometrics.ca>
-Date: Thu, 27 May 2004 20:38:55 +0200
-Message-Id: <20040527183900.10913C109F@atlas.denx.de>
+Message-ID: <OFFF069FF9.720525F3-ON85256EA1.00688E39-85256EA1.0069104C@nanometrics.ca>
+From: David Ho <DavidHo@nanometrics.ca>
+Date: Thu, 27 May 2004 15:07:34 -0400
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Christopher,
+Hi Wolfgang,
 
-in message <OF831E5D0B.E0575821-ON85256EA1.005CAC65-85256EA1.005E95B8@nanometrics.ca> you wrote:
->
-> When I run Qt/Embedded applications on my DENX 2.4.24 kernel, on a
-> MPC852T processor the application tends to randomly crash with EMT trap.
+The last if condition is wrong in this function.   The change is made
+against 0.4.8.  AFAIK, 1.0.2 still has the same problem.
 
-Are you sure that your memory is OK? Problems  like  this  are  very,
-very  often  caused by incorrect initialization of the SDRAMs on your
-system - they appear to be working fine, but  actually  they  aren;t.
-Check  especially  burst accesses. Remember that it is NOT sufficient
-to set up the UPM tables, you must also  perform  the  required  chip
-initialization sequence as described in the SDRAM manual.
+And I wonder why it has to reverse engineer the oscclk when I pass the
+value as a define to come up with the gd->cpu_clk for the MPC866 family...
+It is a bit useless I think.
 
-> Running gdb on the target causes problems with several drivers,
+David
 
-And probably any other application  that  uses  lots  of  memory  and
-causes  otherwise  heavy load and/or network traffinc will fail, too.
-This fortifys my suspicion.
 
-> I've tried running gdbserver on the target, but I can't get it to run.
 
-Why not? The dbserver as included with our ELDK  works  fine  on  all
-systems we tested.
+/*
+ * Get timebase clock frequency (like cpu_clk in Hz)
+ *
+ * See table 15-5 pp. 15-16, and SCCR[RTSEL] pp. 15-27.
+ */
+unsigned long get_tbclk (void)
+{
+        DECLARE_GLOBAL_DATA_PTR;
 
-> I've read http://www.denx.de/twiki/bin/view/DULG/DebuggingApplication
-> guessing as to how to correct a few of the errors on the page.
-> (should CROSS_COMPILE include the hyphen, the commands require it
-> to be "ppc_8xx-", but the root directory is "/opt/eldk/ppc_8xx")
+        volatile immap_t *immr = (volatile immap_t *) CFG_IMMR;
+        ulong oscclk, factor, mf;
 
-I see. Yes, this is a bit misleading. Thanks for pointing out.
+        if (immr->im_clkrst.car_sccr & SCCR_TBS) {
+                return (gd->cpu_clk / 16);
+        }
+#define PLPRCR_val(a) (((CFG_PLPRCR) & PLPRCR_ ## a ## _MSK) >> PLPRCR_ ##
+a ## _SHIFT)
+#ifdef CONFIG_MPC866_et_al
+        /*                   MFN
+                     MFI + -------
+                           MFD + 1
+          factor =  -----------------
+                     (PDF + 1) * 2^S
+         */
 
-> Any suggestions where I should look or how to get more information
+        mf     = (PLPRCR_val(MFI) + PLPRCR_val(MFN)/(PLPRCR_val(MFD)+1));
 
-Check your SDRAM initialization.
+        factor = (PLPRCR_val(MFI) + PLPRCR_val(MFN)/(PLPRCR_val(MFD)+1))/
+                 (PLPRCR_val(PDF)+1) / (1<<PLPRCR_val(S));
+#else
+        factor = PLPRCR_val(MF)+1;
+#endif
 
-Best regards,
+        oscclk = gd->cpu_clk / factor;
 
-Wolfgang Denk
+        if ((immr->im_clkrst.car_sccr & SCCR_RTSEL) == 0 || mf > 2) {
+                return (oscclk / 4);
+        }
+        return (oscclk / 16);
+}
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A conservative is a man with two perfectly good legs  who  has  never
-learned to walk.                              - Franklin D. Roosevelt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
