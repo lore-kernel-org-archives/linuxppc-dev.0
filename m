@@ -1,37 +1,53 @@
-To: Dustin Byford <dustin@firein.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: CVS version on a Sandpoint 8240 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 06 Apr 2002 04:16:32 PDT."
-             <200204060416.32920.dustin@firein.net>
-Date: Sat, 06 Apr 2002 13:28:37 +0200
-Message-Id: <20020406112842.866B111250@denx.denx.de>
+Message-ID: <000d01c1ddcd$c71a2c60$6401a8c0@attbi.com>
+Reply-To: "Greg Griffes" <ggg@ieee.org>
+From: "Greg Griffes" <ggg@ieee.org>
+To: "Matt Porter" <mporter@mvista.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <00e101c1dc8e$f4f8d720$6401a8c0@attbi.com> <20020405102854.A15453@home.com>
+Subject: Re: 7400 mmu_init problem
+Date: Sat, 6 Apr 2002 19:47:11 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200204060416.32920.dustin@firein.net> you wrote:
->
-> Has anyone successfully run the current CVS version of ppcboot on a sandpoint
+Matt,
 
-You have MUCH better chances for a useful reply to sucha question  on
-the ppcboot-users mailing list...
+Thanks a ton for the advice.  Looking at log_buf did the trick.
+The Oops logs helped me to track down each access violation
+and troubleshoot the rest of my bugs.  I'm getting text from
+printk now!  I am sooo excited :-))
 
-> with an 8240.  I'm going to stard porting to my board and it is similar to
-> the sandpoint design.  I would like to take advantage of the reorganization
-> to use a tulip card to tftpboot.
+The BDI2000 wouldn't work with my hardware for some reason.
+It complained that it could not break on the boot vector.
+Tried it with both hard and soft breaks.  Booting from flash, so,
+maybe that has something to do with it.
 
-The only area that is not completely stabilized in  the  current  CVS
-version  is the new I2C code. Avoid this, and you are safe. But then,
-most problems should be fixed by now anyway...
+Question.  How do you recommend mapping in hardware that is
+common to mach_dep code and drivers?
+Specifically, the ASIC is mapped using ioremap in setup_arch so
+that functions like get_irq will work.  The ASIC also has the serial
+ports.  So, for the tty driver, it seems wasteful to map the ASIC
+again in the driver init code.  What I did, was to put serial_in
+and serial_out into myboard_setup.c where the pre-initialized
+virtual address is stored.  Is there a better approach?
 
-Wolfgang Denk
+Greg
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-God may be subtle, but He isn't plain mean.         - Albert Einstein
+To answer your questions...
+
+> 7400 (subject line) or 750? :)
+
+The board actually supports either as you hinted.  Right now, I have a 750
+version.
+
+> and most likely got to start_kernel:setup_arch.  I can only guess
+> that you access an unmapped area in your <board>_setup_arch.
+
+BINGO!  I had some ppc_md.progress calls after mmu_init() and before the ioremap
+calls.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
