@@ -1,16 +1,19 @@
-Return-Path: <galak@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 25D7967A76
+Return-Path: <wd@denx.de>
+Received: from mailout08.sul.t-online.com (mailout08.sul.t-online.com
+	[194.25.134.20]) by ozlabs.org (Postfix) with ESMTP id 3E35B67A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  5 Mar 2005 06:09:29 +1100 (EST)
-Date: Fri, 4 Mar 2005 13:09:18 -0600 (CST)
-From: Kumar Gala <galak@freescale.com>
-To: akpm@osdl.org, greg@kroah.com
-Message-ID: <Pine.LNX.4.61.0503041303290.18551@blarg.somerset.sps.mot.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: [PATCH] ppc32: trivial fix for e500 oprofile build
+	Sat,  5 Mar 2005 11:16:41 +1100 (EST)
+To: "Matt Berry" <mgberry@ellipticity.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 04 Mar 2005 08:13:07 CST."
+	<003b01c520c5$6c44edf0$84be1942@Osiris>
+Date: Sat, 05 Mar 2005 01:16:19 +0100
+Sender: wd@denx.de
+Message-Id: <20050305001624.2B511C108D@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Tool Chain 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,34 +24,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Andrew, Greg
+In message <003b01c520c5$6c44edf0$84be1942@Osiris> you wrote:
+> 
+> I am trying to get the 2.6 running on my lite5200 eval board.  Is there
+> a tool chain allready availble or will I need to build my own?
 
-Here is a patch for the new 2.6.11 release tree and for Linus.
+http://www.denx.de/ELDK.html
 
-Fix for trivial fix for 2.6.11 oprofile compilation on e500 based ppc.
+(chosing the ppc_6xx packages)
 
-Signed-off-by: Andy Fleming <afleming@freescale.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+Best regards,
 
----
+Wolfgang Denk
 
-diff -Nru a/arch/ppc/oprofile/op_model_fsl_booke.c b/arch/ppc/oprofile/op_model_fsl_booke.c
---- a/arch/ppc/oprofile/op_model_fsl_booke.c	2005-03-04 13:02:52 -06:00
-+++ b/arch/ppc/oprofile/op_model_fsl_booke.c	2005-03-04 13:02:52 -06:00
-@@ -150,7 +150,6 @@
- 	int is_kernel;
- 	int val;
- 	int i;
--	unsigned int cpu = smp_processor_id();
- 
- 	/* set the PMM bit (see comment below) */
- 	mtmsr(mfmsr() | MSR_PMM);
-@@ -162,7 +161,7 @@
- 		val = ctr_read(i);
- 		if (val < 0) {
- 			if (oprofile_running && ctr[i].enabled) {
--				oprofile_add_sample(pc, is_kernel, i, cpu);
-+				oprofile_add_pc(pc, is_kernel, i);
- 				ctr_write(i, reset_value[i]);
- 			} else {
- 				ctr_write(i, 0);
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A modem is a baudy house.
