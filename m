@@ -1,33 +1,39 @@
-To: "Dale Farnsworth" <dale@farnsworth.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: MPC5200 Patches 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 16 Nov 2003 23:07:01 MST."
-             <20031117060701.GA26252@zenos.farnsworth.org>
-Date: Tue, 18 Nov 2003 16:00:07 +0100
-Message-Id: <20031118150012.C0123C5F5F@atlas.denx.de>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 18 Nov 2003 08:04:06 -0700
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: MPC5xxx code issues
+Message-ID: <20031118150406.GB8092@zenos.farnsworth.org>
+References: <20031117202944.GH30251@ip68-0-152-218.tc.ph.cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20031117202944.GH30251@ip68-0-152-218.tc.ph.cox.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <20031117060701.GA26252@zenos.farnsworth.org> you wrote:
->
-> Have you had a chance to test my merged patch?  Any bug fixes?  I don't
-> think it's quite ready for linuxppc_2_4_devel, though it's close.
+On Mon, Nov 17, 2003 at 08:29:44PM +0000, Tom Rini wrote:
+> Must clean: These files need some sort of rewrite to look less like a
+> drop of commerical code into the kernel and more like working the
+> commercial code into the kernel:
+> arch/ppc/5xxx_io/bestcomm/capi/Makefile
+> arch/ppc/5xxx_io/bestcomm/code_dma/image_rtos1/Makefile
+> arch/ppc/5xxx_io/bestcomm/code_dma/image_rtos2/Makefile
+> arch/ppc/5xxx_io/bestcomm/include/dummy files (should these be needed?)
 
-Actually I'm more or less waiting if you have a new  version  of  the
-FEC driver that works on the MGT5100 again.
+The code beneath the arch/ppc/5xxx_io/bestcomm directory is supplied
+by Motorola.  To ease the adoption of later revisions of this code,
+we made minimal modifications.  Stupidly, the bestcomm code references
+stdio.h, stdlib.h, string.h, but doesn't use their contents, so we
+added empty files with these names.
 
-Best regards,
+The Makefiles are also supplied by Motorola and are not used by Linux
+at all.  We can safely omit them to reduce confusion.
 
-Wolfgang Denk
+> defconfigs: Since I don't know the board families well (and google was
+> no help here), should both IceCube and Glacier default to MPC5200 ?
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Presidency:  The greased pig in the field game of American politics.
-- Ambrose Bierce
+IMHO, yes.
+
+-Dale Farnsworth
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
