@@ -1,79 +1,40 @@
-Message-ID: <3C3B1162.4000405@humboldt.co.uk>
-Date: Tue, 08 Jan 2002 15:33:54 +0000
-From: Adrian Cox <adrian@humboldt.co.uk>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: ISA DMA take 2
-Content-Type: multipart/mixed;
- boundary="------------020309020601050105090501"
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15419.31427.603521.763333@argo.ozlabs.ibm.com>
+Date: Wed, 9 Jan 2002 10:03:31 +1100 (EST)
+To: mod+linuxppc-dev@MissionCriticalLinux.com
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] Link-time failures from "simple" CFLAGS changes 
+In-Reply-To: <200201072328.SAA07991@missioncriticallinux.com>
+References: <20020107230001.GB13931@cpe-24-221-152-185.az.sprintbbd.net>
+	<200201072328.SAA07991@missioncriticallinux.com>
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------020309020601050105090501
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+mod+linuxppc-dev@MissionCriticalLinux.com writes:
 
-Attached is an update to my ISA DMA patch. The main change from the
-previous patch is that it works, because it now changes MAX_DMA_ADDRESS.
-I've tested it on my platform (Via 686 southbridge, ISA DMA for floppy),
-and it shouldn't break any others.
+> >> Sheesh!    Well, OK then: please apply this patch:
+> >
+> >Feel free to pass it onto Marcelo and/or Linus.
+>
+> I can wait - it'll eventually make it into the main
+> branch when the linuxppc work gets merged, right?
 
-Can somebody please apply this one?
+Tom, Ben and I will send off stuff in arch/ppc, include/asm-ppc, and
+some of the PPC-specific drivers to Marcelo or Linus.  For other
+stuff, like this documentation change, the people who want the change
+need to send the patch to Marcelo, Linus, or the appropriate driver or
+subsystem maintainer.
 
---
-Adrian Cox   http://www.humboldt.co.uk/
+In particular, the top-level Makefile in linuxppc_2_4_devel has an
+extra line in the TAGS target.  I'm not going to send this in; someone
+who wants this change to go in should take on the job of submitting it
+to Marcelo (or Linus) and the linux-kernel mailing list.  It may take
+multiple attempts. :)
 
---------------020309020601050105090501
-Content-Type: text/plain;
- name="dma.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="dma.patch"
-
-diff --minimal -Nru a/arch/ppc/mm/init.c b/arch/ppc/mm/init.c
---- a/arch/ppc/mm/init.c	Tue Jan  8 14:59:58 2002
-+++ b/arch/ppc/mm/init.c	Tue Jan  8 14:59:58 2002
-@@ -440,11 +440,18 @@
- 	kmap_prot = PAGE_KERNEL;
- #endif /* CONFIG_HIGHMEM */
-
--	/*
--	 * All pages are DMA-able so we put them all in the DMA zone.
--	 */
--	zones_size[ZONE_DMA] = total_lowmem >> PAGE_SHIFT;
--	for (i = 1; i < MAX_NR_ZONES; i++)
-+    	if (ISA_DMA_THRESHOLD && ISA_DMA_THRESHOLD < total_lowmem - 1)
-+	{
-+		zones_size[ZONE_DMA] = (ISA_DMA_THRESHOLD + 1) >> PAGE_SHIFT;
-+		zones_size[ZONE_NORMAL] =
-+			(total_lowmem - ISA_DMA_THRESHOLD - 1) >> PAGE_SHIFT;
-+	}
-+	else
-+	{
-+	    	zones_size[ZONE_DMA] = total_lowmem >> PAGE_SHIFT;
-+	    	zones_size[ZONE_NORMAL] = 0;
-+	}
-+	for (i = 2; i < MAX_NR_ZONES; i++)
- 		zones_size[i] = 0;
-
- #ifdef CONFIG_HIGHMEM
-diff --minimal -Nru a/include/asm-ppc/dma.h b/include/asm-ppc/dma.h
---- a/include/asm-ppc/dma.h	Tue Jan  8 14:59:58 2002
-+++ b/include/asm-ppc/dma.h	Tue Jan  8 14:59:58 2002
-@@ -37,8 +37,7 @@
- #endif
-
- /* The maximum address that we can perform a DMA transfer to on this platform */
--/* Doesn't really apply... */
--#define MAX_DMA_ADDRESS		0xFFFFFFFF
-+#define MAX_DMA_ADDRESS		ISA_DMA_THRESHOLD
-
- /* in arch/ppc/kernel/setup.c -- Cort */
- extern unsigned long DMA_MODE_WRITE, DMA_MODE_READ;
-
---------------020309020601050105090501--
-
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
