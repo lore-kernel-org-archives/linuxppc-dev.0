@@ -1,52 +1,42 @@
-Message-Id: <20001223223050.Postino-026826@smtp01.highway.ne.jp>
-Date: Sat, 23 Dec 2000 22:30:50 +0900
-To: Harald Welte <laforge@gnumonks.org>
-CC: <gcc@gcc.gnu.org>, <linuxppc-dev@lists.linuxppc.org>
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: kerne-2.4.0-test13pre3 with gcc-2.97
-In-Reply-To: <20001223142145.T5858@coruscant.gnumonks.org>
-References: <20001223145258.Postino-022361@smtp01.highway.ne.jp>
- <20001223142145.T5858@coruscant.gnumonks.org>
+Date: Sat, 23 Dec 2000 15:35:31 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Wolfgang Haeuptli <whaeuptli@bluewin.ch>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Need testers with MESH SCSI
+In-Reply-To: <19341116104947.29047@192.168.1.2>
+Message-ID: <Pine.LNX.4.05.10012231533220.12626-100000@callisto.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-From: Harald Welte <laforge@gnumonks.org>
-To: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: kerne-2.4.0-test13pre3 with gcc-2.97
-Date: Sat, 23 Dec 2000 14:21:45 +0100
-
-> On Sat, Dec 23, 2000 at 02:52:58PM +0900, Kaoru Fukui wrote:
+On Fri, 22 Dec 2000, Benjamin Herrenschmidt wrote:
+> >Well, would have been a nice christmas present... BUT STILL:
+> >(after applying the new mesh_init() to scsi/mesh.c)
 > >
-> > Hi !
+> >mesh: target 6 aborted
 > >
-> > I tried to compile kernel-2.4.0-test13-pre3 with gcc-2.97.
-> > It need the patch.
-> > The gcc-2.97 makes singleCPU work kernel  well,
-> > But the smp kernel didn't work.
-> >
-> > The gcc-2.95.3 makes both work kernel , very well without this patch.
-> >
-> > Does this kernel problems or gcc problems?
+> >which means that my UMAX Astra 1200S Scanner still does not work under
+> >linuxppc...
 >
-> please think before you write. it is a well-known fact that the linux kernel
-> - regardless of the target plattform - should be compiled with gcc 2.95.2
-or
-> less.
->
-> and please don't take up the time of gcc or linuxppc developers by asking
-> this kind of questions. Go ask other users.
+> Can you try increasing the udelay() calls in mesh_init() to see if it
+> helps ? There maybe something else going on, but it's worth trying.
 
-Don't say  the answer.
-We should fix problems both or earch.
-My focus is not Question.
+Note that there can be other problems with the mesh as well: I remember I once
+had some early 2.3.x kernels that could not init the mesh when cold-booted,
+only when warm-booted. So I had to boot an older kernel first each time I had
+powered down my box :-)
 
-New gcc doesn't compile new kernel.
-It's no good.
+Gr{oetje,eeting}s,
 
-Kaoru
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
