@@ -1,71 +1,44 @@
-In-Reply-To: <OFFF069FF9.720525F3-ON85256EA1.00688E39-85256EA1.0069104C@nanometrics.ca>
-Subject: Re: patch for cpu/mpc8xx/cpu.c:get_tbclk - correction
-To: Wolfgang Denk <wd@denx.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OFBC5021DB.73FD330B-ON85256EA1.0069EDD8-85256EA1.006A2638@nanometrics.ca>
-From: David Ho <DavidHo@nanometrics.ca>
-Date: Thu, 27 May 2004 15:19:26 -0400
+Message-ID: <40B64254.5040004@ztec.com.br>
+Date: Thu, 27 May 2004 16:32:36 -0300
+From: iida <iida@ztec.com.br>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+To: linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: how to use the i2c in mpc5200
+References: <40B5F176.2020805@ztec.com.br> <Pine.LNX.4.60.0405270900480.32475@xmission.xmission.com>
+In-Reply-To: <Pine.LNX.4.60.0405270900480.32475@xmission.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> The last if condition is wrong in this function.   The change is made
-> against 0.4.8.  AFAIK, 1.0.2 still has the same problem.
+i2s is anoter i/o , but i read the source of i2c and
+i think that the minor number is correct
+Thanks for help
+
+linuxppc-embedded@2nerds.com wrote:
+
+> On Thu, 27 May 2004, iida wrote:
 >
-> And I wonder why it has to reverse engineer the oscclk when I pass the
-> value as a define to come up with the gd->cpu_clk for the MPC866
-family...
-> It is a bit useless I think.
+>> i created the i2c with
+>> mknod /dev/i2c c 89 1
 >
-
-Sorry, the last patch breaks on the old 8xx.
-
-This is a bit better.
-
-
-/*
- * Get timebase clock frequency (like cpu_clk in Hz)
- *
- * See table 15-5 pp. 15-16, and SCCR[RTSEL] pp. 15-27.
- */
-unsigned long get_tbclk (void)
-{
-        DECLARE_GLOBAL_DATA_PTR;
-
-        volatile immap_t *immr = (volatile immap_t *) CFG_IMMR;
-        ulong oscclk, factor, multiplier;
-
-        if (immr->im_clkrst.car_sccr & SCCR_TBS) {
-                return (gd->cpu_clk / 16);
-        }
-#define PLPRCR_val(a) (((CFG_PLPRCR) & PLPRCR_ ## a ## _MSK) >> PLPRCR_ ##
-a ## _SHIFT)
-#ifdef CONFIG_MPC866_et_al
-        /*                   MFN
-                     MFI + -------
-                           MFD + 1
-          factor =  -----------------
-                     (PDF + 1) * 2^S
-         */
-
-        factor = (PLPRCR_val(MFI) + PLPRCR_val(MFN)/(PLPRCR_val(MFD)+1));
-
-        multiplier = (PLPRCR_val(MFI) +
-PLPRCR_val(MFN)/(PLPRCR_val(MFD)+1))/
-                     (PLPRCR_val(PDF)+1) / (1<<PLPRCR_val(S));
-#else
-        multiplier = factor = PLPRCR_val(MF)+1;
-#endif
-
-        oscclk = gd->cpu_clk / multiplier;
-
-        if ((immr->im_clkrst.car_sccr & SCCR_RTSEL) == 0 || factor > 2) {
-                return (oscclk / 4);
-        }
-        return (oscclk / 16);
-}
+>
+> This is just a hunch, but is that the proper minor device number?  In my
+> copy of the kernel sources, in the file arch/ppc/5xxx_io/i2s.c, I see
+> this
+> definition:
+>
+> #define I2S_MINOR 242
+>
+> ...which makes me wonder if "mknod /dev/i2c c 89 242" would work any
+> better.  Does your source tree include that same definition?  Is that
+> "minor number" the one you need to use with mknod?
+>
+> I'm a novice at this Linux-on-embedded-PPC stuff, so please forgive me if
+> this is useless advice--and please let me know how you resolved the
+> problem when you find the "right" answer. :-)
+>
+> Chris
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
