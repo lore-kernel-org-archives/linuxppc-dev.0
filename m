@@ -1,42 +1,33 @@
-Message-Id: <200007061657.SAA21598@denx.local.net>
-To: Tom Roberts <tjroberts@lucent.com>
-cc: Ruedi.Hofer@ascom.ch, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: newlib, uclib 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 06 Jul 2000 09:26:33 CDT."
-             <39649719.6A828478@lucent.com>
-Date: Thu, 06 Jul 2000 18:57:13 +0200
+Message-ID: <396504F6.8C36D79C@m2tech.co.nz>
+Date: Fri, 07 Jul 2000 10:15:18 +1200
+From: ben bodley <benb@m2tech.co.nz>
+MIME-Version: 1.0
+To: mailing list <linuxppc-embedded@lists.linuxppc.org>
+Subject: ide driver - where do i start?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <39649719.6A828478@lucent.com> Tom Roberts wrote:
->
-> Ruedi.Hofer@ascom.ch wrote:
-> > In order to build a commercially successful product I have to reduce the footprint of the system.
-> > Having a quick look at the files showed me, that the largest files are the libs (libc.so.6 = 4M) ... as u all know.
->
-> Initially I also thought I would have to strip down the libraries
-> to reduce their footprint. But then I realized that Linux is a demand-
-> paged system, and only the pages which actually get used will be
-> loaded into memory. In our case only memory is an issue, the disk
-> space required is not important. So making libc include _everything_
+hello all!
 
-You have a disk, then.
+listen, we are using a ppc 403gcx running at 80 mips, and have connected
+an ide drive straight up to the data bus (through some buffers)..
 
-Ruedi is probably on an embedded system, loading a compressed  initrd
-image from Flash into a ramdisk.
+i can look at the driver command/control registers fine as memory mapped
+i/o, etc.. the hd is dma-able and the interface is setup to be stable at
+pio4 possibly udma/33..
 
-Both flash and RAM are resources which get tight all too often.
+the next step for me is to modify the linux ide code to talk to my
+drive.. has anyone hooked up ide directly to the processor bus?? i am
+currently looking at basing my code off drivers/block/ide-pmac.c and
+changing the probe and dma code to fit.. is this the place to start??
 
-Wolfgang Denk
+cheers for any insights,
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-How many hardware guys does it take to change a light bulb? "Well the
-diagnostics say it's fine buddy, so it's a software problem."
+/\\------------------------------------------------------------------
+:::::::::::..ben.b..m2technologyltd.nz..64.9.4448307.130..:::::::::::
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
