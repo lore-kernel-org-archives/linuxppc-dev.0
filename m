@@ -1,40 +1,30 @@
-Message-ID: <3910838C.986942D6@embeddededge.com>
-Date: Wed, 03 May 2000 15:52:44 -0400
+Message-ID: <391083CC.7E08CC54@embeddededge.com>
+Date: Wed, 03 May 2000 15:53:48 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Steve Rossi <srossi@ccrl.mot.com>
-CC: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: allocating non-cacheable regions
-References: <39104A07.D997B6C5@ccrl.mot.com>
+To: Marcus Sundberg <marcus@cendio.se>
+CC: "Brown, David (dbrown03)" <DBrown03@harris.com>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Is it normal for serial ports to drop characters at the end?
+References: <BE1C564723B3D21191FD0000F840E39801D814F1@rfcmx2.rfc.comm.harris.com> <veya5rv3gj.fsf@lipta.cendio.se>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steve Rossi wrote:
->
-> How do I allocate a region of memory that is flagged as being
-> non-cacheable?
+Marcus Sundberg wrote:
 
-I am assuming you intend to do this on the 8xx processor as it
-doesn't make sense on others.  It may also not make sense on the 8xx
-as it appears from testing that caching memory and push/invalidate
-during I/O is better......
+> Right on target.
+> rs_8xx_wait_until_sent() will wait for the *first* buffer descriptor
+> to be finished, instead of waiting for the last one as it should.
+> This patch fixes that problem:
 
-For an example, look at the commproc.c or enet.c driver in the
-arch/ppc/8xx_io directory.  When pages are allocated, the PTEs are
-tracked down and marked non-cache.
+That's part of it, but we also need to perform a graceful shutdown
+of the port so we wait until the hardware FIFOs are empty.  Waiting
+for the buffer descriptor just means the CPM moved the last data
+from the buffer, not that it has gone out the wire.
 
-> Does it have to be done at allocation or is it possible to mark a region
-> non-cacheable
-> after its been allocated?
-
-I haven't found a way to get the kernel to allocate non-cache regions
-of real memory.  It would be nice if there was something along the
-lines of DMA attribute, or perhaps I am just not looking in the right
-place (and I am sure someone will point this out :-).
-
-All I/O space is uncached and guarded.
+I thought I did this once.....but, why are you closing devices anyway :-).
 
 
 	-- Dan
