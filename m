@@ -1,34 +1,34 @@
 Return-Path: <tnt@246tNt.com>
-Received: from outmx012.isp.belgacom.be (outmx012.isp.belgacom.be
-	[195.238.3.70]) by ozlabs.org (Postfix) with ESMTP id B2BCE67A84
+Received: from outmx023.isp.belgacom.be (outmx023.isp.belgacom.be
+	[195.238.2.204]) by ozlabs.org (Postfix) with ESMTP id 4A5A367A95
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Mar 2005 10:10:06 +1100 (EST)
-Received: from outmx012.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx012.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id j2LNA3kK013184
-	for <linuxppc-embedded@ozlabs.org>; Tue, 22 Mar 2005 00:10:03 +0100
+	Tue, 22 Mar 2005 10:10:38 +1100 (EST)
+Received: from outmx023.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx023.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id j2LNAZhN015210
+	for <linuxppc-embedded@ozlabs.org>; Tue, 22 Mar 2005 00:10:35 +0100
 	(envelope-from <tnt@246tNt.com>)
 Received: from ayanami.246tNt.com (72.155-200-80.adsl.skynet.be
 	[80.200.155.72])
-	by outmx012.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id j2LNA2I5013174
-	for <linuxppc-embedded@ozlabs.org>; Tue, 22 Mar 2005 00:10:02 +0100
+	by outmx023.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id j2LNAWqd015190
+	for <linuxppc-embedded@ozlabs.org>; Tue, 22 Mar 2005 00:10:32 +0100
 	(envelope-from <tnt@246tNt.com>)
 Received: from localhost.localdomain (246tNt-laptop.lan.ayanami.246tNt.com
 	[10.0.0.245])
-	by ayanami.246tNt.com (Postfix) with ESMTP id 2CB6F110E03
+	by ayanami.246tNt.com (Postfix) with ESMTP id 2FDB8110E03
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Mar 2005 00:07:47 +0100 (CET)
-Message-ID: <2.20050322_000905.tnt@patchsend.246tNt.com>
+	Tue, 22 Mar 2005 00:08:17 +0100 (CET)
+Message-ID: <3.20050322_000905.tnt@patchsend.246tNt.com>
 From: Sylvain Munaut <tnt@246tNt.com>
 To: ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 In-Reply-To: <0.20050322_000905.tnt@patchsend.246tNt.com>
 References: <0.20050322_000905.tnt@patchsend.246tNt.com>
-Date: Tue, 22 Mar 2005 00:07:47 +0100 (CET)
-Subject: [PATCH 2/6] ppc32: Remove the OCP system from the Freescale MPC52xx
-	support
+Date: Tue, 22 Mar 2005 00:08:17 +0100 (CET)
+Subject: [PATCH 3/6] ppc32: Change constants style in Freescale MPC52xx
+	related code
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -39,202 +39,317 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-ppc32: Remove the OCP system from the Freescale MPC52xx support
+ppc32: Change constants style in Freescale MPC52xx related code
 
-We remove all usage of the OCP system as preparation to switch
-to the platform bus model / ppc_sys model.
-This is only for 'generic' support, drivers are adapted separatly,
-afterwards.
+This patch changes the way the constants used for register block
+address are defined/used. This is a preparation for the use of
+the platform bus / ppc_sys model.
 
 
-Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
+Signed-off-by: Sylvain Munaut <tnt@246tNt.com> 
 ---
-diff -Nru a/arch/ppc/Kconfig b/arch/ppc/Kconfig
---- a/arch/ppc/Kconfig	2005-03-21 20:09:47 +01:00
-+++ b/arch/ppc/Kconfig	2005-03-21 20:09:47 +01:00
-@@ -822,7 +822,7 @@
- 
- config FSL_OCP
- 	bool
--	depends on MPC10X_BRIDGE || PPC_MPC52xx
-+	depends on MPC10X_BRIDGE
- 	default y
- 
- config MPC10X_OPENPIC
-diff -Nru a/arch/ppc/platforms/Makefile b/arch/ppc/platforms/Makefile
---- a/arch/ppc/platforms/Makefile	2005-03-21 20:09:47 +01:00
-+++ b/arch/ppc/platforms/Makefile	2005-03-21 20:09:47 +01:00
-@@ -45,7 +45,7 @@
- obj-$(CONFIG_SANDPOINT)		+= sandpoint.o
- obj-$(CONFIG_SBC82xx)		+= sbc82xx.o
- obj-$(CONFIG_SPRUCE)		+= spruce.o
--obj-$(CONFIG_LITE5200)		+= lite5200.o mpc5200.o
-+obj-$(CONFIG_LITE5200)		+= lite5200.o
- 
- ifeq ($(CONFIG_SMP),y)
- obj-$(CONFIG_PPC_PMAC)		+= pmac_smp.o
-diff -Nru a/arch/ppc/platforms/lite5200.c b/arch/ppc/platforms/lite5200.c
---- a/arch/ppc/platforms/lite5200.c	2005-03-21 20:09:47 +01:00
-+++ b/arch/ppc/platforms/lite5200.c	2005-03-21 20:09:47 +01:00
-@@ -13,7 +13,7 @@
-  * Dale Farnsworth <dale.farnsworth@mvista.com> and
-  * Wolfgang Denk <wd@denx.de>
-  * 
-- * Copyright 2004 Sylvain Munaut <tnt@246tNt.com>
-+ * Copyright 2004-2005 Sylvain Munaut <tnt@246tNt.com>
-  * Copyright 2003 Motorola Inc.
-  * Copyright 2003 MontaVista Software Inc.
-  * Copyright 2003 DENX Software Engineering (wd@denx.de)
-@@ -29,10 +29,10 @@
- #include <linux/kdev_t.h>
- #include <linux/root_dev.h>
- #include <linux/console.h>
-+#include <linux/module.h>
- 
- #include <asm/bootinfo.h>
+diff -Nru a/arch/ppc/boot/simple/mpc52xx_tty.c b/arch/ppc/boot/simple/mpc52xx_tty.c
+--- a/arch/ppc/boot/simple/mpc52xx_tty.c	2005-03-21 20:10:10 +01:00
++++ b/arch/ppc/boot/simple/mpc52xx_tty.c	2005-03-21 20:10:10 +01:00
+@@ -20,32 +20,31 @@
  #include <asm/io.h>
--#include <asm/ocp.h>
- #include <asm/mpc52xx.h>
- 
- #include <syslib/mpc52xx_pci.h>
-@@ -46,31 +46,6 @@
- 
- 
- /* ======================================================================== */
--/* OCP device definition                                                    */
--/* For board/shared resources like PSCs                                     */
--/* ======================================================================== */
--/* Be sure not to load conficting devices : e.g. loading the UART drivers for
-- * PSC1 and then also loading a AC97 for this same PSC.
-- * For details about how to create an entry, look in the doc of the concerned
-- * driver ( eg drivers/serial/mpc52xx_uart.c for the PSC in uart mode )
-- */
--
--static struct ocp_def board_ocp[] = {
--	{
--		.vendor		= OCP_VENDOR_FREESCALE,
--		.function	= OCP_FUNC_PSC_UART,
--		.index		= 0,
--		.paddr		= MPC52xx_PSC1,
--		.irq		= MPC52xx_PSC1_IRQ,
--		.pm		= OCP_CPM_NA,
--	},
--	{	/* Terminating entry */
--		.vendor		= OCP_VENDOR_INVALID
--	}
--};
--
--
--/* ======================================================================== */
- /* Platform specific code                                                   */
- /* ======================================================================== */
- 
-@@ -131,9 +106,6 @@
- static void __init
- lite5200_setup_arch(void)
- {
--	/* Add board OCP definitions */
--	mpc52xx_add_board_devices(board_ocp);
--
- 	/* CPU & Port mux setup */
- 	lite5200_setup_cpu();
- 
-diff -Nru a/arch/ppc/platforms/mpc5200.c b/arch/ppc/platforms/mpc5200.c
---- a/arch/ppc/platforms/mpc5200.c	2005-03-21 20:09:47 +01:00
-+++ /dev/null	Wed Dec 31 16:00:00 196900
-@@ -1,53 +0,0 @@
--/*
-- * arch/ppc/platforms/mpc5200.c
-- *
-- * OCP Definitions for the boards based on MPC5200 processor. Contains
-- * definitions for every common peripherals. (Mostly all but PSCs)
-- * 
-- * Maintainer : Sylvain Munaut <tnt@246tNt.com>
-- *
-- * Copyright 2004 Sylvain Munaut <tnt@246tNt.com>
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-- */
--
--#include <asm/ocp.h>
--#include <asm/mpc52xx.h>
--
--
--static struct ocp_fs_i2c_data mpc5200_i2c_def = {
--        .flags  = FS_I2C_CLOCK_5200,
--};
--
--
--/* Here is the core_ocp struct.
-- * With all the devices common to all board. Even if port multiplexing is
-- * not setup for them (if the user don't want them, just don't select the
-- * config option). The potentially conflicting devices (like PSCs) goes in
-- * board specific file.
-- */
--struct ocp_def core_ocp[] = {
--	{
--		.vendor         = OCP_VENDOR_FREESCALE,
--		.function       = OCP_FUNC_IIC,
--		.index          = 0,
--		.paddr          = MPC52xx_I2C1,
--		.irq            = OCP_IRQ_NA,   /* MPC52xx_IRQ_I2C1 - Buggy */
--		.pm             = OCP_CPM_NA,
--		.additions      = &mpc5200_i2c_def,
--	},
--	{
--		.vendor         = OCP_VENDOR_FREESCALE,
--		.function       = OCP_FUNC_IIC,
--		.index          = 1,
--		.paddr          = MPC52xx_I2C2,
--		.irq            = OCP_IRQ_NA,   /* MPC52xx_IRQ_I2C2 - Buggy */
--		.pm             = OCP_CPM_NA,
--		.additions      = &mpc5200_i2c_def,
--	},
--	{	/* Terminating entry */
--		.vendor		= OCP_VENDOR_INVALID
--	}
--};
-diff -Nru a/arch/ppc/syslib/mpc52xx_setup.c b/arch/ppc/syslib/mpc52xx_setup.c
---- a/arch/ppc/syslib/mpc52xx_setup.c	2005-03-21 20:09:47 +01:00
-+++ b/arch/ppc/syslib/mpc52xx_setup.c	2005-03-21 20:09:47 +01:00
-@@ -23,7 +23,6 @@
  #include <asm/time.h>
- #include <asm/mpc52xx.h>
- #include <asm/mpc52xx_psc.h>
--#include <asm/ocp.h>
- #include <asm/pgtable.h>
- #include <asm/ppcboot.h>
  
-@@ -218,12 +217,3 @@
- 	tb_ticks_per_jiffy = xlbfreq / HZ / divisor;
- 	tb_to_us = mulhwu_scale_factor(xlbfreq / divisor, 1000000);
- }
--
--
--void __init
--mpc52xx_add_board_devices(struct ocp_def board_ocp[]) {
--	while (board_ocp->vendor != OCP_VENDOR_INVALID)
--		if(ocp_add_one_device(board_ocp++))
--			printk("mpc5200-ocp: Failed to add board device !\n");
--}
--
+-#if MPC52xx_PF_CONSOLE_PORT == 0
+-#define MPC52xx_CONSOLE		MPC52xx_PSC1
+-#define MPC52xx_PSC_CONFIG_SHIFT	0
+-#elif MPC52xx_PF_CONSOLE_PORT == 1
+-#define MPC52xx_CONSOLE		MPC52xx_PSC2
+-#define MPC52xx_PSC_CONFIG_SHIFT	4
+-#elif MPC52xx_PF_CONSOLE_PORT == 2
+-#define MPC52xx_CONSOLE		MPC52xx_PSC3
+-#define MPC52xx_PSC_CONFIG_SHIFT	8
++
++#ifdef MPC52xx_PF_CONSOLE_PORT
++#define MPC52xx_CONSOLE MPC52xx_PSCx_OFFSET(MPC52xx_PF_CONSOLE_PORT)
++#define MPC52xx_PSC_CONFIG_SHIFT ((MPC52xx_PF_CONSOLE_PORT-1)<<2)
+ #else
+ #error "MPC52xx_PF_CONSOLE_PORT not defined"
+ #endif
+ 
+ static struct mpc52xx_psc __iomem *psc =
+-	(struct mpc52xx_psc __iomem *) MPC52xx_CONSOLE;
++	(struct mpc52xx_psc __iomem *) MPC52xx_PA(MPC52xx_CONSOLE);
+ 
+ /* The decrementer counts at the system bus clock frequency
+  * divided by four.  The most accurate time base is connected to the
+- * rtc.  We read the decrementer change during one rtc tick (one second)
+- * and multiply by 4 to get the system bus clock frequency.
++ * rtc.  We read the decrementer change during one rtc tick
++ * and multiply by 4 to get the system bus clock frequency. Since a
++ * rtc tick is one seconds, and that's pretty long, we change the rtc
++ * dividers temporarly to set them 64x faster ;)
+  */
+ static int
+ mpc52xx_ipbfreq(void)
+ {
+-	struct mpc52xx_rtc __iomem *rtc = (struct mpc52xx_rtc __iomem *)MPC52xx_RTC;
+-	struct mpc52xx_cdm __iomem *cdm = (struct mpc52xx_cdm __iomem *)MPC52xx_CDM;
++	struct mpc52xx_rtc __iomem *rtc =
++		(struct mpc52xx_rtc __iomem *) MPC52xx_PA(MPC52xx_RTC_OFFSET);
++	struct mpc52xx_cdm __iomem *cdm =
++		(struct mpc52xx_cdm __iomem *) MPC52xx_PA(MPC52xx_CDM_OFFSET);
+ 	int current_time, previous_time;
+ 	int tbl_start, tbl_end;
+ 	int xlbfreq, ipbfreq;
+@@ -68,7 +67,8 @@
+ unsigned long
+ serial_init(int ignored, void *ignored2)
+ {
+-	struct mpc52xx_gpio __iomem *gpio = (struct mpc52xx_gpio __iomem *)MPC52xx_GPIO;
++	struct mpc52xx_gpio __iomem *gpio =
++		(struct mpc52xx_gpio __iomem *) MPC52xx_PA(MPC52xx_GPIO_OFFSET);
+ 	int divisor;
+ 	int mode1;
+ 	int mode2;
+diff -Nru a/arch/ppc/platforms/lite5200.c b/arch/ppc/platforms/lite5200.c
+--- a/arch/ppc/platforms/lite5200.c	2005-03-21 20:10:10 +01:00
++++ b/arch/ppc/platforms/lite5200.c	2005-03-21 20:10:10 +01:00
+@@ -73,8 +73,8 @@
+ 	u32 intr_ctrl;
+ 
+ 	/* Map zones */
+-	xlb  = ioremap(MPC52xx_XLB,sizeof(struct mpc52xx_xlb));
+-	intr = ioremap(MPC52xx_INTR,sizeof(struct mpc52xx_intr));
++	xlb  = ioremap(MPC52xx_PA(MPC52xx_XLB_OFFSET), MPC52xx_XLB_SIZE);
++	intr = ioremap(MPC52xx_PA(MPC52xx_INTR_OFFSET), MPC52xx_INTR_SIZE);
+ 
+ 	if (!xlb || !intr) {
+ 		printk("lite5200.c: Error while mapping XLB/INTR during "
+diff -Nru a/arch/ppc/platforms/lite5200.h b/arch/ppc/platforms/lite5200.h
+--- a/arch/ppc/platforms/lite5200.h	2005-03-21 20:10:10 +01:00
++++ b/arch/ppc/platforms/lite5200.h	2005-03-21 20:10:10 +01:00
+@@ -17,7 +17,7 @@
+ #define __PLATFORMS_LITE5200_H__
+ 
+ /* Serial port used for low-level debug */
+-#define MPC52xx_PF_CONSOLE_PORT 0	/* PSC1 */
++#define MPC52xx_PF_CONSOLE_PORT 1	/* PSC1 */
+ 
+ 
+ #endif /* __PLATFORMS_LITE5200_H__ */
+diff -Nru a/arch/ppc/syslib/mpc52xx_pci.c b/arch/ppc/syslib/mpc52xx_pci.c
+--- a/arch/ppc/syslib/mpc52xx_pci.c	2005-03-21 20:10:10 +01:00
++++ b/arch/ppc/syslib/mpc52xx_pci.c	2005-03-21 20:10:10 +01:00
+@@ -183,7 +183,7 @@
+ 
+ 	pci_assign_all_busses = 1;
+ 
+-	pci_regs = ioremap(MPC52xx_PCI, sizeof(struct mpc52xx_pci));
++	pci_regs = ioremap(MPC52xx_PA(MPC52xx_PCI_OFFSET), MPC52xx_PCI_SIZE);
+ 	if (!pci_regs)
+ 		return;
+ 
+diff -Nru a/arch/ppc/syslib/mpc52xx_pic.c b/arch/ppc/syslib/mpc52xx_pic.c
+--- a/arch/ppc/syslib/mpc52xx_pic.c	2005-03-21 20:10:10 +01:00
++++ b/arch/ppc/syslib/mpc52xx_pic.c	2005-03-21 20:10:10 +01:00
+@@ -180,8 +180,8 @@
+ 	u32 intr_ctrl;
+ 
+ 	/* Remap the necessary zones */
+-	intr = ioremap(MPC52xx_INTR, sizeof(struct mpc52xx_intr));
+-	sdma = ioremap(MPC52xx_SDMA, sizeof(struct mpc52xx_sdma));
++	intr = ioremap(MPC52xx_PA(MPC52xx_INTR_OFFSET), MPC52xx_INTR_SIZE);
++	sdma = ioremap(MPC52xx_PA(MPC52xx_SDMA_OFFSET), MPC52xx_SDMA_SIZE);
+ 
+ 	if ((intr==NULL) || (sdma==NULL))
+ 		panic("Can't ioremap PIC/SDMA register for init_irq !");
+diff -Nru a/arch/ppc/syslib/mpc52xx_setup.c b/arch/ppc/syslib/mpc52xx_setup.c
+--- a/arch/ppc/syslib/mpc52xx_setup.c	2005-03-21 20:10:10 +01:00
++++ b/arch/ppc/syslib/mpc52xx_setup.c	2005-03-21 20:10:10 +01:00
+@@ -38,8 +38,7 @@
+ void
+ mpc52xx_restart(char *cmd)
+ {
+-	struct mpc52xx_gpt __iomem *gpt0 =
+-		(struct mpc52xx_gpt __iomem *) MPC52xx_GPTx(0);
++	struct mpc52xx_gpt __iomem *gpt0 = MPC52xx_VA(MPC52xx_GPTx_OFFSET(0));
+ 
+ 	local_irq_disable();
+ 
+@@ -92,9 +91,7 @@
+ 
+ 
+ #ifdef CONFIG_SERIAL_TEXT_DEBUG
+-#ifdef MPC52xx_PF_CONSOLE_PORT
+-#define MPC52xx_CONSOLE MPC52xx_PSCx(MPC52xx_PF_CONSOLE_PORT)
+-#else
++#ifndef MPC52xx_PF_CONSOLE_PORT
+ #error "mpc52xx PSC for console not selected"
+ #endif
+ 
+@@ -110,8 +107,9 @@
+ mpc52xx_progress(char *s, unsigned short hex)
+ {
+ 	char c;
+-	struct mpc52xx_psc __iomem *psc =
+-		(struct mpc52xx_psc __iomem *)MPC52xx_CONSOLE;
++	struct mpc52xx_psc __iomem *psc;
++
++	psc = MPC52xx_VA(MPC52xx_PSCx_OFFSET(MPC52xx_PF_CONSOLE_PORT));
+ 
+ 	while ((c = *s++) != 0) {
+ 		if (c == '\n')
+@@ -140,7 +138,7 @@
+ 		u32 sdram_config_0, sdram_config_1;
+ 
+ 		/* Temp BAT2 mapping active when this is called ! */
+-		mmap_ctl = (struct mpc52xx_mmap_ctl __iomem *) MPC52xx_MMAP_CTL;
++		mmap_ctl = MPC52xx_VA(MPC52xx_MMAP_CTL_OFFSET);
+ 
+ 		sdram_config_0 = in_be32(&mmap_ctl->sdram0);
+ 		sdram_config_1 = in_be32(&mmap_ctl->sdram1);
+@@ -170,8 +168,8 @@
+ 		struct mpc52xx_rtc __iomem *rtc;
+ 		struct mpc52xx_cdm __iomem *cdm;
+ 
+-		rtc = ioremap(MPC52xx_RTC, sizeof(struct mpc52xx_rtc));
+-		cdm = ioremap(MPC52xx_CDM, sizeof(struct mpc52xx_cdm));
++		rtc = ioremap(MPC52xx_PA(MPC52xx_RTC_OFFSET), MPC52xx_RTC_SIZE);
++		cdm = ioremap(MPC52xx_PA(MPC52xx_CDM_OFFSET), MPC52xx_CDM_SIZE);
+ 
+ 		if ((rtc==NULL) || (cdm==NULL))
+ 			panic("Can't ioremap RTC/CDM while computing bus freq");
 diff -Nru a/include/asm-ppc/mpc52xx.h b/include/asm-ppc/mpc52xx.h
---- a/include/asm-ppc/mpc52xx.h	2005-03-21 20:09:47 +01:00
-+++ b/include/asm-ppc/mpc52xx.h	2005-03-21 20:09:47 +01:00
-@@ -26,7 +26,6 @@
- #include <asm/types.h>
+--- a/include/asm-ppc/mpc52xx.h	2005-03-21 20:10:10 +01:00
++++ b/include/asm-ppc/mpc52xx.h	2005-03-21 20:10:10 +01:00
+@@ -10,7 +10,7 @@
+  * Originally written by Dale Farnsworth <dfarnsworth@mvista.com> 
+  * for the 2.4 kernel.
+  *
+- * Copyright (C) 2004 Sylvain Munaut <tnt@246tNt.com>
++ * Copyright (C) 2004-2005 Sylvain Munaut <tnt@246tNt.com>
+  * Copyright (C) 2003 MontaVista, Software, Inc.
+  *
+  * This file is licensed under the terms of the GNU General Public License
+@@ -32,46 +32,67 @@
+ /* ======================================================================== */
+ /* Main registers/struct addresses                                          */
+ /* ======================================================================== */
+-/* Theses are PHYSICAL addresses !                                          */
+-/* TODO : There should be no static mapping, but it's not yet the case, so  */
+-/*        we require a 1:1 mapping                                          */
  
- struct pt_regs;
--struct ocp_def;
- #endif /* __ASSEMBLY__ */
++/* MBAR position */
+ #define MPC52xx_MBAR		0xf0000000	/* Phys address */
+-#define MPC52xx_MBAR_SIZE	0x00010000
+ #define MPC52xx_MBAR_VIRT	0xf0000000	/* Virt address */
++#define MPC52xx_MBAR_SIZE	0x00010000
++
++#define MPC52xx_PA(x)		((phys_addr_t)(MPC52xx_MBAR + (x)))
++#define MPC52xx_VA(x)		((void __iomem *)(MPC52xx_MBAR_VIRT + (x)))
+ 
+-#define MPC52xx_MMAP_CTL	(MPC52xx_MBAR + 0x0000)
+-#define MPC52xx_SDRAM		(MPC52xx_MBAR + 0x0100)
+-#define MPC52xx_CDM		(MPC52xx_MBAR + 0x0200)
+-#define MPC52xx_SFTRST		(MPC52xx_MBAR + 0x0220)
+-#define MPC52xx_SFTRST_BIT	0x01000000
+-#define MPC52xx_INTR		(MPC52xx_MBAR + 0x0500)
+-#define MPC52xx_GPTx(x)		(MPC52xx_MBAR + 0x0600 + ((x)<<4))
+-#define MPC52xx_RTC		(MPC52xx_MBAR + 0x0800)
+-#define MPC52xx_MSCAN1		(MPC52xx_MBAR + 0x0900)
+-#define MPC52xx_MSCAN2		(MPC52xx_MBAR + 0x0980)
+-#define MPC52xx_GPIO		(MPC52xx_MBAR + 0x0b00)
+-#define MPC52xx_GPIO_WKUP	(MPC52xx_MBAR + 0x0c00)
+-#define MPC52xx_PCI		(MPC52xx_MBAR + 0x0d00)
+-#define MPC52xx_USB_OHCI	(MPC52xx_MBAR + 0x1000)
+-#define MPC52xx_SDMA		(MPC52xx_MBAR + 0x1200)
+-#define MPC52xx_XLB		(MPC52xx_MBAR + 0x1f00)
+-#define MPC52xx_PSCx(x)		(MPC52xx_MBAR + 0x2000 + ((x)<<9))
+-#define MPC52xx_PSC1		(MPC52xx_MBAR + 0x2000)
+-#define MPC52xx_PSC2		(MPC52xx_MBAR + 0x2200)
+-#define MPC52xx_PSC3		(MPC52xx_MBAR + 0x2400)
+-#define MPC52xx_PSC4		(MPC52xx_MBAR + 0x2600)
+-#define MPC52xx_PSC5		(MPC52xx_MBAR + 0x2800)
+-#define MPC52xx_PSC6		(MPC52xx_MBAR + 0x2C00)
+-#define MPC52xx_FEC		(MPC52xx_MBAR + 0x3000)
+-#define MPC52xx_ATA		(MPC52xx_MBAR + 0x3a00)
+-#define MPC52xx_I2C1		(MPC52xx_MBAR + 0x3d00)
+-#define MPC52xx_I2C_MICR	(MPC52xx_MBAR + 0x3d20)
+-#define MPC52xx_I2C2		(MPC52xx_MBAR + 0x3d40)
++/* Registers zone offset/size  */
++#define MPC52xx_MMAP_CTL_OFFSET		0x0000
++#define MPC52xx_MMAP_CTL_SIZE		0x068
++#define MPC52xx_SDRAM_OFFSET		0x0100
++#define MPC52xx_SDRAM_SIZE		0x010
++#define MPC52xx_CDM_OFFSET		0x0200
++#define MPC52xx_CDM_SIZE		0x038
++#define MPC52xx_INTR_OFFSET		0x0500
++#define MPC52xx_INTR_SIZE		0x04c
++#define MPC52xx_GPTx_OFFSET(x)		(0x0600 + ((x)<<4))
++#define MPC52xx_GPT_SIZE		0x010
++#define MPC52xx_RTC_OFFSET		0x0800
++#define MPC52xx_RTC_SIZE		0x024
++#define MPC52xx_MSCAN1_OFFSET		0x0900
++#define MPC52xx_MSCAN2_OFFSET		0x0980
++#define MPC52xx_MSCAN_SIZE		0x080
++#define MPC52xx_GPIO_OFFSET		0x0b00
++#define MPC52xx_GPIO_SIZE		0x040
++#define MPC52xx_GPIO_WKUP_OFFSET	0x0c00
++#define MPC52xx_GPIO_WKUP_SIZE		0x028
++#define MPC52xx_PCI_OFFSET		0x0d00
++#define MPC52xx_PCI_SIZE		0x100
++#define MPC52xx_SPI_OFFSET		0x0f00
++#define MPC52xx_SPI_SIZE		0x020
++#define MPC52xx_USB_OFFSET		0x1000
++#define MPC52xx_USB_SIZE		0x0a0
++#define MPC52xx_SDMA_OFFSET		0x1200
++#define MPC52xx_SDMA_SIZE		0x100
++#define MPC52xx_BDLC_OFFSET		0x1300
++#define MPC52xx_BDLC_SIZE		0x010
++#define MPC52xx_XLB_OFFSET		0x1f00
++#define MPC52xx_XLB_SIZE		0x100
++#define MPC52xx_PSC1_OFFSET		0x2000
++#define MPC52xx_PSC2_OFFSET		0x2200
++#define MPC52xx_PSC3_OFFSET		0x2400
++#define MPC52xx_PSC4_OFFSET		0x2600
++#define MPC52xx_PSC5_OFFSET		0x2800
++#define MPC52xx_PSC6_OFFSET		0x2c00
++#define MPC52xx_PSCx_OFFSET(x)		(((x)!=6)?(0x1e00+((x)<<9)):0x2c00)
++#define MPC52xx_PSC_SIZE		0x0a0
++#define MPC52xx_FEC_OFFSET		0x3000
++#define MPC52xx_FEC_SIZE		0x400
++#define MPC52xx_ATA_OFFSET		0x3a00
++#define MPC52xx_ATA_SIZE		0x080
++#define MPC52xx_I2C1_OFFSET		0x3d00
++#define MPC52xx_I2C_MICR		0x3d20
++#define MPC52xx_I2C2_OFFSET		0x3d40
++#define MPC52xx_I2C_SIZE		0x020
+ 
+ /* SRAM used for SDMA */
+-#define MPC52xx_SRAM		(MPC52xx_MBAR + 0x8000)
+-#define MPC52xx_SRAM_SIZE	(16*1024)
++#define MPC52xx_SRAM_OFFSET		0x8000
++#define MPC52xx_SRAM_SIZE		0x4000
  
  
-@@ -391,7 +390,6 @@
- extern void mpc52xx_power_off(void);
- extern void mpc52xx_progress(char *s, unsigned short hex);
- extern void mpc52xx_calibrate_decr(void);
--extern void mpc52xx_add_board_devices(struct ocp_def board_ocp[]);
+ /* ======================================================================== */
+@@ -118,11 +139,12 @@
+ #define MPC52xx_SPI_SPIF_IRQ		(MPC52xx_PERP_IRQ_BASE + 14)
+ #define MPC52xx_I2C1_IRQ		(MPC52xx_PERP_IRQ_BASE + 15)
+ #define MPC52xx_I2C2_IRQ		(MPC52xx_PERP_IRQ_BASE + 16)
+-#define MPC52xx_CAN1_IRQ		(MPC52xx_PERP_IRQ_BASE + 17)
+-#define MPC52xx_CAN2_IRQ		(MPC52xx_PERP_IRQ_BASE + 18)
++#define MPC52xx_MSCAN1_IRQ		(MPC52xx_PERP_IRQ_BASE + 17)
++#define MPC52xx_MSCAN2_IRQ		(MPC52xx_PERP_IRQ_BASE + 18)
+ #define MPC52xx_IR_RX_IRQ		(MPC52xx_PERP_IRQ_BASE + 19)
+ #define MPC52xx_IR_TX_IRQ		(MPC52xx_PERP_IRQ_BASE + 20)
+ #define MPC52xx_XLB_ARB_IRQ		(MPC52xx_PERP_IRQ_BASE + 21)
++#define MPC52xx_BDLC_IRQ		(MPC52xx_PERP_IRQ_BASE + 22)
  
- extern void mpc52xx_find_bridges(void);
+ 
+ 
+@@ -162,7 +184,7 @@
+ 	u32	cs6_start;	/* MMAP_CTRL + 0x58 */
+ 	u32	cs6_stop;	/* MMAP_CTRL + 0x5c */
+ 	u32	cs7_start;	/* MMAP_CTRL + 0x60 */
+-	u32	cs7_stop;	/* MMAP_CTRL + 0x60 */
++	u32	cs7_stop;	/* MMAP_CTRL + 0x64 */
+ };
+ 
+ /* SDRAM control */
