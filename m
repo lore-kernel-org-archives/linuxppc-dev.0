@@ -1,27 +1,37 @@
-Message-ID: <20030218014641.49645.qmail@web41201.mail.yahoo.com>
-Date: Mon, 17 Feb 2003 17:46:41 -0800 (PST)
-From: Prakash kanthi <pkanthi@yahoo.com>
-Subject: RTLinux patch for linuxppc_2_4_devel
+Subject: 405GPr support in linux2.4.18
 To: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3E4C0C73.50704@xopnetworks.com>
+From: "Laurent Mohin" <laurent.mohin@acterna.com>
+Date: Tue, 18 Feb 2003 11:11:06 +0100
+Message-ID: <OFA7B6F432.6CF96B48-ONC1256CD1.00372BF7@eng.eni.wago.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Folks,
+Hello all,
 
-Does anybody have a patch for linuxppc_2_4_devel? I
-have the features i need in linuxppc_2_4_devel and
-rtlinux (3.x).
+I'm designing a board with 405GP processor. I'm now trying to have it
+working with a 405GPr version.
+I've started to configure it working in legacy mode and made the necessary
+changes in PPCBoot.
 
-I downloaded the rtlinux patch from denx. But looks
-like it is for linux-2.4.4. Any idea how hard it is to
-port it myself?
+Once downloaded, my kernel hung in early_init function when it called the
+memset_io to zero the BSS. Using a BDI2000 debugger, I saw that I've
+reached the bad_page_fault function.
 
-Thanks,
-Prakash
+The only difference I know between 405GP and 405GPr in legacy mode is data
+cache size. How does the kernel manage it?
+
+I'm currently using kernel 2.4.18 from Montavista.
+
+Any help is welcome,
+
+Laurent
+
+
+Laurent MOHIN
+ACTERNA
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
