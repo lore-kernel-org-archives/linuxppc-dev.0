@@ -1,38 +1,39 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <20040609131408.33319.qmail@web15205.mail.bjs.yahoo.com>
-Date: Wed, 9 Jun 2004 21:14:08 +0800 (CST)
-From: Song Sam <samlinuxppc@yahoo.com.cn>
-Subject: How to set current time to 8xx RTC through Linux application?
-To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Cc: samlinuxppc@yahoo.com.cn
-In-Reply-To: <20040609130013.57180.qmail@web15204.mail.bjs.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+To: "saurosalomoni" <saurosalomoni@bol.com.br>
+Cc: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: ioctl(TIOCMGET) on Lite5200 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 09 Jun 2004 09:56:29 -0300."
+             <HZ1LA5$9EA97153A3F2D2EC1AD72AC1798B6528@bol.com.br>
+Date: Wed, 09 Jun 2004 15:14:48 +0200
+Message-Id: <20040609131453.76074C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+In message <HZ1LA5$9EA97153A3F2D2EC1AD72AC1798B6528@bol.com.br> you wrote:
+>
+> So, if the 5200 series don't support TIOCMGET and
+> TIOCMSET ioctl() (nor TIOCMBIS and TIOCMBIC, I've just
+> tried them), what could I possibly use to get/set the
+> control pin RTS in my Lite5200?...
+> Is there any other system call or function that
+> accomplishes that?
 
-I added 8xx RTC driver both on U-Boot and Linux
-kernel.And I could set current time right under
-U-Boot.But I have no idea on making it through Linux
-application?I could read it with following code but
-how to set it?
+The current version of the 5200 PSC  UART  driver  does  not  support
+hardware handshake, so there is no way to control the RTS pin. If you
+really  must,  you  can  either extend the driver to support hardware
+handshake, or you could simply write a small driver to  control  this
+pin as GPIO.
 
-#include <time.h>
+Best regards,
 
-     time_t t;
-     struct tm * tm;
+Wolfgang Denk
 
-     time(&t);
-     tm=localtime(&t);
-
-     printf("\nThe corrent time is : %02d.%02d.%02d
-%02d:%02d:%02d\n",tm->tm_year+1900,tm->tm_mon+1,tm->tm_mday,tm->tm_hour,tm->tm_min,tm->tm_sec);
-
-Thanks in advance!
-
-Sam
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Imitation is the sincerest form of plagarism.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
