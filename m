@@ -1,43 +1,26 @@
-Date: Tue, 30 Jan 2001 10:45:26 -0500
-From: Josh Huber <huber@alum.wpi.edu>
-To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Graphics corruption with XF
-Message-ID: <20010130104526.B4903@missioncriticallinux.com>
-References: <20010126133941.A7973@missioncriticallinux.com> <3A721E68.6E85EB0E@iiic.ethz.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <3A721E68.6E85EB0E@iiic.ethz.ch>; from michdaen@iiic.ethz.ch on Sat, Jan 27, 2001 at 02:03:36AM +0100
+Message-Id: <200101301752.MAA37318@mal-ach.watson.ibm.com>
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+cc: "Iain Sandoe" <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: network stack oops 2.4.1/gcc 2.95.3 
+In-Reply-To: Message from Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+   of "Tue, 30 Jan 2001 13:39:06 +0100." <5.0.2.1.2.20010130131525.01ce0010@mail.lauterbach.com>
+Date: Tue, 30 Jan 2001 12:52:16 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Jan 27, 2001 at 02:03:36AM +0100, Michel Dänzer wrote:
-> Josh Huber wrote:
->
-> > X reports that it could only find 1 MB of video memory, when I'm
-> > pretty sure it's got 4 MB.  This of course severly limits my
-> > depth/resolution, and when paired with the rage 128 I'm currently
-> > using it's a little lacking.. :)
->
-> man XF86Config, look for VideoRam.
+>>>>> Franz Sirl writes:
 
-Yes, even with this option I get 1MB of SGRAM used, which severly
-limits my choices for resolutions.
+Franz> I would rather think this is a new kernel bug...
 
-> Anyone who has must have fixed the ati driver ;)
->
-> I suppose it shouldn't be too hard to fix looking at the r128 or glint
-> drivers.
+	I am pretty confident that this is a kernel bug.  The question in
+my mind is whether this is a kernel bug that is newly elicited or
+exacerbated by changes in gcc-2.95.3.  I want to avoid or at least give
+the Linux kernel developers a heads-up so that we can avoid a "GCC is
+broken" flame fest on the kernel mailinglists.
 
-heh, if only I had the time to look at this...
+Thanks, David
 
-> Oh, BTW - have you tried Ani's rsync tree?
-
-I haven't.  I'm in the process of downloading as I type this,
-however...so we'll see how that goes.
-
---
-Josh Huber
-1024D/6B21489A 61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
