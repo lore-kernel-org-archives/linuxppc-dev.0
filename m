@@ -1,39 +1,36 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Ralph Blach <rcblach@raleigh.ibm.com>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ppc LE questions (seeking help hand info pointers)
-Date: Fri, 21 Sep 2001 22:42:44 +0200
-Message-Id: <20010921204244.20773@smtp.wanadoo.fr>
-In-Reply-To: <20010921202929.7340@smtp.wanadoo.fr>
-References: <20010921202929.7340@smtp.wanadoo.fr>
+Message-ID: <3BABAB90.5AC649AD@mvista.com>
+Date: Fri, 21 Sep 2001 17:05:20 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: hollis@austin.ibm.com,
+	Peter Bergner <bergner@brule.borg.umn.edu>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org,
+	Debian PowerPC <debian-powerpc@lists.debian.org>, dan@debian.org
+Subject: Re: yaboot & zImage's
+References: <20010920150939.32251@smtp.adsl.oleane.com> <20010920152246.B14835@plato.local.lan> <20010921114951.A211936@brule.borg.umn.edu> <20010921112047.B23691@cpe-24-221-152-185.az.sprintbbd.net> <20010921132904.C17347@austin.ibm.com> <20010921113329.C23691@cpe-24-221-152-185.az.sprintbbd.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sorry, part of my previous post got "eaten" by my mailer, here it is.
+Tom Rini wrote:
 
->On the other side, running with MMU ON makes that small task of setting
->up the kernel environement on exception entry and unwiding it on
->exception exit a lot more tricky. It prevents using MMU off as an
->efficient way of using SRR0/SRR1 without caring about taking TLB misses
->during critical code pat....
+> > I've booted a zImage.rs6k-chrp from yaboot 1.2.5.
+>
+> That almost sounds silly.
 
-So, I was saying that it prevents using MMU off as an efficient wau to
-avoid taking TLB misses during those critical code path. Having the
-translations always enabled force you to pin down at least one TLB entry
-which makes the TLB handlers more complicated (and so adds overhead). It
-also make the exception entry/exit path more tricky as those have to
-touch datas not covered by pinned TLB entries (like process stacks), more
-or less forcing us to use specific exception stacks (pinned down) to
-avoid horrible bloat.
+Actually, it's not very silly at all.  The zImage is significantly
+smaller than a corresponding vmlinux, so it takes much less time
+to load the image.
 
-This will make some bits of the 32 bits kernel almost as tricky as when
-running below Hypervisor on LPAR :)
+Also, many systems claim the lower memory where we want to load
+the kernel.  The only option is the load it in some higher
+memory hole, and then have it copy itself.  You may as well
+uncompress at the same time....
 
-Ben.
 
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
