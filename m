@@ -1,37 +1,31 @@
-Message-Id: <383BA2FD.E894EC61@ict.ac.cn>
-Date: Wed, 24 Nov 1999 16:34:05 +0800
-From: LiuTao <tliu@ict.ac.cn>
-Mime-Version: 1.0
-To: Dan Malek <dmalek@jlc.net>
-Cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>,
-        "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <19991124005625.A7469@lx.c-side.com>
+Date: Wed, 24 Nov 1999 00:56:25 -0800
+From: Neil Russell <caret@c-side.com>
+To: Dan Malek <dmalek@jlc.net>, LiuTao <tliu@ict.ac.cn>
+Cc: linuxppc <linuxppc-dev@lists.linuxppc.org>,
+        linuxppc-embedded@lists.linuxppc.org
 Subject: Re: need suggestions
-References: <3839F122.3BF6FEDF@ict.ac.cn> <383A0E2D.CFACF894@jlc.net> <383A0E2E.9A261E81@ict.ac.cn> <383A30B7.37700779@jlc.net>
+References: <3839F122.3BF6FEDF@ict.ac.cn> <383A0E2D.CFACF894@jlc.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <383A0E2D.CFACF894@jlc.net>; from Dan Malek on Mon, Nov 22, 1999 at 10:46:53PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi:
+On Mon, Nov 22, 1999 at 10:46:53PM -0500, Dan Malek wrote:
+> How do you load vxWorks?  I have worked on several vxWorks projects,
 
-Dan Malek wrote:
-> My approach is to actually port a Linux kernel to the 8xx board, which
-I have a ADS8xx board and I downloaded kernel source mpc8xx-2.2.13.tgz
-from ppc.kernel.org. Can you tell me how to port it to ADS8xx board and
-make a bootrom of Linux?
-I am a newbie, so please tell something in detail.
-Thanks!
+If you use vxWorks to load Linux, you would probably still have to pay
+WindRiver a royalty.  Also, that would make the worlds largest bootloader;
+well ok, OF is larger.
 
-LiuTao
+Many years ago, I wrote a boot loader that does (amongst other things)
+BOOTP and TFTP.  I plan to port it to PPC for a project I'm doing soon
+and I will publish it.  It wont be ready for a few months though.
 
-> is pretty easy these days for just the minimal network support, then
-> slightly "customize" it (so it doesn't use _all_ of memory) and flash
-> is using S-record download or BDM tools.  I then just use the Linux
-> kernel with a TFTP application to do the job.  Just mmap() the unused
-> memory for loading a new image, and modify the reboot to call a
-> specific address rather than return to rom.
-> 
->         -- Dan
+
+-- 
+Neil Russell <caret@c-side.com>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
