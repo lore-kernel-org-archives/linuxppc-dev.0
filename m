@@ -1,32 +1,21 @@
-Message-ID: <3AC417B4.5F73589@ncal.verio.com>
-Date: Thu, 29 Mar 2001 21:20:52 -0800
+Message-ID: <3AC418FD.2FA4AE67@ncal.verio.com>
+Date: Thu, 29 Mar 2001 21:26:21 -0800
 From: Henry Worth <haworth@ncal.verio.com>
 MIME-Version: 1.0
-To: Franz.Sirl-kernel@lauterbach.com
-Cc: linuxppc-dev@lists.linuxppc.org, billfink@capu.net
-Subject: Re: xine, ppc and illegal instructions
+To: linuxppc-dev@lists.linuxppc.org, billfink@capu.net
+Subject: Re: xine, ppc and illegal instructions 
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Franz Sirl wrote:
->>At 07:30 27.03.2001, Bill Fink wrote:
->>         *  In configure, there's a case check for"powerpc-*-linux*)".
->>            This should be changed to "powerpc-*-linux* | ppc-*-linux*)".
-
->This isn't correct, it's always powerpc-*-linux*, the other one is
->superflous. This usually happens if people didn't update their configure
->scripts for a _long_ time and your patch is just papering over that.
+Bill Fink wrote:
 >
->Franz.
+>A theory why xine 0.4.01 would work on Henry's system but not on mine
+>was that Henry was running with a newer glibc (2.2.something).  I was
 
-
-No, LinuxPPC 2000 Q4 is ppc-*, what version of the
-config scripts, I don't know, and don't care. A
-lot of packages break because of it, allow both
-and save a lot of grief!
-
-Henry
+Actually, I'm at 2.1.3 and 2.95.3 compiler, but the common
+denominator for those failing seems to be Debian distributions,
+whereas I'm LPPC Q4.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
