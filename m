@@ -1,42 +1,62 @@
-Message-ID: <37DD0BE1.5DA876F@email.sps.mot.com>
-Date: Mon, 13 Sep 1999 09:36:17 -0500
-From: "Richard Hendricks" <ra6353@email.sps.mot.com>
+Message-ID: <37DD34C2.55571353@jlc.net>
+Date: Mon, 13 Sep 1999 13:30:42 -0400
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: LinuxPPC with BDM
-References: <37DC9380.D0A6BA3F@ctam.com.au>
+To: bsimon@ctam.com.au
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: LinuxPPC: porting to new platforms
+References: <37DC6656.2A40D04D@ctam.com.au> <37DC7E94.946FBA49@jlc.net> <37DC8FE8.E1ED6636@ctam.com.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The BDM runs into problems when the underlying operating system uses the
-MMUs to implement a page table.  Since the BDM doesn't understand page
-tables, when it stops the core it assumes the PC is pointing into
-physical memory.  This makes debugging the kernel difficult using BDM. 
-Using the BDM inherently doesn't change any registers, but MPC8bug may
-initialize some registers you don't want it to.
-
 Brendan Simon wrote:
-> 
-> Dan mentioned (in another email) that mpcbug can cause problems when
-> running linux.  I take it this is a generic BDM problem.  Is this true
-> ?  In theory it shouldn't matter should it, as long as the debugger
-> leaves the core in the same condition just before it enters debug mode.
-> 
-> I have been using the BDM to download kernels and running them from RAM
-> (stepping through the code, etc).  Could this be the cause of the
-> strange behaviour I've seen on the ADS boards ?
-> 
-> Should I stear clear of the BDM ?  I would prefer to use it as it allows
-> alot of low level debugging and control.
-> 
-> Brendan Simon.
-> 
-> BTW. I have been using a beta version of GDB with support for the
-> Macraigor Wiggler.  I got it from Scott Howard.  Unfortunately it will
-> only run on a Windows machine due to the wigglers.dll which is
-> required.  If anyones interested in this then there is more information
-> on http://www.objsw.com/
+
+> ..... I do not want to
+> waste any more time getting things working on other boards.
+
+Well, that was kind of my point.  Get a board that already runs
+Linux/PPC and you are done.  At least you get to see how it looks.
+
+
+> 2) The ADS board that I have access to is a loan to us (at no cost).
+
+
+They will cost you.....lots.  I couldn't believe how much time I
+invested just so I could develop the FEC driver.....
+
+
+> I can imagine.  There seems to be a LOT happening in the LinuxPPC world.
+
+Although now is a good time for updates....I could break it
+quite badly and no one would notice :-).
+
+The other reason I post the tar images is most of the requests
+for Linux on these processors comes from companies behind firewalls
+that can't access CVS.
+
+
+> ....  What is the
+> latest with regards to silicon bugs in the 82XX series ?  What revision have
+> you been working with ?
+
+I am running with some pretty early versions.  I am also hearing
+the stories but haven't found anything on my side....and can't find
+anyone using the processor to admit to bugs either.  The 82xx
+processors are a big complexity step for embedded processors, much
+more than the 8xx.  Things that have looked like bugs to me turn
+up to be configuration errors.....lots of registers to get set
+correctly.
+
+Right now I am working on the Sandpoint board.  I have the kernel
+basically booting, and I am sorting out the PCI and interrupt
+controller stuff.  It's one of those kind-of-CHRP, but not really
+configurations.  The 8260 is a completely different beast from
+the 8240.  More like a souped up 8xx.
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
