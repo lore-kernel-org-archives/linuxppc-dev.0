@@ -1,37 +1,24 @@
-Date: Thu, 15 Jul 1999 11:12:07 -0500 (CDT)
-From: Dave Weis <djweis@plconline.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: performa 6214 support?
-Message-ID: <Pine.LNX.4.10.9907151110080.25231-100000@catbert.desm.plconline.com>
+Message-ID: <378E0AD6.E23B055B@madison-web.com>
+Date: Thu, 15 Jul 1999 12:22:46 -0400
+From: Jason Haas <jhaas@madison-web.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Matt Porter <mmporter@home.com>
+CC: puetzk6715@uni.edu, Justin Vallon <vallon@mindspring.COM>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: altivec
+References: <Pine.LNX.3.96.990715090450.16549A-100000@liberty.chnd1.az.home.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Matt Porter wrote:
 
-has anyone been working on getting machines like the above working with
-linuxppc? i looked thru the compatibility lists and it was mentioned as
-non-supported. i think mklinux would be closer but i remember seeing
-something about trying to merge them.
-also, the 7011-250 rs/6000 i was using here was sold so if anyone knows
-where i can get one really cheap, please let me know. a bare machine is
-fine.
+> Hrm, I wonder
+> what the licensing cost of OF is or would it be better to do an open
+> implementation of the standard...
 
-thanks
-
-djweis
-
-
--- 
-David Weis                | 10520 New York Ave, Des Moines, IA 50322
-djweis@plconline.com      | Voice 515-278-0133 Ext 231
-
-When they took the Fourth Amendment, I was quiet because I didn't deal drugs.
-When they took the Sixth Amendment, I was quiet because I was innocent.
-When they took the Second Amendment, I was quiet because I didn't own a gun.
-Now they've taken the First Amendment and I can't say anything.
-
+I think it's about $0.5M.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
