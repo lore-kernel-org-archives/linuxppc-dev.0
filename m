@@ -1,27 +1,46 @@
-From: Arun Dharankar <ADharankar@attbi.com>
-To: "Wright, David" <dwright@infiniswitch.com>
-Subject: Re: Linux kernel panics and core dumps.
-Date: Wed, 9 Apr 2003 23:16:40 -0400
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <3D296C067098F149B11A8F4FC37C054685D89F@EXVS1.ops.infiniswitch.com> <200304091318.06120.ADharankar@ATTBI.Com>
-In-Reply-To: <200304091318.06120.ADharankar@ATTBI.Com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <791B3205DB661A42B4BFE5464A7D1D02010E44F3@chzugexch02.zug.ch.abatos.com>
+From: Graf Alex <alex.graf@siemens.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: parse error before `{', stray '\' in program
+Date: Thu, 10 Apr 2003 11:23:49 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200304092316.40163.ADharankar@ATTBI.Com>
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks to the followups and the detailed inputs from David Wright, I
-have the MCLX mcore working on MPC8260/MPC7410 based platform.
+Hello,
 
-For reference: I have posted the patch at:
-http://oss.missioncriticallinux.com/pipermail/mcore-dev/2003-April/000028.html
+If I have some defines which have '\' inside ...
 
+#define BIND_DESC_ALM \
+{ \
+	CAlmSourceProp::IdxBindingGrp; \
+}
 
-Best regards,
--Arun.
+my cross compiler produce following output:
+
+ppc_8xx-gcc -fPIC -DPIC -D_DEBUG -Wall -ansi -g3 -O0
+-I/home/projects/Nscu/_Inc -I/home/projects/Nscu/_Inc_PC -c -o main.o
+main.cpp
+main.cpp:15: parse error before `{'
+main.cpp:15: stray '\' in program
+main.cpp:16: stray '\' in program
+
+I have have SuSE 8.1 and the cross compiler (ppc_8xx-gcc) has version
+2.95.4.
+
+The troubles are coming from the dos <cr><lf> at line end. With gcc 3.2
+(from host) I don't have this problems.
+I don't want to remove the <cr>s (dos2unix), because these files have to be
+used on Windows too.
+
+Any suggestions? Unfortunately there is no ppc_8xx-gcc with version 3.2 out.
+Or is it?
+
+Alex
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
