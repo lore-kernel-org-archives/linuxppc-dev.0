@@ -1,20 +1,21 @@
-Return-Path: <achim.machura@berghof.com>
-Received: from pegasus.berghof.com (unknown [145.253.135.72])
-	by ozlabs.org (Postfix) with ESMTP id B7F652BF07
+Return-Path: <Martin.Krause@tqs.de>
+Received: from mail.tqs.de (mail.tqs.de [213.68.230.225])
+	by ozlabs.org (Postfix) with ESMTP id 92C062BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Dec 2004 01:21:48 +1100 (EST)
-Received: from BATEEE52 (batee-e52.be-int [10.255.241.52])
-	by pegasus.berghof.com (8.12.10/8.12.10) with SMTP id iBMELlof022433
-	for <linuxppc-embedded@ozlabs.org>; Wed, 22 Dec 2004 15:21:47 +0100
-From: "Achim Machura" <achim.machura@berghof.com>
-To: "Linuxppc-Embedded (E-Mail)" <linuxppc-embedded@ozlabs.org>
-Date: Wed, 22 Dec 2004 15:21:45 +0100
-Message-ID: <001601c4e831$91d73c20$34f1ff0a@BATEEE52>
+	Thu, 23 Dec 2004 04:20:25 +1100 (EST)
+Received: from tq-mailsrv-1.tq-net.de (tq-mailsrv-1 [172.20.1.1])
+	by mail.tqs.de (Postfix) with ESMTP id D59FA3C1C
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 22 Dec 2004 18:20:14 +0100 (CET)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Subject: BestCommApi on MPC5200
-Reply-To: achim.machura@berghof.com
+Date: Wed, 22 Dec 2004 18:20:14 +0100
+Message-ID: <DE2CC66C40EAB74EA6D66AC71BF98E1E03055B12@TQ-MAILSRV-1>
+From: "Martin Krause" <Martin.Krause@tqs.de>
+To: <achim.machura@berghof.com>
+Cc: "Linuxppc-Embedded \(E-Mail\)" <linuxppc-embedded@ozlabs.org>
+Subject: AW: BestCommApi on MPC5200
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,25 +26,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello list,
+Hi Achim,
 
-i'm new here, if this mail comes twice sorry .
+Achim Machura wrote on Mittwoch, 22. Dezember 2004 15:22:
+> I work on a 5200 board and want to enable an Bestcomm-task to copy
+> Data from PSC to a shared memory.
+> Have anyone an example for doing this?
 
-I work on a 5200 board and want to enable an Bestcomm-task to copy Data from
-PSC to a shared memory.
-Have anyone an example for doing this?
+There is a BestComm API user guide. Maybe this is helpful.
+You could find it in the linuxppc_2_4_devel linux source
+tree from denx CVS-Server (look at www.denx.de -> Software):
+
+linuxppc_2_4_devel\arch\ppc\5xxx_io\bestcomm\doc\BestCommAPIUserGuide.pdf=
 
 
-Achim
+If you want, I could send the document to you without CC to the
+linuxppc-embedded list (because it is about 120 kByte).
 
-Mit freundlichen Gruessen
-i.A.
-
-Achim Machura
-____________________________________________
-Achim Machura Softwareentwicklung
-Berghof Automationstechnik GmbH
-Harretstrasse 1, D-72800 Eningen u.A.
-Tel: +49-7121-894-131, Fax: +49-7121-894-100
-email: machura@berghof.com
-Internet: http://www.berghof.com
+Regards,
+Martin
