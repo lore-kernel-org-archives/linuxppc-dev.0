@@ -1,72 +1,50 @@
-Message-Id: <200101190841.f0J8fG406174@denx.local.net>
-To: xuelong wang <wang_xuelong@yahoo.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Questions about compliing ppcboot-0.6.2 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 19 Jan 2001 00:02:17 PST."
-             <20010119080217.1791.qmail@web11802.mail.yahoo.com>
-Date: Fri, 19 Jan 2001 09:41:16 +0100
+Message-ID: <3A6854DD.A370D56B@matrox.com>
+Date: Fri, 19 Jan 2001 09:53:18 -0500
+From: Sébastien Côté <scote1@matrox.com>
+MIME-Version: 1.0
+To: mgreer@mvista.com
+CC: LinuxPPC-embedded list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: initrd problems
+References: <3A671191.A0254C18@matrox.com> <3A676DC6.FD21D5D8@matrox.com> <3A6794B1.D0B70C1C@mvista.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20010119080217.1791.qmail@web11802.mail.yahoo.com> you wrote:
+"Mark A. Greer" wrote:
 >
-> I have a target board with a flash on it, and I¡¯d
-> like to put ppcboot-0.6.2 into it by a writer. But
+> Where did you get this version of that kernel?  From the MontaVista CDK or from
+> the website?  If from the website, when did you get it?
 
-I just replied to that. Don't waste your time (and ours!!!) with  old
-versions, use a current version of PPCBoot instead.
+I'm pretty sure it came from the web..  I think it was downloaded at the
+end of November but I can't be sure...  I could probably answer this
+next week.
 
-AND PLEASE SEND PPCBoot RELATED QUESTIONS TO THE PPCBoot MAILING LIST!
-
-AND PLEASE SEND PPCBoot RELATED QUESTIONS TO THE PPCBoot MAILING LIST!
-
-AND PLEASE SEND PPCBoot RELATED QUESTIONS TO THE PPCBoot MAILING LIST!
-
-
-
-> when I compile ppcboot-0.6.2 under the environment of
-
-Please get ppcboot-0.7.3 or the latest CVS snapshot.
-
-> 1. A file can not be complied, the error message is:
+> Try this (if its not already done).  Go into arch/ppc/boot/head.S and add the
+> following lines after the set up of r6 to hold the cmd_line.
 >
-> >/usr/local/src/ppcboot/ppcboot->0.6.2/include/ppc_asm.tmpl:232:
-> Error:Rest of line >ignored. First >ignored character
-> is ¡®\¡¯.
+>         /* r4,r5 have initrd_start, size */
+>         lis     r2,initrd_start@h
+>         ori     r2,r2,initrd_start@l
+>         lwz     r4,0(r2)
+>         lis     r2,initrd_end@h
+>         ori     r2,r2,initrd_end@l
+>         lwz     r5,0(r2)
+>
+> Go into arch/ppc/kernel/sandpoint_setup.c.  Find sandpoint_setup_arch() and add
+> something like (again, if its not already there).
+>
+>      #ifdef CONFIG_BLK_DEV_INITRD
+>              if (initrd_start)
+>                      ROOT_DEV = MKDEV(RAMDISK_MAJOR, 0);
+>
+>        #endif
+>
 
-This is most certainly NOT the error message as you read it. With all
-these funny characters it's hard to guess where it complained.
-
-> Can you give me a hint to explain what happened.
-
-Your file got corrupted. Please unpack it from the original  tarball.
-Make  sure  to  use  "binary"  mode  when  copying  the file to other
-filesystem types.
-
-> but I can not find the definition of ¡°MAKE¡± in this
-> file or the other files included by this package. Can
-> you tell me what ¡°MAKE ¡± is and where the definition
-> locates?
-
-Please see the man page for the make command.
-
->     3. If you think that I use the wrong versions of
-> RedHat Linux, or that I use the wrong CDK , or that
-
-Well, RH-6.2 is a bit old, too, but it works for me; and the HHL  CDK
-works here, too.
+I tried that patch that I found in the list archives but it didn't make
+any difference.
 
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Time is a drug. Too much of it kills you.
-                                      - Terry Pratchett, _Small Gods_
+Sébastien Côté
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
