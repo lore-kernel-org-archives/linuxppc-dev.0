@@ -1,45 +1,31 @@
-To: "Thamarai Selvan" <Thamarai.Selvan@lntinfotech.com>
-Cc: "Stephen Williams" <612dlag102@sneakemail.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: How Can The Starting Address Of An Image In ELF File BeChanged 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 05 Mar 2004 12:03:55 +0530."
-             <OF243EF967.6B4324CF-ON65256E4E.00240CC6@lntinfotech.com>
-Date: Fri, 05 Mar 2004 21:40:26 +0100
-Message-Id: <20040305204031.8BC71C0655@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: PCI/DMA on 8266 under 2.6.3
+Date: Fri, 5 Mar 2004 20:27:38 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DA86@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <OF243EF967.6B4324CF-ON65256E4E.00240CC6@lntinfotech.com> you wrote:
->
-> can u guide me 2 some document/link on it or brief it little bit more
-> why it is linked to that address ?
+Hi
 
-Because that was the decision of the designers.
+Has anybody gotten PCI to work correctly under linux 2.6.3 (or any 2.6)
+on motorola 8266?
 
-> if it is linked it should be configurable
-> bcuz iam using vision ice to download my image.
+I have managed to get the driver from 2.4.24 to work under 2.6.3, but I
+keep getting sporadic bit/byte errors on files written to disk over PCI
+with DMA enabled. (SiI680 IDE controller)
+The Ide driver and PCI works correct under 2.4.24
 
-You get this wrong. The layout of the  Linux  kernel  should  not  be
-modified  to  try  adapting  it  to any tools - this will fail sooner
-orlater. Instead, get tools that are capable of dealing with the task
-you put at them.
-
-VisionIce should be usable to download and start thi  image,  but  it
-will  probably  be  of  little use after that. Get yourself a BDI2000
-instead ;-)
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Inside every old person is a young person wondering what happened.
-                              - Terry Pratchett, _Moving Pictures_
+Rune Torgersen
+System Developer
+Innovative Systems LLC
+1000 Innovative Drive
+Mitchell, SD 57301
+Ph: 605-995-6120
+www.innovsys.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
