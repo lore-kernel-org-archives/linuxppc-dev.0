@@ -1,50 +1,33 @@
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-Subject: Some issues to resolve with XFree 4.0 yet
-Date: Wed, 22 Mar 2000 23:46:34 -0500
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.linuxppc.org
-References: <Pine.LNX.4.21.0003151544550.3091-100000@idd-01.imbc.gr>
-In-Reply-To: <Pine.LNX.4.21.0003151544550.3091-100000@idd-01.imbc.gr>
+Message-ID: <38D9AEEC.7ACB82D1@uncc.edu>
+Date: Thu, 23 Mar 2000 00:43:08 -0500
+From: "William H. Schultz" <whschult@uncc.edu>
 MIME-Version: 1.0
-Message-Id: <00032223534800.00840@localhost.localdomain>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: XFree86 4.0 Generic VGA
+References: <200003210600.AAA05535@lists.linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Kostas,
+I'm attempting to run XFree86 4.0 on my Voodoo3.  As far as
+I can tell, the only way I will be able to do this (any time
+soon) is to run the generic vga driver.  However, after
+running the xf86configure program, X won't load.  I get an
+error saying that the module "bitmap could not be loaded--it
+does not exist."
 
-I have set up my XF86Config file to allow mode switching (with valid mode info)
-by hitting the Cntl-Alt-KeyPad- and Cntl-Alt-KeyPad+ keys.  Unfortunately,
-although the mode seems to switch the screen is very messed up.  Luckily, if I
-keep hitting the key combo I get back to a good resolution.  I tracked this
-back to fbdevxxxSwitchMode which uses a framebuffer ioctl (FBIOPUT_VSCREENINFO)
-which in turn is handled in linux/drivers/video/fbmem.c and eventually calls
-aty128fb.c set_var routine.
+While I am interested in accelerated X, currently, I'm
+slightly more interested in the prospect of being able to
+leave my second monitor on...  because it has some useful
+information on it.  I don't expect it to work right away,
+but I know that I won't have a dual monitor system running
+until I get my Voodoo3 working.
 
-Something here is broken but I can't put my finger on what yet.  Does using the
-key combo to switch modes on the fly under R128 work for you on your x86
-machine?
-
-Also, I tried to test this under the XFree86 running fbdev as its driver.  Each
-time I tried this I ended up with a complete hard lockup (kernel went boom).  I
-tried connecting from other machines on my home network but I got no response
-at all.
-
-This used to work fine under xf 3.9.17.   Have you tried this recently?
-
-Thanks,
-
-Kevin
+Any ideas?  Am Ijust missing something incredibly stupid?
 
 
---
-Kevin B. Hendricks
-Associate Professor of Operations and Information Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+Hank
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
