@@ -1,91 +1,76 @@
-Date: Wed, 30 Aug 2000 14:29:29 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michel Dänzer <daenzerm@student.ethz.ch>,
-        Tony Mantler <nicoya@apia.dhs.org>,
-        Tom Rini <trini@kernel.crashing.org>, Dan Malek <dan@netx4.com>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Platform configuration (was: Re: CONFIG_PPC != Mac)
-In-Reply-To: <Pine.LNX.4.10.10007301642120.810-100000@cassiopeia.home>
-Message-ID: <Pine.LNX.4.10.10008301334570.570-100000@cassiopeia.home>
+Date: Wed, 30 Aug 2000 16:05:50 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Michel Lanners <mlan@mcp.cpu.lu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: asm in OF?
+In-Reply-To: <200008301344.PAA10410@mcp.cpu.lu>
+Message-ID: <Pine.HPX.4.10.10008301549190.15978-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 30 Jul 2000, Geert Uytterhoeven wrote:
-> On Sun, 30 Jul 2000, Michel [iso-8859-1] Dänzer wrote:
-> > Where does APUS fit in there?
+	Hi Michel,
+
+
+> > All the OF I have seen had the capability to build new words in asm, with
+> > a `code' definition IIRC. Maybe Apple's OF are crippled ?
 >
-> APUS is something different (CONFIG_APUS, cfr. arch/ppc/config.in). Currently
-> it's not possible to build one kernel that supports both APUS and any other
-> machine type anyway.
+> Apple's OF seems to have that capability as well (I think, guess and hope ;-).
+> However, it does _not_ seem to have an assembler built-in. The 'code' word
+> is defined all right.
+
+You don't have any ppc-assembler vocabulary or similar, then ?
+
+> When I do a 'see hido@', I only get:
+>  >0 see hid0@ code hid0 ok
+>  >0
+
+Ok, how can something this close to the machine be delivered without an
+assembler ?
+
+> What I can do is look at the hex dump of the hid0@ word, and that gives me asm
+> statements like for you (except that in Apple's OF, r20 holds the top stack
+> item ;-). The fact that ' ' hid0@ dis' gives me a hex dump and not a
+> disassembly is another evidence that Apple's OF doesn't know anything about
+> asm....
+
+Well, sincee you can type in hex, there is still some hope...
+
+> > The syntax to build with an unknwown SPR is strange:
+> > code ictc@
+> > stwu r28,-4(r31)
+> > 33f mfspr r28,*
+> > bcctr 20,0
+> >
+> > generates the correct code, since I don't have ictc spr defined.
+> > Otherwise mfspr 28,ictc might work.
 >
-> So currently you have to compile a kernel for _either_
+> I will try this tonight, but I doubt I will be able to enter this as asm
+> words. Do you know the alternate syntax? Would something lime this work:
 >
->     PowerMac/PReP/MTX/CHRP (CONFIG_ALL_PPC)
->  or Gemini (CONFIG_GEMINI)
->  or EST8260 (CONFIG_EST8260)
->  or APUS (CONFIG_APUS)
->
-> Personally I'd more like a configuration where you can select whatever you
-> want of
->
->   - PowerMac (CONFIG_PMAC)
->   - PReP (CONFIG_PREP)
->   - MTX (CONFIG_MTX)
->   - CHRP (CONFIG_CHRP)
->   - Gemini (CONFIG_GEMINI)
->   - EST8260 (CONFIG_EST8260)
->   - APUS (CONFIG_APUS)
->
-> with of course some extra logic to prevent illegal combinations.
+> code 60000000 l, 6000000 l,
 
-So what about this?
+I think so, let me try:
 
---- linux-2.4.0-test8-pre1/arch/ppc/config.in.orig	Wed Aug 23 18:52:20 2000
-+++ linux-2.4.0-test8-pre1/arch/ppc/config.in	Wed Aug 30 14:23:38 2000
-@@ -82,6 +82,10 @@
- fi
+ok code ictc@ ok 979ffffc l, 7f99faa6 l, 4e800420 l, ;code
+ok see ictc@
+code ictc@
+edcc5c     stwu    r28,-4(r31)
+edcc60     mfspr   r28,spr1017
+edcc64     bcctr   always
+ok ictc@ .
+264d2
+ok
 
- if [ "$CONFIG_ALL_PPC" != "y" ];then
-+  bool 'PowerMac support' CONFIG_PMAC
-+  bool 'PReP support' CONFIG_PREP
-+  bool 'MTX support' CONFIG_MTX
-+  bool 'CHRP support' CONFIG_CHRP
-   define_bool CONFIG_MACH_SPECIFIC y
- fi
+It just works and returns garbage on a 603e, everytime a different value.
 
-and replace all tests for CONFIG_ALL_PPC by a suitable combination of tests
-for CONFIG_PMAC/CONFIG_PREP/CONFIG_MTX/CONFIG_CHRP? (BTW, there are still some
-relics of CONFIG_PREP around in config.in)
+> as a sequence of 2 NOP's? How do you terminate a 'code' sequence?
 
-This clearly indicates that you can
- 1. still compile one kernel that can run on all of PowerMac/PReP/MTX/CHRP,
-    while
- 2. it allows to fine tune the kernel to your specific machine and
- 3. protect against illegal combinations with other machine types.
-And if it ever will be possible to compile a generic kernel that runs on e.g.
-APUS as well, CONFIG_APUS can be included in CONFIG_ALL_PPC (or better, rename
-it to CONFIG_GENERIC_PPC) as well.
+Oops, forgot about it, my bad. With ';code', isn't it obvious ?
 
-I'm willing to work on a first patch, but I don't have a PPC cross-compiler at
-hand and am unable to use bitkeeper, so I have to base it on plain
-2.4.0-test8-pre1 and leave it untested. Whoever owns whatever machine can
-smooth the rough edges for his/her platform afterwards.
-
-What do you think?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
