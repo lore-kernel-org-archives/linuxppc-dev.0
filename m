@@ -1,20 +1,16 @@
-Return-Path: <yuli@arabellasw.com>
-Received: from gold.webfusion.co.uk (gold.webfusion.co.uk [212.67.202.159])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8BD1B67A46
+Return-Path: <takeharu1219@ybb.ne.jp>
+Received: from ybbsmtp08.mail.mci.yahoo.co.jp (ybbsmtp08.mail.mci.yahoo.co.jp
+	[210.80.241.157]) by ozlabs.org (Postfix) with SMTP id A595E67A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 13 Mar 2005 00:54:21 +1100 (EST)
-From: Yuli Barcohen <yuli@arabellasw.com>
+	Sun, 13 Mar 2005 03:45:30 +1100 (EST)
+Message-ID: <42331CA8.3030400@ybb.ne.jp>
+Date: Sun, 13 Mar 2005 01:45:28 +0900
+From: Takeharu KATO <takeharu1219@ybb.ne.jp>
 MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org, galak@freescale.com,
+	mporter@kernel.crashing.org, ebs@ebshome.net
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <16946.62597.739208.125687@astp0002.localdomain>
-Date: Sat, 12 Mar 2005 15:54:13 +0200
-To: "Vijay Padiyar" <vijay_padiyar@hotmail.com>
-In-Reply-To: <BAY1-DAV14F92D2B45266ECD1105A48B540@phx.gbl>
-References: <BAY1-DAV14F92D2B45266ECD1105A48B540@phx.gbl>
-Cc: LinuxPPC Support <linuxppc-embedded@ozlabs.org>
-Subject: Re: problem opening I2C device on MPC8260
+Subject: [PATCH] compilation failure due to confliction of time_offset
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,23 +21,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> Vijay Padiyar writes:
+Hi all:
 
-...
+I send carbon copy of the mail to maintainers of Embedded PowerPC,
+because I can not figure out who is responsible for arch/ppc/kernel/time.c.
 
-    Vijay> When I try to open the I2C device from a user program in root
-    Vijay> mode, I get an error and the value of errno is ENODEV.
+I found a trivial bug made compilation fail.
+I show error log as follows:
 
-...
+-- error log
+arch/ppc/kernel/time.c:92: error: static declaration of 'time_offset'
+follows non-static declaration
+include/linux/timex.h:236: error: previous declaration of 'time_offset'
+was heremake[1]: *** [arch/ppc/kernel/time.o] Error 1
+make: *** [arch/ppc/kernel] Error 2
+--
 
-This means that there is no I2C controller driver in your
-kernel. Probably you use stock kernel which does not contain driver for
-CPM I2C. You have to look for a custom kernel (I can offer Arabella
-Linux) or try to apply one of the patches which were posted in the past.
+Please apply following patch if this is a correct fix.
 
-Best regards,
+Regards,
 -- 
-========================================================================
- Yuli Barcohen       | Phone +972-9-765-1788 |  Software Project Leader
- yuli@arabellasw.com | Fax   +972-9-765-7494 | Arabella Software, Israel
-========================================================================
+Takeharu KATO
+
+Signed-off-by: Takeharu KATO <takeharu1219@ybb.ne.jp>
+
+--- linux-2.6.11.maybe/arch/ppc/kernel/time.c   2005-03-05
+23:58:20.000000000 +0900
++++ linux-2.6.11/arch/ppc/kernel/time.c 2005-03-13 00:46:49.000000000 +0900
+@@ -89,7 +89,6 @@ unsigned long tb_to_ns_scale;
+
+ extern unsigned long wall_jiffies;
+
+-static long time_offset;
+
+ DEFINE_SPINLOCK(rtc_lock);
