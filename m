@@ -1,35 +1,47 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: David Edelsohn <dje@watson.ibm.com>
-Subject: Re: gcc 2v optimization problem with C++ exceptions?
-Date: Tue, 10 Apr 2001 17:14:06 -0400
-Cc: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-	linuxppc-dev@lists.linuxppc.org
-References: <200104102051.QAA20310@makai.watson.ibm.com>
-In-Reply-To: <200104102051.QAA20310@makai.watson.ibm.com>
+Message-ID: <01139FC052A0D411900B00508B9535FC015E9E43@ZCH07EXM04.corp.mot.com>
+From: Liu HongXun-a16975 <a16975@motorola.com>
+To: "linuxppc-dev@lists. linuxppc. org (E-mail)" <linuxppc-dev@lists.linuxppc.org>
+Subject: Why the following codes in do_basic_setup() are always executed ?
+Date: Wed, 11 Apr 2001 10:56:50 +0800
 MIME-Version: 1.0
-Message-Id: <01041017140600.09487@localhost>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hi, all,
+	Currently, I am porting HardHat linux 2.2.14 to my platform based on ppc823.
+The bootloader is ppcboot(0.8.3), and I use ramdisk. But when I boot linux on my board,
+ the following codes in do_basic_setup() are always executed and my board halt.
 
-On Tuesday 10 April 2001 16:51, David Edelsohn wrote:
-> I am confused why the disassembly contains values like 0x78364e55
-> and 0x78664476 because those seem like 64-bit PowrePC instructions.
->
-> David
+#ifdef CONFIG_BLK_DEV_INITRD
+	root_mountflags = real_root_mountflags;
+	if (mount_initrd && ROOT_DEV != real_root_dev
+	    && MAJOR(ROOT_DEV) == RAMDISK_MAJOR && MINOR(ROOT_DEV) == 0) {
+		int error;
+		int i, pid;
 
-Please ignore the dissassembly (as I mentioned in my e-mail).  The objdump -D
-will try to disassemble everything including the __EXCEPTION__TABLE__ entries.
+		pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
+		if (pid>0)
+			while (pid != wait(&i));
+		if (MAJOR(real_root_dev) != RAMDISK_MAJOR
+		     || MINOR(real_root_dev) != 0) {
+			error = change_root(real_root_dev,"/initrd");
+			if (error)
+				printk(KERN_ERR "Change root to /initrd: "
+				    "error %d\n",error);
+		}
+	}
+#endif
 
-The table entries (i.e. data) are what was different, they are not
-instructions AFAIK.
+I know the halt is caused by this line "kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD)",
+because there is no "/linuxrc" in my ramdisk. I just wonder why the above codes are executed.
+Such codes are in do_basic_setup() in /init/main.c, and after that we will execute "/sbin/init" or
+just "/bin/sash", which are the usual ones.
 
-Kevin
+BRs
+Rolf Liu
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
