@@ -1,41 +1,60 @@
-Date: Sun, 14 Nov 1999 21:31:26 -0500
-From: Michael Meissner <meissner@cygnus.com>
-To: Michael Meissner <meissner@cygnus.com>
+From: Brad Boyer <flar@marcus.pants.nu>
+Message-Id: <199911150850.AAA12382@marcus.pants.nu>
+Subject: Re: Would HFS+ read only capability be useful?
+To: dave@thinbits.com (Dave Camp)
+Date: Mon, 15 Nov 1999 00:50:51 -0800 (PST)
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Linux 2.2.13 on an original PowerStack-I
-Message-ID: <19991114213126.A19437@tiktok.cygnus.com>
-References: <199911100542.AAA08374@tiktok.cygnus.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199911100542.AAA08374@tiktok.cygnus.com>; from Michael Meissner on Wed, Nov 10, 1999 at 12:42:25AM -0500
+In-Reply-To: <199911140940.BAA29983@easystreet01.easystreet.com> from "Dave Camp" at Nov 14, 99 01:40:50 am
+Content-Type: text
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Nov 10, 1999 at 12:42:25AM -0500, Michael Meissner wrote:
+Dave Camp wrote:
+> Since HFS+ development seems to be stalled, I was thinking of throwing my 
+> hat in the ring. Now, before you call me crazy...
+
+Actually, I got sick of waiting as well, and there are some other people who
+I have talked to at various points.  I don't have hardly any code written,
+but I have taken a lot of time, and I think I understand VFS pretty well.
+
+> I've got the HFS+ spec. I've got code I wrote for MacOS that was going to be
+> used for a disk repair program I was working on, but has been put on hold
+> due to a lack of free time to complete it. The code implements objects for
+> reading/manipulating the bitmap, volume header, both B*Tree's, extent lists,
+> HFS wrapper volumes, etc. It also has a nice caching system built into it.
+
+Depending on how it was written, it may be useful, but it may not.  Just remember
+that if your code isn't GPL, it can't be directly used in the kernel.  If I get
+some time soon, I'll set up some web pages with what I already have, and
+people can help.  Since most of what I have at the moment is just in my head,
+there isn't much to put on the net, but I'll try.
+
+> There is enough code, I would think, to implement read only data fork access
+> for HFS+ volumes without much trouble.
 > 
-> I have an original PowerStack-I (66 Mhz 603 with no cache) that has
-> been sitting idle since about January, and I thought I would turn it
-> into a web server.  I did the usual boot with my carefully preserved
-> FD_SETUP, base tools, build tools, FD_BOOT diskettes, and set up a R4
-> system, and tried to boot with the 2.2.13 kernel I'm running on my
-> PowerStack-II (a 'UTAH' 200 Mhz 604e, 512K Cache).  It seemed to fail
-> miserably looking for hda/hdb.  Is there a known patch to make the
-> older PowerStack-I boot?  I vaguelly recall having this problem except
-> reversed in the January time frame (standard kernel would boot on the
-> older machine but not boot on the newer machine, but there was a patch
-> available to make it boot on the new machine which broke the old
-> machine -- evidently that patch went into the tree).  Ideally, I could
-> run the same kernel on both machines, but I could live with different
-> kernels.
+> Problem is, I don't know anything about Linux coding, or more specifically,
+> what the API looks like for adding a file system module (or whatever the
+> proper term is).
 
-Just in case anybody else has the same problem, I figured out what my problem
-is -- I forgot to compile in the NCR53C8XX driver.  I compiled in the SYM53C8XX
-driver on the 604e, but the 603 only has a 53c810 onboard.  Whoops.
+Well, the hardest part I've found so far is the interfacing with the system,
+athough understanding Apple's BTrees is a very close second.
 
--- 
-Michael Meissner, Cygnus Solutions
-PMB 198, 174 Littleton Road #3, Westford, Massachusetts 01886
-email: meissner@cygnus.com	phone: 978-486-9304	fax: 978-692-4482
+> Would this be useful? If so, can someone suggest a book or two on coding in
+> this area of Linux? Also, are there Unicode API's in Linux (since HFS+ uses
+> Unicode to store filenames)?
+
+As far as I know, there are no printed books on this topic, although there is
+a book about device drivers.  The best option is the LDP or the kernel source
+itself.  The kernel comes with a short description of VFS in the Documentation
+directory, but it isn't very informative.  Mostly just a list of functions and
+structures.  I learned from reading the kernel source, mostly.  There is some
+Unicode support in the kernel for some of the MS filesystems, but I don't have
+a good understanding of Unicode, so I can't really say how useful it is without
+actually trying it.
+
+	Brad Boyer
+	flar@pants.nu
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
