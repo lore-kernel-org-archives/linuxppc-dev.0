@@ -1,38 +1,31 @@
-Message-ID: <381EB2D4.A5C5DEEF@fi.infn.it>
-Date: Tue, 02 Nov 1999 10:45:56 +0100
-From: Simone Piccardi <Simone.Piccardi@fi.infn.it>
+Date: Tue, 2 Nov 1999 10:51:59 +0100 (CET)
+From: Michael Schmitz <schmitz@simul.biophys.uni-duesseldorf.de>
+To: dsmk@bu.edu
+cc: Troy Benjegerdes <hozer@drgw.net>, Paul Mackerras <paulus@linuxcare.com>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: (simple /proc/apm support for pmud) Re: PMU daemon
+In-Reply-To: <Pine.LNX.4.20.9911011005150.14599-100000@faust.bu.edu>
+Message-ID: <Pine.LNX.4.10.9911021045170.10616-100000@simul.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: Christian Zankel <chris@mvista.com>
-CC: Matt Porter <mporter@eng.mcd.mot.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: BUGboot 0.2 Patch
-References: <19990930134513.C25664@fwrsl-11.phx.mcd.mot.com> <3802668E.C5A6BAC6@fi.infn.it> <19991014094024.A568@fwrsl-11.phx.mcd.mot.com> <3819E280.43C05759@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi again,
-now it works!! I can boot from flash!
+> > Finally, does anyone know how feasable it would be to make pmud have the
+> > same API as the intel-ish APMD, since there are a bunch of nice X
+> > apps/applets for various window managers that talk to APMD?
+> 
+> Well, I threw together a quick patch to pmud that does this.  Here is the
+> message that I sent to Paul Mackerras the other day.
 
-It was just the problem of endianess; for some reason when I compiled
-mkbugboot.c on the board it take it as little-endian; it was sufficient
-to force the code putting:
+Just what I need to use the Gnome applet :-) Thanks for implementing this. 
+Please take care with the 'pmud sleeps machine at low power'
+feature, the write to stderr should be omitted or replaced by a
+syslog write there. At least on my machine, writing to stderr kills pmud
+in the least 'convenient' moment. 
 
-  bbh->entry_offset =header_size;
-  bbh->routine_length= MAX_BOOT_SIZE+boot_size+2;
+	Michael
 
-instead of:
-
-  bbh->entry_offset	= cpu_to_be32(header_size);	/* Entry address */
-  bbh->routine_length	= cpu_to_be32(MAX_BOOT_SIZE+boot_size+2); 
-
-and everything went fine. I'll look to understand why it take it as
-LITTLE_ENDIAN on a big endian computer, but now I'm very happy!
-
-Thank you again for the good work.
--- 
-Simone Piccardi
-Microsoft is NOT the answer. Microsoft is the Question.
-The answer is: "NO!"
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
