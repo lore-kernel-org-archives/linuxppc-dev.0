@@ -1,26 +1,23 @@
-Date: Mon, 13 May 2002 11:13:19 -0400
-From: Ben Collins <bcollins@debian.org>
-To: Bill Fink <billfink@mindspring.com>
-Cc: Linux IEEE1394 Developers <linux1394-devel@lists.sourceforge.net>,
-	LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Firewire Disk Broken in 2.4.19-pre8-ben0 kernel (was working fine with 2.4.18-ben0)
-Message-ID: <20020513151319.GI494@blimpo.internal.net>
-References: <20020513105519.7cb1daf8.billfink@mindspring.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020513105519.7cb1daf8.billfink@mindspring.com>
+From: benh@kernel.crashing.org
+To: <acurtis@onz.com>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: linuxppc_2_5 vs. linuxppc-2.5
+Date: Mon, 13 May 2002 16:50:33 +0100
+Message-Id: <20020513155033.14447@mailhost.mipsys.com>
+In-Reply-To: <NCBBIINEHIPFGJPLBEIFCEPBDGAA.acurtis@onz.com>
+References: <NCBBIINEHIPFGJPLBEIFCEPBDGAA.acurtis@onz.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> ohci1394: $Revision: 1.101 $ Ben Collins <bcollins@debian.org>
+>Is one of these BitKeeper trees now obsolete? The webpage on
+>www.penguinppc.org has been partially updated to specify linuxppc-2.5.
+>(originally linuxppc_2_5)
 
-Try the SVN code base (check the website for how to download).
+The _2_5 is obsolete, we keep it around for the history
 
---
-Debian     - http://www.debian.org/
-Linux 1394 - http://linux1394.sourceforge.net/
-Subversion - http://subversion.tigris.org/
-Deqo       - http://www.deqo.com/
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
