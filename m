@@ -1,42 +1,47 @@
-Message-ID: <406C658E.10500@embeddededge.com>
-Date: Thu, 01 Apr 2004 13:55:10 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Eugene Surovegin <ebs@ebshome.net>
-Cc: John Whitney <jwhitney-linuxppc@sands-edge.com>,
-	Matt Porter <mporter@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problems with dma_alloc_coherent()
-References: <9EB527A2-83F5-11D8-9FF0-000A95A07384@sands-edge.com> <20040401100546.A27472@home.com> <4317F0F4-8405-11D8-9FF0-000A95A07384@sands-edge.com> <20040401181926.GA3630@gate.ebshome.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Kumar Gala <kumar.gala@motorola.com>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Proposed Kconfig update patch for help text) 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 01 Apr 2004 10:19:56 PDT."
+             <20040401171956.GD26876@smtp.west.cox.net>
+Date: Thu, 01 Apr 2004 20:56:51 +0200
+Message-Id: <20040401185656.871ECC10A4@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Eugene Surovegin wrote:
+In message <20040401171956.GD26876@smtp.west.cox.net> you wrote:
+>
+> > So far, it's all we have, right? Or do you have anything significant-
+> > ly better?
+>
+> As I said, someone is working on the second option I described, but I
+> don't know how far they have gotten.
 
-> Hmm, I don't understand this, bus != PCI bus.
+Is this a secret or what? Why don't you give names?  Why  doesn't  he
+show up on this list?
 
-Isn't that necessary due to bridge windows?  If != PCI bus I guess we
-assume OCP that are connected to a 1:1 mapped internal bus, which
-may not be a valid assumption either.
+> 2.6 support, without the Motorola code.  If there's a specific person at
+> Motorola who'd be interested in what the Linux community has to say
+> about the DMA code, no one has told me who.
 
-> Current implementation just relies on the fact that PCI devices view system
-> memory the same way as other-bus devices (e.g. OCP devices which sit on OPB).
+You are not working on this, or are you?
 
-I don't think so.  PCI devices are known to go through bridges, while
-others are assumed to not.
+> > Also, isn't this kind of wasted effort as the target is still moving?
+>
+> What target?  The Motorola code?  The 5xxx hw line?  If you're talking
 
-> In more general case, yes, "views" can be different for each bus type or even
-> for each bus...
-
-So, we should always have some kind of 'bus type' device handle, that provides
-this information.  It's clear that all Linux APIs are designed from the
-viewpoint of PC-like workstations.  They have always fallen very short when
-pressed into the more prevalent embedded computing space :-)
+The Motorola code, and to some extend the hardware.
 
 
-	-- Dan
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+How does a project get to be a year late?      ... One day at a time.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
