@@ -1,41 +1,39 @@
-From: George Staikos <staikos@kde.org>
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: New TiPB - PCMCIA settings
-Date: Mon, 18 Nov 2002 18:29:11 -0500
+Message-ID: <3DD992E1.6040000@iram.es>
+Date: Tue, 19 Nov 2002 02:24:49 +0100
+From: Gabriel Paubert <paubert@iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200211181829.11725.staikos@kde.org>
+To: joakim.tjernlund@lumentis.se
+Cc: Tim Seufert <tas@mindspring.com>,
+	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: csum_partial() and csum_partial_copy_generic() in badly optimized?
+References: <IGEFJKJNHJDCBKALBJLLMEBJFIAA.joakim.tjernlund@lumentis.se>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-   After fighting for a short while, I have some settings for config.opts on
-the new Ti PowerBook.  These make PCMCIA work for me anyways:
+Joakim Tjernlund wrote:
 
-include memory 0xa0003000-0xa0ffffff
-include port 0x9100-0x9fff
+> hmm, I think you are right. The practice seems to be invalidate_dcache_range(start, start+len).
+> But then the interface should be invalidate_dcache_range(start, len) instead, IMHO.
+> I guess it's too late to change it now.
 
-   Remove any other include memory/port lines to avoid oopses.
+Probably. I don't know why it is this way since it would in most cases be
+better to do the start+len in the subroutine, saving almost always one
+instruction in the caller.
 
-   It would really be nice if yenta_socket could be cleaned up and this stuff
-could be autodetected.  the algorithm was straightforward I think:
+>
+>
+>>This said, the first instruction can be removed:
+>>_GLOBAL(invalidate_dcache_range)
+>>  	rlwinm	r3,r3,0,~(L1_CACHE_LINE_SIZE-1)
+>>  	subf	r4,r3,r4
+>>  	add	r4,r4,L1_CACHE_LINE_SIZE-1
 
->From /proc/iomem, find the card services region and use a suitable sized
-region starting after that (assuming it is free).
+of course this instruction should be an immediate form: addi and not add!
 
->From /proc/ioports, find the PCI entry for cardbus and use the ports available
-directly after the last cardbus slot for a suitable sized region.
-
-What doesn't work right now:
-- dmasound is aweful (lots of clicking and sounds bad)
-- video issues in XFree86 and fbdev, along with sleeping
-    - closing the screen causes lots of garbling on the screen.
-- v.92 modem (hcfusb doesn't work on it)
-
---
-
-George Staikos
+	Regards,
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
