@@ -1,44 +1,46 @@
-Message-ID: <000b01bffd59$e0c22600$0301a8c0@w9801>
-From: "Dan" <dung_nguyen@smartstors.com>
-To: "Linux PPC Mailing List" <linuxppc-embedded@lists.linuxppc.org>
-Subject: processes management
-Date: Thu, 3 Aug 2000 21:48:23 +0700
+Message-ID: <39898ACB.E3CD752D@apus.co.at>
+Date: Thu, 03 Aug 2000 17:07:55 +0200
+From: Rene Pachernegg <rene.pachernegg@apus.co.at>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: sys_open fails with shared libs
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Friends,
+hi,
 
-I am Dan Nguyen, I just work with Linux PCC.
-Could you help me (if I am wrong, please show me
-the right address mailling list, thanks!
+We ported  linux (kernel, sysvinit, getty, login, sash ...) to our ppc
+740 based system, which worked fine using static linked libs.
+We are trying now  to support dynamic linking, which causes login to
+fail.
 
- - How to check memory safe when running application?
-- I want find the program look like check_mem, that I can
-check usaged memory before and after running an application.
-I feel /proc/infomem can not say me my application has leak
-mem. I used mpr, but I want to know other tools.
-- When does dynamic loaded library was removed from memory?
-- Can we remove dynamic library on demand?
-- How to check a specified dynamic lib stay on memory or not?
-- I make a big program with many functions, it not fit on small
-memory (my Embedded Linux only have 4 MB RAM and no swap),
-I intend design it as follows:
- + main program will manage all function: main_app
- + Write each function as shared library (ex: f1.so, f2.so, ... fn.so)
- + If main program need that function, then it will loaded into memory.
+I was tracking down the problem to the following:
+static:    sys_open in the kernel gets correct filenames (e.g.:
+/etc/passwd from getpwnam in libc)
+dynamic:    sys_open gets senseless names and cant open the needed files
+(--> login fails without passwd) whenever it is called from a libc
+function. Opening files from elsewhere is working fine.
 
- Now I don't know which way to best:
- 1. link main_app and f1.so, f2.so, ... fn.so
- OR
- 2. call explicit function in main_app.c, only using -ldl
+It seems to be a kind of adressing problem so I controlled the adresses
+of the filename parameter in sys_open, which is always FFExxxxx (don't
+know if that may be an important hint) whenever its called from the
+shared libs.
 
- Thanks for your concerning.
+Everything else works with the shared libs. They are properly loaded (as
+it seems) and the programs work fine. Calls to library functions work
+to. It's seems to be just the system call open, which does not work from
+the shared libs.
 
-Dan Nguyen
+For cross compiling we use:
+    bin-utils 2.9.5.0.22
+    gcc 2.95.2
+    glibc 2.1.2
+
+Any suggestions?
+Thanks,
+    Ren
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
