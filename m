@@ -1,74 +1,43 @@
-Message-ID: <3C0FF72D.3B43D74A@mvista.com>
-Date: Thu, 06 Dec 2001 14:54:37 -0800
-From: Armin Kuster <akuster@mvista.com>
-MIME-Version: 1.0
-To: ppcdevel <linuxppc-dev@lists.linuxppc.org>
-Subject: IBM 4xx drivers restructuring
+Date: Thu, 6 Dec 2001 18:07:55 -0600
+From: Troy Benjegerdes <hozer@drgw.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: HIGHMEM + serial console + SMP + 2GB freeze on pmac
+Message-ID: <20011206180754.A23942@altus.drgw.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have hit the issue of trying to reuse some of the drivers from the
-405GP to NP405 and have the following proposal for making it a bit
-easier for other 4xx cores.  Also my goal is to get the drivers smart
-enough so they can init any number of the same devices in the init
-code.  I am going to use the term "internal peripheral support (ips)"
-when referring to the support of these devices use in the 405GP, NP405H,
-NP405L, stb3xxx and stb4xxx.
+I just compiled the latest 2_4_devel with CONFIG_SMP,
+CONFIG_SERIAL_CONSOLE, CONFIG_XMON, and CONFIG_HIGHMEM, and I'm running
+into some problems.
 
-1) Menuconfig change
-	I would like to use a single CONFIG_<mfg>_IPS to enable a given driver
-instead of "if 405gp -o np405 " so that the config.in is a bit cleaner.
-This config variable will be a bool defined in the /platform/config.in
-in the board sections.
+This machine is an ealier Sawtooth G4 (7400) with 4 memory slots and 2GB
+of ram (I know, Macos does not support this).
 
-2)  Centralize the ips register mapping.
-	I would like to  move the #defines and ethernet register struct and
-created some new ones to a asm-ppc/ibm_ips.h to eliminates replication
-of the same info. This file is included in the asm-platform/board.h file
-before the cpu header(ibm405gp.h, ibmnp405.h, etc.)
+First, It booted up normally, but when I logged into KDE it got about
+halfway through the login and froze.
 
-3) Centralize the defined base address and number for each of the ips
-into the processor headers.
-	I would like to move the defines out of the drivers and into a single
-place.
+Then I booted with 'console=ttyS0,38400'.. it froze after
 
-4) Created new cpu.c
-	I would like to create cpu.c files to do some register inits and keeps
-this form being replicated in each board.c file.
-example:
-ibm_ips.h
+smp_core99_probe: found 1 cpus
+Waiting on wait_init_idle (map = 0x0)
+All processors have done init_idle
+PCI: Probing PCI hardware
 
-typedef struct emac_regs {....}emac_t;
+Then I tried 'console=ttyS0,38400, mem=1500M'.. still died on probing PCI
+hardware.
 
-ibmnp405.h
+I'm going to try several other combinations of things, including taking
+one memory stick out since this could actually be that the hardware
+doesn't like that much memory.
 
-#define	EMAC_BASE_1 0xef008000
-#define EMAC_NUMS 1
-
-ibm405.c
-
-const emac_t* EMAC_ADDR[]=
-{
-	(emac_t*) EMAC_BASE_1,
-};
-
-5) Change drivers to loop though and initialize for any number of
-devices.
-	In ther current state, many of the 405/4xx drivers can not be easily
-reused.  Whith the above changes and driver restructuring, porting a new
-405 processor model shoul dony require two file changes. its cpu.h and
-cpu.c
-
-
-I have changed the ethernet driver all ready and does init two emacs on
-the cedar.
-
-
-feedback
-
-
--- armin
+--
+Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
+-----"If this message isn't misspelled, I didn't write it" -- Me -----
+"Why do musicians compose symphonies and poets write poems? They do it
+because life wouldn't have any meaning for them if they didn't. That's
+why I draw cartoons. It's my life." -- Charles Schulz
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
