@@ -1,35 +1,30 @@
-Message-ID: <006101bf88ac$84978c20$69f001dc@sjzhu.sps.mot.com>
-From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
-To: "Dan Malek" <dan@netx4.com>, "Momchil Velikov" <velco@fadata.bg>
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Kernel debug about Linux for PowerPC
-Date: Wed, 8 Mar 2000 11:14:57 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;	charset="iso-8859-1"
+Message-ID: <20000308035129.11819.qmail@www0f.netaddress.usa.net>
+Date: 7 Mar 00 20:51:28 MST
+From: Robert Shaw <rshawppc@netscape.net>
+To: <linuxppc-user@lists.linuxppc.org>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Booting 2.3.48 (devel) kernel problems?
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello, everyone
+I have a PowerBook G3 (1997) that I'm trying to get the latest devel kernel
+compiled and booting on (2.3.48). However, no matter what I try, it always
+hangs at the "booting..." screen.
 
-I could not find linuxplanet-2.2.13 from ftp.mvista.com.
-Does anyone know where can I get it?
+I've tried using the default ".config" from the rsync, I've tried the default
+pmac_config config, and I've tried the config from a booting stable
+2.2.15pre11 kernel. None of them seem to work.
 
-Thanks in advanced!
-Shuangjun
+Can anyone help? Does anyone have the 2.3.x series kernel booting on this
+older PowerBook G3 (3400 form factor, first PBG3 made)? If so, please email me
+with details.
 
+Thanks!!
 
->
->Momchil Velikov wrote:
->
->> You have to write these functions yourself.
->
->No, you don't.  Just download the kernel sources for
->linuxplanet-2.2.13 from MontaVista (ftp.mvista.com).
->It has the kgdb support.
->
->
-> -- Dan
-
+-Robert
+ mailto:rshaw@linuxppc.org
+ http://www.linuxppc.org/BlueG3/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
