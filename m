@@ -1,53 +1,54 @@
-Message-ID: <3A7023E6.516580F@relog.ch>
-Date: Thu, 25 Jan 2001 14:02:30 +0100
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: michdaen@iiic.ethz.ch
+Message-ID: <3A705D92.682A6FEF@mvista.com>
+Date: Thu, 25 Jan 2001 12:08:34 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Petr Vandrovec <VANDROVE@vc.cvut.cz>,
-        Ani Joshi <ajoshi@shell.unixbox.com>, debian-powerpc@lists.debian.org,
-        linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu
-Subject: Re: [linux-fbdev] Matrox and XFree86 4.0.2 update
-References: <Pine.LNX.4.30.0101251245400.17598-100000@idd-01.imbc.gr>
-Content-Type: text/plain; charset=iso-8859-1
+To: Roman Zippel <zippel@fh-brandenburg.de>
+CC: mgreer@mvista.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: CONFIG_HIGHMEM on PPC
+References: <Pine.GSO.4.10.10101251016230.20829-100000@zeus.fh-brandenburg.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kostas Gewrgiou wrote:
->
-> On Thu, 25 Jan 2001, Geert Uytterhoeven wrote:
->
-> > On Thu, 25 Jan 2001, Kostas Gewrgiou wrote:
->
-> > > Changing the endian to little is the *right* thing, big-endian mode
-> > > doesn't offer us anything beyond problems in matroxfb 8/16 bit accesses
-> > > become a nightmare there...
-> >
-> > 8/16 bit accesses? I assume you're talking about the frame buffer, not
-> > about the register accesses?
->
-> No i am talking about register accesses, for example
-> the mga driver in xfree86 uses
->  #define MGAISBUSY() (INREG8(MGAREG_Status + 2) & 0x01)
-> SDL uses
->  #define mga_wait(space)  {                                             \
->         while ( mga_in8(MGAREG_FIFOSTATUS) < space );                   \
->  }
->
-> Both will fail under big-endian mode in PPC, the addressing is changed
-> so you have to use something like *(addr + (3-addr%4) to get the right
-> byte (i hope i got it right, its still early here)
+Roman Zippel wrote:
 
-What about adapting the macros then?
+> And they don't have to.
+
+So, why do we have so damn many ways and hacks to do stuff like
+this?  If a page or I/O is mapped into the VM space, there should
+be a set of common functions to manage this space, and exactly one
+function to do the virt_to_phys.
+
+> .... If you have a highmem page, use kmap to get
+> temporary virtual mapping. On the other hand most of the drivers should
+> never see a highmem page.
+
+On the other hand, if highmem was designed properly the kernel
+should just fault in the needed pages and virt_to_phys and friends
+should just work in this space, too.  Yet another set of functions
+to use and restrictions just because a physical page exists beyond
+some arbitrary boundary?  Geeze, I thought we learned from Mush-DOS
+back in the mid-80's this was not a good design........
 
 
-Michel
+> I do currently.
+
+I removed the #ifdef APUS in the virt_to_phys and friends macros
+and made everyone call iopa which is going to move to a new file
+called arch/ppc/mm/ioremap.c (like other architectures do).  I
+don't think the mm_ptov() function works on anything because the
+kmap_chunks is gone (at least in the linuxppc_2_5 I am using).
+Perhaps I'm just missing some updates from you.  I'll delete
+these functions from apus_setup.c since they are common to everyone
+now.  I'm almost done with this first phase of IBM4xx merge, which
+I will probably start checking in later today.  I'm just testing
+on as many other platforms as I can to ensure I didn't break other
+stuff.
+
+Thanks.
 
 
---
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
