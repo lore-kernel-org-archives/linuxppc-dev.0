@@ -1,45 +1,35 @@
-Date: Fri, 25 Jan 2002 17:55:34 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: arch/ppc/kernel/setup.c::screen_info
-In-Reply-To: <20020125164406.GF745@cpe-24-221-152-185.az.sprintbbd.net>
-Message-ID: <Pine.GSO.4.21.0201251754440.15996-100000@vervain.sonytel.be>
+Message-ID: <3C5190CF.9000102@embeddededge.com>
+Date: Fri, 25 Jan 2002 12:07:27 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: paulus@samba.org
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: OpenPIC_NumInitSenses
+References: <15439.64102.68217.293733@argo.ozlabs.ibm.com>	<3C50C615.7090503@embeddededge.com> <15440.55617.344240.588918@argo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 25 Jan 2002, Tom Rini wrote:
-> On Fri, Jan 25, 2002 at 05:28:21PM +0100, Geert Uytterhoeven wrote:
-> > On Fri, 25 Jan 2002, Tom Rini wrote:
-> > > Right.  The problem is that exporting a module symbol based on CONFIG_
-> > > option is bad taste.  I'd rather not do it based on FB_VGA16_MODULE ||
-> > > FB_VESA_MODULE :)
-> >
-> > I'd really like to get rid of the screen_info. It's some kind of
-> > `residual data', filled in with values passed by the BIOS (on ia32).
->
-> Perhaps we can in 2.5 as part of the fb rewrite that's going on.  But I
-> don't think it's an option for 2.4, do you?
+Paul Mackerras wrote:
 
-Indeed not for 2.4.x.
+> Well, you need some way to tell the openpic code how many ISRs there
+> are.  You don't _need_ to use OpenPIC_NumInitSenses to do that. :)
 
-Note that it's not pure fb-related, since vgacon relies heavily on screen_info.
+It was a quick hack that did the trick :-).
 
-Gr{oetje,eeting}s,
+> .... and they are not contiguous either (I just looked at the MPC107
+> manual).  Who designed this thing?
 
-						Geert
+Some embedded person, I guess :-).
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> ... have a look - I think it should let you handle the MPC107 quite
+> painlessly, but if not let me know what else is needed.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Cool.  Thanks.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
