@@ -1,54 +1,46 @@
-Message-ID: <3C04820D.5070904@embeddededge.com>
-Date: Wed, 28 Nov 2001 01:19:57 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: BDI2000 PTEs
-References: <B164B53F5BD6D511888D009027732E1A02498E@ntserver.act.domain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Dan Malek <dan@embeddededge.com>
+Cc: Alex Zeffertt <ajz@cambridgebroadband.com>,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 8xx parameter RAM clashes 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 28 Dec 2001 11:11:44 EST."
+             <3C2C99C0.1020502@embeddededge.com>
+Date: Wed, 28 Nov 2001 17:36:07 +0100
+Message-Id: <20011128163612.69675F9BB@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Rudolf Ladyzhenskii wrote:
+In message <3C2C99C0.1020502@embeddededge.com> Dan Malek wrote:
+>
+> Alex Zeffertt wrote:
+>
+> > I appreciate that there may not be anyone in a position to fix this problem - but I think it's worth
+> > mentioning anyway so that future drivers don't make the problem worse.
+>
+> You need to load the appropriate CPM microcode patches that relocate the
+> I2C, SPI, SMC space in the parameter ram and use the new addresses.
+> Again, the infrastructure for all of this is in the PowerPC 2_4_devel
+> kernels.
 
+Right, Dan, but Alex has a valid point:
 
-> All I need for kernel debugging is BAT only translation. I cleared it
-> according to BDI2000 manual.
+There is a lot of potential overlap in parameter RAM that  cannot  be
+fixed  by microcode patches (at least I don't know of any uCode-patch
+for the SMC1 = UART and SCC3 = ESAR collision mentioned by Alex), and
+it would be nice if the drivers would  register  the  locations  they
+use,  and  actually  CHECK for collisions, instead of silently let us
+run into strange and often hard to debug error conditions.
 
-Ummm....I think you need more than that for debugging loadable modules.
-The BAT translation won't work for loadable modules, you have to find
-all of their code and data through page tables.
+Wolfgang Denk
 
-> I looked at 2.4.14 kernel. It only has BDI2000 support in file
-> /arch/ppc/kernel/head_8xx.S
-
-Well hell....I wonder why they were never updated in 2.4.14.  Take
-a look at the PowerPC development kernels, then.
-
-> Which lines do I have to add?
-
-Add this right after the 'bl load_up_mmu':
-
-
-        /* Add helper information for the Abatron bdiGDB debugger.
-         * We do this here because we know the mmu is disabled, and
-         * will be enabled for real in just a few instructions.
-         */
-        lis     r5, abatron_pteptrs@h
-        ori     r5, r5, abatron_pteptrs@l
-        stw     r5, 0xf0(r0)    /* This much match your Abatron config */
-        lis     r6, swapper_pg_dir@h
-        ori     r6, r6, swapper_pg_dir@l
-        tophys(r5, r5)
-        stw     r6, 0(r5)
-
-
-Good Luck.
-
-
-	-- Dan
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Where shall I begin, please your Majesty?" he asked. "Begin  at  the
+beginning,"  the  King said, gravely, "and go on till you come to the
+end: then stop."    - Alice's Adventures in Wonderland, Lewis Carroll
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
