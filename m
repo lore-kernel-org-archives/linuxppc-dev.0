@@ -1,40 +1,37 @@
-Message-Id: <200002101125.MAA17037@denx.local.net>
-To: Jesper Skov <jskov@redhat.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Vger CVS R.I.P.
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "10 Feb 2000 10:42:22 +0100."
-             <otvh3xcs1t.fsf@thinktwice.zoftcorp.dk>
-Date: Thu, 10 Feb 2000 12:25:43 +0100
+Date: Thu, 10 Feb 2000 13:52:53 +0100 (CET)
+From: Christian Bauer <cbauer@student.physik.uni-mainz.de>
+To: "Daniel E. White" <igor@clark.net>
+cc: NTR <ntr@mindmachine.com>, linuxppc-user@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org,
+        yellowdog-devel@lists.yellowdoglinux.com,
+        yellowdog-general@lists.yellowdoglinux.com
+Subject: Re: linuxppc or yellowdog linux or MachTen
+In-Reply-To: <v04210107b4c77e127618@[128.183.8.59]>
+Message-ID: <Pine.LNX.4.10.10002101346220.30919-100000@student.physik.uni-mainz.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <otvh3xcs1t.fsf@thinktwice.zoftcorp.dk> you write:
->
-> As for general usability, with a trained CVS monkey's POV, bk does
-> take some getting used to. My biggest problem has been finding the
-> proper documentation(*) - Larry, you may want to post the list above as a
-...
-> (*): plenty of documentation in the tools, it's just that I find
->      myself clicking around in 'bk helptool' for a long time before I
->      find what I need. I would have liked HTML/ASCII documentation
->      better.
+Hi!
 
-In any case please include ASCII docs  -  I  *hate*  those  so-called
-help-tools  with  point-and-click  interfaces  that are *NOT* helpful
-because I cannot use grep, and the author had a different idea  about
-how I want to search.
+On Wed, 9 Feb 2000, Daniel E. White wrote:
+> Whatever happened to SheepShaver ?
+> Their website has not been updated since October 1999
 
-Wolfgang Denk
+Yes, we are behind schedule. It turned out that working on our diploma
+theses took more spare time than we anticipated. Also, Marc has been away
+on voyages quite a lot. The program is, however, quite complete now and we
+are planning to release a public beta as soon as I can get the VidMode
+support working.
+
+Bye,
+Christian
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-What is tolerance? -- it is the consequence of humanity. We  are  all
-formed  of frailty and error; let us pardon reciprocally each other's
-folly -- that is the first law of nature.                  - Voltaire
+  / Coding on PowerPC and proud of it
+\/ http://www.uni-mainz.de/~bauec002/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
