@@ -1,26 +1,27 @@
-Subject: Why is search_exception_table disabled for modules on PPC?
-To: linuxppc-dev@lists.linuxppc.org (Linux PowerPC developers mailing list)
-Date: Mon, 10 Apr 2000 19:48:43 +1000 (EST)
+Date: Mon, 10 Apr 2000 20:05:38 +1000 (EST)
+From: Alan Modra <alan@linuxcare.com.au>
+To: Graham Stoney <greyham@research.canon.com.au>
+cc: linuxppc-dev@lists.linuxppc.org, linux-kernel@vger.rutgers.edu
+Subject: Re: PATCH: requesting feedback on dead function optimisation
+In-Reply-To: <20000410090550.8B25E5057F@brixi.research.canon.com.au>
+Message-ID: <Pine.LNX.4.21.0004101956320.4828-100000@front.linuxcare.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000410094843.D29FB3C960@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi gang,
+On Mon, 10 Apr 2000, Graham Stoney wrote:
 
-Can anyone tell me why arch/ppc/mm/extable.c:search_exception_table only
-searches the kernel exception table on PowerPC in 2.2.14?  Why isn't the
-per-module table search enabled like on every other architecture?
+>    There has been some discussion of this on the binutils list, including a
+>    patch which fixes the problem at:
+> 	http://sourceware.cygnus.com/ml/binutils/2000-04/msg00165.html
 
-Thanks,
-Graham
+Graham, I suspect that if you create a custom linker script that tells ld
+where to put your .init.* sections, then you won't need the patch.
+
 --
-Graham Stoney
-Principal Hardware/Software Engineer
-Canon Information Systems Research Australia
-Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
+Linuxcare.  Support for the Revolution.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
