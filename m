@@ -1,23 +1,34 @@
-Message-ID: <001001bfe87e$9e4a8370$0602a8c0@cs.tsinghua.edu.cn>
-From: "Wang Yong" <wung_y@263.net>
-To: "Kwansuk Kim" <kskim@neowave.co.kr>,
-        <linuxppc-embedded@lists.linuxppc.org>
-References: <NEBBKFENMLEDKDHMEHPJIEOGCAAA.kskim@neowave.co.kr>
-Subject: Re: Is the ramdisk mounted?
-Date: Sat, 8 Jul 2000 09:48:27 +0800
+Cc: Linux PPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3967600B.92648EB6@lucent.com>
+Date: Sat, 08 Jul 2000 11:08:27 -0600
+From: Steve Tarr <tarr@lucent.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
+To: "Kim, Jin Young" <jykim@ce.cnu.ac.kr>
+Subject: Re: pci bridge in 8260
+References: <NEBBLJBIIKANNNOGGKNDMEOHCAAA.jykim@raonet.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-of course the root fs has been mounted. maybe there is something wrong with your shell or
-execve() itself.
-there is a sequence of execve() at the end of init() and if all these calling fail, a message
-will be shown as : 'No init found.  Try passing init= option to kernel.'
+My understanding is not to expect it any time soon (<12months).
+As to a good alternative, I have no experience
 
-w.y.
 
+
+"Kim, Jin Young" wrote:
+>
+> Does anybody know when 8260 has pci bridge in it?
+> If there is no schedule in the near future, which pci bridge chip is
+> best fit to 8260, in the view of hw design and linux porting aspect?
+>
+> Jin
+>
+
+--
+Steven Tarr
+Lucent Technologies - Bell Labs
+303-538-4056
+tarr@lucent.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
