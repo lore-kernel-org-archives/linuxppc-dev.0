@@ -1,47 +1,28 @@
-Message-Id: <3.0.1.32.20000520100736.006c7434@pop.mail.yahoo.com>
-Date: Sat, 20 May 2000 10:07:36 +0500
-To: <linuxppc-embedded@lists.linuxppc.org>
-From: "RAJESH.B.V" <rajeshbv@trinc.com>
-Subject: cross compiling of bash for 8xx
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Message-ID: <39263EA0.69C60AA9@da-san.com>
+Date: Sat, 20 May 2000 16:28:32 +0900
+From: Seungdong Lee <sdlee@da-san.com>
+MIME-Version: 1.0
+To: Dan Malek <dan@netx4.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: 8240 BogoMIPS
+Content-Type: text/plain; charset=EUC-KR
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
-I'm a newbie entered into this Linux world and working on mbx860...
-i'm able to build the kernel and succeeded in running it.
-But when i try to compile the applications like Bash and all i'm getting
-some problem with shared libraries.
-i'm using the compiler  powerpc-linux-gcc with version 2.95.2 and glibc
-with version 1.99
-if i compile with static libraries it is fine.
-When compiling   Bash-2.03 when i try to configure with the command
-" CC=powerpc-linux-gcc ./configure --target=860 " it is giving error when
-it is searching to configure for  "getpgrep".
-so the configure is exiting..
+Hi Dan, I have successfully ported Linux to my customized 8240 board.
+Linux runs fine, but I found that the performance is not as good as my
+expectation.
+BogoMIPS value of my board is currently 131.89.
+My board is configured to run in 200MHz system clock.
+Both I/D-cache are enabled. So, theoretical BogoMIPS should be around
+400.
+I saw that you had experience in Sandpoint-8240 board.
+What was the BogoMIPS value in your case?
 
-And when i compile the ping application it is compiling well and when i try
-to run it on my mbx860 board it is displaying an error that
-"shared library libc.s0.6 is not found. failed to open libc.so.6"
-but actually that lib file is there in the /lib path.
+Thank you in advance.
 
-can any one suggest me the solutions for the above..
-Is there any site providing  the minimal root file system Disk Image with
-libc-6 to download.
-
-Thanks,
-Rajesh
-******************************************************************
-
- B.V. Rajesh
-
- RENDEZVOUS ON CHIP (I) PVT.LTD.
- VOICE: ph:040-7742606 ( Extn )- 306
- mailto:rajeshbv@trinc.com
- Web Page  :   http://www.trinc.com
- ******************************************************************
+-- Seungdong Lee
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
