@@ -1,67 +1,58 @@
-Date: Tue, 23 Mar 2004 10:31:22 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
+Message-ID: <20040323212719.41649.qmail@web21105.mail.yahoo.com>
+Date: Tue, 23 Mar 2004 13:27:19 -0800 (PST)
+From: Lou Rickard <lou_rickard@yahoo.com>
+Subject: Re: coffboot?
+To: dan@embeddededge.com
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: IBM 440GX, Ocotea...
-Message-ID: <20040323183122.GA6724@gate.ebshome.net>
-References: <4057CCD40003780D@mssbzhh-int.msg.bluewin.ch>
-Mime-Version: 1.0
+In-Reply-To: <405B4037.6090206@embeddededge.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4057CCD40003780D@mssbzhh-int.msg.bluewin.ch>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Mar 23, 2004 at 12:02:31PM +0100, Wolfgang Grandegger wrote:
+Hi,
+
+I tried, this, but was not successful, and am probably
+just not understanding what you're telling me.
+
+I tried loading the zImage file directly into ram
+(load zImage 200000), and started after the ELF header
+(at 210000), but it failed.
+
+Were you intending that I modify the bootlo.bin file
+to point deeper into the zImage to bypass the ELF
+header?  Or something different?
+
+I then tried using objcopy, but that didn't work
+either, and I'm not really sure what it was supposed
+to do, so probably I did it wrong.  'objcopy -O binary
+zImage zImage.bin' generates a zImage.bin file that
+is, or seems, way too small.  The zImage file is
+almost 500KB, the output file is about 21KB.  So, I'm
+doing something wrong, and I'm don't have a strong
+feel for what the objcopy was supposed to do (I read
+the man page, but still didn't get it).
+
+Thanks,
+
+~lr
+
+--- Dan Malek <dan@embeddededge.com> wrote:
+> You can do one of two things.  Load the zImage.elf
+> as
+> a binary to some address (say 400000) and start at
+> the
+> code past the ELF header (g 410000).
 >
-> we are currently trying to understand which PPC Linux
-> kernel tree is best suited for the IBM 440GX on the
-> Ocotea eval board. We would like to support the 405GP
-> and 440GP as well.
+> Second, you can 'objcopy -O binary zImage.elf
+> zImage.bin',
+> then load the zImage.bin (say 400000), then jump to
+> the
+> address where it was loaded (g 400000).
 
-linuxppc-2.4
 
->
-> The Ocotea 440GX board seems to be supported in the
-> "linuxppc_2_4_devel" tree. Is this board configuration
-> up-to-date and still maintained?
-
-unlikely. linuxpp_2_4_devel is officialy "dead" tree :).
-
-> A more up-to-date implementation seems to be in the
-> "linuxppc-2.4" tree. Are there some open issues or known
-> problems?
-
-New UIC mode isn't supported yet.
-Work on GigE support is still not finished yet.
-
-> I realized that the L2 cache has been disabled
-> recently:
->
->   $ cat arch/ppc/platforms/ocotea.c
->   ...
->   /* Disable L2-Cache due to hardware issues */
->   ibm440gx_l2c_disable();
->
-> Does this mean that the L2 cache is unusable on current
-> revisions of the chip? [That's why we would like to use
-> this chip.]
-
-Yes, we found problems with current chip revisions (A & B).
-Ask your IBM contact for more information.
-
-> Does this tree support the 405GP and 440GP as well?
-
-Yes.
-
-> Could
-> anybody make some comments on the stability? We currently
-> use the "linuxppc_2_4_devel" tree for these processors
-> with little problems.
-
-I'm using linuxppc-2.4 as of 2.4.21 in production for 440GP,
-440GX, 405GPr, 405EP based hardware.
-
-Eugene.
+Yahoo! Finance Tax Center - File online. File on time.
+http://taxes.yahoo.com/filing.html
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
