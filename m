@@ -1,19 +1,35 @@
-Message-Id: <s88831d7.021@mail.frequentis.com>
-Date: Fri, 21 Jan 2000 10:15:21 +0100
-From: "Ralf HECKHAUSEN" <RHeckhau@frequentis.com>
-To: "<"<linuxppc-embedded@lists.linuxppc.org>
-Subject: UART driver problem
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: kd@flaga.is
+Subject: Re: gdbserver
+To: dony <dony.he@huawei.com.cn>
+Cc: jlewis@mvista.com, linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OF71BAA0D6.F7356DD9-ON0025686D.00451564@flaga.is>
+Date: Fri, 21 Jan 2000 12:38:40 +0000
+MIME-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have a strange problem with the uart driver. The 8xx_write in uart.c always fails because copy_from_user returns 0 instead of the requested number of bytes. When I ignore the comparison with the requested number of bytes everything works ok, the correct bytes are transmitted and 8xx_write returns something >0.
-The next strange thing: a write to a tty file descriptor sometimes returns a negative number, although the output succeded. perror in this case outputs an unknown error.
-Does anyone know this problems?
 
-Ralf
+Hi,
+
+No I did not solve this. I put it on hold for a while since I can still
+able to do development on my i386 system.
+But soon I  will have to tackle this again since I will have to start
+running the firmware on the final target.
+Actually I think I might just insert more memory and run the whole gdb on
+the target hardware.....
+
+K.D.
+
+
+
+dony wrote:
+
+
+How do you solve all the above problems?
+Thank you very much.
+dony
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
