@@ -1,82 +1,86 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Martin Costabel <costabel@wanadoo.fr>
-Cc: <linuxppc-dev@lists.linuxppc.org>, <paulus@linuxcare.com.au>
-Subject: Re: Patches for 2.4.0-test7
-Date: Sat, 26 Aug 2000 18:41:01 +0200
-Message-Id: <20000826164101.5951@192.168.1.10>
-In-Reply-To: <39A7C246.7BB137EB@wanadoo.fr>
-References: <39A7C246.7BB137EB@wanadoo.fr>
+Message-ID: <39A826A6.D551486F@amberdata.demon.co.uk>
+Date: Sat, 26 Aug 2000 21:20:54 +0100
+From: David Monro <davidm@amberdata.demon.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: PCI resource initialisation
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->- The patch for arch/ppc/kernel/ppc_ksyms.c is necessary if you want to
->compile rtc as a module. If you don't want it as a module, you don't
->need to EXPORT these variables at all.
+Hi,
 
-I'll merge that one.
+I need to make some changes to the way we do our PCI resource allocation
+:-)
 
->- The patch for include/asm-ppc/mman.h is necessary so that the loop
->device ("mount -o loop") works. I suppose the values for these MCL_*
->variables have been chosen by analogy to some other architectures, but
->they are already defined by glibc in /usr/include/bits/mman.h, so you
->can't take arbitrary values.
+Currently the code goes like this (in pci.c:pcibios_init()):
 
-This one is waiting for Cort or Paul ack.
+        pci_scan_bus(0, &generic_pci_ops, NULL);
+        if (ppc_md.pcibios_fixup)
+                ppc_md.pcibios_fixup();
+        pcibios_claim_resources(&pci_root_buses);
 
->- The patch for drivers/macintosh/Makefile is necessary for successful
->compilation if you have CONFIG_ADBMOUSE, but not CONFIG_ADB_KEYBOARD,
->which is possible with the latest version of the new input layer. (Not
->that the adbmouse works for me if I choose CONFIG_INPUT_ADBHID=y, but
->that's another story).
+So we find all the devices, hack any we don't like, and then grab all
+the resources. This means that we pretty much accept whatever the
+firmware provides, which includes leaving any uninitialised resources
+alone. This doesn't work properly on IBM 850 machines because the
+firmware doesn't initialise any devices it doesn't recognise, and also
+(for example) doesn't bother initialising the memory mapped resource of
+the built-in ethernet (presumably because they expected people to use
+the IO resource instead, which in fact we do).
 
-AFAIK, CONFIG_ADBMOUSE cannot be selected without CONFIG_ADB_KEYBOARD in
-the current bk tree. I'm also doing additional config fixes, so that ADB-
-less pmacs can remove all the ADB stuffs and keep the PMU for example.
-CONFIG_ADB_KEYBOARD is not displayed when CONFIG_INPUT_ADBHID is, etc...
+The 2.4 kernel does provide a function,
+pci_assign_unassigned_resources(), which will find pci resources which
+haven't been claimed yet and do the appropriate thing with them.
 
-I though about making adbhid.c call the appropriate hooks in adbmouse to
-make it work. After more thinking, I beleive it would be only bloat. Use
-either the old drivers with your old userland setup, or the new drivers
-with a new userland setup, with the mice all coming from /dev/input/mice.
+As I see it we have a few choices:
 
->I have 3 other pet peeves that I would like to recall:
->
->- I think the new input layer with CONFIG_INPUT_ADBHID=y and
->CONFIG_MAC_ADBKEYCODES=y on an ISO (=European) ADB keyboard gives the
->wrong keycodes for the 2 keys with codes 10 and 50. Wrong in the sense
->that they differ from what all other kernels from the oldest times up to
->linux-pmac-devel before yesterday were giving. The tables,
->mac_keycodes[]
->in drivers/input/keybdev.c and adb_to_linux_keycodes[] in
->drivers/macintosh/adbhid.c, are probably correct. But then
->adbhid_input_register() in drivers/macintosh/adbhid.c swaps the 2 keys
->if it detects an ISO ADB keyboard. IMHO the swapping should occur for
->USB
->keyboards and not for ADB keyboards. I had some discussion with Franz
->which was not conclusive.
+do:
+	pci_scan_bus(0, &generic_pci_ops, NULL);
+        if (ppc_md.pcibios_fixup)
+                ppc_md.pcibios_fixup();
+        pcibios_claim_resources(&pci_root_buses);
+	pci_assign_unassigned_resources();
 
-They need to be fixed in the userland keymaps. We had it wrong at first.
-Some keyboards have those actually swapped, and Franz cold should be ok
-(it was tested with all sorts of keyboards, AFAIK, and now, a fixed
-keymap should give good results everywhere).
+which should allocate any left alone by the original code, and does
+work, but still means we have to hack the original resources (eg on IBM
+850s the SCSI hos adapters seem to always get allocated IO port
+resources above 0x20000000, which we relocate in a not very safe manner
+down to 0x01000000). It also assumes we don't need to do any more fixups
+for the newly discovered resources.
 
->- Paul's pmac-devel kernel still eats the LD_LIBRARY_PATH environment
->variable, therefore stopping Mozilla from running. This is so weird (but
->consistent since several months) that I have not the faintest idea where
->it could come from. It is a feature of linux-pmac-devel, not present in
->linux-bk-devel.
+or we could do:
+	pci_scan_bus(0, &generic_pci_ops, NULL);
+	pci_assign_unassigned_resources();
+        if (ppc_md.pcibios_fixup)
+                ppc_md.pcibios_fixup();
 
-The two kernels are now in sync. Do you still have the problem ?
+which results in the kernel completely reassigning all the PCI
+resources. This should mean that the resources all get allocated in
+areas that we would like to find them in, and means that the
+pcibios_fixup code should be a little simpler. This is my preferred
+solution, but I guess might break something.
 
->- Finally: The ptrace code in 2.4.0-testX has a bug that prevents strace
->from working. I have no idea what's wrong, but it would be nice to have
->a working strace again.
+Note that I can't really do this just for the PReP code; if I put the
+pci_assign_unassigned_resources() call in the prep_pcibios_fixup()
+function it will completely remap the bus and claim all the resources,
+and then pcibios_claim_resources() will walk the tree trying to claim
+each resource again and get a conflict on every resource!
 
-AFAIK, Paul pushed a fix for that in bk a couple of days ago.
+Of course we could simply make pcibios_init() another arch-dependant
+function - what do people think?
 
-Ben.
+On a related, is it true to say that every driver which uses ioremap()
+to map memory on cards into virtual space needs to have isa_mem_base
+added to the base address before it will work? As far as I can tell
+virtually no drivers do this at the moment; I note a rather
+dirty-looking hack in chrp_pci.c where we hack the resource entries for
+the matrox card so that the driver doesn't need rewriting. Or should we
+simply do this for all memory resources on all cards?
+
+Cheers,
+
+	David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
