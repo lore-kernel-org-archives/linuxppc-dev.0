@@ -1,45 +1,38 @@
-Message-ID: <38E2C513.F3A37159@embeddededge.com>
-Date: Wed, 29 Mar 2000 22:08:03 -0500
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: Graham Stoney <greyham@research.canon.com.au>
-CC: LinuxPPC Embedded Mailing List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Tiny fix to fec.c for RPX boards using only fast ethernet
-References: <20000330024703.3E3C0355E8@elph.research.canon.com.au>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200003300704.JAA30539@denx.local.net>
+To: greyham@research.canon.com.au (Graham Stoney)
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Tiny fix to fec.c for RPX boards using only fast ethernet 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 30 Mar 2000 12:47:03 +1000."
+             <20000330024703.3E3C0355E8@elph.research.canon.com.au>
+Date: Thu, 30 Mar 2000 09:04:13 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+In message <20000330024703.3E3C0355E8@elph.research.canon.com.au>
 Graham Stoney wrote:
+>
+> the same MAC address. The munged address is still in their OUI block, whereas
+> using the same address on two interfaces is definitely illegal.
 
+Why should this be illegal?
 
-> Sure, but there's only provision for a single MAC address in the bd_t
-> struct,
+You will run into problem when you try  to  connect  both  interfaces
+(having  athe same MAC address) to the same subnet, but why would you
+want to do this?
 
-The board descriptor is unique to every board configuration.  I have
-some boards with three MACs, three unique Ethernet addresses, and the
-bd_t has three Ethernet entries.  That's the "right" way.  My latest
-change to the RPX Classic is to define two Ethernet addresses, and
-these are assigned in the 'embed_config.c' functions.  The FEC just
-always chooses the second one (board specific index).
+For a common example just look at Sun workstations:  they  _all_  are
+using  the  same MAC address for all ethernet interfaces there are in
+one box...
 
-> ....... Otherwise the MAC address the ROM monitor tells
-> you about is different to the one the FEC uses.
+Wolfgang Denk
 
-That is now irrelevant.  The ROM monitor on the RPX boards is going
-to be significantly different within weeks.  It will only use the
-Ethernet address and the 10 Mbit SCC Ethernet.
-
-> True, it just seemed to me to be a better default for other vendors...
-
-The example will now be in the embedded configuration functions.  Load
-your choice of Ethernet addresses there, and the FEC driver is just
-built with which to select.  This further flows into the 8260 port
-which can support multiple Fast Ethernet controllers.
-
-
-
-	-- Dan
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+8 Catfish                                               = 1 Octo-puss
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
