@@ -1,35 +1,26 @@
-Message-Id: <200003232005.VAA05535@denx.local.net>
-To: christof <xfr@freenet.de>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: kernel executing from flash 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 23 Mar 2000 16:14:30 +0100."
-             <1314024740.953824470340.JavaMail.wwwrun@moe.freenet.de>
-Date: Thu, 23 Mar 2000 21:05:40 +0100
+Date: Thu, 23 Mar 2000 13:28:59 -0700
+From: Cort Dougan <cort@fsmlabs.com>
+To: shaolin zhang <zhangshaolin@sz.huawei.com.cn>
+Cc: linuxppc-embedded@lists.linuxppc.org, eric_mariacher@fr.ibm.com,
+        rtl@rtlinux.cs.nmu.edu
+Subject: Re: problem of port rtlinux3.0 for mpc to 2.2.13 kernel
+Message-ID: <20000323132859.V2133@medea.fsmlabs.com>
+References: <006c01bf94cf$c87f72c0$c4190b0a@huawei.com.cn>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <006c01bf94cf$c87f72c0$c4190b0a@huawei.com.cn>; from shaolin zhang on Thu, Mar 23, 2000 at 09:57:52PM +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <1314024740.953824470340.JavaMail.wwwrun@moe.freenet.de> you wrote:
->
-> all Linux I know will be copied during startup from Harddisk, NFS or Flash to RAM and will be executed there.
-> Is there a possibility for smaller systems to run the
-> kernel directly from flash memory as other embedded os's do? Did somebody try this or is it totaly impossible?
+You're going to have trouble porting rtlinux3.0 to a 2.2 kernel.  It was
+designed around 2.3 and we haven't backported it to 2.2 yet.  If there's
+enough interest we may do that, though.
 
-It may be possible, but usually it does not make much sense - to  run
-the  kernel directly from FLASH you must store an uncompressed kernel
-image there, so you need  more  FLASH.  Given  the  price  difference
-between  FLASH  and  DRAM  memory is often cheaper to uncompress into
-RAM, and run from RAM.
+Would you be willing to give 2.3.x a try?
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The only person who always got his work done by Friday
-                                                 was Robinson Crusoe.
+}     these days I have do some working for port rtlinux3.0 for mpc860 to 2.2.13 kernel. I has modified the __cli __sti etc, and the kernle is runing ok in our embed 860 board. but when I insmod the rtl.o the kernel killed the process by SIGSEGV "pid 7: killed (signal 11)". I have traced the kernel ,and find when in function "do_page_fault" to call "find_vma", but no vma can finded.
+}     anybody has good advie for this problem.
+}
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
