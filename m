@@ -1,45 +1,37 @@
-Date: Thu, 14 Feb 2002 17:47:37 +0100
-From: Marius Groeger <mag@sysgo.de>
-Message-Id: <200202141647.g1EGlbw11727@dagobert.svc.sysgo.de>
+Date: Thu, 14 Feb 2002 09:06:00 -0800
+From: David Ashley <dash@xdr.com>
+Message-Id: <200202141706.g1EH60p19824@xdr.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: serial ports on 8245
-In-Reply-To: <a05101404b891963659eb@[10.8.16.89]>
-References: <a05101404b891963659eb@[10.8.16.89]>
-Reply-To: mag@sysgo.de
+Subject: RE: Linux 2.4.17 bug, mmap of /dev/mem
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In linux.ppc.embedded, you wrote:
+Hmmm. Too many differences, the biggest being 2.4.17 vs 2.4.2.
+
+I forgot to mention to the mailing list that the order of reads/writes to
+a page matters.
+
+In every mmap'd page, if the access order is:
+reads only    = no problem
+writes only   = no problem
+write, read, then anything  = no problem
+read, write   = trouble
+
+Each page is a separate entity. Meaning if I mmap 2 pages of /dev/mem,
+then write to page 0, I'll not have any trouble from page 0 from then on.
+But if I read from page 1, then write to page 1, there is a chance of
+corrupting linux.
+
+-Dave
+
+>Hi David,
 >
-> >mpc10x_bridge_init() is always called before $(PLATFORM)_map_io()
+>I tested your application on my board (Embedded Planet CLLF (mpc860), Linux
+>2.4.2) and made a script that executes it as fast as possible.
+>I let it run for 10 minutes on several telnet sessions simultaneously but I
+>do not see anything strange... The memory I write to is NVRAM.
 >
-> No -- it's the other way around. Mapping IO is very early.
-
-Sorry, you're right.
-
-Regarding the serial driver initialization: the serial driver actually
-provides a way to initialize the serial ports at run-time:
-
----------------------------------------------------------------
-/*
- * This is for use by architectures that know their serial console
- * attributes only at run time. Not to be invoked after rs_init().
- */
-int __init early_serial_setup(struct serial_struct *req) {...}
----------------------------------------------------------------
-
-This could be used to register the duarts with a dynamically calculated
-(ioremap()'ed) iomem_base, which probably only leaves ppc_md.progress() to
-deal with.
-
---
-Regards,
-Marius.
-
---
-Marius Groeger        SYSGO Real-Time Solutions GmbH    www.sysgo.de
-Software Engineering  Embedded and Real-Time Software   www.osek.de
-mgroeger @ sysgo de   Germany                           www.elinos.com
+>Frederic
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
