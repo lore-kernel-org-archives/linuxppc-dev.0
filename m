@@ -1,50 +1,38 @@
-Message-Id: <v02140b08b299f56c55fd@[209.157.72.95]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sun, 13 Dec 1998 15:03:02 -0800
-To: linux-pmac@samba.anu.edu.au, linuxppc-dev-digest@lists.linuxppc.org
-From: daver@idiom.com (David Ray)
-Subject: Complete fix for PB 2400 16-bit video problem
+Date: Sun, 13 Dec 1998 22:41:54 -0700 (MST)
+From: Matt Porter <mmporter@home.com>
+To: Dan Malek <dmalek@jlc.net>
+cc: "Mark S. Mathews" <mark@absoval.com>,
+        LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Cross compiling kernels.
+In-Reply-To: <3670AF4C.23FF463D@jlc.net>
+Message-ID: <Pine.LNX.3.96.981213215448.31533C-100000@liberty.chnd1.az.home.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sorry it's taken me a few days to get back to the list with a status on the chipsfb.c driver.
+On Fri, 11 Dec 1998, Dan Malek wrote:
 
-I want to thank Tim for his enormous help with the Chips 65550 video driver on the Powerbook 2400. I confirmed what a couple other readers already posted. The diff that Tim develped definitely fixes all vodeo problems in X at all depths, and improves the video problem while in 16-bit mode on the console. Thanks, Tim!
-
-I'm booting from quik, not using anything special in my boot settings and not using BootX. I compiled the 2.1.130 kernel to use the custom fb8 and fb16 values. The startup messages indicate it is recognizing the driver as Chips 65550. Xpmac that was developed for the pb2400/3400 now works fine in all depths.
-
-It appears that the 16-bit in the console still has some problems. The color balance is off, but useable. Red is too bright and blue is too dim. I use a custom prompt that uses ansi colors so the color balance at the console is more apparent on my system than on one that just uses white characters.
-
-The new XF68_FBDev just released from the xfree86 site still fails in 16 bit mode. This is not a color balance problem, but something more serious. It looks like only half the screen is trying to be initialized while the bottom half still shows a "compressed" display of the console. After about a second, X fails and exits.
-
-As usual, let me know if there is any information I can collect that would be useful in debugging these problems.
-
-Cheers-
-
-Dave
-daver@idiom.com
-
-
-
-> Date: Tue, 8 Dec 1998 00:38:39 -0800
-> From: "Timothy A. Seufert" <tas@mindspring.com>
-> Subject: Complete fix for PB 2400 16-bit video problem
+> Mark S. Mathews wrote:
 > 
-> I figured out why 16-bit doesn't work in the console today.  I wasn't
-> checking "Advanced driver options" in the console setup screen (I use make
-> menuconfig).  This resulted in CONFIG_FBCON_CFB16 (I think that's the name)
-> not getting set, which .  Perhaps the CONFIG_FBCON_CFBxx settings should
-> default to Y?
+> > I'm currently trying to build a cross compiler (hosted on x86) for
+> > building PPC kernels.....
 > 
-> 
-> Also, since I proved in my earlier message that I didn't know how to use
-> diff, and got told about it :), here is a better diff for
-> drivers/video/chipsfb.c.  This will patch it to correctly change bitdepth.
-> 
-> 
+> Has anyone been successful doing this?  I get personal
+> e-mail almost weekly from people either using gcc 2.x.x.x,
+> which we all know is incorrect, or having problems building
+> a cross egcs.  I use only egcs tools natively on LinuxPPC
+> machines, so I have no suggestions other than that.
 
+Don't use gcc!  See my web page at
+http://members.home.net/mmporter/cross.html for instructions on building
+cross development tools and the latest version to use.
+
+--
+Matt Porter
+mmporter@home.com
+Unix is a Linux-like operating system.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
