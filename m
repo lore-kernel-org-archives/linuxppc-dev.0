@@ -1,51 +1,35 @@
-Date: Wed, 12 Nov 2003 08:53:33 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Gary Thomas <gary@mlbassoc.com>
-Cc: Wolfgang Denk <wd@denx.de>,
+From: Gabriel Paubert <paubert@iram.es>
+Date: Wed, 12 Nov 2003 18:43:09 +0100
+To: Wolfgang Denk <wd@denx.de>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
 	Dale Farnsworth <dale@farnsworth.org>,
-	linuxppc-dev@lists.linuxppc.org
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+	Tom Rini <trini@kernel.crashing.org>
 Subject: Re: MPC5200 Patches
-Message-ID: <20031112155333.GD31581@ip68-0-152-218.tc.ph.cox.net>
-References: <20031110190207.GA12163@zenos.farnsworth.org> <20031112003502.BBA4CC5F59@atlas.denx.de> <20031112151824.GC31581@ip68-0-152-218.tc.ph.cox.net> <1068652170.9906.439.camel@hermes>
+Message-ID: <20031112174308.GA9418@iram.es>
+References: <20031112114114.GA8526@iram.es> <20031112144519.F102CC5F59@atlas.denx.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1068652170.9906.439.camel@hermes>
+In-Reply-To: <20031112144519.F102CC5F59@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Nov 12, 2003 at 08:49:30AM -0700, Gary Thomas wrote:
-> On Wed, 2003-11-12 at 08:18, Tom Rini wrote:
-> > On Wed, Nov 12, 2003 at 01:34:57AM +0100, Wolfgang Denk wrote:
+On Wed, Nov 12, 2003 at 03:45:14PM +0100, Wolfgang Denk wrote:
+> In message <20031112114114.GA8526@iram.es> you wrote:
 > >
-> > [snip]*
+> > > i2c-algo-m5xxx.c, like the original?
 > >
-> > > * Does it make sense to add a "Board uses UBoot" config option to
-> > >   individual boards? [BTW: the name is "U-Boot".] If we do something
-> > >   like this (which I'd appreciate) we should do it right - there
-> > >   might be some other boards that use this, too.
-> >
-> > My question is, is it possible to support both U-Boot and $(VENDOR
-> > FIRMWARE) in the same build?  If possible I'd like to avoid adding a
-> > question for any type of firmware or a define_bool based on board
-> > selection.  I think we allow for this on Sandpoints, so
+> > Hmmm, dont't repeated x have a tendency to trigger spam filters
+> > (especially the dumbest ones)?
 >
-> Actually, I don't think it's possible to handle this in a general way.
-> In  particular, I'd also like to see a "Uses RedBoot" option, as the
-> booting process there is different from U-Boot, PPCBug, OF, ...  Sadly,
-> there is no real common ground and this truly is a target [board]
-> setting.
+> Who cares? This is Linux kernel source code.
 
->From what I recall of how this worked for U-Boot vs in-kernel wrapper
-was that the only thing the kernel cared about was how a data structure
-was passed in, so we just checked to see if it was one or the other and
-used whatever we had.
+I don't remeber the details, but I believe that some
+people had problems when posting about the aic7xxx
+driver some time ago. And yes, this was on the
+linux kernel mailing list IIRC.
 
-#include
-<previous_too_long_never_implemented_sadly_bi_rec_thread_and_move_on>
-
---
-Tom Rini
-http://gate.crashing.org/~trini/
+	Gabriel
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
