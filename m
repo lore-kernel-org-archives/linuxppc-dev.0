@@ -1,53 +1,50 @@
-Message-ID: <3C67AC2D.3050005@pacbell.net>
-Date: Mon, 11 Feb 2002 11:34:05 +0000
-From: Armin <akuster@pacbell.net>
+Message-ID: <3C67B119.4080702@elsoft.ch>
+Date: Mon, 11 Feb 2002 12:55:05 +0100
+From: "David =?ISO-8859-1?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>
 MIME-Version: 1.0
-To: Stefan Roese <stefan.roese@esd-electronics.com>
-Cc: "David =?ISO-8859-15?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: [PATCH] Several patches against linuxppc_devel-2.4.18-pre9
-References: <EFEAIMDCOOOHIEPHDNFJCELKDKAA.stefan.roese@esd-electronics.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: andrew may <acmay@acmay.homeip.net>
+Cc: Armin <akuster@pacbell.net>,
+	Stefan Roese <stefan.roese@esd-electronics.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PPC405gp enet Soft Reset
+References: <20020207191741.A26185@ecam.san.rr.com> <EFEAIMDCOOOHIEPHDNFJOEJBDKAA.stefan.roese@esd-electronics.com> <20020208103557.A27732@ecam.san.rr.com> <3C63AE1A.7000907@pacbell.net> <20020208120140.B27732@ecam.san.rr.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Stefan Roese wrote:
-> Armin and David,
+Hi
+
+andrew may wrote:
+> On Fri, Feb 08, 2002 at 10:53:14AM +0000, Armin wrote:
 >
->
->>The ethernet changes look fine.  there was on other change regarding
->>resetting the EMAC. The ethernet part can go in as is our we can wait
->>until tomorrow when I send in that change + multi emac irq fix.
+>>Andrew & Stefan,
+>>
+>>The softrest could probably be removed from the _init.  its dup'd in _open.
 >>
 >
-> I checked the EMAC/PHY patch on our board (CPCI-405 with Intel LXT971), and
-> the driver seems to start without problems without ethernet cable connected,
-> when the EMAC soft-reset command is removed from the init routine.
+> Here is another problem I have with find_phy, that it seems that mii reads to
+> reg 2 of a non-existent address does not return an error but a read to reg 3
+> does.
 >
-> With the soft-reset in init still implemented, "fec_enet_mdio_read()"
-> returns with timeout, waiting for transfer to complete. The next soft-reset
-> in open leads to the same problem (timeout in mdio_read()), but doesn't lead
-> to a kernel panik.
+> Here is a log from ppcboot since it is easy to test this there without doing
+> a kernel build. My phy is at address 0x1f.
 >
-> So Armin, could you please remove the soft-reset from init (if nobody
-> objects, of cause).
->
-> Best regards,
-> Stefan Roese
->
->
->
->
+> => mii read 0x1 2
+> 07FF
+> => mii read 0x1 3
+> read err 3
+> a2: read: EMAC_STACR=0xffffc023, i=2
+> Error reading from the PHY
+> 07FF
 >
 
-Stefan, David & Andrew,
+I'm seeing this error too on our boards. But i'm not certain, if it's a
+problem of the MII controller in the 405 or a problem of the LXT971.
+What revision of the 405 do you have? What clock frequency your 405 run at?
 
-Thanks
 
-I will remove the EMAC soft-reset.
-
---armin
+Dave
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
