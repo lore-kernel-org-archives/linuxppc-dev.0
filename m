@@ -1,42 +1,37 @@
-Subject: Re: insmod ipv6 freezes current linuxppc-2.5 and 2.5-benh
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Harald Welte <laforge@gnumonks.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20031213090332.GH8950@obroa-skai.de.gnumonks.org>
-References: <20031120201249.GB29432@sunbeam.de.gnumonks.org>
-	 <1069386878.876.49.camel@gaston>
-	 <20031121153314.GC23224@sunbeam.de.gnumonks.org>
-	 <20031130155530.GK26749@obroa-skai.de.gnumonks.org>
-	 <1070380779.5675.16.camel@thor.asgaard.local>
-	 <20031213090332.GH8950@obroa-skai.de.gnumonks.org>
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <1071398331.1642.105.camel@thor.asgaard.local>
+Subject: Re: USB, 2.6-test11 and hot flaming death
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Samuel Rydh <samuel@ibrium.se>,
+	"tom_gall@mac.com" <tom_gall@mac.com>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <20031205233307.GA7462@ibrium.se>
+References: <1070080961.683.26.camel@gaston>
+	 <09B6571B-2408-11D8-970C-0003939E069A@mac.com>
+	 <20031204163433.GA21236@ibrium.se> <1070580925.613.7.camel@gaston>
+	 <20031205233307.GA7462@ibrium.se>
+Content-Type: text/plain
+Message-Id: <1071447777.12498.398.camel@gaston>
 Mime-Version: 1.0
-Date: Sun, 14 Dec 2003 11:38:51 +0100
+Date: Mon, 15 Dec 2003 11:22:58 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2003-12-13 at 10:03, Harald Welte wrote:
->
-> The actual problem seems not to be an infinite loop, but rather a very
-> long loop.   IF you wait long enough, it will eventually work.  A
-> significant delay (i.e. assumed long loop) is also observed while
-> loading any module.  Something like 10 - 15 seconds for every module
-> that I'm loading during startup (ipv6, tulip, dmasound_pmac, ...)
->
-> The machine is completely frozen during that loop, not even the cursor
-> is blinking anymore.
->
-> compiling the kernel with gcc 2.95 or 3.0 removes those symptoms.
+I'm having more reports of this USB problem on G5s, apparently
+not always related to using old kbds...
 
-As I'm not seeing this, you may want to compare your .config to mine,
-which is http://penguinppc.org/~daenzer/config-2.6.0-test11-benh
+In the dmesg log I have here, the problem starts with an error
+in dl_resverse_done_list() where this case is triggered:
 
+		if (!td) {
+			ohci_err (ohci, "bad entry %8x\n", td_dma);
+			break;
+		}
 
---
-Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
-Software libre enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
+It would be interesting, since you both have a 100% repro case,
+to check out what URBs are filled in the lists and where do that
+"bad" one comes from...
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
