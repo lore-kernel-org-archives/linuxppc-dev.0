@@ -1,36 +1,58 @@
-Message-ID: <3C1F4FD2.B855C7FD@cambridgebroadband.com>
-Date: Tue, 18 Dec 2001 14:16:50 +0000
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-MIME-Version: 1.0
-To: None Atall <linux_meis@yahoo.com>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: ATM driver for 8260 (linux 2.4.x) + more questions
-References: <20011218135613.13181.qmail@web9706.mail.yahoo.com>
+Date: Tue, 18 Dec 2001 09:27:10 -0500
+From: Kent Borg <kentborg@borg.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: marc.paquin@motorola.com, peter.barada@motorola.com
+Subject: Re: Good GDB Version?
+Message-ID: <20011218092710.A4505@borg.org>
+References: <20011214135312.B12904@borg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20011214135312.B12904@borg.org>; from kentborg@borg.org on Fri, Dec 14, 2001 at 01:53:12PM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-None Atall wrote:
->
->  By the way, as I can see from mpc860sar code, the
-> ATM device is connected on SCCx via utopia. Our board
-> (MPC8260ADS and our custom one) have the ATM connected
-> on FCC1. Will I need too many changes after the patch?
-> Can anyone evaluate the changes that i will need?
-> We are running out of time, so I wonder...
->
->                                   Thanks a lot!
->                                       D.Meidanis
->
+On Fri, Dec 14, 2001 at 01:53:12PM -0500, I wrote:
+> We are having problems with gdb.
 
+And, though we have not gotten to the bottom of it, we seem to have a
+hardware problem.  But a bizarre one.
 
-As I understand it there is no FCC1 on the 860.  This is something you get with the 8260 only.  With
-the 860 you need to use the utopia interface.
+We download our code, watch the kernel boot, get an sh prompt.  Fire
+up ethernet, do an NFS mount of a directory on the development
+machine.  Launch gdbserver on a trivial helloworld program, attach
+from gdb on the development machine (using ethernet).
 
-I wrote the code for the 860 so there is no support for FCC ATM.  You'll have to read the 8260 UM to
-work out how much there is to do.
+All that works.  It would seem to suggest the hardware is working,
+right?  Well, that's what we thought.
 
-Alex
+Tell gdb to continue.  Immediately get a SIGTRAP.  And further
+attempts to use gdb act strange, such as after hitting a breakpoint
+not being able to continue from there.
+
+Re-downloading the boot ROM does not fix it.
+
+Swap in a different logic card, do all the above, and everything is
+the same except that initial SIGTRAP doesn't happen and breakpoints
+can be continued from and everything seems completely happy.  That
+board works.
+
+Swap in the physical boot ROM from the good board to the bad board and
+the problem stays with the bad board.  Both boards have the same rev
+of the 405GP.
+
+How could we have crafted a custom board that can recognize that gdb
+is running an only malfunction then?  I didn't know hardware could be
+so clever.
+
+My only guess is something hanging around the JTAG (or is it BDM?)
+debug port might be funny--for the debug port has privileged access to
+some of the same internal hardware that gdb uses.  Maybe a hardware
+fault there could cause spurious SIGTRAPs--or maybe something is
+fritzed inside the 405's debug hardware.
+
+Strange.
+
+-kb
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
