@@ -1,30 +1,27 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tom Rini <trini@kernel.crashing.org>,
-	Corey Minyard <minyard@acm.org>
-Cc: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>,
-	<linuxppc-dev@lists.linuxppc.org>, <paulus@samba.org>
-Subject: Re: Changes to PPC Linux required for GCC 3.1
-Date: Wed, 5 Dec 2001 18:50:38 +0100
-Message-Id: <20011205175038.27184@smtp.adsl.oleane.com>
-In-Reply-To: <20011205173728.GB27936@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011205173728.GB27936@cpe-24-221-152-185.az.sprintbbd.net>
+Subject: IO_BASE woes.
+To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <OF6A7540D3.FD212873-ON85256B19.0067E145@raleigh.ibm.com >
+From: "Ralph Blach" <rcblach@us.ibm.com>
+Date: Wed, 5 Dec 2001 13:59:38 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->I think the reason this wasn't applied is that Paul said something about
->thiws being horriyingly ugly.  Corey, can you post a patch that changes
->RELOC(x) into a function and nothing else? :)
+I am having IO base woes on the 405xx based  power pc platform.
 
-I prefer this beeing resolved at compile time. The reason Paul didn't want
-it at first is because he didn't want a workaround for a pre-release gcc
-bug. Since this is becoming a "feature", it makes sense to get the
-workaround. Paulus will confirm or not what I'm saying though...
+Heres the problem.
 
-Ben.
+IO_base is meant to refernece the pci io_base, but now I have ISA based
+chips attached to the EBC bus and an PCMCIA adapter connected
+to EBC bus.
+
+Along with the PCI, this spells a lot of rewrite of code.
+
+The concept of an IO_base seems a little dated.
+
+Chip
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
