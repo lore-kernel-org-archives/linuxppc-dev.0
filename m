@@ -1,34 +1,30 @@
-Date: Tue, 15 Aug 2000 16:43:52 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-To: MkLinux Setup List <mklinux-setup@public.lists.apple.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Xlib Question
-Message-ID: <Pine.LNX.3.96.1000815163648.21337B-100000@deepspace.mklinux.org>
+Message-ID: <3999DE0C.4EF5762F@the-rileys.net>
+Date: Tue, 15 Aug 2000 20:19:25 -0400
+From: David Riley <oscar@the-rileys.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: tom_gall@vnet.ibm.com
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PCI Buses
+References: <200008151939.VAA00754@piglet.grunz.lu> <3999CF3E.561EB9C8@vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-For anybody out there who is familiar with Xlib (libx11), I'm stuck on
-something and I'm wondering if it's a kernel bug (in monolithic Linux).
-When I'm running a multithreaded app with heavy signal load, xlib messages
-stop being delivered from xlib to the program, resulting in XNextEvent
-stalling.  Most of the time, if you click somewhere in that window, those
-events all get delivered at once, sometimes twenty or thirty at a time.
+tom_gall@vnet.ibm.com wrote:
 
-Any ideas?
+> It's definately interesting to hear that AGP is really just another PCI... or at
+> least treated that way. Being PCI/AGP stupid I appreciate the info... if it's
+> just another "PCI" of sorts, doesn't that have performance implications or is
+> that addressed really by the hardware implementation as apposed to the Linux
+> side of things?
 
-
-Later,
-David
-
----------------------------------------------------------------------
-A brief Haiku:
-
-Microsoft is bad.
-It seems secure at first glance.
-Then you read your mail.
+It really is just another PCI (there is a 66 MHz PCI specification, and AGP uses
+it), though there are improvements made (for example, sidebanding, which gives us
+the 2x and 4x modes).  Additionally, it's adapted on the Intel side of things for
+"write combining" (if anyone comes up with an exact definition of how that works,
+please let me know).  I'm not sure what you mean by performance implications, but
+PCI isn't a horrible bus to start with...
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
