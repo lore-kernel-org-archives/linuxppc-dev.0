@@ -1,36 +1,27 @@
-Date: Thu, 26 Aug 1999 13:26:24 -0400
-From: Kevin Puetz <puetzk@iastate.edu>
-To: Diego Laverde <dlaverde@uniandes.edu.co>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: EtherTalk Printers and SAMBA
-Message-ID: <19990826132624.C4924@puetz.penguinpowered.com>
-Reply-To: Kevin Puetz <puetzk@iastate.edu>
-Mime-Version: 1.0
-Content-Type: text/plain
+Date: Thu, 26 Aug 1999 11:11:18 -0700 (PDT)
+From: "David A. Gatwood" <dgatwood@mvista.com>
+To: Tony Mantler <eek@escape.ca>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Performa 5200
+In-Reply-To: <v04003a02b3ea789770f8@[216.81.21.14]>
+Message-ID: <Pine.LNX.3.96.990826110904.32028B-100000@mvista.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Of course not - the two hardly interact.
+On Thu, 26 Aug 1999, Tony Mantler wrote:
 
-papd allows you to print (from Linux) to the Ethertalk printer - get this to work first. Then tell samba to print to that Linux printer.
+> Speaking of which, is there any documentation on the subject? (code,
+> commented code, dead trees, whatever)
 
-I don't know details, but samba is just another program with a print job to spool as far as papd is concerned.
+At the moment, the only thing I'm aware of is the MkLinux code.  I'm not
+sure how far that goes, since it only makes it out of the booter on about
+half the machines.
 
-On Thu, 26 Aug 1999 08:56:25 Diego Laverde wrote:
-> 
-> Hellow,
-> 
-> I will like to share my Ether Talk printers whit Windows users, I have
-> installed papd, but in the documentation din't say noting about SAMBA.
-> 
-> Can you help me?
-> 
-> Diego Laverde
-> Universidad de los Andes
-> Bogota, Colombia
-> 
-> 
+
+David
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
