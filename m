@@ -1,28 +1,36 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?J=F6rn=20Nettingsmeier?= <nettings@folkwang-hochschule.de>,
-	<linuxppc-dev@lists.linuxppc.org>, DerrikPates <dpates@dsdk12.net>
-Subject: Re: 2.4.17-pre[12]-ben0 trees hang on unsuspend
-Date: Wed, 5 Dec 2001 11:37:40 +0100
-Message-Id: <20011205103740.30979@smtp.adsl.oleane.com>
-In-Reply-To: <3C0DF1A8.934A3588@folkwang-hochschule.de>
-References: <3C0DF1A8.934A3588@folkwang-hochschule.de>
+Message-ID: <3C0E0390.95CA5B75@wanadoo.fr>
+Date: Wed, 05 Dec 2001 12:22:58 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+	Debian GNU/Linux PPC <debian-powerpc@lists.debian.org>
+Subject: Re: [PATCH] Minor changes to control/imstt/platinum/valkyrie/atyfb
+References: <3C0AA2AF.97E7FCB4@wanadoo.fr> <Pine.GSO.4.21.0112031415170.5519-100000@mullein.sonytel.be> <20011203080956.R7819@cpe-24-221-152-185.az.sprintbbd.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Tom Rini wrote:
 >
->so far, it has not died after resume. but it only went through 3
->sleep cycles so far...
->btw, alsa compiles now, the feature.h header is there.
+> On Mon, Dec 03, 2001 at 02:16:04PM +0100, Geert Uytterhoeven wrote:
+> > On Sun, 2 Dec 2001, Martin Costabel wrote:
+> > > Paul Mackerras wrote:
+> > > > Martin Costabel writes:
+[]
+> > So please try `cmode 1' instead of `cmode 16'.
 >
->thanks,
+> These bits of code are always different still I think.  Valkyriefb for
+> example parses 'cmode:{8,15,16}' and does CMODE_8 or CMODE_16.  I
+> _think_ the userland tools did both 0/1/2 and 8/15/16/32 (24?).
 
-feature.h ? That one is gone and have been replaced by pmac_feature.h
-for some time now. Maybe Alsa was fixed to handle the new mecanism.
+I'll be happy to let my 6400 play the guinea pig, but I have to excuse
+him until next week; I'm not at home right now.
 
-Ben.
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
