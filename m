@@ -1,330 +1,149 @@
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4D28C508-C56C-11D8-8C0F-000393DBC2E8@freescale.com>
-Cc: Pan Jacob-r7aahq <Jacob.Pan@freescale.com>,
-	linuxppc-dev Development <linuxppc-dev@lists.linuxppc.org>
-From: Kumar Gala <kumar.gala@freescale.com>
-Subject: Add support for the L3CR to 2.6
-Date: Wed, 23 Jun 2004 18:23:14 -0500
-To: Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <40DC0B11.5000302@ru.mvista.com>
+Date: Fri, 25 Jun 2004 15:22:57 +0400
+From: Yuri Frolov <yfrolov@ru.mvista.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Unsuccessfull system call interseption. Please, help to correct it
+ or make a suggestion.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul, Ben
+Platform: IBM Spruce 750CX.
+The problem: due to the necessity of logging system calls entry/exit
+events by LTT the arch/ppc/kernel/entry.S was modified in this way:
 
-Here is a patch from Jacob Pan that adds 'proper' support for the L3CR
-on 745x parts.
+/* LTT stuff */
+#if (CONFIG_LTT)
 
-- kumar
+#define TRACE_REAL_ASM_SYSCALL_ENTRY    \
+        addi    r3,r1,STACK_FRAME_OVERHEAD;     /* Put pointer to
+registers into r3 */  \
+        mflr    r29;                            /* Save LR */ \
+        bl      trace_real_syscall_entry;       /* Call real trace
+function */ \
+        mtlr    r29;                            /* Restore LR */ \
+        lwz     r0,GPR0(r1);                    /* Restore original
+registers */ \
+        lwz     r3,GPR3(r1);    \
+        lwz     r4,GPR4(r1);    \
+        lwz     r5,GPR5(r1);    \
+        lwz     r6,GPR6(r1);    \
+        lwz     r7,GPR7(r1);    \
+        lwz     r8,GPR8(r1);
 
-diff -Nru a/arch/ppc/kernel/l2cr.S b/arch/ppc/kernel/l2cr.S
---- a/arch/ppc/kernel/l2cr.S	Thu Jun 24 00:04:09 2004
-+++ b/arch/ppc/kernel/l2cr.S	Thu Jun 24 00:04:09 2004
-@@ -36,7 +36,9 @@
-  		several months.  The L2CR is similar, but I'm going
-  		to assume the user of this functions knows what they
-  		are doing.
--
-+	June 17, 2004.
-+	- JPAN: Fixed 745X L3 cache enablement routine, also use HW flush
-assist.
-+
-  	Author:	Terry Greeniaus (tgree@phys.ualberta.ca)
-  	Please e-mail updates to this file to me, thanks!
-  */
-@@ -292,17 +294,18 @@
+#define TRACE_REAL_ASM_SYSCALL_EXIT \
+        bl      trace_real_syscall_exit;        /* Call real trace
+function */ \
+        lwz     r0,GPR0(r1);                    /* Restore original
+registers */ \
+        lwz     r3,RESULT(r1); \
+        lwz     r4,GPR4(r1); \
+        lwz     r5,GPR5(r1); \
+        lwz     r6,GPR6(r1); \
+        lwz     r7,GPR7(r1); \
+        lwz     r8,GPR8(r1); \
+        addi    r9,r1,STACK_FRAME_OVERHEAD;
 
-  	/* Flush the cache.
-  	 */
--
--	/* TODO: use HW flush assist */
--
--	lis	r4,0x0008
--	mtctr	r4
--	li	r4,0
--1:
--	lwzx	r0,r0,r4
--	dcbf	0,r4
--	addi	r4,r4,32		/* Go to start of next cache line */
--	bdnz	1b
-+	/* use HW flush assist. (UM 3.6.3.1.5) */
-+	mfspr	r4, SPRN_L3CR
-+	oris	r4,r4,0x0040	/* Set L3CR[L3IO/9] = 1. */
-+	ori	r4,r4,0x0040	/* Set L3CR[L3DO/29] = 1.*/
-+	mtspr	1018,r4		/* Lock the L3 by making IONLY and DONLY */
-+	ori	r4,r4,0x0800	/* Set L3CR[L3HWF/20] for hardware flush */
-+	mtspr	SPRN_L3CR,r4
-+flush_745x_L3_poll:
-+	mfspr	r4,SPRN_L3CR
-+	rlwinm.	r4,r4,0,20,20
-+	bne	flush_745x_L3_poll
-+	sync	/* Clear the store queues per procedure (UM step 8) */
+#endif /* CONFIG_LTT */
 
-  2:
-  	/* Set up the L3CR configuration bits (and switch L3 off) */
-@@ -348,8 +351,8 @@
-  	cmplwi	r5,0
-  	beq	4f
+And then:
 
--	/* Enable the cache */
--	oris	r3,r3,(L3CR_L3E | L3CR_L3CLKEN)@h
-+	/* enable L3 clock */
-+	oris	r3,r3,(L3CR_L3CLKEN)@h
-  	mtspr	SPRN_L3CR,r3
-  	sync
+_GLOBAL(DoSyscall)
+        stw     r0,THREAD+LAST_SYSCALL(r2)
+        stw     r3,ORIG_GPR3(r1)
+        li      r12,0
+        stw     r12,RESULT(r1)
+        lwz     r11,_CCR(r1)    /* Clear SO bit in CR */
+        rlwinm  r11,r11,0,4,2
+        stw     r11,_CCR(r1)
+#ifdef SHOW_SYSCALLS
+        bl      do_show_syscall
+#endif /* SHOW_SYSCALLS */
+        rlwinm  r10,r1,0,0,18   /* current_thread_info() */
+        lwz     r11,TI_LOCAL_FLAGS(r10)
+        rlwinm  r11,r11,0,~_TIFL_FORCE_NOERROR
+        stw     r11,TI_LOCAL_FLAGS(r10)
+        lwz     r11,TI_FLAGS(r10)
+        andi.   r11,r11,_TIF_SYSCALL_TRACE
+        bne-    syscall_dotrace
+syscall_dotrace_cont:
+        cmpli   0,r0,NR_syscalls
+        lis     r10,sys_call_table@h
+        ori     r10,r10,sys_call_table@l
+        slwi    r0,r0,2
+        bge-    66f
+        lwzx    r10,r10,r0      /* Fetch system call handler [ptr] */
+        mtlr    r10
+#if (CONFIG_LTT)
+        TRACE_REAL_ASM_SYSCALL_ENTRY ;
+#endif
+        addi    r9,r1,STACK_FRAME_OVERHEAD
+        blrl                    /* Call handler */
+        .globl  ret_from_syscall
+ret_from_syscall:
+#ifdef SHOW_SYSCALLS
+        bl      do_show_syscall_exit
+#endif
+#if (CONFIG_LTT)
+        stw     r3,RESULT(r1)   /* Save result */
+        TRACE_REAL_ASM_SYSCALL_EXIT ;
+#endif
+        mr      r6,r3
+        li      r11,-_LAST_ERRNO
+        cmpl    0,r3,r11
+        rlwinm  r12,r1,0,0,18   /* current_thread_info() */
+        blt+    30f
+        lwz     r11,TI_LOCAL_FLAGS(r12)
+        andi.   r11,r11,_TIFL_FORCE_NOERROR
+        bne     30f
 
-@@ -357,6 +360,15 @@
-  	li	r0,256
-  	mtctr	r0
-  1:	bdnz	1b
-+
-+	/* Clear MSSSR0 which may cause parity error */
-+	xor	r5,r5,r5
-+	mtspr	1015, r5
-+
-+	/* Enable L3 cache */
-+	oris	r3,r3,(L3CR_L3E)@h
-+	mtspr	SPRN_L3CR,r3
-+	sync
+And so on.
 
-  	/* Restore MSR (restores EE and DR bits to original state) */
-  4:	SYNC
-diff -Nru a/arch/ppc/kernel/ppc_htab.c b/arch/ppc/kernel/ppc_htab.c
---- a/arch/ppc/kernel/ppc_htab.c	Thu Jun 24 00:04:09 2004
-+++ b/arch/ppc/kernel/ppc_htab.c	Thu Jun 24 00:04:09 2004
-@@ -37,6 +37,8 @@
-  static long long ppc_htab_lseek(struct file * file, loff_t offset, int
-orig);
-  int proc_dol2crvec(ctl_table *table, int write, struct file *filp,
-  		  void __user *buffer, size_t *lenp);
-+int proc_dol3crvec(ctl_table *table, int write, struct file *filp,
-+		  void __user *buffer, size_t *lenp);
+This state of affairs produces the next fault sequence (obtained with
+BDI2000 help):
+(gdb) bt
+#0  0xc000814c in __delay ()
+#1  0xc0015ac4 in panic (fmt=0x121eac0 <Address 0x121eac0 out of bounds>)
+    at delay.h:42
+#2  0xc00182b0 in do_exit (code=11) at kernel/exit.c:768
+#3  0xc000625c in die (str=0x1 <Address 0x1 out of bounds>, fp=0xc02add20,
+        err=11) at arch/ppc/kernel/traps.c:106
+#4  0xc000e51c in bad_page_fault (regs=0xc02add20, address=1, sig=11)
+    at arch/ppc/mm/fault.c:363
+#5  0xc000e4c0 in do_page_fault (regs=0xc02add20, address=2449539152,
+               error_code=1107296256) at arch/ppc/mm/fault.c:337
+#6  0xc0005f80 in ret_from_except_full () at init/initramfs.c:12
+#7  0xc01c8ce0 in init_thread_union ()
+#8  0xc0025e94 in queue_work (wq=0x1, work=0x1) at kernel/workqueue.c:105
+#9  0xc0026698 in schedule_work (work=0x1) at kernel/workqueue.c:389
+#10 0xc002a1d4 in kthread_create (threadfn=0x593ad, data=0x1,
+                    namefmt=0xc017388c "%s/%d") at kernel/kthread.c:134
+#11 0xc002640c in create_workqueue_thread (wq=0x1, cpu=10)
+                       at kernel/workqueue.c:293
+#12 0xc0026528 in __create_workqueue (name=0xc017fe74 "kblockd",
+                            singlethread=0) at kernel/workqueue.c:329
+#13 0xc01d8d6c in blk_dev_init () at drivers/block/ll_rw_blk.c:2822
+#14 0xc01d8e28 in device_init () at drivers/block/genhd.c:311
+#15 0xc01ca664 in do_initcalls () at init/main.c:519
+#16 0xc01ca700 in do_basic_setup () at init/main.c:559
+#17 0xc000392c in init (unused=0x593ad) at init/main.c:599
+#18 0xc0008994 in original_kernel_thread ()
 
-  extern PTE *Hash, *Hash_end;
-  extern unsigned long Hash_size, Hash_mask;
-@@ -469,3 +471,173 @@
-  	filp->f_pos += *lenp;
-  	return 0;
-  }
-+/* JPAN: external L3CACHE is supported by MPC745X processors. L3
-timing parameters
-+ * are both CPU and platform dependent, so we do not enable L3 during
-boot time, but rather
-+ * allow user to enable via sysctl via /proc/sys/kernel/l3cr. Prior to
-booting
-+ * the kernel, correct L3 SRAM AC timing can be adjusted by L3IDCR0-3,
-+ * - MPC7450 UM 2.1.5.5.4
-+ */
-+int proc_dol3crvec(ctl_table *table, int write, struct file *filp,
-+		  void __user *buffer_arg, size_t *lenp)
-+{
-+	int vleft, first=1, len, left, val;
-+	char __user *buffer = (char __user *) buffer_arg;
-+	char buf[TMPBUFLEN], *p;
-+	static const char *sizestrings[2] = {
-+		"1MB", "2MB"
-+	};
-+	static const char *clockstrings[8] = {
-+		"divided by 6",
-+		"reserved (1)",
-+		"divided by 2",
-+		"divided by 2.5",
-+		"divided by 3",
-+		"divided by 3.5",
-+		"divided by 4",
-+		"divided by 5"
-+	};
-+	/* 7457 only */
-+	static const char *clockstrings_ext[8] = {
-+		"divided by 7",
-+		"divided by 8",
-+		"divided by 4.5",
-+		"divided by 5.5",
-+		"divided by 6.5",
-+		"divided by 7.5",
-+		"reserved (6)",
-+		"reserved (7)"
-+	};
-+	static const char *clocksamplepoint[4] = {
-+	  "2 clocks",
-+	  "3 clocks",
-+	  "4 clocks",
-+	  "5 clocks"
-+	};
-+	/* 7457 only */
-+	static const char *clocksamplepoint_ext[4] = {
-+	  "6 clocks",
-+	  "7 clocks",
-+	  "8 clocks",
-+	  "9 clocks"
-+	};
-+	static const char* p_clocksamplepoint[8] ={
-+	  "0 clocks",
-+	  "1 clocks",
-+	  "2 clocks",
-+	  "3 clocks",
-+	  "4 clocks",
-+	  "5 clocks",
-+	  "reserved (6)",
-+	  "reserved (7)"
-+	};
-+
-+	static const char* typestrings[4] = {
-+	  "MSUG2 DDR SRAM",
-+	  "pipelined sync late-write SRAM",
-+	  "reserved type (2)",
-+	  "PB2 SRAM",
-+	};
-+
-+	if (!(cur_cpu_spec[0]->cpu_features & CPU_FTR_L3CR))
-+		return -EFAULT;
-+
-+	if ( /*!table->maxlen ||*/ (filp->f_pos && !write)) {
-+		*lenp = 0;
-+		return 0;
-+	}
-+
-+	vleft = table->maxlen / sizeof(int);
-+	left = *lenp;
-+
-+	for (; left /*&& vleft--*/; first=0) {
-+		if (write) {
-+			while (left) {
-+				char c;
-+				if(get_user(c, buffer))
-+					return -EFAULT;
-+				if (!isspace(c))
-+					break;
-+				left--;
-+				buffer++;
-+			}
-+			if (!left)
-+				break;
-+			len = left;
-+			if (len > TMPBUFLEN-1)
-+				len = TMPBUFLEN-1;
-+			if(copy_from_user(buf, buffer, len))
-+				return -EFAULT;
-+			buf[len] = 0;
-+			p = buf;
-+			if (*p < '0' || *p > '9')
-+				break;
-+			val = simple_strtoul(p, &p, 0);
-+			len = p-buf;
-+			if ((len < left) && *p && !isspace(*p))
-+				break;
-+			buffer += len;
-+			left -= len;
-+			_set_L3CR(val);
-+		} else {
-+			p = buf;
-+			if (!first)
-+				*p++ = '\t';
-+			val = _get_L3CR();
-+			p += sprintf(p, "0x%08x: ", val);
-+			p += sprintf(p, " %s", (val >> 31) & 1 ? "enabled" :
-+				     	"disabled");
-+			p += sprintf(p, ", %sparity", (val>>30)&1 ? "" : "no ");
-+			p += sprintf(p, ", %s address parity", (val>>29)&1 ? "" : "no ");
-+			p += sprintf(p, ", %s", sizestrings[(val >> 28) & 1]);
-+ 			if(val & (1<<21)) //clock ext
-+			  p += sprintf(p, ", %s", clockstrings_ext[(val >> 23) & 7]);
-+			else
-+			  p += sprintf(p, ", %s", clockstrings[(val >> 23) & 7]);
-+			p += sprintf(p, ", %s", typestrings[(val >> 8) & 3]);//SRAM type
-+			p += sprintf(p,"\n");
-+			if(val & (1<<20)) //clock sp ext
-+			  p += sprintf(p, ", %s sample point (ext)",
-clocksamplepoint_ext[(val>>16)&3]);
-+			else
-+			  p += sprintf(p, ", %s sample point",
-clocksamplepoint[(val>>16)&3]);
-+
-+			p += sprintf(p, ", %s p-sample point",
-p_clocksamplepoint[(val>>13)&7]);
-+			p += sprintf(p, "%s", (val>>6)&1 ? ", data only" : ", unified");
-+
-+			p += sprintf(p, ", %s", (val>>12)&1 ? "8-bit running counter
-replacement":\
-+				     "default replacement");
-+			p += sprintf(p,"\n");
-+
-+			len = strlen(buf);
-+			if (len > left)
-+				len = left;
-+			if (copy_to_user(buffer, buf, len))
-+				return -EFAULT;
-+			left -= len;
-+			buffer += len;
-+			break;
-+		}
-+	}
-+
-+	if (!write && !first && left) {
-+		if(put_user('\n', (char *) buffer))
-+			return -EFAULT;
-+		left--, buffer++;
-+	}
-+	if (write) {
-+		p = (char *) buffer;
-+		while (left) {
-+			char c;
-+			if(get_user(c, p++))
-+				return -EFAULT;
-+			if (!isspace(c))
-+				break;
-+			left--;
-+		}
-+	}
-+	if (write && first)
-+		return -EINVAL;
-+	*lenp -= left;
-+	filp->f_pos += *lenp;
-+	return 0;
-+}
-+
-diff -Nru a/include/linux/sysctl.h b/include/linux/sysctl.h
---- a/include/linux/sysctl.h	Thu Jun 24 00:04:09 2004
-+++ b/include/linux/sysctl.h	Thu Jun 24 00:04:09 2004
-@@ -133,6 +133,7 @@
-  	KERN_NGROUPS_MAX=63,	/* int: NGROUPS_MAX */
-  	KERN_SPARC_SCONS_PWROFF=64, /* int: serial console power-off halt */
-  	KERN_HZ_TIMER=65,	/* int: hz timer on or off */
-+	KERN_PPC_L3CR=66,	/* int: control L3 cache on/off */
-  };
+The investigation has shown that the reason for fault is the
+addi    r3,r1,STACK_FRAME_OVERHEAD;     /* Put pointer to registers into
+r3 */  \
+instruction whitch follows direcly after the macro:
+#define TRACE_REAL_ASM_SYSCALL_ENTRY
 
+Definitly I can't just get rid of it (trace_real_syscall_entry really
+needs a parameter) and my poor knowledge of ppc assembly prevents me
+from thorough understanding of DoSyscall. If you have a clue, or think
+you may know what problem is, please let me know ASAP.
 
-diff -Nru a/kernel/sysctl.c b/kernel/sysctl.c
---- a/kernel/sysctl.c	Thu Jun 24 00:04:09 2004
-+++ b/kernel/sysctl.c	Thu Jun 24 00:04:09 2004
-@@ -114,6 +114,9 @@
-  extern unsigned long powersave_nap;
-  int proc_dol2crvec(ctl_table *table, int write, struct file *filp,
-  		  void *buffer, size_t *lenp);
-+int proc_dol3crvec(ctl_table *table, int write, struct file *filp,
-+		  void *buffer, size_t *lenp);
-+
-  #endif
-
-  #ifdef CONFIG_BSD_PROCESS_ACCT
-@@ -369,6 +372,12 @@
-  		.procname	= "l2cr",
-  		.mode		= 0644,
-  		.proc_handler	= &proc_dol2crvec,
-+	},
-+	{
-+		.ctl_name	= KERN_PPC_L3CR,
-+		.procname	= "l3cr",
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dol3crvec,
-  	},
-  #endif
-  	{
-
-Signed-off-by: Jacob Pan <Jacob.Pan@freescale.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+Thanks in advance
+Yuri Frolov
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
