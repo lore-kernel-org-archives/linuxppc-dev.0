@@ -1,27 +1,52 @@
-Message-Id: <199902130247.KAA19808@mule.wantree.com.au>
-Subject: Are 7200s still *officially* supported?
-Date: Sat, 13 Feb 1999 13:20:09 +1030
-From: Keith Jacob <kjacob@wantree.com.au>
-To: "linuxppc-dev list" <linuxppc-dev@lists.linuxppc.org>
+Date: Sat, 13 Feb 1999 05:23:26 +0100
+To: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Bootstrap code with egcs
+Message-Id: <19990213052326.032488@mail.mipsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The subject really says it all: if kernel source releases always need 
-patching to boot 7200s, does that mean that 7200s are no longer 
-officially supported?
+Hi !
 
-Either way, what needs patching in the 2.2.1 sources to boot a 7200? I 
-looked thru' the recent suspect, linux/arch/ppc/kernel/head.S, "applied" 
-the 2.2 patch, compiled it, but no go.
+I'm in the process of improving the way BootX boots and adding support
+for NuBus PowerMacs. However, I need to write some PPC bootstrap code
+that will take control before the kernel is actually entered. Part of it
+is PPC asm, but I want some C code too.
 
-Thanks in advance if you can help here, (or just try to :-)
+The Mac-hosted tools I have (CodeWarrior and MrC) can only, to my
+knowledge, produce PEF (or XCOFF), so the boostrap code needs a complex
+relocation before beeing entered, and I have to handle a TOC which is not
+what I want in this boostrap.
 
---
-Keith Jacob
-kjacob@wantree.com.au
+I was wondering what kind of options are available with egcs for
+generating code that is suitable for bootstraps, if possible, relocatable
+code (datas are PC relative).
+
+The bootstrap will be entered with both data and instructions MMUs
+disabled, so the logical-physical mapping will be 1:1. The boostreap
+itself will be made contiguous and resident somewhere in this physical
+memory by BootX along with some memory for a small stack, and eventually
+some datas. It will be passed a map of the physical RAM, a map of the
+kernel pages (scattered in memory) and will take care of putting the
+kernel pages back contiguously in physical mem before entering the kernel.
+
+I'm not very experienced with egcs, ELF format, etc... so some details
+about how I can generate an easy-to-relocate code (I can use a RELOC
+macro all the time like prom.c does if fixed link address is used) and
+how I must parse the resulting ELF (I beleive the way I parse the kernel
+header) would help. (By details I mean which tools with which option, I
+don't know the gnu toolchain very well).
+
+Thanks in advance !
+
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
 
 
 
