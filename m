@@ -1,32 +1,46 @@
-Message-ID: <008501bfc800$f4da0fb0$57c809c0@nt4srv87>
-Reply-To: "john zhan" <johnzhan@263.net>
-From: "john zhan" <johnzhan@263.net>
-To: "linuxppc-em" <linuxppc-embedded@lists.linuxppc.org>
-Subject: X25 implement in mpc8xx
-Date: Sun, 28 May 2000 01:28:11 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <200005312131.XAA21692@denx.local.net>
+To: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: EST SBC8260 & abatron 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 31 May 2000 16:25:43 EDT."
+             <7283DE19D141D111AD0E00A0C95B195502581D61@mail2.aiinet.com>
+Date: Wed, 31 May 2000 23:31:27 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi, all
+In message <7283DE19D141D111AD0E00A0C95B195502581D61@mail2.aiinet.com> you wrote:
+>
+> I'm having trouble accessing the upper 8MB of the 16MB SDRAM SIMM on this
+> board.
+> I'm wondering if I don't have something configured wrong in my BDI2000
+> config file.
 
-Does anybody know the informatin  about x25 implement in embedded linux/mpc8xx
-I think HDLC/LAPB based SCCx support for X.25 is unfinished and will not work.
-even  X25 packet layer itself.
+Although I don't have a 8260 here to test, you could send me your BDI2000
+config file.
 
-if this work was not start ,
-I would be glad to work for it.
+BTW - which firmware version are  you  running?  Abatron  implemented
+some Linux-friendly extensions lately...
 
-if somebody has started ,
-can you tell me where he is, and  how I can  follow him to improve X25 implement in mpc8xx.
+> Would anyone care to send me one they're using that works?
 
-thak you in advance.
+Is a MPC8xx file of any uise to you?
 
-john zhan.
-hacking time.
+> Also, we're trying to load the linux kernel into this system.
+> How are the folks out there doing that?  Via ftp?  Via a bootloader on the
+> 2MB FLASH
+> chip on the board tied to /CS0?  What exactly?
 
+Well, why don't you use your BDI2000 to load the image, or to load it
+and burn it to FLASH? You already have a BDI, so use it...
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The Gates in my computer are AND, OR and NOT; they are not Bill.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
