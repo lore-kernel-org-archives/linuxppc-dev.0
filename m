@@ -1,30 +1,33 @@
-Message-ID: <3AA621D3.755358F7@iiic.ethz.ch>
-Date: Wed, 07 Mar 2001 12:56:03 +0100
-From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: <mlan@cpu.lu>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4.2 USB and "mon>" (was Re: All 6 cards!!!)
+Date: Wed, 7 Mar 2001 13:19:54 +0100
+Message-Id: <20010307121954.29343@mailhost.mipsys.com>
+In-Reply-To: <200103070649.HAA00777@piglet.grunz.lu>
+References: <200103070649.HAA00777@piglet.grunz.lu>
 MIME-Version: 1.0
-To: Henry Worth <haworth@ncal.verio.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Pismo Aty128fb problem in 2.4.3-pre*?
-References: <3AA41B77.73470672@ncal.verio.com> <3AA5113F.A0B78521@ncal.verio.com>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Henry Worth wrote:
+>Oh yes, sure enough. However, I am unable to tell you _where_ exactly it
+>breaks.
 >
-> Narrowed down the problem a bit more. Specifying
-> "video=aty128fb:mode:17" works; also without the mode.
-> But, adding a depth parm (8,16,24, or 32) causes the
-> fb init failure. It defaults to 8 and fbset works for
-> 8,15,16,32 but 24 causes a blurry image.
+>I've been unable to boot _any_ 2.3/2.4 kernels on my machine since
+>around 2.3.99 or a bit earlier. Some revisions would boot part of the
+>time, but most of them not at all. Symtom is always the same: hang
+>before initializing the framebuffer, i.e. still on the OF screen.
+>
+>I get the 'retunring 0x... from prom_init' string, but nothing after
+>that.....
 
-The last is - *tadda* - an endianness error. aty128fb incorrectly enables byte
-swapping for 24 bit, which can easily be fixed; look for CONFIG_CNTL .
+That's weird ? I suppose you tried removing/moving PCI cards ?
 
+You can also try to hack printk so that it calls prom_prinf (or xmon_printf),
+that may help figure out where it goes wrong.
 
---
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
