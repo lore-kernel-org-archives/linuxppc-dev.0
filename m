@@ -1,40 +1,37 @@
-Date: Wed, 25 Aug 2004 21:25:20 +0200 (MEST)
-From: "Patrick Huesmann" <tricknology@gmx.de>
-To: Scott Anderson <scott_anderson@mvista.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Reply-To: <jdomogala@acmepacket.com>
+From: "Jeff Domogala" <jdomogala@acmepacket.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Handling of cascaded interrupt controllers
+Date: Wed, 25 Aug 2004 16:08:58 -0400
+Message-ID: <NFBBJCNFKLFMBACPKDKCOEIFEFAA.jdomogala@acmepacket.com>
 MIME-Version: 1.0
-References: <412CE415.6010201@mvista.com>
-Subject: Re: ppc-linux still not booting on my virtexII board
-Message-ID: <32289.1093461920@www26.gmx.net>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20040825143025.GJ23113@mind.be>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I have a Marvell GT-64260A based custom board.  The interrupt line out of
+the GT is cascaded into a CPLD, which also has 15 other interrupt sources.
+The way I handled this situation in VxWorks was to define interrupt vectors
+for the CPLD interrupts, minus the one cascaded interrupt from the GT (so 15
+interrupt vectors), then use 64 more interrupt vectors for the GT
+interrupts.  The cascaded interrupt would then call the GT's normal
+interrupt handler to determine the interrupt source.
 
-> You should probably invalidate the cache before you flush it.  There is
-> code to do this for the ML300.  Search for "mfdccr" in:
->
->
-http://ppc.bkbits.net:8080/linuxppc-2.4/anno/arch/ppc/boot/simple/embed_config.c@1.24?nav=index.html|src/|src/arch|src/arch/ppc|src/arch/ppc/boot|src/arch/ppc/boot/simple
->
-
-Thanks.
-After digging in the data sheets, I noticed that the address where the
-access fails (0x000931c0) is a boundary between cache lines. Don't know if
-that means something, though.
+Is there a way to define two interrupt controller devices in this fashion in
+Linux, where a single interrupt from one controller (the CPLD) can somehow
+manage multiple interrupts for the other controller (the GT), with all
+interrupt sources having unique vectors?  This appears to be identical to a
+cascaded pair of 8259 controllers.  Or, do I do something similar to my
+VxWorks implementation and create one interrupt controller device with
+unique interrupt vectors for all sources except the cascaded CPLD interrupt
+for the GT?
 
 Regards,
-Patrick
 
-
-
-
-
---
-NEU: Bis zu 10 GB Speicher für e-mails & Dateien!
-1 GB bereits bei GMX FreeMail http://www.gmx.net/de/go/mail
+Jeff
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
