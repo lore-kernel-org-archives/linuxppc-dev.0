@@ -1,32 +1,53 @@
-Date: Thu, 28 Nov 2002 20:31:13 -0900
-From: Ethan Benson <erbenson@alaska.net>
+Date: Fri, 29 Nov 2002 17:08:26 +0100
+From: Samuel Rydh <samuel@ibrium.se>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [patch] ignore trackpad/mouse while typing
-Message-ID: <20021129053113.GB6329@plato.local.lan>
-References: <3DE6C428.5000403@TU-Berlin.de>
+Subject: asm inline
+Message-ID: <20021129160826.GA27950@ibrium.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3DE6C428.5000403@TU-Berlin.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Nov 28, 2002 at 05:34:32PM -0800, Till Straumann wrote:
->
->     /proc/sys/dev/input/mouse_holdoff_ms
->
-> for tuning the time period during which the mouse is to
-> be ignored after a keystroke (valid range from
-> 0 [disabled]  ... 3000 ).
->
-> NOTE: Official 'SYSCTL' numbers should be assigned
->       for the 'input' and 'input/mouse_holdoff_ms' nodes.
+I just noticed that gcc 3.1 doesn't like the following:
 
-why didn't you just use the mac_hid/ node to hold your
-mouse_holdoff_ms node?
+static __inline__ void st_le32( ulong *addr, ulong val )
+{
+        __asm__ __volatile__( "stwbrx %1,0,%2"
+				: "=m" (*addr)
+				: "r" (val), "r" (addr) );
+}
 
---
-Ethan Benson
-http://www.alaska.net/~erbenson/
+The compiler misses the fact that *addr is modified and will happily
+turn the following
+
+	st_le32( &b, 1UL << i );
+	testing( b )
+
+into something like
+
+	addi	r31,r1,28
+	...
+	lwz	r3,28(r1)	; loading b
+	stwbrx	r9,0,r31
+	bl	testing
+
+The real world example looked like this:
+
+    int i,b;
+    for( i=0; i<=30; i++ ) {
+        st_le32( &b, 1UL<<i );
+        printf("dbg:  %d %08lx b=%08lx\n", i, pic.reg[r_flag], b );
+        if( pic.reg[r_flag] & b )
+            break;
+    }
+
+Adding "memory" to the clobber list seems to be the only way to make
+gcc do the right thing :-(.
+
+/Samuel
+
+
+Btw. I'm using gcc 3.1 cross compiled for x86.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
