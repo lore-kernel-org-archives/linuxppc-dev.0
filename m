@@ -1,40 +1,41 @@
-To: "Walser, Martin" <mwalser@harris.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+To: Alex Zeffertt <ajz@cambridgebroadband.com>
+Cc: "Walser, Martin" <mwalser@harris.com>,
+	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: unable to uncompess kernel image 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 05 Feb 2002 09:56:34 EST."
-             <8D4C69676E66D511A1CB00508BBBB1921BCEF9@ranmx1.ran.harris.com>
-Date: Tue, 05 Feb 2002 17:00:04 +0100
-Message-Id: <20020205160009.43BAC116B8@denx.denx.de>
+In-reply-to: Your message of "Tue, 05 Feb 2002 15:52:24 GMT."
+             <3C5FFFB8.5000409@cambridgebroadband.com>
+Date: Tue, 05 Feb 2002 17:58:30 +0100
+Message-Id: <20020205165835.AD017116B8@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <8D4C69676E66D511A1CB00508BBBB1921BCEF9@ranmx1.ran.harris.com> you wrote:
+In message <3C5FFFB8.5000409@cambridgebroadband.com> you wrote:
 >
-> I've successfully developed a kernel which mounts over nfs.
-> Now I want to make a zImage.initrd. To do so, I've first made a ramdisk.image.gz
-> and copied it to /arch/ppc/mbxboot.
-> Then I made make zImage.initrd.
+> I'm a little bit confused as to whether you are trying to build a ramdisk image or a kernel image.
 
-OK. This is the traditional way to do it, using the bootstrap  loader
-code in the mbxboot directory.
+Well, as I understood he tried to combine both  the  kernel  and  the
+ramdisk images in one file; this is sometimes useful when you want to
+deal with a single file only (like when booting from a boot server).
 
-> After that, I've used mkimage to encapsulate /arch/ppc/mbxboot/zvmlinux.initrd
-> to boot it with ppcboot.
+In PPCBoot terminology this is called a "multi-file image":
 
-Wrong. It does not work this way with PPCBoot.
 
-See the README file that comes with PPCBoot for a description what to
-do.
+	$ mkimage -A ppc -O Linux -T multi -C gzip \
+	-n 'Linux Multiboot-Image' -e 0 -a 0 \
+	-d vmlinux.gz:ramdisk_image.gz pMulti
+
 
 Wolfgang Denk
 
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I used to be indecisive, now I'm not sure.
+A man either lives life as it happens to him, meets  it  head-on  and
+licks it, or he turns his back on it and starts to wither away.
+	-- Dr. Boyce, "The Menagerie" ("The Cage"), stardate unknown
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
