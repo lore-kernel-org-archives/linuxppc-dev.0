@@ -1,66 +1,40 @@
-Subject: Re: How to change endian attribute for a memory region
-To: Matt Porter <porter@cox.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF2EA6E612.B4EFD9B5-ON87256C53.004F87F7@boulder.ibm.com>
-From: "Ralph Blach" <rcblach@us.ibm.com>
-Date: Tue, 15 Oct 2002 10:34:14 -0400
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "Matt Porter" <porter@cox.net>,
+	"Laurent Mohin" <laurent.mohin@acterna.com>
+Cc: "Stefan Roese" <stefan.roese@esd-electronics.com>,
+	"Michael Meriin" <Michael@KSWaves.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: How to change endian attribute for a memory region
+Date: Tue, 15 Oct 2002 07:35:40 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFKEHGDNAA.acurtis@onz.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <20021015071546.A14041@home.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-OK, I know this is absolute HERESY  for all you out there, and would never
-be supported in the kernel tree,
-and probably with very good reasons, but I'll mention it anyway.
-
-ON the 405 and the 440 class processors, there is an endian bit in the TLB
-which would make a 4k region
-little endian.  To use this bit one would have to write an IOremap_LE and
-support the bit in the page table,
-but it could be used.
-
-There are probabley better ways that are more inline with the PPC
-philosophy.
-
-Chip
-
-
-
-Matt Porter <porter@cox.net>@lists.linuxppc.org on 10/15/2002 10:15:46 AM
-
-Sent by:    owner-linuxppc-embedded@lists.linuxppc.org
-
-
-To:    Laurent Mohin <laurent.mohin@acterna.com>
-cc:    Stefan Roese <stefan.roese@esd-electronics.com>, Michael Meriin
-       <Michael@KSWaves.com>, linuxppc-embedded@lists.linuxppc.org
-Subject:    Re: How to change endian attribute for a memory region
-
-
-
-
-On Tue, Oct 15, 2002 at 01:07:19PM +0200, Laurent Mohin wrote:
+> > By the way, I really studied the chip and if I want to be able to manage
+> > both 8 bpp and 16 bpp mode, I need to be able to change the endianness
+> > attribute of the memory region.
 >
-> Stefan,
->
-> I'm the initiator of the question.
-> I use the Epson chip in big endian mode. The problem is that in 16 bpp
-> mode, the RGB mapping into video memory is fixed by the chip and
-described
-> in little endian format.
->
-> By the way, I really studied the chip and if I want to be able to manage
-> both 8 bpp and 16 bpp mode, I need to be able to change the endianness
-> attribute of the memory region.
+> Why wouldn't you access video memory via a sthbrx instruction (writew)?
 
-Why wouldn't you access video memory via a sthbrx instruction (writew)?
+Right!
+writew() - assumes that you are talking to a peripheral and all peripherals
+must be little endian , thank you PCI.
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+__raw_writew() - accesses the memory in the native format which is
+big-endian in your case.
+
+
+To answer your other question:
+You can not set an attribute on a memory region within the memory controller
+to force the hardware to handle this for you on a region by region basis.
+The chip's endianness may be configurable. This is an exercise let to the
+programmer.  :(
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
