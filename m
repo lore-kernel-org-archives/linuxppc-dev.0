@@ -1,76 +1,37 @@
-Message-ID: <3F9FF9AB.6000406@esteem.com>
-Date: Wed, 29 Oct 2003 09:32:27 -0800
-From: Conn Clark <clark@esteem.com>
-MIME-Version: 1.0
-To: Paul Miller <pmiller9@users.sourceforge.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 405EP peripheral memory access
-References: <200310290808.00654.pmiller9@users.sourceforge.net>
-In-Reply-To: <200310290808.00654.pmiller9@users.sourceforge.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Thu, 30 Oct 2003 10:29:33 +1300
+From: Robin Gilks <robin.gilks@tait.co.nz>
+Subject: 866 derived RTC handling
+To: linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
+Message-id: <3FA0313D.2070203@tait.co.nz>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Paul Miller wrote:
-> Hi,
->
-> I am new to Linux embedded programming.  I have experience programming
-> microcontrollers and DSPs without an operating system, so I have some
-> idea what I'm doing.  Anyhow, I'm trying to use the peripheral memory
-> bus on my 405EP CerfCube from Intrinsyc.  Does anyone have an example
-> that I can work from?
+Greetings
 
-If I remember correctly the Cerf Cube uses PPCboot/U-Boot and ships with
-the source on a CD.
+Has anyone tackled the lack of a Real Time Clock block in the mpc866
+(and its derivatives)? As far as I can see, the changing of platform_init()
+         ppc_md.set_rtc_time             = m8xx_set_rtc_time;
+         ppc_md.get_rtc_time             = m8xx_get_rtc_time;
+to
+         ppc_md.set_rtc_time             = NULL;
+         ppc_md.get_rtc_time             = NULL;
+based on the CPU will do the trick - but the question is, what is the
+best way to identify the subclass of 866 within the 8xx family of CPUs.
 
->
-> To setup the memory's timings, I need access to the DCR register.  In
-> the PowerPC datasheet it says to use assembly instructions mtdcr and
-> mfdcr.  I don't know much about assembly, but I found a kernel patch
-> that uses these functions.  So, working off this patch, I tried making
-> a simple program to read these registers.  When I run it, Linux reports
-> an "Illegal instruction" and doesn't let me access the register.
-
-Did you make calls to the patched kernel or paste this function into
-your user mode program? Some registers are priviledged and only the
-kernel is allowed to touch them. If you had this function in a user
-program it won't work.
->
-> Does access to this bus need to be done in "kernel mode"?  If so, where
-> can I find more information about writing a kernel driver?  Ideally,
-> I'd like to just open a device file and read/write to the bus.
->
-
-I wrote my first kernel driver based on an example found at
-http://www.denx.de . Though It was for kernel version 2.2.x and the
-Motorla 8xx processor, the example was quite helpful and could still be
-for you. Its at the botom of the page here
-http://www.denx.de/e/index1.php?head=solution-se-head&main=solution-se&subnav=solution-se-subnav&logo=logo-se&mainnav=softwarenav&bottom=bottom-se
-
-One aproach you might take is modifying the PPCBoot source and mapping
-your device to a memory address and access it using the memory map
-functions in the kernel.
-> Thanks!
-> -Paul
->
->
-
-Its going to be ruff in the begining, but it gets easier. Have fun.
-
-Conn Clark
+The IMMR mask version of 0x08000003 seems one way, is this consistant
+does anyone know? I'd like to avoid the introduction of (yet another)
+config item so a probe would be best IMHO.
 
 
 --
-
-*****************************************************************
-   If you live at home long enough, your parents will move out.
-  (Warning they may try to sell their house out from under you.)
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
+Robin Gilks
+Senior Design Engineer          Phone: (+64)(3) 357 1569
+Tait Electronics                Fax  :  (+64)(3) 359 4632
+PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
+New Zealand
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
