@@ -1,48 +1,40 @@
-Message-ID: <3CFF8A74.E17E25D2@mvista.com>
-Date: Thu, 06 Jun 2002 11:14:44 -0500
-From: Mark Hatle <fray@mvista.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3CFF92FC.8070102@thales-bm.com>
+Date: Thu, 06 Jun 2002 18:51:08 +0200
+From: Julien Eyries <julien.eyries@thales-bm.com>
 MIME-Version: 1.0
-To: Rick Hunnicutt <rhunnicu@getntds.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: GDB/GDBSERVER and remote Thread Debugging
-References: <000a01c20d70$e66e9420$cdf859c7@get.com> <3CFF865B.4C4F8DDA@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [Fwd: Re: kernel command line for CRAMFS root filesystem]
+References: <EADB10BAC266A14A85ECBF8686A73E31937F77@kolkrabbi.flaga.is>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sorry, I was incorrect.  Remote thread debugging has not yet been pulled in by
-the upstream GDB.  We have it internally, but it's not in GDB 5.2.  (Mind you
-GDB 5.2 does have good local thread debugging.)
+now it works !!
 
---Mark
 
-Mark Hatle wrote:
->
-> Probably not the answer you want, but MontaVista's GDB 5.2 version allows remote
-> thread debugging.  (We are in the process of releasing GDB 5.2 as an update
-> right now.  I don't know for sure when it will be released.)  I don't know if
-> the upstream (GNU version) supports that for PPC or not.  I know it does not for
-> SH, MIPS, and ARM.
->
-> --Mark
->
-> Rick Hunnicutt wrote:
-> >
-> > Will this give thread debugging with GDBSERVER as well or does it still have
-> > to be native GDB?
-> > >
-> > > You will need to be working with GDB version 5.2 or newer to do thread
-> > > debugging.
-> > >
-> > > --Mark
-> > >
-> > > > I'm looking for a stable GDB/GDBSERVER extension
-> > > > suitable for (remote) Debugging multiple threads.
-> > > >
-> > > > It should also possible to attach already running
-> > > > threads.
-> > > >
->
+1) i have applied by hand the mkcramfs_endian.patch ( i have kernel
+2.4.4 from denx )
+
+2) i have added { "mtdblock", 0x1f00 } in init/main.c (that line is
+missing in my kernel )
+
+3) and the commandline (for me) is "root=/dev/mtdblock2 ..."
+
+once again, thanks for all your advices ,
+
+Julien
+
+
+
+--
+Julien Eyries
+R&D engineer
+Thales Broadcast & Multimedia (ex-thomcast)
+email: julien.eyries@thales-bm.com
+fax: 33(0) 1 34 90 31 10
+tel: 33(0) 1 34 90 31 01
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
