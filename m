@@ -1,32 +1,27 @@
-Date: Wed, 5 Sep 2001 10:50:00 -0400
-Message-Id: <200109051450.f85Eo0b22969@hyper.wm.sps.mot.com>
-From: Peter Barada <pbarada@mail.wm.sps.mot.com>
-To: dan@mvista.com
-Cc: kentborg@borg.org, linuxppc-embedded@lists.linuxppc.org
-In-reply-to: <3B954538.786491A3@mvista.com> (message from Dan Malek on Tue, 04
-	Sep 2001 17:18:48 -0400)
-Subject: Re: 405 Walnut Status?
-References: <20010830161812.A4855@borg.org> <3B954538.786491A3@mvista.com>
+Message-ID: <3B9645EB.DC7F3A6C@mvista.com>
+Date: Wed, 05 Sep 2001 11:34:03 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 4xx - a question and a patch
+References: <20010830175217.H858@zax> <3B95307D.1BE64A98@mvista.com> <20010905110451.A599@zax> <3B95A796.248A0E99@mvista.com> <20010905144125.H6636@zax>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->Are you actually using the BK tools?  If so, you should 'bk clone',
->then go into the directory and 'bk -r get', 'make walnut_config',
->'make oldconfig', 'make dep', 'make zImage'.......
+David Gibson wrote:
 
-Ahhh, I think I figured it out.  In the top level makefile, we forgot
-to define ARCH to be ppc, and CROSS_COMPILE to be powerpc-linux-
+> But when it hits zero we'll also get another timer interrupt and will
+> shortly be updating it with a corrected value.  Why does it matter
+> that the value is reloaded?
 
-Now 'make walnut_config' does something interesting.
+I don't understand the reason for this discussion.  Is something
+not working correctly?  If so, make it work better and send me a
+patch.
 
-I'll try a build and see if it comes together...
 
-Thanx for the help!
-
---
-Peter Barada                                   Peter.Barada@motorola.com
-Wizard                                         781-852-2768 (direct)
-WaveMark Solutions(wholly owned by Motorola)   781-270-0193 (fax)
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
