@@ -1,30 +1,31 @@
-Date: Thu, 30 May 2002 21:31:05 -0700
-From: Matt Porter <porter@cox.net>
-To: Khai Trinh <kqtrinh@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Is there ppcboot support for Ebony (440GP)
-Message-ID: <20020530213105.B5671@home.com>
-References: <20020530222834.82903.qmail@web11505.mail.yahoo.com>
+Date: Fri, 31 May 2002 14:31:42 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: First cut at large page support on 40x
+Message-ID: <20020531043142.GE16537@zax>
+References: <20020531042153.GD16537@zax>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020530222834.82903.qmail@web11505.mail.yahoo.com>; from kqtrinh@yahoo.com on Thu, May 30, 2002 at 03:28:34PM -0700
+In-Reply-To: <20020531042153.GD16537@zax>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, May 30, 2002 at 03:28:34PM -0700, Khai Trinh wrote:
+On Fri, May 31, 2002 at 02:21:53PM +1000, David Gibson wrote:
 >
-> Does anybody enable ppcboot support for the IBM Ebony
-> board out there yet?
+> The patch below (against 2_4_devel) implements using large parge TLB
+> entries to map kernel pages on the 40x.  paulus did the basic design,
+> and I tweaked and degubbed it. It's a bit ugly in places (particularly
+> the handling of iopa()) and will need cleaning up, but it does seem to
+> work.
 
-The ppcboot-users list where you posted this a while back is
-generally the best place to get this information.  We try to
-just discuss embedded Linux on this list.
+Oh, yeah, after applying the patch compile with CONFIG_PIN_TLB=n.  I'm
+not sure how they'd interact, but probably not well.
 
-Regards,
 --
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
