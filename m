@@ -1,33 +1,29 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Uwe Steinmann <steinm@majestix.fernuni-hagen.de>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Again PCMCIA problems
-Date: Wed, 12 Dec 2001 15:44:14 +0100
-Message-Id: <20011212144414.7330@smtp.adsl.oleane.com>
-In-Reply-To: <20011212140119.A12086@gehtnix.fernuni-hagen.de>
-References: <20011212140119.A12086@gehtnix.fernuni-hagen.de>
+Date: Wed, 12 Dec 2001 16:44:44 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Ralf Weidemann <linuxppc@gatekeeper.informatik.fh-dortmund.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4.17pre4-ben0: mouse goes wired after sleep on tibook
+In-Reply-To: <3C168254.5030906@gatekeeper.informatik.fh-dortmund.de>
+Message-ID: <Pine.LNX.4.33.0112121642400.18428-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+> > try getting debian's sid latest version.
 >
->include memory 0x90000000-0x90ffffff
->include port 0x0fff-0x1fff
+>
+> Don't know if this is the latest, but seems to work fine. Thanks Ben.
 
-Some cards wants ports below 0xfff, and make sure the
-memory range you provide is actually available
-(do a cat /proc/iomem to check that). If the memory
-is allocated to cardbus (which happens on some machines
-which pre-configure the cardbus bridge from OF), it will
-not be userable by pcmcia
+That's even the ultra-latest (0.8-1) :-) The trackpad bug was fixed in
+Stephan's source months ago as well. Blast YD for not keeping up to date
+(or you for using an outdated distro) :-)
 
-I'd also suggest you update your kernel as some pcmcia
-fixes were lost around 2.4.16 and recovered later during
-2.4.17-pre cycle, yours may still lack them.
+pmud is on SF now, as 'apmud' in case you want the latest sources.
 
-Ben.
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
