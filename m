@@ -1,39 +1,32 @@
-Date: Tue, 23 Dec 2003 14:20:15 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: "Karoliya, Abhishek" <Abhishek.Karoliya@fci.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PPC PCI Enumeration::Switch off
-Message-ID: <20031223142015.B23655@home.com>
-References: <903E17B6FF22A24C96B4E28C2C0214D7012BB3D8@sr-bng-exc01.int.tsbu.net>
+From: "Ashwin Bihari" <raz0redge@hotmail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Intial ramdisk and kernel
+Date: Tue, 23 Dec 2003 16:54:42 -0500
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <903E17B6FF22A24C96B4E28C2C0214D7012BB3D8@sr-bng-exc01.int.tsbu.net>; from Abhishek.Karoliya@fci.com on Wed, Dec 24, 2003 at 12:08:58AM +0530
+Content-Type: text/plain; format=flowed
+Message-ID: <BAY9-F52DvaPK7835U4000107f3@hotmail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Dec 24, 2003 at 12:08:58AM +0530, Karoliya, Abhishek wrote:
->
-> Hi ,
->
->   While porting Linux {we use both flavours MontaVista based on 2.4.18 &
-> Kernel.org's 2.4.20} on MPC7447(Dual CPU) + MV64360 based Processor PMC
-> boards , we have a scenario where multiple PMC card will reside on the same
-> PCI bus . Out of all the boards only one {identified through hardware
-> signal} will enumerate the rest and other PCI devices on the board. {Monarch
-> mode}.
->
->   Hence we need to turn off PCI enumeration for other {Non-monarch boards }.
-> I tried this by  not calling the
-> pciauto_bus_scan(){arch/ppc/kernel/pci_auto.c} while setting up the host
-> bridge . But the boards still goes forward and does the enumeration.
-> Do I have take care of any other section of the code .
+Greetings,
 
-Don't call pcibios_alloc_controller() and the PCI subsystem will not
-attempt to probe the bus (and enumerate via the fixup hooks).  Just
-configure your inbound window(s) on the non-monarch boards and you
-are done.
+I'm tring to create an initial ramdisk to use for the purpose of installing
+a root file system on an empty hard drive. I've gotten the INITRD made by
+using the methods described in the initrd.txt file located in the
+Documentation directory under the Linux sources.
 
--Matt
+>From my reading these lists and other forums, it seems that with the PPC
+platform, I have to compile the INITRD into the kernel, how do I go about
+doing this???
+
+I'm using a PrPMC800 based installation. Any and all help appreciated.
+
+~Ashwin
+
+_________________________________________________________________
+Get reliable dial-up Internet access now with our limited-time introductory
+offer.  http://join.msn.com/?page=dept/dialup
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
