@@ -1,35 +1,31 @@
-Message-ID: <3912E688.70D4150D@embeddededge.com>
-Date: Fri, 05 May 2000 11:19:36 -0400
+Message-ID: <3912F591.6F6AE305@embeddededge.com>
+Date: Fri, 05 May 2000 12:23:45 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Graham Stoney <greyham@research.canon.com.au>
-CC: LinuxPPC Embedded Mailing List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Better board support (was Re: [PATCH] Adding support for LXT971/2
- PHYs)
-References: <20000505051936.BA2B23C971@elph.research.canon.com.au>
+To: "Brown, David (dbrown03)" <DBrown03@harris.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: interference between scc serial and ethernet: more information
+References: <BE1C564723B3D21191FD0000F840E39801D81505@rfcmx2.rfc.comm.harris.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Graham Stoney wrote:
+"Brown, David (dbrown03)" wrote:
 
-> Another example under the scheme would be to replace most of the usages of
-> "#ifdef CONFIG_RPXCLASSIC" in fec.c with "#ifdef PHY_QS6612",
+> It's a 50MHz MPC860, identified by 8xxrom as XPC860xxZPnnC1 and actually
+> stamped as XPC860ENCZP50C1.  Running at 50MHz.
 
-Actually, that's already gone (but not yet checked in).  I don't even
-have #ifdefs for the PHYS.  I scan the MII looking for all PHYs, when
-one responds I match the mfg/device ID to a table and go.
+There shouldn't be any trouble with that part.
 
-There are thing unique to individual boards that still require board
-specific #ifdefs.
+Since this is a custom board, what software changes have you made?
+What board configuration file are you using?  What changes did
+you make to commproc.h to support your Ethernet configuration?
 
-> /* Ethernet : PHY controls - connected to port X
-
-Many boards don't use 8xx I/O pins for PHY controls.  They have
-external hardware registers for this because they use the 8xx pins
-for other communication I/O.  This requires minor board specific
-code to be included in the driver.
+Send me all of your changes (i.e. diff the sources), or post them
+or something.  This kernel on something like the Embedded Planet CLLF
+runs just fine with Ethernet and PPP on multiple serial ports.  Show
+the changes and maybe we can help.  I certainly can't guess any more.
 
 
 	-- Dan
