@@ -1,62 +1,44 @@
-Date: Fri, 13 Aug 1999 09:56:56 -0400
-From: "Christopher A. Shepherd" <cshepher@hardrock.com>
-Message-Id: <199908131356.JAA08439@ns.hardrock.com>
+Date: Fri, 13 Aug 1999 10:09:29 -0400
+From: Mike Lambert <lambert@jeol.com>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: OF netbooting
+Subject: Re: PATCH: Extra brightness off with the XClaim 3D Plus
+In-Reply-To: <37B1D5F5.F76809E9@liberate.com>
+Message-ID: <Pine.SGI.4.10.9908130946190.968-100000@davinci.jeol.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Wed, 11 Aug 1999, Rick Meier wrote:
 
-All,
+> On the XClaim 3D plus the extra brightness needs to be turned off or the
+> card overdrives the monitor.  Here is a patch to the kernel if anyone
+> wants to try it.
 
-     I've been reading a bit on the list about iMac openfirmware netbooting,
-reading the Apple technotes, etc. After looking over the NetBSD source tree,
-it looks like the special ".note" section in the kernel file consists of
-this:
+> --- atyfb.c     Wed Aug 11 13:49:29 1999
+> +++ atyfb.c.orig        Wed Aug 11 13:57:49 1999
+> @@ -3418,7 +3418,7 @@
+>      if (Gx == GT_CHIP_ID || Gx == GU_CHIP_ID || Gx == GV_CHIP_ID ||
+>         Gx == GW_CHIP_ID || Gx == GZ_CHIP_ID || Gx == LG_CHIP_ID ||
+>         Gx == GB_CHIP_ID || Gx == GD_CHIP_ID || Gx == GI_CHIP_ID ||
+> +       Gx == GP_CHIP_ID || Gx == GQ_CHIP_ID)
+>         i |= 0x2;       /*DAC_CNTL|0x2 turns off the extra brightness
+> for gt*/
+>      aty_st_8(DAC_CNTL, i, info);
+>      aty_st_8(DAC_MASK, 0xff, info);
 
--- snip (ofwmagic.S) --
+Thanks Rick, this works as advertised. The XClaim 3D Plus in my B+W G3 400
+now works properly. Well, except for the mild snow down the left side of
+the display, but that is a different problem...
 
-        .section ".note"
+-mike
 
-        # note header
-
-        # length of name
-        .long   8
-
-        # note descriptor size
-        .long   20
-
-        # note type (IEEE 1275)
-        .long   0x1275
-
-        # name of owner
-        .asciz  "PowerPC"
-        .balign 4
+-- 
+Michael Lambert             JEOL USA Inc.
+Systems Administration      http://www.jeol.com/
 
 
-        # note descriptor
-
-        # real mode (-1) or virtual mode (0)
-        .long   0
-
-        # real-base
-        .long   -1
-        # real-size
-        .long   -1
-
-        # virt-base
-        .long   -1
-        # virt-size
-        .long   -1
-
--- snip --
-
-     I built a special kernel by just assembling this and linking it into
-the kernel. Won't be able to test it until I get back home though. Could it
-really be this simple?
-
--Chris
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
