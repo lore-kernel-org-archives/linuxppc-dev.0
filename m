@@ -1,40 +1,46 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: August Hoerandl <ahoerandl@gmx.at>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: linuxppc_2_5 source tree (and others)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Thu, 10 May 2001 18:38:02 +1000
-Message-ID: <21780.989483882@msa.cmst.csiro.au>
-From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
+Subject: Re: power saving
+Date: Thu, 10 May 2001 12:36:12 +0200
+Content-Type: text/plain;
+  charset="us-ascii"
+References: <3AF638AC.659C8A1F@centurysys.co.jp> <3AF6FC60.D5FE49D9@mvista.com>
+In-Reply-To: <3AF6FC60.D5FE49D9@mvista.com>
+MIME-Version: 1.0
+Message-Id: <01051012361202.02674@linuxhoe>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, I see that the linuxppc_2_5 bk tree has disappeared from fsmlabs, and
-has been replaced with a linuxppc_2_4_devel tree. Could someone in the
-know please post a quick update what this means, and perhaps what the
-future holds wrt 2.4/2.5 linuxppc (embedded)?
+On Monday 07 May 2001 09:49 pm, Dan Malek wrote:
+> Tania Oka wrote:
+> > I would like to reduce power consumption on a custom MPC855T board.
+>
+> This has been asked before, and you can read about it in mailing
+> list archives.
 
-I guess I should actually ask about what I want :-) The linuxppc_2_5 tree
-had a "drivers/i2c/i2c-algo-8xx.c" file which has disappeared from 2_4_devel.
-I need an i2c driver for linuxppc for the 8260 and figured this would be a
-good place to start. So the question really is what has happened to the 8xx
-i2c driver in the fsmlabs linuxppc_2_5, and has anyone ported this to (or done
-one independently for) the 8260?
+checked this - found nothing very specific
 
-And while I am at it, I have searched the archives for info about IDMA
-and it appears that it is a do it yourself job (and that it may not be
-so good on the 8xx anyway - but from what we can tell, it is much better
-on the 8260 - if anyone knows differently, please let me know). If you
-have a driver/support code/etc for IDMA on the 8260 (or 8xx) I would
-appreciate it very much if you let me know.
+> Basically, the MPC8xx processors have a dynamic power management
+> system that doesn't gain much from just doing something in the idle()
+> loop.  The majority of the power is consumed by peripherals.  If they
+> are not enabled, they automatically power down.  All of the MPC8xx
+> drivers "do the right thing" on open and close to power up/down
+> peripherals.
+>
+> If you have some very low power standby requirement, you need to add
+> lots of power management software to do things like power down/up
+> any external peripherals on your board, put DRAM in autorefresh
+> mode, shut down the clocks and put the processor into a deep sleep.
 
-Thanks for your time. Cheers!
-								Murray...
---
-Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
-Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
-Internet: Murray.Jensen@cmst.csiro.au  (old address was mjj@mlb.dmt.csiro.au)
+yes - thats what i would like to do ;-)
 
+> You could look at some of the PowerMac power management code for
+> design ideas.
+
+could anyone be a little more specific to get me to the right files ?
+
+Regards
+Gustl
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
