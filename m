@@ -1,36 +1,38 @@
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Tue, 4 Mar 2003 21:40:15 -0700
-To: Troy Benjegerdes <hozer@hozed.org>,
-	linuxppc-dev@lists.linuxppc.org
 Subject: Re: Patch boot/common/relocate.S to start kernel at 0x000c
-Message-ID: <20030305044015.GB5355@rover.farnsworth.org>
-References: <15973.18737.651334.824024@argo.ozlabs.ibm.com> <20030305010318.6A4D3C6E0C@atlas.denx.de> <20030305022134.GR24171@kalmia.hozed.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dale Farnsworth <dale@farnsworth.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20030305042834.GA5355@rover.farnsworth.org>
+References: <15973.18737.651334.824024@argo.ozlabs.ibm.com>
+	 <20030305010318.6A4D3C6E0C@atlas.denx.de>
+	 <15973.24544.124365.553602@argo.ozlabs.ibm.com>
+	 <20030305042834.GA5355@rover.farnsworth.org>
+Content-Type: text/plain
+Message-Id: <1046858087.890.104.camel@zion.wanadoo.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030305022134.GR24171@kalmia.hozed.org>
+Date: 05 Mar 2003 10:54:48 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Mar 05, 2003 at 02:21:35AM +0000, Troy Benjegerdes wrote:
-> If you can find a SMP system that uses XIP, then let's change it.
+> Well, that does add the requirement that kernel data be mapped at its
+> linked-at address before __secondary_hold references said variable.
 >
-> We should only be writing to kernel text on an SMP system that has
-> firmware that requires you to jump into the wrapper on both cpus.
+> By the way, the recent addition of the call to smp_call_init_cpu,
+> places the same requirement on __secondary_start, unfortunately.
 
-I believe it happens on all ppc SMP systems.  It certainly happens
-on powermacs which don't use the wrapper for cpu != 0.
+smp_call_init_cpu() is broken in various ways, and I'm about to kill
+it, sorry for the inconvenient. I'm finishing tests of the replacement
+in my tree now (and already pushed it to 2.5).
 
-> Dale, instead of changing head.s, can you use your own relocate.s for
-> your wrapper? Don't you have to mess around with holding the 2nd cpu in
-> the wrapper?
+However, I'm replacing it with some cleaner assembly code that still
+has to access the kernel memory. secondary_start has to be called
+with MSR:DR=0 and kernel at it' linked location (but the later shouldn't
+be a problem, and clearing MSR:DR neither).
 
-Sure, we could add an ifdef to have the wrapper start the kernel at 0xc like
-prep/head.S does.  I'd rather use common code where possible though.
+I'll push the new code today
 
--Dale
-
-P.S.  Note that I'm not proposing any additional writes to low memory.
-I'm only proposing that we change the nop at 0x0 to "b .+0xc" .
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
