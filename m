@@ -1,61 +1,56 @@
-From: Frodo Looijaard <frodol@dds.nl>
-Message-Id: <199904281409.QAA01267@arda.frodo.local>
-Subject: Re: Support for Hydra i2c
-To: Geert.Uytterhoeven@cs.kuleuven.ac.be (Geert Uytterhoeven)
-Date: Wed, 28 Apr 1999 16:09:05 +0200 (CEST)
-Cc: lm78@stimpy.netroedge.com, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.10.9904281104050.12292-300000@mercator.cs.kuleuven.ac.be> from "Geert Uytterhoeven" at Apr 28, 99 11:20:36 am
+Date: Wed, 28 Apr 1999 09:13:24 -0600 (MDT)
+From: Dan Burcaw <dburcaw@terraplex.com>
+To: "Paul J. Schinder" <schinder@pobox.com>
+cc: Satadru Pramanik <satadru@umich.edu>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Rel 5 ssh?
+In-Reply-To: <19990428080649.A5927@pobox.com>
+Message-ID: <Pine.LNX.3.96.990428091235.23692C-100000@newhope.terraplex.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
+
 > 
-> The attached patch adds support for the i2c interface on the Apple `Hydra' Mac
-> I/O, found on CHRP PPC motherboards. The patch is relative to the anon CVS
-> version of yesterday evening.
-
-Congratulations! You are the first to add support for a non-Intel 
-architecture. I am very excited by your contribution! To be honest, I did
-not even know the PPC architecture had an I2C interface. Very nice indeed!
-
-I will merge your code in later today, and if necessary I will send you some
-feedback on it. You may want CVS write access; it will make maintaining 
-everything a lot easier for all of us. Phil is the one who needs to make 
-an account for you; he also manages the mailing list, which might be 
-interesting to you too. Phil, can you contact Geert for this?
- 
->   - prog/dump/isadump.c
+> There's a patched RPM for 1.2.26 at Yellow Dog
+> <ftp://ftp.yellowdoglinux.com/>.  I don't remember the exact location;
+> you'll have to hunt around.  It works.
 > 
->       o glibc 2.1 doesn't have <sys/perm.h>
->       o make it compile on PPC (ISA I/O is memory mapped, but it doesn't work
-> 	anyway because different types of PPC boxes have ISA I/O space at
-> 	different addresses :-(
->       o fix a typo (datareg -> addrreg)
 
-This was a very Intel-centered program :=). On Intel PCs, we often have
-some hardware sensors attached to the ISA bus. We will have to find out
-whether this is the case with PPCs too.
- 
-> The only things on my i2c bus are 2 SPD EEPROMS. I attached the output of the
-> decode-dimms Perl script. It looks a bit weird though. 
+Grab the 'install-ssh' program from
+ftp.yellowdoglinux.com/pub/yellowdog/updates/champion-1.0/RPMS/
 
-Again, you need to talk to Phil. He wrote the EEPROM decode routines.
 
-I am very curious whether anybody on the PPC has hardware monitoring sensors
-attached. People, the sensors-detect script should work for you, but don't
-try to do the ISA probing (you are asked whether you want it or not).
+> } 
+> } 
+> } Any thoughts?  Does anybody know how to fix this?  The sshd from this
+> } install can't allocate ptys either.
+> } 
+> } --=
+> } satadru pramanik `satadru@umich.edu' www.umich.edu/~satadru
+> } Online Editor, The Michigan Daily
+> } Yugoslavia declares 'peace' in Kosovo; NATO Airstrikes
+> } continue
+> } -CNN Interactive, 04/08/99
+> } =--
+> } 
+> } 
+> 
+> -- 
+> Paul Schinder
+> schinder@pobox.com
+> 
+> 
 
-Good luck,
-  Frodo
 
--- 
-Frodo Looijaard <frodol@dds.nl>  PGP key and more: http://huizen.dds.nl/~frodol
-  At my homepage you will also find a guide for installing glibc under Linux.
-  New: Linux hardware monitoring kernel modules (LM78/79/80, Winbond etc.)
-  
+Dan
+
+Terra Soft Solutions, Inc.
+ email: dburcaw@yellowdoglinux.com
+ website: http://www.yellowdoglinux.com/
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
