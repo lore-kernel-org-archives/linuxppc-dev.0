@@ -1,53 +1,28 @@
-Subject: Re: TLB and CSSBAR problems with MPC8540 and BDI2000
-From: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>
-To: Dan Malek <dan@embeddededge.com>
-Cc: fabidi@ultsol.com, linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <4002C3BB.8060805@embeddededge.com>
-References: 
-	 <704F2B356FCC3E49A909C625BD9E5C4002143D@ultsol01.tewks.ultsol.local>
-	 <3FFEEAD9.80308@embeddededge.com>
-	 <1073677509.10794.14.camel@chuck.arlut.utexas.edu>
-	 <3FFF276C.4060003@embeddededge.com>
-	 <1073686698.3275.10.camel@chuck.arlut.utexas.edu>
-	 <3FFF2B00.6@embeddededge.com>  <4002C3BB.8060805@embeddededge.com>
-Content-Type: text/plain
-Message-Id: <1073938758.5575.140.camel@chuck.arlut.utexas.edu>
-Mime-Version: 1.0
-Date: Mon, 12 Jan 2004 14:19:18 -0600
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Subject: Porting emlinux on customized MPC860 board
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OFC1528F5C.1343245D-ON65256E1A.0034551B@lntinfotech.com>
+From: "Thamarai Selvan" <Thamarai.Selvan@lntinfotech.com>
+Date: Tue, 13 Jan 2004 15:02:19 +0530
+MIME-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-So that leaves us back at the original question. Why does configuring
-the cpu via bdi2000 prevent me from using my u-boot image? Any other
-ideas?
+hi ALL,
 
-Thanks,
-Matthew
+I would like u all to help me out with porting issue currently iam having.
+The customised MPC860 board [target], we have  doesnt have any bootloader
+or code in its ROM
+If i need to port emlinux from my host what related steps i should take
+from the view of target.
+if anyone could direct me on to the documents available on emlinux and
+head.s[in particular] it would be helpful
+This is my first venture towards Linux/emlinux.
+so i may be foolish on some of the queries which i may post
 
-On Mon, 2004-01-12 at 09:56, Dan Malek wrote:
-> Dan Malek wrote:
->
-> > ..... I'll ask
-> > Abatron and post the response.
->
-> I received their response.  Here it is in my words.
->
-> The BDI2000 doesn't care if the CCSRBAR is changed by software.
-> It uses SPRs for debug control, and if it needs to access anything
-> in the CCSR space, it will fetch the address from the part.
->
-> So, I guess there is something else that is incorrect when we
-> change the CCSRBAR.
->
-> Thanks.
->
->
-> 	-- Dan
->
->
---
-Matthew S. McClintock <mattsm@arlut.utexas.edu>
-
+With Regards,
+Thamarai Selvan.G
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
