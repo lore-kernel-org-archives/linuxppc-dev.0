@@ -1,26 +1,19 @@
-Message-ID: <3A83231E.EEC54514@mvista.com>
-Date: Thu, 08 Feb 2001 17:52:14 -0500
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: "Bruno R. Barreyra" <bruno.r.barreyra@intel.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Fixes for the FADS boards
-References: <3A831FF6.CE4BB215@intel.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200102091048.EAA18120@lists.linuxppc.org>
+Date: Fri, 9 Feb 2001 11:31:47 +0800
+From: cuidongwei <cuidw@sina.com>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: kernel panic when read from device driver
+Mime-Version: 1.0
+Content-Type: text/plain; charset="GB2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Bruno R. Barreyra" wrote:
+Hi,everyone,
+	I am develop a device driver on our custom PPC823 board,the board has linux running on it and everything works well.The device is infact a 8bit fifo,I use CS5 to select it and read data from it,the Address which is selected by CS5 is begin at 0xfff00000.I use ioremap( ) function to read data from the address 0xfff00000,but kernel panic always occured.Does anyone can help me?Any comments would be appreciated.
 
-> I've noticed the support has been removed from the latest linuxppc_2_4
+Thanks,
+Derek
 
-You should read the mailing list archives..........
-
-The FADS support is in the 2.4 kernel found on MontaVista's server,
-in /pub/Area51.  It's already on it's way into the kernel tree.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
