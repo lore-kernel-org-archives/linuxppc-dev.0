@@ -1,46 +1,44 @@
-Date: Wed, 5 Jul 2000 16:00:23 -0400
-From: Josh Huber <huber@mclinux.com>
-To: Dan Bethe <dan_bethe@yahoo.com>
-Cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [ANN] New kernels, gmac, airport, usb...
-Message-ID: <20000705160023.G464@mclx.com>
-References: <20000705195234.22063.qmail@web1001.mail.yahoo.com>
+Date: Wed, 5 Jul 2000 13:01:58 -0700
+From: Daniel Jacobowitz <drow@false.org>
+To: Andrew Clausen <clausen@gnu.org>
+Cc: Hollis Blanchard <hollis@amulet.co.jp>, linuxppc-dev@lists.linuxppc.org,
+        GNU Parted list <parted@gnu.org>
+Subject: Re: GNU Parted, linuxppc support coming :-)
+Message-ID: <20000705130158.A18557@drow.them.org>
+References: <39625AB3.6A5447CE@gnu.org> <39632512.1953DBAA@amulet.co.jp> <39626E45.E0496869@gnu.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-md5;
-	protocol="application/pgp-signature"; boundary="aF3LVLvitz/VQU3c"
-In-Reply-To: <20000705195234.22063.qmail@web1001.mail.yahoo.com>; from dan_bethe@yahoo.com on Wed, Jul 05, 2000 at 12:52:34PM -0700
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <39626E45.E0496869@gnu.org>; from clausen@gnu.org on Wed, Jul 05, 2000 at 09:07:49AM +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---aF3LVLvitz/VQU3c
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Jul 05, 2000 at 09:07:49AM +1000, Andrew Clausen wrote:
+> Each partition gets one block (yes?).  So thats 20 * 512?
+> (From comments in various programs, most disks have 512 byte blocks...)
 
-On Wed, Jul 05, 2000 at 12:52:34PM -0700, Dan Bethe wrote:
->=20
-> > Ok..got the new driver, and I can confirm it working here.
-> > Yay...free
-> > of wires at last!
->=20
-> 	I apologize if this is a FAQ, but is there any chance that Airport can
-> work on IA32?  Or is this just on LinuxPPC on Powerbooks and iBooks?
+CDROMs, for example, often have 2048-byte blocks.  You can get the
+block size out of the disk header somewhere, IIRC.
 
-The airport card is specifically for the newer powerbooks and the ibooks, so
-you can't use that card.  You can however use a Airport base with a wavelan
-card which is what the airport card is based on.
+> > There seems to be a shortage of HFS folks these days. :) But ext2
+> > resizing sounds very cool.
+>
+> Excuse my ignorance... what FS's do people usually use with MacOS?
+> HFS/HFS+?
 
---=20
-Josh
-6B21489A | GnuPG ID/Fingerprint | huber@mclx.com |
-61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
+Yes, that's right.
 
---aF3LVLvitz/VQU3c
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+> (Is the point "no-one uses MacOS", or "no-one's hacking on HFS
+> in Linux"?)
 
+The latter.
 
---aF3LVLvitz/VQU3c--
+Dan
+
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
