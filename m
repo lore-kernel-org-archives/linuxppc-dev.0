@@ -1,30 +1,23 @@
-Message-ID: <3BAAF7F9.B4DAB4BA@mvista.com>
-Date: Fri, 21 Sep 2001 04:19:06 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Timothy A. Seufert" <tas@mindspring.com>,
-	Mark Salisbury <mbs@mc.com>,
-	Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ppc LE questions (seeking help hand info pointers)
-References: <Pine.GSO.4.21.0109210950130.3006-100000@mullein.sonytel.be>
+Message-ID: <XFMail.20010921112613.pochini@shiny.it>
 Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+In-Reply-To: <3BAA4F46.1020002@mc.com>
+Date: Fri, 21 Sep 2001 11:26:13 +0200 (CEST)
+From: Giuliano Pochini <pochini@shiny.it>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: keyb
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
-
-> AFAIK they do, for PCI accesses.
-
-They do the same thing we do.  The ULTRASparc has address modifiers on the
-load/store instructions to do byte swapping in the io macros, just like us.
-The "other" Sparcs do it the hard way with actual byte swap code in the
-macros.  There are comments in various files that clearly state Sparc is
-big-endian without exception :-).
+Can someone explain briefly the relations between the
+input layer, the lowlevel driver, the usb hid, etc. ?
+I want to make a patch to deliver unknown keycodes to
+user space and I don't like to browse 100MB of sources
+just to understand where to look for...
 
 
-	-- Dan
+Bye.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
