@@ -1,30 +1,56 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: <rboder@grn.georet.net>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: linux-pmac-stable
-Date: Mon, 5 Jun 2000 22:35:07 +0200
-Message-Id: <20000605203507.502@192.168.1.10>
-In-Reply-To: <393BF78C.1D3F10E1@grn.georet.net>
-References: <393BF78C.1D3F10E1@grn.georet.net>
+Message-Id: <200006052036.WAA01340@piglet.grunz.lu>
+Date: Mon, 5 Jun 2000 22:36:04 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: CONFIG_BLK_DEV_IDEDMA_PCI
+To: geert@linux-m68k.org
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.05.10006051320470.5397-100000@callisto.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jun 5, 2000, Ryan Boder <rboder@grn.georet.net> wrote:
+On   5 Jun, this message from Geert Uytterhoeven echoed through cyberspace:
+> When trying to compile the sl82c105 IDE driver for my LongTrail, I stumbled
+> across the following problem:
+>
+> This driver needs CONFIG_BLK_DEV_IDEDMA=y, so its config line in
+> drivers/ide/Config.in should look like:
+>
+>     dep_mbool '    Winbond SL82c105 support' CONFIG_BLK_DEV_SL82C105 $CONFIG_BLK_DEV_IDEDMA_PCI
+>
+> Unfortunately I cannot turn CONFIG_BLK_DEV_IDEDMA on because it is
+> automatically turned off again by the following construct in
+> drivers/ide/Config.in:
+>
+>   if [ "$CONFIG_PMAC" = "y" -o "$CONFIG_ALL_PPC" = "y" ]; then
+>      bool '    Builtin PowerMac IDE support' CONFIG_BLK_DEV_IDE_PMAC
+>      dep_bool '      PowerMac IDE DMA support' CONFIG_BLK_DEV_IDEDMA_PMAC $CONFIG_BLK_DEV_IDE_PMAC
+>      dep_bool '        Use DMA by default' CONFIG_IDEDMA_PMAC_AUTO $CONFIG_BLK_DEV_IDEDMA_PMAC
+>      define_bool CONFIG_BLK_DEV_IDEDMA $CONFIG_BLK_DEV_IDEDMA_PMAC
+>      define_bool CONFIG_BLK_DEV_IDEDMA_PCI $CONFIG_BLK_DEV_IDEDMA_PMAC
+>   fi
 
->I am having trouble with the linux-pmac-stable source. I have a G4 AGP
->400MHZ. The problem is that for every kernel I compile, it begins
->booting but halfway through the process it freezes up and kgdb gives me
->this...
+Aha, that might be one of the reasons why I need to enable PowerMac
+built-in IDE, although I don't have such a beast, in order to get my
+Promise going...
 
-The linux-pmac-stable contains a weird USB stack that provides 2
-different USB OHCI drivers: the OHCI, and the OHCI-HCD. You should make
-sure you use the OHCI one, not the OHCI-HCD.
+> I think this part needs to be under the test for CONFIG_PCI, just like the
+> other PCI IDE (DMA) drivers.
 
-This has been all cleaned up in 2.3/2.4 series, we will probably make a
-new USB backport for 2.2 once 2.4 is stable enough.
+There is quite some mixup on PPC between standard (PC, that is :-( ) IDE
+and PowerMac IDE. Paul Mackerras might help out on that part...
 
-Ben.
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
