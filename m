@@ -1,31 +1,28 @@
-Subject: Re: OF properties access ?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040119101728.GB18112@iliana>
-References: <20040113114625.GA9294@iliana> <1074131387.818.43.camel@gaston>
-	 <20040115074439.GB14039@iliana> <1074310140.8360.27.camel@gaston>
-	 <20040118120722.GA4603@iliana> <1074468096.795.27.camel@gaston>
-	 <20040118143225.GA6717@iliana> <1074502892.813.41.camel@gaston>
-	 <20040119101728.GB18112@iliana>
-Content-Type: text/plain
-Message-Id: <1074512524.10581.20.camel@gaston>
+Date: Mon, 19 Jan 2004 12:43:31 +0100
+From: Colin Leroy <colin@colino.net>
+To: debian-powerpc@lists.debian.org
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Mouseemu 0.3
+Message-Id: <20040119124331.62eb156f@jack.colino.net>
 Mime-Version: 1.0
-Date: Mon, 19 Jan 2004 22:42:05 +1100
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> And indeed, the problem seems to be that i get /cpus, and not
-> /cpus/PowerPC,74x7. I thought that the /cpus should give the cpu per
-> default or something such. What should i do here, i can go look for a
-> PowerPC,74x7, but the board can also come with other CPUs (the 750Cxe
-> for now). Maybe i could remove the cpus checking code completely, and go
-> looking for the cpu type directly.
+Hi,
 
-For the "cpus" case, just get to the first child
+I uploaded mouseemu 0.3 to
+http://geekounet.org/powerbook/files/mouseemu.tar.gz
 
-Ben.
+For people who don't know: this is a userland daemon to emulate right-click
+and middle-click under Linux 2.6.
 
+This new version adds mouse wheel emulation (using a modifier, Alt by
+default).
+
+HTH,
+--
+Colin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
