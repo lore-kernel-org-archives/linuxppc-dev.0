@@ -1,49 +1,49 @@
-Subject: Re: Ramdisk trivial question
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
 To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <005601c3b275$39446fd0$0700a8c0@pc005>
-References: <005601c3b275$39446fd0$0700a8c0@pc005>
-Content-Type: text/plain
-Message-Id: <1069671695.31339.151.camel@linpc003.aimsys.nl>
-Mime-Version: 1.0
-Date: Mon, 24 Nov 2003 12:01:36 +0100
+Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Ramdisk trivial question 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 24 Nov 2003 11:25:02 +0100."
+             <005601c3b275$39446fd0$0700a8c0@pc005>
+Date: Mon, 24 Nov 2003 12:49:36 +0100
+Message-Id: <20031124114941.6ADAFC5F5F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Gianfranco,
+Dear Gianfranco,
 
-Isn't busybox a good option? A large part of your ramdisk
-is filled with binaries and libraries (glibc is big)
-which can be included in a single static binary (busybox)
-
-Jaap-Jan
-
-On Mon, 2003-11-24 at 11:25, Ing.Gianfranco Morandi wrote:
-> Dear friends,
->
-> in our project we have always used the NFS to run linux over an 8260 custom
-> board. Now since the activity is almost stable we have tried to build the
-> root filesystem on ramdisk. Obviously we have followed all the main rules
-> which are contained into several good books, but an important choice is
-> always left to the user: " what are the components of filesystem?". The
-> answer to this of course depend on several factors which are not the scope
-> of this e-mail.
+in message <005601c3b275$39446fd0$0700a8c0@pc005> you wrote:
 >
 > The question is: The ELDK 2.01 package (which is currently being used in our
 > system) is too large to be fitted into a ramdisk, while the minimum
 > filesystem does not allow to be used in our midrange application. Does
+
+What do you mean with "the minimum filesystem does not  allow  to  be
+used" ?
+
 > anybody have or can indicate where can we find an almost complete filesystem
 > scheme (for instance based on the ELDK packages)?
->
-> Any help would be apreciated
->
-> Many thanks
->
-> Gianfranco
->
->
 
+The ELDK contains the SELF package  (SELF  =  Simple  Embedded  Linux
+Framework)  which  is  intended  as  a  building  stone  for your own
+application images. Instructions how to add files and/or  change  the
+size  of  the  filesystem and how to generate different image formats
+(ramdisk, cramfs, JFFS2) can be fund in the DULG. See especially
+
+http://www.denx.de/twiki/bin/view/DULG/HowToIncreaseSizeOfRamdisk
+http://www.denx.de/twiki/bin/view/DULG/HowToAddFiles
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+...when fits of creativity run strong, more than  one  programmer  or
+writer  has  been  known to abandon the desktop for the more spacious
+floor.                                             - Fred Brooks, Jr.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
