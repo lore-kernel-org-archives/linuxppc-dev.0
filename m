@@ -1,33 +1,77 @@
-Message-ID: <3D777C99.97AF4D14@mvista.com>
-Date: Thu, 05 Sep 2002 11:47:37 -0400
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Lauri Ojantakanen <lauri.ojantakanen@solidtech.com>
+Date: Thu, 5 Sep 2002 16:54:44 +0100 (BST)
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: <slowforce@zju.edu.cn>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Booting sandpoint from ide disk
-References: <200209051316.19309.lauri.ojantakanen@solidtech.com>
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: ATM issue: one Host Four Nodes
+In-Reply-To: <200209051304.IAA10208@lists.linuxppc.org>
+Message-ID: <Pine.LNX.4.44.0209051647040.2961-100000@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Lauri Ojantakanen wrote:
+On Thu, 5 Sep 2002,  wrote:
 
-> Hi,
+
+In each NODE set up 1 terminated VC, and 3 switched VCs (using the
+atm-860.o specific /proc/net/atm/switch interface).
+
+here's an example of how to set up a switched VC from 0.0.32 to 0.0.32
+using the atm-860.o driver:
+
+echo add 0.0.32 0.0.32 1000 cbr > /proc/net/atm/switch
+
+           ^      ^     ^    ^
+         from-VC to-VC  PCR  TT
+
+See http://mpc860sar.sourceforge.net for the source code.
+
+Alex
+
+BTW:  If you're board only has one PHY then you need an ATM switch in the
+middle to create the ring topology.  If it's multi PHY then you will need
+to modify the atm-860.o driver because it doesn't support this yet.  (I
+think that multi-PHY is only available on MPC862s anyway....)
+
 >
-> does anyone have a good solution for booting sandpoint X3 (cpu 7410, altivec
-> supported) from ide hard disk? Dink32 does not seem to support anything like
-> that and ppcboot does not seem to support that CPU.
-
-If you want to stay with DINK, you can put the zImage in flash and set DINK up
-to automatically (or not) jump to where you put it.  The zImage will relocate
-itself, uncompress the kernel (in the proper location) and then boot.  With the
-correct cmdline, you can use an IDE disk partition for your root filesystem.
-Unless you hack DINK, you won't be able to boot a kernel actually sitting on
-the IDE disk, you have to put it in flash or get it into memory some other way
-first.  As others have already said, you can always use PPCBoot.
-
-Mark
+> Hi all,
+> We just have such a system to build.
+>                                 ________
+>                                 |      |
+>                             RX  | ATM  |_TX____________________________
+>   |---------------------------->| HOST |                              |
+>   |                             |      |                              |
+>   |                             |______|                              |
+>   |                                                                   |
+>   |      ________       ________        ________       ________       |
+>   |      |      |       |      |        |      |       |      |       |
+>   |   TX | ATM  | RX  TX| ATM  | RX   TX| ATM  | RX  TX| ATM  |  RX   |
+>   |------| NODE |<------| NODE |<-------| NODE |<------| NODE |<------|
+>          |      |       |      |        |      |       |      |
+>          |______|       |______|        |______|       |______|
+>              A              B               C              D
+> It's used to perform high speed data acqusition.
+> ATM HOST -- a pc with an ATM card
+> ATM NODE -- MPC860 with linux-2.4.4
+>
+> The ATM HOST is responisble for sending controlling information to ATM NODEs
+> and receiving data from each NODEs.
+> The ATM NODE is responsible for performing data acqusition.
+>
+> As the diagram show,ATM NODEs are connected one after another.
+> we use one VPI/VCI to identify one ATM NODE, so if the ATM HOST send the
+> control message to ATM NODE D, the message will touch  ATM NODE A、B、C first,
+> then ATM NODE D. In order to improve the system capacity and efficiency,
+> the ATM NODE A、B、C should ignore this message(not parse it) and send it
+> to the next node, in another words, this message should be bypassed in low
+> level(e.g. PHY level) by ATM NODE A、B、C. How can i get this point?
+> Any advice will be greatly appreciated!
+> Best Regards!
+> Li
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
