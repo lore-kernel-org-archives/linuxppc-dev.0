@@ -1,21 +1,22 @@
-Return-Path: <sheutlin@gmx.de>
-Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id B9BC82BE83
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Dec 2004 12:44:31 +1100 (EST)
-From: Sebastian Heutling <sheutlin@gmx.de>
-To: Christian Kujau <evil@g-house.de>
-In-Reply-To: <41B34863.3090007@g-house.de>
-References: <41B23DF2.4010303@g-house.de>
+Return-Path: <evil@g-house.de>
+Received: from mail.g-house.de (ns1.g-housing.de [62.75.136.201])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9FC902BDB5
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Dec 2004 15:16:06 +1100 (EST)
+Message-ID: <41B3DCD7.3020503@g-house.de>
+Date: Mon, 06 Dec 2004 05:15:19 +0100
+From: Christian Kujau <evil@g-house.de>
+MIME-Version: 1.0
+To: sheutlin@gmx.de
+References: <41B23DF2.4010303@g-house.de>	
 	<1102207299.6778.16.camel@weizen.left.earth>
 	<41B34863.3090007@g-house.de>
-Content-Type: text/plain
-Date: Mon, 06 Dec 2004 02:46:14 +0100
-Message-Id: <1102297574.7138.17.camel@weizen.left.earth>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Sven Hartge <hartge@ds9.argh.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [FYI] linux 2.6 still not working with PReP (ppc32)
-Reply-To: sheutlin@gmx.de
+	<1102297574.7138.17.camel@weizen.left.earth>
+In-Reply-To: <1102297574.7138.17.camel@weizen.left.earth>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Sven Hartge <hartge@ds9.argh.org>
+Subject: Re: [FYI] linux 2.6 still not^Wnow working with PReP (ppc32)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,56 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2004-12-05 at 18:41 +0100, Christian Kujau wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Sebastian Heutling schrieb:
-> > You got the powerstack booting from scsi (reading and interpreting the
-> 
-> yes, but now the disk is gone and i have to use nfsroot.
-> 
-> > bug report). I had problems booting 2.6 kernels as well (never tested
-> > any 2.5 kernels). It turned out that the pci slot numbering has changed
-> > sometime and this wasn't reflected in arch/ppc/platforms/prep_pci.c.
-> > After having set up the slot0...slot8 using the values of
-> > slot10...slot18 (except for slot1 which got value 4 so IDE is usable out
-> > of the box), the machine booted a 2.6 kernel (2.6.8).
-> 
-> boy! this *is* an early christmas present, for sure! how did you come to
-> this conclusion? something *must* have changed in the pci setup after
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-:-)
-
-Pure trial and error in the first time. When realising that something is
-wrong with the assigned interrupts (looking at the kernel output) we
-tried to set the ones that were working in a 2.4 kernel. When the
-machine finally booted a "lspci" showed that the slot number changed.
-
-
-
-> 2.5.30, because the problem did not go away when i used a different NIC
-> driver. but i could not fiddle out the changeset to blame here, because i
-> failed to compile many kernels > 2.5.30.
+Sebastian Heutling schrieb:
 > 
-> changing one line in arch/ppc/platforms/prep_pci.c made my PReP booting a
-> recent 2.6-BK, patch attached.
-> 
-> it's booting now, "init=/bin/bash" is working, but i still can't ping to
-> the outside world, which is still a bit strange, but i hope i can work it out.
+> Pure trial and error in the first time. When realising that something is
+> wrong with the assigned interrupts (looking at the kernel output) we
+> tried to set the ones that were working in a 2.4 kernel. When the
+> machine finally booted a "lspci" showed that the slot number changed.
 
-Is it that onboard network tulip kind of thingy? Do you have some other
-PCI cards installed?
-I used to have an extra symbios logic scsi-host-adapter installed.
-On high network load and loading/writing to a HD (using onboard scsi), I
-noticed a lot of problems: either the scsi-host-adapter lost the
-interrupt or the network driver lost some packets or both. After having
-removed the extra scsi-host-adapter it works fine now.
+lspci, sounds easy ;-)
+but i never would have looked at slot numbering....
 
 > 
-> tausend dank (really),
+> Is it that onboard network tulip kind of thingy? Do you have some other
+> PCI cards installed?
 
-You are welcome!
+the card is onboard. since i had some issues with this card in early 2.4
+kernels too, i used to have another NIC. in fact, very often i only
+compiled with 3c59x enabled - OF cared about the onboard NIC (tulip) and
+once the kernel is loaded, the tulip is not needed any more and 3c59x
+takes over.
+
+http://nerdbynature.de/bits/sheep/2.6.10-rc3/  has some details.
+
+> I used to have an extra symbios logic scsi-host-adapter installed.
+> On high network load and loading/writing to a HD (using onboard scsi), I
+> noticed a lot of problems: either the scsi-host-adapter lost the
+> interrupt or the network driver lost some packets or both. After having
+> removed the extra scsi-host-adapter it works fine now.
+
+hm, when i had 3 scsi-disks in this machine (fine IBM ones, hmmmm..) i
+only used the on-board scsi-bus. there was no other scsi-host-adapter
+inside, but i noticed the very same problems: upon massive i/o, the
+machine got stuck for 30sec, sometimes longer, load increased to 30..40 or
+so, then the machine got back, with a syslog full of scsi errors.
 
 
-Sebastian
+
+it's still so incredible that a 3-liner solved this issue. the bug-report
+was opened over a year ago...
+
+thanks again,
+Christian.
+- --
+BOFH excuse #13:
+
+we're waiting for [the phone company] to fix that line
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
+
+iD8DBQFBs9zX+A7rjkF8z0wRArwBAKDZ2ywiukQl/b/uPTG1/1jWHrIsxQCeIcKb
+ltnS8407uSUM+J6jiJABxxc=
+=Ts4X
+-----END PGP SIGNATURE-----
