@@ -1,33 +1,27 @@
-Message-ID: <19991218185537.3454.qmail@web301.mail.yahoo.com>
-Date: Sat, 18 Dec 1999 10:55:37 -0800 (PST)
-From: Brian Kuschak <bkuschak@yahoo.com>
-Subject: Re: RTNL Assertion Failures
-To: Grant Erickson <grant@lcse.umn.edu>, linuxppc-dev@lists.linuxppc.org
-Cc: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
+Message-ID: <XFMail.991218120859.jeremy@goop.org>
 Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+In-Reply-To: <Pine.GSO.4.10.9911251429370.12868-100000@user2.teleport.com>
+Date: Sat, 18 Dec 1999 12:08:59 -0800 (PST)
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Jeffrey Karl Lassahn <jkl@teleport.com>
+Subject: Re: dead code removal
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On 25-Nov-99 Jeffrey Karl Lassahn wrote:
+> In principle it can be if the function is marked static (so the compiler
+> knows it will never link outside the module.)  Does anyone know if GCC
+> does remove the code in this case?
 
---- Grant Erickson <grant@lcse.umn.edu> wrote:
-> 
-> Has anyone else out there working with embedded
-> boards and the 2.3.3x
-> kernels seen the following error message pertaining
-> to an RTNL assertion
-> failure? 
+No, only if its inline.  Just because the compiler can't see a reference, it
+doesn't mean one isn't there - inline assember may refer to the static function.
 
-Grant, 
+Basically, you need the linker to strip dead functions, because nothing else
+has enough information to do it right.
 
-I've seen the same message ever since I moved to the
-2.3.x kernel.  Although, it doesn't seem to have any
-negative effects.  My ethernet works fine on an 823
-board.  (I think this has something to do with
-Real-Time Netlink??  Not sure what that is exactly.)
-
-Brian
-
+        J
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
