@@ -1,37 +1,32 @@
-Message-ID: <38BAA220.BD8D31C0@in.tum.de>
-Date: Mon, 28 Feb 2000 17:28:16 +0100
-From: Detlef Fliegl <fliegl@in.tum.de>
+Date: Mon, 28 Feb 2000 17:57:26 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Albrecht Dreﬂ <ad@mpifr-bonn.mpg.de>
+cc: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: iMac Mouse Three Button Emulation: a solution
+In-Reply-To: <38BA9C94.14977454@mpifr-bonn.mpg.de>
+Message-ID: <Pine.LNX.4.10.10002281754130.24776-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: Jack Howarth <howarth@bromo.med.uc.edu>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Stability of 2.3.47 (G4)
-References: <200002281329.FAA67044@bromo.med.uc.edu>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Jack
+> Please note that you should NOT activate this feature if you have a working
+> three-button USB mouse, as the code blocks any 2nd and 3rd mouse button events
+> and passes the emulated ones only. This behaviour is not nice, but I must
+> admit that I can not imagine a situation where this is really a problem, so I
+> omitted the code to fix this. An other point: the emulation does of course not
 
-> Deti,
->    I am surprised you are able to boot your G4 at all under 2.3.47.
-> Is this 2.3.47 from the linuxcare.com.au linux-pmac-devel cvs?
-It¥s a kernel from Cort Dougan¥s server. He was really a big aid in
-setting up my machine (as I am not familiar with open firmware and Mac
-hardware).
+It's a simple matter of keeping track of the button states, OR'ing
+emulated and real buttons together. But it's a bit pointless indeed :-)
 
-> Current on the Sawtooth machines which use the newer lucent
-> chipset these kernels hang on boot unless all usb devices are
-> removed. Attaching the usb devices after booting eventually
-> results in a crash as well.
-Yes I know - it seems to be a memory consistency problem. Roman
-Weissgaerber (the author of the OHCI driver) is already informed and he
-has access to our G4 for further testing.
+> work if you do not have an USB keyboard, e.g. if you connect the iMac Mouse to
+> a Lombard PowerBook.
 
+In which case the ADB button emulation works just fine, via the builtin
+ADB trackpad ...
 
-Deti
---
-Detlef Fliegl, LRR, Technische Universitaet Muenchen
-Phone: +49 89 289-25770, Fax +49 89 289-28232, Room S3240
+	Michael
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
