@@ -1,31 +1,43 @@
-Message-ID: <397502B7.9FE5C6C8@routefree.com>
-Date: Tue, 18 Jul 2000 18:21:59 -0700
-From: "Nikhil G. Daddikar" <ngd@routefree.com>
+Subject: Re: Do I shoot myself in the foot first or HEAD.S?
+To: clark@esteem.com
+Date: Wed, 19 Jul 2000 11:30:06 +1000 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <1.5.4.32.20000719011945.006845c0@pop.esteem.com> from "clark@esteem.com" at Jul 18, 2000 06:19:45 PM
 MIME-Version: 1.0
-To: LinuxPPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Enabling Video on the IBM PowerPC 405GP walnut system
 Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000719013006.DDA67211@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have successfully booted up Monta Vista 6/29 linux kernel on this
-board. I  now want to get the video card to work. Any ideas/pointers
-would be helpful. Also, I think the address space is not configured
-correctly, can somebody confirm this?
-Thanks.
+Hi Conn,
 
+I'll have a shot at the ones I know about:
 
-/proc/pci reports :
-PCI devices found:
-  Bus  0, device   0, function  0:
-    Host bridge: PCI device 1014:0156 (IBM) (rev 1).
-      Master Capable.  Latency=12.  Max Lat=60.
-      Prefetchable 32 bit memory at 0x0 [0x7fffffff].
-  Bus  0, device   4, function  0:
-    VGA compatible controller: S3 Inc. ViRGE/DX or /GX (rev 1).
-      IRQ 31.
-      Master Capable.  Latency=12.  Min Gnt=31.Max Lat=60.
-      Non-prefetchable 32 bit memory at 0x0 [0x3ffffff].
+clark@esteem.com writes:
+>         Any tips for a new guy? I just about ready to start trying to port
+> linux to our custom MPC850 board.
+
+You mentioned head.S; you shouldn't need to modify it at all. We didn't on our
+custom 855T design.
+
+> 1. Is there a FAQ or Doc on porting the kernel to a new design? (please mail
+> or direct me to it)
+
+There's the HOWTO at:
+    http://members.xoom.com/greyhams/linux/PowerPC-Embedded-HOWTO.html
+
+...
+> 3. What do I need to do in the ROM before jumping to HEAD.S other than
+> programming the ram timmings in the UPM( I assume HEAD.S is where everything
+> starts )?
+
+I suggest porting PPCBOOT to it rather than starting from scratch yourself.
+See:
+    http://ppcboot.sourceforge.net/
+
+Regards,
+Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
