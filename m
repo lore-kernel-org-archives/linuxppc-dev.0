@@ -1,32 +1,41 @@
-In-Reply-To: <Pine.HPX.4.10.9908271248020.9440-100000@gra-ux1.iram.es>
-Date: Fri, 27 Aug 1999 15:17:48 +0200
-To: Gabriel Paubert <paubert@iram.es>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: CHRP boards and VGA text mode.
-Message-Id: <19990827151748.028421@mailhost.mipsys.com>
+Message-Id: <v03130308b3ec440550d3@[192.168.1.1]>
+In-Reply-To: <199908270917.LAA04250@lxp03.cern.ch>
+References: <v03130327b3ebecbebbd3@[192.168.1.1]>
+ <v03130327b3ebecbebbd3@[192.168.1.1]>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 27 Aug 1999 08:41:29 -0500
+To: Jes Sorensen <Jes.Sorensen@cern.ch>
+From: "David D. Kilzer" <ddkilzer@computer.org>
+Subject: Re: mac-2.3.14.diff: adb
+Cc: linux-mac68k@mac.linux-m68k.org, linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Aug 27, 1999, Gabriel Paubert <paubert@iram.es> wrote:
+>>>>>> "David" == David D Kilzer <ddkilzer@computer.org> writes:
+>
+>David> Hi Jes, Patch description:
+>
+>David> ADB merge with PowerPC.  These are the m68k patches that need to
+>David> be updated.  Joshua Thompson has already sent the PPC patches to
+>David> that group.
+>
+>David> NEW FILES: arch/m68k/mac/misc.c drivers/macintosh/adb-iop.c
+>David> drivers/macintosh/via-macii.c include/asm-m68k/adb_iop.h
 
+Jes Sorensen <Jes.Sorensen@cern.ch> wrote:
 
->- Make the kernel code loaded at 640 k physical (except for the interrupt
->vectors...). There is no way to build a kernel with less than 384k of
->code (my nfsroot kernels are truly minimal). Reserve the first 16 kB or so 
->for interrupt handlers/whatever, then 624k of normal memory followed by
->the kernel and then higher memory. I would actually prefer this solution,
->but feel free to suggest any other...
+>Do not belong here, create a drivers/adb if you need it - stop putting
+>things in drivers/macintosh.
 
-Side note: having the ability to locate the kernel at a different address
-than the exception vectors would help the NuBus port.
+Well, drivers/macintosh is PPC ADB code.  If drivers/macintosh shouldn't
+exist, then shouldn't it be changed or moved at a higher level?
 
--- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+In reality, there is some ADB mouse code in drivers/char, too, so I wonder
+if drivers/char/adb would make more/less sense than drivers/adb?
+
+Dave
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
