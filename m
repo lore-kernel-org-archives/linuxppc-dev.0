@@ -1,38 +1,27 @@
-Subject: Re: benh performance problem
+Subject: Re: Missing isa_ symbols
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mikolaj Krzewicki <mkrzewicki@lycos.nl>
+To: Christoph Hellwig <hch@lst.de>
 Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <401FE138.8080807@lycos.nl>
-References: <401FE138.8080807@lycos.nl>
+In-Reply-To: <20040203210321.GA19689@lst.de>
+References: <20040203210321.GA19689@lst.de>
 Content-Type: text/plain
-Message-Id: <1075847083.17327.31.camel@gaston>
+Message-Id: <1075847130.17316.33.camel@gaston>
 Mime-Version: 1.0
-Date: Wed, 04 Feb 2004 09:24:44 +1100
+Date: Wed, 04 Feb 2004 09:25:30 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2004-02-04 at 04:58, Mikolaj Krzewicki wrote:
-> hi all,
-> starting 2.6.0-test9-benh3 i noticed an increased system overhead on my
-> ibook 500. Each process eats much more cpu time than in 2.4 or even
-> vanilla 2.6.
-> gkrellm takes 1% instead of 0.1, xmms 5% instead of ~1% and so on.
-> I benchmarked the lot with octave and it indeed runs ~10% slower on the
-> benh kernels.
-> I would use vanilla 2.6.1 but it won't sleep/wake correctly (at all).
-> All pre-2.6.0-test9-benh3 kernels worked fast but would't sleep/wake either.
-> I tried to isolate the patch responsible but failed.
-> Has anybody come across similar behaviour?
-> greetings, M
+On Wed, 2004-02-04 at 08:03, Christoph Hellwig wrote:
+> I've recently switched CONFIG_ISA on to compile-test various scsi
+> drivers and get lots of warnings like:
+>
+> WARNING: /lib/modules/2.6.2-rc3/kernel/drivers/scsi/wd7000.ko needs unknown symbol isa_bus_to_virt
+> WARNING: /lib/modules/2.6.2-rc3/kernel/drivers/scsi/wd7000.ko needs unknown symbol isa_page_to_bus
+> WARNING: /lib/modules/2.6.2-rc3/kernel/drivers/scsi/wd7000.ko needs unknown symbol isa_virt_to_bus
+> WARNING: /lib/modules/2.6.2-rc3/kernel/drivers/scsi/wd7000.ko needs unknown symbol udelay
 
-I switched to HZ=1000, the userland procps utilities (like ps and top)
-tend to not properly deal with that, at least earlier versions, afaik.
-
-I suspect it's just display crap.
-
-Alos, you can find a more recent kernel than that :) My bk tree is
-currently at 2.6.2-rc3-ben1
+udelay is a different story, the driver probably lacks an include
 
 Ben.
 
