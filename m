@@ -1,50 +1,34 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0B7C62BF0A
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 30 Oct 2004 13:29:14 +1000 (EST)
-Date: Fri, 29 Oct 2004 20:29:08 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <20041030032908.GB29945@gate.ebshome.net>
-References: <642F8D42-2A11-11D9-A860-000393C30512@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <642F8D42-2A11-11D9-A860-000393C30512@freescale.com>
-Subject: Re: RFC: performance monitor/oprofile support for e500
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Return-Path: <kumar.gala@freescale.com>
+Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
+	by ozlabs.org (Postfix) with ESMTP id 9F15E2BE83
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Nov 2004 16:42:54 +1100 (EST)
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <D4D14D42-2BC8-11D9-A949-000393DBC2E8@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Sun, 31 Oct 2004 23:42:34 -0600
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, anton@au.ibm.com
+Subject: Added number of PMRs to cpu_specs
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 29, 2004 at 08:16:56PM -0500, Andy Fleming wrote:
+Paul,
 
-[snip] 
+Andy F. is adding 'proper' oprofile support to PPC32.  I was wondering 
+if you had any issue if we added the # of PMRs a cpu has to the 
+cpu_specs table.  I figured it better that we keep all such info in a 
+single place, rather than reproducing PVR based checks in multiple 
+places.
 
-+static int genmii_read_status(struct phy_mii_info *mii_info)
-+{
-+       u16 status;
-+       int err;
-+
-+       /* Update the link, but return if there
-+        * was an error */
-+       err = genmii_update_link(mii_info);
-+       if (err)
-+               return err;
-+
-+       if (mii_info->autoneg) {
-+               status = phy_read(mii_info, MII_LPA);
+Note, PPC64 currently does a PVR based check in arch/ppc64/common.c.  I 
+would recommend that model->num_counters come from cpu_specs and 
+oprof_ppc64_ops.cpu_type be composed from cpu_specs.cpu_name.
 
-MII_LPA should be masked with MII_ADVERTISE here. 
-E.g.
-	status = phy_read(mii_info, MII_LPA) & phy_read(mii_info, MII_ADVERTISE);
-
---
-Eugene
+- kumar
