@@ -1,26 +1,55 @@
-Date: Mon, 3 Dec 2001 03:10:27 -0500 (EST)
-From: Bill Fink <billfink@mindspring.com>
-To: <linuxppc-dev@lists.linuxppc.org>
-Cc: Bill Fink <billfink@mindspring.com>
-Subject: Re: [PATCH] Minor changes to control/imstt/platinum/valkyrie/atyfb
-Message-ID: <Pine.LNX.4.33.0112030257230.5627-100000@gwiz.nasa.atd.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 3 Dec 2001 12:45:59 +0100
+From: Olaf Hering <olh@suse.de>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: CONFIG_ALL_PPC
+Message-ID: <20011203124559.A3441@suse.de>
+References: <3C0561FE.80489F5E@vnet.ibm.com> <20011128221928.8366@smtp.wanadoo.fr> <15365.29851.123004.897729@gargle.gargle.HOWL> <20011129011941.A10393@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20011129011941.A10393@suse.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 2 Dec 2001, Tom Rini wrote:
+On Thu, Nov 29, Olaf Hering wrote:
 
-> Wasn't there a tool to fiddle and store the vmode/cmode stuff into NVRAM
-> tho which would probably work with all of the other cards?
+>
+> On Thu, Nov 29, Paul Mackeras wrote:
+>
+> >
+> > Benjamin Herrenschmidt writes:
+> >
+> > > It's a difficult choice ;)
+> > >
+> > > What about CONFIG_COMMON_PPC ? Still a bit misleading, but probably
+> > > better than CONFIG_ALL_PPC...
+> >
+> > You know, what I am really tempted to do is to split out prep again
+> > and have a CONFIG_PPC_OPENFIRMWARE to indicate pmac and chrp and
+> > anything else that has a working OF.  But Olaf would kill me... :)
+>
+> Hmm, why? :)
 
-nvvideo, which could set either a video-mode or a color-mode, but I
-don't think the color-mode was the same thing as the cmode.  I had to
-use a color-mode of 3 IIRC (with a video-mode of 18) to get a decent
-display on a 7200 at work (which had a platinum FB IIRC).
+Ok, got that.
+Is it worth the trouble?
 
-						-Bill
+banana:/usr/src/linux # l arch/ppc/kernel/*prep*o drivers/video/*vga*o
+-rw-r--r--    1 root     root         3172 Dec  3 11:32 arch/ppc/kernel/prep_nvram.o
+-rw-r--r--    1 root     root        17108 Dec  3 11:32 arch/ppc/kernel/prep_pci.o
+-rw-r--r--    1 root     root        16412 Dec  3 11:32 arch/ppc/kernel/prep_setup.o
+-rw-r--r--    1 root     root         7188 Dec  3 11:32 arch/ppc/kernel/prep_time.o
+-rw-r--r--    1 root     root        29084 Dec  3 11:17 drivers/video/vgacon.o
 
+70kb uncompressed code.
+
+
+Gruss Olaf
+
+--
+ $ man clone
+
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
