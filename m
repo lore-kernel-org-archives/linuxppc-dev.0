@@ -1,43 +1,38 @@
-To: bh40@calva.net
-Cc: ad@mpifr-bonn.mpg.de, roikawa@rr.iij4u.or.jp,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: FireWire + Apple PB G3: some success
-In-Reply-To: Your message of "Tue, 29 Feb 2000 17:45:47 +0100"
-	<20000229174547.008164@mailhost.mipsys.com>
-References: <20000229174547.008164@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20000303022240B.roikawa@rr.iij4u.or.jp>
-Date: Fri, 03 Mar 2000 02:22:40 +0900
-From: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
+Message-ID: <B25E2E5A003CD311B61E00902778AF2A0AACA2@SERVER1>
+From: Ellie Abdollahi <ellie@SkyStream.com>
+To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Subject: Help! for Cross compiler Tools -   Need to build kernel drivers/a
+	pp on NT/x86 targeted for Linux/PPC platform.
+Date: Thu, 2 Mar 2000 09:50:00 -0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: FireWire + Apple PB G3: some success
-> BTW. I didn't find register infos in the datasheet for the TI-1131. Do
-> you have those ? I'd be interested. I found only the pinout and
-No, I didn't find any register information except application report
-on interrupts(I'll send it to you if necessary, which is just a 115K PDF)
-probably because it is obsolete. But you can find it in the pcmcia-cs
-package, whose auther may have a document(though I'm not quite sure).
+I would like to Build Linux Kernels/device drivers/applications on a NT/x86
+ platform targeted for a Linux/PPC platform.
+ Where can I get the proper tools(compiler/linker/debugger/libraries ,..etc)
+ I have checked the
+ http://members.xoom.com/greyhams/linux/PowerPC-Embedded-HOWTO.html
 
-BBTW, I'm new in the MOL source and I need some information/explanation.
-Today I tried to add RageLTPro OF properties to MOL oftree.nw,
-insert it into the pci device tree and mmu map full 16MB aperture
-in thw video driver(on PB G3). I could run the drawing engine within
-MacOS manually, but ATI's extension didn't seem to recognize the chip
-at all. I even tried to load & insert into the driver properties field
-the driver extracted from ATI Driver update file, but no success.
-I don't understand MOL interface mechanism yet(and unfortunately
-my macos complier, symantec c++ doesn't work on recent system).
+  but most sites are un-available .
 
-What is the correct way to accelerate MOL video?
+  Is there anywhere I can go and purchase a CD with complete
+Software/tools(Compiler,linker/debugger) package.
 
-Thanks,
+I appreciate your help,
 
-Ryuichi Oikawa
-roikawa@rr.iij4u.or.jp
+
+
+Ellie Abdollahi
+SW Project Manager
+SkyStream Networks, Inc.
+"Building the Broadcast Internet"
+555 Clyde Ave.
+Mountain View CA. 94043
+Phone (650) 390-8984
+Fax     (650) 390-8986
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
