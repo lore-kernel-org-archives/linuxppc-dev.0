@@ -1,46 +1,105 @@
-Message-ID: <3A9658AC.4FCAE18D@iiic.ethz.ch>
-Date: Fri, 23 Feb 2001 13:33:48 +0100
-From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: Michel Lanners <mlan@cpu.lu>, md@linux.it
+Subject: Re: [S.R.E.Turner@statslab.cam.ac.uk: Re: Bug#86356: analog: analog segfaults]
+Date: Fri, 23 Feb 2001 11:05:45 -0500
+Content-Type: text/plain;
+  charset="us-ascii"
+Cc: debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
+References: <200102220655.HAA00821@piglet.grunz.lu>
+In-Reply-To: <200102220655.HAA00821@piglet.grunz.lu>
 MIME-Version: 1.0
-To: Gareth Hughes <gareth@valinux.com>
-Cc: "Timothy A. Seufert" <tas@mindspring.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: r128 DRI driver now fully functional on PPC
-References: <3A76769B.87242FAA@valinux.com> <v04220800b6bbb8f01525@[10.0.0.42]> <3A96553F.B0485736@iiic.ethz.ch> <3A96563E.DE3599E0@valinux.com>
-Content-Type: text/plain; charset=iso-8859-1
+Message-Id: <01022311054500.05125@localhost>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gareth Hughes wrote:
+Hi,
+
+Most of the bugs in passing parameters have been fixed by the 2.95.3 series
+Franz Sirl has created.
+
+To see if it is indeed a parameter passing issue, I need to know what the
+types are for each parameter passed below (specifically if any are long long
+int or float or double types and what the return type is of that function so
+that I can tell is any structures are returned.
+
+With that info, I can tell you which registers should have which values on
+entry to printtree, and what the contents of the overflow stack should look
+like.
+
+You can then set a breakpoint just inside the printtree frame and do an info
+registers and an x/30x on the previous frames stack pointer (where the
+outgoing overflow parameters are actually stored) to check the remaining
+parameters.
+
+Another (easier solution) is to modify each routine to print the values of
+all parameters just before the call and just inside the called routine.
+
+That will tell you if gcc miscompiled anything.
+
+Kevin
+
+
+On Thursday 22 February 2001 01:55, Michel Lanners wrote:
+> [cross-posted to linuxppc-dev]
 >
-> Michel Dänzer wrote:
+> On  20 Feb, this message from md@linux.it echoed through cyberspace:
+> > Background: analog segfaults when using a custom config file.
+> > The author tried debugging the program on my B50 and replied with this
+> > message.
+> > Is gcc known to be buggy for powerpc? I'm running 2.95.2-17 and the
+> > program has been compiled without optimizations.
+>
+> No idea whether it _is_ buggy or not. However, the list of arguments to
+> that function below seems rather long to me, so if it is a bug in gcc,
+> it might not have been noticed before.
+>
+> Anyway, one thing to look at might be the fact that not all function
+> arguments are passed the same way according to the ABI we are using. The
+> first few are passed in registers, the rest on the stack (IIRC).
+> However, I don't know exactly how many are passed in registers. But it
+> would seem that 22 (the arguments coming through OK below) is a bit high
+> a number...
+>
+> Any of the gcc gurus around?
+>
+> Michel
+>
+> > ----- Forwarded message from Stephen Turner
+<S.R.E.Turner@statslab.cam.ac.uk> -----
 > >
-> > Beware that I have merged in locally some fixes from the trunk which seem
-> > to help for some problems I had - Gareth, will we merge the branch into
-> > the trunk anytime soon or should I commit those to the branch?
+> > OK, I've discovered what's going on, but I have no idea WHY it's going on.
+> >
+> > The problem comes at line 736 of output.c. That line calls printtree, as
+> > follows:
+> >
+> > printtree(outf, rep, outstyle, multibyte, tree, requests, date, badp,
+badn,
+> >           0, NULL, aliashead, linkhead, baseurl, totr, totp, totb, width,
+> >           possrightalign, bmult, unit, sepchar, repsepchar, decpt,
+compsep,
+> >           rawbytes, cols, colhead, colheadp, gender, html, monthname,
+> >           dayname, monthlen, daylen, plainmonthlen, plaindaylen, lngstr);
+> >
+> > But by the time we reach printtree, several of the values are wrong.
+> > Everything is fine up to unit. But sepchar got repsepchar's true value
+(0),
+> > repsepchar got decpt's true value ('.'), etc., until plaindaylen got
+> > lngstr's value (0x100e93c0 = 269390784) and lngstr got a random value.
+> >
+> > As I say, I don't really see how this can have happened. Have you
+> > encountered anything like this before?
+> >
+> > ----- End forwarded message -----
 >
-> Jeff Hartmann has informed me he'll be merging it in RSN.
-
-Cool. I assume it won't get into an XFree86 release before 4.1.0 though?
-
-
-> > The only issues I'm seeing now are broken lighting textures in quake-gl,
-> > missing texture in xtraceroute and garbage at the top of the framebuffer
-> > periodically. The last also causes a delay so I suspect it's some DMA
-> > operation going wrong and the driver hitting a timeout, unfortunately I
-> > don't have time to track it down and probably won't have for weeks. :(
 >
-> Once we get everything on the trunk, we should look into these more.
-> There may already be fixes on the trunk for these problems -- the branch
-> was created a while ago now.
-
-Looking forward to that - I'd expect the first one to be an endianness
-leftover though, and the second one might even be a client issue.
-
-
---
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
+> -------------------------------------------------------------------------
+> Michel Lanners                 |  " Read Philosophy.  Study Art.
+> 23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+> L-1710 Luxembourg              |
+> email   mlan@cpu.lu            |
+> http://www.cpu.lu/~mlan        |                     Learn Always. "
+>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
