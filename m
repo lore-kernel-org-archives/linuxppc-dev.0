@@ -1,19 +1,17 @@
 Return-Path: <rpjday@mindspring.com>
 Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
-	by ozlabs.org (Postfix) with ESMTP id C57BA67AA9
+	by ozlabs.org (Postfix) with ESMTP id 45C6767AB0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 26 Mar 2005 09:13:16 +1100 (EST)
-Date: Fri, 25 Mar 2005 17:11:34 -0500 (EST)
+	Sat, 26 Mar 2005 09:43:02 +1100 (EST)
+Received: from [10.1.1.102] (10.1.2.1) by mailhost.rdmcorp.com (Worldmail
+	1.3.167) for linuxppc-embedded@ozlabs.org; 25 Mar 2005 17:42:59 -0500
+Date: Fri, 25 Mar 2005 17:41:25 -0500 (EST)
 From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Dan Malek <dan@embeddededge.com>
-In-Reply-To: <3787fed579cbb8849677a0baa10e0ee4@embeddededge.com>
-Message-ID: <Pine.LNX.4.61.0503251707250.16955@localhost.localdomain>
-References: <Pine.LNX.4.61.0503251617100.15647@localhost.localdomain>
-	<3787fed579cbb8849677a0baa10e0ee4@embeddededge.com>
+To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Message-ID: <Pine.LNX.4.61.0503251733170.18399@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: still not clear on which tree to be using these days
+Subject: why is entire 8xx architecture defined as "broken"?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,23 +22,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 25 Mar 2005, Dan Malek wrote:
 
->
-> On Mar 25, 2005, at 4:19 PM, Robert P. J. Day wrote:
->
-> >   what is the proper tree to be using these days for a 2.6 kernel
-> > on 8xx?  for the longest time, i've used the "bk" checkout from
-> > bkbits.net, but i see others now working with what looks like the
-> > latest stock 2.6.x release.
->
-> I just use the latest kernel.org tree for everything.  If I'm
-> submitting a patch, or working with someone else, I use the bk tree
-> just to be that little more up to date.
+  after i looked at the Kconfig setup for 2.6.11-5, i'm a bit puzzled
+-- why is the entire 8xx architecture defined as "BROKEN"?  follow the
+logic along:
 
-i just downloaded the 2.6.11-5 kernel source and was a bit nonplussed
-to discover that "8xx" wasn't in the list of choices for processor,
-until i noticed in the Kconfig file that 8xx depends on "BROKEN".  oh,
-my. :-)  live and learn.
+arch/ppc/Kconfig:
+
+	config 8xx
+		depends on BROKEN
+		bool "8xx"
+
+  and what means "BROKEN"?
+
+init/Kconfig:
+
+	config BROKEN
+		bool
+		depends on !CLEAN_COMPILE
+		default y
+
+  ok, and "CLEAN_COMPILE"?  defined just above that:
+
+	config CLEAN_COMPILE
+		bool "Select only drivers expected to compile cleanly" if
+			EXPERIMENTAL
+		default y
+
+  ok, and "EXPERIMENTAL"?
+
+	config EXPERIMENTAL
+		bool "Prompt for development and/or incomplete code/drivers"
+
+and *that* refers to the top-level menu entry regarding whether you
+want to take a chance on "development and/or incomplete code/drivers",
+not entire architectures.
+
+  the above seems just a tad misleading, no?
 
 rday
