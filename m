@@ -1,36 +1,59 @@
-To: linuxppc-dev@lists.linuxppc.org
-From: Gerd Knorr <kraxel@bytesex.org>
-Subject: Re: anyone with bmac network problem?
-Date: 15 Mar 2001 21:51:10 GMT
-Message-ID: <slrn9b2eae.bdh.kraxel@macintoy.masq.in-berlin.de>
-References: <Pine.A41.3.96LJ1.1b7.1010315122129.41552B-100000@unlserve.unl.edu>
+Message-Id: <200103152158.WAA00851@piglet.grunz.lu>
+Date: Thu, 15 Mar 2001 22:58:05 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Multiple PCI buses in 2.4?
+To: bob@kunk.jriver.com
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20010315193345.17142.qmail@kunk.jriver.com>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Takashi Oe wrote:
->
-> Hi,
->
-> I'm looking for testers on a possible workaround for bmac network problem.
-> As some of you might know, bmac tx dies abruptly when network environment
-> is very busy and never recovers.  A patch enclosed might alleviate the
-> situation, and I want to know if it works for anybody else.
->
-> --- bmac.c.ORIG	Sun Dec 10 18:49:42 2000
-> +++ bmac.c	Thu Mar 15 12:38:00 2001
-[ ... ]
+On  15 Mar, this message from bob@kunk.jriver.com echoed through cyberspace:
+> I'm wondering what the state of support for multiple pci buses on
+> PowerMacs is in 2.4? I see by looking at the code and reading the
+> lists that work is being done on it since 2.4.1.
 
-Cool, seems to fix it for me.  My box (RevB iMac) survived a full motif
-build on a NFS filesystem without problems.  Looks like I can turn
-of my network-card-monitor-cronjob now (ifconfig down/up used to bring
-the box online again with the buggy driver, which was exactly what the
-crobjob did if it wasn't able to ping the default gateway).
+Multiple PCI busses should work just fine, with one exception: the
+chaos-based second bus in the 7x00/8x00 machines.
 
-  Gerd
+> The 7X00/8X00 has 2 bridge devices both of which are recognized by
+> 2.42 in the  boot messages but an lspci only shows one bus.
 
---
-Get back there in front of the computer NOW. Christmas can wait.
-	-- Linus "the Grinch" Torvalds,  24 Dec 2000 on linux-kernel
+Yes, this is because the chaos-based bus cannot be probed for device sin
+the traditional way, but will die in flames if you do that. Therefore
+probing it is disabled for now, and hence lspci doesn't show it.
+
+> The planb video4linux device is on the other bus and upon attempting to
+> load the planb module I get the following...
+>
+> Linux video capture interface: v1.00
+> PlanB: Found on bus 1, dev 13, func 0, membase 0x90000000 (base reg. 0x10)
+> PlanB: cannot find PCI device!
+
+Now this is my fault, so to speak ;-) I've modified planb to use the PCI
+device structure, but since that isn't available in the current 2.4
+kernels, you're out of luck.
+
+However, I'm working right now on patches tha fix the detection of the
+chaos bus and its devices; so that this problem should be solved soon.
+
+I'll send you some patches by private mail, containing my current
+working sources.
+
+Cheers
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
