@@ -1,16 +1,25 @@
-Return-Path: <stephane.fillod@thomson.net>
-Received: from dmzraw2.extranet.tce.com (dmzraw2.extranet.tce.com
-	[157.254.234.138]) by ozlabs.org (Postfix) with ESMTP id A78EE67A87
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2005 22:25:49 +1000 (EST)
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C1B2367A83
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2005 22:39:44 +1000 (EST)
+To: Jerome Glisse <j.glisse@gmail.com>
+References: <4240b916050404033230db0551@mail.gmail.com>
+	<1112618509.26086.68.camel@gaston>
+	<4240b91605040412117b29d4ca@mail.gmail.com>
+	<1112656372.26086.88.camel@gaston>
+	<4240b91605040504525fd877e5@mail.gmail.com>
+From: Andreas Schwab <schwab@suse.de>
+Date: Tue, 05 Apr 2005 14:39:36 +0200
+In-Reply-To: <4240b91605040504525fd877e5@mail.gmail.com> (Jerome Glisse's
+	message of "Tue, 5 Apr 2005 13:52:33 +0200")
+Message-ID: <je1x9pv1mf.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Tue, 5 Apr 2005 14:24:39 +0200
-Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0D30@rennsmail02.eu.thmulti.com>
-From: "Fillod Stephane" <stephane.fillod@thomson.net>
-To: "Dan Malek" <dan@embeddededge.com>
-Cc: linuxppc-dev@ozlabs.org
-Subject: RE: [PATCH] invalid instructions in kernel mode
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: linux 2.6.12-rc1-bk5 compilation error
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,57 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dan Malek wrote:
->> What I don't understand, is how the FP load/store operations
->> in misc.S can "work" on a system with no FPU and *no* math-emu?
->
->What should happen is to follow the example used by 8xx for
->many years.  As I said, when math emulation is disabled, there is
->still code that will emulate the load/store FP instructions.  These
->instructions are used in may places even if user applications
->are compiled without any FP usage.
+Jerome Glisse <j.glisse@gmail.com> writes:
 
-Ok.
+> I will try t look at radeon framebuffer see if i can find anythings.
+> Any idea of which change on that code may be the origin of this ?
 
->> Many years? Allow me to doubt it's really used :).
->
->I wrote it in 1998 for the 8xx.  I thought 4xx and e500 used the
->same model.  If they don't, they should.
+I'd suggest looking at the changes between rc1 and rc2 first.  On my iBook
+G3 with Radeon M6 I'm also having problems with rc2, whereas rc1 is
+working fine.  I haven't found the time to look closer yet.
 
-Let's get it fixed.
+Andreas.
 
->> Though, it does work for 8xx thanks to Soft_emulate_8xx, but doesn't
->> for other FPU-less cores when CONFIG_MATH_EMULATION is disabled.
->
->Well, then that should get fixed.
-
-What's the right way to fix it?
-
->> So here is another patch,
-[..]
->The only patch I'm interested in is making the 4xx and e500 follow the
->same path as 8xx.  All of the non-FP cores should work the same way.
-
-Speaking for myself, I don't plan on using the SPE FPU of the e500, but
-would like to see the MATH_EMULATION=3Dn fixed. So how should we fix it?
-
-It seems you didn't like my last patch which lets make enter the
-math-emu
-subdirectory only to compile the load/store (8xx could do that too).
-Would you prefer a fix along the line of Soft_emulate_8xx() ?
-Then should we make it a Soft_emulate_85xx and Soft_emulate_4xx or can
-we attempt to fuse them altogether and rename(+make it generic)
-Soft_emulate_8xx as Soft_emulate_classic?
-
->The e500 is a special case because it doesn't have a classic FPU but
->rather can utilize the SPE for floating point.  Put some thought into=20
->that.
-
-I don't know what Kumar and his team have in mind for the e500, whether
-they will use SPE FPU for the classic load/store "emulation". Kumar,
-can you please enlighten us on this topic?
-
-
-Thanks,
---=20
-Stephane
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
