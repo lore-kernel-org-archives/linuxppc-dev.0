@@ -1,58 +1,84 @@
-Message-ID: <3896AEAE.B261AAAD@ctam.com.au>
-Date: Tue, 01 Feb 2000 21:00:14 +1100
+Message-ID: <3896BF04.55AD7C4F@ctam.com.au>
+Date: Tue, 01 Feb 2000 22:09:56 +1100
 From: Brendan John Simon <Brendan.Simon@ctam.com.au>
 Reply-To: Brendan.Simon@ctam.com.au
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: mpc8xx-2.2.13 kernel hangs during boot.
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: mpc8xx-2.2.13 kernel hangs during boot.
+References: <3896AEAE.B261AAAD@ctam.com.au> <38961D55.C544EB7A@netx4.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Dan Malek wrote:
 
-I am trying to get mpc8xx-2.2.13 booting.  As far as I can tell, it is
-hanging just after the kernel is decompressed into RAM and tries to
-execute.  I get the following console output
+> > ....  It was suggested to me that the UPM was probably incorrect and
+> > that's why it fails with the caches enabled.
+>
+> I was the one that probably suggested that.  If all of the
+> memory mapping is correct (IMMR > 0xd0000000, and such) this
+> is usually where I start looking, since the code is known to
+> operate on other platforms.
 
-    loaded at:     FF801000 FF80C1F0
-    Relocate to:   00100000 0010B1F0
-    Board Data at: 001001C4 001001E0
-    relocated to:  00200100 0020011C
-    Boot args at:  00200000 00200200
-    zimage at:     FF807000 FF8676C8
-    avail ram:     00201000 01000000
+I based my port on the BSEIP board as it is the simplest.
+The IMMR is at 0xff000000 and all peripherals are mapped above 0x80000000
+except for DRAM which is mapped at 0x00000000.
 
-    Linux/PPC load:
-    Uncompressing Linux... done.
-    Now booting the kernel
 
-I'm a little concerned about the overlap of BootArgs and the relocated
-BoardData.  Does this seem right or wrong to anyone ?
+> > ....  I have tried with 4 different UPM settings for a 25MHz bus
+> > with 60ns EDO DRAM.
+>
+> Although others may be more talented, I have never been able
+> to program the UPM without the actual DRAM specifications,
+> schematics and a logic analyzer connected to the processor bus.
+> Guessing at UPM values is kind of like playing the lottery.
 
-I had previously had similar problem when using embedded-2.2.5.  It was
-hanging during the boot.  It was suggested to me that I disable the
-caches.  I did that in arch/ppc/mbxboot/head.S and
-arch/ppc/kernel/head.S and I never had a problem booting embedded-2.2.5
-since.  It was suggested to me that the UPM was probably incorrect and
-that's why it fails with the caches enabled.
-I have disabled the caches in mpc8xx-2.2.13 but I still get the same
-results.  I have tried with 4 different UPM settings for a 25MHz bus
-with 60ns EDO DRAM.  I got the values from the ADS manual, SDS Single
-Step debugger and a commercial operating system.  I even tried with the
-burst inhibit flag set/cleared in the chip select option registers.
+I think I have to agree with you :(
 
-I'm not sure if it is my bootloader or kernel.  In the bootloader I
-basically setup the clocks, ports, chip selects for flash and dram and
-that's about it.  Is there anything else the kernel expects to be setup
-?
 
-I've run out of ideas now and need some advice.
-What could be causing the kernel not to boot ?
-How can I tell where it is failing ?  I don't think I can use printk as
-the console is not setup yet.  Is this correct ?
+> > ....  Is there anything else the kernel expects to be setup
+> > ?
+>
+> Not much.  Obviously the DRAM must be configured because the
+> kernel is loaded there.  Beyond that it just reads the IMMR
+> and maps it.
 
-Getting a little desperate now.
+I didn't think so.  The embedded-2.2.5 kernel works fine with the same
+bootloader.  I forgot to mention the the embedded-2.2.5 kernel is compiled
+with binutils-2.9.1.0.19a/egcs-1.1.2 and the mpc8xx-2.2.12 kernel is
+compiled with binutils-2.9.5.0.24/gcc-2.95.2.  I'm not sure if it makes any
+difference.  I'm recompiling the embedded-2.2.5 kernel with my new tools to
+see if that makes any difference ?  The embedded-2.2.5 does not having an
+floating point emulation where as the mpc8xx-2.2.13 does.  I will also try
+without the floating point emulation patches to see if that makes any
+difference.
+
+
+> > How can I tell where it is failing ?  I don't think I can use printk as
+> > the console is not setup yet.  Is this correct ?
+>
+> Here is a hint.  Look at the symbol table from System.map and
+> convert the address of log_buf to a physical address (mask the
+> upper couple of bits).  Dump this area of memory, as all of the
+> printk() messages end up in this buffer before they are sent to
+> the console.
+
+How can I look at this memory area ?  With a BDM debugger ?  I thought BDM
+can't be used.
+Can a serial debugger be used ?
+
+
+> > Getting a little desperate now.
+>
+> Are those ready-for-production boards looking any better yet :-)?
+> The world is passing you by........
+
+No pain, no gain :)
+Yes I know the off the shelf boards will get me going on the application
+sides of things, but I still need to get it running on our custom board/s
+too.
+
 Brendan Simon.
 
 
