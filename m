@@ -1,39 +1,56 @@
-From: "Stefan Roese" <stefan.roese@esd-electronics.com>
-To: "Linuxppc-Commit" <linuxppc-commit@source.mvista.com>,
-	"Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: status of linuxppc_2_4_devel for ppc405gp
-Date: Wed, 22 Aug 2001 12:22:52 +0200
-Message-ID: <EFEAIMDCOOOHIEPHDNFJAEHDDBAA.stefan.roese@esd-electronics.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Wed, 22 Aug 2001 03:25:09 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Ole Andreas Torvmark <ole.torvmark@radionor.no>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problems with Sandpoint 8240 & i82559 & i82550
+Message-ID: <20010822032509.A32016@cx258813-a.chnd1.az.home.com>
+References: <MHEAIGEFFBAFIOMKCIGCMEAICAAA.ole.torvmark@radionor.no>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <MHEAIGEFFBAFIOMKCIGCMEAICAAA.ole.torvmark@radionor.no>; from ole.torvmark@radionor.no on Wed, Aug 22, 2001 at 12:56:54PM +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+On Wed, Aug 22, 2001 at 12:56:54PM +0200, Ole Andreas Torvmark wrote:
+>
+> During boot the board comes to this point :
 
-I recently noticed that some new stuff for the ppc4xx found its way into the
-linuxppc_2_4_devel tree (thanks dan).
+<snip>
 
-So I tried to port this linux-tree to our custom ppc405gp board. Up to now
-we are using the MontaVista Linux for the ppc405gp (walnut) from 03-2001.
+> eepro100.c:v1.09j-t 9/29/99 Donald Becker
+> http://cesdis.gsfc.nasa.gov/linux/drive
+> rs/eepro100.html
+> eepro100.c: $Revision: 1.36 $ 2000/11/17 Modified by Andrey V. Savochkin
+> <saw@sa
+> w.sw.com.sg> and others
+> eth0: PCI device 8086:1229, 00:02:B3:60:8F:9F, IRQ 16.
+>   Board assembly 751767-004, Physical connectors present: RJ45
+>   Primary interface chip i82555 PHY #1.
+>     Secondary interface chip i82555.
+> Self test failed, status ffffffff:
+>  Failure to initialize the i82557.
+>  Verify that the card is a bus-master capable slot.
 
-Within this process I found some problems:
+When the self test fails on an i8255x device it indicates a
+problem with inbound transations to system memory.  Obviously
+outbound transactions are working since it's reading the MAC
+address from the EEPROM.
 
-Our system crashes in the function "ppc4xx_gdb_init()" in file
-"ppc4xx_setup.c". Without this call bootup look much better ;-). Any
-comments on this?
+> First off the problem seems to be that the self test fails.  And then i get
+> the wait_for_cm_done timeout! message. I have tried two different intel
+> cards the one is i82550 based and the other is older and based on the i82559
+> chip. We have a Linux server here running 2.4.8 and it has the exactly same
+> driver and it does not fail so I think it is something with the Sandpoint
+> Reference Platform.
 
-I noticed that the ppc405_enet driver is not compiled and not started
-(Makefile and Space.c in drivers/net). Is there a patch missing?
+You neglected to give us basic information on what kernel tree
+you are running.  We need that in order to have a chance to
+help you.
 
-Is anybody running this linuxppc_2_4_devel on a walnut board or custom
-ppc405 board? What is the "official status" of the ppc405 support in this
-linux tree?
-
-Thanks and best regards,
-Stefan Roese
-
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
