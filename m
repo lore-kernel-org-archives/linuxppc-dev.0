@@ -1,43 +1,52 @@
-Message-Id: <199902160628.OAA02962@mule.wantree.com.au>
-Subject: PPC 601 issues (was Re: bootstrap stuffs)
-Date: Tue, 16 Feb 1999 17:00:49 +1030
-From: Keith Jacob <kjacob@wantree.com.au>
-To: <Paul.Mackerras@cs.anu.edu.au>,
-        "linuxppc-dev list" <linuxppc-dev@lists.linuxppc.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Date: Tue, 16 Feb 1999 12:24:51 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Paul.Mackerras@cs.anu.edu.au
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: bootstrap stuffs
+In-Reply-To: <199902160002.LAA11648@tango.anu.edu.au>
+Message-ID: <Pine.HPP.3.96.990216112223.1977A-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote
-
->Sync and isync turn out to be needed on some revs of some chips
->(particularly the 601) around rfi and mtmsr instructions.
->
->(In fact the 601 seems to have another weird bug - in the hash_page
->routine in head.S, the location of the rfi instruction w.r.t. cache
->lines appears to be critical on the 601; if it's wrong, you get a
->machine check on the rfi instruction.  At one stage I found that with
->2, 3, 6, or 7 nops added, it would work; with 0, 1, 4 or 5 nops added
->it wouldn't. :-)
->
->Paul.
-
-Does that explain the recent problems with nearly all kernels on 7200s? 
-Someone posted a patch (to head.S) for 2.2, but 2.2.1 from samba doesn't 
-boot either without patching, AFAIK. Things were fine until about 2.1.130.
-
-Would it be possible for 7200 patches to be released (on samba?) with 
-each kernel release? I believe there are quite a few 7200s running Linux 
-(maybe 20 or so by active list subscribers), and they make great little 
-servers, so it would be sad to see them left behind.
-
---
-Keith Jacob
-kjacob@wantree.com.au
 
 
+On Tue, 16 Feb 1999, Paul Mackerras wrote:
+
+> > 	As Gabriel correctly explained, a "sync" instruction may be
+> > necessary before interrupts are enabled if some off-chip operation, like
+> 
+> Sync and isync turn out to be needed on some revs of some chips
+> (particularly the 601) around rfi and mtmsr instructions.
+
+Strange, I thought at least that rfi included a full context
+synchronization for obvious reasons, so at least the isync should be
+superfluous (for the sync it's different). 
+
+Is there any documentation of these weird bus somewhere ?
+
+I never saw anything like this (and the appendix and errata list for
+the 601 from Motorola turns out to only contain the appendices).
+
+Also could we think of implementing config options for people with buggy
+processors, especially since the 601 is so weird in many respects
+(CONFIG_PPC_NOT601 set to Y would remove a significant amount of
+conditional code). I don't want my kernel spread with isync and sync while
+I have perfectly valid processors (especially sync should be used
+sparingly). 
+
+> (In fact the 601 seems to have another weird bug - in the hash_page
+> routine in head.S, the location of the rfi instruction w.r.t. cache
+> lines appears to be critical on the 601; if it's wrong, you get a
+> machine check on the rfi instruction.  At one stage I found that with
+> 2, 3, 6, or 7 nops added, it would work; with 0, 1, 4 or 5 nops added
+> it wouldn't. :-)
+
+Weird indeed :-)
+
+	Gabriel.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
