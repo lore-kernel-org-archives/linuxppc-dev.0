@@ -1,34 +1,52 @@
-Message-ID: <39C6D9C8.E6F17332@serialsystem.com.sg>
-Date: Tue, 19 Sep 2000 10:13:12 +0700
-From: thanh <jari.nguyen@serialsystem.com.sg>
-Reply-To: jari.nguyen@serialsystem.com.sg
-MIME-Version: 1.0
-To: Jacob Chen <jchen@vrcomm.com>
-CC: Julia Elbert <jelbert@enerdyne.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Ram Disk
-References: <67505026E29DD311A9AA00508B7315F31956BA@EXCHANGE> <036601c00e17$4ed4cee0$5bdaa8c0@vrcomm.com>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: kgdb/Sandpoint -- patch & help needed 
+In-Reply-To: Message from Alex Shnitman <alexsh@hectic.net>
+   of "Mon, 18 Sep 2000 17:16:27 +0300." <20000918171627.B4328@hectic.net>
+Mime-Version: 1.0
+Content-Type: text/plain
+Date: Tue, 19 Sep 2000 14:39:17 +1100
+Message-ID: <7803.969334757@msa.cmst.csiro.au>
+From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-HELLO,
+On Mon, 18 Sep 2000 17:16:27 +0300, Alex Shnitman <alexsh@hectic.net> writes:
+>... However, with this patch the kernel
+>hangs right after saying "Now booting the kernel". I don't even see
+>how these changes could affect the boot process so early.
 
-Jacob Chen wrote:
+Aha! I was caught by this. When you enable CONFIG_KGDB, a breakpoint is
+executed in setup_arch() which is just about the first thing the kernel
+does.
 
-> Hi,
->
-> > Software Emulation Web/62 NIP: 1009a014 *NIP: 0x0 code: ffffffdaSoftware
-> > Emulati
-> > on linuxrc/6 NIP: 1009a014 *NIP: 0x0 code: ffffffdasash-2.03#
->
-> Can you post how did John show you to fix this problem?  Thanks.
->
-> Jacob
+The sequence is (very!) roughly (and for the 8xx embedded platform):
 
-CAN YOU POST HOW DID YOU FIX THIS PROBLEM, PLS.
-THANKS.
-JARI
+_start()
+	identify_machine()
+	MMU_init()
+	start_kernel()
+		lock_kernel()
+		setup_arch()
+			set_debug_traps()	| ifdef CONFIG_KGDB
+			breakpoint()		|
+			...
+		parse_options()
+		trap_init()
+		init_IRQ()
+		...
+
+Solution? Simply start gdb on your host machine and do the following:
+
+	set remotebaud BBBBBB	(if required)
+
+	target remote /dev/...	(serial port on host connected to
+				 target kgdb serial port)
+	continue
+
+and your kernel will fire up again (I kicked myself when I realised what
+was going on). Cheers!
+								Murray...
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
