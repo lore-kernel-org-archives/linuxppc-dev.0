@@ -1,78 +1,46 @@
-Message-ID: <4106E076.60500@esteem.com>
-Date: Tue, 27 Jul 2004 16:08:38 -0700
-From: Conn Clark <clark@esteem.com>
+Message-ID: <41075FE3.1040008@fh-landshut.de>
+Date: Wed, 28 Jul 2004 10:12:19 +0200
+From: Oliver Korpilla <okorpil@fh-landshut.de>
 MIME-Version: 1.0
-To: okorpil@fh-landshut.de
-Cc: =?ISO-8859-1?Q?M=E9sz=E1ros_Lajos?= <ludwigm@siemens.com>,
-	Mark Chambers <markc@mail.com>,
-	"Wells, Charles" <Charles.Wells@NielsenMedia.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux is not reliable enough?
-References: <37D0F88E70D96C428C19EEB865701A38027D1105@buda902a.siemens.hu> <41068C9A.1000806@fh-landshut.de>
-In-Reply-To: <41068C9A.1000806@fh-landshut.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linh Dang <linh@linhdang.home>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: BAT mapping exported to user-space
+References: <10A74DE9-DFF7-11D8-96F8-003065F9B7DC@embeddededge.com> <wn58yd5p7og.fsf@linhd-2.ca.nortel.com>
+In-Reply-To: <wn58yd5p7og.fsf@linhd-2.ca.nortel.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Oliver Korpilla wrote:
+Linh Dang wrote:
+> Dan Malek <dan@embeddededge.com> wrote:
 >
-> Mészáros Lajos wrote:
->
+>>On Jul 27, 2004, at 1:34 PM, Dang, Linh [CAR:2X23:EXCH] wrote:
 >>
->> Yes, 'C' is unreliable because writing beyond the "maxindex" lets
->> you overwrite other's data, other's code and DOES make backdoor for
->> viruses.
+>>>>cat /proc/ppc_htab
+>>>
+>>>PTE Hash Table Information
 >>
->> On the other hand testing every index every time for min and max slowes
->> the executing.
+>>You misunderstand. This is the PPC Hash table, not Linux PTEs. There
+>>are lots and lots and lots of Linux PTEs are are eventually loaded
+>>into the PPC hash table for the processor to fetch.
 >
->
-> QNX does not, and Linux does not, and with both C is as unreliable as ever.
->
-> However, a failure in a QNX in the driver level is not as potentially
-> malicious as in Linux. While this does not exclude failure, and does not
-> say a thing about the actual quality of QNX or Linux code, it's a nice
-> _additional_ feature related towards stability.
->
-> I guess Linux lacking proper certification for some applications is a
-> much bigger obstacle in the minds of managers, anyway.
->
-> But somehow this is getting offtopic, quickly, isn't it?
->
-> With kind regards,
-> Oliver Korpilla
->
+> Thanx for pointing that out. I have to dig further. I guess it would
+> come down to how much pressure using pages for mapping our asics
+> (instead of BATs) would have on the TLBs.
 
-	If C is not reliable enough then nothing is. In assembly(or even
-handcoded machine language for the real hard core people) you can do
-just about anything. Since all languages must resort to this at some
-point, our foundation is built on sand and we are eternaly screwed.
+Maybe you want to have a look at the book "Understanding the Linux Virtual
+Memory Manager". Though clearly not PowerPC-specific (as always this book, too,
+focuses on the x86), it's a recommended buy for understanding how paging etc.
+works with Linux. It does explain the non-architecture-specific part rather
+thoroughly.
 
-	Only the 4 last words of the last sentence of this statement is false.
-Its not the languages job to write good solid code or verify it, its the
-programmers responsibility. The only code you can truly trust is code
-you have total control over. For truly solid code, no funky error
-checking computer science language will ever replace good practices,
-thorough testing, and documentation.
+Then, together with the "Programming Environments Manual For 32-Bit
+Implementations of the PowerPC Architecture" (from Motorola), this
+should give you a good understanding of what's going on, and how Linux
+is handling this stuff.
 
-	The reason for this is obvious, at some point higher level languages
-must be built using a lower language to avoid the chicken/egg paradox.
-Hence the quality of a higher level language can never be assured since
-its foundation is made of sand.
-
-Its a poor musician that blames their instrument.
-
--- Conn Clark
-
-*****************************************************************
-Give a man a match and you heat him for a moment. Set him on fire
-and you'll heat him for life.
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
-
+With kind regards,
+Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
