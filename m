@@ -1,68 +1,60 @@
-Message-ID: <3C59005A.4080400@elsoft.ch>
-Date: Thu, 31 Jan 2002 09:29:14 +0100
+Message-ID: <3C591CFB.8030404@elsoft.ch>
+Date: Thu, 31 Jan 2002 11:31:23 +0100
 From: "David =?ISO-8859-1?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>
 MIME-Version: 1.0
-To: Armin Kuster <akuster@mvista.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] 3 patches against linuxppc_dev-2.4.18-pre7
-References: <3C57F9AC.9040008@elsoft.ch> <3C58410B.802BC1F4@mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: [PATCH] 2 patches against linuxppc_dev-2.4.18-pre7
+Content-Type: multipart/mixed;
+ boundary="------------000505000302060103000004"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+This is a multi-part message in MIME format.
+--------------000505000302060103000004
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Armin Kuster wrote:
+Hello
 
-> "David Müller (ELSOFT AG)" wrote:
->
->>Hello
->>
->>The attached patch fixes the following issues:
->>
->>    - arch/ppc/kernel/ppc4xx_pic.c
->>       fixed constant in ppc405_pic_get_irq()
->>       (should be NR_AIC_IRQS as in ppc403_pic_get_irq())
->>
->
-> David,
->
-> include/asm-ppc/irq.h
-> NR_IRQS = (NR_AIC_IRQS + NR_BOARD_IRQS) and was defined to allow
-> cascading UIC's.
-> NR_BOARD_IRQS is defined in some of the board files and its default is
-> in include/asm-ppc/ibm4xx.h
->
-> So i don't see the need to patch that file but the others look fine.
->
->
+In yesterday's e-mail the following 2 patches against linuxppc_dev-2.4.18-pre7
+were missing:
 
-Exactly, NR_IRQS is the the total number of irqs possible in the system
-as this number of irqs is reserved in the irq_desc table.
 
-For example, we have a system with a PPC405GP and an additional PC like 8259 PIC
-pair, we have NR_AIC_IRQS (32) + NR_BOARD_IRQS (16) = NR_IRQS (48).
+    - arch/ppc/mm/fault.c
+       missing type cast
 
-In ppc405_pic_get_irq() the following code is executed:
-
-	irq = 32 - ffs(bits);
-
-	if (irq == NR_IRQS)
-		irq = -1;
-
-	return(irq);
-
-with NR_IRQS equal 48 the condition is never true !
-
-This results in an endless while-loop in do_IRQ() in arch/ppc/kernel/irq.c
-
-Either this or my understanding how things are working is totally wrong. ;-)
-Additionally, i don't see me why ppc403_pic_get_irq() is using NC_AIC_IRQS while
-ppc405_pic_get_irq() is using NR_IRQS. Shouldn't they be "symmetric".
+    - arch/ppc/mm/cachemap.c
+       missing prototype for map_page() (added mmu_decl.h)
+       2 missing type casts
 
 
 Dave
+
+
+
+--------------000505000302060103000004
+Content-Type: application/octet-stream;
+ name="linuxppc.patch.bz2"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="linuxppc.patch.bz2"
+
+QlpoOTFBWSZTWbW4/NoAAPnfgGAweX///2rd3AC/7//+QAK0nbZSy0wlII1NMmQjwk8oPQI0
+A00AAaPRNNBJCIaJoGqemCj1PKAbSaAGg0GQBocZMmTEYmAEyYJkANGEYAhgEpqTJok2p6aT
+0E0aBpoAAZNANBoA4bgYFkx1ohM8P6giIkzM24fg+EKIZlwZnhzQjZRRsobdNot87twAtq71
+FJ4Svn4P1YjDilCHJulNKlavnHlcQtIySxaeZfLzlZnakzE2330lziIqhhjMF5l7Z6wiKsRB
+FsUsGLuXdXOb1G3C/d0Zef7eDOyL8W98BvypXT/ddq0T0V0IZ6O2SUPPWeQtXOmLpZgykncY
+cKywU1GjYxCZEzYwROEwThbnSFWiiWm/hJtNEnEoEXXxqvKfzAwNCRIvQN0jQXQ+yYYLa5Fh
+nGtGLbO87PSjklJmCss4xTixVMoylcYTaDgjWsyB1JjBMyARhLpZblAeDwzehd7vDz8/IeSk
+Z2mtZ3STuOEhigJrRnePPEoKz5ImXSO05Gl30ORzELlSxEIXlUVUn1JriwXoIYbEXB1HXd0K
+YcwshaG0HUWWdXkAuAVzNgKrjSPFMOYKCJBnVxIBE7ChsqL46LXU5Jj+EDiQplQ5pgRYCDOC
+bTar5xF/wJ2Zc+CaMOswNMsoaEJygOm06hMMXC0LkRSJYhgaPRkawdssS4xJi7Mk5aNY8EzD
+Jnxzb6iWJICdr0gUo5HGFEiFQFX6VVpW0SHXBBGldSbTOs01yBMIQxK8fYdq82FSgNCs43K0
+ZNjos/d2LAvwUDbGV4ZESM5VgsgS1CkhI8E0GrfqDy9bJMTNvbg1bRXmIy02Nw5NFcshhKp1
+rstugzWEzYmtkxUQQFekrIYYddl4V2q4nUqb1t1Qsa7Ma078efAwcLay2MlaZXC0nvl98aQq
+/xdyRThQkLW4/No=
+--------------000505000302060103000004--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
