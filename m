@@ -1,23 +1,30 @@
-Reply-To: <zjzhou@newrocktech.com>
-From: "John Zhou" <zjzhou@newrocktech.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Does anybody know which function can read clock counter of Linux kernel? 
-Date: Tue, 3 Feb 2004 10:24:39 +0800
-Message-ID: <000901c3e9fc$e06fce80$b702a8c0@newrock2>
+Message-ID: <20040203140115.33983.qmail@web40401.mail.yahoo.com>
+Date: Tue, 3 Feb 2004 06:01:15 -0800 (PST)
+From: Todd <to_dd@yahoo.com>
+Subject: Re: ppcboot boot-up question
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20040203013624.66B93C108E@atlas.denx.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi!
+As Gerald suggested, I tried disconnecting the serial
+cable, which allowed the board to boot.
+Changing the minicom instructions in the following way
+allowed the board to boot with the serial cable
+connected:
 
-Does anybody know which function can read clock counter of Linux kernel?
-I konw "tickGet()" of vxworks can read OS clock counter.
+ctl-a, z, o, "modem and dialing"
+remove entries for items A - L
+save as the default file.
 
-Thanks any commemts!
-John
+I am looking into converting over to ckermit.
+Thanks Wolfgang and Gerald for responding to my
+question.
+
+best regards,
+Todd
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
