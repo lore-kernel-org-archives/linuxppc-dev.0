@@ -1,70 +1,54 @@
-Message-ID: <3BDD9732.3060607@hadess.net>
-Date: Mon, 29 Oct 2001 17:51:46 +0000
-From: Bastien Nocera <hadess@hadess.net>
-Reply-To: hadess@free.fr
-MIME-Version: 1.0
+Date: Mon, 29 Oct 2001 11:09:46 -0700 (MST)
+From: Derrik Pates <dpates@dsdk12.net>
 To: Ani Joshi <ajoshi@shell.unixbox.com>
 Cc: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>,
-	linuxppc-dev@lists.linuxppc.org
+	<linuxppc-dev@lists.linuxppc.org>
 Subject: Re: GeForce on PPC == _no work_
-References: <Pine.BSF.4.32.0110290940580.22170-100000@shell.unixbox.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <Pine.BSF.4.32.0110290940580.22170-100000@shell.unixbox.com>
+Message-ID: <Pine.LNX.4.33.0110291100560.8216-100000@andromeda.dsdk12.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ani Joshi wrote:
+On Mon, 29 Oct 2001, Ani Joshi wrote:
 
->
-> On 29 Oct 2001, Michel [ISO-8859-1] Dänzer wrote:
->
->
->>I don't see the point of begging them for support though if there are
->>other companies who already support us.
->>
->
 > So all the people with GeForce's in macs should have to buy ATI cards?
 > That is a subpar solution, and ridiculous in my mind.
->
->
->>Someone (Bastien Nocera IIRC) asked nVidia at a show if they planned to
->>release their drivers for PPC in the future, and they said no. Not even
->>maybe...
->>
 
-
-What I was told by a marketing guy (no techies available at the ECTS
-last year), that "NVidia either supports fully themselves [through dodgy
-binary drivers] or not at all". Then again, that might be what the
-company says to avoid any lengthy talks and pleas.
-
+I don't disagree, but consider the fact that we're dealing with a company
+that ran the source-only driver for their boards (that they released to
+XFree86 some time back) through a C preprocessor to prevent people from
+figuring out how their hardware works. They're very possessive about their
+intellectual property, and will go out of their way (to what IMO are
+ridiculous lengths) to prevent anyone else from supporting their gear,
+even if they're not interested in doing so.
 
 > That means nothing.  It doesn't mean they will not help us get things
 > going on macs.  I have a few contacts at nVidia and they have helped  a
 > LOT recently with the support so far, so if they didn't care at all then
 > we wouldnt be as far as we are now.
 
-
-Well, that's good, but I know I wouldn't want to buy a PowerMac with an
-NVidia card until they change their policy or at least that you can tell
-me that NVidia *as a company* is making efforts.
-
+Even Mark V. isn't overly optimistic about getting the necessary info out
+of nVidia to the people who need it to support DVI displays with nVidia
+boards on Linux (he is trying tho, and I thank him for that).
 
 > Just because it isn't working today, doesn't mean it won't work tomorrow.
 > ATI never helped before, and after R128 they decided to really help, is
 > that to say we should have given up after mach64?
 
+All a matter of if anyone is interested in expending the effort trying to
+develop support for their hardware. I don't think the Linux community
+should just give up when we run into something difficult to do, but in
+some ways, we should try to support those who support us. nVidia is making
+some efforts, but unless they can loosen their death grip on specs for
+their hardware, it's very difficult to support it, and there aren't enough
+hours in a day to release binary drivers for every open-source OS on every
+platform.
 
-Fair enough, and all your hard work is much appreciated, just as
-Michel's, Sven's, Geert's and everybody would put their nose into making
-the most important output device of our Macs work better.
-
-Cheers
-
-
---
-/Bastien Nocera
-http://hadess.net
+Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
+dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
