@@ -1,21 +1,24 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
-	by ozlabs.org (Postfix) with ESMTP id D8FC267A2F
+Return-Path: <tnt@246tNt.com>
+Received: from outmx027.isp.belgacom.be (outmx027.isp.belgacom.be
+	[195.238.2.208]) by ozlabs.org (Postfix) with ESMTP id A7DBF67A2F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 12 Mar 2005 08:00:54 +1100 (EST)
-Date: Fri, 11 Mar 2005 14:00:52 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Sylvain Munaut <tnt@246tNt.com>
-Message-ID: <20050311210052.GC3098@smtp.west.cox.net>
-References: <4231F9F9.5080506@246tNt.com>
-	<be4da82f8d12e20b54050e15fd27df36@freescale.com>
-	<423203EC.1070003@246tNt.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <423203EC.1070003@246tNt.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 1/2] MPC52xx updates : sparse clean-ups
+	Sat, 12 Mar 2005 08:06:44 +1100 (EST)
+Received: from outmx027.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx027.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id j2BL6cCl011976
+	for <linuxppc-embedded@ozlabs.org>; Fri, 11 Mar 2005 22:06:39 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <4232085F.9000909@246tNt.com>
+Date: Fri, 11 Mar 2005 22:06:39 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: Dale Farnsworth <dale@farnsworth.org>
+References: <4231F9F9.5080506@246tNt.com> <4231FABA.2030809@246tNt.com>
+	<20050311204823.GA11928@xyzzy>
+In-Reply-To: <20050311204823.GA11928@xyzzy>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: Tom Rini <trini@kernel.crashing.org>, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 2/2] MPC52xx updates : PCI Support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,17 +29,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 11, 2005 at 09:47:40PM +0100, Sylvain Munaut wrote:
+Dale Farnsworth wrote:
 
-[snip]
-> static struct hw_interrupt_type mpc52xx_ic = {
-> -       "MPC52xx",
-[snip]
-> +       .typename       = "MPC52xx",
+>The first hunk of arch/ppc/platforms/lite5200.c looks corrupted.
+>See the line beginning "fdef CONFIG_PCI".
+>
+>-Dale
+>
+>  
+>
+Damn, you're right and even the first patch is screwed, half of it is 
+missing.
 
-Shouldn't that be "  MPC52xx  ", or is that another field I'm thinking
-of?
+Discard theses, I'll put them on-line somewhere and post the urls.
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+
+    Sylvain
+
+>On Fri, Mar 11, 2005 at 08:08:26PM +0000, Sylvain Munaut wrote:
+>  
+>
+>>And here's the second patch :
+>>    
+>>
+>
+>[ deleted lines ]
+>
+>  
+>
+>>diff -Nru a/arch/ppc/platforms/lite5200.c b/arch/ppc/platforms/lite5200.c
+>>--- a/arch/ppc/platforms/lite5200.c     2005-03-11 20:41:56 +01:00
+>>+++ b/arch/ppc/platforms/lite5200.c     2005-03-11 20:41:56 +01:00
+>>@@ -35,6 +35,8 @@
+>>#include <asm/ocp.h>
+>>#include <asm/mpc52xx.h>
+>>
+>>+#include <syslib/mpc52xx_pci.h>
+>>+
+>>
+>>extern int powersave_nap;
+>>
+>>fdef CONFIG_PCI
+>>+static int
+>>+lite5200_map_irq(struct pci_dev *dev, unsigned char idsel,
+>>+                 unsigned char pin) {
+>>+       return (pin == 1) && (idsel==24) ? MPC52xx_IRQ0 : -1;
+>>+}
+>>+#endif
+>>    
+>>
+>
+>[ more deleted lines ]
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>  
+>
