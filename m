@@ -1,40 +1,38 @@
-Date: Thu, 25 Sep 2003 13:57:46 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Bret Indrelee <Bret.Indrelee@qlogic.com>
-Cc: Eugene Surovegin <ebs@ebshome.net>,
-	Linux PPC Embedded mailing list <linuxppc-embedded@lists.linuxppc.org>
+Date: Thu, 25 Sep 2003 16:27:05 -0500 (CDT)
+From: Bret Indrelee <Bret.Indrelee@qlogic.com>
+Reply-To: Bret Indrelee <Bret.Indrelee@qlogic.com>
+To: Matt Porter <mporter@kernel.crashing.org>,
+	Roland Dreier <roland@topspin.com>
+Cc: Linux PPC Embedded mailing list <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: Any restrictions on DMA address boundry?
-Message-ID: <20030925135746.C17028@home.com>
-References: <5.1.0.14.2.20030925131735.03abfab8@mail.ebshome.net> <Pine.LNX.4.44.0309251526470.12966-100000@spider.ancor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.44.0309251526470.12966-100000@spider.ancor.com>; from Bret.Indrelee@qlogic.com on Thu, Sep 25, 2003 at 03:32:13PM -0500
+In-Reply-To: <20030925135552.B17028@home.com>
+Message-ID: <Pine.LNX.4.44.0309251613360.12966-100000@spider.ancor.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Sep 25, 2003 at 03:32:13PM -0500, Bret Indrelee wrote:
->
-> On Thu, 25 Sep 2003, Eugene Surovegin wrote:
-> > At 12:56 PM 9/25/2003, Matt Porter wrote:
-> > >When a buffer is allocated using the allowed methods (as defined in
-> > >DMA-mapping.txt) to obtain memory for use in DMA, there is
-> > >no guarantee that the buffer is cacheline aligned.
-> >
-> > Hmm, I don't think this is true.
-> >
-> > DMA-mapping.txt explicitly states that pci_alloc_consistent() returns
-> > aligned memory buffer:
->
-> It has been cut from the conversation, but I'm using streaming DMA
-> mappings. Specifically, pci_map_single() and pci_unmap_single().
->
-> My reading of the 2.4 DMA-mapping.txt is that use of pci_alloc_consistent()
-> is specific to Consistent DMA mappings. Same for the pci_pool_ interface.
+Just wanted to thank both Matt Porter and Roland Dreier for taking
+the time to explain the situation.
 
-This is correct.  All of my explanation applied to streaming DMA
-mappings.
+I've aligned our buffers to 32 bytes on PPC and am in the process of
+confirming the x86 snoop/coherency situation. Aligning it this way
+makes the transfer slightly faster anyways, since the 8245 PCI
+bridge will cause a disconnect at every 32-byte boundary on a
+PCI burst read.
 
--Matt
+Since the work I'm doing is embedded and we use the same buffer
+format between application and driver/kernel space, I'm using
+a fixed number rather than L1_CACHE_BYTES. The define for L1_CACHE_BYTES
+is only available (as it probably should be) only if you've defined
+KERNEL.
+
+-Bret
+
+--
+Bret Indrelee                 QLogic Corporation
+Bret.Indrelee@qlogic.com      6321 Bury Drive, St 13, Eden Prairie, MN 55346
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
