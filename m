@@ -1,38 +1,28 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Subject: mvista 2.0 cdk and login username and password
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: support@mvista.com
-Message-ID: <OF65A95CC9.1E398D60-ON85256AFB.006B09BF@raleigh.ibm.com>
-From: "John F Davis" <johndavi@us.ibm.com>
-Date: Mon, 5 Nov 2001 14:42:28 -0500
+Message-ID: <607BF0A2B4F3D411A09500508BC225427E833D@mailctx.datum.com>
+From: Geoff Wyche <GWyche@DATUM.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Choosing a Motorola CPU for linux
+Date: Mon, 5 Nov 2001 13:26:40 -0800 
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello
+Hello All,
 
-What's the root login password for a newly installed sbs-k2, cdk 2.0,
-target login?  The final paragraph of the sbs-k2
-installation section (in the pdf) says to login, but doesn't specify a
-password for root.
+I'm looking for some advice in choosing a new CPU for a custom embedded
+application.  Our current design uses a motorola MPC860T, but that seems to
+be falling out of favor.  We don't want to completely redesign the
+architecture of our instrument.  In the past, we've used 68020, 68332, and
+the MPC860T.
 
-I installed the cd and when I try to login to a nfs root mounted partition,
-I get a login prompt, but I can't login.
-My installation doesn't   have a /..../target/etc/passwd file, which leads
-me to believe I missed something during
-the install.  However, I searched the CD for rpm's and none of them
-owns/supplies  the /.../target/etc/passwd file.
-Am I supposed to modify the inittab on the host machine so it boots single
-user mode and create the /etc/password
-file by hand, modify the inittab for multiuser mode and then reboot?
+What choices do I have of (cheap) embedded Motorola CPUs, assuming I wish to
+run Linux (not uClinux)?
 
-Also, when am I going to get a hardhat zone login id?  I am sure MVista has
-a FAQ which addresses this issue.
-
-John F. Davis
-IBM
-
+--Geoff
+gwyche@datum.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
