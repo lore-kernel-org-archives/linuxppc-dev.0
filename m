@@ -1,52 +1,29 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Fri, 04 Feb 2000 08:30:27 +0100 (CET)
-Subject: initrd
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: damm@kieraypc01.p.y.ki.era.ericsson.se
-Message-id: <0FPE0004LA7GMA@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_wtihOt1D2xjHJK4tcIm4tw)"
+Message-ID: <389A8104.AC2C196D@jlc.net>
+Date: Fri, 04 Feb 2000 02:34:28 -0500
+From: Dan Malek <dmalek@jlc.net>
+MIME-Version: 1.0
+To: Michael Thompson <mickey@berkeley.innomedia.com>
+CC: Olivier DERVYN <dervyn@digigram.com>,
+        Linux PPC Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Linux PPC on Sandpoint or YellowKnife board with 750
+References: <200002031505.HAA04494@berkeley.innomedia.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-
---Boundary_(ID_wtihOt1D2xjHJK4tcIm4tw)
-Content-type: TEXT/PLAIN
-Content-Transfer-Encoding: 7BIT
-
-Hi
-
-I got initrd running. The problem is exactly as assumed by Wolfgang.
+Michael Thompson wrote:
 
 
-Change in /usr/src/linux/arch/ppc/mbxboot/misc.c  ~ line 225
+> ......  I still have
+> the patches if anyone wants them, of course.
 
-from
-
-#ifdef CONFIG_MBX
-        cmd_line = (char *)(load_addr - 0x10000);
-#else
-        cmd_line = (char *)(0x200000);
-#endif
-
-to
-
-#if (defined CONFIG_MBX || defined CONFIG_ADS)
-        cmd_line = (char *)(load_addr - 0x10000);
-#else
-        cmd_line = (char *)(0x200000);
-#endif
-
-Then the mapping is alright.
-
-Might the change be necessary for FADS as well ?!?
-
-Cheers and thanks for your help
-
-Ruedi
+Of course we want them.  Where were you for the past six months
+when we would discuss the Sandpoint :-)?  You are now the third person
+that has duplicated work by the rest of us.  Let's stop that from
+happening.
 
 
---Boundary_(ID_wtihOt1D2xjHJK4tcIm4tw)--
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
