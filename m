@@ -1,31 +1,39 @@
-From: Gerd Knorr <kraxel@goldbach.in-berlin.de>
-Date: Wed, 13 Oct 1999 10:39:25 +0200
-Message-Id: <199910130839.KAA04644@macintoy.masq.in-berlin.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: How to get latest vger 2.2 sources???
-In-Reply-To: <Pine.GSO.4.10.9910130811490.21530-100000@dandelion.sonytel.be>
+Message-ID: <3804499E.291265F@arcormail.de>
+Date: Wed, 13 Oct 1999 09:58:07 +0100
+From: Michael Fenske <michael.fenske@arcormail.de>
+Reply-To: michael.fenske@arcormail.de
+MIME-Version: 1.0
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Problem with glibc-2.1.3-0a.src.rpm ?
+References: <3803A7BC.4175E431@arcormail.de> <99101300580600.00880@ns1102.munich.netsurf.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In lists.linuxppc.dev, you wrote:
+Franz Sirl wrote:
 > 
-> On Tue, 12 Oct 1999, Claude Robitaille wrote:
-> > I am the one who just asked how to get linux from on.openprojects.net
-> > 
-> > To get 2.2, the answer I got was:
-> > 
-> > start downloading 2.3
-> > then stop it using ctrl-C
-> > cvs update -dP -rlinux_2_2
-> 
-> Doesn't `cvs -z3 checkout -rlinux_2_2 linux' work?
+> Did you install all parts of gcc-2.95.1? cpp is easily forgotten. What output
+> do you get from 'egcs -v' and 'gcc -v'?
 
-Are there patches vanilla-2.[23].x => CVS tree available somewhere ?
+I have installed the following parts:
 
-  Gerd
+  cpp-2.95.1-0a
+  gcc-2.95.1-0a
+  gcc-c++-2.95.1-0a
+  gcc-objc-2.95.1-0a
 
--- 
-Hi! I'm a .signature virus! Copy me into your ~/.signature, please!
+egcs -v returns
+
+  bash: egcs: command not found  // what a surprise ;-)
+
+gcc -v returns
+
+  Reading specs from /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/specs
+  gcc version 2.95.1 19990809 (prerelease)
+
+Michael
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
