@@ -1,43 +1,68 @@
-Message-ID: <3973935A.A01A7CC3@m2tech.co.nz>
-Date: Tue, 18 Jul 2000 11:14:34 +1200
-From: ben bodley <benb@m2tech.co.nz>
+Date: Tue, 18 Jul 2000 10:36:11 -0400 (EDT)
+From: Pavel Roskin <proski@gnu.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Linux-2.4.0-test4 - problems in memory management?
+Message-ID: <Pine.LNX.4.21.0007172015350.356-100000@sunapee.transcept.com>
 MIME-Version: 1.0
-To: Paolo Scaffardi <arsenio@tin.it>
-CC: mailing list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: X-Server for 823?
-References: <001e01bfeffd$9ba35440$640a0a0a@server>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Paolo Scaffardi wrote:
+Hello!
 
-> How can i run simple X applications on my MPC823 FADS?
-> I'd like to enable S-Video output and to use the frame buffer X-Server...
-> did anyone implement a X-server or a frame-buffer device for the 823?
->
-> Thanx in advance..
->
+If I boot Linux-2.4.0-test4 on RPX/Lite and try to "cat" a file I'm
+getting a "Bad address" error for some files. Writing, executing and
+low-level reading are Ok. In fact, I have to use "init=/bin/sh" to boot
+the kernel, since init from Busybox cannot even read /etc/inittab
 
-we have an x-server running on 4xx core (ibm romeo stb chip), initially using
-s-video output, but then modulated composite.. i'm afraid the framebuffer
-source wont help you but i thought you might want to be aware of the flicker
-problem of televisions..
+This is a minimal test program (which is the result of subsequent
+"unrolling" and simplification of libc internals):
+=======================
+#include <stdio.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <unistd.h>
+#define BUF_SIZE 0x10000
 
-we have implemented software flicker-free control, but this hogs cpu time, and
-will be moving to a hardware flicker-free option in the near future.. we had
-to patch the x-server to implement the flicker-free control and this is far
-from optimal.. i would make sure either the fads board you are using is dammn
-quick, or has built in hardware flicker-free filters..
+int main(int argc, char **argv)
+{
+	int fd;
+	char *p;
+	fd = open (argv[1], O_RDONLY);
+	p = (char *) mmap(0, BUF_SIZE, PROT_READ | PROT_WRITE,
+		MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+//	*(p) = 0;
+	perror("point1");
+	read (fd, p, BUF_SIZE);
+	perror("point2");
+	exit (0);
+}
+=======================
 
-cheers,
+This program always works on existing regular files on Linux/PPC (G3,
+kernel 2.2.14) and RPX/Lite with the Montavista kernel 2.2.13-7.
 
-ben
+However, it fails on some (maybe all) regular files if Linux-2.4.0-test4
+is used. It fails on NFS and procfs, but not on character devices:
 
---
-/\\------------------------------------------------------------------
-:::::::::::..ben.b..m2technologyltd.nz..64.9.4448307.130..:::::::::::
+# t1 /dev/zero
+point1: Success
+point2: Success
+# t1 /proc/version
+point1: Success
+point2: Bad address
+# t1 /bin/sh
+point1: Success
+point2: Bad address
+
+If I uncomment "*(p) = 0;" it works on all files, but it's a workaround,
+not a solution.
+
+The same results have been reproduced with Linux-2.4.0-test5-pre1
+
+Regards,
+Pavel Roskin
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
