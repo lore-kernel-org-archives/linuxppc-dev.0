@@ -1,28 +1,99 @@
-Date: Mon, 9 Jul 2001 08:05:53 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Ralph Blach <rcblach@raleigh.ibm.com>
-Cc: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: How do I get the latest files off of bit keeper
-Message-ID: <20010709080553.H825@opus.bloom.county>
-References: <3B49BCDD.CD4632B7@raleigh.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3B49BCDD.CD4632B7@raleigh.ibm.com>
+Subject: RE: gdb with 405 target
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Mon, 9 Jul 2001 11:20:16 -0400
+Message-ID: <FF6CF34C346E724596A2FB5CAAB2C49750C325@voyager.ops.infiniswitch.com>
+From: "Wright, David" <dwright@infiniswitch.com>
+To: "Matthias Fuchs" <matthias.fuchs@esd-electronics.com>,
+	"linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Jul 09, 2001 at 10:17:01AM -0400, Ralph Blach wrote:
+We got a patch for this problem from MontaVista; once I fixed a
+couple of bugs in the patch, it worked fine.  I supplied a report
+to MontaVista about the bugs, but never got any mail back from
+them, so I don't know what happened after that.
 
-> How do I get the latest tree of off bitkeeper to so that I can review
-> and build the source tree?
+  -- David Wright
 
-After you get a copy of the tree, via bk clone, do a bk -r get -q to have
-bk checkout all of the files.  Don't do bk -r edit, unless you really mean
-to edit every file.  Do this on a per-file baisis.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+
+
+> -----Original Message-----
+> From: Matthias Fuchs [mailto:matthias.fuchs@esd-electronics.com]
+> Sent: Monday, July 09, 2001 11:01 AM
+> To: linuxppc-embedded
+> Subject: gdb with 405 target
+>
+>
+>
+> Hi,
+>
+> I got the following problem when I try to debug a sample
+> program on one
+> of our IBM405 targets.
+> I read some earlier postings in this list that describe similar
+> problems.
+>
+> So my question: Is this problem already fixed ? Where can I
+> find a fix ?
+>
+> The kernel is build from the MontaVista 405 sources from beginning of
+> march.
+>
+> sh-2.03# gdb /bin/demo
+> GNU gdb 5.0
+> Copyright 2000 Free Software Foundation, Inc.
+> GDB is free software, covered by the GNU General Public
+> License, and you
+> are
+> welcome to change it and/or distribute copies of it under certain
+> conditions.
+> Type "show copying" to see the conditions.
+> There is absolutely no warranty for GDB.  Type "show warranty" for
+> details.
+> This GDB was configured as "powerpc-hardhat-linux"...
+> (gdb) run
+> Starting program: /bin/demo
+>
+> Program terminated with signal SIGTRAP, Trace/breakpoint trap.
+> The program no longer exists.
+> (gdb)
+>
+> Oops: Exception in kernel mode, sig: 5
+> NIP: C0002D70 XER: 00000000 LR: C00028BC SP: C0997E80 REGS: c0997dd0
+> TRAP: 2000
+> MSR: 00009230 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+> TASK = c0996000[33] 'demo' Last syscall: 6
+> last math 00000000 last altivec 00000000
+> GPR00: 00000001 C0997E80 C0996000 C0997E90 30002BC0 30000828 30000828
+> 00000000
+> GPR08: 300275C8 00000000 00000003 30026FF8 30026DC8 100A11E4 1009FDB0
+> 00000000
+> GPR16: 00000000 00000000 00000000 1004CA70 00009230 00997E80 00000000
+> C00028BC
+> GPR24: C0002D70 10000034 00000000 30026B54 00000000 30026B88 300262C0
+> 7FFFFA50
+> Call backtrace:
+> C00028BC 30004704 3000DEE0 30003204 30003144 30010C8C
+>
+>
+> Thanks for advice
+> Matthias
+> --
+> -------------------------------------------------
+> \ Matthias Fuchs                                 \
+>  \ esd electronic system design Gmbh              \
+>   \ Vahrenwalder Straße 205                        \
+>    \ D-30165 Hannover                               \
+>     \ email: matthias.fuchs@esd-electronics.com      \
+>      \ phone: +49-511-37298-0                         \
+>       \ fax:   +49-511-37298-68                        \
+>        --------------------------------------------------
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
