@@ -1,41 +1,31 @@
-Date: 9 Jul 2002 13:50:30 -0000
-Message-ID: <20020709135030.28935.qmail@webmail10.rediffmail.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3D2AFC2E.4050400@linuxfoundary.com>
+Date: Tue, 09 Jul 2002 11:07:26 -0400
+From: Dave Strout <dstrout@linuxfoundary.com>
 MIME-Version: 1.0
-From: "navinb" <ppc4@rediffmail.com>
-Reply-To: "navinb" <ppc4@rediffmail.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: klogd and usb printk's..
-Content-type: text/plain;
-	format=flowed
+Subject: Has anybody put together a tiny distro for PPC?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-during elaborate testing of usb i found a issue..
-If i use in USB interrupt routine ( slave on 823/850)
-with printk's with any logging option and don't start klogd it
-works.
+Well, things are going well here with my project to get linux + some
+custom apps on a custom, but very walnut-like, ppc platform.  I have a
+2.4 kernel + initrd booting on my walnut, the custom software works fine
+on PPC, and I have a BDI2000 + bdiGDB JTAG debugger on order.  As soon
+as the debugger shows up, I plan on getting PPCBoot running, but in the
+mean time, I'm working out what the final package will look like.
 
-after starting klogd it stops working even recv. and xmit
-interrupts stops.
-kill klogd it again wotks fine.
+To that end, I was wondering if anybody has put together a very small
+distro that's suitable for an initrd?  I'm thinking of something like
+one of the linux-on-a-floppy sized distros (linux router project is one
+I used in the past), but cross-compiled for PPC?
 
-klogd just setting a logging level that will prohibit usb printk's
-to go got console printing.
+If not, I'll try to put mine up when it's done, but I thought I'd ask.......
 
-if i use printk with KERN_EMERG/KERN_ALERT kind of options it
-again wotks fine also simply with klogd -c 7.
-
-point out of all this  is it works fine when printk's inside it go
-for a console printing.
-
-usb (scc1) is among highest priority while console(smc1) is quite
-lower ..do i need to put some delays to take care of printk's
-
-anybody has experienced the similar issue ..?
-_________________________________________________________
-There is always a better job for you at Monsterindia.com.
-Go now http://monsterindia.rediff.com/jobs
+thanks,
+dave.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
