@@ -1,56 +1,38 @@
-Message-ID: <F9102D41F595D311ACA7009027DE2C840527B245@c3po.heurikon.com>
-From: "Johnson, Stephen" <stevebj@artesyncp.com>
-To: "'ARIBAUD Albert'" <A.ARIBAUD@giat-industries.fr>,
-	"Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: (X-Window) Yellowdog RPMs within ELDK?
-Date: Mon, 12 May 2003 11:34:55 -0500
+Message-ID: <3EBFDDD4.5010707@net.hcc.nl>
+Date: Mon, 12 May 2003 19:45:56 +0200
+From: Willy Jacobs <wn.jacobs@net.hcc.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: FEC on MPC862P freezes CPM
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I just downloaded the tar.gz files from xfree86.org, then
-m4, bison, flex, and perl from their respective sites and compiled
-them natively using the ELDK 2.1.0. It was quite easy for my ppc_7xx
-platform and I had xboard up and running on my embedded 800MHz
-PowerPC-750FX in no time.
+We are using a MPC862P (XPC862PCZP80B, 2K26A silicon) in a system with
+UTOPIA (master) and FEC simultaneously in UTOPIA muxed bus mode. The
+processor runs at 50 MHz (CPM and bus). For references in the MPC862
+Users' Manual, see figure 35-1 (page 35-4), table 41-6 (page 41-7), and
+figure 42-3 (page 42-7). The FEC MII signals are mapped on PCMCIA port A.
 
+For testing we are using Linux. The Linux console is mapped onto SCC3,
+and SCC1 is used for ethernet. Initialization for SCC3 is done first,
+followed by the initialization of the FEC (as described on paragraph
+41.3 (page 41-8)): ECNTRL[FEC_PINMUX]=1; setup the buffer descriptors;
+UTMODE[SPLIT]=0, PDPAR[UT]=1; PDPAR[8]=1 (MDII_MDC). A printk to SCC3 in
+above situation will "freeze" the CPM in the transmit of the SCC3
+buffers. More concrete it will never pass this while loop:
+	while (bdp->cbd_sc & BD_SC_READY) ;
+The UTIOPIA initialization will be done later.
 
+With PDPAR[UT]=0 SCC3 and UTOPIA works without any problem.
+Note that above CPM "freeze" problem also occurs using another RTOS
+(VRTX) and a similar use of SCCs, FEC, and UTOPIA.
 
-
------Original Message-----
-From: ARIBAUD Albert [mailto:A.ARIBAUD@giat-industries.fr]
-Sent: Monday, May 12, 2003 10:40 AM
-To: Linuxppc-Embedded (E-mail)
-Subject: (X-Window) Yellowdog RPMs within ELDK?
-
-
-
-Hi all,
-
-I need to install X libraries and apps on
-our custom 855T-based board running Linux.
-Since ELDK derives from Yellowdog, I thought
-I'd use RPMs from Yellowdog.
-
-Trouble is, if I 'ppc-rpm' an YDL package,
-I get an architecture mismatch (which is
-not surprising, all ELDK packages being
-'ppc_8xx' while YDL packages are 'ppc').
-
-I've tried a sneaky --ignorearch, which
-led ppc-rpm to seemingly accept the
-previously offending package. But then,
-if I 'ppc-rpm -qa', the package isn't
-listed.
-
-Anybody help! :)
-
-Thanks in advance,
-
-Albert.
+Is this problem known?
+Is there another initialization sequence needed?
+--
+willy
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
