@@ -1,42 +1,114 @@
-Date: Wed, 22 Jan 2003 15:54:10 +0100
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: wrong definition in cpm_8260.h?
-In-reply-to: <00bc01c2c205$e4c95520$e600a8c0@udtech.net>
-To: Shen Rong <rshen@udtech.com.cn>,
-	linuxppc-embedded@lists.linuxppc.org
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLKEIJFJAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=Windows-1252
+Message-ID: <42353.12.148.147.242.1043248979.squirrel@nevil.org>
+Date: Wed, 22 Jan 2003 09:22:59 -0600 (CST)
+Subject: Re: Linux Kernel hangs after execve('/bin/sh')
+From: "Daris A Nevil" <dnevil@snmc.com>
+To: <pkanthi@yahoo.com>
+In-Reply-To: <20030122091532.1705.qmail@web41202.mail.yahoo.com>
+References: <20030122055708.ED27DC608E@atlas.denx.de>
+        <20030122091532.1705.qmail@web41202.mail.yahoo.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Reply-To: dnevil@snmc.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+Prakash,
 
-The same error is in commproc.h for 8xx as well.
+Try compiling your hello.c program with the -Bstatic flag.  That will
+eliminate the need to load libraries, and should show if there are other
+problems.  If that works OK then we can focus on why your library loading
+is failing.
 
+Regards,
+Daris Nevil
+
+
+Prakash kanthi said:
+>
+> Hi FOlks,
+>
+> I finally reached the last step (hopefully) of linux
+> kernel booting process. Kernel gets stuck after doing
+> a 'execve("/bin/sh")'. I tried using different
+> ramdisks, still no difference.
+>
+> I added few printk's in the source, following the
+> function call path from 'execve' call. Following is
+> the output. You can see that, execve goes through
+> without any file permission problems and subsequently
+> it tries to open /lib/ld.so.1 flawlessly. After that i
+> see nothing on the terminal.
+>
+> ---------
+> init:Trying to bring /bin/sh up.
+> do_execve:enter for /bin/sh
+> open_exec:enter for /bin/sh.
+> open_exec:Permission error=0.
+> dentry_open:enter.
+> dentry_open: after file->f_op->open. 0
+> open_exec:enter for /lib/ld.so.1.
+> open_exec:Permission error=0.
+> dentry_open:enter.
+> dentry_open: after file->f_op->open. 0
+> do_execve: after search_binary_handler. retval=0
+> -----------
 >
 >
-> Hi,
+> I wrote a small standalone program hello.c to test, if
+> i can dynamically load it from init() instead of
+> loading /bin/sh. I compiled the program added it to my
+> ramdisk and called from init(). Following is the
+> output. You can see that, it did all of it that it did
+> for /bin/sh and also tried to open /etc/ld.so.preload
+> and /etc/ld.so.cache and failed. But again towards the
+> end, it tries to open /lib/libc.so.6 and succeds but
+> still no output is displayed that hello.c is trying to
+> print.
 >
-> In cpm_8260.h, BD_ENET_RX_STATS is defined to 0x1ff, which leads
-> to the fcc driver can't clean the BD_ENET_RX_LAST&BD_ENET_RX_FIRST bits
-> with the following statement:
->     bdp->cbd_sc &= ~BD_ENET_RX_STATS;
+> ---------
+> init:Trying to bring /bin/hello up.
+> do_execve:enter for /bin/hello
+> open_exec:enter for /bin/hello.
+> open_exec:Permission error=0.
+> dentry_open:enter.
+> dentry_open: after file->f_op->open. 0
+> open_exec:enter for /lib/ld.so.1.
+> open_exec:Permission error=0.
+> dentry_open:enter.
+> dentry_open: after file->f_op->open. 0
+> do_execve: after search_binary_handler. retval=0
+> sys_open:enter for /etc/ld.so.preload.
+> sys_open:unused_fd=3.
+> filp_open:enter for /etc/ld.so.preload.
+> filp_open:open_namei error -2.
+> sys_open:enter for /etc/ld.so.cache.
+> sys_open:unused_fd=3.
+> filp_open:enter for /etc/ld.so.cache.
+> filp_open:open_namei error -2.
+> sys_open:enter for /lib/libc.so.6.
+> sys_open:unused_fd=3.
+> filp_open:enter for /lib/libc.so.6.
+> filp_open:open_namei error 0.
+> dentry_open:enter.
+> dentry_open: after file->f_op->open. 0
+> -----------
 >
-> The first&last bits are set by the CPM not the CPU, so they
-> should be cleared after the frame is received. So it should be:
+> Can someone please throw some light on this?
 >
-> #define BD_ENET_RX_STATS ((ushort)0x0fff) /* All status bits */
->
-> The same problem in ppcboot.
+> Thanks,
+> Prakash
 >
 >
-> Shenrong
->
->
->
->
+
+
+Daris A Nevil
+Simple Network Magic Corporation
+401 Kentucky
+McKinney, Texas 75069
+http://www.snmc.com
+972-562-3751
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
