@@ -1,59 +1,55 @@
-Message-Id: <200007252142.WAA27135@hyperion.valhalla.net>
-Date: Tue, 25 Jul 2000 22:41:05 +0100
-Subject: Re: sound again [was: Re: xf4 bug report]
+Message-Id: <200007252153.WAA27683@hyperion.valhalla.net>
+Date: Tue, 25 Jul 2000 22:53:52 +0100
+Subject: Re: [ANN] IRQ Latency tool 0.1.3 release.
 From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: SteffenH@hyperion-software.de, linuxppc-dev@lists.linuxppc.org
+To: Benjamin Herrenschmidt <bh40@calva.net>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        linuxppc-dev@lists.linuxppc.org
 Mime-version: 1.0
 Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Steffen,
-
-I think we should take this off-list... (it's getting to be a bit
-long-winded)...
-
-Ben, Franz (if you are 'listening' or have an interest) let me know and I'll
-cc you otherwise we'll report back when there's some solution.
-
->>1. what does dmesg now show?
+>>> I still haven't found the "hard-block" that is effecting the overall audio
+>>> latency performance... ah well, back to the drawing board...
+>>
+>>Do you have IDE? The IDE driver turned out to be the major interrupt messing
+>>problem on m68k, since it can disable interrupts for quite a while.
 >
-> DMA sound driver core [Ed 3]
+> We have some great IRQ blockers in Linux currently. IDE is one,
+> especially in PIO mode where it disables IRQs by default during
 
-Good that's definitely the back-port code...
+[...]
 
-> 4 Buffers of 32 K for Output
-> Same for Input
+Does this mean that there are already other tools to measure the IRQ
+blocking?
 
-You've abbreviated this (I hope)...
+To go back to the original problem:
 
-> AWACS rev 100
->
-> registers:
->
-> 1400 782d 7810 0001 00a1 0021 0000 0000
-> 0000 0000 0000 0000 0000 0000 0000 0000
-> 0000 0000 4000 0000 26bb 0010 0000 0002
-> 0001 0000 0000 0000 0000 0000 0000 0000
+running a sched_fifo based audio latency test (Benno Senoner's x86 version
+with PPC patches) I was seeing 8-10ms 'inexplicable' scheduling spikes.
 
-Good, it's recognised your Burgundy chip...
+Someone postulated that this could be caused by IRQ blocking.
 
->>2. have you tried headphones/versus built-in speaker?  (others have reported
->>a problem here - which is why the finger of blame is currently pointing at
->>the mixer abstraction)...
->
-> Up to now only built-in speakers. Will try with headphones :)
->
-[snip]
+Hence the tool.  However, on my set-up, using the same latency test the
+spikes show - but there are no IRQ blocks of that length showing in the
+measurement.
 
-The rest looks OK too...
+I therefore have to conclude that:
 
-Now, I'll have a quick look at the amp-enable code (again) - that did have a
-problem at one point.
+(a) The tool is missing something - please peruse and suggest if you have
+time... I think that most stuff is covered (and I did cover the DataAccess &
+InstructionAccess exceptions - although that is currently not enabled in the
+patch I've posted).
 
-I'm out (on paid work :) tomorrow... so not much action 'till late...
+(b) The effect is caused by some other phenomenon (which is my current
+guess).
 
-Iain.
+So, I'm going to have another look at the latency test to see what I can do
+to narrow down the source of the problem (including checking what the test
+does :-)
+
+Iain,
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
