@@ -1,43 +1,42 @@
-Date: Fri, 27 Aug 1999 16:14:11 +0200
-Message-Id: <199908271414.QAA24261@lxp03.cern.ch>
-From: Jes Sorensen <Jes.Sorensen@cern.ch>
-To: "David D. Kilzer" <ddkilzer@computer.org>
-Cc: linux-mac68k@mac.linux-m68k.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: mac-2.3.14.diff: adb
 In-Reply-To: <v03130308b3ec440550d3@[192.168.1.1]>
-References: <v03130327b3ebecbebbd3@[192.168.1.1]>
-	<199908270917.LAA04250@lxp03.cern.ch>
-	<v03130308b3ec440550d3@[192.168.1.1]>
+Date: Fri, 27 Aug 1999 16:32:37 +0200
+To: "David D. Kilzer" <ddkilzer@computer.org>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: mac-2.3.14.diff: adb
+Message-Id: <19990827163237.012324@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "David" == David D Kilzer <ddkilzer@computer.org> writes:
+On Fri, Aug 27, 1999, David D. Kilzer <ddkilzer@computer.org> wrote:
 
-David> Jes Sorensen <Jes.Sorensen@cern.ch> wrote:
+>Well, drivers/macintosh is PPC ADB code.  If drivers/macintosh shouldn't
+>exist, then shouldn't it be changed or moved at a higher level?
+>
+>In reality, there is some ADB mouse code in drivers/char, too, so I wonder
+>if drivers/char/adb would make more/less sense than drivers/adb?
 
->> Do not belong here, create a drivers/adb if you need it - stop
->> putting things in drivers/macintosh.
+I personally like drivers/macintosh, from my point of view, it makes
+things clearer. except for macserial, which should be killed in favor of
+a more generic zilog driver, most of those drivers are really mac-centric
+stuffs with no "generic" userland interface. Also, drivers/char is
+already enough of a mess like this.
 
-David> Well, drivers/macintosh is PPC ADB code.  If drivers/macintosh
-David> shouldn't exist, then shouldn't it be changed or moved at a
-David> higher level?
+I didn't look at the those new patches, but the adb code in
+driver/macintosh was abstracted to use a generic "adb controller"
+sub-driver interface some time ago and so adb.c should be platform
+independant (useable as-is on PPC and 68k). mac_keyb.c too, with all it's
+specific mouse support.
 
-IMHO yes, ADB code will be useful to the NeXT people if they ever get
-the port going.
+David, did you make a generic (m68k/ppc) cuda driver too ?
 
-David> In reality, there is some ADB mouse code in drivers/char, too, so
-David> I wonder if drivers/char/adb would make more/less sense than
-David> drivers/adb?
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-No drivers/adb to handle the ADB bus, the char driver should go in
-drivers/char.
-
-I always disliked drivers/macintosh and drivers/sbus/char for that
-matter as it seems to me like it was just an easy way to get things past
-Linus.
-
-Jes
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
