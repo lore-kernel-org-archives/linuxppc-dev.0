@@ -1,53 +1,39 @@
-Subject: Re: linuxppc-2.5 (mvista rsync) -- drivers/ide/ppc/pmac.c:1843:
-	error: request for member `queue_head' in something not a structure or union
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Miles Lane <miles.lane@comcast.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <200308101351.01114.miles.lane@comcast.net>
-References: <200308100851.04174.miles.lane@comcast.net>
-	 <1060547919.599.34.camel@gaston>
-	 <200308101351.01114.miles.lane@comcast.net>
-Content-Type: text/plain
-Message-Id: <1060548925.599.42.camel@gaston>
+Date: Sun, 10 Aug 2003 23:29:42 +0200
+From: Samuel Rydh <samuel@ibrium.se>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] 2.6 timebase synchronization
+Message-ID: <20030810212942.GB14877@ibrium.se>
+References: <20030808001523.GA9274@ibrium.se> <20030809011305.GA12030@ibrium.se> <16181.43369.219750.258015@cargo.ozlabs.ibm.com> <1060508348.13388.20.camel@gaston>
 Mime-Version: 1.0
-Date: 10 Aug 2003 22:55:25 +0200
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1060508348.13388.20.camel@gaston>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 2003-08-10 at 22:51, Miles Lane wrote:
-> On Sun August 10 2003 1:38 pm, Benjamin Herrenschmidt wrote:
-> > On Sun, 2003-08-10 at 17:51, Miles Lane wrote:
-> > >   CC      drivers/ide/ppc/pmac.o
-> > > drivers/ide/ppc/pmac.c: In function `idepmac_wake_device':
-> > > drivers/ide/ppc/pmac.c:1843: error: request for member `queue_head' in
-> > > something not a structure or union
-> > > drivers/ide/ppc/pmac.c: In function `idepmac_wake_drive':
-> > > drivers/ide/ppc/pmac.c:1927: error: request for member `queue_head' in
-> > > something not a structure or union
-> >
-> > I sent an updated version of this driver to linus today
+On Sun, Aug 10, 2003 at 11:39:08AM +0200, Benjamin Herrenschmidt wrote:
 >
-> When you send patches to Linus to fix problems that show up in
-> the linuxppc-2.5 tree, you don't also apply the patch directly to
-> the linuxppc-2.5 tree?  If you and Paul use BK, couldn't you have
-> Paul pull the changeset?  Is our current process the most efficient
-> we could use?
+> On Sun, 2003-08-10 at 04:09, Paul Mackerras wrote:
+> > Samuel Rydh writes:
+> >
+> > > Attached is an improved version of the patch.
+> >
+> > How many SMP machines are there where we don't know how to freeze/thaw
+> > the timebase?  We know how to do that on the old powersurge powermacs,
+> > on CHRP systems and on at least some of the recent core99 powermacs
+> > (those that have a timebase-enable property on the cpu device nodes).
+> > What machines are left?
+>
+> We know how to do it on some core99, though we don't actually do it
+> yet ;) We use software sync on all core99 for now.
 
-Right now, I'm sending massive PowerMac driver updates directly
-to Linus. Typically, all of this is available from my linuxppc-2.5-benh
-tree, though I don't really recommend for non-hackers to use that.
+Btw, the freeze/thaw timebase setting that is done on psurge is lost
+since the generic timebase calibration mechanism is still invoked
+afterwards (and at that time, the timebases are ticking).
 
-> I am curious, why do you and Paul not use a system more like Russell's
-> (changes move into Linus' tree as soon as they are fairly well tested
-> and he maintains the ARM patches in
-
-I'm trying to completely avoid having a "ppc" or "powermac" tree with
-2.6, at least once all the "pending" bits from mine have been in Linus.
-I want to keep as close as Linus tree as I can, not reproduce what I did
-for 2.4 where I had megabytes of diffs piling up.
-
-Ben.
+/Samuel
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
