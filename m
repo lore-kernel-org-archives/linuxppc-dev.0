@@ -1,30 +1,50 @@
-Date: Sat, 10 Nov 2001 19:58:03 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: APUS irq patch
-Message-ID: <20011110195803.C573@cpe-24-221-152-185.az.sprintbbd.net>
-References: <Pine.LNX.4.33.0111102221430.12896-100000@serv>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.33.0111102221430.12896-100000@serv>
+Date: Sun, 11 Nov 2001 11:03:41 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Joseph Manojlovich <manojlov@cse.psu.edu>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Gxt2000p Patch
+In-Reply-To: <20011110185747.D28196@cardassian.cse.psu.edu>
+Message-ID: <Pine.GSO.4.21.0111111102290.10838-100000@mullein.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Nov 10, 2001 at 11:10:25PM +0100, Roman Zippel wrote:
+On Sat, 10 Nov 2001, Joseph Manojlovich wrote:
+> Here's the patch which I think fixes the video card issues I described
+> in my last email.
+>
+> Joe Manojlovich
+> manojlov@cse.psu.edu
+>
+> --- linuxppc/drivers/video/offb.c	Sat Nov 10 18:04:42 2001
+> +++ offb.c	Sat Nov 10 18:43:36 2001
+> @@ -393,7 +393,8 @@
+>      unsigned long res_size = pitch*height*depth/8;
+>
+>      if (!request_mem_region(res_start, res_size, "offb"))
+> -	return;
+> +		if (!(dp && device_is_compatible(dp, "pci1014,b7")))
+> +        	return;
+>
 
-> Here is a new patch to update APUS irq handling.
-> First, it moves the assembly part in head.S to apus_get_irq, which uses a
-> local table instead of the stack now to save some additional irq context.
-> Second, the major change of this patch is to convert APUS to use the
-> general irq management code.
+What are the values res_start and res_size for which request_mem_region()
+fails? What does /proc/iomem says?
 
-Looks good, applied.  In the future can you please make the patches vs
-_devel?
+This can only be a workaround for the problem, not a fix. The real fix is
+probably a fix for the global bus resources.
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
