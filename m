@@ -1,72 +1,56 @@
-Date: Fri, 10 Oct 2003 01:13:28 +0200
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] incorrect extern declarations
-Message-ID: <20031009231328.GA2330@suse.de>
-References: <20030914194038.GA19676@suse.de>
+Date: Fri, 10 Oct 2003 01:12:54 -0400
+From: Bill Fink <billfink@mindspring.com>
+To: LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
+Cc: Bill Fink <billfink@mindspring.com>
+Subject: Re: Time precision, adjtime(x) vs. gettimeofday
+Message-Id: <20031010011254.078c84a8.billfink@mindspring.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20030914194038.GA19676@suse.de>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- On Sun, Sep 14, Olaf Hering wrote:
+On Wed, 08 Oct 2003, Benjamin Herrenschmidt wrote:
 
+> > I repeat the question: what are the values of drift on the machines
+> > that encounter the problem ? Is this drift stable or unstable?
 >
-> both variables are declared static earlier in the file. gcc3.4 doesnt
-> tolerated the extern anymore.
+> So far, there is no problem. The problem that was happening
+> was a via_calibrate_decr() bug with HZ != 100, but when
+> investigating, I figured out that we had a potential problem
+> there, that's all and that's why I want people like you who
+> know those problems well to state if it's worth bothering ;)
 >
-> --- linux-2.4.23-pre4/arch/ppc/platforms/prep_pci.c~	2003-08-25 13:44:40.000000000 +0200
-> +++ linux-2.4.23-pre4/arch/ppc/platforms/prep_pci.c	2003-09-14 17:36:54.000000000 +0200
-> @@ -1141,8 +1141,6 @@ void __init
->  prep_pcibios_fixup(void)
->  {
->          struct pci_dev *dev;
-> -        extern unsigned char *Motherboard_map;
-> -        extern unsigned char *Motherboard_routes;
+> > > On all cases, those will drift some way from what the NTP server
+> > > will give, either a lot or not, it will. So we may end up adjusting
+> > > our kernel rate and thus opening a window for the problem.
+> >
+> > The worst variations of drift I've seen are a few ppm for a given
+> > machine, barring the occasional boot-time calibration problems that I
+> > have encountered.
 >
->  	prep_route_pci_interrupts();
+> OK.
 
-This fixes another bug. __bss_start is declared twice.
+This discussion prompted me to finally ask about another clock related
+problem I see on the 867 MHz G4 systems at work.  The clocks on these
+systems continuously run 0.2% slow (about 3 minutes per day).  Apparently
+this is more than ntp can adjust for (using scaling), as I get many of
+these error messages in the log:
 
+Oct 10 00:11:29 clifford ntpd[425]: time reset 2.641342 s
+Oct 10 00:11:29 clifford ntpd[425]: synchronisation lost
+Oct 10 00:32:07 clifford ntpd[425]: time reset 2.671741 s
+Oct 10 00:32:07 clifford ntpd[425]: synchronisation lost
+Oct 10 00:52:46 clifford ntpd[425]: time reset 2.671729 s
+Oct 10 00:52:46 clifford ntpd[425]: synchronisation lost
 
-diff -p -purN linux-2.4.22/arch/ppc/kernel/setup.c linux-2.4.23-pre6-irda-gcc34/arch/ppc/kernel/setup.c
---- linux-2.4.22/arch/ppc/kernel/setup.c	2003-10-06 17:50:07.000000000 +0200
-+++ linux-2.4.23-pre6-irda-gcc34/arch/ppc/kernel/setup.c	2003-10-09 21:51:58.000000000 +0200
-@@ -258,7 +258,7 @@ __init
- unsigned long
- early_init(int r3, int r4, int r5)
- {
--	extern char __bss_start, _end;
-+	extern char __bss_start[], _end[];
-  	unsigned long phys;
- 	unsigned long offset = reloc_offset();
+This causes problems if I take these systems off the network for a few
+hours, if I forget to reset them to the correct time when I reconnect
+them, since we use Kerberos for security, and the time difference between
+the system and the Kerberos KDC will prevent remote logins.
 
-@@ -267,7 +267,7 @@ early_init(int r3, int r4, int r5)
+These systems are using a 2.4.20-ben1 kernel.
 
- 	/* First zero the BSS -- use memset, some arches don't have
- 	 * caches on yet */
--	memset_io(PTRRELOC(&__bss_start), 0, &_end - &__bss_start);
-+	memset_io(PTRRELOC(&__bss_start), 0, _end - __bss_start);
-
- 	/*
- 	 * Identify the CPU type and fix up code sections
-diff -p -purN linux-2.4.22/arch/ppc/platforms/prep_pci.c linux-2.4.23-pre6-irda-gcc34/arch/ppc/platforms/prep_pci.c
---- linux-2.4.22/arch/ppc/platforms/prep_pci.c	2003-08-25 13:44:40.000000000 +0200
-+++ linux-2.4.23-pre6-irda-gcc34/arch/ppc/platforms/prep_pci.c	2003-10-09 21:54:33.000000000 +0200
-@@ -1141,8 +1141,6 @@ void __init
- prep_pcibios_fixup(void)
- {
-         struct pci_dev *dev;
--        extern unsigned char *Motherboard_map;
--        extern unsigned char *Motherboard_routes;
-
- 	prep_route_pci_interrupts();
-
---
-USB is for mice, FireWire is for men!
-
-sUse lINUX ag, nÜRNBERG
+						-Bill
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
