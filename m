@@ -1,52 +1,71 @@
-Message-Id: <200012030744.IAA00755@piglet.grunz.lu>
-Date: Sun, 3 Dec 2000 08:44:50 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: 3COM 3c905c-TX-M.... works, or not?
-To: jingai@shell.faradic.net
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <200012030028.eB30SHR04153@shell.faradic.net>
+Date: Sun, 3 Dec 2000 21:41:58 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Stefan Jeglinski <jeglin@4pi.com>
+cc: linuxppc-dev@lists.linuxppc.org,
+        Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+Subject: Re: dual IRQ 23 (was: USB?; 2.2.18 no boot?; aic7xxx?)
+In-Reply-To: <p04330100b64a0cac23a1@[192.168.0.1]>
+Message-ID: <Pine.GSO.4.10.10012032140410.7958-100000@rose.sonytel.be>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi there,
-
-On   2 Dec, this message from Jonathan Lane echoed through cyberspace:
-> A 'cat /proc/interrupts' shows that there have
-> been no interrupts serviced for the card:
+On Tue, 28 Nov 2000, Stefan Jeglinski wrote:
+> >	usb-ohci.c: USB OHCI at membase 0xd0184000, IRQ 23
+> >
+> >already gives a clue. Question is, what else is at IRQ 23?
+> >
+> >	Michael
 >
->            CPU0
->   1:          0   PMAC-PIC      eth1
+> In both 2.2.17 and 2.2.18pre23 (bk), 6-slot PTP (9500-ish), cards are
+> as follows, top to bottom:
+>
+> Adaptec 2940UW
+> Farallon ethernet 10/100
+> OrangeLink firewire/usb combo
+> Matrox Mystique card
+> ixMicro TV card
+> ixMicro Twin Turbo card [aka imstt]
+>
+>
+> lspci -vv is attached at the end. The key point is that the entry for
+> the Adaptec 2940UW card and the Orangelink USB card BOTH say:
+>
+> 	Interrupt: pin A routed to IRQ 23
+>
+> Hah. So, this might explain a lot. Obviously this is why my usb mouse
+> only responds when there is some disk activity, and only for a
+> moment. It ALSO may help explain why I was having trouble booting
+> (kernel panic traced to aic7xxx and its call to ioremap). However,
+> this boot issue is still suspicious for 2 reasons:
+>
+> 	1. 2.2.17 lspci -vv ALSO shows same shared IRQ 23, and 2.2.17
+> 	   never had boot problem. But it also has no USB stuff compiled in.
+>
+> 	2. My boot "workaround" is simply to add printk statements at
+> 	   strategic points in the source. Boot problem solved. Weird.
+>
+>
+> At any rate, why are these 2 devices sharing an IRQ, and what can be
+> done about it? Thanks Michael Schmitz for giving me the first
+> concrete lead on this.
 
-Hmmm, IRQ 1? Weird for a PCI device....
+Shared interrupts are allowed by PCI. If it doesn't work, it means one of the
+drivers (or both) can't cope with shared interrupts. The solution is to fix the
+driver(s).
 
->  20:          0   PMAC-PIC      NMI - XMON
->  24:       9202   PMAC-PIC      usb-ohci
+Gr{oetje,eeting}s,
 
-I suppose your USB is on a PCI card in a PCI slot? I'd expect the other
-PCI slot's interrupts to be next to this one, then.
+						Geert
 
-> eth1: 3Com 3c905C Tornado at 0x1000,  00:01:02:c1:88:c2, IRQ 1
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Everything OK, except IRQ1...
-
-> eth1: transmit timed out, tx_status 00 status e601.
-> eth1: Interrupt posted but not delivered -- IRQ blocked by another device?
-
-Yes, IRQ problem.... Could you send a complete lspci -vv along, together
-with lspci -bvv (bus view)?
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
