@@ -1,35 +1,47 @@
-Message-ID: <010201c447e2$e173cc20$3cc8a8c0@epro.dom>
-From: "Colin LEROY" <colin@colino.net>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: write stuff in the PRAM?
-Date: Tue, 1 Jun 2004 16:15:24 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="us-ASCII"
+Subject: MPC5200Lite and PCI card IRQ
+Date: Wed, 2 Jun 2004 11:20:12 +0200
+Message-ID: <5A96167EBCEA8440A48790B5419953AE13C43B@gr-lafayette.lacie.com>
+From: "Bertrand Baudet" <bbaudet@lacie.com>
+To: <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi,
 
-I'm trying to get TV-out work on my iBook G4.
-After booting with a CRT attached, I get
-$ cat /proc/device-tree/pci@f0000000/ATY,ViaParent@10/ATY,Via_B@1/display-type
-CRT
+I'm trying to plug a PCI card on my MPC5200Lite board but I have some
+trouble enabling the IRQ.
 
-I get the same after booting with a TV attached.
+>From U-Boot, I'm setting the interruption line to IRQ 49. By default,
+the interruption line is set to 0.
 
-It looks like setting this to "STV" would make TV video-out work (or at least
-help it work ;-).
+But when the driver is loaded, it doesn't look like the IRQ is unmasked.
+The IRQ# is reported by the driver but when I look at /proc/interrupt,
+I have:
+           CPU0
+49:          0  MPC5xxx Edge
 
-Is there any way to do such a thing (either a tool, a kernel patch, or in
-openfirmware voodoo) ?
 
-Thanks,
---
-Colin
-  This message represents the official view of the voices
-  in my head.
+What needs to be done in order to have the IRQ automatically enabled for
+the
+PCI card installed? (using linux kernel from DENX devel cvs)
 
+Actually, how does it work? When the PCI driver probes the devices, will
+it
+enable the IRQ set for the PCI device? Or is it the driver for this PCI
+card
+that needs to enable the IRQ?
+
+I tried to enable the IRQ once the drive reports the IRQ# by calling
+enable_irq directly, but I'm getting a "enable_irq(49) unbalanced"
+
+
+
+
+Regards,
+Bertrand
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
