@@ -1,11 +1,10 @@
-Message-ID: <3F6021CD.CC35DC55@gdatech.co.in>
-Date: Thu, 11 Sep 2003 12:48:37 +0530
+Message-ID: <3F6027E2.C59D7ACC@gdatech.co.in>
+Date: Thu, 11 Sep 2003 13:14:34 +0530
 From: Rakesh Jagota <j.rakesh@gdatech.co.in>
 MIME-Version: 1.0
 To: PPC Embedded <linuxppc-embedded@lists.linuxppc.org>
-Cc: 
-Subject: Re: MPC8266ADS patch
-References: <5.2.1.1.2.20030910174452.02767580@192.168.1.10> <3F5FEFA0.1080809@embeddededge.com>
+Subject: PPC 405
+References: <5.2.1.1.2.20030910174452.02767580@192.168.1.10> <3F5FEFA0.1080809@embeddededge.com> <3F6021CD.CC35DC55@gdatech.co.in>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
@@ -128,15 +127,10 @@ CONFIG_UNIX98_PTY_COUNT=256
 # CONFIG_MOUSE is not set
 # CONFIG_RWMOUSE is not set
 
-
-
 ========================================================
-
-
 
 Ur suggestions are appreciated
 Thanks in advance
 Rakesh Jagota
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
