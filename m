@@ -1,26 +1,29 @@
-Date: Wed, 22 Mar 2000 14:16:13 -0500 (EST)
-From: Pavel Roskin <pavel_roskin@geocities.com>
-To: zzh <david-1z@263.net>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: About rs232 on motorola mpc8260 ads board
-In-Reply-To: <38D88437.23494@mta2>
-Message-ID: <Pine.LNX.4.21.0003221359490.12443-100000@sunapee.transcept.com>
+Message-ID: <7143C7BA3BFAD2119AAC0008C7094B9965043A@postoffice2.teltronics.com>
+From: Tom Miles <tmiles@teltronics.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Swap space on Embedded Planet CLLF 860
+Date: Wed, 22 Mar 2000 16:02:54 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+I have my CLLF 860 coming up via TFTP boot with a NFS mounted root file
+system.  The kernel crashes after a short while always in relation to a page
+swap.  As near as I can tell I do not have any swap space set up and am not
+sure how to do so in this environment.
 
-> it works when i send char from 8260,but cannot work in the
-> other direction.
+Do I somehow use ramdisk or can I just turn of swapping somehow?
 
-Make sure that your communication program ignores the modem lines.
-I had this problem with IVT (http://home.wxs.nl/~ruurdb/IVT.HTM).
-Try TeraTerm PRO (for Win32) or Minicom (for *X), they are known to be Ok.
-
-Pavel Roskin
+Tom Miles, Staff Engineer
+Teltronics, Inc.
+4125 Keller Springs Rd, #166
+Addison, TX 75001-4213
+972-818-2829 x2110
+tmiles@teltronics.com
+http://www.teltronics.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
