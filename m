@@ -1,43 +1,30 @@
-Date: Mon, 1 Feb 1999 22:18:53 +0100
-To: linuxppc-dev@lists.linuxppc.org, Paul Mackerras <paulus@cs.anu.edu.au>
-CC: Cort Dougan <cort@ladron.cs.nmt.edu>
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Bogus mouse key events
-Message-Id: <19990201221853.005850@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Tue, 2 Feb 1999 10:23:49 +1100
+Message-Id: <199902012323.KAA24452@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: bryanc@ihug.co.nz
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <l03130300b2dbb10d21bc@[172.16.10.14]> (message from Bryan
+	Christianson on Tue, 2 Feb 1999 08:42:28 +1300)
+Subject: Re: I/O Port Conflicts with PCI devices?
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <l03130300b2dbb10d21bc@[172.16.10.14]>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I finally found where my conflicts on the PowerBook G3 Series and the
-"Fn" key came from. It's simple: the "fake" keycode used by the console
-code (and so by Xpmac) for the middle button is 0x3f, which is also the
-keycode used by this "Fn" key...
+Bryan Christianson <bryanc@ihug.co.nz> wrote:
 
-So either we change the middle key code in both the kernel and Xpmac, or
-(simpler), we add code for remapping the "Fn" key to something else.
+> The following listing of /proc/pci shows that I have 2 devices reporting an
+> I/O port of 0x400. Is this possible or am I not seeing the whole truth
+> here? When I try to access the port (with inl() or outl()), the machine
+> panics. I published this panic on the list last week and had no response.
 
-I'm not (yet) very familiar with the linux keymap and keycode-map, so I
-would like someone who knows this better than me to suggest a keycode to
-which I could remap the "Fn" key without conflicting. I was thinking
-about the equivalent of PC's alt-gr, but it may cause other kind of trouble.
+Most likely neither devices is responding to I/O-space accesses
+because the PCI_COMMAND_IO bit (enable response to I/O space accesses)
+in the PCI command register isn't set.  That would explain the machine
+check when you try to access the device.
 
-This key must be handled in a really special way, since it may be used as
-a mouse button modifier (using the "adb_buttons=2,x,y" patch), but it
-should be ingnored in some cases (page-up, page down for example) since
-the keyboard hardware will automatically send the correct modified keycodes.
-
-So, any suggestion for a new keycode that won't conflict with anyone ?
-
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
-
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
