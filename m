@@ -1,34 +1,40 @@
-Date: Sun, 17 Mar 02 12:10:43 PST
-From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0203172010.AA01807@ivan.Harhan.ORG>
-To: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
+Message-ID: <3C94FB7B.5040007@amberdata.demon.co.uk>
+Date: Sun, 17 Mar 2002 20:24:27 +0000
+From: David Monro <davidm@amberdata.demon.co.uk>
+MIME-Version: 1.0
+To: Dan Malek <dan@embeddededge.com>
+Cc: Michael Sokolov <msokolov@ivan.Harhan.ORG>,
+	linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
 Subject: Re: [PATCH] My GT-64260 enhancements
+References: <0203170703.AA00587@ivan.Harhan.ORG> <3C94D78E.3010100@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek <dan@embeddededge.com> wrote:
+Dan Malek wrote:
+ >
+ > Michael Sokolov wrote:
+ >
+ >> But Troy's personal preferences shouldn't affect the public tree, should
+ >> they? If 9600 is the default baud rate for all of Linux, why
+ >> should one port be different?
+ >
+ >
+ > I didn't know there was a "default" baud rate for Linux.  I think
+ > the lowest I have ever seen is 9600, but I certainly wouldn't call
+ > it a default.  It seems every one of the boards I have uses
+ > something different,
+ >
+The default for just about any unix box (and an awful lot of other
+things - network switches etc) seems to be 9600 8N1, partly because even
+ancient terminals can cope with that (a lot of older ones don't go past
+38400 for example). Allowing an override is fine, but leaving the
+default at 9600 will follow the 'path of least surprise'.
 
-> So, I don't see the problem.  A default is specified and you can change it,
-> just like lots of other configurations.
+Cheers,
 
-The problem is that there is a
+	David
 
-define_int CONFIG_SERIAL_CONSOLE_BAUD 115200
-
-line in arch/ppc/config.in for "$CONFIG_EV64260" = "y" but not for any other
-almost-non-embedded-standard-computer 6xx/7xx/74xx board, which is
-discriminatory and undemocratic.
-
-Having "$CONFIG_GT64260" = "y" imply support for CONFIG_SERIAL_TEXT_DEBUG is
-also discriminatory and undemocratic. Should we also imply the same then for
-"$CONFIG_CPC700" = "y" -o "$CONFIG_CPC710" = "y" -o "$CONFIG_UNINORTH" = "y",
-etc?
-
-I mean I don't mind if defaults are changed globally, it's just the
-discriminatory treatment of GT-64260 that I violently object to. Oh, and having
-a separate BK tree and mailing list for it too isn't something I'm fond of.
-
-MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
