@@ -1,38 +1,36 @@
-Message-ID: <3FC39A87.4060701@mvista.com>
-Date: Tue, 25 Nov 2003 11:08:07 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <3FC39F16.5040208@arlut.utexas.edu>
+Date: Tue, 25 Nov 2003 12:27:34 -0600
+From: Benjamin Davis <bmdavis@arlut.utexas.edu>
 MIME-Version: 1.0
-To: Benjamin Davis <bmdavis@arlut.utexas.edu>
+To: "Mark A. Greer" <mgreer@mvista.com>
 Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: gt-64260 Question
-References: <3FC3945E.9090506@arlut.utexas.edu>
-In-Reply-To: <3FC3945E.9090506@arlut.utexas.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <3FC3945E.9090506@arlut.utexas.edu> <3FC39A87.4060701@mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Benjamin Davis wrote:
+Errata 9 of http://e-www.motorola.com/files/32bit/doc/errata/MPC7455CE.pdf
+talks about some issues with QACK, I further noticed how in
+arch/ppc/platform/pmac_feature.c, in probe_uninorth:
+	if (uninorth_rev < 0x11) {
+		actrl = UN_IN(UNI_N_ARB_CTRL) & ~UNI_N_ARB_CTRL_QACK_DELAY_MASK;
+		actrl |= ((uninorth_rev < 3) ? UNI_N_ARB_CTRL_QACK_DELAY105 :
+			UNI_N_ARB_CTRL_QACK_DELAY) << UNI_N_ARB_CTRL_QACK_DELAY_SHIFT;
+		UN_OUT(UNI_N_ARB_CTRL, actrl);
 
->
-> Is anyone familiar how to set the QACk delay on the 64260 system
-> controller, specifically on an mvme5500 board.
+It would appear to me that a QACK delay is being set by communication
+with the uninorth.  I will say now though this is my first experiance
+with the kernel.
+I was kinda thinking they might have gotten around the errata by
+extending the delay of the QACK.  This QACK is the system saying it is
+time to get out of nap, and snoop.
 
-There are several 'delays' referred to in the gt64260 manual, none of
-which are a QACK (AFAICT).  Do you mean AACK?  If not, are you sure its
-not a field in a board registers?
-
-> I am trying to work
-> around a bit of errata noted in the mpc7450 family chip errata.  Also,
-> does anyone know were to find information on ths gt-64260, marvell is
-> not forthcoming in providing information.
-
-This is a true statement.  My company had to sign an NDA before I could
-see any manuals and I'm not sure just anyone can get an NDA from Marvell.
-
-If you provide some more info, I may be able to help you.
-
-Mark
+thanks
+--
+--
+Benjamin Davis
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
