@@ -1,32 +1,29 @@
-Message-ID: <20030629153700.13980.qmail@web20009.mail.yahoo.com>
-Date: Sun, 29 Jun 2003 08:37:00 -0700 (PDT)
-From: Raghava Raju <vraghava_raju@yahoo.com>
-Subject: delegating to a cpu
-To: linuxppc-dev@lists.linuxppc.org
+Date: Sun, 29 Jun 2003 19:01:00 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Ethan Benson <erbenson@alaska.net>,
+	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4.21 patch?
+In-Reply-To: <Pine.GSO.4.21.0306291226590.14478-100000@vervain.sonytel.be>
+Message-ID: <Pine.LNX.4.44.0306291900030.5042-100000@serv>
+References: <Pine.GSO.4.21.0306291226590.14478-100000@vervain.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi,
 
-Currently interrupt handler in our driver uses
-tasklet to process some of less important info
-to save some interrupt time. But problem is that
-tasklet ends up in the same cpu, and second  cpu
-is not taking much of the work.
-1) Is there any mechanism to delegate the less
-important work to other cpu an example would really
-help.
-2) We dont have multiple interrupts, so please
-dont give irq affinity solution!!
-3) Our kernel version is 2.4.19.
+On Sun, 29 Jun 2003, Geert Uytterhoeven wrote:
 
-I am not subscribed to this list, so please
-mail back at vraghava_raju@yahoo.com.
+> I still have local copies of the linuxppc_2_4 and linuxppc_2_4_devel rsync
+> trees while they were still at 2.4.21. I can generate patch, just drop me an
+> email.
 
-Raju.
+A patch for linuxppc_2_4 would be great. Thanks.
+
+bye, Roman
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
