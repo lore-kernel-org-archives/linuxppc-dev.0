@@ -1,40 +1,33 @@
-Message-ID: <398E5748.10E48750@student.ethz.ch>
-Date: Mon, 07 Aug 2000 08:29:28 +0200
+Message-ID: <398E6051.6DA84197@student.ethz.ch>
+Date: Mon, 07 Aug 2000 09:08:01 +0200
 From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-To: Tom Gall <gall@rochcivictheatre.org>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Patches, Bugs etc ..
-References: <398DADDF.61D21A9E@rochcivictheatre.org>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: Kostas Gewrgiou <gewrgiou@imbc.gr>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [Dri-devel] Re: Kind of success! (r128 on PPC (Re: LinuxPPC X
+ Server))
+References: <Pine.LNX.4.21.0008041831040.29474-100000@idd-01.imbc.gr> <20000805184351.19510@192.168.1.10>
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Gall wrote:
+Benjamin Herrenschmidt wrote:
+>
+> >> At 32 bit, it flickers badly on my Pismo, probably because it only has
+> >8 megs
+> >> of VRAM. (These messages appear in the log:
+> >> (EE) r128(0): Unable to reserve depth buffer
+> >> (EE) r128(0): Unable to reserve texture space in frame buffer
+> >> ) Curious how it works out for people with more...
+> >
+> >Not enough memory for all the buffers indeed, you could try with a lower
+> >res (if prismo allows that) to save some memory.
+>
+> The Pismo allows that by scaling the LCD, but I don't think code for that
+> is implemented in the XFree r128 driver (I didn't check lately).
 
->   I've created a project on Source Forge with the idea that it would be
-> perfect for tracking bugs, patches, projects and so on based on the
-> conversations that were going on here a couple of days ago.
->
->   Located at: http://sourceforge.net/projects/ppclinux/  or
->               https://sourceforge.net/projects/ppclinux/  if you are
-> logged in
->
->   The facilities are here for CVS, releasing files, forums, mailing
-> lists, support requests etc etc. Sourceforge does alot. I turned off
-> CVS, forums, mailing lists etc as these are things that are already
-> being done in the PowerPC Linux community and I didn't think there was
-> any need for the duplication of effort unless maybe someday there is
-> desire to change over.
->
->   Hopefully this is a good thing and I certainly welcome your input. If
-> there are others that would like to pitch in and help with this that'd
-> be great.
-
-We've also started a SourceForge project (called linux-apus) some months ago
-for everything APUS, and our experience has been good so far. APUS development
-has come to a new life, and the SourceForge folks are very supportive.
+No it doesn't work, neither with aty128fb. Would that be hard to implement?
 
 
 Michel
