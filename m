@@ -1,31 +1,35 @@
-Date: Tue, 2 Feb 1999 14:04:55 -0100
+Date: Tue, 2 Feb 1999 14:10:49 -0100
 From: Owen Waller <O.Waller@ee.qub.ac.uk>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-Cc: linuxppc-dev@lists.linuxppc.org
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+Cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: matroxfb, anybody? (More details...)
-In-Reply-To: <19990201201448.020647@mail.mipsys.com>
-Message-Id: <Pine.SGI.4.02A.9902021402140.13845-100000@myst.ee.qub.ac.uk>
+In-Reply-To: <Pine.LNX.4.03.9902011723560.17350-100000@mercator.cs.kuleuven.ac.be>
+Message-Id: <Pine.SGI.4.02A.9902021408200.13845-100000@myst.ee.qub.ac.uk>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 1 Feb 1999, Benjamin Herrenschmidt wrote:
-> On Mon, Feb 1, 1999, Owen Waller <O.Waller@ee.qub.ac.uk> wrote:
-> >If I have two idential video boards in my Mac one "mac" specific which
-> >shows up in the OF tree, and one that is x86 sourced and doesn't show up
-> >under OF how can we initialise both boards correctly.
-> It will not appear in OF as a display device and may not appear with a
-> name, but are you sure it doesn't appear at all under it's generic
-> pciXXXX,YYYY name ? (where XXXX is the vendorID and YYYY the deviceID).
+On Mon, 1 Feb 1999, Geert Uytterhoeven wrote:
+ 
+> On Mon, 1 Feb 1999, Benjamin Herrenschmidt wrote:
+> > On Mon, Feb 1, 1999, Geert Uytterhoeven
+> > <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
+> > >Since BootX creates a fake OF device tree, I suspect it to appear in the
+> > tree.
+> > >Can you use your Mystique under MacOS? This is of course a prerequisite for
+> > >BootX seeing your board.
+> > OF in the machine's ROM (not the card's ROM) should make _any_ PCI board
+> > visible provided that it contains correct config-space registers with a
+> > vendorID and a deviceID, which is required for all PCI cards anyway. The
+> I'd expect that, too. But my DawiControl DC-2976UW Sym875 SCSI board doesn't
+> show up in /pci, while my S3 Vision968 is visible as /pci/display. Both boards
+> don't have OF ROMs.
 
-well having checked this last night an x86 matrox board definatly doesn't
-show up any where under /proc/device-tree. Theres no pciXXXX,YYYY type
-listing. But the board is there /proc/pci.
-
-So it looks like I have a similar situation to Geert, who also has a pci
-board that doesn't show up under OF.
+Geert, do either of these cards show up under your OF tree? I wouldn't
+expect so as theyt don't have an OF rom (like my mystique) but I am
+curious.
 
 Cheers
 
