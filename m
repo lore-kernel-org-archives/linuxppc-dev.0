@@ -1,28 +1,46 @@
-Date: Wed, 2 Feb 2000 00:16:58 -0500 (EST)
-From: Pavel Roskin <pavel_roskin@geocities.com>
-To: Alan Mimms <alan@packetengines.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Script for automated booting RPX boards
-In-Reply-To: <0002011040160D.00776@alan.corp.packetengines.com>
-Message-ID: <Pine.LNX.4.21.0002012224320.1229-100000@localhost.localdomain>
+Subject: Re: Embedded PPC (8xx/82xx) Linux kernel development: How it is done?
+To: diekema@bucks.si.com (diekema_jon)
+Date: Wed, 2 Feb 2000 18:02:04 +1100 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <m12Feir-001SweC@bucks> from "diekema_jon" at Feb 01, 2000 09:56:05 AM
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000202070204.AFB0E1B4E8@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+Hi there,
 
-> Why not FLASH the kernel on your RPXLite and then autoboot it?  That works
-> FINE for me.  (Always assuming that you're past kernel development and doing
-> application work which changes on your target's NFS root mounted filesystem.)
+Welcome to the team! I'll answer the bits I know about ...
 
-Actually, I switch kernels quite often.
-I also need to pass some parameters to the kernel, most often "ro" to make
-sure that the production system will e.g. let me login with /dev/pty0
-being on a read-only filesystem.
+diekema_jon writes:
+> What is the division of labor between Dan and the rest?
 
-Pavel Roskin
+Generally, Dan solves the problem before the rest of us get around to asking
+about it. :-). Seriously though, there are lots of other contributing. I found
+almost everything I hoped to contribute so far was already done, so I wrote a
+HOWTO instead.
 
+> 	- Is this a closed community?  Or, can others join the team?
+> 	- If it is an open community, how does one join?  Are there any
+> 	  posted rules?
+
+No, Yes, You just did, and Maybe.
+
+> 	- I want to contribute to the process of porting Linux to
+> 	  run on the EST SBC8260 single board computer, but I need to
+> 	  understand how to participate.
+
+Start by searching the mailing list archives at:
+    http://lists.linuxppc.org/lists/linuxppc-embedded
+
+Then, ask on the list if anyone else has already done it, or is interested in
+doing it, and see what response you get. If it hasn't been done yet, try all
+the links in the HOWTO to see if it's been ported to a similar board.
+
+Regards,
+Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
