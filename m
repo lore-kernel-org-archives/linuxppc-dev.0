@@ -1,58 +1,49 @@
-From: Amit.Lubovsky@infineon.com
-Message-ID: <AD2F581BD7340A4C908AF1AFB066EA3B0E484D@ntah901e.savan.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: pci on MBX860
-Date: Thu, 2 Oct 2003 14:16:47 +0200 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="windows-1255"
+To: "Jacky Lam" <jackylam@astri.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Queston about Walnut 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 02 Oct 2003 20:01:30 +0800."
+             <000e01c388dc$eb525510$0202a8c0@homevl9biy3v7e>
+Date: Thu, 02 Oct 2003 14:17:28 +0200
+Message-Id: <20031002121733.A2E32C59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+In message <000e01c388dc$eb525510$0202a8c0@homevl9biy3v7e> you wrote:
+>
+> > Who gave you such (obviously wrong) instructions?
+>
+>         I take the example of u-boot to create the "uImage" and download it
+> to the board.
 
-Does anyone have any experience with pci on the MBX860 board ?
+Please show me which U-Boot document uses 0x00400000 as load or entry
+point address so I can fix this immediately. It is WRONG  and  CANNOT
+work.
 
-I run kernel 2.4.20 from www.denx.de but encountered compilation problems
-after trying to configure pci.
+> > For PowerPC systems, both  Load  Address  and  Entry  Point  must  be
+> > specified as 0.
+>
+>         I have tried 0 before. But I get an exception in return. Could you
+> kindly give me some instructions how to run a kernel on this board?
 
-this is the output of what I got:
+Please start by giving a precise description of  what  you  did.  and
+which error messages you got.
 
-kernel configuration:
+You "get an exception" - when? When running "mkimage"?  When  booting
+the kernel? Which sort of exception? What is the exact error message?
+Please include a complete log of your actions and all output.
 
-I have enabled General setup-> QSpan PCI
+Best regards,
 
+Wolfgang Denk
 
-and then while compiling the kernel got:
-
-make uImage
-...
-
-ppc_8xx-gcc -D__KERNEL__ -I/opt/eldk/usr/src/linuxppc_2_4_devel/include
--Wall -Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing
--fno-common -fomit-frame-pointer
--I/opt/eldk/usr/src/linuxppc_2_4_devel/arch/ppc -fsigned-char -msoft-float
--pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring   -nostdinc -I
-/opt/eldk/usr/lib/gcc-lib/ppc-linux/2.95.4/include
--DKBUILD_BASENAME=m8xx_setup  -c -o m8xx_setup.o m8xx_setup.c
-m8xx_setup.c: In function `m8xx_show_percpuinfo':
-m8xx_setup.c:252: warning: int format, long int arg (arg 3)
-m8xx_setup.c:252: warning: int format, long int arg (arg 4)
-m8xx_setup.c: In function `m8xx_init_IRQ':
-m8xx_setup.c:281: structure has no member named `irq_offset'
-m8xx_setup.c: In function `platform_init':
-m8xx_setup.c:357: warning: implicit declaration of function
-`m8xx_setup_pci_ptrs'
-make[1]: *** [m8xx_setup.o] Error 1
-make[1]: Leaving directory
-`/opt/eldk/usr/src/linuxppc_2_4_devel/arch/ppc/kernel'
-make: *** [_dir_arch/ppc/kernel] Error 2
-[root@amit_lap linuxppc_2_4_devel]#
-
-any info is appreciated,
-Thanks,
-Amit.
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Totally illogical, there was no chance.
+	-- Spock, "The Galileo Seven", stardate 2822.3
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
