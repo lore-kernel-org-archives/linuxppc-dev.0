@@ -1,45 +1,42 @@
+Date: Wed, 20 Mar 02 18:13:19 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0203210213.AA15856@ivan.Harhan.ORG>
 To: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: EV-64260-BP & GT64260 bi_recs 
-In-Reply-To: Message from Dan Malek <dan@embeddededge.com>
-   of "Wed, 20 Mar 2002 13:51:01 CDT." <3C98DA15.50302@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Thu, 21 Mar 2002 12:11:05 +1100
-Message-ID: <22654.1016673065@msa.cmst.csiro.au>
-From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
+Subject: Re: EV-64260-BP & GT64260 bi_recs
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 20 Mar 2002 13:51:01 -0500, Dan Malek <dan@embeddededge.com> writes:
->If we want to be passing arbitrary information into the kernel
->for anyone to use, perhaps we should consider using the standard
->argc, argv, envp, like other architectures.  Just pass ASCII
->strings into the kernel as you would any other program, and have
->a function that can search for and parse 'param=value' strings.
+Dan Malek <dan@embeddededge.com> wrote:
 
-I like this idea (a lot), but I'm not sure you were serious. The problem with
-this method starts when you have a lot of information to pass - it gets unwieldy
-and becomes almost as unreadable as a hex dump (anyone ever had to read the
-output from a make of the gcc compiler to decipher what went wrong? with all
-those command line options passed to each invocation of the compiler, the real
-information gets lost).
+> The only reason _any_ Ethernet
+> information had been passed between the bootloader and the kernel
+> was for the processors with internal peripherals and a variety of
+> methods that were used for retrieving the MAC address.
 
-I don't think the method matters a lot, as long as there is only one way to do
-it (that is unlimited, flexible, extensible), not the three different methods
-we have today (command line, bd_t struct and bi_recs).
+Yes, and this is how it should be.
 
-Oh, and for the record - I vote for b). The stuff posted by benh is a very
-good start for this - I really like the idea of bi_recs within bi_recs - this
-gives you effectively unlimited flexibility, but handlers at the top level can
-just skip/pass the entire record without worrying about its content. Cheers!
-								Murray...
---
-Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
-Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
-Internet: Murray.Jensen@csiro.au
+Now not just for Ethernet, but for any peripherals built into the CPU, the
+system controller, or the board custom logic we need bi_recs to tell the kernel
+how it's wired. Like if some random peripheral chip (not PCI or somesuch, but
+"system" type that we have to have hard knowledge of) has a pin that can be
+tied high or low that affects its operation and the Linux driver needs to know
+how it's tied, we need to have the board firmware pass this magic info via
+bi_recs (now it's done either with a board #ifdef maze or .config options). I
+don't think there should be .config options for things that are fixed hard in
+PCB traces or in silicon, and board #ifdefs are ugly. bi_recs are the answer.
+That's why I included is_rmii and phy_addr in BI_GT64260_ETH_CFG.
 
-Hymod project: http://www.msa.cmst.csiro.au/projects/Hymod/
+> There are
+> already Linux methods for configuring network interfaces, we don't
+> need to add another one.
 
+Exactly. Things like 10 vs. 100 Mbps shouldn't be in bi_recs because they are
+up to the user to decide and Linux already provides standard mechanisms for
+them. bi_recs should be used only for stuff that's completely involuntary,
+i.e., to describe how the board is wired. This way they can be completely
+hidden from the user who can't override a PCB trace in software anyway.
+
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
