@@ -1,37 +1,29 @@
-Message-ID: <3904829D.4C65D0AB@embeddededge.com>
-Date: Mon, 24 Apr 2000 13:21:33 -0400
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: "Gessner, Matt" <mattg@aiinet.com>
-CC: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Debugging 8260 under gdb/linux?
-References: <7283DE19D141D111AD0E00A0C95B195502581D14@mail2.aiinet.com>
+Date: Mon, 24 Apr 2000 12:54:23 -0600
+From: Cort Dougan <cort@fsmlabs.com>
+To: Dan Malek <dan@netx4.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: feature_init
+Message-ID: <20000424125423.Z1544@medea.fsmlabs.com>
+References: <3903A49C.B0BB90EB@embeddededge.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3903A49C.B0BB90EB@embeddededge.com>; from Dan Malek on Sun, Apr 23, 2000 at 09:34:20PM -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Gessner, Matt" wrote:
+CONFIG_PREP, CONFIG_CHRP and CONFIG_PMAC are gone in 2.3.  They've been
+replaced with CONFIG_ALL_PPC.  It's a bad name, I know, but it was already
+in place.  In 2.5 (perhaps 2.4 after testing) I was going to rename it and
+clean up the dependencies based on that a bit.
 
-
-> Are there any such solutions for linux?
-
-MontaVista has a boot rom with minimal debug support.  It is what
-I used to do the initial port.  I will soon add the XMON and KGDB
-support just like the 8xx has.
-
-> What external hardware do I need?
-
-I am not a fan of the JTAG/COP/BDM tools because once the kernel
-starts up they just get in the way.  There is a small window of tough
-debugging between jumping to the kernel and starting a serial port for
-KGDB, and once past that I just use remote GDB.  Since the kernel already
-boots way past that point, and none of this is board dependent, you
-should only need a Linux development host.  Here, I prefer using the
-native PowerPC Linux hosts (I like my iMac :-), and MontaVista has
-cross tools for other platforms available.
-
-
-	-- Dan
+} OK.  I did it.  The feature_init call in setup.c is only relevant to OF
+} machines, so I put a CONFIG_ALL_PPC around it.  Then it hit me (it
+} hasn't happened in a while :-)........Does this mean CONFIG_PREP,
+} CONFIG_CHRP, CONFIG_PMAC are becoming obsolete?  They seem to be
+} combined now.  Maybe this is why I can't build a kernel for my Macs
+} because I still select PowerMac instead of "all PPC"?
+}
+} Guess I'll go chase some Easter Bunnies......
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
