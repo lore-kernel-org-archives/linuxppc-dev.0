@@ -1,54 +1,45 @@
-Date: Thu, 26 Feb 2004 16:18:39 +0100 (CET)
-From: Marius Groeger <mgroeger@sysgo.com>
-To: Prabhakar Kalasani <kalasani@sena.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: How to set up KGDB
-In-Reply-To: <NCEHKHHDAHEBBGFMCFHCCEHCCBAA.kalasani@sena.com>
-Message-ID: <Pine.LNX.4.56.0402261615030.14226@mag.sysgo.com>
-References: <NCEHKHHDAHEBBGFMCFHCCEHCCBAA.kalasani@sena.com>
+To: v.sudeep@exgate.tek.com
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	mporter@kernel.crashing.org, samsongshzu@yahoo.com.cn, wd@denx.de,
+	xmiville@oerlikon.ca
+Subject: RE: PCI daughter card with USB on a 405GP
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <OF073609E6.7694C121-ONC1256E46.0053AAA6-C1256E46.00549D37@se.wavetek.com>
+From: "Laurent Mohin" <laurent.mohin@acterna.com>
+Date: Thu, 26 Feb 2004 16:22:33 +0100
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 26 Feb 2004, Prabhakar Kalasani wrote:
+Hello,
 
-> I have a customised target board with MPC855t Processor , ppcboot-1.1.3
-> bootloader , linux-2.4.2 kernel. I'm new to this environment, I got to set
-> up KGDB for this target.can anybody please help me how to go about .
+lspci command gives you a dump of the configuration registers of your
+PCI devices. In your example, it detects only the IBM405GP PCI bridge
+
+The initial lines are a text traduction of what was read:
+
+00:00.0 Host bridge: IBM 405GP PLB to PCI Bridge (rev 01)
 ...
-> If i boot the Image from Teratem(Remote) , I'm getting log like....
->
-> Bootloader 1.1.3 (Dec 10 2003 - 17:02:39)
-..
-> =>setenv bootargs
-> =>tftpboot
-> ARP broadcast 1
-> TFTP from server 192.168.222.208; our IP address is 192.168.161.5
-> Filename 'zImage.vts8nfs.v1.4.1'.
-> Load address: 0x100000
-> Loading: #################################################################
->          ###############################################################
 
-Just a guess: This looks *a lot* like the well-known U-Boot bootloader
-in disguise (see http://sf.net/projects/u-boot). U-Boot usually
-doesn't run zImages (vmlinux kernel + some glue code). Could be that
-you are booting a wrong image. Go inside your kernel tree and try a
-"make pImage" and boot that.
+The last four lines are an hex dump
+00: 14 10 56 01 06 00 10 22 01 00 00 06 00 07 00 00
 
-Regards,
-Marius
+10: 00 00 00 00 08 00 00 00 00 00 00 00 00 00 00 00
 
---
-Marius Groeger <mgroeger@sysgo.com>
-Project Manager
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-SYSGO Real-Time Solutions AG | Embedded and Real-Time Software
-Am Pfaffenstein 14
-55270 Klein-Winternheim, Germany
+30: 00 00 00 00 58 00 00 00 00 00 00 00 00 01 00 00
 
-Voice: +49-6136-9948-0 | FAX: +49-6136-9948-10
-www.sysgo.com | www.elinos.com | www.osek.de
+(14 10 and 56 01 are PCI vendor ID and PCI device ID for the 405GP - be
+careful PCI is little endian whereas 405GP is big endian)
+
+I don't see any PCI daughter card from your output.
+Have you disconnected it to be able to boot?
+If yes, try to disable the usb driver in your kernel, and see the result
+of the lspci command.
+
+Laurent MOHIN
+ACTERNA
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
