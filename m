@@ -1,34 +1,35 @@
-Date: Wed, 28 Jul 1999 10:09:51 +1000
-Message-Id: <199907280009.KAA01751@tango.anu.edu.au>
+Date: Wed, 28 Jul 1999 11:46:35 +1000
+Message-Id: <199907280146.LAA01847@tango.anu.edu.au>
 From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: geiseri@msoe.edu
-CC: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-In-reply-to: <379E3513.738D0449@msoe.edu> (message from ian geiser on Tue, 27
-	Jul 1999 17:39:15 -0500)
-Subject: Re: G3 Upgrade Questions....
+To: bob@jriver.com
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <379D203D.FAAA971@jriver.com> (message from Robert Brose on Mon,
+	26 Jul 1999 21:58:05 -0500)
+Subject: Re: usb mouse in 2.2.10
 Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <379E3513.738D0449@msoe.edu>
+References: <379D203D.FAAA971@jriver.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-ian geiser <geiseri@msoe.edu> wrote:
+Robert Brose <bob@jriver.com> wrote:
 
->     I just installed a G3 upgrade card into my powercenter132
->     It is a 400Mhz with 1Meg at 200Mhz....
->     It registers under MacOS perfectly but i get the following under
->     proc/cpuinfo:
->     processor       : 0
->     cpu             : 750
->     temperature     : 0 C            <--Is this correct?!
+> 1) The keyboard response is somewhat odd. If I type "cd /anything" at the
+> prompt, it fairly
+> regularly does cdcd /anything on the echo. It's hard to pin down because it
 
-Yeah, reading the temperature isn't actually implemented yet.
+This is a problem in the USB keyboard driver, where it doesn't handle
+the `key rollover error' keycode correctly.  The iMac keyboard gives
+this keycode if you press more than 2 keys (other than modifiers) at
+once.
 
->     clock           : 195MHz        <-- Is this correct?!
+> If I cat /dev/mouse and move it I get moving lines of junk as I would expect.
+> The bus mouse
+> protocol looks suspicious but it works in 2.2.5 and I haven't found anything to
+> replace it with
+> yet.
 
-That is probably the value from Open Firmware.  I would guess that OF
-on your motherboard doesn't know how to work out the clock frequency
-correctly for the G3.  It doesn't matter, though.
+Use "IMPS/2" (or "imps2" for gpm).
 
 Paul.
 
