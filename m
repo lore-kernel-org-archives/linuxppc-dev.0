@@ -1,37 +1,43 @@
-Date: Wed, 10 Feb 1999 21:55:18 -0600 (CST)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Rick Kwan <kenobi@coruscant.lightsaber.com>
-cc: linuxppc-dev@lists.linuxppc.org, rick.kwan@lightsaber.com
-Subject: Re: PReP spec
-In-Reply-To: <199902101953.LAA01696@coruscant.lightsaber.com>
-Message-ID: <Pine.LNX.4.04.9902102154390.28166-100000@narn.local.drgw.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <l03130301b2e804cd8aed@[209.251.79.61]>
+In-Reply-To: <19990210124919.012660@mail.mipsys.com>
+References: <l03130301b2e69f7f1da5@[209.251.79.177]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Wed, 10 Feb 1999 22:57:04 -0500
+To: BenH <bh40@calva.net>
+From: "Michael R. Zucca" <mrz5149@acm.org>
+Subject: Re: NuBus PowerMacs and PDM video
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 10 Feb 1999, Rick Kwan wrote:
+At 6:49 AM -0500 2/10/99, BenH wrote:
 
-> 
-> Hello, list... I have never posted here before.  These are sorta
-> more hardware questions, but I'm not sure where else to ask.
-> My motivation is that I inherited a PReP box a year ago, and
-> intermittently play with it (e.g., Valentine's Day release); I'm
-> trying to migrate into serious play.
-> 
-> How does one get a copy of the PReP specification?
-> 
-> Is PReP still considered a viable commercial architecture or is it
-> reaching end-of-life?
+>Anyway, I now have some code
+>to mess with the video controller, so I will be able to work around this
+>problem.
 
-Look on Motorola's MCG website.. (www.mcg.mot.com, I think)
+What does the code reveal about the controller? Is it the MkLinux code?
 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
+>There is a MacOS call for logical->physical mappings. The base address
+>sent by BootX to the kernel is already a physical address (actually both
+>are sent with BootX >= 1.0.2b1)
+
+I could see why you're confused, then. The booter sends you an address of
+zero and it looks like a bug. :) However, the fact that the frame
+buffer starts at 0 physical is weird but shouldn't be an impediment.
+
+The last time I heard of Apple doing this was on the IIsi/IIci. We've been
+avoiding the subject in NetBSD-mac68k for some time now :)
+
+
+_______________________________________________________________________
+ Michael Zucca - mrz5149@acm.org - http://www.mdc.net/~mrz5149/
+ "I will choose a path that's clear. I will choose Freewill. "
+  --Rush, Freewill
+_______________________________________________________________________
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
