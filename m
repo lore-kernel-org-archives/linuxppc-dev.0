@@ -1,55 +1,32 @@
-Date: Wed, 14 Jul 1999 10:17:07 +0000
-Message-Id: <v04003a00b3b227219c2b@[204.22.210.180]>
-In-Reply-To: <v04020a02b3ac45cbc4ab@[192.168.0.2]>
-References: <8xyagpbzxm.fsf@s53.informatik.uni-bremen.de> Mike DeSimone's
- message of Fri, 9 Jul 1999 08:04:03 -0500 Sacha Varma's message of Fri,
- 09 Jul 1999 12:29:35 +0100 <3785DD1F.B853E731@ssl.co.uk>
- <v04020a00b3aba2034899@[192.168.0.2]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Message-ID: <378C95F8.B89F7DD3@x8.net>
+Date: Wed, 14 Jul 1999 15:51:52 +0200
+From: Wolfgang Haeuptli <haeuptli@x8.net>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-From: "sean o'malley" <oses.mde.state.mi.us@lists.linuxppc.org>
-Subject: Re: altivec
+Subject: FBDev-eror: FBIOPUTCMAP, is there a patch ?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I would love to work with Altivec, does anyone have any idea where to get
-the hardware preferably cheap =)?
+Hello
 
+I'm fighting with:
 
->>Well, if you do instruction-by-instruction emulation, the iteration count is
->>at most 16 (16 bytes in a vector). Furthermore, the overhead of a context
->>switch into privileged mode and back again is not negligible (at the very
->>least a pipeline flush and some saving/restoring of registers). Finally,
->>keeping the emulated vector registers somewhere in memory means that you will
->>quite often be limited by the availability of 'only' one load/store unit.
->
->That's true, I forgot about the 16 byte limit.  That will really make the
->overhead significant.  Kind of annoying to me (my typical vector length is
->over 900).  Maybe having two libraries is the way to go, then...
->
->>> I'm also wondering what has been done on this issue on the Intel side of
->>> the fence, since KNI and 3Dnow! are similar to Altivec in concept and, at
->>> least for 3Dnow!, implementation.
->>>
->>Similar? Please forgive my ranting, but AltiVec is feature-complete,
->>orthogonal, and implemented without compromises. MMX, 3DNow!, and ISSE have
->>none of the above three qualities. They were available sooner, but that's
->>about it.
->
->That's why I said "similar in concept" ... not execution.  And I said KNI
->(the PIII new instructions), not MMX, which is integers only.  (Also why I
->didn't mention Sun's VIS).
->_________________________________________________________________________
->                                __________
->##   ##   ###   #####   #####   \********/   #####    ###    ##### ######
->### ###  ## ##  ##  ## ##        \*/\/\*/    ##  ##  ## ##  ##     ##
->#######  ## ##  #####   ####       /\/\      #####   ## ##   ####  ####
->## # ## ####### ##  ##     ##      \**/      ##  ## #######     ## ##
->##   ## ##   ## ##  ## #####        \/       #####  ##   ## #####  ######
->_________________________________________________________________________
->### Mike DeSimone ### Hot-Wire@mail.utexas.edu ### ares.marsbase.mars ###
+Fatal server error:
+fbdevUpdateColormap: FBIOPUTCMAP failed
+
+which crashes my WM when the screensaver kicks in.
+(using cfb16 driver on kernel 2.2.6-15apmac)
+
+some people from the user list suggested to update WindowMaker, but the
+problem seems to be in FBDev. (same thing happens in blackbox)
+Is there a patch to the kernel sources to fix the problem? (I'd prefer
+to recompile the kernel instead of downloading a whole new FBDev-rpm)
+
+Thanks a lot
+
+Wolfgang Haeuptli
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
