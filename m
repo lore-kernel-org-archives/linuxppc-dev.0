@@ -1,63 +1,42 @@
-Message-ID: <00d201c14ce5$069d5300$7e7e7e7e@server>
-From: "RSR - Piero Dominioni" <pdominioni@rsr.it>
-To: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <F1BED55F35F4D3118C0F00E0295CFF4D414C24@mail.mediatrix.com>
-Subject: R: NFS mount for TQM823L
-Date: Thu, 4 Oct 2001 16:58:20 +0200
+Reply-To: <litterio@pyxsys.net>
+From: "Francis Litterio" <litterio@pyxsys.net>
+To: "'linuxppc-embedded'" <linuxppc-embedded@lists.linuxppc.org>
+Cc: <matthias.fuchs@esd-electronics.com>
+Subject: RE: simple access to mem mapped peripheral
+Date: Thu, 4 Oct 2001 11:34:01 -0400
+Message-ID: <000401c14ce9$fec3cba0$4500f98c@EMMAROSE>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="us-ascii"
+In-Reply-To: <3BBC34D9.B60D1BC9@esd-electronics.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Be sure that the file '/etc/services' in the target includes the following
-> entries:
->  sunrpc   111/tcp   portmapper   # RPC 4.0 portmapper TCP
->  sunrpc   111/udp   portmapper   # RPC 4.0 portmapper UDP
+Matthias Fuchs wrote:
 
-> Also, be sure you have the file '/etc/rpc' present in the target.
+> thanks. mmap is working fine for my problem ! I wonder why
+> lseek'ing and reading does not work.
 
-Dear Jean-Denis,
-I must be pretty unlucky or a bit stupid since I couldn't remote-mount
-my target filesystem yet!
-I followed your instuctions: effectively I had neither the entries shown
-above nor rpc file on my target.
-Trying to do the best I copied the /etc/rpc file from the host to
-the target: the problem is not solved yet.
-We cross-compiled 'rpcinfo' command, but running it on the target
-we obtain:
+Because in linux/drivers/char/mem.c the function memory_lseek(), which
+implements the lseek() system call for /dev/mem, does not call
+remap_page_range(), but function mmap_mem(), which implements the mmap()
+system call for /dev/mem, does call remap_page_range().
 
-rpcinfo: can't contact portmapper: RPC: remote system error - Invalid
-argument
+remap_page_range() is a kernel function that builds virtual memory page
+table entries for physical pages.  In this case, the physical pages are
+your device memory that is mapped into RAM by the PCI bus.
 
-While if we remote-execute it with
-# rpcinfo -p 126.126.126.107  (our target's IP)
-from the host's command line prompt we correctly obtain
-program    vers    proto    port
-100000        2        tcp        111    portmapper
-100000        2        udp       111    portmapper
-
-(Running the rpcinfo command on the host, it shows mountd
-and nfsd ports too...)
-Once again if we try '# ./mountd' we obtain
-
-Cannot register service: RPC: Unable to send, errno = Invalid argument
-
-At this point I can only make suppositions.
-There is very little information about portmapper in all the documentation,
-books and HOWTOs I looked in, and I read about a 'RPC server'.
-Nevertheless I could find no remainders to it looking around
-on my PC Linux Box nor something similar.
-Is there a RPC server that I didn't start yet?
-I feel not yet desperate, but this fight is exhausting...!
-Thank you very much for your help.
-
-Best regards.
-
-Piero Dominioni
-R.S.R. srl
+Without the PTEs for those physical pages, attempts to read from those
+pages (e.g., via lseek() and read()) will segfault just as if you had
+dereferenced a pointer that does not point to a valid page in your user
+address space.
+--
+Francis Litterio
+Software Engineer
+Pyxsys Corproration
+litterio@pyxsys.net
+978-371-9115 x131
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
