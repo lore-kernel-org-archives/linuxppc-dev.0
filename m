@@ -1,18 +1,18 @@
-Return-Path: <dave@frascone.com>
-Received: from mail.frascone.com (frascone.com [204.49.99.9])
-	by ozlabs.org (Postfix) with ESMTP id E3A7467A6C
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2005 05:29:58 +1000 (EST)
-Date: Wed, 6 Apr 2005 14:29:47 -0500
-From: David Frascone <dave@frascone.com>
-To: Greg Weeks <greg.weeks@timesys.com>
-Message-ID: <20050406142947.75e360ec@greenlantern.frascone.com>
-In-Reply-To: <4253E9CB.20009@timesys.com>
-References: <20050406081201.07b9bdce@greenlantern.frascone.com>
-	<4253E9CB.20009@timesys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <cfriesen@nortel.com>
+Received: from zcars04f.nortelnetworks.com (zcars04f.nortelnetworks.com
+	[47.129.242.57]) by ozlabs.org (Postfix) with ESMTP id 8F1CF67A6D
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2005 06:01:35 +1000 (EST)
+Message-ID: <42544010.4020105@nortel.com>
+Date: Wed, 06 Apr 2005 14:01:20 -0600
+From: Chris Friesen <cfriesen@nortel.com>
+MIME-Version: 1.0
+To: Kumar Gala <kumar.gala@freescale.com>
+References: <425429BF.1050706@nortel.com>
+	<2b5cd7aefbd800842537d00be729d169@freescale.com>
+In-Reply-To: <2b5cd7aefbd800842537d00be729d169@freescale.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: Bogomips?
+Subject: Re: question on inline assembly and long long values
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,70 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kumar Gala wrote:
+> I'm having a similar need (for a different purpose), this post might be 
+> useful:
+> 
+> http://gcc.gnu.org/ml/gcc/2005-04/msg00283.html
 
-That nailed it (branch prediction)!
+Sweet!  My new code is now shorter *and* more efficient:
 
-------------------------------------------------
-# cat /proc/cpuinfo
-cpu             : e500
-revision        : 2.0 (pvr 8020 0020)
-bogomips        : 665.19
-Vendor          : Motorola SPS
-Machine         : mpc8540ads
-bus freq        : 666.666660 MHz
-PVR             : 0x80200020
-SVR             : 0x80300020
-PLL setting     : 0x4
-Memory          : 512 MB
-------------------------------------------------
+static inline unsigned long long getmsr()
+{
+	unsigned long long val;
+         asm volatile( \
+                 "mfmsr  %L0               \n\t" \
+                 "rldicl %0,%L0,32,32       \n\t" \
+                 "rldicl %L0,%L0,0,32        \n\t" \
+                 : "=r" (val));
+	return val;
+}
+
+This results in
+
+unsigned long long a = asdf3();
+unsigned long long b = asdf3();
+
+being compiled to
+
+	mfmsr  6
+	rldicl 5,6,32,32
+	rldicl 6,6,0,32
+	
+	mfmsr  8
+	rldicl 7,8,32,32
+	rldicl 8,8,0,32
+
+Which is about as good as it gets...
 
 Thanks!
 
--Dave
-
-
-On Wed, 06 Apr 2005 09:53:15 -0400
-Greg Weeks <greg.weeks@timesys.com> wrote:
-
-> David Frascone wrote:
-> 
-> >Can this be right?  I'm getting This from a MPC-8260 (/proc/cpuinfo):
-> >
-> >------------------------------------------------
-> >cpu             : 82xx
-> >core clock      : 199 MHz
-> >CPM  clock      : 133 MHz
-> >bus  clock      : 33 MHz
-> >revision        : 1.1 (pvr 0081 0101)
-> >bogomips        : 133.12
-> >------------------------------------------------
-> >
-> >And this from a MPC-8540
-> >------------------------------------------------
-> >cpu             : e500
-> >revision        : 2.0 (pvr 8020 0020)
-> >bogomips        : 190.05
-> >Vendor          : Motorola SPS
-> >Machine         : mpc8540ads
-> >bus freq        : 666.666660 MHz
-> >PVR             : 0x80200020
-> >SVR             : 0x80300020
-> >PLL setting     : 0x4
-> >Memory          : 512 MB
-> >------------------------------------------------
-> >
-> >
-> >The second one looks way low . . . any ideas?
-> >  
-> >
-> Do you have cache turned on? Do you have branch prediction turned on? 
-> Branch prediction would be my guess as it's easy to miss.
-> 
-> Greg Weeks
-> 
-
-
--- 
-David Frascone
-
-Closed Hearing for the Caption Impaired...
+Chris
