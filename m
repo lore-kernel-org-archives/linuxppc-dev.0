@@ -1,49 +1,35 @@
-Subject: Re: [linux-usb-devel] [Patch] for UHCI driver (from kernel 2.6.6).
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Sven Luther <sven.luther@wanadoo.fr>,
-	Alan Cox <alan@www.pagan.org.uk>, Nicolas DET <nd@bplan-gmbh.de>,
-	Linux-USB <linux-usb-devel@lists.sourceforge.net>,
+From: John Steele Scott <toojays@toojays.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] cpufreq support for 7447A on 2004 iBooks
+Date: Sat, 19 Jun 2004 12:49:31 +0930
+Cc: Sebastian Henschel <linux@kodeaffe.de>,
 	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <Pine.LNX.4.44L0.0406181737520.1334-100000@ida.rowland.org>
-References: <Pine.LNX.4.44L0.0406181737520.1334-100000@ida.rowland.org>
-Content-Type: text/plain
-Message-Id: <1087595028.2061.295.camel@gaston>
-Mime-Version: 1.0
-Date: Fri, 18 Jun 2004 16:43:49 -0500
+References: <200406051846.50718.toojays@toojays.net> <20040618120250.GA8657@fuchi> <1087572619.8207.275.camel@gaston>
+In-Reply-To: <1087572619.8207.275.camel@gaston>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200406191250.18936.toojays@toojays.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2004-06-18 at 16:41, Alan Stern wrote:
-> On Fri, 18 Jun 2004, Benjamin Herrenschmidt wrote:
->
-> > I think it's more likely we are dealing with an ordering issue of
-> > accesses to memory vs. mmio, those aren't order unless you use memory
-> > barriers. Actually, it's worse, you need a full mb() to order them,
-> > which is why lately, we made ppc64 writeX() do full sync's ... that sucks
-> > but it's near to impossible to get an abstract IO API that would cover
-> > our needs here and still make other archs happy it seems...
->
-> I recently changed a few mb() calls to wmb(), because they only protected
-> data the CPU was writing to be read by the device.  Do you think changing
-> all the wmb()'s back to mb()'s would make a difference?
->
-> (Actually it seems likely that this is _not_ directly related to the
-> original problem, but it might be important anyway.)
 
-Well, the problem on ppc is that the eieio done by wmb() (or implicitely
-done by all writeX IO accessors) will only order stores in the same
-domain. That is cacheable aren't ordered vs. non cacheables.
+On Sat, 19 Jun 2004 01:00 am, Benjamin Herrenschmidt wrote:
+> Can you produce a combined patch ?
 
-For example, write to a descriptor in memory, then writel() to your
-device, that isn't guaranteed to happen in order.
+Ben,
 
-In this case, you indeed need an mb(), but that's a ppc thing and the
-race on ppc32 CPUs is quite small (though ppc64, typically POWER4 and
-POWER5, will eat you for lunch with their multiple deep store queues).
+I've added the check for the 12" and 17" PBs to my patch, the latest version
+is at http://www/~toojays/misc/7447a_cpufreq_20040619.patch. I haven't heard
+from anybody using the 17" PB, but got the ID from
+http://www.theapplemuseum.com/index.php?id=tam&page=products&subpage=newworld
 
-Ben
+Do you want the additions to pmac_mb_defs to go in the same patch? In my mind
+the two issues are independent.
 
+cheers,
+
+John
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
