@@ -1,49 +1,25 @@
-Message-ID: <3D1069BE.E5CC6632@icn.siemens.de>
-Date: Wed, 19 Jun 2002 13:23:42 +0200
+Message-ID: <3D106B83.79843019@icn.siemens.de>
+Date: Wed, 19 Jun 2002 13:31:15 +0200
 From: Steffen Rumler <Steffen.Rumler@icn.siemens.de>
 MIME-Version: 1.0
-To: "Ludszuweit, Axel" <Axel.Ludszuweit@datentechnik.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+To: "Ludszuweit, Axel" <Axel.Ludszuweit@datentechnik.com>,
+	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: set_multicast_list function of ppc enet driver
-References: <C287DEEDF2D4C1409FDE10D8253BD7000D4C33@eurobird.dt.net>
+References: <C287DEEDF2D4C1409FDE10D8253BD7000D4C33@eurobird.dt.net> <3D1069BE.E5CC6632@icn.siemens.de>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I have a question about the powerquicc ethernet
-> drivers, especcially to the set_multicast_list
-> routine.
-> In this routine, only one multicast address
-> is used, to evaluate the appropriate hash value.
-> I dont know, how the dmi structure works, but I have
-> took a look to other drivers.
-> In my opinion, dev->dmi is the start point
-> of dev->mc_count chained dmi structures,
-> which contains all multicast addresses.
-> I have attached a patch of the 8260 version of
-> enet.c, which will take this in account.
-> I dont have tested the patch.
-> Have someone experience with the multicast feature
-> and can give me some feedback?
+Sorry, the
 
-I agree with you. For the version of the fcc_enet.c (for MPC8260)
-passed with the 2.4.3 kernel the set_multicast_list()
-routine was incomplete and not working.
+  dmi = dmi->next;  !!!
 
-Via the dmi list the complete set of multicast groups
-actually joined will be presented, every time a process joins or
-dis-joins a new multicast group. This is fine, because the
-driver has not record it in SW.
-
-I pass you also my fixed version for the FCC.
-
-
-Steffen Rumler
+was missing:
 
 
 static void
-set_multicast_list (struct net_device *dev)
+set_multicast_list(struct net_device *dev)
 {
   struct  fcc_enet_private *cep;
   struct  dev_mc_list *dmi;
@@ -52,7 +28,6 @@ set_multicast_list (struct net_device *dev)
   int     i, j;
 
   cep = (struct fcc_enet_private *)dev->priv;
-
 
   /* Get pointer to FCC area in parameter RAM.
    */
@@ -115,11 +90,11 @@ set_multicast_list (struct net_device *dev)
         while (cpmp->cp_cpcr & CPM_CR_FLG);
 #endif  /* CONFIG_MCU */
 
+        dmi = dmi->next;  /* S.R. switch to the next list entry */
       }
     }
   }
 }
-
 
 
 
