@@ -1,59 +1,34 @@
-Message-ID: <396ACDF9.826580D3@amulet.co.jp>
-Date: Tue, 11 Jul 2000 16:34:17 +0900
-From: Hollis Blanchard <hollis@amulet.co.jp>
+Date: Tue, 11 Jul 2000 09:58:41 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Takashi Oe <toe@unlserve.unl.edu>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, toa@pop.agri.ch,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.0-test3
+In-Reply-To: <Pine.LNX.3.96LJ1.1b7.1000710164335.14195C-100000@ofey.inetnebr.com>
+Message-ID: <Pine.HPX.4.10.10007110953000.9548-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: Robert Thompson <rothomp3@vt.edu>
-CC: pogtal@erols.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: trackpad
-References: <003b01bfeaa6$744c6e60$1a6a1504@strayer.edu>
-Content-Type: text/plain; charset=iso-2022-jp
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Robert Thompson wrote:
->
-> On Sat, 08 Jul 2000, Nelson Abramson wrote:
-> >Assuming that you have not changed gpm's defaults, and that you have linked
-> both
-> >/dev/input/mouse and /dev/input/usbmouse to /dev/mouse, all you should need
-> to do
-> >is "gpm -t imps2", and that should allow gpm to take input from both your
-> external
-> >usb mouse and the trackpad.  If you have X use /dev/mouse, then it should
-> also
-> >beable to take input from both sources (it works for my Pismo).
-> >
-> Apparently this is an iBook specific issue, then, because I tried exactly
-> this
-> and is still doesn't work!
+On Mon, 10 Jul 2000, Takashi Oe wrote:
 
-Nelson I didn't really follow that description. Ben's web page clearly
-lists:
+> 601's BAT doesn't have G bit.  Maybe that's the problem?
 
-      su -
-      cd /dev
-      rm usbmouse
-      rm mouse
-      mkdir input
-      mknod input/mice c 13 63
-      ln -s input/mice mouse
-      ln -s input/mice usbmouse
+No 601 BATs are completely different, see the source code in the early
+init. The valid bits in not in the same (BATL or BATU), the size (limited
+to 8 Mb) and protection encoding are different (only one valid bit, not Vs
+and Vu, and WIMGxPP are coded as in the PTE). I think the G bit is
+ignored.
 
-In the end, /dev/mouse and /dev/usbmouse are links to /dev/input/mice.
-This is not the same as what you described above...
+Oh, and a last, but not least, point I forgot, the 601 only has the IBAT
+since the BAT arrays are unified.
 
-> Hmm... anybody have any clue what's different
-> between the trackpad on the Pismo and on the iBook? It's not like ADB isn't
-> working: the keyboard works fine, so ADB is working at least mostly fine.
-> Like
-> I said, I use an external trackball anyway, but I'm sure somebody will be
-> angry
-> about this at some point...
+For the rest (i.e. nothing), 601 BAT are absolutely identical to
+other PPC BATs :-(
 
-Robbie, I missed the beginning of the thread, but did you follow Ben's
-directions?
+	Gabriel
 
--Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
