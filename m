@@ -1,95 +1,36 @@
-Message-ID: <41EA756DBC9FD0118CFC0020AFDB5C5A188E05@tcint1ntsrv>
-From: Zehetbauer Thomas <TZ@link.topcall.co.at>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Cannot access PCI device
-Date: Tue, 10 Jul 2001 17:48:33 +0200
+Message-ID: <3B4B30AF.B925F6A0@mvista.com>
+Date: Tue, 10 Jul 2001 09:43:27 -0700
+From: Armin Kuster <akuster@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Torben Mathiasen <torben@kernel.dk>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: RTC drift on Walnut?
+References: <20010707220903.A1199@fry> <3B4971C3.2ADEAF79@mvista.com> <20010709181719.A798@fry>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi! I am trying to access a custom PCI device on a Walnut Rev. D system
-running Hard Hat Linux Rev. 1.2 with Montavista kernel snapshot
-01.04.12. The following code is beeing executed in the probe function of
-a kernel module and works well on Linux 2.4.2/Intel but returns useless
-values on PowerPC.
+Torben Mathiasen wrote:
 
-### begin code ###
-        unsigned long linux_addr_start, linux_addr_end, val;
-        u32 config_addr;
+> Thanks. I'm pretty sure its kernel related, I bet something's wrong in
+> arch/ppc/kernel/time.c. The kernel just reads the RTC at startup, and maintains
+> the system clok via the timer-interrupts. Coming to think of it, I'm not sure
+> if the hardware RTC drifts, or if its just the kernel 'software' clock. Will
+> check on that.
+>
+> Maybe we're turning ints off for too long somewhere...
+>
+> Thanks,
+> Torben
 
-        pdev = pci_find_device(0x10ee, 0x4030, pdev);
-        if (NULL == pdev)
-                return(-1);
-        if (pci_enable_device(pdev))
-                return(-1);
-        linux_addr_start = pci_resource_start(pdev, 0);
-        linux_addr_end = pci_resource_end(pdev, 0);
-        pci_read_config_dword(pdev, PCI_BASE_ADDRESS_0, &config_addr);
-        printk("Found %s\n", pdev->name);
-        printk("pci_resource_start=%lx\n", linux_addr_start);
-        printk("pci_resource_end=%lx\n", linux_addr_end);
-        printk("PCI_BASE_ADDRESS_0=%lx\n", config_addr);
-        IOAddress = ioremap(config_addr, 0xffff);
-        if (IOAddress) {
-                val = readl(IOAddress + 0xb000);
-                printk("read %lx at remapped PCI_BASE_ADDRESS_0\n",
-val);
-                iounmap(IOAddress);
-        }
-        IOAddress = ioremap(linux_addr_start, 0xffff);
-        if (IOAddress) {
-                val = readl(IOAddress + 0xb000);
-                printk("read %lx at remapped pci_resource_start\n",
-val);
-                iounmap(IOAddress);
-        }
-### end code ###
 
-### begin i686 result ###
-Found PCI device 10ee:4030 (Xilinx, Inc.)
-pci_resource_start=e2000000
-pci_resource_end=e200ffff
-PCI_BASE_ADDRESS_0=e2000000
-read fffffff0 at remapped PCI_BASE_ADDRESS_0
-read fffffff0 at remapped pci_resource_start
-### end i686 result ###
+Torben;
 
-### begin ppc result ###
-Found PCI device 10ee:4030 (Xilinx, Inc.)
-pci_resource_start=10000000
-pci_resource_end=0
-PCI_BASE_ADDRESS_0=ffff0000
-read 0 at remapped PCI_BASE_ADDRESS_0
-Machine Check: PLB0        bear= 0x1000b000 acr=   0x00000000 besr=
-0x0c000000
-Machine Check: PLB0 to OPB bear= 0x80401000 besr0= 0x00000000 besr1=
-0x00000000
-Data Machine Check in kernel mode.
-Oops: machine check, sig: 7
-NIP: C3004160 XER: 20000000 LR: C3004148 SP: C1E69DA0 REGS: c1e69cf0
-TRAP: 0200
-MSR: 00009230 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c1e68000[30] 'insmod' Last syscall: 128
-last math 00000000 last altivec 00000000
-GPR00: C3011000 C1E69DA0 C1E68000 C3006000 00000000 00000F45 00000015
-C013E000
-GPR08: 00000C30 C3016000 C3006000 C02F3000 C013EC30 1001F130 100ABCB0
-00000000
-GPR16: 100A4C50 10010000 7FFFDF98 00000000 00009230 01E69E80 C1E69DE8
-C1ECB2E0
-GPR24: 00000008 C1E69E4C 10022B38 0000004C FFFFFFEA 00000000 10000000
-C3000000
-Call backtrace:
-C3004148 C30044E8 C0013B98 C00026B4 10010000 10003360 100039F4
-0FF055B8 00000000
-Bus error
-### end ppc result ###
+I am running on what will be the next version of 405 kernel from
+MontaVista.  It is using the new todc_time routines.  I saw about a 30
+second drift.
 
-Any hints/suggestions?
-
-Regards
-Tom
+-- armin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
