@@ -1,27 +1,38 @@
-In-Reply-To: <38b3effd38fb6775@amyris.wanadoo.fr> (added by amyris.wanadoo.fr)
-Date: Wed, 23 Feb 2000 18:16:47 +0100
-To: Florent <flobo@iname.com>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: OF doesn't know my hard drive
-Message-Id: <20000223181647.026855@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <20000223205607.23376.qmail@web1005.mail.yahoo.com>
+Date: Wed, 23 Feb 2000 12:56:07 -0800 (PST)
+From: Dan Bethe <dan_bethe@yahoo.com>
+Subject: Re: PowerMac G4 and pcmcia flash cards
+To: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Feb 23, 2000, Florent <flobo@iname.com> wrote:
+	Hi there Tim.  I'm not sure I entirely follow you on the marketing
+issue of these cards or ports.  Are you saying that Apple wants to
+fracture the PCMCIA standard in general because they're able to make
+the Airport cards far cheaper than the typical IEEE 802.11 vendor, and
+so people would overwhelmingly purchase Apple's cards for general
+wireless purposes rather than from the typical vendor?
+	I guess I didn't quite get the meaning of "gray market"  :)  Is that
+it?
+	But other than that, Airport is equal to IEEE 802.11, right?  Can we
+just buy a IEEE 802.11 card and have it work with Airport cards and
+bases?
+	Thanks for the info.
 
->What's wrong with the second IDE bus ? (/pci/@d/mac-io/ata3)
->Why is it not located next to the first on the OF three ?
->It seems it lacks appropriate methods to handle hard drives correctly...
+> It smells tantalizingly like PCMCIA because it's very close, but it
+> is deliberately broken so that it's not compatible with the regular
+> PCMCIA pinout.  This allows Apple to sell AirPort cards for $100 USD
+> without creating a gray market supply of cheap IEEE 802.11 cards,
+> which would undercut everyone else in the world who is selling the
+> same thing for $150-200.  When big companies cut special high volume
+> deals, ugly things happen.  :)
 
-On the B&W G3 and Yikes G4, the ata3 bus is inside the mac-io ASIC while
-the Ultra/ATA bus is a separate PCI controller (CMD646).
 
-OF should contains appropriate methods for both busses. The core ATA
-implementation is not in the device nodes themselves but in the various
-packages.
-
+=====
+"Don't expect your own messiah; this neverworld which you desire is
+only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
