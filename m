@@ -1,52 +1,53 @@
-Message-ID: <20000914211253.24410.qmail@www0m.netaddress.usa.net>
-Date: 14 Sep 00 16:12:53 CDT
-From: jeramy b smith <ultrapenguin@netscape.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Atlanta Linux Showcase
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <39C155BF.1A150162@wanadoo.fr>
+Date: Fri, 15 Sep 2000 00:48:31 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
+To: mlan@cpu.lu
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: per-fb mmap for platinumfb and valkyriefb in 2.4 (and 2.2)
+References: <200009140546.HAA00808@piglet.grunz.lu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-One more thing, I have a stack of exhibit passes for anyone who wants them. If
-you help man the booth, I have transferable passes for the technical seminars
-so you can learn some new hacking knowledge.
+Michel Lanners wrote:
 
--jeramy b smith
+> > Tried it for valkyriefb: Doesn't work. It works in console mode, where
+> > it actually feels like it is scrolling fast, but starting X gives an
+> > immediate system freeze. I tried it twice, but now I'll go to bed.
 
+> Can you have a look and see what might be wrong? Ill do the same,
+> hopefully tonight, but no guarantee...
 
-jeramy b smith <jsmith@penguinppc.org> wrote:
->
-> This is to let everyone know that there will be a linux/ppc booth at the
-> showcase (www.linuxshowcase.com). If anyone is interested, we may have
-> an informal BOF session at a local pub one night or maybe have one in
-> one of those dreary conference rooms.
->
-> Also, if anyone would like to help man the booth during their time at
-> the show then please let me know. As the show is very technical, we want
-> a diverse range of people manning the booth so that visitors who stop by
-> multiple times can talk to people with different skillsets. Embedded
-> knowledge would be a big plus as MontaVista will be in the booth across
-> ours.
->
-> You can see where the booth is in this pic:
-> http://penguinppc.org/users/jeramy/pics/als.jpg
->
-> I am planning on having a Lombard laptop and a Sawtooth in the booth. We
-> are also looking for a nice embedded sample to demo.
->
-> If we do get a nice range of people to man the booth, we will post the
-> schedule of who will be there and when so that visitors will know when
-> someone who can answer their specific questions will be there.
->
-> Cheers,
->
-> -jeramy b smith
->
-> PS: If anyone has nay good ideas of software to run on the G4 for oohs
-> and ahhhs, please send me your ideas.
->
+I don't really understand these things (as usual), but from staring at
+your code it seemed to me that inserting the following line might be a
+good idea (this is for the 2.4.0 case; I haven't tried the 2.2.x patch,
+but there a corresponding line is present):
 
+--- drivers/video/valkyriefb.c~ Wed Sep 13 23:18:59 2000
++++ drivers/video/valkyriefb.c  Thu Sep 14 23:58:12 2000
+@@ -308,6 +308,7 @@
+                pgprot_val(vma->vm_page_prot) |= _PAGE_WRITETHRU;
+        }
+        start &= PAGE_MASK;
++       off += start;
+        vma->vm_pgoff = off >> PAGE_SHIFT;
+        if (io_remap_page_range(vma->vm_start, off,
+            vma->vm_end - vma->vm_start, vma->vm_page_prot))
+
+In any case, it is working now. In fact, I don't see any difference
+between the situation before and after the patch. For x11perf
+--scroll500, I get exactly as before 36.2/sec for 1024x768 at 8bit. This
+is with XFree68-4.0.1; used to be 13/sec with older X servers.
+
+One funny thing: In X, my Alt keys don't work correctly ("ModeShift")
+any more, they give "Alt_R" now. In the console, this is still OK. I
+suppose this cannot come from the mmap stuff, so this must come from
+some of the other changes in the bitkeeper tree in the last 2 days. I
+didn't change anything else in my config.
+
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
