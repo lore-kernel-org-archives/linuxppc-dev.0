@@ -1,26 +1,34 @@
-Date: Wed, 23 Jun 1999 11:09:07 +1000
-Message-Id: <199906230109.LAA02811@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: jquinn@nortelnetworks.com
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <376FFF26.A7493FF1@americasm01.nt.com>
-	(jquinn@nortelnetworks.com)
-Subject: Re: ppp compression module aliases?
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.PMDF.3.96.990622120549.539020675E-100000@uni.edu> <376FFF26.A7493FF1@americasm01.nt.com>
+From: Michael Engel <engel@math.uni-siegen.de>
+Message-Id: <199906230224.EAA24948@fourier.numerik.math.uni-siegen.de>
+Subject: Xbh not working (Cirrus X server)
+To: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 23 Jun 1999 04:24:09 +0200 (MET DST)
+Content-Type: text
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Jerry Quinn <jquinn@nortelnetworks.com> wrote:
 
-> Yes.  modprobe -c doesn't include ppp-compress aliases, at least my
-> version doesn't have them.
+Hi,
 
-I have just checked in a change to modutils on vger which adds the
-ppp-compress aliases.
+I'm experiencing a problem with Xbh on the Motorola PowerStack Series E
+and PowerStack II here. Xbh crashes with segmentation fault shortly after
+starting the server, gdb shows that the server is crashing in
+gd54xx_memsize
+(in xc/programs/Xserver/hw/bh/gd54xx.c). I built XFree from source
+(rpm --rebuild) with the same result. When setting a fixed memsize of 2 MB
+in gd54xx_memsize, the server crashes in outb() in
+gd54xx_setcolor
 
-Paul.
+I can provide the complete gdb bt output if necessary.
+
+It seems that there's something severely wrong with card or base address
+detection. I don't know a thing about programming X servers, so I'm really 
+lost here. Any ideas what I can do to get it running ?
+
+regards,
+	Michael Engel	(engel@unix-ag.org)
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
