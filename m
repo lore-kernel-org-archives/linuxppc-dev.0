@@ -1,14 +1,13 @@
 From: Paul Mackerras <paulus@linuxcare.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14782.63504.101500.256357@argo.linuxcare.com.au>
-Date: Wed, 13 Sep 2000 14:44:16 +1100 (EST)
+Message-ID: <14782.63625.633424.277661@argo.linuxcare.com.au>
+Date: Wed, 13 Sep 2000 14:46:17 +1100 (EST)
 To: mlan@cpu.lu
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: sysctl support for ICTC
-In-Reply-To: <200009122127.XAA00922@piglet.grunz.lu>
-References: <20000912205547.30777@192.168.1.10>
-	<200009122127.XAA00922@piglet.grunz.lu>
+Subject: Re: zeroing pages in the idle task?
+In-Reply-To: <200009122018.WAA00786@piglet.grunz.lu>
+References: <200009122018.WAA00786@piglet.grunz.lu>
 Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
@@ -16,15 +15,17 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 Michel Lanners writes:
 
-> In the idle task, the processor (if supporting sleep) is put to either
-> NAP or DOZE mode (see arch/ppc/kernel/idle.c). NAP mode seems to save
-> more power, but there's no snooping. Don't know whether that would be a
-> problem... but I guess it could. Anyway, if somebody wants to
-> experiment, NAP can be enabled with
-> /proc/sys/kernel/powersave-nap.
+> clock           : 195MHz
+>                   ^^^^^^
+> (by the way, this is wrong. Anybody with a fix?)
 
-When I tried on my 1999 G3 powerbook, it seemed to be that it used
-more power in nap mode than in doze mode, so I leave it in doze mode.
+I'm pretty sure that this is the number that OF is telling us, so if
+it's wrong, blame OF.  You don't have a G3 upgrade card in an older
+machine perhaps?
+
+Since the only use of this number is for oohs and aahs, there's not a
+lot of motivation to try and work out if OF is wrong and work out the
+correct number.
 
 Paul.
 
