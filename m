@@ -1,40 +1,33 @@
-Message-ID: <19991130003956.26231.rocketmail@web1002.mail.yahoo.com>
-Date: Mon, 29 Nov 1999 16:39:56 -0800 (PST)
-From: Dan Bethe <dan_bethe@yahoo.com>
-Subject: Re: USB Bulk transfers
-To: iweiny@pacbell.net, linuxppc-dev@lists.linuxppc.org
+Message-ID: <38431D61.4977E59B@netx4.com>
+Date: Mon, 29 Nov 1999 19:42:09 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
+To: BenH <bh40@calva.net>
+CC: paulus@linuxcare.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: dmasound problems
+References: <19991130012819.012476@smtp.calvacom.fr>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Hi there.  Can you guys suggest a USB card for PCI
-bus, which is supported by MacOS and LinuxPPC?  The
-exact model, and such, so that I can find it out there
-somewhere.  Or a URL to such things!
-	I've grepped the entire kernel tree, read all the
-USB-related source code, and the LDP, but I haven't
-found info on a non-motherboard USB interface!
-	I would be interested in putting this into a PowerMac
-7500 or something in that 7xxx series.  Any
-suggestions or caveats?  Thank you for your time!
-
---- iweiny@pacbell.net wrote:
-> 
-> Has anyone done anything with the USB bulk
-> transfers?
-> 
-> DETAILS:
-> PowerMac 8500
-> USB card and Mouse WORK!
-> kernel 2.2.12 self compiled
-> USB 2.3.29 code from Pauls rsync tree (modified for
-> 2.2 kernel)
+BenH wrote:
 
 
-=====
-"Don't expect your own messiah; this neverworld which you desire is
-only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
+> I tried reproducing the complete init-cleanup-init sequence in
+> dmasound_init() without luck (weird...). There must be some kind of
+> timing issue out there, or I missed something. I don't know the AWACS
+> chip very well so it's difficult to guess.
+
+If these are actually a power and reset to the audio codec, there
+are timing constraints.  Usually, you have to power up and hold
+reset at least 50 milliseconds before releasing reset (Crystal
+codec specs).
+
+This is why it may work with XMON if you set/clear bits
+individually, but not work when you run the code.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
