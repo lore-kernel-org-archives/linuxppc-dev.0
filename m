@@ -1,38 +1,38 @@
-To: vandana mehtani <vandana_mehtani@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: stuck up on FADS board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 28 May 2002 03:35:56 PDT."
-             <20020528103556.81524.qmail@web12706.mail.yahoo.com>
-Date: Tue, 28 May 2002 12:41:24 +0200
-Message-Id: <20020528104129.38BE611973@denx.denx.de>
+Message-ID: <3CF3612B.8020102@embeddededge.com>
+Date: Tue, 28 May 2002 06:51:23 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Armin <akuster@pacbell.net>,
+	Tom Rini <trini@kernel.crashing.org>,
+	Armin Kuster <akuster@mvista.com>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: Another OCP enet patch
+References: <20020527040330.GH16537@zax> <20020527162323.GB32718@opus.bloom.county> <20020528005728.GO16537@zax> <20020528012516.GE1295@opus.bloom.county> <3CF32B87.4010908@pacbell.net> <20020528065027.GT16537@zax>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20020528103556.81524.qmail@web12706.mail.yahoo.com> you wrote:
->
-> I am trying to  port linux on FADS board.
+David Gibson wrote:
 
-There is nothing to port. The FADS board  is  supported  out  of  the
-"box". Umm, ifyour hardware is working, that is.
+> ...  In some ways, since we're PPC specific anyway, I think it would
+> make as much sense as anything just to directly call
+> dcache_flush_range() and so forth, rather than consistent_sync() or
+> dma_cache_*().
 
-> can i use the DIAB compiler instead of the   GCC
+Yes, that's true.  These consistent_* functions were added when we
+started using non-PCI drivers that are common across multiple platforms.
+It seems none of the platforms had common names for data cache management
+functions, so people started using the consistent_sync() in it's place.
+It also made sense because they were using the other consistent_* functions
+as well.  No one probably noticed, but at the same time we also changed
+the cache management function names to be similar to other architectures
+as well.
 
-Forget it. There are many, many GCC features deeply  built  into  the
-Linux kernel.
 
-Use GCC instead.
+	-- Dan
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I wish Captain Vimes were here. He wouldn't have  known  what  to  do
-either, but he's got a much better vocabulary to be baffled in.
-                                 - Terry Pratchett, _Guards! Guards!_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
