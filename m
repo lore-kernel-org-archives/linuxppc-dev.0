@@ -1,39 +1,44 @@
-Date: Mon, 10 Nov 2003 13:32:53 -0700
+Date: Mon, 10 Nov 2003 13:45:27 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: linas@austin.ibm.com
-Cc: Christian <evil@g-house.de>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: ppc32 lockups with 2.6
-Message-ID: <20031110203252.GD8584@ip68-0-152-218.tc.ph.cox.net>
-References: <3FA5698A.9000905@g-house.de> <3FAABE62.4090804@g-house.de> <20031110125044.A22030@forte.austin.ibm.com>
+To: Wolfgang Denk <wd@denx.de>
+Cc: Christophe.LINDHEIMER@fr.thalesgroup.com,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Prob to compile Kernel on mpc860.
+Message-ID: <20031110204527.GE8584@ip68-0-152-218.tc.ph.cox.net>
+References: <66CE949D18BCB249ABE8D9AF48C4F1CE777849@helios.clb.tcfr.thales> <20031030161634.B01C7C59E4@atlas.denx.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20031110125044.A22030@forte.austin.ibm.com>
+In-Reply-To: <20031030161634.B01C7C59E4@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Nov 10, 2003 at 12:50:44PM -0600, linas@austin.ibm.com wrote:
+On Thu, Oct 30, 2003 at 05:16:29PM +0100, Wolfgang Denk wrote:
 >
-> On Thu, Nov 06, 2003 at 10:34:26PM +0100, Christian wrote:
-> >
-> > as nobody seems to answer,
-> >
-> > yes, i know, if the problem does not occur to other people, it's not
-> > worth fixing it. and PReP machines seem to be some kind of "exotic"
-> > (read: outdated) anyways. but i don't have the skills fixing it :-(
-> >
-> > so, if at least someone could point me to something i might have
-> > forgotten to look at, or how to get an oops message out of this here.
-> > would be nice if it turns out to be a user-error only.
+> Dear Christophe,
 >
-> I'd suggest getting the KDB kernel patches, and then poking around to
-> see what the system was doing when it locked up.  What were the stack traces?
-> does it always lock up in the same routine?  What line of code was it
-> executiing when it did that?
+> in message <66CE949D18BCB249ABE8D9AF48C4F1CE777849@helios.clb.tcfr.thales> you wrote:
+> >
+> > prob 1 :
+> > I am trying to compile the linuxppc_2_4_devel_2.4_20-2002_12_04 from Denx.
+> > As I need debug, I replace -O2 by -g in the Makefile.
+> > The kernel doesn't link anymore :[
+>
+> You cannot compile the Linux kernel without optimization, as then  no
+> inlining of functions will be done. Use "-Os -g".
+>
+> > prob 2 :
+> > Using linux2.4.22 from kernel.org.
+> > I apply the patch for powerpc
+> > the kernel doesn't compile.
+> > Prob with stdarg.h that doesn't exist ( in sched.c )
+>
+> Try this patch:
+[snip]
 
-It should be easier to get KGDB working here actually.  I know in the
-not too distant past I've hooked KGDB up to my Powerstack for some
-quick testing.
+Or if you select BDI/KGDB/XMON, you can also pick
+CONFIG_MORE_COMPILE_OPTIONS and add in -g (or put -Os -g and that will
+override the -O2 that preceeds it).
 
 --
 Tom Rini
