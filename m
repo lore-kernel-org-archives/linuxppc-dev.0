@@ -1,34 +1,60 @@
-Message-ID: <3957AB3D.7A0244D9@netx4.com>
-Date: Mon, 26 Jun 2000 15:13:01 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <7283DE19D141D111AD0E00A0C95B195502C5F5F2@mail2.aiinet.com>
+From: "Whitney, John" <johnw@aiinet.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: Image caching/swap bugs
+Date: Mon, 26 Jun 2000 17:16:55 -0400
 MIME-Version: 1.0
-To: "Mark S. Mathews" <mark@absoval.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PLPRCR & Checkstop reset
-References: <Pine.LNX.3.96.1000625172850.17884A-100000@tristar.cc.absoval.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark S. Mathews wrote:
+Given the following situation, I am seeing my embedded linux system on an
+MPC860 crash and was
+wondering if anyone else has experienced the same problem (and possibly have
+a fix):
 
-> We're using the mvista 2.2.13-3 kernel sources and I'd like to add a
-> software reboot capability.
+I have a 2.2.15 kernel running on a proprietary board with 32MB of RAM.  The
+image includes a 16MB
+ramdisk distribution I have created from scratch.  Periodically, after
+uploading a new 4MB image to the
+running system (via FTP), and burning into onboard flash, the system would
+crash.
 
+After looking into it, I found then when I started copying the image from
+the ramdisk to flash, the kernel was caching
+it in memory ("MemFree" went down, "Cached" went up).  When the kernel hit
+the low freepages mark, kswapd was
+kicked off to recover memory, and immediately thereafter the kernel crashed
+(in various tasks, usually with
+*NIP being 0x00000000).  (This is easily reproduced by copying the image to
+/dev/null, eliminating the flash
+driver as a suspect).
 
-How do you actually want to reboot?  At one time, I had modified
-the kernel "gorom()" function to simply jump into the boot rom as
-if a reset occurred.  I should make this work again for many reasons.
+I eventually found out that something in try_to_swap_out() (mm/vmscan.c) was
+causing this.  If I put an
+immediate "return 0;" in this routine kswapd recovered nicely.  When the
+routine was allowed to execute,
+the kernel crashed.  I don't know if something is being incorrectly
+overwritten in memory, or the kernel is
+just flushing parts of different tasks' images and this isn't being handled
+correctly.
 
-If you really want the hard reset, which in some cases on some
-designs will reset some external hardware sometimes, then the
-checkstop reset will do the trick.  This is often confused with
-performing a hard reset function, which really isn't the same thing.
+I've noticed that if I ifdef out the "if (!pte_dirty(pte)) { ... }" section
+of code in try_to_swap_out(), I again don't
+crash.  Unfortunately, I am not (yet) a VM expert, so I am not sure what
+this code is doing.
 
-I will dig up the code for both cases.
+In the short term, I can prevent kswapd from attempting to swap out
+processes (since I have no swap space
+anyway) and run just fine, but it would be nice to have a "correct"
+solution.  I just wanted to know if anyone
+else had experienced this problem before I go delving into it (whenever I
+get the time).
 
-
-	-- Dan
+John Whitney
+johnw@aiinet.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
