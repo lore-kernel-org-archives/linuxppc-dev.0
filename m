@@ -1,35 +1,21 @@
-Date: Thu, 1 Feb 2001 20:55:29 -0500
-From: "TWG - pat, mark & steve" <twg@world.std.com>
-To: jlhagen@collins.rockwell.com
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: trouble creating ramdisk over 8MB - could someone explain this
- to me
-In-Reply-To: <OFCB2243A7.F8689577-ON862569E6.00792F78@collins.rockwell.com>
-Message-ID: <Pine.SGI.4.21.0102012050110.16709-100000@world.std.com>
+Message-ID: <3A7A14BD.C56A5D44@wvi.com>
+Date: Thu, 01 Feb 2001 18:00:29 -0800
+From: Jim Potter <jrp@wvi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: jlhagen@collins.rockwell.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: trouble creating ramdisk over 8MB - could someone explain this to me
+References: <OFCB2243A7.F8689577-ON862569E6.00792F78@collins.rockwell.com>
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Linux sets the max size of a single ramdisk when it boots.  You can
-override this  using the ramdisk_size=10240 argument when you
-boot; however you must do this both on your development platform (so you
-can make the initial ramdisk) as well as your target (so you can use it).
-In any case, you will have to do this for your target; however the
-BOOTDISK-HOWTO describes a method using the loop device and a file
-(instead of a ramdisk) on your development system so you don't have to
-change your devel sys's ramdisk size.
-(on your target system you can also modify rd.c to change the default
-size. -- Sorry, don't have the exact path handy)
-Linux spits out a message when booting like "creating 16 ramdisks of
-size xxx", so you can check whether you were successful.
+I've been able to successfully alter the ramdisk size by running "make
+menuconfig", go to "block devices" then setting the "ramdisk size' to 16384.
+make vmlinux.  Serve with hot bread and beer.
 
-Mark Phillips
 
-On Thu, 1 Feb 2001 jlhagen@collins.rockwell.com wrote:
-
->
 > Hello,
 >
 > I'm trying to set up a 10MB ramdisk for our VME boards. I'm running in to
@@ -54,6 +40,13 @@ On Thu, 1 Feb 2001 jlhagen@collins.rockwell.com wrote:
 > I would appreciate the help.
 > John
 >
->
+
+--
+Sincerely,
+
+Jim Potter
+45th Parallel Processing
+jrp@wvi.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
