@@ -1,20 +1,28 @@
-Date: Tue, 27 Jun 2000 16:16:23 -0500 (CDT)
-From: ian reinhart geiser <geiseri@msoe.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: AltaVec support
-Message-ID: <Pine.OSF.3.96.1000627161511.20198G-100000@torres.msoe.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: bob@kunk.jriver.com
+Message-ID: <20000627221948.10637.qmail@kunk.jriver.com>
+Subject: 2.2.17pre7 Ramdisk compile failure
+To: linuxppc-dev@lists.linuxppc.com
+Date: Tue, 27 Jun 2000 17:18:23 -0500 (CDT)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-How stable is the altavec gcc?
+rd.c:115: `CONFIG_BLK_DEV_RAM_SIZE' undeclared here (not in a function)
 
-I am looking at using it for a project but have some concernes
-about the stability of software built with it.
+BTW, I got this from a fresh rsync from Pauls stable tree. I've been noticing
+odd behavior with these rsync images ocassionally. It seems like
+older files are not always replaced and I ran into a missing autoconf.h this
+afternoon.
 
--ian reinhart geiser
+Are there known issues with rsync?
+
+rsync version 2.4.1 Copyright Andrew Tridgell and Paul Mackerras
+
+Bob
+--
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
