@@ -1,43 +1,40 @@
-Message-ID: <40B711A6.1080603@intracom.gr>
-Date: Fri, 28 May 2004 13:17:10 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+From: rdiz@alumni.deec.uc.pt
+Message-ID: <4902.62.48.238.11.1085744069.squirrel@alumni.deec.uc.pt>
+In-Reply-To: <20040527205529.GL6763@smtp.west.cox.net>
+References: <4786.62.48.238.11.1085678078.squirrel@alumni.deec.uc.pt>
+    <20040527205529.GL6763@smtp.west.cox.net>
+Date: Fri, 28 May 2004 12:34:29 +0100 (WEST)
+Subject: Re: Compiling kernel 2.6.7-rc1 for 8xx
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 2.6-7-rc1 8xx - No go
-References: <40B6FAFB.8020803@intracom.gr>
-In-Reply-To: <40B6FAFB.8020803@intracom.gr>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pantelis Antoniou wrote:
+Thanks, I'll download the latest linuxppc kernel right away.
 
-> Hi there.
->
-> I'm reporting that my tree, after updating from 2.6.6 -> 2.6.7-rc1
-> does not work any more.
->
-> Currently investigating why.
->
-> Regards
->
-> Pantelis
->
->
-Update; for some reason the problem seems to be that page faults
-are incredibly slow.
+Regards,
+Ricardo Diz
 
-Starting a dummy init after a minute it manages to start and operate
-correctly.
 
-I suspect a terribly slow page fault.
-
-Regards
-
-Pantelis
+> On Thu, May 27, 2004 at 06:14:38PM +0100, rdiz@alumni.deec.uc.pt wrote:
+>
+>>
+>> I don't know what kind of search I did before, but I found now some
+>> recent
+>> relevant posts about it. Thanks.
+>>
+>> BTW, do I have to use BitKeeper to download the 2.5 kernel tree?
+>
+> No.  For Linus' tree there are snapshots of the bitkeeper version on
+> kernel.org I believe, and for the linuxppc trees there are still rsync
+> mirrors on source.mvista.com.
+>
+> --
+> Tom Rini
+> http://gate.crashing.org/~trini/
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
