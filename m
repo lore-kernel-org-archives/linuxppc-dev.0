@@ -1,89 +1,69 @@
-Return-Path: <gnomeza@imap.cc>
-Received: from smtp003.mail.ukl.yahoo.com (smtp003.mail.ukl.yahoo.com
-	[217.12.11.34]) by ozlabs.org (Postfix) with SMTP id BE7D02BE83
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2004 23:45:15 +1100 (EST)
-Message-ID: <41AC69C8.1000201@imap.cc>
-Date: Tue, 30 Nov 2004 12:38:32 +0000
-From: Mark Ferry <gnomeza@imap.cc>
-MIME-Version: 1.0
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-References: <200411301206.44403.isidoro@qassessorament.net>
-In-Reply-To: <200411301206.44403.isidoro@qassessorament.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: Re: Mounting usb pendrive
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Return-Path: <kumar.gala@freescale.com>
+Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
+	by ozlabs.org (Postfix) with ESMTP id 618772BF08
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  1 Nov 2004 16:43:56 +1100 (EST)
+Received: from il06exr04.mot.com (il06exr04.mot.com [129.188.137.134])
+	by motgate8.mot.com (Motorola/Motgate8) with ESMTP id iA15jLnQ019210
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 31 Oct 2004 22:45:21 -0700 (MST)
+In-Reply-To: <642F8D42-2A11-11D9-A860-000393C30512@freescale.com>
+References: <642F8D42-2A11-11D9-A860-000393C30512@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <0329659A-2BC9-11D9-A949-000393DBC2E8@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Sun, 31 Oct 2004 23:43:52 -0600
+To: "Fleming Andy-afleming" <afleming@freescale.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: RFC: performance monitor/oprofile support for e500
+List-Id: Linux on Embedded PowerPC Developers Mail List
+	<linuxppc-embedded.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
+List-Post: <mailto:linuxppc-embedded@ozlabs.org>
+List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Have you compiled in PC BIOS (DOS) partition table support?
+Andy,
 
-CONFIG_MSDOS_PARTITION=y
+Some feedback:
 
-menuconfig: File Systems | Partition Types | PC BIOS (MS DOS partition 
-tables) support.
+* Any reason to get ride of the 604 code now,w/o replacing it with 
+something?
+* Why have you introduce two CPU features (CPU_FTR_CAN_USE_PMON_INTR & 
+CPU_FTR_FSL_BOOKE_PMON) you dont use ?
+* In the PerformanceMonitor can't you use regs->nip for the same 
+purpose of regs->sia?
+* Does arch/ppc/kernel/perfmon.c really need all the headers you are 
+including?
+* Does perfmon.c make more sense as perfmon_fsl_booke.c
+* op_ppc32_setup, I'd prefer the saving & restoring of the perf_irq 
+like arch/ppc64/oprofile/common.c does
+* a number of issues related to SMP
+* any reason get_kernel is a function?
+* Do ctr_read & ctr_write really belong in op_impl.h, especially since 
+different implementations will be needed for classic ppc.
 
-I assume your ipod may well have been fat formatted.
 
-Also note that it's using the UB driver introduced in 2.6.9(?) rather 
-than the older scsi usb_storage driver.
+I sent a note to Paul M. about putting num_counters into cpu_specs 
+table.
 
-Many of the features in the old driver may not yet have been implemented 
-in the UB driver (CONFIG_SCSI_MULTI_LUN equivalent ?!).
+- kumar
 
-The solution is to remove the UB driver from the kernel...
-  (CONFIG_BLK_DEV_UB)
+On Oct 29, 2004, at 8:16 PM, Fleming Andy-afleming wrote:
 
-- Mark
-
-Isidoro Reyes de Zuloaga wrote:
-
-> Hi folks,
-> I'm trying to mount my usb pendrive device and i'm getty a strange error 
-> message. I compiled my kernel with the scsi modules and all the stuff, and i 
-> can mount it on my x86, but in the powerbook i can't.
-> this is the /var/log/messages:
-> 
-> Nov 30 12:01:18 yoda kernel: usb 2-1.1: new full speed USB device using 
-> address 11
-> Nov 30 12:01:18 yoda kernel: usb 2-1.1: new full speed USB device using 
-> address 12
-> Nov 30 12:02:04 yoda kernel: ohci_hcd 0001:10:1b.1: wakeup
-> Nov 30 12:02:04 yoda kernel: usb 3-1: new full speed USB device using address 
-> 5
-> Nov 30 12:02:05 yoda kernel: uba: device 5 capacity nsec 50 bsize 512
-> Nov 30 12:02:05 yoda kernel: uba: made changed
-> Nov 30 12:02:05 yoda kernel: uba: device 5 capacity nsec 50 bsize 512
-> Nov 30 12:02:05 yoda kernel: uba: device 5 capacity nsec 50 bsize 512
-> Nov 30 12:02:05 yoda kernel:  /dev/ub/a:end_request: I/O error, dev uba, 
-> sector 0
-> Nov 30 12:02:05 yoda kernel: end_request: I/O error, dev uba, sector 2
-> Nov 30 12:02:05 yoda kernel: end_request: I/O error, dev uba, sector 4
-> Nov 30 12:02:05 yoda kernel: end_request: I/O error, dev uba, sector 6
-> Nov 30 12:02:05 yoda kernel: end_request: I/O error, dev uba, sector 6
-> Nov 30 12:02:05 yoda kernel: end_request: I/O error, dev uba, sector 4
-> Nov 30 12:02:05 yoda kernel: end_request: I/O error, dev uba, sector 2
-> Nov 30 12:02:05 yoda kernel: end_request: I/O error, dev uba, sector 0
-> Nov 30 12:02:05 yoda kernel:  unable to read partition table
-> Nov 30 12:02:05 yoda kernel:  /dev/ub/a:end_request: I/O error, dev uba, 
-> sector 2
-> Nov 30 12:02:05 yoda kernel: end_request: I/O error, dev uba, sector 4
-> Nov 30 12:02:05 yoda kernel: end_request: I/O error, dev uba, sector 6
-> Nov 30 12:02:05 yoda kernel: end_request: I/O error, dev uba, sector 0
-> Nov 30 12:02:05 yoda kernel:  unable to read partition table
-> Nov 30 12:02:05 yoda usb.agent[4698]:      ub: already loaded
-> 
-> I don't know what's happening, it's the same when i try to mount the ipod. my 
-> modules are: 
-> usb_storage           107772  0
-> scsi_mod               69856  3 sd_mod,sg,usb_storage
-> usbhid                 46592  0
-> hci_usb                11104  2
-> bluetooth              44100  7 rfcomm,l2cap,hci_usb
-> usbcore               105204  9 
-> ehci_hcd,ub,ohci_hcd,usb_storage,uhci_hcd,usbhid,hci_usb
-> 
+> This patch:
+>  * Adds support for using the performance monitor counters and the
+> associated interrupt, but only enables it currently for e500
+>  * Removes the old 604 performance monitor code, suggested by various
+> people on IRC
+> * Adds oprofile support for the e500, with potential for expansion to
+> support other ppc32 processors
+>
+> Andy Fleming
+>  NCSG Open Source Team
+>  Freescale Semiconductor, Inc
+> <oprofile-kernel-patch><ATT2027925.txt>
