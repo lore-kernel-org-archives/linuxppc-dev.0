@@ -1,25 +1,29 @@
-Message-ID: <35C119252057D511BB9F0003476BF8A208E5B4@freexc01.smartm.com>
-From: "Prasad, Siva" <Siva.Prasad@smartm.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: zImage prefixed with 1KB...
-Date: Fri, 21 Sep 2001 13:52:40 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Fri, 21 Sep 2001 17:12:43 -0400
+From: macdonldc@netscape.net (Craig MacDonald)
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Console Bug in linux-2.4.4 for sbc8260
+Message-ID: <4E54C6E5.53244AA2.031B03A1@netscape.net>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I finally got linux to boot and display messages on
+the serial console.
 
-My zImage is prefixed with 1KB (0x400 locations) of data (mostly zeros
-expect the first 8 bytes and few in the middle). And after that comes the
-arch/ppc/bot/head.S related code.
+The problem was that in immap_8260.h
 
-Why is this happening. What is the significance of this. Has it anything to
-do with mkprep???
+immap_t *immr;
 
-Thanks
--- Siva
+was not extern and code in uart.c was getting a
+garbage value for immr. I changed it to
+
+extern immap_t *immr;
+
+and I not receive console messages.
+
+Best,
+Craig MacDonald
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
