@@ -1,45 +1,33 @@
-Message-ID: <3A629111.3F36CDE8@mvista.com>
-Date: Mon, 15 Jan 2001 00:56:33 -0500
-From: Dan Malek <dan@mvista.com>
+Message-ID: <001401c07ede$c8187760$4a1f76d8@washington>
+From: "Navin Boppuri" <nboppuri@trinetcommunication.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: A working SPI driver in linux
+Date: Mon, 15 Jan 2001 10:34:46 -0000
 MIME-Version: 1.0
-To: Bob Doyle <doyle@primenet.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: GCC PPC Inline Assembly Help
-References: <3A6283A7.C4327446@primenet.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Bob Doyle wrote:
->
-> I have an embedded platform (MPC8240) that requires flash memory
-> be programmed 64-bits at a time.  I believe that a floating-point
-> store is the only way to generate this 64-bit write.  I also
-> understand that floating-point usage is prohibited in the kernel
-> because the floating-point context is not saved.
+Hello everyone,
 
-Didn't you ask this not long ago?
-Why does the flash memory need to be programmed 64-bits at a time?
-Did you actually find some devices like this?  If you have 8 8-bit,
-or 4 16-bit devices, you can program these one at a time. Oh, that's
-right, you didn't design the hardware correctly.........
+We have been working on a linux SPI driver for the last few weeks. We have a
+basic driver working. We have 3 uarts connected to the SPI working in a
+Master-Slave mode. Of course, these is a lot of uart specific code in the
+driver. But I do have a skeleton driver specific to the SPI which one can
+use for his applications. The driver works only with the microcode patch to
+care of the parameter ram problems.
 
-Why do you have to do this in the kernel?
+The driver is based on the IIC driver by Dan Malek. Also, a customized SPI
+working module (not the driver) was given to me by Tobias Otto-Adamzak.
 
+The driver supports basic open,read,write and close operations. I will have
+the commented version ready in a day. If anyone is interested, they can send
+me a mail.
 
-> How close am I?
+Sincerely,
+Navin Boppuri.
 
-Still pretty far off the mark, even if the assembler is OK.  You need
-to enable the FPU, which presents another set of problems that can
-be somewhat eliminated by disabling interrupts.
-
-
-If you can't write less than 64-bits, how do you ensure the memory
-controller will always generate a cycle to read 64-bits?  Sounds like
-you have designed around lots of luck.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
