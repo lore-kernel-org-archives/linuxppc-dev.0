@@ -1,30 +1,66 @@
-Message-ID: <3C7FB6E7.3DB92F38@mvista.com>
-Date: Fri, 01 Mar 2002 11:14:15 -0600
-From: Mark Hatle <fray@mvista.com>
+Message-ID: <3C7FBC99.E3E0AE07@esteem.com>
+Date: Fri, 01 Mar 2002 09:38:33 -0800
+From: Conn Clark <clark@esteem.com>
 MIME-Version: 1.0
-To: Owen Green <owenjinggreen@yahoo.com>
-Cc: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>,
-	"'Christian Pellegrin '" <chri@infis.univ.trieste.it>,
-	"'linuxppc-embedded@lists.linuxppc.org '" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: gdbserver ppc8xx
-References: <20020301170127.49909.qmail@web20107.mail.yahoo.com>
+To: Norm Legare <normlegare@yahoo.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PPC board
+References: <20020228225750.25177.qmail@web13406.mail.yahoo.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Owen Green wrote:
+Norm Legare wrote:
 >
-> Thank you all guys for the tips,
-> gdbserver was not working because linbss_files.so.2
-> was not present on my  system /lib.
-> By the way, why this was not shown when I typed:
-> readelf gdbserver -d ?
+> Hello,
+>
+> I have been hacking with Linux as a
+> hobby.  I have reached the point where
+> a board is needed.  Does anyone know
+> a good place to get PPC-based boards
+> for hackers?
 >
 > Thanks in advance,
+> Norm
 
-libnss* is dlopened by glibc.
+	Its much more fun to create your own. You'll spend numerous
+enjoyable hours shooting yourself in the foot and pulling your
+hair out in frustration.
 
---Mark
+If you really want to buy one instead here is a few places with
+info.
+
+http://penguinppc.org/embedded/hw-companies/
+http://linux-embedded.com/hardlist.php3  (Note: more than just PPC)
+
+You could try motorola and IBM reference boards.
+
+	If you just want to hack PPC code get a mac and a mac
+distribution like Yellow Dog or MacLinux. (Note: You might want to
+check the list of compatible models of these distributions before
+buying a mac)
+
+Have Fun!!
+
+	Conn
+
+--
+
+*****************************************************************
+  If you live at home long enough, your parents will move out.
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
+
+Stock Ticker Symbol				ELST
+
+"clark@esteem.com" Copyright 2000 By Electronic Systems Technology
+ This email address may be used to communicate to Conn Clark
+ provided it is not being used for advertisement purposes, unless
+ prior written consent is given. This email address may not be
+ sold under any circumstances. All other rights reserved.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
