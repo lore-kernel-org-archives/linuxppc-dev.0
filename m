@@ -1,69 +1,48 @@
-Date: Wed, 30 Jun 2004 13:35:54 -0400 (EDT)
+Date: Wed, 30 Jun 2004 14:21:13 -0400 (EDT)
 From: "Robert P. J. Day" <rpjday@mindspring.com>
 To: Tom Rini <trini@kernel.crashing.org>
 Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: looking for .config file for RPXlite board for 2.6 kernel
-In-Reply-To: <20040630171458.GA15960@smtp.west.cox.net>
-Message-ID: <Pine.LNX.4.60.0406301326160.10682@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.60.0406301326160.10682@localhost.localdomain>
+Message-ID: <Pine.LNX.4.60.0406301416270.511@localhost.localdomain>
 References: <Pine.LNX.4.60.0406301107130.18110@localhost.localdomain>
- <20040630171458.GA15960@smtp.west.cox.net>
+ <20040630171458.GA15960@smtp.west.cox.net> <Pine.LNX.4.60.0406301326160.10682@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 30 Jun 2004, Tom Rini wrote:
+On Wed, 30 Jun 2004, Robert P. J. Day wrote:
 
-> On Wed, Jun 30, 2004 at 11:12:18AM -0400, Robert P. J. Day wrote:
+> and i've selected:
 >
->>
->>   ok, in the interests of my mental health, i've grabbed an rpxlite
->> board off the shelf, and am going to see how far i can boot it with
->> the current 2.6 kernel.
->
-> 'make rpxlite_defconfig' and then enable SERIAL_CPM and select SMC1 and
-> SCC1 (you are correct, AFAIK, about the right console being SMC1, but
-> this is the board I've been using and mentioning that it doesn't quite
-> get right).  WRT having to pass in console=, etc, iff you have
-> CONFIG_VT=n, which I believe is in the defconfig, you don't need to pass
-> anything.
+> [*] CPM2 SCC/SMC serial port support
+> [ ]   Support for console on CPM2 SCC/SMC serial port (NEW)
+> [*]   Support for SCC1 serial port
+> [ ]   Support for SCC2 serial port (NEW)
+> [ ]   Support for SCC3 serial port (NEW)
+> [ ]   Support for SCC4 serial port (NEW)
+> [*]   Support for SMC1 serial port
+> [ ]   Support for SMC2 serial port (NEW)
 
-i did eventually find the defconfig files for PPC, and grabbed the
-rpxlite one and have been playing with it for a while.  every
-combination i've tried so far has given me only:
-=============
-Linux/PPC load: ... various load lines, trying console mostly ...
-Uncompressing Linux...done.
-Now booting the kernel
-=============
-and that's it.  i assumed that my fundamental problem was just not
-getting the system console configured properly.  i've confirmed
-through the bootloader that, yes, SMC1 is my monitor serial port.
+as i just emailed tom on the side, duh, i took his previous note
+stupidly literally, and selected *only* the options he listed.  i
+figured out pretty quickly to also select the "Support for console on
+CPM2 ..." and, lo and behold, i have kernel boot output on my rpxlite
+board.  whew.
 
-so, based on what you've suggested, i've gone into (somewhere i've
-already been many times :-):
+so now i get as far as:
 
-Device Drivers
-   Character devices
-     Serial drivers
+RAMDISK: Compressed image found at block 0
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 72k init
+Warning: unable to open an initial console.
+Kernel panic: Attempted to kill init!
 
 
-and i've selected:
-
-[*] CPM2 SCC/SMC serial port support
-[ ]   Support for console on CPM2 SCC/SMC serial port (NEW)
-[*]   Support for SCC1 serial port
-[ ]   Support for SCC2 serial port (NEW)
-[ ]   Support for SCC3 serial port (NEW)
-[ ]   Support for SCC4 serial port (NEW)
-[*]   Support for SMC1 serial port
-[ ]   Support for SMC2 serial port (NEW)
-
-and left everything else alone, and it's building now.  if this still
-hangs after "Now booting the kernel," maybe you can just send me a
-copy of your .config file to diff.  i can't believe this isn't
-something really trivial i'm screwing up.
+i suspect this is also some silly misconfiguration.  off to track it
+down.
 
 rday
 
