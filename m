@@ -1,83 +1,37 @@
-Message-ID: <001401c30e45$ba674c10$370da8c0@aman>
-From: "Aman" <aman@mistralsoftware.com>
-To: "Aman" <aman@mistralsoftware.com>,
-	"linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
-References: <004e01c30db8$10b3d3b0$370da8c0@aman>
-Subject: Re: Shell prompt - Problem Solved
-Date: Tue, 29 Apr 2003 17:21:53 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+From: ghannon@cspi.com
+To: jwalden@digitalatlantic.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <85256D17.0055A864.00@pine.cspi.com>
+Date: Tue, 29 Apr 2003 11:41:24 -0400
+Subject: Re: get program exception in early setup
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All
+Jerry Walden wrote:
 
-The echoing of received characters  got disabled, when I disable the shell
-prompt. I used the command "stty echo -F /dev/ttyS0" to enable the echo of
-the received characters
+> From System.map:
 
-Regards
-Aman
+> c0113000 A __bss_start
+>     |
+>     |
+>     |
+>     V
+> c013c050 A _end
 
------ Original Message -----
-From: "Aman" <aman@mistralsoftware.com>
-To: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
-Sent: Tuesday, April 29, 2003 12:27 AM
-Subject: Shell prompt - Command not visible
+> The symbol _end does not come after the bss - it is at the end of the
+> kernel, so the memset gets an exception.
+
+_end is correctly after bss_start.
+
+There is probably a different problem with how memory is mapped.
+
+Did your kernel get decompressed correctly at 0?
 
 
->
-> Hi All
->
-> To enable/ disable the shell prompt in linuxppc for IBM 440GP, I wrote two
-> script files. They are as follows
->
-> /**********************************************************************/
-> /* enable_cli.sh: This script is to enable the shell prompt */
->
-> grep -v 'sh:123:respawn:/bin/sh < /dev/console > /dev/console 2>
-> /dev/console' /etc/inittab > inittab.tmp
-> echo 'sh:123:respawn:/bin/sh < /dev/console > /dev/console 2>
-/dev/console'
-> >> inittab.tmp
-> mv inittab.tmp /etc/inittab
-> init q
-> /**********************************************************************/
-> /*disable_cli.sh: This script is to disable the shell prompt */
->
-> grep -v 'sh:123:respawn:/bin/sh < /dev/console > /dev/console 2>
-> /dev/console' /etc/inittab > inittab.tmp
-> mv inittab.tmp /etc/inittab
-> init q
-> /**********************************************************************/
->
-> To enable shell prompt ,  I give the command "sh enable_cli.sh, to disable
-> the shell prompt "sh disable_cli.sh"
->
-> First time things work fine ie enable/disable shell prompt.When enabled,
-in
-> the shell prompt I can execute the command from the shell prompt. If I
-> disable the shell prompt and enable for the second time, I get the prompt
-> and I can execute command in the prompt, however the commands I type on
-the
-> prompt is not visible.
-> I type the enter key continuously I get the shell prompt like this
-> sh-2.05a#  sh-2.05a#   sh-2.05a#  sh-2.05a#  sh-2.05a#  sh-2.05a#
-sh-2.05a#
-> sh-2.05a# sh-2.05a# sh-2.05a#  sh-2.05a#   sh-2.05a#  sh-2.05a#  sh-2.05a#
-> sh-2.05a#  sh-2.05a#  sh-2.05a# sh-2.05a# sh-2.05a#  sh-2.05a#   sh-2.05a#
-> sh-2.05a#  sh-2.05a#  sh-2.05a#  sh-2.05a#  sh-2.05a# sh-2.05a#
->
-> Can anybody help me in solving this issue
->
-> Regards
-> Aman
->
->
->
->
+Gary
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
