@@ -1,47 +1,44 @@
-Message-Id: <5.1.0.14.2.20020823090124.0220d5b0@falcon.si.com>
-Date: Fri, 23 Aug 2002 09:10:53 -0400
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: cygwin and embedded linux
-In-Reply-To: <3D64C445.836C2FC9@opensource.se>
-References: <000501c24979$6348a190$37d34c93@neca.nec.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Date: Fri, 23 Aug 2002 15:13:47 +0200 (CEST)
+From: Marius Groeger <mag@sysgo.de>
+To: John Fisher <John.Fisher@nec.com.au>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: cygwin and embedded linux
+In-Reply-To: <Pine.LNX.4.40.0208220914420.2118-100000@mag.devdep.sysgo.de>
+Message-ID: <Pine.LNX.4.40.0208231506060.12655-100000@mag.devdep.sysgo.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 01:00 PM 8/22/2002 +0200, Magnus Damm wrote:
+On Thu, 22 Aug 2002, I wrote:
 
-> > Are there others in this situation and how have they chosen to solve it?
+> 2. The "emulation" will never be 100%. Maybe 99%. Maybe 99.99%. That last
+>    fraction can be a major PITA, because it is not obvious. To compile a
+>    kernel you need a lot of tools with a lot of explicit and implicit twists
+>    to them. It is just a gut feeling that I wouldn't want to rely on this,
+>    if I don't have to. The native way just seems the better way to do it to
+>    me.
 
-[snip]
+Since the term "native" seems to have triggered many other (very
+interesting) posts, just for completeness: in fact I chose bad wording
+for what I wanted to say in this post. In this case, with "native" I
+merely meant a real Linux box (vs. a Windows box), not necessarily a
+native ppc-linux machine.
 
->Another way to solve it would be to switch to Linux and use VNC to
->connect
->to your Windows boxes. I'm not sure how well this works out, though.
+Native ppc-linux is definitely one way to go, although I'd tend to
+hold with one of the other posts to this thread. It pointed out the
+necessity/robustness/repoducability/beauty of clearly distincting
+between the host and the target.
 
-Very well.  It comes with a Windows client that works well.  The linux
-server works very well with minimal slowdown compared to a native X session
-(I use Exceed for X on Windows).  If I didn't already own Exceed, I would
-use VNC exclusively.  (The Windows server also works quite well, but not as
-well as VNC on linux because Windows isn't really set up to do remote
-windows so it has to work a lot harder and is slower as a result.)
+Regards,
+Marius
 
-The default window manager (TWM?) is very basic so you may want to spend
-some time getting it set up better or getting a more elaborate WM running.
-
-What is really cool about VNC is that you can start a job, reboot your
-Windows box 5 times to install some trivial piece of hardware :-),
-re-attach to your VNC session that was busy running your job all the while,
-just in time to see your job complete.
-
-gvb
-
-
->/ magnus
-
-[snip]
+-----------------------------------------------------------------------------
+Marius Groeger           SYSGO Real-Time Solutions GmbH     mgroeger@sysgo.de
+Software Engineering     Embedded and Real-Time Software    www.sysgo.de
+Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
+FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
