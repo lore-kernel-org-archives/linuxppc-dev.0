@@ -1,19 +1,17 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id 8E10C2BD6A
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Sep 2004 16:24:27 +1000 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id i8F6OaIq026965
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Sep 2004 09:24:37 +0300 (EEST)
-Message-ID: <4147DEBD.4090206@intracom.gr>
-Date: Wed, 15 Sep 2004 09:18:37 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
-MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
+	by ozlabs.org (Postfix) with ESMTP id C2D722BD6A
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2004 00:39:28 +1000 (EST)
+Date: Wed, 15 Sep 2004 07:39:26 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Pantelis Antoniou <panto@intracom.gr>
+Message-ID: <20040915143926.GG9398@smtp.west.cox.net>
 References: <4146F3C3.2090100@intracom.gr>
 	<20040914231551.GC9398@smtp.west.cox.net>
-In-Reply-To: <20040914231551.GC9398@smtp.west.cox.net>
-Content-Type: multipart/mixed; boundary="------------010908060103060301040506"
+	<4147DEBD.4090206@intracom.gr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4147DEBD.4090206@intracom.gr>
 Cc: Linux PPC Dev <linuxppc-dev@ozlabs.org>
 Subject: Re: [PATCH] Trivial warning fix patch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,82 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------010908060103060301040506
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+On Wed, Sep 15, 2004 at 09:18:37AM +0300, Pantelis Antoniou wrote:
 
-Tom Rini wrote:
-> On Tue, Sep 14, 2004 at 04:36:03PM +0300, Pantelis Antoniou wrote:
+> Tom Rini wrote:
+> >On Tue, Sep 14, 2004 at 04:36:03PM +0300, Pantelis Antoniou wrote:
+> >
+> >
+> >>Hi
+> >>
+> >>The following patch removes some annoying warnings produced
+> >>by the latest gccs.
+> >
+> >
+> >Can you please read the Developer's Certificate of Origin 1.0 (found in
+> >Documentation/SubmittingPatches and add the approraite lines?  Thanks (I
+> >hate to be annoying about it, but..)
 > 
-> 
->>Hi
->>
->>The following patch removes some annoying warnings produced
->>by the latest gccs.
-> 
-> 
-> Can you please read the Developer's Certificate of Origin 1.0 (found in
-> Documentation/SubmittingPatches and add the approraite lines?  Thanks (I
-> hate to be annoying about it, but..)
-> 
+> Signed-off-by: Pantelis Antoniou <panto@intracom.gr>
 
-Signed-off-by: Pantelis Antoniou <panto@intracom.gr>
+Thanks, I've tossed this into my tree to point Linus at.
 
-Boy is this anal or what?
-
-Regards
-
-Pantelis
-
-
-
-
---------------010908060103060301040506
-Content-Type: text/x-patch;
- name="rheap.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="rheap.patch"
-
-diff -Nur --exclude=RCS --exclude=CVS --exclude=SCCS --exclude=BitKeeper --exclude=ChangeSet linuxppc_2.5/arch/ppc/lib/rheap.c linuxppc_2.5-intracom/arch/ppc/lib/rheap.c
---- linuxppc_2.5/arch/ppc/lib/rheap.c	2004-07-16 10:03:07 +03:00
-+++ linuxppc_2.5-intracom/arch/ppc/lib/rheap.c	2004-09-14 12:58:48 +03:00
-@@ -216,7 +216,7 @@
- 
- 	/* Grow the after block backwards */
- 	if (before == NULL && after != NULL) {
--		(int8_t *) after->start -= size;
-+		after->start = (int8_t *)after->start - size;
- 		after->size += size;
- 		return;
- 	}
-@@ -407,7 +407,7 @@
- 	/* blk still in free list, with updated start and/or size */
- 	if (bs == s || be == e) {
- 		if (bs == s)
--			(int8_t *) blk->start += size;
-+			blk->start = (int8_t *)blk->start + size;
- 		blk->size -= size;
- 
- 	} else {
-@@ -471,7 +471,7 @@
- 	newblk->owner = owner;
- 
- 	/* blk still in free list, with updated start, size */
--	(int8_t *) blk->start += size;
-+	blk->start = (int8_t *)blk->start + size;
- 	blk->size -= size;
- 
- 	start = newblk->start;
-@@ -535,7 +535,7 @@
- 	/* blk still in free list, with updated start and/or size */
- 	if (bs == s || be == e) {
- 		if (bs == s)
--			(int8_t *) blk->start += size;
-+			blk->start = (int8_t *)blk->start + size;
- 		blk->size -= size;
- 
- 	} else {
-
---------------010908060103060301040506--
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
