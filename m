@@ -1,58 +1,61 @@
-Message-ID: <023901bfd7f1$96254ba0$d0c809c0@p2kasvr>
-Reply-To: "john zhan" <r3587@sina.com>
-From: "john zhan" <r3587@sina.com>
-To: <hugh.mcdonald@nokia.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <4FC68B779807D31191B10008C7731C4D579921@meeis01nok>
-Subject: Re: SCC used for WAN connection
-Date: Sat, 17 Jun 2000 08:16:54 +0800
+Message-ID: <394BB209.E711286D@embeddededge.com>
+Date: Sat, 17 Jun 2000 13:14:49 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: john zhan <r3587@sina.com>
+CC: hugh.mcdonald@nokia.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: SCC used for WAN connection
+References: <4FC68B779807D31191B10008C7731C4D579921@meeis01nok> <023901bfd7f1$96254ba0$d0c809c0@p2kasvr>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi, Hugh McDonald
+john zhan wrote:
 
-> On 30/5/00 Ruedi Hofer wrote,
-> >
-> >I'd like to use one of the currently unused SCC's as WAN interface.
-> >My ultimate dream is to run PPP or Frame Relay at a speed of
-> >2Mb/s on it.
-me too.  in fact,   also, I need generic x.25 running on it.
+> me too.  in fact,   also, I need generic x.25 running on it.
 
->Hugh McDonald wrote,
-> Hi Ruedi,
->     I too am hoping to one day run one SCC on an MBX860 board as a 2M WAN
-> port. My general plan was to run the SCC in HDLC synchronous mode and use
-> the PPP protocol on top of this.  From my quick investigation I found that
-> in the LinuxPPc /kernel/drivers/char area there some files synclink.c
-> (rewrite of serial.c) and n_hdlc.c (rewrite of ppp.c). Together they form a
-> Linux Device Driver & line disipline for a synchrouous PPP link.
-> Unfortunately the synclink.c driver is dedicated to a PCI serial card
-> produced by MicroGate.
-yes , we NEED a SCC HDLC mode synchronous  driver.
+So, write it.
 
->    What is needed is a new version of 8xx_io/uart.c that sets up and drives
-> the SCC as a synchronous serial port. This may then be useable with the sync
-> PPP line disipline from the above driver.
->   I have started playing with it but only when I have some spare time....
-great!
-I think it will probably  have big difference from the existing uart.c , and init routine must contain of  both uart and hdlc init code.
-or ,  maybe need reconstruct the directory/file structures , add hdlc.c which supports full features of net device.
 
-> and I dont seem to get much of that these days :-(
->    Please let me know if you get any info from other people or find out any
-> other possible solutions....
-I think we can  work together .
-If you like,let's discuss it later , privately.
+>
+> >    What is needed is a new version of 8xx_io/uart.c that sets up and drives
 
-what do you say?
+No, what you want is an SCC synchronous driver. Period.  Don't put
+stuff like this in the uart driver, it is a big enough mess the
+way it is.  I am close to having a really configurable uart driver,
+so you can select what SCC/SMCs you want.  The uart driver is a uart
+driver, not an SCC driver.
 
-regards.
-john zhan.
-hacking time.
+We will probably have to create some other functions for managing the
+baud rate generators, but for synchronous I/O that clock should be
+provided externally.
 
+> > other possible solutions....
+> I think we can  work together .
+> If you like,let's discuss it later , privately.
+
+I would strongly suggest not going off and making a big mess, then
+sending me a patch and hope it gets applied to the kernel sources.
+
+I have done lots of synchronous SCC, HDLC, and other things as custom
+proprietary drivers for many customers.  Typically, the driver does
+very little, just buffers the data for mmap()'ed applications that
+do the real work.  I will see if I can provide some framework from
+past work I have done, but some of these folks are quite protective
+of this.
+
+These drivers are not hard to write, and you can use examples from
+Motorola's NetComm site to get started.  You may need to do some
+uncached memory buffering tricks in Linux or just use cache management
+functions to ensure cache coherency.
+
+Don't use old silicon, like before Rev. C 860.  Most of these functions
+don't work as advertised on SCC3 and SCC4, only on SCC1 and SCC2.  Make
+sure you pay close attention to the external hardware, as clock and
+data transition edges are criticaly to this working correctly.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
