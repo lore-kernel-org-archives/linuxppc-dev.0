@@ -1,57 +1,28 @@
-Subject: RE: Linux Kernel hangs after execve('/bin/sh')
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Wed, 22 Jan 2003 15:35:38 -0500
-Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B763497@mail1.mediatrix.com>
-From: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
-To: "Prakash kanthi" <pkanthi@yahoo.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <3.0.3.32.20030122141233.00749e14@hollabaugh.com>
+Date: Wed, 22 Jan 2003 14:12:33 -0700
+To: "Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>,
+	linuxppc-embedded@lists.linuxppc.org
+From: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>
+Subject: Re: where to get ppc_8xx-gdb
+In-Reply-To: <885489B3B89FB6449F93E525DF78777F064563@srvnt506.ALLOPTIC.C
+ OM>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Some important informations are missing to help you.
-Which CPU model and revision are you using?
-Which kernel version, taken from where?
-Some newer CPU revs are incompatible with older kernels.
+At 12:08 PM 1/22/2003 -0800, Muaddi, Cecilia wrote:
+>
+>Hello all,
+>
+>My embeded distribution for PPC 860 did not come with the cross-compiled
+>gdb.
+>
+>Can someone point me to where I can get the ppc_8xx-gdb which will allow
+>me to using GDB on the host=pc and target=power-pc-860
 
-Regards,
---------------------------------------------
- Jean-Denis Boyer, B.Eng., Technical Leader
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
 
-> -----Original Message-----
-> From: Prakash kanthi [mailto:pkanthi@yahoo.com]
-> Sent: 22 janvier, 2003 14:50
-> To: dnevil@snmc.com
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: Linux Kernel hangs after execve('/bin/sh')
->
->
->
-> Hurray .......
->
-> Daris, you suggestion seem to work. I Compiled my
-> hello.c with -Bstatic (size was almost 1MB), added it
-> to ramdisk and it works. So now the problem is
-> narrowed down to, being not able to work with the
-> shared libraries.
->
-> One point is that, i DID NOT get any errors (atleast
-> on the screen) while execve was loading shared
-> libraries in the process of executing /bin/sh. But for
-> sure, my problem is related to it.
->
-> I really appreciate any suggestions related to this
-> issue.
->
-> Thanks,
-> Prakash
+Try ELDK at denx.de.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
