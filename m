@@ -1,29 +1,21 @@
-Message-ID: <013101c1cf69$946139c0$5ad58a89@cern.ch>
-From: "Pei-Jie Hong" <Pei-Jie.Hong@cern.ch>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <004301c1cf9a$3cac90e0$6649a8c0@LEIYINGDU>
+From: "Leiying Du" <ldu@solectek.com>
 To: <linuxppc-embedded@lists.linuxppc.org>
-References: <A1C99F4731CAD111BA5400A024FC3B0CBE06EA@ESBILMA01EDCGE>
-Subject: JFFS2 question!
-Date: Tue, 19 Mar 2002 18:14:50 +0100
+Subject: Single-Step Debugger for HP probe
+Date: Tue, 19 Mar 2002 15:03:09 -0800
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="big5"
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-    We have our own PPC750 board with 4 8MB(16 bits, sector size 64k byte)
-AMD Flash chips on it. Currently we only use on chip, and try to make JFFS2
-filesystem on it. We did pretty well on it.
-    However, we have a question. When we try to copy a small file into the
-Flash
-memory, it always resides at the beginning of the last sector of the flash
-memory.
-Does that mean JFFS2 grow backward?
-    Thanks.
+  Does anyone have experience using WindRiver's Single debugger to debuge a
+linux zimage file? I can load the .elf file but it will crash at somewhere
+when the kernel is booting. Thanks.
 
-Best regards,
-Pei-Jie Hong
+Leiying
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
