@@ -1,50 +1,35 @@
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Serial-to-socket conversion 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 25 May 2004 18:26:41 +0200."
-             <20040525162646.A291FC109F@atlas.denx.de>
-Date: Tue, 25 May 2004 19:10:52 +0200
-Message-Id: <20040525171057.11952C109F@atlas.denx.de>
+Date: Tue, 25 May 2004 10:23:52 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: curious about BK checkin protocol
+Message-ID: <20040525102352.A1329@home.com>
+References: <Pine.LNX.4.58.0405250909280.14496@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.58.0405250909280.14496@localhost.localdomain>; from rpjday@mindspring.com on Tue, May 25, 2004 at 09:12:10AM -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20040525162646.A291FC109F@atlas.denx.de> I wrote:
+On Tue, May 25, 2004 at 09:12:10AM -0400, Robert P. J. Day wrote:
 >
-...
-> We're running a modified version of netkit-rsh which  allows  to  use
-> "rlogin <host> -l <portname>" to connect to a remote serial port; for
-> example, this config file might be used:
-...
-> If you want I can send you the stuff; if ther eis more interest I can
-> put it on our FTP server.
+>   i just bk-cloned a fresh copy of the source tree from
+> http://ppc.bkbits.net:8080/linuxppc-2.5, and once again, had to fix the
+> file arch/ppc/kernel/ppc_ksyms.c to remove the now-obsolete snippet of
+> code:
+>
+> #if defined(CONFIG_8xx)
+> EXPORT_SYMBOL(request_8xxirq);
+> #endif
+>
+>   i thought it had been well-established by now that this had to go.
+> what's the protocol for someone putting these changes into the tree?
+> just curious.
 
-OK, OK, OK - please stop sending requests...
+Post a patch.  If it's something that is incorrect in linux-2.5
+as well, then the patch is expected to be against linux-2.5.
 
-You can find our "terminal server" package at
-
-	ftp://ftp.denx.de/pub/tools/tserver-0.17-3.i386.rpm
-	ftp://ftp.denx.de/pub/tools/tserver-0.17-3.src.rpm
-
-The first is a RPM for RH 9; the second is the Source RPM.
-
-As mentioned before, this is an extension/add-on  to  netkit-rsh-0.17
-which requires the following acknowledgement:
-	This product includes software developed by the University of
-	California, Berkeley and its contributors.
-Our extension itself is available under GPL.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Data is a lot like humans: It is  born.  Matures.  Gets  married  to
-other  data, divorced. Gets old. One thing that it doesn't do is die.
-It has to be killed."                                 - Arthur Miller
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
