@@ -1,31 +1,43 @@
-Message-Id: <m11jo7O-001SwNC@bucks>
-From: diekema@bucks.si.com (diekema_jon)
-Subject: Re: Trying to find out the current state of Linux on a MPC 8260
-To: dan@netx4.com (Dan Malek)
-Date: Fri, 5 Nov 1999 13:29:45 -0500 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <3823292A.3D3E8BFE@netx4.com> from "Dan Malek" at Nov 5, 99 01:59:54 pm
+Message-ID: <382333E0.1F57B795@netx4.com>
+Date: Fri, 05 Nov 1999 14:45:36 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: diekema_jon <diekema@bucks.si.com>
+CC: Dan Malek <dan@penguin.netx4.com>, linuxppc-embedded@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Trying to find out the current state of Linux on a MPC 8260
+References: <m11jo7O-001SwNC@bucks>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Date: Fri, 05 Nov 1999 13:59:54 -0500
-> From: Dan Malek <dan@netx4.com>
-> Organization: NETx4, LLC
+diekema_jon wrote:
 
-> Motorola gave me an 8240 Sandpoint that I have been using in my free
-> time to port Linux/PPC.  Since this is a personal contribution of
-> mine, people that pay me obviously have priority :-).  I should
-> update CVS with the current sources....there are still some bugs in
-> the configuration of the interrupt controller for the ISA bridge and
-> 8259.
 
-What CVS archives do you update?  
+> What CVS archives do you update?
 
-Is it ":pserver:anonymous@cvs.on.openprojects.net:/cvs/linux"?  
+I have access to the vger CVS tree, and only update the minimal
+embedded 8xx and 82xx files.  I rely heavily (and thankfully :-)
+on others to ensure these changes are propagated into Linus'
+and other trees.
 
-What are the collection names that contains the updates?  Is it just "linux"?
+
+> What are the collection names that contains the updates?  Is it just "linux"?
+
+
+Yes, for the kernel.
+
+I think it is time to remind everyone finding, compiling and booting
+a kernel is actually the easy part of the development effort.  The
+real challenges are the applications.....creating the development
+environment with compiler, libraries, debuggers and other tools
+is time consuming.  I try to make the embedded things I do work
+as closely to a desktop or server as possible, but there are
+sometimes differences.
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
