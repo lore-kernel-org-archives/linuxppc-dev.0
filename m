@@ -1,71 +1,56 @@
-Date: Fri, 7 Jan 2000 13:57:08 +0100
-From: Olaf Hering <olh@suse.de>
-To: Andreas Tobler <toa@pop.agri.ch>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: remote debugging?
-Message-ID: <20000107135708.C1891@suse.de>
-Reply-To: linuxppc-dev@lists.linuxppc.org
-References: <3874C8D8.835DBC64@pop.agri.ch> <3874E237.57063BBE@mitre.org> <3874E9A9.48716917@pop.agri.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3874E9A9.48716917@pop.agri.ch>
+Date: Fri, 7 Jan 2000 10:05:49 -0800 (PST)
+From: Mark Vojkovich <mvojkovich@varesearch.com>
+To: XFree86 Devel <devel@XFree86.Org>
+cc: Shuangjun Zhu <r44089@email.sps.mot.com>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Question about the video device driver
+In-Reply-To: <Pine.GSO.4.10.10001071005530.10461-100000@dandelion.sonytel.be>
+Message-ID: <Pine.LNX.4.04.10001070959040.28797-100000@silicon.su.valinux.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 06, Andreas Tobler wrote:
 
-> Charles Lepple wrote:
+
+On Fri, 7 Jan 2000, Geert Uytterhoeven wrote:
+
+> On Fri, 7 Jan 2000, Shuangjun Zhu wrote:
+> > The video of MPC823 FADS board only support YCbYCr mode,
+> > so how can I write a device driver for the video of MPC823 FADS board,
+> > to enable the X?
 > > 
-> > Andreas Tobler wrote:
-> > [...]
-> [...] 
-> > Paul Mackerras wrote some documentation for xmon that you may want to
-> > check out. It doesn't seem to be in Documentation/ but it's probably at
-> > linuxppc.cs.nmt.edu or something (search the mail archives -- it has
-> > been discussed before).
+> > Any suggestion? 
+> > Thanks in advanced.
 > 
-> This docu I have.
-> Thanks for the answer. But my problem is much earlier I think.
+> This sounds like an interesting project.
 > 
-> I'd like to redirect the console output from the boot of my pm7200 to
-> the serial port. This is what doesn't work.
-> Neither the printer nor the modem port. 
+> How many bits per pixel are available? If it's not too much you can create a
+> staticcolor visual and consider it to be a simple paletted video mode (with a
+> static palette). However, IIRC, XFree86 doesn't support staticcolor hardware,
+> but support for that is probably closer than support for YCbCr.
+
+   We support static color visuals just fine.  But there will be
+a problem if the hardware doesn't have a macroblock size of 1x1.
+It's required that you can get read the data back without losing
+information.  If you are sharing chroma between pixels that's
+not going to work.
+
 > 
-> When the system is up, I can check the physical connection which works.
+> I see you write YCbYCr? So the color components are subsampled like digital
+> broadcast video? In that case things become more complex because of the
+> different resolutions for the luminance and chrominance channels.
 > 
-> Isn't it possible to get the boot output to the serial port written?
+> All this combined, I think the best solution is to use the virtual frame buffer
+> feature of XFree86 3.9.x (draw in a piece of memory as large as the screen) and
+> update the screen image by converting the changed parts from RGB to YCbYCr.
 
-I had such a configuration a few days ago. 7200 -> ix86 with a usual
-modem cable.
-
-You need a kernel with support for PowerMac serial port and console on
-serial port.
-Then give the arguments like described in
-Documentation/serial-console.txt :
-
-console=ttyS0,19200 and you will see an output on your console and the
-penguin on your screen. It should be possible to log both to serial and
-to the screen.
-
-For a first test you should setup a serial login to check the settings
-in zterm. Add a line like this in your inittab:
-t:23:respawn:/sbin/agetty -L -h 19200
-
-The 23 mean the runlevels and might be different on a RedHat system.
-If you can login to your 7200 then the cable and the settings in zterm
-are ok. Somehow you always get a little garbage when you login from a
-Mac to another Mac. This does not occour from a ix86 machine, I don't
-know why.
+   Yes, shadowfb should work fine for this if the hardware can do the
+conversion from RGB data stored in system memory.
 
 
+				Mark.
 
-Gruss Olaf
-
--- 
- $ man 1 current_release
-
-BUGS
-       Users never read manuals...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
