@@ -1,36 +1,26 @@
-Message-Id: <9903251912.AA56638@marc.watson.ibm.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Apple Job Posting and Good News for LinuxPPC developers 
-In-Reply-To: Message from "Kevin B. Hendricks" <kbhend@business.wm.edu>
-   of "Thu, 25 Mar 1999 11:46:27 EST." <36FA6863.50817162@business.wm.edu>
-Date: Thu, 25 Mar 1999 14:12:02 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Date: Fri, 26 Mar 1999 17:08:34 +1100 (EST)
+From: Nathan Hurst <njh@drongo.anu.edu.au>
+To: "Kevin B. Hendricks" <kbhend@business.wm.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Apple Job Posting and Good News for LinuxPPC developers
+In-Reply-To: <36FA6863.50817162@business.wm.edu>
+Message-ID: <Pine.LNX.3.95.990326170718.11329A-100000@drongo.anu.edu.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Kevin B Hendricks" writes:
+On Thu, 25 Mar 1999, Kevin B. Hendricks wrote:
 
-Kevin> Just in case anyone missed this.  Apple is hiring someone whose job description
-Kevin> will include making it easier for people to get enough hardware info to get
-Kevin> Linux PPC to run on Apple's new hardware.
+> We should get one of our own into this role and get a leg up on helping apple
+> open up its hardware specs for Linux PPC
+> 
+> What do you think?
 
-Kevin> We should get one of our own into this role and get a leg up on helping apple
-Kevin> open up its hardware specs for Linux PPC
+I'm voting for Paul Mackerras to get the job.. :-)
+(I'm sure he _love_ to spend his time working solely on linuxpmac.. :-)
 
-	My group at IBM Research also is looking for someone with operating
-system development experience to join our project:
-
-	http://www.research.ibm.com/kitchawan/
-
-The project is targeted at multiprocessor systems utilizing 64-bit processors
-including PowerPC64.  An additional aspect is compatibility with glibc.
-
-David
-===============================================================================
-David Edelsohn                                      T.J. Watson Research Center
-dje@watson.ibm.com                                  P.O. Box 218
-+1 914 945 4364 (TL 862)                            Yorktown Heights, NY 10598
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
