@@ -1,182 +1,205 @@
-Subject: [PATCH] openpic_hookup_cascade in linuxppc_2_5
+Subject: [PATCH] sandpoint X2 in linuxppc_2_5
 From: Adrian Cox <adrian@humboldt.co.uk>
 To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <1079446844.1677.250.camel@newt>
+References: <1079446844.1677.250.camel@newt>
 Content-Type: text/plain
-Message-Id: <1079446844.1677.250.camel@newt>
+Message-Id: <1079448047.1677.253.camel@newt>
 Mime-Version: 1.0
-Date: Tue, 16 Mar 2004 14:20:45 +0000
+Date: Tue, 16 Mar 2004 14:40:47 +0000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This patch ports the openpic_hookup_cascade() function from 2_4_devel,
-as it is necessary for the Sandpoint X2. In doing this I have to change
-almost every user of openpic_init.
+On Tue, 2004-03-16 at 14:20, Adrian Cox wrote:
+> This patch ports the openpic_hookup_cascade() function from 2_4_devel,
+> as it is necessary for the Sandpoint X2. In doing this I have to change
+> almost every user of openpic_init.
 
-pmac needs no changes.
-chrp, lopec, mcpn765, pplus, prep, and sandpoint need simple changes.
-
-But some of the platforms don't use the new, single argument, form of
-openpic_init(). Thus, the following are already broken in 2.5: gemini,
-mvme5100, powerpmc250, prmpm750, and prpmc800. I don't have any of these
-platforms, so my patch doesn't touch them.
+And here is the X2 patch. My earlier problems with serial interrupts
+were solved by putting those i8259 irqs into edge mode.
 
 - Adrian Cox
 
-diff -Nru a/arch/ppc/platforms/chrp_setup.c b/arch/ppc/platforms/chrp_setup.c
---- a/arch/ppc/platforms/chrp_setup.c	Tue Mar 16 14:15:02 2004
-+++ b/arch/ppc/platforms/chrp_setup.c	Tue Mar 16 14:15:02 2004
-@@ -407,6 +407,7 @@
- 	OpenPIC_NumInitSenses = NR_IRQS - NUM_8259_INTERRUPTS;
+===== arch/ppc/Kconfig 1.63 vs edited =====
+--- 1.63/arch/ppc/Kconfig	Fri Mar 12 20:23:17 2004
++++ edited/arch/ppc/Kconfig	Tue Mar 16 13:54:05 2004
+@@ -622,9 +622,22 @@
+ 	depends on EV64260
+ 	default y
 
- 	openpic_init(NUM_8259_INTERRUPTS);
-+        openpic_hookup_cascade(NUM_8259_INTERRUPTS, "82c59 cascade", &i8259_irq);
++config SANDPOINT_X2
++        bool "Run on X2 Sandpoint"
++        depends on SANDPOINT
++        default n
++        ---help---
++          This switches the Sandpoint platform to support the older X2
++          revision. The X2 has only two usable PCI slots and a more
++          restricted interrupt layout.
++
++          If you select this option the kernel will not run on later
++          revisions of the Sandpoint.
++
++
+ config EPIC_SERIAL_MODE
+ 	bool
+-	depends on 6xx && (LOPEC || SANDPOINT)
++	depends on 6xx && (LOPEC || SANDPOINT) && ! SANDPOINT_X2
+ 	default y
 
- 	for (i = 0; i < NUM_8259_INTERRUPTS; i++)
- 		irq_desc[i].handler = &i8259_pic;
-diff -Nru a/arch/ppc/platforms/lopec_setup.c b/arch/ppc/platforms/lopec_setup.c
---- a/arch/ppc/platforms/lopec_setup.c	Tue Mar 16 14:15:02 2004
-+++ b/arch/ppc/platforms/lopec_setup.c	Tue Mar 16 14:15:02 2004
-@@ -208,6 +208,7 @@
- 	openpic_set_sources(19, 1, OpenPIC_Addr + 0x110C0);
+ config MPC10X_STORE_GATHERING
+===== arch/ppc/platforms/sandpoint.c 1.23 vs edited =====
+--- 1.23/arch/ppc/platforms/sandpoint.c	Tue Mar 16 14:08:56 2004
++++ edited/arch/ppc/platforms/sandpoint.c	Tue Mar 16 14:19:35 2004
+@@ -61,10 +61,6 @@
+  * what version of DINK initializes the system for us, if applicable, is
+  * found, we can hopefully stop hardcoding 32MB of RAM.
+  *
+- * It is important to note that this code only supports the Sandpoint X3
+- * (all flavors) platform, and it does not support the X2 anymore.  Code
+- * that at one time worked on the X2 can be found at:
+- * ftp://source.mvista.com/pub/linuxppc/obsolete/sandpoint/
+  */
 
- 	openpic_init(NUM_8259_INTERRUPTS);
-+        openpic_hookup_cascade(NUM_8259_INTERRUPTS, "82c59 cascade", &i8259_irq);
+ #include <linux/config.h>
+@@ -137,18 +133,41 @@
+ 	 * 	   A   B   C   D
+ 	 */
+ 	{
++#ifdef CONFIG_SANDPOINT_X2
++                { 18,  0,  0,  0 },     /* IDSEL 11 - i8259 on Windbond */
++                {  0,  0,  0,  0 },     /* IDSEL 12 - unused */
++                { 16, 17, 18, 19 },     /* IDSEL 13 - PCI slot 1 */
++                { 17, 18, 19, 16 },     /* IDSEL 14 - PCI slot 2 */
++                { 18, 19, 16, 17 },     /* IDSEL 15 - PCI slot 3 */
++                { 19, 16, 17, 18 },     /* IDSEL 16 - PCI slot 4 */
++#else
+ 		{ 16,  0,  0,  0 },	/* IDSEL 11 - i8259 on Winbond */
+ 		{  0,  0,  0,  0 },	/* IDSEL 12 - unused */
+ 		{ 18, 21, 20, 19 },	/* IDSEL 13 - PCI slot 1 */
+ 		{ 19, 18, 21, 20 },	/* IDSEL 14 - PCI slot 2 */
+ 		{ 20, 19, 18, 21 },	/* IDSEL 15 - PCI slot 3 */
+ 		{ 21, 20, 19, 18 },	/* IDSEL 16 - PCI slot 4 */
++#endif
+ 	};
 
- 	/* Map i8259 interrupts */
- 	for(i = 0; i < NUM_8259_INTERRUPTS; i++)
-diff -Nru a/arch/ppc/platforms/mcpn765_setup.c b/arch/ppc/platforms/mcpn765_setup.c
---- a/arch/ppc/platforms/mcpn765_setup.c	Tue Mar 16 14:15:02 2004
-+++ b/arch/ppc/platforms/mcpn765_setup.c	Tue Mar 16 14:15:02 2004
-@@ -247,6 +247,7 @@
- 		ppc_md.progress("init_irq: enter", 0);
+ 	const long min_idsel = 11, max_idsel = 16, irqs_per_slot = 4;
+ 	return PCI_IRQ_TABLE_LOOKUP;
+ }
 
- 	openpic_init(NUM_8259_INTERRUPTS);
-+        openpic_hookup_cascade(NUM_8259_INTERRUPTS, "82c59 cascade", &i8259_irq);
++#ifdef CONFIG_SANDPOINT_X2
++/* On the sandpoint X2, we must avoid sending configuration cycles to
++ * device #12 (IDSEL addr = AD12).
++ */
++static int
++sandpoint_exclude_device(u_char bus, u_char devfn)
++{
++        if ((bus == 0) && (PCI_SLOT(devfn) == SANDPOINT_HOST_BRIDGE_IDSEL))
++               return PCIBIOS_DEVICE_NOT_FOUND;
++        else
++               return PCIBIOS_SUCCESSFUL;
++}
++#endif
++
+ static void __init
+ sandpoint_setup_winbond_83553(struct pci_controller *hose)
+ {
+@@ -236,6 +255,9 @@
 
- 	for(i=0; i < NUM_8259_INTERRUPTS; i++)
- 		irq_desc[i].handler = &i8259_pic;
-diff -Nru a/arch/ppc/platforms/pplus.c b/arch/ppc/platforms/pplus.c
---- a/arch/ppc/platforms/pplus.c	Tue Mar 16 14:15:02 2004
-+++ b/arch/ppc/platforms/pplus.c	Tue Mar 16 14:15:02 2004
-@@ -672,6 +672,8 @@
+ 		/* Do early winbond init, then scan PCI bus */
+ 		sandpoint_setup_winbond_83553(hose);
++#ifdef CONFIG_SANDPOINT_X2
++                ppc_md.pci_exclude_device = sandpoint_exclude_device;
++#endif
+ 		hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
 
- 		openpic_set_sources(0, 16, OpenPIC_Addr + 0x10000);
- 		openpic_init(NUM_8259_INTERRUPTS);
-+                openpic_hookup_cascade(NUM_8259_INTERRUPTS, "82c59 cascade",
-+                                       &i8259_irq);
- 		ppc_md.get_irq = openpic_get_irq;
- 	}
+ 		ppc_md.pcibios_fixup = NULL;
+@@ -361,7 +383,7 @@
+ sandpoint_fix_winbond_83553(void)
+ {
+ 	/* Make all 8259 interrupt level sensitive */
+-	outb(0xf8, 0x4d0);
++	outb(0xe0, 0x4d0);
+ 	outb(0xde, 0x4d1);
 
-diff -Nru a/arch/ppc/platforms/prep_setup.c b/arch/ppc/platforms/prep_setup.c
---- a/arch/ppc/platforms/prep_setup.c	Tue Mar 16 14:15:02 2004
-+++ b/arch/ppc/platforms/prep_setup.c	Tue Mar 16 14:15:02 2004
-@@ -854,8 +854,11 @@
- 	int i;
- 	unsigned int pci_viddid, pci_did;
-
--	if (OpenPIC_Addr != NULL)
-+	if (OpenPIC_Addr != NULL) {
- 		openpic_init(NUM_8259_INTERRUPTS);
-+                openpic_hookup_cascade(NUM_8259_INTERRUPTS, "82c59 cascade",
-+                                       &i8259_irq);
-+        }
- 	for ( i = 0 ; i < NUM_8259_INTERRUPTS ; i++ )
- 		irq_desc[i].handler = &i8259_pic;
- 	/* If we have a Raven PCI bridge or a Hawk PCI bridge / Memory
-diff -Nru a/arch/ppc/platforms/sandpoint.c b/arch/ppc/platforms/sandpoint.c
---- a/arch/ppc/platforms/sandpoint.c	Tue Mar 16 14:15:02 2004
-+++ b/arch/ppc/platforms/sandpoint.c	Tue Mar 16 14:15:02 2004
-@@ -444,6 +444,7 @@
+ 	return 0;
+@@ -440,11 +462,19 @@
+ 	 * Interrupt Source Configuration Registers gives these numbers
+ 	 * as offsets starting at 0x50200, we need to adjust occordinly.
+ 	 */
++#ifdef CONFIG_SANDPOINT_X2
++        /* Map EPIC IRQs 0-3 */
++        openpic_set_sources(0, 4, OpenPIC_Addr + 0x10200);
++        /* Skip reserved space and map i2c and DMA Ch[01] */
++        openpic_set_sources(4, 3, OpenPIC_Addr + 0x11020);
++        /* Skip reserved space and map Message Unit Interrupt (I2O) */
++        openpic_set_sources(7, 1, OpenPIC_Addr + 0x110C0);
++#else
+ 	/* Map serial interrupts 0-15 */
  	openpic_set_sources(0, 16, OpenPIC_Addr + 0x10200);
-
+-
++#endif
  	openpic_init(NUM_8259_INTERRUPTS);
-+        openpic_hookup_cascade(NUM_8259_INTERRUPTS, "82c59 cascade", &i8259_irq);
+-        openpic_hookup_cascade(NUM_8259_INTERRUPTS, "82c59 cascade", &i8259_irq);
++	openpic_hookup_cascade(SANDPOINT_CASCADE, "8259 cascade", &i8259_irq);
 
  	/*
  	 * openpic_init() has set up irq_desc[16-31] to be openpic
-diff -Nru a/arch/ppc/syslib/open_pic.c b/arch/ppc/syslib/open_pic.c
---- a/arch/ppc/syslib/open_pic.c	Tue Mar 16 14:15:02 2004
-+++ b/arch/ppc/syslib/open_pic.c	Tue Mar 16 14:15:02 2004
-@@ -48,6 +48,8 @@
- static u_int NumSources;
- static int open_pic_irq_offset;
- static volatile OpenPIC_Source *ISR[NR_IRQS];
-+static int openpic_cascade_irq = -1;
-+static int (*openpic_cascade_fn)(struct pt_regs *);
-
- /* Global Operations */
- static void openpic_disable_8259_pass_through(void);
-@@ -417,12 +419,6 @@
- 	if (ppc_md.progress) ppc_md.progress("openpic: spurious",0x3bd);
- 	openpic_set_spurious(OPENPIC_VEC_SPURIOUS+offset);
-
--	/* Initialize the cascade */
--	if (offset) {
--		if (request_irq(offset, no_action, SA_INTERRUPT,
--				"82c59 cascade", NULL))
--			printk("Unable to get OpenPIC IRQ 0 for cascade\n");
--	}
- 	openpic_disable_8259_pass_through();
- #ifdef CONFIG_EPIC_SERIAL_MODE
- 	openpic_eicr_set_clk(7);	/* Slowest value until we know better */
-@@ -682,6 +678,19 @@
-  *
-  */
-
-+/*
-+ * Hookup a cascade to the OpenPIC.
-+ */
-+void __init
-+openpic_hookup_cascade(u_int irq, char *name,
-+	int (*cascade_fn)(struct pt_regs *))
+@@ -636,7 +666,16 @@
+ 			sync "
+ 			: "=r" (bat3u), "=r" (bat3l));
+ }
++#ifdef CONFIG_SANDPOINT_X2
++static void __init sandpointx2_calibrate_decr(void)
 +{
-+	openpic_cascade_irq = irq;
-+	openpic_cascade_fn = cascade_fn;
-+	if (request_irq(irq, no_action, SA_INTERRUPT, name, NULL))
-+		printk("Unable to get OpenPIC IRQ %d for cascade\n",
-+				irq - open_pic_irq_offset);
++	unsigned freq = 16666600;
+
++	printk("time_init: decrementer frequency = %d\n", freq);
++    	tb_ticks_per_jiffy = freq / HZ;
++    	tb_to_us = mulhwu_scale_factor(freq, 1000000);
 +}
++#endif
+ TODC_ALLOC();
 
- /*
-  *  Enable/disable an external interrupt source
-@@ -841,13 +850,18 @@
- 	int irq = openpic_irq();
+ void __init
+@@ -693,6 +732,9 @@
+ 	ppc_md.find_end_of_memory = sandpoint_find_end_of_memory;
+ 	ppc_md.setup_io_mappings = sandpoint_map_io;
 
- 	/*
--	 * This needs to be cleaned up.  We don't necessarily have
--	 * an i8259 cascaded or even a cascade.
-+	 * Check for the cascade interrupt and call the cascaded
-+	 * interrupt controller function (usually i8259_irq) if so.
-+	 * This should move to irq.c eventually.  -- paulus
- 	 */
--	if (open_pic_irq_offset && irq == open_pic_irq_offset) {
--		/* Get the IRQ from the cascade. */
--		irq = i8259_irq(regs);
--		openpic_eoi();
-+	if (irq == openpic_cascade_irq && openpic_cascade_fn != NULL) {
-+		int cirq = openpic_cascade_fn(regs);
++#ifdef CONFIG_SANDPOINT_X2
++	ppc_md.calibrate_decr = sandpointx2_calibrate_decr;
++#else
+ 	TODC_INIT(TODC_TYPE_PC97307, 0x70, 0x00, 0x71, 8);
+ 	ppc_md.time_init = todc_time_init;
+ 	ppc_md.set_rtc_time = todc_set_rtc_time;
+@@ -701,6 +743,7 @@
+
+ 	ppc_md.nvram_read_val = todc_mc146818_read_val;
+ 	ppc_md.nvram_write_val = todc_mc146818_write_val;
++#endif
+
+ #if defined(CONFIG_SERIAL_8250) && \
+ 	(defined(CONFIG_KGDB) || defined(CONFIG_SERIAL_TEXT_DEBUG))
+===== arch/ppc/platforms/sandpoint.h 1.7 vs edited =====
+--- 1.7/arch/ppc/platforms/sandpoint.h	Fri Sep 12 18:39:40 2003
++++ edited/arch/ppc/platforms/sandpoint.h	Tue Mar 16 14:10:11 2004
+@@ -35,6 +35,16 @@
+ #define SANDPOINT_IDE_INT1		15	/* 8259 Test */
+ #endif
+
++/* The Sandpoint X3 runs the epic in serial mode, with the i8259 cascade
++ * on IRQ 0. The X2 runs in parallel mode with the cascade on IRQ 1, shared
++ * with a PCI slot. */
 +
-+		/* Allow for the cascade being shared with other devices */
-+		if (cirq != -1) {
-+			irq = cirq;
-+			openpic_eoi();
-+		}
- 	} else if (irq == OPENPIC_VEC_SPURIOUS + open_pic_irq_offset)
- 		irq = -1;
- 	return irq;
-diff -Nru a/include/asm-ppc/open_pic.h b/include/asm-ppc/open_pic.h
---- a/include/asm-ppc/open_pic.h	Tue Mar 16 14:15:02 2004
-+++ b/include/asm-ppc/open_pic.h	Tue Mar 16 14:15:02 2004
-@@ -40,6 +40,8 @@
- /* Exported functions */
- extern void openpic_set_sources(int first_irq, int num_irqs, void *isr);
- extern void openpic_init(int linux_irq_offset);
-+extern void openpic_hookup_cascade(u_int irq, char *name,
-+                                   int (*cascade_fn)(struct pt_regs *));
- extern void openpic_init_nmi_irq(u_int irq);
- extern u_int openpic_irq(void);
- extern void openpic_eoi(void);
++#ifdef CONFIG_SANDPOINT_X2
++#define SANDPOINT_CASCADE 17
++#else
++#define SANDPOINT_CASCADE 16
++#endif
++
+ /*
+  * The sandpoint boards have processor modules that either have an 8240 or
+  * an MPC107 host bridge on them.  These bridges have an IDSEL line that allows
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
