@@ -1,38 +1,36 @@
-Message-Id: <20000704081806.Postino-015237@smtp01.highway.ne.jp>
-Date: Tue, 4 Jul 2000 08:18:06 +0900
-To: linuxppc-dev@lists.linuxppc.org
+Message-Id: <20000704082257.Postino-013878@smtp01.highway.ne.jp>
+Date: Tue, 4 Jul 2000 08:22:57 +0900
+To: Kaoru Fukui <k_fukui@highway.ne.jp>
+CC: linuxppc-dev@lists.linuxppc.org
 From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: still CMD646 IDE problem in kernel-2.4.0-test3
+Subject: Re: still CMD646 IDE problem in kernel-2.4.0-test3
+In-Reply-To: <20000704081806.Postino-015237@smtp01.highway.ne.jp>
+References: <20000704081806.Postino-015237@smtp01.highway.ne.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+From: Kaoru Fukui <k_fukui@highway.ne.jp>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: still CMD646 IDE problem in kernel-2.4.0-test3
+Date: Tue, 4 Jul 2000 08:18:06 +0900
 
-I have the problem in kernel-2.4.0-test3.
-My machine is BWG3Version2.
-it has fast ide drive which is CDD646.
-It doesnot work still on develop kernel.
+>
+> Hi!
+>
+> I have the problem in kernel-2.4.0-test3.
+> My machine is BWG3Version2.
+> it has fast ide drive which is CDD646.
 
-Any help!
+Sorry,my mistake CMD646
 
-Kaoru
-
-Partition check:
- hda:Machine check in kernel mode.
-Caused by (from SRR1=41030): Transfer erre ack signal
-NIP: C00D5AF4 XER: 00000000 LR:C00D5A94 REGS: c022fd60 TRAP: 0200
-MSR: 00041030 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c022e030[0] 'swapper' Last syscall: 120
-last math 00000000 last altivec 00000000
-GPR00: 000000FF C022FE10 C022E030 00000000 00001032 00000000 00000000 00000000
-GPR08: C02DB1AC FE000000 FE000000 C0250000 00000001 003030AC 00000000 00000000
-GPR16: 00000000 C02B0000 C02B0000 C02C0000 C0230000 C02BA694 C02BA690 C00050EB
-GPR24: C0006644 C022D3E0 C022D3E0 C022D3E0 C02DB1AC C03E5260 C00E0CC4 C02DB214
-
-Here is stop
+> It doesnot work still on develop kernel.
+>
+> Any help!
+>
+> Kaoru
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
