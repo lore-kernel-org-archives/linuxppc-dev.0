@@ -1,40 +1,25 @@
-Date: Sun, 08 Sep 2002 22:52:50 +0200
-From: o_y <o_yahav@netvision.net.il>
-Subject: Re: MPC860T FEC problem
-To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <MBBBIOFIICDAPDMKHBDEKEDNCAAA.o_yahav@netvision.net.il>
-MIME-version: 1.0
-Content-type: text/plain; charset=windows-1255
+Reply-To: <sunilpa@india.tek.com>
+From: "Sunil P Antony" <sunilpa@india.tek.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RomDisk - kernel panic
+Date: Mon, 9 Sep 2002 11:52:43 +0530
+Message-ID: <001101c257c9$4ef24b20$8c679ec0@india.tek.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Wolfgang Denk
-You are right ! i didn't specify importent stuff about my work :
-The board i'm working on is MPC860TFADS.
-I'm using the 2.2.14 kernel because at the moment it's working just fine( i
-have not bump into any bugs so far ) . The kernel is stable ,busybox is
-working and
-so is the network services .
-BCSR's are the Board & Statuse Control Registers of the FADS.
-The ppcboot-0.8.3 can work only with one of the tow : the scc_enet or the
-fec.
-Since the scc_enet is working ( and the fec isn't) , ppcboot dont initialize
-the BCSR4 register
-that (on the mpc860FADS) controls the fec so if i want to use it i have to
-initialize it
-during the booting process.
-The second thing is that i'm not planing to use ppcboot as boot loader in
-the future.
-I'm only using ppcboot so i coul'd download the image to the memory .
-The actual bootloader is mbxboot with some modifications.
-When the fec will work i'll burn the image on the flash memory .
+Hello All,
+	I had earlier written i regard to the RomDisk. I have been able to open the
+/dev/flash0 device but the kernel panics with the following msg.
+"Kernel panic: No init found.  Try passing init= option to kernel."....
+The init function is there and everything seems to be there... except that
+it dosent work. The architecture is PPC 860 using Linux-2.4.
 
-If any one succeded to get the fec device to work on this board with
-the 2.2 kernel PLEASE tell me how
-
-Thank you for your help and your attention.
-oshri.
+regards,
+Sunil
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
