@@ -1,35 +1,36 @@
-From: benh@kernel.crashing.org
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: "David A. Gatwood" <dgatwood@gatwood.net>
 Cc: <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: G4 boot crash problems with 2.4 "stable"
-Date: Wed, 13 Feb 2002 20:07:44 +0100
-Message-Id: <20020213190744.31608@mailhost.mipsys.com>
-In-Reply-To: <Pine.LNX.3.96.1020213104616.6305C-100000@gatwood.net>
-References: <Pine.LNX.3.96.1020213104616.6305C-100000@gatwood.net>
+Date: Wed, 13 Feb 2002 22:06:16 +0100
+Message-Id: <20020213210616.30410@smtp.wanadoo.fr>
+In-Reply-To: <Pine.LNX.3.96.1020213125526.27925B-100000@gatwood.net>
+References: <Pine.LNX.3.96.1020213125526.27925B-100000@gatwood.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> A workaround for pmac or openpic ppc32 is to use the keylargo or the
->> openpic timer instead of the DEC. That could be a "kernel hacking" option
+>> >Is there a 2.4 kernel source tarball around that is known to boot on
+>> >Sawtooth (using BootX)?  Is there a way to yank the OpenPIC support?
+>>
+>> BootX isn't supported on any newworld mac. You should boot from OF,
+>> using yaboot.
 >
->Speaking of OpenPIC....  I tried to build a kernel from BK TOT last night
->for a PowerMac G4, and it hung about a half screen into booting after some
->yammering about OpenPIC.
->
->openpic enter
->openpic timer
->openpic ext
->(hang)
->
->
->Is there a 2.4 kernel source tarball around that is known to boot on
->Sawtooth (using BootX)?  Is there a way to yank the OpenPIC support?
+>BootX works fine for me with every 2.2 kernel I've tried.  It only fails
+>for 2.4 TOT builds.  I very much doubt the boot mechanism is at fault.
 
-BootX isn't supported on any newworld mac. You should boot from OF,
-using yaboot.
+Well, it can be for various reasons. For example, the interrupt tree
+cannot be properly parsed, we don't get the OF "phandles" and we now
+rely on them (MacOS don't keep them when it gets the device-tree).
+Also, some bus mastering devices aren't properly shut down, potentially
+screwing things up in memory while the kernel loads.
+
+I would really recommend you give a try to yaboot before investigating
+much further.
+
+(Note: I do have a sawtooth here which just works with latest kernels)
 
 Ben.
 
