@@ -1,51 +1,37 @@
-Message-ID: <0B0A39652BB0D411BCCF00508B9512EC08AEB555@tx14exm05.ftw.mot.com>
-From: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: question about open_pic and serial port
-Date: Tue, 22 Oct 2002 10:23:20 -0500
+Message-ID: <3DB57883.4040109@uab.ericsson.se>
+Date: Tue, 22 Oct 2002 18:10:43 +0200
+From: Hans Feldt <Hans.Feldt@uab.ericsson.se>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 8260 CPM commands, need better resource ctrl?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Does the current version Mvista preview 2.1 fully support serial mode of 107
-EPIC ?
-If so, what is interrupt number for serial mode interrupt 0 of mpc107 ? I
-reviewed
-the old messages on this list and the open_pic.c and there are some threads
-talking
-about the first 16 interrupts are reserved for 8259 only. Does that mean
-serial mode interrupt
-0 match interrupt 16 on open_pic interrupt table ?
+CPM commands are executed from different drivers, e.g. fcc_enet.c and
+in different execution contexts.
 
-Plus, I changed the base address of boot/common/ns16550.c to drive the TI
-752 uart.
-It appears working before kernel starts. Then it hang. It seems that the
-same file (ns16550.c)
-is not used after kernel starts. Which serial device driver is used after
-kernel starts ?
+Isn't there a need for a central place to handle CPM commands?
 
-Starting at 0x800000...
+For example:
 
-loaded at:     00800000 0089E1BC
-zimage at:     00805870 0089AC70
-avail ram:     00400000 00800000
+m8260_cpm_cmd(...)
+	disable ints
+	bounded wait until FLG is clear
+	if not clear => ???
+	write to CPCR
+	enable ints
 
-Linux/PPC load:
-Uncompressing Linux...done.
-Now booting the kernel
+I have problems when testing the ATM driver and at the same time having
+limited Ethernet traffic (debug printouts).  I get a "transmit timed
+out" and descriptor ring dump from the eth driver. Disabling irqs in the
+atm driver around CPCR handling seems to fix that problem.
 
+Comments?
 
-
-
-
-Thanks.
-
-Bo Yu
-Motorola, GTSS
-1-817-245-6725
+Thanks,
+Hans
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
