@@ -1,34 +1,60 @@
-Date: Tue, 24 Jul 2001 11:21:00 -0500
-From: "Joseph P. Garcia" <jpgarcia@execpc.com>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: userspace button controls
-Message-Id: <20010724112100.6e00124c.jpgarcia@execpc.com>
-In-Reply-To: <Pine.LNX.4.33.0107241730190.1912-100000@opal.biophys.uni-duesseldorf.de>
-References: <20010724015531.516c9985.jpgarcia@execpc.com>
-	<Pine.LNX.4.33.0107241730190.1912-100000@opal.biophys.uni-duesseldorf.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Tue, 24 Jul 2001 18:07:57 +0100
+Subject: Re: Sound stoppage on PowerCenter 132
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: "Michael R. Zucca" <mrz5149@acm.org>,
+	"linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010724170743.3D847DB9C5@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 24 Jul 2001 17:36:55 +0200 (CEST)
-Michael Schmitz <schmitz@mail.biophys.uni-duesseldorf.de> wrote:
-> You're talking about PMU_IOC_SET/GET_BACKLIGHT? Thanks for breaking pmud
-> :-) Please make that a config option, or get Stephan Leemburg to change
-> pmud before this leaks into kernels built for the unsuspecting user.
+Hi Michael,
 
-Oh yeah.  That's right. ^_^;  When I get the time, I'll see what I can do.  The patches are for testing purposes.  As Franz pointed out, there are a few things that need to be done before anything can be fully merged.  I presume that since the fbdev ioctl can be used by others, whomever is in charge of that might prefer a slightly different name or parameter.  (still need to contact them)  So it will probably be a bit.. maybe.  I'd rather that the api propagates finality in the kernel before it even hits general user userspace.  that involves finalizing the new keys and the fb.h's ioctl afaik.
+> Ok, it's been a long time since I last posted. I've been busy :-)
 
-In the meantime, kernel space coexistance of the two would be nasty.  I coded this thinking i need cleaner code over maintaining the older code links in the kernel.
+tell me about it :-(((
 
-fblevel command also uses pmu.
+> I rsync'd the benh-2.4 tree from 7/24 and compiled it. I checked the awacs
+> driver and it seems to contain the code which handles the DMA DEAD
+> condition.
+>
+> The problem still seems to be the same. If I play an mp3 using mpg123, the
+> song plays fine. However, if I introduce enough PCI traffic (like, say,
+> opening up Netscape in X for my ATI PCI video card), the song stops dead
+> (no sound) but the mpg123 seems to stick around, presumably waiting on the
+> device.
 
-For testing, a 'if(ioctl(pmu,...)<0) ioctl(fb,...);' should work for compatibility, taking with the -EINVAL ioctl failure my patch would generate.  Probably put the fb's ioctl in an #ifdef (IOCTL NAME) so it still compiles elsewhere.
+*sigh* ... well, as the comments say, - it was a trial - I have no h/w to
+test on ...
 
---
-Joseph P. Garcia
-http://www.execpc.com/~jpgarcia
+> The code "seems" more robust under X but that could just be my imagination.
+:-)
+
+actually, it should be (generally) more robust ... (but that might be just
+my sales-pitch ;-))
+
+> BTW, I have a PowerCenter 132 with a 750 upgrade in it, if that makes any
+> difference.
+
+I don't think that the 750 makes any difference - the problem is out in IO
+land (AFAICT).
+
+OK.  I want to fix this (there are a few PowerCentre users out there)...
+but I need someone with h/w to help me ...
+
+You need to enable DEBUG_DMASOUND and rebuild the modules ... it should then
+put (at least a little) stuff out to the console saying what it's trying to
+do ...
+
+I'm considering re-jigging the IRQ code in dmasound_pmac anyway (to make SMP
+handling more sane)....
+
+I don't (at the moment) have much linux time available ... but I'll have a
+go (or make suggestions of things to try - if you can test it)...
+
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
