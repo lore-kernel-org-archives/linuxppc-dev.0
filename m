@@ -1,67 +1,33 @@
-Date: Wed, 20 Oct 1999 20:40:25 -0500 (CDT)
-From: ian reinhart geiser <geiseri@msoe.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: C++ Question
-Message-ID: <Pine.LNX.4.10.9910202034270.9611-100000@sleepchamber.apt5.msoe.edu>
+Date: Thu, 21 Oct 1999 10:33:24 +0100 (BST)
+From: Charlie McLachlan <cim@uk.research.att.com>
+To: anthony tong <atong@uiuc.edu>
+cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: SuSE Rage 128 Xserver Source and XFree 3.3.6
+In-Reply-To: <19991020190425.A1863@mango.genunix.net>
+Message-ID: <Pine.SO4.4.04.9910211026120.5658-100000@marrow>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have confirmed that this works under 2.95 under RH 6.1
-one ix86 so I am thinking this is a LinuxPPC problem.
+On Wed, 20 Oct 1999, anthony tong wrote:
 
-I am building the gcc cross compiler for th 68HC11 using
-the 2.8.1 source code and a patch supplied by my professor.
+> > Are you allowed to share that source with others?
+> 
+> Unfortunately, no.
 
-i get the following error:
+After whining about the Suse website being misleading (on this mailing
+list) a bloke from Suse sent me the code. I'm not a member of XFree86 and
+the code doesn't mention that is not for redistribution. I'll email my
+source and see if he has any objections to me posting it to the mailing
+list (its a 12k tar ball)
 
-gcc -c -DCROSS_COMPILE -DIN_GCC    -g  -DHAVE_CONFIG_H    -I. -I.
--I./config fol
-d-const.c
-fold-const.c: In function `exact_real_inverse':
-fold-const.c:945: parse error before `if'
-fold-const.c: At top level:
-fold-const.c:945: parse error before `else'
-fold-const.c:945: parse error before `.'
-fold-const.c:945: parse error before `.'
-fold-const.c:945: parse error before `.'
-fold-const.c:959: parse error before `('
-fold-const.c:960: `y' undeclared here (not in a function)
-fold-const.c:960: warning: data definition has no type or storage class
-fold-const.c:961: parse error before `return'
-make: *** [fold-const.o] Error 1     
-
-When I looked at the code i found the following:
-
-exact_real_inverse (mode, r)
-     enum machine_mode mode;
-     REAL_VALUE_TYPE *r;
-{
-  union
-    {
-      double d;
-      unsigned short i[4];
-    }x, t, y;     
-----SNIP----
-and at 945 the following code...
-941:  /* Truncate to the required mode and range-check the result.  */
-942:  y.d = REAL_VALUE_TRUNCATE (mode, t.d);
-943:#ifdef CHECK_FLOAT_VALUE
-944:  i = 0;
-945:	  if (CHECK_FLOAT_VALUE (mode, y.d, i))
-946:    goto fail;
-947:#endif 
-
-why did i get an error on y.d on 945 and not 941?
-
-any ideas?
-
-sorry if i am missing info, i have been beating on this
-for a week and it is all getting blurry...
-
--ian reinhart geiser
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Charlie McLachlan - Responsible for VNC on the Mac
+	AT&T Research Lab. Cambridge.
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
