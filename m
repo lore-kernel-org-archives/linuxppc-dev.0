@@ -1,59 +1,52 @@
-To: cjohnson@gcctech.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Tools question 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 24 Nov 2003 13:32:17 EST."
-             <3FC24EB1.60106@gcctech.com>
-Date: Mon, 24 Nov 2003 20:14:03 +0100
-Message-Id: <20031124191408.C662EC5F5F@atlas.denx.de>
+In-Reply-To: <Pine.LNX.4.56.0311241732200.2581@mag.devdep.sysgo.de>
+References: <3FC0A1D3.70706@imc-berlin.de> <B82FB2A3-1E4E-11D8-A8D4-003065E2BB06@aimsys.nl> <Pine.LNX.4.56.0311241732200.2581@mag.devdep.sysgo.de>
+Mime-Version: 1.0 (Apple Message framework v606)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <45C0A1DA-1ECE-11D8-B460-003065E2BB06@aimsys.nl>
+Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
+	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+From: Jaap-Jan Boor <jjboor@aimsys.nl>
+Subject: Re: Preemptive Kernel and MPC8xx ???
+Date: Mon, 24 Nov 2003 23:33:48 +0100
+To: Marius Groeger <mgroeger@sysgo.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Chris,
+On 24-nov-03, at 17:35, Marius Groeger wrote:
 
-in message <3FC24EB1.60106@gcctech.com> you wrote:
 >
-> 1. Do I really need to go back and build my own tool chain?  I've tried
+> On Mon, 24 Nov 2003, Jaap-Jan Boor wrote:
+>
+>> Yes I do on 2.4.20 and 2.4.22 from kernel.org. So far all seems
+>> to work but didn't do any measurements on it.
+>> (I both use the preempt and low-latency patches)
+>
+> AFAIK, you can pretty much drop the low-latency patch in favor of
+> using the lock-breaking patch. It is also available from Robert Love
+> at the cited home page.
 
-Yes, you do - at least if  you  want  to  make  sure  you  completely
-understand the technology and that you will in all situations be able
-to build your tools from scratch.
+Yes, thanks, I know.
+Is it better? I thought both low-latency and lock-break
+do more or less the same.
 
-> 2. On my intel development machine I see that libresolv.a comes from
-> glibc-devel-2.2.5-34.  I have gcc-2.96-110 for my compiler.  Should I go
-> find a version of glibc-devel that matches up with my existing 2.95.3
-> tools?  How will I know if its the right version?
+Jaap-Jan
 
-If you stick with your existing toolchain you must find a version  of
-glibc-devel  that  matches your glibc. The compiler version is not so
-much interesting here.
 
-> 3. Better yet, is there somewhere I can just obtain a reasonable tool
-> chain that's ready-built for my target machine?  Complete with libraries?
+>
+> Marius
+>
+> --
+> Marius Groeger <mgroeger@sysgo.de>
+> Project Manager
+>
+> SYSGO Real-Time Solutions AG | Embedded and Real-Time Software
+> Am Pfaffenstein 14
+> 55270 Klein-Winternheim, Germany
+>
+> Voice: +49-6136-9948-0 | FAX: +49-6136-9948-10
+> www.sysgo.de | www.elinos.com | www.osek.de
+>
 
-Did you ever have a look at our ELDK? It's free for download,  and  a
-lot  of projects seem to be using it (and of course we use it ourself
-for a couple of projects, too).
-
-Please see http://www.denx.de/twiki/bin/view/DULG/ELDK for details.
-
-> Sorry for the newbie type questions.  I have the "Using and Porting GNU
-> CC" book, but am finding it a little too Stallman-esque to follow.  Anyone?
-
-Karim Yaghmour: "Building Embedded  Linux  Systems"  [Paperback:  400
-pages,  O'Reilly  &  Associates;  (May  2003);  ISBN  059600222X]  is
-definitely worth reading.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"This isn't brain surgery; it's just television."   - David Letterman
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
