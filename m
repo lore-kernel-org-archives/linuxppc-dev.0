@@ -1,30 +1,38 @@
-Date: Wed, 28 Nov 2001 16:20:47 -0600
+Date: Wed, 28 Nov 2001 16:22:43 -0600
 From: Troy Benjegerdes <hozer@drgw.net>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: CONFIG_ALL_PPC
-Message-ID: <20011128162046.L23942@altus.drgw.net>
-References: <15365.24592.409195.392505@gargle.gargle.HOWL>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: arch/ppc/boot broken include in currenty 2_4_devel
+Message-ID: <20011128162242.M23942@altus.drgw.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15365.24592.409195.392505@gargle.gargle.HOWL>; from paulus@samba.org on Thu, Nov 29, 2001 at 09:07:12AM +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Nov 29, 2001 at 09:07:12AM +1100, Paul Mackerras wrote:
->
-> I want to rename CONFIG_ALL_PPC to CONFIG_PREP_PMAC_CHRP in the
-> linuxppc_2_4_devel tree (or if anyone can suggest a better name I'll
-> use that).
->
-> Does anyone object to this?
+Somehow, the
 
-I thought were were goign to call it 'CONFIG_WORKSTATION_PPC' or
-'CONFIG_DESKTOP'
+CFLAGS	+= -fno-builtin -D__BOOTER__ -I$(TOPDIR)/arch/$(ARCH)/boot/include
+
+line in arch/ppc/boot/Makefile is not getting picked up, causeing me
+problems like:
+
+make[3]: Entering directory
+`/scratch/mvp/linuxppc_2_4_galileo/arch/ppc/boot/lib'
+ppc_8xx-gcc -D__KERNEL__ -I/scratch/mvp/linuxppc_2_4_galileo/include -Wall
+-Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer
+-fno-strict-aliasing -fno-common -D__powerpc__ -fsigned-char -msoft-float
+-pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring -O2 -ggdb   -c -o
+zlib.o zlib.c
+zlib.c: In function `inflateEnd':
+zlib.c:330: too many arguments to function
+zlib.c: At top level:
+zlib.c:337: parse error before `('
 
 
-I'd be happy with CONFIG_DESKTOP, or CONFIG_PPC_MULTIARCH.
+because it's picking up the wrong zlib.h.
+
+I've been messing around with the makefile, but I can't get it to do
+anything that seems sensible.
 
 --
 Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
