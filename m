@@ -1,33 +1,34 @@
-Message-ID: <3A8EBAF3.3DA51F8B@rochcivictheatre.org>
-Date: Sat, 17 Feb 2001 11:54:59 -0600
-From: Tom Gall <gall@rochcivictheatre.org>
-MIME-Version: 1.0
+From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
+Reply-To: Thomas Graichen <graichen@innominate.de>
+Subject: Re: ltrace for ppc
+Date: 17 Feb 2001 21:11:45 GMT
+Message-ID: <news2mail-96mpeh$6gi$1@mate.bln.innominate.de>
+References: <20010216210927.A9F26DBA2E@atlas.valhalla.net> <v04003a02b6b35c7a4a82@[24.70.162.12]> <20010217231818.G3000@linuxcare.com>
+Reply-To: thomas.graichen@innominate.com
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Initial 140 Support
-Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-All,
-
-  I know some of you have been waiting for some time for this. Located
-in IBM's page is the first drop of support for the RS/6000 Model 140.
+Anton Blanchard <anton@linuxcare.com.au> wrote:
 
 
-http://oss.software.ibm.com/developerworks/opensource/linux/projects/ppc/43p_140notes.php
+>> What about SGI's Kernprof stuff? <http://oss.sgi.com/projects/kernprof/>.
 
-  A big round of applause to Todd Inglett for his tireless work on this!
+> It should be easy to port this and SGI's lockmeter (spinlock metering)
+> to PPC if they haven't already been. I ported them to sparc64 a while ago
+> and they have been quite useful.
 
-  Enjoy!
+also ask on the kernprof/lockmeter list first before you start
+hacking yourself - i think there was someone working on porting
+it to ppc already (but i am not absolutely shure)
+
+t
+
 --
-Regards,
-
-Tom
-
---------------------------------------------------------------
-Linux Guy             "My heart is human, my blood is boiling,
-tgall@rochcivictheatre.org   my brain IBM" -- Mr Roboto, Styxx
-tom_gall@vnet.ibm.com
+thomas.graichen@innominate.com
+                                                         innominate AG
+                                                  the linux architects
+tel: +49-30-308806-13   fax: -77             http://www.innominate.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
