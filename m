@@ -1,33 +1,29 @@
-Mime-Version: 1.0
-Message-Id: <p05101400b8836c3106a5@[10.0.0.42]>
-In-Reply-To: <20020203185831.MQZJ9396.tomts12-srv.bellnexxia.net@there>
-References: <20020202144614.WRFZ11118.tomts10-srv.bellnexxia.net@there>
- <20020202201115.17827@smtp.wanadoo.fr>
- <20020203185831.MQZJ9396.tomts12-srv.bellnexxia.net@there>
-Date: Sun, 3 Feb 2002 14:39:49 -0800
-To: yellowdog-devel@lists.yellowdoglinux.com,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: some questions on new dual 1Gig G4's support?
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: =?ISO-8859-1?Q?Michel=20D=E4nzer?= <michel@daenzer.net>
+Cc: Bastien Nocera <hadess@hadess.net>,
+	AMANO Kazuhiro <haa13142@jnb.odn.ne.jp>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: MATSHITADVD-ROM SR-8176
+Date: Sun, 3 Feb 2002 23:40:27 +0100
+Message-Id: <20020203224027.14153@smtp.wanadoo.fr>
+In-Reply-To: <1012775473.18215.19572.camel@pismo>
+References: <1012775473.18215.19572.camel@pismo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 2:02 PM -0500 2/3/02, Kevin B. Hendricks wrote:
+>I have an SR-8174, and audio grabbing etc. also works. Maybe we can
+>assume it works with any Matsushita DVD-ROM drive, or at least the
+>SR-81xx series?
 
->According to the Apple developers note just released for this machine its
->model ID is simply "PowerMac3,5" which is unchanged from previous versions
->and already covered in the pmac_feature.c file.
+You mean you need a similar patch or not ?
 
-Yep.  It is exactly the same motherboard as the previous set of
-machines (733 / dual 800 / 867).  There might be firmware changes to
-support the new cpus but the hardware is identical, and I believe
-that Apple's intent with the model IDs is to identify motherboard
-architectures, not cpus.
+I still prefer an explicit list for now, I'll see whith Jens what
+can be done in the future.
 
---
-Tim Seufert
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
