@@ -1,24 +1,30 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Linuxppc-Embedded@Lists. Linuxppc. Org (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: NAPI & 8xx/82xx enet.c driver?
-Date: Mon, 1 Dec 2003 15:35:08 +0100
-Message-ID: <002301c3b818$51c00350$0a01a8c0@LUMENTIS02>
+Message-ID: <3FCB87EB.30008@mvista.com>
+Date: Mon, 01 Dec 2003 11:26:51 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Cross Compiler running under Win32
+References: <3FC4B0EC.3090107@imc-berlin.de>
+In-Reply-To: <3FC4B0EC.3090107@imc-berlin.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all
+Steven Scholz wrote:
+>
+> does someone know of a cross compiler (producing code for let's say
+> MPC8xx) that is running natively under win32 (Windows2000/XP) without
+> stuff like CYGWIN?
+>
+> I'am just wondering. Apparently MVISTA released their new "DevRocket"
+> which is supposed to run under WindowsXP. So I assume they have cross
+> compilers for "30 processors from 8 architectures" running under
+> Windows...
 
-I wounder if anyone has done some measurement on 8xx/82xx
-current driver v.s a NAPI(New API) converted driver and willing
-to share the resluts?
+FWIW, this is the mvista marketing spiel:
 
-NAPI(see Documentation/networking/NAPI_HOWTO.txt) is supposed to reduce #irqs
-under high load, which will increase small packet throughput. It got backported
-to 2.4(around 2.4.20)
-
-   Jocke
+http://www.mvista.com/news/2003/devrocket.html
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
