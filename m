@@ -1,35 +1,33 @@
-Message-ID: <392EA227.41945656@embeddededge.com>
-Date: Fri, 26 May 2000 12:11:19 -0400
+Message-ID: <392EA50C.281D52ED@embeddededge.com>
+Date: Fri, 26 May 2000 12:23:40 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: "Brown, David (dbrown03)" <DBrown03@harris.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Questions about 8xxrom
-References: <BE1C564723B3D21191FD0000F840E39801D81549@rfcmx2.rfc.comm.harris.com>
+To: Steve Rossi <srossi@ccrl.mot.com>
+CC: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: root fs on hdd
+References: <392E92E3.62847D28@ccrl.mot.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Brown, David (dbrown03)" wrote:
+Steve Rossi wrote:
 
->
-> Now, I've gone back to try the ELF method.  My flash starts at FF800000, and
-> the zImage.initrd is stored at the beginning of flash.
+> I've copied the the /bin, /dev, /etc, /lib, /libexec, /sbin, and /share
+> directories from the monta vista sdk to the root direectory of my ext2
+> partition (/dev/sda2) using "cp -a" while the root partition was
 
 
-As I have said many times, and as recently as yesterday, the zImage
-(especially with initrd) was never intended to be a proper ELF image.
-It is the most compressed set of bits possible to minimize storage
-in a device.  The ELF header is an artifact of the tools used to create
-zImage, and should simply be stripped.  The zImage is a "self extracting"
-image that is loaded into ram or flash rom.  When you are loading this
-from a file system or via TFTP, you know the size to load into memory.
-If you are loading from some medium, like a raw flash card, you have
-to make some assumptions about the size or tack a few bytes on the front
-that indicate the length.  Most systems have some custom boot loader
-that requires a special, very small header, or they just jump to the
-start of the image in flash rom.
+Several problems here.  You can't "cp" the /dev directory.  Use 'tar'
+or 'cpio'.
+
+The MontaVista CDK is built to operate in the /opt/hardhat/..... directory
+tree.  You have to preserve this directory structure to the target
+file system as used by NFS because these paths are part of the
+library search.  Copy the /opt/hardhat/...../target tree to your
+system, then make symbolic links from /bin, /etc, /lib and so on into
+the /opt/hardhat/..../target subdirectory.  All of this (and much more)
+is described in the documentation if you care to read it.
 
 
 	-- Dan
