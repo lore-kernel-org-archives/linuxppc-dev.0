@@ -1,11 +1,11 @@
-Message-ID: <3D6C4904.1060101@embeddededge.com>
-Date: Tue, 27 Aug 2002 23:52:36 -0400
+Message-ID: <3D6C4B8E.8070706@embeddededge.com>
+Date: Wed, 28 Aug 2002 00:03:26 -0400
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
 To: acurtis@onz.com
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: FCC patch..really
-References: <200208271708.04797.acurtis@onz.com>
+Subject: Re: 8260/8xx Embedded Boot patch
+References: <200208271706.51677.acurtis@onz.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
@@ -13,16 +13,13 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 Allen Curtis wrote:
 
+> Fix/cleanup to embedded boot
 
-> +    if [ "$CONFIG_FCC1_ENET" = "y" ]; then
-> +      choice 'RX Clk Source'	\
-
-Please don't do this.......it doesn't belong in the configuration
-file.  There are more things unique to a board configuration than
-the clock routing.  This belongs as a structure in a C file, selectable
-by board type (along with other board specific selections).
-
-Thanks.
+Please explain these changes.  You shouldn't be using embed_config.c if
+you don't have EMBEDDEDBOOT defined.  The EMBEDDEDBOOT is a generic
+bootloader that should only have unique functions in embed_config.c
+You should be definining a board configuration for whatever you are
+doing and use that.
 
 
 	-- Dan
