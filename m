@@ -1,46 +1,36 @@
-Message-ID: <3FB02C85.6090400@g-house.de>
-Date: Tue, 11 Nov 2003 01:25:41 +0100
-From: Christian <evil@g-house.de>
-MIME-Version: 1.0
-To: linas@austin.ibm.com
+In-Reply-To: <booek6$vvl$1@sea.gmane.org>
+References: <7AFDCF4E-FCCB-11D6-8F24-003065F22EAA@mindspring.com> <booek6$vvl$1@sea.gmane.org>
+Mime-Version: 1.0 (Apple Message framework v606)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9E3C0610-1418-11D8-9936-00039382032A@mindspring.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ppc32 lockups with 2.6
-References: <3FA5698A.9000905@g-house.de> <3FAABE62.4090804@g-house.de> <20031110125044.A22030@forte.austin.ibm.com> <3FB01392.60500@g-house.de> <20031110175740.A32176@forte.austin.ibm.com>
-In-Reply-To: <20031110175740.A32176@forte.austin.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: Tim Seufert <tas@mindspring.com>
+Subject: Re: pmac_halt() bug
+Date: Mon, 10 Nov 2003 23:28:17 -0800
+To: Igal Baevsky <igal.baevsky@terayon.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-linas@austin.ibm.com wrote:
->
-> kdb is a built-in kernel debugger. gdb is useless for this case,
-> although kgdb could be another alternative.
+On Nov 10, 2003, at 8:33 AM, Igal Baevsky wrote:
 
-yes, i thought so. i'm still a bit confused if "kdb" and "kgdb".
+> Tim Seufert wrote:
+>>
+>> In platforms/pmac_setup.c, pmac_halt() is defined as follows:
+>>
+>> pmac_halt(void)
+>> {
+>>     pmac_power_off();
+>> }
 
-as http://kgdb.sourceforge.net/whichdebugger.html points out, kdb would
-be the better choice here, but i don't see any "kdb" within the kernel
-config nor does it seem to be a user space-tool. anyway, i have
+> Tim,
+> Is there any way to halt PMAC machine with no powering it off ?
+> I will realy appretiate your answer - the problem you mentioned above
+> is
+> the exact problem I'm dealing with .
 
-CONFIG_DEBUG_KERNEL=y
-CONFIG_DEBUG_SLAB=y
-CONFIG_MAGIC_SYSRQ=y
-CONFIG_KGDB=y
-CONFIG_KGDB_TTYS1=y
-CONFIG_XMON=y
-CONFIG_DEBUG_INFO=y
-CONFIG_BOOTX_TEXT=y
-
-in my kernel now (still compiling), and will try to setup kgdb tomorrow
-(read: today :-))
-
-Thank you for your time,
-Christian.
---
-BOFH excuse #410:
-
-Electrical conduits in machine room are melting.
+Assuming the above is still the implementation of pmac_halt(), there's
+no way, short of modifying the kernel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
