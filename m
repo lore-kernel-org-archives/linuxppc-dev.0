@@ -1,46 +1,34 @@
-Date: Wed, 20 Mar 02 16:47:55 PST
+Date: Wed, 20 Mar 02 16:57:16 PST
 From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0203210047.AA15633@ivan.Harhan.ORG>
-To: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
+Message-Id: <0203210057.AA15679@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: EV-64260-BP & GT64260 bi_recs
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini <trini@kernel.crashing.org> wrote:
+Mark A. Greer <mgreer@mvista.com> wrote:
 
-> Because you enjoy our conversations? :)
+> I see three options:
+>
+> a) Do it the same was as we're going to do it in 2.5
+>
+> [...]
+>
+> b) Do a more advanced bi_rec scheme (like benh's proposal)
+>
+> c) Do mininimum necessary in 2.4; do it "right" in 2.5
 
-Normally I do, but then we got on the subject of which patches should or
-shouldn't be accepted, and I'm not going to discuss that with anyone except the
-actual responsible maintainers.
+I vote for doing 'c' now and keeping it unchanged for 2.5, 2.6, 2.10, 3.0, and
+the eternity.
 
-> And then you'll have to go and improve the patch anyhow, if you're going
-> to stick to your word. :)
+> Can we focus on this question so we can stop going in circles?  Besides if we
+> reach a concensus in a "few days" we can take MS' $50.  :)
 
-Oh sure, I have a ton of improvements in mind, I just want to do them one step
-at a time, i.e., not work on patch N+1 until N is in the tree.
-
-> How is that a step backward?
-
-The steps forward are linuxppc_2_4_devel -> linuxppc_2_4 -> Marcelo -> 2.4
-tarballs on kernel.org -> Debian, Yellow Dog, etc. Sidetrack trees like
-2_4_galileo are a step backward.
-
-> All of the current galileo work is in that
-> tree.
-
-No, a better competing version of the GT-64260 work is in the 2_4_msokolov tree
-on my machine.
-
-> And a quick diff of the enet drivers in the two trees shows a
-> good deal of differences, many of which aren't just cosmetic.  Isn't it
-> more 'natural' to update the most up to date file?
-
-The gt64260_eth driver in both trees is so busted that I plan to rewrite it
-from scratch anyway like I already did with the rest of the GT-64260 code. (And
-when I do I'll make it vastly superior to yours to convince Paulus/Marcelo to
-use it over yours.)
+Then we have to agree on how many days is a few. And remember, the count
+started yesterday at 16:53 PST. Also you have to have not only a consensus, but
+a working patch counter to mine, otherwise you have to push mine and I keep my
+$50.
 
 MS
 
